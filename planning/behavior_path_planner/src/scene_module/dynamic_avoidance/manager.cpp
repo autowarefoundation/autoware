@@ -63,17 +63,20 @@ DynamicAvoidanceModuleManager::DynamicAvoidanceModuleManager(
       node->declare_parameter<double>(ns + "cut_in_object.min_time_to_start_cut_in");
     p.min_lon_offset_ego_to_cut_in_object =
       node->declare_parameter<double>(ns + "cut_in_object.min_lon_offset_ego_to_object");
+    p.min_cut_in_object_vel = node->declare_parameter<double>(ns + "cut_in_object.min_object_vel");
 
     p.max_time_from_outside_ego_path_for_cut_out =
       node->declare_parameter<double>(ns + "cut_out_object.max_time_from_outside_ego_path");
     p.min_cut_out_object_lat_vel =
       node->declare_parameter<double>(ns + "cut_out_object.min_object_lat_vel");
+    p.min_cut_out_object_vel =
+      node->declare_parameter<double>(ns + "cut_out_object.min_object_vel");
 
     p.max_front_object_angle =
       node->declare_parameter<double>(ns + "front_object.max_object_angle");
-    p.min_front_object_vel = node->declare_parameter<double>(ns + "front_object.min_vel");
     p.max_front_object_ego_path_lat_cover_ratio =
       node->declare_parameter<double>(ns + "front_object.max_ego_path_lat_cover_ratio");
+    p.min_front_object_vel = node->declare_parameter<double>(ns + "front_object.min_object_vel");
 
     p.min_overtaking_crossing_object_vel =
       node->declare_parameter<double>(ns + "crossing_object.min_overtaking_object_vel");
@@ -160,19 +163,22 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
     updateParam<double>(
       parameters, ns + "cut_in_object.min_lon_offset_ego_to_object",
       p->min_lon_offset_ego_to_cut_in_object);
+    updateParam<double>(parameters, ns + "cut_in_object.min_object_vel", p->min_cut_in_object_vel);
 
     updateParam<double>(
       parameters, ns + "cut_out_object.max_time_from_outside_ego_path",
       p->max_time_from_outside_ego_path_for_cut_out);
     updateParam<double>(
       parameters, ns + "cut_out_object.min_object_lat_vel", p->min_cut_out_object_lat_vel);
+    updateParam<double>(
+      parameters, ns + "cut_out_object.min_object_vel", p->min_cut_out_object_vel);
 
     updateParam<double>(
       parameters, ns + "front_object.max_object_angle", p->max_front_object_angle);
-    updateParam<double>(parameters, ns + "front_object.min_vel", p->min_front_object_vel);
     updateParam<double>(
       parameters, ns + "front_object.max_ego_path_lat_cover_ratio",
       p->max_front_object_ego_path_lat_cover_ratio);
+    updateParam<double>(parameters, ns + "front_object.min_object_vel", p->min_front_object_vel);
 
     updateParam<double>(
       parameters, ns + "crossing_object.min_overtaking_object_vel",

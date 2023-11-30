@@ -71,8 +71,10 @@ struct DynamicAvoidanceParameters
 
   double min_time_to_start_cut_in{0.0};
   double min_lon_offset_ego_to_cut_in_object{0.0};
+  double min_cut_in_object_vel{0.0};
   double max_time_from_outside_ego_path_for_cut_out{0.0};
   double min_cut_out_object_lat_vel{0.0};
+  double min_cut_out_object_vel{0.0};
   double max_front_object_angle{0.0};
   double min_front_object_vel{0.0};
   double max_front_object_ego_path_lat_cover_ratio{0.0};

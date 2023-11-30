@@ -28,10 +28,12 @@
         cut_in_object:
           min_time_to_start_cut_in: 1.0 # [s]
           min_lon_offset_ego_to_object: 0.0 # [m]
+          min_object_vel: 0.5 # [m/s]
 
         cut_out_object:
           max_time_from_outside_ego_path: 2.0 # [s]
           min_object_lat_vel: 0.3 # [m/s]
+          min_object_vel: 0.5 # [m/s]
 
         crossing_object:
           min_overtaking_object_vel: 1.0
@@ -41,7 +43,7 @@
 
         front_object:
           max_object_angle: 0.785
-          min_vel: -0.5                      # [m/s] The value is negative considering the noisy velocity of the stopped vehicle.
+          min_object_vel: -0.5               # [m/s] The value is negative considering the noisy velocity of the stopped vehicle.
           max_ego_path_lat_cover_ratio: 0.3  # [-] The object will be ignored if the ratio of the object covering the ego's path is higher than this value.
 
       drivable_area_generation:

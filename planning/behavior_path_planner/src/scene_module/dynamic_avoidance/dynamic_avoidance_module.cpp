@@ -504,7 +504,9 @@ void DynamicAvoidanceModule::updateTargetObjects()
     const bool is_object_aligned_to_path =
       std::abs(obj_angle) < parameters_->max_front_object_angle ||
       M_PI - parameters_->max_front_object_angle < std::abs(obj_angle);
-    if (object.is_object_on_ego_path && is_object_aligned_to_path) {
+    if (
+      object.is_object_on_ego_path && is_object_aligned_to_path &&
+      parameters_->min_front_object_vel < object.vel) {
       RCLCPP_INFO_EXPRESSION(
         getLogger(), parameters_->enable_debug_info,
         "[DynamicAvoidance] Ignore obstacle (%s) since it is to be followed.", obj_uuid.c_str());
@@ -686,6 +688,11 @@ bool DynamicAvoidanceModule::willObjectCutIn(
   const double obj_tangent_vel, const LatLonOffset & lat_lon_offset,
   PolygonGenerationMethod & polygon_generation_method) const
 {
+  // Ignore oncoming object
+  if (obj_tangent_vel < parameters_->min_cut_in_object_vel) {
+    return false;
+  }
+
   // Check if ego's path and object's path are close.
   const bool will_object_cut_in = [&]() {
     for (const auto & predicted_path_point : predicted_path.path) {
@@ -725,7 +732,7 @@ DynamicAvoidanceModule::DecisionWithReason DynamicAvoidanceModule::willObjectCut
   const std::optional<DynamicAvoidanceObject> & prev_object) const
 {
   // Ignore oncoming object
-  if (obj_tangent_vel < 0) {
+  if (obj_tangent_vel < parameters_->min_cut_out_object_vel) {
     return DecisionWithReason{false};
   }
 
