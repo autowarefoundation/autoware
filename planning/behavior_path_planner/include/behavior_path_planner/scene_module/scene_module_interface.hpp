@@ -46,9 +46,7 @@
 
 #include <algorithm>
 #include <any>
-#include <limits>
 #include <memory>
-#include <random>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -103,6 +101,10 @@ public:
     }
   }
 
+  SceneModuleInterface(const SceneModuleInterface &) = delete;
+  SceneModuleInterface(SceneModuleInterface &&) = delete;
+  SceneModuleInterface & operator=(const SceneModuleInterface &) = delete;
+  SceneModuleInterface & operator=(SceneModuleInterface &&) = delete;
   virtual ~SceneModuleInterface() = default;
 
   virtual void updateModuleParams(const std::any & parameters) = 0;
@@ -365,10 +367,6 @@ private:
   BehaviorModuleOutput previous_module_output_;
 
   StopReason stop_reason_;
-
-  bool is_simultaneously_executable_as_approved_module_{false};
-
-  bool is_simultaneously_executable_as_candidate_module_{false};
 
   bool is_locked_new_module_launch_{false};
 
