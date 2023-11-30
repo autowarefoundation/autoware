@@ -887,7 +887,7 @@ MinMaxValue DynamicAvoidanceModule::calcMinMaxLongitudinalOffsetToAvoid(
 
   if (obj_vel < 0) {
     const double valid_start_length_to_avoid =
-      calcValidStartLengthToAvoid(path_points_for_object_polygon, obj_seg_idx, obj_path, obj_shape);
+      calcValidStartLengthToAvoid(obj_path, obj_pose, obj_shape);
     return MinMaxValue{
       std::max(obj_lon_offset.min_value - start_length_to_avoid, valid_start_length_to_avoid),
       obj_lon_offset.max_value + end_length_to_avoid};
@@ -898,9 +898,13 @@ MinMaxValue DynamicAvoidanceModule::calcMinMaxLongitudinalOffsetToAvoid(
 }
 
 double DynamicAvoidanceModule::calcValidStartLengthToAvoid(
-  const std::vector<PathPointWithLaneId> & path_points_for_object_polygon, const size_t obj_seg_idx,
-  const PredictedPath & obj_path, const autoware_auto_perception_msgs::msg::Shape & obj_shape) const
+  const PredictedPath & obj_path, const geometry_msgs::msg::Pose & obj_pose,
+  const autoware_auto_perception_msgs::msg::Shape & obj_shape) const
 {
+  const auto prev_module_path_points = getPreviousModuleOutput().path->points;
+  const size_t obj_seg_idx =
+    motion_utils::findNearestSegmentIndex(prev_module_path_points, obj_pose.position);
+
   const size_t valid_obj_path_end_idx = [&]() {
     int ego_path_idx = obj_seg_idx + 1;
     for (size_t obj_path_idx = 0; obj_path_idx < obj_path.path.size(); ++obj_path_idx) {
@@ -908,8 +912,8 @@ double DynamicAvoidanceModule::calcValidStartLengthToAvoid(
       for (; 0 < ego_path_idx; --ego_path_idx) {
         const double dist_to_segment = calcDistanceToSegment(
           obj_path.path.at(obj_path_idx).position,
-          path_points_for_object_polygon.at(ego_path_idx).point.pose.position,
-          path_points_for_object_polygon.at(ego_path_idx - 1).point.pose.position);
+          prev_module_path_points.at(ego_path_idx).point.pose.position,
+          prev_module_path_points.at(ego_path_idx - 1).point.pose.position);
         if (
           dist_to_segment < planner_data_->parameters.vehicle_width / 2.0 +
                               parameters_->lat_offset_from_obstacle +
