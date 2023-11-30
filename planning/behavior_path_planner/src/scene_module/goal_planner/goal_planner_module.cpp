@@ -1742,34 +1742,6 @@ void GoalPlannerModule::updateSafetyCheckTargetObjectsData(
   goal_planner_data_.ego_predicted_path = ego_predicted_path;
 }
 
-bool GoalPlannerModule::checkSafetyWithRSS(
-  const PathWithLaneId & planned_path,
-  const std::vector<PoseWithVelocityStamped> & ego_predicted_path,
-  const std::vector<ExtendedPredictedObject> & objects, const double hysteresis_factor) const
-{
-  // Check for collisions with each predicted path of the object
-  const bool is_safe = !std::any_of(objects.begin(), objects.end(), [&](const auto & object) {
-    auto current_debug_data = utils::path_safety_checker::createObjectDebug(object);
-
-    const auto obj_predicted_paths = utils::path_safety_checker::getPredictedPathFromObj(
-      object, objects_filtering_params_->check_all_predicted_path);
-
-    return std::any_of(
-      obj_predicted_paths.begin(), obj_predicted_paths.end(), [&](const auto & obj_path) {
-        const bool has_collision = !utils::path_safety_checker::checkCollision(
-          planned_path, ego_predicted_path, object, obj_path, planner_data_->parameters,
-          safety_check_params_->rss_params, hysteresis_factor, current_debug_data.second);
-
-        utils::path_safety_checker::updateCollisionCheckDebugMap(
-          goal_planner_data_.collision_check, current_debug_data, !has_collision);
-
-        return has_collision;
-      });
-  });
-
-  return is_safe;
-}
-
 std::pair<bool, bool> GoalPlannerModule::isSafePath() const
 {
   const auto pull_over_path = thread_safe_data_.get_pull_over_path()->getCurrentPath();
@@ -1821,8 +1793,10 @@ std::pair<bool, bool> GoalPlannerModule::isSafePath() const
 
   const bool current_is_safe = std::invoke([&]() {
     if (parameters_->safety_check_params.method == "RSS") {
-      return checkSafetyWithRSS(
+      return behavior_path_planner::utils::path_safety_checker::checkSafetyWithRSS(
         pull_over_path, ego_predicted_path, target_objects_on_lane.on_current_lane,
+        goal_planner_data_.collision_check, planner_data_->parameters,
+        safety_check_params_->rss_params, objects_filtering_params_->use_all_predicted_path,
         hysteresis_factor);
     } else if (parameters_->safety_check_params.method == "integral_predicted_polygon") {
       return utils::path_safety_checker::checkSafetyWithIntegralPredictedPolygon(

@@ -99,6 +99,14 @@ ExtendedPredictedObject filterObjectPredictedPathByTimeHorizon(
 ExtendedPredictedObjects filterObjectPredictedPathByTimeHorizon(
   const ExtendedPredictedObjects & objects, const double time_horizon,
   const bool check_all_predicted_path);
+
+bool checkSafetyWithRSS(
+  const PathWithLaneId & planned_path,
+  const std::vector<PoseWithVelocityStamped> & ego_predicted_path,
+  const std::vector<ExtendedPredictedObject> & objects, CollisionCheckDebugMap & debug_map,
+  const BehaviorPathPlannerParameters & parameters, const RSSparams & rss_params,
+  const bool check_all_predicted_path, const double hysteresis_factor);
+
 /**
  * @brief Iterate the points in the ego and target's predicted path and
  *        perform safety check for each of the iterated points.
