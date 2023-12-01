@@ -359,7 +359,7 @@ Polygons2d createDetectionAreaPolygon(
     initial_vel, target_vel, initial_acc, planning_dec, jerk_acc, jerk_dec);
 
   if (!stop_dist) {
-    stop_dist = boost::make_optional<double>(0.0);
+    stop_dist = std::make_optional<double>(0.0);
   }
 
   // create detection area polygon
@@ -403,7 +403,7 @@ Polygons2d createMandatoryDetectionAreaPolygon(
     initial_vel, target_vel, initial_acc, planning_dec, jerk_acc, jerk_dec);
 
   if (!stop_dist) {
-    stop_dist = boost::make_optional<double>(0.0);
+    stop_dist = std::make_optional<double>(0.0);
   }
 
   // create detection area polygon

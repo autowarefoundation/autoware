@@ -38,12 +38,12 @@ public:
     const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map);
 
   PullOverPlannerType getPlannerType() const override { return PullOverPlannerType::SHIFT; };
-  boost::optional<PullOverPath> plan(const Pose & goal_pose) override;
+  std::optional<PullOverPath> plan(const Pose & goal_pose) override;
 
 protected:
   PathWithLaneId generateReferencePath(
     const lanelet::ConstLanelets & road_lanes, const Pose & end_pose) const;
-  boost::optional<PullOverPath> generatePullOverPath(
+  std::optional<PullOverPath> generatePullOverPath(
     const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
     const Pose & goal_pose, const double lateral_jerk) const;
   static double calcBeforeShiftedArcLength(

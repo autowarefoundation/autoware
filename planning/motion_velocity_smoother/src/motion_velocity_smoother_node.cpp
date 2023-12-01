@@ -698,14 +698,14 @@ void MotionVelocitySmootherNode::insertBehindVelocity(
           prev_output_, output.at(i).pose, node_param_.ego_nearest_dist_threshold,
           node_param_.ego_nearest_yaw_threshold);
         if (opt_nearest_seg_idx) {
-          return opt_nearest_seg_idx.get();
+          return opt_nearest_seg_idx.value();
         }
 
         // with distance threshold
         const auto opt_second_nearest_seg_idx = motion_utils::findNearestSegmentIndex(
           prev_output_, output.at(i).pose, node_param_.ego_nearest_dist_threshold);
         if (opt_second_nearest_seg_idx) {
-          return opt_second_nearest_seg_idx.get();
+          return opt_second_nearest_seg_idx.value();
         }
 
         return motion_utils::findNearestSegmentIndex(prev_output_, output.at(i).pose.position);

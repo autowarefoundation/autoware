@@ -57,7 +57,7 @@ void setZeroVelocityAfterStopPoint(std::vector<TrajectoryPoint> & traj_points)
 {
   const auto opt_zero_vel_idx = motion_utils::searchZeroVelocityIndex(traj_points);
   if (opt_zero_vel_idx) {
-    for (size_t i = opt_zero_vel_idx.get(); i < traj_points.size(); ++i) {
+    for (size_t i = opt_zero_vel_idx.value(); i < traj_points.size(); ++i) {
       traj_points.at(i).longitudinal_velocity_mps = 0.0;
     }
   }
@@ -447,7 +447,7 @@ void ObstacleAvoidancePlanner::applyInputVelocity(
   // insert stop point explicitly
   const auto stop_idx = motion_utils::searchZeroVelocityIndex(forward_cropped_input_traj_points);
   if (stop_idx) {
-    const auto & input_stop_pose = forward_cropped_input_traj_points.at(stop_idx.get()).pose;
+    const auto & input_stop_pose = forward_cropped_input_traj_points.at(stop_idx.value()).pose;
     // NOTE: motion_utils::findNearestSegmentIndex is used instead of
     // trajectory_utils::findEgoSegmentIndex
     //       for the case where input_traj_points is much longer than output_traj_points, and the

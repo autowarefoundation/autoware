@@ -31,6 +31,7 @@
 
 #include <limits>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace route_handler
@@ -112,7 +113,7 @@ public:
    * @param the lanelet of interest
    * @return vector of lanelet having same direction if true
    */
-  boost::optional<lanelet::ConstLanelet> getRightLanelet(
+  std::optional<lanelet::ConstLanelet> getRightLanelet(
     const lanelet::ConstLanelet & lanelet, const bool enable_same_root = false,
     const bool get_shoulder_lane = false) const;
 
@@ -123,7 +124,7 @@ public:
    * @param the lanelet of interest
    * @return vector of lanelet having same direction if true
    */
-  boost::optional<lanelet::ConstLanelet> getLeftLanelet(
+  std::optional<lanelet::ConstLanelet> getLeftLanelet(
     const lanelet::ConstLanelet & lanelet, const bool enable_same_root = false,
     const bool get_shoulder_lane = false) const;
   lanelet::ConstLanelets getNextLanelets(const lanelet::ConstLanelet & lanelet) const;
@@ -331,9 +332,9 @@ public:
   PathWithLaneId getCenterLinePath(
     const lanelet::ConstLanelets & lanelet_sequence, const double s_start, const double s_end,
     bool use_exact = true) const;
-  boost::optional<lanelet::ConstLanelet> getLaneChangeTarget(
+  std::optional<lanelet::ConstLanelet> getLaneChangeTarget(
     const lanelet::ConstLanelets & lanelets, const Direction direction = Direction::NONE) const;
-  boost::optional<lanelet::ConstLanelet> getLaneChangeTargetExceptPreferredLane(
+  std::optional<lanelet::ConstLanelet> getLaneChangeTargetExceptPreferredLane(
     const lanelet::ConstLanelets & lanelets, const Direction direction) const;
   bool getRightLaneChangeTargetExceptPreferredLane(
     const lanelet::ConstLanelets & lanelets, lanelet::ConstLanelet * target_lanelet) const;

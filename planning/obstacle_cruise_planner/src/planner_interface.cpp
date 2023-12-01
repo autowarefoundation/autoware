@@ -519,12 +519,12 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
   const auto insert_point_in_trajectory = [&](const double lon_dist) -> std::optional<size_t> {
     const auto inserted_idx = motion_utils::insertTargetPoint(0, lon_dist, slow_down_traj_points);
     if (inserted_idx) {
-      if (inserted_idx.get() + 1 <= slow_down_traj_points.size() - 1) {
+      if (inserted_idx.value() + 1 <= slow_down_traj_points.size() - 1) {
         // zero-order hold for velocity interpolation
-        slow_down_traj_points.at(inserted_idx.get()).longitudinal_velocity_mps =
-          slow_down_traj_points.at(inserted_idx.get() + 1).longitudinal_velocity_mps;
+        slow_down_traj_points.at(inserted_idx.value()).longitudinal_velocity_mps =
+          slow_down_traj_points.at(inserted_idx.value() + 1).longitudinal_velocity_mps;
       }
-      return inserted_idx.get();
+      return inserted_idx.value();
     }
     return std::nullopt;
   };

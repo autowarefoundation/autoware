@@ -112,7 +112,7 @@ bool OcclusionSpotModule::modifyPathVelocity(
   const geometry_msgs::msg::Point start_point = path_interpolated.points.at(0).point.pose.position;
   const auto ego_segment_idx = motion_utils::findNearestSegmentIndex(
     path_interpolated.points, ego_pose, param_.dist_thr, param_.angle_thr);
-  if (ego_segment_idx == boost::none) return true;
+  if (!ego_segment_idx) return true;
   const size_t start_point_segment_idx =
     motion_utils::findNearestSegmentIndex(path_interpolated.points, start_point);
   const auto offset = motion_utils::calcSignedArcLength(

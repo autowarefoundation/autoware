@@ -23,8 +23,6 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
-#include <boost/optional.hpp>
-
 #include <memory>
 
 namespace behavior_path_planner
@@ -58,7 +56,7 @@ public:
   }
 
   virtual PlannerType getPlannerType() = 0;
-  virtual boost::optional<PullOutPath> plan(const Pose & start_pose, const Pose & goal_pose) = 0;
+  virtual std::optional<PullOutPath> plan(const Pose & start_pose, const Pose & goal_pose) = 0;
 
 protected:
   std::shared_ptr<const PlannerData> planner_data_;

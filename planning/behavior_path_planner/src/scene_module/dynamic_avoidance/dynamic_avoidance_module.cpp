@@ -790,13 +790,13 @@ std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> DynamicAvoidanceModule
     // left lane
     const auto opt_left_lane = rh->getLeftLanelet(lane);
     if (opt_left_lane) {
-      left_lanes.push_back(opt_left_lane.get());
+      left_lanes.push_back(opt_left_lane.value());
     }
 
     // right lane
     const auto opt_right_lane = rh->getRightLanelet(lane);
     if (opt_right_lane) {
-      right_lanes.push_back(opt_right_lane.get());
+      right_lanes.push_back(opt_right_lane.value());
     }
 
     const auto right_opposite_lanes = rh->getRightOppositeLanelets(lane);

@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -71,13 +72,14 @@ PathWithLaneId resamplePathWithSpline(
     transformed_path.at(i) = path.points.at(i).point;
   }
 
-  const auto find_almost_same_values = [&](const std::vector<double> & vec, double x) {
+  const auto find_almost_same_values =
+    [&](const std::vector<double> & vec, double x) -> std::optional<std::vector<size_t>> {
     constexpr double epsilon = 0.2;
     const auto is_close = [&](double v, double x) { return std::abs(v - x) < epsilon; };
 
     std::vector<size_t> indices;
     if (vec.empty()) {
-      return boost::optional<std::vector<size_t>>();
+      return std::nullopt;
     }
 
     for (size_t i = 0; i < vec.size(); ++i) {
@@ -86,8 +88,11 @@ PathWithLaneId resamplePathWithSpline(
       }
     }
 
-    return indices.empty() ? boost::optional<std::vector<size_t>>()
-                           : boost::optional<std::vector<size_t>>(indices);
+    if (indices.empty()) {
+      return std::nullopt;
+    }
+
+    return indices;
   };
 
   // Get lane ids that are not duplicated
@@ -582,14 +587,14 @@ PathWithLaneId combinePath(const PathWithLaneId & path1, const PathWithLaneId & 
   return filtered_path;
 }
 
-boost::optional<Pose> getFirstStopPoseFromPath(const PathWithLaneId & path)
+std::optional<Pose> getFirstStopPoseFromPath(const PathWithLaneId & path)
 {
   for (const auto & p : path.points) {
     if (std::abs(p.point.longitudinal_velocity_mps) < 0.01) {
       return p.point.pose;
     }
   }
-  return boost::none;
+  return std::nullopt;
 }
 
 BehaviorModuleOutput getReferencePath(

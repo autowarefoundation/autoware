@@ -148,15 +148,6 @@ StopFactor createStopFactor(
   return stop_factor;
 }
 
-std::optional<geometry_msgs::msg::Pose> toStdOptional(
-  const boost::optional<geometry_msgs::msg::Pose> & boost_pose)
-{
-  if (boost_pose) {
-    return *boost_pose;
-  }
-  return std::nullopt;
-}
-
 tier4_debug_msgs::msg::StringStamped createStringStampedMessage(
   const rclcpp::Time & now, const int64_t module_id_,
   const std::vector<std::tuple<std::string, CollisionPoint, CollisionState>> & collision_points)
@@ -245,8 +236,8 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
 
   std::optional<geometry_msgs::msg::Pose> default_stop_pose = std::nullopt;
   if (p_stop_line.has_value()) {
-    default_stop_pose = toStdOptional(
-      calcLongitudinalOffsetPose(path->points, p_stop_line->first, p_stop_line->second));
+    default_stop_pose =
+      calcLongitudinalOffsetPose(path->points, p_stop_line->first, p_stop_line->second);
   }
 
   // Resample path sparsely for less computation cost
@@ -489,8 +480,8 @@ std::pair<double, double> CrosswalkModule::clampAttentionRangeByNeighborCrosswal
     return std::make_pair(near_attention_range, far_attention_range);
   }
 
-  const auto near_idx = findNearestSegmentIndex(ego_path.points, p_near.get());
-  const auto far_idx = findNearestSegmentIndex(ego_path.points, p_far.get()) + 1;
+  const auto near_idx = findNearestSegmentIndex(ego_path.points, p_near.value());
+  const auto far_idx = findNearestSegmentIndex(ego_path.points, p_far.value()) + 1;
 
   std::set<int64_t> lane_ids;
   for (size_t i = near_idx; i < far_idx; ++i) {
@@ -578,8 +569,8 @@ std::pair<double, double> CrosswalkModule::clampAttentionRangeByNeighborCrosswal
     calcLongitudinalOffsetPoint(ego_path.points, ego_pos, far_attention_range);
 
   if (update_p_near && update_p_far) {
-    debug_data_.range_near_point = update_p_near.get();
-    debug_data_.range_far_point = update_p_far.get();
+    debug_data_.range_near_point = update_p_near.value();
+    debug_data_.range_far_point = update_p_far.value();
   }
 
   RCLCPP_INFO_EXPRESSION(
@@ -735,7 +726,7 @@ void CrosswalkModule::applySafetySlowDownSpeed(
     const auto & p_safety_slow =
       calcLongitudinalOffsetPoint(ego_path.points, ego_pos, safety_slow_point_range);
 
-    insertDecelPointWithDebugInfo(p_safety_slow.get(), safety_slow_down_speed, output);
+    insertDecelPointWithDebugInfo(p_safety_slow.value(), safety_slow_down_speed, output);
 
     if (safety_slow_point_range < 0.0) {
       passed_safety_slow_point_ = true;

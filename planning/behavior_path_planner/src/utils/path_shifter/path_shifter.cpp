@@ -630,7 +630,7 @@ double PathShifter::getLastShiftLength() const
   return furthest->end_shift_length;
 }
 
-boost::optional<ShiftLine> PathShifter::getLastShiftLine() const
+std::optional<ShiftLine> PathShifter::getLastShiftLine() const
 {
   if (shift_lines_.empty()) {
     return {};

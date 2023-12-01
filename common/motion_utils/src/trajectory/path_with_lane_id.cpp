@@ -24,7 +24,7 @@
 namespace motion_utils
 {
 
-boost::optional<std::pair<size_t, size_t>> getPathIndexRangeWithLaneId(
+std::optional<std::pair<size_t, size_t>> getPathIndexRangeWithLaneId(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int64_t target_lane_id)
 {
   size_t start_idx = 0;  // NOTE: to prevent from maybe-uninitialized error

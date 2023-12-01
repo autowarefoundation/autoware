@@ -57,6 +57,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -151,7 +152,7 @@ private:
 
   std::unique_ptr<AdaptiveCruiseController> acc_controller_;
   std::shared_ptr<ObstacleStopPlannerDebugNode> debug_ptr_;
-  boost::optional<SlowDownSection> latest_slow_down_section_{boost::none};
+  std::optional<SlowDownSection> latest_slow_down_section_{std::nullopt};
   std::vector<ObstacleWithDetectionTime> obstacle_history_{};
   std::vector<PredictedObjectWithDetectionTime> predicted_object_history_{};
   tf2_ros::Buffer tf_buffer_{get_clock()};

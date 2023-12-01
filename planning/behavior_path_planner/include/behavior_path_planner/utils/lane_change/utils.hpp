@@ -144,7 +144,7 @@ std::string getStrDirection(const std::string & name, const Direction direction)
 
 CandidateOutput assignToCandidate(
   const LaneChangePath & lane_change_path, const Point & ego_position);
-boost::optional<lanelet::ConstLanelet> getLaneChangeTargetLane(
+std::optional<lanelet::ConstLanelet> getLaneChangeTargetLane(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const LaneChangeModuleType type, const Direction & direction);
 
@@ -169,7 +169,7 @@ bool passParkedObject(
   const bool is_goal_in_route, const LaneChangeParameters & lane_change_parameters,
   CollisionCheckDebugMap & object_debug);
 
-boost::optional<size_t> getLeadingStaticObjectIdx(
+std::optional<size_t> getLeadingStaticObjectIdx(
   const RouteHandler & route_handler, const LaneChangePath & lane_change_path,
   const std::vector<ExtendedPredictedObject> & objects,
   const double object_check_min_road_shoulder_width, const double object_shiftable_ratio_threshold);

@@ -424,7 +424,7 @@ bool AvoidanceModule::canYieldManeuver(const AvoidancePlanningData & data) const
   const auto stopped_for_the_object =
     getEgoSpeed() < TH_STOP_SPEED && std::abs(data.to_stop_line) < TH_STOP_POSITION;
 
-  const auto id = data.stop_target_object.get().object.object_id;
+  const auto id = data.stop_target_object.value().object.object_id;
   const auto same_id_obj = std::find_if(
     ego_stopped_objects_.begin(), ego_stopped_objects_.end(),
     [&id](const auto & o) { return o.object.object_id == id; });
@@ -436,7 +436,7 @@ bool AvoidanceModule::canYieldManeuver(const AvoidancePlanningData & data) const
 
   // registered objects whom the ego stopped for at the moment of stopping.
   if (stopped_for_the_object) {
-    ego_stopped_objects_.push_back(data.stop_target_object.get());
+    ego_stopped_objects_.push_back(data.stop_target_object.value());
   }
 
   return true;
@@ -610,7 +610,7 @@ void AvoidanceModule::fillDebugData(
     return;
   }
 
-  const auto o_front = data.stop_target_object.get();
+  const auto o_front = data.stop_target_object.value();
   const auto object_type = utils::getHighestProbLabel(o_front.object.classification);
   const auto object_parameter = parameters_->object_parameters.at(object_type);
   const auto & additional_buffer_longitudinal =
@@ -1572,7 +1572,7 @@ void AvoidanceModule::insertWaitPoint(
   }
 
   // If target object can be stopped for, insert a deceleration point and return
-  if (data.stop_target_object.get().is_stoppable) {
+  if (data.stop_target_object.value().is_stoppable) {
     utils::avoidance::insertDecelPoint(
       getEgoPosition(), data.to_stop_line, 0.0, shifted_path.path, stop_pose_);
     return;

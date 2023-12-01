@@ -248,12 +248,12 @@ double calcMinimumLongitudinalLength(
   return rss_params.longitudinal_velocity_delta_time * std::abs(max_vel) + lon_threshold;
 }
 
-boost::optional<PoseWithVelocityStamped> calcInterpolatedPoseWithVelocity(
+std::optional<PoseWithVelocityStamped> calcInterpolatedPoseWithVelocity(
   const std::vector<PoseWithVelocityStamped> & path, const double relative_time)
 {
   // Check if relative time is in the valid range
   if (path.empty() || relative_time < 0.0) {
-    return boost::none;
+    return std::nullopt;
   }
 
   constexpr double epsilon = 1e-6;
@@ -272,10 +272,10 @@ boost::optional<PoseWithVelocityStamped> calcInterpolatedPoseWithVelocity(
     }
   }
 
-  return boost::none;
+  return std::nullopt;
 }
 
-boost::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocityAndPolygonStamped(
+std::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocityAndPolygonStamped(
   const std::vector<PoseWithVelocityStamped> & pred_path, const double current_time,
   const VehicleInfo & ego_info)
 {
@@ -298,7 +298,7 @@ boost::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVeloci
   return PoseWithVelocityAndPolygonStamped{current_time, pose, velocity, ego_polygon};
 }
 
-boost::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocityAndPolygonStamped(
+std::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocityAndPolygonStamped(
   const std::vector<PoseWithVelocityAndPolygonStamped> & pred_path, const double current_time,
   const Shape & shape)
 {

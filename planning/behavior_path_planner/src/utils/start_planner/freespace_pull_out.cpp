@@ -44,7 +44,7 @@ FreespacePullOut::FreespacePullOut(
   }
 }
 
-boost::optional<PullOutPath> FreespacePullOut::plan(const Pose & start_pose, const Pose & end_pose)
+std::optional<PullOutPath> FreespacePullOut::plan(const Pose & start_pose, const Pose & end_pose)
 {
   const auto & route_handler = planner_data_->route_handler;
   const double backward_path_length = planner_data_->parameters.backward_path_length;

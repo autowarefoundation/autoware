@@ -752,7 +752,7 @@ CandidateOutput assignToCandidate(
   return candidate_output;
 }
 
-boost::optional<lanelet::ConstLanelet> getLaneChangeTargetLane(
+std::optional<lanelet::ConstLanelet> getLaneChangeTargetLane(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const LaneChangeModuleType type, const Direction & direction)
 {
@@ -996,7 +996,7 @@ bool passParkedObject(
   return false;
 }
 
-boost::optional<size_t> getLeadingStaticObjectIdx(
+std::optional<size_t> getLeadingStaticObjectIdx(
   const RouteHandler & route_handler, const LaneChangePath & lane_change_path,
   const std::vector<ExtendedPredictedObject> & objects,
   const double object_check_min_road_shoulder_width, const double object_shiftable_ratio_threshold)
@@ -1011,7 +1011,7 @@ boost::optional<size_t> getLeadingStaticObjectIdx(
   const auto & path_end = path.points.back();
 
   double dist_lc_start_to_leading_obj = 0.0;
-  boost::optional<size_t> leading_obj_idx = boost::none;
+  std::optional<size_t> leading_obj_idx = std::nullopt;
   for (size_t obj_idx = 0; obj_idx < objects.size(); ++obj_idx) {
     const auto & obj = objects.at(obj_idx);
     const auto & obj_pose = obj.initial_pose.pose;

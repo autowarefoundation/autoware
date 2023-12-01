@@ -99,7 +99,7 @@ lanelet::ConstLanelets getExtendLanes(
 
 void insertDecelPoint(
   const Point & p_src, const double offset, const double velocity, PathWithLaneId & path,
-  boost::optional<Pose> & p_out);
+  std::optional<Pose> & p_out);
 
 void fillObjectEnvelopePolygon(
   ObjectData & object_data, const ObjectDataArray & registered_objects, const Pose & closest_pose,

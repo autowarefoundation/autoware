@@ -204,7 +204,7 @@ void MPC::setReferenceTrajectory(
     motion_utils::isDrivingForward(mpc_traj_resampled.toTrajectoryPoints());
 
   // if driving direction is unknown, use previous value
-  m_is_forward_shift = is_forward_shift ? is_forward_shift.get() : m_is_forward_shift;
+  m_is_forward_shift = is_forward_shift ? is_forward_shift.value() : m_is_forward_shift;
 
   // path smoothing
   MPCTrajectory mpc_traj_smoothed = mpc_traj_resampled;  // smooth filtered trajectory

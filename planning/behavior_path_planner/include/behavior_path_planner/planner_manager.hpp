@@ -132,7 +132,7 @@ public:
     std::for_each(manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->reset(); });
     approved_module_ptrs_.clear();
     candidate_module_ptrs_.clear();
-    root_lanelet_ = boost::none;
+    root_lanelet_ = std::nullopt;
     resetProcessingTime();
   }
 
@@ -424,7 +424,7 @@ private:
 
   std::string getNames(const std::vector<SceneModulePtr> & modules) const;
 
-  boost::optional<lanelet::ConstLanelet> root_lanelet_{boost::none};
+  std::optional<lanelet::ConstLanelet> root_lanelet_{std::nullopt};
 
   std::vector<SceneModuleManagerPtr> manager_ptrs_;
 

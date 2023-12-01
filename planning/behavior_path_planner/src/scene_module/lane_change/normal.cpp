@@ -483,7 +483,7 @@ lanelet::ConstLanelets NormalLaneChange::getLaneChangeLanes(
   const auto backward_length = lane_change_parameters_->backward_lane_length;
 
   return route_handler->getLaneletSequence(
-    lane_change_lane.get(), getEgoPose(), backward_length, forward_length);
+    lane_change_lane.value(), getEgoPose(), backward_length, forward_length);
 }
 
 bool NormalLaneChange::isNearEndOfCurrentLanes(

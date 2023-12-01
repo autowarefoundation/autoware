@@ -55,7 +55,7 @@ public:
     if (path_shifter.getShiftLines().empty()) {
       last_ = std::nullopt;
     } else {
-      last_ = path_shifter.getLastShiftLine().get();
+      last_ = path_shifter.getLastShiftLine().value();
     }
   }
 

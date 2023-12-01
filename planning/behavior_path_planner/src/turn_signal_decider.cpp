@@ -124,7 +124,7 @@ std::pair<Pose, double> TurnSignalDecider::getIntersectionPoseAndDistance()
   return std::make_pair(intersection_pose_point_, intersection_distance_);
 }
 
-boost::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo(
+std::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo(
   const PathWithLaneId & path, const Pose & current_pose, const double current_vel,
   const size_t current_seg_idx, const RouteHandler & route_handler,
   const double nearest_dist_threshold, const double nearest_yaw_threshold)

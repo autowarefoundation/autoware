@@ -41,7 +41,7 @@ public:
 
   PullOverPlannerType getPlannerType() const override { return PullOverPlannerType::FREESPACE; }
 
-  boost::optional<PullOverPath> plan(const Pose & goal_pose) override;
+  std::optional<PullOverPath> plan(const Pose & goal_pose) override;
 
 protected:
   std::unique_ptr<AbstractPlanningAlgorithm> planner_;

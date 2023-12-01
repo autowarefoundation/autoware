@@ -128,11 +128,11 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
 
     /* get stop point and stop factor */
     StopFactor stop_factor;
-    stop_factor.stop_pose = stop_pose.get();
+    stop_factor.stop_pose = stop_pose.value();
     stop_factor.stop_factor_points.push_back(path_intersects.front());
     planning_utils::appendStopReason(stop_factor, stop_reason);
     velocity_factor_.set(
-      path->points, planner_data_->current_odometry->pose, stop_pose.get(),
+      path->points, planner_data_->current_odometry->pose, stop_pose.value(),
       VelocityFactor::UNKNOWN);
 
     // use arc length to identify if ego vehicle is in front of walkway stop or not.

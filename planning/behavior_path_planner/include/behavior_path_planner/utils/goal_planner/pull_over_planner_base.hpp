@@ -22,8 +22,6 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
-#include <boost/optional.hpp>
-
 #include <memory>
 #include <utility>
 #include <vector>
@@ -127,7 +125,7 @@ public:
   }
 
   virtual PullOverPlannerType getPlannerType() const = 0;
-  virtual boost::optional<PullOverPath> plan(const Pose & goal_pose) = 0;
+  virtual std::optional<PullOverPath> plan(const Pose & goal_pose) = 0;
 
 protected:
   std::shared_ptr<const PlannerData> planner_data_;

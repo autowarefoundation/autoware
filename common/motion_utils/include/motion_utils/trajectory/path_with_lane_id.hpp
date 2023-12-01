@@ -18,12 +18,11 @@
 #include "autoware_auto_planning_msgs/msg/path_with_lane_id.hpp"
 #include <geometry_msgs/msg/point.hpp>
 
-#include <boost/optional.hpp>
-
+#include <optional>
 #include <utility>
 namespace motion_utils
 {
-boost::optional<std::pair<size_t, size_t>> getPathIndexRangeWithLaneId(
+std::optional<std::pair<size_t, size_t>> getPathIndexRangeWithLaneId(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int64_t target_lane_id);
 
 size_t findNearestIndexFromLaneId(

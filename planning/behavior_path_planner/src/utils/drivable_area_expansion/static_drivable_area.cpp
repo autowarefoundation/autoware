@@ -88,7 +88,7 @@ geometry_msgs::msg::Point calcLongitudinalOffsetStartPoint(
   const auto offset_point =
     motion_utils::calcLongitudinalOffsetPoint(points, nearest_segment_idx, offset_length + offset);
 
-  return offset_point ? offset_point.get() : points.at(nearest_segment_idx);
+  return offset_point ? offset_point.value() : points.at(nearest_segment_idx);
 }
 
 geometry_msgs::msg::Point calcLongitudinalOffsetGoalPoint(
@@ -100,13 +100,13 @@ geometry_msgs::msg::Point calcLongitudinalOffsetGoalPoint(
   const auto offset_point =
     motion_utils::calcLongitudinalOffsetPoint(points, nearest_segment_idx, offset_length + offset);
 
-  return offset_point ? offset_point.get() : points.at(nearest_segment_idx + 1);
+  return offset_point ? offset_point.value() : points.at(nearest_segment_idx + 1);
 }
 }  // namespace
 
 namespace behavior_path_planner::utils::drivable_area_processing
 {
-boost::optional<std::pair<size_t, geometry_msgs::msg::Point>> intersectBound(
+std::optional<std::pair<size_t, geometry_msgs::msg::Point>> intersectBound(
   const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2,
   const std::vector<geometry_msgs::msg::Point> & bound, const size_t seg_idx1,
   const size_t seg_idx2)
@@ -125,7 +125,7 @@ boost::optional<std::pair<size_t, geometry_msgs::msg::Point>> intersectBound(
       return result;
     }
   }
-  return boost::none;
+  return std::nullopt;
 }
 
 double calcDistanceFromPointToSegment(
@@ -444,7 +444,7 @@ std::vector<PolygonPoint> getPolygonPointsInsideBounds(
     const auto start_point_on_bound = motion_utils::calcLongitudinalOffsetPoint(
       bound, start_point.bound_seg_idx, start_point.lon_dist_to_segment);
     if (start_point_on_bound) {
-      start_point.point = start_point_on_bound.get();
+      start_point.point = start_point_on_bound.value();
       valid_inside_polygon.insert(valid_inside_polygon.begin(), start_point);
     }
   }
@@ -453,7 +453,7 @@ std::vector<PolygonPoint> getPolygonPointsInsideBounds(
     const auto end_point_on_bound = motion_utils::calcLongitudinalOffsetPoint(
       bound, end_point.bound_seg_idx, end_point.lon_dist_to_segment);
     if (end_point_on_bound) {
-      end_point.point = end_point_on_bound.get();
+      end_point.point = end_point_on_bound.value();
       valid_inside_polygon.insert(valid_inside_polygon.end(), end_point);
     }
   }
@@ -515,7 +515,7 @@ namespace behavior_path_planner::utils
 {
 using tier4_autoware_utils::Point2d;
 
-boost::optional<size_t> getOverlappedLaneletId(const std::vector<DrivableLanes> & lanes)
+std::optional<size_t> getOverlappedLaneletId(const std::vector<DrivableLanes> & lanes)
 {
   auto overlaps = [](const DrivableLanes & lanes, const DrivableLanes & target_lanes) {
     const auto lanelets = utils::transformToLanelets(lanes);
@@ -1447,7 +1447,7 @@ void makeBoundLongitudinallyMonotonic(
 
   const auto get_intersect_idx = [](
                                    const auto & bound_with_pose, const auto start_idx,
-                                   const auto & p1, const auto & p2) -> boost::optional<size_t> {
+                                   const auto & p1, const auto & p2) -> std::optional<size_t> {
     std::vector<std::pair<size_t, Point>> intersects;
     for (size_t i = start_idx; i < bound_with_pose.size() - 1; i++) {
       const auto opt_intersect =
@@ -1461,7 +1461,7 @@ void makeBoundLongitudinallyMonotonic(
     }
 
     if (intersects.empty()) {
-      return boost::none;
+      return std::nullopt;
     }
 
     std::sort(intersects.begin(), intersects.end(), [&](const auto & a, const auto & b) {
@@ -1492,7 +1492,7 @@ void makeBoundLongitudinallyMonotonic(
       }
 
       if (i + 1 == path_points.size()) {
-        for (size_t j = intersect_idx.get(); j < bound_with_pose.size(); j++) {
+        for (size_t j = intersect_idx.value(); j < bound_with_pose.size(); j++) {
           if (j + 1 == bound_with_pose.size()) {
             const auto yaw =
               calcAzimuthAngle(bound_with_pose.at(j - 1).position, bound_with_pose.at(j).position);
@@ -1504,14 +1504,14 @@ void makeBoundLongitudinallyMonotonic(
           }
         }
       } else {
-        for (size_t j = intersect_idx.get() + 1; j < bound_with_pose.size(); j++) {
+        for (size_t j = intersect_idx.value() + 1; j < bound_with_pose.size(); j++) {
           set_orientation(ret, j, getPose(path_points.at(i)).orientation);
         }
       }
 
       constexpr size_t OVERLAP_CHECK_NUM = 3;
       start_bound_idx =
-        intersect_idx.get() < OVERLAP_CHECK_NUM ? 0 : intersect_idx.get() - OVERLAP_CHECK_NUM;
+        intersect_idx.value() < OVERLAP_CHECK_NUM ? 0 : intersect_idx.value() - OVERLAP_CHECK_NUM;
     }
 
     return ret;

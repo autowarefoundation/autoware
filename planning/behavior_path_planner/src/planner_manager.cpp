@@ -368,7 +368,7 @@ BehaviorModuleOutput PlannerManager::getReferencePath(
     std::max(p.backward_path_length, p.backward_path_length + extra_margin);
 
   const auto lanelet_sequence = route_handler->getLaneletSequence(
-    root_lanelet_.get(), pose, backward_length, std::numeric_limits<double>::max());
+    root_lanelet_.value(), pose, backward_length, std::numeric_limits<double>::max());
 
   lanelet::ConstLanelet closest_lane{};
   if (lanelet::utils::query::getClosestLaneletWithConstrains(
@@ -813,18 +813,18 @@ void PlannerManager::resetRootLanelet(const std::shared_ptr<PlannerData> & data)
   // if root_lanelet is not route lanelets, reset root lanelet.
   // this can be caused by rerouting.
   const auto & route_handler = data->route_handler;
-  if (!route_handler->isRouteLanelet(root_lanelet_.get())) {
+  if (!route_handler->isRouteLanelet(root_lanelet_.value())) {
     root_lanelet_ = root_lanelet;
     return;
   }
 
   // check ego is in same lane
-  if (root_lanelet_.get().id() == root_lanelet.id()) {
+  if (root_lanelet_.value().id() == root_lanelet.id()) {
     return;
   }
 
   // check ego is in next lane
-  const auto next_lanelets = route_handler->getRoutingGraphPtr()->following(root_lanelet_.get());
+  const auto next_lanelets = route_handler->getRoutingGraphPtr()->following(root_lanelet_.value());
   for (const auto & next : next_lanelets) {
     if (next.id() == root_lanelet.id()) {
       return;

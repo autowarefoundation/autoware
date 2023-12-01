@@ -45,7 +45,7 @@ public:
   Pose getCr() const { return planner_.getCr(); }
   Pose getCl() const { return planner_.getCl(); }
 
-  boost::optional<PullOverPath> plan(const Pose & goal_pose) override;
+  std::optional<PullOverPath> plan(const Pose & goal_pose) override;
 
   std::vector<PullOverPath> generatePullOverPaths(
     const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,

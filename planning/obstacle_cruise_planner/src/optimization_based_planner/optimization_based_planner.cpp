@@ -346,12 +346,12 @@ std::tuple<double, double> OptimizationBasedPlanner::calcInitialMotion(
           rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
           "calcInitialMotion : vehicle speed is low (%.3f), and desired speed is high (%.3f). Use "
           "engage speed (%.3f) until vehicle speed reaches engage_vel_thr (%.3f). stop_dist = %.3f",
-          vehicle_speed, target_vel, engage_velocity_, engage_vel_thr, stop_dist.get());
+          vehicle_speed, target_vel, engage_velocity_, engage_vel_thr, stop_dist.value());
         return std::make_tuple(initial_vel, initial_acc);
       } else if (stop_dist) {
         RCLCPP_DEBUG(
           rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
-          "calcInitialMotion : stop point is close (%.3f[m]). no engage.", stop_dist.get());
+          "calcInitialMotion : stop point is close (%.3f[m]). no engage.", stop_dist.value());
       }
     } else if (target_vel > 0.0) {
       auto clock{rclcpp::Clock{RCL_ROS_TIME}};
@@ -449,7 +449,7 @@ std::optional<SBoundaries> OptimizationBasedPlanner::getSBoundaries(
       MarkerArray wall_msg;
 
       const auto markers = motion_utils::createSlowDownVirtualWallMarker(
-        marker_pose.get(), "obstacle to follow", current_time, 0);
+        marker_pose.value(), "obstacle to follow", current_time, 0);
       tier4_autoware_utils::appendMarkerArray(markers, &wall_msg);
 
       // publish rviz marker
@@ -603,7 +603,7 @@ std::optional<double> OptimizationBasedPlanner::calcTrajectoryLengthFromCurrentP
   const auto dist_to_closest_stop_point = motion_utils::calcDistanceToForwardStopPoint(
     traj_points, ego_pose, ego_nearest_param_.dist_threshold, ego_nearest_param_.yaw_threshold);
   if (dist_to_closest_stop_point) {
-    return std::min(traj_length, dist_to_closest_stop_point.get());
+    return std::min(traj_length, dist_to_closest_stop_point.value());
   }
 
   return traj_length;

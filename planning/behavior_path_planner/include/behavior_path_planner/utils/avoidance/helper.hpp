@@ -241,7 +241,7 @@ public:
       getEgoSpeed(), target_velocity, a_now, a_lim, j_lim, -1.0 * j_lim);
 
     if (!!ret) {
-      return ret.get();
+      return ret.value();
     }
 
     return std::numeric_limits<double>::max();

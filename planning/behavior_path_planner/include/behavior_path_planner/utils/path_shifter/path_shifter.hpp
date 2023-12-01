@@ -20,8 +20,6 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/point.hpp>
 
-#include <boost/optional.hpp>
-
 #include <string>
 #include <utility>
 #include <vector>
@@ -151,7 +149,7 @@ public:
 
   double getLastShiftLength() const;
 
-  boost::optional<ShiftLine> getLastShiftLine() const;
+  std::optional<ShiftLine> getLastShiftLine() const;
 
   /**
    * @brief  Calculate the theoretical lateral jerk by spline shifting for current shift_lines_.

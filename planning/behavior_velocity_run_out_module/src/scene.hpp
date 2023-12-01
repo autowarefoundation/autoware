@@ -23,6 +23,7 @@
 #include <behavior_velocity_planner_common/scene_module_interface.hpp>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -106,13 +107,13 @@ private:
   std::vector<geometry_msgs::msg::Point> createBoundingBoxForRangedPoints(
     const PoseWithRange & pose_with_range, const float x_offset, const float y_offset) const;
 
-  boost::optional<geometry_msgs::msg::Pose> calcStopPoint(
+  std::optional<geometry_msgs::msg::Pose> calcStopPoint(
     const boost::optional<DynamicObstacle> & dynamic_obstacle, const PathWithLaneId & path,
     const geometry_msgs::msg::Pose & current_pose, const float current_vel,
     const float current_acc) const;
 
   void insertStopPoint(
-    const boost::optional<geometry_msgs::msg::Pose> stop_point,
+    const std::optional<geometry_msgs::msg::Pose> stop_point,
     autoware_auto_planning_msgs::msg::PathWithLaneId & path);
 
   void insertVelocityForState(

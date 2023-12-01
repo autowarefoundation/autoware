@@ -575,7 +575,7 @@ In addition, while manual driving, the manager always updates **root lanelet** b
       std::max(p.backward_path_length, p.backward_path_length + extra_margin);
 
     const auto lanelet_sequence = route_handler->getLaneletSequence(
-      root_lanelet_.get(), pose, backward_length, std::numeric_limits<double>::max());
+      root_lanelet_.value(), pose, backward_length, std::numeric_limits<double>::max());
 
     lanelet::ConstLanelet closest_lane{};
     if (lanelet::utils::query::getClosestLaneletWithConstrains(

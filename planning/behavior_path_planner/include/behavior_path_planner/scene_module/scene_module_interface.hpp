@@ -279,41 +279,41 @@ public:
 
   std::string name() const { return name_; }
 
-  boost::optional<Pose> getStopPose() const
+  std::optional<Pose> getStopPose() const
   {
     if (!stop_pose_) {
       return {};
     }
 
     const auto & base_link2front = planner_data_->parameters.base_link2front;
-    return calcOffsetPose(stop_pose_.get(), base_link2front, 0.0, 0.0);
+    return calcOffsetPose(stop_pose_.value(), base_link2front, 0.0, 0.0);
   }
 
-  boost::optional<Pose> getSlowPose() const
+  std::optional<Pose> getSlowPose() const
   {
     if (!slow_pose_) {
       return {};
     }
 
     const auto & base_link2front = planner_data_->parameters.base_link2front;
-    return calcOffsetPose(slow_pose_.get(), base_link2front, 0.0, 0.0);
+    return calcOffsetPose(slow_pose_.value(), base_link2front, 0.0, 0.0);
   }
 
-  boost::optional<Pose> getDeadPose() const
+  std::optional<Pose> getDeadPose() const
   {
     if (!dead_pose_) {
       return {};
     }
 
     const auto & base_link2front = planner_data_->parameters.base_link2front;
-    return calcOffsetPose(dead_pose_.get(), base_link2front, 0.0, 0.0);
+    return calcOffsetPose(dead_pose_.value(), base_link2front, 0.0, 0.0);
   }
 
   void resetWallPoses() const
   {
-    stop_pose_ = boost::none;
-    slow_pose_ = boost::none;
-    dead_pose_ = boost::none;
+    stop_pose_ = std::nullopt;
+    slow_pose_ = std::nullopt;
+    dead_pose_ = std::nullopt;
   }
 
   rclcpp::Logger getLogger() const { return logger_; }
@@ -536,9 +536,9 @@ protected:
     }
 
     StopFactor stop_factor;
-    stop_factor.stop_pose = stop_pose_.get();
+    stop_factor.stop_pose = stop_pose_.value();
     stop_factor.dist_to_stop_pose =
-      motion_utils::calcSignedArcLength(path.points, getEgoPosition(), stop_pose_.get().position);
+      motion_utils::calcSignedArcLength(path.points, getEgoPosition(), stop_pose_.value().position);
     stop_reason_.stop_factors.push_back(stop_factor);
   }
 
@@ -601,11 +601,11 @@ protected:
 
   std::unique_ptr<SteeringFactorInterface> steering_factor_interface_ptr_;
 
-  mutable boost::optional<Pose> stop_pose_{boost::none};
+  mutable std::optional<Pose> stop_pose_{std::nullopt};
 
-  mutable boost::optional<Pose> slow_pose_{boost::none};
+  mutable std::optional<Pose> slow_pose_{std::nullopt};
 
-  mutable boost::optional<Pose> dead_pose_{boost::none};
+  mutable std::optional<Pose> dead_pose_{std::nullopt};
 
   mutable MarkerArray info_marker_;
 

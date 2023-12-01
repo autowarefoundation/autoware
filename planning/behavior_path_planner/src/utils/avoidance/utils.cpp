@@ -975,14 +975,14 @@ lanelet::ConstLanelets getTargetLanelets(
 
     const auto opt_left_lane = rh->getLeftLanelet(lane);
     if (opt_left_lane) {
-      target_lanelets.push_back(opt_left_lane.get());
+      target_lanelets.push_back(opt_left_lane.value());
     } else {
       l_offset = left_offset;
     }
 
     const auto opt_right_lane = rh->getRightLanelet(lane);
     if (opt_right_lane) {
-      target_lanelets.push_back(opt_right_lane.get());
+      target_lanelets.push_back(opt_right_lane.value());
     } else {
       r_offset = right_offset;
     }
@@ -1047,7 +1047,7 @@ lanelet::ConstLanelets getExtendLanes(
 
 void insertDecelPoint(
   const Point & p_src, const double offset, const double velocity, PathWithLaneId & path,
-  boost::optional<Pose> & p_out)
+  std::optional<Pose> & p_out)
 {
   const auto decel_point = calcLongitudinalOffsetPoint(path.points, p_src, offset);
 
@@ -1056,8 +1056,8 @@ void insertDecelPoint(
     return;
   }
 
-  const auto seg_idx = findNearestSegmentIndex(path.points, decel_point.get());
-  const auto insert_idx = insertTargetPoint(seg_idx, decel_point.get(), path.points);
+  const auto seg_idx = findNearestSegmentIndex(path.points, decel_point.value());
+  const auto insert_idx = insertTargetPoint(seg_idx, decel_point.value(), path.points);
 
   if (!insert_idx) {
     // TODO(Satoshi OTA)  Think later the process in the case of no decel point found.
@@ -1065,7 +1065,7 @@ void insertDecelPoint(
   }
 
   const auto insertVelocity = [&insert_idx](PathWithLaneId & path, const float v) {
-    for (size_t i = insert_idx.get(); i < path.points.size(); ++i) {
+    for (size_t i = insert_idx.value(); i < path.points.size(); ++i) {
       const auto & original_velocity = path.points.at(i).point.longitudinal_velocity_mps;
       path.points.at(i).point.longitudinal_velocity_mps = std::min(original_velocity, v);
     }
@@ -1073,7 +1073,7 @@ void insertDecelPoint(
 
   insertVelocity(path, velocity);
 
-  p_out = getPose(path.points.at(insert_idx.get()));
+  p_out = getPose(path.points.at(insert_idx.value()));
 }
 
 void fillObjectEnvelopePolygon(
@@ -1677,12 +1677,12 @@ lanelet::ConstLanelets getAdjacentLane(
   for (const auto & lane : ego_succeeding_lanes) {
     const auto opt_left_lane = rh->getLeftLanelet(lane);
     if (!is_right_shift && opt_left_lane) {
-      lanes.push_back(opt_left_lane.get());
+      lanes.push_back(opt_left_lane.value());
     }
 
     const auto opt_right_lane = rh->getRightLanelet(lane);
     if (is_right_shift && opt_right_lane) {
-      lanes.push_back(opt_right_lane.get());
+      lanes.push_back(opt_right_lane.value());
     }
 
     const auto right_opposite_lanes = rh->getRightOppositeLanelets(lane);

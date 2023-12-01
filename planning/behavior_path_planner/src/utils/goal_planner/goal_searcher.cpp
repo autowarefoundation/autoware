@@ -23,7 +23,6 @@
 #include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
 #include <boost/geometry/algorithms/union.hpp>
-#include <boost/optional.hpp>
 
 #include <lanelet2_core/geometry/Polygon.h>
 

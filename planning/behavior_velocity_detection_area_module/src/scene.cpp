@@ -110,7 +110,7 @@ bool DetectionAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason *
       return false;
     }
 
-    modified_stop_pose = ego_pos_on_path.get();
+    modified_stop_pose = ego_pos_on_path.value();
     modified_stop_line_seg_idx = current_seg_idx;
   }
 

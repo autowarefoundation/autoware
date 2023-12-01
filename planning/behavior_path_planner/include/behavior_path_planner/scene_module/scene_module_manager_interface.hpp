@@ -136,21 +136,21 @@ public:
       const auto opt_stop_pose = m.lock()->getStopPose();
       if (!!opt_stop_pose) {
         const auto virtual_wall = createStopVirtualWallMarker(
-          opt_stop_pose.get(), m.lock()->name(), rclcpp::Clock().now(), marker_id);
+          opt_stop_pose.value(), m.lock()->name(), rclcpp::Clock().now(), marker_id);
         appendMarkerArray(virtual_wall, &markers);
       }
 
       const auto opt_slow_pose = m.lock()->getSlowPose();
       if (!!opt_slow_pose) {
         const auto virtual_wall = createSlowDownVirtualWallMarker(
-          opt_slow_pose.get(), m.lock()->name(), rclcpp::Clock().now(), marker_id);
+          opt_slow_pose.value(), m.lock()->name(), rclcpp::Clock().now(), marker_id);
         appendMarkerArray(virtual_wall, &markers);
       }
 
       const auto opt_dead_pose = m.lock()->getDeadPose();
       if (!!opt_dead_pose) {
         const auto virtual_wall = createDeadLineVirtualWallMarker(
-          opt_dead_pose.get(), m.lock()->name(), rclcpp::Clock().now(), marker_id);
+          opt_dead_pose.value(), m.lock()->name(), rclcpp::Clock().now(), marker_id);
         appendMarkerArray(virtual_wall, &markers);
       }
 

@@ -384,7 +384,7 @@ autoware_auto_planning_msgs::msg::Path BehaviorVelocityPlannerNode::generatePath
 
   // TODO(someone): support backward path
   const auto is_driving_forward = motion_utils::isDrivingForward(input_path_msg->points);
-  is_driving_forward_ = is_driving_forward ? is_driving_forward.get() : is_driving_forward_;
+  is_driving_forward_ = is_driving_forward ? is_driving_forward.value() : is_driving_forward_;
   if (!is_driving_forward_) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), 3000,

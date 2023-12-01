@@ -496,7 +496,7 @@ std::vector<TrajectoryPoint> PIDBasedPlanner::doCruiseWithTrajectory(
     return cruise_traj_points;
   }
 
-  for (size_t i = zero_vel_idx_opt.get(); i < cruise_traj_points.size(); ++i) {
+  for (size_t i = zero_vel_idx_opt.value(); i < cruise_traj_points.size(); ++i) {
     cruise_traj_points.at(i).longitudinal_velocity_mps = 0.0;
   }
 

@@ -79,13 +79,13 @@ double calcMinimumLongitudinalLength(
   const double front_object_velocity, const double rear_object_velocity,
   const RSSparams & rss_params);
 
-boost::optional<PoseWithVelocityStamped> calcInterpolatedPoseWithVelocity(
+std::optional<PoseWithVelocityStamped> calcInterpolatedPoseWithVelocity(
   const std::vector<PoseWithVelocityStamped> & path, const double relative_time);
 
-boost::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocityAndPolygonStamped(
+std::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocityAndPolygonStamped(
   const std::vector<PoseWithVelocityStamped> & pred_path, const double current_time,
   const VehicleInfo & ego_info);
-boost::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocityAndPolygonStamped(
+std::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocityAndPolygonStamped(
   const std::vector<PoseWithVelocityStamped> & pred_path, const double current_time,
   const Shape & shape);
 template <typename T, typename F>

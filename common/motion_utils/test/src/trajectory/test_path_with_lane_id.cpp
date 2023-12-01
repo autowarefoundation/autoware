@@ -85,7 +85,7 @@ TEST(path_with_lane_id, getPathIndexRangeWithLaneId)
     }
     {
       const auto res = getPathIndexRangeWithLaneId(points, 4);
-      EXPECT_EQ(res, boost::none);
+      EXPECT_EQ(res, std::nullopt);
     }
   }
 
@@ -93,7 +93,7 @@ TEST(path_with_lane_id, getPathIndexRangeWithLaneId)
   {
     PathWithLaneId points;
     const auto res = getPathIndexRangeWithLaneId(points, 4);
-    EXPECT_EQ(res, boost::none);
+    EXPECT_EQ(res, std::nullopt);
   }
 }
 

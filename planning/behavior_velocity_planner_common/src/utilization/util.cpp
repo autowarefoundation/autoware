@@ -629,12 +629,12 @@ boost::optional<geometry_msgs::msg::Pose> insertDecelPoint(
     return {};
   }
 
-  for (size_t i = insert_idx.get(); i < output.points.size(); ++i) {
+  for (size_t i = insert_idx.value(); i < output.points.size(); ++i) {
     const auto & original_velocity = output.points.at(i).point.longitudinal_velocity_mps;
     output.points.at(i).point.longitudinal_velocity_mps =
       std::min(original_velocity, target_velocity);
   }
-  return tier4_autoware_utils::getPose(output.points.at(insert_idx.get()));
+  return tier4_autoware_utils::getPose(output.points.at(insert_idx.value()));
 }
 
 // TODO(murooka): remove this function for u-turn and crossing-path
@@ -648,7 +648,7 @@ boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
     return {};
   }
 
-  return tier4_autoware_utils::getPose(output.points.at(insert_idx.get()));
+  return tier4_autoware_utils::getPose(output.points.at(insert_idx.value()));
 }
 
 boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
@@ -660,7 +660,7 @@ boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
     return {};
   }
 
-  return tier4_autoware_utils::getPose(output.points.at(insert_idx.get()));
+  return tier4_autoware_utils::getPose(output.points.at(insert_idx.value()));
 }
 
 std::set<lanelet::Id> getAssociativeIntersectionLanelets(

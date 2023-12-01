@@ -122,7 +122,7 @@ bool SideShiftModule::canTransitSuccessState()
   const auto isOffsetDiffAlmostZero = [this]() noexcept {
     const auto last_sp = path_shifter_.getLastShiftLine();
     if (last_sp) {
-      const auto length = std::fabs(last_sp.get().end_shift_length);
+      const auto length = std::fabs(last_sp.value().end_shift_length);
       const auto lateral_offset = std::fabs(requested_lateral_offset_);
       const auto offset_diff = lateral_offset - length;
       if (!isAlmostZero(offset_diff)) {

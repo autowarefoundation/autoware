@@ -105,7 +105,7 @@ PathWithLaneId calcCenterLinePath(
 
 PathWithLaneId combinePath(const PathWithLaneId & path1, const PathWithLaneId & path2);
 
-boost::optional<Pose> getFirstStopPoseFromPath(const PathWithLaneId & path);
+std::optional<Pose> getFirstStopPoseFromPath(const PathWithLaneId & path);
 
 BehaviorModuleOutput getReferencePath(
   const lanelet::ConstLanelet & current_lane,

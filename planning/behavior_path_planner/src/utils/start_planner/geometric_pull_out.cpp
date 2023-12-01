@@ -37,7 +37,7 @@ GeometricPullOut::GeometricPullOut(rclcpp::Node & node, const StartPlannerParame
   planner_.setParameters(parallel_parking_parameters_);
 }
 
-boost::optional<PullOutPath> GeometricPullOut::plan(const Pose & start_pose, const Pose & goal_pose)
+std::optional<PullOutPath> GeometricPullOut::plan(const Pose & start_pose, const Pose & goal_pose)
 {
   PullOutPath output;
 

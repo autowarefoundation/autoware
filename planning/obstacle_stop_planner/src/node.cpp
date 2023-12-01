@@ -325,7 +325,7 @@ void ObstacleStopPlannerNode::onTrigger(const Trajectory::ConstSharedPtr input_m
 
   // TODO(someone): support backward path
   const auto is_driving_forward = motion_utils::isDrivingForwardWithTwist(input_msg->points);
-  is_driving_forward_ = is_driving_forward ? is_driving_forward.get() : is_driving_forward_;
+  is_driving_forward_ = is_driving_forward ? is_driving_forward.value() : is_driving_forward_;
   if (!is_driving_forward_) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), 3000, "Backward path is NOT supported. publish input as it is.");
@@ -1064,7 +1064,7 @@ void ObstacleStopPlannerNode::insertVelocity(
           current_stop_pos.index = findFirstNearestSegmentIndexWithSoftConstraints(
             output, ego_pose, node_param_.ego_nearest_dist_threshold,
             node_param_.ego_nearest_yaw_threshold);
-          current_stop_pos.point.pose = ego_pos_on_path.get();
+          current_stop_pos.point.pose = ego_pos_on_path.value();
 
           insertStopPoint(current_stop_pos, output, planner_data.stop_reason_diag);
 
@@ -1117,8 +1117,8 @@ void ObstacleStopPlannerNode::insertVelocity(
 
   if (node_param_.enable_slow_down && latest_slow_down_section_) {
     // check whether ego is in slow down section or not
-    const auto & p_start = latest_slow_down_section_.get().start_point.pose.position;
-    const auto & p_end = latest_slow_down_section_.get().end_point.pose.position;
+    const auto & p_start = latest_slow_down_section_.value().start_point.pose.position;
+    const auto & p_end = latest_slow_down_section_.value().end_point.pose.position;
     const auto reach_slow_down_start_point =
       isInFrontOfTargetPoint(planner_data.current_pose, p_start);
     const auto reach_slow_down_end_point = isInFrontOfTargetPoint(planner_data.current_pose, p_end);

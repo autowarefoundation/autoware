@@ -24,7 +24,7 @@ namespace behavior_path_planner::utils
 {
 using drivable_area_expansion::DrivableAreaExpansionParameters;
 
-boost::optional<size_t> getOverlappedLaneletId(const std::vector<DrivableLanes> & lanes);
+std::optional<size_t> getOverlappedLaneletId(const std::vector<DrivableLanes> & lanes);
 
 std::vector<DrivableLanes> cutOverlappedLanes(
   PathWithLaneId & path, const std::vector<DrivableLanes> & lanes);

@@ -19,7 +19,7 @@ namespace behavior_path_planner::utils::start_goal_planner_common
 
 using motion_utils::calcDecelDistWithJerkAndAccConstraints;
 
-boost::optional<double> calcFeasibleDecelDistance(
+std::optional<double> calcFeasibleDecelDistance(
   std::shared_ptr<const PlannerData> planner_data, const double acc_lim, const double jerk_lim,
   const double target_velocity)
 {

@@ -20,6 +20,7 @@
 
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -62,7 +63,7 @@ bool insertConstSpeedToPathSection(
   std::vector<PathPointWithLaneId> & output, const size_t start_idx, const size_t end_idx,
   const float speed);
 
-boost::optional<size_t> insertPointWithOffset(
+std::optional<size_t> insertPointWithOffset(
   const geometry_msgs::msg::Point & src_point, const double longitudinal_offset,
   std::vector<PathPointWithLaneId> & output, const double overlap_threshold = 1e-3);
 

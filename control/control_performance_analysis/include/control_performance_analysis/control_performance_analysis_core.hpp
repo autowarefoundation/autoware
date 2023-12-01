@@ -33,6 +33,7 @@
 #include <nav_msgs/msg/odometry.hpp>
 
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -79,7 +80,7 @@ public:
   void setOdomHistory(const Odometry & odom);
   void setSteeringStatus(const SteeringReport & steering);
 
-  boost::optional<int32_t> findCurveRefIdx();
+  std::optional<int32_t> findCurveRefIdx();
   std::pair<bool, int32_t> findClosestPrevWayPointIdx_path_direction();
   double estimateCurvature();
   double estimatePurePursuitCurvature();

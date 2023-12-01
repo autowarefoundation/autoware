@@ -496,7 +496,7 @@ struct AvoidancePlanningData
   ObjectDataArray other_objects;
 
   // nearest object that should be avoid
-  boost::optional<ObjectData> stop_target_object{boost::none};
+  std::optional<ObjectData> stop_target_object{std::nullopt};
 
   // new shift point
   AvoidLineArray new_shift_line{};

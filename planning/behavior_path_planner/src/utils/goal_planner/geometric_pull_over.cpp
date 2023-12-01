@@ -39,7 +39,7 @@ GeometricPullOver::GeometricPullOver(
   planner_.setParameters(parallel_parking_parameters_);
 }
 
-boost::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
+std::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
 {
   const auto & route_handler = planner_data_->route_handler;
 

@@ -502,7 +502,7 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
   *debug_data_ptr_ = DebugData();
 
   const auto is_driving_forward = motion_utils::isDrivingForwardWithTwist(traj_points);
-  is_driving_forward_ = is_driving_forward ? is_driving_forward.get() : is_driving_forward_;
+  is_driving_forward_ = is_driving_forward ? is_driving_forward.value() : is_driving_forward_;
 
   // 1. Convert predicted objects to obstacles which are
   //    (1) with a proper label

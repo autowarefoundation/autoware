@@ -85,7 +85,7 @@ double getDistanceToNextTrafficLight(
     lanelet::utils::to2D(lanelet_point).basicPoint());
 
   for (const auto & element : current_lanelet.regulatoryElementsAs<lanelet::TrafficLight>()) {
-    lanelet::ConstLineString3d lanelet_stop_lines = element->stopLine().get();
+    lanelet::ConstLineString3d lanelet_stop_lines = element->stopLine().value();
 
     const auto to_stop_line = lanelet::geometry::toArcCoordinates(
       lanelet::utils::to2D(current_lanelet.centerline()),
@@ -112,7 +112,7 @@ double getDistanceToNextTrafficLight(
     }
 
     for (const auto & element : llt.regulatoryElementsAs<lanelet::TrafficLight>()) {
-      lanelet::ConstLineString3d lanelet_stop_lines = element->stopLine().get();
+      lanelet::ConstLineString3d lanelet_stop_lines = element->stopLine().value();
 
       const auto to_stop_line = lanelet::geometry::toArcCoordinates(
         lanelet::utils::to2D(llt.centerline()),

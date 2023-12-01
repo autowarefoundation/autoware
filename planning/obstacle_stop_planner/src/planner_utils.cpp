@@ -66,10 +66,10 @@ boost::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
       continue;
     }
 
-    if (stop_dist.get() + p.longitudinal_forward_margin < dist_baselink_to_obstacle) {
+    if (stop_dist.value() + p.longitudinal_forward_margin < dist_baselink_to_obstacle) {
       RCLCPP_DEBUG(
         logger, "[found plan] dist:%-6.2f jerk:%-6.2f margin:%-6.2f v0:%-6.2f vt:%-6.2f",
-        stop_dist.get(), planning_jerk, p.longitudinal_forward_margin, p.slow_down_velocity,
+        stop_dist.value(), planning_jerk, p.longitudinal_forward_margin, p.slow_down_velocity,
         current_vel);
       return std::make_pair(p.longitudinal_forward_margin, p.slow_down_velocity);
     }
@@ -88,11 +88,12 @@ boost::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
       return {};
     }
 
-    if (stop_dist.get() + p.min_longitudinal_forward_margin < dist_baselink_to_obstacle) {
-      const auto planning_margin = dist_baselink_to_obstacle - stop_dist.get();
+    if (stop_dist.value() + p.min_longitudinal_forward_margin < dist_baselink_to_obstacle) {
+      const auto planning_margin = dist_baselink_to_obstacle - stop_dist.value();
       RCLCPP_DEBUG(
         logger, "[relax margin] dist:%-6.2f jerk:%-6.2f margin:%-6.2f v0:%-6.2f vt%-6.2f",
-        stop_dist.get(), p.slow_down_min_jerk, planning_margin, p.slow_down_velocity, current_vel);
+        stop_dist.value(), p.slow_down_min_jerk, planning_margin, p.slow_down_velocity,
+        current_vel);
       return std::make_pair(planning_margin, p.slow_down_velocity);
     }
   }

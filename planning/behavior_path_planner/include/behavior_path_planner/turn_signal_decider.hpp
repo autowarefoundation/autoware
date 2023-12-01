@@ -101,7 +101,7 @@ public:
   std::pair<Pose, double> getIntersectionPoseAndDistance();
 
 private:
-  boost::optional<TurnSignalInfo> getIntersectionTurnSignalInfo(
+  std::optional<TurnSignalInfo> getIntersectionTurnSignalInfo(
     const PathWithLaneId & path, const Pose & current_pose, const double current_vel,
     const size_t current_seg_idx, const RouteHandler & route_handler,
     const double nearest_dist_threshold, const double nearest_yaw_threshold);

@@ -124,7 +124,7 @@ bool StopLineModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop
       }
 
       SegmentIndexWithPose ego_pos_on_path;
-      ego_pos_on_path.pose = stopped_pose.get();
+      ego_pos_on_path.pose = stopped_pose.value();
       ego_pos_on_path.index = findEgoSegmentIndex(path->points);
 
       // Insert stop pose

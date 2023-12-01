@@ -37,7 +37,7 @@ using behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
 using behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
 using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
 
-boost::optional<double> calcFeasibleDecelDistance(
+std::optional<double> calcFeasibleDecelDistance(
   std::shared_ptr<const PlannerData> planner_data, const double acc_lim, const double jerk_lim,
   const double target_velocity);
 

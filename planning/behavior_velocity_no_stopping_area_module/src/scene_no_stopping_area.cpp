@@ -298,7 +298,7 @@ Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
       logger_, *clock_, 1000 /* ms */, "motion_utils::findNearestIndex fail");
     return ego_area;
   }
-  const size_t closest_idx = closest_idx_opt.get();
+  const size_t closest_idx = closest_idx_opt.value();
 
   const int num_ignore_nearest = 1;  // Do not consider nearest lane polygon
   size_t ego_area_start_idx = closest_idx + num_ignore_nearest;

@@ -45,7 +45,7 @@ protected:  // for the static_centerline_optimizer package
     bool isDrivingForward(const std::vector<PathPoint> & path_points)
     {
       const auto is_driving_forward = motion_utils::isDrivingForward(path_points);
-      is_driving_forward_ = is_driving_forward ? is_driving_forward.get() : is_driving_forward_;
+      is_driving_forward_ = is_driving_forward ? is_driving_forward.value() : is_driving_forward_;
       return is_driving_forward_;
     }
 

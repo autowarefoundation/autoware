@@ -128,7 +128,7 @@ private:
   PathPointWithLaneId generateArcPathPoint(
     const Pose & center, const double radius, const double yaw, const bool is_left_turn,
     const bool is_forward);
-  boost::optional<Pose> calcStartPose(
+  std::optional<Pose> calcStartPose(
     const Pose & goal_pose, const lanelet::ConstLanelets & road_lanes,
     const double start_pose_offset, const double R_E_far, const bool is_forward,
     const bool left_side_parking);

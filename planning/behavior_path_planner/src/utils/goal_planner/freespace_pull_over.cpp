@@ -44,7 +44,7 @@ FreespacePullOver::FreespacePullOver(
   }
 }
 
-boost::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
+std::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
 {
   const Pose & current_pose = planner_data_->self_odometry->pose.pose;
 

@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -93,8 +94,8 @@ std::pair<bool, int32_t> ControlPerformanceAnalysisCore::findClosestPrevWayPoint
     return std::make_pair(false, std::numeric_limits<int32_t>::quiet_NaN());
   }
 
-  idx_prev_wp_ = std::make_unique<int32_t>(closest_segment.get());
-  idx_next_wp_ = std::make_unique<int32_t>(closest_segment.get() + 1);
+  idx_prev_wp_ = std::make_unique<int32_t>(closest_segment.value());
+  idx_next_wp_ = std::make_unique<int32_t>(closest_segment.value() + 1);
   return std::make_pair(true, *idx_prev_wp_);
 }
 
@@ -360,13 +361,13 @@ void ControlPerformanceAnalysisCore::setSteeringStatus(const SteeringReport & st
   current_vec_steering_msg_ptr_ = std::make_shared<SteeringReport>(steering);
 }
 
-boost::optional<int32_t> ControlPerformanceAnalysisCore::findCurveRefIdx()
+std::optional<int32_t> ControlPerformanceAnalysisCore::findCurveRefIdx()
 {
   // Get the previous waypoint as the reference
   if (!interpolated_pose_ptr_) {
     RCLCPP_WARN_THROTTLE(
       logger_, clock_, 1000, "Cannot set the curvature_idx, no valid interpolated pose ...");
-    return boost::none;
+    return std::nullopt;
   }
 
   auto fun_distance_cond = [this](auto point_t) {
@@ -428,7 +429,7 @@ double ControlPerformanceAnalysisCore::estimateCurvature()
     RCLCPP_WARN(logger_, "Cannot find index of curvature reference waypoint ");
     return 0;
   }
-  const auto idx_curve_ref_wp = idx_curve_ref_wp_optional.get();
+  const auto idx_curve_ref_wp = idx_curve_ref_wp_optional.value();
 
   const auto & points = current_trajectory_ptr_->points;
 

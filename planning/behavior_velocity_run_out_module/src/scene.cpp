@@ -508,7 +508,7 @@ bool RunOutModule::checkCollisionWithPolygon() const
   return false;
 }
 
-boost::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
+std::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
   const boost::optional<DynamicObstacle> & dynamic_obstacle, const PathWithLaneId & path,
   const geometry_msgs::msg::Pose & current_pose, const float current_vel,
   const float current_acc) const
@@ -558,7 +558,7 @@ boost::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
     RCLCPP_WARN_STREAM(logger_, "failed to calculate stop distance.");
 
     // force to insert zero velocity
-    stop_dist = boost::make_optional<double>(dist_to_collision);
+    stop_dist = std::make_optional<double>(dist_to_collision);
   }
 
   debug_ptr_->setDebugValues(DebugValues::TYPE::STOP_DISTANCE, *stop_dist);
@@ -595,7 +595,7 @@ boost::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
 }
 
 void RunOutModule::insertStopPoint(
-  const boost::optional<geometry_msgs::msg::Pose> stop_point,
+  const std::optional<geometry_msgs::msg::Pose> stop_point,
   autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
   // no stop point
