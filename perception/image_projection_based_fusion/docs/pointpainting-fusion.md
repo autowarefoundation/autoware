@@ -43,6 +43,7 @@ The lidar points are projected onto the output of an image-only 2d object detect
 | `encoder_engine_path`           | string | `""`          | path to VoxelFeatureEncoder TensorRT Engine file            |
 | `head_onnx_path`                | string | `""`          | path to DetectionHead ONNX file                             |
 | `head_engine_path`              | string | `""`          | path to DetectionHead TensorRT Engine file                  |
+| `build_only`                    | bool   | `false`       | shutdown the node after TensorRT engine file is built       |
 
 ## Assumptions / Known limits
 

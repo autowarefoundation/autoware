@@ -193,6 +193,11 @@ PointPaintingFusionNode::PointPaintingFusionNode(const rclcpp::NodeOptions & opt
     encoder_param, head_param, densification_param, config);
 
   obj_pub_ptr_ = this->create_publisher<DetectedObjects>("~/output/objects", rclcpp::QoS{1});
+
+  if (this->declare_parameter("build_only", false)) {
+    RCLCPP_INFO(this->get_logger(), "TensorRT engine is built and shutdown node.");
+    rclcpp::shutdown();
+  }
 }
 
 void PointPaintingFusionNode::preprocess(sensor_msgs::msg::PointCloud2 & painted_pointcloud_msg)
