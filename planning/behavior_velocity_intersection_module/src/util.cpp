@@ -171,22 +171,22 @@ static std::optional<size_t> getStopLineIndexFromMap(
     planner_data->route_handler_->getLaneletMapPtr()->laneletLayer.get(
       interpolated_path_info.lane_id);
   const auto road_markings = lanelet.regulatoryElementsAs<lanelet::autoware::RoadMarking>();
-  lanelet::ConstLineStrings3d stop_line;
+  lanelet::ConstLineStrings3d stopline;
   for (const auto & road_marking : road_markings) {
     const std::string type =
       road_marking->roadMarking().attributeOr(lanelet::AttributeName::Type, "none");
     if (type == lanelet::AttributeValueString::StopLine) {
-      stop_line.push_back(road_marking->roadMarking());
-      break;  // only one stop_line exists.
+      stopline.push_back(road_marking->roadMarking());
+      break;  // only one stopline exists.
     }
   }
-  if (stop_line.empty()) {
+  if (stopline.empty()) {
     return std::nullopt;
   }
 
-  const auto p_start = stop_line.front().front();
-  const auto p_end = stop_line.front().back();
-  const LineString2d extended_stop_line =
+  const auto p_start = stopline.front().front();
+  const auto p_end = stopline.front().back();
+  const LineString2d extended_stopline =
     planning_utils::extendLine(p_start, p_end, planner_data->stop_line_extend_length);
 
   for (size_t i = lane_interval.first; i < lane_interval.second; i++) {
@@ -195,7 +195,7 @@ static std::optional<size_t> getStopLineIndexFromMap(
 
     const LineString2d path_segment = {{p_front.x, p_front.y}, {p_back.x, p_back.y}};
     std::vector<Point2d> collision_points;
-    bg::intersection(extended_stop_line, path_segment, collision_points);
+    bg::intersection(extended_stopline, path_segment, collision_points);
 
     if (collision_points.empty()) {
       continue;
@@ -269,7 +269,7 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
   const lanelet::ConstLineString2d & first_attention_lane_centerline,
   const std::shared_ptr<const PlannerData> & planner_data,
   const InterpolatedPathInfo & interpolated_path_info, const bool use_stuck_stopline,
-  const double stop_line_margin, const double max_accel, const double max_jerk,
+  const double stopline_margin, const double max_accel, const double max_jerk,
   const double delay_response_time, const double peeking_offset,
   autoware_auto_planning_msgs::msg::PathWithLaneId * original_path)
 {
@@ -278,7 +278,7 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
   const auto & lane_interval_ip = interpolated_path_info.lane_id_interval.value();
   const double baselink2front = planner_data->vehicle_info_.max_longitudinal_offset_m;
 
-  const int stop_line_margin_idx_dist = std::ceil(stop_line_margin / ds);
+  const int stopline_margin_idx_dist = std::ceil(stopline_margin / ds);
   const int base2front_idx_dist =
     std::ceil(planner_data->vehicle_info_.max_longitudinal_offset_m / ds);
 
@@ -310,19 +310,19 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
     first_footprint_attention_centerline_ip_opt.value();
 
   // (1) default stop line position on interpolated path
-  bool default_stop_line_valid = true;
+  bool default_stopline_valid = true;
   int stop_idx_ip_int = -1;
   if (const auto map_stop_idx_ip = getStopLineIndexFromMap(interpolated_path_info, planner_data);
       map_stop_idx_ip) {
     stop_idx_ip_int = static_cast<int>(map_stop_idx_ip.value()) - base2front_idx_dist;
   }
   if (stop_idx_ip_int < 0) {
-    stop_idx_ip_int = first_footprint_inside_detection_ip - stop_line_margin_idx_dist;
+    stop_idx_ip_int = first_footprint_inside_detection_ip - stopline_margin_idx_dist;
   }
   if (stop_idx_ip_int < 0) {
-    default_stop_line_valid = false;
+    default_stopline_valid = false;
   }
-  const auto default_stop_line_ip = stop_idx_ip_int >= 0 ? static_cast<size_t>(stop_idx_ip_int) : 0;
+  const auto default_stopline_ip = stop_idx_ip_int >= 0 ? static_cast<size_t>(stop_idx_ip_int) : 0;
 
   // (2) ego front stop line position on interpolated path
   const geometry_msgs::msg::Pose & current_pose = planner_data->current_odometry->pose;
@@ -331,11 +331,11 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
     planner_data->ego_nearest_yaw_threshold);
 
   // (3) occlusion peeking stop line position on interpolated path
-  int occlusion_peeking_line_ip_int = static_cast<int>(default_stop_line_ip);
+  int occlusion_peeking_line_ip_int = static_cast<int>(default_stopline_ip);
   bool occlusion_peeking_line_valid = true;
   // NOTE: if footprints[0] is already inside the detection area, invalid
   {
-    const auto & base_pose0 = path_ip.points.at(default_stop_line_ip).point.pose;
+    const auto & base_pose0 = path_ip.points.at(default_stopline_ip).point.pose;
     const auto path_footprint0 = tier4_autoware_utils::transformVector(
       local_footprint, tier4_autoware_utils::pose2transform(base_pose0));
     if (bg::intersects(
@@ -350,8 +350,8 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
 
   const auto occlusion_peeking_line_ip = static_cast<size_t>(
     std::clamp<int>(occlusion_peeking_line_ip_int, 0, static_cast<int>(path_ip.points.size()) - 1));
-  const auto first_attention_stop_line_ip = first_footprint_inside_detection_ip;
-  const bool first_attention_stop_line_valid = true;
+  const auto first_attention_stopline_ip = first_footprint_inside_detection_ip;
+  const bool first_attention_stopline_valid = true;
 
   // (4) pass judge line position on interpolated path
   const double velocity = planner_data->current_velocity->twist.linear.x;
@@ -367,52 +367,52 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
     static_cast<size_t>(first_footprint_attention_centerline_ip);
 
   // (5) stuck vehicle stop line
-  int stuck_stop_line_ip_int = 0;
-  bool stuck_stop_line_valid = true;
+  int stuck_stopline_ip_int = 0;
+  bool stuck_stopline_valid = true;
   if (use_stuck_stopline) {
     // NOTE: when ego vehicle is approaching detection area and already passed
     // first_conflicting_area, this could be null.
-    const auto stuck_stop_line_idx_ip_opt = getFirstPointInsidePolygonByFootprint(
+    const auto stuck_stopline_idx_ip_opt = getFirstPointInsidePolygonByFootprint(
       first_conflicting_area, interpolated_path_info, local_footprint, baselink2front);
-    if (!stuck_stop_line_idx_ip_opt) {
-      stuck_stop_line_valid = false;
-      stuck_stop_line_ip_int = 0;
+    if (!stuck_stopline_idx_ip_opt) {
+      stuck_stopline_valid = false;
+      stuck_stopline_ip_int = 0;
     } else {
-      stuck_stop_line_ip_int = stuck_stop_line_idx_ip_opt.value() - stop_line_margin_idx_dist;
+      stuck_stopline_ip_int = stuck_stopline_idx_ip_opt.value() - stopline_margin_idx_dist;
     }
   } else {
-    stuck_stop_line_ip_int =
-      std::get<0>(lane_interval_ip) - (stop_line_margin_idx_dist + base2front_idx_dist);
+    stuck_stopline_ip_int =
+      std::get<0>(lane_interval_ip) - (stopline_margin_idx_dist + base2front_idx_dist);
   }
-  if (stuck_stop_line_ip_int < 0) {
-    stuck_stop_line_valid = false;
+  if (stuck_stopline_ip_int < 0) {
+    stuck_stopline_valid = false;
   }
-  const auto stuck_stop_line_ip = static_cast<size_t>(std::max(0, stuck_stop_line_ip_int));
+  const auto stuck_stopline_ip = static_cast<size_t>(std::max(0, stuck_stopline_ip_int));
 
   struct IntersectionStopLinesTemp
   {
     size_t closest_idx{0};
-    size_t stuck_stop_line{0};
-    size_t default_stop_line{0};
-    size_t first_attention_stop_line{0};
-    size_t occlusion_peeking_stop_line{0};
+    size_t stuck_stopline{0};
+    size_t default_stopline{0};
+    size_t first_attention_stopline{0};
+    size_t occlusion_peeking_stopline{0};
     size_t pass_judge_line{0};
     size_t occlusion_wo_tl_pass_judge_line{0};
   };
 
-  IntersectionStopLinesTemp intersection_stop_lines_temp;
-  std::list<std::pair<const size_t *, size_t *>> stop_lines = {
-    {&closest_idx_ip, &intersection_stop_lines_temp.closest_idx},
-    {&stuck_stop_line_ip, &intersection_stop_lines_temp.stuck_stop_line},
-    {&default_stop_line_ip, &intersection_stop_lines_temp.default_stop_line},
-    {&first_attention_stop_line_ip, &intersection_stop_lines_temp.first_attention_stop_line},
-    {&occlusion_peeking_line_ip, &intersection_stop_lines_temp.occlusion_peeking_stop_line},
-    {&pass_judge_line_ip, &intersection_stop_lines_temp.pass_judge_line},
+  IntersectionStopLinesTemp intersection_stoplines_temp;
+  std::list<std::pair<const size_t *, size_t *>> stoplines = {
+    {&closest_idx_ip, &intersection_stoplines_temp.closest_idx},
+    {&stuck_stopline_ip, &intersection_stoplines_temp.stuck_stopline},
+    {&default_stopline_ip, &intersection_stoplines_temp.default_stopline},
+    {&first_attention_stopline_ip, &intersection_stoplines_temp.first_attention_stopline},
+    {&occlusion_peeking_line_ip, &intersection_stoplines_temp.occlusion_peeking_stopline},
+    {&pass_judge_line_ip, &intersection_stoplines_temp.pass_judge_line},
     {&occlusion_wo_tl_pass_judge_line_ip,
-     &intersection_stop_lines_temp.occlusion_wo_tl_pass_judge_line}};
-  stop_lines.sort(
+     &intersection_stoplines_temp.occlusion_wo_tl_pass_judge_line}};
+  stoplines.sort(
     [](const auto & it1, const auto & it2) { return *(std::get<0>(it1)) < *(std::get<0>(it2)); });
-  for (const auto & [stop_idx_ip, stop_idx] : stop_lines) {
+  for (const auto & [stop_idx_ip, stop_idx] : stoplines) {
     const auto & insert_point = path_ip.points.at(*stop_idx_ip).point.pose;
     const auto insert_idx = insertPointIndex(
       insert_point, original_path, planner_data->ego_nearest_dist_threshold,
@@ -423,32 +423,32 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
     *stop_idx = insert_idx.value();
   }
   if (
-    intersection_stop_lines_temp.occlusion_peeking_stop_line <
-    intersection_stop_lines_temp.default_stop_line) {
-    intersection_stop_lines_temp.occlusion_peeking_stop_line =
-      intersection_stop_lines_temp.default_stop_line;
+    intersection_stoplines_temp.occlusion_peeking_stopline <
+    intersection_stoplines_temp.default_stopline) {
+    intersection_stoplines_temp.occlusion_peeking_stopline =
+      intersection_stoplines_temp.default_stopline;
   }
 
-  IntersectionStopLines intersection_stop_lines;
-  intersection_stop_lines.closest_idx = intersection_stop_lines_temp.closest_idx;
-  if (stuck_stop_line_valid) {
-    intersection_stop_lines.stuck_stop_line = intersection_stop_lines_temp.stuck_stop_line;
+  IntersectionStopLines intersection_stoplines;
+  intersection_stoplines.closest_idx = intersection_stoplines_temp.closest_idx;
+  if (stuck_stopline_valid) {
+    intersection_stoplines.stuck_stopline = intersection_stoplines_temp.stuck_stopline;
   }
-  if (default_stop_line_valid) {
-    intersection_stop_lines.default_stop_line = intersection_stop_lines_temp.default_stop_line;
+  if (default_stopline_valid) {
+    intersection_stoplines.default_stopline = intersection_stoplines_temp.default_stopline;
   }
-  if (first_attention_stop_line_valid) {
-    intersection_stop_lines.first_attention_stop_line =
-      intersection_stop_lines_temp.first_attention_stop_line;
+  if (first_attention_stopline_valid) {
+    intersection_stoplines.first_attention_stopline =
+      intersection_stoplines_temp.first_attention_stopline;
   }
   if (occlusion_peeking_line_valid) {
-    intersection_stop_lines.occlusion_peeking_stop_line =
-      intersection_stop_lines_temp.occlusion_peeking_stop_line;
+    intersection_stoplines.occlusion_peeking_stopline =
+      intersection_stoplines_temp.occlusion_peeking_stopline;
   }
-  intersection_stop_lines.pass_judge_line = intersection_stop_lines_temp.pass_judge_line;
-  intersection_stop_lines.occlusion_wo_tl_pass_judge_line =
-    intersection_stop_lines_temp.occlusion_wo_tl_pass_judge_line;
-  return intersection_stop_lines;
+  intersection_stoplines.pass_judge_line = intersection_stoplines_temp.pass_judge_line;
+  intersection_stoplines.occlusion_wo_tl_pass_judge_line =
+    intersection_stoplines_temp.occlusion_wo_tl_pass_judge_line;
+  return intersection_stoplines;
 }
 
 std::optional<size_t> getFirstPointInsidePolygon(
@@ -537,30 +537,30 @@ getFirstPointInsidePolygons(
 std::optional<size_t> generateStuckStopLine(
   const lanelet::CompoundPolygon3d & conflicting_area,
   const std::shared_ptr<const PlannerData> & planner_data,
-  const InterpolatedPathInfo & interpolated_path_info, const double stop_line_margin,
+  const InterpolatedPathInfo & interpolated_path_info, const double stopline_margin,
   const bool use_stuck_stopline, autoware_auto_planning_msgs::msg::PathWithLaneId * original_path)
 {
   const auto & path_ip = interpolated_path_info.path;
   const double ds = interpolated_path_info.ds;
   const auto & lane_interval_ip = interpolated_path_info.lane_id_interval.value();
   const auto lane_interval_ip_start = std::get<0>(lane_interval_ip);
-  size_t stuck_stop_line_idx_ip = 0;
+  size_t stuck_stopline_idx_ip = 0;
   if (use_stuck_stopline) {
-    stuck_stop_line_idx_ip = lane_interval_ip_start;
+    stuck_stopline_idx_ip = lane_interval_ip_start;
   } else {
-    const auto stuck_stop_line_idx_ip_opt =
+    const auto stuck_stopline_idx_ip_opt =
       getFirstPointInsidePolygon(path_ip, lane_interval_ip, conflicting_area);
-    if (!stuck_stop_line_idx_ip_opt) {
+    if (!stuck_stopline_idx_ip_opt) {
       return std::nullopt;
     }
-    stuck_stop_line_idx_ip = stuck_stop_line_idx_ip_opt.value();
+    stuck_stopline_idx_ip = stuck_stopline_idx_ip_opt.value();
   }
 
-  const int stop_line_margin_idx_dist = std::ceil(stop_line_margin / ds);
+  const int stopline_margin_idx_dist = std::ceil(stopline_margin / ds);
   const int base2front_idx_dist =
     std::ceil(planner_data->vehicle_info_.max_longitudinal_offset_m / ds);
   const size_t insert_idx_ip = static_cast<size_t>(std::max(
-    static_cast<int>(stuck_stop_line_idx_ip) - 1 - stop_line_margin_idx_dist - base2front_idx_dist,
+    static_cast<int>(stuck_stopline_idx_ip) - 1 - stopline_margin_idx_dist - base2front_idx_dist,
     0));
   const auto & insert_point = path_ip.points.at(insert_idx_ip).point.pose;
   return insertPointIndex(
@@ -695,8 +695,8 @@ IntersectionLanelets getObjectiveLanelets(
   if (const auto tl_reg_elems = assigned_lanelet.regulatoryElementsAs<lanelet::TrafficLight>();
       tl_reg_elems.size() != 0) {
     const auto tl_reg_elem = tl_reg_elems.front();
-    const auto stop_line_opt = tl_reg_elem->stopLine();
-    if (!!stop_line_opt) has_traffic_light = true;
+    const auto stopline_opt = tl_reg_elem->stopLine();
+    if (!!stopline_opt) has_traffic_light = true;
   }
 
   // for low priority lane
@@ -744,7 +744,7 @@ IntersectionLanelets getObjectiveLanelets(
   // final objective lanelets
   lanelet::ConstLanelets detection_lanelets;
   lanelet::ConstLanelets conflicting_ex_ego_lanelets;
-  // conflicting lanes is necessary to get stop_line for stuck vehicle
+  // conflicting lanes is necessary to get stopline for stuck vehicle
   for (auto && conflicting_lanelet : conflicting_lanelets) {
     if (!lanelet::utils::contains(ego_lanelets, conflicting_lanelet))
       conflicting_ex_ego_lanelets.push_back(conflicting_lanelet);
@@ -836,31 +836,31 @@ IntersectionLanelets getObjectiveLanelets(
   for (const auto & original_attention_lanelet_seq : original_attention_lanelet_sequences) {
     // NOTE: in mergeLaneletsByTopologicalSort(), sub_ids are empty checked, so it is ensured that
     // back() exists.
-    std::optional<lanelet::ConstLineString3d> stop_line{std::nullopt};
+    std::optional<lanelet::ConstLineString3d> stopline{std::nullopt};
     for (auto it = original_attention_lanelet_seq.rbegin();
          it != original_attention_lanelet_seq.rend(); ++it) {
       const auto traffic_lights = it->regulatoryElementsAs<lanelet::TrafficLight>();
       for (const auto & traffic_light : traffic_lights) {
-        const auto stop_line_opt = traffic_light->stopLine();
-        if (!stop_line_opt) continue;
-        stop_line = stop_line_opt.get();
+        const auto stopline_opt = traffic_light->stopLine();
+        if (!stopline_opt) continue;
+        stopline = stopline_opt.get();
         break;
       }
-      if (stop_line) break;
+      if (stopline) break;
     }
-    result.attention_stop_lines_.push_back(stop_line);
+    result.attention_stoplines_.push_back(stopline);
   }
   result.attention_non_preceding_ = std::move(detection_lanelets);
   for (unsigned i = 0; i < result.attention_non_preceding_.size(); ++i) {
-    std::optional<lanelet::ConstLineString3d> stop_line = std::nullopt;
+    std::optional<lanelet::ConstLineString3d> stopline = std::nullopt;
     const auto & ll = result.attention_non_preceding_.at(i);
     const auto traffic_lights = ll.regulatoryElementsAs<lanelet::TrafficLight>();
     for (const auto & traffic_light : traffic_lights) {
-      const auto stop_line_opt = traffic_light->stopLine();
-      if (!stop_line_opt) continue;
-      stop_line = stop_line_opt.get();
+      const auto stopline_opt = traffic_light->stopLine();
+      if (!stopline_opt) continue;
+      stopline = stopline_opt.get();
     }
-    result.attention_non_preceding_stop_lines_.push_back(stop_line);
+    result.attention_non_preceding_stoplines_.push_back(stopline);
   }
   result.conflicting_ = std::move(conflicting_ex_ego_lanelets);
   result.adjacent_ = planning_utils::getConstLaneletsFromIds(lanelet_map_ptr, associative_ids);
@@ -1317,7 +1317,7 @@ TimeDistanceArray calcIntersectionPassingTime(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const std::shared_ptr<const PlannerData> & planner_data, const lanelet::Id lane_id,
   const std::set<lanelet::Id> & associative_ids, const size_t closest_idx,
-  const size_t last_intersection_stop_line_candidate_idx, const double time_delay,
+  const size_t last_intersection_stopline_candidate_idx, const double time_delay,
   const double intersection_velocity, const double minimum_ego_velocity,
   const bool use_upstream_velocity, const double minimum_upstream_velocity,
   tier4_debug_msgs::msg::Float64MultiArrayStamped * debug_ttc_array)
@@ -1329,7 +1329,7 @@ TimeDistanceArray calcIntersectionPassingTime(
   // crop intersection part of the path, and set the reference velocity to intersection_velocity
   // for ego's ttc
   PathWithLaneId reference_path;
-  std::optional<size_t> upstream_stop_line{std::nullopt};
+  std::optional<size_t> upstream_stopline{std::nullopt};
   for (size_t i = 0; i < path.points.size() - 1; ++i) {
     auto reference_point = path.points.at(i);
     // assume backward velocity is current ego velocity
@@ -1337,11 +1337,11 @@ TimeDistanceArray calcIntersectionPassingTime(
       reference_point.point.longitudinal_velocity_mps = current_velocity;
     }
     if (
-      i > last_intersection_stop_line_candidate_idx &&
+      i > last_intersection_stopline_candidate_idx &&
       std::fabs(reference_point.point.longitudinal_velocity_mps) <
         std::numeric_limits<double>::epsilon() &&
-      !upstream_stop_line) {
-      upstream_stop_line = i;
+      !upstream_stopline) {
+      upstream_stopline = i;
     }
     if (!use_upstream_velocity) {
       reference_point.point.longitudinal_velocity_mps = intersection_velocity;
@@ -1376,23 +1376,23 @@ TimeDistanceArray calcIntersectionPassingTime(
   time_distance_array.emplace_back(passing_time, dist_sum);
 
   // NOTE: `reference_path` is resampled in `reference_smoothed_path`, so
-  // `last_intersection_stop_line_candidate_idx` makes no sense
+  // `last_intersection_stopline_candidate_idx` makes no sense
   const auto smoothed_path_closest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
     smoothed_reference_path.points, path.points.at(closest_idx).point.pose,
     planner_data->ego_nearest_dist_threshold, planner_data->ego_nearest_yaw_threshold);
 
-  const std::optional<size_t> upstream_stop_line_idx_opt = [&]() -> std::optional<size_t> {
-    if (upstream_stop_line) {
-      const auto upstream_stop_line_point = path.points.at(upstream_stop_line.value()).point.pose;
+  const std::optional<size_t> upstream_stopline_idx_opt = [&]() -> std::optional<size_t> {
+    if (upstream_stopline) {
+      const auto upstream_stopline_point = path.points.at(upstream_stopline.value()).point.pose;
       return motion_utils::findFirstNearestIndexWithSoftConstraints(
-        smoothed_reference_path.points, upstream_stop_line_point,
+        smoothed_reference_path.points, upstream_stopline_point,
         planner_data->ego_nearest_dist_threshold, planner_data->ego_nearest_yaw_threshold);
     } else {
       return std::nullopt;
     }
   }();
-  const bool has_upstream_stopline = upstream_stop_line_idx_opt.has_value();
-  const size_t upstream_stopline_ind = upstream_stop_line_idx_opt.value_or(0);
+  const bool has_upstream_stopline = upstream_stopline_idx_opt.has_value();
+  const size_t upstream_stopline_ind = upstream_stopline_idx_opt.value_or(0);
 
   for (size_t i = smoothed_path_closest_idx; i < smoothed_reference_path.points.size() - 1; ++i) {
     const auto & p1 = smoothed_reference_path.points.at(i);
@@ -1613,22 +1613,22 @@ std::optional<PathLanelets> generatePathLanelets(
   return path_lanelets;
 }
 
-void TargetObject::calc_dist_to_stop_line()
+void TargetObject::calc_dist_to_stopline()
 {
-  if (!attention_lanelet || !stop_line) {
+  if (!attention_lanelet || !stopline) {
     return;
   }
   const auto attention_lanelet_val = attention_lanelet.value();
   const auto object_arc_coords = lanelet::utils::getArcCoordinates(
     {attention_lanelet_val}, object.kinematics.initial_pose_with_covariance.pose);
-  const auto stop_line_val = stop_line.value();
+  const auto stopline_val = stopline.value();
   geometry_msgs::msg::Pose stopline_center;
-  stopline_center.position.x = (stop_line_val.front().x() + stop_line_val.back().x()) / 2.0;
-  stopline_center.position.y = (stop_line_val.front().y() + stop_line_val.back().y()) / 2.0;
-  stopline_center.position.z = (stop_line_val.front().z() + stop_line_val.back().z()) / 2.0;
+  stopline_center.position.x = (stopline_val.front().x() + stopline_val.back().x()) / 2.0;
+  stopline_center.position.y = (stopline_val.front().y() + stopline_val.back().y()) / 2.0;
+  stopline_center.position.z = (stopline_val.front().z() + stopline_val.back().z()) / 2.0;
   const auto stopline_arc_coords =
     lanelet::utils::getArcCoordinates({attention_lanelet_val}, stopline_center);
-  dist_to_stop_line = (stopline_arc_coords.length - object_arc_coords.length);
+  dist_to_stopline = (stopline_arc_coords.length - object_arc_coords.length);
 }
 
 }  // namespace util

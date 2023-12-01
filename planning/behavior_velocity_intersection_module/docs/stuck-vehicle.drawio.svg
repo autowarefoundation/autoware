@@ -539,13 +539,13 @@
             <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
               <div style="display: inline-block; font-size: 25px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: nowrap;">
                 <b>
-                  <i>stop_line_margin</i>
+                  <i>stopline_margin</i>
                 </b>
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="964" y="899" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="25px" text-anchor="middle">stop_line_margin</text>
+        <text x="964" y="899" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="25px" text-anchor="middle">stopline_margin</text>
       </switch>
     </g>
     <path d="M 2250.2 867 L 2372.2 867 L 2372.2 916 L 2250.2 916 L 2250.2 867 Z" fill-opacity="0.6" fill="#cdebb8" stroke="none" transform="rotate(-90,2311.2,891.5)" pointer-events="none"/>

@@ -65,7 +65,7 @@ IntersectionLanelets getObjectiveLanelets(
 std::optional<size_t> generateStuckStopLine(
   const lanelet::CompoundPolygon3d & first_conflicting_area,
   const std::shared_ptr<const PlannerData> & planner_data,
-  const InterpolatedPathInfo & interpolated_path_info, const double stop_line_margin,
+  const InterpolatedPathInfo & interpolated_path_info, const double stopline_margin,
   const bool use_stuck_stopline, autoware_auto_planning_msgs::msg::PathWithLaneId * original_path);
 
 std::optional<IntersectionStopLines> generateIntersectionStopLines(
@@ -74,7 +74,7 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
   const lanelet::ConstLineString2d & first_attention_lane_centerline,
   const std::shared_ptr<const PlannerData> & planner_data,
   const InterpolatedPathInfo & interpolated_path_info, const bool use_stuck_stopline,
-  const double stop_line_margin, const double max_accel, const double max_jerk,
+  const double stopline_margin, const double max_accel, const double max_jerk,
   const double delay_response_time, const double peeking_offset,
   autoware_auto_planning_msgs::msg::PathWithLaneId * original_path);
 
@@ -152,7 +152,7 @@ TimeDistanceArray calcIntersectionPassingTime(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const std::shared_ptr<const PlannerData> & planner_data, const lanelet::Id lane_id,
   const std::set<lanelet::Id> & associative_ids, const size_t closest_idx,
-  const size_t last_intersection_stop_line_candidate_idx, const double time_delay,
+  const size_t last_intersection_stopline_candidate_idx, const double time_delay,
   const double intersection_velocity, const double minimum_ego_velocity,
   const bool use_upstream_velocity, const double minimum_upstream_velocity,
   tier4_debug_msgs::msg::Float64MultiArrayStamped * debug_ttc_array);

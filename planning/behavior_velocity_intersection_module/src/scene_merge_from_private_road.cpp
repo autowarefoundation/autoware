@@ -105,39 +105,39 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
   }
 
   /* set stop-line and stop-judgement-line for base_link */
-  const auto stop_line_idx_opt = util::generateStuckStopLine(
+  const auto stopline_idx_opt = util::generateStuckStopLine(
     first_conflicting_area.value(), planner_data_, interpolated_path_info,
-    planner_param_.stop_line_margin, false, path);
-  if (!stop_line_idx_opt.has_value()) {
+    planner_param_.stopline_margin, false, path);
+  if (!stopline_idx_opt.has_value()) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "setStopLineIdx fail");
     return false;
   }
 
-  const size_t stop_line_idx = stop_line_idx_opt.value();
-  if (stop_line_idx == 0) {
+  const size_t stopline_idx = stopline_idx_opt.value();
+  if (stopline_idx == 0) {
     RCLCPP_DEBUG(logger_, "stop line is at path[0], ignore planning.");
     return true;
   }
 
   debug_data_.virtual_wall_pose = planning_utils::getAheadPose(
-    stop_line_idx, planner_data_->vehicle_info_.max_longitudinal_offset_m, *path);
-  debug_data_.stop_point_pose = path->points.at(stop_line_idx).point.pose;
+    stopline_idx, planner_data_->vehicle_info_.max_longitudinal_offset_m, *path);
+  debug_data_.stop_point_pose = path->points.at(stopline_idx).point.pose;
 
   /* set stop speed */
   if (state_machine_.getState() == StateMachine::State::STOP) {
     constexpr double v = 0.0;
-    planning_utils::setVelocityFromIndex(stop_line_idx, v, path);
+    planning_utils::setVelocityFromIndex(stopline_idx, v, path);
 
     /* get stop point and stop factor */
     tier4_planning_msgs::msg::StopFactor stop_factor;
     stop_factor.stop_pose = debug_data_.stop_point_pose;
     planning_utils::appendStopReason(stop_factor, stop_reason);
-    const auto & stop_pose = path->points.at(stop_line_idx).point.pose;
+    const auto & stop_pose = path->points.at(stopline_idx).point.pose;
     velocity_factor_.set(
       path->points, planner_data_->current_odometry->pose, stop_pose, VelocityFactor::UNKNOWN);
 
     const double signed_arc_dist_to_stop_point = motion_utils::calcSignedArcLength(
-      path->points, current_pose.position, path->points.at(stop_line_idx).point.pose.position);
+      path->points, current_pose.position, path->points.at(stopline_idx).point.pose.position);
 
     if (
       signed_arc_dist_to_stop_point < planner_param_.stop_distance_threshold &&

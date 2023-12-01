@@ -56,7 +56,7 @@ public:
   struct PlannerParam
   {
     double attention_area_length;
-    double stop_line_margin;
+    double stopline_margin;
     double stop_duration_sec;
     double stop_distance_threshold;
     double path_interpolation_ds;

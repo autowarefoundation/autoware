@@ -2,42 +2,47 @@
   ros__parameters:
     intersection:
       common:
-        attention_area_margin: 0.75 # [m]
-        attention_area_length: 200.0 # [m]
-        attention_area_angle_threshold: 0.785 # [rad]
-        stop_line_margin: 3.0
-        intersection_velocity: 2.778 # 2.778m/s = 10.0km/h
-        intersection_max_accel: 0.5 # m/ss
-        stop_overshoot_margin: 0.5 # [m] overshoot margin for stuck, collision detection
+        attention_area_length: 200.0
+        attention_area_margin: 0.75
+        attention_area_angle_threshold: 0.785
         use_intersection_area: false
-        path_interpolation_ds: 0.1 # [m]
-        consider_wrong_direction_vehicle: false
+        default_stopline_margin: 3.0
+        stopline_overshoot_margin: 0.5
+        path_interpolation_ds: 0.1
         max_accel: -2.8
         max_jerk: -5.0
         delay_response_time: 0.5
+
       stuck_vehicle:
         turn_direction:
           left: true
           right: true
           straight: true
-        use_stuck_stopline: true # stopline generated before the first conflicting area
-        stuck_vehicle_detect_dist: 5.0 # this should be the length between cars when they are stopped. The actual stuck vehicle detection length will be this value + vehicle_length.
-        stuck_vehicle_vel_thr: 0.833 # 0.833m/s = 3.0km/h
-        # enable_front_car_decel_prediction: false # By default this feature is disabled
-        # assumed_front_car_decel: 1.0 # [m/ss] the expected deceleration of front car when front car as well as ego are turning
-        timeout_private_area: 3.0 # [s] cancel stuck vehicle stop in private area
-        enable_private_area_stuck_disregard: false #In the intersections which labeled as "private area", the obstacle vehicles judged as "stuck" are neglected if this param is set as true.
-        yield_stuck:
-          turn_direction:
-            left: true
-            right: false
-            straight: false
-          distance_thr: 1.0 # [m]
+        use_stuck_stopline: true
+        stuck_vehicle_detect_dist: 5.0
+        stuck_vehicle_velocity_threshold: 0.833
+        # enable_front_car_decel_prediction: false
+        # assumed_front_car_decel: 1.0
+        timeout_private_area: 3.0
+        enable_private_area_stuck_disregard: false
+
+      yield_stuck:
+        turn_direction:
+          left: true
+          right: false
+          straight: false
+        distance_threshold: 1.0
 
       collision_detection:
-        state_transit_margin_time: 0.5
+        consider_wrong_direction_vehicle: false
+        collision_detection_hold_time: 0.5
         min_predicted_path_confidence: 0.05
-        minimum_ego_predicted_velocity: 1.388 # [m/s]
+        keep_detection_velocity_threshold: 0.833
+        velocity_profile:
+          use_upstream: true
+          minimum_upstream_velocity: 0.01
+          default_velocity: 2.778
+          minimum_default_velocity: 1.388
         fully_prioritized:
           collision_start_margin_time: 2.0
           collision_end_margin_time: 0.0
@@ -45,52 +50,46 @@
           collision_start_margin_time: 3.0
           collision_end_margin_time: 2.0
         not_prioritized:
-          collision_start_margin_time: 3.0 # [s] this + state_transit_margin_time should be higher to account for collision with fast/accelerating object
-          collision_end_margin_time: 2.0 # [s] this + state_transit_margin_time should be higher to account for collision with slow/decelerating object
-        keep_detection_vel_thr: 0.833 # == 3.0km/h. keep detection if ego is ego.vel < keep_detection_vel_thr
-        use_upstream_velocity: true # flag to use the planned velocity profile from the upstream module
-        minimum_upstream_velocity: 0.01 # [m/s] minimum velocity to avoid null division for the stop line from the upstream velocity
+          collision_start_margin_time: 3.0
+          collision_end_margin_time: 2.0
         yield_on_green_traffic_light:
           distance_to_assigned_lanelet_start: 10.0
           duration: 3.0
-          object_dist_to_stopline: 10.0 # [m]
+          object_dist_to_stopline: 10.0
         ignore_on_amber_traffic_light:
-          object_expected_deceleration: 2.0 # [m/ss]
+          object_expected_deceleration: 2.0
         ignore_on_red_traffic_light:
           object_margin_to_path: 2.0
 
       occlusion:
         enable: false
-        occlusion_attention_area_length: 70.0 # [m]
-        enable_creeping: false # flag to use the creep velocity when reaching occlusion limit stop line
-        occlusion_creep_velocity: 0.8333 # the creep velocity to occlusion limit stop line
-        peeking_offset: -0.5 # [m] offset for peeking into detection area
+        occlusion_attention_area_length: 70.0
         free_space_max: 43
         occupied_min: 58
-        do_dp: true
-        before_creep_stop_time: 0.1 # [s]
-        min_vehicle_brake_for_rss: -2.5 # [m/s^2]
-        max_vehicle_velocity_for_rss: 16.66 # [m/s] == 60kmph
-        denoise_kernel: 1.0 # [m]
-        possible_object_bbox: [1.5, 2.5] # [m x m]
-        ignore_parked_vehicle_speed_threshold: 0.8333 # == 3.0km/h
-        stop_release_margin_time: 1.5 # [s]
-        temporal_stop_before_attention_area: false
-        absence_traffic_light:
-          creep_velocity: 1.388 # [m/s]
-          maximum_peeking_distance: 6.0 # [m]
+        denoise_kernel: 1.0
         attention_lane_crop_curvature_threshold: 0.25
         attention_lane_curvature_calculation_ds: 0.5
+        creep_during_peeking:
+          enable: false
+          creep_velocity: 0.8333
+        peeking_offset: -0.5
+        occlusion_required_clearance_distance: 55
+        possible_object_bbox: [1.5, 2.5]
+        ignore_parked_vehicle_speed_threshold: 0.8333
+        occlusion_detection_hold_time: 1.5
+        temporal_stop_time_before_peeking: 0.1
+        temporal_stop_before_attention_area: false
+        creep_velocity_without_traffic_light: 1.388
         static_occlusion_with_traffic_light_timeout: 0.5
 
       debug:
         ttc: [0]
 
       enable_rtc:
-        intersection: false # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
+        intersection: false
         intersection_to_occlusion: false
 
     merge_from_private:
-      stop_line_margin: 3.0
+      stopline_margin: 3.0
       stop_duration_sec: 1.0
       stop_distance_threshold: 1.0
