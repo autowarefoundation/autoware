@@ -91,7 +91,7 @@ private:
 
   void checkConsistency(
     const rclcpp::Time & current_time, const PredictedObjects & predicted_objects,
-    const std::vector<TrajectoryPoint> & traj_points, std::vector<StopObstacle> & stop_obstacles);
+    std::vector<StopObstacle> & stop_obstacles);
   void publishVelocityLimit(
     const std::optional<VelocityLimit> & vel_limit, const std::string & module_name);
   void publishDebugMarker() const;

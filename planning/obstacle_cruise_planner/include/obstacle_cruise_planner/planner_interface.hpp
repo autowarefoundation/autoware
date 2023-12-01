@@ -107,6 +107,7 @@ public:
     slow_down_debug_multi_array_.stamp = current_time;
     return slow_down_debug_multi_array_;
   }
+  double getSafeDistanceMargin() const { return longitudinal_info_.safe_distance_margin; }
 
 protected:
   // Parameters

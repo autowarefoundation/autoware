@@ -95,24 +95,16 @@ PoseWithStamp getCurrentObjectPose(
   return PoseWithStamp{obj_base_time, *interpolated_pose};
 }
 
-std::optional<StopObstacle> getClosestStopObstacle(
-  const std::vector<TrajectoryPoint> & traj_points,
-  const std::vector<StopObstacle> & stop_obstacles)
+std::optional<StopObstacle> getClosestStopObstacle(const std::vector<StopObstacle> & stop_obstacles)
 {
-  if (stop_obstacles.empty()) {
-    return std::nullopt;
-  }
-
-  std::optional<StopObstacle> closest_stop_obstacle = std::nullopt;
-  double dist_to_closest_stop_obstacle = std::numeric_limits<double>::max();
+  std::optional<StopObstacle> candidate_obstacle = std::nullopt;
   for (const auto & stop_obstacle : stop_obstacles) {
-    const double dist_to_stop_obstacle =
-      motion_utils::calcSignedArcLength(traj_points, 0, stop_obstacle.collision_point);
-    if (dist_to_stop_obstacle < dist_to_closest_stop_obstacle) {
-      dist_to_closest_stop_obstacle = dist_to_stop_obstacle;
-      closest_stop_obstacle = stop_obstacle;
+    if (
+      !candidate_obstacle || stop_obstacle.dist_to_collide_on_decimated_traj <
+                               candidate_obstacle->dist_to_collide_on_decimated_traj) {
+      candidate_obstacle = stop_obstacle;
     }
   }
-  return closest_stop_obstacle;
+  return candidate_obstacle;
 }
 }  // namespace obstacle_cruise_utils

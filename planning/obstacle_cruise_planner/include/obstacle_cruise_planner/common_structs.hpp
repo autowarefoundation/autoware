@@ -110,14 +110,20 @@ struct StopObstacle : public TargetObstacleInterface
     const std::string & arg_uuid, const rclcpp::Time & arg_stamp,
     const geometry_msgs::msg::Pose & arg_pose, const Shape & arg_shape,
     const double arg_lon_velocity, const double arg_lat_velocity,
-    const geometry_msgs::msg::Point arg_collision_point)
+    const geometry_msgs::msg::Point arg_collision_point,
+    const double arg_dist_to_collide_on_decimated_traj)
   : TargetObstacleInterface(arg_uuid, arg_stamp, arg_pose, arg_lon_velocity, arg_lat_velocity),
     shape(arg_shape),
-    collision_point(arg_collision_point)
+    collision_point(arg_collision_point),
+    dist_to_collide_on_decimated_traj(arg_dist_to_collide_on_decimated_traj)
   {
   }
   Shape shape;
-  geometry_msgs::msg::Point collision_point;
+  geometry_msgs::msg::Point
+    collision_point;  // TODO(yuki_takagi): this member variable still used in
+                      // calculateMarginFromObstacleOnCurve() and  should be removed as it can be
+                      // replaced by ”dist_to_collide_on_decimated_traj”
+  double dist_to_collide_on_decimated_traj;
 };
 
 struct CruiseObstacle : public TargetObstacleInterface

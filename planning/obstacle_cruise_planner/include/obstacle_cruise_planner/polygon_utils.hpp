@@ -38,9 +38,10 @@ Polygon2d createOneStepPolygon(
   const std::vector<geometry_msgs::msg::Pose> & current_poses,
   const vehicle_info_util::VehicleInfo & vehicle_info, const double lat_margin);
 
-std::optional<geometry_msgs::msg::Point> getCollisionPoint(
+std::optional<std::pair<geometry_msgs::msg::Point, double>> getCollisionPoint(
   const std::vector<TrajectoryPoint> & traj_points, const std::vector<Polygon2d> & traj_polygons,
-  const Obstacle & obstacle, const bool is_driving_forward);
+  const Obstacle & obstacle, const bool is_driving_forward,
+  const vehicle_info_util::VehicleInfo & vehicle_info);
 
 std::vector<PointWithStamp> getCollisionPoints(
   const std::vector<TrajectoryPoint> & traj_points, const std::vector<Polygon2d> & traj_polygons,
