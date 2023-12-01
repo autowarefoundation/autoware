@@ -40,7 +40,7 @@ using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::getRPY;
 
-boost::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
+std::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
   const SlowDownParam & slow_down_param, const double dist_baselink_to_obstacle,
   const double current_vel, const double current_acc)
 {
@@ -102,7 +102,7 @@ boost::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
   return {};
 }
 
-boost::optional<std::pair<size_t, TrajectoryPoint>> getForwardInsertPointFromBasePoint(
+std::optional<std::pair<size_t, TrajectoryPoint>> getForwardInsertPointFromBasePoint(
   const size_t base_idx, const TrajectoryPoints & trajectory, const double margin)
 {
   if (base_idx + 1 > trajectory.size()) {
@@ -138,7 +138,7 @@ boost::optional<std::pair<size_t, TrajectoryPoint>> getForwardInsertPointFromBas
   return {};
 }
 
-boost::optional<std::pair<size_t, TrajectoryPoint>> getBackwardInsertPointFromBasePoint(
+std::optional<std::pair<size_t, TrajectoryPoint>> getBackwardInsertPointFromBasePoint(
   const size_t base_idx, const TrajectoryPoints & trajectory, const double margin)
 {
   if (base_idx + 1 > trajectory.size()) {
@@ -175,7 +175,7 @@ boost::optional<std::pair<size_t, TrajectoryPoint>> getBackwardInsertPointFromBa
   return {};
 }
 
-boost::optional<std::pair<size_t, double>> findNearestFrontIndex(
+std::optional<std::pair<size_t, double>> findNearestFrontIndex(
   const size_t start_idx, const TrajectoryPoints & trajectory, const Point & point)
 {
   for (size_t i = start_idx; i < trajectory.size(); ++i) {
@@ -491,10 +491,11 @@ pcl::PointXYZ pointToPcl(const double x, const double y, const double z)
   PointVariant z_variant = z;
 
   // Extract the corresponding components from the variant
-  auto extract_float = [](const auto & variant) { return boost::get<float>(variant); };
-  float pcl_x = boost::apply_visitor(extract_float, x_variant);
-  float pcl_y = boost::apply_visitor(extract_float, y_variant);
-  float pcl_z = boost::apply_visitor(extract_float, z_variant);
+  auto extract_float = [](const auto & value) -> float { return static_cast<float>(value); };
+
+  float pcl_x = std::visit(extract_float, x_variant);
+  float pcl_y = std::visit(extract_float, y_variant);
+  float pcl_z = std::visit(extract_float, z_variant);
 
   // Create a new pcl::PointXYZ object
   return {pcl_x, pcl_y, pcl_z};
@@ -673,7 +674,7 @@ Polygon2d convertPolygonObjectToGeometryPolygon(
   return object_polygon;
 }
 
-boost::optional<PredictedObject> getObstacleFromUuid(
+std::optional<PredictedObject> getObstacleFromUuid(
   const PredictedObjects & obstacles, const unique_identifier_msgs::msg::UUID & target_object_id)
 {
   const auto itr = std::find_if(
@@ -682,9 +683,9 @@ boost::optional<PredictedObject> getObstacleFromUuid(
     });
 
   if (itr == obstacles.objects.end()) {
-    return boost::none;
+    return std::nullopt;
   }
-  return boost::make_optional(*itr);
+  return *itr;
 }
 
 bool isFrontObstacle(const Pose & ego_pose, const geometry_msgs::msg::Point & obstacle_pos)

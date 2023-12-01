@@ -28,9 +28,6 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 
-#include <boost/optional.hpp>
-#include <boost/variant.hpp>
-
 #include <map>
 #include <string>
 #include <utility>
@@ -57,19 +54,19 @@ using TrajectoryPoints = std::vector<TrajectoryPoint>;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
-using PointVariant = boost::variant<float, double>;
+using PointVariant = std::variant<float, double>;
 
-boost::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
+std::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
   const SlowDownParam & slow_down_param, const double dist_baselink_to_obstacle,
   const double current_vel, const double current_acc);
 
-boost::optional<std::pair<size_t, TrajectoryPoint>> getForwardInsertPointFromBasePoint(
+std::optional<std::pair<size_t, TrajectoryPoint>> getForwardInsertPointFromBasePoint(
   const size_t base_idx, const TrajectoryPoints & trajectory, const double margin);
 
-boost::optional<std::pair<size_t, TrajectoryPoint>> getBackwardInsertPointFromBasePoint(
+std::optional<std::pair<size_t, TrajectoryPoint>> getBackwardInsertPointFromBasePoint(
   const size_t base_idx, const TrajectoryPoints & trajectory, const double margin);
 
-boost::optional<std::pair<size_t, double>> findNearestFrontIndex(
+std::optional<std::pair<size_t, double>> findNearestFrontIndex(
   const size_t start_idx, const TrajectoryPoints & trajectory, const Point & point);
 
 void insertStopPoint(
@@ -143,7 +140,7 @@ bool intersectsInZAxis(const PredictedObject & object, const double z_min, const
 
 pcl::PointXYZ pointToPcl(const double x, const double y, const double z);
 
-boost::optional<PredictedObject> getObstacleFromUuid(
+std::optional<PredictedObject> getObstacleFromUuid(
   const PredictedObjects & obstacles, const unique_identifier_msgs::msg::UUID & target_object_id);
 
 bool isFrontObstacle(const Pose & ego_pose, const geometry_msgs::msg::Point & obstacle_pos);

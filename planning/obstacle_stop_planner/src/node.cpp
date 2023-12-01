@@ -973,7 +973,7 @@ void ObstacleStopPlannerNode::searchPredictedObject(
       auto obj_latest_state = getObstacleFromUuid(*latest_object_ptr, obj.object_id);
       if (!obj_latest_state) {
         // Can not find the object in the latest object list. Send previous state.
-        obj_latest_state = boost::make_optional(obj);
+        obj_latest_state = obj;
       }
 
       acc_controller_->insertAdaptiveCruiseVelocity(
@@ -1003,7 +1003,7 @@ void ObstacleStopPlannerNode::insertVelocity(
     const auto idx = planner_data.decimate_trajectory_index_map.at(
                        planner_data.decimate_trajectory_collision_index) +
                      planner_data.trajectory_trim_index;
-    boost::optional<std::pair<size_t, double>> index_with_dist_remain;
+    std::optional<std::pair<size_t, double>> index_with_dist_remain;
 
     index_with_dist_remain = findNearestFrontIndex(
       std::min(idx, traj_end_idx), output,
@@ -1013,14 +1013,14 @@ void ObstacleStopPlannerNode::insertVelocity(
     if (index_with_dist_remain) {
       const auto vehicle_idx = std::min(planner_data.trajectory_trim_index, traj_end_idx);
       const auto dist_baselink_to_obstacle =
-        calcSignedArcLength(output, vehicle_idx, index_with_dist_remain.get().first);
+        calcSignedArcLength(output, vehicle_idx, index_with_dist_remain.value().first);
 
       debug_ptr_->setDebugValues(
         DebugValues::TYPE::COLLISION_OBSTACLE_DISTANCE,
-        dist_baselink_to_obstacle + index_with_dist_remain.get().second - base_link2front);
+        dist_baselink_to_obstacle + index_with_dist_remain.value().second - base_link2front);
 
       const auto stop_point = searchInsertPoint(
-        index_with_dist_remain.get().first, output, index_with_dist_remain.get().second,
+        index_with_dist_remain.value().first, output, index_with_dist_remain.value().second,
         stop_param);
 
       const auto & ego_pose = planner_data.current_pose;
@@ -1094,19 +1094,19 @@ void ObstacleStopPlannerNode::insertVelocity(
     if (index_with_dist_remain) {
       const auto vehicle_idx = std::min(planner_data.trajectory_trim_index, traj_end_idx);
       const auto dist_baselink_to_obstacle =
-        calcSignedArcLength(output, vehicle_idx, index_with_dist_remain.get().first);
+        calcSignedArcLength(output, vehicle_idx, index_with_dist_remain.value().first);
 
       debug_ptr_->setDebugValues(
         DebugValues::TYPE::SLOWDOWN_OBSTACLE_DISTANCE,
-        dist_baselink_to_obstacle + index_with_dist_remain.get().second - base_link2front);
+        dist_baselink_to_obstacle + index_with_dist_remain.value().second - base_link2front);
       const auto slow_down_section = createSlowDownSection(
-        index_with_dist_remain.get().first, output, planner_data.lateral_deviation,
-        index_with_dist_remain.get().second, dist_baselink_to_obstacle, vehicle_info, current_acc,
+        index_with_dist_remain.value().first, output, planner_data.lateral_deviation,
+        index_with_dist_remain.value().second, dist_baselink_to_obstacle, vehicle_info, current_acc,
         current_vel);
 
       if (
         !latest_slow_down_section_ &&
-        dist_baselink_to_obstacle + index_with_dist_remain.get().second <
+        dist_baselink_to_obstacle + index_with_dist_remain.value().second <
           vehicle_info.max_longitudinal_offset_m) {
         latest_slow_down_section_ = slow_down_section;
       }
@@ -1127,7 +1127,7 @@ void ObstacleStopPlannerNode::insertVelocity(
 
     if (is_in_slow_down_section && index_with_dist_remain) {
       const auto end_insert_point_with_idx = getBackwardInsertPointFromBasePoint(
-        index_with_dist_remain.get().first, output, -index_with_dist_remain.get().second);
+        index_with_dist_remain.value().first, output, -index_with_dist_remain.value().second);
 
       double slow_down_velocity;
       if (node_param_.use_predicted_objects) {
@@ -1175,8 +1175,8 @@ void ObstacleStopPlannerNode::insertVelocity(
       SlowDownSection slow_down_section{};
       slow_down_section.slow_down_start_idx = 0;
       slow_down_section.start_point = output.front();
-      slow_down_section.slow_down_end_idx = end_insert_point_with_idx.get().first;
-      slow_down_section.end_point = end_insert_point_with_idx.get().second;
+      slow_down_section.slow_down_end_idx = end_insert_point_with_idx.value().first;
+      slow_down_section.end_point = end_insert_point_with_idx.value().second;
       slow_down_section.velocity =
         set_velocity_limit_ ? std::numeric_limits<double>::max() : target_velocity;
 
@@ -1258,8 +1258,8 @@ StopPoint ObstacleStopPlannerNode::createTargetPoint(
   }
 
   StopPoint stop_point{};
-  stop_point.index = insert_point_with_idx.get().first;
-  stop_point.point = insert_point_with_idx.get().second;
+  stop_point.index = insert_point_with_idx.value().first;
+  stop_point.point = insert_point_with_idx.value().second;
 
   return stop_point;
 }
@@ -1273,7 +1273,7 @@ SlowDownSection ObstacleStopPlannerNode::createSlowDownSection(
     const auto margin_with_vel = calcFeasibleMarginAndVelocity(
       slow_down_param_, dist_baselink_to_obstacle + dist_remain, current_vel, current_acc);
 
-    const auto relax_target_vel = margin_with_vel == boost::none;
+    const auto relax_target_vel = margin_with_vel.has_value();
     if (relax_target_vel && !set_velocity_limit_) {
       setExternalVelocityLimit();
     }
@@ -1288,12 +1288,12 @@ SlowDownSection ObstacleStopPlannerNode::createSlowDownSection(
 
     const auto update_forward_margin_from_vehicle =
       use_velocity_limit ? slow_down_param_.min_longitudinal_forward_margin - dist_remain
-                         : margin_with_vel.get().first - dist_remain;
+                         : margin_with_vel.value().first - dist_remain;
     const auto update_backward_margin_from_vehicle =
       slow_down_param_.longitudinal_backward_margin + dist_remain;
 
     const auto velocity =
-      use_velocity_limit ? std::numeric_limits<double>::max() : margin_with_vel.get().second;
+      use_velocity_limit ? std::numeric_limits<double>::max() : margin_with_vel.value().second;
 
     return createSlowDownSectionFromMargin(
       idx, base_trajectory, update_forward_margin_from_vehicle, update_backward_margin_from_vehicle,
@@ -1335,10 +1335,10 @@ SlowDownSection ObstacleStopPlannerNode::createSlowDownSectionFromMargin(
   }
 
   SlowDownSection slow_down_section{};
-  slow_down_section.slow_down_start_idx = start_insert_point_with_idx.get().first;
-  slow_down_section.start_point = start_insert_point_with_idx.get().second;
-  slow_down_section.slow_down_end_idx = end_insert_point_with_idx.get().first;
-  slow_down_section.end_point = end_insert_point_with_idx.get().second;
+  slow_down_section.slow_down_start_idx = start_insert_point_with_idx.value().first;
+  slow_down_section.start_point = start_insert_point_with_idx.value().second;
+  slow_down_section.slow_down_end_idx = end_insert_point_with_idx.value().first;
+  slow_down_section.end_point = end_insert_point_with_idx.value().second;
   slow_down_section.velocity = velocity;
 
   return slow_down_section;
