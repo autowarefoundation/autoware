@@ -4,8 +4,8 @@
   <name>dummy_diag_publisher</name>
   <version>0.1.0</version>
   <description>The dummy_diag_publisher ROS 2 package</description>
-  <maintainer email="akihiro.sakurai@tier4.jp">Akihiro Sakurai</maintainer>
   <maintainer email="fumihito.ito@tier4.jp">Fumihito Ito</maintainer>
+  <maintainer email="tetsuhiro.kawaguchi@tier4.jp">TetsuKawa</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>

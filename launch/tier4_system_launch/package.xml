@@ -5,7 +5,7 @@
   <version>0.1.0</version>
   <description>The tier4_system_launch package</description>
   <maintainer email="fumihito.ito@tier4.jp">Fumihito Ito</maintainer>
-  <maintainer email="akihiro.sakurai@tier4.jp">asana17</maintainer>
+  <maintainer email="tetsuhiro.kawaguchi@tier4.jp">TetsuKawa</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
