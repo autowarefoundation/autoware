@@ -1126,8 +1126,11 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   const double occlusion_dist_thr = std::fabs(
     std::pow(planner_param_.occlusion.max_vehicle_velocity_for_rss, 2) /
     (2 * planner_param_.occlusion.min_vehicle_brake_for_rss));
+  const double is_amber_or_red =
+    (traffic_prioritized_level == util::TrafficPrioritizedLevel::PARTIALLY_PRIORITIZED) ||
+    (traffic_prioritized_level == util::TrafficPrioritizedLevel::FULLY_PRIORITIZED);
   auto occlusion_status =
-    (enable_occlusion_detection_ && !occlusion_attention_lanelets.empty() && !is_prioritized)
+    (enable_occlusion_detection_ && !occlusion_attention_lanelets.empty() && !is_amber_or_red)
       ? getOcclusionStatus(
           *planner_data_->occupancy_grid, occlusion_attention_area, adjacent_lanelets,
           first_attention_area, interpolated_path_info, occlusion_attention_divisions,
