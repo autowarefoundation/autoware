@@ -15,8 +15,8 @@
 #include "behavior_path_planner/scene_module/lane_change/avoidance_by_lane_change.hpp"
 
 #include "behavior_path_planner/utils/avoidance/utils.hpp"
-#include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
-#include "behavior_path_planner/utils/path_utils.hpp"
+#include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
+#include "behavior_path_planner_common/utils/path_utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>

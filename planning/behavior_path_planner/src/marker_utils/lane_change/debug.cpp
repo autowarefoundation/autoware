@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/marker_utils/colors.hpp"
-#include "behavior_path_planner/marker_utils/utils.hpp"
-#include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
+#include "behavior_path_planner_common/marker_utils/colors.hpp"
+#include "behavior_path_planner_common/marker_utils/utils.hpp"
+#include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
 #include <behavior_path_planner/marker_utils/lane_change/debug.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>

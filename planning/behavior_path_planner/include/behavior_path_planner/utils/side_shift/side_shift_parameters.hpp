@@ -15,7 +15,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__SIDE_SHIFT__SIDE_SHIFT_PARAMETERS_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__SIDE_SHIFT__SIDE_SHIFT_PARAMETERS_HPP_
 
-#include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
+#include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
 #include <tier4_planning_msgs/msg/lateral_offset.hpp>
 

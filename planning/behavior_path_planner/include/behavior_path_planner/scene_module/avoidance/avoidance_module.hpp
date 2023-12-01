@@ -20,7 +20,7 @@
 #include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
 #include "behavior_path_planner/utils/avoidance/helper.hpp"
 #include "behavior_path_planner/utils/avoidance/shift_line_generator.hpp"
-#include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
+#include "behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

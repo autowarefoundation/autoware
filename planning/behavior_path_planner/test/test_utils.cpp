@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "behavior_path_planner/utils/drivable_area_expansion/static_drivable_area.hpp"
-#include "behavior_path_planner/utils/utils.hpp"
+#include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
+#include "behavior_path_planner_common/utils/utils.hpp"
 #include "input.hpp"
 #include "lanelet2_core/Attribute.h"
 #include "lanelet2_core/geometry/LineString.h"

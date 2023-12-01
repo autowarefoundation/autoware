@@ -14,8 +14,8 @@
 
 #include "static_centerline_optimizer/utils.hpp"
 
-#include "behavior_path_planner/data_manager.hpp"
-#include "behavior_path_planner/utils/drivable_area_expansion/static_drivable_area.hpp"
+#include "behavior_path_planner_common/data_manager.hpp"
+#include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/ros/marker_helper.hpp"
 

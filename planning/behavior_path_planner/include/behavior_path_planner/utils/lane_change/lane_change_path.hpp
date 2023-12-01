@@ -15,9 +15,9 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__LANE_CHANGE_PATH_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__LANE_CHANGE_PATH_HPP_
 
-#include "behavior_path_planner/turn_signal_decider.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
-#include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
+#include "behavior_path_planner_common/turn_signal_decider.hpp"
+#include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 

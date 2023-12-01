@@ -14,7 +14,7 @@
 
 #include "behavior_path_planner/marker_utils/avoidance/debug.hpp"
 
-#include "behavior_path_planner/utils/utils.hpp"
+#include "behavior_path_planner_common/utils/utils.hpp"
 
 #include <magic_enum.hpp>
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>

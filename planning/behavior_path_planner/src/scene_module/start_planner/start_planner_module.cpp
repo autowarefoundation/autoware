@@ -14,11 +14,11 @@
 
 #include "behavior_path_planner/scene_module/start_planner/start_planner_module.hpp"
 
-#include "behavior_path_planner/utils/create_vehicle_footprint.hpp"
-#include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
-#include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/start_goal_planner_common/utils.hpp"
 #include "behavior_path_planner/utils/start_planner/util.hpp"
+#include "behavior_path_planner_common/utils/create_vehicle_footprint.hpp"
+#include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
+#include "behavior_path_planner_common/utils/path_utils.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
 #include <lanelet2_extension/utility/query.hpp>

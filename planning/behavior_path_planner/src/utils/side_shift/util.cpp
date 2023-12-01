@@ -14,7 +14,7 @@
 
 #include "behavior_path_planner/utils/side_shift/util.hpp"
 
-#include "behavior_path_planner/utils/utils.hpp"
+#include "behavior_path_planner_common/utils/utils.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

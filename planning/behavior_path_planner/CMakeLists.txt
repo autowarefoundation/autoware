@@ -27,12 +27,6 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/scene_module/lane_change/external_request.cpp
   src/scene_module/lane_change/avoidance_by_lane_change.cpp
   src/scene_module/lane_change/manager.cpp
-  src/turn_signal_decider.cpp
-  src/utils/utils.cpp
-  src/utils/path_utils.cpp
-  src/utils/traffic_light_utils.cpp
-  src/utils/path_safety_checker/safety_check.cpp
-  src/utils/path_safety_checker/objects_filtering.cpp
   src/utils/start_goal_planner_common/utils.cpp
   src/utils/avoidance/shift_line_generator.cpp
   src/utils/avoidance/utils.cpp
@@ -48,14 +42,8 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/utils/start_planner/shift_pull_out.cpp
   src/utils/start_planner/geometric_pull_out.cpp
   src/utils/start_planner/freespace_pull_out.cpp
-  src/utils/path_shifter/path_shifter.cpp
-  src/utils/drivable_area_expansion/static_drivable_area.cpp
-  src/utils/drivable_area_expansion/drivable_area_expansion.cpp
-  src/utils/drivable_area_expansion/map_utils.cpp
-  src/utils/drivable_area_expansion/footprints.cpp
   src/utils/geometric_parallel_parking/geometric_parallel_parking.cpp
   src/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.cpp
-  src/marker_utils/utils.cpp
   src/marker_utils/avoidance/debug.cpp
   src/marker_utils/lane_change/debug.cpp
 )
@@ -77,8 +65,8 @@ if(BUILD_TESTING)
   ament_add_ros_isolated_gmock(test_${CMAKE_PROJECT_NAME}_utilities
     test/input.cpp
     test/test_utils.cpp
-    test/test_drivable_area_expansion.cpp
   )
+
   target_link_libraries(test_${CMAKE_PROJECT_NAME}_utilities
     behavior_path_planner_node
   )
@@ -96,22 +84,6 @@ if(BUILD_TESTING)
   )
 
   target_link_libraries(test_${CMAKE_PROJECT_NAME}_lane_change_module
-    behavior_path_planner_node
-  )
-
-  ament_add_ros_isolated_gmock(test_${CMAKE_PROJECT_NAME}_safety_check
-    test/test_safety_check.cpp
-  )
-
-  target_link_libraries(test_${CMAKE_PROJECT_NAME}_safety_check
-    behavior_path_planner_node
-  )
-
-  ament_add_ros_isolated_gmock(test_${CMAKE_PROJECT_NAME}_turn_signal
-    test/test_turn_signal.cpp
-  )
-
-  target_link_libraries(test_${CMAKE_PROJECT_NAME}_turn_signal
     behavior_path_planner_node
   )
 

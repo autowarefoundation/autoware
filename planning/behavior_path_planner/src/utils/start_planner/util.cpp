@@ -14,10 +14,10 @@
 
 #include "behavior_path_planner/utils/start_planner/util.hpp"
 
-#include "behavior_path_planner/utils/create_vehicle_footprint.hpp"
-#include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
-#include "behavior_path_planner/utils/path_utils.hpp"
-#include "behavior_path_planner/utils/utils.hpp"
+#include "behavior_path_planner_common/utils/create_vehicle_footprint.hpp"
+#include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
+#include "behavior_path_planner_common/utils/path_utils.hpp"
+#include "behavior_path_planner_common/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>

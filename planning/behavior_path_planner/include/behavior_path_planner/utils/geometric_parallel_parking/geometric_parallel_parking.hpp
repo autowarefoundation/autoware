@@ -15,8 +15,8 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__GEOMETRIC_PARALLEL_PARKING__GEOMETRIC_PARALLEL_PARKING_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__GEOMETRIC_PARALLEL_PARKING__GEOMETRIC_PARALLEL_PARKING_HPP_
 
-#include "behavior_path_planner/data_manager.hpp"
-#include "behavior_path_planner/parameters.hpp"
+#include "behavior_path_planner_common/data_manager.hpp"
+#include "behavior_path_planner_common/parameters.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>

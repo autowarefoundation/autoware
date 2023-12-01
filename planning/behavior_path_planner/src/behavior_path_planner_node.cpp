@@ -14,7 +14,6 @@
 
 #include "behavior_path_planner/behavior_path_planner_node.hpp"
 
-#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/scene_module/avoidance/manager.hpp"
 #include "behavior_path_planner/scene_module/dynamic_avoidance/manager.hpp"
 #include "behavior_path_planner/scene_module/goal_planner/manager.hpp"
@@ -22,8 +21,9 @@
 #include "behavior_path_planner/scene_module/lane_change/manager.hpp"
 #include "behavior_path_planner/scene_module/side_shift/manager.hpp"
 #include "behavior_path_planner/scene_module/start_planner/manager.hpp"
-#include "behavior_path_planner/utils/drivable_area_expansion/static_drivable_area.hpp"
-#include "behavior_path_planner/utils/path_utils.hpp"
+#include "behavior_path_planner_common/marker_utils/utils.hpp"
+#include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
+#include "behavior_path_planner_common/utils/path_utils.hpp"
 
 #include <tier4_autoware_utils/ros/update_param.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>

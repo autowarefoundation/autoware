@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
+#include "behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>

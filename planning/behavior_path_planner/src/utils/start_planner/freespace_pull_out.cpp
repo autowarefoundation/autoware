@@ -14,9 +14,9 @@
 
 #include "behavior_path_planner/utils/start_planner/freespace_pull_out.hpp"
 
-#include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/start_planner/util.hpp"
-#include "behavior_path_planner/utils/utils.hpp"
+#include "behavior_path_planner_common/utils/path_utils.hpp"
+#include "behavior_path_planner_common/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 

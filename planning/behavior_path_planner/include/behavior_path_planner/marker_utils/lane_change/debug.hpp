@@ -15,9 +15,9 @@
 #ifndef BEHAVIOR_PATH_PLANNER__MARKER_UTILS__LANE_CHANGE__DEBUG_HPP_
 #define BEHAVIOR_PATH_PLANNER__MARKER_UTILS__LANE_CHANGE__DEBUG_HPP_
 
-#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_path.hpp"
-#include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
+#include "behavior_path_planner_common/marker_utils/utils.hpp"
+#include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 
 #include <string>
 #include <unordered_map>
