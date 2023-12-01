@@ -231,6 +231,10 @@
         stop_buffer: 1.0                                # [m]
 
       policy:
+        # policy for rtc request. select "per_shift_line" or "per_avoidance_maneuver".
+        # "per_shift_line": request approval for each shift line.
+        # "per_avoidance_maneuver": request approval for avoidance maneuver (avoid + return).
+        make_approval_request: "per_shift_line"
         # policy for vehicle slow down behavior. select "best_effort" or "reliable".
         # "best_effort": slow down deceleration & jerk are limited by constraints.
         #                but there is a possibility that the vehicle can't stop in front of the vehicle.

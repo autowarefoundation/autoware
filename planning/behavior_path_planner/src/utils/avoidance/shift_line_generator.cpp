@@ -35,6 +35,11 @@ bool isBestEffort(const std::string & policy)
   return policy == "best_effort";
 }
 
+bool perManeuver(const std::string & policy)
+{
+  return policy == "per_avoidance_maneuver";
+}
+
 AvoidLine merge(const AvoidLine & line1, const AvoidLine & line2, const UUID id)
 {
   AvoidLine ret{};
@@ -1213,11 +1218,18 @@ AvoidLineArray ShiftLineGenerator::findNewShiftLine(
       break;
     }
 
-    if (!is_ignore_shift(candidate)) {
-      const auto new_shift_lines = get_subsequent_shift(i);
-      debug.step4_new_shift_line = new_shift_lines;
-      return new_shift_lines;
+    if (is_ignore_shift(candidate)) {
+      continue;
     }
+
+    if (perManeuver(parameters_->policy_approval)) {
+      debug.step4_new_shift_line = shift_lines;
+      return shift_lines;
+    }
+
+    const auto new_shift_lines = get_subsequent_shift(i);
+    debug.step4_new_shift_line = new_shift_lines;
+    return new_shift_lines;
   }
 
   return {};
