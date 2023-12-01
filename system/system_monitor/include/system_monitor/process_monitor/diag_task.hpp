@@ -52,7 +52,7 @@ public:
    * @brief constructor
    * @param [in] name diagnostics status name
    */
-  explicit DiagTask(const std::string & name) : DiagnosticTask(name) {}
+  explicit DiagTask(const std::string & name) : DiagnosticTask(name) { level_ = DiagStatus::STALE; }
 
   /**
    * @brief main loop
@@ -60,8 +60,6 @@ public:
    */
   void run(diagnostic_updater::DiagnosticStatusWrapper & stat)
   {
-    stat.summary(level_, message_);
-
     if (level_ != DiagStatus::OK) {
       stat.add("content", content_);
     } else {
