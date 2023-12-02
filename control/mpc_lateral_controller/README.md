@@ -41,9 +41,7 @@ For the optimization, a Quadratic Programming (QP) solver is used and two option
 ### Filtering
 
 Filtering is required for good noise reduction.
-A [Butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter) is used for the yaw and lateral errors used as
-input of the MPC as well as for
-the output steering angle.
+A [Butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter) is employed for processing the yaw and lateral errors, which are used as inputs for the MPC, as well as for refining the output steering angle.
 Other filtering methods can be considered as long as the noise reduction performances are good
 enough.
 The moving average filter for example is not suited and can yield worse results than without any
