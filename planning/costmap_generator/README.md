@@ -26,8 +26,9 @@ None
 
 ### How to launch
 
-1. Write your remapping info in `costmap_generator.launch` or add args when executing `roslaunch`
-2. Run `roslaunch costmap_generator costmap_generator.launch`
+1. Execute the command `source install/setup.bash` to setup the environment
+
+2. Run `ros2 launch costmap_generator costmap_generator.launch.xml` to launch the node
 
 ### Parameters
 

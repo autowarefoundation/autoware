@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Costmap Generator Node",
+  "type": "object",
+  "definitions": {
+    "costmap_generator": {
+      "type": "object",
+      "properties": {
+        "costmap_frame": {
+          "type": "string",
+          "default": "map",
+          "description": "Created costmap's coordinate."
+        },
+        "vehicle_frame": {
+          "type": "string",
+          "default": "base_link",
+          "description": "Vehicle's coordinate."
+        },
+        "map_frame": {
+          "type": "string",
+          "default": "map",
+          "description": "Map's coordinate."
+        },
+        "update_rate": {
+          "type": "number",
+          "default": 10.0,
+          "exclusiveMinimum": 0,
+          "description": "Timer's update rate ."
+        },
+        "activate_by_scenario": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, activate by scenario = parking. Otherwise, activate if vehicle is inside parking lot."
+        },
+        "grid_min_value": {
+          "type": "number",
+          "default": 0.0,
+          "description": "The minimum cost for gridmap."
+        },
+        "grid_max_value": {
+          "type": "number",
+          "default": 1.0,
+          "description": "The maximum cost for gridmap."
+        },
+        "grid_resolution": {
+          "type": "number",
+          "default": 0.2,
+          "description": "The resolution for gridmap."
+        },
+        "grid_length_x": {
+          "type": "number",
+          "default": 70.0,
+          "description": "The size of gridmap for x direction."
+        },
+        "grid_length_y": {
+          "type": "number",
+          "default": 70.0,
+          "description": "The size of gridmap for y direction."
+        },
+        "grid_position_x": {
+          "type": "number",
+          "default": 0.0,
+          "description": "The offset from coordinate in x direction."
+        },
+        "grid_position_y": {
+          "type": "number",
+          "default": 0.0,
+          "description": "The offset from coordinate in y direction."
+        },
+        "maximum_lidar_height_thres": {
+          "type": "number",
+          "default": 0.3,
+          "description": "The maximum height threshold for pointcloud data."
+        },
+        "minimum_lidar_height_thres": {
+          "type": "number",
+          "default": -2.2,
+          "description": "The minimum height threshold for pointcloud data."
+        },
+        "use_objects": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether using `~input/objects` or not."
+        },
+        "use_points": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether using `~input/points_no_ground` or not."
+        },
+        "use_wayarea": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether using `wayarea` from `~input/vector_map` or not."
+        },
+        "use_parkinglot": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether using `parkinglot` from `~input/vector_map` or not."
+        },
+        "expand_polygon_size": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Expand object's rectangle with this value."
+        },
+        "size_of_expansion_kernel": {
+          "type": "integer",
+          "default": 9,
+          "description": "The kernel size for blurring effect on object's costmap."
+        }
+      },
+      "required": [
+        "costmap_frame",
+        "vehicle_frame",
+        "map_frame",
+        "update_rate",
+        "activate_by_scenario",
+        "grid_min_value",
+        "grid_max_value",
+        "grid_resolution",
+        "grid_length_x",
+        "grid_length_y",
+        "grid_position_x",
+        "grid_position_y",
+        "maximum_lidar_height_thres",
+        "minimum_lidar_height_thres",
+        "use_wayarea",
+        "use_parkinglot",
+        "use_objects",
+        "use_points",
+        "expand_polygon_size",
+        "size_of_expansion_kernel"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/costmap_generator"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
