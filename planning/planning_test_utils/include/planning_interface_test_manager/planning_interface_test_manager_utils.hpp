@@ -41,15 +41,12 @@
 #include <tier4_planning_msgs/msg/scenario.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
-#include <boost/optional.hpp>
-
 #include <cxxabi.h>
 #include <lanelet2_io/Io.h>
 #include <tf2/utils.h>
 #include <tf2_ros/buffer.h>
 #include <yaml-cpp/yaml.h>
 
-#include <algorithm>
 #include <limits>
 #include <memory>
 #include <string>

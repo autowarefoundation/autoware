@@ -61,14 +61,11 @@
 #include <tier4_planning_msgs/msg/velocity_limit.hpp>
 #include <tier4_v2x_msgs/msg/virtual_traffic_light_state_array.hpp>
 
-#include <boost/optional.hpp>
-
 #include <gtest/gtest.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
-#include <time.h>
 
-#include <chrono>
+#include <ctime>
 #include <memory>
 #include <string>
 
@@ -252,7 +249,6 @@ private:
   void publishNominalTrajectory(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishAbnormalTrajectory(
     rclcpp::Node::SharedPtr target_node, const Trajectory & abnormal_trajectory);
-  boost::optional<PoseStamped> transform_pose(const PoseStamped & input);
 
   void publishNominalRoute(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishAbnormalRoute(
