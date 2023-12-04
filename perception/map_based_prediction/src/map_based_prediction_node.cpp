@@ -995,6 +995,7 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
 
         for (auto & predicted_path : predicted_paths) {
           predicted_path.confidence = predicted_path.confidence / sum_confidence;
+          if (predicted_object.kinematics.predicted_paths.size() >= 100) break;
           predicted_object.kinematics.predicted_paths.push_back(predicted_path);
         }
         output.objects.push_back(predicted_object);
