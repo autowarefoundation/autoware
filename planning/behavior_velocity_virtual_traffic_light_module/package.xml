@@ -21,7 +21,6 @@
   <depend>behavior_velocity_planner_common</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
-  <depend>libboost-dev</depend>
   <depend>motion_utils</depend>
   <depend>nlohmann-json-dev</depend>
   <depend>pluginlib</depend>

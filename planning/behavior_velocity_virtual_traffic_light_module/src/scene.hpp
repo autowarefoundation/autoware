@@ -27,7 +27,6 @@
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
 
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -50,7 +49,7 @@ public:
     std::string instrument_id{};
     std::vector<tier4_v2x_msgs::msg::KeyValue> custom_tags{};
     tier4_autoware_utils::Point3d instrument_center{};
-    boost::optional<tier4_autoware_utils::LineString3d> stop_line{};
+    std::optional<tier4_autoware_utils::LineString3d> stop_line{};
     tier4_autoware_utils::LineString3d start_line{};
     std::vector<tier4_autoware_utils::LineString3d> end_lines{};
   };
@@ -59,8 +58,8 @@ public:
   {
     geometry_msgs::msg::Pose head_pose{};
     autoware_auto_planning_msgs::msg::PathWithLaneId path{};
-    boost::optional<geometry_msgs::msg::Pose> stop_head_pose_at_stop_line;
-    boost::optional<geometry_msgs::msg::Pose> stop_head_pose_at_end_line;
+    std::optional<geometry_msgs::msg::Pose> stop_head_pose_at_stop_line;
+    std::optional<geometry_msgs::msg::Pose> stop_head_pose_at_end_line;
   };
 
   struct PlannerParam
@@ -103,7 +102,7 @@ private:
     const geometry_msgs::msg::Pose & stop_pose,
     autoware_adapi_v1_msgs::msg::VelocityFactor * velocity_factor);
 
-  boost::optional<size_t> getPathIndexOfFirstEndLine();
+  std::optional<size_t> getPathIndexOfFirstEndLine();
 
   bool isBeforeStartLine(const size_t end_line_idx);
 
@@ -113,7 +112,7 @@ private:
 
   bool isNearAnyEndLine(const size_t end_line_idx);
 
-  boost::optional<tier4_v2x_msgs::msg::VirtualTrafficLightState> findCorrespondingState();
+  std::optional<tier4_v2x_msgs::msg::VirtualTrafficLightState> findCorrespondingState();
 
   bool isStateTimeout(const tier4_v2x_msgs::msg::VirtualTrafficLightState & state);
 

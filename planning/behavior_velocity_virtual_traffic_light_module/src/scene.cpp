@@ -20,8 +20,6 @@
 
 #include <tier4_v2x_msgs/msg/key_value.hpp>
 
-#include <algorithm>
-#include <limits>
 #include <string>
 #include <vector>
 
@@ -29,7 +27,6 @@ namespace behavior_velocity_planner
 {
 namespace
 {
-namespace bg = boost::geometry;
 using tier4_autoware_utils::calcDistance2d;
 
 struct SegmentIndexWithPoint
@@ -58,7 +55,7 @@ tier4_autoware_utils::LineString3d toAutowarePoints(const lanelet::ConstLineStri
   return output;
 }
 
-boost::optional<tier4_autoware_utils::LineString3d> toAutowarePoints(
+std::optional<tier4_autoware_utils::LineString3d> toAutowarePoints(
   const lanelet::Optional<lanelet::ConstLineString3d> & line_string)
 {
   if (!line_string) {
@@ -111,7 +108,7 @@ geometry_msgs::msg::Point convertToGeomPoint(const tier4_autoware_utils::Point3d
 }
 
 template <class T>
-boost::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
+std::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
   const T & points, const tier4_autoware_utils::LineString3d & target_line,
   const size_t end_line_idx)
 {
@@ -134,7 +131,7 @@ boost::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
 }
 
 template <class T>
-boost::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
+std::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
   const T & points, const std::vector<tier4_autoware_utils::LineString3d> & lines,
   const size_t end_line_idx)
 {
@@ -155,7 +152,7 @@ void insertStopVelocityFromStart(autoware_auto_planning_msgs::msg::PathWithLaneI
   }
 }
 
-boost::optional<size_t> insertStopVelocityAtCollision(
+std::optional<size_t> insertStopVelocityAtCollision(
   const SegmentIndexWithPoint & collision, const double offset,
   autoware_auto_planning_msgs::msg::PathWithLaneId * path)
 {
@@ -267,7 +264,7 @@ bool VirtualTrafficLightModule::modifyPathVelocity(PathWithLaneId * path, StopRe
   if (!opt_end_line_idx) {
     return true;
   }
-  const size_t end_line_idx = opt_end_line_idx.get();
+  const size_t end_line_idx = opt_end_line_idx.value();
 
   // Do nothing if vehicle is before start line
   if (isBeforeStartLine(end_line_idx)) {
@@ -366,9 +363,9 @@ void VirtualTrafficLightModule::setStopReason(
   planning_utils::appendStopReason(stop_factor, stop_reason);
 }
 
-boost::optional<size_t> VirtualTrafficLightModule::getPathIndexOfFirstEndLine()
+std::optional<size_t> VirtualTrafficLightModule::getPathIndexOfFirstEndLine()
 {
-  boost::optional<size_t> min_seg_idx;
+  std::optional<size_t> min_seg_idx;
   for (const auto & end_line : map_data_.end_lines) {
     geometry_msgs::msg::Point end_line_p1;
     end_line_p1.x = end_line.front().x();
@@ -386,7 +383,7 @@ boost::optional<size_t> VirtualTrafficLightModule::getPathIndexOfFirstEndLine()
 
     const size_t collision_seg_idx = collision->first;
 
-    if (!min_seg_idx || collision_seg_idx < min_seg_idx.get()) {
+    if (!min_seg_idx || collision_seg_idx < min_seg_idx.value()) {
       min_seg_idx =
         collision_seg_idx + 1;  // NOTE: In order that min_seg_idx will be after the end line
     }
@@ -490,7 +487,7 @@ bool VirtualTrafficLightModule::isNearAnyEndLine(const size_t end_line_idx)
   return std::abs(signed_arc_length) < planner_param_.near_line_distance;
 }
 
-boost::optional<tier4_v2x_msgs::msg::VirtualTrafficLightState>
+std::optional<tier4_v2x_msgs::msg::VirtualTrafficLightState>
 VirtualTrafficLightModule::findCorrespondingState()
 {
   // No message
@@ -545,7 +542,7 @@ void VirtualTrafficLightModule::insertStopVelocityAtStopLine(
 
     const auto stop_distance =
       motion_utils::calcSignedArcLength(
-        path->points, ego_pose.position, ego_seg_idx, collision.get().point, collision_seg_idx) +
+        path->points, ego_pose.position, ego_seg_idx, collision.value().point, collision_seg_idx) +
       offset;
     const auto is_stopped = planner_data_->isVehicleStopped();
 
@@ -565,14 +562,14 @@ void VirtualTrafficLightModule::insertStopVelocityAtStopLine(
         auto path_tmp = path;
         const auto insert_index = insertStopVelocityAtCollision(*collision, offset, path_tmp);
         if (insert_index) {
-          stop_pose = path_tmp->points.at(insert_index.get()).point.pose;
+          stop_pose = path_tmp->points.at(insert_index.value()).point.pose;
         }
       }
 
     } else {
       const auto insert_index = insertStopVelocityAtCollision(*collision, offset, path);
       if (insert_index) {
-        stop_pose = path->points.at(insert_index.get()).point.pose;
+        stop_pose = path->points.at(insert_index.value()).point.pose;
       }
     }
   }
@@ -608,7 +605,7 @@ void VirtualTrafficLightModule::insertStopVelocityAtEndLine(
     const auto offset = -planner_data_->vehicle_info_.max_longitudinal_offset_m;
     const auto insert_index = insertStopVelocityAtCollision(*collision, offset, path);
     if (insert_index) {
-      stop_pose = path->points.at(insert_index.get()).point.pose;
+      stop_pose = path->points.at(insert_index.value()).point.pose;
     }
   }
 
