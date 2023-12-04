@@ -19,8 +19,7 @@
 
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include <boost/optional.hpp>
-
+#include <optional>
 #include <string>
 
 namespace tier4_autoware_utils
@@ -75,7 +74,7 @@ visualization_msgs::msg::Marker createDeletedDefaultMarker(
 void appendMarkerArray(
   const visualization_msgs::msg::MarkerArray & additional_marker_array,
   visualization_msgs::msg::MarkerArray * marker_array,
-  const boost::optional<rclcpp::Time> & current_time = {});
+  const std::optional<rclcpp::Time> & current_time = {});
 
 }  // namespace tier4_autoware_utils
 
