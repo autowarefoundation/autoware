@@ -438,8 +438,8 @@ std::vector<DrivableLanes> generateDrivableLanes(
     drivable_lanes.at(i).left_lane = current_lane;
     drivable_lanes.at(i).right_lane = current_lane;
 
-    const auto left_lane = route_handler.getLeftLanelet(current_lane);
-    const auto right_lane = route_handler.getRightLanelet(current_lane);
+    const auto left_lane = route_handler.getLeftLanelet(current_lane, false, false);
+    const auto right_lane = route_handler.getRightLanelet(current_lane, false, false);
     if (!left_lane && !right_lane) {
       continue;
     }
