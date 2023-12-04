@@ -1,0 +1,83 @@
+nav:
+  - 'Introduction': planning
+  - 'Behavior Path Planner':
+    - 'About Behavior Path': planning/behavior_path_planner
+    - 'Concept':
+        - 'Planner Manager': planning/behavior_path_planner/docs/behavior_path_planner_manager_design
+        - 'Scene Module Interface': planning/behavior_path_planner/docs/behavior_path_planner_interface_design
+        - 'Path Generation': planning/behavior_path_planner/docs/behavior_path_planner_path_generation_design
+        - 'Collision Assessment/Safety Check': planning/behavior_path_planner/docs/behavior_path_planner_safety_check
+        - 'Dynamic Drivable Area': planning/behavior_path_planner/docs/behavior_path_planner_drivable_area_design
+        - 'Turn Signal': planning/behavior_path_planner/docs/behavior_path_planner_turn_signal_design
+    - 'Scene Module':
+        - 'Avoidance': planning/behavior_path_planner/docs/behavior_path_planner_avoidance_design
+        - 'Avoidance by Lane Change': planning/behavior_path_planner/docs/behavior_path_planner_avoidance_by_lane_change_design
+        - 'Dynamic Avoidance': planning/behavior_path_planner/docs/behavior_path_planner_dynamic_avoidance_design
+        - 'Goal Planner': planning/behavior_path_planner/docs/behavior_path_planner_goal_planner_design
+        - 'Lane Change': planning/behavior_path_planner/docs/behavior_path_planner_lane_change_design
+        - 'Side Shift': planning/behavior_path_planner/docs/behavior_path_planner_side_shift_design
+        - 'Start Planner': planning/behavior_path_planner/docs/behavior_path_planner_start_planner_design
+  - 'Behavior Velocity Planner':
+    - 'About Behavior Velocity': planning/behavior_velocity_planner
+    - 'Template for Custom Module': planning/behavior_velocity_template_module
+    - 'Available Module':
+        - 'Blind Spot': planning/behavior_velocity_blind_spot_module
+        - 'Crosswalk': planning/behavior_velocity_crosswalk_module
+        - 'Detection Area': planning/behavior_velocity_detection_area_module
+        - 'Intersection': planning/behavior_velocity_intersection_module
+        - 'No Drivable Lane': planning/behavior_velocity_no_drivable_lane_module
+        - 'No Stopping Area': planning/behavior_velocity_no_stopping_area_module
+        - 'Occlusion Spot': planning/behavior_velocity_occlusion_spot_module
+        - 'Out of Lane': planning/behavior_velocity_out_of_lane_module
+        - 'Run Out': planning/behavior_velocity_run_out_module
+        - 'Speed Bump': planning/behavior_velocity_speed_bump_module
+        - 'Stop Line': planning/behavior_velocity_stop_line_module
+        - 'Traffic Light': planning/behavior_velocity_traffic_light_module
+        - 'Virtual Traffic Light': planning/behavior_velocity_virtual_traffic_light_module
+        - 'Walkway': planning/behavior_velocity_walkway_module
+  - 'Parking':
+    - 'Freespace Planner':
+      - 'About Freespace Planner': planning/freespace_planner
+      - 'Algorithm': planning/freespace_planning_algorithms
+      - 'RRT*': planning/freespace_planning_algorithms/rrtstar
+  - 'Mission Planner': planning/mission_planner
+  - 'Motion Planning':
+    - 'Obstacle Avoidance Planner':
+      - 'About Obstacle Avoidance': planning/obstacle_avoidance_planner
+      - 'Model Predictive Trajectory (MPT)': planning/obstacle_avoidance_planner/docs/mpt
+      - 'How to Debug': planning/obstacle_avoidance_planner/docs/debug
+    - 'Obstacle Cruise Planner':
+      - 'About Obstacle Cruise': planning/obstacle_cruise_planner
+      - 'How to Debug': planning/obstacle_cruise_planner/docs/debug
+    - 'Obstacle Stop Planner': planning/obstacle_stop_planner
+    - 'Obstacle Velocity Limiter': planning/obstacle_velocity_limiter
+    - 'Path Smoother':
+      - 'About Path Smoother': planning/path_smoother
+      - 'Elastic Band': planning/path_smoother/docs/eb
+    - 'Sampling Based Planner':
+      - 'Path Sample': planning/sampling_based_planner/path_sampler
+      - 'Common library': planning/sampling_based_planner/sampler_common
+      - 'Frenet Planner': planning/sampling_based_planner/frenet_planner
+      - 'Bezier Sampler': planning/sampling_based_planner/bezier_sampler
+    - 'Surround Obstacle Checker':
+      - 'About Surround Obstacle Checker': planning/surround_obstacle_checker
+      - 'About Surround Obstacle Checker (Japanese)': planning/surround_obstacle_checker/surround_obstacle_checker-design.ja
+    - 'Motion Velocity Smoother':
+      - 'About Motion Velocity Smoother': planning/motion_velocity_smoother
+      - 'About Motion Velocity Smoother (Japanese)': planning/motion_velocity_smoother/README.ja
+  - 'Scenario Selector': planning/scenario_selector
+  - 'Static Centerline Optimizer': planning/static_centerline_optimizer
+  - 'API and Library':
+    - 'Costmap Generator': planning/costmap_generator
+    - 'External Velocity Limit Selector': planning/external_velocity_limit_selector
+    - 'Objects of Interest Marker Interface': planning/objects_of_interest_marker_interface
+    - 'Route Handler': planning/route_handler
+    - 'RTC Interface': planning/rtc_interface
+  - 'Additional Tools':
+    - 'RTC Replayer': planning/rtc_replayer
+    - 'Planning Debug Tools':
+      - 'About Planning Debug Tools': planning/planning_debug_tools
+      - 'Stop Reason Visualizer': planning/planning_debug_tools/doc-stop-reason-visualizer
+    - 'Planning Test Utils': planning/planning_test_utils
+    - 'Planning Topic Converter': planning/planning_topic_converter
+    - 'Planning Validator': planning/planning_validator
