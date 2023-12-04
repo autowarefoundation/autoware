@@ -89,6 +89,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
 
   bound_publisher_ = create_publisher<MarkerArray>("~/debug/bound", 1);
 
+  const auto qos_transient_local = rclcpp::QoS{1}.transient_local();
   // subscriber
   velocity_subscriber_ = create_subscription<Odometry>(
     "~/input/odometry", 1, std::bind(&BehaviorPathPlannerNode::onOdometry, this, _1),
@@ -113,7 +114,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     "~/input/lateral_offset", 1, std::bind(&BehaviorPathPlannerNode::onLateralOffset, this, _1),
     createSubscriptionOptions(this));
   operation_mode_subscriber_ = create_subscription<OperationModeState>(
-    "/system/operation_mode/state", 1,
+    "/system/operation_mode/state", qos_transient_local,
     std::bind(&BehaviorPathPlannerNode::onOperationMode, this, _1),
     createSubscriptionOptions(this));
   scenario_subscriber_ = create_subscription<Scenario>(
@@ -124,7 +125,6 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     createSubscriptionOptions(this));
 
   // route_handler
-  auto qos_transient_local = rclcpp::QoS{1}.transient_local();
   vector_map_subscriber_ = create_subscription<HADMapBin>(
     "~/input/vector_map", qos_transient_local, std::bind(&BehaviorPathPlannerNode::onMap, this, _1),
     createSubscriptionOptions(this));

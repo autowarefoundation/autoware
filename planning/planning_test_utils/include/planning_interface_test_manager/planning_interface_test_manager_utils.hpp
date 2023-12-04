@@ -26,6 +26,7 @@
 #include <route_handler/route_handler.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
+#include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
@@ -57,6 +58,7 @@
 
 namespace test_utils
 {
+using autoware_adapi_v1_msgs::msg::OperationModeState;
 using autoware_auto_mapping_msgs::msg::HADMapBin;
 using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
@@ -399,12 +401,9 @@ void createPublisherWithQoS(
   rclcpp::Node::SharedPtr test_node, std::string topic_name,
   std::shared_ptr<rclcpp::Publisher<T>> & publisher)
 {
-  if constexpr (std::is_same_v<T, LaneletRoute>) {
-    rclcpp::QoS custom_qos_profile{rclcpp::KeepLast(1)};
-    custom_qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE);
-    custom_qos_profile.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
-    publisher = rclcpp::create_publisher<T>(test_node, topic_name, custom_qos_profile);
-  } else if constexpr (std::is_same_v<T, HADMapBin>) {
+  if constexpr (
+    std::is_same_v<T, LaneletRoute> || std::is_same_v<T, HADMapBin> ||
+    std::is_same_v<T, OperationModeState>) {
     rclcpp::QoS qos(rclcpp::KeepLast(1));
     qos.reliable();
     qos.transient_local();
