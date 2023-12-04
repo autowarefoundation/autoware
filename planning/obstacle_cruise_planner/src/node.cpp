@@ -258,10 +258,6 @@ ObstacleCruisePlannerNode::BehaviorDeterminationParam::BehaviorDeterminationPara
     node.declare_parameter<double>("behavior_determination.prediction_resampling_time_interval");
   prediction_resampling_time_horizon =
     node.declare_parameter<double>("behavior_determination.prediction_resampling_time_horizon");
-  goal_extension_length =
-    node.declare_parameter<double>("behavior_determination.goal_extension_length");
-  goal_extension_interval =
-    node.declare_parameter<double>("behavior_determination.goal_extension_interval");
 
   max_lat_margin_for_stop =
     node.declare_parameter<double>("behavior_determination.stop.max_lat_margin");
@@ -317,10 +313,6 @@ void ObstacleCruisePlannerNode::BehaviorDeterminationParam::onParam(
   tier4_autoware_utils::updateParam<double>(
     parameters, "behavior_determination.prediction_resampling_time_horizon",
     prediction_resampling_time_horizon);
-  tier4_autoware_utils::updateParam<double>(
-    parameters, "behavior_determination.goal_extension_length", goal_extension_length);
-  tier4_autoware_utils::updateParam<double>(
-    parameters, "behavior_determination.goal_extension_interval", goal_extension_interval);
 
   tier4_autoware_utils::updateParam<double>(
     parameters, "behavior_determination.stop.max_lat_margin", max_lat_margin_for_stop);

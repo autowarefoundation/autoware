@@ -70,9 +70,6 @@
     behavior_determination:
       decimate_trajectory_step_length : 2.0 # longitudinal step length to calculate trajectory polygon for collision checking
 
-      goal_extension_length: 5.0 # extension length for collision check around the goal
-      goal_extension_interval: 1.0 # extension interval for collision check around the goal
-
       prediction_resampling_time_interval: 0.1
       prediction_resampling_time_horizon: 10.0
 
