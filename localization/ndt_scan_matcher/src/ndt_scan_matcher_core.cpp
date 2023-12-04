@@ -52,19 +52,6 @@ tier4_debug_msgs::msg::Int32Stamped make_int32_stamped(
   return tier4_debug_msgs::build<T>().stamp(stamp).data(data);
 }
 
-std::vector<Eigen::Vector2d> create_initial_pose_offset_model(
-  const std::vector<double> & x, const std::vector<double> & y)
-{
-  int size = x.size();
-  std::vector<Eigen::Vector2d> initial_pose_offset_model(size);
-  for (int i = 0; i < size; i++) {
-    initial_pose_offset_model[i].x() = x[i];
-    initial_pose_offset_model[i].y() = y[i];
-  }
-
-  return initial_pose_offset_model;
-}
-
 Eigen::Matrix2d find_rotation_matrix_aligning_covariance_to_principal_axes(
   const Eigen::Matrix2d & matrix)
 {
@@ -73,9 +60,8 @@ Eigen::Matrix2d find_rotation_matrix_aligning_covariance_to_principal_axes(
     const Eigen::Vector2d eigen_vec = eigensolver.eigenvectors().col(0);
     const double th = std::atan2(eigen_vec.y(), eigen_vec.x());
     return Eigen::Rotation2Dd(th).toRotationMatrix();
-  } else {
-    throw std::runtime_error("Eigen solver failed. Return output_pose_covariance value.");
   }
+  throw std::runtime_error("Eigen solver failed. Return output_pose_covariance value.");
 }
 
 bool validate_local_optimal_solution_oscillation(
@@ -114,14 +100,15 @@ NDTScanMatcher::NDTScanMatcher()
   state_ptr_(new std::map<std::string, std::string>),
   inversion_vector_threshold_(-0.9),  // Not necessary to extract to ndt_scan_matcher.param.yaml
   oscillation_threshold_(10),         // Not necessary to extract to ndt_scan_matcher.param.yaml
+  output_pose_covariance_({}),
   regularization_enabled_(declare_parameter<bool>("regularization_enabled"))
 {
   (*state_ptr_)["state"] = "Initializing";
   is_activated_ = false;
 
-  int points_queue_size = this->declare_parameter<int>("input_sensor_points_queue_size");
-  points_queue_size = std::max(points_queue_size, 0);
-  RCLCPP_INFO(get_logger(), "points_queue_size: %d", points_queue_size);
+  int64_t points_queue_size = this->declare_parameter<int64_t>("input_sensor_points_queue_size");
+  points_queue_size = std::max(points_queue_size, (int64_t)0);
+  RCLCPP_INFO(get_logger(), "points_queue_size: %ld", points_queue_size);
 
   base_frame_ = this->declare_parameter<std::string>("base_frame");
   RCLCPP_INFO(get_logger(), "base_frame_id: %s", base_frame_.c_str());
@@ -136,8 +123,8 @@ NDTScanMatcher::NDTScanMatcher()
   ndt_params.trans_epsilon = this->declare_parameter<double>("trans_epsilon");
   ndt_params.step_size = this->declare_parameter<double>("step_size");
   ndt_params.resolution = this->declare_parameter<double>("resolution");
-  ndt_params.max_iterations = this->declare_parameter<int>("max_iterations");
-  ndt_params.num_threads = this->declare_parameter<int>("num_threads");
+  ndt_params.max_iterations = static_cast<int>(this->declare_parameter<int64_t>("max_iterations"));
+  ndt_params.num_threads = static_cast<int>(this->declare_parameter<int64_t>("num_threads"));
   ndt_params.num_threads = std::max(ndt_params.num_threads, 1);
   ndt_params.regularization_scale_factor =
     static_cast<float>(this->declare_parameter<float>("regularization_scale_factor"));
@@ -148,7 +135,7 @@ NDTScanMatcher::NDTScanMatcher()
     ndt_params.trans_epsilon, ndt_params.step_size, ndt_params.resolution,
     ndt_params.max_iterations);
 
-  int converged_param_type_tmp = this->declare_parameter<int>("converged_param_type");
+  const int64_t converged_param_type_tmp = this->declare_parameter<int64_t>("converged_param_type");
   converged_param_type_ = static_cast<ConvergedParamType>(converged_param_type_tmp);
 
   converged_param_transform_probability_ =
@@ -159,7 +146,7 @@ NDTScanMatcher::NDTScanMatcher()
   lidar_topic_timeout_sec_ = this->declare_parameter<double>("lidar_topic_timeout_sec");
 
   critical_upper_bound_exe_time_ms_ =
-    this->declare_parameter<int>("critical_upper_bound_exe_time_ms");
+    this->declare_parameter<int64_t>("critical_upper_bound_exe_time_ms");
 
   initial_pose_timeout_sec_ = this->declare_parameter<double>("initial_pose_timeout_sec");
 
@@ -177,8 +164,12 @@ NDTScanMatcher::NDTScanMatcher()
       this->declare_parameter<std::vector<double>>("initial_pose_offset_model_y");
 
     if (initial_pose_offset_model_x.size() == initial_pose_offset_model_y.size()) {
-      initial_pose_offset_model_ =
-        create_initial_pose_offset_model(initial_pose_offset_model_x, initial_pose_offset_model_y);
+      const size_t size = initial_pose_offset_model_x.size();
+      initial_pose_offset_model_.resize(size);
+      for (size_t i = 0; i < size; i++) {
+        initial_pose_offset_model_[i].x() = initial_pose_offset_model_x[i];
+        initial_pose_offset_model_[i].y() = initial_pose_offset_model_y[i];
+      }
     } else {
       RCLCPP_WARN(
         get_logger(),
@@ -193,8 +184,9 @@ NDTScanMatcher::NDTScanMatcher()
     output_pose_covariance_[i] = output_pose_covariance[i];
   }
 
-  initial_estimate_particles_num_ = this->declare_parameter<int>("initial_estimate_particles_num");
-  n_startup_trials_ = this->declare_parameter<int>("n_startup_trials");
+  initial_estimate_particles_num_ =
+    this->declare_parameter<int64_t>("initial_estimate_particles_num");
+  n_startup_trials_ = this->declare_parameter<int64_t>("n_startup_trials");
 
   estimate_scores_for_degrounded_scan_ =
     this->declare_parameter<bool>("estimate_scores_for_degrounded_scan");
@@ -355,7 +347,8 @@ void NDTScanMatcher::publish_diagnostic()
   }
   if (
     state_ptr_->count("execution_time") &&
-    std::stod((*state_ptr_)["execution_time"]) >= critical_upper_bound_exe_time_ms_) {
+    std::stod((*state_ptr_)["execution_time"]) >=
+      static_cast<double>(critical_upper_bound_exe_time_ms_)) {
     diag_status_msg.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
     diag_status_msg.message +=
       "NDT exe time is too long. (took " + (*state_ptr_)["execution_time"] + " [ms])";
@@ -747,12 +740,12 @@ std::array<double, 36> NDTScanMatcher::estimate_covariance(
     rot = find_rotation_matrix_aligning_covariance_to_principal_axes(
       ndt_result.hessian.inverse().block(0, 0, 2, 2));
   } catch (const std::exception & e) {
-    RCLCPP_WARN(get_logger(), e.what());
+    RCLCPP_WARN(get_logger(), "Error in Eigen solver: %s", e.what());
     return output_pose_covariance_;
   }
 
   // first result is added to mean
-  const int n = initial_pose_offset_model_.size() + 1;
+  const int n = static_cast<int>(initial_pose_offset_model_.size()) + 1;
   const Eigen::Vector2d ndt_pose_2d(ndt_result.pose(0, 3), ndt_result.pose(1, 3));
   Eigen::Vector2d mean = ndt_pose_2d;
   std::vector<Eigen::Vector2d> ndt_pose_2d_vec;
@@ -895,16 +888,16 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_pose(
   // The range taken by 2 * phi(x) - 1 is [-1, 1], so it can be used as a uniform distribution in
   // TPE. Let u = 2 * phi(x) - 1, then x = sqrt(2) * erf_inv(u). Computationally, it is not a good
   // to give erf_inv -1 and 1, so it is rounded off at (-1 + eps, 1 - eps).
-  const double SQRT2 = std::sqrt(2);
-  auto uniform_to_normal = [&SQRT2](const double uniform) {
+  const double sqrt2 = std::sqrt(2);
+  auto uniform_to_normal = [&sqrt2](const double uniform) {
     assert(-1.0 <= uniform && uniform <= 1.0);
     constexpr double epsilon = 1.0e-6;
     const double clamped = std::clamp(uniform, -1.0 + epsilon, 1.0 - epsilon);
-    return boost::math::erf_inv(clamped) * SQRT2;
+    return boost::math::erf_inv(clamped) * sqrt2;
   };
 
-  auto normal_to_uniform = [&SQRT2](const double normal) {
-    return boost::math::erf(normal / SQRT2);
+  auto normal_to_uniform = [&sqrt2](const double normal) {
+    return boost::math::erf(normal / sqrt2);
   };
 
   // Optimizing (x, y, z, roll, pitch, yaw) 6 dimensions.
@@ -921,10 +914,10 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_pose(
 
   // publish the estimated poses in 20 times to see the progress and to avoid dropping data
   visualization_msgs::msg::MarkerArray marker_array;
-  constexpr int publish_num = 20;
-  const int publish_interval = initial_estimate_particles_num_ / publish_num;
+  constexpr int64_t publish_num = 20;
+  const int64_t publish_interval = initial_estimate_particles_num_ / publish_num;
 
-  for (int i = 0; i < initial_estimate_particles_num_; i++) {
+  for (int64_t i = 0; i < initial_estimate_particles_num_; i++) {
     const TreeStructuredParzenEstimator::Input input = tpe.get_next_input();
 
     geometry_msgs::msg::Pose initial_pose;
