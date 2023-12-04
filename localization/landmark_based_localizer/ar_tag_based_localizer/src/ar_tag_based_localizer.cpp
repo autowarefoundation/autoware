@@ -154,13 +154,8 @@ bool ArTagBasedLocalizer::setup()
 
 void ArTagBasedLocalizer::map_bin_callback(const HADMapBin::ConstSharedPtr & msg)
 {
-  const std::vector<landmark_manager::Landmark> landmarks =
-    landmark_manager::parse_landmarks(msg, "apriltag_16h5", this->get_logger());
-  for (const landmark_manager::Landmark & landmark : landmarks) {
-    landmark_map_[landmark.id] = landmark.pose;
-  }
-
-  const MarkerArray marker_msg = landmark_manager::convert_landmarks_to_marker_array_msg(landmarks);
+  landmark_manager_.parse_landmarks(msg, "apriltag_16h5", this->get_logger());
+  const MarkerArray marker_msg = landmark_manager_.get_landmarks_as_marker_array_msg();
   marker_pub_->publish(marker_msg);
 }
 
@@ -209,7 +204,7 @@ void ArTagBasedLocalizer::image_callback(const Image::ConstSharedPtr & msg)
   }
 
   // calc new_self_pose
-  const Pose new_self_pose = calculate_new_self_pose(landmarks, self_pose);
+  const Pose new_self_pose = landmark_manager_.calculate_new_self_pose(landmarks, self_pose);
   const Pose diff_pose = tier4_autoware_utils::inverseTransformPose(new_self_pose, self_pose);
   const double distance =
     std::hypot(diff_pose.position.x, diff_pose.position.y, diff_pose.position.z);
@@ -373,46 +368,4 @@ std::vector<landmark_manager::Landmark> ArTagBasedLocalizer::detect_landmarks(
   }
 
   return landmarks;
-}
-
-geometry_msgs::msg::Pose ArTagBasedLocalizer::calculate_new_self_pose(
-  const std::vector<landmark_manager::Landmark> & detected_landmarks, const Pose & self_pose)
-{
-  Pose min_new_self_pose;
-  double min_distance = std::numeric_limits<double>::max();
-
-  for (const landmark_manager::Landmark & landmark : detected_landmarks) {
-    // Firstly, landmark pose is base_link
-    const Pose & detected_marker_on_base_link = landmark.pose;
-
-    // convert base_link to map
-    const Pose detected_marker_on_map =
-      tier4_autoware_utils::transformPose(detected_marker_on_base_link, self_pose);
-
-    // match to map
-    if (landmark_map_.count(landmark.id) == 0) {
-      continue;
-    }
-    const Pose mapped_marker_on_map = landmark_map_[landmark.id];
-
-    // check distance
-    const double curr_distance = tier4_autoware_utils::calcDistance3d(
-      mapped_marker_on_map.position, detected_marker_on_map.position);
-    if (curr_distance > min_distance) {
-      continue;
-    }
-
-    const Eigen::Affine3d marker_pose = pose_to_affine3d(mapped_marker_on_map);
-    const Eigen::Affine3d marker_to_base_link =
-      pose_to_affine3d(detected_marker_on_base_link).inverse();
-    const Eigen::Affine3d new_self_pose_eigen = marker_pose * marker_to_base_link;
-
-    const Pose new_self_pose = matrix4f_to_pose(new_self_pose_eigen.matrix().cast<float>());
-
-    // update
-    min_distance = curr_distance;
-    min_new_self_pose = new_self_pose;
-  }
-
-  return min_new_self_pose;
 }

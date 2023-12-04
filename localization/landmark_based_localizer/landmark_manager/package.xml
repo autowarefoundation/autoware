@@ -18,6 +18,7 @@
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
+  <depend>localization_util</depend>
   <depend>rclcpp</depend>
   <depend>tf2_eigen</depend>
 

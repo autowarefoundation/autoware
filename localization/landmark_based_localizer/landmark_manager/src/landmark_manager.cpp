@@ -15,6 +15,8 @@
 #include "landmark_manager/landmark_manager.hpp"
 
 #include "lanelet2_extension/utility/message_conversion.hpp"
+#include "localization_util/util_func.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <Eigen/Core>
 #include <tf2_eigen/tf2_eigen.hpp>
@@ -25,7 +27,7 @@
 namespace landmark_manager
 {
 
-std::vector<Landmark> parse_landmarks(
+void LandmarkManager::parse_landmarks(
   const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr & msg,
   const std::string & target_subtype, const rclcpp::Logger & logger)
 {
@@ -35,8 +37,6 @@ std::vector<Landmark> parse_landmarks(
   RCLCPP_INFO_STREAM(logger, "msg->data.size(): " << msg->data.size());
   lanelet::LaneletMapPtr lanelet_map_ptr{std::make_shared<lanelet::LaneletMap>()};
   lanelet::utils::conversion::fromBinMsg(*msg, lanelet_map_ptr);
-
-  std::vector<Landmark> landmarks;
 
   for (const auto & poly : lanelet_map_ptr->polygonLayer) {
     const std::string type{poly.attributeOr(lanelet::AttributeName::Type, "none")};
@@ -48,8 +48,8 @@ std::vector<Landmark> parse_landmarks(
       continue;
     }
 
-    // Get marker_id
-    const std::string marker_id = poly.attributeOr("marker_id", "none");
+    // Get landmark_id
+    const std::string landmark_id = poly.attributeOr("marker_id", "none");
 
     // Get 4 vertices
     const auto & vertices = poly.basicPolygon();
@@ -58,7 +58,7 @@ std::vector<Landmark> parse_landmarks(
       continue;
     }
 
-    // 4 vertices represent the marker vertices in counterclockwise order
+    // 4 vertices represent the landmark vertices in counterclockwise order
     // Calculate the volume by considering it as a tetrahedron
     const auto & v0 = vertices[0];
     const auto & v1 = vertices[1];
@@ -98,8 +98,8 @@ std::vector<Landmark> parse_landmarks(
     pose.orientation.w = q.w();
 
     // Add
-    landmarks.push_back(Landmark{marker_id, pose});
-    RCLCPP_INFO_STREAM(logger, "id: " << marker_id);
+    landmarks_map_[landmark_id].push_back(pose);
+    RCLCPP_INFO_STREAM(logger, "id: " << landmark_id);
     RCLCPP_INFO_STREAM(
       logger,
       "(x, y, z) = " << pose.position.x << ", " << pose.position.y << ", " << pose.position.z);
@@ -107,54 +107,100 @@ std::vector<Landmark> parse_landmarks(
       logger, "q = " << pose.orientation.x << ", " << pose.orientation.y << ", "
                      << pose.orientation.z << ", " << pose.orientation.w);
   }
-
-  return landmarks;
 }
 
-visualization_msgs::msg::MarkerArray convert_landmarks_to_marker_array_msg(
-  const std::vector<Landmark> & landmarks)
+visualization_msgs::msg::MarkerArray LandmarkManager::get_landmarks_as_marker_array_msg() const
 {
   int32_t id = 0;
   visualization_msgs::msg::MarkerArray marker_array;
-  for (const auto & [id_str, pose] : landmarks) {
-    // publish cube as a thin board
-    visualization_msgs::msg::Marker cube_marker;
-    cube_marker.header.frame_id = "map";
-    cube_marker.header.stamp = rclcpp::Clock().now();
-    cube_marker.ns = "landmark_cube";
-    cube_marker.id = id;
-    cube_marker.type = visualization_msgs::msg::Marker::CUBE;
-    cube_marker.action = visualization_msgs::msg::Marker::ADD;
-    cube_marker.pose = pose;
-    cube_marker.scale.x = 1.0;
-    cube_marker.scale.y = 2.0;
-    cube_marker.scale.z = 0.1;
-    cube_marker.color.a = 0.5;
-    cube_marker.color.r = 0.0;
-    cube_marker.color.g = 1.0;
-    cube_marker.color.b = 0.0;
-    marker_array.markers.push_back(cube_marker);
+  for (const auto & [landmark_id_str, landmark_poses] : landmarks_map_) {
+    for (const auto & pose : landmark_poses) {
+      // publish cube as a thin board
+      visualization_msgs::msg::Marker cube_marker;
+      cube_marker.header.frame_id = "map";
+      cube_marker.header.stamp = rclcpp::Clock().now();
+      cube_marker.ns = "landmark_cube";
+      cube_marker.id = id;
+      cube_marker.type = visualization_msgs::msg::Marker::CUBE;
+      cube_marker.action = visualization_msgs::msg::Marker::ADD;
+      cube_marker.pose = pose;
+      cube_marker.scale.x = 1.0;
+      cube_marker.scale.y = 2.0;
+      cube_marker.scale.z = 0.1;
+      cube_marker.color.a = 0.5;
+      cube_marker.color.r = 0.0;
+      cube_marker.color.g = 1.0;
+      cube_marker.color.b = 0.0;
+      marker_array.markers.push_back(cube_marker);
 
-    // publish text
-    visualization_msgs::msg::Marker text_marker;
-    text_marker.header.frame_id = "map";
-    text_marker.header.stamp = rclcpp::Clock().now();
-    text_marker.ns = "landmark_text";
-    text_marker.id = id;
-    text_marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
-    text_marker.action = visualization_msgs::msg::Marker::ADD;
-    text_marker.pose = pose;
-    text_marker.text = "(" + id_str + ")";
-    text_marker.scale.z = 0.5;
-    text_marker.color.a = 1.0;
-    text_marker.color.r = 1.0;
-    text_marker.color.g = 0.0;
-    text_marker.color.b = 0.0;
-    marker_array.markers.push_back(text_marker);
+      // publish text
+      visualization_msgs::msg::Marker text_marker;
+      text_marker.header.frame_id = "map";
+      text_marker.header.stamp = rclcpp::Clock().now();
+      text_marker.ns = "landmark_text";
+      text_marker.id = id;
+      text_marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
+      text_marker.action = visualization_msgs::msg::Marker::ADD;
+      text_marker.pose = pose;
+      text_marker.text = "(" + landmark_id_str + ")";
+      text_marker.scale.z = 0.5;
+      text_marker.color.a = 1.0;
+      text_marker.color.r = 1.0;
+      text_marker.color.g = 0.0;
+      text_marker.color.b = 0.0;
+      marker_array.markers.push_back(text_marker);
 
-    id++;
+      id++;
+    }
   }
   return marker_array;
+}
+
+geometry_msgs::msg::Pose LandmarkManager::calculate_new_self_pose(
+  const std::vector<landmark_manager::Landmark> & detected_landmarks,
+  const geometry_msgs::msg::Pose & self_pose) const
+{
+  using Pose = geometry_msgs::msg::Pose;
+
+  Pose min_new_self_pose;
+  double min_distance = std::numeric_limits<double>::max();
+
+  for (const landmark_manager::Landmark & landmark : detected_landmarks) {
+    // Firstly, landmark pose is base_link
+    const Pose & detected_landmark_on_base_link = landmark.pose;
+
+    // convert base_link to map
+    const Pose detected_landmark_on_map =
+      tier4_autoware_utils::transformPose(detected_landmark_on_base_link, self_pose);
+
+    // match to map
+    if (landmarks_map_.count(landmark.id) == 0) {
+      continue;
+    }
+
+    // check all poses
+    for (const Pose mapped_landmark_on_map : landmarks_map_.at(landmark.id)) {
+      // check distance
+      const double curr_distance = tier4_autoware_utils::calcDistance3d(
+        mapped_landmark_on_map.position, detected_landmark_on_map.position);
+      if (curr_distance > min_distance) {
+        continue;
+      }
+
+      const Eigen::Affine3d landmark_pose = pose_to_affine3d(mapped_landmark_on_map);
+      const Eigen::Affine3d landmark_to_base_link =
+        pose_to_affine3d(detected_landmark_on_base_link).inverse();
+      const Eigen::Affine3d new_self_pose_eigen = landmark_pose * landmark_to_base_link;
+
+      const Pose new_self_pose = matrix4f_to_pose(new_self_pose_eigen.matrix().cast<float>());
+
+      // update
+      min_distance = curr_distance;
+      min_new_self_pose = new_self_pose;
+    }
+  }
+
+  return min_new_self_pose;
 }
 
 }  // namespace landmark_manager
