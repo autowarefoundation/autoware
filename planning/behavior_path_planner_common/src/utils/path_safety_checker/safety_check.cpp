@@ -598,7 +598,7 @@ CollisionCheckDebugPair createObjectDebug(const ExtendedPredictedObject & obj)
   debug.extended_obj_polygon = tier4_autoware_utils::toPolygon2d(obj.initial_pose.pose, obj.shape);
   debug.obj_shape = obj.shape;
   debug.current_twist = obj.initial_twist.twist;
-  return {tier4_autoware_utils::toHexString(obj.uuid), debug};
+  return {tier4_autoware_utils::toBoostUUID(obj.uuid), debug};
 }
 
 void updateCollisionCheckDebugMap(

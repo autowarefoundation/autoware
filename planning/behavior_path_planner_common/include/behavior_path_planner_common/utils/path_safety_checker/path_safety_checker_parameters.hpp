@@ -21,6 +21,8 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 
+#include <boost/uuid/uuid_hash.hpp>
+
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -214,7 +216,7 @@ struct CollisionCheckDebug
   Polygon2d extended_obj_polygon{};  ///< Detected object's extended collision polygon.
   autoware_auto_perception_msgs::msg::Shape obj_shape;  ///< object's shape.
 };
-using CollisionCheckDebugPair = std::pair<std::string, CollisionCheckDebug>;
+using CollisionCheckDebugPair = std::pair<boost::uuids::uuid, CollisionCheckDebug>;
 using CollisionCheckDebugMap =
   std::unordered_map<CollisionCheckDebugPair::first_type, CollisionCheckDebugPair::second_type>;
 
