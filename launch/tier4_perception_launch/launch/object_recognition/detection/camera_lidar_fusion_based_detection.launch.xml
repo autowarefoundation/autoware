@@ -7,10 +7,8 @@
   <arg name="input/pointcloud"/>
   <arg name="input/obstacle_segmentation/pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
   <arg name="container_name" default="pointcloud_container"/>
-
   <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`, `pointpainting`, `clustering`"/>
   <arg name="score_threshold" default="0.35"/>
-
   <arg name="use_object_filter" default="true" description="use object filter"/>
   <arg name="use_pointcloud_container" default="false" description="use pointcloud container for detection preprocessor"/>
   <arg name="use_validator" default="true" description="use obstacle_pointcloud based validator"/>
