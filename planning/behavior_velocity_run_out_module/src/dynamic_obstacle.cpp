@@ -238,7 +238,7 @@ pcl::PointCloud<pcl::PointXYZ> extractLateralNearestPoints(
   return lateral_nearest_points;
 }
 
-boost::optional<Eigen::Affine3f> getTransformMatrix(
+std::optional<Eigen::Affine3f> getTransformMatrix(
   const tf2_ros::Buffer & tf_buffer, const std::string & target_frame_id,
   const std::string & source_frame_id, const builtin_interfaces::msg::Time & stamp)
 {

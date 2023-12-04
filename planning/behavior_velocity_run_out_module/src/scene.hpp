@@ -24,12 +24,10 @@
 
 #include <memory>
 #include <optional>
-#include <string>
 #include <vector>
 
 namespace behavior_velocity_planner
 {
-namespace bg = boost::geometry;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
@@ -68,7 +66,7 @@ private:
   // Function
   Polygons2d createDetectionAreaPolygon(const PathWithLaneId & smoothed_path) const;
 
-  boost::optional<DynamicObstacle> detectCollision(
+  std::optional<DynamicObstacle> detectCollision(
     const std::vector<DynamicObstacle> & dynamic_obstacles, const PathWithLaneId & path_points);
 
   float calcCollisionPositionOfVehicleSide(
@@ -81,11 +79,11 @@ private:
     const std::vector<DynamicObstacle> & dynamic_obstacles,
     std::vector<geometry_msgs::msg::Point> poly, const float travel_time) const;
 
-  boost::optional<DynamicObstacle> findNearestCollisionObstacle(
+  std::optional<DynamicObstacle> findNearestCollisionObstacle(
     const PathWithLaneId & path, const geometry_msgs::msg::Pose & base_pose,
     std::vector<DynamicObstacle> & dynamic_obstacles) const;
 
-  boost::optional<geometry_msgs::msg::Pose> calcPredictedObstaclePose(
+  std::optional<geometry_msgs::msg::Pose> calcPredictedObstaclePose(
     const std::vector<PredictedPath> & predicted_paths, const float travel_time,
     const float velocity_mps) const;
 
@@ -108,7 +106,7 @@ private:
     const PoseWithRange & pose_with_range, const float x_offset, const float y_offset) const;
 
   std::optional<geometry_msgs::msg::Pose> calcStopPoint(
-    const boost::optional<DynamicObstacle> & dynamic_obstacle, const PathWithLaneId & path,
+    const std::optional<DynamicObstacle> & dynamic_obstacle, const PathWithLaneId & path,
     const geometry_msgs::msg::Pose & current_pose, const float current_vel,
     const float current_acc) const;
 
@@ -117,12 +115,12 @@ private:
     autoware_auto_planning_msgs::msg::PathWithLaneId & path);
 
   void insertVelocityForState(
-    const boost::optional<DynamicObstacle> & dynamic_obstacle, const PlannerData planner_data,
+    const std::optional<DynamicObstacle> & dynamic_obstacle, const PlannerData planner_data,
     const PlannerParam & planner_param, const PathWithLaneId & smoothed_path,
     PathWithLaneId & output_path);
 
   void insertStoppingVelocity(
-    const boost::optional<DynamicObstacle> & dynamic_obstacle,
+    const std::optional<DynamicObstacle> & dynamic_obstacle,
     const geometry_msgs::msg::Pose & current_pose, const float current_vel, const float current_acc,
     PathWithLaneId & output_path);
 
@@ -140,7 +138,7 @@ private:
 
   void publishDebugValue(
     const PathWithLaneId & path, const std::vector<DynamicObstacle> extracted_obstacles,
-    const boost::optional<DynamicObstacle> & dynamic_obstacle,
+    const std::optional<DynamicObstacle> & dynamic_obstacle,
     const geometry_msgs::msg::Pose & current_pose) const;
 
   bool isMomentaryDetection();

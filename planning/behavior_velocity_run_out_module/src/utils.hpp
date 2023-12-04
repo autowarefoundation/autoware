@@ -209,7 +209,7 @@ std::vector<geometry_msgs::msg::Point> findLateralSameSidePoints(
 bool isSamePoint(const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2);
 
 // if path points have the same point as target_point, return the index
-boost::optional<size_t> haveSamePoint(
+std::optional<size_t> haveSamePoint(
   const PathPointsWithLaneId & path_points, const geometry_msgs::msg::Point & target_point);
 
 // insert path velocity which doesn't exceed original velocity
@@ -219,7 +219,7 @@ void insertPathVelocityFromIndexLimited(
 void insertPathVelocityFromIndex(
   const size_t & start_idx, const float velocity_mps, PathPointsWithLaneId & path_points);
 
-boost::optional<size_t> findFirstStopPointIdx(PathPointsWithLaneId & path_points);
+std::optional<size_t> findFirstStopPointIdx(PathPointsWithLaneId & path_points);
 
 LineString2d createLineString2d(const lanelet::BasicPolygon2d & poly);
 
@@ -237,7 +237,7 @@ PathWithLaneId trimPathFromSelfPose(
 
 // create polygon for passing lines and deceleration line calculated by stopping jerk
 // note that this polygon is not closed
-boost::optional<std::vector<geometry_msgs::msg::Point>> createDetectionAreaPolygon(
+std::optional<std::vector<geometry_msgs::msg::Point>> createDetectionAreaPolygon(
   const std::vector<std::vector<geometry_msgs::msg::Point>> & passing_lines,
   const size_t deceleration_line_idx);
 

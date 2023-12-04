@@ -133,7 +133,7 @@ bool isSamePoint(const geometry_msgs::msg::Point & p1, const geometry_msgs::msg:
 }
 
 // if path points have the same point as target_point, return the index
-boost::optional<size_t> haveSamePoint(
+std::optional<size_t> haveSamePoint(
   const PathPointsWithLaneId & path_points, const geometry_msgs::msg::Point & target_point)
 {
   for (size_t i = 0; i < path_points.size(); i++) {
@@ -164,7 +164,7 @@ void insertPathVelocityFromIndex(
   }
 }
 
-boost::optional<size_t> findFirstStopPointIdx(PathPointsWithLaneId & path_points)
+std::optional<size_t> findFirstStopPointIdx(PathPointsWithLaneId & path_points)
 {
   for (size_t i = 0; i < path_points.size(); i++) {
     const auto vel = path_points.at(i).point.longitudinal_velocity_mps;
@@ -272,7 +272,7 @@ PathWithLaneId trimPathFromSelfPose(
 
 // create polygon for passing lines and deceleration line calculated by stopping jerk
 // note that this polygon is not closed
-boost::optional<std::vector<geometry_msgs::msg::Point>> createDetectionAreaPolygon(
+std::optional<std::vector<geometry_msgs::msg::Point>> createDetectionAreaPolygon(
   const std::vector<std::vector<geometry_msgs::msg::Point>> & passing_lines,
   const size_t deceleration_line_idx)
 {
