@@ -487,9 +487,12 @@ void MissionPlanner::on_clear_mrm_route(
   if (!mrm_route_) {
     throw component_interface_utils::NoEffectWarning("MRM route is not set");
   }
-  if (reroute_availability_ && !reroute_availability_->availability) {
+  if (
+    state_.state == RouteState::Message::SET && reroute_availability_ &&
+    !reroute_availability_->availability) {
     throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_INVALID_STATE, "Cannot reroute as the planner is not in lane following.");
+      ResponseCode::ERROR_INVALID_STATE,
+      "Cannot clear MRM route as the planner is not lane following before arriving at the goal.");
   }
 
   change_state(RouteState::Message::CHANGING);
@@ -563,7 +566,7 @@ void MissionPlanner::on_modified_goal(const ModifiedGoal::Message::ConstSharedPt
     if (new_route.segments.empty()) {
       change_mrm_route(*mrm_route_);
       change_state(RouteState::Message::SET);
-      RCLCPP_ERROR(get_logger(), "The planned route is empty.");
+      RCLCPP_ERROR(get_logger(), "The planned MRM route is empty.");
       return;
     }
 
