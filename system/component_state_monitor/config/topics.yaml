@@ -89,6 +89,19 @@
     error_rate: 1.0
     timeout: 1.0
 
+- module: perception
+  mode: [online, logging_simulation]
+  type: autonomous
+  args:
+    node_name_suffix: traffic_light_recognition_traffic_signals
+    topic: /perception/traffic_light_recognition/traffic_signals
+    topic_type: autoware_perception_msgs/msg/TrafficSignalArray
+    best_effort: false
+    transient_local: false
+    warn_rate: 5.0
+    error_rate: 1.0
+    timeout: 1.0
+
 - module: planning
   mode: [online, logging_simulation, planning_simulation]
   type: autonomous
