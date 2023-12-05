@@ -444,6 +444,7 @@ void MissionPlanner::on_set_mrm_route(
       res->status.success = false;
     }
     change_state(RouteState::Message::SET);
+    RCLCPP_INFO(get_logger(), "Route is successfully changed with the modified goal");
     return;
   }
 
@@ -452,6 +453,7 @@ void MissionPlanner::on_set_mrm_route(
     change_mrm_route(new_route);
     change_state(RouteState::Message::SET);
     res->status.success = true;
+    RCLCPP_INFO(get_logger(), "MRM route is successfully changed with the modified goal");
     return;
   }
 
@@ -537,6 +539,8 @@ void MissionPlanner::on_clear_mrm_route(
 
 void MissionPlanner::on_modified_goal(const ModifiedGoal::Message::ConstSharedPtr msg)
 {
+  RCLCPP_INFO(get_logger(), "Received modified goal.");
+
   if (state_.state != RouteState::Message::SET) {
     RCLCPP_ERROR(get_logger(), "The route hasn't set yet. Cannot reroute.");
     return;
@@ -572,6 +576,7 @@ void MissionPlanner::on_modified_goal(const ModifiedGoal::Message::ConstSharedPt
 
     change_mrm_route(new_route);
     change_state(RouteState::Message::SET);
+    RCLCPP_INFO(get_logger(), "Changed the MRM route with the modified goal");
     return;
   }
 
@@ -593,6 +598,7 @@ void MissionPlanner::on_modified_goal(const ModifiedGoal::Message::ConstSharedPt
 
     change_route(new_route);
     change_state(RouteState::Message::SET);
+    RCLCPP_INFO(get_logger(), "Changed the route with the modified goal");
     return;
   }
 
