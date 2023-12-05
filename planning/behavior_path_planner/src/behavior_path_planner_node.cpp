@@ -408,7 +408,9 @@ void BehaviorPathPlannerNode::run()
     // Reset behavior tree when new route is received,
     // so that the each modules do not have to care about the "route jump".
     if (!is_first_time && !has_same_route_id) {
+      RCLCPP_INFO(get_logger(), "New uuid route is received. Resetting modules.");
       planner_manager_->reset();
+      planner_data_->prev_modified_goal.reset();
     }
   }
 
