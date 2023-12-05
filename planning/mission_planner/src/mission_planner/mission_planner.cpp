@@ -734,6 +734,13 @@ bool MissionPlanner::check_reroute_safety(
     return false;
   }
 
+  const auto current_velocity = odometry_->twist.twist.linear.x;
+
+  // if vehicle is stopped, do not check safety
+  if (current_velocity < 0.01) {
+    return true;
+  }
+
   auto hasSamePrimitives = [](
                              const std::vector<LaneletPrimitive> & original_primitives,
                              const std::vector<LaneletPrimitive> & target_primitives) {
@@ -878,13 +885,17 @@ bool MissionPlanner::check_reroute_safety(
   }
 
   // check safety
-  const auto current_velocity = odometry_->twist.twist.linear.x;
   const double safety_length =
     std::max(current_velocity * reroute_time_threshold_, minimum_reroute_length_);
   if (accumulated_length > safety_length) {
     return true;
   }
 
+  RCLCPP_WARN(
+    get_logger(),
+    "Length of lane where original and B target (= %f) is less than safety length (= %f), so "
+    "reroute is not safe.",
+    accumulated_length, safety_length);
   return false;
 }
 }  // namespace mission_planner
