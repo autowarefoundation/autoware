@@ -256,9 +256,7 @@ void GoalPlannerModuleManager::init(rclcpp::Node * node)
     p.ego_predicted_path_params.min_velocity =
       node->declare_parameter<double>(ego_path_ns + "min_velocity");
     p.ego_predicted_path_params.acceleration =
-      node->declare_parameter<double>(ego_path_ns + "acceleration");
-    p.ego_predicted_path_params.max_velocity =
-      node->declare_parameter<double>(ego_path_ns + "max_velocity");
+      node->declare_parameter<double>(ego_path_ns + "min_acceleration");
     p.ego_predicted_path_params.time_horizon_for_front_object =
       node->declare_parameter<double>(ego_path_ns + "time_horizon_for_front_object");
     p.ego_predicted_path_params.time_horizon_for_rear_object =

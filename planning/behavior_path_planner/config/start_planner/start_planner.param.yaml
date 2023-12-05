@@ -2,15 +2,13 @@
   ros__parameters:
     start_planner:
 
-      verbose: false
-
       th_arrived_distance: 1.0
       th_stopped_velocity: 0.01
       th_stopped_time: 1.0
       collision_check_margin: 1.0
       collision_check_distance_from_end: 1.0
       th_moving_object_velocity: 1.0
-      th_distance_to_middle_of_the_road: 0.1
+      th_distance_to_middle_of_the_road: 0.5
       center_line_path_interval: 1.0
       # shift pull out
       enable_shift_pull_out: true
@@ -24,7 +22,7 @@
       maximum_curvature: 0.07
       # geometric pull out
       enable_geometric_pull_out: true
-      divide_pull_out_path: false
+      divide_pull_out_path: true
       geometric_pull_out_velocity: 1.0
       arc_path_interval: 1.0
       lane_departure_margin: 0.2
@@ -85,8 +83,7 @@
         # EgoPredictedPath
         ego_predicted_path:
           min_velocity: 0.0
-          acceleration: 1.0
-          max_velocity: 1.0
+          min_acceleration: 1.0
           time_horizon_for_front_object: 10.0
           time_horizon_for_rear_object: 10.0
           time_resolution: 0.5
@@ -140,3 +137,7 @@
           # temporary
           backward_path_length: 30.0
           forward_path_length: 100.0
+
+      # debug
+      debug:
+        print_debug_info: false

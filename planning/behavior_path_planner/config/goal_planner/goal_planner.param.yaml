@@ -119,8 +119,7 @@
         # EgoPredictedPath
         ego_predicted_path:
           min_velocity: 0.0
-          acceleration: 1.0
-          max_velocity: 1.0
+          min_acceleration: 1.0
           time_horizon_for_front_object: 10.0
           time_horizon_for_rear_object: 10.0
           time_resolution: 0.5

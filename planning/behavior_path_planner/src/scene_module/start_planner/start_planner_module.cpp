@@ -36,8 +36,14 @@
 #include <utility>
 #include <vector>
 
+using behavior_path_planner::utils::start_goal_planner_common::initializeCollisionCheckDebugMap;
 using motion_utils::calcLongitudinalOffsetPose;
 using tier4_autoware_utils::calcOffsetPose;
+
+// set as macro so that calling function name will be printed.
+// debug print is heavy. turn on only when debugging.
+#define DEBUG_PRINT(...) \
+  RCLCPP_DEBUG_EXPRESSION(getLogger(), parameters_->print_debug_info, __VA_ARGS__)
 
 namespace behavior_path_planner
 {
@@ -107,44 +113,77 @@ BehaviorModuleOutput StartPlannerModule::run()
 
 void StartPlannerModule::processOnEntry()
 {
-  // Initialize safety checker
-  if (parameters_->safety_check_params.enable_safety_check) {
-    initializeSafetyCheckParameters();
-    utils::start_goal_planner_common::initializeCollisionCheckDebugMap(
-      start_planner_data_.collision_check);
-  }
+  initVariables();
 }
 
 void StartPlannerModule::processOnExit()
 {
+  initVariables();
+}
+
+void StartPlannerModule::initVariables()
+{
   resetPathCandidate();
   resetPathReference();
   debug_marker_.markers.clear();
+  initializeSafetyCheckParameters();
+  initializeCollisionCheckDebugMap(start_planner_data_.collision_check);
 }
 
 void StartPlannerModule::updateData()
 {
-  if (isBackwardDrivingComplete()) {
+  if (receivedNewRoute()) {
+    resetStatus();
+    DEBUG_PRINT("StartPlannerModule::updateData() received new route, reset status");
+  }
+
+  if (hasFinishedBackwardDriving()) {
     updateStatusAfterBackwardDriving();
+    DEBUG_PRINT("StartPlannerModule::updateData() completed backward driving");
   } else {
     status_.backward_driving_complete = false;
   }
 
-  if (receivedNewRoute()) {
-    status_ = PullOutStatus();
+  if (requiresDynamicObjectsCollisionDetection()) {
+    status_.is_safe_dynamic_objects = !hasCollisionWithDynamicObjects();
   }
-  // check safety status when driving forward
-  if (parameters_->safety_check_params.enable_safety_check && status_.driving_forward) {
-    status_.is_safe_dynamic_objects = isSafePath();
-  } else {
-    status_.is_safe_dynamic_objects = true;
+}
+
+bool StartPlannerModule::hasFinishedBackwardDriving() const
+{
+  // check ego car is close enough to pull out start pose and stopped
+  const auto current_pose = planner_data_->self_odometry->pose.pose;
+  const auto distance =
+    tier4_autoware_utils::calcDistance2d(current_pose, status_.pull_out_start_pose);
+
+  const bool is_near = distance < parameters_->th_arrived_distance;
+  const double ego_vel = utils::l2Norm(planner_data_->self_odometry->twist.twist.linear);
+  const bool is_stopped = ego_vel < parameters_->th_stopped_velocity;
+
+  const bool back_finished = !status_.driving_forward && is_near && is_stopped;
+  if (back_finished) {
+    RCLCPP_INFO(getLogger(), "back finished");
   }
+
+  return back_finished;
 }
 
 bool StartPlannerModule::receivedNewRoute() const
 {
   return !planner_data_->prev_route_id ||
          *planner_data_->prev_route_id != planner_data_->route_handler->getRouteUuid();
+}
+
+bool StartPlannerModule::requiresDynamicObjectsCollisionDetection() const
+{
+  return parameters_->safety_check_params.enable_safety_check && status_.driving_forward;
+}
+
+bool StartPlannerModule::hasCollisionWithDynamicObjects() const
+{
+  // TODO(Sugahara): update path, params for predicted path and so on in this function to avoid
+  // mutable
+  return !isSafePath();
 }
 
 bool StartPlannerModule::isExecutionRequested() const
@@ -211,25 +250,42 @@ bool StartPlannerModule::isMoving() const
          parameters_->th_stopped_velocity;
 }
 
+bool StartPlannerModule::isStopped()
+{
+  odometry_buffer_.push_back(planner_data_->self_odometry);
+  // Delete old data in buffer
+  while (rclcpp::ok()) {
+    const auto time_diff = rclcpp::Time(odometry_buffer_.back()->header.stamp) -
+                           rclcpp::Time(odometry_buffer_.front()->header.stamp);
+    if (time_diff.seconds() < parameters_->th_stopped_time) {
+      break;
+    }
+    odometry_buffer_.pop_front();
+  }
+  return !std::any_of(
+    odometry_buffer_.begin(), odometry_buffer_.end(), [this](const auto & odometry) {
+      return utils::l2Norm(odometry->twist.twist.linear) > parameters_->th_stopped_velocity;
+    });
+}
+
 bool StartPlannerModule::isExecutionReady() const
 {
-  // when found_pull_out_path is false,the path is not generated and approval shouldn't be
-  // allowed
+  bool is_safe = true;
+
+  // Evaluate safety. The situation is not safe if any of the following conditions are met:
+  // 1. pull out path has not been found
+  // 2. waiting for approval and there is a collision with dynamic objects
   if (!status_.found_pull_out_path) {
-    RCLCPP_ERROR_THROTTLE(getLogger(), *clock_, 5000, "Pull over path is not found");
-    return false;
+    is_safe = false;
   }
 
-  if (
-    parameters_->safety_check_params.enable_safety_check && status_.driving_forward &&
-    isWaitingApproval()) {
-    if (!isSafePath()) {
-      RCLCPP_ERROR_THROTTLE(getLogger(), *clock_, 5000, "Path is not safe against dynamic objects");
-      stop_pose_ = planner_data_->self_odometry->pose.pose;
-      return false;
-    }
+  if (requiresDynamicObjectsCollisionDetection()) {
+    is_safe = !hasCollisionWithDynamicObjects();
   }
-  return true;
+
+  if (!is_safe) stop_pose_ = planner_data_->self_odometry->pose.pose;
+
+  return is_safe;
 }
 
 bool StartPlannerModule::canTransitSuccessState()
@@ -461,8 +517,7 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
 
 void StartPlannerModule::resetStatus()
 {
-  PullOutStatus initial_status;
-  status_ = initial_status;
+  status_ = PullOutStatus{};
 }
 
 void StartPlannerModule::incrementPathIndex()
@@ -722,7 +777,7 @@ void StartPlannerModule::updatePullOutStatus()
   const auto pull_out_lanes = start_planner_utils::getPullOutLanes(
     planner_data_, planner_data_->parameters.backward_path_length + parameters_->max_back_distance);
 
-  if (isBackwardDrivingComplete()) {
+  if (hasFinishedBackwardDriving()) {
     updateStatusAfterBackwardDriving();
   } else {
     status_.backward_path = start_planner_utils::getBackwardPath(
@@ -864,48 +919,6 @@ bool StartPlannerModule::hasFinishedPullOut() const
   const bool has_finished = arclength_current.length - arclength_pull_out_end.length > offset;
 
   return has_finished;
-}
-
-bool StartPlannerModule::isBackwardDrivingComplete() const
-{
-  // check ego car is close enough to pull out start pose and stopped
-  const auto current_pose = planner_data_->self_odometry->pose.pose;
-  const auto distance =
-    tier4_autoware_utils::calcDistance2d(current_pose, status_.pull_out_start_pose);
-
-  const bool is_near = distance < parameters_->th_arrived_distance;
-  const double ego_vel = utils::l2Norm(planner_data_->self_odometry->twist.twist.linear);
-  const bool is_stopped = ego_vel < parameters_->th_stopped_velocity;
-
-  const bool back_finished = !status_.driving_forward && is_near && is_stopped;
-  if (back_finished) {
-    RCLCPP_INFO(getLogger(), "back finished");
-  }
-
-  return back_finished;
-}
-
-bool StartPlannerModule::isStopped()
-{
-  odometry_buffer_.push_back(planner_data_->self_odometry);
-  // Delete old data in buffer
-  while (rclcpp::ok()) {
-    const auto time_diff = rclcpp::Time(odometry_buffer_.back()->header.stamp) -
-                           rclcpp::Time(odometry_buffer_.front()->header.stamp);
-    if (time_diff.seconds() < parameters_->th_stopped_time) {
-      break;
-    }
-    odometry_buffer_.pop_front();
-  }
-  bool is_stopped = true;
-  for (const auto & odometry : odometry_buffer_) {
-    const double ego_vel = utils::l2Norm(odometry->twist.twist.linear);
-    if (ego_vel > parameters_->th_stopped_velocity) {
-      is_stopped = false;
-      break;
-    }
-  }
-  return is_stopped;
 }
 
 bool StartPlannerModule::isStuck()
@@ -1262,8 +1275,7 @@ void StartPlannerModule::setDebugData() const
     add(showSafetyCheckInfo(start_planner_data_.collision_check, "object_debug_info"));
     add(showPredictedPath(start_planner_data_.collision_check, "ego_predicted_path"));
     add(showPolygon(start_planner_data_.collision_check, "ego_and_target_polygon_relation"));
-    utils::start_goal_planner_common::initializeCollisionCheckDebugMap(
-      start_planner_data_.collision_check);
+    initializeCollisionCheckDebugMap(start_planner_data_.collision_check);
   }
 
   // Visualize planner type text
@@ -1285,9 +1297,6 @@ void StartPlannerModule::setDebugData() const
     marker.lifetime = life_time;
     planner_type_marker_array.markers.push_back(marker);
     add(planner_type_marker_array);
-  }
-  if (parameters_->verbose) {
-    logPullOutStatus();
   }
 }
 

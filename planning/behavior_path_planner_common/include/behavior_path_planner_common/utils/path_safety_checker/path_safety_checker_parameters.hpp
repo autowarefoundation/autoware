@@ -150,6 +150,7 @@ struct IntegralPredictedPolygonParams
 struct EgoPredictedPathParams
 {
   double min_velocity{0.0};                   ///< Minimum velocity.
+  double min_acceleration{0.0};               ///< Minimum acceleration
   double acceleration{0.0};                   ///< Acceleration value.
   double max_velocity{0.0};                   ///< Maximum velocity.
   double time_horizon_for_front_object{0.0};  ///< Time horizon for front object.

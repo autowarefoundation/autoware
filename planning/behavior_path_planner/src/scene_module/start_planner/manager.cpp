@@ -33,7 +33,6 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
 
   const std::string ns = "start_planner.";
 
-  p.verbose = node->declare_parameter<bool>(ns + "verbose");
   p.th_arrived_distance = node->declare_parameter<double>(ns + "th_arrived_distance");
   p.th_stopped_velocity = node->declare_parameter<double>(ns + "th_stopped_velocity");
   p.th_stopped_time = node->declare_parameter<double>(ns + "th_stopped_time");
@@ -172,9 +171,7 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
     p.ego_predicted_path_params.min_velocity =
       node->declare_parameter<double>(ego_path_ns + "min_velocity");
     p.ego_predicted_path_params.acceleration =
-      node->declare_parameter<double>(ego_path_ns + "acceleration");
-    p.ego_predicted_path_params.max_velocity =
-      node->declare_parameter<double>(ego_path_ns + "max_velocity");
+      node->declare_parameter<double>(ego_path_ns + "min_acceleration");
     p.ego_predicted_path_params.time_horizon_for_front_object =
       node->declare_parameter<double>(ego_path_ns + "time_horizon_for_front_object");
     p.ego_predicted_path_params.time_horizon_for_rear_object =
@@ -274,6 +271,12 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
       node->declare_parameter<double>(rss_ns + "longitudinal_distance_min_threshold");
     p.safety_check_params.rss_params.longitudinal_velocity_delta_time =
       node->declare_parameter<double>(rss_ns + "longitudinal_velocity_delta_time");
+  }
+
+  // debug
+  std::string debug_ns = ns + "debug.";
+  {
+    p.print_debug_info = node->declare_parameter<bool>(debug_ns + "print_debug_info");
   }
 
   // validation of parameters

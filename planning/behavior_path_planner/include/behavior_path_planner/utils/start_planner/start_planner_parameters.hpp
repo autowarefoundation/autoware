@@ -46,7 +46,6 @@ struct StartPlannerParameters
   double collision_check_distance_from_end{0.0};
   double th_moving_object_velocity{0.0};
   double center_line_path_interval{0.0};
-  bool verbose{false};
 
   // shift pull out
   bool enable_shift_pull_out{false};
@@ -93,6 +92,8 @@ struct StartPlannerParameters
   utils::path_safety_checker::EgoPredictedPathParams ego_predicted_path_params{};
   utils::path_safety_checker::ObjectsFilteringParams objects_filtering_params{};
   utils::path_safety_checker::SafetyCheckParams safety_check_params{};
+
+  bool print_debug_info{false};
 };
 
 }  // namespace behavior_path_planner
