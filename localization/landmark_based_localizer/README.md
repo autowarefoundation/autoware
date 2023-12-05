@@ -105,3 +105,20 @@ For example, when using the AR tag, it would look like this.
 ...
 
 ```
+
+## About `consider_orientation`
+
+The `calculate_new_self_pose` function in the `LandmarkManager` class includes a boolean argument named `consider_orientation`. This argument determines the method used to calculate the new self pose based on detected and mapped landmarks. The following image illustrates the difference between the two methods.
+
+![consider_orientation_figure](./doc_image/consider_orientation.drawio.svg)
+
+### `consider_orientation = true`
+
+In this mode, the new self pose is calculated so that the relative Pose of the "landmark detected from the current self pose" is equal to the relative Pose of the "landmark mapped from the new self pose".
+This method can correct for orientation, but is strongly affected by the orientation error of the landmark detection.
+
+### `consider_orientation = false`
+
+In this mode, the new self pose is calculated so that only the relative position is correct for x, y, and z.
+
+This method can not correct for orientation, but it is not affected by the orientation error of the landmark detection.

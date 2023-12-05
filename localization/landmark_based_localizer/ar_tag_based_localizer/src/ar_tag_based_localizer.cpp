@@ -78,6 +78,7 @@ bool ArTagBasedLocalizer::setup()
   target_tag_ids_ = this->declare_parameter<std::vector<std::string>>("target_tag_ids");
   base_covariance_ = this->declare_parameter<std::vector<double>>("base_covariance");
   distance_threshold_ = this->declare_parameter<double>("distance_threshold");
+  consider_orientation_ = this->declare_parameter<bool>("consider_orientation");
   ekf_time_tolerance_ = this->declare_parameter<double>("ekf_time_tolerance");
   ekf_position_tolerance_ = this->declare_parameter<double>("ekf_position_tolerance");
   std::string detection_mode = this->declare_parameter<std::string>("detection_mode");
@@ -204,7 +205,8 @@ void ArTagBasedLocalizer::image_callback(const Image::ConstSharedPtr & msg)
   }
 
   // calc new_self_pose
-  const Pose new_self_pose = landmark_manager_.calculate_new_self_pose(landmarks, self_pose);
+  const Pose new_self_pose =
+    landmark_manager_.calculate_new_self_pose(landmarks, self_pose, consider_orientation_);
   const Pose diff_pose = tier4_autoware_utils::inverseTransformPose(new_self_pose, self_pose);
   const double distance =
     std::hypot(diff_pose.position.x, diff_pose.position.y, diff_pose.position.z);

@@ -158,7 +158,7 @@ visualization_msgs::msg::MarkerArray LandmarkManager::get_landmarks_as_marker_ar
 
 geometry_msgs::msg::Pose LandmarkManager::calculate_new_self_pose(
   const std::vector<landmark_manager::Landmark> & detected_landmarks,
-  const geometry_msgs::msg::Pose & self_pose) const
+  const geometry_msgs::msg::Pose & self_pose, const bool consider_orientation) const
 {
   using Pose = geometry_msgs::msg::Pose;
 
@@ -187,16 +187,33 @@ geometry_msgs::msg::Pose LandmarkManager::calculate_new_self_pose(
         continue;
       }
 
-      const Eigen::Affine3d landmark_pose = pose_to_affine3d(mapped_landmark_on_map);
-      const Eigen::Affine3d landmark_to_base_link =
-        pose_to_affine3d(detected_landmark_on_base_link).inverse();
-      const Eigen::Affine3d new_self_pose_eigen = landmark_pose * landmark_to_base_link;
+      if (consider_orientation) {
+        const Eigen::Affine3d landmark_pose = pose_to_affine3d(mapped_landmark_on_map);
+        const Eigen::Affine3d landmark_to_base_link =
+          pose_to_affine3d(detected_landmark_on_base_link).inverse();
+        const Eigen::Affine3d new_self_pose_eigen = landmark_pose * landmark_to_base_link;
 
-      const Pose new_self_pose = matrix4f_to_pose(new_self_pose_eigen.matrix().cast<float>());
+        const Pose new_self_pose = matrix4f_to_pose(new_self_pose_eigen.matrix().cast<float>());
 
-      // update
-      min_distance = curr_distance;
-      min_new_self_pose = new_self_pose;
+        // update
+        min_distance = curr_distance;
+        min_new_self_pose = new_self_pose;
+      } else {
+        const double diff_x =
+          mapped_landmark_on_map.position.x - detected_landmark_on_map.position.x;
+        const double diff_y =
+          mapped_landmark_on_map.position.y - detected_landmark_on_map.position.y;
+        const double diff_z =
+          mapped_landmark_on_map.position.z - detected_landmark_on_map.position.z;
+        Pose new_self_pose = self_pose;
+        new_self_pose.position.x += diff_x;
+        new_self_pose.position.y += diff_y;
+        new_self_pose.position.z += diff_z;
+
+        // update
+        min_distance = curr_distance;
+        min_new_self_pose = new_self_pose;
+      }
     }
   }
 

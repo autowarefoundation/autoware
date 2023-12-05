@@ -96,6 +96,7 @@ private:
   std::vector<std::string> target_tag_ids_;
   std::vector<double> base_covariance_;
   double distance_threshold_{};
+  bool consider_orientation_{};
   double ekf_time_tolerance_{};
   double ekf_position_tolerance_{};
 

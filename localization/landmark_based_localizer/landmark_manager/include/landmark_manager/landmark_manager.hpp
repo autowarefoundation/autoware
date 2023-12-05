@@ -42,11 +42,11 @@ public:
     const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr & msg,
     const std::string & target_subtype, const rclcpp::Logger & logger);
 
-  visualization_msgs::msg::MarkerArray get_landmarks_as_marker_array_msg() const;
+  [[nodiscard]] visualization_msgs::msg::MarkerArray get_landmarks_as_marker_array_msg() const;
 
-  geometry_msgs::msg::Pose calculate_new_self_pose(
+  [[nodiscard]] geometry_msgs::msg::Pose calculate_new_self_pose(
     const std::vector<landmark_manager::Landmark> & detected_landmarks,
-    const geometry_msgs::msg::Pose & self_pose) const;
+    const geometry_msgs::msg::Pose & self_pose, const bool consider_orientation) const;
 
 private:
   // To allow multiple landmarks with the same id to be registered on a vector_map,

@@ -1,0 +1,76 @@
+<svg
+  host="65bd71144e"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  version="1.1"
+  width="941px"
+  height="371px"
+  viewBox="-0.5 -0.5 941 371"
+  content="&lt;mxfile&gt;&lt;diagram id=&quot;w3J_4DS4PvaigkZ3hRSa&quot; name=&quot;ページ1&quot;&gt;3VhNc9sgFPw1OtYjhJDEsbHT9NB0OpNDk1OHsbDMRBYehGO5v74QoQ+E4ziNajv1wSMWEOzy3mNtD05X1Y0g6+UtT2nuBX5aeXDmBQGGifrWwK4GQt+vgUywtIZAB9yx39SAzbANS2lpDZSc55KtbXDOi4LOpYURIfjWHrbgub3qmmTUAe7mJHfRnyyVyxpNgrjDv1KWLZuVQYTrnhVpBhsm5ZKkfNuD4LUHp4JzWT+tqinNtXaNLvW8Ly/0thsTtJBHTTD7eCL5xpAzG5O7hq3gmyKlegLw4JW7gln0iQpJqx5kVryhfEWl2KkhpheaRXf2HradlGFksGVPRhgbkJjjy9o3dwzVgyG5n3Dg8L2j+UIz4iV1qEvBSJHp1hi8sc27DYIecYD2EE9G4I0c3oLmRLIn+hJ3mqqYN82CF1oDWjF5r5q+eX7QzxNkWrOq1zXbNY1C7fS+G6ibDyaWnhvdtOdWMy8l5fL1oCv5RsypdbSSiIw2IVNDmsrBA2q1sCrFO+SGjtwzKlUpUoyCyAsg0BS/kSJdEfF4IOP0MMGl2hwvtBZonEgEsR2KeE8kBnsiMRwhEkNHmluyXr9TGH+kyuSUphMKEznCfKdbzf+4AtVT49NYcQLBoGRFJyxZ8f9fsiK3ZIVjlywz9QdnaiNdBfAHJzu8XOttmll9BzF4UQDDSRLACGAfxzjEEbQzCOIJBAkCEQpQnAAY2MvU1J1lnmOjZXtUuCROuCj7VyqjKH5xwdQp1Nmhsld3+lJs9qQTrdQxXJVS8Ec65TkXXSQtWJ4PIJKzTOfbXL2dKvxKZxZTPvGz6VixNDXJ2S9cI2QmGhzfkXkJR8hLABylDxTqkTwjAmc0jeCcrhHFZ7SNwL2tL8rIROh8Rga4nvpynEzi5MsplRnPyowkRzwwdm0hPEkSvfFqWpB8nz4f524ain3Kywm/fjkdsomtNWwN3wXYxKYK931iU31O/9u2Oc4PL/G/9tjq5p74fmeNYzsrEJ5g3HPG9uuP9d8xRBOQ+O0H2IuoLUSJ/ea/ttyq2f0zWQ/v/t6F138A&lt;/diagram&gt;&lt;/mxfile&gt;"
+>
+  <defs/>
+  <g>
+    <rect x="0" y="0" width="460" height="370" rx="55.5" ry="55.5" fill="rgb(255, 255, 255)" stroke="rgb(0, 0, 0)" pointer-events="all"/>
+    <path d="M 60 210 L 210 250 L 60 290 Z" fill="rgb(255, 255, 255)" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="all"/>
+    <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="12px">
+      <text x="134.5" y="254.5">Self pose</text>
+    </g>
+    <path d="M 60 250 L 190.25 123.75" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <path d="M 194.02 120.1 L 191.43 127.48 L 190.25 123.75 L 186.56 122.46 Z" fill="rgb(0, 0, 0)" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="all"/>
+    <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="11px">
+      <rect fill="rgb(255, 255, 255)" stroke="none" x="96" y="179" width="64" height="14" stroke-width="0"/>
+      <text x="127" y="188.58">relative pose</text>
+    </g>
+    <rect x="140" y="80" width="120" height="40" fill="rgb(255, 255, 255)" stroke="rgb(0, 0, 0)" transform="rotate(15,200,100)" pointer-events="all"/>
+    <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="12px" transform="rotate(15,200,100)">
+      <text x="199.5" y="97.5">Detected</text>
+      <text x="199.5" y="111.5">Landmark</text>
+    </g>
+    <rect x="300" y="90" width="120" height="40" fill="rgb(255, 255, 255)" stroke="rgb(0, 0, 0)" pointer-events="all"/>
+    <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="12px">
+      <text x="359.5" y="107.5">Mapped</text>
+      <text x="359.5" y="121.5">Landmark</text>
+    </g>
+    <path d="M 280 250 L 430 290 L 280 330 Z" fill="rgb(255, 255, 255)" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" transform="rotate(-15,355,290)" pointer-events="all"/>
+    <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="12px" transform="rotate(-15,355,290)">
+      <text x="354.5" y="294.5">New self pose</text>
+    </g>
+    <path d="M 282.56 309.41 L 357.48 135.85" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <path d="M 359.56 131.03 L 360 138.84 L 357.48 135.85 L 353.57 136.07 Z" fill="rgb(0, 0, 0)" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="all"/>
+    <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="11px">
+      <rect fill="rgb(255, 255, 255)" stroke="none" x="290" y="213" width="64" height="14" stroke-width="0"/>
+      <text x="320.89" y="223.44">relative pose</text>
+    </g>
+    <rect x="20" y="10" width="150" height="30" fill="none" stroke="none" pointer-events="all"/>
+    <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="12px">
+      <text x="94.5" y="29.5">consider_orientation = true</text>
+    </g>
+    <rect x="480" y="0" width="460" height="370" rx="55.5" ry="55.5" fill="rgb(255, 255, 255)" stroke="rgb(0, 0, 0)" pointer-events="all"/>
+    <path d="M 540 210 L 690 250 L 540 290 Z" fill="rgb(255, 255, 255)" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="all"/>
+    <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="12px">
+      <text x="614.5" y="254.5">Self pose</text>
+    </g>
+    <rect x="620" y="80" width="120" height="40" fill="rgb(255, 255, 255)" stroke="rgb(0, 0, 0)" transform="rotate(15,680,100)" pointer-events="all"/>
+    <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="12px" transform="rotate(15,680,100)">
+      <text x="679.5" y="97.5">Detected</text>
+      <text x="679.5" y="111.5">Landmark</text>
+    </g>
+    <rect x="780" y="90" width="120" height="40" fill="rgb(255, 255, 255)" stroke="rgb(0, 0, 0)" pointer-events="all"/>
+    <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="12px">
+      <text x="839.5" y="107.5">Mapped</text>
+      <text x="839.5" y="121.5">Landmark</text>
+    </g>
+    <path d="M 700 220 L 850 260 L 700 300 Z" fill="rgb(255, 255, 255)" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="all"/>
+    <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="12px">
+      <text x="774.5" y="264.5">New self pose</text>
+    </g>
+    <rect x="500" y="10" width="150" height="30" fill="none" stroke="none" pointer-events="all"/>
+    <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="12px">
+      <text x="574.5" y="29.5">consider_orientation = false</text>
+    </g>
+    <path d="M 674.82 119.32 L 833.65 129.59" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <path d="M 838.88 129.93 L 831.67 132.97 L 833.65 129.59 L 832.12 125.98 Z" fill="rgb(0, 0, 0)" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 540 250 L 698.83 260.27" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <path d="M 704.06 260.61 L 696.85 263.65 L 698.83 260.27 L 697.3 256.66 Z" fill="rgb(0, 0, 0)" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="all"/>
+  </g>
+</svg>

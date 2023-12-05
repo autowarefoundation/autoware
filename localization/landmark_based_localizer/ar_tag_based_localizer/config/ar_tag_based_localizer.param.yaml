@@ -18,6 +18,9 @@
     # Detect AR-Tags within this range and publish the pose of ego vehicle
     distance_threshold: 13.0  # [m]
 
+    # consider_orientation
+    consider_orientation: false
+
     # Detector parameters
     # See https://github.com/pal-robotics/aruco_ros/blob/7787a6794d30c248bc546d1582e65dd47bc40c12/aruco/include/aruco/markerdetector.h#L106-L126
     detection_mode: "DM_NORMAL"  # select from [DM_NORMAL, DM_FAST, DM_VIDEO_FAST]
