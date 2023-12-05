@@ -263,10 +263,7 @@ std::vector<SceneModulePtr> PlannerManager::getRequestModules(
     // Condition 1: always executable module can be added regardless of the existence of other
     // modules, so skip checking the existence of other modules.
     // in other cases, need to check the existence of other modules and which module can be added.
-    const bool has_non_always_executable_module = std::any_of(
-      approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
-      [this](const auto & m) { return !getManager(m)->isAlwaysExecutableModule(); });
-    if (!manager_ptr->isAlwaysExecutableModule() && has_non_always_executable_module) {
+    if (!manager_ptr->isAlwaysExecutableModule() && hasNonAlwaysExecutableApprovedModules()) {
       // pairs of find_block_module and is_executable
       std::vector<std::pair<std::function<bool(const SceneModulePtr &)>, std::function<bool()>>>
         conditions;

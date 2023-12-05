@@ -226,6 +226,13 @@ public:
    */
   bool hasApprovedModules() const { return !approved_module_ptrs_.empty(); }
 
+  bool hasNonAlwaysExecutableApprovedModules() const
+  {
+    return std::any_of(
+      approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
+      [this](const auto & m) { return !getManager(m)->isAlwaysExecutableModule(); });
+  }
+
   /**
    * @brief check if there are candidate modules.
    */
