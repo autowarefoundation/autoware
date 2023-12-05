@@ -131,7 +131,7 @@ TEST(checkCollision, various_cases)
     const auto p4 = createPoint(0.0, 2.0, 0.0);
 
     const auto collision = checkCollision(p1, p2, p3, p4);
-    EXPECT_NE(collision, boost::none);
+    EXPECT_NE(collision, std::nullopt);
     EXPECT_NEAR(collision->x, 0.0, epsilon);
     EXPECT_NEAR(collision->y, 0.0, epsilon);
     EXPECT_NEAR(collision->z, 0.0, epsilon);
@@ -144,7 +144,7 @@ TEST(checkCollision, various_cases)
     const auto p4 = createPoint(0.0, 2.0, 0.0);
 
     const auto collision = checkCollision(p1, p2, p3, p4);
-    EXPECT_EQ(collision, boost::none);
+    EXPECT_EQ(collision, std::nullopt);
   }
 
   {  // normal case without collision
@@ -154,7 +154,7 @@ TEST(checkCollision, various_cases)
     const auto p4 = createPoint(0.0, 2.0, 0.0);
 
     const auto collision = checkCollision(p1, p2, p3, p4);
-    EXPECT_EQ(collision, boost::none);
+    EXPECT_EQ(collision, std::nullopt);
   }
 
   {  // line and point
@@ -164,7 +164,7 @@ TEST(checkCollision, various_cases)
     const auto p4 = createPoint(0.0, 0.0, 0.0);
 
     const auto collision = checkCollision(p1, p2, p3, p4);
-    EXPECT_EQ(collision, boost::none);
+    EXPECT_EQ(collision, std::nullopt);
   }
 
   {  // point and line
@@ -174,7 +174,7 @@ TEST(checkCollision, various_cases)
     const auto p4 = createPoint(2.0, 0.0, 0.0);
 
     const auto collision = checkCollision(p1, p2, p3, p4);
-    EXPECT_EQ(collision, boost::none);
+    EXPECT_EQ(collision, std::nullopt);
   }
 
   {  // collision with edges
@@ -184,7 +184,7 @@ TEST(checkCollision, various_cases)
     const auto p4 = createPoint(0.0, 2.0, 0.0);
 
     const auto collision = checkCollision(p1, p2, p3, p4);
-    EXPECT_NE(collision, boost::none);
+    EXPECT_NE(collision, std::nullopt);
     EXPECT_NEAR(collision->x, 0.0, epsilon);
     EXPECT_NEAR(collision->y, 0.0, epsilon);
     EXPECT_NEAR(collision->z, 0.0, epsilon);
@@ -197,7 +197,7 @@ TEST(checkCollision, various_cases)
     const auto p4 = createPoint(0.0, 1.0, 0.0);
 
     const auto collision = checkCollision(p1, p2, p3, p4);
-    EXPECT_NE(collision, boost::none);
+    EXPECT_NE(collision, std::nullopt);
     EXPECT_NEAR(collision->x, 0.0, epsilon);
     EXPECT_NEAR(collision->y, 0.0, epsilon);
     EXPECT_NEAR(collision->z, 0.0, epsilon);
@@ -210,7 +210,7 @@ TEST(checkCollision, various_cases)
     const auto p4 = createPoint(0.0, 0.0, 0.0);
 
     const auto collision = checkCollision(p1, p2, p3, p4);
-    EXPECT_NE(collision, boost::none);
+    EXPECT_NE(collision, std::nullopt);
     EXPECT_NEAR(collision->x, 0.0, epsilon);
     EXPECT_NEAR(collision->y, 0.0, epsilon);
     EXPECT_NEAR(collision->z, 0.0, epsilon);
@@ -223,7 +223,7 @@ TEST(checkCollision, various_cases)
     const auto p4 = createPoint(0.0, 1.0, 0.0);
 
     const auto collision = checkCollision(p1, p2, p3, p4);
-    EXPECT_NE(collision, boost::none);
+    EXPECT_NE(collision, std::nullopt);
     EXPECT_NEAR(collision->x, 0.0, epsilon);
     EXPECT_NEAR(collision->y, 0.0, epsilon);
     EXPECT_NEAR(collision->z, 0.0, epsilon);
@@ -236,7 +236,7 @@ TEST(checkCollision, various_cases)
     const auto p4 = createPoint(0.0, 1.0, 0.0);
 
     const auto collision = checkCollision(p1, p2, p3, p4);
-    EXPECT_NE(collision, boost::none);
+    EXPECT_NE(collision, std::nullopt);
     EXPECT_NEAR(collision->x, 0.0, epsilon);
     EXPECT_NEAR(collision->y, 0.0, epsilon);
     EXPECT_NEAR(collision->z, 0.0, epsilon);

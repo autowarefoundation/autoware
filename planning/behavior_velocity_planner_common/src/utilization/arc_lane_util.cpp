@@ -75,7 +75,7 @@ double calcSignedDistance(const geometry_msgs::msg::Pose & p1, const geometry_ms
 
 // calculate one collision point between the line (from p1 to p2) and the line (from p3 to p4)
 
-boost::optional<geometry_msgs::msg::Point> checkCollision(
+std::optional<geometry_msgs::msg::Point> checkCollision(
   const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2,
   const geometry_msgs::msg::Point & p3, const geometry_msgs::msg::Point & p4)
 {
@@ -83,7 +83,7 @@ boost::optional<geometry_msgs::msg::Point> checkCollision(
 
   if (det == 0.0) {
     // collision is not one point.
-    return boost::none;
+    return std::nullopt;
   }
 
   const double t1 = ((p4.y - p3.y) * (p4.x - p1.x) - (p4.x - p3.x) * (p4.y - p1.y)) / det;
@@ -91,13 +91,13 @@ boost::optional<geometry_msgs::msg::Point> checkCollision(
 
   // check collision is outside the segment line
   if (t1 < 0.0 || 1.0 < t1 || t2 < 0.0 || 1.0 < t2) {
-    return boost::none;
+    return std::nullopt;
   }
 
   return p1 * (1.0 - t1) + p2 * t1;
 }
 
-boost::optional<PathIndexWithOffset> findOffsetSegment(
+std::optional<PathIndexWithOffset> findOffsetSegment(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t index,
   const double offset)
 {
@@ -108,7 +108,7 @@ boost::optional<PathIndexWithOffset> findOffsetSegment(
   return findBackwardOffsetSegment(path, index, -offset);
 }
 
-boost::optional<PathIndexWithPose> createTargetPoint(
+std::optional<PathIndexWithPose> createTargetPoint(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const LineString2d & stop_line,
   const size_t lane_id, const double margin, const double vehicle_offset)
 {

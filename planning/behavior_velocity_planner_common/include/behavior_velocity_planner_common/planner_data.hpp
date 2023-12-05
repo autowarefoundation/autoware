@@ -35,8 +35,6 @@
 #include <tier4_planning_msgs/msg/velocity_limit.hpp>
 #include <tier4_v2x_msgs/msg/virtual_traffic_light_state_array.hpp>
 
-#include <boost/optional.hpp>
-
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
@@ -44,6 +42,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace behavior_velocity_planner
@@ -78,7 +77,7 @@ struct PlannerData
 
   // other internal data
   std::map<int, TrafficSignalStamped> traffic_light_id_map;
-  boost::optional<tier4_planning_msgs::msg::VelocityLimit> external_velocity_limit;
+  std::optional<tier4_planning_msgs::msg::VelocityLimit> external_velocity_limit;
   tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr virtual_traffic_light_states;
 
   // velocity smoother

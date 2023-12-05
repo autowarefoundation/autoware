@@ -108,11 +108,11 @@ autoware_auto_planning_msgs::msg::PathWithLaneId BehaviorVelocityPlannerManager:
   for (const auto & plugin : scene_manager_plugins_) {
     plugin->updateSceneModuleInstances(planner_data, input_path_msg);
     plugin->plan(&output_path_msg);
-    boost::optional<int> firstStopPathPointIndex = plugin->getFirstStopPathPointIndex();
+    const auto firstStopPathPointIndex = plugin->getFirstStopPathPointIndex();
 
     if (firstStopPathPointIndex) {
-      if (firstStopPathPointIndex.get() < first_stop_path_point_index) {
-        first_stop_path_point_index = firstStopPathPointIndex.get();
+      if (firstStopPathPointIndex.value() < first_stop_path_point_index) {
+        first_stop_path_point_index = firstStopPathPointIndex.value();
         stop_reason_msg = plugin->getModuleName();
       }
     }

@@ -123,7 +123,7 @@ std::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
       arc_lane_utils::checkCollision(p1, p2, target_line_p1, target_line_p2);
 
     if (collision_point) {
-      return SegmentIndexWithPoint{i, collision_point.get()};
+      return SegmentIndexWithPoint{i, collision_point.value()};
     }
   }
 

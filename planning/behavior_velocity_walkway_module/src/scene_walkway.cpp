@@ -123,7 +123,7 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
 
     const auto inserted_pose = planning_utils::insertStopPoint(stop_pose->position, *path);
     if (inserted_pose) {
-      debug_data_.stop_poses.push_back(inserted_pose.get());
+      debug_data_.stop_poses.push_back(inserted_pose.value());
     }
 
     /* get stop point and stop factor */

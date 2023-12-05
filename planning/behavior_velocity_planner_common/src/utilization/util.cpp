@@ -519,7 +519,7 @@ LineString2d extendLine(
     {(p1 - length * t).x(), (p1 - length * t).y()}, {(p2 + length * t).x(), (p2 + length * t).y()}};
 }
 
-boost::optional<int64_t> getNearestLaneId(
+std::optional<int64_t> getNearestLaneId(
   const PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map,
   const geometry_msgs::msg::Pose & current_pose)
 {
@@ -533,7 +533,7 @@ boost::optional<int64_t> getNearestLaneId(
   if (lanelet::utils::query::getClosestLanelet(lanes, current_pose, &closest_lane)) {
     return closest_lane.id();
   }
-  return boost::none;
+  return std::nullopt;
 }
 
 std::vector<lanelet::ConstLanelet> getLaneletsOnPath(
@@ -614,7 +614,7 @@ bool isOverLine(
          0.0;
 }
 
-boost::optional<geometry_msgs::msg::Pose> insertDecelPoint(
+std::optional<geometry_msgs::msg::Pose> insertDecelPoint(
   const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output,
   const float target_velocity)
 {
@@ -638,7 +638,7 @@ boost::optional<geometry_msgs::msg::Pose> insertDecelPoint(
 }
 
 // TODO(murooka): remove this function for u-turn and crossing-path
-boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
+std::optional<geometry_msgs::msg::Pose> insertStopPoint(
   const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output)
 {
   const size_t base_idx = motion_utils::findNearestSegmentIndex(output.points, stop_point);
@@ -651,7 +651,7 @@ boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
   return tier4_autoware_utils::getPose(output.points.at(insert_idx.value()));
 }
 
-boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
+std::optional<geometry_msgs::msg::Pose> insertStopPoint(
   const geometry_msgs::msg::Point & stop_point, const size_t stop_seg_idx, PathWithLaneId & output)
 {
   const auto insert_idx = motion_utils::insertStopPoint(stop_seg_idx, stop_point, output.points);

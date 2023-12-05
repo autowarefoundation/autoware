@@ -34,7 +34,7 @@ public:
   virtual void updateSceneModuleInstances(
     const std::shared_ptr<const PlannerData> & planner_data,
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path) = 0;
-  virtual boost::optional<int> getFirstStopPathPointIndex() = 0;
+  virtual std::optional<int> getFirstStopPathPointIndex() = 0;
   virtual const char * getModuleName() = 0;
 };
 

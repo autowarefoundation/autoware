@@ -18,6 +18,7 @@
 #include <behavior_velocity_planner_common/plugin_interface.hpp>
 
 #include <memory>
+#include <optional>
 
 namespace behavior_velocity_planner
 {
@@ -37,7 +38,7 @@ public:
   {
     scene_manager_->updateSceneModuleInstances(planner_data, path);
   }
-  boost::optional<int> getFirstStopPathPointIndex() override
+  std::optional<int> getFirstStopPathPointIndex() override
   {
     return scene_manager_->getFirstStopPathPointIndex();
   }

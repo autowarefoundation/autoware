@@ -29,7 +29,6 @@
   <depend>geometry_msgs</depend>
   <depend>interpolation</depend>
   <depend>lanelet2_extension</depend>
-  <depend>libboost-dev</depend>
   <depend>motion_utils</depend>
   <depend>motion_velocity_smoother</depend>
   <depend>nav_msgs</depend>

@@ -64,7 +64,7 @@ void applySafeVelocityConsideringPossibleCollision(
     const auto & pose = possible_collision.collision_with_margin.pose;
     const auto & decel_pose =
       planning_utils::insertDecelPoint(pose.position, *inout_path, safe_velocity);
-    if (decel_pose) debug_poses.push_back(decel_pose.get());
+    if (decel_pose) debug_poses.push_back(decel_pose.value());
   }
 }
 

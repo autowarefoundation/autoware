@@ -73,18 +73,18 @@ public:
     planner_data_ = planner_data;
   }
 
-  boost::optional<tier4_v2x_msgs::msg::InfrastructureCommand> getInfrastructureCommand()
+  std::optional<tier4_v2x_msgs::msg::InfrastructureCommand> getInfrastructureCommand()
   {
     return infrastructure_command_;
   }
 
   void setInfrastructureCommand(
-    const boost::optional<tier4_v2x_msgs::msg::InfrastructureCommand> & command)
+    const std::optional<tier4_v2x_msgs::msg::InfrastructureCommand> & command)
   {
     infrastructure_command_ = command;
   }
 
-  boost::optional<int> getFirstStopPathPointIndex() { return first_stop_path_point_index_; }
+  std::optional<int> getFirstStopPathPointIndex() { return first_stop_path_point_index_; }
 
   void setActivation(const bool activated) { activated_ = activated; }
   void setRTCEnabled(const bool enable_rtc) { rtc_enabled_ = enable_rtc; }
@@ -104,8 +104,8 @@ protected:
   rclcpp::Logger logger_;
   rclcpp::Clock::SharedPtr clock_;
   std::shared_ptr<const PlannerData> planner_data_;
-  boost::optional<tier4_v2x_msgs::msg::InfrastructureCommand> infrastructure_command_;
-  boost::optional<int> first_stop_path_point_index_;
+  std::optional<tier4_v2x_msgs::msg::InfrastructureCommand> infrastructure_command_;
+  std::optional<int> first_stop_path_point_index_;
   VelocityFactorInterface velocity_factor_;
 
   void setSafe(const bool safe)
@@ -131,7 +131,7 @@ public:
 
   virtual const char * getModuleName() = 0;
 
-  boost::optional<int> getFirstStopPathPointIndex() { return first_stop_path_point_index_; }
+  std::optional<int> getFirstStopPathPointIndex() { return first_stop_path_point_index_; }
 
   void updateSceneModuleInstances(
     const std::shared_ptr<const PlannerData> & planner_data,
@@ -170,7 +170,7 @@ protected:
   std::shared_ptr<const PlannerData> planner_data_;
   motion_utils::VirtualWallMarkerCreator virtual_wall_marker_creator_;
 
-  boost::optional<int> first_stop_path_point_index_;
+  std::optional<int> first_stop_path_point_index_;
   rclcpp::Node & node_;
   rclcpp::Clock::SharedPtr clock_;
   // Debug

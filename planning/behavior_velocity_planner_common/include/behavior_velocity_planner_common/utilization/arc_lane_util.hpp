@@ -20,20 +20,15 @@
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
-#include <boost/optional.hpp>
-
 #include <algorithm>
-#include <memory>
+#include <optional>
 #include <utility>
-#include <vector>
 
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
 
 namespace behavior_velocity_planner
 {
-namespace bg = boost::geometry;
-
 namespace
 {
 geometry_msgs::msg::Point convertToGeomPoint(const tier4_autoware_utils::Point2d & p)
@@ -59,12 +54,12 @@ double calcSignedDistance(
   const geometry_msgs::msg::Pose & p1, const geometry_msgs::msg::Point & p2);
 
 // calculate one collision point between the line (from p1 to p2) and the line (from p3 to p4)
-boost::optional<geometry_msgs::msg::Point> checkCollision(
+std::optional<geometry_msgs::msg::Point> checkCollision(
   const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2,
   const geometry_msgs::msg::Point & p3, const geometry_msgs::msg::Point & p4);
 
 template <class T>
-boost::optional<PathIndexWithPoint> findCollisionSegment(
+std::optional<PathIndexWithPoint> findCollisionSegment(
   const T & path, const geometry_msgs::msg::Point & stop_line_p1,
   const geometry_msgs::msg::Point & stop_line_p2, const size_t target_lane_id)
 {
@@ -88,7 +83,7 @@ boost::optional<PathIndexWithPoint> findCollisionSegment(
     const auto collision_point = checkCollision(p1, p2, stop_line_p1, stop_line_p2);
 
     if (collision_point) {
-      return std::make_pair(i, collision_point.get());
+      return std::make_pair(i, collision_point.value());
     }
   }
 
@@ -96,7 +91,7 @@ boost::optional<PathIndexWithPoint> findCollisionSegment(
 }
 
 template <class T>
-boost::optional<PathIndexWithPoint> findCollisionSegment(
+std::optional<PathIndexWithPoint> findCollisionSegment(
   const T & path, const LineString2d & stop_line, const size_t target_lane_id)
 {
   const auto stop_line_p1 = convertToGeomPoint(stop_line.at(0));
@@ -106,7 +101,7 @@ boost::optional<PathIndexWithPoint> findCollisionSegment(
 }
 
 template <class T>
-boost::optional<PathIndexWithOffset> findForwardOffsetSegment(
+std::optional<PathIndexWithOffset> findForwardOffsetSegment(
   const T & path, const size_t base_idx, const double offset_length)
 {
   double sum_length = 0.0;
@@ -124,7 +119,7 @@ boost::optional<PathIndexWithOffset> findForwardOffsetSegment(
 }
 
 template <class T>
-boost::optional<PathIndexWithOffset> findBackwardOffsetSegment(
+std::optional<PathIndexWithOffset> findBackwardOffsetSegment(
   const T & path, const size_t base_idx, const double offset_length)
 {
   double sum_length = 0.0;
@@ -144,7 +139,7 @@ boost::optional<PathIndexWithOffset> findBackwardOffsetSegment(
 }
 
 template <class T>
-boost::optional<PathIndexWithOffset> findOffsetSegment(
+std::optional<PathIndexWithOffset> findOffsetSegment(
   const T & path, const PathIndexWithPoint & collision_segment, const double offset_length)
 {
   const size_t collision_idx = collision_segment.first;
@@ -163,7 +158,7 @@ boost::optional<PathIndexWithOffset> findOffsetSegment(
       tier4_autoware_utils::calcDistance2d(path.points.at(collision_idx + 1), collision_point));
 }
 
-boost::optional<PathIndexWithOffset> findOffsetSegment(
+std::optional<PathIndexWithOffset> findOffsetSegment(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t index,
   const double offset);
 
@@ -196,7 +191,7 @@ geometry_msgs::msg::Pose calcTargetPose(const T & path, const PathIndexWithOffse
   return target_pose;
 }
 
-boost::optional<PathIndexWithPose> createTargetPoint(
+std::optional<PathIndexWithPose> createTargetPoint(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const LineString2d & stop_line,
   const size_t lane_id, const double margin, const double vehicle_offset);
 
