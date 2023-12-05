@@ -25,7 +25,7 @@ jobs:
             additional-tag-suffix: ""
           - name: cuda
             base_image_env: cuda_base_image
-            setup-args: --no-cuda-drivers
+            setup-args: --no-cuda-drivers --no-nvidia
             additional-tag-suffix: -cuda
     steps:
       - name: Check out repository

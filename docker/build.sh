@@ -31,7 +31,7 @@ if [ "$option_no_cuda" = "true" ]; then
     setup_args="--no-nvidia"
     image_name_suffix=""
 else
-    setup_args="--no-cuda-drivers"
+    setup_args="--no-cuda-drivers --no-nvidia"
     image_name_suffix="-cuda"
 fi
 
