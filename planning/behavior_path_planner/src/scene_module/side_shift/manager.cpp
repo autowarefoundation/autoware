@@ -25,20 +25,22 @@
 namespace behavior_path_planner
 {
 
-SideShiftModuleManager::SideShiftModuleManager(
-  rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config)
-: SceneModuleManagerInterface(node, name, config, {})
+void SideShiftModuleManager::init(rclcpp::Node * node)
 {
+  // init manager interface
+  initInterface(node, {});
+
   SideShiftParameters p{};
 
+  const std::string ns = "side_shift.";
   p.min_distance_to_start_shifting =
-    node->declare_parameter<double>(name + ".min_distance_to_start_shifting");
-  p.time_to_start_shifting = node->declare_parameter<double>(name + ".time_to_start_shifting");
-  p.shifting_lateral_jerk = node->declare_parameter<double>(name + ".shifting_lateral_jerk");
-  p.min_shifting_distance = node->declare_parameter<double>(name + ".min_shifting_distance");
-  p.min_shifting_speed = node->declare_parameter<double>(name + ".min_shifting_speed");
-  p.shift_request_time_limit = node->declare_parameter<double>(name + ".shift_request_time_limit");
-  p.publish_debug_marker = node->declare_parameter<bool>(name + ".publish_debug_marker");
+    node->declare_parameter<double>(ns + "min_distance_to_start_shifting");
+  p.time_to_start_shifting = node->declare_parameter<double>(ns + "time_to_start_shifting");
+  p.shifting_lateral_jerk = node->declare_parameter<double>(ns + "shifting_lateral_jerk");
+  p.min_shifting_distance = node->declare_parameter<double>(ns + "min_shifting_distance");
+  p.min_shifting_speed = node->declare_parameter<double>(ns + "min_shifting_speed");
+  p.shift_request_time_limit = node->declare_parameter<double>(ns + "shift_request_time_limit");
+  p.publish_debug_marker = node->declare_parameter<bool>(ns + "publish_debug_marker");
 
   parameters_ = std::make_shared<SideShiftParameters>(p);
 }
@@ -50,7 +52,7 @@ void SideShiftModuleManager::updateModuleParams(
 
   [[maybe_unused]] auto p = parameters_;
 
-  [[maybe_unused]] std::string ns = "side_shift.";
+  [[maybe_unused]] const std::string ns = "side_shift.";
   // updateParam<bool>(parameters, ns + ..., ...);
 
   std::for_each(observers_.begin(), observers_.end(), [&p](const auto & observer) {
@@ -59,3 +61,7 @@ void SideShiftModuleManager::updateModuleParams(
 }
 
 }  // namespace behavior_path_planner
+
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(
+  behavior_path_planner::SideShiftModuleManager, behavior_path_planner::SceneModuleManagerInterface)

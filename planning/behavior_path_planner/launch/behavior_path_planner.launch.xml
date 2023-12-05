@@ -6,17 +6,7 @@
   <arg name="nearest_search_param_path"/>
 
   <!-- launch module -->
-  <arg name="launch_avoidance_module"/>
-  <arg name="launch_avoidance_by_lane_change_module"/>
-  <arg name="launch_dynamic_avoidance_module"/>
-  <arg name="launch_lane_change_right_module"/>
-  <arg name="launch_lane_change_left_module"/>
-  <arg name="launch_external_request_lane_change_right_module"/>
-  <arg name="launch_external_request_lane_change_left_module"/>
-  <arg name="launch_goal_planner_module"/>
-  <arg name="launch_start_planner_module"/>
-  <arg name="launch_side_shift_module"/>
-  <arg name="use_experimental_lane_change_function"/>
+  <arg name="behavior_path_planner_launch_modules"/>
 
   <!-- module config path -->
   <arg name="behavior_path_config_path"/>
@@ -48,17 +38,7 @@
     <remap from="~/output/modified_goal" to="/planning/scenario_planning/modified_goal"/>
     <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons"/>
     <!-- params -->
-    <param name="avoidance.enable_module" value="$(var launch_avoidance_module)"/>
-    <param name="avoidance_by_lc.enable_module" value="$(var launch_avoidance_by_lane_change_module)"/>
-    <param name="dynamic_avoidance.enable_module" value="$(var launch_dynamic_avoidance_module)"/>
-    <param name="lane_change_right.enable_module" value="$(var launch_lane_change_right_module)"/>
-    <param name="lane_change_left.enable_module" value="$(var launch_lane_change_left_module)"/>
-    <param name="external_request_lane_change_left.enable_module" value="$(var launch_external_request_lane_change_left_module)"/>
-    <param name="external_request_lane_change_right.enable_module" value="$(var launch_external_request_lane_change_right_module)"/>
-    <param name="goal_planner.enable_module" value="$(var launch_goal_planner_module)"/>
-    <param name="start_planner.enable_module" value="$(var launch_start_planner_module)"/>
-    <param name="side_shift.enable_module" value="$(var launch_side_shift_module)"/>
-    <param name="use_experimental_lane_change_function" value="$(var use_experimental_lane_change_function)"/>
+    <param name="launch_modules" value="$(var behavior_path_planner_launch_modules)"/>
     <!-- load config -->
     <param from="$(var common_param_path)"/>
     <param from="$(var vehicle_param_file)"/>

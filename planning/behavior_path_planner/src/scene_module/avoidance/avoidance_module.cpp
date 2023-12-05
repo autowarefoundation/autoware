@@ -15,8 +15,8 @@
 #include "behavior_path_planner/scene_module/avoidance/avoidance_module.hpp"
 
 #include "behavior_path_planner/marker_utils/avoidance/debug.hpp"
-#include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utils/avoidance/utils.hpp"
+#include "behavior_path_planner_common/interface/scene_module_visitor.hpp"
 #include "behavior_path_planner_common/utils/create_vehicle_footprint.hpp"
 #include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"

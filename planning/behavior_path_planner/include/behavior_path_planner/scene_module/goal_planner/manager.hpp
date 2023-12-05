@@ -16,7 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__GOAL_PLANNER__MANAGER_HPP_
 
 #include "behavior_path_planner/scene_module/goal_planner/goal_planner_module.hpp"
-#include "behavior_path_planner/scene_module/scene_module_manager_interface.hpp"
+#include "behavior_path_planner_common/interface/scene_module_manager_interface.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -30,8 +30,9 @@ namespace behavior_path_planner
 class GoalPlannerModuleManager : public SceneModuleManagerInterface
 {
 public:
-  GoalPlannerModuleManager(
-    rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config);
+  GoalPlannerModuleManager() : SceneModuleManagerInterface{"goal_planner"} {}
+
+  void init(rclcpp::Node * node) override;
 
   std::unique_ptr<SceneModuleInterface> createNewSceneModuleInstance() override
   {

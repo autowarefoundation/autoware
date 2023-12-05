@@ -7,8 +7,10 @@ autoware_package()
 find_package(OpenCV REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 
-ament_auto_add_library(behavior_path_planner_common SHARED
+ament_auto_add_library(${PROJECT_NAME} SHARED
   src/turn_signal_decider.cpp
+  src/interface/steering_factor_interface.cpp
+  src/interface/scene_module_visitor.cpp
   src/utils/utils.cpp
   src/utils/path_utils.cpp
   src/utils/traffic_light_utils.cpp
@@ -22,37 +24,37 @@ ament_auto_add_library(behavior_path_planner_common SHARED
   src/marker_utils/utils.cpp
 )
 
-target_include_directories(behavior_path_planner_common SYSTEM PUBLIC
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
   ${EIGEN3_INCLUDE_DIR}
 )
 
-target_link_libraries(behavior_path_planner_common
+target_link_libraries(${PROJECT_NAME}
   ${OpenCV_LIBRARIES}
 )
 
 if(BUILD_TESTING)
-  ament_add_ros_isolated_gmock(test_${CMAKE_PROJECT_NAME}_utilities
+  ament_add_ros_isolated_gmock(test_${PROJECT_NAME}_utilities
     test/test_drivable_area_expansion.cpp
   )
 
-  target_link_libraries(test_${CMAKE_PROJECT_NAME}_utilities
-    behavior_path_planner_common
+  target_link_libraries(test_${PROJECT_NAME}_utilities
+    ${PROJECT_NAME}
   )
 
-  ament_add_ros_isolated_gmock(test_${CMAKE_PROJECT_NAME}_safety_check
+  ament_add_ros_isolated_gmock(test_${PROJECT_NAME}_safety_check
     test/test_safety_check.cpp
   )
 
-  target_link_libraries(test_${CMAKE_PROJECT_NAME}_safety_check
-    behavior_path_planner_common
+  target_link_libraries(test_${PROJECT_NAME}_safety_check
+    ${PROJECT_NAME}
   )
 
-  ament_add_ros_isolated_gmock(test_${CMAKE_PROJECT_NAME}_turn_signal
+  ament_add_ros_isolated_gmock(test_${PROJECT_NAME}_turn_signal
     test/test_turn_signal.cpp
   )
 
-  target_link_libraries(test_${CMAKE_PROJECT_NAME}_turn_signal
-    behavior_path_planner_common
+  target_link_libraries(test_${PROJECT_NAME}_turn_signal
+    ${PROJECT_NAME}
   )
 endif()
 

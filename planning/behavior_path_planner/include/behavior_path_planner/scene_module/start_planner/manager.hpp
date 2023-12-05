@@ -15,8 +15,8 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__START_PLANNER__MANAGER_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__START_PLANNER__MANAGER_HPP_
 
-#include "behavior_path_planner/scene_module/scene_module_manager_interface.hpp"
 #include "behavior_path_planner/scene_module/start_planner/start_planner_module.hpp"
+#include "behavior_path_planner_common/interface/scene_module_manager_interface.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -30,8 +30,9 @@ namespace behavior_path_planner
 class StartPlannerModuleManager : public SceneModuleManagerInterface
 {
 public:
-  StartPlannerModuleManager(
-    rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config);
+  StartPlannerModuleManager() : SceneModuleManagerInterface{"start_planner"} {}
+
+  void init(rclcpp::Node * node) override;
 
   std::unique_ptr<SceneModuleInterface> createNewSceneModuleInstance() override
   {

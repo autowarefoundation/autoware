@@ -14,10 +14,10 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__BASE_CLASS_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__BASE_CLASS_HPP_
 
-#include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_path.hpp"
 #include "behavior_path_planner/utils/lane_change/utils.hpp"
+#include "behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "behavior_path_planner_common/turn_signal_decider.hpp"
 #include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"

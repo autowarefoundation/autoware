@@ -51,7 +51,6 @@
   <depend>autoware_auto_vehicle_msgs</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>behavior_path_planner_common</depend>
-  <depend>behaviortree_cpp_v3</depend>
   <depend>freespace_planning_algorithms</depend>
   <depend>geometry_msgs</depend>
   <depend>interpolation</depend>
@@ -62,12 +61,11 @@
   <depend>magic_enum</depend>
   <depend>motion_utils</depend>
   <depend>object_recognition_utils</depend>
-  <depend>objects_of_interest_marker_interface</depend>
   <depend>planning_test_utils</depend>
+  <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>route_handler</depend>
-  <depend>rtc_interface</depend>
   <depend>sensor_msgs</depend>
   <depend>signal_processing</depend>
   <depend>tf2</depend>

@@ -48,17 +48,20 @@ std::shared_ptr<BehaviorPathPlannerNode> generateNode()
   const auto behavior_path_planner_dir =
     ament_index_cpp::get_package_share_directory("behavior_path_planner");
 
+  std::vector<std::string> module_names;
+  module_names.emplace_back("behavior_path_planner::AvoidanceModuleManager");
+  module_names.emplace_back("behavior_path_planner::DynamicAvoidanceModuleManager");
+  module_names.emplace_back("behavior_path_planner::SideShiftModuleManager");
+  module_names.emplace_back("behavior_path_planner::StartPlannerModuleManager");
+  module_names.emplace_back("behavior_path_planner::GoalPlannerModuleManager");
+  module_names.emplace_back("behavior_path_planner::LaneChangeRightModuleManager");
+  module_names.emplace_back("behavior_path_planner::LaneChangeLeftModuleManager");
+  module_names.emplace_back("behavior_path_planner::ExternalRequestLaneChangeRightModuleManager");
+  module_names.emplace_back("behavior_path_planner::ExternalRequestLaneChangeLeftModuleManager");
+  module_names.emplace_back("behavior_path_planner::AvoidanceByLaneChangeModuleManager");
+
   std::vector<rclcpp::Parameter> params;
-  params.emplace_back("avoidance.enable_module", true);
-  params.emplace_back("avoidance_by_lc.enable_module", true);
-  params.emplace_back("dynamic_avoidance.enable_module", true);
-  params.emplace_back("lane_change_right.enable_module", true);
-  params.emplace_back("lane_change_left.enable_module", true);
-  params.emplace_back("external_request_lane_change_right.enable_module", true);
-  params.emplace_back("external_request_lane_change_left.enable_module", true);
-  params.emplace_back("goal_planner.enable_module", true);
-  params.emplace_back("start_planner.enable_module", true);
-  params.emplace_back("side_shift.enable_module", true);
+  params.emplace_back("launch_modules", module_names);
   node_options.parameter_overrides(params);
 
   test_utils::updateNodeOptions(

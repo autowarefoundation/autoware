@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_INTERFACE_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_INTERFACE_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__SCENE_MODULE_INTERFACE_HPP_
+#define BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__SCENE_MODULE_INTERFACE_HPP_
 
-#include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner_common/data_manager.hpp"
+#include "behavior_path_planner_common/interface/scene_module_visitor.hpp"
 #include "behavior_path_planner_common/marker_utils/utils.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
 
-#include <behavior_path_planner/steering_factor_interface.hpp>
+#include <behavior_path_planner_common/interface/steering_factor_interface.hpp>
 #include <behavior_path_planner_common/turn_signal_decider.hpp>
 #include <magic_enum.hpp>
 #include <motion_utils/marker/marker_helper.hpp>
@@ -616,4 +616,4 @@ protected:
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_INTERFACE_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__SCENE_MODULE_INTERFACE_HPP_

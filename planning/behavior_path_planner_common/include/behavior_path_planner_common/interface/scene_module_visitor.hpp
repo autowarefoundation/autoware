@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_VISITOR_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_VISITOR_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__SCENE_MODULE_VISITOR_HPP_
+#define BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__SCENE_MODULE_VISITOR_HPP_
 
 #include "tier4_planning_msgs/msg/detail/avoidance_debug_msg_array__struct.hpp"
 
@@ -44,4 +44,4 @@ protected:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_VISITOR_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__SCENE_MODULE_VISITOR_HPP_

@@ -15,11 +15,11 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__AVOIDANCE_MODULE_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__AVOIDANCE_MODULE_HPP_
 
-#include "behavior_path_planner/scene_module/scene_module_interface.hpp"
-#include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
 #include "behavior_path_planner/utils/avoidance/helper.hpp"
 #include "behavior_path_planner/utils/avoidance/shift_line_generator.hpp"
+#include "behavior_path_planner_common/interface/scene_module_interface.hpp"
+#include "behavior_path_planner_common/interface/scene_module_visitor.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
 
 #include <rclcpp/rclcpp.hpp>

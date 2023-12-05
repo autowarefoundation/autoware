@@ -15,7 +15,6 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__GOAL_PLANNER__GOAL_PLANNER_MODULE_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__GOAL_PLANNER__GOAL_PLANNER_MODULE_HPP_
 
-#include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/utils/geometric_parallel_parking/geometric_parallel_parking.hpp"
 #include "behavior_path_planner/utils/goal_planner/default_fixed_goal_planner.hpp"
 #include "behavior_path_planner/utils/goal_planner/freespace_pull_over.hpp"
@@ -25,6 +24,7 @@
 #include "behavior_path_planner/utils/goal_planner/shift_pull_over.hpp"
 #include "behavior_path_planner/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
 #include "behavior_path_planner/utils/start_goal_planner_common/common_module_data.hpp"
+#include "behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
 

@@ -15,9 +15,9 @@
 #include "behavior_path_planner/scene_module/lane_change/interface.hpp"
 
 #include "behavior_path_planner/marker_utils/lane_change/debug.hpp"
-#include "behavior_path_planner/scene_module/scene_module_interface.hpp"
-#include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utils/lane_change/utils.hpp"
+#include "behavior_path_planner_common/interface/scene_module_interface.hpp"
+#include "behavior_path_planner_common/interface/scene_module_visitor.hpp"
 #include "behavior_path_planner_common/marker_utils/utils.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>

@@ -25,20 +25,21 @@
 namespace behavior_path_planner
 {
 
-DynamicAvoidanceModuleManager::DynamicAvoidanceModuleManager(
-  rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config)
-: SceneModuleManagerInterface(node, name, config, {""})
+void DynamicAvoidanceModuleManager::init(rclcpp::Node * node)
 {
+  // init manager interface
+  initInterface(node, {""});
+
   DynamicAvoidanceParameters p{};
 
   {  // common
-    std::string ns = "dynamic_avoidance.common.";
+    const std::string ns = "dynamic_avoidance.common.";
     p.enable_debug_info = node->declare_parameter<bool>(ns + "enable_debug_info");
     p.use_hatched_road_markings = node->declare_parameter<bool>(ns + "use_hatched_road_markings");
   }
 
   {  // target object
-    std::string ns = "dynamic_avoidance.target_object.";
+    const std::string ns = "dynamic_avoidance.target_object.";
     p.avoid_car = node->declare_parameter<bool>(ns + "car");
     p.avoid_truck = node->declare_parameter<bool>(ns + "truck");
     p.avoid_bus = node->declare_parameter<bool>(ns + "bus");
@@ -89,7 +90,7 @@ DynamicAvoidanceModuleManager::DynamicAvoidanceModuleManager(
   }
 
   {  // drivable_area_generation
-    std::string ns = "dynamic_avoidance.drivable_area_generation.";
+    const std::string ns = "dynamic_avoidance.drivable_area_generation.";
     p.min_obj_path_based_lon_polygon_margin =
       node->declare_parameter<double>(ns + "object_path_base.min_longitudinal_polygon_margin");
     p.lat_offset_from_obstacle = node->declare_parameter<double>(ns + "lat_offset_from_obstacle");
@@ -235,3 +236,8 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
   });
 }
 }  // namespace behavior_path_planner
+
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(
+  behavior_path_planner::DynamicAvoidanceModuleManager,
+  behavior_path_planner::SceneModuleManagerInterface)

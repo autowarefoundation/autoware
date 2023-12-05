@@ -26,15 +26,12 @@
 namespace behavior_path_planner
 {
 
-using route_handler::Direction;
-using utils::convertToSnakeCase;
-
-LaneChangeModuleManager::LaneChangeModuleManager(
-  rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
-  const Direction direction, const LaneChangeModuleType type)
-: SceneModuleManagerInterface(node, name, config, {""}), direction_{direction}, type_{type}
+void LaneChangeModuleManager::init(rclcpp::Node * node)
 {
   using tier4_autoware_utils::getOrDeclareParameter;
+
+  // init manager interface
+  initInterface(node, {""});
 
   LaneChangeParameters p{};
 
@@ -146,7 +143,7 @@ LaneChangeModuleManager::LaneChangeModuleManager(
 
   // target object
   {
-    std::string ns = "lane_change.target_object.";
+    const std::string ns = "lane_change.target_object.";
     p.object_types_to_check.check_car = getOrDeclareParameter<bool>(*node, ns + "car");
     p.object_types_to_check.check_truck = getOrDeclareParameter<bool>(*node, ns + "truck");
     p.object_types_to_check.check_bus = getOrDeclareParameter<bool>(*node, ns + "bus");
@@ -180,10 +177,11 @@ LaneChangeModuleManager::LaneChangeModuleManager(
   // validation of parameters
   if (p.longitudinal_acc_sampling_num < 1 || p.lateral_acc_sampling_num < 1) {
     RCLCPP_FATAL_STREAM(
-      logger_, "lane_change_sampling_num must be positive integer. Given longitudinal parameter: "
-                 << p.longitudinal_acc_sampling_num
-                 << "Given lateral parameter: " << p.lateral_acc_sampling_num << std::endl
-                 << "Terminating the program...");
+      node->get_logger().get_child(name()),
+      "lane_change_sampling_num must be positive integer. Given longitudinal parameter: "
+        << p.longitudinal_acc_sampling_num
+        << "Given lateral parameter: " << p.lateral_acc_sampling_num << std::endl
+        << "Terminating the program...");
     exit(EXIT_FAILURE);
   }
 
@@ -203,14 +201,17 @@ LaneChangeModuleManager::LaneChangeModuleManager(
         p.rss_params_for_abort.longitudinal_distance_min_threshold ||
       p.rss_params.longitudinal_velocity_delta_time >
         p.rss_params_for_abort.longitudinal_velocity_delta_time) {
-      RCLCPP_FATAL_STREAM(logger_, "abort parameter might be loose... Terminating the program...");
+      RCLCPP_FATAL_STREAM(
+        node->get_logger().get_child(name()),
+        "abort parameter might be loose... Terminating the program...");
       exit(EXIT_FAILURE);
     }
   }
   if (p.cancel.delta_time < 1.0) {
     RCLCPP_WARN_STREAM(
-      logger_, "cancel.delta_time: " << p.cancel.delta_time
-                                     << ", is too short. This could cause a danger behavior.");
+      node->get_logger().get_child(name()),
+      "cancel.delta_time: " << p.cancel.delta_time
+                            << ", is too short. This could cause a danger behavior.");
   }
 
   parameters_ = std::make_shared<LaneChangeParameters>(p);
@@ -245,27 +246,21 @@ void LaneChangeModuleManager::updateModuleParams(const std::vector<rclcpp::Param
   });
 }
 
-AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
-  rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config)
-: LaneChangeModuleManager(
-    node, name, config, Direction::NONE, LaneChangeModuleType::AVOIDANCE_BY_LANE_CHANGE)
+void AvoidanceByLaneChangeModuleManager::init(rclcpp::Node * node)
 {
   using autoware_auto_perception_msgs::msg::ObjectClassification;
   using tier4_autoware_utils::getOrDeclareParameter;
 
-  rtc_interface_ptr_map_.clear();
-  const std::vector<std::string> rtc_types = {"left", "right"};
-  for (const auto & rtc_type : rtc_types) {
-    const auto snake_case_name = convertToSnakeCase(name);
-    const std::string rtc_interface_name = snake_case_name + "_" + rtc_type;
-    rtc_interface_ptr_map_.emplace(
-      rtc_type, std::make_shared<RTCInterface>(node, rtc_interface_name));
-  }
+  // init manager interface
+  initInterface(node, {"left", "right"});
+
+  // init lane change manager
+  LaneChangeModuleManager::init(node);
 
   AvoidanceByLCParameters p{};
   // unique parameters
   {
-    std::string ns = "avoidance_by_lane_change.";
+    const std::string ns = "avoidance_by_lane_change.";
     p.execute_object_longitudinal_margin =
       getOrDeclareParameter<double>(*node, ns + "execute_object_longitudinal_margin");
     p.execute_only_when_lane_change_finish_before_object =
@@ -274,7 +269,7 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
 
   // general params
   {
-    std::string ns = "avoidance.";
+    const std::string ns = "avoidance.";
     p.resample_interval_for_planning =
       getOrDeclareParameter<double>(*node, ns + "resample_interval_for_planning");
     p.resample_interval_for_output =
@@ -328,7 +323,7 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
         getOrDeclareParameter<bool>(*node, ns);
     };
 
-    std::string ns = "avoidance.target_filtering.";
+    const std::string ns = "avoidance.target_filtering.";
     set_target_flag(ObjectClassification::CAR, ns + "target_type.car");
     set_target_flag(ObjectClassification::TRUCK, ns + "target_type.truck");
     set_target_flag(ObjectClassification::TRAILER, ns + "target_type.trailer");
@@ -351,7 +346,7 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
   }
 
   {
-    std::string ns = "avoidance.target_filtering.force_avoidance.";
+    const std::string ns = "avoidance.target_filtering.force_avoidance.";
     p.enable_force_avoidance_for_stopped_vehicle =
       getOrDeclareParameter<bool>(*node, ns + "enable");
     p.threshold_time_force_avoidance_for_stopped_vehicle =
@@ -365,7 +360,7 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
   }
 
   {
-    std::string ns = "avoidance.target_filtering.detection_area.";
+    const std::string ns = "avoidance.target_filtering.detection_area.";
     p.use_static_detection_area = getOrDeclareParameter<bool>(*node, ns + "static");
     p.object_check_min_forward_distance =
       getOrDeclareParameter<double>(*node, ns + "min_forward_distance");
@@ -377,7 +372,7 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
 
   // safety check
   {
-    std::string ns = "avoidance.safety_check.";
+    const std::string ns = "avoidance.safety_check.";
     p.hysteresis_factor_expand_rate =
       getOrDeclareParameter<double>(*node, ns + "hysteresis_factor_expand_rate");
   }
@@ -394,3 +389,20 @@ AvoidanceByLaneChangeModuleManager::createNewSceneModuleInstance()
 }
 
 }  // namespace behavior_path_planner
+
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(
+  behavior_path_planner::LaneChangeRightModuleManager,
+  behavior_path_planner::SceneModuleManagerInterface)
+PLUGINLIB_EXPORT_CLASS(
+  behavior_path_planner::LaneChangeLeftModuleManager,
+  behavior_path_planner::SceneModuleManagerInterface)
+PLUGINLIB_EXPORT_CLASS(
+  behavior_path_planner::ExternalRequestLaneChangeRightModuleManager,
+  behavior_path_planner::SceneModuleManagerInterface)
+PLUGINLIB_EXPORT_CLASS(
+  behavior_path_planner::ExternalRequestLaneChangeLeftModuleManager,
+  behavior_path_planner::SceneModuleManagerInterface)
+PLUGINLIB_EXPORT_CLASS(
+  behavior_path_planner::AvoidanceByLaneChangeModuleManager,
+  behavior_path_planner::SceneModuleManagerInterface)

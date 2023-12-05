@@ -7,11 +7,11 @@ autoware_package()
 find_package(OpenCV REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 
-ament_auto_add_library(behavior_path_planner_node SHARED
+pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
+
+ament_auto_add_library(${PROJECT_NAME}_lib SHARED
   src/planner_manager.cpp
-  src/steering_factor_interface.cpp
   src/behavior_path_planner_node.cpp
-  src/scene_module/scene_module_visitor.cpp
   src/scene_module/avoidance/avoidance_module.cpp
   src/scene_module/avoidance/manager.cpp
   src/scene_module/dynamic_avoidance/dynamic_avoidance_module.cpp
@@ -48,17 +48,17 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/marker_utils/lane_change/debug.cpp
 )
 
-target_include_directories(behavior_path_planner_node SYSTEM PUBLIC
+target_include_directories(${PROJECT_NAME}_lib SYSTEM PUBLIC
   ${EIGEN3_INCLUDE_DIR}
 )
 
-target_link_libraries(behavior_path_planner_node
+target_link_libraries(${PROJECT_NAME}_lib
   ${OpenCV_LIBRARIES}
 )
 
-rclcpp_components_register_node(behavior_path_planner_node
+rclcpp_components_register_node(${PROJECT_NAME}_lib
   PLUGIN "behavior_path_planner::BehaviorPathPlannerNode"
-  EXECUTABLE behavior_path_planner
+  EXECUTABLE ${PROJECT_NAME}_node
 )
 
 if(BUILD_TESTING)
@@ -68,7 +68,7 @@ if(BUILD_TESTING)
   )
 
   target_link_libraries(test_${CMAKE_PROJECT_NAME}_utilities
-    behavior_path_planner_node
+    ${PROJECT_NAME}_lib
   )
 
   ament_add_ros_isolated_gmock(test_${CMAKE_PROJECT_NAME}_avoidance_module
@@ -76,7 +76,7 @@ if(BUILD_TESTING)
   )
 
   target_link_libraries(test_${CMAKE_PROJECT_NAME}_avoidance_module
-    behavior_path_planner_node
+    ${PROJECT_NAME}_lib
   )
 
   ament_add_ros_isolated_gmock(test_${CMAKE_PROJECT_NAME}_lane_change_module
@@ -84,14 +84,15 @@ if(BUILD_TESTING)
   )
 
   target_link_libraries(test_${CMAKE_PROJECT_NAME}_lane_change_module
-    behavior_path_planner_node
+    ${PROJECT_NAME}_lib
   )
 
   ament_add_ros_isolated_gtest(test_${PROJECT_NAME}_node_interface
     test/test_${PROJECT_NAME}_node_interface.cpp
   )
+
   target_link_libraries(test_${PROJECT_NAME}_node_interface
-    behavior_path_planner_node
+    ${PROJECT_NAME}_lib
   )
 endif()
 

@@ -15,12 +15,13 @@
 #ifndef BEHAVIOR_PATH_PLANNER__PLANNER_MANAGER_HPP_
 #define BEHAVIOR_PATH_PLANNER__PLANNER_MANAGER_HPP_
 
-#include "behavior_path_planner/scene_module/scene_module_interface.hpp"
-#include "behavior_path_planner/scene_module/scene_module_manager_interface.hpp"
-#include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
+#include "behavior_path_planner_common/interface/scene_module_interface.hpp"
+#include "behavior_path_planner_common/interface/scene_module_manager_interface.hpp"
+#include "behavior_path_planner_common/interface/scene_module_visitor.hpp"
 #include "tier4_autoware_utils/ros/debug_publisher.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
+#include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
@@ -104,14 +105,17 @@ public:
 
   /**
    * @brief register managers.
-   * @param manager pointer.
+   * @param node.
+   * @param plugin name.
    */
-  void registerSceneModuleManager(const SceneModuleManagerPtr & manager_ptr)
-  {
-    RCLCPP_INFO(logger_, "register %s module", manager_ptr->name().c_str());
-    manager_ptrs_.push_back(manager_ptr);
-    processing_time_.emplace(manager_ptr->name(), 0.0);
-  }
+  void launchScenePlugin(rclcpp::Node & node, const std::string & name);
+
+  /**
+   * @brief unregister managers.
+   * @param node.
+   * @param plugin name.
+   */
+  void removeScenePlugin(rclcpp::Node & node, const std::string & name);
 
   /**
    * @brief update module parameters. used for dynamic reconfigure.
@@ -433,6 +437,8 @@ private:
   std::vector<SceneModulePtr> candidate_module_ptrs_;
 
   std::unique_ptr<DebugPublisher> debug_publisher_ptr_;
+
+  pluginlib::ClassLoader<SceneModuleManagerInterface> plugin_loader_;
 
   mutable rclcpp::Logger logger_;
 

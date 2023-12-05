@@ -13,10 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_MANAGER_INTERFACE_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_MANAGER_INTERFACE_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__SCENE_MODULE_MANAGER_INTERFACE_HPP_
+#define BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__SCENE_MODULE_MANAGER_INTERFACE_HPP_
 
-#include "behavior_path_planner/scene_module/scene_module_interface.hpp"
+#include "behavior_path_planner_common/interface/scene_module_interface.hpp"
+#include "tier4_autoware_utils/ros/parameter.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -43,39 +44,11 @@ using SceneModuleObserver = std::weak_ptr<SceneModuleInterface>;
 class SceneModuleManagerInterface
 {
 public:
-  SceneModuleManagerInterface(
-    rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
-    const std::vector<std::string> & rtc_types)
-  : node_(node),
-    clock_(*node->get_clock()),
-    logger_(node->get_logger().get_child(name)),
-    name_(name),
-    enable_simultaneous_execution_as_approved_module_(
-      config.enable_simultaneous_execution_as_approved_module),
-    enable_simultaneous_execution_as_candidate_module_(
-      config.enable_simultaneous_execution_as_candidate_module),
-    enable_rtc_(config.enable_rtc),
-    keep_last_(config.keep_last),
-    max_module_num_(config.max_module_size),
-    priority_(config.priority)
-  {
-    for (const auto & rtc_type : rtc_types) {
-      const auto snake_case_name = utils::convertToSnakeCase(name);
-      const auto rtc_interface_name =
-        rtc_type == "" ? snake_case_name : snake_case_name + "_" + rtc_type;
-      rtc_interface_ptr_map_.emplace(
-        rtc_type, std::make_shared<RTCInterface>(node, rtc_interface_name, enable_rtc_));
-      objects_of_interest_marker_interface_ptr_map_.emplace(
-        rtc_type, std::make_shared<ObjectsOfInterestMarkerInterface>(node, rtc_interface_name));
-    }
-
-    pub_info_marker_ = node->create_publisher<MarkerArray>("~/info/" + name, 20);
-    pub_debug_marker_ = node->create_publisher<MarkerArray>("~/debug/" + name, 20);
-    pub_virtual_wall_ = node->create_publisher<MarkerArray>("~/virtual_wall/" + name, 20);
-    pub_drivable_lanes_ = node->create_publisher<MarkerArray>("~/drivable_lanes/" + name, 20);
-  }
+  explicit SceneModuleManagerInterface(const std::string & name) : name_{name} {}
 
   virtual ~SceneModuleManagerInterface() = default;
+
+  virtual void init(rclcpp::Node * node) = 0;
 
   void updateIdleModuleInstance()
   {
@@ -215,7 +188,7 @@ public:
     });
   }
 
-  bool canLaunchNewModule() const { return observers_.size() < max_module_num_; }
+  bool canLaunchNewModule() const { return observers_.size() < config_.max_module_size; }
 
   /**
    * Determine if the module is always executable, regardless of the state of other modules.
@@ -234,7 +207,7 @@ public:
       return true;
     }
 
-    return enable_simultaneous_execution_as_approved_module_;
+    return config_.enable_simultaneous_execution_as_approved_module;
   }
 
   virtual bool isSimultaneousExecutableAsCandidateModule() const
@@ -243,10 +216,10 @@ public:
       return true;
     }
 
-    return enable_simultaneous_execution_as_candidate_module_;
+    return config_.enable_simultaneous_execution_as_candidate_module;
   }
 
-  bool isKeepLast() const { return keep_last_; }
+  bool isKeepLast() const { return config_.keep_last; }
 
   void setData(const std::shared_ptr<PlannerData> & planner_data) { planner_data_ = planner_data; }
 
@@ -270,7 +243,7 @@ public:
     pub_debug_marker_->publish(MarkerArray{});
   }
 
-  size_t getPriority() const { return priority_; }
+  size_t getPriority() const { return config_.priority; }
 
   std::string name() const { return name_; }
 
@@ -281,13 +254,51 @@ public:
   virtual void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) = 0;
 
 protected:
+  void initInterface(rclcpp::Node * node, const std::vector<std::string> & rtc_types)
+  {
+    using tier4_autoware_utils::getOrDeclareParameter;
+
+    // init manager configuration
+    {
+      std::string ns = name_ + ".";
+      config_.enable_rtc = getOrDeclareParameter<bool>(*node, ns + "enable_rtc");
+      config_.enable_simultaneous_execution_as_approved_module =
+        getOrDeclareParameter<bool>(*node, ns + "enable_simultaneous_execution_as_approved_module");
+      config_.enable_simultaneous_execution_as_candidate_module = getOrDeclareParameter<bool>(
+        *node, ns + "enable_simultaneous_execution_as_candidate_module");
+      config_.keep_last = getOrDeclareParameter<bool>(*node, ns + "keep_last");
+      config_.priority = getOrDeclareParameter<int>(*node, ns + "priority");
+      config_.max_module_size = getOrDeclareParameter<int>(*node, ns + "max_module_size");
+    }
+
+    // init rtc configuration
+    for (const auto & rtc_type : rtc_types) {
+      const auto snake_case_name = utils::convertToSnakeCase(name_);
+      const auto rtc_interface_name =
+        rtc_type == "" ? snake_case_name : snake_case_name + "_" + rtc_type;
+      rtc_interface_ptr_map_.emplace(
+        rtc_type, std::make_shared<RTCInterface>(node, rtc_interface_name, config_.enable_rtc));
+      objects_of_interest_marker_interface_ptr_map_.emplace(
+        rtc_type, std::make_shared<ObjectsOfInterestMarkerInterface>(node, rtc_interface_name));
+    }
+
+    // init publisher
+    {
+      pub_info_marker_ = node->create_publisher<MarkerArray>("~/info/" + name_, 20);
+      pub_debug_marker_ = node->create_publisher<MarkerArray>("~/debug/" + name_, 20);
+      pub_virtual_wall_ = node->create_publisher<MarkerArray>("~/virtual_wall/" + name_, 20);
+      pub_drivable_lanes_ = node->create_publisher<MarkerArray>("~/drivable_lanes/" + name_, 20);
+    }
+
+    // misc
+    {
+      node_ = node;
+    }
+  }
+
   virtual std::unique_ptr<SceneModuleInterface> createNewSceneModuleInstance() = 0;
 
   rclcpp::Node * node_;
-
-  rclcpp::Clock clock_;
-
-  rclcpp::Logger logger_;
 
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_info_marker_;
 
@@ -310,20 +321,9 @@ protected:
   std::unordered_map<std::string, std::shared_ptr<ObjectsOfInterestMarkerInterface>>
     objects_of_interest_marker_interface_ptr_map_;
 
-  bool enable_simultaneous_execution_as_approved_module_{false};
-
-  bool enable_simultaneous_execution_as_candidate_module_{false};
-
-private:
-  bool enable_rtc_;
-
-  bool keep_last_;
-
-  size_t max_module_num_;
-
-  size_t priority_;
+  ModuleConfigParameters config_;
 };
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_MANAGER_INTERFACE_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__SCENE_MODULE_MANAGER_INTERFACE_HPP_

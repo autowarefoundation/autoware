@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
+#include "behavior_path_planner_common/interface/scene_module_visitor.hpp"
 
-#include "behavior_path_planner/scene_module/scene_module_interface.hpp"
+#include "behavior_path_planner_common/interface/scene_module_interface.hpp"
 
 namespace behavior_path_planner
 {

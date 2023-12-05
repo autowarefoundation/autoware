@@ -25,18 +25,18 @@
 
 namespace behavior_path_planner
 {
-
-AvoidanceModuleManager::AvoidanceModuleManager(
-  rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config)
-: SceneModuleManagerInterface(node, name, config, {"left", "right"})
+void AvoidanceModuleManager::init(rclcpp::Node * node)
 {
   using autoware_auto_perception_msgs::msg::ObjectClassification;
   using tier4_autoware_utils::getOrDeclareParameter;
 
+  // init manager interface
+  initInterface(node, {"left", "right"});
+
   AvoidanceParameters p{};
   // general params
   {
-    std::string ns = "avoidance.";
+    const std::string ns = "avoidance.";
     p.resample_interval_for_planning =
       getOrDeclareParameter<double>(*node, ns + "resample_interval_for_planning");
     p.resample_interval_for_output =
@@ -53,7 +53,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
 
   // drivable area
   {
-    std::string ns = "avoidance.";
+    const std::string ns = "avoidance.";
     p.use_adjacent_lane = getOrDeclareParameter<bool>(*node, ns + "use_adjacent_lane");
     p.use_opposite_lane = getOrDeclareParameter<bool>(*node, ns + "use_opposite_lane");
     p.use_intersection_areas = getOrDeclareParameter<bool>(*node, ns + "use_intersection_areas");
@@ -112,7 +112,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
         getOrDeclareParameter<bool>(*node, ns);
     };
 
-    std::string ns = "avoidance.target_filtering.";
+    const std::string ns = "avoidance.target_filtering.";
     set_target_flag(ObjectClassification::CAR, ns + "target_type.car");
     set_target_flag(ObjectClassification::TRUCK, ns + "target_type.truck");
     set_target_flag(ObjectClassification::TRAILER, ns + "target_type.trailer");
@@ -137,7 +137,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
   }
 
   {
-    std::string ns = "avoidance.target_filtering.force_avoidance.";
+    const std::string ns = "avoidance.target_filtering.force_avoidance.";
     p.enable_force_avoidance_for_stopped_vehicle =
       getOrDeclareParameter<bool>(*node, ns + "enable");
     p.threshold_time_force_avoidance_for_stopped_vehicle =
@@ -151,7 +151,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
   }
 
   {
-    std::string ns = "avoidance.target_filtering.detection_area.";
+    const std::string ns = "avoidance.target_filtering.detection_area.";
     p.use_static_detection_area = getOrDeclareParameter<bool>(*node, ns + "static");
     p.object_check_min_forward_distance =
       getOrDeclareParameter<double>(*node, ns + "min_forward_distance");
@@ -171,7 +171,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
         getOrDeclareParameter<bool>(*node, ns);
     };
 
-    std::string ns = "avoidance.safety_check.";
+    const std::string ns = "avoidance.safety_check.";
     set_target_flag(ObjectClassification::CAR, ns + "target_type.car");
     set_target_flag(ObjectClassification::TRUCK, ns + "target_type.truck");
     set_target_flag(ObjectClassification::TRAILER, ns + "target_type.trailer");
@@ -200,7 +200,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
 
   // safety check predicted path params
   {
-    std::string ns = "avoidance.safety_check.";
+    const std::string ns = "avoidance.safety_check.";
     p.ego_predicted_path_params.min_velocity =
       getOrDeclareParameter<double>(*node, ns + "min_velocity");
     p.ego_predicted_path_params.max_velocity =
@@ -217,7 +217,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
 
   // safety check rss params
   {
-    std::string ns = "avoidance.safety_check.";
+    const std::string ns = "avoidance.safety_check.";
     p.rss_params.longitudinal_distance_min_threshold =
       getOrDeclareParameter<double>(*node, ns + "longitudinal_distance_min_threshold");
     p.rss_params.longitudinal_velocity_delta_time =
@@ -236,7 +236,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
 
   // avoidance maneuver (lateral)
   {
-    std::string ns = "avoidance.avoidance.lateral.";
+    const std::string ns = "avoidance.avoidance.lateral.";
     p.soft_road_shoulder_margin =
       getOrDeclareParameter<double>(*node, ns + "soft_road_shoulder_margin");
     p.hard_road_shoulder_margin =
@@ -255,7 +255,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
 
   // avoidance maneuver (longitudinal)
   {
-    std::string ns = "avoidance.avoidance.longitudinal.";
+    const std::string ns = "avoidance.avoidance.longitudinal.";
     p.min_prepare_time = getOrDeclareParameter<double>(*node, ns + "min_prepare_time");
     p.max_prepare_time = getOrDeclareParameter<double>(*node, ns + "max_prepare_time");
     p.min_prepare_distance = getOrDeclareParameter<double>(*node, ns + "min_prepare_distance");
@@ -267,7 +267,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
 
   // avoidance maneuver (return shift dead line)
   {
-    std::string ns = "avoidance.avoidance.return_dead_line.";
+    const std::string ns = "avoidance.avoidance.return_dead_line.";
     p.enable_dead_line_for_goal = getOrDeclareParameter<bool>(*node, ns + "goal.enable");
     p.enable_dead_line_for_traffic_light =
       getOrDeclareParameter<bool>(*node, ns + "traffic_light.enable");
@@ -278,20 +278,20 @@ AvoidanceModuleManager::AvoidanceModuleManager(
 
   // yield
   {
-    std::string ns = "avoidance.yield.";
+    const std::string ns = "avoidance.yield.";
     p.yield_velocity = getOrDeclareParameter<double>(*node, ns + "yield_velocity");
   }
 
   // stop
   {
-    std::string ns = "avoidance.stop.";
+    const std::string ns = "avoidance.stop.";
     p.stop_max_distance = getOrDeclareParameter<double>(*node, ns + "max_distance");
     p.stop_buffer = getOrDeclareParameter<double>(*node, ns + "stop_buffer");
   }
 
   // policy
   {
-    std::string ns = "avoidance.policy.";
+    const std::string ns = "avoidance.policy.";
     p.policy_approval = getOrDeclareParameter<std::string>(*node, ns + "make_approval_request");
     p.policy_deceleration = getOrDeclareParameter<std::string>(*node, ns + "deceleration");
     p.policy_lateral_margin = getOrDeclareParameter<std::string>(*node, ns + "lateral_margin");
@@ -309,7 +309,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
 
   // constraints (longitudinal)
   {
-    std::string ns = "avoidance.constraints.longitudinal.";
+    const std::string ns = "avoidance.constraints.longitudinal.";
     p.nominal_deceleration = getOrDeclareParameter<double>(*node, ns + "nominal_deceleration");
     p.nominal_jerk = getOrDeclareParameter<double>(*node, ns + "nominal_jerk");
     p.max_deceleration = getOrDeclareParameter<double>(*node, ns + "max_deceleration");
@@ -319,7 +319,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
 
   // constraints (lateral)
   {
-    std::string ns = "avoidance.constraints.lateral.";
+    const std::string ns = "avoidance.constraints.lateral.";
     p.velocity_map = getOrDeclareParameter<std::vector<double>>(*node, ns + "velocity");
     p.lateral_max_accel_map =
       getOrDeclareParameter<std::vector<double>>(*node, ns + "max_accel_values");
@@ -347,7 +347,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
 
   // shift line pipeline
   {
-    std::string ns = "avoidance.shift_line_pipeline.";
+    const std::string ns = "avoidance.shift_line_pipeline.";
     p.quantize_filter_threshold =
       getOrDeclareParameter<double>(*node, ns + "trim.quantize_filter_threshold");
     p.same_grad_filter_1_threshold =
@@ -486,3 +486,7 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
   });
 }
 }  // namespace behavior_path_planner
+
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(
+  behavior_path_planner::AvoidanceModuleManager, behavior_path_planner::SceneModuleManagerInterface)

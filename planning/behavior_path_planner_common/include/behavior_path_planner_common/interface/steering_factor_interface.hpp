@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__STEERING_FACTOR_INTERFACE_HPP_
-#define BEHAVIOR_PATH_PLANNER__STEERING_FACTOR_INTERFACE_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__STEERING_FACTOR_INTERFACE_HPP_
+#define BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__STEERING_FACTOR_INTERFACE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -52,4 +52,4 @@ private:
 
 }  // namespace steering_factor_interface
 
-#endif  // BEHAVIOR_PATH_PLANNER__STEERING_FACTOR_INTERFACE_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__STEERING_FACTOR_INTERFACE_HPP_

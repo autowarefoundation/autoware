@@ -14,13 +14,6 @@
 
 #include "behavior_path_planner/behavior_path_planner_node.hpp"
 
-#include "behavior_path_planner/scene_module/avoidance/manager.hpp"
-#include "behavior_path_planner/scene_module/dynamic_avoidance/manager.hpp"
-#include "behavior_path_planner/scene_module/goal_planner/manager.hpp"
-#include "behavior_path_planner/scene_module/lane_change/interface.hpp"
-#include "behavior_path_planner/scene_module/lane_change/manager.hpp"
-#include "behavior_path_planner/scene_module/side_shift/manager.hpp"
-#include "behavior_path_planner/scene_module/start_planner/manager.hpp"
 #include "behavior_path_planner_common/marker_utils/utils.hpp"
 #include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "behavior_path_planner_common/utils/path_utils.hpp"
@@ -141,84 +134,15 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     const auto & p = planner_data_->parameters;
     planner_manager_ = std::make_shared<PlannerManager>(*this, p.max_iteration_num, p.verbose);
 
-    const auto register_and_create_publisher =
-      [&](const auto & manager, const bool create_publishers) {
-        const auto & module_name = manager->name();
-        planner_manager_->registerSceneModuleManager(manager);
-        if (create_publishers) {
-          path_candidate_publishers_.emplace(
-            module_name, create_publisher<Path>(path_candidate_name_space + module_name, 1));
-          path_reference_publishers_.emplace(
-            module_name, create_publisher<Path>(path_reference_name_space + module_name, 1));
-        }
-      };
-
-    if (p.config_start_planner.enable_module) {
-      auto manager =
-        std::make_shared<StartPlannerModuleManager>(this, "start_planner", p.config_start_planner);
-      register_and_create_publisher(manager, true);
+    for (const auto & name : declare_parameter<std::vector<std::string>>("launch_modules")) {
+      planner_manager_->launchScenePlugin(*this, name);
     }
 
-    if (p.config_goal_planner.enable_module) {
-      auto manager =
-        std::make_shared<GoalPlannerModuleManager>(this, "goal_planner", p.config_goal_planner);
-      register_and_create_publisher(manager, true);
-    }
-
-    if (p.config_side_shift.enable_module) {
-      auto manager =
-        std::make_shared<SideShiftModuleManager>(this, "side_shift", p.config_side_shift);
-      register_and_create_publisher(manager, true);
-    }
-
-    if (p.config_lane_change_left.enable_module) {
-      const std::string module_topic = "lane_change_left";
-      auto manager = std::make_shared<LaneChangeModuleManager>(
-        this, module_topic, p.config_lane_change_left, route_handler::Direction::LEFT,
-        LaneChangeModuleType::NORMAL);
-      register_and_create_publisher(manager, true);
-    }
-
-    if (p.config_lane_change_right.enable_module) {
-      const std::string module_topic = "lane_change_right";
-      auto manager = std::make_shared<LaneChangeModuleManager>(
-        this, module_topic, p.config_lane_change_right, route_handler::Direction::RIGHT,
-        LaneChangeModuleType::NORMAL);
-      register_and_create_publisher(manager, true);
-    }
-
-    if (p.config_ext_request_lane_change_right.enable_module) {
-      const std::string module_topic = "external_request_lane_change_right";
-      auto manager = std::make_shared<LaneChangeModuleManager>(
-        this, module_topic, p.config_ext_request_lane_change_right, route_handler::Direction::RIGHT,
-        LaneChangeModuleType::EXTERNAL_REQUEST);
-      register_and_create_publisher(manager, true);
-    }
-
-    if (p.config_ext_request_lane_change_left.enable_module) {
-      const std::string module_topic = "external_request_lane_change_left";
-      auto manager = std::make_shared<LaneChangeModuleManager>(
-        this, module_topic, p.config_ext_request_lane_change_left, route_handler::Direction::LEFT,
-        LaneChangeModuleType::EXTERNAL_REQUEST);
-      register_and_create_publisher(manager, true);
-    }
-
-    if (p.config_avoidance.enable_module) {
-      auto manager =
-        std::make_shared<AvoidanceModuleManager>(this, "avoidance", p.config_avoidance);
-      register_and_create_publisher(manager, true);
-    }
-
-    if (p.config_avoidance_by_lc.enable_module) {
-      auto manager = std::make_shared<AvoidanceByLaneChangeModuleManager>(
-        this, "avoidance_by_lane_change", p.config_avoidance_by_lc);
-      register_and_create_publisher(manager, true);
-    }
-
-    if (p.config_dynamic_avoidance.enable_module) {
-      auto manager = std::make_shared<DynamicAvoidanceModuleManager>(
-        this, "dynamic_avoidance", p.config_dynamic_avoidance);
-      register_and_create_publisher(manager, false);
+    for (const auto & manager : planner_manager_->getSceneModuleManagers()) {
+      path_candidate_publishers_.emplace(
+        manager->name(), create_publisher<Path>(path_candidate_name_space + manager->name(), 1));
+      path_reference_publishers_.emplace(
+        manager->name(), create_publisher<Path>(path_reference_name_space + manager->name(), 1));
     }
   }
 
@@ -281,33 +205,6 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.verbose = declare_parameter<bool>("verbose");
   p.max_iteration_num = declare_parameter<int>("max_iteration_num");
   p.traffic_light_signal_timeout = declare_parameter<double>("traffic_light_signal_timeout");
-
-  const auto get_scene_module_manager_param = [&](std::string && ns) {
-    ModuleConfigParameters config;
-    config.enable_module = declare_parameter<bool>(ns + "enable_module");
-    config.enable_rtc = declare_parameter<bool>(ns + "enable_rtc");
-    config.enable_simultaneous_execution_as_approved_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_approved_module");
-    config.enable_simultaneous_execution_as_candidate_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_candidate_module");
-    config.keep_last = declare_parameter<bool>(ns + "keep_last");
-    config.priority = declare_parameter<int>(ns + "priority");
-    config.max_module_size = declare_parameter<int>(ns + "max_module_size");
-    return config;
-  };
-
-  p.config_start_planner = get_scene_module_manager_param("start_planner.");
-  p.config_goal_planner = get_scene_module_manager_param("goal_planner.");
-  p.config_side_shift = get_scene_module_manager_param("side_shift.");
-  p.config_lane_change_left = get_scene_module_manager_param("lane_change_left.");
-  p.config_lane_change_right = get_scene_module_manager_param("lane_change_right.");
-  p.config_ext_request_lane_change_right =
-    get_scene_module_manager_param("external_request_lane_change_right.");
-  p.config_ext_request_lane_change_left =
-    get_scene_module_manager_param("external_request_lane_change_left.");
-  p.config_avoidance = get_scene_module_manager_param("avoidance.");
-  p.config_avoidance_by_lc = get_scene_module_manager_param("avoidance_by_lc.");
-  p.config_dynamic_avoidance = get_scene_module_manager_param("dynamic_avoidance.");
 
   // vehicle info
   const auto vehicle_info = VehicleInfoUtil(*this).getVehicleInfo();

@@ -79,17 +79,6 @@ struct BehaviorPathPlannerParameters
   size_t max_iteration_num{100};
   double traffic_light_signal_timeout{1.0};
 
-  ModuleConfigParameters config_avoidance;
-  ModuleConfigParameters config_avoidance_by_lc;
-  ModuleConfigParameters config_dynamic_avoidance;
-  ModuleConfigParameters config_start_planner;
-  ModuleConfigParameters config_goal_planner;
-  ModuleConfigParameters config_side_shift;
-  ModuleConfigParameters config_lane_change_left;
-  ModuleConfigParameters config_lane_change_right;
-  ModuleConfigParameters config_ext_request_lane_change_left;
-  ModuleConfigParameters config_ext_request_lane_change_right;
-
   double backward_path_length;
   double forward_path_length;
   double backward_length_buffer_for_end_of_lane;

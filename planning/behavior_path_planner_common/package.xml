@@ -53,8 +53,10 @@
   <depend>magic_enum</depend>
   <depend>motion_utils</depend>
   <depend>object_recognition_utils</depend>
+  <depend>objects_of_interest_marker_interface</depend>
   <depend>rclcpp</depend>
   <depend>route_handler</depend>
+  <depend>rtc_interface</depend>
   <depend>sensor_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>

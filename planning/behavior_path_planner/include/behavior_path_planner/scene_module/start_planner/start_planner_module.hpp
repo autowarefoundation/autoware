@@ -15,7 +15,6 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__START_PLANNER__START_PLANNER_MODULE_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__START_PLANNER__START_PLANNER_MODULE_HPP_
 
-#include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/utils/geometric_parallel_parking/geometric_parallel_parking.hpp"
 #include "behavior_path_planner/utils/start_goal_planner_common/common_module_data.hpp"
 #include "behavior_path_planner/utils/start_planner/freespace_pull_out.hpp"
@@ -23,6 +22,7 @@
 #include "behavior_path_planner/utils/start_planner/pull_out_path.hpp"
 #include "behavior_path_planner/utils/start_planner/shift_pull_out.hpp"
 #include "behavior_path_planner/utils/start_planner/start_planner_parameters.hpp"
+#include "behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"

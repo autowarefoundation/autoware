@@ -25,11 +25,11 @@
 
 namespace behavior_path_planner
 {
-
-GoalPlannerModuleManager::GoalPlannerModuleManager(
-  rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config)
-: SceneModuleManagerInterface(node, name, config, {""})
+void GoalPlannerModuleManager::init(rclcpp::Node * node)
 {
+  // init manager interface
+  initInterface(node, {""});
+
   GoalPlannerParameters p;
 
   const std::string base_ns = "goal_planner.";
@@ -70,7 +70,8 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
       p.parking_policy = ParkingPolicy::RIGHT_SIDE;
     } else {
       RCLCPP_ERROR_STREAM(
-        logger_, "[goal_planner] invalid parking_policy: " << parking_policy_name << std::endl);
+        node->get_logger().get_child(name()),
+        "[goal_planner] invalid parking_policy: " << parking_policy_name << std::endl);
       exit(EXIT_FAILURE);
     }
   }
@@ -247,10 +248,10 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
       node->declare_parameter<double>(base_ns + "stop_condition.maximum_jerk_for_stop");
   }
 
-  std::string path_safety_check_ns = "goal_planner.path_safety_check.";
+  const std::string path_safety_check_ns = "goal_planner.path_safety_check.";
 
   // EgoPredictedPath
-  std::string ego_path_ns = path_safety_check_ns + "ego_predicted_path.";
+  const std::string ego_path_ns = path_safety_check_ns + "ego_predicted_path.";
   {
     p.ego_predicted_path_params.min_velocity =
       node->declare_parameter<double>(ego_path_ns + "min_velocity");
@@ -269,7 +270,7 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
   }
 
   // ObjectFilteringParams
-  std::string obj_filter_ns = path_safety_check_ns + "target_filtering.";
+  const std::string obj_filter_ns = path_safety_check_ns + "target_filtering.";
   {
     p.objects_filtering_params.safety_check_time_horizon =
       node->declare_parameter<double>(obj_filter_ns + "safety_check_time_horizon");
@@ -294,7 +295,7 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
   }
 
   // ObjectTypesToCheck
-  std::string obj_types_ns = obj_filter_ns + "object_types_to_check.";
+  const std::string obj_types_ns = obj_filter_ns + "object_types_to_check.";
   {
     p.objects_filtering_params.object_types_to_check.check_car =
       node->declare_parameter<bool>(obj_types_ns + "check_car");
@@ -315,7 +316,7 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
   }
 
   // ObjectLaneConfiguration
-  std::string obj_lane_ns = obj_filter_ns + "object_lane_configuration.";
+  const std::string obj_lane_ns = obj_filter_ns + "object_lane_configuration.";
   {
     p.objects_filtering_params.object_lane_configuration.check_current_lane =
       node->declare_parameter<bool>(obj_lane_ns + "check_current_lane");
@@ -330,7 +331,7 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
   }
 
   // SafetyCheckParams
-  std::string safety_check_ns = path_safety_check_ns + "safety_check_params.";
+  const std::string safety_check_ns = path_safety_check_ns + "safety_check_params.";
   {
     p.safety_check_params.enable_safety_check =
       node->declare_parameter<bool>(safety_check_ns + "enable_safety_check");
@@ -348,7 +349,7 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
   }
 
   // RSSparams
-  std::string rss_ns = safety_check_ns + "rss_params.";
+  const std::string rss_ns = safety_check_ns + "rss_params.";
   {
     p.safety_check_params.rss_params.rear_vehicle_reaction_time =
       node->declare_parameter<double>(rss_ns + "rear_vehicle_reaction_time");
@@ -363,7 +364,7 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
   }
 
   // IntegralPredictedPolygonParams
-  std::string integral_ns = safety_check_ns + "integral_predicted_polygon_params.";
+  const std::string integral_ns = safety_check_ns + "integral_predicted_polygon_params.";
   {
     p.safety_check_params.integral_predicted_polygon_params.forward_margin =
       node->declare_parameter<double>(integral_ns + "forward_margin");
@@ -384,16 +385,18 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
   // validation of parameters
   if (p.shift_sampling_num < 1) {
     RCLCPP_FATAL_STREAM(
-      logger_, "shift_sampling_num must be positive integer. Given parameter: "
-                 << p.shift_sampling_num << std::endl
-                 << "Terminating the program...");
+      node->get_logger().get_child(name()),
+      "shift_sampling_num must be positive integer. Given parameter: "
+        << p.shift_sampling_num << std::endl
+        << "Terminating the program...");
     exit(EXIT_FAILURE);
   }
   if (p.maximum_deceleration < 0.0) {
     RCLCPP_FATAL_STREAM(
-      logger_, "maximum_deceleration cannot be negative value. Given parameter: "
-                 << p.maximum_deceleration << std::endl
-                 << "Terminating the program...");
+      node->get_logger().get_child(name()),
+      "maximum_deceleration cannot be negative value. Given parameter: "
+        << p.maximum_deceleration << std::endl
+        << "Terminating the program...");
     exit(EXIT_FAILURE);
   }
 
@@ -407,7 +410,7 @@ void GoalPlannerModuleManager::updateModuleParams(
 
   auto & p = parameters_;
 
-  [[maybe_unused]] std::string ns = name_ + ".";
+  [[maybe_unused]] const std::string ns = name_ + ".";
 
   std::for_each(observers_.begin(), observers_.end(), [&p](const auto & observer) {
     if (!observer.expired()) observer.lock()->updateModuleParams(p);
@@ -437,7 +440,7 @@ bool GoalPlannerModuleManager::isSimultaneousExecutableAsApprovedModule() const
     return true;
   }
 
-  return enable_simultaneous_execution_as_approved_module_;
+  return config_.enable_simultaneous_execution_as_approved_module;
 }
 
 bool GoalPlannerModuleManager::isSimultaneousExecutableAsCandidateModule() const
@@ -452,7 +455,12 @@ bool GoalPlannerModuleManager::isSimultaneousExecutableAsCandidateModule() const
     return true;
   }
 
-  return enable_simultaneous_execution_as_candidate_module_;
+  return config_.enable_simultaneous_execution_as_candidate_module;
 }
 
 }  // namespace behavior_path_planner
+
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(
+  behavior_path_planner::GoalPlannerModuleManager,
+  behavior_path_planner::SceneModuleManagerInterface)
