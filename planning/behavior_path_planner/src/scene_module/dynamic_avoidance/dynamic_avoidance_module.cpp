@@ -319,10 +319,10 @@ BehaviorModuleOutput DynamicAvoidanceModule::plan()
   std::vector<DrivableAreaInfo::Obstacle> obstacles_for_drivable_area;
   for (const auto & object : target_objects_) {
     const auto obstacle_poly = [&]() {
-      if (object.polygon_generation_method == PolygonGenerationMethod::EGO_PATH_BASE) {
+      if (parameters_->polygon_generation_method == PolygonGenerationMethod::EGO_PATH_BASE) {
         return calcEgoPathBasedDynamicObstaclePolygon(object);
       }
-      if (object.polygon_generation_method == PolygonGenerationMethod::OBJECT_PATH_BASE) {
+      if (parameters_->polygon_generation_method == PolygonGenerationMethod::OBJECT_PATH_BASE) {
         return calcObjectPathBasedDynamicObstaclePolygon(object);
       }
       throw std::logic_error("The polygon_generation_method's string is invalid.");
@@ -492,7 +492,6 @@ void DynamicAvoidanceModule::updateTargetObjects()
 
   // 2. Precise filtering of target objects and check if they should be avoided
   for (const auto & object : target_objects_manager_.getValidObjects()) {
-    PolygonGenerationMethod polygon_generation_method{PolygonGenerationMethod::EGO_PATH_BASE};
     const auto obj_uuid = object.uuid;
     const auto prev_object = getObstacleFromUuid(prev_objects, obj_uuid);
     const auto obj_path = *std::max_element(
@@ -519,8 +518,8 @@ void DynamicAvoidanceModule::updateTargetObjects()
       getLateralLongitudinalOffset(input_path->points, object.pose, object.shape);
 
     // 2.c. check if object will not cut in
-    const bool will_object_cut_in = willObjectCutIn(
-      input_path->points, obj_path, object.vel, lat_lon_offset, polygon_generation_method);
+    const bool will_object_cut_in =
+      willObjectCutIn(input_path->points, obj_path, object.vel, lat_lon_offset);
     if (will_object_cut_in) {
       RCLCPP_INFO_EXPRESSION(
         getLogger(), parameters_->enable_debug_info,
@@ -607,8 +606,7 @@ void DynamicAvoidanceModule::updateTargetObjects()
 
     const bool should_be_avoided = true;
     target_objects_manager_.updateObject(
-      obj_uuid, lon_offset_to_avoid, *lat_offset_to_avoid, is_collision_left, should_be_avoided,
-      polygon_generation_method);
+      obj_uuid, lon_offset_to_avoid, *lat_offset_to_avoid, is_collision_left, should_be_avoided);
   }
 
   prev_input_ref_path_points = input_ref_path_points;
@@ -686,8 +684,7 @@ bool DynamicAvoidanceModule::isObjectFarFromPath(
 
 bool DynamicAvoidanceModule::willObjectCutIn(
   const std::vector<PathPointWithLaneId> & ego_path, const PredictedPath & predicted_path,
-  const double obj_tangent_vel, const LatLonOffset & lat_lon_offset,
-  PolygonGenerationMethod & polygon_generation_method) const
+  const double obj_tangent_vel, const LatLonOffset & lat_lon_offset) const
 {
   // Ignore oncoming object
   if (obj_tangent_vel < parameters_->min_cut_in_object_vel) {
@@ -721,7 +718,6 @@ bool DynamicAvoidanceModule::willObjectCutIn(
     lon_offset_ego_to_obj < std::max(
                               parameters_->min_lon_offset_ego_to_cut_in_object,
                               relative_velocity * parameters_->min_time_to_start_cut_in)) {
-    polygon_generation_method = PolygonGenerationMethod::EGO_PATH_BASE;
     return false;
   }
 

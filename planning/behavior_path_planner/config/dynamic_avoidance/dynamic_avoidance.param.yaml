@@ -47,6 +47,7 @@
           max_ego_path_lat_cover_ratio: 0.3  # [-] The object will be ignored if the ratio of the object covering the ego's path is higher than this value.
 
       drivable_area_generation:
+        polygon_generation_method: "ego_path_base" # choose "ego_path_base" and "object_path_base"
         object_path_base:
           min_longitudinal_polygon_margin: 3.0 # [m]
 
