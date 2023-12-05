@@ -330,14 +330,14 @@ private:
     const PredictedPath & obj_path, const geometry_msgs::msg::Pose & obj_pose,
     const autoware_auto_perception_msgs::msg::Shape & obj_shape) const;
   MinMaxValue calcMinMaxLongitudinalOffsetToAvoid(
-    const std::vector<PathPointWithLaneId> & path_points_for_object_polygon,
+    const std::vector<PathPointWithLaneId> & input_ref_path_points,
     const geometry_msgs::msg::Pose & obj_pose, const Polygon2d & obj_points, const double obj_vel,
     const PredictedPath & obj_path, const autoware_auto_perception_msgs::msg::Shape & obj_shape,
     const double time_to_collision) const;
   std::optional<MinMaxValue> calcMinMaxLateralOffsetToAvoid(
-    const std::vector<PathPointWithLaneId> & path_points_for_object_polygon,
-    const Polygon2d & obj_points, const double obj_vel, const bool is_collision_left,
-    const double obj_normal_vel, const std::optional<DynamicAvoidanceObject> & prev_object) const;
+    const std::vector<PathPointWithLaneId> & input_ref_path_points, const Polygon2d & obj_points,
+    const double obj_vel, const bool is_collision_left, const double obj_normal_vel,
+    const std::optional<DynamicAvoidanceObject> & prev_object) const;
 
   std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> getAdjacentLanes(
     const double forward_distance, const double backward_distance) const;
@@ -356,6 +356,7 @@ private:
 
   std::vector<DynamicAvoidanceModule::DynamicAvoidanceObject> target_objects_;
   // std::vector<DynamicAvoidanceModule::DynamicAvoidanceObject> prev_target_objects_;
+  std::vector<PathPointWithLaneId> prev_input_ref_path_points;
   std::shared_ptr<DynamicAvoidanceParameters> parameters_;
 
   TargetObjectsManager target_objects_manager_;
