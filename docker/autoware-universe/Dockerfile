@@ -107,7 +107,7 @@ RUN mkdir -p ~/.ssh \
 
 ## Set up runtime environment
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y $SETUP_ARGS --no-cuda-drivers --runtime universe \
+  ./setup-dev-env.sh -y $SETUP_ARGS --no-cuda-drivers --no-nvidia --runtime universe \
   && pip uninstall -y ansible ansible-core \
   && mkdir src \
   && vcs import src < autoware.repos \
