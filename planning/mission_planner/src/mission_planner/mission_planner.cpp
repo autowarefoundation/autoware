@@ -497,7 +497,7 @@ void MissionPlanner::on_clear_mrm_route(
   if (!normal_route_) {
     clear_mrm_route();
     change_state(RouteState::Message::UNSET);
-    res->success = true;
+    res->status.success = true;
     return;
   }
 
@@ -506,7 +506,7 @@ void MissionPlanner::on_clear_mrm_route(
     clear_mrm_route();
     change_route(*normal_route_);
     change_state(RouteState::Message::SET);
-    res->success = true;
+    res->status.success = true;
     return;
   }
 
@@ -523,12 +523,12 @@ void MissionPlanner::on_clear_mrm_route(
     change_mrm_route(*mrm_route_);
     change_route(*normal_route_);
     change_state(RouteState::Message::SET);
-    res->success = false;
+    res->status.success = false;
   } else {
     clear_mrm_route();
     change_route(new_route);
     change_state(RouteState::Message::SET);
-    res->success = true;
+    res->status.success = true;
   }
 }
 

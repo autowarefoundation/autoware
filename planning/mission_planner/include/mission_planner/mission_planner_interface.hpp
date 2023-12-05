@@ -32,7 +32,7 @@ struct SetMrmRoute
 
 struct ClearMrmRoute
 {
-  using Service = std_srvs::srv::Trigger;
+  using Service = autoware_adapi_v1_msgs::srv::ClearRoute;
   static constexpr char name[] = "~/srv/clear_mrm_route";
 };
 
