@@ -524,9 +524,8 @@ void MissionPlanner::on_clear_mrm_route(
   // check new route safety
   if (new_route.segments.empty() || !check_reroute_safety(*mrm_route_, new_route)) {
     // failed to create a new route
-    RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 5000, "Reroute with normal goal failed.");
+    RCLCPP_ERROR(get_logger(), "Reroute with normal goal failed.");
     change_mrm_route(*mrm_route_);
-    change_route(*normal_route_);
     change_state(RouteState::Message::SET);
     res->status.success = false;
   } else {
