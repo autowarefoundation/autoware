@@ -89,7 +89,7 @@ fi
 
 # Check installation of CUDA Drivers
 if [ "$option_no_cuda_drivers" = "true" ]; then
-    ansible_args+=("--extra-vars" "install_cuda_drivers=false")
+    ansible_args+=("--extra-vars" "cuda_install_drivers=false")
 fi
 
 # Check installation of dev package
