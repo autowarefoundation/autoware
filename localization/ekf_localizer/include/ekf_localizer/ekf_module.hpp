@@ -30,6 +30,7 @@
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 
 #include <memory>
+#include <vector>
 
 struct EKFDiagnosticInfo
 {
@@ -76,12 +77,15 @@ public:
   std::array<double, 36> getCurrentPoseCovariance() const;
   std::array<double, 36> getCurrentTwistCovariance() const;
 
+  size_t find_closest_delay_time_index(double target_value) const;
+  void accumulate_delay_time(const double dt);
+
   void predictWithDelay(const double dt);
   bool measurementUpdatePose(
-    const PoseWithCovariance & pose, const double dt, const rclcpp::Time & t_curr,
+    const PoseWithCovariance & pose, const rclcpp::Time & t_curr,
     EKFDiagnosticInfo & pose_diag_info);
   bool measurementUpdateTwist(
-    const TwistWithCovariance & twist, const double dt, const rclcpp::Time & t_curr,
+    const TwistWithCovariance & twist, const rclcpp::Time & t_curr,
     EKFDiagnosticInfo & twist_diag_info);
   geometry_msgs::msg::PoseWithCovarianceStamped compensatePoseWithZDelay(
     const PoseWithCovariance & pose, const double delay_time);
@@ -91,6 +95,7 @@ private:
 
   std::shared_ptr<Warning> warning_;
   const int dim_x_;
+  std::vector<double> accumulated_delay_times_;
   const HyperParameters params_;
 };
 

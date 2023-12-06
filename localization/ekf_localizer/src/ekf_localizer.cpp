@@ -44,7 +44,6 @@ EKFLocalizer::EKFLocalizer(const std::string & node_name, const rclcpp::NodeOpti
 : rclcpp::Node(node_name, node_options),
   warning_(std::make_shared<Warning>(this)),
   params_(this),
-  ekf_rate_(params_.ekf_rate),
   ekf_dt_(params_.ekf_dt),
   pose_queue_(params_.pose_smoothing_steps),
   twist_queue_(params_.twist_smoothing_steps)
@@ -109,9 +108,22 @@ void EKFLocalizer::updatePredictFrequency()
     if (get_clock()->now() < *last_predict_time_) {
       warning_->warn("Detected jump back in time");
     } else {
-      ekf_rate_ = 1.0 / (get_clock()->now() - *last_predict_time_).seconds();
-      DEBUG_INFO(get_logger(), "[EKF] update ekf_rate_ to %f hz", ekf_rate_);
-      ekf_dt_ = 1.0 / std::max(ekf_rate_, 0.1);
+      /* Measure dt */
+      ekf_dt_ = (get_clock()->now() - *last_predict_time_).seconds();
+      DEBUG_INFO(
+        get_logger(), "[EKF] update ekf_dt_ to %f seconds (= %f hz)", ekf_dt_, 1 / ekf_dt_);
+
+      if (ekf_dt_ > 10.0) {
+        ekf_dt_ = 10.0;
+        RCLCPP_WARN(
+          get_logger(), "Large ekf_dt_ detected!! (%f sec) Capped to 10.0 seconds", ekf_dt_);
+      } else if (ekf_dt_ > params_.pose_smoothing_steps / params_.ekf_rate) {
+        RCLCPP_WARN(
+          get_logger(), "EKF period may be too slow to finish pose smoothing!! (%f sec) ", ekf_dt_);
+      }
+
+      /* Register dt and accumulate time delay */
+      ekf_module_->accumulate_delay_time(ekf_dt_);
 
       /* Update discrete proc_cov*/
       proc_cov_vx_d_ = std::pow(params_.proc_stddev_vx_c * ekf_dt_, 2.0);
@@ -165,7 +177,7 @@ void EKFLocalizer::timerCallback()
     const size_t n = pose_queue_.size();
     for (size_t i = 0; i < n; ++i) {
       const auto pose = pose_queue_.pop_increment_age();
-      bool is_updated = ekf_module_->measurementUpdatePose(*pose, ekf_dt_, t_curr, pose_diag_info_);
+      bool is_updated = ekf_module_->measurementUpdatePose(*pose, t_curr, pose_diag_info_);
       if (is_updated) {
         pose_is_updated = true;
 
@@ -200,8 +212,7 @@ void EKFLocalizer::timerCallback()
     const size_t n = twist_queue_.size();
     for (size_t i = 0; i < n; ++i) {
       const auto twist = twist_queue_.pop_increment_age();
-      bool is_updated =
-        ekf_module_->measurementUpdateTwist(*twist, ekf_dt_, t_curr, twist_diag_info_);
+      bool is_updated = ekf_module_->measurementUpdateTwist(*twist, t_curr, twist_diag_info_);
       if (is_updated) {
         twist_is_updated = true;
       }

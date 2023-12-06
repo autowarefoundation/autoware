@@ -38,6 +38,7 @@
 EKFModule::EKFModule(std::shared_ptr<Warning> warning, const HyperParameters params)
 : warning_(std::move(warning)),
   dim_x_(6),  // x, y, yaw, yaw_bias, vx, wz
+  accumulated_delay_times_(params.extend_state_step, 1.0E15),
   params_(params)
 {
   Eigen::MatrixXd X = Eigen::MatrixXd::Zero(dim_x_, 1);
@@ -131,6 +132,48 @@ double EKFModule::getYawBias() const
   return kalman_filter_.getLatestX()(IDX::YAWB);
 }
 
+size_t EKFModule::find_closest_delay_time_index(double target_value) const
+{
+  // If target_value is too large, return last index + 1
+  if (target_value > accumulated_delay_times_.back()) {
+    return accumulated_delay_times_.size();
+  }
+
+  auto lower = std::lower_bound(
+    accumulated_delay_times_.begin(), accumulated_delay_times_.end(), target_value);
+
+  // If the lower bound is the first element, return its index.
+  // If the lower bound is beyond the last element, return the last index.
+  // If else, take the closest element.
+  if (lower == accumulated_delay_times_.begin()) {
+    return 0;
+  } else if (lower == accumulated_delay_times_.end()) {
+    return accumulated_delay_times_.size() - 1;
+  } else {
+    // Compare the target with the lower bound and the previous element.
+    auto prev = lower - 1;
+    bool is_closer_to_prev = (target_value - *prev) < (*lower - target_value);
+
+    // Return the index of the closer element.
+    return is_closer_to_prev ? std::distance(accumulated_delay_times_.begin(), prev)
+                             : std::distance(accumulated_delay_times_.begin(), lower);
+  }
+}
+
+void EKFModule::accumulate_delay_time(const double dt)
+{
+  // Shift the delay times to the right.
+  std::copy_backward(
+    accumulated_delay_times_.begin(), accumulated_delay_times_.end() - 1,
+    accumulated_delay_times_.end());
+
+  // Add the new delay time to all elements.
+  accumulated_delay_times_.front() = 0.0;
+  for (auto & delay_time : accumulated_delay_times_) {
+    delay_time += dt;
+  }
+}
+
 void EKFModule::predictWithDelay(const double dt)
 {
   const Eigen::MatrixXd X_curr = kalman_filter_.getLatestX();
@@ -147,8 +190,7 @@ void EKFModule::predictWithDelay(const double dt)
 }
 
 bool EKFModule::measurementUpdatePose(
-  const PoseWithCovariance & pose, const double dt, const rclcpp::Time & t_curr,
-  EKFDiagnosticInfo & pose_diag_info)
+  const PoseWithCovariance & pose, const rclcpp::Time & t_curr, EKFDiagnosticInfo & pose_diag_info)
 {
   if (pose.header.frame_id != params_.pose_frame_id) {
     warning_->warnThrottle(
@@ -170,14 +212,15 @@ bool EKFModule::measurementUpdatePose(
 
   delay_time = std::max(delay_time, 0.0);
 
-  const int delay_step = std::roundf(delay_time / dt);
+  const int delay_step = static_cast<int>(find_closest_delay_time_index(delay_time));
 
   pose_diag_info.delay_time = std::max(delay_time, pose_diag_info.delay_time);
-  pose_diag_info.delay_time_threshold = params_.extend_state_step * dt;
+  pose_diag_info.delay_time_threshold = accumulated_delay_times_.back();
   if (delay_step >= params_.extend_state_step) {
     pose_diag_info.is_passed_delay_gate = false;
     warning_->warnThrottle(
-      poseDelayStepWarningMessage(delay_time, params_.extend_state_step, dt), 2000);
+      poseDelayStepWarningMessage(pose_diag_info.delay_time, pose_diag_info.delay_time_threshold),
+      2000);
     return false;
   }
 
@@ -243,7 +286,7 @@ geometry_msgs::msg::PoseWithCovarianceStamped EKFModule::compensatePoseWithZDela
 }
 
 bool EKFModule::measurementUpdateTwist(
-  const TwistWithCovariance & twist, const double dt, const rclcpp::Time & t_curr,
+  const TwistWithCovariance & twist, const rclcpp::Time & t_curr,
   EKFDiagnosticInfo & twist_diag_info)
 {
   if (twist.header.frame_id != "base_link") {
@@ -262,14 +305,16 @@ bool EKFModule::measurementUpdateTwist(
   }
   delay_time = std::max(delay_time, 0.0);
 
-  const int delay_step = std::roundf(delay_time / dt);
+  const int delay_step = static_cast<int>(find_closest_delay_time_index(delay_time));
 
   twist_diag_info.delay_time = std::max(delay_time, twist_diag_info.delay_time);
-  twist_diag_info.delay_time_threshold = params_.extend_state_step * dt;
+  twist_diag_info.delay_time_threshold = accumulated_delay_times_.back();
   if (delay_step >= params_.extend_state_step) {
     twist_diag_info.is_passed_delay_gate = false;
     warning_->warnThrottle(
-      twistDelayStepWarningMessage(delay_time, params_.extend_state_step, dt), 2000);
+      twistDelayStepWarningMessage(
+        twist_diag_info.delay_time, twist_diag_info.delay_time_threshold),
+      2000);
     return false;
   }
 

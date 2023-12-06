@@ -155,7 +155,6 @@ private:
 
   const HyperParameters params_;
 
-  double ekf_rate_;
   double ekf_dt_;
 
   /* process noise variance for discrete model */

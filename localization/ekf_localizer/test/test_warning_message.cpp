@@ -21,17 +21,17 @@
 TEST(PoseDelayStepWarningMessage, SmokeTest)
 {
   EXPECT_STREQ(
-    poseDelayStepWarningMessage(6.0, 2, 2.0).c_str(),
+    poseDelayStepWarningMessage(6.0, 4.0).c_str(),
     "Pose delay exceeds the compensation limit, ignored. "
-    "delay: 6.000[s], limit = extend_state_step * ekf_dt : 4.000[s]");
+    "delay: 6.000[s], limit: 4.000[s]");
 }
 
 TEST(TwistDelayStepWarningMessage, SmokeTest)
 {
   EXPECT_STREQ(
-    twistDelayStepWarningMessage(10.0, 3, 2.0).c_str(),
+    twistDelayStepWarningMessage(10.0, 6.0).c_str(),
     "Twist delay exceeds the compensation limit, ignored. "
-    "delay: 10.000[s], limit = extend_state_step * ekf_dt : 6.000[s]");
+    "delay: 10.000[s], limit: 6.000[s]");
 }
 
 TEST(PoseDelayTimeWarningMessage, SmokeTest)
