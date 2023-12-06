@@ -273,6 +273,35 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
       node->declare_parameter<double>(rss_ns + "longitudinal_velocity_delta_time");
   }
 
+  // surround moving obstacle check
+  std::string surround_moving_obstacle_check_ns = ns + "surround_moving_obstacle_check.";
+  {
+    p.search_radius =
+      node->declare_parameter<double>(surround_moving_obstacle_check_ns + "search_radius");
+    p.th_moving_obstacle_velocity = node->declare_parameter<double>(
+      surround_moving_obstacle_check_ns + "th_moving_obstacle_velocity");
+    // ObjectTypesToCheck
+    std::string obj_types_ns = surround_moving_obstacle_check_ns + "object_types_to_check.";
+    {
+      p.surround_moving_obstacles_type_to_check.check_car =
+        node->declare_parameter<bool>(obj_types_ns + "check_car");
+      p.surround_moving_obstacles_type_to_check.check_truck =
+        node->declare_parameter<bool>(obj_types_ns + "check_truck");
+      p.surround_moving_obstacles_type_to_check.check_bus =
+        node->declare_parameter<bool>(obj_types_ns + "check_bus");
+      p.surround_moving_obstacles_type_to_check.check_trailer =
+        node->declare_parameter<bool>(obj_types_ns + "check_trailer");
+      p.surround_moving_obstacles_type_to_check.check_unknown =
+        node->declare_parameter<bool>(obj_types_ns + "check_unknown");
+      p.surround_moving_obstacles_type_to_check.check_bicycle =
+        node->declare_parameter<bool>(obj_types_ns + "check_bicycle");
+      p.surround_moving_obstacles_type_to_check.check_motorcycle =
+        node->declare_parameter<bool>(obj_types_ns + "check_motorcycle");
+      p.surround_moving_obstacles_type_to_check.check_pedestrian =
+        node->declare_parameter<bool>(obj_types_ns + "check_pedestrian");
+    }
+  }
+
   // debug
   std::string debug_ns = ns + "debug.";
   {

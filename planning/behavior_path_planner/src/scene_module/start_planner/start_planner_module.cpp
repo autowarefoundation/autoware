@@ -181,6 +181,21 @@ bool StartPlannerModule::requiresDynamicObjectsCollisionDetection() const
   return parameters_->safety_check_params.enable_safety_check && status_.driving_forward;
 }
 
+bool StartPlannerModule::noMovingObjectsAround() const
+{
+  auto dynamic_objects = *(planner_data_->dynamic_object);
+  utils::path_safety_checker::filterObjectsWithinRadius(
+    dynamic_objects, planner_data_->self_odometry->pose.pose.position, parameters_->search_radius);
+  utils::path_safety_checker::filterObjectsByClass(
+    dynamic_objects, parameters_->surround_moving_obstacles_type_to_check);
+  const auto filtered_objects = utils::path_safety_checker::filterObjectsByVelocity(
+    dynamic_objects, parameters_->th_moving_obstacle_velocity, false);
+  if (!filtered_objects.objects.empty()) {
+    DEBUG_PRINT("Moving objects exist in the safety check area");
+  }
+  return filtered_objects.objects.empty();
+}
+
 bool StartPlannerModule::hasCollisionWithDynamicObjects() const
 {
   // TODO(Sugahara): update path, params for predicted path and so on in this function to avoid
@@ -273,19 +288,23 @@ bool StartPlannerModule::isStopped()
 bool StartPlannerModule::isExecutionReady() const
 {
   bool is_safe = true;
-
   // Evaluate safety. The situation is not safe if any of the following conditions are met:
   // 1. pull out path has not been found
-  // 2. waiting for approval and there is a collision with dynamic objects
+  // 2. there is a moving objects around ego
+  // 3. waiting for approval and there is a collision with dynamic objects
   if (!status_.found_pull_out_path) {
     is_safe = false;
+  } else if (isWaitingApproval()) {
+    if (!noMovingObjectsAround()) {
+      is_safe = false;
+    } else if (requiresDynamicObjectsCollisionDetection() && hasCollisionWithDynamicObjects()) {
+      is_safe = false;
+    }
   }
 
-  if (requiresDynamicObjectsCollisionDetection() && isWaitingApproval()) {
-    is_safe = !hasCollisionWithDynamicObjects();
+  if (!is_safe) {
+    stop_pose_ = planner_data_->self_odometry->pose.pose;
   }
-
-  if (!is_safe) stop_pose_ = planner_data_->self_odometry->pose.pose;
 
   return is_safe;
 }

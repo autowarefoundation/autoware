@@ -44,6 +44,15 @@ bool position_filter(
 
   return (backward_distance < dist_ego_to_obj && dist_ego_to_obj < forward_distance);
 }
+
+bool is_within_circle(
+  const geometry_msgs::msg::Point & object_pos, const geometry_msgs::msg::Point & reference_point,
+  const double search_radius)
+{
+  const double dist =
+    std::hypot(reference_point.x - object_pos.x, reference_point.y - object_pos.y);
+  return dist < search_radius;
+}
 }  // namespace behavior_path_planner::utils::path_safety_checker::filter
 
 namespace behavior_path_planner::utils::path_safety_checker
@@ -123,6 +132,18 @@ void filterObjectsByPosition(
   const auto filter = [&](const auto & object) {
     return filter::position_filter(
       object, path_points, current_pose, forward_distance, -backward_distance);
+  };
+
+  filterObjects(objects, filter);
+}
+
+void filterObjectsWithinRadius(
+  PredictedObjects & objects, const geometry_msgs::msg::Point & reference_point,
+  const double search_radius)
+{
+  const auto filter = [&](const auto & object) {
+    return filter::is_within_circle(
+      object.kinematics.initial_pose_with_covariance.pose.position, reference_point, search_radius);
   };
 
   filterObjects(objects, filter);

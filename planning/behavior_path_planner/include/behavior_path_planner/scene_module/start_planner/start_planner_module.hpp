@@ -137,6 +137,17 @@ private:
   void initializeSafetyCheckParameters();
 
   bool requiresDynamicObjectsCollisionDetection() const;
+
+  /**
+   * @brief Check if there are no moving objects around within a certain radius.
+   *
+   * This function filters the dynamic objects within a certain radius and then filters them by
+   * their velocity. If there are no moving objects around, it returns true. Otherwise, it returns
+   * false.
+   *
+   * @return True if there are no moving objects around. False otherwise.
+   */
+  bool noMovingObjectsAround() const;
   bool receivedNewRoute() const;
 
   bool isModuleRunning() const;

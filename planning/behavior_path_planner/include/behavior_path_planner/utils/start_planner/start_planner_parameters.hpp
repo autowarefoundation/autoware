@@ -93,6 +93,12 @@ struct StartPlannerParameters
   utils::path_safety_checker::ObjectsFilteringParams objects_filtering_params{};
   utils::path_safety_checker::SafetyCheckParams safety_check_params{};
 
+  // surround moving obstacle check
+  double search_radius{0.0};
+  double th_moving_obstacle_velocity{0.0};
+  behavior_path_planner::utils::path_safety_checker::ObjectTypesToCheck
+    surround_moving_obstacles_type_to_check{};
+
   bool print_debug_info{false};
 };
 
