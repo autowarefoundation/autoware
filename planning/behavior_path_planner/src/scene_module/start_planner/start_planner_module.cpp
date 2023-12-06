@@ -146,6 +146,8 @@ void StartPlannerModule::updateData()
 
   if (requiresDynamicObjectsCollisionDetection()) {
     status_.is_safe_dynamic_objects = !hasCollisionWithDynamicObjects();
+  } else {
+    status_.is_safe_dynamic_objects = true;
   }
 }
 
@@ -279,7 +281,7 @@ bool StartPlannerModule::isExecutionReady() const
     is_safe = false;
   }
 
-  if (requiresDynamicObjectsCollisionDetection()) {
+  if (requiresDynamicObjectsCollisionDetection() && isWaitingApproval()) {
     is_safe = !hasCollisionWithDynamicObjects();
   }
 
