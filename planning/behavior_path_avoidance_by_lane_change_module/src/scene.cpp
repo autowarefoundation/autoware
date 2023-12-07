@@ -12,14 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/scene_module/lane_change/avoidance_by_lane_change.hpp"
+#include "behavior_path_avoidance_by_lane_change_module/scene.hpp"
 
-#include "behavior_path_planner/utils/avoidance/utils.hpp"
+#include "behavior_path_avoidance_module/utils.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner_common/utils/path_utils.hpp"
-
-#include <lanelet2_extension/utility/utilities.hpp>
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <boost/geometry/algorithms/centroid.hpp>
 #include <boost/geometry/strategies/cartesian/centroid_bashein_detmer.hpp>

@@ -1,0 +1,3 @@
+<library path="behavior_path_avoidance_module">
+  <class type="behavior_path_planner::AvoidanceModuleManager" base_class_type="behavior_path_planner::SceneModuleManagerInterface"/>
+</library>

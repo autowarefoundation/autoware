@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__AVOIDANCE_MODULE_DATA_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__AVOIDANCE_MODULE_DATA_HPP_
+#ifndef BEHAVIOR_PATH_AVOIDANCE_MODULE__DATA_STRUCTS_HPP_
+#define BEHAVIOR_PATH_AVOIDANCE_MODULE__DATA_STRUCTS_HPP_
 
 #include "behavior_path_planner_common/data_manager.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
@@ -622,4 +622,4 @@ struct DebugData
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__AVOIDANCE_MODULE_DATA_HPP_
+#endif  // BEHAVIOR_PATH_AVOIDANCE_MODULE__DATA_STRUCTS_HPP_

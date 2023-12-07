@@ -94,24 +94,6 @@ public:
   {
   }
 };
-
-class AvoidanceByLaneChangeModuleManager : public LaneChangeModuleManager
-{
-public:
-  AvoidanceByLaneChangeModuleManager()
-  : LaneChangeModuleManager(
-      "avoidance_by_lc", route_handler::Direction::NONE,
-      LaneChangeModuleType::AVOIDANCE_BY_LANE_CHANGE)
-  {
-  }
-
-  void init(rclcpp::Node * node) override;
-
-  std::unique_ptr<SceneModuleInterface> createNewSceneModuleInstance() override;
-
-private:
-  std::shared_ptr<AvoidanceByLCParameters> avoidance_parameters_;
-};
 }  // namespace behavior_path_planner
 
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__MANAGER_HPP_

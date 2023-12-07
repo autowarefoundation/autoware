@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__SHIFT_LINE_GENERATOR_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__SHIFT_LINE_GENERATOR_HPP_
+#ifndef BEHAVIOR_PATH_AVOIDANCE_MODULE__SHIFT_LINE_GENERATOR_HPP_
+#define BEHAVIOR_PATH_AVOIDANCE_MODULE__SHIFT_LINE_GENERATOR_HPP_
 
-#include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
-#include "behavior_path_planner/utils/avoidance/helper.hpp"
+#include "behavior_path_avoidance_module/data_structs.hpp"
+#include "behavior_path_avoidance_module/helper.hpp"
 #include "behavior_path_planner_common/data_manager.hpp"
 #include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
@@ -248,4 +248,4 @@ private:
 
 }  // namespace behavior_path_planner::utils::avoidance
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__SHIFT_LINE_GENERATOR_HPP_
+#endif  // BEHAVIOR_PATH_AVOIDANCE_MODULE__SHIFT_LINE_GENERATOR_HPP_

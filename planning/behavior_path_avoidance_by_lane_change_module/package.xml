@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>behavior_path_avoidance_by_lane_change_module</name>
+  <version>0.1.0</version>
+  <description>The behavior_path_avoidance_by_lane_change_module package</description>
+
+  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
+  <maintainer email="zulfaqar.azmi@tier4.jp">Zulfaqar Azmi</maintainer>
+  <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+  <buildtool_depend>eigen3_cmake_module</buildtool_depend>
+
+  <depend>behavior_path_avoidance_module</depend>
+  <depend>behavior_path_planner</depend>
+  <depend>behavior_path_planner_common</depend>
+  <depend>motion_utils</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>rtc_interface</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>tier4_planning_msgs</depend>
+  <depend>visualization_msgs</depend>
+
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

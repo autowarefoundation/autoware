@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/utils/avoidance/shift_line_generator.hpp"
+#include "behavior_path_avoidance_module/shift_line_generator.hpp"
 
-#include "behavior_path_planner/utils/avoidance/utils.hpp"
+#include "behavior_path_avoidance_module/utils.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
 
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>

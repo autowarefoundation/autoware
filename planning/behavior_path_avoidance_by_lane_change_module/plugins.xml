@@ -1,0 +1,3 @@
+<library path="behavior_path_avoidance_by_lane_change_module">
+  <class type="behavior_path_planner::AvoidanceByLaneChangeModuleManager" base_class_type="behavior_path_planner::SceneModuleManagerInterface"/>
+</library>

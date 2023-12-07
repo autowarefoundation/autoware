@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__HELPER_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__HELPER_HPP_
+#ifndef BEHAVIOR_PATH_AVOIDANCE_MODULE__HELPER_HPP_
+#define BEHAVIOR_PATH_AVOIDANCE_MODULE__HELPER_HPP_
 
-#include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
-#include "behavior_path_planner/utils/avoidance/utils.hpp"
+#include "behavior_path_avoidance_module/data_structs.hpp"
+#include "behavior_path_avoidance_module/utils.hpp"
 
 #include <motion_utils/distance/distance.hpp>
 
@@ -331,4 +331,4 @@ private:
 };
 }  // namespace behavior_path_planner::helper::avoidance
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__HELPER_HPP_
+#endif  // BEHAVIOR_PATH_AVOIDANCE_MODULE__HELPER_HPP_

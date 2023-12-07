@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>behavior_path_avoidance_module</name>
+  <version>0.1.0</version>
+  <description>The behavior_path_avoidance_module package</description>
+
+  <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
+  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
+  <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
+  <maintainer email="kyoichi.sugahara@tier4.jp">Kyoichi Sugahara</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+  <buildtool_depend>eigen3_cmake_module</buildtool_depend>
+
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_auto_tf2</depend>
+  <depend>autoware_perception_msgs</depend>
+  <depend>behavior_path_planner</depend>
+  <depend>behavior_path_planner_common</depend>
+  <depend>geometry_msgs</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>libboost-dev</depend>
+  <depend>magic_enum</depend>
+  <depend>motion_utils</depend>
+  <depend>objects_of_interest_marker_interface</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>route_handler</depend>
+  <depend>rtc_interface</depend>
+  <depend>sensor_msgs</depend>
+  <depend>signal_processing</depend>
+  <depend>tf2</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>tier4_planning_msgs</depend>
+  <depend>vehicle_info_util</depend>
+  <depend>visualization_msgs</depend>
+
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

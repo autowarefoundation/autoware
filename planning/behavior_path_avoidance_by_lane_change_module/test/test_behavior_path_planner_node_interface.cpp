@@ -49,14 +49,7 @@ std::shared_ptr<BehaviorPathPlannerNode> generateNode()
     ament_index_cpp::get_package_share_directory("behavior_path_planner");
 
   std::vector<std::string> module_names;
-  module_names.emplace_back("behavior_path_planner::DynamicAvoidanceModuleManager");
-  module_names.emplace_back("behavior_path_planner::SideShiftModuleManager");
-  module_names.emplace_back("behavior_path_planner::StartPlannerModuleManager");
-  module_names.emplace_back("behavior_path_planner::GoalPlannerModuleManager");
-  module_names.emplace_back("behavior_path_planner::LaneChangeRightModuleManager");
-  module_names.emplace_back("behavior_path_planner::LaneChangeLeftModuleManager");
-  module_names.emplace_back("behavior_path_planner::ExternalRequestLaneChangeRightModuleManager");
-  module_names.emplace_back("behavior_path_planner::ExternalRequestLaneChangeLeftModuleManager");
+  module_names.emplace_back("behavior_path_planner::AvoidanceByLaneChangeModuleManager");
 
   std::vector<rclcpp::Parameter> params;
   params.emplace_back("launch_modules", module_names);
@@ -70,11 +63,12 @@ std::shared_ptr<BehaviorPathPlannerNode> generateNode()
      behavior_path_planner_dir + "/config/behavior_path_planner.param.yaml",
      behavior_path_planner_dir + "/config/drivable_area_expansion.param.yaml",
      behavior_path_planner_dir + "/config/scene_module_manager.param.yaml",
-     behavior_path_planner_dir + "/config/dynamic_avoidance/dynamic_avoidance.param.yaml",
-     behavior_path_planner_dir + "/config/lane_change/lane_change.param.yaml",
-     behavior_path_planner_dir + "/config/start_planner/start_planner.param.yaml",
-     behavior_path_planner_dir + "/config/goal_planner/goal_planner.param.yaml",
-     behavior_path_planner_dir + "/config/side_shift/side_shift.param.yaml"});
+     ament_index_cpp::get_package_share_directory("behavior_path_planner") +
+       "/config/lane_change/lane_change.param.yaml",
+     ament_index_cpp::get_package_share_directory("behavior_path_avoidance_module") +
+       "/config/avoidance.param.yaml",
+     ament_index_cpp::get_package_share_directory("behavior_path_avoidance_by_lane_change_module") +
+       "/config/avoidance_by_lc.param.yaml"});
 
   return std::make_shared<BehaviorPathPlannerNode>(node_options);
 }

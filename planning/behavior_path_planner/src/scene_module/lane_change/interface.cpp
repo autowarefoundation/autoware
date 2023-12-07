@@ -474,38 +474,4 @@ TurnSignalInfo LaneChangeInterface::getCurrentTurnSignalInfo(
   // not in the vicinity of the end of the path. return original
   return original_turn_signal_info;
 }
-
-AvoidanceByLaneChangeInterface::AvoidanceByLaneChangeInterface(
-  const std::string & name, rclcpp::Node & node,
-  const std::shared_ptr<LaneChangeParameters> & parameters,
-  const std::shared_ptr<AvoidanceByLCParameters> & avoidance_by_lane_change_parameters,
-  const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map,
-  std::unordered_map<std::string, std::shared_ptr<ObjectsOfInterestMarkerInterface>> &
-    objects_of_interest_marker_interface_ptr_map)
-: LaneChangeInterface{
-    name,
-    node,
-    parameters,
-    rtc_interface_ptr_map,
-    objects_of_interest_marker_interface_ptr_map,
-    std::make_unique<AvoidanceByLaneChange>(parameters, avoidance_by_lane_change_parameters)}
-{
-}
-
-bool AvoidanceByLaneChangeInterface::isExecutionRequested() const
-{
-  return module_type_->specialRequiredCheck() && module_type_->isLaneChangeRequired();
-}
-
-void AvoidanceByLaneChangeInterface::updateRTCStatus(
-  const double start_distance, const double finish_distance)
-{
-  const auto direction = std::invoke([&]() -> std::string {
-    const auto dir = module_type_->getDirection();
-    return (dir == Direction::LEFT) ? "left" : "right";
-  });
-
-  rtc_interface_ptr_map_.at(direction)->updateCooperateStatus(
-    uuid_map_.at(direction), isExecutionReady(), start_distance, finish_distance, clock_->now());
-}
 }  // namespace behavior_path_planner

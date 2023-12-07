@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 
 #include "behavior_path_planner_common/utils/utils.hpp"
 
-#include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
-#include "behavior_path_planner/utils/avoidance/utils.hpp"
+#include "behavior_path_avoidance_module/data_structs.hpp"
+#include "behavior_path_avoidance_module/utils.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner_common/utils/path_utils.hpp"
 #include "behavior_path_planner_common/utils/traffic_light_utils.hpp"

@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__MARKER_UTILS__AVOIDANCE__DEBUG_HPP_
-#define BEHAVIOR_PATH_PLANNER__MARKER_UTILS__AVOIDANCE__DEBUG_HPP_
+#ifndef BEHAVIOR_PATH_AVOIDANCE_MODULE__DEBUG_HPP_
+#define BEHAVIOR_PATH_AVOIDANCE_MODULE__DEBUG_HPP_
 
-#include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
+#include "behavior_path_avoidance_module/data_structs.hpp"
 #include "behavior_path_planner_common/marker_utils/utils.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
@@ -78,4 +78,4 @@ std::string toStrInfo(const behavior_path_planner::ShiftLine & sp);
 
 std::string toStrInfo(const behavior_path_planner::AvoidLine & ap);
 
-#endif  // BEHAVIOR_PATH_PLANNER__MARKER_UTILS__AVOIDANCE__DEBUG_HPP_
+#endif  // BEHAVIOR_PATH_AVOIDANCE_MODULE__DEBUG_HPP_

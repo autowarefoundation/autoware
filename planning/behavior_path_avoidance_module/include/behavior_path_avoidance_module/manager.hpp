@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__MANAGER_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__MANAGER_HPP_
+#ifndef BEHAVIOR_PATH_AVOIDANCE_MODULE__MANAGER_HPP_
+#define BEHAVIOR_PATH_AVOIDANCE_MODULE__MANAGER_HPP_
 
-#include "behavior_path_planner/scene_module/avoidance/avoidance_module.hpp"
-#include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
+#include "behavior_path_avoidance_module/data_structs.hpp"
+#include "behavior_path_avoidance_module/scene.hpp"
 #include "behavior_path_planner_common/interface/scene_module_manager_interface.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -51,4 +51,4 @@ private:
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__MANAGER_HPP_
+#endif  // BEHAVIOR_PATH_AVOIDANCE_MODULE__MANAGER_HPP_

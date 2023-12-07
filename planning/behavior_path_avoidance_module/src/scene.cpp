@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/scene_module/avoidance/avoidance_module.hpp"
+#include "behavior_path_avoidance_module/scene.hpp"
 
-#include "behavior_path_planner/marker_utils/avoidance/debug.hpp"
-#include "behavior_path_planner/utils/avoidance/utils.hpp"
+#include "behavior_path_avoidance_module/debug.hpp"
+#include "behavior_path_avoidance_module/utils.hpp"
 #include "behavior_path_planner_common/interface/scene_module_visitor.hpp"
 #include "behavior_path_planner_common/utils/create_vehicle_footprint.hpp"
 #include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"

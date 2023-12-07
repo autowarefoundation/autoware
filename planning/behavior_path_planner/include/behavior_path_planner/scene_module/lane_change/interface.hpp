@@ -15,7 +15,6 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__INTERFACE_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__INTERFACE_HPP_
 
-#include "behavior_path_planner/scene_module/lane_change/avoidance_by_lane_change.hpp"
 #include "behavior_path_planner/scene_module/lane_change/base_class.hpp"
 #include "behavior_path_planner/scene_module/lane_change/external_request.hpp"
 #include "behavior_path_planner/scene_module/lane_change/normal.hpp"
@@ -144,23 +143,6 @@ protected:
   bool is_abort_path_approved_{false};
 
   bool is_abort_approval_requested_{false};
-};
-
-class AvoidanceByLaneChangeInterface : public LaneChangeInterface
-{
-public:
-  AvoidanceByLaneChangeInterface(
-    const std::string & name, rclcpp::Node & node,
-    const std::shared_ptr<LaneChangeParameters> & parameters,
-    const std::shared_ptr<AvoidanceByLCParameters> & avoidance_by_lane_change_parameters,
-    const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map,
-    std::unordered_map<std::string, std::shared_ptr<ObjectsOfInterestMarkerInterface>> &
-      objects_of_interest_marker_interface_ptr_map);
-
-  bool isExecutionRequested() const override;
-
-protected:
-  void updateRTCStatus(const double start_distance, const double finish_distance) override;
 };
 }  // namespace behavior_path_planner
 

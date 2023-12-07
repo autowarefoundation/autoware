@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__AVOIDANCE_MODULE_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__AVOIDANCE_MODULE_HPP_
+#ifndef BEHAVIOR_PATH_AVOIDANCE_MODULE__SCENE_HPP_
+#define BEHAVIOR_PATH_AVOIDANCE_MODULE__SCENE_HPP_
 
-#include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
-#include "behavior_path_planner/utils/avoidance/helper.hpp"
-#include "behavior_path_planner/utils/avoidance/shift_line_generator.hpp"
+#include "behavior_path_avoidance_module/data_structs.hpp"
+#include "behavior_path_avoidance_module/helper.hpp"
+#include "behavior_path_avoidance_module/shift_line_generator.hpp"
 #include "behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "behavior_path_planner_common/interface/scene_module_visitor.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
@@ -450,4 +450,4 @@ private:
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__AVOIDANCE_MODULE_HPP_
+#endif  // BEHAVIOR_PATH_AVOIDANCE_MODULE__SCENE_HPP_

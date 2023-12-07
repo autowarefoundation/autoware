@@ -14,8 +14,8 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__LANE_CHANGE_MODULE_DATA_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__LANE_CHANGE_MODULE_DATA_HPP_
 
-#include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
+#include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
 #include <lanelet2_core/primitives/Lanelet.h>
 
@@ -146,15 +146,6 @@ enum class LaneChangeModuleType {
   NORMAL = 0,
   EXTERNAL_REQUEST,
   AVOIDANCE_BY_LANE_CHANGE,
-};
-
-struct AvoidanceByLCParameters : public AvoidanceParameters
-{
-  // execute only when the target object longitudinal distance is larger than this param.
-  double execute_object_longitudinal_margin{0.0};
-
-  // execute only when lane change end point is before the object.
-  bool execute_only_when_lane_change_finish_before_object{false};
 };
 }  // namespace behavior_path_planner
 

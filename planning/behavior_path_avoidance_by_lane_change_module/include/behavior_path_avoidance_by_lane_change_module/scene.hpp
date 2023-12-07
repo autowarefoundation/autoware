@@ -12,18 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__AVOIDANCE_BY_LANE_CHANGE_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__AVOIDANCE_BY_LANE_CHANGE_HPP_
+#ifndef BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__SCENE_HPP_
+#define BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__SCENE_HPP_
 
+#include "behavior_path_avoidance_by_lane_change_module/data_structs.hpp"
 #include "behavior_path_planner/scene_module/lane_change/normal.hpp"
 
 #include <memory>
 
 namespace behavior_path_planner
 {
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using geometry_msgs::msg::Pose;
-using geometry_msgs::msg::Twist;
 using AvoidanceDebugData = DebugData;
 
 class AvoidanceByLaneChange : public NormalLaneChange
@@ -56,4 +54,4 @@ private:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__AVOIDANCE_BY_LANE_CHANGE_HPP_
+#endif  // BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__SCENE_HPP_
