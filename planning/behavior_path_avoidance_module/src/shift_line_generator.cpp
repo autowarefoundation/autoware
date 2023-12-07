@@ -966,6 +966,7 @@ AvoidLineArray ShiftLineGenerator::addReturnShiftLine(
   AvoidLineArray ret = shift_lines;
 
   constexpr double ep = 1.0e-3;
+  constexpr double RETURN_SHIFT_THRESHOLD = 0.1;
   const bool has_candidate_point = !ret.empty();
   const bool has_registered_point = last_.has_value();
 
@@ -977,14 +978,15 @@ AvoidLineArray ShiftLineGenerator::addReturnShiftLine(
     return ret;
   }
 
-  // If the return-to-center shift points are already registered, do nothing.
-  if (!has_registered_point && std::fabs(base_offset_) < ep) {
-    return ret;
-  }
-
-  constexpr double RETURN_SHIFT_THRESHOLD = 0.1;
-  if (std::abs(last_.value().end_shift_length) < RETURN_SHIFT_THRESHOLD) {
-    return ret;
+  if (last_.has_value()) {
+    if (std::abs(last_.value().end_shift_length) < RETURN_SHIFT_THRESHOLD) {
+      return ret;
+    }
+  } else {
+    // If the return-to-center shift points are already registered, do nothing.
+    if (std::abs(base_offset_) < ep) {
+      return ret;
+    }
   }
 
   // From here, the return-to-center is not registered. But perhaps the candidate is
