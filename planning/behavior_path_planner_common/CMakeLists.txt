@@ -21,6 +21,8 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/utils/drivable_area_expansion/drivable_area_expansion.cpp
   src/utils/drivable_area_expansion/map_utils.cpp
   src/utils/drivable_area_expansion/footprints.cpp
+  src/utils/parking_departure/geometric_parallel_parking.cpp
+  src/utils/parking_departure/utils.cpp
   src/marker_utils/utils.cpp
 )
 

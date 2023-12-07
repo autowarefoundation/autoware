@@ -51,8 +51,6 @@ std::shared_ptr<BehaviorPathPlannerNode> generateNode()
   std::vector<std::string> module_names;
   module_names.emplace_back("behavior_path_planner::DynamicAvoidanceModuleManager");
   module_names.emplace_back("behavior_path_planner::SideShiftModuleManager");
-  module_names.emplace_back("behavior_path_planner::StartPlannerModuleManager");
-  module_names.emplace_back("behavior_path_planner::GoalPlannerModuleManager");
   module_names.emplace_back("behavior_path_planner::LaneChangeRightModuleManager");
   module_names.emplace_back("behavior_path_planner::LaneChangeLeftModuleManager");
   module_names.emplace_back("behavior_path_planner::ExternalRequestLaneChangeRightModuleManager");
@@ -72,8 +70,6 @@ std::shared_ptr<BehaviorPathPlannerNode> generateNode()
      behavior_path_planner_dir + "/config/scene_module_manager.param.yaml",
      behavior_path_planner_dir + "/config/dynamic_avoidance/dynamic_avoidance.param.yaml",
      behavior_path_planner_dir + "/config/lane_change/lane_change.param.yaml",
-     behavior_path_planner_dir + "/config/start_planner/start_planner.param.yaml",
-     behavior_path_planner_dir + "/config/goal_planner/goal_planner.param.yaml",
      behavior_path_planner_dir + "/config/side_shift/side_shift.param.yaml"});
 
   return std::make_shared<BehaviorPathPlannerNode>(node_options);
