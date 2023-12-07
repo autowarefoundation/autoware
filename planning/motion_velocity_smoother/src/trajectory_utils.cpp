@@ -15,7 +15,6 @@
 #include "motion_velocity_smoother/trajectory_utils.hpp"
 
 #include "interpolation/linear_interpolation.hpp"
-#include "interpolation/spline_interpolation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
@@ -430,7 +429,7 @@ bool isValidStopDist(
   return true;
 }
 
-boost::optional<TrajectoryPoints> applyDecelFilterWithJerkConstraint(
+std::optional<TrajectoryPoints> applyDecelFilterWithJerkConstraint(
   const TrajectoryPoints & input, const size_t start_index, const double v0, const double a0,
   const double min_acc, const double decel_target_vel,
   const std::map<double, double> & jerk_profile)
@@ -536,7 +535,7 @@ boost::optional<TrajectoryPoints> applyDecelFilterWithJerkConstraint(
   return output_trajectory;
 }
 
-boost::optional<std::tuple<double, double, double, double>> updateStateWithJerkConstraint(
+std::optional<std::tuple<double, double, double, double>> updateStateWithJerkConstraint(
   const double v0, const double a0, const std::map<double, double> & jerk_profile, const double t)
 {
   // constexpr double eps = 1.0E-05;
@@ -558,15 +557,14 @@ boost::optional<std::tuple<double, double, double, double>> updateStateWithJerkC
       x = integ_x(x, v, a, j, dt);
       v = integ_v(v, a, j, dt);
       a = integ_a(a, j, dt);
-      const auto state = std::make_tuple(x, v, a, j);
-      return boost::optional<std::tuple<double, double, double, double>>(state);
+      return std::make_tuple(x, v, a, j);
     }
   }
 
   RCLCPP_WARN_STREAM(
     rclcpp::get_logger("motion_velocity_smoother").get_child("trajectory_utils"),
     "Invalid jerk profile");
-  return {};
+  return std::nullopt;
 }
 
 std::vector<double> calcVelocityProfileWithConstantJerkAndAccelerationLimit(

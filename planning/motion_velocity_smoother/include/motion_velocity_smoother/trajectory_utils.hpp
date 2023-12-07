@@ -15,20 +15,15 @@
 #ifndef MOTION_VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_
 #define MOTION_VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_
 
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
-#include "geometry_msgs/msg/pose.hpp"
+#include "autoware_auto_planning_msgs/msg/detail/trajectory_point__struct.hpp"
+#include "geometry_msgs/msg/detail/pose__struct.hpp"
 
-#include "boost/optional.hpp"
-
-#include <iostream>
 #include <map>
-#include <numeric>
+#include <optional>
 #include <tuple>
 #include <vector>
 
-namespace motion_velocity_smoother
-{
-namespace trajectory_utils
+namespace motion_velocity_smoother::trajectory_utils
 {
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
@@ -57,7 +52,7 @@ double getMaxAbsVelocity(const TrajectoryPoints & trajectory);
 void applyMaximumVelocityLimit(
   const size_t from, const size_t to, const double max_vel, TrajectoryPoints & trajectory);
 
-boost::optional<size_t> searchZeroVelocityIdx(const TrajectoryPoints & trajectory);
+std::optional<size_t> searchZeroVelocityIdx(const TrajectoryPoints & trajectory);
 
 bool calcStopDistWithJerkConstraints(
   const double v0, const double a0, const double jerk_acc, const double jerk_dec,
@@ -68,12 +63,12 @@ bool isValidStopDist(
   const double v_end, const double a_end, const double v_target, const double a_target,
   const double v_margin, const double a_margin);
 
-boost::optional<TrajectoryPoints> applyDecelFilterWithJerkConstraint(
+std::optional<TrajectoryPoints> applyDecelFilterWithJerkConstraint(
   const TrajectoryPoints & input, const size_t start_index, const double v0, const double a0,
   const double min_acc, const double decel_target_vel,
   const std::map<double, double> & jerk_profile);
 
-boost::optional<std::tuple<double, double, double, double>> updateStateWithJerkConstraint(
+std::optional<std::tuple<double, double, double, double>> updateStateWithJerkConstraint(
   const double v0, const double a0, const std::map<double, double> & jerk_profile, const double t);
 
 std::vector<double> calcVelocityProfileWithConstantJerkAndAccelerationLimit(
@@ -82,7 +77,6 @@ std::vector<double> calcVelocityProfileWithConstantJerkAndAccelerationLimit(
 
 double calcStopDistance(const TrajectoryPoints & trajectory, const size_t closest);
 
-}  // namespace trajectory_utils
-}  // namespace motion_velocity_smoother
+}  // namespace motion_velocity_smoother::trajectory_utils
 
 #endif  // MOTION_VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_
