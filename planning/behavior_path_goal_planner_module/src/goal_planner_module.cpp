@@ -873,7 +873,6 @@ void GoalPlannerModule::updateSteeringFactor(
     return SteeringFactor::STRAIGHT;
   });
 
-  // TODO(tkhmy) add handle status TRYING
   steering_factor_interface_ptr_->updateSteeringFactor(
     pose, distance, PlanningBehavior::GOAL_PLANNER, steering_factor_direction, type, "");
 }
