@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="mode" default="lidar" description="options: `camera_lidar_radar_fusion`, `camera_lidar_fusion`, `lidar_radar_fusion`, `lidar` or `radar`"/>
-  <arg name="publish_rate" default="10.0"/>
-  <arg name="enable_delay_compensation" default="true"/>
 
   <!-- Radar Tracking and Merger parameters -->
   <arg name="use_radar_tracking_fusion" default="false" description="use radar tracking fusion"/>
@@ -19,8 +17,7 @@
     <!--multi object tracking-->
     <include file="$(find-pkg-share multi_object_tracker)/launch/multi_object_tracker.launch.xml">
       <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path)"/>
-      <arg name="publish_rate" value="$(var publish_rate)"/>
-      <arg name="enable_delay_compensation" value="$(var enable_delay_compensation)"/>
+      <arg name="tracker_setting_path" value="$(var object_recognition_tracking_multi_object_tracker_node_param_path)"/>
     </include>
   </group>
 
@@ -29,15 +26,12 @@
     <!--multi object tracking for near objects-->
     <include file="$(find-pkg-share multi_object_tracker)/launch/multi_object_tracker.launch.xml">
       <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path)"/>
-      <arg name="publish_rate" value="$(var publish_rate)"/>
-      <arg name="enable_delay_compensation" value="$(var enable_delay_compensation)"/>
+      <arg name="tracker_setting_path" value="$(var object_recognition_tracking_multi_object_tracker_node_param_path)"/>
       <arg name="output" value="/perception/object_recognition/tracking/near_objects"/>
     </include>
 
     <!--radar long range dynamic object tracking-->
     <include file="$(find-pkg-share radar_object_tracker)/launch/radar_object_tracker.launch.xml">
-      <arg name="publish_rate" value="$(var publish_rate)"/>
-      <arg name="enable_delay_compensation" value="$(var enable_delay_compensation)"/>
       <arg name="input" value="$(var radar_tracker_input)"/>
       <arg name="output" value="$(var radar_tracker_output)"/>
       <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path)"/>

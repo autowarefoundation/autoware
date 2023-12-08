@@ -78,9 +78,9 @@ MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
     create_publisher<autoware_auto_perception_msgs::msg::TrackedObjects>("output", rclcpp::QoS{1});
 
   // Parameters
-  double publish_rate = declare_parameter<double>("publish_rate", 30.0);
-  world_frame_id_ = declare_parameter<std::string>("world_frame_id", "world");
-  bool enable_delay_compensation{declare_parameter("enable_delay_compensation", false)};
+  double publish_rate = declare_parameter<double>("publish_rate");
+  world_frame_id_ = declare_parameter<std::string>("world_frame_id");
+  bool enable_delay_compensation{declare_parameter<bool>("enable_delay_compensation")};
 
   auto cti = std::make_shared<tf2_ros::CreateTimerROS>(
     this->get_node_base_interface(), this->get_node_timers_interface());

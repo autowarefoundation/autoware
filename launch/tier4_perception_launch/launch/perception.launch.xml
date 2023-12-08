@@ -14,6 +14,7 @@
   <arg name="object_recognition_detection_radar_lanelet_filtering_range_param"/>
   <arg name="object_recognition_detection_radar_object_clustering_param_path"/>
   <arg name="object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path"/>
+  <arg name="object_recognition_tracking_multi_object_tracker_node_param_path"/>
   <arg name="object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path"/>
   <arg name="object_recognition_tracking_radar_object_tracker_tracking_setting_param_path"/>
   <arg name="obstacle_segmentation_ground_segmentation_param_path"/>
