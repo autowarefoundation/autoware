@@ -15,7 +15,6 @@
 #ifndef BEHAVIOR_PATH_PLANNER_COMMON__PARAMETERS_HPP_
 #define BEHAVIOR_PATH_PLANNER_COMMON__PARAMETERS_HPP_
 
-#include <interpolation/linear_interpolation.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <utility>
@@ -32,47 +31,6 @@ struct ModuleConfigParameters
   uint8_t max_module_size{0};
 };
 
-struct LateralAccelerationMap
-{
-  std::vector<double> base_vel;
-  std::vector<double> base_min_acc;
-  std::vector<double> base_max_acc;
-
-  void add(const double velocity, const double min_acc, const double max_acc)
-  {
-    if (base_vel.size() != base_min_acc.size() || base_vel.size() != base_max_acc.size()) {
-      return;
-    }
-
-    size_t idx = 0;
-    for (size_t i = 0; i < base_vel.size(); ++i) {
-      if (velocity < base_vel.at(i)) {
-        break;
-      }
-      idx = i + 1;
-    }
-
-    base_vel.insert(base_vel.begin() + idx, velocity);
-    base_min_acc.insert(base_min_acc.begin() + idx, min_acc);
-    base_max_acc.insert(base_max_acc.begin() + idx, max_acc);
-  }
-
-  std::pair<double, double> find(const double velocity) const
-  {
-    if (!base_vel.empty() && velocity < base_vel.front()) {
-      return std::make_pair(base_min_acc.front(), base_max_acc.front());
-    }
-    if (!base_vel.empty() && velocity > base_vel.back()) {
-      return std::make_pair(base_min_acc.back(), base_max_acc.back());
-    }
-
-    const double min_acc = interpolation::lerp(base_vel, base_min_acc, velocity);
-    const double max_acc = interpolation::lerp(base_vel, base_max_acc, velocity);
-
-    return std::make_pair(min_acc, max_acc);
-  }
-};
-
 struct BehaviorPathPlannerParameters
 {
   bool verbose;
@@ -81,21 +39,12 @@ struct BehaviorPathPlannerParameters
 
   double backward_path_length;
   double forward_path_length;
-  double backward_length_buffer_for_end_of_lane;
-  double backward_length_buffer_for_blocking_object;
   double backward_length_buffer_for_end_of_pull_over;
   double backward_length_buffer_for_end_of_pull_out;
 
   // common parameters
   double min_acc;
   double max_acc;
-
-  // lane change parameters
-  double lane_changing_lateral_jerk{0.5};
-  double minimum_lane_changing_velocity{5.6};
-  double lane_change_prepare_duration{4.0};
-  double lane_change_finish_judge_buffer{3.0};
-  LateralAccelerationMap lane_change_lat_acc_map;
 
   double minimum_pull_over_length;
   double minimum_pull_out_length;

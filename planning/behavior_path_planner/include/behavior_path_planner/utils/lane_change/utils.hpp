@@ -54,17 +54,21 @@ using tier4_autoware_utils::Polygon2d;
 double calcLaneChangeResampleInterval(
   const double lane_changing_length, const double lane_changing_velocity);
 
+double calcMinimumLaneChangeLength(
+  const LaneChangeParameters & lane_change_parameters, const std::vector<double> & shift_intervals,
+  const double length_to_intersection = 0.0);
+
 double calcMaximumLaneChangeLength(
-  const double current_velocity, const BehaviorPathPlannerParameters & common_param,
+  const double current_velocity, const LaneChangeParameters & lane_change_parameters,
   const std::vector<double> & shift_intervals, const double max_acc);
 
 double calcMinimumAcceleration(
   const double current_velocity, const double min_longitudinal_acc,
-  const BehaviorPathPlannerParameters & params);
+  const LaneChangeParameters & lane_change_parameters);
 
 double calcMaximumAcceleration(
   const double current_velocity, const double current_max_velocity,
-  const double max_longitudinal_acc, const BehaviorPathPlannerParameters & params);
+  const double max_longitudinal_acc, const LaneChangeParameters & lane_change_parameters);
 
 double calcLaneChangingAcceleration(
   const double initial_lane_changing_velocity, const double max_path_velocity,
@@ -130,7 +134,7 @@ double getLateralShift(const LaneChangePath & path);
 bool hasEnoughLengthToLaneChangeAfterAbort(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const Pose & curent_pose, const double abort_return_dist,
-  const BehaviorPathPlannerParameters & common_param, const Direction direction);
+  const LaneChangeParameters & lane_change_parameters, const Direction direction);
 
 lanelet::ConstLanelets getBackwardLanelets(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
@@ -150,7 +154,8 @@ std::optional<lanelet::ConstLanelet> getLaneChangeTargetLane(
 
 std::vector<PoseWithVelocityStamped> convertToPredictedPath(
   const LaneChangePath & lane_change_path, const Twist & vehicle_twist, const Pose & pose,
-  const BehaviorPathPlannerParameters & common_parameters, const double resolution);
+  const BehaviorPathPlannerParameters & common_parameters,
+  const LaneChangeParameters & lane_change_parameters, const double resolution);
 
 bool isParkedObject(
   const PathWithLaneId & path, const RouteHandler & route_handler,

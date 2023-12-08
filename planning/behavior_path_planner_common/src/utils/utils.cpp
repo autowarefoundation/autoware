@@ -1515,31 +1515,6 @@ bool checkPathRelativeAngle(const PathWithLaneId & path, const double angle_thre
   return true;
 }
 
-double calcMinimumLaneChangeLength(
-  const BehaviorPathPlannerParameters & common_param, const std::vector<double> & shift_intervals,
-  const double backward_buffer, const double length_to_intersection)
-{
-  if (shift_intervals.empty()) {
-    return 0.0;
-  }
-
-  const double & vel = common_param.minimum_lane_changing_velocity;
-  const auto lat_acc = common_param.lane_change_lat_acc_map.find(vel);
-  const double & max_lateral_acc = lat_acc.second;
-  const double & lateral_jerk = common_param.lane_changing_lateral_jerk;
-  const double & finish_judge_buffer = common_param.lane_change_finish_judge_buffer;
-
-  double accumulated_length = length_to_intersection;
-  for (const auto & shift_interval : shift_intervals) {
-    const double t =
-      PathShifter::calcShiftTimeFromJerk(shift_interval, lateral_jerk, max_lateral_acc);
-    accumulated_length += vel * t + finish_judge_buffer;
-  }
-  accumulated_length += backward_buffer * (shift_intervals.size() - 1.0);
-
-  return accumulated_length;
-}
-
 lanelet::ConstLanelets getLaneletsFromPath(
   const PathWithLaneId & path, const std::shared_ptr<route_handler::RouteHandler> & route_handler)
 {

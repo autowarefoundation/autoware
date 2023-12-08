@@ -141,6 +141,49 @@ void LaneChangeModuleManager::init(rclcpp::Node * node)
   p.rss_params_for_stuck.lateral_distance_max_threshold = getOrDeclareParameter<double>(
     *node, parameter("safety_check.stuck.lateral_distance_max_threshold"));
 
+  // lane change parameters
+  const auto max_acc = getOrDeclareParameter<double>(*node, "normal.max_acc");
+  p.backward_length_buffer_for_end_of_lane =
+    getOrDeclareParameter<double>(*node, parameter("backward_length_buffer_for_end_of_lane"));
+  p.backward_length_buffer_for_blocking_object =
+    getOrDeclareParameter<double>(*node, parameter("backward_length_buffer_for_blocking_object"));
+  p.lane_changing_lateral_jerk =
+    getOrDeclareParameter<double>(*node, parameter("lane_changing_lateral_jerk"));
+  p.lane_change_prepare_duration =
+    getOrDeclareParameter<double>(*node, parameter("prepare_duration"));
+  p.minimum_lane_changing_velocity =
+    getOrDeclareParameter<double>(*node, parameter("minimum_lane_changing_velocity"));
+  p.minimum_lane_changing_velocity =
+    std::min(p.minimum_lane_changing_velocity, max_acc * p.lane_change_prepare_duration);
+  p.lane_change_finish_judge_buffer =
+    getOrDeclareParameter<double>(*node, parameter("lane_change_finish_judge_buffer"));
+
+  if (p.backward_length_buffer_for_end_of_lane < 1.0) {
+    RCLCPP_WARN_STREAM(
+      node->get_logger().get_child(name()),
+      "Lane change buffer must be more than 1 meter. Modifying the buffer.");
+  }
+
+  // lateral acceleration map for lane change
+  const auto lateral_acc_velocity =
+    getOrDeclareParameter<std::vector<double>>(*node, parameter("lateral_acceleration.velocity"));
+  const auto min_lateral_acc =
+    getOrDeclareParameter<std::vector<double>>(*node, parameter("lateral_acceleration.min_values"));
+  const auto max_lateral_acc =
+    getOrDeclareParameter<std::vector<double>>(*node, parameter("lateral_acceleration.max_values"));
+  if (
+    lateral_acc_velocity.size() != min_lateral_acc.size() ||
+    lateral_acc_velocity.size() != max_lateral_acc.size()) {
+    RCLCPP_ERROR(
+      node->get_logger().get_child(name()),
+      "Lane change lateral acceleration map has invalid size.");
+    exit(EXIT_FAILURE);
+  }
+  for (size_t i = 0; i < lateral_acc_velocity.size(); ++i) {
+    p.lane_change_lat_acc_map.add(
+      lateral_acc_velocity.at(i), min_lateral_acc.at(i), max_lateral_acc.at(i));
+  }
+
   // target object
   {
     const std::string ns = "lane_change.target_object.";

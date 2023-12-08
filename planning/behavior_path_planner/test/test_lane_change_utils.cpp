@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
@@ -41,7 +42,7 @@ TEST(BehaviorPathPlanningLaneChangeUtilsTest, projectCurrentPoseToTarget)
 
 TEST(BehaviorPathPlanningLaneChangeUtilsTest, TESTLateralAccelerationMap)
 {
-  LateralAccelerationMap lat_acc_map;
+  behavior_path_planner::LateralAccelerationMap lat_acc_map;
   lat_acc_map.add(0.0, 0.2, 0.315);
   lat_acc_map.add(3.0, 0.2, 0.315);
   lat_acc_map.add(5.0, 0.2, 0.315);

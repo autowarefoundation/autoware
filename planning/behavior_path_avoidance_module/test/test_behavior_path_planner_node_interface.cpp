@@ -62,8 +62,6 @@ std::shared_ptr<BehaviorPathPlannerNode> generateNode()
                    behavior_path_planner_dir + "/config/behavior_path_planner.param.yaml",
                    behavior_path_planner_dir + "/config/drivable_area_expansion.param.yaml",
                    behavior_path_planner_dir + "/config/scene_module_manager.param.yaml",
-                   ament_index_cpp::get_package_share_directory("behavior_path_planner") +
-                     "/config/lane_change/lane_change.param.yaml",
                    ament_index_cpp::get_package_share_directory("behavior_path_avoidance_module") +
                      "/config/avoidance.param.yaml"});
 

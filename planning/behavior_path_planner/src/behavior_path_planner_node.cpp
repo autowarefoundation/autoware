@@ -238,39 +238,6 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.min_acc = declare_parameter<double>("normal.min_acc");
   p.max_acc = declare_parameter<double>("normal.max_acc");
 
-  // lane change parameters
-  p.backward_length_buffer_for_end_of_lane =
-    declare_parameter<double>("lane_change.backward_length_buffer_for_end_of_lane");
-  p.backward_length_buffer_for_blocking_object =
-    declare_parameter<double>("lane_change.backward_length_buffer_for_blocking_object");
-  p.lane_changing_lateral_jerk =
-    declare_parameter<double>("lane_change.lane_changing_lateral_jerk");
-  p.lane_change_prepare_duration = declare_parameter<double>("lane_change.prepare_duration");
-  p.minimum_lane_changing_velocity =
-    declare_parameter<double>("lane_change.minimum_lane_changing_velocity");
-  p.minimum_lane_changing_velocity =
-    std::min(p.minimum_lane_changing_velocity, p.max_acc * p.lane_change_prepare_duration);
-  p.lane_change_finish_judge_buffer =
-    declare_parameter<double>("lane_change.lane_change_finish_judge_buffer");
-
-  // lateral acceleration map for lane change
-  const auto lateral_acc_velocity =
-    declare_parameter<std::vector<double>>("lane_change.lateral_acceleration.velocity");
-  const auto min_lateral_acc =
-    declare_parameter<std::vector<double>>("lane_change.lateral_acceleration.min_values");
-  const auto max_lateral_acc =
-    declare_parameter<std::vector<double>>("lane_change.lateral_acceleration.max_values");
-  if (
-    lateral_acc_velocity.size() != min_lateral_acc.size() ||
-    lateral_acc_velocity.size() != max_lateral_acc.size()) {
-    RCLCPP_ERROR(get_logger(), "Lane change lateral acceleration map has invalid size.");
-    exit(EXIT_FAILURE);
-  }
-  for (size_t i = 0; i < lateral_acc_velocity.size(); ++i) {
-    p.lane_change_lat_acc_map.add(
-      lateral_acc_velocity.at(i), min_lateral_acc.at(i), max_lateral_acc.at(i));
-  }
-
   p.backward_length_buffer_for_end_of_pull_over =
     declare_parameter<double>("backward_length_buffer_for_end_of_pull_over");
   p.backward_length_buffer_for_end_of_pull_out =
@@ -297,10 +264,6 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.ego_nearest_dist_threshold = declare_parameter<double>("ego_nearest_dist_threshold");
   p.ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
 
-  if (p.backward_length_buffer_for_end_of_lane < 1.0) {
-    RCLCPP_WARN_STREAM(
-      get_logger(), "Lane change buffer must be more than 1 meter. Modifying the buffer.");
-  }
   return p;
 }
 
