@@ -167,10 +167,10 @@ void EKFModule::accumulate_delay_time(const double dt)
     accumulated_delay_times_.begin(), accumulated_delay_times_.end() - 1,
     accumulated_delay_times_.end());
 
-  // Add the new delay time to all elements.
+  // Add a new element (=0) and, and add delay time to the previous elements.
   accumulated_delay_times_.front() = 0.0;
-  for (auto & delay_time : accumulated_delay_times_) {
-    delay_time += dt;
+  for (size_t i = 1; i < accumulated_delay_times_.size(); ++i) {
+    accumulated_delay_times_[i] += dt;
   }
 }
 
