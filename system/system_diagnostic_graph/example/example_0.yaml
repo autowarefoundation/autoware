@@ -22,15 +22,15 @@ nodes:
     list:
       - { type: link, link: /external/remote_command }
 
-  - path: /autoware/modes/emergency-stop
+  - path: /autoware/modes/emergency_stop
     type: ok
 
-  - path: /autoware/modes/comfortable-stop
+  - path: /autoware/modes/comfortable_stop
     type: and
     list:
       - { type: link, link: /functions/obstacle_detection }
 
-  - path: /autoware/modes/pull-over
+  - path: /autoware/modes/pull_over
     type: and
     list:
       - { type: link, link: /functions/pose_estimation }

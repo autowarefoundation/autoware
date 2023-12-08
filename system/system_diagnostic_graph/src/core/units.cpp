@@ -14,6 +14,8 @@
 
 #include "units.hpp"
 
+#include "error.hpp"
+
 #include <algorithm>
 #include <string>
 #include <utility>
@@ -40,13 +42,6 @@ auto resolve(const BaseUnit::NodeDict & dict, const std::vector<UnitConfig::Shar
   return result;
 }
 
-auto resolve(const BaseUnit::NodeDict & dict, const std::string & path)
-{
-  std::vector<BaseUnit *> result;
-  result.push_back(dict.paths.at(path));
-  return result;
-}
-
 BaseUnit::BaseUnit(const std::string & path) : path_(path)
 {
   index_ = 0;
@@ -69,8 +64,8 @@ BaseUnit::NodeData BaseUnit::report() const
 
 void DiagUnit::init(const UnitConfig::SharedPtr & config, const NodeDict &)
 {
-  timeout_ = 3.0;  // TODO(Takagi, Isamu): parameterize
   name_ = config->data.take_text("diag");
+  timeout_ = config->data.take<double>("timeout", 1.0);
 }
 
 void DiagUnit::update(const rclcpp::Time & stamp)
@@ -146,6 +141,28 @@ void OrUnit::update(const rclcpp::Time &)
     merge(links_, status.links, true);
   }
   level_ = std::min(level_, DiagnosticStatus::ERROR);
+}
+
+RemapUnit::RemapUnit(const std::string & path, DiagnosticLevel remap_warn) : BaseUnit(path)
+{
+  remap_warn_ = remap_warn;
+}
+
+void RemapUnit::init(const UnitConfig::SharedPtr & config, const NodeDict & dict)
+{
+  if (config->children.size() != 1) {
+    throw error<InvalidValue>("list size must be 1", config->data);
+  }
+  children_ = resolve(dict, config->children);
+}
+
+void RemapUnit::update(const rclcpp::Time &)
+{
+  const auto status = children_.front()->status();
+  level_ = status.level;
+  links_ = status.links;
+
+  if (level_ == DiagnosticStatus::WARN) level_ = remap_warn_;
 }
 
 DebugUnit::DebugUnit(const std::string & path, DiagnosticLevel level) : BaseUnit(path)

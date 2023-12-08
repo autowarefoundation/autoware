@@ -22,6 +22,8 @@
 #include <memory>
 #include <regex>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -66,15 +68,24 @@ ConfigData ConfigData::load(YAML::Node yaml)
 ConfigData ConfigData::type(const std::string & name) const
 {
   ConfigData data(file);
-  data.mark = name;
+  data.mark = mark.empty() ? name : mark + "-" + name;
   return data;
 }
 
 ConfigData ConfigData::node(const size_t index) const
 {
-  ConfigData data(file);
-  data.mark = mark + "-" + std::to_string(index);
-  return data;
+  return type(std::to_string(index));
+}
+
+std::optional<YAML::Node> ConfigData::take_yaml(const std::string & name)
+{
+  if (!object.count(name)) {
+    return std::nullopt;
+  }
+
+  const auto yaml = object.at(name);
+  object.erase(name);
+  return yaml;
 }
 
 std::string ConfigData::take_text(const std::string & name)
@@ -114,50 +125,82 @@ std::vector<YAML::Node> ConfigData::take_list(const std::string & name)
   return std::vector<YAML::Node>(yaml.begin(), yaml.end());
 }
 
-void check_config_nodes(const std::vector<UnitConfig::SharedPtr> & nodes)
+void resolve_link_nodes(RootConfig & root)
 {
-  std::unordered_map<std::string, size_t> path_count;
-  for (const auto & node : nodes) {
-    path_count[node->path] += 1;
-  }
-
-  path_count.erase("");
-  for (const auto & [path, count] : path_count) {
-    if (1 < count) {
-      throw error<PathConflict>("object path is not unique", path);
-    }
-  }
-}
-
-void resolve_link_nodes(std::vector<UnitConfig::SharedPtr> & nodes)
-{
-  std::vector<UnitConfig::SharedPtr> filtered;
-  std::unordered_map<UnitConfig::SharedPtr, UnitConfig::SharedPtr> links;
   std::unordered_map<std::string, UnitConfig::SharedPtr> paths;
-
-  for (const auto & node : nodes) {
-    links[node] = node;
+  for (const auto & node : root.nodes) {
+    if (node->path.empty()) {
+      continue;
+    }
+    if (paths.count(node->path)) {
+      throw error<PathConflict>("object path is not unique", node->path);
+    }
     paths[node->path] = node;
   }
 
-  for (const auto & node : nodes) {
-    if (node->type == "link" && node->path == "") {
-      const auto link = node->data.take_text("link");
-      if (!paths.count(link)) {
-        throw error<PathNotFound>("link path is not found", link, node->data);
-      }
-      links[node] = paths.at(link);
+  std::vector<UnitConfig::SharedPtr> nodes;
+  std::vector<UnitConfig::SharedPtr> links;
+  for (const auto & node : root.nodes) {
+    if (node->type == "link") {
+      links.push_back(node);
     } else {
-      filtered.push_back(node);
+      nodes.push_back(node);
     }
   }
-  nodes = filtered;
 
+  std::unordered_map<UnitConfig::SharedPtr, UnitConfig::SharedPtr> targets;
+  for (const auto & node : nodes) {
+    targets[node] = node;
+  }
+  for (const auto & node : links) {
+    const auto path = node->data.take_text("link");
+    if (!paths.count(path)) {
+      throw error<PathNotFound>("link path is not found", path, node->data);
+    }
+    const auto link = paths.at(path);
+    if (link->type == "link") {
+      throw error<GraphStructure>("link target is link type", path, node->data);
+    }
+    targets[node] = link;
+  }
   for (const auto & node : nodes) {
     for (auto & child : node->children) {
-      child = links.at(child);
+      child = targets.at(child);
     }
   }
+  root.nodes = nodes;
+}
+
+void resolve_remove_edits(RootConfig & root)
+{
+  std::unordered_map<std::string, UnitConfig::SharedPtr> paths;
+  for (const auto & node : root.nodes) {
+    paths[node->path] = node;
+  }
+
+  std::unordered_set<UnitConfig::SharedPtr> removes;
+  for (const auto & edit : root.edits) {
+    if (edit->type == "remove") {
+      if (!paths.count(edit->path)) {
+        throw error<PathNotFound>("remove path is not found", edit->path, edit->data);
+      }
+      removes.insert(paths.at(edit->path));
+    }
+  }
+
+  const auto filter = [removes](const std::vector<UnitConfig::SharedPtr> & nodes) {
+    std::vector<UnitConfig::SharedPtr> result;
+    for (const auto & node : nodes) {
+      if (!removes.count(node)) {
+        result.push_back(node);
+      }
+    }
+    return result;
+  };
+  for (const auto & node : root.nodes) {
+    node->children = filter(node->children);
+  }
+  root.nodes = filter(root.nodes);
 }
 
 std::string complement_node_type(ConfigData & data)
@@ -224,13 +267,23 @@ UnitConfig::SharedPtr parse_node_config(const ConfigData & data)
   return node;
 }
 
+EditConfig::SharedPtr parse_edit_config(const ConfigData & data)
+{
+  const auto edit = std::make_shared<EditConfig>(data);
+  edit->path = edit->data.take_text("path", "");
+  edit->type = edit->data.take_text("type", "");
+  return edit;
+}
+
 FileConfig::SharedPtr parse_file_config(const ConfigData & data)
 {
   const auto file = std::make_shared<FileConfig>(data);
   const auto path_data = data.type("file");
   const auto node_data = data.type("node");
+  const auto edit_data = data.type("edit");
   const auto paths = file->data.take_list("files");
   const auto nodes = file->data.take_list("nodes");
+  const auto edits = file->data.take_list("edits");
 
   for (const auto & [index, yaml] : enumerate(paths)) {
     const auto path = path_data.node(index).load(yaml);
@@ -239,6 +292,10 @@ FileConfig::SharedPtr parse_file_config(const ConfigData & data)
   for (const auto & [index, yaml] : enumerate(nodes)) {
     const auto node = node_data.node(index).load(yaml);
     file->nodes.push_back(parse_node_config(node));
+  }
+  for (const auto & [index, yaml] : enumerate(edits)) {
+    const auto edit = edit_data.node(index).load(yaml);
+    file->edits.push_back(parse_edit_config(edit));
   }
   return file;
 }
@@ -267,20 +324,22 @@ RootConfig load_root_config(const PathConfig::SharedPtr root)
   }
 
   std::vector<UnitConfig::SharedPtr> nodes;
+  std::vector<EditConfig::SharedPtr> edits;
   for (const auto & file : files) {
     extend(nodes, file->nodes);
+    extend(edits, file->edits);
   }
   for (size_t i = 0; i < nodes.size(); ++i) {
     const auto node = nodes[i];
     extend(nodes, node->children);
   }
 
-  check_config_nodes(nodes);
-  resolve_link_nodes(nodes);
-
   RootConfig config;
   config.files = files;
   config.nodes = nodes;
+  config.edits = edits;
+  resolve_link_nodes(config);
+  resolve_remove_edits(config);
   return config;
 }
 

@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
-    mode_availability: true
-    mode: psim
+    use_operation_mode_availability: true
+    use_debug_mode: false
     rate: 1.0
     input_qos_depth: 1000
     graph_qos_depth: 1

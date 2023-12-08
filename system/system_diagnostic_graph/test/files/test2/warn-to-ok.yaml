@@ -1,0 +1,7 @@
+nodes:
+  - path: output
+    type: warn-to-ok
+    list:
+      - path: input-0
+        type: diag
+        diag: "test: input-0"

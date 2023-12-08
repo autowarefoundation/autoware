@@ -50,6 +50,7 @@ public:
   virtual ~BaseUnit() = default;
   virtual void init(const UnitConfig::SharedPtr & config, const NodeDict & dict) = 0;
   virtual void update(const rclcpp::Time & stamp) = 0;
+  virtual std::string type() const = 0;
 
   NodeData status() const;
   NodeData report() const;
@@ -77,6 +78,7 @@ public:
   using BaseUnit::BaseUnit;
   void init(const UnitConfig::SharedPtr & config, const NodeDict & dict) override;
   void update(const rclcpp::Time & stamp) override;
+  std::string type() const override { return "diag"; }
 
   std::string name() const { return name_; }
   void callback(const rclcpp::Time & stamp, const DiagnosticStatus & status);
@@ -93,6 +95,7 @@ public:
   AndUnit(const std::string & path, bool short_circuit);
   void init(const UnitConfig::SharedPtr & config, const NodeDict & dict) override;
   void update(const rclcpp::Time & stamp) override;
+  std::string type() const override { return short_circuit_ ? "short-circuit-and" : "and"; }
 
 private:
   bool short_circuit_;
@@ -104,6 +107,19 @@ public:
   using BaseUnit::BaseUnit;
   void init(const UnitConfig::SharedPtr & config, const NodeDict & dict) override;
   void update(const rclcpp::Time & stamp) override;
+  std::string type() const override { return "or"; }
+};
+
+class RemapUnit : public BaseUnit
+{
+public:
+  RemapUnit(const std::string & path, DiagnosticLevel remap_warn);
+  void init(const UnitConfig::SharedPtr & config, const NodeDict & dict) override;
+  void update(const rclcpp::Time & stamp) override;
+  std::string type() const override { return "remap"; }
+
+private:
+  DiagnosticLevel remap_warn_;
 };
 
 class DebugUnit : public BaseUnit
@@ -112,6 +128,7 @@ public:
   DebugUnit(const std::string & path, DiagnosticLevel level);
   void init(const UnitConfig::SharedPtr & config, const NodeDict & dict) override;
   void update(const rclcpp::Time & stamp) override;
+  std::string type() const override { return "const"; }
 };
 
 }  // namespace system_diagnostic_graph

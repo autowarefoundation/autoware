@@ -40,6 +40,8 @@ private:
   rclcpp::Publisher<DiagnosticGraph>::SharedPtr pub_graph_;
   void on_timer();
   void on_diag(const DiagnosticArray::ConstSharedPtr msg);
+
+  bool debug_;
 };
 
 }  // namespace system_diagnostic_graph

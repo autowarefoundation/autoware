@@ -18,6 +18,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -32,6 +33,14 @@ struct ConfigData
   ConfigData type(const std::string & name) const;
   ConfigData node(const size_t index) const;
 
+  template <class T>
+  T take(const std::string & name, const T & fail)
+  {
+    const auto yaml = take_yaml(name);
+    return yaml ? yaml.value().as<T>() : fail;
+  }
+
+  std::optional<YAML::Node> take_yaml(const std::string & name);
   std::string take_text(const std::string & name);
   std::string take_text(const std::string & name, const std::string & fail);
   std::vector<YAML::Node> take_list(const std::string & name);
@@ -64,18 +73,28 @@ struct UnitConfig : public BaseConfig
   std::vector<UnitConfig::SharedPtr> children;
 };
 
+struct EditConfig : public BaseConfig
+{
+  using SharedPtr = std::shared_ptr<EditConfig>;
+  using BaseConfig::BaseConfig;
+  std::string type;
+  std::string path;
+};
+
 struct FileConfig : public BaseConfig
 {
   using SharedPtr = std::shared_ptr<FileConfig>;
   using BaseConfig::BaseConfig;
   std::vector<PathConfig::SharedPtr> paths;
   std::vector<UnitConfig::SharedPtr> nodes;
+  std::vector<EditConfig::SharedPtr> edits;
 };
 
 struct RootConfig
 {
   std::vector<FileConfig::SharedPtr> files;
   std::vector<UnitConfig::SharedPtr> nodes;
+  std::vector<EditConfig::SharedPtr> edits;
 };
 
 template <class T>

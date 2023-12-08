@@ -26,19 +26,32 @@
 namespace system_diagnostic_graph
 {
 
-const std::unordered_map<DiagnosticLevel, std::string> level_names = {
-  {DiagnosticStatus::OK, "OK"},
-  {DiagnosticStatus::WARN, "WARN"},
-  {DiagnosticStatus::ERROR, "ERROR"},
-  {DiagnosticStatus::STALE, "STALE"}};
+std::string get_level_text(DiagnosticLevel level)
+{
+  switch (level) {
+    case DiagnosticStatus::OK:
+      return "OK";
+    case DiagnosticStatus::WARN:
+      return "WARN";
+    case DiagnosticStatus::ERROR:
+      return "ERROR";
+    case DiagnosticStatus::STALE:
+      return "STALE";
+  }
+  return "UNKNOWN";
+}
 
 void Graph::debug()
 {
   std::vector<DiagDebugData> lines;
   for (const auto & node : nodes_) {
-    const auto level_name = level_names.at(node->level());
+    const auto level_name = get_level_text(node->level());
     const auto index_name = std::to_string(node->index());
-    lines.push_back({"unit", index_name, level_name, node->path(), "-----"});
+    lines.push_back({index_name, level_name, node->path(), node->type()});
+  }
+  for (const auto & [name, level] : unknowns_) {
+    const auto level_name = get_level_text(level);
+    lines.push_back({"*", level_name, name, "unknown"});
   }
 
   std::array<size_t, diag_debug_size> widths = {};

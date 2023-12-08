@@ -1,0 +1,10 @@
+nodes:
+  - path: output
+    type: and
+    list:
+      - path: input-0
+        type: diag
+        diag: "test: input-0"
+      - path: input-1
+        type: diag
+        diag: "test: input-1"

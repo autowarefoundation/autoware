@@ -12,18 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CORE__DEBUG_HPP_
-#define CORE__DEBUG_HPP_
+#ifndef UTILS_HPP_
+#define UTILS_HPP_
 
-#include <array>
+#include <filesystem>
 #include <string>
 
-namespace system_diagnostic_graph
-{
+std::filesystem::path resource(const std::string & path);
 
-constexpr size_t diag_debug_size = 4;
-using DiagDebugData = std::array<std::string, diag_debug_size>;
-
-}  // namespace system_diagnostic_graph
-
-#endif  // CORE__DEBUG_HPP_
+#endif  // UTILS_HPP_

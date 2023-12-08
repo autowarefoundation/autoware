@@ -40,6 +40,11 @@ class InvalidType : public Exception
   using Exception::Exception;
 };
 
+class InvalidValue : public Exception
+{
+  using Exception::Exception;
+};
+
 class FieldNotFound : public Exception
 {
   using Exception::Exception;
