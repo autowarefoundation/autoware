@@ -92,6 +92,8 @@ private:
   boost::optional<uint8_t> getHighestConfidenceTrafficSignal(
     const lanelet::Id & id, const TrafficLightIdMap & traffic_light_id_map) const;
 
+  void removeDuplicateIds(TrafficSignalArray & signal_array) const;
+
   // Node param
   bool use_last_detect_color_;
   double last_detect_color_hold_time_;
