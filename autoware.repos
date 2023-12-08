@@ -11,7 +11,7 @@ repositories:
   core/autoware_common:
     type: git
     url: https://github.com/autowarefoundation/autoware_common.git
-    version: main
+    version: autoware_msg
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
@@ -24,15 +24,15 @@ repositories:
   universe/autoware.universe:
     type: git
     url: https://github.com/autowarefoundation/autoware.universe.git
-    version: main
+    version: autoware_msg
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
-    url: https://github.com/tier4/tier4_ad_api_adaptor.git
-    version: tier4/universe
+    url: https://github.com/NorahXiong/tier4_ad_api_adaptor.git
+    version: autoware_msg
   universe/external/tier4_autoware_msgs:
     type: git
-    url: https://github.com/tier4/tier4_autoware_msgs.git
-    version: tier4/universe
+    url: https://github.com/shulanbushangshu/tier4_autoware_msgs.git
+    version: tier4_autoware_msgs_planning
   universe/external/morai_msgs:
     type: git
     url: https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs.git
@@ -65,7 +65,7 @@ repositories:
   launcher/autoware_launch:
     type: git
     url: https://github.com/autowarefoundation/autoware_launch.git
-    version: main
+    version: autoware_msg
   # sensor_component
   sensor_component/external/sensor_component_description:
     type: git
@@ -99,8 +99,8 @@ repositories:
     version: main
   vehicle/external/pacmod_interface:
     type: git
-    url: https://github.com/tier4/pacmod_interface.git
-    version: main
+    url: https://github.com/NorahXiong/pacmod_interface.git
+    version: autoware_msg
   # param
   param/autoware_individual_params:
     type: git
