@@ -152,10 +152,10 @@ void CrosswalkModuleManager::launchNewModules(const PathWithLaneId & path)
       path.header.stamp);
   };
 
-  const auto crosswalk_leg_elem_map = planning_utils::getRegElemMapOnPath<Crosswalk>(
+  const auto crosswalk_reg_elem_map = planning_utils::getRegElemMapOnPath<Crosswalk>(
     path, rh->getLaneletMapPtr(), planner_data_->current_odometry->pose);
 
-  for (const auto & crosswalk : crosswalk_leg_elem_map) {
+  for (const auto & crosswalk : crosswalk_reg_elem_map) {
     // NOTE: The former id is a lane id, and the latter one is a regulatory element's id.
     launch(crosswalk.second.id(), crosswalk.first->crosswalkLanelet().id(), crosswalk.first->id());
   }
@@ -178,10 +178,10 @@ CrosswalkModuleManager::getModuleExpiredFunction(const PathWithLaneId & path)
   crosswalk_id_set = getCrosswalkIdSetOnPath(
     planner_data_->current_odometry->pose, path, rh->getLaneletMapPtr(), rh->getOverallGraphPtr());
 
-  const auto crosswalk_leg_elem_map = planning_utils::getRegElemMapOnPath<Crosswalk>(
+  const auto crosswalk_reg_elem_map = planning_utils::getRegElemMapOnPath<Crosswalk>(
     path, rh->getLaneletMapPtr(), planner_data_->current_odometry->pose);
 
-  for (const auto & crosswalk : crosswalk_leg_elem_map) {
+  for (const auto & crosswalk : crosswalk_reg_elem_map) {
     crosswalk_id_set.insert(crosswalk.first->crosswalkLanelet().id());
   }
 

@@ -9,7 +9,7 @@
 
       # param for stop position
       stop_position:
-        stop_position_threshold: 1.0 # [m] threshold to check whether the vehicle stops in front of crosswalk for yielding
+        stop_position_threshold: 1.0 # [m] If the ego vehicle has stopped near the stop line than this value, this module assumes itself to have achieved yielding.
 
         # For the Lanelet2 map with no explicit stop lines
         stop_distance_from_crosswalk: 3.5 # [m] make stop line away from crosswalk
@@ -18,24 +18,24 @@
         # For the case where the stop position is determined according to the object position.
         stop_distance_from_object: 2.0 # [m] the vehicle decelerates to be able to stop in front of object with margin
 
-      # param for ego's slow down velocity
+      # params for ego's slow down velocity. These params are not used for the case of "enable_rtc: false".
       slow_down:
         min_slow_down_velocity: 2.78 # [m/s] target vehicle velocity when module receive slow down command from FOA (2.78 m/s = 10.0 kmph)
         max_slow_down_jerk: -1.5 # [m/sss] minimum jerk deceleration for safe brake
         max_slow_down_accel: -2.5 # [m/ss] minimum accel deceleration for safe brake
         no_relax_velocity: 2.78 # [m/s] if the current velocity is less than X m/s, ego always stops at the stop position(not relax deceleration constraints 2.78 m/s = 10 kmph)
 
-      # param for stuck vehicles
+      # params to prevent stopping on crosswalks due to another vehicle ahead
       stuck_vehicle:
         enable_stuck_check_in_intersection: false # [-] flag to enable stuck vehicle checking for crosswalk which is in intersection
-        stuck_vehicle_velocity: 1.0 # [m/s] maximum velocity threshold whether the vehicle is stuck
-        max_stuck_vehicle_lateral_offset: 2.0 # [m] maximum lateral offset for stuck vehicle position should be looked
-        stuck_vehicle_attention_range: 10.0 # [m] the detection area is defined as X meters behind the crosswalk
-        min_acc: -1.0   # min acceleration [m/ss]
-        min_jerk: -1.0  # min jerk [m/sss]
-        max_jerk: 1.0   # max jerk [m/sss]
+        stuck_vehicle_velocity: 1.0 # [m/s] threshold velocity whether other vehicles are assumed to be stuck or not.
+        max_stuck_vehicle_lateral_offset: 2.0 # [m] The feature does not handle the vehicles farther than this value to the ego's path.
+        stuck_vehicle_attention_range: 10.0 # [m] Ego does not enter the crosswalk area if a stuck vehicle exists within this distance from the end of the crosswalk on the ego's path.
+        min_acc: -1.0 # min acceleration [m/ss]
+        min_jerk: -1.0 # min jerk [m/sss]
+        max_jerk: 1.0 # max jerk [m/sss]
 
-      # param for pass judge logic
+      # params for the pass judge logic against the crosswalk users such as pedestrians or bicycles
       pass_judge:
         ego_pass_first_margin_x: [0.0] # [[s]] time to collision margin vector for ego pass first situation (the module judges that ego don't have to stop at TTC + MARGIN < TTV condition)
         ego_pass_first_margin_y: [6.0] # [[s]] time to vehicle margin vector for ego pass first situation (the module judges that ego don't have to stop at TTC + MARGIN < TTV condition)
@@ -44,21 +44,21 @@
         ego_pass_later_margin_y: [10.0] # [[s]] time to collision margin vector for object pass first situation (the module judges that ego don't have to stop at TTV + MARGIN < TTC condition)
         ego_pass_later_additional_margin: 0.5 # [s] additional time margin for object pass first situation to suppress chattering
 
-        no_stop_decision:
+        no_stop_decision: # parameters to determine if it is safe to attempt stopping before the crosswalk
           max_offset_to_crosswalk_for_yield: 0.0 # [m] maximum offset from ego's front to crosswalk for yield. Positive value means in front of the crosswalk.
-          min_acc: -1.0   # min acceleration [m/ss]
-          min_jerk: -1.0  # min jerk [m/sss]
-          max_jerk: 1.0   # max jerk [m/sss]
+          min_acc: -1.0 # min acceleration [m/ss]
+          min_jerk: -1.0 # min jerk [m/sss]
+          max_jerk: 1.0 # max jerk [m/sss]
 
         stop_object_velocity_threshold: 0.28 # [m/s] velocity threshold for the module to judge whether the objects is stopped (0.28 m/s = 1.0 kmph)
         min_object_velocity: 1.39 # [m/s] minimum object velocity (compare the estimated velocity by perception module with this parameter and adopt the larger one to calculate TTV. 1.39 m/s = 5.0 kmph)
         ## param for yielding
-        disable_stop_for_yield_cancel: true # for the crosswalk where there is a traffic signal
-        disable_yield_for_new_stopped_object: true # for the crosswalk where there is a traffic signal
-        # if the pedestrian does not move for X seconds after stopping before the crosswalk, the module judge that ego is able to pass first.
+        disable_stop_for_yield_cancel: true # for the crosswalks with traffic signal
+        disable_yield_for_new_stopped_object: true # for the crosswalks with traffic signal
+        # If the pedestrian does not move for X seconds after the ego has stopped in front the crosswalk, the module judge that the pedestrian has no intention to walk and allows the ego to proceed.
         distance_map_for_no_intention_to_walk: [1.0, 5.0] # [m] ascending order
         timeout_map_for_no_intention_to_walk: [3.0, 0.0] # [s]
-        timeout_ego_stop_for_yield: 3.0 # [s] the amount of time which ego should be stopping to query whether it yields or not
+        timeout_ego_stop_for_yield: 3.0 # [s] If the ego maintains the stop for this amount of time, then the ego proceeds, assuming it has stopped long time enough.
 
       # param for target object filtering
       object_filtering:
