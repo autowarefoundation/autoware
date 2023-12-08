@@ -5,9 +5,12 @@
   <version>0.1.0</version>
   <description>The behavior_path_start_planner_module package</description>
 
-  <maintainer email="kyoichi.sugahara@tier4.jp">Kyoichi Sugahara</maintainer>
   <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
+  <maintainer email="kyoichi.sugahara@tier4.jp">Kyoichi Sugahara</maintainer>
   <maintainer email="satoshi.ota@tier4.jp">Satoshi OTA</maintainer>
+  <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
+  <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>
+  <maintainer email="tomohito.ando@tier4.jp">Tomohito Ando</maintainer>
 
   <license>Apache License 2.0</license>
 
