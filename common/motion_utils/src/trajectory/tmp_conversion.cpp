@@ -36,12 +36,7 @@ autoware_auto_planning_msgs::msg::Trajectory convertToTrajectory(
   const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & trajectory)
 {
   autoware_auto_planning_msgs::msg::Trajectory output{};
-  for (const auto & pt : trajectory) {
-    output.points.push_back(pt);
-    if (output.points.size() >= output.CAPACITY) {
-      break;
-    }
-  }
+  for (const auto & pt : trajectory) output.points.push_back(pt);
   return output;
 }
 
