@@ -65,7 +65,10 @@ autoware_perception_msgs::msg::PredictedObjects generate_perception_msg()
   kin.initial_acceleration_with_covariance.accel.angular.y = 0;
   kin.initial_acceleration_with_covariance.accel.angular.z = 0;
 
-  for (size_t i = 0; i < 10; i++) {
+  constexpr size_t path_size = 10;
+  kin.predicted_paths.resize(1);
+  kin.predicted_paths[0].path.resize(path_size);
+  for (size_t i = 0; i < path_size; i++) {
     kin.predicted_paths[0].path[i].position.x = i;
     kin.predicted_paths[0].path[i].position.y = 0;
     kin.predicted_paths[0].path[i].position.z = 0;
