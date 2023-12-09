@@ -1,5 +1,4 @@
 <library path="behavior_path_planner_lib">
-  <class type="behavior_path_planner::SideShiftModuleManager" base_class_type="behavior_path_planner::SceneModuleManagerInterface"/>
   <class type="behavior_path_planner::DynamicAvoidanceModuleManager" base_class_type="behavior_path_planner::SceneModuleManagerInterface"/>
   <class type="behavior_path_planner::LaneChangeRightModuleManager" base_class_type="behavior_path_planner::SceneModuleManagerInterface"/>
   <class type="behavior_path_planner::LaneChangeLeftModuleManager" base_class_type="behavior_path_planner::SceneModuleManagerInterface"/>

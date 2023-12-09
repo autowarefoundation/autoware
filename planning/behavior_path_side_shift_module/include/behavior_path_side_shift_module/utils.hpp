@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2021 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__SIDE_SHIFT__UTIL_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__SIDE_SHIFT__UTIL_HPP_
+#ifndef BEHAVIOR_PATH_SIDE_SHIFT_MODULE__UTILS_HPP_
+#define BEHAVIOR_PATH_SIDE_SHIFT_MODULE__UTILS_HPP_
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/point.hpp>
@@ -41,4 +41,4 @@ Point transformToGrid(
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__SIDE_SHIFT__UTIL_HPP_
+#endif  // BEHAVIOR_PATH_SIDE_SHIFT_MODULE__UTILS_HPP_

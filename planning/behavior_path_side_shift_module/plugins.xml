@@ -1,0 +1,3 @@
+<library path="behavior_path_side_shift_module">
+  <class type="behavior_path_planner::SideShiftModuleManager" base_class_type="behavior_path_planner::SceneModuleManagerInterface"/>
+</library>

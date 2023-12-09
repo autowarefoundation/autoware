@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2021 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SIDE_SHIFT__SIDE_SHIFT_MODULE_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SIDE_SHIFT__SIDE_SHIFT_MODULE_HPP_
+#ifndef BEHAVIOR_PATH_SIDE_SHIFT_MODULE__SCENE_HPP_
+#define BEHAVIOR_PATH_SIDE_SHIFT_MODULE__SCENE_HPP_
 
-#include "behavior_path_planner/utils/side_shift/side_shift_parameters.hpp"
 #include "behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
+#include "behavior_path_side_shift_module/data_structs.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -134,4 +134,4 @@ private:
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SIDE_SHIFT__SIDE_SHIFT_MODULE_HPP_
+#endif  // BEHAVIOR_PATH_SIDE_SHIFT_MODULE__SCENE_HPP_
