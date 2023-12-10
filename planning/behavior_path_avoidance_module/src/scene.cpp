@@ -137,7 +137,7 @@ bool AvoidanceModule::isExecutionRequested() const
 bool AvoidanceModule::isExecutionReady() const
 {
   DEBUG_PRINT("AVOIDANCE isExecutionReady");
-  return avoid_data_.safe && avoid_data_.comfortable;
+  return avoid_data_.safe && avoid_data_.comfortable && avoid_data_.valid;
 }
 
 bool AvoidanceModule::canTransitSuccessState()
@@ -450,15 +450,14 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    * STEP1: Create candidate shift lines.
    * Merge rough shift lines, and extract new shift lines.
    */
-  const auto processed_shift_lines = generator_.generate(data, debug);
+  data.new_shift_line = generator_.generate(data, debug);
 
   /**
    * Step2: Validate new shift lines.
    * Output new shift lines only when the avoidance path which is generated from them doesn't have
    * huge offset from ego.
    */
-  data.valid = isValidShiftLine(processed_shift_lines, path_shifter);
-  data.new_shift_line = data.valid ? processed_shift_lines : AvoidLineArray{};
+  data.valid = isValidShiftLine(data.new_shift_line, path_shifter);
   const auto found_new_sl = data.new_shift_line.size() > 0;
   const auto registered = path_shifter.getShiftLines().size() > 0;
   data.found_avoidance_path = found_new_sl || registered;
@@ -494,17 +493,6 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
 void AvoidanceModule::fillEgoStatus(
   AvoidancePlanningData & data, [[maybe_unused]] DebugData & debug) const
 {
-  /**
-   * TODO(someone): prevent meaningless stop point insertion in other way.
-   * If the candidate shift line is invalid, manage all objects as unavoidable.
-   */
-  if (!data.valid) {
-    std::for_each(data.target_objects.begin(), data.target_objects.end(), [](auto & o) {
-      o.is_avoidable = false;
-      o.reason = "InvalidShiftLine";
-    });
-  }
-
   /**
    * Find the nearest object that should be avoid. When the ego follows reference path,
    * if the both of following two conditions are satisfied, the module surely avoid the object.
