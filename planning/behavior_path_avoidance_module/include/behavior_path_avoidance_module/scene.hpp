@@ -73,6 +73,8 @@ public:
   std::shared_ptr<AvoidanceDebugMsgArray> get_debug_msg_array() const;
 
 private:
+  bool isSatisfiedSuccessCondition(const AvoidancePlanningData & data) const;
+
   bool canTransitSuccessState() override;
 
   bool canTransitFailureState() override { return false; }

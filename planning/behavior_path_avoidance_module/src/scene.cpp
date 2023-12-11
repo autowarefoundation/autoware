@@ -140,6 +140,47 @@ bool AvoidanceModule::isExecutionReady() const
   return avoid_data_.safe && avoid_data_.comfortable && avoid_data_.valid;
 }
 
+bool AvoidanceModule::isSatisfiedSuccessCondition(const AvoidancePlanningData & data) const
+{
+  const bool has_avoidance_target =
+    std::any_of(data.target_objects.begin(), data.target_objects.end(), [](const auto & o) {
+      return o.is_avoidable || o.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
+    });
+
+  if (has_avoidance_target) {
+    return false;
+  }
+
+  // If the ego is on the shift line, keep RUNNING.
+  {
+    const size_t idx = planner_data_->findEgoIndex(path_shifter_.getReferencePath().points);
+    const auto within = [](const auto & line, const size_t idx) {
+      return line.start_idx < idx && idx < line.end_idx;
+    };
+    for (const auto & shift_line : path_shifter_.getShiftLines()) {
+      if (within(shift_line, idx)) {
+        return false;
+      }
+    }
+  }
+
+  const bool has_shift_point = !path_shifter_.getShiftLines().empty();
+  const bool has_base_offset =
+    std::abs(path_shifter_.getBaseOffset()) > parameters_->lateral_avoid_check_threshold;
+
+  // Nothing to do. -> EXIT.
+  if (!has_shift_point && !has_base_offset) {
+    return true;
+  }
+
+  // Be able to canceling avoidance path. -> EXIT.
+  if (!helper_->isShifted() && parameters_->enable_cancel_maneuver) {
+    return true;
+  }
+
+  return false;
+}
+
 bool AvoidanceModule::canTransitSuccessState()
 {
   const auto & data = avoid_data_;
@@ -168,44 +209,7 @@ bool AvoidanceModule::canTransitSuccessState()
     }
   }
 
-  const bool has_avoidance_target =
-    std::any_of(data.target_objects.begin(), data.target_objects.end(), [](const auto & o) {
-      return o.is_avoidable || o.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
-    });
-  const bool has_shift_point = !path_shifter_.getShiftLines().empty();
-  const bool has_base_offset =
-    std::abs(path_shifter_.getBaseOffset()) > parameters_->lateral_avoid_check_threshold;
-
-  // If the vehicle is on the shift line, keep RUNNING.
-  {
-    const size_t idx = planner_data_->findEgoIndex(path_shifter_.getReferencePath().points);
-    const auto within = [](const auto & line, const size_t idx) {
-      return line.start_idx < idx && idx < line.end_idx;
-    };
-    for (const auto & shift_line : path_shifter_.getShiftLines()) {
-      if (within(shift_line, idx)) {
-        return false;
-      }
-    }
-  }
-
-  // Nothing to do. -> EXIT.
-  if (!has_avoidance_target) {
-    if (!has_shift_point && !has_base_offset) {
-      RCLCPP_INFO(getLogger(), "No objects. No approved shift lines. Exit.");
-      return true;
-    }
-  }
-
-  // Be able to canceling avoidance path. -> EXIT.
-  if (!has_avoidance_target) {
-    if (!helper_->isShifted() && parameters_->enable_cancel_maneuver) {
-      RCLCPP_INFO(getLogger(), "No objects. Cancel avoidance path. Exit.");
-      return true;
-    }
-  }
-
-  return false;  // Keep current state.
+  return data.success;
 }
 
 void AvoidanceModule::fillFundamentalData(AvoidancePlanningData & data, DebugData & debug)
@@ -493,6 +497,8 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
 void AvoidanceModule::fillEgoStatus(
   AvoidancePlanningData & data, [[maybe_unused]] DebugData & debug) const
 {
+  data.success = isSatisfiedSuccessCondition(data);
+
   /**
    * Find the nearest object that should be avoid. When the ego follows reference path,
    * if the both of following two conditions are satisfied, the module surely avoid the object.
@@ -844,6 +850,10 @@ BehaviorModuleOutput AvoidanceModule::plan()
   resetPathReference();
 
   updatePathShifter(data.safe_shift_line);
+
+  if (data.success) {
+    removeRegisteredShiftLines();
+  }
 
   if (data.yield_required) {
     removeRegisteredShiftLines();
