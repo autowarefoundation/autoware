@@ -39,9 +39,15 @@ std::optional<SmartPoseBuffer::InterpolateResult> SmartPoseBuffer::interpolate(
     const rclcpp::Time time_first = pose_buffer_.front()->header.stamp;
     const rclcpp::Time time_last = pose_buffer_.back()->header.stamp;
 
-    if (target_ros_time < time_first || time_last < target_ros_time) {
+    if (target_ros_time < time_first) {
       return std::nullopt;
     }
+
+    // [time_last < target_ros_time] is acceptable here.
+    // It is possible that the target_ros_time (often sensor timestamp) is newer than the latest
+    // timestamp of buffered pose (often EKF).
+    // However, if the timestamp difference is too large,
+    // it will later be rejected by validate_time_stamp_difference.
 
     // get the nearest poses
     result.old_pose = *pose_buffer_.front();
