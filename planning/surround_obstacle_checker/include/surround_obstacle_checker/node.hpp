@@ -31,13 +31,12 @@
 #include <tier4_planning_msgs/msg/velocity_limit_clear_command.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include <boost/optional/optional.hpp>
-
 #include <tf2/utils.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -93,13 +92,13 @@ private:
 
   void onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
 
-  boost::optional<Obstacle> getNearestObstacle() const;
+  std::optional<Obstacle> getNearestObstacle() const;
 
-  boost::optional<Obstacle> getNearestObstacleByPointCloud() const;
+  std::optional<Obstacle> getNearestObstacleByPointCloud() const;
 
-  boost::optional<Obstacle> getNearestObstacleByDynamicObject() const;
+  std::optional<Obstacle> getNearestObstacleByDynamicObject() const;
 
-  boost::optional<geometry_msgs::msg::TransformStamped> getTransform(
+  std::optional<geometry_msgs::msg::TransformStamped> getTransform(
     const std::string & source, const std::string & target, const rclcpp::Time & stamp,
     double duration_sec) const;
 

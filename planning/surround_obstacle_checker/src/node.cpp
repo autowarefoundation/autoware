@@ -29,6 +29,8 @@
 #include <pcl/common/transforms.h>
 #include <pcl/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
+
+#include <optional>
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
 #else
@@ -314,7 +316,7 @@ void SurroundObstacleCheckerNode::onTimer()
   switch (state_) {
     case State::PASS: {
       const auto is_obstacle_found =
-        !nearest_obstacle ? false : nearest_obstacle.get().first < epsilon;
+        !nearest_obstacle ? false : nearest_obstacle.value().first < epsilon;
 
       if (!isStopRequired(is_obstacle_found, is_vehicle_stopped)) {
         break;
@@ -340,7 +342,7 @@ void SurroundObstacleCheckerNode::onTimer()
       const auto is_obstacle_found =
         !nearest_obstacle
           ? false
-          : nearest_obstacle.get().first < node_param_.surround_check_hysteresis_distance;
+          : nearest_obstacle.value().first < node_param_.surround_check_hysteresis_distance;
 
       if (isStopRequired(is_obstacle_found, is_vehicle_stopped)) {
         break;
@@ -363,7 +365,7 @@ void SurroundObstacleCheckerNode::onTimer()
   }
 
   if (nearest_obstacle) {
-    debug_ptr_->pushObstaclePoint(nearest_obstacle.get().second, PointType::NoStart);
+    debug_ptr_->pushObstaclePoint(nearest_obstacle.value().second, PointType::NoStart);
   }
 
   diagnostic_msgs::msg::DiagnosticStatus no_start_reason_diag;
@@ -392,7 +394,7 @@ void SurroundObstacleCheckerNode::onOdometry(const nav_msgs::msg::Odometry::Cons
   odometry_ptr_ = msg;
 }
 
-boost::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacle() const
+std::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacle() const
 {
   const auto nearest_pointcloud = getNearestObstacleByPointCloud();
   const auto nearest_object = getNearestObstacleByDynamicObject();
@@ -408,28 +410,29 @@ boost::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacle() cons
     return nearest_pointcloud;
   }
 
-  return nearest_pointcloud.get().first < nearest_object.get().first ? nearest_pointcloud
-                                                                     : nearest_object;
+  return nearest_pointcloud.value().first < nearest_object.value().first ? nearest_pointcloud
+                                                                         : nearest_object;
 }
 
-boost::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacleByPointCloud() const
+std::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacleByPointCloud() const
 {
   if (!node_param_.pointcloud_enable_check || !pointcloud_ptr_) {
-    return boost::none;
+    return std::nullopt;
   }
 
   if (pointcloud_ptr_->data.empty()) {
-    return boost::none;
+    return std::nullopt;
   }
 
   const auto transform_stamped =
     getTransform("base_link", pointcloud_ptr_->header.frame_id, pointcloud_ptr_->header.stamp, 0.5);
 
   if (!transform_stamped) {
-    return boost::none;
+    return std::nullopt;
   }
 
-  Eigen::Affine3f isometry = tf2::transformToEigen(transform_stamped.get().transform).cast<float>();
+  Eigen::Affine3f isometry =
+    tf2::transformToEigen(transform_stamped.value().transform).cast<float>();
   pcl::PointCloud<pcl::PointXYZ> transformed_pointcloud;
   pcl::fromROSMsg(*pointcloud_ptr_, transformed_pointcloud);
   tier4_autoware_utils::transformPointCloud(
@@ -458,22 +461,22 @@ boost::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacleByPoint
   if (was_minimum_distance_updated) {
     return std::make_pair(minimum_distance, nearest_point);
   }
-  return boost::none;
+  return std::nullopt;
 }
 
-boost::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacleByDynamicObject() const
+std::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacleByDynamicObject() const
 {
-  if (!object_ptr_ || !use_dynamic_object_) return boost::none;
+  if (!object_ptr_ || !use_dynamic_object_) return std::nullopt;
 
   const auto transform_stamped =
     getTransform(object_ptr_->header.frame_id, "base_link", object_ptr_->header.stamp, 0.5);
 
   if (!transform_stamped) {
-    return boost::none;
+    return std::nullopt;
   }
 
   tf2::Transform tf_src2target;
-  tf2::fromMsg(transform_stamped.get().transform, tf_src2target);
+  tf2::fromMsg(transform_stamped.value().transform, tf_src2target);
 
   // TODO(murooka) check computation cost
   geometry_msgs::msg::Point nearest_point;
@@ -515,10 +518,10 @@ boost::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacleByDynam
   if (was_minimum_distance_updated) {
     return std::make_pair(minimum_distance, nearest_point);
   }
-  return boost::none;
+  return std::nullopt;
 }
 
-boost::optional<geometry_msgs::msg::TransformStamped> SurroundObstacleCheckerNode::getTransform(
+std::optional<geometry_msgs::msg::TransformStamped> SurroundObstacleCheckerNode::getTransform(
   const std::string & source, const std::string & target, const rclcpp::Time & stamp,
   double duration_sec) const
 {
