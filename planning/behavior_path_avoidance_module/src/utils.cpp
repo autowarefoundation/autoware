@@ -756,11 +756,21 @@ size_t findPathIndexFromArclength(
 std::vector<UUID> concatParentIds(const std::vector<UUID> & ids1, const std::vector<UUID> & ids2)
 {
   std::vector<UUID> ret;
-  for (const auto id2 : ids2) {
-    if (std::any_of(ids1.begin(), ids1.end(), [&id2](const auto & id1) { return id1 == id2; })) {
+
+  for (const auto & id : ids1) {
+    if (std::any_of(
+          ret.begin(), ret.end(), [&id](const auto & exist_id) { return exist_id == id; })) {
       continue;
     }
-    ret.push_back(id2);
+    ret.push_back(id);
+  }
+
+  for (const auto & id : ids2) {
+    if (std::any_of(
+          ret.begin(), ret.end(), [&id](const auto & exist_id) { return exist_id == id; })) {
+      continue;
+    }
+    ret.push_back(id);
   }
 
   return ret;

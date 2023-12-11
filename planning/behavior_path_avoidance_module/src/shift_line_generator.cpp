@@ -931,6 +931,9 @@ void ShiftLineGenerator::applySimilarGradFilter(
       combine, input.at(i).end_shift_length, input.at(i).end, input.at(i).end_idx,
       input.at(i).end_longitudinal);
 
+    combine.parent_ids =
+      utils::avoidance::concatParentIds(base_line.parent_ids, input.at(i).parent_ids);
+
     combine_buffer.push_back(input.at(i));
 
     const auto violates = [&]() {
