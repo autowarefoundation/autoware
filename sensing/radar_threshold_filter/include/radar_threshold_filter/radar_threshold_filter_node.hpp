@@ -68,6 +68,7 @@ private:
   // Parameter
   NodeParam node_param_{};
 
+public:
   // Function
   bool isWithinThreshold(const RadarReturn & radar_return);
 };

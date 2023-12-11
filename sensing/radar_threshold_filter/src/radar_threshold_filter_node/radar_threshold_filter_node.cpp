@@ -74,6 +74,9 @@ RadarThresholdFilterNode::RadarThresholdFilterNode(const rclcpp::NodeOptions & n
   node_param_.is_azimuth_filter = declare_parameter<bool>("node_params.is_azimuth_filter", false);
   node_param_.azimuth_min = declare_parameter<double>("node_params.azimuth_min", 0.0);
   node_param_.azimuth_max = declare_parameter<double>("node_params.azimuth_max", 0.0);
+  node_param_.is_z_filter = declare_parameter<bool>("node_params.is_z_filter", false);
+  node_param_.z_min = declare_parameter<double>("node_params.z_min", 0.0);
+  node_param_.z_max = declare_parameter<double>("node_params.z_max", 0.0);
 
   // Subscriber
   sub_radar_ = create_subscription<RadarScan>(
@@ -99,6 +102,9 @@ rcl_interfaces::msg::SetParametersResult RadarThresholdFilterNode::onSetParam(
       update_param(params, "node_params.is_azimuth_filter", p.is_azimuth_filter);
       update_param(params, "node_params.azimuth_min", p.azimuth_min);
       update_param(params, "node_params.azimuth_max", p.azimuth_max);
+      update_param(params, "node_params.is_z_filter", p.is_z_filter);
+      update_param(params, "node_params.z_min", p.z_min);
+      update_param(params, "node_params.z_max", p.z_max);
     }
   } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
     result.successful = false;
