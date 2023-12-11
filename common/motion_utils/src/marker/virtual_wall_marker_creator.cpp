@@ -21,24 +21,24 @@ namespace motion_utils
 
 void VirtualWallMarkerCreator::cleanup()
 {
-  for (auto it = marker_count_per_namespace.begin(); it != marker_count_per_namespace.end();) {
+  for (auto it = marker_count_per_namespace_.begin(); it != marker_count_per_namespace_.end();) {
     const auto & marker_count = it->second;
     const auto is_unused_namespace = marker_count.previous == 0 && marker_count.current == 0;
     if (is_unused_namespace)
-      it = marker_count_per_namespace.erase(it);
+      it = marker_count_per_namespace_.erase(it);
     else
       ++it;
   }
-  virtual_walls.clear();
+  virtual_walls_.clear();
 }
 
 void VirtualWallMarkerCreator::add_virtual_wall(const VirtualWall & virtual_wall)
 {
-  virtual_walls.push_back(virtual_wall);
+  virtual_walls_.push_back(virtual_wall);
 }
 void VirtualWallMarkerCreator::add_virtual_walls(const VirtualWalls & walls)
 {
-  virtual_walls.insert(virtual_walls.end(), walls.begin(), walls.end());
+  virtual_walls_.insert(virtual_walls_.end(), walls.begin(), walls.end());
 }
 
 visualization_msgs::msg::MarkerArray VirtualWallMarkerCreator::create_markers(
@@ -46,13 +46,13 @@ visualization_msgs::msg::MarkerArray VirtualWallMarkerCreator::create_markers(
 {
   visualization_msgs::msg::MarkerArray marker_array;
   // update marker counts
-  for (auto & [ns, count] : marker_count_per_namespace) {
+  for (auto & [ns, count] : marker_count_per_namespace_) {
     count.previous = count.current;
     count.current = 0UL;
   }
   // convert to markers
   create_wall_function create_fn;
-  for (const auto & virtual_wall : virtual_walls) {
+  for (const auto & virtual_wall : virtual_walls_) {
     switch (virtual_wall.style) {
       case stop:
         create_fn = motion_utils::createStopVirtualWallMarker;
@@ -68,15 +68,16 @@ visualization_msgs::msg::MarkerArray VirtualWallMarkerCreator::create_markers(
       virtual_wall.pose, virtual_wall.text, now, 0, virtual_wall.longitudinal_offset,
       virtual_wall.ns, virtual_wall.is_driving_forward);
     for (auto & marker : markers.markers) {
-      marker.id = marker_count_per_namespace[marker.ns].current++;
+      marker.id = static_cast<int>(marker_count_per_namespace_[marker.ns].current++);
       marker_array.markers.push_back(marker);
     }
   }
   // create delete markers
   visualization_msgs::msg::Marker marker;
   marker.action = visualization_msgs::msg::Marker::DELETE;
-  for (const auto & [ns, count] : marker_count_per_namespace) {
-    for (marker.id = count.current; marker.id < static_cast<int>(count.previous); ++marker.id) {
+  for (const auto & [ns, count] : marker_count_per_namespace_) {
+    for (marker.id = static_cast<int>(count.current); marker.id < static_cast<int>(count.previous);
+         ++marker.id) {
       marker.ns = ns;
       marker_array.markers.push_back(marker);
     }

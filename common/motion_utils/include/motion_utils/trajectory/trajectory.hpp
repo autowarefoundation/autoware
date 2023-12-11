@@ -130,11 +130,11 @@ std::optional<bool> isDrivingForwardWithTwist(const T & points_with_twist)
   if (points_with_twist.size() == 1) {
     if (0.0 < tier4_autoware_utils::getLongitudinalVelocity(points_with_twist.front())) {
       return true;
-    } else if (0.0 > tier4_autoware_utils::getLongitudinalVelocity(points_with_twist.front())) {
-      return false;
-    } else {
-      return std::nullopt;
     }
+    if (0.0 > tier4_autoware_utils::getLongitudinalVelocity(points_with_twist.front())) {
+      return false;
+    }
+    return std::nullopt;
   }
 
   return isDrivingForward(points_with_twist);
@@ -401,12 +401,12 @@ double calcLongitudinalOffsetToSegment(
   const bool throw_exception = false)
 {
   if (seg_idx >= points.size() - 1) {
-    const std::out_of_range e("Segment index is invalid.");
+    const auto error_message{"Segment index is invalid."};
     tier4_autoware_utils::print_backtrace();
     if (throw_exception) {
-      throw e;
+      throw std::out_of_range(error_message);
     }
-    std::cerr << e.what() << std::endl;
+    std::cerr << error_message << std::endl;
     return std::nan("");
   }
 
@@ -424,12 +424,12 @@ double calcLongitudinalOffsetToSegment(
   }
 
   if (seg_idx >= overlap_removed_points.size() - 1) {
-    const std::runtime_error e("Same points are given.");
+    const auto error_message{"Same points are given."};
     tier4_autoware_utils::print_backtrace();
     if (throw_exception) {
-      throw e;
+      throw std::runtime_error(error_message);
     }
-    std::cerr << e.what() << std::endl;
+    std::cerr << error_message << std::endl;
     return std::nan("");
   }
 
@@ -581,12 +581,12 @@ double calcLateralOffset(
   }
 
   if (overlap_removed_points.size() == 1) {
-    const std::runtime_error e("Same points are given.");
+    const auto error_message{"Same points are given."};
     tier4_autoware_utils::print_backtrace();
     if (throw_exception) {
-      throw e;
+      throw std::runtime_error(error_message);
     }
-    std::cerr << e.what() << std::endl;
+    std::cerr << error_message << std::endl;
     return std::nan("");
   }
 
@@ -643,12 +643,12 @@ double calcLateralOffset(
   }
 
   if (overlap_removed_points.size() == 1) {
-    const std::runtime_error e("Same points are given.");
+    const auto error_message{"Same points are given."};
     tier4_autoware_utils::print_backtrace();
     if (throw_exception) {
-      throw e;
+      throw std::runtime_error(error_message);
     }
-    std::cerr << e.what() << std::endl;
+    std::cerr << error_message << std::endl;
     return std::nan("");
   }
 
@@ -968,7 +968,7 @@ std::vector<std::pair<double, double>> calcCurvatureAndArcLength(const T & point
 {
   // Note that arclength is for the segment, not the sum.
   std::vector<std::pair<double, double>> curvature_arc_length_vec;
-  curvature_arc_length_vec.push_back(std::pair(0.0, 0.0));
+  curvature_arc_length_vec.emplace_back(0.0, 0.0);
   for (size_t i = 1; i < points.size() - 1; ++i) {
     const auto p1 = tier4_autoware_utils::getPoint(points.at(i - 1));
     const auto p2 = tier4_autoware_utils::getPoint(points.at(i));
@@ -976,9 +976,9 @@ std::vector<std::pair<double, double>> calcCurvatureAndArcLength(const T & point
     const double curvature = tier4_autoware_utils::calcCurvature(p1, p2, p3);
     const double arc_length = tier4_autoware_utils::calcDistance2d(points.at(i - 1), points.at(i)) +
                               tier4_autoware_utils::calcDistance2d(points.at(i), points.at(i + 1));
-    curvature_arc_length_vec.push_back(std::pair(curvature, arc_length));
+    curvature_arc_length_vec.emplace_back(curvature, arc_length);
   }
-  curvature_arc_length_vec.push_back(std::pair(0.0, 0.0));
+  curvature_arc_length_vec.emplace_back(0.0, 0.0);
 
   return curvature_arc_length_vec;
 }
@@ -1046,12 +1046,12 @@ std::optional<geometry_msgs::msg::Point> calcLongitudinalOffsetPoint(
   }
 
   if (points.size() - 1 < src_idx) {
-    const auto e = std::out_of_range("Invalid source index");
+    const auto error_message{"Invalid source index"};
     tier4_autoware_utils::print_backtrace();
     if (throw_exception) {
-      throw e;
+      throw std::out_of_range(error_message);
     }
-    std::cerr << e.what() << std::endl;
+    std::cerr << error_message << std::endl;
     return {};
   }
 
@@ -1171,12 +1171,12 @@ std::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
   }
 
   if (points.size() - 1 < src_idx) {
-    const auto e = std::out_of_range("Invalid source index");
+    const auto error_message{"Invalid source index"};
     tier4_autoware_utils::print_backtrace();
     if (throw_exception) {
-      throw e;
+      throw std::out_of_range(error_message);
     }
-    std::cerr << e.what() << std::endl;
+    std::cerr << error_message << std::endl;
     return {};
   }
 
@@ -2041,9 +2041,8 @@ size_t findFirstNearestIndexWithSoftConstraints(
       if (squared_dist_threshold < squared_dist || yaw_threshold < std::abs(yaw)) {
         if (is_within_constraints) {
           break;
-        } else {
-          continue;
         }
+        continue;
       }
 
       if (min_squared_dist <= squared_dist) {
@@ -2073,9 +2072,8 @@ size_t findFirstNearestIndexWithSoftConstraints(
       if (squared_dist_threshold < squared_dist) {
         if (is_within_constraints) {
           break;
-        } else {
-          continue;
         }
+        continue;
       }
 
       if (min_squared_dist <= squared_dist) {
@@ -2386,12 +2384,12 @@ double calcYawDeviation(
   }
 
   if (overlap_removed_points.size() <= 1) {
-    const std::runtime_error e("points size is less than 2");
+    const auto error_message{"points size is less than 2"};
     tier4_autoware_utils::print_backtrace();
     if (throw_exception) {
-      throw e;
+      throw std::runtime_error(error_message);
     }
-    std::cerr << e.what() << std::endl;
+    std::cerr << error_message << std::endl;
     return 0.0;
   }
 

@@ -15,8 +15,8 @@
 #ifndef MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
 #define MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
 
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_auto_planning_msgs/msg/detail/trajectory__struct.hpp"
+#include "autoware_auto_planning_msgs/msg/detail/trajectory_point__struct.hpp"
 
 #include <vector>
 

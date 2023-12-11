@@ -22,7 +22,6 @@
 #include <nav_msgs/msg/odometry.hpp>
 
 #include <deque>
-#include <memory>
 
 namespace motion_utils
 {

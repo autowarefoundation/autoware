@@ -16,16 +16,12 @@
 #define MOTION_UTILS__TRAJECTORY__INTERPOLATION_HPP_
 
 #include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/math/constants.hpp"
 
-#include "autoware_auto_planning_msgs/msg/path_with_lane_id.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
+#include "autoware_auto_planning_msgs/msg/detail/path_with_lane_id__struct.hpp"
+#include "autoware_auto_planning_msgs/msg/detail/trajectory__struct.hpp"
 
 #include <algorithm>
 #include <limits>
-#include <optional>
-#include <stdexcept>
-#include <vector>
 
 namespace motion_utils
 {

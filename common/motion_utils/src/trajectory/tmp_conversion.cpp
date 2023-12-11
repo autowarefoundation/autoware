@@ -14,9 +14,6 @@
 
 #include "motion_utils/trajectory/tmp_conversion.hpp"
 
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/geometry/pose_deviation.hpp"
-
 #include <algorithm>
 
 namespace motion_utils

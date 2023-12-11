@@ -262,7 +262,8 @@ std::optional<double> calcDecelDistWithJerkAndAccConstraints(
   if (t_during_min_acc > epsilon) {
     return calcDecelDistPlanType1(
       current_vel, target_vel, current_acc, acc_min, jerk_acc, jerk_dec, t_during_min_acc);
-  } else if (is_decel_needed || current_acc > epsilon) {
+  }
+  if (is_decel_needed || current_acc > epsilon) {
     return calcDecelDistPlanType2(current_vel, target_vel, current_acc, jerk_acc, jerk_dec);
   }
 

@@ -15,13 +15,10 @@
 #ifndef MOTION_UTILS__RESAMPLE__RESAMPLE_HPP_
 #define MOTION_UTILS__RESAMPLE__RESAMPLE_HPP_
 
-#include "autoware_auto_planning_msgs/msg/path.hpp"
-#include "autoware_auto_planning_msgs/msg/path_with_lane_id.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
+#include "autoware_auto_planning_msgs/msg/detail/path__struct.hpp"
+#include "autoware_auto_planning_msgs/msg/detail/path_with_lane_id__struct.hpp"
+#include "autoware_auto_planning_msgs/msg/detail/trajectory__struct.hpp"
 
-#include <algorithm>
-#include <limits>
-#include <stdexcept>
 #include <vector>
 
 namespace motion_utils
@@ -187,7 +184,8 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
 autoware_auto_planning_msgs::msg::Path resamplePath(
   const autoware_auto_planning_msgs::msg::Path & input_path, const double resample_interval,
   const bool use_akima_spline_for_xy = false, const bool use_lerp_for_z = true,
-  const bool use_zero_order_hold_for_v = true, const bool resample_input_path_stop_point = true);
+  const bool use_zero_order_hold_for_twist = true,
+  const bool resample_input_path_stop_point = true);
 
 /**
  * @brief A resampling function for a trajectory. Note that in a default setting, position xy are

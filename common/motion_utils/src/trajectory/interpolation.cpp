@@ -15,8 +15,6 @@
 #include "motion_utils/trajectory/interpolation.hpp"
 
 #include "interpolation/linear_interpolation.hpp"
-#include "interpolation/zero_order_hold.hpp"
-#include "motion_utils/trajectory/path_with_lane_id.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
@@ -34,7 +32,8 @@ TrajectoryPoint calcInterpolatedPoint(
     TrajectoryPoint interpolated_point{};
     interpolated_point.pose = target_pose;
     return interpolated_point;
-  } else if (trajectory.points.size() == 1) {
+  }
+  if (trajectory.points.size() == 1) {
     return trajectory.points.front();
   }
 
@@ -101,7 +100,8 @@ PathPointWithLaneId calcInterpolatedPoint(
     PathPointWithLaneId interpolated_point{};
     interpolated_point.point.pose = target_pose;
     return interpolated_point;
-  } else if (path.points.size() == 1) {
+  }
+  if (path.points.size() == 1) {
     return path.points.front();
   }
 
