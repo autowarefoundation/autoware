@@ -39,6 +39,7 @@ class TrafficLightModule : public SceneModuleInterface
 public:
   using TrafficSignal = autoware_perception_msgs::msg::TrafficSignal;
   using TrafficSignalElement = autoware_perception_msgs::msg::TrafficSignalElement;
+  using Time = rclcpp::Time;
   enum class State { APPROACH, GO_OUT };
 
   struct DebugData
@@ -60,6 +61,7 @@ public:
     double stop_margin;
     double tl_state_timeout;
     double yellow_lamp_period;
+    double stop_time_hysteresis;
     bool enable_pass_judge;
   };
 
@@ -100,9 +102,11 @@ private:
 
   bool hasTrafficLightShape(const TrafficSignal & tl_state, const uint8_t & lamp_shape) const;
 
-  bool findValidTrafficSignal(TrafficSignal & valid_traffic_signal);
+  bool findValidTrafficSignal(TrafficSignalStamped & valid_traffic_signal) const;
 
-  bool updateTrafficSignal();
+  bool isTrafficSignalTimedOut() const;
+
+  void updateTrafficSignal();
 
   // Lane id
   const int64_t lane_id_;
@@ -120,10 +124,15 @@ private:
   // Debug
   DebugData debug_data_;
 
-  // prevent paththrough chattering
+  // prevent pass through chattering
   bool is_prev_state_stop_;
 
+  // prevent stop chattering
+  std::unique_ptr<Time> stop_signal_received_time_ptr_{};
+
   boost::optional<int> first_ref_stop_path_point_index_;
+
+  boost::optional<Time> traffic_signal_stamp_;
 
   // Traffic Light State
   TrafficSignal looking_tl_state_;

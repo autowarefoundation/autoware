@@ -222,13 +222,33 @@ bool TrafficLightModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     if (signed_arc_length_to_stop_point < signed_deadline_length) {
       RCLCPP_INFO(logger_, "APPROACH -> GO_OUT");
       state_ = State::GO_OUT;
+      stop_signal_received_time_ptr_.reset();
       return true;
     }
 
     first_ref_stop_path_point_index_ = stop_line_point_idx;
 
     // Check if stop is coming.
-    setSafe(!isStopSignal());
+    const bool is_stop_signal = isStopSignal();
+
+    // Update stop signal received time
+    if (is_stop_signal) {
+      if (!stop_signal_received_time_ptr_) {
+        stop_signal_received_time_ptr_ = std::make_unique<Time>(clock_->now());
+      }
+    } else {
+      stop_signal_received_time_ptr_.reset();
+    }
+
+    // Check hysteresis
+    const double time_diff =
+      stop_signal_received_time_ptr_
+        ? std::max((clock_->now() - *stop_signal_received_time_ptr_).seconds(), 0.0)
+        : 0.0;
+    const bool to_be_stopped =
+      is_stop_signal && (is_prev_state_stop_ || time_diff > planner_param_.stop_time_hysteresis);
+
+    setSafe(!to_be_stopped);
     if (isActivated()) {
       is_prev_state_stop_ = false;
       return true;
@@ -250,6 +270,7 @@ bool TrafficLightModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
         state_ = State::APPROACH;
       }
     }
+    stop_signal_received_time_ptr_.reset();
     return true;
   }
 
@@ -258,27 +279,33 @@ bool TrafficLightModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
 
 bool TrafficLightModule::isStopSignal()
 {
-  if (!updateTrafficSignal()) {
+  updateTrafficSignal();
+
+  // If it never receives traffic signal, it will PASS.
+  if (!traffic_signal_stamp_) {
     return false;
+  }
+
+  if (isTrafficSignalTimedOut()) {
+    return true;
   }
 
   return isTrafficSignalStop(looking_tl_state_);
 }
 
-bool TrafficLightModule::updateTrafficSignal()
+void TrafficLightModule::updateTrafficSignal()
 {
-  TrafficSignal signal;
-  bool found_signal = findValidTrafficSignal(signal);
-
-  if (!found_signal) {
-    // Don't stop when UNKNOWN or TIMEOUT as discussed at #508
-    return false;
+  TrafficSignalStamped signal;
+  if (!findValidTrafficSignal(signal)) {
+    // Don't stop if it never receives traffic light topic.
+    return;
   }
 
-  // Found signal associated with the lanelet
-  looking_tl_state_ = signal;
+  traffic_signal_stamp_ = signal.stamp;
 
-  return true;
+  // Found signal associated with the lanelet
+  looking_tl_state_ = signal.signal;
+  return;
 }
 
 bool TrafficLightModule::isPassthrough(const double & signed_arc_length) const
@@ -355,7 +382,7 @@ bool TrafficLightModule::isTrafficSignalStop(
   return true;
 }
 
-bool TrafficLightModule::findValidTrafficSignal(TrafficSignal & valid_traffic_signal)
+bool TrafficLightModule::findValidTrafficSignal(TrafficSignalStamped & valid_traffic_signal) const
 {
   // get traffic signal associated with the regulatory element id
   const auto traffic_signal_stamped = planner_data_->getTrafficSignal(traffic_light_reg_elem_.id());
@@ -366,20 +393,27 @@ bool TrafficLightModule::findValidTrafficSignal(TrafficSignal & valid_traffic_si
     return false;
   }
 
-  // check if the traffic signal data is outdated
+  valid_traffic_signal = *traffic_signal_stamped;
+  return true;
+}
+
+bool TrafficLightModule::isTrafficSignalTimedOut() const
+{
+  if (!traffic_signal_stamp_) {
+    return false;
+  }
+
   const auto is_traffic_signal_timeout =
-    (clock_->now() - traffic_signal_stamped->stamp).seconds() > planner_param_.tl_state_timeout;
+    (clock_->now() - *traffic_signal_stamp_).seconds() > planner_param_.tl_state_timeout;
   if (is_traffic_signal_timeout) {
     RCLCPP_WARN_THROTTLE(
       logger_, *clock_, 5000 /* ms */, "the received traffic signal data is outdated");
     RCLCPP_WARN_STREAM_THROTTLE(
       logger_, *clock_, 5000 /* ms */,
-      "time diff: " << (clock_->now() - traffic_signal_stamped->stamp).seconds());
-    return false;
+      "time diff: " << (clock_->now() - *traffic_signal_stamp_).seconds());
+    return true;
   }
-
-  valid_traffic_signal = traffic_signal_stamped->signal;
-  return true;
+  return false;
 }
 
 autoware_auto_planning_msgs::msg::PathWithLaneId TrafficLightModule::insertStopPose(

@@ -19,7 +19,13 @@ This module is activated when there is traffic light in ego lane.
 
 1. Obtains a traffic light mapped to the route and a stop line correspond to the traffic light from a map information.
 
-2. Uses the highest reliability one of the traffic light recognition result and if the color of that was red, generates a stop point.
+   - If a corresponding traffic light signal have never been found, it treats as a signal to pass.
+
+   - If a corresponding traffic light signal is found but timed out, it treats as a signal to stop.
+
+2. Uses the highest reliability one of the traffic light recognition result and if the color of that was not green or corresponding arrow signal, generates a stop point.
+
+   - If an elapsed time to receive stop signal is less than `stop_time_hysteresis`, it treats as a signal to pass. This feature is to prevent chattering.
 
 3. When vehicle current velocity is
 
@@ -63,12 +69,13 @@ This module is activated when there is traffic light in ego lane.
 
 #### Module Parameters
 
-| Parameter            | Type   | Description                                     |
-| -------------------- | ------ | ----------------------------------------------- |
-| `stop_margin`        | double | [m] margin before stop point                    |
-| `tl_state_timeout`   | double | [s] time out for detected traffic light result. |
-| `yellow_lamp_period` | double | [s] time for yellow lamp                        |
-| `enable_pass_judge`  | bool   | [-] whether to use pass judge                   |
+| Parameter              | Type   | Description                                                          |
+| ---------------------- | ------ | -------------------------------------------------------------------- |
+| `stop_margin`          | double | [m] margin before stop point                                         |
+| `tl_state_timeout`     | double | [s] time out for detected traffic light result.                      |
+| `stop_time_hysteresis` | double | [s] time threshold to decide stop planning for chattering prevention |
+| `yellow_lamp_period`   | double | [s] time for yellow lamp                                             |
+| `enable_pass_judge`    | bool   | [-] whether to use pass judge                                        |
 
 #### Flowchart
 
@@ -91,7 +98,7 @@ if (state is APPROACH) then (yes)
     :change state to GO_OUT;
     stop
   elseif (no stop signal) then (yes)
-    :change previous state to STOP;
+    :change previous state to PASS;
     stop
   elseif (not pass through) then (yes)
     :insert stop pose;
