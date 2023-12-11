@@ -69,8 +69,8 @@ bool PointPaintingTRT::preprocess(
 
   CHECK_CUDA_ERROR(image_projection_based_fusion::generateBaseFeatures_launch(
     mask_d_.get(), voxels_buffer_d_.get(), config_.grid_size_y_, config_.grid_size_x_,
-    num_voxels_d_.get(), voxels_d_.get(), num_points_per_voxel_d_.get(), coordinates_d_.get(),
-    stream_));
+    config_.max_voxel_size_, num_voxels_d_.get(), voxels_d_.get(), num_points_per_voxel_d_.get(),
+    coordinates_d_.get(), stream_));
 
   CHECK_CUDA_ERROR(image_projection_based_fusion::generateFeatures_launch(
     voxels_d_.get(), num_points_per_voxel_d_.get(), coordinates_d_.get(), num_voxels_d_.get(),

@@ -105,8 +105,8 @@ cudaError_t generateVoxels_random_launch(
 }
 
 __global__ void generateBaseFeatures_kernel(
-  unsigned int * mask, float * voxels, int grid_y_size, int grid_x_size, unsigned int * pillar_num,
-  float * voxel_features, float * voxel_num, int * voxel_idxs)
+  unsigned int * mask, float * voxels, int grid_y_size, int grid_x_size, int max_voxel_size,
+  unsigned int * pillar_num, float * voxel_features, float * voxel_num, int * voxel_idxs)
 {
   unsigned int voxel_idx = blockIdx.x * blockDim.x + threadIdx.x;
   unsigned int voxel_idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -120,6 +120,7 @@ __global__ void generateBaseFeatures_kernel(
 
   unsigned int current_pillarId = 0;
   current_pillarId = atomicAdd(pillar_num, 1);
+  if (current_pillarId > max_voxel_size - 1) return;
 
   voxel_num[current_pillarId] = count;
 
@@ -140,15 +141,17 @@ __global__ void generateBaseFeatures_kernel(
 
 // create 4 channels
 cudaError_t generateBaseFeatures_launch(
-  unsigned int * mask, float * voxels, int grid_y_size, int grid_x_size, unsigned int * pillar_num,
-  float * voxel_features, float * voxel_num, int * voxel_idxs, cudaStream_t stream)
+  unsigned int * mask, float * voxels, int grid_y_size, int grid_x_size, int max_voxel_size,
+  unsigned int * pillar_num, float * voxel_features, float * voxel_num, int * voxel_idxs,
+  cudaStream_t stream)
 {
   dim3 threads = {32, 32};
   dim3 blocks = {
     (grid_x_size + threads.x - 1) / threads.x, (grid_y_size + threads.y - 1) / threads.y};
 
   generateBaseFeatures_kernel<<<blocks, threads, 0, stream>>>(
-    mask, voxels, grid_y_size, grid_x_size, pillar_num, voxel_features, voxel_num, voxel_idxs);
+    mask, voxels, grid_y_size, grid_x_size, max_voxel_size, pillar_num, voxel_features, voxel_num,
+    voxel_idxs);
   cudaError_t err = cudaGetLastError();
   return err;
 }

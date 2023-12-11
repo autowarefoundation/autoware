@@ -27,8 +27,9 @@ cudaError_t generateVoxels_random_launch(
   cudaStream_t stream);
 
 cudaError_t generateBaseFeatures_launch(
-  unsigned int * mask, float * voxels, int grid_y_size, int grid_x_size, unsigned int * pillar_num,
-  float * voxel_features, float * voxel_num, int * voxel_idxs, cudaStream_t stream);
+  unsigned int * mask, float * voxels, int grid_y_size, int grid_x_size, int max_voxel_size,
+  unsigned int * pillar_num, float * voxel_features, float * voxel_num, int * voxel_idxs,
+  cudaStream_t stream);
 
 cudaError_t generateFeatures_launch(
   const float * voxel_features, const float * voxel_num_points, const int * coords,
