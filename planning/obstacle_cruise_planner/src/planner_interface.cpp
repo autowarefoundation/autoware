@@ -763,8 +763,8 @@ PlannerInterface::calculateDistanceToSlowDownWithConstraints(
       }
       // TODO(murooka) Calculate more precisely. Final acceleration should be zero.
       const double min_feasible_slow_down_vel = calcDecelerationVelocityFromDistanceToTarget(
-        longitudinal_info_.min_jerk, longitudinal_info_.min_accel, planner_data.ego_acc,
-        planner_data.ego_vel, deceleration_dist);
+        longitudinal_info_.slow_down_min_jerk, longitudinal_info_.slow_down_min_accel,
+        planner_data.ego_acc, planner_data.ego_vel, deceleration_dist);
       return min_feasible_slow_down_vel;
     }();
     if (prev_output) {

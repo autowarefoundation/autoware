@@ -172,6 +172,8 @@ struct LongitudinalInfo
     limit_min_accel = node.declare_parameter<double>("limit.min_acc");
     limit_max_jerk = node.declare_parameter<double>("limit.max_jerk");
     limit_min_jerk = node.declare_parameter<double>("limit.min_jerk");
+    slow_down_min_accel = node.declare_parameter<double>("slow_down.min_acc");
+    slow_down_min_jerk = node.declare_parameter<double>("slow_down.min_jerk");
 
     idling_time = node.declare_parameter<double>("common.idling_time");
     min_ego_accel_for_rss = node.declare_parameter<double>("common.min_ego_accel_for_rss");
@@ -197,6 +199,9 @@ struct LongitudinalInfo
     tier4_autoware_utils::updateParam<double>(parameters, "limit.min_accel", limit_min_accel);
     tier4_autoware_utils::updateParam<double>(parameters, "limit.max_jerk", limit_max_jerk);
     tier4_autoware_utils::updateParam<double>(parameters, "limit.min_jerk", limit_min_jerk);
+    tier4_autoware_utils::updateParam<double>(
+      parameters, "slow_down.min_accel", slow_down_min_accel);
+    tier4_autoware_utils::updateParam<double>(parameters, "slow_down.min_jerk", slow_down_min_jerk);
 
     tier4_autoware_utils::updateParam<double>(parameters, "common.idling_time", idling_time);
     tier4_autoware_utils::updateParam<double>(
@@ -220,6 +225,8 @@ struct LongitudinalInfo
   double min_accel;
   double max_jerk;
   double min_jerk;
+  double slow_down_min_jerk;
+  double slow_down_min_accel;
   double limit_max_accel;
   double limit_min_accel;
   double limit_max_jerk;

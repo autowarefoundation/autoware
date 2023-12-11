@@ -7,6 +7,10 @@
       min_jerk: -1.0        # min jerk [m/sss]
       max_jerk: 1.0         # max jerk [m/sss]
 
+    slow_down:
+      min_acc: -1.0         # min slowdown deceleration [m/ss]
+      min_jerk: -1.0        # min slowdown jerk [m/sss]
+
     # constraints to be observed
     limit:
       min_acc: -2.5         # min deceleration limit [m/ss]
