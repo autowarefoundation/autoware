@@ -271,6 +271,8 @@ If the traffic light color is RED or Arrow signal is turned on, the attention la
 
 When the traffic light color/shape is RED/Arrow, occlusion detection is skipped.
 
+![traffic-light-specific-behavior](./docs/traffic-light-specific-behavior.drawio.svg)
+
 ## Pass Judge Line
 
 To avoid sudden braking, if deceleration and jerk more than the threshold (`common.max_accel` and `common.max_jerk`) is required to stop at first_attention_stopline, this module does not command to stop once it passed the default_stopline position.
