@@ -16,6 +16,7 @@
 #define DETECTION_BY_TRACKER__DETECTION_BY_TRACKER_CORE_HPP_
 
 #include "detection_by_tracker/debugger.hpp"
+#include "detection_by_tracker/utils.hpp"
 
 #include <euclidean_cluster/euclidean_cluster.hpp>
 #include <euclidean_cluster/utils.hpp>
@@ -38,8 +39,6 @@
 #else
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
-
-#include "utils/utils.hpp"
 
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
@@ -82,7 +81,7 @@ private:
   std::map<uint8_t, int> max_search_distance_for_merger_;
   std::map<uint8_t, int> max_search_distance_for_divider_;
 
-  utils::TrackerIgnoreLabel tracker_ignore_;
+  detection_by_tracker::utils::TrackerIgnoreLabel tracker_ignore_;
 
   void setMaxSearchRange();
 

@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef UTILS__UTILS_HPP_
-#define UTILS__UTILS_HPP_
+#ifndef DETECTION_BY_TRACKER__UTILS_HPP_
+#define DETECTION_BY_TRACKER__UTILS_HPP_
 
 #include <cstdint>
 
+namespace detection_by_tracker
+{
 namespace utils
 {
 struct TrackerIgnoreLabel
@@ -32,5 +34,6 @@ struct TrackerIgnoreLabel
   bool isIgnore(const uint8_t label) const;
 };  // struct TrackerIgnoreLabel
 }  // namespace utils
+}  // namespace detection_by_tracker
 
-#endif  // UTILS__UTILS_HPP_
+#endif  // DETECTION_BY_TRACKER__UTILS_HPP_
