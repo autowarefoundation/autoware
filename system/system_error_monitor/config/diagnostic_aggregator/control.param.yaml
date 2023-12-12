@@ -68,6 +68,12 @@
                   contains: [": control_state"]
                   timeout: 1.0
 
+                control_validator:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: control_validator
+                  contains: [": control_validation_max_distance_deviation"]
+                  timeout: 1.0
+
         external_control:
           type: diagnostic_aggregator/AnalyzerGroup
           path: external_control
