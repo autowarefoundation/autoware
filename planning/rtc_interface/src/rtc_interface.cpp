@@ -14,6 +14,8 @@
 
 #include "rtc_interface/rtc_interface.hpp"
 
+#include <chrono>
+
 namespace
 {
 using tier4_rtc_msgs::msg::Module;
@@ -80,15 +82,23 @@ namespace rtc_interface
 {
 RTCInterface::RTCInterface(rclcpp::Node * node, const std::string & name, const bool enable_rtc)
 : logger_{node->get_logger().get_child("RTCInterface[" + name + "]")},
-  is_auto_mode_init_{!enable_rtc},
+  is_auto_mode_enabled_{!enable_rtc},
   is_locked_{false}
 {
   using std::placeholders::_1;
   using std::placeholders::_2;
 
+  constexpr double update_rate = 10.0;
+  const auto period_ns = rclcpp::Rate(update_rate).period();
+  timer_ = rclcpp::create_timer(
+    node, node->get_clock(), period_ns, std::bind(&RTCInterface::onTimer, this));
+
   // Publisher
   pub_statuses_ =
     node->create_publisher<CooperateStatusArray>(cooperate_status_namespace_ + "/" + name, 1);
+
+  pub_auto_mode_status_ =
+    node->create_publisher<AutoModeStatus>(auto_mode_status_namespace_ + "/" + name, 1);
 
   // Service
   callback_group_ = node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -174,11 +184,20 @@ void RTCInterface::onAutoModeService(
   const AutoMode::Request::SharedPtr request, const AutoMode::Response::SharedPtr response)
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  is_auto_mode_init_ = request->enable;
+  is_auto_mode_enabled_ = request->enable;
   for (auto & status : registered_status_.statuses) {
     status.auto_mode = request->enable;
   }
   response->success = true;
+}
+
+void RTCInterface::onTimer()
+{
+  AutoModeStatus auto_mode_status;
+  auto_mode_status.module = module_;
+  auto_mode_status.is_auto_mode = is_auto_mode_enabled_;
+
+  pub_auto_mode_status_->publish(auto_mode_status);
 }
 
 void RTCInterface::updateCooperateStatus(
@@ -201,7 +220,7 @@ void RTCInterface::updateCooperateStatus(
     status.command_status.type = Command::DEACTIVATE;
     status.start_distance = start_distance;
     status.finish_distance = finish_distance;
-    status.auto_mode = is_auto_mode_init_;
+    status.auto_mode = is_auto_mode_enabled_;
     registered_status_.statuses.push_back(status);
     return;
   }
@@ -293,7 +312,7 @@ bool RTCInterface::isRTCEnabled(const UUID & uuid) const
 
   RCLCPP_WARN_STREAM(
     getLogger(), "[isRTCEnabled] uuid : " << to_string(uuid) << " is not found." << std::endl);
-  return is_auto_mode_init_;
+  return is_auto_mode_enabled_;
 }
 
 void RTCInterface::lockCommandUpdate()

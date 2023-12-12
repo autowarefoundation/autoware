@@ -17,6 +17,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+#include "tier4_rtc_msgs/msg/auto_mode_status.hpp"
 #include "tier4_rtc_msgs/msg/command.hpp"
 #include "tier4_rtc_msgs/msg/cooperate_command.hpp"
 #include "tier4_rtc_msgs/msg/cooperate_response.hpp"
@@ -33,6 +34,7 @@
 
 namespace rtc_interface
 {
+using tier4_rtc_msgs::msg::AutoModeStatus;
 using tier4_rtc_msgs::msg::Command;
 using tier4_rtc_msgs::msg::CooperateCommand;
 using tier4_rtc_msgs::msg::CooperateResponse;
@@ -65,6 +67,7 @@ private:
     const CooperateCommands::Response::SharedPtr responses);
   void onAutoModeService(
     const AutoMode::Request::SharedPtr request, const AutoMode::Response::SharedPtr response);
+  void onTimer();
   std::vector<CooperateResponse> validateCooperateCommands(
     const std::vector<CooperateCommand> & commands);
   void updateCooperateCommandStatus(const std::vector<CooperateCommand> & commands);
@@ -73,18 +76,21 @@ private:
   bool isLocked() const;
 
   rclcpp::Publisher<CooperateStatusArray>::SharedPtr pub_statuses_;
+  rclcpp::Publisher<AutoModeStatus>::SharedPtr pub_auto_mode_status_;
   rclcpp::Service<CooperateCommands>::SharedPtr srv_commands_;
   rclcpp::Service<AutoMode>::SharedPtr srv_auto_mode_;
   rclcpp::CallbackGroup::SharedPtr callback_group_;
+  rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Logger logger_;
 
   Module module_;
   CooperateStatusArray registered_status_;
   std::vector<CooperateCommand> stored_commands_;
-  bool is_auto_mode_init_;
+  bool is_auto_mode_enabled_;
   bool is_locked_;
 
   std::string cooperate_status_namespace_ = "/planning/cooperate_status";
+  std::string auto_mode_status_namespace_ = "/planning/auto_mode_status";
   std::string cooperate_commands_namespace_ = "/planning/cooperate_commands";
   std::string enable_auto_mode_namespace_ = "/planning/enable_auto_mode";
 
