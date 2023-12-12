@@ -43,7 +43,7 @@ There are multiple parameters available for configuration, and users have the op
 
 This guide outlines the steps for integrating your custom module into Autoware:
 
-- Add your modules to the `default_present.yaml` file. For example
+- Add your modules to the `default_preset.yaml` file. For example
 
 ```yaml
 - arg:
