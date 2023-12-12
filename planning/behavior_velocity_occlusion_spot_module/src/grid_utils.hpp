@@ -99,7 +99,7 @@ void findOcclusionSpots(
 bool isCollisionFree(
   const grid_map::GridMap & grid, const grid_map::Position & p1, const grid_map::Position & p2,
   const double radius);
-boost::optional<Polygon2d> generateOccupiedPolygon(
+std::optional<Polygon2d> generateOccupiedPolygon(
   const Polygon2d & occupancy_poly, const Polygons2d & stuck_vehicle_foot_prints,
   const Polygons2d & moving_vehicle_foot_prints, const Point & position);
 //!< @brief generate occupied polygon from foot print

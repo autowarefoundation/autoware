@@ -123,7 +123,7 @@ bool isCollisionFree(
   return true;
 }
 
-boost::optional<Polygon2d> generateOcclusionPolygon(
+std::optional<Polygon2d> generateOcclusionPolygon(
   const Polygon2d & occupancy_poly, const Point2d & origin, const Point2d & min_theta_pos,
   const Point2d & max_theta_pos, const double ray_max_length = 100.0)
 {
@@ -157,7 +157,7 @@ boost::optional<Polygon2d> generateOcclusionPolygon(
     occlusion_poly.outer().emplace_back(max_intersections.front());
   }
   //! case outside detection area
-  if (occlusion_poly.outer().size() == 2) return boost::none;
+  if (occlusion_poly.outer().size() == 2) return std::nullopt;
   boost::geometry::correct(occlusion_poly);
   Polygon2d hull_poly;
   boost::geometry::convex_hull(occlusion_poly, hull_poly);
@@ -200,7 +200,7 @@ std::pair<size_t, size_t> calcEdgePoint(const Polygon2d & foot_print, const Poin
   return std::make_pair(min_idx, max_idx);
 }
 
-boost::optional<Polygon2d> generateOccupiedPolygon(
+std::optional<Polygon2d> generateOccupiedPolygon(
   const Polygon2d & occupancy_poly, const Polygon2d & foot_print, const Point & position)
 {
   Point2d origin = {position.x, position.y};
@@ -275,9 +275,9 @@ void generateOccupiedImage(
     for (const auto & foot_print : moving_vehicle_foot_prints) {
       // calculate occlusion polygon from moving vehicle
       const auto polys = generateOccupiedPolygon(occupancy_poly, foot_print, scan_origin);
-      if (polys == boost::none) continue;
+      if (polys == std::nullopt) continue;
       // transform to cv point and stuck it to cv polygon
-      for (const auto & p : polys.get().outer()) {
+      for (const auto & p : polys.value().outer()) {
         const Point transformed_geom_pt = transformFromMap2Grid(geom_tf_map2grid, p);
         cv_polygon.emplace_back(
           toCVPoint(transformed_geom_pt, width, height, occupancy_grid.info.resolution));
