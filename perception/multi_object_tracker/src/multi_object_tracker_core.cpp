@@ -65,7 +65,8 @@ boost::optional<geometry_msgs::msg::Transform> getTransformAnonymous(
 
 }  // namespace
 
-TrackerDebugger::TrackerDebugger(rclcpp::Node & node) : node_(node), last_input_stamp_(node.now())
+TrackerDebugger::TrackerDebugger(rclcpp::Node & node)
+: diagnostic_updater_(&node), node_(node), last_input_stamp_(node.now())
 {
   // declare debug parameters to decide whether to publish debug topics
   loadParameters();
@@ -82,8 +83,17 @@ TrackerDebugger::TrackerDebugger(rclcpp::Node & node) : node_(node), last_input_
         "debug/tentative_objects", rclcpp::QoS{1});
   }
 
-  // initialize stop watch
+  // initialize stop watch and diagnostics
   startStopWatch();
+  setupDiagnostics();
+}
+
+void TrackerDebugger::setupDiagnostics()
+{
+  diagnostic_updater_.setHardwareID(node_.get_name());
+  diagnostic_updater_.add(
+    "Perception delay check from original header stamp", this, &TrackerDebugger::checkDelay);
+  diagnostic_updater_.setPeriod(0.1);
 }
 
 void TrackerDebugger::loadParameters()
@@ -93,26 +103,51 @@ void TrackerDebugger::loadParameters()
       node_.declare_parameter<bool>("publish_processing_time");
     debug_settings_.publish_tentative_objects =
       node_.declare_parameter<bool>("publish_tentative_objects");
+    debug_settings_.diagnostics_warn_delay =
+      node_.declare_parameter<double>("diagnostics_warn_delay");
+    debug_settings_.diagnostics_error_delay =
+      node_.declare_parameter<double>("diagnostics_error_delay");
   } catch (const std::exception & e) {
     RCLCPP_WARN(node_.get_logger(), "Failed to declare parameter: %s", e.what());
     debug_settings_.publish_processing_time = false;
     debug_settings_.publish_tentative_objects = false;
+    debug_settings_.diagnostics_warn_delay = 0.5;
+    debug_settings_.diagnostics_error_delay = 1.0;
   }
 }
 
-void TrackerDebugger::publishProcessingTime() const
+void TrackerDebugger::checkDelay(diagnostic_updater::DiagnosticStatusWrapper & stat)
+{
+  const double delay = elapsed_time_from_sensor_input_;  // [s]
+
+  if (delay == 0.0) {
+    stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "Detection delay is not calculated.");
+  } else if (delay < debug_settings_.diagnostics_warn_delay) {
+    stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "Detection delay is acceptable");
+  } else if (delay < debug_settings_.diagnostics_error_delay) {
+    stat.summary(
+      diagnostic_msgs::msg::DiagnosticStatus::WARN, "Detection delay is over warn threshold.");
+  } else {
+    stat.summary(
+      diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Detection delay is over error threshold.");
+  }
+
+  stat.add("Detection delay", delay);
+}
+
+void TrackerDebugger::publishProcessingTime()
 {
   const double processing_time_ms = stop_watch_ptr_->toc("processing_time", true);
   const double cyclic_time_ms = stop_watch_ptr_->toc("cyclic_time", true);
   const auto current_time = node_.now();
-  const double elapsed_time_from_sensor_input = (current_time - last_input_stamp_).nanoseconds();
+  elapsed_time_from_sensor_input_ = (current_time - last_input_stamp_).seconds();
   if (debug_settings_.publish_processing_time) {
     processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
       "debug/cyclic_time_ms", cyclic_time_ms);
     processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
       "debug/processing_time_ms", processing_time_ms);
     processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
-      "debug/elapsed_time_from_sensor_input_ms", elapsed_time_from_sensor_input * 1e-6);
+      "debug/elapsed_time_from_sensor_input_ms", elapsed_time_from_sensor_input_ * 1e3);
   }
 }
 
@@ -401,7 +436,7 @@ inline bool MultiObjectTracker::shouldTrackerPublish(
   return true;
 }
 
-void MultiObjectTracker::publish(const rclcpp::Time & time) const
+void MultiObjectTracker::publish(const rclcpp::Time & time)
 {
   const auto subscriber_count = tracked_objects_pub_->get_subscription_count() +
                                 tracked_objects_pub_->get_intra_process_subscription_count();

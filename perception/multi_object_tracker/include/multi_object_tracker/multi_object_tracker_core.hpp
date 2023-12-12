@@ -40,6 +40,9 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
+#include <diagnostic_updater/diagnostic_updater.hpp>
+#include <diagnostic_updater/publisher.hpp>
+
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
@@ -57,17 +60,22 @@ class TrackerDebugger
 {
 public:
   explicit TrackerDebugger(rclcpp::Node & node);
-  void publishProcessingTime() const;
+  void publishProcessingTime();
   void publishTentativeObjects(
     const autoware_auto_perception_msgs::msg::TrackedObjects & tentative_objects) const;
   void startStopWatch();
   void startMeasurementTime(const rclcpp::Time & measurement_header_stamp);
-
+  void setupDiagnostics();
+  void checkDelay(diagnostic_updater::DiagnosticStatusWrapper & stat);
   struct DEBUG_SETTINGS
   {
     bool publish_processing_time;
     bool publish_tentative_objects;
+    double diagnostics_warn_delay;
+    double diagnostics_error_delay;
   } debug_settings_;
+  double elapsed_time_from_sensor_input_ = 0.0;
+  diagnostic_updater::Updater diagnostic_updater_;
 
 private:
   void loadParameters();
@@ -116,7 +124,7 @@ private:
     const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
     const geometry_msgs::msg::Transform & self_transform) const;
 
-  void publish(const rclcpp::Time & time) const;
+  void publish(const rclcpp::Time & time);
   inline bool shouldTrackerPublish(const std::shared_ptr<const Tracker> tracker) const;
 };
 
