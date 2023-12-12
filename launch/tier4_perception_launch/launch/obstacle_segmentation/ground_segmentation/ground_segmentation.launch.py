@@ -78,7 +78,7 @@ class GroundSegmentationPipeline:
                 plugin="pointcloud_preprocessor::CropBoxFilterComponent",
                 name=f"{lidar_name}_crop_box_filter",
                 remappings=[
-                    ("input", f"/sensing/lidar/{lidar_name}/outlier_filtered/pointcloud"),
+                    ("input", f"/sensing/lidar/{lidar_name}/pointcloud"),
                     ("output", f"{lidar_name}/range_cropped/pointcloud"),
                 ],
                 parameters=[

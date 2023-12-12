@@ -14,7 +14,7 @@
   <arg name="pose_initializer_param_path"/>
   <arg name="eagleye_param_path"/>
 
-  <arg name="input_pointcloud" default="/sensing/lidar/top/outlier_filtered/pointcloud"/>
+  <arg name="input_pointcloud" default="/sensing/lidar/top/pointcloud"/>
   <arg name="use_pointcloud_container" default="true" description="launch pointcloud container"/>
   <arg name="pointcloud_container_name" default="pointcloud_container"/>
 
