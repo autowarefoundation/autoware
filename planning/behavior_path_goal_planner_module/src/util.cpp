@@ -203,7 +203,7 @@ bool isAllowedGoalModification(const std::shared_ptr<RouteHandler> & route_handl
 
 bool checkOriginalGoalIsInShoulder(const std::shared_ptr<RouteHandler> & route_handler)
 {
-  const Pose & goal_pose = route_handler->getGoalPose();
+  const Pose & goal_pose = route_handler->getOriginalGoalPose();
   const auto shoulder_lanes = route_handler->getShoulderLanelets();
 
   lanelet::ConstLanelet closest_shoulder_lane{};

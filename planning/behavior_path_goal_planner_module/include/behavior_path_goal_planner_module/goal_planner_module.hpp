@@ -476,10 +476,6 @@ private:
   void onTimer();
   void onFreespaceParkingTimer();
 
-  // flag for the interface which do not support `allow_goal_modification`
-  // when the goal is in `road_shoulder`, always allow goal modification.
-  bool checkOriginalGoalIsInShoulder() const;
-
   // steering factor
   void updateSteeringFactor(
     const std::array<Pose, 2> & pose, const std::array<double, 2> distance, const uint16_t type);

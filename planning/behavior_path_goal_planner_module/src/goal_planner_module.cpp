@@ -2036,21 +2036,6 @@ void GoalPlannerModule::printParkingPositionError() const
     distance_from_real_shoulder);
 }
 
-bool GoalPlannerModule::checkOriginalGoalIsInShoulder() const
-{
-  const auto & route_handler = planner_data_->route_handler;
-  const Pose goal_pose = route_handler->getOriginalGoalPose();
-
-  const lanelet::ConstLanelets pull_over_lanes = goal_planner_utils::getPullOverLanes(
-    *(route_handler), left_side_parking_, parameters_->backward_goal_search_length,
-    parameters_->forward_goal_search_length);
-  lanelet::ConstLanelet target_lane{};
-  lanelet::utils::query::getClosestLanelet(pull_over_lanes, goal_pose, &target_lane);
-
-  return route_handler->isShoulderLanelet(target_lane) &&
-         lanelet::utils::isInLanelet(goal_pose, target_lane, 0.1);
-}
-
 bool GoalPlannerModule::needPathUpdate(const double path_update_duration) const
 {
   return !isOnModifiedGoal() && hasEnoughTimePassedSincePathUpdate(path_update_duration);
