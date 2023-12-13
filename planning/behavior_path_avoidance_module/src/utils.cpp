@@ -1358,76 +1358,60 @@ void compensateDetectionLost(
 double getRoadShoulderDistance(
   ObjectData & object, const AvoidancePlanningData & data,
   const std::shared_ptr<const PlannerData> & planner_data,
-  const std::shared_ptr<AvoidanceParameters> & parameters)
+  [[maybe_unused]] const std::shared_ptr<AvoidanceParameters> & parameters)
 {
   using lanelet::utils::to2D;
+  using tier4_autoware_utils::Point2d;
 
   const auto & object_pose = object.object.kinematics.initial_pose_with_covariance.pose;
   const auto object_closest_index =
-    findNearestIndex(data.reference_path_rough.points, object_pose.position);
-  const auto object_closest_pose =
-    data.reference_path_rough.points.at(object_closest_index).point.pose;
+    findNearestIndex(data.reference_path.points, object_pose.position);
+  const auto object_closest_pose = data.reference_path.points.at(object_closest_index).point.pose;
 
   const auto rh = planner_data->route_handler;
   if (!rh->getClosestLaneletWithinRoute(object_closest_pose, &object.overhang_lanelet)) {
     return 0.0;
   }
 
-  double road_shoulder_distance = std::numeric_limits<double>::max();
+  const auto centerline_pose =
+    lanelet::utils::getClosestCenterPose(object.overhang_lanelet, object_pose.position);
+  const auto & p1_object = object.overhang_pose.position;
+  const auto p_tmp =
+    geometry_msgs::build<Pose>().position(p1_object).orientation(centerline_pose.orientation);
+  const auto p2_object =
+    calcOffsetPose(p_tmp, 0.0, (isOnRight(object) ? 100.0 : -100.0), 0.0).position;
 
-  const bool get_left = isOnRight(object) && parameters->use_adjacent_lane;
-  const bool get_right = !isOnRight(object) && parameters->use_adjacent_lane;
-  const bool get_opposite = parameters->use_opposite_lane;
+  // TODO(Satoshi OTA): check if the basic point is on right or left of bound.
+  const auto bound = isOnRight(object) ? data.left_bound : data.right_bound;
 
-  lanelet::BasicPoint3d p_overhang(
-    object.overhang_pose.position.x, object.overhang_pose.position.y,
-    object.overhang_pose.position.z);
+  std::vector<Point> intersects;
+  for (size_t i = 1; i < bound.size(); i++) {
+    const auto p1_bound =
+      geometry_msgs::build<Point>().x(bound[i - 1].x()).y(bound[i - 1].y()).z(bound[i - 1].z());
+    const auto p2_bound =
+      geometry_msgs::build<Point>().x(bound[i].x()).y(bound[i].y()).z(bound[i].z());
 
-  lanelet::ConstLineString3d target_line{};
+    const auto opt_intersect =
+      tier4_autoware_utils::intersect(p1_object, p2_object, p1_bound, p2_bound);
 
-  const auto update_road_to_shoulder_distance = [&](const auto & target_lanelet) {
-    const auto lines =
-      rh->getFurthestLinestring(target_lanelet, get_right, get_left, get_opposite, true);
-    const auto & line = isOnRight(object) ? lines.back() : lines.front();
-    const auto d = boost::geometry::distance(object.envelope_poly, to2D(line.basicLineString()));
-    if (d < road_shoulder_distance) {
-      road_shoulder_distance = d;
-      target_line = line;
+    if (!opt_intersect) {
+      continue;
     }
-  };
 
-  // current lanelet
-  {
-    update_road_to_shoulder_distance(object.overhang_lanelet);
-
-    road_shoulder_distance = extendToRoadShoulderDistanceWithPolygon(
-      rh, target_line, road_shoulder_distance, object.overhang_lanelet,
-      object.overhang_pose.position, p_overhang, parameters->use_hatched_road_markings,
-      parameters->use_intersection_areas);
+    intersects.push_back(opt_intersect.value());
   }
 
-  // previous lanelet
-  lanelet::ConstLanelets previous_lanelet{};
-  if (rh->getPreviousLaneletsWithinRoute(object.overhang_lanelet, &previous_lanelet)) {
-    update_road_to_shoulder_distance(previous_lanelet.front());
-
-    road_shoulder_distance = extendToRoadShoulderDistanceWithPolygon(
-      rh, target_line, road_shoulder_distance, previous_lanelet.front(),
-      object.overhang_pose.position, p_overhang, parameters->use_hatched_road_markings,
-      parameters->use_intersection_areas);
+  if (intersects.empty()) {
+    return 0.0;
   }
 
-  // next lanelet
-  lanelet::ConstLanelet next_lanelet{};
-  if (rh->getNextLaneletWithinRoute(object.overhang_lanelet, &next_lanelet)) {
-    update_road_to_shoulder_distance(next_lanelet);
+  std::sort(intersects.begin(), intersects.end(), [&p1_object](const auto & a, const auto & b) {
+    return calcDistance2d(p1_object, a) < calcDistance2d(p1_object, b);
+  });
 
-    road_shoulder_distance = extendToRoadShoulderDistanceWithPolygon(
-      rh, target_line, road_shoulder_distance, next_lanelet, object.overhang_pose.position,
-      p_overhang, parameters->use_hatched_road_markings, parameters->use_intersection_areas);
-  }
+  object.nearest_bound_point = intersects.front();
 
-  return road_shoulder_distance;
+  return calcDistance2d(p1_object, object.nearest_bound_point.value());
 }
 
 void filterTargetObjects(
@@ -1473,93 +1457,6 @@ void filterTargetObjects(
 
     push_target_object(o);
   }
-}
-
-double extendToRoadShoulderDistanceWithPolygon(
-  const std::shared_ptr<route_handler::RouteHandler> & rh,
-  const lanelet::ConstLineString3d & target_line, const double to_road_shoulder_distance,
-  const lanelet::ConstLanelet & overhang_lanelet, const geometry_msgs::msg::Point & overhang_pos,
-  const lanelet::BasicPoint3d & overhang_basic_pose, const bool use_hatched_road_markings,
-  const bool use_intersection_areas)
-{
-  // get expandable polygons for avoidance (e.g. hatched road markings)
-  std::vector<lanelet::Polygon3d> expandable_polygons;
-
-  const auto exist_polygon = [&](const auto & candidate_polygon) {
-    return std::any_of(
-      expandable_polygons.begin(), expandable_polygons.end(),
-      [&](const auto & polygon) { return polygon.id() == candidate_polygon.id(); });
-  };
-
-  if (use_hatched_road_markings) {
-    for (const auto & point : target_line) {
-      const auto new_polygon_candidate =
-        utils::getPolygonByPoint(rh, point, "hatched_road_markings");
-
-      if (!!new_polygon_candidate && !exist_polygon(*new_polygon_candidate)) {
-        expandable_polygons.push_back(*new_polygon_candidate);
-      }
-    }
-  }
-
-  if (use_intersection_areas) {
-    const std::string area_id_str = overhang_lanelet.attributeOr("intersection_area", "else");
-
-    if (area_id_str != "else") {
-      expandable_polygons.push_back(
-        rh->getLaneletMapPtr()->polygonLayer.get(std::atoi(area_id_str.c_str())));
-    }
-  }
-
-  if (expandable_polygons.empty()) {
-    return to_road_shoulder_distance;
-  }
-
-  // calculate point laterally offset from overhang position to calculate intersection with
-  // polygon
-  Point lat_offset_overhang_pos;
-  {
-    auto arc_coordinates = lanelet::geometry::toArcCoordinates(
-      lanelet::utils::to2D(target_line), lanelet::utils::to2D(overhang_basic_pose));
-    arc_coordinates.distance = 0.0;
-    const auto closest_target_line_point =
-      lanelet::geometry::fromArcCoordinates(target_line, arc_coordinates);
-
-    const double ratio = 100.0 / to_road_shoulder_distance;
-    lat_offset_overhang_pos.x =
-      closest_target_line_point.x() + (closest_target_line_point.x() - overhang_pos.x) * ratio;
-    lat_offset_overhang_pos.y =
-      closest_target_line_point.y() + (closest_target_line_point.y() - overhang_pos.y) * ratio;
-  }
-
-  // update to_road_shoulder_distance with valid expandable polygon
-  double updated_to_road_shoulder_distance = to_road_shoulder_distance;
-  for (const auto & polygon : expandable_polygons) {
-    std::vector<double> intersect_dist_vec;
-    for (size_t i = 0; i < polygon.size(); ++i) {
-      const auto polygon_current_point =
-        geometry_msgs::build<Point>().x(polygon[i].x()).y(polygon[i].y()).z(0.0);
-      const auto polygon_next_point = geometry_msgs::build<Point>()
-                                        .x(polygon[(i + 1) % polygon.size()].x())
-                                        .y(polygon[(i + 1) % polygon.size()].y())
-                                        .z(0.0);
-
-      const auto intersect_pos = tier4_autoware_utils::intersect(
-        overhang_pos, lat_offset_overhang_pos, polygon_current_point, polygon_next_point);
-      if (intersect_pos) {
-        intersect_dist_vec.push_back(calcDistance2d(*intersect_pos, overhang_pos));
-      }
-    }
-
-    if (intersect_dist_vec.empty()) {
-      continue;
-    }
-
-    std::sort(intersect_dist_vec.begin(), intersect_dist_vec.end());
-    updated_to_road_shoulder_distance =
-      std::max(updated_to_road_shoulder_distance, intersect_dist_vec.back());
-  }
-  return updated_to_road_shoulder_distance;
 }
 
 AvoidLine fillAdditionalInfo(const AvoidancePlanningData & data, const AvoidLine & line)

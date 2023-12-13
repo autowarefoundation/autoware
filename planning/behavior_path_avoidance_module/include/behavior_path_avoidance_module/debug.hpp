@@ -59,13 +59,6 @@ MarkerArray createTargetObjectsMarkerArray(const ObjectDataArray & objects, cons
 
 MarkerArray createOtherObjectsMarkerArray(const ObjectDataArray & objects, const std::string & ns);
 
-MarkerArray makeOverhangToRoadShoulderMarkerArray(
-  const behavior_path_planner::ObjectDataArray & objects, std::string && ns);
-
-MarkerArray createOverhangFurthestLineStringMarkerArray(
-  const lanelet::ConstLineStrings3d & linestrings, std::string && ns, const float & r,
-  const float & g, const float & b);
-
 MarkerArray createDebugMarkerArray(
   const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug);
 }  // namespace marker_utils::avoidance_marker

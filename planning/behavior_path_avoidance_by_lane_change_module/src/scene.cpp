@@ -15,8 +15,10 @@
 #include "behavior_path_avoidance_by_lane_change_module/scene.hpp"
 
 #include "behavior_path_avoidance_module/utils.hpp"
+#include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner_common/utils/path_utils.hpp"
+#include "behavior_path_planner_common/utils/utils.hpp"
 
 #include <boost/geometry/algorithms/centroid.hpp>
 #include <boost/geometry/strategies/cartesian/centroid_bashein_detmer.hpp>
@@ -25,6 +27,16 @@
 
 namespace behavior_path_planner
 {
+namespace
+{
+lanelet::BasicLineString3d toLineString3d(const std::vector<Point> & bound)
+{
+  lanelet::BasicLineString3d ret{};
+  std::for_each(
+    bound.begin(), bound.end(), [&](const auto & p) { ret.emplace_back(p.x, p.y, p.z); });
+  return ret;
+}
+}  // namespace
 AvoidanceByLaneChange::AvoidanceByLaneChange(
   const std::shared_ptr<LaneChangeParameters> & parameters,
   std::shared_ptr<AvoidanceByLCParameters> avoidance_parameters)
@@ -124,6 +136,23 @@ AvoidancePlanningData AvoidanceByLaneChange::calcAvoidancePlanningData(
   data.reference_path = utils::resamplePathWithSpline(data.reference_path_rough, resample_interval);
 
   data.current_lanelets = getCurrentLanes();
+
+  // expand drivable lanes
+  std::for_each(
+    data.current_lanelets.begin(), data.current_lanelets.end(), [&](const auto & lanelet) {
+      data.drivable_lanes.push_back(utils::avoidance::generateExpandDrivableLanes(
+        lanelet, planner_data_, avoidance_parameters_));
+    });
+
+  // calc drivable bound
+  const auto shorten_lanes =
+    utils::cutOverlappedLanes(data.reference_path_rough, data.drivable_lanes);
+  data.left_bound = toLineString3d(utils::calcBound(
+    planner_data_->route_handler, shorten_lanes, avoidance_parameters_->use_hatched_road_markings,
+    avoidance_parameters_->use_intersection_areas, true));
+  data.right_bound = toLineString3d(utils::calcBound(
+    planner_data_->route_handler, shorten_lanes, avoidance_parameters_->use_hatched_road_markings,
+    avoidance_parameters_->use_intersection_areas, false));
 
   // get related objects from dynamic_objects, and then separates them as target objects and non
   // target objects

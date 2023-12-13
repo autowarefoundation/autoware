@@ -401,6 +401,9 @@ struct ObjectData  // avoidance target
 
   // lateral avoid margin
   std::optional<double> avoid_margin{std::nullopt};
+
+  // the nearest bound point (use in road shoulder distance calculation)
+  std::optional<Point> nearest_bound_point{std::nullopt};
 };
 using ObjectDataArray = std::vector<ObjectData>;
 

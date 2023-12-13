@@ -135,13 +135,6 @@ double getRoadShoulderDistance(
   const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters);
 
-double extendToRoadShoulderDistanceWithPolygon(
-  const std::shared_ptr<route_handler::RouteHandler> & rh,
-  const lanelet::ConstLineString3d & target_line, const double to_road_shoulder_distance,
-  const lanelet::ConstLanelet & overhang_lanelet, const geometry_msgs::msg::Point & overhang_pos,
-  const lanelet::BasicPoint3d & overhang_basic_pose, const bool use_hatched_road_markings,
-  const bool use_intersection_areas);
-
 void fillAdditionalInfoFromPoint(const AvoidancePlanningData & data, AvoidLineArray & lines);
 
 void fillAdditionalInfoFromLongitudinal(const AvoidancePlanningData & data, AvoidLine & line);
