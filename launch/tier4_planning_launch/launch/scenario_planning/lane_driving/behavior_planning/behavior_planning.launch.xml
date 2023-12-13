@@ -43,6 +43,8 @@
   <arg name="launch_out_of_lane_module" default="true"/>
   <arg name="launch_no_drivable_lane_module" default="true"/>
 
+  <arg name="launch_module_list_end" default="&quot;&quot;]"/>
+
   <!-- assemble launch config for behavior path planner -->
   <arg name="behavior_path_planner_launch_modules" default="["/>
   <let
@@ -95,7 +97,7 @@
     value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::AvoidanceByLaneChangeModuleManager, '&quot;)"
     if="$(var launch_avoidance_by_lane_change_module)"
   />
-  <let name="behavior_path_planner_launch_modules" value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + ']'&quot;)"/>
+  <let name="behavior_path_planner_launch_modules" value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + '$(var launch_module_list_end)'&quot;)"/>
 
   <!-- assemble launch config for behavior velocity planner -->
   <arg name="behavior_velocity_planner_launch_modules" default="["/>
@@ -174,7 +176,7 @@
     value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::NoDrivableLaneModulePlugin, '&quot;)"
     if="$(var launch_no_drivable_lane_module)"
   />
-  <let name="behavior_velocity_planner_launch_modules" value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + ']'&quot;)"/>
+  <let name="behavior_velocity_planner_launch_modules" value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + '$(var launch_module_list_end)'&quot;)"/>
 
   <node_container pkg="rclcpp_components" exec="$(var container_type)" name="behavior_planning_container" namespace="" args="" output="screen">
     <composable_node pkg="behavior_path_planner" plugin="behavior_path_planner::BehaviorPathPlannerNode" name="behavior_path_planner" namespace="">
