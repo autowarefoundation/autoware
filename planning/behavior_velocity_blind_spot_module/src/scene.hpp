@@ -25,8 +25,6 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/point.hpp>
 
-#include <boost/optional.hpp>
-
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
 
@@ -128,7 +126,7 @@ private:
    * @param closest_idx closest path point index from ego car in path points
    * @return Blind spot polygons
    */
-  boost::optional<BlindSpotPolygons> generateBlindSpotPolygons(
+  std::optional<BlindSpotPolygons> generateBlindSpotPolygons(
     lanelet::LaneletMapConstPtr lanelet_map_ptr,
     lanelet::routing::RoutingGraphPtr routing_graph_ptr,
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int closest_idx,
@@ -192,7 +190,7 @@ private:
    * @param lanelets target lanelets
    * @return path point index
    */
-  boost::optional<int> getFirstPointConflictingLanelets(
+  std::optional<int> getFirstPointConflictingLanelets(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
     const lanelet::ConstLanelets & lanelets) const;
 
@@ -201,8 +199,7 @@ private:
    * @param lane_id lane id of objective lanelet
    * @return end point of lanelet
    */
-  boost::optional<geometry_msgs::msg::Pose> getStartPointFromLaneLet(
-    const lanelet::Id lane_id) const;
+  std::optional<geometry_msgs::msg::Pose> getStartPointFromLaneLet(const lanelet::Id lane_id) const;
 
   /**
    * @brief get straight lanelets in intersection

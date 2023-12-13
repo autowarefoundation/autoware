@@ -27,12 +27,14 @@
 #include <boost/geometry/algorithms/length.hpp>
 #include <boost/geometry/algorithms/union.hpp>
 
+#include <lanelet2_core/Forward.h>
 #include <lanelet2_core/geometry/Polygon.h>
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -203,7 +205,7 @@ bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   return true;
 }
 
-boost::optional<int> BlindSpotModule::getFirstPointConflictingLanelets(
+std::optional<int> BlindSpotModule::getFirstPointConflictingLanelets(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const lanelet::ConstLanelets & lanelets) const
 {
@@ -229,7 +231,7 @@ boost::optional<int> BlindSpotModule::getFirstPointConflictingLanelets(
   if (is_conflict) {
     return first_idx_conflicting_lanelets;
   } else {
-    return boost::none;
+    return std::nullopt;
   }
 }
 
@@ -252,7 +254,7 @@ bool BlindSpotModule::generateStopLine(
   /* generate stop point */
   int stop_idx_ip = 0;  // stop point index for interpolated path.
   if (straight_lanelets.size() > 0) {
-    boost::optional<int> first_idx_conflicting_lane_opt =
+    std::optional<int> first_idx_conflicting_lane_opt =
       getFirstPointConflictingLanelets(path_ip, straight_lanelets);
     if (!first_idx_conflicting_lane_opt) {
       RCLCPP_DEBUG(logger_, "No conflicting line found.");
@@ -261,7 +263,7 @@ bool BlindSpotModule::generateStopLine(
     stop_idx_ip = std::max(
       first_idx_conflicting_lane_opt.value() - 1 - margin_idx_dist - base2front_idx_dist, 0);
   } else {
-    boost::optional<geometry_msgs::msg::Pose> intersection_enter_point_opt =
+    std::optional<geometry_msgs::msg::Pose> intersection_enter_point_opt =
       getStartPointFromLaneLet(lane_id_);
     if (!intersection_enter_point_opt) {
       RCLCPP_DEBUG(logger_, "No intersection enter point found.");
@@ -502,7 +504,7 @@ lanelet::ConstLanelet BlindSpotModule::generateExtendedAdjacentLanelet(
   return new_lanelet;
 }
 
-boost::optional<BlindSpotPolygons> BlindSpotModule::generateBlindSpotPolygons(
+std::optional<BlindSpotPolygons> BlindSpotModule::generateBlindSpotPolygons(
   lanelet::LaneletMapConstPtr lanelet_map_ptr,
   [[maybe_unused]] lanelet::routing::RoutingGraphPtr routing_graph_ptr,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int closest_idx,
@@ -537,11 +539,21 @@ boost::optional<BlindSpotPolygons> BlindSpotModule::generateBlindSpotPolygons(
   lanelet::ConstLanelets adjacent_lanelets;
   for (const auto i : lane_ids) {
     const auto lane = lanelet_map_ptr->laneletLayer.get(i);
-    const auto adj =
-      turn_direction_ == TurnDirection::LEFT
-        ? (routing_graph_ptr->adjacentLeft(lane))
-        : (turn_direction_ == TurnDirection::RIGHT ? (routing_graph_ptr->adjacentRight(lane))
-                                                   : boost::none);
+    const auto adj = std::invoke([&]() -> std::optional<lanelet::ConstLanelet> {
+      if (turn_direction_ == TurnDirection::INVALID) {
+        return std::nullopt;
+      }
+      const auto adj_lane = (turn_direction_ == TurnDirection::LEFT)
+                              ? routing_graph_ptr->adjacentLeft(lane)
+                              : routing_graph_ptr->adjacentRight(lane);
+
+      if (adj_lane) {
+        return *adj_lane;
+      }
+
+      return std::nullopt;
+    });
+
     if (adj) {
       const auto half_lanelet = generateExtendedAdjacentLanelet(adj.value(), turn_direction_);
       adjacent_lanelets.push_back(half_lanelet);
@@ -577,7 +589,7 @@ boost::optional<BlindSpotPolygons> BlindSpotModule::generateBlindSpotPolygons(
     }
     return blind_spot_polygons;
   } else {
-    return boost::none;
+    return std::nullopt;
   }
 }
 
@@ -628,13 +640,13 @@ bool BlindSpotModule::isTargetObjectType(
   return false;
 }
 
-boost::optional<geometry_msgs::msg::Pose> BlindSpotModule::getStartPointFromLaneLet(
+std::optional<geometry_msgs::msg::Pose> BlindSpotModule::getStartPointFromLaneLet(
   const lanelet::Id lane_id) const
 {
   lanelet::ConstLanelet lanelet =
     planner_data_->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id);
   if (lanelet.centerline().empty()) {
-    return boost::none;
+    return std::nullopt;
   }
   const auto p = lanelet.centerline().front();
   geometry_msgs::msg::Point start_point;
