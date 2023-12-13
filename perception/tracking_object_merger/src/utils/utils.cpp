@@ -253,6 +253,68 @@ double mean(const double a, const double b)
   return (a + b) / 2.0;
 }
 
+/**
+ * @brief compare two tracked objects motion direction is same or not
+ *
+ * @param main_obj
+ * @param sub_obj
+ * @return true
+ * @return false
+ */
+bool objectsHaveSameMotionDirections(const TrackedObject & main_obj, const TrackedObject & sub_obj)
+{
+  // get yaw
+  const auto main_yaw = tf2::getYaw(main_obj.kinematics.pose_with_covariance.pose.orientation);
+  const auto sub_yaw = tf2::getYaw(sub_obj.kinematics.pose_with_covariance.pose.orientation);
+  // get velocity
+  const auto main_vx = main_obj.kinematics.twist_with_covariance.twist.linear.x;
+  const auto main_vy = main_obj.kinematics.twist_with_covariance.twist.linear.y;
+  const auto sub_vx = sub_obj.kinematics.twist_with_covariance.twist.linear.x;
+  const auto sub_vy = sub_obj.kinematics.twist_with_covariance.twist.linear.y;
+  // calc velocity direction
+  const auto main_vyaw = std::atan2(main_vy, main_vx);
+  const auto sub_vyaw = std::atan2(sub_vy, sub_vx);
+  // get motion yaw angle
+  const auto main_motion_yaw = main_yaw + main_vyaw;
+  const auto sub_motion_yaw = sub_yaw + sub_vyaw;
+  // diff of motion yaw angle
+  const auto motion_yaw_diff = std::fabs(main_motion_yaw - sub_motion_yaw);
+  const auto normalized_motion_yaw_diff =
+    tier4_autoware_utils::normalizeRadian(motion_yaw_diff);  // -pi ~ pi
+  // evaluate if motion yaw angle is same
+  constexpr double yaw_threshold = M_PI / 4.0;  // 45 deg
+  if (std::abs(normalized_motion_yaw_diff) < yaw_threshold) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/**
+ * @brief compare two tracked objects yaw is reverted or not
+ *
+ * @param main_obj
+ * @param sub_obj
+ * @return true
+ * @return false
+ */
+bool objectsYawIsReverted(const TrackedObject & main_obj, const TrackedObject & sub_obj)
+{
+  // get yaw
+  const auto main_yaw = tf2::getYaw(main_obj.kinematics.pose_with_covariance.pose.orientation);
+  const auto sub_yaw = tf2::getYaw(sub_obj.kinematics.pose_with_covariance.pose.orientation);
+  // calc yaw diff
+  const auto yaw_diff = std::fabs(main_yaw - sub_yaw);
+  const auto normalized_yaw_diff = tier4_autoware_utils::normalizeRadian(yaw_diff);  // -pi ~ pi
+  // evaluate if yaw is reverted
+  constexpr double yaw_threshold = M_PI / 2.0;  // 90 deg
+  if (std::abs(normalized_yaw_diff) >= yaw_threshold) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 // object kinematics merger
 // currently only support velocity fusion
 autoware_auto_perception_msgs::msg::TrackedObjectKinematics objectKinematicsVXMerger(
@@ -261,18 +323,29 @@ autoware_auto_perception_msgs::msg::TrackedObjectKinematics objectKinematicsVXMe
   autoware_auto_perception_msgs::msg::TrackedObjectKinematics output_kinematics;
   // copy main object at first
   output_kinematics = main_obj.kinematics;
+  auto sub_obj_ = sub_obj;
+  // do not merge reverse direction objects
+  if (!objectsHaveSameMotionDirections(main_obj, sub_obj)) {
+    return output_kinematics;
+  } else if (objectsYawIsReverted(main_obj, sub_obj)) {
+    // revert velocity (revert pose is not necessary because it is not used in tracking)
+    sub_obj_.kinematics.twist_with_covariance.twist.linear.x *= -1.0;
+    sub_obj_.kinematics.twist_with_covariance.twist.linear.y *= -1.0;
+  }
+
+  // currently only merge vx
   if (policy == MergePolicy::SKIP) {
     return output_kinematics;
   } else if (policy == MergePolicy::OVERWRITE) {
     output_kinematics.twist_with_covariance.twist.linear.x =
-      sub_obj.kinematics.twist_with_covariance.twist.linear.x;
+      sub_obj_.kinematics.twist_with_covariance.twist.linear.x;
     return output_kinematics;
   } else if (policy == MergePolicy::FUSION) {
     const auto main_vx = main_obj.kinematics.twist_with_covariance.twist.linear.x;
-    const auto sub_vx = sub_obj.kinematics.twist_with_covariance.twist.linear.x;
+    const auto sub_vx = sub_obj_.kinematics.twist_with_covariance.twist.linear.x;
     // inverse weight
     const auto main_vx_cov = main_obj.kinematics.twist_with_covariance.covariance[0];
-    const auto sub_vx_cov = sub_obj.kinematics.twist_with_covariance.covariance[0];
+    const auto sub_vx_cov = sub_obj_.kinematics.twist_with_covariance.covariance[0];
     double main_vx_weight, sub_vx_weight;
     if (main_vx_cov == 0.0) {
       main_vx_weight = 1.0 * 1e6;
@@ -380,9 +453,21 @@ autoware_auto_perception_msgs::msg::Shape shapeMerger(
 
 void updateExceptVelocity(TrackedObject & main_obj, const TrackedObject & sub_obj)
 {
-  const auto vx_temp = main_obj.kinematics.twist_with_covariance.twist.linear.x;
-  main_obj = sub_obj;
-  main_obj.kinematics.twist_with_covariance.twist.linear.x = vx_temp;
+  if (!objectsHaveSameMotionDirections(main_obj, sub_obj)) {
+    // do not update velocity
+    return;
+  } else if (objectsYawIsReverted(main_obj, sub_obj)) {
+    // revert velocity (revert pose is not necessary because it is not used in tracking)
+    const auto vx_temp = sub_obj.kinematics.twist_with_covariance.twist.linear.x;
+    main_obj = sub_obj;
+    main_obj.kinematics.twist_with_covariance.twist.linear.x = -vx_temp;
+    return;
+  } else {
+    // update velocity
+    const auto vx_temp = sub_obj.kinematics.twist_with_covariance.twist.linear.x;
+    main_obj = sub_obj;
+    main_obj.kinematics.twist_with_covariance.twist.linear.x = vx_temp;
+  }
 }
 
 void updateOnlyObjectVelocity(TrackedObject & main_obj, const TrackedObject & sub_obj)
@@ -397,6 +482,12 @@ void updateOnlyClassification(TrackedObject & main_obj, const TrackedObject & su
 
 void updateWholeTrackedObject(TrackedObject & main_obj, const TrackedObject & sub_obj)
 {
+  if (!objectsHaveSameMotionDirections(main_obj, sub_obj)) {
+    // warning
+    std::cerr << "[object_tracking_merger]: motion direction is different in "
+                 "updateWholeTrackedObject function."
+              << std::endl;
+  }
   main_obj = sub_obj;
 }
 
