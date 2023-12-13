@@ -3,6 +3,7 @@
   <arg name="control_param_path" default="$(find-pkg-share autoware_auto_msgs_adapter)/config/adapter_control.param.yaml"/>
   <arg name="map_param_path" default="$(find-pkg-share autoware_auto_msgs_adapter)/config/adapter_map.param.yaml"/>
   <arg name="perception_param_path" default="$(find-pkg-share autoware_auto_msgs_adapter)/config/adapter_perception.param.yaml"/>
+  <arg name="planning_param_path" default="$(find-pkg-share autoware_auto_msgs_adapter)/config/adapter_planning.param.yaml"/>
 
   <node pkg="autoware_auto_msgs_adapter" exec="autoware_auto_msgs_adapter_exe" name="autoware_auto_msgs_adapter_control" output="screen">
     <param from="$(var control_param_path)"/>
@@ -12,5 +13,8 @@
   </node>
   <node pkg="autoware_auto_msgs_adapter" exec="autoware_auto_msgs_adapter_exe" name="autoware_auto_msgs_adapter_perception" output="screen">
     <param from="$(var perception_param_path)"/>
+  </node>
+  <node pkg="autoware_auto_msgs_adapter" exec="autoware_auto_msgs_adapter_exe" name="autoware_auto_msgs_adapter_planning" output="screen">
+    <param from="$(var planning_param_path)"/>
   </node>
 </launch>

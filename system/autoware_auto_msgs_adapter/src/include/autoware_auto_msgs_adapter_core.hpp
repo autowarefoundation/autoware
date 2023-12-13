@@ -17,6 +17,7 @@
 #include "adapter_control.hpp"
 #include "adapter_map.hpp"
 #include "adapter_perception.hpp"
+#include "adapter_planning.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

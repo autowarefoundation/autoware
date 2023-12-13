@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    msg_type_target: "autoware_auto_planning_msgs/msg/Trajectory"
+    topic_name_source: "/planning/scenario_planning/trajectory"
+    topic_name_target: "/planning/scenario_planning/trajectory_auto"
