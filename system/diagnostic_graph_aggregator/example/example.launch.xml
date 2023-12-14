@@ -1,0 +1,7 @@
+<launch>
+  <include file="$(find-pkg-share diagnostic_graph_aggregator)/launch/diagnostic_graph_aggregator.launch.xml">
+    <arg name="graph_file" value="$(find-pkg-share diagnostic_graph_aggregator)/example/example_0.yaml"/>
+  </include>
+  <node pkg="diagnostic_graph_aggregator" exec="converter" name="converter"/>
+  <executable cmd="python3 $(find-pkg-share diagnostic_graph_aggregator)/example/example_diags.py"/>
+</launch>

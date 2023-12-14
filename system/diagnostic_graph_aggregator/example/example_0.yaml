@@ -1,0 +1,37 @@
+files:
+  - { path: $(find-pkg-share diagnostic_graph_aggregator)/example/example_1.yaml }
+  - { path: $(find-pkg-share diagnostic_graph_aggregator)/example/example_2.yaml }
+
+nodes:
+  - path: /autoware/modes/stop
+    type: ok
+
+  - path: /autoware/modes/autonomous
+    type: and
+    list:
+      - { type: link, link: /functions/pose_estimation }
+      - { type: link, link: /functions/obstacle_detection }
+
+  - path: /autoware/modes/local
+    type: and
+    list:
+      - { type: link, link: /external/joystick_command }
+
+  - path: /autoware/modes/remote
+    type: and
+    list:
+      - { type: link, link: /external/remote_command }
+
+  - path: /autoware/modes/emergency_stop
+    type: ok
+
+  - path: /autoware/modes/comfortable_stop
+    type: and
+    list:
+      - { type: link, link: /functions/obstacle_detection }
+
+  - path: /autoware/modes/pull_over
+    type: and
+    list:
+      - { type: link, link: /functions/pose_estimation }
+      - { type: link, link: /functions/obstacle_detection }

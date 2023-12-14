@@ -1,6 +1,0 @@
-<launch>
-  <include file="$(find-pkg-share system_diagnostic_graph)/launch/system_diagnostic_graph.launch.xml">
-    <arg name="graph_file" value="$(find-pkg-share system_diagnostic_graph)/example/example_0.yaml"/>
-  </include>
-  <executable cmd="python3 $(find-pkg-share system_diagnostic_graph)/example/example_diags.py"/>
-</launch>

@@ -1,9 +1,0 @@
-<launch>
-  <arg name="param_file" default="$(find-pkg-share system_diagnostic_graph)/config/default.param.yaml"/>
-  <arg name="graph_file"/>
-  <node pkg="system_diagnostic_graph" exec="aggregator" name="system_diagnostic_graph_aggregator">
-    <param from="$(var param_file)"/>
-    <param name="graph_file" value="$(var graph_file)"/>
-  </node>
-  <node pkg="system_diagnostic_graph" exec="converter" name="system_diagnostic_graph_converter"/>
-</launch>
