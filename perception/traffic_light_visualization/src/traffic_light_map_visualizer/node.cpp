@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "traffic_light_visualization/traffic_light_map_visualizer/node.hpp"
+
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/visualization/visualization.hpp>
-#include <traffic_light_map_visualizer/node.hpp>
 
 #include <visualization_msgs/msg/marker_array.hpp>
 

@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "traffic_light_visualization/traffic_light_map_visualizer/node.hpp"
+
 #include <rclcpp/rclcpp.hpp>
-#include <traffic_light_map_visualizer/node.hpp>
 
 #include <memory>
 
