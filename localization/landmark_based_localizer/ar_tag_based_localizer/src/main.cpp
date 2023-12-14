@@ -48,7 +48,6 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
   std::shared_ptr<ArTagBasedLocalizer> ptr = std::make_shared<ArTagBasedLocalizer>();
-  ptr->setup();
   rclcpp::spin(ptr);
   rclcpp::shutdown();
 }

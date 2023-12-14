@@ -8,8 +8,11 @@
   <arg name="input_camera_info" default="~/input/camera_info"/>
   <arg name="input_ekf_pose" default="~/input/ekf_pose"/>
 
-  <arg name="output_image" default="~/debug/result"/>
   <arg name="output_pose_with_covariance" default="~/output/pose_with_covariance"/>
+
+  <arg name="debug_image" default="~/debug/image"/>
+  <arg name="debug_mapped_tag" default="~/debug/mapped_tag"/>
+  <arg name="debug_detected_tag" default="~/debug/detected_tag"/>
 
   <node pkg="ar_tag_based_localizer" exec="ar_tag_based_localizer" name="$(var node_name)" output="log">
     <remap from="~/input/lanelet2_map" to="$(var input_lanelet2_map)"/>
@@ -17,8 +20,11 @@
     <remap from="~/input/camera_info" to="$(var input_camera_info)"/>
     <remap from="~/input/ekf_pose" to="$(var input_ekf_pose)"/>
 
-    <remap from="~/debug/result" to="$(var output_image)"/>
     <remap from="~/output/pose_with_covariance" to="$(var output_pose_with_covariance)"/>
+
+    <remap from="~/debug/image" to="$(var debug_image)"/>
+    <remap from="~/debug/mapped_tag" to="$(var debug_mapped_tag)"/>
+    <remap from="~/debug/detected_tag" to="$(var debug_detected_tag)"/>
 
     <param from="$(var param_file)"/>
   </node>

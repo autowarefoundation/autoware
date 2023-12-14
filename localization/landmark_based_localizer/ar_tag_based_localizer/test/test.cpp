@@ -55,7 +55,8 @@ protected:
 
 TEST_F(TestArTagBasedLocalizer, test_setup)  // NOLINT
 {
-  EXPECT_TRUE(node_->setup());
+  // Check if the constructor finishes successfully
+  EXPECT_TRUE(true);
 }
 
 int main(int argc, char ** argv)

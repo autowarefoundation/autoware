@@ -17,7 +17,6 @@
   <depend>aruco</depend>
   <depend>cv_bridge</depend>
   <depend>diagnostic_msgs</depend>
-  <depend>image_transport</depend>
   <depend>landmark_manager</depend>
   <depend>lanelet2_extension</depend>
   <depend>localization_util</depend>

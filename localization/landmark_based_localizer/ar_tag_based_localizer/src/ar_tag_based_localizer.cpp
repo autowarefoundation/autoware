@@ -67,10 +67,6 @@
 ArTagBasedLocalizer::ArTagBasedLocalizer(const rclcpp::NodeOptions & options)
 : Node("ar_tag_based_localizer", options), cam_info_received_(false)
 {
-}
-
-bool ArTagBasedLocalizer::setup()
-{
   /*
     Declare node parameters
   */
@@ -92,7 +88,7 @@ bool ArTagBasedLocalizer::setup()
   } else {
     // Error
     RCLCPP_ERROR_STREAM(this->get_logger(), "Invalid detection_mode: " << detection_mode);
-    return false;
+    return;
   }
   ekf_pose_buffer_ = std::make_unique<SmartPoseBuffer>(
     this->get_logger(), ekf_time_tolerance_, ekf_position_tolerance_);
@@ -112,58 +108,49 @@ bool ArTagBasedLocalizer::setup()
   tf_listener_ = std::make_unique<tf2_ros::TransformListener>(*tf_buffer_);
 
   /*
-    Initialize image transport
-  */
-  it_ = std::make_unique<image_transport::ImageTransport>(shared_from_this());
-
-  /*
     Subscribers
   */
+  using std::placeholders::_1;
   map_bin_sub_ = this->create_subscription<HADMapBin>(
     "~/input/lanelet2_map", rclcpp::QoS(10).durability(rclcpp::DurabilityPolicy::TransientLocal),
-    std::bind(&ArTagBasedLocalizer::map_bin_callback, this, std::placeholders::_1));
+    std::bind(&ArTagBasedLocalizer::map_bin_callback, this, _1));
 
   rclcpp::QoS qos_sub(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
   qos_sub.best_effort();
-  pose_array_pub_ = this->create_publisher<PoseArray>("~/debug/detected_landmarks", qos_sub);
   image_sub_ = this->create_subscription<Image>(
-    "~/input/image", qos_sub,
-    std::bind(&ArTagBasedLocalizer::image_callback, this, std::placeholders::_1));
+    "~/input/image", qos_sub, std::bind(&ArTagBasedLocalizer::image_callback, this, _1));
   cam_info_sub_ = this->create_subscription<CameraInfo>(
-    "~/input/camera_info", qos_sub,
-    std::bind(&ArTagBasedLocalizer::cam_info_callback, this, std::placeholders::_1));
+    "~/input/camera_info", qos_sub, std::bind(&ArTagBasedLocalizer::cam_info_callback, this, _1));
   ekf_pose_sub_ = this->create_subscription<PoseWithCovarianceStamped>(
-    "~/input/ekf_pose", qos_sub,
-    std::bind(&ArTagBasedLocalizer::ekf_pose_callback, this, std::placeholders::_1));
+    "~/input/ekf_pose", qos_sub, std::bind(&ArTagBasedLocalizer::ekf_pose_callback, this, _1));
 
   /*
     Publishers
   */
-  rclcpp::QoS qos_marker = rclcpp::QoS(rclcpp::KeepLast(10));
-  qos_marker.transient_local();
-  qos_marker.reliable();
-  marker_pub_ = this->create_publisher<MarkerArray>("~/debug/marker", qos_marker);
-  rclcpp::QoS qos_pub(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
-  image_pub_ = it_->advertise("~/debug/result", 1);
-  pose_pub_ =
-    this->create_publisher<PoseWithCovarianceStamped>("~/output/pose_with_covariance", qos_pub);
-  diag_pub_ = this->create_publisher<DiagnosticArray>("/diagnostics", qos_pub);
+  const rclcpp::QoS qos_pub_once = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local().reliable();
+  const rclcpp::QoS qos_pub_periodic(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
+  pose_pub_ = this->create_publisher<PoseWithCovarianceStamped>(
+    "~/output/pose_with_covariance", qos_pub_periodic);
+  image_pub_ = this->create_publisher<Image>("~/debug/image", qos_pub_periodic);
+  mapped_tag_pose_pub_ = this->create_publisher<MarkerArray>("~/debug/mapped_tag", qos_pub_once);
+  detected_tag_pose_pub_ =
+    this->create_publisher<PoseArray>("~/debug/detected_tag", qos_pub_periodic);
+  diag_pub_ = this->create_publisher<DiagnosticArray>("/diagnostics", qos_pub_periodic);
 
   RCLCPP_INFO(this->get_logger(), "Setup of ar_tag_based_localizer node is successful!");
-  return true;
 }
 
 void ArTagBasedLocalizer::map_bin_callback(const HADMapBin::ConstSharedPtr & msg)
 {
   landmark_manager_.parse_landmarks(msg, "apriltag_16h5", this->get_logger());
   const MarkerArray marker_msg = landmark_manager_.get_landmarks_as_marker_array_msg();
-  marker_pub_->publish(marker_msg);
+  mapped_tag_pose_pub_->publish(marker_msg);
 }
 
 void ArTagBasedLocalizer::image_callback(const Image::ConstSharedPtr & msg)
 {
   // check subscribers
-  if ((image_pub_.getNumSubscribers() == 0) && (pose_pub_->get_subscription_count() == 0)) {
+  if ((image_pub_->get_subscription_count() == 0) && (pose_pub_->get_subscription_count() == 0)) {
     RCLCPP_DEBUG(this->get_logger(), "No subscribers, not looking for ArUco markers");
     return;
   }
@@ -192,7 +179,7 @@ void ArTagBasedLocalizer::image_callback(const Image::ConstSharedPtr & msg)
   }
 
   // for debug
-  if (pose_array_pub_->get_subscription_count() > 0) {
+  if (detected_tag_pose_pub_->get_subscription_count() > 0) {
     PoseArray pose_array_msg;
     pose_array_msg.header.stamp = sensor_stamp;
     pose_array_msg.header.frame_id = "map";
@@ -201,7 +188,7 @@ void ArTagBasedLocalizer::image_callback(const Image::ConstSharedPtr & msg)
         tier4_autoware_utils::transformPose(landmark.pose, self_pose);
       pose_array_msg.poses.push_back(detected_marker_on_map);
     }
-    pose_array_pub_->publish(pose_array_msg);
+    detected_tag_pose_pub_->publish(pose_array_msg);
   }
 
   // calc new_self_pose
@@ -267,24 +254,12 @@ void ArTagBasedLocalizer::cam_info_callback(const CameraInfo::ConstSharedPtr & m
     return;
   }
 
-  cv::Mat camera_matrix(3, 4, CV_64FC1, 0.0);
-  camera_matrix.at<double>(0, 0) = msg->p[0];
-  camera_matrix.at<double>(0, 1) = msg->p[1];
-  camera_matrix.at<double>(0, 2) = msg->p[2];
-  camera_matrix.at<double>(0, 3) = msg->p[3];
-  camera_matrix.at<double>(1, 0) = msg->p[4];
-  camera_matrix.at<double>(1, 1) = msg->p[5];
-  camera_matrix.at<double>(1, 2) = msg->p[6];
-  camera_matrix.at<double>(1, 3) = msg->p[7];
-  camera_matrix.at<double>(2, 0) = msg->p[8];
-  camera_matrix.at<double>(2, 1) = msg->p[9];
-  camera_matrix.at<double>(2, 2) = msg->p[10];
-  camera_matrix.at<double>(2, 3) = msg->p[11];
+  // copy camera matrix
+  cv::Mat camera_matrix(3, 4, CV_64FC1);
+  std::copy(msg->p.begin(), msg->p.end(), camera_matrix.begin<double>());
 
-  cv::Mat distortion_coeff(4, 1, CV_64FC1);
-  for (int i = 0; i < 4; ++i) {
-    distortion_coeff.at<double>(i, 0) = 0;
-  }
+  // all 0
+  cv::Mat distortion_coeff(4, 1, CV_64FC1, 0.0);
 
   const cv::Size size(static_cast<int>(msg->width), static_cast<int>(msg->height));
 
@@ -361,12 +336,12 @@ std::vector<landmark_manager::Landmark> ArTagBasedLocalizer::detect_landmarks(
   }
 
   // for debug
-  if (image_pub_.getNumSubscribers() > 0) {
+  if (image_pub_->get_subscription_count() > 0) {
     cv_bridge::CvImage out_msg;
     out_msg.header.stamp = sensor_stamp;
     out_msg.encoding = sensor_msgs::image_encodings::RGB8;
     out_msg.image = in_image;
-    image_pub_.publish(out_msg.toImageMsg());
+    image_pub_->publish(*out_msg.toImageMsg());
   }
 
   return landmarks;
