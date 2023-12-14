@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef UTILS__UTILS_HPP_
-#define UTILS__UTILS_HPP_
+#ifndef DETECTED_OBJECT_VALIDATION__UTILS__UTILS_HPP_
+#define DETECTED_OBJECT_VALIDATION__UTILS__UTILS_HPP_
 
 #include <cstdint>
 
@@ -33,4 +33,4 @@ struct FilterTargetLabel
 };  // struct FilterTargetLabel
 }  // namespace utils
 
-#endif  // UTILS__UTILS_HPP_
+#endif  // DETECTED_OBJECT_VALIDATION__UTILS__UTILS_HPP_

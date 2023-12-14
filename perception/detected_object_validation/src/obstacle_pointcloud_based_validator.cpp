@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "obstacle_pointcloud_based_validator/obstacle_pointcloud_based_validator.hpp"
+#include "detected_object_validation/obstacle_pointcloud_based_validator/obstacle_pointcloud_based_validator.hpp"
 
 #include <object_recognition_utils/object_recognition_utils.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>

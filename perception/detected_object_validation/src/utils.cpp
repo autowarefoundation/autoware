@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "utils/utils.hpp"
+#include "detected_object_validation/utils/utils.hpp"
 
 #include <autoware_auto_perception_msgs/msg/object_classification.hpp>
 

@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DETECTED_OBJECT_FILTER__OBJECT_POSITION_FILTER_HPP_
-#define DETECTED_OBJECT_FILTER__OBJECT_POSITION_FILTER_HPP_
+#ifndef DETECTED_OBJECT_VALIDATION__DETECTED_OBJECT_FILTER__OBJECT_POSITION_FILTER_HPP_
+#define DETECTED_OBJECT_VALIDATION__DETECTED_OBJECT_FILTER__OBJECT_POSITION_FILTER_HPP_
 
-#include "utils/utils.hpp"
+#include "detected_object_validation/utils/utils.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
@@ -55,4 +55,4 @@ private:
 
 }  // namespace object_position_filter
 
-#endif  // DETECTED_OBJECT_FILTER__OBJECT_POSITION_FILTER_HPP_
+#endif  // DETECTED_OBJECT_VALIDATION__DETECTED_OBJECT_FILTER__OBJECT_POSITION_FILTER_HPP_

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "occupancy_grid_based_validator/occupancy_grid_based_validator.hpp"
+#include "detected_object_validation/occupancy_grid_based_validator/occupancy_grid_based_validator.hpp"
 
 #include <object_recognition_utils/object_classification.hpp>
 #include <object_recognition_utils/object_recognition_utils.hpp>
