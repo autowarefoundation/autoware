@@ -16,7 +16,7 @@
 #define BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__SCENE_HPP_
 
 #include "behavior_path_avoidance_by_lane_change_module/data_structs.hpp"
-#include "behavior_path_planner/scene_module/lane_change/normal.hpp"
+#include "behavior_path_lane_change_module/scene.hpp"
 
 #include <memory>
 

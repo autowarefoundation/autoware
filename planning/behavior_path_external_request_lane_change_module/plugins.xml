@@ -1,0 +1,4 @@
+<library path="behavior_path_external_request_lane_change_module">
+  <class type="behavior_path_planner::ExternalRequestLaneChangeLeftModuleManager" base_class_type="behavior_path_planner::SceneModuleManagerInterface"/>
+  <class type="behavior_path_planner::ExternalRequestLaneChangeRightModuleManager" base_class_type="behavior_path_planner::SceneModuleManagerInterface"/>
+</library>

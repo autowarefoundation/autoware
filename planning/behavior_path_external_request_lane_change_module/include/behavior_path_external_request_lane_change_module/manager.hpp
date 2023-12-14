@@ -12,41 +12,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__MANAGER_HPP_
-#define BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__MANAGER_HPP_
+#ifndef BEHAVIOR_PATH_EXTERNAL_REQUEST_LANE_CHANGE_MODULE__MANAGER_HPP_
+#define BEHAVIOR_PATH_EXTERNAL_REQUEST_LANE_CHANGE_MODULE__MANAGER_HPP_
 
-#include "behavior_path_avoidance_by_lane_change_module/data_structs.hpp"
-#include "behavior_path_avoidance_by_lane_change_module/interface.hpp"
 #include "behavior_path_lane_change_module/manager.hpp"
+#include "route_handler/route_handler.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>
 #include <string>
-#include <unordered_map>
-#include <vector>
 
 namespace behavior_path_planner
 {
-using route_handler::Direction;
-
-class AvoidanceByLaneChangeModuleManager : public LaneChangeModuleManager
+class ExternalRequestLaneChangeRightModuleManager : public LaneChangeModuleManager
 {
 public:
-  AvoidanceByLaneChangeModuleManager()
+  ExternalRequestLaneChangeRightModuleManager()
   : LaneChangeModuleManager(
-      "avoidance_by_lc", route_handler::Direction::NONE,
-      LaneChangeModuleType::AVOIDANCE_BY_LANE_CHANGE)
+      "external_request_lane_change_right", route_handler::Direction::RIGHT,
+      LaneChangeModuleType::EXTERNAL_REQUEST)
   {
   }
-
-  void init(rclcpp::Node * node) override;
-
   std::unique_ptr<SceneModuleInterface> createNewSceneModuleInstance() override;
+};
 
-private:
-  std::shared_ptr<AvoidanceByLCParameters> avoidance_parameters_;
+class ExternalRequestLaneChangeLeftModuleManager : public LaneChangeModuleManager
+{
+public:
+  ExternalRequestLaneChangeLeftModuleManager()
+
+  : LaneChangeModuleManager(
+      "external_request_lane_change_left", route_handler::Direction::LEFT,
+      LaneChangeModuleType::EXTERNAL_REQUEST)
+  {
+  }
+  std::unique_ptr<SceneModuleInterface> createNewSceneModuleInstance() override;
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__MANAGER_HPP_
+#endif  // BEHAVIOR_PATH_EXTERNAL_REQUEST_LANE_CHANGE_MODULE__MANAGER_HPP_

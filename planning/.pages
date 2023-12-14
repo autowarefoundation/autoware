@@ -14,7 +14,7 @@ nav:
         - 'Avoidance by Lane Change': planning/behavior_path_planner/docs/behavior_path_planner_avoidance_by_lane_change_design
         - 'Dynamic Avoidance': planning/behavior_path_planner/docs/behavior_path_planner_dynamic_avoidance_design
         - 'Goal Planner': planning/behavior_path_planner/docs/behavior_path_planner_goal_planner_design
-        - 'Lane Change': planning/behavior_path_planner/docs/behavior_path_planner_lane_change_design
+        - 'Lane Change': planning/behavior_path_lane_change_module
         - 'Side Shift': planning/behavior_path_planner/docs/behavior_path_planner_side_shift_design
         - 'Start Planner': planning/behavior_path_planner/docs/behavior_path_planner_start_planner_design
   - 'Behavior Velocity Planner':

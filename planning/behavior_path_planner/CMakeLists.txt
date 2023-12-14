@@ -14,13 +14,7 @@ ament_auto_add_library(${PROJECT_NAME}_lib SHARED
   src/behavior_path_planner_node.cpp
   src/scene_module/dynamic_avoidance/dynamic_avoidance_module.cpp
   src/scene_module/dynamic_avoidance/manager.cpp
-  src/scene_module/lane_change/interface.cpp
-  src/scene_module/lane_change/normal.cpp
-  src/scene_module/lane_change/external_request.cpp
-  src/scene_module/lane_change/manager.cpp
-  src/utils/lane_change/utils.cpp
   src/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.cpp
-  src/marker_utils/lane_change/debug.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_lib SYSTEM PUBLIC
@@ -43,14 +37,6 @@ if(BUILD_TESTING)
   )
 
   target_link_libraries(test_${CMAKE_PROJECT_NAME}_utilities
-    ${PROJECT_NAME}_lib
-  )
-
-  ament_add_ros_isolated_gmock(test_${CMAKE_PROJECT_NAME}_lane_change_module
-    test/test_lane_change_utils.cpp
-  )
-
-  target_link_libraries(test_${CMAKE_PROJECT_NAME}_lane_change_module
     ${PROJECT_NAME}_lib
   )
 
