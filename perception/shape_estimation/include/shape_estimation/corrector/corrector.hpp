@@ -15,6 +15,7 @@
 #ifndef SHAPE_ESTIMATION__CORRECTOR__CORRECTOR_HPP_
 #define SHAPE_ESTIMATION__CORRECTOR__CORRECTOR_HPP_
 
+#include "shape_estimation/corrector/bicycle_corrector.hpp"
 #include "shape_estimation/corrector/bus_corrector.hpp"
 #include "shape_estimation/corrector/car_corrector.hpp"
 #include "shape_estimation/corrector/corrector_interface.hpp"
