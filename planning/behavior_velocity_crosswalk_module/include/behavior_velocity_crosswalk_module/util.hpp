@@ -50,6 +50,8 @@ enum class CollisionState { YIELD, EGO_PASS_FIRST, EGO_PASS_LATER, IGNORE };
 struct CollisionPoint
 {
   geometry_msgs::msg::Point collision_point{};
+  std::optional<double> crosswalk_passage_direction{
+    std::nullopt};  // denote obj is passing the crosswalk along the vehicle lane
   double time_to_collision{};
   double time_to_vehicle{};
 };

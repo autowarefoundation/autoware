@@ -63,6 +63,7 @@
       # param for target object filtering
       object_filtering:
         crosswalk_attention_range: 1.0 # [m] the detection area is defined as -X meters before the crosswalk to +X meters behind the crosswalk
+        vehicle_object_cross_angle_threshold: 0.5 # [rad] threshold judging object is crossing walkway as a pedestrian or passing over as a vehicle
         target_object:
           unknown: true # [-] whether to look and stop by UNKNOWN objects
           bicycle: true # [-] whether to look and stop by BICYCLE objects

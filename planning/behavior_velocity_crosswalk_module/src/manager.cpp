@@ -116,6 +116,8 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
   // param for target area & object
   cp.crosswalk_attention_range =
     getOrDeclareParameter<double>(node, ns + ".object_filtering.crosswalk_attention_range");
+  cp.vehicle_object_cross_angle_threshold = getOrDeclareParameter<double>(
+    node, ns + ".object_filtering.vehicle_object_cross_angle_threshold");
   cp.look_unknown =
     getOrDeclareParameter<bool>(node, ns + ".object_filtering.target_object.unknown");
   cp.look_bicycle =
