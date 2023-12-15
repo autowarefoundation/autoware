@@ -60,7 +60,7 @@ bool RunOutModule::modifyPathVelocity(
   PathWithLaneId * path, [[maybe_unused]] StopReason * stop_reason)
 {
   // timer starts
-  const auto t1_modify_path = std::chrono::system_clock::now();
+  const auto t_start = std::chrono::system_clock::now();
 
   // set planner data
   const auto current_vel = planner_data_->current_velocity->twist.linear.x;
@@ -70,20 +70,27 @@ bool RunOutModule::modifyPathVelocity(
   // set height of debug data
   debug_ptr_->setHeight(current_pose.position.z);
 
-  // smooth velocity of the path to calculate time to collision accurately
-  PathWithLaneId smoothed_path;
-  if (!smoothPath(*path, smoothed_path, planner_data_)) {
-    return true;
-  }
-
   // extend path to consider obstacles after the goal
-  const auto extended_smoothed_path =
-    run_out_utils::extendPath(smoothed_path, planner_param_.vehicle_param.base_to_front);
+  const auto extended_path =
+    run_out_utils::extendPath(*path, planner_param_.vehicle_param.base_to_front);
 
   // trim path ahead of the base_link to make calculation easier
   const double trim_distance = planner_param_.run_out.detection_distance;
-  const auto trim_smoothed_path =
-    run_out_utils::trimPathFromSelfPose(extended_smoothed_path, current_pose, trim_distance);
+  const auto trim_path =
+    run_out_utils::trimPathFromSelfPose(extended_path, current_pose, trim_distance);
+
+  // smooth velocity of the path to calculate time to collision accurately
+  PathWithLaneId extended_smoothed_path;
+  if (!smoothPath(trim_path, extended_smoothed_path, planner_data_)) {
+    return true;
+  }
+
+  // record time for path processing
+  const auto t_path_processing = std::chrono::system_clock::now();
+  const auto elapsed_path_processing =
+    std::chrono::duration_cast<std::chrono::microseconds>(t_path_processing - t_start);
+  debug_ptr_->setDebugValues(
+    DebugValues::TYPE::CALCULATION_TIME_PATH_PROCESSING, elapsed_path_processing.count() / 1000.0);
 
   // create abstracted dynamic obstacles from objects or points
   dynamic_obstacle_creator_->setData(*planner_data_, planner_param_, *path, extended_smoothed_path);
@@ -92,18 +99,24 @@ bool RunOutModule::modifyPathVelocity(
 
   // extract obstacles using lanelet information
   const auto partition_excluded_obstacles =
-    excludeObstaclesOutSideOfPartition(dynamic_obstacles, trim_smoothed_path, current_pose);
+    excludeObstaclesOutSideOfPartition(dynamic_obstacles, extended_smoothed_path, current_pose);
 
-  // timer starts
-  const auto t1_collision_check = std::chrono::system_clock::now();
+  // record time for obstacle creation
+  const auto t_obstacle_creation = std::chrono::system_clock::now();
+  const auto elapsed_obstacle_creation =
+    std::chrono::duration_cast<std::chrono::microseconds>(t_obstacle_creation - t_path_processing);
+  debug_ptr_->setDebugValues(
+    DebugValues::TYPE::CALCULATION_TIME_OBSTACLE_CREATION,
+    elapsed_obstacle_creation.count() / 1000.0);
 
   // detect collision with dynamic obstacles using velocity planning of ego
-  const auto dynamic_obstacle = detectCollision(partition_excluded_obstacles, trim_smoothed_path);
+  const auto dynamic_obstacle =
+    detectCollision(partition_excluded_obstacles, extended_smoothed_path);
 
-  // timer ends
-  const auto t2_collision_check = std::chrono::system_clock::now();
+  // record time for collision check
+  const auto t_collision_check = std::chrono::system_clock::now();
   const auto elapsed_collision_check =
-    std::chrono::duration_cast<std::chrono::microseconds>(t2_collision_check - t1_collision_check);
+    std::chrono::duration_cast<std::chrono::microseconds>(t_collision_check - t_obstacle_creation);
   debug_ptr_->setDebugValues(
     DebugValues::TYPE::CALCULATION_TIME_COLLISION_CHECK, elapsed_collision_check.count() / 1000.0);
 
@@ -112,7 +125,7 @@ bool RunOutModule::modifyPathVelocity(
     // after a certain amount of time has elapsed since the ego stopped,
     // approach the obstacle with slow velocity
     insertVelocityForState(
-      dynamic_obstacle, *planner_data_, planner_param_, trim_smoothed_path, *path);
+      dynamic_obstacle, *planner_data_, planner_param_, extended_smoothed_path, *path);
   } else {
     // just insert zero velocity for stopping
     insertStoppingVelocity(dynamic_obstacle, current_pose, current_vel, current_acc, *path);
@@ -124,14 +137,19 @@ bool RunOutModule::modifyPathVelocity(
   }
 
   publishDebugValue(
-    trim_smoothed_path, partition_excluded_obstacles, dynamic_obstacle, current_pose);
+    extended_smoothed_path, partition_excluded_obstacles, dynamic_obstacle, current_pose);
 
-  // timer ends
-  const auto t2_modify_path = std::chrono::system_clock::now();
-  const auto elapsed_modify_path =
-    std::chrono::duration_cast<std::chrono::microseconds>(t2_modify_path - t1_modify_path);
+  // record time for collision check
+  const auto t_path_planning = std::chrono::system_clock::now();
+  const auto elapsed_path_planning =
+    std::chrono::duration_cast<std::chrono::microseconds>(t_path_planning - t_collision_check);
   debug_ptr_->setDebugValues(
-    DebugValues::TYPE::CALCULATION_TIME, elapsed_modify_path.count() / 1000.0);
+    DebugValues::TYPE::CALCULATION_TIME_PATH_PLANNING, elapsed_path_planning.count() / 1000.0);
+
+  // record time for the function
+  const auto t_end = std::chrono::system_clock::now();
+  const auto elapsed_all = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start);
+  debug_ptr_->setDebugValues(DebugValues::TYPE::CALCULATION_TIME, elapsed_all.count() / 1000.0);
 
   return true;
 }
