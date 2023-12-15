@@ -32,6 +32,7 @@
   <depend>motion_utils</depend>
   <depend>motion_velocity_smoother</depend>
   <depend>nav_msgs</depend>
+  <depend>objects_of_interest_marker_interface</depend>
   <depend>pcl_conversions</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
