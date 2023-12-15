@@ -943,6 +943,7 @@ BehaviorModuleOutput GoalPlannerModule::planPullOverAsCandidate()
   const BehaviorModuleOutput pull_over_output = planPullOverAsOutput();
   output.modified_goal = pull_over_output.modified_goal;
   output.path = std::make_shared<PathWithLaneId>(generateStopPath());
+  output.reference_path = getPreviousModuleOutput().reference_path;
 
   const auto target_drivable_lanes = utils::getNonOverlappingExpandedLanes(
     *output.path, generateDrivableLanes(), planner_data_->drivable_area_expansion_parameters);
