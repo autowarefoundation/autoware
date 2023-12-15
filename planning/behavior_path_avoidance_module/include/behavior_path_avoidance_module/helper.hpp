@@ -58,6 +58,8 @@ public:
 
   double getEgoSpeed() const { return std::abs(data_->self_odometry->twist.twist.linear.x); }
 
+  geometry_msgs::msg::Pose getEgoPose() const { return data_->self_odometry->pose.pose; }
+
   size_t getConstraintsMapIndex(const double velocity, const std::vector<double> & values) const
   {
     const auto itr = std::find_if(
@@ -185,10 +187,20 @@ public:
       return parameters_->object_check_max_forward_distance;
     }
 
+    const auto & route_handler = data_->route_handler;
+
+    lanelet::ConstLanelet closest_lane;
+    if (!route_handler->getClosestLaneletWithinRoute(getEgoPose(), &closest_lane)) {
+      return parameters_->object_check_max_forward_distance;
+    }
+
+    const auto limit = route_handler->getTrafficRulesPtr()->speedLimit(closest_lane);
+    const auto speed = isShifted() ? limit.speedLimit.value() : getEgoSpeed();
+
     const auto max_shift_length = std::max(
       std::abs(parameters_->max_right_shift_length), std::abs(parameters_->max_left_shift_length));
-    const auto dynamic_distance = PathShifter::calcLongitudinalDistFromJerk(
-      max_shift_length, getLateralMinJerkLimit(), getEgoSpeed());
+    const auto dynamic_distance =
+      PathShifter::calcLongitudinalDistFromJerk(max_shift_length, getLateralMinJerkLimit(), speed);
 
     return std::clamp(
       1.5 * dynamic_distance + getNominalPrepareDistance(),
