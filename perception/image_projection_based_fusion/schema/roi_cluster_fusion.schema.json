@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for RoI Cluster Fusion Node",
+  "type": "object",
+  "definitions": {
+    "roi_cluster_fusion": {
+      "type": "object",
+      "properties": {
+        "fusion_distance": {
+          "type": "number",
+          "description": "If the detected object's distance is less than its value, the fusion will be processed.",
+          "default": 100.0,
+          "minimum": 0.0
+        },
+        "trust_object_distance": {
+          "type": "number",
+          "description": "If the detected object's distance is less than its value, IoU method specified in `trust_object_iou_mode` is used, otherwise `non_trust_object_iou_mode` is used.",
+          "default": 100.0,
+          "minimum": 0.0
+        },
+        "trust_object_iou_mode": {
+          "type": "string",
+          "description": "Name of IoU method applied to the objects in range of [0.0, `trust_distance`].",
+          "default": "iou",
+          "enum": ["iou", "iou_x", "iou_y"]
+        },
+        "non_trust_object_iou_mode": {
+          "type": "string",
+          "description": "Name of IoU method applied to the objects in range of [`trust_distance`, `fusion_distance`], if `trust_distance` < `fusion_distance`.",
+          "default": "iou_x",
+          "enum": ["iou", "iou_x", "iou_y"]
+        },
+        "use_cluster_semantic_type": {
+          "type": "boolean",
+          "description": "If this parameter is false, label of cluster objects will be reset to UNKNOWN.",
+          "default": false
+        },
+        "only_allow_inside_cluster": {
+          "type": "boolean",
+          "description": "If this parameter is true, only clusters in which all their points are inside the RoI can be assigned to the RoI.",
+          "default": true
+        },
+        "roi_scale_factor": {
+          "type": "number",
+          "description": "A scale factor for resizing RoI while checking if cluster points are inside the RoI.",
+          "default": 1.1,
+          "minimum": 1.0,
+          "maximum": 2.0
+        },
+        "iou_threshold": {
+          "type": "number",
+          "description": "An IoU score threshold. Note that the total IoU score is the sum of the IoU scores that are set to true in use_iou, use_iou_x and use_iou_y.",
+          "default": 0.65,
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "unknown_iou_threshold": {
+          "type": "number",
+          "description": "A threshold value of IoU score for objects labeled UNKNOWN.",
+          "default": 0.1,
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "remove_unknown": {
+          "type": "boolean",
+          "description": "If this parameter is true, all of objects labeled UNKNOWN will be removed in post-process.",
+          "default": false
+        }
+      },
+      "required": [
+        "fusion_distance",
+        "trust_object_distance",
+        "trust_object_iou_mode",
+        "non_trust_object_iou_mode",
+        "use_cluster_semantic_type",
+        "only_allow_inside_cluster",
+        "roi_scale_factor",
+        "iou_threshold",
+        "unknown_iou_threshold",
+        "remove_unknown"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/roi_cluster_fusion"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

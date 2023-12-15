@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for RoI Detected Object Fusion Node",
+  "type": "object",
+  "definitions": {
+    "roi_detected_object_fusion": {
+      "type": "object",
+      "properties": {
+        "passthrough_lower_bound_probability_thresholds": {
+          "type": "array",
+          "description": "An array of object probability thresholds. The objects that have higher probability than their respective thresholds are kept.",
+          "default": [0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.5]
+        },
+        "trust_distances": {
+          "type": "array",
+          "description": "An array of object distances thresholds. Any objects that is farther than this value will be skipped in the clustering process, but will still be published.",
+          "default": [50.0, 100.0, 100.0, 100.0, 100.0, 50.0, 50.0, 50.0]
+        },
+        "min_iou_threshold": {
+          "type": "number",
+          "description": "An Iou score threshold.",
+          "default": 0.5,
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "roi_probability_threshold": {
+          "type": "number",
+          "description": "A object probability threshold.",
+          "default": 0.5,
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "use_roi_probability": {
+          "type": "boolean",
+          "description": "If this parameter is true, the objects are filtered out with their RoI probabilities.",
+          "default": false
+        },
+        "can_assign_matrix": {
+          "type": "array",
+          "description": "An NxN matrix, where N represents the number of classes. A value 1 indicates that it is assignable, while a value of 0 indicates not.",
+          "default": [
+            1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1,
+            0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0,
+            0, 0, 0, 1, 1, 1
+          ]
+        }
+      },
+      "required": [
+        "passthrough_lower_bound_probability_thresholds",
+        "trust_distances",
+        "min_iou_threshold",
+        "roi_probability_threshold",
+        "use_roi_probability",
+        "can_assign_matrix"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/roi_detected_object_fusion"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

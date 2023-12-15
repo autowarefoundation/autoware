@@ -1,8 +1,5 @@
 <launch>
   <arg name="input/rois_number" default="6"/>
-  <arg name="cluster_2d_tolerance" default="0.5"/>
-  <arg name="min_cluster_size" default="2"/>
-  <arg name="fuse_unknown_only" default="true"/>
   <arg name="input/rois0" default="rois0"/>
   <arg name="input/camera_info0" default="/camera_info0"/>
   <arg name="input/rois1" default="rois1"/>
@@ -23,6 +20,7 @@
   <arg name="output/pointcloud" default="roi_pointcloud_fusion/output/pointcloud"/>
   <arg name="output_clusters" default="output_clusters"/>
   <arg name="debug/clusters" default="roi_pointcloud_fusion/debug/clusters"/>
+  <arg name="param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_pointcloud_fusion.param.yaml"/>
   <arg name="sync_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_sync.param.yaml"/>
 
   <!-- for eval variable-->
@@ -38,9 +36,7 @@
   <group>
     <node pkg="image_projection_based_fusion" exec="roi_pointcloud_fusion_node" name="roi_pointcloud_fusion" output="screen">
       <param name="rois_number" value="$(var input/rois_number)"/>
-      <param name="cluster_2d_tolerance" value="$(var cluster_2d_tolerance)"/>
-      <param name="min_cluster_size" value="$(var min_cluster_size)"/>
-      <param name="fuse_unknown_only" value="$(var fuse_unknown_only)"/>
+      <param from="$(var param_path)"/>
       <param from="$(var sync_param_path)"/>
       <remap from="input" to="$(var input/pointcloud)"/>
       <remap from="output" to="$(var output/pointcloud)"/>

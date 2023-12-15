@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Point Painting Fusion Node",
+  "type": "object",
+  "definitions": {
+    "pointpainting": {
+      "type": "object",
+      "properties": {
+        "model_params": {
+          "type": "object",
+          "description": "Parameters for model configuration.",
+          "properties": {
+            "class_names": {
+              "type": "array",
+              "description": "An array of class names will be predicted.",
+              "default": ["CAR", "TRUCK", "BUS", "BICYCLE", "PEDESTRIAN"],
+              "uniqueItems": true
+            },
+            "paint_class_names": {
+              "type": "array",
+              "description": "An array of class names will be painted by PointPainting",
+              "default": ["CAR", "BICYCLE", "PEDESTRIAN"],
+              "uniqueItems": true
+            },
+            "point_feature_size": {
+              "type": "integer",
+              "description": "A number of channels of point feature layer.",
+              "default": 7
+            },
+            "max_voxel_size": {
+              "type": "integer",
+              "description": "A maximum size of voxel grid.",
+              "default": 40000
+            },
+            "point_cloud_range": {
+              "type": "array",
+              "description": "An array of distance ranges of each class, this must have same length with `class_names`.",
+              "default": [-121.6, -76.8, -3.0, 121.6, 76.8, 5.0]
+            },
+            "voxel_size": {
+              "type": "array",
+              "description": "An array of voxel grid sizes for PointPainting, this must have same length with `paint_class_names`.",
+              "default": [0.32, 0.32, 8.0]
+            },
+            "down_sample_factor": {
+              "type": "integer",
+              "description": "A scale factor of downsampling points",
+              "default": 1,
+              "minimum": 1
+            },
+            "encoder_in_feature_size": {
+              "type": "integer",
+              "description": "A size of encoder input feature channels.",
+              "default": 12
+            },
+            "yaw_norm_thresholds": {
+              "type": "array",
+              "description": "An array of distance threshold values of norm of yaw [rad].",
+              "default": [0.3, 0.3, 0.3, 0.3, 0.0],
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "has_twist": {
+              "type": "boolean",
+              "description": "Indicates whether the model outputs twist value.",
+              "default": false
+            }
+          }
+        },
+        "densification_params": {
+          "type": "object",
+          "description": "Parameters for pointcloud densification.",
+          "properties": {
+            "world_frame_id": {
+              "type": "string",
+              "description": "A name of frame id where world coordinates system is defined with respect to.",
+              "default": "map"
+            },
+            "num_past_frames": {
+              "type": "integer",
+              "description": "A number of past frames to be considered as same input frame.",
+              "default": 0,
+              "minimum": 0
+            }
+          }
+        },
+        "post_process_params": {
+          "type": "object",
+          "properties": {
+            "score_threshold": {
+              "type": "number",
+              "description": "A threshold value of existence probability score, all of objects with score less than this threshold are ignored.",
+              "default": 0.4,
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "circle_nms_dist_threshold": {
+              "type": "number",
+              "description": "",
+              "default": 0.3,
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "iou_nms_target_class_names": {
+              "type": "array",
+              "description": "An array of class names to be target in NMS.",
+              "default": ["CAR"],
+              "uniqueItems": true
+            },
+            "iou_search_distance_2d": {
+              "type": "number",
+              "description": "A maximum distance value to search the nearest objects.",
+              "default": 10.0,
+              "minimum": 0.0
+            },
+            "iou_nms_threshold": {
+              "type": "number",
+              "description": "A threshold value of NMS using IoU score.",
+              "default": 0.1,
+              "minimum": 0.0,
+              "maximum": 1.0
+            }
+          }
+        },
+        "omp_params": {
+          "type": "object",
+          "properties": {
+            "num_threads": {
+              "type": "integer",
+              "description": "The number of threads that is set to the environment variable OMP_NUM_THREADS.",
+              "default": 1,
+              "minimum": 1
+            }
+          }
+        }
+      },
+      "required": ["model_params", "densification_params", "post_process_params", "omp_params"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/pointpainting"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

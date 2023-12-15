@@ -46,7 +46,7 @@ FusionNode<Msg, ObjType>::FusionNode(
 : Node(node_name, options), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_)
 {
   // set rois_number
-  rois_number_ = static_cast<std::size_t>(declare_parameter("rois_number", 1));
+  rois_number_ = static_cast<std::size_t>(declare_parameter<int32_t>("rois_number"));
   if (rois_number_ < 1) {
     RCLCPP_WARN(
       this->get_logger(), "minimum rois_number is 1. current rois_number is %zu", rois_number_);
@@ -80,7 +80,7 @@ FusionNode<Msg, ObjType>::FusionNode(
       "/sensing/camera/camera" + std::to_string(roi_i) + "/image_rect_color");
   }
 
-  input_offset_ms_ = declare_parameter("input_offset_ms", std::vector<double>{});
+  input_offset_ms_ = declare_parameter<std::vector<double>>("input_offset_ms");
   if (!input_offset_ms_.empty() && rois_number_ != input_offset_ms_.size()) {
     throw std::runtime_error("The number of offsets does not match the number of topics.");
   }
@@ -122,7 +122,7 @@ FusionNode<Msg, ObjType>::FusionNode(
   // debugger
   if (declare_parameter("debug_mode", false)) {
     std::size_t image_buffer_size =
-      static_cast<std::size_t>(declare_parameter("image_buffer_size", 15));
+      static_cast<std::size_t>(declare_parameter<int32_t>("image_buffer_size"));
     debugger_ =
       std::make_shared<Debugger>(this, rois_number_, image_buffer_size, input_camera_topics_);
   }
@@ -136,14 +136,15 @@ FusionNode<Msg, ObjType>::FusionNode(
     stop_watch_ptr_->tic("cyclic_time");
     stop_watch_ptr_->tic("processing_time");
   }
+
   // cspell: ignore minx, maxx, miny, maxy, minz, maxz
   // FIXME: use min_x instead of minx
-  filter_scope_minx_ = declare_parameter("filter_scope_minx", -100);
-  filter_scope_maxx_ = declare_parameter("filter_scope_maxx", 100);
-  filter_scope_miny_ = declare_parameter("filter_scope_miny", -100);
-  filter_scope_maxy_ = declare_parameter("filter_scope_maxy", 100);
-  filter_scope_minz_ = declare_parameter("filter_scope_minz", -100);
-  filter_scope_maxz_ = declare_parameter("filter_scope_maxz", 100);
+  filter_scope_minx_ = declare_parameter<double>("filter_scope_min_x");
+  filter_scope_maxx_ = declare_parameter<double>("filter_scope_max_x");
+  filter_scope_miny_ = declare_parameter<double>("filter_scope_min_y");
+  filter_scope_maxy_ = declare_parameter<double>("filter_scope_max_y");
+  filter_scope_minz_ = declare_parameter<double>("filter_scope_min_z");
+  filter_scope_maxz_ = declare_parameter<double>("filter_scope_max_z");
 }
 
 template <class Msg, class Obj>

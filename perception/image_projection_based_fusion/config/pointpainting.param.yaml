@@ -1,18 +1,26 @@
 /**:
   ros__parameters:
-    class_names: ["CAR", "TRUCK", "BUS", "BICYCLE", "PEDESTRIAN"]
-    paint_class_names: ["CAR", "BICYCLE", "PEDESTRIAN"]
-    point_feature_size: 7  # x, y, z, time-lag and car, pedestrian, bicycle
-    max_voxel_size: 40000
-    point_cloud_range: [-121.6, -76.8, -3.0, 121.6, 76.8, 5.0]
-    voxel_size: [0.32, 0.32, 8.0]
-    downsample_factor: 1
-    encoder_in_feature_size: 12
-    yaw_norm_thresholds: [0.3, 0.3, 0.3, 0.3, 0.0]
-    # post-process params
-    circle_nms_dist_threshold: 0.3
-    iou_nms_target_class_names: ["CAR"]
-    iou_nms_search_distance_2d: 10.0
-    iou_nms_threshold: 0.1
-    # omp params
-    omp_num_threads: 1
+    model_params:
+      class_names: ["CAR", "TRUCK", "BUS", "BICYCLE", "PEDESTRIAN"]
+      paint_class_names: ["CAR", "BICYCLE", "PEDESTRIAN"]
+      point_feature_size: 7 # x, y, z, time-lag and car, pedestrian, bicycle
+      max_voxel_size: 40000
+      point_cloud_range: [-121.6, -76.8, -3.0, 121.6, 76.8, 5.0]
+      voxel_size: [0.32, 0.32, 8.0]
+      downsample_factor: 1
+      encoder_in_feature_size: 12
+      yaw_norm_thresholds: [0.3, 0.3, 0.3, 0.3, 0.0]
+      has_twist: false
+    densification_params:
+      world_frame_id: "map"
+      num_past_frames: 0
+    post_process_params:
+      # post-process params
+      circle_nms_dist_threshold: 0.3
+      iou_nms_target_class_names: ["CAR"]
+      iou_nms_search_distance_2d: 10.0
+      iou_nms_threshold: 0.1
+      score_threshold: 0.4
+    omp_params:
+      # omp params
+      num_threads: 1

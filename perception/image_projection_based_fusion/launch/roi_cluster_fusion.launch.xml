@@ -18,24 +18,11 @@
   <arg name="input/camera_info7" default="/camera_info7"/>
   <arg name="input/clusters" default="clusters"/>
   <arg name="output/clusters" default="labeled_clusters"/>
+  <arg name="param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_cluster_fusion.param.yaml"/>
   <arg name="sync_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_sync.param.yaml"/>
-  <arg name="remove_unknown" default="true"/>
-  <arg name="fusion_distance" default="100.0"/>
-  <arg name="trust_object_distance" default="100.0"/>
-
-  <!-- for eval variable-->
-  <arg name="input_rois_number" default="$(var input/rois_number)"/>
 
   <!-- debug -->
   <!-- cspell: ignore minx, maxx, miny, maxy, minz, maxz  -->
-  <arg name="debug_mode" default="false"/>
-  <arg name="filter_scope_minx" default="-100"/>
-  <arg name="filter_scope_maxx" default="100"/>
-  <arg name="filter_scope_miny" default="-100"/>
-  <arg name="filter_scope_maxy" default="100"/>
-  <arg name="filter_scope_minz" default="-100"/>
-  <arg name="filter_scope_maxz" default="100"/>
-  <arg name="image_buffer_size" default="15"/>
   <arg name="input/image0" default="/image_raw0"/>
   <arg name="input/image1" default="/image_raw1"/>
   <arg name="input/image2" default="/image_raw2"/>
@@ -46,17 +33,8 @@
   <arg name="input/image7" default="/image_raw7"/>
   <group>
     <node pkg="image_projection_based_fusion" exec="roi_cluster_fusion_node" name="roi_cluster_fusion" output="screen">
-      <param name="trust_object_iou_mode" value="iou"/>
-      <param name="non_trust_object_iou_mode" value="iou_x"/>
-      <param name="use_cluster_semantic_type" value="false"/>
-      <param name="only_allow_inside_cluster" value="true"/>
-      <param name="roi_scale_factor" value="1.1"/>
-      <param name="iou_threshold" value="0.65"/>
-      <param name="unknown_iou_threshold" value="0.1"/>
       <param name="rois_number" value="$(var input/rois_number)"/>
-      <param name="remove_unknown" value="$(var remove_unknown)"/>
-      <param name="fusion_distance" value="$(var fusion_distance)"/>
-      <param name="trust_object_distance" value="$(var trust_object_distance)"/>
+      <param from="$(var param_path)"/>
       <param from="$(var sync_param_path)"/>
       <remap from="input" to="$(var input/clusters)"/>
       <remap from="output" to="$(var output/clusters)"/>
@@ -86,16 +64,6 @@
       <param name="input/rois7" value="$(var input/rois7)"/>
       <param name="input/camera_info7" value="$(var input/camera_info7)"/>
       <param name="input/image7" value="$(var input/image7)"/>
-
-      <!-- debug -->
-      <param name="debug_mode" value="$(var debug_mode)"/>
-      <param name="filter_scope_minx" value="$(var filter_scope_minx)"/>
-      <param name="filter_scope_maxx" value="$(var filter_scope_maxx)"/>
-      <param name="filter_scope_miny" value="$(var filter_scope_miny)"/>
-      <param name="filter_scope_maxy" value="$(var filter_scope_maxy)"/>
-      <param name="filter_scope_minz" value="$(var filter_scope_minz)"/>
-      <param name="filter_scope_maxz" value="$(var filter_scope_maxz)"/>
-      <param name="image_buffer_size" value="$(var image_buffer_size)"/>
     </node>
   </group>
 </launch>

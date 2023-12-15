@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for RoI PointCloud Fusion Node",
+  "type": "object",
+  "definitions": {
+    "roi_pointcloud_fusion": {
+      "type": "object",
+      "properties": {
+        "fuse_unknown_only": {
+          "type": "boolean",
+          "description": "Whether to fuse only UNKNOWN clusters.",
+          "default": true
+        },
+        "min_cluster_size": {
+          "type": "integer",
+          "description": "The minimum number of points that a cluster must contain to be considered as valid.",
+          "default": 2
+        },
+        "cluster_2d_tolerance": {
+          "type": "number",
+          "description": "A cluster tolerance measured in radial direction [m]",
+          "default": 0.5,
+          "exclusiveMinimum": 0.0
+        }
+      },
+      "required": ["fuse_unknown_only", "min_cluster_size", "cluster_2d_tolerance"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/roi_pointcloud_fusion"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Synchronization of RoI Fusion Nodes",
+  "type": "object",
+  "definitions": {
+    "roi_sync": {
+      "type": "object",
+      "properties": {
+        "input_offset_ms": {
+          "type": "array",
+          "description": "An array of timestamp offsets for each camera [ms].",
+          "default": [61.67, 111.67, 45.0, 28.33, 78.33, 95.0]
+        },
+        "timeout_ms": {
+          "type": "number",
+          "description": "A timeout value can be assigned within a single frame [ms].",
+          "default": 70.0,
+          "minimum": 1.0,
+          "maximum": 100.0
+        },
+        "match_threshold_ms": {
+          "type": "number",
+          "description": "A maximum threshold value to synchronize RoIs from multiple cameras [ms].",
+          "default": 50.0,
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
+        "image_buffer_size": {
+          "type": "integer",
+          "description": "The number of image buffer size for debug.",
+          "default": 15,
+          "minimum": 1
+        },
+        "debug_mode": {
+          "type": "boolean",
+          "description": "Whether to debug or not.",
+          "default": false
+        },
+        "filter_scope_min_x": {
+          "type": "number",
+          "description": "Minimum x position to be considered for debug [m].",
+          "default": -100.0
+        },
+        "filter_scope_min_y": {
+          "type": "number",
+          "description": "Minimum y position to be considered for debug [m].",
+          "default": -100.0
+        },
+        "filter_scope_min_z": {
+          "type": "number",
+          "description": "Minimum z position to be considered for debug [m].",
+          "default": -100.0
+        },
+        "filter_scope_max_x": {
+          "type": "number",
+          "description": "Maximum x position to be considered for debug [m].",
+          "default": 100.0
+        },
+        "filter_scope_max_y": {
+          "type": "number",
+          "description": "Maximum y position to be considered for debug [m].",
+          "default": 100.0
+        },
+        "filter_scope_max_z": {
+          "type": "number",
+          "description": "Maximum z position [m].",
+          "default": 100.0
+        }
+      }
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/roi_sync"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
