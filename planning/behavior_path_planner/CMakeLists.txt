@@ -14,7 +14,6 @@ ament_auto_add_library(${PROJECT_NAME}_lib SHARED
   src/behavior_path_planner_node.cpp
   src/scene_module/dynamic_avoidance/dynamic_avoidance_module.cpp
   src/scene_module/dynamic_avoidance/manager.cpp
-  src/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_lib SYSTEM PUBLIC

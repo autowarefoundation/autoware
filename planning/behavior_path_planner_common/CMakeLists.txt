@@ -23,6 +23,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/utils/drivable_area_expansion/footprints.cpp
   src/utils/parking_departure/geometric_parallel_parking.cpp
   src/utils/parking_departure/utils.cpp
+  src/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.cpp
   src/marker_utils/utils.cpp
 )
 
