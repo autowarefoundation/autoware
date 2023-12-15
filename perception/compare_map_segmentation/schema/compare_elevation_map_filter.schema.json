@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Compare Elevation Map Filter",
+  "type": "object",
+  "definitions": {
+    "compare_elevation_map_filter": {
+      "type": "object",
+      "properties": {
+        "map_layer_name": {
+          "type": "string",
+          "default": "elevation",
+          "description": "elevation map layer name"
+        },
+        "height_diff_thresh": {
+          "type": "number",
+          "default": "0.15",
+          "description": "Remove points whose height difference is below this value [m]"
+        },
+        "map_frame": {
+          "type": "string",
+          "default": "map",
+          "description": "frame_id of the map that is temporarily used before elevation_map is subscribed"
+        }
+      },
+      "required": ["map_layer_name", "height_diff_thresh", "map_frame"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/compare_elevation_map_filter"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

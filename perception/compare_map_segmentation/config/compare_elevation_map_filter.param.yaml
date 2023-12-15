@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    map_layer_name: "elevation"
+    height_diff_thresh: 0.15
+    map_frame: "map"

@@ -40,9 +40,9 @@ CompareElevationMapFilterComponent::CompareElevationMapFilterComponent(
 : Filter("CompareElevationMapFilter", options)
 {
   unsubscribe();
-  layer_name_ = this->declare_parameter("map_layer_name", std::string("elevation"));
-  height_diff_thresh_ = this->declare_parameter("height_diff_thresh", 0.15);
-  map_frame_ = this->declare_parameter("map_frame", "map");
+  layer_name_ = declare_parameter<std::string>("map_layer_name");
+  height_diff_thresh_ = declare_parameter<float>("height_diff_thresh");
+  map_frame_ = declare_parameter<std::string>("map_frame");
 
   rclcpp::QoS durable_qos{1};
   durable_qos.transient_local();

@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Voxel Based Compare Map Filter",
+  "type": "object",
+  "definitions": {
+    "voxel_based_compare_map_filter": {
+      "type": "object",
+      "properties": {
+        "distance_threshold": {
+          "type": "number",
+          "default": "0.5",
+          "description": "Threshold distance to compare input points with map points [m]"
+        },
+        "use_dynamic_map_loading": {
+          "type": "boolean",
+          "default": "true",
+          "description": "map loading mode selection, true for dynamic map loading, false for static map loading, recommended for no-split map pointcloud"
+        },
+        "downsize_ratio_z_axis": {
+          "type": "number",
+          "default": "0.5",
+          "description": "Positive ratio to reduce voxel_leaf_size and neighbor point distance threshold in z axis"
+        },
+        "map_update_distance_threshold": {
+          "type": "number",
+          "default": "10.0",
+          "description": "Threshold distance to update map points with input points [m]"
+        },
+        "map_loader_radius": {
+          "type": "number",
+          "default": "150.0",
+          "description": "Radius to load map points [m]"
+        },
+        "timer_interval_ms": {
+          "type": "number",
+          "default": "100",
+          "description": "Timer interval to load map points [ms]"
+        }
+      },
+      "required": [
+        "distance_threshold",
+        "use_dynamic_map_loading",
+        "downsize_ratio_z_axis",
+        "map_update_distance_threshold",
+        "map_loader_radius",
+        "timer_interval_ms"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/voxel_based_compare_map_filter"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

@@ -1,25 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <launch>
+  <arg name="voxel_based_compare_map_filter_param_file" default="$(find-pkg-share compare_map_segmentation)/config/voxel_based_compare_map_filter.param.yaml"/>
   <arg name="input" default="/input" description="input topic name"/>
   <arg name="input_map" default="/map" description="input map topic name"/>
   <arg name="pose_with_covariance" default="/localization/pose_estimator/pose_with_covariance" description="input vehicle pose topic name"/>
   <arg name="output" default="/output" description="output topic name"/>
   <arg name="map_loader_service" default="/map/get_differential_pointcloud_map" description="map loader service name"/>
-  <arg name="distance_threshold" default="0.3"/>
-  <arg name="downsize_ratio_z_axis" default="0.5"/>
-  <arg name="use_dynamic_map_loading" default="true"/>
-  <arg name="timer_interval_ms" default="100"/>
-  <arg name="map_update_distance_threshold" default="10.0"/>
-  <arg name="map_loader_radius" default="150.0"/>
 
   <node pkg="compare_map_segmentation" exec="voxel_based_compare_map_filter_node" name="voxel_based_compare_map_filter_node" output="screen">
     <remap from="input" to="$(var input)"/>
     <remap from="map" to="$(var input_map)"/>
     <remap from="output" to="$(var output)"/>
-    <param name="distance_threshold" value="$(var distance_threshold)"/>
-    <param name="downsize_ratio_z_axis" value="$(var downsize_ratio_z_axis)"/>
-    <param name="use_dynamic_map_loading" value="$(var use_dynamic_map_loading)"/>
-    <param name="timer_interval_ms" value="$(var timer_interval_ms)"/>
-    <param name="map_update_distance_threshold" value="$(var map_update_distance_threshold)"/>
-    <param name="map_loader_radius" value="$(var map_loader_radius)"/>
+    <param from="$(var voxel_based_compare_map_filter_param_file)"/>
   </node>
 </launch>

@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Voxel Based Approximate Compare Map Filter",
+  "type": "object",
+  "definitions": {
+    "voxel_based_approximate_compare_map_filter": {
+      "type": "object",
+      "properties": {
+        "distance_threshold": {
+          "type": "number",
+          "default": "0.5",
+          "description": "Threshold distance to compare input points with map points [m]"
+        },
+        "use_dynamic_map_loading": {
+          "type": "boolean",
+          "default": "true",
+          "description": "map loading mode selection, true for dynamic map loading, false for static map loading, recommended for no-split map pointcloud"
+        },
+        "downsize_ratio_z_axis": {
+          "type": "number",
+          "default": "0.5",
+          "description": "Positive ratio to reduce voxel_leaf_size and neighbor point distance threshold in z axis"
+        }
+      },
+      "required": ["distance_threshold", "use_dynamic_map_loading", "downsize_ratio_z_axis"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/voxel_based_approximate_compare_map_filter"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
