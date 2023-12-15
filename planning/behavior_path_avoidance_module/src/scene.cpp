@@ -1700,7 +1700,7 @@ void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
   // insert slow down speed.
   const double current_target_velocity = PathShifter::calcFeasibleVelocityFromJerk(
     shift_length, helper_->getLateralMinJerkLimit(), distance_to_object);
-  if (current_target_velocity < getEgoSpeed() && decel_distance < remaining_distance) {
+  if (current_target_velocity < getEgoSpeed() + parameters_->buf_slow_down_speed) {
     utils::avoidance::insertDecelPoint(
       getEgoPosition(), decel_distance, parameters_->velocity_map.front(), shifted_path.path,
       slow_pose_);
