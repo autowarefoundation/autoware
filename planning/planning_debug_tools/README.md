@@ -6,6 +6,7 @@ This package contains several planning-related debug tools.
 - **Closest velocity checker**: prints the velocity information indicated by each modules
 - **Perception reproducer**: generates detected objects from rosbag data in planning simulator environment
 - **processing time checker**: displays processing_time of modules on the terminal
+- **logging level updater**: updates the logging level of the planning modules.
 
 ## Trajectory analyzer
 
@@ -264,3 +265,19 @@ The program allows users to customize two parameters via command-line arguments:
 - --display_frequency (or -f): This sets the frequency at which the terminal UI updates. The default value is 5Hz.
 
 By adjusting these parameters, users can tailor the display to their specific monitoring needs.
+
+## Logging Level Updater
+
+The purpose of the Logging Level Updater is to update the logging level of the planning modules via ROS 2 service. Users can easily update the logging level for debugging.
+
+```bash
+ros2 run planning_debug_tools update_logger_level.sh <module-name> <logger-level>
+```
+
+`<logger-level>` will be `DEBUG`, `INFO`, `WARN`, or `ERROR`.
+
+![logging_level_updater](image/logging_level_updater.png)
+
+When you have a typo of the planning module, the script will show the available modules.
+
+![logging_level_updater_typo](image/logging_level_updater_typo.png)
