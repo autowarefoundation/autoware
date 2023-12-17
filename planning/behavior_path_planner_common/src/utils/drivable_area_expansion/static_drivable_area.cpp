@@ -1183,6 +1183,8 @@ std::vector<lanelet::ConstPoint3d> getBoundWithHatchedRoadMarkings(
     } else {
       if (!polygon) {
         will_close_polygon = true;
+      } else if (polygon.value().id() != current_polygon.value().id()) {
+        will_close_polygon = true;
       } else {
         current_polygon_border_indices.push_back(
           get_corresponding_polygon_index(*current_polygon, bound_point.id()));
@@ -1217,6 +1219,17 @@ std::vector<lanelet::ConstPoint3d> getBoundWithHatchedRoadMarkings(
             (*current_polygon)[mod(target_poly_idx, current_polygon_points_num)]);
         }
       }
+
+      if (polygon.has_value() && current_polygon.has_value()) {
+        if (polygon.value().id() != current_polygon.value().id()) {
+          current_polygon = polygon;
+          current_polygon_border_indices.clear();
+          current_polygon_border_indices.push_back(
+            get_corresponding_polygon_index(current_polygon.value(), bound_point.id()));
+          continue;
+        }
+      }
+
       current_polygon = std::nullopt;
       current_polygon_border_indices.clear();
     }
