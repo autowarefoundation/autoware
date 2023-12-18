@@ -203,17 +203,17 @@ void SideShiftModule::updateData()
                                 ? planner_data_->self_odometry->pose.pose
                                 : utils::getUnshiftedEgoPose(getEgoPose(), prev_output_);
   if (prev_reference_.points.empty()) {
-    prev_reference_ = *getPreviousModuleOutput().path;
+    prev_reference_ = getPreviousModuleOutput().path;
   }
-  if (!getPreviousModuleOutput().reference_path) {
+  if (getPreviousModuleOutput().reference_path.points.empty()) {
     return;
   }
   const auto centerline_path = utils::calcCenterLinePath(
     planner_data_, reference_pose, longest_dist_to_shift_line,
-    *getPreviousModuleOutput().reference_path);
+    getPreviousModuleOutput().reference_path);
 
   constexpr double resample_interval = 1.0;
-  const auto backward_extened_path = extendBackwardLength(*getPreviousModuleOutput().path);
+  const auto backward_extened_path = extendBackwardLength(getPreviousModuleOutput().path);
   reference_path_ = utils::resamplePathWithSpline(backward_extened_path, resample_interval);
 
   path_shifter_.setPath(reference_path_);
@@ -286,7 +286,7 @@ BehaviorModuleOutput SideShiftModule::plan()
   output.reference_path = getPreviousModuleOutput().reference_path;
 
   prev_output_ = shifted_path;
-  path_reference_ = getPreviousModuleOutput().reference_path;
+  path_reference_ = std::make_shared<PathWithLaneId>(getPreviousModuleOutput().reference_path);
 
   debug_data_.path_shifter = std::make_shared<PathShifter>(path_shifter_);
 
@@ -329,7 +329,7 @@ BehaviorModuleOutput SideShiftModule::planWaitingApproval()
   output.reference_path = getPreviousModuleOutput().reference_path;
 
   path_candidate_ = std::make_shared<PathWithLaneId>(planCandidate().path_candidate);
-  path_reference_ = getPreviousModuleOutput().reference_path;
+  path_reference_ = std::make_shared<PathWithLaneId>(getPreviousModuleOutput().reference_path);
 
   prev_output_ = shifted_path;
 
@@ -409,7 +409,8 @@ BehaviorModuleOutput SideShiftModule::adjustDrivableArea(const ShiftedPath & pat
   {  // for new architecture
     // NOTE: side shift module is not launched with other modules. Therefore, drivable_lanes can be
     // assigned without combining.
-    out.path = std::make_shared<PathWithLaneId>(output_path);
+    out.path = output_path;
+    out.reference_path = getPreviousModuleOutput().reference_path;
     out.drivable_area_info.drivable_lanes = expanded_lanes;
     out.drivable_area_info.is_already_expanded = true;
   }

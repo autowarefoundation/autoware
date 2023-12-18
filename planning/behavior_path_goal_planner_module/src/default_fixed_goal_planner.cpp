@@ -33,9 +33,8 @@ BehaviorModuleOutput DefaultFixedGoalPlanner::plan(
   BehaviorModuleOutput output =
     // use planner previous module reference path
     getPreviousModuleOutput();
-  const PathWithLaneId smoothed_path =
-    modifyPathForSmoothGoalConnection(*(output.path), planner_data);
-  output.path = std::make_shared<PathWithLaneId>(smoothed_path);
+  const PathWithLaneId smoothed_path = modifyPathForSmoothGoalConnection(output.path, planner_data);
+  output.path = smoothed_path;
   output.reference_path = getPreviousModuleOutput().reference_path;
   return output;
 }

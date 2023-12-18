@@ -201,8 +201,8 @@ BehaviorModuleOutput LaneChangeInterface::plan()
   module_type_->setPreviousDrivableAreaInfo(getPreviousModuleOutput().drivable_area_info);
   module_type_->setPreviousTurnSignalInfo(getPreviousModuleOutput().turn_signal_info);
   auto output = module_type_->generateOutput();
-  path_reference_ = output.reference_path;
-  *prev_approved_path_ = *getPreviousModuleOutput().path;
+  path_reference_ = std::make_shared<PathWithLaneId>(output.reference_path);
+  *prev_approved_path_ = getPreviousModuleOutput().path;
 
   stop_pose_ = module_type_->getStopPose();
 
@@ -219,12 +219,12 @@ BehaviorModuleOutput LaneChangeInterface::plan()
 
 BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
 {
-  *prev_approved_path_ = *getPreviousModuleOutput().path;
+  *prev_approved_path_ = getPreviousModuleOutput().path;
   module_type_->insertStopPoint(
     module_type_->getLaneChangeStatus().current_lanes, *prev_approved_path_);
 
   BehaviorModuleOutput out;
-  out.path = std::make_shared<PathWithLaneId>(*prev_approved_path_);
+  out.path = *prev_approved_path_;
   out.reference_path = getPreviousModuleOutput().reference_path;
   out.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
   out.drivable_area_info = getPreviousModuleOutput().drivable_area_info;
@@ -240,9 +240,9 @@ BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
   }
 
   // change turn signal when the vehicle reaches at the end of the path for waiting lane change
-  out.turn_signal_info = getCurrentTurnSignalInfo(*out.path, out.turn_signal_info);
+  out.turn_signal_info = getCurrentTurnSignalInfo(out.path, out.turn_signal_info);
 
-  path_reference_ = getPreviousModuleOutput().reference_path;
+  path_reference_ = std::make_shared<PathWithLaneId>(getPreviousModuleOutput().reference_path);
 
   stop_pose_ = module_type_->getStopPose();
 
@@ -366,9 +366,9 @@ void LaneChangeInterface::updateSteeringFactorPtr(const BehaviorModuleOutput & o
   const auto current_position = module_type_->getEgoPosition();
   const auto status = module_type_->getLaneChangeStatus();
   const auto start_distance = motion_utils::calcSignedArcLength(
-    output.path->points, current_position, status.lane_change_path.info.shift_line.start.position);
+    output.path.points, current_position, status.lane_change_path.info.shift_line.start.position);
   const auto finish_distance = motion_utils::calcSignedArcLength(
-    output.path->points, current_position, status.lane_change_path.info.shift_line.end.position);
+    output.path.points, current_position, status.lane_change_path.info.shift_line.end.position);
 
   steering_factor_interface_ptr_->updateSteeringFactor(
     {status.lane_change_path.info.shift_line.start, status.lane_change_path.info.shift_line.end},

@@ -642,8 +642,8 @@ BehaviorModuleOutput getReferencePath(
     dp.drivable_area_types_to_skip);
 
   BehaviorModuleOutput output;
-  output.path = std::make_shared<PathWithLaneId>(reference_path);
-  output.reference_path = std::make_shared<PathWithLaneId>(reference_path);
+  output.path = reference_path;
+  output.reference_path = reference_path;
   output.drivable_area_info.drivable_lanes = drivable_lanes;
 
   return output;
@@ -692,8 +692,8 @@ BehaviorModuleOutput createGoalAroundPath(const std::shared_ptr<const PlannerDat
     point.point.longitudinal_velocity_mps = 0.0;
   }
 
-  output.path = std::make_shared<PathWithLaneId>(reference_path);
-  output.reference_path = std::make_shared<PathWithLaneId>(reference_path);
+  output.path = reference_path;
+  output.reference_path = reference_path;
   output.drivable_area_info.drivable_lanes = drivable_lanes;
 
   return output;

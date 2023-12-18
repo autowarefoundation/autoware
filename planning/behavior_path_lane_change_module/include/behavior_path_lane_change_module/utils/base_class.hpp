@@ -107,14 +107,13 @@ public:
   virtual bool specialExpiredCheck() const { return false; }
 
   virtual void setPreviousModulePaths(
-    const std::shared_ptr<PathWithLaneId> & prev_module_reference_path,
-    const std::shared_ptr<PathWithLaneId> & prev_module_path)
+    const PathWithLaneId & prev_module_reference_path, const PathWithLaneId & prev_module_path)
   {
-    if (prev_module_reference_path) {
-      prev_module_reference_path_ = *prev_module_reference_path;
+    if (!prev_module_reference_path.points.empty()) {
+      prev_module_reference_path_ = prev_module_reference_path;
     }
-    if (prev_module_path) {
-      prev_module_path_ = *prev_module_path;
+    if (!prev_module_path.points.empty()) {
+      prev_module_path_ = prev_module_path;
     }
   };
 

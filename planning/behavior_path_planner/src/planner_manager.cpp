@@ -198,7 +198,7 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
 void PlannerManager::generateCombinedDrivableArea(
   BehaviorModuleOutput & output, const std::shared_ptr<PlannerData> & data) const
 {
-  if (!output.path || output.path->points.empty()) {
+  if (output.path.points.empty()) {
     RCLCPP_ERROR_STREAM(logger_, "[generateCombinedDrivableArea] Output path is empty!");
     return;
   }
@@ -206,20 +206,20 @@ void PlannerManager::generateCombinedDrivableArea(
   const auto & di = output.drivable_area_info;
   constexpr double epsilon = 1e-3;
 
-  const auto is_driving_forward_opt = motion_utils::isDrivingForward(output.path->points);
+  const auto is_driving_forward_opt = motion_utils::isDrivingForward(output.path.points);
   const bool is_driving_forward = is_driving_forward_opt ? *is_driving_forward_opt : true;
 
   if (epsilon < std::abs(di.drivable_margin)) {
     // for single free space pull over
     utils::generateDrivableArea(
-      *output.path, data->parameters.vehicle_length, di.drivable_margin, is_driving_forward);
+      output.path, data->parameters.vehicle_length, di.drivable_margin, is_driving_forward);
   } else if (di.is_already_expanded) {
     // for single side shift
     utils::generateDrivableArea(
-      *output.path, di.drivable_lanes, false, false, data->parameters.vehicle_length, data,
+      output.path, di.drivable_lanes, false, false, data->parameters.vehicle_length, data,
       is_driving_forward);
   } else {
-    const auto shorten_lanes = utils::cutOverlappedLanes(*output.path, di.drivable_lanes);
+    const auto shorten_lanes = utils::cutOverlappedLanes(output.path, di.drivable_lanes);
 
     const auto & dp = data->drivable_area_expansion_parameters;
     const auto expanded_lanes = utils::expandLanelets(
@@ -228,19 +228,19 @@ void PlannerManager::generateCombinedDrivableArea(
 
     // for other modules where multiple modules may be launched
     utils::generateDrivableArea(
-      *output.path, expanded_lanes, di.enable_expanding_hatched_road_markings,
+      output.path, expanded_lanes, di.enable_expanding_hatched_road_markings,
       di.enable_expanding_intersection_areas, data->parameters.vehicle_length, data,
       is_driving_forward);
   }
 
   // extract obstacles from drivable area
-  utils::extractObstaclesFromDrivableArea(*output.path, di.obstacles);
+  utils::extractObstaclesFromDrivableArea(output.path, di.obstacles);
 }
 
 std::vector<SceneModulePtr> PlannerManager::getRequestModules(
   const BehaviorModuleOutput & previous_module_output) const
 {
-  if (!previous_module_output.path) {
+  if (previous_module_output.path.points.empty()) {
     RCLCPP_ERROR_STREAM(
       logger_, "Current module output is null. Skip candidate module check."
                  << "\n      - Approved  module list: " << getNames(approved_module_ptrs_)

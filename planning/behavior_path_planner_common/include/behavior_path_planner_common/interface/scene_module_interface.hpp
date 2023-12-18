@@ -405,7 +405,7 @@ protected:
   virtual BehaviorModuleOutput planWaitingApproval()
   {
     path_candidate_ = std::make_shared<PathWithLaneId>(planCandidate().path_candidate);
-    path_reference_ = getPreviousModuleOutput().reference_path;
+    path_reference_ = std::make_shared<PathWithLaneId>(getPreviousModuleOutput().reference_path);
 
     return getPreviousModuleOutput();
   }

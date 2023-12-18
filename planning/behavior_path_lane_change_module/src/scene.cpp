@@ -145,38 +145,38 @@ BehaviorModuleOutput NormalLaneChange::generateOutput()
   BehaviorModuleOutput output;
 
   if (isAbortState() && abort_path_) {
-    output.path = std::make_shared<PathWithLaneId>(abort_path_->path);
-    output.reference_path = std::make_shared<PathWithLaneId>(prev_module_reference_path_);
+    output.path = abort_path_->path;
+    output.reference_path = prev_module_reference_path_;
     output.turn_signal_info = prev_turn_signal_info_;
-    insertStopPoint(status_.current_lanes, *output.path);
+    insertStopPoint(status_.current_lanes, output.path);
   } else {
-    output.path = std::make_shared<PathWithLaneId>(getLaneChangePath().path);
+    output.path = getLaneChangePath().path;
 
     const auto found_extended_path = extendPath();
     if (found_extended_path) {
-      *output.path = utils::combinePath(*output.path, *found_extended_path);
+      output.path = utils::combinePath(output.path, *found_extended_path);
     }
-    output.reference_path = std::make_shared<PathWithLaneId>(getReferencePath());
+    output.reference_path = getReferencePath();
     output.turn_signal_info = updateOutputTurnSignal();
 
     if (isStopState()) {
       const auto current_velocity = getEgoVelocity();
       const auto current_dist = calcSignedArcLength(
-        output.path->points, output.path->points.front().point.pose.position, getEgoPosition());
+        output.path.points, output.path.points.front().point.pose.position, getEgoPosition());
       const auto stop_dist =
         -(current_velocity * current_velocity / (2.0 * planner_data_->parameters.min_acc));
-      const auto stop_point = utils::insertStopPoint(stop_dist + current_dist, *output.path);
+      const auto stop_point = utils::insertStopPoint(stop_dist + current_dist, output.path);
       setStopPose(stop_point.point.pose);
     } else {
-      insertStopPoint(status_.target_lanes, *output.path);
+      insertStopPoint(status_.target_lanes, output.path);
     }
   }
 
   extendOutputDrivableArea(output);
 
-  const auto current_seg_idx = planner_data_->findEgoSegmentIndex(output.path->points);
+  const auto current_seg_idx = planner_data_->findEgoSegmentIndex(output.path.points);
   output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
-    *output.path, getEgoPose(), current_seg_idx, prev_turn_signal_info_, output.turn_signal_info,
+    output.path, getEgoPose(), current_seg_idx, prev_turn_signal_info_, output.turn_signal_info,
     planner_data_->parameters.ego_nearest_dist_threshold,
     planner_data_->parameters.ego_nearest_yaw_threshold);
 
@@ -189,7 +189,7 @@ void NormalLaneChange::extendOutputDrivableArea(BehaviorModuleOutput & output)
 
   const auto drivable_lanes = utils::lane_change::generateDrivableLanes(
     *getRouteHandler(), status_.current_lanes, status_.target_lanes);
-  const auto shorten_lanes = utils::cutOverlappedLanes(*output.path, drivable_lanes);
+  const auto shorten_lanes = utils::cutOverlappedLanes(output.path, drivable_lanes);
   const auto expanded_lanes = utils::expandLanelets(
     shorten_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
     dp.drivable_area_types_to_skip);

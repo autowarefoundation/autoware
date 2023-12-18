@@ -402,11 +402,11 @@ BehaviorModuleOutput StartPlannerModule::plan()
     path = status_.backward_path;
   }
 
-  output.path = std::make_shared<PathWithLaneId>(path);
+  output.path = path;
   output.reference_path = getPreviousModuleOutput().reference_path;
   output.turn_signal_info = calcTurnSignalInfo();
   path_candidate_ = std::make_shared<PathWithLaneId>(getFullPath());
-  path_reference_ = getPreviousModuleOutput().reference_path;
+  path_reference_ = std::make_shared<PathWithLaneId>(getPreviousModuleOutput().reference_path);
 
   setDrivableAreaInfo(output);
 
@@ -512,11 +512,11 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
     p.point.longitudinal_velocity_mps = 0.0;
   }
 
-  output.path = std::make_shared<PathWithLaneId>(stop_path);
+  output.path = stop_path;
   output.reference_path = getPreviousModuleOutput().reference_path;
   output.turn_signal_info = calcTurnSignalInfo();
   path_candidate_ = std::make_shared<PathWithLaneId>(getFullPath());
-  path_reference_ = getPreviousModuleOutput().reference_path;
+  path_reference_ = std::make_unique<PathWithLaneId>(getPreviousModuleOutput().reference_path);
 
   setDrivableAreaInfo(output);
 
@@ -1182,7 +1182,7 @@ BehaviorModuleOutput StartPlannerModule::generateStopOutput()
 {
   BehaviorModuleOutput output;
   const PathWithLaneId stop_path = generateStopPath();
-  output.path = std::make_shared<PathWithLaneId>(stop_path);
+  output.path = stop_path;
 
   setDrivableAreaInfo(output);
 
@@ -1201,7 +1201,7 @@ BehaviorModuleOutput StartPlannerModule::generateStopOutput()
   }
 
   path_candidate_ = std::make_shared<PathWithLaneId>(stop_path);
-  path_reference_ = getPreviousModuleOutput().reference_path;
+  path_reference_ = std::make_shared<PathWithLaneId>(getPreviousModuleOutput().reference_path);
 
   return output;
 }
@@ -1258,7 +1258,7 @@ void StartPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) cons
       planner_data_->parameters.vehicle_width / 2.0 + drivable_area_margin;
   } else {
     const auto target_drivable_lanes = utils::getNonOverlappingExpandedLanes(
-      *output.path, generateDrivableLanes(*output.path),
+      output.path, generateDrivableLanes(output.path),
       planner_data_->drivable_area_expansion_parameters);
 
     DrivableAreaInfo current_drivable_area_info;

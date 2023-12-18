@@ -119,10 +119,10 @@ struct BehaviorModuleOutput
   BehaviorModuleOutput() = default;
 
   // path planed by module
-  PlanResult path{};
+  PathWithLaneId path{};
 
   // reference path planed by module
-  PlanResult reference_path{};
+  PathWithLaneId reference_path{};
 
   TurnSignalInfo turn_signal_info{};
 
