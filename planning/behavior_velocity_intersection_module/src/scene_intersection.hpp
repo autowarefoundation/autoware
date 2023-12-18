@@ -336,9 +336,9 @@ private:
     const util::PathLanelets & path_lanelets);
 
   bool checkYieldStuckVehicle(
-    const std::shared_ptr<const PlannerData> & planner_data,
-    const util::PathLanelets & path_lanelets,
-    const std::optional<lanelet::CompoundPolygon3d> & first_attention_area);
+    const util::TargetObjects & target_objects,
+    const util::InterpolatedPathInfo & interpolated_path_info,
+    const lanelet::ConstLanelets & attention_lanelets);
 
   util::TargetObjects generateTargetObjects(
     const util::IntersectionLanelets & intersection_lanelets,

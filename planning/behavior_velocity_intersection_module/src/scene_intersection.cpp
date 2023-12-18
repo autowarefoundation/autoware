@@ -1056,27 +1056,31 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   // stuck vehicle detection is viable even if attention area is empty
   // so this needs to be checked before attention area validation
   const bool stuck_detected = checkStuckVehicle(planner_data_, path_lanelets);
-  if (stuck_detected && stuck_stopline_idx_opt) {
-    auto stuck_stopline_idx = stuck_stopline_idx_opt.value();
+  if (stuck_detected) {
     if (is_private_area_ && planner_param_.stuck_vehicle.enable_private_area_stuck_disregard) {
-      if (
-        default_stopline_idx_opt &&
-        fromEgoDist(stuck_stopline_idx) < -planner_param_.common.stopline_overshoot_margin) {
-        stuck_stopline_idx = default_stopline_idx_opt.value();
-      }
     } else {
-      return IntersectionModule::StuckStop{
-        closest_idx, stuck_stopline_idx, occlusion_peeking_stopline_idx_opt};
+      std::optional<size_t> stopline_idx = std::nullopt;
+      if (stuck_stopline_idx_opt) {
+        const bool is_over_stuck_stopline = fromEgoDist(stuck_stopline_idx_opt.value()) <
+                                            -planner_param_.common.stopline_overshoot_margin;
+        if (!is_over_stuck_stopline) {
+          stopline_idx = stuck_stopline_idx_opt.value();
+        }
+      }
+      if (!stopline_idx) {
+        if (default_stopline_idx_opt && fromEgoDist(default_stopline_idx_opt.value()) >= 0.0) {
+          stopline_idx = default_stopline_idx_opt.value();
+        } else if (
+          first_attention_stopline_idx_opt &&
+          fromEgoDist(first_attention_stopline_idx_opt.value()) >= 0.0) {
+          stopline_idx = closest_idx;
+        }
+      }
+      if (stopline_idx) {
+        return IntersectionModule::StuckStop{
+          closest_idx, stopline_idx.value(), occlusion_peeking_stopline_idx_opt};
+      }
     }
-  }
-
-  // yield stuck vehicle detection is viable even if attention area is empty
-  // so this needs to be checked before attention area validation
-  const bool yield_stuck_detected = checkYieldStuckVehicle(
-    planner_data_, path_lanelets, intersection_lanelets.first_attention_area());
-  if (yield_stuck_detected && stuck_stopline_idx_opt) {
-    const auto stuck_stopline_idx = stuck_stopline_idx_opt.value();
-    return IntersectionModule::YieldStuckStop{closest_idx, stuck_stopline_idx};
   }
 
   // if attention area is empty, collision/occlusion detection is impossible
@@ -1123,6 +1127,32 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   const auto intersection_area = util::getIntersectionArea(assigned_lanelet, lanelet_map_ptr);
   // filter objects
   auto target_objects = generateTargetObjects(intersection_lanelets, intersection_area);
+
+  const bool yield_stuck_detected = checkYieldStuckVehicle(
+    target_objects, interpolated_path_info, intersection_lanelets.attention_non_preceding_);
+  if (yield_stuck_detected) {
+    std::optional<size_t> stopline_idx = std::nullopt;
+    const bool is_before_default_stopline = fromEgoDist(default_stopline_idx) >= 0.0;
+    const bool is_before_first_attention_stopline =
+      fromEgoDist(first_attention_stopline_idx) >= 0.0;
+    if (stuck_stopline_idx_opt) {
+      const bool is_over_stuck_stopline = fromEgoDist(stuck_stopline_idx_opt.value()) <
+                                          -planner_param_.common.stopline_overshoot_margin;
+      if (!is_over_stuck_stopline) {
+        stopline_idx = stuck_stopline_idx_opt.value();
+      }
+    }
+    if (!stopline_idx) {
+      if (is_before_default_stopline) {
+        stopline_idx = default_stopline_idx;
+      } else if (is_before_first_attention_stopline) {
+        stopline_idx = closest_idx;
+      }
+    }
+    if (stopline_idx) {
+      return IntersectionModule::YieldStuckStop{closest_idx, stopline_idx.value()};
+    }
+  }
 
   const double is_amber_or_red =
     (traffic_prioritized_level == util::TrafficPrioritizedLevel::PARTIALLY_PRIORITIZED) ||
@@ -1376,13 +1406,10 @@ bool IntersectionModule::checkStuckVehicle(
 }
 
 bool IntersectionModule::checkYieldStuckVehicle(
-  const std::shared_ptr<const PlannerData> & planner_data, const util::PathLanelets & path_lanelets,
-  const std::optional<lanelet::CompoundPolygon3d> & first_attention_area)
+  const util::TargetObjects & target_objects,
+  const util::InterpolatedPathInfo & interpolated_path_info,
+  const lanelet::ConstLanelets & attention_lanelets)
 {
-  if (!first_attention_area) {
-    return false;
-  }
-
   const bool yield_stuck_detection_direction = [&]() {
     return (turn_direction_ == "left" && planner_param_.yield_stuck.turn_direction.left) ||
            (turn_direction_ == "right" && planner_param_.yield_stuck.turn_direction.right) ||
@@ -1392,13 +1419,9 @@ bool IntersectionModule::checkYieldStuckVehicle(
     return false;
   }
 
-  const auto & objects_ptr = planner_data->predicted_objects;
-
-  const auto & ego_lane = path_lanelets.ego_or_entry2exit;
-  const auto ego_poly = ego_lane.polygon2d().basicPolygon();
-
   return util::checkYieldStuckVehicleInIntersection(
-    objects_ptr, ego_poly, first_attention_area.value(),
+    target_objects, interpolated_path_info, attention_lanelets, turn_direction_,
+    planner_data_->vehicle_info_.vehicle_width_m,
     planner_param_.stuck_vehicle.stuck_vehicle_velocity_threshold,
     planner_param_.yield_stuck.distance_threshold, &debug_data_);
 }

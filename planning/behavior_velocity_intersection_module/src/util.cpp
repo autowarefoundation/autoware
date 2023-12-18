@@ -31,6 +31,7 @@
 #include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/algorithms/intersects.hpp>
 
+#include <lanelet2_core/geometry/LineString.h>
 #include <lanelet2_core/geometry/Polygon.h>
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 
@@ -298,7 +299,7 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
     const auto path_footprint = tier4_autoware_utils::transformVector(
       local_footprint, tier4_autoware_utils::pose2transform(base_pose));
     if (bg::intersects(path_footprint, first_attention_lane_centerline.basicLineString())) {
-      // TODO(Mamoru Sobue): maybe consideration of braking dist is necessary
+      // NOTE: maybe consideration of braking dist is necessary
       first_footprint_attention_centerline_ip_opt = i;
       break;
     }
@@ -1179,40 +1180,145 @@ bool checkStuckVehicleInIntersection(
   return false;
 }
 
-bool checkYieldStuckVehicleInIntersection(
-  const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_ptr,
-  const lanelet::BasicPolygon2d & ego_poly, const lanelet::CompoundPolygon3d & first_attention_area,
-  const double stuck_vehicle_vel_thr, const double yield_stuck_distance_thr, DebugData * debug_data)
+static lanelet::LineString3d getLineStringFromArcLength(
+  const lanelet::ConstLineString3d & linestring, const double s1, const double s2)
 {
-  const auto first_attention_area_2d = lanelet::utils::to2D(first_attention_area);
-  Polygon2d first_attention_area_poly;
-  for (const auto & p : first_attention_area_2d) {
-    first_attention_area_poly.outer().emplace_back(p.x(), p.y());
+  lanelet::Points3d points;
+  double accumulated_length = 0;
+  size_t start_index = linestring.size();
+  for (size_t i = 0; i < linestring.size() - 1; i++) {
+    const auto & p1 = linestring[i];
+    const auto & p2 = linestring[i + 1];
+    const double length = boost::geometry::distance(p1.basicPoint(), p2.basicPoint());
+    if (accumulated_length + length > s1) {
+      start_index = i;
+      break;
+    }
+    accumulated_length += length;
+  }
+  if (start_index < linestring.size() - 1) {
+    const auto & p1 = linestring[start_index];
+    const auto & p2 = linestring[start_index + 1];
+    const double residue = s1 - accumulated_length;
+    const auto direction_vector = (p2.basicPoint() - p1.basicPoint()).normalized();
+    const auto start_basic_point = p1.basicPoint() + residue * direction_vector;
+    const auto start_point = lanelet::Point3d(lanelet::InvalId, start_basic_point);
+    points.push_back(start_point);
   }
 
-  for (const auto & object : objects_ptr->objects) {
-    if (!isTargetStuckVehicleType(object)) {
-      continue;  // not target vehicle type
+  accumulated_length = 0;
+  size_t end_index = linestring.size();
+  for (size_t i = 0; i < linestring.size() - 1; i++) {
+    const auto & p1 = linestring[i];
+    const auto & p2 = linestring[i + 1];
+    const double length = boost::geometry::distance(p1.basicPoint(), p2.basicPoint());
+    if (accumulated_length + length > s2) {
+      end_index = i;
+      break;
     }
-    const auto obj_v_norm = std::hypot(
-      object.kinematics.initial_twist_with_covariance.twist.linear.x,
-      object.kinematics.initial_twist_with_covariance.twist.linear.y);
-    if (obj_v_norm > stuck_vehicle_vel_thr) {
-      continue;  // not stop vehicle
+    accumulated_length += length;
+  }
+
+  for (size_t i = start_index + 1; i < end_index; i++) {
+    const auto p = lanelet::Point3d(linestring[i]);
+    points.push_back(p);
+  }
+  if (end_index < linestring.size() - 1) {
+    const auto & p1 = linestring[end_index];
+    const auto & p2 = linestring[end_index + 1];
+    const double residue = s2 - accumulated_length;
+    const auto direction_vector = (p2.basicPoint() - p1.basicPoint()).normalized();
+    const auto end_basic_point = p1.basicPoint() + residue * direction_vector;
+    const auto end_point = lanelet::Point3d(lanelet::InvalId, end_basic_point);
+    points.push_back(end_point);
+  }
+  return lanelet::LineString3d{lanelet::InvalId, points};
+}
+
+static lanelet::ConstLanelet createLaneletFromArcLength(
+  const lanelet::ConstLanelet & lanelet, const double s1, const double s2)
+{
+  const double total_length = boost::geometry::length(lanelet.centerline2d().basicLineString());
+  // make sure that s1, and s2 are between [0, lane_length]
+  const auto s1_saturated = std::max(0.0, std::min(s1, total_length));
+  const auto s2_saturated = std::max(0.0, std::min(s2, total_length));
+
+  const auto ratio_s1 = s1_saturated / total_length;
+  const auto ratio_s2 = s2_saturated / total_length;
+
+  const auto s1_left =
+    static_cast<double>(ratio_s1 * boost::geometry::length(lanelet.leftBound().basicLineString()));
+  const auto s2_left =
+    static_cast<double>(ratio_s2 * boost::geometry::length(lanelet.leftBound().basicLineString()));
+  const auto s1_right =
+    static_cast<double>(ratio_s1 * boost::geometry::length(lanelet.rightBound().basicLineString()));
+  const auto s2_right =
+    static_cast<double>(ratio_s2 * boost::geometry::length(lanelet.rightBound().basicLineString()));
+
+  const auto left_bound = getLineStringFromArcLength(lanelet.leftBound(), s1_left, s2_left);
+  const auto right_bound = getLineStringFromArcLength(lanelet.rightBound(), s1_right, s2_right);
+
+  return lanelet::Lanelet(lanelet::InvalId, left_bound, right_bound);
+}
+
+bool checkYieldStuckVehicleInIntersection(
+  const util::TargetObjects & target_objects,
+  const util::InterpolatedPathInfo & interpolated_path_info,
+  const lanelet::ConstLanelets & attention_lanelets, const std::string & turn_direction,
+  const double width, const double stuck_vehicle_vel_thr, const double yield_stuck_distance_thr,
+  DebugData * debug_data)
+{
+  LineString2d sparse_intersection_path;
+  const auto [start, end] = interpolated_path_info.lane_id_interval.value();
+  for (unsigned i = start; i < end; ++i) {
+    const auto & point = interpolated_path_info.path.points.at(i).point.pose.position;
+    const auto yaw = tf2::getYaw(interpolated_path_info.path.points.at(i).point.pose.orientation);
+    if (turn_direction == "right") {
+      const double right_x = point.x - width / 2 * std::sin(yaw);
+      const double right_y = point.y + width / 2 * std::cos(yaw);
+      sparse_intersection_path.emplace_back(right_x, right_y);
+    } else if (turn_direction == "left") {
+      const double left_x = point.x + width / 2 * std::sin(yaw);
+      const double left_y = point.y - width / 2 * std::cos(yaw);
+      sparse_intersection_path.emplace_back(left_x, left_y);
+    } else {
+      // straight
+      sparse_intersection_path.emplace_back(point.x, point.y);
     }
-
-    const auto obj_footprint = tier4_autoware_utils::toPolygon2d(object);
-
-    // check if the object is too close to the ego path
-    if (yield_stuck_distance_thr < bg::distance(ego_poly, obj_footprint)) {
+  }
+  lanelet::ConstLanelets yield_stuck_detect_lanelets;
+  for (const auto & attention_lanelet : attention_lanelets) {
+    const auto centerline = attention_lanelet.centerline2d().basicLineString();
+    std::vector<Point2d> intersects;
+    bg::intersection(sparse_intersection_path, centerline, intersects);
+    if (intersects.empty()) {
       continue;
     }
+    const auto intersect = intersects.front();
+    const auto intersect_arc_coords = lanelet::geometry::toArcCoordinates(
+      centerline, lanelet::BasicPoint2d(intersect.x(), intersect.y()));
+    const double yield_stuck_start =
+      std::max(0.0, intersect_arc_coords.length - yield_stuck_distance_thr);
+    const double yield_stuck_end = intersect_arc_coords.length;
+    yield_stuck_detect_lanelets.push_back(
+      createLaneletFromArcLength(attention_lanelet, yield_stuck_start, yield_stuck_end));
+  }
+  debug_data->yield_stuck_detect_area = getPolygon3dFromLanelets(yield_stuck_detect_lanelets);
+  for (const auto & object : target_objects.all_attention_objects) {
+    const auto obj_v_norm = std::hypot(
+      object.object.kinematics.initial_twist_with_covariance.twist.linear.x,
+      object.object.kinematics.initial_twist_with_covariance.twist.linear.y);
 
-    // check if the footprint is in the stuck detect area
-    const bool is_in_stuck_area = bg::within(obj_footprint, first_attention_area_poly);
-    if (is_in_stuck_area && debug_data) {
-      debug_data->yield_stuck_targets.objects.push_back(object);
-      return true;
+    if (obj_v_norm > stuck_vehicle_vel_thr) {
+      continue;
+    }
+    for (const auto & yield_stuck_detect_lanelet : yield_stuck_detect_lanelets) {
+      const bool is_in_lanelet = lanelet::utils::isInLanelet(
+        object.object.kinematics.initial_pose_with_covariance.pose, yield_stuck_detect_lanelet);
+      if (is_in_lanelet) {
+        debug_data->yield_stuck_targets.objects.push_back(object.object);
+        return true;
+      }
     }
   }
   return false;
@@ -1527,6 +1633,7 @@ lanelet::ConstLanelet generatePathLanelet(
     const double yaw = tf2::getYaw(p.orientation);
     const double x = p.position.x;
     const double y = p.position.y;
+    // NOTE: maybe this is opposite
     const double left_x = x + width / 2 * std::sin(yaw);
     const double left_y = y - width / 2 * std::cos(yaw);
     const double right_x = x - width / 2 * std::sin(yaw);

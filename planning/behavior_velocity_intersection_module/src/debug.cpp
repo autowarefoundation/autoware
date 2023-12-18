@@ -196,6 +196,14 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
       &debug_marker_array, now);
   }
 
+  if (debug_data_.yield_stuck_detect_area) {
+    appendMarkerArray(
+      createLaneletPolygonsMarkerArray(
+        debug_data_.yield_stuck_detect_area.value(), "yield_stuck_detect_area", lane_id_, 0.6588235,
+        0.34509, 0.6588235),
+      &debug_marker_array);
+  }
+
   if (debug_data_.ego_lane) {
     appendMarkerArray(
       createLaneletPolygonsMarkerArray(

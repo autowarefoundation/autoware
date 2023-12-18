@@ -29,9 +29,9 @@
       yield_stuck:
         turn_direction:
           left: true
-          right: false
+          right: true
           straight: false
-        distance_threshold: 1.0
+        distance_threshold: 5.0
 
       collision_detection:
         consider_wrong_direction_vehicle: false

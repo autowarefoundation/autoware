@@ -45,6 +45,7 @@ struct DebugData
   std::optional<lanelet::CompoundPolygon3d> ego_lane{std::nullopt};
   std::optional<std::vector<lanelet::CompoundPolygon3d>> adjacent_area{std::nullopt};
   std::optional<geometry_msgs::msg::Polygon> stuck_vehicle_detect_area{std::nullopt};
+  std::optional<std::vector<lanelet::CompoundPolygon3d>> yield_stuck_detect_area{std::nullopt};
   std::optional<geometry_msgs::msg::Polygon> candidate_collision_ego_lane_polygon{std::nullopt};
   std::vector<geometry_msgs::msg::Polygon> candidate_collision_object_polygons;
   autoware_auto_perception_msgs::msg::PredictedObjects conflicting_targets;
