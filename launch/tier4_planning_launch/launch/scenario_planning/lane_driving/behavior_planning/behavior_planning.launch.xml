@@ -210,7 +210,6 @@
       <param from="$(var behavior_path_planner_drivable_area_expansion_param_path)"/>
       <param from="$(var behavior_path_planner_scene_module_manager_param_path)"/>
       <param from="$(var behavior_path_planner_common_param_path)"/>
-      <param name="use_experimental_lane_change_function" value="$(var use_experimental_lane_change_function)"/>
       <!-- composable node config -->
       <extra_arg name="use_intra_process_comms" value="false"/>
     </composable_node>

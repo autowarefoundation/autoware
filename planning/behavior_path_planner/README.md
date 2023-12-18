@@ -139,7 +139,6 @@ Enabling and disabling the modules in the behavior path planner is primarily man
 The `default_preset.yaml` file acts as a configuration file for enabling or disabling specific modules within the planner. It contains a series of arguments which represent the behavior path planner's modules or features. For example:
 
 - `launch_avoidance_module`: Set to `true` to enable the avoidance module, or `false` to disable it.
-- `use_experimental_lane_change_function`: Set to `true` to enable experimental features in the lane change module.
 
 !!! note
 
