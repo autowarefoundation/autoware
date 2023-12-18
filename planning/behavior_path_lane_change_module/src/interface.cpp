@@ -44,6 +44,7 @@ LaneChangeInterface::LaneChangeInterface(
   prev_approved_path_{std::make_unique<PathWithLaneId>()}
 {
   steering_factor_interface_ptr_ = std::make_unique<SteeringFactorInterface>(&node, name);
+  logger_ = utils::lane_change::getLogger(module_type_->getModuleTypeStr());
 }
 
 void LaneChangeInterface::processOnEntry()
@@ -78,8 +79,7 @@ bool LaneChangeInterface::isExecutionReady() const
 ModuleStatus LaneChangeInterface::updateState()
 {
   auto log_warn_throttled = [&](const std::string & message) -> void {
-    RCLCPP_WARN_STREAM_THROTTLE(
-      getLogger().get_child(module_type_->getModuleTypeStr()), *clock_, 5000, message);
+    RCLCPP_WARN_STREAM_THROTTLE(getLogger(), *clock_, 5000, message);
   };
 
   if (module_type_->specialExpiredCheck()) {
@@ -111,8 +111,7 @@ ModuleStatus LaneChangeInterface::updateState()
 
   if (module_type_->isEgoOnPreparePhase() && module_type_->isStoppedAtRedTrafficLight()) {
     RCLCPP_WARN_STREAM_THROTTLE(
-      getLogger().get_child(module_type_->getModuleTypeStr()), *clock_, 5000,
-      "Ego stopped at traffic light. Canceling lane change");
+      getLogger(), *clock_, 5000, "Ego stopped at traffic light. Canceling lane change");
     module_type_->toCancelState();
     return isWaitingApproval() ? ModuleStatus::RUNNING : ModuleStatus::SUCCESS;
   }

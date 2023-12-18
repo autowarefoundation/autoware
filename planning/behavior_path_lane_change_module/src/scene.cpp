@@ -997,12 +997,7 @@ PathWithLaneId NormalLaneChange::getTargetSegment(
         std::min(dist_from_start, dist_from_end), s_start + std::numeric_limits<double>::epsilon());
     });
 
-  RCLCPP_DEBUG(
-    rclcpp::get_logger("behavior_path_planner")
-      .get_child("lane_change")
-      .get_child("util")
-      .get_child("getTargetSegment"),
-    "start: %f, end: %f", s_start, s_end);
+  RCLCPP_DEBUG(logger_, "in %s start: %f, end: %f", __func__, s_start, s_end);
 
   PathWithLaneId target_segment = route_handler.getCenterLinePath(target_lanes, s_start, s_end);
   for (auto & point : target_segment.points) {

@@ -1159,4 +1159,9 @@ lanelet::ConstLanelets generateExpandedLanelets(
   const auto right_extend_offset = (direction == Direction::RIGHT) ? -right_offset : 0.0;
   return lanelet::utils::getExpandedLanelets(lanes, left_extend_offset, right_extend_offset);
 }
+
+rclcpp::Logger getLogger(const std::string & type)
+{
+  return rclcpp::get_logger("lane_change").get_child(type);
+}
 }  // namespace behavior_path_planner::utils::lane_change

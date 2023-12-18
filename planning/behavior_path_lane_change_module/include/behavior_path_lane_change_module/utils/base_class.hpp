@@ -264,7 +264,7 @@ protected:
   mutable double object_debug_lifetime_{0.0};
   mutable StopWatch<std::chrono::milliseconds> stop_watch_;
 
-  rclcpp::Logger logger_ = rclcpp::get_logger("lane_change");
+  rclcpp::Logger logger_ = utils::lane_change::getLogger(getModuleTypeStr());
   mutable rclcpp::Clock clock_{RCL_ROS_TIME};
 };
 }  // namespace behavior_path_planner

@@ -20,6 +20,7 @@
 #include "behavior_path_planner_common/parameters.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
+#include "rclcpp/logger.hpp"
 
 #include <route_handler/route_handler.hpp>
 
@@ -207,5 +208,17 @@ lanelet::ConstLanelets generateExpandedLanelets(
   const lanelet::ConstLanelets & lanes, const Direction direction, const double left_offset,
   const double right_offset);
 
+/**
+ * @brief Retrieves a logger instance for a specific lane change type.
+ *
+ * This function provides a specialized logger for different types of lane change.
+ *
+ * @param type A string representing the type of lane change operation. This could be
+ *             a specific maneuver or condition related to lane changing, such as
+ *             'avoidance_by_lane_change', 'normal', 'external_request'.
+ *
+ * @return rclcpp::Logger The logger instance configured for the specified lane change type.
+ */
+rclcpp::Logger getLogger(const std::string & type);
 }  // namespace behavior_path_planner::utils::lane_change
 #endif  // BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__UTILS_HPP_

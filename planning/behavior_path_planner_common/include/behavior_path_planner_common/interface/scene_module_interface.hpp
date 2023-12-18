@@ -362,8 +362,6 @@ private:
 
   std::string name_;
 
-  rclcpp::Logger logger_;
-
   BehaviorModuleOutput previous_module_output_;
 
   StopReason stop_reason_;
@@ -580,6 +578,8 @@ protected:
   {
     return std::abs(planner_data_->self_odometry->twist.twist.linear.x);
   }
+
+  rclcpp::Logger logger_;
 
   rclcpp::Clock::SharedPtr clock_;
 
