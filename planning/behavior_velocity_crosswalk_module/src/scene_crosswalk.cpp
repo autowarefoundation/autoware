@@ -371,12 +371,6 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
         const double direction_diff = tier4_autoware_utils::normalizeRadian(
           collision_point.crosswalk_passage_direction.value() -
           ego_crosswalk_passage_direction.value());
-        RCLCPP_INFO(
-          rclcpp::get_logger("temp"),
-          "collision_point.crosswalk_passage_direction = %f, ego_crosswalk_passage_direction = %f, "
-          "direction_diff = %f",
-          collision_point.crosswalk_passage_direction.value(),
-          ego_crosswalk_passage_direction.value(), direction_diff);
         if (std::fabs(direction_diff) < planner_param_.vehicle_object_cross_angle_threshold) {
           continue;
         }
