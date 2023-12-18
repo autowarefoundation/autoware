@@ -4,7 +4,9 @@
   <name>map_tf_generator</name>
   <version>0.1.0</version>
   <description>map_tf_generator package as a ROS 2 node</description>
-  <maintainer email="azumi.suzuki@tier4.jp">azumi-suzuki</maintainer>
+  <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
+  <maintainer email="kento.yabuuchi.2@tier4.jp">Kento Yabuuchi</maintainer>
+  <maintainer email="masahiro.sakamoto@tier4.jp">Masahiro Sakamoto</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
