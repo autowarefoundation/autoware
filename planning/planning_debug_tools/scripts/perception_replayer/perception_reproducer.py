@@ -84,9 +84,14 @@ class PerceptionReproducer(PerceptionReplayerCommon):
 
         # copy the messages
         self.stopwatch.tic("message deepcopy")
-        msgs = pickle.loads(pickle.dumps(msgs_orig))  # this is x5 faster than deepcopy
-        objects_msg = msgs[0]
-        traffic_signals_msg = msgs[1]
+        if self.args.detected_object:
+            msgs = pickle.loads(pickle.dumps(msgs_orig))  # this is x5 faster than deepcopy
+            objects_msg = msgs[0]
+            traffic_signals_msg = msgs[1]
+        else:
+            # NOTE: No need to deepcopy since only timestamp will be changed and it will be changed every time correctly.
+            objects_msg = msgs_orig[0]
+            traffic_signals_msg = msgs_orig[1]
         self.stopwatch.toc("message deepcopy")
 
         self.stopwatch.tic("transform and publish")
