@@ -174,7 +174,7 @@ void SceneModuleManagerInterface::deleteExpiredModules(
 void SceneModuleManagerInterface::registerModule(
   const std::shared_ptr<SceneModuleInterface> & scene_module)
 {
-  RCLCPP_INFO(
+  RCLCPP_DEBUG(
     logger_, "register task: module = %s, id = %lu", getModuleName(), scene_module->getModuleId());
   registered_module_id_set_.emplace(scene_module->getModuleId());
   scene_modules_.insert(scene_module);
@@ -183,7 +183,7 @@ void SceneModuleManagerInterface::registerModule(
 void SceneModuleManagerInterface::unregisterModule(
   const std::shared_ptr<SceneModuleInterface> & scene_module)
 {
-  RCLCPP_INFO(
+  RCLCPP_DEBUG(
     logger_, "unregister task: module = %s, id = %lu", getModuleName(),
     scene_module->getModuleId());
   registered_module_id_set_.erase(scene_module->getModuleId());
