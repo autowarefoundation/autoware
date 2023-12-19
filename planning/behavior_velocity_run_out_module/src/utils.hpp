@@ -54,6 +54,7 @@ struct RunOutParam
 {
   std::string detection_method;
   bool use_partition_lanelet;
+  bool suppress_on_crosswalk;
   bool specify_decel_jerk;
   double stop_margin;
   double passing_margin;

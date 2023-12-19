@@ -14,6 +14,7 @@
 
 #include "scene.hpp"
 
+#include "behavior_velocity_crosswalk_module/util.hpp"
 #include "path_utils.hpp"
 
 #include <behavior_velocity_planner_common/utilization/trajectory_utils.hpp>
@@ -23,6 +24,10 @@
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <boost/geometry/algorithms/intersection.hpp>
+#include <boost/geometry/algorithms/within.hpp>
+
+#include <lanelet2_core/geometry/Point.h>
+#include <lanelet2_core/geometry/Polygon.h>
 
 #include <algorithm>
 #include <limits>
@@ -110,8 +115,14 @@ bool RunOutModule::modifyPathVelocity(
     elapsed_obstacle_creation.count() / 1000.0);
 
   // detect collision with dynamic obstacles using velocity planning of ego
+  const auto crosswalk_lanelets = planner_param_.run_out.suppress_on_crosswalk
+                                    ? getCrosswalksOnPath(
+                                        planner_data_->current_odometry->pose, *path,
+                                        planner_data_->route_handler_->getLaneletMapPtr(),
+                                        planner_data_->route_handler_->getOverallGraphPtr())
+                                    : std::vector<std::pair<int64_t, lanelet::ConstLanelet>>();
   const auto dynamic_obstacle =
-    detectCollision(partition_excluded_obstacles, extended_smoothed_path);
+    detectCollision(partition_excluded_obstacles, extended_smoothed_path, crosswalk_lanelets);
 
   // record time for collision check
   const auto t_collision_check = std::chrono::system_clock::now();
@@ -155,7 +166,8 @@ bool RunOutModule::modifyPathVelocity(
 }
 
 std::optional<DynamicObstacle> RunOutModule::detectCollision(
-  const std::vector<DynamicObstacle> & dynamic_obstacles, const PathWithLaneId & path)
+  const std::vector<DynamicObstacle> & dynamic_obstacles, const PathWithLaneId & path,
+  const std::vector<std::pair<int64_t, lanelet::ConstLanelet>> & crosswalk_lanelets)
 {
   if (path.points.size() < 2) {
     RCLCPP_WARN_STREAM(logger_, "path doesn't have enough points.");
@@ -189,7 +201,7 @@ std::optional<DynamicObstacle> RunOutModule::detectCollision(
     debug_ptr_->pushTravelTimeTexts(travel_time, p2.pose, /* lateral_offset */ 3.0);
 
     auto obstacles_collision =
-      checkCollisionWithObstacles(dynamic_obstacles, vehicle_poly, travel_time);
+      checkCollisionWithObstacles(dynamic_obstacles, vehicle_poly, travel_time, crosswalk_lanelets);
     if (obstacles_collision.empty()) {
       continue;
     }
@@ -309,7 +321,8 @@ std::vector<geometry_msgs::msg::Point> RunOutModule::createVehiclePolygon(
 
 std::vector<DynamicObstacle> RunOutModule::checkCollisionWithObstacles(
   const std::vector<DynamicObstacle> & dynamic_obstacles,
-  std::vector<geometry_msgs::msg::Point> poly, const float travel_time) const
+  std::vector<geometry_msgs::msg::Point> poly, const float travel_time,
+  const std::vector<std::pair<int64_t, lanelet::ConstLanelet>> & crosswalk_lanelets) const
 {
   const auto bg_poly_vehicle = run_out_utils::createBoostPolyFromMsg(poly);
 
@@ -338,8 +351,8 @@ std::vector<DynamicObstacle> RunOutModule::checkCollisionWithObstacles(
       *predicted_obstacle_pose_min_vel, *predicted_obstacle_pose_max_vel};
 
     std::vector<geometry_msgs::msg::Point> collision_points;
-    const bool collision_detected =
-      checkCollisionWithShape(bg_poly_vehicle, pose_with_range, obstacle.shape, collision_points);
+    const bool collision_detected = checkCollisionWithShape(
+      bg_poly_vehicle, pose_with_range, obstacle.shape, crosswalk_lanelets, collision_points);
 
     if (!collision_detected) {
       continue;
@@ -398,6 +411,7 @@ std::optional<geometry_msgs::msg::Pose> RunOutModule::calcPredictedObstaclePose(
 
 bool RunOutModule::checkCollisionWithShape(
   const Polygon2d & vehicle_polygon, const PoseWithRange pose_with_range, const Shape & shape,
+  const std::vector<std::pair<int64_t, lanelet::ConstLanelet>> & crosswalk_lanelets,
   std::vector<geometry_msgs::msg::Point> & collision_points) const
 {
   bool collision_detected = false;
@@ -418,6 +432,23 @@ bool RunOutModule::checkCollisionWithShape(
 
     default:
       break;
+  }
+
+  if (!collision_points.empty()) {
+    for (const auto & crosswalk : crosswalk_lanelets) {
+      const auto poly = crosswalk.second.polygon2d().basicPolygon();
+      for (auto it = collision_points.begin(); it != collision_points.end();) {
+        if (boost::geometry::within(lanelet::BasicPoint2d(it->x, it->y), poly)) {
+          it = collision_points.erase(it);
+        } else {
+          ++it;
+        }
+      }
+      if (collision_points.empty()) {
+        break;
+      }
+    }
+    collision_detected = !collision_points.empty();
   }
 
   return collision_detected;
