@@ -255,6 +255,11 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
     if (!observer.expired()) observer.lock()->updateModuleParams(p);
   });
 }
+
+bool DynamicAvoidanceModuleManager::isAlwaysExecutableModule() const
+{
+  return true;
+}
 }  // namespace behavior_path_planner
 
 #include <pluginlib/class_list_macros.hpp>
