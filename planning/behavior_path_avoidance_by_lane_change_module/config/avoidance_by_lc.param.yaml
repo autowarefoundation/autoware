@@ -85,3 +85,11 @@
           bicycle: false                               # [-]
           motorcycle: false                            # [-]
           pedestrian: false                            # [-]
+
+      constraints:
+        # lateral constraints
+        lateral:
+          velocity: [1.0, 1.38, 11.1]                   # [m/s]
+          max_accel_values: [0.5, 0.5, 0.5]             # [m/ss]
+          min_jerk_values: [0.2, 0.2, 0.2]              # [m/sss]
+          max_jerk_values: [1.0, 1.0, 1.0]              # [m/sss]

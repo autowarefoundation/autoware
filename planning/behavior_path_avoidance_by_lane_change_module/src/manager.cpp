@@ -14,6 +14,8 @@
 
 #include "behavior_path_avoidance_by_lane_change_module/manager.hpp"
 
+#include "behavior_path_avoidance_by_lane_change_module/data_structs.hpp"
+#include "behavior_path_avoidance_module/parameter_helper.hpp"
 #include "tier4_autoware_utils/ros/parameter.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
 
@@ -37,7 +39,9 @@ void AvoidanceByLaneChangeModuleManager::init(rclcpp::Node * node)
   // init lane change manager
   LaneChangeModuleManager::init(node);
 
-  AvoidanceByLCParameters p{};
+  const auto avoidance_params = getParameter(node);
+  AvoidanceByLCParameters p(avoidance_params);
+
   // unique parameters
   {
     const std::string ns = "avoidance_by_lane_change.";
@@ -137,6 +141,18 @@ void AvoidanceByLaneChangeModuleManager::init(rclcpp::Node * node)
       getOrDeclareParameter<double>(*node, ns + "ignore_area.crosswalk.front_distance");
     p.object_ignore_section_crosswalk_behind_distance =
       getOrDeclareParameter<double>(*node, ns + "ignore_area.crosswalk.behind_distance");
+  }
+
+  // avoidance maneuver (longitudinal)
+  {
+    const std::string ns = "avoidance.avoidance.longitudinal.";
+    p.min_prepare_time = getOrDeclareParameter<double>(*node, ns + "min_prepare_time");
+    p.max_prepare_time = getOrDeclareParameter<double>(*node, ns + "max_prepare_time");
+    p.min_prepare_distance = getOrDeclareParameter<double>(*node, ns + "min_prepare_distance");
+    p.min_slow_down_speed = getOrDeclareParameter<double>(*node, ns + "min_slow_down_speed");
+    p.buf_slow_down_speed = getOrDeclareParameter<double>(*node, ns + "buf_slow_down_speed");
+    p.nominal_avoidance_speed =
+      getOrDeclareParameter<double>(*node, ns + "nominal_avoidance_speed");
   }
 
   {

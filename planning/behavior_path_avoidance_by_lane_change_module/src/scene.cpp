@@ -20,6 +20,8 @@
 #include "behavior_path_planner_common/utils/path_utils.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
 
+#include <rclcpp/logging.hpp>
+
 #include <boost/geometry/algorithms/centroid.hpp>
 #include <boost/geometry/strategies/cartesian/centroid_bashein_detmer.hpp>
 
@@ -41,7 +43,8 @@ AvoidanceByLaneChange::AvoidanceByLaneChange(
   const std::shared_ptr<LaneChangeParameters> & parameters,
   std::shared_ptr<AvoidanceByLCParameters> avoidance_parameters)
 : NormalLaneChange(parameters, LaneChangeModuleType::AVOIDANCE_BY_LANE_CHANGE, Direction::NONE),
-  avoidance_parameters_(std::move(avoidance_parameters))
+  avoidance_parameters_(std::move(avoidance_parameters)),
+  avoidance_helper_{std::make_shared<AvoidanceHelper>(avoidance_parameters_)}
 {
 }
 
@@ -49,48 +52,66 @@ bool AvoidanceByLaneChange::specialRequiredCheck() const
 {
   const auto & data = avoidance_data_;
 
-  if (!status_.is_safe) {
+  if (data.target_objects.empty()) {
     return false;
   }
 
   const auto & object_parameters = avoidance_parameters_->object_parameters;
-  const auto is_more_than_threshold =
-    std::any_of(object_parameters.begin(), object_parameters.end(), [&](const auto & p) {
-      const auto & objects = avoidance_data_.target_objects;
 
-      const size_t num = std::count_if(objects.begin(), objects.end(), [&p](const auto & object) {
-        const auto target_class =
-          utils::getHighestProbLabel(object.object.classification) == p.first;
-        return target_class && object.avoid_required;
-      });
+  const auto count_target_object = [&](const auto sum, const auto & p) {
+    const auto & objects = avoidance_data_.target_objects;
 
-      return num >= p.second.execute_num;
-    });
+    const auto is_avoidance_target = [&p](const auto & object) {
+      const auto target_class = utils::getHighestProbLabel(object.object.classification) == p.first;
+      return target_class && object.avoid_required;
+    };
 
-  if (!is_more_than_threshold) {
+    return sum + std::count_if(objects.begin(), objects.end(), is_avoidance_target);
+  };
+  const auto num_of_avoidance_targets =
+    std::accumulate(object_parameters.begin(), object_parameters.end(), 0UL, count_target_object);
+
+  if (num_of_avoidance_targets < 1) {
     return false;
   }
 
-  const auto & front_object = data.target_objects.front();
-
-  const auto THRESHOLD = avoidance_parameters_->execute_object_longitudinal_margin;
-  if (front_object.longitudinal < THRESHOLD) {
+  const auto current_lanes = getCurrentLanes();
+  if (current_lanes.empty()) {
     return false;
   }
 
-  const auto path = status_.lane_change_path.path;
-  const auto to_lc_end = motion_utils::calcSignedArcLength(
-    status_.lane_change_path.path.points, getEgoPose().position,
-    status_.lane_change_path.info.shift_line.end.position);
-  const auto execute_only_when_lane_change_finish_before_object =
-    avoidance_parameters_->execute_only_when_lane_change_finish_before_object;
-  const auto not_enough_distance = front_object.longitudinal < to_lc_end;
+  const auto & nearest_object = data.target_objects.front();
 
-  if (execute_only_when_lane_change_finish_before_object && not_enough_distance) {
-    return false;
-  }
+  // get minimum lane change distance
+  const auto shift_intervals =
+    getRouteHandler()->getLateralIntervalsToPreferredLane(current_lanes.back(), direction_);
+  const double minimum_lane_change_length = utils::lane_change::calcMinimumLaneChangeLength(
+    *lane_change_parameters_, shift_intervals,
+    lane_change_parameters_->backward_length_buffer_for_end_of_lane);
 
-  return true;
+  // get minimum avoid distance
+
+  const auto ego_width = getCommonParam().vehicle_width;
+  const auto nearest_object_type = utils::getHighestProbLabel(nearest_object.object.classification);
+  const auto nearest_object_parameter =
+    avoidance_parameters_->object_parameters.at(nearest_object_type);
+  const auto avoid_margin =
+    nearest_object_parameter.safety_buffer_lateral * nearest_object.distance_factor +
+    nearest_object_parameter.avoid_margin_lateral + 0.5 * ego_width;
+
+  avoidance_helper_->setData(planner_data_);
+  const auto shift_length = avoidance_helper_->getShiftLength(
+    nearest_object, utils::avoidance::isOnRight(nearest_object), avoid_margin);
+
+  const auto maximum_avoid_distance = avoidance_helper_->getMaxAvoidanceDistance(shift_length);
+
+  RCLCPP_DEBUG(
+    logger_,
+    "nearest_object.longitudinal %.3f, minimum_lane_change_length %.3f, maximum_avoid_distance "
+    "%.3f",
+    nearest_object.longitudinal, minimum_lane_change_length, maximum_avoid_distance);
+
+  return nearest_object.longitudinal > std::max(minimum_lane_change_length, maximum_avoid_distance);
 }
 
 bool AvoidanceByLaneChange::specialExpiredCheck() const

@@ -751,9 +751,11 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
     const auto itr =
       std::find_if(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), success_module_cond);
 
-    const auto success_lane_change = std::any_of(
-      itr, approved_module_ptrs_.end(),
-      [](const auto & m) { return m->name().find("lane_change") != std::string::npos; });
+    const auto success_lane_change =
+      std::any_of(itr, approved_module_ptrs_.end(), [](const auto & m) {
+        return m->name().find("lane_change") != std::string::npos ||
+               m->name().find("avoidance_by_lc") != std::string::npos;
+      });
 
     if (success_lane_change) {
       root_lanelet_ = updateRootLanelet(data);
@@ -837,9 +839,11 @@ void PlannerManager::resetRootLanelet(const std::shared_ptr<PlannerData> & data)
 
   // when lane change module is running, don't update root lanelet.
   const bool is_lane_change_running = std::invoke([&]() {
-    const auto lane_change_itr = std::find_if(
-      approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
-      [](const auto & m) { return m->name().find("lane_change") != std::string::npos; });
+    const auto lane_change_itr =
+      std::find_if(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), [](const auto & m) {
+        return m->name().find("lane_change") != std::string::npos ||
+               m->name().find("avoidance_by_lc") != std::string::npos;
+      });
     return lane_change_itr != approved_module_ptrs_.end();
   });
   if (is_lane_change_running) {

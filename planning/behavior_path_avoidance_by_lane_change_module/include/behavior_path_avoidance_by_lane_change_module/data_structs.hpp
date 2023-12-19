@@ -16,8 +16,6 @@
 
 #include "behavior_path_avoidance_module/data_structs.hpp"
 
-#include <vector>
-
 namespace behavior_path_planner
 {
 struct AvoidanceByLCParameters : public AvoidanceParameters
@@ -27,6 +25,10 @@ struct AvoidanceByLCParameters : public AvoidanceParameters
 
   // execute only when lane change end point is before the object.
   bool execute_only_when_lane_change_finish_before_object{false};
+
+  explicit AvoidanceByLCParameters(const AvoidanceParameters & param) : AvoidanceParameters(param)
+  {
+  }
 };
 }  // namespace behavior_path_planner
 

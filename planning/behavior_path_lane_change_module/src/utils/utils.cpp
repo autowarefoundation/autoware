@@ -244,7 +244,9 @@ lanelet::ConstLanelets getTargetNeighborLanes(
 
   for (const auto & current_lane : current_lanes) {
     if (route_handler.getNumLaneToPreferredLane(current_lane) != 0) {
-      if (type == LaneChangeModuleType::NORMAL) {
+      if (
+        type == LaneChangeModuleType::NORMAL ||
+        type == LaneChangeModuleType::AVOIDANCE_BY_LANE_CHANGE) {
         neighbor_lanes.push_back(current_lane);
       }
     } else {
@@ -782,7 +784,9 @@ std::optional<lanelet::ConstLanelet> getLaneChangeTargetLane(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const LaneChangeModuleType type, const Direction & direction)
 {
-  if (type == LaneChangeModuleType::NORMAL) {
+  if (
+    type == LaneChangeModuleType::NORMAL ||
+    type == LaneChangeModuleType::AVOIDANCE_BY_LANE_CHANGE) {
     return route_handler.getLaneChangeTarget(current_lanes, direction);
   }
 
