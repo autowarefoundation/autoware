@@ -27,12 +27,12 @@ repositories:
     version: autoware_msg
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
-    url: https://github.com/NorahXiong/tier4_ad_api_adaptor.git
+    url: https://github.com/cyn-liu/tier4_ad_api_adaptor.git
     version: autoware_msg
   universe/external/tier4_autoware_msgs:
     type: git
-    url: https://github.com/shulanbushangshu/tier4_autoware_msgs.git
-    version: tier4_autoware_msgs_planning
+    url: https://github.com/cyn-liu/tier4_autoware_msgs.git
+    version: autoware_msg
   universe/external/morai_msgs:
     type: git
     url: https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs.git
@@ -99,7 +99,7 @@ repositories:
     version: main
   vehicle/external/pacmod_interface:
     type: git
-    url: https://github.com/NorahXiong/pacmod_interface.git
+    url: https://github.com/cyn-liu/pacmod_interface.git
     version: autoware_msg
   # param
   param/autoware_individual_params:
