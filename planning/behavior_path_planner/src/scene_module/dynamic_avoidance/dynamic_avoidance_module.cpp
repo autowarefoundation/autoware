@@ -962,19 +962,23 @@ MinMaxValue DynamicAvoidanceModule::calcMinMaxLongitudinalOffsetToAvoid(
     std::abs(obj_vel) * (is_object_overtaking ? parameters_->end_duration_to_avoid_overtaking_object
                                               : parameters_->end_duration_to_avoid_oncoming_object);
 
-  if (obj_vel < 0) {
-    const double valid_start_length_to_avoid =
-      calcValidStartLengthToAvoid(obj_path, obj_pose, obj_shape);
+  const double valid_length_to_avoid = calcValidLengthToAvoid(obj_path, obj_pose, obj_shape);
+  if (obj_vel < -0.5) {
     return MinMaxValue{
-      std::max(obj_lon_offset.min_value - start_length_to_avoid, valid_start_length_to_avoid),
+      std::max(obj_lon_offset.min_value - start_length_to_avoid, -valid_length_to_avoid),
       obj_lon_offset.max_value + end_length_to_avoid};
+  }
+  if (0.5 < obj_vel) {
+    return MinMaxValue{
+      obj_lon_offset.min_value - start_length_to_avoid,
+      std::min(obj_lon_offset.max_value + end_length_to_avoid, valid_length_to_avoid)};
   }
   return MinMaxValue{
     obj_lon_offset.min_value - start_length_to_avoid,
     obj_lon_offset.max_value + end_length_to_avoid};
 }
 
-double DynamicAvoidanceModule::calcValidStartLengthToAvoid(
+double DynamicAvoidanceModule::calcValidLengthToAvoid(
   const PredictedPath & obj_path, const geometry_msgs::msg::Pose & obj_pose,
   const autoware_auto_perception_msgs::msg::Shape & obj_shape) const
 {
@@ -1006,7 +1010,7 @@ double DynamicAvoidanceModule::calcValidStartLengthToAvoid(
     }
     return obj_path.path.size() - 1;
   }();
-  return -motion_utils::calcSignedArcLength(obj_path.path, 0, valid_obj_path_end_idx);
+  return motion_utils::calcSignedArcLength(obj_path.path, 0, valid_obj_path_end_idx);
 }
 
 std::optional<MinMaxValue> DynamicAvoidanceModule::calcMinMaxLateralOffsetToAvoid(
