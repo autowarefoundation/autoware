@@ -158,6 +158,58 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
   return std::nullopt;
 }
 
+bool ShiftPullOut::refineShiftedPathToStartPose(
+  ShiftedPath & shifted_path, const Pose & start_pose, const Pose & end_pose,
+  const double longitudinal_acc, const double lateral_acc)
+{
+  constexpr double TOLERANCE = 0.01;
+  constexpr size_t MAX_ITERATION = 100;
+
+  // Lambda to check if change is above tolerance
+  auto is_within_tolerance =
+    [](const auto & prev_val, const auto & current_val, const auto & tolerance) {
+      return std::abs(current_val - prev_val) < tolerance;
+    };
+
+  size_t iteration = 0;
+  while (iteration < MAX_ITERATION) {
+    const double lateral_offset =
+      motion_utils::calcLateralOffset(shifted_path.path.points, start_pose.position);
+
+    PathShifter path_shifter;
+    path_shifter.setPath(shifted_path.path);
+    ShiftLine shift_line{};
+    shift_line.start = start_pose;
+    shift_line.end = end_pose;
+    shift_line.end_shift_length = lateral_offset;
+    path_shifter.addShiftLine(shift_line);
+    path_shifter.setVelocity(0.0);
+    path_shifter.setLongitudinalAcceleration(longitudinal_acc);
+    path_shifter.setLateralAccelerationLimit(lateral_acc);
+
+    if (!path_shifter.generate(&shifted_path, false)) {
+      RCLCPP_WARN(
+        rclcpp::get_logger("ShiftPullOut:refineShiftedPathToStartPose()"),
+        "Failed to generate shifted path");
+      return false;
+    }
+
+    if (is_within_tolerance(
+          lateral_offset,
+          motion_utils::calcLateralOffset(shifted_path.path.points, start_pose.position),
+          TOLERANCE)) {
+      return true;
+    }
+
+    iteration++;
+  }
+
+  RCLCPP_WARN(
+    rclcpp::get_logger("ShiftPullOut:refineShiftedPathToStartPose()"),
+    "Failed to converge lateral offset until max iteration");
+  return false;
+}
+
 std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & road_lanes,
   const Pose & start_pose, const Pose & goal_pose)
@@ -303,6 +355,8 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
     if (!path_shifter.generate(&shifted_path, offset_back)) {
       continue;
     }
+    refineShiftedPathToStartPose(
+      shifted_path, start_pose, *shift_end_pose_ptr, longitudinal_acc, lateral_acc);
 
     // set velocity
     const size_t pull_out_end_idx =

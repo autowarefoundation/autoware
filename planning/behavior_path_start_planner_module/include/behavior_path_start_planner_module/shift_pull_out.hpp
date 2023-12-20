@@ -46,6 +46,10 @@ public:
   double calcBeforeShiftedArcLength(
     const PathWithLaneId & path, const double target_after_arc_length, const double dr);
 
+  bool refineShiftedPathToStartPose(
+    ShiftedPath & shifted_path, const Pose & start_pose, const Pose & end_pose,
+    const double longitudinal_acc, const double lateral_acc);
+
   std::shared_ptr<LaneDepartureChecker> lane_departure_checker_;
 
 private:
