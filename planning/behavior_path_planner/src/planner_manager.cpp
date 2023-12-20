@@ -751,13 +751,9 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
     const auto itr =
       std::find_if(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), success_module_cond);
 
-    const auto success_lane_change =
-      std::any_of(itr, approved_module_ptrs_.end(), [](const auto & m) {
-        return m->name().find("lane_change") != std::string::npos ||
-               m->name().find("avoidance_by_lc") != std::string::npos;
-      });
-
-    if (success_lane_change) {
+    if (std::any_of(itr, approved_module_ptrs_.end(), [](const auto & m) {
+          return m->isRootLaneletToBeUpdated();
+        })) {
       root_lanelet_ = updateRootLanelet(data);
     }
 
