@@ -141,6 +141,7 @@
         force_avoidance:
           enable: false                                  # [-]
           time_threshold: 1.0                            # [s]
+          distance_threshold: 1.0                        # [m]
           ignore_area:
             traffic_light:
               front_distance: 100.0                      # [m]

@@ -177,6 +177,7 @@ struct AvoidanceParameters
 
   // force avoidance
   double threshold_time_force_avoidance_for_stopped_vehicle{0.0};
+  double force_avoidance_distance_threshold{0.0};
 
   // when complete avoidance motion, there is a distance margin with the object
   // for longitudinal direction
@@ -367,6 +368,9 @@ struct ObjectData  // avoidance target
 
   // store the information of the lanelet which the object's overhang is currently occupying
   lanelet::ConstLanelet overhang_lanelet;
+
+  // the position at the detected moment
+  Pose init_pose;
 
   // the position of the overhang
   Pose overhang_pose;

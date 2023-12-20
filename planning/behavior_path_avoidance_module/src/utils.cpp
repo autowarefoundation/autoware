@@ -463,6 +463,15 @@ bool isForceAvoidanceTarget(
     return false;
   }
 
+  const auto & object_pose = object.object.kinematics.initial_pose_with_covariance.pose;
+  const auto is_moving_distance_longer_than_threshold =
+    tier4_autoware_utils::calcDistance2d(object.init_pose, object_pose) >
+    parameters->force_avoidance_distance_threshold;
+
+  if (is_moving_distance_longer_than_threshold) {
+    return false;
+  }
+
   if (object.is_within_intersection) {
     RCLCPP_DEBUG(rclcpp::get_logger(__func__), "object is in the intersection area.");
     return false;
@@ -478,7 +487,6 @@ bool isForceAvoidanceTarget(
   }
 
   const auto & ego_pose = planner_data->self_odometry->pose.pose;
-  const auto & object_pose = object.object.kinematics.initial_pose_with_covariance.pose;
 
   // force avoidance for stopped vehicle
   bool not_parked_object = true;
@@ -1233,6 +1241,22 @@ void fillAvoidanceNecessity(
 
   // TRUE -> ? (check with hysteresis factor)
   object_data.avoid_required = check_necessity(parameters->hysteresis_factor_expand_rate);
+}
+
+void fillInitialPose(ObjectData & object_data, ObjectDataArray & detected_objects)
+{
+  const auto id = object_data.object.object_id;
+  const auto same_id_obj = std::find_if(
+    detected_objects.begin(), detected_objects.end(),
+    [&id](const auto & o) { return o.object.object_id == id; });
+
+  if (same_id_obj != detected_objects.end()) {
+    object_data.init_pose = same_id_obj->init_pose;
+    return;
+  }
+
+  object_data.init_pose = object_data.object.kinematics.initial_pose_with_covariance.pose;
+  detected_objects.push_back(object_data);
 }
 
 void fillObjectStoppableJudge(

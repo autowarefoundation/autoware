@@ -433,13 +433,19 @@ private:
 
   UUID candidate_uuid_;
 
+  // TODO(Satoshi OTA) create detected object manager.
   ObjectDataArray registered_objects_;
 
-  mutable size_t safe_count_{0};
+  // TODO(Satoshi OTA) remove mutable.
+  mutable ObjectDataArray detected_objects_;
 
+  // TODO(Satoshi OTA) remove this variable.
   mutable ObjectDataArray ego_stopped_objects_;
 
+  // TODO(Satoshi OTA) remove this variable.
   mutable ObjectDataArray stopped_objects_;
+
+  mutable size_t safe_count_{0};
 
   mutable DebugData debug_data_;
 
