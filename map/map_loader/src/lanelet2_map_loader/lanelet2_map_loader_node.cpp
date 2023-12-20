@@ -33,6 +33,8 @@
 
 #include "map_loader/lanelet2_map_loader_node.hpp"
 
+#include "lanelet2_local_projector.hpp"
+
 #include <ament_index_cpp/get_package_prefix.hpp>
 #include <geography_utils/lanelet2_projector.hpp>
 #include <lanelet2_extension/io/autoware_osm_parser.hpp>
@@ -100,8 +102,7 @@ lanelet::LaneletMapPtr Lanelet2MapLoaderNode::load_map(
       return map;
     }
   } else {
-    // Use MGRSProjector as parser
-    lanelet::projection::MGRSProjector projector{};
+    const lanelet::projection::LocalProjector projector;
     const lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, projector, &errors);
 
     // overwrite local_x, local_y
