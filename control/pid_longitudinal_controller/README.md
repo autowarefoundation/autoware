@@ -241,6 +241,10 @@ If the ego is still running, strong acceleration (`strong_stop_acc`) to stop rig
 
 ### STOPPED Parameter
 
+The `STOPPED` state assumes that the vehicle is completely stopped with the brakes fully applied.
+Therefore, `stopped_acc` should be set to a value that allows the vehicle to apply the strongest possible brake.
+If `stopped_acc` is not sufficiently low, there is a possibility of sliding down on steep slopes.
+
 | Name         | Type   | Description                                  | Default value |
 | :----------- | :----- | :------------------------------------------- | :------------ |
 | stopped_vel  | double | target velocity in STOPPED state [m/s]       | 0.0           |
