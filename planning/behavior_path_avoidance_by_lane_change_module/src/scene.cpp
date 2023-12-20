@@ -20,6 +20,7 @@
 #include "behavior_path_planner_common/utils/path_utils.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
 
+#include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/logging.hpp>
 
 #include <boost/geometry/algorithms/centroid.hpp>
@@ -232,6 +233,7 @@ ObjectData AvoidanceByLaneChange::createObjectData(
   using boost::geometry::return_centroid;
   using motion_utils::findNearestIndex;
   using tier4_autoware_utils::calcDistance2d;
+  using tier4_autoware_utils::calcLateralDeviation;
 
   const auto p = std::dynamic_pointer_cast<AvoidanceParameters>(avoidance_parameters_);
 
@@ -263,8 +265,11 @@ ObjectData AvoidanceByLaneChange::createObjectData(
   utils::avoidance::fillObjectMovingTime(object_data, stopped_objects_, p);
 
   // Calc lateral deviation from path to target object.
-  object_data.lateral =
-    tier4_autoware_utils::calcLateralDeviation(object_closest_pose, object_pose.position);
+  object_data.to_centerline =
+    lanelet::utils::getArcCoordinates(data.current_lanelets, object_pose).distance;
+  object_data.direction = calcLateralDeviation(object_closest_pose, object_pose.position) > 0.0
+                            ? Direction::LEFT
+                            : Direction::RIGHT;
 
   // Find the footprint point closest to the path, set to object_data.overhang_distance.
   object_data.overhang_dist = utils::avoidance::calcEnvelopeOverhangDistance(

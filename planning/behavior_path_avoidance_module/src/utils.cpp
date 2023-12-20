@@ -594,7 +594,7 @@ bool isSatisfiedWithVehicleCondition(
   }
 
   // Object is on center line -> ignore.
-  if (std::abs(object.lateral) < parameters->threshold_distance_object_is_on_center) {
+  if (std::abs(object.to_centerline) < parameters->threshold_distance_object_is_on_center) {
     object.reason = AvoidanceDebugFactor::TOO_NEAR_TO_CENTERLINE;
     return false;
   }
@@ -678,7 +678,11 @@ std::optional<double> getAvoidMargin(
 
 bool isOnRight(const ObjectData & obj)
 {
-  return obj.lateral < 0.0;
+  if (obj.direction == Direction::NONE) {
+    throw std::logic_error("object direction is not initialized. something wrong.");
+  }
+
+  return obj.direction == Direction::RIGHT;
 }
 
 double calcShiftLength(
@@ -960,9 +964,8 @@ std::vector<DrivableAreaInfo::Obstacle> generateObstaclePolygonsForDrivableArea(
       object.avoid_margin.value() - object_parameter.envelope_buffer_margin - vehicle_width / 2.0;
     const auto obj_poly =
       tier4_autoware_utils::expandPolygon(object.envelope_poly, diff_poly_buffer);
-    const bool is_left = 0 < object.lateral;
     obstacles_for_drivable_area.push_back(
-      {object.object.kinematics.initial_pose_with_covariance.pose, obj_poly, is_left});
+      {object.object.kinematics.initial_pose_with_covariance.pose, obj_poly, !isOnRight(object)});
   }
   return obstacles_for_drivable_area;
 }

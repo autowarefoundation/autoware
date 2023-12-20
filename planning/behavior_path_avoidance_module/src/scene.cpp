@@ -328,14 +328,12 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
 
   // debug
   {
-    debug.current_lanelets = std::make_shared<lanelet::ConstLanelets>(data.current_lanelets);
-
     std::vector<AvoidanceDebugMsg> debug_info_array;
     const auto append = [&](const auto & o) {
       AvoidanceDebugMsg debug_info;
       debug_info.object_id = toHexString(o.object.object_id);
       debug_info.longitudinal_distance = o.longitudinal;
-      debug_info.lateral_distance_from_centerline = o.lateral;
+      debug_info.lateral_distance_from_centerline = o.to_centerline;
       debug_info.allow_avoidance = o.reason == "";
       debug_info.failed_reason = o.reason;
       debug_info_array.push_back(debug_info);
@@ -380,7 +378,11 @@ ObjectData AvoidanceModule::createObjectData(
   utils::avoidance::fillObjectMovingTime(object_data, stopped_objects_, parameters_);
 
   // Calc lateral deviation from path to target object.
-  object_data.lateral = calcLateralDeviation(object_closest_pose, object_pose.position);
+  object_data.to_centerline =
+    lanelet::utils::getArcCoordinates(data.current_lanelets, object_pose).distance;
+  object_data.direction = calcLateralDeviation(object_closest_pose, object_pose.position) > 0.0
+                            ? Direction::LEFT
+                            : Direction::RIGHT;
 
   // Find the footprint point closest to the path, set to object_data.overhang_distance.
   object_data.overhang_dist = utils::avoidance::calcEnvelopeOverhangDistance(

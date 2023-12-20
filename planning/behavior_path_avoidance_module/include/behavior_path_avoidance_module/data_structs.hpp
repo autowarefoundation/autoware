@@ -52,6 +52,8 @@ using geometry_msgs::msg::TransformStamped;
 
 using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 
+using route_handler::Direction;
+
 struct ObjectParameter
 {
   bool is_avoidance_target{false};
@@ -327,14 +329,14 @@ struct ObjectData  // avoidance target
 {
   ObjectData() = default;
   ObjectData(const PredictedObject & obj, double lat, double lon, double len, double overhang)
-  : object(obj), lateral(lat), longitudinal(lon), length(len), overhang_dist(overhang)
+  : object(obj), to_centerline(lat), longitudinal(lon), length(len), overhang_dist(overhang)
   {
   }
 
   PredictedObject object;
 
   // lateral position of the CoM, in Frenet coordinate from ego-pose
-  double lateral;
+  double to_centerline;
 
   // longitudinal position of the CoM, in Frenet coordinate from ego-pose
   double longitudinal;
@@ -395,6 +397,9 @@ struct ObjectData  // avoidance target
 
   // is within intersection area
   bool is_within_intersection{false};
+
+  // object direction.
+  Direction direction{Direction::NONE};
 
   // unavoidable reason
   std::string reason{""};
@@ -566,8 +571,6 @@ struct ShiftLineData
  */
 struct DebugData
 {
-  std::shared_ptr<lanelet::ConstLanelets> current_lanelets;
-
   geometry_msgs::msg::Polygon detection_area;
 
   lanelet::ConstLineStrings3d bounds;

@@ -22,6 +22,7 @@
   <depend>behavior_path_lane_change_module</depend>
   <depend>behavior_path_planner</depend>
   <depend>behavior_path_planner_common</depend>
+  <depend>lanelet2_extension</depend>
   <depend>motion_utils</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
