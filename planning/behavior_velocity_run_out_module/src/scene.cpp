@@ -615,14 +615,23 @@ std::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
   // vehicle have to decelerate if there is not enough distance with deceleration_jerk
   const bool deceleration_needed =
     *stop_dist > dist_to_collision - planner_param_.run_out.stop_margin;
-  // avoid acceleration when ego is decelerating
-  // TODO(Tomohito Ando): replace with more appropriate method
-  constexpr float epsilon = 1.0e-2;
-  constexpr float stopping_vel_mps = 2.5 / 3.6;
-  const bool is_stopping = current_vel < stopping_vel_mps && current_acc < epsilon;
-  if (!deceleration_needed && !is_stopping) {
+  const auto & detection_method = planner_param_.run_out.detection_method;
+
+  if (!deceleration_needed && detection_method == "Object") {
     debug_ptr_->setAccelReason(RunOutDebug::AccelReason::LOW_JERK);
     return {};
+  }
+
+  // If the detection method assumes running out, avoid acceleration when the ego is decelerating.
+  // TODO(Tomohito Ando): replace with more appropriate way
+  if (!deceleration_needed && detection_method != "Object") {
+    constexpr float epsilon = 1.0e-2;
+    constexpr float stopping_vel_mps = 2.5 / 3.6;
+    const bool is_stopping = current_vel < stopping_vel_mps && current_acc < epsilon;
+    if (!is_stopping) {
+      debug_ptr_->setAccelReason(RunOutDebug::AccelReason::LOW_JERK);
+      return {};
+    }
   }
 
   // calculate the stop point for base link
