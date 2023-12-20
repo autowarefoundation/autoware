@@ -17,7 +17,6 @@
 
 #include <memory>
 #include <optional>
-#include <string>
 #include <tuple>
 #include <vector>
 
@@ -81,7 +80,7 @@ public:
 
   inline State getTrafficLightModuleState() const { return state_; }
 
-  inline boost::optional<int> getFirstRefStopPathPointIndex() const
+  inline std::optional<int> getFirstRefStopPathPointIndex() const
   {
     return first_ref_stop_path_point_index_;
   }
@@ -130,9 +129,9 @@ private:
   // prevent stop chattering
   std::unique_ptr<Time> stop_signal_received_time_ptr_{};
 
-  boost::optional<int> first_ref_stop_path_point_index_;
+  std::optional<int> first_ref_stop_path_point_index_;
 
-  boost::optional<Time> traffic_signal_stamp_;
+  std::optional<Time> traffic_signal_stamp_;
 
   // Traffic Light State
   TrafficSignal looking_tl_state_;

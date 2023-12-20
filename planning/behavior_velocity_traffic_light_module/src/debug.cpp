@@ -26,8 +26,6 @@
 
 namespace behavior_velocity_planner
 {
-using tier4_autoware_utils::appendMarkerArray;
-
 visualization_msgs::msg::MarkerArray TrafficLightModule::createDebugMarkerArray()
 {
   visualization_msgs::msg::MarkerArray debug_marker_array;

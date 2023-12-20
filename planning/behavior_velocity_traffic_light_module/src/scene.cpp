@@ -19,7 +19,6 @@
 
 #include <boost/geometry/algorithms/distance.hpp>
 #include <boost/geometry/algorithms/intersection.hpp>
-#include <boost/optional.hpp>  // To be replaced by std::optional in C++17
 
 #include <tf2/utils.h>
 
@@ -31,9 +30,7 @@
 
 #include <algorithm>
 #include <limits>
-#include <map>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace behavior_velocity_planner
@@ -52,14 +49,14 @@ bool getBackwardPointFromBasePoint(
   return true;
 }
 
-boost::optional<Point2d> findNearestCollisionPoint(
+std::optional<Point2d> findNearestCollisionPoint(
   const LineString2d & line1, const LineString2d & line2, const Point2d & origin)
 {
   std::vector<Point2d> collision_points;
   bg::intersection(line1, line2, collision_points);
 
   if (collision_points.empty()) {
-    return boost::none;
+    return std::nullopt;
   }
 
   // check nearest collision point
