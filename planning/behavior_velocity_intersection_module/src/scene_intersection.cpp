@@ -97,8 +97,8 @@ IntersectionModule::IntersectionModule(
   [[maybe_unused]] std::shared_ptr<const PlannerData> planner_data,
   const PlannerParam & planner_param, const std::set<lanelet::Id> & associative_ids,
   const std::string & turn_direction, const bool has_traffic_light,
-  const bool enable_occlusion_detection, const bool is_private_area, rclcpp::Node & node,
-  const rclcpp::Logger logger, const rclcpp::Clock::SharedPtr clock)
+  const bool enable_occlusion_detection, rclcpp::Node & node, const rclcpp::Logger logger,
+  const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock),
   node_(node),
   lane_id_(lane_id),
@@ -107,7 +107,6 @@ IntersectionModule::IntersectionModule(
   has_traffic_light_(has_traffic_light),
   enable_occlusion_detection_(enable_occlusion_detection),
   occlusion_attention_divisions_(std::nullopt),
-  is_private_area_(is_private_area),
   occlusion_uuid_(tier4_autoware_utils::generateUUID())
 {
   velocity_factor_.init(PlanningBehavior::INTERSECTION);
@@ -1056,8 +1055,11 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   // stuck vehicle detection is viable even if attention area is empty
   // so this needs to be checked before attention area validation
   const bool stuck_detected = checkStuckVehicle(planner_data_, path_lanelets);
+  const bool is_first_conflicting_lane_private =
+    (std::string(first_conflicting_lane.attributeOr("location", "else")).compare("private") == 0);
   if (stuck_detected) {
-    if (is_private_area_ && planner_param_.stuck_vehicle.enable_private_area_stuck_disregard) {
+    if (!(is_first_conflicting_lane_private &&
+          planner_param_.stuck_vehicle.disable_against_private_lane)) {
     } else {
       std::optional<size_t> stopline_idx = std::nullopt;
       if (stuck_stopline_idx_opt) {

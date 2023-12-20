@@ -23,8 +23,7 @@
         stuck_vehicle_velocity_threshold: 0.833
         # enable_front_car_decel_prediction: false
         # assumed_front_car_decel: 1.0
-        timeout_private_area: 3.0
-        enable_private_area_stuck_disregard: false
+        disable_against_private_lane: true
 
       yield_stuck:
         turn_direction:
