@@ -286,6 +286,8 @@ private:
 
     module_ptr->publishRTCStatus();
 
+    module_ptr->publishSteeringFactor();
+
     module_ptr->publishObjectsOfInterestMarker();
 
     processing_time_.at(module_ptr->name()) += stop_watch_.toc(module_ptr->name(), true);
