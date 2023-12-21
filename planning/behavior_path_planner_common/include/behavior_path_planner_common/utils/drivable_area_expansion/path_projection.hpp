@@ -19,7 +19,7 @@
 
 #include <interpolation/linear_interpolation.hpp>
 
-#include <boost/geometry.hpp>
+#include <boost/geometry/algorithms/distance.hpp>
 
 #include <limits>
 
@@ -141,13 +141,11 @@ inline Segment2d linestring_to_point_projection(
 
   const auto lerp_ratio = (arc_length - prev_arc_length) / (curr_arc_length - prev_arc_length);
   const auto base_point = lerp_point(*std::prev(ls_iterator), *ls_iterator, lerp_ratio);
-  if (distance == 0.0)
-    return {base_point, base_point};
-  else if (lerp_ratio >= 1.0)  // base point is beyond the 2nd segment point -> calculate normal in
-                               // the other direction
+  if (distance == 0.0) return {base_point, base_point};
+  if (lerp_ratio >= 1.0)  // base point is beyond the 2nd segment point -> calculate normal in
+                          // the other direction
     return {base_point, normal_at_distance(base_point, *std::prev(ls_iterator), -distance)};
-  else
-    return {base_point, normal_at_distance(base_point, *ls_iterator, distance)};
+  return {base_point, normal_at_distance(base_point, *ls_iterator, distance)};
 }
 
 /// @brief create a sub linestring between the given arc lengths

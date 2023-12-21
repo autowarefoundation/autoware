@@ -39,7 +39,7 @@ using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using route_handler::RouteHandler;
 
-const std::map<std::string, uint8_t> signal_map = {
+const std::map<std::string, uint8_t> g_signal_map = {
   {"left", TurnIndicatorsCommand::ENABLE_LEFT},
   {"right", TurnIndicatorsCommand::ENABLE_RIGHT},
   {"straight", TurnIndicatorsCommand::DISABLE},

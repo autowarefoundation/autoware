@@ -18,15 +18,10 @@
 #include "behavior_path_planner_common/data_manager.hpp"
 #include "behavior_path_planner_common/parameters.hpp"
 
-#include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
-
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/point.hpp>
-#include <geometry_msgs/msg/polygon.hpp>
-#include <geometry_msgs/msg/pose_array.hpp>
-#include <visualization_msgs/msg/marker_array.hpp>
+#include <geometry_msgs/msg/pose.hpp>
 
 #include <lanelet2_core/Forward.h>
 
@@ -40,7 +35,6 @@ using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
-using geometry_msgs::msg::PoseArray;
 
 struct ParallelParkingParameters
 {

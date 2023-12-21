@@ -14,9 +14,12 @@
 
 #include "behavior_path_goal_planner_module/util.hpp"
 
+#include "behavior_path_planner_common/utils/utils.hpp"
+
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <boost/geometry/algorithms/dispatch/distance.hpp>
 
@@ -30,17 +33,14 @@
 #include <string>
 #include <vector>
 
+namespace behavior_path_planner::goal_planner_utils
+{
+
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::createDefaultMarker;
 using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
-
-namespace behavior_path_planner
-{
-namespace goal_planner_utils
-{
-
 lanelet::ConstLanelets getPullOverLanes(
   const RouteHandler & route_handler, const bool left_side, const double backward_distance,
   const double forward_distance)
@@ -214,5 +214,4 @@ bool checkOriginalGoalIsInShoulder(const std::shared_ptr<RouteHandler> & route_h
   return false;
 }
 
-}  // namespace goal_planner_utils
-}  // namespace behavior_path_planner
+}  // namespace behavior_path_planner::goal_planner_utils

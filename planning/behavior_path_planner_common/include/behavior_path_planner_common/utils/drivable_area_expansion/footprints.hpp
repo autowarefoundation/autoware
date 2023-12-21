@@ -22,13 +22,6 @@
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <geometry_msgs/msg/pose.hpp>
-#include <geometry_msgs/msg/vector3.hpp>
-
-#include <boost/geometry.hpp>
-#include <boost/geometry/algorithms/intersection.hpp>
-#include <boost/geometry/algorithms/overlaps.hpp>
-#include <boost/geometry/index/predicates.hpp>
-#include <boost/geometry/index/rtree.hpp>
 
 namespace drivable_area_expansion
 {

@@ -16,7 +16,6 @@
 #define BEHAVIOR_PATH_PLANNER_COMMON__UTILS__UTILS_HPP_
 
 #include "behavior_path_planner_common/data_manager.hpp"
-#include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
 #include <route_handler/route_handler.hpp>
@@ -34,18 +33,10 @@
 #include <geometry_msgs/msg/pose_array.hpp>
 
 #include <lanelet2_core/Forward.h>
-#include <tf2/utils.h>
-
-#ifdef ROS_DISTRO_GALACTIC
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#else
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#endif
 
 #include <limits>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace behavior_path_planner::utils
@@ -55,34 +46,21 @@ using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::PredictedPath;
 
-using autoware_auto_perception_msgs::msg::Shape;
-using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
-using geometry_msgs::msg::PoseArray;
-using geometry_msgs::msg::Twist;
 using geometry_msgs::msg::Vector3;
-using path_safety_checker::ExtendedPredictedObject;
-using path_safety_checker::ObjectTypesToCheck;
-using path_safety_checker::PoseWithVelocityAndPolygonStamped;
-using path_safety_checker::PoseWithVelocityStamped;
-using path_safety_checker::PredictedPathWithPolygon;
-using path_safety_checker::SafetyCheckParams;
-using path_safety_checker::TargetObjectsOnLane;
 using route_handler::RouteHandler;
 using tier4_autoware_utils::LinearRing2d;
-using tier4_autoware_utils::LineString2d;
 using tier4_autoware_utils::Polygon2d;
-using vehicle_info_util::VehicleInfo;
 
 struct PolygonPoint
 {
   geometry_msgs::msg::Point point;
-  size_t bound_seg_idx;
-  double lon_dist_to_segment;
-  double lat_dist_to_bound;
+  size_t bound_seg_idx{0};
+  double lon_dist_to_segment{0.0};
+  double lat_dist_to_bound{0.0};
 
   bool is_after(const PolygonPoint & other_point) const
   {

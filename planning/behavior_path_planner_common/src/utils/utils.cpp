@@ -14,7 +14,6 @@
 
 #include "behavior_path_planner_common/utils/utils.hpp"
 
-#include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 #include "motion_utils/trajectory/path_with_lane_id.hpp"
 #include "object_recognition_utils/predicted_path_utils.hpp"
 
@@ -22,6 +21,7 @@
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/resample/resample.hpp>
+#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
 
@@ -74,7 +74,7 @@ namespace behavior_path_planner::utils
 using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_perception_msgs::msg::Shape;
 using geometry_msgs::msg::PoseWithCovarianceStamped;
-using tf2::fromMsg;
+using tier4_autoware_utils::LineString2d;
 using tier4_autoware_utils::Point2d;
 
 std::optional<lanelet::Polygon3d> getPolygonByPoint(

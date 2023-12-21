@@ -19,10 +19,7 @@
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-
-#include <boost/assign.hpp>
-#include <boost/geometry.hpp>
+#include <boost/geometry/strategies/transform/matrix_transformers.hpp>
 
 #include <tf2/utils.h>
 

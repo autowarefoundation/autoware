@@ -186,16 +186,15 @@ size_t getIdxByArclength(
       }
     }
     return path.points.size() - 1;
-  } else {
-    for (size_t i = target_idx; i > 0; --i) {
-      const auto next_i = i - 1;
-      sum_length -= calcDistance2d(path.points.at(i), path.points.at(next_i));
-      if (sum_length < signed_arc) {
-        return next_i;
-      }
-    }
-    return 0;
   }
+  for (size_t i = target_idx; i > 0; --i) {
+    const auto next_i = i - 1;
+    sum_length -= calcDistance2d(path.points.at(i), path.points.at(next_i));
+    if (sum_length < signed_arc) {
+      return next_i;
+    }
+  }
+  return 0;
 }
 
 // TODO(murooka) This function should be replaced with motion_utils::cropPoints

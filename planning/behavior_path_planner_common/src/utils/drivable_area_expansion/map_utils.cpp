@@ -14,7 +14,7 @@
 
 #include "behavior_path_planner_common/utils/drivable_area_expansion/map_utils.hpp"
 
-#include <boost/geometry.hpp>
+#include <boost/geometry/strategies/strategies.hpp>
 
 #include <lanelet2_core/Attribute.h>
 #include <lanelet2_core/primitives/LineString.h>

@@ -19,10 +19,13 @@
 #include "behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "tier4_autoware_utils/ros/parameter.hpp"
 
-#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/node.hpp>
+#include <rclcpp/parameter.hpp>
+#include <rclcpp/publisher.hpp>
 
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
+#include <cstddef>
 #include <limits>
 #include <memory>
 #include <string>
@@ -44,7 +47,11 @@ using SceneModuleObserver = std::weak_ptr<SceneModuleInterface>;
 class SceneModuleManagerInterface
 {
 public:
-  explicit SceneModuleManagerInterface(const std::string & name) : name_{name} {}
+  SceneModuleManagerInterface(const SceneModuleManagerInterface &) = delete;
+  SceneModuleManagerInterface(SceneModuleManagerInterface &&) = delete;
+  SceneModuleManagerInterface & operator=(const SceneModuleManagerInterface &) = delete;
+  SceneModuleManagerInterface & operator=(SceneModuleManagerInterface &&) = delete;
+  explicit SceneModuleManagerInterface(std::string name) : name_{std::move(name)} {}
 
   virtual ~SceneModuleManagerInterface() = default;
 
@@ -275,7 +282,7 @@ protected:
     for (const auto & rtc_type : rtc_types) {
       const auto snake_case_name = utils::convertToSnakeCase(name_);
       const auto rtc_interface_name =
-        rtc_type == "" ? snake_case_name : snake_case_name + "_" + rtc_type;
+        rtc_type.empty() ? snake_case_name : snake_case_name + "_" + rtc_type;
       rtc_interface_ptr_map_.emplace(
         rtc_type, std::make_shared<RTCInterface>(node, rtc_interface_name, config_.enable_rtc));
       objects_of_interest_marker_interface_ptr_map_.emplace(
@@ -298,7 +305,7 @@ protected:
 
   virtual std::unique_ptr<SceneModuleInterface> createNewSceneModuleInstance() = 0;
 
-  rclcpp::Node * node_;
+  rclcpp::Node * node_ = nullptr;
 
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_info_marker_;
 

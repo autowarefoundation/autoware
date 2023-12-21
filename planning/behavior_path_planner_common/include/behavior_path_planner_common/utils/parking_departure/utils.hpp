@@ -19,8 +19,6 @@
 #include "behavior_path_planner_common/utils/parking_departure/common_module_data.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 
-#include <motion_utils/distance/distance.hpp>
-
 #include <memory>
 #include <utility>
 #include <vector>

@@ -266,7 +266,7 @@ std::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo(
         turn_signal_info.required_start_point = lane_front_pose;
         turn_signal_info.required_end_point = get_required_end_point(combined_lane.centerline3d());
         turn_signal_info.desired_end_point = lane_back_pose;
-        turn_signal_info.turn_signal.command = signal_map.at(lane_attribute);
+        turn_signal_info.turn_signal.command = g_signal_map.at(lane_attribute);
         signal_queue.push(turn_signal_info);
       }
     }

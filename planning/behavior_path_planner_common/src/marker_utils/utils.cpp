@@ -30,9 +30,7 @@
 
 namespace marker_utils
 {
-using behavior_path_planner::ShiftLine;
 using behavior_path_planner::utils::calcPathArcLengthArray;
-using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 using std_msgs::msg::ColorRGBA;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::createDefaultMarker;
@@ -101,7 +99,7 @@ MarkerArray createShiftLineMarkerArray(
 {
   ShiftLineArray shift_lines_local = shift_lines;
   if (shift_lines.empty()) {
-    shift_lines_local.push_back(ShiftLine());
+    shift_lines_local.emplace_back();
   }
 
   MarkerArray msg;
@@ -289,8 +287,8 @@ MarkerArray createFurthestLineStringMarkerArray(const lanelet::ConstLineStrings3
     const bool isFrontNear = tier4_autoware_utils::calcDistance2d(marker_back, front) <
                              tier4_autoware_utils::calcDistance2d(marker_back, front_inverted);
     const auto & left_ls = (isFrontNear) ? idx->basicLineString() : idx->invert().basicLineString();
-    for (auto ls = left_ls.cbegin(); ls != left_ls.cend(); ++ls) {
-      marker.points.push_back(createPoint(ls->x(), ls->y(), ls->z()));
+    for (const auto & left_l : left_ls) {
+      marker.points.push_back(createPoint(left_l.x(), left_l.y(), left_l.z()));
     }
   }
 

@@ -21,14 +21,6 @@
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 
-#include <tf2/utils.h>
-
-#ifdef ROS_DISTRO_GALACTIC
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#else
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#endif
-
 #include <vector>
 
 namespace behavior_path_planner
@@ -74,8 +66,8 @@ struct OccupancyGridMapParam
   VehicleShape vehicle_shape;
 
   // costmap configs
-  int theta_size;          // discretized angle table size [-]
-  int obstacle_threshold;  // obstacle threshold on grid [-]
+  int theta_size{0};          // discretized angle table size [-]
+  int obstacle_threshold{0};  // obstacle threshold on grid [-]
 };
 
 struct PlannerWaypoint
@@ -93,7 +85,12 @@ struct PlannerWaypoints
 class OccupancyGridBasedCollisionDetector
 {
 public:
-  OccupancyGridBasedCollisionDetector() {}
+  OccupancyGridBasedCollisionDetector() = default;
+  OccupancyGridBasedCollisionDetector(const OccupancyGridBasedCollisionDetector &) = default;
+  OccupancyGridBasedCollisionDetector(OccupancyGridBasedCollisionDetector &&) = delete;
+  OccupancyGridBasedCollisionDetector & operator=(const OccupancyGridBasedCollisionDetector &) =
+    default;
+  OccupancyGridBasedCollisionDetector & operator=(OccupancyGridBasedCollisionDetector &&) = delete;
   void setParam(const OccupancyGridMapParam & param) { param_ = param; };
   OccupancyGridMapParam getParam() const { return param_; };
   void setMap(const nav_msgs::msg::OccupancyGrid & costmap);
@@ -106,7 +103,7 @@ public:
     const bool check_out_of_range) const;
   const PlannerWaypoints & getWaypoints() const { return waypoints_; }
   bool detectCollision(const IndexXYT & base_index, const bool check_out_of_range) const;
-  virtual ~OccupancyGridBasedCollisionDetector() {}
+  virtual ~OccupancyGridBasedCollisionDetector() = default;
 
 protected:
   void computeCollisionIndexes(int theta_index, std::vector<IndexXY> & indexes);

@@ -16,11 +16,10 @@
 #define BEHAVIOR_PATH_GOAL_PLANNER_MODULE__UTIL_HPP_
 
 #include "behavior_path_goal_planner_module/goal_searcher_base.hpp"
-#include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
-#include "behavior_path_planner_common/utils/utils.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 
+#include "visualization_msgs/msg/detail/marker_array__struct.hpp"
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
@@ -33,9 +32,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
-{
-namespace goal_planner_utils
+namespace behavior_path_planner::goal_planner_utils
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::PredictedPath;
@@ -68,7 +65,6 @@ MarkerArray createGoalCandidatesMarkerArray(
 MarkerArray createNumObjectsToAvoidTextsMarkerArray(
   const GoalCandidates & goal_candidates, std::string && ns,
   const std_msgs::msg::ColorRGBA & color);
-}  // namespace goal_planner_utils
-}  // namespace behavior_path_planner
+}  // namespace behavior_path_planner::goal_planner_utils
 
 #endif  // BEHAVIOR_PATH_GOAL_PLANNER_MODULE__UTIL_HPP_

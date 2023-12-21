@@ -4,7 +4,6 @@ project(behavior_path_planner_common)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-find_package(OpenCV REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
@@ -29,10 +28,6 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
   ${EIGEN3_INCLUDE_DIR}
-)
-
-target_link_libraries(${PROJECT_NAME}
-  ${OpenCV_LIBRARIES}
 )
 
 if(BUILD_TESTING)

@@ -16,7 +16,7 @@
 
 #include "tier4_autoware_utils/ros/marker_helper.hpp"
 
-#include "std_msgs/msg/color_rgba.hpp"
+#include "std_msgs/msg/detail/color_rgba__struct.hpp"
 
 #include <vector>
 

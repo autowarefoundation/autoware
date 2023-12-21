@@ -23,38 +23,22 @@
 #include <interpolation/spline_interpolation.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 
-#include <optional>
-
-#ifdef ROS_DISTRO_GALACTIC
-#include <tf2_eigen/tf2_eigen.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#else
-#include <tf2_eigen/tf2_eigen.hpp>
-
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-
-#include <lanelet2_core/geometry/Polygon.h>
-#endif
-
 #include <boost/geometry/algorithms/within.hpp>
 
+#include <lanelet2_core/geometry/Polygon.h>
+
+#include <optional>
 #include <utility>
 #include <vector>
 
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
-using geometry_msgs::msg::PoseArray;
-using geometry_msgs::msg::Transform;
-using geometry_msgs::msg::TransformStamped;
 using lanelet::utils::getArcCoordinates;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcOffsetPose;
-using tier4_autoware_utils::deg2rad;
 using tier4_autoware_utils::inverseTransformPoint;
-using tier4_autoware_utils::inverseTransformPose;
 using tier4_autoware_utils::normalizeRadian;
-using tier4_autoware_utils::toMsg;
 using tier4_autoware_utils::transformPose;
 
 namespace behavior_path_planner
@@ -518,15 +502,11 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
 
   // set terminal velocity and acceleration(temporary implementation)
   if (is_forward) {
-    pairs_terminal_velocity_and_accel_.push_back(
-      std::make_pair(parameters_.forward_parking_velocity, 0.0));
-    pairs_terminal_velocity_and_accel_.push_back(
-      std::make_pair(parameters_.forward_parking_velocity, 0.0));
+    pairs_terminal_velocity_and_accel_.emplace_back(parameters_.forward_parking_velocity, 0.0);
+    pairs_terminal_velocity_and_accel_.emplace_back(parameters_.forward_parking_velocity, 0.0);
   } else {
-    pairs_terminal_velocity_and_accel_.push_back(
-      std::make_pair(parameters_.backward_parking_velocity, 0.0));
-    pairs_terminal_velocity_and_accel_.push_back(
-      std::make_pair(parameters_.backward_parking_velocity, 0.0));
+    pairs_terminal_velocity_and_accel_.emplace_back(parameters_.backward_parking_velocity, 0.0);
+    pairs_terminal_velocity_and_accel_.emplace_back(parameters_.backward_parking_velocity, 0.0);
   }
 
   // set pull_over start and end pose

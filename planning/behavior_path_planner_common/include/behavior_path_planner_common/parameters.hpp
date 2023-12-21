@@ -17,9 +17,6 @@
 
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
-#include <utility>
-#include <vector>
-
 struct ModuleConfigParameters
 {
   bool enable_module{false};

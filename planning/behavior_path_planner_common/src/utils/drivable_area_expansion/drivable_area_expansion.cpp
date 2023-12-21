@@ -20,14 +20,13 @@
 #include "behavior_path_planner_common/utils/drivable_area_expansion/path_projection.hpp"
 #include "behavior_path_planner_common/utils/drivable_area_expansion/types.hpp"
 
-#include <Eigen/Geometry>
 #include <interpolation/linear_interpolation.hpp>
 #include <motion_utils/resample/resample.hpp>
 #include <motion_utils/trajectory/interpolation.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
-#include <boost/geometry.hpp>
+#include <boost/geometry/strategies/strategies.hpp>
 
 #include <limits>
 

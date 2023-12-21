@@ -41,18 +41,18 @@ using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
 using tier4_autoware_utils::Segment2d;
 
-typedef boost::geometry::index::rtree<Segment2d, boost::geometry::index::rstar<16>> SegmentRtree;
+using SegmentRtree = boost::geometry::index::rtree<Segment2d, boost::geometry::index::rstar<16>>;
 
 struct PointDistance
 {
   Point2d point;
-  double distance;
+  double distance{0.0};
 };
 struct Projection
 {
   Point2d projected_point;
-  double distance;
-  double arc_length;
+  double distance{0.0};
+  double arc_length{0.0};
 };
 enum Side { LEFT, RIGHT };
 

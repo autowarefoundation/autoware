@@ -17,8 +17,6 @@
 
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 
-#include <rclcpp/rclcpp.hpp>
-
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 
 #include <vector>

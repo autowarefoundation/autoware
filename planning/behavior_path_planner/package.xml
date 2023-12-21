@@ -56,7 +56,6 @@
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>route_handler</depend>
   <depend>sensor_msgs</depend>
   <depend>signal_processing</depend>
   <depend>tf2</depend>

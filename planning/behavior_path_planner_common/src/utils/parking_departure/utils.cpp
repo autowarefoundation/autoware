@@ -17,6 +17,7 @@
 #include "behavior_path_planner_common/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <motion_utils/distance/distance.hpp>
 
 namespace behavior_path_planner::utils::parking_departure
 {
