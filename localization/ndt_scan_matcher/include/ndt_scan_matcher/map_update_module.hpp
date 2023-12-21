@@ -48,14 +48,10 @@ class MapUpdateModule
 public:
   MapUpdateModule(
     rclcpp::Node * node, std::mutex * ndt_ptr_mutex,
-    std::shared_ptr<NormalDistributionsTransform> ndt_ptr,
-    std::shared_ptr<Tf2ListenerModule> tf2_listener_module, std::string map_frame,
-    rclcpp::CallbackGroup::SharedPtr main_callback_group);
+    std::shared_ptr<NormalDistributionsTransform> ndt_ptr);
 
 private:
   friend class NDTScanMatcher;
-  void callback_ekf_odom(nav_msgs::msg::Odometry::ConstSharedPtr odom_ptr);
-  void map_update_timer_callback();
 
   void update_ndt(
     const std::vector<autoware_map_msgs::msg::PointCloudMapCellWithID> & maps_to_add,
@@ -68,21 +64,13 @@ private:
 
   rclcpp::Client<autoware_map_msgs::srv::GetDifferentialPointCloudMap>::SharedPtr
     pcd_loader_client_;
-  rclcpp::TimerBase::SharedPtr map_update_timer_;
-
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr ekf_odom_sub_;
-
-  rclcpp::CallbackGroup::SharedPtr map_callback_group_;
 
   std::shared_ptr<NormalDistributionsTransform> ndt_ptr_;
   std::mutex * ndt_ptr_mutex_;
-  std::string map_frame_;
   rclcpp::Logger logger_;
   rclcpp::Clock::SharedPtr clock_;
-  std::shared_ptr<Tf2ListenerModule> tf2_listener_module_;
 
   std::optional<geometry_msgs::msg::Point> last_update_position_ = std::nullopt;
-  std::optional<geometry_msgs::msg::Point> current_position_ = std::nullopt;
   const double dynamic_map_loading_update_distance_;
   const double dynamic_map_loading_map_radius_;
   const double lidar_radius_;

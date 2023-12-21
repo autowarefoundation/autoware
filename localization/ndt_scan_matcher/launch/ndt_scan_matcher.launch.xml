@@ -7,7 +7,6 @@
   <arg name="input_map_points_topic" default="/pointcloud_map" description="Map points topic"/>
   <arg name="input_regularization_pose_topic" default="/sensing/gnss/pose_with_covariance" description="Regularization pose topic"/>
   <arg name="input_service_trigger_node" default="trigger_node" description="Trigger node service name"/>
-  <arg name="input_ekf_odom" default="/localization/kinematic_state" description="Input EKF odometry"/>
 
   <arg name="output_pose_topic" default="ndt_pose" description="Estimated self position"/>
   <arg name="output_pose_with_covariance_topic" default="ndt_pose_with_covariance" description="Estimated self position with covariance"/>
@@ -27,7 +26,6 @@
     <remap from="regularization_pose_with_covariance" to="$(var input_regularization_pose_topic)"/>
     <remap from="trigger_node_srv" to="$(var input_service_trigger_node)"/>
     <remap from="pcd_loader_service" to="$(var client_map_loader)"/>
-    <remap from="ekf_odom" to="$(var input_ekf_odom)"/>
 
     <param from="$(var param_file)"/>
   </node>

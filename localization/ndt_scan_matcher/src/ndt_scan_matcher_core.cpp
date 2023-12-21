@@ -101,10 +101,10 @@ NDTScanMatcher::NDTScanMatcher()
   inversion_vector_threshold_(-0.9),  // Not necessary to extract to ndt_scan_matcher.param.yaml
   oscillation_threshold_(10),         // Not necessary to extract to ndt_scan_matcher.param.yaml
   output_pose_covariance_({}),
-  regularization_enabled_(declare_parameter<bool>("regularization_enabled"))
+  regularization_enabled_(declare_parameter<bool>("regularization_enabled")),
+  is_activated_(false)
 {
   (*state_ptr_)["state"] = "Initializing";
-  is_activated_ = false;
 
   int64_t points_queue_size = this->declare_parameter<int64_t>("input_sensor_points_queue_size");
   points_queue_size = std::max(points_queue_size, (int64_t)0);
@@ -193,31 +193,36 @@ NDTScanMatcher::NDTScanMatcher()
 
   z_margin_for_ground_removal_ = this->declare_parameter<double>("z_margin_for_ground_removal");
 
-  rclcpp::CallbackGroup::SharedPtr initial_pose_callback_group;
-  initial_pose_callback_group =
+  timer_callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  rclcpp::CallbackGroup::SharedPtr initial_pose_callback_group =
     this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-
-  rclcpp::CallbackGroup::SharedPtr main_callback_group;
-  main_callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  rclcpp::CallbackGroup::SharedPtr sensor_callback_group =
+    this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
   auto initial_pose_sub_opt = rclcpp::SubscriptionOptions();
   initial_pose_sub_opt.callback_group = initial_pose_callback_group;
+  auto sensor_sub_opt = rclcpp::SubscriptionOptions();
+  sensor_sub_opt.callback_group = sensor_callback_group;
 
-  auto main_sub_opt = rclcpp::SubscriptionOptions();
-  main_sub_opt.callback_group = main_callback_group;
-
+  constexpr double map_update_dt = 1.0;
+  constexpr auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+    std::chrono::duration<double>(map_update_dt));
+  map_update_timer_ = rclcpp::create_timer(
+    this, this->get_clock(), period_ns, std::bind(&NDTScanMatcher::callback_timer, this),
+    timer_callback_group_);
   initial_pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "ekf_pose_with_covariance", 100,
     std::bind(&NDTScanMatcher::callback_initial_pose, this, std::placeholders::_1),
     initial_pose_sub_opt);
   sensor_points_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
     "points_raw", rclcpp::SensorDataQoS().keep_last(points_queue_size),
-    std::bind(&NDTScanMatcher::callback_sensor_points, this, std::placeholders::_1), main_sub_opt);
+    std::bind(&NDTScanMatcher::callback_sensor_points, this, std::placeholders::_1),
+    sensor_sub_opt);
 
   // Only if regularization is enabled, subscribe to the regularization base pose
   if (regularization_enabled_) {
     // NOTE: The reason that the regularization subscriber does not belong to the
-    // main_callback_group is to ensure that the regularization callback is called even if
+    // sensor_callback_group is to ensure that the regularization callback is called even if
     // sensor_callback takes long time to process.
     // Both callback_initial_pose and callback_regularization_pose must not miss receiving data for
     // proper interpolation.
@@ -280,21 +285,20 @@ NDTScanMatcher::NDTScanMatcher()
     "ndt_align_srv",
     std::bind(
       &NDTScanMatcher::service_ndt_align, this, std::placeholders::_1, std::placeholders::_2),
-    rclcpp::ServicesQoS().get_rmw_qos_profile(), main_callback_group);
+    rclcpp::ServicesQoS().get_rmw_qos_profile(), sensor_callback_group);
   service_trigger_node_ = this->create_service<std_srvs::srv::SetBool>(
     "trigger_node_srv",
     std::bind(
       &NDTScanMatcher::service_trigger_node, this, std::placeholders::_1, std::placeholders::_2),
-    rclcpp::ServicesQoS().get_rmw_qos_profile(), main_callback_group);
+    rclcpp::ServicesQoS().get_rmw_qos_profile(), sensor_callback_group);
 
   tf2_listener_module_ = std::make_shared<Tf2ListenerModule>(this);
 
   use_dynamic_map_loading_ = this->declare_parameter<bool>("use_dynamic_map_loading");
   if (use_dynamic_map_loading_) {
-    map_update_module_ = std::make_unique<MapUpdateModule>(
-      this, &ndt_ptr_mtx_, ndt_ptr_, tf2_listener_module_, map_frame_, main_callback_group);
+    map_update_module_ = std::make_unique<MapUpdateModule>(this, &ndt_ptr_mtx_, ndt_ptr_);
   } else {
-    map_module_ = std::make_unique<MapModule>(this, &ndt_ptr_mtx_, ndt_ptr_, main_callback_group);
+    map_module_ = std::make_unique<MapModule>(this, &ndt_ptr_mtx_, ndt_ptr_, sensor_callback_group);
   }
 
   logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
@@ -368,6 +372,29 @@ void NDTScanMatcher::publish_diagnostic()
   diagnostics_pub_->publish(diag_msg);
 }
 
+void NDTScanMatcher::callback_timer()
+{
+  if (!is_activated_) {
+    return;
+  }
+  if (!use_dynamic_map_loading_) {
+    return;
+  }
+  std::lock_guard<std::mutex> lock(latest_ekf_position_mtx_);
+  if (latest_ekf_position_ == std::nullopt) {
+    RCLCPP_ERROR_STREAM_THROTTLE(
+      this->get_logger(), *this->get_clock(), 1000,
+      "Cannot find the reference position for map update. Please check if the EKF odometry is "
+      "provided to NDT.");
+    return;
+  }
+  // continue only if we should update the map
+  if (map_update_module_->should_update_map(latest_ekf_position_.value())) {
+    RCLCPP_INFO(this->get_logger(), "Start updating NDT map (timer_callback)");
+    map_update_module_->update_map(latest_ekf_position_.value());
+  }
+}
+
 void NDTScanMatcher::callback_initial_pose(
   const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr initial_pose_msg_ptr)
 {
@@ -381,6 +408,11 @@ void NDTScanMatcher::callback_initial_pose(
       "Received initial pose message with frame_id "
         << initial_pose_msg_ptr->header.frame_id << ", but expected " << map_frame_
         << ". Please check the frame_id in the input topic and ensure it is correct.");
+  }
+
+  if (use_dynamic_map_loading_) {
+    std::lock_guard<std::mutex> lock(latest_ekf_position_mtx_);
+    latest_ekf_position_ = initial_pose_msg_ptr->pose.pose.position;
   }
 }
 
