@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECT_ASSOCIATION_MERGER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_HPP_
-#define OBJECT_ASSOCIATION_MERGER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_HPP_
+#ifndef OBJECT_MERGER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_HPP_
+#define OBJECT_MERGER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_HPP_
 
-#include "object_association_merger/data_association/solver/gnn_solver_interface.hpp"
-#include "object_association_merger/data_association/solver/mu_successive_shortest_path.hpp"
-#include "object_association_merger/data_association/solver/successive_shortest_path.hpp"
+#include "object_merger/data_association/solver/gnn_solver_interface.hpp"
+#include "object_merger/data_association/solver/mu_successive_shortest_path.hpp"
+#include "object_merger/data_association/solver/successive_shortest_path.hpp"
 
-#endif  // OBJECT_ASSOCIATION_MERGER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_HPP_
+#endif  // OBJECT_MERGER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_HPP_

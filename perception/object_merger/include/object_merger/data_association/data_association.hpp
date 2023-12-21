@@ -16,8 +16,8 @@
 // Author: v1.0 Yukihiro Saito
 //
 
-#ifndef OBJECT_ASSOCIATION_MERGER__DATA_ASSOCIATION__DATA_ASSOCIATION_HPP_
-#define OBJECT_ASSOCIATION_MERGER__DATA_ASSOCIATION__DATA_ASSOCIATION_HPP_
+#ifndef OBJECT_MERGER__DATA_ASSOCIATION__DATA_ASSOCIATION_HPP_
+#define OBJECT_MERGER__DATA_ASSOCIATION__DATA_ASSOCIATION_HPP_
 
 #include <list>
 #include <memory>
@@ -25,7 +25,7 @@
 #include <vector>
 
 #define EIGEN_MPL2_ONLY
-#include "object_association_merger/data_association/solver/gnn_solver.hpp"
+#include "object_merger/data_association/solver/gnn_solver.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -56,4 +56,4 @@ public:
   virtual ~DataAssociation() {}
 };
 
-#endif  // OBJECT_ASSOCIATION_MERGER__DATA_ASSOCIATION__DATA_ASSOCIATION_HPP_
+#endif  // OBJECT_MERGER__DATA_ASSOCIATION__DATA_ASSOCIATION_HPP_

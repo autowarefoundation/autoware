@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECT_ASSOCIATION_MERGER__NODE_HPP_
-#define OBJECT_ASSOCIATION_MERGER__NODE_HPP_
+#ifndef OBJECT_MERGER__NODE_HPP_
+#define OBJECT_MERGER__NODE_HPP_
 
-#include "object_association_merger/data_association/data_association.hpp"
+#include "object_merger/data_association/data_association.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -84,4 +84,4 @@ private:
 };
 }  // namespace object_association
 
-#endif  // OBJECT_ASSOCIATION_MERGER__NODE_HPP_
+#endif  // OBJECT_MERGER__NODE_HPP_

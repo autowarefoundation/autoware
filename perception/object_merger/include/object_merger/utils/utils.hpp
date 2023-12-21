@@ -16,8 +16,8 @@
 // Author: v1.0 Yukihiro Saito
 //
 
-#ifndef OBJECT_ASSOCIATION_MERGER__UTILS__UTILS_HPP_
-#define OBJECT_ASSOCIATION_MERGER__UTILS__UTILS_HPP_
+#ifndef OBJECT_MERGER__UTILS__UTILS_HPP_
+#define OBJECT_MERGER__UTILS__UTILS_HPP_
 
 #include <autoware_auto_perception_msgs/msg/detected_object.hpp>
 #include <autoware_auto_perception_msgs/msg/shape.hpp>
@@ -70,4 +70,4 @@ enum MSG_COV_IDX {
 };
 }  // namespace utils
 
-#endif  // OBJECT_ASSOCIATION_MERGER__UTILS__UTILS_HPP_
+#endif  // OBJECT_MERGER__UTILS__UTILS_HPP_

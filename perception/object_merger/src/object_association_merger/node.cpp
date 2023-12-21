@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "object_association_merger/node.hpp"
+#include "object_merger/node.hpp"
 
-#include "object_association_merger/utils/utils.hpp"
+#include "object_merger/utils/utils.hpp"
 #include "object_recognition_utils/object_recognition_utils.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
