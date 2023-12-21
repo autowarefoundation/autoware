@@ -333,6 +333,34 @@ bool isParallelToEgoLane(const ObjectData & object, const double threshold)
   return yaw_deviation < threshold || yaw_deviation > M_PI - threshold;
 }
 
+bool isMergingToEgoLane(const ObjectData & object)
+{
+  const auto & object_pose = object.object.kinematics.initial_pose_with_covariance.pose;
+  const auto closest_pose =
+    lanelet::utils::getClosestCenterPose(object.overhang_lanelet, object_pose.position);
+  const auto yaw_deviation = calcYawDeviation(closest_pose, object_pose);
+
+  if (isOnRight(object)) {
+    if (yaw_deviation < 0.0 && -1.0 * M_PI_2 < yaw_deviation) {
+      return false;
+    }
+
+    if (yaw_deviation > M_PI_2) {
+      return false;
+    }
+  } else {
+    if (yaw_deviation > 0.0 && M_PI_2 > yaw_deviation) {
+      return false;
+    }
+
+    if (yaw_deviation < -1.0 * M_PI_2) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 bool isObjectOnRoadShoulder(
   ObjectData & object, const std::shared_ptr<RouteHandler> & route_handler,
   const std::shared_ptr<AvoidanceParameters> & parameters)
@@ -587,6 +615,17 @@ bool isSatisfiedWithNonVehicleCondition(
   return true;
 }
 
+ObjectData::Behavior getObjectBehavior(
+  ObjectData & object, const std::shared_ptr<AvoidanceParameters> & parameters)
+{
+  if (isParallelToEgoLane(object, parameters->object_check_yaw_deviation)) {
+    return ObjectData::Behavior::NONE;
+  }
+
+  return isMergingToEgoLane(object) ? ObjectData::Behavior::MERGING
+                                    : ObjectData::Behavior::DEVIATING;
+}
+
 bool isSatisfiedWithVehicleCondition(
   ObjectData & object, const AvoidancePlanningData & data,
   const std::shared_ptr<const PlannerData> & planner_data,
@@ -594,11 +633,18 @@ bool isSatisfiedWithVehicleCondition(
 {
   using boost::geometry::within;
 
+  object.behavior = getObjectBehavior(object, parameters);
   object.is_within_intersection = isWithinIntersection(object, planner_data->route_handler);
 
   // from here condition check for vehicle type objects.
   if (isForceAvoidanceTarget(object, data, planner_data, parameters)) {
     return true;
+  }
+
+  // always ignore all merging objects.
+  if (object.behavior == ObjectData::Behavior::MERGING) {
+    object.reason = "MergingToEgoLane";
+    return false;
   }
 
   // Object is on center line -> ignore.
@@ -623,7 +669,12 @@ bool isSatisfiedWithVehicleCondition(
     return true;
   }
 
-  if (isParallelToEgoLane(object, parameters->object_check_yaw_deviation)) {
+  std::string turn_direction = object.overhang_lanelet.attributeOr("turn_direction", "else");
+  if (turn_direction == "straight") {
+    return true;
+  }
+
+  if (object.behavior == ObjectData::Behavior::NONE) {
     object.reason = "ParallelToEgoLane";
     return false;
   }

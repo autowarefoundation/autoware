@@ -336,6 +336,14 @@ struct ObjectData  // avoidance target
 
   PredictedObject object;
 
+  // object behavior.
+  enum class Behavior {
+    NONE = 0,
+    MERGING,
+    DEVIATING,
+  };
+  Behavior behavior{Behavior::NONE};
+
   // lateral position of the CoM, in Frenet coordinate from ego-pose
   double to_centerline;
 

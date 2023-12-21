@@ -557,6 +557,8 @@ MarkerArray createDebugMarkerArray(
     addObjects(data.other_objects, std::string("NotNeedAvoidance"));
     addObjects(data.other_objects, std::string("LessThanExecutionThreshold"));
     addObjects(data.other_objects, std::string("TooNearToGoal"));
+    addObjects(data.other_objects, std::string("ParallelToEgoLane"));
+    addObjects(data.other_objects, std::string("MergingToEgoLane"));
   }
 
   // shift line pre-process
