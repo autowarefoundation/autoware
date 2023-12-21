@@ -17,16 +17,13 @@
 
 #include "freespace_planning_algorithms/reeds_shepp.hpp"
 
-#include <boost/optional.hpp>
-
 #include <tf2/utils.h>
 
 #include <algorithm>
-#include <array>
 #include <cmath>
-#include <iostream>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <random>
 #include <string>
 #include <vector>
@@ -96,9 +93,9 @@ using NodeWeakPtr = std::weak_ptr<Node>;
 struct Node
 {
   Pose pose;
-  boost::optional<double> cost_from_start = boost::none;
-  boost::optional<double> cost_to_goal = boost::none;
-  boost::optional<double> cost_to_parent = boost::none;
+  std::optional<double> cost_from_start = std::nullopt;
+  std::optional<double> cost_to_goal = std::nullopt;
+  std::optional<double> cost_to_parent = std::nullopt;
   NodeWeakPtr parent = NodeWeakPtr();
   std::vector<NodeSharedPtr> childs = std::vector<NodeSharedPtr>();
 

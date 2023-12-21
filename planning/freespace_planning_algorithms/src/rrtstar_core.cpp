@@ -135,7 +135,7 @@ RRTStar::RRTStar(
   is_informed_(is_informed),
   cspace_(cspace)
 {
-  node_goal_ = std::make_shared<Node>(Node{x_goal, boost::none, 0.0});
+  node_goal_ = std::make_shared<Node>(Node{x_goal, std::nullopt, 0.0});
   node_start_ = std::make_shared<Node>(Node{x_start, 0.0});
   nodes_.push_back(node_start_);
 }
@@ -375,7 +375,7 @@ NodeSharedPtr RRTStar::addNewNode(const Pose & pose, NodeSharedPtr node_parent)
   const double cost_to_parent = cspace_.distance(pose, node_parent->pose);
   const double cost_from_start = *(node_parent->cost_from_start) + cost_to_parent;
   auto node_new =
-    std::make_shared<Node>(Node{pose, cost_from_start, boost::none, cost_to_parent, node_parent});
+    std::make_shared<Node>(Node{pose, cost_from_start, std::nullopt, cost_to_parent, node_parent});
   nodes_.push_back(node_new);
   node_parent->childs.push_back(node_new);
   return node_new;
@@ -431,7 +431,7 @@ void RRTStar::reconnect(const NodeSharedPtr & node_new, const NodeSharedPtr & no
   const auto node_reconnect_parent = node_reconnect->getParent();
   node_reconnect_parent->deleteChild(node_reconnect);
   node_reconnect->parent = std::weak_ptr<Node>();
-  node_reconnect->cost_to_parent = boost::none;
+  node_reconnect->cost_to_parent = std::nullopt;
 
   // Current state:
   // node_new_parent -> node_new -> #nil
