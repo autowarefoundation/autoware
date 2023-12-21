@@ -1208,6 +1208,12 @@ void AvoidanceModule::updateData()
   // update rtc status.
   updateRTCData();
 
+  // update interest objects data
+  for (const auto & [uuid, data] : debug_data_.collision_check) {
+    const auto color = data.is_safe ? ColorName::GREEN : ColorName::RED;
+    setObjectsOfInterestData(data.current_obj_pose, data.obj_shape, color);
+  }
+
   safe_ = avoid_data_.safe;
 }
 
