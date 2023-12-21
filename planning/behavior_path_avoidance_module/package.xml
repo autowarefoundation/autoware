@@ -27,7 +27,6 @@
   <depend>behavior_path_planner_common</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
-  <depend>libboost-dev</depend>
   <depend>magic_enum</depend>
   <depend>motion_utils</depend>
   <depend>objects_of_interest_marker_interface</depend>

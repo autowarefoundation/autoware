@@ -20,6 +20,7 @@
 #include "behavior_path_planner_common/utils/create_vehicle_footprint.hpp"
 #include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
+#include "behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
 #include "behavior_path_planner_common/utils/path_utils.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
 
@@ -28,14 +29,11 @@
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
-#include <tier4_planning_msgs/msg/avoidance_debug_factor.hpp>
-#include <tier4_planning_msgs/msg/avoidance_debug_msg.hpp>
-#include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
+#include "tier4_planning_msgs/msg/detail/avoidance_debug_msg_array__struct.hpp"
+#include <tier4_planning_msgs/msg/detail/avoidance_debug_factor__struct.hpp>
 
 #include <boost/geometry/algorithms/centroid.hpp>
-#include <boost/geometry/strategies/cartesian/centroid_bashein_detmer.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -1234,7 +1232,6 @@ void AvoidanceModule::initVariables()
   debug_marker_.markers.clear();
   resetPathCandidate();
   resetPathReference();
-  is_avoidance_maneuver_starts = false;
   arrived_path_end_ = false;
 }
 
@@ -1271,8 +1268,8 @@ void AvoidanceModule::updateRTCData()
 
   CandidateOutput output;
 
-  const auto sl_front = candidates.front();
-  const auto sl_back = candidates.back();
+  const auto & sl_front = candidates.front();
+  const auto & sl_back = candidates.back();
 
   output.path_candidate = data.candidate_path.path;
   output.lateral_shift = helper_->getRelativeShiftToPath(shift_line);

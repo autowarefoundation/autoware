@@ -60,7 +60,7 @@ public:
 
   geometry_msgs::msg::Pose getEgoPose() const { return data_->self_odometry->pose.pose; }
 
-  size_t getConstraintsMapIndex(const double velocity, const std::vector<double> & values) const
+  static size_t getConstraintsMapIndex(const double velocity, const std::vector<double> & values)
   {
     const auto itr = std::find_if(
       values.begin(), values.end(), [&](const auto value) { return velocity < value; });

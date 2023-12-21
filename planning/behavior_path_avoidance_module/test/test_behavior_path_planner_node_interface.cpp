@@ -17,9 +17,6 @@
 #include "planning_interface_test_manager/planning_interface_test_manager.hpp"
 #include "planning_interface_test_manager/planning_interface_test_manager_utils.hpp"
 
-#include <gtest/gtest.h>
-
-#include <cmath>
 #include <vector>
 
 using behavior_path_planner::BehaviorPathPlannerNode;

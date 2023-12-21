@@ -19,11 +19,10 @@
 #include "behavior_path_avoidance_module/scene.hpp"
 #include "behavior_path_planner_common/interface/scene_module_manager_interface.hpp"
 
-#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/node.hpp>
+#include <rclcpp/parameter.hpp>
 
 #include <memory>
-#include <string>
-#include <unordered_map>
 #include <vector>
 
 namespace behavior_path_planner

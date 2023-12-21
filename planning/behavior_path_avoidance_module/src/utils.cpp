@@ -21,29 +21,23 @@
 #include "behavior_path_planner_common/utils/traffic_light_utils.hpp"
 #include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
-#include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
-#include <lanelet2_extension/utility/utilities.hpp>
-#include <motion_utils/trajectory/interpolation.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
-#include <tier4_planning_msgs/msg/avoidance_debug_factor.hpp>
+#include <geometry_msgs/msg/detail/transform_stamped__struct.hpp>
+#include <tier4_planning_msgs/msg/detail/avoidance_debug_factor__struct.hpp>
 
-#include <boost/geometry.hpp>
+#include <boost/geometry/algorithms/buffer.hpp>
 #include <boost/geometry/algorithms/convex_hull.hpp>
 #include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/algorithms/union.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/strategies/convex_hull.hpp>
 
 #include <lanelet2_routing/RoutingGraphContainer.h>
 
 #include <algorithm>
 #include <limits>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -53,6 +47,7 @@ namespace behavior_path_planner::utils::avoidance
 using autoware_perception_msgs::msg::TrafficSignalElement;
 using behavior_path_planner::utils::traffic_light::calcDistanceToRedTrafficLight;
 using behavior_path_planner::utils::traffic_light::getDistanceToNextTrafficLight;
+using geometry_msgs::msg::TransformStamped;
 using motion_utils::calcLongitudinalOffsetPoint;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestIndex;
@@ -65,7 +60,6 @@ using tier4_autoware_utils::calcYawDeviation;
 using tier4_autoware_utils::createQuaternionFromRPY;
 using tier4_autoware_utils::getPose;
 using tier4_autoware_utils::pose2transform;
-using tier4_autoware_utils::toHexString;
 using tier4_planning_msgs::msg::AvoidanceDebugFactor;
 using tier4_planning_msgs::msg::AvoidanceDebugMsg;
 

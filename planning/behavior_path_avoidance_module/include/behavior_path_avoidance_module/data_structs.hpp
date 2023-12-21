@@ -19,12 +19,11 @@
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
-#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/time.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 
 #include <lanelet2_core/primitives/Lanelet.h>
@@ -34,6 +33,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace behavior_path_planner
@@ -48,7 +48,6 @@ using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
-using geometry_msgs::msg::TransformStamped;
 
 using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 
@@ -329,8 +328,13 @@ struct AvoidanceParameters
 struct ObjectData  // avoidance target
 {
   ObjectData() = default;
-  ObjectData(const PredictedObject & obj, double lat, double lon, double len, double overhang)
-  : object(obj), to_centerline(lat), longitudinal(lon), length(len), overhang_dist(overhang)
+
+  ObjectData(PredictedObject obj, double lat, double lon, double len, double overhang)
+  : object(std::move(obj)),
+    to_centerline(lat),
+    longitudinal(lon),
+    length(len),
+    overhang_dist(overhang)
   {
   }
 
@@ -345,16 +349,17 @@ struct ObjectData  // avoidance target
   Behavior behavior{Behavior::NONE};
 
   // lateral position of the CoM, in Frenet coordinate from ego-pose
-  double to_centerline;
+
+  double to_centerline{0.0};
 
   // longitudinal position of the CoM, in Frenet coordinate from ego-pose
-  double longitudinal;
+  double longitudinal{0.0};
 
   // longitudinal length of vehicle, in Frenet coordinate
-  double length;
+  double length{0.0};
 
   // lateral distance to the closest footprint, in Frenet coordinate
-  double overhang_dist;
+  double overhang_dist{0.0};
 
   // lateral shiftable ratio
   double shiftable_ratio{0.0};
@@ -414,7 +419,7 @@ struct ObjectData  // avoidance target
   Direction direction{Direction::NONE};
 
   // unavoidable reason
-  std::string reason{""};
+  std::string reason{};
 
   // lateral avoid margin
   std::optional<double> avoid_margin{std::nullopt};
@@ -457,8 +462,8 @@ using AvoidLineArray = std::vector<AvoidLine>;
 
 struct AvoidOutline
 {
-  AvoidOutline(const AvoidLine & avoid_line, const AvoidLine & return_line)
-  : avoid_line{avoid_line}, return_line{return_line}
+  AvoidOutline(AvoidLine avoid_line, AvoidLine return_line)
+  : avoid_line{std::move(avoid_line)}, return_line{std::move(return_line)}
   {
   }
 

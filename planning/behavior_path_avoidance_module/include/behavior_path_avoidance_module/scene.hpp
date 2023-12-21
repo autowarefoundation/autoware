@@ -20,9 +20,10 @@
 #include "behavior_path_avoidance_module/shift_line_generator.hpp"
 #include "behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "behavior_path_planner_common/interface/scene_module_visitor.hpp"
-#include "behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
 
-#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/logging.hpp>
+#include <rclcpp/node.hpp>
+#include <rclcpp/time.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
@@ -30,11 +31,9 @@
 #include <tier4_planning_msgs/msg/avoidance_debug_msg.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 namespace behavior_path_planner
@@ -374,8 +373,8 @@ private:
    */
   void removeRegisteredShiftLines()
   {
-    constexpr double THRESHOLD = 0.1;
-    if (std::abs(path_shifter_.getBaseOffset()) > THRESHOLD) {
+    constexpr double threshold = 0.1;
+    if (std::abs(path_shifter_.getBaseOffset()) > threshold) {
       RCLCPP_INFO(getLogger(), "base offset is not zero. can't reset registered shift lines.");
       return;
     }
@@ -396,7 +395,7 @@ private:
    * @brief remove behind shift lines.
    * @param path shifter.
    */
-  void postProcess()
+  void postProcess() override
   {
     const size_t idx = planner_data_->findEgoIndex(path_shifter_.getReferencePath().points);
     path_shifter_.removeBehindShiftLineAndSetBaseOffset(idx);
@@ -410,8 +409,6 @@ private:
   };
 
   using RegisteredShiftLineArray = std::vector<RegisteredShiftLine>;
-
-  bool is_avoidance_maneuver_starts;
 
   bool arrived_path_end_{false};
 

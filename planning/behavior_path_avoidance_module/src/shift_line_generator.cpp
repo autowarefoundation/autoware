@@ -19,7 +19,7 @@
 
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
-#include <tier4_planning_msgs/msg/avoidance_debug_factor.hpp>
+#include <tier4_planning_msgs/msg/detail/avoidance_debug_factor__struct.hpp>
 
 namespace behavior_path_planner::utils::avoidance
 {
