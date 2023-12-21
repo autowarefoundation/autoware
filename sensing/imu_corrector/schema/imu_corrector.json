@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for imu_corrector",
+  "type": "object",
+  "definitions": {
+    "imu_corrector": {
+      "type": "object",
+      "properties": {
+        "angular_velocity_offset_x": {
+          "type": "number",
+          "description": "roll rate offset in imu_link [rad/s]."
+        },
+        "angular_velocity_offset_y": {
+          "type": "number",
+          "description": "pitch rate offset imu_link [rad/s]."
+        },
+        "angular_velocity_offset_z": {
+          "type": "number",
+          "description": "yaw rate offset imu_link [rad/s]."
+        },
+        "angular_velocity_stddev_xx": {
+          "type": "number",
+          "description": "roll rate standard deviation imu_link [rad/s]."
+        },
+        "angular_velocity_stddev_yy": {
+          "type": "number",
+          "description": "pitch rate standard deviation imu_link [rad/s]."
+        },
+        "angular_velocity_stddev_zz": {
+          "type": "number",
+          "description": "yaw rate standard deviation imu_link [rad/s]."
+        },
+        "acceleration_stddev": {
+          "type": "number",
+          "description": "acceleration standard deviation imu_link [m/s^2]."
+        }
+      },
+      "required": [
+        "angular_velocity_offset_x",
+        "angular_velocity_offset_y",
+        "angular_velocity_offset_z",
+        "angular_velocity_stddev_xx",
+        "angular_velocity_stddev_yy",
+        "angular_velocity_stddev_zz",
+        "acceleration_stddev"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/imu_corrector"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
