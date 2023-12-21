@@ -172,7 +172,7 @@ double calcDiffAngleAgainstPath(
   return diff_yaw;
 }
 
-double calcDiffAngleBetweenPaths(
+[[maybe_unused]] double calcDiffAngleBetweenPaths(
   const std::vector<PathPointWithLaneId> & path_points, const PredictedPath & predicted_path)
 {
   const size_t nearest_idx =
@@ -456,7 +456,7 @@ void DynamicAvoidanceModule::updateTargetObjects()
     }
 
     // 1.c. check if object is not crossing ego's path
-    const double obj_angle = calcDiffAngleBetweenPaths(input_path.points, obj_path);
+    const double obj_angle = calcDiffAngleAgainstPath(input_path.points, obj_pose);
     const double max_crossing_object_angle = 0.0 <= obj_tangent_vel
                                                ? parameters_->max_overtaking_crossing_object_angle
                                                : parameters_->max_oncoming_crossing_object_angle;
@@ -592,10 +592,15 @@ void DynamicAvoidanceModule::updateTargetObjects()
     }
 
     // 2.f. calculate which side object will be against ego's path
-    const auto future_obj_pose =
-      object_recognition_utils::calcInterpolatedPose(obj_path, time_to_collision);
-    const bool is_collision_left =
-      future_obj_pose ? isLeft(input_path.points, future_obj_pose->position) : is_object_left;
+    const bool is_collision_left = [&]() {
+      if (0.0 < object.vel) {
+        return is_object_left;
+      }
+      const auto future_obj_pose =
+        object_recognition_utils::calcInterpolatedPose(obj_path, time_to_collision);
+      return future_obj_pose ? isLeft(input_path.points, future_obj_pose->position)
+                             : is_object_left;
+    }();
 
     // 2.g. check if the ego is not ahead of the object.
     const double signed_dist_ego_to_obj = [&]() {
