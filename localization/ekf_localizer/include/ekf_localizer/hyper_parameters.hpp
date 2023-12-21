@@ -40,6 +40,9 @@ public:
     proc_stddev_vx_c(node->declare_parameter("proc_stddev_vx_c", 5.0)),
     proc_stddev_wz_c(node->declare_parameter("proc_stddev_wz_c", 1.0)),
     proc_stddev_yaw_c(node->declare_parameter("proc_stddev_yaw_c", 0.005)),
+    z_filter_proc_dev(node->declare_parameter("z_filter_proc_dev", 1.0)),
+    roll_filter_proc_dev(node->declare_parameter("roll_filter_proc_dev", 0.01)),
+    pitch_filter_proc_dev(node->declare_parameter("pitch_filter_proc_dev", 0.01)),
     pose_no_update_count_threshold_warn(
       node->declare_parameter("pose_no_update_count_threshold_warn", 50)),
     pose_no_update_count_threshold_error(
@@ -69,6 +72,9 @@ public:
   const double proc_stddev_vx_c;   //!< @brief  vx process noise
   const double proc_stddev_wz_c;   //!< @brief  wz process noise
   const double proc_stddev_yaw_c;  //!< @brief  yaw process noise
+  const double z_filter_proc_dev;
+  const double roll_filter_proc_dev;
+  const double pitch_filter_proc_dev;
   const size_t pose_no_update_count_threshold_warn;
   const size_t pose_no_update_count_threshold_error;
   const size_t twist_no_update_count_threshold_warn;

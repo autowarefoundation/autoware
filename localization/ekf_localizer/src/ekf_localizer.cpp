@@ -94,9 +94,9 @@ EKFLocalizer::EKFLocalizer(const std::string & node_name, const rclcpp::NodeOpti
   ekf_module_ = std::make_unique<EKFModule>(warning_, params_);
   logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 
-  z_filter_.set_proc_dev(1.0);
-  roll_filter_.set_proc_dev(0.01);
-  pitch_filter_.set_proc_dev(0.01);
+  z_filter_.set_proc_dev(params_.z_filter_proc_dev);
+  roll_filter_.set_proc_dev(params_.roll_filter_proc_dev);
+  pitch_filter_.set_proc_dev(params_.pitch_filter_proc_dev);
 }
 
 /*

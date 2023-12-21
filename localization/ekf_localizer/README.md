@@ -152,6 +152,14 @@ The parameters are set in `launch/ekf_localizer.launch` .
 
 note: process noise for positions x & y are calculated automatically from nonlinear dynamics.
 
+### Simple 1D Filter Parameters
+
+| Name                  | Type   | Description                                     | Default value |
+| :-------------------- | :----- | :---------------------------------------------- | :------------ |
+| z_filter_proc_dev     | double | Simple1DFilter - Z filter process deviation     | 1.0           |
+| roll_filter_proc_dev  | double | Simple1DFilter - Roll filter process deviation  | 0.01          |
+| pitch_filter_proc_dev | double | Simple1DFilter - Pitch filter process deviation | 0.01          |
+
 ### For diagnostics
 
 | Name                                  | Type   | Description                                                                                                                                | Default value |
