@@ -73,7 +73,8 @@ void DetectedObjectsDisplay::processMessage(DetectedObjects::ConstSharedPtr msg)
 
     // Get marker for twist
     auto twist_marker = get_twist_marker_ptr(
-      object.kinematics.pose_with_covariance, object.kinematics.twist_with_covariance);
+      object.kinematics.pose_with_covariance, object.kinematics.twist_with_covariance,
+      get_line_width());
     if (twist_marker) {
       auto twist_marker_ptr = twist_marker.value();
       twist_marker_ptr->header = msg->header;

@@ -26,6 +26,24 @@ namespace object_detection
 {
 TrackedObjectsDisplay::TrackedObjectsDisplay() : ObjectPolygonDisplayBase("tracks")
 {
+  // Option for selective visualization by object dynamics
+  m_select_object_dynamics_property = new rviz_common::properties::EnumProperty(
+    "Dynamic Status", "All", "Selectively visualize objects by its dynamic status.", this);
+  m_select_object_dynamics_property->addOption("Dynamic", 0);
+  m_select_object_dynamics_property->addOption("Static", 1);
+  m_select_object_dynamics_property->addOption("All", 2);
+}
+
+bool TrackedObjectsDisplay::is_object_to_show(
+  const uint showing_dynamic_status, const TrackedObject & object)
+{
+  if (showing_dynamic_status == 0 && object.kinematics.is_stationary) {
+    return false;  // Show only moving objects
+  }
+  if (showing_dynamic_status == 1 && !object.kinematics.is_stationary) {
+    return false;  // Show only stationary objects
+  }
+  return true;
 }
 
 void TrackedObjectsDisplay::processMessage(TrackedObjects::ConstSharedPtr msg)
@@ -33,12 +51,15 @@ void TrackedObjectsDisplay::processMessage(TrackedObjects::ConstSharedPtr msg)
   clear_markers();
   update_id_map(msg);
 
+  const auto showing_dynamic_status = get_object_dynamics_to_visualize();
   for (const auto & object : msg->objects) {
+    // Filter by object dynamic status
+    if (!is_object_to_show(showing_dynamic_status, object)) continue;
+    const auto line_width = get_line_width();
     // Get marker for shape
     auto shape_marker = get_shape_marker_ptr(
       object.shape, object.kinematics.pose_with_covariance.pose.position,
-      object.kinematics.pose_with_covariance.pose.orientation, object.classification,
-      get_line_width());
+      object.kinematics.pose_with_covariance.pose.orientation, object.classification, line_width);
     if (shape_marker) {
       auto shape_marker_ptr = shape_marker.value();
       shape_marker_ptr->header = msg->header;
@@ -113,7 +134,7 @@ void TrackedObjectsDisplay::processMessage(TrackedObjects::ConstSharedPtr msg)
 
     // Get marker for twist
     auto twist_marker = get_twist_marker_ptr(
-      object.kinematics.pose_with_covariance, object.kinematics.twist_with_covariance);
+      object.kinematics.pose_with_covariance, object.kinematics.twist_with_covariance, line_width);
     if (twist_marker) {
       auto twist_marker_ptr = twist_marker.value();
       twist_marker_ptr->header = msg->header;

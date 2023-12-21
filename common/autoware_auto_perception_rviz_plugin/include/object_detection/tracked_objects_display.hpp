@@ -39,11 +39,23 @@ class AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC TrackedObjectsDisplay
   Q_OBJECT
 
 public:
+  using TrackedObject = autoware_auto_perception_msgs::msg::TrackedObject;
   using TrackedObjects = autoware_auto_perception_msgs::msg::TrackedObjects;
 
   TrackedObjectsDisplay();
 
+protected:
+  uint get_object_dynamics_to_visualize()
+  {
+    return m_select_object_dynamics_property->getOptionInt();
+  }
+
+  static bool is_object_to_show(const uint showing_dynamic_status, const TrackedObject & object);
+
 private:
+  // Property to choose object dynamics to visualize
+  rviz_common::properties::EnumProperty * m_select_object_dynamics_property;
+
   void processMessage(TrackedObjects::ConstSharedPtr msg) override;
 
   boost::uuids::uuid to_boost_uuid(const unique_identifier_msgs::msg::UUID & uuid_msg)

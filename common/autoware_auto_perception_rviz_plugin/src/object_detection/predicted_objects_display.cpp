@@ -154,7 +154,7 @@ std::vector<visualization_msgs::msg::Marker::SharedPtr> PredictedObjectsDisplay:
     // Get marker for twist
     auto twist_marker = get_twist_marker_ptr(
       object.kinematics.initial_pose_with_covariance,
-      object.kinematics.initial_twist_with_covariance);
+      object.kinematics.initial_twist_with_covariance, get_line_width());
     if (twist_marker) {
       auto twist_marker_ptr = twist_marker.value();
       twist_marker_ptr->header = msg->header;

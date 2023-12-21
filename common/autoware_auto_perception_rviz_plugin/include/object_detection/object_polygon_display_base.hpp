@@ -91,6 +91,7 @@ public:
       "Visualization Type", "Normal", "Simplicity of the polygon to display object.", this);
     m_simple_visualize_mode_property->addOption("Normal", 0);
     m_simple_visualize_mode_property->addOption("Simple", 1);
+
     // iterate over default values to create and initialize the properties.
     for (const auto & map_property_it : detail::kDefaultObjectPropertyValues) {
       const auto & class_property_values = map_property_it.second;
@@ -254,10 +255,11 @@ protected:
 
   std::optional<Marker::SharedPtr> get_twist_marker_ptr(
     const geometry_msgs::msg::PoseWithCovariance & pose_with_covariance,
-    const geometry_msgs::msg::TwistWithCovariance & twist_with_covariance) const
+    const geometry_msgs::msg::TwistWithCovariance & twist_with_covariance,
+    const double & line_width) const
   {
     if (m_display_twist_property.getBool()) {
-      return detail::get_twist_marker_ptr(pose_with_covariance, twist_with_covariance);
+      return detail::get_twist_marker_ptr(pose_with_covariance, twist_with_covariance, line_width);
     } else {
       return std::nullopt;
     }
