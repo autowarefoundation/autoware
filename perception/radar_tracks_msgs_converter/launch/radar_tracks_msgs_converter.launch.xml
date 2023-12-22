@@ -5,6 +5,8 @@
   <arg name="output/radar_tracked_objects" default="output/radar_tracked_objects"/>
   <arg name="update_rate_hz" default="20.0"/>
   <arg name="use_twist_compensation" default="false"/>
+  <arg name="use_twist_yaw_compensation" default="false"/>
+  <arg name="static_object_speed_threshold" default="1.0"/>
 
   <node pkg="radar_tracks_msgs_converter" exec="radar_tracks_msgs_converter_node" name="radar_tracks_msgs_converter" output="screen">
     <remap from="~/input/radar_objects" to="$(var input/radar_objects)"/>
@@ -13,5 +15,7 @@
     <remap from="~/output/radar_tracked_objects" to="$(var output/radar_tracked_objects)"/>
     <param name="update_rate_hz" value="$(var update_rate_hz)"/>
     <param name="use_twist_compensation" value="$(var use_twist_compensation)"/>
+    <param name="use_twist_yaw_compensation" value="$(var use_twist_yaw_compensation)"/>
+    <param name="static_object_speed_threshold" value="$(var static_object_speed_threshold)"/>
   </node>
 </launch>

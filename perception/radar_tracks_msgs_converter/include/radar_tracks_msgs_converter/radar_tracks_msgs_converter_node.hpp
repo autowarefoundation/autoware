@@ -1,4 +1,4 @@
-// Copyright 2022 TIER IV, Inc.
+// Copyright 2022-2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ using autoware_auto_perception_msgs::msg::TrackedObject;
 using autoware_auto_perception_msgs::msg::TrackedObjectKinematics;
 using autoware_auto_perception_msgs::msg::TrackedObjects;
 using nav_msgs::msg::Odometry;
+using radar_msgs::msg::RadarTrack;
 using radar_msgs::msg::RadarTracks;
 
 class RadarTracksMsgsConverterNode : public rclcpp::Node
@@ -55,6 +56,8 @@ public:
     double update_rate_hz{};
     std::string new_frame_id{};
     bool use_twist_compensation{};
+    bool use_twist_yaw_compensation{};
+    double static_object_speed_threshold{};
   };
 
 private:
@@ -94,6 +97,20 @@ private:
   geometry_msgs::msg::PoseWithCovariance convertPoseWithCovariance();
   TrackedObjects convertRadarTrackToTrackedObjects();
   DetectedObjects convertTrackedObjectsToDetectedObjects(TrackedObjects & objects);
+  geometry_msgs::msg::Vector3 compensateVelocitySensorPosition(
+    const radar_msgs::msg::RadarTrack & radar_track);
+  geometry_msgs::msg::Vector3 compensateVelocityEgoMotion(
+    const geometry_msgs::msg::Vector3 & velocity_in,
+    const geometry_msgs::msg::Point & position_from_veh);
+  bool isStaticObject(
+    const radar_msgs::msg::RadarTrack & radar_track,
+    const geometry_msgs::msg::Vector3 & compensated_velocity);
+  std::array<double, 36> convertPoseCovarianceMatrix(
+    const radar_msgs::msg::RadarTrack & radar_track);
+  std::array<double, 36> convertTwistCovarianceMatrix(
+    const radar_msgs::msg::RadarTrack & radar_track);
+  std::array<double, 36> convertAccelerationCovarianceMatrix(
+    const radar_msgs::msg::RadarTrack & radar_track);
   uint8_t convertClassification(const uint16_t classification);
 };
 
