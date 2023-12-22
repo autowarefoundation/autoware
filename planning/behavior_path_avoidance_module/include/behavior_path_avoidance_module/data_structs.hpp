@@ -638,6 +638,9 @@ struct DebugData
   // tmp for plot
   PathWithLaneId center_line;
 
+  // safety check area
+  lanelet::ConstLanelets safety_check_lanes;
+
   // collision check debug map
   utils::path_safety_checker::CollisionCheckDebugMap collision_check;
 

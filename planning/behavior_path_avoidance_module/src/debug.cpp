@@ -618,6 +618,8 @@ MarkerArray createDebugMarkerArray(
       createMarkerColor(0.16, 1.0, 0.69, 0.2)));
     add(laneletsAsTriangleMarkerArray(
       "current_lanes", data.current_lanelets, createMarkerColor(1.0, 1.0, 1.0, 0.2)));
+    add(laneletsAsTriangleMarkerArray(
+      "safety_check_lanes", debug.safety_check_lanes, createMarkerColor(1.0, 0.0, 0.42, 0.2)));
   }
 
   return msg;

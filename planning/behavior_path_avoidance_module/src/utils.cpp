@@ -1654,12 +1654,12 @@ lanelet::ConstLanelets getAdjacentLane(
 
   lanelet::ConstLanelets lanes{};
   for (const auto & lane : ego_succeeding_lanes) {
-    const auto opt_left_lane = rh->getLeftLanelet(lane);
+    const auto opt_left_lane = rh->getLeftLanelet(lane, true, false);
     if (!is_right_shift && opt_left_lane) {
       lanes.push_back(opt_left_lane.value());
     }
 
-    const auto opt_right_lane = rh->getRightLanelet(lane);
+    const auto opt_right_lane = rh->getRightLanelet(lane, true, false);
     if (is_right_shift && opt_right_lane) {
       lanes.push_back(opt_right_lane.value());
     }
@@ -1675,7 +1675,8 @@ lanelet::ConstLanelets getAdjacentLane(
 
 std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
   const AvoidancePlanningData & data, const std::shared_ptr<const PlannerData> & planner_data,
-  const std::shared_ptr<AvoidanceParameters> & parameters, const bool is_right_shift)
+  const std::shared_ptr<AvoidanceParameters> & parameters, const bool is_right_shift,
+  DebugData & debug)
 {
   const auto & p = parameters;
   const auto check_right_lanes =
@@ -1733,6 +1734,9 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
         utils::path_safety_checker::isCentroidWithinLanelet);
       append(targets);
     }
+
+    debug.safety_check_lanes.insert(
+      debug.safety_check_lanes.end(), check_lanes.begin(), check_lanes.end());
   }
 
   // check left lanes
@@ -1752,6 +1756,9 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
         utils::path_safety_checker::isCentroidWithinLanelet);
       append(targets);
     }
+
+    debug.safety_check_lanes.insert(
+      debug.safety_check_lanes.end(), check_lanes.begin(), check_lanes.end());
   }
 
   // check current lanes
@@ -1771,6 +1778,9 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
         utils::path_safety_checker::isCentroidWithinLanelet);
       append(targets);
     }
+
+    debug.safety_check_lanes.insert(
+      debug.safety_check_lanes.end(), check_lanes.begin(), check_lanes.end());
   }
 
   return target_objects;
