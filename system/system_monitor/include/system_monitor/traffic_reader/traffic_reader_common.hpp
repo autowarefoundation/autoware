@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2021 Tier IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,25 +13,37 @@
 // limitations under the License.
 
 /**
- * @file msr_reader.h
- * @brief MSR reader definitions
+ * @file traffic_reader.h
+ * @brief traffic reader definitions
  */
 
-#ifndef MSR_READER__MSR_READER_HPP_
-#define MSR_READER__MSR_READER_HPP_
+#ifndef SYSTEM_MONITOR__TRAFFIC_READER__TRAFFIC_READER_COMMON_HPP_
+#define SYSTEM_MONITOR__TRAFFIC_READER__TRAFFIC_READER_COMMON_HPP_
 
 #include <boost/serialization/serialization.hpp>
+#include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include <vector>
+#include <string>
+
+namespace traffic_reader_service
+{
+
+static constexpr char socket_path[] = "/tmp/traffic_reader";
+
+enum Request {
+  NONE = 0,
+  START_NETHOGS,
+  GET_RESULT,
+};
 
 /**
- * @brief MSR information
+ * @brief Result of nethogs
  */
-struct MSRInfo
+struct Result
 {
-  int error_code_;                        //!< @brief error code, 0 on success, otherwise error
-  std::vector<bool> pkg_thermal_status_;  //!< @brief Pkg Thermal Status
+  int error_code;      //!< @brief Error code, 0 on success, otherwise error
+  std::string output;  //!< @brief Result output of nethogs
 
   /**
    * @brief Load or save data members.
@@ -43,9 +55,13 @@ struct MSRInfo
   template <typename archive>
   void serialize(archive & ar, const unsigned /*version*/)  // NOLINT(runtime/references)
   {
-    ar & error_code_;
-    ar & pkg_thermal_status_;
+    ar & error_code;
+    ar & output;
   }
 };
 
-#endif  // MSR_READER__MSR_READER_HPP_
+// constexpr std::string_view GET_ALL_STR{"<All>"};  //!< @brief nethogs result all request string
+
+}  // namespace traffic_reader_service
+
+#endif  // SYSTEM_MONITOR__TRAFFIC_READER__TRAFFIC_READER_COMMON_HPP_

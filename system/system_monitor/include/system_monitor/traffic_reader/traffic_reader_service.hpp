@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAFFIC_READER__TRAFFIC_READER_SERVICE_HPP_
-#define TRAFFIC_READER__TRAFFIC_READER_SERVICE_HPP_
+#ifndef SYSTEM_MONITOR__TRAFFIC_READER__TRAFFIC_READER_SERVICE_HPP_
+#define SYSTEM_MONITOR__TRAFFIC_READER__TRAFFIC_READER_SERVICE_HPP_
 
-#include "traffic_reader/traffic_reader_common.hpp"
+#include "system_monitor/traffic_reader/traffic_reader_common.hpp"
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/asio.hpp>
@@ -107,4 +107,4 @@ protected:
 
 }  // namespace traffic_reader_service
 
-#endif  // TRAFFIC_READER__TRAFFIC_READER_SERVICE_HPP_
+#endif  // SYSTEM_MONITOR__TRAFFIC_READER__TRAFFIC_READER_SERVICE_HPP_

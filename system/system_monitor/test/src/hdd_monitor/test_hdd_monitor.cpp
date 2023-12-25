@@ -13,8 +13,8 @@
 // limitations under the License.
 
 #include "system_monitor/hdd_monitor/hdd_monitor.hpp"
+#include "system_monitor/hdd_reader/hdd_reader.hpp"
 
-#include <hdd_reader/hdd_reader.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <boost/algorithm/string.hpp>
