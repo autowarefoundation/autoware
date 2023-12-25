@@ -33,23 +33,33 @@ namespace
 {
 template <class T>
 size_t findNearestSegmentIndexFromLateralDistance(
-  const std::vector<T> & points, const geometry_msgs::msg::Point & target_point)
+  const std::vector<T> & points, const geometry_msgs::msg::Pose & target_point,
+  const double yaw_threshold)
 {
+  using tier4_autoware_utils::calcAzimuthAngle;
+  using tier4_autoware_utils::calcDistance2d;
+  using tier4_autoware_utils::normalizeRadian;
+
   std::optional<size_t> closest_idx{std::nullopt};
   double min_lateral_dist = std::numeric_limits<double>::max();
   for (size_t seg_idx = 0; seg_idx < points.size() - 1; ++seg_idx) {
+    const auto base_yaw = tf2::getYaw(target_point.orientation);
+    const auto yaw =
+      normalizeRadian(calcAzimuthAngle(points.at(seg_idx), points.at(seg_idx + 1)) - base_yaw);
+    if (yaw_threshold < std::abs(yaw)) {
+      continue;
+    }
     const double lon_dist =
-      motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, target_point);
-    const double segment_length =
-      tier4_autoware_utils::calcDistance2d(points.at(seg_idx), points.at(seg_idx + 1));
+      motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, target_point.position);
+    const double segment_length = calcDistance2d(points.at(seg_idx), points.at(seg_idx + 1));
     const double lat_dist = [&]() {
       if (lon_dist < 0.0) {
-        return tier4_autoware_utils::calcDistance2d(points.at(seg_idx), target_point);
+        return calcDistance2d(points.at(seg_idx), target_point.position);
       }
       if (segment_length < lon_dist) {
-        return tier4_autoware_utils::calcDistance2d(points.at(seg_idx + 1), target_point);
+        return calcDistance2d(points.at(seg_idx + 1), target_point.position);
       }
-      return std::abs(motion_utils::calcLateralOffset(points, target_point, seg_idx));
+      return std::abs(motion_utils::calcLateralOffset(points, target_point.position, seg_idx));
     }();
     if (lat_dist < min_lateral_dist) {
       closest_idx = seg_idx;
@@ -61,7 +71,7 @@ size_t findNearestSegmentIndexFromLateralDistance(
     return *closest_idx;
   }
 
-  return motion_utils::findNearestSegmentIndex(points, target_point);
+  return motion_utils::findNearestSegmentIndex(points, target_point.position);
 }
 
 bool checkHasSameLane(
@@ -795,17 +805,17 @@ void generateDrivableArea(
     const auto front_pose =
       cropped_path_points.empty() ? current_pose : cropped_path_points.front().point.pose;
     const size_t front_left_start_idx =
-      findNearestSegmentIndexFromLateralDistance(left_bound, front_pose.position);
+      findNearestSegmentIndexFromLateralDistance(left_bound, front_pose, M_PI_2);
     const size_t front_right_start_idx =
-      findNearestSegmentIndexFromLateralDistance(right_bound, front_pose.position);
+      findNearestSegmentIndexFromLateralDistance(right_bound, front_pose, M_PI_2);
     const auto left_start_point =
       calcLongitudinalOffsetStartPoint(left_bound, front_pose, front_left_start_idx, -front_length);
     const auto right_start_point = calcLongitudinalOffsetStartPoint(
       right_bound, front_pose, front_right_start_idx, -front_length);
     const size_t left_start_idx =
-      findNearestSegmentIndexFromLateralDistance(left_bound, left_start_point);
+      motion_utils::findNearestSegmentIndex(left_bound, left_start_point);
     const size_t right_start_idx =
-      findNearestSegmentIndexFromLateralDistance(right_bound, right_start_point);
+      motion_utils::findNearestSegmentIndex(right_bound, right_start_point);
 
     // Insert a start point
     path.left_bound.push_back(left_start_point);
@@ -817,18 +827,17 @@ void generateDrivableArea(
   // Get Closest segment for the goal point
   const auto goal_pose = path.points.empty() ? current_pose : path.points.back().point.pose;
   const size_t goal_left_start_idx =
-    findNearestSegmentIndexFromLateralDistance(left_bound, goal_pose.position);
+    findNearestSegmentIndexFromLateralDistance(left_bound, goal_pose, M_PI_2);
   const size_t goal_right_start_idx =
-    findNearestSegmentIndexFromLateralDistance(right_bound, goal_pose.position);
+    findNearestSegmentIndexFromLateralDistance(right_bound, goal_pose, M_PI_2);
   const auto left_goal_point =
     calcLongitudinalOffsetGoalPoint(left_bound, goal_pose, goal_left_start_idx, vehicle_length);
   const auto right_goal_point =
     calcLongitudinalOffsetGoalPoint(right_bound, goal_pose, goal_right_start_idx, vehicle_length);
   const size_t left_goal_idx = std::max(
-    goal_left_start_idx, findNearestSegmentIndexFromLateralDistance(left_bound, left_goal_point));
+    goal_left_start_idx, motion_utils::findNearestSegmentIndex(left_bound, left_goal_point));
   const size_t right_goal_idx = std::max(
-    goal_right_start_idx,
-    findNearestSegmentIndexFromLateralDistance(right_bound, right_goal_point));
+    goal_right_start_idx, motion_utils::findNearestSegmentIndex(right_bound, right_goal_point));
 
   // Insert middle points
   for (size_t i = left_start_idx + 1; i <= left_goal_idx; ++i) {
