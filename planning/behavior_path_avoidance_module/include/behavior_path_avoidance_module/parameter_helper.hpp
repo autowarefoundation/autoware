@@ -207,6 +207,8 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
       getOrDeclareParameter<double>(*node, ns + "max_velocity");
     p.ego_predicted_path_params.acceleration =
       getOrDeclareParameter<double>(*node, "avoidance.constraints.longitudinal.max_acceleration");
+    p.ego_predicted_path_params.time_horizon_for_front_object =
+      getOrDeclareParameter<double>(*node, ns + "time_horizon_for_front_object");
     p.ego_predicted_path_params.time_horizon_for_rear_object =
       getOrDeclareParameter<double>(*node, ns + "time_horizon_for_rear_object");
     p.ego_predicted_path_params.time_resolution =
