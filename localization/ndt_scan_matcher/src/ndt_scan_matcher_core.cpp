@@ -64,42 +64,12 @@ Eigen::Matrix2d find_rotation_matrix_aligning_covariance_to_principal_axes(
   throw std::runtime_error("Eigen solver failed. Return output_pose_covariance value.");
 }
 
-bool validate_local_optimal_solution_oscillation(
-  const std::vector<geometry_msgs::msg::Pose> & result_pose_msg_array,
-  const float oscillation_threshold, const float inversion_vector_threshold)
-{
-  bool prev_oscillation = false;
-  int oscillation_cnt = 0;
-
-  for (size_t i = 2; i < result_pose_msg_array.size(); ++i) {
-    const Eigen::Vector3d current_pose = point_to_vector3d(result_pose_msg_array.at(i).position);
-    const Eigen::Vector3d prev_pose = point_to_vector3d(result_pose_msg_array.at(i - 1).position);
-    const Eigen::Vector3d prev_prev_pose =
-      point_to_vector3d(result_pose_msg_array.at(i - 2).position);
-    const auto current_vec = current_pose - prev_pose;
-    const auto prev_vec = (prev_pose - prev_prev_pose).normalized();
-    const bool oscillation = prev_vec.dot(current_vec) < inversion_vector_threshold;
-    if (prev_oscillation && oscillation) {
-      if (static_cast<float>(oscillation_cnt) > oscillation_threshold) {
-        return true;
-      }
-      ++oscillation_cnt;
-    } else {
-      oscillation_cnt = 0;
-    }
-    prev_oscillation = oscillation;
-  }
-  return false;
-}
-
 // cspell: ignore degrounded
 NDTScanMatcher::NDTScanMatcher()
 : Node("ndt_scan_matcher"),
   tf2_broadcaster_(*this),
   ndt_ptr_(new NormalDistributionsTransform),
   state_ptr_(new std::map<std::string, std::string>),
-  inversion_vector_threshold_(-0.9),  // Not necessary to extract to ndt_scan_matcher.param.yaml
-  oscillation_threshold_(10),         // Not necessary to extract to ndt_scan_matcher.param.yaml
   output_pose_covariance_({}),
   regularization_enabled_(declare_parameter<bool>("regularization_enabled")),
   is_activated_(false)
@@ -505,10 +475,11 @@ void NDTScanMatcher::callback_sensor_points(
   // perform several validations
   bool is_ok_iteration_num =
     validate_num_iteration(ndt_result.iteration_num, ndt_ptr_->getMaximumIterations());
+  const int oscillation_num = count_oscillation(transformation_msg_array);
   bool is_local_optimal_solution_oscillation = false;
   if (!is_ok_iteration_num) {
-    is_local_optimal_solution_oscillation = validate_local_optimal_solution_oscillation(
-      transformation_msg_array, oscillation_threshold_, inversion_vector_threshold_);
+    constexpr int oscillation_threshold = 10;
+    is_local_optimal_solution_oscillation = (oscillation_num > oscillation_threshold);
   }
   bool is_ok_converged_param = validate_converged_param(
     ndt_result.transform_probability, ndt_result.nearest_voxel_transformation_likelihood);
@@ -590,11 +561,9 @@ void NDTScanMatcher::callback_sensor_points(
     std::to_string(ndt_result.nearest_voxel_transformation_likelihood);
   (*state_ptr_)["iteration_num"] = std::to_string(ndt_result.iteration_num);
   (*state_ptr_)["skipping_publish_num"] = std::to_string(skipping_publish_num);
-  if (is_local_optimal_solution_oscillation) {
-    (*state_ptr_)["is_local_optimal_solution_oscillation"] = "1";
-  } else {
-    (*state_ptr_)["is_local_optimal_solution_oscillation"] = "0";
-  }
+  (*state_ptr_)["oscillation_count"] = std::to_string(oscillation_num);
+  (*state_ptr_)["is_local_optimal_solution_oscillation"] =
+    std::to_string(is_local_optimal_solution_oscillation);
   (*state_ptr_)["execution_time"] = std::to_string(exe_time);
 
   publish_diagnostic();
@@ -761,6 +730,33 @@ bool NDTScanMatcher::validate_converged_param(
       this->get_logger(), *this->get_clock(), 1, "Unknown converged param type.");
   }
   return is_ok_converged_param;
+}
+
+int NDTScanMatcher::count_oscillation(
+  const std::vector<geometry_msgs::msg::Pose> & result_pose_msg_array)
+{
+  constexpr double inversion_vector_threshold = -0.9;
+
+  int oscillation_cnt = 0;
+  int max_oscillation_cnt = 0;
+
+  for (size_t i = 2; i < result_pose_msg_array.size(); ++i) {
+    const Eigen::Vector3d current_pose = point_to_vector3d(result_pose_msg_array.at(i).position);
+    const Eigen::Vector3d prev_pose = point_to_vector3d(result_pose_msg_array.at(i - 1).position);
+    const Eigen::Vector3d prev_prev_pose =
+      point_to_vector3d(result_pose_msg_array.at(i - 2).position);
+    const auto current_vec = (current_pose - prev_pose).normalized();
+    const auto prev_vec = (prev_pose - prev_prev_pose).normalized();
+    const double cosine_value = current_vec.dot(prev_vec);
+    const bool oscillation = cosine_value < inversion_vector_threshold;
+    if (oscillation) {
+      oscillation_cnt++;  // count consecutive oscillation
+    } else {
+      oscillation_cnt = 0;  // reset
+    }
+    max_oscillation_cnt = std::max(max_oscillation_cnt, oscillation_cnt);
+  }
+  return max_oscillation_cnt;
 }
 
 std::array<double, 36> NDTScanMatcher::estimate_covariance(

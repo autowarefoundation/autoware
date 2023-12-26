@@ -125,6 +125,7 @@ private:
     const double score, const double score_threshold, const std::string & score_name);
   bool validate_converged_param(
     const double & transform_probability, const double & nearest_voxel_transformation_likelihood);
+  static int count_oscillation(const std::vector<geometry_msgs::msg::Pose> & result_pose_msg_array);
 
   std::array<double, 36> estimate_covariance(
     const pclomp::NdtResult & ndt_result, const Eigen::Matrix4f & initial_pose_matrix,
@@ -195,8 +196,6 @@ private:
   double lidar_topic_timeout_sec_;
   double initial_pose_timeout_sec_;
   double initial_pose_distance_tolerance_m_;
-  float inversion_vector_threshold_;
-  float oscillation_threshold_;
   bool use_cov_estimation_;
   std::vector<Eigen::Vector2d> initial_pose_offset_model_;
   std::array<double, 36> output_pose_covariance_;
