@@ -890,7 +890,7 @@ void ShiftLineGenerator::applySmallShiftFilter(
       continue;
     }
 
-    if (s.start_longitudinal < helper_->getMinimumPrepareDistance()) {
+    if (s.start_longitudinal + 1e-3 < helper_->getMinimumPrepareDistance()) {
       continue;
     }
 
