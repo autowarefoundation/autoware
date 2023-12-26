@@ -45,7 +45,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <mission_checkpoint/mission_checkpoint.hpp>
+#include "tier4_planning_rviz_plugin/mission_checkpoint/mission_checkpoint.hpp"
 
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>

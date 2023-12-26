@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <path/display.hpp>
+#include "tier4_planning_rviz_plugin/path/display.hpp"
+
 #include <pluginlib/class_list_macros.hpp>
 
 namespace rviz_plugins

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PATH__DISPLAY_BASE_HPP_
-#define PATH__DISPLAY_BASE_HPP_
+#ifndef TIER4_PLANNING_RVIZ_PLUGIN__PATH__DISPLAY_BASE_HPP_
+#define TIER4_PLANNING_RVIZ_PLUGIN__PATH__DISPLAY_BASE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/display_context.hpp>
@@ -40,9 +40,10 @@
 #include <vector>
 
 #define EIGEN_MPL2_ONLY
+#include "tier4_planning_rviz_plugin/utils.hpp"
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <utils.hpp>
 
 namespace
 {
@@ -654,4 +655,4 @@ private:
 };
 }  // namespace rviz_plugins
 
-#endif  // PATH__DISPLAY_BASE_HPP_
+#endif  // TIER4_PLANNING_RVIZ_PLUGIN__PATH__DISPLAY_BASE_HPP_
