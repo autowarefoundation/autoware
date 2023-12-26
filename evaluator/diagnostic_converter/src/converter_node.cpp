@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "converter_node.hpp"
+#include "diagnostic_converter/converter_node.hpp"
 
 #include <regex>
 

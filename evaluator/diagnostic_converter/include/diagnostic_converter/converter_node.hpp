@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CONVERTER_NODE_HPP_
-#define CONVERTER_NODE_HPP_
+#ifndef DIAGNOSTIC_CONVERTER__CONVERTER_NODE_HPP_
+#define DIAGNOSTIC_CONVERTER__CONVERTER_NODE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -63,4 +63,4 @@ private:
 };
 }  // namespace diagnostic_converter
 
-#endif  // CONVERTER_NODE_HPP_
+#endif  // DIAGNOSTIC_CONVERTER__CONVERTER_NODE_HPP_
