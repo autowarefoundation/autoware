@@ -1017,34 +1017,6 @@ void generateDrivableArea(
   path.right_bound = modified_right_bound;
 }
 
-// TODO(Azu) Some parts of is the same with generateCenterLinePath. Therefore it might be better if
-// we can refactor some of the code for better readability
-lanelet::ConstLineStrings3d getMaximumDrivableArea(
-  const std::shared_ptr<const PlannerData> & planner_data)
-{
-  const auto & p = planner_data->parameters;
-  const auto & route_handler = planner_data->route_handler;
-  const auto & ego_pose = planner_data->self_odometry->pose.pose;
-
-  lanelet::ConstLanelet current_lane;
-  if (!route_handler->getClosestLaneletWithinRoute(ego_pose, &current_lane)) {
-    RCLCPP_ERROR(
-      rclcpp::get_logger("behavior_path_planner").get_child("utils"),
-      "failed to find closest lanelet within route!!!");
-    return {};
-  }
-
-  const auto current_lanes = route_handler->getLaneletSequence(
-    current_lane, ego_pose, p.backward_path_length, p.forward_path_length);
-  lanelet::ConstLineStrings3d linestring_shared;
-  for (const auto & lane : current_lanes) {
-    lanelet::ConstLineStrings3d furthest_line = route_handler->getFurthestLinestring(lane);
-    linestring_shared.insert(linestring_shared.end(), furthest_line.begin(), furthest_line.end());
-  }
-
-  return linestring_shared;
-}
-
 std::vector<DrivableLanes> expandLanelets(
   const std::vector<DrivableLanes> & drivable_lanes, const double left_bound_offset,
   const double right_bound_offset, const std::vector<std::string> & types_to_skip)

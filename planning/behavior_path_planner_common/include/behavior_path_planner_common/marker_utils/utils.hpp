@@ -81,8 +81,6 @@ MarkerArray createLaneletsAreaMarkerArray(
   const std::vector<lanelet::ConstLanelet> & lanelets, std::string && ns, const float & r,
   const float & g, const float & b);
 
-MarkerArray createFurthestLineStringMarkerArray(const lanelet::ConstLineStrings3d & linestrings);
-
 MarkerArray createPolygonMarkerArray(
   const Polygon & polygon, std::string && ns, const int64_t & lane_id, const float & r,
   const float & g, const float & b, const float & w = 0.3);

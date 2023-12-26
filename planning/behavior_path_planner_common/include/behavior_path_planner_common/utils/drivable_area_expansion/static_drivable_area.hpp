@@ -47,9 +47,6 @@ void generateDrivableArea(
   PathWithLaneId & path, const double vehicle_length, const double offset,
   const bool is_driving_forward = true);
 
-lanelet::ConstLineStrings3d getMaximumDrivableArea(
-  const std::shared_ptr<const PlannerData> & planner_data);
-
 /**
  * @brief Expand the borders of the given lanelets
  * @param [in] drivable_lanes lanelets to expand
