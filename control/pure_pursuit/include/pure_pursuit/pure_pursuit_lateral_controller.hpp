@@ -38,7 +38,7 @@
 #include "trajectory_follower_base/lateral_controller_base.hpp"
 
 #include <motion_utils/resample/resample.hpp>
-#include <motion_utils/trajectory/tmp_conversion.hpp>
+#include <motion_utils/trajectory/conversion.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 
 #include "autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp"

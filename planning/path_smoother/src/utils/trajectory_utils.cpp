@@ -15,7 +15,7 @@
 #include "path_smoother/utils/trajectory_utils.hpp"
 
 #include "motion_utils/resample/resample.hpp"
-#include "motion_utils/trajectory/tmp_conversion.hpp"
+#include "motion_utils/trajectory/conversion.hpp"
 #include "path_smoother/utils/geometry_utils.hpp"
 
 #include "autoware_auto_planning_msgs/msg/path_point.hpp"

@@ -15,8 +15,8 @@
 #ifndef PREDICTED_PATH_CHECKER__COLLISION_CHECKER_HPP_
 #define PREDICTED_PATH_CHECKER__COLLISION_CHECKER_HPP_
 
+#include <motion_utils/trajectory/conversion.hpp>
 #include <motion_utils/trajectory/interpolation.hpp>
-#include <motion_utils/trajectory/tmp_conversion.hpp>
 #include <predicted_path_checker/debug_marker.hpp>
 #include <predicted_path_checker/utils.hpp>
 #include <rclcpp/rclcpp.hpp>

@@ -14,7 +14,7 @@
 
 #include "planning_topic_converter/path_to_trajectory.hpp"
 
-#include <motion_utils/trajectory/tmp_conversion.hpp>
+#include <motion_utils/trajectory/conversion.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
 namespace planning_topic_converter

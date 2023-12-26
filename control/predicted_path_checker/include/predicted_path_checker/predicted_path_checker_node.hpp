@@ -18,7 +18,7 @@
 #include <component_interface_specs/control.hpp>
 #include <component_interface_utils/rclcpp.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
-#include <motion_utils/trajectory/tmp_conversion.hpp>
+#include <motion_utils/trajectory/conversion.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <predicted_path_checker/collision_checker.hpp>
 #include <predicted_path_checker/utils.hpp>

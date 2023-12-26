@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
-#define MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
+#ifndef MOTION_UTILS__TRAJECTORY__CONVERSION_HPP_
+#define MOTION_UTILS__TRAJECTORY__CONVERSION_HPP_
 
 #include "autoware_auto_planning_msgs/msg/detail/trajectory__struct.hpp"
 #include "autoware_auto_planning_msgs/msg/detail/trajectory_point__struct.hpp"
@@ -45,4 +45,4 @@ std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> convertToTrajecto
 
 }  // namespace motion_utils
 
-#endif  // MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
+#endif  // MOTION_UTILS__TRAJECTORY__CONVERSION_HPP_
