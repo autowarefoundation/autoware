@@ -8,11 +8,11 @@ This module is activated when a new route is received.
 Use cases are as follows
 
 - start smoothly from the current ego position to centerline.
-  ![case1](../image/start_from_road_lane.drawio.svg)
+  ![case1](./images/start_from_road_lane.drawio.svg)
 - pull out from the side of the road lane to centerline.
-  ![case2](../image/start_from_road_side.drawio.svg)
+  ![case2](./images/start_from_road_side.drawio.svg)
 - pull out from the shoulder lane to the road lane centerline.
-  ![case3](../image/start_from_road_shoulder.drawio.svg)
+  ![case3](./images/start_from_road_shoulder.drawio.svg)
 
 ## Design
 
@@ -78,14 +78,14 @@ PullOutPath --o PullOutPlannerBase
 2. Calculate object's polygon
 3. If a distance between the footprint and the polygon is lower than the threshold (default: `1.0 m`), that is judged as a unsafe path
 
-![pull_out_collision_check](../image/pull_out_collision_check.drawio.svg)
+![pull_out_collision_check](./images/pull_out_collision_check.drawio.svg)
 
 ## Safety check with dynamic obstacles
 
 ### **Basic concept of safety check against dynamic obstacles**
 
 This is based on the concept of RSS. For the logic used, refer to the link below.
-See [safety check feature explanation](../docs/behavior_path_planner_safety_check.md)
+See [safety check feature explanation](../behavior_path_planner_common/docs/behavior_path_planner_safety_check.md)
 
 ### **Collision check performed range**
 
@@ -103,7 +103,7 @@ Since there's a stop at the midpoint during the shift, this becomes the endpoint
 
 During backward movement, no safety check is performed. Safety check begins at the point where the backward movement ends.
 
-![collision_check_range](../image/start_planner/collision_check_range.drawio.svg)
+![collision_check_range](./images/collision_check_range.drawio.svg)
 
 ### **Ego vehicle's velocity planning**
 
@@ -198,7 +198,7 @@ Pull out distance is calculated by the speed, lateral deviation, and the lateral
 - In the section between merge start and end, path is shifted by a method that is used to generate avoidance path (four segmental constant jerk polynomials)
 - Combine this path with center line of road lane
 
-![shift_pull_out](../image/shift_pull_out.drawio.svg)
+![shift_pull_out](./images/shift_pull_out.drawio.svg)
 
 [shift pull out video](https://user-images.githubusercontent.com/39142679/187872468-6d5057ee-e039-499b-afc7-fe0dc8052a6b.mp4)
 
@@ -220,7 +220,7 @@ Pull out distance is calculated by the speed, lateral deviation, and the lateral
 Generate two arc paths with discontinuous curvature. Ego-vehicle stops once in the middle of the path to control the steer on the spot.
 See also [[1]](https://www.sciencedirect.com/science/article/pii/S1474667015347431) for details of the algorithm.
 
-![geometric_pull_out](../image/geometric_pull_out.drawio.svg)
+![geometric_pull_out](./images/geometric_pull_out.drawio.svg)
 
 [geometric pull out video](https://user-images.githubusercontent.com/39142679/181024707-3e7ca5ee-62de-4334-b9e9-ded313de1ea1.mp4)
 
@@ -239,7 +239,7 @@ See also [[1]](https://www.sciencedirect.com/science/article/pii/S14746670153474
 
 If a safe path cannot be generated from the current position, search backwards for a pull out start point at regular intervals(default: `2.0`).
 
-![pull_out_after_back](../image/pull_out_after_back.drawio.svg)
+![pull_out_after_back](./images/pull_out_after_back.drawio.svg)
 
 [pull out after backward driving video](https://user-images.githubusercontent.com/39142679/181025149-8fb9fb51-9b8f-45c4-af75-27572f4fba78.mp4)
 
@@ -257,7 +257,7 @@ If a safe path cannot be generated from the current position, search backwards f
 ### **freespace pull out**
 
 If the vehicle gets stuck with pull out along lanes, execute freespace pull out.
-To run this feature, you need to set `parking_lot` to the map, `activate_by_scenario` of [costmap_generator](../../costmap_generator/README.md) to `false` and `enable_freespace_planner` to `true`
+To run this feature, you need to set `parking_lot` to the map, `activate_by_scenario` of [costmap_generator](../costmap_generator/README.md) to `false` and `enable_freespace_planner` to `true`
 
 <img src="https://user-images.githubusercontent.com/39142679/270964106-ae688bca-1709-4e06-98c4-90f671bb8246.png" width="600">
 
@@ -276,4 +276,4 @@ To run this feature, you need to set `parking_lot` to the map, `activate_by_scen
 | end_pose_search_end_distance   | [m]  | double | distance from ego to the end point of the search for the end point in the freespace_pull_out driving lane                                | 30.0          |
 | end_pose_search_interval       | [m]  | bool   | interval to search for the end point in the freespace_pull_out driving lane                                                              | 2.0           |
 
-See [freespace_planner](../../freespace_planner/README.md) for other parameters.
+See [freespace_planner](../freespace_planner/README.md) for other parameters.

@@ -22,7 +22,7 @@ Currently the yaw angle of each point of predicted paths of a target object does
 
 The flow of the safety check algorithm is described in the following explanations.
 
-![safety_check_flow](../image/path_safety_checker/safety_check_flow.drawio.svg)
+![safety_check_flow](../images/path_safety_checker/safety_check_flow.drawio.svg)
 
 Here we explain each step of the algorithm flow.
 
@@ -38,7 +38,7 @@ With the interpolated pose obtained in the step.1, we check if the object and eg
 
 After the overlap check, it starts to perform the safety check for the broader range. In this step, it judges if ego or target object is in front of the other vehicle. We use arc length of the front point of each object along the given path to judge which one is in front of the other. In the following example, target object (red rectangle) is running in front of the ego vehicle (black rectangle).
 
-![front_object](../image/path_safety_checker/front_object.drawio.svg)
+![front_object](../images/path_safety_checker/front_object.drawio.svg)
 
 #### 4. Calculate RSS distance
 
@@ -54,7 +54,7 @@ where $V_{front}$, $v_{rear}$ are front and rear vehicle velocity respectively a
 
 In this step, we compute extended ego and target object polygons. The extended polygons can be described as:
 
-![extended_polygons](../image/path_safety_checker/extended_polygons.drawio.svg)
+![extended_polygons](../images/path_safety_checker/extended_polygons.drawio.svg)
 
 As the picture shows, we expand the rear object polygon. For the longitudinal side, we extend it with the RSS distance, and for the lateral side, we extend it by the lateral margin
 

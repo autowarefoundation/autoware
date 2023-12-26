@@ -9,11 +9,11 @@ This module is designed as one of the obstacle avoidance features and generates 
 - Exist lane changeable lanelet.
 - Exist avoidance target objects on ego driving lane.
 
-![avoidance_by_lane_change](../image/avoidance_by_lane_change/avoidance_by_lane_change.svg)
+![avoidance_by_lane_change](./images/avoidance_by_lane_change.svg)
 
 ## Inner-workings / Algorithms
 
-Basically, this module is implemented by reusing the avoidance target filtering logic of the existing [Normal Avoidance Module](./behavior_path_planner_avoidance_design.md) and the path generation logic of the [Normal Lane Change Module](./behavior_path_planner_lane_change_design.md). On the other hand, the conditions under which the module is activated differ from those of a normal avoidance module.
+Basically, this module is implemented by reusing the avoidance target filtering logic of the existing [Normal Avoidance Module](../behavior_path_avoidance_module/README.md) and the path generation logic of the [Normal Lane Change Module](../behavior_path_lane_change_module/README.md). On the other hand, the conditions under which the module is activated differ from those of a normal avoidance module.
 
 Check that the following conditions are satisfied after the filtering process for the avoidance target.
 
@@ -21,7 +21,7 @@ Check that the following conditions are satisfied after the filtering process fo
 
 This module is launched when the number of avoidance target objects on **EGO DRIVING LANE** is greater than `execute_object_num`. If there are no avoidance targets in the ego driving lane or their number is less than the parameter, the obstacle is avoided by normal avoidance behavior (if the normal avoidance module is registered).
 
-![trigger_1](../image/avoidance_by_lane_change/avoidance_by_lc_trigger_1.svg)
+![trigger_1](./images/avoidance_by_lc_trigger_1.svg)
 
 ### Lane change end point condition
 
@@ -29,7 +29,7 @@ Unlike the normal avoidance module, which specifies the shift line end point, th
 
 Although setting the parameter to `false` would increase the scene of avoidance by lane change, it is assumed that sufficient lateral margin may not be ensured in some cases because the vehicle passes by the side of obstacles during the lane change.
 
-![trigger_2](../image/avoidance_by_lane_change/avoidance_by_lc_trigger_2.svg)
+![trigger_2](./images/avoidance_by_lc_trigger_2.svg)
 
 ## Parameters
 

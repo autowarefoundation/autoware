@@ -73,7 +73,7 @@ struct DrivalbleLanes
 
 The image of the sorted drivable lanes is depicted in the following picture.
 
-![sorted_lanes](../image/drivable_area/sorted_lanes.drawio.svg)
+![sorted_lanes](../images/drivable_area/sorted_lanes.drawio.svg)
 
 Note that, the order of drivable lanes become
 
@@ -92,7 +92,7 @@ std::vector<geometry_msgs::msg::Point> right_bound;
 
 and each point of right bound and left bound has a position in the absolute coordinate system.
 
-![drivable_lines](../image/drivable_area/drivable_lines.drawio.svg)
+![drivable_lines](../images/drivable_area/drivable_lines.drawio.svg)
 
 ### Drivable Area Expansion
 
@@ -101,7 +101,7 @@ and each point of right bound and left bound has a position in the absolute coor
 Each module can statically expand the left and right bounds of the target lanes by the parameter defined values.
 This enables large vehicles to pass narrow curve. The image of this process can be described as
 
-![expanded_lanes](../image/drivable_area/expanded_lanes.drawio.svg)
+![expanded_lanes](../images/drivable_area/expanded_lanes.drawio.svg)
 
 Note that we only expand right bound of the rightmost lane and left bound of the leftmost lane.
 
@@ -110,9 +110,9 @@ Note that we only expand right bound of the rightmost lane and left bound of the
 The drivable area can also be expanded dynamically based on a minimum width calculated from the path curvature and the ego vehicle's properties.
 If static expansion is also enabled, the dynamic expansion will be done after the static expansion such that both expansions are applied.
 
-| Without dynamic expansion                                                  | With dynamic expansion                                                   |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| ![dynamic_expansion_off](../image/drivable_area/dynamic_expansion_off.png) | ![dynamic_expansion_on](../image/drivable_area/dynamic_expansion_on.png) |
+| Without dynamic expansion                                                   | With dynamic expansion                                                    |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| ![dynamic_expansion_off](../images/drivable_area/dynamic_expansion_off.png) | ![dynamic_expansion_on](../images/drivable_area/dynamic_expansion_on.png) |
 
 Next we detail the algorithm used to expand the drivable area bounds.
 
@@ -131,30 +131,30 @@ $$ W = \frac{a² + 2 al + 2kw + l² + w²}{2k + w}$$
 Where $W$ is the minimum drivable area width, $a$, is the front overhang of ego, $l$ is the wheelbase of ego, $w$ is the width of ego, and $k$ is the path curvature.
 This equation was derived from the work of [Lim, H., Kim, C., and Jo, A., "Model Predictive Control-Based Lateral Control of Autonomous Large-Size Bus on Road with Large Curvature," SAE Technical Paper 2021-01-0099, 2021](https://www.sae.org/publications/technical-papers/content/2021-01-0099/).
 
-![min width](../image/drivable_area/DynamicDrivableArea-MinWidth.drawio.svg)
+![min width](../images/drivable_area/DynamicDrivableArea-MinWidth.drawio.svg)
 
 ##### 3 Calculate maximum expansion distances of each bound point based on dynamic objects and linestring of the vector map (optional)
 
 For each drivable area bound point, we calculate its maximum expansion distance as its distance to the closest "obstacle" (either a map linestring with type `avoid_linestrings.type`, or a dynamic object footprint if `dynamic_objects.avoid` is set to `true`).
 If `max_expansion_distance` is not `0.0`, it is use here if smaller than the distance to the closest obstacle.
 
-![max distances](../image/drivable_area/DynamicDrivableArea-MaxWidth.drawio.svg)
+![max distances](../images/drivable_area/DynamicDrivableArea-MaxWidth.drawio.svg)
 
 ##### 4 Calculate by how much each bound point should be pushed away from the path
 
 For each bound point, a shift distance is calculated.
 such that the resulting width between corresponding left and right bound points is as close as possible to the minimum width calculated in step 2 but the individual shift distance stays bellow the previously calculated maximum expansion distance.
 
-![expansion distances](../image/drivable_area/DynamicDrivableArea-ExpDistances.drawio.svg)
+![expansion distances](../images/drivable_area/DynamicDrivableArea-ExpDistances.drawio.svg)
 
 ##### 5 Shift bound points by the values calculated in step 4 and remove all loops in the resulting bound
 
 Finally, each bound point is shifted away from the path by the distance calculated in step 4.
 Once all points have been shifted, loops are removed from the bound and we obtain our final expanded drivable area.
 
-|                                                                               |                                                                         |
-| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| ![expansion](../image/drivable_area/DynamicDrivableArea-Expansion.drawio.svg) | ![result](../image/drivable_area/DynamicDrivableArea-Result.drawio.svg) |
+|                                                                                |                                                                          |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| ![expansion](../images/drivable_area/DynamicDrivableArea-Expansion.drawio.svg) | ![result](../images/drivable_area/DynamicDrivableArea-Result.drawio.svg) |
 
 ### Visualizing maximum drivable area (Debug)
 
@@ -164,9 +164,9 @@ For example, in the same area, one can perform avoidance and another cannot. Thi
 
 To debug the issue, the maximum drivable area boundary can be visualized.
 
-![drivable_area_boundary_marker1](../image/drivable_area/drivable_area_boundary_marker_example1.png)
+![drivable_area_boundary_marker1](../images/drivable_area/drivable_area_boundary_marker_example1.png)
 
-![drivable_area_boundary_marker2](../image/drivable_area/drivable_area_boundary_marker_example2.png)
+![drivable_area_boundary_marker2](../images/drivable_area/drivable_area_boundary_marker_example2.png)
 
 The maximum drivable area can be visualize by adding the marker from `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/maximum_drivable_area`
 
@@ -175,4 +175,4 @@ The maximum drivable area can be visualize by adding the marker from `/planning/
 If the hatched road markings area is defined in the lanelet map, the area can be used as a drivable area.
 Since the area is expressed as a polygon format of Lanelet2, several steps are required for correct expansion.
 
-![hatched_road_markings_drivable_area_expansion](../image/drivable_area/hatched_road_markings_drivable_area_expansion.drawio.svg)
+![hatched_road_markings_drivable_area_expansion](../images/drivable_area/hatched_road_markings_drivable_area_expansion.drawio.svg)

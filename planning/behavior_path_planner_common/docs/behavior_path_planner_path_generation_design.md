@@ -1,6 +1,6 @@
 # Path Generation design
 
-This document explains how the path is generated for lane change and avoidance, etc. The implementation can be found in [path_shifter.hpp](https://github.com/autowarefoundation/autoware.universe/blob/main/planning/behavior_path_planner/include/behavior_path_planner/utils/path_shifter/path_shifter.hpp).
+This document explains how the path is generated for lane change and avoidance, etc. The implementation can be found in [path_shifter.hpp](https://github.com/autowarefoundation/autoware.universe/blob/main/planning/behavior_path_planner_common/include/behavior_path_planner_common/utils/path_shifter/path_shifter.hpp).
 
 ## Overview
 
@@ -8,7 +8,7 @@ The base idea of the path generation in lane change and avoidance is to smoothly
 
 The figure below explains how the application of a constant lateral jerk $l^{'''}(s)$ can be used to induce lateral shifting. In order to comply with the limits on lateral acceleration and velocity, zero-jerk time is employed in the figure ( $T_a$ and $T_v$ ). In each interval where constant jerk is applied, the shift position $l(s)$ can be characterized by a third-degree polynomial. Therefore the shift length from the reference path can then be calculated by combining spline curves.
 
-![path-shifter](../image/path_shifter.png)
+![path-shifter](../images/path_shifter/path_shifter.png)
 
 Note that, due to the rarity of the $T_v$ in almost all cases of lane change and avoidance, $T_v$ is not considered in the current implementation.
 
