@@ -14,11 +14,11 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#ifndef GEOMETRY__INTERSECTION_HPP_
-#define GEOMETRY__INTERSECTION_HPP_
+#ifndef AUTOWARE_AUTO_GEOMETRY__INTERSECTION_HPP_
+#define AUTOWARE_AUTO_GEOMETRY__INTERSECTION_HPP_
 
-#include <geometry/common_2d.hpp>
-#include <geometry/convex_hull.hpp>
+#include "autoware_auto_geometry/common_2d.hpp"
+#include "autoware_auto_geometry/convex_hull.hpp"
 
 #include <autoware_auto_perception_msgs/msg/bounding_box.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
@@ -309,4 +309,4 @@ common::types::float32_t convex_intersection_over_union_2d(
 }  // namespace common
 }  // namespace autoware
 
-#endif  // GEOMETRY__INTERSECTION_HPP_
+#endif  // AUTOWARE_AUTO_GEOMETRY__INTERSECTION_HPP_

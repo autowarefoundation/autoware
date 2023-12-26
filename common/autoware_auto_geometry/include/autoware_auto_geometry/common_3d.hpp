@@ -16,10 +16,10 @@
 /// \file
 /// \brief This file includes common functionality for 3D geometry, such as dot products
 
-#ifndef GEOMETRY__COMMON_3D_HPP_
-#define GEOMETRY__COMMON_3D_HPP_
+#ifndef AUTOWARE_AUTO_GEOMETRY__COMMON_3D_HPP_
+#define AUTOWARE_AUTO_GEOMETRY__COMMON_3D_HPP_
 
-#include <geometry/common_2d.hpp>
+#include "autoware_auto_geometry/common_2d.hpp"
 
 namespace autoware
 {
@@ -74,4 +74,4 @@ inline OUT distance_3d(const T1 & a, const T2 & b)
 }  // namespace common
 }  // namespace autoware
 
-#endif  // GEOMETRY__COMMON_3D_HPP_
+#endif  // AUTOWARE_AUTO_GEOMETRY__COMMON_3D_HPP_

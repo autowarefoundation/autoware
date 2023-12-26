@@ -18,8 +18,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#ifndef GEOMETRY__INTERVAL_HPP_
-#define GEOMETRY__INTERVAL_HPP_
+#ifndef AUTOWARE_AUTO_GEOMETRY__INTERVAL_HPP_
+#define AUTOWARE_AUTO_GEOMETRY__INTERVAL_HPP_
 
 #include "common/types.hpp"
 #include "helper_functions/float_comparisons.hpp"
@@ -355,4 +355,4 @@ T Interval<T>::clamp_to(const Interval & i, T val)
 }  // namespace common
 }  // namespace autoware
 
-#endif  // GEOMETRY__INTERVAL_HPP_
+#endif  // AUTOWARE_AUTO_GEOMETRY__INTERVAL_HPP_

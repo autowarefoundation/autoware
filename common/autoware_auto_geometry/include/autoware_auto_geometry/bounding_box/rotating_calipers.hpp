@@ -17,11 +17,11 @@
 /// \file
 /// \brief This file implements the rotating calipers algorithm for minimum oriented bounding boxes
 
-#ifndef GEOMETRY__BOUNDING_BOX__ROTATING_CALIPERS_HPP_
-#define GEOMETRY__BOUNDING_BOX__ROTATING_CALIPERS_HPP_
-#include <geometry/bounding_box/bounding_box_common.hpp>
-#include <geometry/common_2d.hpp>
-#include <geometry/convex_hull.hpp>
+#ifndef AUTOWARE_AUTO_GEOMETRY__BOUNDING_BOX__ROTATING_CALIPERS_HPP_
+#define AUTOWARE_AUTO_GEOMETRY__BOUNDING_BOX__ROTATING_CALIPERS_HPP_
+#include "autoware_auto_geometry/bounding_box/bounding_box_common.hpp"
+#include "autoware_auto_geometry/common_2d.hpp"
+#include "autoware_auto_geometry/convex_hull.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -277,4 +277,4 @@ BoundingBox minimum_perimeter_bounding_box(std::list<PointT> & list)
 }  // namespace geometry
 }  // namespace common
 }  // namespace autoware
-#endif  // GEOMETRY__BOUNDING_BOX__ROTATING_CALIPERS_HPP_
+#endif  // AUTOWARE_AUTO_GEOMETRY__BOUNDING_BOX__ROTATING_CALIPERS_HPP_

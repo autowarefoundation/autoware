@@ -5,9 +5,9 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
-  include/geometry/spatial_hash.hpp
-  include/geometry/intersection.hpp
-  include/geometry/spatial_hash_config.hpp
+  include/autoware_auto_geometry/spatial_hash.hpp
+  include/autoware_auto_geometry/intersection.hpp
+  include/autoware_auto_geometry/spatial_hash_config.hpp
   src/spatial_hash.cpp
   src/bounding_box.cpp
 )

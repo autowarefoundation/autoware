@@ -18,11 +18,12 @@
 /// \brief This file implements the monotone chain algorithm to compute 2D convex hulls on linked
 ///        lists of points
 
-#ifndef GEOMETRY__CONVEX_HULL_HPP_
-#define GEOMETRY__CONVEX_HULL_HPP_
+#ifndef AUTOWARE_AUTO_GEOMETRY__CONVEX_HULL_HPP_
+#define AUTOWARE_AUTO_GEOMETRY__CONVEX_HULL_HPP_
+
+#include "autoware_auto_geometry/common_2d.hpp"
 
 #include <common/types.hpp>
-#include <geometry/common_2d.hpp>
 
 // lint -e537 NOLINT pclint vs cpplint
 #include <algorithm>
@@ -191,4 +192,4 @@ typename std::list<PointT>::const_iterator convex_hull(std::list<PointT> & list)
 }  // namespace common
 }  // namespace autoware
 
-#endif  // GEOMETRY__CONVEX_HULL_HPP_
+#endif  // AUTOWARE_AUTO_GEOMETRY__CONVEX_HULL_HPP_

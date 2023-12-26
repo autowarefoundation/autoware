@@ -39,7 +39,7 @@ See 'Example Usage' below.
 ## Example Usage
 
 ```c++
-#include "geometry/interval.hpp"
+#include "autoware_auto_geometry/interval.hpp"
 
 #include <iostream>
 

@@ -14,8 +14,8 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#ifndef GEOMETRY__VISIBILITY_CONTROL_HPP_
-#define GEOMETRY__VISIBILITY_CONTROL_HPP_
+#ifndef AUTOWARE_AUTO_GEOMETRY__VISIBILITY_CONTROL_HPP_
+#define AUTOWARE_AUTO_GEOMETRY__VISIBILITY_CONTROL_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 #if defined(__WIN32)
@@ -38,4 +38,4 @@
 #else  // defined(__linux__)
 #error "Unsupported Build Configuration"
 #endif  // defined(__WIN32)
-#endif  // GEOMETRY__VISIBILITY_CONTROL_HPP_
+#endif  // AUTOWARE_AUTO_GEOMETRY__VISIBILITY_CONTROL_HPP_

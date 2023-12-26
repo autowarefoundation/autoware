@@ -14,7 +14,7 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <geometry/common_2d.hpp>
+#include "autoware_auto_geometry/common_2d.hpp"
 
 #include <geometry_msgs/msg/point32.hpp>
 

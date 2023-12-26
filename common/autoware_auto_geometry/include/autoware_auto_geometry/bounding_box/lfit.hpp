@@ -20,10 +20,10 @@
 
 // cspell: ignore LFIT, lfit
 // LFIT means "L-Shape Fitting"
-#ifndef GEOMETRY__BOUNDING_BOX__LFIT_HPP_
-#define GEOMETRY__BOUNDING_BOX__LFIT_HPP_
+#ifndef AUTOWARE_AUTO_GEOMETRY__BOUNDING_BOX__LFIT_HPP_
+#define AUTOWARE_AUTO_GEOMETRY__BOUNDING_BOX__LFIT_HPP_
 
-#include <geometry/bounding_box/eigenbox_2d.hpp>
+#include "autoware_auto_geometry/bounding_box/eigenbox_2d.hpp"
 
 #include <limits>
 #include <utility>
@@ -278,4 +278,4 @@ BoundingBox lfit_bounding_box_2d(const IT begin, const IT end)
 }  // namespace common
 }  // namespace autoware
 
-#endif  // GEOMETRY__BOUNDING_BOX__LFIT_HPP_
+#endif  // AUTOWARE_AUTO_GEOMETRY__BOUNDING_BOX__LFIT_HPP_

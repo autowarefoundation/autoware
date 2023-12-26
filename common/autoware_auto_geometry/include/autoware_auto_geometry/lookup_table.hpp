@@ -17,11 +17,11 @@
 /// \file
 /// \brief This file contains a 1D linear lookup table implementation
 
-#ifndef GEOMETRY__LOOKUP_TABLE_HPP_
-#define GEOMETRY__LOOKUP_TABLE_HPP_
+#ifndef AUTOWARE_AUTO_GEOMETRY__LOOKUP_TABLE_HPP_
+#define AUTOWARE_AUTO_GEOMETRY__LOOKUP_TABLE_HPP_
 
+#include "autoware_auto_geometry/interval.hpp"
 #include "common/types.hpp"
-#include "geometry/interval.hpp"
 
 #include <cmath>
 #include <stdexcept>
@@ -175,4 +175,4 @@ private:
 }  // namespace common
 }  // namespace autoware
 
-#endif  // GEOMETRY__LOOKUP_TABLE_HPP_
+#endif  // AUTOWARE_AUTO_GEOMETRY__LOOKUP_TABLE_HPP_

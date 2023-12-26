@@ -19,10 +19,10 @@
 ///        bounding box
 
 // cspell: ignore eigenbox, EIGENBOX
-#ifndef GEOMETRY__BOUNDING_BOX__EIGENBOX_2D_HPP_
-#define GEOMETRY__BOUNDING_BOX__EIGENBOX_2D_HPP_
+#ifndef AUTOWARE_AUTO_GEOMETRY__BOUNDING_BOX__EIGENBOX_2D_HPP_
+#define AUTOWARE_AUTO_GEOMETRY__BOUNDING_BOX__EIGENBOX_2D_HPP_
 
-#include <geometry/bounding_box/bounding_box_common.hpp>
+#include "autoware_auto_geometry/bounding_box/bounding_box_common.hpp"
 
 #include <limits>
 #include <utility>
@@ -244,4 +244,4 @@ BoundingBox eigenbox_2d(const IT begin, const IT end)
 }  // namespace common
 }  // namespace autoware
 
-#endif  // GEOMETRY__BOUNDING_BOX__EIGENBOX_2D_HPP_
+#endif  // AUTOWARE_AUTO_GEOMETRY__BOUNDING_BOX__EIGENBOX_2D_HPP_

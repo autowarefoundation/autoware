@@ -14,7 +14,7 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <geometry/spatial_hash.hpp>
+#include "autoware_auto_geometry/spatial_hash.hpp"
 
 #include <geometry_msgs/msg/point32.hpp>
 // lint -e537 NOLINT repeated include file due to cpplint rule

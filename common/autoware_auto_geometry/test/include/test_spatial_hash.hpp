@@ -17,7 +17,7 @@
 #ifndef TEST_SPATIAL_HASH_HPP_
 #define TEST_SPATIAL_HASH_HPP_
 
-#include "geometry/spatial_hash.hpp"
+#include "autoware_auto_geometry/spatial_hash.hpp"
 
 #include <geometry_msgs/msg/point32.hpp>
 

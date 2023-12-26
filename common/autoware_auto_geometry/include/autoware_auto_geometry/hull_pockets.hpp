@@ -18,11 +18,12 @@
 /// \brief This file implements an algorithm for getting a list of "pockets" in the convex
 ///        hull of a non-convex simple polygon.
 
-#ifndef GEOMETRY__HULL_POCKETS_HPP_
-#define GEOMETRY__HULL_POCKETS_HPP_
+#ifndef AUTOWARE_AUTO_GEOMETRY__HULL_POCKETS_HPP_
+#define AUTOWARE_AUTO_GEOMETRY__HULL_POCKETS_HPP_
+
+#include "autoware_auto_geometry/common_2d.hpp"
 
 #include <common/types.hpp>
-#include <geometry/common_2d.hpp>
 
 #include <algorithm>
 #include <iterator>
@@ -107,4 +108,4 @@ typename std::vector<std::vector<typename std::iterator_traits<Iter1>::value_typ
 }  // namespace common
 }  // namespace autoware
 
-#endif  // GEOMETRY__HULL_POCKETS_HPP_
+#endif  // AUTOWARE_AUTO_GEOMETRY__HULL_POCKETS_HPP_

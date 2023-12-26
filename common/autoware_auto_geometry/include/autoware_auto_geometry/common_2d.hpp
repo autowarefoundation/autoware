@@ -16,10 +16,10 @@
 /// \file
 /// \brief This file includes common functionality for 2D geometry, such as dot products
 
-#ifndef GEOMETRY__COMMON_2D_HPP_
-#define GEOMETRY__COMMON_2D_HPP_
+#ifndef AUTOWARE_AUTO_GEOMETRY__COMMON_2D_HPP_
+#define AUTOWARE_AUTO_GEOMETRY__COMMON_2D_HPP_
 
-#include "geometry/interval.hpp"
+#include "autoware_auto_geometry/interval.hpp"
 
 #include <common/types.hpp>
 
@@ -584,4 +584,4 @@ bool is_point_inside_polygon_2d(
 }  // namespace common
 }  // namespace autoware
 
-#endif  // GEOMETRY__COMMON_2D_HPP_
+#endif  // AUTOWARE_AUTO_GEOMETRY__COMMON_2D_HPP_

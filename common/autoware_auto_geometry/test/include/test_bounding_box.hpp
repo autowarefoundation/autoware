@@ -17,9 +17,9 @@
 #ifndef TEST_BOUNDING_BOX_HPP_
 #define TEST_BOUNDING_BOX_HPP_
 
-#include "geometry/bounding_box/lfit.hpp"
+#include "autoware_auto_geometry/bounding_box/lfit.hpp"
 // cspell: ignore lfit
-#include "geometry/bounding_box/rotating_calipers.hpp"
+#include "autoware_auto_geometry/bounding_box/rotating_calipers.hpp"
 
 #include <geometry_msgs/msg/point32.hpp>
 

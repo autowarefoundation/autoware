@@ -17,11 +17,11 @@
 /// \file
 /// \brief Common functionality for bounding box computation algorithms
 
-#ifndef GEOMETRY__BOUNDING_BOX__BOUNDING_BOX_COMMON_HPP_
-#define GEOMETRY__BOUNDING_BOX__BOUNDING_BOX_COMMON_HPP_
+#ifndef AUTOWARE_AUTO_GEOMETRY__BOUNDING_BOX__BOUNDING_BOX_COMMON_HPP_
+#define AUTOWARE_AUTO_GEOMETRY__BOUNDING_BOX__BOUNDING_BOX_COMMON_HPP_
 
-#include <geometry/common_2d.hpp>
-#include <geometry/visibility_control.hpp>
+#include "autoware_auto_geometry/common_2d.hpp"
+#include "autoware_auto_geometry/visibility_control.hpp"
 
 #include <autoware_auto_perception_msgs/msg/bounding_box.hpp>
 #include <autoware_auto_perception_msgs/msg/detected_object.hpp>
@@ -185,4 +185,4 @@ std::vector<geometry_msgs::msg::Point32> GEOMETRY_PUBLIC get_transformed_corners
 }  // namespace common
 }  // namespace autoware
 
-#endif  // GEOMETRY__BOUNDING_BOX__BOUNDING_BOX_COMMON_HPP_
+#endif  // AUTOWARE_AUTO_GEOMETRY__BOUNDING_BOX__BOUNDING_BOX_COMMON_HPP_

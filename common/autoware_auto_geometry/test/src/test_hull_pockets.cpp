@@ -14,8 +14,8 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include "geometry/convex_hull.hpp"
-#include "geometry/hull_pockets.hpp"
+#include "autoware_auto_geometry/convex_hull.hpp"
+#include "autoware_auto_geometry/hull_pockets.hpp"
 
 #include <geometry_msgs/msg/point32.hpp>
 
