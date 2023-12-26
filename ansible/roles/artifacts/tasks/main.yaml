@@ -292,6 +292,30 @@
     mode: "644"
     checksum: sha256:44d94540fa8b89dfb39cd9a8523cf010ddfb10ea2f1f9b53bf3618ce7f4912ad
 
+- name: Download traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v3/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx
+    dest: "{{ data_dir }}/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx"
+    mode: "644"
+    checksum: sha256:b52632fee96d1bc99922e743335ebfd49d6a0645c8a04e615f156e38661add24
+
+- name: Download traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v3/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx
+    dest: "{{ data_dir }}/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx"
+    mode: "644"
+    checksum: sha256:ef0a3052857cdc6f380da524560548b40e9e46f876cccf3cd0cb40ccddae9892
+
+- name: Download traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v3/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx
+    dest: "{{ data_dir }}/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx"
+    mode: "644"
+    checksum: sha256:b56700551254afa985916d03b74372ebc675f2d9b76ee0e39c46e88c37744a4f
+
 - name: Download traffic_light_classifier/lamp_labels.txt
   become: true
   ansible.builtin.get_url:
@@ -299,6 +323,14 @@
     dest: "{{ data_dir }}/traffic_light_classifier/lamp_labels.txt"
     mode: "644"
     checksum: sha256:1a5a49eeec5593963eab8d70f48b8a01bfb07e753e9688eb1510ad26e803579d
+
+- name: Download traffic_light_classifier/lamp_labels_ped.txt
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v3/lamp_labels_ped.txt
+    dest: "{{ data_dir }}/traffic_light_classifier/lamp_labels_ped.txt"
+    mode: "644"
+    checksum: sha256:5427e1b7c2e33acd9565ede29e77992c38137bcf7d7074c73ebbc38080c6bcac
 
 # traffic_light_fine_detector
 - name: Create traffic_light_fine_detector directory inside {{ data_dir }}
