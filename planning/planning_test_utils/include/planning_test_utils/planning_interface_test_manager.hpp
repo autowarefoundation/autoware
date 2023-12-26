@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANNING_INTERFACE_TEST_MANAGER__PLANNING_INTERFACE_TEST_MANAGER_HPP_
-#define PLANNING_INTERFACE_TEST_MANAGER__PLANNING_INTERFACE_TEST_MANAGER_HPP_
+#ifndef PLANNING_TEST_UTILS__PLANNING_INTERFACE_TEST_MANAGER_HPP_
+#define PLANNING_TEST_UTILS__PLANNING_INTERFACE_TEST_MANAGER_HPP_
 
 // since ASSERT_NO_THROW in gtest masks the exception message, redefine it.
 #define ASSERT_NO_THROW_WITH_ERROR_MSG(statement)                                                \
@@ -266,4 +266,4 @@ private:
 
 }  // namespace planning_test_utils
 
-#endif  // PLANNING_INTERFACE_TEST_MANAGER__PLANNING_INTERFACE_TEST_MANAGER_HPP_
+#endif  // PLANNING_TEST_UTILS__PLANNING_INTERFACE_TEST_MANAGER_HPP_

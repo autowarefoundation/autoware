@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <planning_interface_test_manager/planning_interface_test_manager.hpp>
-#include <planning_interface_test_manager/planning_interface_test_manager_utils.hpp>
+#include <planning_test_utils/planning_interface_test_manager.hpp>
+#include <planning_test_utils/planning_interface_test_manager_utils.hpp>
 
 namespace planning_test_utils
 {
