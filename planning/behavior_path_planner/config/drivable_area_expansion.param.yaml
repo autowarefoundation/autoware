@@ -13,7 +13,7 @@
       smoothing:
         curvature_average_window: 3  # window size used for smoothing the curvatures using a moving window average
         max_bound_rate: 1.0  # [m/m] maximum rate of change of the bound lateral distance over its arc length
-        extra_arc_length: 2.0  # [m] extra arc length where an expansion distance is initially applied
+        arc_length_range: 2.0  # [m] arc length range where an expansion distance is initially applied
       ego:
         extra_wheelbase: 0.0 # [m] extra length to add to the wheelbase
         extra_front_overhang: 0.5 # [m] extra length to add to the front overhang

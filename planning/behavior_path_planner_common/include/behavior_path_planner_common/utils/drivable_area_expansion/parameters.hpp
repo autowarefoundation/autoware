@@ -55,8 +55,8 @@ struct DrivableAreaExpansionParameters
     "dynamic_expansion.smoothing.curvature_average_window";
   static constexpr auto SMOOTHING_MAX_BOUND_RATE_PARAM =
     "dynamic_expansion.smoothing.max_bound_rate";
-  static constexpr auto SMOOTHING_EXTRA_ARC_LENGTH_PARAM =
-    "dynamic_expansion.smoothing.extra_arc_length";
+  static constexpr auto SMOOTHING_ARC_LENGTH_RANGE_PARAM =
+    "dynamic_expansion.smoothing.arc_length_range";
   static constexpr auto PRINT_RUNTIME_PARAM = "dynamic_expansion.print_runtime";
 
   // static expansion
@@ -78,7 +78,7 @@ struct DrivableAreaExpansionParameters
   double max_expansion_distance{};
   double max_path_arc_length{};
   double resample_interval{};
-  double extra_arc_length{};
+  double arc_length_range{};
   double max_reuse_deviation{};
   bool avoid_dynamic_objects{};
   bool print_runtime{};
@@ -103,7 +103,7 @@ struct DrivableAreaExpansionParameters
     extra_width = node.declare_parameter<double>(EGO_EXTRA_WIDTH);
     curvature_average_window = node.declare_parameter<int>(SMOOTHING_CURVATURE_WINDOW_PARAM);
     max_bound_rate = node.declare_parameter<double>(SMOOTHING_MAX_BOUND_RATE_PARAM);
-    extra_arc_length = node.declare_parameter<double>(SMOOTHING_EXTRA_ARC_LENGTH_PARAM);
+    arc_length_range = node.declare_parameter<double>(SMOOTHING_ARC_LENGTH_RANGE_PARAM);
     max_path_arc_length = node.declare_parameter<double>(MAX_PATH_ARC_LENGTH_PARAM);
     resample_interval = node.declare_parameter<double>(RESAMPLE_INTERVAL_PARAM);
     max_reuse_deviation = node.declare_parameter<double>(MAX_REUSE_DEVIATION_PARAM);

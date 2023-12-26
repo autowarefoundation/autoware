@@ -929,8 +929,8 @@ SetParametersResult BehaviorPathPlannerNode::onSetParam(
       parameters, DrivableAreaExpansionParameters::SMOOTHING_MAX_BOUND_RATE_PARAM,
       planner_data_->drivable_area_expansion_parameters.max_bound_rate);
     updateParam(
-      parameters, DrivableAreaExpansionParameters::SMOOTHING_EXTRA_ARC_LENGTH_PARAM,
-      planner_data_->drivable_area_expansion_parameters.extra_arc_length);
+      parameters, DrivableAreaExpansionParameters::SMOOTHING_ARC_LENGTH_RANGE_PARAM,
+      planner_data_->drivable_area_expansion_parameters.arc_length_range);
     updateParam(
       parameters, DrivableAreaExpansionParameters::PRINT_RUNTIME_PARAM,
       planner_data_->drivable_area_expansion_parameters.print_runtime);

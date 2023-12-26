@@ -58,7 +58,7 @@ TEST(DrivableAreaExpansionProjection, PointToSegment)
     Point2d query(5.0, -5.0);
     Segment2d segment(Point2d(0.0, 0.0), Point2d(10.0, 0.0));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
-    EXPECT_NEAR(projection.distance, -5.0, eps);
+    EXPECT_NEAR(projection.distance, 5.0, eps);
     EXPECT_NEAR(projection.point.x(), 5.0, eps);
     EXPECT_NEAR(projection.point.y(), 0.0, eps);
   }
@@ -82,7 +82,7 @@ TEST(DrivableAreaExpansionProjection, PointToSegment)
     Point2d query(0.0, 0.0);
     Segment2d segment(Point2d(2.5, 7.5), Point2d(7.5, 2.5));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
-    EXPECT_NEAR(projection.distance, -std::sqrt(50), eps);
+    EXPECT_NEAR(projection.distance, std::sqrt(50), eps);
     EXPECT_NEAR(projection.point.x(), 5.0, eps);
     EXPECT_NEAR(projection.point.y(), 5.0, eps);
   }
@@ -115,7 +115,7 @@ TEST(DrivableAreaExpansionProjection, PointToLinestring)
     Point2d query(0.0, 5.0);
     const auto projection = point_to_linestring_projection(query, ls);
     EXPECT_NEAR(projection.arc_length, 30.0 + std::sqrt(2.5 * 2.5 * 2), eps);
-    EXPECT_NEAR(projection.distance, -std::sqrt(2.5 * 2.5 * 2), eps);
+    EXPECT_NEAR(projection.distance, std::sqrt(2.5 * 2.5 * 2), eps);
     EXPECT_NEAR(projection.projected_point.x(), 2.5, eps);
     EXPECT_NEAR(projection.projected_point.y(), 7.5, eps);
   }

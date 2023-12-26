@@ -26,7 +26,6 @@
 namespace drivable_area_expansion
 {
 /// @brief project a point to a segment
-/// @details the distance is signed based on the side of the point: left=positive, right=negative
 /// @param p point to project on the segment
 /// @param p1 first segment point
 /// @param p2 second segment point
@@ -37,22 +36,18 @@ inline PointDistance point_to_segment_projection(
   const Point2d p2_vec = {p2.x() - p1.x(), p2.y() - p1.y()};
   const Point2d p_vec = {p.x() - p1.x(), p.y() - p1.y()};
 
-  const auto cross = p2_vec.x() * p_vec.y() - p2_vec.y() * p_vec.x();
-  const auto dist_sign = cross < 0.0 ? -1.0 : 1.0;
-
   const auto c1 = boost::geometry::dot_product(p_vec, p2_vec);
-  if (c1 <= 0) return {p1, boost::geometry::distance(p, p1) * dist_sign};
+  if (c1 <= 0) return {p1, boost::geometry::distance(p, p1)};
 
   const auto c2 = boost::geometry::dot_product(p2_vec, p2_vec);
-  if (c2 <= c1) return {p2, boost::geometry::distance(p, p2) * dist_sign};
+  if (c2 <= c1) return {p2, boost::geometry::distance(p, p2)};
 
   const auto projection = p1 + (p2_vec * c1 / c2);
   const auto projection_point = Point2d{projection.x(), projection.y()};
-  return {projection_point, boost::geometry::distance(p, projection_point) * dist_sign};
+  return {projection_point, boost::geometry::distance(p, projection_point)};
 }
 
 /// @brief project a point to a line
-/// @details the distance is signed based on the side of the point: left=positive, right=negative
 /// @param p point to project on the line
 /// @param p1 first line point
 /// @param p2 second line point
@@ -63,14 +58,11 @@ inline PointDistance point_to_line_projection(
   const Point2d p2_vec = {p2.x() - p1.x(), p2.y() - p1.y()};
   const Point2d p_vec = {p.x() - p1.x(), p.y() - p1.y()};
 
-  const auto cross = p2_vec.x() * p_vec.y() - p2_vec.y() * p_vec.x();
-  const auto dist_sign = cross < 0.0 ? -1.0 : 1.0;
-
   const auto c1 = boost::geometry::dot_product(p_vec, p2_vec);
   const auto c2 = boost::geometry::dot_product(p2_vec, p2_vec);
   const auto projection = p1 + (p2_vec * c1 / c2);
   const auto projection_point = Point2d{projection.x(), projection.y()};
-  return {projection_point, boost::geometry::distance(p, projection_point) * dist_sign};
+  return {projection_point, boost::geometry::distance(p, projection_point)};
 }
 
 /// @brief project a point to a linestring
@@ -84,7 +76,7 @@ inline Projection point_to_linestring_projection(const Point2d & p, const LineSt
   auto arc_length = 0.0;
   for (auto ls_it = ls.begin(); std::next(ls_it) != ls.end(); ++ls_it) {
     const auto pd = point_to_segment_projection(p, *ls_it, *(ls_it + 1));
-    if (std::abs(pd.distance) < std::abs(closest.distance)) {
+    if (pd.distance < closest.distance) {
       closest.projected_point = pd.point;
       closest.distance = pd.distance;
       closest.arc_length = arc_length + boost::geometry::distance(*ls_it, pd.point);
