@@ -449,54 +449,70 @@ protected:
    */
   virtual ModuleStatus updateState()
   {
+    auto log_debug_throttled = [&](std::string_view message) -> void {
+      RCLCPP_WARN(getLogger(), "%s", message.data());
+    };
     if (current_state_ == ModuleStatus::IDLE) {
       if (canTransitIdleToRunningState()) {
+        log_debug_throttled("transiting from IDLE to RUNNING");
         return ModuleStatus::RUNNING;
       }
 
+      log_debug_throttled("transiting from IDLE to IDLE");
       return ModuleStatus::IDLE;
     }
 
     if (current_state_ == ModuleStatus::RUNNING) {
       if (canTransitSuccessState()) {
+        log_debug_throttled("transiting from RUNNING to SUCCESS");
         return ModuleStatus::SUCCESS;
       }
 
       if (canTransitFailureState()) {
+        log_debug_throttled("transiting from RUNNING to FAILURE");
         return ModuleStatus::FAILURE;
       }
 
       if (canTransitWaitingApprovalState()) {
+        log_debug_throttled("transiting from RUNNING to WAITING_APPROVAL");
         return ModuleStatus::WAITING_APPROVAL;
       }
 
+      log_debug_throttled("transiting from RUNNING to RUNNING");
       return ModuleStatus::RUNNING;
     }
 
     if (current_state_ == ModuleStatus::WAITING_APPROVAL) {
       if (canTransitSuccessState()) {
+        log_debug_throttled("transiting from WAITING_APPROVAL to SUCCESS");
         return ModuleStatus::SUCCESS;
       }
 
       if (canTransitFailureState()) {
+        log_debug_throttled("transiting from WAITING_APPROVAL to FAILURE");
         return ModuleStatus::FAILURE;
       }
 
       if (canTransitWaitingApprovalToRunningState()) {
+        log_debug_throttled("transiting from WAITING_APPROVAL to RUNNING");
         return ModuleStatus::RUNNING;
       }
 
+      log_debug_throttled("transiting from WAITING_APPROVAL to WAITING APPROVAL");
       return ModuleStatus::WAITING_APPROVAL;
     }
 
     if (current_state_ == ModuleStatus::SUCCESS) {
+      log_debug_throttled("already SUCCESS");
       return ModuleStatus::SUCCESS;
     }
 
     if (current_state_ == ModuleStatus::FAILURE) {
+      log_debug_throttled("already FAILURE");
       return ModuleStatus::FAILURE;
     }
 
+    log_debug_throttled("already IDLE");
     return ModuleStatus::IDLE;
   }
 

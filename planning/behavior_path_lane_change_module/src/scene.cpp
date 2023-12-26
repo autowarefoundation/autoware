@@ -1526,11 +1526,17 @@ bool NormalLaneChange::isValidPath(const PathWithLaneId & path) const
   return true;
 }
 
-bool NormalLaneChange::isRequiredStop(const bool is_object_coming_from_rear) const
+bool NormalLaneChange::isRequiredStop(const bool is_object_coming_from_rear)
 {
   const auto threshold = lane_change_parameters_->backward_length_buffer_for_end_of_lane;
-  return isNearEndOfCurrentLanes(status_.current_lanes, status_.target_lanes, threshold) &&
-         isAbleToStopSafely() && is_object_coming_from_rear;
+  if (
+    isNearEndOfCurrentLanes(status_.current_lanes, status_.target_lanes, threshold) &&
+    isAbleToStopSafely() && is_object_coming_from_rear) {
+    current_lane_change_state_ = LaneChangeStates::Stop;
+    return true;
+  }
+  current_lane_change_state_ = LaneChangeStates::Normal;
+  return false;
 }
 
 bool NormalLaneChange::calcAbortPath()

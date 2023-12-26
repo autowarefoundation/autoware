@@ -71,7 +71,7 @@ public:
 
   PathSafetyStatus isApprovedPathSafe() const override;
 
-  bool isRequiredStop(const bool is_object_coming_from_rear) const override;
+  bool isRequiredStop(const bool is_object_coming_from_rear) override;
 
   bool isNearEndOfCurrentLanes(
     const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes,

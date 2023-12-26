@@ -54,6 +54,7 @@ bool AvoidanceByLaneChange::specialRequiredCheck() const
   const auto & data = avoidance_data_;
 
   if (data.target_objects.empty()) {
+    RCLCPP_WARN(logger_, "no empty objects");
     return false;
   }
 
@@ -73,11 +74,13 @@ bool AvoidanceByLaneChange::specialRequiredCheck() const
     std::accumulate(object_parameters.begin(), object_parameters.end(), 0UL, count_target_object);
 
   if (num_of_avoidance_targets < 1) {
+    RCLCPP_WARN(logger_, "no avoidance target");
     return false;
   }
 
   const auto current_lanes = getCurrentLanes();
   if (current_lanes.empty()) {
+    RCLCPP_WARN(logger_, "no empty lanes");
     return false;
   }
 
@@ -106,7 +109,7 @@ bool AvoidanceByLaneChange::specialRequiredCheck() const
 
   const auto maximum_avoid_distance = avoidance_helper_->getMaxAvoidanceDistance(shift_length);
 
-  RCLCPP_DEBUG(
+  RCLCPP_WARN(
     logger_,
     "nearest_object.longitudinal %.3f, minimum_lane_change_length %.3f, maximum_avoid_distance "
     "%.3f",

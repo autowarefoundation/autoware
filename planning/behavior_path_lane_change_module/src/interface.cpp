@@ -76,116 +76,17 @@ bool LaneChangeInterface::isExecutionReady() const
   return module_type_->isSafe();
 }
 
-ModuleStatus LaneChangeInterface::updateState()
-{
-  auto log_warn_throttled = [&](const std::string & message) -> void {
-    RCLCPP_WARN_STREAM_THROTTLE(getLogger(), *clock_, 5000, message);
-  };
-
-  if (module_type_->specialExpiredCheck()) {
-    log_warn_throttled("expired check.");
-    if (isWaitingApproval()) {
-      return ModuleStatus::SUCCESS;
-    }
-  }
-
-  if (!isActivated() || isWaitingApproval()) {
-    log_warn_throttled("Is idling.");
-    return ModuleStatus::IDLE;
-  }
-
-  if (!module_type_->isValidPath()) {
-    log_warn_throttled("Is invalid path.");
-    return ModuleStatus::SUCCESS;
-  }
-
-  if (module_type_->isAbortState()) {
-    log_warn_throttled("Ego is in the process of aborting lane change.");
-    return module_type_->hasFinishedAbort() ? ModuleStatus::SUCCESS : ModuleStatus::RUNNING;
-  }
-
-  if (module_type_->hasFinishedLaneChange()) {
-    log_warn_throttled("Completed lane change.");
-    return ModuleStatus::SUCCESS;
-  }
-
-  if (module_type_->isEgoOnPreparePhase() && module_type_->isStoppedAtRedTrafficLight()) {
-    RCLCPP_WARN_STREAM_THROTTLE(
-      getLogger(), *clock_, 5000, "Ego stopped at traffic light. Canceling lane change");
-    module_type_->toCancelState();
-    return isWaitingApproval() ? ModuleStatus::RUNNING : ModuleStatus::SUCCESS;
-  }
-
-  const auto [is_safe, is_object_coming_from_rear] = module_type_->isApprovedPathSafe();
-
-  setObjectDebugVisualization();
-  if (is_safe) {
-    log_warn_throttled("Lane change path is safe.");
-    module_type_->toNormalState();
-    return ModuleStatus::RUNNING;
-  }
-
-  const auto change_state_if_stop_required = [&]() -> void {
-    if (module_type_->isRequiredStop(is_object_coming_from_rear)) {
-      module_type_->toStopState();
-    } else {
-      module_type_->toNormalState();
-    }
-  };
-
-  if (!module_type_->isCancelEnabled()) {
-    log_warn_throttled(
-      "Lane change path is unsafe but cancel was not enabled. Continue lane change.");
-    change_state_if_stop_required();
-    return ModuleStatus::RUNNING;
-  }
-
-  if (!module_type_->isAbleToReturnCurrentLane()) {
-    log_warn_throttled("Lane change path is unsafe but cannot return. Continue lane change.");
-    change_state_if_stop_required();
-    return ModuleStatus::RUNNING;
-  }
-
-  const auto threshold = module_type_->getLaneChangeParam().backward_length_buffer_for_end_of_lane;
-  const auto status = module_type_->getLaneChangeStatus();
-  if (module_type_->isNearEndOfCurrentLanes(status.current_lanes, status.target_lanes, threshold)) {
-    log_warn_throttled("Lane change path is unsafe but near end of lane. Continue lane change.");
-    change_state_if_stop_required();
-    return ModuleStatus::RUNNING;
-  }
-
-  if (module_type_->isEgoOnPreparePhase() && module_type_->isAbleToReturnCurrentLane()) {
-    log_warn_throttled("Lane change path is unsafe. Cancel lane change.");
-    module_type_->toCancelState();
-    return isWaitingApproval() ? ModuleStatus::RUNNING : ModuleStatus::SUCCESS;
-  }
-
-  if (!module_type_->isAbortEnabled()) {
-    log_warn_throttled(
-      "Lane change path is unsafe but abort was not enabled. Continue lane change.");
-    change_state_if_stop_required();
-    return ModuleStatus::RUNNING;
-  }
-
-  const auto found_abort_path = module_type_->calcAbortPath();
-  if (!found_abort_path) {
-    log_warn_throttled(
-      "Lane change path is unsafe but not found abort path. Continue lane change.");
-    change_state_if_stop_required();
-    return ModuleStatus::RUNNING;
-  }
-
-  log_warn_throttled("Lane change path is unsafe. Abort lane change.");
-  module_type_->toAbortState();
-  return ModuleStatus::RUNNING;
-}
-
 void LaneChangeInterface::updateData()
 {
   module_type_->setPreviousModulePaths(
     getPreviousModuleOutput().reference_path, getPreviousModuleOutput().path);
   module_type_->updateSpecialData();
   module_type_->resetStopPose();
+}
+
+void LaneChangeInterface::postProcess()
+{
+  post_process_safety_status_ = module_type_->isApprovedPathSafe();
 }
 
 BehaviorModuleOutput LaneChangeInterface::plan()
@@ -284,6 +185,130 @@ void LaneChangeInterface::setData(const std::shared_ptr<const PlannerData> & dat
 {
   planner_data_ = data;
   module_type_->setData(data);
+}
+
+bool LaneChangeInterface::canTransitSuccessState()
+{
+  auto log_debug_throttled = [&](std::string_view message) -> void {
+    RCLCPP_WARN(getLogger(), "%s", message.data());
+  };
+
+  if (module_type_->specialExpiredCheck() && isWaitingApproval()) {
+    log_debug_throttled("Run specialExpiredCheck.");
+    if (isWaitingApproval()) {
+      return true;
+    }
+  }
+
+  if (!module_type_->isValidPath()) {
+    log_debug_throttled("Has no valid path.");
+    return true;
+  }
+
+  if (module_type_->isAbortState() && module_type_->hasFinishedAbort()) {
+    log_debug_throttled("Abort process has completed.");
+    return true;
+  }
+
+  if (module_type_->hasFinishedLaneChange()) {
+    log_debug_throttled("Lane change process has completed.");
+    return true;
+  }
+
+  log_debug_throttled("Lane changing process is ongoing");
+  return false;
+}
+
+bool LaneChangeInterface::canTransitFailureState()
+{
+  auto log_debug_throttled = [&](std::string_view message) -> void {
+    RCLCPP_WARN(getLogger(), "%s", message.data());
+  };
+
+  log_debug_throttled(__func__);
+
+  if (module_type_->isAbortState() && !module_type_->hasFinishedAbort()) {
+    log_debug_throttled("Abort process has on going.");
+    return false;
+  }
+
+  if (isWaitingApproval()) {
+    log_debug_throttled("Can't transit to failure state. Module is WAITING_FOR_APPROVAL");
+    return false;
+  }
+
+  if (module_type_->isCancelEnabled() && module_type_->isEgoOnPreparePhase()) {
+    if (module_type_->isStoppedAtRedTrafficLight()) {
+      log_debug_throttled("Stopping at traffic light while in prepare phase. Cancel lane change");
+      module_type_->toCancelState();
+      return true;
+    }
+
+    if (post_process_safety_status_.is_safe) {
+      log_debug_throttled("Can't transit to failure state. Ego is on prepare, and it's safe.");
+      return false;
+    }
+
+    if (module_type_->isAbleToReturnCurrentLane()) {
+      log_debug_throttled("It's possible to return to current lane. Cancel lane change.");
+      return true;
+    }
+  }
+
+  if (post_process_safety_status_.is_safe) {
+    log_debug_throttled("Can't transit to failure state. Ego is lane changing, and it's safe.");
+    return false;
+  }
+
+  if (module_type_->isRequiredStop(post_process_safety_status_.is_object_coming_from_rear)) {
+    log_debug_throttled("Module require stopping");
+  }
+
+  if (!module_type_->isCancelEnabled()) {
+    log_debug_throttled(
+      "Lane change path is unsafe but cancel was not enabled. Continue lane change.");
+    return false;
+  }
+
+  if (!module_type_->isAbortEnabled()) {
+    log_debug_throttled(
+      "Lane change path is unsafe but abort was not enabled. Continue lane change.");
+    return false;
+  }
+
+  const auto found_abort_path = module_type_->calcAbortPath();
+  if (!found_abort_path) {
+    log_debug_throttled(
+      "Lane change path is unsafe but abort path not found. Continue lane change.");
+    return false;
+  }
+
+  log_debug_throttled("Lane change path is unsafe. Abort lane change.");
+  module_type_->toAbortState();
+  return false;
+}
+
+bool LaneChangeInterface::canTransitIdleToRunningState()
+{
+  setObjectDebugVisualization();
+
+  auto log_debug_throttled = [&](std::string_view message) -> void {
+    RCLCPP_WARN(getLogger(), "%s", message.data());
+  };
+
+  log_debug_throttled(__func__);
+
+  if (!isActivated() || isWaitingApproval()) {
+    if (module_type_->specialRequiredCheck()) {
+      return true;
+    }
+    log_debug_throttled("Module is idling.");
+    return false;
+  }
+
+  log_debug_throttled("Can lane change safely. Executing lane change.");
+  module_type_->toNormalState();
+  return true;
 }
 
 void LaneChangeInterface::setObjectDebugVisualization() const
