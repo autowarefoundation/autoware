@@ -64,7 +64,7 @@ void LaneChangeInterface::processOnExit()
 
 bool LaneChangeInterface::isExecutionRequested() const
 {
-  if (current_state_ == ModuleStatus::RUNNING) {
+  if (getCurrentStatus() == ModuleStatus::RUNNING) {
     return true;
   }
 
@@ -359,7 +359,7 @@ MarkerArray LaneChangeInterface::getModuleVirtualWall()
     return marker;
   }
 
-  if (isWaitingApproval() || current_state_ != ModuleStatus::RUNNING) {
+  if (isWaitingApproval() || getCurrentStatus() != ModuleStatus::RUNNING) {
     return marker;
   }
   const auto & start_pose = module_type_->getLaneChangePath().info.lane_changing_start;

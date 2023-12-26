@@ -67,7 +67,10 @@ public:
 
   bool isExecutionReady() const override;
 
-  bool isRootLaneletToBeUpdated() const override { return current_state_ == ModuleStatus::SUCCESS; }
+  bool isRootLaneletToBeUpdated() const override
+  {
+    return getCurrentStatus() == ModuleStatus::SUCCESS;
+  }
 
   void updateData() override;
 
