@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Map Based Prediction",
+  "type": "object",
+  "definitions": {
+    "map_based_prediction": {
+      "type": "object",
+      "properties": {
+        "enable_delay_compensation": {
+          "type": "boolean",
+          "default": true,
+          "description": "flag to enable the time delay compensation for the position of the object"
+        },
+        "prediction_time_horizon": {
+          "type": "number",
+          "default": "10.0",
+          "description": "predict time duration for predicted path"
+        },
+        "lateral_control_time_horizon": {
+          "type": "number",
+          "default": "5.0",
+          "description": "time duration for predicted path will reach the reference path (mostly center of the lane)"
+        },
+        "prediction_sampling_delta_time": {
+          "type": "number",
+          "default": "0.5",
+          "description": "sampling time for points in predicted path"
+        },
+        "min_velocity_for_map_based_prediction": {
+          "type": "number",
+          "default": 1.39,
+          "description": "apply map-based prediction to the objects with higher velocity than this value"
+        },
+        "min_crosswalk_user_velocity": {
+          "type": "number",
+          "default": 1.39,
+          "description": "minimum velocity use in path prediction for crosswalk users"
+        },
+        "max_crosswalk_user_delta_yaw_threshold_for_lanelet": {
+          "type": "number",
+          "default": 0.785,
+          "description": "maximum yaw difference between crosswalk user and lanelet to use in path prediction for crosswalk users"
+        },
+        "dist_threshold_for_searching_lanelet": {
+          "type": "number",
+          "default": 3.0,
+          "description": "The threshold of the angle used when searching for the lane to which the object belongs "
+        },
+        "delta_yaw_threshold_for_searching_lanelet": {
+          "type": "number",
+          "default": 0.785,
+          "description": "The threshold of the distance used when searching for the lane to which the object belongs"
+        },
+        "sigma_lateral_offset": {
+          "type": "number",
+          "default": 0.5,
+          "description": "Standard deviation for lateral position of objects "
+        },
+        "sigma_yaw_angle_deg": {
+          "type": "number",
+          "default": 5.0,
+          "description": "Standard deviation yaw angle of objects "
+        },
+        "object_buffer_time_length": {
+          "type": "number",
+          "default": 2.0,
+          "description": "Time span of object history to store the information"
+        },
+        "history_time_length": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Time span of object information used for prediction"
+        },
+        "prediction_time_horizon_rate_for_validate_shoulder_lane_length": {
+          "type": "number",
+          "default": 0.8,
+          "description": "prediction path will disabled when the estimated path length exceeds lanelet length. This parameter control the estimated path length"
+        },
+        "lane_change_detection": {
+          "type": "object",
+          "properties": {
+            "time_to_change_lane": {
+              "type": "object",
+              "properties": {
+                "dist_threshold_for_lane_change_detection": {
+                  "type": "number",
+                  "default": 1.0
+                },
+                "time_threshold_for_lane_change_detection": {
+                  "type": "number",
+                  "default": 5.0
+                },
+                "cutoff_freq_of_velocity_for_lane_change_detection": {
+                  "type": "number",
+                  "default": 0.1
+                }
+              },
+              "required": [
+                "dist_threshold_for_lane_change_detection",
+                "time_threshold_for_lane_change_detection",
+                "cutoff_freq_of_velocity_for_lane_change_detection"
+              ]
+            },
+            "lat_diff_distance": {
+              "type": "object",
+              "properties": {
+                "dist_ratio_threshold_to_left_bound": {
+                  "type": "number",
+                  "default": -0.5
+                },
+                "dist_ratio_threshold_to_right_bound": {
+                  "type": "number",
+                  "default": 0.5
+                },
+                "diff_dist_threshold_to_left_bound": {
+                  "type": "number",
+                  "default": 0.29
+                },
+                "diff_dist_threshold_to_right_bound": {
+                  "type": "number",
+                  "default": -0.29
+                }
+              },
+              "required": [
+                "dist_ratio_threshold_to_left_bound",
+                "dist_ratio_threshold_to_right_bound",
+                "diff_dist_threshold_to_left_bound",
+                "diff_dist_threshold_to_right_bound"
+              ]
+            }
+          }
+        },
+        "reference_path_resolution": {
+          "type": "number",
+          "default": 0.5,
+          "description": "Standard deviation for lateral position of objects "
+        }
+      },
+      "required": [
+        "enable_delay_compensation",
+        "prediction_time_horizon",
+        "lateral_control_time_horizon",
+        "prediction_sampling_delta_time",
+        "min_velocity_for_map_based_prediction",
+        "min_crosswalk_user_velocity",
+        "max_crosswalk_user_delta_yaw_threshold_for_lanelet",
+        "dist_threshold_for_searching_lanelet",
+        "delta_yaw_threshold_for_searching_lanelet",
+        "sigma_lateral_offset",
+        "sigma_yaw_angle_deg",
+        "object_buffer_time_length",
+        "history_time_length",
+        "prediction_time_horizon_rate_for_validate_shoulder_lane_length"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/map_based_prediction"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
