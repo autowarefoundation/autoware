@@ -326,13 +326,6 @@ private:
   // generate output data
 
   /**
-   * @brief calculate turn signal infomation.
-   * @param avoidance path.
-   * @return turn signal command.
-   */
-  TurnSignalInfo calcTurnSignalInfo(const ShiftedPath & path) const;
-
-  /**
    * @brief fill debug markers.
    */
   void updateDebugMarker(

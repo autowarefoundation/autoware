@@ -17,7 +17,6 @@
 #include "behavior_path_avoidance_module/debug.hpp"
 #include "behavior_path_avoidance_module/utils.hpp"
 #include "behavior_path_planner_common/interface/scene_module_visitor.hpp"
-#include "behavior_path_planner_common/utils/create_vehicle_footprint.hpp"
 #include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
@@ -874,7 +873,7 @@ BehaviorModuleOutput AvoidanceModule::plan()
   if (success_spline_path_generation && success_linear_path_generation) {
     helper_->setPreviousLinearShiftPath(linear_shift_path);
     helper_->setPreviousSplineShiftPath(spline_shift_path);
-    helper_->setPreviousReferencePath(data.reference_path);
+    helper_->setPreviousReferencePath(path_shifter_.getReferencePath());
   } else {
     spline_shift_path = helper_->getPreviousSplineShiftPath();
   }
@@ -887,9 +886,13 @@ BehaviorModuleOutput AvoidanceModule::plan()
   BehaviorModuleOutput output;
 
   // turn signal info
-  {
+  if (path_shifter_.getShiftLines().empty()) {
+    output.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
+  } else {
     const auto original_signal = getPreviousModuleOutput().turn_signal_info;
-    const auto new_signal = calcTurnSignalInfo(spline_shift_path);
+    const auto new_signal = utils::avoidance::calcTurnSignalInfo(
+      linear_shift_path, path_shifter_.getShiftLines().front(), helper_->getEgoShift(), avoid_data_,
+      planner_data_);
     const auto current_seg_idx = planner_data_->findEgoSegmentIndex(spline_shift_path.path.points);
     output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
       spline_shift_path.path, getEgoPose(), current_seg_idx, original_signal, new_signal,
@@ -1283,118 +1286,6 @@ void AvoidanceModule::updateRTCData()
   output.finish_distance_to_path_change = sl_back.end_longitudinal;
 
   updateCandidateRTCStatus(output);
-}
-
-TurnSignalInfo AvoidanceModule::calcTurnSignalInfo(const ShiftedPath & path) const
-{
-  const auto shift_lines = path_shifter_.getShiftLines();
-  if (shift_lines.empty()) {
-    return {};
-  }
-
-  const auto front_shift_line = shift_lines.front();
-  const size_t start_idx = front_shift_line.start_idx;
-  const size_t end_idx = front_shift_line.end_idx;
-
-  const auto current_shift_length = helper_->getEgoShift();
-  const double start_shift_length = path.shift_length.at(start_idx);
-  const double end_shift_length = path.shift_length.at(end_idx);
-  const double segment_shift_length = end_shift_length - start_shift_length;
-
-  const double turn_signal_shift_length_threshold =
-    planner_data_->parameters.turn_signal_shift_length_threshold;
-  const double turn_signal_search_time = planner_data_->parameters.turn_signal_search_time;
-  const double turn_signal_minimum_search_distance =
-    planner_data_->parameters.turn_signal_minimum_search_distance;
-
-  // If shift length is shorter than the threshold, it does not need to turn on blinkers
-  if (std::fabs(segment_shift_length) < turn_signal_shift_length_threshold) {
-    return {};
-  }
-
-  // If the vehicle does not shift anymore, we turn off the blinker
-  if (std::fabs(end_shift_length - current_shift_length) < 0.1) {
-    return {};
-  }
-
-  // compute blinker start idx and end idx
-  size_t blinker_start_idx = [&]() {
-    for (size_t idx = start_idx; idx <= end_idx; ++idx) {
-      const double current_shift_length = path.shift_length.at(idx);
-      if (current_shift_length > 0.1) {
-        return idx;
-      }
-    }
-    return start_idx;
-  }();
-  size_t blinker_end_idx = end_idx;
-
-  // prevent invalid access for out-of-range
-  blinker_start_idx =
-    std::min(std::max(std::size_t(0), blinker_start_idx), path.path.points.size() - 1);
-  blinker_end_idx =
-    std::min(std::max(blinker_start_idx, blinker_end_idx), path.path.points.size() - 1);
-
-  const auto blinker_start_pose = path.path.points.at(blinker_start_idx).point.pose;
-  const auto blinker_end_pose = path.path.points.at(blinker_end_idx).point.pose;
-
-  const double ego_vehicle_offset =
-    planner_data_->parameters.vehicle_info.max_longitudinal_offset_m;
-  const auto signal_prepare_distance =
-    std::max(getEgoSpeed() * turn_signal_search_time, turn_signal_minimum_search_distance);
-  const auto ego_front_to_shift_start =
-    calcSignedArcLength(path.path.points, getEgoPosition(), blinker_start_pose.position) -
-    ego_vehicle_offset;
-
-  if (signal_prepare_distance < ego_front_to_shift_start) {
-    return {};
-  }
-
-  bool turn_signal_on_swerving = planner_data_->parameters.turn_signal_on_swerving;
-
-  TurnSignalInfo turn_signal_info{};
-  if (turn_signal_on_swerving) {
-    if (segment_shift_length > 0.0) {
-      turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
-    } else {
-      turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
-    }
-  } else {
-    const lanelet::ConstLanelets current_lanes = utils::getCurrentLanes(planner_data_);
-    const auto local_vehicle_footprint =
-      createVehicleFootprint(planner_data_->parameters.vehicle_info);
-    boost::geometry::model::ring<tier4_autoware_utils::Point2d> shifted_vehicle_footprint;
-    for (const auto & cl : current_lanes) {
-      // get left and right bounds of current lane
-      const auto lane_left_bound = cl.leftBound2d().basicLineString();
-      const auto lane_right_bound = cl.rightBound2d().basicLineString();
-      for (size_t i = start_idx; i < end_idx; ++i) {
-        // transform vehicle footprint onto path points
-        shifted_vehicle_footprint = transformVector(
-          local_vehicle_footprint,
-          tier4_autoware_utils::pose2transform(path.path.points.at(i).point.pose));
-        if (
-          boost::geometry::intersects(lane_left_bound, shifted_vehicle_footprint) ||
-          boost::geometry::intersects(lane_right_bound, shifted_vehicle_footprint)) {
-          if (segment_shift_length > 0.0) {
-            turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
-          } else {
-            turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
-          }
-        }
-      }
-    }
-  }
-  if (ego_front_to_shift_start > 0.0) {
-    turn_signal_info.desired_start_point = planner_data_->self_odometry->pose.pose;
-  } else {
-    turn_signal_info.desired_start_point = blinker_start_pose;
-  }
-  turn_signal_info.desired_end_point = blinker_end_pose;
-  turn_signal_info.required_start_point = blinker_start_pose;
-  turn_signal_info.required_end_point = blinker_end_pose;
-
-  return turn_signal_info;
 }
 
 void AvoidanceModule::updateInfoMarker(const AvoidancePlanningData & data) const
