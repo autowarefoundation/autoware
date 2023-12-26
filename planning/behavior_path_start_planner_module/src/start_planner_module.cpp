@@ -1283,6 +1283,7 @@ void StartPlannerModule::setDebugData() const
   using tier4_autoware_utils::createDefaultMarker;
   using tier4_autoware_utils::createMarkerColor;
   using tier4_autoware_utils::createMarkerScale;
+  using visualization_msgs::msg::Marker;
 
   const auto life_time = rclcpp::Duration::from_seconds(1.5);
   auto add = [&](MarkerArray added) {
@@ -1298,6 +1299,35 @@ void StartPlannerModule::setDebugData() const
   add(createPoseMarkerArray(status_.pull_out_path.end_pose, "end_pose", 0, 0.9, 0.9, 0.3));
   add(createPathMarkerArray(getFullPath(), "full_path", 0, 0.0, 0.5, 0.9));
   add(createPathMarkerArray(status_.backward_path, "backward_driving_path", 0, 0.0, 0.9, 0.0));
+
+  // visualize collision_check_end_pose and footprint
+  {
+    const auto local_footprint = createVehicleFootprint(vehicle_info_);
+    const auto collision_check_end_pose = motion_utils::calcLongitudinalOffsetPose(
+      getFullPath().points, status_.pull_out_path.end_pose.position,
+      parameters_->collision_check_distance_from_end);
+    if (collision_check_end_pose) {
+      add(createPoseMarkerArray(
+        *collision_check_end_pose, "static_collision_check_end_pose", 0, 1.0, 0.0, 0.0));
+      auto marker = tier4_autoware_utils::createDefaultMarker(
+        "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "static_collision_check_end_polygon", 0,
+        Marker::LINE_LIST, tier4_autoware_utils::createMarkerScale(0.1, 0.1, 0.1),
+        tier4_autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
+      const auto footprint = transformVector(
+        local_footprint, tier4_autoware_utils::pose2transform(*collision_check_end_pose));
+      const double ego_z = planner_data_->self_odometry->pose.pose.position.z;
+      for (size_t i = 0; i < footprint.size(); i++) {
+        const auto & current_point = footprint.at(i);
+        const auto & next_point = footprint.at((i + 1) % footprint.size());
+        marker.points.push_back(
+          tier4_autoware_utils::createPoint(current_point.x(), current_point.y(), ego_z));
+        marker.points.push_back(
+          tier4_autoware_utils::createPoint(next_point.x(), next_point.y(), ego_z));
+      }
+      marker.lifetime = life_time;
+      debug_marker_.markers.push_back(marker);
+    }
+  }
 
   // safety check
   if (parameters_->safety_check_params.enable_safety_check) {
