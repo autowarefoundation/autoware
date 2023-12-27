@@ -16,6 +16,7 @@
 
 #include <boost/optional.hpp>
 
+#include <glog/logging.h>
 #include <tf2_ros/create_timer_interface.h>
 #include <tf2_ros/create_timer_ros.h>
 
@@ -177,6 +178,10 @@ MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
   tf_buffer_(this->get_clock()),
   tf_listener_(tf_buffer_)
 {
+  // glog for debug
+  google::InitGoogleLogging("multi_object_tracker");
+  google::InstallFailureSignalHandler();
+
   // Create publishers and subscribers
   detected_object_sub_ = create_subscription<autoware_auto_perception_msgs::msg::DetectedObjects>(
     "input", rclcpp::QoS{1},

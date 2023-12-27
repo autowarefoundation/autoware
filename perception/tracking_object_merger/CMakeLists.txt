@@ -6,6 +6,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(autoware_cmake REQUIRED)
+find_package(glog REQUIRED)
 autoware_package()
 
 
@@ -31,6 +32,7 @@ ament_auto_add_library(decorative_tracker_merger_node SHARED
 
 target_link_libraries(decorative_tracker_merger_node
   Eigen3::Eigen
+  glog::glog
 )
 
 rclcpp_components_register_node(decorative_tracker_merger_node
