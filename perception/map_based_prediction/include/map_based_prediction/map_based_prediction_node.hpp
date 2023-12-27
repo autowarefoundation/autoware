@@ -16,11 +16,15 @@
 #define MAP_BASED_PREDICTION__MAP_BASED_PREDICTION_NODE_HPP_
 
 #include "map_based_prediction/path_generator.hpp"
+#include "tf2/LinearMath/Quaternion.h"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "tier4_autoware_utils/ros/update_param.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/transform_listener.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
+#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
@@ -34,6 +38,7 @@
 #include <lanelet2_routing/Forward.h>
 #include <lanelet2_traffic_rules/TrafficRules.h>
 
+#include <algorithm>
 #include <deque>
 #include <memory>
 #include <string>
@@ -99,9 +104,10 @@ using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_perception_msgs::msg::TrackedObject;
 using autoware_auto_perception_msgs::msg::TrackedObjectKinematics;
 using autoware_auto_perception_msgs::msg::TrackedObjects;
+using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using tier4_autoware_utils::StopWatch;
 using tier4_debug_msgs::msg::StringStamped;
-
+using TrajectoryPoints = std::vector<TrajectoryPoint>;
 class MapBasedPredictionNode : public rclcpp::Node
 {
 public:
@@ -122,6 +128,11 @@ private:
   std::shared_ptr<lanelet::LaneletMap> lanelet_map_ptr_;
   std::shared_ptr<lanelet::routing::RoutingGraph> routing_graph_ptr_;
   std::shared_ptr<lanelet::traffic_rules::TrafficRules> traffic_rules_ptr_;
+
+  // parameter update
+  OnSetParametersCallbackHandle::SharedPtr set_param_res_;
+  rcl_interfaces::msg::SetParametersResult onParam(
+    const std::vector<rclcpp::Parameter> & parameters);
 
   // Pose Transform Listener
   tier4_autoware_utils::TransformListener transform_listener_{this};
@@ -159,6 +170,10 @@ private:
   int num_continuous_state_transition_;
   bool consider_only_routable_neighbours_;
   double reference_path_resolution_;
+
+  bool check_lateral_acceleration_constraints_;
+  double max_lateral_accel_;
+  double min_acceleration_before_curve_;
 
   // Stop watch
   StopWatch<std::chrono::milliseconds> stop_watch_;
@@ -237,6 +252,114 @@ private:
   Maneuver predictObjectManeuverByLatDiffDistance(
     const TrackedObject & object, const LaneletData & current_lanelet_data,
     const double object_detected_time);
+
+  // NOTE: This function is copied from the motion_velocity_smoother package.
+  // TODO(someone): Consolidate functions and move them to a common
+  inline std::vector<double> calcTrajectoryCurvatureFrom3Points(
+    const TrajectoryPoints & trajectory, size_t idx_dist)
+  {
+    using tier4_autoware_utils::calcCurvature;
+    using tier4_autoware_utils::getPoint;
+
+    if (trajectory.size() < 3) {
+      const std::vector<double> k_arr(trajectory.size(), 0.0);
+      return k_arr;
+    }
+
+    // if the idx size is not enough, change the idx_dist
+    const auto max_idx_dist = static_cast<size_t>(std::floor((trajectory.size() - 1) / 2.0));
+    idx_dist = std::max(1ul, std::min(idx_dist, max_idx_dist));
+
+    if (idx_dist < 1) {
+      throw std::logic_error("idx_dist less than 1 is not expected");
+    }
+
+    // calculate curvature by circle fitting from three points
+    std::vector<double> k_arr(trajectory.size(), 0.0);
+
+    for (size_t i = 1; i + 1 < trajectory.size(); i++) {
+      double curvature = 0.0;
+      const auto p0 = getPoint(trajectory.at(i - std::min(idx_dist, i)));
+      const auto p1 = getPoint(trajectory.at(i));
+      const auto p2 = getPoint(trajectory.at(i + std::min(idx_dist, trajectory.size() - 1 - i)));
+      try {
+        curvature = calcCurvature(p0, p1, p2);
+      } catch (std::exception const & e) {
+        // ...code that handles the error...
+        RCLCPP_WARN(rclcpp::get_logger("map_based_prediction"), "%s", e.what());
+        if (i > 1) {
+          curvature = k_arr.at(i - 1);  // previous curvature
+        } else {
+          curvature = 0.0;
+        }
+      }
+      k_arr.at(i) = curvature;
+    }
+    // copy curvatures for the last and first points;
+    k_arr.at(0) = k_arr.at(1);
+    k_arr.back() = k_arr.at((trajectory.size() - 2));
+
+    return k_arr;
+  }
+
+  inline TrajectoryPoints toTrajectoryPoints(const PredictedPath & path, const double velocity)
+  {
+    TrajectoryPoints out_trajectory;
+    std::for_each(
+      path.path.begin(), path.path.end(), [&out_trajectory, velocity](const auto & pose) {
+        TrajectoryPoint p;
+        p.pose = pose;
+        p.longitudinal_velocity_mps = velocity;
+        out_trajectory.push_back(p);
+      });
+    return out_trajectory;
+  };
+
+  inline bool isLateralAccelerationConstraintSatisfied(
+    const TrajectoryPoints & trajectory [[maybe_unused]], const double delta_time)
+  {
+    if (trajectory.size() < 3) return true;
+    const double max_lateral_accel_abs = std::fabs(max_lateral_accel_);
+
+    double arc_length = 0.0;
+    for (size_t i = 1; i < trajectory.size(); ++i) {
+      const auto current_pose = trajectory.at(i).pose;
+      const auto next_pose = trajectory.at(i - 1).pose;
+      // Compute distance between poses
+      const double delta_s = std::hypot(
+        next_pose.position.x - current_pose.position.x,
+        next_pose.position.y - current_pose.position.y);
+      arc_length += delta_s;
+
+      // Compute change in heading
+      tf2::Quaternion q_current, q_next;
+      tf2::convert(current_pose.orientation, q_current);
+      tf2::convert(next_pose.orientation, q_next);
+      double delta_theta = q_current.angleShortestPath(q_next);
+      // Handle wrap-around
+      if (delta_theta > M_PI) {
+        delta_theta -= 2.0 * M_PI;
+      } else if (delta_theta < -M_PI) {
+        delta_theta += 2.0 * M_PI;
+      }
+
+      const double yaw_rate = std::max(delta_theta / delta_time, 1.0E-5);
+
+      const double current_speed = std::abs(trajectory.at(i).longitudinal_velocity_mps);
+      // Compute lateral acceleration
+      const double lateral_acceleration = std::abs(current_speed * yaw_rate);
+      if (lateral_acceleration < max_lateral_accel_abs) continue;
+
+      const double v_curvature_max = std::sqrt(max_lateral_accel_abs / yaw_rate);
+      const double t =
+        (v_curvature_max - current_speed) / min_acceleration_before_curve_;  // acc is negative
+      const double distance_to_slow_down =
+        current_speed * t + 0.5 * min_acceleration_before_curve_ * std::pow(t, 2);
+
+      if (distance_to_slow_down > arc_length) return false;
+    }
+    return true;
+  };
 };
 }  // namespace map_based_prediction
 

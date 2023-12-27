@@ -13,6 +13,9 @@
     sigma_yaw_angle_deg: 5.0 #[angle degree]
     object_buffer_time_length: 2.0 #[s]
     history_time_length: 1.0 #[s]
+    check_lateral_acceleration_constraints: false # whether to check if the predicted path complies with lateral acceleration constraints
+    max_lateral_accel: 2.0 # [m/ss] max acceptable lateral acceleration for predicted vehicle paths
+    min_acceleration_before_curve: -2.0 # [m/ss] min acceleration a vehicle might take to decelerate before a curve
     # parameter for shoulder lane prediction
     prediction_time_horizon_rate_for_validate_shoulder_lane_length: 0.8
 

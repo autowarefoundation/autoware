@@ -66,7 +66,7 @@ Lane change logics is illustrated in the figure below.An example of how to tune 
 
 ### Tuning lane change detection logic
 
-Currently we provide two parameters to tune lane change detection:
+Currently we provide three parameters to tune lane change detection:
 
 - `dist_threshold_to_bound_`: maximum distance from lane boundary allowed for lane changing vehicle
 - `time_threshold_to_bound_`: maximum time allowed for lane change vehicle to reach the boundary
@@ -123,6 +123,24 @@ See paper [2] for more details.
 #### Tuning lateral path shape
 
 `lateral_control_time_horizon` parameter supports the tuning of the lateral path shape. This parameter is used to calculate the time to reach the reference path. The smaller the value, the more the path will be generated to reach the reference path quickly. (Mostly the center of the lane.)
+
+#### Pruning predicted paths with lateral acceleration constraint
+
+It is possible to apply a maximum lateral acceleration constraint to generated vehicle paths. This check verifies if it is possible for the vehicle to perform the predicted path without surpassing a lateral acceleration threshold `max_lateral_accel` when taking a curve. If it is not possible, it checks if the vehicle can slow down on time to take the curve with a deceleration of `min_acceleration_before_curve` and comply with the constraint. If that is also not possible, the path is eliminated.
+
+Currently we provide three parameters to tune the lateral acceleration constraint:
+
+- `check_lateral_acceleration_constraints_`: to enable the constraint check.
+- `max_lateral_accel_`: max acceptable lateral acceleration for predicted paths (absolute value).
+- `min_acceleration_before_curve_`: the minimum acceleration the vehicle would theoretically use to slow down before a curve is taken (must be negative).
+
+You can change these parameters in rosparam in the table below.
+
+| param name                                | default value  |
+| ----------------------------------------- | -------------- |
+| `check_lateral_acceleration_constraints_` | `false` [bool] |
+| `max_lateral_accel`                       | `2.0` [m/s^2]  |
+| `min_acceleration_before_curve`           | `-2.0` [m/s^2] |
 
 ### Path prediction for crosswalk users
 
