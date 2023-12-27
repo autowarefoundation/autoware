@@ -38,6 +38,9 @@ struct StartGoalPlannerData
   std::vector<PoseWithVelocityStamped> ego_predicted_path;
   // collision check debug map
   CollisionCheckDebugMap collision_check;
+
+  Pose refined_start_pose;
+  std::vector<Pose> start_pose_candidates;
 };
 
 }  // namespace behavior_path_planner

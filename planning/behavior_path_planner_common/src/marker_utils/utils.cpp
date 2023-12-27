@@ -40,6 +40,45 @@ using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
 using visualization_msgs::msg::Marker;
 
+void addFootprintMarker(
+  visualization_msgs::msg::Marker & marker, const geometry_msgs::msg::Pose & pose,
+  const vehicle_info_util::VehicleInfo & vehicle_info)
+{
+  const double half_width = vehicle_info.vehicle_width_m / 2.0;
+  const double base_to_front = vehicle_info.vehicle_length_m - vehicle_info.rear_overhang_m;
+  const double base_to_rear = vehicle_info.rear_overhang_m;
+
+  marker.points.push_back(
+    tier4_autoware_utils::calcOffsetPose(pose, base_to_front, -half_width, 0.0).position);
+  marker.points.push_back(
+    tier4_autoware_utils::calcOffsetPose(pose, base_to_front, half_width, 0.0).position);
+  marker.points.push_back(
+    tier4_autoware_utils::calcOffsetPose(pose, -base_to_rear, half_width, 0.0).position);
+  marker.points.push_back(
+    tier4_autoware_utils::calcOffsetPose(pose, -base_to_rear, -half_width, 0.0).position);
+  marker.points.push_back(marker.points.front());
+}
+
+MarkerArray createFootprintMarkerArray(
+  const Pose & base_link_pose, const vehicle_info_util::VehicleInfo vehicle_info,
+  const std::string && ns, const int32_t & id, const float & r, const float & g, const float & b)
+{
+  const auto current_time = rclcpp::Clock{RCL_ROS_TIME}.now();
+  MarkerArray msg;
+
+  Marker marker = createDefaultMarker(
+    "map", current_time, ns, id, Marker::LINE_STRIP, createMarkerScale(0.2, 0.2, 0.2),
+    createMarkerColor(r, g, b, 0.999));
+  marker.lifetime = rclcpp::Duration::from_seconds(1.5);
+
+  MarkerArray marker_array;
+
+  addFootprintMarker(marker, base_link_pose, vehicle_info);
+
+  msg.markers.push_back(marker);
+  return msg;
+}
+
 MarkerArray createPoseMarkerArray(
   const Pose & pose, std::string && ns, const int32_t & id, const float & r, const float & g,
   const float & b)
@@ -347,7 +386,6 @@ MarkerArray createPredictedPathMarkerArray(
 
   Marker marker = createDefaultMarker(
     "map", current_time, ns, id, Marker::LINE_STRIP, createMarkerScale(0.1, 0.1, 0.1),
-
     createMarkerColor(r, g, b, 0.999));
   marker.lifetime = rclcpp::Duration::from_seconds(1.5);
 
@@ -357,34 +395,11 @@ MarkerArray createPredictedPathMarkerArray(
     marker.points.clear();
 
     const auto & predicted_path_pose = path.at(i);
-    const double half_width = vehicle_info.vehicle_width_m / 2.0;
-    const double base_to_front = vehicle_info.vehicle_length_m - vehicle_info.rear_overhang_m;
-    const double base_to_rear = vehicle_info.rear_overhang_m;
-
-    marker.points.push_back(
-      tier4_autoware_utils::calcOffsetPose(predicted_path_pose, base_to_front, -half_width, 0.0)
-        .position);
-    marker.points.push_back(
-      tier4_autoware_utils::calcOffsetPose(predicted_path_pose, base_to_front, half_width, 0.0)
-        .position);
-    marker.points.push_back(
-      tier4_autoware_utils::calcOffsetPose(predicted_path_pose, -base_to_rear, half_width, 0.0)
-        .position);
-    marker.points.push_back(
-      tier4_autoware_utils::calcOffsetPose(predicted_path_pose, -base_to_rear, -half_width, 0.0)
-        .position);
-    marker.points.push_back(marker.points.front());
+    addFootprintMarker(marker, predicted_path_pose, vehicle_info);
 
     marker_array.markers.push_back(marker);
   }
   return marker_array;
-
-  marker.points.reserve(path.size());
-  for (const auto & point : path) {
-    marker.points.push_back(point.position);
-  }
-  msg.markers.push_back(marker);
-  return msg;
 }
 
 MarkerArray showPolygon(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns)

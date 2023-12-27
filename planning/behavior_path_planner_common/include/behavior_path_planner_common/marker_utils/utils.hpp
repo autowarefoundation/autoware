@@ -18,6 +18,8 @@
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
+#include <vehicle_info_util/vehicle_info.hpp>
+
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
@@ -55,6 +57,14 @@ inline int64_t bitShift(int64_t original_id)
 {
   return original_id << (sizeof(int32_t) * 8 / 2);
 }
+
+void addFootprintMarker(
+  visualization_msgs::msg::Marker & marker, const geometry_msgs::msg::Pose & pose,
+  const vehicle_info_util::VehicleInfo & vehicle_info);
+
+MarkerArray createFootprintMarkerArray(
+  const Pose & base_link_pose, const vehicle_info_util::VehicleInfo vehicle_info,
+  const std::string && ns, const int32_t & id, const float & r, const float & g, const float & b);
 
 MarkerArray createPoseMarkerArray(
   const Pose & pose, std::string && ns, const int32_t & id, const float & r, const float & g,

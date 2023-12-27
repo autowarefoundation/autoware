@@ -816,6 +816,8 @@ void StartPlannerModule::updatePullOutStatus()
   planWithPriority(
     start_pose_candidates, *refined_start_pose, goal_pose, parameters_->search_priority);
 
+  start_planner_data_.refined_start_pose = *refined_start_pose;
+  start_planner_data_.start_pose_candidates = start_pose_candidates;
   const auto pull_out_lanes = start_planner_utils::getPullOutLanes(
     planner_data_, planner_data_->parameters.backward_path_length + parameters_->max_back_distance);
 
@@ -1274,6 +1276,8 @@ void StartPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) cons
 
 void StartPlannerModule::setDebugData() const
 {
+  using marker_utils::addFootprintMarker;
+  using marker_utils::createFootprintMarkerArray;
   using marker_utils::createObjectsMarkerArray;
   using marker_utils::createPathMarkerArray;
   using marker_utils::createPoseMarkerArray;
@@ -1298,6 +1302,8 @@ void StartPlannerModule::setDebugData() const
   add(createPoseMarkerArray(status_.pull_out_start_pose, "back_end_pose", 0, 0.9, 0.3, 0.3));
   add(createPoseMarkerArray(status_.pull_out_path.start_pose, "start_pose", 0, 0.3, 0.9, 0.3));
   add(createPoseMarkerArray(status_.pull_out_path.end_pose, "end_pose", 0, 0.9, 0.9, 0.3));
+  add(createFootprintMarkerArray(
+    start_planner_data_.refined_start_pose, vehicle_info_, "refined_start_pose", 0, 0.9, 0.9, 0.3));
   add(createPathMarkerArray(getFullPath(), "full_path", 0, 0.0, 0.5, 0.9));
   add(createPathMarkerArray(status_.backward_path, "backward_driving_path", 0, 0.0, 0.9, 0.0));
 
@@ -1328,6 +1334,34 @@ void StartPlannerModule::setDebugData() const
       marker.lifetime = life_time;
       debug_marker_.markers.push_back(marker);
     }
+  }
+  // start pose candidates
+  {
+    MarkerArray start_pose_footprint_marker_array{};
+    MarkerArray start_pose_text_marker_array{};
+    const auto purple = createMarkerColor(1.0, 0.0, 1.0, 0.99);
+    Marker footprint_marker = createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "start_pose_candidates", 0, Marker::LINE_STRIP,
+      createMarkerScale(0.2, 0.2, 0.2), purple);
+    Marker text_marker = createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "start_pose_candidates_idx", 0,
+      visualization_msgs::msg::Marker::TEXT_VIEW_FACING, createMarkerScale(0.3, 0.3, 0.3), purple);
+    footprint_marker.lifetime = rclcpp::Duration::from_seconds(1.5);
+    text_marker.lifetime = rclcpp::Duration::from_seconds(1.5);
+    for (size_t i = 0; i < start_planner_data_.start_pose_candidates.size(); ++i) {
+      footprint_marker.id = i;
+      text_marker.id = i;
+      footprint_marker.points.clear();
+      text_marker.text = "idx[" + std::to_string(i) + "]";
+      text_marker.pose = start_planner_data_.start_pose_candidates.at(i);
+      addFootprintMarker(
+        footprint_marker, start_planner_data_.start_pose_candidates.at(i), vehicle_info_);
+      start_pose_footprint_marker_array.markers.push_back(footprint_marker);
+      start_pose_text_marker_array.markers.push_back(text_marker);
+    }
+
+    add(start_pose_footprint_marker_array);
+    add(start_pose_text_marker_array);
   }
 
   // safety check
