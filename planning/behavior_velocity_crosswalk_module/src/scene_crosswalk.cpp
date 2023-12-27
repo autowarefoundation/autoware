@@ -873,7 +873,7 @@ Polygon2d CrosswalkModule::getAttentionArea(
 std::optional<StopFactor> CrosswalkModule::checkStopForStuckVehicles(
   const PathWithLaneId & ego_path, const std::vector<PredictedObject> & objects,
   const std::vector<geometry_msgs::msg::Point> & path_intersects,
-  const std::optional<geometry_msgs::msg::Pose> & stop_pose) const
+  const std::optional<geometry_msgs::msg::Pose> & stop_pose)
 {
   const auto & p = planner_param_;
 
@@ -938,6 +938,10 @@ std::optional<StopFactor> CrosswalkModule::checkStopForStuckVehicles(
         continue;
       }
 
+      setObjectsOfInterestData(
+        object.kinematics.initial_pose_with_covariance.pose, object.shape, ColorName::RED);
+
+      // early return may not appropriate because the nearest in range object should be handled
       return createStopFactor(*feasible_stop_pose, {obj_pos});
     }
   }
@@ -1018,11 +1022,29 @@ void CrosswalkModule::updateObjectState(
       has_traffic_light, collision_point, object.classification.front().label, planner_param_,
       crosswalk_.polygon2d().basicPolygon());
 
+    const auto collision_state = object_info_manager_.getCollisionState(obj_uuid);
     if (collision_point) {
-      const auto collision_state = object_info_manager_.getCollisionState(obj_uuid);
       debug_data_.collision_points.push_back(
         std::make_tuple(obj_uuid, *collision_point, collision_state));
     }
+
+    const auto getLabelColor = [](const auto collision_state) {
+      if (collision_state == CollisionState::YIELD) {
+        return ColorName::RED;
+      } else if (
+        collision_state == CollisionState::EGO_PASS_FIRST ||
+        collision_state == CollisionState::EGO_PASS_LATER) {
+        return ColorName::GREEN;
+      } else if (collision_state == CollisionState::IGNORE) {
+        return ColorName::GRAY;
+      } else {
+        return ColorName::AMBER;
+      }
+    };
+
+    setObjectsOfInterestData(
+      object.kinematics.initial_pose_with_covariance.pose, object.shape,
+      getLabelColor(collision_state));
   }
   object_info_manager_.finalize();
 }

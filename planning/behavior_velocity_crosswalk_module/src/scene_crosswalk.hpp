@@ -331,7 +331,7 @@ private:
   std::optional<StopFactor> checkStopForStuckVehicles(
     const PathWithLaneId & ego_path, const std::vector<PredictedObject> & objects,
     const std::vector<geometry_msgs::msg::Point> & path_intersects,
-    const std::optional<geometry_msgs::msg::Pose> & stop_pose) const;
+    const std::optional<geometry_msgs::msg::Pose> & stop_pose);
 
   std::optional<double> findEgoPassageDirectionAlongPath(
     const PathWithLaneId & sparse_resample_path) const;
