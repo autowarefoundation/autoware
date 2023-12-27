@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_FUSION_TO_DETECTED_OBJECT_HPP_
-#define RADAR_FUSION_TO_DETECTED_OBJECT_HPP_
+#ifndef RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_HPP_
+#define RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_HPP_
 
 #include "rclcpp/logger.hpp"
 #include "tier4_autoware_utils/geometry/boost_geometry.hpp"
@@ -115,4 +115,4 @@ private:
 };
 }  // namespace radar_fusion_to_detected_object
 
-#endif  // RADAR_FUSION_TO_DETECTED_OBJECT_HPP_
+#endif  // RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_HPP_

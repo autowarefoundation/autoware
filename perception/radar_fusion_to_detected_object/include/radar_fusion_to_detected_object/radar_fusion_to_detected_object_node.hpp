@@ -13,13 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_OBJECT_FUSION_TO_DETECTED_OBJECT__RADAR_OBJECT_FUSION_TO_DETECTED_OBJECT_NODE_HPP_
-#define RADAR_OBJECT_FUSION_TO_DETECTED_OBJECT__RADAR_OBJECT_FUSION_TO_DETECTED_OBJECT_NODE_HPP_
+#ifndef RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_NODE_HPP_
+#define RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_NODE_HPP_
 
 #include "message_filters/subscriber.h"
 #include "message_filters/sync_policies/approximate_time.h"
 #include "message_filters/synchronizer.h"
-#include "radar_fusion_to_detected_object.hpp"
+#include "radar_fusion_to_detected_object/radar_fusion_to_detected_object.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include "autoware_auto_perception_msgs/msg/detected_objects.hpp"
@@ -89,4 +89,4 @@ private:
 
 }  // namespace radar_fusion_to_detected_object
 
-#endif  // RADAR_OBJECT_FUSION_TO_DETECTED_OBJECT__RADAR_OBJECT_FUSION_TO_DETECTED_OBJECT_NODE_HPP_
+#endif  // RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_NODE_HPP_
