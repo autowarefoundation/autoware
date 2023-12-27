@@ -130,7 +130,7 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
       /**
        * STEP1: get approved modules' output
        */
-      const auto approved_modules_output = runApprovedModules(data);
+      auto approved_modules_output = runApprovedModules(data);
 
       /**
        * STEP2: check modules that need to be launched
@@ -272,22 +272,22 @@ std::vector<SceneModulePtr> PlannerManager::getRequestModules(
       // if there exists at least one approved module that is simultaneous but not always
       // executable. (only modules that are either always executable or simultaneous executable can
       // be added)
-      conditions.push_back(
-        {[&](const SceneModulePtr & m) {
-           return !getManager(m)->isAlwaysExecutableModule() &&
-                  getManager(m)->isSimultaneousExecutableAsApprovedModule();
-         },
-         [&]() { return manager_ptr->isSimultaneousExecutableAsApprovedModule(); }});
+      conditions.emplace_back(
+        [&](const SceneModulePtr & m) {
+          return !getManager(m)->isAlwaysExecutableModule() &&
+                 getManager(m)->isSimultaneousExecutableAsApprovedModule();
+        },
+        [&]() { return manager_ptr->isSimultaneousExecutableAsApprovedModule(); });
 
       // Condition 3: do not add modules that are not always executable if there exists
       // at least one approved module that is neither always nor simultaneous executable.
       // (only modules that are always executable can be added)
-      conditions.push_back(
-        {[&](const SceneModulePtr & m) {
-           return !getManager(m)->isAlwaysExecutableModule() &&
-                  !getManager(m)->isSimultaneousExecutableAsApprovedModule();
-         },
-         [&]() { return false; }});
+      conditions.emplace_back(
+        [&](const SceneModulePtr & m) {
+          return !getManager(m)->isAlwaysExecutableModule() &&
+                 !getManager(m)->isSimultaneousExecutableAsApprovedModule();
+        },
+        [&]() { return false; });
 
       bool skip_module = false;
       for (const auto & condition : conditions) {
@@ -484,22 +484,22 @@ std::pair<SceneModulePtr, BehaviorModuleOutput> PlannerManager::runRequestModule
     // Condition 3: Only modules that are always executable can be added
     // if there exists at least one executable module that is neither always nor simultaneous
     // executable.
-    conditions.push_back(
-      {[this](const SceneModulePtr & m) {
-         return !getManager(m)->isAlwaysExecutableModule() &&
-                !getManager(m)->isSimultaneousExecutableAsCandidateModule();
-       },
-       [&]() { return false; }});
+    conditions.emplace_back(
+      [this](const SceneModulePtr & m) {
+        return !getManager(m)->isAlwaysExecutableModule() &&
+               !getManager(m)->isSimultaneousExecutableAsCandidateModule();
+      },
+      [&]() { return false; });
 
     // Condition 2: Only modules that are either always executable or simultaneous executable can be
     // added if there exists at least one executable module that is simultaneous but not always
     // executable.
-    conditions.push_back(
-      {[this](const SceneModulePtr & m) {
-         return !getManager(m)->isAlwaysExecutableModule() &&
-                getManager(m)->isSimultaneousExecutableAsCandidateModule();
-       },
-       [&]() { return getManager(module_ptr)->isSimultaneousExecutableAsCandidateModule(); }});
+    conditions.emplace_back(
+      [this](const SceneModulePtr & m) {
+        return !getManager(m)->isAlwaysExecutableModule() &&
+               getManager(m)->isSimultaneousExecutableAsCandidateModule();
+      },
+      [&]() { return getManager(module_ptr)->isSimultaneousExecutableAsCandidateModule(); });
 
     for (const auto & condition : conditions) {
       const auto & find_block_module = condition.first;
@@ -933,8 +933,9 @@ void PlannerManager::print() const
   string_stream << "\n" << std::fixed << std::setprecision(1);
   string_stream << "processing time   : ";
   for (const auto & t : processing_time_) {
-    string_stream << std::right << "[" << std::setw(max_string_num + 1) << std::left << t.first
-                  << ":" << std::setw(4) << std::right << t.second << "ms]\n"
+    string_stream << std::right << "[" << std::setw(static_cast<int>(max_string_num) + 1)
+                  << std::left << t.first << ":" << std::setw(4) << std::right << t.second
+                  << "ms]\n"
                   << std::setw(21);
   }
 
@@ -962,7 +963,7 @@ std::shared_ptr<SceneModuleVisitor> PlannerManager::getDebugMsg()
   return debug_msg_ptr_;
 }
 
-std::string PlannerManager::getNames(const std::vector<SceneModulePtr> & modules) const
+std::string PlannerManager::getNames(const std::vector<SceneModulePtr> & modules)
 {
   std::stringstream ss;
   for (const auto & m : modules) {

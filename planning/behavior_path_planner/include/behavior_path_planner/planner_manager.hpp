@@ -435,7 +435,7 @@ private:
     const std::vector<SceneModulePtr> & request_modules, const std::shared_ptr<PlannerData> & data,
     const BehaviorModuleOutput & previous_module_output);
 
-  std::string getNames(const std::vector<SceneModulePtr> & modules) const;
+  static std::string getNames(const std::vector<SceneModulePtr> & modules);
 
   std::optional<lanelet::ConstLanelet> root_lanelet_{std::nullopt};
 
