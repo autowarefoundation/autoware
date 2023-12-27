@@ -1058,8 +1058,10 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   const bool is_first_conflicting_lane_private =
     (std::string(first_conflicting_lane.attributeOr("location", "else")).compare("private") == 0);
   if (stuck_detected) {
-    if (!(is_first_conflicting_lane_private &&
-          planner_param_.stuck_vehicle.disable_against_private_lane)) {
+    if (
+      is_first_conflicting_lane_private &&
+      planner_param_.stuck_vehicle.disable_against_private_lane) {
+      // do nothing
     } else {
       std::optional<size_t> stopline_idx = std::nullopt;
       if (stuck_stopline_idx_opt) {
