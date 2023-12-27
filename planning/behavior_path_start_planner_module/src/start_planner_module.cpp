@@ -371,11 +371,11 @@ BehaviorModuleOutput StartPlannerModule::plan()
       incrementPathIndex();
     }
 
-    if (!status_.is_safe_dynamic_objects && !isWaitingApproval() && !status_.has_stop_point) {
+    if (!status_.is_safe_dynamic_objects && !isWaitingApproval() && !status_.stop_pose) {
       auto current_path = getCurrentPath();
       const auto stop_path =
         behavior_path_planner::utils::parking_departure::generateFeasibleStopPath(
-          current_path, planner_data_, *stop_pose_, parameters_->maximum_deceleration_for_stop,
+          current_path, planner_data_, stop_pose_, parameters_->maximum_deceleration_for_stop,
           parameters_->maximum_jerk_for_stop);
 
       // Insert stop point in the path if needed
@@ -384,17 +384,18 @@ BehaviorModuleOutput StartPlannerModule::plan()
           getLogger(), *clock_, 5000, "Insert stop point in the path because of dynamic objects");
         path = *stop_path;
         status_.prev_stop_path_after_approval = std::make_shared<PathWithLaneId>(path);
-        status_.has_stop_point = true;
+        status_.stop_pose = stop_pose_;
       } else {
         path = current_path;
       }
-    } else if (!isWaitingApproval() && status_.has_stop_point) {
+    } else if (!isWaitingApproval() && status_.stop_pose) {
       // Delete stop point if conditions are met
       if (status_.is_safe_dynamic_objects && isStopped()) {
-        status_.has_stop_point = false;
+        status_.stop_pose = std::nullopt;
         path = getCurrentPath();
       }
       path = *status_.prev_stop_path_after_approval;
+      stop_pose_ = status_.stop_pose;
     } else {
       path = getCurrentPath();
     }
@@ -1419,7 +1420,7 @@ void StartPlannerModule::logPullOutStatus(rclcpp::Logger::Level log_level) const
     status_.prev_is_safe_dynamic_objects ? "true" : "false");
   logFunc("  Driving Forward: %s", status_.driving_forward ? "true" : "false");
   logFunc("  Backward Driving Complete: %s", status_.backward_driving_complete ? "true" : "false");
-  logFunc("  Has Stop Point: %s", status_.has_stop_point ? "true" : "false");
+  logFunc("  Has Stop Pose: %s", status_.stop_pose ? "true" : "false");
 
   logFunc("[Module State]");
   logFunc("  isActivated: %s", isActivated() ? "true" : "false");

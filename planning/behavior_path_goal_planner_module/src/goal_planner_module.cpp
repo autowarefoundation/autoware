@@ -798,7 +798,7 @@ void GoalPlannerModule::setStopPathFromCurrentPath(BehaviorModuleOutput & output
     auto current_path = thread_safe_data_.get_pull_over_path()->getCurrentPath();
     const auto stop_path =
       behavior_path_planner::utils::parking_departure::generateFeasibleStopPath(
-        current_path, planner_data_, *stop_pose_, parameters_->maximum_deceleration_for_stop,
+        current_path, planner_data_, stop_pose_, parameters_->maximum_deceleration_for_stop,
         parameters_->maximum_jerk_for_stop);
     if (stop_path) {
       output.path = *stop_path;

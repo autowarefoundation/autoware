@@ -68,7 +68,7 @@ struct PullOutStatus
   Pose pull_out_start_pose{};
   bool prev_is_safe_dynamic_objects{false};
   std::shared_ptr<PathWithLaneId> prev_stop_path_after_approval{nullptr};
-  bool has_stop_point{false};
+  std::optional<Pose> stop_pose{std::nullopt};
 
   PullOutStatus() {}
 };
