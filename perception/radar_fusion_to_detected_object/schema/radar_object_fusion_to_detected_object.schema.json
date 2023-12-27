@@ -3,7 +3,7 @@
   "title": "Parameters for Radar Fusion to Detected Object Node",
   "type": "object",
   "definitions": {
-    "radar_fusion_to_detected_object": {
+    "radar_object_fusion_to_detected_object": {
       "type": "object",
       "properties": {
         "node_params": {
@@ -104,7 +104,7 @@
       "type": "object",
       "properties": {
         "ros__parameters": {
-          "$ref": "#/definitions/radar_fusion_to_detected_object"
+          "$ref": "#/definitions/radar_object_fusion_to_detected_object"
         }
       },
       "required": ["ros__parameters"]

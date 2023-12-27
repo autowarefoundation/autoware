@@ -3,7 +3,7 @@
   "title": "Parameters for Mission Planner nodes",
   "type": "object",
   "definitions": {
-    "mission_planner_nodes": {
+    "mission_planner": {
       "type": "object",
       "properties": {
         "map_frame": {
@@ -73,7 +73,7 @@
       "type": "object",
       "properties": {
         "ros__parameters": {
-          "$ref": "#/definitions/mission_planner_nodes"
+          "$ref": "#/definitions/mission_planner"
         }
       },
       "required": ["ros__parameters"]

@@ -21,7 +21,7 @@ The `autoware_auto_msgs_adapter` package provides the following capabilities:
 
 ## Usage
 
-Customize the adapter configuration by replicating and editing the `adapter_control.param.yaml` file located
+Customize the adapter configuration by replicating and editing the `autoware_auto_msgs_adapter_control.param.yaml` file located
 in the `autoware_auto_msgs_adapter/config` directory. Example configuration:
 
 ```yaml
@@ -90,7 +90,7 @@ To add a new message pair,
 - Add a new entry to the [schema/autoware_auto_msgs_adapter.schema.json](schema/autoware_auto_msgs_adapter.schema.json) file in the `definitions:autoware_auto_msgs_adapter:properties:msg_type_target:enum` section.
   - Learn more about JSON schema usage in [here](https://autowarefoundation.github.io/autoware-documentation/main/contributing/coding-guidelines/ros-nodes/parameters/#json-schema).
 - Create a new config file by replicating and editing:
-  - [adapter_control.param.yaml](config/adapter_control.param.yaml)
+  - [autoware_auto_msgs_adapter_control.param.yaml](config/autoware_auto_msgs_adapter_control.param.yaml)
 - Add a new test file by replicating and editing:
   - [test_msg_ackermann_control_command.cpp](test/test_msg_ackermann_control_command.cpp)
   - No need to edit the `CMakeLists.txt` file as it will automatically detect the new test file.
