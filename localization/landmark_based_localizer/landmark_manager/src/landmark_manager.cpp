@@ -29,32 +29,17 @@ namespace landmark_manager
 
 void LandmarkManager::parse_landmarks(
   const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr & msg,
-  const std::string & target_subtype, const rclcpp::Logger & logger)
+  const std::string & target_subtype)
 {
-  RCLCPP_INFO_STREAM(logger, "msg->format_version: " << msg->format_version);
-  RCLCPP_INFO_STREAM(logger, "msg->map_format: " << msg->map_format);
-  RCLCPP_INFO_STREAM(logger, "msg->map_version: " << msg->map_version);
-  RCLCPP_INFO_STREAM(logger, "msg->data.size(): " << msg->data.size());
-  lanelet::LaneletMapPtr lanelet_map_ptr{std::make_shared<lanelet::LaneletMap>()};
-  lanelet::utils::conversion::fromBinMsg(*msg, lanelet_map_ptr);
-
-  for (const auto & poly : lanelet_map_ptr->polygonLayer) {
-    const std::string type{poly.attributeOr(lanelet::AttributeName::Type, "none")};
-    if (type != "pose_marker") {
-      continue;
-    }
-    const std::string subtype{poly.attributeOr(lanelet::AttributeName::Subtype, "none")};
-    if (subtype != target_subtype) {
-      continue;
-    }
-
+  std::vector<lanelet::Polygon3d> landmarks =
+    lanelet::localization::parseLandmarkPolygons(msg, target_subtype);
+  for (const lanelet::Polygon3d & poly : landmarks) {
     // Get landmark_id
     const std::string landmark_id = poly.attributeOr("marker_id", "none");
 
     // Get 4 vertices
     const auto & vertices = poly.basicPolygon();
     if (vertices.size() != 4) {
-      RCLCPP_WARN_STREAM(logger, "vertices.size() (" << vertices.size() << ") != 4");
       continue;
     }
 
@@ -65,12 +50,8 @@ void LandmarkManager::parse_landmarks(
     const auto & v2 = vertices[2];
     const auto & v3 = vertices[3];
     const double volume = (v1 - v0).cross(v2 - v0).dot(v3 - v0) / 6.0;
-    RCLCPP_INFO_STREAM(logger, "volume = " << volume);
     const double volume_threshold = 1e-5;
     if (volume > volume_threshold) {
-      RCLCPP_WARN_STREAM(
-        logger,
-        "volume (" << volume << ") > threshold (" << volume_threshold << "), This is not plane.");
       continue;
     }
 
@@ -99,13 +80,6 @@ void LandmarkManager::parse_landmarks(
 
     // Add
     landmarks_map_[landmark_id].push_back(pose);
-    RCLCPP_INFO_STREAM(logger, "id: " << landmark_id);
-    RCLCPP_INFO_STREAM(
-      logger,
-      "(x, y, z) = " << pose.position.x << ", " << pose.position.y << ", " << pose.position.z);
-    RCLCPP_INFO_STREAM(
-      logger, "q = " << pose.orientation.x << ", " << pose.orientation.y << ", "
-                     << pose.orientation.z << ", " << pose.orientation.w);
   }
 }
 

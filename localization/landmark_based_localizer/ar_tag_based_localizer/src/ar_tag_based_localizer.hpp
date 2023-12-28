@@ -80,6 +80,7 @@ class ArTagBasedLocalizer : public rclcpp::Node
   using TransformStamped = geometry_msgs::msg::TransformStamped;
   using MarkerArray = visualization_msgs::msg::MarkerArray;
   using DiagnosticArray = diagnostic_msgs::msg::DiagnosticArray;
+  using Landmark = landmark_manager::Landmark;
 
 public:
   explicit ArTagBasedLocalizer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
@@ -89,7 +90,7 @@ private:
   void image_callback(const Image::ConstSharedPtr & msg);
   void cam_info_callback(const CameraInfo::ConstSharedPtr & msg);
   void ekf_pose_callback(const PoseWithCovarianceStamped::ConstSharedPtr & msg);
-  std::vector<landmark_manager::Landmark> detect_landmarks(const Image::ConstSharedPtr & msg);
+  std::vector<Landmark> detect_landmarks(const Image::ConstSharedPtr & msg);
 
   // Parameters
   float marker_size_{};

@@ -43,68 +43,7 @@ So, if the 4 vertices are considered as forming a tetrahedron and its volume exc
 
 ## Map specifications
 
-For this package to work correctly, the poses of the landmarks must be specified in the Lanelet2 map format that `map_loader` and `landmark_manager` can interpret.
-
-The four vertices of a landmark are defined counterclockwise.
-
-The order of the four vertices is defined as follows. In the coordinate system of a landmark,
-
-- the x-axis is parallel to the vector from the first vertex to the second vertex
-- the y-axis is parallel to the vector from the second vertex to the third vertex
-
-![lanelet2 data structure](./doc_image/lanelet2_data_structure.drawio.svg)
-
-### Example of `lanelet2_map.osm`
-
-The values provided below are placeholders.
-Ensure to input the correct coordinates corresponding to the actual location where the landmark is placed, such as `lat`, `lon`, `mgrs_code`, `local_x`, `local_y`.
-
-For example, when using the AR tag, it would look like this.
-
-```xml
-...
-
-  <node id="1" lat="35.8xxxxx" lon="139.6xxxxx">
-    <tag k="mgrs_code" v="99XXX000000"/>
-    <tag k="local_x" v="22.2356"/>
-    <tag k="local_y" v="87.4506"/>
-    <tag k="ele" v="2.1725"/>
-  </node>
-  <node id="2" lat="35.8xxxxx" lon="139.6xxxxx">
-    <tag k="mgrs_code" v="99XXX000000"/>
-    <tag k="local_x" v="22.639"/>
-    <tag k="local_y" v="87.5886"/>
-    <tag k="ele" v="2.5947"/>
-  </node>
-  <node id="3" lat="35.8xxxxx" lon="139.6xxxxx">
-    <tag k="mgrs_code" v="99XXX000000"/>
-    <tag k="local_x" v="22.2331"/>
-    <tag k="local_y" v="87.4713"/>
-    <tag k="ele" v="3.0208"/>
-  </node>
-  <node id="4" lat="35.8xxxxx" lon="139.6xxxxx">
-    <tag k="mgrs_code" v="99XXX000000"/>
-    <tag k="local_x" v="21.8298"/>
-    <tag k="local_y" v="87.3332"/>
-    <tag k="ele" v="2.5985"/>
-  </node>
-
-...
-
-  <way id="5">
-    <nd ref="1"/>
-    <nd ref="2"/>
-    <nd ref="3"/>
-    <nd ref="4"/>
-    <tag k="type" v="pose_marker"/>
-    <tag k="subtype" v="apriltag_16h5"/>
-    <tag k="area" v="yes"/>
-    <tag k="marker_id" v="0"/>
-  </way>
-
-...
-
-```
+See <https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md#localization-landmarks>
 
 ## About `consider_orientation`
 
