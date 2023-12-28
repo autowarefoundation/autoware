@@ -63,82 +63,6 @@ T merge_factors(const rclcpp::Time stamp, const std::vector<typename T::ConstSha
   return message;
 }
 
-uint16_t convert_velocity_behavior(const std::string & behavior)
-{
-  using autoware_adapi_v1_msgs::msg::PlanningBehavior;
-  using autoware_adapi_v1_msgs::msg::VelocityFactor;
-
-  if (behavior == PlanningBehavior::AVOIDANCE) {
-    return VelocityFactor::AVOIDANCE;
-  }
-  if (behavior == PlanningBehavior::CROSSWALK) {
-    return VelocityFactor::CROSSWALK;
-  }
-  if (behavior == PlanningBehavior::INTERSECTION) {
-    return VelocityFactor::INTERSECTION;
-  }
-  if (behavior == PlanningBehavior::LANE_CHANGE) {
-    return VelocityFactor::LANE_CHANGE;
-  }
-  if (behavior == PlanningBehavior::MERGE) {
-    return VelocityFactor::MERGE;
-  }
-  if (behavior == PlanningBehavior::NO_DRIVABLE_LANE) {
-    return VelocityFactor::NO_DRIVABLE_LANE;
-  }
-  if (behavior == PlanningBehavior::NO_STOPPING_AREA) {
-    return VelocityFactor::NO_STOPPING_AREA;
-  }
-  if (behavior == PlanningBehavior::REAR_CHECK) {
-    return VelocityFactor::REAR_CHECK;
-  }
-  if (behavior == PlanningBehavior::ROUTE_OBSTACLE) {
-    return VelocityFactor::ROUTE_OBSTACLE;
-  }
-  if (behavior == PlanningBehavior::SIDEWALK) {
-    return VelocityFactor::SIDEWALK;
-  }
-  if (behavior == PlanningBehavior::STOP_SIGN) {
-    return VelocityFactor::STOP_SIGN;
-  }
-  if (behavior == PlanningBehavior::SURROUNDING_OBSTACLE) {
-    return VelocityFactor::SURROUNDING_OBSTACLE;
-  }
-  if (behavior == PlanningBehavior::TRAFFIC_SIGNAL) {
-    return VelocityFactor::TRAFFIC_SIGNAL;
-  }
-  if (behavior == PlanningBehavior::USER_DEFINED_DETECTION_AREA) {
-    return VelocityFactor::USER_DEFINED_DETECTION_AREA;
-  }
-  if (behavior == PlanningBehavior::VIRTUAL_TRAFFIC_LIGHT) {
-    return VelocityFactor::V2I_GATE_CONTROL_ENTER;
-  }
-  return VelocityFactor::UNKNOWN;
-}
-
-uint16_t convert_steering_behavior(const std::string & behavior)
-{
-  using autoware_adapi_v1_msgs::msg::PlanningBehavior;
-  using autoware_adapi_v1_msgs::msg::SteeringFactor;
-
-  if (behavior == PlanningBehavior::AVOIDANCE) {
-    return SteeringFactor::AVOIDANCE_PATH_CHANGE;
-  }
-  if (behavior == PlanningBehavior::GOAL_PLANNER) {
-    return SteeringFactor::GOAL_PLANNER;
-  }
-  if (behavior == PlanningBehavior::INTERSECTION) {
-    return SteeringFactor::INTERSECTION;
-  }
-  if (behavior == PlanningBehavior::LANE_CHANGE) {
-    return SteeringFactor::LANE_CHANGE;
-  }
-  if (behavior == PlanningBehavior::START_PLANNER) {
-    return SteeringFactor::START_PLANNER;
-  }
-  return SteeringFactor::UNKNOWN;
-}
-
 PlanningNode::PlanningNode(const rclcpp::NodeOptions & options) : Node("planning", options)
 {
   // TODO(Takagi, Isamu): remove default value
@@ -202,16 +126,6 @@ void PlanningNode::on_timer()
   using autoware_adapi_v1_msgs::msg::VelocityFactor;
   auto velocity = merge_factors<VelocityFactorArray>(now(), velocity_factors_);
   auto steering = merge_factors<SteeringFactorArray>(now(), steering_factors_);
-
-  // Set velocity factor type for compatibility.
-  for (auto & factor : velocity.factors) {
-    factor.type = convert_velocity_behavior(factor.behavior);
-  }
-
-  // Set steering factor type for compatibility.
-  for (auto & factor : steering.factors) {
-    factor.type = convert_steering_behavior(factor.behavior);
-  }
 
   // Set the distance if it is nan.
   if (trajectory_ && kinematic_state_) {

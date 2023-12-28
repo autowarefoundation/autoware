@@ -174,9 +174,6 @@ void VelocitySteeringFactorsPanel::onSteeringFactors(const SteeringFactorArray::
         case SteeringFactor::APPROACHING:
           label->setText("APPROACHING");
           break;
-        case SteeringFactor::TRYING:
-          label->setText("TRYING");
-          break;
         case SteeringFactor::TURNING:
           label->setText("TURNING");
           break;
