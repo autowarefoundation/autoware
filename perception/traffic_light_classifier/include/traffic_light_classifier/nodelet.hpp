@@ -86,6 +86,9 @@ private:
   rclcpp::Publisher<tier4_perception_msgs::msg::TrafficSignalArray>::SharedPtr
     traffic_signal_array_pub_;
   std::shared_ptr<ClassifierInterface> classifier_ptr_;
+
+  double backlight_threshold_;
+  bool is_harsh_backlight(const cv::Mat & img) const;
 };
 
 }  // namespace traffic_light

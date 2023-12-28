@@ -42,7 +42,8 @@ def generate_launch_description():
     add_launch_arg("input/image", "/sensing/camera/traffic_light/image_raw")
     add_launch_arg("output/rois", "/perception/traffic_light_recognition/rois")
     add_launch_arg(
-        "output/traffic_signals", "/perception/traffic_light_recognition/traffic_signals"
+        "output/traffic_signals",
+        "/perception/traffic_light_recognition/traffic_signals",
     )
 
     # traffic_light_fine_detector
@@ -64,14 +65,20 @@ def generate_launch_description():
     add_launch_arg("classifier_type", "1")
     add_launch_arg(
         "classifier_model_path",
-        os.path.join(classifier_share_dir, "data", "traffic_light_classifier_efficientNet_b1.onnx"),
+        os.path.join(
+            classifier_share_dir,
+            "data",
+            "traffic_light_classifier_efficientNet_b1.onnx",
+        ),
     )
     add_launch_arg(
-        "classifier_label_path", os.path.join(classifier_share_dir, "data", "lamp_labels.txt")
+        "classifier_label_path",
+        os.path.join(classifier_share_dir, "data", "lamp_labels.txt"),
     )
     add_launch_arg("classifier_precision", "fp16")
     add_launch_arg("classifier_mean", "[123.675, 116.28, 103.53]")
     add_launch_arg("classifier_std", "[58.395, 57.12, 57.375]")
+    add_launch_arg("backlight_threshold", "0.85")
 
     add_launch_arg("use_intra_process", "False")
     add_launch_arg("use_multithread", "False")
@@ -102,6 +109,7 @@ def generate_launch_description():
                         "classifier_precision",
                         "classifier_mean",
                         "classifier_std",
+                        "backlight_threshold",
                     )
                 ],
                 remappings=[
@@ -122,7 +130,10 @@ def generate_launch_description():
                     ("~/input/image", LaunchConfiguration("input/image")),
                     ("~/input/rois", LaunchConfiguration("output/rois")),
                     ("~/input/rough/rois", "detection/rough/rois"),
-                    ("~/input/traffic_signals", LaunchConfiguration("output/traffic_signals")),
+                    (
+                        "~/input/traffic_signals",
+                        LaunchConfiguration("output/traffic_signals"),
+                    ),
                     ("~/output/image", "debug/rois"),
                     ("~/output/image/compressed", "debug/rois/compressed"),
                     ("~/output/image/compressedDepth", "debug/rois/compressedDepth"),

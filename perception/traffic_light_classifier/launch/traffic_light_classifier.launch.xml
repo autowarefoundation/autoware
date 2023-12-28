@@ -13,6 +13,7 @@
   <arg name="classifier_type" default="0" unless="$(var use_gpu)"/>
 
   <arg name="build_only" default="false" description="shutdown node after TensorRT engine file is built"/>
+  <arg name="backlight_threshold" default="0.85" description="overwrite signals if the RoI image intensity is greater than this value"/>
 
   <node pkg="traffic_light_classifier" exec="traffic_light_classifier_node" name="traffic_light_classifier">
     <remap from="~/input/image" to="$(var input/image)"/>
@@ -24,5 +25,6 @@
     <param name="classifier_model_path" value="$(var classifier_model_path)"/>
     <param name="classifier_precision" value="$(var classifier_precision)"/>
     <param name="build_only" value="$(var build_only)"/>
+    <param name="backlight_threshold" value="$(var backlight_threshold)"/>
   </node>
 </launch>
