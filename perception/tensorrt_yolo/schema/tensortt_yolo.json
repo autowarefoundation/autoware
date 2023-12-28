@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for tensorrt_yolo",
+  "type": "object",
+  "definitions": {
+    "tensorrt_yolo": {
+      "type": "object",
+      "properties": {
+        "num_anchors": {
+          "type": "number",
+          "default": [
+            10.0, 13.0, 16.0, 30.0, 33.0, 23.0, 30.0, 61.0, 62.0, 45.0, 59.0, 119.0, 116.0, 90.0,
+            156.0, 198.0, 373.0, 326.0
+          ],
+          "description": "The anchors to create bounding box candidates."
+        },
+        "scale_x_y": {
+          "type": "number",
+          "default": [1.0, 1.0, 1.0],
+          "description": "scale parameter to eliminate grid sensitivity."
+        },
+        "score_thresh": {
+          "type": "number",
+          "default": 0.1,
+          "description": "If the objectness score is less than this value, the object is ignored in yolo layer."
+        },
+        "iou_thresh": {
+          "type": "number",
+          "default": 0.45,
+          "description": "The iou threshold for NMS method."
+        },
+        "detections_per_im": {
+          "type": "number",
+          "default": 100,
+          "description": " The maximum detection number for one frame."
+        },
+        "use_darknet_layer": {
+          "type": "boolean",
+          "default": true,
+          "description": "The flag to use yolo layer in darknet."
+        },
+        "ignore_thresh": {
+          "type": "number",
+          "default": 0.5,
+          "description": "If the output score is less than this value, this object is ignored."
+        },
+        "onnx_file": {
+          "type": "string",
+          "description": "The onnx file name for yolo model."
+        },
+        "engine_file": {
+          "type": "string",
+          "description": "The tensorrt engine file name for yolo model."
+        },
+        "label_file": {
+          "type": "string",
+          "description": "The label file with label names for detected objects written on it."
+        },
+        "calib_image_directory": {
+          "type": "string",
+          "description": "The directory name including calibration images for int8 inference."
+        },
+        "calib_cache_file": {
+          "type": "string",
+          "description": "The calibration cache file for int8 inference."
+        },
+        "mode": {
+          "type": "string",
+          "default": "FP32",
+          "description": "The inference mode: FP32, FP16, INT8."
+        },
+        "gpu_id": {
+          "type": "number",
+          "default": 0,
+          "description": "GPU device ID that runs the model."
+        }
+      },
+      "required": [
+        "num_anchors",
+        "scale_x_y",
+        "score_thresh",
+        "iou_thresh",
+        "detections_per_im",
+        "use_darknet_layer",
+        "ignore_thresh",
+        "onnx_file",
+        "engine_file",
+        "label_file",
+        "calib_image_directory",
+        "calib_cache_file",
+        "mode",
+        "gpu_id"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/tensorrt_yolo"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

@@ -50,9 +50,9 @@ TensorrtYoloNodelet::TensorrtYoloNodelet(const rclcpp::NodeOptions & options)
   std::string label_file = declare_parameter("label_file", "");
   std::string calib_image_directory = declare_parameter("calib_image_directory", "");
   std::string calib_cache_file = declare_parameter("calib_cache_file", "");
-  std::string mode = declare_parameter("mode", "FP32");
-  gpu_device_id_ = declare_parameter("gpu_id", 0);
-  yolo_config_.num_anchors = declare_parameter("num_anchors", 3);
+  std::string mode = declare_parameter<std::string>("mode");
+  gpu_device_id_ = declare_parameter<int>("gpu_id");
+  yolo_config_.num_anchors = declare_parameter<int>("num_anchors");
   auto anchors = declare_parameter(
     "anchors", std::vector<double>{
                  10, 13, 16, 30, 33, 23, 30, 61, 62, 45, 59, 119, 116, 90, 156, 198, 373, 326});
@@ -61,11 +61,11 @@ TensorrtYoloNodelet::TensorrtYoloNodelet(const rclcpp::NodeOptions & options)
   auto scale_x_y = declare_parameter("scale_x_y", std::vector<double>{1.0, 1.0, 1.0});
   std::vector<float> scale_x_y_float(scale_x_y.begin(), scale_x_y.end());
   yolo_config_.scale_x_y = scale_x_y_float;
-  yolo_config_.score_thresh = declare_parameter("score_thresh", 0.1);
-  yolo_config_.iou_thresh = declare_parameter("iou_thresh", 0.45);
-  yolo_config_.detections_per_im = declare_parameter("detections_per_im", 100);
-  yolo_config_.use_darknet_layer = declare_parameter("use_darknet_layer", true);
-  yolo_config_.ignore_thresh = declare_parameter("ignore_thresh", 0.5);
+  yolo_config_.score_thresh = declare_parameter<double>("score_thresh");
+  yolo_config_.iou_thresh = declare_parameter<double>("iou_thresh");
+  yolo_config_.detections_per_im = declare_parameter<int>("detections_per_im");
+  yolo_config_.use_darknet_layer = declare_parameter<bool>("use_darknet_layer");
+  yolo_config_.ignore_thresh = declare_parameter<double>("ignore_thresh");
 
   if (!yolo::set_cuda_device(gpu_device_id_)) {
     RCLCPP_ERROR(this->get_logger(), "Given GPU not exist or suitable");
