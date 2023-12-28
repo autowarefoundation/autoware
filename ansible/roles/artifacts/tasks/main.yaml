@@ -339,27 +339,27 @@
     mode: "755"
     state: directory
 
-- name: Download traffic_light_fine_detector/tlr_pedcar_yolox_s_batch_1.onnx
+- name: Download traffic_light_fine_detector/tlr_car_ped_yolox_s_batch_1.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v3/tlr_pedcar_yolox_s_batch_1.onnx
-    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_pedcar_yolox_s_batch_1.onnx"
+    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v3/tlr_car_ped_yolox_s_batch_1.onnx
+    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_car_ped_yolox_s_batch_1.onnx"
     mode: "644"
     checksum: sha256:1ad633066a1195006f4709f8fa07800dd65a74a814b3efb4c99bcc5a1a7962f6
 
-- name: Download traffic_light_fine_detector/tlr_pedcar_yolox_s_batch_4.onnx
+- name: Download traffic_light_fine_detector/tlr_car_ped_yolox_s_batch_4.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v3/tlr_pedcar_yolox_s_batch_4.onnx
-    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_pedcar_yolox_s_batch_4.onnx"
+    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v3/tlr_car_ped_yolox_s_batch_4.onnx
+    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_car_ped_yolox_s_batch_4.onnx"
     mode: "644"
     checksum: sha256:cf93eb1e1a97aefc6edd0c0c4d77c7f5fc2aa1e81e3c5c9cd49d976173d03a04
 
-- name: Download traffic_light_fine_detector/tlr_pedcar_yolox_s_batch_6.onnx
+- name: Download traffic_light_fine_detector/tlr_car_ped_yolox_s_batch_6.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v3/tlr_pedcar_yolox_s_batch_6.onnx
-    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_pedcar_yolox_s_batch_6.onnx"
+    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v3/tlr_car_ped_yolox_s_batch_6.onnx
+    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_car_ped_yolox_s_batch_6.onnx"
     mode: "644"
     checksum: sha256:0b05a89fb30f1f92c6ec687d48e8ceda4da6f81cbd82d8a102d168753a6cedb6
 
