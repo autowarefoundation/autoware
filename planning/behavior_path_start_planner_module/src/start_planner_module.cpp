@@ -586,7 +586,7 @@ void StartPlannerModule::planWithPriority(
     determinePriorityOrder(search_priority, start_pose_candidates.size());
 
   for (const auto & [index, planner] : order_priority) {
-    if (findPullOutPath(start_pose_candidates, index, planner, refined_start_pose, goal_pose))
+    if (findPullOutPath(start_pose_candidates[index], planner, refined_start_pose, goal_pose))
       return;
   }
 
@@ -594,17 +594,17 @@ void StartPlannerModule::planWithPriority(
 }
 
 PriorityOrder StartPlannerModule::determinePriorityOrder(
-  const std::string & search_priority, const size_t candidates_size)
+  const std::string & search_priority, const size_t start_pose_candidates_num)
 {
   PriorityOrder order_priority;
   if (search_priority == "efficient_path") {
     for (const auto & planner : start_planners_) {
-      for (size_t i = 0; i < candidates_size; i++) {
+      for (size_t i = 0; i < start_pose_candidates_num; i++) {
         order_priority.emplace_back(i, planner);
       }
     }
   } else if (search_priority == "short_back_distance") {
-    for (size_t i = 0; i < candidates_size; i++) {
+    for (size_t i = 0; i < start_pose_candidates_num; i++) {
       for (const auto & planner : start_planners_) {
         order_priority.emplace_back(i, planner);
       }
@@ -617,43 +617,62 @@ PriorityOrder StartPlannerModule::determinePriorityOrder(
 }
 
 bool StartPlannerModule::findPullOutPath(
-  const std::vector<Pose> & start_pose_candidates, const size_t index,
-  const std::shared_ptr<PullOutPlannerBase> & planner, const Pose & refined_start_pose,
-  const Pose & goal_pose)
+  const Pose & start_pose_candidate, const std::shared_ptr<PullOutPlannerBase> & planner,
+  const Pose & refined_start_pose, const Pose & goal_pose)
 {
-  // Ensure the index is within the bounds of the start_pose_candidates vector
-  if (index >= start_pose_candidates.size()) return false;
+  const auto & dynamic_objects = planner_data_->dynamic_object;
+  const auto pull_out_lanes = start_planner_utils::getPullOutLanes(
+    planner_data_, planner_data_->parameters.backward_path_length + parameters_->max_back_distance);
+  const auto & vehicle_footprint = createVehicleFootprint(vehicle_info_);
+  // extract stop objects in pull out lane for collision check
+  const auto stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
+    *dynamic_objects, parameters_->th_moving_object_velocity);
+  const auto [pull_out_lane_stop_objects, others] =
+    utils::path_safety_checker::separateObjectsByLanelets(
+      stop_objects, pull_out_lanes, utils::path_safety_checker::isPolygonOverlapLanelet);
 
-  const Pose & pull_out_start_pose = start_pose_candidates.at(index);
-  const bool is_driving_forward =
-    tier4_autoware_utils::calcDistance2d(pull_out_start_pose, refined_start_pose) < 0.01;
+  // if start_pose_candidate is far from refined_start_pose, backward driving is necessary
+  const bool backward_is_unnecessary =
+    tier4_autoware_utils::calcDistance2d(start_pose_candidate, refined_start_pose) < 0.01;
 
   planner->setPlannerData(planner_data_);
-  const auto pull_out_path = planner->plan(pull_out_start_pose, goal_pose);
+  const auto pull_out_path = planner->plan(start_pose_candidate, goal_pose);
 
   // If no path is found, return false
   if (!pull_out_path) {
     return false;
   }
 
-  // If driving forward, update status with the current path and return true
-  if (is_driving_forward) {
-    updateStatusWithCurrentPath(*pull_out_path, pull_out_start_pose, planner->getPlannerType());
+  // lambda function for combining partial_paths
+  const auto combine_partial_path = [pull_out_lanes](const auto & path) {
+    PathWithLaneId combined_path;
+    for (const auto & partial_path : path.partial_paths) {
+      combined_path.points.insert(
+        combined_path.points.end(), partial_path.points.begin(), partial_path.points.end());
+    }
+    // remove the point behind of shift end pose
+    const auto shift_end_pose_idx =
+      motion_utils::findNearestIndex(combined_path.points, path.end_pose);
+    combined_path.points.erase(
+      combined_path.points.begin() + *shift_end_pose_idx + 1, combined_path.points.end());
+    return combined_path;
+  };
+
+  // check collision
+  if (utils::checkCollisionBetweenPathFootprintsAndObjects(
+        vehicle_footprint, combine_partial_path(*pull_out_path), pull_out_lane_stop_objects,
+        parameters_->collision_check_margin)) {
+    return false;
+  }
+
+  // If start pose candidate
+  if (backward_is_unnecessary) {
+    updateStatusWithCurrentPath(*pull_out_path, start_pose_candidate, planner->getPlannerType());
     return true;
   }
 
-  // If this is the last start pose candidate, return false
-  if (index == start_pose_candidates.size() - 1) return false;
+  updateStatusWithNextPath(*pull_out_path, start_pose_candidate, planner->getPlannerType());
 
-  const Pose & next_pull_out_start_pose = start_pose_candidates.at(index + 1);
-  const auto next_pull_out_path = planner->plan(next_pull_out_start_pose, goal_pose);
-
-  // If no next path is found, return false
-  if (!next_pull_out_path) return false;
-
-  // Update status with the next path and return true
-  updateStatusWithNextPath(
-    *next_pull_out_path, next_pull_out_start_pose, planner->getPlannerType());
   return true;
 }
 
@@ -776,13 +795,9 @@ std::vector<DrivableLanes> StartPlannerModule::generateDrivableLanes(
 
 void StartPlannerModule::updatePullOutStatus()
 {
-  const bool has_received_new_route =
-    !planner_data_->prev_route_id ||
-    *planner_data_->prev_route_id != planner_data_->route_handler->getRouteUuid();
-
   // skip updating if enough time has not passed for preventing chattering between back and
   // start_planner
-  if (!has_received_new_route) {
+  if (!receivedNewRoute()) {
     if (!last_pull_out_start_update_time_) {
       last_pull_out_start_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
     }

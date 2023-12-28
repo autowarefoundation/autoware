@@ -169,11 +169,10 @@ private:
   bool isMoving() const;
 
   PriorityOrder determinePriorityOrder(
-    const std::string & search_priority, const size_t candidates_size);
+    const std::string & search_priority, const size_t start_pose_candidates_num);
   bool findPullOutPath(
-    const std::vector<Pose> & start_pose_candidates, const size_t index,
-    const std::shared_ptr<PullOutPlannerBase> & planner, const Pose & refined_start_pose,
-    const Pose & goal_pose);
+    const Pose & start_pose_candidate, const std::shared_ptr<PullOutPlannerBase> & planner,
+    const Pose & refined_start_pose, const Pose & goal_pose);
   void updateStatusWithCurrentPath(
     const behavior_path_planner::PullOutPath & path, const Pose & start_pose,
     const behavior_path_planner::PlannerType & planner_type);

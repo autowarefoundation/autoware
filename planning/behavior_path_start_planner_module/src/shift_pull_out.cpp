@@ -46,7 +46,6 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
 {
   const auto & route_handler = planner_data_->route_handler;
   const auto & common_parameters = planner_data_->parameters;
-  const auto & dynamic_objects = planner_data_->dynamic_object;
 
   const double backward_path_length =
     planner_data_->parameters.backward_path_length + parameters_.max_back_distance;
@@ -63,13 +62,6 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
   if (pull_out_paths.empty()) {
     return std::nullopt;
   }
-
-  // extract stop objects in pull out lane for collision check
-  const auto [pull_out_lane_objects, others] =
-    utils::path_safety_checker::separateObjectsByLanelets(
-      *dynamic_objects, pull_out_lanes, utils::path_safety_checker::isPolygonOverlapLanelet);
-  const auto pull_out_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
-    pull_out_lane_objects, parameters_.th_moving_object_velocity);
 
   // get safe path
   for (auto & pull_out_path : pull_out_paths) {
@@ -140,13 +132,6 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
     if (
       parameters_.check_shift_path_lane_departure &&
       lane_departure_checker_->checkPathWillLeaveLane(expanded_lanes, path_start_to_end)) {
-      continue;
-    }
-
-    // check collision
-    if (utils::checkCollisionBetweenPathFootprintsAndObjects(
-          vehicle_footprint_, path_start_to_end, pull_out_lane_stop_objects,
-          parameters_.collision_check_margin)) {
       continue;
     }
 

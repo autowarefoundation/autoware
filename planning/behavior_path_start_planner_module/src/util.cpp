@@ -92,7 +92,6 @@ lanelet::ConstLanelets getPullOutLanes(
   const auto start_pose = planner_data->route_handler->getOriginalStartPose();
 
   lanelet::ConstLanelet current_shoulder_lane;
-  lanelet::ConstLanelets shoulder_lanes;
   if (route_handler->getPullOutStartLane(
         route_handler->getShoulderLanelets(), start_pose, vehicle_width, &current_shoulder_lane)) {
     // pull out from shoulder lane
