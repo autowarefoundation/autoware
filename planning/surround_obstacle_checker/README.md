@@ -103,16 +103,17 @@ As mentioned in stop condition section, it prevents chattering by changing thres
 
 {{ json_to_markdown("planning/surround_obstacle_checker/schema/surround_obstacle_checker.schema.json") }}
 
-| Name                              | Type     | Description                                                                            | Default value |
-| :-------------------------------- | :------- | :------------------------------------------------------------------------------------- | :------------ |
-| `use_pointcloud`                  | `bool`   | Use pointcloud as obstacle check                                                       | `true`        |
-| `use_dynamic_object`              | `bool`   | Use dynamic object as obstacle check                                                   | `true`        |
-| `surround_check_distance`         | `double` | If objects exist in this distance, transit to "exist-surrounding-obstacle" status [m]  | 0.5           |
-| `surround_check_recover_distance` | `double` | If no object exists in this distance, transit to "non-surrounding-obstacle" status [m] | 0.8           |
-| `state_clear_time`                | `double` | Threshold to clear stop state [s]                                                      | 2.0           |
-| `stop_state_ego_speed`            | `double` | Threshold to check ego vehicle stopped [m/s]                                           | 0.1           |
-| `stop_state_entry_duration_time`  | `double` | Threshold to check ego vehicle stopped [s]                                             | 0.1           |
-| `publish_debug_footprints`        | `bool`   | Publish vehicle footprint with/without offsets                                         | `true`        |
+| Name                                 | Type     | Description                                                                                                                                      | Default value                                |
+| :----------------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------- |
+| `enable_check`                       | `bool`   | Indicates whether each object is considered in the obstacle check target.                                                                        | `true` for objects; `false` for point clouds |
+| `surround_check_front_distance`      | `bool`   | If there are objects or point clouds within this distance in front, transition to the "exist-surrounding-obstacle" status [m].                   | 0.5                                          |
+| `surround_check_side_distance`       | `double` | If there are objects or point clouds within this side distance, transition to the "exist-surrounding-obstacle" status [m].                       | 0.5                                          |
+| `surround_check_back_distance`       | `double` | If there are objects or point clouds within this back distance, transition to the "exist-surrounding-obstacle" status [m].                       | 0.5                                          |
+| `surround_check_hysteresis_distance` | `double` | If no object exists within `surround_check_xxx_distance` plus this additional distance, transition to the "non-surrounding-obstacle" status [m]. | 0.3                                          |
+| `state_clear_time`                   | `double` | Threshold to clear stop state [s]                                                                                                                | 2.0                                          |
+| `stop_state_ego_speed`               | `double` | Threshold to check ego vehicle stopped [m/s]                                                                                                     | 0.1                                          |
+| `stop_state_entry_duration_time`     | `double` | Threshold to check ego vehicle stopped [s]                                                                                                       | 0.1                                          |
+| `publish_debug_footprints`           | `bool`   | Publish vehicle footprint with/without offsets                                                                                                   | `true`                                       |
 
 ## Assumptions / Known limits
 
