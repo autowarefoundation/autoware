@@ -61,6 +61,30 @@ TEST(TestLowpassFilter, MoveAverageFilter)
     EXPECT_EQ(filtered_vec[4], 23.0 / 3);
     EXPECT_EQ(filtered_vec[5], original_vec[5]);
   }
+  {
+    const int window_size = 3;
+    const std::vector<double> original_vec = {1.0, 1.0, 1.0, 1.0};
+    std::vector<double> filtered_vec = original_vec;
+    EXPECT_TRUE(MoveAverageFilter::filt_vector(window_size, filtered_vec));
+    ASSERT_EQ(filtered_vec.size(), original_vec.size());
+    EXPECT_EQ(filtered_vec[0], original_vec[0]);
+    EXPECT_EQ(filtered_vec[1], 1.0);
+    EXPECT_EQ(filtered_vec[2], 1.0);
+    EXPECT_EQ(filtered_vec[3], original_vec[3]);
+  }
+  {
+    const int window_size = 4;
+    const std::vector<double> original_vec = {1.0, 3.0, 4.0, 6.0, 7.0, 10.0};
+    std::vector<double> filtered_vec = original_vec;
+    EXPECT_TRUE(MoveAverageFilter::filt_vector(window_size, filtered_vec));
+    ASSERT_EQ(filtered_vec.size(), original_vec.size());
+    EXPECT_EQ(filtered_vec[0], original_vec[0]);
+    EXPECT_EQ(filtered_vec[1], 8.0 / 3);
+    EXPECT_EQ(filtered_vec[2], 21.0 / 5);
+    EXPECT_EQ(filtered_vec[3], 30.0 / 5);
+    EXPECT_EQ(filtered_vec[4], 23.0 / 3);
+    EXPECT_EQ(filtered_vec[5], original_vec[5]);
+  }
 }
 TEST(TestLowpassFilter, Butterworth2dFilter)
 {

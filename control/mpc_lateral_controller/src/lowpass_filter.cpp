@@ -120,10 +120,8 @@ bool filt_vector(const int num, std::vector<double> & u)
     double tmp = 0.0;
     int num_tmp = 0;
     double count = 0;
-    if (i - num < 0) {
-      num_tmp = i;
-    } else if (i + num > static_cast<int>(u.size()) - 1) {
-      num_tmp = static_cast<int>(u.size()) - i - 1;
+    if ((i - num < 0) || (i + num > static_cast<int>(u.size()) - 1)) {
+      num_tmp = std::min(i, static_cast<int>(u.size()) - i - 1);
     } else {
       num_tmp = num;
     }
