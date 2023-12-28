@@ -68,7 +68,7 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
     auto & shift_path =
       pull_out_path.partial_paths.front();  // shift path is not separate but only one.
 
-    // check lane_departure and collision with path between pull_out_start to pull_out_end
+    // check lane_departure with path between pull_out_start to pull_out_end
     PathWithLaneId path_start_to_end{};
     {
       const size_t pull_out_start_idx = findNearestIndex(shift_path.points, start_pose.position);

@@ -643,29 +643,13 @@ bool StartPlannerModule::findPullOutPath(
     return false;
   }
 
-  // lambda function for combining partial_paths
-  const auto combine_partial_path = [pull_out_lanes](const auto & path) {
-    PathWithLaneId combined_path;
-    for (const auto & partial_path : path.partial_paths) {
-      combined_path.points.insert(
-        combined_path.points.end(), partial_path.points.begin(), partial_path.points.end());
-    }
-    // remove the point behind of shift end pose
-    const auto shift_end_pose_idx =
-      motion_utils::findNearestIndex(combined_path.points, path.end_pose);
-    combined_path.points.erase(
-      combined_path.points.begin() + *shift_end_pose_idx + 1, combined_path.points.end());
-    return combined_path;
-  };
-
   // check collision
   if (utils::checkCollisionBetweenPathFootprintsAndObjects(
-        vehicle_footprint, combine_partial_path(*pull_out_path), pull_out_lane_stop_objects,
+        vehicle_footprint, extractCollisionCheckPath(*pull_out_path), pull_out_lane_stop_objects,
         parameters_->collision_check_margin)) {
     return false;
   }
 
-  // If start pose candidate
   if (backward_is_unnecessary) {
     updateStatusWithCurrentPath(*pull_out_path, start_pose_candidate, planner->getPlannerType());
     return true;
@@ -674,6 +658,33 @@ bool StartPlannerModule::findPullOutPath(
   updateStatusWithNextPath(*pull_out_path, start_pose_candidate, planner->getPlannerType());
 
   return true;
+}
+
+PathWithLaneId StartPlannerModule::extractCollisionCheckPath(const PullOutPath & path)
+{
+  PathWithLaneId combined_path;
+  for (const auto & partial_path : path.partial_paths) {
+    combined_path.points.insert(
+      combined_path.points.end(), partial_path.points.begin(), partial_path.points.end());
+  }
+
+  // calculate collision check end idx
+  size_t collision_check_end_idx = 0;
+  const auto collision_check_end_pose = motion_utils::calcLongitudinalOffsetPose(
+    combined_path.points, path.end_pose.position, parameters_->collision_check_distance_from_end);
+
+  if (collision_check_end_pose) {
+    collision_check_end_idx =
+      motion_utils::findNearestIndex(combined_path.points, collision_check_end_pose->position);
+  }
+
+  // remove the point behind of collision check end pose
+  if (collision_check_end_idx + 1 < combined_path.points.size()) {
+    combined_path.points.erase(
+      combined_path.points.begin() + collision_check_end_idx + 1, combined_path.points.end());
+  }
+
+  return combined_path;
 }
 
 void StartPlannerModule::updateStatusWithCurrentPath(
@@ -892,9 +903,12 @@ std::vector<Pose> StartPlannerModule::searchPullOutStartPoseCandidates(
   const auto local_vehicle_footprint = createVehicleFootprint(vehicle_info_);
   const auto pull_out_lanes = start_planner_utils::getPullOutLanes(
     planner_data_, planner_data_->parameters.backward_path_length + parameters_->max_back_distance);
+  const double backward_path_length =
+    planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
 
-  const auto stop_objects_in_pull_out_lanes =
-    filterStopObjectsInPullOutLanes(pull_out_lanes, parameters_->th_moving_object_velocity);
+  const auto stop_objects_in_pull_out_lanes = filterStopObjectsInPullOutLanes(
+    pull_out_lanes, start_pose.position, parameters_->th_moving_object_velocity,
+    backward_path_length, std::numeric_limits<double>::max());
 
   // Set the maximum backward distance less than the distance from the vehicle's base_link to the
   // lane's rearmost point to prevent lane departure.
@@ -937,15 +951,24 @@ std::vector<Pose> StartPlannerModule::searchPullOutStartPoseCandidates(
 }
 
 PredictedObjects StartPlannerModule::filterStopObjectsInPullOutLanes(
-  const lanelet::ConstLanelets & pull_out_lanes, const double velocity_threshold) const
+  const lanelet::ConstLanelets & pull_out_lanes, const geometry_msgs::msg::Point & current_point,
+  const double velocity_threshold, const double object_check_forward_distance,
+  const double object_check_backward_distance) const
 {
   const auto stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
     *planner_data_->dynamic_object, velocity_threshold);
 
-  // filter for objects located in pull_out_lanes and moving at a speed below the threshold
-  const auto [stop_objects_in_pull_out_lanes, others] =
+  // filter for objects located in pull out lanes and moving at a speed below the threshold
+  auto [stop_objects_in_pull_out_lanes, others] =
     utils::path_safety_checker::separateObjectsByLanelets(
       stop_objects, pull_out_lanes, utils::path_safety_checker::isPolygonOverlapLanelet);
+
+  const auto path = planner_data_->route_handler->getCenterLinePath(
+    pull_out_lanes, object_check_backward_distance, object_check_forward_distance);
+
+  utils::path_safety_checker::filterObjectsByPosition(
+    stop_objects_in_pull_out_lanes, path.points, current_point, object_check_forward_distance,
+    object_check_backward_distance);
 
   return stop_objects_in_pull_out_lanes;
 }

@@ -173,6 +173,8 @@ private:
   bool findPullOutPath(
     const Pose & start_pose_candidate, const std::shared_ptr<PullOutPlannerBase> & planner,
     const Pose & refined_start_pose, const Pose & goal_pose);
+
+  PathWithLaneId extractCollisionCheckPath(const PullOutPath & path);
   void updateStatusWithCurrentPath(
     const behavior_path_planner::PullOutPath & path, const Pose & start_pose,
     const behavior_path_planner::PlannerType & planner_type);
@@ -226,7 +228,9 @@ private:
   void updatePullOutStatus();
   void updateStatusAfterBackwardDriving();
   PredictedObjects filterStopObjectsInPullOutLanes(
-    const lanelet::ConstLanelets & pull_out_lanes, const double velocity_threshold) const;
+    const lanelet::ConstLanelets & pull_out_lanes, const geometry_msgs::msg::Point & current_pose,
+    const double velocity_threshold, const double object_check_backward_distance,
+    const double object_check_forward_distance) const;
   bool hasFinishedPullOut() const;
   bool hasFinishedBackwardDriving() const;
   bool hasCollisionWithDynamicObjects() const;
