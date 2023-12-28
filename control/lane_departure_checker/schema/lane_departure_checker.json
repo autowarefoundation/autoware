@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for lane_departure_checker",
+  "type": "object",
+  "definitions": {
+    "lane_departure_checker": {
+      "type": "object",
+      "properties": {
+        "footprint_margin_scale": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Coefficient for expanding footprint margin. Multiplied by 1 standard deviation."
+        },
+        "resample_interval": {
+          "type": "number",
+          "default": 0.3,
+          "description": "Minimum Euclidean distance between points when resample trajectory.[m]."
+        },
+        "max_deceleration": {
+          "type": "number",
+          "default": 2.8,
+          "description": "Maximum deceleration when calculating braking distance."
+        },
+        "delay_time": {
+          "type": "number",
+          "default": 1.3,
+          "description": "Delay time which took to actuate brake when calculating braking distance. [second]."
+        },
+        "max_lateral_deviation": {
+          "type": "number",
+          "default": 2.0,
+          "description": "Maximum lateral deviation in vehicle coordinate. [m]."
+        },
+        "max_longitudinal_deviation": {
+          "type": "number",
+          "default": 2.0,
+          "description": "Maximum longitudinal deviation in vehicle coordinate. [m]."
+        },
+        "max_yaw_deviation_deg": {
+          "type": "number",
+          "default": 60.0,
+          "description": "Maximum ego yaw deviation from trajectory. [deg]."
+        },
+        "ego_nearest_dist_threshold": {
+          "type": "number"
+        },
+        "ego_nearest_yaw_threshold": {
+          "type": "number"
+        },
+        "min_braking_distance": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "footprint_margin_scale",
+        "resample_interval",
+        "max_deceleration",
+        "max_lateral_deviation",
+        "max_longitudinal_deviation",
+        "max_yaw_deviation_deg",
+        "ego_nearest_dist_threshold",
+        "ego_nearest_yaw_threshold",
+        "min_braking_distance"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/lane_departure_checker"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
