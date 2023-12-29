@@ -15,7 +15,6 @@
 #include "surround_obstacle_checker/debug_marker.hpp"
 
 #include <motion_utils/marker/marker_helper.hpp>
-#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 #ifdef ROS_DISTRO_GALACTIC
@@ -52,7 +51,6 @@ Polygon2d createSelfPolygon(
 }
 }  // namespace
 
-using motion_utils::createStopVirtualWallMarker;
 using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::createDefaultMarker;
@@ -76,8 +74,6 @@ SurroundObstacleCheckerDebugNode::SurroundObstacleCheckerDebugNode(
   self_pose_(self_pose),
   clock_(clock)
 {
-  debug_virtual_wall_pub_ =
-    node.create_publisher<visualization_msgs::msg::MarkerArray>("~/virtual_wall", 1);
   debug_viz_pub_ = node.create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/marker", 1);
   stop_reason_pub_ = node.create_publisher<StopReasonArray>("~/output/stop_reasons", 1);
   velocity_factor_pub_ =
@@ -141,10 +137,6 @@ void SurroundObstacleCheckerDebugNode::publishFootprints()
 
 void SurroundObstacleCheckerDebugNode::publish()
 {
-  /* publish virtual_wall marker for rviz */
-  const auto virtual_wall_msg = makeVirtualWallMarker();
-  debug_virtual_wall_pub_->publish(virtual_wall_msg);
-
   /* publish debug marker for rviz */
   const auto visualization_msg = makeVisualizationMarker();
   debug_viz_pub_->publish(visualization_msg);
@@ -158,21 +150,6 @@ void SurroundObstacleCheckerDebugNode::publish()
   /* reset variables */
   stop_pose_ptr_ = nullptr;
   stop_obstacle_point_ptr_ = nullptr;
-}
-
-MarkerArray SurroundObstacleCheckerDebugNode::makeVirtualWallMarker()
-{
-  MarkerArray msg;
-  rclcpp::Time current_time = this->clock_->now();
-
-  // visualize stop line
-  if (stop_pose_ptr_ != nullptr) {
-    const auto p = calcOffsetPose(*stop_pose_ptr_, base_link2front_, 0.0, 0.0);
-    const auto markers = createStopVirtualWallMarker(p, "surround obstacle", current_time, 0);
-    appendMarkerArray(markers, &msg);
-  }
-
-  return msg;
 }
 
 MarkerArray SurroundObstacleCheckerDebugNode::makeVisualizationMarker()

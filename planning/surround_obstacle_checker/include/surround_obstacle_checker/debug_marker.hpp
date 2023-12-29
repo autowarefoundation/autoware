@@ -71,7 +71,6 @@ public:
     const double back_distance);
 
 private:
-  rclcpp::Publisher<MarkerArray>::SharedPtr debug_virtual_wall_pub_;
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_viz_pub_;
   rclcpp::Publisher<StopReasonArray>::SharedPtr stop_reason_pub_;
   rclcpp::Publisher<VelocityFactorArray>::SharedPtr velocity_factor_pub_;
@@ -89,7 +88,6 @@ private:
   double surround_check_hysteresis_distance_;
   geometry_msgs::msg::Pose self_pose_;
 
-  MarkerArray makeVirtualWallMarker();
   MarkerArray makeVisualizationMarker();
   StopReasonArray makeStopReasonArray();
   VelocityFactorArray makeVelocityFactorArray();
