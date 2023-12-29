@@ -37,6 +37,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <vector>
 
 namespace traffic_light
 {
@@ -71,7 +72,8 @@ private:
     const tier4_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr in_signal_msg,
     const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr in_roi_msg,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr in_cam_info_msg,
-    const sensor_msgs::msg::PointCloud2::ConstSharedPtr in_cloud_msg);
+    const sensor_msgs::msg::PointCloud2::ConstSharedPtr in_cloud_msg,
+    const uint8_t traffic_light_type);
 
   rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr map_sub_;
   /**
@@ -89,7 +91,6 @@ private:
    *
    */
   std::shared_ptr<CloudOcclusionPredictor> cloud_occlusion_predictor_;
-
   typedef perception_utils::PrimeSynchronizer<
     tier4_perception_msgs::msg::TrafficSignalArray,
     tier4_perception_msgs::msg::TrafficLightRoiArray, sensor_msgs::msg::CameraInfo,
@@ -97,6 +98,11 @@ private:
     SynchronizerType;
 
   std::shared_ptr<SynchronizerType> synchronizer_;
+  std::shared_ptr<SynchronizerType> synchronizer_ped_;
+
+  std::vector<bool> subscribed_;
+  std::vector<int> occlusion_ratios_;
+  tier4_perception_msgs::msg::TrafficSignalArray out_msg_;
 };
 }  // namespace traffic_light
 #endif  // TRAFFIC_LIGHT_OCCLUSION_PREDICTOR__NODELET_HPP_

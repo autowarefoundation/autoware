@@ -11,6 +11,8 @@
   <!-- classifier_type {hsv_filter: 0, cnn: 1} -->
   <arg name="classifier_type" default="1" if="$(var use_gpu)"/>
   <arg name="classifier_type" default="0" unless="$(var use_gpu)"/>
+  <!-- classify_traffic_light_type {car: 0, pedestrian:1} -->
+  <arg name="classify_traffic_light_type" default="0"/>
 
   <arg name="build_only" default="false" description="shutdown node after TensorRT engine file is built"/>
   <arg name="backlight_threshold" default="0.85" description="overwrite signals if the RoI image intensity is greater than this value"/>
@@ -21,6 +23,7 @@
     <remap from="~/output/traffic_signals" to="$(var output/traffic_signals)"/>
     <param name="approximate_sync" value="false"/>
     <param name="classifier_type" value="$(var classifier_type)"/>
+    <param name="classify_traffic_light_type" value="$(var classify_traffic_light_type)"/>
     <param name="classifier_label_path" value="$(var classifier_label_path)"/>
     <param name="classifier_model_path" value="$(var classifier_model_path)"/>
     <param name="classifier_precision" value="$(var classifier_precision)"/>

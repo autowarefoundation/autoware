@@ -7,8 +7,10 @@
   <arg name="traffic_light_fine_detector_label_name" default="tlr_labels.txt" description="fine detector label filename"/>
   <arg name="traffic_light_fine_detector_model_name" default="tlr_yolox_s_batch_6" description="fine detector onnx model filename"/>
   <arg name="traffic_light_classifier_model_path" default="$(find-pkg-share traffic_light_classifier)/data" description="classifier label path"/>
-  <arg name="traffic_light_classifier_label_name" default="lamp_labels.txt" description="classifier label filename"/>
-  <arg name="traffic_light_classifier_model_name" default="traffic_light_classifier_mobilenetv2_batch_6.onnx" description="classifier onnx model filename"/>
+  <arg name="car_traffic_light_classifier_label_name" default="lamp_labels.txt" description="classifier label filename"/>
+  <arg name="pedestrian_traffic_light_classifier_label_name" default="lamp_labels_ped.txt" description="classifier label filename"/>
+  <arg name="car_traffic_light_classifier_model_name" default="traffic_light_classifier_mobilenetv2_batch_6.onnx" description="classifier onnx model filename"/>
+  <arg name="pedestrian_traffic_light_classifier_model_name" default="ped_traffic_light_classifier_mobilenetv2_batch_6.onnx" description="classifier onnx model filename"/>
   <arg name="input/cloud" default="/sensing/lidar/top/pointcloud_raw" description="point cloud for occlusion prediction"/>
   <arg name="internal/traffic_signals" default="/perception/traffic_light_recognition/internal/traffic_signals"/>
   <arg name="fusion/traffic_signals" default="/perception/traffic_light_recognition/fusion/traffic_signals"/>
@@ -24,8 +26,10 @@
 
   <arg name="fine_detector_label_path" default="$(var traffic_light_fine_detector_model_path)/$(var traffic_light_fine_detector_label_name)"/>
   <arg name="fine_detector_model_path" default="$(var traffic_light_fine_detector_model_path)/$(var traffic_light_fine_detector_model_name).onnx"/>
-  <arg name="classifier_label_path" default="$(var traffic_light_classifier_model_path)/$(var traffic_light_classifier_label_name)"/>
-  <arg name="classifier_model_path" default="$(var traffic_light_classifier_model_path)/$(var traffic_light_classifier_model_name).onnx"/>
+  <arg name="car_classifier_label_path" default="$(var traffic_light_classifier_model_path)/$(var car_traffic_light_classifier_label_name)"/>
+  <arg name="pedestrian_classifier_label_path" default="$(var traffic_light_classifier_model_path)/$(var pedestrian_traffic_light_classifier_label_name)"/>
+  <arg name="car_classifier_model_path" default="$(var traffic_light_classifier_model_path)/$(var car_traffic_light_classifier_model_name).onnx"/>
+  <arg name="pedestrian_classifier_model_path" default="$(var traffic_light_classifier_model_path)/$(var pedestrian_traffic_light_classifier_model_name).onnx"/>
 
   <!-- namespace1 camera TLR pipeline -->
   <group>
@@ -34,6 +38,8 @@
     <let name="input/camera_info" value="/sensing/camera/$(var namespace1)/camera_info"/>
     <let name="output/rois1" value="/perception/traffic_light_recognition/$(var namespace1)/detection/rois"/>
     <let name="output/traffic_signals1" value="/perception/traffic_light_recognition/$(var namespace1)/classification/traffic_signals"/>
+    <let name="output/car/traffic_signals1" value="/perception/traffic_light_recognition/$(var namespace1)/classification/car/traffic_signals"/>
+    <let name="output/pedestrian/traffic_signals1" value="/perception/traffic_light_recognition/$(var namespace1)/classification/pedestrian/traffic_signals"/>
     <let name="map_based_detector_output_topic" value="rough/rois" if="$(var enable_fine_detection)"/>
     <let name="map_based_detector_output_topic" value="$(var output/rois1)" unless="$(var enable_fine_detection)"/>
 
@@ -54,15 +60,18 @@
         <arg name="input/image" value="$(var input/image)"/>
         <arg name="enable_image_decompressor" value="$(var enable_image_decompressor)"/>
         <arg name="enable_fine_detection" value="$(var enable_fine_detection)"/>
-        <arg name="use_crosswalk_traffic_light_estimator" value="$(var use_crosswalk_traffic_light_estimator)"/>
         <arg name="use_intra_process" value="true"/>
         <arg name="use_multithread" value="true"/>
         <arg name="fine_detector_label_path" value="$(var fine_detector_label_path)"/>
         <arg name="fine_detector_model_path" value="$(var fine_detector_model_path)"/>
-        <arg name="classifier_label_path" value="$(var classifier_label_path)"/>
-        <arg name="classifier_model_path" value="$(var classifier_model_path)"/>
+        <arg name="car_classifier_label_path" value="$(var car_classifier_label_path)"/>
+        <arg name="pedestrian_classifier_label_path" value="$(var pedestrian_classifier_label_path)"/>
+        <arg name="car_classifier_model_path" value="$(var car_classifier_model_path)"/>
+        <arg name="pedestrian_classifier_model_path" value="$(var pedestrian_classifier_model_path)"/>
         <arg name="output/rois" value="$(var output/rois1)"/>
         <arg name="output/traffic_signals" value="$(var output/traffic_signals1)"/>
+        <arg name="output/car/traffic_signals" value="$(var output/car/traffic_signals1)"/>
+        <arg name="output/pedestrian/traffic_signals" value="$(var output/pedestrian/traffic_signals1)"/>
       </include>
     </group>
 
@@ -72,11 +81,13 @@
         <arg name="input/camera_info" value="$(var input/camera_info)"/>
         <arg name="input/cloud" value="$(var input/cloud)"/>
         <arg name="input/rois" value="$(var output/rois1)"/>
-        <arg name="input/traffic_signals" value="classified/traffic_signals"/>
+        <arg name="input/car/traffic_signals" value="classified/car/traffic_signals"/>
+        <arg name="input/pedestrian/traffic_signals" value="classified/pedestrian/traffic_signals"/>
         <arg name="output/traffic_signals" value="$(var output/traffic_signals1)"/>
       </include>
     </group>
   </group>
+
   <!-- namespace2 camera TLR pipeline -->
   <group if="$(eval &quot; '$(var image_number)' >= '2' &quot;)">
     <push-ros-namespace namespace="$(var namespace2)"/>
@@ -84,6 +95,8 @@
     <let name="input/camera_info" value="/sensing/camera/$(var namespace2)/camera_info"/>
     <let name="output/rois2" value="/perception/traffic_light_recognition/$(var namespace2)/detection/rois"/>
     <let name="output/traffic_signals2" value="/perception/traffic_light_recognition/$(var namespace2)/classification/traffic_signals"/>
+    <let name="output/car/traffic_signals2" value="/perception/traffic_light_recognition/$(var namespace2)/classification/car/traffic_signals"/>
+    <let name="output/pedestrian/traffic_signals2" value="/perception/traffic_light_recognition/$(var namespace2)/classification/pedestrian/traffic_signals"/>
     <let name="map_based_detector_output_topic" value="rough/rois" if="$(var enable_fine_detection)"/>
     <let name="map_based_detector_output_topic" value="rois" unless="$(var enable_fine_detection)"/>
 
@@ -104,15 +117,18 @@
         <arg name="input/image" value="$(var input/image)"/>
         <arg name="enable_image_decompressor" value="$(var enable_image_decompressor)"/>
         <arg name="enable_fine_detection" value="$(var enable_fine_detection)"/>
-        <arg name="use_crosswalk_traffic_light_estimator" value="$(var use_crosswalk_traffic_light_estimator)"/>
         <arg name="use_intra_process" value="true"/>
         <arg name="use_multithread" value="true"/>
         <arg name="fine_detector_label_path" value="$(var fine_detector_label_path)"/>
         <arg name="fine_detector_model_path" value="$(var fine_detector_model_path)"/>
-        <arg name="classifier_label_path" value="$(var classifier_label_path)"/>
-        <arg name="classifier_model_path" value="$(var classifier_model_path)"/>
+        <arg name="car_classifier_label_path" value="$(var car_classifier_label_path)"/>
+        <arg name="pedestrian_classifier_label_path" value="$(var pedestrian_classifier_label_path)"/>
+        <arg name="car_classifier_model_path" value="$(var car_classifier_model_path)"/>
+        <arg name="pedestrian_classifier_model_path" value="$(var pedestrian_classifier_model_path)"/>
         <arg name="output/rois" value="$(var output/rois2)"/>
         <arg name="output/traffic_signals" value="$(var output/traffic_signals2)"/>
+        <arg name="output/car/traffic_signals" value="$(var output/car/traffic_signals2)"/>
+        <arg name="output/pedestrian/traffic_signals" value="$(var output/pedestrian/traffic_signals2)"/>
       </include>
     </group>
 
@@ -122,7 +138,8 @@
         <arg name="input/camera_info" value="$(var input/camera_info)"/>
         <arg name="input/cloud" value="$(var input/cloud)"/>
         <arg name="input/rois" value="$(var output/rois2)"/>
-        <arg name="input/traffic_signals" value="classified/traffic_signals"/>
+        <arg name="input/car/traffic_signals" value="classified/car/traffic_signals"/>
+        <arg name="input/pedestrian/traffic_signals" value="classified/pedestrian/traffic_signals"/>
         <arg name="output/traffic_signals" value="$(var output/traffic_signals2)"/>
       </include>
     </group>

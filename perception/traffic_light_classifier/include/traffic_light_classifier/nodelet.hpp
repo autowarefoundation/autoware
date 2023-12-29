@@ -66,6 +66,8 @@ public:
     CNN = 1,
   };
 
+  uint8_t classify_traffic_light_type_;
+
 private:
   void connectCb();
 

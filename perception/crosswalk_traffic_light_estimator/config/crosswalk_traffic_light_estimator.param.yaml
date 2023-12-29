@@ -16,3 +16,4 @@
   ros__parameters:
     use_last_detect_color: true
     last_detect_color_hold_time: 2.0
+    last_colors_hold_time: 1.0

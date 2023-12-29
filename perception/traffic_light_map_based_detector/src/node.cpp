@@ -137,6 +137,10 @@ MapBasedDetector::MapBasedDetector(const rclcpp::NodeOptions & node_options)
   config_.max_timestamp_offset = declare_parameter<double>("max_timestamp_offset", 0.0);
   config_.timestamp_sample_len = declare_parameter<double>("timestamp_sample_len", 0.01);
   config_.max_detection_range = declare_parameter<double>("max_detection_range", 200.0);
+  config_.car_traffic_light_max_angle_range =
+    declare_parameter<double>("car_traffic_light_max_angle_range", 40.0);
+  config_.pedestrian_traffic_light_max_angle_range =
+    declare_parameter<double>("pedestrian_traffic_light_max_angle_range", 80.0);
 
   if (config_.max_detection_range <= 0) {
     RCLCPP_ERROR_STREAM(
@@ -287,6 +291,11 @@ bool MapBasedDetector::getTrafficLightRoi(
   tier4_perception_msgs::msg::TrafficLightRoi & roi) const
 {
   roi.traffic_light_id = traffic_light.id();
+  if (pedestrian_tl_id_.find(traffic_light.id()) != pedestrian_tl_id_.end()) {
+    roi.traffic_light_type = tier4_perception_msgs::msg::TrafficLightRoi::PEDESTRIAN_TRAFFIC_LIGHT;
+  } else {
+    roi.traffic_light_type = tier4_perception_msgs::msg::TrafficLightRoi::CAR_TRAFFIC_LIGHT;
+  }
 
   // for roi.x_offset and roi.y_offset
   {
@@ -392,7 +401,6 @@ void MapBasedDetector::mapCallback(
   for (auto tl_itr = all_lanelet_traffic_lights.begin(); tl_itr != all_lanelet_traffic_lights.end();
        ++tl_itr) {
     lanelet::AutowareTrafficLightConstPtr tl = *tl_itr;
-
     auto lights = tl->trafficLights();
     for (auto lsp : lights) {
       if (!lsp.isLineString()) {  // traffic lights must be linestrings
@@ -401,6 +409,28 @@ void MapBasedDetector::mapCallback(
       all_traffic_lights_ptr_->insert(static_cast<lanelet::ConstLineString3d>(lsp));
     }
   }
+
+  auto crosswalk_lanelets = lanelet::utils::query::crosswalkLanelets(all_lanelets);
+  for (const auto & tl : lanelet::utils::query::autowareTrafficLights(crosswalk_lanelets)) {
+    for (const auto & lsp : tl->trafficLights()) {
+      if (lsp.isLineString()) {  // traffic lights must be linestrings
+        pedestrian_tl_id_.insert(lsp.id());
+      }
+    }
+  }
+
+  // crosswalk
+  const auto traffic_rules = lanelet::traffic_rules::TrafficRulesFactory::create(
+    lanelet::Locations::Germany, lanelet::Participants::Vehicle);
+  const auto pedestrian_rules = lanelet::traffic_rules::TrafficRulesFactory::create(
+    lanelet::Locations::Germany, lanelet::Participants::Pedestrian);
+  lanelet::routing::RoutingGraphConstPtr vehicle_graph =
+    lanelet::routing::RoutingGraph::build(*lanelet_map_ptr_, *traffic_rules);
+  lanelet::routing::RoutingGraphConstPtr pedestrian_graph =
+    lanelet::routing::RoutingGraph::build(*lanelet_map_ptr_, *pedestrian_rules);
+  lanelet::routing::RoutingGraphContainer overall_graphs({vehicle_graph, pedestrian_graph});
+  overall_graphs_ptr_ =
+    std::make_shared<const lanelet::routing::RoutingGraphContainer>(overall_graphs);
 }
 
 void MapBasedDetector::routeCallback(
@@ -436,6 +466,34 @@ void MapBasedDetector::routeCallback(
       route_traffic_lights_ptr_->insert(static_cast<lanelet::ConstLineString3d>(lsp));
     }
   }
+
+  // crosswalk trafficlights
+  lanelet::ConstLanelets conflicting_crosswalks;
+  pedestrian_tl_id_.clear();
+
+  for (const auto & route_lanelet : route_lanelets) {
+    constexpr int PEDESTRIAN_GRAPH_ID = 1;
+    const auto conflict_lls =
+      overall_graphs_ptr_->conflictingInGraph(route_lanelet, PEDESTRIAN_GRAPH_ID);
+    for (const auto & lanelet : conflict_lls) {
+      conflicting_crosswalks.push_back(lanelet);
+    }
+  }
+  std::vector<lanelet::AutowareTrafficLightConstPtr> crosswalk_lanelet_traffic_lights =
+    lanelet::utils::query::autowareTrafficLights(conflicting_crosswalks);
+  for (auto tl_itr = crosswalk_lanelet_traffic_lights.begin();
+       tl_itr != crosswalk_lanelet_traffic_lights.end(); ++tl_itr) {
+    lanelet::AutowareTrafficLightConstPtr tl = *tl_itr;
+
+    auto lights = tl->trafficLights();
+    for (auto lsp : lights) {
+      if (!lsp.isLineString()) {  // traffic lights must be linestrings
+        continue;
+      }
+      route_traffic_lights_ptr_->insert(static_cast<lanelet::ConstLineString3d>(lsp));
+      pedestrian_tl_id_.insert(lsp.id());
+    }
+  }
 }
 
 void MapBasedDetector::getVisibleTrafficLights(
@@ -445,11 +503,18 @@ void MapBasedDetector::getVisibleTrafficLights(
   std::vector<lanelet::ConstLineString3d> & visible_traffic_lights) const
 {
   for (const auto & traffic_light : all_traffic_lights) {
-    // some "Traffic Light" are actually not traffic lights
     if (
       traffic_light.hasAttribute("subtype") == false ||
       traffic_light.attribute("subtype").value() == "solid") {
       continue;
+    }
+    // set different max angle range for ped and car traffic light
+    double max_angle_range;
+    if (pedestrian_tl_id_.find(traffic_light.id()) != pedestrian_tl_id_.end()) {
+      max_angle_range =
+        tier4_autoware_utils::deg2rad(config_.pedestrian_traffic_light_max_angle_range);
+    } else {
+      max_angle_range = tier4_autoware_utils::deg2rad(config_.car_traffic_light_max_angle_range);
     }
     // traffic light bottom left
     const auto & tl_bl = traffic_light.front();
@@ -467,7 +532,6 @@ void MapBasedDetector::getVisibleTrafficLights(
       // check angle range
       const double tl_yaw = tier4_autoware_utils::normalizeRadian(
         std::atan2(tl_br.y() - tl_bl.y(), tl_br.x() - tl_bl.x()) + M_PI_2);
-      constexpr double max_angle_range = tier4_autoware_utils::deg2rad(40.0);
 
       // get direction of z axis
       tf2::Vector3 camera_z_dir(0, 0, 1);

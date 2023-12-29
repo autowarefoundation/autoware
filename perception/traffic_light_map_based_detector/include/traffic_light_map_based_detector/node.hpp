@@ -58,6 +58,8 @@ private:
     double max_timestamp_offset;
     double timestamp_sample_len;
     double max_detection_range;
+    double car_traffic_light_max_angle_range;
+    double pedestrian_traffic_light_max_angle_range;
   };
 
   struct IdLessThan
@@ -93,9 +95,13 @@ private:
   std::shared_ptr<TrafficLightSet> all_traffic_lights_ptr_;
   std::shared_ptr<TrafficLightSet> route_traffic_lights_ptr_;
 
+  std::set<int64_t> pedestrian_tl_id_;
+
   lanelet::LaneletMapPtr lanelet_map_ptr_;
   lanelet::traffic_rules::TrafficRulesPtr traffic_rules_ptr_;
   lanelet::routing::RoutingGraphPtr routing_graph_ptr_;
+
+  std::shared_ptr<const lanelet::routing::RoutingGraphContainer> overall_graphs_ptr_;
 
   Config config_;
   /**
