@@ -37,6 +37,7 @@
 | `steering_angle_velocity` | double | steering angle velocity for operation                                                                              |
 | `accel_sensitivity`       | double | sensitivity to calculate acceleration for external API (commanded acceleration is pow(operation, 1 / sensitivity)) |
 | `brake_sensitivity`       | double | sensitivity to calculate deceleration for external API (commanded acceleration is pow(operation, 1 / sensitivity)) |
+| `raw_control`             | bool   | skip input odometry if true                                                                                        |
 | `velocity_gain`           | double | ratio to calculate velocity by acceleration                                                                        |
 | `max_forward_velocity`    | double | absolute max velocity to go forward                                                                                |
 | `max_backward_velocity`   | double | absolute max velocity to go backward                                                                               |

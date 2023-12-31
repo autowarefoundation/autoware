@@ -9,6 +9,7 @@
     accel_sensitivity: 1.0
     brake_sensitivity: 1.0
     control_command:
+      raw_control: false
       velocity_gain: 3.0
       max_forward_velocity: 20.0
       max_backward_velocity: 3.0

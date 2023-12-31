@@ -55,6 +55,11 @@
         "control_command": {
           "type": "object",
           "properties": {
+            "raw_control": {
+              "type": "boolean",
+              "description": "Whether to skip input odometry",
+              "default": false
+            },
             "velocity_gain": {
               "type": "number",
               "description": "Ratio to calculate velocity by acceleration",
@@ -79,6 +84,7 @@
             }
           },
           "required": [
+            "raw_control",
             "velocity_gain",
             "max_forward_velocity",
             "max_backward_velocity",
