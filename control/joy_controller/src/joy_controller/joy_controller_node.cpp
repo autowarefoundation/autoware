@@ -16,6 +16,7 @@
 #include "joy_controller/joy_converter/ds4_joy_converter.hpp"
 #include "joy_controller/joy_converter/g29_joy_converter.hpp"
 #include "joy_controller/joy_converter/p65_joy_converter.hpp"
+#include "joy_controller/joy_converter/xbox_joy_converter.hpp"
 
 #include <tier4_api_utils/tier4_api_utils.hpp>
 
@@ -154,6 +155,8 @@ void AutowareJoyControllerNode::onJoy(const sensor_msgs::msg::Joy::ConstSharedPt
     joy_ = std::make_shared<const G29JoyConverter>(*msg);
   } else if (joy_type_ == "DS4") {
     joy_ = std::make_shared<const DS4JoyConverter>(*msg);
+  } else if (joy_type_ == "XBOX") {
+    joy_ = std::make_shared<const XBOXJoyConverter>(*msg);
   } else {
     joy_ = std::make_shared<const P65JoyConverter>(*msg);
   }

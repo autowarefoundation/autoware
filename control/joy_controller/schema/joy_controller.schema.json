@@ -10,7 +10,7 @@
           "type": "string",
           "description": "Joy controller type",
           "default": "DS4",
-          "enum": ["P65", "DS4", "G29"]
+          "enum": ["P65", "DS4", "G29", "XBOX"]
         },
         "update_rate": {
           "type": "number",

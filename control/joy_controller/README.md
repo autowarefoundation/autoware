@@ -85,3 +85,25 @@
 | Autoware Disengage   | ○                          |
 | Vehicle Engage       | △                          |
 | Vehicle Disengage    | △                          |
+
+## XBOX Joystick Key Map
+
+| Action               | Button                |
+| -------------------- | --------------------- |
+| Acceleration         | RT                    |
+| Brake                | LT                    |
+| Steering             | Left Stick Left Right |
+| Shift up             | Cursor Up             |
+| Shift down           | Cursor Down           |
+| Shift Drive          | Cursor Left           |
+| Shift Reverse        | Cursor Right          |
+| Turn Signal Left     | LB                    |
+| Turn Signal Right    | RB                    |
+| Clear Turn Signal    | A                     |
+| Gate Mode            | B                     |
+| Emergency Stop       | View                  |
+| Clear Emergency Stop | Menu                  |
+| Autoware Engage      | X                     |
+| Autoware Disengage   | Y                     |
+| Vehicle Engage       | Left Stick Button     |
+| Vehicle Disengage    | Right Stick Button    |
