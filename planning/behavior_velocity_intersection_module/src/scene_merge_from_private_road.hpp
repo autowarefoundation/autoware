@@ -15,10 +15,7 @@
 #ifndef SCENE_MERGE_FROM_PRIVATE_ROAD_HPP_
 #define SCENE_MERGE_FROM_PRIVATE_ROAD_HPP_
 
-#include "scene_intersection.hpp"
-
 #include <behavior_velocity_planner_common/scene_module_interface.hpp>
-#include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <behavior_velocity_planner_common/utilization/state_machine.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -26,9 +23,6 @@
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/point.hpp>
-
-#include <lanelet2_core/LaneletMap.h>
-#include <lanelet2_routing/RoutingGraph.h>
 
 #include <memory>
 #include <set>
@@ -89,7 +83,7 @@ private:
 
   // Parameter
   PlannerParam planner_param_;
-  std::optional<util::IntersectionLanelets> intersection_lanelets_;
+  std::optional<lanelet::ConstLanelet> first_conflicting_lanelet_;
 
   StateMachine state_machine_;  //! for state
 
