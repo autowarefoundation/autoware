@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2023 TIER IV, Inc.
+# Copyright 2024 TIER IV, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ class CalculationCostAnalyzer(Node):
         self.calculation_cost_hist = []
         self.sub_calculation_cost = self.create_subscription(
             StringStamped,
-            "/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/debug/calculation_time",
+            "/planning/scenario_planning/lane_driving/motion_planning/elastic_band_smoother/debug/calculation_time",
             self.CallbackCalculationCost,
             1,
         )
@@ -102,7 +102,7 @@ if __name__ == "__main__":
         "-f",
         "--functions",
         type=str,
-        default="onPath, calcReferencePoints, calcOptimizedSteerAngles, publishDebugMarkerOfOptimization",
+        default="onPath,calcSmoothedTrajectory",
     )
     parser.add_argument(
         "-d",

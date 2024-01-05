@@ -35,3 +35,8 @@ ament_auto_package(
     launch
     config
 )
+
+install(PROGRAMS
+  scripts/calculation_time_plotter.py
+  DESTINATION lib/${PROJECT_NAME}
+)
