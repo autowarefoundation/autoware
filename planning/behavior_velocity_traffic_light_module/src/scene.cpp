@@ -217,7 +217,7 @@ bool TrafficLightModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     // Move to go out state if ego vehicle over deadline.
     constexpr double signed_deadline_length = -2.0;
     if (signed_arc_length_to_stop_point < signed_deadline_length) {
-      RCLCPP_INFO(logger_, "APPROACH -> GO_OUT");
+      RCLCPP_DEBUG(logger_, "APPROACH -> GO_OUT");
       state_ = State::GO_OUT;
       stop_signal_received_time_ptr_.reset();
       return true;
@@ -263,7 +263,7 @@ bool TrafficLightModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     constexpr double restart_length = 1.0;
     if (use_initialization_after_start) {
       if (signed_arc_length_to_stop_point > restart_length) {
-        RCLCPP_INFO(logger_, "GO_OUT(RESTART) -> APPROACH");
+        RCLCPP_DEBUG(logger_, "GO_OUT(RESTART) -> APPROACH");
         state_ = State::APPROACH;
       }
     }
