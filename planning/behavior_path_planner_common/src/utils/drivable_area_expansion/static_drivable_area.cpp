@@ -33,6 +33,42 @@ namespace
 {
 template <class T>
 size_t findNearestSegmentIndexFromLateralDistance(
+  const std::vector<T> & points, const geometry_msgs::msg::Point & target_point)
+{
+  using tier4_autoware_utils::calcAzimuthAngle;
+  using tier4_autoware_utils::calcDistance2d;
+  using tier4_autoware_utils::normalizeRadian;
+
+  std::optional<size_t> closest_idx{std::nullopt};
+  double min_lateral_dist = std::numeric_limits<double>::max();
+  for (size_t seg_idx = 0; seg_idx < points.size() - 1; ++seg_idx) {
+    const double lon_dist =
+      motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, target_point);
+    const double segment_length = calcDistance2d(points.at(seg_idx), points.at(seg_idx + 1));
+    const double lat_dist = [&]() {
+      if (lon_dist < 0.0) {
+        return calcDistance2d(points.at(seg_idx), target_point);
+      }
+      if (segment_length < lon_dist) {
+        return calcDistance2d(points.at(seg_idx + 1), target_point);
+      }
+      return std::abs(motion_utils::calcLateralOffset(points, target_point, seg_idx));
+    }();
+    if (lat_dist < min_lateral_dist) {
+      closest_idx = seg_idx;
+      min_lateral_dist = lat_dist;
+    }
+  }
+
+  if (closest_idx) {
+    return *closest_idx;
+  }
+
+  return motion_utils::findNearestSegmentIndex(points, target_point);
+}
+
+template <class T>
+size_t findNearestSegmentIndexFromLateralDistance(
   const std::vector<T> & points, const geometry_msgs::msg::Pose & target_point,
   const double yaw_threshold)
 {
@@ -813,9 +849,9 @@ void generateDrivableArea(
     const auto right_start_point = calcLongitudinalOffsetStartPoint(
       right_bound, front_pose, front_right_start_idx, -front_length);
     const size_t left_start_idx =
-      motion_utils::findNearestSegmentIndex(left_bound, left_start_point);
+      findNearestSegmentIndexFromLateralDistance(left_bound, left_start_point);
     const size_t right_start_idx =
-      motion_utils::findNearestSegmentIndex(right_bound, right_start_point);
+      findNearestSegmentIndexFromLateralDistance(right_bound, right_start_point);
 
     // Insert a start point
     path.left_bound.push_back(left_start_point);
@@ -835,9 +871,10 @@ void generateDrivableArea(
   const auto right_goal_point =
     calcLongitudinalOffsetGoalPoint(right_bound, goal_pose, goal_right_start_idx, vehicle_length);
   const size_t left_goal_idx = std::max(
-    goal_left_start_idx, motion_utils::findNearestSegmentIndex(left_bound, left_goal_point));
+    goal_left_start_idx, findNearestSegmentIndexFromLateralDistance(left_bound, left_goal_point));
   const size_t right_goal_idx = std::max(
-    goal_right_start_idx, motion_utils::findNearestSegmentIndex(right_bound, right_goal_point));
+    goal_right_start_idx,
+    findNearestSegmentIndexFromLateralDistance(right_bound, right_goal_point));
 
   // Insert middle points
   for (size_t i = left_start_idx + 1; i <= left_goal_idx; ++i) {
