@@ -74,7 +74,23 @@ MarkerArray createFootprintMarkerArray(
   MarkerArray marker_array;
 
   addFootprintMarker(marker, base_link_pose, vehicle_info);
+  msg.markers.push_back(marker);
+  return msg;
+}
 
+MarkerArray createPointsMarkerArray(
+  const std::vector<Point> points, const std::string & ns, const int32_t id, const float r,
+  const float g, const float b)
+{
+  auto marker = createDefaultMarker(
+    "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, id, Marker::LINE_STRIP,
+    createMarkerScale(0.1, 0.0, 0.0), createMarkerColor(r, g, b, 0.999));
+
+  for (const auto & point : points) {
+    marker.points.push_back(point);
+  }
+
+  MarkerArray msg;
   msg.markers.push_back(marker);
   return msg;
 }

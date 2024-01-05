@@ -66,6 +66,10 @@ MarkerArray createFootprintMarkerArray(
   const Pose & base_link_pose, const vehicle_info_util::VehicleInfo vehicle_info,
   const std::string && ns, const int32_t & id, const float & r, const float & g, const float & b);
 
+MarkerArray createPointsMarkerArray(
+  const std::vector<Point> points, const std::string & ns, const int32_t id, const float r,
+  const float g, const float b);
+
 MarkerArray createPoseMarkerArray(
   const Pose & pose, std::string && ns, const int32_t & id, const float & r, const float & g,
   const float & b);

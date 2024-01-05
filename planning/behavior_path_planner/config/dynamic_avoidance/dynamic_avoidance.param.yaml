@@ -59,6 +59,10 @@
         max_time_for_object_lat_shift: 0.0 # [s]
         lpf_gain_for_lat_avoid_to_offset: 0.9 # [-]
 
+        max_ego_lat_acc: 0.3        # [m/ss]
+        max_ego_lat_jerk: 0.3       # [m/sss]
+        delay_time_ego_shift: 1.0   # [s]
+
         # for same directional object
         overtaking_object:
           max_time_to_collision: 40.0 # [s]
