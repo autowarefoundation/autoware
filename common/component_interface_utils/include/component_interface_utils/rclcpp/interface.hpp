@@ -52,7 +52,7 @@ struct NodeInterface
        {ServiceLog::CLIENT_RESPONSE, "client exit"},
        {ServiceLog::ERROR_UNREADY, "client unready"},
        {ServiceLog::ERROR_TIMEOUT, "client timeout"}});
-    RCLCPP_INFO_STREAM(node->get_logger(), type_text.at(type) << ": " << name);
+    RCLCPP_DEBUG_STREAM(node->get_logger(), type_text.at(type) << ": " << name);
 
     ServiceLog msg;
     msg.stamp = node->now();
