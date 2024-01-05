@@ -101,11 +101,11 @@ bool MapHeightFitter::Impl::get_partial_point_cloud_map(const Point & point)
   req->area.center_y = point.y;
   req->area.radius = 50;
 
-  RCLCPP_INFO(logger, "Send request to map_loader");
+  RCLCPP_DEBUG(logger, "Send request to map_loader");
   auto future = cli_map_->async_send_request(req);
   auto status = future.wait_for(std::chrono::seconds(1));
   while (status != std::future_status::ready) {
-    RCLCPP_INFO(logger, "waiting response");
+    RCLCPP_DEBUG(logger, "waiting response");
     if (!rclcpp::ok()) {
       return false;
     }
@@ -113,7 +113,7 @@ bool MapHeightFitter::Impl::get_partial_point_cloud_map(const Point & point)
   }
 
   const auto res = future.get();
-  RCLCPP_INFO(
+  RCLCPP_DEBUG(
     logger, "Loaded partial pcd map from map_loader (grid size: %lu)",
     res->new_pointcloud_with_ids.size());
 
@@ -168,7 +168,7 @@ std::optional<Point> MapHeightFitter::Impl::fit(const Point & position, const st
   const auto logger = node_->get_logger();
   tf2::Vector3 point(position.x, position.y, position.z);
 
-  RCLCPP_INFO(logger, "original point: %.3f %.3f %.3f", point.getX(), point.getY(), point.getZ());
+  RCLCPP_DEBUG(logger, "original point: %.3f %.3f %.3f", point.getX(), point.getY(), point.getZ());
 
   if (cli_map_) {
     if (!get_partial_point_cloud_map(position)) {
@@ -193,7 +193,7 @@ std::optional<Point> MapHeightFitter::Impl::fit(const Point & position, const st
     return std::nullopt;
   }
 
-  RCLCPP_INFO(logger, "modified point: %.3f %.3f %.3f", point.getX(), point.getY(), point.getZ());
+  RCLCPP_DEBUG(logger, "modified point: %.3f %.3f %.3f", point.getX(), point.getY(), point.getZ());
 
   Point result;
   result.x = point.getX();
