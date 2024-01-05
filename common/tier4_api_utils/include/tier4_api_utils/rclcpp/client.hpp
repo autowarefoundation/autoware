@@ -41,20 +41,20 @@ public:
     const typename ServiceT::Request::SharedPtr & request,
     const std::chrono::nanoseconds & timeout = std::chrono::seconds(2))
   {
-    RCLCPP_INFO(logger_, "client request");
+    RCLCPP_DEBUG(logger_, "client request");
 
     if (!client_->service_is_ready()) {
-      RCLCPP_INFO(logger_, "client available");
+      RCLCPP_DEBUG(logger_, "client available");
       return {response_error("Internal service is not available."), nullptr};
     }
 
     auto future = client_->async_send_request(request);
     if (future.wait_for(timeout) != std::future_status::ready) {
-      RCLCPP_INFO(logger_, "client timeout");
+      RCLCPP_DEBUG(logger_, "client timeout");
       return {response_error("Internal service has timed out."), nullptr};
     }
 
-    RCLCPP_INFO(logger_, "client response");
+    RCLCPP_DEBUG(logger_, "client response");
     return {response_success(), future.get()};
   }
 

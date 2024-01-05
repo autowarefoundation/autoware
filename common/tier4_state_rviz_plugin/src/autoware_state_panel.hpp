@@ -171,15 +171,15 @@ protected:
   {
     auto req = std::make_shared<typename T::Request>();
 
-    RCLCPP_INFO(raw_node_->get_logger(), "client request");
+    RCLCPP_DEBUG(raw_node_->get_logger(), "client request");
 
     if (!client->service_is_ready()) {
-      RCLCPP_INFO(raw_node_->get_logger(), "client is unavailable");
+      RCLCPP_DEBUG(raw_node_->get_logger(), "client is unavailable");
       return;
     }
 
     client->async_send_request(req, [this](typename rclcpp::Client<T>::SharedFuture result) {
-      RCLCPP_INFO(
+      RCLCPP_DEBUG(
         raw_node_->get_logger(), "Status: %d, %s", result.get()->status.code,
         result.get()->status.message.c_str());
     });

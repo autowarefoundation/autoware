@@ -263,9 +263,9 @@ void ManualController::onClickEnableButton()
   {
     auto req = std::make_shared<EngageSrv::Request>();
     req->engage = true;
-    RCLCPP_INFO(raw_node_->get_logger(), "client request");
+    RCLCPP_DEBUG(raw_node_->get_logger(), "client request");
     if (!client_engage_->service_is_ready()) {
-      RCLCPP_INFO(raw_node_->get_logger(), "client is unavailable");
+      RCLCPP_DEBUG(raw_node_->get_logger(), "client is unavailable");
       return;
     }
     client_engage_->async_send_request(
