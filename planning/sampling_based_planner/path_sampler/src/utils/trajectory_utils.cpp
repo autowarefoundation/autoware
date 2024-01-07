@@ -58,15 +58,6 @@ void compensateLastPose(
   }
 }
 
-Trajectory createTrajectory(
-  const std_msgs::msg::Header & header, const std::vector<TrajectoryPoint> & traj_points)
-{
-  auto traj = motion_utils::convertToTrajectory(traj_points);
-  traj.header = header;
-
-  return traj;
-}
-
 std::vector<TrajectoryPoint> resampleTrajectoryPoints(
   const std::vector<TrajectoryPoint> traj_points, const double interval)
 {

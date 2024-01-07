@@ -34,15 +34,6 @@ namespace path_smoother
 {
 namespace trajectory_utils
 {
-Trajectory createTrajectory(
-  const std_msgs::msg::Header & header, const std::vector<TrajectoryPoint> & traj_points)
-{
-  auto traj = motion_utils::convertToTrajectory(traj_points);
-  traj.header = header;
-
-  return traj;
-}
-
 Path create_path(Path path_msg, const std::vector<TrajectoryPoint> & traj_points)
 {
   path_msg.points.clear();

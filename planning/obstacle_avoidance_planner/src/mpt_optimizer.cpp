@@ -15,6 +15,7 @@
 #include "obstacle_avoidance_planner/mpt_optimizer.hpp"
 
 #include "interpolation/spline_interpolation_points_2d.hpp"
+#include "motion_utils/trajectory/conversion.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "obstacle_avoidance_planner/utils/geometry_utils.hpp"
 #include "obstacle_avoidance_planner/utils/trajectory_utils.hpp"
@@ -1708,17 +1709,17 @@ void MPTOptimizer::publishDebugTrajectories(
   time_keeper_ptr_->tic(__func__);
 
   // reference points
-  const auto ref_traj = trajectory_utils::createTrajectory(
-    header, trajectory_utils::convertToTrajectoryPoints(ref_points));
+  const auto ref_traj = motion_utils::convertToTrajectory(
+    trajectory_utils::convertToTrajectoryPoints(ref_points), header);
   debug_ref_traj_pub_->publish(ref_traj);
 
   // fixed reference points
   const auto fixed_traj_points = extractFixedPoints(ref_points);
-  const auto fixed_traj = trajectory_utils::createTrajectory(header, fixed_traj_points);
+  const auto fixed_traj = motion_utils::convertToTrajectory(fixed_traj_points, header);
   debug_fixed_traj_pub_->publish(fixed_traj);
 
   // mpt points
-  const auto mpt_traj = trajectory_utils::createTrajectory(header, mpt_traj_points);
+  const auto mpt_traj = motion_utils::convertToTrajectory(mpt_traj_points, header);
   debug_mpt_traj_pub_->publish(mpt_traj);
 
   time_keeper_ptr_->toc(__func__, "        ");

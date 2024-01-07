@@ -171,15 +171,6 @@ std::vector<TrajectoryPoint> extendTrajectoryPoints(
   return output_points;
 }
 
-Trajectory createTrajectory(
-  const std::vector<TrajectoryPoint> & traj_points, const std_msgs::msg::Header & header)
-{
-  auto traj = motion_utils::convertToTrajectory(traj_points);
-  traj.header = header;
-
-  return traj;
-}
-
 std::vector<int> getTargetObjectType(rclcpp::Node & node, const std::string & param_prefix)
 {
   std::unordered_map<std::string, int> types_map{
@@ -525,7 +516,7 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
   publishVelocityLimit(slow_down_vel_limit, "slow_down");
 
   // 7. Publish trajectory
-  const auto output_traj = createTrajectory(slow_down_traj_points, msg->header);
+  const auto output_traj = motion_utils::convertToTrajectory(slow_down_traj_points, msg->header);
   trajectory_pub_->publish(output_traj);
 
   // 8. Publish debug data

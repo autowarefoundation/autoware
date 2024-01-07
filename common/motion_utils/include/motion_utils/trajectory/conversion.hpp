@@ -17,6 +17,7 @@
 
 #include "autoware_auto_planning_msgs/msg/detail/trajectory__struct.hpp"
 #include "autoware_auto_planning_msgs/msg/detail/trajectory_point__struct.hpp"
+#include "std_msgs/msg/header.hpp"
 
 #include <vector>
 
@@ -34,7 +35,8 @@ namespace motion_utils
  * points larger than the capacity. (Tier IV)
  */
 autoware_auto_planning_msgs::msg::Trajectory convertToTrajectory(
-  const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & trajectory);
+  const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & trajectory,
+  const std_msgs::msg::Header & header = std_msgs::msg::Header{});
 
 /**
  * @brief Convert autoware_auto_planning_msgs::msg::Trajectory to
