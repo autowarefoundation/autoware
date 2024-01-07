@@ -144,7 +144,7 @@ void MissionPlanner::checkInitialization()
   }
 
   // All data is ready. Now API is available.
-  RCLCPP_INFO(get_logger(), "Route API is ready.");
+  RCLCPP_DEBUG(get_logger(), "Route API is ready.");
   change_state(RouteState::Message::UNSET);
   data_check_timer_->cancel();  // stop timer callback
 }
