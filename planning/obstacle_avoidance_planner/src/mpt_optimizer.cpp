@@ -468,8 +468,7 @@ void MPTOptimizer::onParam(const std::vector<rclcpp::Parameter> & parameters)
   debug_data_ptr_->mpt_visualize_sampling_num = mpt_param_.mpt_visualize_sampling_num;
 }
 
-std::vector<TrajectoryPoint> MPTOptimizer::optimizeTrajectory(
-  const PlannerData & planner_data, const std::vector<TrajectoryPoint> & smoothed_points)
+std::vector<TrajectoryPoint> MPTOptimizer::optimizeTrajectory(const PlannerData & planner_data)
 {
   time_keeper_ptr_->tic(__func__);
 
@@ -480,11 +479,11 @@ std::vector<TrajectoryPoint> MPTOptimizer::optimizeTrajectory(
     if (prev_optimized_traj_points_ptr_) {
       return *prev_optimized_traj_points_ptr_;
     }
-    return smoothed_points;
+    return traj_points;
   };
 
   // 1. calculate reference points
-  auto ref_points = calcReferencePoints(planner_data, smoothed_points);
+  auto ref_points = calcReferencePoints(planner_data, traj_points);
   if (ref_points.size() < 2) {
     RCLCPP_INFO_EXPRESSION(
       logger_, enable_debug_info_, "return std::nullopt since ref_points size is less than 2.");

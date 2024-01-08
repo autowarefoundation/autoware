@@ -37,6 +37,11 @@ class ObstacleAvoidancePlanner : public rclcpp::Node
 public:
   explicit ObstacleAvoidancePlanner(const rclcpp::NodeOptions & node_options);
 
+  // NOTE: This is for the static_centerline_optimizer package which utilizes the following
+  // instance.
+  std::shared_ptr<MPTOptimizer> getMPTOptimizer() const { return mpt_optimizer_ptr_; }
+
+  // private:
 protected:  // for the static_centerline_optimizer package
   // TODO(murooka) move this node to common
   class DrivingDirectionChecker

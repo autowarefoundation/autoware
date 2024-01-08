@@ -28,6 +28,7 @@
   <depend>motion_utils</depend>
   <depend>obstacle_avoidance_planner</depend>
   <depend>osqp_interface</depend>
+  <depend>path_smoother</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>route_handler</depend>

@@ -24,7 +24,6 @@ autoware_package()
 ament_auto_add_executable(main
   src/main.cpp
   src/static_centerline_optimizer_node.cpp
-  src/successive_trajectory_optimizer_node.cpp
   src/utils.cpp
 )
 

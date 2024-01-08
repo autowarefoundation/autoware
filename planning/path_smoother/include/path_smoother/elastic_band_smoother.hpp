@@ -36,7 +36,11 @@ class ElasticBandSmoother : public rclcpp::Node
 public:
   explicit ElasticBandSmoother(const rclcpp::NodeOptions & node_options);
 
-protected:
+  // NOTE: This is for the static_centerline_optimizer package which utilizes the following
+  // instance.
+  std::shared_ptr<EBPathSmoother> getElasticBandSmoother() const { return eb_path_smoother_ptr_; }
+
+private:
   class DrivingDirectionChecker
   {
   public:

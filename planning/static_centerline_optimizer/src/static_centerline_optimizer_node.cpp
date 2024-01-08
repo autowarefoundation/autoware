@@ -18,9 +18,11 @@
 #include "lanelet2_extension/utility/query.hpp"
 #include "lanelet2_extension/utility/utilities.hpp"
 #include "map_loader/lanelet2_map_loader_node.hpp"
+#include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
+#include "obstacle_avoidance_planner/node.hpp"
+#include "path_smoother/elastic_band_smoother.hpp"
 #include "static_centerline_optimizer/msg/points_with_lane_id.hpp"
-#include "static_centerline_optimizer/successive_trajectory_optimizer_node.hpp"
 #include "static_centerline_optimizer/type_alias.hpp"
 #include "static_centerline_optimizer/utils.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
@@ -60,6 +62,21 @@ Path convert_to_path(const PathWithLaneId & path_with_lane_id)
   }
 
   return path;
+}
+
+Trajectory convert_to_trajectory(const Path & path)
+{
+  Trajectory traj;
+  for (const auto & point : path.points) {
+    TrajectoryPoint traj_point;
+    traj_point.pose = point.pose;
+    traj_point.longitudinal_velocity_mps = point.longitudinal_velocity_mps;
+    traj_point.lateral_velocity_mps = point.lateral_velocity_mps;
+    traj_point.heading_rate_rps = point.heading_rate_rps;
+
+    traj.points.push_back(traj_point);
+  }
+  return traj;
 }
 
 [[maybe_unused]] lanelet::ConstLanelets get_lanelets_from_route(
@@ -249,13 +266,21 @@ void StaticCenterlineOptimizerNode::load_map(const std::string & lanelet2_input_
   // load map by the map_loader package
   map_bin_ptr_ = [&]() -> HADMapBin::ConstSharedPtr {
     // load map
-    lanelet::LaneletMapPtr map_ptr;
     tier4_map_msgs::msg::MapProjectorInfo map_projector_info;
     map_projector_info.projector_type = tier4_map_msgs::msg::MapProjectorInfo::MGRS;
-    map_ptr = Lanelet2MapLoaderNode::load_map(lanelet2_input_file_path, map_projector_info);
+    const auto map_ptr =
+      Lanelet2MapLoaderNode::load_map(lanelet2_input_file_path, map_projector_info);
     if (!map_ptr) {
       return nullptr;
     }
+
+    // NOTE: The original map is stored here since the various ids in the lanelet map will change
+    //       after lanelet::utils::overwriteLaneletCenterline, and saving map will fail.
+    original_map_ptr_ =
+      Lanelet2MapLoaderNode::load_map(lanelet2_input_file_path, map_projector_info);
+
+    // overwrite more dense centerline
+    lanelet::utils::overwriteLaneletsCenterline(map_ptr, 5.0, false);
 
     // create map bin msg
     const auto map_bin_msg =
@@ -388,7 +413,7 @@ std::vector<TrajectoryPoint> StaticCenterlineOptimizerNode::plan_path(
   const auto start_center_pose =
     utils::get_center_pose(*route_handler_ptr_, route_lane_ids.front());
 
-  // ego nearest search parameters
+  // get ego nearest search parameters and resample interval in behavior_path_planner
   const double ego_nearest_dist_threshold =
     has_parameter("ego_nearest_dist_threshold")
       ? get_parameter("ego_nearest_dist_threshold").as_double()
@@ -397,29 +422,103 @@ std::vector<TrajectoryPoint> StaticCenterlineOptimizerNode::plan_path(
     has_parameter("ego_nearest_yaw_threshold")
       ? get_parameter("ego_nearest_yaw_threshold").as_double()
       : declare_parameter<double>("ego_nearest_yaw_threshold");
+  const double behavior_path_interval = has_parameter("output_path_interval")
+                                          ? get_parameter("output_path_interval").as_double()
+                                          : declare_parameter<double>("output_path_interval");
 
   // extract path with lane id from lanelets
-  const auto raw_path_with_lane_id = utils::get_path_with_lane_id(
-    *route_handler_ptr_, route_lanelets, start_center_pose, ego_nearest_dist_threshold,
-    ego_nearest_yaw_threshold);
-
+  const auto raw_path_with_lane_id = [&]() {
+    const auto non_resampled_path_with_lane_id = utils::get_path_with_lane_id(
+      *route_handler_ptr_, route_lanelets, start_center_pose, ego_nearest_dist_threshold,
+      ego_nearest_yaw_threshold);
+    return motion_utils::resamplePath(non_resampled_path_with_lane_id, behavior_path_interval);
+  }();
   pub_raw_path_with_lane_id_->publish(raw_path_with_lane_id);
   RCLCPP_INFO(get_logger(), "Calculated raw path with lane id and published.");
 
   // convert path with lane id to path
-  const auto raw_path = convert_to_path(raw_path_with_lane_id);
+  const auto raw_path = [&]() {
+    const auto non_resampled_path = convert_to_path(raw_path_with_lane_id);
+    // NOTE: The behavior_velocity_planner resamples with the interval 1.0 somewhere.
+    return motion_utils::resamplePath(non_resampled_path, 1.0);
+  }();
   pub_raw_path_->publish(raw_path);
   RCLCPP_INFO(get_logger(), "Converted to path and published.");
 
-  // optimize trajectory by the obstacle_avoidance_planner package
-  SuccessiveTrajectoryOptimizer successive_trajectory_optimizer(create_node_options());
-  const auto optimized_traj = successive_trajectory_optimizer.on_centerline(raw_path);
-  pub_optimized_centerline_->publish(optimized_traj);
-  const auto optimized_traj_points = motion_utils::convertToTrajectoryPointArray(optimized_traj);
-
-  RCLCPP_INFO(get_logger(), "Optimized trajectory and published.");
+  // smooth trajectory and road collision avoidance
+  const auto optimized_traj_points = optimize_trajectory(raw_path);
+  pub_optimized_centerline_->publish(
+    motion_utils::convertToTrajectory(optimized_traj_points, raw_path.header));
+  RCLCPP_INFO(
+    get_logger(), "Smoothed trajectory and made it collision free with the road and published.");
 
   return optimized_traj_points;
+}
+
+std::vector<TrajectoryPoint> StaticCenterlineOptimizerNode::optimize_trajectory(
+  const Path & raw_path) const
+{
+  // convert to trajectory points
+  const auto raw_traj_points = [&]() {
+    const auto raw_traj = convert_to_trajectory(raw_path);
+    return motion_utils::convertToTrajectoryPointArray(raw_traj);
+  }();
+
+  // create an instance of elastic band and model predictive trajectory.
+  const auto eb_path_smoother_ptr =
+    path_smoother::ElasticBandSmoother(create_node_options()).getElasticBandSmoother();
+  const auto mpt_optimizer_ptr =
+    obstacle_avoidance_planner::ObstacleAvoidancePlanner(create_node_options()).getMPTOptimizer();
+
+  // NOTE: The optimization is executed every valid_optimized_traj_points_num points.
+  constexpr int valid_optimized_traj_points_num = 10;
+  const int traj_segment_num = raw_traj_points.size() / valid_optimized_traj_points_num;
+
+  // NOTE: num_initial_optimization exists to make the both optimizations stable since they may use
+  // warm start.
+  constexpr int num_initial_optimization = 2;
+
+  std::vector<TrajectoryPoint> whole_optimized_traj_points;
+  for (int virtual_ego_pose_idx = -num_initial_optimization;
+       virtual_ego_pose_idx < traj_segment_num; ++virtual_ego_pose_idx) {
+    // calculate virtual ego pose for the optimization
+    constexpr int virtual_ego_pose_offset_idx = 1;
+    const auto virtual_ego_pose =
+      raw_traj_points
+        .at(
+          valid_optimized_traj_points_num * std::max(virtual_ego_pose_idx, 0) +
+          virtual_ego_pose_offset_idx)
+        .pose;
+
+    // smooth trajectory by elastic band in the path_smoother package
+    const auto smoothed_traj_points =
+      eb_path_smoother_ptr->smoothTrajectory(raw_traj_points, virtual_ego_pose);
+
+    // road collision avoidance by model predictive trajectory in the obstacle_avoidance_planner
+    // package
+    const obstacle_avoidance_planner::PlannerData planner_data{
+      raw_path.header, smoothed_traj_points, raw_path.left_bound, raw_path.right_bound,
+      virtual_ego_pose};
+    const auto optimized_traj_points = mpt_optimizer_ptr->optimizeTrajectory(planner_data);
+
+    // connect the previously and currently optimized trajectory points
+    for (size_t j = 0; j < whole_optimized_traj_points.size(); ++j) {
+      const double dist = tier4_autoware_utils::calcDistance2d(
+        whole_optimized_traj_points.at(j), optimized_traj_points.front());
+      if (dist < 0.5) {
+        const std::vector<TrajectoryPoint> extracted_whole_optimized_traj_points{
+          whole_optimized_traj_points.begin(),
+          whole_optimized_traj_points.begin() + std::max(j, 1UL) - 1};
+        whole_optimized_traj_points = extracted_whole_optimized_traj_points;
+        break;
+      }
+    }
+    for (size_t j = 0; j < optimized_traj_points.size(); ++j) {
+      whole_optimized_traj_points.push_back(optimized_traj_points.at(j));
+    }
+  }
+
+  return whole_optimized_traj_points;
 }
 
 void StaticCenterlineOptimizerNode::on_plan_path(
@@ -581,7 +680,7 @@ void StaticCenterlineOptimizerNode::save_map(
   RCLCPP_INFO(get_logger(), "Updated centerline in map.");
 
   // save map with modified center line
-  lanelet::write(lanelet2_output_file_path, *route_handler_ptr_->getLaneletMapPtr());
+  lanelet::write(lanelet2_output_file_path, *original_map_ptr_);
   RCLCPP_INFO(get_logger(), "Saved map.");
 }
 }  // namespace static_centerline_optimizer

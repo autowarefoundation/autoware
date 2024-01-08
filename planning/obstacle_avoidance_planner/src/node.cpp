@@ -364,7 +364,7 @@ std::vector<TrajectoryPoint> ObstacleAvoidancePlanner::optimizeTrajectory(
 
   // 2. make trajectory kinematically-feasible and collision-free (= inside the drivable area)
   //    with model predictive trajectory
-  const auto mpt_traj = mpt_optimizer_ptr_->optimizeTrajectory(planner_data, p.traj_points);
+  const auto mpt_traj = mpt_optimizer_ptr_->optimizeTrajectory(planner_data);
 
   time_keeper_ptr_->toc(__func__, "    ");
   return mpt_traj;
