@@ -53,7 +53,6 @@ PointCloudMapLoaderNode::PointCloudMapLoaderNode(const rclcpp::NodeOptions & opt
   bool enable_whole_load = declare_parameter<bool>("enable_whole_load");
   bool enable_downsample_whole_load = declare_parameter<bool>("enable_downsampled_whole_load");
   bool enable_partial_load = declare_parameter<bool>("enable_partial_load");
-  bool enable_differential_load = declare_parameter<bool>("enable_differential_load");
   bool enable_selected_load = declare_parameter<bool>("enable_selected_load");
 
   if (enable_whole_load) {
@@ -68,26 +67,21 @@ PointCloudMapLoaderNode::PointCloudMapLoaderNode(const rclcpp::NodeOptions & opt
       std::make_unique<PointcloudMapLoaderModule>(this, pcd_paths, publisher_name, true);
   }
 
-  if (enable_partial_load || enable_differential_load || enable_selected_load) {
-    std::map<std::string, PCDFileMetadata> pcd_metadata_dict;
-    try {
-      pcd_metadata_dict = getPCDMetadata(pcd_metadata_path, pcd_paths);
-    } catch (std::runtime_error & e) {
-      RCLCPP_ERROR_STREAM(get_logger(), e.what());
-    }
+  std::map<std::string, PCDFileMetadata> pcd_metadata_dict;
+  try {
+    pcd_metadata_dict = getPCDMetadata(pcd_metadata_path, pcd_paths);
+  } catch (std::runtime_error & e) {
+    RCLCPP_ERROR_STREAM(get_logger(), e.what());
+  }
 
-    if (enable_partial_load) {
-      partial_map_loader_ = std::make_unique<PartialMapLoaderModule>(this, pcd_metadata_dict);
-    }
+  if (enable_partial_load) {
+    partial_map_loader_ = std::make_unique<PartialMapLoaderModule>(this, pcd_metadata_dict);
+  }
 
-    if (enable_differential_load) {
-      differential_map_loader_ =
-        std::make_unique<DifferentialMapLoaderModule>(this, pcd_metadata_dict);
-    }
+  differential_map_loader_ = std::make_unique<DifferentialMapLoaderModule>(this, pcd_metadata_dict);
 
-    if (enable_selected_load) {
-      selected_map_loader_ = std::make_unique<SelectedMapLoaderModule>(this, pcd_metadata_dict);
-    }
+  if (enable_selected_load) {
+    selected_map_loader_ = std::make_unique<SelectedMapLoaderModule>(this, pcd_metadata_dict);
   }
 }
 

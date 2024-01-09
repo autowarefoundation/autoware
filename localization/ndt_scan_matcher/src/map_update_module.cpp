@@ -57,10 +57,7 @@ void MapUpdateModule::update_map(const geometry_msgs::msg::Point & position)
   request->cached_ids = ndt_ptr_->getCurrentMapIDs();
 
   while (!pcd_loader_client_->wait_for_service(std::chrono::seconds(1)) && rclcpp::ok()) {
-    RCLCPP_INFO(
-      logger_,
-      "Waiting for pcd loader service. Check if the enable_differential_load in "
-      "pointcloud_map_loader is set `true`.");
+    RCLCPP_INFO(logger_, "Waiting for pcd loader service. Check the pointcloud_map_loader.");
   }
 
   // send a request to map_loader

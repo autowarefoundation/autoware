@@ -264,12 +264,7 @@ NDTScanMatcher::NDTScanMatcher()
       &NDTScanMatcher::service_trigger_node, this, std::placeholders::_1, std::placeholders::_2),
     rclcpp::ServicesQoS().get_rmw_qos_profile(), sensor_callback_group);
 
-  use_dynamic_map_loading_ = this->declare_parameter<bool>("use_dynamic_map_loading");
-  if (use_dynamic_map_loading_) {
-    map_update_module_ = std::make_unique<MapUpdateModule>(this, &ndt_ptr_mtx_, ndt_ptr_);
-  } else {
-    map_module_ = std::make_unique<MapModule>(this, &ndt_ptr_mtx_, ndt_ptr_, sensor_callback_group);
-  }
+  map_update_module_ = std::make_unique<MapUpdateModule>(this, &ndt_ptr_mtx_, ndt_ptr_);
 
   logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
@@ -347,9 +342,6 @@ void NDTScanMatcher::callback_timer()
   if (!is_activated_) {
     return;
   }
-  if (!use_dynamic_map_loading_) {
-    return;
-  }
   std::lock_guard<std::mutex> lock(latest_ekf_position_mtx_);
   if (latest_ekf_position_ == std::nullopt) {
     RCLCPP_ERROR_STREAM_THROTTLE(
@@ -380,7 +372,8 @@ void NDTScanMatcher::callback_initial_pose(
         << ". Please check the frame_id in the input topic and ensure it is correct.");
   }
 
-  if (use_dynamic_map_loading_) {
+  {
+    // latest_ekf_position_ is also used by callback_timer, so it is necessary to acquire the lock
     std::lock_guard<std::mutex> lock(latest_ekf_position_mtx_);
     latest_ekf_position_ = initial_pose_msg_ptr->pose.pose.position;
   }
@@ -898,9 +891,7 @@ void NDTScanMatcher::service_ndt_align(
 
   // transform pose_frame to map_frame
   const auto initial_pose_msg_in_map_frame = transform(req->pose_with_covariance, transform_s2t);
-  if (use_dynamic_map_loading_) {
-    map_update_module_->update_map(initial_pose_msg_in_map_frame.pose.pose.position);
-  }
+  map_update_module_->update_map(initial_pose_msg_in_map_frame.pose.pose.position);
 
   // mutex Map
   std::lock_guard<std::mutex> lock(ndt_ptr_mtx_);

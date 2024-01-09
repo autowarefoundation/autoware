@@ -18,7 +18,6 @@ One optional function is regularization. Please see the regularization chapter i
 | Name                                | Type                                            | Description                           |
 | ----------------------------------- | ----------------------------------------------- | ------------------------------------- |
 | `ekf_pose_with_covariance`          | `geometry_msgs::msg::PoseWithCovarianceStamped` | initial pose                          |
-| `pointcloud_map`                    | `sensor_msgs::msg::PointCloud2`                 | map pointcloud                        |
 | `points_raw`                        | `sensor_msgs::msg::PointCloud2`                 | sensor pointcloud                     |
 | `sensing/gnss/pose_with_covariance` | `sensor_msgs::msg::PoseWithCovarianceStamped`   | base position for regularization term |
 
@@ -193,12 +192,6 @@ Using the feature, `ndt_scan_matcher` can theoretically handle any large size ma
 
 ### Additional interfaces
 
-#### Additional inputs
-
-| Name             | Type                      | Description                                                 |
-| ---------------- | ------------------------- | ----------------------------------------------------------- |
-| `input_ekf_odom` | `nav_msgs::msg::Odometry` | Vehicle localization results (used for map update decision) |
-
 #### Additional outputs
 
 | Name                          | Type                            | Description                                       |
@@ -213,20 +206,15 @@ Using the feature, `ndt_scan_matcher` can theoretically handle any large size ma
 
 ### Parameters
 
-| Name                                  | Type   | Description                                                          |
-| ------------------------------------- | ------ | -------------------------------------------------------------------- |
-| `use_dynamic_map_loading`             | bool   | Flag to enable dynamic map loading feature for NDT (TRUE by default) |
-| `dynamic_map_loading_update_distance` | double | Distance traveled to load new map(s)                                 |
-| `dynamic_map_loading_map_radius`      | double | Map loading radius for every update                                  |
-| `lidar_radius`                        | double | LiDAR radius used for localization (only used for diagnosis)         |
+| Name                                  | Type   | Description                                                  |
+| ------------------------------------- | ------ | ------------------------------------------------------------ |
+| `dynamic_map_loading_update_distance` | double | Distance traveled to load new map(s)                         |
+| `dynamic_map_loading_map_radius`      | double | Map loading radius for every update                          |
+| `lidar_radius`                        | double | LiDAR radius used for localization (only used for diagnosis) |
 
-### Enabling the dynamic map loading feature
+### Notes for dynamic map loading
 
-To use dynamic map loading feature for `ndt_scan_matcher`, you also need to appropriately configure some other settings outside of this node.
-Follow the next two instructions.
-
-1. enable dynamic map loading interface in `pointcloud_map_loader` (by setting `enable_differential_load` to true in the package)
-2. split the PCD files into grids (recommended size: 20[m] x 20[m])
+To use dynamic map loading feature for `ndt_scan_matcher`, you also need to split the PCD files into grids (recommended size: 20[m] x 20[m])
 
 Note that the dynamic map loading may FAIL if the map is split into two or more large size map (e.g. 1000[m] x 1000[m]). Please provide either of
 
@@ -235,14 +223,10 @@ Note that the dynamic map loading may FAIL if the map is split into two or more 
 
 Here is a split PCD map for `sample-map-rosbag` from Autoware tutorial: [`sample-map-rosbag_split.zip`](https://github.com/autowarefoundation/autoware.universe/files/10349104/sample-map-rosbag_split.zip)
 
-|   PCD files    | `use_dynamic_map_loading` | `enable_differential_load` | How NDT loads map(s) |
-| :------------: | :-----------------------: | :------------------------: | :------------------: |
-|  single file   |           true            |            true            |  at once (standard)  |
-|  single file   |           true            |           false            |  **does NOT work**   |
-|  single file   |           false           |         true/false         |  at once (standard)  |
-| multiple files |           true            |            true            |     dynamically      |
-| multiple files |           true            |           false            |  **does NOT work**   |
-| multiple files |           false           |         true/false         |  at once (standard)  |
+|   PCD files    | How NDT loads map(s) |
+| :------------: | :------------------: |
+|  single file   |  at once (standard)  |
+| multiple files |     dynamically      |
 
 ## Scan matching score based on de-grounded LiDAR scan
 

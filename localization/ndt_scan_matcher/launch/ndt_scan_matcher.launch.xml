@@ -4,7 +4,6 @@
   <!-- Topics -->
   <arg name="input/pointcloud" default="/points_raw" description="Sensor points topic"/>
   <arg name="input_initial_pose_topic" default="/ekf_pose_with_covariance" description="Initial position topic to align"/>
-  <arg name="input_map_points_topic" default="/pointcloud_map" description="Map points topic"/>
   <arg name="input_regularization_pose_topic" default="/sensing/gnss/pose_with_covariance" description="Regularization pose topic"/>
   <arg name="input_service_trigger_node" default="trigger_node" description="Trigger node service name"/>
 
@@ -19,7 +18,6 @@
     <remap from="points_raw" to="$(var input/pointcloud)"/>
 
     <remap from="ekf_pose_with_covariance" to="$(var input_initial_pose_topic)"/>
-    <remap from="pointcloud_map" to="$(var input_map_points_topic)"/>
 
     <remap from="ndt_pose" to="$(var output_pose_topic)"/>
     <remap from="ndt_pose_with_covariance" to="$(var output_pose_with_covariance_topic)"/>

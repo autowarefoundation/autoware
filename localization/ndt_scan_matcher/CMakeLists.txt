@@ -30,7 +30,6 @@ ament_auto_add_executable(ndt_scan_matcher
   src/particle.cpp
   src/ndt_scan_matcher_node.cpp
   src/ndt_scan_matcher_core.cpp
-  src/map_module.cpp
   src/map_update_module.cpp
 )
 
