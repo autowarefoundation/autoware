@@ -88,18 +88,12 @@ public:
 private:
   bool isStopSignal();
 
-  bool isTrafficSignalStop(const TrafficSignal & tl_state) const;
-
   autoware_auto_planning_msgs::msg::PathWithLaneId insertStopPose(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & input,
     const size_t & insert_target_point_idx, const Eigen::Vector2d & target_point,
     tier4_planning_msgs::msg::StopReason * stop_reason);
 
   bool isPassthrough(const double & signed_arc_length) const;
-
-  bool hasTrafficLightCircleColor(const TrafficSignal & tl_state, const uint8_t & lamp_color) const;
-
-  bool hasTrafficLightShape(const TrafficSignal & tl_state, const uint8_t & lamp_shape) const;
 
   bool findValidTrafficSignal(TrafficSignalStamped & valid_traffic_signal) const;
 

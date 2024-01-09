@@ -33,6 +33,7 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>tier4_planning_msgs</depend>
+  <depend>traffic_light_utils</depend>
   <depend>visualization_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>

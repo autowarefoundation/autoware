@@ -14,62 +14,11 @@
 
 #include <behavior_path_planner_common/utils/traffic_light_utils.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
+#include <traffic_light_utils/traffic_light_utils.hpp>
 
 namespace behavior_path_planner::utils::traffic_light
 {
 using motion_utils::calcSignedArcLength;
-
-bool hasTrafficLightCircleColor(const TrafficSignal & tl_state, const uint8_t & lamp_color)
-{
-  const auto it_lamp =
-    std::find_if(tl_state.elements.begin(), tl_state.elements.end(), [&lamp_color](const auto & x) {
-      return x.shape == TrafficSignalElement::CIRCLE && x.color == lamp_color;
-    });
-
-  return it_lamp != tl_state.elements.end();
-}
-
-bool hasTrafficLightShape(const TrafficSignal & tl_state, const uint8_t & lamp_shape)
-{
-  const auto it_lamp = std::find_if(
-    tl_state.elements.begin(), tl_state.elements.end(),
-    [&lamp_shape](const auto & x) { return x.shape == lamp_shape; });
-
-  return it_lamp != tl_state.elements.end();
-}
-
-bool isTrafficSignalStop(const lanelet::ConstLanelet & lanelet, const TrafficSignal & tl_state)
-{
-  if (hasTrafficLightCircleColor(tl_state, TrafficSignalElement::GREEN)) {
-    return false;
-  }
-
-  if (hasTrafficLightCircleColor(tl_state, TrafficSignalElement::UNKNOWN)) {
-    return false;
-  }
-
-  const std::string turn_direction = lanelet.attributeOr("turn_direction", "else");
-
-  if (turn_direction == "else") {
-    return true;
-  }
-  if (
-    turn_direction == "right" &&
-    hasTrafficLightShape(tl_state, TrafficSignalElement::RIGHT_ARROW)) {
-    return false;
-  }
-  if (
-    turn_direction == "left" && hasTrafficLightShape(tl_state, TrafficSignalElement::LEFT_ARROW)) {
-    return false;
-  }
-  if (
-    turn_direction == "straight" &&
-    hasTrafficLightShape(tl_state, TrafficSignalElement::UP_ARROW)) {
-    return false;
-  }
-
-  return true;
-}
 
 double getDistanceToNextTrafficLight(
   const Pose & current_pose, const lanelet::ConstLanelets & lanelets)
@@ -138,7 +87,8 @@ std::optional<double> calcDistanceToRedTrafficLight(
         continue;
       }
 
-      if (!isTrafficSignalStop(lanelet, traffic_signal_stamped.value().signal)) {
+      if (!traffic_light_utils::isTrafficSignalStop(
+            lanelet, traffic_signal_stamped.value().signal)) {
         continue;
       }
 

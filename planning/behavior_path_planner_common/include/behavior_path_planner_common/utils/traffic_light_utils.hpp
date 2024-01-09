@@ -38,43 +38,6 @@ using autoware_perception_msgs::msg::TrafficSignalElement;
 using geometry_msgs::msg::Pose;
 
 /**
- * @brief Checks if a traffic light state includes a circle-shaped light with the specified color.
- *
- * Iterates through the traffic light elements to find a circle-shaped light that matches the given
- * color.
- *
- * @param tl_state The traffic light state to check.
- * @param lamp_color The color to look for in the traffic light's circle-shaped lamps.
- * @return True if a circle-shaped light with the specified color is found, false otherwise.
- */
-bool hasTrafficLightCircleColor(const TrafficSignal & tl_state, const uint8_t & lamp_color);
-
-/**
- * @brief Checks if a traffic light state includes a light with the specified shape.
- *
- * Searches through the traffic light elements to find a light that matches the given shape.
- *
- * @param tl_state The traffic light state to check.
- * @param shape The shape to look for in the traffic light's lights.
- * @return True if a light with the specified shape is found, false otherwise.
- */
-bool hasTrafficLightShape(const TrafficSignal & tl_state, const uint8_t & lamp_shape);
-
-/**
- * @brief Determines if a traffic signal indicates a stop for the given lanelet.
- *
- * Evaluates the current state of the traffic light, considering if it's green or unknown,
- * which would not necessitate a stop. Then, it checks the turn direction attribute of the lanelet
- * against the traffic light's arrow shapes to determine whether a vehicle must stop or if it can
- * proceed based on allowed turn directions.
- *
- * @param lanelet The lanelet to check for a stop signal at its traffic light.
- * @param tl_state The current state of the traffic light associated with the lanelet.
- * @return True if the traffic signal indicates a stop is required, false otherwise.
- */
-bool isTrafficSignalStop(const lanelet::ConstLanelet & lanelet, const TrafficSignal & tl_state);
-
-/**
  * @brief Computes the distance from the current position to the next traffic light along a set of
  * lanelets.
  *

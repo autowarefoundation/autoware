@@ -51,6 +51,63 @@ void setSignalUnknown(tier4_perception_msgs::msg::TrafficSignal & signal, float 
   }
 }
 
+bool hasTrafficLightCircleColor(
+  const autoware_perception_msgs::msg::TrafficSignal & tl_state, const uint8_t & lamp_color)
+{
+  const auto it_lamp =
+    std::find_if(tl_state.elements.begin(), tl_state.elements.end(), [&lamp_color](const auto & x) {
+      return x.shape == autoware_perception_msgs::msg::TrafficSignalElement::CIRCLE &&
+             x.color == lamp_color;
+    });
+
+  return it_lamp != tl_state.elements.end();
+}
+
+bool hasTrafficLightShape(
+  const autoware_perception_msgs::msg::TrafficSignal & tl_state, const uint8_t & lamp_shape)
+{
+  const auto it_lamp = std::find_if(
+    tl_state.elements.begin(), tl_state.elements.end(),
+    [&lamp_shape](const auto & x) { return x.shape == lamp_shape; });
+
+  return it_lamp != tl_state.elements.end();
+}
+
+bool isTrafficSignalStop(
+  const lanelet::ConstLanelet & lanelet,
+  const autoware_perception_msgs::msg::TrafficSignal & tl_state)
+{
+  if (hasTrafficLightCircleColor(
+        tl_state, autoware_perception_msgs::msg::TrafficSignalElement::GREEN)) {
+    return false;
+  }
+
+  const std::string turn_direction = lanelet.attributeOr("turn_direction", "else");
+
+  if (turn_direction == "else") {
+    return true;
+  }
+  if (
+    turn_direction == "right" &&
+    hasTrafficLightShape(
+      tl_state, autoware_perception_msgs::msg::TrafficSignalElement::RIGHT_ARROW)) {
+    return false;
+  }
+  if (
+    turn_direction == "left" &&
+    hasTrafficLightShape(
+      tl_state, autoware_perception_msgs::msg::TrafficSignalElement::LEFT_ARROW)) {
+    return false;
+  }
+  if (
+    turn_direction == "straight" &&
+    hasTrafficLightShape(tl_state, autoware_perception_msgs::msg::TrafficSignalElement::UP_ARROW)) {
+    return false;
+  }
+
+  return true;
+}
+
 tf2::Vector3 getTrafficLightTopLeft(const lanelet::ConstLineString3d & traffic_light)
 {
   const auto & tl_bl = traffic_light.front();
