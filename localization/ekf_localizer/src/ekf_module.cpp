@@ -87,9 +87,15 @@ geometry_msgs::msg::PoseStamped EKFModule::getCurrentPose(
 {
   const double x = kalman_filter_.getXelement(IDX::X);
   const double y = kalman_filter_.getXelement(IDX::Y);
+  /*
+    getXelement(IDX::YAW) is surely `biased_yaw`.
+    Please note how `yaw` and `yaw_bias` are used in the state transition model and
+    how the observed pose is handled in the measurement pose update.
+  */
   const double biased_yaw = kalman_filter_.getXelement(IDX::YAW);
   const double yaw_bias = kalman_filter_.getXelement(IDX::YAWB);
   const double yaw = biased_yaw + yaw_bias;
+
   Pose current_ekf_pose;
   current_ekf_pose.header.frame_id = params_.pose_frame_id;
   current_ekf_pose.header.stamp = current_time;
@@ -224,7 +230,9 @@ bool EKFModule::measurementUpdatePose(
     return false;
   }
 
-  /* Set yaw */
+  /* Since the kalman filter cannot handle the rotation angle directly,
+    offset the yaw angle so that the difference from the yaw angle that ekf holds internally is less
+    than 2 pi. */
   double yaw = tf2::getYaw(pose.pose.pose.orientation);
   const double ekf_yaw = kalman_filter_.getXelement(delay_step * dim_x_ + IDX::YAW);
   const double yaw_error = normalizeYaw(yaw - ekf_yaw);  // normalize the error not to exceed 2 pi
