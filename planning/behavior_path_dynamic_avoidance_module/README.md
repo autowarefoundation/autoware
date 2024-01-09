@@ -32,16 +32,16 @@ First, a maximum lateral offset to avoid is calculated as follows.
 The polygon's width to extract from the drivable area is the obstacle width and double `drivable_area_generation.lat_offset_from_obstacle`.
 We can limit the lateral shift offset by `drivable_area_generation.max_lat_offset_to_avoid`.
 
-![drivable_area_extraction_width](../image/dynamic_avoidance/drivable_area_extraction_width.drawio.svg)
+![drivable_area_extraction_width](./image/drivable_area_extraction_width.drawio.svg)
 
 Then, extracting the same directional and opposite directional obstacles from the drivable area will work as follows considering TTC (time to collision).
 Regarding the same directional obstacles, obstacles whose TTC is negative will be ignored (e.g. The obstacle is in front of the ego, and the obstacle's velocity is larger than the ego's velocity.).
 
 Same directional obstacles
-![same_directional_object](../image/dynamic_avoidance/same_directional_object.svg)
+![same_directional_object](./image/same_directional_object.svg)
 
 Opposite directional obstacles
-![opposite_directional_object](../image/dynamic_avoidance/opposite_directional_object.svg)
+![opposite_directional_object](./image/opposite_directional_object.svg)
 
 ## Parameters
 

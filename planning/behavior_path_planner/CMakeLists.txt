@@ -7,13 +7,9 @@ autoware_package()
 find_package(OpenCV REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 
-pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
-
 ament_auto_add_library(${PROJECT_NAME}_lib SHARED
   src/planner_manager.cpp
   src/behavior_path_planner_node.cpp
-  src/scene_module/dynamic_avoidance/dynamic_avoidance_module.cpp
-  src/scene_module/dynamic_avoidance/manager.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_lib SYSTEM PUBLIC

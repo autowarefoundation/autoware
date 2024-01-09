@@ -18,9 +18,6 @@
 #include <planning_test_utils/planning_interface_test_manager.hpp>
 #include <planning_test_utils/planning_interface_test_manager_utils.hpp>
 
-#include <gtest/gtest.h>
-
-#include <cmath>
 #include <vector>
 
 using behavior_path_planner::BehaviorPathPlannerNode;
@@ -50,18 +47,22 @@ std::shared_ptr<BehaviorPathPlannerNode> generateNode()
     ament_index_cpp::get_package_share_directory("behavior_path_planner");
 
   std::vector<std::string> module_names;
+  module_names.emplace_back("behavior_path_planner::DynamicAvoidanceModuleManager");
 
   std::vector<rclcpp::Parameter> params;
   params.emplace_back("launch_modules", module_names);
   node_options.parameter_overrides(params);
 
   test_utils::updateNodeOptions(
-    node_options, {planning_test_utils_dir + "/config/test_common.param.yaml",
-                   planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
-                   planning_test_utils_dir + "/config/test_vehicle_info.param.yaml",
-                   behavior_path_planner_dir + "/config/behavior_path_planner.param.yaml",
-                   behavior_path_planner_dir + "/config/drivable_area_expansion.param.yaml",
-                   behavior_path_planner_dir + "/config/scene_module_manager.param.yaml"});
+    node_options,
+    {planning_test_utils_dir + "/config/test_common.param.yaml",
+     planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
+     planning_test_utils_dir + "/config/test_vehicle_info.param.yaml",
+     behavior_path_planner_dir + "/config/behavior_path_planner.param.yaml",
+     behavior_path_planner_dir + "/config/drivable_area_expansion.param.yaml",
+     behavior_path_planner_dir + "/config/scene_module_manager.param.yaml",
+     ament_index_cpp::get_package_share_directory("behavior_path_dynamic_avoidance_module") +
+       "/config/dynamic_avoidance.param.yaml"});
 
   return std::make_shared<BehaviorPathPlannerNode>(node_options);
 }

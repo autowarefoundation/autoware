@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__DYNAMIC_AVOIDANCE__DYNAMIC_AVOIDANCE_MODULE_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__DYNAMIC_AVOIDANCE__DYNAMIC_AVOIDANCE_MODULE_HPP_
+#ifndef BEHAVIOR_PATH_DYNAMIC_AVOIDANCE_MODULE__SCENE_HPP_
+#define BEHAVIOR_PATH_DYNAMIC_AVOIDANCE_MODULE__SCENE_HPP_
 
 #include "behavior_path_planner_common/interface/scene_module_interface.hpp"
 
@@ -23,9 +23,6 @@
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
-#include <tier4_planning_msgs/msg/avoidance_debug_msg.hpp>
-#include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -413,4 +410,4 @@ private:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__DYNAMIC_AVOIDANCE__DYNAMIC_AVOIDANCE_MODULE_HPP_
+#endif  // BEHAVIOR_PATH_DYNAMIC_AVOIDANCE_MODULE__SCENE_HPP_

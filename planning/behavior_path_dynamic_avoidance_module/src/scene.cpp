@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/scene_module/dynamic_avoidance/dynamic_avoidance_module.hpp"
+#include "behavior_path_dynamic_avoidance_module/scene.hpp"
 
 #include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
