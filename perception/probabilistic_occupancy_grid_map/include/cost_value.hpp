@@ -59,19 +59,48 @@ static const unsigned char NO_INFORMATION = 128;  // 0.5 * 255
 static const unsigned char LETHAL_OBSTACLE = 255;
 static const unsigned char FREE_SPACE = 0;
 
+static const unsigned char OCCUPIED_THRESHOLD = 180;
+static const unsigned char FREE_THRESHOLD = 50;
+
 struct CostTranslationTable
 {
   CostTranslationTable()
   {
     for (int i = 0; i < 256; i++) {
-      const auto value = static_cast<char>(static_cast<float>(i) * 100.f / 255.f);
-      data[i] = std::max(std::min(value, static_cast<char>(99)), static_cast<char>(1));
+      const auto value =
+        static_cast<char>(static_cast<float>(i) * 100.f / 255.f);  // 0-255 to 0-100
+      data[i] =
+        std::max(std::min(value, static_cast<char>(99)), static_cast<char>(1));  // 0-100 to 1-99
     }
   }
   char operator[](unsigned char n) const { return data[n]; }
   char data[256];
 };
+struct InverseCostTranslationTable
+{
+  InverseCostTranslationTable()
+  {
+    // 0-100 to 0-255
+    for (int i = 0; i < 100; i++) {
+      data[i] = static_cast<unsigned char>(i * 255 / 99);
+    }
+  }
+  unsigned char operator[](char n) const
+  {
+    if (n > 99) {
+      return data[99];
+    } else if (n < 1) {
+      return data[1];
+    } else {
+      const unsigned char u_n = static_cast<unsigned char>(n);
+      return data[u_n];
+    }
+  }
+  unsigned char data[100];
+};
+
 static const CostTranslationTable cost_translation_table;
+static const InverseCostTranslationTable inverse_cost_translation_table;
 }  // namespace occupancy_cost_value
 
 #endif  // COST_VALUE_HPP_

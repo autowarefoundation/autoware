@@ -55,6 +55,24 @@ rclcpp_components_register_node(laserscan_based_occupancy_grid_map
   EXECUTABLE laserscan_based_occupancy_grid_map_node
 )
 
+# GridMapFusionNode
+ament_auto_add_library(synchronized_grid_map_fusion SHARED
+  src/fusion/synchronized_grid_map_fusion_node.cpp
+  src/fusion/single_frame_fusion_policy.cpp
+  src/pointcloud_based_occupancy_grid_map/occupancy_grid_map_fixed.cpp
+  src/updater/occupancy_grid_map_log_odds_bayes_filter_updater.cpp
+  src/utils/utils.cpp
+)
+
+target_link_libraries(synchronized_grid_map_fusion
+  ${PCL_LIBRARIES}
+)
+
+rclcpp_components_register_node(synchronized_grid_map_fusion
+  PLUGIN "synchronized_grid_map_fusion::GridMapFusionNode"
+  EXECUTABLE synchronized_grid_map_fusion_node
+)
+
 ament_auto_package(
   INSTALL_TO_SHARE
     launch
@@ -66,13 +84,22 @@ if(BUILD_TESTING)
   # launch_testing
   find_package(launch_testing_ament_cmake REQUIRED)
   add_launch_test(test/test_pointcloud_based_method.py)
+  add_launch_test(test/test_synchronized_grid_map_fusion_node.py)
 
   # gtest
   ament_add_gtest(test_utils
   test/test_utils.cpp
   )
+  ament_add_gtest(costmap_unit_tests
+  test/cost_value_test.cpp)
+  ament_add_gtest(fusion_policy_unit_tests
+  test/fusion_policy_test.cpp
+  src/fusion/single_frame_fusion_policy.cpp
+  )
   target_link_libraries(test_utils
     ${PCL_LIBRARIES}
     ${PROJECT_NAME}_common
   )
+  target_include_directories(costmap_unit_tests PRIVATE "include")
+  target_include_directories(fusion_policy_unit_tests PRIVATE "include")
 endif()

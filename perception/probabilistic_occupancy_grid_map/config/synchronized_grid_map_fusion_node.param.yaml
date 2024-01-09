@@ -1,0 +1,20 @@
+/**:
+  ros__parameters:
+    # 1. fusion parameters
+    fusion_input_ogm_topics: ["topic1", "topic2"]
+    input_ogm_reliabilities: [0.8, 0.2]
+    fusion_method: "overwrite" # choose from ["overwrite", "log-odds", "dempster-shafer"]
+
+    # 2. synchronization settings
+    match_threshold_sec: 0.01    # 10ms
+    timeout_sec: 0.1             # 100ms
+    input_offset_sec: [0.0, 0.0] # no offset
+
+    # 3. settings for fused fusion map
+    # remember resolution and map size should be same with input maps
+    map_frame_: "map"
+    base_link_frame_: "base_link"
+    grid_map_origin_frame_: "base_link"
+    fusion_map_length_x: 100.0
+    fusion_map_length_y: 100.0
+    fusion_map_resolution: 0.5

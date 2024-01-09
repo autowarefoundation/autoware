@@ -15,6 +15,8 @@
 #ifndef UTILS__UTILS_HPP_
 #define UTILS__UTILS_HPP_
 
+#include "cost_value.hpp"
+
 #include <builtin_interfaces/msg/time.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -114,6 +116,7 @@ bool extractCommonPointCloud(
   const sensor_msgs::msg::PointCloud2 & obstacle_pc, const sensor_msgs::msg::PointCloud2 & raw_pc,
   sensor_msgs::msg::PointCloud2 & output_obstacle_pc);
 
+unsigned char getApproximateOccupancyState(const unsigned char & value);
 }  // namespace utils
 
 #endif  // UTILS__UTILS_HPP_
