@@ -102,6 +102,7 @@ private:
   //  parameter
   double forward_path_length_;
   double backward_path_length_;
+  double behavior_output_path_interval_;
 
   // member
   PlannerData planner_data_;

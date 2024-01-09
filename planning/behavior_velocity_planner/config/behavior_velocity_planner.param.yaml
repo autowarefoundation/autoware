@@ -2,6 +2,7 @@
   ros__parameters:
     forward_path_length: 1000.0
     backward_path_length: 5.0
+    behavior_output_path_interval: 1.0
     stop_line_extend_length: 5.0
     max_accel: -2.8
     max_jerk: -5.0

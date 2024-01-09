@@ -138,6 +138,7 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   // Parameters
   forward_path_length_ = declare_parameter<double>("forward_path_length");
   backward_path_length_ = declare_parameter<double>("backward_path_length");
+  behavior_output_path_interval_ = declare_parameter<double>("behavior_output_path_interval");
   planner_data_.stop_line_extend_length = declare_parameter<double>("stop_line_extend_length");
 
   // nearest search
@@ -409,7 +410,8 @@ autoware_auto_planning_msgs::msg::Path BehaviorVelocityPlannerNode::generatePath
   const auto filtered_path = filterLitterPathPoint(to_path(velocity_planned_path));
 
   // interpolation
-  const auto interpolated_path_msg = interpolatePath(filtered_path, forward_path_length_);
+  const auto interpolated_path_msg =
+    interpolatePath(filtered_path, forward_path_length_, behavior_output_path_interval_);
 
   // check stop point
   output_path_msg = filterStopPathPoint(interpolated_path_msg);
