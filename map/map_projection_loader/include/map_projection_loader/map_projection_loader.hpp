@@ -23,6 +23,8 @@
 #include <string>
 
 tier4_map_msgs::msg::MapProjectorInfo load_info_from_yaml(const std::string & filename);
+tier4_map_msgs::msg::MapProjectorInfo load_map_projector_info(
+  const std::string & yaml_filename, const std::string & lanelet2_map_filename);
 
 class MapProjectionLoader : public rclcpp::Node
 {
