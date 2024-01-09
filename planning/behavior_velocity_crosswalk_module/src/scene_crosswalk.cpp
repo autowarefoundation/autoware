@@ -393,7 +393,7 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
     return {};
   }
 
-  // Check if the ego should stop beyond the stop line.
+  // Check if the ego should stop at the stop line or the other points.
   const bool stop_at_stop_line =
     dist_ego_to_stop < nearest_stop_info->second &&
     nearest_stop_info->second < dist_ego_to_stop + planner_param_.far_object_threshold;
@@ -404,9 +404,9 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
       return createStopFactor(*default_stop_pose, stop_factor_points);
     }
   } else {
-    // Stop beyond the stop line
     const auto stop_pose = calcLongitudinalOffsetPose(
-      ego_path.points, nearest_stop_info->first, planner_param_.stop_distance_from_object);
+      ego_path.points, nearest_stop_info->first,
+      -base_link2front - planner_param_.stop_distance_from_object);
     if (stop_pose) {
       return createStopFactor(*stop_pose, stop_factor_points);
     }
