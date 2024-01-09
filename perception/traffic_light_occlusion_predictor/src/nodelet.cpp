@@ -129,12 +129,18 @@ void TrafficLightOcclusionPredictorNodelet::syncCallback(
   const uint8_t traffic_light_type)
 {
   std::vector<int> occlusion_ratios;
+  size_t not_detected_roi = 0;
   if (in_cloud_msg == nullptr || in_cam_info_msg == nullptr || in_roi_msg == nullptr) {
     occlusion_ratios.resize(in_signal_msg->signals.size(), 0);
   } else {
     tier4_perception_msgs::msg::TrafficLightRoiArray selected_roi_msg;
     selected_roi_msg.rois.reserve(in_roi_msg->rois.size());
     for (size_t i = 0; i < in_roi_msg->rois.size(); ++i) {
+      // not detected roi
+      if (in_roi_msg->rois[i].roi.height == 0) {
+        not_detected_roi++;
+        continue;
+      }
       if (in_roi_msg->rois.at(i).traffic_light_type == traffic_light_type) {
         selected_roi_msg.rois.push_back(in_roi_msg->rois.at(i));
       }
@@ -142,7 +148,7 @@ void TrafficLightOcclusionPredictorNodelet::syncCallback(
 
     tier4_perception_msgs::msg::TrafficSignalArray out_msg = *in_signal_msg;
 
-    if (selected_roi_msg.rois.size() != in_signal_msg->signals.size()) {
+    if (selected_roi_msg.rois.size() != in_signal_msg->signals.size() - not_detected_roi) {
       occlusion_ratios.resize(in_signal_msg->signals.size(), 0);
     } else {
       auto selected_roi_msg_ptr =
@@ -162,6 +168,12 @@ void TrafficLightOcclusionPredictorNodelet::syncCallback(
       traffic_light_utils::setSignalUnknown(out_msg_.signals.at(predicted_num + i), 0.0);
     }
   }
+
+  // push back not detected rois
+  for (size_t i = occlusion_ratios.size(); i < in_signal_msg->signals.size(); ++i) {
+    out_msg_.signals.push_back(in_signal_msg->signals[i]);
+  }
+
   subscribed_.at(traffic_light_type) = true;
 
   if (std::all_of(subscribed_.begin(), subscribed_.end(), [](bool v) { return v; })) {
