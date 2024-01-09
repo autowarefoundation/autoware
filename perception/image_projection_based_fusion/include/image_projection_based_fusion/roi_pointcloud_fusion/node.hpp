@@ -22,7 +22,7 @@
 namespace image_projection_based_fusion
 {
 class RoiPointCloudFusionNode
-: public FusionNode<sensor_msgs::msg::PointCloud2, DetectedObjectWithFeature>
+: public FusionNode<PointCloud2, DetectedObjectWithFeature, DetectedObjectsWithFeature>
 {
 private:
   int min_cluster_size_{1};

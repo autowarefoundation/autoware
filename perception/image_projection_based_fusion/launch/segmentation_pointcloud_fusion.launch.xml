@@ -1,0 +1,87 @@
+<launch>
+  <arg name="input/camera_number" default="1"/>
+  <arg name="input/mask0" default="/perception/object_recognition/detection/mask0"/>
+  <arg name="input/camera_info0" default="/sensing/camera/camera0/camera_info"/>
+  <arg name="input/mask1" default="/perception/object_recognition/detection/mask1"/>
+  <arg name="input/camera_info1" default="/sensing/camera/camera0/camera_info"/>
+  <arg name="input/mask2" default="/perception/object_recognition/detection/mask2"/>
+  <arg name="input/camera_info2" default="/sensing/camera/camera0/camera_info"/>
+  <arg name="input/mask3" default="/perception/object_recognition/detection/mask3"/>
+  <arg name="input/camera_info3" default="/sensing/camera/camera0/camera_info"/>
+  <arg name="input/mask4" default="/perception/object_recognition/detection/mask4"/>
+  <arg name="input/camera_info4" default="/sensing/camera/camera0/camera_info"/>
+  <arg name="input/mask5" default="/perception/object_recognition/detection/mask5"/>
+  <arg name="input/camera_info5" default="/sensing/camera/camera0/camera_info"/>
+  <arg name="input/mask6" default="/perception/object_recognition/detection/mask6"/>
+  <arg name="input/camera_info6" default="/sensing/camera/camera0/camera_info"/>
+  <arg name="input/mask7" default="/perception/object_recognition/detection/mask7"/>
+  <arg name="input/camera_info7" default="/sensing/camera/camera0/camera_info"/>
+  <arg name="input/pointcloud" default="/sensing/lidar/top/outlier_filtered/pointcloud"/>
+  <arg name="output/pointcloud" default="output/pointcloud"/>
+  <arg name="sync_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_sync.param.yaml"/>
+  <arg name="semantic_segmentation_based_filter_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/segmentation_pointcloud_fusion.param.yaml"/>
+  <!-- debug -->
+  <!-- cspell: ignore minx, maxx, miny, maxy, minz, maxz  -->
+  <arg name="debug_mode" default="false"/>
+
+  <arg name="filter_scope_minx" default="-100"/>
+  <arg name="filter_scope_maxx" default="100"/>
+  <arg name="filter_scope_miny" default="-100"/>
+  <arg name="filter_scope_maxy" default="100"/>
+  <arg name="filter_scope_minz" default="-100"/>
+  <arg name="filter_scope_maxz" default="100"/>
+  <arg name="image_buffer_size" default="15"/>
+  <arg name="input/image0" default="/image_raw0"/>
+  <arg name="input/image1" default="/image_raw1"/>
+  <arg name="input/image2" default="/image_raw2"/>
+  <arg name="input/image3" default="/image_raw3"/>
+  <arg name="input/image4" default="/image_raw4"/>
+  <arg name="input/image5" default="/image_raw5"/>
+  <arg name="input/image6" default="/image_raw6"/>
+  <arg name="input/image7" default="/image_raw7"/>
+  <group>
+    <node pkg="image_projection_based_fusion" exec="segmentation_pointcloud_fusion_node" name="segmentation_pointcloud_fusion" output="screen">
+      <param name="rois_number" value="$(var input/camera_number)"/>
+      <param from="$(var semantic_segmentation_based_filter_param_path)"/>
+      <param from="$(var sync_param_path)"/>
+      <remap from="input" to="$(var input/pointcloud)"/>
+      <remap from="output" to="$(var output/pointcloud)"/>
+
+      <!-- rois, camera and info -->
+      <param name="input/rois0" value="$(var input/mask0)"/>
+      <param name="input/camera_info0" value="$(var input/camera_info0)"/>
+      <param name="input/image0" value="$(var input/image0)"/>
+      <param name="input/rois1" value="$(var input/mask1)"/>
+      <param name="input/camera_info1" value="$(var input/camera_info1)"/>
+      <param name="input/image1" value="$(var input/image1)"/>
+      <param name="input/rois2" value="$(var input/mask2)"/>
+      <param name="input/camera_info2" value="$(var input/camera_info2)"/>
+      <param name="input/image2" value="$(var input/image2)"/>
+      <param name="input/rois3" value="$(var input/mask3)"/>
+      <param name="input/camera_info3" value="$(var input/camera_info3)"/>
+      <param name="input/image3" value="$(var input/image3)"/>
+      <param name="input/rois4" value="$(var input/mask4)"/>
+      <param name="input/camera_info4" value="$(var input/camera_info4)"/>
+      <param name="input/image4" value="$(var input/image4)"/>
+      <param name="input/rois5" value="$(var input/mask5)"/>
+      <param name="input/camera_info5" value="$(var input/camera_info5)"/>
+      <param name="input/image5" value="$(var input/image5)"/>
+      <param name="input/rois6" value="$(var input/mask6)"/>
+      <param name="input/camera_info6" value="$(var input/camera_info6)"/>
+      <param name="input/image6" value="$(var input/image6)"/>
+      <param name="input/rois7" value="$(var input/mask7)"/>
+      <param name="input/camera_info7" value="$(var input/camera_info7)"/>
+      <param name="input/image7" value="$(var input/image7)"/>
+
+      <!-- debug -->
+      <param name="debug_mode" value="$(var debug_mode)"/>
+      <param name="filter_scope_minx" value="$(var filter_scope_minx)"/>
+      <param name="filter_scope_maxx" value="$(var filter_scope_maxx)"/>
+      <param name="filter_scope_miny" value="$(var filter_scope_miny)"/>
+      <param name="filter_scope_maxy" value="$(var filter_scope_maxy)"/>
+      <param name="filter_scope_minz" value="$(var filter_scope_minz)"/>
+      <param name="filter_scope_maxz" value="$(var filter_scope_maxz)"/>
+      <param name="image_buffer_size" value="$(var image_buffer_size)"/>
+    </node>
+  </group>
+</launch>

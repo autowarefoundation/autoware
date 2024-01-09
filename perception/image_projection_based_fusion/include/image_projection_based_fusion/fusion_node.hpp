@@ -22,6 +22,7 @@
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 
@@ -49,13 +50,14 @@ namespace image_projection_based_fusion
 {
 using autoware_auto_perception_msgs::msg::DetectedObject;
 using autoware_auto_perception_msgs::msg::DetectedObjects;
+using sensor_msgs::msg::CameraInfo;
+using sensor_msgs::msg::Image;
 using sensor_msgs::msg::PointCloud2;
 using tier4_perception_msgs::msg::DetectedObjectsWithFeature;
 using tier4_perception_msgs::msg::DetectedObjectWithFeature;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 using autoware_auto_perception_msgs::msg::ObjectClassification;
-
-template <class Msg, class ObjType>
+template <class Msg, class ObjType, class Msg2D>
 class FusionNode : public rclcpp::Node
 {
 public:
@@ -78,12 +80,12 @@ protected:
   virtual void subCallback(const typename Msg::ConstSharedPtr input_msg);
 
   // callback for roi subscription
+
   virtual void roiCallback(
-    const DetectedObjectsWithFeature::ConstSharedPtr input_roi_msg, const std::size_t roi_i);
+    const typename Msg2D::ConstSharedPtr input_roi_msg, const std::size_t roi_i);
 
   virtual void fuseOnSingleImage(
-    const Msg & input_msg, const std::size_t image_id,
-    const DetectedObjectsWithFeature & input_roi_msg,
+    const Msg & input_msg, const std::size_t image_id, const Msg2D & input_roi_msg,
     const sensor_msgs::msg::CameraInfo & camera_info, Msg & output_msg) = 0;
 
   // set args if you need
@@ -111,7 +113,7 @@ protected:
 
   /** \brief A vector of subscriber. */
   typename rclcpp::Subscription<Msg>::SharedPtr sub_;
-  std::vector<rclcpp::Subscription<DetectedObjectsWithFeature>::SharedPtr> rois_subs_;
+  std::vector<typename rclcpp::Subscription<Msg2D>::SharedPtr> rois_subs_;
 
   // offsets between cameras and the lidars
   std::vector<double> input_offset_ms_;
@@ -120,7 +122,7 @@ protected:
   std::vector<bool> is_fused_;
   std::pair<int64_t, typename Msg::SharedPtr>
     cached_msg_;  // first element is the timestamp in nanoseconds, second element is the message
-  std::vector<std::map<int64_t, DetectedObjectsWithFeature::ConstSharedPtr>> cached_roi_msgs_;
+  std::vector<std::map<int64_t, typename Msg2D::ConstSharedPtr>> cached_roi_msgs_;
   std::mutex mutex_cached_msgs_;
 
   // output publisher

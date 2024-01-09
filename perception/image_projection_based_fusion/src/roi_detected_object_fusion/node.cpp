@@ -25,7 +25,8 @@ namespace image_projection_based_fusion
 {
 
 RoiDetectedObjectFusionNode::RoiDetectedObjectFusionNode(const rclcpp::NodeOptions & options)
-: FusionNode<DetectedObjects, DetectedObject>("roi_detected_object_fusion", options)
+: FusionNode<DetectedObjects, DetectedObject, DetectedObjectsWithFeature>(
+    "roi_detected_object_fusion", options)
 {
   fusion_params_.passthrough_lower_bound_probability_thresholds =
     declare_parameter<std::vector<double>>("passthrough_lower_bound_probability_thresholds");

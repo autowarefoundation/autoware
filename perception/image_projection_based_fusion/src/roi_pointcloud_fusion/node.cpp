@@ -30,7 +30,8 @@
 namespace image_projection_based_fusion
 {
 RoiPointCloudFusionNode::RoiPointCloudFusionNode(const rclcpp::NodeOptions & options)
-: FusionNode<PointCloud2, DetectedObjectWithFeature>("roi_pointcloud_fusion", options)
+: FusionNode<PointCloud2, DetectedObjectWithFeature, DetectedObjectsWithFeature>(
+    "roi_pointcloud_fusion", options)
 {
   fuse_unknown_only_ = declare_parameter<bool>("fuse_unknown_only");
   min_cluster_size_ = declare_parameter<int>("min_cluster_size");

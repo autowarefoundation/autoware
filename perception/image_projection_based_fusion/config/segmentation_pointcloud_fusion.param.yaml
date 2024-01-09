@@ -1,0 +1,30 @@
+/**:
+  ros__parameters:
+    # if the semantic label is applied for pointcloud filtering
+    filter_semantic_label_target:
+      [
+      true, # road
+      true, # sidewalk
+      true, # building
+      true, # wall
+      true, # fence
+      true, # pole
+      true, # traffic_light
+      true, # traffic_sign
+      true, # vegetation
+      true, # terrain
+      true, # sky
+      false, # person
+      false, # ride
+      false, # car
+      false, # truck
+      false, # bus
+      false, # train
+      false, # motorcycle
+      false, # bicycle
+      false, # others
+      ]
+    # the maximum distance of pointcloud to be applied filter,
+    # this is selected based on semantic segmentation model accuracy,
+    # calibration accuracy and unknown reaction distance
+    filter_distance_threshold: 60.0
