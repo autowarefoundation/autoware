@@ -23,7 +23,7 @@
 #include "autoware_auto_geometry/spatial_hash_config.hpp"
 #include "autoware_auto_geometry/visibility_control.hpp"
 
-#include <common/types.hpp>
+#include <autoware_auto_common/common/types.hpp>
 
 #include <unordered_map>
 #include <utility>

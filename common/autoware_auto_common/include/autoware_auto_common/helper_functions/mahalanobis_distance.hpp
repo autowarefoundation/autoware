@@ -14,8 +14,8 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#ifndef HELPER_FUNCTIONS__MAHALANOBIS_DISTANCE_HPP_
-#define HELPER_FUNCTIONS__MAHALANOBIS_DISTANCE_HPP_
+#ifndef AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__MAHALANOBIS_DISTANCE_HPP_
+#define AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__MAHALANOBIS_DISTANCE_HPP_
 
 #include <Eigen/Cholesky>
 
@@ -69,4 +69,4 @@ types::float32_t calculate_mahalanobis_distance(
 }  // namespace common
 }  // namespace autoware
 
-#endif  // HELPER_FUNCTIONS__MAHALANOBIS_DISTANCE_HPP_
+#endif  // AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__MAHALANOBIS_DISTANCE_HPP_

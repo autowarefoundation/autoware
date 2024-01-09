@@ -14,15 +14,15 @@
 //
 // Developed by Apex.AI, Inc.
 
-#include <common/types.hpp>
-#include <common/visibility_control.hpp>
+#include "autoware_auto_common/common/types.hpp"
+#include "autoware_auto_common/common/visibility_control.hpp"
 
 #include <cstdint>
 #include <tuple>
 #include <type_traits>
 
-#ifndef COMMON__TYPE_TRAITS_HPP_
-#define COMMON__TYPE_TRAITS_HPP_
+#ifndef AUTOWARE_AUTO_COMMON__COMMON__TYPE_TRAITS_HPP_
+#define AUTOWARE_AUTO_COMMON__COMMON__TYPE_TRAITS_HPP_
 
 namespace autoware
 {
@@ -219,4 +219,4 @@ struct intersect
 }  // namespace common
 }  // namespace autoware
 
-#endif  // COMMON__TYPE_TRAITS_HPP_
+#endif  // AUTOWARE_AUTO_COMMON__COMMON__TYPE_TRAITS_HPP_

@@ -22,8 +22,8 @@ The `exclusive_or` function will test whether two values cast to different boole
 ## Example Usage
 
 ```c++
-#include "common/bool_comparisons.hpp"
-#include "common/float_comparisons.hpp"
+#include "autoware_auto_common/common/bool_comparisons.hpp"
+#include "autoware_auto_common/common/float_comparisons.hpp"
 
 #include <iostream>
 

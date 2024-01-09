@@ -16,11 +16,11 @@
 /// \file
 /// \brief This file includes common type definition
 
-#ifndef COMMON__TYPES_HPP_
-#define COMMON__TYPES_HPP_
+#ifndef AUTOWARE_AUTO_COMMON__COMMON__TYPES_HPP_
+#define AUTOWARE_AUTO_COMMON__COMMON__TYPES_HPP_
 
-#include "common/visibility_control.hpp"
-#include "helper_functions/float_comparisons.hpp"
+#include "autoware_auto_common/common/visibility_control.hpp"
+#include "autoware_auto_common/helper_functions/float_comparisons.hpp"
 
 #include <cstdint>
 #include <limits>
@@ -122,4 +122,4 @@ using void_t = void;
 }  // namespace common
 }  // namespace autoware
 
-#endif  // COMMON__TYPES_HPP_
+#endif  // AUTOWARE_AUTO_COMMON__COMMON__TYPES_HPP_

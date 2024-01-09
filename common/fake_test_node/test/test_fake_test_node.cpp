@@ -17,7 +17,7 @@
 /// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
-#include <common/types.hpp>
+#include <autoware_auto_common/common/types.hpp>
 #include <fake_test_node/fake_test_node.hpp>
 
 #include <std_msgs/msg/bool.hpp>

@@ -14,8 +14,8 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#ifndef COMMON__VISIBILITY_CONTROL_HPP_
-#define COMMON__VISIBILITY_CONTROL_HPP_
+#ifndef AUTOWARE_AUTO_COMMON__COMMON__VISIBILITY_CONTROL_HPP_
+#define AUTOWARE_AUTO_COMMON__COMMON__VISIBILITY_CONTROL_HPP_
 
 #if defined(_MSC_VER) && defined(_WIN64)
 #if defined(COMMON_BUILDING_DLL) || defined(COMMON_EXPORTS)
@@ -35,4 +35,4 @@
 #error "Unsupported Build Configuration"
 #endif  // _MSC_VER
 
-#endif  // COMMON__VISIBILITY_CONTROL_HPP_
+#endif  // AUTOWARE_AUTO_COMMON__COMMON__VISIBILITY_CONTROL_HPP_

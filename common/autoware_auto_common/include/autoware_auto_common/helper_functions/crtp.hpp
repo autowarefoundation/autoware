@@ -16,8 +16,8 @@
 /// \file
 /// \brief This file includes common helper functions
 
-#ifndef HELPER_FUNCTIONS__CRTP_HPP_
-#define HELPER_FUNCTIONS__CRTP_HPP_
+#ifndef AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__CRTP_HPP_
+#define AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__CRTP_HPP_
 
 namespace autoware
 {
@@ -49,4 +49,4 @@ protected:
 }  // namespace common
 }  // namespace autoware
 
-#endif  // HELPER_FUNCTIONS__CRTP_HPP_
+#endif  // AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__CRTP_HPP_

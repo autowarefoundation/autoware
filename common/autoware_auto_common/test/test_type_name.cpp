@@ -14,8 +14,8 @@
 //
 // Developed by Apex.AI, Inc.
 
-#include <common/types.hpp>
-#include <helper_functions/type_name.hpp>
+#include "autoware_auto_common/common/types.hpp"
+#include "autoware_auto_common/helper_functions/type_name.hpp"
 
 #include <gtest/gtest.h>
 

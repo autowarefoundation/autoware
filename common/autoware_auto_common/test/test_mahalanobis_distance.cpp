@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
-#include <common/types.hpp>
-#include <helper_functions/mahalanobis_distance.hpp>
+#include "autoware_auto_common/common/types.hpp"
+#include "autoware_auto_common/helper_functions/mahalanobis_distance.hpp"
 
 #include <gtest/gtest.h>
 

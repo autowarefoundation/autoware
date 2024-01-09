@@ -21,8 +21,8 @@
 #ifndef AUTOWARE_AUTO_GEOMETRY__INTERVAL_HPP_
 #define AUTOWARE_AUTO_GEOMETRY__INTERVAL_HPP_
 
-#include "common/types.hpp"
-#include "helper_functions/float_comparisons.hpp"
+#include <autoware_auto_common/common/types.hpp>
+#include <autoware_auto_common/helper_functions/float_comparisons.hpp>
 
 #include <algorithm>
 #include <cmath>

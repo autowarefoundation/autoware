@@ -14,7 +14,7 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <common/color_alpha_property.hpp>
+#include "common/color_alpha_property.hpp"
 
 #include <memory>
 

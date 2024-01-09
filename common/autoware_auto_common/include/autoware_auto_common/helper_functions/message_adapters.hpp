@@ -16,8 +16,8 @@
 /// \file
 /// \brief This file includes common helper functions
 
-#ifndef HELPER_FUNCTIONS__MESSAGE_ADAPTERS_HPP_
-#define HELPER_FUNCTIONS__MESSAGE_ADAPTERS_HPP_
+#ifndef AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__MESSAGE_ADAPTERS_HPP_
+#define AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__MESSAGE_ADAPTERS_HPP_
 
 #include <builtin_interfaces/msg/time.hpp>
 
@@ -112,4 +112,4 @@ TimeStamp get_stamp(const T & msg) noexcept
 }  // namespace common
 }  // namespace autoware
 
-#endif  // HELPER_FUNCTIONS__MESSAGE_ADAPTERS_HPP_
+#endif  // AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__MESSAGE_ADAPTERS_HPP_

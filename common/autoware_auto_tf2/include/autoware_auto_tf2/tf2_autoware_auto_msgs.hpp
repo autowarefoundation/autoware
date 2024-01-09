@@ -17,7 +17,7 @@
 #ifndef AUTOWARE_AUTO_TF2__TF2_AUTOWARE_AUTO_MSGS_HPP_
 #define AUTOWARE_AUTO_TF2__TF2_AUTOWARE_AUTO_MSGS_HPP_
 
-#include <common/types.hpp>
+#include <autoware_auto_common/common/types.hpp>
 #include <kdl/frames.hpp>
 
 #include <autoware_auto_geometry_msgs/msg/quaternion32.hpp>

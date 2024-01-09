@@ -14,7 +14,7 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <helper_functions/template_utils.hpp>
+#include "autoware_auto_common/helper_functions/template_utils.hpp"
 
 #include <gtest/gtest.h>
 

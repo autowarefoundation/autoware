@@ -18,10 +18,10 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#ifndef HELPER_FUNCTIONS__BOOL_COMPARISONS_HPP_
-#define HELPER_FUNCTIONS__BOOL_COMPARISONS_HPP_
+#ifndef AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__BOOL_COMPARISONS_HPP_
+#define AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__BOOL_COMPARISONS_HPP_
 
-#include "common/types.hpp"
+#include "autoware_auto_common/common/types.hpp"
 
 namespace autoware
 {
@@ -47,4 +47,4 @@ types::bool8_t exclusive_or(const T & a, const T & b)
 }  // namespace common
 }  // namespace autoware
 
-#endif  // HELPER_FUNCTIONS__BOOL_COMPARISONS_HPP_
+#endif  // AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__BOOL_COMPARISONS_HPP_

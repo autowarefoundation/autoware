@@ -14,8 +14,8 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#ifndef HELPER_FUNCTIONS__ANGLE_UTILS_HPP_
-#define HELPER_FUNCTIONS__ANGLE_UTILS_HPP_
+#ifndef AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__ANGLE_UTILS_HPP_
+#define AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__ANGLE_UTILS_HPP_
 
 #include <cmath>
 #include <type_traits>
@@ -63,4 +63,4 @@ constexpr T wrap_angle(T angle) noexcept
 }  // namespace common
 }  // namespace autoware
 
-#endif  // HELPER_FUNCTIONS__ANGLE_UTILS_HPP_
+#endif  // AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__ANGLE_UTILS_HPP_

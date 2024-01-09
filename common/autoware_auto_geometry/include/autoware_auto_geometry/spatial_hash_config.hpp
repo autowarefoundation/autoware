@@ -22,9 +22,9 @@
 
 #include "autoware_auto_geometry/common_2d.hpp"
 #include "autoware_auto_geometry/visibility_control.hpp"
-#include "helper_functions/crtp.hpp"
 
-#include <common/types.hpp>
+#include <autoware_auto_common/common/types.hpp>
+#include <autoware_auto_common/helper_functions/crtp.hpp>
 
 #include <algorithm>
 #include <cmath>

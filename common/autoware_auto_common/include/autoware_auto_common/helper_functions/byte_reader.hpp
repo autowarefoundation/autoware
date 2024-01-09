@@ -16,8 +16,8 @@
 /// \file
 /// \brief This file includes common helper functions
 
-#ifndef HELPER_FUNCTIONS__BYTE_READER_HPP_
-#define HELPER_FUNCTIONS__BYTE_READER_HPP_
+#ifndef AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__BYTE_READER_HPP_
+#define AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__BYTE_READER_HPP_
 
 #include <cstdint>
 #include <cstring>
@@ -70,4 +70,4 @@ public:
 }  // namespace common
 }  // namespace autoware
 
-#endif  // HELPER_FUNCTIONS__BYTE_READER_HPP_
+#endif  // AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__BYTE_READER_HPP_

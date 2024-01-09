@@ -14,10 +14,10 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#ifndef HELPER_FUNCTIONS__TYPE_NAME_HPP_
-#define HELPER_FUNCTIONS__TYPE_NAME_HPP_
+#ifndef AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__TYPE_NAME_HPP_
+#define AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__TYPE_NAME_HPP_
 
-#include <common/visibility_control.hpp>
+#include "autoware_auto_common/common/visibility_control.hpp"
 
 #include <string>
 #include <typeinfo>
@@ -53,4 +53,4 @@ COMMON_PUBLIC std::string get_type_name(const T &)
 }  // namespace helper_functions
 }  // namespace autoware
 
-#endif  // HELPER_FUNCTIONS__TYPE_NAME_HPP_
+#endif  // AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__TYPE_NAME_HPP_

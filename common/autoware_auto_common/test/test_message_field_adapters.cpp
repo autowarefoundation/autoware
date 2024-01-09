@@ -14,7 +14,7 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <helper_functions/message_adapters.hpp>
+#include "autoware_auto_common/helper_functions/message_adapters.hpp"
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 

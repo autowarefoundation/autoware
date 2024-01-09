@@ -14,12 +14,12 @@
 #ifndef OBJECT_DETECTION__OBJECT_POLYGON_DISPLAY_BASE_HPP_
 #define OBJECT_DETECTION__OBJECT_POLYGON_DISPLAY_BASE_HPP_
 
-#include "rviz_common/properties/enum_property.hpp"
+#include "common/color_alpha_property.hpp"
 
-#include <common/color_alpha_property.hpp>
 #include <object_detection/object_polygon_detail.hpp>
 #include <rviz_common/display.hpp>
 #include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
 #include <rviz_common/properties/float_property.hpp>
 #include <rviz_default_plugins/displays/marker/marker_common.hpp>
 #include <rviz_default_plugins/displays/marker_array/marker_array_display.hpp>

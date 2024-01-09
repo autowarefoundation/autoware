@@ -14,8 +14,8 @@
 //
 // Developed by Apex.AI, Inc.
 
-#include <common/type_traits.hpp>
-#include <common/types.hpp>
+#include "autoware_auto_common/common/type_traits.hpp"
+#include "autoware_auto_common/common/types.hpp"
 
 #include <gtest/gtest.h>
 

@@ -23,7 +23,7 @@
 
 #include "autoware_auto_geometry/common_2d.hpp"
 
-#include <common/types.hpp>
+#include <autoware_auto_common/common/types.hpp>
 
 #include <algorithm>
 #include <iterator>

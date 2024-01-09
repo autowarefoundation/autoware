@@ -21,7 +21,7 @@
 
 #include "autoware_auto_geometry/interval.hpp"
 
-#include <common/types.hpp>
+#include <autoware_auto_common/common/types.hpp>
 
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
 

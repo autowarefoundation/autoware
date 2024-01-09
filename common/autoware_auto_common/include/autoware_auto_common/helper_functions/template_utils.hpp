@@ -14,10 +14,10 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#ifndef HELPER_FUNCTIONS__TEMPLATE_UTILS_HPP_
-#define HELPER_FUNCTIONS__TEMPLATE_UTILS_HPP_
+#ifndef AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__TEMPLATE_UTILS_HPP_
+#define AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__TEMPLATE_UTILS_HPP_
 
-#include <common/types.hpp>
+#include "autoware_auto_common/common/types.hpp"
 
 #include <type_traits>
 
@@ -72,4 +72,4 @@ struct expression_valid_with_return<
 }  // namespace helper_functions
 }  // namespace common
 }  // namespace autoware
-#endif  // HELPER_FUNCTIONS__TEMPLATE_UTILS_HPP_
+#endif  // AUTOWARE_AUTO_COMMON__HELPER_FUNCTIONS__TEMPLATE_UTILS_HPP_
