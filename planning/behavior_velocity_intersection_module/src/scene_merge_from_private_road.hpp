@@ -73,13 +73,11 @@ public:
   motion_utils::VirtualWalls createVirtualWalls() override;
 
   const std::set<lanelet::Id> & getAssociativeIds() const { return associative_ids_; }
+  lanelet::ConstLanelets getAttentionLanelets() const;
 
 private:
   const int64_t lane_id_;
   const std::set<lanelet::Id> associative_ids_;
-
-  autoware_auto_planning_msgs::msg::PathWithLaneId extractPathNearExitOfPrivateRoad(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const double extend_length);
 
   // Parameter
   PlannerParam planner_param_;

@@ -108,14 +108,12 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
     return false;
   }
 
+  const double baselink2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
   const auto local_footprint = planner_data_->vehicle_info_.createFootprint(0.0, 0.0);
   if (!first_conflicting_lanelet_) {
-    const auto & assigned_lanelet = lanelet_map_ptr->laneletLayer.get(lane_id_);
-    const auto conflicting_lanelets =
-      lanelet::utils::getConflictingLanelets(routing_graph_ptr, assigned_lanelet);
+    const auto conflicting_lanelets = getAttentionLanelets();
     first_conflicting_lanelet_ = getFirstConflictingLanelet(
-      conflicting_lanelets, interpolated_path_info, local_footprint,
-      planner_data_->vehicle_info_.max_longitudinal_offset_m);
+      conflicting_lanelets, interpolated_path_info, local_footprint, baselink2front);
   }
   if (!first_conflicting_lanelet_) {
     return false;
@@ -123,12 +121,13 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
   const auto first_conflicting_lanelet = first_conflicting_lanelet_.value();
 
   const auto first_conflicting_idx_opt = getFirstPointInsidePolygonByFootprint(
-    first_conflicting_lanelet.polygon3d(), interpolated_path_info, local_footprint,
-    planner_data_->vehicle_info_.max_longitudinal_offset_m);
+    first_conflicting_lanelet.polygon3d(), interpolated_path_info, local_footprint, baselink2front);
   if (!first_conflicting_idx_opt) {
     return false;
   }
-  const auto stopline_idx_ip = first_conflicting_idx_opt.value();
+  const auto stopline_idx_ip = static_cast<size_t>(std::max<int>(
+    0, static_cast<int>(first_conflicting_idx_opt.value()) -
+         static_cast<int>(baselink2front / planner_param_.path_interpolation_ds)));
 
   const auto stopline_idx_opt = util::insertPointIndex(
     interpolated_path_info.path.points.at(stopline_idx_ip).point.pose, path,
@@ -139,8 +138,7 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
   }
   const auto stopline_idx = stopline_idx_opt.value();
 
-  debug_data_.virtual_wall_pose = planning_utils::getAheadPose(
-    stopline_idx, planner_data_->vehicle_info_.max_longitudinal_offset_m, *path);
+  debug_data_.virtual_wall_pose = planning_utils::getAheadPose(stopline_idx, baselink2front, *path);
   debug_data_.stop_point_pose = path->points.at(stopline_idx).point.pose;
 
   /* set stop speed */
@@ -174,46 +172,33 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
   return true;
 }
 
-autoware_auto_planning_msgs::msg::PathWithLaneId
-MergeFromPrivateRoadModule::extractPathNearExitOfPrivateRoad(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const double extend_length)
+lanelet::ConstLanelets MergeFromPrivateRoadModule::getAttentionLanelets() const
 {
-  if (path.points.size() < 2) {
-    return path;
+  const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
+  const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
+
+  const auto & assigned_lanelet = lanelet_map_ptr->laneletLayer.get(lane_id_);
+  const auto conflicting_lanelets =
+    lanelet::utils::getConflictingLanelets(routing_graph_ptr, assigned_lanelet);
+  lanelet::ConstLanelets sibling_lanelets;
+  for (const auto & previous_lanelet : routing_graph_ptr->previous(assigned_lanelet)) {
+    sibling_lanelets.push_back(previous_lanelet);
+    for (const auto & following_lanelet : routing_graph_ptr->following(previous_lanelet)) {
+      if (lanelet::utils::contains(sibling_lanelets, following_lanelet)) {
+        continue;
+      }
+      sibling_lanelets.push_back(following_lanelet);
+    }
   }
 
-  autoware_auto_planning_msgs::msg::PathWithLaneId private_path = path;
-  private_path.points.clear();
-
-  double sum_dist = 0.0;
-  bool prev_has_target_lane_id = false;
-  for (int i = static_cast<int>(path.points.size()) - 2; i >= 0; i--) {
-    bool has_target_lane_id = false;
-    for (const auto path_id : path.points.at(i).lane_ids) {
-      if (path_id == lane_id_) {
-        has_target_lane_id = true;
-      }
-    }
-    if (has_target_lane_id) {
-      // add path point with target lane id
-      // (lanelet with target lane id is exit of private road)
-      private_path.points.emplace_back(path.points.at(i));
-      prev_has_target_lane_id = true;
+  lanelet::ConstLanelets attention_lanelets;
+  for (const auto & conflicting_lanelet : conflicting_lanelets) {
+    if (lanelet::utils::contains(sibling_lanelets, conflicting_lanelet)) {
       continue;
     }
-    if (prev_has_target_lane_id) {
-      // extend path to the front
-      private_path.points.emplace_back(path.points.at(i));
-      sum_dist += tier4_autoware_utils::calcDistance2d(
-        path.points.at(i).point.pose, path.points.at(i + 1).point.pose);
-      if (sum_dist > extend_length) {
-        break;
-      }
-    }
+    attention_lanelets.push_back(conflicting_lanelet);
   }
-
-  std::reverse(private_path.points.begin(), private_path.points.end());
-  return private_path;
+  return attention_lanelets;
 }
 
 }  // namespace behavior_velocity_planner
