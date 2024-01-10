@@ -1055,19 +1055,20 @@ bool CrosswalkModule::isRedSignalForPedestrians() const
     crosswalk_.regulatoryElementsAs<const lanelet::TrafficLight>();
 
   for (const auto & traffic_lights_reg_elem : traffic_lights_reg_elems) {
-    const auto traffic_signal_stamped =
+    const auto traffic_signal_stamped_opt =
       planner_data_->getTrafficSignal(traffic_lights_reg_elem->id());
-    if (!traffic_signal_stamped) {
+    if (!traffic_signal_stamped_opt) {
       continue;
     }
+    const auto traffic_signal_stamped = traffic_signal_stamped_opt.value();
 
     if (
       planner_param_.traffic_light_state_timeout <
-      (clock_->now() - traffic_signal_stamped->stamp).seconds()) {
+      (clock_->now() - traffic_signal_stamped.stamp).seconds()) {
       continue;
     }
 
-    const auto & lights = traffic_signal_stamped->signal.elements;
+    const auto & lights = traffic_signal_stamped.signal.elements;
     if (lights.empty()) {
       continue;
     }

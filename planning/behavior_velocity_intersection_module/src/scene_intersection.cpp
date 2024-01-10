@@ -940,12 +940,11 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   return true;
 }
 
-static bool isGreenSolidOn(
-  lanelet::ConstLanelet lane, const std::map<int, TrafficSignalStamped> & tl_infos)
+bool IntersectionModule::isGreenSolidOn(lanelet::ConstLanelet lane)
 {
   using TrafficSignalElement = autoware_perception_msgs::msg::TrafficSignalElement;
 
-  std::optional<int> tl_id = std::nullopt;
+  std::optional<lanelet::Id> tl_id = std::nullopt;
   for (auto && tl_reg_elem : lane.regulatoryElementsAs<lanelet::TrafficLight>()) {
     tl_id = tl_reg_elem->id();
     break;
@@ -954,12 +953,13 @@ static bool isGreenSolidOn(
     // this lane has no traffic light
     return false;
   }
-  const auto tl_info_it = tl_infos.find(tl_id.value());
-  if (tl_info_it == tl_infos.end()) {
+  const auto tl_info_opt = planner_data_->getTrafficSignal(
+    tl_id.value(), true /* traffic light module keeps last observation*/);
+  if (!tl_info_opt) {
     // the info of this traffic light is not available
     return false;
   }
-  const auto & tl_info = tl_info_it->second;
+  const auto & tl_info = tl_info_opt.value();
   for (auto && tl_light : tl_info.signal.elements) {
     if (
       tl_light.color == TrafficSignalElement::GREEN &&
@@ -1004,8 +1004,7 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
 
   // at the very first time of regisTration of this module, the path may not be conflicting with the
   // attention area, so update() is called to update the internal data as well as traffic light info
-  const auto traffic_prioritized_level =
-    getTrafficPrioritizedLevel(assigned_lanelet, planner_data_->traffic_light_id_map);
+  const auto traffic_prioritized_level = getTrafficPrioritizedLevel(assigned_lanelet);
   const bool is_prioritized =
     traffic_prioritized_level == TrafficPrioritizedLevel::FULLY_PRIORITIZED;
   intersection_lanelets.update(is_prioritized, interpolated_path_info, footprint, baselink2front);
@@ -1259,8 +1258,7 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   // If there are any vehicles on the attention area when ego entered the intersection on green
   // light, do pseudo collision detection because the vehicles are very slow and no collisions may
   // be detected. check if ego vehicle entered assigned lanelet
-  const bool is_green_solid_on =
-    isGreenSolidOn(assigned_lanelet, planner_data_->traffic_light_id_map);
+  const bool is_green_solid_on = isGreenSolidOn(assigned_lanelet);
   if (is_green_solid_on) {
     if (!initial_green_light_observed_time_) {
       const auto assigned_lane_begin_point = assigned_lanelet.centerline().front();
@@ -1413,12 +1411,11 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   }
 }
 
-TrafficPrioritizedLevel IntersectionModule::getTrafficPrioritizedLevel(
-  lanelet::ConstLanelet lane, const std::map<int, TrafficSignalStamped> & tl_infos)
+TrafficPrioritizedLevel IntersectionModule::getTrafficPrioritizedLevel(lanelet::ConstLanelet lane)
 {
   using TrafficSignalElement = autoware_perception_msgs::msg::TrafficSignalElement;
 
-  std::optional<int> tl_id = std::nullopt;
+  std::optional<lanelet::Id> tl_id = std::nullopt;
   for (auto && tl_reg_elem : lane.regulatoryElementsAs<lanelet::TrafficLight>()) {
     tl_id = tl_reg_elem->id();
     break;
@@ -1427,12 +1424,12 @@ TrafficPrioritizedLevel IntersectionModule::getTrafficPrioritizedLevel(
     // this lane has no traffic light
     return TrafficPrioritizedLevel::NOT_PRIORITIZED;
   }
-  const auto tl_info_it = tl_infos.find(tl_id.value());
-  if (tl_info_it == tl_infos.end()) {
-    // the info of this traffic light is not available
+  const auto tl_info_opt = planner_data_->getTrafficSignal(
+    tl_id.value(), true /* traffic light module keeps last observation*/);
+  if (!tl_info_opt) {
     return TrafficPrioritizedLevel::NOT_PRIORITIZED;
   }
-  const auto & tl_info = tl_info_it->second;
+  const auto & tl_info = tl_info_opt.value();
   bool has_amber_signal{false};
   for (auto && tl_light : tl_info.signal.elements) {
     if (tl_light.color == TrafficSignalElement::AMBER) {

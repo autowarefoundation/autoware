@@ -327,7 +327,21 @@ void BehaviorVelocityPlannerNode::onTrafficSignals(
     TrafficSignalStamped traffic_signal;
     traffic_signal.stamp = msg->stamp;
     traffic_signal.signal = signal;
-    planner_data_.traffic_light_id_map[signal.traffic_signal_id] = traffic_signal;
+    planner_data_.traffic_light_id_map_raw_[signal.traffic_signal_id] = traffic_signal;
+    const bool is_unknown_observation =
+      std::any_of(signal.elements.begin(), signal.elements.end(), [](const auto & element) {
+        return element.color == autoware_perception_msgs::msg::TrafficSignalElement::UNKNOWN;
+      });
+    // if the observation is UNKNOWN and past observation is available, only update the timestamp
+    // and keep the body of the info
+    if (
+      is_unknown_observation &&
+      planner_data_.traffic_light_id_map_last_observed_.count(signal.traffic_signal_id) == 1) {
+      planner_data_.traffic_light_id_map_last_observed_[signal.traffic_signal_id].stamp =
+        msg->stamp;
+    } else {
+      planner_data_.traffic_light_id_map_last_observed_[signal.traffic_signal_id] = traffic_signal;
+    }
   }
 }
 

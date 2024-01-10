@@ -631,8 +631,7 @@ private:
    * @fn
    * @brief find TrafficPrioritizedLevel
    */
-  TrafficPrioritizedLevel getTrafficPrioritizedLevel(
-    lanelet::ConstLanelet lane, const std::map<int, TrafficSignalStamped> & tl_infos);
+  TrafficPrioritizedLevel getTrafficPrioritizedLevel(lanelet::ConstLanelet lane);
 
   /**
    * @fn
@@ -737,6 +736,12 @@ private:
     const util::InterpolatedPathInfo & interpolated_path_info,
     const std::vector<lanelet::ConstLineString3d> & lane_divisions,
     const TargetObjects & target_objects);
+
+  /*
+   * @fn
+   * @brief check if associated traffic light is green
+   */
+  bool isGreenSolidOn(lanelet::ConstLanelet lane);
 
   /*
   bool IntersectionModule::checkFrontVehicleDeceleration(
