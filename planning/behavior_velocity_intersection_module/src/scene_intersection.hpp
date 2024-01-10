@@ -53,6 +53,8 @@ struct DebugData
   std::optional<std::vector<lanelet::CompoundPolygon3d>> occlusion_attention_area{std::nullopt};
   std::optional<lanelet::CompoundPolygon3d> ego_lane{std::nullopt};
   std::optional<std::vector<lanelet::CompoundPolygon3d>> adjacent_area{std::nullopt};
+  std::optional<lanelet::CompoundPolygon3d> first_attention_area{std::nullopt};
+  std::optional<lanelet::CompoundPolygon3d> second_attention_area{std::nullopt};
   std::optional<geometry_msgs::msg::Polygon> stuck_vehicle_detect_area{std::nullopt};
   std::optional<std::vector<lanelet::CompoundPolygon3d>> yield_stuck_detect_area{std::nullopt};
   std::optional<geometry_msgs::msg::Polygon> candidate_collision_ego_lane_polygon{std::nullopt};
@@ -82,7 +84,8 @@ public:
    */
   void update(
     const bool is_prioritized, const util::InterpolatedPathInfo & interpolated_path_info,
-    const tier4_autoware_utils::LinearRing2d & footprint, const double vehicle_length);
+    const tier4_autoware_utils::LinearRing2d & footprint, const double vehicle_length,
+    lanelet::routing::RoutingGraphPtr routing_graph_ptr);
 
   const lanelet::ConstLanelets & attention() const
   {
@@ -131,6 +134,14 @@ public:
   {
     return first_attention_area_;
   }
+  const std::optional<lanelet::ConstLanelet> & second_attention_lane() const
+  {
+    return second_attention_lane_;
+  }
+  const std::optional<lanelet::CompoundPolygon3d> & second_attention_area() const
+  {
+    return second_attention_area_;
+  }
 
   /**
    * the set of attention lanelets which is topologically merged
@@ -178,16 +189,24 @@ public:
   std::vector<double> occlusion_attention_size_;
 
   /**
-   * the attention lanelet which ego path points intersect for the first time
+   * the first conflicting lanelet which ego path points intersect for the first time
    */
   std::optional<lanelet::ConstLanelet> first_conflicting_lane_{std::nullopt};
   std::optional<lanelet::CompoundPolygon3d> first_conflicting_area_{std::nullopt};
 
   /**
-   * the attention lanelet which ego path points intersect for the first time
+   * the first attention lanelet which ego path points intersect for the first time
    */
   std::optional<lanelet::ConstLanelet> first_attention_lane_{std::nullopt};
   std::optional<lanelet::CompoundPolygon3d> first_attention_area_{std::nullopt};
+
+  /**
+   * the second attention lanelet which ego path points intersect next to the
+   * first_attention_lanelet
+   */
+  bool second_attention_lane_empty_{false};
+  std::optional<lanelet::ConstLanelet> second_attention_lane_{std::nullopt};
+  std::optional<lanelet::CompoundPolygon3d> second_attention_area_{std::nullopt};
 
   /**
    * flag if the intersection is prioritized by the traffic light
@@ -220,15 +239,27 @@ struct IntersectionStopLines
   std::optional<size_t> first_attention_stopline{std::nullopt};
 
   /**
+   * second_attention_stopline is null if ego footprint along the path does not intersect with
+   * second_attention_lane. if path[0] satisfies the condition, it is 0
+   */
+  std::optional<size_t> second_attention_stopline{std::nullopt};
+
+  /**
    * occlusion_peeking_stopline is null if path[0] is already inside the attention area
    */
   std::optional<size_t> occlusion_peeking_stopline{std::nullopt};
 
   /**
-   * pass_judge_line is before first_attention_stop_line by the braking distance. if its value is
-   * calculated negative, it is 0
+   * first_pass_judge_line is before first_attention_stopline by the braking distance. if its value
+   * is calculated negative, it is 0
    */
-  size_t pass_judge_line{0};
+  size_t first_pass_judge_line{0};
+
+  /**
+   * second_pass_judge_line is before second_attention_stopline by the braking distance. if its
+   * value is calculated negative, it is 0
+   */
+  size_t second_pass_judge_line{0};
 
   /**
    * occlusion_wo_tl_pass_judge_line is null if ego footprint along the path does not intersect with
@@ -650,6 +681,7 @@ private:
     lanelet::ConstLanelet assigned_lanelet,
     const lanelet::CompoundPolygon3d & first_conflicting_area,
     const lanelet::ConstLanelet & first_attention_lane,
+    const std::optional<lanelet::CompoundPolygon3d> & second_attention_area_opt,
     const util::InterpolatedPathInfo & interpolated_path_info,
     autoware_auto_planning_msgs::msg::PathWithLaneId * original_path);
 
