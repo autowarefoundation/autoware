@@ -1,0 +1,10 @@
+/**:
+  ros__parameters:
+    dynamic_obstacle_stop: # module to stop or before entering the immediate path of a moving object
+      extra_object_width: 1.0  # [m] extra width around detected objects
+      minimum_object_velocity: 0.5  # [m/s] objects with a velocity bellow this value are ignored
+      stop_distance_buffer: 0.5  # [m] extra distance to add between the stop point and the collision point
+      time_horizon: 5.0  # [s] time horizon used for collision checks
+      hysteresis: 1.0  # [m] once a collision has been detected, this hysteresis is used on the collision detection
+      decision_duration_buffer : 1.0  # [s] duration between no collision being detected and the stop decision being cancelled
+      minimum_object_distance_from_ego_path: 1.0  # [m] minimum distance between the footprints of ego and an object to consider for collision

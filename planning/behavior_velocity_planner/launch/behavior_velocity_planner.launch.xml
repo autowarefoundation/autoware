@@ -26,6 +26,7 @@
   <arg name="behavior_velocity_planner_speed_bump_module_param_path"/>
   <arg name="behavior_velocity_planner_out_of_lane_module_param_path"/>
   <arg name="behavior_velocity_planner_no_drivable_lane_module_param_path"/>
+  <arg name="behavior_velocity_planner_dynamic_obstacle_stop_module_param_path"/>
   <!-- <arg name="behavior_velocity_planner_template_module_param_path"/> -->
   <arg name="behavior_velocity_planner_param_file" default="$(find-pkg-share behavior_velocity_planner)/config/behavior_velocity_planner.param.yaml"/>
 
@@ -69,6 +70,7 @@
     <param from="$(var behavior_velocity_planner_speed_bump_module_param_path)"/>
     <param from="$(var behavior_velocity_planner_out_of_lane_module_param_path)"/>
     <param from="$(var behavior_velocity_planner_no_drivable_lane_module_param_path)"/>
+    <param from="$(var behavior_velocity_planner_dynamic_obstacle_stop_module_param_path)"/>
     <!-- <param from="$(var behavior_velocity_planner_template_param_path)"/> -->
 
     <param from="$(var behavior_velocity_planner_param_file)"/>
