@@ -166,7 +166,7 @@ AvoidancePlanningData AvoidanceByLaneChange::calcAvoidancePlanningData(
   std::for_each(
     data.current_lanelets.begin(), data.current_lanelets.end(), [&](const auto & lanelet) {
       data.drivable_lanes.push_back(utils::avoidance::generateExpandDrivableLanes(
-        lanelet, planner_data_, avoidance_parameters_));
+        lanelet, planner_data_, avoidance_parameters_, false));
     });
 
   // calc drivable bound

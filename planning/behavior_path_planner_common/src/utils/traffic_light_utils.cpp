@@ -127,4 +127,24 @@ bool isStoppedAtRedTrafficLightWithinDistance(
   return (distance_to_red_traffic_light < distance_threshold);
 }
 
+bool isTrafficSignalStop(
+  const lanelet::ConstLanelets & lanelets, const std::shared_ptr<const PlannerData> & planner_data)
+{
+  for (const auto & lanelet : lanelets) {
+    for (const auto & element : lanelet.regulatoryElementsAs<TrafficLight>()) {
+      const auto traffic_signal_stamped = planner_data->getTrafficSignal(element->id());
+      if (!traffic_signal_stamped.has_value()) {
+        continue;
+      }
+
+      if (traffic_light_utils::isTrafficSignalStop(
+            lanelet, traffic_signal_stamped.value().signal)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 }  // namespace behavior_path_planner::utils::traffic_light

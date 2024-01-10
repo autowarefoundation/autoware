@@ -92,6 +92,21 @@ bool isStoppedAtRedTrafficLightWithinDistance(
   const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path,
   const std::shared_ptr<const PlannerData> & planner_data,
   const double distance_threshold = std::numeric_limits<double>::infinity());
+
+/**
+ * @brief Determines if a traffic signal indicates a stop for the given lanelet.
+ *
+ * Evaluates the current state of the traffic light, considering if it's green or unknown,
+ * which would not necessitate a stop. Then, it checks the turn direction attribute of the lanelet
+ * against the traffic light's arrow shapes to determine whether a vehicle must stop or if it can
+ * proceed based on allowed turn directions.
+ *
+ * @param lanelet The lanelet to check for a stop signal at its traffic light.
+ * @param planner_data Shared pointer to the planner data containing vehicle state information.
+ * @return True if the traffic signal indicates a stop is required, false otherwise.
+ */
+bool isTrafficSignalStop(
+  const lanelet::ConstLanelets & lanelets, const std::shared_ptr<const PlannerData> & planner_data);
 }  // namespace behavior_path_planner::utils::traffic_light
 
 #endif  // BEHAVIOR_PATH_PLANNER_COMMON__UTILS__TRAFFIC_LIGHT_UTILS_HPP_

@@ -223,10 +223,12 @@ void AvoidanceModule::fillFundamentalData(AvoidancePlanningData & data, DebugDat
     utils::avoidance::getExtendLanes(data.current_lanelets, getEgoPose(), planner_data_);
 
   // expand drivable lanes
+  const auto has_shift_point = !path_shifter_.getShiftLines().empty();
+  const auto in_avoidance_maneuver = has_shift_point || helper_->isShifted();
   std::for_each(
     data.current_lanelets.begin(), data.current_lanelets.end(), [&](const auto & lanelet) {
-      data.drivable_lanes.push_back(
-        utils::avoidance::generateExpandDrivableLanes(lanelet, planner_data_, parameters_));
+      data.drivable_lanes.push_back(utils::avoidance::generateExpandDrivableLanes(
+        lanelet, planner_data_, parameters_, in_avoidance_maneuver));
     });
 
   // calc drivable bound
