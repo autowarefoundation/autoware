@@ -2,17 +2,23 @@
 
 ## Purpose / Role
 
-The Start Planner module is designed to generate a path from the current ego position to the driving lane, avoiding static obstacles and implementing safety checks against dynamic obstacles. (Note: The feature of safety checks against dynamic obstacles is currently a work in progress.)
-This module is activated when a new route is received.
+The Start Planner module is designed to generate a path from the current ego position to the driving lane, avoiding static obstacles and stopping in response to dynamic obstacles when a collision is detected.
 
-Use cases are as follows
+Use cases include:
 
-- start smoothly from the current ego position to centerline.
-  ![case1](./images/start_from_road_lane.drawio.svg)
 - pull out from the side of the road lane to centerline.
-  ![case2](./images/start_from_road_side.drawio.svg)
+
+<figure markdown>
+  ![case1](images/start_from_road_side.drawio.svg){width=1000}
+  <figcaption>pull out from side of the road lane</figcaption>
+</figure>
+
 - pull out from the shoulder lane to the road lane centerline.
-  ![case3](./images/start_from_road_shoulder.drawio.svg)
+
+<figure markdown>
+  ![case2](images/start_from_start_from_road_shoulder.drawio.svg){width=1000}
+  <figcaption>pull out from the shoulder lane</figcaption>
+</figure>
 
 ## Design
 
