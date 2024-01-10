@@ -839,8 +839,10 @@ void StartPlannerModule::updatePullOutStatus()
     return {*refined_start_pose};
   });
 
-  planWithPriority(
-    start_pose_candidates, *refined_start_pose, goal_pose, parameters_->search_priority);
+  if (!status_.backward_driving_complete) {
+    planWithPriority(
+      start_pose_candidates, *refined_start_pose, goal_pose, parameters_->search_priority);
+  }
 
   start_planner_data_.refined_start_pose = *refined_start_pose;
   start_planner_data_.start_pose_candidates = start_pose_candidates;
