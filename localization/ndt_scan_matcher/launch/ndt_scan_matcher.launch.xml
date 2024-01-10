@@ -2,27 +2,27 @@
   <arg name="param_file" default="$(find-pkg-share ndt_scan_matcher)/config/ndt_scan_matcher.param.yaml"/>
 
   <!-- Topics -->
-  <arg name="input/pointcloud" default="/points_raw" description="Sensor points topic"/>
-  <arg name="input_initial_pose_topic" default="/ekf_pose_with_covariance" description="Initial position topic to align"/>
-  <arg name="input_regularization_pose_topic" default="/sensing/gnss/pose_with_covariance" description="Regularization pose topic"/>
+  <arg name="input_pointcloud" default="points_raw" description="Sensor points topic"/>
+  <arg name="input_initial_pose_topic" default="ekf_pose_with_covariance" description="Initial position topic to align"/>
+  <arg name="input_regularization_pose_topic" default="regularization_pose_with_covariance" description="Regularization pose topic"/>
   <arg name="input_service_trigger_node" default="trigger_node" description="Trigger node service name"/>
 
   <arg name="output_pose_topic" default="ndt_pose" description="Estimated self position"/>
   <arg name="output_pose_with_covariance_topic" default="ndt_pose_with_covariance" description="Estimated self position with covariance"/>
 
-  <arg name="client_map_loader" default="/map/get_differential_pointcloud_map" description="Trigger node service name"/>
+  <arg name="client_map_loader" default="pcd_loader_service" description="Trigger node service name"/>
 
   <arg name="node_name" default="ndt_scan_matcher" description="Use a different name for this node"/>
 
   <node pkg="ndt_scan_matcher" exec="ndt_scan_matcher" name="$(var node_name)" output="log">
-    <remap from="points_raw" to="$(var input/pointcloud)"/>
-
+    <remap from="points_raw" to="$(var input_pointcloud)"/>
     <remap from="ekf_pose_with_covariance" to="$(var input_initial_pose_topic)"/>
+    <remap from="regularization_pose_with_covariance" to="$(var input_regularization_pose_topic)"/>
+    <remap from="trigger_node_srv" to="$(var input_service_trigger_node)"/>
 
     <remap from="ndt_pose" to="$(var output_pose_topic)"/>
     <remap from="ndt_pose_with_covariance" to="$(var output_pose_with_covariance_topic)"/>
-    <remap from="regularization_pose_with_covariance" to="$(var input_regularization_pose_topic)"/>
-    <remap from="trigger_node_srv" to="$(var input_service_trigger_node)"/>
+
     <remap from="pcd_loader_service" to="$(var client_map_loader)"/>
 
     <param from="$(var param_file)"/>
