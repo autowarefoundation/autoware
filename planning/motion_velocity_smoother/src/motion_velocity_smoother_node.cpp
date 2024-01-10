@@ -453,6 +453,9 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
     return;
   }
 
+  // Set 0 at the end of the trajectory
+  input_points.back().longitudinal_velocity_mps = 0.0;
+
   // calculate prev closest point
   if (!prev_output_.empty()) {
     current_closest_point_from_prev_output_ = calcProjectedTrajectoryPointFromEgo(prev_output_);
