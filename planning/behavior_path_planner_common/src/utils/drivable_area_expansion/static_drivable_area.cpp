@@ -148,6 +148,40 @@ geometry_msgs::msg::Point calcLongitudinalOffsetGoalPoint(
 
   return offset_point ? offset_point.value() : points.at(nearest_segment_idx + 1);
 }
+
+std::vector<lanelet::ConstPoint3d> extractBoundFromPolygon(
+  const lanelet::ConstPolygon3d & polygon, const size_t start_idx, const size_t end_idx,
+  const bool clockwise)
+{
+  std::vector<lanelet::ConstPoint3d> ret{};
+  for (size_t i = start_idx; i != end_idx; i = clockwise ? i + 1 : i - 1) {
+    ret.push_back(polygon[i]);
+
+    if (i + 1 == polygon.size() && clockwise) {
+      if (end_idx == 0) {
+        ret.push_back(polygon[end_idx]);
+        return ret;
+      }
+      i = 0;
+      ret.push_back(polygon[i]);
+      continue;
+    }
+
+    if (i == 0 && !clockwise) {
+      if (end_idx == polygon.size() - 1) {
+        ret.push_back(polygon[end_idx]);
+        return ret;
+      }
+      i = polygon.size() - 1;
+      ret.push_back(polygon[i]);
+      continue;
+    }
+  }
+
+  ret.push_back(polygon[end_idx]);
+
+  return ret;
+}
 }  // namespace
 
 namespace behavior_path_planner::utils::drivable_area_processing
@@ -1261,36 +1295,6 @@ std::vector<lanelet::ConstPoint3d> getBoundWithIntersectionAreas(
   const std::shared_ptr<RouteHandler> & route_handler,
   const std::vector<DrivableLanes> & drivable_lanes, const bool is_left)
 {
-  const auto extract_bound_from_polygon =
-    [](const auto & polygon, const auto start_idx, const auto end_idx, const auto clockwise) {
-      std::vector<lanelet::ConstPoint3d> ret{};
-      for (size_t i = start_idx; i != end_idx; i = clockwise ? i + 1 : i - 1) {
-        ret.push_back(polygon[i]);
-
-        if (i + 1 == polygon.size() && clockwise) {
-          if (end_idx == 0) {
-            ret.push_back(polygon[end_idx]);
-            return ret;
-          }
-          i = 0;
-          continue;
-        }
-
-        if (i == 0 && !clockwise) {
-          if (end_idx == polygon.size() - 1) {
-            ret.push_back(polygon[end_idx]);
-            return ret;
-          }
-          i = polygon.size() - 1;
-          continue;
-        }
-      }
-
-      ret.push_back(polygon[end_idx]);
-
-      return ret;
-    };
-
   std::vector<lanelet::ConstPoint3d> expanded_bound = original_bound;
 
   // expand drivable area by using intersection area.
@@ -1336,7 +1340,7 @@ std::vector<lanelet::ConstPoint3d> getBoundWithIntersectionAreas(
       const size_t end_idx = std::distance(polygon.begin(), intersection_bound_itr_last);
 
       intersection_bound =
-        extract_bound_from_polygon(polygon, start_idx, end_idx, is_clockwise_iteration);
+        extractBoundFromPolygon(polygon, start_idx, end_idx, is_clockwise_iteration);
     }
 
     // Step2. check shared bound point.
