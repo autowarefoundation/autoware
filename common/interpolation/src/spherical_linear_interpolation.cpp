@@ -57,4 +57,15 @@ std::vector<geometry_msgs::msg::Quaternion> slerp(
   return query_values;
 }
 
+geometry_msgs::msg::Quaternion lerpOrientation(
+  const geometry_msgs::msg::Quaternion & o_from, const geometry_msgs::msg::Quaternion & o_to,
+  const double ratio)
+{
+  tf2::Quaternion q_from, q_to;
+  tf2::fromMsg(o_from, q_from);
+  tf2::fromMsg(o_to, q_to);
+
+  const auto q_interpolated = q_from.slerp(q_to, ratio);
+  return tf2::toMsg(q_interpolated);
+}
 }  // namespace interpolation

@@ -16,6 +16,8 @@
 #define PID_LONGITUDINAL_CONTROLLER__LONGITUDINAL_CONTROLLER_UTILS_HPP_
 
 #include "interpolation/linear_interpolation.hpp"
+#include "interpolation/spherical_linear_interpolation.hpp"
+#include "motion_utils/trajectory/conversion.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
 
@@ -75,14 +77,6 @@ Pose calcPoseAfterTimeDelay(
   const double current_acc);
 
 /**
- * @brief apply linear interpolation to orientation
- * @param [in] o_from first orientation
- * @param [in] o_to second orientation
- * @param [in] ratio ratio between o_from and o_to for interpolation
- */
-Quaternion lerpOrientation(const Quaternion & o_from, const Quaternion & o_to, const double ratio);
-
-/**
  * @brief apply linear interpolation to trajectory point that is nearest to a certain point
  * @param [in] points trajectory points
  * @param [in] point Interpolated point is nearest to this point.
@@ -107,7 +101,7 @@ TrajectoryPoint lerpTrajectoryPoint(
       points.at(i).pose.position.x, points.at(i + 1).pose.position.x, interpolate_ratio);
     interpolated_point.pose.position.y = interpolation::lerp(
       points.at(i).pose.position.y, points.at(i + 1).pose.position.y, interpolate_ratio);
-    interpolated_point.pose.orientation = lerpOrientation(
+    interpolated_point.pose.orientation = interpolation::lerpOrientation(
       points.at(i).pose.orientation, points.at(i + 1).pose.orientation, interpolate_ratio);
     interpolated_point.longitudinal_velocity_mps = interpolation::lerp(
       points.at(i).longitudinal_velocity_mps, points.at(i + 1).longitudinal_velocity_mps,

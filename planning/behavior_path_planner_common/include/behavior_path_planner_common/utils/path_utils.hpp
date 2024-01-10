@@ -58,8 +58,6 @@ PathWithLaneId resamplePathWithSpline(
   const PathWithLaneId & path, const double interval, const bool keep_input_points = false,
   const std::pair<double, double> target_section = {0.0, std::numeric_limits<double>::max()});
 
-Path toPath(const PathWithLaneId & input);
-
 size_t getIdxByArclength(
   const PathWithLaneId & path, const size_t target_idx, const double signed_arc);
 

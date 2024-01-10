@@ -35,11 +35,6 @@ using TrajectoryPoints = std::vector<TrajectoryPoint>;
 using geometry_msgs::msg::Quaternion;
 using TrajectoryPointWithIdx = std::pair<TrajectoryPoint, size_t>;
 
-TrajectoryPoints convertPathToTrajectoryPoints(const PathWithLaneId & path);
-PathWithLaneId convertTrajectoryPointsToPath(const TrajectoryPoints & trajectory);
-
-Quaternion lerpOrientation(const Quaternion & o_from, const Quaternion & o_to, const double ratio);
-
 //! smooth path point with lane id starts from ego position on path to the path end
 bool smoothPath(
   const PathWithLaneId & in_path, PathWithLaneId & out_path,

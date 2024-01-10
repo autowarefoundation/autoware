@@ -15,6 +15,8 @@
 #ifndef MOTION_UTILS__TRAJECTORY__CONVERSION_HPP_
 #define MOTION_UTILS__TRAJECTORY__CONVERSION_HPP_
 
+#include "autoware_auto_planning_msgs/msg/detail/path__struct.hpp"
+#include "autoware_auto_planning_msgs/msg/detail/path_with_lane_id__struct.hpp"
 #include "autoware_auto_planning_msgs/msg/detail/trajectory__struct.hpp"
 #include "autoware_auto_planning_msgs/msg/detail/trajectory_point__struct.hpp"
 #include "std_msgs/msg/header.hpp"
@@ -23,6 +25,8 @@
 
 namespace motion_utils
 {
+using TrajectoryPoints = std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>;
+
 /**
  * @brief Convert std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> to
  * autoware_auto_planning_msgs::msg::Trajectory. This function is temporarily added for porting to
@@ -44,6 +48,73 @@ autoware_auto_planning_msgs::msg::Trajectory convertToTrajectory(
  */
 std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> convertToTrajectoryPointArray(
   const autoware_auto_planning_msgs::msg::Trajectory & trajectory);
+
+template <class T>
+autoware_auto_planning_msgs::msg::Path convertToPath([[maybe_unused]] const T & input)
+{
+  static_assert(sizeof(T) == 0, "Only specializations of convertToPath can be used.");
+  throw std::logic_error("Only specializations of convertToPath can be used.");
+}
+
+template <>
+inline autoware_auto_planning_msgs::msg::Path convertToPath(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & input)
+{
+  autoware_auto_planning_msgs::msg::Path output{};
+  output.header = input.header;
+  output.left_bound = input.left_bound;
+  output.right_bound = input.right_bound;
+  output.points.resize(input.points.size());
+  for (size_t i = 0; i < input.points.size(); ++i) {
+    output.points.at(i) = input.points.at(i).point;
+  }
+  return output;
+}
+
+template <class T>
+TrajectoryPoints convertToTrajectoryPoints([[maybe_unused]] const T & input)
+{
+  static_assert(sizeof(T) == 0, "Only specializations of convertToTrajectoryPoints can be used.");
+  throw std::logic_error("Only specializations of convertToTrajectoryPoints can be used.");
+}
+
+template <>
+inline TrajectoryPoints convertToTrajectoryPoints(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & input)
+{
+  TrajectoryPoints output{};
+  for (const auto & p : input.points) {
+    autoware_auto_planning_msgs::msg::TrajectoryPoint tp;
+    tp.pose = p.point.pose;
+    tp.longitudinal_velocity_mps = p.point.longitudinal_velocity_mps;
+    // since path point doesn't have acc for now
+    tp.acceleration_mps2 = 0;
+    output.emplace_back(tp);
+  }
+  return output;
+}
+
+template <class T>
+autoware_auto_planning_msgs::msg::PathWithLaneId convertToPathWithLaneId(
+  [[maybe_unused]] const T & input)
+{
+  static_assert(sizeof(T) == 0, "Only specializations of convertToPathWithLaneId can be used.");
+  throw std::logic_error("Only specializations of convertToPathWithLaneId can be used.");
+}
+
+template <>
+inline autoware_auto_planning_msgs::msg::PathWithLaneId convertToPathWithLaneId(
+  const TrajectoryPoints & input)
+{
+  autoware_auto_planning_msgs::msg::PathWithLaneId output{};
+  for (const auto & p : input) {
+    autoware_auto_planning_msgs::msg::PathPointWithLaneId pp;
+    pp.point.pose = p.pose;
+    pp.point.longitudinal_velocity_mps = p.longitudinal_velocity_mps;
+    output.points.emplace_back(pp);
+  }
+  return output;
+}
 
 }  // namespace motion_utils
 

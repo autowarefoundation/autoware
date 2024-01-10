@@ -23,6 +23,7 @@
   <depend>component_interface_utils</depend>
   <depend>lanelet2_extension</depend>
   <depend>lanelet2_io</depend>
+  <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
   <depend>route_handler</depend>

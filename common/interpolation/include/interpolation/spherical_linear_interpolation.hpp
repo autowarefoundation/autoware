@@ -39,6 +39,10 @@ std::vector<geometry_msgs::msg::Quaternion> slerp(
   const std::vector<double> & base_keys,
   const std::vector<geometry_msgs::msg::Quaternion> & base_values,
   const std::vector<double> & query_keys);
+
+geometry_msgs::msg::Quaternion lerpOrientation(
+  const geometry_msgs::msg::Quaternion & o_from, const geometry_msgs::msg::Quaternion & o_to,
+  const double ratio);
 }  // namespace interpolation
 
 #endif  // INTERPOLATION__SPHERICAL_LINEAR_INTERPOLATION_HPP_

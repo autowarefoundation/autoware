@@ -141,16 +141,6 @@ double lerp(const double v_from, const double v_to, const double ratio)
   return v_from + (v_to - v_from) * ratio;
 }
 
-Quaternion lerpOrientation(const Quaternion & o_from, const Quaternion & o_to, const double ratio)
-{
-  tf2::Quaternion q_from, q_to;
-  tf2::fromMsg(o_from, q_from);
-  tf2::fromMsg(o_to, q_to);
-
-  const auto q_interpolated = q_from.slerp(q_to, ratio);
-  return tf2::toMsg(q_interpolated);
-}
-
 double applyDiffLimitFilter(
   const double input_val, const double prev_val, const double dt, const double max_val,
   const double min_val)
