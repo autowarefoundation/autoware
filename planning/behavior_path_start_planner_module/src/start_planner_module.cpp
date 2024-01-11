@@ -584,9 +584,16 @@ void StartPlannerModule::planWithPriority(
   const PriorityOrder order_priority =
     determinePriorityOrder(search_priority, start_pose_candidates.size());
 
-  for (const auto & [index, planner] : order_priority) {
-    if (findPullOutPath(start_pose_candidates[index], planner, refined_start_pose, goal_pose))
-      return;
+  for (const auto & collision_check_margin : parameters_->collision_check_margins) {
+    for (const auto & [index, planner] : order_priority) {
+      if (findPullOutPath(
+            start_pose_candidates[index], planner, refined_start_pose, goal_pose,
+            collision_check_margin)) {
+        start_planner_data_.selected_start_pose_candidate_index = index;
+        start_planner_data_.margin_for_start_pose_candidate = collision_check_margin;
+        return;
+      }
+    }
   }
 
   updateStatusIfNoSafePathFound();
@@ -617,7 +624,7 @@ PriorityOrder StartPlannerModule::determinePriorityOrder(
 
 bool StartPlannerModule::findPullOutPath(
   const Pose & start_pose_candidate, const std::shared_ptr<PullOutPlannerBase> & planner,
-  const Pose & refined_start_pose, const Pose & goal_pose)
+  const Pose & refined_start_pose, const Pose & goal_pose, const double collision_check_margin)
 {
   const auto & dynamic_objects = planner_data_->dynamic_object;
   const auto pull_out_lanes = start_planner_utils::getPullOutLanes(
@@ -645,7 +652,7 @@ bool StartPlannerModule::findPullOutPath(
   // check collision
   if (utils::checkCollisionBetweenPathFootprintsAndObjects(
         vehicle_footprint, extractCollisionCheckSection(*pull_out_path), pull_out_lane_stop_objects,
-        parameters_->collision_check_margin)) {
+        collision_check_margin)) {
     return false;
   }
 
@@ -666,23 +673,21 @@ PathWithLaneId StartPlannerModule::extractCollisionCheckSection(const PullOutPat
     combined_path.points.insert(
       combined_path.points.end(), partial_path.points.begin(), partial_path.points.end());
   }
-
   // calculate collision check end idx
-  size_t collision_check_end_idx = 0;
-  const auto collision_check_end_pose = motion_utils::calcLongitudinalOffsetPose(
-    combined_path.points, path.end_pose.position, parameters_->collision_check_distance_from_end);
+  const size_t collision_check_end_idx = std::invoke([&]() {
+    const auto collision_check_end_pose = motion_utils::calcLongitudinalOffsetPose(
+      combined_path.points, path.end_pose.position, parameters_->collision_check_distance_from_end);
 
-  if (collision_check_end_pose) {
-    collision_check_end_idx =
-      motion_utils::findNearestIndex(combined_path.points, collision_check_end_pose->position);
-  }
-
+    if (collision_check_end_pose) {
+      return motion_utils::findNearestIndex(
+        combined_path.points, collision_check_end_pose->position);
+    } else {
+      return combined_path.points.size() - 1;
+    }
+  });
   // remove the point behind of collision check end pose
-  if (collision_check_end_idx + 1 < combined_path.points.size()) {
-    combined_path.points.erase(
-      combined_path.points.begin() + collision_check_end_idx + 1, combined_path.points.end());
-  }
-
+  combined_path.points.erase(
+    combined_path.points.begin() + collision_check_end_idx + 1, combined_path.points.end());
   return combined_path;
 }
 
@@ -949,7 +954,7 @@ std::vector<Pose> StartPlannerModule::searchPullOutStartPoseCandidates(
 
     if (utils::checkCollisionBetweenFootprintAndObjects(
           local_vehicle_footprint, *backed_pose, stop_objects_in_pull_out_lanes,
-          parameters_->collision_check_margin)) {
+          parameters_->collision_check_margins.back())) {
       break;  // poses behind this has a collision, so break.
     }
 

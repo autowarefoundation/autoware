@@ -41,6 +41,8 @@ struct StartGoalPlannerData
 
   Pose refined_start_pose;
   std::vector<Pose> start_pose_candidates;
+  size_t selected_start_pose_candidate_index;
+  double margin_for_start_pose_candidate;
 };
 
 }  // namespace behavior_path_planner
