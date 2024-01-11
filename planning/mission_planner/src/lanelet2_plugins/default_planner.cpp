@@ -292,7 +292,8 @@ bool DefaultPlanner::check_goal_footprint(
     lanelet::ConstLanelets lanelets;
     lanelets.push_back(combined_prev_lanelet);
     lanelets.push_back(next_lane);
-    lanelet::ConstLanelet combined_lanelets = combine_lanelets(lanelets);
+    lanelet::ConstLanelet combined_lanelets =
+      combine_lanelets_with_shoulder(lanelets, shoulder_lanelets_);
 
     // if next lanelet length longer than vehicle longitudinal offset
     if (vehicle_info_.max_longitudinal_offset_m + search_margin < next_lane_length) {
@@ -351,7 +352,8 @@ bool DefaultPlanner::is_goal_valid(
 
   double next_lane_length = 0.0;
   // combine calculated route lanelets
-  lanelet::ConstLanelet combined_prev_lanelet = combine_lanelets(path_lanelets);
+  lanelet::ConstLanelet combined_prev_lanelet =
+    combine_lanelets_with_shoulder(path_lanelets, shoulder_lanelets_);
 
   // check if goal footprint exceeds lane when the goal isn't in parking_lot
   if (

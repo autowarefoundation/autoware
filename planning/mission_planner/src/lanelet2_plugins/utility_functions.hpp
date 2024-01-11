@@ -49,7 +49,8 @@ void set_color(std_msgs::msg::ColorRGBA * cl, double r, double g, double b, doub
 void insert_marker_array(
   visualization_msgs::msg::MarkerArray * a1, const visualization_msgs::msg::MarkerArray & a2);
 
-lanelet::ConstLanelet combine_lanelets(const lanelet::ConstLanelets & lanelets);
+lanelet::ConstLanelet combine_lanelets_with_shoulder(
+  const lanelet::ConstLanelets & lanelets, const lanelet::ConstLanelets & shoulder_lanelets);
 std::vector<geometry_msgs::msg::Point> convertCenterlineToPoints(const lanelet::Lanelet & lanelet);
 geometry_msgs::msg::Pose convertBasicPoint3dToPose(
   const lanelet::BasicPoint3d & point, const double lane_yaw);

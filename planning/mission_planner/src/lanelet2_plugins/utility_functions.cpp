@@ -54,7 +54,8 @@ void insert_marker_array(
   a1->markers.insert(a1->markers.end(), a2.markers.begin(), a2.markers.end());
 }
 
-lanelet::ConstLanelet combine_lanelets(const lanelet::ConstLanelets & lanelets)
+lanelet::ConstLanelet combine_lanelets_with_shoulder(
+  const lanelet::ConstLanelets & lanelets, const lanelet::ConstLanelets & shoulder_lanelets)
 {
   lanelet::Points3d lefts;
   lanelet::Points3d rights;
@@ -70,17 +71,48 @@ lanelet::ConstLanelet combine_lanelets(const lanelet::ConstLanelets & lanelets)
   }
 
   for (const auto & llt : lanelets) {
-    if (std::count(right_bound_ids.begin(), right_bound_ids.end(), llt.leftBound().id()) < 1) {
-      for (const auto & pt : llt.leftBound()) {
-        lefts.push_back(lanelet::Point3d(pt));
-      }
+    // lambda to check if shoulder lane which share left bound with lanelets exist
+    const auto find_bound_shared_shoulder =
+      [&shoulder_lanelets](const auto & lanelet_bound, const auto & get_shoulder_bound) {
+        return std::find_if(
+          shoulder_lanelets.begin(), shoulder_lanelets.end(),
+          [&lanelet_bound, &get_shoulder_bound](const auto & shoulder_llt) {
+            return lanelet_bound.id() == get_shoulder_bound(shoulder_llt).id();
+          });
+      };
+
+    // lambda to add bound to target_bound
+    const auto add_bound = [](const auto & bound, auto & target_bound) {
+      std::transform(
+        bound.begin(), bound.end(), std::back_inserter(target_bound),
+        [](const auto & pt) { return lanelet::Point3d(pt); });
+    };
+
+    // check if shoulder lanelets which has RIGHT bound same to LEFT bound of lanelet exist
+    const auto left_shared_shoulder_it = find_bound_shared_shoulder(
+      llt.leftBound(), [](const auto & shoulder_llt) { return shoulder_llt.rightBound(); });
+    if (left_shared_shoulder_it != shoulder_lanelets.end()) {
+      // if exist, add left bound of SHOULDER lanelet to lefts
+      add_bound(left_shared_shoulder_it->leftBound(), lefts);
+    } else if (
+      // if not exist, add left bound of lanelet to lefts
+      std::count(right_bound_ids.begin(), right_bound_ids.end(), llt.leftBound().id()) < 1) {
+      add_bound(llt.leftBound(), lefts);
     }
-    if (std::count(left_bound_ids.begin(), left_bound_ids.end(), llt.rightBound().id()) < 1) {
-      for (const auto & pt : llt.rightBound()) {
-        rights.push_back(lanelet::Point3d(pt));
-      }
+
+    // check if shoulder lanelets which has LEFT bound same to RIGHT bound of lanelet exist
+    const auto right_shared_shoulder_it = find_bound_shared_shoulder(
+      llt.rightBound(), [](const auto & shoulder_llt) { return shoulder_llt.leftBound(); });
+    if (right_shared_shoulder_it != shoulder_lanelets.end()) {
+      // if exist, add right bound of SHOULDER lanelet to rights
+      add_bound(right_shared_shoulder_it->rightBound(), rights);
+    } else if (
+      // if not exist, add right bound of lanelet to rights
+      std::count(left_bound_ids.begin(), left_bound_ids.end(), llt.rightBound().id()) < 1) {
+      add_bound(llt.rightBound(), rights);
     }
   }
+
   const auto left_bound = lanelet::LineString3d(lanelet::InvalId, lefts);
   const auto right_bound = lanelet::LineString3d(lanelet::InvalId, rights);
   auto combined_lanelet = lanelet::Lanelet(lanelet::InvalId, left_bound, right_bound);
