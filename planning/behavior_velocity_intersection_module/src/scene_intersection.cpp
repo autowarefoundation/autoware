@@ -1195,7 +1195,7 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     }
   }
 
-  const double is_amber_or_red =
+  const bool is_amber_or_red =
     (traffic_prioritized_level == TrafficPrioritizedLevel::PARTIALLY_PRIORITIZED) ||
     (traffic_prioritized_level == TrafficPrioritizedLevel::FULLY_PRIORITIZED);
   auto occlusion_status =

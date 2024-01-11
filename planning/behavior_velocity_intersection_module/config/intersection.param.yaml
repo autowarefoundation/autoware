@@ -72,7 +72,7 @@
           enable: false
           creep_velocity: 0.8333
         peeking_offset: -0.5
-        occlusion_required_clearance_distance: 55
+        occlusion_required_clearance_distance: 55.0
         possible_object_bbox: [1.5, 2.5]
         ignore_parked_vehicle_speed_threshold: 0.8333
         occlusion_detection_hold_time: 1.5
