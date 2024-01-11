@@ -613,16 +613,16 @@ ObjectClassification::_label_type changeLabelForPrediction(
     case ObjectClassification::BICYCLE: {  // if object is within road lanelet and satisfies yaw
                                            // constraints
       const bool within_road_lanelet = withinRoadLanelet(object, lanelet_map_ptr_, true);
-      const float high_speed_threshold =
+      // if the object is within lanelet, do the same estimation with vehicle
+      if (within_road_lanelet) return ObjectClassification::MOTORCYCLE;
+
+      constexpr float high_speed_threshold =
         tier4_autoware_utils::kmph2mps(25.0);  // High speed bicycle 25 km/h
       // calc abs speed from x and y velocity
       const double abs_speed = std::hypot(
         object.kinematics.twist_with_covariance.twist.linear.x,
         object.kinematics.twist_with_covariance.twist.linear.y);
       const bool high_speed_object = abs_speed > high_speed_threshold;
-
-      // if the object is within lanelet, do the same estimation with vehicle
-      if (within_road_lanelet) return ObjectClassification::MOTORCYCLE;
       // high speed object outside road lanelet will move like unknown object
       // return ObjectClassification::UNKNOWN; // temporary disabled
       if (high_speed_object) return label;  // Do nothing for now
