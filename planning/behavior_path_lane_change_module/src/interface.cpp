@@ -276,6 +276,11 @@ bool LaneChangeInterface::canTransitFailureState()
     return false;
   }
 
+  if (!module_type_->isAbleToReturnCurrentLane()) {
+    log_debug_throttled("It's is not possible to return to original lane. Continue lane change.");
+    return false;
+  }
+
   const auto found_abort_path = module_type_->calcAbortPath();
   if (!found_abort_path) {
     log_debug_throttled(
