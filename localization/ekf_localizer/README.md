@@ -83,6 +83,7 @@ The parameters are set in `launch/ekf_localizer.launch` .
 | show_debug_info            | bool   | Flag to display debug info                                                                | false         |
 | predict_frequency          | double | Frequency for filtering and publishing [Hz]                                               | 50.0          |
 | tf_rate                    | double | Frequency for tf broadcasting [Hz]                                                        | 10.0          |
+| publish_tf                 | bool   | Whether to publish tf                                                                     | true          |
 | extend_state_step          | int    | Max delay step which can be dealt with in EKF. Large number increases computational cost. | 50            |
 | enable_yaw_bias_estimation | bool   | Flag to enable yaw bias estimation                                                        | true          |
 

@@ -60,9 +60,11 @@ EKFLocalizer::EKFLocalizer(const std::string & node_name, const rclcpp::NodeOpti
     this, get_clock(), rclcpp::Duration::from_seconds(ekf_dt_),
     std::bind(&EKFLocalizer::timerCallback, this));
 
-  timer_tf_ = rclcpp::create_timer(
-    this, get_clock(), rclcpp::Rate(params_.tf_rate_).period(),
-    std::bind(&EKFLocalizer::timerTFCallback, this));
+  if (params_.publish_tf_) {
+    timer_tf_ = rclcpp::create_timer(
+      this, get_clock(), rclcpp::Rate(params_.tf_rate_).period(),
+      std::bind(&EKFLocalizer::timerTFCallback, this));
+  }
 
   pub_pose_ = create_publisher<geometry_msgs::msg::PoseStamped>("ekf_pose", 1);
   pub_pose_cov_ =

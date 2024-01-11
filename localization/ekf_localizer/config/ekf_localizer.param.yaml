@@ -4,6 +4,7 @@
     enable_yaw_bias_estimation: true
     predict_frequency: 50.0
     tf_rate: 50.0
+    publish_tf: true
     extend_state_step: 50
 
     # for Pose measurement
