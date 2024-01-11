@@ -14,7 +14,6 @@
 
 #include "behavior_path_start_planner_module/start_planner_module.hpp"
 
-#include "behavior_path_planner_common/utils/create_vehicle_footprint.hpp"
 #include "behavior_path_planner_common/utils/parking_departure/utils.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner_common/utils/path_utils.hpp"
@@ -623,7 +622,7 @@ bool StartPlannerModule::findPullOutPath(
   const auto & dynamic_objects = planner_data_->dynamic_object;
   const auto pull_out_lanes = start_planner_utils::getPullOutLanes(
     planner_data_, planner_data_->parameters.backward_path_length + parameters_->max_back_distance);
-  const auto & vehicle_footprint = createVehicleFootprint(vehicle_info_);
+  const auto & vehicle_footprint = vehicle_info_.createFootprint();
   // extract stop objects in pull out lane for collision check
   const auto stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
     *dynamic_objects, parameters_->th_moving_object_velocity);
@@ -902,7 +901,7 @@ std::vector<Pose> StartPlannerModule::searchPullOutStartPoseCandidates(
 {
   std::vector<Pose> pull_out_start_pose_candidates{};
   const auto start_pose = planner_data_->route_handler->getOriginalStartPose();
-  const auto local_vehicle_footprint = createVehicleFootprint(vehicle_info_);
+  const auto local_vehicle_footprint = vehicle_info_.createFootprint();
   const auto pull_out_lanes = start_planner_utils::getPullOutLanes(
     planner_data_, planner_data_->parameters.backward_path_length + parameters_->max_back_distance);
   const double backward_path_length =
@@ -1356,7 +1355,7 @@ void StartPlannerModule::setDebugData() const
 
   // visualize collision_check_end_pose and footprint
   {
-    const auto local_footprint = createVehicleFootprint(vehicle_info_);
+    const auto local_footprint = vehicle_info_.createFootprint();
     const auto collision_check_end_pose = motion_utils::calcLongitudinalOffsetPose(
       getFullPath().points, status_.pull_out_path.end_pose.position,
       parameters_->collision_check_distance_from_end);
