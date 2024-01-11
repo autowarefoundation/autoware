@@ -645,7 +645,7 @@ bool StartPlannerModule::findPullOutPath(
 
   // check collision
   if (utils::checkCollisionBetweenPathFootprintsAndObjects(
-        vehicle_footprint, extractCollisionCheckPath(*pull_out_path), pull_out_lane_stop_objects,
+        vehicle_footprint, extractCollisionCheckSection(*pull_out_path), pull_out_lane_stop_objects,
         parameters_->collision_check_margin)) {
     return false;
   }
@@ -660,7 +660,7 @@ bool StartPlannerModule::findPullOutPath(
   return true;
 }
 
-PathWithLaneId StartPlannerModule::extractCollisionCheckPath(const PullOutPath & path)
+PathWithLaneId StartPlannerModule::extractCollisionCheckSection(const PullOutPath & path)
 {
   PathWithLaneId combined_path;
   for (const auto & partial_path : path.partial_paths) {
@@ -912,6 +912,10 @@ std::vector<Pose> StartPlannerModule::searchPullOutStartPoseCandidates(
     pull_out_lanes, start_pose.position, parameters_->th_moving_object_velocity,
     backward_path_length, std::numeric_limits<double>::max());
 
+  const auto front_stop_objects_in_pull_out_lanes = filterStopObjectsInPullOutLanes(
+    pull_out_lanes, start_pose.position, parameters_->th_moving_object_velocity, 0,
+    std::numeric_limits<double>::max());
+
   // Set the maximum backward distance less than the distance from the vehicle's base_link to the
   // lane's rearmost point to prevent lane departure.
   const double current_arc_length =
@@ -924,9 +928,12 @@ std::vector<Pose> StartPlannerModule::searchPullOutStartPoseCandidates(
        back_distance += parameters_->backward_search_resolution) {
     const auto backed_pose = calcLongitudinalOffsetPose(
       back_path_from_start_pose.points, start_pose.position, -back_distance);
-    if (!backed_pose) {
+    if (!backed_pose) continue;
+
+    if (utils::checkCollisionBetweenFootprintAndObjects(
+          local_vehicle_footprint, *backed_pose, front_stop_objects_in_pull_out_lanes,
+          parameters_->collision_check_margin_from_front_object))
       continue;
-    }
 
     const double backed_pose_arc_length =
       lanelet::utils::getArcCoordinates(pull_out_lanes, *backed_pose).length;

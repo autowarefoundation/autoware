@@ -44,6 +44,7 @@ struct StartPlannerParameters
   double length_ratio_for_turn_signal_deactivation_near_intersection{0.0};
   double collision_check_margin{0.0};
   double collision_check_distance_from_end{0.0};
+  double collision_check_margin_from_front_object{0.0};
   double th_moving_object_velocity{0.0};
   double center_line_path_interval{0.0};
 

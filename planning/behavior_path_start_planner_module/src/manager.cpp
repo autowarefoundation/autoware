@@ -46,6 +46,8 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
   p.collision_check_margin = node->declare_parameter<double>(ns + "collision_check_margin");
   p.collision_check_distance_from_end =
     node->declare_parameter<double>(ns + "collision_check_distance_from_end");
+  p.collision_check_margin_from_front_object =
+    node->declare_parameter<double>(ns + "collision_check_margin_from_front_object");
   p.th_moving_object_velocity = node->declare_parameter<double>(ns + "th_moving_object_velocity");
   p.center_line_path_interval = node->declare_parameter<double>(ns + "center_line_path_interval");
   // shift pull out
