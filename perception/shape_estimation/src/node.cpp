@@ -42,11 +42,11 @@ ShapeEstimationNode::ShapeEstimationNode(const rclcpp::NodeOptions & node_option
     "input", rclcpp::QoS{1}, std::bind(&ShapeEstimationNode::callback, this, _1));
 
   pub_ = create_publisher<DetectedObjectsWithFeature>("objects", rclcpp::QoS{1});
-  bool use_corrector = declare_parameter("use_corrector", true);
-  bool use_filter = declare_parameter("use_filter", true);
-  use_vehicle_reference_yaw_ = declare_parameter("use_vehicle_reference_yaw", true);
-  use_vehicle_reference_shape_size_ = declare_parameter("use_vehicle_reference_shape_size", true);
-  bool use_boost_bbox_optimizer = declare_parameter("use_boost_bbox_optimizer", false);
+  bool use_corrector = declare_parameter<bool>("use_corrector");
+  bool use_filter = declare_parameter<bool>("use_filter");
+  use_vehicle_reference_yaw_ = declare_parameter<bool>("use_vehicle_reference_yaw");
+  use_vehicle_reference_shape_size_ = declare_parameter<bool>("use_vehicle_reference_shape_size");
+  bool use_boost_bbox_optimizer = declare_parameter<bool>("use_boost_bbox_optimizer");
   RCLCPP_INFO(this->get_logger(), "using boost shape estimation : %d", use_boost_bbox_optimizer);
   estimator_ =
     std::make_unique<ShapeEstimator>(use_corrector, use_filter, use_boost_bbox_optimizer);

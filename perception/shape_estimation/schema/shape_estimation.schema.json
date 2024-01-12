@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Shape Estimation Node",
+  "type": "object",
+  "definitions": {
+    "shape_estimation": {
+      "type": "object",
+      "properties": {
+        "use_corrector": {
+          "type": "boolean",
+          "description": "The flag to apply rule-based corrector.",
+          "default": "true"
+        },
+        "use_filter": {
+          "type": "boolean",
+          "description": "The flag to apply rule-based filter",
+          "default": "true"
+        },
+        "use_vehicle_reference_yaw": {
+          "type": "boolean",
+          "description": "The flag to use vehicle reference yaw for corrector",
+          "default": "false"
+        },
+        "use_vehicle_reference_shape_size": {
+          "type": "boolean",
+          "description": "The flag to use vehicle reference shape size",
+          "default": "false"
+        },
+        "use_boost_bbox_optimizer": {
+          "type": "boolean",
+          "description": "The flag to use boost bbox optimizer",
+          "default": "false"
+        }
+      },
+      "required": [
+        "use_corrector",
+        "use_filter",
+        "use_vehicle_reference_yaw",
+        "use_vehicle_reference_shape_size",
+        "use_boost_bbox_optimizer"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/shape_estimation"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

@@ -1,18 +1,16 @@
 <launch>
   <arg name="input/objects" default="labeled_clusters"/>
   <arg name="output/objects" default="shape_estimated_objects"/>
-  <arg name="use_filter" default="true"/>
-  <arg name="use_corrector" default="true"/>
   <arg name="node_name" default="shape_estimation"/>
+  <!-- Parameter -->
+  <arg name="config_file" default="$(find-pkg-share shape_estimation)/config/shape_estimation.param.yaml"/>
   <arg name="use_vehicle_reference_yaw" default="false"/>
   <arg name="use_vehicle_reference_shape_size" default="false"/>
   <arg name="use_boost_bbox_optimizer" default="false"/>
+
   <node pkg="shape_estimation" exec="shape_estimation" name="$(var node_name)" output="screen">
     <remap from="input" to="$(var input/objects)"/>
     <remap from="objects" to="$(var output/objects)"/>
-    <param name="use_filter" value="$(var use_filter)"/>
-    <param name="use_corrector" value="$(var use_corrector)"/>
-    <param name="use_vehicle_reference_yaw" value="$(var use_vehicle_reference_yaw)"/>
-    <param name="use_boost_bbox_optimizer" value="$(var use_boost_bbox_optimizer)"/>
+    <param from="$(var config_file)"/>
   </node>
 </launch>

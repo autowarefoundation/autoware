@@ -64,4 +64,5 @@ rclcpp_components_register_node(shape_estimation_node
 
 ament_auto_package(INSTALL_TO_SHARE
   launch
+  config
 )
