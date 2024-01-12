@@ -83,6 +83,22 @@ void LandmarkManager::parse_landmarks(
   }
 }
 
+std::vector<landmark_manager::Landmark> LandmarkManager::get_landmarks() const
+{
+  std::vector<landmark_manager::Landmark> landmarks;
+
+  landmark_manager::Landmark landmark;
+  for (const auto & [landmark_id_str, landmark_poses] : landmarks_map_) {
+    for (const auto & pose : landmark_poses) {
+      landmark.id = landmark_id_str;
+      landmark.pose = pose;
+      landmarks.push_back(landmark);
+    }
+  }
+
+  return landmarks;
+}
+
 visualization_msgs::msg::MarkerArray LandmarkManager::get_landmarks_as_marker_array_msg() const
 {
   int32_t id = 0;

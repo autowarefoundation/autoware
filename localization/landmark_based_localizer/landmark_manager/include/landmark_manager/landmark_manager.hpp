@@ -44,6 +44,8 @@ public:
     const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr & msg,
     const std::string & target_subtype);
 
+  [[nodiscard]] std::vector<landmark_manager::Landmark> get_landmarks() const;
+
   [[nodiscard]] visualization_msgs::msg::MarkerArray get_landmarks_as_marker_array_msg() const;
 
   [[nodiscard]] geometry_msgs::msg::Pose calculate_new_self_pose(
