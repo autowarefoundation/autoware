@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "utils/utils.hpp"
+#include "probabilistic_occupancy_grid_map/utils/utils.hpp"
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 

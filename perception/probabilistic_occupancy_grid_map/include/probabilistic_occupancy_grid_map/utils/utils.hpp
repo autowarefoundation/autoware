@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef UTILS__UTILS_HPP_
-#define UTILS__UTILS_HPP_
+#ifndef PROBABILISTIC_OCCUPANCY_GRID_MAP__UTILS__UTILS_HPP_
+#define PROBABILISTIC_OCCUPANCY_GRID_MAP__UTILS__UTILS_HPP_
 
-#include "cost_value.hpp"
+#include "probabilistic_occupancy_grid_map/cost_value.hpp"
 
 #include <builtin_interfaces/msg/time.hpp>
 #include <pcl_ros/transforms.hpp>
@@ -119,4 +119,4 @@ bool extractCommonPointCloud(
 unsigned char getApproximateOccupancyState(const unsigned char & value);
 }  // namespace utils
 
-#endif  // UTILS__UTILS_HPP_
+#endif  // PROBABILISTIC_OCCUPANCY_GRID_MAP__UTILS__UTILS_HPP_

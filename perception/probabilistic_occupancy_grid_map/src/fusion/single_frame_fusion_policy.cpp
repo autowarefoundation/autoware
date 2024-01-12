@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fusion/single_frame_fusion_policy.hpp"
+#include "probabilistic_occupancy_grid_map/fusion/single_frame_fusion_policy.hpp"
 
 namespace fusion_policy
 {

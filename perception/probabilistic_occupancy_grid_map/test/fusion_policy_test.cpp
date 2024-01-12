@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cost_value.hpp"
-#include "fusion/single_frame_fusion_policy.hpp"
-#include "gtest/gtest.h"
+#include "probabilistic_occupancy_grid_map/cost_value.hpp"
+#include "probabilistic_occupancy_grid_map/fusion/single_frame_fusion_policy.hpp"
+
+#include <gtest/gtest.h>
 
 // Test the log-odds update rule
 TEST(FusionPolicyTest, TestLogOddsUpdateRule)

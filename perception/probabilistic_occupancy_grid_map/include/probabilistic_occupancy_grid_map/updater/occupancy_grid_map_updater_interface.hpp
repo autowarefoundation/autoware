@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_
-#define UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_
+#ifndef PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_
+#define PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_
 
-#include "cost_value.hpp"
+#include "probabilistic_occupancy_grid_map/cost_value.hpp"
 
 #include <nav2_costmap_2d/costmap_2d.hpp>
 #include <rclcpp/node.hpp>
@@ -38,4 +38,4 @@ public:
 
 }  // namespace costmap_2d
 
-#endif  // UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_
+#endif  // PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_

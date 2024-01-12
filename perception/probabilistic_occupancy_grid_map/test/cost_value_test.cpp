@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cost_value.hpp"
+#include "probabilistic_occupancy_grid_map/cost_value.hpp"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 // Test the CostTranslationTable and InverseCostTranslationTable functions
 using occupancy_cost_value::cost_translation_table;

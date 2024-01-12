@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// autoware
+#include "probabilistic_occupancy_grid_map/utils/utils.hpp"
+
 #include <gtest/gtest.h>
 
 #include <memory>
@@ -20,9 +23,6 @@
 
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
-
-// autoware
-#include "utils/utils.hpp"
 
 // create pointcloud function
 pcl::PointCloud<pcl::PointXYZ> createPCLPointCloudWithIteratedHeight(const size_t width)

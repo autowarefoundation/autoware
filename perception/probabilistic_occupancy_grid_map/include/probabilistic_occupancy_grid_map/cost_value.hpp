@@ -46,50 +46,61 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  * Author: Eitan Marder-Eppstein
- *         David V. Lu!!
  *********************************************************************/
 
-#ifndef POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_BASE_HPP_
-#define POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_BASE_HPP_
+#ifndef PROBABILISTIC_OCCUPANCY_GRID_MAP__COST_VALUE_HPP_
+#define PROBABILISTIC_OCCUPANCY_GRID_MAP__COST_VALUE_HPP_
 
-#include <nav2_costmap_2d/costmap_2d.hpp>
-#include <rclcpp/rclcpp.hpp>
+#include <algorithm>
 
-#include <nav_msgs/msg/occupancy_grid.hpp>
-#include <sensor_msgs/msg/laser_scan.hpp>
-#include <sensor_msgs/msg/point_cloud2.hpp>
-
-namespace costmap_2d
+namespace occupancy_cost_value
 {
-using geometry_msgs::msg::Pose;
-using sensor_msgs::msg::PointCloud2;
+static const unsigned char NO_INFORMATION = 128;  // 0.5 * 255
+static const unsigned char LETHAL_OBSTACLE = 255;
+static const unsigned char FREE_SPACE = 0;
 
-class OccupancyGridMapInterface : public nav2_costmap_2d::Costmap2D
+static const unsigned char OCCUPIED_THRESHOLD = 180;
+static const unsigned char FREE_THRESHOLD = 50;
+
+struct CostTranslationTable
 {
-public:
-  OccupancyGridMapInterface(
-    const unsigned int cells_size_x, const unsigned int cells_size_y, const float resolution);
-
-  virtual void updateWithPointCloud(
-    const PointCloud2 & raw_pointcloud, const PointCloud2 & obstacle_pointcloud,
-    const Pose & robot_pose, const Pose & scan_origin) = 0;
-
-  void updateOrigin(double new_origin_x, double new_origin_y) override;
-  void raytrace(
-    const double source_x, const double source_y, const double target_x, const double target_y,
-    const unsigned char cost);
-  void setCellValue(const double wx, const double wy, const unsigned char cost);
-  using nav2_costmap_2d::Costmap2D::resetMaps;
-
-  virtual void initRosParam(rclcpp::Node & node) = 0;
-
-private:
-  bool worldToMap(double wx, double wy, unsigned int & mx, unsigned int & my) const;
-
-  rclcpp::Logger logger_{rclcpp::get_logger("pointcloud_based_occupancy_grid_map")};
-  rclcpp::Clock clock_{RCL_ROS_TIME};
+  CostTranslationTable()
+  {
+    for (int i = 0; i < 256; i++) {
+      const auto value =
+        static_cast<char>(static_cast<float>(i) * 100.f / 255.f);  // 0-255 to 0-100
+      data[i] =
+        std::max(std::min(value, static_cast<char>(99)), static_cast<char>(1));  // 0-100 to 1-99
+    }
+  }
+  char operator[](unsigned char n) const { return data[n]; }
+  char data[256];
+};
+struct InverseCostTranslationTable
+{
+  InverseCostTranslationTable()
+  {
+    // 0-100 to 0-255
+    for (int i = 0; i < 100; i++) {
+      data[i] = static_cast<unsigned char>(i * 255 / 99);
+    }
+  }
+  unsigned char operator[](char n) const
+  {
+    if (n > 99) {
+      return data[99];
+    } else if (n < 1) {
+      return data[1];
+    } else {
+      const unsigned char u_n = static_cast<unsigned char>(n);
+      return data[u_n];
+    }
+  }
+  unsigned char data[100];
 };
 
-}  // namespace costmap_2d
+static const CostTranslationTable cost_translation_table;
+static const InverseCostTranslationTable inverse_cost_translation_table;
+}  // namespace occupancy_cost_value
 
-#endif  // POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_BASE_HPP_
+#endif  // PROBABILISTIC_OCCUPANCY_GRID_MAP__COST_VALUE_HPP_

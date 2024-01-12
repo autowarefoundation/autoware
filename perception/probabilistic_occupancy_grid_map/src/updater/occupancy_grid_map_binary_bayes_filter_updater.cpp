@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "updater/occupancy_grid_map_binary_bayes_filter_updater.hpp"
+#include "probabilistic_occupancy_grid_map/updater/occupancy_grid_map_binary_bayes_filter_updater.hpp"
 
-#include "cost_value.hpp"
+#include "probabilistic_occupancy_grid_map/cost_value.hpp"
 
 #include <algorithm>
 

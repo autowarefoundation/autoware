@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fusion/synchronized_grid_map_fusion_node.hpp"
+#include "probabilistic_occupancy_grid_map/fusion/synchronized_grid_map_fusion_node.hpp"
 
-#include "cost_value.hpp"
-#include "utils/utils.hpp"
+#include "probabilistic_occupancy_grid_map/cost_value.hpp"
+#include "probabilistic_occupancy_grid_map/utils/utils.hpp"
 
 namespace synchronized_grid_map_fusion
 {

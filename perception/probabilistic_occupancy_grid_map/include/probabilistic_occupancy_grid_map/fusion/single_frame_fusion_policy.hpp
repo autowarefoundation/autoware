@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef FUSION__SINGLE_FRAME_FUSION_POLICY_HPP_
-#define FUSION__SINGLE_FRAME_FUSION_POLICY_HPP_
+#ifndef PROBABILISTIC_OCCUPANCY_GRID_MAP__FUSION__SINGLE_FRAME_FUSION_POLICY_HPP_
+#define PROBABILISTIC_OCCUPANCY_GRID_MAP__FUSION__SINGLE_FRAME_FUSION_POLICY_HPP_
 
-#include "cost_value.hpp"
+#include "probabilistic_occupancy_grid_map/cost_value.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -63,4 +63,4 @@ unsigned char singleFrameOccupancyFusion(
   const std::vector<double> & reliability);
 }  // namespace fusion_policy
 
-#endif  // FUSION__SINGLE_FRAME_FUSION_POLICY_HPP_
+#endif  // PROBABILISTIC_OCCUPANCY_GRID_MAP__FUSION__SINGLE_FRAME_FUSION_POLICY_HPP_

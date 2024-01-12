@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_FIXED_HPP_
-#define POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_FIXED_HPP_
+#ifndef PROBABILISTIC_OCCUPANCY_GRID_MAP__POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_FIXED_HPP_
+#define PROBABILISTIC_OCCUPANCY_GRID_MAP__POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_FIXED_HPP_
 
-#include "pointcloud_based_occupancy_grid_map/occupancy_grid_map_base.hpp"
+#include "probabilistic_occupancy_grid_map/pointcloud_based_occupancy_grid_map/occupancy_grid_map_base.hpp"
 
 namespace costmap_2d
 {
@@ -44,4 +44,4 @@ private:
 
 }  // namespace costmap_2d
 
-#endif  // POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_FIXED_HPP_
+#endif  // PROBABILISTIC_OCCUPANCY_GRID_MAP__POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_FIXED_HPP_

@@ -1,4 +1,4 @@
-// Copyright 2023 TIER IV, Inc.
+// Copyright 2021 Tier IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,37 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef UPDATER__OCCUPANCY_GRID_MAP_LOG_ODDS_BAYES_FILTER_UPDATER_HPP_
-#define UPDATER__OCCUPANCY_GRID_MAP_LOG_ODDS_BAYES_FILTER_UPDATER_HPP_
+#ifndef PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_BINARY_BAYES_FILTER_UPDATER_HPP_
+#define PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_BINARY_BAYES_FILTER_UPDATER_HPP_
 
-#include "fusion/single_frame_fusion_policy.hpp"
-#include "updater/occupancy_grid_map_updater_interface.hpp"
-#include "utils/utils.hpp"
+#include "probabilistic_occupancy_grid_map/updater/occupancy_grid_map_updater_interface.hpp"
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Geometry>
-
-// LOBF means: Log Odds Bayes Filter
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 namespace costmap_2d
 {
-class OccupancyGridMapLOBFUpdater : public OccupancyGridMapUpdaterInterface
+class OccupancyGridMapBBFUpdater : public OccupancyGridMapUpdaterInterface
 {
 public:
   enum Index : size_t { OCCUPIED = 0U, FREE = 1U };
-  OccupancyGridMapLOBFUpdater(
-    const unsigned int cells_size_x, const unsigned int cells_size_y, const float resolution)
-  : OccupancyGridMapUpdaterInterface(cells_size_x, cells_size_y, resolution)
-  {
-  }
+  OccupancyGridMapBBFUpdater(
+    const unsigned int cells_size_x, const unsigned int cells_size_y, const float resolution);
   bool update(const Costmap2D & single_frame_occupancy_grid_map) override;
   void initRosParam(rclcpp::Node & node) override;
 
 private:
-  inline unsigned char applyLOBF(const unsigned char & z, const unsigned char & o);
+  inline unsigned char applyBBF(const unsigned char & z, const unsigned char & o);
   Eigen::Matrix2f probability_matrix_;
+  double v_ratio_;
 };
 
 }  // namespace costmap_2d
 
-#endif  // UPDATER__OCCUPANCY_GRID_MAP_LOG_ODDS_BAYES_FILTER_UPDATER_HPP_
+#endif  // PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_BINARY_BAYES_FILTER_UPDATER_HPP_

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "pointcloud_based_occupancy_grid_map/pointcloud_based_occupancy_grid_map_node.hpp"
+#include "probabilistic_occupancy_grid_map/pointcloud_based_occupancy_grid_map/pointcloud_based_occupancy_grid_map_node.hpp"
 
-#include "cost_value.hpp"
-#include "pointcloud_based_occupancy_grid_map/occupancy_grid_map_fixed.hpp"
-#include "pointcloud_based_occupancy_grid_map/occupancy_grid_map_projective.hpp"
-#include "utils/utils.hpp"
+#include "probabilistic_occupancy_grid_map/cost_value.hpp"
+#include "probabilistic_occupancy_grid_map/pointcloud_based_occupancy_grid_map/occupancy_grid_map_fixed.hpp"
+#include "probabilistic_occupancy_grid_map/pointcloud_based_occupancy_grid_map/occupancy_grid_map_projective.hpp"
+#include "probabilistic_occupancy_grid_map/utils/utils.hpp"
 
 #include <pcl_ros/transforms.hpp>
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
