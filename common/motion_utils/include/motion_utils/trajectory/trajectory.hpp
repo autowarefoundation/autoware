@@ -952,7 +952,10 @@ calcArcLength<std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>>(
 template <class T>
 std::vector<double> calcCurvature(const T & points)
 {
-  std::vector<double> curvature_vec(points.size());
+  std::vector<double> curvature_vec(points.size(), 0.0);
+  if (points.size() < 3) {
+    return curvature_vec;
+  }
 
   for (size_t i = 1; i < points.size() - 1; ++i) {
     const auto p1 = tier4_autoware_utils::getPoint(points.at(i - 1));
