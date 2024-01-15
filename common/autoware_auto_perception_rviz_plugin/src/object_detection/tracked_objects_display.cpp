@@ -14,7 +14,7 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <object_detection/tracked_objects_display.hpp>
+#include "autoware_auto_perception_rviz_plugin/object_detection/tracked_objects_display.hpp"
 
 #include <memory>
 

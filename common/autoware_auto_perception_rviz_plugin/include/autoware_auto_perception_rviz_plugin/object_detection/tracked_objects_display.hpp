@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2021 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,24 +11,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef OBJECT_DETECTION__PREDICTED_OBJECTS_DISPLAY_HPP_
-#define OBJECT_DETECTION__PREDICTED_OBJECTS_DISPLAY_HPP_
+#ifndef AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__TRACKED_OBJECTS_DISPLAY_HPP_
+#define AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__TRACKED_OBJECTS_DISPLAY_HPP_
 
-#include <object_detection/object_polygon_display_base.hpp>
+#include "autoware_auto_perception_rviz_plugin/object_detection/object_polygon_display_base.hpp"
 
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
 
-#include <boost/functional/hash.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 
-#include <condition_variable>
 #include <list>
-#include <queue>
-#include <set>
+#include <map>
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
 
 namespace autoware
@@ -37,40 +32,31 @@ namespace rviz_plugins
 {
 namespace object_detection
 {
-/// \brief Class defining rviz plugin to visualize PredictedObjects
-class AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC PredictedObjectsDisplay
-: public ObjectPolygonDisplayBase<autoware_auto_perception_msgs::msg::PredictedObjects>
+/// \brief Class defining rviz plugin to visualize TrackedObjects
+class AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC TrackedObjectsDisplay
+: public ObjectPolygonDisplayBase<autoware_auto_perception_msgs::msg::TrackedObjects>
 {
   Q_OBJECT
 
 public:
-  using PredictedObjects = autoware_auto_perception_msgs::msg::PredictedObjects;
+  using TrackedObject = autoware_auto_perception_msgs::msg::TrackedObject;
+  using TrackedObjects = autoware_auto_perception_msgs::msg::TrackedObjects;
 
-  PredictedObjectsDisplay();
-  ~PredictedObjectsDisplay()
+  TrackedObjectsDisplay();
+
+protected:
+  uint get_object_dynamics_to_visualize()
   {
-    {
-      std::unique_lock<std::mutex> lock(queue_mutex);
-      should_terminate = true;
-    }
-    condition.notify_all();
-    for (std::thread & active_thread : threads) {
-      active_thread.join();
-    }
-    threads.clear();
+    return m_select_object_dynamics_property->getOptionInt();
   }
+
+  static bool is_object_to_show(const uint showing_dynamic_status, const TrackedObject & object);
 
 private:
-  void processMessage(PredictedObjects::ConstSharedPtr msg) override;
+  // Property to choose object dynamics to visualize
+  rviz_common::properties::EnumProperty * m_select_object_dynamics_property;
 
-  void queueJob(std::function<void()> job)
-  {
-    {
-      std::unique_lock<std::mutex> lock(queue_mutex);
-      jobs.push(std::move(job));
-    }
-    condition.notify_one();
-  }
+  void processMessage(TrackedObjects::ConstSharedPtr msg) override;
 
   boost::uuids::uuid to_boost_uuid(const unique_identifier_msgs::msg::UUID & uuid_msg)
   {
@@ -80,7 +66,7 @@ private:
     return uuid;
   }
 
-  void update_id_map(const PredictedObjects::ConstSharedPtr & msg)
+  void update_id_map(const TrackedObjects::ConstSharedPtr & msg)
   {
     std::vector<boost::uuids::uuid> new_uuids;
     std::vector<boost::uuids::uuid> tracked_uuids;
@@ -119,38 +105,13 @@ private:
     return id_map.at(uuid);
   }
 
-  std::vector<visualization_msgs::msg::Marker::SharedPtr> createMarkers(
-    PredictedObjects::ConstSharedPtr msg);
-  void workerThread();
-
-  void messageProcessorThreadJob();
-
-  void update(float wall_dt, float ros_dt) override;
-
-  std::unordered_map<boost::uuids::uuid, int32_t, boost::hash<boost::uuids::uuid>> id_map;
-  // std::unordered_map<boost::uuids::uuid, int32_t> id_map;
+  std::map<boost::uuids::uuid, int32_t> id_map;
   std::list<int32_t> unused_marker_ids;
   int32_t marker_id = 0;
-  const int32_t PATH_ID_CONSTANT = 1e3;
-
-  // max_num_threads: number of threads created in the thread pool, hard-coded to be 1;
-  int max_num_threads;
-
-  bool should_terminate{false};
-  std::mutex queue_mutex;
-  std::vector<std::thread> threads;
-  std::queue<std::function<void()>> jobs;
-
-  PredictedObjects::ConstSharedPtr msg;
-  bool consumed{false};
-  std::mutex mutex;
-  std::condition_variable condition;
-  std::vector<visualization_msgs::msg::Marker::SharedPtr> markers;
-  std::set<rviz_default_plugins::displays::MarkerID> existing_marker_ids;
 };
 
 }  // namespace object_detection
 }  // namespace rviz_plugins
 }  // namespace autoware
 
-#endif  // OBJECT_DETECTION__PREDICTED_OBJECTS_DISPLAY_HPP_
+#endif  // AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__TRACKED_OBJECTS_DISPLAY_HPP_

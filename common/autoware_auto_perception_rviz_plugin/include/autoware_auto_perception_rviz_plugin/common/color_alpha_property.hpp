@@ -11,13 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef COMMON__COLOR_ALPHA_PROPERTY_HPP_
-#define COMMON__COLOR_ALPHA_PROPERTY_HPP_
+#ifndef AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__COMMON__COLOR_ALPHA_PROPERTY_HPP_
+#define AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__COMMON__COLOR_ALPHA_PROPERTY_HPP_
+
+#include "autoware_auto_perception_rviz_plugin/visibility_control.hpp"
 
 #include <rviz_common/display.hpp>
 #include <rviz_common/properties/color_property.hpp>
 #include <rviz_common/properties/float_property.hpp>
-#include <visibility_control.hpp>
 
 #include <std_msgs/msg/color_rgba.hpp>
 
@@ -55,4 +56,4 @@ private:
 }  // namespace rviz_plugins
 }  // namespace autoware
 
-#endif  // COMMON__COLOR_ALPHA_PROPERTY_HPP_
+#endif  // AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__COMMON__COLOR_ALPHA_PROPERTY_HPP_

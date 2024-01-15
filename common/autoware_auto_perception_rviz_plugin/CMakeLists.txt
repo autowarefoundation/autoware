@@ -13,18 +13,18 @@ set(OD_PLUGIN_LIB_SRC
 )
 
 set(OD_PLUGIN_LIB_HEADERS
-  include/visibility_control.hpp
+  include/autoware_auto_perception_rviz_plugin/visibility_control.hpp
 )
 set(OD_PLUGIN_LIB_HEADERS_TO_WRAP
-  include/object_detection/detected_objects_display.hpp
-  include/object_detection/tracked_objects_display.hpp
-  include/object_detection/predicted_objects_display.hpp
+  include/autoware_auto_perception_rviz_plugin/object_detection/detected_objects_display.hpp
+  include/autoware_auto_perception_rviz_plugin/object_detection/tracked_objects_display.hpp
+  include/autoware_auto_perception_rviz_plugin/object_detection/predicted_objects_display.hpp
 )
 
 set(COMMON_HEADERS
-  include/common/color_alpha_property.hpp
-  include/object_detection/object_polygon_detail.hpp
-  include/object_detection/object_polygon_display_base.hpp
+  include/autoware_auto_perception_rviz_plugin/common/color_alpha_property.hpp
+  include/autoware_auto_perception_rviz_plugin/object_detection/object_polygon_detail.hpp
+  include/autoware_auto_perception_rviz_plugin/object_detection/object_polygon_display_base.hpp
 )
 
 set(COMMON_SRC

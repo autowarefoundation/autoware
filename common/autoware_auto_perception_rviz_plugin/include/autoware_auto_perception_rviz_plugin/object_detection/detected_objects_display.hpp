@@ -11,10 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef OBJECT_DETECTION__DETECTED_OBJECTS_DISPLAY_HPP_
-#define OBJECT_DETECTION__DETECTED_OBJECTS_DISPLAY_HPP_
+#ifndef AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__DETECTED_OBJECTS_DISPLAY_HPP_
+#define AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__DETECTED_OBJECTS_DISPLAY_HPP_
 
-#include <object_detection/object_polygon_display_base.hpp>
+#include "autoware_auto_perception_rviz_plugin/object_detection/object_polygon_display_base.hpp"
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
 
@@ -43,4 +43,4 @@ private:
 }  // namespace rviz_plugins
 }  // namespace autoware
 
-#endif  // OBJECT_DETECTION__DETECTED_OBJECTS_DISPLAY_HPP_
+#endif  // AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__DETECTED_OBJECTS_DISPLAY_HPP_
