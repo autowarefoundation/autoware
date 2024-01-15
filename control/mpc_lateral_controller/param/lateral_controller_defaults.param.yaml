@@ -83,3 +83,5 @@
     mass_rr: 600.0
     cf: 155494.663
     cr: 155494.663
+
+    debug_publish_predicted_trajectory: false  # publish debug predicted trajectory in Frenet coordinate

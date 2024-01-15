@@ -89,6 +89,15 @@ void calcMPCTrajectoryArcLength(const MPCTrajectory & trajectory, std::vector<do
   }
 }
 
+double calcMPCTrajectoryArcLength(const MPCTrajectory & trajectory)
+{
+  double length = 0.0;
+  for (size_t i = 1; i < trajectory.size(); ++i) {
+    length += calcDistance2d(trajectory, i, i - 1);
+  }
+  return length;
+}
+
 std::pair<bool, MPCTrajectory> resampleMPCTrajectoryByDistance(
   const MPCTrajectory & input, const double resample_interval_dist, const size_t nearest_seg_idx,
   const double ego_offset_to_segment)
@@ -456,6 +465,23 @@ void extendTrajectoryInYawDirection(
       extended_pose.position.x, extended_pose.position.y, extended_pose.position.z, traj.yaw.back(),
       extend_vel, traj.k.back(), traj.smooth_k.back(), traj.relative_time.back() + dt);
   }
+}
+
+MPCTrajectory clipTrajectoryByLength(const MPCTrajectory & trajectory, const double length)
+{
+  MPCTrajectory clipped_trajectory;
+  clipped_trajectory.push_back(trajectory.at(0));
+
+  double current_length = 0.0;
+  for (size_t i = 1; i < trajectory.size(); ++i) {
+    current_length += calcDistance3d(trajectory, i, i - 1);
+    if (current_length > length) {
+      break;
+    }
+    clipped_trajectory.push_back(trajectory.at(i));
+  }
+
+  return clipped_trajectory;
 }
 
 }  // namespace MPCUtils

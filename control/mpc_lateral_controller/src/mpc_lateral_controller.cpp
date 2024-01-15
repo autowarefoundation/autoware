@@ -42,7 +42,9 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node)
   const auto dp_bool = [&](const std::string & s) { return node.declare_parameter<bool>(s); };
   const auto dp_double = [&](const std::string & s) { return node.declare_parameter<double>(s); };
 
-  m_mpc.m_ctrl_period = node.get_parameter("ctrl_period").as_double();
+  m_mpc = std::make_unique<MPC>(node);
+
+  m_mpc->m_ctrl_period = node.get_parameter("ctrl_period").as_double();
 
   auto & p_filt = m_trajectory_filtering_param;
   p_filt.enable_path_smoothing = dp_bool("enable_path_smoothing");
@@ -52,10 +54,10 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node)
   p_filt.traj_resample_dist = dp_double("traj_resample_dist");
   p_filt.extend_trajectory_for_end_yaw_control = dp_bool("extend_trajectory_for_end_yaw_control");
 
-  m_mpc.m_admissible_position_error = dp_double("admissible_position_error");
-  m_mpc.m_admissible_yaw_error_rad = dp_double("admissible_yaw_error_rad");
-  m_mpc.m_use_steer_prediction = dp_bool("use_steer_prediction");
-  m_mpc.m_param.steer_tau = dp_double("vehicle_model_steer_tau");
+  m_mpc->m_admissible_position_error = dp_double("admissible_position_error");
+  m_mpc->m_admissible_yaw_error_rad = dp_double("admissible_yaw_error_rad");
+  m_mpc->m_use_steer_prediction = dp_bool("use_steer_prediction");
+  m_mpc->m_param.steer_tau = dp_double("vehicle_model_steer_tau");
 
   /* stop state parameters */
   m_stop_state_entry_ego_speed = dp_double("stop_state_entry_ego_speed");
@@ -70,7 +72,7 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node)
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
   const double wheelbase = vehicle_info.wheel_base_m;
   constexpr double deg2rad = static_cast<double>(M_PI) / 180.0;
-  m_mpc.m_steer_lim = vehicle_info.max_steer_angle_rad;
+  m_mpc->m_steer_lim = vehicle_info.max_steer_angle_rad;
 
   // steer rate limit depending on curvature
   const auto steer_rate_lim_dps_list_by_curvature =
@@ -78,7 +80,7 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node)
   const auto curvature_list_for_steer_rate_lim =
     node.declare_parameter<std::vector<double>>("curvature_list_for_steer_rate_lim");
   for (size_t i = 0; i < steer_rate_lim_dps_list_by_curvature.size(); ++i) {
-    m_mpc.m_steer_rate_lim_map_by_curvature.emplace_back(
+    m_mpc->m_steer_rate_lim_map_by_curvature.emplace_back(
       curvature_list_for_steer_rate_lim.at(i),
       steer_rate_lim_dps_list_by_curvature.at(i) * deg2rad);
   }
@@ -89,26 +91,26 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node)
   const auto velocity_list_for_steer_rate_lim =
     node.declare_parameter<std::vector<double>>("velocity_list_for_steer_rate_lim");
   for (size_t i = 0; i < steer_rate_lim_dps_list_by_velocity.size(); ++i) {
-    m_mpc.m_steer_rate_lim_map_by_velocity.emplace_back(
+    m_mpc->m_steer_rate_lim_map_by_velocity.emplace_back(
       velocity_list_for_steer_rate_lim.at(i), steer_rate_lim_dps_list_by_velocity.at(i) * deg2rad);
   }
 
   /* vehicle model setup */
   auto vehicle_model_ptr =
-    createVehicleModel(wheelbase, m_mpc.m_steer_lim, m_mpc.m_param.steer_tau, node);
-  m_mpc.setVehicleModel(vehicle_model_ptr);
+    createVehicleModel(wheelbase, m_mpc->m_steer_lim, m_mpc->m_param.steer_tau, node);
+  m_mpc->setVehicleModel(vehicle_model_ptr);
 
   /* QP solver setup */
-  m_mpc.setVehicleModel(vehicle_model_ptr);
+  m_mpc->setVehicleModel(vehicle_model_ptr);
   auto qpsolver_ptr = createQPSolverInterface(node);
-  m_mpc.setQPSolver(qpsolver_ptr);
+  m_mpc->setQPSolver(qpsolver_ptr);
 
   /* delay compensation */
   {
     const double delay_tmp = dp_double("input_delay");
-    const double delay_step = std::round(delay_tmp / m_mpc.m_ctrl_period);
-    m_mpc.m_param.input_delay = delay_step * m_mpc.m_ctrl_period;
-    m_mpc.m_input_buffer = std::deque<double>(static_cast<size_t>(delay_step), 0.0);
+    const double delay_step = std::round(delay_tmp / m_mpc->m_ctrl_period);
+    m_mpc->m_param.input_delay = delay_step * m_mpc->m_ctrl_period;
+    m_mpc->m_input_buffer = std::deque<double>(static_cast<size_t>(delay_step), 0.0);
   }
 
   /* steering offset compensation */
@@ -120,7 +122,7 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node)
   {
     const double steering_lpf_cutoff_hz = dp_double("steering_lpf_cutoff_hz");
     const double error_deriv_lpf_cutoff_hz = dp_double("error_deriv_lpf_cutoff_hz");
-    m_mpc.initializeLowPassFilters(steering_lpf_cutoff_hz, error_deriv_lpf_cutoff_hz);
+    m_mpc->initializeLowPassFilters(steering_lpf_cutoff_hz, error_deriv_lpf_cutoff_hz);
   }
 
   // ego nearest index search
@@ -129,8 +131,10 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node)
   };
   m_ego_nearest_dist_threshold = check_and_get_param("ego_nearest_dist_threshold");
   m_ego_nearest_yaw_threshold = check_and_get_param("ego_nearest_yaw_threshold");
-  m_mpc.ego_nearest_dist_threshold = m_ego_nearest_dist_threshold;
-  m_mpc.ego_nearest_yaw_threshold = m_ego_nearest_yaw_threshold;
+  m_mpc->ego_nearest_dist_threshold = m_ego_nearest_dist_threshold;
+  m_mpc->ego_nearest_yaw_threshold = m_ego_nearest_yaw_threshold;
+
+  m_mpc->m_debug_publish_predicted_trajectory = dp_bool("debug_publish_predicted_trajectory");
 
   m_pub_predicted_traj = node.create_publisher<Trajectory>("~/output/predicted_trajectory", 1);
   m_pub_debug_values =
@@ -144,10 +148,10 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node)
   m_set_param_res =
     node.add_on_set_parameters_callback(std::bind(&MpcLateralController::paramCallback, this, _1));
 
-  m_mpc.initializeSteeringPredictor();
+  m_mpc->initializeSteeringPredictor();
 
-  m_mpc.setLogger(logger_);
-  m_mpc.setClock(clock_);
+  m_mpc->setLogger(logger_);
+  m_mpc->setClock(clock_);
 }
 
 MpcLateralController::~MpcLateralController()
@@ -244,7 +248,7 @@ trajectory_follower::LateralOutput MpcLateralController::run(
     m_is_ctrl_cmd_prev_initialized = true;
   }
 
-  const bool is_mpc_solved = m_mpc.calculateMPC(
+  const bool is_mpc_solved = m_mpc->calculateMPC(
     m_current_steering, m_current_kinematic_state, ctrl_cmd, predicted_traj, debug_values);
 
   // reset previous MPC result
@@ -253,7 +257,7 @@ trajectory_follower::LateralOutput MpcLateralController::run(
   // After the recovery, the previous value of the optimization may deviate greatly from
   // the actual steer angle, and it may make the optimization result unstable.
   if (!is_mpc_solved) {
-    m_mpc.resetPrevResult(m_current_steering);
+    m_mpc->resetPrevResult(m_current_steering);
   } else {
     setSteeringToHistory(ctrl_cmd);
   }
@@ -284,11 +288,11 @@ trajectory_follower::LateralOutput MpcLateralController::run(
 
   if (isStoppedState()) {
     // Reset input buffer
-    for (auto & value : m_mpc.m_input_buffer) {
+    for (auto & value : m_mpc->m_input_buffer) {
       value = m_ctrl_cmd_prev.steering_tire_angle;
     }
     // Use previous command value as previous raw steer command
-    m_mpc.m_raw_steer_cmd_prev = m_ctrl_cmd_prev.steering_tire_angle;
+    m_mpc->m_raw_steer_cmd_prev = m_ctrl_cmd_prev.steering_tire_angle;
     return createLateralOutput(m_ctrl_cmd_prev, false);
   }
 
@@ -323,15 +327,15 @@ bool MpcLateralController::isReady(const trajectory_follower::InputData & input_
   m_current_kinematic_state = input_data.current_odometry;
   m_current_steering = input_data.current_steering;
 
-  if (!m_mpc.hasVehicleModel()) {
+  if (!m_mpc->hasVehicleModel()) {
     info_throttle("MPC does not have a vehicle model");
     return false;
   }
-  if (!m_mpc.hasQPSolver()) {
+  if (!m_mpc->hasQPSolver()) {
     info_throttle("MPC does not have a QP solver");
     return false;
   }
-  if (m_mpc.m_reference_trajectory.empty()) {
+  if (m_mpc->m_reference_trajectory.empty()) {
     info_throttle("trajectory size is zero.");
     return false;
   }
@@ -354,7 +358,7 @@ void MpcLateralController::setTrajectory(
     return;
   }
 
-  m_mpc.setReferenceTrajectory(msg, m_trajectory_filtering_param, current_kinematics);
+  m_mpc->setReferenceTrajectory(msg, m_trajectory_filtering_param, current_kinematics);
 
   // update trajectory buffer to check the trajectory shape change.
   m_trajectory_buffer.push_back(m_current_trajectory);
@@ -504,12 +508,12 @@ bool MpcLateralController::isMpcConverged()
 
 void MpcLateralController::declareMPCparameters(rclcpp::Node & node)
 {
-  m_mpc.m_param.prediction_horizon = node.declare_parameter<int>("mpc_prediction_horizon");
-  m_mpc.m_param.prediction_dt = node.declare_parameter<double>("mpc_prediction_dt");
+  m_mpc->m_param.prediction_horizon = node.declare_parameter<int>("mpc_prediction_horizon");
+  m_mpc->m_param.prediction_dt = node.declare_parameter<double>("mpc_prediction_dt");
 
   const auto dp = [&](const auto & param) { return node.declare_parameter<double>(param); };
 
-  auto & nw = m_mpc.m_param.nominal_weight;
+  auto & nw = m_mpc->m_param.nominal_weight;
   nw.lat_error = dp("mpc_weight_lat_error");
   nw.heading_error = dp("mpc_weight_heading_error");
   nw.heading_error_squared_vel = dp("mpc_weight_heading_error_squared_vel");
@@ -521,7 +525,7 @@ void MpcLateralController::declareMPCparameters(rclcpp::Node & node)
   nw.terminal_lat_error = dp("mpc_weight_terminal_lat_error");
   nw.terminal_heading_error = dp("mpc_weight_terminal_heading_error");
 
-  auto & lcw = m_mpc.m_param.low_curvature_weight;
+  auto & lcw = m_mpc->m_param.low_curvature_weight;
   lcw.lat_error = dp("mpc_low_curvature_weight_lat_error");
   lcw.heading_error = dp("mpc_low_curvature_weight_heading_error");
   lcw.heading_error_squared_vel = dp("mpc_low_curvature_weight_heading_error_squared_vel");
@@ -530,12 +534,12 @@ void MpcLateralController::declareMPCparameters(rclcpp::Node & node)
   lcw.lat_jerk = dp("mpc_low_curvature_weight_lat_jerk");
   lcw.steer_rate = dp("mpc_low_curvature_weight_steer_rate");
   lcw.steer_acc = dp("mpc_low_curvature_weight_steer_acc");
-  m_mpc.m_param.low_curvature_thresh_curvature = dp("mpc_low_curvature_thresh_curvature");
+  m_mpc->m_param.low_curvature_thresh_curvature = dp("mpc_low_curvature_thresh_curvature");
 
-  m_mpc.m_param.zero_ff_steer_deg = dp("mpc_zero_ff_steer_deg");
-  m_mpc.m_param.acceleration_limit = dp("mpc_acceleration_limit");
-  m_mpc.m_param.velocity_time_constant = dp("mpc_velocity_time_constant");
-  m_mpc.m_param.min_prediction_length = dp("mpc_min_prediction_length");
+  m_mpc->m_param.zero_ff_steer_deg = dp("mpc_zero_ff_steer_deg");
+  m_mpc->m_param.acceleration_limit = dp("mpc_acceleration_limit");
+  m_mpc->m_param.velocity_time_constant = dp("mpc_velocity_time_constant");
+  m_mpc->m_param.min_prediction_length = dp("mpc_min_prediction_length");
 }
 
 rcl_interfaces::msg::SetParametersResult MpcLateralController::paramCallback(
@@ -546,7 +550,7 @@ rcl_interfaces::msg::SetParametersResult MpcLateralController::paramCallback(
   result.reason = "success";
 
   // strong exception safety wrt MPCParam
-  MPCParam param = m_mpc.m_param;
+  MPCParam param = m_mpc->m_param;
   auto & nw = param.nominal_weight;
   auto & lcw = param.low_curvature_weight;
 
@@ -587,15 +591,15 @@ rcl_interfaces::msg::SetParametersResult MpcLateralController::paramCallback(
 
     // initialize input buffer
     update_param(parameters, "input_delay", param.input_delay);
-    const double delay_step = std::round(param.input_delay / m_mpc.m_ctrl_period);
-    const double delay = delay_step * m_mpc.m_ctrl_period;
+    const double delay_step = std::round(param.input_delay / m_mpc->m_ctrl_period);
+    const double delay = delay_step * m_mpc->m_ctrl_period;
     if (param.input_delay != delay) {
       param.input_delay = delay;
-      m_mpc.m_input_buffer = std::deque<double>(static_cast<size_t>(delay_step), 0.0);
+      m_mpc->m_input_buffer = std::deque<double>(static_cast<size_t>(delay_step), 0.0);
     }
 
     // transaction succeeds, now assign values
-    m_mpc.m_param = param;
+    m_mpc->m_param = param;
   } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
     result.successful = false;
     result.reason = e.what();

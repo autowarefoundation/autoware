@@ -58,6 +58,22 @@ MPCTrajectoryPoint MPCTrajectory::back()
   return p;
 }
 
+MPCTrajectoryPoint MPCTrajectory::at(const size_t i) const
+{
+  MPCTrajectoryPoint p;
+
+  p.x = x.at(i);
+  p.y = y.at(i);
+  p.z = z.at(i);
+  p.yaw = yaw.at(i);
+  p.vx = vx.at(i);
+  p.k = k.at(i);
+  p.smooth_k = smooth_k.at(i);
+  p.relative_time = relative_time.at(i);
+
+  return p;
+}
+
 void MPCTrajectory::clear()
 {
   x.clear();

@@ -86,4 +86,48 @@ void DynamicsBicycleModel::calculateReferenceInput(Eigen::MatrixXd & u_ref)
     m_lr * m_mass / (2 * m_cf * m_wheelbase) - m_lf * m_mass / (2 * m_cr * m_wheelbase);
   u_ref(0, 0) = m_wheelbase * m_curvature + Kv * vel * vel * m_curvature;
 }
+
+MPCTrajectory DynamicsBicycleModel::calculatePredictedTrajectoryInWorldCoordinate(
+  const Eigen::MatrixXd & a_d, const Eigen::MatrixXd & b_d,
+  [[maybe_unused]] const Eigen::MatrixXd & c_d, const Eigen::MatrixXd & w_d,
+  const Eigen::MatrixXd & x0, const Eigen::MatrixXd & Uex,
+  const MPCTrajectory & reference_trajectory, [[maybe_unused]] const double dt) const
+{
+  RCLCPP_ERROR(
+    rclcpp::get_logger("control.trajectory_follower.lateral_controller"),
+    "Predicted trajectory calculation in world coordinate is not supported in dynamic model. "
+    "Calculate in the Frenet coordinate instead.");
+  return calculatePredictedTrajectoryInFrenetCoordinate(
+    a_d, b_d, c_d, w_d, x0, Uex, reference_trajectory, dt);
+}
+
+MPCTrajectory DynamicsBicycleModel::calculatePredictedTrajectoryInFrenetCoordinate(
+  const Eigen::MatrixXd & a_d, const Eigen::MatrixXd & b_d,
+  [[maybe_unused]] const Eigen::MatrixXd & c_d, const Eigen::MatrixXd & w_d,
+  const Eigen::MatrixXd & x0, const Eigen::MatrixXd & Uex,
+  const MPCTrajectory & reference_trajectory, [[maybe_unused]] const double dt) const
+{
+  // state = [e, de, th, dth]
+  // e      : lateral error
+  // de     : derivative of lateral error
+  // th     : heading angle error
+  // dth    : derivative of heading angle error
+  // steer  : steering angle (input)
+
+  Eigen::VectorXd Xex = a_d * x0 + b_d * Uex + w_d;
+  MPCTrajectory mpc_predicted_trajectory;
+  const auto DIM_X = getDimX();
+  const auto & t = reference_trajectory;
+
+  for (size_t i = 0; i < reference_trajectory.size(); ++i) {
+    const auto lateral_error = Xex(i * DIM_X);  // model dependent
+    const auto yaw_error = Xex(i * DIM_X + 2);  // model dependent
+    const auto x = t.x.at(i) - std::sin(t.yaw.at(i)) * lateral_error;
+    const auto y = t.y.at(i) + std::cos(t.yaw.at(i)) * lateral_error;
+    const auto yaw = t.yaw.at(i) + yaw_error;
+    mpc_predicted_trajectory.push_back(
+      x, y, t.z.at(i), yaw, t.vx.at(i), t.k.at(i), t.smooth_k.at(i), t.relative_time.at(i));
+  }
+  return mpc_predicted_trajectory;
+}
 }  // namespace autoware::motion::control::mpc_lateral_controller

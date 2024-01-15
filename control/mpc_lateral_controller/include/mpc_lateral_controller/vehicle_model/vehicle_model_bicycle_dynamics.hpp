@@ -103,6 +103,16 @@ public:
 
   std::string modelName() override { return "dynamics"; };
 
+  MPCTrajectory calculatePredictedTrajectoryInWorldCoordinate(
+    const Eigen::MatrixXd & a_d, const Eigen::MatrixXd & b_d, const Eigen::MatrixXd & c_d,
+    const Eigen::MatrixXd & w_d, const Eigen::MatrixXd & x0, const Eigen::MatrixXd & Uex,
+    const MPCTrajectory & reference_trajectory, const double dt) const override;
+
+  MPCTrajectory calculatePredictedTrajectoryInFrenetCoordinate(
+    const Eigen::MatrixXd & a_d, const Eigen::MatrixXd & b_d, const Eigen::MatrixXd & c_d,
+    const Eigen::MatrixXd & w_d, const Eigen::MatrixXd & x0, const Eigen::MatrixXd & Uex,
+    const MPCTrajectory & reference_trajectory, const double dt) const override;
+
 private:
   double m_lf;    //!< @brief length from center of mass to front wheel [m]
   double m_lr;    //!< @brief length from center of mass to rear wheel [m]

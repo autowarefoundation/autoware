@@ -221,6 +221,7 @@ private:
 
   double m_min_prediction_length = 5.0;  // Minimum prediction distance.
 
+  rclcpp::Publisher<Trajectory>::SharedPtr m_debug_frenet_predicted_trajectory_pub;
   /**
    * @brief Get variables for MPC calculation.
    * @param trajectory The reference trajectory.
@@ -334,6 +335,19 @@ private:
     const float current_steer, const double predict_dt) const;
 
   /**
+   * @brief calculate predicted trajectory
+   * @param mpc_matrix The MPC matrix used in the mpc problem.
+   * @param x0 initial state used in the mpc problem.
+   * @param Uex optimized input.
+   * @param mpc_resampled_ref_traj reference trajectory resampled in the mpc time-step
+   * @param dt delta time used in the mpc problem.
+   * @return predicted path
+   */
+  Trajectory calculatePredictedTrajectory(
+    const MPCMatrix & mpc_matrix, const Eigen::MatrixXd & x0, const Eigen::MatrixXd & Uex,
+    const MPCTrajectory & mpc_resampled_ref_traj, const double dt) const;
+
+  /**
    * @brief Check if the MPC matrix has any invalid values.
    * @param m The MPC matrix to check.
    * @return True if the matrix is valid, false otherwise.
@@ -351,18 +365,6 @@ private:
              ? m_param.low_curvature_weight
              : m_param.nominal_weight;
   }
-
-  /**
-   * @brief Calculate the predicted trajectory for the ego vehicle based on the MPC result.
-   * @param mpc_resampled_reference_trajectory The resampled reference trajectory.
-   * @param mpc_matrix The MPC matrix used for optimization.
-   * @param x0_delayed The delayed initial state vector.
-   * @param Uex The optimized input vector.
-   * @return The predicted trajectory.
-   */
-  Trajectory calcPredictedTrajectory(
-    const MPCTrajectory & mpc_resampled_reference_trajectory, const MPCMatrix & mpc_matrix,
-    const VectorXd & x0_delayed, const VectorXd & Uex) const;
 
   /**
    * @brief Generate diagnostic data for debugging purposes.
@@ -424,8 +426,10 @@ public:
   double ego_nearest_dist_threshold = 3.0;  // Threshold for nearest index search based on distance.
   double ego_nearest_yaw_threshold = M_PI_2;  // Threshold for nearest index search based on yaw.
 
+  bool m_debug_publish_predicted_trajectory = false;  // Flag to publish debug predicted trajectory
+
   //!< Constructor.
-  MPC() = default;
+  explicit MPC(rclcpp::Node & node);
 
   /**
    * @brief Calculate control command using the MPC algorithm.

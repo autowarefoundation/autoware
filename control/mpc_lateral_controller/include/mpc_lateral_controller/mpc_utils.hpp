@@ -93,6 +93,13 @@ Trajectory convertToAutowareTrajectory(const MPCTrajectory & input);
 void calcMPCTrajectoryArcLength(const MPCTrajectory & trajectory, std::vector<double> & arc_length);
 
 /**
+ * @brief calculate the arc length of the given trajectory
+ * @param [in] trajectory trajectory for which to calculate the arc length
+ * @return total arc length
+ */
+double calcMPCTrajectoryArcLength(const MPCTrajectory & trajectory);
+
+/**
  * @brief resample the given trajectory with the given fixed interval
  * @param [in] input trajectory to resample
  * @param [in] resample_interval_dist the desired distance between two successive trajectory points
@@ -193,6 +200,14 @@ double calcStopDistance(const Trajectory & current_trajectory, const int origin)
  */
 void extendTrajectoryInYawDirection(
   const double yaw, const double interval, const bool is_forward_shift, MPCTrajectory & traj);
+
+/**
+ * @brief clip trajectory size by length
+ * @param [in] trajectory original trajectory
+ * @param [in] length clip length
+ * @return clipped trajectory
+ */
+MPCTrajectory clipTrajectoryByLength(const MPCTrajectory & trajectory, const double length);
 
 /**
  * @brief Updates the value of a parameter with the given name.

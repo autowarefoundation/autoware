@@ -86,6 +86,12 @@ public:
   size_t size() const;
 
   /**
+   * @brief get trajectory point at index i
+   * @return trajectory point at index i
+   */
+  MPCTrajectoryPoint at(const size_t i) const;
+
+  /**
    * @return true if the components sizes are all 0 or are inconsistent
    */
   inline bool empty() const { return size() == 0; }

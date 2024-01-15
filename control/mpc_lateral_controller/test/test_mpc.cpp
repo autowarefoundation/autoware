@@ -19,6 +19,7 @@
 #include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_dynamics.hpp"
 #include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
 #include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 #include "autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
@@ -48,6 +49,22 @@ using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseStamped;
 using tier4_debug_msgs::msg::Float32MultiArrayStamped;
 
+TrajectoryPoint makePoint(const double x, const double y, const float vx)
+{
+  TrajectoryPoint p;
+  p.pose.position.x = x;
+  p.pose.position.y = y;
+  p.longitudinal_velocity_mps = vx;
+  return p;
+}
+
+nav_msgs::msg::Odometry makeOdometry(const geometry_msgs::msg::Pose & pose, const double velocity)
+{
+  nav_msgs::msg::Odometry odometry;
+  odometry.pose.pose = pose;
+  odometry.twist.twist.linear.x = velocity;
+  return odometry;
+}
 class MPCTest : public ::testing::Test
 {
 protected:
@@ -86,16 +103,7 @@ protected:
 
   TrajectoryFilteringParam trajectory_param;
 
-  TrajectoryPoint makePoint(const double x, const double y, const float vx)
-  {
-    TrajectoryPoint p;
-    p.pose.position.x = x;
-    p.pose.position.y = y;
-    p.longitudinal_velocity_mps = vx;
-    return p;
-  }
-
-  void SetUp() override
+  void initParam()
   {
     param.prediction_horizon = 50;
     param.prediction_dt = 0.1;
@@ -168,259 +176,268 @@ protected:
     mpc.setReferenceTrajectory(dummy_straight_trajectory, trajectory_param, current_kinematics);
   }
 
-  nav_msgs::msg::Odometry makeOdometry(const geometry_msgs::msg::Pose & pose, const double velocity)
+  void SetUp() override
   {
-    nav_msgs::msg::Odometry odometry;
-    odometry.pose.pose = pose;
-    odometry.twist.twist.linear.x = velocity;
-    return odometry;
+    rclcpp::init(0, nullptr);
+    initParam();
   }
+
+  void TearDown() override { rclcpp::shutdown(); }
 };  // class MPCTest
 
 /* cppcheck-suppress syntaxError */
 TEST_F(MPCTest, InitializeAndCalculate)
 {
-  MPC mpc;
-  EXPECT_FALSE(mpc.hasVehicleModel());
-  EXPECT_FALSE(mpc.hasQPSolver());
+  auto node = rclcpp::Node("mpc_test_node", rclcpp::NodeOptions{});
+  auto mpc = std::make_unique<MPC>(node);
+  EXPECT_FALSE(mpc->hasVehicleModel());
+  EXPECT_FALSE(mpc->hasQPSolver());
 
   std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
     std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
-  mpc.setVehicleModel(vehicle_model_ptr);
-  ASSERT_TRUE(mpc.hasVehicleModel());
+  mpc->setVehicleModel(vehicle_model_ptr);
+  ASSERT_TRUE(mpc->hasVehicleModel());
 
   std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
-  mpc.setQPSolver(qpsolver_ptr);
-  ASSERT_TRUE(mpc.hasQPSolver());
+  mpc->setQPSolver(qpsolver_ptr);
+  ASSERT_TRUE(mpc->hasQPSolver());
 
   // Init parameters and reference trajectory
-  initializeMPC(mpc);
+  initializeMPC(*mpc);
 
   // Calculate MPC
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
   const auto odom = makeOdometry(pose_zero, default_velocity);
-  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
+  ASSERT_TRUE(mpc->calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, InitializeAndCalculateRightTurn)
 {
-  MPC mpc;
-  EXPECT_FALSE(mpc.hasVehicleModel());
-  EXPECT_FALSE(mpc.hasQPSolver());
+  auto node = rclcpp::Node("mpc_test_node", rclcpp::NodeOptions{});
+  auto mpc = std::make_unique<MPC>(node);
+  EXPECT_FALSE(mpc->hasVehicleModel());
+  EXPECT_FALSE(mpc->hasQPSolver());
 
   std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
     std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
-  mpc.setVehicleModel(vehicle_model_ptr);
-  ASSERT_TRUE(mpc.hasVehicleModel());
+  mpc->setVehicleModel(vehicle_model_ptr);
+  ASSERT_TRUE(mpc->hasVehicleModel());
 
   std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
-  mpc.setQPSolver(qpsolver_ptr);
-  ASSERT_TRUE(mpc.hasQPSolver());
+  mpc->setQPSolver(qpsolver_ptr);
+  ASSERT_TRUE(mpc->hasQPSolver());
 
   // Init parameters and reference trajectory
-  initializeMPC(mpc);
+  initializeMPC(*mpc);
   const auto current_kinematics =
     makeOdometry(dummy_right_turn_trajectory.points.front().pose, 0.0);
-  mpc.setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param, current_kinematics);
+  mpc->setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param, current_kinematics);
 
   // Calculate MPC
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
   const auto odom = makeOdometry(pose_zero, default_velocity);
-  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
+  ASSERT_TRUE(mpc->calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_LT(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_LT(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, OsqpCalculate)
 {
-  MPC mpc;
-  initializeMPC(mpc);
+  auto node = rclcpp::Node("mpc_test_node", rclcpp::NodeOptions{});
+  auto mpc = std::make_unique<MPC>(node);
+  initializeMPC(*mpc);
   const auto current_kinematics = makeOdometry(dummy_straight_trajectory.points.front().pose, 0.0);
-  mpc.setReferenceTrajectory(dummy_straight_trajectory, trajectory_param, current_kinematics);
+  mpc->setReferenceTrajectory(dummy_straight_trajectory, trajectory_param, current_kinematics);
 
   std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
     std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
-  mpc.setVehicleModel(vehicle_model_ptr);
-  ASSERT_TRUE(mpc.hasVehicleModel());
+  mpc->setVehicleModel(vehicle_model_ptr);
+  ASSERT_TRUE(mpc->hasVehicleModel());
 
   std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverOSQP>(logger);
-  mpc.setQPSolver(qpsolver_ptr);
-  ASSERT_TRUE(mpc.hasQPSolver());
+  mpc->setQPSolver(qpsolver_ptr);
+  ASSERT_TRUE(mpc->hasQPSolver());
 
   // Calculate MPC
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
   const auto odom = makeOdometry(pose_zero, default_velocity);
-  EXPECT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
+  EXPECT_TRUE(mpc->calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, OsqpCalculateRightTurn)
 {
-  MPC mpc;
-  initializeMPC(mpc);
+  auto node = rclcpp::Node("mpc_test_node", rclcpp::NodeOptions{});
+  auto mpc = std::make_unique<MPC>(node);
+  initializeMPC(*mpc);
   const auto current_kinematics =
     makeOdometry(dummy_right_turn_trajectory.points.front().pose, 0.0);
-  mpc.setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param, current_kinematics);
+  mpc->setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param, current_kinematics);
 
   std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
     std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
-  mpc.setVehicleModel(vehicle_model_ptr);
-  ASSERT_TRUE(mpc.hasVehicleModel());
+  mpc->setVehicleModel(vehicle_model_ptr);
+  ASSERT_TRUE(mpc->hasVehicleModel());
 
   std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverOSQP>(logger);
-  mpc.setQPSolver(qpsolver_ptr);
-  ASSERT_TRUE(mpc.hasQPSolver());
+  mpc->setQPSolver(qpsolver_ptr);
+  ASSERT_TRUE(mpc->hasQPSolver());
 
   // Calculate MPC
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
   const auto odom = makeOdometry(pose_zero, default_velocity);
-  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
+  ASSERT_TRUE(mpc->calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_LT(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_LT(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, KinematicsNoDelayCalculate)
 {
-  MPC mpc;
-  initializeMPC(mpc);
+  auto node = rclcpp::Node("mpc_test_node", rclcpp::NodeOptions{});
+  auto mpc = std::make_unique<MPC>(node);
+  initializeMPC(*mpc);
 
   std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
     std::make_shared<KinematicsBicycleModelNoDelay>(wheelbase, steer_limit);
-  mpc.setVehicleModel(vehicle_model_ptr);
-  ASSERT_TRUE(mpc.hasVehicleModel());
+  mpc->setVehicleModel(vehicle_model_ptr);
+  ASSERT_TRUE(mpc->hasVehicleModel());
 
   std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
-  mpc.setQPSolver(qpsolver_ptr);
-  ASSERT_TRUE(mpc.hasQPSolver());
+  mpc->setQPSolver(qpsolver_ptr);
+  ASSERT_TRUE(mpc->hasQPSolver());
 
   // Init filters
-  mpc.initializeLowPassFilters(steering_lpf_cutoff_hz, error_deriv_lpf_cutoff_hz);
+  mpc->initializeLowPassFilters(steering_lpf_cutoff_hz, error_deriv_lpf_cutoff_hz);
   // Init trajectory
   const auto current_kinematics = makeOdometry(dummy_straight_trajectory.points.front().pose, 0.0);
-  mpc.setReferenceTrajectory(dummy_straight_trajectory, trajectory_param, current_kinematics);
+  mpc->setReferenceTrajectory(dummy_straight_trajectory, trajectory_param, current_kinematics);
   // Calculate MPC
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
   const auto odom = makeOdometry(pose_zero, default_velocity);
-  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
+  ASSERT_TRUE(mpc->calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, KinematicsNoDelayCalculateRightTurn)
 {
-  MPC mpc;
-  initializeMPC(mpc);
+  auto node = rclcpp::Node("mpc_test_node", rclcpp::NodeOptions{});
+  auto mpc = std::make_unique<MPC>(node);
+  initializeMPC(*mpc);
   const auto current_kinematics =
     makeOdometry(dummy_right_turn_trajectory.points.front().pose, 0.0);
-  mpc.setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param, current_kinematics);
+  mpc->setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param, current_kinematics);
 
   std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
     std::make_shared<KinematicsBicycleModelNoDelay>(wheelbase, steer_limit);
-  mpc.setVehicleModel(vehicle_model_ptr);
-  ASSERT_TRUE(mpc.hasVehicleModel());
+  mpc->setVehicleModel(vehicle_model_ptr);
+  ASSERT_TRUE(mpc->hasVehicleModel());
 
   std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
-  mpc.setQPSolver(qpsolver_ptr);
-  ASSERT_TRUE(mpc.hasQPSolver());
+  mpc->setQPSolver(qpsolver_ptr);
+  ASSERT_TRUE(mpc->hasQPSolver());
 
   // Init filters
-  mpc.initializeLowPassFilters(steering_lpf_cutoff_hz, error_deriv_lpf_cutoff_hz);
+  mpc->initializeLowPassFilters(steering_lpf_cutoff_hz, error_deriv_lpf_cutoff_hz);
 
   // Calculate MPC
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
   const auto odom = makeOdometry(pose_zero, default_velocity);
-  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
+  ASSERT_TRUE(mpc->calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_LT(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_LT(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, DynamicCalculate)
 {
-  MPC mpc;
-  initializeMPC(mpc);
+  auto node = rclcpp::Node("mpc_test_node", rclcpp::NodeOptions{});
+  auto mpc = std::make_unique<MPC>(node);
+  initializeMPC(*mpc);
 
   std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
     std::make_shared<DynamicsBicycleModel>(wheelbase, mass_fl, mass_fr, mass_rl, mass_rr, cf, cr);
-  mpc.setVehicleModel(vehicle_model_ptr);
-  ASSERT_TRUE(mpc.hasVehicleModel());
+  mpc->setVehicleModel(vehicle_model_ptr);
+  ASSERT_TRUE(mpc->hasVehicleModel());
 
   std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
-  mpc.setQPSolver(qpsolver_ptr);
-  ASSERT_TRUE(mpc.hasQPSolver());
+  mpc->setQPSolver(qpsolver_ptr);
+  ASSERT_TRUE(mpc->hasQPSolver());
 
   // Calculate MPC
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
   const auto odom = makeOdometry(pose_zero, default_velocity);
-  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
+  ASSERT_TRUE(mpc->calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, MultiSolveWithBuffer)
 {
-  MPC mpc;
+  auto node = rclcpp::Node("mpc_test_node", rclcpp::NodeOptions{});
+  auto mpc = std::make_unique<MPC>(node);
   std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
     std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
-  mpc.setVehicleModel(vehicle_model_ptr);
+  mpc->setVehicleModel(vehicle_model_ptr);
   std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
-  mpc.setQPSolver(qpsolver_ptr);
+  mpc->setQPSolver(qpsolver_ptr);
 
   // Init parameters and reference trajectory
-  initializeMPC(mpc);
+  initializeMPC(*mpc);
 
-  mpc.m_input_buffer = {0.0, 0.0, 0.0};
+  mpc->m_input_buffer = {0.0, 0.0, 0.0};
   // Calculate MPC
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
   const auto odom = makeOdometry(pose_zero, default_velocity);
 
-  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
+  ASSERT_TRUE(mpc->calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
-  EXPECT_EQ(mpc.m_input_buffer.size(), size_t(3));
-  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
+  EXPECT_EQ(mpc->m_input_buffer.size(), size_t(3));
+  ASSERT_TRUE(mpc->calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
-  EXPECT_EQ(mpc.m_input_buffer.size(), size_t(3));
-  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
+  EXPECT_EQ(mpc->m_input_buffer.size(), size_t(3));
+  ASSERT_TRUE(mpc->calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
-  EXPECT_EQ(mpc.m_input_buffer.size(), size_t(3));
-  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
+  EXPECT_EQ(mpc->m_input_buffer.size(), size_t(3));
+  ASSERT_TRUE(mpc->calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
-  EXPECT_EQ(mpc.m_input_buffer.size(), size_t(3));
+  EXPECT_EQ(mpc->m_input_buffer.size(), size_t(3));
 }
 
 TEST_F(MPCTest, FailureCases)
 {
-  MPC mpc;
+  auto node = rclcpp::Node("mpc_test_node", rclcpp::NodeOptions{});
+  auto mpc = std::make_unique<MPC>(node);
   std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
     std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
-  mpc.setVehicleModel(vehicle_model_ptr);
+  mpc->setVehicleModel(vehicle_model_ptr);
   std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
-  mpc.setQPSolver(qpsolver_ptr);
+  mpc->setQPSolver(qpsolver_ptr);
 
   // Init parameters and reference trajectory
-  initializeMPC(mpc);
+  initializeMPC(*mpc);
 
   // Calculate MPC with a pose too far from the trajectory
   Pose pose_far;
@@ -430,10 +447,10 @@ TEST_F(MPCTest, FailureCases)
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
   const auto odom = makeOdometry(pose_far, default_velocity);
-  EXPECT_FALSE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
+  EXPECT_FALSE(mpc->calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
 
   // Calculate MPC with a fast velocity to make the prediction go further than the reference path
-  EXPECT_FALSE(mpc.calculateMPC(
+  EXPECT_FALSE(mpc->calculateMPC(
     neutral_steer, makeOdometry(pose_far, default_velocity + 10.0), ctrl_cmd, pred_traj, diag));
 }
 }  // namespace autoware::motion::control::mpc_lateral_controller

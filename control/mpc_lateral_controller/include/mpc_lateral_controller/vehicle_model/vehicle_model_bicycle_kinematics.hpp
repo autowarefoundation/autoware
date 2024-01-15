@@ -91,6 +91,16 @@ public:
 
   std::string modelName() override { return "kinematics"; };
 
+  MPCTrajectory calculatePredictedTrajectoryInWorldCoordinate(
+    const Eigen::MatrixXd & a_d, const Eigen::MatrixXd & b_d, const Eigen::MatrixXd & c_d,
+    const Eigen::MatrixXd & w_d, const Eigen::MatrixXd & x0, const Eigen::MatrixXd & Uex,
+    const MPCTrajectory & reference_trajectory, const double dt) const override;
+
+  MPCTrajectory calculatePredictedTrajectoryInFrenetCoordinate(
+    const Eigen::MatrixXd & a_d, const Eigen::MatrixXd & b_d, const Eigen::MatrixXd & c_d,
+    const Eigen::MatrixXd & w_d, const Eigen::MatrixXd & x0, const Eigen::MatrixXd & Uex,
+    const MPCTrajectory & reference_trajectory, const double dt) const override;
+
 private:
   double m_steer_lim;  //!< @brief steering angle limit [rad]
   double m_steer_tau;  //!< @brief steering time constant for 1d-model [s]
