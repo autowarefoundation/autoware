@@ -112,13 +112,12 @@ private:
    */
   void updateRegisteredRTCStatus(const PathWithLaneId & path)
   {
-    const Point ego_position = planner_data_->self_odometry->pose.pose.position;
+    const auto ego_idx = planner_data_->findEgoIndex(path.points);
 
     for (const auto & left_shift : left_shift_array_) {
       const double start_distance =
-        calcSignedArcLength(path.points, ego_position, left_shift.start_pose.position);
-      const double finish_distance =
-        calcSignedArcLength(path.points, ego_position, left_shift.finish_pose.position);
+        calcSignedArcLength(path.points, ego_idx, left_shift.start_pose.position);
+      const double finish_distance = start_distance + left_shift.relative_longitudinal;
       rtc_interface_ptr_map_.at("left")->updateCooperateStatus(
         left_shift.uuid, true, start_distance, finish_distance, clock_->now());
       if (finish_distance > -1.0e-03) {
@@ -130,9 +129,8 @@ private:
 
     for (const auto & right_shift : right_shift_array_) {
       const double start_distance =
-        calcSignedArcLength(path.points, ego_position, right_shift.start_pose.position);
-      const double finish_distance =
-        calcSignedArcLength(path.points, ego_position, right_shift.finish_pose.position);
+        calcSignedArcLength(path.points, ego_idx, right_shift.start_pose.position);
+      const double finish_distance = start_distance + right_shift.relative_longitudinal;
       rtc_interface_ptr_map_.at("right")->updateCooperateStatus(
         right_shift.uuid, true, start_distance, finish_distance, clock_->now());
       if (finish_distance > -1.0e-03) {
@@ -399,6 +397,7 @@ private:
     UUID uuid;
     Pose start_pose;
     Pose finish_pose;
+    double relative_longitudinal{0.0};
   };
 
   using RegisteredShiftLineArray = std::vector<RegisteredShiftLine>;

@@ -208,26 +208,25 @@ std::optional<std::pair<size_t, geometry_msgs::msg::Point>> intersectBound(
   return std::nullopt;
 }
 
-double calcDistanceFromPointToSegment(
+double calcSquaredDistanceFromPointToSegment(
   const geometry_msgs::msg::Point & segment_start_point,
   const geometry_msgs::msg::Point & segment_end_point,
   const geometry_msgs::msg::Point & target_point)
 {
+  using tier4_autoware_utils::calcSquaredDistance2d;
+
   const auto & a = segment_start_point;
   const auto & b = segment_end_point;
   const auto & p = target_point;
 
   const double dot_val = (b.x - a.x) * (p.x - a.x) + (b.y - a.y) * (p.y - a.y);
-  const double squared_segment_length = tier4_autoware_utils::calcSquaredDistance2d(a, b);
+  const double squared_segment_length = calcSquaredDistance2d(a, b);
   if (0 <= dot_val && dot_val <= squared_segment_length) {
-    const double numerator = std::abs((p.x - a.x) * (a.y - b.y) - (p.y - a.y) * (a.x - b.x));
-    const double denominator = std::sqrt(std::pow(a.x - b.x, 2) + std::pow(a.y - b.y, 2));
-    return numerator / denominator;
+    return calcSquaredDistance2d(p, a) - dot_val * dot_val / squared_segment_length;
   }
 
   // target_point is outside the segment.
-  return std::min(
-    tier4_autoware_utils::calcDistance2d(a, p), tier4_autoware_utils::calcDistance2d(b, p));
+  return std::min(calcSquaredDistance2d(a, p), calcSquaredDistance2d(b, p));
 }
 
 PolygonPoint transformBoundFrenetCoordinate(
@@ -238,8 +237,8 @@ PolygonPoint transformBoundFrenetCoordinate(
   // find wrong nearest index.
   std::vector<double> dist_to_bound_segment_vec;
   for (size_t i = 0; i < bound_points.size() - 1; ++i) {
-    const double dist_to_bound_segment =
-      calcDistanceFromPointToSegment(bound_points.at(i), bound_points.at(i + 1), target_point);
+    const double dist_to_bound_segment = calcSquaredDistanceFromPointToSegment(
+      bound_points.at(i), bound_points.at(i + 1), target_point);
     dist_to_bound_segment_vec.push_back(dist_to_bound_segment);
   }
 

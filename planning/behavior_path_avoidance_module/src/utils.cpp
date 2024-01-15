@@ -1892,11 +1892,12 @@ std::pair<PredictedObjects, PredictedObjects> separateObjectsByPath(
     max_offset = std::max(max_offset, offset);
   }
 
+  const double MARGIN = is_running ? 1.0 : 0.0;  // [m]
   const auto detection_area =
-    createVehiclePolygon(planner_data->parameters.vehicle_info, max_offset);
+    createVehiclePolygon(planner_data->parameters.vehicle_info, max_offset + MARGIN);
   const auto ego_idx = planner_data->findEgoIndex(path.points);
 
-  Polygon2d attention_area;
+  std::vector<Polygon2d> detection_areas;
   for (size_t i = 0; i < path.points.size() - 1; ++i) {
     const auto & p_ego_front = path.points.at(i).point.pose;
     const auto & p_ego_back = path.points.at(i + 1).point.pose;
@@ -1906,41 +1907,27 @@ std::pair<PredictedObjects, PredictedObjects> separateObjectsByPath(
       break;
     }
 
-    const auto ego_one_step_polygon = createOneStepPolygon(p_ego_front, p_ego_back, detection_area);
-
-    std::vector<Polygon2d> unions;
-    boost::geometry::union_(attention_area, ego_one_step_polygon, unions);
-    if (!unions.empty()) {
-      attention_area = unions.front();
-      boost::geometry::correct(attention_area);
-    }
+    detection_areas.push_back(createOneStepPolygon(p_ego_front, p_ego_back, detection_area));
   }
 
-  // expand detection area width only when the module is running.
-  if (is_running) {
-    constexpr int PER_CIRCLE = 36;
-    constexpr double MARGIN = 1.0;  // [m]
-    boost::geometry::strategy::buffer::distance_symmetric<double> distance_strategy(MARGIN);
-    boost::geometry::strategy::buffer::join_round join_strategy(PER_CIRCLE);
-    boost::geometry::strategy::buffer::end_round end_strategy(PER_CIRCLE);
-    boost::geometry::strategy::buffer::point_circle circle_strategy(PER_CIRCLE);
-    boost::geometry::strategy::buffer::side_straight side_strategy;
-    boost::geometry::model::multi_polygon<Polygon2d> result;
-    // Create the buffer of a multi polygon
-    boost::geometry::buffer(
-      attention_area, result, distance_strategy, side_strategy, join_strategy, end_strategy,
-      circle_strategy);
-    if (!result.empty()) {
-      attention_area = result.front();
-    }
-  }
+  std::for_each(detection_areas.begin(), detection_areas.end(), [&](const auto & detection_area) {
+    debug.detection_areas.push_back(toMsg(detection_area, data.reference_pose.position.z));
+  });
 
-  debug.detection_area = toMsg(attention_area, data.reference_pose.position.z);
+  const auto within_detection_area = [&](const auto & obj_polygon) {
+    for (const auto & detection_area : detection_areas) {
+      if (!boost::geometry::disjoint(obj_polygon, detection_area)) {
+        return true;
+      }
+    }
+
+    return false;
+  };
 
   const auto objects = planner_data->dynamic_object->objects;
   std::for_each(objects.begin(), objects.end(), [&](const auto & object) {
     const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object);
-    if (boost::geometry::disjoint(obj_polygon, attention_area)) {
+    if (!within_detection_area(obj_polygon)) {
       other_objects.objects.push_back(object);
     } else {
       target_objects.objects.push_back(object);

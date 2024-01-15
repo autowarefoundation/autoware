@@ -608,10 +608,15 @@ MarkerArray createDebugMarkerArray(
     addShiftGrad(debug.total_backward_grad, debug.total_shift, "grad_backward", 0.4, 0.2, 0.9);
   }
 
+  // detection area
+  size_t i = 0;
+  for (const auto & detection_area : debug.detection_areas) {
+    add(createPolygonMarkerArray(detection_area, "detection_area", i++, 0.16, 1.0, 0.69, 0.1));
+  }
+
   // misc
   {
     add(createPathMarkerArray(path, "centerline_resampled", 0, 0.0, 0.9, 0.5));
-    add(createPolygonMarkerArray(debug.detection_area, "detection_area", 0L, 0.16, 1.0, 0.69, 0.1));
     add(createDrivableBounds(data, "drivable_bound", 1.0, 0.0, 0.42));
     add(laneletsAsTriangleMarkerArray(
       "drivable_lanes", transformToLanelets(data.drivable_lanes),

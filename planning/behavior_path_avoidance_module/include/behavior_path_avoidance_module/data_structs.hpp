@@ -588,7 +588,7 @@ struct ShiftLineData
  */
 struct DebugData
 {
-  geometry_msgs::msg::Polygon detection_area;
+  std::vector<geometry_msgs::msg::Polygon> detection_areas;
 
   lanelet::ConstLineStrings3d bounds;
 

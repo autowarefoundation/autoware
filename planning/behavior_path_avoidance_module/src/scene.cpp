@@ -703,18 +703,6 @@ bool AvoidanceModule::isSafePath(
     return true;  // if safety check is disabled, it always return safe.
   }
 
-  const bool limit_to_max_velocity = false;
-  const auto ego_predicted_path_params =
-    std::make_shared<utils::path_safety_checker::EgoPredictedPathParams>(
-      parameters_->ego_predicted_path_params);
-  const size_t ego_seg_idx = planner_data_->findEgoSegmentIndex(shifted_path.path.points);
-  const auto ego_predicted_path_for_front_object = utils::path_safety_checker::createPredictedPath(
-    ego_predicted_path_params, shifted_path.path.points, getEgoPose(), getEgoSpeed(), ego_seg_idx,
-    true, limit_to_max_velocity);
-  const auto ego_predicted_path_for_rear_object = utils::path_safety_checker::createPredictedPath(
-    ego_predicted_path_params, shifted_path.path.points, getEgoPose(), getEgoSpeed(), ego_seg_idx,
-    false, limit_to_max_velocity);
-
   const auto ego_idx = planner_data_->findEgoIndex(shifted_path.path.points);
   const auto is_right_shift = [&]() -> std::optional<bool> {
     for (size_t i = ego_idx; i < shifted_path.shift_length.size(); i++) {
@@ -740,6 +728,22 @@ bool AvoidanceModule::isSafePath(
 
   const auto safety_check_target_objects = utils::avoidance::getSafetyCheckTargetObjects(
     avoid_data_, planner_data_, parameters_, is_right_shift.value(), debug);
+
+  if (safety_check_target_objects.empty()) {
+    return true;
+  }
+
+  const bool limit_to_max_velocity = false;
+  const auto ego_predicted_path_params =
+    std::make_shared<utils::path_safety_checker::EgoPredictedPathParams>(
+      parameters_->ego_predicted_path_params);
+  const size_t ego_seg_idx = planner_data_->findEgoSegmentIndex(shifted_path.path.points);
+  const auto ego_predicted_path_for_front_object = utils::path_safety_checker::createPredictedPath(
+    ego_predicted_path_params, shifted_path.path.points, getEgoPose(), getEgoSpeed(), ego_seg_idx,
+    true, limit_to_max_velocity);
+  const auto ego_predicted_path_for_rear_object = utils::path_safety_checker::createPredictedPath(
+    ego_predicted_path_params, shifted_path.path.points, getEgoPose(), getEgoSpeed(), ego_seg_idx,
+    false, limit_to_max_velocity);
 
   for (const auto & object : safety_check_target_objects) {
     auto current_debug_data = utils::path_safety_checker::createObjectDebug(object);
@@ -793,15 +797,16 @@ PathWithLaneId AvoidanceModule::extendBackwardLength(const PathWithLaneId & orig
 
   const auto longest_dist_to_shift_point = [&]() {
     double max_dist = 0.0;
-    for (const auto & pnt : path_shifter_.getShiftLines()) {
-      max_dist = std::max(
-        max_dist, calcSignedArcLength(previous_path.points, pnt.start.position, getEgoPosition()));
+    auto lines = path_shifter_.getShiftLines();
+    if (lines.empty()) {
+      return max_dist;
     }
-    for (const auto & sp : generator_.getRawRegisteredShiftLine()) {
-      max_dist = std::max(
-        max_dist, calcSignedArcLength(previous_path.points, sp.start.position, getEgoPosition()));
-    }
-    return max_dist;
+    std::sort(lines.begin(), lines.end(), [](const auto & a, const auto & b) {
+      return a.start_idx < b.start_idx;
+    });
+    return std::max(
+      max_dist,
+      calcSignedArcLength(previous_path.points, lines.front().start.position, getEgoPosition()));
   }();
 
   const auto extra_margin = 10.0;  // Since distance does not consider arclength, but just line.
@@ -1029,11 +1034,14 @@ void AvoidanceModule::updatePathShifter(const AvoidLineArray & shift_lines)
   const auto sl = helper_->getMainShiftLine(shift_lines);
   const auto sl_front = shift_lines.front();
   const auto sl_back = shift_lines.back();
+  const auto relative_longitudinal = sl_back.end_longitudinal - sl_front.start_longitudinal;
 
   if (helper_->getRelativeShiftToPath(sl) > 0.0) {
-    left_shift_array_.push_back({uuid_map_.at("left"), sl_front.start, sl_back.end});
+    left_shift_array_.push_back(
+      {uuid_map_.at("left"), sl_front.start, sl_back.end, relative_longitudinal});
   } else if (helper_->getRelativeShiftToPath(sl) < 0.0) {
-    right_shift_array_.push_back({uuid_map_.at("right"), sl_front.start, sl_back.end});
+    right_shift_array_.push_back(
+      {uuid_map_.at("right"), sl_front.start, sl_back.end, relative_longitudinal});
   }
 
   uuid_map_.at("left") = generateUUID();
@@ -1150,15 +1158,19 @@ bool AvoidanceModule::isValidShiftLine(
     const size_t start_idx = shift_lines.front().start_idx;
     const size_t end_idx = shift_lines.back().end_idx;
 
+    const auto path = shifter_for_validate.getReferencePath();
+    const auto left_bound = lanelet::utils::to2D(avoid_data_.left_bound);
+    const auto right_bound = lanelet::utils::to2D(avoid_data_.right_bound);
     for (size_t i = start_idx; i <= end_idx; ++i) {
-      const auto p = getPoint(shifter_for_validate.getReferencePath().points.at(i));
+      const auto p = getPoint(path.points.at(i));
       lanelet::BasicPoint2d basic_point{p.x, p.y};
 
       const auto shift_length = proposed_shift_path.shift_length.at(i);
-      const auto bound = shift_length > 0.0 ? avoid_data_.left_bound : avoid_data_.right_bound;
       const auto THRESHOLD = minimum_distance + std::abs(shift_length);
 
-      if (boost::geometry::distance(basic_point, lanelet::utils::to2D(bound)) < THRESHOLD) {
+      if (
+        boost::geometry::distance(basic_point, (shift_length > 0.0 ? left_bound : right_bound)) <
+        THRESHOLD) {
         RCLCPP_DEBUG_THROTTLE(
           getLogger(), *clock_, 1000,
           "following latest new shift line may cause deviation from drivable area.");
