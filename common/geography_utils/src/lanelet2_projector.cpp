@@ -34,6 +34,7 @@ std::unique_ptr<lanelet::Projector> get_lanelet2_projector(const MapProjectorInf
 
   } else if (projector_info.projector_type == MapProjectorInfo::MGRS) {
     lanelet::projection::MGRSProjector projector{};
+    projector.setMGRSCode(projector_info.mgrs_grid);
     return std::make_unique<lanelet::projection::MGRSProjector>(projector);
 
   } else if (projector_info.projector_type == MapProjectorInfo::TRANSVERSE_MERCATOR) {
