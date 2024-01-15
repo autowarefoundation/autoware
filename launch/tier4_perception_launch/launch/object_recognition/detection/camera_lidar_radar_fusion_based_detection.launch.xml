@@ -139,6 +139,7 @@
         <arg name="input/image7" value="$(var image_raw7)"/>
         <arg name="input/pointcloud" value="/perception/object_recognition/detection/pointcloud_map_filtered/pointcloud"/>
         <arg name="output_clusters" value="roi_cluster/clusters"/>
+        <arg name="param_path" value="$(var roi_pointcloud_fusion_param_path)"/>
       </include>
     </group>
 
@@ -193,9 +194,7 @@
           <arg name="input/image6" value="$(var image_raw6)"/>
           <arg name="input/image7" value="$(var image_raw7)"/>
           <arg name="output/clusters" value="clusters"/>
-          <arg name="remove_unknown" value="$(var remove_unknown)"/>
-          <arg name="fusion_distance" value="$(var fusion_distance)"/>
-          <arg name="trust_object_distance" value="$(var trust_object_distance)"/>
+          <arg name="param_path" value="$(var roi_cluster_fusion_param_path)"/>
         </include>
       </group>
 
@@ -344,6 +343,7 @@
       <arg name="input/image7" value="$(var image_raw7)"/>
       <arg name="input/objects" value="$(var target_objects)"/>
       <arg name="output/objects" value="$(var lidar_detection_model)/roi_fusion/objects"/>
+      <arg name="param_path" value="$(var roi_detected_object_fusion_param_path)"/>
     </include>
   </group>
 
