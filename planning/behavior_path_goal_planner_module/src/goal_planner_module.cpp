@@ -440,8 +440,14 @@ double GoalPlannerModule::calcModuleRequestLength() const
     return parameters_->pull_over_minimum_request_length;
   }
 
-  const double minimum_request_length =
-    *min_stop_distance + parameters_->backward_goal_search_length + approximate_pull_over_distance_;
+  //  The module is requested at a distance such that the ego can stop for the pull over start point
+  //  closest to ego. When path planning, each start point is checked to see if it is possible to
+  //  stop again. At that time, if the speed has changed over time, the path will be rejected if
+  //  min_stop_distance is used as is, so scale is applied to provide a buffer.
+  constexpr double scale_factor_for_buffer = 1.2;
+  const double minimum_request_length = *min_stop_distance * scale_factor_for_buffer +
+                                        parameters_->backward_goal_search_length +
+                                        approximate_pull_over_distance_;
 
   return std::max(minimum_request_length, parameters_->pull_over_minimum_request_length);
 }
