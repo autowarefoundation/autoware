@@ -122,6 +122,8 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
 
     p.object_check_goal_distance =
       getOrDeclareParameter<double>(*node, ns + "object_check_goal_distance");
+    p.object_check_return_pose_distance =
+      getOrDeclareParameter<double>(*node, ns + "object_check_return_pose_distance");
     p.threshold_distance_object_is_on_center =
       getOrDeclareParameter<double>(*node, ns + "threshold_distance_object_is_on_center");
     p.object_check_shiftable_ratio =

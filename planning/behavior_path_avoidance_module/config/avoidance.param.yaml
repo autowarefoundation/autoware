@@ -122,7 +122,8 @@
           motorcycle: true                               # [-]
           pedestrian: true                               # [-]
         # detection range
-        object_check_goal_distance: 20.0                # [m]
+        object_check_goal_distance: 20.0                 # [m]
+        object_check_return_pose_distance: 20.0          # [m]
         # filtering parking objects
         threshold_distance_object_is_on_center: 1.0     # [m]
         object_check_shiftable_ratio: 0.6               # [-]

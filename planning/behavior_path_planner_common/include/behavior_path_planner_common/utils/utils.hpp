@@ -221,6 +221,9 @@ PathWithLaneId refinePathForGoal(
 
 bool containsGoal(const lanelet::ConstLanelets & lanes, const lanelet::Id & goal_id);
 
+bool isAllowedGoalModification(const std::shared_ptr<RouteHandler> & route_handler);
+bool checkOriginalGoalIsInShoulder(const std::shared_ptr<RouteHandler> & route_handler);
+
 bool isInLanelets(const Pose & pose, const lanelet::ConstLanelets & lanes);
 
 bool isInLaneletWithYawThreshold(
@@ -302,6 +305,10 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
 lanelet::ConstLanelets getExtendedCurrentLanes(
   const std::shared_ptr<const PlannerData> & planner_data, const double backward_length,
   const double forward_length, const bool forward_only_in_route);
+
+lanelet::ConstLanelets getExtendedCurrentLanesFromPath(
+  const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data,
+  const double backward_length, const double forward_length, const bool forward_only_in_route);
 
 lanelet::ConstLanelets calcLaneAroundPose(
   const std::shared_ptr<RouteHandler> route_handler, const geometry_msgs::msg::Pose & pose,

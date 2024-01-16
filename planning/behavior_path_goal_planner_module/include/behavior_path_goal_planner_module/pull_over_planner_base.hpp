@@ -118,6 +118,11 @@ public:
   }
   virtual ~PullOverPlannerBase() = default;
 
+  void setPreviousModuleOutput(const BehaviorModuleOutput & previous_module_output)
+  {
+    previous_module_output_ = previous_module_output;
+  }
+
   void setPlannerData(const std::shared_ptr<const PlannerData> planner_data)
   {
     planner_data_ = planner_data;
@@ -131,6 +136,8 @@ protected:
   vehicle_info_util::VehicleInfo vehicle_info_;
   LinearRing2d vehicle_footprint_;
   GoalPlannerParameters parameters_;
+
+  BehaviorModuleOutput previous_module_output_;
 };
 }  // namespace behavior_path_planner
 

@@ -49,8 +49,21 @@ PredictedObjects filterObjectsByLateralDistance(
   const Pose & ego_pose, const double vehicle_width, const PredictedObjects & objects,
   const double distance_thresh, const bool filter_inside);
 
-bool isAllowedGoalModification(const std::shared_ptr<RouteHandler> & route_handler);
-bool checkOriginalGoalIsInShoulder(const std::shared_ptr<RouteHandler> & route_handler);
+double calcLateralDeviationBetweenPaths(
+  const PathWithLaneId & reference_path, const PathWithLaneId & target_path);
+bool isReferencePath(
+  const PathWithLaneId & reference_path, const PathWithLaneId & target_path,
+  const double lateral_deviation_thresh);
+
+std::optional<PathWithLaneId> cropPath(const PathWithLaneId & path, const Pose & end_pose);
+PathWithLaneId cropForwardPoints(
+  const PathWithLaneId & path, const size_t target_seg_idx, const double forward_length);
+PathWithLaneId extendPath(
+  const PathWithLaneId & prev_module_path, const PathWithLaneId & reference_path,
+  const double extend_length);
+PathWithLaneId extendPath(
+  const PathWithLaneId & prev_module_path, const PathWithLaneId & reference_path,
+  const Pose & extend_pose);
 
 // debug
 MarkerArray createPullOverAreaMarkerArray(
