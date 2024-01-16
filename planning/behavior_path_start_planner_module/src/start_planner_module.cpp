@@ -1325,7 +1325,7 @@ void StartPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) cons
   }
 }
 
-void StartPlannerModule::setDebugData() const
+void StartPlannerModule::setDebugData()
 {
   using marker_utils::addFootprintMarker;
   using marker_utils::createFootprintMarkerArray;
@@ -1432,6 +1432,13 @@ void StartPlannerModule::setDebugData() const
     add(showSafetyCheckInfo(start_planner_data_.collision_check, "object_debug_info"));
     add(showPredictedPath(start_planner_data_.collision_check, "ego_predicted_path"));
     add(showPolygon(start_planner_data_.collision_check, "ego_and_target_polygon_relation"));
+
+    // set objects of interest
+    for (const auto & [uuid, data] : start_planner_data_.collision_check) {
+      const auto color = data.is_safe ? ColorName::GREEN : ColorName::RED;
+      setObjectsOfInterestData(data.current_obj_pose, data.obj_shape, color);
+    }
+
     initializeCollisionCheckDebugMap(start_planner_data_.collision_check);
   }
 

@@ -254,7 +254,7 @@ private:
   void onFreespacePlannerTimer();
   bool planFreespacePath();
 
-  void setDebugData() const;
+  void setDebugData();
   void logPullOutStatus(rclcpp::Logger::Level log_level = rclcpp::Logger::Level::Info) const;
 };
 }  // namespace behavior_path_planner
