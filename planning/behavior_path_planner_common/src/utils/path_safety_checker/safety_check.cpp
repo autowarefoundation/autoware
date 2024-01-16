@@ -453,16 +453,15 @@ bool checkSafetyWithIntegralPredictedPolygon(
     for (const auto & path : object.predicted_paths) {
       for (const auto & pose_with_poly : path.path) {
         if (boost::geometry::overlaps(ego_integral_polygon, pose_with_poly.poly)) {
-          {
-            debug_pair.second.ego_predicted_path = ego_predicted_path;  // raw path
-            debug_pair.second.obj_predicted_path = path.path;           // raw path
-            debug_pair.second.extended_obj_polygon = pose_with_poly.poly;
-            debug_pair.second.extended_ego_polygon =
-              ego_integral_polygon;  // time filtered extended polygon
-            updateCollisionCheckDebugMap(debug_map, debug_pair, false);
-          }
+          debug_pair.second.ego_predicted_path = ego_predicted_path;  // raw path
+          debug_pair.second.obj_predicted_path = path.path;           // raw path
+          debug_pair.second.extended_obj_polygon = pose_with_poly.poly;
+          debug_pair.second.extended_ego_polygon =
+            ego_integral_polygon;  // time filtered extended polygon
+          updateCollisionCheckDebugMap(debug_map, debug_pair, /*is_safe=*/false);
           return false;
         }
+        updateCollisionCheckDebugMap(debug_map, debug_pair, /*is_safe=*/true);
       }
     }
   }

@@ -1957,6 +1957,13 @@ void GoalPlannerModule::setDebugData()
     }
     add(showPredictedPath(goal_planner_data_.collision_check, "ego_predicted_path"));
     add(showPolygon(goal_planner_data_.collision_check, "ego_and_target_polygon_relation"));
+
+    // set objects of interest
+    for (const auto & [uuid, data] : goal_planner_data_.collision_check) {
+      const auto color = data.is_safe ? ColorName::GREEN : ColorName::RED;
+      setObjectsOfInterestData(data.current_obj_pose, data.obj_shape, color);
+    }
+
     utils::parking_departure::initializeCollisionCheckDebugMap(goal_planner_data_.collision_check);
 
     // visualize safety status maker
