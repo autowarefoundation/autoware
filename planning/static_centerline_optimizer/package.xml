@@ -19,6 +19,7 @@
   <depend>autoware_auto_perception_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
   <depend>behavior_path_planner</depend>
+  <depend>behavior_velocity_planner</depend>
   <depend>geometry_msgs</depend>
   <depend>global_parameter_loader</depend>
   <depend>interpolation</depend>

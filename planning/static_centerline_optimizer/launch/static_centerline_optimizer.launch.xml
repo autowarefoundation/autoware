@@ -21,6 +21,10 @@
     name="behavior_path_planner_param"
     default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/behavior_path_planner.param.yaml"
   />
+  <arg
+    name="behavior_velocity_planner_param"
+    default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/behavior_velocity_planner.param.yaml"
+  />
   <arg name="path_smoother_param" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/motion_planning/path_smoother/elastic_band_smoother.param.yaml"/>
   <arg
     name="obstacle_avoidance_planner_param"
@@ -67,6 +71,7 @@
     <!-- component param -->
     <param from="$(var map_loader_param)"/>
     <param from="$(var behavior_path_planner_param)"/>
+    <param from="$(var behavior_velocity_planner_param)"/>
     <param from="$(var path_smoother_param)"/>
     <param from="$(var obstacle_avoidance_planner_param)"/>
     <param from="$(var mission_planner_param)"/>

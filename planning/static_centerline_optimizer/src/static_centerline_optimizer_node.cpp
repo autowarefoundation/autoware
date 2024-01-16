@@ -425,6 +425,10 @@ std::vector<TrajectoryPoint> StaticCenterlineOptimizerNode::plan_path(
   const double behavior_path_interval = has_parameter("output_path_interval")
                                           ? get_parameter("output_path_interval").as_double()
                                           : declare_parameter<double>("output_path_interval");
+  const double behavior_vel_interval =
+    has_parameter("behavior_output_path_interval")
+      ? get_parameter("behavior_output_path_interval").as_double()
+      : declare_parameter<double>("behavior_output_path_interval");
 
   // extract path with lane id from lanelets
   const auto raw_path_with_lane_id = [&]() {
@@ -439,8 +443,7 @@ std::vector<TrajectoryPoint> StaticCenterlineOptimizerNode::plan_path(
   // convert path with lane id to path
   const auto raw_path = [&]() {
     const auto non_resampled_path = convert_to_path(raw_path_with_lane_id);
-    // NOTE: The behavior_velocity_planner resamples with the interval 1.0 somewhere.
-    return motion_utils::resamplePath(non_resampled_path, 1.0);
+    return motion_utils::resamplePath(non_resampled_path, behavior_vel_interval);
   }();
   pub_raw_path_->publish(raw_path);
   RCLCPP_INFO(get_logger(), "Converted to path and published.");
