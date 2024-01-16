@@ -1101,8 +1101,8 @@ AvoidLineArray ShiftLineGenerator::addReturnShiftLine(
   const double variable_prepare_distance =
     std::max(nominal_prepare_distance - last_sl_distance, 0.0);
 
-  double prepare_distance_scaled =
-    std::clamp(nominal_prepare_distance, helper_->getMinimumPrepareDistance(), last_sl_distance);
+  double prepare_distance_scaled = std::max(
+    helper_->getMinimumPrepareDistance(), std::max(nominal_prepare_distance, last_sl_distance));
   double avoid_distance_scaled = nominal_avoid_distance;
   if (remaining_distance < prepare_distance_scaled + avoid_distance_scaled) {
     const auto scale = (remaining_distance - last_sl_distance) /
@@ -1122,7 +1122,7 @@ AvoidLineArray ShiftLineGenerator::addReturnShiftLine(
     al.end_idx =
       utils::avoidance::findPathIndexFromArclength(arclength_from_ego, prepare_distance_scaled);
     al.end = data.reference_path.points.at(al.end_idx).point.pose;
-    al.end_longitudinal = arclength_from_ego.at(al.end_idx);
+    al.end_longitudinal = prepare_distance_scaled;
     al.end_shift_length = last_sl.end_shift_length;
     al.start_shift_length = last_sl.end_shift_length;
     ret.push_back(al);
@@ -1136,7 +1136,7 @@ AvoidLineArray ShiftLineGenerator::addReturnShiftLine(
     al.start_idx =
       utils::avoidance::findPathIndexFromArclength(arclength_from_ego, prepare_distance_scaled);
     al.start = data.reference_path.points.at(al.start_idx).point.pose;
-    al.start_longitudinal = arclength_from_ego.at(al.start_idx);
+    al.start_longitudinal = prepare_distance_scaled;
     al.end_idx = utils::avoidance::findPathIndexFromArclength(
       arclength_from_ego, prepare_distance_scaled + avoid_distance_scaled);
     al.end = data.reference_path.points.at(al.end_idx).point.pose;

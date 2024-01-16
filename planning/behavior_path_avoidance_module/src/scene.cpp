@@ -287,21 +287,18 @@ void AvoidanceModule::fillFundamentalData(AvoidancePlanningData & data, DebugDat
 void AvoidanceModule::fillAvoidanceTargetObjects(
   AvoidancePlanningData & data, DebugData & debug) const
 {
+  using utils::avoidance::fillAvoidanceNecessity;
   using utils::avoidance::fillObjectStoppableJudge;
   using utils::avoidance::filterTargetObjects;
   using utils::avoidance::getTargetLanelets;
-
-  // Add margin in order to prevent avoidance request chattering only when the module is running.
-  const auto is_running = getCurrentStatus() == ModuleStatus::RUNNING ||
-                          getCurrentStatus() == ModuleStatus::WAITING_APPROVAL;
+  using utils::avoidance::separateObjectsByPath;
 
   // Separate dynamic objects based on whether they are inside or outside of the expanded lanelets.
-  const auto sparse_resample_path = utils::resamplePathWithSpline(
-    helper_->getPreviousSplineShiftPath().path, parameters_->resample_interval_for_output);
-  const auto [object_within_target_lane, object_outside_target_lane] =
-    utils::avoidance::separateObjectsByPath(
-      sparse_resample_path, planner_data_, data, parameters_, helper_->getForwardDetectionRange(),
-      is_running, debug);
+  constexpr double MARGIN = 10.0;
+  const auto forward_detection_range = helper_->getForwardDetectionRange();
+  const auto [object_within_target_lane, object_outside_target_lane] = separateObjectsByPath(
+    helper_->getPreviousReferencePath(), helper_->getPreviousSplineShiftPath().path, planner_data_,
+    data, parameters_, forward_detection_range + MARGIN, debug);
 
   for (const auto & object : object_outside_target_lane.objects) {
     ObjectData other_object;
@@ -316,11 +313,13 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
   }
 
   // Filter out the objects to determine the ones to be avoided.
-  filterTargetObjects(objects, data, debug, planner_data_, parameters_);
+  filterTargetObjects(objects, data, forward_detection_range, planner_data_, parameters_);
 
   // Calculate the distance needed to safely decelerate the ego vehicle to a stop line.
+  const auto & vehicle_width = planner_data_->parameters.vehicle_width;
   const auto feasible_stop_distance = helper_->getFeasibleDecelDistance(0.0, false);
   std::for_each(data.target_objects.begin(), data.target_objects.end(), [&, this](auto & o) {
+    fillAvoidanceNecessity(o, registered_objects_, vehicle_width, parameters_);
     o.to_stop_line = calcDistanceToStopLine(o);
     fillObjectStoppableJudge(o, registered_objects_, feasible_stop_distance, parameters_);
   });
@@ -380,20 +379,9 @@ ObjectData AvoidanceModule::createObjectData(
   utils::avoidance::fillInitialPose(object_data, detected_objects_);
 
   // Calc lateral deviation from path to target object.
-  object_data.to_centerline =
-    lanelet::utils::getArcCoordinates(data.current_lanelets, object_pose).distance;
   object_data.direction = calcLateralDeviation(object_closest_pose, object_pose.position) > 0.0
                             ? Direction::LEFT
                             : Direction::RIGHT;
-
-  // Find the footprint point closest to the path, set to object_data.overhang_distance.
-  object_data.overhang_dist = utils::avoidance::calcEnvelopeOverhangDistance(
-    object_data, data.reference_path, object_data.overhang_pose.position);
-
-  // Check whether the the ego should avoid the object.
-  const auto & vehicle_width = planner_data_->parameters.vehicle_width;
-  utils::avoidance::fillAvoidanceNecessity(
-    object_data, registered_objects_, vehicle_width, parameters_);
 
   return object_data;
 }
