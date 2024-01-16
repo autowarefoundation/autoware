@@ -101,23 +101,184 @@ visualization_msgs::msg::Marker::SharedPtr get_twist_marker_ptr(
   marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
   marker_ptr->pose = pose_with_covariance.pose;
 
-  geometry_msgs::msg::Point pt_s;
-  pt_s.x = 0.0;
-  pt_s.y = 0.0;
-  pt_s.z = 0.0;
-  marker_ptr->points.push_back(pt_s);
-
-  geometry_msgs::msg::Point pt_e;
-  pt_e.x = twist_with_covariance.twist.linear.x;
-  pt_e.y = twist_with_covariance.twist.linear.y;
-  pt_e.z = twist_with_covariance.twist.linear.z;
-  marker_ptr->points.push_back(pt_e);
+  // velocity line
+  geometry_msgs::msg::Point point;
+  point.x = 0.0;
+  point.y = 0.0;
+  point.z = 0.0;
+  marker_ptr->points.push_back(point);
+  point.x = twist_with_covariance.twist.linear.x;
+  point.y = twist_with_covariance.twist.linear.y;
+  point.z = twist_with_covariance.twist.linear.z;
+  marker_ptr->points.push_back(point);
 
   marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
   marker_ptr->color.a = 0.999;
   marker_ptr->color.r = 1.0;
   marker_ptr->color.g = 0.0;
   marker_ptr->color.b = 0.0;
+
+  return marker_ptr;
+}
+
+visualization_msgs::msg::Marker::SharedPtr get_twist_covariance_marker_ptr(
+  const geometry_msgs::msg::PoseWithCovariance & pose_with_covariance,
+  const geometry_msgs::msg::TwistWithCovariance & twist_with_covariance,
+  const double & confidence_interval_coefficient)
+{
+  auto marker_ptr = std::make_shared<Marker>();
+  marker_ptr->type = visualization_msgs::msg::Marker::CYLINDER;
+  marker_ptr->ns = std::string("twist covariance");
+  marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
+  marker_ptr->pose = pose_with_covariance.pose;
+
+  // position is the tip of the velocity vector
+  const double velocity = std::sqrt(
+    twist_with_covariance.twist.linear.x * twist_with_covariance.twist.linear.x +
+    twist_with_covariance.twist.linear.y * twist_with_covariance.twist.linear.y);
+  const double velocity_angle =
+    std::atan2(twist_with_covariance.twist.linear.y, twist_with_covariance.twist.linear.x);
+  const double pos_yaw_angle = 2.0 * std::atan2(
+                                       pose_with_covariance.pose.orientation.z,
+                                       pose_with_covariance.pose.orientation.w);  // [rad]
+  marker_ptr->pose.position.x += velocity * std::cos(pos_yaw_angle + velocity_angle);
+  marker_ptr->pose.position.y += velocity * std::sin(pos_yaw_angle + velocity_angle);
+
+  // velocity covariance
+  // extract eigen values and eigen vectors
+  Eigen::Matrix2d eigen_twist_covariance;
+  eigen_twist_covariance << twist_with_covariance.covariance[0],
+    twist_with_covariance.covariance[1], twist_with_covariance.covariance[6],
+    twist_with_covariance.covariance[7];
+  double phi, sigma1, sigma2;
+  calc_covariance_eigen_vectors(eigen_twist_covariance, sigma1, sigma2, phi);
+  phi = pos_yaw_angle + phi;
+  double area = sigma1 * sigma2;
+  double alpha = std::min(0.5, 1.0 / area);
+  alpha = std::max(0.1, alpha);
+
+  // ellipse orientation
+  marker_ptr->pose.orientation.x = 0.0;
+  marker_ptr->pose.orientation.y = 0.0;
+  marker_ptr->pose.orientation.z = std::sin(phi / 2.0);
+  marker_ptr->pose.orientation.w = std::cos(phi / 2.0);
+
+  // ellipse size
+  marker_ptr->scale.x = sigma1 * confidence_interval_coefficient;
+  marker_ptr->scale.y = sigma2 * confidence_interval_coefficient;
+  marker_ptr->scale.z = 0.05;
+
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->color.a = alpha;
+  marker_ptr->color.r = 1.0;
+  marker_ptr->color.g = 0.2;
+  marker_ptr->color.b = 0.4;
+
+  return marker_ptr;
+}
+
+visualization_msgs::msg::Marker::SharedPtr get_yaw_rate_marker_ptr(
+  const geometry_msgs::msg::PoseWithCovariance & pose_with_covariance,
+  const geometry_msgs::msg::TwistWithCovariance & twist_with_covariance, const double & line_width)
+{
+  auto marker_ptr = std::make_shared<Marker>();
+  marker_ptr->type = visualization_msgs::msg::Marker::LINE_STRIP;
+  marker_ptr->ns = std::string("yaw rate");
+  marker_ptr->scale.x = line_width;
+  marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
+  marker_ptr->pose = pose_with_covariance.pose;
+
+  // yaw rate
+  const double yaw_rate = twist_with_covariance.twist.angular.z;
+  const double velocity = std::sqrt(
+    twist_with_covariance.twist.linear.x * twist_with_covariance.twist.linear.x +
+    twist_with_covariance.twist.linear.y * twist_with_covariance.twist.linear.y +
+    twist_with_covariance.twist.linear.z * twist_with_covariance.twist.linear.z);
+  const double velocity_angle =
+    std::atan2(twist_with_covariance.twist.linear.y, twist_with_covariance.twist.linear.x);
+  const double yaw_mark_length = velocity * 0.8;
+
+  geometry_msgs::msg::Point point;
+  // first point
+  point.x = 0;
+  point.y = 0;
+  point.z = 0;
+  marker_ptr->points.push_back(point);
+  // yaw rate arc
+  calc_arc_line_strip(
+    velocity_angle, velocity_angle + yaw_rate, yaw_mark_length, marker_ptr->points);
+  // last point
+  point.x = 0;
+  point.y = 0;
+  point.z = 0;
+  marker_ptr->points.push_back(point);
+
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->color.a = 0.9;
+  marker_ptr->color.r = 1.0;
+  marker_ptr->color.g = 0.0;
+  marker_ptr->color.b = 0.0;
+
+  return marker_ptr;
+}
+
+visualization_msgs::msg::Marker::SharedPtr get_yaw_rate_covariance_marker_ptr(
+  const geometry_msgs::msg::PoseWithCovariance & pose_with_covariance,
+  const geometry_msgs::msg::TwistWithCovariance & twist_with_covariance,
+  const double & confidence_interval_coefficient, const double & line_width)
+{
+  auto marker_ptr = std::make_shared<Marker>();
+  marker_ptr->type = visualization_msgs::msg::Marker::LINE_LIST;
+  marker_ptr->ns = std::string("yaw rate covariance");
+  marker_ptr->scale.x = line_width;
+  marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
+  marker_ptr->pose = pose_with_covariance.pose;
+
+  // yaw rate covariance
+  const double yaw_rate_covariance = twist_with_covariance.covariance[35];
+  const double yaw_rate_sigma = std::sqrt(yaw_rate_covariance) * confidence_interval_coefficient;
+  const double yaw_rate = twist_with_covariance.twist.angular.z;
+  const double velocity = std::sqrt(
+    twist_with_covariance.twist.linear.x * twist_with_covariance.twist.linear.x +
+    twist_with_covariance.twist.linear.y * twist_with_covariance.twist.linear.y +
+    twist_with_covariance.twist.linear.z * twist_with_covariance.twist.linear.z);
+  const double velocity_angle =
+    std::atan2(twist_with_covariance.twist.linear.y, twist_with_covariance.twist.linear.x);
+  const double yaw_mark_length = velocity * 0.8;
+  const double bar_width = std::max(velocity * 0.05, 0.1);
+  const double velocity_yaw_angle = velocity_angle + yaw_rate;
+  const double velocity_yaw_p_sigma_angle = velocity_yaw_angle + yaw_rate_sigma;
+  const double velocity_yaw_n_sigma_angle = velocity_yaw_angle - yaw_rate_sigma;
+
+  const double point_list[7][3] = {
+    {yaw_mark_length * std::cos(velocity_yaw_angle), yaw_mark_length * std::sin(velocity_yaw_angle),
+     0},
+    {yaw_mark_length * std::cos(velocity_yaw_p_sigma_angle),
+     yaw_mark_length * std::sin(velocity_yaw_p_sigma_angle), 0},
+    {yaw_mark_length * std::cos(velocity_yaw_n_sigma_angle),
+     yaw_mark_length * std::sin(velocity_yaw_n_sigma_angle), 0},
+    {(yaw_mark_length + bar_width) * std::cos(velocity_yaw_p_sigma_angle),
+     (yaw_mark_length + bar_width) * std::sin(velocity_yaw_p_sigma_angle), 0},
+    {(yaw_mark_length - bar_width) * std::cos(velocity_yaw_p_sigma_angle),
+     (yaw_mark_length - bar_width) * std::sin(velocity_yaw_p_sigma_angle), 0},
+    {(yaw_mark_length + bar_width) * std::cos(velocity_yaw_n_sigma_angle),
+     (yaw_mark_length + bar_width) * std::sin(velocity_yaw_n_sigma_angle), 0},
+    {(yaw_mark_length - bar_width) * std::cos(velocity_yaw_n_sigma_angle),
+     (yaw_mark_length - bar_width) * std::sin(velocity_yaw_n_sigma_angle), 0},
+  };
+  const int point_pairs[4][2] = {
+    {0, 1},
+    {0, 2},
+    {3, 4},
+    {5, 6},
+  };
+  calc_line_list_from_points(point_list, point_pairs, 4, marker_ptr->points);
+
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->color.a = 0.9;
+  marker_ptr->color.r = 1.0;
+  marker_ptr->color.g = 0.2;
+  marker_ptr->color.b = 0.4;
 
   return marker_ptr;
 }
@@ -164,47 +325,117 @@ visualization_msgs::msg::Marker::SharedPtr get_acceleration_text_marker_ptr(
   return marker_ptr;
 }
 
-visualization_msgs::msg::Marker::SharedPtr get_pose_with_covariance_marker_ptr(
-  const geometry_msgs::msg::PoseWithCovariance & pose_with_covariance)
+void calc_arc_line_strip(
+  const double start_angle, const double end_angle, const double radius,
+  std::vector<geometry_msgs::msg::Point> & points)
+{
+  geometry_msgs::msg::Point point;
+  // arc points
+  const double maximum_delta_angle = 10.0 * M_PI / 180.0;
+  const int num_points =
+    std::max(3, static_cast<int>(std::abs(end_angle - start_angle) / maximum_delta_angle));
+  for (int i = 0; i < num_points; ++i) {
+    const double angle = start_angle + (end_angle - start_angle) * static_cast<double>(i) /
+                                         static_cast<double>(num_points - 1);
+    point.x = radius * std::cos(angle);
+    point.y = radius * std::sin(angle);
+    point.z = 0;
+    points.push_back(point);
+  }
+}
+
+void calc_covariance_eigen_vectors(
+  const Eigen::Matrix2d & matrix, double & sigma1, double & sigma2, double & yaw)
+{
+  Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> solver(matrix);
+  Eigen::Vector2d eigen_values = solver.eigenvalues();
+  // eigen values
+  sigma1 = std::sqrt(eigen_values.x());
+  sigma2 = std::sqrt(eigen_values.y());
+  // orientation of covariance ellipse
+  Eigen::Vector2d e1 = solver.eigenvectors().col(0);
+  yaw = std::atan2(e1.y(), e1.x());
+}
+
+visualization_msgs::msg::Marker::SharedPtr get_pose_covariance_marker_ptr(
+  const geometry_msgs::msg::PoseWithCovariance & pose_with_covariance,
+  const double & confidence_interval_coefficient)
 {
   auto marker_ptr = std::make_shared<Marker>();
-  marker_ptr->type = visualization_msgs::msg::Marker::LINE_LIST;
+  marker_ptr->type = visualization_msgs::msg::Marker::CYLINDER;
   marker_ptr->ns = std::string("position covariance");
-  marker_ptr->scale.x = 0.03;
   marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
   marker_ptr->pose = pose_with_covariance.pose;
+
+  // position covariance
+  // extract eigen values and eigen vectors
+  Eigen::Matrix2d eigen_pose_covariance;
+  eigen_pose_covariance << pose_with_covariance.covariance[0], pose_with_covariance.covariance[1],
+    pose_with_covariance.covariance[6], pose_with_covariance.covariance[7];
+  double yaw, sigma1, sigma2;
+  calc_covariance_eigen_vectors(eigen_pose_covariance, sigma1, sigma2, yaw);
+
+  // ellipse orientation
   marker_ptr->pose.orientation.x = 0.0;
   marker_ptr->pose.orientation.y = 0.0;
-  marker_ptr->pose.orientation.z = 0.0;
-  marker_ptr->pose.orientation.w = 1.0;
-  geometry_msgs::msg::Point point;
-  Eigen::Matrix2d eigen_pose_with_covariance;
-  eigen_pose_with_covariance << pose_with_covariance.covariance[0],
-    pose_with_covariance.covariance[1], pose_with_covariance.covariance[6],
-    pose_with_covariance.covariance[7];
-  Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> solver(eigen_pose_with_covariance);
-  double sigma1 = 2.448 * std::sqrt(solver.eigenvalues().x());  // 2.448 sigma is 95%
-  double sigma2 = 2.448 * std::sqrt(solver.eigenvalues().y());  // 2.448 sigma is 95%
-  Eigen::Vector2d e1 = solver.eigenvectors().col(0);
-  Eigen::Vector2d e2 = solver.eigenvectors().col(1);
-  point.x = -e1.x() * sigma1;
-  point.y = -e1.y() * sigma1;
-  point.z = 0;
-  marker_ptr->points.push_back(point);
-  point.x = e1.x() * sigma1;
-  point.y = e1.y() * sigma1;
-  point.z = 0;
-  marker_ptr->points.push_back(point);
-  point.x = -e2.x() * sigma2;
-  point.y = -e2.y() * sigma2;
-  point.z = 0;
-  marker_ptr->points.push_back(point);
-  point.x = e2.x() * sigma2;
-  point.y = e2.y() * sigma2;
-  point.z = 0;
-  marker_ptr->points.push_back(point);
+  marker_ptr->pose.orientation.z = std::sin(yaw / 2.0);
+  marker_ptr->pose.orientation.w = std::cos(yaw / 2.0);
+
+  // ellipse size
+  marker_ptr->scale.x = sigma1 * confidence_interval_coefficient;
+  marker_ptr->scale.y = sigma2 * confidence_interval_coefficient;
+  marker_ptr->scale.z = 0.05;
+
+  // ellipse color density
+  double area = sigma1 * sigma2;
+  double alpha = std::min(0.5, 3.0 / area);
+  alpha = std::max(0.1, alpha);
+
+  // marker configuration
   marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
-  marker_ptr->color.a = 0.999;
+  marker_ptr->color.a = alpha;
+  marker_ptr->color.r = 1.0;
+  marker_ptr->color.g = 1.0;
+  marker_ptr->color.b = 1.0;
+  return marker_ptr;
+}
+
+visualization_msgs::msg::Marker::SharedPtr get_yaw_covariance_marker_ptr(
+  const geometry_msgs::msg::PoseWithCovariance & pose_with_covariance, const double & length,
+  const double & confidence_interval_coefficient, const double & line_width)
+{
+  auto marker_ptr = std::make_shared<Marker>();
+  marker_ptr->type = visualization_msgs::msg::Marker::LINE_STRIP;
+  marker_ptr->ns = std::string("yaw covariance");
+  marker_ptr->scale.x = line_width;
+  marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
+  marker_ptr->pose = pose_with_covariance.pose;
+  geometry_msgs::msg::Point point;
+
+  // orientation covariance
+  double yaw_vector_length = std::max(length, 1.0);
+  double yaw_sigma =
+    std::sqrt(pose_with_covariance.covariance[35]) * confidence_interval_coefficient;
+  // get arc points
+  if (yaw_sigma > M_PI) {
+    yaw_vector_length = 1.0;
+  }
+  // first point
+  point.x = 0;
+  point.y = 0;
+  point.z = 0;
+  marker_ptr->points.push_back(point);
+  // arc points
+  calc_arc_line_strip(-yaw_sigma, yaw_sigma, yaw_vector_length, marker_ptr->points);
+  // last point
+  point.x = 0;
+  point.y = 0;
+  point.z = 0;
+  marker_ptr->points.push_back(point);
+
+  // marker configuration
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->color.a = 0.9;
   marker_ptr->color.r = 1.0;
   marker_ptr->color.g = 1.0;
   marker_ptr->color.b = 1.0;

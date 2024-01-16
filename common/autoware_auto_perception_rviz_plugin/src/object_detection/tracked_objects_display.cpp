@@ -55,11 +55,11 @@ void TrackedObjectsDisplay::processMessage(TrackedObjects::ConstSharedPtr msg)
   for (const auto & object : msg->objects) {
     // Filter by object dynamic status
     if (!is_object_to_show(showing_dynamic_status, object)) continue;
-    const auto line_width = get_line_width();
     // Get marker for shape
     auto shape_marker = get_shape_marker_ptr(
       object.shape, object.kinematics.pose_with_covariance.pose.position,
-      object.kinematics.pose_with_covariance.pose.orientation, object.classification, line_width,
+      object.kinematics.pose_with_covariance.pose.orientation, object.classification,
+      get_line_width(),
       object.kinematics.orientation_availability ==
         autoware_auto_perception_msgs::msg::DetectedObjectKinematics::AVAILABLE);
     if (shape_marker) {
@@ -95,15 +95,27 @@ void TrackedObjectsDisplay::processMessage(TrackedObjects::ConstSharedPtr msg)
       add_marker(id_marker_ptr);
     }
 
-    // Get marker for pose with covariance
+    // Get marker for pose covariance
     auto pose_with_covariance_marker =
-      get_pose_with_covariance_marker_ptr(object.kinematics.pose_with_covariance);
+      get_pose_covariance_marker_ptr(object.kinematics.pose_with_covariance);
     if (pose_with_covariance_marker) {
-      auto pose_with_covariance_marker_ptr = pose_with_covariance_marker.value();
-      pose_with_covariance_marker_ptr->header = msg->header;
-      pose_with_covariance_marker_ptr->id = uuid_to_marker_id(object.object_id);
-      add_marker(pose_with_covariance_marker_ptr);
+      auto marker_ptr = pose_with_covariance_marker.value();
+      marker_ptr->header = msg->header;
+      marker_ptr->id = uuid_to_marker_id(object.object_id);
+      add_marker(marker_ptr);
     }
+
+    // Get marker for yaw covariance
+    auto yaw_covariance_marker = get_yaw_covariance_marker_ptr(
+      object.kinematics.pose_with_covariance, object.shape.dimensions.x * 0.65,
+      get_line_width() * 0.5);
+    if (yaw_covariance_marker) {
+      auto marker_ptr = yaw_covariance_marker.value();
+      marker_ptr->header = msg->header;
+      marker_ptr->id = uuid_to_marker_id(object.object_id);
+      add_marker(marker_ptr);
+    }
+
     // Get marker for existence probability
     geometry_msgs::msg::Point existence_probability_position;
     existence_probability_position.x = object.kinematics.pose_with_covariance.pose.position.x + 0.5;
@@ -150,12 +162,45 @@ void TrackedObjectsDisplay::processMessage(TrackedObjects::ConstSharedPtr msg)
 
     // Get marker for twist
     auto twist_marker = get_twist_marker_ptr(
-      object.kinematics.pose_with_covariance, object.kinematics.twist_with_covariance, line_width);
+      object.kinematics.pose_with_covariance, object.kinematics.twist_with_covariance,
+      get_line_width());
     if (twist_marker) {
       auto twist_marker_ptr = twist_marker.value();
       twist_marker_ptr->header = msg->header;
       twist_marker_ptr->id = uuid_to_marker_id(object.object_id);
       add_marker(twist_marker_ptr);
+    }
+
+    // Get marker for twist covariance
+    auto twist_covariance_marker = get_twist_covariance_marker_ptr(
+      object.kinematics.pose_with_covariance, object.kinematics.twist_with_covariance);
+    if (twist_covariance_marker) {
+      auto marker_ptr = twist_covariance_marker.value();
+      marker_ptr->header = msg->header;
+      marker_ptr->id = uuid_to_marker_id(object.object_id);
+      add_marker(marker_ptr);
+    }
+
+    // Get marker for yaw rate
+    auto yaw_rate_marker = get_yaw_rate_marker_ptr(
+      object.kinematics.pose_with_covariance, object.kinematics.twist_with_covariance,
+      get_line_width() * 0.4);
+    if (yaw_rate_marker) {
+      auto marker_ptr = yaw_rate_marker.value();
+      marker_ptr->header = msg->header;
+      marker_ptr->id = uuid_to_marker_id(object.object_id);
+      add_marker(marker_ptr);
+    }
+
+    // Get marker for twist covariance
+    auto yaw_rate_covariance_marker = get_yaw_rate_covariance_marker_ptr(
+      object.kinematics.pose_with_covariance, object.kinematics.twist_with_covariance,
+      get_line_width() * 0.5);
+    if (yaw_rate_covariance_marker) {
+      auto marker_ptr = yaw_rate_covariance_marker.value();
+      marker_ptr->header = msg->header;
+      marker_ptr->id = uuid_to_marker_id(object.object_id);
+      add_marker(marker_ptr);
     }
   }
 }

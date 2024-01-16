@@ -64,14 +64,22 @@ public:
     // m_display_type_property{"Polygon Type", "3d", "Type of the polygon to display object", this},
     m_display_label_property{"Display Label", true, "Enable/disable label visualization", this},
     m_display_uuid_property{"Display UUID", true, "Enable/disable uuid visualization", this},
-    m_display_pose_with_covariance_property{
-      "Display PoseWithCovariance", true, "Enable/disable pose with covariance visualization",
-      this},
     m_display_velocity_text_property{
       "Display Velocity", true, "Enable/disable velocity text visualization", this},
     m_display_acceleration_text_property{
       "Display Acceleration", true, "Enable/disable acceleration text visualization", this},
+    m_display_pose_covariance_property{
+      "Display Pose Covariance", true, "Enable/disable pose covariance visualization", this},
+    m_display_yaw_covariance_property{
+      "Display Yaw Covariance", false, "Enable/disable yaw covariance visualization", this},
     m_display_twist_property{"Display Twist", true, "Enable/disable twist visualization", this},
+    m_display_twist_covariance_property{
+      "Display Twist Covariance", false, "Enable/disable twist covariance visualization", this},
+    m_display_yaw_rate_property{
+      "Display Yaw Rate", false, "Enable/disable yaw rate visualization", this},
+    m_display_yaw_rate_covariance_property{
+      "Display Yaw Rate Covariance", false, "Enable/disable yaw rate covariance visualization",
+      this},
     m_display_predicted_paths_property{
       "Display Predicted Paths", true, "Enable/disable predicted paths visualization", this},
     m_display_path_confidence_property{
@@ -96,6 +104,13 @@ public:
       "Visualization Type", "Normal", "Simplicity of the polygon to display object.", this);
     m_simple_visualize_mode_property->addOption("Normal", 0);
     m_simple_visualize_mode_property->addOption("Simple", 1);
+    // Confidence interval property
+    m_confidence_interval_property = new rviz_common::properties::EnumProperty(
+      "Confidence Interval", "95%", "Confidence interval of state estimations.", this);
+    m_confidence_interval_property->addOption("70%", 0);
+    m_confidence_interval_property->addOption("85%", 1);
+    m_confidence_interval_property->addOption("95%", 2);
+    m_confidence_interval_property->addOption("99%", 3);
 
     // iterate over default values to create and initialize the properties.
     for (const auto & map_property_it : detail::kDefaultObjectPropertyValues) {
@@ -238,11 +253,23 @@ protected:
     }
   }
 
-  std::optional<Marker::SharedPtr> get_pose_with_covariance_marker_ptr(
+  std::optional<Marker::SharedPtr> get_pose_covariance_marker_ptr(
     const geometry_msgs::msg::PoseWithCovariance & pose_with_covariance) const
   {
-    if (m_display_pose_with_covariance_property.getBool()) {
-      return detail::get_pose_with_covariance_marker_ptr(pose_with_covariance);
+    if (m_display_pose_covariance_property.getBool()) {
+      return detail::get_pose_covariance_marker_ptr(pose_with_covariance, get_confidence_region());
+    } else {
+      return std::nullopt;
+    }
+  }
+
+  std::optional<Marker::SharedPtr> get_yaw_covariance_marker_ptr(
+    const geometry_msgs::msg::PoseWithCovariance & pose_with_covariance, const double & length,
+    const double & line_width) const
+  {
+    if (m_display_yaw_covariance_property.getBool()) {
+      return detail::get_yaw_covariance_marker_ptr(
+        pose_with_covariance, length, get_confidence_interval(), line_width);
     } else {
       return std::nullopt;
     }
@@ -281,6 +308,44 @@ protected:
   {
     if (m_display_twist_property.getBool()) {
       return detail::get_twist_marker_ptr(pose_with_covariance, twist_with_covariance, line_width);
+    } else {
+      return std::nullopt;
+    }
+  }
+
+  std::optional<Marker::SharedPtr> get_twist_covariance_marker_ptr(
+    const geometry_msgs::msg::PoseWithCovariance & pose_with_covariance,
+    const geometry_msgs::msg::TwistWithCovariance & twist_with_covariance) const
+  {
+    if (m_display_twist_covariance_property.getBool()) {
+      return detail::get_twist_covariance_marker_ptr(
+        pose_with_covariance, twist_with_covariance, get_confidence_region());
+    } else {
+      return std::nullopt;
+    }
+  }
+
+  std::optional<Marker::SharedPtr> get_yaw_rate_marker_ptr(
+    const geometry_msgs::msg::PoseWithCovariance & pose_with_covariance,
+    const geometry_msgs::msg::TwistWithCovariance & twist_with_covariance,
+    const double & line_width) const
+  {
+    if (m_display_yaw_rate_property.getBool()) {
+      return detail::get_yaw_rate_marker_ptr(
+        pose_with_covariance, twist_with_covariance, line_width);
+    } else {
+      return std::nullopt;
+    }
+  }
+
+  std::optional<Marker::SharedPtr> get_yaw_rate_covariance_marker_ptr(
+    const geometry_msgs::msg::PoseWithCovariance & pose_with_covariance,
+    const geometry_msgs::msg::TwistWithCovariance & twist_with_covariance,
+    const double & line_width) const
+  {
+    if (m_display_yaw_rate_covariance_property.getBool()) {
+      return detail::get_yaw_rate_covariance_marker_ptr(
+        pose_with_covariance, twist_with_covariance, get_confidence_interval(), line_width);
     } else {
       return std::nullopt;
     }
@@ -408,6 +473,46 @@ protected:
 
   double get_line_width() { return m_line_width_property.getFloat(); }
 
+  double get_confidence_interval() const
+  {
+    switch (m_confidence_interval_property->getOptionInt()) {
+      case 0:
+        // 70%
+        return 1.036;
+      case 1:
+        // 85%
+        return 1.440;
+      case 2:
+        // 95%
+        return 1.960;
+      case 3:
+        // 99%
+        return 2.576;
+      default:
+        return 1.960;
+    }
+  }
+
+  double get_confidence_region() const
+  {
+    switch (m_confidence_interval_property->getOptionInt()) {
+      case 0:
+        // 70%
+        return 1.552;
+      case 1:
+        // 85%
+        return 1.802;
+      case 2:
+        // 95%
+        return 2.448;
+      case 3:
+        // 99%
+        return 3.035;
+      default:
+        return 2.448;
+    }
+  }
+
 private:
   // All rviz plugins should have this. Should be initialized with pointer to this class
   MarkerCommon m_marker_common;
@@ -419,18 +524,28 @@ private:
   rviz_common::properties::EnumProperty * m_display_type_property;
   // Property to choose simplicity of visualization polygon
   rviz_common::properties::EnumProperty * m_simple_visualize_mode_property;
+  // Property to set confidence interval of state estimations
+  rviz_common::properties::EnumProperty * m_confidence_interval_property;
   // Property to enable/disable label visualization
   rviz_common::properties::BoolProperty m_display_label_property;
   // Property to enable/disable uuid visualization
   rviz_common::properties::BoolProperty m_display_uuid_property;
-  // Property to enable/disable pose with covariance visualization
-  rviz_common::properties::BoolProperty m_display_pose_with_covariance_property;
   // Property to enable/disable velocity text visualization
   rviz_common::properties::BoolProperty m_display_velocity_text_property;
   // Property to enable/disable acceleration text visualization
   rviz_common::properties::BoolProperty m_display_acceleration_text_property;
+  // Property to enable/disable pose with covariance visualization
+  rviz_common::properties::BoolProperty m_display_pose_covariance_property;
+  // Property to enable/disable yaw covariance visualization
+  rviz_common::properties::BoolProperty m_display_yaw_covariance_property;
   // Property to enable/disable twist visualization
   rviz_common::properties::BoolProperty m_display_twist_property;
+  // Property to enable/disable twist covariance visualization
+  rviz_common::properties::BoolProperty m_display_twist_covariance_property;
+  // Property to enable/disable yaw rate visualization
+  rviz_common::properties::BoolProperty m_display_yaw_rate_property;
+  // Property to enable/disable yaw rate covariance visualization
+  rviz_common::properties::BoolProperty m_display_yaw_rate_covariance_property;
   // Property to enable/disable predicted paths visualization
   rviz_common::properties::BoolProperty m_display_predicted_paths_property;
   // Property to enable/disable predicted path confidence visualization
