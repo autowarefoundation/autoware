@@ -127,6 +127,8 @@ private:
     const double & transform_probability, const double & nearest_voxel_transformation_likelihood);
   static int count_oscillation(const std::vector<geometry_msgs::msg::Pose> & result_pose_msg_array);
 
+  std::array<double, 36> rotate_covariance(
+    const std::array<double, 36> & src_covariance, const Eigen::Matrix3d & rotation) const;
   std::array<double, 36> estimate_covariance(
     const pclomp::NdtResult & ndt_result, const Eigen::Matrix4f & initial_pose_matrix,
     const rclcpp::Time & sensor_ros_time);
