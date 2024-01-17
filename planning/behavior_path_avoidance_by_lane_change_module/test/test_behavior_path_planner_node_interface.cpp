@@ -70,7 +70,7 @@ std::shared_ptr<BehaviorPathPlannerNode> generateNode()
      ament_index_cpp::get_package_share_directory("behavior_path_avoidance_module") +
        "/config/avoidance.param.yaml",
      ament_index_cpp::get_package_share_directory("behavior_path_avoidance_by_lane_change_module") +
-       "/config/avoidance_by_lc.param.yaml"});
+       "/config/avoidance_by_lane_change.param.yaml"});
 
   return std::make_shared<BehaviorPathPlannerNode>(node_options);
 }

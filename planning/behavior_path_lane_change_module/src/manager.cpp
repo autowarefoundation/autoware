@@ -29,10 +29,14 @@ namespace behavior_path_planner
 
 void LaneChangeModuleManager::init(rclcpp::Node * node)
 {
-  using tier4_autoware_utils::getOrDeclareParameter;
-
   // init manager interface
   initInterface(node, {""});
+  initParams(node);
+}
+
+void LaneChangeModuleManager::initParams(rclcpp::Node * node)
+{
+  using tier4_autoware_utils::getOrDeclareParameter;
 
   LaneChangeParameters p{};
 

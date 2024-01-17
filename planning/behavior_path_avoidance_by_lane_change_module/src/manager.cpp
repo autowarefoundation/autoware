@@ -37,7 +37,7 @@ void AvoidanceByLaneChangeModuleManager::init(rclcpp::Node * node)
   initInterface(node, {"left", "right"});
 
   // init lane change manager
-  LaneChangeModuleManager::init(node);
+  LaneChangeModuleManager::initParams(node);
 
   const auto avoidance_params = getParameter(node);
   AvoidanceByLCParameters p(avoidance_params);

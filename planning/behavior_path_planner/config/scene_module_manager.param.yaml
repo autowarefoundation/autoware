@@ -67,7 +67,7 @@
       priority: 4
       max_module_size: 1
 
-    avoidance_by_lc:
+    avoidance_by_lane_change:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: false
