@@ -46,6 +46,12 @@ This package contains some executable nodes related to particle filter.
 | `prediction_rate`             | double           | frequency of forecast updates, in Hz                              |
 | `cov_xx_yy`                   | vector\<double\> | the covariance of initial pose                                    |
 
+### Services
+
+| Name                 | Type                     | Description                                      |
+| -------------------- | ------------------------ | ------------------------------------------------ |
+| `yabloc_trigger_srv` | `std_srvs::srv::SetBool` | activation and deactivation of yabloc estimation |
+
 ## gnss_particle_corrector
 
 ### Purpose

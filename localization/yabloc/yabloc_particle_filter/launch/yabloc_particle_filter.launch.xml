@@ -16,6 +16,9 @@
     <remap from="~/output/predicted_particles" to="predicted_particles"/>
     <remap from="~/debug/init_marker" to="init_maker"/>
     <remap from="~/debug/particles_marker_array" to="$(var output_particles_marker_array)"/>
+
+    <remap from="~/input/ekf_pose" to="/localization/pose_with_covariance"/>
+    <remap from="~/yabloc_trigger_srv" to="/localization/pose_estimator/yabloc/pf/yabloc_trigger_srv"/>
   </node>
 
   <!-- camera  correction -->

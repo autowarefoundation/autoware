@@ -1,7 +1,7 @@
 <launch>
   <arg name="src_image" default="/sensing/camera/traffic_light/image_raw"/>
   <arg name="src_info" default="/sensing/camera/traffic_light/camera_info"/>
-  <arg name="resized_image" default="/sensing/camera/undistorted/image_raw/relay"/>
+  <arg name="resized_image" default="/sensing/camera/undistorted/image_raw"/>
   <arg name="resized_info" default="/sensing/camera/undistorted/camera_info"/>
 
   <!-- undistort -->

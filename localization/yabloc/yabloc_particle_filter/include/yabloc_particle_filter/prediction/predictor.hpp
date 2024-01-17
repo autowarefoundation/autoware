@@ -27,6 +27,7 @@
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <std_msgs/msg/float32.hpp>
+#include <std_srvs/srv/set_bool.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
 #include <tf2_ros/transform_broadcaster.h>
@@ -46,6 +47,7 @@ public:
   using TwistCovStamped = geometry_msgs::msg::TwistWithCovarianceStamped;
   using TwistStamped = geometry_msgs::msg::TwistStamped;
   using Marker = visualization_msgs::msg::Marker;
+  using SetBool = std_srvs::srv::SetBool;
 
   Predictor();
 
@@ -62,6 +64,7 @@ private:
   const std::vector<double> cov_xx_yy_;
 
   // Subscriber
+  rclcpp::Subscription<PoseCovStamped>::SharedPtr ekf_pose_sub_;
   rclcpp::Subscription<PoseCovStamped>::SharedPtr initialpose_sub_;
   rclcpp::Subscription<TwistCovStamped>::SharedPtr twist_cov_sub_;
   rclcpp::Subscription<ParticleArray>::SharedPtr particles_sub_;
@@ -73,11 +76,15 @@ private:
   rclcpp::Publisher<PoseCovStamped>::SharedPtr pose_cov_pub_;
   rclcpp::Publisher<Marker>::SharedPtr marker_pub_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf2_broadcaster_;
+  // Server
+  rclcpp::Service<SetBool>::SharedPtr yabloc_trigger_server_;
 
   // Timer callback
   rclcpp::TimerBase::SharedPtr timer_;
 
   float ground_height_{0};
+  bool yabloc_activated_{true};
+  PoseCovStamped::ConstSharedPtr latest_ekf_pose_ptr_{nullptr};
 
   std::optional<ParticleArray> particle_array_opt_{std::nullopt};
   std::optional<TwistCovStamped> latest_twist_opt_{std::nullopt};
@@ -92,6 +99,8 @@ private:
   void on_twist_cov(const TwistCovStamped::ConstSharedPtr twist);
   void on_weighted_particles(const ParticleArray::ConstSharedPtr weighted_particles);
   void on_timer();
+  void on_trigger_service(
+    SetBool::Request::ConstSharedPtr request, SetBool::Response::SharedPtr response);
 
   //
   void initialize_particles(const PoseCovStamped & initialpose);
