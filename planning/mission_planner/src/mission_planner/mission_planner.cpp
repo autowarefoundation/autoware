@@ -731,6 +731,7 @@ bool MissionPlanner::check_reroute_safety(
   const LaneletRoute & original_route, const LaneletRoute & target_route)
 {
   if (original_route.segments.empty() || target_route.segments.empty() || !map_ptr_ || !odometry_) {
+    RCLCPP_ERROR(get_logger(), "Check reroute safety failed. Route, map or odometry is not set.");
     return false;
   }
 
@@ -803,6 +804,8 @@ bool MissionPlanner::check_reroute_safety(
     return std::nullopt;
   });
   if (!start_idx_opt.has_value()) {
+    RCLCPP_ERROR(
+      get_logger(), "Check reroute safety failed. Cannot find the start index of the route.");
     return false;
   }
   const size_t start_idx = start_idx_opt.value();
@@ -838,6 +841,7 @@ bool MissionPlanner::check_reroute_safety(
   // get closest lanelet in start lanelets
   lanelet::ConstLanelet closest_lanelet;
   if (!lanelet::utils::query::getClosestLanelet(start_lanelets, current_pose, &closest_lanelet)) {
+    RCLCPP_ERROR(get_logger(), "Check reroute safety failed. Cannot find the closest lanelet.");
     return false;
   }
 
