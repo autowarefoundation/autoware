@@ -5,8 +5,6 @@
   <version>0.1.0</version>
   <description>The ad_api_visualizers package</description>
   <maintainer email="isamu.takagi@tier4.jp">Takagi, Isamu</maintainer>
-  <maintainer email="kahhooi.tan@tier4.jp">Kah Hooi Tan</maintainer>
-  <maintainer email="makoto.yabuta@tier4.jp">yabuta</maintainer>
   <maintainer email="ryohsuke.mitsudome@tier4.jp">Ryohsuke Mitsudome</maintainer>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <license>Apache License 2.0</license>
