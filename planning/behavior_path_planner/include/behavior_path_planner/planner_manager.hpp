@@ -46,6 +46,7 @@ using SceneModulePtr = std::shared_ptr<SceneModuleInterface>;
 using SceneModuleManagerPtr = std::shared_ptr<SceneModuleManagerInterface>;
 using DebugPublisher = tier4_autoware_utils::DebugPublisher;
 using DebugDoubleMsg = tier4_debug_msgs::msg::Float64Stamped;
+using DebugStringMsg = tier4_debug_msgs::msg::StringStamped;
 
 enum Action {
   ADD = 0,
@@ -455,6 +456,8 @@ private:
   std::vector<SceneModulePtr> candidate_module_ptrs_;
 
   std::unique_ptr<DebugPublisher> debug_publisher_ptr_;
+
+  std::unique_ptr<DebugPublisher> state_publisher_ptr_;
 
   pluginlib::ClassLoader<SceneModuleManagerInterface> plugin_loader_;
 
