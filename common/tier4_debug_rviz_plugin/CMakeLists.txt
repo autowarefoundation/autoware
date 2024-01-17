@@ -12,7 +12,9 @@ add_definitions(-DQT_NO_KEYWORDS)
 ament_auto_add_library(tier4_debug_rviz_plugin SHARED
   include/tier4_debug_rviz_plugin/float32_multi_array_stamped_pie_chart.hpp
   include/tier4_debug_rviz_plugin/jsk_overlay_utils.hpp
+  include/tier4_debug_rviz_plugin/string_stamped.hpp
   src/float32_multi_array_stamped_pie_chart.cpp
+  src/string_stamped.cpp
   src/jsk_overlay_utils.cpp
 )
 
