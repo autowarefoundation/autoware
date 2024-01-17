@@ -170,11 +170,13 @@ GoalCandidates GoalSearcher::search()
         transformVector(vehicle_footprint_, tier4_autoware_utils::pose2transform(search_pose));
 
       if (isInAreas(transformed_vehicle_footprint, getNoParkingAreaPolygons(pull_over_lanes))) {
-        continue;
+        // break here to exclude goals located laterally in no_parking_areas
+        break;
       }
 
       if (isInAreas(transformed_vehicle_footprint, getNoStoppingAreaPolygons(pull_over_lanes))) {
-        continue;
+        // break here to exclude goals located laterally in no_stopping_areas
+        break;
       }
 
       if (LaneDepartureChecker::isOutOfLane(lanes, transformed_vehicle_footprint)) {
