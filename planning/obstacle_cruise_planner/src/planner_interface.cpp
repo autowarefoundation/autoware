@@ -37,19 +37,21 @@ StopSpeedExceeded createStopSpeedExceededMsg(
 }
 
 tier4_planning_msgs::msg::StopReasonArray makeStopReasonArray(
-  const rclcpp::Time & current_time, const geometry_msgs::msg::Pose & stop_pose,
+  const PlannerData & planner_data, const geometry_msgs::msg::Pose & stop_pose,
   const StopObstacle & stop_obstacle)
 {
   // create header
   std_msgs::msg::Header header;
   header.frame_id = "map";
-  header.stamp = current_time;
+  header.stamp = planner_data.current_time;
 
   // create stop factor
   StopFactor stop_factor;
   stop_factor.stop_pose = stop_pose;
   geometry_msgs::msg::Point stop_factor_point = stop_obstacle.collision_point;
   stop_factor_point.z = stop_pose.position.z;
+  stop_factor.dist_to_stop_pose = motion_utils::calcSignedArcLength(
+    planner_data.traj_points, planner_data.ego_pose.position, stop_pose.position);
   stop_factor.stop_factor_points.emplace_back(stop_factor_point);
 
   // create stop reason stamped
@@ -359,7 +361,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
     // Publish Stop Reason
     const auto stop_pose = output_traj_points.at(*zero_vel_idx).pose;
     const auto stop_reasons_msg =
-      makeStopReasonArray(planner_data.current_time, stop_pose, *closest_stop_obstacle);
+      makeStopReasonArray(planner_data, stop_pose, *closest_stop_obstacle);
     stop_reasons_pub_->publish(stop_reasons_msg);
     velocity_factors_pub_->publish(makeVelocityFactorArray(planner_data.current_time, stop_pose));
 
