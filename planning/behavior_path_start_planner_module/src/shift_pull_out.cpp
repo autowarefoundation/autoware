@@ -69,25 +69,15 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
       pull_out_path.partial_paths.front();  // shift path is not separate but only one.
 
     // check lane_departure with path between pull_out_start to pull_out_end
-    PathWithLaneId path_start_to_end{};
+    PathWithLaneId path_shift_start_to_end{};
     {
       const size_t pull_out_start_idx = findNearestIndex(shift_path.points, start_pose.position);
+      const size_t pull_out_end_idx =
+        findNearestIndex(shift_path.points, pull_out_path.end_pose.position);
 
-      // calculate collision check end idx
-      const size_t collision_check_end_idx = std::invoke([&]() {
-        const auto collision_check_end_pose = motion_utils::calcLongitudinalOffsetPose(
-          shift_path.points, pull_out_path.end_pose.position,
-          parameters_.collision_check_distance_from_end);
-
-        if (collision_check_end_pose) {
-          return findNearestIndex(shift_path.points, collision_check_end_pose->position);
-        } else {
-          return shift_path.points.size() - 1;
-        }
-      });
-      path_start_to_end.points.insert(
-        path_start_to_end.points.begin(), shift_path.points.begin() + pull_out_start_idx,
-        shift_path.points.begin() + collision_check_end_idx + 1);
+      path_shift_start_to_end.points.insert(
+        path_shift_start_to_end.points.begin(), shift_path.points.begin() + pull_out_start_idx,
+        shift_path.points.begin() + pull_out_end_idx + 1);
     }
 
     // extract shoulder lanes from pull out lanes
@@ -131,7 +121,7 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
     // check lane departure
     if (
       parameters_.check_shift_path_lane_departure &&
-      lane_departure_checker_->checkPathWillLeaveLane(expanded_lanes, path_start_to_end)) {
+      lane_departure_checker_->checkPathWillLeaveLane(expanded_lanes, path_shift_start_to_end)) {
       continue;
     }
 
