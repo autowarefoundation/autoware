@@ -267,6 +267,8 @@
       <arg name="input/image7" value="$(var image_raw7)"/>
       <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
       <arg name="output/objects" value="objects"/>
+      <arg name="model_name" value="$(var lidar_detection_model)"/>
+      <arg name="model_path" value="$(var pointpainting_model_path)"/>
       <arg name="model_param_path" value="$(var lidar_model_param_path)/$(var lidar_detection_model).param.yaml"/>
       <arg name="class_remapper_param_path" value="$(var lidar_model_param_path)/detection_class_remapper.param.yaml"/>
     </include>

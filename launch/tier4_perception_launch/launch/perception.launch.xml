@@ -34,6 +34,9 @@
   <arg name="centerpoint_model_name" default="centerpoint_tiny" description="options: `centerpoint` or `centerpoint_tiny`"/>
   <arg name="centerpoint_model_path" default="$(var data_path)/lidar_centerpoint"/>
 
+  <!-- PointPainting model parameters -->
+  <arg name="pointpainting_model_path" default="$(var data_path)/image_projection_based_fusion"/>
+
   <!-- Common parameters -->
   <arg name="input/pointcloud" default="/sensing/lidar/concatenated/pointcloud" description="The topic will be used in the detection module"/>
   <arg name="mode" default="camera_lidar_fusion" description="options: `camera_lidar_radar_fusion`, `camera_lidar_fusion`, `lidar_radar_fusion`, `lidar` or `radar`"/>
