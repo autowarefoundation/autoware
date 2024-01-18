@@ -23,7 +23,7 @@ This package converts from [radar_msgs/msg/RadarTracks](https://github.com/ros-p
 - `new_frame_id` (string): The header frame of the output topic.
   - Default parameter is "base_link"
 - `use_twist_compensation` (bool): If the parameter is true, then the twist of the output objects' topic is compensated by ego vehicle motion.
-  - Default parameter is "false"
+  - Default parameter is "true"
 - `use_twist_yaw_compensation` (bool): If the parameter is true, then the ego motion compensation will also consider yaw motion of the ego vehicle.
   - Default parameter is "false"
 - `static_object_speed_threshold` (float): Specify the threshold for static object speed which determines the flag `is_stationary` [m/s].

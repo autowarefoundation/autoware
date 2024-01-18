@@ -4,7 +4,7 @@
   <arg name="output/radar_detected_objects" default="output/radar_detected_objects"/>
   <arg name="output/radar_tracked_objects" default="output/radar_tracked_objects"/>
   <arg name="update_rate_hz" default="20.0"/>
-  <arg name="use_twist_compensation" default="false"/>
+  <arg name="use_twist_compensation" default="true"/>
   <arg name="use_twist_yaw_compensation" default="false"/>
   <arg name="static_object_speed_threshold" default="1.0"/>
 
