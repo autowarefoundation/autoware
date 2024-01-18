@@ -784,6 +784,7 @@ void BehaviorPathPlannerNode::onTrafficSignals(const TrafficSignalArray::ConstSh
 {
   std::lock_guard<std::mutex> lock(mutex_pd_);
 
+  planner_data_->traffic_light_id_map.clear();
   for (const auto & signal : msg->signals) {
     TrafficSignalStamped traffic_signal;
     traffic_signal.stamp = msg->stamp;

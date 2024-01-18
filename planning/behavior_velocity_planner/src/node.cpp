@@ -323,6 +323,11 @@ void BehaviorVelocityPlannerNode::onTrafficSignals(
 {
   std::lock_guard<std::mutex> lock(mutex_);
 
+  // clear previous observation
+  planner_data_.traffic_light_id_map_raw_.clear();
+  const auto traffic_light_id_map_last_observed_old =
+    planner_data_.traffic_light_id_map_last_observed_;
+  planner_data_.traffic_light_id_map_last_observed_.clear();
   for (const auto & signal : msg->signals) {
     TrafficSignalStamped traffic_signal;
     traffic_signal.stamp = msg->stamp;
@@ -334,9 +339,12 @@ void BehaviorVelocityPlannerNode::onTrafficSignals(
       });
     // if the observation is UNKNOWN and past observation is available, only update the timestamp
     // and keep the body of the info
-    if (
-      is_unknown_observation &&
-      planner_data_.traffic_light_id_map_last_observed_.count(signal.traffic_signal_id) == 1) {
+    const auto old_data = traffic_light_id_map_last_observed_old.find(signal.traffic_signal_id);
+    if (is_unknown_observation && old_data != traffic_light_id_map_last_observed_old.end()) {
+      // copy last observation
+      planner_data_.traffic_light_id_map_last_observed_[signal.traffic_signal_id] =
+        old_data->second;
+      // update timestamp
       planner_data_.traffic_light_id_map_last_observed_[signal.traffic_signal_id].stamp =
         msg->stamp;
     } else {
