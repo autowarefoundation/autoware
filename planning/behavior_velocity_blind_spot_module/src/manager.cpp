@@ -48,6 +48,8 @@ BlindSpotModuleManager::BlindSpotModuleManager(rclcpp::Node & node)
     getOrDeclareParameter<double>(node, ns + ".threshold_yaw_diff");
   planner_param_.adjacent_extend_width =
     getOrDeclareParameter<double>(node, ns + ".adjacent_extend_width");
+  planner_param_.opposite_adjacent_extend_width =
+    getOrDeclareParameter<double>(node, ns + ".opposite_adjacent_extend_width");
 }
 
 void BlindSpotModuleManager::launchNewModules(

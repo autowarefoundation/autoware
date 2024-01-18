@@ -145,14 +145,12 @@ visualization_msgs::msg::MarkerArray BlindSpotModule::createDebugMarkerArray()
 
   appendMarkerArray(
     createLaneletPolygonsMarkerArray(
-      debug_data_.conflict_areas_for_blind_spot, "conflict_area_for_blind_spot", module_id_, 0.0,
-      0.5, 0.5),
+      debug_data_.conflict_areas, "conflict_area", module_id_, 0.0, 0.5, 0.5),
     &debug_marker_array, now);
 
   appendMarkerArray(
     createLaneletPolygonsMarkerArray(
-      debug_data_.detection_areas_for_blind_spot, "detection_area_for_blind_spot", module_id_, 0.5,
-      0.0, 0.0),
+      debug_data_.detection_areas, "detection_area", module_id_, 0.5, 0.0, 0.0),
     &debug_marker_array, now);
 
   appendMarkerArray(
