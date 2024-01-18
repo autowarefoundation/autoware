@@ -88,7 +88,7 @@ To precisely calculate stop positions, the path is interpolated at the certain i
 
 - closest_idx denotes the path point index which is closest to ego position.
 - first_attention_stopline denotes the first path point where ego footprint intersects with the attention_area.
-- If a stopline is associated with the intersection lane on the map, that line is used as the default_stopline for collision detection. Otherwise the point which is `common.default_stopline_margin` meters behind first_attention_stopline is defined as the default_stopline instead.
+- If a stopline is associated with the intersection lane on the map, that line is used as default_stopline for collision detection. Otherwise the point which is `common.default_stopline_margin` meters behind first_attention_stopline is defined as default_stopline instead.
 - occlusion_peeking_stopline is a bit ahead of first_attention_stopline as described later.
 - occlusion_wo_tl_pass_judge_line is the first position where ego footprint intersects with the centerline of the first attention_area lane.
 
@@ -113,8 +113,8 @@ There are several behaviors depending on the scene.
 | Safe                     | Ego detected no occlusion and collision                                                           | Ego passes the intersection                                                         |
 | StuckStop                | The exit of the intersection is blocked by traffic jam                                            | Ego stops before the intersection or the boundary of attention area                 |
 | YieldStuck               | Another vehicle stops to yield ego                                                                | Ego stops before the intersection or the boundary of attention area                 |
-| NonOccludedCollisionStop | Ego detects no occlusion but detects collision                                                    | Ego stops at the default_stop_line                                                  |
-| FirstWaitBeforeOcclusion | Ego detected occlusion when entering the intersection                                             | Ego stops at the default_stop_line at first                                         |
+| NonOccludedCollisionStop | Ego detects no occlusion but detects collision                                                    | Ego stops at default_stopline                                                       |
+| FirstWaitBeforeOcclusion | Ego detected occlusion when entering the intersection                                             | Ego stops at default_stopline at first                                              |
 | PeekingTowardOcclusion   | Ego detected occlusion and but no collision within the FOV (after FirstWaitBeforeOcclusion)       | Ego approaches the boundary of the attention area slowly                            |
 | OccludedCollisionStop    | Ego detected both occlusion and collision (after FirstWaitBeforeOcclusion)                        | Ego stops immediately                                                               |
 | FullyPrioritized         | Ego is fully prioritized by the RED/Arrow signal                                                  | Ego only cares vehicles still running inside the intersection. Occlusion is ignored |
@@ -219,7 +219,7 @@ ros2 run behavior_velocity_intersection_module ttc.py --lane_id <lane_id>
 
 ## Occlusion detection
 
-If the flag `occlusion.enable` is true this module checks if there is sufficient field of view (FOV) on the attention area up to `occlusion.occlusion_attention_area_length`. If FOV is not clear enough ego first makes a brief stop at the default stop line for `occlusion.temporal_stop_time_before_peeking`, and then slowly creeps toward occlusion_peeking_stop_line. If `occlusion.creep_during_peeking.enable` is true `occlusion.creep_during_peeking.creep_velocity` is inserted up to occlusion_peeking_stop_line. Otherwise only stop line is inserted.
+If the flag `occlusion.enable` is true this module checks if there is sufficient field of view (FOV) on the attention area up to `occlusion.occlusion_attention_area_length`. If FOV is not clear enough ego first makes a brief stop at default_stopline for `occlusion.temporal_stop_time_before_peeking`, and then slowly creeps toward occlusion_peeking_stopline. If `occlusion.creep_during_peeking.enable` is true `occlusion.creep_during_peeking.creep_velocity` is inserted up to occlusion_peeking_stopline. Otherwise only stop line is inserted.
 
 During the creeping if collision is detected this module inserts a stop line in front of ego immediately, and if the FOV gets sufficiently clear the intersection_occlusion wall will disappear. If occlusion is cleared and no collision is detected ego will pass the intersection.
 
@@ -241,7 +241,7 @@ The remaining time is visualized on the intersection_occlusion virtual wall.
 
 ### Occlusion handling at intersection without traffic light
 
-At intersection without traffic light, if occlusion is detected, ego makes a brief stop at the default_stopline and first_attention_stopline respectively. After stopping at the first_attention_area_stopline this module inserts `occlusion.absence_traffic_light.creep_velocity` velocity between ego and occlusion_wo_tl_pass_judge_line while occlusion is not cleared. If collision is detected, ego immediately stops. Once the occlusion is cleared or ego has passed occlusion_wo_tl_pass_judge_line this module does not detect collision and occlusion because ego footprint is already inside the intersection.
+At intersection without traffic light, if occlusion is detected, ego makes a brief stop at default_stopline and first_attention_stopline respectively. After stopping at the first_attention_area_stopline this module inserts `occlusion.absence_traffic_light.creep_velocity` velocity between ego and occlusion_wo_tl_pass_judge_line while occlusion is not cleared. If collision is detected, ego immediately stops. Once the occlusion is cleared or ego has passed occlusion_wo_tl_pass_judge_line this module does not detect collision and occlusion because ego footprint is already inside the intersection.
 
 ![occlusion_detection](./docs/occlusion-without-tl.drawio.svg)
 
@@ -263,7 +263,7 @@ TTC parameter varies depending on the traffic light color/shape as follows.
 
 ### yield on GREEN
 
-If the traffic light color changed to GREEN and ego approached the entry of the intersection lane within the distance `collision_detection.yield_on_green_traffic_light.distance_to_assigned_lanelet_start` and there is any object whose distance to its stopline is less than `collision_detection.yield_on_green_traffic_light.object_dist_to_stopline`, this module commands to stop for the duration of `collision_detection.yield_on_green_traffic_light.duration` at the default_stopline.
+If the traffic light color changed to GREEN and ego approached the entry of the intersection lane within the distance `collision_detection.yield_on_green_traffic_light.distance_to_assigned_lanelet_start` and there is any object whose distance to its stopline is less than `collision_detection.yield_on_green_traffic_light.object_dist_to_stopline`, this module commands to stop for the duration of `collision_detection.yield_on_green_traffic_light.duration` at default_stopline.
 
 ### skip on AMBER
 
@@ -281,18 +281,49 @@ When the traffic light color/shape is RED/Arrow, occlusion detection is skipped.
 
 ## Pass Judge Line
 
-To avoid sudden braking, if deceleration and jerk more than the threshold (`common.max_accel` and `common.max_jerk`) is required to stop at first_attention_stopline, this module does not command to stop once it passed the default_stopline position.
+Generally it is not tolerable for vehicles that have lower traffic priority to stop in the middle of the unprotected area in intersections, and they need to stop at the stop line beforehand if there will be any risk of collision, which introduces two requirements:
 
-If ego passed pass_judge_line, then ego does not stop anymore. If ego passed pass_judge_line while ego is stopping for dangerous decision, then ego stops while the situation is judged as dangerous. Once the judgement turned safe, ego restarts and does not stop anymore.
+1. The vehicle must start braking before the boundary of the unprotected area at least by the braking distance if it is supposed to stop
+2. The vehicle must recognize upcoming vehicles and check safety beforehand with enough braking distance margin if it is supposed to go
+   1. And the SAFE decision must be absolutely certain and remain to be valid for the future horizon so that the safety condition will be always satisfied while ego is driving inside the unprotected area.
+3. (TODO): Since it is almost impossible to make perfectly safe decision beforehand given the limited detection range/velocity tracking performance, intersection module should plan risk-evasive acceleration velocity profile AND/OR relax lateral acceleration limit while ego is driving inside the unprotected area, if the safety decision is "betrayed" later due to the following reasons:
+   1. The situation _turned out to be dangerous_ later, mainly because velocity tracking was underestimated or the object accelerated beyond TTC margin
+   2. The situation _turned dangerous_ later, mainly because the object is suddenly detected out of nowhere
 
-The position of the pass judge line depends on the occlusion detection configuration and the existence of the associated traffic light of the intersection lane.
+The position which is before the boundary of unprotected area by the braking distance which is obtained by
 
-- If `occlusion.enable` is false, the pass judge line before the `first_attention_stopline` by the braking distance $v_{ego}^{2} / 2a_{max}$.
-- If `occlusion.enable` is true and:
-  - if there are associated traffic lights, the pass judge line is at the `occlusion_peeking_stopline` in order to continue peeking/collision detection while occlusion is detected.
-  - if there are no associated traffic lights and:
-    - if occlusion is detected, pass judge line is at the `occlusion_wo_tl_pass_judge_line` to continue peeking.
-    - if occlusion is not detected, pass judge line is at the same place at the case where `occlusion.enable` is false.
+$$
+\dfrac{v_{\mathrm{ego}}^{2}}{2a_{\mathrm{max}}} + v_{\mathrm{ego}} * t_{\mathrm{delay}}
+$$
+
+is called pass_judge_line, and safety decision must be made before ego passes this position because ego does not stop anymore.
+
+1st_pass_judge_line is before the first upcoming lane, and at intersections with multiple upcoming lanes, 2nd_pass_judge_line is defined as the position which is before the centerline of the first attention lane by the braking distance. 1st/2nd_pass_judge_line are illustrated in the following figure.
+
+![pass-judge-line](./docs/pass-judge-line.drawio.svg)
+
+Intersection module will command to GO if
+
+- ego is over default_stopline(or `common.enable_pass_judge_before_default_stopline` is true) AND
+- ego is over 1st_pass judge line AND
+- ego judged SAFE previously AND
+- (ego is over 2nd_pass_judge_line OR ego is between 1st and 2nd pass_judge_line but most probable collision is expected to happen in the 1st attention lane)
+
+because it is expected to stop or continue stop decision if
+
+1. ego is before default_stopline && `common.enable_pass_judge_before_default_stopline` is false OR
+   1. reason: default_stopline is defined on the map and should be respected
+2. ego is before 1st_pass_judge_line OR
+   1. reason: it has enough braking distance margin
+3. ego judged UNSAFE previously
+   1. reason: ego is now trying to stop and should continue stop decision if collision is detected in later calculation
+4. (ego is between 1st and 2nd pass_judge_line and the most probable collision is expected to happen in the 2nd attention lane)
+
+For the 3rd condition, it is possible that ego stops with some overshoot to the unprotected area while it is trying to stop for collision detection, because ego should keep stop decision while UNSAFE decision is made even if it passed 1st_pass_judge_line during deceleration.
+
+For the 4th condition, at intersections with 2nd attention lane, even if ego is over the 1st pass_judge_line, still intersection module commands to stop if the most probable collision is expected to happen in the 2nd attention lane.
+
+Also if `occlusion.enable` is true, the position of 1st_pass_judge line changes to occlusion_peeking_stopline if ego passed the original 1st_pass_judge_line position while ego is peeking. Otherwise ego could inadvertently judge that it passed 1st_pass_judge during peeking and then abort peeking.
 
 ## Data Structure
 
@@ -375,17 +406,18 @@ entity TargetObject {
 
 ### common
 
-| Parameter                         | Type   | Description                                                              |
-| --------------------------------- | ------ | ------------------------------------------------------------------------ |
-| `.attention_area_length`          | double | [m] range for object detection                                           |
-| `.attention_area_margin`          | double | [m] margin for expanding attention area width                            |
-| `.attention_area_angle_threshold` | double | [rad] threshold of angle difference between the detected object and lane |
-| `.use_intersection_area`          | bool   | [-] flag to use intersection_area for collision detection                |
-| `.default_stopline_margin`        | double | [m] margin before_stop_line                                              |
-| `.stopline_overshoot_margin`      | double | [m] margin for the overshoot from stopline                               |
-| `.max_accel`                      | double | [m/ss] max acceleration for stop                                         |
-| `.max_jerk`                       | double | [m/sss] max jerk for stop                                                |
-| `.delay_response_time`            | double | [s] action delay before stop                                             |
+| Parameter                                    | Type   | Description                                                                      |
+| -------------------------------------------- | ------ | -------------------------------------------------------------------------------- |
+| `.attention_area_length`                     | double | [m] range for object detection                                                   |
+| `.attention_area_margin`                     | double | [m] margin for expanding attention area width                                    |
+| `.attention_area_angle_threshold`            | double | [rad] threshold of angle difference between the detected object and lane         |
+| `.use_intersection_area`                     | bool   | [-] flag to use intersection_area for collision detection                        |
+| `.default_stopline_margin`                   | double | [m] margin before_stop_line                                                      |
+| `.stopline_overshoot_margin`                 | double | [m] margin for the overshoot from stopline                                       |
+| `.max_accel`                                 | double | [m/ss] max acceleration for stop                                                 |
+| `.max_jerk`                                  | double | [m/sss] max jerk for stop                                                        |
+| `.delay_response_time`                       | double | [s] action delay before stop                                                     |
+| `.enable_pass_judge_before_default_stopline` | bool   | [-] flag not to stop before default_stopline even if ego is over pass_judge_line |
 
 ### stuck_vehicle/yield_stuck
 
@@ -430,7 +462,7 @@ entity TargetObject {
 | `.possible_object_bbox`                        | [double] | [m] minimum bounding box size for checking if occlusion polygon is small enough             |
 | `.ignore_parked_vehicle_speed_threshold`       | double   | [m/s] velocity threshold for checking parked vehicle                                        |
 | `.occlusion_detection_hold_time`               | double   | [s] hold time of occlusion detection                                                        |
-| `.temporal_stop_time_before_peeking`           | double   | [s] temporal stop duration at the default_stop_line before starting peeking                 |
+| `.temporal_stop_time_before_peeking`           | double   | [s] temporal stop duration at default_stopline before starting peeking                      |
 | `.temporal_stop_before_attention_area`         | bool     | [-] flag to temporarily stop at first_attention_stopline before peeking into attention_area |
 | `.creep_velocity_without_traffic_light`        | double   | [m/s] creep velocity to occlusion_wo_tl_pass_judge_line                                     |
 | `.static_occlusion_with_traffic_light_timeout` | double   | [s] the timeout duration for ignoring static occlusion at intersection with traffic light   |

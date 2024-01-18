@@ -48,7 +48,10 @@ struct DebugData
   std::optional<geometry_msgs::msg::Pose> collision_stop_wall_pose{std::nullopt};
   std::optional<geometry_msgs::msg::Pose> occlusion_stop_wall_pose{std::nullopt};
   std::optional<geometry_msgs::msg::Pose> occlusion_first_stop_wall_pose{std::nullopt};
-  std::optional<geometry_msgs::msg::Pose> pass_judge_wall_pose{std::nullopt};
+  std::optional<geometry_msgs::msg::Pose> first_pass_judge_wall_pose{std::nullopt};
+  bool passed_first_pass_judge{false};
+  bool passed_second_pass_judge{false};
+  std::optional<geometry_msgs::msg::Pose> second_pass_judge_wall_pose{std::nullopt};
   std::optional<std::vector<lanelet::CompoundPolygon3d>> attention_area{std::nullopt};
   std::optional<std::vector<lanelet::CompoundPolygon3d>> occlusion_attention_area{std::nullopt};
   std::optional<lanelet::CompoundPolygon3d> ego_lane{std::nullopt};
@@ -256,8 +259,8 @@ struct IntersectionStopLines
   size_t first_pass_judge_line{0};
 
   /**
-   * second_pass_judge_line is before second_attention_stopline by the braking distance. if its
-   * value is calculated negative, it is 0
+   * second_pass_judge_line is before second_attention_stopline by the braking distance. if
+   * second_attention_lane is null, it is same as first_pass_judge_line
    */
   size_t second_pass_judge_line{0};
 
@@ -344,6 +347,7 @@ public:
       double max_accel;
       double max_jerk;
       double delay_response_time;
+      bool enable_pass_judge_before_default_stopline;
     } common;
 
     struct TurnDirection
@@ -373,7 +377,6 @@ public:
       bool consider_wrong_direction_vehicle;
       double collision_detection_hold_time;
       double min_predicted_path_confidence;
-      double keep_detection_velocity_threshold;
       struct VelocityProfile
       {
         bool use_upstream;
@@ -606,7 +609,7 @@ public:
 
 private:
   rclcpp::Node & node_;
-  const int64_t lane_id_;
+  const lanelet::Id lane_id_;
   const std::set<lanelet::Id> associative_ids_;
   const std::string turn_direction_;
   const bool has_traffic_light_;
@@ -621,6 +624,9 @@ private:
   bool is_permanent_go_{false};
   DecisionResult prev_decision_result_{Indecisive{""}};
   OcclusionType prev_occlusion_status_;
+  bool passed_1st_judge_line_while_peeking_{false};
+  std::optional<rclcpp::Time> safely_passed_1st_judge_line_time_{std::nullopt};
+  std::optional<rclcpp::Time> safely_passed_2nd_judge_line_time_{std::nullopt};
 
   // for occlusion detection
   const bool enable_occlusion_detection_;
