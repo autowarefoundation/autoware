@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_START_PLANNER_MODULE__START_PLANNER_PARAMETERS_HPP_
-#define BEHAVIOR_PATH_START_PLANNER_MODULE__START_PLANNER_PARAMETERS_HPP_
+#ifndef BEHAVIOR_PATH_START_PLANNER_MODULE__DATA_STRUCTS_HPP_
+#define BEHAVIOR_PATH_START_PLANNER_MODULE__DATA_STRUCTS_HPP_
 
 #include "behavior_path_planner_common/utils/parking_departure/geometric_parallel_parking.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
@@ -29,9 +29,29 @@
 namespace behavior_path_planner
 {
 
+using autoware_auto_perception_msgs::msg::PredictedObjects;
+using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebugMap;
+using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
+using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
+
 using freespace_planning_algorithms::AstarParam;
 using freespace_planning_algorithms::PlannerCommonParam;
 using freespace_planning_algorithms::RRTStarParam;
+
+struct StartPlannerDebugData
+{
+  // filtered objects
+  PredictedObjects filtered_objects;
+  TargetObjectsOnLane target_objects_on_lane;
+  std::vector<PoseWithVelocityStamped> ego_predicted_path;
+  // collision check debug map
+  CollisionCheckDebugMap collision_check;
+
+  Pose refined_start_pose;
+  std::vector<Pose> start_pose_candidates;
+  size_t selected_start_pose_candidate_index;
+  double margin_for_start_pose_candidate;
+};
 
 struct StartPlannerParameters
 {
@@ -105,4 +125,4 @@ struct StartPlannerParameters
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_START_PLANNER_MODULE__START_PLANNER_PARAMETERS_HPP_
+#endif  // BEHAVIOR_PATH_START_PLANNER_MODULE__DATA_STRUCTS_HPP_

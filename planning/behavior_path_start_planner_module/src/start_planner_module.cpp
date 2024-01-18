@@ -17,6 +17,7 @@
 #include "behavior_path_planner_common/utils/parking_departure/utils.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner_common/utils/path_utils.hpp"
+#include "behavior_path_start_planner_module/debug.hpp"
 #include "behavior_path_start_planner_module/util.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
@@ -126,7 +127,7 @@ void StartPlannerModule::initVariables()
   resetPathReference();
   debug_marker_.markers.clear();
   initializeSafetyCheckParameters();
-  initializeCollisionCheckDebugMap(start_planner_data_.collision_check);
+  initializeCollisionCheckDebugMap(debug_data_.collision_check);
 }
 
 void StartPlannerModule::updateEgoPredictedPathParams(
@@ -589,8 +590,8 @@ void StartPlannerModule::planWithPriority(
       if (findPullOutPath(
             start_pose_candidates[index], planner, refined_start_pose, goal_pose,
             collision_check_margin)) {
-        start_planner_data_.selected_start_pose_candidate_index = index;
-        start_planner_data_.margin_for_start_pose_candidate = collision_check_margin;
+        debug_data_.selected_start_pose_candidate_index = index;
+        debug_data_.margin_for_start_pose_candidate = collision_check_margin;
         return;
       }
     }
@@ -848,8 +849,8 @@ void StartPlannerModule::updatePullOutStatus()
       start_pose_candidates, *refined_start_pose, goal_pose, parameters_->search_priority);
   }
 
-  start_planner_data_.refined_start_pose = *refined_start_pose;
-  start_planner_data_.start_pose_candidates = start_pose_candidates;
+  debug_data_.refined_start_pose = *refined_start_pose;
+  debug_data_.start_pose_candidates = start_pose_candidates;
   const auto pull_out_lanes = start_planner_utils::getPullOutLanes(
     planner_data_, planner_data_->parameters.backward_path_length + parameters_->max_back_distance);
 
@@ -1196,14 +1197,13 @@ bool StartPlannerModule::isSafePath() const
   const double hysteresis_factor =
     status_.is_safe_dynamic_objects ? 1.0 : safety_check_params_->hysteresis_factor_expand_rate;
 
-  utils::parking_departure::updateSafetyCheckTargetObjectsData(
-    start_planner_data_, filtered_objects, target_objects_on_lane, ego_predicted_path);
+  behavior_path_planner::updateSafetyCheckDebugData(
+    debug_data_, filtered_objects, target_objects_on_lane, ego_predicted_path);
 
   return behavior_path_planner::utils::path_safety_checker::checkSafetyWithRSS(
     pull_out_path, ego_predicted_path, target_objects_on_lane.on_current_lane,
-    start_planner_data_.collision_check, planner_data_->parameters,
-    safety_check_params_->rss_params, objects_filtering_params_->use_all_predicted_path,
-    hysteresis_factor);
+    debug_data_.collision_check, planner_data_->parameters, safety_check_params_->rss_params,
+    objects_filtering_params_->use_all_predicted_path, hysteresis_factor);
 }
 
 bool StartPlannerModule::isGoalBehindOfEgoInSameRouteSegment() const
@@ -1354,7 +1354,7 @@ void StartPlannerModule::setDebugData()
   add(createPoseMarkerArray(status_.pull_out_path.start_pose, "start_pose", 0, 0.3, 0.9, 0.3));
   add(createPoseMarkerArray(status_.pull_out_path.end_pose, "end_pose", 0, 0.9, 0.9, 0.3));
   add(createFootprintMarkerArray(
-    start_planner_data_.refined_start_pose, vehicle_info_, "refined_start_pose", 0, 0.9, 0.9, 0.3));
+    debug_data_.refined_start_pose, vehicle_info_, "refined_start_pose", 0, 0.9, 0.9, 0.3));
   add(createPathMarkerArray(getFullPath(), "full_path", 0, 0.0, 0.5, 0.9));
   add(createPathMarkerArray(status_.backward_path, "backward_driving_path", 0, 0.0, 0.9, 0.0));
 
@@ -1399,14 +1399,13 @@ void StartPlannerModule::setDebugData()
       visualization_msgs::msg::Marker::TEXT_VIEW_FACING, createMarkerScale(0.3, 0.3, 0.3), purple);
     footprint_marker.lifetime = rclcpp::Duration::from_seconds(1.5);
     text_marker.lifetime = rclcpp::Duration::from_seconds(1.5);
-    for (size_t i = 0; i < start_planner_data_.start_pose_candidates.size(); ++i) {
+    for (size_t i = 0; i < debug_data_.start_pose_candidates.size(); ++i) {
       footprint_marker.id = i;
       text_marker.id = i;
       footprint_marker.points.clear();
       text_marker.text = "idx[" + std::to_string(i) + "]";
-      text_marker.pose = start_planner_data_.start_pose_candidates.at(i);
-      addFootprintMarker(
-        footprint_marker, start_planner_data_.start_pose_candidates.at(i), vehicle_info_);
+      text_marker.pose = debug_data_.start_pose_candidates.at(i);
+      addFootprintMarker(footprint_marker, debug_data_.start_pose_candidates.at(i), vehicle_info_);
       start_pose_footprint_marker_array.markers.push_back(footprint_marker);
       start_pose_text_marker_array.markers.push_back(text_marker);
     }
@@ -1450,29 +1449,29 @@ void StartPlannerModule::setDebugData()
 
   // safety check
   if (parameters_->safety_check_params.enable_safety_check) {
-    if (start_planner_data_.ego_predicted_path.size() > 0) {
+    if (debug_data_.ego_predicted_path.size() > 0) {
       const auto & ego_predicted_path = utils::path_safety_checker::convertToPredictedPath(
-        start_planner_data_.ego_predicted_path, ego_predicted_path_params_->time_resolution);
+        debug_data_.ego_predicted_path, ego_predicted_path_params_->time_resolution);
       add(createPredictedPathMarkerArray(
         ego_predicted_path, vehicle_info_, "ego_predicted_path_start_planner", 0, 0.0, 0.5, 0.9));
     }
 
-    if (start_planner_data_.filtered_objects.objects.size() > 0) {
+    if (debug_data_.filtered_objects.objects.size() > 0) {
       add(createObjectsMarkerArray(
-        start_planner_data_.filtered_objects, "filtered_objects", 0, 0.0, 0.5, 0.9));
+        debug_data_.filtered_objects, "filtered_objects", 0, 0.0, 0.5, 0.9));
     }
 
-    add(showSafetyCheckInfo(start_planner_data_.collision_check, "object_debug_info"));
-    add(showPredictedPath(start_planner_data_.collision_check, "ego_predicted_path"));
-    add(showPolygon(start_planner_data_.collision_check, "ego_and_target_polygon_relation"));
+    add(showSafetyCheckInfo(debug_data_.collision_check, "object_debug_info"));
+    add(showPredictedPath(debug_data_.collision_check, "ego_predicted_path"));
+    add(showPolygon(debug_data_.collision_check, "ego_and_target_polygon_relation"));
 
     // set objects of interest
-    for (const auto & [uuid, data] : start_planner_data_.collision_check) {
+    for (const auto & [uuid, data] : debug_data_.collision_check) {
       const auto color = data.is_safe ? ColorName::GREEN : ColorName::RED;
       setObjectsOfInterestData(data.current_obj_pose, data.obj_shape, color);
     }
 
-    initializeCollisionCheckDebugMap(start_planner_data_.collision_check);
+    initializeCollisionCheckDebugMap(debug_data_.collision_check);
   }
 
   // Visualize planner type text
