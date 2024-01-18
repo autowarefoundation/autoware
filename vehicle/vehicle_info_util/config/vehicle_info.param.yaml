@@ -1,5 +1,6 @@
 /**:
   ros__parameters:
+    # version: 0.1.0 # uncomment this line in the next update of this file format. please check Readme.md
     wheel_radius: 0.39
     wheel_width: 0.42
     wheel_base: 2.74 # between front wheel center and rear wheel center
