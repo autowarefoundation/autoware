@@ -458,13 +458,6 @@ bool GoalPlannerModule::isExecutionRequested() const
     return false;
   }
 
-  // if goal modification is not allowed
-  // 1) goal_pose is in current_lanes, plan path to the original fixed goal
-  // 2) goal_pose is NOT in current_lanes, do not execute goal_planner
-  if (!utils::isAllowedGoalModification(route_handler)) {
-    return goal_is_in_current_lanes;
-  }
-
   // if (A) or (B) is met execute pull over
   // (A) target lane is `road` and same to the current lanes
   // (B) target lane is `road_shoulder` and neighboring to the current lanes
