@@ -813,7 +813,9 @@ void CrosswalkModule::applySafetySlowDownSpeed(
     const auto & p_safety_slow =
       calcLongitudinalOffsetPoint(ego_path.points, ego_pos, safety_slow_point_range);
 
-    insertDecelPointWithDebugInfo(p_safety_slow.value(), safety_slow_down_speed, output);
+    if (p_safety_slow.has_value()) {
+      insertDecelPointWithDebugInfo(p_safety_slow.value(), safety_slow_down_speed, output);
+    }
 
     if (safety_slow_point_range < 0.0) {
       passed_safety_slow_point_ = true;
