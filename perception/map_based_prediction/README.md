@@ -124,7 +124,7 @@ See paper [2] for more details.
 
 `lateral_control_time_horizon` parameter supports the tuning of the lateral path shape. This parameter is used to calculate the time to reach the reference path. The smaller the value, the more the path will be generated to reach the reference path quickly. (Mostly the center of the lane.)
 
-#### Pruning predicted paths with lateral acceleration constraint
+#### Pruning predicted paths with lateral acceleration constraint (for vehicle obstacles)
 
 It is possible to apply a maximum lateral acceleration constraint to generated vehicle paths. This check verifies if it is possible for the vehicle to perform the predicted path without surpassing a lateral acceleration threshold `max_lateral_accel` when taking a curve. If it is not possible, it checks if the vehicle can slow down on time to take the curve with a deceleration of `min_acceleration_before_curve` and comply with the constraint. If that is also not possible, the path is eliminated.
 
@@ -136,11 +136,47 @@ Currently we provide three parameters to tune the lateral acceleration constrain
 
 You can change these parameters in rosparam in the table below.
 
-| param name                                | default value  |
-| ----------------------------------------- | -------------- |
-| `check_lateral_acceleration_constraints_` | `false` [bool] |
-| `max_lateral_accel`                       | `2.0` [m/s^2]  |
-| `min_acceleration_before_curve`           | `-2.0` [m/s^2] |
+| param name                               | default value  |
+| ---------------------------------------- | -------------- |
+| `check_lateral_acceleration_constraints` | `false` [bool] |
+| `max_lateral_accel`                      | `2.0` [m/s^2]  |
+| `min_acceleration_before_curve`          | `-2.0` [m/s^2] |
+
+## Using Vehicle Acceleration for Path Prediction (for Vehicle Obstacles)
+
+By default, the `map_based_prediction` module uses the current obstacle's velocity to compute its predicted path length. However, it is possible to use the obstacle's current acceleration to calculate its predicted path's length.
+
+### Decaying Acceleration Model
+
+Since this module tries to predict the vehicle's path several seconds into the future, it is not practical to consider the current vehicle's acceleration as constant (it is not assumed the vehicle will be accelerating for `prediction_time_horizon` seconds after detection). Instead, a decaying acceleration model is used. With the decaying acceleration model, a vehicle's acceleration is modeled as:
+
+$\ a(t) = a\_{t0} \cdot e^{-\lambda \cdot t} $
+
+where $\ a\_{t0} $ is the vehicle acceleration at the time of detection $\ t0 $, and $\ \lambda $ is the decay constant $\ \lambda = \ln(2) / hl $ and $\ hl $ is the exponential's half life.
+
+Furthermore, the integration of $\ a(t) $ over time gives us equations for velocity, $\ v(t) $ and distance $\ x(t) $ as:
+
+$\ v(t) = v*{t0} + a*{t0} \* (1/\lambda) \cdot (1 - e^{-\lambda \cdot t}) $
+
+and
+
+$\ x(t) = x*{t0} + (v*{t0} + a*{t0} \* (1/\lambda)) \cdot t + a*{t0}(1/λ^2)(e^{-\lambda \cdot t} - 1) $
+
+With this model, the influence of the vehicle's detected instantaneous acceleration on the predicted path's length is diminished but still considered. This feature also considers that the obstacle might not accelerate past its road's speed limit (multiplied by a tunable factor).
+
+Currently, we provide three parameters to tune the use of obstacle acceleration for path prediction:
+
+- `use_vehicle_acceleration`: to enable the feature.
+- `acceleration_exponential_half_life`: The decaying acceleration model considers that the current vehicle acceleration will be halved after this many seconds.
+- `speed_limit_multiplier`: Set the vehicle type obstacle's maximum predicted speed as the legal speed limit in that lanelet times this value. This value should be at least equal or greater than 1.0.
+
+You can change these parameters in `rosparam` in the table below.
+
+| Param Name                           | Default Value  |
+| ------------------------------------ | -------------- |
+| `use_vehicle_acceleration`           | `false` [bool] |
+| `acceleration_exponential_half_life` | `2.5` [s]      |
+| `speed_limit_multiplier`             | `1.5` []       |
 
 ### Path prediction for crosswalk users
 

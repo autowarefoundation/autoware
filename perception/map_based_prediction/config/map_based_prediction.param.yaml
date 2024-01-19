@@ -16,6 +16,9 @@
     check_lateral_acceleration_constraints: false # whether to check if the predicted path complies with lateral acceleration constraints
     max_lateral_accel: 2.0 # [m/ss] max acceptable lateral acceleration for predicted vehicle paths
     min_acceleration_before_curve: -2.0 # [m/ss] min acceleration a vehicle might take to decelerate before a curve
+    use_vehicle_acceleration: false # whether to consider current vehicle acceleration when predicting paths or not
+    speed_limit_multiplier: 1.5 # When using vehicle acceleration. Set vehicle's maximum predicted speed as the legal speed limit in that lanelet times this value
+    acceleration_exponential_half_life: 2.5 # [s] When using vehicle acceleration. The decaying acceleration model considers that the current vehicle acceleration will be halved after this many seconds
     # parameter for shoulder lane prediction
     prediction_time_horizon_rate_for_validate_shoulder_lane_length: 0.8
 

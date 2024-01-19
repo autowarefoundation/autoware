@@ -22,6 +22,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/transform_listener.hpp>
+#include <tier4_autoware_utils/ros/uuid_helper.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
@@ -89,6 +90,7 @@ struct LaneletData
 struct PredictedRefPath
 {
   float probability;
+  double speed_limit;
   PosePath path;
   Maneuver maneuver;
 };
@@ -175,6 +177,10 @@ private:
   double max_lateral_accel_;
   double min_acceleration_before_curve_;
 
+  bool use_vehicle_acceleration_;
+  double speed_limit_multiplier_;
+  double acceleration_exponential_half_life_;
+
   // Stop watch
   StopWatch<std::chrono::milliseconds> stop_watch_;
 
@@ -231,7 +237,8 @@ private:
   void addReferencePaths(
     const TrackedObject & object, const lanelet::routing::LaneletPaths & candidate_paths,
     const float path_probability, const ManeuverProbability & maneuver_probability,
-    const Maneuver & maneuver, std::vector<PredictedRefPath> & reference_paths);
+    const Maneuver & maneuver, std::vector<PredictedRefPath> & reference_paths,
+    const double speed_limit = 0.0);
   std::vector<PosePath> convertPathType(const lanelet::routing::LaneletPaths & paths);
 
   void updateFuturePossibleLanelets(
