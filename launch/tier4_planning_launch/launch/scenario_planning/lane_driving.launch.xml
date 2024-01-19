@@ -1,4 +1,6 @@
 <launch>
+  <arg name="enable_all_modules_auto_mode"/>
+
   <!-- lane_driving scenario -->
   <group>
     <push-ros-namespace namespace="lane_driving"/>
@@ -8,6 +10,7 @@
       <group>
         <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/lane_driving/behavior_planning/behavior_planning.launch.xml">
           <arg name="container_type" value="component_container_mt"/>
+          <arg name="enable_all_modules_auto_mode" value="$(var enable_all_modules_auto_mode)"/>
           <!-- This condition should be true if run_out module is enabled and its detection method is Points -->
           <arg name="launch_compare_map_pipeline" value="false"/>
         </include>

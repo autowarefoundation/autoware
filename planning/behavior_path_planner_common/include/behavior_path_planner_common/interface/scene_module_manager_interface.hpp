@@ -268,7 +268,14 @@ protected:
     // init manager configuration
     {
       std::string ns = name_ + ".";
-      config_.enable_rtc = getOrDeclareParameter<bool>(*node, ns + "enable_rtc");
+      try {
+        config_.enable_rtc = getOrDeclareParameter<bool>(*node, "enable_all_modules_auto_mode")
+                               ? false
+                               : getOrDeclareParameter<bool>(*node, ns + "enable_rtc");
+      } catch (const std::exception & e) {
+        config_.enable_rtc = getOrDeclareParameter<bool>(*node, ns + "enable_rtc");
+      }
+
       config_.enable_simultaneous_execution_as_approved_module =
         getOrDeclareParameter<bool>(*node, ns + "enable_simultaneous_execution_as_approved_module");
       config_.enable_simultaneous_execution_as_candidate_module = getOrDeclareParameter<bool>(

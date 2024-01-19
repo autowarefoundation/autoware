@@ -4,6 +4,7 @@
   <arg name="input_virtual_traffic_light_topic_name" default="/awapi/tmp/virtual_traffic_light_states"/>
   <arg name="input_vector_map_topic_name" default="/map/vector_map"/>
   <arg name="input_pointcloud_map_topic_name" default="/map/pointcloud_map"/>
+  <arg name="enable_all_modules_auto_mode"/>
 
   <arg name="launch_avoidance_module" default="true"/>
   <arg name="launch_avoidance_by_lane_change_module" default="true"/>
@@ -195,6 +196,7 @@
       <param from="$(var vehicle_param_file)"/>
       <param from="$(var nearest_search_param_path)"/>
       <param name="launch_modules" value="$(var behavior_path_planner_launch_modules)"/>
+      <param name="enable_all_modules_auto_mode" value="$(var enable_all_modules_auto_mode)"/>
       <param from="$(var behavior_path_planner_side_shift_module_param_path)"/>
       <param from="$(var behavior_path_planner_avoidance_module_param_path)"/>
       <param from="$(var behavior_path_planner_avoidance_by_lc_module_param_path)"/>
