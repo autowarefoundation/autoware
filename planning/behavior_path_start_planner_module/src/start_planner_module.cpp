@@ -128,6 +128,7 @@ void StartPlannerModule::initVariables()
   debug_marker_.markers.clear();
   initializeSafetyCheckParameters();
   initializeCollisionCheckDebugMap(debug_data_.collision_check);
+  updateDrivableLanes();
 }
 
 void StartPlannerModule::updateEgoPredictedPathParams(
@@ -560,6 +561,7 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
 void StartPlannerModule::resetStatus()
 {
   status_ = PullOutStatus{};
+  updateDrivableLanes();
 }
 
 void StartPlannerModule::incrementPathIndex()
@@ -1323,6 +1325,42 @@ void StartPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) cons
             current_drivable_area_info, getPreviousModuleOutput().drivable_area_info)
         : current_drivable_area_info;
   }
+}
+
+void StartPlannerModule::updateDrivableLanes()
+{
+  const auto drivable_lanes = createDrivableLanes();
+  for (auto & planner : start_planners_) {
+    auto shift_pull_out = std::dynamic_pointer_cast<ShiftPullOut>(planner);
+
+    if (shift_pull_out) {
+      shift_pull_out->setDrivableLanes(drivable_lanes);
+    }
+  }
+}
+
+lanelet::ConstLanelets StartPlannerModule::createDrivableLanes() const
+{
+  const double backward_path_length =
+    planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
+  const auto pull_out_lanes =
+    start_planner_utils::getPullOutLanes(planner_data_, backward_path_length);
+  if (pull_out_lanes.empty()) {
+    return lanelet::ConstLanelets{};
+  }
+  const auto road_lanes = utils::getExtendedCurrentLanes(
+    planner_data_, backward_path_length, std::numeric_limits<double>::max(),
+    /*forward_only_in_route*/ true);
+  // extract shoulder lanes from pull out lanes
+  lanelet::ConstLanelets shoulder_lanes;
+  std::copy_if(
+    pull_out_lanes.begin(), pull_out_lanes.end(), std::back_inserter(shoulder_lanes),
+    [this](const auto & pull_out_lane) {
+      return planner_data_->route_handler->isShoulderLanelet(pull_out_lane);
+    });
+  const auto drivable_lanes = utils::transformToLanelets(
+    utils::generateDrivableLanesWithShoulderLanes(road_lanes, shoulder_lanes));
+  return drivable_lanes;
 }
 
 void StartPlannerModule::setDebugData()

@@ -49,11 +49,6 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
 
   const double backward_path_length =
     planner_data_->parameters.backward_path_length + parameters_.max_back_distance;
-  const auto pull_out_lanes = getPullOutLanes(planner_data_, backward_path_length);
-  if (pull_out_lanes.empty()) {
-    return std::nullopt;
-  }
-
   const auto road_lanes = utils::getExtendedCurrentLanes(
     planner_data_, backward_path_length, std::numeric_limits<double>::max(),
     /*forward_only_in_route*/ true);
@@ -80,20 +75,6 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
         shift_path.points.begin() + pull_out_end_idx + 1);
     }
 
-    // extract shoulder lanes from pull out lanes
-    lanelet::ConstLanelets shoulder_lanes;
-    std::copy_if(
-      pull_out_lanes.begin(), pull_out_lanes.end(), std::back_inserter(shoulder_lanes),
-      [&route_handler](const auto & pull_out_lane) {
-        return route_handler->isShoulderLanelet(pull_out_lane);
-      });
-    const auto drivable_lanes =
-      utils::generateDrivableLanesWithShoulderLanes(road_lanes, shoulder_lanes);
-    const auto & dp = planner_data_->drivable_area_expansion_parameters;
-    const auto expanded_lanes = utils::transformToLanelets(utils::expandLanelets(
-      drivable_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
-      dp.drivable_area_types_to_skip));
-
     // crop backward path
     // removes points which are out of lanes up to the start pose.
     // this ensures that the backward_path stays within the drivable area when starting from a
@@ -107,7 +88,7 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
       const auto transformed_vehicle_footprint =
         transformVector(vehicle_footprint_, tier4_autoware_utils::pose2transform(pose));
       const bool is_out_of_lane =
-        LaneDepartureChecker::isOutOfLane(expanded_lanes, transformed_vehicle_footprint);
+        LaneDepartureChecker::isOutOfLane(drivable_lanes_, transformed_vehicle_footprint);
       if (i <= start_segment_idx) {
         if (!is_out_of_lane) {
           cropped_path.points.push_back(shift_path.points.at(i));
@@ -121,7 +102,7 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
     // check lane departure
     if (
       parameters_.check_shift_path_lane_departure &&
-      lane_departure_checker_->checkPathWillLeaveLane(expanded_lanes, path_shift_start_to_end)) {
+      lane_departure_checker_->checkPathWillLeaveLane(drivable_lanes_, path_shift_start_to_end)) {
       continue;
     }
 
