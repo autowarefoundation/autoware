@@ -22,6 +22,7 @@
 #include <objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp>
 #include <rtc_interface/rtc_interface.hpp>
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
+#include <tier4_autoware_utils/ros/parameter.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/velocity_factor.hpp>
 #include <autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp>
@@ -52,6 +53,7 @@ using objects_of_interest_marker_interface::ColorName;
 using objects_of_interest_marker_interface::ObjectsOfInterestMarkerInterface;
 using rtc_interface::RTCInterface;
 using tier4_autoware_utils::DebugPublisher;
+using tier4_autoware_utils::getOrDeclareParameter;
 using tier4_debug_msgs::msg::Float64Stamped;
 using tier4_planning_msgs::msg::StopFactor;
 using tier4_planning_msgs::msg::StopReason;
@@ -251,6 +253,21 @@ protected:
   void publishObjectsOfInterestMarker();
 
   void deleteExpiredModules(const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
+
+  bool getEnableRTC(rclcpp::Node & node, const std::string & param_name)
+  {
+    bool enable_rtc = true;
+
+    try {
+      enable_rtc = getOrDeclareParameter<bool>(node, "enable_all_modules_auto_mode")
+                     ? false
+                     : getOrDeclareParameter<bool>(node, param_name);
+    } catch (const std::exception & e) {
+      enable_rtc = getOrDeclareParameter<bool>(node, param_name);
+    }
+
+    return enable_rtc;
+  }
 };
 
 }  // namespace behavior_velocity_planner

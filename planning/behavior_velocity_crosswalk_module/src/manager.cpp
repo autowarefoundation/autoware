@@ -31,8 +31,7 @@ using tier4_autoware_utils::getOrDeclareParameter;
 
 CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterfaceWithRTC(
-    node, getModuleName(),
-    getOrDeclareParameter<bool>(node, std::string(getModuleName()) + ".common.enable_rtc"))
+    node, getModuleName(), getEnableRTC(node, std::string(getModuleName()) + ".common.enable_rtc"))
 {
   const std::string ns(getModuleName());
 

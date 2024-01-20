@@ -237,6 +237,7 @@
       <param from="$(var behavior_velocity_smoother_type_param_path)"/>
       <param from="$(var behavior_velocity_planner_common_param_path)"/>
       <param name="launch_modules" value="$(var behavior_velocity_planner_launch_modules)"/>
+      <param name="enable_all_modules_auto_mode" value="$(var enable_all_modules_auto_mode)"/>
       <!-- <param from="$(var template_param_path)"/> -->
       <param from="$(var behavior_velocity_planner_blind_spot_module_param_path)"/>
       <param from="$(var behavior_velocity_planner_crosswalk_module_param_path)"/>
