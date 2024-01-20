@@ -474,13 +474,7 @@ class GroundSegmentationPipeline:
 def launch_setup(context, *args, **kwargs):
     pipeline = GroundSegmentationPipeline(context)
 
-    glog_component = ComposableNode(
-        package="glog_component",
-        plugin="GlogComponent",
-        name="glog_component",
-    )
-
-    components = [glog_component]
+    components = []
     components.extend(
         pipeline.create_single_frame_obstacle_segmentation_components(
             input_topic=LaunchConfiguration("input/pointcloud"),
