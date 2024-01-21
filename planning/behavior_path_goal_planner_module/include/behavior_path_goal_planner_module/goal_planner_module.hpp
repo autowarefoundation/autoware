@@ -254,6 +254,29 @@ struct PreviousPullOverData
   bool has_decided_path{false};
 };
 
+// store stop_pose_ pointer with reason string
+struct PoseWithString
+{
+  std::optional<Pose> * pose;
+  std::string string;
+
+  explicit PoseWithString(std::optional<Pose> * shared_pose) : pose(shared_pose), string("") {}
+
+  void set(const Pose & new_pose, const std::string & new_string)
+  {
+    *pose = new_pose;
+    string = new_string;
+  }
+
+  void set(const std::string & new_string) { string = new_string; }
+
+  void clear()
+  {
+    pose->reset();
+    string = "";
+  }
+};
+
 class GoalPlannerModule : public SceneModuleInterface
 {
 public:
@@ -385,6 +408,7 @@ private:
 
   // debug
   mutable GoalPlannerDebugData debug_data_;
+  mutable PoseWithString debug_stop_pose_with_info_;
 
   // collision check
   void initializeOccupancyGridMap();
