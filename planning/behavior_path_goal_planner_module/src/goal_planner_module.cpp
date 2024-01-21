@@ -275,6 +275,10 @@ void GoalPlannerModule::onTimer()
 
 void GoalPlannerModule::onFreespaceParkingTimer()
 {
+  if (getCurrentStatus() == ModuleStatus::IDLE) {
+    return;
+  }
+
   if (!planner_data_) {
     return;
   }
