@@ -1,6 +1,7 @@
 builtin_interfaces/Time stamp
 
 # states
+bool is_valid_size
 bool is_valid_finite_value
 bool is_valid_interval
 bool is_valid_relative_angle

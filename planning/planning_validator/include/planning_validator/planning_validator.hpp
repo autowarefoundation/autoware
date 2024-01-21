@@ -64,6 +64,7 @@ public:
 
   void onTrajectory(const Trajectory::ConstSharedPtr msg);
 
+  bool checkValidSize(const Trajectory & trajectory) const;
   bool checkValidFiniteValue(const Trajectory & trajectory);
   bool checkValidInterval(const Trajectory & trajectory);
   bool checkValidRelativeAngle(const Trajectory & trajectory);
@@ -116,7 +117,7 @@ private:
 
   vehicle_info_util::VehicleInfo vehicle_info_;
 
-  bool isAllValid(const PlanningValidatorStatus & status);
+  bool isAllValid(const PlanningValidatorStatus & status) const;
 
   Trajectory::ConstSharedPtr current_trajectory_;
   Trajectory::ConstSharedPtr previous_published_trajectory_;
