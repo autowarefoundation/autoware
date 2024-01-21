@@ -1491,9 +1491,16 @@ bool GoalPlannerModule::checkObjectsCollision(
   const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
     *(planner_data_->route_handler), left_side_parking_, parameters_->backward_goal_search_length,
     parameters_->forward_goal_search_length);
+
+  const auto expanded_pull_over_lanes =
+    left_side_parking_ ? lanelet::utils::getExpandedLanelets(
+                           pull_over_lanes, parameters_->detection_bound_offset, 0.0)
+                       : lanelet::utils::getExpandedLanelets(
+                           pull_over_lanes, 0.0, parameters_->detection_bound_offset);
+
   const auto [pull_over_lane_objects, others] =
     utils::path_safety_checker::separateObjectsByLanelets(
-      *(planner_data_->dynamic_object), pull_over_lanes,
+      *(planner_data_->dynamic_object), expanded_pull_over_lanes,
       utils::path_safety_checker::isPolygonOverlapLanelet);
   const auto pull_over_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
     pull_over_lane_objects, parameters_->th_moving_object_velocity);

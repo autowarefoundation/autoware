@@ -155,6 +155,7 @@ Generate footprints from ego-vehicle path points and determine obstacle collisio
 | use_object_recognition                                       | [-]  | bool   | flag whether to use object recognition for collision check                                               | true          |
 | object_recognition_collision_check_margin                    | [m]  | double | margin to calculate ego-vehicle cells from footprint.                                                    | 0.6           |
 | object_recognition_collision_check_max_extra_stopping_margin | [m]  | double | maximum value when adding longitudinal distance margin for collision check considering stopping distance | 1.0           |
+| detection_bound_offset                                       | [m]  | double | expand pull over lane with this offset to make detection area for collision check of path generation     | 15.0          |
 
 ## **Goal Search**
 

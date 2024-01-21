@@ -101,6 +101,7 @@ void GoalPlannerModuleManager::init(rclcpp::Node * node)
       node->declare_parameter<double>(
         ns + "object_recognition_collision_check_max_extra_stopping_margin");
     p.th_moving_object_velocity = node->declare_parameter<double>(ns + "th_moving_object_velocity");
+    p.detection_bound_offset = node->declare_parameter<double>(ns + "detection_bound_offset");
   }
 
   // pull over general params
