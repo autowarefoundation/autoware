@@ -16,7 +16,7 @@ Use cases include:
 - pull out from the shoulder lane to the road lane centerline.
 
 <figure markdown>
-  ![case2](images/start_from_start_from_road_shoulder.drawio.svg){width=1000}
+  ![case2](images/start_from_road_shoulder.drawio.svg){width=1000}
   <figcaption>pull out from the shoulder lane</figcaption>
 </figure>
 
