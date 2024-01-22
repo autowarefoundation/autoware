@@ -11,11 +11,6 @@
           "default": "base_link",
           "description": "frame id for base_frame"
         },
-        "gnss_frame": {
-          "type": "string",
-          "default": "gnss",
-          "description": "frame id for gnss_frame"
-        },
         "gnss_base_frame": {
           "type": "string",
           "default": "gnss_base_link",

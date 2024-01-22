@@ -2,7 +2,6 @@
   ros__parameters:
     base_frame: base_link
     gnss_base_frame: gnss_base_link
-    gnss_frame: gnss
     map_frame: map
     buff_epoch: 1
     use_gnss_ins_orientation: true
