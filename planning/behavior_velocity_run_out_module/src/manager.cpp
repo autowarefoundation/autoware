@@ -105,16 +105,14 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
     p.enable = getOrDeclareParameter<bool>(node, ns_a + ".enable");
     p.margin = getOrDeclareParameter<double>(node, ns_a + ".margin");
     p.limit_vel_kmph = getOrDeclareParameter<double>(node, ns_a + ".limit_vel_kmph");
-  }
 
-  {
-    auto & p = planner_param_.state_param;
-    const std::string ns_s = ns + ".state";
-    p.stop_thresh = getOrDeclareParameter<double>(node, ns_s + ".stop_thresh");
-    p.stop_time_thresh = getOrDeclareParameter<double>(node, ns_s + ".stop_time_thresh");
-    p.disable_approach_dist = getOrDeclareParameter<double>(node, ns_s + ".disable_approach_dist");
-    p.keep_approach_duration =
-      getOrDeclareParameter<double>(node, ns_s + ".keep_approach_duration");
+    const std::string ns_as = ns_a + ".state";
+    p.state.stop_thresh = getOrDeclareParameter<double>(node, ns_as + ".stop_thresh");
+    p.state.stop_time_thresh = getOrDeclareParameter<double>(node, ns_as + ".stop_time_thresh");
+    p.state.disable_approach_dist =
+      getOrDeclareParameter<double>(node, ns_as + ".disable_approach_dist");
+    p.state.keep_approach_duration =
+      getOrDeclareParameter<double>(node, ns_as + ".keep_approach_duration");
   }
 
   {

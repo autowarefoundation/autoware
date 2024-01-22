@@ -46,7 +46,7 @@ RunOutModule::RunOutModule(
   planner_param_(planner_param),
   dynamic_obstacle_creator_(std::move(dynamic_obstacle_creator)),
   debug_ptr_(debug_ptr),
-  state_machine_(std::make_unique<run_out_utils::StateMachine>(planner_param.state_param))
+  state_machine_(std::make_unique<run_out_utils::StateMachine>(planner_param.approaching.state))
 {
   velocity_factor_.init(PlanningBehavior::UNKNOWN);
 
