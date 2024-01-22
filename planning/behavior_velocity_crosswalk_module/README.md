@@ -2,7 +2,7 @@
 
 ## Role
 
-This module judges whether the ego should stop in front of the crosswalk in order to provide safe passage of crosswalk users such as pedestrians and bicycles based on the objects' behavior and surround traffic.
+This module judges whether the ego should stop in front of the crosswalk in order to provide safe passage for crosswalk users, such as pedestrians and bicycles, based on the objects' behavior and surround traffic.
 
 <figure markdown>
   ![crosswalk_module](docs/crosswalk_module.svg){width=1100}
@@ -14,7 +14,7 @@ This module judges whether the ego should stop in front of the crosswalk in orde
 
 #### Target Object
 
-The target object's type is filtered by the following parameters in the `object_filtering.target_object` namespace.
+The crosswalk module handles objects of the types defined by the following parameters in the `object_filtering.target_object` namespace.
 
 | Parameter    | Unit | Type | Description                                    |
 | ------------ | ---- | ---- | ---------------------------------------------- |
@@ -23,13 +23,13 @@ The target object's type is filtered by the following parameters in the `object_
 | `bicycle`    | [-]  | bool | whether to look and stop by BICYCLE objects    |
 | `motorcycle` | [-]  | bool | whether to look and stop by MOTORCYCLE objects |
 
-In order to detect crosswalk users crossing outside the crosswalk as well, the crosswalk module creates an attention area around the crosswalk shown as the yellow polygon in the figure. If the object's predicted path collides with the attention area, the object will be targeted for yield.
+In order to handle the crosswalk users crossing the neighborhood but outside the crosswalk, the crosswalk module creates an attention area around the crosswalk, shown as the yellow polygon in the figure. If the object's predicted path collides with the attention area, the object will be targeted for yield.
 
 <figure markdown>
   ![crosswalk_attention_range](docs/crosswalk_attention_range.svg){width=600}
 </figure>
 
-The parameter is in the `object_filtering.target_object` namespace.
+The neighborhood is defined by the following parameter in the `object_filtering.target_object` namespace.
 
 | Parameter                   | Unit | Type   | Description                                                                                       |
 | --------------------------- | ---- | ------ | ------------------------------------------------------------------------------------------------- |
@@ -51,13 +51,13 @@ When the stop line does **NOT** exist in the lanelet map, the stop position is c
     </table>
 </div>
 
-On the other hand, if pedestrian (bicycle) is crossing **wide** crosswalks seen in scramble intersections, and the pedestrian position is more than `far_object_threshold` meters away from the stop line, the actual stop position is determined to be `stop_distance_from_object` and pedestrian position, not at the stop line.
+As an exceptional case, if a pedestrian (or bicycle) is crossing **wide** crosswalks seen in scramble intersections, and the pedestrian position is more than `far_object_threshold` meters away from the stop line, the actual stop position is determined by `stop_distance_from_object` and pedestrian position, not at the stop line.
 
 <figure markdown>
   ![far_object_threshold](docs/far_object_threshold.drawio.svg){width=700}
 </figure>
 
-In the `stop_position` namespace,
+In the `stop_position` namespace, the following parameters are defined.
 
 | Parameter                      |     | Type   | Description                                                                                                                                                                                                               |
 | ------------------------------ | --- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -69,12 +69,12 @@ In the `stop_position` namespace,
 #### Yield decision
 
 The module makes a decision to yield only when the pedestrian traffic light is **GREEN** or **UNKNOWN**.
-Calculating the collision point, the decision is based on the following variables.
+The decision is based on the following variables, along with the calculation of the collision point.
 
-- TTC: Time-To-Collision which is the time for the **ego** to reach the virtual collision point.
-- TTV: Time-To-Vehicle which is the time for the **object** to reach the virtual collision point.
+- Time-To-Collision (TTC): The time for the **ego** to reach the virtual collision point.
+- Time-To-Vehicle (TTV): The time for the **object** to reach the virtual collision point.
 
-Depending on the relative relationship between TTC and TTV, the ego's behavior at crosswalks can be classified into three categories based on [1]
+We classify ego behavior at crosswalks into three categories according to the relative relationship between TTC and TTV [1].
 
 - A. **TTC >> TTV**: The object has enough time to cross before the ego.
   - No stop planning.
@@ -92,10 +92,12 @@ Depending on the relative relationship between TTC and TTV, the ego's behavior a
     </table>
 </div>
 
-The boundary of A and B is interpolated from `ego_pass_later_margin_x` and `ego_pass_later_margin_y`. In the case of the upper figure, `ego_pass_later_margin_x` is `{0, 1, 2}` and `ego_pass_later_margin_y` is `{1, 4, 6}` for example.
-The same way, the boundary of B and C is calculated from `ego_pass_first_margin_x` and `ego_pass_first_margin_y`. In the case of the upper figure, `ego_pass_first_margin_x` is `{3, 5}` and `ego_pass_first_margin_y` is `{0, 1}` for example.
+The boundary of A and B is interpolated from `ego_pass_later_margin_x` and `ego_pass_later_margin_y`.
+In the case of the upper figure, `ego_pass_later_margin_x` is `{0, 1, 2}` and `ego_pass_later_margin_y` is `{1, 4, 6}`.
+In the same way, the boundary of B and C is calculated from `ego_pass_first_margin_x` and `ego_pass_first_margin_y`.
+In the case of the upper figure, `ego_pass_first_margin_x` is `{3, 5}` and `ego_pass_first_margin_y` is `{0, 1}`.
 
-In the `pass_judge` namespace,
+In the `pass_judge` namespace, the following parameters are defined.
 
 | Parameter                          |       | Type   | Description                                                                                                                                     |
 | ---------------------------------- | ----- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -108,17 +110,17 @@ In the `pass_judge` namespace,
 
 ### Smooth Yield Decision
 
-When the object is stopped around the crosswalk but has no intention to walk, the ego will yield the object forever.
-To prevent this dead lock behavior, the ego will cancel the yield depending on the situation.
+If the object is stopped near the crosswalk but has no intention of walking, a situation can arise in which the ego continues to yield the right-of-way to the object.
+To prevent such a deadlock situation, the ego will cancel yielding depending on the situation.
 
-#### When there is no traffic light
+#### Cases without traffic lights
 
-For the object stopped around the crosswalk but has no intention to walk (\*1), when the ego keeps stopping to yield for a certain time (\*2), the ego cancels the yield and start driving.
+For the object stopped around the crosswalk but has no intention to walk (\*1), after the ego has keep stopping to yield for a specific time (\*2), the ego cancels the yield and starts driving.
 
 \*1:
 The time is calculated by the interpolation of distance between the object and crosswalk with `distance_map_for_no_intention_to_walk` and `timeout_map_for_no_intention_to_walk`.
 
-In the `pass_judge` namespace,
+In the `pass_judge` namespace, the following parameters are defined.
 
 | Parameter                               |       | Type   | Description                                                                       |
 | --------------------------------------- | ----- | ------ | --------------------------------------------------------------------------------- |
@@ -126,19 +128,19 @@ In the `pass_judge` namespace,
 | `timeout_map_for_no_intention_to_walk`  | [[s]] | double | timeout map to calculate the timeout for no intention to walk with interpolation  |
 
 \*2:
-In the `pass_judge` namespace,
+In the `pass_judge` namespace, the following parameters are defined.
 
 | Parameter                    |     | Type   | Description                                                                                                             |
 | ---------------------------- | --- | ------ | ----------------------------------------------------------------------------------------------------------------------- |
 | `timeout_ego_stop_for_yield` | [s] | double | If the ego maintains the stop for this amount of time, then the ego proceeds, assuming it has stopped long time enough. |
 
-#### When there is traffic light
+#### Cases with traffic lights
 
-For the object stopped around the crosswalk but has no intention to walk (\*1), the ego will cancel the yield without stopping.
+The ego will cancel the yield without stopping when the object stops around the crosswalk but has no intention to walk (\*1).
 This comes from the assumption that the object has no intention to walk since it is stopped even though the pedestrian traffic light is green.
 
 \*1:
-The crosswalk user's intention to walk is calculated in the same way as `When there is no traffic light`.
+The crosswalk user's intention to walk is calculated in the same way as `Cases without traffic lights`.
 
 <div align="center">
     <table>
@@ -152,12 +154,12 @@ The crosswalk user's intention to walk is calculated in the same way as `When th
 #### New Object Handling
 
 Due to the perception's limited performance where the tree or poll is recognized as a pedestrian or the tracking failure in the crowd or occlusion, even if the surrounding environment does not change, the new pedestrian (= the new ID's pedestrian) may suddenly appear unexpectedly.
-When this happens when the ego is going to pass the crosswalk, the ego will stop suddenly.
+If this happens while the ego is going to pass the crosswalk, the ego will stop suddenly.
 
-To fix this issue, the option `disable_yield_for_new_stopped_object` is prepared.
-If set to true, the new stopped object will be ignored during the yield decision around the crosswalk with a traffic light.
+To deal with this issue, the option `disable_yield_for_new_stopped_object` is prepared.
+If true is set, the yield decisions around the crosswalk with a traffic light will ignore the new stopped object.
 
-In the `pass_judge` namespace,
+In the `pass_judge` namespace, the following parameters are defined.
 
 | Parameter                              |     | Type | Description                                                                                      |
 | -------------------------------------- | --- | ---- | ------------------------------------------------------------------------------------------------ |
@@ -165,11 +167,9 @@ In the `pass_judge` namespace,
 
 ### Safety Slow Down Behavior
 
-In current autoware implementation if there are no target objects around a crosswalk, ego vehicle
-will not slow down for the crosswalk. However, if ego vehicle to slow down to a certain speed in
-such cases is wanted then it is possible by adding some tags to the related crosswalk definition as
-it is instructed
-in [lanelet2_format_extension.md](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md)
+In the current autoware implementation, if no target object is detected around a crosswalk, the ego vehicle will not slow down for the crosswalk.
+However, it may be desirable to slow down in situations, for example, where there are blind spots.
+Such a situation can be handled by setting some tags to the related crosswalk as instructed in the [lanelet2_format_extension.md](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md)
 document.
 
 | Parameter             |         | Type   | Description                                                                                                           |
@@ -182,7 +182,7 @@ document.
 ### Stuck Vehicle Detection
 
 The feature will make the ego not to stop on the crosswalk.
-When there are low-speed or stopped vehicle ahead of the crosswalk, and there is not enough space between the crosswalk and the vehicle, the crosswalk module will plan to stop before the crosswalk even if there are no pedestrians or bicycles.
+When there is a low-speed or stopped vehicle ahead of the crosswalk, and there is not enough space between the crosswalk and the vehicle, the crosswalk module plans to stop before the crosswalk even if there are no pedestrians or bicycles.
 
 `min_acc`, `min_jerk`, and `max_jerk` are met. If the ego cannot stop before the crosswalk with these parameters, the stop position will move forward.
 
@@ -190,7 +190,7 @@ When there are low-speed or stopped vehicle ahead of the crosswalk, and there is
   ![stuck_vehicle_attention_range](docs/stuck_vehicle_detection.svg){width=600}
 </figure>
 
-In the `stuck_vehicle` namespace,
+In the `stuck_vehicle` namespace, the following parameters are defined.
 
 | Parameter                          | Unit    | Type   | Description                                                             |
 | ---------------------------------- | ------- | ------ | ----------------------------------------------------------------------- |
@@ -203,7 +203,7 @@ In the `stuck_vehicle` namespace,
 
 ### Others
 
-In the `common` namespace,
+In the `common` namespace, the following parameters are defined.
 
 | Parameter                     | Unit | Type   | Description                                                                                                                                     |
 | ----------------------------- | ---- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -231,10 +231,10 @@ In the `common` namespace,
   - Ego footprints' polygon to calculate the collision check.
 - Pink polygons
   - Object footprints' polygon to calculate the collision check.
-- The color of crosswalk
-  - Considering the traffic light's color, red means the target crosswalk and white means the ignored crosswalk.
+- The color of crosswalks
+  - Considering the traffic light's color, red means the target crosswalk, and white means the ignored crosswalk.
 - Texts
-  - It shows the module id, TTC, TTV, and the module state.
+  - It shows the module ID, TTC, TTV, and the module state.
 
 ### Visualization of Time-To-Collision
 
