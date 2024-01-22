@@ -280,9 +280,10 @@ private:
    * @brief get z-position from trajectory
    * @param [in] x current x-position
    * @param [in] y current y-position
+   * @param [in] prev_odometry odometry calculated in the previous step
    * @return get z-position from trajectory
    */
-  double get_z_pose_from_trajectory(const double x, const double y);
+  double get_z_pose_from_trajectory(const double x, const double y, const Odometry & prev_odometry);
 
   /**
    * @brief get transform from two frame_ids

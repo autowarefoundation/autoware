@@ -371,9 +371,10 @@ void SimplePlanningSimulator::on_timer()
   }
 
   // set current state
+  const auto prev_odometry = current_odometry_;
   current_odometry_ = to_odometry(vehicle_model_ptr_, ego_pitch_angle);
   current_odometry_.pose.pose.position.z = get_z_pose_from_trajectory(
-    current_odometry_.pose.pose.position.x, current_odometry_.pose.pose.position.y);
+    current_odometry_.pose.pose.position.x, current_odometry_.pose.pose.position.y, prev_odometry);
 
   current_velocity_ = to_velocity_report(vehicle_model_ptr_);
   current_steer_ = to_steering_report(vehicle_model_ptr_);
@@ -429,6 +430,7 @@ void SimplePlanningSimulator::on_initialpose(const PoseWithCovarianceStamped::Co
   set_initial_state_with_transform(initial_pose, initial_twist);
 
   initial_pose_ = msg;
+  current_odometry_.pose = msg->pose;
 }
 
 void SimplePlanningSimulator::on_initialtwist(const TwistStamped::ConstSharedPtr msg)
@@ -591,11 +593,12 @@ void SimplePlanningSimulator::set_initial_state(const Pose & pose, const Twist &
   is_initialized_ = true;
 }
 
-double SimplePlanningSimulator::get_z_pose_from_trajectory(const double x, const double y)
+double SimplePlanningSimulator::get_z_pose_from_trajectory(
+  const double x, const double y, const Odometry & prev_odometry)
 {
   // calculate closest point on trajectory
   if (!current_trajectory_ptr_) {
-    return 0.0;
+    return prev_odometry.pose.pose.position.z;
   }
 
   const double max_sqrt_dist = std::numeric_limits<double>::max();
@@ -616,7 +619,7 @@ double SimplePlanningSimulator::get_z_pose_from_trajectory(const double x, const
     return current_trajectory_ptr_->points.at(index).pose.position.z;
   }
 
-  return 0.0;
+  return prev_odometry.pose.pose.position.z;
 }
 
 TransformStamped SimplePlanningSimulator::get_transform_msg(
