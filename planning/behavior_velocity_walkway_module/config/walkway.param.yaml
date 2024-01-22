@@ -1,5 +1,5 @@
 /**:
   ros__parameters:
     walkway:
-      stop_duration: 1.0 # [s] stop time at stop position
+      stop_duration: 0.1 # [s] stop time at stop position
       stop_distance_from_crosswalk: 3.5 # [m] make stop line away from crosswalk when no explicit stop line exists

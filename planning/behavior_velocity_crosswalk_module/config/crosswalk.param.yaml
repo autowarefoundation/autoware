@@ -50,15 +50,15 @@
           min_jerk: -1.0 # min jerk [m/sss]
           max_jerk: 1.0 # max jerk [m/sss]
 
-        stop_object_velocity_threshold: 0.28 # [m/s] velocity threshold for the module to judge whether the objects is stopped (0.28 m/s = 1.0 kmph)
+        stop_object_velocity_threshold: 0.25 # [m/s] velocity threshold for the module to judge whether the objects is stopped (0.28 m/s = 1.0 kmph)
         min_object_velocity: 1.39 # [m/s] minimum object velocity (compare the estimated velocity by perception module with this parameter and adopt the larger one to calculate TTV. 1.39 m/s = 5.0 kmph)
         ## param for yielding
         disable_stop_for_yield_cancel: true # for the crosswalks with traffic signal
         disable_yield_for_new_stopped_object: true # for the crosswalks with traffic signal
         # If the pedestrian does not move for X seconds after the ego has stopped in front the crosswalk, the module judge that the pedestrian has no intention to walk and allows the ego to proceed.
         distance_map_for_no_intention_to_walk: [1.0, 5.0] # [m] ascending order
-        timeout_map_for_no_intention_to_walk: [3.0, 0.0] # [s]
-        timeout_ego_stop_for_yield: 3.0 # [s] If the ego maintains the stop for this amount of time, then the ego proceeds, assuming it has stopped long time enough.
+        timeout_map_for_no_intention_to_walk: [1.0, 0.0] # [s]
+        timeout_ego_stop_for_yield: 1.0 # [s] If the ego maintains the stop for this amount of time, then the ego proceeds, assuming it has stopped long time enough.
 
       # param for target object filtering
       object_filtering:
