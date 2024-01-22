@@ -1,6 +1,7 @@
 <launch>
   <!-- common param -->
-  <arg name="external_velocity_limit_selector_param_path" default="$(find-pkg-share external_velocity_limit_selector)/config/external_velocity_limit_selector.param.yaml"/>
+  <arg name="common_param_path" default="$(find-pkg-share external_velocity_limit_selector)/config/default_common.param.yaml"/>
+  <arg name="param_path" default="$(find-pkg-share external_velocity_limit_selector)/config/default.param.yaml"/>
 
   <!-- input/output -->
   <arg name="input_velocity_limit_from_api" default="/planning/scenario_planning/max_velocity_default"/>
@@ -10,7 +11,8 @@
   <arg name="output_debug_string" default="/planning/scenario_planning/external_velocity_limit_selector/debug"/>
 
   <node pkg="external_velocity_limit_selector" exec="external_velocity_limit_selector" name="external_velocity_limit_selector" output="screen">
-    <param from="$(var external_velocity_limit_selector_param_path)"/>
+    <param from="$(var common_param_path)"/>
+    <param from="$(var param_path)"/>
     <remap from="input/velocity_limit_from_api" to="$(var input_velocity_limit_from_api)"/>
     <remap from="input/velocity_limit_from_internal" to="$(var input_velocity_limit_from_internal)"/>
     <remap from="input/velocity_limit_clear_command_from_internal" to="$(var input_velocity_limit_clear_command_from_internal)"/>
