@@ -1,8 +1,5 @@
 /**:
   ros__parameters:
-    csv_path_accel_map: "$(find-pkg-share raw_vehicle_cmd_converter)/data/default/accel_map.csv"
-    csv_path_brake_map: "$(find-pkg-share raw_vehicle_cmd_converter)/data/default/brake_map.csv"
-    csv_path_steer_map: "$(find-pkg-share raw_vehicle_cmd_converter)/data/default/steer_map.csv"
     convert_accel_cmd: true
     convert_brake_cmd: true
     convert_steer_cmd: true

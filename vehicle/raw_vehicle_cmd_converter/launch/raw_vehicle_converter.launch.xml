@@ -1,5 +1,9 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="csv_path_accel_map" default="$(find-pkg-share raw_vehicle_cmd_converter)/data/default/accel_map.csv"/>
+  <arg name="csv_path_brake_map" default="$(find-pkg-share raw_vehicle_cmd_converter)/data/default/brake_map.csv"/>
+  <arg name="csv_path_steer_map" default="$(find-pkg-share raw_vehicle_cmd_converter)/data/default/steer_map.csv"/>
+
   <arg name="input_control_cmd" default="/control/command/control_cmd"/>
   <arg name="input_odometry" default="/localization/kinematic_state"/>
   <arg name="input_steering" default="/vehicle/status/steering_status"/>
@@ -9,6 +13,9 @@
 
   <node pkg="raw_vehicle_cmd_converter" exec="raw_vehicle_cmd_converter_node" name="raw_vehicle_cmd_converter" output="screen">
     <param from="$(var config_file)" allow_substs="true"/>
+    <param name="csv_path_accel_map" value="$(var csv_path_accel_map)"/>
+    <param name="csv_path_brake_map" value="$(var csv_path_brake_map)"/>
+    <param name="csv_path_steer_map" value="$(var csv_path_steer_map)"/>
     <remap from="~/input/control_cmd" to="$(var input_control_cmd)"/>
     <remap from="~/input/odometry" to="$(var input_odometry)"/>
     <remap from="~/input/steering" to="$(var input_steering)"/>

@@ -6,6 +6,7 @@
   <arg name="vehicle_id" default="$(env VEHICLE_ID default)" description="vehicle specific ID"/>
   <arg name="initial_engage_state" default="false" description="/vehicle/engage state after starting Autoware"/>
   <arg name="config_dir" default="$(find-pkg-share $(var sensor_model)_description)/config" description="path to dir where sensors_calibration.yaml, etc. are located"/>
+  <arg name="raw_vehicle_cmd_converter_param_path" default="$(find-pkg-share raw_vehicle_cmd_converter)/config/raw_vehicle_cmd_converter.param.yaml"/>
 
   <let name="vehicle_launch_pkg" value="$(find-pkg-share $(var vehicle_model)_launch)"/>
 
@@ -21,6 +22,7 @@
   <group if="$(var launch_vehicle_interface)">
     <include file="$(var vehicle_launch_pkg)/launch/vehicle_interface.launch.xml">
       <arg name="vehicle_id" value="$(var vehicle_id)"/>
+      <arg name="raw_vehicle_cmd_converter_param_path" value="$(var raw_vehicle_cmd_converter_param_path)"/>
       <arg name="initial_engage_state" value="$(var initial_engage_state)"/>
     </include>
   </group>

@@ -6,21 +6,6 @@
     "raw_vehicle_cmd_converter": {
       "type": "object",
       "properties": {
-        "csv_path_accel_map": {
-          "type": "string",
-          "description": "path for acceleration map csv file",
-          "default": "$(find-pkg-share raw_vehicle_cmd_converter)/data/default/accel_map.csv"
-        },
-        "csv_path_brake_map": {
-          "type": "string",
-          "description": "path for brake map csv file",
-          "default": "$(find-pkg-share raw_vehicle_cmd_converter)/data/default/brake_map.csv"
-        },
-        "csv_path_steer_map": {
-          "type": "string",
-          "description": "path for steer map csv file",
-          "default": "$(find-pkg-share raw_vehicle_cmd_converter)/data/default/steer_map.csv"
-        },
         "convert_accel_cmd": {
           "type": "boolean",
           "description": "use accel or not",
