@@ -22,6 +22,12 @@
               type: diagnostic_aggregator/AnalyzerGroup
               path: trajectory_validation
               analyzers:
+                trajectory_size:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: trajectory_validation_size
+                  contains: [": trajectory_validation_size"]
+                  timeout: 1.0
+
                 trajectory_finite_value:
                   type: diagnostic_aggregator/GenericAnalyzer
                   path: trajectory_validation_finite
