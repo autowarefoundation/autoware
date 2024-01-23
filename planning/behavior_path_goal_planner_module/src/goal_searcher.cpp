@@ -312,6 +312,43 @@ void GoalSearcher::update(GoalCandidates & goal_candidates) const
   }
 }
 
+// Note: this function is not just return goal_candidate.is_safe but check collision with
+// current planner_data_ and margin scale factor.
+// And is_safe is not updated in this function.
+bool GoalSearcher::isSafeGoalWithMarginScaleFactor(
+  const GoalCandidate & goal_candidate, const double margin_scale_factor) const
+{
+  if (!parameters_.use_object_recognition) {
+    return true;
+  }
+
+  const Pose goal_pose = goal_candidate.goal_pose;
+
+  const auto pull_over_lane_stop_objects =
+    goal_planner_utils::extractStaticObjectsInExpandedPullOverLanes(
+      *(planner_data_->route_handler), left_side_parking_, parameters_.backward_goal_search_length,
+      parameters_.forward_goal_search_length, parameters_.detection_bound_offset,
+      *(planner_data_->dynamic_object), parameters_.th_moving_object_velocity);
+
+  const double margin = parameters_.object_recognition_collision_check_margin * margin_scale_factor;
+
+  if (utils::checkCollisionBetweenFootprintAndObjects(
+        vehicle_footprint_, goal_pose, pull_over_lane_stop_objects, margin)) {
+    return false;
+  }
+
+  // check longitudinal margin with pull over lane objects
+  constexpr bool filter_inside = true;
+  const auto target_objects = goal_planner_utils::filterObjectsByLateralDistance(
+    goal_pose, planner_data_->parameters.vehicle_width, pull_over_lane_stop_objects, margin,
+    filter_inside);
+  if (checkCollisionWithLongitudinalDistance(goal_pose, target_objects)) {
+    return false;
+  }
+
+  return true;
+}
+
 bool GoalSearcher::checkCollision(const Pose & pose, const PredictedObjects & objects) const
 {
   if (parameters_.use_occupancy_grid_for_goal_search) {

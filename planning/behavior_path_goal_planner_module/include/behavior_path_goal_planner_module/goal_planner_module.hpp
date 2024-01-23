@@ -230,6 +230,13 @@ struct LastApprovalData
   Pose pose{};
 };
 
+enum class DecidingPathStatus {
+  NOT_DECIDED,
+  DECIDING,
+  DECIDED,
+};
+using DecidingPathStatusWithStamp = std::pair<DecidingPathStatus, rclcpp::Time>;
+
 struct PreviousPullOverData
 {
   struct SafetyStatus
@@ -242,12 +249,12 @@ struct PreviousPullOverData
   {
     found_path = false;
     safety_status = SafetyStatus{};
-    has_decided_path = false;
+    deciding_path_status = DecidingPathStatusWithStamp{};
   }
 
   bool found_path{false};
   SafetyStatus safety_status{};
-  bool has_decided_path{false};
+  DecidingPathStatusWithStamp deciding_path_status{};
 };
 
 // store stop_pose_ pointer with reason string
@@ -439,6 +446,8 @@ private:
   bool needPathUpdate(const double path_update_duration) const;
   bool isStuck();
   bool hasDecidedPath() const;
+  bool hasNotDecidedPath() const;
+  DecidingPathStatusWithStamp checkDecidingPathStatus() const;
   void decideVelocity();
   bool foundPullOverPath() const;
   void updateStatus(const BehaviorModuleOutput & output);

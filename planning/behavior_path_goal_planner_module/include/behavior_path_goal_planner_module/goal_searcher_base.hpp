@@ -60,6 +60,8 @@ public:
   virtual void update([[maybe_unused]] GoalCandidates & goal_candidates) const { return; }
   virtual GoalCandidate getClosetGoalCandidateAlongLanes(
     const GoalCandidates & goal_candidates) const = 0;
+  virtual bool isSafeGoalWithMarginScaleFactor(
+    const GoalCandidate & goal_candidate, const double margin_scale_factor) const = 0;
 
 protected:
   GoalPlannerParameters parameters_{};

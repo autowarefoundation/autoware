@@ -35,8 +35,13 @@ public:
 
   GoalCandidates search() override;
   void update(GoalCandidates & goal_candidates) const override;
+
+  // todo(kosuke55):　Functions for this specific use should not be in the interface,
+  // so it is better to consider interface design when we implement other goal searchers.
   GoalCandidate getClosetGoalCandidateAlongLanes(
     const GoalCandidates & goal_candidates) const override;
+  bool isSafeGoalWithMarginScaleFactor(
+    const GoalCandidate & goal_candidate, const double margin_scale_factor) const override;
 
 private:
   void countObjectsToAvoid(
