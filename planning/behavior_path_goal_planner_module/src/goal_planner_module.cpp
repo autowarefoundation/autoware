@@ -806,7 +806,9 @@ void GoalPlannerModule::setOutput(BehaviorModuleOutput & output) const
 
   if (!thread_safe_data_.foundPullOverPath()) {
     // situation : not safe against static objects use stop_path
-    setStopPath(output);
+    output.path = generateStopPath();
+    RCLCPP_WARN_THROTTLE(
+      getLogger(), *clock_, 5000, "Not found safe pull_over path, generate stop path");
     setDrivableAreaInfo(output);
     return;
   }
@@ -816,7 +818,11 @@ void GoalPlannerModule::setOutput(BehaviorModuleOutput & output) const
     // situation : not safe against dynamic objects after approval
     // insert stop point in current path if ego is able to stop with acceleration and jerk
     // constraints
-    setStopPathFromCurrentPath(output);
+    output.path =
+      generateFeasibleStopPath(thread_safe_data_.get_pull_over_path()->getCurrentPath());
+    RCLCPP_WARN_THROTTLE(
+      getLogger(), *clock_, 5000, "Not safe against dynamic objects, generate stop path");
+    debug_stop_pose_with_info_.set(std::string("feasible stop after approval"));
   } else {
     // situation : (safe against static and dynamic objects) or (safe against static objects and
     // before approval) don't stop
@@ -833,58 +839,6 @@ void GoalPlannerModule::setOutput(BehaviorModuleOutput & output) const
   // set hazard and turn signal
   if (hasDecidedPath() && isActivated()) {
     setTurnSignalInfo(output);
-  }
-}
-
-void GoalPlannerModule::setStopPath(BehaviorModuleOutput & output) const
-{
-  if (prev_data_.found_path || !prev_data_.stop_path) {
-    // safe -> not_safe or no prev_stop_path: generate new stop_path
-    output.path = generateStopPath();
-    RCLCPP_WARN_THROTTLE(
-      getLogger(), *clock_, 5000, "Not found safe pull_over path, generate stop path");
-  } else {
-    // not_safe -> not_safe: use previous stop path
-    output.path = *prev_data_.stop_path;
-    RCLCPP_WARN_THROTTLE(
-      getLogger(), *clock_, 5000, "Not found safe pull_over path, use previous stop path");
-    // stop_pose_ is removed in manager every loop, so need to set every loop.
-    const auto stop_pose_opt = utils::getFirstStopPoseFromPath(output.path);
-    if (stop_pose_opt) {
-      debug_stop_pose_with_info_.set(stop_pose_opt.value(), std::string("keep previous stop pose"));
-    }
-  }
-}
-
-void GoalPlannerModule::setStopPathFromCurrentPath(BehaviorModuleOutput & output) const
-{
-  // safe or not safe(no feasible stop_path found) -> not_safe: try to find new feasible stop_path
-  if (prev_data_.safety_status.is_safe || !prev_data_.stop_path_after_approval) {
-    auto current_path = thread_safe_data_.get_pull_over_path()->getCurrentPath();
-    const auto stop_path =
-      behavior_path_planner::utils::parking_departure::generateFeasibleStopPath(
-        current_path, planner_data_, stop_pose_, parameters_->maximum_deceleration_for_stop,
-        parameters_->maximum_jerk_for_stop);
-    if (stop_path) {
-      output.path = *stop_path;
-      debug_stop_pose_with_info_.set(std::string("feasible stop after approval"));
-      RCLCPP_WARN_THROTTLE(getLogger(), *clock_, 5000, "Collision detected, generate stop path");
-    } else {
-      output.path = thread_safe_data_.get_pull_over_path()->getCurrentPath();
-      RCLCPP_WARN_THROTTLE(
-        getLogger(), *clock_, 5000,
-        "Collision detected, no feasible stop path found, cannot stop.");
-    }
-  } else {
-    // not_safe safe(no feasible stop path found) -> not_safe: use previous stop path
-    output.path = *prev_data_.stop_path_after_approval;
-    // stop_pose_ is removed in manager every loop, so need to set every loop.
-    const auto stop_pose_opt = utils::getFirstStopPoseFromPath(output.path);
-    if (stop_pose_opt) {
-      debug_stop_pose_with_info_.set(
-        stop_pose_opt.value(), std::string("keep feasible stop after approval"));
-    }
-    RCLCPP_WARN_THROTTLE(getLogger(), *clock_, 5000, "Collision detected, use previous stop path");
   }
 }
 
@@ -1096,7 +1050,7 @@ BehaviorModuleOutput GoalPlannerModule::planPullOverAsOutput()
   path_candidate_ =
     std::make_shared<PathWithLaneId>(thread_safe_data_.get_pull_over_path()->getFullPath());
 
-  updatePreviousData(output);
+  updatePreviousData();
 
   return output;
 }
@@ -1123,12 +1077,8 @@ void GoalPlannerModule::postProcess()
   setStopReason(StopReason::GOAL_PLANNER, thread_safe_data_.get_pull_over_path()->getFullPath());
 }
 
-void GoalPlannerModule::updatePreviousData(const BehaviorModuleOutput & output)
+void GoalPlannerModule::updatePreviousData()
 {
-  if (prev_data_.found_path || !prev_data_.stop_path) {
-    prev_data_.stop_path = std::make_shared<PathWithLaneId>(output.path);
-  }
-
   // for the next loop setOutput().
   // this is used to determine whether to generate a new stop path or keep the current stop path.
   prev_data_.found_path = thread_safe_data_.foundPullOverPath();
@@ -1152,17 +1102,6 @@ void GoalPlannerModule::updatePreviousData(const BehaviorModuleOutput & output)
     prev_data_.safety_status.safe_start_time = std::nullopt;
   }
   prev_data_.safety_status.is_safe = is_safe;
-
-  // If safety check is enabled, save current path as stop_path_after_approval
-  // This path is set only once after approval.
-  if (!isActivated() || (!is_safe && prev_data_.stop_path_after_approval)) {
-    return;
-  }
-  auto stop_path = std::make_shared<PathWithLaneId>(output.path);
-  for (auto & point : stop_path->points) {
-    point.point.longitudinal_velocity_mps = 0.0;
-  }
-  prev_data_.stop_path_after_approval = stop_path;
 }
 
 BehaviorModuleOutput GoalPlannerModule::planWaitingApproval()
@@ -1269,7 +1208,7 @@ PathWithLaneId GoalPlannerModule::generateStopPath() const
       return std::make_pair(decel_pose.value(), "stop at search start pose");
     });
   if (!stop_pose_with_info) {
-    const auto feasible_stop_path = generateFeasibleStopPath();
+    const auto feasible_stop_path = generateFeasibleStopPath(getPreviousModuleOutput().path);
     // override stop pose info debug string
     debug_stop_pose_with_info_.set(std::string("feasible stop: not calculate stop pose"));
     return feasible_stop_path;
@@ -1284,7 +1223,7 @@ PathWithLaneId GoalPlannerModule::generateStopPath() const
   const bool is_stopped = std::abs(current_vel) < eps_vel;
   const double buffer = is_stopped ? stop_distance_buffer_ : 0.0;
   if (min_stop_distance && ego_to_stop_distance + buffer < *min_stop_distance) {
-    const auto feasible_stop_path = generateFeasibleStopPath();
+    const auto feasible_stop_path = generateFeasibleStopPath(getPreviousModuleOutput().path);
     debug_stop_pose_with_info_.set(
       std::string("feasible stop: stop pose is closer than min_stop_distance"));
     return feasible_stop_path;
@@ -1316,17 +1255,17 @@ PathWithLaneId GoalPlannerModule::generateStopPath() const
   return stop_path;
 }
 
-PathWithLaneId GoalPlannerModule::generateFeasibleStopPath() const
+PathWithLaneId GoalPlannerModule::generateFeasibleStopPath(const PathWithLaneId & path) const
 {
   // calc minimum stop distance under maximum deceleration
   const auto min_stop_distance = calcFeasibleDecelDistance(
     planner_data_, parameters_->maximum_deceleration, parameters_->maximum_jerk, 0.0);
   if (!min_stop_distance) {
-    return getPreviousModuleOutput().path;
+    return path;
   }
 
   // set stop point
-  auto stop_path = getPreviousModuleOutput().path;
+  auto stop_path = path;
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const auto stop_idx =
     motion_utils::insertStopPoint(current_pose, *min_stop_distance, stop_path.points);
