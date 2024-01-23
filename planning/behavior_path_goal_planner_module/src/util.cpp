@@ -14,6 +14,7 @@
 
 #include "behavior_path_goal_planner_module/util.hpp"
 
+#include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/query.hpp>
@@ -41,6 +42,7 @@ using tier4_autoware_utils::createDefaultMarker;
 using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
+
 lanelet::ConstLanelets getPullOverLanes(
   const RouteHandler & route_handler, const bool left_side, const double backward_distance,
   const double forward_distance)
@@ -72,6 +74,41 @@ lanelet::ConstLanelets getPullOverLanes(
   constexpr bool only_route_lanes = false;
   return route_handler.getLaneletSequence(
     outermost_lane, backward_distance_with_buffer, forward_distance, only_route_lanes);
+}
+
+lanelet::ConstLanelets generateExpandedPullOverLanes(
+  const RouteHandler & route_handler, const bool left_side, const double backward_distance,
+  const double forward_distance, double bound_offset)
+{
+  const auto pull_over_lanes =
+    getPullOverLanes(route_handler, left_side, backward_distance, forward_distance);
+
+  return left_side ? lanelet::utils::getExpandedLanelets(pull_over_lanes, bound_offset, 0.0)
+                   : lanelet::utils::getExpandedLanelets(pull_over_lanes, 0.0, bound_offset);
+}
+
+PredictedObjects extractObjectsInExpandedPullOverLanes(
+  const RouteHandler & route_handler, const bool left_side, const double backward_distance,
+  const double forward_distance, double bound_offset, const PredictedObjects & objects)
+{
+  const auto lanes = generateExpandedPullOverLanes(
+    route_handler, left_side, backward_distance, forward_distance, bound_offset);
+
+  const auto [objects_in_lanes, others] = utils::path_safety_checker::separateObjectsByLanelets(
+    objects, lanes, utils::path_safety_checker::isPolygonOverlapLanelet);
+
+  return objects_in_lanes;
+}
+
+PredictedObjects extractStaticObjectsInExpandedPullOverLanes(
+  const RouteHandler & route_handler, const bool left_side, const double backward_distance,
+  const double forward_distance, double bound_offset, const PredictedObjects & objects,
+  const double velocity_thresh)
+{
+  const auto objects_in_lanes = extractObjectsInExpandedPullOverLanes(
+    route_handler, left_side, backward_distance, forward_distance, bound_offset, objects);
+
+  return utils::path_safety_checker::filterObjectsByVelocity(objects_in_lanes, velocity_thresh);
 }
 
 PredictedObjects filterObjectsByLateralDistance(

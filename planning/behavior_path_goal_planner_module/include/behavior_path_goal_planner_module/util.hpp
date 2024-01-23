@@ -45,9 +45,19 @@ using visualization_msgs::msg::MarkerArray;
 lanelet::ConstLanelets getPullOverLanes(
   const RouteHandler & route_handler, const bool left_side, const double backward_distance,
   const double forward_distance);
+lanelet::ConstLanelets generateExpandedPullOverLanes(
+  const RouteHandler & route_handler, const bool left_side, const double backward_distance,
+  const double forward_distance, double bound_offset);
+PredictedObjects extractObjectsInExpandedPullOverLanes(
+  const RouteHandler & route_handler, const bool left_side, const double backward_distance,
+  const double forward_distance, double bound_offset, const PredictedObjects & objects);
 PredictedObjects filterObjectsByLateralDistance(
   const Pose & ego_pose, const double vehicle_width, const PredictedObjects & objects,
   const double distance_thresh, const bool filter_inside);
+PredictedObjects extractStaticObjectsInExpandedPullOverLanes(
+  const RouteHandler & route_handler, const bool left_side, const double backward_distance,
+  const double forward_distance, double bound_offset, const PredictedObjects & objects,
+  const double velocity_thresh);
 
 double calcLateralDeviationBetweenPaths(
   const PathWithLaneId & reference_path, const PathWithLaneId & target_path);

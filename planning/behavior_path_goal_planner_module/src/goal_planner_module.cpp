@@ -1509,22 +1509,12 @@ bool GoalPlannerModule::checkObjectsCollision(
   const PathWithLaneId & path, const double collision_check_margin,
   const bool update_debug_data) const
 {
-  const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
-    *(planner_data_->route_handler), left_side_parking_, parameters_->backward_goal_search_length,
-    parameters_->forward_goal_search_length);
+  const auto pull_over_lane_stop_objects =
+    goal_planner_utils::extractStaticObjectsInExpandedPullOverLanes(
+      *(planner_data_->route_handler), left_side_parking_, parameters_->backward_goal_search_length,
+      parameters_->forward_goal_search_length, parameters_->detection_bound_offset,
+      *(planner_data_->dynamic_object), parameters_->th_moving_object_velocity);
 
-  const auto expanded_pull_over_lanes =
-    left_side_parking_ ? lanelet::utils::getExpandedLanelets(
-                           pull_over_lanes, parameters_->detection_bound_offset, 0.0)
-                       : lanelet::utils::getExpandedLanelets(
-                           pull_over_lanes, 0.0, parameters_->detection_bound_offset);
-
-  const auto [pull_over_lane_objects, others] =
-    utils::path_safety_checker::separateObjectsByLanelets(
-      *(planner_data_->dynamic_object), expanded_pull_over_lanes,
-      utils::path_safety_checker::isPolygonOverlapLanelet);
-  const auto pull_over_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
-    pull_over_lane_objects, parameters_->th_moving_object_velocity);
   std::vector<Polygon2d> obj_polygons;
   for (const auto & object : pull_over_lane_stop_objects.objects) {
     obj_polygons.push_back(tier4_autoware_utils::toPolygon2d(object));
