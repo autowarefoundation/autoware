@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Merger parameters -->
+  <arg name="output/objects" default="objects"/>
+
+  <arg name="objects_validation_method" default="obstacle_pointcloud"/>
+  <arg name="objects_filter_method" default="lanelet_filter"/>
+  <arg name="object_recognition_detection_object_merger_data_association_matrix_param_path" default="$(find-pkg-share object_merger)/config/data_association_matrix.param.yaml"/>
+  <arg name="object_recognition_detection_object_merger_distance_threshold_list_path" default="$(find-pkg-share object_merger)/config/overlapped_judge.param.yaml"/>
+
+  <arg name="use_object_filter" default="true" description="use object filter"/>
+  <arg name="use_validator" default="true" description="use obstacle_pointcloud based validator"/>
+
+  <!-- Lidar parameters -->
+  <arg name="lidar_detection_model"/>
+  <arg name="use_pointcloud_map"/>
+
+  <!-- Validator -->
+  <group if="$(eval &quot;'$(var objects_validation_method)'=='obstacle_pointcloud'&quot;)">
+    <let name="validator/input/obstacle_pointcloud" value="/perception/object_recognition/detection/pointcloud_map_filtered/pointcloud" if="$(var use_pointcloud_map)"/>
+    <let name="validator/input/obstacle_pointcloud" value="$(var input/obstacle_segmentation/pointcloud)" unless="$(var use_pointcloud_map)"/>
+    <include file="$(find-pkg-share detected_object_validation)/launch/obstacle_pointcloud_based_validator.launch.xml" if="$(var use_validator)">
+      <arg name="input/detected_objects" value="$(var lidar_detection_model)/objects"/>
+      <arg name="input/obstacle_pointcloud" value="$(var validator/input/obstacle_pointcloud)"/>
+      <arg name="output/objects" value="$(var lidar_detection_model)/validation/objects"/>
+      <arg name="obstacle_pointcloud_based_validator_param_path" value="$(var object_recognition_detection_obstacle_pointcloud_based_validator_param_path)"/>
+    </include>
+  </group>
+
+  <group if="$(eval &quot;'$(var objects_validation_method)'=='occupancy_grid'&quot;)">
+    <include file="$(find-pkg-share detected_object_validation)/launch/occupancy_grid_based_validator.launch.xml" if="$(var use_validator)">
+      <arg name="input/detected_objects" value="$(var lidar_detection_model)/objects"/>
+      <arg name="output/objects" value="$(var lidar_detection_model)/validation/objects"/>
+    </include>
+  </group>
+
+  <!-- Merger -->
+  <group>
+    <!-- 1st merger to merge clustering + ML lidar detection-->
+    <let name="merger/input/objects" value="$(var lidar_detection_model)/validation/objects" if="$(var use_validator)"/>
+    <let name="merger/input/objects" value="$(var lidar_detection_model)/objects" unless="$(var use_validator)"/>
+    <let name="without_dbt_and_filter" value="$(eval &quot;'$(var use_detection_by_tracker)'=='false' and '$(var use_object_filter)'=='false' &quot;)"/>
+    <let name="merger/output/objects" value="temporary_merged_objects" unless="$(var without_dbt_and_filter)"/>
+    <let name="merger/output/objects" value="$(var output/objects)" if="$(var without_dbt_and_filter)"/>
+    <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
+      <arg name="input/object0" value="$(var merger/input/objects)"/>
+      <arg name="input/object1" value="clustering/objects"/>
+      <arg name="output/object" value="$(var merger/output/objects)"/>
+      <arg name="data_association_matrix_path" value="$(var object_recognition_detection_object_merger_data_association_matrix_param_path)"/>
+      <arg name="distance_threshold_list_path" value="$(var object_recognition_detection_object_merger_distance_threshold_list_path)"/>
+    </include>
+  </group>
+
+  <group if="$(var use_detection_by_tracker)">
+    <!-- 2nd merger to merge detection_by_tracker -->
+    <let name="merger/output/objects" value="objects_before_filter" if="$(var use_object_filter)"/>
+    <let name="merger/output/objects" value="$(var output/objects)" unless="$(var use_object_filter)"/>
+    <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
+      <arg name="input/object0" value="temporary_merged_objects"/>
+      <arg name="input/object1" value="detection_by_tracker/objects"/>
+      <arg name="priority_mode" value="0"/>
+      <arg name="output/object" value="$(var merger/output/objects)"/>
+      <arg name="data_association_matrix_path" value="$(var object_recognition_detection_object_merger_data_association_matrix_param_path)"/>
+      <arg name="distance_threshold_list_path" value="$(var object_recognition_detection_object_merger_distance_threshold_list_path)"/>
+    </include>
+  </group>
+
+  <!-- Filter -->
+  <group if="$(eval &quot;'$(var objects_filter_method)'=='lanelet_filter'&quot;)">
+    <let name="filter/input/objects" value="objects_before_filter" if="$(var use_detection_by_tracker)"/>
+    <let name="filter/input/objects" value="temporary_merged_objects" unless="$(var use_detection_by_tracker)"/>
+    <include file="$(find-pkg-share detected_object_validation)/launch/object_lanelet_filter.launch.xml" if="$(var use_object_filter)">
+      <arg name="input/object" value="$(var filter/input/objects)"/>
+      <arg name="output/object" value="$(var output/objects)"/>
+      <arg name="filtering_range_param" value="$(var object_recognition_detection_object_lanelet_filter_param_path)"/>
+    </include>
+  </group>
+
+  <group if="$(eval &quot;'$(var objects_filter_method)'=='position_filter'&quot;)">
+    <let name="filter/input/objects" value="objects_before_filter" if="$(var use_detection_by_tracker)"/>
+    <let name="filter/input/objects" value="temporary_merged_objects" unless="$(var use_detection_by_tracker)"/>
+    <include file="$(find-pkg-share detected_object_validation)/launch/object_position_filter.launch.xml" if="$(var use_object_filter)">
+      <arg name="input/object" value="$(var filter/input/objects)"/>
+      <arg name="output/object" value="$(var output/objects)"/>
+      <arg name="filtering_range_param" value="$(var object_recognition_detection_object_position_filter_param_path)"/>
+    </include>
+  </group>
+</launch>

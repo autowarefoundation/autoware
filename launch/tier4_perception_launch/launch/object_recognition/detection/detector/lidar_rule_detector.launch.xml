@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Lidar parameters -->
+  <arg name="input/obstacle_segmentation/pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
+  <arg name="pointcloud_container_name" default="pointcloud_container"/>
+  <arg name="use_pointcloud_container" default="false" description="use pointcloud container for detection preprocessor"/>
+
+  <!-- Pointcloud filter -->
+  <group>
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/pointcloud_map_filter.launch.py">
+      <arg name="input_topic" value="$(var input/obstacle_segmentation/pointcloud)"/>
+      <arg name="output_topic" value="pointcloud_map_filtered/pointcloud"/>
+      <arg name="use_intra_process" value="true"/>
+      <arg name="use_multithread" value="true"/>
+      <arg name="use_pointcloud_container" value="$(var use_pointcloud_container)"/>
+      <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+      <arg name="use_pointcloud_map" value="$(var use_pointcloud_map)"/>
+    </include>
+  </group>
+
+  <!-- Clustering -->
+  <group>
+    <push-ros-namespace namespace="clustering"/>
+    <group>
+      <include file="$(find-pkg-share euclidean_cluster)/launch/voxel_grid_based_euclidean_cluster.launch.xml">
+        <arg name="input_pointcloud" value="/perception/object_recognition/detection/pointcloud_map_filtered/pointcloud"/>
+        <arg name="output_clusters" value="clusters"/>
+        <arg name="use_low_height_cropbox" value="$(var use_low_height_cropbox)"/>
+      </include>
+    </group>
+
+    <group>
+      <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
+        <arg name="input/objects" value="clusters"/>
+        <arg name="output/objects" value="objects_with_feature"/>
+      </include>
+    </group>
+
+    <!-- convert DynamicObjectsWithFeatureArray to DynamicObjects -->
+    <group>
+      <include file="$(find-pkg-share detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
+        <arg name="input" value="objects_with_feature"/>
+        <arg name="output" value="objects"/>
+      </include>
+    </group>
+  </group>
+
+  <!-- DetectionByTracker -->
+  <group if="$(var use_detection_by_tracker)">
+    <push-ros-namespace namespace="detection_by_tracker"/>
+    <include file="$(find-pkg-share detection_by_tracker)/launch/detection_by_tracker.launch.xml">
+      <arg name="detection_by_tracker_param_path" value="$(var object_recognition_detection_detection_by_tracker_param)"/>
+    </include>
+  </group>
+</launch>

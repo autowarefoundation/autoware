@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Lidar parameters -->
+  <arg name="input/pointcloud"/>
+  <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`, `clustering`"/>
+  <arg name="lidar_detection_score_threshold" default="0.35"/>
+
+  <!-- Lidar detector centerpoint parameters -->
+  <arg name="centerpoint_model_name" default="centerpoint_tiny"/>
+  <arg name="centerpoint_model_path" default="$(var data_path)/lidar_centerpoint"/>
+  <arg name="lidar_model_param_path" default="$(find-pkg-share lidar_centerpoint)/config"/>
+
+  <!-- CenterPoint -->
+  <group if="$(eval &quot;'$(var lidar_detection_model)'=='centerpoint'&quot;)">
+    <push-ros-namespace namespace="centerpoint"/>
+    <group>
+      <include file="$(find-pkg-share lidar_centerpoint)/launch/lidar_centerpoint.launch.xml">
+        <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+        <arg name="output/objects" value="objects"/>
+        <arg name="score_threshold" value="$(var lidar_detection_score_threshold)"/>
+        <arg name="model_name" value="$(var centerpoint_model_name)"/>
+        <arg name="model_path" value="$(var centerpoint_model_path)"/>
+        <arg name="model_param_path" value="$(var lidar_model_param_path)/$(var centerpoint_model_name).param.yaml"/>
+        <arg name="class_remapper_param_path" value="$(var lidar_model_param_path)/detection_class_remapper.param.yaml"/>
+      </include>
+    </group>
+  </group>
+
+  <!-- Lidar Apollo Instance Segmentation -->
+  <group if="$(eval &quot;'$(var lidar_detection_model)'=='apollo'&quot;)">
+    <push-ros-namespace namespace="apollo"/>
+    <group>
+      <include file="$(find-pkg-share lidar_apollo_instance_segmentation)/launch/lidar_apollo_instance_segmentation.launch.xml">
+        <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+        <arg name="output/objects" value="labeled_clusters"/>
+      </include>
+    </group>
+
+    <group>
+      <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
+        <arg name="input/objects" value="labeled_clusters"/>
+        <arg name="output/objects" value="objects_with_feature"/>
+        <arg name="use_vehicle_reference_yaw" value="true"/>
+        <arg name="use_vehicle_reference_shape_size" value="false"/>
+      </include>
+    </group>
+
+    <!-- convert DynamicObjectsWithFeatureArray to DynamicObjects -->
+    <group>
+      <include file="$(find-pkg-share detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
+        <arg name="input" value="objects_with_feature"/>
+        <arg name="output" value="objects"/>
+      </include>
+    </group>
+  </group>
+</launch>
