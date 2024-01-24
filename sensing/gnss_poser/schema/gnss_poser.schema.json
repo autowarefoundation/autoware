@@ -42,7 +42,6 @@
       },
       "required": [
         "base_frame",
-        "gnss_frame",
         "gnss_base_frame",
         "map_frame",
         "use_gnss_ins_orientation",
