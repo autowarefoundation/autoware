@@ -61,7 +61,9 @@ class AutowareAutomaticGoalPanel : public rviz_common::Panel,
                                    public automatic_goal::AutowareAutomaticGoalSender
 {
   using State = automatic_goal::AutomaticGoalState;
+  using Pose = geometry_msgs::msg::Pose;
   using PoseStamped = geometry_msgs::msg::PoseStamped;
+  using Marker = visualization_msgs::msg::Marker;
   using MarkerArray = visualization_msgs::msg::MarkerArray;
   using OperationModeState = autoware_adapi_v1_msgs::msg::OperationModeState;
   using ChangeOperationMode = autoware_adapi_v1_msgs::srv::ChangeOperationMode;
@@ -96,6 +98,7 @@ private:
 
   // Inputs
   void onAppendGoal(const PoseStamped::ConstSharedPtr pose);
+  void onAppendCheckpoint(const PoseStamped::ConstSharedPtr pose);
 
   // Visual updates
   void updateGUI();
@@ -116,6 +119,7 @@ private:
   // Pub/Sub
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_{nullptr};
   rclcpp::Subscription<PoseStamped>::SharedPtr sub_append_goal_{nullptr};
+  rclcpp::Subscription<PoseStamped>::SharedPtr sub_append_checkpoint_{nullptr};
 
   // Containers
   rclcpp::Node::SharedPtr raw_node_{nullptr};

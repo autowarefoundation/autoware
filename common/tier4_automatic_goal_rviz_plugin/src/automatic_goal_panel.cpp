@@ -16,6 +16,8 @@
 
 #include "automatic_goal_panel.hpp"
 
+#include <tier4_autoware_utils/ros/marker_helper.hpp>
+
 namespace rviz_plugins
 {
 AutowareAutomaticGoalPanel::AutowareAutomaticGoalPanel(QWidget * parent)
@@ -139,6 +141,9 @@ void AutowareAutomaticGoalPanel::onInitialize()
   sub_append_goal_ = raw_node_->create_subscription<PoseStamped>(
     "~/automatic_goal/goal", 5,
     std::bind(&AutowareAutomaticGoalPanel::onAppendGoal, this, std::placeholders::_1));
+  sub_append_checkpoint_ = raw_node_->create_subscription<PoseStamped>(
+    "~/automatic_goal/checkpoint", 5,
+    std::bind(&AutowareAutomaticGoalPanel::onAppendCheckpoint, this, std::placeholders::_1));
   initCommunication(raw_node_.get());
 }
 
@@ -244,10 +249,26 @@ void AutowareAutomaticGoalPanel::onClickSaveListToFile()
 void AutowareAutomaticGoalPanel::onAppendGoal(const PoseStamped::ConstSharedPtr pose)
 {
   if (state_ == State::EDITING) {
-    goals_list_.push_back(pose);
+    goals_list_.emplace_back(pose);
     updateGoalsList();
     updateGUI();
   }
+}
+
+void AutowareAutomaticGoalPanel::onAppendCheckpoint(const PoseStamped::ConstSharedPtr pose)
+{
+  if (goals_list_widget_ptr_->selectedItems().count() != 1) {
+    showMessageBox("Select a goal in GoalsList before set checkpoint");
+    return;
+  }
+
+  current_goal_ = goals_list_widget_ptr_->currentRow();
+  if (current_goal_ >= goals_list_.size()) {
+    return;
+  }
+
+  goals_list_.at(current_goal_).checkpoint_pose_ptrs.push_back(pose);
+  publishMarkers();
 }
 
 // Override
@@ -418,47 +439,71 @@ void AutowareAutomaticGoalPanel::updateGoalIcon(const unsigned goal_index, const
 
 void AutowareAutomaticGoalPanel::publishMarkers()
 {
+  using tier4_autoware_utils::createDefaultMarker;
+  using tier4_autoware_utils::createMarkerColor;
+  using tier4_autoware_utils::createMarkerScale;
+
   MarkerArray text_array;
   MarkerArray arrow_array;
   // Clear existing
-  visualization_msgs::msg::Marker marker;
-  marker.header.stamp = rclcpp::Time();
-  marker.ns = "names";
-  marker.id = 0;
-  marker.action = visualization_msgs::msg::Marker::DELETEALL;
-  text_array.markers.push_back(marker);
-  marker.ns = "poses";
-  arrow_array.markers.push_back(marker);
-  pub_marker_->publish(text_array);
-  pub_marker_->publish(arrow_array);
+  {
+    auto marker = createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "names", 0L, Marker::CUBE,
+      createMarkerScale(1.0, 1.0, 1.0), createMarkerColor(1.0, 1.0, 1.0, 0.999));
+    marker.action = visualization_msgs::msg::Marker::DELETEALL;
+    text_array.markers.push_back(marker);
+    pub_marker_->publish(text_array);
+  }
+
+  {
+    auto marker = createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "poses", 0L, Marker::CUBE,
+      createMarkerScale(1.0, 1.0, 1.0), createMarkerColor(1.0, 1.0, 1.0, 0.999));
+    arrow_array.markers.push_back(marker);
+    pub_marker_->publish(arrow_array);
+  }
+
   text_array.markers.clear();
   arrow_array.markers.clear();
-  // Publish current
-  for (unsigned i = 0; i < goals_list_.size(); i++) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = rclcpp::Time();
-    marker.ns = "names";
-    marker.id = static_cast<int>(i);
-    marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
+
+  const auto push_arrow_marker = [&](const auto & pose, const auto & color, const size_t id) {
+    auto marker = createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "poses", id, Marker::ARROW,
+      createMarkerScale(1.6, 0.5, 0.5), color);
     marker.action = visualization_msgs::msg::Marker::ADD;
-    marker.pose = goals_list_[i]->pose;
+    marker.pose = pose;
     marker.lifetime = rclcpp::Duration(0, 0);
-    marker.scale.x = 1.6;
-    marker.scale.y = 1.6;
-    marker.scale.z = 1.6;
-    marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
-    marker.color.a = 1.0;
     marker.frame_locked = false;
-    marker.text = "G" + std::to_string(i);
-    text_array.markers.push_back(marker);
-    marker.ns = "poses";
-    marker.scale.y = 0.2;
-    marker.scale.z = 0.2;
-    marker.type = visualization_msgs::msg::Marker::ARROW;
     arrow_array.markers.push_back(marker);
+  };
+
+  const auto push_text_marker = [&](const auto & pose, const auto & text, const size_t id) {
+    auto marker = createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "names", id, Marker::TEXT_VIEW_FACING,
+      createMarkerScale(1.6, 1.6, 1.6), createMarkerColor(1.0, 1.0, 1.0, 0.999));
+    marker.action = visualization_msgs::msg::Marker::ADD;
+    marker.pose = pose;
+    marker.lifetime = rclcpp::Duration(0, 0);
+    marker.frame_locked = false;
+    marker.text = text;
+    text_array.markers.push_back(marker);
+  };
+
+  // Publish current
+  size_t id = 0;
+  for (size_t i = 0; i < goals_list_.size(); ++i) {
+    {
+      const auto pose = goals_list_.at(i).goal_pose_ptr->pose;
+      push_arrow_marker(pose, createMarkerColor(0.0, 1.0, 0.0, 0.999), id++);
+      push_text_marker(pose, "Goal:" + std::to_string(i), id++);
+    }
+
+    for (size_t j = 0; j < goals_list_.at(i).checkpoint_pose_ptrs.size(); ++j) {
+      const auto pose = goals_list_.at(i).checkpoint_pose_ptrs.at(j)->pose;
+      push_arrow_marker(pose, createMarkerColor(1.0, 1.0, 0.0, 0.999), id++);
+      push_text_marker(
+        pose, "Checkpoint:" + std::to_string(i) + "[Goal:" + std::to_string(j) + "]", id++);
+    }
   }
   pub_marker_->publish(text_array);
   pub_marker_->publish(arrow_array);
@@ -469,13 +514,13 @@ void AutowareAutomaticGoalPanel::saveGoalsList(const std::string & file_path)
 {
   YAML::Node node;
   for (unsigned i = 0; i < goals_list_.size(); ++i) {
-    node[i]["position_x"] = goals_list_[i]->pose.position.x;
-    node[i]["position_y"] = goals_list_[i]->pose.position.y;
-    node[i]["position_z"] = goals_list_[i]->pose.position.z;
-    node[i]["orientation_x"] = goals_list_[i]->pose.orientation.x;
-    node[i]["orientation_y"] = goals_list_[i]->pose.orientation.y;
-    node[i]["orientation_z"] = goals_list_[i]->pose.orientation.z;
-    node[i]["orientation_w"] = goals_list_[i]->pose.orientation.w;
+    node[i]["position_x"] = goals_list_[i].goal_pose_ptr->pose.position.x;
+    node[i]["position_y"] = goals_list_[i].goal_pose_ptr->pose.position.y;
+    node[i]["position_z"] = goals_list_[i].goal_pose_ptr->pose.position.z;
+    node[i]["orientation_x"] = goals_list_[i].goal_pose_ptr->pose.orientation.x;
+    node[i]["orientation_y"] = goals_list_[i].goal_pose_ptr->pose.orientation.y;
+    node[i]["orientation_z"] = goals_list_[i].goal_pose_ptr->pose.orientation.z;
+    node[i]["orientation_w"] = goals_list_[i].goal_pose_ptr->pose.orientation.w;
   }
   std::ofstream file_out(file_path);
   file_out << node;

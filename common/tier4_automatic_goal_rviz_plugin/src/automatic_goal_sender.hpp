@@ -80,8 +80,11 @@ protected:
     }
 
     auto req = std::make_shared<SetRoutePoints::Request>();
-    req->header = goals_list_.at(goal_index)->header;
-    req->goal = goals_list_.at(goal_index)->pose;
+    req->header = goals_list_.at(goal_index).goal_pose_ptr->header;
+    req->goal = goals_list_.at(goal_index).goal_pose_ptr->pose;
+    for (const auto & checkpoint : goals_list_.at(goal_index).checkpoint_pose_ptrs) {
+      req->waypoints.push_back(checkpoint->pose);
+    }
     client->async_send_request(
       req, [this](typename rclcpp::Client<SetRoutePoints>::SharedFuture result) {
         if (result.get()->status.code != 0) state_ = State::ERROR;
@@ -120,6 +123,13 @@ protected:
     }
   }
 
+  struct Route
+  {
+    explicit Route(const PoseStamped::ConstSharedPtr & goal) : goal_pose_ptr{goal} {}
+    PoseStamped::ConstSharedPtr goal_pose_ptr{};
+    std::vector<PoseStamped::ConstSharedPtr> checkpoint_pose_ptrs{};
+  };
+
   // Update
   void updateGoalsList();
   virtual void updateAutoExecutionTimerTick();
@@ -155,7 +165,7 @@ protected:
   // Containers
   unsigned current_goal_{0};
   State state_{State::INITIALIZING};
-  std::vector<PoseStamped::ConstSharedPtr> goals_list_{};
+  std::vector<Route> goals_list_{};
   std::map<unsigned, std::pair<std::string, unsigned>> goals_achieved_{};
   std::string goals_achieved_file_path_{};
 

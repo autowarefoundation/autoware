@@ -6,6 +6,8 @@
   <description>The autoware automatic goal rviz plugin package</description>
   <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>
   <maintainer email="dawid.moszynski@robotec.ai">Dawid Moszyński</maintainer>
+  <maintainer email="kyoichi.sugahara@tier4.jp">Kyoichi Sugahara</maintainer>
+  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
   <license>Apache License 2.0</license>
   <author email="dawid.moszynski@robotec.ai">Dawid Moszyński</author>
 
@@ -22,6 +24,7 @@
   <depend>rviz_default_plugins</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
+  <depend>tier4_autoware_utils</depend>
   <depend>visualization_msgs</depend>
   <depend>yaml-cpp</depend>
 

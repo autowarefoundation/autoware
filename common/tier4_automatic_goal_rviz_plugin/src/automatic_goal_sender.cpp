@@ -108,9 +108,9 @@ void AutowareAutomaticGoalSender::updateGoalsList()
     std::stringstream ss;
     ss << std::fixed << std::setprecision(2);
     tf2::Quaternion tf2_quat;
-    tf2::convert(goal->pose.orientation, tf2_quat);
-    ss << "G" << i << " (" << goal->pose.position.x << ", ";
-    ss << goal->pose.position.y << ", " << tf2::getYaw(tf2_quat) << ")";
+    tf2::convert(goal.goal_pose_ptr->pose.orientation, tf2_quat);
+    ss << "G" << i << " (" << goal.goal_pose_ptr->pose.position.x << ", ";
+    ss << goal.goal_pose_ptr->pose.position.y << ", " << tf2::getYaw(tf2_quat) << ")";
     goals_achieved_.insert({i++, std::make_pair(ss.str(), 0)});
   }
   onGoalListUpdated();
@@ -178,7 +178,7 @@ void AutowareAutomaticGoalSender::loadGoalsList(const std::string & file_path)
     pose->pose.orientation.y = goal["orientation_y"].as<double>();
     pose->pose.orientation.z = goal["orientation_z"].as<double>();
     pose->pose.orientation.w = goal["orientation_w"].as<double>();
-    goals_list_.push_back(pose);
+    goals_list_.emplace_back(pose);
   }
   resetAchievedGoals();
   updateGoalsList();

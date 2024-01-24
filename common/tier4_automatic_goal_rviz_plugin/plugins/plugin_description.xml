@@ -9,4 +9,9 @@
     base_class_type="rviz_common::Tool">
     <description>AutowareAutomaticGoalTool</description>
   </class>
+  <class name="rviz_plugins/AutowareAutomaticCheckpointTool"
+    type="rviz_plugins::AutowareAutomaticCheckpointTool"
+    base_class_type="rviz_common::Tool">
+    <description>AutowareAutomaticCheckpointTool</description>
+  </class>
 </library>

@@ -11,6 +11,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_definitions(-DQT_NO_KEYWORDS)
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/automatic_checkpoint_append_tool.cpp
   src/automatic_goal_sender.cpp
   src/automatic_goal_append_tool.cpp
   src/automatic_goal_panel.cpp
