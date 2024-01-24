@@ -31,7 +31,6 @@
   <depend>pcl_msgs</depend>
   <depend>pcl_ros</depend>
   <depend>point_cloud_msg_wrapper</depend>
-  <depend>range-v3</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>

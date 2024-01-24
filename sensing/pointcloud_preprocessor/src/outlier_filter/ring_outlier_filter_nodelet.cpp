@@ -14,18 +14,10 @@
 
 #include "pointcloud_preprocessor/outlier_filter/ring_outlier_filter_nodelet.hpp"
 
-#include "pointcloud_preprocessor/utility/utilities.hpp"
-
-#include <range/v3/view/chunk.hpp>
-#include <range/v3/view/transform.hpp>
-#include <range/v3/view/zip.hpp>
-
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
 #include <algorithm>
-#include <cstddef>
 #include <vector>
-
 namespace pointcloud_preprocessor
 {
 RingOutlierFilterComponent::RingOutlierFilterComponent(const rclcpp::NodeOptions & options)
@@ -48,6 +40,8 @@ RingOutlierFilterComponent::RingOutlierFilterComponent(const rclcpp::NodeOptions
       static_cast<double>(declare_parameter("object_length_threshold", 0.1));
     num_points_threshold_ = static_cast<int>(declare_parameter("num_points_threshold", 4));
     max_rings_num_ = static_cast<uint16_t>(declare_parameter("max_rings_num", 128));
+    max_points_num_per_ring_ =
+      static_cast<size_t>(declare_parameter("max_points_num_per_ring", 4000));
   }
 
   using std::placeholders::_1;
@@ -67,252 +61,122 @@ void RingOutlierFilterComponent::faster_filter(
   }
   stop_watch_ptr_->toc("processing_time", true);
 
-  // The ring_outlier_filter specifies the expected input point cloud format,
-  // however, we want to verify the input is correct and make failures explicit.
-  auto getFieldOffsetSafely = [=](
-                                const std::string & field_name,
-                                const pcl::PCLPointField::PointFieldTypes expected_type) -> size_t {
-    const auto field_index = pcl::getFieldIndex(*input, field_name);
-    if (field_index == -1) {
-      RCLCPP_ERROR(get_logger(), "Field %s not found in input point cloud", field_name.c_str());
-      return -1UL;
-    }
-
-    auto field = (*input).fields.at(field_index);
-    if (field.datatype != expected_type) {
-      RCLCPP_ERROR(
-        get_logger(), "Field %s has unexpected type %d (expected %d)", field_name.c_str(),
-        field.datatype, expected_type);
-      return -1UL;
-    }
-
-    return static_cast<size_t>(field.offset);
-  };
-
-  // as per the specification of this node, these fields must be present in the input
-  const auto ring_offset = getFieldOffsetSafely("ring", pcl::PCLPointField::UINT16);
-  const auto azimuth_offset = getFieldOffsetSafely("azimuth", pcl::PCLPointField::FLOAT32);
-  const auto distance_offset = getFieldOffsetSafely("distance", pcl::PCLPointField::FLOAT32);
-  const auto intensity_offset = getFieldOffsetSafely("intensity", pcl::PCLPointField::FLOAT32);
-
-  if (
-    ring_offset == -1UL || azimuth_offset == -1UL || distance_offset == -1UL ||
-    intensity_offset == -1UL) {
-    RCLCPP_ERROR(get_logger(), "One or more required fields are missing in input point cloud");
-    return;
-  }
-
-  // The initial implementation of ring outlier filter looked like this:
-  //   1. Iterate over the input cloud and group point indices by ring
-  //   2. For each ring:
-  //   2.1. iterate over the ring points, and group points belonging to the same "walk"
-  //   2.2. when a walk is closed, copy indexed points to the output cloud if the walk is long
-  //   enough.
-  //
-  // Because LIDAR data is naturally "azimuth-major order" and not "ring-major order", such
-  // implementation is not cache friendly at all, and has negative impact on all the other nodes.
-  //
-  // To tackle this issue, the algorithm has been rewritten so that points would be accessed in
-  // order. To do so, all rings are being processing simultaneously instead of separately. The
-  // overall logic is still the same.
-
-  // ad-hoc struct to store finished walks information (for isCluster())
-  struct WalkInfo
-  {
-    size_t id;
-    int num_points;
-    float first_point_distance;
-    float first_point_azimuth;
-    float last_point_distance;
-    float last_point_azimuth;
-  };
-
-  // ad-hoc struct to keep track of each ring current walk
-  struct RingWalkInfo
-  {
-    WalkInfo first_walk;
-    WalkInfo current_walk;
-  };
-
-  // helper functions
-
-  // check if walk is a valid cluster
-  const float object_length_threshold2 = object_length_threshold_ * object_length_threshold_;
-  auto isCluster = [=](const WalkInfo & walk_info) {
-    // A cluster is a walk which has many points or is long enough
-    if (walk_info.num_points > num_points_threshold_) return true;
-
-    // Using the law of cosines, the distance between 2 points can be written as:
-    //   |p2-p1|^2 = d1^2 + d2^2 - 2*d1*d2*cos(a)
-    // where d1 and d2 are the distance attribute of p1 and p2, and 'a' the azimuth diff between
-    // the 2 points.
-    const float dist2 =
-      walk_info.first_point_distance * walk_info.first_point_distance +
-      walk_info.last_point_distance * walk_info.last_point_distance -
-      2 * walk_info.first_point_distance * walk_info.last_point_distance *
-        std::cos((walk_info.last_point_azimuth - walk_info.first_point_azimuth) * (M_PI / 18000.0));
-    return dist2 > object_length_threshold2;
-  };
-
-  // check if 2 points belong to the same walk
-  auto isSameWalk =
-    [=](float curr_distance, float curr_azimuth, float prev_distance, float prev_azimuth) {
-      float azimuth_diff = curr_azimuth - prev_azimuth;
-      azimuth_diff = azimuth_diff < 0.f ? azimuth_diff + 36000.f : azimuth_diff;
-      return std::max(curr_distance, prev_distance) <
-               std::min(curr_distance, prev_distance) * distance_ratio_ &&
-             azimuth_diff < 100.f;
-    };
-
-  // tmp vectors to keep track of walk/ring state while processing points in order (cache efficient)
-  std::vector<RingWalkInfo> rings;     // info for each LiDAR ring
-  std::vector<size_t> points_walk_id;  // for each input point, the walk index associated with it
-  std::vector<bool>
-    walks_cluster_status;  // for each generated walk, stores whether it is a cluster
-
-  size_t latest_walk_id = -1UL;  // ID given to the latest walk created
-
-  // initialize each ring with two empty walks (first and current walk)
-  rings.resize(max_rings_num_, RingWalkInfo{{-1UL, 0, 0, 0, 0, 0}, {-1UL, 0, 0, 0, 0, 0}});
-  // points are initially associated to no walk (-1UL)
-  points_walk_id.resize(input->width * input->height, -1UL);
-  walks_cluster_status.reserve(
-    max_rings_num_ * 2);  // In the worst case, this could grow to the number of input points
-
-  int invalid_ring_count = 0;
-
-  // Build walks and classify points
-  for (const auto & [raw_p, point_walk_id] :
-       ranges::views::zip(input->data | ranges::views::chunk(input->point_step), points_walk_id)) {
-    uint16_t ring_idx{};
-    float curr_azimuth{};
-    float curr_distance{};
-    std::memcpy(&ring_idx, &raw_p.data()[ring_offset], sizeof(ring_idx));
-    std::memcpy(&curr_azimuth, &raw_p.data()[azimuth_offset], sizeof(curr_azimuth));
-    std::memcpy(&curr_distance, &raw_p.data()[distance_offset], sizeof(curr_distance));
-
-    if (ring_idx >= max_rings_num_) {
-      // Either the data is corrupted or max_rings_num_ is not set correctly
-      // Note: point_walk_id == -1 so the point will be filtered out
-      ++invalid_ring_count;
-      continue;
-    }
-
-    auto & ring = rings[ring_idx];
-    if (ring.current_walk.id == -1UL) {
-      // first walk ever for this ring. It is both the first and current walk of the ring.
-      ring.first_walk =
-        WalkInfo{++latest_walk_id, 1, curr_distance, curr_azimuth, curr_distance, curr_azimuth};
-      ring.current_walk = ring.first_walk;
-      point_walk_id = latest_walk_id;
-      continue;
-    }
-
-    auto & walk = ring.current_walk;
-    if (isSameWalk(
-          curr_distance, curr_azimuth, walk.last_point_distance, walk.last_point_azimuth)) {
-      // current point is part of previous walk
-      walk.num_points += 1;
-      walk.last_point_distance = curr_distance;
-      walk.last_point_azimuth = curr_azimuth;
-      point_walk_id = walk.id;
-    } else {
-      // previous walk is finished, start a new one
-
-      // check and store whether the previous walks is a cluster
-      if (walk.id >= walks_cluster_status.size()) walks_cluster_status.resize(walk.id + 1, false);
-      walks_cluster_status.at(walk.id) = isCluster(walk);
-
-      ring.current_walk =
-        WalkInfo{++latest_walk_id, 1, curr_distance, curr_azimuth, curr_distance, curr_azimuth};
-      point_walk_id = latest_walk_id;
-    }
-  }
-
-  // So far, we have processed ring points as if rings were not circular. Of course, the last and
-  // first points of a ring could totally be part of the same walk. When such thing happens, we need
-  // to merge the two walks
-  for (auto & ring : rings) {
-    if (ring.current_walk.id == -1UL) {
-      continue;
-    }
-
-    const auto & walk = ring.current_walk;
-    if (walk.id >= walks_cluster_status.size()) walks_cluster_status.resize(walk.id + 1, false);
-    walks_cluster_status.at(walk.id) = isCluster(walk);
-
-    if (ring.first_walk.id == ring.current_walk.id) {
-      continue;
-    }
-
-    auto & first_walk = ring.first_walk;
-    auto & last_walk = ring.current_walk;
-
-    // check if the two walks are connected
-    if (isSameWalk(
-          first_walk.first_point_distance, first_walk.first_point_azimuth,
-          last_walk.last_point_distance, last_walk.last_point_azimuth)) {
-      // merge
-      auto combined_num_points = first_walk.num_points + last_walk.num_points;
-      first_walk.first_point_distance = last_walk.first_point_distance;
-      first_walk.first_point_azimuth = last_walk.first_point_azimuth;
-      first_walk.num_points = combined_num_points;
-      last_walk.last_point_distance = first_walk.last_point_distance;
-      last_walk.last_point_azimuth = first_walk.last_point_azimuth;
-      last_walk.num_points = combined_num_points;
-
-      walks_cluster_status.at(first_walk.id) = isCluster(first_walk);
-      walks_cluster_status.at(last_walk.id) = isCluster(last_walk);
-    }
-  }
-
-  // finally copy points
   output.point_step = sizeof(PointXYZI);
-  output.data.resize(output.point_step * input->width * input->height);
+  output.data.resize(output.point_step * input->width);
   size_t output_size = 0;
-  if (transform_info.need_transform) {
-    for (const auto & [raw_p, point_walk_id] : ranges::views::zip(
-           input->data | ranges::views::chunk(input->point_step), points_walk_id)) {
-      // Filter out points on invalid rings and points not in a cluster
-      if (point_walk_id == -1UL || !walks_cluster_status.at(point_walk_id)) {
-        continue;
+
+  const auto ring_offset =
+    input->fields.at(static_cast<size_t>(autoware_point_types::PointIndex::Ring)).offset;
+  const auto azimuth_offset =
+    input->fields.at(static_cast<size_t>(autoware_point_types::PointIndex::Azimuth)).offset;
+  const auto distance_offset =
+    input->fields.at(static_cast<size_t>(autoware_point_types::PointIndex::Distance)).offset;
+  const auto intensity_offset =
+    input->fields.at(static_cast<size_t>(autoware_point_types::PointIndex::Intensity)).offset;
+
+  std::vector<std::vector<size_t>> ring2indices;
+  ring2indices.reserve(max_rings_num_);
+
+  for (uint16_t i = 0; i < max_rings_num_; i++) {
+    ring2indices.push_back(std::vector<size_t>());
+    ring2indices.back().reserve(max_points_num_per_ring_);
+  }
+
+  for (size_t data_idx = 0; data_idx < input->data.size(); data_idx += input->point_step) {
+    const uint16_t ring = *reinterpret_cast<const uint16_t *>(&input->data[data_idx + ring_offset]);
+    ring2indices[ring].push_back(data_idx);
+  }
+
+  // walk range: [walk_first_idx, walk_last_idx]
+  int walk_first_idx = 0;
+  int walk_last_idx = -1;
+
+  for (const auto & indices : ring2indices) {
+    if (indices.size() < 2) continue;
+
+    walk_first_idx = 0;
+    walk_last_idx = -1;
+
+    for (size_t idx = 0U; idx < indices.size() - 1; ++idx) {
+      const size_t & current_data_idx = indices[idx];
+      const size_t & next_data_idx = indices[idx + 1];
+      walk_last_idx = idx;
+
+      // if(std::abs(iter->distance - (iter+1)->distance) <= std::sqrt(iter->distance) * 0.08)
+
+      const float & current_azimuth =
+        *reinterpret_cast<const float *>(&input->data[current_data_idx + azimuth_offset]);
+      const float & next_azimuth =
+        *reinterpret_cast<const float *>(&input->data[next_data_idx + azimuth_offset]);
+      float azimuth_diff = next_azimuth - current_azimuth;
+      azimuth_diff = azimuth_diff < 0.f ? azimuth_diff + 36000.f : azimuth_diff;
+
+      const float & current_distance =
+        *reinterpret_cast<const float *>(&input->data[current_data_idx + distance_offset]);
+      const float & next_distance =
+        *reinterpret_cast<const float *>(&input->data[next_data_idx + distance_offset]);
+
+      if (
+        std::max(current_distance, next_distance) <
+          std::min(current_distance, next_distance) * distance_ratio_ &&
+        azimuth_diff < 100.f) {
+        continue;  // Determined to be included in the same walk
       }
 
-      // assume binary representation of input point is compatible with PointXYZ*
-      PointXYZI out_point;
-      std::memcpy(&out_point, raw_p.data(), sizeof(PointXYZI));
+      if (isCluster(
+            input, std::make_pair(indices[walk_first_idx], indices[walk_last_idx]),
+            walk_last_idx - walk_first_idx + 1)) {
+        for (int i = walk_first_idx; i <= walk_last_idx; i++) {
+          auto output_ptr = reinterpret_cast<PointXYZI *>(&output.data[output_size]);
+          auto input_ptr = reinterpret_cast<const PointXYZI *>(&input->data[indices[i]]);
 
-      Eigen::Vector4f p(out_point.x, out_point.y, out_point.z, 1);
-      p = transform_info.eigen_transform * p;
-      out_point.x = p[0];
-      out_point.y = p[1];
-      out_point.z = p[2];
-      // FIXME(VRichardJP) tmp fix because input data does not have the same layout than PointXYZI
-      std::memcpy(
-        &out_point.intensity, &raw_p.data()[intensity_offset], sizeof(out_point.intensity));
+          if (transform_info.need_transform) {
+            Eigen::Vector4f p(input_ptr->x, input_ptr->y, input_ptr->z, 1);
+            p = transform_info.eigen_transform * p;
+            output_ptr->x = p[0];
+            output_ptr->y = p[1];
+            output_ptr->z = p[2];
+          } else {
+            *output_ptr = *input_ptr;
+          }
+          const float & intensity =
+            *reinterpret_cast<const float *>(&input->data[indices[i] + intensity_offset]);
+          output_ptr->intensity = intensity;
 
-      std::memcpy(&output.data[output_size], &out_point, sizeof(PointXYZI));
-      output_size += sizeof(PointXYZI);
+          output_size += output.point_step;
+        }
+      }
+
+      walk_first_idx = idx + 1;
     }
-  } else {
-    for (const auto & [raw_p, point_walk_id] : ranges::views::zip(
-           input->data | ranges::views::chunk(input->point_step), points_walk_id)) {
-      // Filter out points on invalid rings and points not in a cluster
-      if (point_walk_id == -1UL || !walks_cluster_status.at(point_walk_id)) {
-        continue;
+
+    if (walk_first_idx > walk_last_idx) continue;
+
+    if (isCluster(
+          input, std::make_pair(indices[walk_first_idx], indices[walk_last_idx]),
+          walk_last_idx - walk_first_idx + 1)) {
+      for (int i = walk_first_idx; i <= walk_last_idx; i++) {
+        auto output_ptr = reinterpret_cast<PointXYZI *>(&output.data[output_size]);
+        auto input_ptr = reinterpret_cast<const PointXYZI *>(&input->data[indices[i]]);
+
+        if (transform_info.need_transform) {
+          Eigen::Vector4f p(input_ptr->x, input_ptr->y, input_ptr->z, 1);
+          p = transform_info.eigen_transform * p;
+          output_ptr->x = p[0];
+          output_ptr->y = p[1];
+          output_ptr->z = p[2];
+        } else {
+          *output_ptr = *input_ptr;
+        }
+        const float & intensity =
+          *reinterpret_cast<const float *>(&input->data[indices[i] + intensity_offset]);
+        output_ptr->intensity = intensity;
+
+        output_size += output.point_step;
       }
-
-      PointXYZI out_point;
-      std::memcpy(&out_point, raw_p.data(), sizeof(PointXYZI));
-      // FIXME(VRichardJP) tmp fix because input data does not have the same layout than PointXYZI
-      std::memcpy(
-        &out_point.intensity, &raw_p.data()[intensity_offset], sizeof(out_point.intensity));
-
-      std::memcpy(&output.data[output_size], &out_point, sizeof(PointXYZI));
-
-      output_size += sizeof(PointXYZI);
     }
   }
+
   output.data.resize(output_size);
 
   // Note that `input->header.frame_id` is data before converted when `transform_info.need_transform
@@ -331,12 +195,6 @@ void RingOutlierFilterComponent::faster_filter(
     num_fields, "x", 1, sensor_msgs::msg::PointField::FLOAT32, "y", 1,
     sensor_msgs::msg::PointField::FLOAT32, "z", 1, sensor_msgs::msg::PointField::FLOAT32,
     "intensity", 1, sensor_msgs::msg::PointField::FLOAT32);
-
-  if (invalid_ring_count > 0) {
-    RCLCPP_WARN(
-      get_logger(), "%d points had ring index over max_rings_num (%d) and have been ignored.",
-      invalid_ring_count, max_rings_num_);
-  }
 
   // add processing time for debug
   if (debug_publisher_) {
