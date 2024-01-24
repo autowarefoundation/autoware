@@ -28,6 +28,15 @@ sample-map-rosbag
 projector_type: local
 ```
 
+#### Limitation
+
+The functionality that requires latitude and longitude will become unavailable.
+
+The currently identified unavailable functionalities are:
+
+- GNSS localization
+- Sending the self-position in latitude and longitude using ADAPI
+
 ### Using MGRS
 
 If you want to use MGRS, please specify the MGRS grid as well.
@@ -38,6 +47,10 @@ projector_type: MGRS
 vertical_datum: WGS84
 mgrs_grid: 54SUE
 ```
+
+#### Limitation
+
+It cannot be used with maps that span across two or more MGRS grids. Please use it only when it falls within the scope of a single MGRS grid.
 
 ### Using LocalCartesianUTM
 
