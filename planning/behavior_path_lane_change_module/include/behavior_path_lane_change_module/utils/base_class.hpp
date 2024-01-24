@@ -80,7 +80,7 @@ public:
 
   virtual bool hasFinishedAbort() const = 0;
 
-  virtual bool isLaneChangeRequired() const = 0;
+  virtual bool isLaneChangeRequired() = 0;
 
   virtual bool isAbortState() const = 0;
 

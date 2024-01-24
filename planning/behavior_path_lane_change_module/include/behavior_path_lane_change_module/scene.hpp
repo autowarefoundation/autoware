@@ -89,7 +89,7 @@ public:
 
   bool isAbortState() const override;
 
-  bool isLaneChangeRequired() const override;
+  bool isLaneChangeRequired() override;
 
   bool isStoppedAtRedTrafficLight() const override;
 

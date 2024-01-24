@@ -50,9 +50,6 @@ LaneChangeInterface::LaneChangeInterface(
 void LaneChangeInterface::processOnEntry()
 {
   waitApproval();
-  module_type_->setPreviousModulePaths(
-    getPreviousModuleOutput().reference_path, getPreviousModuleOutput().path);
-  module_type_->updateLaneChangeStatus();
 }
 
 void LaneChangeInterface::processOnExit()
@@ -80,6 +77,14 @@ void LaneChangeInterface::updateData()
 {
   module_type_->setPreviousModulePaths(
     getPreviousModuleOutput().reference_path, getPreviousModuleOutput().path);
+  module_type_->setPreviousDrivableAreaInfo(getPreviousModuleOutput().drivable_area_info);
+  module_type_->setPreviousTurnSignalInfo(getPreviousModuleOutput().turn_signal_info);
+
+  if (isWaitingApproval()) {
+    module_type_->updateLaneChangeStatus();
+  }
+  setObjectDebugVisualization();
+
   module_type_->updateSpecialData();
   module_type_->resetStopPose();
 }
@@ -98,8 +103,6 @@ BehaviorModuleOutput LaneChangeInterface::plan()
     return {};
   }
 
-  module_type_->setPreviousDrivableAreaInfo(getPreviousModuleOutput().drivable_area_info);
-  module_type_->setPreviousTurnSignalInfo(getPreviousModuleOutput().turn_signal_info);
   auto output = module_type_->generateOutput();
   path_reference_ = std::make_shared<PathWithLaneId>(output.reference_path);
   *prev_approved_path_ = getPreviousModuleOutput().path;
@@ -128,22 +131,14 @@ BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
   out.reference_path = getPreviousModuleOutput().reference_path;
   out.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
   out.drivable_area_info = getPreviousModuleOutput().drivable_area_info;
-
-  module_type_->setPreviousModulePaths(
-    getPreviousModuleOutput().reference_path, getPreviousModuleOutput().path);
-  module_type_->updateLaneChangeStatus();
-  setObjectDebugVisualization();
+  out.turn_signal_info = getCurrentTurnSignalInfo(out.path, out.turn_signal_info);
 
   for (const auto & [uuid, data] : module_type_->getDebugData()) {
     const auto color = data.is_safe ? ColorName::GREEN : ColorName::RED;
     setObjectsOfInterestData(data.current_obj_pose, data.obj_shape, color);
   }
 
-  // change turn signal when the vehicle reaches at the end of the path for waiting lane change
-  out.turn_signal_info = getCurrentTurnSignalInfo(out.path, out.turn_signal_info);
-
   path_reference_ = std::make_shared<PathWithLaneId>(getPreviousModuleOutput().reference_path);
-
   stop_pose_ = module_type_->getStopPose();
 
   if (!module_type_->isValidPath()) {
@@ -211,6 +206,7 @@ bool LaneChangeInterface::canTransitSuccessState()
   }
 
   if (module_type_->hasFinishedLaneChange()) {
+    module_type_->resetParameters();
     log_debug_throttled("Lane change process has completed.");
     return true;
   }

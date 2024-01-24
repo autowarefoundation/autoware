@@ -115,17 +115,17 @@ std::pair<bool, bool> NormalLaneChange::getSafePath(LaneChangePath & safe_path) 
   return {true, found_safe_path};
 }
 
-bool NormalLaneChange::isLaneChangeRequired() const
+bool NormalLaneChange::isLaneChangeRequired()
 {
-  const auto current_lanes = getCurrentLanes();
+  status_.current_lanes = getCurrentLanes();
 
-  if (current_lanes.empty()) {
+  if (status_.current_lanes.empty()) {
     return false;
   }
 
-  const auto target_lanes = getLaneChangeLanes(current_lanes, direction_);
+  status_.target_lanes = getLaneChangeLanes(status_.current_lanes, direction_);
 
-  return !target_lanes.empty();
+  return !status_.target_lanes.empty();
 }
 
 bool NormalLaneChange::isStoppedAtRedTrafficLight() const
@@ -420,8 +420,15 @@ void NormalLaneChange::resetParameters()
   is_abort_approval_requested_ = false;
   current_lane_change_state_ = LaneChangeStates::Normal;
   abort_path_ = nullptr;
+  status_ = {};
 
   object_debug_.clear();
+  object_debug_after_approval_.clear();
+  debug_filtered_objects_.current_lane.clear();
+  debug_filtered_objects_.target_lane.clear();
+  debug_filtered_objects_.other_lane.clear();
+  debug_valid_path_.clear();
+  RCLCPP_DEBUG(logger_, "reset all flags and debug information.");
 }
 
 TurnSignalInfo NormalLaneChange::updateOutputTurnSignal()
