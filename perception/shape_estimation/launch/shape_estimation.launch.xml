@@ -4,9 +4,6 @@
   <arg name="node_name" default="shape_estimation"/>
   <!-- Parameter -->
   <arg name="config_file" default="$(find-pkg-share shape_estimation)/config/shape_estimation.param.yaml"/>
-  <arg name="use_vehicle_reference_yaw" default="false"/>
-  <arg name="use_vehicle_reference_shape_size" default="false"/>
-  <arg name="use_boost_bbox_optimizer" default="false"/>
 
   <node pkg="shape_estimation" exec="shape_estimation" name="$(var node_name)" output="screen">
     <remap from="input" to="$(var input/objects)"/>
