@@ -118,7 +118,7 @@ NDTScanMatcher::NDTScanMatcher()
   lidar_topic_timeout_sec_ = this->declare_parameter<double>("lidar_topic_timeout_sec");
 
   critical_upper_bound_exe_time_ms_ =
-    this->declare_parameter<int64_t>("critical_upper_bound_exe_time_ms");
+    this->declare_parameter<double>("critical_upper_bound_exe_time_ms");
 
   initial_pose_timeout_sec_ = this->declare_parameter<double>("initial_pose_timeout_sec");
 
@@ -316,8 +316,7 @@ void NDTScanMatcher::publish_diagnostic()
   }
   if (
     state_ptr_->count("execution_time") &&
-    std::stod((*state_ptr_)["execution_time"]) >=
-      static_cast<double>(critical_upper_bound_exe_time_ms_)) {
+    std::stod((*state_ptr_)["execution_time"]) >= critical_upper_bound_exe_time_ms_) {
     diag_status_msg.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
     diag_status_msg.message +=
       "NDT exe time is too long. (took " + (*state_ptr_)["execution_time"] + " [ms])";
