@@ -68,8 +68,8 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
     getOrDeclareParameter<double>(node, ns + ".stuck_vehicle.stuck_vehicle_velocity");
   cp.max_stuck_vehicle_lateral_offset =
     getOrDeclareParameter<double>(node, ns + ".stuck_vehicle.max_stuck_vehicle_lateral_offset");
-  cp.stuck_vehicle_attention_range =
-    getOrDeclareParameter<double>(node, ns + ".stuck_vehicle.stuck_vehicle_attention_range");
+  cp.required_clearance =
+    getOrDeclareParameter<double>(node, ns + ".stuck_vehicle.required_clearance");
   cp.min_acc_for_stuck_vehicle = getOrDeclareParameter<double>(node, ns + ".stuck_vehicle.min_acc");
   cp.max_jerk_for_stuck_vehicle =
     getOrDeclareParameter<double>(node, ns + ".stuck_vehicle.max_jerk");

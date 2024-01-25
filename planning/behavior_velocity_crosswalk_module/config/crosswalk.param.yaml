@@ -30,7 +30,7 @@
         enable_stuck_check_in_intersection: false # [-] flag to enable stuck vehicle checking for crosswalk which is in intersection
         stuck_vehicle_velocity: 1.0 # [m/s] threshold velocity whether other vehicles are assumed to be stuck or not.
         max_stuck_vehicle_lateral_offset: 2.0 # [m] The feature does not handle the vehicles farther than this value to the ego's path.
-        stuck_vehicle_attention_range: 10.0 # [m] Ego does not enter the crosswalk area if a stuck vehicle exists within this distance from the end of the crosswalk on the ego's path.
+        required_clearance: 6.0 # [m] clearance to be secured between the ego and the ahead vehicle
         min_acc: -1.0 # min acceleration [m/ss]
         min_jerk: -1.0 # min jerk [m/sss]
         max_jerk: 1.0 # max jerk [m/sss]

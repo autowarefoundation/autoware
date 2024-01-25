@@ -124,7 +124,7 @@ public:
     bool enable_stuck_check_in_intersection{false};
     double stuck_vehicle_velocity;
     double max_stuck_vehicle_lateral_offset;
-    double stuck_vehicle_attention_range;
+    double required_clearance;
     double min_acc_for_stuck_vehicle;
     double max_jerk_for_stuck_vehicle;
     double min_jerk_for_stuck_vehicle;
