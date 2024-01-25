@@ -29,10 +29,4 @@ The package monitors the following two values:
 
 ## Parameters
 
-| Name                                   | Type   | Description                                                                                  |
-| -------------------------------------- | ------ | -------------------------------------------------------------------------------------------- |
-| `scale`                                | double | scale factor for monitored values (default: 3.0)                                             |
-| `error_ellipse_size`                   | double | error threshold for long radius of confidence ellipse [m] (default: 1.0)                     |
-| `warn_ellipse_size`                    | double | warning threshold for long radius of confidence ellipse [m] (default: 0.8)                   |
-| `error_ellipse_size_lateral_direction` | double | error threshold for size of confidence ellipse along lateral direction [m] (default: 0.3)    |
-| `warn_ellipse_size_lateral_direction`  | double | warning threshold for size of confidence ellipse along lateral direction [m] (default: 0.25) |
+{{ json_to_markdown("localization/localization_error_monitor/schema/localization_error_monitor.schema.json") }}

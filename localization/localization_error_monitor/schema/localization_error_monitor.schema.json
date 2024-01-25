@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Localization Error Monitor node",
+  "type": "object",
+  "definitions": {
+    "localization_error_monitor": {
+      "type": "object",
+      "properties": {
+        "scale": {
+          "type": "number",
+          "default": 3.0,
+          "description": "scale factor for monitored values"
+        },
+        "error_ellipse_size": {
+          "type": "number",
+          "default": 1.5,
+          "description": "error threshold for long radius of confidence ellipse [m]"
+        },
+        "warn_ellipse_size": {
+          "type": "number",
+          "default": 1.2,
+          "description": "warning threshold for long radius of confidence ellipse [m]"
+        },
+        "error_ellipse_size_lateral_direction": {
+          "type": "number",
+          "default": 0.3,
+          "description": "error threshold for size of confidence ellipse along lateral direction [m]"
+        },
+        "warn_ellipse_size_lateral_direction": {
+          "type": "number",
+          "default": 0.25,
+          "description": "warning threshold for size of confidence ellipse along lateral direction [m]"
+        }
+      },
+      "required": [
+        "scale",
+        "error_ellipse_size",
+        "warn_ellipse_size",
+        "error_ellipse_size_lateral_direction",
+        "warn_ellipse_size_lateral_direction"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/localization_error_monitor"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
