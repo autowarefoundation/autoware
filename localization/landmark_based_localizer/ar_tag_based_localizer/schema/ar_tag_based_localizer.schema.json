@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for ar_tag_based_localizer",
+  "type": "object",
+  "definitions": {
+    "ar_tag_based_localizer": {
+      "type": "object",
+      "properties": {
+        "marker_size": {
+          "type": "number",
+          "description": "marker_size",
+          "default": 0.6
+        },
+        "target_tag_ids": {
+          "type": "array",
+          "description": "target_tag_ids",
+          "default": "['0','1','2','3','4','5','6']"
+        },
+        "base_covariance": {
+          "type": "array",
+          "description": "base_covariance",
+          "default": [
+            0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.02, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.02, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.02
+          ]
+        },
+        "distance_threshold": {
+          "type": "number",
+          "description": "distance_threshold(m)",
+          "default": "13.0"
+        },
+        "consider_orientation": {
+          "type": "boolean",
+          "description": "consider_orientation",
+          "default": "false"
+        },
+        "detection_mode": {
+          "type": "string",
+          "description": "detection_mode select from [DM_NORMAL, DM_FAST, DM_VIDEO_FAST]",
+          "default": "DM_NORMAL"
+        },
+        "min_marker_size": {
+          "type": "number",
+          "description": "min_marker_size",
+          "default": 0.02
+        },
+        "ekf_time_tolerance": {
+          "type": "number",
+          "description": "ekf_time_tolerance(sec)",
+          "default": 5.0
+        },
+        "ekf_position_tolerance": {
+          "type": "number",
+          "description": "ekf_position_tolerance(m)",
+          "default": 10.0
+        }
+      },
+      "required": [
+        "marker_size",
+        "target_tag_ids",
+        "base_covariance",
+        "distance_threshold",
+        "consider_orientation",
+        "detection_mode",
+        "min_marker_size",
+        "ekf_time_tolerance",
+        "ekf_position_tolerance"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/ar_tag_based_localizer"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
