@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for ll2_decomposer",
+  "type": "object",
+  "definitions": {
+    "ll2_decomposer": {
+      "type": "object",
+      "properties": {
+        "road_marking_labels": {
+          "type": "array",
+          "description": "line string types that indicating road surface markings in lanelet2",
+          "default": [
+            "cross_walk",
+            "zebra_marking",
+            "line_thin",
+            "line_thick",
+            "pedestrian_marking",
+            "stop_line",
+            "road_border"
+          ]
+        },
+        "sign_board_labels": {
+          "type": "array",
+          "description": "line string types that indicating traffic sign boards in lanelet2",
+          "default": ["sign-board"]
+        },
+        "bounding_box_labels": {
+          "type": "array",
+          "description": "line string types that indicating not mapped areas in lanelet2",
+          "default": ["none"]
+        }
+      },
+      "required": ["road_marking_labels", "sign_board_labels", "bounding_box_labels"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/ll2_decomposer"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

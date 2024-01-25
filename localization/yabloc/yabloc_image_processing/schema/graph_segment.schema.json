@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for graph_segment",
+  "type": "object",
+  "definitions": {
+    "graph_segment": {
+      "type": "object",
+      "properties": {
+        "target_height_ratio": {
+          "type": "number",
+          "description": "height on the image to retrieve the candidate road surface",
+          "default": 0.85
+        },
+        "target_candidate_box_width": {
+          "type": "number",
+          "description": "size of the square area to search for candidate road surfaces",
+          "default": 15
+        },
+        "pickup_additional_graph_segment": {
+          "type": "boolean",
+          "description": "if this is true, additional regions of similar color are retrieved",
+          "default": true
+        },
+        "similarity_score_threshold": {
+          "type": "number",
+          "description": "threshold for picking up additional areas",
+          "default": 0.8
+        },
+        "sigma": {
+          "type": "number",
+          "description": "parameter for cv::ximgproc::segmentation::GraphSegmentation",
+          "default": 0.5
+        },
+        "k": {
+          "type": "number",
+          "description": "parameter for cv::ximgproc::segmentation::GraphSegmentation",
+          "default": 300.0
+        },
+        "min_size": {
+          "type": "number",
+          "description": "parameter for cv::ximgproc::segmentation::GraphSegmentation",
+          "default": 100.0
+        }
+      },
+      "required": [
+        "target_height_ratio",
+        "target_candidate_box_width",
+        "pickup_additional_graph_segment",
+        "similarity_score_threshold",
+        "sigma",
+        "k",
+        "min_size"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/graph_segment"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

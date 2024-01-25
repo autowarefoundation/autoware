@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for gnss_particle_corrector",
+  "type": "object",
+  "definitions": {
+    "gnss_particle_corrector": {
+      "type": "object",
+      "properties": {
+        "acceptable_max_delay": {
+          "type": "number",
+          "description": "how long to hold the predicted particles",
+          "default": 1.0
+        },
+        "visualize": {
+          "type": "boolean",
+          "description": "whether publish particles as marker_array or not",
+          "default": false
+        },
+        "mahalanobis_distance_threshold": {
+          "type": "number",
+          "description": "if the Mahalanobis distance to the GNSS for particle exceeds this, the correction skips.",
+          "default": 30.0
+        },
+        "for_fixed/max_weight": {
+          "type": "number",
+          "description": "gnss weight distribution used when observation is fixed",
+          "default": 5.0
+        },
+        "for_fixed/flat_radius": {
+          "type": "number",
+          "description": "gnss weight distribution used when observation is fixed",
+          "default": 0.5
+        },
+        "for_fixed/max_radius": {
+          "type": "number",
+          "description": "gnss weight distribution used when observation is fixed",
+          "default": 10.0
+        },
+        "for_fixed/min_weight": {
+          "type": "number",
+          "description": "gnss weight distribution used when observation is fixed",
+          "default": 0.5
+        },
+        "for_not_fixed/max_weight": {
+          "type": "number",
+          "description": "gnss weight distribution used when observation is not fixed",
+          "default": 1.0
+        },
+        "for_not_fixed/flat_radius": {
+          "type": "number",
+          "description": "gnss weight distribution used when observation is not fixed",
+          "default": 5.0
+        },
+        "for_not_fixed/max_radius": {
+          "type": "number",
+          "description": "gnss weight distribution used when observation is not fixed",
+          "default": 20.0
+        },
+        "for_not_fixed/min_weight": {
+          "type": "number",
+          "description": "gnss weight distribution used when observation is not fixed",
+          "default": 0.5
+        }
+      },
+      "required": [
+        "acceptable_max_delay",
+        "visualize",
+        "for_fixed/max_weight",
+        "for_fixed/flat_radius",
+        "for_fixed/max_radius",
+        "for_fixed/min_weight",
+        "for_not_fixed/max_weight",
+        "for_not_fixed/flat_radius",
+        "for_not_fixed/max_radius",
+        "for_not_fixed/min_weight"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/gnss_particle_corrector"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

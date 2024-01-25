@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for camera_particle_corrector",
+  "type": "object",
+  "definitions": {
+    "camera_particle_corrector": {
+      "type": "object",
+      "properties": {
+        "acceptable_max_delay": {
+          "type": "number",
+          "description": "how long to hold the predicted particles",
+          "default": 1.0
+        },
+        "visualize": {
+          "type": "boolean",
+          "description": "whether publish particles as marker_array or not",
+          "default": false
+        },
+        "image_size": {
+          "type": "number",
+          "description": "image size of debug/cost_map_image",
+          "default": 800
+        },
+        "max_range": {
+          "type": "number",
+          "description": "width of hierarchical cost map",
+          "default": 40.0
+        },
+        "gamma": {
+          "type": "number",
+          "description": "gamma value of the intensity gradient of the cost map",
+          "default": 5.0
+        },
+        "min_prob": {
+          "type": "number",
+          "description": "minimum particle weight the corrector node gives",
+          "default": 0.1
+        },
+        "far_weight_gain": {
+          "type": "number",
+          "description": "`exp(-far_weight_gain_ * squared_distance_from_camera)` is weight gain. if this is large, the nearby road markings will be more important",
+          "default": 0.001
+        },
+        "enabled_at_first": {
+          "type": "boolean",
+          "description": "if it is false, this node is not activated at first. you can activate by service call",
+          "default": true
+        }
+      },
+      "required": [
+        "acceptable_max_delay",
+        "visualize",
+        "image_size",
+        "max_range",
+        "gamma",
+        "min_prob",
+        "far_weight_gain",
+        "enabled_at_first"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/camera_particle_corrector"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for segment_filter",
+  "type": "object",
+  "definitions": {
+    "segment_filter": {
+      "type": "object",
+      "properties": {
+        "min_segment_length": {
+          "type": "number",
+          "description": "min length threshold (if it is negative, it is unlimited)",
+          "default": 1.5
+        },
+        "max_segment_distance": {
+          "type": "number",
+          "description": "max distance threshold (if it is negative, it is unlimited)",
+          "default": 30.0
+        },
+        "max_lateral_distance": {
+          "type": "number",
+          "description": "max lateral distance threshold (if it is negative, it is unlimited)",
+          "default": 10.0
+        },
+        "publish_image_with_segment_for_debug": {
+          "type": "boolean",
+          "description": "toggle whether to publish the filtered line segment for debug",
+          "default": true
+        },
+        "max_range": {
+          "type": "number",
+          "description": "range of debug projection visualization",
+          "default": 20.0
+        },
+        "image_size": {
+          "type": "number",
+          "description": "image size of debug projection visualization",
+          "default": 800
+        }
+      },
+      "required": [
+        "min_segment_length",
+        "max_segment_distance",
+        "max_lateral_distance",
+        "publish_image_with_segment_for_debug",
+        "max_range",
+        "image_size"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/segment_filter"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

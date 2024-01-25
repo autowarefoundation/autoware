@@ -36,15 +36,7 @@ This package contains some executable nodes related to particle filter.
 
 ### Parameters
 
-| Name                          | Type             | Description                                                       |
-| ----------------------------- | ---------------- | ----------------------------------------------------------------- |
-| `visualize`                   | bool             | whether particles are also published in visualization_msgs or not |
-| `static_linear_covariance`    | double           | to override the covariance of `/twist_with_covariance`            |
-| `static_angular_covariance`   | double           | to override the covariance of `/twist_with_covariance`            |
-| `resampling_interval_seconds` | double           | the interval of particle resampling                               |
-| `num_of_particles`            | int              | the number of particles                                           |
-| `prediction_rate`             | double           | frequency of forecast updates, in Hz                              |
-| `cov_xx_yy`                   | vector\<double\> | the covariance of initial pose                                    |
+{{ json_to_markdown("localization/yabloc/yabloc_particle_filter/schema/predictor.schema.json") }}
 
 ### Services
 
@@ -80,19 +72,7 @@ This package contains some executable nodes related to particle filter.
 
 ### Parameters
 
-| Name                             | Type   | Description                                                                              |
-| -------------------------------- | ------ | ---------------------------------------------------------------------------------------- |
-| `acceptable_max_delay`           | double | how long to hold the predicted particles                                                 |
-| `visualize`                      | double | whether publish particles as marker_array or not                                         |
-| `mahalanobis_distance_threshold` | double | if the Mahalanobis distance to the GNSS for particle exceeds this, the correction skips. |
-| `for_fixed/max_weight`           | bool   | parameter for gnss weight distribution                                                   |
-| `for_fixed/flat_radius`          | bool   | parameter for gnss weight distribution                                                   |
-| `for_fixed/max_radius`           | bool   | parameter for gnss weight distribution                                                   |
-| `for_fixed/min_weight`           | bool   | parameter for gnss weight distribution                                                   |
-| `for_not_fixed/flat_radius`      | bool   | parameter for gnss weight distribution                                                   |
-| `for_not_fixed/max_radius`       | bool   | parameter for gnss weight distribution                                                   |
-| `for_not_fixed/min_weight`       | bool   | parameter for gnss weight distribution                                                   |
-| `for_not_fixed/max_weight`       | bool   | parameter for gnss weight distribution                                                   |
+{{ json_to_markdown("localization/yabloc/yabloc_particle_filter/schema/gnss_particle_corrector.schema.json") }}
 
 ## camera_particle_corrector
 
@@ -127,16 +107,7 @@ This package contains some executable nodes related to particle filter.
 
 ### Parameters
 
-| Name                   | Type   | Description                                                                                                                               |
-| ---------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `acceptable_max_delay` | double | how long to hold the predicted particles                                                                                                  |
-| `visualize`            | double | whether publish particles as marker_array or not                                                                                          |
-| `image_size`           | int    | image size of debug/cost_map_image                                                                                                        |
-| `max_range`            | double | width of hierarchical cost map                                                                                                            |
-| `gamma`                | double | gamma value of the intensity gradient of the cost map                                                                                     |
-| `min_prob`             | double | minimum particle weight the corrector node gives                                                                                          |
-| `far_weight_gain`      | double | `exp(-far_weight_gain_ * squared_distance_from_camera)` is weight gain. if this is large, the nearby road markings will be more important |
-| `enabled_at_first`     | bool   | if it is false, this node is not activated at first. you can activate by service call                                                     |
+{{ json_to_markdown("localization/yabloc/yabloc_particle_filter/schema/camera_particle_corrector.schema.json") }}
 
 ### Services
 

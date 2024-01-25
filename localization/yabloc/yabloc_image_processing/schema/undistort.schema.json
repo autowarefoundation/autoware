@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for undistort",
+  "type": "object",
+  "definitions": {
+    "undistort": {
+      "type": "object",
+      "properties": {
+        "use_sensor_qos": {
+          "type": "boolean",
+          "description": "whether to use sensor qos or not",
+          "default": true
+        },
+        "width": {
+          "type": "number",
+          "description": "resized image width size",
+          "default": 800
+        },
+        "override_frame_id": {
+          "type": "string",
+          "description": "value for overriding the camera's frame_id. if blank, frame_id of static_tf is not overwritten",
+          "default": ""
+        }
+      },
+      "required": ["use_sensor_qos", "width", "override_frame_id"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/undistort"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

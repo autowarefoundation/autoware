@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for predictor",
+  "type": "object",
+  "definitions": {
+    "predictor": {
+      "type": "object",
+      "properties": {
+        "visualize": {
+          "type": "boolean",
+          "description": "whether particles are also published in visualization_msgs or not",
+          "default": true
+        },
+        "static_linear_covariance": {
+          "type": "number",
+          "description": "overriding covariance of `/twist_with_covariance`",
+          "default": 0.04
+        },
+        "static_angular_covariance": {
+          "type": "number",
+          "description": "overriding covariance of `/twist_with_covariance`",
+          "default": 0.006
+        },
+        "resampling_interval_seconds": {
+          "type": "number",
+          "description": "the interval of particle resampling",
+          "default": 1.0
+        },
+        "num_of_particles": {
+          "type": "number",
+          "description": "the number of particles",
+          "default": 500
+        },
+        "prediction_rate": {
+          "type": "number",
+          "description": "frequency of forecast updates, in Hz",
+          "default": 50.0
+        },
+        "cov_xx_yy": {
+          "type": "array",
+          "description": "the covariance of initial pose",
+          "default": [2.0, 0.25]
+        }
+      },
+      "required": [
+        "visualize",
+        "static_linear_covariance",
+        "static_angular_covariance",
+        "resampling_interval_seconds",
+        "num_of_particles",
+        "prediction_rate",
+        "cov_xx_yy"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/predictor"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

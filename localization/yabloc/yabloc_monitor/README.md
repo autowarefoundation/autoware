@@ -25,3 +25,7 @@ To be added,
 | Name           | Type                              | Description         |
 | -------------- | --------------------------------- | ------------------- |
 | `/diagnostics` | `diagnostic_msgs/DiagnosticArray` | Diagnostics outputs |
+
+### Parameters
+
+{{ json_to_markdown("localization/yabloc/yabloc_monitor/schema/yabloc_monitor.schema.json") }}

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for yabloc_monitor",
+  "type": "object",
+  "definitions": {
+    "yabloc_monitor": {
+      "type": "object",
+      "properties": {
+        "availability/timestamp_tolerance": {
+          "type": "number",
+          "description": "tolerable time difference between current time and latest estimated pose",
+          "default": 1.0
+        }
+      },
+      "required": ["availability/timestamp_tolerance"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/yabloc_monitor"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
