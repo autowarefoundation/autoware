@@ -1,3 +1,10 @@
+- name: Install libqt5charts5-dev # remove this task after merging https://github.com/ros/rosdistro/pull/39705.
+  become: true
+  ansible.builtin.apt:
+    name: libqt5charts5-dev
+    state: latest
+    update_cache: true
+
 - name: Install geographiclib-tools
   become: true
   ansible.builtin.apt:
