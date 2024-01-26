@@ -66,7 +66,7 @@ public:
 
   virtual BehaviorModuleOutput generateOutput() = 0;
 
-  virtual void extendOutputDrivableArea(BehaviorModuleOutput & output) = 0;
+  virtual void extendOutputDrivableArea(BehaviorModuleOutput & output) const = 0;
 
   virtual PathWithLaneId getReferencePath() const = 0;
 
@@ -74,7 +74,7 @@ public:
 
   virtual void resetParameters() = 0;
 
-  virtual TurnSignalInfo updateOutputTurnSignal() = 0;
+  virtual TurnSignalInfo updateOutputTurnSignal() const = 0;
 
   virtual bool hasFinishedLaneChange() const = 0;
 
@@ -225,7 +225,7 @@ protected:
     LaneChangePaths * candidate_paths, const utils::path_safety_checker::RSSparams rss_params,
     const bool is_stuck, const bool check_safety) const = 0;
 
-  virtual TurnSignalInfo calcTurnSignalInfo() = 0;
+  virtual TurnSignalInfo calcTurnSignalInfo() const = 0;
 
   virtual bool isValidPath(const PathWithLaneId & path) const = 0;
 
