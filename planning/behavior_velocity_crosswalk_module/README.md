@@ -196,7 +196,7 @@ In the `stuck_vehicle` namespace, the following parameters are defined.
 | ---------------------------------- | ------- | ------ | ----------------------------------------------------------------------- |
 | `stuck_vehicle_velocity`           | [m/s]   | double | maximum velocity threshold whether the target vehicle is stopped or not |
 | `max_stuck_vehicle_lateral_offset` | [m]     | double | maximum lateral offset of the target vehicle position                   |
-| `stuck_vehicle_attention_range`    | [m]     | double | detection area length ahead of the crosswalk                            |
+| `required_clearance`               | [m]     | double | clearance to be secured between the ego and the ahead vehicle           |
 | `min_acc`                          | [m/ss]  | double | minimum acceleration to stop                                            |
 | `min_jerk`                         | [m/sss] | double | minimum jerk to stop                                                    |
 | `max_jerk`                         | [m/sss] | double | maximum jerk to stop                                                    |
