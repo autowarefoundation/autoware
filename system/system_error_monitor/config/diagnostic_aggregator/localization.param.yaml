@@ -24,9 +24,9 @@
               contains: ["ndt_scan_matcher"]
               timeout: 1.0
 
-            localization_accuracy:
+            localization_error_ellipse:
               type: diagnostic_aggregator/GenericAnalyzer
-              path: localization_accuracy
+              path: localization_error_ellipse
               contains: ["localization: localization_error_monitor"]
               timeout: 1.0
 

@@ -23,7 +23,7 @@ diagnostic_msgs::msg::DiagnosticStatus checkLocalizationAccuracy(
   diagnostic_msgs::msg::DiagnosticStatus stat;
 
   diagnostic_msgs::msg::KeyValue key_value;
-  key_value.key = "localization_accuracy";
+  key_value.key = "localization_error_ellipse";
   key_value.value = std::to_string(ellipse_size);
   stat.values.push_back(key_value);
 
@@ -47,7 +47,7 @@ diagnostic_msgs::msg::DiagnosticStatus checkLocalizationAccuracyLateralDirection
   diagnostic_msgs::msg::DiagnosticStatus stat;
 
   diagnostic_msgs::msg::KeyValue key_value;
-  key_value.key = "localization_accuracy_lateral_direction";
+  key_value.key = "localization_error_ellipse_lateral_direction";
   key_value.value = std::to_string(ellipse_size);
   stat.values.push_back(key_value);
 
