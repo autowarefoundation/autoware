@@ -53,15 +53,7 @@ This node extract road surface region by [graph-based-segmentation](https://docs
 
 ### Parameters
 
-| Name                              | Type   | Description                                                        |
-| --------------------------------- | ------ | ------------------------------------------------------------------ |
-| `target_height_ratio`             | double | height on the image to retrieve the candidate road surface         |
-| `target_candidate_box_width`      | int    | size of the square area to search for candidate road surfaces      |
-| `pickup_additional_graph_segment` | bool   | if this is true, additional regions of similar color are retrieved |
-| `similarity_score_threshold`      | double | threshold for picking up additional areas                          |
-| `sigma`                           | double | parameters for cv::ximgproc::segmentation                          |
-| `k`                               | double | parameters for cv::ximgproc::segmentation                          |
-| `min_size`                        | double | parameters for cv::ximgproc::segmentation                          |
+{{ json_to_markdown("localization/yabloc/yabloc_image_processing/schema/graph_segment.schema.json") }}
 
 ## segment_filter
 
@@ -89,7 +81,7 @@ This is a node that integrates the results of graph_segment and lsd to extract r
 
 ### Parameters
 
-{{ json_to_markdown("localization/yabloc/yabloc_common/schema/segment_filter.schema.json") }}
+{{ json_to_markdown("localization/yabloc/yabloc_image_processing/schema/segment_filter.schema.json") }}
 
 ## undistort
 
@@ -120,7 +112,7 @@ This is to avoid redundant decompression within Autoware.
 
 ### Parameters
 
-{{ json_to_markdown("localization/yabloc/yabloc_common/schema/undistort.schema.json") }}
+{{ json_to_markdown("localization/yabloc/yabloc_image_processing/schema/undistort.schema.json") }}
 
 #### about tf_static overriding
 
