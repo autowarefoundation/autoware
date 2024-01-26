@@ -630,32 +630,38 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
     return output;
   }
 
-  const auto move_to_end = [](auto & modules, const auto & cond) {
-    auto itr = modules.begin();
-    while (itr != modules.end()) {
-      const auto satisfied_exit_cond =
-        std::all_of(itr, modules.end(), [&cond](const auto & m) { return cond(m); });
-
-      if (satisfied_exit_cond) {
-        return;
-      }
-
-      if (cond(*itr)) {
-        auto tmp = std::move(*itr);
-        itr = modules.erase(itr);
-        modules.insert(modules.end(), std::move(tmp));
-      } else {
-        itr++;
-      }
-    }
-  };
-
   // move modules whose keep last flag is true to end of the approved_module_ptrs_.
+  // if there are multiple keep last modules, sort by priority
   {
-    const auto keep_last_module_cond = [this](const auto & m) {
-      return getManager(m)->isKeepLast();
+    const auto move_to_end = [](auto & modules, const auto & module_to_move) {
+      auto itr = std::find(modules.begin(), modules.end(), module_to_move);
+
+      if (itr != modules.end()) {
+        auto tmp = std::move(*itr);
+        modules.erase(itr);
+        modules.push_back(std::move(tmp));
+      }
     };
-    move_to_end(approved_module_ptrs_, keep_last_module_cond);
+
+    const auto get_sorted_keep_last_modules = [this](const auto & modules) {
+      std::vector<SceneModulePtr> keep_last_modules;
+
+      std::copy_if(
+        modules.begin(), modules.end(), std::back_inserter(keep_last_modules),
+        [this](const auto & m) { return getManager(m)->isKeepLast(); });
+
+      // sort by priority (low -> high)
+      std::sort(
+        keep_last_modules.begin(), keep_last_modules.end(), [this](const auto & a, const auto & b) {
+          return getManager(a)->getPriority() < getManager(b)->getPriority();
+        });
+
+      return keep_last_modules;
+    };
+
+    for (const auto & module : get_sorted_keep_last_modules(approved_module_ptrs_)) {
+      move_to_end(approved_module_ptrs_, module);
+    }
   }
 
   // lock approved modules besides last one
@@ -768,6 +774,25 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
    * remove success module immediately. if lane change module has succeeded, update root lanelet.
    */
   {
+    const auto move_to_end = [](auto & modules, const auto & cond) {
+      auto itr = modules.begin();
+      while (itr != modules.end()) {
+        const auto satisfied_exit_cond =
+          std::all_of(itr, modules.end(), [&cond](const auto & m) { return cond(m); });
+
+        if (satisfied_exit_cond) {
+          return;
+        }
+
+        if (cond(*itr)) {
+          auto tmp = std::move(*itr);
+          itr = modules.erase(itr);
+          modules.insert(modules.end(), std::move(tmp));
+        } else {
+          itr++;
+        }
+      }
+    };
     const auto success_module_cond = [](const auto & m) {
       return m->getCurrentStatus() == ModuleStatus::SUCCESS;
     };
