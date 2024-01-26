@@ -1884,6 +1884,10 @@ DrivableAreaInfo combineDrivableAreaInfo(
     drivable_area_info1.enable_expanding_intersection_areas ||
     drivable_area_info2.enable_expanding_intersection_areas;
 
+  // drivable margin
+  combined_drivable_area_info.drivable_margin =
+    std::max(drivable_area_info1.drivable_margin, drivable_area_info2.drivable_margin);
+
   return combined_drivable_area_info;
 }
 
