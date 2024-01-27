@@ -2278,11 +2278,11 @@ TurnSignalInfo calcTurnSignalInfo(
     return {};
   }
 
-  const auto left_lanelets = rh->getAllLeftSharedLinestringLanelets(lanelet, true, true);
-  const auto right_lanelets = rh->getAllRightSharedLinestringLanelets(lanelet, true, true);
+  const auto left_lane = rh->getLeftLanelet(lanelet, true, true);
+  const auto right_lane = rh->getRightLanelet(lanelet, true, true);
 
   if (!existShiftSideLane(
-        start_shift_length, end_shift_length, left_lanelets.empty(), right_lanelets.empty())) {
+        start_shift_length, end_shift_length, !left_lane.has_value(), !right_lane.has_value())) {
     return {};
   }
 
