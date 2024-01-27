@@ -419,7 +419,7 @@ private:
   bool checkOccupancyGridCollision(const PathWithLaneId & path) const;
   bool checkObjectsCollision(
     const PathWithLaneId & path, const double collision_check_margin,
-    const bool update_debug_data = false) const;
+    const bool extract_static_objects, const bool update_debug_data = false) const;
 
   // goal seach
   Pose calcRefinedGoal(const Pose & goal_pose) const;

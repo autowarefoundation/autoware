@@ -624,7 +624,9 @@ bool GoalPlannerModule::canReturnToLaneParking()
 
   if (
     parameters_->use_object_recognition &&
-    checkObjectsCollision(path, parameters_->object_recognition_collision_check_margin)) {
+    checkObjectsCollision(
+      path, parameters_->object_recognition_collision_check_margin,
+      /*extract_static_objects=*/false)) {
     return false;
   }
 
@@ -711,7 +713,9 @@ std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPri
       const auto resampled_path =
         utils::resamplePathWithSpline(pull_over_path.getParkingPath(), 0.5);
       for (const auto & scale_factor : scale_factors) {
-        if (!checkObjectsCollision(resampled_path, margin * scale_factor)) {
+        if (!checkObjectsCollision(
+              resampled_path, margin * scale_factor,
+              /*extract_static_objects=*/true)) {
           return margin * scale_factor;
         }
       }
@@ -771,8 +775,10 @@ std::optional<std::pair<PullOverPath, GoalCandidate>> GoalPlannerModule::selectP
 
     const auto resampled_path = utils::resamplePathWithSpline(pull_over_path.getParkingPath(), 0.5);
     if (
-      parameters_->use_object_recognition &&
-      checkObjectsCollision(resampled_path, collision_check_margin, true /*update_debug_data*/)) {
+      parameters_->use_object_recognition && checkObjectsCollision(
+                                               resampled_path, collision_check_margin,
+                                               /*extract_static_objects=*/true,
+                                               /*update_debug_data=*/true)) {
       continue;
     }
 
@@ -914,6 +920,7 @@ bool GoalPlannerModule::hasNotDecidedPath() const
 DecidingPathStatusWithStamp GoalPlannerModule::checkDecidingPathStatus() const
 {
   const auto & prev_status = prev_data_.deciding_path_status;
+  const bool enable_safety_check = parameters_->safety_check_params.enable_safety_check;
 
   // Once this function returns true, it will continue to return true thereafter
   if (prev_status.first == DecidingPathStatus::DECIDED) {
@@ -927,8 +934,7 @@ DecidingPathStatusWithStamp GoalPlannerModule::checkDecidingPathStatus() const
 
   // If it is dangerous against dynamic objects before approval, do not determine the path.
   // This eliminates a unsafe path to be approved
-  if (
-    parameters_->safety_check_params.enable_safety_check && !isSafePath().first && !isActivated()) {
+  if (enable_safety_check && !isSafePath().first && !isActivated()) {
     RCLCPP_DEBUG(
       getLogger(),
       "[DecidingPathStatus]: NOT_DECIDED. path is not safe against dynamic objects before "
@@ -957,10 +963,17 @@ DecidingPathStatusWithStamp GoalPlannerModule::checkDecidingPathStatus() const
     const auto parking_path = utils::resamplePathWithSpline(pull_over_path->getParkingPath(), 0.5);
     const double margin =
       parameters_->object_recognition_collision_check_margin * hysteresis_factor;
-    if (checkObjectsCollision(parking_path, margin)) {
+    if (checkObjectsCollision(parking_path, margin, /*extract_static_objects=*/false)) {
       RCLCPP_DEBUG(
         getLogger(),
         "[DecidingPathStatus]: DECIDING->NOT_DECIDED. path has collision with objects");
+      return {DecidingPathStatus::NOT_DECIDED, clock_->now()};
+    }
+
+    if (enable_safety_check && !isSafePath().first) {
+      RCLCPP_DEBUG(
+        getLogger(),
+        "[DecidingPathStatus]: DECIDING->NOT_DECIDED. path is not safe against dynamic objects");
       return {DecidingPathStatus::NOT_DECIDED, clock_->now()};
     }
 
@@ -1406,7 +1419,7 @@ bool GoalPlannerModule::isStuck()
     parameters_->use_object_recognition &&
     checkObjectsCollision(
       thread_safe_data_.get_pull_over_path()->getCurrentPath(),
-      parameters_->object_recognition_collision_check_margin)) {
+      /*extract_static_objects=*/false, parameters_->object_recognition_collision_check_margin)) {
     return true;
   }
 
@@ -1519,16 +1532,24 @@ bool GoalPlannerModule::checkOccupancyGridCollision(const PathWithLaneId & path)
 
 bool GoalPlannerModule::checkObjectsCollision(
   const PathWithLaneId & path, const double collision_check_margin,
-  const bool update_debug_data) const
+  const bool extract_static_objects, const bool update_debug_data) const
 {
-  const auto pull_over_lane_stop_objects =
-    goal_planner_utils::extractStaticObjectsInExpandedPullOverLanes(
-      *(planner_data_->route_handler), left_side_parking_, parameters_->backward_goal_search_length,
-      parameters_->forward_goal_search_length, parameters_->detection_bound_offset,
-      *(planner_data_->dynamic_object), parameters_->th_moving_object_velocity);
+  const auto target_objects = std::invoke([&]() {
+    const auto & p = parameters_;
+    const auto & rh = *(planner_data_->route_handler);
+    const auto objects = *(planner_data_->dynamic_object);
+    if (extract_static_objects) {
+      return goal_planner_utils::extractStaticObjectsInExpandedPullOverLanes(
+        rh, left_side_parking_, p->backward_goal_search_length, p->forward_goal_search_length,
+        p->detection_bound_offset, objects, p->th_moving_object_velocity);
+    }
+    return goal_planner_utils::extractObjectsInExpandedPullOverLanes(
+      rh, left_side_parking_, p->backward_goal_search_length, p->forward_goal_search_length,
+      p->detection_bound_offset, objects);
+  });
 
   std::vector<Polygon2d> obj_polygons;
-  for (const auto & object : pull_over_lane_stop_objects.objects) {
+  for (const auto & object : target_objects.objects) {
     obj_polygons.push_back(tier4_autoware_utils::toPolygon2d(object));
   }
 
