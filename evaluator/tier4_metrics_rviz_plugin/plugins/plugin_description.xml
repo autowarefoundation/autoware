@@ -1,0 +1,5 @@
+<library path="tier4_metrics_rviz_plugin">
+  <class type="rviz_plugins::MetricsVisualizePanel" base_class_type="rviz_common::Panel">
+    <description>MetricsVisualizePanel</description>
+  </class>
+</library>
