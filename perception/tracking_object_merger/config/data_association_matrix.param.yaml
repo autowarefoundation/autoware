@@ -3,7 +3,7 @@
     lidar-lidar:
       can_assign_matrix:
         #UNKNOWN, CAR, TRUCK, BUS,  TRAILER, MOTORBIKE, BICYCLE,PEDESTRIAN
-        [0,       0,   0,     0,    0,       0,         0,      0,         #UNKNOWN
+        [1,       0,   0,     0,    0,       0,         0,      0,         #UNKNOWN
         0,       1,   1,     1,    1,       0,         0,      0,         #CAR
         0,       1,   1,     1,    1,       0,         0,      0,         #TRUCK
         0,       1,   1,     1,    1,       0,         0,      0,         #BUS
@@ -59,7 +59,7 @@
     lidar-radar:
       can_assign_matrix:
         #UNKNOWN, CAR, TRUCK, BUS,  TRAILER, MOTORBIKE, BICYCLE,PEDESTRIAN
-        [0,       0,   0,     0,    0,       0,         0,      0,         #UNKNOWN
+        [1,       0,   0,     0,    0,       0,         0,      0,         #UNKNOWN
         0,       1,   1,     1,    1,       0,         0,      0,         #CAR
         0,       1,   1,     1,    1,       0,         0,      0,         #TRUCK
         0,       1,   1,     1,    1,       0,         0,      0,         #BUS
@@ -115,7 +115,7 @@
     radar-radar:
       can_assign_matrix:
         #UNKNOWN, CAR, TRUCK, BUS,  TRAILER, MOTORBIKE, BICYCLE,PEDESTRIAN
-        [0,       0,   0,     0,    0,       0,         0,      0,         #UNKNOWN
+        [1,       0,   0,     0,    0,       0,         0,      0,         #UNKNOWN
         0,       1,   1,     1,    1,       0,         0,      0,         #CAR
         0,       1,   1,     1,    1,       0,         0,      0,         #TRUCK
         0,       1,   1,     1,    1,       0,         0,      0,         #BUS
