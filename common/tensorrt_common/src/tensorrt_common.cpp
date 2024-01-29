@@ -186,7 +186,11 @@ void TrtCommon::setup()
     } else {
       std::cout << "Building... " << cache_engine_path << std::endl;
       logger_.log(nvinfer1::ILogger::Severity::kINFO, "Start build engine");
+      auto log_thread = logger_.log_throttle(
+        nvinfer1::ILogger::Severity::kINFO,
+        "Applying optimizations and building TRT CUDA engine. Please wait for a few minutes...", 5);
       buildEngineFromOnnx(model_file_path_, cache_engine_path);
+      logger_.stop_throttle(log_thread);
       logger_.log(nvinfer1::ILogger::Severity::kINFO, "End build engine");
     }
     engine_path = cache_engine_path;

@@ -16,6 +16,7 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
+  <depend>tensorrt_common</depend>
   <depend>tier4_debug_msgs</depend>
   <depend>tier4_perception_msgs</depend>
 

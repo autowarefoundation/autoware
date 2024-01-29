@@ -113,10 +113,9 @@ std::vector<float> Net::preprocess(
   return result;
 }
 
-Net::Net(const std::string & path, bool verbose)
+Net::Net(const std::string & path, bool verbose) : logger_(verbose)
 {
-  Logger logger(verbose);
-  runtime_ = unique_ptr<nvinfer1::IRuntime>(nvinfer1::createInferRuntime(logger));
+  runtime_ = unique_ptr<nvinfer1::IRuntime>(nvinfer1::createInferRuntime(logger_));
   load(path);
   if (!prepare()) {
     std::cout << "Fail to prepare engine" << std::endl;
@@ -136,9 +135,9 @@ Net::Net(
   const std::string & onnx_file_path, const std::string & precision, const int max_batch_size,
   const Config & yolo_config, const std::vector<std::string> & calibration_images,
   const std::string & calibration_table, bool verbose, size_t workspace_size)
+: logger_(verbose)
 {
-  Logger logger(verbose);
-  runtime_ = unique_ptr<nvinfer1::IRuntime>(nvinfer1::createInferRuntime(logger));
+  runtime_ = unique_ptr<nvinfer1::IRuntime>(nvinfer1::createInferRuntime(logger_));
   if (!runtime_) {
     std::cout << "Fail to create runtime" << std::endl;
     return;
@@ -147,7 +146,7 @@ Net::Net(
   bool int8 = precision.compare("INT8") == 0;
 
   // Create builder
-  auto builder = unique_ptr<nvinfer1::IBuilder>(nvinfer1::createInferBuilder(logger));
+  auto builder = unique_ptr<nvinfer1::IBuilder>(nvinfer1::createInferBuilder(logger_));
   if (!builder) {
     std::cout << "Fail to create builder" << std::endl;
     return;
@@ -168,20 +167,23 @@ Net::Net(
 #endif
 
   // Parse ONNX FCN
-  std::cout << "Building " << precision << " core model..." << std::endl;
+  tensorrt_common::LOG_INFO(logger_) << "Building " << precision << " core model..." << std::endl;
   const auto flag =
     1U << static_cast<uint32_t>(nvinfer1::NetworkDefinitionCreationFlag::kEXPLICIT_BATCH);
   auto network = unique_ptr<nvinfer1::INetworkDefinition>(builder->createNetworkV2(flag));
   if (!network) {
-    std::cout << "Fail to create network" << std::endl;
+    tensorrt_common::LOG_ERROR(logger_) << "Fail to create network" << std::endl;
     return;
   }
-  auto parser = unique_ptr<nvonnxparser::IParser>(nvonnxparser::createParser(*network, logger));
+  auto parser = unique_ptr<nvonnxparser::IParser>(nvonnxparser::createParser(*network, logger_));
   if (!parser) {
-    std::cout << "Fail to create parser" << std::endl;
+    tensorrt_common::LOG_ERROR(logger_) << "Fail to create parser" << std::endl;
     return;
   }
 
+  auto log_thread = logger_.log_throttle(
+    nvinfer1::ILogger::Severity::kINFO,
+    "Applying optimizations and building TRT CUDA engine. Please wait for a few minutes...", 5);
   parser->parseFromFile(
     onnx_file_path.c_str(), static_cast<int>(nvinfer1::ILogger::Severity::kERROR));
   std::vector<nvinfer1::ITensor *> scores, boxes, classes;
@@ -250,28 +252,31 @@ Net::Net(
       calib = std::make_unique<yolo::Int8EntropyCalibrator>(stream, calibration_table);
       config->setInt8Calibrator(calib.get());
     } else {
-      std::cout << "Fail to find enough images for INT8 calibration. Build FP mode..." << std::endl;
+      tensorrt_common::LOG_WARN(logger_)
+        << "Fail to find enough images for INT8 calibration. Build FP mode..." << std::endl;
     }
   }
 
   // Build engine
-  std::cout << "Applying optimizations and building TRT CUDA engine..." << std::endl;
   plan_ = unique_ptr<nvinfer1::IHostMemory>(builder->buildSerializedNetwork(*network, *config));
   if (!plan_) {
-    std::cout << "Fail to create serialized network" << std::endl;
+    tensorrt_common::LOG_ERROR(logger_) << "Fail to create serialized network" << std::endl;
+    logger_.stop_throttle(log_thread);
     return;
   }
   engine_ = unique_ptr<nvinfer1::ICudaEngine>(
     runtime_->deserializeCudaEngine(plan_->data(), plan_->size()));
   if (!prepare()) {
-    std::cout << "Fail to create engine" << std::endl;
+    tensorrt_common::LOG_ERROR(logger_) << "Fail to create engine" << std::endl;
+    logger_.stop_throttle(log_thread);
     return;
   }
+  logger_.stop_throttle(log_thread);
 }
 
 void Net::save(const std::string & path) const
 {
-  std::cout << "Writing to " << path << "..." << std::endl;
+  tensorrt_common::LOG_INFO(logger_) << "Writing to " << path << "..." << std::endl;
   std::ofstream file(path, std::ios::out | std::ios::binary);
   file.write(reinterpret_cast<const char *>(plan_->data()), plan_->size());
 }

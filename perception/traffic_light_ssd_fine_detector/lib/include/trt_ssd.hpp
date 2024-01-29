@@ -15,6 +15,8 @@
 #ifndef TRT_SSD_HPP_
 #define TRT_SSD_HPP_
 
+#include <tensorrt_common/logger.hpp>
+
 #include <./cuda_runtime.h>
 #include <NvInfer.h>
 
@@ -39,22 +41,6 @@ struct Deleter
 template <typename T>
 using unique_ptr = std::unique_ptr<T, Deleter>;
 
-class Logger : public nvinfer1::ILogger
-{
-public:
-  explicit Logger(bool verbose) : verbose_(verbose) {}
-
-  void log(Severity severity, const char * msg) noexcept override
-  {
-    if (verbose_ || ((severity != Severity::kINFO) && (severity != Severity::kVERBOSE))) {
-      std::cout << msg << std::endl;
-    }
-  }
-
-private:
-  bool verbose_{false};
-};
-
 struct Shape
 {
   int channel, width, height;
@@ -78,7 +64,7 @@ public:
   // Create engine from serialized onnx model
   Net(
     const std::string & onnx_file_path, const std::string & precision, const int max_batch_size,
-    bool verbose = false, size_t workspace_size = (1ULL << 30));
+    bool verbose = true, size_t workspace_size = (1ULL << 30));
 
   ~Net();
 
@@ -127,6 +113,7 @@ private:
   unique_ptr<nvinfer1::ICudaEngine> engine_ = nullptr;
   unique_ptr<nvinfer1::IExecutionContext> context_ = nullptr;
   cudaStream_t stream_ = nullptr;
+  tensorrt_common::Logger logger_;
 
   void load(const std::string & path);
   void prepare();

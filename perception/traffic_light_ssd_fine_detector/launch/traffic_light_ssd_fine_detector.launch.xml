@@ -16,7 +16,7 @@
   <arg name="manager" default="traffic_light_recognition_nodelet_manager"/>
   <arg name="build_only" default="false" description="shutdown node after TensorRT engine file is built"/>
 
-  <node pkg="traffic_light_ssd_fine_detector" exec="traffic_light_ssd_fine_detector_node" name="traffic_light_ssd_fine_detector">
+  <node pkg="traffic_light_ssd_fine_detector" exec="traffic_light_ssd_fine_detector_node" name="traffic_light_ssd_fine_detector" output="screen">
     <remap from="~/input/image" to="$(var input/image)"/>
     <remap from="~/input/rois" to="$(var input/rois)"/>
     <remap from="~/output/rois" to="$(var output/rois)"/>

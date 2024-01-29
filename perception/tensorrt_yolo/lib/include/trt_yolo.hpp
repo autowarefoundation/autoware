@@ -41,6 +41,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include <tensorrt_common/logger.hpp>
 #include <yolo_layer.hpp>
 
 #include <NvInfer.h>
@@ -67,22 +68,6 @@ struct Deleter
 template <typename T>
 using unique_ptr = std::unique_ptr<T, Deleter>;
 
-class Logger : public nvinfer1::ILogger
-{
-public:
-  explicit Logger(bool verbose) : verbose_(verbose) {}
-
-  void log(Severity severity, const char * msg) noexcept override
-  {
-    if (verbose_ || ((severity != Severity::kINFO) && (severity != Severity::kVERBOSE))) {
-      std::cout << msg << std::endl;
-    }
-  }
-
-private:
-  bool verbose_{false};
-};
-
 struct Config
 {
   int num_anchors;
@@ -105,7 +90,7 @@ public:
   Net(
     const std::string & onnx_file_path, const std::string & precision, const int max_batch_size,
     const Config & yolo_config, const std::vector<std::string> & calibration_images,
-    const std::string & calibration_table, bool verbose = false,
+    const std::string & calibration_table, bool verbose = true,
     size_t workspace_size = (1ULL << 30));
 
   ~Net();
@@ -138,6 +123,7 @@ private:
   cuda::unique_ptr<float[]> out_scores_d_ = nullptr;
   cuda::unique_ptr<float[]> out_boxes_d_ = nullptr;
   cuda::unique_ptr<float[]> out_classes_d_ = nullptr;
+  tensorrt_common::Logger logger_;
 
   void load(const std::string & path);
   bool prepare();
