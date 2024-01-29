@@ -19,6 +19,7 @@
       use_opposite_lane: true
       use_intersection_areas: true
       use_hatched_road_markings: true
+      use_freespace_areas: true
 
       # for debug
       publish_debug_marker: false

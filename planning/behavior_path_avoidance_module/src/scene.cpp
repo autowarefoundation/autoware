@@ -235,11 +235,13 @@ void AvoidanceModule::fillFundamentalData(AvoidancePlanningData & data, DebugDat
   auto tmp_path = getPreviousModuleOutput().path;
   const auto shorten_lanes = utils::cutOverlappedLanes(tmp_path, data.drivable_lanes);
   data.left_bound = toLineString3d(utils::calcBound(
-    planner_data_->route_handler, shorten_lanes, parameters_->use_hatched_road_markings,
-    parameters_->use_intersection_areas, true));
+    getPreviousModuleOutput().path, planner_data_, shorten_lanes,
+    parameters_->use_hatched_road_markings, parameters_->use_intersection_areas,
+    parameters_->use_freespace_areas, true));
   data.right_bound = toLineString3d(utils::calcBound(
-    planner_data_->route_handler, shorten_lanes, parameters_->use_hatched_road_markings,
-    parameters_->use_intersection_areas, false));
+    getPreviousModuleOutput().path, planner_data_, shorten_lanes,
+    parameters_->use_hatched_road_markings, parameters_->use_intersection_areas,
+    parameters_->use_freespace_areas, false));
 
   // reference path
   if (isDrivingSameLane(helper_->getPreviousDrivingLanes(), data.current_lanelets)) {
@@ -938,6 +940,8 @@ BehaviorModuleOutput AvoidanceModule::plan()
     // expand intersection areas
     current_drivable_area_info.enable_expanding_intersection_areas =
       parameters_->use_intersection_areas;
+    // expand freespace areas
+    current_drivable_area_info.enable_expanding_freespace_areas = parameters_->use_freespace_areas;
 
     output.drivable_area_info = utils::combineDrivableAreaInfo(
       current_drivable_area_info, getPreviousModuleOutput().drivable_area_info);

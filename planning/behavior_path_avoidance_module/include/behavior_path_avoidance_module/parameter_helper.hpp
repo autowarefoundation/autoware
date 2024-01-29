@@ -57,6 +57,7 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
     p.use_intersection_areas = getOrDeclareParameter<bool>(*node, ns + "use_intersection_areas");
     p.use_hatched_road_markings =
       getOrDeclareParameter<bool>(*node, ns + "use_hatched_road_markings");
+    p.use_freespace_areas = getOrDeclareParameter<bool>(*node, ns + "use_freespace_areas");
   }
 
   // target object

@@ -173,11 +173,9 @@ AvoidancePlanningData AvoidanceByLaneChange::calcAvoidancePlanningData(
   const auto shorten_lanes =
     utils::cutOverlappedLanes(data.reference_path_rough, data.drivable_lanes);
   data.left_bound = toLineString3d(utils::calcBound(
-    planner_data_->route_handler, shorten_lanes, avoidance_parameters_->use_hatched_road_markings,
-    avoidance_parameters_->use_intersection_areas, true));
+    data.reference_path_rough, planner_data_, shorten_lanes, false, false, false, true));
   data.right_bound = toLineString3d(utils::calcBound(
-    planner_data_->route_handler, shorten_lanes, avoidance_parameters_->use_hatched_road_markings,
-    avoidance_parameters_->use_intersection_areas, false));
+    data.reference_path_rough, planner_data_, shorten_lanes, false, false, false, false));
 
   // get related objects from dynamic_objects, and then separates them as target objects and non
   // target objects

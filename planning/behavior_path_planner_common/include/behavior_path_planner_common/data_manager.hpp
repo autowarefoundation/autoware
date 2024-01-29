@@ -106,6 +106,7 @@ struct DrivableAreaInfo
   std::vector<Obstacle> obstacles{};  // obstacles to extract from the drivable area
   bool enable_expanding_hatched_road_markings{false};
   bool enable_expanding_intersection_areas{false};
+  bool enable_expanding_freespace_areas{false};
 
   // temporary only for pull over's freespace planning
   double drivable_margin{0.0};

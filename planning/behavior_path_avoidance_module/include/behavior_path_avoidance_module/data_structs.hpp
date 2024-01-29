@@ -115,6 +115,9 @@ struct AvoidanceParameters
   // use intersection area for avoidance
   bool use_intersection_areas{false};
 
+  // use freespace area for avoidance
+  bool use_freespace_areas{false};
+
   // consider avoidance return dead line
   bool enable_dead_line_for_goal{false};
   bool enable_dead_line_for_traffic_light{false};

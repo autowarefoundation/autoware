@@ -19,6 +19,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 namespace behavior_path_planner::utils
 {
@@ -40,8 +41,8 @@ std::vector<DrivableLanes> getNonOverlappingExpandedLanes(
 void generateDrivableArea(
   PathWithLaneId & path, const std::vector<DrivableLanes> & lanes,
   const bool enable_expanding_hatched_road_markings, const bool enable_expanding_intersection_areas,
-  const double vehicle_length, const std::shared_ptr<const PlannerData> planner_data,
-  const bool is_driving_forward = true);
+  const bool enable_expanding_freespace_areas,
+  const std::shared_ptr<const PlannerData> planner_data, const bool is_driving_forward = true);
 
 void generateDrivableArea(
   PathWithLaneId & path, const double vehicle_length, const double offset,
@@ -62,6 +63,11 @@ std::vector<DrivableLanes> expandLanelets(
 void extractObstaclesFromDrivableArea(
   PathWithLaneId & path, const std::vector<DrivableAreaInfo::Obstacle> & obstacles);
 
+std::pair<std::vector<lanelet::ConstPoint3d>, bool> getBoundWithFreeSpaceAreas(
+  const std::vector<lanelet::ConstPoint3d> & original_bound,
+  const std::vector<lanelet::ConstPoint3d> & other_side_bound,
+  const std::shared_ptr<const PlannerData> planner_data, const bool is_left);
+
 std::vector<lanelet::ConstPoint3d> getBoundWithHatchedRoadMarkings(
   const std::vector<lanelet::ConstPoint3d> & original_bound,
   const std::shared_ptr<RouteHandler> & route_handler);
@@ -72,14 +78,22 @@ std::vector<lanelet::ConstPoint3d> getBoundWithIntersectionAreas(
   const std::vector<DrivableLanes> & drivable_lanes, const bool is_left);
 
 std::vector<geometry_msgs::msg::Point> calcBound(
-  const std::shared_ptr<RouteHandler> route_handler,
+  const PathWithLaneId & path, const std::shared_ptr<const PlannerData> planner_data,
   const std::vector<DrivableLanes> & drivable_lanes,
   const bool enable_expanding_hatched_road_markings, const bool enable_expanding_intersection_areas,
-  const bool is_left);
+  const bool enable_expanding_freespace_areas, const bool is_left,
+  const bool is_driving_forward = true);
 
-void makeBoundLongitudinallyMonotonic(
-  PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data,
-  const bool is_bound_left);
+std::vector<geometry_msgs::msg::Point> postProcess(
+  const std::vector<geometry_msgs::msg::Point> & original_bound, const PathWithLaneId & path,
+  const std::shared_ptr<const PlannerData> planner_data,
+  const std::vector<DrivableLanes> & drivable_lanes,
+  const bool enable_expanding_hatched_road_markings, const bool enable_expanding_intersection_areas,
+  const bool is_left, const bool is_driving_forward = true);
+
+std::vector<geometry_msgs::msg::Point> makeBoundLongitudinallyMonotonic(
+  const std::vector<geometry_msgs::msg::Point> & original_bound, const PathWithLaneId & path,
+  const std::shared_ptr<const PlannerData> & planner_data, const bool is_left);
 
 DrivableAreaInfo combineDrivableAreaInfo(
   const DrivableAreaInfo & drivable_area_info1, const DrivableAreaInfo & drivable_area_info2);
