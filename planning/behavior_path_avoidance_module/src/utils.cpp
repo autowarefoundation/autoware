@@ -2278,11 +2278,15 @@ TurnSignalInfo calcTurnSignalInfo(
     return {};
   }
 
-  const auto left_lane = rh->getLeftLanelet(lanelet, true, true);
-  const auto right_lane = rh->getRightLanelet(lanelet, true, true);
+  const auto left_same_direction_lane = rh->getLeftLanelet(lanelet, true, true);
+  const auto left_opposite_lanes = rh->getLeftOppositeLanelets(lanelet);
+  const auto right_same_direction_lane = rh->getRightLanelet(lanelet, true, true);
+  const auto right_opposite_lanes = rh->getRightOppositeLanelets(lanelet);
+  const auto has_left_lane = left_same_direction_lane.has_value() || !left_opposite_lanes.empty();
+  const auto has_right_lane =
+    right_same_direction_lane.has_value() || !right_opposite_lanes.empty();
 
-  if (!existShiftSideLane(
-        start_shift_length, end_shift_length, !left_lane.has_value(), !right_lane.has_value())) {
+  if (!existShiftSideLane(start_shift_length, end_shift_length, !has_left_lane, !has_right_lane)) {
     return {};
   }
 
