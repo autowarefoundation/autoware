@@ -621,6 +621,9 @@ IntersectionModule::CollisionStatus IntersectionModule::detectCollision(
       continue;
     }
     const auto & unsafe_info = object_info->is_unsafe().value();
+    setObjectsOfInterestData(
+      object_info->predicted_object().kinematics.initial_pose_with_covariance.pose,
+      object_info->predicted_object().shape, ColorName::RED);
     // ==========================================================================================
     // if ego is over the pass judge lines, then the visualization as "too_late_objects" or
     // "misjudge_objects" is more important than that for "unsafe"
@@ -910,7 +913,7 @@ bool IntersectionModule::checkCollision(
         }
       }
       object_ttc_time_array.layout.dim.at(0).size++;
-      const auto & pos = object.kinematics.initial_pose_with_covariance.pose.position;
+      const auto & pos = object..position;
       const auto & shape = object.shape;
       object_ttc_time_array.data.insert(
         object_ttc_time_array.data.end(),

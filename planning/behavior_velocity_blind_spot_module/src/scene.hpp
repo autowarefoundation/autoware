@@ -113,7 +113,7 @@ private:
     lanelet::routing::RoutingGraphPtr routing_graph_ptr,
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
     const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_ptr,
-    const int closest_idx, const geometry_msgs::msg::Pose & stop_line_pose) const;
+    const int closest_idx, const geometry_msgs::msg::Pose & stop_line_pose);
 
   /**
    * @brief Create half lanelet

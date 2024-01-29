@@ -348,7 +348,7 @@ bool BlindSpotModule::checkObstacleInBlindSpot(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_ptr,
-  const int closest_idx, const geometry_msgs::msg::Pose & stop_line_pose) const
+  const int closest_idx, const geometry_msgs::msg::Pose & stop_line_pose)
 {
   /* get detection area */
   if (turn_direction_ == TurnDirection::INVALID) {
@@ -409,6 +409,8 @@ bool BlindSpotModule::checkObstacleInBlindSpot(
         exist_in_right_conflict_area || exist_in_opposite_conflict_area;
       if (exist_in_detection_area && exist_in_conflict_area) {
         debug_data_.conflicting_targets.objects.push_back(object);
+        setObjectsOfInterestData(
+          object.kinematics.initial_pose_with_covariance.pose, object.shape, ColorName::RED);
         return true;
       }
     }
