@@ -23,4 +23,4 @@
 
     # logging settings
     enable_logging: false
-    log_file_path: "/tmp/decorative_tracker_merger.log"
+    logging_file_path: "association_log.json"
