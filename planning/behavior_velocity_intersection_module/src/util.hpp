@@ -34,7 +34,6 @@ namespace behavior_velocity_planner::util
 {
 
 /**
- * @fn
  * @brief insert a new pose to the path and return its index
  * @return if insertion was successful return the inserted point index
  */
@@ -44,7 +43,6 @@ std::optional<size_t> insertPointIndex(
   const double ego_nearest_dist_threshold, const double ego_nearest_yaw_threshold);
 
 /**
- * @fn
  * @brief check if a PathPointWithLaneId contains any of the given lane ids
  */
 bool hasLaneIds(
@@ -52,7 +50,6 @@ bool hasLaneIds(
   const std::set<lanelet::Id> & ids);
 
 /**
- * @fn
  * @brief find the first contiguous interval of the path points that contains the specified lane ids
  * @return if no interval is found, return null. if the interval [start, end] (inclusive range) is
  * found, returns the pair (start-1, end)
@@ -61,7 +58,6 @@ std::optional<std::pair<size_t, size_t>> findLaneIdsInterval(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & p, const std::set<lanelet::Id> & ids);
 
 /**
- * @fn
  * @brief return the index of the first point which is inside the given polygon
  * @param[in] lane_interval the interval of the path points on the intersection
  * @param[in] search_forward flag for search direction
@@ -72,7 +68,6 @@ std::optional<size_t> getFirstPointInsidePolygon(
   const bool search_forward = true);
 
 /**
- * @fn
  * @brief check if ego is over the target_idx. If the index is same, compare the exact pose
  * @param[in] path path
  * @param[in] closest_idx ego's closest index on the path
@@ -84,7 +79,6 @@ bool isOverTargetIndex(
   const geometry_msgs::msg::Pose & current_pose, const size_t target_idx);
 
 /**
- * @fn
  * @brief check if ego is before the target_idx. If the index is same, compare the exact pose
  * @param[in] path path
  * @param[in] closest_idx ego's closest index on the path
@@ -99,13 +93,11 @@ std::optional<tier4_autoware_utils::Polygon2d> getIntersectionArea(
   lanelet::ConstLanelet assigned_lane, lanelet::LaneletMapConstPtr lanelet_map_ptr);
 
 /**
- * @fn
  * @brief check if the given lane has related traffic light
  */
 bool hasAssociatedTrafficLight(lanelet::ConstLanelet lane);
 
 /**
- * @fn
  * @brief interpolate PathWithLaneId
  */
 std::optional<intersection::InterpolatedPathInfo> generateInterpolatedPath(
@@ -117,7 +109,6 @@ geometry_msgs::msg::Pose getObjectPoseWithVelocityDirection(
   const autoware_auto_perception_msgs::msg::PredictedObjectKinematics & obj_state);
 
 /**
- * @fn
  * @brief this function sorts the set of lanelets topologically using topological sort and merges
  * the lanelets from each root to each end. each branch is merged and returned with the original
  * lanelets
@@ -131,7 +122,6 @@ mergeLaneletsByTopologicalSort(
   const lanelet::routing::RoutingGraphPtr routing_graph_ptr);
 
 /**
- * @fn
  * @brief find the index of the first point where vehicle footprint intersects with the given
  * polygon
  */
@@ -140,6 +130,10 @@ std::optional<size_t> getFirstPointInsidePolygonByFootprint(
   const intersection::InterpolatedPathInfo & interpolated_path_info,
   const tier4_autoware_utils::LinearRing2d & footprint, const double vehicle_length);
 
+/**
+ * @brief find the index of the first point where vehicle footprint intersects with the given
+ * polygons
+ */
 std::optional<std::pair<
   size_t /* the index of interpolated PathPoint*/, size_t /* the index of corresponding Polygon */>>
 getFirstPointInsidePolygonsByFootprint(

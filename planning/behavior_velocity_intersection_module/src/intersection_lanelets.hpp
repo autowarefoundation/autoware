@@ -31,7 +31,6 @@ namespace behavior_velocity_planner::intersection
 {
 
 /**
- * @struct
  * @brief see the document for more details of IntersectionLanelets
  */
 struct IntersectionLanelets
@@ -174,7 +173,6 @@ public:
 };
 
 /**
- * @struct
  * @brief see the document for more details of PathLanelets
  */
 struct PathLanelets

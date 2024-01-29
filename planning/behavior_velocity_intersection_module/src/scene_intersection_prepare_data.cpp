@@ -161,11 +161,13 @@ namespace behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
-intersection::Result<IntersectionModule::BasicData, intersection::Indecisive>
+using intersection::make_err;
+using intersection::make_ok;
+using intersection::Result;
+
+Result<IntersectionModule::BasicData, intersection::InternalError>
 IntersectionModule::prepareIntersectionData(const bool is_prioritized, PathWithLaneId * path)
 {
-  using intersection::Result;
-
   const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
   const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
   const auto & assigned_lanelet = lanelet_map_ptr->laneletLayer.get(lane_id_);
@@ -177,26 +179,32 @@ IntersectionModule::prepareIntersectionData(const bool is_prioritized, PathWithL
   const auto interpolated_path_info_opt = util::generateInterpolatedPath(
     lane_id_, associative_ids_, *path, planner_param_.common.path_interpolation_ds, logger_);
   if (!interpolated_path_info_opt) {
-    return Result<IntersectionModule::BasicData, intersection::Indecisive>::make_err(
-      intersection::Indecisive{"splineInterpolate failed"});
+    return make_err<IntersectionModule::BasicData, intersection::InternalError>(
+      "splineInterpolate failed");
   }
 
   const auto & interpolated_path_info = interpolated_path_info_opt.value();
   if (!interpolated_path_info.lane_id_interval) {
-    return Result<IntersectionModule::BasicData, intersection::Indecisive>::make_err(
-      intersection::Indecisive{
-        "Path has no interval on intersection lane " + std::to_string(lane_id_)});
+    return make_err<IntersectionModule::BasicData, intersection::InternalError>(
+      "Path has no interval on intersection lane " + std::to_string(lane_id_));
   }
 
-  // cache intersection lane information because it is invariant
   if (!intersection_lanelets_) {
     intersection_lanelets_ =
       generateObjectiveLanelets(lanelet_map_ptr, routing_graph_ptr, assigned_lanelet);
   }
   auto & intersection_lanelets = intersection_lanelets_.value();
+  debug_data_.attention_area = intersection_lanelets.attention_area();
+  debug_data_.first_attention_area = intersection_lanelets.first_attention_area();
+  debug_data_.second_attention_area = intersection_lanelets.second_attention_area();
+  debug_data_.occlusion_attention_area = intersection_lanelets.occlusion_attention_area();
+  debug_data_.adjacent_area = intersection_lanelets.adjacent_area();
 
-  // at the very first time of regisTration of this module, the path may not be conflicting with the
-  // attention area, so update() is called to update the internal data as well as traffic light info
+  // ==========================================================================================
+  // at the very first time of registration of this module, the path may not be conflicting with
+  // the attention area, so update() is called to update the internal data as well as traffic
+  // light info
+  // ==========================================================================================
   intersection_lanelets.update(
     is_prioritized, interpolated_path_info, footprint, baselink2front, routing_graph_ptr);
 
@@ -205,17 +213,17 @@ IntersectionModule::prepareIntersectionData(const bool is_prioritized, PathWithL
   const auto & first_conflicting_lane_opt = intersection_lanelets.first_conflicting_lane();
   if (conflicting_lanelets.empty() || !first_conflicting_area_opt || !first_conflicting_lane_opt) {
     // this is abnormal
-    return Result<IntersectionModule::BasicData, intersection::Indecisive>::make_err(
-      intersection::Indecisive{"conflicting area is empty"});
+    return make_err<IntersectionModule::BasicData, intersection::InternalError>(
+      "conflicting area is empty");
   }
   const auto & first_conflicting_lane = first_conflicting_lane_opt.value();
   const auto & first_conflicting_area = first_conflicting_area_opt.value();
   const auto & second_attention_area_opt = intersection_lanelets.second_attention_area();
 
-  // generate all stop line candidates
-  // see the doc for struct IntersectionStopLines
-  /// even if the attention area is null, stuck vehicle stop line needs to be generated from
-  /// conflicting lanes
+  // ==========================================================================================
+  // even if the attention area is null, stuck vehicle stop line needs to be generated from
+  // conflicting lanes, so dummy_first_attention_lane is used
+  // ==========================================================================================
   const auto & dummy_first_attention_lane = intersection_lanelets.first_attention_lane()
                                               ? intersection_lanelets.first_attention_lane().value()
                                               : first_conflicting_lane;
@@ -224,8 +232,8 @@ IntersectionModule::prepareIntersectionData(const bool is_prioritized, PathWithL
     assigned_lanelet, first_conflicting_area, dummy_first_attention_lane, second_attention_area_opt,
     interpolated_path_info, path);
   if (!intersection_stoplines_opt) {
-    return Result<IntersectionModule::BasicData, intersection::Indecisive>::make_err(
-      intersection::Indecisive{"failed to generate intersection_stoplines"});
+    return make_err<IntersectionModule::BasicData, intersection::InternalError>(
+      "failed to generate intersection_stoplines");
   }
   const auto & intersection_stoplines = intersection_stoplines_opt.value();
   const auto closest_idx = intersection_stoplines.closest_idx;
@@ -239,8 +247,8 @@ IntersectionModule::prepareIntersectionData(const bool is_prioritized, PathWithL
     lanelets_on_path, interpolated_path_info, first_conflicting_area, conflicting_area,
     first_attention_area_opt, intersection_lanelets.attention_area(), closest_idx);
   if (!path_lanelets_opt.has_value()) {
-    return Result<IntersectionModule::BasicData, intersection::Indecisive>::make_err(
-      intersection::Indecisive{"failed to generate PathLanelets"});
+    return make_err<IntersectionModule::BasicData, intersection::InternalError>(
+      "failed to generate PathLanelets");
   }
   const auto & path_lanelets = path_lanelets_opt.value();
 
@@ -250,8 +258,24 @@ IntersectionModule::prepareIntersectionData(const bool is_prioritized, PathWithL
       planner_data_->occupancy_grid->info.resolution);
   }
 
-  return Result<IntersectionModule::BasicData, intersection::Indecisive>::make_ok(
-    BasicData{interpolated_path_info, intersection_stoplines, path_lanelets});
+  const bool is_green_solid_on = isGreenSolidOn();
+  if (is_green_solid_on && !initial_green_light_observed_time_) {
+    const auto assigned_lane_begin_point = assigned_lanelet.centerline().front();
+    const bool approached_assigned_lane =
+      motion_utils::calcSignedArcLength(
+        path->points, closest_idx,
+        tier4_autoware_utils::createPoint(
+          assigned_lane_begin_point.x(), assigned_lane_begin_point.y(),
+          assigned_lane_begin_point.z())) <
+      planner_param_.collision_detection.yield_on_green_traffic_light
+        .distance_to_assigned_lanelet_start;
+    if (approached_assigned_lane) {
+      initial_green_light_observed_time_ = clock_->now();
+    }
+  }
+
+  return make_ok<IntersectionModule::BasicData, intersection::InternalError>(
+    interpolated_path_info, intersection_stoplines, path_lanelets);
 }
 
 std::optional<size_t> IntersectionModule::getStopLineIndexFromMap(
@@ -421,8 +445,10 @@ IntersectionModule::generateIntersectionStopLines(
   int stuck_stopline_ip_int = 0;
   bool stuck_stopline_valid = true;
   if (use_stuck_stopline) {
+    // ==========================================================================================
     // NOTE: when ego vehicle is approaching attention area and already passed
     // first_conflicting_area, this could be null.
+    // ==========================================================================================
     const auto stuck_stopline_idx_ip_opt = util::getFirstPointInsidePolygonByFootprint(
       first_conflicting_area, interpolated_path_info, local_footprint, baselink2front);
     if (!stuck_stopline_idx_ip_opt) {
@@ -457,12 +483,13 @@ IntersectionModule::generateIntersectionStopLines(
     second_attention_stopline_ip_int >= 0 ? static_cast<size_t>(second_attention_stopline_ip_int)
                                           : 0;
 
-  // (8) second pass judge line position on interpolated path. It is the same as first pass judge
-  // line if second_attention_lane is null
-  int second_pass_judge_ip_int = occlusion_wo_tl_pass_judge_line_ip;
-  const auto second_pass_judge_line_ip =
-    second_attention_area_opt ? static_cast<size_t>(std::max<int>(second_pass_judge_ip_int, 0))
-                              : first_pass_judge_line_ip;
+  // (8) second pass judge line position on interpolated path. It is null if second_attention_lane
+  // is null
+  size_t second_pass_judge_line_ip = occlusion_wo_tl_pass_judge_line_ip;
+  bool second_pass_judge_line_valid = false;
+  if (second_attention_area_opt) {
+    second_pass_judge_line_valid = true;
+  }
 
   struct IntersectionStopLinesTemp
   {
@@ -528,9 +555,11 @@ IntersectionModule::generateIntersectionStopLines(
     intersection_stoplines.occlusion_peeking_stopline =
       intersection_stoplines_temp.occlusion_peeking_stopline;
   }
+  if (second_pass_judge_line_valid) {
+    intersection_stoplines.second_pass_judge_line =
+      intersection_stoplines_temp.second_pass_judge_line;
+  }
   intersection_stoplines.first_pass_judge_line = intersection_stoplines_temp.first_pass_judge_line;
-  intersection_stoplines.second_pass_judge_line =
-    intersection_stoplines_temp.second_pass_judge_line;
   intersection_stoplines.occlusion_wo_tl_pass_judge_line =
     intersection_stoplines_temp.occlusion_wo_tl_pass_judge_line;
   return intersection_stoplines;
@@ -556,7 +585,7 @@ intersection::IntersectionLanelets IntersectionModule::generateObjectiveLanelets
   }
 
   // for low priority lane
-  // If ego_lane has right of way (i.e. is high priority),
+  // if ego_lane has right of way (i.e. is high priority),
   // ignore yieldLanelets (i.e. low priority lanes)
   lanelet::ConstLanelets yield_lanelets{};
   const auto right_of_ways = assigned_lanelet.regulatoryElementsAs<lanelet::RightOfWay>();

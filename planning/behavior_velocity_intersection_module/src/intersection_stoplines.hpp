@@ -21,7 +21,6 @@ namespace behavior_velocity_planner::intersection
 {
 
 /**
- * @struct
  * @brief see the document for more details of IntersectionStopLines
  */
 struct IntersectionStopLines
@@ -63,9 +62,9 @@ struct IntersectionStopLines
 
   /**
    * second_pass_judge_line is before second_attention_stopline by the braking distance. if
-   * second_attention_lane is null, it is same as first_pass_judge_line
+   * second_attention_lane is null, it is null
    */
-  size_t second_pass_judge_line{0};
+  std::optional<size_t> second_pass_judge_line{std::nullopt};
 
   /**
    * occlusion_wo_tl_pass_judge_line is null if ego footprint along the path does not intersect with

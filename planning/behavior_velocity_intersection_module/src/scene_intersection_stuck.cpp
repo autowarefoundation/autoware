@@ -262,21 +262,19 @@ bool IntersectionModule::checkStuckVehicleInIntersection(
 std::optional<intersection::YieldStuckStop> IntersectionModule::isYieldStuckStatus(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const intersection::InterpolatedPathInfo & interpolated_path_info,
-  const intersection::IntersectionStopLines & intersection_stoplines,
-  const TargetObjects & target_objects) const
+  const intersection::IntersectionStopLines & intersection_stoplines) const
 {
   const auto closest_idx = intersection_stoplines.closest_idx;
   auto fromEgoDist = [&](const size_t index) {
     return motion_utils::calcSignedArcLength(path.points, closest_idx, index);
   };
-  const auto & intersection_lanelets = intersection_lanelets_.value();                // this is OK
-  const auto default_stopline_idx = intersection_stoplines.default_stopline.value();  // this is OK
-  const auto first_attention_stopline_idx =
-    intersection_stoplines.first_attention_stopline.value();  // this is OK
+  const auto & intersection_lanelets = intersection_lanelets_.value();
+  const auto default_stopline_idx = intersection_stoplines.default_stopline.value();
+  const auto first_attention_stopline_idx = intersection_stoplines.first_attention_stopline.value();
   const auto stuck_stopline_idx_opt = intersection_stoplines.stuck_stopline;
 
   const bool yield_stuck_detected = checkYieldStuckVehicleInIntersection(
-    target_objects, interpolated_path_info, intersection_lanelets.attention_non_preceding());
+    interpolated_path_info, intersection_lanelets.attention_non_preceding());
   if (yield_stuck_detected) {
     std::optional<size_t> stopline_idx = std::nullopt;
     const bool is_before_default_stopline = fromEgoDist(default_stopline_idx) >= 0.0;
@@ -297,14 +295,13 @@ std::optional<intersection::YieldStuckStop> IntersectionModule::isYieldStuckStat
       }
     }
     if (stopline_idx) {
-      return intersection::YieldStuckStop{closest_idx, stopline_idx.value()};
+      return intersection::YieldStuckStop{closest_idx, stopline_idx.value(), std::string("")};
     }
   }
   return std::nullopt;
 }
 
 bool IntersectionModule::checkYieldStuckVehicleInIntersection(
-  const TargetObjects & target_objects,
   const intersection::InterpolatedPathInfo & interpolated_path_info,
   const lanelet::ConstLanelets & attention_lanelets) const
 {
@@ -358,19 +355,20 @@ bool IntersectionModule::checkYieldStuckVehicleInIntersection(
       ::createLaneletFromArcLength(attention_lanelet, yield_stuck_start, yield_stuck_end));
   }
   debug_data_.yield_stuck_detect_area = util::getPolygon3dFromLanelets(yield_stuck_detect_lanelets);
-  for (const auto & object : target_objects.all_attention_objects) {
+  for (const auto & object_info : object_info_manager_.attentionObjects()) {
+    const auto & object = object_info->predicted_object();
     const auto obj_v_norm = std::hypot(
-      object.object.kinematics.initial_twist_with_covariance.twist.linear.x,
-      object.object.kinematics.initial_twist_with_covariance.twist.linear.y);
+      object.kinematics.initial_twist_with_covariance.twist.linear.x,
+      object.kinematics.initial_twist_with_covariance.twist.linear.y);
 
     if (obj_v_norm > stuck_vehicle_vel_thr) {
       continue;
     }
     for (const auto & yield_stuck_detect_lanelet : yield_stuck_detect_lanelets) {
       const bool is_in_lanelet = lanelet::utils::isInLanelet(
-        object.object.kinematics.initial_pose_with_covariance.pose, yield_stuck_detect_lanelet);
+        object.kinematics.initial_pose_with_covariance.pose, yield_stuck_detect_lanelet);
       if (is_in_lanelet) {
-        debug_data_.yield_stuck_targets.objects.push_back(object.object);
+        debug_data_.yield_stuck_targets.objects.push_back(object);
         return true;
       }
     }

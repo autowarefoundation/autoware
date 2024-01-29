@@ -27,7 +27,6 @@ namespace behavior_velocity_planner::intersection
 {
 
 /**
- * @struct
  * @brief  wrapper class of interpolated path with lane id
  */
 struct InterpolatedPathInfo

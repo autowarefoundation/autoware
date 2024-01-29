@@ -59,6 +59,8 @@
           object_expected_deceleration: 2.0
         ignore_on_red_traffic_light:
           object_margin_to_path: 2.0
+        avoid_collision_by_acceleration:
+          object_time_margin_to_collision_point: 4.0
 
       occlusion:
         enable: false

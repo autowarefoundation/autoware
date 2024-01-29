@@ -23,16 +23,23 @@ namespace behavior_velocity_planner::intersection
 {
 
 /**
- * @struct
- * @brief Internal error or ego already passed pass_judge_line
+ * @brief internal error
  */
-struct Indecisive
+struct InternalError
 {
   std::string error;
 };
 
 /**
- * @struct
+ * @brief
+ */
+struct OverPassJudge
+{
+  std::string safety_report;
+  std::string evasive_report;
+};
+
+/**
  * @brief detected stuck vehicle
  */
 struct StuckStop
@@ -43,17 +50,16 @@ struct StuckStop
 };
 
 /**
- * @struct
  * @brief yielded by vehicle on the attention area
  */
 struct YieldStuckStop
 {
   size_t closest_idx{0};
   size_t stuck_stopline_idx{0};
+  std::string safety_report;
 };
 
 /**
- * @struct
  * @brief only collision is detected
  */
 struct NonOccludedCollisionStop
@@ -61,10 +67,10 @@ struct NonOccludedCollisionStop
   size_t closest_idx{0};
   size_t collision_stopline_idx{0};
   size_t occlusion_stopline_idx{0};
+  std::string safety_report;
 };
 
 /**
- * @struct
  * @brief occlusion is detected so ego needs to stop at the default stop line position
  */
 struct FirstWaitBeforeOcclusion
@@ -76,7 +82,6 @@ struct FirstWaitBeforeOcclusion
 };
 
 /**
- * @struct
  * @brief ego is approaching the boundary of attention area in the presence of traffic light
  */
 struct PeekingTowardOcclusion
@@ -96,7 +101,6 @@ struct PeekingTowardOcclusion
 };
 
 /**
- * @struct
  * @brief both collision and occlusion are detected in the presence of traffic light
  */
 struct OccludedCollisionStop
@@ -110,10 +114,10 @@ struct OccludedCollisionStop
   //! if null, it is dynamic occlusion and shows up intersection_occlusion(dyn). if valid, it
   //! contains the remaining time to release the static occlusion stuck
   std::optional<double> static_occlusion_timeout{std::nullopt};
+  std::string safety_report;
 };
 
 /**
- * @struct
  * @brief at least occlusion is detected in the absence of traffic light
  */
 struct OccludedAbsenceTrafficLight
@@ -124,10 +128,10 @@ struct OccludedAbsenceTrafficLight
   size_t closest_idx{0};
   size_t first_attention_area_stopline_idx{0};
   size_t peeking_limit_line_idx{0};
+  std::string safety_report;
 };
 
 /**
- * @struct
  * @brief both collision and occlusion are not detected
  */
 struct Safe
@@ -138,7 +142,6 @@ struct Safe
 };
 
 /**
- * @struct
  * @brief traffic light is red or arrow signal
  */
 struct FullyPrioritized
@@ -147,10 +150,12 @@ struct FullyPrioritized
   size_t closest_idx{0};
   size_t collision_stopline_idx{0};
   size_t occlusion_stopline_idx{0};
+  std::string safety_report;
 };
 
 using DecisionResult = std::variant<
-  Indecisive,                   //! internal process error, or over the pass judge line
+  InternalError,                //! internal process error, or over the pass judge line
+  OverPassJudge,                //! over the pass judge lines
   StuckStop,                    //! detected stuck vehicle
   YieldStuckStop,               //! detected yield stuck vehicle
   NonOccludedCollisionStop,     //! detected collision while FOV is clear
@@ -162,41 +167,7 @@ using DecisionResult = std::variant<
   FullyPrioritized              //! only detect vehicles violating traffic rules
   >;
 
-inline std::string formatDecisionResult(const DecisionResult & decision_result)
-{
-  if (std::holds_alternative<Indecisive>(decision_result)) {
-    const auto indecisive = std::get<Indecisive>(decision_result);
-    return "Indecisive because " + indecisive.error;
-  }
-  if (std::holds_alternative<StuckStop>(decision_result)) {
-    return "StuckStop";
-  }
-  if (std::holds_alternative<YieldStuckStop>(decision_result)) {
-    return "YieldStuckStop";
-  }
-  if (std::holds_alternative<NonOccludedCollisionStop>(decision_result)) {
-    return "NonOccludedCollisionStop";
-  }
-  if (std::holds_alternative<FirstWaitBeforeOcclusion>(decision_result)) {
-    return "FirstWaitBeforeOcclusion";
-  }
-  if (std::holds_alternative<PeekingTowardOcclusion>(decision_result)) {
-    return "PeekingTowardOcclusion";
-  }
-  if (std::holds_alternative<OccludedCollisionStop>(decision_result)) {
-    return "OccludedCollisionStop";
-  }
-  if (std::holds_alternative<OccludedAbsenceTrafficLight>(decision_result)) {
-    return "OccludedAbsenceTrafficLight";
-  }
-  if (std::holds_alternative<Safe>(decision_result)) {
-    return "Safe";
-  }
-  if (std::holds_alternative<FullyPrioritized>(decision_result)) {
-    return "FullyPrioritized";
-  }
-  return "";
-}
+std::string formatDecisionResult(const DecisionResult & decision_result);
 
 }  // namespace behavior_velocity_planner::intersection
 

@@ -31,8 +31,6 @@
 #include <string>
 #include <vector>
 
-namespace behavior_velocity_planner
-{
 namespace
 {
 using tier4_autoware_utils::appendMarkerArray;
@@ -40,14 +38,14 @@ using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerOrientation;
 using tier4_autoware_utils::createMarkerScale;
 
-static visualization_msgs::msg::MarkerArray createLaneletPolygonsMarkerArray(
+visualization_msgs::msg::MarkerArray createLaneletPolygonsMarkerArray(
   const std::vector<lanelet::CompoundPolygon3d> & polygons, const std::string & ns,
   const int64_t lane_id, const double r, const double g, const double b)
 {
   visualization_msgs::msg::MarkerArray msg;
 
   int32_t i = 0;
-  int32_t uid = planning_utils::bitShift(lane_id);
+  int32_t uid = behavior_velocity_planner::planning_utils::bitShift(lane_id);
   for (const auto & polygon : polygons) {
     visualization_msgs::msg::Marker marker{};
     marker.header.frame_id = "map";
@@ -158,7 +156,58 @@ visualization_msgs::msg::MarkerArray createLineMarkerArray(
   return marker_point;
 }
 
+constexpr std::tuple<float, float, float> white()
+{
+  constexpr uint64_t code = 0xfdfdfd;
+  constexpr float r = static_cast<int>(code >> 16) / 255.0;
+  constexpr float g = static_cast<int>((code << 48) >> 56) / 255.0;
+  constexpr float b = static_cast<int>((code << 56) >> 56) / 255.0;
+  return {r, g, b};
+}
+
+constexpr std::tuple<float, float, float> green()
+{
+  constexpr uint64_t code = 0x5fa641;
+  constexpr float r = static_cast<int>(code >> 16) / 255.0;
+  constexpr float g = static_cast<int>((code << 48) >> 56) / 255.0;
+  constexpr float b = static_cast<int>((code << 56) >> 56) / 255.0;
+  return {r, g, b};
+}
+
+constexpr std::tuple<float, float, float> yellow()
+{
+  constexpr uint64_t code = 0xebce2b;
+  constexpr float r = static_cast<int>(code >> 16) / 255.0;
+  constexpr float g = static_cast<int>((code << 48) >> 56) / 255.0;
+  constexpr float b = static_cast<int>((code << 56) >> 56) / 255.0;
+  return {r, g, b};
+}
+
+constexpr std::tuple<float, float, float> red()
+{
+  constexpr uint64_t code = 0xba1c30;
+  constexpr float r = static_cast<int>(code >> 16) / 255.0;
+  constexpr float g = static_cast<int>((code << 48) >> 56) / 255.0;
+  constexpr float b = static_cast<int>((code << 56) >> 56) / 255.0;
+  return {r, g, b};
+}
+
+constexpr std::tuple<float, float, float> light_blue()
+{
+  constexpr uint64_t code = 0x96cde6;
+  constexpr float r = static_cast<int>(code >> 16) / 255.0;
+  constexpr float g = static_cast<int>((code << 48) >> 56) / 255.0;
+  constexpr float b = static_cast<int>((code << 56) >> 56) / 255.0;
+  return {r, g, b};
+}
 }  // namespace
+
+namespace behavior_velocity_planner
+{
+using tier4_autoware_utils::appendMarkerArray;
+using tier4_autoware_utils::createMarkerColor;
+using tier4_autoware_utils::createMarkerOrientation;
+using tier4_autoware_utils::createMarkerScale;
 
 visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray()
 {
@@ -168,14 +217,14 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
 
   if (debug_data_.attention_area) {
     appendMarkerArray(
-      createLaneletPolygonsMarkerArray(
+      ::createLaneletPolygonsMarkerArray(
         debug_data_.attention_area.value(), "attention_area", lane_id_, 0.0, 1.0, 0.0),
       &debug_marker_array);
   }
 
   if (debug_data_.occlusion_attention_area) {
     appendMarkerArray(
-      createLaneletPolygonsMarkerArray(
+      ::createLaneletPolygonsMarkerArray(
         debug_data_.occlusion_attention_area.value(), "occlusion_attention_area", lane_id_, 0.917,
         0.568, 0.596),
       &debug_marker_array);
@@ -183,14 +232,14 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
 
   if (debug_data_.adjacent_area) {
     appendMarkerArray(
-      createLaneletPolygonsMarkerArray(
+      ::createLaneletPolygonsMarkerArray(
         debug_data_.adjacent_area.value(), "adjacent_area", lane_id_, 0.913, 0.639, 0.149),
       &debug_marker_array);
   }
 
   if (debug_data_.first_attention_area) {
     appendMarkerArray(
-      createLaneletPolygonsMarkerArray(
+      ::createLaneletPolygonsMarkerArray(
         {debug_data_.first_attention_area.value()}, "first_attention_area", lane_id_, 1, 0.647,
         0.0),
       &debug_marker_array, now);
@@ -198,7 +247,7 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
 
   if (debug_data_.second_attention_area) {
     appendMarkerArray(
-      createLaneletPolygonsMarkerArray(
+      ::createLaneletPolygonsMarkerArray(
         {debug_data_.second_attention_area.value()}, "second_attention_area", lane_id_, 1, 0.647,
         0.0),
       &debug_marker_array, now);
@@ -214,7 +263,7 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
 
   if (debug_data_.yield_stuck_detect_area) {
     appendMarkerArray(
-      createLaneletPolygonsMarkerArray(
+      ::createLaneletPolygonsMarkerArray(
         debug_data_.yield_stuck_detect_area.value(), "yield_stuck_detect_area", lane_id_, 0.6588235,
         0.34509, 0.6588235),
       &debug_marker_array);
@@ -222,7 +271,7 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
 
   if (debug_data_.ego_lane) {
     appendMarkerArray(
-      createLaneletPolygonsMarkerArray(
+      ::createLaneletPolygonsMarkerArray(
         {debug_data_.ego_lane.value()}, "ego_lane", lane_id_, 1, 0.647, 0.0),
       &debug_marker_array, now);
   }
@@ -235,59 +284,58 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
       &debug_marker_array, now);
   }
 
-  size_t i{0};
-  for (const auto & p : debug_data_.candidate_collision_object_polygons) {
-    appendMarkerArray(
-      debug::createPolygonMarkerArray(
-        p, "candidate_collision_object_polygons", lane_id_ + i++, now, 0.3, 0.0, 0.0, 0.0, 0.5,
-        0.5),
-      &debug_marker_array, now);
-  }
-
+  static constexpr auto white = ::white();
+  static constexpr auto green = ::green();
+  static constexpr auto yellow = ::yellow();
+  static constexpr auto red = ::red();
+  static constexpr auto light_blue = ::light_blue();
   appendMarkerArray(
     debug::createObjectsMarkerArray(
-      debug_data_.conflicting_targets, "conflicting_targets", module_id_, now, 0.99, 0.4, 0.0),
+      debug_data_.safe_under_traffic_control_targets, "safe_under_traffic_control_targets",
+      module_id_, now, std::get<0>(light_blue), std::get<1>(light_blue), std::get<2>(light_blue)),
     &debug_marker_array, now);
 
   appendMarkerArray(
     debug::createObjectsMarkerArray(
-      debug_data_.amber_ignore_targets, "amber_ignore_targets", module_id_, now, 0.0, 1.0, 0.0),
+      debug_data_.unsafe_targets, "unsafe_targets", module_id_, now, std::get<0>(green),
+      std::get<1>(green), std::get<2>(green)),
     &debug_marker_array, now);
 
   appendMarkerArray(
     debug::createObjectsMarkerArray(
-      debug_data_.red_overshoot_ignore_targets, "red_overshoot_ignore_targets", module_id_, now,
-      0.0, 1.0, 0.0),
+      debug_data_.misjudge_targets, "misjudge_targets", module_id_, now, std::get<0>(yellow),
+      std::get<1>(yellow), std::get<2>(yellow)),
     &debug_marker_array, now);
 
   appendMarkerArray(
     debug::createObjectsMarkerArray(
-      debug_data_.stuck_targets, "stuck_targets", module_id_, now, 0.99, 0.99, 0.2),
+      debug_data_.too_late_detect_targets, "too_late_detect_targets", module_id_, now,
+      std::get<0>(red), std::get<1>(red), std::get<2>(red)),
     &debug_marker_array, now);
 
   appendMarkerArray(
     debug::createObjectsMarkerArray(
-      debug_data_.yield_stuck_targets, "stuck_targets", module_id_, now, 0.4, 0.99, 0.2),
+      debug_data_.parked_targets, "parked_targets", module_id_, now, std::get<0>(white),
+      std::get<1>(white), std::get<2>(white)),
     &debug_marker_array, now);
 
   appendMarkerArray(
     debug::createObjectsMarkerArray(
-      debug_data_.blocking_attention_objects, "blocking_attention_objects", module_id_, now, 0.99,
-      0.99, 0.6),
+      debug_data_.stuck_targets, "stuck_targets", module_id_, now, std::get<0>(white),
+      std::get<1>(white), std::get<2>(white)),
     &debug_marker_array, now);
 
-  /*
   appendMarkerArray(
-    createPoseMarkerArray(
-      debug_data_.predicted_obj_pose, "predicted_obj_pose", module_id_, 0.7, 0.85, 0.9),
+    debug::createObjectsMarkerArray(
+      debug_data_.yield_stuck_targets, "yield_stuck_targets", module_id_, now, std::get<0>(white),
+      std::get<1>(white), std::get<2>(white)),
     &debug_marker_array, now);
-  */
 
   if (debug_data_.first_pass_judge_wall_pose) {
     const double r = debug_data_.passed_first_pass_judge ? 1.0 : 0.0;
     const double g = debug_data_.passed_first_pass_judge ? 0.0 : 1.0;
     appendMarkerArray(
-      createPoseMarkerArray(
+      ::createPoseMarkerArray(
         debug_data_.first_pass_judge_wall_pose.value(), "first_pass_judge_wall_pose", module_id_, r,
         g, 0.0),
       &debug_marker_array, now);
@@ -297,7 +345,7 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
     const double r = debug_data_.passed_second_pass_judge ? 1.0 : 0.0;
     const double g = debug_data_.passed_second_pass_judge ? 0.0 : 1.0;
     appendMarkerArray(
-      createPoseMarkerArray(
+      ::createPoseMarkerArray(
         debug_data_.second_pass_judge_wall_pose.value(), "second_pass_judge_wall_pose", module_id_,
         r, g, 0.0),
       &debug_marker_array, now);
@@ -314,7 +362,7 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
   if (debug_data_.nearest_occlusion_projection) {
     const auto [point_start, point_end] = debug_data_.nearest_occlusion_projection.value();
     appendMarkerArray(
-      createLineMarkerArray(
+      ::createLineMarkerArray(
         point_start, point_end, "nearest_occlusion_projection", lane_id_, 0.5, 0.5, 0.0),
       &debug_marker_array, now);
   }
@@ -369,11 +417,11 @@ visualization_msgs::msg::MarkerArray MergeFromPrivateRoadModule::createDebugMark
 
   const auto state = state_machine_.getState();
 
-  int32_t uid = planning_utils::bitShift(module_id_);
+  int32_t uid = behavior_velocity_planner::planning_utils::bitShift(module_id_);
   const auto now = this->clock_->now();
   if (state == StateMachine::State::STOP) {
     appendMarkerArray(
-      createPoseMarkerArray(debug_data_.stop_point_pose, "stop_point_pose", uid, 1.0, 0.0, 0.0),
+      ::createPoseMarkerArray(debug_data_.stop_point_pose, "stop_point_pose", uid, 1.0, 0.0, 0.0),
       &debug_marker_array, now);
   }
 

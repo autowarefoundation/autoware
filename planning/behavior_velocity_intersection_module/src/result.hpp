@@ -15,6 +15,7 @@
 #ifndef RESULT_HPP_
 #define RESULT_HPP_
 
+#include <utility>
 #include <variant>
 
 namespace behavior_velocity_planner::intersection
@@ -23,10 +24,6 @@ namespace behavior_velocity_planner::intersection
 template <typename Ok, typename Error>
 class Result
 {
-public:
-  static Result<Ok, Error> make_ok(const Ok & ok) { return Result<Ok, Error>(ok); }
-  static Result<Ok, Error> make_err(const Error & err) { return Result<Ok, Error>(err); }
-
 public:
   explicit Result(const Ok & ok) : data_(ok) {}
   explicit Result(const Error & err) : data_(err) {}
@@ -38,6 +35,18 @@ public:
 private:
   std::variant<Ok, Error> data_;
 };
+
+template <typename Ok, typename Error, typename... Args>
+Result<Ok, Error> make_ok(Args &&... args)
+{
+  return Result<Ok, Error>(Ok{std::forward<Args>(args)...});
+}
+
+template <typename Ok, typename Error, typename... Args>
+Result<Ok, Error> make_err(Args &&... args)
+{
+  return Result<Ok, Error>(Error{std::forward<Args>(args)...});
+}
 
 }  // namespace behavior_velocity_planner::intersection
 
