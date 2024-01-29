@@ -78,7 +78,7 @@
         <arg name="filter/angle_threshold" value="1.0472"/>
         <arg name="filter/velocity_threshold" value="3.0"/>
         <arg name="split/velocity_threshold" value="4.5"/>
-        <arg name="split_range" value="70.0"/>
+        <arg name="object_range_splitter_param_path" value="$(var object_recognition_detection_object_range_splitter_radar_fusion_param_path)"/>
         <arg name="radar_lanelet_filtering_range_param" value="$(var radar_lanelet_filtering_range_param)"/>
         <arg name="radar_object_clustering_param_path" value="$(var radar_object_clustering_param_path)"/>
       </include>
@@ -177,6 +177,7 @@
       <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/detector/radar_detector.launch.xml">
         <arg name="input/radar" value="$(var input/radar)"/>
         <arg name="output/objects" value="far_objects"/>
+        <arg name="object_range_splitter_param_path" value="$(var object_recognition_detection_object_range_splitter_radar_fusion_param_path)"/>
         <arg name="radar_lanelet_filtering_range_param" value="$(var radar_lanelet_filtering_range_param)"/>
         <arg name="radar_object_clustering_param_path" value="$(var radar_object_clustering_param_path)"/>
       </include>
@@ -236,6 +237,7 @@
     <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/detector/radar_detector.launch.xml">
       <arg name="input/radar" value="$(var input/radar)"/>
       <arg name="output/objects" value="objects"/>
+      <arg name="object_range_splitter_param_path" value="$(var object_recognition_detection_object_range_splitter_radar_param_path)"/>
       <arg name="radar_lanelet_filtering_range_param" value="$(var radar_lanelet_filtering_range_param)"/>
       <arg name="radar_object_clustering_param_path" value="$(var radar_object_clustering_param_path)"/>
     </include>

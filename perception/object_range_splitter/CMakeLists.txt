@@ -16,4 +16,5 @@ rclcpp_components_register_node(object_range_splitter
 ament_auto_package(
   INSTALL_TO_SHARE
     launch
+    config
 )
