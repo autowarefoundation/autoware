@@ -13,3 +13,4 @@
       [800.0,  800.0,  800.0,    800.0,   800.0,      800.0,    800.0,         800.0]
 
     using_2d_validator: false
+    enable_debugger: false
