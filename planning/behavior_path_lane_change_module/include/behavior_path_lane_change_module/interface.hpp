@@ -128,7 +128,7 @@ protected:
 
   bool canTransitIdleToRunningState() override;
 
-  void setObjectDebugVisualization() const;
+  void updateDebugMarker() const;
 
   void updateSteeringFactorPtr(const BehaviorModuleOutput & output);
 

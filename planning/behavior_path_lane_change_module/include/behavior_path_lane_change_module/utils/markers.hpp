@@ -15,9 +15,11 @@
 #ifndef BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__MARKERS_HPP_
 #define BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__MARKERS_HPP_
 
+#include "behavior_path_lane_change_module/utils/debug_structs.hpp"
 #include "behavior_path_lane_change_module/utils/path.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 
+#include <visualization_msgs/msg/detail/marker_array__struct.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <string>
@@ -26,6 +28,7 @@
 namespace marker_utils::lane_change_markers
 {
 using behavior_path_planner::LaneChangePath;
+using behavior_path_planner::data::lane_change::Debug;
 using behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObjects;
 using visualization_msgs::msg::MarkerArray;
 MarkerArray showAllValidLaneChangePath(
@@ -37,5 +40,6 @@ MarkerArray showFilteredObjects(
   const ExtendedPredictedObjects & current_lane_objects,
   const ExtendedPredictedObjects & target_lane_objects,
   const ExtendedPredictedObjects & other_lane_objects, const std::string & ns);
+MarkerArray createDebugMarkerArray(const Debug & debug_data);
 }  // namespace marker_utils::lane_change_markers
 #endif  // BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__MARKERS_HPP_

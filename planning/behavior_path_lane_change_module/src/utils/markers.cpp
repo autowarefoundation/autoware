@@ -22,6 +22,7 @@
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <visualization_msgs/msg/detail/marker__struct.hpp>
+#include <visualization_msgs/msg/detail/marker_array__struct.hpp>
 
 #include <cstdint>
 #include <cstdlib>
@@ -119,5 +120,48 @@ MarkerArray showFilteredObjects(
   marker_array.markers.insert(
     marker_array.markers.end(), other_marker.markers.begin(), other_marker.markers.end());
   return marker_array;
+}
+
+MarkerArray createDebugMarkerArray(const Debug & debug_data)
+{
+  using marker_utils::showPolygon;
+  using marker_utils::showPredictedPath;
+  using marker_utils::showSafetyCheckInfo;
+  using marker_utils::lane_change_markers::showAllValidLaneChangePath;
+  using marker_utils::lane_change_markers::showFilteredObjects;
+
+  const auto & debug_collision_check_object = debug_data.collision_check_objects;
+  const auto & debug_collision_check_object_after_approval =
+    debug_data.collision_check_objects_after_approval;
+  const auto & debug_valid_paths = debug_data.valid_paths;
+  const auto & debug_filtered_objects = debug_data.filtered_objects;
+
+  MarkerArray debug_marker;
+  const auto add = [&debug_marker](const MarkerArray & added) {
+    tier4_autoware_utils::appendMarkerArray(added, &debug_marker);
+  };
+
+  add(showAllValidLaneChangePath(debug_valid_paths, "lane_change_valid_paths"));
+  add(showFilteredObjects(
+    debug_filtered_objects.current_lane, debug_filtered_objects.target_lane,
+    debug_filtered_objects.other_lane, "object_filtered"));
+
+  if (!debug_collision_check_object.empty()) {
+    add(showSafetyCheckInfo(debug_collision_check_object, "collision_check_object_info"));
+    add(showPredictedPath(debug_collision_check_object, "ego_predicted_path"));
+    add(showPolygon(debug_collision_check_object, "ego_and_target_polygon_relation"));
+  }
+
+  if (!debug_collision_check_object_after_approval.empty()) {
+    add(showSafetyCheckInfo(
+      debug_collision_check_object_after_approval, "object_debug_info_after_approval"));
+    add(showPredictedPath(
+      debug_collision_check_object_after_approval, "ego_predicted_path_after_approval"));
+    add(showPolygon(
+      debug_collision_check_object_after_approval,
+      "ego_and_target_polygon_relation_after_approval"));
+  }
+
+  return debug_marker;
 }
 }  // namespace marker_utils::lane_change_markers
