@@ -70,11 +70,11 @@ In the future, with careful implementation for pose errors, the IMU bias estimat
 
 ### Parameters
 
+Note that this node also uses `angular_velocity_offset_x`, `angular_velocity_offset_y`, `angular_velocity_offset_z` parameters from `imu_corrector.param.yaml`.
+
 | Name                                  | Type   | Description                                                                                 |
 | ------------------------------------- | ------ | ------------------------------------------------------------------------------------------- |
-| `angular_velocity_offset_x`           | double | roll rate offset in imu_link [rad/s]                                                        |
-| `angular_velocity_offset_y`           | double | pitch rate offset imu_link [rad/s]                                                          |
-| `angular_velocity_offset_z`           | double | yaw rate offset imu_link [rad/s]                                                            |
 | `gyro_bias_threshold`                 | double | threshold of the bias of the gyroscope [rad/s]                                              |
 | `timer_callback_interval_sec`         | double | seconds about the timer callback function [sec]                                             |
+| `diagnostics_updater_interval_sec`    | double | period of the diagnostics updater [sec]                                                     |
 | `straight_motion_ang_vel_upper_limit` | double | upper limit of yaw angular velocity, beyond which motion is not considered straight [rad/s] |

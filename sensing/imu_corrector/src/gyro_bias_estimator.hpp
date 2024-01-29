@@ -49,6 +49,7 @@ private:
   void callback_imu(const Imu::ConstSharedPtr imu_msg_ptr);
   void callback_odom(const Odometry::ConstSharedPtr odom_msg_ptr);
   void timer_callback();
+  void validate_gyro_bias();
 
   static geometry_msgs::msg::Vector3 transform_vector3(
     const geometry_msgs::msg::Vector3 & vec,
@@ -68,6 +69,7 @@ private:
   const double angular_velocity_offset_y_;
   const double angular_velocity_offset_z_;
   const double timer_callback_interval_sec_;
+  const double diagnostics_updater_interval_sec_;
   const double straight_motion_ang_vel_upper_limit_;
 
   diagnostic_updater::Updater updater_;
@@ -80,6 +82,20 @@ private:
 
   std::vector<geometry_msgs::msg::Vector3Stamped> gyro_all_;
   std::vector<geometry_msgs::msg::PoseStamped> pose_buf_;
+
+  struct DiagnosticsInfo
+  {
+    unsigned char level;
+    std::string summary_message;
+    double gyro_bias_x_for_imu_corrector;
+    double gyro_bias_y_for_imu_corrector;
+    double gyro_bias_z_for_imu_corrector;
+    double estimated_gyro_bias_x;
+    double estimated_gyro_bias_y;
+    double estimated_gyro_bias_z;
+  };
+
+  DiagnosticsInfo diagnostics_info_;
 };
 }  // namespace imu_corrector
 
