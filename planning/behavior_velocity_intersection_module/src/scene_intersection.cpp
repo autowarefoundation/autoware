@@ -354,8 +354,18 @@ intersection::DecisionResult IntersectionModule::modifyPathVelocityDetail(
         : false;
     if (!has_traffic_light_) {
       if (fromEgoDist(occlusion_wo_tl_pass_judge_line_idx) < 0) {
-        return intersection::InternalError{
-          "already passed maximum peeking line in the absence of traffic light"};
+        if (has_collision) {
+          const auto closest_idx = intersection_stoplines.closest_idx;
+          const std::string evasive_diag = generateEgoRiskEvasiveDiagnosis(
+            *path, closest_idx, time_distance_array, too_late_detect_objects, misjudge_objects);
+          return intersection::OverPassJudge{
+            "already passed maximum peeking line in the absence of traffic light.\n" +
+              safety_report,
+            evasive_diag};
+        }
+        return intersection::OverPassJudge{
+          "already passed maximum peeking line in the absence of traffic light safely",
+          "no evasive action required"};
       }
       return intersection::OccludedAbsenceTrafficLight{
         is_occlusion_cleared_with_margin,
@@ -364,7 +374,7 @@ intersection::DecisionResult IntersectionModule::modifyPathVelocityDetail(
         closest_idx,
         first_attention_stopline_idx,
         occlusion_wo_tl_pass_judge_line_idx,
-        safety_report};
+        safety_diag};
     }
 
     // ==========================================================================================
@@ -1251,7 +1261,22 @@ IntersectionModule::PassJudgeStatus IntersectionModule::isOverPassJudgeLinesStat
     return first_pass_judge_line_idx;
   }();
 
-  const bool was_safe = std::holds_alternative<intersection::Safe>(prev_decision_result_);
+  // ==========================================================================================
+  // at intersection without traffic light, this module ignores occlusion even if occlusion is
+  // detected for real, so if collision is not detected in that context, that should be interpreted
+  // as "was_safe"
+  // ==========================================================================================
+  const bool was_safe = [&]() {
+    if (std::holds_alternative<intersection::Safe>(prev_decision_result_)) {
+      return true;
+    }
+    if (std::holds_alternative<intersection::OccludedAbsenceTrafficLight>(prev_decision_result_)) {
+      const auto & state =
+        std::get<intersection::OccludedAbsenceTrafficLight>(prev_decision_result_);
+      return !state.collision_detected;
+    }
+    return false;
+  }();
 
   const bool is_over_1st_pass_judge_line =
     util::isOverTargetIndex(path, closest_idx, current_pose, pass_judge_line_idx);
