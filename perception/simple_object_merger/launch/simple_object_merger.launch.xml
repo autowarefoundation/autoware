@@ -4,7 +4,7 @@
   <!-- Parameter -->
   <arg name="update_rate_hz" default="20.0"/>
   <arg name="new_frame_id" default="base_link"/>
-  <arg name="timeout_threshold" default="1.0"/>
+  <arg name="timeout_threshold" default="0.1"/>
   <arg name="input_topics" default="[]"/>
 
   <!-- Node -->
