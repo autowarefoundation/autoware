@@ -64,7 +64,6 @@ Eigen::Matrix2d find_rotation_matrix_aligning_covariance_to_principal_axes(
   throw std::runtime_error("Eigen solver failed. Return output_pose_covariance value.");
 }
 
-// cspell: ignore degrounded
 NDTScanMatcher::NDTScanMatcher()
 : Node("ndt_scan_matcher"),
   tf2_broadcaster_(*this),
@@ -160,8 +159,8 @@ NDTScanMatcher::NDTScanMatcher()
     this->declare_parameter<int64_t>("initial_estimate_particles_num");
   n_startup_trials_ = this->declare_parameter<int64_t>("n_startup_trials");
 
-  estimate_scores_for_degrounded_scan_ =
-    this->declare_parameter<bool>("estimate_scores_for_degrounded_scan");
+  estimate_scores_by_no_ground_points_ =
+    this->declare_parameter<bool>("estimate_scores_by_no_ground_points");
 
   z_margin_for_ground_removal_ = this->declare_parameter<double>("z_margin_for_ground_removal");
 
@@ -526,8 +525,8 @@ void NDTScanMatcher::callback_sensor_points(
     *sensor_points_in_baselink_frame, *sensor_points_in_map_ptr, ndt_result.pose);
   publish_point_cloud(sensor_ros_time, map_frame_, sensor_points_in_map_ptr);
 
-  // whether use de-grounded points calculate score
-  if (estimate_scores_for_degrounded_scan_) {
+  // whether use no ground points to calculate score
+  if (estimate_scores_by_no_ground_points_) {
     // remove ground
     pcl::shared_ptr<pcl::PointCloud<PointSource>> no_ground_points_in_map_ptr(
       new pcl::PointCloud<PointSource>);

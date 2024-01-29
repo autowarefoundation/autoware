@@ -31,13 +31,13 @@ One optional function is regularization. Please see the regularization chapter i
 | `ndt_pose_with_covariance`        | `geometry_msgs::msg::PoseWithCovarianceStamped` | estimated pose with covariance                                                                                                           |
 | `/diagnostics`                    | `diagnostic_msgs::msg::DiagnosticArray`         | diagnostics                                                                                                                              |
 | `points_aligned`                  | `sensor_msgs::msg::PointCloud2`                 | [debug topic] pointcloud aligned by scan matching                                                                                        |
-| `points_aligned_no_ground`        | `sensor_msgs::msg::PointCloud2`                 | [debug topic] de-grounded pointcloud aligned by scan matching                                                                            |
+| `points_aligned_no_ground`        | `sensor_msgs::msg::PointCloud2`                 | [debug topic] no ground pointcloud aligned by scan matching                                                                              |
 | `initial_pose_with_covariance`    | `geometry_msgs::msg::PoseWithCovarianceStamped` | [debug topic] initial pose used in scan matching                                                                                         |
 | `multi_ndt_pose`                  | `geometry_msgs::msg::PoseArray`                 | [debug topic] estimated poses from multiple initial poses in real-time covariance estimation                                             |
 | `multi_initial_pose`              | `geometry_msgs::msg::PoseArray`                 | [debug topic] initial poses for real-time covariance estimation                                                                          |
 | `exe_time_ms`                     | `tier4_debug_msgs::msg::Float32Stamped`         | [debug topic] execution time for scan matching [ms]                                                                                      |
 | `transform_probability`           | `tier4_debug_msgs::msg::Float32Stamped`         | [debug topic] score of scan matching                                                                                                     |
-| `no_ground_transform_probability` | `tier4_debug_msgs::msg::Float32Stamped`         | [debug topic] score of scan matching based on de-grounded LiDAR scan                                                                     |
+| `no_ground_transform_probability` | `tier4_debug_msgs::msg::Float32Stamped`         | [debug topic] score of scan matching based on no ground LiDAR scan                                                                       |
 | `iteration_num`                   | `tier4_debug_msgs::msg::Int32Stamped`           | [debug topic] number of scan matching iterations                                                                                         |
 | `initial_to_result_relative_pose` | `geometry_msgs::msg::PoseStamped`               | [debug topic] relative pose between the initial point and the convergence point                                                          |
 | `initial_to_result_distance`      | `tier4_debug_msgs::msg::Float32Stamped`         | [debug topic] distance difference between the initial point and the convergence point [m]                                                |
@@ -228,21 +228,19 @@ Here is a split PCD map for `sample-map-rosbag` from Autoware tutorial: [`sample
 |  single file   |  at once (standard)  |
 | multiple files |     dynamically      |
 
-## Scan matching score based on de-grounded LiDAR scan
+## Scan matching score based on no ground LiDAR scan
 
 ### Abstract
 
-This is a function that uses de-grounded LiDAR scan to estimate the scan matching score. This score can reflect the current localization performance more accurately.
+This is a function that uses no ground LiDAR scan to estimate the scan matching score. This score can reflect the current localization performance more accurately.
 [related issue](https://github.com/autowarefoundation/autoware.universe/issues/2044).
 
 ### Parameters
 
-<!-- cspell: ignore degrounded -->
-
-| Name                                  | Type   | Description                                                                           |
-| ------------------------------------- | ------ | ------------------------------------------------------------------------------------- |
-| `estimate_scores_for_degrounded_scan` | bool   | Flag for using scan matching score based on de-grounded LiDAR scan (FALSE by default) |
-| `z_margin_for_ground_removal`         | double | Z-value margin for removal ground points                                              |
+| Name                                  | Type   | Description                                                                         |
+| ------------------------------------- | ------ | ----------------------------------------------------------------------------------- |
+| `estimate_scores_by_no_ground_points` | bool   | Flag for using scan matching score based on no ground LiDAR scan (FALSE by default) |
+| `z_margin_for_ground_removal`         | double | Z-value margin for removal ground points                                            |
 
 ## 2D real-time covariance estimation
 
