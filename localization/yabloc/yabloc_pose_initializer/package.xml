@@ -17,8 +17,10 @@
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <depend>autoware_auto_mapping_msgs</depend>
+  <depend>cv_bridge</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
+  <depend>libopencv-dev</depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>tier4_localization_msgs</depend>

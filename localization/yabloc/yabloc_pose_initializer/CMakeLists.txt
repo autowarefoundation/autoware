@@ -14,6 +14,9 @@ find_package(PCL REQUIRED COMPONENTS common kdtree)
 # Sophus
 find_package(Sophus REQUIRED)
 
+# OpenCV
+find_package(OpenCV REQUIRED)
+
 # ===================================================
 # Executable
 # Camera
@@ -28,6 +31,7 @@ ament_auto_add_executable(${TARGET}
 target_include_directories(${TARGET} PUBLIC include)
 target_include_directories(${TARGET} SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
 target_link_libraries(${TARGET} ${PCL_LIBRARIES} Sophus::Sophus)
+ament_target_dependencies(${TARGET} OpenCV)
 
 # ===================================================
 ament_auto_package(INSTALL_TO_SHARE config launch)
