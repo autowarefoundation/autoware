@@ -90,8 +90,9 @@ std::map<std::string, PCDFileMetadata> PointCloudMapLoaderNode::getPCDMetadata(
 {
   std::map<std::string, PCDFileMetadata> pcd_metadata_dict;
   if (pcd_paths.size() != 1) {
-    if (!fs::exists(pcd_metadata_path)) {
-      throw std::runtime_error("PCD metadata file not found: " + pcd_metadata_path);
+    while (!fs::exists(pcd_metadata_path)) {
+      RCLCPP_ERROR_STREAM(get_logger(), "PCD metadata file not found: " << pcd_metadata_path);
+      std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     pcd_metadata_dict = loadPCDMetadata(pcd_metadata_path);
