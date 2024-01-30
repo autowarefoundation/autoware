@@ -368,13 +368,15 @@ bool isSafetyCheckTargetObjectType(
   return parameters->object_parameters.at(object_type).is_safety_check_target;
 }
 
+bool isUnknownTypeObject(const ObjectData & object)
+{
+  const auto object_type = utils::getHighestProbLabel(object.object.classification);
+  return object_type == ObjectClassification::UNKNOWN;
+}
+
 bool isVehicleTypeObject(const ObjectData & object)
 {
   const auto object_type = utils::getHighestProbLabel(object.object.classification);
-
-  if (object_type == ObjectClassification::UNKNOWN) {
-    return false;
-  }
 
   if (object_type == ObjectClassification::PEDESTRIAN) {
     return false;
@@ -720,6 +722,15 @@ bool isSatisfiedWithNonVehicleCondition(
   // avoidance module ignore pedestrian and bicycle around crosswalk
   if (isWithinCrosswalk(object, planner_data->route_handler->getOverallGraphPtr())) {
     object.reason = "CrosswalkUser";
+    return false;
+  }
+
+  // Object is on center line -> ignore.
+  const auto & object_pose = object.object.kinematics.initial_pose_with_covariance.pose;
+  object.to_centerline =
+    lanelet::utils::getArcCoordinates(data.current_lanelets, object_pose).distance;
+  if (std::abs(object.to_centerline) < parameters->threshold_distance_object_is_on_center) {
+    object.reason = AvoidanceDebugFactor::TOO_NEAR_TO_CENTERLINE;
     return false;
   }
 
@@ -1625,6 +1636,16 @@ void filterTargetObjects(
       calcEnvelopeOverhangDistance(o, data.reference_path, o.overhang_pose.position);
     o.to_road_shoulder_distance = filtering_utils::getRoadShoulderDistance(o, data, planner_data);
     o.avoid_margin = filtering_utils::getAvoidMargin(o, planner_data, parameters);
+
+    // TODO(Satoshi Ota) parametrize stop time threshold if need.
+    constexpr double STOP_TIME_THRESHOLD = 3.0;  // [s]
+    if (filtering_utils::isUnknownTypeObject(o)) {
+      if (o.stop_time < STOP_TIME_THRESHOLD) {
+        o.reason = "UnstableObject";
+        data.other_objects.push_back(o);
+        continue;
+      }
+    }
 
     if (filtering_utils::isNoNeedAvoidanceBehavior(o, parameters)) {
       data.other_objects.push_back(o);
