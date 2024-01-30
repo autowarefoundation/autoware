@@ -493,6 +493,7 @@ private:
   std::optional<BehaviorModuleOutput> last_previous_module_output_{};
   bool hasPreviousModulePathShapeChanged() const;
   bool hasDeviatedFromLastPreviousModulePath() const;
+  bool hasDeviatedFromCurrentPreviousModulePath() const;
 
   // timer for generating pull over path candidates in a separate thread
   void onTimer();

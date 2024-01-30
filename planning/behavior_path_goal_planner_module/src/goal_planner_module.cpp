@@ -161,6 +161,13 @@ bool GoalPlannerModule::hasDeviatedFromLastPreviousModulePath() const
            planner_data_->self_odometry->pose.pose.position)) > 0.3;
 }
 
+bool GoalPlannerModule::hasDeviatedFromCurrentPreviousModulePath() const
+{
+  return std::abs(motion_utils::calcLateralOffset(
+           getPreviousModuleOutput().path.points,
+           planner_data_->self_odometry->pose.pose.position)) > 0.3;
+}
+
 // generate pull over candidate paths
 void GoalPlannerModule::onTimer()
 {
@@ -179,6 +186,10 @@ void GoalPlannerModule::onTimer()
 
   // check if new pull over path candidates are needed to be generated
   const bool need_update = std::invoke([&]() {
+    if (hasDeviatedFromCurrentPreviousModulePath()) {
+      RCLCPP_ERROR(getLogger(), "has deviated from current previous module path");
+      return false;
+    }
     if (thread_safe_data_.get_pull_over_path_candidates().empty()) {
       return true;
     }
