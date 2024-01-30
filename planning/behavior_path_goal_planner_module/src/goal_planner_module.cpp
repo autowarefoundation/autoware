@@ -1565,27 +1565,9 @@ bool GoalPlannerModule::checkObjectsCollision(
   }
 
   /* Expand ego collision check polygon
-   *   - `collision_check_margin` in all directions
-   *   - `extra_stopping_margin` in the moving direction
-   *   - `extra_lateral_margin` in external direction of path curve
-   *
-   *
-   *                                        ^ moving direction
-   *                                        x
-   *                                        x
-   *                                        x
-   *          +----------------------+------x--+
-   *          |                      |      x  |
-   *          |   +---------------+  |    xx   |
-   *          |   |               |  |  xx     |
-   *          |   | ego footprint |xxxxx       |
-   *          |   |               |  |         |
-   *          |   +---------------+  | extra_stopping_margin
-   *          |       margin         |         |
-   *          +----------------------+         |
-   *          |       extra_lateral_margin     |
-   *          +--------------------------------+
-   *
+   *   - `collision_check_margin` is added in all directions.
+   *   - `extra_stopping_margin` adds stopping margin under deceleration constraints forward.
+   *   - `extra_lateral_margin` adds the lateral margin on curves.
    */
   std::vector<Polygon2d> ego_polygons_expanded{};
   const auto curvatures = motion_utils::calcCurvature(path.points);
@@ -1596,19 +1578,19 @@ bool GoalPlannerModule::checkObjectsCollision(
       std::pow(p.point.longitudinal_velocity_mps, 2) * 0.5 / parameters_->maximum_deceleration,
       parameters_->object_recognition_collision_check_max_extra_stopping_margin);
 
-    double extra_lateral_margin = (-1) * curvatures.at(i) * p.point.longitudinal_velocity_mps *
-                                  std::abs(p.point.longitudinal_velocity_mps);
-    extra_lateral_margin =
-      std::clamp(extra_lateral_margin, -extra_stopping_margin, extra_stopping_margin);
+    // The square is meant to imply centrifugal force, but it is not a very well-founded formula.
+    // TODO(kosuke55): It is needed to consider better way because there is an inherently different
+    // conception of the inside and outside margins.
+    const double extra_lateral_margin = std::min(
+      extra_stopping_margin,
+      std::abs(curvatures.at(i) * std::pow(p.point.longitudinal_velocity_mps, 2)));
 
-    const auto lateral_offset_pose =
-      tier4_autoware_utils::calcOffsetPose(p.point.pose, 0.0, extra_lateral_margin / 2.0, 0.0);
     const auto ego_polygon = tier4_autoware_utils::toFootprint(
-      lateral_offset_pose,
+      p.point.pose,
       planner_data_->parameters.base_link2front + collision_check_margin + extra_stopping_margin,
       planner_data_->parameters.base_link2rear + collision_check_margin,
       planner_data_->parameters.vehicle_width + collision_check_margin * 2.0 +
-        std::abs(extra_lateral_margin));
+        extra_lateral_margin * 2.0);
     ego_polygons_expanded.push_back(ego_polygon);
   }
 
