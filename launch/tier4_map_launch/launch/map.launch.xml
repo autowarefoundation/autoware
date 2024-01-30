@@ -1,26 +1,66 @@
 <launch>
+  <!-- map files -->
+  <arg name="pointcloud_map_path"/>
+  <arg name="pointcloud_map_metadata_path"/>
+  <arg name="lanelet2_map_path"/>
+  <arg name="map_projector_info_path"/>
+
   <!-- Parameter files -->
   <arg name="pointcloud_map_loader_param_path"/>
   <arg name="lanelet2_map_loader_param_path"/>
 
-  <arg name="map_path" default=""/>
-  <arg name="lanelet2_map_path" default="$(var map_path)/lanelet2_map.osm"/>
-  <arg name="pointcloud_map_path" default="$(var map_path)/pointcloud_map.pcd"/>
+  <!-- whether use intra-process -->
+  <arg name="use_intra_process" default="false"/>
+
+  <!-- select container type -->
+  <arg name="use_multithread" default="false"/>
+  <let name="container_type" value="component_container" unless="$(var use_multithread)"/>
+  <let name="container_type" value="component_container_mt" if="$(var use_multithread)"/>
 
   <group>
     <push-ros-namespace namespace="map"/>
-    <include file="$(find-pkg-share map_loader)/launch/lanelet2_map_loader.launch.xml">
+
+    <node_container pkg="rclcpp_components" exec="$(var container_type)" name="map_container" namespace="" output="screen">
+      <composable_node pkg="map_loader" plugin="PointCloudMapLoaderNode" name="pointcloud_map_loader">
+        <param from="$(var pointcloud_map_loader_param_path)"/>
+        <param name="pcd_paths_or_directory" value="[$(var pointcloud_map_path)]"/>
+        <param name="pcd_metadata_path" value="$(var pointcloud_map_metadata_path)"/>
+        <remap from="output/pointcloud_map" to="pointcloud_map"/>
+        <remap from="output/pointcloud_map_metadata" to="pointcloud_map_metadata"/>
+        <remap from="service/get_partial_pcd_map" to="/map/get_partial_pointcloud_map"/>
+        <remap from="service/get_differential_pcd_map" to="/map/get_differential_pointcloud_map"/>
+        <remap from="service/get_selected_pcd_map" to="/map/get_selected_pointcloud_map"/>
+        <extra_arg name="use_intra_process_comms" value="$(var use_intra_process)"/>
+      </composable_node>
+
+      <composable_node pkg="map_loader" plugin="Lanelet2MapLoaderNode" name="lanelet2_map_loader">
+        <param from="$(var lanelet2_map_loader_param_path)"/>
+        <param name="lanelet2_map_path" value="$(var lanelet2_map_path)"/>
+        <remap from="output/lanelet2_map" to="vector_map"/>
+        <extra_arg name="use_intra_process_comms" value="$(var use_intra_process)"/>
+      </composable_node>
+
+      <composable_node pkg="map_loader" plugin="Lanelet2MapVisualizationNode" name="lanelet2_map_visualization">
+        <remap from="input/lanelet2_map" to="vector_map"/>
+        <remap from="output/lanelet2_map_marker" to="vector_map_marker"/>
+        <extra_arg name="use_intra_process_comms" value="$(var use_intra_process)"/>
+      </composable_node>
+
+      <composable_node pkg="map_tf_generator" plugin="VectorMapTFGeneratorNode" name="vector_map_tf_generator">
+        <param name="map_frame" value="map"/>
+        <param name="viewer_frame" value="viewer"/>
+        <extra_arg name="use_intra_process_comms" value="$(var use_intra_process)"/>
+      </composable_node>
+    </node_container>
+
+    <node pkg="map_loader" exec="map_hash_generator" name="map_hash_generator">
+      <param name="lanelet2_map_path" value="$(var lanelet2_map_path)"/>
+      <param name="pointcloud_map_path" value="$(var pointcloud_map_path)"/>
+    </node>
+
+    <include file="$(find-pkg-share map_projection_loader)/launch/map_projection_loader.launch.xml">
+      <arg name="map_projector_info_path" value="$(var map_projector_info_path)"/>
       <arg name="lanelet2_map_path" value="$(var lanelet2_map_path)"/>
-      <arg name="lanelet2_map_loader_param_path" value="$(var lanelet2_map_loader_param_path)"/>
-    </include>
-
-    <include file="$(find-pkg-share map_loader)/launch/pointcloud_map_loader.launch.xml">
-      <arg name="pointcloud_map_path" value="$(var pointcloud_map_path)"/>
-      <arg name="pointcloud_map_loader_param_path" value="$(var pointcloud_map_loader_param_path)"/>
-    </include>
-
-    <include file="$(find-pkg-share map_tf_generator)/launch/map_tf_generator.launch.xml">
-      <arg name="input_vector_map_topic" value="/map/vector_map"/>
     </include>
   </group>
 </launch>
