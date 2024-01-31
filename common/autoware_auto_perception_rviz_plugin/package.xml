@@ -8,7 +8,8 @@
   <maintainer email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</maintainer>
   <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>
   <maintainer email="takeshi.miura@tier4.jp">Takeshi Miura</maintainer>
-
+  <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
+  <maintainer email="yoshi.ri@tier4.jp">Yoshi Ri</maintainer>
   <license>Apache 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
