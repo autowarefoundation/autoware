@@ -42,6 +42,8 @@ def format_param_range(param):
 def extract_parameter_info(parameters, namespace=""):
     params = []
     for k, v in parameters.items():
+        if "$ref" in v.keys():
+            continue
         if v["type"] != "object":
             param = {}
             param["Name"] = namespace + k
