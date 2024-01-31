@@ -303,8 +303,7 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
     data, parameters_, forward_detection_range + MARGIN, debug);
 
   for (const auto & object : object_outside_target_lane.objects) {
-    ObjectData other_object;
-    other_object.object = object;
+    ObjectData other_object = createObjectData(data, object);
     other_object.reason = "OutOfTargetArea";
     data.other_objects.push_back(other_object);
   }

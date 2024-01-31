@@ -389,6 +389,14 @@ bool isVehicleTypeObject(const ObjectData & object)
   return true;
 }
 
+bool isMovingObject(
+  const ObjectData & object, const std::shared_ptr<AvoidanceParameters> & parameters)
+{
+  const auto object_type = utils::getHighestProbLabel(object.object.classification);
+  const auto object_parameter = parameters->object_parameters.at(object_type);
+  return object.move_time > object_parameter.moving_time_threshold;
+}
+
 bool isWithinCrosswalk(
   const ObjectData & object,
   const std::shared_ptr<const lanelet::routing::RoutingGraphContainer> & overall_graphs)
@@ -665,9 +673,7 @@ bool isSatisfiedWithCommonCondition(
   }
 
   // Step2. filtered stopped objects.
-  const auto object_type = utils::getHighestProbLabel(object.object.classification);
-  const auto object_parameter = parameters->object_parameters.at(object_type);
-  if (object.move_time > object_parameter.moving_time_threshold) {
+  if (filtering_utils::isMovingObject(object, parameters)) {
     object.reason = AvoidanceDebugFactor::MOVING_OBJECT;
     return false;
   }
