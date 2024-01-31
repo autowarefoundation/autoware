@@ -174,7 +174,8 @@ private:
     const Pose & start_pose_candidate, const std::shared_ptr<PullOutPlannerBase> & planner,
     const Pose & refined_start_pose, const Pose & goal_pose, const double collision_check_margin);
 
-  PathWithLaneId extractCollisionCheckSection(const PullOutPath & path);
+  PathWithLaneId extractCollisionCheckSection(
+    const PullOutPath & path, const behavior_path_planner::PlannerType & planner_type);
   void updateStatusWithCurrentPath(
     const behavior_path_planner::PullOutPath & path, const Pose & start_pose,
     const behavior_path_planner::PlannerType & planner_type);

@@ -63,7 +63,6 @@ struct StartPlannerParameters
   double intersection_search_length{0.0};
   double length_ratio_for_turn_signal_deactivation_near_intersection{0.0};
   std::vector<double> collision_check_margins{};
-  double collision_check_distance_from_end{0.0};
   double collision_check_margin_from_front_object{0.0};
   double th_moving_object_velocity{0.0};
   double center_line_path_interval{0.0};
@@ -71,6 +70,7 @@ struct StartPlannerParameters
   // shift pull out
   bool enable_shift_pull_out{false};
   bool check_shift_path_lane_departure{false};
+  double shift_collision_check_distance_from_end{0.0};
   double minimum_shift_pull_out_distance{0.0};
   int lateral_acceleration_sampling_num{0};
   double lateral_jerk{0.0};
@@ -80,6 +80,7 @@ struct StartPlannerParameters
   double deceleration_interval{0.0};
   // geometric pull out
   bool enable_geometric_pull_out{false};
+  double geometric_collision_check_distance_from_end;
   bool divide_pull_out_path{false};
   ParallelParkingParameters parallel_parking_parameters{};
   // search start pose backward

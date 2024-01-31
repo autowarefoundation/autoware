@@ -657,8 +657,8 @@ bool StartPlannerModule::findPullOutPath(
 
   // check collision
   if (utils::checkCollisionBetweenPathFootprintsAndObjects(
-        vehicle_footprint, extractCollisionCheckSection(*pull_out_path), pull_out_lane_stop_objects,
-        collision_check_margin)) {
+        vehicle_footprint, extractCollisionCheckSection(*pull_out_path, planner->getPlannerType()),
+        pull_out_lane_stop_objects, collision_check_margin)) {
     return false;
   }
 
@@ -672,8 +672,17 @@ bool StartPlannerModule::findPullOutPath(
   return true;
 }
 
-PathWithLaneId StartPlannerModule::extractCollisionCheckSection(const PullOutPath & path)
+PathWithLaneId StartPlannerModule::extractCollisionCheckSection(
+  const PullOutPath & path, const behavior_path_planner::PlannerType & planner_type)
 {
+  const std::map<PlannerType, double> collision_check_distances = {
+    {behavior_path_planner::PlannerType::SHIFT,
+     parameters_->shift_collision_check_distance_from_end},
+    {behavior_path_planner::PlannerType::GEOMETRIC,
+     parameters_->geometric_collision_check_distance_from_end}};
+
+  const double collision_check_distance_from_end = collision_check_distances.at(planner_type);
+
   PathWithLaneId combined_path;
   for (const auto & partial_path : path.partial_paths) {
     combined_path.points.insert(
@@ -682,7 +691,7 @@ PathWithLaneId StartPlannerModule::extractCollisionCheckSection(const PullOutPat
   // calculate collision check end idx
   const size_t collision_check_end_idx = std::invoke([&]() {
     const auto collision_check_end_pose = motion_utils::calcLongitudinalOffsetPose(
-      combined_path.points, path.end_pose.position, parameters_->collision_check_distance_from_end);
+      combined_path.points, path.end_pose.position, collision_check_distance_from_end);
 
     if (collision_check_end_pose) {
       return motion_utils::findNearestIndex(
@@ -1403,9 +1412,14 @@ void StartPlannerModule::setDebugData()
   // visualize collision_check_end_pose and footprint
   {
     const auto local_footprint = vehicle_info_.createFootprint();
+    std::map<PlannerType, double> collision_check_distances = {
+      {PlannerType::SHIFT, parameters_->shift_collision_check_distance_from_end},
+      {PlannerType::GEOMETRIC, parameters_->geometric_collision_check_distance_from_end}};
+
+    double collision_check_distance_from_end = collision_check_distances[status_.planner_type];
     const auto collision_check_end_pose = motion_utils::calcLongitudinalOffsetPose(
       getFullPath().points, status_.pull_out_path.end_pose.position,
-      parameters_->collision_check_distance_from_end);
+      collision_check_distance_from_end);
     if (collision_check_end_pose) {
       add(createPoseMarkerArray(
         *collision_check_end_pose, "static_collision_check_end_pose", 0, 1.0, 0.0, 0.0));

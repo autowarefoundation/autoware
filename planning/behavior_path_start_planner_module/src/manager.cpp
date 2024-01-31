@@ -45,8 +45,6 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
     ns + "length_ratio_for_turn_signal_deactivation_near_intersection");
   p.collision_check_margins =
     node->declare_parameter<std::vector<double>>(ns + "collision_check_margins");
-  p.collision_check_distance_from_end =
-    node->declare_parameter<double>(ns + "collision_check_distance_from_end");
   p.collision_check_margin_from_front_object =
     node->declare_parameter<double>(ns + "collision_check_margin_from_front_object");
   p.th_moving_object_velocity = node->declare_parameter<double>(ns + "th_moving_object_velocity");
@@ -55,6 +53,8 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
   p.enable_shift_pull_out = node->declare_parameter<bool>(ns + "enable_shift_pull_out");
   p.check_shift_path_lane_departure =
     node->declare_parameter<bool>(ns + "check_shift_path_lane_departure");
+  p.shift_collision_check_distance_from_end =
+    node->declare_parameter<double>(ns + "shift_collision_check_distance_from_end");
   p.minimum_shift_pull_out_distance =
     node->declare_parameter<double>(ns + "minimum_shift_pull_out_distance");
   p.lateral_acceleration_sampling_num =
@@ -66,6 +66,8 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
   p.deceleration_interval = node->declare_parameter<double>(ns + "deceleration_interval");
   // geometric pull out
   p.enable_geometric_pull_out = node->declare_parameter<bool>(ns + "enable_geometric_pull_out");
+  p.geometric_collision_check_distance_from_end =
+    node->declare_parameter<double>(ns + "geometric_collision_check_distance_from_end");
   p.divide_pull_out_path = node->declare_parameter<bool>(ns + "divide_pull_out_path");
   p.parallel_parking_parameters.pull_out_velocity =
     node->declare_parameter<double>(ns + "geometric_pull_out_velocity");
