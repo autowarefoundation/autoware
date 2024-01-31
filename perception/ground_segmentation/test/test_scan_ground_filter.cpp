@@ -38,6 +38,8 @@ protected:
   {
     rclcpp::init(0, nullptr);
 
+    parse_yaml();
+
     dummy_node_ = std::make_shared<rclcpp::Node>("ScanGroundFilterTest");
     input_pointcloud_pub_ = rclcpp::create_publisher<sensor_msgs::msg::PointCloud2>(
       dummy_node_, "/test_scan_ground_filter/input_cloud", 1);
@@ -58,6 +60,30 @@ protected:
     parameters.emplace_back(rclcpp::Parameter("right_overhang", 0.1));
     parameters.emplace_back(rclcpp::Parameter("vehicle_height", 2.5));
     parameters.emplace_back(rclcpp::Parameter("max_steer_angle", 0.7));
+
+    parameters.emplace_back(
+      rclcpp::Parameter("global_slope_max_angle_deg", global_slope_max_angle_deg_));
+    parameters.emplace_back(
+      rclcpp::Parameter("local_slope_max_angle_deg", local_slope_max_angle_deg_));
+    parameters.emplace_back(
+      rclcpp::Parameter("split_points_distance_tolerance", split_points_distance_tolerance_));
+    parameters.emplace_back(
+      rclcpp::Parameter("use_virtual_ground_point", use_virtual_ground_point_));
+    parameters.emplace_back(rclcpp::Parameter("split_height_distance", split_height_distance_));
+    parameters.emplace_back(
+      rclcpp::Parameter("non_ground_height_threshold", non_ground_height_threshold_));
+    parameters.emplace_back(rclcpp::Parameter("grid_size_m", grid_size_m_));
+    parameters.emplace_back(rclcpp::Parameter("grid_mode_switch_radius", grid_mode_switch_radius_));
+    parameters.emplace_back(rclcpp::Parameter("gnd_grid_buffer_size", gnd_grid_buffer_size_));
+    parameters.emplace_back(rclcpp::Parameter("detection_range_z_max", detection_range_z_max_));
+    parameters.emplace_back(rclcpp::Parameter("elevation_grid_mode", elevation_grid_mode_));
+    parameters.emplace_back(rclcpp::Parameter("low_priority_region_x", low_priority_region_x_));
+    parameters.emplace_back(rclcpp::Parameter("center_pcl_shift", center_pcl_shift_));
+    parameters.emplace_back(
+      rclcpp::Parameter("radial_divider_angle_deg", radial_divider_angle_deg_));
+    parameters.emplace_back(
+      rclcpp::Parameter("use_recheck_ground_cluster", use_recheck_ground_cluster_));
+
     options.parameter_overrides(parameters);
 
     scan_ground_filter_ = std::make_shared<ground_segmentation::ScanGroundFilterComponent>(options);
@@ -88,8 +114,6 @@ protected:
     t.transform.rotation.w = q.w();
 
     tf2::doTransform(*origin_input_msg_ptr, *input_msg_ptr_, t);
-
-    parse_yaml();
   }
 
   ScanGroundFilterTest() {}
@@ -113,10 +137,10 @@ public:
   void parse_yaml()
   {
     const auto share_dir = ament_index_cpp::get_package_share_directory("ground_segmentation");
-    const auto config_path = share_dir + "/config/ground_segmentation.param.yaml";
+    const auto config_path = share_dir + "/config/scan_ground_filter.param.yaml";
     // std::cout << "config_path:" << config_path << std::endl;
     YAML::Node config = YAML::LoadFile(config_path);
-    auto params = config["/**"]["ros__parameters"]["common_ground_filter"]["parameters"];
+    auto params = config["/**"]["ros__parameters"];
     global_slope_max_angle_deg_ = params["global_slope_max_angle_deg"].as<float>();
     local_slope_max_angle_deg_ = params["local_slope_max_angle_deg"].as<float>();
     split_points_distance_tolerance_ = params["split_points_distance_tolerance"].as<float>();
@@ -127,6 +151,11 @@ public:
     gnd_grid_buffer_size_ = params["gnd_grid_buffer_size"].as<uint16_t>();
     detection_range_z_max_ = params["detection_range_z_max"].as<float>();
     elevation_grid_mode_ = params["elevation_grid_mode"].as<bool>();
+    low_priority_region_x_ = params["low_priority_region_x"].as<float>();
+    use_virtual_ground_point_ = params["use_virtual_ground_point"].as<bool>();
+    center_pcl_shift_ = params["center_pcl_shift"].as<float>();
+    radial_divider_angle_deg_ = params["radial_divider_angle_deg"].as<float>();
+    use_recheck_ground_cluster_ = params["use_recheck_ground_cluster"].as<bool>();
   }
 
   float global_slope_max_angle_deg_ = 0.0;
@@ -139,33 +168,17 @@ public:
   uint16_t gnd_grid_buffer_size_ = 0;
   float detection_range_z_max_ = 0.0;
   bool elevation_grid_mode_ = false;
+  float low_priority_region_x_ = 0.0;
+  bool use_virtual_ground_point_;
+  float center_pcl_shift_;
+  float radial_divider_angle_deg_;
+  bool use_recheck_ground_cluster_;
 };
 
 TEST_F(ScanGroundFilterTest, TestCase1)
 {
   input_pointcloud_pub_->publish(*input_msg_ptr_);
   sensor_msgs::msg::PointCloud2 out_cloud;
-
-  // set filter parameter
-  scan_ground_filter_->set_parameter(
-    rclcpp::Parameter("global_slope_max_angle_deg", global_slope_max_angle_deg_));
-  scan_ground_filter_->set_parameter(
-    rclcpp::Parameter("local_slope_max_angle_deg", local_slope_max_angle_deg_));
-  scan_ground_filter_->set_parameter(
-    rclcpp::Parameter("split_points_distance_tolerance", split_points_distance_tolerance_));
-  scan_ground_filter_->set_parameter(
-    rclcpp::Parameter("split_height_distance", split_height_distance_));
-  scan_ground_filter_->set_parameter(
-    rclcpp::Parameter("non_ground_height_threshold", non_ground_height_threshold_));
-  scan_ground_filter_->set_parameter(rclcpp::Parameter("grid_size_m", grid_size_m_));
-  scan_ground_filter_->set_parameter(
-    rclcpp::Parameter("grid_mode_switch_radius", grid_mode_switch_radius_));
-  scan_ground_filter_->set_parameter(
-    rclcpp::Parameter("gnd_grid_buffer_size", gnd_grid_buffer_size_));
-  scan_ground_filter_->set_parameter(
-    rclcpp::Parameter("detection_range_z_max", detection_range_z_max_));
-  scan_ground_filter_->set_parameter(
-    rclcpp::Parameter("elevation_grid_mode", elevation_grid_mode_));
 
   filter(out_cloud);
   output_pointcloud_pub_->publish(out_cloud);

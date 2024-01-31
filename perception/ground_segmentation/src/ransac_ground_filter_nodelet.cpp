@@ -85,18 +85,18 @@ using pointcloud_preprocessor::get_param;
 RANSACGroundFilterComponent::RANSACGroundFilterComponent(const rclcpp::NodeOptions & options)
 : Filter("RANSACGroundFilter", options)
 {
-  base_frame_ = declare_parameter("base_frame", "base_link");
-  unit_axis_ = declare_parameter("unit_axis", "z");
-  max_iterations_ = declare_parameter("max_iterations", 1000);
-  min_inliers_ = declare_parameter("min_trial", 5000);
-  min_points_ = declare_parameter("min_points", 1000);
-  outlier_threshold_ = declare_parameter("outlier_threshold", 0.01);
-  plane_slope_threshold_ = declare_parameter("plane_slope_threshold", 10.0);
-  voxel_size_x_ = declare_parameter("voxel_size_x", 0.04);
-  voxel_size_y_ = declare_parameter("voxel_size_y", 0.04);
-  voxel_size_z_ = declare_parameter("voxel_size_z", 0.04);
-  height_threshold_ = declare_parameter("height_threshold", 0.01);
-  debug_ = declare_parameter("debug", false);
+  base_frame_ = declare_parameter<std::string>("base_frame", "base_link");
+  unit_axis_ = declare_parameter<std::string>("unit_axis");
+  max_iterations_ = declare_parameter<int>("max_iterations");
+  min_inliers_ = declare_parameter<int>("min_trial");
+  min_points_ = declare_parameter<int>("min_points");
+  outlier_threshold_ = declare_parameter<double>("outlier_threshold");
+  plane_slope_threshold_ = declare_parameter<double>("plane_slope_threshold");
+  voxel_size_x_ = declare_parameter<double>("voxel_size_x");
+  voxel_size_y_ = declare_parameter<double>("voxel_size_y");
+  voxel_size_z_ = declare_parameter<double>("voxel_size_z");
+  height_threshold_ = declare_parameter<double>("height_threshold");
+  debug_ = declare_parameter<bool>("debug");
 
   if (unit_axis_ == "x") {
     unit_vec_ = Eigen::Vector3d::UnitX();

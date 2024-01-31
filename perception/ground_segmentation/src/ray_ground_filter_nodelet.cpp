@@ -48,22 +48,22 @@ RayGroundFilterComponent::RayGroundFilterComponent(const rclcpp::NodeOptions & o
     grid_precision_ = 0.2;
     ray_ground_filter::generateColors(colors_, color_num_);
 
-    min_x_ = declare_parameter("min_x", -0.01);
-    max_x_ = declare_parameter("max_x", 0.01);
-    min_y_ = declare_parameter("min_y", -0.01);
-    max_y_ = declare_parameter("max_y", 0.01);
+    min_x_ = declare_parameter<double>("min_x");
+    max_x_ = declare_parameter<double>("max_x");
+    min_y_ = declare_parameter<double>("min_y");
+    max_y_ = declare_parameter<double>("max_y");
 
     setVehicleFootprint(min_x_, max_x_, min_y_, max_y_);
 
-    use_vehicle_footprint_ = declare_parameter("use_vehicle_footprint", false);
+    use_vehicle_footprint_ = declare_parameter<bool>("use_vehicle_footprint", false);
 
-    general_max_slope_ = declare_parameter("general_max_slope", 8.0);
-    local_max_slope_ = declare_parameter("local_max_slope", 6.0);
-    initial_max_slope_ = declare_parameter("initial_max_slope", 3.0);
-    radial_divider_angle_ = declare_parameter("radial_divider_angle", 1.0);
-    min_height_threshold_ = declare_parameter("min_height_threshold", 0.15);
-    concentric_divider_distance_ = declare_parameter("concentric_divider_distance", 0.0);
-    reclass_distance_threshold_ = declare_parameter("reclass_distance_threshold", 0.1);
+    general_max_slope_ = declare_parameter<double>("general_max_slope");
+    local_max_slope_ = declare_parameter<double>("local_max_slope");
+    initial_max_slope_ = declare_parameter<double>("initial_max_slope");
+    radial_divider_angle_ = declare_parameter<double>("radial_divider_angle");
+    min_height_threshold_ = declare_parameter<double>("min_height_threshold");
+    concentric_divider_distance_ = declare_parameter<double>("concentric_divider_distance");
+    reclass_distance_threshold_ = declare_parameter<double>("reclass_distance_threshold");
   }
 
   using std::placeholders::_1;

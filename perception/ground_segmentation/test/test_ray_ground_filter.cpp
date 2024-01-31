@@ -29,7 +29,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
 #endif
-
+#include <yaml-cpp/yaml.h>
 class RayGroundFilterComponentTestSuite : public ::testing::Test
 {
 protected:
@@ -63,8 +63,25 @@ public:
 
 TEST_F(RayGroundFilterComponentTestSuite, TestCase1)
 {
-  // read pcd to pointcloud
   const auto share_dir = ament_index_cpp::get_package_share_directory("ground_segmentation");
+  const auto config_path = share_dir + "/config/ray_ground_filter.param.yaml";
+  // std::cout << "config_path:" << config_path << std::endl;
+  YAML::Node config = YAML::LoadFile(config_path);
+  auto params = config["/**"]["ros__parameters"];
+
+  double min_x_ = params["min_x"].as<float>();
+  double max_x_ = params["max_x"].as<float>();
+  double min_y_ = params["min_y"].as<float>();
+  double max_y_ = params["max_y"].as<float>();
+  bool use_vehicle_footprint_ = params["use_vehicle_footprint"].as<bool>();
+  double general_max_slope_ = params["general_max_slope"].as<float>();
+  double local_max_slope_ = params["local_max_slope"].as<float>();
+  double initial_max_slope_ = params["initial_max_slope"].as<float>();
+  double radial_divider_angle_ = params["radial_divider_angle"].as<float>();
+  double min_height_threshold_ = params["min_height_threshold"].as<float>();
+  double concentric_divider_distance_ = params["concentric_divider_distance"].as<float>();
+  double reclass_distance_threshold_ = params["reclass_distance_threshold"].as<float>();
+
   const auto pcd_path = share_dir + "/data/test.pcd";
   pcl::PointCloud<pcl::PointXYZ> cloud;
   pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_path, cloud);
@@ -94,10 +111,23 @@ TEST_F(RayGroundFilterComponentTestSuite, TestCase1)
 
   rclcpp::NodeOptions node_options;
   std::vector<rclcpp::Parameter> parameters;
+
   parameters.emplace_back(rclcpp::Parameter("base_frame", "base_link"));
-  parameters.emplace_back(rclcpp::Parameter("general_max_slope", 2.0));
-  parameters.emplace_back(rclcpp::Parameter("local_max_slope", 3.0));
-  parameters.emplace_back(rclcpp::Parameter("initial_max_slope", 1.0));
+  parameters.emplace_back(rclcpp::Parameter("general_max_slope", general_max_slope_));
+  parameters.emplace_back(rclcpp::Parameter("local_max_slope", local_max_slope_));
+  parameters.emplace_back(rclcpp::Parameter("initial_max_slope", initial_max_slope_));
+  parameters.emplace_back(rclcpp::Parameter("radial_divider_angle", radial_divider_angle_));
+  parameters.emplace_back(rclcpp::Parameter("min_height_threshold", min_height_threshold_));
+  parameters.emplace_back(
+    rclcpp::Parameter("concentric_divider_distance", concentric_divider_distance_));
+  parameters.emplace_back(
+    rclcpp::Parameter("reclass_distance_threshold", reclass_distance_threshold_));
+  parameters.emplace_back(rclcpp::Parameter("min_x", min_x_));
+  parameters.emplace_back(rclcpp::Parameter("max_x", max_x_));
+  parameters.emplace_back(rclcpp::Parameter("min_y", min_y_));
+  parameters.emplace_back(rclcpp::Parameter("max_y", max_y_));
+  parameters.emplace_back(rclcpp::Parameter("use_vehicle_footprint", use_vehicle_footprint_));
+
   node_options.parameter_overrides(parameters);
   auto ray_ground_filter_test = std::make_shared<RayGroundFilterComponentTest>(node_options);
   ray_ground_filter_test->input_pointcloud_pub_->publish(*input_msg_ptr);

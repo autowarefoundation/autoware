@@ -89,6 +89,7 @@ if(BUILD_TESTING)
 
   target_link_libraries(test_ray_ground_filter
     ground_segmentation
+    ${YAML_CPP_LIBRARIES}
   )
 
   ament_add_ros_isolated_gtest(test_scan_ground_filter

@@ -37,24 +37,22 @@ ScanGroundFilterComponent::ScanGroundFilterComponent(const rclcpp::NodeOptions &
 {
   // set initial parameters
   {
-    low_priority_region_x_ = static_cast<float>(declare_parameter("low_priority_region_x", -20.0f));
-    detection_range_z_max_ = static_cast<float>(declare_parameter("detection_range_z_max", 2.5f));
-    center_pcl_shift_ = static_cast<float>(declare_parameter("center_pcl_shift", 0.0));
-    non_ground_height_threshold_ =
-      static_cast<float>(declare_parameter("non_ground_height_threshold", 0.20));
-    grid_mode_switch_radius_ =
-      static_cast<float>(declare_parameter("grid_mode_switch_radius", 20.0));
+    low_priority_region_x_ = declare_parameter<float>("low_priority_region_x");
+    detection_range_z_max_ = declare_parameter<float>("detection_range_z_max");
+    center_pcl_shift_ = declare_parameter<float>("center_pcl_shift");
+    non_ground_height_threshold_ = declare_parameter<float>("non_ground_height_threshold");
+    grid_mode_switch_radius_ = declare_parameter<float>("grid_mode_switch_radius");
 
-    grid_size_m_ = static_cast<float>(declare_parameter("grid_size_m", 0.5));
-    gnd_grid_buffer_size_ = static_cast<int>(declare_parameter("gnd_grid_buffer_size", 4));
-    elevation_grid_mode_ = static_cast<bool>(declare_parameter("elevation_grid_mode", true));
-    global_slope_max_angle_rad_ = deg2rad(declare_parameter("global_slope_max_angle_deg", 8.0));
-    local_slope_max_angle_rad_ = deg2rad(declare_parameter("local_slope_max_angle_deg", 10.0));
-    radial_divider_angle_rad_ = deg2rad(declare_parameter("radial_divider_angle_deg", 1.0));
-    split_points_distance_tolerance_ = declare_parameter("split_points_distance_tolerance", 0.2);
-    split_height_distance_ = declare_parameter("split_height_distance", 0.2);
-    use_virtual_ground_point_ = declare_parameter("use_virtual_ground_point", true);
-    use_recheck_ground_cluster_ = declare_parameter("use_recheck_ground_cluster", true);
+    grid_size_m_ = declare_parameter<float>("grid_size_m");
+    gnd_grid_buffer_size_ = declare_parameter<int>("gnd_grid_buffer_size");
+    elevation_grid_mode_ = declare_parameter<bool>("elevation_grid_mode");
+    global_slope_max_angle_rad_ = deg2rad(declare_parameter<float>("global_slope_max_angle_deg"));
+    local_slope_max_angle_rad_ = deg2rad(declare_parameter<float>("local_slope_max_angle_deg"));
+    radial_divider_angle_rad_ = deg2rad(declare_parameter<float>("radial_divider_angle_deg"));
+    split_points_distance_tolerance_ = declare_parameter<float>("split_points_distance_tolerance");
+    split_height_distance_ = declare_parameter<float>("split_height_distance");
+    use_virtual_ground_point_ = declare_parameter<bool>("use_virtual_ground_point");
+    use_recheck_ground_cluster_ = declare_parameter<bool>("use_recheck_ground_cluster");
     radial_dividers_num_ = std::ceil(2.0 * M_PI / radial_divider_angle_rad_);
     vehicle_info_ = VehicleInfoUtil(*this).getVehicleInfo();
 

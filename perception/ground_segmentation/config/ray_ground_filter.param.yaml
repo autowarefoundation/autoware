@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+      min_x: -0.01
+      max_x: 0.01
+      min_y: -0.01
+      max_y: 0.01
+      use_vehicle_footprint: false
+      general_max_slope: 8.0
+      local_max_slope: 6.0
+      initial_max_slope: 3.0
+      radial_divider_angle: 1.0
+      min_height_threshold: 0.15
+      concentric_divider_distance: 0.0
+      reclass_distance_threshold: 0.1
