@@ -4,7 +4,6 @@
   <name>lidar_centerpoint</name>
   <version>1.0.0</version>
   <description>The lidar_centerpoint package</description>
-  <maintainer email="yusuke.muramatsu@tier4.jp">Yusuke Muramatsu</maintainer>
   <maintainer email="kenzo.lobos@tier4.jp">Kenzo Lobos-Tsunekawa</maintainer>
   <license>Apache License 2.0</license>
 
