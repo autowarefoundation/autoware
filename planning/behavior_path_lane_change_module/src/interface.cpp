@@ -70,7 +70,7 @@ bool LaneChangeInterface::isExecutionRequested() const
 
 bool LaneChangeInterface::isExecutionReady() const
 {
-  return module_type_->isSafe();
+  return module_type_->isSafe() && !module_type_->isAbortState();
 }
 
 void LaneChangeInterface::updateData()
@@ -116,7 +116,16 @@ BehaviorModuleOutput LaneChangeInterface::plan()
   }
 
   updateSteeringFactorPtr(output);
-  clearWaitingApproval();
+  if (module_type_->isAbortState()) {
+    waitApproval();
+    removeRTCStatus();
+    const auto candidate = planCandidate();
+    path_candidate_ = std::make_shared<PathWithLaneId>(candidate.path_candidate);
+    updateRTCStatus(
+      candidate.start_distance_to_path_change, candidate.finish_distance_to_path_change);
+  } else {
+    clearWaitingApproval();
+  }
 
   return output;
 }

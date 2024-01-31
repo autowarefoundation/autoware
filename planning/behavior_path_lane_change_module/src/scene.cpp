@@ -144,6 +144,19 @@ BehaviorModuleOutput NormalLaneChange::getTerminalLaneChangePath() const
 {
   BehaviorModuleOutput output;
 
+  if (isAbortState() && abort_path_) {
+    output.path = abort_path_->path;
+    output.reference_path = prev_module_reference_path_;
+    output.turn_signal_info = prev_turn_signal_info_;
+    extendOutputDrivableArea(output);
+    const auto current_seg_idx = planner_data_->findEgoSegmentIndex(output.path.points);
+    output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
+      output.path, getEgoPose(), current_seg_idx, prev_turn_signal_info_, output.turn_signal_info,
+      planner_data_->parameters.ego_nearest_dist_threshold,
+      planner_data_->parameters.ego_nearest_yaw_threshold);
+    return output;
+  }
+
   const auto current_lanes = getCurrentLanes();
   if (current_lanes.empty()) {
     RCLCPP_WARN(logger_, "Current lanes not found!!! Something wrong.");
@@ -157,7 +170,7 @@ BehaviorModuleOutput NormalLaneChange::getTerminalLaneChangePath() const
   const auto terminal_path =
     calcTerminalLaneChangePath(current_lanes, getLaneChangeLanes(current_lanes, direction_));
   if (!terminal_path) {
-    RCLCPP_WARN(logger_, "Terminal path not found!!!");
+    RCLCPP_DEBUG(logger_, "Terminal path not found!!!");
     output.path = prev_module_path_;
     output.reference_path = prev_module_reference_path_;
     output.drivable_area_info = prev_drivable_area_info_;
@@ -1525,7 +1538,7 @@ std::optional<LaneChangePath> NormalLaneChange::calcTerminalLaneChangePath(
     -(lane_change_buffer + next_lane_change_buffer + distance_to_terminal_from_goal));
 
   if (!lane_changing_start_pose) {
-    RCLCPP_WARN(logger_, "Reject: lane changing start pose not found!!!");
+    RCLCPP_DEBUG(logger_, "Reject: lane changing start pose not found!!!");
     return {};
   }
 
@@ -1534,7 +1547,7 @@ std::optional<LaneChangePath> NormalLaneChange::calcTerminalLaneChangePath(
 
   // Check if the lane changing start point is not on the lanes next to target lanes,
   if (target_length_from_lane_change_start_pose > 0.0) {
-    RCLCPP_WARN(logger_, "lane change start getEgoPose() is behind target lanelet!");
+    RCLCPP_DEBUG(logger_, "lane change start getEgoPose() is behind target lanelet!");
     return {};
   }
 
@@ -1552,7 +1565,7 @@ std::optional<LaneChangePath> NormalLaneChange::calcTerminalLaneChangePath(
     minimum_lane_changing_velocity, next_lane_change_buffer);
 
   if (target_segment.points.empty()) {
-    RCLCPP_WARN(logger_, "Reject: target segment is empty!! something wrong...");
+    RCLCPP_DEBUG(logger_, "Reject: target segment is empty!! something wrong...");
     return {};
   }
 
@@ -1581,7 +1594,7 @@ std::optional<LaneChangePath> NormalLaneChange::calcTerminalLaneChangePath(
   lane_change_info.terminal_lane_changing_velocity = minimum_lane_changing_velocity;
 
   if (!is_valid_start_point) {
-    RCLCPP_WARN(
+    RCLCPP_DEBUG(
       logger_,
       "Reject: lane changing points are not inside of the target preferred lanes or its "
       "neighbors");
@@ -1596,7 +1609,7 @@ std::optional<LaneChangePath> NormalLaneChange::calcTerminalLaneChangePath(
     next_lane_change_buffer);
 
   if (target_lane_reference_path.points.empty()) {
-    RCLCPP_WARN(logger_, "Reject: target_lane_reference_path is empty!!");
+    RCLCPP_DEBUG(logger_, "Reject: target_lane_reference_path is empty!!");
     return {};
   }
 
@@ -1855,31 +1868,25 @@ bool NormalLaneChange::calcAbortPath()
 
   ShiftedPath shifted_path;
   // offset front side
-  // bool offset_back = false;
   if (!path_shifter.generate(&shifted_path)) {
     RCLCPP_ERROR(logger_, "failed to generate abort shifted path.");
   }
 
-  const auto arc_position = lanelet::utils::getArcCoordinates(
-    reference_lanelets, shifted_path.path.points.at(abort_return_idx).point.pose);
-  const PathWithLaneId reference_lane_segment = std::invoke([&]() {
-    const double s_start = arc_position.length;
-    double s_end = std::max(lanelet::utils::getLaneletLength2d(reference_lanelets), s_start);
-
-    if (
-      !reference_lanelets.empty() &&
-      route_handler->isInGoalRouteSection(reference_lanelets.back())) {
-      const auto goal_arc_coordinates =
-        lanelet::utils::getArcCoordinates(reference_lanelets, route_handler->getGoalPose());
-      const double forward_length = std::max(goal_arc_coordinates.length, s_start);
-      s_end = std::min(s_end, forward_length);
+  PathWithLaneId reference_lane_segment = prev_module_path_;
+  {
+    const auto terminal_path =
+      calcTerminalLaneChangePath(reference_lanelets, selected_path.info.target_lanes);
+    if (terminal_path) {
+      reference_lane_segment = terminal_path->path;
     }
-    PathWithLaneId ref = route_handler->getCenterLinePath(reference_lanelets, s_start, s_end, true);
-    ref.points.back().point.longitudinal_velocity_mps = std::min(
-      ref.points.back().point.longitudinal_velocity_mps,
-      static_cast<float>(lane_change_parameters_->minimum_lane_changing_velocity));
-    return ref;
-  });
+    const auto return_pose = shifted_path.path.points.at(abort_return_idx).point.pose;
+    const auto seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      reference_lane_segment.points, return_pose, common_param.ego_nearest_dist_threshold,
+      common_param.ego_nearest_yaw_threshold);
+    reference_lane_segment.points = motion_utils::cropPoints(
+      reference_lane_segment.points, return_pose.position, seg_idx,
+      common_param.forward_path_length, 0.0);
+  }
 
   auto abort_path = selected_path;
   abort_path.shifted_path = shifted_path;
