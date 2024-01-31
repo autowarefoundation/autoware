@@ -1,5 +1,5 @@
 repositories:
-  universe/tools:
+  tools:
     type: git
     url: https://github.com/autowarefoundation/autoware_tools.git
     version: main
