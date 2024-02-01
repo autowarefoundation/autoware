@@ -2,19 +2,19 @@ repositories:
   core/autoware_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_msgs.git
-    version: f365616db1b59a1b45f6c9f2fa88fe5f88ba4638
+    version: v1.0
   core/autoware_adapi_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_adapi_msgs.git
-    version: 12d6d7729be6b7b42612a202c29556261254ff30
+    version: v1.0
   core/autoware_common:
     type: git
     url: https://github.com/autowarefoundation/autoware_common.git
-    version: deed4064d427668e08c10a12da82be9ed0419a52
+    version: v1.0
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
-    version: 99891401473b5740e640f5a0cc0412c0984b8e0b
+    version: v1.0
   core/external/autoware_auto_msgs:
     type: git
     url: https://github.com/tier4/autoware_auto_msgs.git
@@ -22,7 +22,7 @@ repositories:
   universe/autoware.universe:
     type: git
     url: https://github.com/autowarefoundation/autoware.universe.git
-    version: 90d5b94e91eee5fd437976196a9e6dbf465ec9cb
+    version: v1.0
   universe/external/tier4_ad_api_adaptor:
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
@@ -62,7 +62,7 @@ repositories:
   launcher/autoware_launch:
     type: git
     url: https://github.com/autowarefoundation/autoware_launch.git
-    version: 0d35c8a7b4c6e8aa26e5ba6feed3586845640261
+    version: v1.0
   sensor_component/external/sensor_component_description:
     type: git
     url: https://github.com/tier4/sensor_component_description.git
@@ -82,7 +82,7 @@ repositories:
   sensor_kit/sample_sensor_kit_launch:
     type: git
     url: https://github.com/autowarefoundation/sample_sensor_kit_launch.git
-    version: 5ccd754fde6a39d8ddb3a8ee2f0f0e8be540f6a5
+    version: v1.0
   sensor_kit/external/awsim_sensor_kit_launch:
     type: git
     url: https://github.com/RobotecAI/awsim_sensor_kit_launch.git
@@ -90,7 +90,7 @@ repositories:
   vehicle/sample_vehicle_launch:
     type: git
     url: https://github.com/autowarefoundation/sample_vehicle_launch.git
-    version: 627068935b12ec6d6121e6a1b885e31d564b04c5
+    version: v1.0
   vehicle/external/pacmod_interface:
     type: git
     url: https://github.com/tier4/pacmod_interface.git
@@ -98,4 +98,4 @@ repositories:
   param/autoware_individual_params:
     type: git
     url: https://github.com/autowarefoundation/autoware_individual_params.git
-    version: bfc7e159cb040f2abcf39954ede326ecebd86749
+    version: v1.0
