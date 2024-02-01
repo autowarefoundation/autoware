@@ -1548,6 +1548,8 @@ void ObstacleStopPlannerNode::filterObstacles(
   const PredictedObjects & input_objects, const Pose & ego_pose, const TrajectoryPoints & traj,
   const double dist_threshold, PredictedObjects & filtered_objects)
 {
+  if (traj.size() < 2) return;
+
   filtered_objects.header = input_objects.header;
 
   for (auto & object : input_objects.objects) {
