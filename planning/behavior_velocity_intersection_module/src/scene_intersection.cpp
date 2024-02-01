@@ -735,9 +735,7 @@ void reactRTCApprovalByDecisionResult(
         path->points.at(stopline_idx).point.pose, VelocityFactor::UNKNOWN);
     }
   }
-  if (
-    !rtc_occlusion_approved && decision_result.occlusion_stopline_idx &&
-    planner_param.occlusion.enable) {
+  if (!rtc_occlusion_approved && decision_result.occlusion_stopline_idx) {
     const auto occlusion_stopline_idx = decision_result.occlusion_stopline_idx.value();
     planning_utils::setVelocityFromIndex(occlusion_stopline_idx, 0.0, path);
     debug_data->occlusion_stop_wall_pose =
@@ -814,7 +812,7 @@ void reactRTCApprovalByDecisionResult(
         path->points.at(stopline_idx).point.pose, VelocityFactor::UNKNOWN);
     }
   }
-  if (!rtc_occlusion_approved && planner_param.occlusion.enable) {
+  if (!rtc_occlusion_approved) {
     const auto stopline_idx = decision_result.occlusion_stopline_idx;
     planning_utils::setVelocityFromIndex(stopline_idx, 0.0, path);
     debug_data->occlusion_stop_wall_pose =
@@ -857,7 +855,7 @@ void reactRTCApprovalByDecisionResult(
         path->points.at(stopline_idx).point.pose, VelocityFactor::UNKNOWN);
     }
   }
-  if (!rtc_occlusion_approved && planner_param.occlusion.enable) {
+  if (!rtc_occlusion_approved) {
     if (planner_param.occlusion.creep_during_peeking.enable) {
       const size_t occlusion_peeking_stopline = decision_result.occlusion_stopline_idx;
       const size_t closest_idx = decision_result.closest_idx;
@@ -895,7 +893,7 @@ void reactRTCApprovalByDecisionResult(
     "PeekingTowardOcclusion, approval = (default: %d, occlusion: %d)", rtc_default_approved,
     rtc_occlusion_approved);
   // NOTE: creep_velocity should be inserted first at closest_idx if !rtc_default_approved
-  if (!rtc_occlusion_approved && planner_param.occlusion.enable) {
+  if (!rtc_occlusion_approved) {
     const size_t occlusion_peeking_stopline =
       decision_result.temporal_stop_before_attention_required
         ? decision_result.first_attention_stopline_idx
@@ -965,7 +963,7 @@ void reactRTCApprovalByDecisionResult(
         path->points.at(stopline_idx).point.pose, VelocityFactor::UNKNOWN);
     }
   }
-  if (!rtc_occlusion_approved && planner_param.occlusion.enable) {
+  if (!rtc_occlusion_approved) {
     const auto stopline_idx = decision_result.temporal_stop_before_attention_required
                                 ? decision_result.first_attention_stopline_idx
                                 : decision_result.occlusion_stopline_idx;
@@ -1066,7 +1064,7 @@ void reactRTCApprovalByDecisionResult(
         path->points.at(stopline_idx).point.pose, VelocityFactor::UNKNOWN);
     }
   }
-  if (!rtc_occlusion_approved && planner_param.occlusion.enable) {
+  if (!rtc_occlusion_approved) {
     const auto stopline_idx = decision_result.occlusion_stopline_idx;
     planning_utils::setVelocityFromIndex(stopline_idx, 0.0, path);
     debug_data->occlusion_stop_wall_pose =
@@ -1110,7 +1108,7 @@ void reactRTCApprovalByDecisionResult(
         path->points.at(stopline_idx).point.pose, VelocityFactor::UNKNOWN);
     }
   }
-  if (!rtc_occlusion_approved && planner_param.occlusion.enable) {
+  if (!rtc_occlusion_approved) {
     const auto stopline_idx = decision_result.occlusion_stopline_idx;
     planning_utils::setVelocityFromIndex(stopline_idx, 0.0, path);
     debug_data->occlusion_stop_wall_pose =
