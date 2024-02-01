@@ -21,10 +21,7 @@ This package is responsible for estimating acceleration using the output of `ekf
 
 ## Parameters
 
-| Name                 | Type   | Description                                                               |
-| -------------------- | ------ | ------------------------------------------------------------------------- |
-| `use_odom`           | bool   | use odometry if true, else use twist input (default: true)                |
-| `accel_lowpass_gain` | double | lowpass gain for lowpass filter in estimating acceleration (default: 0.9) |
+{{ json_to_markdown("localization/twist2accel/schema/twist2accel.schema.json") }}
 
 ## Future work
 

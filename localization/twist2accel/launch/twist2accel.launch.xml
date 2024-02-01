@@ -1,6 +1,6 @@
 <launch>
-  <arg name="use_odom" default="true"/>
-  <arg name="accel_lowpass_gain" default="0.9"/>
+  <arg name="param_file" default="$(find-pkg-share twist2accel)/config/twist2accel.param.yaml"/>
+
   <arg name="in_odom" default="in_odom"/>
   <arg name="in_twist" default="in_twist"/>
   <arg name="out_accel" default="out_accel"/>
@@ -8,7 +8,6 @@
     <remap from="input/odom" to="$(var in_odom)"/>
     <remap from="input/twist" to="$(var in_twist)"/>
     <remap from="output/accel" to="$(var out_accel)"/>
-    <param name="accel_lowpass_gain" value="$(var accel_lowpass_gain)"/>
-    <param name="use_odom" value="$(var use_odom)"/>
+    <param from="$(var param_file)"/>
   </node>
 </launch>

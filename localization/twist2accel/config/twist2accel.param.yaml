@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    use_odom: true
+    accel_lowpass_gain: 0.9

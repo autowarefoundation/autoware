@@ -27,10 +27,10 @@
 
   <group>
     <include file="$(find-pkg-share twist2accel)/launch/twist2accel.launch.xml">
-      <arg name="use_odom" value="true"/>
       <arg name="in_odom" value="/localization/kinematic_state"/>
       <arg name="in_twist" value="/localization/twist_estimator/twist_with_covariance"/>
       <arg name="out_accel" value="/localization/acceleration"/>
+      <arg name="param_file" value="$(var twist2accel_param_path)"/>
     </include>
   </group>
 

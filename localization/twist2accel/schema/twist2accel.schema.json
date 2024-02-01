@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for twist2accel Nodes",
+  "type": "object",
+  "definitions": {
+    "twist2accel": {
+      "type": "object",
+      "properties": {
+        "use_odom": {
+          "type": "boolean",
+          "default": true,
+          "description": "use odometry if true, else use twist input."
+        },
+        "accel_lowpass_gain": {
+          "type": "number",
+          "default": 0.9,
+          "minimum": 0.0,
+          "description": "lowpass gain for lowpass filter in estimating acceleration."
+        }
+      },
+      "required": ["use_odom", "accel_lowpass_gain"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/twist2accel"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
