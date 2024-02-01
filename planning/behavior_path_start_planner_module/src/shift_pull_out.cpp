@@ -88,7 +88,7 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
       const auto transformed_vehicle_footprint =
         transformVector(vehicle_footprint_, tier4_autoware_utils::pose2transform(pose));
       const bool is_out_of_lane =
-        LaneDepartureChecker::isOutOfLane(drivable_lanes_, transformed_vehicle_footprint);
+        LaneDepartureChecker::isOutOfLane(departure_check_lanes_, transformed_vehicle_footprint);
       if (i <= start_segment_idx) {
         if (!is_out_of_lane) {
           cropped_path.points.push_back(shift_path.points.at(i));
@@ -100,9 +100,16 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
     shift_path.points = cropped_path.points;
 
     // check lane departure
+    // The method for lane departure checking verifies if the footprint of each point on the path is
+    // contained within a lanelet using `boost::geometry::within`, which incurs a high computational
+    // cost.
+    // TODO(someone): improve the method for detecting lane departures without using
+    // lanelet::ConstLanelets, making it unnecessary to retain departure_check_lanes_ as a member
+    // variable.
     if (
       parameters_.check_shift_path_lane_departure &&
-      lane_departure_checker_->checkPathWillLeaveLane(drivable_lanes_, path_shift_start_to_end)) {
+      lane_departure_checker_->checkPathWillLeaveLane(
+        departure_check_lanes_, path_shift_start_to_end)) {
       continue;
     }
 

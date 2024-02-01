@@ -46,6 +46,7 @@ struct StartPlannerDebugData
   std::vector<PoseWithVelocityStamped> ego_predicted_path;
   // collision check debug map
   CollisionCheckDebugMap collision_check;
+  lanelet::ConstLanelets departure_check_lanes;
 
   Pose refined_start_pose;
   std::vector<Pose> start_pose_candidates;

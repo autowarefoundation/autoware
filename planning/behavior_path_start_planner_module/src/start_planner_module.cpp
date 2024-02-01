@@ -24,6 +24,7 @@
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <lanelet2_extension/visualization/visualization.hpp>
 #include <magic_enum.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -137,7 +138,7 @@ void StartPlannerModule::initVariables()
   debug_marker_.markers.clear();
   initializeSafetyCheckParameters();
   initializeCollisionCheckDebugMap(debug_data_.collision_check);
-  updateDrivableLanes();
+  updateDepartureCheckLanes();
 }
 
 void StartPlannerModule::updateEgoPredictedPathParams(
@@ -597,7 +598,7 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
 void StartPlannerModule::resetStatus()
 {
   status_ = PullOutStatus{};
-  updateDrivableLanes();
+  updateDepartureCheckLanes();
 }
 
 void StartPlannerModule::incrementPathIndex()
@@ -1244,8 +1245,12 @@ bool StartPlannerModule::isSafePath() const
   const double hysteresis_factor =
     status_.is_safe_dynamic_objects ? 1.0 : safety_check_params_->hysteresis_factor_expand_rate;
 
-  behavior_path_planner::updateSafetyCheckDebugData(
-    debug_data_, filtered_objects, target_objects_on_lane, ego_predicted_path);
+  // debug
+  {
+    debug_data_.filtered_objects = filtered_objects;
+    debug_data_.target_objects_on_lane = target_objects_on_lane;
+    debug_data_.ego_predicted_path = ego_predicted_path;
+  }
 
   return behavior_path_planner::utils::path_safety_checker::checkSafetyWithRSS(
     pull_out_path, ego_predicted_path, target_objects_on_lane.on_current_lane,
@@ -1373,19 +1378,23 @@ void StartPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) cons
   }
 }
 
-void StartPlannerModule::updateDrivableLanes()
+void StartPlannerModule::updateDepartureCheckLanes()
 {
-  const auto drivable_lanes = createDrivableLanes();
+  const auto departure_check_lanes = createDepartureCheckLanes();
   for (auto & planner : start_planners_) {
     auto shift_pull_out = std::dynamic_pointer_cast<ShiftPullOut>(planner);
 
     if (shift_pull_out) {
-      shift_pull_out->setDrivableLanes(drivable_lanes);
+      shift_pull_out->setDepartureCheckLanes(departure_check_lanes);
     }
+  }
+  // debug
+  {
+    debug_data_.departure_check_lanes = departure_check_lanes;
   }
 }
 
-lanelet::ConstLanelets StartPlannerModule::createDrivableLanes() const
+lanelet::ConstLanelets StartPlannerModule::createDepartureCheckLanes() const
 {
   const double backward_path_length =
     planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
@@ -1404,13 +1413,14 @@ lanelet::ConstLanelets StartPlannerModule::createDrivableLanes() const
     [this](const auto & pull_out_lane) {
       return planner_data_->route_handler->isShoulderLanelet(pull_out_lane);
     });
-  const auto drivable_lanes = utils::transformToLanelets(
+  const auto departure_check_lanes = utils::transformToLanelets(
     utils::generateDrivableLanesWithShoulderLanes(road_lanes, shoulder_lanes));
-  return drivable_lanes;
+  return departure_check_lanes;
 }
 
 void StartPlannerModule::setDebugData()
 {
+  using lanelet::visualization::laneletsAsTriangleMarkerArray;
   using marker_utils::addFootprintMarker;
   using marker_utils::createFootprintMarkerArray;
   using marker_utils::createObjectsMarkerArray;
@@ -1424,6 +1434,12 @@ void StartPlannerModule::setDebugData()
   using tier4_autoware_utils::createMarkerColor;
   using tier4_autoware_utils::createMarkerScale;
   using visualization_msgs::msg::Marker;
+
+  const auto red_color = createMarkerColor(1.0, 0.0, 0.0, 0.999);
+  const auto cyan_color = createMarkerColor(0.0, 1.0, 1.0, 0.2);
+  const auto pink_color = createMarkerColor(1.0, 0.5, 0.5, 0.35);
+  const auto purple_color = createMarkerColor(1.0, 0.0, 1.0, 0.99);
+  const auto white_color = createMarkerColor(1.0, 1.0, 1.0, 0.99);
 
   const auto life_time = rclcpp::Duration::from_seconds(1.5);
   auto add = [&](MarkerArray added) {
@@ -1456,10 +1472,9 @@ void StartPlannerModule::setDebugData()
     if (collision_check_end_pose) {
       add(createPoseMarkerArray(
         *collision_check_end_pose, "static_collision_check_end_pose", 0, 1.0, 0.0, 0.0));
-      auto marker = tier4_autoware_utils::createDefaultMarker(
+      auto marker = createDefaultMarker(
         "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "static_collision_check_end_polygon", 0,
-        Marker::LINE_LIST, tier4_autoware_utils::createMarkerScale(0.1, 0.1, 0.1),
-        tier4_autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
+        Marker::LINE_LIST, createMarkerScale(0.1, 0.1, 0.1), red_color);
       const auto footprint = transformVector(
         local_footprint, tier4_autoware_utils::pose2transform(*collision_check_end_pose));
       const double ego_z = planner_data_->self_odometry->pose.pose.position.z;
@@ -1479,13 +1494,13 @@ void StartPlannerModule::setDebugData()
   {
     MarkerArray start_pose_footprint_marker_array{};
     MarkerArray start_pose_text_marker_array{};
-    const auto purple = createMarkerColor(1.0, 0.0, 1.0, 0.99);
     Marker footprint_marker = createDefaultMarker(
       "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "start_pose_candidates", 0, Marker::LINE_STRIP,
-      createMarkerScale(0.2, 0.2, 0.2), purple);
+      createMarkerScale(0.2, 0.2, 0.2), purple_color);
     Marker text_marker = createDefaultMarker(
       "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "start_pose_candidates_idx", 0,
-      visualization_msgs::msg::Marker::TEXT_VIEW_FACING, createMarkerScale(0.3, 0.3, 0.3), purple);
+      visualization_msgs::msg::Marker::TEXT_VIEW_FACING, createMarkerScale(0.3, 0.3, 0.3),
+      purple_color);
     footprint_marker.lifetime = rclcpp::Duration::from_seconds(1.5);
     text_marker.lifetime = rclcpp::Duration::from_seconds(1.5);
     for (size_t i = 0; i < debug_data_.start_pose_candidates.size(); ++i) {
@@ -1506,10 +1521,9 @@ void StartPlannerModule::setDebugData()
   // visualize the footprint from pull_out_start pose to pull_out_end pose along the path
   {
     MarkerArray pull_out_path_footprint_marker_array{};
-    const auto pink = createMarkerColor(1.0, 0.0, 1.0, 0.99);
     Marker pull_out_path_footprint_marker = createDefaultMarker(
       "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "shift_path_footprint", 0, Marker::LINE_STRIP,
-      createMarkerScale(0.2, 0.2, 0.2), pink);
+      createMarkerScale(0.2, 0.2, 0.2), pink_color);
     pull_out_path_footprint_marker.lifetime = rclcpp::Duration::from_seconds(1.5);
     PathWithLaneId path_shift_start_to_end{};
     const auto shift_path = status_.pull_out_path.partial_paths.front();
@@ -1567,8 +1581,7 @@ void StartPlannerModule::setDebugData()
   const auto header = planner_data_->route_handler->getRouteHeader();
   {
     visualization_msgs::msg::MarkerArray planner_type_marker_array{};
-    const auto color = status_.found_pull_out_path ? createMarkerColor(1.0, 1.0, 1.0, 0.99)
-                                                   : createMarkerColor(1.0, 0.0, 0.0, 0.99);
+    const auto color = status_.found_pull_out_path ? white_color : red_color;
     auto marker = createDefaultMarker(
       header.frame_id, header.stamp, "planner_type", 0,
       visualization_msgs::msg::Marker::TEXT_VIEW_FACING, createMarkerScale(0.0, 0.0, 1.0), color);
@@ -1583,6 +1596,15 @@ void StartPlannerModule::setDebugData()
     planner_type_marker_array.markers.push_back(marker);
     add(planner_type_marker_array);
   }
+
+  add(laneletsAsTriangleMarkerArray(
+    "departure_check_lanes_for_shift_pull_out_path", debug_data_.departure_check_lanes,
+    cyan_color));
+
+  const auto pull_out_lanes = start_planner_utils::getPullOutLanes(
+    planner_data_, planner_data_->parameters.backward_path_length + parameters_->max_back_distance);
+  add(laneletsAsTriangleMarkerArray(
+    "pull_out_lanes_for_static_objects_collision_check", pull_out_lanes, pink_color));
 }
 
 void StartPlannerModule::logPullOutStatus(rclcpp::Logger::Level log_level) const
