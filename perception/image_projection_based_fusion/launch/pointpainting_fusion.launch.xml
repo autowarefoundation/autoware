@@ -47,15 +47,12 @@
       <composable_node pkg="image_projection_based_fusion" plugin="image_projection_based_fusion::PointPaintingFusionNode" name="pointpainting">
         <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
         <remap from="~/output/objects" to="$(var output/objects)"/>
-        <param name="trt_precision" value="fp16"/>
-        <param name="encoder_onnx_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).onnx"/>
-        <param name="encoder_engine_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).engine"/>
-        <param name="head_onnx_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).onnx"/>
-        <param name="head_engine_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).engine"/>
-        <param from="$(var model_param_path)"/>
+        <param from="$(var model_param_path)" allow_substs="true"/>
         <param from="$(var sync_param_path)"/>
         <param from="$(var class_remapper_param_path)"/>
         <param name="rois_number" value="$(var input/rois_number)"/>
+
+        <!-- This parameter shall NOT be included in param file. See the PR from the git blame for details. -->
         <param name="build_only" value="$(var build_only)"/>
 
         <!-- rois, camera and info -->
@@ -91,15 +88,12 @@
     <node pkg="image_projection_based_fusion" exec="pointpainting_fusion_node" name="pointpainting" output="screen">
       <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
       <remap from="~/output/objects" to="$(var output/objects)"/>
-      <param name="trt_precision" value="fp16"/>
-      <param name="encoder_onnx_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).onnx"/>
-      <param name="encoder_engine_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).engine"/>
-      <param name="head_onnx_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).onnx"/>
-      <param name="head_engine_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).engine"/>
-      <param from="$(var model_param_path)"/>
+      <param from="$(var model_param_path)" allow_substs="true"/>
       <param from="$(var sync_param_path)"/>
       <param from="$(var class_remapper_param_path)"/>
       <param name="rois_number" value="$(var input/rois_number)"/>
+
+      <!-- This parameter shall NOT be included in param file. See the PR from the git blame for details. -->
       <param name="build_only" value="$(var build_only)"/>
 
       <!-- rois, camera and info -->

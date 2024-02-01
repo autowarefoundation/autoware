@@ -53,6 +53,15 @@ The timeout threshold should be set according to the postprocessing time.
 E.g, if the postprocessing time is around 50ms, the timeout threshold should be set smaller than 50ms, so that the whole processing time could be less than 100ms.
 current default value at autoware.universe for XX1: - timeout_ms: 50.0
 
+#### The `build_only` option
+
+The `pointpainting_fusion` node has `build_only` option to build the TensorRT engine file from the ONNX file.
+Although it is preferred to move all the ROS parameters in `.param.yaml` file in Autoware Universe, the `build_only` option is not moved to the `.param.yaml` file for now, because it may be used as a flag to execute the build as a pre-task. You can execute with the following command:
+
+```bash
+ros2 launch image_projection_based_fusion pointpainting_fusion.launch.xml model_name:=pointpainting model_path:=/home/autoware/autoware_data/image_projection_based_fusion model_param_path:=$(ros2 pkg prefix image_projection_based_fusion --share)/config/pointpainting.param.yaml build_only:=true
+```
+
 #### Known Limits
 
 The rclcpp::TimerBase timer could not break a for loop, therefore even if time is out when fusing a roi msg at the middle, the program will run until all msgs are fused.

@@ -1,5 +1,11 @@
 /**:
   ros__parameters:
+    trt_precision: fp16
+    encoder_onnx_path: "$(var model_path)/pts_voxel_encoder_$(var model_name).onnx"
+    encoder_engine_path: "$(var model_path)/pts_voxel_encoder_$(var model_name).engine"
+    head_onnx_path: "$(var model_path)/pts_backbone_neck_head_$(var model_name).onnx"
+    head_engine_path: "$(var model_path)/pts_backbone_neck_head_$(var model_name).engine"
+
     model_params:
       class_names: ["CAR", "TRUCK", "BUS", "BICYCLE", "PEDESTRIAN"]
       paint_class_names: ["CAR", "BICYCLE", "PEDESTRIAN"]
