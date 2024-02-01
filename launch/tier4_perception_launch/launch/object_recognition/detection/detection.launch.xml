@@ -31,8 +31,6 @@
 
   <!-- Radar parameters -->
   <arg name="input/radar" default="/sensing/radar/detected_objects"/>
-  <arg name="radar_lanelet_filtering_range_param" default="$(find-pkg-share detected_object_validation)/config/object_lanelet_filter.param.yaml"/>
-  <arg name="radar_object_clustering_param_path" default="$(find-pkg-share radar_object_clustering)/config/radar_object_clustering.param.yaml"/>
 
   <!-- Camera-Lidar-Radar fusion based detection -->
   <group if="$(eval '&quot;$(var mode)&quot;==&quot;camera_lidar_radar_fusion&quot;')">
@@ -75,10 +73,10 @@
       <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/detector/radar_detector.launch.xml">
         <arg name="input/radar" value="$(var input/radar)"/>
         <arg name="output/objects" value="far_objects"/>
+        <arg name="radar_lanelet_filtering_range_param_path" value="$(var radar_lanelet_filtering_range_param_path)"/>
         <arg name="radar_crossing_objects_noise_filter_param_path" value="$(var object_recognition_detection_radar_crossing_objects_noise_filter_param_path)"/>
         <arg name="object_velocity_splitter_param_path" value="$(var object_recognition_detection_object_velocity_splitter_radar_fusion_param_path)"/>
         <arg name="object_range_splitter_param_path" value="$(var object_recognition_detection_object_range_splitter_radar_fusion_param_path)"/>
-        <arg name="radar_lanelet_filtering_range_param" value="$(var radar_lanelet_filtering_range_param)"/>
         <arg name="radar_object_clustering_param_path" value="$(var radar_object_clustering_param_path)"/>
       </include>
     </group>
@@ -176,10 +174,10 @@
       <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/detector/radar_detector.launch.xml">
         <arg name="input/radar" value="$(var input/radar)"/>
         <arg name="output/objects" value="far_objects"/>
+        <arg name="radar_lanelet_filtering_range_param_path" value="$(var radar_lanelet_filtering_range_param_path)"/>
         <arg name="radar_crossing_objects_noise_filter_param_path" value="$(var object_recognition_detection_radar_crossing_objects_noise_filter_param_path)"/>
         <arg name="object_velocity_splitter_param_path" value="$(var object_recognition_detection_object_velocity_splitter_radar_fusion_param_path)"/>
         <arg name="object_range_splitter_param_path" value="$(var object_recognition_detection_object_range_splitter_radar_fusion_param_path)"/>
-        <arg name="radar_lanelet_filtering_range_param" value="$(var radar_lanelet_filtering_range_param)"/>
         <arg name="radar_object_clustering_param_path" value="$(var radar_object_clustering_param_path)"/>
       </include>
     </group>
@@ -238,10 +236,10 @@
     <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/detector/radar_detector.launch.xml">
       <arg name="input/radar" value="$(var input/radar)"/>
       <arg name="output/objects" value="objects"/>
+      <arg name="radar_lanelet_filtering_range_param_path" value="$(var radar_lanelet_filtering_range_param_path)"/>
       <arg name="radar_crossing_objects_noise_filter_param_path" value="$(var object_recognition_detection_radar_crossing_objects_noise_filter_param_path)"/>
       <arg name="object_velocity_splitter_param_path" value="$(var object_recognition_detection_object_velocity_splitter_radar_param_path)"/>
       <arg name="object_range_splitter_param_path" value="$(var object_recognition_detection_object_range_splitter_radar_param_path)"/>
-      <arg name="radar_lanelet_filtering_range_param" value="$(var radar_lanelet_filtering_range_param)"/>
       <arg name="radar_object_clustering_param_path" value="$(var radar_object_clustering_param_path)"/>
     </include>
   </group>

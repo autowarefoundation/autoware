@@ -14,8 +14,8 @@
   <arg name="object_recognition_detection_roi_pointcloud_fusion_param_path"/>
   <arg name="object_recognition_detection_roi_detected_object_fusion_param_path"/>
   <arg name="object_recognition_detection_lidar_model_param_path"/>
+  <arg name="object_recognition_detection_radar_lanelet_filtering_range_param_path"/>
   <arg name="object_recognition_detection_radar_crossing_objects_noise_filter_param_path"/>
-  <arg name="object_recognition_detection_radar_lanelet_filtering_range_param"/>
   <arg name="object_recognition_detection_radar_object_clustering_param_path"/>
   <arg name="object_recognition_detection_object_velocity_splitter_radar_param_path"/>
   <arg name="object_recognition_detection_object_velocity_splitter_radar_fusion_param_path"/>
@@ -190,7 +190,7 @@
           <arg name="euclidean_param_path" value="$(var object_recognition_detection_euclidean_cluster_param_path)"/>
           <arg name="outlier_param_path" value="$(var object_recognition_detection_outlier_param_path)"/>
           <arg name="voxel_grid_based_euclidean_param_path" value="$(var object_recognition_detection_voxel_grid_based_euclidean_cluster_param_path)"/>
-          <arg name="radar_lanelet_filtering_range_param" value="$(var object_recognition_detection_radar_lanelet_filtering_range_param)"/>
+          <arg name="radar_lanelet_filtering_range_param_path" value="$(var object_recognition_detection_radar_lanelet_filtering_range_param_path)"/>
           <arg name="radar_object_clustering_param_path" value="$(var object_recognition_detection_radar_object_clustering_param_path)"/>
           <arg name="detection_by_tracker_param_path" value="$(var object_recognition_detection_detection_by_tracker_param)"/>
 

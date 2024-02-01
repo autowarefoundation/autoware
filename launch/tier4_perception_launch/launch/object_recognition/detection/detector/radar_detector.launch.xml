@@ -33,7 +33,7 @@
   <include file="$(find-pkg-share detected_object_validation)/launch/object_lanelet_filter.launch.xml">
     <arg name="input/object" value="far_high_speed_objects"/>
     <arg name="output/object" value="lanelet_filtered_objects"/>
-    <arg name="filtering_range_param" value="$(var radar_lanelet_filtering_range_param)"/>
+    <arg name="filtering_range_param_path" value="$(var radar_lanelet_filtering_range_param_path)"/>
   </include>
 
   <include file="$(find-pkg-share radar_object_clustering)/launch/radar_object_clustering.launch.xml">
