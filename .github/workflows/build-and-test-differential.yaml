@@ -16,7 +16,7 @@ jobs:
   build-and-test-differential:
     needs: prevent-no-label-execution
     if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
-    runs-on: [self-hosted, linux, X64]
+    runs-on: ubuntu-latest
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
       fail-fast: false
@@ -70,7 +70,7 @@ jobs:
           flags: differential
 
   clang-tidy-differential:
-    runs-on: [self-hosted, linux, X64]
+    runs-on: ubuntu-latest
     container: ghcr.io/autowarefoundation/autoware-universe:humble-latest-cuda
     needs: build-and-test-differential
     steps:
