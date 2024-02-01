@@ -21,6 +21,7 @@
 #include "behavior_path_start_planner_module/util.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
+#include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <magic_enum.hpp>
@@ -211,7 +212,8 @@ bool StartPlannerModule::receivedNewRoute() const
 
 bool StartPlannerModule::requiresDynamicObjectsCollisionDetection() const
 {
-  return parameters_->safety_check_params.enable_safety_check && status_.driving_forward;
+  return parameters_->safety_check_params.enable_safety_check && status_.driving_forward &&
+         !isOverlapWithCenterLane();
 }
 
 bool StartPlannerModule::noMovingObjectsAround() const
@@ -276,6 +278,37 @@ bool StartPlannerModule::isCurrentPoseOnMiddleOfTheRoad() const
     lanelet::utils::getArcCoordinates(current_lanes, current_pose).distance;
 
   return std::abs(lateral_distance_to_center_lane) < parameters_->th_distance_to_middle_of_the_road;
+}
+
+bool StartPlannerModule::isOverlapWithCenterLane() const
+{
+  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
+  const auto current_lanes = utils::getCurrentLanes(planner_data_);
+  const auto local_vehicle_footprint = vehicle_info_.createFootprint();
+  const auto vehicle_footprint =
+    transformVector(local_vehicle_footprint, tier4_autoware_utils::pose2transform(current_pose));
+  for (const auto & current_lane : current_lanes) {
+    std::vector<geometry_msgs::msg::Point> centerline_points;
+    for (const auto & point : current_lane.centerline()) {
+      geometry_msgs::msg::Point center_point = lanelet::utils::conversion::toGeomMsgPt(point);
+      centerline_points.push_back(center_point);
+    }
+
+    for (size_t i = 0; i < centerline_points.size() - 1; ++i) {
+      const auto & p1 = centerline_points.at(i);
+      const auto & p2 = centerline_points.at(i + 1);
+      for (size_t j = 0; j < vehicle_footprint.size() - 1; ++j) {
+        const auto p3 = tier4_autoware_utils::toMsg(vehicle_footprint[j].to_3d());
+        const auto p4 = tier4_autoware_utils::toMsg(vehicle_footprint[j + 1].to_3d());
+        const auto intersection = tier4_autoware_utils::intersect(p1, p2, p3, p4);
+
+        if (intersection.has_value()) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
 bool StartPlannerModule::isCloseToOriginalStartPose() const
@@ -935,8 +968,8 @@ std::vector<Pose> StartPlannerModule::searchPullOutStartPoseCandidates(
     pull_out_lanes, start_pose.position, parameters_->th_moving_object_velocity, 0,
     std::numeric_limits<double>::max());
 
-  // Set the maximum backward distance less than the distance from the vehicle's base_link to the
-  // lane's rearmost point to prevent lane departure.
+  // Set the maximum backward distance less than the distance from the vehicle's base_link to
+  // the lane's rearmost point to prevent lane departure.
   const double current_arc_length =
     lanelet::utils::getArcCoordinates(pull_out_lanes, start_pose).length;
   const double allowed_backward_distance = std::clamp(
@@ -1224,8 +1257,8 @@ bool StartPlannerModule::isGoalBehindOfEgoInSameRouteSegment() const
 {
   const auto & rh = planner_data_->route_handler;
 
-  // Check if the goal and ego are in the same route segment. If not, this is out of scope of this
-  // function. Return false.
+  // Check if the goal and ego are in the same route segment. If not, this is out of scope of
+  // this function. Return false.
   lanelet::ConstLanelet ego_lanelet;
   rh->getClosestLaneletWithinRoute(getEgoPose(), &ego_lanelet);
   const auto is_ego_in_goal_route_section = rh->isInGoalRouteSection(ego_lanelet);
