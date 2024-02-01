@@ -72,5 +72,19 @@ If the time difference between the first topic of `input_topics` and an input to
   - Default parameter: "[]"
 
 This parameter is the name of input topics.
-For example, when this packages use for radar objects, `"[/sensing/radar/front_center/detected_objects, /sensing/radar/front_left/detected_objects, /sensing/radar/rear_left/detected_objects, /sensing/radar/rear_center/detected_objects, /sensing/radar/rear_right/detected_objects, /sensing/radar/front_right/detected_objects]"` can be set.
+For example, when this packages use for radar objects,
+
+```yaml
+input_topics:
+  [
+    "/sensing/radar/front_center/detected_objects",
+    "/sensing/radar/front_left/detected_objects",
+    "/sensing/radar/rear_left/detected_objects",
+    "/sensing/radar/rear_center/detected_objects",
+    "/sensing/radar/rear_right/detected_objects",
+    "/sensing/radar/front_right/detected_objects",
+  ]
+```
+
+can be set in config yaml file.
 For now, the time difference is calculated by the header time between the first topic of `input_topics` and the input topics, so the most important objects to detect should be set in the first of `input_topics` list.
