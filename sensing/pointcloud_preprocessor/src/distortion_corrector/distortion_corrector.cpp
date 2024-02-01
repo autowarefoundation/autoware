@@ -128,6 +128,16 @@ void DistortionCorrectorComponent::onPointCloud(PointCloud2::UniquePtr points_ms
 
   undistortPointCloud(tf2_base_link_to_sensor, *points_msg);
 
+  if (debug_publisher_) {
+    auto pipeline_latency_ms =
+      std::chrono::duration<double, std::milli>(
+        std::chrono::nanoseconds(
+          (this->get_clock()->now() - points_msg->header.stamp).nanoseconds()))
+        .count();
+    debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+      "debug/pipeline_latency_ms", pipeline_latency_ms);
+  }
+
   undistorted_points_pub_->publish(std::move(points_msg));
 
   // add processing time for debug

@@ -56,7 +56,45 @@ Detail description of each filter's algorithm is in the following links.
 
 ## Assumptions / Known limits
 
-`pointcloud_preprocessor::Filter` is implemented based on pcl_perception [1] because of [this issue](https://github.com/ros-perception/perception_pcl/issues/9).
+`pointcloud_preprocessor::Filter` is implemented based on pcl_perception [1] because
+of [this issue](https://github.com/ros-perception/perception_pcl/issues/9).
+
+## Measuring the performance
+
+In Autoware, point cloud data from each LiDAR sensor undergoes preprocessing in the sensing pipeline before being input
+into the perception pipeline. The preprocessing stages are illustrated in the diagram below:
+
+![pointcloud_preprocess_pipeline.drawio.png](docs%2Fimage%2Fpointcloud_preprocess_pipeline.drawio.png)
+
+Each stage in the pipeline incurs a processing delay. Mostly, we've used `ros2 topic delay /topic_name` to measure
+the time between the message header and the current time. This approach works well for small-sized messages. However,
+when dealing with large point cloud messages, this method introduces an additional delay. This is primarily because
+accessing these large point cloud messages externally impacts the pipeline's performance.
+
+Our sensing/perception nodes are designed to run within composable node containers, leveraging intra-process
+communication. External subscriptions to these messages (like using ros2 topic delay or rviz2) impose extra delays and
+can even slow down the pipeline by subscribing externally. Therefore, these measurements will not be accurate.
+
+To mitigate this issue, we've adopted a method where each node in the pipeline reports its pipeline latency time.
+This approach ensures the integrity of intra-process communication and provides a more accurate measure of delays in the
+pipeline.
+
+### Benchmarking The Pipeline
+
+The nodes within the pipeline report the pipeline latency time, indicating the duration from the sensor driver's pointcloud
+output to the node's output. This data is crucial for assessing the pipeline's health and efficiency.
+
+When running Autoware, you can monitor the pipeline latency times for each node in the pipeline by subscribing to the
+following ROS 2 topics:
+
+- `/sensing/lidar/LidarX/crop_box_filter_self/debug/pipeline_latency_ms`
+- `/sensing/lidar/LidarX/crop_box_filter_mirror/debug/pipeline_latency_ms`
+- `/sensing/lidar/LidarX/distortion_corrector/debug/pipeline_latency_ms`
+- `/sensing/lidar/LidarX/ring_outlier_filter/debug/pipeline_latency_ms`
+- `/sensing/lidar/concatenate_data_synchronizer/debug/sensing/lidar/LidarX/pointcloud/pipeline_latency_ms`
+
+These topics provide the pipeline latency times, giving insights into the delays at various stages of the pipeline
+from the sensor output of LidarX to each subsequent node.
 
 ## (Optional) Error detection and handling
 
