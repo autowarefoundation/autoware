@@ -14,6 +14,7 @@
   <arg name="object_recognition_detection_roi_pointcloud_fusion_param_path"/>
   <arg name="object_recognition_detection_roi_detected_object_fusion_param_path"/>
   <arg name="object_recognition_detection_lidar_model_param_path"/>
+  <arg name="object_recognition_detection_radar_crossing_objects_noise_filter_param_path"/>
   <arg name="object_recognition_detection_radar_lanelet_filtering_range_param"/>
   <arg name="object_recognition_detection_radar_object_clustering_param_path"/>
   <arg name="object_recognition_detection_object_velocity_splitter_radar_param_path"/>

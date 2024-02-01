@@ -2,8 +2,7 @@
 <launch>
   <arg name="input/radar" default="/sensing/radar/detected_objects"/>
   <arg name="output/objects" default="far_objects"/>
-  <arg name="filter/angle_threshold" default="1.221"/>
-  <arg name="filter/velocity_threshold" default="1.5"/>
+  <arg name="radar_crossing_objects_noise_filter_param_path"/>
   <arg name="object_velocity_splitter_param_path" default="$(var object_recognition_detection_object_velocity_splitter_radar_param_path)"/>
   <arg name="object_range_splitter_param_path" default="$(var object_recognition_detection_object_range_splitter_radar_param_path)"/>
   <arg name="radar_lanelet_filtering_range_param" default="$(find-pkg-share detected_object_validation)/config/object_lanelet_filter.param.yaml"/>
@@ -14,8 +13,7 @@
     <arg name="input/objects" value="$(var input/radar)"/>
     <arg name="output/noise_objects" value="noise_objects"/>
     <arg name="output/filtered_objects" value="noise_filtered_objects"/>
-    <arg name="angle_threshold" value="$(var filter/angle_threshold)"/>
-    <arg name="velocity_threshold" value="$(var filter/velocity_threshold)"/>
+    <arg name="param_path" value="$(var radar_crossing_objects_noise_filter_param_path)"/>
   </include>
 
   <include file="$(find-pkg-share object_velocity_splitter)/launch/object_velocity_splitter.launch.xml">

@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    angle_threshold: 1.2210
+    velocity_threshold: 1.5
