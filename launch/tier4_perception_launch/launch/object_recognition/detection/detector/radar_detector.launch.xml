@@ -41,6 +41,6 @@
   <include file="$(find-pkg-share radar_object_clustering)/launch/radar_object_clustering.launch.xml">
     <arg name="input/objects" value="lanelet_filtered_objects"/>
     <arg name="output/objects" value="$(var output/objects)"/>
-    <arg name="radar_object_clustering_param_path" value="$(var radar_object_clustering_param_path)"/>
+    <arg name="param_path" value="$(var radar_object_clustering_param_path)"/>
   </include>
 </launch>
