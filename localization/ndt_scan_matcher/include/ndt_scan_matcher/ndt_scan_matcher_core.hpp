@@ -18,6 +18,7 @@
 #define FMT_HEADER_ONLY
 
 #include "localization_util/smart_pose_buffer.hpp"
+#include "ndt_scan_matcher/hyper_parameters.hpp"
 #include "ndt_scan_matcher/map_update_module.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -64,11 +65,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-
-enum class ConvergedParamType {
-  TRANSFORM_PROBABILITY = 0,
-  NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD = 1
-};
 
 class NDTScanMatcher : public rclcpp::Node
 {
@@ -187,44 +183,21 @@ private:
   std::shared_ptr<std::map<std::string, std::string>> state_ptr_;
 
   Eigen::Matrix4f base_to_sensor_matrix_;
-  std::string base_frame_;
-  std::string ndt_base_frame_;
-  std::string map_frame_;
-
-  ConvergedParamType converged_param_type_;
-  double converged_param_transform_probability_;
-  double converged_param_nearest_voxel_transformation_likelihood_;
-
-  int64_t initial_estimate_particles_num_;
-  int64_t n_startup_trials_;
-  double lidar_topic_timeout_sec_;
-  double initial_pose_timeout_sec_;
-  double initial_pose_distance_tolerance_m_;
-  bool use_cov_estimation_;
-  std::vector<Eigen::Vector2d> initial_pose_offset_model_;
-  std::array<double, 36> output_pose_covariance_;
 
   std::mutex ndt_ptr_mtx_;
   std::unique_ptr<SmartPoseBuffer> initial_pose_buffer_;
 
   // Keep latest position for dynamic map loading
-  // This variable is only used when use_dynamic_map_loading is true
   std::mutex latest_ekf_position_mtx_;
   std::optional<geometry_msgs::msg::Point> latest_ekf_position_ = std::nullopt;
 
-  // variables for regularization
-  const bool regularization_enabled_;  // whether to use longitudinal regularization
   std::unique_ptr<SmartPoseBuffer> regularization_pose_buffer_;
 
   std::atomic<bool> is_activated_;
   std::unique_ptr<MapUpdateModule> map_update_module_;
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 
-  bool estimate_scores_by_no_ground_points_;
-  double z_margin_for_ground_removal_;
-
-  // The execution time which means probably NDT cannot matches scans properly
-  double critical_upper_bound_exe_time_ms_;
+  HyperParameters param_;
 };
 
 #endif  // NDT_SCAN_MATCHER__NDT_SCAN_MATCHER_CORE_HPP_

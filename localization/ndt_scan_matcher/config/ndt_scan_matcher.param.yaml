@@ -1,102 +1,114 @@
 /**:
   ros__parameters:
-    # Vehicle reference frame
-    base_frame: "base_link"
+    frame:
+      # Vehicle reference frame
+      base_frame: "base_link"
 
-    # NDT reference frame
-    ndt_base_frame: "ndt_base_link"
+      # NDT reference frame
+      ndt_base_frame: "ndt_base_link"
 
-    # map frame
-    map_frame: "map"
+      # Map frame
+      map_frame: "map"
 
-    # Subscriber queue size
-    input_sensor_points_queue_size: 1
 
-    # The maximum difference between two consecutive
-    # transformations in order to consider convergence
-    trans_epsilon: 0.01
+    ndt:
+      # The maximum difference between two consecutive
+      # transformations in order to consider convergence
+      trans_epsilon: 0.01
 
-    # The newton line search maximum step length
-    step_size: 0.1
+      # The newton line search maximum step length
+      step_size: 0.1
 
-    # The ND voxel grid resolution
-    resolution: 2.0
+      # The ND voxel grid resolution
+      resolution: 2.0
 
-    # The number of iterations required to calculate alignment
-    max_iterations: 30
+      # The number of iterations required to calculate alignment
+      max_iterations: 30
 
-    # Converged param type
-    # 0=TRANSFORM_PROBABILITY, 1=NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD
-    converged_param_type: 1
+      # Number of threads used for parallel computing
+      num_threads: 4
 
-    # If converged_param_type is 0
-    # Threshold for deciding whether to trust the estimation result
-    converged_param_transform_probability: 3.0
+      regularization:
+        enable: false
 
-    # If converged_param_type is 1
-    # Threshold for deciding whether to trust the estimation result
-    converged_param_nearest_voxel_transformation_likelihood: 2.3
+        # Regularization scale factor
+        scale_factor: 0.01
 
-    # The number of particles to estimate initial pose
-    initial_estimate_particles_num: 200
 
-    # The number of initial random trials in the TPE (Tree-Structured Parzen Estimator).
-    # This value should be equal to or less than 'initial_estimate_particles_num' and more than 0.
-    # If it is equal to 'initial_estimate_particles_num', the search will be the same as a full random search.
-    n_startup_trials: 20
+    initial_pose_estimation:
+      # The number of particles to estimate initial pose
+      particles_num: 200
 
-    # Tolerance of timestamp difference between current time and sensor pointcloud. [sec]
-    lidar_topic_timeout_sec: 1.0
+      # The number of initial random trials in the TPE (Tree-Structured Parzen Estimator).
+      # This value should be equal to or less than 'initial_estimate_particles_num' and more than 0.
+      # If it is equal to 'initial_estimate_particles_num', the search will be the same as a full random search.
+      n_startup_trials: 20
 
-    # Tolerance of timestamp difference between initial_pose and sensor pointcloud. [sec]
-    initial_pose_timeout_sec: 1.0
 
-    # Tolerance of distance difference between two initial poses used for linear interpolation. [m]
-    initial_pose_distance_tolerance_m: 10.0
+    validation:
+      # Tolerance of timestamp difference between current time and sensor pointcloud. [sec]
+      lidar_topic_timeout_sec: 1.0
 
-    # The execution time which means probably NDT cannot matches scans properly. [ms]
-    critical_upper_bound_exe_time_ms: 100.0
+      # Tolerance of timestamp difference between initial_pose and sensor pointcloud. [sec]
+      initial_pose_timeout_sec: 1.0
 
-    # Number of threads used for parallel computing
-    num_threads: 4
+      # Tolerance of distance difference between two initial poses used for linear interpolation. [m]
+      initial_pose_distance_tolerance_m: 10.0
 
-    # The covariance of output pose
-    # Note that this covariance matrix is empirically derived
-    output_pose_covariance:
-      [
-        0.0225, 0.0,   0.0,   0.0,      0.0,      0.0,
-        0.0,   0.0225, 0.0,   0.0,      0.0,      0.0,
-        0.0,   0.0,   0.0225, 0.0,      0.0,      0.0,
-        0.0,   0.0,   0.0,   0.000625, 0.0,      0.0,
-        0.0,   0.0,   0.0,   0.0,      0.000625, 0.0,
-        0.0,   0.0,   0.0,   0.0,      0.0,      0.000625,
-      ]
+      # The execution time which means probably NDT cannot matches scans properly. [ms]
+      critical_upper_bound_exe_time_ms: 100.0
 
-    # 2D Real-time covariance estimation with multiple searches (output_pose_covariance is the minimum value)
-    use_covariance_estimation: false
 
-    # Offset arrangement in covariance estimation [m]
-    # initial_pose_offset_model_x & initial_pose_offset_model_y must have the same number of elements.
-    initial_pose_offset_model_x: [0.0, 0.0, 0.5, -0.5, 1.0, -1.0]
-    initial_pose_offset_model_y: [0.5, -0.5, 0.0, 0.0, 0.0, 0.0]
+    score_estimation:
+      # Converged param type
+      # 0=TRANSFORM_PROBABILITY, 1=NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD
+      converged_param_type: 1
 
-    # Regularization switch
-    regularization_enabled: false
+      # If converged_param_type is 0
+      # Threshold for deciding whether to trust the estimation result
+      converged_param_transform_probability: 3.0
 
-    # Regularization scale factor
-    regularization_scale_factor: 0.01
+      # If converged_param_type is 1
+      # Threshold for deciding whether to trust the estimation result
+      converged_param_nearest_voxel_transformation_likelihood: 2.3
 
-    # Dynamic map loading distance
-    dynamic_map_loading_update_distance: 20.0
+      # Scan matching score based on no ground LiDAR scan
+      no_ground_points:
+        enable: false
 
-    # Dynamic map loading loading radius
-    dynamic_map_loading_map_radius: 150.0
+        # If lidar_point.z - base_link.z <= this threshold , the point will be removed
+        z_margin_for_ground_removal: 0.8
 
-    # Radius of input LiDAR range (used for diagnostics of dynamic map loading)
-    lidar_radius: 100.0
 
-    # A flag for using scan matching score based on no ground LiDAR scan
-    estimate_scores_by_no_ground_points: false
+    covariance:
+      # The covariance of output pose
+      # Note that this covariance matrix is empirically derived
+      output_pose_covariance:
+        [
+          0.0225, 0.0,   0.0,   0.0,      0.0,      0.0,
+          0.0,   0.0225, 0.0,   0.0,      0.0,      0.0,
+          0.0,   0.0,   0.0225, 0.0,      0.0,      0.0,
+          0.0,   0.0,   0.0,   0.000625, 0.0,      0.0,
+          0.0,   0.0,   0.0,   0.0,      0.000625, 0.0,
+          0.0,   0.0,   0.0,   0.0,      0.0,      0.000625,
+        ]
 
-    # If lidar_point.z - base_link.z <= this threshold , the point will be removed
-    z_margin_for_ground_removal: 0.8
+      # 2D Real-time covariance estimation with multiple searches (output_pose_covariance is the minimum value)
+      covariance_estimation:
+        enable: false
+
+        # Offset arrangement in covariance estimation [m]
+        # initial_pose_offset_model_x & initial_pose_offset_model_y must have the same number of elements.
+        initial_pose_offset_model_x: [0.0, 0.0, 0.5, -0.5, 1.0, -1.0]
+        initial_pose_offset_model_y: [0.5, -0.5, 0.0, 0.0, 0.0, 0.0]
+
+
+    dynamic_map_loading:
+      # Dynamic map loading distance
+      update_distance: 20.0
+
+      # Dynamic map loading loading radius
+      map_radius: 150.0
+
+      # Radius of input LiDAR range (used for diagnostics of dynamic map loading)
+      lidar_radius: 100.0

@@ -16,6 +16,7 @@
 #define NDT_SCAN_MATCHER__MAP_UPDATE_MODULE_HPP_
 
 #include "localization_util/util_func.hpp"
+#include "ndt_scan_matcher/hyper_parameters.hpp"
 #include "ndt_scan_matcher/particle.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -47,7 +48,8 @@ class MapUpdateModule
 public:
   MapUpdateModule(
     rclcpp::Node * node, std::mutex * ndt_ptr_mutex,
-    std::shared_ptr<NormalDistributionsTransform> ndt_ptr);
+    std::shared_ptr<NormalDistributionsTransform> ndt_ptr,
+    HyperParameters::DynamicMapLoading param);
 
 private:
   friend class NDTScanMatcher;
@@ -70,9 +72,8 @@ private:
   rclcpp::Clock::SharedPtr clock_;
 
   std::optional<geometry_msgs::msg::Point> last_update_position_ = std::nullopt;
-  const double dynamic_map_loading_update_distance_;
-  const double dynamic_map_loading_map_radius_;
-  const double lidar_radius_;
+
+  HyperParameters::DynamicMapLoading param_;
 };
 
 #endif  // NDT_SCAN_MATCHER__MAP_UPDATE_MODULE_HPP_

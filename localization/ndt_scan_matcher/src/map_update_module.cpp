@@ -16,16 +16,12 @@
 
 MapUpdateModule::MapUpdateModule(
   rclcpp::Node * node, std::mutex * ndt_ptr_mutex,
-  std::shared_ptr<NormalDistributionsTransform> ndt_ptr)
+  std::shared_ptr<NormalDistributionsTransform> ndt_ptr, HyperParameters::DynamicMapLoading param)
 : ndt_ptr_(std::move(ndt_ptr)),
   ndt_ptr_mutex_(ndt_ptr_mutex),
   logger_(node->get_logger()),
   clock_(node->get_clock()),
-  dynamic_map_loading_update_distance_(
-    node->declare_parameter<double>("dynamic_map_loading_update_distance")),
-  dynamic_map_loading_map_radius_(
-    node->declare_parameter<double>("dynamic_map_loading_map_radius")),
-  lidar_radius_(node->declare_parameter<double>("lidar_radius"))
+  param_(param)
 {
   loaded_pcd_pub_ = node->create_publisher<sensor_msgs::msg::PointCloud2>(
     "debug/loaded_pointcloud_map", rclcpp::QoS{1}.transient_local());
@@ -42,10 +38,10 @@ bool MapUpdateModule::should_update_map(const geometry_msgs::msg::Point & positi
   const double dx = position.x - last_update_position_.value().x;
   const double dy = position.y - last_update_position_.value().y;
   const double distance = std::hypot(dx, dy);
-  if (distance + lidar_radius_ > dynamic_map_loading_map_radius_) {
+  if (distance + param_.lidar_radius > param_.map_radius) {
     RCLCPP_ERROR_STREAM_THROTTLE(logger_, *clock_, 1000, "Dynamic map loading is not keeping up.");
   }
-  return distance > dynamic_map_loading_update_distance_;
+  return distance > param_.update_distance;
 }
 
 void MapUpdateModule::update_map(const geometry_msgs::msg::Point & position)
@@ -53,7 +49,7 @@ void MapUpdateModule::update_map(const geometry_msgs::msg::Point & position)
   auto request = std::make_shared<autoware_map_msgs::srv::GetDifferentialPointCloudMap::Request>();
   request->area.center_x = static_cast<float>(position.x);
   request->area.center_y = static_cast<float>(position.y);
-  request->area.radius = static_cast<float>(dynamic_map_loading_map_radius_);
+  request->area.radius = static_cast<float>(param_.map_radius);
   request->cached_ids = ndt_ptr_->getCurrentMapIDs();
 
   while (!pcd_loader_client_->wait_for_service(std::chrono::seconds(1)) && rclcpp::ok()) {
