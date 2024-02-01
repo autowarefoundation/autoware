@@ -1,0 +1,6 @@
+/**:
+  ros__parameters:
+    update_rate_hz: 20.0
+    use_twist_compensation: true
+    use_twist_yaw_compensation: false
+    static_object_speed_threshold: 1.0
