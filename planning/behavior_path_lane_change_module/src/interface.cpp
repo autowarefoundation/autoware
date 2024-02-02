@@ -297,29 +297,6 @@ bool LaneChangeInterface::canTransitFailureState()
   return false;
 }
 
-bool LaneChangeInterface::canTransitIdleToRunningState()
-{
-  updateDebugMarker();
-
-  auto log_debug_throttled = [&](std::string_view message) -> void {
-    RCLCPP_DEBUG(getLogger(), "%s", message.data());
-  };
-
-  log_debug_throttled(__func__);
-
-  if (!isActivated() || isWaitingApproval()) {
-    if (module_type_->specialRequiredCheck()) {
-      return true;
-    }
-    log_debug_throttled("Module is idling.");
-    return false;
-  }
-
-  log_debug_throttled("Can lane change safely. Executing lane change.");
-  module_type_->toNormalState();
-  return true;
-}
-
 void LaneChangeInterface::updateDebugMarker() const
 {
   if (!parameters_->publish_debug_marker) {

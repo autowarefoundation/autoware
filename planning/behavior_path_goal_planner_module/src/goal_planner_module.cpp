@@ -1863,6 +1863,9 @@ void GoalPlannerModule::updateSafetyCheckTargetObjectsData(
 
 std::pair<bool, bool> GoalPlannerModule::isSafePath() const
 {
+  if (!thread_safe_data_.get_pull_over_path()) {
+    return {false, false};
+  }
   const auto pull_over_path = thread_safe_data_.get_pull_over_path()->getCurrentPath();
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const double current_velocity = std::hypot(

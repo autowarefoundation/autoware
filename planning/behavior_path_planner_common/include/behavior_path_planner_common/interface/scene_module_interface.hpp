@@ -373,13 +373,10 @@ private:
       RCLCPP_DEBUG(getLogger(), "%s", message.data());
     };
     if (current_state_ == ModuleStatus::IDLE) {
-      if (canTransitIdleToRunningState()) {
-        log_debug_throttled("transiting from IDLE to RUNNING");
-        return ModuleStatus::RUNNING;
-      }
-
-      log_debug_throttled("transiting from IDLE to IDLE");
-      return ModuleStatus::IDLE;
+      auto init_state = setInitState();
+      RCLCPP_DEBUG(
+        getLogger(), "transiting from IDLE to %s", magic_enum::enum_name(init_state).data());
+      return init_state;
     }
 
     if (current_state_ == ModuleStatus::RUNNING) {
@@ -460,9 +457,9 @@ protected:
   virtual bool canTransitFailureState() = 0;
 
   /**
-   * @brief State transition condition IDLE -> RUNNING
+   * @brief Explicitly set the initial state
    */
-  virtual bool canTransitIdleToRunningState() = 0;
+  virtual ModuleStatus setInitState() const { return ModuleStatus::RUNNING; }
 
   /**
    * @brief Get candidate path. This information is used for external judgement.

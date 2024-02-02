@@ -356,7 +356,6 @@ private:
   // If terminating it, it may switch to lane following and could generate an inappropriate path.
   bool canTransitSuccessState() override { return false; }
   bool canTransitFailureState() override { return false; }
-  bool canTransitIdleToRunningState() override { return true; }
 
   mutable StartGoalPlannerData goal_planner_data_;
 
