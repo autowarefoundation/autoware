@@ -201,7 +201,7 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
             measurement_object.kinematics.pose_with_covariance.pose.position,
             tracked_object.kinematics.pose_with_covariance.pose.position,
             getXYCovariance(tracked_object.kinematics.pose_with_covariance));
-          if (2.448 /*95%*/ <= mahalanobis_dist) passed_gate = false;
+          if (3.035 /*99%*/ <= mahalanobis_dist) passed_gate = false;
         }
         // 2d iou gate
         if (passed_gate) {
