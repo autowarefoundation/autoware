@@ -111,7 +111,7 @@ visualization_msgs::msg::MarkerArray createPoseMarkerArray(
   return msg;
 }
 
-visualization_msgs::msg::MarkerArray createLineMarkerArray(
+visualization_msgs::msg::MarkerArray createArrowLineMarkerArray(
   const geometry_msgs::msg::Point & point_start, const geometry_msgs::msg::Point & point_end,
   const std::string & ns, const int64_t id, const double r, const double g, const double b)
 {
@@ -129,6 +129,28 @@ visualization_msgs::msg::MarkerArray createLineMarkerArray(
   arrow.y = 1.0;
   arrow.z = 1.0;
   marker.scale = arrow;
+  marker.color = createMarkerColor(r, g, b, 0.999);
+  marker.points.push_back(point_start);
+  marker.points.push_back(point_end);
+
+  msg.markers.push_back(marker);
+  return msg;
+}
+
+visualization_msgs::msg::MarkerArray createLineMarkerArray(
+  const geometry_msgs::msg::Point & point_start, const geometry_msgs::msg::Point & point_end,
+  const std::string & ns, const int64_t id, const double r, const double g, const double b)
+{
+  visualization_msgs::msg::MarkerArray msg;
+
+  visualization_msgs::msg::Marker marker;
+  marker.header.frame_id = "map";
+  marker.ns = ns + "_line";
+  marker.id = id;
+  marker.lifetime = rclcpp::Duration::from_seconds(0.3);
+  marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
+  marker.action = visualization_msgs::msg::Marker::ADD;
+  marker.scale.x = 0.1;
   marker.color = createMarkerColor(r, g, b, 0.999);
   marker.points.push_back(point_start);
   marker.points.push_back(point_end);
@@ -362,8 +384,25 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
   if (debug_data_.nearest_occlusion_projection) {
     const auto [point_start, point_end] = debug_data_.nearest_occlusion_projection.value();
     appendMarkerArray(
-      ::createLineMarkerArray(
+      ::createArrowLineMarkerArray(
         point_start, point_end, "nearest_occlusion_projection", lane_id_, 0.5, 0.5, 0.0),
+      &debug_marker_array, now);
+  }
+
+  if (debug_data_.traffic_light_observation) {
+    const auto GREEN = autoware_perception_msgs::msg::TrafficSignalElement::GREEN;
+    const auto YELLOW = autoware_perception_msgs::msg::TrafficSignalElement::AMBER;
+
+    const auto [ego, tl_point, id, color] = debug_data_.traffic_light_observation.value();
+    geometry_msgs::msg::Point tl_point_point;
+    tl_point_point.x = tl_point.x();
+    tl_point_point.y = tl_point.y();
+    tl_point_point.z = tl_point.z();
+    const auto tl_color = (color == GREEN) ? green : (color == YELLOW ? yellow : red);
+    const auto [r, g, b] = tl_color;
+    appendMarkerArray(
+      ::createLineMarkerArray(
+        ego.position, tl_point_point, "intersection_traffic_light", lane_id_, r, g, b),
       &debug_marker_array, now);
   }
   return debug_marker_array;

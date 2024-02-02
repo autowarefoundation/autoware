@@ -258,19 +258,27 @@ IntersectionModule::prepareIntersectionData(const bool is_prioritized, PathWithL
       planner_data_->occupancy_grid->info.resolution);
   }
 
-  const bool is_green_solid_on = isGreenSolidOn();
-  if (is_green_solid_on && !initial_green_light_observed_time_) {
-    const auto assigned_lane_begin_point = assigned_lanelet.centerline().front();
-    const bool approached_assigned_lane =
-      motion_utils::calcSignedArcLength(
-        path->points, closest_idx,
-        tier4_autoware_utils::createPoint(
-          assigned_lane_begin_point.x(), assigned_lane_begin_point.y(),
-          assigned_lane_begin_point.z())) <
-      planner_param_.collision_detection.yield_on_green_traffic_light
-        .distance_to_assigned_lanelet_start;
-    if (approached_assigned_lane) {
-      initial_green_light_observed_time_ = clock_->now();
+  // ==========================================================================================
+  // update traffic light information
+  // updateTrafficSignalObservation() must be called at first to because other traffic signal
+  // fuctions use last_valid_observation_
+  // ==========================================================================================
+  if (has_traffic_light_) {
+    updateTrafficSignalObservation();
+    const bool is_green_solid_on = isGreenSolidOn();
+    if (is_green_solid_on && !initial_green_light_observed_time_) {
+      const auto assigned_lane_begin_point = assigned_lanelet.centerline().front();
+      const bool approached_assigned_lane =
+        motion_utils::calcSignedArcLength(
+          path->points, closest_idx,
+          tier4_autoware_utils::createPoint(
+            assigned_lane_begin_point.x(), assigned_lane_begin_point.y(),
+            assigned_lane_begin_point.z())) <
+        planner_param_.collision_detection.yield_on_green_traffic_light
+          .distance_to_assigned_lanelet_start;
+      if (approached_assigned_lane) {
+        initial_green_light_observed_time_ = clock_->now();
+      }
     }
   }
 

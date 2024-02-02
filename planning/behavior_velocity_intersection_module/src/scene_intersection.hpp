@@ -209,6 +209,9 @@ public:
     std::optional<std::pair<geometry_msgs::msg::Point, geometry_msgs::msg::Point>>
       nearest_occlusion_projection{std::nullopt};
     std::optional<double> static_occlusion_with_traffic_light_timeout{std::nullopt};
+
+    std::optional<std::tuple<geometry_msgs::msg::Pose, lanelet::ConstPoint3d, lanelet::Id, uint8_t>>
+      traffic_light_observation{std::nullopt};
   };
 
   using TimeDistanceArray = std::vector<std::pair<double /* time*/, double /* distance*/>>;
@@ -393,6 +396,20 @@ private:
    ***********************************************************
    ***********************************************************
    ***********************************************************
+   * @defgroup collision-variables [var] collision detection
+   * @{
+   */
+  //! save the last UNKNOWN traffic light information of this intersection(keep even if the info got
+  //! unavailable)
+  std::optional<std::pair<lanelet::Id, lanelet::ConstPoint3d>> tl_id_and_point_;
+  std::optional<TrafficSignalStamped> last_tl_valid_observation_{std::nullopt};
+  /** @} */
+
+private:
+  /**
+   ***********************************************************
+   ***********************************************************
+   ***********************************************************
    * @defgroup occlusion-variables [var] occlusion detection variables
    * @{
    */
@@ -556,6 +573,13 @@ private:
    * @brief find TrafficPrioritizedLevel
    */
   TrafficPrioritizedLevel getTrafficPrioritizedLevel() const;
+
+  /**
+   * @brief update the valid traffic signal information if still available, otherwise keep last
+   * observation
+   */
+  void updateTrafficSignalObservation();
+
   /** @} */
 
 private:

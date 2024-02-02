@@ -18,6 +18,7 @@
 
 #include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for toGeomPoly
 #include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <lanelet2_extension/regulatory_elements/autoware_traffic_light.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>  // for toPolygon2d
@@ -1143,25 +1144,11 @@ void IntersectionModule::reactRTCApproval(
 bool IntersectionModule::isGreenSolidOn() const
 {
   using TrafficSignalElement = autoware_perception_msgs::msg::TrafficSignalElement;
-  const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
-  const auto & lane = lanelet_map_ptr->laneletLayer.get(lane_id_);
 
-  std::optional<lanelet::Id> tl_id = std::nullopt;
-  for (auto && tl_reg_elem : lane.regulatoryElementsAs<lanelet::TrafficLight>()) {
-    tl_id = tl_reg_elem->id();
-    break;
-  }
-  if (!tl_id) {
-    // this lane has no traffic light
+  if (!last_tl_valid_observation_) {
     return false;
   }
-  const auto tl_info_opt = planner_data_->getTrafficSignal(
-    tl_id.value(), true /* traffic light module keeps last observation*/);
-  if (!tl_info_opt) {
-    // the info of this traffic light is not available
-    return false;
-  }
-  const auto & tl_info = tl_info_opt.value();
+  const auto & tl_info = last_tl_valid_observation_.value();
   for (auto && tl_light : tl_info.signal.elements) {
     if (
       tl_light.color == TrafficSignalElement::GREEN &&
@@ -1176,38 +1163,88 @@ IntersectionModule::TrafficPrioritizedLevel IntersectionModule::getTrafficPriori
 {
   using TrafficSignalElement = autoware_perception_msgs::msg::TrafficSignalElement;
 
+  auto corresponding_arrow = [&](const TrafficSignalElement & element) {
+    if (turn_direction_ == "straight" && element.shape == TrafficSignalElement::UP_ARROW) {
+      return true;
+    }
+    if (turn_direction_ == "left" && element.shape == TrafficSignalElement::LEFT_ARROW) {
+      return true;
+    }
+    if (turn_direction_ == "right" && element.shape == TrafficSignalElement::RIGHT_ARROW) {
+      return true;
+    }
+    return false;
+  };
+
+  // ==========================================================================================
+  // if no traffic light information has been available, it is UNKNOWN state which is treated as
+  // NOT_PRIORITIZED
+  //
+  // if there has been any information available in the past more than once, the last valid
+  // information is kept and used for planning
+  // ==========================================================================================
+  auto level = TrafficPrioritizedLevel::NOT_PRIORITIZED;
+  if (last_tl_valid_observation_) {
+    auto color = TrafficSignalElement::GREEN;
+    const auto & tl_info = last_tl_valid_observation_.value();
+    bool has_amber_signal{false};
+    for (auto && tl_light : tl_info.signal.elements) {
+      if (
+        tl_light.color == TrafficSignalElement::AMBER &&
+        tl_light.shape == TrafficSignalElement::CIRCLE) {
+        has_amber_signal = true;
+      }
+      if (
+        (tl_light.color == TrafficSignalElement::RED &&
+         tl_light.shape == TrafficSignalElement::CIRCLE) ||
+        (tl_light.color == TrafficSignalElement::GREEN && corresponding_arrow(tl_light))) {
+        // NOTE: Return here since the red signal has the highest priority.
+        level = TrafficPrioritizedLevel::FULLY_PRIORITIZED;
+        color = TrafficSignalElement::RED;
+        break;
+      }
+    }
+    if (has_amber_signal) {
+      level = TrafficPrioritizedLevel::PARTIALLY_PRIORITIZED;
+      color = TrafficSignalElement::AMBER;
+    }
+    if (tl_id_and_point_) {
+      const auto [tl_id, point] = tl_id_and_point_.value();
+      debug_data_.traffic_light_observation =
+        std::make_tuple(planner_data_->current_odometry->pose, point, tl_id, color);
+    }
+  }
+  return level;
+}
+
+void IntersectionModule::updateTrafficSignalObservation()
+{
   const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
   const auto & lane = lanelet_map_ptr->laneletLayer.get(lane_id_);
 
-  std::optional<lanelet::Id> tl_id = std::nullopt;
-  for (auto && tl_reg_elem : lane.regulatoryElementsAs<lanelet::TrafficLight>()) {
-    tl_id = tl_reg_elem->id();
-    break;
+  if (!tl_id_and_point_) {
+    for (auto && tl_reg_elem :
+         lane.regulatoryElementsAs<lanelet::autoware::AutowareTrafficLight>()) {
+      for (const auto & ls : tl_reg_elem->lightBulbs()) {
+        if (ls.hasAttribute("traffic_light_id")) {
+          tl_id_and_point_ = std::make_pair(tl_reg_elem->id(), ls.front());
+          break;
+        }
+      }
+    }
   }
-  if (!tl_id) {
+  if (!tl_id_and_point_) {
     // this lane has no traffic light
-    return TrafficPrioritizedLevel::NOT_PRIORITIZED;
+    return;
   }
-  const auto tl_info_opt = planner_data_->getTrafficSignal(
-    tl_id.value(), true /* traffic light module keeps last observation*/);
+  const auto [tl_id, point] = tl_id_and_point_.value();
+  const auto tl_info_opt =
+    planner_data_->getTrafficSignal(tl_id, true /* traffic light module keeps last observation*/);
   if (!tl_info_opt) {
-    return TrafficPrioritizedLevel::NOT_PRIORITIZED;
+    // the info of this traffic light is not available
+    return;
   }
-  const auto & tl_info = tl_info_opt.value();
-  bool has_amber_signal{false};
-  for (auto && tl_light : tl_info.signal.elements) {
-    if (tl_light.color == TrafficSignalElement::AMBER) {
-      has_amber_signal = true;
-    }
-    if (tl_light.color == TrafficSignalElement::RED) {
-      // NOTE: Return here since the red signal has the highest priority.
-      return TrafficPrioritizedLevel::FULLY_PRIORITIZED;
-    }
-  }
-  if (has_amber_signal) {
-    return TrafficPrioritizedLevel::PARTIALLY_PRIORITIZED;
-  }
-  return TrafficPrioritizedLevel::NOT_PRIORITIZED;
+  last_tl_valid_observation_ = tl_info_opt.value();
 }
 
 IntersectionModule::PassJudgeStatus IntersectionModule::isOverPassJudgeLinesStatus(
