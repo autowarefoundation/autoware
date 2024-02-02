@@ -74,6 +74,7 @@ void Lanelet2MapLoaderNode::on_map_projector_info(
   // load map from file
   const auto map = load_map(lanelet2_filename, *msg);
   if (!map) {
+    RCLCPP_ERROR(get_logger(), "Failed to load lanelet2_map. Not published.");
     return;
   }
 
@@ -87,6 +88,7 @@ void Lanelet2MapLoaderNode::on_map_projector_info(
   pub_map_bin_ =
     create_publisher<HADMapBin>("output/lanelet2_map", rclcpp::QoS{1}.transient_local());
   pub_map_bin_->publish(map_bin_msg);
+  RCLCPP_INFO(get_logger(), "Succeeded to load lanelet2_map. Map is published.");
 }
 
 lanelet::LaneletMapPtr Lanelet2MapLoaderNode::load_map(
@@ -104,6 +106,12 @@ lanelet::LaneletMapPtr Lanelet2MapLoaderNode::load_map(
   } else {
     const lanelet::projection::LocalProjector projector;
     const lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, projector, &errors);
+
+    if (!errors.empty()) {
+      for (const auto & error : errors) {
+        RCLCPP_ERROR_STREAM(rclcpp::get_logger("map_loader"), error);
+      }
+    }
 
     // overwrite local_x, local_y
     for (lanelet::Point3d point : map->pointLayer) {
