@@ -126,9 +126,13 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
   if (!first_conflicting_idx_opt) {
     return false;
   }
+  // ==========================================================================================
+  // first_conflicting_idx is calculated considering baselink2front already, so there is no need
+  // to subtract baselink2front/ds here
+  // ==========================================================================================
   const auto stopline_idx_ip = static_cast<size_t>(std::max<int>(
     0, static_cast<int>(first_conflicting_idx_opt.value()) -
-         static_cast<int>(baselink2front / planner_param_.path_interpolation_ds)));
+         static_cast<int>(planner_param_.stopline_margin / planner_param_.path_interpolation_ds)));
 
   const auto stopline_idx_opt = util::insertPointIndex(
     interpolated_path_info.path.points.at(stopline_idx_ip).point.pose, path,
