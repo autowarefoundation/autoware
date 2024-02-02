@@ -3,12 +3,14 @@
   <arg name="param_path" default="$(find-pkg-share map_based_prediction)/config/map_based_prediction.param.yaml"/>
 
   <arg name="vector_map_topic" default="/map/vector_map"/>
+  <arg name="traffic_signals_topic" default="/perception/traffic_light_recognition/traffic_signals"/>
   <arg name="output_topic" default="objects"/>
   <arg name="input_topic" default="/perception/object_recognition/tracking/objects"/>
 
   <node pkg="map_based_prediction" exec="map_based_prediction" name="map_based_prediction" output="screen">
     <param from="$(var param_path)"/>
     <remap from="/vector_map" to="$(var vector_map_topic)"/>
+    <remap from="/traffic_signals" to="$(var traffic_signals_topic)"/>
     <remap from="~/output/objects" to="$(var output_topic)"/>
     <remap from="~/input/objects" to="$(var input_topic)"/>
   </node>
