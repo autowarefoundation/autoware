@@ -2,20 +2,9 @@ name: build-and-test-differential
 
 on:
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - labeled
 
 jobs:
-  prevent-no-label-execution:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/prevent-no-label-execution.yaml@v1
-    with:
-      label: tag:run-build-and-test-differential
-
   build-and-test-differential:
-    needs: prevent-no-label-execution
-    if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
