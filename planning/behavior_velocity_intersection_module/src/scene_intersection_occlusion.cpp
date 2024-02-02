@@ -39,12 +39,28 @@ IntersectionModule::getOcclusionStatus(
   const auto & intersection_lanelets = intersection_lanelets_.value();
   const auto & occlusion_attention_lanelets = intersection_lanelets.occlusion_attention();
 
-  const bool is_amber_or_red =
+  // ==========================================================================================
+  // for the convenience of Psim user, this module ignores occlusion if there has not been any
+  // information published for the associated traffic light, and only runs collision checking on
+  // that intersection lane.
+  //
+  // this is because Psim-users/scenario-files do not set traffic light information perfectly
+  // most of the times, and they just set bare minimum traffic information only for traffic lights
+  // they are interested in or want to test.
+  //
+  // no_tl_info_ever variable is defined for that purpose. if there has been any
+  // information published for the associated traffic light in the real world through perception/V2I
+  // or in the simulation, then it should be kept in last_tl_valid_observation_ and this variable
+  // becomes false
+  // ==========================================================================================
+  const bool no_tl_info_ever = !last_tl_valid_observation_.has_value();
+  const bool is_amber_or_red_or_no_tl_info_ever =
     (traffic_prioritized_level == TrafficPrioritizedLevel::PARTIALLY_PRIORITIZED) ||
-    (traffic_prioritized_level == TrafficPrioritizedLevel::FULLY_PRIORITIZED);
+    (traffic_prioritized_level == TrafficPrioritizedLevel::FULLY_PRIORITIZED) || no_tl_info_ever;
   // check occlusion on detection lane
   auto occlusion_status =
-    (planner_param_.occlusion.enable && !occlusion_attention_lanelets.empty() && !is_amber_or_red)
+    (planner_param_.occlusion.enable && !occlusion_attention_lanelets.empty() &&
+     !is_amber_or_red_or_no_tl_info_ever)
       ? detectOcclusion(interpolated_path_info)
       : OcclusionType::NOT_OCCLUDED;
   occlusion_stop_state_machine_.setStateWithMarginTime(
