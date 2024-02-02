@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    map_projector_info_path: $(var map_projector_info_path)
+    lanelet2_map_path: $(var lanelet2_map_path)

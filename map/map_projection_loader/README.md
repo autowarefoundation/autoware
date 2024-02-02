@@ -82,11 +82,10 @@ map_origin:
 
 ## Published Topics
 
-- ~/map_projector_info (tier4_map_msgs/MapProjectorInfo) : Topic for defining map projector information
+- `~/map_projector_info` (tier4_map_msgs/MapProjectorInfo) : This topic shows the definition of map projector information
 
 ## Parameters
 
-| Name                    | Type        | Description                                                                      |
-| :---------------------- | :---------- | :------------------------------------------------------------------------------- |
-| map_projector_info_path | std::string | A path to map_projector_info.yaml (used by default)                              |
-| lanelet2_map_path       | std::string | A path to lanelet2 map (used only when `map_projector_info_path` does not exist) |
+Note that these parameters are assumed to be passed from launch arguments, and it is not recommended to directly write them in `map_projection_loader.param.yaml`.
+
+{{ json_to_markdown("map/map_projection_loader/schema/map_projection_loader.schema.json") }}
