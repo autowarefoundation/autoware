@@ -92,12 +92,13 @@ public:
    * @param [in] acc_time_constant time constant for 1D model of accel dynamics
    * @param [in] steer_delay time delay for steering command [s]
    * @param [in] steer_time_constant time constant for 1D model of steering dynamics
+   * @param [in] steer_bias steering bias [rad]
    * @param [in] path path to csv file for acceleration conversion map
    */
   SimModelDelaySteerMapAccGeared(
     double vx_lim, double steer_lim, double vx_rate_lim, double steer_rate_lim, double wheelbase,
     double dt, double acc_delay, double acc_time_constant, double steer_delay,
-    double steer_time_constant, std::string path);
+    double steer_time_constant, double steer_bias, std::string path);
 
   /**
    * @brief default destructor
@@ -135,6 +136,7 @@ private:
   const double acc_time_constant_;        //!< @brief time constant for accel dynamics
   const double steer_delay_;              //!< @brief time delay for steering command [s]
   const double steer_time_constant_;      //!< @brief time constant for steering dynamics
+  const double steer_bias_;               //!< @brief steering angle bias [rad]
   const std::string path_;                //!< @brief conversion map path
 
   /**

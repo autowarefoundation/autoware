@@ -40,14 +40,15 @@ public:
    * @param [in] steer_delay time delay for steering command [s]
    * @param [in] steer_time_constant time constant for 1D model of steering dynamics
    * @param [in] steer_dead_band dead band for steering angle [rad]
+   * @param [in] steer_bias steering bias [rad]
    * @param [in] debug_acc_scaling_factor scaling factor for accel command
    * @param [in] debug_steer_scaling_factor scaling factor for steering command
    */
   SimModelDelaySteerAccGeared(
     double vx_lim, double steer_lim, double vx_rate_lim, double steer_rate_lim, double wheelbase,
     double dt, double acc_delay, double acc_time_constant, double steer_delay,
-    double steer_time_constant, double steer_dead_band, double debug_acc_scaling_factor,
-    double debug_steer_scaling_factor);
+    double steer_time_constant, double steer_dead_band, double steer_bias,
+    double debug_acc_scaling_factor, double debug_steer_scaling_factor);
 
   /**
    * @brief default destructor
@@ -84,6 +85,7 @@ private:
   const double steer_delay_;                 //!< @brief time delay for steering command [s]
   const double steer_time_constant_;         //!< @brief time constant for steering dynamics
   const double steer_dead_band_;             //!< @brief dead band for steering angle [rad]
+  const double steer_bias_;                  //!< @brief steering angle bias [rad]
   const double debug_acc_scaling_factor_;    //!< @brief scaling factor for accel command
   const double debug_steer_scaling_factor_;  //!< @brief scaling factor for steering command
 

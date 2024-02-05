@@ -19,7 +19,7 @@
 SimModelDelaySteerVel::SimModelDelaySteerVel(
   double vx_lim, double steer_lim, double vx_rate_lim, double steer_rate_lim, double wheelbase,
   double dt, double vx_delay, double vx_time_constant, double steer_delay,
-  double steer_time_constant, double steer_dead_band)
+  double steer_time_constant, double steer_dead_band, double steer_bias)
 : SimModelInterface(5 /* dim x */, 2 /* dim u */),
   MIN_TIME_CONSTANT(0.03),
   vx_lim_(vx_lim),
@@ -31,7 +31,8 @@ SimModelDelaySteerVel::SimModelDelaySteerVel(
   vx_time_constant_(std::max(vx_time_constant, MIN_TIME_CONSTANT)),
   steer_delay_(steer_delay),
   steer_time_constant_(std::max(steer_time_constant, MIN_TIME_CONSTANT)),
-  steer_dead_band_(steer_dead_band)
+  steer_dead_band_(steer_dead_band),
+  steer_bias_(steer_bias)
 {
   initializeInputQueue(dt);
 }
@@ -66,7 +67,7 @@ double SimModelDelaySteerVel::getWz()
 }
 double SimModelDelaySteerVel::getSteer()
 {
-  return state_(IDX::STEER);
+  return state_(IDX::STEER) + steer_bias_;
 }
 void SimModelDelaySteerVel::update(const double & dt)
 {
@@ -109,7 +110,7 @@ Eigen::VectorXd SimModelDelaySteerVel::calcModel(
   const double delay_vx_des = sat(delay_input_vx, vx_lim_, -vx_lim_);
   const double vx_rate = sat(-(vx - delay_vx_des) / vx_time_constant_, vx_rate_lim_, -vx_rate_lim_);
   const double delay_steer_des = sat(delay_input_steer, steer_lim_, -steer_lim_);
-  const double steer_diff = steer - delay_steer_des;
+  const double steer_diff = getSteer() - delay_steer_des;
   const double steer_diff_with_dead_band = std::invoke([&]() {
     if (steer_diff > steer_dead_band_) {
       return steer_diff - steer_dead_band_;

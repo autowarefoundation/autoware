@@ -43,11 +43,12 @@ public:
    * @param [in] steer_delay time delay for steering command [s]
    * @param [in] steer_time_constant time constant for 1D model of steering dynamics
    * @param [in] steer_dead_band dead band for steering angle [rad]
+   * @param [in] steer_bias steering bias [rad]
    */
   SimModelDelaySteerVel(
     double vx_lim, double steer_lim, double vx_rate_lim, double steer_rate_lim, double wheelbase,
     double dt, double vx_delay, double vx_time_constant, double steer_delay,
-    double steer_time_constant, double steer_dead_band);
+    double steer_time_constant, double steer_dead_band, double steer_bias);
 
   /**
    * @brief destructor
@@ -86,6 +87,7 @@ private:
   const double
     steer_time_constant_;  //!< @brief time constant for 1D model of angular-velocity dynamics
   const double steer_dead_band_;  //!< @brief dead band for steering angle [rad]
+  const double steer_bias_;       //!< @brief steering angle bias [rad]
 
   /**
    * @brief set queue buffer for input command

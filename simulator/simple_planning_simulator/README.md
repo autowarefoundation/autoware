@@ -40,18 +40,17 @@ The purpose of this simulator is for the integration test of planning and contro
 
 ### Common Parameters
 
-| Name                   | Type   | Description                                                                                                                                | Default value        |
-| :--------------------- | :----- | :----------------------------------------------------------------------------------------------------------------------------------------- | :------------------- |
-| simulated_frame_id     | string | set to the child_frame_id in output tf                                                                                                     | "base_link"          |
-| origin_frame_id        | string | set to the frame_id in output tf                                                                                                           | "odom"               |
-| initialize_source      | string | If "ORIGIN", the initial pose is set at (0,0,0). If "INITIAL_POSE_TOPIC", node will wait until the `input/initialpose` topic is published. | "INITIAL_POSE_TOPIC" |
-| add_measurement_noise  | bool   | If true, the Gaussian noise is added to the simulated results.                                                                             | true                 |
-| pos_noise_stddev       | double | Standard deviation for position noise                                                                                                      | 0.01                 |
-| rpy_noise_stddev       | double | Standard deviation for Euler angle noise                                                                                                   | 0.0001               |
-| vel_noise_stddev       | double | Standard deviation for longitudinal velocity noise                                                                                         | 0.0                  |
-| angvel_noise_stddev    | double | Standard deviation for angular velocity noise                                                                                              | 0.0                  |
-| steer_noise_stddev     | double | Standard deviation for steering angle noise                                                                                                | 0.0001               |
-| measurement_steer_bias | double | Measurement bias for steering angle                                                                                                        | 0.0                  |
+| Name                  | Type   | Description                                                                                                                                | Default value        |
+| :-------------------- | :----- | :----------------------------------------------------------------------------------------------------------------------------------------- | :------------------- |
+| simulated_frame_id    | string | set to the child_frame_id in output tf                                                                                                     | "base_link"          |
+| origin_frame_id       | string | set to the frame_id in output tf                                                                                                           | "odom"               |
+| initialize_source     | string | If "ORIGIN", the initial pose is set at (0,0,0). If "INITIAL_POSE_TOPIC", node will wait until the `input/initialpose` topic is published. | "INITIAL_POSE_TOPIC" |
+| add_measurement_noise | bool   | If true, the Gaussian noise is added to the simulated results.                                                                             | true                 |
+| pos_noise_stddev      | double | Standard deviation for position noise                                                                                                      | 0.01                 |
+| rpy_noise_stddev      | double | Standard deviation for Euler angle noise                                                                                                   | 0.0001               |
+| vel_noise_stddev      | double | Standard deviation for longitudinal velocity noise                                                                                         | 0.0                  |
+| angvel_noise_stddev   | double | Standard deviation for angular velocity noise                                                                                              | 0.0                  |
+| steer_noise_stddev    | double | Standard deviation for steering angle noise                                                                                                | 0.0001               |
 
 ### Vehicle Model Parameters
 
@@ -82,6 +81,7 @@ The table below shows which models correspond to what parameters. The model name
 | vel_rate_lim               | double | limit of acceleration                                                                                       | x      | x      | x        | o      | o      | o        | o            | 7.0           | [m/ss]  |
 | steer_lim                  | double | limit of steering angle                                                                                     | x      | x      | x        | o      | o      | o        | o            | 1.0           | [rad]   |
 | steer_rate_lim             | double | limit of steering angle change rate                                                                         | x      | x      | x        | o      | o      | o        | o            | 5.0           | [rad/s] |
+| steer_bias                 | double | bias for steering angle                                                                                     | x      | x      | x        | o      | o      | o        | o            | 0.0           | [rad]   |
 | debug_acc_scaling_factor   | double | scaling factor for accel command                                                                            | x      | x      | x        | x      | o      | o        | x            | 1.0           | [-]     |
 | debug_steer_scaling_factor | double | scaling factor for steer command                                                                            | x      | x      | x        | x      | o      | o        | x            | 1.0           | [-]     |
 | acceleration_map_path      | string | path to csv file for acceleration map which converts velocity and ideal acceleration to actual acceleration | x      | x      | x        | x      | x      | x        | o            | -             | [-]     |
