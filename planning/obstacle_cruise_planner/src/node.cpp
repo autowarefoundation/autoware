@@ -54,20 +54,15 @@ std::optional<T> getObstacleFromUuid(
   return *itr;
 }
 
-bool isFrontObstacle(
+std::optional<double> calcDistanceToFrontVehicle(
   const std::vector<TrajectoryPoint> & traj_points, const size_t ego_idx,
   const geometry_msgs::msg::Point & obstacle_pos)
 {
   const size_t obstacle_idx = motion_utils::findNearestIndex(traj_points, obstacle_pos);
-
-  const double ego_to_obstacle_distance =
+  const auto ego_to_obstacle_distance =
     motion_utils::calcSignedArcLength(traj_points, ego_idx, obstacle_idx);
-
-  if (ego_to_obstacle_distance < 0) {
-    return false;
-  }
-
-  return true;
+  if (ego_to_obstacle_distance < 0.0) return std::nullopt;
+  return ego_to_obstacle_distance;
 }
 
 PredictedPath resampleHighestConfidencePredictedPath(
@@ -254,6 +249,15 @@ ObstacleCruisePlannerNode::BehaviorDeterminationParam::BehaviorDeterminationPara
     node.declare_parameter<double>("behavior_determination.stop.max_lat_margin");
   max_lat_margin_for_cruise =
     node.declare_parameter<double>("behavior_determination.cruise.max_lat_margin");
+  enable_yield = node.declare_parameter<bool>("behavior_determination.cruise.yield.enable_yield");
+  yield_lat_distance_threshold =
+    node.declare_parameter<double>("behavior_determination.cruise.yield.lat_distance_threshold");
+  max_lat_dist_between_obstacles = node.declare_parameter<double>(
+    "behavior_determination.cruise.yield.max_lat_dist_between_obstacles");
+  stopped_obstacle_velocity_threshold = node.declare_parameter<double>(
+    "behavior_determination.cruise.yield.stopped_obstacle_velocity_threshold");
+  max_obstacles_collision_time = node.declare_parameter<double>(
+    "behavior_determination.cruise.yield.max_obstacles_collision_time");
   max_lat_margin_for_slow_down =
     node.declare_parameter<double>("behavior_determination.slow_down.max_lat_margin");
   lat_hysteresis_margin_for_slow_down =
@@ -309,6 +313,20 @@ void ObstacleCruisePlannerNode::BehaviorDeterminationParam::onParam(
     parameters, "behavior_determination.stop.max_lat_margin", max_lat_margin_for_stop);
   tier4_autoware_utils::updateParam<double>(
     parameters, "behavior_determination.cruise.max_lat_margin", max_lat_margin_for_cruise);
+  tier4_autoware_utils::updateParam<bool>(
+    parameters, "behavior_determination.cruise.yield.enable_yield", enable_yield);
+  tier4_autoware_utils::updateParam<double>(
+    parameters, "behavior_determination.cruise.yield.lat_distance_threshold",
+    yield_lat_distance_threshold);
+  tier4_autoware_utils::updateParam<double>(
+    parameters, "behavior_determination.cruise.yield.max_lat_dist_between_obstacles",
+    max_lat_dist_between_obstacles);
+  tier4_autoware_utils::updateParam<double>(
+    parameters, "behavior_determination.cruise.yield.stopped_obstacle_velocity_threshold",
+    stopped_obstacle_velocity_threshold);
+  tier4_autoware_utils::updateParam<double>(
+    parameters, "behavior_determination.cruise.yield.max_obstacles_collision_time",
+    max_obstacles_collision_time);
   tier4_autoware_utils::updateParam<double>(
     parameters, "behavior_determination.slow_down.max_lat_margin", max_lat_margin_for_slow_down);
   tier4_autoware_utils::updateParam<double>(
@@ -493,7 +511,7 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
   //    (3) not too far from trajectory
   const auto target_obstacles = convertToObstacles(traj_points);
 
-  // 2. Determine ego's behavior against each obstacle from stop, cruise and slow down.
+  //  2. Determine ego's behavior against each obstacle from stop, cruise and slow down.
   const auto & [stop_obstacles, cruise_obstacles, slow_down_obstacles] =
     determineEgoBehaviorAgainstObstacles(traj_points, target_obstacles);
 
@@ -590,6 +608,7 @@ std::vector<Obstacle> ObstacleCruisePlannerNode::convertToObstacles(
   stop_watch_.tic(__func__);
 
   const auto obj_stamp = rclcpp::Time(objects_ptr_->header.stamp);
+  const auto & p = behavior_determination_param_;
 
   std::vector<Obstacle> target_obstacles;
   for (const auto & predicted_object : objects_ptr_->objects) {
@@ -611,9 +630,9 @@ std::vector<Obstacle> ObstacleCruisePlannerNode::convertToObstacles(
 
     // 2. Check if the obstacle is in front of the ego.
     const size_t ego_idx = ego_nearest_param_.findIndex(traj_points, ego_odom_ptr_->pose.pose);
-    const bool is_front_obstacle =
-      isFrontObstacle(traj_points, ego_idx, current_obstacle_pose.pose.position);
-    if (!is_front_obstacle) {
+    const auto ego_to_obstacle_distance =
+      calcDistanceToFrontVehicle(traj_points, ego_idx, current_obstacle_pose.pose.position);
+    if (!ego_to_obstacle_distance) {
       RCLCPP_INFO_EXPRESSION(
         get_logger(), enable_debug_info_, "Ignore obstacle (%s) since it is not front obstacle.",
         object_id.c_str());
@@ -621,14 +640,15 @@ std::vector<Obstacle> ObstacleCruisePlannerNode::convertToObstacles(
     }
 
     // 3. Check if rough lateral distance is smaller than the threshold
+    const double lat_dist_from_obstacle_to_traj =
+      motion_utils::calcLateralOffset(traj_points, current_obstacle_pose.pose.position);
+
     const double min_lat_dist_to_traj_poly = [&]() {
-      const double lat_dist_from_obstacle_to_traj =
-        motion_utils::calcLateralOffset(traj_points, current_obstacle_pose.pose.position);
       const double obstacle_max_length = calcObstacleMaxLength(predicted_object.shape);
       return std::abs(lat_dist_from_obstacle_to_traj) - vehicle_info_.vehicle_width_m -
              obstacle_max_length;
     }();
-    const auto & p = behavior_determination_param_;
+
     const double max_lat_margin = std::max(
       std::max(p.max_lat_margin_for_stop, p.max_lat_margin_for_cruise),
       p.max_lat_margin_for_slow_down);
@@ -639,7 +659,9 @@ std::vector<Obstacle> ObstacleCruisePlannerNode::convertToObstacles(
       continue;
     }
 
-    const auto target_obstacle = Obstacle(obj_stamp, predicted_object, current_obstacle_pose.pose);
+    const auto target_obstacle = Obstacle(
+      obj_stamp, predicted_object, current_obstacle_pose.pose, ego_to_obstacle_distance.value(),
+      lat_dist_from_obstacle_to_traj);
     target_obstacles.push_back(target_obstacle);
   }
 
@@ -741,6 +763,23 @@ ObstacleCruisePlannerNode::determineEgoBehaviorAgainstObstacles(
       continue;
     }
   }
+  const auto & p = behavior_determination_param_;
+  if (p.enable_yield) {
+    const auto yield_obstacles = findYieldCruiseObstacles(obstacles, decimated_traj_points);
+    if (yield_obstacles) {
+      for (const auto & y : yield_obstacles.value()) {
+        // Check if there is no member with the same UUID in cruise_obstacles
+        auto it = std::find_if(
+          cruise_obstacles.begin(), cruise_obstacles.end(),
+          [&y](const auto & c) { return y.uuid == c.uuid; });
+
+        // If no matching UUID found, insert yield obstacle into cruise_obstacles
+        if (it == cruise_obstacles.end()) {
+          cruise_obstacles.push_back(y);
+        }
+      }
+    }
+  }
   slow_down_condition_counter_.removeCounterUnlessUpdated();
 
   // Check target obstacles' consistency
@@ -827,6 +866,137 @@ std::optional<CruiseObstacle> ObstacleCruisePlannerNode::createCruiseObstacle(
   const auto [tangent_vel, normal_vel] = projectObstacleVelocityToTrajectory(traj_points, obstacle);
   return CruiseObstacle{obstacle.uuid, obstacle.stamp, obstacle.pose,
                         tangent_vel,   normal_vel,     *collision_points};
+}
+
+std::optional<CruiseObstacle> ObstacleCruisePlannerNode::createYieldCruiseObstacle(
+  const Obstacle & obstacle, const std::vector<TrajectoryPoint> & traj_points)
+{
+  if (traj_points.empty()) return std::nullopt;
+  // check label
+  const auto & object_id = obstacle.uuid.substr(0, 4);
+  const auto & p = behavior_determination_param_;
+
+  if (!isOutsideCruiseObstacle(obstacle.classification.label)) {
+    RCLCPP_INFO_EXPRESSION(
+      get_logger(), enable_debug_info_,
+      "[Cruise] Ignore yield obstacle (%s) since its type is not designated.", object_id.c_str());
+    return std::nullopt;
+  }
+
+  if (
+    std::hypot(obstacle.twist.linear.x, obstacle.twist.linear.y) <
+    p.outside_obstacle_min_velocity_threshold) {
+    RCLCPP_INFO_EXPRESSION(
+      get_logger(), enable_debug_info_,
+      "[Cruise] Ignore yield obstacle (%s) since the obstacle velocity is low.", object_id.c_str());
+    return std::nullopt;
+  }
+
+  if (isObstacleCrossing(traj_points, obstacle)) {
+    RCLCPP_INFO_EXPRESSION(
+      get_logger(), enable_debug_info_,
+      "[Cruise] Ignore yield obstacle (%s) since it's crossing the ego's trajectory..",
+      object_id.c_str());
+    return std::nullopt;
+  }
+
+  const auto collision_points = [&]() -> std::optional<std::vector<PointWithStamp>> {
+    const auto obstacle_idx = motion_utils::findNearestIndex(traj_points, obstacle.pose);
+    if (!obstacle_idx) return std::nullopt;
+    const auto collision_traj_point = traj_points.at(obstacle_idx.value());
+    const auto object_time = now() + traj_points.at(obstacle_idx.value()).time_from_start;
+
+    PointWithStamp collision_traj_point_with_stamp;
+    collision_traj_point_with_stamp.stamp = object_time;
+    collision_traj_point_with_stamp.point.x = collision_traj_point.pose.position.x;
+    collision_traj_point_with_stamp.point.y = collision_traj_point.pose.position.y;
+    collision_traj_point_with_stamp.point.z = collision_traj_point.pose.position.z;
+    std::vector<PointWithStamp> collision_points_vector{collision_traj_point_with_stamp};
+    return collision_points_vector;
+  }();
+
+  if (!collision_points) return std::nullopt;
+  const auto [tangent_vel, normal_vel] = projectObstacleVelocityToTrajectory(traj_points, obstacle);
+  // check if obstacle is driving on the opposite direction
+  if (tangent_vel < 0.0) return std::nullopt;
+  return CruiseObstacle{obstacle.uuid, obstacle.stamp, obstacle.pose,
+                        tangent_vel,   normal_vel,     collision_points.value()};
+}
+
+std::optional<std::vector<CruiseObstacle>> ObstacleCruisePlannerNode::findYieldCruiseObstacles(
+  const std::vector<Obstacle> & obstacles, const std::vector<TrajectoryPoint> & traj_points)
+{
+  if (obstacles.empty() || traj_points.empty()) return std::nullopt;
+  const auto & p = behavior_determination_param_;
+
+  std::vector<Obstacle> stopped_obstacles;
+  std::vector<Obstacle> moving_obstacles;
+
+  std::for_each(
+    obstacles.begin(), obstacles.end(),
+    [&stopped_obstacles, &moving_obstacles, &p](const auto & o) {
+      const bool is_moving =
+        std::hypot(o.twist.linear.x, o.twist.linear.y) > p.stopped_obstacle_velocity_threshold;
+      if (is_moving) {
+        const bool is_within_lat_dist_threshold =
+          o.lat_dist_from_obstacle_to_traj < p.yield_lat_distance_threshold;
+        if (is_within_lat_dist_threshold) moving_obstacles.push_back(o);
+        return;
+      }
+      // lat threshold is larger for stopped obstacles
+      const bool is_within_lat_dist_threshold =
+        o.lat_dist_from_obstacle_to_traj <
+        p.yield_lat_distance_threshold + p.max_lat_dist_between_obstacles;
+      if (is_within_lat_dist_threshold) stopped_obstacles.push_back(o);
+      return;
+    });
+
+  if (stopped_obstacles.empty() || moving_obstacles.empty()) return std::nullopt;
+
+  std::sort(
+    stopped_obstacles.begin(), stopped_obstacles.end(), [](const auto & o1, const auto & o2) {
+      return o1.ego_to_obstacle_distance < o2.ego_to_obstacle_distance;
+    });
+
+  std::sort(moving_obstacles.begin(), moving_obstacles.end(), [](const auto & o1, const auto & o2) {
+    return o1.ego_to_obstacle_distance < o2.ego_to_obstacle_distance;
+  });
+
+  std::vector<CruiseObstacle> yield_obstacles;
+  for (const auto & moving_obstacle : moving_obstacles) {
+    for (const auto & stopped_obstacle : stopped_obstacles) {
+      const bool is_moving_obs_behind_of_stopped_obs =
+        moving_obstacle.ego_to_obstacle_distance < stopped_obstacle.ego_to_obstacle_distance;
+      const bool is_moving_obs_ahead_of_ego_front =
+        moving_obstacle.ego_to_obstacle_distance > vehicle_info_.vehicle_length_m;
+
+      if (!is_moving_obs_ahead_of_ego_front || !is_moving_obs_behind_of_stopped_obs) continue;
+
+      const double lateral_distance_between_obstacles = std::abs(
+        moving_obstacle.lat_dist_from_obstacle_to_traj -
+        stopped_obstacle.lat_dist_from_obstacle_to_traj);
+
+      const double longitudinal_distance_between_obstacles = std::abs(
+        moving_obstacle.ego_to_obstacle_distance - stopped_obstacle.ego_to_obstacle_distance);
+
+      const double moving_obstacle_speed =
+        std::hypot(moving_obstacle.twist.linear.x, moving_obstacle.twist.linear.y);
+
+      const bool are_obstacles_aligned =
+        lateral_distance_between_obstacles < p.max_lat_dist_between_obstacles;
+      const bool obstacles_collide_within_threshold_time =
+        longitudinal_distance_between_obstacles / moving_obstacle_speed <
+        p.max_obstacles_collision_time;
+      if (are_obstacles_aligned && obstacles_collide_within_threshold_time) {
+        const auto yield_obstacle = createYieldCruiseObstacle(moving_obstacle, traj_points);
+        if (yield_obstacle) {
+          yield_obstacles.push_back(*yield_obstacle);
+        }
+      }
+    }
+  }
+  if (yield_obstacles.empty()) return std::nullopt;
+  return yield_obstacles;
 }
 
 std::optional<std::vector<PointWithStamp>>

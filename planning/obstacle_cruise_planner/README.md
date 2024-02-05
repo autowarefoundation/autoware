@@ -108,6 +108,20 @@ The obstacles meeting the following condition are determined as obstacles for cr
 | `behavior_determination.cruise.outside_obstacle.obstacle_velocity_threshold`         | double | maximum obstacle velocity for cruise obstacle outside the trajectory |
 | `behavior_determination.cruise.outside_obstacle.ego_obstacle_overlap_time_threshold` | double | maximum overlap time of the collision between the ego and obstacle   |
 
+##### Yield for vehicles that might cut in into the ego's lane
+
+It is also possible to yield (cruise) behind vehicles in neighbor lanes if said vehicles might cut in the ego vehicle's current lane.
+
+The obstacles meeting the following condition are determined as obstacles for yielding (cruising).
+
+- The object type is for cruising according to `common.cruise_obstacle_type.*` and it is moving with a speed greater than `behavior_determination.cruise.yield.stopped_obstacle_velocity_threshold`.
+- The object is not crossing the ego's trajectory (\*1).
+- There is another object of type `common.cruise_obstacle_type.*` stopped in front of the moving obstacle.
+- The lateral distance (using the ego's trajectory as reference) between both obstacles is less than `behavior_determination.cruise.yield.max_lat_dist_between_obstacles`
+- Both obstacles, moving and stopped, are within `behavior_determination.cruise.yield.lat_distance_threshold` and `behavior_determination.cruise.yield.lat_distance_threshold` + `behavior_determination.cruise.yield.max_lat_dist_between_obstacles` lateral distance from the ego's trajectory respectively.
+
+If the above conditions are met, the ego vehicle will cruise behind the moving obstacle, yielding to it so it can cut in into the ego's lane to avoid the stopped obstacle.
+
 #### Determine stop vehicles
 
 Among obstacles which are not for cruising, the obstacles meeting the following condition are determined as obstacles for stopping.

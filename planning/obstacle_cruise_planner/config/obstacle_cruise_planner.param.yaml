@@ -95,7 +95,12 @@
           obstacle_velocity_threshold : 3.5 # minimum velocity threshold of obstacles outside the trajectory to cruise or stop [m/s]
           ego_obstacle_overlap_time_threshold : 2.0 #  time threshold to decide cut-in obstacle for cruise or stop [s]
           max_prediction_time_for_collision_check : 20.0 # prediction time to check collision between obstacle and ego
-
+        yield:
+          enable_yield: false
+          lat_distance_threshold: 5.0 # lateral margin between obstacle in neighbor lanes and trajectory band with ego's width for yielding
+          max_lat_dist_between_obstacles: 2.5 # lateral margin between moving obstacle in neighbor lanes and stopped obstacle in front of it
+          max_obstacles_collision_time: 10.0 # how far the blocking obstacle
+          stopped_obstacle_velocity_threshold: 0.5
       slow_down:
         max_lat_margin: 1.1  # lateral margin between obstacle and trajectory band with ego's width
         lat_hysteresis_margin: 0.2
