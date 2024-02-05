@@ -165,7 +165,7 @@ bool ObjectInfo::can_stop_before_ego_lane(
   const auto stopline_p1 = stopline.front();
   const auto stopline_p2 = stopline.back();
   const tier4_autoware_utils::Point2d stopline_mid{
-    stopline_p1.x() + stopline_p2.x() / 2.0, (stopline_p1.y() + stopline_p2.y()) / 2.0};
+    (stopline_p1.x() + stopline_p2.x()) / 2.0, (stopline_p1.y() + stopline_p2.y()) / 2.0};
   const auto attention_lane_end = attention_lanelet.centerline().back();
   const tier4_autoware_utils::LineString2d attention_lane_later_part(
     {tier4_autoware_utils::Point2d{stopline_mid.x(), stopline_mid.y()},
