@@ -2,10 +2,21 @@ name: build-and-test-differential
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - labeled
 
 jobs:
+  prevent-no-label-execution:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/prevent-no-label-execution.yaml@v1
+    with:
+      label: tag:run-build-and-test-differential
+
   build-and-test-differential:
-    runs-on: ubuntu-latest
+    needs: prevent-no-label-execution
+    if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
+    runs-on: [self-hosted, linux, X64]
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
       fail-fast: false
@@ -65,7 +76,7 @@ jobs:
         run: df -h
 
   clang-tidy-differential:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, X64]
     container: ghcr.io/autowarefoundation/autoware-universe:humble-latest-cuda
     needs: build-and-test-differential
     steps:
