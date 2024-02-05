@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Ndt Scan Matcher Node",
+  "definitions": {
+    "ndt": {
+      "type": "object",
+      "properties": {
+        "trans_epsilon": {
+          "type": "number",
+          "description": "The maximum difference between two consecutive transformations in order to consider convergence.",
+          "default": 0.01,
+          "minimum": 0.0
+        },
+        "step_size": {
+          "type": "number",
+          "description": "The newton line search maximum step length.",
+          "default": 0.1,
+          "minimum": 0.0
+        },
+        "resolution": {
+          "type": "number",
+          "description": "The ND voxel grid resolution.",
+          "default": 2.0,
+          "minimum": 0.0
+        },
+        "max_iterations": {
+          "type": "number",
+          "description": "The number of iterations required to calculate alignment.",
+          "default": 30,
+          "minimum": 1
+        },
+        "num_threads": {
+          "type": "number",
+          "description": "Number of threads used for parallel computing.",
+          "default": 4,
+          "minimum": 1
+        },
+        "regularization": {
+          "$ref": "ndt_regularization.json#/definitions/regularization"
+        }
+      },
+      "required": [
+        "trans_epsilon",
+        "step_size",
+        "resolution",
+        "max_iterations",
+        "num_threads",
+        "regularization"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

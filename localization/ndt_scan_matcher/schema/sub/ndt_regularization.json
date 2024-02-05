@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Ndt Scan Matcher Node",
+  "definitions": {
+    "regularization": {
+      "type": "object",
+      "properties": {
+        "enable": {
+          "type": "boolean",
+          "description": "Regularization switch.",
+          "default": false
+        },
+        "scale_factor": {
+          "type": "number",
+          "description": "Regularization scale factor.",
+          "default": 0.01,
+          "minimum": 0.0
+        }
+      },
+      "required": ["enable", "scale_factor"],
+      "additionalProperties": false
+    }
+  }
+}

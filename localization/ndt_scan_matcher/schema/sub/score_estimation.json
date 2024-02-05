@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Ndt Scan Matcher Node",
+  "definitions": {
+    "score_estimation": {
+      "type": "object",
+      "properties": {
+        "converged_param_type": {
+          "type": "number",
+          "description": "Converged param type. 0=TRANSFORM_PROBABILITY, 1=NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 1
+        },
+        "converged_param_transform_probability": {
+          "type": "number",
+          "description": "If converged_param_type is 0, threshold for deciding whether to trust the estimation result.",
+          "default": 3.0,
+          "minimum": 0.0
+        },
+        "converged_param_nearest_voxel_transformation_likelihood": {
+          "type": "number",
+          "description": "If converged_param_type is 1, threshold for deciding whether to trust the estimation result.",
+          "default": 2.3,
+          "minimum": 0.0
+        },
+        "no_ground_points": {
+          "$ref": "score_estimation_no_ground_points.json#/definitions/no_ground_points"
+        }
+      },
+      "required": [
+        "converged_param_type",
+        "converged_param_transform_probability",
+        "no_ground_points"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

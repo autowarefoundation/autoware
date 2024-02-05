@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Ndt Scan Matcher Node",
+  "definitions": {
+    "dynamic_map_loading": {
+      "type": "object",
+      "properties": {
+        "update_distance": {
+          "type": "number",
+          "description": "Dynamic map loading distance.",
+          "default": 20.0,
+          "minimum": 0.0
+        },
+        "map_radius": {
+          "type": "number",
+          "description": "Dynamic map loading loading radius.",
+          "default": 150.0,
+          "minimum": 0.0
+        },
+        "lidar_radius": {
+          "type": "number",
+          "description": "Radius of input LiDAR range (used for diagnostics of dynamic map loading).",
+          "default": 100.0,
+          "minimum": 0.0
+        }
+      },
+      "required": ["update_distance", "map_radius", "lidar_radius"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Ndt Scan Matcher Node",
+  "definitions": {
+    "validation": {
+      "type": "object",
+      "properties": {
+        "lidar_topic_timeout_sec": {
+          "type": "number",
+          "description": "Tolerance of timestamp difference between current time and sensor pointcloud. [sec]",
+          "default": 1.0,
+          "minimum": 0.0
+        },
+        "initial_pose_timeout_sec": {
+          "type": "number",
+          "description": "Tolerance of timestamp difference between initial_pose and sensor pointcloud. [sec]",
+          "default": 1.0,
+          "minimum": 0.0
+        },
+        "initial_pose_distance_tolerance_m": {
+          "type": "number",
+          "description": "Tolerance of distance difference between two initial poses used for linear interpolation. [m]",
+          "default": 10.0,
+          "minimum": 0.0
+        },
+        "critical_upper_bound_exe_time_ms": {
+          "type": "number",
+          "description": "The execution time which means probably NDT cannot matches scans properly. [ms]",
+          "default": 100.0,
+          "minimum": 0.0
+        }
+      },
+      "required": [
+        "lidar_topic_timeout_sec",
+        "initial_pose_timeout_sec",
+        "initial_pose_distance_tolerance_m",
+        "critical_upper_bound_exe_time_ms"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

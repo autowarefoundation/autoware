@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Ndt Scan Matcher Node",
+  "definitions": {
+    "covariance_estimation": {
+      "type": "object",
+      "properties": {
+        "enable": {
+          "type": "boolean",
+          "description": "2D Real-time covariance estimation with multiple searches (output_pose_covariance is the minimum value).",
+          "default": false
+        },
+        "initial_pose_offset_model_x": {
+          "type": "array",
+          "description": "Offset arrangement in covariance estimation [m]. initial_pose_offset_model_x & initial_pose_offset_model_y must have the same number of elements.",
+          "default": [0.0, 0.0, 0.5, -0.5, 1.0, -1.0]
+        },
+        "initial_pose_offset_model_y": {
+          "type": "array",
+          "description": "Offset arrangement in covariance estimation [m]. initial_pose_offset_model_x & initial_pose_offset_model_y must have the same number of elements.",
+          "default": [0.5, -0.5, 0.0, 0.0, 0.0, 0.0]
+        }
+      },
+      "required": ["enable", "initial_pose_offset_model_x", "initial_pose_offset_model_y"],
+      "additionalProperties": false
+    }
+  }
+}

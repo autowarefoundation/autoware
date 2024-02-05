@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Ndt Scan Matcher Node",
+  "definitions": {
+    "frame": {
+      "type": "object",
+      "properties": {
+        "base_frame": {
+          "type": "string",
+          "description": "Vehicle reference frame.",
+          "default": "base_link"
+        },
+        "ndt_base_frame": {
+          "type": "string",
+          "description": "NDT reference frame.",
+          "default": "ndt_base_link"
+        },
+        "map_frame": {
+          "type": "string",
+          "description": "Map frame.",
+          "default": "map"
+        }
+      },
+      "required": ["base_frame", "ndt_base_frame", "map_frame"],
+      "additionalProperties": false
+    }
+  }
+}

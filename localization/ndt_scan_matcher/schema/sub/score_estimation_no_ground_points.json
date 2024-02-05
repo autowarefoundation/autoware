@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Ndt Scan Matcher Node",
+  "definitions": {
+    "no_ground_points": {
+      "type": "object",
+      "properties": {
+        "enable": {
+          "type": "boolean",
+          "description": "A flag for using scan matching score based on de-grounded LiDAR scan.",
+          "default": false
+        },
+        "z_margin_for_ground_removal": {
+          "type": "number",
+          "description": "If lidar_point.z - base_link.z <= this threshold , the point will be removed.",
+          "default": 0.8,
+          "minimum": 0.0
+        }
+      },
+      "required": ["enable", "z_margin_for_ground_removal"],
+      "additionalProperties": false
+    }
+  }
+}

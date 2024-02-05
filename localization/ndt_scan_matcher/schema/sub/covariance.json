@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Ndt Scan Matcher Node",
+  "definitions": {
+    "covariance": {
+      "type": "object",
+      "properties": {
+        "output_pose_covariance": {
+          "type": "array",
+          "description": "The covariance of output pose. Note that this covariance matrix is empirically derived.",
+          "default": [
+            0.0225, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0225, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0225, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.000625, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.000625, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.000625
+          ]
+        },
+        "covariance_estimation": {
+          "$ref": "covariance_covariance_estimation.json#/definitions/covariance_estimation"
+        }
+      },
+      "required": ["output_pose_covariance", "covariance_estimation"],
+      "additionalProperties": false
+    }
+  }
+}

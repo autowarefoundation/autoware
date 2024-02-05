@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Ndt Scan Matcher Node",
+  "definitions": {
+    "initial_pose_estimation": {
+      "type": "object",
+      "properties": {
+        "particles_num": {
+          "type": "number",
+          "description": "The number of particles to estimate initial pose.",
+          "default": 200,
+          "minimum": 1
+        },
+        "n_startup_trials": {
+          "type": "number",
+          "description": "The number of initial random trials in the TPE (Tree-Structured Parzen Estimator). This value should be equal to or less than 'initial_estimate_particles_num' and more than 0. If it is equal to 'initial_estimate_particles_num', the search will be the same as a full random search.",
+          "default": 20,
+          "minimum": 1
+        }
+      },
+      "required": ["particles_num", "n_startup_trials"],
+      "additionalProperties": false
+    }
+  }
+}

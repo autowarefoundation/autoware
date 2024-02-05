@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "type": "object",
+          "properties": {
+            "frame": { "$ref": "sub/frame.json#/definitions/frame" },
+            "ndt": { "$ref": "sub/ndt.json#/definitions/ndt" },
+            "regularization": { "$ref": "ndt_regularization.json#/definitions/ndt/regularization" },
+            "initial_pose_estimation": {
+              "$ref": "sub/initial_pose_estimation.json#/definitions/initial_pose_estimation"
+            },
+            "validation": { "$ref": "sub/validation.json#/definitions/validation" },
+            "score_estimation": {
+              "$ref": "sub/score_estimation.json#/definitions/score_estimation"
+            },
+            "covariance": { "$ref": "sub/covariance.json#/definitions/covariance" },
+            "dynamic_map_loading": {
+              "$ref": "sub/dynamic_map_loading.json#/definitions/dynamic_map_loading"
+            }
+          },
+          "required": [
+            "frame",
+            "ndt",
+            "initial_pose_estimation",
+            "validation",
+            "score_estimation",
+            "covariance",
+            "dynamic_map_loading"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
