@@ -136,7 +136,7 @@ std::optional<size_t> updateFrontPointForFix(
   const double lon_offset_to_prev_front =
     motion_utils::calcSignedArcLength(points, 0, front_fix_point.pose.position);
   if (0 < lon_offset_to_prev_front) {
-    RCLCPP_WARN(
+    RCLCPP_DEBUG(
       rclcpp::get_logger("path_smoother.trajectory_utils"),
       "Fixed point will not be inserted due to the error during calculation.");
     return std::nullopt;
@@ -147,7 +147,7 @@ std::optional<size_t> updateFrontPointForFix(
   // check if deviation is not too large
   constexpr double max_lat_error = 3.0;
   if (max_lat_error < dist) {
-    RCLCPP_WARN(
+    RCLCPP_DEBUG(
       rclcpp::get_logger("path_smoother.trajectory_utils"),
       "New Fixed point is too far from points %f [m]", dist);
   }
