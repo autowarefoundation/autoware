@@ -406,7 +406,7 @@ bool generatePossibleCollisionsFromGridMap(
     const auto pc = generateOneNotableCollisionFromOcclusionSpot(
       grid, occlusion_spot_positions, offset_from_start_to_ego, base_point, path_lanelet, param,
       debug_data);
-    if (pc) continue;
+    if (pc == std::nullopt) continue;
     const double lateral_distance = std::abs(pc.value().arc_lane_dist_at_collision.distance);
     if (lateral_distance > distance_lower_bound) continue;
     distance_lower_bound = lateral_distance;
