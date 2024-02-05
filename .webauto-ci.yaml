@@ -23,7 +23,7 @@ simulations:
         architecture_type: awf/universe
         vehicle_model: sample_vehicle
         sensor_model: sample_sensor_kit
-        initialize_duration: "45"
+        initialize_duration: "90"
 
 release:
   components:

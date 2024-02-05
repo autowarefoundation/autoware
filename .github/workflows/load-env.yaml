@@ -16,7 +16,7 @@ jobs:
       rosdistro: ${{ steps.set-env.outputs.rosdistro }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Load env
         run: |

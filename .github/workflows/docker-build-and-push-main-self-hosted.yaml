@@ -34,7 +34,7 @@ jobs:
           sudo chown -R $USER:$USER ${{ github.workspace }}
 
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Free disk space
         uses: ./.github/actions/free-disk-space

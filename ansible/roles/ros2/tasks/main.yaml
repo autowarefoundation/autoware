@@ -34,10 +34,10 @@
     state: present
     update_cache: true
 
-- name: Install ros-{{ rosdistro + '-' + installation_type }}
+- name: Install ros-{{ rosdistro + '-' + ros2_installation_type }}
   become: true
   ansible.builtin.apt:
-    name: ros-{{ rosdistro }}-{{ installation_type }}
+    name: ros-{{ rosdistro }}-{{ ros2_installation_type }}
     state: latest
     update_cache: true
 

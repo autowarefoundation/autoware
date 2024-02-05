@@ -28,6 +28,6 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
           pr-labels: |
-            bot
-            sync-files
+            tag:bot
+            tag:sync-files
           auto-merge-method: squash

@@ -29,8 +29,8 @@ jobs:
           token: ${{ steps.generate-token.outputs.token }}
           pre-commit-config: .pre-commit-config.yaml
           pr-labels: |
-            bot
-            pre-commit-autoupdate
+            tag:bot
+            tag:pre-commit-autoupdate
           pr-branch: pre-commit-autoupdate
           pr-title: "ci(pre-commit): autoupdate"
           pr-commit-message: "ci(pre-commit): autoupdate"

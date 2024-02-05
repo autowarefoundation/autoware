@@ -37,10 +37,10 @@
     # Core
     - role: autoware.dev_env.autoware_core
     - role: autoware.dev_env.ccache
-      when: install_devel == 'true'
+      when: tensorrt_install_devel == 'true'
     - role: autoware.dev_env.plotjuggler
     - role: autoware.dev_env.pre_commit
-      when: install_devel == 'true'
+      when: tensorrt_install_devel == 'true'
     - role: autoware.dev_env.ros2
     - role: autoware.dev_env.ros2_dev_tools
     - role: autoware.dev_env.rmw_implementation
@@ -48,7 +48,7 @@
     # Universe
     - role: autoware.dev_env.autoware_universe
     - role: autoware.dev_env.cuda
-      when: prompt_install_nvidia == 'y' and install_devel == 'true'
+      when: prompt_install_nvidia == 'y' and tensorrt_install_devel == 'true'
     - role: autoware.dev_env.pacmod
       when: rosdistro != 'rolling'
     - role: autoware.dev_env.tensorrt
