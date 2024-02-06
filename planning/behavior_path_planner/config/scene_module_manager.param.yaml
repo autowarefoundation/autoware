@@ -82,3 +82,12 @@
       keep_last: false
       priority: 7
       max_module_size: 1
+
+    sampling_planner:
+      enable_module: true
+      enable_rtc: false
+      enable_simultaneous_execution_as_approved_module: false
+      enable_simultaneous_execution_as_candidate_module: false
+      keep_last: true
+      priority: 16
+      max_module_size: 1

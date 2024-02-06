@@ -22,6 +22,11 @@
 #include <sampler_common/structures.hpp>
 #include <sampler_common/transform/spline_transform.hpp>
 
+#include "autoware_auto_planning_msgs/msg/path.hpp"
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
+#include <tf2/utils.h>
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -150,6 +155,7 @@ void calculateCartesian(const sampler_common::transform::Spline2D & reference, P
     path.yaws.reserve(path.frenet_points.size());
     path.lengths.reserve(path.frenet_points.size());
     path.curvatures.reserve(path.frenet_points.size());
+    path.poses.reserve(path.frenet_points.size());
     // Calculate cartesian positions
     for (const auto & fp : path.frenet_points) {
       path.points.push_back(reference.cartesian(fp));
@@ -161,10 +167,20 @@ void calculateCartesian(const sampler_common::transform::Spline2D & reference, P
     for (auto it = path.points.begin(); it != std::prev(path.points.end()); ++it) {
       const auto dx = std::next(it)->x() - it->x();
       const auto dy = std::next(it)->y() - it->y();
-      path.yaws.push_back(std::atan2(dy, dx));
+      const auto yaw = std::atan2(dy, dx);
+      path.yaws.push_back(yaw);
       path.lengths.push_back(path.lengths.back() + std::hypot(dx, dy));
+
+      geometry_msgs::msg::Pose pose;
+      pose.position.x = it->x();
+      pose.position.y = it->y();
+      pose.position.z = 0.0;
+      pose.orientation = tier4_autoware_utils::createQuaternionFromRPY(0.0, 0.0, yaw);
+      path.poses.push_back(pose);
     }
     path.yaws.push_back(path.yaws.back());
+    path.poses.push_back(path.poses.back());
+
     // Calculate curvatures
     for (size_t i = 1; i < path.yaws.size(); ++i) {
       const auto dyaw =

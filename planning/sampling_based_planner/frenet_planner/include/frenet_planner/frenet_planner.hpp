@@ -18,6 +18,7 @@
 #include "frenet_planner/structures.hpp"
 #include "sampler_common/structures.hpp"
 #include "sampler_common/transform/spline_transform.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <optional>
 #include <vector>

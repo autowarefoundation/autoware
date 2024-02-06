@@ -1,0 +1,20 @@
+/**:
+  ros__parameters:
+    start_planner:
+      max_curvature: 0.1
+      min_curvature: -0.1
+      lateral_deviation_weight: 1.0
+      length_weight: 1.0
+      curvature_weight: 1.0
+      enable_frenet: true
+      enable_bezier: false
+      resolution: 0.5
+      previous_path_reuse_points_nb: 2
+      nb_target_lateral_positions: {10.0, 20.0}
+      target_lengths: {-2.0, -1.0, 0.0, 1.0, 2.0}
+      target_lateral_positions: 2
+      target_lateral_velocities: {-0.1, 0.0, 0.1}
+      target_lateral_accelerations: {0.0}
+      force_zero_deviation: true
+      force_zero_heading: true
+      smooth_reference: false

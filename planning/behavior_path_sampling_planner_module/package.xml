@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>behavior_path_sampling_planner_module</name>
+  <version>0.1.0</version>
+  <description>The behavior_path_sampling_planner_module package</description>
+
+  <maintainer email="daniel.sanchez@tier4.jp">Daniel Sanchez</maintainer>
+  <maintainer email="maxime.clement@tier4.jp">Maxime Clement</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_auto_tf2</depend>
+  <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>autoware_perception_msgs</depend>
+  <depend>behavior_path_planner_common</depend>
+  <depend>bezier_sampler</depend>
+  <depend>frenet_planner</depend>
+  <depend>geometry_msgs</depend>
+  <depend>interpolation</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>motion_utils</depend>
+  <depend>path_sampler</depend>
+  <depend>planning_test_utils</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>route_handler</depend>
+  <depend>sensor_msgs</depend>
+  <depend>signal_processing</depend>
+  <depend>tf2</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>tier4_planning_msgs</depend>
+  <depend>vehicle_info_util</depend>
+  <depend>visualization_msgs</depend>
+
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -43,6 +43,7 @@
   <depend>autoware_perception_msgs</depend>
   <depend>behavior_path_planner_common</depend>
   <depend>freespace_planning_algorithms</depend>
+  <depend>frenet_planner</depend>
   <depend>geometry_msgs</depend>
   <depend>interpolation</depend>
   <depend>lane_departure_checker</depend>
@@ -52,6 +53,7 @@
   <depend>magic_enum</depend>
   <depend>motion_utils</depend>
   <depend>object_recognition_utils</depend>
+  <depend>path_sampler</depend>
   <depend>planning_test_utils</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>

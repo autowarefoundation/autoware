@@ -15,6 +15,7 @@
   <arg name="launch_external_request_lane_change_left_module" default="true"/>
   <arg name="launch_goal_planner_module" default="true"/>
   <arg name="launch_start_planner_module" default="true"/>
+  <arg name="launch_sampling_planner_module" default="true"/>
   <arg name="launch_side_shift_module" default="true"/>
 
   <arg name="launch_crosswalk_module" default="true"/>
@@ -57,6 +58,11 @@
     name="behavior_path_planner_launch_modules"
     value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::StartPlannerModuleManager, '&quot;)"
     if="$(var launch_start_planner_module)"
+  />
+  <let
+    name="behavior_path_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::SamplingPlannerModuleManager, '&quot;)"
+    if="$(var launch_sampling_planner_module)"
   />
   <let
     name="behavior_path_planner_launch_modules"
@@ -204,6 +210,7 @@
       <param from="$(var behavior_path_planner_lane_change_module_param_path)"/>
       <param from="$(var behavior_path_planner_goal_planner_module_param_path)"/>
       <param from="$(var behavior_path_planner_start_planner_module_param_path)"/>
+      <param from="$(var behavior_path_planner_sampling_planner_module_param_path)"/>
       <param from="$(var behavior_path_planner_drivable_area_expansion_param_path)"/>
       <param from="$(var behavior_path_planner_scene_module_manager_param_path)"/>
       <param from="$(var behavior_path_planner_common_param_path)"/>
