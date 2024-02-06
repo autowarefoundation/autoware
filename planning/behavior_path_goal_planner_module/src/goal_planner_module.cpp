@@ -62,6 +62,8 @@ GoalPlannerModule::GoalPlannerModule(
   parameters_{parameters},
   vehicle_info_{vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo()},
   thread_safe_data_{mutex_, clock_},
+  is_lane_parking_cb_running_{false},
+  is_freespace_parking_cb_running_{false},
   debug_stop_pose_with_info_{&stop_pose_}
 {
   LaneDepartureChecker lane_departure_checker{};
@@ -171,6 +173,8 @@ bool GoalPlannerModule::hasDeviatedFromCurrentPreviousModulePath() const
 // generate pull over candidate paths
 void GoalPlannerModule::onTimer()
 {
+  const ScopedFlag flag(is_lane_parking_cb_running_);
+
   if (getCurrentStatus() == ModuleStatus::IDLE) {
     return;
   }
@@ -287,6 +291,8 @@ void GoalPlannerModule::onTimer()
 
 void GoalPlannerModule::onFreespaceParkingTimer()
 {
+  const ScopedFlag flag(is_freespace_parking_cb_running_);
+
   if (getCurrentStatus() == ModuleStatus::IDLE) {
     return;
   }
