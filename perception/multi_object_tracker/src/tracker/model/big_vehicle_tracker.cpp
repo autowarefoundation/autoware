@@ -158,8 +158,8 @@ BigVehicleTracker::BigVehicleTracker(
   setNearestCornerOrSurfaceIndex(self_transform);  // this index is used in next measure step
 
   // Set lf, lr
-  lf_ = bounding_box_.length * 0.3;   // 30% front from the center
-  lr_ = bounding_box_.length * 0.25;  // 25% rear from the center
+  lf_ = std::max(bounding_box_.length * 0.3, 1.5);   // 30% front from the center, minimum of 1.5m
+  lr_ = std::max(bounding_box_.length * 0.25, 1.5);  // 25% rear from the center, minimum of 1.5m
 }
 
 bool BigVehicleTracker::predict(const rclcpp::Time & time)
@@ -457,9 +457,8 @@ bool BigVehicleTracker::measureWithShape(
     bbox_object.shape.dimensions.x, bbox_object.shape.dimensions.y, bbox_object.shape.dimensions.z};
 
   // update lf, lr
-  lf_ = bounding_box_.length * 0.3;   // 30% front from the center
-  lr_ = bounding_box_.length * 0.25;  // 25% rear from the center
-
+  lf_ = std::max(bounding_box_.length * 0.3, 1.5);   // 30% front from the center, minimum of 1.5m
+  lr_ = std::max(bounding_box_.length * 0.25, 1.5);  // 25% rear from the center, minimum of 1.5m
   return true;
 }
 
