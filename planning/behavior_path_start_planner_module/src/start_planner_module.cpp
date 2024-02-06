@@ -1362,7 +1362,6 @@ bool StartPlannerModule::planFreespacePath()
 void StartPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) const
 {
   if (status_.planner_type == PlannerType::FREESPACE) {
-    std::cerr << "Freespace planner updated drivable area." << std::endl;
     const double drivable_area_margin = planner_data_->parameters.vehicle_width;
     output.drivable_area_info.drivable_margin =
       planner_data_->parameters.vehicle_width / 2.0 + drivable_area_margin;
