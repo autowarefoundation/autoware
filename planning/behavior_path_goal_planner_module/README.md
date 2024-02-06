@@ -5,7 +5,7 @@
 Plan path around the goal.
 
 - Arrive at the designated goal.
-- Modify the goal to avoid obstacles or to pull over at the side of tha lane.
+- Modify the goal to avoid obstacles or to pull over at the side of the lane.
 
 ## Design
 
