@@ -24,36 +24,41 @@ class HyperParameters
 {
 public:
   explicit HyperParameters(rclcpp::Node * node)
-  : show_debug_info(node->declare_parameter("show_debug_info", false)),
-    ekf_rate(node->declare_parameter("predict_frequency", 50.0)),
+  : show_debug_info(node->declare_parameter<bool>("node.show_debug_info")),
+    ekf_rate(node->declare_parameter<double>("node.predict_frequency")),
     ekf_dt(1.0 / std::max(ekf_rate, 0.1)),
-    tf_rate_(node->declare_parameter("tf_rate", 10.0)),
-    publish_tf_(node->declare_parameter("publish_tf", true)),
-    enable_yaw_bias_estimation(node->declare_parameter("enable_yaw_bias_estimation", true)),
-    extend_state_step(node->declare_parameter("extend_state_step", 50)),
-    pose_frame_id(node->declare_parameter("pose_frame_id", std::string("map"))),
-    pose_additional_delay(node->declare_parameter("pose_additional_delay", 0.0)),
-    pose_gate_dist(node->declare_parameter("pose_gate_dist", 10000.0)),
-    pose_smoothing_steps(node->declare_parameter("pose_smoothing_steps", 5)),
-    twist_additional_delay(node->declare_parameter("twist_additional_delay", 0.0)),
-    twist_gate_dist(node->declare_parameter("twist_gate_dist", 10000.0)),
-    twist_smoothing_steps(node->declare_parameter("twist_smoothing_steps", 2)),
-    proc_stddev_vx_c(node->declare_parameter("proc_stddev_vx_c", 5.0)),
-    proc_stddev_wz_c(node->declare_parameter("proc_stddev_wz_c", 1.0)),
-    proc_stddev_yaw_c(node->declare_parameter("proc_stddev_yaw_c", 0.005)),
-    z_filter_proc_dev(node->declare_parameter("z_filter_proc_dev", 1.0)),
-    roll_filter_proc_dev(node->declare_parameter("roll_filter_proc_dev", 0.01)),
-    pitch_filter_proc_dev(node->declare_parameter("pitch_filter_proc_dev", 0.01)),
+    tf_rate_(node->declare_parameter<double>("node.tf_rate")),
+    publish_tf_(node->declare_parameter<bool>("node.publish_tf")),
+    enable_yaw_bias_estimation(node->declare_parameter<bool>("node.enable_yaw_bias_estimation")),
+    extend_state_step(node->declare_parameter<int>("node.extend_state_step")),
+    pose_frame_id(node->declare_parameter<std::string>("misc.pose_frame_id")),
+    pose_additional_delay(
+      node->declare_parameter<double>("pose_measurement.pose_additional_delay")),
+    pose_gate_dist(node->declare_parameter<double>("pose_measurement.pose_gate_dist")),
+    pose_smoothing_steps(node->declare_parameter<int>("pose_measurement.pose_smoothing_steps")),
+    twist_additional_delay(
+      node->declare_parameter<double>("twist_measurement.twist_additional_delay")),
+    twist_gate_dist(node->declare_parameter<double>("twist_measurement.twist_gate_dist")),
+    twist_smoothing_steps(node->declare_parameter<int>("twist_measurement.twist_smoothing_steps")),
+    proc_stddev_vx_c(node->declare_parameter<double>("process_noise.proc_stddev_vx_c")),
+    proc_stddev_wz_c(node->declare_parameter<double>("process_noise.proc_stddev_wz_c")),
+    proc_stddev_yaw_c(node->declare_parameter<double>("process_noise.proc_stddev_yaw_c")),
+    z_filter_proc_dev(
+      node->declare_parameter<double>("simple_1d_filter_parameters.z_filter_proc_dev")),
+    roll_filter_proc_dev(
+      node->declare_parameter<double>("simple_1d_filter_parameters.roll_filter_proc_dev")),
+    pitch_filter_proc_dev(
+      node->declare_parameter<double>("simple_1d_filter_parameters.pitch_filter_proc_dev")),
     pose_no_update_count_threshold_warn(
-      node->declare_parameter("pose_no_update_count_threshold_warn", 50)),
+      node->declare_parameter<int>("diagnostics.pose_no_update_count_threshold_warn")),
     pose_no_update_count_threshold_error(
-      node->declare_parameter("pose_no_update_count_threshold_error", 250)),
+      node->declare_parameter<int>("diagnostics.pose_no_update_count_threshold_error")),
     twist_no_update_count_threshold_warn(
-      node->declare_parameter("twist_no_update_count_threshold_warn", 50)),
+      node->declare_parameter<int>("diagnostics.twist_no_update_count_threshold_warn")),
     twist_no_update_count_threshold_error(
-      node->declare_parameter("twist_no_update_count_threshold_error", 250)),
+      node->declare_parameter<int>("diagnostics.twist_no_update_count_threshold_error")),
     threshold_observable_velocity_mps(
-      node->declare_parameter("threshold_observable_velocity_mps", 0.5))
+      node->declare_parameter<double>("misc.threshold_observable_velocity_mps"))
   {
   }
 

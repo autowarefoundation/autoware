@@ -1,38 +1,46 @@
 /**:
   ros__parameters:
-    show_debug_info: false
-    enable_yaw_bias_estimation: true
-    predict_frequency: 50.0
-    tf_rate: 50.0
-    publish_tf: true
-    extend_state_step: 50
+    node:
+      show_debug_info: false
+      enable_yaw_bias_estimation: true
+      predict_frequency: 50.0
+      tf_rate: 50.0
+      publish_tf: true
+      extend_state_step: 50
 
-    # for Pose measurement
-    pose_additional_delay: 0.0
-    pose_measure_uncertainty_time: 0.01
-    pose_smoothing_steps: 5
-    pose_gate_dist: 10000.0
+    pose_measurement:
+      # for Pose measurement
+      pose_additional_delay: 0.0
+      pose_measure_uncertainty_time: 0.01
+      pose_smoothing_steps: 5
+      pose_gate_dist: 10000.0
 
-    # for twist measurement
-    twist_additional_delay: 0.0
-    twist_smoothing_steps: 2
-    twist_gate_dist: 10000.0
+    twist_measurement:
+      # for twist measurement
+      twist_additional_delay: 0.0
+      twist_smoothing_steps: 2
+      twist_gate_dist: 10000.0
 
-    # for process model
-    proc_stddev_yaw_c: 0.005
-    proc_stddev_vx_c: 10.0
-    proc_stddev_wz_c: 5.0
+    process_noise:
+      # for process model
+      proc_stddev_yaw_c: 0.005
+      proc_stddev_vx_c: 10.0
+      proc_stddev_wz_c: 5.0
 
-    #Simple1DFilter parameters
-    z_filter_proc_dev: 1.0
-    roll_filter_proc_dev: 0.01
-    pitch_filter_proc_dev: 0.01
+    simple_1d_filter_parameters:
+      #Simple1DFilter parameters
+      z_filter_proc_dev: 1.0
+      roll_filter_proc_dev: 0.01
+      pitch_filter_proc_dev: 0.01
 
-    # for diagnostics
-    pose_no_update_count_threshold_warn: 50
-    pose_no_update_count_threshold_error: 100
-    twist_no_update_count_threshold_warn: 50
-    twist_no_update_count_threshold_error: 100
+    diagnostics:
+      # for diagnostics
+      pose_no_update_count_threshold_warn: 50
+      pose_no_update_count_threshold_error: 100
+      twist_no_update_count_threshold_warn: 50
+      twist_no_update_count_threshold_error: 100
 
-    # for velocity measurement limitation (Set 0.0 if you want to ignore)
-    threshold_observable_velocity_mps: 0.0 # [m/s]
+    misc:
+      # for velocity measurement limitation (Set 0.0 if you want to ignore)
+      threshold_observable_velocity_mps: 0.0 # [m/s]
+      pose_frame_id: "map"

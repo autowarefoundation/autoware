@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EKF Localizer Configuration for Diagnostics",
+  "definitions": {
+    "diagnostics": {
+      "type": "object",
+      "properties": {
+        "pose_no_update_count_threshold_warn": {
+          "type": "integer",
+          "description": "The threshold at which a WARN state is triggered due to the Pose Topic update not happening continuously for a certain number of times",
+          "default": 50
+        },
+        "pose_no_update_count_threshold_error": {
+          "type": "integer",
+          "description": "The threshold at which an ERROR state is triggered due to the Pose Topic update not happening continuously for a certain number of times",
+          "default": 100
+        },
+        "twist_no_update_count_threshold_warn": {
+          "type": "integer",
+          "description": "The threshold at which a WARN state is triggered due to the Twist Topic update not happening continuously for a certain number of times",
+          "default": 50
+        },
+        "twist_no_update_count_threshold_error": {
+          "type": "integer",
+          "description": "The threshold at which an ERROR state is triggered due to the Twist Topic update not happening continuously for a certain number of times",
+          "default": 100
+        }
+      },
+      "required": [
+        "pose_no_update_count_threshold_warn",
+        "pose_no_update_count_threshold_error",
+        "twist_no_update_count_threshold_warn",
+        "twist_no_update_count_threshold_error"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -25,8 +25,6 @@
     <remap from="initialpose" to="$(var input_initial_pose_name)"/>
     <remap from="trigger_node_srv" to="$(var input_trigger_node_service_name)"/>
 
-    <param name="pose_frame_id" value="map"/>
-
     <remap from="ekf_odom" to="$(var output_odom_name)"/>
     <remap from="ekf_pose" to="$(var output_pose_name)"/>
     <remap from="ekf_pose_with_covariance" to="$(var output_pose_with_covariance_name)"/>

@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EKF Localizer Configuration",
+  "type": "object",
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "type": "object",
+          "properties": {
+            "node": {
+              "$ref": "sub/node.sub_schema.json#/definitions/node"
+            },
+            "pose_measurement": {
+              "$ref": "sub/pose_measurement.sub_schema.json#/definitions/pose_measurement"
+            },
+            "twist_measurement": {
+              "$ref": "sub/twist_measurement.sub_schema.json#/definitions/twist_measurement"
+            },
+            "process_noise": {
+              "$ref": "sub/process_noise.sub_schema.json#/definitions/process_noise"
+            },
+            "simple_1d_filter_parameters": {
+              "$ref": "sub/simple_1d_filter_parameters.sub_schema.json#/definitions/simple_1d_filter_parameters"
+            },
+            "diagnostics": {
+              "$ref": "sub/diagnostics.sub_schema.json#/definitions/diagnostics"
+            },
+            "misc": {
+              "$ref": "sub/misc.sub_schema.json#/definitions/misc"
+            }
+          },
+          "required": [
+            "node",
+            "pose_measurement",
+            "twist_measurement",
+            "process_noise",
+            "simple_1d_filter_parameters",
+            "diagnostics",
+            "misc"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

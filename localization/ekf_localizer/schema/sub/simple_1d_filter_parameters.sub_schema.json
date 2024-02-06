@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EKF Localizer Configuration of Simple 1D Filter Parameters",
+  "definitions": {
+    "simple_1d_filter_parameters": {
+      "type": "object",
+      "properties": {
+        "z_filter_proc_dev": {
+          "type": "number",
+          "description": "Simple1DFilter - Z filter process deviation",
+          "default": 1.0
+        },
+        "roll_filter_proc_dev": {
+          "type": "number",
+          "description": "Simple1DFilter - Roll filter process deviation",
+          "default": 0.01
+        },
+        "pitch_filter_proc_dev": {
+          "type": "number",
+          "description": "Simple1DFilter - Pitch filter process deviation",
+          "default": 0.01
+        }
+      },
+      "required": ["z_filter_proc_dev", "roll_filter_proc_dev", "pitch_filter_proc_dev"],
+      "additionalProperties": false
+    }
+  }
+}
