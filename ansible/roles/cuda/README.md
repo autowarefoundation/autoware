@@ -17,7 +17,7 @@ For Universe, the `cuda_version` version can also be found in:
 [../../playbooks/universe.yaml](../../playbooks/universe.yaml)
 
 ```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
+wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/v1.0/amd64.env && source /tmp/amd64.env
 
 # From: https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#network-repo-installation-for-ubuntu
 

@@ -133,7 +133,7 @@ After downloading you can check integrity of the files with `sha256sum`:
 ```console
 #
 $ cd ~/autoware_data/
-$ wget -q -O - https://raw.githubusercontent.com/autowarefoundation/autoware/main/ansible/roles/artifacts/SHA256SUMS | sha256sum -c
+$ wget -q -O - https://raw.githubusercontent.com/autowarefoundation/autoware/v1.0/ansible/roles/artifacts/SHA256SUMS | sha256sum -c
 ```
 
 Extracting files:

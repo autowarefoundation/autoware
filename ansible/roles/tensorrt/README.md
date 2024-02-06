@@ -15,7 +15,7 @@ For Universe, the `cudnn_version` and `tensorrt_version` variables should be cop
 [amd64.env](../../../amd64.env) or [arm64.env](../../../arm64.env) depending on the architecture used.
 
 ```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
+wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/v1.0/amd64.env && source /tmp/amd64.env
 
 # Taken from: https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing
 

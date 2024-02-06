@@ -14,7 +14,7 @@ For Universe, the `rosdistro` variable can also be found in:
 [../../playbooks/universe.yaml](../../playbooks/universe.yaml)
 
 ```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
+wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/v1.0/amd64.env && source /tmp/amd64.env
 
 # Taken from https://github.com/astuff/pacmod3#installation
 sudo apt install apt-transport-https

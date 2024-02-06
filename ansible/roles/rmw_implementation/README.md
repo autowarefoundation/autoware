@@ -15,7 +15,7 @@ For Universe, the `rosdistro` and `rmw_implementation` variable can also be foun
 [../../playbooks/universe.yaml](../../playbooks/universe.yaml)
 
 ```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
+wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/v1.0/amd64.env && source /tmp/amd64.env
 
 # For details: https://docs.ros.org/en/humble/How-To-Guides/Working-with-multiple-RMW-implementations.html
 sudo apt update
