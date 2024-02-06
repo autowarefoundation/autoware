@@ -274,6 +274,9 @@ PointCloudDataSynchronizerComponent::synchronizeClouds()
   for (const auto & e : cloud_stdmap_) {
     transformed_clouds[e.first] = nullptr;
     if (e.second != nullptr) {
+      if (e.second->data.size() == 0) {
+        continue;
+      }
       pc_stamps.push_back(rclcpp::Time(e.second->header.stamp));
     }
   }
@@ -288,11 +291,22 @@ PointCloudDataSynchronizerComponent::synchronizeClouds()
   // Step2. Calculate compensation transform and concatenate with the oldest stamp
   for (const auto & e : cloud_stdmap_) {
     if (e.second != nullptr) {
+      // transform pointcloud
       sensor_msgs::msg::PointCloud2::SharedPtr transformed_cloud_ptr(
         new sensor_msgs::msg::PointCloud2());
+      sensor_msgs::msg::PointCloud2::SharedPtr transformed_delay_compensated_cloud_ptr(
+        new sensor_msgs::msg::PointCloud2());
+      if (e.second->data.size() == 0) {
+        // gather transformed clouds
+        transformed_delay_compensated_cloud_ptr->header.stamp = oldest_stamp;
+        transformed_delay_compensated_cloud_ptr->header.frame_id = output_frame_;
+        transformed_clouds[e.first] = transformed_delay_compensated_cloud_ptr;
+        continue;
+      }
+      // transform pointcloud to output frame
       transformPointCloud(e.second, transformed_cloud_ptr);
 
-      // calculate transforms to oldest stamp
+      // calculate transforms to oldest stamp and transform pointcloud to oldest stamp
       Eigen::Matrix4f adjust_to_old_data_transform = Eigen::Matrix4f::Identity();
       rclcpp::Time transformed_stamp = rclcpp::Time(e.second->header.stamp);
       for (const auto & stamp : pc_stamps) {
@@ -301,15 +315,15 @@ PointCloudDataSynchronizerComponent::synchronizeClouds()
         adjust_to_old_data_transform = new_to_old_transform * adjust_to_old_data_transform;
         transformed_stamp = std::min(transformed_stamp, stamp);
       }
-      sensor_msgs::msg::PointCloud2::SharedPtr transformed_delay_compensated_cloud_ptr(
-        new sensor_msgs::msg::PointCloud2());
       pcl_ros::transformPointCloud(
         adjust_to_old_data_transform, *transformed_cloud_ptr,
         *transformed_delay_compensated_cloud_ptr);
+
       // gather transformed clouds
       transformed_delay_compensated_cloud_ptr->header.stamp = oldest_stamp;
       transformed_delay_compensated_cloud_ptr->header.frame_id = output_frame_;
       transformed_clouds[e.first] = transformed_delay_compensated_cloud_ptr;
+
     } else {
       not_subscribed_topic_names_.insert(e.first);
     }
@@ -414,7 +428,9 @@ void PointCloudDataSynchronizerComponent::cloud_callback(
   std::lock_guard<std::mutex> lock(mutex_);
   auto input = std::make_shared<sensor_msgs::msg::PointCloud2>(*input_ptr);
   sensor_msgs::msg::PointCloud2::SharedPtr xyzi_input_ptr(new sensor_msgs::msg::PointCloud2());
-  convertToXYZICloud(input, xyzi_input_ptr);
+  if (input->data.size() > 0) {
+    convertToXYZICloud(input, xyzi_input_ptr);
+  }
 
   const bool is_already_subscribed_this = (cloud_stdmap_[topic_name] != nullptr);
   const bool is_already_subscribed_tmp = std::any_of(
