@@ -1,0 +1,3 @@
+/**:
+  ros__parameters:
+    map_loader_name: "/map/pointcloud_map_loader"

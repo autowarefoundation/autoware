@@ -1,8 +1,10 @@
 <launch>
+  <arg name="param_path" default="$(find-pkg-share map_height_fitter)/config/map_height_fitter.param.yaml"/>
+
   <group>
     <push-ros-namespace namespace="map"/>
     <node pkg="map_height_fitter" exec="node" name="map_height_fitter">
-      <param name="map_loader_name" value="/map/pointcloud_map_loader"/>
+      <param from="$(var param_path)"/>
       <remap from="~/pointcloud_map" to="/map/pointcloud_map"/>
       <remap from="~/partial_map_load" to="/map/get_partial_pointcloud_map"/>
     </node>

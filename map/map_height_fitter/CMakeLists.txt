@@ -14,4 +14,7 @@ ament_auto_add_executable(node
   src/node.cpp
 )
 
-ament_auto_package(INSTALL_TO_SHARE launch)
+ament_auto_package(
+  INSTALL_TO_SHARE
+  launch
+  config)
