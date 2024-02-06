@@ -27,6 +27,7 @@
   <exec_depend>gyro_odometer</exec_depend>
   <exec_depend>ndt_scan_matcher</exec_depend>
   <exec_depend>pointcloud_preprocessor</exec_depend>
+  <exec_depend>pose_estimator_arbiter</exec_depend>
   <exec_depend>pose_initializer</exec_depend>
   <exec_depend>pose_instability_detector</exec_depend>
   <exec_depend>topic_tools</exec_depend>

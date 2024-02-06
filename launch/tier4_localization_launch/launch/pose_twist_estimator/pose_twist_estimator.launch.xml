@@ -1,152 +1,116 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- only when running with a real vehicle, the pose_initializer judges the stop -->
   <let name="stop_check_enabled" if="$(eval &quot;'$(var system_run_mode)'=='online'&quot;)" value="true"/>
   <let name="stop_check_enabled" if="$(eval &quot;'$(var system_run_mode)'=='logging_simulation'&quot;)" value="false"/>
 
+  <!-- When gnss_enabled is false, automatic_pose_initializer will not run, only manual initial position estimation is available. -->
+  <arg name="gnss_enabled" default="true" description="gnss availability for initial position estimation"/>
+
+  <!-- split string with underscores -->
+  <let name="available_args" value="[\'ndt\',\'yabloc\',\'eagleye\',\'artag\']"/>
+  <let name="split_function" value="list(set('$(var pose_source)'.split('_')).intersection($(var available_args)))"/>
+  <let name="pose_sources" value="$(eval $(var split_function))"/>
+  <let name="multi_localizer_mode" value="$(eval &quot;len($(var pose_sources))> 1&quot;)"/>
+
+  <!-- organizes flags for which nodes to activate -->
+  <let name="use_ndt_pose" value="$(eval &quot;'ndt' in $(var pose_sources)&quot;)"/>
+  <let name="use_yabloc_pose" value="$(eval &quot;'yabloc' in $(var pose_sources)&quot;)"/>
+  <let name="use_artag_pose" value="$(eval &quot;'artag' in $(var pose_sources)&quot;)"/>
+  <let name="use_eagleye_pose" value="$(eval &quot;'eagleye' in $(var pose_sources)&quot;)"/>
+  <let name="use_eagleye_twist" value="$(eval &quot;'eagleye' == '$(var twist_source)'&quot;)"/>
+  <let name="use_gyro_odom_twist" value="$(eval &quot;'gyro_odom' == '$(var twist_source)'&quot;)"/>
+
   <!-- NDT Scan Matcher Launch (as pose estimator) -->
-  <group if="$(eval &quot;'$(var pose_source)'=='ndt'&quot;)">
-    <group>
-      <push-ros-namespace namespace="pose_estimator"/>
-      <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/ndt_scan_matcher.launch.xml"/>
-    </group>
-    <group>
-      <push-ros-namespace namespace="util"/>
-      <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
-        <arg name="ndt_enabled" value="true"/>
-        <arg name="gnss_enabled" value="true"/>
-        <arg name="ekf_enabled" value="true"/>
-        <arg name="yabloc_enabled" value="false"/>
-        <arg name="stop_check_enabled" value="$(var stop_check_enabled)"/>
-        <arg name="config_file" value="$(var pose_initializer_param_path)"/>
-        <arg name="sub_gnss_pose_cov" value="/sensing/gnss/pose_with_covariance"/>
-      </include>
-      <group if="$(var gnss_enabled)">
-        <include file="$(find-pkg-share automatic_pose_initializer)/launch/automatic_pose_initializer.launch.xml"/>
-      </group>
-      <include file="$(find-pkg-share tier4_localization_launch)/launch/util/util.launch.py">
-        <arg name="lidar_container_name" value="$(var lidar_container_name)"/>
-      </include>
-    </group>
+  <group if="$(var use_ndt_pose)">
+    <push-ros-namespace namespace="pose_estimator"/>
+    <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/ndt_scan_matcher.launch.xml"/>
   </group>
 
   <!-- YabLoc Launch (as pose estimator) -->
-  <group if="$(eval &quot;'$(var pose_source)'=='yabloc'&quot;)">
-    <group>
-      <push-ros-namespace namespace="pose_estimator"/>
-      <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/yabloc.launch.xml"/>
-    </group>
-    <group>
-      <push-ros-namespace namespace="util"/>
-      <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
-        <arg name="ndt_enabled" value="false"/>
-        <arg name="gnss_enabled" value="true"/>
-        <arg name="ekf_enabled" value="true"/>
-        <arg name="yabloc_enabled" value="true"/>
-        <arg name="stop_check_enabled" value="$(var stop_check_enabled)"/>
-        <arg name="config_file" value="$(var pose_initializer_param_path)"/>
-        <arg name="sub_gnss_pose_cov" value="/sensing/gnss/pose_with_covariance"/>
-      </include>
-      <group if="$(var gnss_enabled)">
-        <include file="$(find-pkg-share automatic_pose_initializer)/launch/automatic_pose_initializer.launch.xml"/>
-      </group>
-    </group>
+  <group if="$(var use_yabloc_pose)">
+    <push-ros-namespace namespace="pose_estimator"/>
+    <let name="yabloc_src_image" value="/sensing/camera/traffic_light/image_raw" unless="$(var multi_localizer_mode)"/>
+    <let name="yabloc_src_image" value="/sensing/camera/traffic_light/image_raw/yabloc_relay" if="$(var multi_localizer_mode)"/>
+
+    <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/yabloc.launch.xml">
+      <arg name="src_image" value="$(var yabloc_src_image)"/>
+    </include>
   </group>
 
-  <!-- Gyro Odometer Launch (as pose estimator) -->
-  <group if="$(eval &quot;'$(var twist_source)'=='gyro_odom'&quot;)">
+  <!-- Gyro Odometer Launch (as twist estimator) -->
+  <group if="$(var use_gyro_odom_twist)">
     <push-ros-namespace namespace="twist_estimator"/>
     <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/gyro_odometer.launch.xml"/>
   </group>
 
-  <!-- Eagleye Launch (as pose & twist estimator) -->
-  <group if="$(eval &quot;'$(var pose_source)'=='eagleye' and '$(var twist_source)'=='eagleye'&quot;)">
-    <group>
-      <push-ros-namespace namespace="pose_twist_estimator"/>
-      <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/eagleye/eagleye_rt.launch.xml">
-        <arg name="output_twist_with_cov_name" value="/localization/twist_estimator/twist_with_covariance"/>
-        <arg name="output_pose_with_cov_name" value="/localization/pose_estimator/pose_with_covariance"/>
-        <arg name="use_eagleye_pose" value="true"/>
-        <arg name="use_eagleye_twist" value="true"/>
-      </include>
-    </group>
-    <group>
-      <push-ros-namespace namespace="util"/>
-      <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
-        <arg name="ndt_enabled" value="false"/>
-        <arg name="gnss_enabled" value="true"/>
-        <arg name="ekf_enabled" value="true"/>
-        <arg name="yabloc_enabled" value="false"/>
-        <arg name="stop_check_enabled" value="$(var stop_check_enabled)"/>
-        <arg name="config_file" value="$(var pose_initializer_param_path)"/>
-        <arg name="sub_gnss_pose_cov" value="/localization/pose_estimator/pose_with_covariance"/>
-      </include>
-      <group if="$(var gnss_enabled)">
-        <include file="$(find-pkg-share automatic_pose_initializer)/launch/automatic_pose_initializer.launch.xml"/>
-      </group>
-    </group>
-  </group>
+  <!-- Eagleye Launch -->
+  <group if="$(eval &quot;$(var use_eagleye_pose) or $(var use_eagleye_twist)&quot;)">
+    <let name="eagleye_name_space" value="pose_twist_estimator"/>
+    <let name="eagleye_name_space" value="twist_estimator" unless="$(var use_eagleye_pose)"/>
+    <let name="eagleye_name_space" value="pose_estimator" unless="$(var use_eagleye_twist)"/>
+    <let name="output_pose_with_cov_name" value="/localization/pose_estimator/pose_with_covariance" unless="$(var multi_localizer_mode)"/>
+    <let name="output_pose_with_cov_name" value="/localization/pose_estimator/eagleye/pose_with_covariance/to_relay" if="$(var multi_localizer_mode)"/>
 
-  <!-- Eagleye Launch (as pose estimator) -->
-  <group if="$(eval &quot;'$(var pose_source)'=='eagleye' and '$(var twist_source)'!='eagleye'&quot;)">
-    <group>
-      <push-ros-namespace namespace="pose_estimator"/>
-      <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/eagleye/eagleye_rt.launch.xml">
-        <arg name="output_pose_with_cov_name" value="/localization/pose_estimator/pose_with_covariance"/>
-        <arg name="use_eagleye_pose" value="true"/>
-        <arg name="use_eagleye_twist" value="false"/>
-      </include>
-    </group>
-    <group>
-      <push-ros-namespace namespace="util"/>
-      <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
-        <arg name="ndt_enabled" value="false"/>
-        <arg name="gnss_enabled" value="true"/>
-        <arg name="ekf_enabled" value="true"/>
-        <arg name="yabloc_enabled" value="false"/>
-        <arg name="stop_check_enabled" value="$(var stop_check_enabled)"/>
-        <arg name="config_file" value="$(var pose_initializer_param_path)"/>
-        <arg name="sub_gnss_pose_cov" value="/localization/pose_estimator/pose_with_covariance"/>
-      </include>
-      <group if="$(var gnss_enabled)">
-        <include file="$(find-pkg-share automatic_pose_initializer)/launch/automatic_pose_initializer.launch.xml"/>
-      </group>
-    </group>
-  </group>
-
-  <!-- Eagleye Launch (as twist estimator) -->
-  <group if="$(eval &quot;'$(var pose_source)'!='eagleye' and '$(var twist_source)'=='eagleye'&quot;)">
-    <push-ros-namespace namespace="twist_estimator"/>
+    <push-ros-namespace namespace="$(var eagleye_name_space)"/>
     <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/eagleye/eagleye_rt.launch.xml">
       <arg name="output_twist_with_cov_name" value="/localization/twist_estimator/twist_with_covariance"/>
-      <arg name="use_eagleye_pose" value="false"/>
-      <arg name="use_eagleye_twist" value="true"/>
+      <arg name="output_pose_with_cov_name" value="$(var output_pose_with_cov_name)"/>
+      <arg name="use_eagleye_pose" value="$(var use_eagleye_pose)"/>
+      <arg name="use_eagleye_twist" value="$(var use_eagleye_twist)"/>
     </include>
   </group>
 
   <!-- AR Tag Based Localizer (as pose estimator) -->
-  <group if="$(eval &quot;'$(var pose_source)'=='artag'&quot;)">
-    <group>
-      <push-ros-namespace namespace="pose_estimator"/>
-      <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/ar_tag_based_localizer.launch.xml"/>
+  <group if="$(var use_artag_pose)">
+    <push-ros-namespace namespace="pose_estimator"/>
+    <let name="artag_input_image" value="/sensing/camera/traffic_light/image_raw" unless="$(var multi_localizer_mode)"/>
+    <let name="artag_input_image" value="/sensing/camera/traffic_light/image_raw/artag_relay" if="$(var multi_localizer_mode)"/>
+
+    <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/ar_tag_based_localizer.launch.xml">
+      <arg name="input_image" value="$(var artag_input_image)"/>
+    </include>
+  </group>
+
+  <!-- Pose Estimator Arbiter Launch -->
+  <group if="$(var multi_localizer_mode)">
+    <include file="$(find-pkg-share pose_estimator_arbiter)/launch/pose_estimator_arbiter.launch.xml">
+      <arg name="pose_sources" value="$(var pose_sources)"/>
+      <arg name="input_pointcloud" value="$(var input_pointcloud)"/>
+    </include>
+  </group>
+
+  <!-- Util Launch -->
+  <group>
+    <push-ros-namespace namespace="util"/>
+
+    <!-- pose_initializer -->
+    <let name="sub_gnss_pose_cov" value="/sensing/gnss/pose_with_covariance"/>
+    <group if="$(var use_eagleye_pose)" scoped="false">
+      <let name="sub_gnss_pose_cov" value="/localization/pose_estimator/pose_with_covariance" unless="$(var multi_localizer_mode)"/>
     </group>
 
-    <group>
-      <push-ros-namespace namespace="util"/>
-      <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
-        <arg name="ndt_enabled" value="false"/>
-        <arg name="gnss_enabled" value="false"/>
-        <arg name="ekf_enabled" value="true"/>
-        <arg name="yabloc_enabled" value="false"/>
-        <arg name="stop_check_enabled" value="$(var stop_check_enabled)"/>
-        <arg name="config_file" value="$(var pose_initializer_param_path)"/>
-        <arg name="sub_gnss_pose_cov" value="/sensing/gnss/pose_with_covariance"/>
-      </include>
-      <group if="$(var gnss_enabled)">
-        <include file="$(find-pkg-share automatic_pose_initializer)/launch/automatic_pose_initializer.launch.xml"/>
-      </group>
-      <include file="$(find-pkg-share tier4_localization_launch)/launch/util/util.launch.py">
-        <arg name="lidar_container_name" value="$(var lidar_container_name)"/>
-      </include>
+    <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
+      <arg name="ndt_enabled" value="$(var use_ndt_pose)"/>
+      <arg name="yabloc_enabled" value="$(var use_yabloc_pose)"/>
+      <arg name="gnss_enabled" value="$(var gnss_enabled)"/>
+      <arg name="ekf_enabled" value="true"/>
+      <arg name="stop_check_enabled" value="$(var stop_check_enabled)"/>
+      <arg name="config_file" value="$(var pose_initializer_param_path)"/>
+      <arg name="sub_gnss_pose_cov" value="$(var sub_gnss_pose_cov)"/>
+    </include>
+
+    <!-- automatic_pose_initializer -->
+    <group if="$(var gnss_enabled)">
+      <include file="$(find-pkg-share automatic_pose_initializer)/launch/automatic_pose_initializer.launch.xml"/>
     </group>
+
+    <!-- pointcloud_downsampling -->
+    <let name="override_input_pointcloud" value="$(var input_pointcloud)"/>
+    <let name="override_input_pointcloud" value="$(var input_pointcloud)/relay" if="$(var multi_localizer_mode)"/>
+    <include file="$(find-pkg-share tier4_localization_launch)/launch/util/util.launch.py" if="$(var use_ndt_pose)">
+      <arg name="lidar_container_name" value="$(var lidar_container_name)"/>
+      <arg name="input_pointcloud" value="$(var override_input_pointcloud)"/>
+    </include>
   </group>
 </launch>

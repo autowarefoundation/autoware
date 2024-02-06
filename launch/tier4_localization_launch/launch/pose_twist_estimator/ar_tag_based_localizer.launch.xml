@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
 <launch>
   <group>
+    <arg name="input_image"/>
+
     <include file="$(find-pkg-share ar_tag_based_localizer)/launch/ar_tag_based_localizer.launch.xml">
       <arg name="input_lanelet2_map" value="/map/vector_map"/>
-      <arg name="input_image" value="/sensing/camera/traffic_light/image_raw"/>
+      <arg name="input_image" value="$(var input_image)"/>
       <arg name="input_camera_info" value="/sensing/camera/traffic_light/camera_info"/>
       <arg name="input_ekf_pose" value="/localization/pose_twist_fusion_filter/biased_pose_with_covariance"/>
       <arg name="output_pose_with_covariance" value="/localization/pose_estimator/pose_with_covariance"/>

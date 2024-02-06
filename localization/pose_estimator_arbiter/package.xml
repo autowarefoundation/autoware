@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>pose_estimator_arbiter</name>
+  <version>0.1.0</version>
+  <description>The arbiter of multiple pose estimators</description>
+  <maintainer email="kento.yabuuchi.2@tier4.jp">Kento Yabuuchi</maintainer>
+  <license>Apache License 2.0</license>
+  <author email="kento.yabuuchi.2@tier4.jp">Kento Yabuuchi</author>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <build_depend>autoware_cmake</build_depend>
+
+  <depend>autoware_adapi_v1_msgs</depend>
+  <depend>autoware_auto_mapping_msgs</depend>
+  <depend>diagnostic_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>libgoogle-glog-dev</depend>
+  <depend>magic_enum</depend>
+  <depend>pcl_conversions</depend>
+  <depend>pcl_ros</depend>
+  <depend>pluginlib</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>ublox_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>yabloc_particle_filter</depend>
+
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>rclcpp_components</exec_depend>
+
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+  <test_depend>ros_testing</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
