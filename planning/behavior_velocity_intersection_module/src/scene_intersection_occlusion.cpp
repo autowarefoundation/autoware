@@ -41,8 +41,8 @@ IntersectionModule::getOcclusionStatus(
 
   // ==========================================================================================
   // for the convenience of Psim user, this module ignores occlusion if there has not been any
-  // information published for the associated traffic light, and only runs collision checking on
-  // that intersection lane.
+  // information published for the associated traffic light even if occlusion.enable is true,
+  // and only runs collision checking on that intersection lane.
   //
   // this is because Psim-users/scenario-files do not set traffic light information perfectly
   // most of the times, and they just set bare minimum traffic information only for traffic lights
@@ -53,7 +53,7 @@ IntersectionModule::getOcclusionStatus(
   // or in the simulation, then it should be kept in last_tl_valid_observation_ and this variable
   // becomes false
   // ==========================================================================================
-  const bool no_tl_info_ever = !last_tl_valid_observation_.has_value();
+  const bool no_tl_info_ever = (has_traffic_light_ && !last_tl_valid_observation_.has_value());
   const bool is_amber_or_red_or_no_tl_info_ever =
     (traffic_prioritized_level == TrafficPrioritizedLevel::PARTIALLY_PRIORITIZED) ||
     (traffic_prioritized_level == TrafficPrioritizedLevel::FULLY_PRIORITIZED) || no_tl_info_ever;
