@@ -84,18 +84,18 @@ repositories:
     url: https://github.com/MapIV/transport_drivers.git
     version: boost
   # sensor_kit
-  sensor_kit/sample_sensor_kit_launch:
+  sensor_kit/sensor_kit_launch_training202402:
     type: git
-    url: https://github.com/autowarefoundation/sample_sensor_kit_launch.git
+    url: https://github.com/tier4/sensor_kit_launch_training202402
     version: main
   sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
     type: git
     url: https://github.com/RobotecAI/awsim_sensor_kit_launch.git
     version: main
   # vehicle
-  vehicle/sample_vehicle_launch:
+  vehicle/vehicle_launch_training202402:
     type: git
-    url: https://github.com/autowarefoundation/sample_vehicle_launch.git
+    url: https://github.com/tier4/vehicle_launch_training202402
     version: main
   vehicle/external/pacmod_interface:
     type: git
