@@ -13,3 +13,14 @@
     iou_nms_search_distance_2d: 10.0
     iou_nms_threshold: 0.1
     yaw_norm_thresholds: [0.3, 0.3, 0.3, 0.3, 0.0]
+    score_threshold: 0.35
+    has_twist: false
+    trt_precision: fp16
+    densification_num_past_frames: 1
+    densification_world_frame_id: map
+
+    # weight files
+    encoder_onnx_path: "$(var model_path)/pts_voxel_encoder_$(var model_name).onnx"
+    encoder_engine_path: "$(var model_path)/pts_voxel_encoder_$(var model_name).engine"
+    head_onnx_path: "$(var model_path)/pts_backbone_neck_head_$(var model_name).onnx"
+    head_engine_path: "$(var model_path)/pts_backbone_neck_head_$(var model_name).engine"

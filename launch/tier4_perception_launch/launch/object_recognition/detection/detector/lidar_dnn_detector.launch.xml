@@ -3,7 +3,6 @@
   <!-- Lidar parameters -->
   <arg name="input/pointcloud"/>
   <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`, `clustering`"/>
-  <arg name="lidar_detection_score_threshold" default="0.35"/>
 
   <!-- Lidar detector centerpoint parameters -->
   <arg name="centerpoint_model_name" default="centerpoint_tiny"/>
@@ -17,7 +16,6 @@
       <include file="$(find-pkg-share lidar_centerpoint)/launch/lidar_centerpoint.launch.xml">
         <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
         <arg name="output/objects" value="objects"/>
-        <arg name="score_threshold" value="$(var lidar_detection_score_threshold)"/>
         <arg name="model_name" value="$(var centerpoint_model_name)"/>
         <arg name="model_path" value="$(var centerpoint_model_path)"/>
         <arg name="model_param_path" value="$(var lidar_model_param_path)/$(var centerpoint_model_name).param.yaml"/>

@@ -7,8 +7,6 @@
   <arg name="model_path" default="$(var data_path)/lidar_centerpoint"/>
   <arg name="model_param_path" default="$(find-pkg-share lidar_centerpoint)/config/$(var model_name).param.yaml"/>
   <arg name="class_remapper_param_path" default="$(find-pkg-share lidar_centerpoint)/config/detection_class_remapper.param.yaml"/>
-  <arg name="score_threshold" default="0.35"/>
-  <arg name="has_twist" default="false"/>
   <arg name="build_only" default="false" description="shutdown node after TensorRT engine file is built"/>
 
   <arg name="use_pointcloud_container" default="false" description="use pointcloud_container"/>
@@ -19,18 +17,11 @@
       <composable_node pkg="lidar_centerpoint" plugin="centerpoint::LidarCenterPointNode" name="lidar_centerpoint">
         <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
         <remap from="~/output/objects" to="$(var output/objects)"/>
-        <param name="score_threshold" value="$(var score_threshold)"/>
-        <param name="densification_world_frame_id" value="map"/>
-        <param name="densification_num_past_frames" value="1"/>
-        <param name="trt_precision" value="fp16"/>
-        <param name="has_twist" value="$(var has_twist)"/>
-        <param name="encoder_onnx_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).onnx"/>
-        <param name="encoder_engine_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).engine"/>
-        <param name="head_onnx_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).onnx"/>
-        <param name="head_engine_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).engine"/>
-        <param name="build_only" value="$(var build_only)"/>
-        <param from="$(var model_param_path)"/>
+        <param from="$(var model_param_path)" allow_substs="true"/>
         <param from="$(var class_remapper_param_path)"/>
+
+        <!-- This parameter shall NOT be included in param file. See also: https://github.com/autowarefoundation/autoware.universe/pull/6167 -->
+        <param name="build_only" value="$(var build_only)"/>
       </composable_node>
     </load_composable_node>
   </group>
@@ -38,18 +29,11 @@
     <node pkg="lidar_centerpoint" exec="lidar_centerpoint_node" name="lidar_centerpoint" output="screen">
       <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
       <remap from="~/output/objects" to="$(var output/objects)"/>
-      <param name="score_threshold" value="$(var score_threshold)"/>
-      <param name="densification_world_frame_id" value="map"/>
-      <param name="densification_num_past_frames" value="1"/>
-      <param name="trt_precision" value="fp16"/>
-      <param name="has_twist" value="$(var has_twist)"/>
-      <param name="encoder_onnx_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).onnx"/>
-      <param name="encoder_engine_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).engine"/>
-      <param name="head_onnx_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).onnx"/>
-      <param name="head_engine_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).engine"/>
-      <param name="build_only" value="$(var build_only)"/>
-      <param from="$(var model_param_path)"/>
+      <param from="$(var model_param_path)" allow_substs="true"/>
       <param from="$(var class_remapper_param_path)"/>
+
+      <!-- This parameter shall NOT be included in param file. See also: https://github.com/autowarefoundation/autoware.universe/pull/6167 -->
+      <param name="build_only" value="$(var build_only)"/>
     </node>
   </group>
 </launch>

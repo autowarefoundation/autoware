@@ -45,6 +45,15 @@ We trained the models using <https://github.com/open-mmlab/mmdetection3d>.
 | `nms_iou_threshold`             | double       | -             | IoU threshold for the IoU-based Non Maximum Suppression       |
 | `build_only`                    | bool         | `false`       | shutdown the node after TensorRT engine file is built         |
 
+### The `build_only` option
+
+The `lidar_centerpoint` node has `build_only` option to build the TensorRT engine file from the ONNX file.
+Although it is preferred to move all the ROS parameters in `.param.yaml` file in Autoware Universe, the `build_only` option is not moved to the `.param.yaml` file for now, because it may be used as a flag to execute the build as a pre-task. You can execute with the following command:
+
+```bash
+ros2 launch lidar_centerpoint lidar_centerpoint.launch.xml model_name:=centerpoint_tiny model_path:=/home/autoware/autoware_data/lidar_centerpoint model_param_path:=$(ros2 pkg prefix lidar_centerpoint --share)/config/centerpoint_tiny.param.yaml build_only:=true
+```
+
 ## Assumptions / Known limits
 
 - The `object.existence_probability` is stored the value of classification confidence of a DNN, not probability.
