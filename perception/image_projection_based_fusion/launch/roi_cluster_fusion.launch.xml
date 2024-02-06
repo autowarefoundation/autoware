@@ -22,7 +22,6 @@
   <arg name="sync_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_sync.param.yaml"/>
 
   <!-- debug -->
-  <!-- cspell: ignore minx, maxx, miny, maxy, minz, maxz  -->
   <arg name="input/image0" default="/image_raw0"/>
   <arg name="input/image1" default="/image_raw1"/>
   <arg name="input/image2" default="/image_raw2"/>

@@ -31,10 +31,10 @@
 
     # debug
     debug_mode: false
-    filter_scope_minx: -100
-    filter_scope_maxx: 100
-    filter_scope_miny: -100
-    filter_scope_maxy: 100
-    filter_scope_minz: -100
-    filter_scope_maxz: 100
+    filter_scope_min_x: -100
+    filter_scope_max_x: 100
+    filter_scope_min_y: -100
+    filter_scope_max_y: 100
+    filter_scope_min_z: -100
+    filter_scope_max_z: 100
     image_buffer_size: 15

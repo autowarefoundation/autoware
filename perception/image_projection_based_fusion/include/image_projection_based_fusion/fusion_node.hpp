@@ -44,8 +44,6 @@
 #include <utility>
 #include <vector>
 
-// cspell: ignore minx, maxx, miny, maxy, minz, maxz
-
 namespace image_projection_based_fusion
 {
 using autoware_auto_perception_msgs::msg::DetectedObject;
@@ -131,13 +129,12 @@ protected:
   // debugger
   std::shared_ptr<Debugger> debugger_;
   virtual bool out_of_scope(const ObjType & obj) = 0;
-  // cspell: ignore minx, maxx, miny, maxy, minz, maxz
-  float filter_scope_minx_;
-  float filter_scope_maxx_;
-  float filter_scope_miny_;
-  float filter_scope_maxy_;
-  float filter_scope_minz_;
-  float filter_scope_maxz_;
+  float filter_scope_min_x_;
+  float filter_scope_max_x_;
+  float filter_scope_min_y_;
+  float filter_scope_max_y_;
+  float filter_scope_min_z_;
+  float filter_scope_max_z_;
 
   /** \brief processing time publisher. **/
   std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;

@@ -28,8 +28,6 @@
 #include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
 #endif
 
-// cspell: ignore minx, maxx, miny, maxy, minz, maxz
-
 namespace image_projection_based_fusion
 {
 
@@ -253,17 +251,17 @@ bool RoiClusterFusionNode::out_of_scope(const DetectedObjectWithFeature & obj)
   for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(cluster, "x"), iter_y(cluster, "y"),
        iter_z(cluster, "z");
        iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z) {
-    if (!valid_point(*iter_x, filter_scope_minx_, filter_scope_maxx_)) {
+    if (!valid_point(*iter_x, filter_scope_min_x_, filter_scope_max_x_)) {
       is_out = true;
       break;
     }
 
-    if (!valid_point(*iter_y, filter_scope_miny_, filter_scope_maxy_)) {
+    if (!valid_point(*iter_y, filter_scope_min_y_, filter_scope_max_y_)) {
       is_out = true;
       break;
     }
 
-    if (!valid_point(*iter_z, filter_scope_minz_, filter_scope_maxz_)) {
+    if (!valid_point(*iter_z, filter_scope_min_z_, filter_scope_max_z_)) {
       is_out = true;
       break;
     }
