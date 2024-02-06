@@ -185,29 +185,36 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
     }
 
     // prepare distance is not enough. unavoidable.
-    if (remaining_distance < 1e-3) {
+    if (avoidance_distance < 1e-3) {
       object.reason = AvoidanceDebugFactor::REMAINING_DISTANCE_LESS_THAN_ZERO;
       return std::nullopt;
     }
 
     // calculate lateral jerk.
     const auto required_jerk = PathShifter::calcJerkFromLatLonDistance(
-      avoiding_shift, remaining_distance, helper_->getAvoidanceEgoSpeed());
+      avoiding_shift, avoidance_distance, helper_->getAvoidanceEgoSpeed());
 
     // relax lateral jerk limit. avoidable.
     if (required_jerk < helper_->getLateralMaxJerkLimit()) {
       return std::make_pair(desire_shift_length, avoidance_distance);
     }
 
+    constexpr double LON_DIST_BUFFER = 1e-3;
+
     // avoidance distance is not enough. unavoidable.
     if (!isBestEffort(parameters_->policy_deceleration)) {
-      object.reason = AvoidanceDebugFactor::TOO_LARGE_JERK;
-      return std::nullopt;
+      if (avoidance_distance < helper_->getMinAvoidanceDistance(avoiding_shift) + LON_DIST_BUFFER) {
+        object.reason = AvoidanceDebugFactor::REMAINING_DISTANCE_LESS_THAN_ZERO;
+        return std::nullopt;
+      } else {
+        object.reason = AvoidanceDebugFactor::TOO_LARGE_JERK;
+        return std::nullopt;
+      }
     }
 
     // output avoidance path under lateral jerk constraints.
     const auto feasible_relative_shift_length = PathShifter::calcLateralDistFromJerk(
-      remaining_distance, helper_->getLateralMaxJerkLimit(), helper_->getAvoidanceEgoSpeed());
+      avoidance_distance, helper_->getLateralMaxJerkLimit(), helper_->getAvoidanceEgoSpeed());
 
     if (std::abs(feasible_relative_shift_length) < parameters_->lateral_execution_threshold) {
       object.reason = "LessThanExecutionThreshold";
@@ -218,8 +225,17 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
       desire_shift_length > 0.0 ? feasible_relative_shift_length + current_ego_shift
                                 : -1.0 * feasible_relative_shift_length + current_ego_shift;
 
+    if (
+      avoidance_distance <
+      helper_->getMinAvoidanceDistance(feasible_shift_length) + LON_DIST_BUFFER) {
+      object.reason = AvoidanceDebugFactor::REMAINING_DISTANCE_LESS_THAN_ZERO;
+      return std::nullopt;
+    }
+
+    const double LAT_DIST_BUFFER = desire_shift_length > 0.0 ? 1e-3 : -1e-3;
+
     const auto infeasible =
-      std::abs(feasible_shift_length - object.overhang_dist) <
+      std::abs(feasible_shift_length - object.overhang_dist) - LAT_DIST_BUFFER <
       0.5 * data_->parameters.vehicle_width + object_parameter.safety_buffer_lateral;
     if (infeasible) {
       RCLCPP_DEBUG(rclcpp::get_logger(""), "feasible shift length is not enough to avoid. ");
@@ -227,7 +243,7 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
       return std::nullopt;
     }
 
-    return std::make_pair(feasible_shift_length, avoidance_distance);
+    return std::make_pair(feasible_shift_length - LAT_DIST_BUFFER, avoidance_distance);
   };
 
   const auto is_forward_object = [](const auto & object) { return object.longitudinal > 0.0; };

@@ -261,10 +261,11 @@ public:
 
   bool isComfortable(const AvoidLineArray & shift_lines) const
   {
+    const auto JERK_BUFFER = 0.1;  // [m/sss]
     return std::all_of(shift_lines.begin(), shift_lines.end(), [&](const auto & line) {
       return PathShifter::calcJerkFromLatLonDistance(
                line.getRelativeLength(), line.getRelativeLongitudinal(), getAvoidanceEgoSpeed()) <
-             getLateralMaxJerkLimit();
+             getLateralMaxJerkLimit() + JERK_BUFFER;
     });
   }
 
