@@ -1,13 +1,11 @@
 <launch>
-  <arg name="input_vector_map_topic" default="/map/vector_map"/>
+  <arg name="param_file" default="$(find-pkg-share map_tf_generator)/config/map_tf_generator.param.yaml"/>
 
-  <arg name="map_frame" default="map"/>
-  <arg name="viewer_frame" default="viewer"/>
+  <arg name="input_vector_map_topic" default="/map/vector_map"/>
 
   <node pkg="map_tf_generator" exec="vector_map_tf_generator" name="vector_map_tf_generator">
     <remap from="vector_map" to="$(var input_vector_map_topic)"/>
 
-    <param name="map_frame" value="$(var map_frame)"/>
-    <param name="viewer_frame" value="$(var viewer_frame)"/>
+    <param from="$(var param_file)"/>
   </node>
 </launch>

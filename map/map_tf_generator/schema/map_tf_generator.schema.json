@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Map Tf Generator",
+  "type": "object",
+  "definitions": {
+    "map_tf_generator": {
+      "type": "object",
+      "properties": {
+        "map_frame": {
+          "type": "string",
+          "description": "The parent frame name of viewer frame",
+          "default": "map"
+        },
+        "viewer_frame": {
+          "type": "string",
+          "description": "Name of `viewer` frame",
+          "default": "viewer"
+        }
+      },
+      "required": ["map_frame", "viewer_frame"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/map_tf_generator"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

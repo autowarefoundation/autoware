@@ -43,10 +43,7 @@ None
 
 ### Core Parameters
 
-| Name           | Type   | Default Value | Explanation                           |
-| -------------- | ------ | ------------- | ------------------------------------- |
-| `viewer_frame` | string | viewer        | Name of `viewer` frame                |
-| `map_frame`    | string | map           | The parent frame name of viewer frame |
+{{ json_to_markdown("map/map_tf_generator/schema/map_tf_generator.schema.json") }}
 
 ## Assumptions / Known limits
 

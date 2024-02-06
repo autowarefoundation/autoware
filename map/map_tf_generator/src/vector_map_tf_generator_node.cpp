@@ -31,8 +31,8 @@ public:
   explicit VectorMapTFGeneratorNode(const rclcpp::NodeOptions & options)
   : Node("vector_map_tf_generator", options)
   {
-    map_frame_ = declare_parameter("map_frame", "map");
-    viewer_frame_ = declare_parameter("viewer_frame", "viewer");
+    map_frame_ = declare_parameter<std::string>("map_frame");
+    viewer_frame_ = declare_parameter<std::string>("viewer_frame");
 
     sub_ = create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
       "vector_map", rclcpp::QoS{1}.transient_local(),
