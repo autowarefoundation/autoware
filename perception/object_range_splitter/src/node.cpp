@@ -20,7 +20,7 @@ ObjectRangeSplitterNode::ObjectRangeSplitterNode(const rclcpp::NodeOptions & nod
 : Node("object_range_splitter_node", node_options)
 {
   using std::placeholders::_1;
-  spilt_range_ = declare_parameter("split_range", 30.0);
+  spilt_range_ = declare_parameter<double>("split_range");
   sub_ = this->create_subscription<autoware_auto_perception_msgs::msg::DetectedObjects>(
     "input/object", rclcpp::QoS{1}, std::bind(&ObjectRangeSplitterNode::objectCallback, this, _1));
   long_range_object_pub_ =
