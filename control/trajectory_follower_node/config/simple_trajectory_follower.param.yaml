@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    use_external_target_vel: $(var use_external_target_vel)
+    external_target_vel: $(var external_target_vel)
+    lateral_deviation: $(var lateral_deviation)

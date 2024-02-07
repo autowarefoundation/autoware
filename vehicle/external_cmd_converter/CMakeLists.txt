@@ -15,4 +15,5 @@ rclcpp_components_register_node(external_cmd_converter
 
 ament_auto_package(INSTALL_TO_SHARE
   launch
+  config
 )

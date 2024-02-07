@@ -2,13 +2,11 @@
   <arg name="input_path_topic" default="input/path"/>
   <arg name="output_path_topic" default="output/path"/>
   <arg name="enable_debug_info" default="false"/>
-  <arg name="param_path" default="$(find-pkg-share obstacle_avoidance_planner)/param/obstacle_avoidance_planner.param.yaml"/>
-
+  <arg name="param_path" default="$(find-pkg-share obstacle_avoidance_planner)/config/obstacle_avoidance_planner.param.yaml"/>
   <node pkg="obstacle_avoidance_planner" exec="obstacle_avoidance_planner_node" name="obstacle_avoidance_planner" output="screen">
     <remap from="~/input/path" to="$(var input_path_topic)"/>
     <remap from="~/input/odometry" to="/localization/kinematic_state"/>
     <remap from="~/output/path" to="$(var output_path_topic)"/>
-
     <param from="$(var param_path)"/>
     <param name="enable_debug_info" value="$(var enable_debug_info)"/>
   </node>

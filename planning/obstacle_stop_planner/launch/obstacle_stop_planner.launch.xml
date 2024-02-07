@@ -6,7 +6,6 @@
   <!-- vehicle info -->
   <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml"/>
 
-  <arg name="enable_slow_down" default="false"/>
   <arg name="input_objects" default="/perception/object_recognition/objects"/>
   <arg name="input_pointcloud" default="input/pointcloud"/>
   <arg name="input_trajectory" default="input/trajectory"/>
@@ -21,7 +20,6 @@
     <param from="$(var adaptive_cruise_control_param_path)"/>
     <param from="$(var obstacle_stop_planner_param_path)"/>
     <param from="$(var vehicle_info_param_file)"/>
-    <param name="enable_slow_down" value="$(var enable_slow_down)"/>
     <!-- remap topic name -->
     <remap from="~/output/stop_reason" to="/planning/scenario_planning/status/stop_reason"/>
     <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons"/>

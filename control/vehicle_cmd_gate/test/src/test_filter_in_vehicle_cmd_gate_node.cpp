@@ -331,6 +331,9 @@ std::shared_ptr<VehicleCmdGate> generateNode()
     {"--ros-args", "--params-file", vehicle_cmd_gate_dir + "/config/vehicle_cmd_gate.param.yaml",
      "--ros-args", "--params-file", vehicle_info_util_dir + "/config/vehicle_info.param.yaml"});
 
+  node_options.append_parameter_override(
+    "check_external_emergency_heartbeat", true);  // This parameter has to be set when launching.
+
   const auto override = [&](const auto s, const std::vector<double> v) {
     node_options.append_parameter_override<std::vector<double>>(s, v);
   };

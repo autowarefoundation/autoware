@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="external_cmd_converter_param" default="$(find-pkg-share external_cmd_converter)/config/external_cmd_converter.param.yaml"/>
   <!-- map file -->
   <arg name="csv_path_accel_map" default="$(find-pkg-share raw_vehicle_cmd_converter)/data/default/accel_map.csv"/>
   <arg name="csv_path_brake_map" default="$(find-pkg-share raw_vehicle_cmd_converter)/data/default/brake_map.csv"/>
@@ -24,13 +25,7 @@
 
   <!-- node -->
   <node pkg="external_cmd_converter" exec="external_cmd_converter_node" name="external_cmd_converter" output="screen">
-    <param name="csv_path_accel_map" value="$(var csv_path_accel_map)"/>
-    <param name="csv_path_brake_map" value="$(var csv_path_brake_map)"/>
-    <param name="ref_vel_gain" value="$(var ref_vel_gain)"/>
-    <param name="timer_rate" value="$(var timer_rate)"/>
-    <param name="wait_for_first_topic" value="$(var wait_for_first_topic)"/>
-    <param name="control_command_timeout" value="$(var control_command_timeout)"/>
-    <param name="emergency_stop_timeout" value="$(var emergency_stop_timeout)"/>
+    <param from="$(var external_cmd_converter_param)" allow_substs="true"/>
     <remap from="in/external_control_cmd" to="$(var in/external_control_cmd)"/>
     <remap from="in/shift_cmd" to="$(var in/shift_cmd)"/>
     <remap from="in/emergency_stop" to="$(var in/emergency_stop)"/>

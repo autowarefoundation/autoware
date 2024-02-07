@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    joy_type: DS4
+    joy_type: $(var joy_type)
     update_rate: 10.0
     accel_ratio: 3.0
     brake_ratio: 5.0

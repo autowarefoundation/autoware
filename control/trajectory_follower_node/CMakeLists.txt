@@ -62,4 +62,5 @@ ament_auto_package(
   param
   test
   launch
+  config
 )

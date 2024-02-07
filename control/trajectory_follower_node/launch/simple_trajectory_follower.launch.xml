@@ -5,9 +5,7 @@
 
   <!-- engage_transition_manager -->
   <node pkg="trajectory_follower_node" exec="simple_trajectory_follower_exe" name="simple_trajectory_follower" output="screen">
-    <param name="use_external_target_vel" value="$(var use_external_target_vel)"/>
-    <param name="external_target_vel" value="$(var external_target_vel)"/>
-    <param name="lateral_deviation" value="$(var lateral_deviation)"/>
+    <param from="$(find-pkg-share trajectory_follower_node)/config/simple_trajectory_follower.param.yaml" allow_substs="true"/>
 
     <remap from="input/kinematics" to="/localization/kinematic_state"/>
     <remap from="input/trajectory" to="/planning/scenario_planning/trajectory"/>
