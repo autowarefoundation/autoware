@@ -240,7 +240,7 @@ void ObjectInfoManager::clearObjects()
   parked_objects_.clear();
 };
 
-std::vector<std::shared_ptr<ObjectInfo>> ObjectInfoManager::allObjects()
+std::vector<std::shared_ptr<ObjectInfo>> ObjectInfoManager::allObjects() const
 {
   std::vector<std::shared_ptr<ObjectInfo>> all_objects = attention_area_objects_;
   all_objects.insert(

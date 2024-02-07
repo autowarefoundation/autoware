@@ -351,7 +351,7 @@ void IntersectionModule::cutPredictPathWithinDuration(
 std::optional<intersection::NonOccludedCollisionStop>
 IntersectionModule::isGreenPseudoCollisionStatus(
   const size_t closest_idx, const size_t collision_stopline_idx,
-  const intersection::IntersectionStopLines & intersection_stoplines)
+  const intersection::IntersectionStopLines & intersection_stoplines) const
 {
   // ==========================================================================================
   // if there are any vehicles on the attention area when ego entered the intersection on green
@@ -593,7 +593,8 @@ std::string IntersectionModule::generateEgoRiskEvasiveDiagnosis(
 }
 
 IntersectionModule::CollisionStatus IntersectionModule::detectCollision(
-  const bool is_over_1st_pass_judge_line, const std::optional<bool> is_over_2nd_pass_judge_line)
+  const bool is_over_1st_pass_judge_line,
+  const std::optional<bool> is_over_2nd_pass_judge_line) const
 {
   // ==========================================================================================
   // if collision is detected for multiple objects, we prioritize collision on the first
@@ -603,14 +604,18 @@ IntersectionModule::CollisionStatus IntersectionModule::detectCollision(
   bool collision_at_non_first_lane = false;
 
   // ==========================================================================================
-  // find the objects which is judges as UNSAFE after ego passed pass judge lines.
+  // find the objects which are judged as UNSAFE after ego passed pass judge lines.
   //
   // misjudge_objects are those that were once judged as safe when ego passed the pass judge line
   //
-  // too_late_detect objects are those that (1) were not detected when ego passed the pass judge
-  // line (2) were judged as dangerous at the same time when ego passed the pass judge, which are
-  // expected to have been detected in the prior iteration because ego could have judged as UNSAFE
-  // in the prior iteration
+  // too_late_detect_objects are those that (1) were not detected when ego passed the pass judge
+  // line (2) were judged as dangerous at the same time when ego passed the pass judge line, which
+  // means they were expected to have been detected when ego passed the pass judge lines or in the
+  // prior iteration, because ego could have judged them as UNSAFE if their information was
+  // available at that time.
+  //
+  // that case is both "too late to stop" and "too late to go" for the planner. and basically
+  // detection side is responsible for this fault
   // ==========================================================================================
   std::vector<std::pair<CollisionStatus::BlameType, std::shared_ptr<intersection::ObjectInfo>>>
     misjudge_objects;
@@ -622,13 +627,10 @@ IntersectionModule::CollisionStatus IntersectionModule::detectCollision(
         object_info->predicted_object());
       continue;
     }
-    if (!object_info->is_unsafe()) {
+    if (!object_info->unsafe_info()) {
       continue;
     }
-    const auto & unsafe_info = object_info->is_unsafe().value();
-    setObjectsOfInterestData(
-      object_info->predicted_object().kinematics.initial_pose_with_covariance.pose,
-      object_info->predicted_object().shape, ColorName::RED);
+    const auto & unsafe_info = object_info->unsafe_info().value();
     // ==========================================================================================
     // if ego is over the pass judge lines, then the visualization as "too_late_objects" or
     // "misjudge_objects" is more important than that for "unsafe"
@@ -994,7 +996,7 @@ std::optional<size_t> IntersectionModule::checkAngleForTargetLanelets(
 IntersectionModule::TimeDistanceArray IntersectionModule::calcIntersectionPassingTime(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const bool is_prioritized,
   const intersection::IntersectionStopLines & intersection_stoplines,
-  tier4_debug_msgs::msg::Float64MultiArrayStamped * debug_ttc_array)
+  tier4_debug_msgs::msg::Float64MultiArrayStamped * debug_ttc_array) const
 {
   const double intersection_velocity =
     planner_param_.collision_detection.velocity_profile.default_velocity;

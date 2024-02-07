@@ -109,7 +109,7 @@ public:
     return predicted_object_;
   };
 
-  std::optional<CollisionInterval> is_unsafe() const
+  std::optional<CollisionInterval> unsafe_info() const
   {
     if (safe_under_traffic_control_) {
       return std::nullopt;
@@ -246,7 +246,7 @@ public:
 
   const std::vector<std::shared_ptr<ObjectInfo>> & parkedObjects() const { return parked_objects_; }
 
-  std::vector<std::shared_ptr<ObjectInfo>> allObjects();
+  std::vector<std::shared_ptr<ObjectInfo>> allObjects() const;
 
   const std::unordered_map<unique_identifier_msgs::msg::UUID, std::shared_ptr<ObjectInfo>> &
   getObjectsMap()

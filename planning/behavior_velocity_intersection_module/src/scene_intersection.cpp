@@ -52,7 +52,6 @@ IntersectionModule::IntersectionModule(
   const std::string & turn_direction, const bool has_traffic_light, rclcpp::Node & node,
   const rclcpp::Logger logger, const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock),
-  node_(node),
   lane_id_(lane_id),
   associative_ids_(associative_ids),
   turn_direction_(turn_direction),
@@ -88,10 +87,10 @@ IntersectionModule::IntersectionModule(
   }
 
   decision_state_pub_ =
-    node_.create_publisher<std_msgs::msg::String>("~/debug/intersection/decision_state", 1);
-  ego_ttc_pub_ = node_.create_publisher<tier4_debug_msgs::msg::Float64MultiArrayStamped>(
+    node.create_publisher<std_msgs::msg::String>("~/debug/intersection/decision_state", 1);
+  ego_ttc_pub_ = node.create_publisher<tier4_debug_msgs::msg::Float64MultiArrayStamped>(
     "~/debug/intersection/ego_ttc", 1);
-  object_ttc_pub_ = node_.create_publisher<tier4_debug_msgs::msg::Float64MultiArrayStamped>(
+  object_ttc_pub_ = node.create_publisher<tier4_debug_msgs::msg::Float64MultiArrayStamped>(
     "~/debug/intersection/object_ttc", 1);
 }
 
@@ -105,11 +104,13 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   const auto decision_result = modifyPathVelocityDetail(path, stop_reason);
   prev_decision_result_ = decision_result;
 
-  const std::string decision_type = "intersection" + std::to_string(module_id_) + " : " +
-                                    intersection::formatDecisionResult(decision_result);
-  std_msgs::msg::String decision_result_msg;
-  decision_result_msg.data = decision_type;
-  decision_state_pub_->publish(decision_result_msg);
+  {
+    const std::string decision_type = "intersection" + std::to_string(module_id_) + " : " +
+                                      intersection::formatDecisionResult(decision_result);
+    std_msgs::msg::String decision_result_msg;
+    decision_result_msg.data = decision_type;
+    decision_state_pub_->publish(decision_result_msg);
+  }
 
   prepareRTCStatus(decision_result, *path);
 
@@ -225,6 +226,14 @@ intersection::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   updateObjectInfoManagerCollision(
     path_lanelets, time_distance_array, traffic_prioritized_level, safely_passed_1st_judge_line,
     safely_passed_2nd_judge_line);
+  for (const auto & object_info : object_info_manager_.attentionObjects()) {
+    if (!object_info->unsafe_info()) {
+      continue;
+    }
+    setObjectsOfInterestData(
+      object_info->predicted_object().kinematics.initial_pose_with_covariance.pose,
+      object_info->predicted_object().shape, ColorName::RED);
+  }
 
   const auto [has_collision, collision_position, too_late_detect_objects, misjudge_objects] =
     detectCollision(is_over_1st_pass_judge_line, is_over_2nd_pass_judge_line);
@@ -241,17 +250,17 @@ intersection::DecisionResult IntersectionModule::modifyPathVelocityDetail(
       "no collision is detected", "ego can safely pass the intersection at this rate"};
   }
 
-  const bool collision_on_1st_attention_lane =
-    has_collision && (collision_position == intersection::CollisionInterval::LanePosition::FIRST);
   // ==========================================================================================
   // this state is very dangerous because ego is very close/over the boundary of 1st attention lane
   // and collision is detected on the 1st lane. Since the 2nd attention lane also exists in this
   // case, possible another collision may be expected on the 2nd attention lane too.
   // ==========================================================================================
   std::string safety_report = safety_diag;
-  if (
-    is_over_1st_pass_judge_line && is_over_2nd_pass_judge_line &&
-    is_over_2nd_pass_judge_line.value() && collision_on_1st_attention_lane) {
+  if (const bool collision_on_1st_attention_lane =
+        has_collision &&
+        (collision_position == intersection::CollisionInterval::LanePosition::FIRST);
+      is_over_1st_pass_judge_line && is_over_2nd_pass_judge_line.has_value() &&
+      !is_over_2nd_pass_judge_line.value() && collision_on_1st_attention_lane) {
     safety_report +=
       "\nego is between the 1st and 2nd pass judge line but collision is expected on the 1st "
       "attention lane, which is dangerous.";
@@ -375,7 +384,7 @@ intersection::DecisionResult IntersectionModule::modifyPathVelocityDetail(
         closest_idx,
         first_attention_stopline_idx,
         occlusion_wo_tl_pass_judge_line_idx,
-        safety_diag};
+        safety_report};
     }
 
     // ==========================================================================================
@@ -383,7 +392,7 @@ intersection::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     //
     // if ego is stuck by static occlusion in the presence of traffic light, start timeout count
     // ==========================================================================================
-    const bool is_static_occlusion = occlusion_status == OcclusionType::STATICALLY_OCCLUDED;
+    const bool is_static_occlusion = std::holds_alternative<StaticallyOccluded>(occlusion_status);
     const bool is_stuck_by_static_occlusion =
       stoppedAtPosition(
         occlusion_stopline_idx, planner_param_.occlusion.temporal_stop_time_before_peeking) &&
