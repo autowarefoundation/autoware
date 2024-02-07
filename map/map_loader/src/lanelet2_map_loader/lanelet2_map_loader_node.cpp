@@ -61,8 +61,8 @@ Lanelet2MapLoaderNode::Lanelet2MapLoaderNode(const rclcpp::NodeOptions & options
     sub_map_projector_info_,
     [this](const MapProjectorInfo::Message::ConstSharedPtr msg) { on_map_projector_info(msg); });
 
-  declare_parameter("lanelet2_map_path", "");
-  declare_parameter("center_line_resolution", 5.0);
+  declare_parameter<std::string>("lanelet2_map_path");
+  declare_parameter<double>("center_line_resolution");
 }
 
 void Lanelet2MapLoaderNode::on_map_projector_info(

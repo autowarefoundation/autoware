@@ -7,3 +7,5 @@
 
     # only used when downsample_whole_load enabled
     leaf_size: 3.0 # downsample leaf size [m]
+    pcd_paths_or_directory: [$(var pcd_paths_or_directory)] # Path to the pointcloud map file or directory
+    pcd_metadata_path: $(var pcd_metadata_path) # Path to pointcloud metadata file

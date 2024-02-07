@@ -71,7 +71,7 @@ Lanelet2MapVisualizationNode::Lanelet2MapVisualizationNode(const rclcpp::NodeOpt
 {
   using std::placeholders::_1;
 
-  viz_lanelets_centerline_ = this->declare_parameter("viz_lanelets_centerline", true);
+  viz_lanelets_centerline_ = true;
 
   sub_map_bin_ = this->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
     "input/lanelet2_map", rclcpp::QoS{1}.transient_local(),

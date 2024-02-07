@@ -7,8 +7,6 @@
     <remap from="output/pointcloud_map" to="/map/pointcloud_map"/>
     <remap from="service/get_partial_pcd_map" to="/map/get_partial_pointcloud_map"/>
     <remap from="service/get_selected_pcd_map" to="/map/get_selected_pointcloud_map"/>
-    <param name="pcd_paths_or_directory" value="[$(var pointcloud_map_path)]"/>
-    <param name="pcd_metadata_path" value="$(var pcd_metadata_path)"/>
-    <param from="$(var pointcloud_map_loader_param_path)"/>
+    <param from="$(var pointcloud_map_loader_param_path)" allow_substs="true"/>
   </node>
 </launch>

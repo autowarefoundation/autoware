@@ -5,13 +5,12 @@
   <arg name="lanelet2_map_marker_topic" default="vector_map_marker"/>
 
   <node pkg="map_loader" exec="map_hash_generator" name="map_hash_generator">
-    <param name="lanelet2_map_path" value="$(var lanelet2_map_path)"/>
+    <param from="$(var lanelet2_map_loader_param_path)" allow_substs="true"/>
   </node>
 
   <node pkg="map_loader" exec="lanelet2_map_loader" name="lanelet2_map_loader">
     <remap from="output/lanelet2_map" to="$(var lanelet2_map_topic)"/>
-    <param name="lanelet2_map_path" value="$(var lanelet2_map_path)"/>
-    <param from="$(var lanelet2_map_loader_param_path)"/>
+    <param from="$(var lanelet2_map_loader_param_path)" allow_substs="true"/>
   </node>
 
   <node pkg="map_loader" exec="lanelet2_map_visualization" name="lanelet2_map_visualization">

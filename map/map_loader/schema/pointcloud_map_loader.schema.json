@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for point cloud map loader Node",
+  "type": "object",
+  "definitions": {
+    "pointcloud_map_loader": {
+      "type": "object",
+      "properties": {
+        "enable_whole_load": {
+          "type": "boolean",
+          "description": "Enable raw pointcloud map publishing",
+          "default": true
+        },
+        "enable_downsampled_whole_load": {
+          "type": "boolean",
+          "description": "Enable downsampled pointcloud map publishing",
+          "default": false
+        },
+        "enable_partial_load": {
+          "type": "boolean",
+          "description": "Enable partial pointcloud map server",
+          "default": true
+        },
+        "enable_selected_load": {
+          "type": "boolean",
+          "description": "Enable selected pointcloud map server",
+          "default": false
+        },
+        "leaf_size": {
+          "type": "number",
+          "description": "Downsampling leaf size (only used when enable_downsampled_whole_load is set true)",
+          "default": 3.0
+        },
+        "pcd_paths_or_directory": {
+          "type": "array",
+          "description": "Path(s) to pointcloud map file or directory",
+          "default": []
+        },
+        "pcd_metadata_path": {
+          "type": "string",
+          "description": "Path to pointcloud metadata file",
+          "default": ""
+        }
+      },
+      "required": [
+        "enable_whole_load",
+        "enable_downsampled_whole_load",
+        "enable_partial_load",
+        "enable_selected_load",
+        "leaf_size",
+        "pcd_paths_or_directory",
+        "pcd_metadata_path"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/pointcloud_map_loader"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

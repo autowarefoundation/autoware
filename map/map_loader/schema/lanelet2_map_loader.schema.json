@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for lanelet2 map loader Node",
+  "type": "object",
+  "definitions": {
+    "lanelet2_map_loader": {
+      "type": "object",
+      "properties": {
+        "center_line_resolution": {
+          "type": "number",
+          "description": "Resolution of the Lanelet center line [m]",
+          "default": "5.0"
+        },
+        "lanelet2_map_path": {
+          "type": "string",
+          "description": "The lanelet2 map path pointing to the .osm file",
+          "default": ""
+        }
+      },
+      "required": ["center_line_resolution", "lanelet2_map_path"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/lanelet2_map_loader"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
