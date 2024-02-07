@@ -126,7 +126,6 @@
           # safety check configuration
           enable_safety_check: true
           # collision check parameters
-          check_all_predicted_path: true
           publish_debug_marker: false
           rss_params:
             rear_vehicle_reaction_time: 2.0

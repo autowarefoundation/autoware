@@ -370,31 +370,31 @@ Parameters under `path_safety_check.ego_predicted_path` specify the ego vehicle'
 
 Parameters under `target_filtering` are related to filtering target objects for safety check.
 
-| Name                                            | Unit  | Type   | Description                                        | Default value |
-| :---------------------------------------------- | :---- | :----- | :------------------------------------------------- | :------------ |
-| safety_check_time_horizon                       | [s]   | double | Time horizon for safety check                      | 5.0           |
-| safety_check_time_resolution                    | [s]   | double | Time resolution for safety check                   | 1.0           |
-| object_check_forward_distance                   | [m]   | double | Forward distance for object detection              | 10.0          |
-| object_check_backward_distance                  | [m]   | double | Backward distance for object detection             | 100.0         |
-| ignore_object_velocity_threshold                | [m/s] | double | Velocity threshold below which objects are ignored | 1.0           |
-| object_types_to_check.check_car                 | -     | bool   | Flag to check cars                                 | true          |
-| object_types_to_check.check_truck               | -     | bool   | Flag to check trucks                               | true          |
-| object_types_to_check.check_bus                 | -     | bool   | Flag to check buses                                | true          |
-| object_types_to_check.check_trailer             | -     | bool   | Flag to check trailers                             | true          |
-| object_types_to_check.check_bicycle             | -     | bool   | Flag to check bicycles                             | true          |
-| object_types_to_check.check_motorcycle          | -     | bool   | Flag to check motorcycles                          | true          |
-| object_types_to_check.check_pedestrian          | -     | bool   | Flag to check pedestrians                          | true          |
-| object_types_to_check.check_unknown             | -     | bool   | Flag to check unknown object types                 | false         |
-| object_lane_configuration.check_current_lane    | -     | bool   | Flag to check the current lane                     | true          |
-| object_lane_configuration.check_right_side_lane | -     | bool   | Flag to check the right side lane                  | true          |
-| object_lane_configuration.check_left_side_lane  | -     | bool   | Flag to check the left side lane                   | true          |
-| object_lane_configuration.check_shoulder_lane   | -     | bool   | Flag to check the shoulder lane                    | true          |
-| object_lane_configuration.check_other_lane      | -     | bool   | Flag to check other lanes                          | false         |
-| include_opposite_lane                           | -     | bool   | Flag to include the opposite lane in check         | false         |
-| invert_opposite_lane                            | -     | bool   | Flag to invert the opposite lane check             | false         |
-| check_all_predicted_path                        | -     | bool   | Flag to check all predicted paths                  | true          |
-| use_all_predicted_path                          | -     | bool   | Flag to use all predicted paths                    | true          |
-| use_predicted_path_outside_lanelet              | -     | bool   | Flag to use predicted paths outside of lanelets    | false         |
+| Name                                            | Unit  | Type   | Description                                                        | Default value |
+| :---------------------------------------------- | :---- | :----- | :----------------------------------------------------------------- | :------------ |
+| safety_check_time_horizon                       | [s]   | double | Time horizon for predicted paths of the ego and dynamic objects    | 5.0           |
+| safety_check_time_resolution                    | [s]   | double | Time resolution for predicted paths of the ego and dynamic objects | 1.0           |
+| object_check_forward_distance                   | [m]   | double | Forward distance for object detection                              | 10.0          |
+| object_check_backward_distance                  | [m]   | double | Backward distance for object detection                             | 100.0         |
+| ignore_object_velocity_threshold                | [m/s] | double | Velocity threshold below which objects are ignored                 | 1.0           |
+| object_types_to_check.check_car                 | -     | bool   | Flag to check cars                                                 | true          |
+| object_types_to_check.check_truck               | -     | bool   | Flag to check trucks                                               | true          |
+| object_types_to_check.check_bus                 | -     | bool   | Flag to check buses                                                | true          |
+| object_types_to_check.check_trailer             | -     | bool   | Flag to check trailers                                             | true          |
+| object_types_to_check.check_bicycle             | -     | bool   | Flag to check bicycles                                             | true          |
+| object_types_to_check.check_motorcycle          | -     | bool   | Flag to check motorcycles                                          | true          |
+| object_types_to_check.check_pedestrian          | -     | bool   | Flag to check pedestrians                                          | true          |
+| object_types_to_check.check_unknown             | -     | bool   | Flag to check unknown object types                                 | false         |
+| object_lane_configuration.check_current_lane    | -     | bool   | Flag to check the current lane                                     | true          |
+| object_lane_configuration.check_right_side_lane | -     | bool   | Flag to check the right side lane                                  | true          |
+| object_lane_configuration.check_left_side_lane  | -     | bool   | Flag to check the left side lane                                   | true          |
+| object_lane_configuration.check_shoulder_lane   | -     | bool   | Flag to check the shoulder lane                                    | true          |
+| object_lane_configuration.check_other_lane      | -     | bool   | Flag to check other lanes                                          | false         |
+| include_opposite_lane                           | -     | bool   | Flag to include the opposite lane in check                         | false         |
+| invert_opposite_lane                            | -     | bool   | Flag to invert the opposite lane check                             | false         |
+| check_all_predicted_path                        | -     | bool   | Flag to check all predicted paths                                  | true          |
+| use_all_predicted_path                          | -     | bool   | Flag to use all predicted paths                                    | true          |
+| use_predicted_path_outside_lanelet              | -     | bool   | Flag to use predicted paths outside of lanelets                    | false         |
 
 ### Safety Check Parameters
 

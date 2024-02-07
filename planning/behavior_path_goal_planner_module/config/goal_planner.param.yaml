@@ -127,7 +127,7 @@
           delay_until_departure: 1.0
         # For target object filtering
         target_filtering:
-          safety_check_time_horizon: 5.0
+          safety_check_time_horizon: 10.0
           safety_check_time_resolution: 1.0
           # detection range
           object_check_forward_distance: 10.0
@@ -163,7 +163,6 @@
           method: "integral_predicted_polygon"
           keep_unsafe_time: 3.0
           # collision check parameters
-          check_all_predicted_path: true
           publish_debug_marker: false
           rss_params:
             rear_vehicle_reaction_time: 2.0
