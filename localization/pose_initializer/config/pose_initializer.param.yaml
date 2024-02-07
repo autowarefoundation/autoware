@@ -2,6 +2,11 @@
   ros__parameters:
     gnss_pose_timeout: 3.0 # [sec]
     stop_check_duration: 3.0 # [sec]
+    ekf_enabled: $(var ekf_enabled)
+    gnss_enabled: $(var gnss_enabled)
+    yabloc_enabled: $(var yabloc_enabled)
+    ndt_enabled: $(var ndt_enabled)
+    stop_check_enabled: $(var stop_check_enabled)
 
     # from gnss
     gnss_particle_covariance:

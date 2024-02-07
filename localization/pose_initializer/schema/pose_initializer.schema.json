@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Pose Initializer Node",
+  "type": "object",
+  "definitions": {
+    "pose_initializer": {
+      "type": "object",
+      "properties": {
+        "gnss_pose_timeout": {
+          "type": "number",
+          "description": "The duration that the GNSS pose is valid. [sec]",
+          "default": "3.0",
+          "minimum": 0.0
+        },
+        "stop_check_enabled": {
+          "type": "string",
+          "description": "If true, initialization is accepted only when the vehicle is stopped.",
+          "default": "true"
+        },
+        "stop_check_duration": {
+          "type": "number",
+          "description": "The duration used for the stop check above. [sec]",
+          "default": "3.0",
+          "minimum": 0.0
+        },
+        "ekf_enabled": {
+          "type": "string",
+          "description": "If true, EKF localizer is activated.",
+          "default": "true"
+        },
+        "gnss_enabled": {
+          "type": "string",
+          "description": "If true, use the GNSS pose when no pose is specified.",
+          "default": "true"
+        },
+        "yabloc_enabled": {
+          "type": "string",
+          "description": "If true, YabLocModule is used.",
+          "default": "true"
+        },
+        "ndt_enabled": {
+          "type": "string",
+          "description": "If true, the pose will be estimated by NDT scan matcher, otherwise it is passed through.",
+          "default": "true"
+        },
+        "gnss_particle_covariance": {
+          "type": "array",
+          "description": "gnss particle covariance",
+          "default": "[1.0, 0.0, 0.0, 0.0, 0.0, 0.0,\n  0.0, 1.0, 0.0, 0.0, 0.0, 0.0,\n 0.0, 0.0, 0.01, 0.0, 0.0, 0.0,\n 0.0, 0.0, 0.0, 0.01, 0.0, 0.0,\n 0.0, 0.0, 0.0, 0.0, 0.01, 0.0,\n 0.0, 0.0, 0.0, 0.0, 0.0, 10.0]"
+        },
+        "output_pose_covariance": {
+          "type": "array",
+          "description": "output pose covariance",
+          "default": "[1.0, 0.0, 0.0, 0.0, 0.0, 0.0,\n 0.0, 1.0, 0.0,  0.0,  0.0,  0.0,\n 0.0, 0.0, 0.01, 0.0, 0.0, 0.0,\n 0.0, 0.0, 0.0, 0.01, 0.0, 0.0,\n 0.0, 0.0, 0.0, 0.0, 0.01, 0.0,\n 0.0, 0.0, 0.0, 0.0, 0.0, 0.2]"
+        }
+      },
+      "required": [
+        "gnss_pose_timeout",
+        "stop_check_duration",
+        "ekf_enabled",
+        "gnss_enabled",
+        "yabloc_enabled",
+        "ndt_enabled",
+        "stop_check_enabled",
+        "gnss_particle_covariance",
+        "output_pose_covariance"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/pose_initializer"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

@@ -22,6 +22,8 @@ This node depends on the map height fitter library.
 | `gnss_enabled`        | bool | If true, use the GNSS pose when no pose is specified.                                    |
 | `gnss_pose_timeout`   | bool | The duration that the GNSS pose is valid.                                                |
 
+{{ json_to_markdown("localization/pose_initializer/schema/pose_initializer.schema.json") }}
+
 ### Services
 
 | Name                       | Type                                                | Description           |

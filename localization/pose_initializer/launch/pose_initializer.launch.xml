@@ -9,13 +9,7 @@
   <arg name="sub_gnss_pose_cov" default="sub_gnss_pose_cov"/>
 
   <node pkg="pose_initializer" exec="pose_initializer_node" name="pose_initializer_node">
-    <param from="$(var config_file)"/>
-    <param name="ndt_enabled" value="$(var ndt_enabled)"/>
-    <param name="gnss_enabled" value="$(var gnss_enabled)"/>
-    <param name="ekf_enabled" value="$(var ekf_enabled)"/>
-    <param name="yabloc_enabled" value="$(var yabloc_enabled)"/>
-    <param name="stop_check_enabled" value="$(var stop_check_enabled)"/>
-
+    <param from="$(var config_file)" allow_substs="true"/>
     <remap from="yabloc_align" to="/localization/pose_estimator/yabloc/initializer/yabloc_align_srv"/>
     <remap from="ndt_align" to="/localization/pose_estimator/ndt_align_srv"/>
     <remap from="stop_check_twist" to="/sensing/vehicle_velocity_converter/twist_with_covariance"/>
