@@ -12,7 +12,7 @@
 
       <arg name="client_map_loader" value="/map/get_differential_pointcloud_map"/>
 
-      <arg name="param_file" value="$(var ndt_scan_matcher_param_path)"/>
+      <arg name="param_file" value="$(var ndt_scan_matcher/ndt_scan_matcher_param_path)"/>
     </include>
   </group>
 </launch>

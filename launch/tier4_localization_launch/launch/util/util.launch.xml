@@ -10,21 +10,21 @@
 
   <load_composable_node target="$(var lidar_container_name)">
     <composable_node pkg="pointcloud_preprocessor" plugin="pointcloud_preprocessor::CropBoxFilterComponent" name="crop_box_filter_measurement_range">
-      <param from="$(var crop_box_filter_measurement_range_param_path)"/>
+      <param from="$(var ndt_scan_matcher/pointcloud_preprocessor/crop_box_filter_measurement_range_param_path)"/>
       <remap from="input" to="$(var input_pointcloud)"/>
       <remap from="output" to="measurement_range/pointcloud"/>
       <extra_arg name="use_intra_process_comms" value="$(var use_intra_process)"/>
     </composable_node>
 
     <composable_node pkg="pointcloud_preprocessor" plugin="pointcloud_preprocessor::VoxelGridDownsampleFilterComponent" name="voxel_grid_downsample_filter">
-      <param from="$(var voxel_grid_downsample_filter_param_path)"/>
+      <param from="$(var ndt_scan_matcher/pointcloud_preprocessor/voxel_grid_downsample_filter_param_path)"/>
       <remap from="input" to="measurement_range/pointcloud"/>
       <remap from="output" to="voxel_grid_downsample/pointcloud"/>
       <extra_arg name="use_intra_process_comms" value="$(var use_intra_process)"/>
     </composable_node>
 
     <composable_node pkg="pointcloud_preprocessor" plugin="pointcloud_preprocessor::RandomDownsampleFilterComponent" name="random_downsample_filter">
-      <param from="$(var random_downsample_filter_param_path)"/>
+      <param from="$(var ndt_scan_matcher/pointcloud_preprocessor/random_downsample_filter_param_path)"/>
       <remap from="input" to="voxel_grid_downsample/pointcloud"/>
       <remap from="output" to="$(var output/pointcloud)"/>
       <extra_arg name="use_intra_process_comms" value="$(var use_intra_process)"/>
