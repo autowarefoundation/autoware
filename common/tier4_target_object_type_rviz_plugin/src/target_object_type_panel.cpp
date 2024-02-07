@@ -60,7 +60,12 @@ void TargetObjectTypePanel::setParameters()
   modules_ = {
     "avoidance",
     "avoidance_by_lane_change",
+    "dynamic_avoidance",
     "lane_change",
+    "start_planner",
+    "goal_planner",
+    "crosswalk",
+    "surround_obstacle_checker",
     "obstacle_cruise (inside)",
     "obstacle_cruise (outside)",
     "obstacle_stop",
@@ -89,15 +94,8 @@ void TargetObjectTypePanel::setParameters()
     ParamNameEnableObject param_name;
     param_name.node =
       "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner";
-    param_name.ns = "avoidance.target_object";
-    param_name.name.emplace("car", "car.is_target");
-    param_name.name.emplace("truck", "truck.is_target");
-    param_name.name.emplace("bus", "bus.is_target");
-    param_name.name.emplace("trailer", "trailer.is_target");
-    param_name.name.emplace("unknown", "unknown.is_target");
-    param_name.name.emplace("bicycle", "bicycle.is_target");
-    param_name.name.emplace("motorcycle", "motorcycle.is_target");
-    param_name.name.emplace("pedestrian", "pedestrian.is_target");
+    param_name.ns = "avoidance.target_filtering.target_type";
+    param_name.name = default_param_name.name;
     param_names_.emplace(module, param_name);
   }
 
@@ -107,15 +105,8 @@ void TargetObjectTypePanel::setParameters()
     ParamNameEnableObject param_name;
     param_name.node =
       "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner";
-    param_name.ns = "avoidance_by_lane_change.target_object";
-    param_name.name.emplace("car", "car.is_target");
-    param_name.name.emplace("truck", "truck.is_target");
-    param_name.name.emplace("bus", "bus.is_target");
-    param_name.name.emplace("trailer", "trailer.is_target");
-    param_name.name.emplace("unknown", "unknown.is_target");
-    param_name.name.emplace("bicycle", "bicycle.is_target");
-    param_name.name.emplace("motorcycle", "motorcycle.is_target");
-    param_name.name.emplace("pedestrian", "pedestrian.is_target");
+    param_name.ns = "avoidance_by_lane_change.target_filtering.target_type";
+    param_name.name = default_param_name.name;
     param_names_.emplace(module, param_name);
   }
 
@@ -126,6 +117,64 @@ void TargetObjectTypePanel::setParameters()
     param_name.node =
       "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner";
     param_name.ns = "lane_change.target_object";
+    param_name.name = default_param_name.name;
+    param_names_.emplace(module, param_name);
+  }
+
+  // start_planner
+  {
+    const auto module = "start_planner";
+    ParamNameEnableObject param_name;
+    param_name.node =
+      "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner";
+    param_name.ns = "start_planner.path_safety_check.target_filtering.object_types_to_check";
+    param_name.name.emplace("car", "check_car");
+    param_name.name.emplace("truck", "check_truck");
+    param_name.name.emplace("bus", "check_bus");
+    param_name.name.emplace("trailer", "check_trailer");
+    param_name.name.emplace("unknown", "check_unknown");
+    param_name.name.emplace("bicycle", "check_bicycle");
+    param_name.name.emplace("motorcycle", "check_motorcycle");
+    param_name.name.emplace("pedestrian", "check_pedestrian");
+    param_names_.emplace(module, param_name);
+  }
+
+  // goal_planner
+  {
+    const auto module = "goal_planner";
+    ParamNameEnableObject param_name;
+    param_name.node =
+      "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner";
+    param_name.ns = "goal_planner.path_safety_check.target_filtering.object_types_to_check";
+    param_name.name.emplace("car", "check_car");
+    param_name.name.emplace("truck", "check_truck");
+    param_name.name.emplace("bus", "check_bus");
+    param_name.name.emplace("trailer", "check_trailer");
+    param_name.name.emplace("unknown", "check_unknown");
+    param_name.name.emplace("bicycle", "check_bicycle");
+    param_name.name.emplace("motorcycle", "check_motorcycle");
+    param_name.name.emplace("pedestrian", "check_pedestrian");
+    param_names_.emplace(module, param_name);
+  }
+
+  // dynamic_avoidance
+  {
+    const auto module = "dynamic_avoidance";
+    ParamNameEnableObject param_name;
+    param_name.node =
+      "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner";
+    param_name.ns = "dynamic_avoidance.target_object";
+    param_name.name = default_param_name.name;
+    param_names_.emplace(module, param_name);
+  }
+
+  // crosswalk
+  {
+    const auto module = "crosswalk";
+    ParamNameEnableObject param_name;
+    param_name.node =
+      "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner";
+    param_name.ns = "crosswalk.object_filtering.target_object";
     param_name.name = default_param_name.name;
     param_names_.emplace(module, param_name);
   }
@@ -149,6 +198,24 @@ void TargetObjectTypePanel::setParameters()
       "/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner";
     param_name.ns = "common.cruise_obstacle_type.outside";
     param_name.name = default_param_name.name;
+    param_names_.emplace(module, param_name);
+  }
+
+  // surround_obstacle_check
+  {
+    const auto module = "surround_obstacle_checker";
+    ParamNameEnableObject param_name;
+    param_name.node =
+      "/planning/scenario_planning/lane_driving/motion_planning/surround_obstacle_checker";
+    param_name.ns = "";
+    param_name.name.emplace("car", "car.enable_check");
+    param_name.name.emplace("truck", "truck.enable_check");
+    param_name.name.emplace("bus", "bus.enable_check");
+    param_name.name.emplace("trailer", "trailer.enable_check");
+    param_name.name.emplace("unknown", "unknown.enable_check");
+    param_name.name.emplace("bicycle", "bicycle.enable_check");
+    param_name.name.emplace("motorcycle", "motorcycle.enable_check");
+    param_name.name.emplace("pedestrian", "pedestrian.enable_check");
     param_names_.emplace(module, param_name);
   }
 
@@ -225,7 +292,8 @@ void TargetObjectTypePanel::updateMatrix()
         continue;
       }
 
-      std::string param_name = module_params.ns + "." + module_params.name.at(target);
+      std::string param_name =
+        (module_params.ns.empty() ? "" : module_params.ns + ".") + module_params.name.at(target);
       auto parameter_result = parameters_client->get_parameters({param_name});
 
       if (!parameter_result.empty()) {
