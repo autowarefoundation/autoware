@@ -1,5 +1,0 @@
-<library path="awf_2d_overlay_vehicle">
-    <class name="awf_2d_overlay_vehicle/SignalDisplay" type="awf_2d_overlay_vehicle::SignalDisplay" base_class_type="rviz_common::Display">
-        <description>Signal overlay plugin for the 3D view.</description>
-    </class>
-</library>

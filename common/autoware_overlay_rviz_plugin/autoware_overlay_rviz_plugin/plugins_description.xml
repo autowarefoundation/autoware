@@ -1,0 +1,5 @@
+<library path="autoware_overlay_rviz_plugin">
+    <class name="autoware_overlay_rviz_plugin/SignalDisplay" type="autoware_overlay_rviz_plugin::SignalDisplay" base_class_type="rviz_common::Display">
+        <description>Signal overlay plugin for the 3D view.</description>
+    </class>
+</library>

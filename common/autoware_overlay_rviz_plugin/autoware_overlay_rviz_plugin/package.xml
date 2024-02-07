@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>autoware_overlay_rviz_plugin</name>
+  <version>0.0.1</version>
+  <description>
+    RViz2 plugin for 2D overlays in the 3D view. Mainly a port of the JSK overlay plugin
+        (https://github.com/jsk-ros-pkg/jsk_visualization).
+  </description>
+  <maintainer email="khalil@leodrive.ai">Khalil Selyan</maintainer>
+
+  <license>BSD-3-Clause</license>
+
+  <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>autoware_overlay_msgs</depend>
+  <depend>autoware_perception_msgs</depend>
+  <depend>boost</depend>
+  <depend>rviz_common</depend>
+  <depend>rviz_ogre_vendor</depend>
+  <depend>rviz_rendering</depend>
+  <depend>tier4_planning_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
