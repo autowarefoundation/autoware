@@ -56,7 +56,9 @@
           duration: 3.0
           object_dist_to_stopline: 10.0
         ignore_on_amber_traffic_light:
-          object_expected_deceleration: 2.0
+          object_expected_deceleration:
+            car: 2.0
+            bike: 5.0
         ignore_on_red_traffic_light:
           object_margin_to_path: 2.0
         avoid_collision_by_acceleration:

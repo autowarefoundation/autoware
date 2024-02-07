@@ -127,9 +127,14 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   ip.collision_detection.yield_on_green_traffic_light.object_dist_to_stopline =
     getOrDeclareParameter<double>(
       node, ns + ".collision_detection.yield_on_green_traffic_light.object_dist_to_stopline");
-  ip.collision_detection.ignore_on_amber_traffic_light.object_expected_deceleration =
+  ip.collision_detection.ignore_on_amber_traffic_light.object_expected_deceleration.car =
     getOrDeclareParameter<double>(
-      node, ns + ".collision_detection.ignore_on_amber_traffic_light.object_expected_deceleration");
+      node,
+      ns + ".collision_detection.ignore_on_amber_traffic_light.object_expected_deceleration.car");
+  ip.collision_detection.ignore_on_amber_traffic_light.object_expected_deceleration.bike =
+    getOrDeclareParameter<double>(
+      node,
+      ns + ".collision_detection.ignore_on_amber_traffic_light.object_expected_deceleration.bike");
   ip.collision_detection.ignore_on_red_traffic_light.object_margin_to_path =
     getOrDeclareParameter<double>(
       node, ns + ".collision_detection.ignore_on_red_traffic_light.object_margin_to_path");

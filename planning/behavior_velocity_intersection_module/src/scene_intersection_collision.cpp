@@ -176,18 +176,23 @@ void IntersectionModule::updateObjectInfoManagerCollision(
   for (auto & object_info : object_info_manager_.attentionObjects()) {
     const auto & predicted_object = object_info->predicted_object();
     bool safe_under_traffic_control = false;
+    const auto label = predicted_object.classification.at(0).label;
+    const auto expected_deceleration =
+      (label == autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE ||
+       label == autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE)
+        ? planner_param_.collision_detection.ignore_on_amber_traffic_light
+            .object_expected_deceleration.bike
+        : planner_param_.collision_detection.ignore_on_amber_traffic_light
+            .object_expected_deceleration.car;
     if (
       traffic_prioritized_level == TrafficPrioritizedLevel::PARTIALLY_PRIORITIZED &&
-      object_info->can_stop_before_stopline(
-        planner_param_.collision_detection.ignore_on_amber_traffic_light
-          .object_expected_deceleration)) {
+      object_info->can_stop_before_stopline(expected_deceleration)) {
       safe_under_traffic_control = true;
     }
     if (
       traffic_prioritized_level == TrafficPrioritizedLevel::FULLY_PRIORITIZED &&
       object_info->can_stop_before_ego_lane(
-        planner_param_.collision_detection.ignore_on_amber_traffic_light
-          .object_expected_deceleration,
+        expected_deceleration,
         planner_param_.collision_detection.ignore_on_red_traffic_light.object_margin_to_path,
         ego_lane)) {
       safe_under_traffic_control = true;

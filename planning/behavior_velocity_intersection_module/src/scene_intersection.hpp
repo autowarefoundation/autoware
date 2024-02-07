@@ -123,7 +123,11 @@ public:
       } yield_on_green_traffic_light;
       struct IgnoreOnAmberTrafficLight
       {
-        double object_expected_deceleration;
+        struct ObjectExpectedDeceleration
+        {
+          double car;
+          double bike;
+        } object_expected_deceleration;
       } ignore_on_amber_traffic_light;
       struct IgnoreOnRedTrafficLight
       {
