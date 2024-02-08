@@ -176,7 +176,8 @@ public:
   {
     using utils::avoidance::calcShiftLength;
 
-    const auto shift_length = calcShiftLength(is_on_right, object.overhang_dist, margin);
+    const auto shift_length =
+      calcShiftLength(is_on_right, object.overhang_points.front().first, margin);
     return is_on_right ? std::min(shift_length, getLeftShiftBound())
                        : std::max(shift_length, getRightShiftBound());
   }

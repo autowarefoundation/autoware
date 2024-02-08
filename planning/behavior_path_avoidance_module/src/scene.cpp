@@ -234,14 +234,14 @@ void AvoidanceModule::fillFundamentalData(AvoidancePlanningData & data, DebugDat
   // calc drivable bound
   auto tmp_path = getPreviousModuleOutput().path;
   const auto shorten_lanes = utils::cutOverlappedLanes(tmp_path, data.drivable_lanes);
-  data.left_bound = toLineString3d(utils::calcBound(
+  data.left_bound = utils::calcBound(
     getPreviousModuleOutput().path, planner_data_, shorten_lanes,
     parameters_->use_hatched_road_markings, parameters_->use_intersection_areas,
-    parameters_->use_freespace_areas, true));
-  data.right_bound = toLineString3d(utils::calcBound(
+    parameters_->use_freespace_areas, true);
+  data.right_bound = utils::calcBound(
     getPreviousModuleOutput().path, planner_data_, shorten_lanes,
     parameters_->use_hatched_road_markings, parameters_->use_intersection_areas,
-    parameters_->use_freespace_areas, false));
+    parameters_->use_freespace_areas, false);
 
   // reference path
   if (isDrivingSameLane(helper_->getPreviousDrivingLanes(), data.current_lanelets)) {
@@ -294,6 +294,7 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
   using utils::avoidance::filterTargetObjects;
   using utils::avoidance::getTargetLanelets;
   using utils::avoidance::separateObjectsByPath;
+  using utils::avoidance::updateRoadShoulderDistance;
 
   // Separate dynamic objects based on whether they are inside or outside of the expanded lanelets.
   constexpr double MARGIN = 10.0;
@@ -315,6 +316,7 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
 
   // Filter out the objects to determine the ones to be avoided.
   filterTargetObjects(objects, data, forward_detection_range, planner_data_, parameters_);
+  updateRoadShoulderDistance(data, planner_data_, parameters_);
 
   // Calculate the distance needed to safely decelerate the ego vehicle to a stop line.
   const auto & vehicle_width = planner_data_->parameters.vehicle_width;
@@ -929,10 +931,6 @@ BehaviorModuleOutput AvoidanceModule::plan()
     DrivableAreaInfo current_drivable_area_info;
     // generate drivable lanes
     current_drivable_area_info.drivable_lanes = avoid_data_.drivable_lanes;
-    // generate obstacle polygons
-    current_drivable_area_info.obstacles =
-      utils::avoidance::generateObstaclePolygonsForDrivableArea(
-        avoid_data_.target_objects, parameters_, planner_data_->parameters.vehicle_width / 2.0);
     // expand hatched road markings
     current_drivable_area_info.enable_expanding_hatched_road_markings =
       parameters_->use_hatched_road_markings;
@@ -941,6 +939,21 @@ BehaviorModuleOutput AvoidanceModule::plan()
       parameters_->use_intersection_areas;
     // expand freespace areas
     current_drivable_area_info.enable_expanding_freespace_areas = parameters_->use_freespace_areas;
+    // generate obstacle polygons
+    if (parameters_->enable_bound_clipping) {
+      ObjectDataArray clip_objects;
+      // If avoidance is executed by both behavior and motion, only non-avoidable object will be
+      // extracted from the drivable area.
+      std::for_each(
+        data.target_objects.begin(), data.target_objects.end(), [&](const auto & object) {
+          if (!object.is_avoidable) clip_objects.push_back(object);
+        });
+      current_drivable_area_info.obstacles =
+        utils::avoidance::generateObstaclePolygonsForDrivableArea(
+          clip_objects, parameters_, planner_data_->parameters.vehicle_width / 2.0);
+    } else {
+      current_drivable_area_info.obstacles.clear();
+    }
 
     output.drivable_area_info = utils::combineDrivableAreaInfo(
       current_drivable_area_info, getPreviousModuleOutput().drivable_area_info);
@@ -1150,8 +1163,8 @@ bool AvoidanceModule::isValidShiftLine(
     const size_t end_idx = shift_lines.back().end_idx;
 
     const auto path = shifter_for_validate.getReferencePath();
-    const auto left_bound = lanelet::utils::to2D(avoid_data_.left_bound);
-    const auto right_bound = lanelet::utils::to2D(avoid_data_.right_bound);
+    const auto left_bound = lanelet::utils::to2D(toLineString3d(avoid_data_.left_bound));
+    const auto right_bound = lanelet::utils::to2D(toLineString3d(avoid_data_.right_bound));
     for (size_t i = start_idx; i <= end_idx; ++i) {
       const auto p = getPoint(path.points.at(i));
       lanelet::BasicPoint2d basic_point{p.x, p.y};
