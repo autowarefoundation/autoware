@@ -121,6 +121,11 @@ bool ControlValidator::isDataReady()
 
 void ControlValidator::onReferenceTrajectory(const Trajectory::ConstSharedPtr msg)
 {
+  if (msg->points.size() < 2) {
+    RCLCPP_ERROR(get_logger(), "planning trajectory size is invalid (%lu)", msg->points.size());
+    return;
+  }
+
   current_reference_trajectory_ = msg;
 
   return;
