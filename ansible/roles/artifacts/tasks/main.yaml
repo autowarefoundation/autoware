@@ -371,29 +371,6 @@
     mode: "644"
     checksum: sha256:a2a91f5fe9c2e68e3e3647a272bb9bb25cd07631a1990a3fb15efddce7691131
 
-# traffic_light_ssd_fine_detector
-- name: Create traffic_light_ssd_fine_detector directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/traffic_light_ssd_fine_detector"
-    mode: "755"
-    state: directory
-
-- name: Download traffic_light_ssd_fine_detector/mb2-ssd-lite-tlr.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/mb2-ssd-lite-tlr.onnx
-    dest: "{{ data_dir }}/traffic_light_ssd_fine_detector/mb2-ssd-lite-tlr.onnx"
-    mode: "644"
-    checksum: sha256:e29e6ee68751a270fb285fd037713939ca7f61a897b4c3a7ab22b0d6a9a21ddf
-
-- name: Download traffic_light_ssd_fine_detector/voc_labels_tl.txt
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/voc_labels_tl.txt
-    dest: "{{ data_dir }}/traffic_light_ssd_fine_detector/voc_labels_tl.txt"
-    mode: "644"
-    checksum: sha256:a41e6e3324e32c30b3b2fe38908eaf3471e2bfdaeb9e14ca0c1c3bc0275119c6
-
 # tvm_utility
 - name: Create tvm_utility/models directory inside {{ data_dir }}
   ansible.builtin.file:
