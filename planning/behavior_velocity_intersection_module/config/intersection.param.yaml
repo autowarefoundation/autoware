@@ -15,6 +15,15 @@
         enable_pass_judge_before_default_stopline: false
 
       stuck_vehicle:
+        target_type:
+          car: true
+          bus: true
+          truck: true
+          trailer: true
+          motorcycle: false
+          bicycle: false
+          unknown: false
+
         turn_direction:
           left: true
           right: true
@@ -27,6 +36,14 @@
         disable_against_private_lane: true
 
       yield_stuck:
+        target_type:
+          car: true
+          bus: true
+          truck: true
+          trailer: true
+          motorcycle: false
+          bicycle: false
+          unknown: false
         turn_direction:
           left: true
           right: true
@@ -37,6 +54,14 @@
         consider_wrong_direction_vehicle: false
         collision_detection_hold_time: 0.5
         min_predicted_path_confidence: 0.05
+        target_type:
+          car: true
+          bus: true
+          truck: true
+          trailer: true
+          motorcycle: true
+          bicycle: true
+          unknown: false
         velocity_profile:
           use_upstream: true
           minimum_upstream_velocity: 0.01

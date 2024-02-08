@@ -74,8 +74,20 @@ public:
       bool straight;
     };
 
+    struct TargetType
+    {
+      bool car;
+      bool bus;
+      bool truck;
+      bool trailer;
+      bool motorcycle;
+      bool bicycle;
+      bool unknown;
+    };
+
     struct StuckVehicle
     {
+      TargetType target_type;
       TurnDirection turn_direction;
       bool use_stuck_stopline;
       double stuck_vehicle_detect_dist;
@@ -85,6 +97,7 @@ public:
 
     struct YieldStuck
     {
+      TargetType target_type;
       TurnDirection turn_direction;
       double distance_threshold;
     } yield_stuck;
@@ -94,6 +107,7 @@ public:
       bool consider_wrong_direction_vehicle;
       double collision_detection_hold_time;
       double min_predicted_path_confidence;
+      TargetType target_type;
       struct VelocityProfile
       {
         bool use_upstream;
@@ -614,6 +628,9 @@ private:
     const intersection::PathLanelets & path_lanelets) const;
 
   bool isTargetStuckVehicleType(
+    const autoware_auto_perception_msgs::msg::PredictedObject & object) const;
+
+  bool isTargetYieldStuckVehicleType(
     const autoware_auto_perception_msgs::msg::PredictedObject & object) const;
 
   /**

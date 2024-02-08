@@ -37,19 +37,29 @@ namespace bg = boost::geometry;
 bool IntersectionModule::isTargetCollisionVehicleType(
   const autoware_auto_perception_msgs::msg::PredictedObject & object) const
 {
+  const auto label = object.classification.at(0).label;
+  const auto & p = planner_param_.collision_detection.target_type;
+
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::CAR && p.car) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::BUS && p.bus) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK && p.truck) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER && p.trailer) {
+    return true;
+  }
   if (
-    object.classification.at(0).label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::CAR ||
-    object.classification.at(0).label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::BUS ||
-    object.classification.at(0).label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK ||
-    object.classification.at(0).label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER ||
-    object.classification.at(0).label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE ||
-    object.classification.at(0).label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE) {
+    label == autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE && p.motorcycle) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE && p.bicycle) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN && p.unknown) {
     return true;
   }
   return false;

@@ -170,17 +170,60 @@ std::optional<intersection::StuckStop> IntersectionModule::isStuckStatus(
 bool IntersectionModule::isTargetStuckVehicleType(
   const autoware_auto_perception_msgs::msg::PredictedObject & object) const
 {
+  const auto label = object.classification.at(0).label;
+  const auto & p = planner_param_.stuck_vehicle.target_type;
+
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::CAR && p.car) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::BUS && p.bus) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK && p.truck) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER && p.trailer) {
+    return true;
+  }
   if (
-    object.classification.at(0).label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::CAR ||
-    object.classification.at(0).label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::BUS ||
-    object.classification.at(0).label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK ||
-    object.classification.at(0).label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER ||
-    object.classification.at(0).label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE) {
+    label == autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE && p.motorcycle) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE && p.bicycle) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN && p.unknown) {
+    return true;
+  }
+  return false;
+}
+
+bool IntersectionModule::isTargetYieldStuckVehicleType(
+  const autoware_auto_perception_msgs::msg::PredictedObject & object) const
+{
+  const auto label = object.classification.at(0).label;
+  const auto & p = planner_param_.yield_stuck.target_type;
+
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::CAR && p.car) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::BUS && p.bus) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK && p.truck) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER && p.trailer) {
+    return true;
+  }
+  if (
+    label == autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE && p.motorcycle) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE && p.bicycle) {
+    return true;
+  }
+  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN && p.unknown) {
     return true;
   }
   return false;
@@ -357,6 +400,9 @@ bool IntersectionModule::checkYieldStuckVehicleInIntersection(
   debug_data_.yield_stuck_detect_area = util::getPolygon3dFromLanelets(yield_stuck_detect_lanelets);
   for (const auto & object_info : object_info_manager_.attentionObjects()) {
     const auto & object = object_info->predicted_object();
+    if (!isTargetYieldStuckVehicleType(object)) {
+      continue;
+    }
     const auto obj_v_norm = std::hypot(
       object.kinematics.initial_twist_with_covariance.twist.linear.x,
       object.kinematics.initial_twist_with_covariance.twist.linear.y);
