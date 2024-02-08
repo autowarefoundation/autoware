@@ -7,7 +7,7 @@ In other word, this package can combine multiple radar detections from one objec
 
 ![radar_clustering](docs/radar_clustering.drawio.svg)
 
-## Algorithm
+## Design
 
 ### Background
 
@@ -15,14 +15,14 @@ In radars with object output, there are cases that multiple detection results ar
 Its multiple detection results cause separation of objects in tracking module.
 Therefore, by this package the multiple detection results are clustered into one object in advance.
 
-### Detail Algorithm
+### Algorithm
 
-- Sort by distance from `base_link`
+- 1. Sort by distance from `base_link`
 
 At first, to prevent changing the result from depending on the order of objects in DetectedObjects, input objects are sorted by distance from `base_link`.
 In addition, to apply matching in closeness order considering occlusion, objects are sorted in order of short distance in advance.
 
-- Clustering
+- 2. Clustering
 
 If two radar objects are near, and yaw angle direction and velocity between two radar objects is similar (the degree of these is defined by parameters), then these are clustered.
 Note that radar characteristic affect parameters for this matching.
@@ -32,13 +32,13 @@ For example, if resolution of range distance or angle is low and accuracy of vel
 
 After grouping for all radar objects, if multiple radar objects are grouping, the kinematics of the new clustered object is calculated from average of that and label and shape of the new clustered object is calculated from top confidence in radar objects.
 
-- Fixed label correction
+- 3. Fixed label correction
 
 When the label information from radar outputs lack accuracy, `is_fixed_label` parameter is recommended to set `true`.
 If the parameter is true, the label of a clustered object is overwritten by the label set by `fixed_label` parameter.
 If this package use for faraway dynamic object detection with radar, the parameter is recommended to set to `VEHICLE`.
 
-- Fixed size correction
+- 4. Fixed size correction
 
 When the size information from radar outputs lack accuracy, `is_fixed_size` parameter is recommended to set `true`.
 If the parameter is true, the size of a clustered object is overwritten by the label set by `size_x`, `size_y`, and `size_z` parameters.
@@ -51,28 +51,75 @@ Note that to use for [multi_objects_tracker](https://github.com/autowarefoundati
 For now, size estimation for clustered object is not implemented.
 So `is_fixed_size` parameter is recommended to set `true`, and size parameters is recommended to set to value near to average size of vehicles.
 
-## Input
+## Interface
 
-| Name              | Type                                                  | Description    |
-| ----------------- | ----------------------------------------------------- | -------------- |
-| `~/input/objects` | autoware_auto_perception_msgs/msg/DetectedObjects.msg | Radar objects. |
+### Input
 
-## Output
+- `~/input/objects` (`autoware_auto_perception_msgs/msg/DetectedObjects.msg`)
+  - Radar objects
 
-| Name               | Type                                                  | Description    |
-| ------------------ | ----------------------------------------------------- | -------------- |
-| `~/output/objects` | autoware_auto_perception_msgs/msg/DetectedObjects.msg | Output objects |
+### Output
 
-## Parameters
+- `~/output/objects` (`autoware_auto_perception_msgs/msg/DetectedObjects.msg`)
+  - Output objects
 
-| Name                 | Type   | Description                                                                                                                               | Default value |
-| :------------------- | :----- | :---------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| `angle_threshold`    | double | Angle threshold to judge whether radar detections come from one object. [rad]                                                             | 0.174         |
-| `distance_threshold` | double | Distance threshold to judge whether radar detections come from one object. [m]                                                            | 4.0           |
-| `velocity_threshold` | double | Velocity threshold to judge whether radar detections come from one object. [m/s]                                                          | 2.0           |
-| `is_fixed_label`     | bool   | If this parameter is true, the label of a clustered object is overwritten by the label set by `fixed_label` parameter.                    | false         |
-| `fixed_label`        | string | If `is_fixed_label` is true, the label of a clustered object is overwritten by this parameter.                                            | "UNKNOWN"     |
-| `is_fixed_size`      | bool   | If this parameter is true, the size of a clustered object is overwritten by the label set by `size_x`, `size_y`, and `size_z` parameters. | false         |
-| `size_x`             | double | If `is_fixed_size` is true, the x-axis size of a clustered object is overwritten by this parameter. [m]                                   | 4.0           |
-| `size_y`             | double | If `is_fixed_size` is true, the y-axis size of a clustered object is overwritten by this parameter. [m]                                   | 1.5           |
-| `size_z`             | double | If `is_fixed_size` is true, the z-axis size of a clustered object is overwritten by this parameter. [m]                                   | 1.5           |
+### Parameter
+
+- `angle_threshold` (double) [rad]
+  - Default parameter is 0.174.
+- `distance_threshold` (double) [m]
+  - Default parameter is 4.0.
+- `velocity_threshold` (double) [m/s]
+  - Default parameter is 2.0.
+
+These parameter are thresholds for angle, distance, and velocity to judge whether radar detections come from one object in "clustering" processing, which is written in detail at algorithm section.
+If all of the difference in angle/distance/velocity from two objects is less than the thresholds, then the two objects are merged to one clustered object.
+If these parameter is larger, more objects are merged to one clustered object.
+
+These are used in `isSameObject` function as below.
+
+```cpp
+
+bool RadarObjectClusteringNode::isSameObject(
+  const DetectedObject & object_1, const DetectedObject & object_2)
+{
+  const double angle_diff = std::abs(tier4_autoware_utils::normalizeRadian(
+    tf2::getYaw(object_1.kinematics.pose_with_covariance.pose.orientation) -
+    tf2::getYaw(object_2.kinematics.pose_with_covariance.pose.orientation)));
+  const double velocity_diff = std::abs(
+    object_1.kinematics.twist_with_covariance.twist.linear.x -
+    object_2.kinematics.twist_with_covariance.twist.linear.x);
+  const double distance = tier4_autoware_utils::calcDistance2d(
+    object_1.kinematics.pose_with_covariance.pose.position,
+    object_2.kinematics.pose_with_covariance.pose.position);
+
+  if (
+    distance < node_param_.distance_threshold && angle_diff < node_param_.angle_threshold &&
+    velocity_diff < node_param_.velocity_threshold) {
+    return true;
+  } else {
+    return false;
+  }
+}
+```
+
+- `is_fixed_label` (bool)
+  - Default parameter is false.
+- `fixed_label` (string)
+  - Default parameter is "UNKNOWN".
+
+`is_fixed_label` is the flag to use fixed label.
+If it is true, the label of a clustered object is overwritten by the label set by `fixed_label` parameter.
+If the radar objects do not have label information, then it is recommended to use fixed label.
+
+- `is_fixed_size` (bool)
+  - Default parameter is false.
+- `size_x` (double) [m]
+  - Default parameter is 4.0.
+- `size_y` (double) [m]
+  - Default parameter is 1.5.
+- `size_z` (double) [m]
+  - Default parameter is 1.5.
+
+`is_fixed_size` is the flag to use fixed size parameters.
+If it is true, the size of a clustered object is overwritten by the label set by `size_x`, `size_y`, and `size_z` parameters.
