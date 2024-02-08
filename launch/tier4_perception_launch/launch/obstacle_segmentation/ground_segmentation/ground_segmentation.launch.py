@@ -21,7 +21,6 @@ from launch.conditions import IfCondition
 from launch.conditions import UnlessCondition
 from launch.substitutions import LaunchConfiguration
 from launch.substitutions import PathJoinSubstitution
-from launch_ros.actions import ComposableNodeContainer
 from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
 from launch_ros.substitutions import FindPackageShare
@@ -504,21 +503,11 @@ def launch_setup(context, *args, **kwargs):
                 output_topic=pipeline.output_topic,
             )
         )
-    individual_container = ComposableNodeContainer(
-        name=LaunchConfiguration("individual_container_name"),
-        namespace="",
-        package="rclcpp_components",
-        executable=LaunchConfiguration("container_executable"),
-        composable_node_descriptions=components,
-        condition=UnlessCondition(LaunchConfiguration("use_pointcloud_container")),
-        output="screen",
-    )
     pointcloud_container_loader = LoadComposableNodes(
         composable_node_descriptions=components,
         target_container=LaunchConfiguration("pointcloud_container_name"),
-        condition=IfCondition(LaunchConfiguration("use_pointcloud_container")),
     )
-    return [individual_container, pointcloud_container_loader]
+    return [pointcloud_container_loader]
 
 
 def generate_launch_description():
@@ -530,9 +519,7 @@ def generate_launch_description():
     add_launch_arg("base_frame", "base_link")
     add_launch_arg("use_multithread", "False")
     add_launch_arg("use_intra_process", "True")
-    add_launch_arg("use_pointcloud_container", "False")
     add_launch_arg("pointcloud_container_name", "pointcloud_container")
-    add_launch_arg("individual_container_name", "ground_segmentation_container")
     add_launch_arg("input/pointcloud", "/sensing/lidar/concatenated/pointcloud")
 
     set_container_executable = SetLaunchConfiguration(

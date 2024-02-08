@@ -269,59 +269,28 @@
   </node_container>
 
   <group if="$(var launch_compare_map_pipeline)">
-    <group if="$(var use_pointcloud_container)">
-      <!-- use pointcloud container -->
-      <load_composable_node target="$(var pointcloud_container_name)">
-        <composable_node pkg="compare_map_segmentation" plugin="compare_map_segmentation::VoxelDistanceBasedCompareMapFilterComponent" name="voxel_distance_based_compare_map_filter_node" namespace="">
-          <!-- topic remap -->
-          <remap from="map" to="$(var input_pointcloud_map_topic_name)"/>
-          <remap from="kinematic_state" to="/localization/kinematic_state"/>
-          <remap from="map_loader_service" to="/map/get_differential_pointcloud_map"/>
-          <remap from="input" to="/perception/obstacle_segmentation/pointcloud"/>
-          <remap from="output" to="compare_map_filtered/pointcloud"/>
-          <!-- params -->
-          <param from="$(var compare_map_filter_param_path)"/>
-          <extra_arg name="use_intra_process_comms" value="false"/>
-        </composable_node>
+    <!-- use pointcloud container -->
+    <load_composable_node target="$(var pointcloud_container_name)">
+      <composable_node pkg="compare_map_segmentation" plugin="compare_map_segmentation::VoxelDistanceBasedCompareMapFilterComponent" name="voxel_distance_based_compare_map_filter_node" namespace="">
+        <!-- topic remap -->
+        <remap from="map" to="$(var input_pointcloud_map_topic_name)"/>
+        <remap from="kinematic_state" to="/localization/kinematic_state"/>
+        <remap from="map_loader_service" to="/map/get_differential_pointcloud_map"/>
+        <remap from="input" to="/perception/obstacle_segmentation/pointcloud"/>
+        <remap from="output" to="compare_map_filtered/pointcloud"/>
+        <!-- params -->
+        <param from="$(var compare_map_filter_param_path)"/>
+        <extra_arg name="use_intra_process_comms" value="false"/>
+      </composable_node>
 
-        <composable_node pkg="pointcloud_preprocessor" plugin="pointcloud_preprocessor::VectorMapInsideAreaFilterComponent" name="vector_map_inside_area_filter_node" namespace="">
-          <!-- topic remap -->
-          <remap from="input/vector_map" to="$(var input_vector_map_topic_name)"/>
-          <remap from="input" to="compare_map_filtered/pointcloud"/>
-          <remap from="output" to="vector_map_inside_area_filtered/pointcloud"/>
-          <param name="polygon_type" value="no_obstacle_segmentation_area_for_run_out"/>
-          <extra_arg name="use_intra_process_comms" value="false"/>
-        </composable_node>
-      </load_composable_node>
-    </group>
-
-    <group unless="$(var use_pointcloud_container)">
-      <!-- launch new container -->
-      <node_container pkg="rclcpp_components" exec="$(var container_type)" name="compare_map_container" namespace="" args="">
-        <composable_node pkg="compare_map_segmentation" plugin="compare_map_segmentation::VoxelDistanceBasedCompareMapFilterComponent" name="voxel_distance_based_compare_map_filter_node" namespace="">
-          <!-- topic remap -->
-          <remap from="map" to="$(var input_pointcloud_map_topic_name)"/>
-          <remap from="kinematic_state" to="/localization/kinematic_state"/>
-          <remap from="map_loader_service" to="/map/get_differential_pointcloud_map"/>
-          <remap from="input" to="/perception/obstacle_segmentation/pointcloud"/>
-          <remap from="output" to="compare_map_filtered/pointcloud"/>
-          <!-- params -->
-          <param from="$(var compare_map_filter_param_path)"/>
-          <extra_arg name="use_intra_process_comms" value="false"/>
-        </composable_node>
-
-        <composable_node pkg="pointcloud_preprocessor" plugin="pointcloud_preprocessor::VectorMapInsideAreaFilterComponent" name="vector_map_inside_area_filter_node" namespace="">
-          <!-- topic remap -->
-          <remap from="input/vector_map" to="$(var input_vector_map_topic_name)"/>
-          <remap from="input" to="compare_map_filtered/pointcloud"/>
-          <remap from="output" to="vector_map_inside_area_filtered/pointcloud"/>
-          <!-- params -->
-          <param name="polygon_type" value="no_obstacle_segmentation_area_for_run_out"/>
-          <extra_arg name="use_intra_process_comms" value="false"/>
-        </composable_node>
-
-        <composable_node pkg="glog_component" plugin="GlogComponent" name="glog_component" namespace=""/>
-      </node_container>
-    </group>
+      <composable_node pkg="pointcloud_preprocessor" plugin="pointcloud_preprocessor::VectorMapInsideAreaFilterComponent" name="vector_map_inside_area_filter_node" namespace="">
+        <!-- topic remap -->
+        <remap from="input/vector_map" to="$(var input_vector_map_topic_name)"/>
+        <remap from="input" to="compare_map_filtered/pointcloud"/>
+        <remap from="output" to="vector_map_inside_area_filtered/pointcloud"/>
+        <param name="polygon_type" value="no_obstacle_segmentation_area_for_run_out"/>
+        <extra_arg name="use_intra_process_comms" value="false"/>
+      </composable_node>
+    </load_composable_node>
   </group>
 </launch>
