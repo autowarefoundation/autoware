@@ -173,7 +173,7 @@ bool BicycleTracker::predict(const rclcpp::Time & time)
 
 bool BicycleTracker::predict(const double dt, KalmanFilter & ekf) const
 {
-  /*  static bicycle model (constant slip angle, constant velocity)
+  /*  Motion model: static bicycle model (constant slip angle, constant velocity)
    *
    * w_k = vel_k * sin(slip_k) / l_r
    * x_{k+1}   = x_k + vel_k*cos(yaw_k+slip_k)*dt - 0.5*w_k*vel_k*sin(yaw_k+slip_k)*dt*dt
@@ -291,12 +291,6 @@ bool BicycleTracker::predict(const double dt, KalmanFilter & ekf) const
   return true;
 }
 
-/**
- * @brief measurement update with ekf on receiving detected_object
- *
- * @param object : Detected object
- * @return bool : measurement is updatable
- */
 bool BicycleTracker::measureWithPose(
   const autoware_auto_perception_msgs::msg::DetectedObject & object)
 {
@@ -333,19 +327,16 @@ bool BicycleTracker::measureWithPose(
   const int dim_y =
     use_orientation_information ? 3 : 2;  // pos x, pos y, (pos yaw) depending on Pose output
 
-  /* Set measurement matrix */
+  // Set measurement matrix C and observation vector Y
   Eigen::MatrixXd Y(dim_y, 1);
+  Eigen::MatrixXd C = Eigen::MatrixXd::Zero(dim_y, ekf_params_.dim_x);
   Y(IDX::X, 0) = object.kinematics.pose_with_covariance.pose.position.x;
   Y(IDX::Y, 0) = object.kinematics.pose_with_covariance.pose.position.y;
-
-  /* Set measurement matrix */
-  Eigen::MatrixXd C = Eigen::MatrixXd::Zero(dim_y, ekf_params_.dim_x);
   C(0, IDX::X) = 1.0;  // for pos x
   C(1, IDX::Y) = 1.0;  // for pos y
 
-  /* Set measurement noise covariance */
+  // Set noise covariance matrix R
   Eigen::MatrixXd R = Eigen::MatrixXd::Zero(dim_y, dim_y);
-
   if (!object.kinematics.has_position_covariance) {
     R(0, 0) = ekf_params_.r_cov_x;  // x - x
     R(0, 1) = 0.0;                  // x - y
@@ -471,6 +462,7 @@ bool BicycleTracker::getTrackedObject(
   tmp_ekf_for_no_update.getX(X_t);
   tmp_ekf_for_no_update.getP(P);
 
+  /*  put predicted pose and twist to output object  */
   auto & pose_with_cov = object.kinematics.pose_with_covariance;
   auto & twist_with_cov = object.kinematics.twist_with_covariance;
 

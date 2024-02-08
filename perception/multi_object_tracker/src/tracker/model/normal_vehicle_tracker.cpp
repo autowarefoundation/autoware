@@ -188,7 +188,7 @@ bool NormalVehicleTracker::predict(const rclcpp::Time & time)
 
 bool NormalVehicleTracker::predict(const double dt, KalmanFilter & ekf) const
 {
-  /*  static bicycle model (constant slip angle, constant velocity)
+  /*  Motion model: static bicycle model (constant slip angle, constant velocity)
    *
    * w_k = vel_k * sin(slip_k) / l_r
    * x_{k+1}   = x_k + vel_k*cos(yaw_k+slip_k)*dt - 0.5*w_k*vel_k*sin(yaw_k+slip_k)*dt*dt
@@ -362,11 +362,9 @@ bool NormalVehicleTracker::measureWithPose(
     last_input_bounding_box_.width, last_input_bounding_box_.length, last_nearest_corner_index_,
     bbox_object, X_t(IDX::YAW), offset_object, tracking_offset_);
 
-  /* Set measurement matrix and noise covariance*/
+  // Set measurement matrix C and observation vector Y
   Eigen::MatrixXd Y(dim_y, 1);
   Eigen::MatrixXd C = Eigen::MatrixXd::Zero(dim_y, ekf_params_.dim_x);
-  Eigen::MatrixXd R = Eigen::MatrixXd::Zero(dim_y, dim_y);
-
   Y(IDX::X, 0) = offset_object.kinematics.pose_with_covariance.pose.position.x;
   Y(IDX::Y, 0) = offset_object.kinematics.pose_with_covariance.pose.position.y;
   Y(IDX::YAW, 0) = measurement_yaw;
@@ -374,7 +372,8 @@ bool NormalVehicleTracker::measureWithPose(
   C(1, IDX::Y) = 1.0;    // for pos y
   C(2, IDX::YAW) = 1.0;  // for yaw
 
-  /* Set measurement noise covariance */
+  // Set noise covariance matrix R
+  Eigen::MatrixXd R = Eigen::MatrixXd::Zero(dim_y, dim_y);
   if (!object.kinematics.has_position_covariance) {
     const double cos_yaw = std::cos(measurement_yaw);
     const double sin_yaw = std::sin(measurement_yaw);
@@ -598,6 +597,7 @@ bool NormalVehicleTracker::getTrackedObject(
   const auto ekf_pose_yaw = tf2::getYaw(pose_with_cov.pose.orientation);
   object.shape.footprint =
     tier4_autoware_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
+
   return true;
 }
 
