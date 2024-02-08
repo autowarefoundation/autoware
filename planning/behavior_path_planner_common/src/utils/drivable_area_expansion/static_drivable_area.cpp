@@ -1347,7 +1347,7 @@ std::pair<std::vector<lanelet::ConstPoint3d>, bool> getBoundWithFreeSpaceAreas(
 
       if (intersect.has_value()) {
         ret.emplace_back(
-          lanelet::InvalId, intersect.value().x, intersect.value().y, intersect.value().z);
+          lanelet::InvalId, intersect.value().x, intersect.value().y, toGeomMsgPt(bound.at(i)).z);
         break;
       }
     }
