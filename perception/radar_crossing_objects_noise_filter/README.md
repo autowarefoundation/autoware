@@ -3,7 +3,7 @@
 This package contains a radar noise filter module for [autoware_auto_perception_msgs/msg/DetectedObject](https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/DetectedObject.idl).
 This package can filter the noise objects which cross to the ego vehicle.
 
-## Algorithm
+## Design
 
 ### Background
 
@@ -32,7 +32,7 @@ When the ego vehicle turn right, the surrounding objects have left circular moti
 
 ![turning_around](docs/turning_around.png)
 
-### Detail Algorithm
+### Algorithm
 
 To filter the objects crossing to ego vehicle, this package filter the objects as below algorithm.
 
@@ -51,22 +51,30 @@ To filter the objects crossing to ego vehicle, this package filter the objects a
   }
 ```
 
-## Input
+## Interface
 
-| Name              | Type                                                  | Description    |
-| ----------------- | ----------------------------------------------------- | -------------- |
-| `~/input/objects` | autoware_auto_perception_msgs/msg/DetectedObjects.msg | Radar objects. |
+### Input
 
-## Output
+- `~/input/objects` (`autoware_auto_perception_msgs/msg/DetectedObjects.msg`)
+  - Input radar objects
 
-| Name                        | Type                                                  | Description      |
-| --------------------------- | ----------------------------------------------------- | ---------------- |
-| `~/output/noise_objects`    | autoware_auto_perception_msgs/msg/DetectedObjects.msg | Noise objects    |
-| `~/output/filtered_objects` | autoware_auto_perception_msgs/msg/DetectedObjects.msg | Filtered objects |
+### Output
 
-## Parameters
+- `~/output/noise_objects` (`autoware_auto_perception_msgs/msg/DetectedObjects.msg`)
+  - Noise objects
+- `~/output/filtered_objects` (`autoware_auto_perception_msgs/msg/DetectedObjects.msg`)
+  - Filtered objects
 
-| Name                 | Type   | Description                                                                                                                                         | Default value |
-| :------------------- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| `angle_threshold`    | double | The angle threshold parameter to filter [rad]. This parameter has condition that 0 < `angle_threshold` < pi / 2. See algorithm chapter for details. | 1.0472        |
-| `velocity_threshold` | double | The velocity threshold parameter to filter [m/s]. See algorithm chapter for details.                                                                | 3.0           |
+### Parameters
+
+- `angle_threshold` (double) [rad]
+  - Default parameter is 1.0472.
+
+This parameter is the angle threshold to filter. It has condition that 0 < `angle_threshold` < pi / 2. If the crossing angle is larger than this parameter, it can be a candidate for noise object. In other words, if it is smaller than this parameter, it is a filtered object.
+If this parameter is set smaller, more objects are considered noise. In detail, see algorithm chapter.
+
+- `velocity_threshold` (double) [m/s]
+  - Default parameter is 3.0.
+
+This parameter is the velocity threshold to filter. If velocity of an object is larger than this parameter, it can be a candidate for noise object. In other words, if velocity of an object is smaller than this parameter, it is a filtered object.
+If this parameter is set smaller, more objects are considered noise. In detail, see algorithm chapter.
