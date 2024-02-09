@@ -21,6 +21,7 @@
 #include <lanelet2_core/geometry/Polygon.h>
 #include <tf2/utils.h>
 
+#include <algorithm>
 #include <vector>
 
 namespace behavior_velocity_planner::out_of_lane
@@ -58,7 +59,10 @@ std::vector<lanelet::BasicPolygon2d> calculate_path_footprints(
   const auto base_footprint = make_base_footprint(params);
   std::vector<lanelet::BasicPolygon2d> path_footprints;
   path_footprints.reserve(ego_data.path.points.size());
-  for (auto i = ego_data.first_path_idx; i < ego_data.path.points.size(); ++i) {
+  double length = 0.0;
+  const auto range = std::max(params.slow_dist_threshold, params.stop_dist_threshold) +
+                     params.front_offset + params.extra_front_offset;
+  for (auto i = ego_data.first_path_idx; i < ego_data.path.points.size() && length < range; ++i) {
     const auto & path_pose = ego_data.path.points[i].point.pose;
     const auto angle = tf2::getYaw(path_pose.orientation);
     const auto rotated_footprint = tier4_autoware_utils::rotatePolygon(base_footprint, angle);
@@ -66,6 +70,8 @@ std::vector<lanelet::BasicPolygon2d> calculate_path_footprints(
     for (const auto & p : rotated_footprint.outer())
       footprint.emplace_back(p.x() + path_pose.position.x, p.y() + path_pose.position.y);
     path_footprints.push_back(footprint);
+    if (i + 1 < ego_data.path.points.size())
+      length += tier4_autoware_utils::calcDistance2d(path_pose, ego_data.path.points[i + 1].point);
   }
   return path_footprints;
 }

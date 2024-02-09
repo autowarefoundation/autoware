@@ -33,6 +33,14 @@ inline bool contains_lanelet(const lanelet::ConstLanelets & lanelets, const lane
            return l.id() == id;
          }) != lanelets.end();
 };
+
+/// @brief calculate lanelets crossed by the ego path
+/// @details calculated from the ids of the path msg, the lanelets containing path points
+/// @param [in] ego_data data about the ego vehicle
+/// @param [in] route_handler route handler
+/// @return lanelets crossed by the ego vehicle
+lanelet::ConstLanelets calculate_path_lanelets(
+  const EgoData & ego_data, const route_handler::RouteHandler & route_handler);
 /// @brief calculate lanelets that should be ignored
 /// @param [in] ego_data data about the ego vehicle
 /// @param [in] path_lanelets lanelets driven by the ego vehicle

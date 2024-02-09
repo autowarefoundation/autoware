@@ -34,6 +34,7 @@ Overlap calculate_overlap(
   Overlap overlap;
   const auto & left_bound = lanelet.leftBound2d().basicLineString();
   const auto & right_bound = lanelet.rightBound2d().basicLineString();
+  // TODO(Maxime): these intersects (for each path footprint, for each lanelet) are too expensive
   const auto overlap_left = boost::geometry::intersects(path_footprint, left_bound);
   const auto overlap_right = boost::geometry::intersects(path_footprint, right_bound);
 
