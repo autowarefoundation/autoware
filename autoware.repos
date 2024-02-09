@@ -84,23 +84,27 @@ repositories:
     url: https://github.com/MapIV/transport_drivers.git
     version: boost
   # sensor_kit
-  sensor_kit/sensor_kit_launch_training202402:
+  sensor_kit/logiee_sensor_kit_launch:
     type: git
-    url: https://github.com/tier4/sensor_kit_launch_training202402
+    url: https://github.com/dkoldaev/logiee_sensor_kit_launch
     version: main
   sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
     type: git
     url: https://github.com/RobotecAI/awsim_sensor_kit_launch.git
     version: main
   # vehicle
-  vehicle/vehicle_launch_training202402:
+  vehicle/logiee_vehicle_launch:
     type: git
-    url: https://github.com/tier4/vehicle_launch_training202402
+    url: https://github.com/dkoldaev/logiee_vehicle_launch
     version: main
   vehicle/external/pacmod_interface:
     type: git
     url: https://github.com/tier4/pacmod_interface.git
     version: main
+  vehicle/jw_interface:
+    type: git
+    url: git@github.com:tier4/jw_interface
+    version: tier4/universe
   # param
   param/autoware_individual_params:
     type: git
