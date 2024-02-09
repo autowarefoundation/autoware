@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    sync_queue_size: 20
+    precision_threshold_to_judge_overlapped: 0.4
+    remove_overlapped_unknown_objects: true

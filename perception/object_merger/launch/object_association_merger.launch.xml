@@ -6,7 +6,7 @@
   <arg name="priority_mode" default="2" description="0: Object0, 1: Object1, 2: Confidence"/>
   <arg name="data_association_matrix_path" default="$(find-pkg-share object_merger)/config/data_association_matrix.param.yaml"/>
   <arg name="distance_threshold_list_path" default="$(find-pkg-share object_merger)/config/overlapped_judge.param.yaml"/>
-  <arg name="sync_queue_size" default="20"/>
+  <arg name="object_association_merger_param_path" default="$(find-pkg-share object_merger)/config/object_association_merger.param.yaml"/>
 
   <node pkg="object_merger" exec="object_association_merger_node" name="$(anon object_association_merger)" output="screen">
     <remap from="input/object0" to="$(var input/object0)"/>
@@ -14,9 +14,9 @@
     <remap from="output/object" to="$(var output/object)"/>
     <param from="$(var data_association_matrix_path)"/>
     <param from="$(var distance_threshold_list_path)"/>
+    <param from="$(var object_association_merger_param_path)"/>
+
+    <!-- Be careful when moving this parameter to param.yaml, since this value depends on which part this launcher is called -->
     <param name="priority_mode" value="$(var priority_mode)"/>
-    <param name="sync_queue_size" value="$(var sync_queue_size)"/>
-    <param name="precision_threshold_to_judge_overlapped" value="0.4"/>
-    <param name="remove_overlapped_unknown_objects" value="true"/>
   </node>
 </launch>

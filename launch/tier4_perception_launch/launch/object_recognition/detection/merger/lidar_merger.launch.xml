@@ -45,6 +45,7 @@
     <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
       <arg name="input/object0" value="$(var merger/input/objects)"/>
       <arg name="input/object1" value="clustering/objects"/>
+      <arg name="priority_mode" value="2"/>
       <arg name="output/object" value="$(var merger/output/objects)"/>
       <arg name="data_association_matrix_path" value="$(var object_recognition_detection_object_merger_data_association_matrix_param_path)"/>
       <arg name="distance_threshold_list_path" value="$(var object_recognition_detection_object_merger_distance_threshold_list_path)"/>
