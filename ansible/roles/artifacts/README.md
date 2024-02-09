@@ -83,14 +83,6 @@ $ wget -P ~/autoware_data/traffic_light_fine_detector/ \
        https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v3/tlr_labels.txt
 
 
-# traffic_light_ssd_fine_detector
-
-$ mkdir -p ~/autoware_data/traffic_light_ssd_fine_detector/
-$ wget -P ~/autoware_data/traffic_light_ssd_fine_detector/ \
-       https://awf.ml.dev.web.auto/perception/models/mb2-ssd-lite-tlr.onnx \
-       https://awf.ml.dev.web.auto/perception/models/voc_labels_tl.txt
-
-
 # tvm_utility
 
 $ mkdir -p ~/autoware_data/tvm_utility/models/yolo_v2_tiny
