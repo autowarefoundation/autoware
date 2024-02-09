@@ -36,6 +36,7 @@
       <arg name="output" value="$(var radar_tracker_output)"/>
       <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path)"/>
       <arg name="tracker_setting_path" value="$(var object_recognition_tracking_radar_object_tracker_tracking_setting_param_path)"/>
+      <arg name="radar_object_tracker_param_path" value="$(var object_recognition_tracking_radar_object_tracker_node_param_path)"/>
     </include>
 
     <!--tracking object merger to merge near objects and far objects -->

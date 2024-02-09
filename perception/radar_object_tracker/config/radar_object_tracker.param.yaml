@@ -24,3 +24,6 @@
     max_distance_from_lane: 5.0 # [m]
     max_angle_diff_from_lane: 0.785398 # [rad] (45 deg)
     max_lateral_velocity: 7.0 # [m/s]
+
+    # tracking model parameters
+    tracking_config_directory: $(find-pkg-share radar_object_tracker)/config/tracking/
