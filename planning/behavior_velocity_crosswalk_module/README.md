@@ -10,7 +10,7 @@ This module judges whether the ego should stop in front of the crosswalk in orde
 
 ## Features
 
-### Yield
+### Yield the Way to the Pedestrians
 
 #### Target Object
 
@@ -97,6 +97,17 @@ In the case of the upper figure, `ego_pass_later_margin_x` is `{0, 1, 2}` and `e
 In the same way, the boundary of B and C is calculated from `ego_pass_first_margin_x` and `ego_pass_first_margin_y`.
 In the case of the upper figure, `ego_pass_first_margin_x` is `{3, 5}` and `ego_pass_first_margin_y` is `{0, 1}`.
 
+If the red signal is indicating to the corresponding crosswalk, the ego do not yield against the pedestrians.
+
+<div align="center">
+    <table>
+        <tr>
+            <td><img src="./docs/without_traffic_light.svg" width="600"></td>
+            <td><img src="./docs/with_traffic_light.svg" width="600"></td>
+        </tr>
+    </table>
+</div>
+
 In the `pass_judge` namespace, the following parameters are defined.
 
 | Parameter                          |       | Type   | Description                                                                                                                                     |
@@ -108,24 +119,22 @@ In the `pass_judge` namespace, the following parameters are defined.
 | `ego_pass_later_margin_y`          | [[s]] | double | time to collision margin vector for object pass first situation (the module judges that ego don't have to stop at TTV + MARGIN < TTC condition) |
 | `ego_pass_later_additional_margin` | [s]   | double | additional time margin for object pass first situation to suppress chattering                                                                   |
 
-### Smooth Yield Decision
+#### Smooth Yield Decision
 
 If the object is stopped near the crosswalk but has no intention of walking, a situation can arise in which the ego continues to yield the right-of-way to the object.
 To prevent such a deadlock situation, the ego will cancel yielding depending on the situation.
 
-#### Cases without traffic lights
-
 For the object stopped around the crosswalk but has no intention to walk (\*1), after the ego has keep stopping to yield for a specific time (\*2), the ego cancels the yield and starts driving.
 
 \*1:
-The time is calculated by the interpolation of distance between the object and crosswalk with `distance_map_for_no_intention_to_walk` and `timeout_map_for_no_intention_to_walk`.
+The time is calculated by the interpolation of distance between the object and crosswalk with `distance_set_for_no_intention_to_walk` and `timeout_set_for_no_intention_to_walk`.
 
 In the `pass_judge` namespace, the following parameters are defined.
 
-| Parameter                               |       | Type   | Description                                                                       |
-| --------------------------------------- | ----- | ------ | --------------------------------------------------------------------------------- |
-| `distance_map_for_no_intention_to_walk` | [[m]] | double | distance map to calculate the timeout for no intention to walk with interpolation |
-| `timeout_map_for_no_intention_to_walk`  | [[s]] | double | timeout map to calculate the timeout for no intention to walk with interpolation  |
+| Parameter                               |       | Type   | Description                                                                     |
+| --------------------------------------- | ----- | ------ | ------------------------------------------------------------------------------- |
+| `distance_set_for_no_intention_to_walk` | [[m]] | double | key sets to calculate the timeout for no intention to walk with interpolation   |
+| `timeout_set_for_no_intention_to_walk`  | [[s]] | double | value sets to calculate the timeout for no intention to walk with interpolation |
 
 \*2:
 In the `pass_judge` namespace, the following parameters are defined.
@@ -133,23 +142,6 @@ In the `pass_judge` namespace, the following parameters are defined.
 | Parameter                    |     | Type   | Description                                                                                                             |
 | ---------------------------- | --- | ------ | ----------------------------------------------------------------------------------------------------------------------- |
 | `timeout_ego_stop_for_yield` | [s] | double | If the ego maintains the stop for this amount of time, then the ego proceeds, assuming it has stopped long time enough. |
-
-#### Cases with traffic lights
-
-The ego will cancel the yield without stopping when the object stops around the crosswalk but has no intention to walk (\*1).
-This comes from the assumption that the object has no intention to walk since it is stopped even though the pedestrian traffic light is green.
-
-\*1:
-The crosswalk user's intention to walk is calculated in the same way as `Cases without traffic lights`.
-
-<div align="center">
-    <table>
-        <tr>
-            <td><img src="./docs/without_traffic_light.svg" width="600"></td>
-            <td><img src="./docs/with_traffic_light.svg" width="600"></td>
-        </tr>
-    </table>
-</div>
 
 #### New Object Handling
 
@@ -165,21 +157,7 @@ In the `pass_judge` namespace, the following parameters are defined.
 | -------------------------------------- | --- | ---- | ------------------------------------------------------------------------------------------------ |
 | `disable_yield_for_new_stopped_object` | [-] | bool | If set to true, the new stopped object will be ignored around the crosswalk with a traffic light |
 
-### Safety Slow Down Behavior
-
-In the current autoware implementation, if no target object is detected around a crosswalk, the ego vehicle will not slow down for the crosswalk.
-However, it may be desirable to slow down in situations, for example, where there are blind spots.
-Such a situation can be handled by setting some tags to the related crosswalk as instructed in the [lanelet2_format_extension.md](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md)
-document.
-
-| Parameter             |         | Type   | Description                                                                                                           |
-| --------------------- | ------- | ------ | --------------------------------------------------------------------------------------------------------------------- |
-| `slow_velocity`       | [m/s]   | double | target vehicle velocity when module receive slow down command from FOA                                                |
-| `max_slow_down_jerk`  | [m/sss] | double | minimum jerk deceleration for safe brake                                                                              |
-| `max_slow_down_accel` | [m/ss]  | double | minimum accel deceleration for safe brake                                                                             |
-| `no_relax_velocity`   | [m/s]   | double | if the current velocity is less than X m/s, ego always stops at the stop position(not relax deceleration constraints) |
-
-### Stuck Vehicle Detection
+### Stuck Prevention on the Crosswalk
 
 The feature will make the ego not to stop on the crosswalk.
 When there is a low-speed or stopped vehicle ahead of the crosswalk, and there is not enough space between the crosswalk and the vehicle, the crosswalk module plans to stop before the crosswalk even if there are no pedestrians or bicycles.
@@ -200,6 +178,20 @@ In the `stuck_vehicle` namespace, the following parameters are defined.
 | `min_acc`                          | [m/ss]  | double | minimum acceleration to stop                                            |
 | `min_jerk`                         | [m/sss] | double | minimum jerk to stop                                                    |
 | `max_jerk`                         | [m/sss] | double | maximum jerk to stop                                                    |
+
+### Safety Slow Down Behavior
+
+In the current autoware implementation, if no target object is detected around a crosswalk, the ego vehicle will not slow down for the crosswalk.
+However, it may be desirable to slow down in situations, for example, where there are blind spots.
+Such a situation can be handled by setting some tags to the related crosswalk as instructed in the [lanelet2_format_extension.md](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md)
+document.
+
+| Parameter             |         | Type   | Description                                                                                                           |
+| --------------------- | ------- | ------ | --------------------------------------------------------------------------------------------------------------------- |
+| `slow_velocity`       | [m/s]   | double | target vehicle velocity when module receive slow down command from FOA                                                |
+| `max_slow_down_jerk`  | [m/sss] | double | minimum jerk deceleration for safe brake                                                                              |
+| `max_slow_down_accel` | [m/ss]  | double | minimum accel deceleration for safe brake                                                                             |
+| `no_relax_velocity`   | [m/s]   | double | if the current velocity is less than X m/s, ego always stops at the stop position(not relax deceleration constraints) |
 
 ### Others
 
