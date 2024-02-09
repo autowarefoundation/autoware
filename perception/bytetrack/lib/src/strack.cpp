@@ -72,7 +72,7 @@ STrack::STrack(std::vector<float> input_tlwh, float score, int label)
   const std::string package_share_directory =
     ament_index_cpp::get_package_share_directory("bytetrack");
   const std::string default_config_path =
-    package_share_directory + "/config/bytetracker.param.yaml";
+    package_share_directory + "/config/kalman_filter.param.yaml";
   if (!_parameters_loaded) {
     load_parameters(default_config_path);
     _parameters_loaded = true;
