@@ -1067,7 +1067,7 @@ MinMaxValue DynamicAvoidanceModule::calcMinMaxLongitudinalOffsetToAvoid(
   const double start_length_to_avoid = [&]() {
     if (obj_vel < parameters_->max_stopped_object_vel) {
       // The ego and object are the opposite directional or the object is parked.
-      return std::min(time_while_collision.time_to_start_collision, 8.0) * std::abs(obj_vel) +
+      return std::min(time_while_collision.time_to_start_collision, 3.5) * std::abs(obj_vel) +
              std::abs(relative_velocity) * parameters_->start_duration_to_avoid_oncoming_object;
     }
     // The ego and object are the same directional.
