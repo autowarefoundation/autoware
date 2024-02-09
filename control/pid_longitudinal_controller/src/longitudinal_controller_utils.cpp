@@ -84,7 +84,7 @@ double getPitchByPose(const Quaternion & quaternion_msg)
 }
 
 double getPitchByTraj(
-  const Trajectory & trajectory, const size_t nearest_idx, const double wheel_base)
+  const Trajectory & trajectory, const size_t start_idx, const double wheel_base)
 {
   // cannot calculate pitch
   if (trajectory.points.size() <= 1) {
@@ -92,17 +92,17 @@ double getPitchByTraj(
   }
 
   const auto [prev_idx, next_idx] = [&]() {
-    for (size_t i = nearest_idx + 1; i < trajectory.points.size(); ++i) {
-      const double dist = tier4_autoware_utils::calcDistance2d(
-        trajectory.points.at(nearest_idx), trajectory.points.at(i));
+    for (size_t i = start_idx + 1; i < trajectory.points.size(); ++i) {
+      const double dist = tier4_autoware_utils::calcDistance3d(
+        trajectory.points.at(start_idx), trajectory.points.at(i));
       if (dist > wheel_base) {
         // calculate pitch from trajectory between rear wheel (nearest) and front center (i)
-        return std::make_pair(nearest_idx, i);
+        return std::make_pair(start_idx, i);
       }
     }
     // NOTE: The ego pose is close to the goal.
     return std::make_pair(
-      std::min(nearest_idx, trajectory.points.size() - 2), trajectory.points.size() - 1);
+      std::min(start_idx, trajectory.points.size() - 2), trajectory.points.size() - 1);
   }();
 
   return tier4_autoware_utils::calcElevationAngle(
@@ -157,6 +157,34 @@ double applyDiffLimitFilter(
   const double max_val = std::fabs(lim_val);
   const double min_val = -max_val;
   return applyDiffLimitFilter(input_val, prev_val, dt, max_val, min_val);
+}
+
+geometry_msgs::msg::Pose findTrajectoryPoseAfterDistance(
+  const size_t src_idx, const double distance,
+  const autoware_auto_planning_msgs::msg::Trajectory & trajectory)
+{
+  double remain_dist = distance;
+  geometry_msgs::msg::Pose p = trajectory.points.back().pose;
+  for (size_t i = src_idx; i < trajectory.points.size() - 1; ++i) {
+    const double dist = tier4_autoware_utils::calcDistance3d(
+      trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose);
+    if (remain_dist < dist) {
+      if (remain_dist <= 0.0) {
+        return trajectory.points.at(i).pose;
+      }
+      double ratio = remain_dist / dist;
+      const auto p0 = trajectory.points.at(i).pose;
+      const auto p1 = trajectory.points.at(i + 1).pose;
+      p = trajectory.points.at(i).pose;
+      p.position.x = interpolation::lerp(p0.position.x, p1.position.x, ratio);
+      p.position.y = interpolation::lerp(p0.position.y, p1.position.y, ratio);
+      p.position.z = interpolation::lerp(p0.position.z, p1.position.z, ratio);
+      p.orientation = interpolation::lerpOrientation(p0.orientation, p1.orientation, ratio);
+      break;
+    }
+    remain_dist -= dist;
+  }
+  return p;
 }
 }  // namespace longitudinal_utils
 }  // namespace autoware::motion::control::pid_longitudinal_controller
