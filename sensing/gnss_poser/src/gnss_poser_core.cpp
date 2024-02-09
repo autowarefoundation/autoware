@@ -78,6 +78,13 @@ void GNSSPoser::callbackNavSatFix(
     return;
   }
 
+  if (projector_info_.projector_type == MapProjectorInfo::Message::LOCAL) {
+    RCLCPP_ERROR_THROTTLE(
+      this->get_logger(), *this->get_clock(), std::chrono::milliseconds(5000).count(),
+      "map_projector_info is local projector type. Unable to convert GNSS pose.");
+    return;
+  }
+
   // check fixed topic
   const bool is_fixed = isFixed(nav_sat_fix_msg_ptr->status);
 
