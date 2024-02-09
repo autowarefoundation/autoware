@@ -430,13 +430,17 @@ void VehicleCmdGate::publishControlCommands(const Commands & commands)
 
   // Check engage
   if (!is_engaged_) {
-    filtered_commands.control = createStopControlCmd();
+    filtered_commands.control.longitudinal = createLongitudinalStopControlCmd();
   }
 
   // Check pause. Place this check after all other checks as it needs the final output.
   adapi_pause_->update(filtered_commands.control);
   if (adapi_pause_->is_paused()) {
-    filtered_commands.control = createStopControlCmd();
+    if (is_engaged_) {
+      filtered_commands.control.longitudinal = createLongitudinalStopControlCmd();
+    } else {
+      filtered_commands.control = createStopControlCmd();
+    }
   }
 
   // Check if command filtering option is enable
@@ -595,6 +599,17 @@ AckermannControlCommand VehicleCmdGate::createStopControlCmd() const
   cmd.lateral.steering_tire_rotation_rate = 0.0;
   cmd.longitudinal.speed = 0.0;
   cmd.longitudinal.acceleration = stop_hold_acceleration_;
+
+  return cmd;
+}
+
+LongitudinalCommand VehicleCmdGate::createLongitudinalStopControlCmd() const
+{
+  LongitudinalCommand cmd;
+  const auto t = this->now();
+  cmd.stamp = t;
+  cmd.speed = 0.0;
+  cmd.acceleration = stop_hold_acceleration_;
 
   return cmd;
 }
