@@ -304,6 +304,8 @@ ObstaclePointCloudBasedValidator::ObstaclePointCloudBasedValidator(
 
   objects_pub_ = create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
     "~/output/objects", rclcpp::QoS{1});
+  debug_publisher_ = std::make_unique<tier4_autoware_utils::DebugPublisher>(
+    this, "obstacle_pointcloud_based_validator");
 
   const bool enable_debugger = declare_parameter<bool>("enable_debugger", false);
   if (enable_debugger) debugger_ = std::make_shared<Debugger>(this);
@@ -350,6 +352,14 @@ void ObstaclePointCloudBasedValidator::onObjectsAndObstaclePointCloud(
     debugger_->publishNeighborPointcloud(input_obstacle_pointcloud->header);
     debugger_->publishPointcloudWithinPolygon(input_obstacle_pointcloud->header);
   }
+
+  // Publish processing time info
+  const double pipeline_latency =
+    std::chrono::duration<double, std::milli>(
+      std::chrono::nanoseconds((this->get_clock()->now() - output.header.stamp).nanoseconds()))
+      .count();
+  debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+    "debug/pipeline_latency_ms", pipeline_latency);
 }
 
 }  // namespace obstacle_pointcloud_based_validator

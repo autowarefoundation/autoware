@@ -52,6 +52,9 @@ ObjectLaneletFilterNode::ObjectLaneletFilterNode(const rclcpp::NodeOptions & nod
     "input/object", rclcpp::QoS{1}, std::bind(&ObjectLaneletFilterNode::objectCallback, this, _1));
   object_pub_ = this->create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
     "output/object", rclcpp::QoS{1});
+
+  debug_publisher_ =
+    std::make_unique<tier4_autoware_utils::DebugPublisher>(this, "object_lanelet_filter");
 }
 
 void ObjectLaneletFilterNode::mapCallback(
@@ -116,6 +119,15 @@ void ObjectLaneletFilterNode::objectCallback(
     ++index;
   }
   object_pub_->publish(output_object_msg);
+
+  // Publish debug info
+  const double pipeline_latency =
+    std::chrono::duration<double, std::milli>(
+      std::chrono::nanoseconds(
+        (this->get_clock()->now() - output_object_msg.header.stamp).nanoseconds()))
+      .count();
+  debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+    "debug/pipeline_latency_ms", pipeline_latency);
 }
 
 geometry_msgs::msg::Polygon ObjectLaneletFilterNode::setFootprint(
