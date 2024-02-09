@@ -15,8 +15,10 @@
 #ifndef ROUTE_PANEL_HPP_
 #define ROUTE_PANEL_HPP_
 
+#include <QButtonGroup>
 #include <QCheckBox>
 #include <QGroupBox>
+#include <QLabel>
 #include <QPushButton>
 #include <autoware_ad_api_specs/routing.hpp>
 #include <component_interface_utils/rclcpp.hpp>
@@ -35,6 +37,7 @@ class RoutePanel : public rviz_common::Panel
   Q_OBJECT
   using ClearRoute = autoware_ad_api::routing::ClearRoute;
   using SetRoutePoints = autoware_ad_api::routing::SetRoutePoints;
+  using ChangeRoutePoints = autoware_ad_api::routing::ChangeRoutePoints;
   using PoseStamped = geometry_msgs::msg::PoseStamped;
 
 public:
@@ -45,6 +48,11 @@ private:
   QPushButton * waypoints_mode_;
   QPushButton * waypoints_reset_;
   QPushButton * waypoints_apply_;
+  QPushButton * adapi_clear_;
+  QPushButton * adapi_set_;
+  QPushButton * adapi_change_;
+  QLabel * adapi_response_;
+  QCheckBox * adapi_auto_clear_;
   QGroupBox * waypoints_group_;
   QCheckBox * allow_goal_modification_;
 
@@ -52,11 +60,17 @@ private:
   std::vector<PoseStamped> waypoints_;
   void onPose(const PoseStamped::ConstSharedPtr msg);
 
+  enum AdapiMode { Set, Change };
+  AdapiMode adapi_mode_;
+
   component_interface_utils::Client<ClearRoute>::SharedPtr cli_clear_;
-  component_interface_utils::Client<SetRoutePoints>::SharedPtr cli_route_;
-  void setRoute(const PoseStamped & pose);
+  component_interface_utils::Client<SetRoutePoints>::SharedPtr cli_set_;
+  component_interface_utils::Client<ChangeRoutePoints>::SharedPtr cli_change_;
+  void requestRoute(const PoseStamped & pose);
+  void asyncSendRequest(SetRoutePoints::Service::Request::SharedPtr req);
 
 private slots:
+  void clearRoute();
   void onWaypointsMode(bool clicked);
   void onWaypointsReset();
   void onWaypointsApply();
