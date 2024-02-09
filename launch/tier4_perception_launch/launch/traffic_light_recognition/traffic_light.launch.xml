@@ -24,12 +24,9 @@
   <let name="all_camera_namespaces" value="[$(var namespace1)]" if="$(eval &quot; '$(var image_number)' == '1' &quot;)"/>
   <let name="all_camera_namespaces" value="[$(var namespace1), $(var namespace2)]" if="$(eval &quot; '$(var image_number)' >= '2' &quot;)"/>
 
-  <arg name="fine_detector_label_path" default="$(var traffic_light_fine_detector_model_path)/$(var traffic_light_fine_detector_label_name)"/>
-  <arg name="fine_detector_model_path" default="$(var traffic_light_fine_detector_model_path)/$(var traffic_light_fine_detector_model_name).onnx"/>
-  <arg name="car_classifier_label_path" default="$(var traffic_light_classifier_model_path)/$(var car_traffic_light_classifier_label_name)"/>
-  <arg name="pedestrian_classifier_label_path" default="$(var traffic_light_classifier_model_path)/$(var pedestrian_traffic_light_classifier_label_name)"/>
-  <arg name="car_classifier_model_path" default="$(var traffic_light_classifier_model_path)/$(var car_traffic_light_classifier_model_name).onnx"/>
-  <arg name="pedestrian_classifier_model_path" default="$(var traffic_light_classifier_model_path)/$(var pedestrian_traffic_light_classifier_model_name).onnx"/>
+  <arg name="fine_detector_param_path" default="$(find-pkg-share traffic_light_fine_detector)/config/traffic_light_fine_detector.param.yaml"/>
+  <arg name="car_classifier_param_path" default="$(find-pkg-share traffic_light_classifier)/config/car_traffic_light_classifier.param.yaml"/>
+  <arg name="pedestrian_classifier_param_path" default="$(find-pkg-share traffic_light_classifier)/config/pedestrian_traffic_light_classifier.param.yaml"/>
 
   <!-- namespace1 camera TLR pipeline -->
   <group>
@@ -62,12 +59,9 @@
         <arg name="enable_fine_detection" value="$(var enable_fine_detection)"/>
         <arg name="use_intra_process" value="true"/>
         <arg name="use_multithread" value="true"/>
-        <arg name="fine_detector_label_path" value="$(var fine_detector_label_path)"/>
-        <arg name="fine_detector_model_path" value="$(var fine_detector_model_path)"/>
-        <arg name="car_classifier_label_path" value="$(var car_classifier_label_path)"/>
-        <arg name="pedestrian_classifier_label_path" value="$(var pedestrian_classifier_label_path)"/>
-        <arg name="car_classifier_model_path" value="$(var car_classifier_model_path)"/>
-        <arg name="pedestrian_classifier_model_path" value="$(var pedestrian_classifier_model_path)"/>
+        <arg name="fine_detector_param_path" value="$(var fine_detector_param_path)"/>
+        <arg name="car_classifier_param_path" value="$(var car_classifier_param_path)"/>
+        <arg name="pedestrian_classifier_param_path" value="$(var pedestrian_classifier_param_path)"/>
         <arg name="output/rois" value="$(var output/rois1)"/>
         <arg name="output/traffic_signals" value="$(var output/traffic_signals1)"/>
         <arg name="output/car/traffic_signals" value="$(var output/car/traffic_signals1)"/>
@@ -119,12 +113,9 @@
         <arg name="enable_fine_detection" value="$(var enable_fine_detection)"/>
         <arg name="use_intra_process" value="true"/>
         <arg name="use_multithread" value="true"/>
-        <arg name="fine_detector_label_path" value="$(var fine_detector_label_path)"/>
-        <arg name="fine_detector_model_path" value="$(var fine_detector_model_path)"/>
-        <arg name="car_classifier_label_path" value="$(var car_classifier_label_path)"/>
-        <arg name="pedestrian_classifier_label_path" value="$(var pedestrian_classifier_label_path)"/>
-        <arg name="car_classifier_model_path" value="$(var car_classifier_model_path)"/>
-        <arg name="pedestrian_classifier_model_path" value="$(var pedestrian_classifier_model_path)"/>
+        <arg name="fine_detector_param_path" value="$(var fine_detector_param_path)"/>
+        <arg name="car_classifier_param_path" value="$(var car_classifier_param_path)"/>
+        <arg name="pedestrian_classifier_param_path" value="$(var pedestrian_classifier_param_path)"/>
         <arg name="output/rois" value="$(var output/rois2)"/>
         <arg name="output/traffic_signals" value="$(var output/traffic_signals2)"/>
         <arg name="output/car/traffic_signals" value="$(var output/car/traffic_signals2)"/>

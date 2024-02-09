@@ -1,27 +1,17 @@
 <launch>
-  <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
-  <arg name="fine_detector_label_path" default="$(var data_path)/traffic_light_fine_detector/tlr_labels.txt" description="fine detector label path"/>
-  <arg name="fine_detector_model_path" default="$(var data_path)/traffic_light_fine_detector/tlr_car_ped_yolox_s_batch_6.onnx" description="fine detector onnx model path"/>
-  <arg name="fine_detector_precision" default="fp16"/>
-  <arg name="fine_detector_score_thresh" default="0.3"/>
-  <arg name="fine_detector_nms_thresh" default="0.65"/>
   <arg name="input/image" default="/image_raw"/>
   <arg name="input/rois" default="/traffic_light_map_based_detector/output/rois"/>
   <arg name="expect/rois" default="~/expect/rois"/>
   <arg name="output/rois" default="~/output/rois"/>
-
-  <arg name="build_only" default="false" description="shutdown node after TensorRT engine file is built"/>
+  <arg name="traffic_light_fine_detector_param_path" default="$(find-pkg-share traffic_light_fine_detector)/config/traffic_light_fine_detector.param.yaml" description="fine detector param path"/>
+  <arg name="build_only" default="false" description="exit after trt engine is built"/>
 
   <node pkg="traffic_light_fine_detector" exec="traffic_light_fine_detector_node" name="traffic_light_fine_detector" output="screen">
     <remap from="~/input/image" to="$(var input/image)"/>
     <remap from="~/input/rois" to="$(var input/rois)"/>
     <remap from="~/expect/rois" to="$(var expect/rois)"/>
     <remap from="~/output/rois" to="$(var output/rois)"/>
-    <param name="fine_detector_model_path" value="$(var fine_detector_model_path)"/>
-    <param name="fine_detector_label_path" value="$(var fine_detector_label_path)"/>
-    <param name="fine_detector_precision" value="$(var fine_detector_precision)"/>
-    <param name="fine_detector_score_thresh" value="$(var fine_detector_score_thresh)"/>
-    <param name="fine_detector_nms_thresh" value="$(var fine_detector_nms_thresh)"/>
+    <param from="$(var traffic_light_fine_detector_param_path)" allow_substs="true"/>
     <param name="build_only" value="$(var build_only)"/>
   </node>
 </launch>

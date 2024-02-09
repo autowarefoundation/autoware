@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    approximate_sync: false
+    classifier_label_path: "$(var traffic_light_classifier_model_path)/$(var car_traffic_light_classifier_label_name)"
+    classifier_model_path: "$(var traffic_light_classifier_model_path)/$(var car_traffic_light_classifier_model_name).onnx"
+    classifier_precision: fp16
+    classifier_mean: [123.675, 116.28, 103.53]
+    classifier_std: [58.395, 57.12, 57.375]
+    backlight_threshold: 0.85
+    classifier_type: 1 #classifier_type {hsv_filter: 0, cnn: 1}
+    classify_traffic_light_type: 0 #classify_traffic_light_type {car: 0, pedestrian:1}

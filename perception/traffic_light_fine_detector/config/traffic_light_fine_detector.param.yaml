@@ -1,0 +1,7 @@
+/**:
+  ros__parameters:
+    fine_detector_label_path: "$(var traffic_light_fine_detector_model_path)/$(var traffic_light_fine_detector_label_name)"
+    fine_detector_model_path: "$(var traffic_light_fine_detector_model_path)/$(var traffic_light_fine_detector_model_name).onnx"
+    fine_detector_precision: fp16
+    fine_detector_score_thresh: 0.3
+    fine_detector_nms_thresh: 0.65
