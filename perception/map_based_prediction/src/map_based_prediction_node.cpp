@@ -1309,6 +1309,13 @@ void MapBasedPredictionNode::updateObjectData(TrackedObject & object)
   // assumption: the object vx is much larger than vy
   if (object.kinematics.twist_with_covariance.twist.linear.x >= 0.0) return;
 
+  // calculate absolute velocity and do nothing if it is too slow
+  const double abs_object_speed = std::hypot(
+    object.kinematics.twist_with_covariance.twist.linear.x,
+    object.kinematics.twist_with_covariance.twist.linear.y);
+  constexpr double min_abs_speed = 1e-1;  // 0.1 m/s
+  if (abs_object_speed < min_abs_speed) return;
+
   switch (object.kinematics.orientation_availability) {
     case autoware_auto_perception_msgs::msg::DetectedObjectKinematics::SIGN_UNKNOWN: {
       const auto original_yaw =
