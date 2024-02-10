@@ -80,9 +80,9 @@ SimpleObjectMergerNode::SimpleObjectMergerNode(const rclcpp::NodeOptions & node_
     std::bind(&SimpleObjectMergerNode::onSetParam, this, std::placeholders::_1));
 
   // Node Parameter
-  node_param_.update_rate_hz = declare_parameter<double>("update_rate_hz", 20.0);
-  node_param_.new_frame_id = declare_parameter<std::string>("new_frame_id", "base_link");
-  node_param_.timeout_threshold = declare_parameter<double>("timeout_threshold", 0.1);
+  node_param_.update_rate_hz = declare_parameter<double>("update_rate_hz");
+  node_param_.new_frame_id = declare_parameter<std::string>("new_frame_id");
+  node_param_.timeout_threshold = declare_parameter<double>("timeout_threshold");
 
   declare_parameter("input_topics", std::vector<std::string>());
   node_param_.topic_names = get_parameter("input_topics").as_string_array();
