@@ -37,7 +37,7 @@
   <arg name="image_number" default="1" description="choose image raw number(1-8)"/>
 
   <!-- Jetson AGX -->
-  <!-- <include file="$(find-pkg-share tensorrt_yolo)/launch/yolo.launch.xml">
+  <!-- <include file="$(find-pkg-share tensorrt_yolox)/launch/multiple_yolox.launch.xml">
     <arg name="image_raw0" value="$(var image_raw0)"/>
     <arg name="image_raw1" value="$(var image_raw1)"/>
     <arg name="image_raw2" value="$(var image_raw2)"/>
