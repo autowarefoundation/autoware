@@ -64,19 +64,18 @@ RadarThresholdFilterNode::RadarThresholdFilterNode(const rclcpp::NodeOptions & n
     std::bind(&RadarThresholdFilterNode::onSetParam, this, _1));
 
   // Node Parameter
-  node_param_.is_amplitude_filter =
-    declare_parameter<bool>("node_params.is_amplitude_filter", false);
-  node_param_.amplitude_min = declare_parameter<double>("node_params.amplitude_min", 0.0);
-  node_param_.amplitude_max = declare_parameter<double>("node_params.amplitude_max", 0.0);
-  node_param_.is_range_filter = declare_parameter<bool>("node_params.is_range_filter", false);
-  node_param_.range_min = declare_parameter<double>("node_params.range_min", 0.0);
-  node_param_.range_max = declare_parameter<double>("node_params.range_max", 0.0);
-  node_param_.is_azimuth_filter = declare_parameter<bool>("node_params.is_azimuth_filter", false);
-  node_param_.azimuth_min = declare_parameter<double>("node_params.azimuth_min", 0.0);
-  node_param_.azimuth_max = declare_parameter<double>("node_params.azimuth_max", 0.0);
-  node_param_.is_z_filter = declare_parameter<bool>("node_params.is_z_filter", false);
-  node_param_.z_min = declare_parameter<double>("node_params.z_min", 0.0);
-  node_param_.z_max = declare_parameter<double>("node_params.z_max", 0.0);
+  node_param_.is_amplitude_filter = declare_parameter<bool>("node_params.is_amplitude_filter");
+  node_param_.amplitude_min = declare_parameter<double>("node_params.amplitude_min");
+  node_param_.amplitude_max = declare_parameter<double>("node_params.amplitude_max");
+  node_param_.is_range_filter = declare_parameter<bool>("node_params.is_range_filter");
+  node_param_.range_min = declare_parameter<double>("node_params.range_min");
+  node_param_.range_max = declare_parameter<double>("node_params.range_max");
+  node_param_.is_azimuth_filter = declare_parameter<bool>("node_params.is_azimuth_filter");
+  node_param_.azimuth_min = declare_parameter<double>("node_params.azimuth_min");
+  node_param_.azimuth_max = declare_parameter<double>("node_params.azimuth_max");
+  node_param_.is_z_filter = declare_parameter<bool>("node_params.is_z_filter");
+  node_param_.z_min = declare_parameter<double>("node_params.z_min");
+  node_param_.z_max = declare_parameter<double>("node_params.z_max");
 
   // Subscriber
   sub_radar_ = create_subscription<RadarScan>(
