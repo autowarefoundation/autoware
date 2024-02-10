@@ -5,12 +5,11 @@
   <arg name="input/route" default="/planning/mission_planning/route"/>
   <arg name="expect/rois" default="~/expect/rois"/>
   <arg name="output/rois" default="~/output/rois"/>
-  <arg name="output/camera_info" default="~/camera_info"/>
   <!--This parameter should be configured differently for each camera considering their delay.-->
   <arg name="min_timestamp_offset" default="0.0"/>
   <!--This parameter should be configured differently for each camera considering their delay.-->
   <arg name="max_timestamp_offset" default="0.0"/>
-  <arg name="timestamp_sample_len" default="0.02"/>
+
   <arg name="param_path" default="$(find-pkg-share traffic_light_map_based_detector)/config/traffic_light_map_based_detector.param.yaml"/>
 
   <node pkg="traffic_light_map_based_detector" exec="traffic_light_map_based_detector_node" name="traffic_light_map_based_detector" output="screen">
@@ -19,10 +18,8 @@
     <remap from="~/expect/rois" to="$(var expect/rois)"/>
     <remap from="~/input/route" to="$(var input/route)"/>
     <remap from="~/output/rois" to="$(var output/rois)"/>
-    <remap from="~/output/camera_info" to="$(var output/camera_info)"/>
     <param from="$(var param_path)"/>
     <param name="min_timestamp_offset" value="$(var min_timestamp_offset)"/>
     <param name="max_timestamp_offset" value="$(var max_timestamp_offset)"/>
-    <param name="timestamp_sample_len" value="$(var timestamp_sample_len)"/>
   </node>
 </launch>

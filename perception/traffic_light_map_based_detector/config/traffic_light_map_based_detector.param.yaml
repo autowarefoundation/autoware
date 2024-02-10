@@ -6,5 +6,6 @@
     max_vibration_width: 0.5             # -0.25 ~ 0.25 m
     max_vibration_depth: 0.5             # -0.25 ~ 0.25 m
     max_detection_range: 200.0
+    timestamp_sample_len: 0.02
     car_traffic_light_max_angle_range: 40.0
     pedestrian_traffic_light_max_angle_range: 80.0

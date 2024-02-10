@@ -46,10 +46,11 @@
         <push-ros-namespace namespace="detection"/>
         <include file="$(find-pkg-share traffic_light_map_based_detector)/launch/traffic_light_map_based_detector.launch.xml">
           <arg name="input/camera_info" value="$(var input/camera_info)"/>
-          <arg name="min_timestamp_offset" value="-0.3"/>
           <arg name="expect/rois" value="expect/rois"/>
           <arg name="output/rois" value="$(var map_based_detector_output_topic)"/>
-          <arg name="output/camera_info" value="camera_info"/>
+          <!-- This parameter should be configured differently for each camera considering their delay. -->
+          <arg name="min_timestamp_offset" value="-0.3"/>
+          <arg name="max_timestamp_offset" value="0.0"/>
         </include>
       </group>
 
@@ -100,10 +101,11 @@
         <push-ros-namespace namespace="detection"/>
         <include file="$(find-pkg-share traffic_light_map_based_detector)/launch/traffic_light_map_based_detector.launch.xml">
           <arg name="input/camera_info" value="$(var input/camera_info)"/>
-          <arg name="min_timestamp_offset" value="-0.04"/>
           <arg name="expect/rois" value="expect/rois"/>
           <arg name="output/rois" value="$(var map_based_detector_output_topic)"/>
-          <arg name="output/camera_info" value="camera_info"/>
+          <!-- This parameter should be configured differently for each camera considering their delay. -->
+          <arg name="min_timestamp_offset" value="-0.04"/>
+          <arg name="max_timestamp_offset" value="0.0"/>
         </include>
       </group>
 
