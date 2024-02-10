@@ -53,7 +53,7 @@ ObjectVelocitySplitterNode::ObjectVelocitySplitterNode(const rclcpp::NodeOptions
     std::bind(&ObjectVelocitySplitterNode::onSetParam, this, std::placeholders::_1));
 
   // Node Parameter
-  node_param_.velocity_threshold = declare_parameter<double>("velocity_threshold", 3.0);
+  node_param_.velocity_threshold = declare_parameter<double>("velocity_threshold");
 
   // Subscriber
   sub_objects_ = create_subscription<DetectedObjects>(
