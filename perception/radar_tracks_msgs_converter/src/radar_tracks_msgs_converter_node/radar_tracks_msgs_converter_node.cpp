@@ -78,13 +78,12 @@ RadarTracksMsgsConverterNode::RadarTracksMsgsConverterNode(const rclcpp::NodeOpt
     std::bind(&RadarTracksMsgsConverterNode::onSetParam, this, _1));
 
   // Node Parameter
-  node_param_.update_rate_hz = declare_parameter<double>("update_rate_hz", 20.0);
-  node_param_.new_frame_id = declare_parameter<std::string>("new_frame_id", "base_link");
-  node_param_.use_twist_compensation = declare_parameter<bool>("use_twist_compensation", false);
-  node_param_.use_twist_yaw_compensation =
-    declare_parameter<bool>("use_twist_yaw_compensation", false);
+  node_param_.update_rate_hz = declare_parameter<double>("update_rate_hz");
+  node_param_.new_frame_id = declare_parameter<std::string>("new_frame_id");
+  node_param_.use_twist_compensation = declare_parameter<bool>("use_twist_compensation");
+  node_param_.use_twist_yaw_compensation = declare_parameter<bool>("use_twist_yaw_compensation");
   node_param_.static_object_speed_threshold =
-    declare_parameter<float>("static_object_speed_threshold", 1.0);
+    declare_parameter<float>("static_object_speed_threshold");
 
   // Subscriber
   sub_radar_ = create_subscription<RadarTracks>(
