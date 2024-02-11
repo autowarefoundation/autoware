@@ -43,20 +43,6 @@ $ wget -P ~/autoware_data/lidar_centerpoint/ \
        https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/pts_backbone_neck_head_centerpoint_tiny.onnx
 
 
-# tensorrt_yolo
-
-$ mkdir -p ~/autoware_data/tensorrt_yolo/
-$ wget -P ~/autoware_data/tensorrt_yolo/ \
-       https://awf.ml.dev.web.auto/perception/models/yolov3.onnx \
-       https://awf.ml.dev.web.auto/perception/models/yolov4.onnx \
-       https://awf.ml.dev.web.auto/perception/models/yolov4-tiny.onnx \
-       https://awf.ml.dev.web.auto/perception/models/yolov5s.onnx \
-       https://awf.ml.dev.web.auto/perception/models/yolov5m.onnx \
-       https://awf.ml.dev.web.auto/perception/models/yolov5l.onnx \
-       https://awf.ml.dev.web.auto/perception/models/yolov5x.onnx \
-       https://awf.ml.dev.web.auto/perception/models/coco.names
-
-
 # tensorrt_yolox
 
 $ mkdir -p ~/autoware_data/tensorrt_yolox/
