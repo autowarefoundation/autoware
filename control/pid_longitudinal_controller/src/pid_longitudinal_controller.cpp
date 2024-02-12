@@ -626,7 +626,7 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     return;
   };
 
-  const auto info_once = [this](const auto & s) { RCLCPP_INFO_ONCE(logger_, "%s", s); };
+  const auto debug_msg_once = [this](const auto & s) { RCLCPP_DEBUG_ONCE(logger_, "%s", s); };
 
   const bool is_under_control = m_current_operation_mode.is_autoware_control_enabled &&
                                 m_current_operation_mode.mode == OperationModeState::AUTONOMOUS;
@@ -691,10 +691,10 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
   if (m_control_state == ControlState::STOPPED) {
     // -- debug print --
     if (has_nonzero_target_vel && !departure_condition_from_stopped) {
-      info_once("target speed > 0, but departure condition is not met. Keep STOPPED.");
+      debug_msg_once("target speed > 0, but departure condition is not met. Keep STOPPED.");
     }
     if (has_nonzero_target_vel && keep_stopped_condition) {
-      info_once("target speed > 0, but keep stop condition is met. Keep STOPPED.");
+      debug_msg_once("target speed > 0, but keep stop condition is met. Keep STOPPED.");
     }
     // ---------------
 

@@ -75,7 +75,6 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_markers_;
 
   // system parameters
-  bool publish_diag_ = true;
   int diag_error_count_threshold_ = 0;
   bool display_on_terminal_ = true;
 

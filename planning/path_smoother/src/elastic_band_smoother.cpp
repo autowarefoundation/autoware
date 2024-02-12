@@ -136,7 +136,7 @@ rcl_interfaces::msg::SetParametersResult ElasticBandSmoother::onParam(
 
 void ElasticBandSmoother::initializePlanning()
 {
-  RCLCPP_INFO(get_logger(), "Initialize planning");
+  RCLCPP_DEBUG(get_logger(), "Initialize planning");
 
   eb_path_smoother_ptr_->initialize(false, common_param_);
   resetPreviousData();

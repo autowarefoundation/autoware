@@ -203,7 +203,7 @@ void TrafficLightMapVisualizerNode::binMapCallback(
   lanelet::LaneletMapPtr viz_lanelet_map(new lanelet::LaneletMap);
 
   lanelet::utils::conversion::fromBinMsg(*input_map_msg, viz_lanelet_map);
-  RCLCPP_INFO(get_logger(), "Map is loaded\n");
+  RCLCPP_DEBUG(get_logger(), "Map is loaded\n");
 
   // get lanelets etc to visualize
   lanelet::ConstLanelets all_lanelets = lanelet::utils::query::laneletLayer(viz_lanelet_map);

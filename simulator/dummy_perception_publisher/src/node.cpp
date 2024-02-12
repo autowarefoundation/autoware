@@ -197,7 +197,7 @@ void DummyPerceptionPublisherNode::timerCallback()
   std::string error;
   if (!tf_buffer_.canTransform("base_link", /*src*/ "map", tf2::TimePointZero, &error)) {
     failed_tf_time = this->now();
-    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000, "map->base_link is not available yet");
+    RCLCPP_DEBUG_THROTTLE(get_logger(), *get_clock(), 5000, "map->base_link is not available yet");
     return;
   }
 

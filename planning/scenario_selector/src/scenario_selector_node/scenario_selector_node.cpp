@@ -180,7 +180,7 @@ void ScenarioSelectorNode::updateCurrentScenario()
   }
 
   if (current_scenario_ != prev_scenario) {
-    RCLCPP_INFO_STREAM(
+    RCLCPP_DEBUG_STREAM(
       this->get_logger(), "scenario changed: " << prev_scenario << " -> " << current_scenario_);
   }
 }
