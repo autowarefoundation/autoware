@@ -3,7 +3,7 @@ repositories:
   core/autoware_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_msgs.git
-    version: main
+    version: autoware_msg
   core/autoware_adapi_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_adapi_msgs.git
@@ -27,11 +27,11 @@ repositories:
     version: autoware_msg
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
-    url: https://github.com/cyn-liu/tier4_ad_api_adaptor.git
+    url: https://github.com/tier4/tier4_ad_api_adaptor.git
     version: autoware_msg
   universe/external/tier4_autoware_msgs:
     type: git
-    url: https://github.com/cyn-liu/tier4_autoware_msgs.git
+    url: https://github.com/tier4/tier4_autoware_msgs.git
     version: autoware_msg
   universe/external/morai_msgs:
     type: git
