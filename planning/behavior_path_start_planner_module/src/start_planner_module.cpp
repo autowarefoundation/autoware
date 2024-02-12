@@ -721,27 +721,36 @@ PathWithLaneId StartPlannerModule::extractCollisionCheckSection(
 
   const double collision_check_distance_from_end = collision_check_distances.at(planner_type);
 
-  PathWithLaneId combined_path;
+  PathWithLaneId full_path;
   for (const auto & partial_path : path.partial_paths) {
-    combined_path.points.insert(
-      combined_path.points.end(), partial_path.points.begin(), partial_path.points.end());
+    full_path.points.insert(
+      full_path.points.end(), partial_path.points.begin(), partial_path.points.end());
   }
-  // calculate collision check end idx
-  const size_t collision_check_end_idx = std::invoke([&]() {
-    const auto collision_check_end_pose = motion_utils::calcLongitudinalOffsetPose(
-      combined_path.points, path.end_pose.position, collision_check_distance_from_end);
 
-    if (collision_check_end_pose) {
-      return motion_utils::findNearestIndex(
-        combined_path.points, collision_check_end_pose->position);
-    } else {
-      return combined_path.points.size() - 1;
-    }
-  });
-  // remove the point behind of collision check end pose
-  combined_path.points.erase(
-    combined_path.points.begin() + collision_check_end_idx + 1, combined_path.points.end());
-  return combined_path;
+  // Find the start index for collision check section based on the shift start pose
+  const auto shift_start_idx =
+    motion_utils::findNearestIndex(full_path.points, path.start_pose.position);
+
+  // Find the end index for collision check section based on the end pose and collision check
+  // distance
+  const auto collision_check_end_idx = [&]() -> size_t {
+    const auto end_pose_offset = motion_utils::calcLongitudinalOffsetPose(
+      full_path.points, path.end_pose.position, collision_check_distance_from_end);
+
+    return end_pose_offset
+             ? motion_utils::findNearestIndex(full_path.points, end_pose_offset->position)
+             : full_path.points.size() - 1;  // Use the last point if offset pose is not calculable
+  }();
+
+  // Extract the collision check section from the full path
+  PathWithLaneId collision_check_section;
+  if (shift_start_idx < collision_check_end_idx) {
+    collision_check_section.points.assign(
+      full_path.points.begin() + shift_start_idx,
+      full_path.points.begin() + collision_check_end_idx + 1);
+  }
+
+  return collision_check_section;
 }
 
 void StartPlannerModule::updateStatusWithCurrentPath(
