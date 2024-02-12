@@ -14,7 +14,7 @@ The `pre_commit_clang_format_version` variable can also be found in:
 [./defaults/main.yaml](./defaults/main.yaml)
 
 ```bash
-pre_commit_clang_format_version=17.0.5
+pre_commit_clang_format_version=17.0.6
 pip3 install pre-commit clang-format==${pre_commit_clang_format_version}
 
 sudo apt install golang
