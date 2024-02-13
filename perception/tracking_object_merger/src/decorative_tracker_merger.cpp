@@ -250,9 +250,6 @@ bool DecorativeTrackerMergerNode::decorativeMerger(
 {
   // get current time
   const auto current_time = rclcpp::Time(input_objects_msg->header.stamp);
-  if (input_objects_msg->objects.empty()) {
-    return false;
-  }
   if (inner_tracker_objects_.empty()) {
     for (const auto & object : input_objects_msg->objects) {
       inner_tracker_objects_.push_back(createNewTracker(input_sensor, current_time, object));

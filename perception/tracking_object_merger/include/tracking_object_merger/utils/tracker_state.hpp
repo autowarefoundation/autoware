@@ -118,7 +118,7 @@ public:
     std::function<void(TrackedObject &, const TrackedObject &)> update_func);
   // const functions
   bool hasUUID(const MEASUREMENT_STATE input, const unique_identifier_msgs::msg::UUID & uuid) const;
-  bool isValid() const;
+  bool isValid(const rclcpp::Time & current_time) const;
   bool canPublish() const;
   TrackedObject getObject() const;
 

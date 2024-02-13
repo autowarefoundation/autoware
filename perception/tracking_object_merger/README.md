@@ -59,8 +59,8 @@ We use the `existence_probability` to manage tracklet.
 - When we create a new tracklet, we set the `existence_probability` to $p_{sensor}$ value.
 - In each update with specific sensor, we set the `existence_probability` to $p_{sensor}$ value.
 - When tracklet does not have update with specific sensor, we reduce the `existence_probability` by `decay_rate`
-- Object can be published if `existence_probability` is larger than `publish_probability_threshold`
-- Object will be removed if `existence_probability` is smaller than `remove_probability_threshold`
+- Object can be published if `existence_probability` is larger than `publish_probability_threshold` and time from last update is smaller than `max_dt`
+- Object will be removed if `existence_probability` is smaller than `remove_probability_threshold` and time from last update is larger than `max_dt`
 
 ![tracklet_management](./image/tracklet_management.drawio.svg)
 

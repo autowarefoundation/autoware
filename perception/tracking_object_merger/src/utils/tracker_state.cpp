@@ -271,8 +271,14 @@ bool TrackerState::hasUUID(
   return input_uuid_map_.at(input) == uuid;
 }
 
-bool TrackerState::isValid() const
+bool TrackerState::isValid(const rclcpp::Time & current_time) const
 {
+  // check dt from last update
+  double dt = (current_time - last_update_time_).seconds();
+  if (std::abs(dt) > max_dt_) {
+    return false;
+  }
+
   // check if tracker state is valid
   if (existence_probability_ < remove_probability_threshold_) {
     return false;
@@ -302,7 +308,7 @@ TrackedObjects getTrackedObjectsFromTrackerStates(
   // sanitize and get tracked objects
   for (auto it = tracker_states.begin(); it != tracker_states.end();) {
     // check if tracker state is valid
-    if (it->isValid()) {
+    if (it->isValid(current_time)) {
       if (it->canPublish()) {
         // if valid, get tracked object
         tracked_objects.objects.push_back(it->getObject());
