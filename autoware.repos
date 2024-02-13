@@ -61,6 +61,10 @@ repositories:
     type: git
     url: https://github.com/MapIV/llh_converter.git
     version: ros2
+  universe/external/ament_cmake: # TODO(mitsudome-r): remove when https://github.com/ament/ament_cmake/pull/448 is merged
+    type: git
+    url: https://github.com/autowarefoundation/ament_cmake.git
+    version: feat/faster_ament_libraries_deduplicate
   # launcher
   launcher/autoware_launch:
     type: git
