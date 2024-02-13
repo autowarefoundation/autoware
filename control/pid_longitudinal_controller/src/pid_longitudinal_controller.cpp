@@ -456,6 +456,8 @@ PidLongitudinalController::ControlData PidLongitudinalController::getControlData
     current_interpolated_pose.first);
   control_data.nearest_idx = current_interpolated_pose.second + 1;
   control_data.target_idx = control_data.nearest_idx;
+  const auto nearest_point = current_interpolated_pose.first;
+  auto target_point = current_interpolated_pose.first;
 
   // check if the deviation is worth emergency
   m_diagnostic_data.trans_deviation =
@@ -491,11 +493,25 @@ PidLongitudinalController::ControlData PidLongitudinalController::getControlData
     control_data.interpolated_traj.points.insert(
       control_data.interpolated_traj.points.begin() + control_data.target_idx,
       target_interpolated_point.first);
+    target_point = target_interpolated_point.first;
   }
 
+  // ==========================================================================================
+  // NOTE: due to removeOverlapPoints(), the obtained control_data.target_idx and
+  // control_data.nearest_idx may become invalid if the number of points decreased.
+  // current API does not provide the way to check duplication beforehand and this function
+  // does not tell how many/which index points were removed, so there is no way
+  // to tell if our `control_data.target_idx` point still exists or removed.
+  // ==========================================================================================
   // Remove overlapped points after inserting the interpolated points
   control_data.interpolated_traj.points =
     motion_utils::removeOverlapPoints(control_data.interpolated_traj.points);
+  control_data.nearest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    control_data.interpolated_traj.points, nearest_point.pose, m_ego_nearest_dist_threshold,
+    m_ego_nearest_yaw_threshold);
+  control_data.target_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    control_data.interpolated_traj.points, target_point.pose, m_ego_nearest_dist_threshold,
+    m_ego_nearest_yaw_threshold);
 
   // send debug values
   m_debug_values.setValues(DebugValues::TYPE::PREDICTED_VEL, control_data.state_after_delay.vel);
@@ -610,8 +626,12 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
       ? (clock_->now() - *m_last_running_time).seconds() > p.stopped_state_entry_duration_time
       : false;
 
-  const double current_vel_cmd =
-    std::fabs(m_trajectory.points.at(control_data.nearest_idx).longitudinal_velocity_mps);
+  // ==========================================================================================
+  // NOTE: due to removeOverlapPoints() in getControlData() m_trajectory and
+  // control_data.interpolated_traj have different size.
+  // ==========================================================================================
+  const double current_vel_cmd = std::fabs(
+    control_data.interpolated_traj.points.at(control_data.nearest_idx).longitudinal_velocity_mps);
   const bool emergency_condition = m_enable_overshoot_emergency &&
                                    stop_dist < -p.emergency_state_overshoot_stop_dist &&
                                    current_vel_cmd < vel_epsilon;
