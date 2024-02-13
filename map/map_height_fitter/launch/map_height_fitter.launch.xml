@@ -7,6 +7,7 @@
       <param from="$(var param_path)"/>
       <remap from="~/pointcloud_map" to="/map/pointcloud_map"/>
       <remap from="~/partial_map_load" to="/map/get_partial_pointcloud_map"/>
+      <remap from="~/vector_map" to="/map/vector_map"/>
     </node>
   </group>
 </launch>

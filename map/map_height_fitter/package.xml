@@ -18,8 +18,10 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_auto_mapping_msgs</depend>
   <depend>autoware_map_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>lanelet2_extension</depend>
   <depend>libpcl-common</depend>
   <depend>pcl_conversions</depend>
   <depend>rclcpp</depend>
