@@ -885,41 +885,58 @@ double getRoadShoulderDistance(
     return 0.0;
   }
 
-  std::vector<std::pair<Point, Point>> intersects;
+  std::vector<std::tuple<double, Point, Point>> intersects;
   for (const auto & p1 : object.overhang_points) {
     const auto centerline_pose =
       lanelet::utils::getClosestCenterPose(object.overhang_lanelet, object_pose.position);
     const auto p_tmp =
       geometry_msgs::build<Pose>().position(p1.second).orientation(centerline_pose.orientation);
-    const auto p2 = calcOffsetPose(p_tmp, 0.0, (isOnRight(object) ? 100.0 : -100.0), 0.0).position;
 
     // TODO(Satoshi OTA): check if the basic point is on right or left of bound.
     const auto bound = isOnRight(object) ? data.left_bound : data.right_bound;
 
     for (size_t i = 1; i < bound.size(); i++) {
-      const auto opt_intersect =
-        tier4_autoware_utils::intersect(p1.second, p2, bound.at(i - 1), bound.at(i));
+      {
+        const auto p2 =
+          calcOffsetPose(p_tmp, 0.0, (isOnRight(object) ? 100.0 : -100.0), 0.0).position;
+        const auto opt_intersect =
+          tier4_autoware_utils::intersect(p1.second, p2, bound.at(i - 1), bound.at(i));
 
-      if (!opt_intersect) {
-        continue;
+        if (opt_intersect.has_value()) {
+          intersects.emplace_back(
+            calcDistance2d(p1.second, opt_intersect.value()), p1.second, opt_intersect.value());
+          break;
+        }
       }
 
-      intersects.emplace_back(p1.second, opt_intersect.value());
+      {
+        const auto p2 =
+          calcOffsetPose(p_tmp, 0.0, (isOnRight(object) ? -100.0 : 100.0), 0.0).position;
+        const auto opt_intersect =
+          tier4_autoware_utils::intersect(p1.second, p2, bound.at(i - 1), bound.at(i));
+
+        if (opt_intersect.has_value()) {
+          intersects.emplace_back(
+            -1.0 * calcDistance2d(p1.second, opt_intersect.value()), p1.second,
+            opt_intersect.value());
+          break;
+        }
+      }
     }
   }
 
   std::sort(intersects.begin(), intersects.end(), [](const auto & a, const auto & b) {
-    return calcDistance2d(a.first, a.second) < calcDistance2d(b.first, b.second);
+    return std::get<0>(a) < std::get<0>(b);
   });
 
   if (intersects.empty()) {
     return 0.0;
   }
 
-  object.narrowest_place = intersects.front();
+  object.narrowest_place =
+    std::make_pair(std::get<1>(intersects.front()), std::get<2>(intersects.front()));
 
-  return calcDistance2d(
-    object.narrowest_place.value().first, object.narrowest_place.value().second);
+  return std::get<0>(intersects.front());
 }
 }  // namespace filtering_utils
 
