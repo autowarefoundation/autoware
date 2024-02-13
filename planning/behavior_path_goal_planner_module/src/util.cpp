@@ -17,6 +17,7 @@
 #include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
 
+#include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -78,13 +79,62 @@ lanelet::ConstLanelets getPullOverLanes(
 
 lanelet::ConstLanelets generateExpandedPullOverLanes(
   const RouteHandler & route_handler, const bool left_side, const double backward_distance,
-  const double forward_distance, double bound_offset)
+  const double forward_distance, const double bound_offset)
 {
   const auto pull_over_lanes =
     getPullOverLanes(route_handler, left_side, backward_distance, forward_distance);
 
   return left_side ? lanelet::utils::getExpandedLanelets(pull_over_lanes, bound_offset, 0.0)
-                   : lanelet::utils::getExpandedLanelets(pull_over_lanes, 0.0, bound_offset);
+                   : lanelet::utils::getExpandedLanelets(pull_over_lanes, 0.0, -bound_offset);
+}
+
+static double getOffsetToLanesBoundary(
+  const lanelet::ConstLanelets & lanelet_sequence, const geometry_msgs::msg::Pose target_pose,
+  const bool left_side)
+{
+  lanelet::ConstLanelet closest_lanelet;
+  lanelet::utils::query::getClosestLanelet(lanelet_sequence, target_pose, &closest_lanelet);
+
+  // the boundary closer to ego. if left_side, take right boundary
+  const auto & boundary3d = left_side ? closest_lanelet.rightBound() : closest_lanelet.leftBound();
+  const auto boundary = lanelet::utils::to2D(boundary3d);
+  using lanelet::utils::conversion::toLaneletPoint;
+  const auto arc_coords = lanelet::geometry::toArcCoordinates(
+    boundary, lanelet::utils::to2D(toLaneletPoint(target_pose.position)).basicPoint());
+  return arc_coords.distance;
+}
+
+lanelet::ConstLanelets generateBetweenEgoAndExpandedPullOverLanes(
+  const lanelet::ConstLanelets & pull_over_lanes, const bool left_side,
+  const geometry_msgs::msg::Pose ego_pose, const vehicle_info_util::VehicleInfo & vehicle_info,
+  const double outer_road_offset, const double inner_road_offset)
+{
+  const double front_overhang = vehicle_info.front_overhang_m,
+               wheel_base = vehicle_info.wheel_base_m, wheel_tread = vehicle_info.wheel_tread_m;
+  const double side_overhang =
+    left_side ? vehicle_info.left_overhang_m : vehicle_info.right_overhang_m;
+  const double ego_length_to_front = wheel_base + front_overhang;
+  const double ego_width_to_front =
+    !left_side ? (-wheel_tread / 2.0 - side_overhang) : (wheel_tread / 2.0 + side_overhang);
+  tier4_autoware_utils::Point2d front_edge_local{ego_length_to_front, ego_width_to_front};
+  const auto front_edge_glob = tier4_autoware_utils::transformPoint(
+    front_edge_local, tier4_autoware_utils::pose2transform(ego_pose));
+  geometry_msgs::msg::Pose ego_front_pose;
+  ego_front_pose.position =
+    createPoint(front_edge_glob.x(), front_edge_glob.y(), ego_pose.position.z);
+
+  // ==========================================================================================
+  // NOTE: the point which is on the right side of a directed line has negative distance
+  // getExpandedLanelet(1.0, -2.0) expands a lanelet by 1.0 to the left and by 2.0 to the right
+  // ==========================================================================================
+  const double ego_offset_to_closer_boundary =
+    getOffsetToLanesBoundary(pull_over_lanes, ego_front_pose, left_side);
+  return left_side ? lanelet::utils::getExpandedLanelets(
+                       pull_over_lanes, outer_road_offset,
+                       ego_offset_to_closer_boundary - inner_road_offset)
+                   : lanelet::utils::getExpandedLanelets(
+                       pull_over_lanes, ego_offset_to_closer_boundary + inner_road_offset,
+                       -outer_road_offset);
 }
 
 PredictedObjects extractObjectsInExpandedPullOverLanes(
@@ -230,6 +280,21 @@ MarkerArray createGoalCandidatesMarkerArray(
     marker_array.markers.push_back(text_marker);
   }
 
+  return marker_array;
+}
+
+MarkerArray createLaneletPolygonMarkerArray(
+  const lanelet::CompoundPolygon3d & polygon, const std_msgs::msg::Header & header,
+  const std::string & ns, const std_msgs::msg::ColorRGBA & color)
+{
+  visualization_msgs::msg::MarkerArray marker_array{};
+  auto marker = createDefaultMarker(
+    header.frame_id, header.stamp, ns, 0, visualization_msgs::msg::Marker::LINE_STRIP,
+    createMarkerScale(0.1, 0.0, 0.0), color);
+  for (const auto & p : polygon) {
+    marker.points.push_back(createPoint(p.x(), p.y(), p.z()));
+  }
+  marker_array.markers.push_back(marker);
   return marker_array;
 }
 

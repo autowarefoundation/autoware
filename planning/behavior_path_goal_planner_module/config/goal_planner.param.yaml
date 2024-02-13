@@ -39,6 +39,8 @@
         object_recognition_collision_check_max_extra_stopping_margin: 1.0
         th_moving_object_velocity: 1.0
         detection_bound_offset: 15.0
+        outer_road_detection_offset: 1.0
+        inner_road_detection_offset: 0.0
 
       # pull over
       pull_over:
