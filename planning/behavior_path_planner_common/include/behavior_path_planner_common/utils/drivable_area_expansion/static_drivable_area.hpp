@@ -87,13 +87,8 @@ std::vector<geometry_msgs::msg::Point> calcBound(
 std::vector<geometry_msgs::msg::Point> postProcess(
   const std::vector<geometry_msgs::msg::Point> & original_bound, const PathWithLaneId & path,
   const std::shared_ptr<const PlannerData> planner_data,
-  const std::vector<DrivableLanes> & drivable_lanes,
-  const bool enable_expanding_hatched_road_markings, const bool enable_expanding_intersection_areas,
-  const bool is_left, const bool is_driving_forward = true);
-
-std::vector<geometry_msgs::msg::Point> makeBoundLongitudinallyMonotonic(
-  const std::vector<geometry_msgs::msg::Point> & original_bound, const PathWithLaneId & path,
-  const std::shared_ptr<const PlannerData> & planner_data, const bool is_left);
+  const std::vector<DrivableLanes> & drivable_lanes, const bool is_left,
+  const bool is_driving_forward = true);
 
 DrivableAreaInfo combineDrivableAreaInfo(
   const DrivableAreaInfo & drivable_area_info1, const DrivableAreaInfo & drivable_area_info2);

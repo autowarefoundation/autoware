@@ -32,6 +32,53 @@
 namespace
 {
 template <class T>
+std::vector<T> removeSharpPoints(const std::vector<T> & points)
+{
+  if (points.size() < 2) {
+    return points;
+  }
+
+  std::vector<T> ret = points;
+  auto itr = std::next(ret.begin());
+  while (std::next(itr) != ret.end()) {
+    if (itr == ret.begin()) {
+      itr++;
+      continue;
+    }
+
+    const auto p1 = *std::prev(itr);
+    const auto p2 = *itr;
+    const auto p3 = *std::next(itr);
+
+    const std::vector vec_1to2 = {p2.x - p1.x, p2.y - p1.y, p2.z - p1.z};
+    const std::vector vec_3to2 = {p2.x - p3.x, p2.y - p3.y, p2.z - p3.z};
+    const auto product =
+      std::inner_product(vec_1to2.begin(), vec_1to2.end(), vec_3to2.begin(), 0.0);
+
+    const auto dist_1to2 = tier4_autoware_utils::calcDistance3d(p1, p2);
+    const auto dist_3to2 = tier4_autoware_utils::calcDistance3d(p3, p2);
+
+    constexpr double epsilon = 1e-3;
+
+    // Remove overlapped point.
+    if (dist_1to2 < epsilon || dist_3to2 < epsilon) {
+      itr = std::prev(ret.erase(itr));
+      continue;
+    }
+
+    // If the angle between the points is sharper than 45 degrees, remove the middle point.
+    if (std::cos(M_PI_4) < product / dist_1to2 / dist_3to2 + epsilon) {
+      itr = std::prev(ret.erase(itr));
+      continue;
+    }
+
+    itr++;
+  }
+
+  return ret;
+}
+
+template <class T>
 size_t findNearestSegmentIndexFromLateralDistance(
   const std::vector<T> & points, const geometry_msgs::msg::Point & target_point)
 {
@@ -1426,9 +1473,8 @@ std::pair<std::vector<lanelet::ConstPoint3d>, bool> getBoundWithFreeSpaceAreas(
 std::vector<geometry_msgs::msg::Point> postProcess(
   const std::vector<geometry_msgs::msg::Point> & original_bound, const PathWithLaneId & path,
   const std::shared_ptr<const PlannerData> planner_data,
-  const std::vector<DrivableLanes> & drivable_lanes,
-  const bool enable_expanding_hatched_road_markings, const bool enable_expanding_intersection_areas,
-  const bool is_left, const bool is_driving_forward)
+  const std::vector<DrivableLanes> & drivable_lanes, const bool is_left,
+  const bool is_driving_forward)
 {
   const auto lanelets = utils::transformToLanelets(drivable_lanes);
   const auto & current_pose = planner_data->self_odometry->pose.pose;
@@ -1554,13 +1600,7 @@ std::vector<geometry_msgs::msg::Point> postProcess(
     processed_bound.push_back(goal_point);
   }
 
-  const bool skip_monotonic_process =
-    !is_driving_forward ||
-    !(enable_expanding_hatched_road_markings || enable_expanding_intersection_areas);
-
-  return skip_monotonic_process
-           ? processed_bound
-           : makeBoundLongitudinallyMonotonic(processed_bound, path, planner_data, is_left);
+  return removeSharpPoints(processed_bound);
 }
 
 // calculate bounds from drivable lanes and hatched road markings
@@ -1614,9 +1654,7 @@ std::vector<geometry_msgs::msg::Point> calcBound(
   const auto post_process = [&](const auto & bound, const auto skip) {
     return skip
              ? bound
-             : postProcess(
-                 bound, path, planner_data, drivable_lanes, enable_expanding_hatched_road_markings,
-                 enable_expanding_intersection_areas, is_left, is_driving_forward);
+             : postProcess(bound, path, planner_data, drivable_lanes, is_left, is_driving_forward);
   };
 
   // Step2. if there is no drivable area defined by polygon, return original drivable bound.
@@ -1640,318 +1678,6 @@ std::vector<geometry_msgs::msg::Point> calcBound(
   }
 
   return post_process(removeOverlapPoints(to_ros_point(bound_points)), skip_post_process);
-}
-
-std::vector<geometry_msgs::msg::Point> makeBoundLongitudinallyMonotonic(
-  const std::vector<geometry_msgs::msg::Point> & original_bound, const PathWithLaneId & path,
-  const std::shared_ptr<const PlannerData> & planner_data, const bool is_left)
-{
-  using motion_utils::findNearestSegmentIndex;
-  using tier4_autoware_utils::calcAzimuthAngle;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::calcOffsetPose;
-  using tier4_autoware_utils::createQuaternionFromRPY;
-  using tier4_autoware_utils::getPoint;
-  using tier4_autoware_utils::getPose;
-  using tier4_autoware_utils::intersect;
-  using tier4_autoware_utils::normalizeRadian;
-
-  const auto set_orientation = [](
-                                 auto & bound_with_pose, const auto idx, const auto & orientation) {
-    bound_with_pose.at(idx).orientation = orientation;
-  };
-
-  const auto get_intersect_idx = [](
-                                   const auto & bound_with_pose, const auto start_idx,
-                                   const auto & p1, const auto & p2) -> std::optional<size_t> {
-    std::vector<std::pair<size_t, Point>> intersects;
-    for (size_t i = start_idx; i < bound_with_pose.size() - 1; i++) {
-      const auto opt_intersect =
-        intersect(p1, p2, bound_with_pose.at(i).position, bound_with_pose.at(i + 1).position);
-
-      if (!opt_intersect) {
-        continue;
-      }
-
-      intersects.emplace_back(i, *opt_intersect);
-    }
-
-    if (intersects.empty()) {
-      return std::nullopt;
-    }
-
-    std::sort(intersects.begin(), intersects.end(), [&](const auto & a, const auto & b) {
-      return calcDistance2d(p1, a.second) < calcDistance2d(p1, b.second);
-    });
-
-    return intersects.front().first;
-  };
-
-  const auto get_bound_with_pose = [&](const auto & bound_with_pose, const auto & path_points) {
-    auto ret = bound_with_pose;
-
-    const double offset = is_left ? 100.0 : -100.0;
-
-    size_t start_bound_idx = 0;
-
-    const size_t start_path_idx =
-      findNearestSegmentIndex(path_points, bound_with_pose.front().position);
-
-    // append bound point with point
-    for (size_t i = start_path_idx + 1; i < path_points.size(); i++) {
-      const auto p_path_offset = calcOffsetPose(getPose(path_points.at(i)), 0.0, offset, 0.0);
-      const auto intersect_idx = get_intersect_idx(
-        bound_with_pose, start_bound_idx, getPoint(path_points.at(i)), getPoint(p_path_offset));
-
-      if (!intersect_idx) {
-        continue;
-      }
-
-      if (i + 1 == path_points.size()) {
-        for (size_t j = intersect_idx.value(); j < bound_with_pose.size(); j++) {
-          if (j + 1 == bound_with_pose.size()) {
-            const auto yaw =
-              calcAzimuthAngle(bound_with_pose.at(j - 1).position, bound_with_pose.at(j).position);
-            set_orientation(ret, j, createQuaternionFromRPY(0.0, 0.0, yaw));
-          } else {
-            const auto yaw =
-              calcAzimuthAngle(bound_with_pose.at(j).position, bound_with_pose.at(j + 1).position);
-            set_orientation(ret, j, createQuaternionFromRPY(0.0, 0.0, yaw));
-          }
-        }
-      } else {
-        for (size_t j = intersect_idx.value() + 1; j < bound_with_pose.size(); j++) {
-          set_orientation(ret, j, getPose(path_points.at(i)).orientation);
-        }
-      }
-
-      constexpr size_t OVERLAP_CHECK_NUM = 3;
-      start_bound_idx =
-        intersect_idx.value() < OVERLAP_CHECK_NUM ? 0 : intersect_idx.value() - OVERLAP_CHECK_NUM;
-    }
-
-    return ret;
-  };
-
-  const auto is_non_monotonic = [&](
-                                  const auto & base_pose, const auto & point,
-                                  const auto is_points_left, const auto is_reverse) {
-    const auto p_transformed = tier4_autoware_utils::inverseTransformPoint(point, base_pose);
-    if (p_transformed.x < 0.0 && p_transformed.y > 0.0) {
-      return is_points_left && !is_reverse;
-    }
-
-    if (p_transformed.x < 0.0 && p_transformed.y < 0.0) {
-      return !is_points_left && !is_reverse;
-    }
-
-    if (p_transformed.x > 0.0 && p_transformed.y > 0.0) {
-      return is_points_left && is_reverse;
-    }
-
-    if (p_transformed.x > 0.0 && p_transformed.y < 0.0) {
-      return !is_points_left && is_reverse;
-    }
-
-    return false;
-  };
-
-  // define a function to remove non monotonic point on bound
-  const auto remove_non_monotonic_point = [&](const auto & bound_with_pose, const bool is_reverse) {
-    std::vector<Pose> monotonic_bound;
-
-    size_t bound_idx = 0;
-    while (true) {
-      monotonic_bound.push_back(bound_with_pose.at(bound_idx));
-
-      if (bound_idx + 1 == bound_with_pose.size()) {
-        break;
-      }
-
-      // NOTE: is_bound_left is used instead of is_points_left since orientation of path point is
-      // opposite.
-      const double lat_offset = is_left ? 100.0 : -100.0;
-
-      const auto p_bound_1 = getPose(bound_with_pose.at(bound_idx));
-      const auto p_bound_2 = getPose(bound_with_pose.at(bound_idx + 1));
-
-      const auto p_bound_offset = calcOffsetPose(p_bound_1, 0.0, lat_offset, 0.0);
-
-      if (!is_non_monotonic(p_bound_1, p_bound_2.position, is_left, is_reverse)) {
-        bound_idx++;
-        continue;
-      }
-
-      // skip non monotonic points
-      for (size_t i = bound_idx + 1; i < bound_with_pose.size() - 1; ++i) {
-        const auto intersect_point = intersect(
-          p_bound_1.position, p_bound_offset.position, bound_with_pose.at(i).position,
-          bound_with_pose.at(i + 1).position);
-
-        if (intersect_point) {
-          Pose pose;
-          pose.position = *intersect_point;
-          pose.position.z = bound_with_pose.at(i).position.z;
-          const auto yaw = calcAzimuthAngle(*intersect_point, bound_with_pose.at(i + 1).position);
-          pose.orientation = createQuaternionFromRPY(0.0, 0.0, yaw);
-          monotonic_bound.push_back(pose);
-          bound_idx = i;
-          break;
-        }
-      }
-
-      bound_idx++;
-    }
-
-    return monotonic_bound;
-  };
-
-  const auto remove_orientation = [](const auto & bound_with_pose) {
-    std::vector<Point> ret;
-
-    ret.reserve(bound_with_pose.size());
-
-    std::for_each(bound_with_pose.begin(), bound_with_pose.end(), [&ret](const auto & p) {
-      ret.push_back(p.position);
-    });
-
-    return ret;
-  };
-
-  const auto remove_sharp_points = [](const auto & bound) {
-    if (bound.size() < 2) {
-      return bound;
-    }
-
-    std::vector<Point> ret = bound;
-    auto itr = std::next(ret.begin());
-    while (std::next(itr) != ret.end()) {
-      if (itr == ret.begin()) {
-        itr++;
-        continue;
-      }
-
-      const auto p1 = *std::prev(itr);
-      const auto p2 = *itr;
-      const auto p3 = *std::next(itr);
-
-      const std::vector vec_1to2 = {p2.x - p1.x, p2.y - p1.y, p2.z - p1.z};
-      const std::vector vec_3to2 = {p2.x - p3.x, p2.y - p3.y, p2.z - p3.z};
-      const auto product =
-        std::inner_product(vec_1to2.begin(), vec_1to2.end(), vec_3to2.begin(), 0.0);
-
-      const auto dist_1to2 = tier4_autoware_utils::calcDistance3d(p1, p2);
-      const auto dist_3to2 = tier4_autoware_utils::calcDistance3d(p3, p2);
-
-      constexpr double epsilon = 1e-3;
-
-      // Remove overlapped point.
-      if (dist_1to2 < epsilon || dist_3to2 < epsilon) {
-        itr = std::prev(ret.erase(itr));
-        continue;
-      }
-
-      // If the angle between the points is sharper than 45 degrees, remove the middle point.
-      if (std::cos(M_PI_4) < product / dist_1to2 / dist_3to2 + epsilon) {
-        itr = std::prev(ret.erase(itr));
-        continue;
-      }
-
-      itr++;
-    }
-
-    return ret;
-  };
-
-  if (path.points.empty()) {
-    return original_bound;
-  }
-
-  if (original_bound.size() < 2) {
-    return original_bound;
-  }
-
-  if (path.points.front().lane_ids.empty()) {
-    return original_bound;
-  }
-
-  // step.1 create bound with pose vector.
-  std::vector<Pose> original_bound_with_pose;
-  {
-    original_bound_with_pose.reserve(original_bound.size());
-
-    std::for_each(original_bound.begin(), original_bound.end(), [&](const auto & p) {
-      Pose pose;
-      pose.position = p;
-      original_bound_with_pose.push_back(pose);
-    });
-
-    for (size_t i = 0; i < original_bound_with_pose.size(); i++) {
-      if (i + 1 == original_bound_with_pose.size()) {
-        const auto yaw = calcAzimuthAngle(
-          original_bound_with_pose.at(i - 1).position, original_bound_with_pose.at(i).position);
-        set_orientation(original_bound_with_pose, i, createQuaternionFromRPY(0.0, 0.0, yaw));
-      } else {
-        const auto yaw = calcAzimuthAngle(
-          original_bound_with_pose.at(i).position, original_bound_with_pose.at(i + 1).position);
-        set_orientation(original_bound_with_pose, i, createQuaternionFromRPY(0.0, 0.0, yaw));
-      }
-    }
-  }
-
-  // step.2 get base pose vector.
-  std::vector<PathPointWithLaneId> clipped_points;
-  {
-    const auto & route_handler = planner_data->route_handler;
-    const auto p = planner_data->parameters;
-    const auto start_id = path.points.front().lane_ids.front();
-    const auto start_lane = planner_data->route_handler->getLaneletsFromId(start_id);
-
-    const auto lanelet_sequence =
-      route_handler->getLaneletSequence(start_lane, p.backward_path_length, p.forward_path_length);
-    const auto centerline_path = getCenterLinePath(
-      *route_handler, lanelet_sequence, getPose(path.points.front()), p.backward_path_length,
-      p.forward_path_length, p);
-
-    if (centerline_path.points.size() < 2) {
-      return original_bound;
-    }
-
-    const auto ego_idx = planner_data->findEgoIndex(centerline_path.points);
-    const auto end_idx = findNearestSegmentIndex(centerline_path.points, original_bound.back());
-
-    if (ego_idx >= end_idx) {
-      return original_bound;
-    }
-
-    clipped_points.insert(
-      clipped_points.end(), centerline_path.points.begin() + ego_idx,
-      centerline_path.points.begin() + end_idx + 1);
-  }
-
-  if (clipped_points.empty()) {
-    return original_bound;
-  }
-
-  // step.3 update bound pose by reference path pose.
-  const auto updated_bound_with_pose =
-    get_bound_with_pose(original_bound_with_pose, clipped_points);  // for reverse
-
-  // step.4 create remove monotonic points by forward direction.
-  auto half_monotonic_bound_with_pose =
-    remove_non_monotonic_point(updated_bound_with_pose, false);  // for reverse
-  std::reverse(half_monotonic_bound_with_pose.begin(), half_monotonic_bound_with_pose.end());
-
-  // step.5 create remove monotonic points by backward direction.
-  auto full_monotonic_bound_with_pose =
-    remove_non_monotonic_point(half_monotonic_bound_with_pose, true);
-  std::reverse(full_monotonic_bound_with_pose.begin(), full_monotonic_bound_with_pose.end());
-
-  // step.6 remove orientation from bound with pose.
-  auto full_monotonic_bound = remove_orientation(full_monotonic_bound_with_pose);
-
-  // step.7 remove sharp bound points.
-  return remove_sharp_points(full_monotonic_bound);
 }
 
 std::vector<DrivableLanes> combineDrivableLanes(
