@@ -695,30 +695,39 @@ bool AvoidanceModule::isSafePath(
   }
 
   const auto ego_idx = planner_data_->findEgoIndex(shifted_path.path.points);
-  const auto is_right_shift = [&]() -> std::optional<bool> {
+
+  const auto has_left_shift = [&]() {
     for (size_t i = ego_idx; i < shifted_path.shift_length.size(); i++) {
       const auto length = shifted_path.shift_length.at(i);
 
       if (parameters_->lateral_avoid_check_threshold < length) {
-        return false;
+        return true;
       }
+    }
+
+    return false;
+  }();
+
+  const auto has_right_shift = [&]() {
+    for (size_t i = ego_idx; i < shifted_path.shift_length.size(); i++) {
+      const auto length = shifted_path.shift_length.at(i);
 
       if (parameters_->lateral_avoid_check_threshold < -1.0 * length) {
         return true;
       }
     }
 
-    return std::nullopt;
+    return false;
   }();
 
-  if (!is_right_shift.has_value()) {
+  if (!has_left_shift && !has_right_shift) {
     return true;
   }
 
   const auto hysteresis_factor = safe_ ? 1.0 : parameters_->hysteresis_factor_expand_rate;
 
   const auto safety_check_target_objects = utils::avoidance::getSafetyCheckTargetObjects(
-    avoid_data_, planner_data_, parameters_, is_right_shift.value(), debug);
+    avoid_data_, planner_data_, parameters_, has_left_shift, has_right_shift, debug);
 
   if (safety_check_target_objects.empty()) {
     return true;

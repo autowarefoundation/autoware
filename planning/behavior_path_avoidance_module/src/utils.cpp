@@ -1263,11 +1263,13 @@ lanelet::ConstLanelets getCurrentLanesFromPath(
     throw std::logic_error("empty path.");
   }
 
-  if (path.points.front().lane_ids.empty()) {
+  const auto idx = planner_data->findEgoIndex(path.points);
+
+  if (path.points.at(idx).lane_ids.empty()) {
     throw std::logic_error("empty lane ids.");
   }
 
-  const auto start_id = path.points.front().lane_ids.front();
+  const auto start_id = path.points.at(idx).lane_ids.front();
   const auto start_lane = planner_data->route_handler->getLaneletsFromId(start_id);
   const auto & p = planner_data->parameters;
 
@@ -1814,6 +1816,7 @@ AvoidLineArray combineRawShiftLinesWithUniqueCheck(
 }
 
 lanelet::ConstLanelets getAdjacentLane(
+  const lanelet::ConstLanelet & current_lane,
   const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters, const bool is_right_shift)
 {
@@ -1822,18 +1825,17 @@ lanelet::ConstLanelets getAdjacentLane(
   const auto & backward_distance = parameters->safety_check_backward_distance;
   const auto & vehicle_pose = planner_data->self_odometry->pose.pose;
 
-  lanelet::ConstLanelet current_lane;
-  if (!rh->getClosestLaneletWithinRoute(vehicle_pose, &current_lane)) {
-    RCLCPP_ERROR(
-      rclcpp::get_logger("behavior_path_planner").get_child("avoidance"),
-      "failed to find closest lanelet within route!!!");
-    return {};  // TODO(Satoshi Ota)
-  }
-
   const auto ego_succeeding_lanes =
     rh->getLaneletSequence(current_lane, vehicle_pose, backward_distance, forward_distance);
 
   lanelet::ConstLanelets lanes{};
+
+  const auto exist = [&lanes](const auto id) {
+    const auto itr = std::find_if(
+      lanes.begin(), lanes.end(), [&id](const auto & lane) { return lane.id() == id; });
+    return itr != lanes.end();
+  };
+
   for (const auto & lane : ego_succeeding_lanes) {
     const auto opt_left_lane = rh->getLeftLanelet(lane, true, false);
     if (!is_right_shift && opt_left_lane) {
@@ -1848,6 +1850,20 @@ lanelet::ConstLanelets getAdjacentLane(
     const auto right_opposite_lanes = rh->getRightOppositeLanelets(lane);
     if (is_right_shift && !right_opposite_lanes.empty()) {
       lanes.push_back(right_opposite_lanes.front());
+
+      for (const auto & prev_lane : rh->getPreviousLanelets(right_opposite_lanes.front())) {
+        if (!exist(prev_lane.id())) {
+          lanes.push_back(prev_lane);
+        }
+      }
+    }
+  }
+
+  for (const auto & lane : lanes) {
+    for (const auto & next_lane : rh->getNextLanelets(lane)) {
+      if (!exist(next_lane.id())) {
+        lanes.push_back(next_lane);
+      }
     }
   }
 
@@ -1856,14 +1872,14 @@ lanelet::ConstLanelets getAdjacentLane(
 
 std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
   const AvoidancePlanningData & data, const std::shared_ptr<const PlannerData> & planner_data,
-  const std::shared_ptr<AvoidanceParameters> & parameters, const bool is_right_shift,
-  DebugData & debug)
+  const std::shared_ptr<AvoidanceParameters> & parameters, const bool has_left_shift,
+  const bool has_right_shift, DebugData & debug)
 {
   const auto & p = parameters;
   const auto check_right_lanes =
-    (is_right_shift && p->check_shift_side_lane) || (!is_right_shift && p->check_other_side_lane);
+    (has_right_shift && p->check_shift_side_lane) || (has_left_shift && p->check_other_side_lane);
   const auto check_left_lanes =
-    (!is_right_shift && p->check_shift_side_lane) || (is_right_shift && p->check_other_side_lane);
+    (has_left_shift && p->check_shift_side_lane) || (has_right_shift && p->check_other_side_lane);
 
   std::vector<ExtendedPredictedObject> target_objects;
 
@@ -1901,9 +1917,16 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
     return ret;
   }();
 
+  lanelet::ConstLanelet closest_lanelet;
+  const auto & ego_pose = planner_data->self_odometry->pose.pose;
+  if (!lanelet::utils::query::getClosestLanelet(
+        data.current_lanelets, ego_pose, &closest_lanelet)) {
+    return {};
+  }
+
   // check right lanes
   if (check_right_lanes) {
-    const auto check_lanes = getAdjacentLane(planner_data, p, true);
+    const auto check_lanes = getAdjacentLane(closest_lanelet, planner_data, p, true);
 
     if (p->check_other_object) {
       const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
@@ -1925,7 +1948,7 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
 
   // check left lanes
   if (check_left_lanes) {
-    const auto check_lanes = getAdjacentLane(planner_data, p, false);
+    const auto check_lanes = getAdjacentLane(closest_lanelet, planner_data, p, false);
 
     if (p->check_other_object) {
       const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
