@@ -22,7 +22,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <tier4_perception_msgs/msg/traffic_signal_array.hpp>
+#include <tier4_perception_msgs/msg/traffic_light_array.hpp>
 
 #if __has_include(<cv_bridge/cv_bridge.hpp>)
 #include <cv_bridge/cv_bridge.hpp>
@@ -64,7 +64,7 @@ public:
 
   bool getTrafficSignals(
     const std::vector<cv::Mat> & images,
-    tier4_perception_msgs::msg::TrafficSignalArray & traffic_signals) override;
+    tier4_perception_msgs::msg::TrafficLightArray & traffic_signals) override;
 
 private:
   bool filterHSV(

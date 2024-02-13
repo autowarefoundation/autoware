@@ -20,8 +20,8 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <sensor_msgs/msg/image.hpp>
+#include <tier4_perception_msgs/msg/traffic_light_array.hpp>
 #include <tier4_perception_msgs/msg/traffic_light_roi_array.hpp>
-#include <tier4_perception_msgs/msg/traffic_signal_array.hpp>
 
 #include <cv_bridge/cv_bridge.h>
 #include <message_filters/subscriber.h>
@@ -51,14 +51,14 @@ public:
   void imageRoiCallback(
     const sensor_msgs::msg::Image::ConstSharedPtr & input_image_msg,
     const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr & input_tl_roi_msg,
-    const tier4_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr &
+    const tier4_perception_msgs::msg::TrafficLightArray::ConstSharedPtr &
       input_traffic_signals_msg);
 
   void imageRoughRoiCallback(
     const sensor_msgs::msg::Image::ConstSharedPtr & input_image_msg,
     const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr & input_tl_roi_msg,
     const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr & input_tl_rough_roi_msg,
-    const tier4_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr &
+    const tier4_perception_msgs::msg::TrafficLightArray::ConstSharedPtr &
       input_traffic_signals_msg);
 
 private:
@@ -90,7 +90,7 @@ private:
     const ClassificationResult & result);
 
   bool getClassificationResult(
-    int id, const tier4_perception_msgs::msg::TrafficSignalArray & traffic_signals,
+    int id, const tier4_perception_msgs::msg::TrafficLightArray & traffic_signals,
     ClassificationResult & result);
 
   bool getRoiFromId(
@@ -101,19 +101,18 @@ private:
   image_transport::SubscriberFilter image_sub_;
   message_filters::Subscriber<tier4_perception_msgs::msg::TrafficLightRoiArray> roi_sub_;
   message_filters::Subscriber<tier4_perception_msgs::msg::TrafficLightRoiArray> rough_roi_sub_;
-  message_filters::Subscriber<tier4_perception_msgs::msg::TrafficSignalArray> traffic_signals_sub_;
+  message_filters::Subscriber<tier4_perception_msgs::msg::TrafficLightArray> traffic_signals_sub_;
   image_transport::Publisher image_pub_;
   typedef message_filters::sync_policies::ApproximateTime<
     sensor_msgs::msg::Image, tier4_perception_msgs::msg::TrafficLightRoiArray,
-    tier4_perception_msgs::msg::TrafficSignalArray>
+    tier4_perception_msgs::msg::TrafficLightArray>
     SyncPolicy;
   typedef message_filters::Synchronizer<SyncPolicy> Sync;
   std::shared_ptr<Sync> sync_;
 
   typedef message_filters::sync_policies::ApproximateTime<
     sensor_msgs::msg::Image, tier4_perception_msgs::msg::TrafficLightRoiArray,
-    tier4_perception_msgs::msg::TrafficLightRoiArray,
-    tier4_perception_msgs::msg::TrafficSignalArray>
+    tier4_perception_msgs::msg::TrafficLightRoiArray, tier4_perception_msgs::msg::TrafficLightArray>
     SyncPolicyWithRoughRoi;
   typedef message_filters::Synchronizer<SyncPolicyWithRoughRoi> SyncWithRoughRoi;
   std::shared_ptr<SyncWithRoughRoi> sync_with_rough_roi_;

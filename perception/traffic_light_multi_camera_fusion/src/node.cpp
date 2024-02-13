@@ -25,7 +25,7 @@
 namespace
 {
 
-bool isUnknown(const tier4_perception_msgs::msg::TrafficSignal & signal)
+bool isUnknown(const tier4_perception_msgs::msg::TrafficLight & signal)
 {
   return signal.elements.size() == 1 &&
          signal.elements[0].color == tier4_perception_msgs::msg::TrafficLightElement::UNKNOWN &&

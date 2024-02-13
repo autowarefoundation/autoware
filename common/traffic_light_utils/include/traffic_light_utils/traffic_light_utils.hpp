@@ -17,9 +17,9 @@
 
 #include "autoware_perception_msgs/msg/traffic_signal.hpp"
 #include "autoware_perception_msgs/msg/traffic_signal_element.hpp"
+#include "tier4_perception_msgs/msg/traffic_light.hpp"
 #include "tier4_perception_msgs/msg/traffic_light_element.hpp"
 #include "tier4_perception_msgs/msg/traffic_light_roi.hpp"
-#include "tier4_perception_msgs/msg/traffic_signal.hpp"
 
 #include <lanelet2_core/primitives/Lanelet.h>
 #include <lanelet2_core/primitives/LineString.h>
@@ -35,9 +35,9 @@ bool isRoiValid(
 
 void setRoiInvalid(tier4_perception_msgs::msg::TrafficLightRoi & roi);
 
-bool isSignalUnknown(const tier4_perception_msgs::msg::TrafficSignal & signal);
+bool isSignalUnknown(const tier4_perception_msgs::msg::TrafficLight & signal);
 
-void setSignalUnknown(tier4_perception_msgs::msg::TrafficSignal & signal, float confidence = -1);
+void setSignalUnknown(tier4_perception_msgs::msg::TrafficLight & signal, float confidence = -1);
 
 /**
  * @brief Checks if a traffic light state includes a circle-shaped light with the specified color.

@@ -123,7 +123,7 @@ private:
         return;
       }
       cv::cvtColor(crop, crop, cv::COLOR_BGR2RGB);
-      tier4_perception_msgs::msg::TrafficSignalArray traffic_signal;
+      tier4_perception_msgs::msg::TrafficLightArray traffic_signal;
       if (!classifier_ptr_->getTrafficSignals({crop}, traffic_signal)) {
         RCLCPP_ERROR(get_logger(), "failed to classify image");
         return;

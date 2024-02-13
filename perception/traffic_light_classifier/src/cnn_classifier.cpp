@@ -65,7 +65,7 @@ CNNClassifier::CNNClassifier(rclcpp::Node * node_ptr) : node_ptr_(node_ptr)
 
 bool CNNClassifier::getTrafficSignals(
   const std::vector<cv::Mat> & images,
-  tier4_perception_msgs::msg::TrafficSignalArray & traffic_signals)
+  tier4_perception_msgs::msg::TrafficLightArray & traffic_signals)
 {
   if (images.size() != traffic_signals.signals.size()) {
     RCLCPP_WARN(node_ptr_->get_logger(), "image number should be equal to traffic signal number!");
@@ -106,7 +106,7 @@ bool CNNClassifier::getTrafficSignals(
 }
 
 void CNNClassifier::outputDebugImage(
-  cv::Mat & debug_image, const tier4_perception_msgs::msg::TrafficSignal & traffic_signal)
+  cv::Mat & debug_image, const tier4_perception_msgs::msg::TrafficLight & traffic_signal)
 {
   float probability;
   std::string label;
@@ -138,7 +138,7 @@ void CNNClassifier::outputDebugImage(
 }
 
 void CNNClassifier::postProcess(
-  int class_index, float prob, tier4_perception_msgs::msg::TrafficSignal & traffic_signal)
+  int class_index, float prob, tier4_perception_msgs::msg::TrafficLight & traffic_signal)
 {
   std::string match_label = labels_[class_index];
 
@@ -196,7 +196,7 @@ bool CNNClassifier::readLabelfile(std::string filepath, std::vector<std::string>
 
 bool CNNClassifier::isColorLabel(const std::string label)
 {
-  using tier4_perception_msgs::msg::TrafficSignal;
+  using tier4_perception_msgs::msg::TrafficLight;
   if (
     label == state2label_[tier4_perception_msgs::msg::TrafficLightElement::GREEN] ||
     label == state2label_[tier4_perception_msgs::msg::TrafficLightElement::AMBER] ||

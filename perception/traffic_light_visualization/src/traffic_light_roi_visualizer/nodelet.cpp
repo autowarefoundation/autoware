@@ -123,7 +123,7 @@ bool TrafficLightRoiVisualizerNodelet::createRect(
 void TrafficLightRoiVisualizerNodelet::imageRoiCallback(
   const sensor_msgs::msg::Image::ConstSharedPtr & input_image_msg,
   const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr & input_tl_roi_msg,
-  [[maybe_unused]] const tier4_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr &
+  [[maybe_unused]] const tier4_perception_msgs::msg::TrafficLightArray::ConstSharedPtr &
     input_traffic_signals_msg)
 {
   cv_bridge::CvImagePtr cv_ptr;
@@ -152,7 +152,7 @@ void TrafficLightRoiVisualizerNodelet::imageRoiCallback(
 }
 
 bool TrafficLightRoiVisualizerNodelet::getClassificationResult(
-  int id, const tier4_perception_msgs::msg::TrafficSignalArray & traffic_signals,
+  int id, const tier4_perception_msgs::msg::TrafficLightArray & traffic_signals,
   ClassificationResult & result)
 {
   bool has_correspond_traffic_signal = false;
@@ -191,7 +191,7 @@ void TrafficLightRoiVisualizerNodelet::imageRoughRoiCallback(
   const sensor_msgs::msg::Image::ConstSharedPtr & input_image_msg,
   const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr & input_tl_roi_msg,
   const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr & input_tl_rough_roi_msg,
-  const tier4_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr & input_traffic_signals_msg)
+  const tier4_perception_msgs::msg::TrafficLightArray::ConstSharedPtr & input_traffic_signals_msg)
 {
   cv_bridge::CvImagePtr cv_ptr;
   try {

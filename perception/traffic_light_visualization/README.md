@@ -17,10 +17,10 @@ The `traffic_light_visualization` is a package that includes two visualizing nod
 
 #### Input
 
-| Name                 | Type                                             | Description              |
-| -------------------- | ------------------------------------------------ | ------------------------ |
-| `~/input/tl_state`   | `tier4_perception_msgs::msg::TrafficSignalArray` | status of traffic lights |
-| `~/input/vector_map` | `autoware_auto_mapping_msgs::msg::HADMapBin`     | vector map               |
+| Name                 | Type                                            | Description              |
+| -------------------- | ----------------------------------------------- | ------------------------ |
+| `~/input/tl_state`   | `tier4_perception_msgs::msg::TrafficLightArray` | status of traffic lights |
+| `~/input/vector_map` | `autoware_auto_mapping_msgs::msg::HADMapBin`    | vector map               |
 
 #### Output
 
@@ -34,7 +34,7 @@ The `traffic_light_visualization` is a package that includes two visualizing nod
 
 | Name                          | Type                                               | Description                                             |
 | ----------------------------- | -------------------------------------------------- | ------------------------------------------------------- |
-| `~/input/tl_state`            | `tier4_perception_msgs::msg::TrafficSignalArray`   | status of traffic lights                                |
+| `~/input/tl_state`            | `tier4_perception_msgs::msg::TrafficLightArray`    | status of traffic lights                                |
 | `~/input/image`               | `sensor_msgs::msg::Image`                          | the image captured by perception cameras                |
 | `~/input/rois`                | `tier4_perception_msgs::msg::TrafficLightRoiArray` | the ROIs detected by `traffic_light_fine_detector`      |
 | `~/input/rough/rois` (option) | `tier4_perception_msgs::msg::TrafficLightRoiArray` | the ROIs detected by `traffic_light_map_based_detector` |

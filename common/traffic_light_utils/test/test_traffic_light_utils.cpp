@@ -48,7 +48,7 @@ TEST(setRoiInvalid, set_roi_size)
 
 TEST(isSignalUnknown, signal_element)
 {
-  tier4_perception_msgs::msg::TrafficSignal test_signal;
+  tier4_perception_msgs::msg::TrafficLight test_signal;
   tier4_perception_msgs::msg::TrafficLightElement element;
   element.color = tier4_perception_msgs::msg::TrafficLightElement::UNKNOWN;
   element.shape = tier4_perception_msgs::msg::TrafficLightElement::UNKNOWN;
@@ -60,7 +60,7 @@ TEST(isSignalUnknown, signal_element)
 
 TEST(setSignalUnknown, set_signal_element)
 {
-  tier4_perception_msgs::msg::TrafficSignal test_signal;
+  tier4_perception_msgs::msg::TrafficLight test_signal;
   tier4_perception_msgs::msg::TrafficLightElement element;
   element.color = tier4_perception_msgs::msg::TrafficLightElement::RED;
   element.shape = tier4_perception_msgs::msg::TrafficLightElement::CROSS;

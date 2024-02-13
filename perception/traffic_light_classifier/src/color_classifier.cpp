@@ -53,7 +53,7 @@ ColorClassifier::ColorClassifier(rclcpp::Node * node_ptr) : node_ptr_(node_ptr)
 
 bool ColorClassifier::getTrafficSignals(
   const std::vector<cv::Mat> & images,
-  tier4_perception_msgs::msg::TrafficSignalArray & traffic_signals)
+  tier4_perception_msgs::msg::TrafficLightArray & traffic_signals)
 {
   if (images.size() != traffic_signals.signals.size()) {
     RCLCPP_WARN(node_ptr_->get_logger(), "image number should be equal to traffic signal number!");

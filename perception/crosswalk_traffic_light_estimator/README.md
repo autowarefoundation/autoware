@@ -8,17 +8,17 @@
 
 ### Input
 
-| Name                                 | Type                                             | Description        |
-| ------------------------------------ | ------------------------------------------------ | ------------------ |
-| `~/input/vector_map`                 | `autoware_auto_mapping_msgs::msg::HADMapBin`     | vector map         |
-| `~/input/route`                      | `autoware_planning_msgs::msg::LaneletRoute`      | route              |
-| `~/input/classified/traffic_signals` | `tier4_perception_msgs::msg::TrafficSignalArray` | classified signals |
+| Name                                 | Type                                                | Description        |
+| ------------------------------------ | --------------------------------------------------- | ------------------ |
+| `~/input/vector_map`                 | `autoware_auto_mapping_msgs::msg::HADMapBin`        | vector map         |
+| `~/input/route`                      | `autoware_planning_msgs::msg::LaneletRoute`         | route              |
+| `~/input/classified/traffic_signals` | `autoware_perception_msgs::msg::TrafficSignalArray` | classified signals |
 
 ### Output
 
-| Name                       | Type                                             | Description                                               |
-| -------------------------- | ------------------------------------------------ | --------------------------------------------------------- |
-| `~/output/traffic_signals` | `tier4_perception_msgs::msg::TrafficSignalArray` | output that contains estimated pedestrian traffic signals |
+| Name                       | Type                                                | Description                                               |
+| -------------------------- | --------------------------------------------------- | --------------------------------------------------------- |
+| `~/output/traffic_signals` | `autoware_perception_msgs::msg::TrafficSignalArray` | output that contains estimated pedestrian traffic signals |
 
 ## Parameters
 

@@ -57,7 +57,7 @@ TrafficLightOcclusionPredictorNodelet::TrafficLightOcclusionPredictorNodelet(
 
   // publishers
   signal_pub_ =
-    create_publisher<tier4_perception_msgs::msg::TrafficSignalArray>("~/output/traffic_signals", 1);
+    create_publisher<tier4_perception_msgs::msg::TrafficLightArray>("~/output/traffic_signals", 1);
 
   // configuration parameters
   config_.azimuth_occlusion_resolution_deg =
@@ -122,7 +122,7 @@ void TrafficLightOcclusionPredictorNodelet::mapCallback(
 }
 
 void TrafficLightOcclusionPredictorNodelet::syncCallback(
-  const tier4_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr in_signal_msg,
+  const tier4_perception_msgs::msg::TrafficLightArray::ConstSharedPtr in_signal_msg,
   const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr in_roi_msg,
   const sensor_msgs::msg::CameraInfo::ConstSharedPtr in_cam_info_msg,
   const sensor_msgs::msg::PointCloud2::ConstSharedPtr in_cloud_msg,
@@ -146,7 +146,7 @@ void TrafficLightOcclusionPredictorNodelet::syncCallback(
       }
     }
 
-    tier4_perception_msgs::msg::TrafficSignalArray out_msg = *in_signal_msg;
+    tier4_perception_msgs::msg::TrafficLightArray out_msg = *in_signal_msg;
 
     if (selected_roi_msg.rois.size() != in_signal_msg->signals.size() - not_detected_roi) {
       occlusion_ratios.resize(in_signal_msg->signals.size(), 0);
@@ -177,7 +177,7 @@ void TrafficLightOcclusionPredictorNodelet::syncCallback(
   subscribed_.at(traffic_light_type) = true;
 
   if (std::all_of(subscribed_.begin(), subscribed_.end(), [](bool v) { return v; })) {
-    auto pub_msg = std::make_unique<tier4_perception_msgs::msg::TrafficSignalArray>(out_msg_);
+    auto pub_msg = std::make_unique<tier4_perception_msgs::msg::TrafficLightArray>(out_msg_);
     pub_msg->header = in_signal_msg->header;
     signal_pub_->publish(std::move(pub_msg));
     out_msg_.signals.clear();

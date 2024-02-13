@@ -18,7 +18,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <tier4_perception_msgs/msg/traffic_signal_array.hpp>
+#include <tier4_perception_msgs/msg/traffic_light_array.hpp>
 
 #include <vector>
 
@@ -29,7 +29,7 @@ class ClassifierInterface
 public:
   virtual bool getTrafficSignals(
     const std::vector<cv::Mat> & input_image,
-    tier4_perception_msgs::msg::TrafficSignalArray & traffic_signals) = 0;
+    tier4_perception_msgs::msg::TrafficLightArray & traffic_signals) = 0;
 };
 }  // namespace traffic_light
 

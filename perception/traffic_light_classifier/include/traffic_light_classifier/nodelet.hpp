@@ -24,10 +24,10 @@
 #include <sensor_msgs/image_encodings.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/header.hpp>
+#include <tier4_perception_msgs/msg/traffic_light.hpp>
+#include <tier4_perception_msgs/msg/traffic_light_array.hpp>
 #include <tier4_perception_msgs/msg/traffic_light_element.hpp>
 #include <tier4_perception_msgs/msg/traffic_light_roi_array.hpp>
-#include <tier4_perception_msgs/msg/traffic_signal.hpp>
-#include <tier4_perception_msgs/msg/traffic_signal_array.hpp>
 
 #if __has_include(<cv_bridge/cv_bridge.hpp>)
 #include <cv_bridge/cv_bridge.hpp>
@@ -85,7 +85,7 @@ private:
   typedef message_filters::Synchronizer<ApproximateSyncPolicy> ApproximateSync;
   std::shared_ptr<ApproximateSync> approximate_sync_;
   bool is_approximate_sync_;
-  rclcpp::Publisher<tier4_perception_msgs::msg::TrafficSignalArray>::SharedPtr
+  rclcpp::Publisher<tier4_perception_msgs::msg::TrafficLightArray>::SharedPtr
     traffic_signal_array_pub_;
   std::shared_ptr<ClassifierInterface> classifier_ptr_;
 

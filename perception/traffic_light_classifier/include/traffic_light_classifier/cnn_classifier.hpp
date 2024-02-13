@@ -57,14 +57,14 @@ public:
 
   bool getTrafficSignals(
     const std::vector<cv::Mat> & images,
-    tier4_perception_msgs::msg::TrafficSignalArray & traffic_signals) override;
+    tier4_perception_msgs::msg::TrafficLightArray & traffic_signals) override;
 
 private:
-  void postProcess(int cls, float prob, tier4_perception_msgs::msg::TrafficSignal & traffic_signal);
+  void postProcess(int cls, float prob, tier4_perception_msgs::msg::TrafficLight & traffic_signal);
   bool readLabelfile(std::string filepath, std::vector<std::string> & labels);
   bool isColorLabel(const std::string label);
   void outputDebugImage(
-    cv::Mat & debug_image, const tier4_perception_msgs::msg::TrafficSignal & traffic_signal);
+    cv::Mat & debug_image, const tier4_perception_msgs::msg::TrafficLight & traffic_signal);
 
 private:
   std::map<int, std::string> state2label_{

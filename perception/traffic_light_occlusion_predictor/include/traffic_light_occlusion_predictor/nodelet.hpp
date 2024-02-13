@@ -24,8 +24,8 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <tier4_perception_msgs/msg/traffic_light_array.hpp>
 #include <tier4_perception_msgs/msg/traffic_light_roi_array.hpp>
-#include <tier4_perception_msgs/msg/traffic_signal_array.hpp>
 
 #include <image_geometry/pinhole_camera_model.h>
 #include <message_filters/subscriber.h>
@@ -69,7 +69,7 @@ private:
    *
    */
   void syncCallback(
-    const tier4_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr in_signal_msg,
+    const tier4_perception_msgs::msg::TrafficLightArray::ConstSharedPtr in_signal_msg,
     const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr in_roi_msg,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr in_cam_info_msg,
     const sensor_msgs::msg::PointCloud2::ConstSharedPtr in_cloud_msg,
@@ -80,7 +80,7 @@ private:
    * @brief publishers
    *
    */
-  rclcpp::Publisher<tier4_perception_msgs::msg::TrafficSignalArray>::SharedPtr signal_pub_;
+  rclcpp::Publisher<tier4_perception_msgs::msg::TrafficLightArray>::SharedPtr signal_pub_;
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
@@ -92,9 +92,8 @@ private:
    */
   std::shared_ptr<CloudOcclusionPredictor> cloud_occlusion_predictor_;
   typedef perception_utils::PrimeSynchronizer<
-    tier4_perception_msgs::msg::TrafficSignalArray,
-    tier4_perception_msgs::msg::TrafficLightRoiArray, sensor_msgs::msg::CameraInfo,
-    sensor_msgs::msg::PointCloud2>
+    tier4_perception_msgs::msg::TrafficLightArray, tier4_perception_msgs::msg::TrafficLightRoiArray,
+    sensor_msgs::msg::CameraInfo, sensor_msgs::msg::PointCloud2>
     SynchronizerType;
 
   std::shared_ptr<SynchronizerType> synchronizer_;
@@ -102,7 +101,7 @@ private:
 
   std::vector<bool> subscribed_;
   std::vector<int> occlusion_ratios_;
-  tier4_perception_msgs::msg::TrafficSignalArray out_msg_;
+  tier4_perception_msgs::msg::TrafficLightArray out_msg_;
 };
 }  // namespace traffic_light
 #endif  // TRAFFIC_LIGHT_OCCLUSION_PREDICTOR__NODELET_HPP_

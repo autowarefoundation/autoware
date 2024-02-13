@@ -20,8 +20,8 @@
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_perception_msgs/msg/traffic_signal_array.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
+#include <tier4_perception_msgs/msg/traffic_light_array.hpp>
 #include <tier4_perception_msgs/msg/traffic_light_roi_array.hpp>
-#include <tier4_perception_msgs/msg/traffic_signal_array.hpp>
 
 #include <lanelet2_core/Forward.h>
 #include <message_filters/subscriber.h>
@@ -46,7 +46,7 @@ struct FusionRecord
   std_msgs::msg::Header header;
   sensor_msgs::msg::CameraInfo cam_info;
   tier4_perception_msgs::msg::TrafficLightRoi roi;
-  tier4_perception_msgs::msg::TrafficSignal signal;
+  tier4_perception_msgs::msg::TrafficLight signal;
 };
 
 struct FusionRecordArr
@@ -54,7 +54,7 @@ struct FusionRecordArr
   std_msgs::msg::Header header;
   sensor_msgs::msg::CameraInfo cam_info;
   tier4_perception_msgs::msg::TrafficLightRoiArray rois;
-  tier4_perception_msgs::msg::TrafficSignalArray signals;
+  tier4_perception_msgs::msg::TrafficLightArray signals;
 };
 
 bool operator<(const FusionRecordArr & r1, const FusionRecordArr & r2)
@@ -67,8 +67,8 @@ class MultiCameraFusion : public rclcpp::Node
 public:
   typedef sensor_msgs::msg::CameraInfo CamInfoType;
   typedef tier4_perception_msgs::msg::TrafficLightRoi RoiType;
-  typedef tier4_perception_msgs::msg::TrafficSignal SignalType;
-  typedef tier4_perception_msgs::msg::TrafficSignalArray SignalArrayType;
+  typedef tier4_perception_msgs::msg::TrafficLight SignalType;
+  typedef tier4_perception_msgs::msg::TrafficLightArray SignalArrayType;
   typedef tier4_perception_msgs::msg::TrafficLightRoiArray RoiArrayType;
   typedef tier4_perception_msgs::msg::TrafficLightRoi::_traffic_light_id_type IdType;
   typedef autoware_perception_msgs::msg::TrafficSignal NewSignalType;
