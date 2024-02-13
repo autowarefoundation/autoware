@@ -9,7 +9,7 @@
       <arg name="input_camera_info" value="/sensing/camera/traffic_light/camera_info"/>
       <arg name="input_ekf_pose" value="/localization/pose_twist_fusion_filter/biased_pose_with_covariance"/>
       <arg name="output_pose_with_covariance" value="/localization/pose_estimator/pose_with_covariance"/>
-      <arg name="param_file" value="$(find-pkg-share ar_tag_based_localizer)/config/ar_tag_based_localizer.param.yaml"/>
+      <arg name="param_file" value="$(var ar_tag_based_localizer_param_path)"/>
     </include>
   </group>
 </launch>
