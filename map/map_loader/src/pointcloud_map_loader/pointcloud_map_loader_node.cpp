@@ -88,30 +88,27 @@ PointCloudMapLoaderNode::PointCloudMapLoaderNode(const rclcpp::NodeOptions & opt
 std::map<std::string, PCDFileMetadata> PointCloudMapLoaderNode::getPCDMetadata(
   const std::string & pcd_metadata_path, const std::vector<std::string> & pcd_paths) const
 {
-  std::map<std::string, PCDFileMetadata> pcd_metadata_dict;
-  if (pcd_paths.size() != 1) {
-    if (!fs::exists(pcd_metadata_path)) {
-      throw std::runtime_error("PCD metadata file not found: " + pcd_metadata_path);
-    }
-
-    pcd_metadata_dict = loadPCDMetadata(pcd_metadata_path);
+  if (fs::exists(pcd_metadata_path)) {
+    auto pcd_metadata_dict = loadPCDMetadata(pcd_metadata_path);
     pcd_metadata_dict = replaceWithAbsolutePath(pcd_metadata_dict, pcd_paths);
-    RCLCPP_INFO_STREAM(get_logger(), "Loaded PCD metadata: " << pcd_metadata_path);
-  } else {
+    return pcd_metadata_dict;
+  } else if (pcd_paths.size() == 1) {
     // An exception when using a single file PCD map so that the users do not have to provide
     // a metadata file.
     // Note that this should ideally be avoided and thus eventually be removed by someone, until
     // Autoware users get used to handling the PCD file(s) with metadata.
     RCLCPP_DEBUG_STREAM(get_logger(), "Create PCD metadata, as the pointcloud is a single file.");
     pcl::PointCloud<pcl::PointXYZ> single_pcd;
-    if (pcl::io::loadPCDFile(pcd_paths[0], single_pcd) == -1) {
-      throw std::runtime_error("PCD load failed: " + pcd_paths[0]);
+    const auto & pcd_path = pcd_paths.front();
+    if (pcl::io::loadPCDFile(pcd_path, single_pcd) == -1) {
+      throw std::runtime_error("PCD load failed: " + pcd_path);
     }
     PCDFileMetadata metadata = {};
     pcl::getMinMax3D(single_pcd, metadata.min, metadata.max);
-    pcd_metadata_dict[pcd_paths[0]] = metadata;
+    return std::map<std::string, PCDFileMetadata>{{pcd_path, metadata}};
+  } else {
+    throw std::runtime_error("PCD metadata file not found: " + pcd_metadata_path);
   }
-  return pcd_metadata_dict;
 }
 
 std::vector<std::string> PointCloudMapLoaderNode::getPcdPaths(
