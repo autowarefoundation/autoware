@@ -193,7 +193,7 @@ If there are a reachable crosswalk entry points within the `prediction_time_hori
 
 This module takes into account the corresponding traffic light information.
 When RED signal is indicated, we assume the target object will not walk across.
-In additon, if the target object is stopping (not moving) against GREEN signal, we assume the target object will not walk across either.
+In addition, if the target object is stopping (not moving) against GREEN signal, we assume the target object will not walk across either.
 This prediction comes from the assumption that the object should move if the traffic light is green and the object is intended to cross.
 
 <div align="center">

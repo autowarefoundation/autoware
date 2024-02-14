@@ -1240,7 +1240,7 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
   for (const auto & crosswalk : crosswalks_) {
     const auto crosswalk_signal_id_opt = getTrafficSignalId(crosswalk);
     if (crosswalk_signal_id_opt.has_value() && use_crosswalk_signal_) {
-      if (!calcIntentionToCrossWithTrafficSgnal(
+      if (!calcIntentionToCrossWithTrafficSignal(
             object, crosswalk, crosswalk_signal_id_opt.value())) {
         continue;
       }
@@ -2292,7 +2292,7 @@ std::optional<TrafficSignalElement> MapBasedPredictionNode::getTrafficSignalElem
   return std::nullopt;
 }
 
-bool MapBasedPredictionNode::calcIntentionToCrossWithTrafficSgnal(
+bool MapBasedPredictionNode::calcIntentionToCrossWithTrafficSignal(
   const TrackedObject & object, const lanelet::ConstLanelet & crosswalk,
   const lanelet::Id & signal_id)
 {

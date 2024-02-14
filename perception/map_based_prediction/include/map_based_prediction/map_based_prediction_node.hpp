@@ -268,7 +268,7 @@ private:
     const PredictedPath & predicted_path, const std::vector<PredictedPath> & predicted_paths);
   std::optional<lanelet::Id> getTrafficSignalId(const lanelet::ConstLanelet & way_lanelet);
   std::optional<TrafficSignalElement> getTrafficSignalElement(const lanelet::Id & id);
-  bool calcIntentionToCrossWithTrafficSgnal(
+  bool calcIntentionToCrossWithTrafficSignal(
     const TrackedObject & object, const lanelet::ConstLanelet & crosswalk,
     const lanelet::Id & signal_id);
 

@@ -5,5 +5,5 @@
     "perception/bytetrack/lib/**"
   ],
   "ignoreRegExpList": [],
-  "words": ["dltype", "tvmgen", "quantizer", "imageio", "mimsave"]
+  "words": ["dltype", "tvmgen", "quantizer", "imageio", "mimsave", "routable"]
 }
