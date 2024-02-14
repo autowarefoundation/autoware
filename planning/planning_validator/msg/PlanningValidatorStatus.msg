@@ -13,8 +13,11 @@ bool is_valid_steering
 bool is_valid_steering_rate
 bool is_valid_velocity_deviation
 bool is_valid_distance_deviation
+bool is_valid_longitudinal_distance_deviation
+bool is_valid_forward_trajectory_length
 
 # values
+int64 trajectory_size
 float64 max_interval_distance
 float64 max_relative_angle
 float64 max_curvature
@@ -25,5 +28,8 @@ float64 max_steering
 float64 max_steering_rate
 float64 velocity_deviation
 float64 distance_deviation
+float64 longitudinal_distance_deviation
+float64 forward_trajectory_length_required
+float64 forward_trajectory_length_measured
 
 int64 invalid_count

@@ -296,7 +296,7 @@ std::pair<double, size_t> calcMaxSteeringRates(
     const auto steer_next = steering_array.at(i + 1);
 
     const auto steer_rate = (steer_next - steer_prev) / dt;
-    takeBigger(max_steering_rate, max_index, steer_rate, i);
+    takeBigger(max_steering_rate, max_index, std::abs(steer_rate), i);
   }
 
   return {max_steering_rate, max_index};

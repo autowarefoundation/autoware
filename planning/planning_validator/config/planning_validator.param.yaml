@@ -26,3 +26,14 @@
       steering_rate: 10.0
       velocity_deviation: 100.0
       distance_deviation: 100.0
+      longitudinal_distance_deviation: 1.0
+
+    parameters:
+      # The required trajectory length is calculated as the distance needed
+      # to stop from the current speed at this deceleration.
+      forward_trajectory_length_acceleration: -3.0
+
+      # An error is raised if the required trajectory length is less than this distance.
+      # Setting it to 0 means an error will occur if even slightly exceeding the end of the path,
+      # therefore, a certain margin is necessary.
+      forward_trajectory_length_margin: 2.0

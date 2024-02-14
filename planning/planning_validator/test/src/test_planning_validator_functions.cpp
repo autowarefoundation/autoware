@@ -14,6 +14,7 @@
 
 #include "planning_validator/debug_marker.hpp"
 #include "planning_validator/planning_validator.hpp"
+#include "test_parameter.hpp"
 #include "test_planning_validator_helper.hpp"
 
 #include <gtest/gtest.h>
@@ -29,7 +30,7 @@ TEST(PlanningValidatorTestSuite, checkValidFiniteValueFunction)
 
   // Valid Trajectory
   {
-    Trajectory valid_traj = generateTrajectory(NOMINAL_INTERVAL);
+    Trajectory valid_traj = generateTrajectory(THRESHOLD_INTERVAL * 0.9);
     ASSERT_TRUE(validator->checkValidFiniteValue(valid_traj));
   }
 
@@ -52,7 +53,7 @@ TEST(PlanningValidatorTestSuite, checkValidIntervalFunction)
 
   // Normal Trajectory
   {
-    Trajectory valid_traj = generateTrajectory(NOMINAL_INTERVAL);
+    Trajectory valid_traj = generateTrajectory(THRESHOLD_INTERVAL * 0.9);
     ASSERT_TRUE(validator->checkValidInterval(valid_traj));
   }
 
@@ -61,16 +62,16 @@ TEST(PlanningValidatorTestSuite, checkValidIntervalFunction)
     // Note: too small value is not supported like numerical_limits::epsilon
     const auto ep = 1.0e-5;
 
-    Trajectory ok_bound_traj = generateTrajectory(ERROR_INTERVAL - ep);
+    Trajectory ok_bound_traj = generateTrajectory(THRESHOLD_INTERVAL - ep);
     ASSERT_TRUE(validator->checkValidInterval(ok_bound_traj));
 
-    Trajectory ng_bound_traj = generateTrajectory(ERROR_INTERVAL + ep);
+    Trajectory ng_bound_traj = generateTrajectory(THRESHOLD_INTERVAL + ep);
     ASSERT_FALSE(validator->checkValidInterval(ng_bound_traj));
   }
 
   // Long Interval Trajectory
   {
-    Trajectory long_interval_traj = generateTrajectory(ERROR_INTERVAL * 2.0);
+    Trajectory long_interval_traj = generateTrajectory(THRESHOLD_INTERVAL * 2.0);
     ASSERT_FALSE(validator->checkValidInterval(long_interval_traj));
   }
 }
@@ -81,7 +82,7 @@ TEST(PlanningValidatorTestSuite, checkValidCurvatureFunction)
 
   // Normal Trajectory
   {
-    Trajectory valid_traj = generateTrajectory(NOMINAL_INTERVAL);
+    Trajectory valid_traj = generateTrajectory(THRESHOLD_INTERVAL * 2.0);
     ASSERT_TRUE(validator->checkValidCurvature(valid_traj));
   }
 

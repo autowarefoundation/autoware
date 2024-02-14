@@ -14,40 +14,150 @@
 
 #include "test_planning_validator_helper.hpp"
 
+#include "test_parameter.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
+
 #include <math.h>
 
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using tier4_autoware_utils::createQuaternionFromYaw;
 
-Trajectory generateTrajectory(double interval_distance)
+Trajectory generateTrajectoryWithConstantAcceleration(
+  const double interval_distance, const double speed, const double yaw, const size_t size,
+  const double acceleration)
 {
-  Trajectory traj;
-  for (double s = 0.0; s <= 10.0 * interval_distance; s += interval_distance) {
+  Trajectory trajectory;
+  double s = 0.0, v = speed, a = acceleration;
+  constexpr auto MAX_DT = 10.0;
+  for (size_t i = 0; i < size; ++i) {
     TrajectoryPoint p;
-    p.pose.position.x = s;
-    p.longitudinal_velocity_mps = 1.0;
-    traj.points.push_back(p);
+    p.pose.position.x = s * std::cos(yaw);
+    p.pose.position.y = s * std::sin(yaw);
+    p.pose.orientation = createQuaternionFromYaw(yaw);
+    p.longitudinal_velocity_mps = v;
+    p.acceleration_mps2 = a;
+    p.front_wheel_angle_rad = 0.0;
+    trajectory.points.push_back(p);
+    s += interval_distance;
+
+    const auto dt = std::abs(v) > 0.1 ? interval_distance / v : MAX_DT;
+    v += acceleration * dt;
+    if (v < 0.0) {
+      v = 0.0;
+      a = 0.0;
+    }
   }
-  return traj;
+  return trajectory;
+}
+
+Trajectory generateTrajectory(
+  const double interval_distance, const double speed, const double yaw, const size_t size)
+{
+  constexpr auto acceleration = 0.0;
+  return generateTrajectoryWithConstantAcceleration(
+    interval_distance, speed, yaw, size, acceleration);
+}
+
+Trajectory generateTrajectoryWithConstantCurvature(
+  const double interval_distance, const double speed, const double curvature, const size_t size,
+  const double wheelbase)
+{
+  if (std::abs(curvature) < 1.0e-5) {
+    return generateTrajectory(interval_distance, speed, 0.0, size);
+  }
+
+  const auto steering = std::atan(curvature * wheelbase);
+  const auto radius = 1.0 / curvature;
+
+  Trajectory trajectory;
+  double x = 0.0, y = 0.0, yaw = 0.0;
+
+  for (size_t i = 0; i <= size; ++i) {
+    TrajectoryPoint p;
+    p.pose.position.x = x;
+    p.pose.position.y = y;
+    p.pose.orientation = createQuaternionFromYaw(yaw);
+    p.longitudinal_velocity_mps = speed;
+    p.front_wheel_angle_rad = steering;
+    trajectory.points.push_back(p);
+
+    // Update x, y, yaw for the next point
+    const auto prev_yaw = yaw;
+    double delta_yaw = curvature * interval_distance;
+    yaw += delta_yaw;
+    x += radius * (std::sin(yaw) - std::sin(prev_yaw));
+    y -= radius * (std::cos(yaw) - std::cos(prev_yaw));
+  }
+  return trajectory;
+}
+
+Trajectory generateTrajectoryWithConstantSteering(
+  const double interval_distance, const double speed, const double steering_angle_rad,
+  const size_t size, const double wheelbase)
+{
+  const auto curvature = std::tan(steering_angle_rad) / wheelbase;
+  return generateTrajectoryWithConstantCurvature(
+    interval_distance, speed, curvature, size, wheelbase);
+}
+
+Trajectory generateTrajectoryWithConstantSteeringRate(
+  const double interval_distance, const double speed, const double steering_rate, const size_t size,
+  const double wheelbase)
+{
+  Trajectory trajectory;
+  double x = 0.0, y = 0.0, yaw = 0.0, steering_angle_rad = 0.0;
+
+  constexpr double MAX_STEERING_ANGLE_RAD = M_PI / 3.0;
+
+  for (size_t i = 0; i <= size; ++i) {
+    // Limit the steering angle to the maximum value
+    steering_angle_rad =
+      std::clamp(steering_angle_rad, -MAX_STEERING_ANGLE_RAD, MAX_STEERING_ANGLE_RAD);
+
+    TrajectoryPoint p;
+    p.pose.position.x = x;
+    p.pose.position.y = y;
+    p.pose.orientation = createQuaternionFromYaw(yaw);
+    p.longitudinal_velocity_mps = speed;
+    p.front_wheel_angle_rad = steering_angle_rad;
+    p.acceleration_mps2 = 0.0;
+
+    trajectory.points.push_back(p);
+
+    // Update x, y, yaw, and steering_angle for the next point
+    const auto curvature = std::tan(steering_angle_rad) / wheelbase;
+    double delta_yaw = curvature * interval_distance;
+    yaw += delta_yaw;
+    x += interval_distance * cos(yaw);
+    y += interval_distance * sin(yaw);
+    if (std::abs(speed) > 0.01) {
+      steering_angle_rad += steering_rate * interval_distance / speed;
+    } else {
+      steering_angle_rad = steering_rate > 0.0 ? MAX_STEERING_ANGLE_RAD : -MAX_STEERING_ANGLE_RAD;
+    }
+  }
+
+  return trajectory;
 }
 
 Trajectory generateNanTrajectory()
 {
-  Trajectory traj = generateTrajectory(1.0);
-  traj.points.front().pose.position.x = NAN;
-  return traj;
+  Trajectory trajectory = generateTrajectory(1.0);
+  trajectory.points.front().pose.position.x = NAN;
+  return trajectory;
 }
 
 Trajectory generateInfTrajectory()
 {
-  Trajectory traj = generateTrajectory(1.0);
-  traj.points.front().pose.position.x = INFINITY;
-  return traj;
+  Trajectory trajectory = generateTrajectory(1.0);
+  trajectory.points.front().pose.position.x = INFINITY;
+  return trajectory;
 }
 
 Trajectory generateBadCurvatureTrajectory()
 {
-  Trajectory traj;
+  Trajectory trajectory;
 
   double y = 1.5;
   for (double s = 0.0; s <= 10.0; s += 1.0) {
@@ -56,10 +166,10 @@ Trajectory generateBadCurvatureTrajectory()
     p.pose.position.x = s;
     p.pose.position.y = y;
     y *= -1.0;  // invert sign
-    traj.points.push_back(p);
+    trajectory.points.push_back(p);
   }
 
-  return traj;
+  return trajectory;
 }
 
 Odometry generateDefaultOdometry(const double x, const double y, const double vx)
@@ -79,22 +189,33 @@ rclcpp::NodeOptions getNodeOptionsWithDefaultParams()
   node_options.append_parameter_override("publish_diag", true);
   node_options.append_parameter_override("invalid_trajectory_handling_type", 0);
   node_options.append_parameter_override("diag_error_count_threshold", 0);
-  node_options.append_parameter_override("display_on_terminal", false);
-  node_options.append_parameter_override("thresholds.interval", ERROR_INTERVAL);
-  node_options.append_parameter_override("thresholds.relative_angle", 1.0);
-  node_options.append_parameter_override("thresholds.curvature", ERROR_CURVATURE);
-  node_options.append_parameter_override("thresholds.lateral_acc", 100.0);
-  node_options.append_parameter_override("thresholds.longitudinal_max_acc", 100.0);
-  node_options.append_parameter_override("thresholds.longitudinal_min_acc", -100.0);
-  node_options.append_parameter_override("thresholds.steering", 100.0);
-  node_options.append_parameter_override("thresholds.steering_rate", 100.0);
-  node_options.append_parameter_override("thresholds.velocity_deviation", 100.0);
-  node_options.append_parameter_override("thresholds.distance_deviation", 100.0);
+  node_options.append_parameter_override("display_on_terminal", true);
+  node_options.append_parameter_override("thresholds.interval", THRESHOLD_INTERVAL);
+  node_options.append_parameter_override("thresholds.relative_angle", THRESHOLD_RELATIVE_ANGLE);
+  node_options.append_parameter_override("thresholds.curvature", THRESHOLD_CURVATURE);
+  node_options.append_parameter_override("thresholds.lateral_acc", THRESHOLD_LATERAL_ACC);
+  node_options.append_parameter_override(
+    "thresholds.longitudinal_max_acc", THRESHOLD_LONGITUDINAL_MAX_ACC);
+  node_options.append_parameter_override(
+    "thresholds.longitudinal_min_acc", THRESHOLD_LONGITUDINAL_MIN_ACC);
+  node_options.append_parameter_override("thresholds.steering", THRESHOLD_STEERING);
+  node_options.append_parameter_override("thresholds.steering_rate", THRESHOLD_STEERING_RATE);
+  node_options.append_parameter_override(
+    "thresholds.velocity_deviation", THRESHOLD_VELOCITY_DEVIATION);
+  node_options.append_parameter_override(
+    "thresholds.distance_deviation", THRESHOLD_DISTANCE_DEVIATION);
+  node_options.append_parameter_override(
+    "thresholds.longitudinal_distance_deviation", THRESHOLD_LONGITUDINAL_DISTANCE_DEVIATION);
+  node_options.append_parameter_override(
+    "parameters.forward_trajectory_length_acceleration",
+    PARAMETER_FORWARD_TRAJECTORY_LENGTH_ACCELERATION);
+  node_options.append_parameter_override(
+    "parameters.forward_trajectory_length_margin", PARAMETER_FORWARD_TRAJECTORY_LENGTH_MARGIN);
 
   // for vehicle info
   node_options.append_parameter_override("wheel_radius", 0.5);
   node_options.append_parameter_override("wheel_width", 0.2);
-  node_options.append_parameter_override("wheel_base", 3.0);
+  node_options.append_parameter_override("wheel_base", WHEELBASE);
   node_options.append_parameter_override("wheel_tread", 2.0);
   node_options.append_parameter_override("front_overhang", 1.0);
   node_options.append_parameter_override("rear_overhang", 1.0);

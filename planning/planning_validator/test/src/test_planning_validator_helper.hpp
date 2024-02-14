@@ -21,14 +21,28 @@
 #include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 
-constexpr double NOMINAL_INTERVAL = 1.0;
-constexpr double ERROR_INTERVAL = 1000.0;
-constexpr double ERROR_CURVATURE = 2.0;
-
 using autoware_auto_planning_msgs::msg::Trajectory;
 using nav_msgs::msg::Odometry;
 
-Trajectory generateTrajectory(double interval_distance);
+Trajectory generateTrajectoryWithConstantAcceleration(
+  const double interval_distance, const double speed, const double yaw, const size_t size,
+  const double acceleration);
+
+Trajectory generateTrajectory(
+  const double interval_distance, const double speed = 1.0, const double yaw = 0.0,
+  const size_t size = 10);
+
+Trajectory generateTrajectoryWithConstantCurvature(
+  const double interval_distance, const double speed, const double curvature, const size_t size,
+  const double wheelbase);
+
+Trajectory generateTrajectoryWithConstantSteering(
+  const double interval_distance, const double speed, const double steering_angle_rad,
+  const size_t size, const double wheelbase);
+
+Trajectory generateTrajectoryWithConstantSteeringRate(
+  const double interval_distance, const double speed, const double steering_rate, const size_t size,
+  const double wheelbase);
 
 Trajectory generateNanTrajectory();
 
