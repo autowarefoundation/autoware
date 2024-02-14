@@ -1,6 +1,8 @@
 /**:
   ros__parameters:
     # constraints param for normal driving
+    max_vel: 11.1           # max velocity limit [m/s]
+
     normal:
       min_acc: -1.0         # min deceleration [m/ss]
       max_acc: 1.0          # max acceleration [m/ss]
