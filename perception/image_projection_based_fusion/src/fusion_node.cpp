@@ -167,7 +167,6 @@ void FusionNode<Msg, Obj, Msg2D>::subCallback(const typename Msg::ConstSharedPtr
     timer_->cancel();
     postprocess(*(cached_msg_.second));
     publish(*(cached_msg_.second));
-    cached_msg_.second = nullptr;
     std::fill(is_fused_.begin(), is_fused_.end(), false);
 
     // add processing time for debug
@@ -187,6 +186,8 @@ void FusionNode<Msg, Obj, Msg2D>::subCallback(const typename Msg::ConstSharedPtr
         "debug/pipeline_latency_ms", pipeline_latency_ms);
       processing_time_ms = 0;
     }
+
+    cached_msg_.second = nullptr;
   }
 
   std::lock_guard<std::mutex> lock(mutex_cached_msgs_);
