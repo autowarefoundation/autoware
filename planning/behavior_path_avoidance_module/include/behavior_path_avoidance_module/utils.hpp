@@ -36,6 +36,9 @@ bool isOnRight(const ObjectData & obj);
 double calcShiftLength(
   const bool & is_object_on_right, const double & overhang_dist, const double & avoid_margin);
 
+bool isWithinLanes(
+  const lanelet::ConstLanelets & lanelets, std::shared_ptr<const PlannerData> & planner_data);
+
 bool isShiftNecessary(const bool & is_object_on_right, const double & shift_length);
 
 bool isSameDirectionShift(const bool & is_object_on_right, const double & shift_length);
@@ -157,9 +160,11 @@ std::pair<PredictedObjects, PredictedObjects> separateObjectsByPath(
   const std::shared_ptr<AvoidanceParameters> & parameters,
   const double object_check_forward_distance, DebugData & debug);
 
-DrivableLanes generateExpandDrivableLanes(
+DrivableLanes generateNotExpandedDrivableLanes(const lanelet::ConstLanelet & lanelet);
+
+DrivableLanes generateExpandedDrivableLanes(
   const lanelet::ConstLanelet & lanelet, const std::shared_ptr<const PlannerData> & planner_data,
-  const std::shared_ptr<AvoidanceParameters> & parameters, const bool in_avoidance_maneuver);
+  const std::shared_ptr<AvoidanceParameters> & parameters);
 
 double calcDistanceToReturnDeadLine(
   const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path,

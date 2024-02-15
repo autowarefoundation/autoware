@@ -21,6 +21,7 @@
 #include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
 #include "behavior_path_planner_common/utils/path_utils.hpp"
+#include "behavior_path_planner_common/utils/traffic_light_utils.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
@@ -31,8 +32,6 @@
 
 #include "tier4_planning_msgs/msg/detail/avoidance_debug_msg_array__struct.hpp"
 #include <tier4_planning_msgs/msg/detail/avoidance_debug_factor__struct.hpp>
-
-#include <boost/geometry/algorithms/centroid.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -223,24 +222,51 @@ void AvoidanceModule::fillFundamentalData(AvoidancePlanningData & data, DebugDat
     utils::avoidance::getExtendLanes(data.current_lanelets, getEgoPose(), planner_data_);
 
   // expand drivable lanes
-  const auto has_shift_point = !path_shifter_.getShiftLines().empty();
-  const auto in_avoidance_maneuver = has_shift_point || helper_->isShifted();
+  const auto is_within_current_lane =
+    utils::avoidance::isWithinLanes(data.current_lanelets, planner_data_);
+  const auto red_signal_lane_itr = std::find_if(
+    data.current_lanelets.begin(), data.current_lanelets.end(), [&](const auto & lanelet) {
+      const auto next_lanes = planner_data_->route_handler->getNextLanelets(lanelet);
+      return utils::traffic_light::isTrafficSignalStop(next_lanes, planner_data_);
+    });
+  const auto not_use_adjacent_lane =
+    is_within_current_lane && red_signal_lane_itr != data.current_lanelets.end();
+
   std::for_each(
     data.current_lanelets.begin(), data.current_lanelets.end(), [&](const auto & lanelet) {
-      data.drivable_lanes.push_back(utils::avoidance::generateExpandDrivableLanes(
-        lanelet, planner_data_, parameters_, in_avoidance_maneuver));
+      if (!not_use_adjacent_lane) {
+        data.drivable_lanes.push_back(
+          utils::avoidance::generateExpandedDrivableLanes(lanelet, planner_data_, parameters_));
+      } else if (red_signal_lane_itr->id() != lanelet.id()) {
+        data.drivable_lanes.push_back(
+          utils::avoidance::generateExpandedDrivableLanes(lanelet, planner_data_, parameters_));
+      } else {
+        data.drivable_lanes.push_back(utils::avoidance::generateNotExpandedDrivableLanes(lanelet));
+      }
     });
 
   // calc drivable bound
   auto tmp_path = getPreviousModuleOutput().path;
   const auto shorten_lanes = utils::cutOverlappedLanes(tmp_path, data.drivable_lanes);
+  const auto use_left_side_hatched_road_marking_area = [&]() {
+    if (!not_use_adjacent_lane) {
+      return true;
+    }
+    return !planner_data_->route_handler->getRoutingGraphPtr()->left(*red_signal_lane_itr);
+  }();
+  const auto use_right_side_hatched_road_marking_area = [&]() {
+    if (!not_use_adjacent_lane) {
+      return true;
+    }
+    return !planner_data_->route_handler->getRoutingGraphPtr()->right(*red_signal_lane_itr);
+  }();
   data.left_bound = utils::calcBound(
     getPreviousModuleOutput().path, planner_data_, shorten_lanes,
-    parameters_->use_hatched_road_markings, parameters_->use_intersection_areas,
+    use_left_side_hatched_road_marking_area, parameters_->use_intersection_areas,
     parameters_->use_freespace_areas, true);
   data.right_bound = utils::calcBound(
     getPreviousModuleOutput().path, planner_data_, shorten_lanes,
-    parameters_->use_hatched_road_markings, parameters_->use_intersection_areas,
+    use_right_side_hatched_road_marking_area, parameters_->use_intersection_areas,
     parameters_->use_freespace_areas, false);
 
   // reference path
@@ -939,7 +965,11 @@ BehaviorModuleOutput AvoidanceModule::plan()
   {
     DrivableAreaInfo current_drivable_area_info;
     // generate drivable lanes
-    current_drivable_area_info.drivable_lanes = avoid_data_.drivable_lanes;
+    std::for_each(
+      data.current_lanelets.begin(), data.current_lanelets.end(), [&](const auto & lanelet) {
+        current_drivable_area_info.drivable_lanes.push_back(
+          utils::avoidance::generateExpandedDrivableLanes(lanelet, planner_data_, parameters_));
+      });
     // expand hatched road markings
     current_drivable_area_info.enable_expanding_hatched_road_markings =
       parameters_->use_hatched_road_markings;
