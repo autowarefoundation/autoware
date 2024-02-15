@@ -43,6 +43,21 @@ struct BlindSpotPolygons
   std::vector<lanelet::CompoundPolygon3d> opposite_detection_areas;
 };
 
+/**
+ * @brief  wrapper class of interpolated path with lane id
+ */
+struct InterpolatedPathInfo
+{
+  /** the interpolated path */
+  autoware_auto_planning_msgs::msg::PathWithLaneId path;
+  /** discretization interval of interpolation */
+  double ds{0.0};
+  /** the intersection lanelet id */
+  lanelet::Id lane_id{0};
+  /** the range of indices for the path points with associative lane id */
+  std::optional<std::pair<size_t, size_t>> lane_id_interval{std::nullopt};
+};
+
 class BlindSpotModule : public SceneModuleInterface
 {
 public:
@@ -91,12 +106,35 @@ public:
 
 private:
   const int64_t lane_id_;
-  TurnDirection turn_direction_;
-  bool has_traffic_light_;
-  bool is_over_pass_judge_line_;
+  TurnDirection turn_direction_{TurnDirection::INVALID};
+  bool is_over_pass_judge_line_{false};
+  std::optional<lanelet::ConstLanelet> first_conflicting_lanelet_{std::nullopt};
 
   // Parameter
   PlannerParam planner_param_;
+
+  std::optional<InterpolatedPathInfo> generateInterpolatedPathInfo(
+    const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path) const;
+
+  std::optional<lanelet::ConstLanelet> getFirstConflictingLanelet(
+    const InterpolatedPathInfo & interpolated_path_info) const;
+
+  std::optional<int> getFirstPointConflictingLanelets(
+    const InterpolatedPathInfo & interpolated_path_info,
+    const lanelet::ConstLanelets & lanelets) const;
+
+  /**
+   * @brief Generate a stop line and insert it into the path.
+   * A stop line is at an intersection point of straight path with vehicle path
+   * @param detection_areas used to generate stop line
+   * @param path            ego-car lane
+   * @param stop_line_idx   generated stop line index
+   * @param pass_judge_line_idx  generated pass judge line index
+   * @return false when generation failed
+   */
+  std::optional<std::pair<size_t, size_t>> generateStopLine(
+    const InterpolatedPathInfo & interpolated_path_info,
+    autoware_auto_planning_msgs::msg::PathWithLaneId * path) const;
 
   /**
    * @brief Check obstacle is in blind spot areas.
@@ -141,17 +179,6 @@ private:
     const geometry_msgs::msg::Pose & pose) const;
 
   /**
-   * @brief Get vehicle edge
-   * @param vehicle_pose pose of ego vehicle
-   * @param vehicle_width width of ego vehicle
-   * @param base_link2front length between base link and front of ego vehicle
-   * @return edge of ego vehicle
-   */
-  lanelet::LineString2d getVehicleEdge(
-    const geometry_msgs::msg::Pose & vehicle_pose, const double vehicle_width,
-    const double base_link2front) const;
-
-  /**
    * @brief Check if object is belong to targeted classes
    * @param object Dynamic object
    * @return True when object belong to targeted classes
@@ -167,54 +194,6 @@ private:
   bool isPredictedPathInArea(
     const autoware_auto_perception_msgs::msg::PredictedObject & object,
     const std::vector<lanelet::CompoundPolygon3d> & areas, geometry_msgs::msg::Pose ego_pose) const;
-
-  /**
-   * @brief Generate a stop line and insert it into the path.
-   * A stop line is at an intersection point of straight path with vehicle path
-   * @param detection_areas used to generate stop line
-   * @param path            ego-car lane
-   * @param stop_line_idx   generated stop line index
-   * @param pass_judge_line_idx  generated pass judge line index
-   * @return false when generation failed
-   */
-  std::optional<std::pair<size_t, size_t>> generateStopLine(
-    const lanelet::ConstLanelets straight_lanelets,
-    autoware_auto_planning_msgs::msg::PathWithLaneId * path) const;
-
-  /**
-   * @brief Insert a point to target path
-   * @param insert_idx_ip insert point index in path_ip
-   * @param path_ip interpolated path
-   * @param path target path for inserting a point
-   * @return inserted point idx in target path, return -1 when could not find valid index
-   */
-  int insertPoint(
-    const int insert_idx_ip, const autoware_auto_planning_msgs::msg::PathWithLaneId path_ip,
-    autoware_auto_planning_msgs::msg::PathWithLaneId * path) const;
-
-  /**
-   * @brief Calculate first path index that is conflicting lanelets.
-   * @param path     target path
-   * @param lanelets target lanelets
-   * @return path point index
-   */
-  std::optional<int> getFirstPointConflictingLanelets(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-    const lanelet::ConstLanelets & lanelets) const;
-
-  /**
-   * @brief Get start point from lanelet
-   * @param lane_id lane id of objective lanelet
-   * @return end point of lanelet
-   */
-  std::optional<geometry_msgs::msg::Pose> getStartPointFromLaneLet(const lanelet::Id lane_id) const;
-
-  /**
-   * @brief get straight lanelets in intersection
-   */
-  lanelet::ConstLanelets getStraightLanelets(
-    lanelet::LaneletMapConstPtr lanelet_map_ptr,
-    lanelet::routing::RoutingGraphPtr routing_graph_ptr, const lanelet::Id lane_id);
 
   /**
    * @brief Modify objects predicted path. remove path point if the time exceeds timer_thr.

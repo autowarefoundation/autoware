@@ -82,8 +82,6 @@ BlindSpotModule::BlindSpotModule(
   } else if (!turn_direction.compare("right")) {
     turn_direction_ = TurnDirection::RIGHT;
   }
-  has_traffic_light_ =
-    !(assigned_lanelet.regulatoryElementsAs<const lanelet::TrafficLight>().empty());
 }
 
 bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
@@ -98,19 +96,31 @@ bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
     logger_, "lane_id = %ld, state = %s", lane_id_, StateMachine::toString(current_state).c_str());
 
   /* get current pose */
-  geometry_msgs::msg::Pose current_pose = planner_data_->current_odometry->pose;
+  const auto & current_pose = planner_data_->current_odometry->pose;
 
   /* get lanelet map */
   const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
   const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
 
   /* set stop-line and stop-judgement-line for base_link */
-  const auto straight_lanelets = getStraightLanelets(lanelet_map_ptr, routing_graph_ptr, lane_id_);
-  const auto stoplines_idx_opt = generateStopLine(straight_lanelets, path);
+  const auto interpolated_path_info_opt = generateInterpolatedPathInfo(input_path);
+  if (!interpolated_path_info_opt) {
+    RCLCPP_DEBUG(logger_, "[BlindSpotModule::run] failed to interpolate path");
+    return false;
+  }
+  const auto & interpolated_path_info = interpolated_path_info_opt.value();
+
+  if (!first_conflicting_lanelet_) {
+    first_conflicting_lanelet_ = getFirstConflictingLanelet(interpolated_path_info);
+  }
+  if (!first_conflicting_lanelet_) {
+    RCLCPP_DEBUG(logger_, "[BlindSpotModule::run] failed to find first conflicting lanelet");
+    return false;
+  }
+
+  const auto stoplines_idx_opt = generateStopLine(interpolated_path_info, path);
   if (!stoplines_idx_opt) {
-    RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      logger_, *clock_, 1000 /* ms */, "[BlindSpotModule::run] setStopLineIdx fail");
-    *path = input_path;  // reset path
+    RCLCPP_DEBUG(logger_, "[BlindSpotModule::run] setStopLineIdx fail");
     return false;
   }
 
@@ -126,15 +136,9 @@ bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   }
 
   /* calc closest index */
-  const auto closest_idx_opt =
-    motion_utils::findNearestIndex(input_path.points, current_pose, 3.0, M_PI_4);
-  if (!closest_idx_opt) {
-    RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      logger_, *clock_, 1000 /* ms */, "[Blind Spot] motion_utils::findNearestIndex fail");
-    *path = input_path;  // reset path
-    return false;
-  }
-  const size_t closest_idx = closest_idx_opt.value();
+  const auto closest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    input_path.points, current_pose, planner_data_->ego_nearest_dist_threshold,
+    planner_data_->ego_nearest_yaw_threshold);
   const auto stop_line_idx =
     closest_idx > default_stopline_idx ? critical_stopline_idx : default_stopline_idx;
 
@@ -145,13 +149,13 @@ bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   const double pass_judge_line_dist =
     planning_utils::calcJudgeLineDistWithAccLimit(current_vel, max_acc, delay_response_time);
   const auto stop_point_pose = path->points.at(stop_line_idx).point.pose;
-  const auto ego_segment_idx =
-    motion_utils::findNearestSegmentIndex(input_path.points, current_pose);
-  if (!ego_segment_idx) return true;
+  const auto ego_segment_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    input_path.points, current_pose, planner_data_->ego_nearest_dist_threshold,
+    planner_data_->ego_nearest_yaw_threshold);
   const size_t stop_point_segment_idx =
     motion_utils::findNearestSegmentIndex(input_path.points, stop_point_pose.position);
   const auto distance_until_stop = motion_utils::calcSignedArcLength(
-    input_path.points, current_pose.position, *ego_segment_idx, stop_point_pose.position,
+    input_path.points, current_pose.position, ego_segment_idx, stop_point_pose.position,
     stop_point_segment_idx);
 
   /* get debug info */
@@ -206,71 +210,211 @@ bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   return true;
 }
 
-std::optional<int> BlindSpotModule::getFirstPointConflictingLanelets(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const lanelet::ConstLanelets & lanelets) const
+static bool hasLaneIds(
+  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p, const lanelet::Id id)
 {
-  using lanelet::utils::to2D;
-  using lanelet::utils::toHybrid;
+  for (const auto & pid : p.lane_ids) {
+    if (pid == id) {
+      return true;
+    }
+  }
+  return false;
+}
 
-  int first_idx_conflicting_lanelets = path.points.size() - 1;
-  bool is_conflict = false;
-  for (const auto & ll : lanelets) {
-    const auto line = (turn_direction_ == TurnDirection::LEFT) ? ll.leftBound() : ll.rightBound();
-    for (size_t i = 0; i < path.points.size(); ++i) {
-      const auto vehicle_edge = getVehicleEdge(
-        path.points.at(i).point.pose, planner_data_->vehicle_info_.vehicle_width_m,
-        planner_data_->vehicle_info_.max_longitudinal_offset_m);
-      if (bg::intersects(toHybrid(to2D(line)), toHybrid(vehicle_edge))) {
-        first_idx_conflicting_lanelets =
-          std::min(first_idx_conflicting_lanelets, static_cast<int>(i));
-        is_conflict = true;
-        break;
+static std::optional<std::pair<size_t, size_t>> findLaneIdInterval(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & p, const lanelet::Id id)
+{
+  bool found = false;
+  size_t start = 0;
+  size_t end = p.points.size() > 0 ? p.points.size() - 1 : 0;
+  if (start == end) {
+    // there is only one point in the path
+    return std::nullopt;
+  }
+  for (size_t i = 0; i < p.points.size(); ++i) {
+    if (hasLaneIds(p.points.at(i), id)) {
+      if (!found) {
+        // found interval for the first time
+        found = true;
+        start = i;
+      }
+    } else if (found) {
+      // prior point was in the interval. interval ended
+      end = i;
+      break;
+    }
+  }
+  start = start > 0 ? start - 1 : 0;  // the idx of last point before the interval
+  return found ? std::make_optional(std::make_pair(start, end)) : std::nullopt;
+}
+
+std::optional<InterpolatedPathInfo> BlindSpotModule::generateInterpolatedPathInfo(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path) const
+{
+  constexpr double ds = 0.2;
+  InterpolatedPathInfo interpolated_path_info;
+  if (!splineInterpolate(input_path, ds, interpolated_path_info.path, logger_)) {
+    return std::nullopt;
+  }
+  interpolated_path_info.ds = ds;
+  interpolated_path_info.lane_id = lane_id_;
+  interpolated_path_info.lane_id_interval =
+    findLaneIdInterval(interpolated_path_info.path, lane_id_);
+  return interpolated_path_info;
+}
+
+std::optional<lanelet::ConstLanelet> BlindSpotModule::getFirstConflictingLanelet(
+  const InterpolatedPathInfo & interpolated_path_info) const
+{
+  if (!interpolated_path_info.lane_id_interval) {
+    return std::nullopt;
+  }
+
+  const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
+  const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
+
+  const auto assigned_lane = lanelet_map_ptr->laneletLayer.get(lane_id_);
+  const auto conflicting_lanes =
+    lanelet::utils::getConflictingLanelets(routing_graph_ptr, assigned_lane);
+  lanelet::ConstLanelets conflicting_ex_sibling_lanes{};
+  lanelet::ConstLanelets sibling_lanes{};
+  for (const auto & prev : routing_graph_ptr->previous(assigned_lane)) {
+    for (const auto & following : routing_graph_ptr->following(prev)) {
+      if (!lanelet::utils::contains(sibling_lanes, following)) {
+        sibling_lanes.push_back(following);
       }
     }
   }
-  if (is_conflict) {
-    return first_idx_conflicting_lanelets;
-  } else {
-    return std::nullopt;
+  for (const auto & conflicting : conflicting_lanes) {
+    if (!lanelet::utils::contains(sibling_lanes, conflicting)) {
+      conflicting_ex_sibling_lanes.push_back(conflicting);
+    }
   }
+
+  const auto [lane_start, lane_end] = interpolated_path_info.lane_id_interval.value();
+  const size_t vehicle_length_idx = static_cast<size_t>(
+    planner_data_->vehicle_info_.max_longitudinal_offset_m / interpolated_path_info.ds);
+  const size_t start =
+    static_cast<size_t>(std::max<int>(0, static_cast<int>(lane_start) - vehicle_length_idx));
+  const auto local_footprint = planner_data_->vehicle_info_.createFootprint(0.0, 0.0);
+  for (size_t i = start; i <= lane_end; ++i) {
+    const auto & pose = interpolated_path_info.path.points.at(i).point.pose;
+    const auto path_footprint = tier4_autoware_utils::transformVector(
+      local_footprint, tier4_autoware_utils::pose2transform(pose));
+    for (const auto & conflicting : conflicting_ex_sibling_lanes) {
+      const auto area2d = conflicting.polygon2d().basicPolygon();
+      const bool is_in_polygon = bg::intersects(area2d, path_footprint);
+      if (is_in_polygon) {
+        return std::make_optional<lanelet::ConstLanelet>(conflicting);
+      }
+    }
+  }
+  return std::nullopt;
+}
+
+static std::optional<size_t> getFirstPointInsidePolygonByFootprint(
+  const lanelet::CompoundPolygon2d & polygon, const InterpolatedPathInfo & interpolated_path_info,
+  const tier4_autoware_utils::LinearRing2d & footprint, const double vehicle_length)
+{
+  const auto & path_ip = interpolated_path_info.path;
+  const auto [lane_start, lane_end] = interpolated_path_info.lane_id_interval.value();
+  const size_t vehicle_length_idx = static_cast<size_t>(vehicle_length / interpolated_path_info.ds);
+  const size_t start =
+    static_cast<size_t>(std::max<int>(0, static_cast<int>(lane_start) - vehicle_length_idx));
+  const auto area_2d = polygon.basicPolygon();
+  for (auto i = start; i <= lane_end; ++i) {
+    const auto & base_pose = path_ip.points.at(i).point.pose;
+    const auto path_footprint = tier4_autoware_utils::transformVector(
+      footprint, tier4_autoware_utils::pose2transform(base_pose));
+    if (bg::intersects(path_footprint, area_2d)) {
+      return std::make_optional<size_t>(i);
+    }
+  }
+  return std::nullopt;
+}
+
+static std::optional<size_t> getDuplicatedPointIdx(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const geometry_msgs::msg::Point & point)
+{
+  for (size_t i = 0; i < path.points.size(); i++) {
+    const auto & p = path.points.at(i).point.pose.position;
+
+    constexpr double min_dist = 0.001;
+    if (tier4_autoware_utils::calcDistance2d(p, point) < min_dist) {
+      return i;
+    }
+  }
+
+  return std::nullopt;
+}
+
+static std::optional<size_t> insertPointIndex(
+  const geometry_msgs::msg::Pose & in_pose,
+  autoware_auto_planning_msgs::msg::PathWithLaneId * inout_path,
+  const double ego_nearest_dist_threshold, const double ego_nearest_yaw_threshold)
+{
+  const auto duplicate_idx_opt = getDuplicatedPointIdx(*inout_path, in_pose.position);
+  if (duplicate_idx_opt) {
+    return duplicate_idx_opt.value();
+  }
+
+  const size_t closest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    inout_path->points, in_pose, ego_nearest_dist_threshold, ego_nearest_yaw_threshold);
+  // vector.insert(i) inserts element on the left side of v[i]
+  // the velocity need to be zero order hold(from prior point)
+  int insert_idx = closest_idx;
+  autoware_auto_planning_msgs::msg::PathPointWithLaneId inserted_point =
+    inout_path->points.at(closest_idx);
+  if (planning_utils::isAheadOf(in_pose, inout_path->points.at(closest_idx).point.pose)) {
+    ++insert_idx;
+  } else {
+    // copy with velocity from prior point
+    const size_t prior_ind = closest_idx > 0 ? closest_idx - 1 : 0;
+    inserted_point.point.longitudinal_velocity_mps =
+      inout_path->points.at(prior_ind).point.longitudinal_velocity_mps;
+  }
+  inserted_point.point.pose = in_pose;
+
+  auto it = inout_path->points.begin() + insert_idx;
+  inout_path->points.insert(it, inserted_point);
+
+  return insert_idx;
 }
 
 std::optional<std::pair<size_t, size_t>> BlindSpotModule::generateStopLine(
-  const lanelet::ConstLanelets straight_lanelets,
+  const InterpolatedPathInfo & interpolated_path_info,
   autoware_auto_planning_msgs::msg::PathWithLaneId * path) const
 {
-  /* set parameters */
-  constexpr double interval = 0.2;
-  const int margin_idx_dist = std::ceil(planner_param_.stop_line_margin / interval);
-  // const int base2front_idx_dist =
-  //  std::ceil(planner_data_->vehicle_info_.max_longitudinal_offset_m / interval);
+  const int margin_idx_dist =
+    std::ceil(planner_param_.stop_line_margin / interpolated_path_info.ds);
 
-  /* spline interpolation */
-  autoware_auto_planning_msgs::msg::PathWithLaneId path_ip;
-  if (!splineInterpolate(*path, interval, path_ip, logger_)) {
+  const auto first_conflict_idx_ip_opt = getFirstPointInsidePolygonByFootprint(
+    first_conflicting_lanelet_.value().polygon2d(), interpolated_path_info,
+    planner_data_->vehicle_info_.createFootprint(0.0, 0.0),
+    planner_data_->vehicle_info_.max_longitudinal_offset_m);
+  if (!first_conflict_idx_ip_opt) {
     return std::nullopt;
   }
+  const int first_conflict_idx_ip = static_cast<int>(first_conflict_idx_ip_opt.value());
 
-  /* generate stop point */
-  size_t stop_idx_default_ip = 0;  // stop point index for interpolated path.
-  size_t stop_idx_critical_ip = 0;
-  if (straight_lanelets.size() > 0) {
-    std::optional<int> first_idx_conflicting_lane_opt =
-      getFirstPointConflictingLanelets(path_ip, straight_lanelets);
-    if (!first_idx_conflicting_lane_opt) {
-      RCLCPP_DEBUG(logger_, "No conflicting line found.");
-      return std::nullopt;
-    }
-    stop_idx_default_ip = std::max(first_idx_conflicting_lane_opt.value() - 1 - margin_idx_dist, 0);
-    stop_idx_critical_ip = std::max(first_idx_conflicting_lane_opt.value() - 1, 0);
-  }
+  const size_t stop_idx_default_ip =
+    static_cast<size_t>(std::max(first_conflict_idx_ip - margin_idx_dist, 0));
+  const size_t stop_idx_critical_ip = static_cast<size_t>(first_conflict_idx_ip);
 
   /* insert stop_point to use interpolated path*/
-  const size_t stopline_idx_default = insertPoint(stop_idx_default_ip, path_ip, path);
-  const size_t stopline_idx_critical = insertPoint(stop_idx_critical_ip, path_ip, path);
+  const auto & path_ip = interpolated_path_info.path;
+  const auto stopline_idx_default_opt = insertPointIndex(
+    path_ip.points.at(stop_idx_default_ip).point.pose, path,
+    planner_data_->ego_nearest_dist_threshold, planner_data_->ego_nearest_yaw_threshold);
+  const auto stopline_idx_critical_opt = insertPointIndex(
+    path_ip.points.at(stop_idx_critical_ip).point.pose, path,
+    planner_data_->ego_nearest_dist_threshold, planner_data_->ego_nearest_yaw_threshold);
 
-  return std::make_pair(stopline_idx_default, stopline_idx_critical);
+  if (!stopline_idx_default_opt || !stopline_idx_critical_opt) {
+    return std::nullopt;
+  }
+  return std::make_pair(stopline_idx_default_opt.value(), stopline_idx_critical_opt.value());
 }
 
 void BlindSpotModule::cutPredictPathWithDuration(
@@ -294,54 +438,6 @@ void BlindSpotModule::cutPredictPathWithDuration(
       }
     }
   }
-}
-
-int BlindSpotModule::insertPoint(
-  const int insert_idx_ip, const autoware_auto_planning_msgs::msg::PathWithLaneId path_ip,
-  autoware_auto_planning_msgs::msg::PathWithLaneId * inout_path) const
-{
-  double insert_point_s = 0.0;
-  for (int i = 1; i <= insert_idx_ip; i++) {
-    insert_point_s += tier4_autoware_utils::calcDistance2d(
-      path_ip.points[i].point.pose.position, path_ip.points[i - 1].point.pose.position);
-  }
-  int insert_idx = -1;
-  // initialize with epsilon so that comparison with insert_point_s = 0.0 would work
-  constexpr double eps = 1e-2;
-  double accum_s = eps + std::numeric_limits<double>::epsilon();
-  for (size_t i = 1; i < inout_path->points.size(); i++) {
-    accum_s += tier4_autoware_utils::calcDistance2d(
-      inout_path->points[i].point.pose.position, inout_path->points[i - 1].point.pose.position);
-    if (accum_s > insert_point_s) {
-      insert_idx = i;
-      break;
-    }
-  }
-  if (insert_idx >= 0) {
-    const auto it = inout_path->points.begin() + insert_idx;
-    autoware_auto_planning_msgs::msg::PathPointWithLaneId inserted_point;
-    // copy from previous point
-    inserted_point = inout_path->points.at(std::max(insert_idx - 1, 0));
-    inserted_point.point.pose = path_ip.points[insert_idx_ip].point.pose;
-    constexpr double min_dist = eps;  // to make sure path point is forward insert index
-    //! avoid to insert duplicated point
-    if (
-      tier4_autoware_utils::calcDistance2d(
-        inserted_point, inout_path->points.at(insert_idx).point) < min_dist) {
-      inout_path->points.at(insert_idx).point.longitudinal_velocity_mps = 0.0;
-      return insert_idx;
-    } else if (
-      insert_idx != 0 &&
-      tier4_autoware_utils::calcDistance2d(
-        inserted_point, inout_path->points.at(static_cast<size_t>(insert_idx - 1)).point) <
-        min_dist) {
-      inout_path->points.at(insert_idx - 1).point.longitudinal_velocity_mps = 0.0;
-      insert_idx--;
-      return insert_idx;
-    }
-    inout_path->points.insert(it, inserted_point);
-  }
-  return insert_idx;
 }
 
 bool BlindSpotModule::checkObstacleInBlindSpot(
@@ -665,38 +761,6 @@ std::optional<BlindSpotPolygons> BlindSpotModule::generateBlindSpotPolygons(
   }
 }
 
-lanelet::LineString2d BlindSpotModule::getVehicleEdge(
-  const geometry_msgs::msg::Pose & vehicle_pose, const double vehicle_width,
-  const double base_link2front) const
-{
-  lanelet::LineString2d vehicle_edge;
-  tf2::Vector3 front_left, front_right, rear_left, rear_right;
-  front_left.setValue(base_link2front, vehicle_width / 2, 0);
-  front_right.setValue(base_link2front, -vehicle_width / 2, 0);
-  rear_left.setValue(0, vehicle_width / 2, 0);
-  rear_right.setValue(0, -vehicle_width / 2, 0);
-
-  tf2::Transform tf;
-  tf2::fromMsg(vehicle_pose, tf);
-  const auto front_left_transformed = tf * front_left;
-  const auto front_right_transformed = tf * front_right;
-  const auto rear_left_transformed = tf * rear_left;
-  const auto rear_right_transformed = tf * rear_right;
-
-  if (turn_direction_ == TurnDirection::LEFT) {
-    vehicle_edge.push_back(
-      lanelet::Point2d(0, front_left_transformed.x(), front_left_transformed.y()));
-    vehicle_edge.push_back(
-      lanelet::Point2d(0, rear_left_transformed.x(), rear_left_transformed.y()));
-  } else if (turn_direction_ == TurnDirection::RIGHT) {
-    vehicle_edge.push_back(
-      lanelet::Point2d(0, front_right_transformed.x(), front_right_transformed.y()));
-    vehicle_edge.push_back(
-      lanelet::Point2d(0, rear_right_transformed.x(), rear_right_transformed.y()));
-  }
-  return vehicle_edge;
-}
-
 bool BlindSpotModule::isTargetObjectType(
   const autoware_auto_perception_msgs::msg::PredictedObject & object) const
 {
@@ -712,47 +776,4 @@ bool BlindSpotModule::isTargetObjectType(
   return false;
 }
 
-std::optional<geometry_msgs::msg::Pose> BlindSpotModule::getStartPointFromLaneLet(
-  const lanelet::Id lane_id) const
-{
-  lanelet::ConstLanelet lanelet =
-    planner_data_->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id);
-  if (lanelet.centerline().empty()) {
-    return std::nullopt;
-  }
-  const auto p = lanelet.centerline().front();
-  geometry_msgs::msg::Point start_point;
-  start_point.x = p.x();
-  start_point.y = p.y();
-  start_point.z = p.z();
-  const double yaw = lanelet::utils::getLaneletAngle(lanelet, start_point);
-  geometry_msgs::msg::Pose start_pose;
-  start_pose.position = start_point;
-  tf2::Quaternion quat;
-  quat.setRPY(0, 0, yaw);
-  start_pose.orientation = tf2::toMsg(quat);
-
-  return start_pose;
-}
-
-lanelet::ConstLanelets BlindSpotModule::getStraightLanelets(
-  lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
-  const lanelet::Id lane_id)
-{
-  lanelet::ConstLanelets straight_lanelets;
-  const auto intersection_lanelet = lanelet_map_ptr->laneletLayer.get(lane_id);
-  const auto prev_intersection_lanelets = routing_graph_ptr->previous(intersection_lanelet);
-  if (prev_intersection_lanelets.empty()) {
-    return straight_lanelets;
-  }
-
-  const auto next_lanelets = routing_graph_ptr->following(prev_intersection_lanelets.front());
-  for (const auto & ll : next_lanelets) {
-    const std::string turn_direction = ll.attributeOr("turn_direction", "else");
-    if (turn_direction.compare("straight") == 0) {
-      straight_lanelets.push_back(ll);
-    }
-  }
-  return straight_lanelets;
-}
 }  // namespace behavior_velocity_planner
