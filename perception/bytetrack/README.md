@@ -25,7 +25,7 @@ the number of false negatives is expected to decrease by using it.
 The paper just says that the 2d tracking algorithm is a simple Kalman filter.
 Original codes use the `top-left-corner` and `aspect ratio` and `size` as the state vector.
 
-This is sometimes unstable because the aspectratio can be changed by the occlusion.
+This is sometimes unstable because the aspect ratio can be changed by the occlusion.
 So, we use the `top-left` and `size` as the state vector.
 
 Kalman filter settings can be controlled by the parameters in `config/bytetrack_node.param.yaml`.

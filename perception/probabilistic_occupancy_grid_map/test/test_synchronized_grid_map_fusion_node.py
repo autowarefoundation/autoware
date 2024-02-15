@@ -57,7 +57,7 @@ def generate_test_description():
         FindPackageShare(PACKAGE_NAME).find(PACKAGE_NAME)
         + "/launch/synchronized_occupancy_grid_map_fusion.launch.xml"
     )
-    # use default launch arguments and parms
+    # use default launch arguments and params
     launch_args = []
     # action to include launch file
     test_launch_file = launch.actions.IncludeLaunchDescription(
