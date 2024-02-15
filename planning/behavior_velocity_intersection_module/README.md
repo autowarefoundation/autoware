@@ -217,6 +217,13 @@ ros2 run behavior_velocity_intersection_module ttc.py --lane_id <lane_id>
 
 ![ego ttc profile](./docs/ttc.gif)
 
+### about use_upstream_velocity flag
+
+There are some use cases where ego should check collision before entering the intersection considering the temporal stop by walkway/crosswalk module around the exit of the intersection, because their stop position can be inside the intersection and it could bother upcoming vehicles. By setting the flag `collision_detection.velocity_profile.use_upstream` to true and running the walkway/crosswalk module prior to this module, ego velocity profile is calculated considering their velocity and stop positions.
+
+As illustrated in below figure if upstream module inserted a stopline, ego position profile will remain there for the infinite time, thus it leads to the judgement that ego cannot exit the intersection during the interval [$t$ - `collision_detection.collision_start_margin_time`, $t$ + `collision_detection.collision_end_margin_time`]. In this way this feature considers possible collision for the infinite time if stoplines exist ahead of ego position (practically the prediction horizon is limited so the collision check horizon is bounded).
+![upstream_velocity](./docs/upstream-velocity.drawio.svg)
+
 ## Occlusion detection
 
 If the flag `occlusion.enable` is true this module checks if there is sufficient field of view (FOV) on the attention area up to `occlusion.occlusion_attention_area_length`. If FOV is not clear enough ego first makes a brief stop at default_stopline for `occlusion.temporal_stop_time_before_peeking`, and then slowly creeps toward occlusion_peeking_stopline. If `occlusion.creep_during_peeking.enable` is true `occlusion.creep_during_peeking.creep_velocity` is inserted up to occlusion_peeking_stopline. Otherwise only stop line is inserted.
