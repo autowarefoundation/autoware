@@ -8,7 +8,7 @@
       "properties": {
         "interval_sec": {
           "type": "number",
-          "default": 1.0,
+          "default": 0.5,
           "exclusiveMinimum": 0,
           "description": "The interval of timer_callback in seconds."
         },

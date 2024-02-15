@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    interval_sec: 1.0  # [sec]
+    interval_sec: 0.5  # [sec]
     threshold_diff_position_x: 1.0  # [m]
     threshold_diff_position_y: 1.0  # [m]
     threshold_diff_position_z: 1.0  # [m]
