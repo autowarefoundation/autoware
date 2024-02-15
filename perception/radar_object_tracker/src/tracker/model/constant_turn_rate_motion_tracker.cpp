@@ -387,11 +387,11 @@ bool ConstantTurnRateMotionTracker::measureWithPose(
   const bool enable_yaw_measurement = trust_yaw_input_ && object_has_orientation;
 
   if (enable_yaw_measurement) {
-    Eigen::MatrixXd Cyaw = Eigen::MatrixXd::Zero(1, ekf_params_.dim_x);
-    Cyaw(0, IDX::YAW) = 1;
-    C_list.push_back(Cyaw);
+    Eigen::MatrixXd C_yaw = Eigen::MatrixXd::Zero(1, ekf_params_.dim_x);
+    C_yaw(0, IDX::YAW) = 1;
+    C_list.push_back(C_yaw);
 
-    Eigen::MatrixXd Yyaw = Eigen::MatrixXd::Zero(1, 1);
+    Eigen::MatrixXd Y_yaw = Eigen::MatrixXd::Zero(1, 1);
     const auto yaw = [&] {
       auto obj_yaw = tier4_autoware_utils::normalizeRadian(
         tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation));
@@ -404,12 +404,12 @@ bool ConstantTurnRateMotionTracker::measureWithPose(
       return obj_yaw;
     }();
 
-    Yyaw << yaw;
-    Y_list.push_back(Yyaw);
+    Y_yaw << yaw;
+    Y_list.push_back(Y_yaw);
 
-    Eigen::MatrixXd Ryaw = Eigen::MatrixXd::Zero(1, 1);
-    Ryaw << ekf_params_.r_cov_yaw;
-    R_block_list.push_back(Ryaw);
+    Eigen::MatrixXd R_yaw = Eigen::MatrixXd::Zero(1, 1);
+    R_yaw << ekf_params_.r_cov_yaw;
+    R_block_list.push_back(R_yaw);
   }
 
   // 3. add linear velocity measurement
