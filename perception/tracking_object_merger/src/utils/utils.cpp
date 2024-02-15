@@ -272,11 +272,11 @@ bool objectsHaveSameMotionDirections(const TrackedObject & main_obj, const Track
   const auto sub_vx = sub_obj.kinematics.twist_with_covariance.twist.linear.x;
   const auto sub_vy = sub_obj.kinematics.twist_with_covariance.twist.linear.y;
   // calc velocity direction
-  const auto main_vyaw = std::atan2(main_vy, main_vx);
-  const auto sub_vyaw = std::atan2(sub_vy, sub_vx);
+  const auto main_v_yaw = std::atan2(main_vy, main_vx);
+  const auto sub_v_yaw = std::atan2(sub_vy, sub_vx);
   // get motion yaw angle
-  const auto main_motion_yaw = main_yaw + main_vyaw;
-  const auto sub_motion_yaw = sub_yaw + sub_vyaw;
+  const auto main_motion_yaw = main_yaw + main_v_yaw;
+  const auto sub_motion_yaw = sub_yaw + sub_v_yaw;
   // diff of motion yaw angle
   const auto motion_yaw_diff = std::fabs(main_motion_yaw - sub_motion_yaw);
   const auto normalized_motion_yaw_diff =
