@@ -215,7 +215,7 @@ TrajectoryPoints SmootherBase::applySteeringRateLimit(
 
   // Step2. Calculate steer rate for each trajectory point.
   std::vector<double> steer_rate_arr(output.size(), 0.0);
-  for (size_t i = 1; i < output.size() - 1; i++) {
+  for (size_t i = 0; i < output.size() - 1; i++) {
     // velocity
     const auto & v_front = output.at(i + 1).longitudinal_velocity_mps;
     const auto & v_back = output.at(i).longitudinal_velocity_mps;
@@ -234,7 +234,6 @@ TrajectoryPoints SmootherBase::applySteeringRateLimit(
     steer_rate_arr.at(i) = steering_diff / dt;
   }
 
-  steer_rate_arr.at(0) = steer_rate_arr.at(1);
   steer_rate_arr.back() = steer_rate_arr.at((output.size() - 2));
 
   // Step3. Remove noise by mean filter.
