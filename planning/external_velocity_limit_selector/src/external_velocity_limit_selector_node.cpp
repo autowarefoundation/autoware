@@ -112,7 +112,7 @@ ExternalVelocityLimitSelectorNode::ExternalVelocityLimitSelectorNode(
   // Params
   {
     auto & p = node_param_;
-    p.max_velocity = this->declare_parameter<double>("max_velocity");
+    p.max_velocity = this->declare_parameter<double>("max_vel");
     p.normal_min_acc = this->declare_parameter<double>("normal.min_acc");
     p.normal_max_acc = this->declare_parameter<double>("normal.max_acc");
     p.normal_min_jerk = this->declare_parameter<double>("normal.min_jerk");
