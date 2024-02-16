@@ -126,6 +126,9 @@ struct TargetObjectsOnLane
  */
 struct RSSparams
 {
+  std::string extended_polygon_policy{
+    "rectangle"};                               ///< Policy to create collision check polygon.
+                                                ///< possible values: ["rectangle", "along_path"]
   double rear_vehicle_reaction_time{0.0};       ///< Reaction time of the rear vehicle.
   double rear_vehicle_safety_time_margin{0.0};  ///< Safety time margin for the rear vehicle.
   double lateral_distance_max_threshold{0.0};   ///< Maximum threshold for lateral distance.

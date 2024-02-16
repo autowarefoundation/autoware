@@ -184,6 +184,88 @@ Polygon2d createExtendedPolygon(
            : tier4_autoware_utils::inverseClockwise(polygon);
 }
 
+Polygon2d createExtendedPolygonAlongPath(
+  const PathWithLaneId & planned_path, const Pose & base_link_pose,
+  const vehicle_info_util::VehicleInfo & vehicle_info, const double lon_length,
+  const double lat_margin, const double is_stopped_obj, CollisionCheckDebug & debug)
+{
+  const double & base_to_front = vehicle_info.max_longitudinal_offset_m;
+  const double & width = vehicle_info.vehicle_width_m;
+  const double & base_to_rear = vehicle_info.rear_overhang_m;
+
+  // if stationary object, extend forward and backward by the half of lon length
+  const double forward_lon_offset = base_to_front + (is_stopped_obj ? lon_length / 2 : lon_length);
+  const double backward_lon_offset =
+    -base_to_rear - (is_stopped_obj ? lon_length / 2 : 0);  // minus value
+  const double lat_offset = width / 2.0 + lat_margin;
+
+  {
+    debug.forward_lon_offset = forward_lon_offset;
+    debug.backward_lon_offset = backward_lon_offset;
+    debug.lat_offset = lat_offset;
+  }
+
+  const auto lon_offset_pose = motion_utils::calcLongitudinalOffsetPose(
+    planned_path.points, base_link_pose.position, lon_length);
+  if (!lon_offset_pose.has_value()) {
+    return createExtendedPolygon(
+      base_link_pose, vehicle_info, lon_length, lat_margin, is_stopped_obj, debug);
+  }
+
+  const size_t start_idx =
+    motion_utils::findNearestSegmentIndex(planned_path.points, base_link_pose.position);
+  const size_t end_idx =
+    motion_utils::findNearestSegmentIndex(planned_path.points, lon_offset_pose.value().position);
+
+  Polygon2d polygon;
+
+  {
+    const auto p_offset =
+      tier4_autoware_utils::calcOffsetPose(base_link_pose, backward_lon_offset, lat_offset, 0.0);
+    appendPointToPolygon(polygon, p_offset.position);
+  }
+
+  for (size_t i = start_idx + 1; i < end_idx + 1; ++i) {
+    const auto p = tier4_autoware_utils::getPose(planned_path.points.at(i));
+    const auto p_offset = tier4_autoware_utils::calcOffsetPose(p, 0.0, lat_offset, 0.0);
+    appendPointToPolygon(polygon, p_offset.position);
+  }
+
+  {
+    const auto p_offset =
+      tier4_autoware_utils::calcOffsetPose(lon_offset_pose.value(), base_to_front, lat_offset, 0.0);
+    appendPointToPolygon(polygon, p_offset.position);
+  }
+
+  {
+    const auto p_offset = tier4_autoware_utils::calcOffsetPose(
+      lon_offset_pose.value(), base_to_front, -lat_offset, 0.0);
+    appendPointToPolygon(polygon, p_offset.position);
+  }
+
+  for (size_t i = end_idx; i > start_idx; --i) {
+    const auto p = tier4_autoware_utils::getPose(planned_path.points.at(i));
+    const auto p_offset = tier4_autoware_utils::calcOffsetPose(p, 0.0, -lat_offset, 0.0);
+    appendPointToPolygon(polygon, p_offset.position);
+  }
+
+  {
+    const auto p_offset =
+      tier4_autoware_utils::calcOffsetPose(base_link_pose, backward_lon_offset, -lat_offset, 0.0);
+    appendPointToPolygon(polygon, p_offset.position);
+  }
+
+  {
+    const auto p_offset =
+      tier4_autoware_utils::calcOffsetPose(base_link_pose, backward_lon_offset, lat_offset, 0.0);
+    appendPointToPolygon(polygon, p_offset.position);
+  }
+
+  return tier4_autoware_utils::isClockwise(polygon)
+           ? polygon
+           : tier4_autoware_utils::inverseClockwise(polygon);
+}
+
 std::vector<Polygon2d> createExtendedPolygonsFromPoseWithVelocityStamped(
   const std::vector<PoseWithVelocityStamped> & predicted_path, const VehicleInfo & vehicle_info,
   const double forward_margin, const double backward_margin, const double lat_margin)
@@ -549,10 +631,24 @@ std::vector<Polygon2d> getCollidedPolygons(
     const auto & lat_margin = rss_parameters.lateral_distance_max_threshold * hysteresis_factor;
     // TODO(watanabe) fix hard coding value
     const bool is_stopped_object = object_velocity < 0.3;
-    const auto & extended_ego_polygon = is_object_front ? createExtendedPolygon(
-                                                            ego_pose, ego_vehicle_info, lon_offset,
-                                                            lat_margin, is_stopped_object, debug)
-                                                        : ego_polygon;
+    const auto extended_ego_polygon = [&]() {
+      if (!is_object_front) {
+        return ego_polygon;
+      }
+
+      if (rss_parameters.extended_polygon_policy == "rectangle") {
+        return createExtendedPolygon(
+          ego_pose, ego_vehicle_info, lon_offset, lat_margin, is_stopped_object, debug);
+      }
+
+      if (rss_parameters.extended_polygon_policy == "along_path") {
+        return createExtendedPolygonAlongPath(
+          planned_path, ego_pose, ego_vehicle_info, lon_offset, lat_margin, is_stopped_object,
+          debug);
+      }
+
+      throw std::domain_error("invalid rss parameter. please select 'rectangle' or 'along_path'.");
+    }();
     const auto & extended_obj_polygon =
       is_object_front
         ? obj_polygon

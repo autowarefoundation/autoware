@@ -187,6 +187,7 @@
         time_horizon_for_rear_object: 10.0               # [s]
         delay_until_departure: 0.0                       # [s]
         # rss parameters
+        extended_polygon_policy: "along_path"            # [-] select "rectangle" or "along_path"
         expected_front_deceleration: -1.0                # [m/ss]
         expected_rear_deceleration: -1.0                 # [m/ss]
         rear_vehicle_reaction_time: 2.0                  # [s]
