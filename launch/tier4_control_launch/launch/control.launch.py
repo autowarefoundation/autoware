@@ -116,23 +116,6 @@ def launch_setup(context, *args, **kwargs):
         parameters=[nearest_search_param, lane_departure_checker_param, vehicle_info_param],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
-    # control validator checker
-    control_validator_component = ComposableNode(
-        package="control_validator",
-        plugin="control_validator::ControlValidator",
-        name="control_validator",
-        remappings=[
-            ("~/input/kinematics", "/localization/kinematic_state"),
-            ("~/input/reference_trajectory", "/planning/scenario_planning/trajectory"),
-            (
-                "~/input/predicted_trajectory",
-                "/control/trajectory_follower/lateral/predicted_trajectory",
-            ),
-            ("~/output/validation_status", "~/validation_status"),
-        ],
-        parameters=[control_validator_param],
-        extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
-    )
 
     # shift decider
     shift_decider_component = ComposableNode(
@@ -351,13 +334,29 @@ def launch_setup(context, *args, **kwargs):
         executable=LaunchConfiguration("container_executable"),
         composable_node_descriptions=[
             controller_component,
-            control_validator_component,
             lane_departure_component,
             shift_decider_component,
             vehicle_cmd_gate_component,
             operation_mode_transition_manager_component,
             glog_component,
         ],
+    )
+
+    # control validator checker
+    control_validator_component = ComposableNode(
+        package="control_validator",
+        plugin="control_validator::ControlValidator",
+        name="control_validator",
+        remappings=[
+            ("~/input/kinematics", "/localization/kinematic_state"),
+            ("~/input/reference_trajectory", "/planning/scenario_planning/trajectory"),
+            (
+                "~/input/predicted_trajectory",
+                "/control/trajectory_follower/lateral/predicted_trajectory",
+            ),
+            ("~/output/validation_status", "~/validation_status"),
+        ],
+        parameters=[control_validator_param],
     )
 
     group = GroupAction(
@@ -372,7 +371,19 @@ def launch_setup(context, *args, **kwargs):
         ]
     )
 
-    return [group]
+    control_validator_group = GroupAction(
+        [
+            PushRosNamespace("control"),
+            ComposableNodeContainer(
+                name="control_validator_container",
+                namespace="",
+                package="rclcpp_components",
+                executable=LaunchConfiguration("container_executable"),
+                composable_node_descriptions=[control_validator_component, glog_component],
+            ),
+        ]
+    )
+    return [group, control_validator_group]
 
 
 def generate_launch_description():
