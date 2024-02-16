@@ -383,11 +383,18 @@ void expand_drivable_area(
 
   stop_watch.tic("curvatures_expansion");
   // Only add curvatures for the new points. Curvatures of reused path points are not updated.
-  const auto new_curvatures =
-    calculate_smoothed_curvatures(path_poses, params.curvature_average_window);
-  const auto first_new_point_idx = curvatures.size();
-  curvatures.insert(
-    curvatures.end(), new_curvatures.begin() + first_new_point_idx, new_curvatures.end());
+  try {
+    if (path_poses.size() > curvatures.size()) {
+      const auto new_curvatures =
+        calculate_smoothed_curvatures(path_poses, params.curvature_average_window);
+      const auto first_new_point_idx = curvatures.size();
+      curvatures.insert(
+        curvatures.end(), new_curvatures.begin() + first_new_point_idx, new_curvatures.end());
+    }
+  } catch (const std::exception & e) {
+    std::cerr << "[drivable_area_expansion] could not calculate path curvatures\n";
+    curvatures.resize(path_poses.size(), 0.0);
+  }
   auto expansion =
     calculate_expansion(path_poses, path.left_bound, path.right_bound, curvatures, params);
   const auto curvature_expansion_ms = stop_watch.toc("curvatures_expansion");
