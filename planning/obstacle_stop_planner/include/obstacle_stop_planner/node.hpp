@@ -107,15 +107,31 @@ struct ObstacleWithDetectionTime
 
 struct PredictedObjectWithDetectionTime
 {
-  explicit PredictedObjectWithDetectionTime(
-    const rclcpp::Time & t, geometry_msgs::msg::Point & p, PredictedObject obj)
-  : detection_time(t), point(p), object(std::move(obj))
+  explicit PredictedObjectWithDetectionTime(const rclcpp::Time & t, PredictedObject obj)
+  : detection_time(t), object(std::move(obj))
   {
   }
 
   rclcpp::Time detection_time;
-  geometry_msgs::msg::Point point;
   PredictedObject object;
+};
+
+struct IntersectedPredictedObject
+{
+  explicit IntersectedPredictedObject(
+    const rclcpp::Time & t, PredictedObject obj, const Polygon2d obj_polygon,
+    const Polygon2d ego_polygon)
+  : detection_time(t),
+    object(std::move(obj)),
+    object_polygon{obj_polygon},
+    vehicle_polygon{ego_polygon}
+  {
+  }
+
+  rclcpp::Time detection_time;
+  PredictedObject object;
+  Polygon2d object_polygon;
+  Polygon2d vehicle_polygon;
 };
 
 class ObstacleStopPlannerNode : public rclcpp::Node
@@ -272,6 +288,19 @@ private:
 
       itr++;
     }
+  }
+
+  void addPredictedObstacleToHistory(const PredictedObject & obj, const rclcpp::Time & now)
+  {
+    for (auto itr = predicted_object_history_.begin(); itr != predicted_object_history_.end();) {
+      if (obj.object_id.uuid == itr->object.object_id.uuid) {
+        // Erase the itr from the vector
+        itr = predicted_object_history_.erase(itr);
+      } else {
+        ++itr;
+      }
+    }
+    predicted_object_history_.emplace_back(now, obj);
   }
 
   PointCloud::Ptr getOldPointCloudPtr() const
