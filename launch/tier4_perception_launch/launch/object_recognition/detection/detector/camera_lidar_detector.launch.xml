@@ -117,36 +117,39 @@
 
     <!-- roi based clustering -->
     <group>
-      <include file="$(find-pkg-share image_projection_based_fusion)/launch/roi_pointcloud_fusion.launch.xml" if="$(var use_roi_based_cluster)">
-        <arg name="input/camera_info0" value="$(var camera_info0)"/>
-        <arg name="input/rois0" value="$(var detection_rois0)"/>
-        <arg name="input/camera_info1" value="$(var camera_info1)"/>
-        <arg name="input/rois1" value="$(var detection_rois1)"/>
-        <arg name="input/camera_info2" value="$(var camera_info2)"/>
-        <arg name="input/rois2" value="$(var detection_rois2)"/>
-        <arg name="input/camera_info3" value="$(var camera_info3)"/>
-        <arg name="input/rois3" value="$(var detection_rois3)"/>
-        <arg name="input/camera_info4" value="$(var camera_info4)"/>
-        <arg name="input/rois4" value="$(var detection_rois4)"/>
-        <arg name="input/camera_info5" value="$(var camera_info5)"/>
-        <arg name="input/rois5" value="$(var detection_rois5)"/>
-        <arg name="input/camera_info6" value="$(var camera_info6)"/>
-        <arg name="input/rois6" value="$(var detection_rois6)"/>
-        <arg name="input/camera_info7" value="$(var camera_info7)"/>
-        <arg name="input/rois7" value="$(var detection_rois7)"/>
-        <arg name="input/rois_number" value="$(var image_number)"/>
-        <arg name="input/image0" value="$(var image_raw0)"/>
-        <arg name="input/image1" value="$(var image_raw1)"/>
-        <arg name="input/image2" value="$(var image_raw2)"/>
-        <arg name="input/image3" value="$(var image_raw3)"/>
-        <arg name="input/image4" value="$(var image_raw4)"/>
-        <arg name="input/image5" value="$(var image_raw5)"/>
-        <arg name="input/image6" value="$(var image_raw6)"/>
-        <arg name="input/image7" value="$(var image_raw7)"/>
-        <arg name="input/pointcloud" value="/perception/object_recognition/detection/pointcloud_map_filtered/pointcloud"/>
-        <arg name="output_clusters" value="roi_cluster/clusters"/>
-        <arg name="param_path" value="$(var roi_pointcloud_fusion_param_path)"/>
-      </include>
+      <push-ros-namespace namespace="roi_cluster"/>
+      <group>
+        <include file="$(find-pkg-share image_projection_based_fusion)/launch/roi_pointcloud_fusion.launch.xml" if="$(var use_roi_based_cluster)">
+          <arg name="input/camera_info0" value="$(var camera_info0)"/>
+          <arg name="input/rois0" value="$(var detection_rois0)"/>
+          <arg name="input/camera_info1" value="$(var camera_info1)"/>
+          <arg name="input/rois1" value="$(var detection_rois1)"/>
+          <arg name="input/camera_info2" value="$(var camera_info2)"/>
+          <arg name="input/rois2" value="$(var detection_rois2)"/>
+          <arg name="input/camera_info3" value="$(var camera_info3)"/>
+          <arg name="input/rois3" value="$(var detection_rois3)"/>
+          <arg name="input/camera_info4" value="$(var camera_info4)"/>
+          <arg name="input/rois4" value="$(var detection_rois4)"/>
+          <arg name="input/camera_info5" value="$(var camera_info5)"/>
+          <arg name="input/rois5" value="$(var detection_rois5)"/>
+          <arg name="input/camera_info6" value="$(var camera_info6)"/>
+          <arg name="input/rois6" value="$(var detection_rois6)"/>
+          <arg name="input/camera_info7" value="$(var camera_info7)"/>
+          <arg name="input/rois7" value="$(var detection_rois7)"/>
+          <arg name="input/rois_number" value="$(var image_number)"/>
+          <arg name="input/image0" value="$(var image_raw0)"/>
+          <arg name="input/image1" value="$(var image_raw1)"/>
+          <arg name="input/image2" value="$(var image_raw2)"/>
+          <arg name="input/image3" value="$(var image_raw3)"/>
+          <arg name="input/image4" value="$(var image_raw4)"/>
+          <arg name="input/image5" value="$(var image_raw5)"/>
+          <arg name="input/image6" value="$(var image_raw6)"/>
+          <arg name="input/image7" value="$(var image_raw7)"/>
+          <arg name="input/pointcloud" value="/perception/object_recognition/detection/pointcloud_map_filtered/pointcloud"/>
+          <arg name="output_clusters" value="clusters"/>
+          <arg name="param_path" value="$(var roi_pointcloud_fusion_param_path)"/>
+        </include>
+      </group>
     </group>
 
     <!-- simple_cluster_merger -->
