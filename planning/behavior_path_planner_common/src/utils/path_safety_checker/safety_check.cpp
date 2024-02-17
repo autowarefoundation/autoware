@@ -543,9 +543,9 @@ bool checkSafetyWithIntegralPredictedPolygon(
           updateCollisionCheckDebugMap(debug_map, debug_pair, /*is_safe=*/false);
           return false;
         }
-        updateCollisionCheckDebugMap(debug_map, debug_pair, /*is_safe=*/true);
       }
     }
+    updateCollisionCheckDebugMap(debug_map, debug_pair, /*is_safe=*/true);
   }
   return true;
 }
