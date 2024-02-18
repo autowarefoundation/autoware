@@ -20,7 +20,7 @@ simulations:
         launch_autoware: "true"
         autoware_launch_package: autoware_launch
         autoware_launch_file: planning_simulator.launch.xml
-        architecture_type: awf/universe
+        architecture_type: awf/universe/20230906
         vehicle_model: sample_vehicle
         sensor_model: sample_sensor_kit
         initialize_duration: "90"
