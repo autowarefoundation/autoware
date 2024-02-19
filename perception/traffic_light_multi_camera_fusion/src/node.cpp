@@ -82,13 +82,9 @@ int compareRecord(const traffic_light::FusionRecord & r1, const traffic_light::F
   int visible_score_1 = calVisibleScore(r1);
   int visible_score_2 = calVisibleScore(r2);
   if (visible_score_1 == visible_score_2) {
-    int area_1 = r1.roi.roi.width * r1.roi.roi.height;
-    int area_2 = r2.roi.roi.width * r2.roi.roi.height;
-    if (area_1 < area_2) {
-      return -1;
-    } else {
-      return static_cast<int>(area_1 > area_2);
-    }
+    double confidence_1 = r1.signal.elements[0].confidence;
+    double confidence_2 = r2.signal.elements[0].confidence;
+    return confidence_1 < confidence_2 ? -1 : 1;
   } else {
     return visible_score_1 < visible_score_2 ? -1 : 1;
   }
