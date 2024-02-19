@@ -279,10 +279,104 @@ void LaneChangeModuleManager::updateModuleParams(const std::vector<rclcpp::Param
 
   auto p = parameters_;
 
-  const std::string ns = name_ + ".";
-  updateParam<double>(
-    parameters, ns + "finish_judge_lateral_threshold", p->finish_judge_lateral_threshold);
+  {
+    const std::string ns = "lane_change.";
+    updateParam<double>(parameters, ns + "backward_lane_length", p->backward_lane_length);
+    updateParam<double>(parameters, ns + "prepare_duration", p->lane_change_prepare_duration);
 
+    updateParam<double>(
+      parameters, ns + "backward_length_buffer_for_end_of_lane",
+      p->backward_length_buffer_for_end_of_lane);
+    updateParam<double>(
+      parameters, ns + "backward_length_buffer_for_blocking_object",
+      p->backward_length_buffer_for_blocking_object);
+    updateParam<double>(
+      parameters, ns + "lane_change_finish_judge_buffer", p->lane_change_finish_judge_buffer);
+
+    updateParam<double>(
+      parameters, ns + "lane_changing_lateral_jerk", p->lane_changing_lateral_jerk);
+
+    updateParam<double>(
+      parameters, ns + "minimum_lane_changing_velocity", p->minimum_lane_changing_velocity);
+    updateParam<double>(
+      parameters, ns + "prediction_time_resolution", p->prediction_time_resolution);
+
+    int longitudinal_acc_sampling_num = 0;
+    updateParam<int>(
+      parameters, ns + "longitudinal_acceleration_sampling_num", longitudinal_acc_sampling_num);
+    if (longitudinal_acc_sampling_num > 0) {
+      p->longitudinal_acc_sampling_num = longitudinal_acc_sampling_num;
+    }
+
+    int lateral_acc_sampling_num = 0;
+    updateParam<int>(
+      parameters, ns + "lateral_acceleration_sampling_num", lateral_acc_sampling_num);
+    if (lateral_acc_sampling_num > 0) {
+      p->lateral_acc_sampling_num = lateral_acc_sampling_num;
+    }
+
+    updateParam<double>(
+      parameters, ns + "finish_judge_lateral_threshold", p->finish_judge_lateral_threshold);
+    updateParam<bool>(parameters, ns + "publish_debug_marker", p->publish_debug_marker);
+
+    // longitudinal acceleration
+    updateParam<double>(parameters, ns + "min_longitudinal_acc", p->min_longitudinal_acc);
+    updateParam<double>(parameters, ns + "max_longitudinal_acc", p->max_longitudinal_acc);
+  }
+
+  {
+    const std::string ns = "lane_change.safety_check.lane_expansion.";
+    updateParam<double>(parameters, ns + "left_offset", p->lane_expansion_left_offset);
+    updateParam<double>(parameters, ns + "right_offset", p->lane_expansion_right_offset);
+  }
+
+  {
+    const std::string ns = "lane_change.target_object.";
+    updateParam<bool>(parameters, ns + "car", p->object_types_to_check.check_car);
+    updateParam<bool>(parameters, ns + "truck", p->object_types_to_check.check_truck);
+    updateParam<bool>(parameters, ns + "bus", p->object_types_to_check.check_bus);
+    updateParam<bool>(parameters, ns + "trailer", p->object_types_to_check.check_trailer);
+    updateParam<bool>(parameters, ns + "unknown", p->object_types_to_check.check_unknown);
+    updateParam<bool>(parameters, ns + "bicycle", p->object_types_to_check.check_bicycle);
+    updateParam<bool>(parameters, ns + "motorcycle", p->object_types_to_check.check_motorcycle);
+    updateParam<bool>(parameters, ns + "pedestrian", p->object_types_to_check.check_pedestrian);
+  }
+
+  {
+    const std::string ns = "lane_change.regulation.";
+    updateParam<bool>(parameters, ns + "crosswalk", p->regulate_on_crosswalk);
+    updateParam<bool>(parameters, ns + "intersection", p->regulate_on_intersection);
+    updateParam<bool>(parameters, ns + "traffic_light", p->regulate_on_traffic_light);
+  }
+
+  {
+    const std::string ns = "lane_change.stuck_detection.";
+    updateParam<double>(parameters, ns + "velocity", p->stop_velocity_threshold);
+    updateParam<double>(parameters, ns + "stop_time", p->stop_time_threshold);
+  }
+
+  {
+    const std::string ns = "lane_change.cancel.";
+    bool enable_on_prepare_phase = true;
+    updateParam<bool>(parameters, ns + "enable_on_prepare_phase", enable_on_prepare_phase);
+    if (!enable_on_prepare_phase) {
+      RCLCPP_WARN_ONCE(node_->get_logger(), "WARNING! Lane Change cancel function is disabled.");
+      p->cancel.enable_on_prepare_phase = enable_on_prepare_phase;
+    }
+
+    bool enable_on_lane_changing_phase = true;
+    updateParam<bool>(
+      parameters, ns + "enable_on_lane_changing_phase", enable_on_lane_changing_phase);
+    if (!enable_on_lane_changing_phase) {
+      RCLCPP_WARN_ONCE(node_->get_logger(), "WARNING! Lane Change abort function is disabled.");
+      p->cancel.enable_on_lane_changing_phase = enable_on_lane_changing_phase;
+    }
+
+    updateParam<double>(parameters, ns + "delta_time", p->cancel.delta_time);
+    updateParam<double>(parameters, ns + "duration", p->cancel.duration);
+    updateParam<double>(parameters, ns + "max_lateral_jerk", p->cancel.max_lateral_jerk);
+    updateParam<double>(parameters, ns + "overhang_tolerance", p->cancel.overhang_tolerance);
+  }
   std::for_each(observers_.begin(), observers_.end(), [&p](const auto & observer) {
     if (!observer.expired()) observer.lock()->updateModuleParams(p);
   });
