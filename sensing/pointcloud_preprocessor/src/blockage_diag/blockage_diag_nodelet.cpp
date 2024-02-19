@@ -255,9 +255,11 @@ void BlockageDiagComponent::filter(
 
   if (ground_blockage_ratio_ > blockage_ratio_threshold_) {
     cv::Rect ground_blockage_bb = cv::boundingRect(ground_no_return_mask);
-    ground_blockage_range_deg_[0] = static_cast<float>(ground_blockage_bb.x) + angle_range_deg_[0];
+    ground_blockage_range_deg_[0] =
+      ground_blockage_bb.x * horizontal_resolution_ + angle_range_deg_[0];
     ground_blockage_range_deg_[1] =
-      static_cast<float>(ground_blockage_bb.x + ground_blockage_bb.width) + angle_range_deg_[0];
+      (ground_blockage_bb.x + ground_blockage_bb.width) * horizontal_resolution_ +
+      angle_range_deg_[0];
     if (ground_blockage_count_ <= 2 * blockage_count_threshold_) {
       ground_blockage_count_ += 1;
     }
@@ -266,9 +268,9 @@ void BlockageDiagComponent::filter(
   }
   if (sky_blockage_ratio_ > blockage_ratio_threshold_) {
     cv::Rect sky_blockage_bx = cv::boundingRect(sky_no_return_mask);
-    sky_blockage_range_deg_[0] = static_cast<float>(sky_blockage_bx.x) + angle_range_deg_[0];
+    sky_blockage_range_deg_[0] = sky_blockage_bx.x * horizontal_resolution_ + angle_range_deg_[0];
     sky_blockage_range_deg_[1] =
-      static_cast<float>(sky_blockage_bx.x + sky_blockage_bx.width) + angle_range_deg_[0];
+      (sky_blockage_bx.x + sky_blockage_bx.width) * horizontal_resolution_ + angle_range_deg_[0];
     if (sky_blockage_count_ <= 2 * blockage_count_threshold_) {
       sky_blockage_count_ += 1;
     }
