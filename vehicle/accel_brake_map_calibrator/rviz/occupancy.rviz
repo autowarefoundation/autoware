@@ -1,0 +1,141 @@
+Panels:
+  - Class: rviz_common/Displays
+    Help Height: 0
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Map1
+        - /Axes1
+        - /MarkerArray1
+      Splitter Ratio: 0.5581113696098328
+    Tree Height: 1615
+  - Class: rviz_common/Selection
+    Name: Selection
+  - Class: rviz_common/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+Preferences:
+  PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 1
+      Class: rviz_default_plugins/Map
+      Color Scheme: costmap
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /accel_brake_map_calibrator/debug/data_count_self_pose_occ_map
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
+    - Class: rviz_default_plugins/Axes
+      Enabled: false
+      Length: 0.10000000149011612
+      Name: Axes
+      Radius: 0.009999999776482582
+      Reference Frame: <Fixed Frame>
+      Value: false
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        occ_pedal_index: true
+        occ_vel_index: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /accel_brake_map_calibrator/debug/occ_index
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 238; 238; 236
+    Default Light: true
+    Fixed Frame: base_link
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/Interact
+      Hide Inactive Objects: true
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+    - Class: rviz_default_plugins/SetInitialPose
+      Theta std deviation: 0.2617993950843811
+      Topic: initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
+    - Class: rviz_default_plugins/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz_plugins/PedestrianInitialPoseTool
+      Pose Topic: /simulation/dummy_perception_publisher/object_info
+      Theta std deviation: 0.0872664600610733
+      Velocity: 1
+      X std deviation: 0.009999999776482582
+      Y std deviation: 0.009999999776482582
+      Z position: 0
+      Z std deviation: 0.009999999776482582
+    - Class: rviz_plugins/CarInitialPoseTool
+      Pose Topic: /simulation/dummy_perception_publisher/object_info
+      Theta std deviation: 0.0872664600610733
+      Velocity: 3
+      X std deviation: 0.009999999776482582
+      Y std deviation: 0.009999999776482582
+      Z position: 0
+      Z std deviation: 0.009999999776482582
+    - Class: rviz_plugins/MissionCheckpointTool
+      Pose Topic: checkpoint
+      Theta std deviation: 0.2617993950843811
+      X std deviation: 0.5
+      Y std deviation: 0.5
+      Z position: 0
+    - Class: rviz_plugins/DeleteAllObjectsTool
+      Pose Topic: /simulation/dummy_perception_publisher/object_info
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/ThirdPersonFollower
+      Distance: 1.8697248697280884
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: 0.48724469542503357
+        Y: 0.3405919671058655
+        Z: 5.960464477539062e-7
+      Focal Shape Fixed Size: false
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 1.5697963237762451
+      Target Frame: base_link
+      Value: ThirdPersonFollower (rviz)
+      Yaw: 4.710395336151123
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: true
+  Height: 1862
+  Hide Left Dock: true
+  Hide Right Dock: true
+  QMainWindow State: 000000ff00000000fd0000000400000000000005070000068cfc020000000efb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003d0000068c000000c900fffffffb0000000a00560069006500770073000000030c000003bd000000a400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000005470000012b0000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610100000682000000eb0000000000000000fb0000000a0049006d00610067006501000005d6000000f30000000000000000fb0000002c0049006e0069007400690061006c0050006f007300650042007500740074006f006e00500061006e0065006c000000068f000000de0000007700fffffffb0000002c0049006e0069007400690061006c0050006f007300650042007500740074006f006e00500061006e0065006c000000068f000000de0000007700fffffffb0000000a0049006d00610067006500000002ef000003da0000000000000000000000010000015f000006fffc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000006fb0000005afc0100000002fb0000000800540069006d00650100000000000006fb000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000006fb0000068c00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 1787
+  X: 1193
+  Y: 165

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="accel_brake_map_calib_param" default="$(find-pkg-share accel_brake_map_calibrator)/config/accel_brake_map_calibrator.param.yaml"/>
+  <arg name="csv_default_map_dir" default="$(find-pkg-share raw_vehicle_cmd_converter)/data/default/"/>
+  <arg name="csv_calibrated_map_dir" default="$(find-pkg-share accel_brake_map_calibrator)/config/"/>
+  <arg name="logger_level" default="info"/>
+  <arg name="rviz" default="true"/>
+  <arg name="pedal_accel_graph_output" default="true"/>
+  <arg name="progress_file_output" default="false"/>
+  <arg name="use_sim_time" default="false"/>
+  <arg name="calibration_method" default="each_cell"/>
+
+  <!-- calibration interface -->
+  <node pkg="accel_brake_map_calibrator" exec="accel_brake_map_calibrator" name="accel_brake_map_calibrator" output="screen">
+    <param from="$(var accel_brake_map_calib_param)"/>
+    <remap from="~/input/velocity" to="/vehicle/status/velocity_status"/>
+    <remap from="~/input/steer" to="/vehicle/status/steering_status"/>
+    <remap from="~/input/actuation_status" to="/vehicle/status/actuation_status"/>
+    <remap from="~/input/actuation_cmd" to="/control/command/actuation_cmd"/>
+    <remap from="~/input/update_map_dir" to="~/update_map_dir"/>
+    <param name="csv_default_map_dir" value="$(var csv_default_map_dir)"/>
+    <param name="csv_calibrated_map_dir" value="$(var csv_calibrated_map_dir)"/>
+    <param name="output_log_file" value="$(find-pkg-share accel_brake_map_calibrator)/config/log.csv"/>
+    <param name="pedal_accel_graph_output" value="$(var pedal_accel_graph_output)"/>
+    <param name="progress_file_output" value="$(var progress_file_output)"/>
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+  </node>
+
+  <!-- calibration plot and map server node -->
+  <node pkg="accel_brake_map_calibrator" exec="new_accel_brake_map_server.py" name="new_accel_brake_map_server" output="screen">
+    <param name="calibration_method" value="$(var calibration_method)"/>
+  </node>
+  <!-- Rviz -->
+  <node pkg="rviz2" exec="rviz2" name="rviz2" output="screen" args="-d $(find-pkg-share accel_brake_map_calibrator)/rviz/occupancy.rviz" if="$(var rviz)"/>
+</launch>
