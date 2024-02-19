@@ -1,3 +1,0 @@
-/**:
-  ros__parameters:
-    yaw_threshold_to_search_closest: 0.785398  # yaw threshold to search closest index [rad]

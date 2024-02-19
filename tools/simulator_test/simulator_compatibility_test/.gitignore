@@ -1,8 +1,0 @@
-simulator_compatibility_test/*pycache*/
-simulator_compatibility_test/clients/*pycache*/
-simulator_compatibility_test/clients/moraisim/*pycache*/
-simulator_compatibility_test/publishers/*pycache*/
-simulator_compatibility_test/subscribers/*pycache*/
-test_base/*pycache*/
-test_sim/*pycache*/
-test_moraisim/*pycache*/

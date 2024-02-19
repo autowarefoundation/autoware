@@ -77,8 +77,8 @@ nav:
   - 'Additional Tools':
     - 'RTC Replayer': planning/rtc_replayer
     - 'Planning Debug Tools':
-      - 'About Planning Debug Tools': planning/planning_debug_tools
-      - 'Stop Reason Visualizer': planning/planning_debug_tools/doc-stop-reason-visualizer
+      - ['About Planning Debug Tools'](https://github.com/autowarefoundation/autoware_tools/tree/main/planning_debug_tools)
+      - ['Stop Reason Visualizer'](https://github.com/autowarefoundation/autoware_tools/tree/main/planning_debug_tools/doc-stop-reason-visualizer)
     - 'Planning Test Utils': planning/planning_test_utils
     - 'Planning Topic Converter': planning/planning_topic_converter
     - 'Planning Validator': planning/planning_validator

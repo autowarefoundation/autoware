@@ -1,3 +1,0 @@
-<launch>
-  <node pkg="planning_debug_tools" exec="stop_reason_visualizer_exe" name="stop_reason_visualizer" output="screen"/>
-</launch>
