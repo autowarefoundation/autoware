@@ -30,8 +30,6 @@
 #include <unordered_set>
 #include <vector>
 
-bool exists(const std::unordered_set<lanelet::Id> & set, const lanelet::Id & id);
-
 template <typename T>
 bool exists(const std::vector<T> & vectors, const T & item)
 {
@@ -45,12 +43,18 @@ bool exists(const std::vector<T> & vectors, const T & item)
 
 tier4_autoware_utils::Polygon2d convert_linear_ring_to_polygon(
   tier4_autoware_utils::LinearRing2d footprint);
-void set_color(std_msgs::msg::ColorRGBA * cl, double r, double g, double b, double a);
 void insert_marker_array(
   visualization_msgs::msg::MarkerArray * a1, const visualization_msgs::msg::MarkerArray & a2);
 
+/**
+ * @brief create a single merged lanelet whose left/right bounds consist of the leftmost/rightmost
+ * bound of the original lanelets or the left/right bound of its adjacent road_shoulder respectively
+ * @param lanelets topologically sorted sequence of lanelets
+ * @param shoulder_lanelets list of possible road_shoulder lanelets to combine with lanelets
+ */
 lanelet::ConstLanelet combine_lanelets_with_shoulder(
   const lanelet::ConstLanelets & lanelets, const lanelet::ConstLanelets & shoulder_lanelets);
+
 std::vector<geometry_msgs::msg::Point> convertCenterlineToPoints(const lanelet::Lanelet & lanelet);
 geometry_msgs::msg::Pose convertBasicPoint3dToPose(
   const lanelet::BasicPoint3d & point, const double lane_yaw);

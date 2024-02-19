@@ -71,13 +71,38 @@ private:
 
   void initialize_common(rclcpp::Node * node);
   void map_callback(const HADMapBin::ConstSharedPtr msg);
-  bool check_goal_footprint(
+
+  /**
+   * @brief check if the goal_footprint is within the combined lanelet of route_lanelets plus the
+   * succeeding lanelets around the goal
+   * @attention this function will terminate when the accumulated search length from the initial
+   * current_lanelet exceeds max_longitudinal_offset_m + search_margin, so under normal assumptions
+   * (i.e. the map is composed of finite elements of practically normal sized lanelets), it is
+   * assured to terminate
+   * @param current_lanelet the start lanelet to begin recursive query
+   * @param combined_prev_lanelet initial entire route_lanelets plus the small consecutive lanelets
+   * around the goal during the query
+   * @param next_lane_length the accumulated total length from the start lanelet of the search to
+   * the lanelet of current goal query
+   */
+  bool check_goal_footprint_inside_lanes(
     const lanelet::ConstLanelet & current_lanelet,
     const lanelet::ConstLanelet & combined_prev_lanelet,
     const tier4_autoware_utils::Polygon2d & goal_footprint, double & next_lane_length,
     const double search_margin = 2.0);
+
+  /**
+   * @brief return true if (1)the goal is in parking area or (2)the goal is on the lanes and the
+   * footprint around the goal does not overlap the lanes
+   */
   bool is_goal_valid(const geometry_msgs::msg::Pose & goal, lanelet::ConstLanelets path_lanelets);
+
+  /**
+   * @brief project the specified goal pose onto the goal lanelet(the last preferred lanelet of
+   * route_sections) and return the z-aligned goal position
+   */
   Pose refine_goal_height(const Pose & goal, const RouteSections & route_sections);
+
   void updateRoute(const PlannerPlugin::LaneletRoute & route);
   void clearRoute();
 };

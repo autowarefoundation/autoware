@@ -21,11 +21,6 @@
 #include <unordered_set>
 #include <utility>
 
-bool exists(const std::unordered_set<lanelet::Id> & set, const lanelet::Id & id)
-{
-  return set.find(id) != set.end();
-}
-
 tier4_autoware_utils::Polygon2d convert_linear_ring_to_polygon(
   tier4_autoware_utils::LinearRing2d footprint)
 {
@@ -38,14 +33,6 @@ tier4_autoware_utils::Polygon2d convert_linear_ring_to_polygon(
   boost::geometry::append(footprint_polygon.outer(), footprint[5]);
   boost::geometry::correct(footprint_polygon);
   return footprint_polygon;
-}
-
-void set_color(std_msgs::msg::ColorRGBA * cl, double r, double g, double b, double a)
-{
-  cl->r = r;
-  cl->g = g;
-  cl->b = b;
-  cl->a = a;
 }
 
 void insert_marker_array(
@@ -64,7 +51,7 @@ lanelet::ConstLanelet combine_lanelets_with_shoulder(
   std::vector<uint64_t> right_bound_ids;
 
   for (const auto & llt : lanelets) {
-    if (llt.id() != 0) {
+    if (llt.id() != lanelet::InvalId) {
       left_bound_ids.push_back(llt.leftBound().id());
       right_bound_ids.push_back(llt.rightBound().id());
     }
@@ -96,6 +83,8 @@ lanelet::ConstLanelet combine_lanelets_with_shoulder(
       add_bound(left_shared_shoulder_it->leftBound(), lefts);
     } else if (
       // if not exist, add left bound of lanelet to lefts
+      // if the **left** of this lanelet does not match any of the **right** bounds of `lanelets`,
+      // then its left bound constitutes the left boundary of the entire merged lanelet
       std::count(right_bound_ids.begin(), right_bound_ids.end(), llt.leftBound().id()) < 1) {
       add_bound(llt.leftBound(), lefts);
     }
@@ -108,6 +97,8 @@ lanelet::ConstLanelet combine_lanelets_with_shoulder(
       add_bound(right_shared_shoulder_it->rightBound(), rights);
     } else if (
       // if not exist, add right bound of lanelet to rights
+      // if the **right** of this lanelet does not match any of the **left** bounds of `lanelets`,
+      // then its right bound constitutes the right boundary of the entire merged lanelet
       std::count(left_bound_ids.begin(), left_bound_ids.end(), llt.rightBound().id()) < 1) {
       add_bound(llt.rightBound(), rights);
     }
