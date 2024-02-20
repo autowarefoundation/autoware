@@ -339,12 +339,13 @@ Then there is the concept of soft and hard margins. Although not currently param
 
 #### Parameters for object recognition based collision check
 
-| Name                                                         | Unit | Type   | Description                                                                                              | Default value |
-| :----------------------------------------------------------- | :--- | :----- | :------------------------------------------------------------------------------------------------------- | :------------ |
-| use_object_recognition                                       | [-]  | bool   | flag whether to use object recognition for collision check                                               | true          |
-| object_recognition_collision_check_margin                    | [m]  | double | margin to calculate ego-vehicle cells from footprint.                                                    | 0.6           |
-| object_recognition_collision_check_max_extra_stopping_margin | [m]  | double | maximum value when adding longitudinal distance margin for collision check considering stopping distance | 1.0           |
-| detection_bound_offset                                       | [m]  | double | expand pull over lane with this offset to make detection area for collision check of path generation     | 15.0          |
+| Name                                                         | Unit | Type           | Description                                                                                              | Default value   |
+| :----------------------------------------------------------- | :--- | :------------- | :------------------------------------------------------------------------------------------------------- | :-------------- |
+| use_object_recognition                                       | [-]  | bool           | flag whether to use object recognition for collision check                                               | true            |
+| object_recognition_collision_check_soft_margins              | [m]  | vector[double] | soft margins for collision check when path generation                                                    | [2.0, 1.5, 1.0] |
+| object_recognition_collision_check_hard_margins              | [m]  | vector[double] | hard margins for collision check when path generation                                                    | [0.6]           |
+| object_recognition_collision_check_max_extra_stopping_margin | [m]  | double         | maximum value when adding longitudinal distance margin for collision check considering stopping distance | 1.0             |
+| detection_bound_offset                                       | [m]  | double         | expand pull over lane with this offset to make detection area for collision check of path generation     | 15.0            |
 
 ## **safety check**
 

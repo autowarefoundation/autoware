@@ -642,7 +642,7 @@ bool GoalPlannerModule::canReturnToLaneParking()
   if (
     parameters_->use_object_recognition &&
     checkObjectsCollision(
-      path, parameters_->object_recognition_collision_check_margin,
+      path, parameters_->object_recognition_collision_check_hard_margins.back(),
       /*extract_static_objects=*/false)) {
     return false;
   }
@@ -697,7 +697,37 @@ std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPri
   const std::vector<PullOverPath> & pull_over_path_candidates,
   const GoalCandidates & goal_candidates) const
 {
-  auto sorted_pull_over_path_candidates = pull_over_path_candidates;
+  // ==========================================================================================
+  // print path priority for debug
+  const auto debugPrintPathPriority =
+    [this](
+      const std::vector<PullOverPath> & sorted_pull_over_path_candidates,
+      const std::map<size_t, size_t> & goal_id_to_index,
+      const std::optional<std::map<size_t, double>> & path_id_to_margin_map_opt = std::nullopt,
+      const std::optional<std::function<bool(const PullOverPath &)>> & isSoftMarginOpt =
+        std::nullopt) {
+      std::stringstream ss;
+      ss << "\n---------------------- path priority ----------------------\n";
+      for (const auto & path : sorted_pull_over_path_candidates) {
+        // clang-format off
+        ss << "path_type: " << magic_enum::enum_name(path.type)
+           << ", path_id: " << path.id
+           << ", goal_id: " << path.goal_id
+           << ", goal_priority:" << goal_id_to_index.at(path.goal_id);
+        // clang-format on
+        if (path_id_to_margin_map_opt && isSoftMarginOpt) {
+          ss << ", margin: " << path_id_to_margin_map_opt->at(path.id)
+             << ((*isSoftMarginOpt)(path) ? " (soft)" : " (hard)");
+        }
+        ss << "\n";
+      }
+      ss << "-----------------------------------------------------------\n";
+      RCLCPP_DEBUG_STREAM(getLogger(), ss.str());
+    };
+  // ==========================================================================================
+
+  const auto & soft_margins = parameters_->object_recognition_collision_check_soft_margins;
+  const auto & hard_margins = parameters_->object_recognition_collision_check_hard_margins;
 
   // Create a map of goal_id to its index in goal_candidates
   std::map<size_t, size_t> goal_id_to_index;
@@ -706,13 +736,29 @@ std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPri
   }
 
   // Sort pull_over_path_candidates based on the order in goal_candidates
+  auto sorted_pull_over_path_candidates = pull_over_path_candidates;
   std::stable_sort(
     sorted_pull_over_path_candidates.begin(), sorted_pull_over_path_candidates.end(),
     [&goal_id_to_index](const auto & a, const auto & b) {
       return goal_id_to_index[a.goal_id] < goal_id_to_index[b.goal_id];
     });
 
+  // compare to sort pull_over_path_candidates based on the order in efficient_path_order
+  const auto comparePathTypePriority = [&](const PullOverPath & a, const PullOverPath & b) -> bool {
+    const auto & order = parameters_->efficient_path_order;
+    const auto a_pos = std::find(order.begin(), order.end(), magic_enum::enum_name(a.type));
+    const auto b_pos = std::find(order.begin(), order.end(), magic_enum::enum_name(b.type));
+    return a_pos < b_pos;
+  };
+
+  // if object recognition is enabled, sort by collision check margin
   if (parameters_->use_object_recognition) {
+    const std::vector<double> margins = std::invoke([&]() {
+      std::vector<double> combined_margins = soft_margins;
+      combined_margins.insert(combined_margins.end(), hard_margins.begin(), hard_margins.end());
+      return combined_margins;
+    });
+
     // Create a map of PullOverPath pointer to largest collision check margin
     auto calcLargestMargin = [&](const PullOverPath & pull_over_path) {
       // check has safe goal
@@ -724,16 +770,14 @@ std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPri
       if (goal_candidate_it != goal_candidates.end() && !goal_candidate_it->is_safe) {
         return 0.0;
       }
-      // calc largest margin
-      std::vector<double> scale_factors{3.0, 2.0, 1.0};
-      const double margin = parameters_->object_recognition_collision_check_margin;
+      // check path collision margin
       const auto resampled_path =
         utils::resamplePathWithSpline(pull_over_path.getParkingPath(), 0.5);
-      for (const auto & scale_factor : scale_factors) {
+      for (const auto & margin : margins) {
         if (!checkObjectsCollision(
-              resampled_path, margin * scale_factor,
+              resampled_path, margin,
               /*extract_static_objects=*/true)) {
-          return margin * scale_factor;
+          return margin;
         }
       }
       return 0.0;
@@ -754,18 +798,44 @@ std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPri
         }
         return path_id_to_margin_map[a.id] > path_id_to_margin_map[b.id];
       });
-  }
 
-  // Sort pull_over_path_candidates based on the order in efficient_path_order
-  if (parameters_->path_priority == "efficient_path") {
-    std::stable_sort(
-      sorted_pull_over_path_candidates.begin(), sorted_pull_over_path_candidates.end(),
-      [this](const auto & a, const auto & b) {
-        const auto & order = parameters_->efficient_path_order;
-        const auto a_pos = std::find(order.begin(), order.end(), magic_enum::enum_name(a.type));
-        const auto b_pos = std::find(order.begin(), order.end(), magic_enum::enum_name(b.type));
-        return a_pos < b_pos;
-      });
+    // Sort pull_over_path_candidates based on the order in efficient_path_order
+    if (parameters_->path_priority == "efficient_path") {
+      const auto isSoftMargin = [&](const PullOverPath & path) -> bool {
+        const double margin = path_id_to_margin_map[path.id];
+        return std::any_of(
+          soft_margins.begin(), soft_margins.end(),
+          [margin](const double soft_margin) { return std::abs(margin - soft_margin) < 0.01; });
+      };
+      const auto isSameHardMargin = [&](const PullOverPath & a, const PullOverPath & b) -> bool {
+        return !isSoftMargin(a) && !isSoftMargin(b) &&
+               std::abs(path_id_to_margin_map[a.id] - path_id_to_margin_map[b.id]) < 0.01;
+      };
+
+      std::stable_sort(
+        sorted_pull_over_path_candidates.begin(), sorted_pull_over_path_candidates.end(),
+        [&](const auto & a, const auto & b) {
+          // if both are soft margin or both are same hard margin, sort by planner priority
+          if ((isSoftMargin(a) && isSoftMargin(b)) || isSameHardMargin(a, b)) {
+            return comparePathTypePriority(a, b);
+          }
+          // otherwise, keep the order.
+          return false;
+        });
+
+      // debug print path priority: sorted by efficient_path_order and collision check margin
+      debugPrintPathPriority(
+        sorted_pull_over_path_candidates, goal_id_to_index, path_id_to_margin_map, isSoftMargin);
+    }
+  } else {
+    // Sort pull_over_path_candidates based on the order in efficient_path_order
+    if (parameters_->path_priority == "efficient_path") {
+      std::stable_sort(
+        sorted_pull_over_path_candidates.begin(), sorted_pull_over_path_candidates.end(),
+        [&](const auto & a, const auto & b) { return comparePathTypePriority(a, b); });
+      // debug print path priority: sorted by efficient_path_order and collision check margin
+      debugPrintPathPriority(sorted_pull_over_path_candidates, goal_id_to_index);
+    }
   }
 
   return sorted_pull_over_path_candidates;
@@ -979,7 +1049,7 @@ DecidingPathStatusWithStamp GoalPlannerModule::checkDecidingPathStatus() const
     // check current parking path collision
     const auto parking_path = utils::resamplePathWithSpline(pull_over_path->getParkingPath(), 0.5);
     const double margin =
-      parameters_->object_recognition_collision_check_margin * hysteresis_factor;
+      parameters_->object_recognition_collision_check_hard_margins.back() * hysteresis_factor;
     if (checkObjectsCollision(parking_path, margin, /*extract_static_objects=*/false)) {
       RCLCPP_DEBUG(
         getLogger(),
@@ -1115,7 +1185,7 @@ BehaviorModuleOutput GoalPlannerModule::planPullOverAsOutput()
     // select pull over path which is safe against static objects and get it's goal
     const auto path_and_goal_opt = selectPullOverPath(
       pull_over_path_candidates, goal_candidates,
-      parameters_->object_recognition_collision_check_margin);
+      parameters_->object_recognition_collision_check_hard_margins.back());
 
     // update thread_safe_data_
     if (path_and_goal_opt) {
@@ -1123,6 +1193,9 @@ BehaviorModuleOutput GoalPlannerModule::planPullOverAsOutput()
       deceleratePath(pull_over_path);
       thread_safe_data_.set(
         goal_candidates, pull_over_path_candidates, pull_over_path, modified_goal);
+      RCLCPP_DEBUG(
+        getLogger(), "selected pull over path: path_id: %ld, goal_id: %ld", pull_over_path.id,
+        modified_goal.id);
     } else {
       thread_safe_data_.set(goal_candidates, pull_over_path_candidates);
     }
@@ -1436,7 +1509,8 @@ bool GoalPlannerModule::isStuck()
     parameters_->use_object_recognition &&
     checkObjectsCollision(
       thread_safe_data_.get_pull_over_path()->getCurrentPath(),
-      /*extract_static_objects=*/false, parameters_->object_recognition_collision_check_margin)) {
+      /*extract_static_objects=*/false,
+      parameters_->object_recognition_collision_check_hard_margins.back())) {
     return true;
   }
 

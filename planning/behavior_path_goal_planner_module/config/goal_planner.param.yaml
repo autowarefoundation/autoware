@@ -35,7 +35,8 @@
       # object recognition
       object_recognition:
         use_object_recognition: false
-        object_recognition_collision_check_margin: 0.6 # this should be larger than `surround_check_distance` of surround_obstacle_checker
+        collision_check_soft_margins: [2.0, 1.5, 1.0]
+        collision_check_hard_margins: [0.6]  # this should be larger than `surround_check_distance` of surround_obstacle_checker
         object_recognition_collision_check_max_extra_stopping_margin: 1.0
         th_moving_object_velocity: 1.0
         detection_bound_offset: 15.0

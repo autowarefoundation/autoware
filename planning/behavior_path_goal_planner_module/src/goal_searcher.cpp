@@ -247,7 +247,7 @@ void GoalSearcher::countObjectsToAvoid(
         transformVector(vehicle_footprint_, tier4_autoware_utils::pose2transform(p.point.pose));
       const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object);
       const double distance = boost::geometry::distance(obj_polygon, transformed_vehicle_footprint);
-      if (distance > parameters_.object_recognition_collision_check_margin) {
+      if (distance > parameters_.object_recognition_collision_check_hard_margins.back()) {
         continue;
       }
       const Pose & object_pose = object.kinematics.initial_pose_with_covariance.pose;
@@ -302,7 +302,7 @@ void GoalSearcher::update(GoalCandidates & goal_candidates) const
     constexpr bool filter_inside = true;
     const auto target_objects = goal_planner_utils::filterObjectsByLateralDistance(
       goal_pose, planner_data_->parameters.vehicle_width, pull_over_lane_stop_objects,
-      parameters_.object_recognition_collision_check_margin, filter_inside);
+      parameters_.object_recognition_collision_check_hard_margins.back(), filter_inside);
     if (checkCollisionWithLongitudinalDistance(goal_pose, target_objects)) {
       goal_candidate.is_safe = false;
       continue;
@@ -330,7 +330,8 @@ bool GoalSearcher::isSafeGoalWithMarginScaleFactor(
       parameters_.forward_goal_search_length, parameters_.detection_bound_offset,
       *(planner_data_->dynamic_object), parameters_.th_moving_object_velocity);
 
-  const double margin = parameters_.object_recognition_collision_check_margin * margin_scale_factor;
+  const double margin =
+    parameters_.object_recognition_collision_check_hard_margins.back() * margin_scale_factor;
 
   if (utils::checkCollisionBetweenFootprintAndObjects(
         vehicle_footprint_, goal_pose, pull_over_lane_stop_objects, margin)) {
@@ -364,7 +365,7 @@ bool GoalSearcher::checkCollision(const Pose & pose, const PredictedObjects & ob
   if (parameters_.use_object_recognition) {
     if (utils::checkCollisionBetweenFootprintAndObjects(
           vehicle_footprint_, pose, objects,
-          parameters_.object_recognition_collision_check_margin)) {
+          parameters_.object_recognition_collision_check_hard_margins.back())) {
       return true;
     }
   }

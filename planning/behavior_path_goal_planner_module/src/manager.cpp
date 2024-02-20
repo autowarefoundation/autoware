@@ -95,8 +95,10 @@ void GoalPlannerModuleManager::init(rclcpp::Node * node)
   {
     const std::string ns = base_ns + "object_recognition.";
     p.use_object_recognition = node->declare_parameter<bool>(ns + "use_object_recognition");
-    p.object_recognition_collision_check_margin =
-      node->declare_parameter<double>(ns + "object_recognition_collision_check_margin");
+    p.object_recognition_collision_check_soft_margins =
+      node->declare_parameter<std::vector<double>>(ns + "collision_check_soft_margins");
+    p.object_recognition_collision_check_hard_margins =
+      node->declare_parameter<std::vector<double>>(ns + "collision_check_hard_margins");
     p.object_recognition_collision_check_max_extra_stopping_margin =
       node->declare_parameter<double>(
         ns + "object_recognition_collision_check_max_extra_stopping_margin");
@@ -106,6 +108,18 @@ void GoalPlannerModuleManager::init(rclcpp::Node * node)
       node->declare_parameter<double>(ns + "outer_road_detection_offset");
     p.inner_road_detection_offset =
       node->declare_parameter<double>(ns + "inner_road_detection_offset");
+
+    // validate object recognition collision check margins
+    if (
+      p.object_recognition_collision_check_soft_margins.empty() ||
+      p.object_recognition_collision_check_hard_margins.empty()) {
+      RCLCPP_FATAL_STREAM(
+        node->get_logger().get_child(name()),
+        "object_recognition.collision_check_soft_margins and "
+          << "object_recognition.collision_check_hard_margins must not be empty. "
+          << "Terminating the program...");
+      exit(EXIT_FAILURE);
+    }
   }
 
   // pull over general params
