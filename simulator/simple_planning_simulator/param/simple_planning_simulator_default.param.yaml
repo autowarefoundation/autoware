@@ -17,6 +17,7 @@
     steer_dead_band: 0.0
     x_stddev: 0.0001 # x standard deviation for dummy covariance in map coordinate
     y_stddev: 0.0001 # y standard deviation for dummy covariance in map coordinate
+    enable_road_slope_simulation: true # if true, slopes in the lanelet map are used to apply an extra acceleration to the ego vehicle
     # acceleration_map_path: $(var vehicle_model_pkg)/config/acceleration_map.csv  # only `DELAY_STEER_MAP_ACC_GEARED` needs this parameter
 
 # Note: vehicle characteristics parameters (e.g. wheelbase) are defined in a separate file.
