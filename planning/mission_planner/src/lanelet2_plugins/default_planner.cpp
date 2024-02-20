@@ -212,11 +212,11 @@ PlannerPlugin::MarkerArray DefaultPlanner::visualize(const LaneletRoute & route)
   const std_msgs::msg::ColorRGBA cl_route =
     tier4_autoware_utils::createMarkerColor(0.8, 0.99, 0.8, 0.15);
   const std_msgs::msg::ColorRGBA cl_ll_borders =
-    tier4_autoware_utils::createMarkerColor(0.2, 0.4, 0.4, 0.05);
+    tier4_autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999);
   const std_msgs::msg::ColorRGBA cl_end =
     tier4_autoware_utils::createMarkerColor(0.2, 0.2, 0.4, 0.05);
   const std_msgs::msg::ColorRGBA cl_goal =
-    tier4_autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999);
+    tier4_autoware_utils::createMarkerColor(0.2, 0.4, 0.4, 0.05);
 
   visualization_msgs::msg::MarkerArray route_marker_array;
   insert_marker_array(
