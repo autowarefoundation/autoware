@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="hazard_status_converter" exec="converter" name="hazard_status_converter"/>
+</launch>
