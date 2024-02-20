@@ -38,6 +38,7 @@
       backward_path_update_duration: 3.0
       ignore_distance_from_lane_end: 15.0
       # turns signal
+      prepare_time_before_start: 0.0
       th_turn_signal_on_lateral_offset: 1.0
       intersection_search_length: 30.0
       length_ratio_for_turn_signal_deactivation_near_intersection: 0.5

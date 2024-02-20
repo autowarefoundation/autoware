@@ -59,6 +59,7 @@ struct StartPlannerParameters
   double th_arrived_distance{0.0};
   double th_stopped_velocity{0.0};
   double th_stopped_time{0.0};
+  double prepare_time_before_start{0.0};
   double th_turn_signal_on_lateral_offset{0.0};
   double th_distance_to_middle_of_the_road{0.0};
   double intersection_search_length{0.0};

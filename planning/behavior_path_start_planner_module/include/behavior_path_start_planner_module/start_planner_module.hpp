@@ -70,6 +70,8 @@ struct PullOutStatus
   bool prev_is_safe_dynamic_objects{false};
   std::shared_ptr<PathWithLaneId> prev_stop_path_after_approval{nullptr};
   std::optional<Pose> stop_pose{std::nullopt};
+  //! record the first time when the state changed from !isActivated() to isActivated()
+  std::optional<rclcpp::Time> first_approved_time{std::nullopt};
 
   PullOutStatus() {}
 };
@@ -261,6 +263,7 @@ private:
     const lanelet::ConstLanelets & pull_out_lanes, const geometry_msgs::msg::Point & current_pose,
     const double velocity_threshold, const double object_check_backward_distance,
     const double object_check_forward_distance) const;
+  bool needToPrepareBlinkerBeforeStart() const;
   bool hasFinishedPullOut() const;
   bool hasFinishedBackwardDriving() const;
   bool hasCollisionWithDynamicObjects() const;

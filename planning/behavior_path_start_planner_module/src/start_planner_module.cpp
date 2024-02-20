@@ -117,7 +117,7 @@ void StartPlannerModule::onFreespacePlannerTimer()
 BehaviorModuleOutput StartPlannerModule::run()
 {
   updateData();
-  if (!isActivated()) {
+  if (!isActivated() || needToPrepareBlinkerBeforeStart()) {
     return planWaitingApproval();
   }
 
@@ -174,6 +174,10 @@ void StartPlannerModule::updateData()
   if (receivedNewRoute()) {
     resetStatus();
     DEBUG_PRINT("StartPlannerModule::updateData() received new route, reset status");
+  }
+
+  if (!status_.first_approved_time && isActivated()) {
+    status_.first_approved_time = clock_->now();
   }
 
   if (hasFinishedBackwardDriving()) {
@@ -1076,6 +1080,16 @@ bool StartPlannerModule::hasFinishedPullOut() const
   const bool has_finished = arclength_current.length - arclength_pull_out_end.length > offset;
 
   return has_finished;
+}
+
+bool StartPlannerModule::needToPrepareBlinkerBeforeStart() const
+{
+  if (!status_.first_approved_time) {
+    return true;
+  }
+  const auto first_approved_time = status_.first_approved_time.value();
+  const double elapsed = rclcpp::Duration(clock_->now() - first_approved_time).seconds();
+  return elapsed < parameters_->prepare_time_before_start;
 }
 
 bool StartPlannerModule::isStuck()

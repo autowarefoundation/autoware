@@ -36,6 +36,7 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
   p.th_arrived_distance = node->declare_parameter<double>(ns + "th_arrived_distance");
   p.th_stopped_velocity = node->declare_parameter<double>(ns + "th_stopped_velocity");
   p.th_stopped_time = node->declare_parameter<double>(ns + "th_stopped_time");
+  p.prepare_time_before_start = node->declare_parameter<double>(ns + "prepare_time_before_start");
   p.th_turn_signal_on_lateral_offset =
     node->declare_parameter<double>(ns + "th_turn_signal_on_lateral_offset");
   p.th_distance_to_middle_of_the_road =
