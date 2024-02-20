@@ -48,6 +48,11 @@ LidarApolloInstanceSegmentation::LidarApolloInstanceSegmentation(rclcpp::Node * 
     return;
   }
 
+  if (node_->declare_parameter("build_only", false)) {
+    RCLCPP_INFO(node_->get_logger(), "TensorRT engine is built and shutdown node.");
+    rclcpp::shutdown();
+  }
+
   // GPU memory allocation
   const auto input_dims = trt_common_->getBindingDimensions(0);
   const auto input_size =

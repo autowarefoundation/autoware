@@ -47,6 +47,7 @@ None
 | `use_constant_feature`  | bool   | false                | The flag to use direction and distance feature of pointcloud.                      |
 | `target_frame`          | string | "base_link"          | Pointcloud data is transformed into this frame.                                    |
 | `z_offset`              | int    | 2                    | z offset from target frame. [m]                                                    |
+| `build_only`            | bool   | `false`              | shutdown the node after TensorRT engine file is built                              |
 
 ## Assumptions / Known limits
 

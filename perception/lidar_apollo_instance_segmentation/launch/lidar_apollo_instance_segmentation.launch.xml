@@ -2,6 +2,7 @@
   <arg name="input/pointcloud" default="/sensing/lidar/pointcloud"/>
   <arg name="model" default="model_128"/>
   <arg name="output/objects" default="labeled_clusters"/>
+  <arg name="build_only" default="false" description="shutdown node after TensorRT engine file is built"/>
 
   <arg if="$(eval &quot;'$(var model)'=='model_16'&quot;)" name="base_name" default="vlp-16"/>
   <arg if="$(eval &quot;'$(var model)'=='model_64'&quot;)" name="base_name" default="hdl-64"/>
@@ -24,5 +25,8 @@
     <param name="precision" value="$(var precision)"/>
     <param name="target_frame" value="$(var target_frame)"/>
     <param from="$(var param_file)"/>
+
+    <!-- This parameter shall NOT be included in param file. -->
+    <param name="build_only" value="$(var build_only)"/>
   </node>
 </launch>
