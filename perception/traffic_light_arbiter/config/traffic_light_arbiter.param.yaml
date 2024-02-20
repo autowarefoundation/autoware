@@ -3,3 +3,4 @@
     external_time_tolerance: 5.0
     perception_time_tolerance: 1.0
     external_priority: false
+    enable_signal_matching: false

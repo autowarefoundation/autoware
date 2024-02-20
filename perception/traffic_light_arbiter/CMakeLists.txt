@@ -6,6 +6,7 @@ autoware_package()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/traffic_light_arbiter.cpp
+  src/signal_match_validator.cpp
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME}
