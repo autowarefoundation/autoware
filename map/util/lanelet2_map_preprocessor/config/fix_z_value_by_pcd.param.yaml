@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    llt_map_path: $(var llt_map_path)
+    pcd_map_path: $(var pcd_map_path)
+    llt_output_path: $(var llt_output_path)

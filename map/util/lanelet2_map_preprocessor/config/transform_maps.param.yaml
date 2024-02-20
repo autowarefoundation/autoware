@@ -1,0 +1,12 @@
+/**:
+  ros__parameters:
+    llt_map_path: $(var llt_map_path)
+    pcd_map_path: $(var pcd_map_path)
+    llt_output_path: $(var llt_output_path)
+    pcd_output_path: $(var pcd_output_path)
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0

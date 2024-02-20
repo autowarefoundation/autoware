@@ -107,12 +107,12 @@ int main(int argc, char * argv[])
   const auto pcd_map_path = node->declare_parameter<std::string>("pcd_map_path");
   const auto llt_output_path = node->declare_parameter<std::string>("llt_output_path");
   const auto pcd_output_path = node->declare_parameter<std::string>("pcd_output_path");
-  const auto x = node->declare_parameter<double>("x", 0.0);
-  const auto y = node->declare_parameter<double>("y", 0.0);
-  const auto z = node->declare_parameter<double>("z", 0.0);
-  const auto roll = node->declare_parameter<double>("roll", 0.0);
-  const auto pitch = node->declare_parameter<double>("pitch", 0.0);
-  const auto yaw = node->declare_parameter<double>("yaw", 0.0);
+  const auto x = node->declare_parameter<double>("x");
+  const auto y = node->declare_parameter<double>("y");
+  const auto z = node->declare_parameter<double>("z");
+  const auto roll = node->declare_parameter<double>("roll");
+  const auto pitch = node->declare_parameter<double>("pitch");
+  const auto yaw = node->declare_parameter<double>("yaw");
 
   std::cout << "transforming maps with following parameters" << std::endl
             << "x " << x << std::endl

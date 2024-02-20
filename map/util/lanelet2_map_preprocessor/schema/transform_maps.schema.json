@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Transforming Maps",
+  "type": "object",
+  "definitions": {
+    "transform_maps": {
+      "type": "object",
+      "properties": {
+        "llt_map_path": {
+          "type": "string",
+          "description": "Path pointing to the input lanelet2 file",
+          "default": ""
+        },
+        "pcd_map_path": {
+          "type": "string",
+          "description": "Path pointing to the input point cloud file",
+          "default": ""
+        },
+        "llt_output_path": {
+          "type": "string",
+          "description": "Path pointing to the output lanelet2 file",
+          "default": ""
+        },
+        "pcd_output_path": {
+          "type": "string",
+          "description": "Path pointing to the output point cloud file",
+          "default": ""
+        },
+        "x": {
+          "type": "number",
+          "default": 0.0,
+          "description": "x factor of Translation vector for transforming maps [m]"
+        },
+        "y": {
+          "type": "number",
+          "default": 0.0,
+          "description": "y factor of Translation vector for transforming maps [m]"
+        },
+        "z": {
+          "type": "number",
+          "default": 0.0,
+          "description": "z factor of Translation vector for transforming maps [m]"
+        },
+        "roll": {
+          "type": "number",
+          "default": 0.0,
+          "description": "roll factor of Rotation vector for transforming maps [rad]"
+        },
+        "pitch": {
+          "type": "number",
+          "default": 0.0,
+          "description": "pitch factor of Rotation vector for transforming maps [rad]"
+        },
+        "yaw": {
+          "type": "number",
+          "default": 0.0,
+          "description": "yaw factor of Rotation vector for transforming maps [rad]"
+        }
+      },
+      "required": ["x", "y", "z", "roll", "pitch", "yaw"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/transform_maps"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
