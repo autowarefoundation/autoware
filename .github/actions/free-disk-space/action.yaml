@@ -12,25 +12,18 @@ runs:
         fi
       shell: bash
 
-    # https://github.community/t/bug-strange-no-space-left-on-device-ioexceptions-on-github-runners/17616
-    - name: Free disk space
-      run: |
-        df -h
+    - name: Free Disk Space (Ubuntu)
+      uses: jlumbroso/free-disk-space@main
+      with:
+        # this might remove tools that are actually needed,
+        # if set to "true" but frees about 6 GB
+        tool-cache: true
 
-        sudo apt-get -y purge \
-          dotnet* \
-          ghc* \
-          php* \
-          || true
-        sudo apt-get -y autoremove
-        sudo apt-get -y autoclean
-
-        sudo rm -rf \
-          /usr/local/lib/android \
-          /usr/share/dotnet/ \
-          /opt/ghc
-
-        docker rmi $(docker image ls -aq) || true
-
-        df -h
-      shell: bash
+        # all of these default to true, but feel free to set to
+        # "false" if necessary for your workflow
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: false

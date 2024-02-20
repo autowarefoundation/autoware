@@ -12,36 +12,54 @@ jobs:
   build-main-self-hosted:
     needs: load-env
     runs-on: [self-hosted, linux, ARM64]
-    container: ${{ needs.load-env.outputs.base-image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name:
+          - no-cuda
+          - cuda
+        include:
+          - name: no-cuda
+            base_image_env: base_image
+            setup-args: --no-nvidia
+            additional-tag-suffix: ""
+          - name: cuda
+            base_image_env: cuda_base_image
+            setup-args: --no-cuda-drivers
+            additional-tag-suffix: -cuda
     steps:
+      # https://github.com/actions/checkout/issues/211
+      - name: Change permission of workspace
+        run: |
+          sudo chown -R $USER:$USER ${{ github.workspace }}
+
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Run setup script
-        run: |
-          ./setup-dev-env.sh -y
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
 
-      - name: Set git config
-        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+      - name: Load env
+        run: |
+          cat amd64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
+          if [ "$(uname -m)" = "aarch64" ]; then
+            cat arm64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
+          fi
+
+      - name: Build 'autoware-universe'
+        uses: ./.github/actions/docker-build-and-push
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          bake-target: autoware-universe
+          build-args: |
+            *.platform=linux/amd64
+            *.args.ROS_DISTRO=${{ env.rosdistro }}
+            *.args.BASE_IMAGE=${{ env[format('{0}', matrix.base_image_env)] }}
+            *.args.PREBUILT_BASE_IMAGE=${{ env.prebuilt_base_image }}
+            *.args.SETUP_ARGS=${{ matrix.setup-args }}
+          tag-prefix: ${{ env.rosdistro }}-
+          tag-suffix: ${{ matrix.additional-tag-suffix }}-amd64
+          allow-push: false
 
-      - name: Run vcs import
+      - name: Show disk space
         run: |
-          mkdir src
-          vcs import src < autoware.repos
-
-      - name: Run vcs export
-        run: |
-          vcs export --exact src || true
-
-      - name: Run rosdep install
-        run: |
-          sudo apt-get -y update
-          rosdep update
-          DEBIAN_FRONTEND=noninteractive rosdep install -y --from-paths src --ignore-src --rosdistro ${{ needs.load-env.outputs.rosdistro }}
-
-      - name: Build
-        run: |
-          . /opt/ros/${{ needs.load-env.outputs.rosdistro }}/setup.sh
-          colcon build --event-handlers console_cohesion+ --cmake-args -DCMAKE_BUILD_TYPE=Release
+          df -h
