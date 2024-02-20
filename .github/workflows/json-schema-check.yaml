@@ -5,6 +5,7 @@ on:
     paths:
       - "**/schema/*.schema.json"
       - "**/config/*.param.yaml"
+  workflow_dispatch:
 
 jobs:
   json-schema-check:
