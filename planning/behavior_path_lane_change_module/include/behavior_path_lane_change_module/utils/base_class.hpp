@@ -96,6 +96,9 @@ public:
 
   virtual PathSafetyStatus isApprovedPathSafe() const = 0;
 
+  virtual PathSafetyStatus evaluateApprovedPathWithUnsafeHysteresis(
+    PathSafetyStatus approve_path_safety_status) = 0;
+
   virtual bool isNearEndOfCurrentLanes(
     const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes,
     const double threshold) const = 0;
@@ -240,6 +243,7 @@ protected:
 
   PathWithLaneId prev_approved_path_{};
 
+  int unsafe_hysteresis_count_{0};
   bool is_abort_path_approved_{false};
   bool is_abort_approval_requested_{false};
   bool is_activated_{false};

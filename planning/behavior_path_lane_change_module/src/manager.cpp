@@ -215,6 +215,8 @@ void LaneChangeModuleManager::initParams(rclcpp::Node * node)
     getOrDeclareParameter<double>(*node, parameter("cancel.max_lateral_jerk"));
   p.cancel.overhang_tolerance =
     getOrDeclareParameter<double>(*node, parameter("cancel.overhang_tolerance"));
+  p.cancel.unsafe_hysteresis_threshold =
+    getOrDeclareParameter<int>(*node, parameter("cancel.unsafe_hysteresis_threshold"));
 
   p.finish_judge_lateral_threshold =
     getOrDeclareParameter<double>(*node, parameter("finish_judge_lateral_threshold"));
@@ -376,6 +378,8 @@ void LaneChangeModuleManager::updateModuleParams(const std::vector<rclcpp::Param
     updateParam<double>(parameters, ns + "duration", p->cancel.duration);
     updateParam<double>(parameters, ns + "max_lateral_jerk", p->cancel.max_lateral_jerk);
     updateParam<double>(parameters, ns + "overhang_tolerance", p->cancel.overhang_tolerance);
+    updateParam<int>(
+      parameters, ns + "unsafe_hysteresis_threshold", p->cancel.unsafe_hysteresis_threshold);
   }
   std::for_each(observers_.begin(), observers_.end(), [&p](const auto & observer) {
     if (!observer.expired()) observer.lock()->updateModuleParams(p);
