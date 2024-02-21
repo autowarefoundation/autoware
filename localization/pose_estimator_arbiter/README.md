@@ -246,16 +246,16 @@ This table's usage is described from three perspectives:
 |           yabloc            | yabloc                        | false         | true             | true           | /sensing/gnss/pose_with_covariance           |
 |           eagleye           | vehicle needs run for a while | false         | false            | true           | /localization/pose_estimator/eagleye/...     |
 |            artag            | 2D Pose Estimate (RViz)       | false         | false            | true           | /sensing/gnss/pose_with_covariance           |
-|         ndt, yabloc         | ndt                           | ndt           | true             | true           | /sensing/gnss/pose_with_covariance           |
-|        ndt, eagleye         | ndt                           | ndt           | false            | true           | /sensing/gnss/pose_with_covariance           |
-|         ndt, artag          | ndt                           | ndt           | false            | true           | /sensing/gnss/pose_with_covariance           |
+|         ndt, yabloc         | ndt                           | true          | true             | true           | /sensing/gnss/pose_with_covariance           |
+|        ndt, eagleye         | ndt                           | true          | false            | true           | /sensing/gnss/pose_with_covariance           |
+|         ndt, artag          | ndt                           | true          | false            | true           | /sensing/gnss/pose_with_covariance           |
 |       yabloc, eagleye       | yabloc                        | false         | true             | true           | /sensing/gnss/pose_with_covariance           |
 |        yabloc, artag        | yabloc                        | false         | true             | true           | /sensing/gnss/pose_with_covariance           |
 |       eagleye, artag        | vehicle needs run for a while | false         | false            | true           | /localization/pose_estimator/eagleye/pose... |
-|    ndt, yabloc, eagleye     | ndt                           | ndt           | true             | true           | /sensing/gnss/pose_with_covariance           |
-|     ndt, eagleye, artag     | ndt                           | ndt           | false            | true           | /sensing/gnss/pose_with_covariance           |
-|   yabloc, eagleye, artag    | yabloc                        | ndt           | true             | true           | /sensing/gnss/pose_with_covariance           |
-| ndt, yabloc, eagleye, artag | ndt                           | ndt           | true             | true           | /sensing/gnss/pose_with_covariance           |
+|    ndt, yabloc, eagleye     | ndt                           | true          | true             | true           | /sensing/gnss/pose_with_covariance           |
+|     ndt, eagleye, artag     | ndt                           | true          | false            | true           | /sensing/gnss/pose_with_covariance           |
+|   yabloc, eagleye, artag    | yabloc                        | false         | true             | true           | /sensing/gnss/pose_with_covariance           |
+| ndt, yabloc, eagleye, artag | ndt                           | true          | true             | true           | /sensing/gnss/pose_with_covariance           |
 
 </details>
 
