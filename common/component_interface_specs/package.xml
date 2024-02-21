@@ -9,13 +9,7 @@
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
-  <buildtool_depend>ament_cmake_core</buildtool_depend>
-  <buildtool_depend>ament_cmake_export_dependencies</buildtool_depend>
-  <buildtool_depend>ament_cmake_test</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
-
-  <buildtool_export_depend>ament_cmake_core</buildtool_export_depend>
-  <buildtool_export_depend>ament_cmake_test</buildtool_export_depend>
 
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_auto_perception_msgs</depend>
@@ -28,9 +22,11 @@
   <depend>rosidl_runtime_cpp</depend>
   <depend>tier4_control_msgs</depend>
   <depend>tier4_map_msgs</depend>
+  <depend>tier4_planning_msgs</depend>
   <depend>tier4_system_msgs</depend>
   <depend>tier4_vehicle_msgs</depend>
-  <test_depend>ament_cmake_ros</test_depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
 

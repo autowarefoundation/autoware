@@ -27,26 +27,8 @@ TEST(planning, interface)
   }
 
   {
-    using planning_interface::Route;
-    Route route;
-    size_t depth = 1;
-    EXPECT_EQ(route.depth, depth);
-    EXPECT_EQ(route.reliability, RMW_QOS_POLICY_RELIABILITY_RELIABLE);
-    EXPECT_EQ(route.durability, RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
-  }
-
-  {
-    using planning_interface::NormalRoute;
-    NormalRoute route;
-    size_t depth = 1;
-    EXPECT_EQ(route.depth, depth);
-    EXPECT_EQ(route.reliability, RMW_QOS_POLICY_RELIABILITY_RELIABLE);
-    EXPECT_EQ(route.durability, RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
-  }
-
-  {
-    using planning_interface::MrmRoute;
-    MrmRoute route;
+    using planning_interface::LaneletRoute;
+    LaneletRoute route;
     size_t depth = 1;
     EXPECT_EQ(route.depth, depth);
     EXPECT_EQ(route.reliability, RMW_QOS_POLICY_RELIABILITY_RELIABLE);

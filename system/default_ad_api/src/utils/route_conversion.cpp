@@ -14,6 +14,7 @@
 
 #include "route_conversion.hpp"
 
+#include <memory>
 #include <vector>
 
 namespace
@@ -48,6 +49,15 @@ RoutePrimitive convert(const LaneletPrimitive & in)
 }
 
 template <>
+LaneletPrimitive convert(const RoutePrimitive & in)
+{
+  LaneletPrimitive out;
+  out.id = in.id;
+  out.primitive_type = in.type;
+  return out;
+}
+
+template <>
 RouteSegment convert(const LaneletSegment & in)
 {
   RouteSegment api;
@@ -60,6 +70,18 @@ RouteSegment convert(const LaneletSegment & in)
     }
   }
   return api;
+}
+
+template <>
+LaneletSegment convert(const RouteSegment & in)
+{
+  LaneletSegment out;
+  out.preferred_primitive = convert<LaneletPrimitive>(in.preferred);
+  out.primitives.push_back(out.preferred_primitive);
+  for (const auto & primitive : in.alternatives) {
+    out.primitives.push_back(convert<LaneletPrimitive>(primitive));
+  }
+  return out;
 }
 
 }  // namespace
@@ -84,6 +106,67 @@ ExternalRoute convert_route(const InternalRoute & internal)
   ExternalRoute external;
   external.header = internal.header;
   external.data.push_back(data);
+  return external;
+}
+
+ExternalState convert_state(const InternalState & internal)
+{
+  // clang-format off
+  const auto convert = [](InternalState::_state_type state) {
+    switch(state) {
+      // TODO(Takagi, Isamu): Add adapi state.
+      case InternalState::INITIALIZING: return ExternalState::UNSET;
+      case InternalState::UNSET:        return ExternalState::UNSET;
+      case InternalState::ROUTING:      return ExternalState::UNSET;
+      case InternalState::SET:          return ExternalState::SET;
+      case InternalState::REROUTING:    return ExternalState::CHANGING;
+      case InternalState::ARRIVED:      return ExternalState::ARRIVED;
+      case InternalState::ABORTED:      return ExternalState::SET;
+      case InternalState::INTERRUPTED:  return ExternalState::SET;
+      default:                          return ExternalState::UNKNOWN;
+    }
+  };
+  // clang-format on
+
+  ExternalState external;
+  external.stamp = internal.stamp;
+  external.state = convert(internal.state);
+  return external;
+}
+
+InternalClearRequest convert_request(const ExternalClearRequest &)
+{
+  auto internal = std::make_shared<InternalClearRequest::element_type>();
+  return internal;
+}
+
+InternalLaneletRequest convert_request(const ExternalLaneletRequest & external)
+{
+  auto internal = std::make_shared<InternalLaneletRequest::element_type>();
+  internal->header = external->header;
+  internal->goal_pose = external->goal;
+  internal->segments = convert_vector<LaneletSegment>(external->segments);
+  internal->allow_modification = external->option.allow_goal_modification;
+  return internal;
+}
+
+InternalWaypointRequest convert_request(const ExternalWaypointRequest & external)
+{
+  auto internal = std::make_shared<InternalWaypointRequest::element_type>();
+  internal->header = external->header;
+  internal->goal_pose = external->goal;
+  internal->waypoints = external->waypoints;
+  internal->allow_modification = external->option.allow_goal_modification;
+  return internal;
+}
+
+ExternalResponse convert_response(const InternalResponse & internal)
+{
+  // TODO(Takagi, Isamu): check error code correspondence
+  ExternalResponse external;
+  external.success = internal.success;
+  external.code = internal.code;
+  external.message = internal.message;
   return external;
 }
 

@@ -17,77 +17,48 @@
 
 #include <rclcpp/qos.hpp>
 
-#include <autoware_adapi_v1_msgs/msg/route_state.hpp>
-#include <autoware_adapi_v1_msgs/srv/clear_route.hpp>
-#include <autoware_adapi_v1_msgs/srv/set_route.hpp>
-#include <autoware_adapi_v1_msgs/srv/set_route_points.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
+#include <tier4_planning_msgs/msg/route_state.hpp>
+#include <tier4_planning_msgs/srv/clear_route.hpp>
+#include <tier4_planning_msgs/srv/set_lanelet_route.hpp>
+#include <tier4_planning_msgs/srv/set_waypoint_route.hpp>
 
 namespace planning_interface
 {
 
-struct SetRoutePoints
+struct SetLaneletRoute
 {
-  using Service = autoware_adapi_v1_msgs::srv::SetRoutePoints;
-  static constexpr char name[] = "/planning/mission_planning/set_route_points";
+  using Service = tier4_planning_msgs::srv::SetLaneletRoute;
+  static constexpr char name[] = "/planning/mission_planning/route_selector/main/set_lanelet_route";
 };
 
-struct SetRoute
+struct SetWaypointRoute
 {
-  using Service = autoware_adapi_v1_msgs::srv::SetRoute;
-  static constexpr char name[] = "/planning/mission_planning/set_route";
-};
-
-struct ChangeRoutePoints
-{
-  using Service = autoware_adapi_v1_msgs::srv::SetRoutePoints;
-  static constexpr char name[] = "/planning/mission_planning/change_route_points";
-};
-
-struct ChangeRoute
-{
-  using Service = autoware_adapi_v1_msgs::srv::SetRoute;
-  static constexpr char name[] = "/planning/mission_planning/change_route";
+  using Service = tier4_planning_msgs::srv::SetWaypointRoute;
+  static constexpr char name[] =
+    "/planning/mission_planning/route_selector/main/set_waypoint_route";
 };
 
 struct ClearRoute
 {
-  using Service = autoware_adapi_v1_msgs::srv::ClearRoute;
-  static constexpr char name[] = "/planning/mission_planning/clear_route";
+  using Service = tier4_planning_msgs::srv::ClearRoute;
+  static constexpr char name[] = "/planning/mission_planning/route_selector/main/clear_route";
 };
 
 struct RouteState
 {
-  using Message = autoware_adapi_v1_msgs::msg::RouteState;
-  static constexpr char name[] = "/planning/mission_planning/route_state";
+  using Message = tier4_planning_msgs::msg::RouteState;
+  static constexpr char name[] = "/planning/mission_planning/route_selector/main/state";
   static constexpr size_t depth = 1;
   static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
   static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
 };
 
-struct Route
+struct LaneletRoute
 {
   using Message = autoware_planning_msgs::msg::LaneletRoute;
-  static constexpr char name[] = "/planning/mission_planning/route";
-  static constexpr size_t depth = 1;
-  static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
-  static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
-};
-
-struct NormalRoute
-{
-  using Message = autoware_planning_msgs::msg::LaneletRoute;
-  static constexpr char name[] = "/planning/mission_planning/normal_route";
-  static constexpr size_t depth = 1;
-  static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
-  static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
-};
-
-struct MrmRoute
-{
-  using Message = autoware_planning_msgs::msg::LaneletRoute;
-  static constexpr char name[] = "/planning/mission_planning/mrm_route";
+  static constexpr char name[] = "/planning/mission_planning/route_selector/main/route";
   static constexpr size_t depth = 1;
   static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
   static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
