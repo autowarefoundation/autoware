@@ -211,7 +211,7 @@ std::vector<visualization_msgs::msg::Marker::SharedPtr> PredictedObjectsDisplay:
       auto marker_ptr = yaw_rate_marker.value();
       marker_ptr->header = msg->header;
       marker_ptr->id = uuid_to_marker_id(object.object_id);
-      add_marker(marker_ptr);
+      markers.push_back(marker_ptr);
     }
 
     // Get marker for twist covariance

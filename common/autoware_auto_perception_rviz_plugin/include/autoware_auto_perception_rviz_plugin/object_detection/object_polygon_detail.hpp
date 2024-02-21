@@ -186,11 +186,19 @@ AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC void calc_bounding_box_direction_lin
   const autoware_auto_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points);
 
+AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC void calc_bounding_box_orientation_line_list(
+  const autoware_auto_perception_msgs::msg::Shape & shape,
+  std::vector<geometry_msgs::msg::Point> & points);
+
 AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC void calc_2d_bounding_box_bottom_line_list(
   const autoware_auto_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points);
 
 AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC void calc_2d_bounding_box_bottom_direction_line_list(
+  const autoware_auto_perception_msgs::msg::Shape & shape,
+  std::vector<geometry_msgs::msg::Point> & points);
+
+AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC void calc_2d_bounding_box_bottom_orientation_line_list(
   const autoware_auto_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points);
 

@@ -57,7 +57,7 @@ visualization_msgs::msg::Marker::SharedPtr get_path_confidence_marker_ptr(
   marker_ptr->type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
   marker_ptr->ns = std::string("path confidence");
   marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->scale.x = 0.5;
   marker_ptr->scale.y = 0.5;
   marker_ptr->scale.z = 0.5;
@@ -78,14 +78,14 @@ visualization_msgs::msg::Marker::SharedPtr get_predicted_path_marker_ptr(
   marker_ptr->type = visualization_msgs::msg::Marker::LINE_LIST;
   marker_ptr->ns = std::string("path");
   marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->pose = initPose();
   marker_ptr->color = predicted_path_color;
   marker_ptr->color.a = 0.6;
   marker_ptr->scale.x = 0.015;
   calc_path_line_list(predicted_path, marker_ptr->points, is_simple);
   for (size_t k = 0; k < marker_ptr->points.size(); ++k) {
-    marker_ptr->points.at(k).z -= shape.dimensions.z / 2.0;
+    marker_ptr->points.at(k).z -= shape.dimensions.z * 0.5;
   }
   return marker_ptr;
 }
@@ -112,7 +112,7 @@ visualization_msgs::msg::Marker::SharedPtr get_twist_marker_ptr(
   point.z = twist_with_covariance.twist.linear.z;
   marker_ptr->points.push_back(point);
 
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->color.a = 0.999;
   marker_ptr->color.r = 1.0;
   marker_ptr->color.g = 0.0;
@@ -160,19 +160,19 @@ visualization_msgs::msg::Marker::SharedPtr get_twist_covariance_marker_ptr(
   // ellipse orientation
   marker_ptr->pose.orientation.x = 0.0;
   marker_ptr->pose.orientation.y = 0.0;
-  marker_ptr->pose.orientation.z = std::sin(phi / 2.0);
-  marker_ptr->pose.orientation.w = std::cos(phi / 2.0);
+  marker_ptr->pose.orientation.z = std::sin(phi * 0.5);
+  marker_ptr->pose.orientation.w = std::cos(phi * 0.5);
 
   // ellipse size
   marker_ptr->scale.x = sigma1 * confidence_interval_coefficient;
   marker_ptr->scale.y = sigma2 * confidence_interval_coefficient;
   marker_ptr->scale.z = 0.05;
 
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->color.a = alpha;
-  marker_ptr->color.r = 1.0;
-  marker_ptr->color.g = 0.2;
-  marker_ptr->color.b = 0.4;
+  marker_ptr->color.r = 0.2;
+  marker_ptr->color.g = 0.4;
+  marker_ptr->color.b = 0.9;
 
   return marker_ptr;
 }
@@ -213,7 +213,7 @@ visualization_msgs::msg::Marker::SharedPtr get_yaw_rate_marker_ptr(
   point.z = 0;
   marker_ptr->points.push_back(point);
 
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->color.a = 0.9;
   marker_ptr->color.r = 1.0;
   marker_ptr->color.g = 0.0;
@@ -274,7 +274,7 @@ visualization_msgs::msg::Marker::SharedPtr get_yaw_rate_covariance_marker_ptr(
   };
   calc_line_list_from_points(point_list, point_pairs, 4, marker_ptr->points);
 
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->color.a = 0.9;
   marker_ptr->color.r = 1.0;
   marker_ptr->color.g = 0.2;
@@ -299,7 +299,7 @@ visualization_msgs::msg::Marker::SharedPtr get_velocity_text_marker_ptr(
   marker_ptr->text = std::to_string(static_cast<int>(vel * 3.6)) + std::string("[km/h]");
   marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
   marker_ptr->pose.position = vis_pos;
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->color = color_rgba;
   return marker_ptr;
 }
@@ -320,7 +320,7 @@ visualization_msgs::msg::Marker::SharedPtr get_acceleration_text_marker_ptr(
   marker_ptr->text = getRoundedDoubleString(acc) + std::string("[m/s^2]");
   marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
   marker_ptr->pose.position = vis_pos;
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->color = color_rgba;
   return marker_ptr;
 }
@@ -378,8 +378,8 @@ visualization_msgs::msg::Marker::SharedPtr get_pose_covariance_marker_ptr(
   // ellipse orientation
   marker_ptr->pose.orientation.x = 0.0;
   marker_ptr->pose.orientation.y = 0.0;
-  marker_ptr->pose.orientation.z = std::sin(yaw / 2.0);
-  marker_ptr->pose.orientation.w = std::cos(yaw / 2.0);
+  marker_ptr->pose.orientation.z = std::sin(yaw * 0.5);
+  marker_ptr->pose.orientation.w = std::cos(yaw * 0.5);
 
   // ellipse size
   marker_ptr->scale.x = sigma1 * confidence_interval_coefficient;
@@ -392,11 +392,11 @@ visualization_msgs::msg::Marker::SharedPtr get_pose_covariance_marker_ptr(
   alpha = std::max(0.1, alpha);
 
   // marker configuration
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->color.a = alpha;
-  marker_ptr->color.r = 1.0;
-  marker_ptr->color.g = 1.0;
-  marker_ptr->color.b = 1.0;
+  marker_ptr->color.r = 0.8;
+  marker_ptr->color.g = 0.8;
+  marker_ptr->color.b = 0.8;
   return marker_ptr;
 }
 
@@ -434,7 +434,7 @@ visualization_msgs::msg::Marker::SharedPtr get_yaw_covariance_marker_ptr(
   marker_ptr->points.push_back(point);
 
   // marker configuration
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->color.a = 0.9;
   marker_ptr->color.r = 1.0;
   marker_ptr->color.g = 1.0;
@@ -469,7 +469,7 @@ visualization_msgs::msg::Marker::SharedPtr get_label_marker_ptr(
   marker_ptr->text = label;
   marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
   marker_ptr->pose = marker_ptr->pose = to_pose(centroid, orientation);
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->color = color_rgba;
   return marker_ptr;
 }
@@ -486,7 +486,7 @@ visualization_msgs::msg::Marker::SharedPtr get_existence_probability_marker_ptr(
   marker_ptr->text = std::to_string(existence_probability);
   marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
   marker_ptr->pose = marker_ptr->pose = to_pose(centroid, orientation);
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.2);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->color = color_rgba;
   return marker_ptr;
 }
@@ -506,6 +506,8 @@ visualization_msgs::msg::Marker::SharedPtr get_shape_marker_ptr(
     calc_bounding_box_line_list(shape_msg, marker_ptr->points);
     if (is_orientation_available) {
       calc_bounding_box_direction_line_list(shape_msg, marker_ptr->points);
+    } else {
+      calc_bounding_box_orientation_line_list(shape_msg, marker_ptr->points);
     }
   } else if (shape_msg.type == Shape::CYLINDER) {
     marker_ptr->type = visualization_msgs::msg::Marker::LINE_LIST;
@@ -520,7 +522,7 @@ visualization_msgs::msg::Marker::SharedPtr get_shape_marker_ptr(
 
   marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
   marker_ptr->pose = to_pose(centroid, orientation);
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->scale.x = line_width;
   marker_ptr->color = color_rgba;
 
@@ -542,6 +544,8 @@ visualization_msgs::msg::Marker::SharedPtr get_2d_shape_marker_ptr(
     calc_2d_bounding_box_bottom_line_list(shape_msg, marker_ptr->points);
     if (is_orientation_available) {
       calc_2d_bounding_box_bottom_direction_line_list(shape_msg, marker_ptr->points);
+    } else {
+      calc_2d_bounding_box_bottom_orientation_line_list(shape_msg, marker_ptr->points);
     }
   } else if (shape_msg.type == Shape::CYLINDER) {
     marker_ptr->type = visualization_msgs::msg::Marker::LINE_LIST;
@@ -556,7 +560,7 @@ visualization_msgs::msg::Marker::SharedPtr get_2d_shape_marker_ptr(
 
   marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
   marker_ptr->pose = to_pose(centroid, orientation);
-  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.5);
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.15);
   marker_ptr->scale.x = line_width;
   marker_ptr->color = color_rgba;
 
@@ -584,9 +588,9 @@ void calc_bounding_box_line_list(
   const autoware_auto_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points)
 {
-  const double length_half = shape.dimensions.x / 2.0;
-  const double width_half = shape.dimensions.y / 2.0;
-  const double height_half = shape.dimensions.z / 2.0;
+  const double length_half = shape.dimensions.x * 0.5;
+  const double width_half = shape.dimensions.y * 0.5;
+  const double height_half = shape.dimensions.z * 0.5;
   geometry_msgs::msg::Point point;
 
   // bounding box corner points
@@ -608,10 +612,10 @@ void calc_bounding_box_direction_line_list(
   std::vector<geometry_msgs::msg::Point> & points)
 {
   // direction triangle
-  const double length_half = shape.dimensions.x / 2.0;
-  const double width_half = shape.dimensions.y / 2.0;
-  const double height_half = shape.dimensions.z / 2.0;
-  const double triangle_size_half = shape.dimensions.y / 1.4;
+  const double length_half = shape.dimensions.x * 0.5;
+  const double width_half = shape.dimensions.y * 0.5;
+  const double height_half = shape.dimensions.z * 0.5;
+  const double triangle_size_half = std::min(width_half * 1.4, shape.dimensions.x);
   geometry_msgs::msg::Point point;
 
   // triangle-shaped direction indicator
@@ -629,13 +633,38 @@ void calc_bounding_box_direction_line_list(
   calc_line_list_from_points(point_list, point_pairs, 5, points);
 }
 
+void calc_bounding_box_orientation_line_list(
+  const autoware_auto_perception_msgs::msg::Shape & shape,
+  std::vector<geometry_msgs::msg::Point> & points)
+{
+  const double length_half = shape.dimensions.x * 0.5;
+  const double width_half = shape.dimensions.y * 0.5;
+  const double height_half = shape.dimensions.z * 0.5;
+  const double tick_width = width_half * 0.5;
+  const double tick_length = std::min(tick_width, length_half);
+  geometry_msgs::msg::Point point;
+
+  // front corner cuts for orientation
+  const double point_list[4][3] = {
+    {length_half, width_half - tick_width, height_half},
+    {length_half - tick_length, width_half, height_half},
+    {length_half, -width_half + tick_width, height_half},
+    {length_half - tick_length, -width_half, height_half},
+  };
+  const int point_pairs[2][2] = {
+    {0, 1},
+    {2, 3},
+  };
+  calc_line_list_from_points(point_list, point_pairs, 2, points);
+}
+
 void calc_2d_bounding_box_bottom_line_list(
   const autoware_auto_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points)
 {
-  const double length_half = shape.dimensions.x / 2.0;
-  const double width_half = shape.dimensions.y / 2.0;
-  const double height_half = shape.dimensions.z / 2.0;
+  const double length_half = shape.dimensions.x * 0.5;
+  const double width_half = shape.dimensions.y * 0.5;
+  const double height_half = shape.dimensions.z * 0.5;
   geometry_msgs::msg::Point point;
 
   // bounding box corner points
@@ -659,10 +688,10 @@ void calc_2d_bounding_box_bottom_direction_line_list(
   const autoware_auto_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points)
 {
-  const double length_half = shape.dimensions.x / 2.0;
-  const double width_half = shape.dimensions.y / 2.0;
-  const double height_half = shape.dimensions.z / 2.0;
-  const double triangle_size_half = shape.dimensions.y / 1.4;
+  const double length_half = shape.dimensions.x * 0.5;
+  const double width_half = shape.dimensions.y * 0.5;
+  const double height_half = shape.dimensions.z * 0.5;
+  const double triangle_size_half = std::min(width_half * 1.4, shape.dimensions.x);
   geometry_msgs::msg::Point point;
 
   // triangle-shaped direction indicator
@@ -677,6 +706,31 @@ void calc_2d_bounding_box_bottom_direction_line_list(
     {0, 2},
   };
   calc_line_list_from_points(point_list, point_pairs, 3, points);
+}
+
+void calc_2d_bounding_box_bottom_orientation_line_list(
+  const autoware_auto_perception_msgs::msg::Shape & shape,
+  std::vector<geometry_msgs::msg::Point> & points)
+{
+  const double length_half = shape.dimensions.x * 0.5;
+  const double width_half = shape.dimensions.y * 0.5;
+  const double height_half = shape.dimensions.z * 0.5;
+  const double tick_width = width_half * 0.5;
+  const double tick_length = std::min(tick_width, length_half);
+  geometry_msgs::msg::Point point;
+
+  // front corner cuts for orientation
+  const double point_list[4][3] = {
+    {length_half, width_half - tick_width, height_half},
+    {length_half - tick_length, width_half, height_half},
+    {length_half, -width_half + tick_width, height_half},
+    {length_half - tick_length, -width_half, height_half},
+  };
+  const int point_pairs[2][2] = {
+    {0, 1},
+    {2, 3},
+  };
+  calc_line_list_from_points(point_list, point_pairs, 2, points);
 }
 
 void calc_cylinder_line_list(
@@ -784,7 +838,7 @@ void calc_polygon_line_list(
     geometry_msgs::msg::Point point;
     point.x = shape.footprint.points.at(i).x;
     point.y = shape.footprint.points.at(i).y;
-    point.z = shape.dimensions.z / 2.0;
+    point.z = shape.dimensions.z * 0.5;
     points.push_back(point);
     point.x = shape.footprint.points
                 .at(static_cast<int>(i + 1) % static_cast<int>(shape.footprint.points.size()))
@@ -792,14 +846,14 @@ void calc_polygon_line_list(
     point.y = shape.footprint.points
                 .at(static_cast<int>(i + 1) % static_cast<int>(shape.footprint.points.size()))
                 .y;
-    point.z = shape.dimensions.z / 2.0;
+    point.z = shape.dimensions.z * 0.5;
     points.push_back(point);
   }
   for (size_t i = 0; i < shape.footprint.points.size(); ++i) {
     geometry_msgs::msg::Point point;
     point.x = shape.footprint.points.at(i).x;
     point.y = shape.footprint.points.at(i).y;
-    point.z = -shape.dimensions.z / 2.0;
+    point.z = -shape.dimensions.z * 0.5;
     points.push_back(point);
     point.x = shape.footprint.points
                 .at(static_cast<int>(i + 1) % static_cast<int>(shape.footprint.points.size()))
@@ -807,18 +861,18 @@ void calc_polygon_line_list(
     point.y = shape.footprint.points
                 .at(static_cast<int>(i + 1) % static_cast<int>(shape.footprint.points.size()))
                 .y;
-    point.z = -shape.dimensions.z / 2.0;
+    point.z = -shape.dimensions.z * 0.5;
     points.push_back(point);
   }
   for (size_t i = 0; i < shape.footprint.points.size(); ++i) {
     geometry_msgs::msg::Point point;
     point.x = shape.footprint.points.at(i).x;
     point.y = shape.footprint.points.at(i).y;
-    point.z = shape.dimensions.z / 2.0;
+    point.z = shape.dimensions.z * 0.5;
     points.push_back(point);
     point.x = shape.footprint.points.at(i).x;
     point.y = shape.footprint.points.at(i).y;
-    point.z = -shape.dimensions.z / 2.0;
+    point.z = -shape.dimensions.z * 0.5;
     points.push_back(point);
   }
 }
@@ -837,7 +891,7 @@ void calc_2d_polygon_bottom_line_list(
     geometry_msgs::msg::Point point;
     point.x = shape.footprint.points.at(i).x;
     point.y = shape.footprint.points.at(i).y;
-    point.z = -shape.dimensions.z / 2.0;
+    point.z = -shape.dimensions.z * 0.5;
     points.push_back(point);
     point.x = shape.footprint.points
                 .at(static_cast<int>(i + 1) % static_cast<int>(shape.footprint.points.size()))
@@ -845,7 +899,7 @@ void calc_2d_polygon_bottom_line_list(
     point.y = shape.footprint.points
                 .at(static_cast<int>(i + 1) % static_cast<int>(shape.footprint.points.size()))
                 .y;
-    point.z = -shape.dimensions.z / 2.0;
+    point.z = -shape.dimensions.z * 0.5;
     points.push_back(point);
   }
 }
