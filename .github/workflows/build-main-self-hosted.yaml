@@ -6,11 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  load-env:
-    uses: ./.github/workflows/load-env.yaml
-
   build-main-self-hosted:
-    needs: load-env
     runs-on: [self-hosted, linux, ARM64]
     strategy:
       fail-fast: false
@@ -51,13 +47,13 @@ jobs:
         with:
           bake-target: autoware-universe
           build-args: |
-            *.platform=linux/amd64
+            *.platform=linux/arm64
             *.args.ROS_DISTRO=${{ env.rosdistro }}
             *.args.BASE_IMAGE=${{ env[format('{0}', matrix.base_image_env)] }}
             *.args.PREBUILT_BASE_IMAGE=${{ env.prebuilt_base_image }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
           tag-prefix: ${{ env.rosdistro }}-
-          tag-suffix: ${{ matrix.additional-tag-suffix }}-amd64
+          tag-suffix: ${{ matrix.additional-tag-suffix }}-arm64
           allow-push: false
 
       - name: Show disk space
