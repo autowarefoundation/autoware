@@ -13,15 +13,6 @@ This node depends on the map height fitter library.
 
 ### Parameters
 
-| Name                  | Type | Description                                                                              |
-| --------------------- | ---- | ---------------------------------------------------------------------------------------- |
-| `ekf_enabled`         | bool | If true, EKF localizer is activated.                                                     |
-| `ndt_enabled`         | bool | If true, the pose will be estimated by NDT scan matcher, otherwise it is passed through. |
-| `stop_check_enabled`  | bool | If true, initialization is accepted only when the vehicle is stopped.                    |
-| `stop_check_duration` | bool | The duration used for the stop check above.                                              |
-| `gnss_enabled`        | bool | If true, use the GNSS pose when no pose is specified.                                    |
-| `gnss_pose_timeout`   | bool | The duration that the GNSS pose is valid.                                                |
-
 {{ json_to_markdown("localization/pose_initializer/schema/pose_initializer.schema.json") }}
 
 ### Services
