@@ -4,10 +4,24 @@
   <arg name="visualization_topic_name" default="/planning/mission_planning/route_marker"/>
   <arg name="mission_planner_param_path" default="$(find-pkg-share mission_planner)/config/mission_planner.param.yaml"/>
 
-  <node pkg="mission_planner" exec="mission_planner" name="mission_planner" output="screen">
-    <param from="$(var mission_planner_param_path)"/>
-    <remap from="input/modified_goal" to="$(var modified_goal_topic_name)"/>
-    <remap from="input/vector_map" to="$(var map_topic_name)"/>
-    <remap from="debug/route_marker" to="$(var visualization_topic_name)"/>
-  </node>
+  <node_container pkg="rclcpp_components" exec="component_container_mt" name="mission_planner_container" namespace="">
+    <composable_node pkg="mission_planner" plugin="mission_planner::MissionPlanner" name="mission_planner" namespace="">
+      <param from="$(var mission_planner_param_path)"/>
+      <remap from="~/input/modified_goal" to="$(var modified_goal_topic_name)"/>
+      <remap from="~/input/vector_map" to="$(var map_topic_name)"/>
+      <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+      <remap from="~/input/reroute_availability" to="/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/output/is_reroute_available"/>
+      <remap from="~/route" to="route"/>
+      <remap from="~/state" to="state"/>
+      <remap from="~/debug/route_marker" to="$(var visualization_topic_name)"/>
+    </composable_node>
+    <composable_node pkg="mission_planner" plugin="mission_planner::RouteSelector" name="route_selector" namespace="">
+      <remap from="~/planner/clear_route" to="mission_planner/clear_route"/>
+      <remap from="~/planner/set_lanelet_route" to="mission_planner/set_lanelet_route"/>
+      <remap from="~/planner/set_waypoint_route" to="mission_planner/set_waypoint_route"/>
+      <remap from="~/planner/route" to="route"/>
+      <remap from="~/planner/state" to="state"/>
+    </composable_node>
+    <composable_node pkg="glog_component" plugin="GlogComponent" name="glog_component" namespace=""/>
+  </node_container>
 </launch>

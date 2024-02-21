@@ -18,10 +18,8 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_adapi_v1_msgs</depend>
-  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_auto_mapping_msgs</depend>
   <depend>autoware_planning_msgs</depend>
-  <depend>component_interface_specs</depend>
-  <depend>component_interface_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
   <depend>motion_utils</depend>
@@ -29,7 +27,6 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>route_handler</depend>
-  <depend>std_srvs</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
   <depend>tier4_autoware_utils</depend>
