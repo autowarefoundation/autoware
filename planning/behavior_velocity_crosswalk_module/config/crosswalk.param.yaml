@@ -68,3 +68,20 @@
           bicycle: true # [-] whether to look and stop by BICYCLE objects
           motorcycle: true # [-] whether to look and stop by MOTORCYCLE objects (tmp: currently it is difficult for perception modules to detect bicycles and motorcycles separately.)
           pedestrian: true # [-] whether to look and stop by PEDESTRIAN objects
+
+      # param for occlusions
+      occlusion:
+        enable: true  # if true, ego will slowdown around crosswalks that are occluded
+        occluded_object_velocity: 1.0 # [m/s] assumed velocity of objects that may come out of the occluded space
+        slow_down_velocity: 1.0  # [m/s]
+        time_buffer: 1.0  # [s] consecutive time with/without an occlusion to add/remove the slowdown
+        min_size: 0.5  # [m] minimum size of an occlusion (square side size)
+        free_space_max: 43  # [-] maximum value of a free space cell in the occupancy grid
+        occupied_min: 58    # [-] minimum value of an occupied cell in the occupancy grid
+        ignore_with_red_traffic_light: true  # [-] if true, occlusions at crosswalks with traffic lights are ignored
+        ignore_behind_predicted_objects: true  # [-] if true, occlusions behind predicted objects are ignored
+        ignore_velocity_thresholds:
+          default: 0.5  # [m/s] occlusions are only ignored behind objects with a higher or equal velocity
+          custom_labels: ["PEDESTRIAN"]  # labels for which to define a non-default velocity threshold (see autoware_auto_perception_msgs::msg::ObjectClassification for all the labels)
+          custom_thresholds: [0.0]  # velocities of the custom labels
+        extra_predicted_objects_size: 0.5  # [m] extra size added to the objects for masking the occlusions

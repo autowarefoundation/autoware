@@ -154,6 +154,18 @@ public:
     bool look_bicycle;
     bool look_motorcycle;
     bool look_pedestrian;
+    // param for occlusions
+    bool occlusion_enable;
+    double occlusion_occluded_object_velocity;
+    float occlusion_slow_down_velocity;
+    double occlusion_time_buffer;
+    double occlusion_min_size;
+    int occlusion_free_space_max;
+    int occlusion_occupied_min;
+    bool occlusion_ignore_with_red_traffic_light;
+    bool occlusion_ignore_behind_predicted_objects;
+    std::vector<double> occlusion_ignore_velocity_thresholds;
+    double occlusion_extra_objects_size;
   };
 
   struct ObjectInfo
@@ -309,7 +321,8 @@ public:
 private:
   // main functions
   void applySafetySlowDownSpeed(
-    PathWithLaneId & output, const std::vector<geometry_msgs::msg::Point> & path_intersects);
+    PathWithLaneId & output, const std::vector<geometry_msgs::msg::Point> & path_intersects,
+    const float speed);
 
   std::optional<std::pair<geometry_msgs::msg::Point, double>> getStopPointWithMargin(
     const PathWithLaneId & ego_path,
@@ -430,6 +443,10 @@ private:
 
   // whether use regulatory element
   const bool use_regulatory_element_;
+
+  // occluded space time buffer
+  std::optional<rclcpp::Time> current_initial_occlusion_time_;
+  std::optional<rclcpp::Time> most_recent_occlusion_time_;
 };
 }  // namespace behavior_velocity_planner
 

@@ -193,6 +193,50 @@ document.
 | `max_slow_down_accel` | [m/ss]  | double | minimum accel deceleration for safe brake                                                                             |
 | `no_relax_velocity`   | [m/s]   | double | if the current velocity is less than X m/s, ego always stops at the stop position(not relax deceleration constraints) |
 
+### Occlusion
+
+This feature makes ego slow down for a crosswalk that is occluded.
+
+Occlusion of the crosswalk is determined using the occupancy grid.
+An occlusion is a square of size `min_size` of occluded cells
+(i.e., their values are between `free_space_max` and `occupied_min`)
+of size `min_size`.
+If an occlusion is found within range of the crosswalk,
+then the velocity limit at the crosswalk is set to `slow_down_velocity` (or more to not break limits set by `max_slow_down_jerk` and `max_slow_down_accel`).
+The range is calculated from the intersection between the ego path and the crosswalk and is equal to the time taken by ego to reach the crosswalk times the `occluded_object_velocity`.
+This range is meant to be large when ego is far from the crosswalk and small when ego is close.
+
+In order to avoid flickering decisions, a time buffer can be used such that the decision to add (or remove) the slow down is only taken
+after an occlusion is detected (or not detected) for a consecutive time defined by the `time_buffer` parameter.
+
+To ignore occlusions when the pedestrian light is red, `ignore_with_red_traffic_light` should be set to true.
+
+To ignore temporary occlusions caused by moving objects,
+`ignore_behind_predicted_objects` should be set to true.
+By default, occlusions behind an object with velocity higher than `ignore_velocity_thresholds.default` are ignored.
+This velocity threshold can be specified depending on the object type by specifying the object class label and velocity threshold in the parameter lists `ignore_velocity_thresholds.custom_labels` and `ignore_velocity_thresholds.custom_thresholds`.
+To inflate the masking behind objects, their footprint can be made bigger using `extra_predicted_objects_size`.
+
+<figure markdown>
+  ![stuck_vehicle_attention_range](docs/with_occlusion.svg){width=600}
+</figure>
+
+| Parameter                                      | Unit  | Type        | Description                                                                                                                                     |
+| ---------------------------------------------- | ----- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enable`                                       | [-]   | bool        | if true, ego will slow down around crosswalks that are occluded                                                                                 |
+| `occluded_object_velocity`                     | [m/s] | double      | assumed velocity of objects that may come out of the occluded space                                                                             |
+| `slow_down_velocity`                           | [m/s] | double      | slow down velocity                                                                                                                              |
+| `time_buffer`                                  | [s]   | double      | consecutive time with/without an occlusion to add/remove the slowdown                                                                           |
+| `min_size`                                     | [m]   | double      | minimum size of an occlusion (square side size)                                                                                                 |
+| `free_space_max`                               | [-]   | double      | maximum value of a free space cell in the occupancy grid                                                                                        |
+| `occupied_min`                                 | [-]   | double      | minimum value of an occupied cell in the occupancy grid                                                                                         |
+| `ignore_with_red_traffic_light`                | [-]   | bool        | if true, occlusions at crosswalks with traffic lights are ignored                                                                               |
+| `ignore_behind_predicted_objects`              | [-]   | bool        | if true, occlusions behind predicted objects are ignored                                                                                        |
+| `ignore_velocity_thresholds.default`           | [m/s] | double      | occlusions are only ignored behind objects with a higher or equal velocity                                                                      |
+| `ignore_velocity_thresholds.custom_labels`     | [-]   | string list | labels for which to define a non-default velocity threshold (see `autoware_auto_perception_msgs::msg::ObjectClassification` for all the labels) |
+| `ignore_velocity_thresholds.custom_thresholds` | [-]   | double list | velocities of the custom labels                                                                                                                 |
+| `extra_predicted_objects_size`                 | [m]   | double      | extra size added to the objects for masking the occlusions                                                                                      |
+
 ### Others
 
 In the `common` namespace, the following parameters are defined.

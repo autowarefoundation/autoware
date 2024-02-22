@@ -28,9 +28,14 @@
   <depend>behavior_velocity_planner_common</depend>
   <depend>eigen</depend>
   <depend>geometry_msgs</depend>
+  <depend>grid_map_core</depend>
+  <depend>grid_map_ros</depend>
+  <depend>grid_map_utils</depend>
+  <depend>interpolation</depend>
   <depend>lanelet2_extension</depend>
   <depend>libboost-dev</depend>
   <depend>motion_utils</depend>
+  <depend>nav_msgs</depend>
   <depend>pcl_conversions</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
