@@ -6,7 +6,7 @@ This is a rule-based path planning module designed for obstacle avoidance.
 
 This module is designed for rule-based avoidance that is easy for developers to design its behavior. It generates avoidance path parameterized by intuitive parameters such as lateral jerk and avoidance distance margin. This makes it possible to pre-define avoidance behavior.
 
-In addition, the approval interface of behavior_path_planner allows external users / modules (e.g. remote operation) to intervene the decision of the vehicle behavior.　 This function is expected to be used, for example, for remote intervention in emergency situations or gathering information on operator decisions during development.
+In addition, the approval interface of behavior_path_planner allows external users / modules (e.g. remote operation) to intervene the decision of the vehicle behavior. This function is expected to be used, for example, for remote intervention in emergency situations or gathering information on operator decisions during development.
 
 ### Limitations
 
@@ -934,7 +934,7 @@ namespace: `avoidance.constraints.longitudinal.`
 ## Future extensions / Unimplemented parts
 
 - **Planning on the intersection**
-  - If it is known that the ego vehicle is going to stop in the middle of avoidance execution (for example, at a red traffic light), sometimes the avoidance should not be executed until the vehicle is ready to move. This is because it is impossible to predict how the environment will change during the stop.　 This is especially important at intersections.
+  - If it is known that the ego vehicle is going to stop in the middle of avoidance execution (for example, at a red traffic light), sometimes the avoidance should not be executed until the vehicle is ready to move. This is because it is impossible to predict how the environment will change during the stop. This is especially important at intersections.
 
 ![fig1](./images/intersection_problem.drawio.svg)
 
@@ -956,7 +956,7 @@ namespace: `avoidance.constraints.longitudinal.`
   - Essentially, avoidance targets are judged based on whether they are static objects or not. For example, a vehicle waiting at a traffic light should not be avoided because we know that it will start moving in the future. However this decision cannot be made in the current Autoware due to the lack of the perception functions. Therefore, the current avoidance module limits the avoidance target to vehicles parked on the shoulder of the road, and executes avoidance only for vehicles that are stopped away from the center of the lane. However, this logic cannot avoid a vehicle that has broken down and is stopped in the center of the lane, which should be recognized as a static object by the perception module. There is room for improvement in the performance of this decision.
 
 - **Resampling path**
-  - Now the rough resolution resampling is processed to the output path in order to reduce the computational cost for the later modules. This resolution is set to a uniformly large value 　(e.g. `5m`), but small resolution should be applied for complex paths.
+  - Now the rough resolution resampling is processed to the output path in order to reduce the computational cost for the later modules. This resolution is set to a uniformly large value (e.g. `5m`), but small resolution should be applied for complex paths.
 
 ## How to debug
 

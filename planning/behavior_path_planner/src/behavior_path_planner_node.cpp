@@ -505,7 +505,7 @@ void BehaviorPathPlannerNode::publish_reroute_availability() const
 {
   // In the current behavior path planner, we might encounter unexpected behavior when rerouting
   // while modules other than lane following are active. If non-lane-following module except
-  // always-executable module is approved and running, rerouting will not be　possible.
+  // always-executable module is approved and running, rerouting will not be possible.
   RerouteAvailability is_reroute_available;
   is_reroute_available.stamp = this->now();
   if (planner_manager_->hasNonAlwaysExecutableApprovedModules()) {

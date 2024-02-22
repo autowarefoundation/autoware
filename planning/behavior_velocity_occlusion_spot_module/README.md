@@ -119,11 +119,11 @@ The maximum slowdown velocity is calculated from the below parameters of ego cur
 | `use_object_info`       | bool | [-] whether to reflect object info to occupancy grid map or not. |
 | `use_partition_lanelet` | bool | [-] whether to use partition lanelet map data.                   |
 
-| Parameter /debug          | Type | Description                                    |
-| ------------------------- | ---- | ---------------------------------------------- |
-| `is_show_occlusion`       | bool | [-] whether to show occlusion point markers.　 |
-| `is_show_cv_window`       | bool | [-] whether to show open_cv debug window.      |
-| `is_show_processing_time` | bool | [-] whether to show processing time.           |
+| Parameter /debug          | Type | Description                                  |
+| ------------------------- | ---- | -------------------------------------------- |
+| `is_show_occlusion`       | bool | [-] whether to show occlusion point markers. |
+| `is_show_cv_window`       | bool | [-] whether to show open_cv debug window.    |
+| `is_show_processing_time` | bool | [-] whether to show processing time.         |
 
 | Parameter /threshold    | Type   | Description                                               |
 | ----------------------- | ------ | --------------------------------------------------------- |

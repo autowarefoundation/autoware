@@ -454,7 +454,7 @@ bool MissionPlanner::check_reroute_safety(
      * +-----------+-----------+-----------+-----------+-----------+
      * |           |           |           |           |           |
      * +-----------+-----------+-----------+-----------+-----------+
-     * 　　　　　　　　　　　　　　　original    original    original
+     *                          original    original    original
      *  target      target      target      target      target
      */
     const auto original_front_primitives = original_route.segments.front().primitives;

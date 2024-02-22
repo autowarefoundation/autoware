@@ -214,7 +214,7 @@ The main thread will be the one called from the planner manager flow.
 | decide_path_distance             | [m]    | double | decide path if it approaches this distance relative to the parking position. after that, no path planning and goal search are performed                                        | 10.0                                     |
 | maximum_deceleration             | [m/s2] | double | maximum deceleration. it prevents sudden deceleration when a parking path cannot be found suddenly                                                                             | 1.0                                      |
 | path_priority                    | [-]    | string | In case `efficient_path` use a goal that can generate an efficient path which is set in `efficient_path_order`. In case `close_goal` use the closest goal to the original one. | efficient_path                           |
-| efficient_path_order             | [-]    | string | efficient order of pull over planner along lanes　excluding freespace pull over                                                                                                | ["SHIFT", "ARC_FORWARD", "ARC_BACKWARD"] |
+| efficient_path_order             | [-]    | string | efficient order of pull over planner along lanes excluding freespace pull over                                                                                                 | ["SHIFT", "ARC_FORWARD", "ARC_BACKWARD"] |
 
 ### **shift parking**
 
@@ -366,18 +366,18 @@ This method integrates the footprints of egos and objects at a given time and ch
 In addition, the safety check has a time hysteresis, and if the path is judged "safe" for a certain period of time(`keep_unsafe_time`), it is finally treated as "safe".
 
 ```txt
-   　　                    ==== is_safe
-   　　                    ---- current_is_safe
-   　　  is_safe
-   　　   ^
-   　　   |
-   　　   |                   time
-   　　 1 +--+    +---+       +---=========   +--+
-   　　   |  |    |   |       |           |   |  |
-   　　   |  |    |   |       |           |   |  |
-   　　   |  |    |   |       |           |   |  |
-   　　   |  |    |   |       |           |   |  |
-   　　 0 =========================-------==========--> t
+                         ==== is_safe
+                         ---- current_is_safe
+       is_safe
+        ^
+        |
+        |                   time
+      1 +--+    +---+       +---=========   +--+
+        |  |    |   |       |           |   |  |
+        |  |    |   |       |           |   |  |
+        |  |    |   |       |           |   |  |
+        |  |    |   |       |           |   |  |
+      0 =========================-------==========--> t
 ```
 
 ### Parameters for safety check
