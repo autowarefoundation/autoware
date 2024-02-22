@@ -323,6 +323,8 @@ void BehaviorVelocityPlannerNode::onTrafficSignals(
 {
   std::lock_guard<std::mutex> lock(mutex_);
 
+  planner_data_.has_received_signal_ = true;
+
   // clear previous observation
   planner_data_.traffic_light_id_map_raw_.clear();
   const auto traffic_light_id_map_last_observed_old =
