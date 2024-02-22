@@ -16,6 +16,11 @@
           "default": "5.0",
           "description": "backward path"
         },
+        "behavior_output_path_interval": {
+          "type": "number",
+          "default": "1.0",
+          "description": "output path interval"
+        },
         "max_accel": {
           "type": "number",
           "default": "-2.8",
@@ -49,6 +54,7 @@
       },
       "required": [
         "forward_path_length",
+        "behavior_output_path_interval",
         "backward_path_length",
         "max_accel",
         "system_delay",

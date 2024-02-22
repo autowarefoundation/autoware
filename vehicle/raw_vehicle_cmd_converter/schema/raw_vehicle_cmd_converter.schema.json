@@ -142,9 +142,6 @@
         }
       },
       "required": [
-        "csv_path_accel_map",
-        "csv_path_brake_map",
-        "csv_path_steer_map",
         "convert_accel_cmd",
         "convert_brake_cmd",
         "convert_steer_cmd",
