@@ -162,6 +162,11 @@ MarkerArray createDebugMarkerArray(const Debug & debug_data)
       "ego_and_target_polygon_relation_after_approval"));
   }
 
+  if (!debug_data.execution_area.points.empty()) {
+    add(createPolygonMarkerArray(
+      debug_data.execution_area, "execution_area", 0, 0.16, 1.0, 0.69, 0.1));
+  }
+
   return debug_marker;
 }
 }  // namespace marker_utils::lane_change_markers

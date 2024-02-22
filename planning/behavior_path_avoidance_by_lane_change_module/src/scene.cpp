@@ -20,16 +20,21 @@
 #include "behavior_path_planner_common/utils/path_utils.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
 
+#include <behavior_path_avoidance_module/data_structs.hpp>
+#include <behavior_path_lane_change_module/utils/utils.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/logging.hpp>
 
 #include <boost/geometry/algorithms/centroid.hpp>
 #include <boost/geometry/strategies/cartesian/centroid_bashein_detmer.hpp>
 
+#include <limits>
 #include <utility>
 
 namespace behavior_path_planner
 {
+using behavior_path_planner::utils::lane_change::debug::createExecutionArea;
+
 AvoidanceByLaneChange::AvoidanceByLaneChange(
   const std::shared_ptr<LaneChangeParameters> & parameters,
   std::shared_ptr<AvoidanceByLCParameters> avoidance_parameters)
@@ -68,44 +73,15 @@ bool AvoidanceByLaneChange::specialRequiredCheck() const
     return false;
   }
 
-  const auto current_lanes = getCurrentLanes();
-  if (current_lanes.empty()) {
-    RCLCPP_DEBUG(logger_, "no empty lanes");
-    return false;
-  }
-
   const auto & nearest_object = data.target_objects.front();
+  const auto minimum_avoid_length = calcMinAvoidanceLength(nearest_object);
+  const auto minimum_lane_change_length = calcMinimumLaneChangeLength();
 
-  // get minimum lane change distance
-  const auto shift_intervals =
-    getRouteHandler()->getLateralIntervalsToPreferredLane(current_lanes.back(), direction_);
-  const double minimum_lane_change_length = utils::lane_change::calcMinimumLaneChangeLength(
-    *lane_change_parameters_, shift_intervals,
-    lane_change_parameters_->backward_length_buffer_for_end_of_lane);
+  lane_change_debug_.execution_area = createExecutionArea(
+    getCommonParam().vehicle_info, getEgoPose(),
+    std::max(minimum_lane_change_length, minimum_avoid_length), calcLateralOffset());
 
-  // get minimum avoid distance
-
-  const auto ego_width = getCommonParam().vehicle_width;
-  const auto nearest_object_type = utils::getHighestProbLabel(nearest_object.object.classification);
-  const auto nearest_object_parameter =
-    avoidance_parameters_->object_parameters.at(nearest_object_type);
-  const auto avoid_margin =
-    nearest_object_parameter.safety_buffer_lateral * nearest_object.distance_factor +
-    nearest_object_parameter.avoid_margin_lateral + 0.5 * ego_width;
-
-  avoidance_helper_->setData(planner_data_);
-  const auto shift_length = avoidance_helper_->getShiftLength(
-    nearest_object, utils::avoidance::isOnRight(nearest_object), avoid_margin);
-
-  const auto maximum_avoid_distance = avoidance_helper_->getMaxAvoidanceDistance(shift_length);
-
-  RCLCPP_DEBUG(
-    logger_,
-    "nearest_object.longitudinal %.3f, minimum_lane_change_length %.3f, maximum_avoid_distance "
-    "%.3f",
-    nearest_object.longitudinal, minimum_lane_change_length, maximum_avoid_distance);
-
-  return nearest_object.longitudinal > std::max(minimum_lane_change_length, maximum_avoid_distance);
+  return nearest_object.longitudinal > std::max(minimum_lane_change_length, minimum_avoid_length);
 }
 
 bool AvoidanceByLaneChange::specialExpiredCheck() const
@@ -273,5 +249,49 @@ ObjectData AvoidanceByLaneChange::createObjectData(
   utils::avoidance::fillAvoidanceNecessity(object_data, registered_objects_, vehicle_width, p);
 
   return object_data;
+}
+
+double AvoidanceByLaneChange::calcMinAvoidanceLength(const ObjectData & nearest_object) const
+{
+  const auto ego_width = getCommonParam().vehicle_width;
+  const auto nearest_object_type = utils::getHighestProbLabel(nearest_object.object.classification);
+  const auto nearest_object_parameter =
+    avoidance_parameters_->object_parameters.at(nearest_object_type);
+  const auto avoid_margin =
+    nearest_object_parameter.safety_buffer_lateral * nearest_object.distance_factor +
+    nearest_object_parameter.avoid_margin_lateral + 0.5 * ego_width;
+
+  avoidance_helper_->setData(planner_data_);
+  const auto shift_length = avoidance_helper_->getShiftLength(
+    nearest_object, utils::avoidance::isOnRight(nearest_object), avoid_margin);
+
+  return avoidance_helper_->getMinAvoidanceDistance(shift_length);
+}
+
+double AvoidanceByLaneChange::calcMinimumLaneChangeLength() const
+{
+  const auto current_lanes = getCurrentLanes();
+  if (current_lanes.empty()) {
+    RCLCPP_DEBUG(logger_, "no empty lanes");
+    return std::numeric_limits<double>::infinity();
+  }
+
+  // get minimum lane change distance
+  const auto shift_intervals =
+    getRouteHandler()->getLateralIntervalsToPreferredLane(current_lanes.back(), direction_);
+  return utils::lane_change::calcMinimumLaneChangeLength(
+    *lane_change_parameters_, shift_intervals,
+    lane_change_parameters_->backward_length_buffer_for_end_of_lane);
+}
+
+double AvoidanceByLaneChange::calcLateralOffset() const
+{
+  auto additional_lat_offset{0.0};
+  for (const auto & [type, p] : avoidance_parameters_->object_parameters) {
+    const auto offset =
+      2.0 * p.envelope_buffer_margin + p.safety_buffer_lateral + p.avoid_margin_lateral;
+    additional_lat_offset = std::max(additional_lat_offset, offset);
+  }
+  return additional_lat_offset;
 }
 }  // namespace behavior_path_planner

@@ -16,13 +16,9 @@
 
 #include "behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "behavior_path_planner_common/interface/scene_module_visitor.hpp"
-#include "behavior_path_planner_common/marker_utils/utils.hpp"
 
-#include <algorithm>
 #include <memory>
 #include <string>
-#include <utility>
-#include <vector>
 
 namespace behavior_path_planner
 {
@@ -45,7 +41,8 @@ AvoidanceByLaneChangeInterface::AvoidanceByLaneChangeInterface(
 
 bool AvoidanceByLaneChangeInterface::isExecutionRequested() const
 {
-  return module_type_->isLaneChangeRequired() && module_type_->specialRequiredCheck();
+  return module_type_->isLaneChangeRequired() && module_type_->specialRequiredCheck() &&
+         module_type_->isValidPath();
 }
 void AvoidanceByLaneChangeInterface::processOnEntry()
 {

@@ -19,6 +19,8 @@
 
 #include <behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp>
 
+#include <geometry_msgs/msg/detail/polygon__struct.hpp>
+
 #include <string>
 
 namespace behavior_path_planner::data::lane_change
@@ -31,6 +33,7 @@ struct Debug
   CollisionCheckDebugMap collision_check_objects;
   CollisionCheckDebugMap collision_check_objects_after_approval;
   LaneChangeTargetObjects filtered_objects;
+  geometry_msgs::msg::Polygon execution_area;
   double collision_check_object_debug_lifetime{0.0};
 
   void reset()

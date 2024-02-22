@@ -15,7 +15,6 @@
 #include "behavior_path_lane_change_module/scene.hpp"
 
 #include "behavior_path_lane_change_module/utils/utils.hpp"
-#include "behavior_path_planner_common/marker_utils/utils.hpp"
 #include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
@@ -33,7 +32,6 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 

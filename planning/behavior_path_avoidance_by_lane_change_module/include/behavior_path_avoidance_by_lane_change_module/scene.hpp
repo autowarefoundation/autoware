@@ -54,6 +54,10 @@ private:
     const AvoidancePlanningData & data, const PredictedObject & object) const;
 
   void fillAvoidanceTargetObjects(AvoidancePlanningData & data, AvoidanceDebugData & debug) const;
+
+  double calcMinAvoidanceLength(const ObjectData & nearest_object) const;
+  double calcMinimumLaneChangeLength() const;
+  double calcLateralOffset() const;
 };
 }  // namespace behavior_path_planner
 
