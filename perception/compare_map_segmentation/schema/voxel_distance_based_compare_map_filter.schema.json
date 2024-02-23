@@ -20,9 +20,37 @@
           "type": "number",
           "default": "0.5",
           "description": "Positive ratio to reduce voxel_leaf_size and neighbor point distance threshold in z axis"
+        },
+        "timer_interval_ms": {
+          "type": "number",
+          "default": "100",
+          "description": "Timer interval to load map points [ms]"
+        },
+        "map_update_distance_threshold": {
+          "type": "number",
+          "default": "10.0",
+          "description": "Threshold distance to update map points with input points [m]"
+        },
+        "map_loader_radius": {
+          "type": "number",
+          "default": "150.0",
+          "description": "Radius to load map points [m]"
+        },
+        "publish_debug_pcd": {
+          "type": "boolean",
+          "default": "false",
+          "description": "Publish a downsampled map pointcloud for debugging"
         }
       },
-      "required": ["distance_threshold", "use_dynamic_map_loading", "downsize_ratio_z_axis"],
+      "required": [
+        "distance_threshold",
+        "use_dynamic_map_loading",
+        "downsize_ratio_z_axis",
+        "timer_interval_ms",
+        "map_update_distance_threshold",
+        "map_loader_radius",
+        "publish_debug_pcd"
+      ],
       "additionalProperties": false
     }
   },
