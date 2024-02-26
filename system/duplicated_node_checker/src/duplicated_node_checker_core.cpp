@@ -69,7 +69,7 @@ void DuplicatedNodeChecker::produceDiagnostics(diagnostic_updater::DiagnosticSta
     if (add_duplicated_node_names_to_msg_) {
       std::set<std::string> unique_identical_names(identical_names.begin(), identical_names.end());
       for (const auto & name : unique_identical_names) {
-        msg += " " + name;
+        msg += "[" + name + "], ";
       }
     }
     for (auto name : identical_names) {

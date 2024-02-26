@@ -6,6 +6,7 @@
   <description>A package to find out nodes with common names</description>
   <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>
   <maintainer email="uken.ryu@tier4.jp">yliuhb</maintainer>
+  <maintainer email="mamoru.sobue@tier4.jp">Mamoru Sobue</maintainer>
   <license>Apache 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
