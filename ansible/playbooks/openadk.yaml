@@ -1,0 +1,46 @@
+- name: Set up source development environments for Autoware Universe
+  hosts: localhost
+  connection: local
+  pre_tasks:
+    - name: Verify OS
+      ansible.builtin.fail:
+        msg: Only Ubuntu 22.04 is supported for this branch. Please refer to https://autowarefoundation.github.io/autoware-documentation/main/installation/autoware/source-installation/.
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version != '22.04'
+
+    - name: Print args
+      ansible.builtin.debug:
+        msg:
+          - module: "{{ module }}"
+          - rosdistro: "{{ rosdistro }}"
+          - rmw_implementation: "{{ rmw_implementation }}"
+          - cuda_version: "{{ cuda_version }}"
+          - cudnn_version: "{{ cudnn_version }}"
+          - tensorrt_version: "{{ tensorrt_version }}"
+  roles:
+    # Autoware base dependencies
+    - role: autoware.dev_env.rmw_implementation
+      when: module == 'base'
+    - role: autoware.dev_env.gdown
+      when: module == 'base'
+    - role: autoware.dev_env.kisak_mesa
+      when: module == 'base'
+
+    # Module specific dependencies
+    - role: autoware.dev_env.geographiclib
+      when: module == 'perception-localization' or module == 'all'
+    - role: autoware.dev_env.cuda
+      when: (module == 'perception-localization' or module == 'all') and prompt_install_nvidia=='y'
+    - role: autoware.dev_env.tensorrt
+      when: (module == 'perception-localization' or module == 'all') and prompt_install_nvidia=='y'
+    - role: autoware.dev_env.pacmod
+      when: module == 'planning-control' or module == 'perception-localization' or module == 'all'
+
+    # Development environment
+    - role: autoware.dev_env.dev_tools
+      when: module == 'dev-tools'
+    - role: autoware.dev_env.ros2_dev_tools
+      when: module == 'dev-tools'
+
+    # ONNX files and other artifacts
+    - role: autoware.dev_env.artifacts
+      when: prompt_download_artifacts == 'y'

@@ -1,0 +1,24 @@
+- name: Install additional dependencies
+  become: true
+  ansible.builtin.apt:
+    name: software-properties-common
+    state: present
+
+- name: Add Kisak Mesa PPA
+  become: true
+  ansible.builtin.apt_repository:
+    repo: ppa:kisak/kisak-mesa
+
+- name: Install Mesa libraries
+  become: true
+  ansible.builtin.apt:
+    name:
+      - libegl-mesa0
+      - libegl1-mesa-dev
+      - libgbm-dev
+      - libgbm1
+      - libgl1-mesa-dev
+      - libgl1-mesa-dri
+      - libglapi-mesa
+      - libglx-mesa0
+    state: present

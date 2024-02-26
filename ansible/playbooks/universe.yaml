@@ -34,26 +34,24 @@
           [Warning] Skipping installation of NVIDIA libraries. Please manually install them if you plan to use any dependent components.
       when: prompt_install_nvidia != 'y'
   roles:
-    # Core
-    - role: autoware.dev_env.autoware_core
-    - role: autoware.dev_env.ccache
-      when: tensorrt_install_devel == 'true'
-    - role: autoware.dev_env.plotjuggler
-    - role: autoware.dev_env.pre_commit
-      when: tensorrt_install_devel == 'true'
+    # Autoware base dependencies
     - role: autoware.dev_env.ros2
     - role: autoware.dev_env.ros2_dev_tools
     - role: autoware.dev_env.rmw_implementation
+    - role: autoware.dev_env.gdown
 
-    # Universe
-    - role: autoware.dev_env.autoware_universe
+    # Autoware module dependencies
+    - role: autoware.dev_env.geographiclib
     - role: autoware.dev_env.cuda
-      when: prompt_install_nvidia == 'y' and tensorrt_install_devel == 'true'
+      when: prompt_install_nvidia == 'y'
     - role: autoware.dev_env.pacmod
       when: rosdistro != 'rolling'
     - role: autoware.dev_env.tensorrt
       when: prompt_install_nvidia == 'y'
-    - role: autoware.dev_env.git_lfs
+
+    # Autoware devel dependencies
+    - role: autoware.dev_env.dev_tools
+      when: install_devel == 'true'
 
     # ONNX files and other artifacts
     - role: autoware.dev_env.artifacts

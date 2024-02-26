@@ -1,30 +1,34 @@
-- name: Authorize NVIDIA Docker GPG key
+- name: Add NVIDIA container toolkit GPG key
   become: true
   ansible.builtin.apt_key:
-    url: https://nvidia.github.io/nvidia-docker/gpgkey
+    url: https://nvidia.github.io/libnvidia-container/gpgkey
+    state: present
+    keyring: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
 
-- name: Save result of '. /etc/os-release;echo $ID$VERSION_ID'
-  ansible.builtin.shell: . /etc/os-release;echo $ID$VERSION_ID
-  register: nvidia_docker__distribution
-  changed_when: false
-
-- name: Save result of 'curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list'
-  ansible.builtin.uri:
-    url: https://nvidia.github.io/nvidia-docker/{{ nvidia_docker__distribution.stdout }}/nvidia-docker.list
-    return_content: true
-  register: nvidia_docker_list
-
-# curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-- name: Add NVIDIA Docker apt repository to source list
+- name: Add NVIDIA container toolkit repository
   become: true
-  ansible.builtin.copy:
-    dest: /etc/apt/sources.list.d/nvidia-docker.list
-    content: "{{ nvidia_docker_list.content }}"
-    mode: 0644
+  ansible.builtin.apt_repository:
+    repo: deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /
+    state: present
+    filename: nvidia-container-toolkit
+    update_cache: true
 
 - name: Install NVIDIA Container Toolkit
   become: true
   ansible.builtin.apt:
     name:
-      - nvidia-docker2
+      - nvidia-container-toolkit
     update_cache: true
+
+- name: Add NVIDIA runtime support to docker engine
+  become: true
+  ansible.builtin.shell: |
+    nvidia-ctk runtime configure --runtime=docker
+  changed_when: true
+
+- name: Restart docker daemon
+  become: true
+  ansible.builtin.systemd:
+    name: docker
+    state: restarted
+  changed_when: true
