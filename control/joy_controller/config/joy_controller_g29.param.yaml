@@ -1,0 +1,16 @@
+/**:
+  ros__parameters:
+    joy_type: G29
+    update_rate: 10.0
+    accel_ratio: 3.0
+    brake_ratio: 5.0
+    steer_ratio: 0.5
+    steering_angle_velocity: 0.1
+    accel_sensitivity: 1.0
+    brake_sensitivity: 1.0
+    control_command:
+      raw_control: false
+      velocity_gain: 3.0
+      max_forward_velocity: 20.0
+      max_backward_velocity: 3.0
+      backward_accel_ratio: 1.0

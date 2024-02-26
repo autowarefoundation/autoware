@@ -1,5 +1,4 @@
 <launch>
-  <arg name="joy_type" default="DS4" description="options: DS4, G29, P65, XBOX"/>
   <arg name="external_cmd_source" default="remote" description="options: local, remote"/>
 
   <arg name="input_joy" default="/joy"/>
@@ -13,7 +12,7 @@
   <arg name="output_gate_mode" default="/control/gate_mode_cmd"/>
   <arg name="output_vehicle_engage" default="/vehicle/engage"/>
 
-  <arg name="config_file" default="$(find-pkg-share joy_controller)/config/joy_controller.param.yaml"/>
+  <arg name="config_file" default="$(find-pkg-share joy_controller)/config/joy_controller_ds4.param.yaml"/>
 
   <node pkg="joy_controller" exec="joy_controller" name="joy_controller" output="screen">
     <remap from="input/joy" to="$(var input_joy)"/>
