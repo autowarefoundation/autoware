@@ -176,8 +176,10 @@ void StartPlannerModule::updateData()
     DEBUG_PRINT("StartPlannerModule::updateData() received new route, reset status");
   }
 
-  if (!status_.first_approved_time && isActivated()) {
-    status_.first_approved_time = clock_->now();
+  if (
+    planner_data_->operation_mode->mode == OperationModeState::AUTONOMOUS &&
+    !status_.first_engaged_time) {
+    status_.first_engaged_time = clock_->now();
   }
 
   if (hasFinishedBackwardDriving()) {
@@ -1084,11 +1086,11 @@ bool StartPlannerModule::hasFinishedPullOut() const
 
 bool StartPlannerModule::needToPrepareBlinkerBeforeStart() const
 {
-  if (!status_.first_approved_time) {
+  if (!status_.first_engaged_time) {
     return true;
   }
-  const auto first_approved_time = status_.first_approved_time.value();
-  const double elapsed = rclcpp::Duration(clock_->now() - first_approved_time).seconds();
+  const auto first_engaged_time = status_.first_engaged_time.value();
+  const double elapsed = rclcpp::Duration(clock_->now() - first_engaged_time).seconds();
   return elapsed < parameters_->prepare_time_before_start;
 }
 
