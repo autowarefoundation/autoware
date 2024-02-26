@@ -5,6 +5,9 @@
   <version>0.1.0</version>
   <description>The tier4_pcl_extensions package</description>
   <maintainer email="ryu.yamamoto@tier4.jp">Ryu Yamamoto</maintainer>
+  <maintainer email="kenzo.lobos@tier4.jp">Kenzo Lobos Tsunekawa</maintainer>
+  <maintainer email="david.wong@tier4.jp">David Wong</maintainer>
+
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
