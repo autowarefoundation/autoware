@@ -170,7 +170,7 @@ void PointcloudBasedOccupancyGridMapNode::onPointcloudWithObstacleAndRaw(
   Pose gridmap_origin{};
   Pose scan_origin{};
   try {
-    robot_pose = utils::getPose(input_raw_msg->header, *tf2_, map_frame_);
+    robot_pose = utils::getPose(input_raw_msg->header.stamp, *tf2_, base_link_frame_, map_frame_);
     gridmap_origin =
       utils::getPose(input_raw_msg->header.stamp, *tf2_, gridmap_origin_frame_, map_frame_);
     scan_origin =
