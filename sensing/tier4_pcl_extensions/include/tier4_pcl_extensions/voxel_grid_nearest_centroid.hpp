@@ -111,8 +111,8 @@ public:
   struct Leaf
   {
     /** \brief Constructor.
-     * Sets \ref nr_points, \ref icov_, \ref mean_ and \ref evals_ to 0 and \ref cov_ and \ref
-     * evecs_ to the identity matrix
+     * Sets \ref nr_points, \ref icov_, \ref mean_ and \ref eigen_values_ to 0 and \ref cov_ and
+     * \ref eigen_vectors_ to the identity matrix
      */
     Leaf()
     : nr_points(0),
@@ -120,8 +120,8 @@ public:
       centroid()
     // cov_ (Eigen::Matrix3d::Identity ()),
     // icov_ (Eigen::Matrix3d::Zero ()),
-    // evecs_ (Eigen::Matrix3d::Identity ()),
-    // evals_ (Eigen::Vector3d::Zero ())
+    // eigen_vectors_ (Eigen::Matrix3d::Identity ()),
+    // eigen_values_ (Eigen::Vector3d::Zero ())
     {
     }
 
@@ -153,23 +153,23 @@ public:
     // }
 
     /** \brief Get the eigen vectors of the voxel covariance.
-     * \note Order corresponds with \ref getEvals
+     * \note Order corresponds with \ref getEigenValues
      * \return matrix whose columns contain eigen vectors
      */
     // Eigen::Matrix3d
-    // getEvecs () const
+    // getEigenVectors () const
     // {
-    //   return (evecs_);
+    //   return (eigen_vectors_);
     // }
 
     /** \brief Get the eigen values of the voxel covariance.
-     * \note Order corresponds with \ref getEvecs
+     * \note Order corresponds with \ref getEigenVectors
      * \return vector of eigen values
      */
     // Eigen::Vector3d
-    // getEvals () const
+    // getEigenValues () const
     // {
-    //   return (evals_);
+    //   return (eigen_values_);
     // }
 
     /** \brief Get the number of points contained by this voxel.
@@ -195,10 +195,10 @@ public:
     // Eigen::Matrix3d icov_;
 
     /** \brief Eigen vectors of voxel covariance matrix */
-    // Eigen::Matrix3d evecs_;
+    // Eigen::Matrix3d eigen_vectors_;
 
     /** \brief Eigen values of voxel covariance matrix */
-    // Eigen::Vector3d evals_;
+    // Eigen::Vector3d eigen_values_;
 
     PointCloud points;
   };
@@ -217,7 +217,7 @@ public:
   : searchable_(true),
     // min_points_per_voxel_ (6),
     min_points_per_voxel_(1),
-    // min_covar_eigenvalue_mult_ (0.01),
+    // min_cov_eigenvalue_mult_ (0.01),
     leaves_(),
     voxel_centroids_(),
     voxel_centroids_leaf_indices_(),
@@ -258,12 +258,12 @@ public:
   inline int getMinPointPerVoxel() { return min_points_per_voxel_; }
 
   /** \brief Set the minimum allowable ratio between eigenvalues to prevent singular covariance
-   * matrices. \param[in] min_covar_eigenvalue_mult the minimum allowable ratio between eigenvalues
+   * matrices. \param[in] min_cov_eigenvalue_mult the minimum allowable ratio between eigenvalues
    */
   // inline void
-  // setCovEigValueInflationRatio (double min_covar_eigenvalue_mult)
+  // setCovEigValueInflationRatio (double min_cov_eigenvalue_mult)
   // {
-  //   min_covar_eigenvalue_mult_ = min_covar_eigenvalue_mult;
+  //   min_cov_eigenvalue_mult_ = min_cov_eigenvalue_mult;
   // }
 
   /** \brief Get the minimum allowable ratio between eigenvalues to prevent singular covariance
@@ -272,7 +272,7 @@ public:
   // inline double
   // getCovEigValueInflationRatio ()
   // {
-  //   return min_covar_eigenvalue_mult_;
+  //   return min_cov_eigenvalue_mult_;
   // }
 
   /** \brief Filter cloud and initializes voxel structure.
@@ -517,7 +517,7 @@ protected:
 
   /** \brief Minimum allowable ratio between eigenvalues to prevent singular covariance
    *         matrices. */
-  // double min_covar_eigenvalue_mult_;
+  // double min_cov_eigenvalue_mult_;
 
   /** \brief Voxel structure containing all leaf nodes (includes voxels with less than
    *         a sufficient number of points). */

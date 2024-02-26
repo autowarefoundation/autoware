@@ -300,7 +300,7 @@ void pcl::VoxelGridNearestCentroid<PointT>::applyFilter(PointCloud & output)
 
   // Eigen values less than a threshold of max eigen value are inflated to a set fraction of the
   // max eigen value.
-  // double min_covar_eigenvalue;
+  // double min_cov_eigenvalue;
 
   for (typename std::map<size_t, Leaf>::iterator it = leaves_.begin(); it != leaves_.end(); ++it) {
     // Normalize the centroid
