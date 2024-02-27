@@ -5,9 +5,11 @@ If you are using Ubuntu 22.04 and Rviz2 (especially inside a container), you may
 This role will install the Kisak Mesa fix for Ubuntu 22.04 for Rviz2.
 
 ## Inputs
+
 None
 
 ## Manual Installation
+
 ```bash
 #!/bin/bash
 

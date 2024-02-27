@@ -3,6 +3,7 @@
 This role installs optional development tools for Autoware.
 
 ## Tools
+
 - Git LFS
 - pre-commit
 - clang-format
@@ -10,11 +11,12 @@ This role installs optional development tools for Autoware.
 
 ## Inputs
 
-| Name                 | Required | Description                      |
-| -------------------- | -------- | -------------------------------- |
-| clang-version        | true     | The version of clang-format to install.
+| Name          | Required | Description                             |
+| ------------- | -------- | --------------------------------------- |
+| clang-version | true     | The version of clang-format to install. |
 
 ## Manual Installation
+
 ```bash
 #!/bin/bash
 
