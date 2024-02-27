@@ -35,4 +35,31 @@ Perform the post installation actions:
 # Taken from: https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions
 echo 'export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}' >> ~/.bashrc
 echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}' >> ~/.bashrc
+
+# Register Vulkan, OpenGL, and OpenCL GPU vendors
+
+# Create Vulkan directory
+sudo mkdir -p /etc/vulkan/icd.d
+sudo chmod 0755 /etc/vulkan/icd.d
+
+# Create OpenGL directory
+sudo mkdir -p /etc/glvnd/egl_vendor.d
+sudo chmod 0755 /etc/glvnd/egl_vendor.d
+
+# Create OpenCL directory
+sudo mkdir -p /etc/OpenCL/vendors
+sudo chmod 0755 /etc/OpenCL/vendors
+
+# Download and set permissions for Vulkan GPU vendors JSON
+sudo wget https://gitlab.com/nvidia/container-images/vulkan/raw/dc389b0445c788901fda1d85be96fd1cb9410164/nvidia_icd.json -O /etc/vulkan/icd.d/nvidia_icd.json
+sudo chmod 0644 /etc/vulkan/icd.d/nvidia_icd.json
+
+# Download and set permissions for OpenGL GPU vendors JSON
+sudo wget https://gitlab.com/nvidia/container-images/opengl/raw/5191cf205d3e4bb1150091f9464499b076104354/glvnd/runtime/10_nvidia.json -O /etc/glvnd/egl_vendor.d/10_nvidia.json
+sudo chmod 0644 /etc/glvnd/egl_vendor.d/10_nvidia.json
+
+# Register and set permissions for OpenCL GPU vendors
+sudo touch /etc/OpenCL/vendors/nvidia.icd
+echo "libnvidia-opencl.so.1" | sudo tee /etc/OpenCL/vendors/nvidia.icd > /dev/null
+sudo chmod 0644 /etc/OpenCL/vendors/nvidia.icd
 ```
