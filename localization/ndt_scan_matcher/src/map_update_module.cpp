@@ -70,6 +70,7 @@ void MapUpdateModule::update_map(const geometry_msgs::msg::Point & position)
   // lock and rebuild ndt_ptr_
   if (need_rebuild_) {
     ndt_ptr_mutex_->lock();
+
     auto param = ndt_ptr_->getParams();
     auto input_source = ndt_ptr_->getInputSource();
 
@@ -90,10 +91,13 @@ void MapUpdateModule::update_map(const geometry_msgs::msg::Point & position)
     update_ndt(position, *secondary_ndt_ptr_);
 
     ndt_ptr_mutex_->lock();
+    auto dummy_ptr = ndt_ptr_;
     auto input_source = ndt_ptr_->getInputSource();
     ndt_ptr_ = secondary_ndt_ptr_;
     ndt_ptr_->setInputSource(input_source);
     ndt_ptr_mutex_->unlock();
+
+    dummy_ptr.reset();
   }
 
   secondary_ndt_ptr_.reset(new NdtType);
