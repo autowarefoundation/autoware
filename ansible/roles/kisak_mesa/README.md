@@ -24,5 +24,13 @@ sudo add-apt-repository -y ppa:kisak/kisak-mesa
 sudo apt-get update
 
 # Install Mesa libraries
-sudo apt-get install -y libegl-mesa0 libegl1-mesa-dev libgbm-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri libglapi-mesa libglx-mesa0
+sudo apt-get install -y \
+libegl-mesa0 \
+libegl1-mesa-dev \
+libgbm-dev \
+libgbm1 \
+libgl1-mesa-dev \
+libgl1-mesa-dri \
+libglapi-mesa \
+libglx-mesa0
 ```
