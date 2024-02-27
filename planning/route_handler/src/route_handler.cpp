@@ -433,6 +433,11 @@ lanelet::ConstLanelets RouteHandler::getRouteLanelets() const
   return route_lanelets_;
 }
 
+lanelet::ConstLanelets RouteHandler::getPreferredLanelets() const
+{
+  return preferred_lanelets_;
+}
+
 Pose RouteHandler::getStartPose() const
 {
   if (!route_ptr_) {
