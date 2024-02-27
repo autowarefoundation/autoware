@@ -211,6 +211,7 @@ ament_export_targets(export_${PROJECT_NAME})
 
 ament_auto_package(INSTALL_TO_SHARE
   launch
+  config
 )
 
 

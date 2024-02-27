@@ -16,8 +16,6 @@
 
 #include "autoware_point_types/types.hpp"
 
-#include <boost/circular_buffer.hpp>
-
 #include <algorithm>
 #include <numeric>
 
@@ -35,7 +33,7 @@ BlockageDiagComponent::BlockageDiagComponent(const rclcpp::NodeOptions & options
     blockage_ratio_threshold_ = declare_parameter<float>("blockage_ratio_threshold");
     vertical_bins_ = declare_parameter<int>("vertical_bins");
     angle_range_deg_ = declare_parameter<std::vector<double>>("angle_range");
-    lidar_model_ = declare_parameter<std::string>("model");
+    is_channel_order_top2down_ = declare_parameter<bool>("is_channel_order_top2down");
     blockage_count_threshold_ = declare_parameter<int>("blockage_count_threshold");
     blockage_buffering_frames_ = declare_parameter<int>("blockage_buffering_frames");
     blockage_buffering_interval_ = declare_parameter<int>("blockage_buffering_interval");
@@ -44,6 +42,17 @@ BlockageDiagComponent::BlockageDiagComponent(const rclcpp::NodeOptions & options
     dust_kernel_size_ = declare_parameter<int>("dust_kernel_size");
     dust_buffering_frames_ = declare_parameter<int>("dust_buffering_frames");
     dust_buffering_interval_ = declare_parameter<int>("dust_buffering_interval");
+    max_distance_range_ = declare_parameter<double>("max_distance_range");
+    horizontal_resolution_ = declare_parameter<double>("horizontal_resolution");
+    blockage_kernel_ = declare_parameter<int>("blockage_kernel");
+  }
+  dust_mask_buffer.set_capacity(dust_buffering_frames_);
+  no_return_mask_buffer.set_capacity(blockage_buffering_frames_);
+  if (vertical_bins_ <= horizontal_ring_id_) {
+    RCLCPP_ERROR(
+      this->get_logger(),
+      "The horizontal_ring_id should be smaller than vertical_bins. Skip blockage diag!");
+    return;
   }
 
   updater_.setHardwareID("blockage_diag");
@@ -150,24 +159,17 @@ void BlockageDiagComponent::filter(
   std::scoped_lock lock(mutex_);
   int vertical_bins = vertical_bins_;
   int ideal_horizontal_bins;
-  float distance_coefficient = 327.67f;
-  float horizontal_resolution_ = 0.4f;
-  if (lidar_model_ == "Pandar40P") {
-    distance_coefficient = 327.67f;
-    horizontal_resolution_ = 0.4f;
-  } else if (lidar_model_ == "PandarQT") {
-    distance_coefficient = 3276.75f;
-    horizontal_resolution_ = 0.6f;
+  double compensate_angle = 0.0;
+  // Check the case when angle_range_deg_[1] exceed 360 and shifted the range to 0~360
+  if (angle_range_deg_[0] > angle_range_deg_[1]) {
+    compensate_angle = 360.0;
   }
-  ideal_horizontal_bins =
-    static_cast<uint>((angle_range_deg_[1] - angle_range_deg_[0]) / horizontal_resolution_);
+  ideal_horizontal_bins = static_cast<int>(
+    (angle_range_deg_[1] + compensate_angle - angle_range_deg_[0]) / horizontal_resolution_);
   pcl::PointCloud<PointXYZIRADRT>::Ptr pcl_input(new pcl::PointCloud<PointXYZIRADRT>);
   pcl::fromROSMsg(*input, *pcl_input);
-  std::vector<float> horizontal_bin_reference(ideal_horizontal_bins);
-  std::vector<pcl::PointCloud<PointXYZIRADRT>> each_ring_pointcloud(vertical_bins);
   cv::Mat full_size_depth_map(
     cv::Size(ideal_horizontal_bins, vertical_bins), CV_16UC1, cv::Scalar(0));
-  cv::Mat lidar_depth_map(cv::Size(ideal_horizontal_bins, vertical_bins), CV_16UC1, cv::Scalar(0));
   cv::Mat lidar_depth_map_8u(
     cv::Size(ideal_horizontal_bins, vertical_bins), CV_8UC1, cv::Scalar(0));
   if (pcl_input->points.empty()) {
@@ -184,24 +186,23 @@ void BlockageDiagComponent::filter(
     sky_blockage_range_deg_[0] = angle_range_deg_[0];
     sky_blockage_range_deg_[1] = angle_range_deg_[1];
   } else {
-    for (int i = 0; i < ideal_horizontal_bins; ++i) {
-      horizontal_bin_reference.at(i) = angle_range_deg_[0] + i * horizontal_resolution_;
-    }
     for (const auto p : pcl_input->points) {
-      for (int horizontal_bin = 0;
-           horizontal_bin < static_cast<int>(horizontal_bin_reference.size()); horizontal_bin++) {
-        if (
-          (p.azimuth / 100 >
-           (horizontal_bin_reference.at(horizontal_bin) - horizontal_resolution_ / 2)) &&
-          (p.azimuth / 100 <=
-           (horizontal_bin_reference.at(horizontal_bin) + horizontal_resolution_ / 2))) {
-          if (lidar_model_ == "Pandar40P") {
-            full_size_depth_map.at<uint16_t>(p.ring, horizontal_bin) =
-              UINT16_MAX - distance_coefficient * p.distance;
-          } else if (lidar_model_ == "PandarQT") {
-            full_size_depth_map.at<uint16_t>(vertical_bins - p.ring - 1, horizontal_bin) =
-              UINT16_MAX - distance_coefficient * p.distance;
-          }
+      double azimuth_deg = p.azimuth / 100.;
+      if (
+        ((azimuth_deg > angle_range_deg_[0]) &&
+         (azimuth_deg <= angle_range_deg_[1] + compensate_angle)) ||
+        ((azimuth_deg + compensate_angle > angle_range_deg_[0]) &&
+         (azimuth_deg < angle_range_deg_[1]))) {
+        double current_angle_range = (azimuth_deg + compensate_angle - angle_range_deg_[0]);
+        int horizontal_bin_index = static_cast<int>(current_angle_range / horizontal_resolution_) %
+                                   static_cast<int>(360.0 / horizontal_resolution_);
+        uint16_t depth_intensity =
+          UINT16_MAX * (1.0 - std::min(p.distance / max_distance_range_, 1.0));
+        if (is_channel_order_top2down_) {
+          full_size_depth_map.at<uint16_t>(p.ring, horizontal_bin_index) = depth_intensity;
+        } else {
+          full_size_depth_map.at<uint16_t>(vertical_bins - p.ring - 1, horizontal_bin_index) =
+            depth_intensity;
         }
       }
     }
@@ -215,7 +216,6 @@ void BlockageDiagComponent::filter(
     cv::Point(blockage_kernel_, blockage_kernel_));
   cv::erode(no_return_mask, erosion_dst, blockage_element);
   cv::dilate(erosion_dst, no_return_mask, blockage_element);
-  static boost::circular_buffer<cv::Mat> no_return_mask_buffer(blockage_buffering_frames_);
   cv::Mat time_series_blockage_result(
     cv::Size(ideal_horizontal_bins, vertical_bins), CV_8UC1, cv::Scalar(0));
   cv::Mat time_series_blockage_mask(
@@ -250,8 +250,13 @@ void BlockageDiagComponent::filter(
   ground_blockage_ratio_ =
     static_cast<float>(cv::countNonZero(ground_no_return_mask)) /
     static_cast<float>(ideal_horizontal_bins * (vertical_bins - horizontal_ring_id_));
-  sky_blockage_ratio_ = static_cast<float>(cv::countNonZero(sky_no_return_mask)) /
-                        static_cast<float>(ideal_horizontal_bins * horizontal_ring_id_);
+
+  if (horizontal_ring_id_ == 0) {
+    sky_blockage_ratio_ = 0.0f;
+  } else {
+    sky_blockage_ratio_ = static_cast<float>(cv::countNonZero(sky_no_return_mask)) /
+                          static_cast<float>(ideal_horizontal_bins * horizontal_ring_id_);
+  }
 
   if (ground_blockage_ratio_ > blockage_ratio_threshold_) {
     cv::Rect ground_blockage_bb = cv::boundingRect(ground_no_return_mask);
@@ -295,7 +300,6 @@ void BlockageDiagComponent::filter(
   cv::inRange(single_dust_ground_img, 254, 255, single_dust_ground_img);
   cv::Mat ground_mask(cv::Size(ideal_horizontal_bins, horizontal_ring_id_), CV_8UC1);
   cv::vconcat(sky_blank, single_dust_ground_img, single_dust_img);
-  static boost::circular_buffer<cv::Mat> dust_mask_buffer(dust_buffering_frames_);
   cv::Mat binarized_dust_mask_(
     cv::Size(ideal_horizontal_bins, vertical_bins), CV_8UC1, cv::Scalar(0));
   cv::Mat multi_frame_dust_mask(
@@ -405,8 +409,8 @@ rcl_interfaces::msg::SetParametersResult BlockageDiagComponent::paramCallback(
     RCLCPP_DEBUG(
       get_logger(), "Setting new blockage_count_threshold to: %d.", blockage_count_threshold_);
   }
-  if (get_param(p, "model", lidar_model_)) {
-    RCLCPP_DEBUG(get_logger(), "Setting new lidar model to: %s. ", lidar_model_.c_str());
+  if (get_param(p, "is_channel_order_top2down", is_channel_order_top2down_)) {
+    RCLCPP_DEBUG(get_logger(), "Setting new lidar model to: %d. ", is_channel_order_top2down_);
   }
   if (get_param(p, "angle_range", angle_range_deg_)) {
     RCLCPP_DEBUG(

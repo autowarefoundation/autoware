@@ -58,14 +58,17 @@ This implementation inherits `pointcloud_preprocessor::Filter` class, please ref
 | `horizontal_ring_id`          | int    | The id of horizontal ring of the LiDAR                                                                                        |
 | `angle_range`                 | vector | The effective range of LiDAR                                                                                                  |
 | `vertical_bins`               | int    | The LiDAR channel number                                                                                                      |
-| `model`                       | string | The LiDAR model                                                                                                               |
+| `is_channel_order_top2down`   | bool   | If the lidar channels are indexed from top to down                                                                            |
 | `blockage_buffering_frames`   | int    | The number of buffering about blockage detection [range:1-200]                                                                |
 | `blockage_buffering_interval` | int    | The interval of buffering about blockage detection                                                                            |
 | `dust_ratio_threshold`        | float  | The threshold of dusty area ratio                                                                                             |
 | `dust_count_threshold`        | int    | The threshold of number continuous frames include dusty area                                                                  |
+| `blockage_kernel`             | int    | The kernel size of morphology processing the detected blockage area                                                           |
 | `dust_kernel_size`            | int    | The kernel size of morphology processing in dusty area detection                                                              |
 | `dust_buffering_frames`       | int    | The number of buffering about dusty area detection [range:1-200]                                                              |
 | `dust_buffering_interval`     | int    | The interval of buffering about dusty area detection                                                                          |
+| `max_distance_range`          | double | Maximum view range for the LiDAR                                                                                              |
+| `horizontal_resolution`       | double | The horizontal resolution of depth map image [deg/pixel]                                                                      |
 
 ## Assumptions / Known limits
 

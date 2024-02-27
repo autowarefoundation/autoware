@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    blockage_ratio_threshold: 0.1
+    blockage_count_threshold: 50
+    blockage_buffering_frames: 2
+    blockage_buffering_interval: 1
+    dust_ratio_threshold: 0.2
+    dust_count_threshold: 10
+    dust_kernel_size: 2
+    dust_buffering_frames: 10
+    dust_buffering_interval: 1
+    max_distance_range: 200.0
+    horizontal_resolution: 0.4
+    blockage_kernel: 10
