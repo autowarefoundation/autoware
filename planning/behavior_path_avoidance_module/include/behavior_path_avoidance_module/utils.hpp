@@ -176,7 +176,7 @@ double calcDistanceToAvoidStartLine(
   const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters);
 
-TurnSignalInfo calcTurnSignalInfo(
+std::pair<TurnSignalInfo, bool> calcTurnSignalInfo(
   const ShiftedPath & path, const ShiftLine & shift_line, const double current_shift_length,
   const AvoidancePlanningData & data, const std::shared_ptr<const PlannerData> & planner_data);
 }  // namespace behavior_path_planner::utils::avoidance

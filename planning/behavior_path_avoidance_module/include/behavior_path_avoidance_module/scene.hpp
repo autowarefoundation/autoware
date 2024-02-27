@@ -404,6 +404,8 @@ private:
 
   bool safe_{true};
 
+  std::optional<UUID> ignore_signal_{std::nullopt};
+
   std::shared_ptr<AvoidanceHelper> helper_;
 
   std::shared_ptr<AvoidanceParameters> parameters_;

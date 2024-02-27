@@ -443,9 +443,6 @@ struct AvoidLine : public ShiftLine
   // Distance from ego to end point in Frenet
   double end_longitudinal = 0.0;
 
-  // for unique_id
-  UUID id{};
-
   // for the case the point is created by merge other points
   std::vector<UUID> parent_ids{};
 

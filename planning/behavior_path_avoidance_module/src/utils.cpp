@@ -250,16 +250,37 @@ void pushUniqueVector(T & base_vector, const T & additional_vector)
   base_vector.insert(base_vector.end(), additional_vector.begin(), additional_vector.end());
 }
 
+bool isAvoidShift(
+  const double start_shift_length, const double end_shift_length, const double threshold)
+{
+  return std::abs(start_shift_length) < threshold && std::abs(end_shift_length) > threshold;
+}
+
+bool isReturnShift(
+  const double start_shift_length, const double end_shift_length, const double threshold)
+{
+  return std::abs(start_shift_length) > threshold && std::abs(end_shift_length) < threshold;
+}
+
+bool isLeftMiddleShift(
+  const double start_shift_length, const double end_shift_length, const double threshold)
+{
+  return start_shift_length > threshold && end_shift_length > threshold;
+}
+
+bool isRightMiddleShift(
+  const double start_shift_length, const double end_shift_length, const double threshold)
+{
+  return start_shift_length < threshold && end_shift_length < threshold;
+}
+
 bool existShiftSideLane(
   const double start_shift_length, const double end_shift_length, const bool no_left_lanes,
-  const bool no_right_lanes)
+  const bool no_right_lanes, const double threshold)
 {
-  constexpr double THRESHOLD = 0.1;
   const auto relative_shift_length = end_shift_length - start_shift_length;
 
-  const auto avoid_shift =
-    std::abs(start_shift_length) < THRESHOLD && std::abs(end_shift_length) > THRESHOLD;
-  if (avoid_shift) {
+  if (isAvoidShift(start_shift_length, end_shift_length, threshold)) {
     // Left avoid. But there is no adjacent lane. No need blinker.
     if (relative_shift_length > 0.0 && no_left_lanes) {
       return false;
@@ -271,9 +292,7 @@ bool existShiftSideLane(
     }
   }
 
-  const auto return_shift =
-    std::abs(start_shift_length) > THRESHOLD && std::abs(end_shift_length) < THRESHOLD;
-  if (return_shift) {
+  if (isReturnShift(start_shift_length, end_shift_length, threshold)) {
     // Right return. But there is no adjacent lane. No need blinker.
     if (relative_shift_length > 0.0 && no_right_lanes) {
       return false;
@@ -285,8 +304,7 @@ bool existShiftSideLane(
     }
   }
 
-  const auto left_middle_shift = start_shift_length > THRESHOLD && end_shift_length > THRESHOLD;
-  if (left_middle_shift) {
+  if (isLeftMiddleShift(start_shift_length, end_shift_length, threshold)) {
     // Left avoid. But there is no adjacent lane. No need blinker.
     if (relative_shift_length > 0.0 && no_left_lanes) {
       return false;
@@ -298,8 +316,7 @@ bool existShiftSideLane(
     }
   }
 
-  const auto right_middle_shift = start_shift_length < THRESHOLD && end_shift_length < THRESHOLD;
-  if (right_middle_shift) {
+  if (isRightMiddleShift(start_shift_length, end_shift_length, threshold)) {
     // Right avoid. But there is no adjacent lane. No need blinker.
     if (relative_shift_length < 0.0 && no_right_lanes) {
       return false;
@@ -312,6 +329,23 @@ bool existShiftSideLane(
   }
 
   return true;
+}
+
+bool isNearEndOfShift(
+  const double start_shift_length, const double end_shift_length, const Point & ego_pos,
+  const lanelet::ConstLanelets & original_lanes, const double threshold)
+{
+  using boost::geometry::within;
+  using lanelet::utils::to2D;
+  using lanelet::utils::conversion::toLaneletPoint;
+
+  if (!isReturnShift(start_shift_length, end_shift_length, threshold)) {
+    return false;
+  }
+
+  return std::any_of(original_lanes.begin(), original_lanes.end(), [&ego_pos](const auto & lane) {
+    return within(to2D(toLaneletPoint(ego_pos)), lane.polygon2d().basicPolygon());
+  });
 }
 
 bool straddleRoadBound(
@@ -2323,7 +2357,7 @@ double calcDistanceToReturnDeadLine(
   return distance_to_return_dead_line;
 }
 
-TurnSignalInfo calcTurnSignalInfo(
+std::pair<TurnSignalInfo, bool> calcTurnSignalInfo(
   const ShiftedPath & path, const ShiftLine & shift_line, const double current_shift_length,
   const AvoidancePlanningData & data, const std::shared_ptr<const PlannerData> & planner_data)
 {
@@ -2335,22 +2369,22 @@ TurnSignalInfo calcTurnSignalInfo(
 
   if (shift_line.start_idx + 1 > path.shift_length.size()) {
     RCLCPP_WARN(rclcpp::get_logger(__func__), "index inconsistency.");
-    return {};
+    return std::make_pair(TurnSignalInfo{}, true);
   }
 
   if (shift_line.start_idx + 1 > path.path.points.size()) {
     RCLCPP_WARN(rclcpp::get_logger(__func__), "index inconsistency.");
-    return {};
+    return std::make_pair(TurnSignalInfo{}, true);
   }
 
   if (shift_line.end_idx + 1 > path.shift_length.size()) {
     RCLCPP_WARN(rclcpp::get_logger(__func__), "index inconsistency.");
-    return {};
+    return std::make_pair(TurnSignalInfo{}, true);
   }
 
   if (shift_line.end_idx + 1 > path.path.points.size()) {
     RCLCPP_WARN(rclcpp::get_logger(__func__), "index inconsistency.");
-    return {};
+    return std::make_pair(TurnSignalInfo{}, true);
   }
 
   const auto start_shift_length = path.shift_length.at(shift_line.start_idx);
@@ -2359,12 +2393,12 @@ TurnSignalInfo calcTurnSignalInfo(
 
   // If shift length is shorter than the threshold, it does not need to turn on blinkers
   if (std::fabs(relative_shift_length) < p.turn_signal_shift_length_threshold) {
-    return {};
+    return std::make_pair(TurnSignalInfo{}, true);
   }
 
   // If the vehicle does not shift anymore, we turn off the blinker
   if (std::fabs(path.shift_length.at(shift_line.end_idx) - current_shift_length) < THRESHOLD) {
-    return {};
+    return std::make_pair(TurnSignalInfo{}, true);
   }
 
   const auto get_command = [](const auto & shift_length) {
@@ -2379,7 +2413,7 @@ TurnSignalInfo calcTurnSignalInfo(
     p.vehicle_info.max_longitudinal_offset_m;
 
   if (signal_prepare_distance < ego_front_to_shift_start) {
-    return {};
+    return std::make_pair(TurnSignalInfo{}, false);
   }
 
   const auto blinker_start_pose = path.path.points.at(shift_line.start_idx).point.pose;
@@ -2396,12 +2430,12 @@ TurnSignalInfo calcTurnSignalInfo(
   turn_signal_info.turn_signal.command = get_command(relative_shift_length);
 
   if (!p.turn_signal_on_swerving) {
-    return turn_signal_info;
+    return std::make_pair(turn_signal_info, false);
   }
 
   lanelet::ConstLanelet lanelet;
   if (!rh->getClosestLaneletWithinRoute(shift_line.end, &lanelet)) {
-    return {};
+    return std::make_pair(TurnSignalInfo{}, true);
   }
 
   const auto left_same_direction_lane = rh->getLeftLanelet(lanelet, true, true);
@@ -2412,14 +2446,25 @@ TurnSignalInfo calcTurnSignalInfo(
   const auto has_right_lane =
     right_same_direction_lane.has_value() || !right_opposite_lanes.empty();
 
-  if (!existShiftSideLane(start_shift_length, end_shift_length, !has_left_lane, !has_right_lane)) {
-    return {};
+  if (!existShiftSideLane(
+        start_shift_length, end_shift_length, !has_left_lane, !has_right_lane,
+        p.turn_signal_shift_length_threshold)) {
+    return std::make_pair(TurnSignalInfo{}, true);
   }
 
   if (!straddleRoadBound(path, shift_line, data.current_lanelets, p.vehicle_info)) {
-    return {};
+    return std::make_pair(TurnSignalInfo{}, true);
   }
 
-  return turn_signal_info;
+  constexpr double STOPPED_THRESHOLD = 0.1;  // [m/s]
+  if (ego_speed < STOPPED_THRESHOLD) {
+    if (isNearEndOfShift(
+          start_shift_length, end_shift_length, ego_pose.position, data.current_lanelets,
+          p.turn_signal_shift_length_threshold)) {
+      return std::make_pair(TurnSignalInfo{}, true);
+    }
+  }
+
+  return std::make_pair(turn_signal_info, false);
 }
 }  // namespace behavior_path_planner::utils::avoidance

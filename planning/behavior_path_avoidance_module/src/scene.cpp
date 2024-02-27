@@ -918,12 +918,26 @@ BehaviorModuleOutput AvoidanceModule::plan()
 
   BehaviorModuleOutput output;
 
+  const auto is_ignore_signal = [this](const UUID & uuid) {
+    if (!ignore_signal_.has_value()) {
+      return false;
+    }
+
+    return ignore_signal_.value() == uuid;
+  };
+
+  const auto update_ignore_signal = [this](const UUID & uuid, const bool is_ignore) {
+    ignore_signal_ = is_ignore ? std::make_optional(uuid) : std::nullopt;
+  };
+
   // turn signal info
   if (path_shifter_.getShiftLines().empty()) {
     output.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
+  } else if (is_ignore_signal(path_shifter_.getShiftLines().front().id)) {
+    output.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
   } else {
     const auto original_signal = getPreviousModuleOutput().turn_signal_info;
-    const auto new_signal = utils::avoidance::calcTurnSignalInfo(
+    const auto [new_signal, is_ignore] = utils::avoidance::calcTurnSignalInfo(
       linear_shift_path, path_shifter_.getShiftLines().front(), helper_->getEgoShift(), avoid_data_,
       planner_data_);
     const auto current_seg_idx = planner_data_->findEgoSegmentIndex(spline_shift_path.path.points);
@@ -931,6 +945,7 @@ BehaviorModuleOutput AvoidanceModule::plan()
       spline_shift_path.path, getEgoPose(), current_seg_idx, original_signal, new_signal,
       planner_data_->parameters.ego_nearest_dist_threshold,
       planner_data_->parameters.ego_nearest_yaw_threshold);
+    update_ignore_signal(path_shifter_.getShiftLines().front().id, is_ignore);
   }
 
   // sparse resampling for computational cost
