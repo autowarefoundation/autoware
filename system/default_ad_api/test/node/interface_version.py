@@ -30,7 +30,7 @@ response = future.result()
 
 if response.major != 1:
     exit(1)
-if response.minor != 0:
+if response.minor != 1:
     exit(1)
 if response.patch != 0:
     exit(1)
