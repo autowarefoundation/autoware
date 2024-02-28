@@ -24,7 +24,6 @@ jobs:
         rosdistro:
           - humble
         container-suffix:
-          - ""
           - -cuda
         include:
           - rosdistro: humble
