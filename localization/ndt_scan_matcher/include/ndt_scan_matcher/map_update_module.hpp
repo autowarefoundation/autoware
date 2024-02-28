@@ -55,7 +55,7 @@ private:
   friend class NDTScanMatcher;
 
   // Update the specified NDT
-  void update_ndt(const geometry_msgs::msg::Point & position, NdtType & ndt);
+  bool update_ndt(const geometry_msgs::msg::Point & position, NdtType & ndt);
   void update_map(const geometry_msgs::msg::Point & position);
   [[nodiscard]] bool should_update_map(const geometry_msgs::msg::Point & position);
   void publish_partial_pcd_map();
