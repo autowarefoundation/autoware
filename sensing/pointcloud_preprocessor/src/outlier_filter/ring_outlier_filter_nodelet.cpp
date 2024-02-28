@@ -14,7 +14,11 @@
 
 #include "pointcloud_preprocessor/outlier_filter/ring_outlier_filter_nodelet.hpp"
 
+#include "autoware_auto_geometry/common_3d.hpp"
+
 #include <sensor_msgs/point_cloud2_iterator.hpp>
+
+#include <pcl/search/pcl_search.h>
 
 #include <algorithm>
 #include <vector>
@@ -29,6 +33,8 @@ RingOutlierFilterComponent::RingOutlierFilterComponent(const rclcpp::NodeOptions
     using tier4_autoware_utils::StopWatch;
     stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
     debug_publisher_ = std::make_unique<DebugPublisher>(this, "ring_outlier_filter");
+    excluded_points_publisher_ =
+      this->create_publisher<sensor_msgs::msg::PointCloud2>("debug/ring_outlier_filter", 1);
     stop_watch_ptr_->tic("cyclic_time");
     stop_watch_ptr_->tic("processing_time");
   }
@@ -42,6 +48,8 @@ RingOutlierFilterComponent::RingOutlierFilterComponent(const rclcpp::NodeOptions
     max_rings_num_ = static_cast<uint16_t>(declare_parameter("max_rings_num", 128));
     max_points_num_per_ring_ =
       static_cast<size_t>(declare_parameter("max_points_num_per_ring", 4000));
+    publish_excluded_points_ =
+      static_cast<bool>(declare_parameter("publish_excluded_points", false));
   }
 
   using std::placeholders::_1;
@@ -196,6 +204,17 @@ void RingOutlierFilterComponent::faster_filter(
     sensor_msgs::msg::PointField::FLOAT32, "z", 1, sensor_msgs::msg::PointField::FLOAT32,
     "intensity", 1, sensor_msgs::msg::PointField::FLOAT32);
 
+  if (publish_excluded_points_) {
+    auto excluded_points = extractExcludedPoints(*input, output, 0.01);
+    // set fields
+    sensor_msgs::PointCloud2Modifier excluded_pcd_modifier(excluded_points);
+    excluded_pcd_modifier.setPointCloud2Fields(
+      num_fields, "x", 1, sensor_msgs::msg::PointField::FLOAT32, "y", 1,
+      sensor_msgs::msg::PointField::FLOAT32, "z", 1, sensor_msgs::msg::PointField::FLOAT32,
+      "intensity", 1, sensor_msgs::msg::PointField::FLOAT32);
+    excluded_points_publisher_->publish(excluded_points);
+  }
+
   // add processing time for debug
   if (debug_publisher_) {
     const double cyclic_time_ms = stop_watch_ptr_->toc("cyclic_time", true);
@@ -241,6 +260,10 @@ rcl_interfaces::msg::SetParametersResult RingOutlierFilterComponent::paramCallba
   if (get_param(p, "num_points_threshold", num_points_threshold_)) {
     RCLCPP_DEBUG(get_logger(), "Setting new num_points_threshold to: %d.", num_points_threshold_);
   }
+  if (get_param(p, "publish_excluded_points", publish_excluded_points_)) {
+    RCLCPP_DEBUG(
+      get_logger(), "Setting new publish_excluded_points to: %d.", publish_excluded_points_);
+  }
 
   rcl_interfaces::msg::SetParametersResult result;
   result.successful = true;
@@ -248,6 +271,54 @@ rcl_interfaces::msg::SetParametersResult RingOutlierFilterComponent::paramCallba
 
   return result;
 }
+
+sensor_msgs::msg::PointCloud2 RingOutlierFilterComponent::extractExcludedPoints(
+  const sensor_msgs::msg::PointCloud2 & input, const sensor_msgs::msg::PointCloud2 & output,
+  float epsilon)
+{
+  // Convert ROS PointCloud2 message to PCL point cloud for easier manipulation
+  pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::fromROSMsg(input, *input_cloud);
+  pcl::fromROSMsg(output, *output_cloud);
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr excluded_points(new pcl::PointCloud<pcl::PointXYZ>);
+
+  pcl::search::Search<pcl::PointXYZ>::Ptr tree;
+  if (output_cloud->isOrganized()) {
+    tree.reset(new pcl::search::OrganizedNeighbor<pcl::PointXYZ>());
+  } else {
+    tree.reset(new pcl::search::KdTree<pcl::PointXYZ>(false));
+  }
+  tree->setInputCloud(output_cloud);
+  std::vector<int> nn_indices(1);
+  std::vector<float> nn_distances(1);
+  for (const auto & point : input_cloud->points) {
+    if (!tree->nearestKSearch(point, 1, nn_indices, nn_distances)) {
+      continue;
+    }
+    if (nn_distances[0] > epsilon) {
+      excluded_points->points.push_back(point);
+    }
+  }
+
+  sensor_msgs::msg::PointCloud2 excluded_points_msg;
+  pcl::toROSMsg(*excluded_points, excluded_points_msg);
+
+  // Set the metadata for the excluded points message based on the input cloud
+  excluded_points_msg.height = 1;
+  excluded_points_msg.width =
+    static_cast<uint32_t>(output.data.size() / output.height / output.point_step);
+  excluded_points_msg.row_step = static_cast<uint32_t>(output.data.size() / output.height);
+  excluded_points_msg.is_bigendian = input.is_bigendian;
+  excluded_points_msg.is_dense = input.is_dense;
+  excluded_points_msg.header = input.header;
+  excluded_points_msg.header.frame_id =
+    !tf_input_frame_.empty() ? tf_input_frame_ : tf_input_orig_frame_;
+
+  return excluded_points_msg;
+}
+
 }  // namespace pointcloud_preprocessor
 
 #include <rclcpp_components/register_node_macro.hpp>

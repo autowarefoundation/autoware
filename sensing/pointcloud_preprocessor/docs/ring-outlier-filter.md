@@ -22,13 +22,14 @@ This implementation inherits `pointcloud_preprocessor::Filter` class, please ref
 
 ### Core Parameters
 
-| Name                      | Type    | Default Value | Description                                                                         |
-| ------------------------- | ------- | ------------- | ----------------------------------------------------------------------------------- |
-| `distance_ratio`          | double  | 1.03          |                                                                                     |
-| `object_length_threshold` | double  | 0.1           |                                                                                     |
-| `num_points_threshold`    | int     | 4             |                                                                                     |
-| `max_rings_num`           | uint_16 | 128           |                                                                                     |
-| `max_points_num_per_ring` | size_t  | 4000          | Set this value large enough such that `HFoV / resolution < max_points_num_per_ring` |
+| Name                      | Type    | Default Value | Description                                                                                                                     |
+| ------------------------- | ------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `distance_ratio`          | double  | 1.03          |                                                                                                                                 |
+| `object_length_threshold` | double  | 0.1           |                                                                                                                                 |
+| `num_points_threshold`    | int     | 4             |                                                                                                                                 |
+| `max_rings_num`           | uint_16 | 128           |                                                                                                                                 |
+| `max_points_num_per_ring` | size_t  | 4000          | Set this value large enough such that `HFoV / resolution < max_points_num_per_ring`                                             |
+| `publish_excluded_points` | bool    | false         | Flag to publish excluded pointcloud for debugging purpose. Due to performance concerns, please set to false during experiments. |
 
 ## Assumptions / Known limits
 

@@ -18,6 +18,7 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_auto_geometry</depend>
   <depend>autoware_point_types</depend>
   <depend>cgal</depend>
   <depend>cv_bridge</depend>
