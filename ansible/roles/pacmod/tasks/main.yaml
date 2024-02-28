@@ -1,11 +1,3 @@
-- name: Install plotjuggler
-  become: true
-  ansible.builtin.apt:
-    name:
-      - ros-{{ rosdistro }}-plotjuggler-ros
-    state: latest
-    update_cache: true
-
 - name: Install apt-transport-https
   become: true
   ansible.builtin.apt:

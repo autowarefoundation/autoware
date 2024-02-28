@@ -23,4 +23,4 @@
     - role: autoware.dev_env.cuda
       when: prompt_install_nvidia == 'y'
     - role: autoware.dev_env.docker_engine
-    - role: autoware.dev_env.nvidia_docker
+    - role: autoware.dev_env.nvidia_container_toolkit

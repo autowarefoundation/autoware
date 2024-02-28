@@ -1,6 +1,6 @@
-# nvidia_docker
+# nvidia_container_toolkit
 
-This role installs [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker) following the [installation guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
+This role installs [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-container-toolkit) following the [installation guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
 
 ## Inputs
 
@@ -13,26 +13,31 @@ Install Nvidia Container Toolkit:
 <!-- cspell:ignore Disp, Uncorr -->
 
 ```bash
-# Taken from https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#setting-up-nvidia-container-toolkit
+# Add NVIDIA container toolkit GPG key
+sudo apt-key adv --fetch-keys https://nvidia.github.io/libnvidia-container/gpgkey
+sudo gpg --no-default-keyring --keyring /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg --import /etc/apt/trusted.gpg
 
-# Setup the package repository and the GPG key:
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
-      && curl -s -L https://nvidia.github.io/libnvidia-container/gpgkey | sudo apt-key add - \
-      && curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+# Add NVIDIA container toolkit repository
+echo "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/deb/$(dpkg --print-architecture) /" | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
 
-# Install the nvidia-docker2 package (and dependencies) after updating the package listing:
+# Update the package list
 sudo apt-get update
-sudo apt-get install -y nvidia-docker2
 
-# Restart the Docker daemon to complete the installation after setting the default runtime:
+# Install NVIDIA Container Toolkit
+sudo apt-get install -y nvidia-container-toolkit
+
+# Add NVIDIA runtime support to docker engine
+sudo nvidia-ctk runtime configure --runtime=docker
+
+# Restart docker daemon
 sudo systemctl restart docker
 
 # At this point, a working setup can be tested by running a base CUDA container:
-sudo docker run --rm --gpus all nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
+sudo docker run --rm --gpus all nvcr.io/nvidia/cuda:12.3.1-runtime-ubuntu20.04 nvidia-smi
 
 # This should result in a console output shown below:
 # +-----------------------------------------------------------------------------+
-# | NVIDIA-SMI 450.51.06    Driver Version: 450.51.06    CUDA Version: 11.0     |
+# | NVIDIA-SMI 545.23.08    Driver Version: 545.23.08    CUDA Version: 12.3.1   |
 # |-------------------------------+----------------------+----------------------+
 # | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
 # | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
