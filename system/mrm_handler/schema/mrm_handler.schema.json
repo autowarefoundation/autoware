@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for mrm handler",
+  "type": "object",
+  "definitions": {
+    "mrm_handler": {
+      "type": "object",
+      "properties": {
+        "update_rate": {
+          "type": "integer",
+          "description": "Timer callback period.",
+          "default": 10
+        },
+        "timeout_operation_mode_availability": {
+          "type": "number",
+          "description": "If the input `operation_mode_availability` topic cannot be received for more than `timeout_operation_mode_availability`, vehicle will make an emergency stop.",
+          "default": 0.5
+        },
+        "use_emergency_holding": {
+          "type": "boolean",
+          "description": "If this parameter is true, the handler does not recover to the NORMAL state.",
+          "default": false
+        },
+        "timeout_emergency_recovery": {
+          "type": "number",
+          "description": "If the duration of the EMERGENCY state is longer than `timeout_emergency_recovery`, it does not recover to the NORMAL state.",
+          "default": 5.0
+        },
+        "timeout_takeover_request": {
+          "type": "number",
+          "description": "Transition to MRR_OPERATING if the time from the last takeover request exceeds `timeout_takeover_request`.",
+          "default": 10.0
+        },
+        "use_takeover_request": {
+          "type": "boolean",
+          "description": "If this parameter is true, the handler will record the time and make take over request to the driver when emergency state occurs.",
+          "default": "false"
+        },
+        "use_parking_after_stopped": {
+          "type": "boolean",
+          "description": "If this parameter is true, it will publish PARKING shift command.",
+          "default": "false"
+        },
+        "use_pull_over": {
+          "type": "boolean",
+          "description": "If this parameter is true, operate pull over when latent faults occur.",
+          "default": "false"
+        },
+        "use_comfortable_stop": {
+          "type": "boolean",
+          "description": "If this parameter is true, operate comfortable stop when latent faults occur.",
+          "default": "false"
+        },
+        "turning_hazard_on": {
+          "type": "object",
+          "properties": {
+            "emergency": {
+              "type": "boolean",
+              "description": "If this parameter is true, hazard lamps will be turned on during emergency state.",
+              "default": "true"
+            }
+          },
+          "required": ["emergency"]
+        }
+      },
+      "required": [
+        "update_rate",
+        "timeout_operation_mode_availability",
+        "use_emergency_holding",
+        "timeout_emergency_recovery",
+        "timeout_takeover_request",
+        "use_takeover_request",
+        "use_parking_after_stopped",
+        "use_pull_over",
+        "use_comfortable_stop",
+        "turning_hazard_on"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/mrm_handler"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

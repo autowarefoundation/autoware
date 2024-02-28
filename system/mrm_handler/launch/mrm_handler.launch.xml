@@ -1,0 +1,39 @@
+<launch>
+  <arg name="input_operation_mode_availability" default="/system/operation_mode/availability"/>
+  <!-- To be replaced by ControlCommand -->
+  <arg name="input_odometry" default="/localization/kinematic_state"/>
+  <arg name="input_control_mode" default="/vehicle/status/control_mode"/>
+  <arg name="input_mrm_pull_over_state" default="/system/mrm/pull_over_manager/status"/>
+  <arg name="input_mrm_comfortable_stop_state" default="/system/mrm/comfortable_stop/status"/>
+  <arg name="input_mrm_emergency_stop_state" default="/system/mrm/emergency_stop/status"/>
+  <arg name="input_api_operation_mode_state" default="/api/operation_mode/state"/>
+
+  <arg name="output_gear" default="/system/emergency/gear_cmd"/>
+  <arg name="output_hazard" default="/system/emergency/hazard_lights_cmd"/>
+  <arg name="output_mrm_state" default="/system/fail_safe/mrm_state"/>
+  <arg name="output_mrm_pull_over_operate" default="/system/mrm/pull_over_manager/operate"/>
+  <arg name="output_mrm_comfortable_stop_operate" default="/system/mrm/comfortable_stop/operate"/>
+  <arg name="output_mrm_emergency_stop_operate" default="/system/mrm/emergency_stop/operate"/>
+
+  <arg name="config_file" default="$(find-pkg-share mrm_handler)/config/mrm_handler.param.yaml"/>
+
+  <!-- mrm_handler -->
+  <node pkg="mrm_handler" exec="mrm_handler" name="mrm_handler" output="screen">
+    <remap from="~/input/operation_mode_availability" to="$(var input_operation_mode_availability)"/>
+    <remap from="~/input/odometry" to="$(var input_odometry)"/>
+    <remap from="~/input/control_mode" to="$(var input_control_mode)"/>
+    <remap from="~/input/mrm/pull_over/status" to="$(var input_mrm_pull_over_state)"/>
+    <remap from="~/input/mrm/comfortable_stop/status" to="$(var input_mrm_comfortable_stop_state)"/>
+    <remap from="~/input/mrm/emergency_stop/status" to="$(var input_mrm_emergency_stop_state)"/>
+    <remap from="~/input/api/operation_mode/state" to="$(var input_api_operation_mode_state)"/>
+
+    <remap from="~/output/gear" to="$(var output_gear)"/>
+    <remap from="~/output/hazard" to="$(var output_hazard)"/>
+    <remap from="~/output/mrm/state" to="$(var output_mrm_state)"/>
+    <remap from="~/output/mrm/pull_over/operate" to="$(var output_mrm_pull_over_operate)"/>
+    <remap from="~/output/mrm/comfortable_stop/operate" to="$(var output_mrm_comfortable_stop_operate)"/>
+    <remap from="~/output/mrm/emergency_stop/operate" to="$(var output_mrm_emergency_stop_operate)"/>
+
+    <param from="$(var config_file)"/>
+  </node>
+</launch>
