@@ -116,7 +116,7 @@ std::vector<PathWithLaneId> GeometricParallelParking::generatePullOverPaths(
                                               : parameters_.backward_parking_path_interval;
   auto arc_paths = planOneTrial(
     start_pose, goal_pose, R_E_far, road_lanes, shoulder_lanes, is_forward, left_side_parking,
-    end_pose_offset, lane_departure_margin, arc_path_interval);
+    end_pose_offset, lane_departure_margin, arc_path_interval, {});
   if (arc_paths.empty()) {
     return std::vector<PathWithLaneId>{};
   }
@@ -222,7 +222,8 @@ bool GeometricParallelParking::planPullOver(
 
 bool GeometricParallelParking::planPullOut(
   const Pose & start_pose, const Pose & goal_pose, const lanelet::ConstLanelets & road_lanes,
-  const lanelet::ConstLanelets & shoulder_lanes, const bool left_side_start)
+  const lanelet::ConstLanelets & shoulder_lanes, const bool left_side_start,
+  const std::shared_ptr<lane_departure_checker::LaneDepartureChecker> lane_departure_checker)
 {
   constexpr bool is_forward = false;         // parking backward means pull_out forward
   constexpr double start_pose_offset = 0.0;  // start_pose is current_pose
@@ -242,7 +243,7 @@ bool GeometricParallelParking::planPullOut(
     auto arc_paths = planOneTrial(
       *end_pose, start_pose, R_E_min_, road_lanes, shoulder_lanes, is_forward, left_side_start,
       start_pose_offset, parameters_.pull_out_lane_departure_margin,
-      parameters_.pull_out_path_interval);
+      parameters_.pull_out_path_interval, lane_departure_checker);
     if (arc_paths.empty()) {
       // not found path
       continue;
@@ -362,7 +363,8 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
   const Pose & start_pose, const Pose & goal_pose, const double R_E_far,
   const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
   const bool is_forward, const bool left_side_parking, const double end_pose_offset,
-  const double lane_departure_margin, const double arc_path_interval)
+  const double lane_departure_margin, const double arc_path_interval,
+  const std::shared_ptr<lane_departure_checker::LaneDepartureChecker> lane_departure_checker)
 {
   clearPaths();
 
@@ -495,6 +497,24 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
   };
   setLaneIdsToPath(path_turn_first);
   setLaneIdsToPath(path_turn_second);
+
+  if (lane_departure_checker) {
+    const auto lanelet_map_ptr = planner_data_->route_handler->getLaneletMapPtr();
+
+    const bool is_path_turn_first_outside_lanes =
+      lane_departure_checker->checkPathWillLeaveLane(lanelet_map_ptr, path_turn_first);
+
+    if (is_path_turn_first_outside_lanes) {
+      return std::vector<PathWithLaneId>{};
+    }
+
+    const bool is_path_turn_second_outside_lanes =
+      lane_departure_checker->checkPathWillLeaveLane(lanelet_map_ptr, path_turn_second);
+
+    if (is_path_turn_second_outside_lanes) {
+      return std::vector<PathWithLaneId>{};
+    }
+  }
 
   // generate arc path vector
   paths_.push_back(path_turn_first);

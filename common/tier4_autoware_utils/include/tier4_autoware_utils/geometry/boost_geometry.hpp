@@ -18,6 +18,7 @@
 #include <boost/geometry/core/cs.hpp>
 #include <boost/geometry/geometries/geometries.hpp>
 #include <boost/geometry/geometries/register/point.hpp>
+#include <boost/geometry/geometries/register/ring.hpp>
 
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
@@ -98,5 +99,6 @@ BOOST_GEOMETRY_REGISTER_POINT_2D(                                       // NOLIN
   tier4_autoware_utils::Point2d, double, cs::cartesian, x(), y())       // NOLINT
 BOOST_GEOMETRY_REGISTER_POINT_3D(                                       // NOLINT
   tier4_autoware_utils::Point3d, double, cs::cartesian, x(), y(), z())  // NOLINT
+BOOST_GEOMETRY_REGISTER_RING(tier4_autoware_utils::LinearRing2d)        // NOLINT
 
 #endif  // TIER4_AUTOWARE_UTILS__GEOMETRY__BOOST_GEOMETRY_HPP_

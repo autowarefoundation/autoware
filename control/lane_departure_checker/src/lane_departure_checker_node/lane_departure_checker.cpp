@@ -34,6 +34,7 @@ using motion_utils::calcArcLength;
 using tier4_autoware_utils::LinearRing2d;
 using tier4_autoware_utils::LineString2d;
 using tier4_autoware_utils::MultiPoint2d;
+using tier4_autoware_utils::MultiPolygon2d;
 using tier4_autoware_utils::Point2d;
 
 namespace
@@ -92,6 +93,7 @@ lanelet::ConstLanelets getCandidateLanelets(
 
   return candidate_lanelets;
 }
+
 }  // namespace
 
 namespace lane_departure_checker
@@ -298,6 +300,92 @@ bool LaneDepartureChecker::willLeaveLane(
   return false;
 }
 
+std::vector<std::pair<double, lanelet::Lanelet>> LaneDepartureChecker::getLaneletsFromPath(
+  const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path) const
+{
+  // Get Footprint Hull basic polygon
+  std::vector<LinearRing2d> vehicle_footprints = createVehicleFootprints(path);
+  LinearRing2d footprint_hull = createHullFromFootprints(vehicle_footprints);
+  auto to_basic_polygon = [](const LinearRing2d & footprint_hull) -> lanelet::BasicPolygon2d {
+    lanelet::BasicPolygon2d basic_polygon;
+    for (const auto & point : footprint_hull) {
+      Eigen::Vector2d p(point.x(), point.y());
+      basic_polygon.push_back(p);
+    }
+    return basic_polygon;
+  };
+  lanelet::BasicPolygon2d footprint_hull_basic_polygon = to_basic_polygon(footprint_hull);
+
+  // Find all lanelets that intersect the footprint hull
+  return lanelet::geometry::findWithin2d(
+    lanelet_map_ptr->laneletLayer, footprint_hull_basic_polygon, 0.0);
+}
+
+std::optional<lanelet::BasicPolygon2d> LaneDepartureChecker::getFusedLaneletPolygonForPath(
+  const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path) const
+{
+  const auto lanelets_distance_pair = getLaneletsFromPath(lanelet_map_ptr, path);
+  // Fuse lanelets into a single BasicPolygon2d
+  auto fused_lanelets = [&lanelets_distance_pair]() -> std::optional<lanelet::BasicPolygon2d> {
+    if (lanelets_distance_pair.empty()) return std::nullopt;
+    if (lanelets_distance_pair.size() == 1)
+      return lanelets_distance_pair.at(0).second.polygon2d().basicPolygon();
+
+    lanelet::BasicPolygon2d merged_polygon =
+      lanelets_distance_pair.at(0).second.polygon2d().basicPolygon();
+    for (size_t i = 1; i < lanelets_distance_pair.size(); ++i) {
+      const auto & route_lanelet = lanelets_distance_pair.at(i).second;
+      const auto & poly = route_lanelet.polygon2d().basicPolygon();
+
+      std::vector<lanelet::BasicPolygon2d> lanelet_union_temp;
+      boost::geometry::union_(poly, merged_polygon, lanelet_union_temp);
+
+      // Update merged_polygon by accumulating all merged results
+      merged_polygon.clear();
+      for (const auto & temp_poly : lanelet_union_temp) {
+        merged_polygon.insert(merged_polygon.end(), temp_poly.begin(), temp_poly.end());
+      }
+    }
+    if (merged_polygon.empty()) return std::nullopt;
+    return merged_polygon;
+  }();
+
+  return fused_lanelets;
+}
+
+bool LaneDepartureChecker::checkPathWillLeaveLane(
+  const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path) const
+{
+  // check if the footprint is not fully contained within the fused lanelets polygon
+  const std::vector<LinearRing2d> vehicle_footprints = createVehicleFootprints(path);
+  const auto fused_lanelets_polygon = getFusedLaneletPolygonForPath(lanelet_map_ptr, path);
+  if (!fused_lanelets_polygon) return true;
+  return !std::all_of(
+    vehicle_footprints.begin(), vehicle_footprints.end(),
+    [&fused_lanelets_polygon](const auto & footprint) {
+      return boost::geometry::within(footprint, fused_lanelets_polygon.value());
+    });
+}
+
+PathWithLaneId LaneDepartureChecker::cropPointsOutsideOfLanes(
+  const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path, const size_t end_index)
+{
+  PathWithLaneId temp_path;
+  const auto fused_lanelets_polygon = getFusedLaneletPolygonForPath(lanelet_map_ptr, path);
+  if (path.points.empty() || !fused_lanelets_polygon) return temp_path;
+  const auto vehicle_footprints = createVehicleFootprints(path);
+  size_t idx = 0;
+  std::for_each(vehicle_footprints.begin(), vehicle_footprints.end(), [&](const auto & footprint) {
+    if (idx > end_index || boost::geometry::within(footprint, fused_lanelets_polygon.value())) {
+      temp_path.points.push_back(path.points.at(idx));
+    }
+    ++idx;
+  });
+  PathWithLaneId cropped_path = path;
+  cropped_path.points = temp_path.points;
+  return cropped_path;
+}
+
 bool LaneDepartureChecker::isOutOfLane(
   const lanelet::ConstLanelets & candidate_lanelets, const LinearRing2d & vehicle_footprint)
 {
@@ -364,4 +452,5 @@ bool LaneDepartureChecker::willCrossBoundary(
   }
   return false;
 }
+
 }  // namespace lane_departure_checker

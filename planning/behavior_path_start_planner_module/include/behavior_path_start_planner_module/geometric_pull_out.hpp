@@ -19,20 +19,27 @@
 #include "behavior_path_start_planner_module/pull_out_path.hpp"
 #include "behavior_path_start_planner_module/pull_out_planner_base.hpp"
 
+#include <lane_departure_checker/lane_departure_checker.hpp>
+
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+
+#include <memory>
 
 namespace behavior_path_planner
 {
 class GeometricPullOut : public PullOutPlannerBase
 {
 public:
-  explicit GeometricPullOut(rclcpp::Node & node, const StartPlannerParameters & parameters);
+  explicit GeometricPullOut(
+    rclcpp::Node & node, const StartPlannerParameters & parameters,
+    const std::shared_ptr<lane_departure_checker::LaneDepartureChecker> lane_departure_checker);
 
   PlannerType getPlannerType() override { return PlannerType::GEOMETRIC; };
   std::optional<PullOutPath> plan(const Pose & start_pose, const Pose & goal_pose) override;
 
   GeometricParallelParking planner_;
   ParallelParkingParameters parallel_parking_parameters_;
+  std::shared_ptr<lane_departure_checker::LaneDepartureChecker> lane_departure_checker_;
 };
 }  // namespace behavior_path_planner
 

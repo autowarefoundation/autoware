@@ -30,9 +30,12 @@ namespace behavior_path_planner
 {
 using start_planner_utils::getPullOutLanes;
 
-GeometricPullOut::GeometricPullOut(rclcpp::Node & node, const StartPlannerParameters & parameters)
+GeometricPullOut::GeometricPullOut(
+  rclcpp::Node & node, const StartPlannerParameters & parameters,
+  const std::shared_ptr<lane_departure_checker::LaneDepartureChecker> lane_departure_checker)
 : PullOutPlannerBase{node, parameters},
-  parallel_parking_parameters_{parameters.parallel_parking_parameters}
+  parallel_parking_parameters_{parameters.parallel_parking_parameters},
+  lane_departure_checker_(lane_departure_checker)
 {
   planner_.setParameters(parallel_parking_parameters_);
 }
@@ -55,8 +58,8 @@ std::optional<PullOutPath> GeometricPullOut::plan(const Pose & start_pose, const
   planner_.setTurningRadius(
     planner_data_->parameters, parallel_parking_parameters_.pull_out_max_steer_angle);
   planner_.setPlannerData(planner_data_);
-  const bool found_valid_path =
-    planner_.planPullOut(start_pose, goal_pose, road_lanes, pull_out_lanes, left_side_start);
+  const bool found_valid_path = planner_.planPullOut(
+    start_pose, goal_pose, road_lanes, pull_out_lanes, left_side_start, lane_departure_checker_);
   if (!found_valid_path) {
     return {};
   }
