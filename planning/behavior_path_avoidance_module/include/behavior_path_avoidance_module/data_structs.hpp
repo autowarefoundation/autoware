@@ -276,6 +276,9 @@ struct AvoidanceParameters
   // use for judge if the ego is shifting or not.
   double lateral_avoid_check_threshold{0.0};
 
+  // use for return shift approval.
+  double ratio_for_return_shift_approval{0.0};
+
   // For shift line generation process. The continuous shift length is quantized by this value.
   double quantize_filter_threshold{0.0};
 
@@ -538,6 +541,8 @@ struct AvoidancePlanningData
   bool safe{false};
 
   bool valid{false};
+
+  bool ready{false};
 
   bool success{false};
 

@@ -133,7 +133,7 @@ bool AvoidanceModule::isExecutionRequested() const
 bool AvoidanceModule::isExecutionReady() const
 {
   DEBUG_PRINT("AVOIDANCE isExecutionReady");
-  return avoid_data_.safe && avoid_data_.comfortable && avoid_data_.valid;
+  return avoid_data_.safe && avoid_data_.comfortable && avoid_data_.valid && avoid_data_.ready;
 }
 
 bool AvoidanceModule::isSatisfiedSuccessCondition(const AvoidancePlanningData & data) const
@@ -513,6 +513,7 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    */
   data.comfortable = helper_->isComfortable(data.new_shift_line);
   data.safe = isSafePath(data.candidate_path, debug);
+  data.ready = helper_->isReady(data.new_shift_line, path_shifter_.getLastShiftLength());
 }
 
 void AvoidanceModule::fillEgoStatus(

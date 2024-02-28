@@ -258,6 +258,12 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
     p.max_left_shift_length = getOrDeclareParameter<double>(*node, ns + "max_left_shift_length");
     p.max_deviation_from_lane =
       getOrDeclareParameter<double>(*node, ns + "max_deviation_from_lane");
+    p.ratio_for_return_shift_approval =
+      getOrDeclareParameter<double>(*node, ns + "ratio_for_return_shift_approval");
+    if (p.ratio_for_return_shift_approval < 0.0 || p.ratio_for_return_shift_approval > 1.0) {
+      throw std::domain_error(
+        "ratio_for_return_shift_approval should be within range of 0.0 to 1.0");
+    }
   }
 
   // avoidance maneuver (longitudinal)

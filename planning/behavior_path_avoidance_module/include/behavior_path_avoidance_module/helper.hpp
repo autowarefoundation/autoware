@@ -270,6 +270,33 @@ public:
     });
   }
 
+  bool isReady(const AvoidLineArray & new_shift_lines, const double current_shift_length) const
+  {
+    if (std::abs(current_shift_length) < 1e-3) {
+      return true;
+    }
+
+    if (new_shift_lines.empty()) {
+      return true;
+    }
+
+    const auto front_shift_relative_length = new_shift_lines.front().getRelativeLength();
+
+    // same direction shift.
+    if (current_shift_length > 0.0 && front_shift_relative_length > 0.0) {
+      return true;
+    }
+
+    // same direction shift.
+    if (current_shift_length < 0.0 && front_shift_relative_length < 0.0) {
+      return true;
+    }
+
+    // keep waiting the other side shift approval until the ego reaches shift length threshold.
+    const auto ego_shift_ratio = (current_shift_length - getEgoShift()) / current_shift_length;
+    return ego_shift_ratio < parameters_->ratio_for_return_shift_approval + 1e-3;
+  }
+
   bool isShifted() const
   {
     return std::abs(getEgoShift()) > parameters_->lateral_avoid_check_threshold;

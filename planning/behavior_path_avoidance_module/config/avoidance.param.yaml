@@ -208,6 +208,11 @@
           max_right_shift_length: 5.0
           max_left_shift_length: 5.0
           max_deviation_from_lane: 0.5                  # [m]
+          # approve the next shift line after reaching this percentage of the current shift line length.
+          # this parameter should be within range of 0.0 to 1.0.
+          # this parameter is added to allow waiting for the return of shift approval until the occlusion behind the avoid target is clear.
+          # this feature can be disabled by setting this parameter to 1.0. (in that case, avoidance module creates return shift as soon as possible.)
+          ratio_for_return_shift_approval: 0.5          # [-]
         # avoidance distance parameters
         longitudinal:
           min_prepare_time: 1.0                         # [s]
