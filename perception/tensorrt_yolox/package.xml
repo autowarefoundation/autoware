@@ -5,7 +5,6 @@
   <description>tensorrt library implementation for yolox</description>
 
   <author email="daisuke.nishimatsu@tier4.jp">Daisuke Nishimatsu</author>
-  <maintainer email="daisuke.nishimatsu@tier4.jp">Daisuke Nishimatsu</maintainer>
   <maintainer email="dan.umeda@tier4.jp">Dan Umeda</maintainer>
   <maintainer email="manato.hirabayashi@tier4.jp">Manato Hirabayashi</maintainer>
 
