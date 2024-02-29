@@ -6,6 +6,7 @@
   <description>The map_loader package</description>
   <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
   <maintainer email="taichi.higashide@tier4.jp">Taichi Higashide</maintainer>
+  <maintainer email="shintaro.tomie@tier4.jp">Shintaro Tomie</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>

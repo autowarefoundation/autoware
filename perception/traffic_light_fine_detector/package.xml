@@ -6,6 +6,7 @@
   <description>The traffic_light_fine_detector package</description>
   <maintainer email="tao.zhong@tier4.jp">Tao Zhong</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
+  <maintainer email="shintaro.tomie@tier4.jp">Shintaro Tomie</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
