@@ -324,9 +324,7 @@ Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
     }
     ++ego_area_start_idx;
   }
-  if (ego_area_start_idx > num_ignore_nearest) {
-    ego_area_start_idx--;
-  }
+
   if (!is_in_area) {
     return ego_area;
   }
@@ -338,6 +336,11 @@ Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
     const auto & p = pp.at(i).point.pose.position;
     if (!bg::within(Point2d{p.x, p.y}, lanelet::utils::to2D(no_stopping_area).basicPolygon())) {
       dist_from_area_sum += tier4_autoware_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
+
+      // do not take extra distance and exit as soon as p is outside no stopping area
+      // just a temporary fix
+      ego_area_end_idx = i - 1;
+      break;
     }
     if (dist_from_start_sum > extra_dist || dist_from_area_sum > margin) {
       break;
