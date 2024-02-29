@@ -74,13 +74,27 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
         shift_path.points.begin() + pull_out_end_idx + 1);
     }
 
-    // check lane departure
-    // The method for lane departure checking verifies if the footprint of each point on the path is
-    // contained within a lanelet using `boost::geometry::within`, which incurs a high computational
-    // cost.
     const auto lanelet_map_ptr = planner_data_->route_handler->getLaneletMapPtr();
+
+    // if lane departure check override is true, and if the initial pose is not fully within a lane,
+    // cancel lane departure check
+    const bool is_lane_departure_check_required = std::invoke([&]() -> bool {
+      if (!parameters_.allow_check_shift_path_lane_departure_override)
+        return parameters_.check_shift_path_lane_departure;
+
+      PathWithLaneId path_with_only_first_pose{};
+      path_with_only_first_pose.points.push_back(path_shift_start_to_end.points.at(0));
+      return !lane_departure_checker_->checkPathWillLeaveLane(
+        lanelet_map_ptr, path_with_only_first_pose);
+    });
+
+    // check lane departure
+    // The method for lane departure checking verifies if the footprint of each point on the path
+    // is contained within a lanelet using `boost::geometry::within`, which incurs a high
+    // computational cost.
+
     if (
-      parameters_.check_shift_path_lane_departure &&
+      is_lane_departure_check_required &&
       lane_departure_checker_->checkPathWillLeaveLane(lanelet_map_ptr, path_shift_start_to_end)) {
       continue;
     }

@@ -178,6 +178,21 @@ private:
 
   bool requiresDynamicObjectsCollisionDetection() const;
 
+  uint16_t getSteeringFactorDirection(
+    const behavior_path_planner::BehaviorModuleOutput & output) const
+  {
+    switch (output.turn_signal_info.turn_signal.command) {
+      case TurnIndicatorsCommand::ENABLE_LEFT:
+        return SteeringFactor::LEFT;
+
+      case TurnIndicatorsCommand::ENABLE_RIGHT:
+        return SteeringFactor::RIGHT;
+
+      default:
+        return SteeringFactor::STRAIGHT;
+    }
+  };
+
   /**
    * @brief Check if there are no moving objects around within a certain radius.
    *

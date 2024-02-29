@@ -182,18 +182,14 @@ void StartPlannerModule::updateData()
     status_.first_engaged_time = clock_->now();
   }
 
-  if (hasFinishedBackwardDriving()) {
+  status_.backward_driving_complete = hasFinishedBackwardDriving();
+  if (status_.backward_driving_complete) {
     updateStatusAfterBackwardDriving();
     DEBUG_PRINT("StartPlannerModule::updateData() completed backward driving");
-  } else {
-    status_.backward_driving_complete = false;
   }
 
-  if (requiresDynamicObjectsCollisionDetection()) {
-    status_.is_safe_dynamic_objects = !hasCollisionWithDynamicObjects();
-  } else {
-    status_.is_safe_dynamic_objects = true;
-  }
+  status_.is_safe_dynamic_objects =
+    (!requiresDynamicObjectsCollisionDetection()) ? true : !hasCollisionWithDynamicObjects();
 }
 
 bool StartPlannerModule::hasFinishedBackwardDriving() const
@@ -364,20 +360,17 @@ bool StartPlannerModule::isStopped()
 
 bool StartPlannerModule::isExecutionReady() const
 {
-  bool is_safe = true;
   // Evaluate safety. The situation is not safe if any of the following conditions are met:
   // 1. pull out path has not been found
   // 2. there is a moving objects around ego
   // 3. waiting for approval and there is a collision with dynamic objects
-  if (!status_.found_pull_out_path) {
-    is_safe = false;
-  } else if (isWaitingApproval()) {
-    if (!noMovingObjectsAround()) {
-      is_safe = false;
-    } else if (requiresDynamicObjectsCollisionDetection() && hasCollisionWithDynamicObjects()) {
-      is_safe = false;
-    }
-  }
+
+  const bool is_safe = [&]() -> bool {
+    if (!status_.found_pull_out_path) return false;
+    if (!isWaitingApproval()) return true;
+    if (!noMovingObjectsAround()) return false;
+    return !(requiresDynamicObjectsCollisionDetection() && hasCollisionWithDynamicObjects());
+  }();
 
   if (!is_safe) {
     stop_pose_ = planner_data_->self_odometry->pose.pose;
@@ -459,14 +452,7 @@ BehaviorModuleOutput StartPlannerModule::plan()
 
   setDrivableAreaInfo(output);
 
-  const uint16_t steering_factor_direction = std::invoke([&output]() {
-    if (output.turn_signal_info.turn_signal.command == TurnIndicatorsCommand::ENABLE_LEFT) {
-      return SteeringFactor::LEFT;
-    } else if (output.turn_signal_info.turn_signal.command == TurnIndicatorsCommand::ENABLE_RIGHT) {
-      return SteeringFactor::RIGHT;
-    }
-    return SteeringFactor::STRAIGHT;
-  });
+  const auto steering_factor_direction = getSteeringFactorDirection(output);
 
   if (status_.driving_forward) {
     const double start_distance = motion_utils::calcSignedArcLength(
@@ -480,15 +466,16 @@ BehaviorModuleOutput StartPlannerModule::plan()
       {status_.pull_out_path.start_pose, status_.pull_out_path.end_pose},
       {start_distance, finish_distance}, PlanningBehavior::START_PLANNER, steering_factor_direction,
       SteeringFactor::TURNING, "");
-  } else {
-    const double distance = motion_utils::calcSignedArcLength(
-      path.points, planner_data_->self_odometry->pose.pose.position,
-      status_.pull_out_path.start_pose.position);
-    updateRTCStatus(0.0, distance);
-    steering_factor_interface_ptr_->updateSteeringFactor(
-      {status_.pull_out_path.start_pose, status_.pull_out_path.end_pose}, {0.0, distance},
-      PlanningBehavior::START_PLANNER, steering_factor_direction, SteeringFactor::TURNING, "");
+    setDebugData();
+    return output;
   }
+  const double distance = motion_utils::calcSignedArcLength(
+    path.points, planner_data_->self_odometry->pose.pose.position,
+    status_.pull_out_path.start_pose.position);
+  updateRTCStatus(0.0, distance);
+  steering_factor_interface_ptr_->updateSteeringFactor(
+    {status_.pull_out_path.start_pose, status_.pull_out_path.end_pose}, {0.0, distance},
+    PlanningBehavior::START_PLANNER, steering_factor_direction, SteeringFactor::TURNING, "");
 
   setDebugData();
 
@@ -569,14 +556,7 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
 
   setDrivableAreaInfo(output);
 
-  const uint16_t steering_factor_direction = std::invoke([&output]() {
-    if (output.turn_signal_info.turn_signal.command == TurnIndicatorsCommand::ENABLE_LEFT) {
-      return SteeringFactor::LEFT;
-    } else if (output.turn_signal_info.turn_signal.command == TurnIndicatorsCommand::ENABLE_RIGHT) {
-      return SteeringFactor::RIGHT;
-    }
-    return SteeringFactor::STRAIGHT;
-  });
+  const auto steering_factor_direction = getSteeringFactorDirection(output);
 
   if (status_.driving_forward) {
     const double start_distance = motion_utils::calcSignedArcLength(
@@ -590,15 +570,17 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
       {status_.pull_out_path.start_pose, status_.pull_out_path.end_pose},
       {start_distance, finish_distance}, PlanningBehavior::START_PLANNER, steering_factor_direction,
       SteeringFactor::APPROACHING, "");
-  } else {
-    const double distance = motion_utils::calcSignedArcLength(
-      stop_path.points, planner_data_->self_odometry->pose.pose.position,
-      status_.pull_out_path.start_pose.position);
-    updateRTCStatus(0.0, distance);
-    steering_factor_interface_ptr_->updateSteeringFactor(
-      {status_.pull_out_path.start_pose, status_.pull_out_path.end_pose}, {0.0, distance},
-      PlanningBehavior::START_PLANNER, steering_factor_direction, SteeringFactor::APPROACHING, "");
+    setDebugData();
+
+    return output;
   }
+  const double distance = motion_utils::calcSignedArcLength(
+    stop_path.points, planner_data_->self_odometry->pose.pose.position,
+    status_.pull_out_path.start_pose.position);
+  updateRTCStatus(0.0, distance);
+  steering_factor_interface_ptr_->updateSteeringFactor(
+    {status_.pull_out_path.start_pose, status_.pull_out_path.end_pose}, {0.0, distance},
+    PlanningBehavior::START_PLANNER, steering_factor_direction, SteeringFactor::APPROACHING, "");
 
   setDebugData();
 
@@ -658,16 +640,20 @@ PriorityOrder StartPlannerModule::determinePriorityOrder(
         order_priority.emplace_back(i, planner);
       }
     }
-  } else if (search_priority == "short_back_distance") {
+    return order_priority;
+  }
+
+  if (search_priority == "short_back_distance") {
     for (size_t i = 0; i < start_pose_candidates_num; i++) {
       for (const auto & planner : start_planners_) {
         order_priority.emplace_back(i, planner);
       }
     }
-  } else {
-    RCLCPP_ERROR(getLogger(), "Invalid search_priority: %s", search_priority.c_str());
-    throw std::domain_error("[start_planner] invalid search_priority");
+    return order_priority;
   }
+
+  RCLCPP_ERROR(getLogger(), "Invalid search_priority: %s", search_priority.c_str());
+  throw std::domain_error("[start_planner] invalid search_priority");
   return order_priority;
 }
 
@@ -1099,12 +1085,7 @@ bool StartPlannerModule::isStuck()
     return false;
   }
 
-  if (status_.planner_type == PlannerType::STOP) {
-    return true;
-  }
-
-  // not found safe path
-  if (!status_.found_pull_out_path) {
+  if (status_.planner_type == PlannerType::STOP || !status_.found_pull_out_path) {
     return true;
   }
 
@@ -1197,30 +1178,26 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo() const
     return false;
   });
 
-  if (is_near_intersection) {
-    // offset required end pose with ration to activate turn signal for intersection
-    turn_signal.required_end_point = std::invoke([&]() {
-      const double length_start_to_end =
-        motion_utils::calcSignedArcLength(path.points, start_pose.position, end_pose.position);
-      const auto ratio = std::clamp(
-        parameters_->length_ratio_for_turn_signal_deactivation_near_intersection, 0.0, 1.0);
+  turn_signal.required_end_point = std::invoke([&]() {
+    if (is_near_intersection) return end_pose;
+    const double length_start_to_end =
+      motion_utils::calcSignedArcLength(path.points, start_pose.position, end_pose.position);
+    const auto ratio = std::clamp(
+      parameters_->length_ratio_for_turn_signal_deactivation_near_intersection, 0.0, 1.0);
 
-      const double required_end_length = length_start_to_end * ratio;
-      double accumulated_length = 0.0;
-      const size_t start_idx = motion_utils::findNearestIndex(path.points, start_pose.position);
-      for (size_t i = start_idx; i < path.points.size() - 1; ++i) {
-        accumulated_length +=
-          tier4_autoware_utils::calcDistance2d(path.points.at(i), path.points.at(i + 1));
-        if (accumulated_length > required_end_length) {
-          return path.points.at(i).point.pose;
-        }
+    const double required_end_length = length_start_to_end * ratio;
+    double accumulated_length = 0.0;
+    const size_t start_idx = motion_utils::findNearestIndex(path.points, start_pose.position);
+    for (size_t i = start_idx; i < path.points.size() - 1; ++i) {
+      accumulated_length +=
+        tier4_autoware_utils::calcDistance2d(path.points.at(i), path.points.at(i + 1));
+      if (accumulated_length > required_end_length) {
+        return path.points.at(i).point.pose;
       }
-      // not found required end point
-      return end_pose;
-    });
-  } else {
-    turn_signal.required_end_point = end_pose;
-  }
+    }
+    // not found required end point
+    return end_pose;
+  });
 
   return turn_signal;
 }
@@ -1389,22 +1366,27 @@ bool StartPlannerModule::planFreespacePath()
 
 void StartPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) const
 {
-  if (status_.planner_type == PlannerType::FREESPACE) {
-    const double drivable_area_margin = planner_data_->parameters.vehicle_width;
-    output.drivable_area_info.drivable_margin =
-      planner_data_->parameters.vehicle_width / 2.0 + drivable_area_margin;
-  } else {
-    const auto target_drivable_lanes = utils::getNonOverlappingExpandedLanes(
-      output.path, generateDrivableLanes(output.path),
-      planner_data_->drivable_area_expansion_parameters);
+  switch (status_.planner_type) {
+    case PlannerType::FREESPACE: {
+      const double drivable_area_margin = planner_data_->parameters.vehicle_width;
+      output.drivable_area_info.drivable_margin =
+        planner_data_->parameters.vehicle_width / 2.0 + drivable_area_margin;
+      break;
+    }
+    default: {
+      const auto target_drivable_lanes = utils::getNonOverlappingExpandedLanes(
+        output.path, generateDrivableLanes(output.path),
+        planner_data_->drivable_area_expansion_parameters);
 
-    DrivableAreaInfo current_drivable_area_info;
-    current_drivable_area_info.drivable_lanes = target_drivable_lanes;
-    output.drivable_area_info =
-      status_.driving_forward
-        ? utils::combineDrivableAreaInfo(
-            current_drivable_area_info, getPreviousModuleOutput().drivable_area_info)
-        : current_drivable_area_info;
+      DrivableAreaInfo current_drivable_area_info;
+      current_drivable_area_info.drivable_lanes = target_drivable_lanes;
+      output.drivable_area_info =
+        status_.driving_forward
+          ? utils::combineDrivableAreaInfo(
+              current_drivable_area_info, getPreviousModuleOutput().drivable_area_info)
+          : current_drivable_area_info;
+      break;
+    }
   }
 }
 

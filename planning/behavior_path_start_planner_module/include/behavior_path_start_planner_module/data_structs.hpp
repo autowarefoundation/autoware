@@ -72,6 +72,7 @@ struct StartPlannerParameters
   // shift pull out
   bool enable_shift_pull_out{false};
   bool check_shift_path_lane_departure{false};
+  bool allow_check_shift_path_lane_departure_override{false};
   double shift_collision_check_distance_from_end{0.0};
   double minimum_shift_pull_out_distance{0.0};
   int lateral_acceleration_sampling_num{0};
