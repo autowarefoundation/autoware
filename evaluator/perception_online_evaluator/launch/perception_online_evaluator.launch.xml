@@ -1,0 +1,13 @@
+<launch>
+  <arg name="input/objects" default="/perception/object_recognition/objects"/>
+
+  <!-- perception evaluator -->
+  <group>
+    <node name="perception_online_evaluator" exec="perception_online_evaluator" pkg="perception_online_evaluator">
+      <param from="$(find-pkg-share perception_online_evaluator)/param/perception_online_evaluator.defaults.yaml"/>
+      <remap from="~/input/objects" to="$(var input/objects)"/>
+      <remap from="~/metrics" to="/diagnostic/perception_online_evaluator/metrics"/>
+      <remap from="~/markers" to="/diagnostic/perception_online_evaluator/markers"/>
+    </node>
+  </group>
+</launch>

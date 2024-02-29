@@ -1,0 +1,39 @@
+/**:
+  ros__parameters:
+    selected_metrics:
+      - lateral_deviation
+      - yaw_deviation
+      - predicted_path_deviation
+
+    # this should be an odd number, because it includes the target point
+    smoothing_window_size: 11
+
+    prediction_time_horizons: [1.0, 2.0, 3.0, 5.0]
+
+    target_object:
+      car:
+        check_deviation: true
+      truck:
+        check_deviation: true
+      bus:
+        check_deviation: true
+      trailer:
+        check_deviation: true
+      bicycle:
+        check_deviation: true
+      motorcycle:
+        check_deviation: true
+      pedestrian:
+        check_deviation: true
+      unknown:
+        check_deviation: false
+
+    debug_marker:
+      history_path: false
+      history_path_arrows: false
+      smoothed_history_path: true
+      smoothed_history_path_arrows: false
+      predicted_path: true
+      predicted_path_gt: true
+      deviation_lines: true
+      object_polygon: true

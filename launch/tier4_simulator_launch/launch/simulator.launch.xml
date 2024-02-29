@@ -85,6 +85,11 @@
       </group>
     </group>
 
+    <!-- perception evaluator -->
+    <group>
+      <include file="$(find-pkg-share perception_online_evaluator)/launch/perception_online_evaluator.launch.xml"/>
+    </group>
+
     <!-- publish empty objects instead of object recognition module -->
     <group unless="$(var perception/enable_object_recognition)">
       <push-ros-namespace namespace="object_recognition"/>

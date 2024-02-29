@@ -247,4 +247,9 @@
       </include>
     </group>
   </group>
+
+  <!-- perception evaluator -->
+  <group>
+    <include file="$(find-pkg-share perception_online_evaluator)/launch/perception_online_evaluator.launch.xml"/>
+  </group>
 </launch>

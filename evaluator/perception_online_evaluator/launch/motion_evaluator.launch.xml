@@ -1,0 +1,7 @@
+<launch>
+  <arg name="input/twist" default="/localization/twist"/>
+
+  <node name="motion_evaluator" exec="motion_evaluator" pkg="perception_online_evaluator" output="screen">
+    <remap from="~/input/twist" to="$(var input/twist)"/>
+  </node>
+</launch>
