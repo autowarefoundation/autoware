@@ -79,6 +79,7 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
 
   std::vector<rclcpp::Parameter> params;
   params.emplace_back("launch_modules", module_names);
+  params.emplace_back("is_simulation", false);
   node_options.parameter_overrides(params);
 
   test_utils::updateNodeOptions(

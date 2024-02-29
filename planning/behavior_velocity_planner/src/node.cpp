@@ -146,6 +146,9 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
     declare_parameter<double>("ego_nearest_dist_threshold");
   planner_data_.ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
 
+  // is simulation or not
+  planner_data_.is_simulation = declare_parameter<bool>("is_simulation");
+
   // Initialize PlannerManager
   for (const auto & name : declare_parameter<std::vector<std::string>>("launch_modules")) {
     // workaround: Since ROS 2 can't get empty list, launcher set [''] on the parameter.
@@ -322,8 +325,6 @@ void BehaviorVelocityPlannerNode::onTrafficSignals(
   const autoware_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr msg)
 {
   std::lock_guard<std::mutex> lock(mutex_);
-
-  planner_data_.has_received_signal_ = true;
 
   // clear previous observation
   planner_data_.traffic_light_id_map_raw_.clear();

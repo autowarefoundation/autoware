@@ -1,5 +1,6 @@
 <launch>
   <arg name="enable_all_modules_auto_mode"/>
+  <arg name="is_simulation"/>
   <!-- scenario selector -->
   <group>
     <include file="$(find-pkg-share scenario_selector)/launch/scenario_selector.launch.xml">
@@ -53,6 +54,7 @@
     <group>
       <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/lane_driving.launch.xml">
         <arg name="enable_all_modules_auto_mode" value="$(var enable_all_modules_auto_mode)"/>
+        <arg name="is_simulation" value="$(var is_simulation)"/>
       </include>
     </group>
     <!-- parking -->
