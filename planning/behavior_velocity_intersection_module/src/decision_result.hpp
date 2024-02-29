@@ -56,7 +56,7 @@ struct YieldStuckStop
 {
   size_t closest_idx{0};
   size_t stuck_stopline_idx{0};
-  std::string safety_report;
+  std::string occlusion_report;
 };
 
 /**
@@ -67,7 +67,7 @@ struct NonOccludedCollisionStop
   size_t closest_idx{0};
   size_t collision_stopline_idx{0};
   size_t occlusion_stopline_idx{0};
-  std::string safety_report;
+  std::string occlusion_report;
 };
 
 /**
@@ -79,6 +79,7 @@ struct FirstWaitBeforeOcclusion
   size_t closest_idx{0};
   size_t first_stopline_idx{0};
   size_t occlusion_stopline_idx{0};
+  std::string occlusion_report;
 };
 
 /**
@@ -98,6 +99,7 @@ struct PeekingTowardOcclusion
   //! contains the remaining time to release the static occlusion stuck and shows up
   //! intersection_occlusion(x.y)
   std::optional<double> static_occlusion_timeout{std::nullopt};
+  std::string occlusion_report;
 };
 
 /**
@@ -114,7 +116,7 @@ struct OccludedCollisionStop
   //! if null, it is dynamic occlusion and shows up intersection_occlusion(dyn). if valid, it
   //! contains the remaining time to release the static occlusion stuck
   std::optional<double> static_occlusion_timeout{std::nullopt};
-  std::string safety_report;
+  std::string occlusion_report;
 };
 
 /**
@@ -128,7 +130,7 @@ struct OccludedAbsenceTrafficLight
   size_t closest_idx{0};
   size_t first_attention_area_stopline_idx{0};
   size_t peeking_limit_line_idx{0};
-  std::string safety_report;
+  std::string occlusion_report;
 };
 
 /**
@@ -139,6 +141,7 @@ struct Safe
   size_t closest_idx{0};
   size_t collision_stopline_idx{0};
   size_t occlusion_stopline_idx{0};
+  std::string occlusion_report;
 };
 
 /**
@@ -154,7 +157,7 @@ struct FullyPrioritized
 };
 
 using DecisionResult = std::variant<
-  InternalError,                //! internal process error, or over the pass judge line
+  InternalError,                //! internal process error
   OverPassJudge,                //! over the pass judge lines
   StuckStop,                    //! detected stuck vehicle
   YieldStuckStop,               //! detected yield stuck vehicle

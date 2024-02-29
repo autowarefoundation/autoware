@@ -189,6 +189,12 @@ IntersectionModule::prepareIntersectionData(const bool is_prioritized, PathWithL
       "Path has no interval on intersection lane " + std::to_string(lane_id_));
   }
 
+  const auto & path_ip = interpolated_path_info.path;
+  const auto & path_ip_intersection_end = interpolated_path_info.lane_id_interval.value().second;
+  internal_debug_data_.distance = motion_utils::calcSignedArcLength(
+    path->points, current_pose.position,
+    path_ip.points.at(path_ip_intersection_end).point.pose.position);
+
   if (!intersection_lanelets_) {
     intersection_lanelets_ =
       generateObjectiveLanelets(lanelet_map_ptr, routing_graph_ptr, assigned_lanelet);

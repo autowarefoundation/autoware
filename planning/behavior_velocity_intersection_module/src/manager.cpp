@@ -294,6 +294,11 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   }
 
   ip.debug.ttc = getOrDeclareParameter<std::vector<int64_t>>(node, ns + ".debug.ttc");
+
+  decision_state_pub_ =
+    node.create_publisher<std_msgs::msg::String>("~/debug/intersection/decision_state", 1);
+  tl_observation_pub_ = node.create_publisher<autoware_perception_msgs::msg::TrafficSignal>(
+    "~/debug/intersection_traffic_signal", 1);
 }
 
 void IntersectionModuleManager::launchNewModules(
@@ -390,6 +395,10 @@ bool IntersectionModuleManager::hasSameParentLaneletAndTurnDirectionWithRegister
 
 void IntersectionModuleManager::sendRTC(const Time & stamp)
 {
+  double min_distance = std::numeric_limits<double>::infinity();
+  std::optional<TrafficSignalStamped> nearest_tl_observation{std::nullopt};
+  std_msgs::msg::String decision_type;
+
   for (const auto & scene_module : scene_modules_) {
     const auto intersection_module = std::dynamic_pointer_cast<IntersectionModule>(scene_module);
     const UUID uuid = getUUID(scene_module->getModuleId());
@@ -401,9 +410,27 @@ void IntersectionModuleManager::sendRTC(const Time & stamp)
     const auto occlusion_safety = intersection_module->getOcclusionSafety();
     occlusion_rtc_interface_.updateCooperateStatus(
       occlusion_uuid, occlusion_safety, occlusion_distance, occlusion_distance, stamp);
+
+    // ==========================================================================================
+    // module debug data
+    // ==========================================================================================
+    const auto internal_debug_data = intersection_module->getInternalDebugData();
+    if (internal_debug_data.distance < min_distance) {
+      min_distance = internal_debug_data.distance;
+      nearest_tl_observation = internal_debug_data.tl_observation;
+    }
+    decision_type.data += (internal_debug_data.decision_type + "\n");
   }
   rtc_interface_.publishCooperateStatus(stamp);  // publishRTCStatus()
   occlusion_rtc_interface_.publishCooperateStatus(stamp);
+
+  // ==========================================================================================
+  // publish module debug data
+  // ==========================================================================================
+  decision_state_pub_->publish(decision_type);
+  if (nearest_tl_observation) {
+    tl_observation_pub_->publish(nearest_tl_observation.value().signal);
+  }
 }
 
 void IntersectionModuleManager::setActivation()

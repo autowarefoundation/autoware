@@ -24,36 +24,39 @@ std::string formatDecisionResult(const DecisionResult & decision_result)
   }
   if (std::holds_alternative<OverPassJudge>(decision_result)) {
     const auto & state = std::get<OverPassJudge>(decision_result);
-    return "OverPassJudge:\nsafety_report:" + state.safety_report + "\nevasive_report:\n" +
-           state.evasive_report;
+    return "OverPassJudge:\nsafety_report:" + state.safety_report +
+           "\nevasive_report:" + state.evasive_report;
   }
   if (std::holds_alternative<StuckStop>(decision_result)) {
     return "StuckStop";
   }
   if (std::holds_alternative<YieldStuckStop>(decision_result)) {
     const auto & state = std::get<YieldStuckStop>(decision_result);
-    return "YieldStuckStop:\nsafety_report:" + state.safety_report;
+    return "YieldStuckStop:\nocclusion_report:" + state.occlusion_report;
   }
   if (std::holds_alternative<NonOccludedCollisionStop>(decision_result)) {
     const auto & state = std::get<NonOccludedCollisionStop>(decision_result);
-    return "NonOccludedCollisionStop\nsafety_report:" + state.safety_report;
+    return "NonOccludedCollisionStop:\nocclusion_report:" + state.occlusion_report;
   }
   if (std::holds_alternative<FirstWaitBeforeOcclusion>(decision_result)) {
-    return "FirstWaitBeforeOcclusion";
+    const auto & state = std::get<FirstWaitBeforeOcclusion>(decision_result);
+    return "FirstWaitBeforeOcclusion:\nocclusion_report:" + state.occlusion_report;
   }
   if (std::holds_alternative<PeekingTowardOcclusion>(decision_result)) {
-    return "PeekingTowardOcclusion";
+    const auto & state = std::get<PeekingTowardOcclusion>(decision_result);
+    return "PeekingTowardOcclusion:\nocclusion_report:" + state.occlusion_report;
   }
   if (std::holds_alternative<OccludedCollisionStop>(decision_result)) {
     const auto & state = std::get<OccludedCollisionStop>(decision_result);
-    return "OccludedCollisionStop\nsafety_report:" + state.safety_report;
+    return "OccludedCollisionStop:\nocclusion_report:" + state.occlusion_report;
   }
   if (std::holds_alternative<OccludedAbsenceTrafficLight>(decision_result)) {
     const auto & state = std::get<OccludedAbsenceTrafficLight>(decision_result);
-    return "OccludedAbsenceTrafficLight\nsafety_report:" + state.safety_report;
+    return "OccludedAbsenceTrafficLight:\nocclusion_report:" + state.occlusion_report;
   }
   if (std::holds_alternative<Safe>(decision_result)) {
-    return "Safe";
+    const auto & state = std::get<Safe>(decision_result);
+    return "Safe:\nocclusion_report:" + state.occlusion_report;
   }
   if (std::holds_alternative<FullyPrioritized>(decision_result)) {
     const auto & state = std::get<FullyPrioritized>(decision_result);
