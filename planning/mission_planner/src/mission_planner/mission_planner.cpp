@@ -27,6 +27,7 @@
 #include <lanelet2_core/geometry/LineString.h>
 
 #include <algorithm>
+#include <utility>
 
 namespace mission_planner
 {
@@ -132,6 +133,8 @@ void MissionPlanner::on_reroute_availability(const RerouteAvailability::ConstSha
 void MissionPlanner::on_map(const HADMapBin::ConstSharedPtr msg)
 {
   map_ptr_ = msg;
+  lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
+  lanelet::utils::conversion::fromBinMsg(*map_ptr_, lanelet_map_ptr_);
 }
 
 Pose MissionPlanner::transform_pose(const Pose & pose, const Header & header)
@@ -394,7 +397,9 @@ LaneletRoute MissionPlanner::create_route(
 bool MissionPlanner::check_reroute_safety(
   const LaneletRoute & original_route, const LaneletRoute & target_route)
 {
-  if (original_route.segments.empty() || target_route.segments.empty() || !map_ptr_ || !odometry_) {
+  if (
+    original_route.segments.empty() || target_route.segments.empty() || !map_ptr_ ||
+    !lanelet_map_ptr_ || !odometry_) {
     RCLCPP_ERROR(get_logger(), "Check reroute safety failed. Route, map or odometry is not set.");
     return false;
   }
@@ -413,112 +418,135 @@ bool MissionPlanner::check_reroute_safety(
       return false;
     }
 
-    bool is_same = false;
     for (const auto & primitive : original_primitives) {
       const auto has_same = [&](const auto & p) { return p.id == primitive.id; };
-      is_same = std::find_if(target_primitives.begin(), target_primitives.end(), has_same) !=
-                target_primitives.end();
+      const bool is_same =
+        std::find_if(target_primitives.begin(), target_primitives.end(), has_same) !=
+        target_primitives.end();
+      if (!is_same) {
+        return false;
+      }
     }
-    return is_same;
+    return true;
   };
 
-  // find idx of original primitives that matches the target primitives
-  const auto start_idx_opt = std::invoke([&]() -> std::optional<size_t> {
-    /*
-     * find the index of the original route that has same idx with the front segment of the new
-     * route
-     *
-     *                          start_idx
-     * +-----------+-----------+-----------+-----------+-----------+
-     * |           |           |           |           |           |
-     * +-----------+-----------+-----------+-----------+-----------+
-     * |           |           |           |           |           |
-     * +-----------+-----------+-----------+-----------+-----------+
-     *  original    original    original    original    original
-     *                          target      target      target
-     */
-    const auto target_front_primitives = target_route.segments.front().primitives;
-    for (size_t i = 0; i < original_route.segments.size(); ++i) {
-      const auto & original_primitives = original_route.segments.at(i).primitives;
-      if (hasSamePrimitives(original_primitives, target_front_primitives)) {
-        return i;
+  // =============================================================================================
+  // NOTE: the target route is calculated while ego is driving on the original route, so basically
+  // the first lane of the target route should be in the original route lanelets. So the common
+  // segment interval matches the beginning of the target route. The exception is that if ego is
+  // on an intersection lanelet, getClosestLanelet() may not return the same lanelet which exists
+  // in the original route. In that case the common segment interval does not match the beginning of
+  // the target lanelet
+  // =============================================================================================
+  const auto start_idx_opt =
+    std::invoke([&]() -> std::optional<std::pair<size_t /* original */, size_t /* target */>> {
+      for (size_t i = 0; i < original_route.segments.size(); ++i) {
+        const auto & original_segment = original_route.segments.at(i).primitives;
+        for (size_t j = 0; j < target_route.segments.size(); ++j) {
+          const auto & target_segment = target_route.segments.at(j).primitives;
+          if (hasSamePrimitives(original_segment, target_segment)) {
+            return std::make_pair(i, j);
+          }
+        }
       }
-    }
-
-    /*
-     * find the target route that has same idx with the front segment of the original route
-     *
-     *                          start_idx
-     * +-----------+-----------+-----------+-----------+-----------+
-     * |           |           |           |           |           |
-     * +-----------+-----------+-----------+-----------+-----------+
-     * |           |           |           |           |           |
-     * +-----------+-----------+-----------+-----------+-----------+
-     *                          original    original    original
-     *  target      target      target      target      target
-     */
-    const auto original_front_primitives = original_route.segments.front().primitives;
-    for (size_t i = 0; i < target_route.segments.size(); ++i) {
-      const auto & target_primitives = target_route.segments.at(i).primitives;
-      if (hasSamePrimitives(target_primitives, original_front_primitives)) {
-        return 0;
-      }
-    }
-
-    return std::nullopt;
-  });
+      return std::nullopt;
+    });
   if (!start_idx_opt.has_value()) {
     RCLCPP_ERROR(
       get_logger(), "Check reroute safety failed. Cannot find the start index of the route.");
     return false;
   }
-  const size_t start_idx = start_idx_opt.value();
+  const auto [start_idx_original, start_idx_target] = start_idx_opt.value();
 
   // find last idx that matches the target primitives
-  size_t end_idx = start_idx;
-  for (size_t i = 1; i < target_route.segments.size(); ++i) {
-    if (start_idx + i > original_route.segments.size() - 1) {
+  size_t end_idx_original = start_idx_original;
+  size_t end_idx_target = start_idx_target;
+  for (size_t i = 1; i < target_route.segments.size() - start_idx_target; ++i) {
+    if (start_idx_original + i > original_route.segments.size() - 1) {
       break;
     }
 
-    const auto & original_primitives = original_route.segments.at(start_idx + i).primitives;
-    const auto & target_primitives = target_route.segments.at(i).primitives;
+    const auto & original_primitives =
+      original_route.segments.at(start_idx_original + i).primitives;
+    const auto & target_primitives = target_route.segments.at(start_idx_target + i).primitives;
     if (!hasSamePrimitives(original_primitives, target_primitives)) {
       break;
     }
-    end_idx = start_idx + i;
+    end_idx_original = start_idx_original + i;
+    end_idx_target = start_idx_target + i;
   }
 
-  // create map
-  auto lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
-  lanelet::utils::conversion::fromBinMsg(*map_ptr_, lanelet_map_ptr_);
-
-  // compute distance from the current pose to the end of the current lanelet
-  const auto current_pose = target_route.start_pose;
-  const auto primitives = original_route.segments.at(start_idx).primitives;
-  lanelet::ConstLanelets start_lanelets;
-  for (const auto & primitive : primitives) {
-    const auto lanelet = lanelet_map_ptr_->laneletLayer.get(primitive.id);
-    start_lanelets.push_back(lanelet);
-  }
-
-  // get closest lanelet in start lanelets
-  lanelet::ConstLanelet closest_lanelet;
-  if (!lanelet::utils::query::getClosestLanelet(start_lanelets, current_pose, &closest_lanelet)) {
-    RCLCPP_ERROR(get_logger(), "Check reroute safety failed. Cannot find the closest lanelet.");
+  // at the very first transition from main/MRM to MRM/main, the requested route from the
+  // route_selector may not begin from ego current lane (because route_selector requests the
+  // previous route once, and then replan)
+  const bool ego_is_on_first_target_section = std::any_of(
+    target_route.segments.front().primitives.begin(),
+    target_route.segments.front().primitives.end(), [&](const auto & primitive) {
+      const auto lanelet = lanelet_map_ptr_->laneletLayer.get(primitive.id);
+      return lanelet::utils::isInLanelet(target_route.start_pose, lanelet);
+    });
+  if (!ego_is_on_first_target_section) {
+    RCLCPP_ERROR(
+      get_logger(),
+      "Check reroute safety failed. Ego is not on the first section of target route.");
     return false;
   }
 
-  const auto & centerline_2d = lanelet::utils::to2D(closest_lanelet.centerline());
-  const auto lanelet_point = lanelet::utils::conversion::toLaneletPoint(current_pose.position);
-  const auto arc_coordinates = lanelet::geometry::toArcCoordinates(
-    centerline_2d, lanelet::utils::to2D(lanelet_point).basicPoint());
-  const double dist_to_current_pose = arc_coordinates.length;
-  const double lanelet_length = lanelet::utils::getLaneletLength2d(closest_lanelet);
-  double accumulated_length = lanelet_length - dist_to_current_pose;
+  // if the front of target route is not the front of common segment, it is expected that the front
+  // of the target route is conflicting with another lane which is equal to original
+  // route[start_idx_original-1]
+  double accumulated_length = 0.0;
+
+  if (start_idx_target != 0 && start_idx_original > 1) {
+    // compute distance from the current pose to the beginning of the common segment
+    const auto current_pose = target_route.start_pose;
+    const auto primitives = original_route.segments.at(start_idx_original - 1).primitives;
+    lanelet::ConstLanelets start_lanelets;
+    for (const auto & primitive : primitives) {
+      const auto lanelet = lanelet_map_ptr_->laneletLayer.get(primitive.id);
+      start_lanelets.push_back(lanelet);
+    }
+    // closest lanelet in start lanelets
+    lanelet::ConstLanelet closest_lanelet;
+    if (!lanelet::utils::query::getClosestLanelet(start_lanelets, current_pose, &closest_lanelet)) {
+      RCLCPP_ERROR(get_logger(), "Check reroute safety failed. Cannot find the closest lanelet.");
+      return false;
+    }
+
+    const auto & centerline_2d = lanelet::utils::to2D(closest_lanelet.centerline());
+    const auto lanelet_point = lanelet::utils::conversion::toLaneletPoint(current_pose.position);
+    const auto arc_coordinates = lanelet::geometry::toArcCoordinates(
+      centerline_2d, lanelet::utils::to2D(lanelet_point).basicPoint());
+    const double dist_to_current_pose = arc_coordinates.length;
+    const double lanelet_length = lanelet::utils::getLaneletLength2d(closest_lanelet);
+    accumulated_length = lanelet_length - dist_to_current_pose;
+  } else {
+    // compute distance from the current pose to the end of the current lanelet
+    const auto current_pose = target_route.start_pose;
+    const auto primitives = original_route.segments.at(start_idx_original).primitives;
+    lanelet::ConstLanelets start_lanelets;
+    for (const auto & primitive : primitives) {
+      const auto lanelet = lanelet_map_ptr_->laneletLayer.get(primitive.id);
+      start_lanelets.push_back(lanelet);
+    }
+    // closest lanelet in start lanelets
+    lanelet::ConstLanelet closest_lanelet;
+    if (!lanelet::utils::query::getClosestLanelet(start_lanelets, current_pose, &closest_lanelet)) {
+      RCLCPP_ERROR(get_logger(), "Check reroute safety failed. Cannot find the closest lanelet.");
+      return false;
+    }
+
+    const auto & centerline_2d = lanelet::utils::to2D(closest_lanelet.centerline());
+    const auto lanelet_point = lanelet::utils::conversion::toLaneletPoint(current_pose.position);
+    const auto arc_coordinates = lanelet::geometry::toArcCoordinates(
+      centerline_2d, lanelet::utils::to2D(lanelet_point).basicPoint());
+    const double dist_to_current_pose = arc_coordinates.length;
+    const double lanelet_length = lanelet::utils::getLaneletLength2d(closest_lanelet);
+    accumulated_length = lanelet_length - dist_to_current_pose;
+  }
 
   // compute distance from the start_idx+1 to end_idx
-  for (size_t i = start_idx + 1; i <= end_idx; ++i) {
+  for (size_t i = start_idx_original + 1; i <= end_idx_original; ++i) {
     const auto primitives = original_route.segments.at(i).primitives;
     if (primitives.empty()) {
       break;
@@ -534,7 +562,7 @@ bool MissionPlanner::check_reroute_safety(
   }
 
   // check if the goal is inside of the target terminal lanelet
-  const auto & target_end_primitives = target_route.segments.at(end_idx - start_idx).primitives;
+  const auto & target_end_primitives = target_route.segments.at(end_idx_target).primitives;
   const auto & target_goal = target_route.goal_pose;
   for (const auto & target_end_primitive : target_end_primitives) {
     const auto lanelet = lanelet_map_ptr_->laneletLayer.get(target_end_primitive.id);
@@ -546,8 +574,11 @@ bool MissionPlanner::check_reroute_safety(
                                     lanelet::utils::to2D(target_goal_position).basicPoint())
                                     .length;
       const double target_lanelet_length = lanelet::utils::getLaneletLength2d(lanelet);
-      const double dist = target_lanelet_length - dist_to_goal;
-      accumulated_length = std::max(accumulated_length - dist, 0.0);
+      // NOTE: `accumulated_length` here contains the length of the entire target_end_primitive, so
+      // the remaining distance from the goal to the end of the target_end_primitive needs to be
+      // subtracted.
+      const double remaining_dist = target_lanelet_length - dist_to_goal;
+      accumulated_length = std::max(accumulated_length - remaining_dist, 0.0);
       break;
     }
   }

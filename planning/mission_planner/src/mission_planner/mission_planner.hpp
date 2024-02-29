@@ -93,6 +93,7 @@ private:
   RerouteAvailability::ConstSharedPtr reroute_availability_;
   RouteState state_;
   LaneletRoute::ConstSharedPtr current_route_;
+  lanelet::LaneletMapPtr lanelet_map_ptr_{nullptr};
 
   void on_odometry(const Odometry::ConstSharedPtr msg);
   void on_map(const HADMapBin::ConstSharedPtr msg);
