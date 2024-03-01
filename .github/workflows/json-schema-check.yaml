@@ -2,9 +2,6 @@ name: json-schema-check
 
 on:
   pull_request:
-    paths:
-      - "**/schema/*.schema.json"
-      - "**/config/*.param.yaml"
   workflow_dispatch:
 
 jobs:
