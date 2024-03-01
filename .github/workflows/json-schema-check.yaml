@@ -5,7 +5,23 @@ on:
   workflow_dispatch:
 
 jobs:
+  check-if-relevant-files-changed:
+    runs-on: ubuntu-latest
+    outputs:
+      run-check: ${{ steps.paths_filter.outputs.json_or_yaml }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v3
+        id: paths_filter
+        with:
+          filters: |
+            json_or_yaml:
+              - '**/schema/*.schema.json'
+              - '**/config/*.param.yaml'
+
   json-schema-check:
+    needs: check-if-relevant-files-changed
+    if: needs.check-if-relevant-files-changed.outputs.run-check == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -13,3 +29,11 @@ jobs:
 
       - name: Run json-schema-check
         uses: autowarefoundation/autoware-github-actions/json-schema-check@v1
+
+  no-relevant-changes:
+    needs: check-if-relevant-files-changed
+    if: needs.check-if-relevant-files-changed.outputs.run-check == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dummy step
+        run: echo "No relevant changes, passing check"
