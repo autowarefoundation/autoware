@@ -34,7 +34,7 @@
 #include <vector>
 
 // postfix for output topics
-#define POSTFIX_NAME "_synchronized"
+#define DEFAULT_SYNC_TOPIC_POSTFIX "_synchronized"
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace pointcloud_preprocessor
@@ -55,6 +55,7 @@ PointCloudDataSynchronizerComponent::PointCloudDataSynchronizerComponent(
   }
 
   // Set parameters
+  std::string synchronized_pointcloud_postfix;
   {
     output_frame_ = static_cast<std::string>(declare_parameter("output_frame", ""));
     if (output_frame_.empty()) {
@@ -71,6 +72,9 @@ PointCloudDataSynchronizerComponent::PointCloudDataSynchronizerComponent(
       RCLCPP_ERROR(get_logger(), "Only one topic given. Need at least two topics to continue.");
       return;
     }
+    // output topic name postfix
+    synchronized_pointcloud_postfix =
+      declare_parameter("synchronized_pointcloud_postfix", "pointcloud");
 
     // Optional parameters
     maximum_queue_size_ = static_cast<int>(declare_parameter("max_queue_size", 5));
@@ -150,7 +154,7 @@ PointCloudDataSynchronizerComponent::PointCloudDataSynchronizerComponent(
   // Transformed Raw PointCloud2 Publisher
   {
     for (auto & topic : input_topics_) {
-      std::string new_topic = topic + POSTFIX_NAME;
+      std::string new_topic = replaceSyncTopicNamePostfix(topic, synchronized_pointcloud_postfix);
       auto publisher = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         new_topic, rclcpp::SensorDataQoS().keep_last(maximum_queue_size_));
       transformed_raw_pc_publisher_map_.insert({topic, publisher});
@@ -171,6 +175,35 @@ PointCloudDataSynchronizerComponent::PointCloudDataSynchronizerComponent(
     updater_.setHardwareID("synchronize_data_checker");
     updater_.add("concat_status", this, &PointCloudDataSynchronizerComponent::checkSyncStatus);
   }
+}
+
+std::string PointCloudDataSynchronizerComponent::replaceSyncTopicNamePostfix(
+  const std::string & original_topic_name, const std::string & postfix)
+{
+  std::string replaced_topic_name;
+  // separate the topic name by '/' and replace the last element with the new postfix
+  size_t pos = original_topic_name.find_last_of("/");
+  if (pos == std::string::npos) {
+    // not found '/': this is not a namespaced topic
+    RCLCPP_WARN_STREAM(
+      get_logger(),
+      "The topic name is not namespaced. The postfix will be added to the end of the topic name.");
+    return original_topic_name + postfix;
+  } else {
+    // replace the last element with the new postfix
+    replaced_topic_name = original_topic_name.substr(0, pos) + "/" + postfix;
+  }
+
+  // if topic name is the same with original topic name, add postfix to the end of the topic name
+  if (replaced_topic_name == original_topic_name) {
+    RCLCPP_WARN_STREAM(
+      get_logger(), "The topic name "
+                      << original_topic_name
+                      << " have the same postfix with synchronized pointcloud. We use the postfix "
+                         "to the end of the topic name.");
+    replaced_topic_name = original_topic_name + DEFAULT_SYNC_TOPIC_POSTFIX;
+  }
+  return replaced_topic_name;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
