@@ -30,14 +30,6 @@ using std::placeholders::_1;
 namespace rviz_plugins
 {
 
-double lowpassFilter(
-  const double current_value, const double prev_value, double cutoff, const double dt)
-{
-  const double tau = 1.0 / (2.0 * M_PI * cutoff);
-  const double a = tau / (dt + tau);
-  return prev_value * a + (1.0 - a) * current_value;
-}
-
 ManualController::ManualController(QWidget * parent) : rviz_common::Panel(parent)
 {
   auto * state_layout = new QHBoxLayout;
@@ -115,25 +107,23 @@ void ManualController::update()
     ackermann.stamp = raw_node_->get_clock()->now();
     ackermann.lateral.steering_tire_angle = steering_angle_;
     ackermann.longitudinal.speed = cruise_velocity_;
-    if (current_acceleration_) {
-      /**
-       * @brief Calculate desired acceleration by simple BackSteppingControl
-       *  V = 0.5*(v-v_des)^2 >= 0
-       *  D[V] = (D[v] - a_des)*(v-v_des) <=0
-       *  a_des = k_const *(v - v_des) + a (k < 0 )
-       */
-      const double k = -0.5;
-      const double v = current_velocity_;
-      const double v_des = cruise_velocity_;
-      const double a = *current_acceleration_;
-      const double a_des = k * (v - v_des) + a;
-      ackermann.longitudinal.acceleration = std::clamp(a_des, -1.0, 1.0);
-    }
+    /**
+     * @brief Calculate desired acceleration by simple BackSteppingControl
+     *  V = 0.5*(v-v_des)^2 >= 0
+     *  D[V] = (D[v] - a_des)*(v-v_des) <=0
+     *  a_des = k_const *(v - v_des) + a (k < 0 )
+     */
+    const double k = -0.5;
+    const double v = current_velocity_;
+    const double v_des = cruise_velocity_;
+    const double a = current_acceleration_;
+    const double a_des = k * (v - v_des) + a;
+    ackermann.longitudinal.acceleration = std::clamp(a_des, -1.0, 1.0);
   }
   GearCommand gear_cmd;
   {
     const double eps = 0.001;
-    if (ackermann.longitudinal.speed > eps) {
+    if (ackermann.longitudinal.speed > eps && current_velocity_ > -eps) {
       gear_cmd.command = GearCommand::DRIVE;
     } else if (ackermann.longitudinal.speed < -eps && current_velocity_ < eps) {
       gear_cmd.command = GearCommand::REVERSE;
@@ -220,19 +210,11 @@ void ManualController::onEngageStatus(const Engage::ConstSharedPtr msg)
 void ManualController::onVelocity(const VelocityReport::ConstSharedPtr msg)
 {
   current_velocity_ = msg->longitudinal_velocity;
-  if (previous_velocity_) {
-    const double cutoff = 10.0;
-    const double dt = 1.0 / 10.0;
-    const double acc = (current_velocity_ - *previous_velocity_) / dt;
-    if (!current_acceleration_) {
-      current_acceleration_ = std::make_unique<double>(acc);
-    } else {
-      current_acceleration_ =
-        std::make_unique<double>(lowpassFilter(acc, *current_acceleration_, cutoff, dt));
-    }
-  }
-  previous_velocity_ = std::make_unique<double>(msg->longitudinal_velocity);
-  prev_stamp_ = rclcpp::Time(msg->header.stamp);
+}
+
+void ManualController::onAcceleration(const AccelWithCovarianceStamped::ConstSharedPtr msg)
+{
+  current_acceleration_ = msg->accel.accel.linear.x;
 }
 
 void ManualController::onGear(const GearReport::ConstSharedPtr msg)

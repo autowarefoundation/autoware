@@ -25,6 +25,7 @@
 #include <rviz_common/panel.hpp>
 
 #include "autoware_auto_vehicle_msgs/msg/velocity_report.hpp"
+#include "geometry_msgs/msg/accel_with_covariance_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
 #include <autoware_auto_vehicle_msgs/msg/engage.hpp>
@@ -40,6 +41,7 @@ namespace rviz_plugins
 using autoware_auto_control_msgs::msg::AckermannControlCommand;
 using autoware_auto_vehicle_msgs::msg::GearCommand;
 using autoware_auto_vehicle_msgs::msg::VelocityReport;
+using geometry_msgs::msg::AccelWithCovarianceStamped;
 using geometry_msgs::msg::Twist;
 using tier4_control_msgs::msg::GateMode;
 using EngageSrv = tier4_external_api_msgs::srv::Engage;
@@ -67,6 +69,7 @@ protected:
   void onPublishControlCommand();
   void onGateMode(const GateMode::ConstSharedPtr msg);
   void onVelocity(const VelocityReport::ConstSharedPtr msg);
+  void onAcceleration(const AccelWithCovarianceStamped::ConstSharedPtr msg);
   void onEngageStatus(const Engage::ConstSharedPtr msg);
   void onGear(const GearReport::ConstSharedPtr msg);
   rclcpp::Node::SharedPtr raw_node_;
@@ -82,9 +85,7 @@ protected:
   double cruise_velocity_{0.0};
   double steering_angle_{0.0};
   double current_velocity_{0.0};
-  rclcpp::Time prev_stamp_;
-  std::unique_ptr<double> previous_velocity_;
-  std::unique_ptr<double> current_acceleration_;
+  double current_acceleration_{0.0};
 
   QLabel * gate_mode_label_ptr_;
   QLabel * gear_label_ptr_;
