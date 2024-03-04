@@ -109,7 +109,7 @@
     <let name="override_input_pointcloud" value="$(var input_pointcloud)"/>
     <let name="override_input_pointcloud" value="$(var input_pointcloud)/relay" if="$(var multi_localizer_mode)"/>
     <include file="$(find-pkg-share tier4_localization_launch)/launch/util/util.launch.xml" if="$(var use_ndt_pose)">
-      <arg name="lidar_container_name" value="$(var lidar_container_name)"/>
+      <arg name="localization_pointcloud_container_name" value="$(var localization_pointcloud_container_name)"/>
       <arg name="input_pointcloud" value="$(var override_input_pointcloud)"/>
     </include>
   </group>

@@ -17,15 +17,15 @@
   <arg name="eagleye_param_path"/>
   <arg name="ar_tag_based_localizer_param_path"/>
 
-  <arg name="input_pointcloud" default="/sensing/lidar/top/pointcloud"/>
-  <arg name="lidar_container_name" default="/sensing/lidar/top/pointcloud_preprocessor/pointcloud_container"/>
+  <arg name="input_pointcloud" default="/sensing/lidar/concatenated/pointcloud"/>
+  <arg name="localization_pointcloud_container_name" default="/pointcloud_container"/>
 
   <!-- localization module -->
   <group>
     <push-ros-namespace namespace="localization"/>
     <!-- pose_twist_estimator module -->
     <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/pose_twist_estimator.launch.xml">
-      <arg name="lidar_container_name" value="$(var lidar_container_name)"/>
+      <arg name="localization_pointcloud_container_name" value="$(var localization_pointcloud_container_name)"/>
     </include>
 
     <!-- pose_twist_fusion_filter module -->

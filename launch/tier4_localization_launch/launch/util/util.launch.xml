@@ -3,12 +3,12 @@
   <arg name="output/pointcloud" default="downsample/pointcloud" description="final output topic name"/>
 
   <!-- container -->
-  <arg name="lidar_container_name" default="/sensing/lidar/top/pointcloud_preprocessor/pointcloud_container" description="container name of main lidar used for localization"/>
+  <arg name="localization_pointcloud_container_name" default="/pointcloud_container" description="container name of main lidar used for localization"/>
 
   <!-- whether use intra-process -->
   <arg name="use_intra_process" default="true" description="use ROS 2 component container communication"/>
 
-  <load_composable_node target="$(var lidar_container_name)">
+  <load_composable_node target="$(var localization_pointcloud_container_name)">
     <composable_node pkg="pointcloud_preprocessor" plugin="pointcloud_preprocessor::CropBoxFilterComponent" name="crop_box_filter_measurement_range">
       <param from="$(var ndt_scan_matcher/pointcloud_preprocessor/crop_box_filter_measurement_range_param_path)"/>
       <remap from="input" to="$(var input_pointcloud)"/>
