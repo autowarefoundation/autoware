@@ -332,6 +332,13 @@ PullOutPath --o PullOutPlannerBase
 | shift_collision_check_distance_from_end                     | [m]   | double | collision check distance from end shift end pose                            | -10.0                |
 | geometric_collision_check_distance_from_end                 | [m]   | double | collision check distance from end geometric end pose                        | 0.0                  |
 | collision_check_margin_from_front_object                    | [m]   | double | collision check margin from front object                                    | 5.0                  |
+| object_types_to_check_for_path_generation.check_car         | -     | bool   | flag to check car for path generation                                       | true                 |
+| object_types_to_check_for_path_generation.check_truck       | -     | bool   | flag to check truck for path generation                                     | true                 |
+| object_types_to_check_for_path_generation.check_bus         | -     | bool   | flag to check bus for path generation                                       | true                 |
+| object_types_to_check_for_path_generation.check_bicycle     | -     | bool   | flag to check bicycle for path generation                                   | true                 |
+| object_types_to_check_for_path_generation.check_motorcycle  | -     | bool   | flag to check motorcycle for path generation                                | true                 |
+| object_types_to_check_for_path_generation.check_pedestrian  | -     | bool   | flag to check pedestrian for path generation                                | true                 |
+| object_types_to_check_for_path_generation.check_unknown     | -     | bool   | flag to check unknown for path generation                                   | true                 |
 | center_line_path_interval                                   | [m]   | double | reference center line path point interval                                   | 1.0                  |
 
 ### **Ego vehicle's velocity planning**

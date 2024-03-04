@@ -67,6 +67,8 @@ struct StartPlannerParameters
   std::vector<double> collision_check_margins{};
   double collision_check_margin_from_front_object{0.0};
   double th_moving_object_velocity{0.0};
+  behavior_path_planner::utils::path_safety_checker::ObjectTypesToCheck
+    object_types_to_check_for_path_generation{};
   double center_line_path_interval{0.0};
 
   // shift pull out

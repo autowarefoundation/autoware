@@ -668,9 +668,10 @@ bool StartPlannerModule::findPullOutPath(
   // extract stop objects in pull out lane for collision check
   const auto stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
     *dynamic_objects, parameters_->th_moving_object_velocity);
-  const auto [pull_out_lane_stop_objects, others] =
-    utils::path_safety_checker::separateObjectsByLanelets(
-      stop_objects, pull_out_lanes, utils::path_safety_checker::isPolygonOverlapLanelet);
+  auto [pull_out_lane_stop_objects, others] = utils::path_safety_checker::separateObjectsByLanelets(
+    stop_objects, pull_out_lanes, utils::path_safety_checker::isPolygonOverlapLanelet);
+  utils::path_safety_checker::filterObjectsByClass(
+    pull_out_lane_stop_objects, parameters_->object_types_to_check_for_path_generation);
 
   // if start_pose_candidate is far from refined_start_pose, backward driving is necessary
   const bool backward_is_unnecessary =
@@ -1035,6 +1036,9 @@ PredictedObjects StartPlannerModule::filterStopObjectsInPullOutLanes(
   utils::path_safety_checker::filterObjectsByPosition(
     stop_objects_in_pull_out_lanes, path.points, current_point, object_check_forward_distance,
     object_check_backward_distance);
+
+  utils::path_safety_checker::filterObjectsByClass(
+    stop_objects_in_pull_out_lanes, parameters_->object_types_to_check_for_path_generation);
 
   return stop_objects_in_pull_out_lanes;
 }
