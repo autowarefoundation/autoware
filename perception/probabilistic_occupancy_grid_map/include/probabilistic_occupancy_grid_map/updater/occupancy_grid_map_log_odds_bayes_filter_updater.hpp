@@ -23,6 +23,7 @@
 #include <eigen3/Eigen/Geometry>
 
 // LOBF means: Log Odds Bayes Filter
+// cspell: ignore LOBF
 
 namespace costmap_2d
 {

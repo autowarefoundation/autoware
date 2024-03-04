@@ -18,6 +18,8 @@
 
 #include <algorithm>
 
+// cspell: ignore LOBF
+
 namespace costmap_2d
 {
 

@@ -40,6 +40,7 @@ static const tvm_utility::pipeline::InferenceEngineTVMConfig config{
   "./",               // network_graph_path
   "./",               // network_params_path
 
+  // cspell: ignore DLCPU
   kDLCPU,  // tvm_device_type
   0,       // tvm_device_id
 

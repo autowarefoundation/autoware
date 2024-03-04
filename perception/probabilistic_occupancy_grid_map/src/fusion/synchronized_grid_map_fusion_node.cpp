@@ -17,6 +17,8 @@
 #include "probabilistic_occupancy_grid_map/cost_value.hpp"
 #include "probabilistic_occupancy_grid_map/utils/utils.hpp"
 
+// cspell: ignore LOBF
+
 namespace synchronized_grid_map_fusion
 {
 using costmap_2d::OccupancyGridMapFixedBlindSpot;

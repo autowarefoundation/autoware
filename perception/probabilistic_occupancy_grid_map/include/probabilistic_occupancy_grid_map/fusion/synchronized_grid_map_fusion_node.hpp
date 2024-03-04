@@ -43,6 +43,8 @@
 #include <string>
 #include <vector>
 
+// cspell: ignore LOBF
+
 namespace synchronized_grid_map_fusion
 {
 

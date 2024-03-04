@@ -17,6 +17,8 @@
 #ifndef PERCEPTION__LIDAR_APOLLO_SEGMENTATION_TVM__DATA__MODELS__BAIDU_CNN__INFERENCE_ENGINE_TVM_CONFIG_HPP_  // NOLINT
 #define PERCEPTION__LIDAR_APOLLO_SEGMENTATION_TVM__DATA__MODELS__BAIDU_CNN__INFERENCE_ENGINE_TVM_CONFIG_HPP_  // NOLINT
 
+// cspell: ignore bcnn
+
 namespace model_zoo
 {
 namespace perception
@@ -38,6 +40,7 @@ static const tvm_utility::pipeline::InferenceEngineTVMConfig config{
   "./deploy_graph.json",    // network_graph_path
   "./deploy_param.params",  // network_params_path
 
+  // cspell: ignore DLCPU
   kDLCPU,  // tvm_device_type
   0,       // tvm_device_id
 

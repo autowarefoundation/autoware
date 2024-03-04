@@ -158,6 +158,7 @@ bool PedestrianTracker::predict(const rclcpp::Time & time)
 
 bool PedestrianTracker::predict(const double dt, KalmanFilter & ekf) const
 {
+  // cspell: ignore CTRV
   /*  Motion model: Constant turn-rate motion model (CTRV)
    *
    * x_{k+1}   = x_k + vx_k * cos(yaw_k) * dt
