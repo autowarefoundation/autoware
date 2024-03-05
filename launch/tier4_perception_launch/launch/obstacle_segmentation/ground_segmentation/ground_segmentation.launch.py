@@ -40,7 +40,7 @@ class GroundSegmentationPipeline:
             self.ground_segmentation_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
         self.single_frame_obstacle_seg_output = (
-            "/perception/obstacle_segmentation/single_frame/pointcloud_raw"
+            "/perception/obstacle_segmentation/single_frame/pointcloud"
         )
         self.output_topic = "/perception/obstacle_segmentation/pointcloud"
         self.use_single_frame_filter = self.ground_segmentation_param["use_single_frame_filter"]
@@ -297,7 +297,7 @@ class GroundSegmentationPipeline:
             ComposableNode(
                 package="occupancy_grid_map_outlier_filter",
                 plugin="occupancy_grid_map_outlier_filter::OccupancyGridMapOutlierFilterComponent",
-                name="occupancy_grid_map_outlier_filter",
+                name="occupancy_grid_based_outlier_filter",
                 remappings=[
                     ("~/input/occupancy_grid_map", "/perception/occupancy_grid_map/map"),
                     ("~/input/pointcloud", input_topic),
