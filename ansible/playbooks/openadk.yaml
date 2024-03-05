@@ -25,7 +25,7 @@
     - role: autoware.dev_env.kisak_mesa
       when: module == 'base'
     - role: autoware.dev_env.build_tools
-      when: module == 'all' and install_devel=='y'
+      when: module == 'all' and install_devel=='true'
 
     # Module specific dependencies
     - role: autoware.dev_env.geographiclib
