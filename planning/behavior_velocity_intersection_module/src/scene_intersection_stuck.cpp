@@ -34,6 +34,9 @@ lanelet::LineString3d getLineStringFromArcLength(
   lanelet::Points3d points;
   double accumulated_length = 0;
   size_t start_index = linestring.size();
+  if (start_index == 0) {
+    return lanelet::LineString3d{lanelet::InvalId, points};
+  }
   for (size_t i = 0; i < linestring.size() - 1; i++) {
     const auto & p1 = linestring[i];
     const auto & p2 = linestring[i + 1];
