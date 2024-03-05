@@ -208,11 +208,6 @@ bool LaneChangeInterface::canTransitSuccessState()
     }
   }
 
-  if (!module_type_->isValidPath()) {
-    log_debug_throttled("Has no valid path.");
-    return true;
-  }
-
   if (module_type_->isAbortState() && module_type_->hasFinishedAbort()) {
     log_debug_throttled("Abort process has completed.");
     return true;
