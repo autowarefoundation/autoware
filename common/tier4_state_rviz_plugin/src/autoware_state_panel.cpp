@@ -502,6 +502,11 @@ void AutowareStatePanel::onMRMState(const MRMState::ConstSharedPtr msg)
         style_sheet = "background-color: #00FF00;";  // green
         break;
 
+      case MRMState::PULL_OVER:
+        text = "PULL_OVER";
+        style_sheet = "background-color: #FFFF00;";  // yellow
+        break;
+
       case MRMState::COMFORTABLE_STOP:
         text = "COMFORTABLE_STOP";
         style_sheet = "background-color: #FFFF00;";  // yellow
