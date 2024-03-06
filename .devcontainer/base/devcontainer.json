@@ -12,9 +12,7 @@
     "--security-opt",
     "seccomp=unconfined",
     "--net=host",
-    "--volume=/etc/localtime:/etc/localtime:ro",
-    "--gpus",
-    "all"
+    "--volume=/etc/localtime:/etc/localtime:ro"
   ],
   "customizations": {
     "vscode": {

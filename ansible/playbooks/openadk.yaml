@@ -5,7 +5,7 @@
     - name: Verify OS
       ansible.builtin.fail:
         msg: Only Ubuntu 22.04 is supported for this branch. Please refer to https://autowarefoundation.github.io/autoware-documentation/main/installation/autoware/source-installation/.
-      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version != '22.04'
+      when: ansible_distribution != 'Ubuntu' or ansible_distribution_version != '22.04'
 
     - name: Print args
       ansible.builtin.debug:

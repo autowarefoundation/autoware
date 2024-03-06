@@ -33,7 +33,7 @@ To install without **NVIDIA GPU** support:
 
 ## Usage
 
-### Runtime Setup
+### Runtime
 
 You can use `run.sh` to run the Autoware runtime container with the map data:
 
@@ -59,7 +59,7 @@ Inside the container, you can run the Autoware simulation by following these tut
 
 [Rosbag Replay Simulation](../../tutorials/ad-hoc-simulation/rosbag-replay-simulation.md).
 
-### Development Setup
+### Development Environment
 
 You can use [VS Code Remote Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) to develop Autoware in the containerized environment with ease. Or you can use `run.sh` manually to run the Autoware development container with the workspace mounted.
 
@@ -68,17 +68,33 @@ You can use [VS Code Remote Containers](https://marketplace.visualstudio.com/ite
 Get the Visual Studio Code's [Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension.
 And reopen the workspace in the container by selecting `Remote-Containers: Reopen in Container` from the Command Palette (`F1`).
 
-By default devcontainer assumes NVIDIA GPU support, you can change this by deleting these lines within `.devcontainer/devcontainer.json`:
+Autoware and Autoware-cuda are available containers for development.
 
-```json
-    "hostRequirements": {
-      "gpu": true
-    },
+If you want to use CUDA supported dev container, you need to install the NVIDIA Container Toolkit before opening the workspace in the container:
+
+```bash
+# Add NVIDIA container toolkit GPG key
+sudo apt-key adv --fetch-keys https://nvidia.github.io/libnvidia-container/gpgkey
+sudo gpg --no-default-keyring --keyring /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg --import /etc/apt/trusted.gpg
+
+# Add NVIDIA container toolkit repository
+echo "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/deb/$(dpkg --print-architecture) /" | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+# Update the package list
+sudo apt-get update
+
+# Install NVIDIA Container Toolkit
+sudo apt-get install -y nvidia-container-toolkit
+
+# Add NVIDIA runtime support to docker engine
+sudo nvidia-ctk runtime configure --runtime=docker
+
+# Restart docker daemon
+sudo systemctl restart docker
 ```
 
-```json
-      "--gpus", "all"
-```
+Then, you can use the `Remote-Containers: Reopen in Container` command to open the workspace in the container.
+
 
 #### Using `run.sh` for Development
 
