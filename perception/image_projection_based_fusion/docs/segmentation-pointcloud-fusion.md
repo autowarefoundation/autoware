@@ -15,12 +15,12 @@ The node `segmentation_pointcloud_fusion` is a package for filtering pointcloud 
 
 ### Input
 
-| Name                     | Type                                | Description                                               |
-| ------------------------ | ----------------------------------- | --------------------------------------------------------- |
-| `input`                  | `sensor_msgs::msg::PointCloud2`     | input pointcloud                                          |
-| `input/camera_info[0-7]` | `sensor_msgs::msg::CameraInfo`      | camera information to project 3d points onto image planes |
-| `input/rois[0-7]`        | `tier4_perception_msgs::msg::Image` | semantic segmentation mask image                          |
-| `input/image_raw[0-7]`   | `sensor_msgs::msg::Image`           | images for visualization                                  |
+| Name                     | Type                            | Description                                                                            |
+| ------------------------ | ------------------------------- | -------------------------------------------------------------------------------------- |
+| `input`                  | `sensor_msgs::msg::PointCloud2` | input pointcloud                                                                       |
+| `input/camera_info[0-7]` | `sensor_msgs::msg::CameraInfo`  | camera information to project 3d points onto image planes                              |
+| `input/rois[0-7]`        | `sensor_msgs::msg::Image`       | A gray-scale image of semantic segmentation mask, the pixel value is semantic class id |
+| `input/image_raw[0-7]`   | `sensor_msgs::msg::Image`       | images for visualization                                                               |
 
 ### Output
 
