@@ -6,8 +6,9 @@
   <description>The ROS 2 cluster merger package</description>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
-  <maintainer email="dai.nguyen@tier4.jp">autoware</maintainer>
+  <maintainer email="dai.nguyen@tier4.jp">Dai Nguyen</maintainer>
   <license>Apache License 2.0</license>
+  <author email="dai.nguyen@tier4.jp">Dai Nguyen</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 

@@ -4,8 +4,10 @@
   <name>image_diagnostics</name>
   <version>0.1.0</version>
   <description>The image_diagnostics_package</description>
-  <maintainer email="dai.nguyen@tier4.jp">dainguyen</maintainer>
+  <maintainer email="dai.nguyen@tier4.jp">Dai Nguyen</maintainer>
   <license>Apache License 2.0</license>
+
+  <author email="dai.nguyen@tier4.jp">Dai Nguyen</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
