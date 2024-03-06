@@ -8,10 +8,10 @@ inputs:
   build-args:
     description: ""
     required: false
-  tag-suffix:
+  tag-prefix:
     description: ""
     required: false
-  tag-prefix:
+  tag-suffix:
     description: ""
     required: false
   allow-push:
