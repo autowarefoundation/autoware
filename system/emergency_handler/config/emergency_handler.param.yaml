@@ -4,8 +4,6 @@
   ros__parameters:
     update_rate: 10
     timeout_hazard_status: 0.5
-    timeout_takeover_request: 10.0
-    use_takeover_request: false
     use_parking_after_stopped: false
     use_comfortable_stop: false
 

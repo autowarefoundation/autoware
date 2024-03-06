@@ -26,8 +26,6 @@ MrmHandler::MrmHandler() : Node("mrm_handler")
     declare_parameter<double>("timeout_operation_mode_availability", 0.5);
   param_.use_emergency_holding = declare_parameter<bool>("use_emergency_holding", false);
   param_.timeout_emergency_recovery = declare_parameter<double>("timeout_emergency_recovery", 5.0);
-  param_.timeout_takeover_request = declare_parameter<double>("timeout_takeover_request", 10.0);
-  param_.use_takeover_request = declare_parameter<bool>("use_takeover_request", false);
   param_.use_parking_after_stopped = declare_parameter<bool>("use_parking_after_stopped", false);
   param_.use_pull_over = declare_parameter<bool>("use_pull_over", false);
   param_.use_comfortable_stop = declare_parameter<bool>("use_comfortable_stop", false);
@@ -434,41 +432,23 @@ void MrmHandler::updateMrmState()
 
   // Get mode
   const bool is_auto_mode = control_mode_->mode == ControlModeReport::AUTONOMOUS;
-  const bool is_takeover_done = control_mode_->mode == ControlModeReport::MANUAL;
 
   // State Machine
   if (mrm_state_.state == MrmState::NORMAL) {
     // NORMAL
     if (is_auto_mode && is_emergency) {
-      if (param_.use_takeover_request) {
-        takeover_requested_time_ = this->get_clock()->now();
-        is_takeover_request_ = true;
-        return;
-      } else {
-        transitionTo(MrmState::MRM_OPERATING);
-        return;
-      }
+      transitionTo(MrmState::MRM_OPERATING);
+      return;
     }
   } else {
     // Emergency
-    // Send recovery events if "not emergency" or "takeover done"
+    // Send recovery events if "not emergency"
     if (!is_emergency) {
       transitionTo(MrmState::NORMAL);
       return;
     }
-    // TODO(TetsuKawa): Check if human can safely override, for example using DSM
-    if (is_takeover_done) {
-      transitionTo(MrmState::NORMAL);
-      return;
-    }
 
-    if (is_takeover_request_) {
-      const auto time_from_takeover_request = this->get_clock()->now() - takeover_requested_time_;
-      if (time_from_takeover_request.seconds() > param_.timeout_takeover_request) {
-        transitionTo(MrmState::MRM_OPERATING);
-        return;
-      }
-    } else if (mrm_state_.state == MrmState::MRM_OPERATING) {
+    if (mrm_state_.state == MrmState::MRM_OPERATING) {
       // TODO(TetsuKawa): Check MRC is accomplished
       if (mrm_state_.behavior == MrmState::PULL_OVER) {
         if (isStopped() && isArrivedAtGoal()) {

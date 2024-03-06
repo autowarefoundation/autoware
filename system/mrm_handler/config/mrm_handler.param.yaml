@@ -6,8 +6,6 @@
     timeout_operation_mode_availability: 0.5
     use_emergency_holding: false
     timeout_emergency_recovery: 5.0
-    timeout_takeover_request: 10.0
-    use_takeover_request: false
     use_parking_after_stopped: false
     use_pull_over: false
     use_comfortable_stop: false

@@ -49,8 +49,6 @@ struct Param
   double timeout_operation_mode_availability;
   bool use_emergency_holding;
   double timeout_emergency_recovery;
-  double timeout_takeover_request;
-  bool use_takeover_request;
   bool use_parking_after_stopped;
   bool use_pull_over;
   bool use_comfortable_stop;
@@ -145,8 +143,6 @@ private:
   std::optional<rclcpp::Time> stamp_autonomous_become_unavailable_ = std::nullopt;
 
   // Algorithm
-  rclcpp::Time takeover_requested_time_;
-  bool is_takeover_request_ = false;
   bool is_emergency_holding_ = false;
   void transitionTo(const int new_state);
   void updateMrmState();

@@ -16,16 +16,6 @@
           "description": "If the input `hazard_status` topic cannot be received for more than `timeout_hazard_status`, vehicle will make an emergency stop.",
           "default": 0.5
         },
-        "timeout_takeover_request": {
-          "type": "number",
-          "description": "Transition to MRR_OPERATING if the time from the last takeover request exceeds `timeout_takeover_request`.",
-          "default": 10.0
-        },
-        "use_takeover_request": {
-          "type": "boolean",
-          "description": "If this parameter is true, the handler will record the time and make take over request to the driver when emergency state occurs.",
-          "default": "false"
-        },
         "use_parking_after_stopped": {
           "type": "boolean",
           "description": "If this parameter is true, it will publish PARKING shift command.",
@@ -51,8 +41,6 @@
       "required": [
         "update_rate",
         "timeout_hazard_status",
-        "timeout_takeover_request",
-        "use_takeover_request",
         "use_parking_after_stopped",
         "use_comfortable_stop",
         "turning_hazard_on"

@@ -45,8 +45,6 @@ struct Param
 {
   int update_rate;
   double timeout_hazard_status;
-  double timeout_takeover_request;
-  bool use_takeover_request;
   bool use_parking_after_stopped;
   bool use_comfortable_stop;
   HazardLampPolicy turning_hazard_on{};
@@ -135,8 +133,6 @@ private:
   rclcpp::Time stamp_hazard_status_;
 
   // Algorithm
-  rclcpp::Time takeover_requested_time_;
-  bool is_takeover_request_ = false;
   void transitionTo(const int new_state);
   void updateMrmState();
   void operateMrm();
