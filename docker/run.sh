@@ -35,11 +35,11 @@ print_help() {
     echo -e "${RED}Usage:${NC} run.sh [OPTIONS] [LAUNCH_CMD](optional)"
     echo -e "Options:"
     echo -e "  ${GREEN}--help/-h${NC}       Display this help message"
-    echo -e "  ${GREEN}--map-path${NC}      Specify the path to the map files (mandatory if no custom launch command is provided)"
+    echo -e "  ${GREEN}--map-path${NC}      Specify to mount map files into /autoware_map (mandatory if no custom launch command is provided)"
     echo -e "  ${GREEN}--no-nvidia${NC}     Disable NVIDIA GPU support"
     echo -e "  ${GREEN}--devel${NC}         Use the latest development version of Autoware"
     echo -e "  ${GREEN}--headless${NC}      Run Autoware in headless mode (default: false)"
-    echo -e "  ${GREEN}--workspace${NC}     Specify the workspace path to mount into container"
+    echo -e "  ${GREEN}--workspace${NC}     Specify to mount the workspace into /workspace"
     echo ""
 }
 
@@ -98,15 +98,19 @@ set_variables() {
     # Mount map path if provided
     MAP="-v ${MAP_PATH}:/autoware_map:ro"
 
-    # Set default launch command if not provided
-    if [ "$LAUNCH_CMD" == "" ]; then
-        LAUNCH_CMD=${DEFAULT_LAUNCH_CMD}
-    fi
-
-    # Set workspace path if provided with current user and group
+    # Set workspace path if provided and login with local user
     if [ "$WORKSPACE_PATH" != "" ]; then
         USER_ID="-e LOCAL_UID=$(id -u) -e LOCAL_GID=$(id -g) -e LOCAL_USER=$(id -un) -e LOCAL_GROUP=$(id -gn)"
         WORKSPACE="-v ${WORKSPACE_PATH}:/workspace"
+    fi
+
+    # Set default launch command if not provided
+    if [ "$LAUNCH_CMD" == "" ]; then
+        if [ "$WORKSPACE_PATH" != "" ]; then
+            LAUNCH_CMD="/bin/bash"
+        else
+            LAUNCH_CMD=${DEFAULT_LAUNCH_CMD}
+        fi
     fi
 
     # Set image based on option

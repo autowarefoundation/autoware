@@ -11,6 +11,9 @@ This role installs TensorRT and cuDNN following [this page](https://docs.nvidia.
 
 ## Manual Installation
 
+For Universe, the `cudnn_version` and `tensorrt_version` variables should be copied from
+[amd64.env](../../../amd64.env) or [arm64.env](../../../arm64.env) depending on the architecture used.
+
 ```bash
 wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
 

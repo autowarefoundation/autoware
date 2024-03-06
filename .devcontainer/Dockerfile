@@ -1,4 +1,4 @@
-FROM ghcr.io/autowarefoundation/openadk:latest-devel
+FROM ghcr.io/autowarefoundation/autoware-openadk:latest-devel
 
 ENV SHELL /bin/bash
 
