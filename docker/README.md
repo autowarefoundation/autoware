@@ -129,7 +129,6 @@ If you don't have a workspace yet, you can create a new workspace with following
 > vcs pull src
 > ```
 
-
 ## Building Docker images from scratch
 
 If you want to build these images locally for development purposes, run the following command:
