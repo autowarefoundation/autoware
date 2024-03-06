@@ -95,7 +95,6 @@ sudo systemctl restart docker
 
 Then, you can use the `Remote-Containers: Reopen in Container` command to open the workspace in the container.
 
-
 #### Using `run.sh` for Development
 
 ```bash
