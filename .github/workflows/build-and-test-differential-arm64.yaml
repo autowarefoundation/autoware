@@ -1,4 +1,4 @@
-name: build-and-test-differential-self-hosted
+name: build-and-test-differential-arm64
 
 on:
   pull_request:
@@ -12,9 +12,9 @@ jobs:
   prevent-no-label-execution:
     uses: autowarefoundation/autoware-github-actions/.github/workflows/prevent-no-label-execution.yaml@v1
     with:
-      label: ARM64
+      label: type:arm64
 
-  build-and-test-differential-self-hosted:
+  build-and-test-differential-arm64:
     needs: prevent-no-label-execution
     if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
     runs-on: [self-hosted, linux, ARM64]
@@ -29,13 +29,16 @@ jobs:
           - -cuda
         include:
           - rosdistro: humble
-            container: ghcr.io/autowarefoundation/autoware-universe:humble-latest
+            container: ghcr.io/autowarefoundation/autoware-openadk:latest-prebuilt
             build-depends-repos: build_depends.repos
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Show disk space before the tasks
+        run: df -h
 
       - name: Remove exec_depend
         uses: autowarefoundation/autoware-github-actions/remove-exec-depend@v1
@@ -59,3 +62,6 @@ jobs:
           rosdistro: ${{ matrix.rosdistro }}
           target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
           build-depends-repos: ${{ matrix.build-depends-repos }}
+
+      - name: Show disk space after the tasks
+        run: df -h

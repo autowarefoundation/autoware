@@ -1,4 +1,4 @@
-name: build-and-test-self-hosted
+name: build-and-test-arm64
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test-self-hosted:
+  build-and-test-arm64:
     runs-on: [self-hosted, linux, ARM64]
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
@@ -19,11 +19,14 @@ jobs:
           - -cuda
         include:
           - rosdistro: humble
-            container: ghcr.io/autowarefoundation/autoware-universe:humble-latest
+            container: ghcr.io/autowarefoundation/autoware-openadk:latest-prebuilt
             build-depends-repos: build_depends.repos
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
+
+      - name: Show disk space before the tasks
+        run: df -h
 
       - name: Remove exec_depend
         uses: autowarefoundation/autoware-github-actions/remove-exec-depend@v1
@@ -47,3 +50,6 @@ jobs:
           rosdistro: ${{ matrix.rosdistro }}
           target-packages: ${{ steps.get-self-packages.outputs.self-packages }}
           build-depends-repos: ${{ matrix.build-depends-repos }}
+
+      - name: Show disk space after the tasks
+        run: df -h

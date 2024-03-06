@@ -16,7 +16,7 @@ jobs:
   build-and-test-differential:
     needs: prevent-no-label-execution
     if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
-    runs-on: [self-hosted, linux, X64]
+    runs-on: ubuntu-latest
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
       fail-fast: false
@@ -24,10 +24,11 @@ jobs:
         rosdistro:
           - humble
         container-suffix:
+          - ""
           - -cuda
         include:
           - rosdistro: humble
-            container: ghcr.io/autowarefoundation/autoware-universe:humble-latest
+            container: ghcr.io/autowarefoundation/autoware-openadk:latest-prebuilt
             build-depends-repos: build_depends.repos
     steps:
       - name: Check out repository
@@ -35,7 +36,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check disk space before build
+      - name: Show disk space before the tasks
         run: df -h
 
       - name: Remove exec_depend
@@ -71,5 +72,5 @@ jobs:
           verbose: true
           flags: differential
 
-      - name: Check disk space after build
+      - name: Show disk space after the tasks
         run: df -h
