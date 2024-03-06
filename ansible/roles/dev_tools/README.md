@@ -35,7 +35,6 @@ git lfs install
 pip3 install pre-commit
 
 # Install a specific version of clang-format using pip3
-# Replace X.Y with the actual version you want to install
 pip3 install clang-format==${pre_commit_clang_format_version}
 
 # Install Go
