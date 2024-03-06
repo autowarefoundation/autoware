@@ -1,0 +1,17 @@
+# Ignore git and metadata directories
+.git
+.github
+.vscode
+
+# Ignore all markdown files
+*.md
+
+# Ignore Docker files
+docker-bake.hcl
+
+# Etc
+*.ignore
+*.lint
+*.lock
+*.log
+*.out

@@ -1,0 +1,5 @@
+ignored:
+  - DL3008 # Pin versions in apt get install. Instead of `apt-get install <package>` use `apt-get install <package>=<version>`
+  - DL3013 # Pin versions in pip. Instead of `pip install <package>`, use `pip install <package>==<version>`
+  - DL3015 # Avoid additional packages by specifying `--no-install-recommends`
+  - DL3009 # Delete the apt-get lists after installing something
