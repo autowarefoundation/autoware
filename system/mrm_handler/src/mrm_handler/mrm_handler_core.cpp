@@ -161,48 +161,39 @@ void MrmHandler::onOperationModeState(
   operation_mode_state_ = msg;
 }
 
-autoware_auto_vehicle_msgs::msg::HazardLightsCommand MrmHandler::createHazardCmdMsg()
+void MrmHandler::publishHazardCmd()
 {
   using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
   HazardLightsCommand msg;
 
-  // Check emergency
-  const bool is_emergency = isEmergency();
-
+  msg.stamp = this->now();
   if (is_emergency_holding_) {
     // turn hazard on during emergency holding
     msg.command = HazardLightsCommand::ENABLE;
-  } else if (is_emergency && param_.turning_hazard_on.emergency) {
+  } else if (isEmergency() && param_.turning_hazard_on.emergency) {
     // turn hazard on if vehicle is in emergency state and
     // turning hazard on if emergency flag is true
     msg.command = HazardLightsCommand::ENABLE;
   } else {
     msg.command = HazardLightsCommand::NO_COMMAND;
   }
-  return msg;
+
+  pub_hazard_cmd_->publish(msg);
 }
 
-void MrmHandler::publishControlCommands()
+void MrmHandler::publishGearCmd()
 {
   using autoware_auto_vehicle_msgs::msg::GearCommand;
+  GearCommand msg;
 
-  // Create timestamp
-  const auto stamp = this->now();
-
-  // Publish hazard command
-  pub_hazard_cmd_->publish(createHazardCmdMsg());
-
-  // Publish gear
-  {
-    GearCommand msg;
-    msg.stamp = stamp;
-    if (param_.use_parking_after_stopped && isStopped()) {
-      msg.command = GearCommand::PARK;
-    } else {
-      msg.command = GearCommand::DRIVE;
-    }
-    pub_gear_cmd_->publish(msg);
+  msg.stamp = this->now();
+  if (param_.use_parking_after_stopped && isStopped()) {
+    msg.command = GearCommand::PARK;
+  } else {
+    msg.command = GearCommand::DRIVE;
   }
+
+  pub_gear_cmd_->publish(msg);
 }
 
 void MrmHandler::publishMrmState()
@@ -380,17 +371,21 @@ void MrmHandler::onTimer()
       this->get_logger(), *this->get_clock(), std::chrono::milliseconds(1000).count(),
       "heartbeat operation_mode_availability is timeout");
     mrm_state_.state = autoware_adapi_v1_msgs::msg::MrmState::MRM_OPERATING;
-    publishControlCommands();
+    publishHazardCmd();
+    publishGearCmd();
     return;
   }
 
   // Update Emergency State
   updateMrmState();
 
-  // Publish control commands
-  publishControlCommands();
+  // Operate MRM
   operateMrm();
+
+  // Publish
   publishMrmState();
+  publishHazardCmd();
+  publishGearCmd();
 }
 
 void MrmHandler::transitionTo(const int new_state)

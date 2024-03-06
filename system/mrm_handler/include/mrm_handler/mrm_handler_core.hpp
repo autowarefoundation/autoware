@@ -104,9 +104,8 @@ private:
     pub_hazard_cmd_;
   rclcpp::Publisher<autoware_auto_vehicle_msgs::msg::GearCommand>::SharedPtr pub_gear_cmd_;
 
-  autoware_auto_vehicle_msgs::msg::HazardLightsCommand createHazardCmdMsg();
-  autoware_auto_vehicle_msgs::msg::GearCommand createGearCmdMsg();
-  void publishControlCommands();
+  void publishHazardCmd();
+  void publishGearCmd();
 
   rclcpp::Publisher<autoware_adapi_v1_msgs::msg::MrmState>::SharedPtr pub_mrm_state_;
 
