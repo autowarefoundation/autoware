@@ -1481,6 +1481,10 @@ std::vector<geometry_msgs::msg::Point> postProcess(
   const auto & vehicle_length = planner_data->parameters.vehicle_length;
   constexpr double overlap_threshold = 0.01;
 
+  if (original_bound.size() < 2) {
+    return original_bound;
+  }
+
   const auto addPoints =
     [](const lanelet::ConstLineString3d & points, std::vector<geometry_msgs::msg::Point> & bound) {
       for (const auto & bound_p : points) {
