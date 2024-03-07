@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Radar Tracks Msgs Converter node",
+  "type": "object",
+  "definitions": {
+    "radar_tracks_msgs_converter": {
+      "type": "object",
+      "properties": {
+        "update_rate_hz": {
+          "type": "number",
+          "description": "The update rate [hz] of the output topic",
+          "default": "20.0",
+          "minimum": 0.0
+        },
+        "new_frame_id": {
+          "type": "string",
+          "description": "The header frame_id of the output topic",
+          "default": "base_link"
+        },
+        "use_twist_compensation": {
+          "type": "boolean",
+          "description": "Flag to enable the linear compensation of ego vehicle's twist",
+          "default": "false"
+        },
+        "use_twist_yaw_compensation": {
+          "type": "boolean",
+          "description": "Flag to enable the compensation of yaw rotation of ego vehicle's twist",
+          "default": "false"
+        },
+        "static_object_speed_threshold": {
+          "type": "number",
+          "description": "Threshold to treat detected objects as static objects",
+          "default": "1.0"
+        }
+      },
+      "required": [
+        "update_rate_hz",
+        "new_frame_id",
+        "use_twist_compensation",
+        "use_twist_yaw_compensation",
+        "static_object_speed_threshold"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/radar_tracks_msgs_converter"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
