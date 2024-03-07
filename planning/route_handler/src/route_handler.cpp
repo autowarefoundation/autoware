@@ -643,12 +643,22 @@ lanelet::ConstLanelets RouteHandler::getLaneletSequence(
     return lanelet_sequence;
   }
 
-  lanelet::ConstLanelets lanelet_sequence_forward =
-    getLaneletSequenceAfter(lanelet, forward_distance, only_route_lanes);
+  const lanelet::ConstLanelets lanelet_sequence_forward = std::invoke([&]() {
+    if (only_route_lanes) {
+      return getLaneletSequenceAfter(lanelet, forward_distance, only_route_lanes);
+    } else if (lanelet::utils::contains(shoulder_lanelets_, lanelet)) {
+      return getShoulderLaneletSequenceAfter(lanelet, forward_distance);
+    }
+    return lanelet::ConstLanelets{};
+  });
   const lanelet::ConstLanelets lanelet_sequence_backward = std::invoke([&]() {
     const auto arc_coordinate = lanelet::utils::getArcCoordinates({lanelet}, current_pose);
     if (arc_coordinate.length < backward_distance) {
-      return getLaneletSequenceUpTo(lanelet, backward_distance, only_route_lanes);
+      if (only_route_lanes) {
+        return getLaneletSequenceUpTo(lanelet, backward_distance, only_route_lanes);
+      } else if (lanelet::utils::contains(shoulder_lanelets_, lanelet)) {
+        return getShoulderLaneletSequenceUpTo(lanelet, backward_distance);
+      }
     }
     return lanelet::ConstLanelets{};
   });
