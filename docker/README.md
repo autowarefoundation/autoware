@@ -1,4 +1,4 @@
-## Open AD Kit: Containerized Workloads for Autoware
+# Open AD Kit: containerized workloads for Autoware
 
 [Open AD Kit](https://autoware.org/open-ad-kit/) offers containers for Autoware to simplify the development and deployment of Autoware and its dependencies. This directory contains the Dockerfiles and scripts to build and run the containers.
 
