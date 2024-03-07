@@ -222,9 +222,9 @@ This ordering is beneficial when the priority is to minimize the backward distan
 
 - **Applying RSS in Dynamic Collision Detection**: Collision detection is based on the RSS (Responsibility-Sensitive Safety) model to evaluate if a safe distance is maintained. See [safety check feature explanation](../behavior_path_planner_common/docs/behavior_path_planner_safety_check.md)
 
-- **Collision check performed range**: Safety checks for collisions with dynamic objects are conducted within the defined boundaries between the start and end points of each maneuver, ensuring there is no overlap with the road lane's centerline. This is to avoid hindering the progress of following vehicles.
+- **Collision check performed range**: Safety checks for collisions with dynamic objects are conducted within the defined boundaries between the start and end points of each maneuver, ensuring the ego vehicle does not impede or hinder the progress of dynamic objects that come from behind it.
 
-- **Collision response policy**: Should a collision with dynamic objects be detected along the generated path, deactivate module decision is registered if collision detection occurs before departure. If the vehicle has already commenced movement, an attempt to stop will be made, provided it's feasible within the braking constraints and without crossing the travel lane's centerline.
+- **Collision response policy**: Should a collision with dynamic objects be detected along the generated path, deactivate module decision is registered if collision detection occurs before departure. If the vehicle has already commenced movement, an attempt to stop will be made, provided it's feasible within the braking constraints and that the rear vehicle can pass through the gap between the ego vehicle and the lane border.
 
 ```plantuml
 @startuml
@@ -235,7 +235,7 @@ if (Collision with dynamic objects detected?) then (yes)
   if (Before departure?) then (yes)
     :Deactivate module decision is registered;
   else (no)
-    if (Can stop within constraints \n && \n no crossing centerline?) then (yes)
+    if (Can stop within constraints \n && \n Has sufficient space for rear vehicle to drive?) then (yes)
       :Stop;
     else (no)
       :Continue with caution;
@@ -250,7 +250,7 @@ stop
 
 #### **example of safety check performed range for shift pull out**
 
-Give an example of safety verification range for shift pull out. The safety check is performed from the start of the shift to the end of the shift. And if the vehicle footprint overlaps with the center line of the road lane, the safety check against dynamic objects is disabled.
+Give an example of safety verification range for shift pull out. The safety check is performed from the start of the shift to the end of the shift. And if the vehicle footprint does not leave enough space for a rear vehicle to drive through, the safety check against dynamic objects is disabled.
 
 <figure markdown>
   ![safety check performed range for shift pull out](images/collision_check_range_shift_pull_out.drawio.svg){width=1100}
@@ -319,27 +319,28 @@ PullOutPath --o PullOutPlannerBase
 
 ## General parameters for start_planner
 
-| Name                                                        | Unit  | Type   | Description                                                                 | Default value        |
-| :---------------------------------------------------------- | :---- | :----- | :-------------------------------------------------------------------------- | :------------------- |
-| th_arrived_distance_m                                       | [m]   | double | distance threshold for arrival of path termination                          | 1.0                  |
-| th_distance_to_middle_of_the_road                           | [m]   | double | distance threshold to determine if the vehicle is on the middle of the road | 0.1                  |
-| th_stopped_velocity_mps                                     | [m/s] | double | velocity threshold for arrival of path termination                          | 0.01                 |
-| th_stopped_time_sec                                         | [s]   | double | time threshold for arrival of path termination                              | 1.0                  |
-| th_turn_signal_on_lateral_offset                            | [m]   | double | lateral distance threshold for turning on blinker                           | 1.0                  |
-| intersection_search_length                                  | [m]   | double | check if intersections exist within this length                             | 30.0                 |
-| length_ratio_for_turn_signal_deactivation_near_intersection | [m]   | double | deactivate turn signal of this module near intersection                     | 0.5                  |
-| collision_check_margins                                     | [m]   | double | Obstacle collision check margins list                                       | [2.0, 1.0, 0.5, 0.1] |
-| shift_collision_check_distance_from_end                     | [m]   | double | collision check distance from end shift end pose                            | -10.0                |
-| geometric_collision_check_distance_from_end                 | [m]   | double | collision check distance from end geometric end pose                        | 0.0                  |
-| collision_check_margin_from_front_object                    | [m]   | double | collision check margin from front object                                    | 5.0                  |
-| object_types_to_check_for_path_generation.check_car         | -     | bool   | flag to check car for path generation                                       | true                 |
-| object_types_to_check_for_path_generation.check_truck       | -     | bool   | flag to check truck for path generation                                     | true                 |
-| object_types_to_check_for_path_generation.check_bus         | -     | bool   | flag to check bus for path generation                                       | true                 |
-| object_types_to_check_for_path_generation.check_bicycle     | -     | bool   | flag to check bicycle for path generation                                   | true                 |
-| object_types_to_check_for_path_generation.check_motorcycle  | -     | bool   | flag to check motorcycle for path generation                                | true                 |
-| object_types_to_check_for_path_generation.check_pedestrian  | -     | bool   | flag to check pedestrian for path generation                                | true                 |
-| object_types_to_check_for_path_generation.check_unknown     | -     | bool   | flag to check unknown for path generation                                   | true                 |
-| center_line_path_interval                                   | [m]   | double | reference center line path point interval                                   | 1.0                  |
+| Name                                                        | Unit  | Type   | Description                                                                                                                                                                            | Default value        |
+| :---------------------------------------------------------- | :---- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------- |
+| th_arrived_distance_m                                       | [m]   | double | distance threshold for arrival of path termination                                                                                                                                     | 1.0                  |
+| th_distance_to_middle_of_the_road                           | [m]   | double | distance threshold to determine if the vehicle is on the middle of the road                                                                                                            | 0.1                  |
+| th_stopped_velocity_mps                                     | [m/s] | double | velocity threshold for arrival of path termination                                                                                                                                     | 0.01                 |
+| th_stopped_time_sec                                         | [s]   | double | time threshold for arrival of path termination                                                                                                                                         | 1.0                  |
+| th_turn_signal_on_lateral_offset                            | [m]   | double | lateral distance threshold for turning on blinker                                                                                                                                      | 1.0                  |
+| intersection_search_length                                  | [m]   | double | check if intersections exist within this length                                                                                                                                        | 30.0                 |
+| length_ratio_for_turn_signal_deactivation_near_intersection | [m]   | double | deactivate turn signal of this module near intersection                                                                                                                                | 0.5                  |
+| collision_check_margins                                     | [m]   | double | Obstacle collision check margins list                                                                                                                                                  | [2.0, 1.0, 0.5, 0.1] |
+| shift_collision_check_distance_from_end                     | [m]   | double | collision check distance from end shift end pose                                                                                                                                       | -10.0                |
+| geometric_collision_check_distance_from_end                 | [m]   | double | collision check distance from end geometric end pose                                                                                                                                   | 0.0                  |
+| collision_check_margin_from_front_object                    | [m]   | double | collision check margin from front object                                                                                                                                               | 5.0                  |
+| extra_width_margin_for_rear_obstacle                        | [m]   | double | extra width that is added to the perceived rear obstacle's width when deciding if the rear obstacle can overtake the ego vehicle while it is merging to a lane from the shoulder lane. | 0.5                  |
+| object_types_to_check_for_path_generation.check_car         | -     | bool   | flag to check car for path generation                                                                                                                                                  | true                 |
+| object_types_to_check_for_path_generation.check_truck       | -     | bool   | flag to check truck for path generation                                                                                                                                                | true                 |
+| object_types_to_check_for_path_generation.check_bus         | -     | bool   | flag to check bus for path generation                                                                                                                                                  | true                 |
+| object_types_to_check_for_path_generation.check_bicycle     | -     | bool   | flag to check bicycle for path generation                                                                                                                                              | true                 |
+| object_types_to_check_for_path_generation.check_motorcycle  | -     | bool   | flag to check motorcycle for path generation                                                                                                                                           | true                 |
+| object_types_to_check_for_path_generation.check_pedestrian  | -     | bool   | flag to check pedestrian for path generation                                                                                                                                           | true                 |
+| object_types_to_check_for_path_generation.check_unknown     | -     | bool   | flag to check unknown for path generation                                                                                                                                              | true                 |
+| center_line_path_interval                                   | [m]   | double | reference center line path point interval                                                                                                                                              | 1.0                  |
 
 ### **Ego vehicle's velocity planning**
 

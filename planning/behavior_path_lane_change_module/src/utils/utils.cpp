@@ -674,43 +674,6 @@ bool hasEnoughLengthToLaneChangeAfterAbort(
   return true;
 }
 
-// TODO(Azu): In the future, get back lanelet within `to_back_dist` [m] from queried lane
-lanelet::ConstLanelets getBackwardLanelets(
-  const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
-  const Pose & current_pose, const double backward_length)
-{
-  if (target_lanes.empty()) {
-    return {};
-  }
-
-  const auto arc_length = lanelet::utils::getArcCoordinates(target_lanes, current_pose);
-
-  if (arc_length.length >= backward_length) {
-    return {};
-  }
-
-  const auto & front_lane = target_lanes.front();
-  const auto preceding_lanes = route_handler.getPrecedingLaneletSequence(
-    front_lane, std::abs(backward_length - arc_length.length), {front_lane});
-
-  lanelet::ConstLanelets backward_lanes{};
-  const auto num_of_lanes = std::invoke([&preceding_lanes]() {
-    size_t sum{0};
-    for (const auto & lanes : preceding_lanes) {
-      sum += lanes.size();
-    }
-    return sum;
-  });
-
-  backward_lanes.reserve(num_of_lanes);
-
-  for (const auto & lanes : preceding_lanes) {
-    backward_lanes.insert(backward_lanes.end(), lanes.begin(), lanes.end());
-  }
-
-  return backward_lanes;
-}
-
 double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer)
 {
   return lateral_buffer + 0.5 * vehicle_width;

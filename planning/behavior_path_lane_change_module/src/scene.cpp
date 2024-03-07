@@ -843,7 +843,7 @@ LaneChangeTargetObjects NormalLaneChange::getTargetObjects(
 
   // get backward lanes
   const auto backward_length = lane_change_parameters_->backward_lane_length;
-  const auto target_backward_lanes = utils::lane_change::getBackwardLanelets(
+  const auto target_backward_lanes = behavior_path_planner::utils::getBackwardLanelets(
     route_handler, target_lanes, current_pose, backward_length);
 
   // filter objects to get target object index

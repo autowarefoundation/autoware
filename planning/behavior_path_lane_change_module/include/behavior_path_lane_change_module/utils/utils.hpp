@@ -141,10 +141,6 @@ bool hasEnoughLengthToLaneChangeAfterAbort(
   const Pose & curent_pose, const double abort_return_dist,
   const LaneChangeParameters & lane_change_parameters, const Direction direction);
 
-lanelet::ConstLanelets getBackwardLanelets(
-  const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
-  const Pose & current_pose, const double backward_length);
-
 double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer = 0.0);
 
 double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer);

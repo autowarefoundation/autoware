@@ -39,6 +39,7 @@
 #include <vector>
 
 using behavior_path_planner::utils::parking_departure::initializeCollisionCheckDebugMap;
+using motion_utils::calcLateralOffset;
 using motion_utils::calcLongitudinalOffsetPose;
 using tier4_autoware_utils::calcOffsetPose;
 
@@ -220,7 +221,7 @@ bool StartPlannerModule::receivedNewRoute() const
 bool StartPlannerModule::requiresDynamicObjectsCollisionDetection() const
 {
   return parameters_->safety_check_params.enable_safety_check && status_.driving_forward &&
-         !isOverlapWithCenterLane();
+         !isPreventingRearVehicleFromPassingThrough();
 }
 
 bool StartPlannerModule::noMovingObjectsAround() const
@@ -287,35 +288,140 @@ bool StartPlannerModule::isCurrentPoseOnMiddleOfTheRoad() const
   return std::abs(lateral_distance_to_center_lane) < parameters_->th_distance_to_middle_of_the_road;
 }
 
-bool StartPlannerModule::isOverlapWithCenterLane() const
+bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
 {
-  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
-  const auto current_lanes = utils::getCurrentLanes(planner_data_);
-  const auto local_vehicle_footprint = vehicle_info_.createFootprint();
-  const auto vehicle_footprint =
-    transformVector(local_vehicle_footprint, tier4_autoware_utils::pose2transform(current_pose));
-  for (const auto & current_lane : current_lanes) {
-    std::vector<geometry_msgs::msg::Point> centerline_points;
-    for (const auto & point : current_lane.centerline()) {
-      geometry_msgs::msg::Point center_point = lanelet::utils::conversion::toGeomMsgPt(point);
-      centerline_points.push_back(center_point);
-    }
+  const auto & current_pose = planner_data_->self_odometry->pose.pose;
+  const auto & dynamic_object = planner_data_->dynamic_object;
+  const auto & route_handler = planner_data_->route_handler;
+  const Pose start_pose = planner_data_->route_handler->getOriginalStartPose();
 
-    for (size_t i = 0; i < centerline_points.size() - 1; ++i) {
-      const auto & p1 = centerline_points.at(i);
-      const auto & p2 = centerline_points.at(i + 1);
-      for (size_t j = 0; j < vehicle_footprint.size() - 1; ++j) {
-        const auto p3 = tier4_autoware_utils::toMsg(vehicle_footprint[j].to_3d());
-        const auto p4 = tier4_autoware_utils::toMsg(vehicle_footprint[j + 1].to_3d());
-        const auto intersection = tier4_autoware_utils::intersect(p1, p2, p3, p4);
+  const auto target_lanes = utils::getCurrentLanes(planner_data_);
+  if (target_lanes.empty()) return false;
 
-        if (intersection.has_value()) {
-          return true;
-        }
+  // Define functions to get distance between a point and a lane's boundaries.
+  auto calc_absolute_lateral_offset = [&](
+                                        const lanelet::ConstLineString2d & boundary_line,
+                                        const geometry_msgs::msg::Pose & search_pose) {
+    std::vector<geometry_msgs::msg::Point> boundary_path;
+    std::for_each(
+      boundary_line.begin(), boundary_line.end(), [&boundary_path](const auto & boundary_point) {
+        const double x = boundary_point.x();
+        const double y = boundary_point.y();
+        boundary_path.push_back(tier4_autoware_utils::createPoint(x, y, 0.0));
+      });
+
+    return std::fabs(calcLateralOffset(boundary_path, search_pose.position));
+  };
+
+  // Check from what side of the road the ego is merging
+  const auto centerline_path =
+    route_handler->getCenterLinePath(target_lanes, 0.0, std::numeric_limits<double>::max());
+  const auto start_pose_nearest_segment_index =
+    motion_utils::findNearestSegmentIndex(centerline_path.points, start_pose);
+  if (!start_pose_nearest_segment_index) return false;
+
+  const auto start_pose_point_msg = tier4_autoware_utils::createPoint(
+    start_pose.position.x, start_pose.position.y, start_pose.position.z);
+  const auto starting_pose_lateral_offset = motion_utils::calcLateralOffset(
+    centerline_path.points, start_pose_point_msg, start_pose_nearest_segment_index.value());
+  if (std::isnan(starting_pose_lateral_offset)) return false;
+
+  RCLCPP_DEBUG(getLogger(), "starting pose lateral offset: %f", starting_pose_lateral_offset);
+  const bool ego_is_merging_from_the_left = (starting_pose_lateral_offset > 0.0);
+
+  // Get the ego's overhang point closest to the centerline path and the gap between said point and
+  // the lane's border.
+  auto get_gap_between_ego_and_lane_border =
+    [&](
+      geometry_msgs::msg::Pose & ego_overhang_point_as_pose,
+      const bool ego_is_merging_from_the_left) -> std::optional<double> {
+    const auto local_vehicle_footprint = vehicle_info_.createFootprint();
+    const auto vehicle_footprint =
+      transformVector(local_vehicle_footprint, tier4_autoware_utils::pose2transform(current_pose));
+    double smallest_lateral_gap_between_ego_and_border = std::numeric_limits<double>::max();
+    for (const auto & point : vehicle_footprint) {
+      geometry_msgs::msg::Pose point_pose;
+      point_pose.position.x = point.x();
+      point_pose.position.y = point.y();
+      point_pose.position.z = 0.0;
+
+      lanelet::Lanelet closest_lanelet;
+      lanelet::utils::query::getClosestLanelet(target_lanes, point_pose, &closest_lanelet);
+      lanelet::ConstLanelet closest_lanelet_const(closest_lanelet.constData());
+
+      const lanelet::ConstLineString2d current_lane_bound = (ego_is_merging_from_the_left)
+                                                              ? closest_lanelet_const.rightBound2d()
+                                                              : closest_lanelet_const.leftBound2d();
+      const double current_point_lateral_gap =
+        calc_absolute_lateral_offset(current_lane_bound, point_pose);
+      if (current_point_lateral_gap < smallest_lateral_gap_between_ego_and_border) {
+        smallest_lateral_gap_between_ego_and_border = current_point_lateral_gap;
+        ego_overhang_point_as_pose.position.x = point.x();
+        ego_overhang_point_as_pose.position.y = point.y();
+        ego_overhang_point_as_pose.position.z = 0.0;
       }
     }
-  }
-  return false;
+    if (smallest_lateral_gap_between_ego_and_border == std::numeric_limits<double>::max()) {
+      return std::nullopt;
+    }
+    return smallest_lateral_gap_between_ego_and_border;
+  };
+
+  geometry_msgs::msg::Pose ego_overhang_point_as_pose;
+  const auto gap_between_ego_and_lane_border =
+    get_gap_between_ego_and_lane_border(ego_overhang_point_as_pose, ego_is_merging_from_the_left);
+  if (!gap_between_ego_and_lane_border) return false;
+
+  // Get the lanelets that will be queried for target objects
+  const auto relevant_lanelets = std::invoke([&]() -> std::optional<lanelet::ConstLanelets> {
+    lanelet::Lanelet closest_lanelet;
+    const bool is_closest_lanelet = lanelet::utils::query::getClosestLanelet(
+      target_lanes, ego_overhang_point_as_pose, &closest_lanelet);
+    if (!is_closest_lanelet) return std::nullopt;
+    lanelet::ConstLanelet closest_lanelet_const(closest_lanelet.constData());
+    // Check backwards just in case the Vehicle behind ego is in a different lanelet
+    constexpr double backwards_length = 200.0;
+    const auto prev_lanes = behavior_path_planner::utils::getBackwardLanelets(
+      *route_handler, target_lanes, current_pose, backwards_length);
+    // return all the relevant lanelets
+    lanelet::ConstLanelets relevant_lanelets{closest_lanelet_const};
+    relevant_lanelets.insert(relevant_lanelets.end(), prev_lanes.begin(), prev_lanes.end());
+    return relevant_lanelets;
+  });
+  if (!relevant_lanelets) return false;
+
+  // filtering objects with velocity, position and class
+  const auto filtered_objects = utils::path_safety_checker::filterObjects(
+    dynamic_object, route_handler, relevant_lanelets.value(), current_pose.position,
+    objects_filtering_params_);
+  if (filtered_objects.objects.empty()) return false;
+
+  // filtering objects based on the current position's lane
+  const auto target_objects_on_lane = utils::path_safety_checker::createTargetObjectsOnLane(
+    relevant_lanelets.value(), route_handler, filtered_objects, objects_filtering_params_);
+  if (target_objects_on_lane.on_current_lane.empty()) return false;
+
+  // Get the closest target obj width in the relevant lanes
+  const auto closest_object_width = std::invoke([&]() -> std::optional<double> {
+    double arc_length_to_closet_object = std::numeric_limits<double>::max();
+    double closest_object_width = -1.0;
+    std::for_each(
+      target_objects_on_lane.on_current_lane.begin(), target_objects_on_lane.on_current_lane.end(),
+      [&](const auto & o) {
+        const auto arc_length = motion_utils::calcSignedArcLength(
+          centerline_path.points, current_pose.position, o.initial_pose.pose.position);
+        if (arc_length > 0.0) return;
+        if (std::abs(arc_length) >= std::abs(arc_length_to_closet_object)) return;
+        arc_length_to_closet_object = arc_length;
+        closest_object_width = o.shape.dimensions.y;
+      });
+    if (closest_object_width < 0.0) return std::nullopt;
+    return closest_object_width;
+  });
+  if (!closest_object_width) return false;
+  // Decide if the closest object does not fit in the gap left by the ego vehicle.
+  return closest_object_width.value() + parameters_->extra_width_margin_for_rear_obstacle >
+         gap_between_ego_and_lane_border.value();
 }
 
 bool StartPlannerModule::isCloseToOriginalStartPose() const
@@ -1148,14 +1254,14 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo() const
   const double lateral_offset =
     lanelet::utils::getLateralDistanceToCenterline(closest_road_lane, start_pose);
 
-  if (distance_from_end < 0.0 && lateral_offset > parameters_->th_turn_signal_on_lateral_offset) {
-    turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
-  } else if (
-    distance_from_end < 0.0 && lateral_offset < -parameters_->th_turn_signal_on_lateral_offset) {
-    turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
-  } else {
-    turn_signal.turn_signal.command = TurnIndicatorsCommand::DISABLE;
-  }
+  turn_signal.turn_signal.command = std::invoke([&]() {
+    if (distance_from_end >= 0.0) return TurnIndicatorsCommand::DISABLE;
+    if (lateral_offset > parameters_->th_turn_signal_on_lateral_offset)
+      return TurnIndicatorsCommand::ENABLE_RIGHT;
+    if (lateral_offset < -parameters_->th_turn_signal_on_lateral_offset)
+      return TurnIndicatorsCommand::ENABLE_LEFT;
+    return TurnIndicatorsCommand::DISABLE;
+  });
 
   turn_signal.desired_start_point = start_pose;
   turn_signal.required_start_point = start_pose;
@@ -1375,7 +1481,7 @@ void StartPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) cons
       const double drivable_area_margin = planner_data_->parameters.vehicle_width;
       output.drivable_area_info.drivable_margin =
         planner_data_->parameters.vehicle_width / 2.0 + drivable_area_margin;
-      break;
+      return;
     }
     default: {
       const auto target_drivable_lanes = utils::getNonOverlappingExpandedLanes(
@@ -1389,7 +1495,7 @@ void StartPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) cons
           ? utils::combineDrivableAreaInfo(
               current_drivable_area_info, getPreviousModuleOutput().drivable_area_info)
           : current_drivable_area_info;
-      break;
+      return;
     }
   }
 }

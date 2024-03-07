@@ -78,7 +78,7 @@ PredictedObjects filterObjects(
   const std::shared_ptr<ObjectsFilteringParams> & params)
 {
   // Guard
-  if (objects->objects.empty()) {
+  if (objects->objects.empty() || !params) {
     return PredictedObjects();
   }
 
