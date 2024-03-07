@@ -234,9 +234,12 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
 
     const double LAT_DIST_BUFFER = desire_shift_length > 0.0 ? 1e-3 : -1e-3;
 
+    const auto lateral_hard_margin = object.is_parked
+                                       ? object_parameter.lateral_hard_margin_for_parked_vehicle
+                                       : object_parameter.lateral_hard_margin;
     const auto infeasible =
       std::abs(feasible_shift_length - object.overhang_points.front().first) - LAT_DIST_BUFFER <
-      0.5 * data_->parameters.vehicle_width + object_parameter.safety_buffer_lateral;
+      0.5 * data_->parameters.vehicle_width + lateral_hard_margin;
     if (infeasible) {
       RCLCPP_DEBUG(rclcpp::get_logger(""), "feasible shift length is not enough to avoid. ");
       object.reason = AvoidanceDebugFactor::TOO_LARGE_JERK;

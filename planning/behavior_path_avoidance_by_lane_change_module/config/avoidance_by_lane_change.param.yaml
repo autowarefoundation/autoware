@@ -12,64 +12,80 @@
           moving_time_threshold: 1.0                   # [s]
           max_expand_ratio: 0.0                        # [-]
           envelope_buffer_margin: 0.3                  # [m]
-          avoid_margin_lateral: 1.0                    # [m]
-          safety_buffer_lateral: 0.7                   # [m]
+          lateral_margin:
+            soft_margin: 0.0                           # [m]
+            hard_margin: 0.0                           # [m]
+            hard_margin_for_parked_vehicle: 0.0        # [m]
         truck:
           execute_num: 2
           moving_speed_threshold: 1.0                  # 3.6km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
-          avoid_margin_lateral: 1.0
-          safety_buffer_lateral: 0.7
+          lateral_margin:
+            soft_margin: 0.0                           # [m]
+            hard_margin: 0.0                           # [m]
+            hard_margin_for_parked_vehicle: 0.0        # [m]
         bus:
           execute_num: 2
           moving_speed_threshold: 1.0                  # 3.6km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
-          avoid_margin_lateral: 1.0
-          safety_buffer_lateral: 0.7
+          lateral_margin:
+            soft_margin: 0.0                           # [m]
+            hard_margin: 0.0                           # [m]
+            hard_margin_for_parked_vehicle: 0.0        # [m]
         trailer:
           execute_num: 2
           moving_speed_threshold: 1.0                  # 3.6km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
-          avoid_margin_lateral: 1.0
-          safety_buffer_lateral: 0.7
+          lateral_margin:
+            soft_margin: 0.0                           # [m]
+            hard_margin: 0.0                           # [m]
+            hard_margin_for_parked_vehicle: 0.0        # [m]
         unknown:
           execute_num: 1
           moving_speed_threshold: 0.28                 # 1.0km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
-          avoid_margin_lateral: 1.0
-          safety_buffer_lateral: 0.0
+          lateral_margin:
+            soft_margin: 0.0                           # [m]
+            hard_margin: 0.0                           # [m]
+            hard_margin_for_parked_vehicle: 0.0        # [m]
         bicycle:
           execute_num: 2
           moving_speed_threshold: 0.28                 # 1.0km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.8
-          avoid_margin_lateral: 1.0
-          safety_buffer_lateral: 1.0
+          lateral_margin:
+            soft_margin: 0.0                           # [m]
+            hard_margin: 0.0                           # [m]
+            hard_margin_for_parked_vehicle: 0.0        # [m]
         motorcycle:
           execute_num: 2
           moving_speed_threshold: 1.0                  # 3.6km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.8
-          avoid_margin_lateral: 1.0
-          safety_buffer_lateral: 1.0
+          lateral_margin:
+            soft_margin: 0.0                           # [m]
+            hard_margin: 0.0                           # [m]
+            hard_margin_for_parked_vehicle: 0.0        # [m]
         pedestrian:
           execute_num: 2
           moving_speed_threshold: 0.28                 # 1.0km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.8
-          avoid_margin_lateral: 1.0
-          safety_buffer_lateral: 1.0
+          lateral_margin:
+            soft_margin: 0.0                           # [m]
+            hard_margin: 0.0                           # [m]
+            hard_margin_for_parked_vehicle: 0.0        # [m]
         lower_distance_for_polygon_expansion: 0.0      # [m]
         upper_distance_for_polygon_expansion: 1.0      # [m]
 

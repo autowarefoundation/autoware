@@ -176,7 +176,7 @@ MarkerArray createObjectInfoMarkerArray(const ObjectDataArray & objects, std::st
       marker.id = uuidToInt32(object.object.object_id);
       marker.pose.position.z += 2.0;
       std::ostringstream string_stream;
-      string_stream << object.reason;
+      string_stream << object.reason << (object.is_parked ? "(PARKED)" : "");
       marker.text = string_stream.str();
       marker.color = createMarkerColor(1.0, 1.0, 1.0, 0.999);
       marker.scale = createMarkerScale(0.6, 0.6, 0.6);

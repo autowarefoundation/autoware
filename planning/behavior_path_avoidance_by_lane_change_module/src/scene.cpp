@@ -257,9 +257,11 @@ double AvoidanceByLaneChange::calcMinAvoidanceLength(const ObjectData & nearest_
   const auto nearest_object_type = utils::getHighestProbLabel(nearest_object.object.classification);
   const auto nearest_object_parameter =
     avoidance_parameters_->object_parameters.at(nearest_object_type);
-  const auto avoid_margin =
-    nearest_object_parameter.safety_buffer_lateral * nearest_object.distance_factor +
-    nearest_object_parameter.avoid_margin_lateral + 0.5 * ego_width;
+  const auto lateral_hard_margin = std::max(
+    nearest_object_parameter.lateral_hard_margin,
+    nearest_object_parameter.lateral_hard_margin_for_parked_vehicle);
+  const auto avoid_margin = lateral_hard_margin * nearest_object.distance_factor +
+                            nearest_object_parameter.lateral_soft_margin + 0.5 * ego_width;
 
   avoidance_helper_->setData(planner_data_);
   const auto shift_length = avoidance_helper_->getShiftLength(
@@ -288,8 +290,10 @@ double AvoidanceByLaneChange::calcLateralOffset() const
 {
   auto additional_lat_offset{0.0};
   for (const auto & [type, p] : avoidance_parameters_->object_parameters) {
+    const auto lateral_hard_margin =
+      std::max(p.lateral_hard_margin, p.lateral_hard_margin_for_parked_vehicle);
     const auto offset =
-      2.0 * p.envelope_buffer_margin + p.safety_buffer_lateral + p.avoid_margin_lateral;
+      2.0 * p.envelope_buffer_margin + lateral_hard_margin + p.lateral_soft_margin;
     additional_lat_offset = std::max(additional_lat_offset, offset);
   }
   return additional_lat_offset;
