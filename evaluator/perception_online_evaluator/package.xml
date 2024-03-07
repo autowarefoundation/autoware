@@ -24,6 +24,7 @@
   <depend>libgoogle-glog-dev</depend>
   <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
+  <depend>object_recognition_utils</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

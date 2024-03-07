@@ -15,13 +15,15 @@
 #include "perception_online_evaluator/metrics_calculator.hpp"
 
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "perception_online_evaluator/utils/objects_filtering.hpp"
+#include "object_recognition_utils/object_recognition_utils.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
 namespace perception_diagnostics
 {
+using object_recognition_utils::convertLabelToString;
+
 std::optional<MetricStatMap> MetricsCalculator::calculate(const Metric & metric) const
 {
   if (object_map_.empty()) {
@@ -35,14 +37,14 @@ std::optional<MetricStatMap> MetricsCalculator::calculate(const Metric & metric)
     return {};
   }
   const auto target_objects = getObjectsByStamp(target_stamp);
-
+  const ClassObjectsMap class_objects_map = separateObjectsByClass(target_objects);
   switch (metric) {
     case Metric::lateral_deviation:
-      return calcLateralDeviationMetrics(target_objects);
+      return calcLateralDeviationMetrics(class_objects_map);
     case Metric::yaw_deviation:
-      return calcYawDeviationMetrics(target_objects);
+      return calcYawDeviationMetrics(class_objects_map);
     case Metric::predicted_path_deviation:
-      return calcPredictedPathDeviationMetrics(target_objects);
+      return calcPredictedPathDeviationMetrics(class_objects_map);
     default:
       return {};
   }
@@ -155,65 +157,70 @@ PredictedObjects MetricsCalculator::getObjectsByStamp(const rclcpp::Time stamp) 
   return objects;
 }
 
-MetricStatMap MetricsCalculator::calcLateralDeviationMetrics(const PredictedObjects & objects) const
+MetricStatMap MetricsCalculator::calcLateralDeviationMetrics(
+  const ClassObjectsMap & class_objects_map) const
 {
-  Stat<double> stat{};
-  const auto stamp = rclcpp::Time(objects.header.stamp);
-
-  for (const auto & object : objects.objects) {
-    const auto uuid = tier4_autoware_utils::toHexString(object.object_id);
-    if (!hasPassedTime(uuid, stamp)) {
-      continue;
+  MetricStatMap metric_stat_map{};
+  for (const auto & [label, objects] : class_objects_map) {
+    Stat<double> stat{};
+    const auto stamp = rclcpp::Time(objects.header.stamp);
+    for (const auto & object : objects.objects) {
+      const auto uuid = tier4_autoware_utils::toHexString(object.object_id);
+      if (!hasPassedTime(uuid, stamp)) {
+        continue;
+      }
+      const auto object_pose = object.kinematics.initial_pose_with_covariance.pose;
+      const auto history_path = history_path_map_.at(uuid).second;
+      if (history_path.empty()) {
+        continue;
+      }
+      stat.add(metrics::calcLateralDeviation(history_path, object_pose));
     }
-    const auto object_pose = object.kinematics.initial_pose_with_covariance.pose;
-    const auto history_path = history_path_map_.at(uuid).second;
-    if (history_path.empty()) {
-      continue;
-    }
-    stat.add(metrics::calcLateralDeviation(history_path, object_pose));
+    metric_stat_map["lateral_deviation_" + convertLabelToString(label)] = stat;
   }
-
-  MetricStatMap metric_stat_map;
-  metric_stat_map["lateral_deviation"] = stat;
   return metric_stat_map;
 }
 
-MetricStatMap MetricsCalculator::calcYawDeviationMetrics(const PredictedObjects & objects) const
+MetricStatMap MetricsCalculator::calcYawDeviationMetrics(
+  const ClassObjectsMap & class_objects_map) const
 {
-  Stat<double> stat{};
-  const auto stamp = rclcpp::Time(objects.header.stamp);
-  for (const auto & object : objects.objects) {
-    const auto uuid = tier4_autoware_utils::toHexString(object.object_id);
-    if (!hasPassedTime(uuid, stamp)) {
-      continue;
+  MetricStatMap metric_stat_map{};
+  for (const auto & [label, objects] : class_objects_map) {
+    Stat<double> stat{};
+    const auto stamp = rclcpp::Time(objects.header.stamp);
+    for (const auto & object : objects.objects) {
+      const auto uuid = tier4_autoware_utils::toHexString(object.object_id);
+      if (!hasPassedTime(uuid, stamp)) {
+        continue;
+      }
+      const auto object_pose = object.kinematics.initial_pose_with_covariance.pose;
+      const auto history_path = history_path_map_.at(uuid).second;
+      if (history_path.empty()) {
+        continue;
+      }
+      stat.add(metrics::calcYawDeviation(history_path, object_pose));
     }
-    const auto object_pose = object.kinematics.initial_pose_with_covariance.pose;
-    const auto history_path = history_path_map_.at(uuid).second;
-    if (history_path.empty()) {
-      continue;
-    }
-    stat.add(metrics::calcYawDeviation(history_path, object_pose));
+    metric_stat_map["yaw_deviation_" + convertLabelToString(label)] = stat;
   }
-
-  MetricStatMap metric_stat_map;
-  metric_stat_map["yaw_deviation"] = stat;
   return metric_stat_map;
 }
 
 MetricStatMap MetricsCalculator::calcPredictedPathDeviationMetrics(
-  const PredictedObjects & objects) const
+  const ClassObjectsMap & class_objects_map) const
 {
   const auto time_horizons = parameters_->prediction_time_horizons;
 
-  MetricStatMap metric_stat_map;
-  for (const double time_horizon : time_horizons) {
-    const auto stat = calcPredictedPathDeviationMetrics(objects, time_horizon);
-    std::ostringstream stream;
-    stream << std::fixed << std::setprecision(2) << time_horizon;
-    std::string time_horizon_str = stream.str();
-    metric_stat_map["predicted_path_deviation_" + time_horizon_str] = stat;
+  MetricStatMap metric_stat_map{};
+  for (const auto & [label, objects] : class_objects_map) {
+    for (const double time_horizon : time_horizons) {
+      const auto stat = calcPredictedPathDeviationMetrics(objects, time_horizon);
+      std::ostringstream stream;
+      stream << std::fixed << std::setprecision(2) << time_horizon;
+      std::string time_horizon_str = stream.str();
+      metric_stat_map
+        ["predicted_path_deviation_" + convertLabelToString(label) + "_" + time_horizon_str] = stat;
+    }
   }
-
   return metric_stat_map;
 }
 

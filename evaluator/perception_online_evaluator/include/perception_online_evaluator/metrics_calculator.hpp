@@ -19,6 +19,7 @@
 #include "perception_online_evaluator/metrics/metric.hpp"
 #include "perception_online_evaluator/parameters.hpp"
 #include "perception_online_evaluator/stat.hpp"
+#include "perception_online_evaluator/utils/objects_filtering.hpp"
 
 #include <rclcpp/time.hpp>
 
@@ -118,9 +119,9 @@ private:
   void deleteOldObjects(const rclcpp::Time stamp);
 
   // Calculate metrics
-  MetricStatMap calcLateralDeviationMetrics(const PredictedObjects & objects) const;
-  MetricStatMap calcYawDeviationMetrics(const PredictedObjects & objects) const;
-  MetricStatMap calcPredictedPathDeviationMetrics(const PredictedObjects & objects) const;
+  MetricStatMap calcLateralDeviationMetrics(const ClassObjectsMap & class_objects_map) const;
+  MetricStatMap calcYawDeviationMetrics(const ClassObjectsMap & class_objects_map) const;
+  MetricStatMap calcPredictedPathDeviationMetrics(const ClassObjectsMap & class_objects_map) const;
   Stat<double> calcPredictedPathDeviationMetrics(
     const PredictedObjects & objects, const double time_horizon) const;
 

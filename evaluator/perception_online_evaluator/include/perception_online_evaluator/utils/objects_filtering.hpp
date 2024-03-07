@@ -37,6 +37,8 @@ using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 
+using ClassObjectsMap = std::unordered_map<uint8_t, PredictedObjects>;
+
 std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & classification);
 
 /**
@@ -104,6 +106,14 @@ void filterObjects(PredictedObjects & objects, Func filter)
   [[maybe_unused]] PredictedObjects removed_objects{};
   filterObjects(objects, removed_objects, filter);
 }
+
+/**
+ * @brief Separates the provided objects based on their classification.
+ *
+ * @param objects The predicted objects to be separated.
+ * @return A map of objects separated by their classification.
+ */
+ClassObjectsMap separateObjectsByClass(const PredictedObjects & objects);
 
 /**
  * @brief Filters the provided objects based on their classification.

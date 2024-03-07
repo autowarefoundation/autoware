@@ -83,6 +83,17 @@ bool isTargetObjectType(
     (t == ObjectClassification::PEDESTRIAN && target_object_types.check_pedestrian));
 }
 
+ClassObjectsMap separateObjectsByClass(const PredictedObjects & objects)
+{
+  ClassObjectsMap separated_objects;
+  for (const auto & object : objects.objects) {
+    const auto label = getHighestProbLabel(object.classification);
+    separated_objects[label].objects.push_back(object);
+    separated_objects[label].header = objects.header;
+  }
+  return separated_objects;
+}
+
 void filterObjectsByClass(
   PredictedObjects & objects, const ObjectTypesToCheck & target_object_types)
 {
