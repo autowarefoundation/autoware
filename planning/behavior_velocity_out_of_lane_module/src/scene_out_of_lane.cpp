@@ -109,13 +109,15 @@ bool OutOfLaneModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
     calculate_overlapping_ranges(path_footprints, path_lanelets, other_lanelets, params_);
   const auto calculate_overlapping_ranges_us = stopwatch.toc("calculate_overlapping_ranges");
   // Calculate stop and slowdown points
-  stopwatch.tic("calculate_decisions");
   DecisionInputs inputs;
   inputs.ranges = ranges;
   inputs.ego_data = ego_data;
-  inputs.objects = filter_predicted_objects(*planner_data_->predicted_objects, ego_data, params_);
+  stopwatch.tic("filter_predicted_objects");
+  inputs.objects = filter_predicted_objects(*planner_data_, ego_data, params_);
+  const auto filter_predicted_objects_ms = stopwatch.toc("filter_predicted_objects");
   inputs.route_handler = planner_data_->route_handler_;
   inputs.lanelets = other_lanelets;
+  stopwatch.tic("calculate_decisions");
   const auto decisions = calculate_decisions(inputs, params_, logger_);
   const auto calculate_decisions_us = stopwatch.toc("calculate_decisions");
   stopwatch.tic("calc_slowdown_points");
@@ -157,7 +159,7 @@ bool OutOfLaneModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   }
   if (point_to_insert) {
     prev_inserted_point_ = point_to_insert;
-    RCLCPP_INFO(logger_, "Avoiding lane %lu", point_to_insert->slowdown.lane_to_avoid.id());
+    RCLCPP_DEBUG(logger_, "Avoiding lane %lu", point_to_insert->slowdown.lane_to_avoid.id());
     debug_data_.slowdowns = {*point_to_insert};
     auto path_idx = motion_utils::findNearestSegmentIndex(
                       path->points, point_to_insert->point.point.pose.position) +
@@ -187,12 +189,13 @@ bool OutOfLaneModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
     "\tcalculate_lanelets = %2.0fus\n"
     "\tcalculate_path_footprints = %2.0fus\n"
     "\tcalculate_overlapping_ranges = %2.0fus\n"
+    "\tfilter_pred_objects = %2.0fus\n"
     "\tcalculate_decisions = %2.0fus\n"
     "\tcalc_slowdown_points = %2.0fus\n"
     "\tinsert_slowdown_points = %2.0fus\n",
     total_time_us, calculate_lanelets_us, calculate_path_footprints_us,
-    calculate_overlapping_ranges_us, calculate_decisions_us, calc_slowdown_points_us,
-    insert_slowdown_points_us);
+    calculate_overlapping_ranges_us, filter_predicted_objects_ms, calculate_decisions_us,
+    calc_slowdown_points_us, insert_slowdown_points_us);
   return true;
 }
 

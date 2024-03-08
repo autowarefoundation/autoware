@@ -51,6 +51,8 @@ OutOfLaneModuleManager::OutOfLaneModuleManager(rclcpp::Node & node)
   pp.objects_min_confidence =
     getOrDeclareParameter<double>(node, ns + ".objects.predicted_path_min_confidence");
   pp.objects_dist_buffer = getOrDeclareParameter<double>(node, ns + ".objects.distance_buffer");
+  pp.objects_cut_predicted_paths_beyond_red_lights =
+    getOrDeclareParameter<bool>(node, ns + ".objects.cut_predicted_paths_beyond_red_lights");
 
   pp.overlap_min_dist = getOrDeclareParameter<double>(node, ns + ".overlap.minimum_distance");
   pp.overlap_extra_length = getOrDeclareParameter<double>(node, ns + ".overlap.extra_length");

@@ -1,4 +1,4 @@
-// Copyright 2023 TIER IV, Inc.
+// Copyright 2023-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,56 +17,41 @@
 
 #include "types.hpp"
 
-#include <motion_utils/trajectory/trajectory.hpp>
+#include <behavior_velocity_planner_common/planner_data.hpp>
 
-#include <string>
+#include <optional>
 
 namespace behavior_velocity_planner::out_of_lane
 {
+/// @brief cut a predicted path beyond the given stop line
+/// @param [inout] predicted_path predicted path to cut
+/// @param [in] stop_line stop line used for cutting
+/// @param [in] object_front_overhang extra distance to cut ahead of the stop line
+void cut_predicted_path_beyond_line(
+  autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
+  const lanelet::BasicLineString2d & stop_line, const double object_front_overhang);
+
+/// @brief find the next red light stop line along the given path
+/// @param [in] path predicted path to check for a stop line
+/// @param [in] planner_data planner data with stop line information
+/// @return the first red light stop line found along the path (if any)
+std::optional<const lanelet::BasicLineString2d> find_next_stop_line(
+  const autoware_auto_perception_msgs::msg::PredictedPath & path, const PlannerData & planner_data);
+
+/// @brief cut predicted path beyond stop lines of red lights
+/// @param [inout] predicted_path predicted path to cut
+/// @param [in] planner_data planner data to get the map and traffic light information
+void cut_predicted_path_beyond_red_lights(
+  autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
+  const PlannerData & planner_data, const double object_front_overhang);
+
 /// @brief filter predicted objects and their predicted paths
-/// @param [in] objects predicted objects to filter
+/// @param [in] planner_data planner data
 /// @param [in] ego_data ego data
 /// @param [in] params parameters
 /// @return filtered predicted objects
 autoware_auto_perception_msgs::msg::PredictedObjects filter_predicted_objects(
-  const autoware_auto_perception_msgs::msg::PredictedObjects & objects, const EgoData & ego_data,
-  const PlannerParam & params)
-{
-  autoware_auto_perception_msgs::msg::PredictedObjects filtered_objects;
-  filtered_objects.header = objects.header;
-  for (const auto & object : objects.objects) {
-    const auto is_pedestrian =
-      std::find_if(object.classification.begin(), object.classification.end(), [](const auto & c) {
-        return c.label == autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN;
-      }) != object.classification.end();
-    if (is_pedestrian) continue;
-
-    auto filtered_object = object;
-    const auto is_invalid_predicted_path = [&](const auto & predicted_path) {
-      const auto is_low_confidence = predicted_path.confidence < params.objects_min_confidence;
-      const auto no_overlap_path = motion_utils::removeOverlapPoints(predicted_path.path);
-      if (no_overlap_path.size() <= 1) return true;
-      const auto lat_offset_to_current_ego =
-        std::abs(motion_utils::calcLateralOffset(no_overlap_path, ego_data.pose.position));
-      const auto is_crossing_ego =
-        lat_offset_to_current_ego <=
-        object.shape.dimensions.y / 2.0 + std::max(
-                                            params.left_offset + params.extra_left_offset,
-                                            params.right_offset + params.extra_right_offset);
-      return is_low_confidence || is_crossing_ego;
-    };
-    if (params.objects_use_predicted_paths) {
-      auto & predicted_paths = filtered_object.kinematics.predicted_paths;
-      const auto new_end =
-        std::remove_if(predicted_paths.begin(), predicted_paths.end(), is_invalid_predicted_path);
-      predicted_paths.erase(new_end, predicted_paths.end());
-    }
-    if (!params.objects_use_predicted_paths || !filtered_object.kinematics.predicted_paths.empty())
-      filtered_objects.objects.push_back(filtered_object);
-  }
-  return filtered_objects;
-}
-
+  const PlannerData & planner_data, const EgoData & ego_data, const PlannerParam & params);
 }  // namespace behavior_velocity_planner::out_of_lane
 
 #endif  // FILTER_PREDICTED_OBJECTS_HPP_

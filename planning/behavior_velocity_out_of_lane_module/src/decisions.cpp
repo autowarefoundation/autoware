@@ -73,11 +73,13 @@ std::optional<std::pair<double, double>> object_time_to_range(
   if (!object_is_incoming(object_point, route_handler, range.lane)) return {};
 
   const auto max_deviation = object.shape.dimensions.y + range.inside_distance + dist_buffer;
+  const auto max_lon_deviation = object.shape.dimensions.x / 2.0;
   auto worst_enter_time = std::optional<double>();
   auto worst_exit_time = std::optional<double>();
 
   for (const auto & predicted_path : object.kinematics.predicted_paths) {
     const auto unique_path_points = motion_utils::removeOverlapPoints(predicted_path.path);
+    if (unique_path_points.size() < 2) continue;
     const auto time_step = rclcpp::Duration(predicted_path.time_step).seconds();
     const auto enter_point =
       geometry_msgs::msg::Point().set__x(range.entering_point.x()).set__y(range.entering_point.y());
@@ -121,7 +123,17 @@ std::optional<std::pair<double, double>> object_time_to_range(
         max_deviation);
       continue;
     }
-    // else we rely on the interpolation to estimate beyond the end of the predicted path
+    const auto is_last_predicted_path_point =
+      (exit_segment_idx + 2 == unique_path_points.size() ||
+       enter_segment_idx + 2 == unique_path_points.size());
+    const auto does_not_reach_overlap =
+      is_last_predicted_path_point && (std::min(exit_offset, enter_offset) > max_lon_deviation);
+    if (does_not_reach_overlap) {
+      RCLCPP_DEBUG(
+        logger, " * does not reach the overlap = %2.2fm | max_dev = %2.2fm\n",
+        std::min(exit_offset, enter_offset), max_lon_deviation);
+      continue;
+    }
 
     const auto same_driving_direction_as_ego = enter_time < exit_time;
     if (same_driving_direction_as_ego) {

@@ -27,6 +27,7 @@
   <depend>tf2</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>tier4_planning_msgs</depend>
+  <depend>traffic_light_utils</depend>
   <depend>vehicle_info_util</depend>
   <depend>visualization_msgs</depend>
 

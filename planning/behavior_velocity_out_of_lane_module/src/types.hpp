@@ -47,8 +47,10 @@ struct PlannerParam
   double ego_min_velocity;  // [m/s] minimum velocity of ego used to calculate its ttc or time range
 
   bool objects_use_predicted_paths;  // whether to use the objects' predicted paths
-  double objects_min_vel;            // [m/s] objects lower than this velocity will be ignored
-  double objects_min_confidence;     // minimum confidence to consider a predicted path
+  bool objects_cut_predicted_paths_beyond_red_lights;  // whether to cut predicted paths beyond red
+                                                       // lights' stop lines
+  double objects_min_vel;         // [m/s] objects lower than this velocity will be ignored
+  double objects_min_confidence;  // minimum confidence to consider a predicted path
   double objects_dist_buffer;  // [m] distance buffer used to determine if a collision will occur in
                                // the other lane
 
