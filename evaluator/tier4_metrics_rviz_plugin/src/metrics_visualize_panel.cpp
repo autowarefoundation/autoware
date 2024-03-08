@@ -30,6 +30,12 @@ MetricsVisualizePanel::MetricsVisualizePanel(QWidget * parent)
 : rviz_common::Panel(parent), grid_(new QGridLayout())
 {
   setLayout(grid_);
+  topic_selector_ = new QComboBox();
+  for (const auto & topic : topics_) {
+    topic_selector_->addItem(QString::fromStdString(topic));
+  }
+  grid_->addWidget(topic_selector_, 0, 0, 1, -1);
+  connect(topic_selector_, SIGNAL(currentIndexChanged(int)), this, SLOT(onTopicChanged()));
 }
 
 void MetricsVisualizePanel::onInitialize()
@@ -38,12 +44,51 @@ void MetricsVisualizePanel::onInitialize()
 
   raw_node_ = this->getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
 
-  sub_ = raw_node_->create_subscription<DiagnosticArray>(
-    "/diagnostic/planning_evaluator/metrics", rclcpp::QoS{1},
-    std::bind(&MetricsVisualizePanel::onMetrics, this, _1));
+  for (const auto & topic_name : topics_) {
+    const auto callback = [this, topic_name](const DiagnosticArray::ConstSharedPtr msg) {
+      this->onMetrics(msg, topic_name);
+    };
+    const auto subscription =
+      raw_node_->create_subscription<DiagnosticArray>(topic_name, rclcpp::QoS{1}, callback);
+    subscriptions_[topic_name] = subscription;
+  }
 
   const auto period = std::chrono::milliseconds(static_cast<int64_t>(1e3 / 10));
   timer_ = raw_node_->create_wall_timer(period, [&]() { onTimer(); });
+}
+
+void MetricsVisualizePanel::updateWidgetVisibility(
+  const std::string & target_topic, const bool show)
+{
+  for (const auto & [topic_name, metric_widgets_pair] : topic_widgets_map_) {
+    const bool is_target_topic = (topic_name == target_topic);
+    if ((!is_target_topic && show) || (is_target_topic && !show)) {
+      continue;
+    }
+    for (const auto & [metric, widgets] : metric_widgets_pair) {
+      widgets.first->setVisible(show);
+      widgets.second->setVisible(show);
+    }
+  }
+}
+
+void MetricsVisualizePanel::showCurrentTopicWidgets()
+{
+  const std::string current_topic = topic_selector_->currentText().toStdString();
+  updateWidgetVisibility(current_topic, true);
+}
+
+void MetricsVisualizePanel::hideInactiveTopicWidgets()
+{
+  const std::string current_topic = topic_selector_->currentText().toStdString();
+  updateWidgetVisibility(current_topic, false);
+}
+
+void MetricsVisualizePanel::onTopicChanged()
+{
+  std::lock_guard<std::mutex> message_lock(mutex_);
+  hideInactiveTopicWidgets();
+  showCurrentTopicWidgets();
 }
 
 void MetricsVisualizePanel::onTimer()
@@ -56,24 +101,38 @@ void MetricsVisualizePanel::onTimer()
   }
 }
 
-void MetricsVisualizePanel::onMetrics(const DiagnosticArray::ConstSharedPtr msg)
+void MetricsVisualizePanel::onMetrics(
+  const DiagnosticArray::ConstSharedPtr & msg, const std::string & topic_name)
 {
   std::lock_guard<std::mutex> message_lock(mutex_);
 
   const auto time = msg->header.stamp.sec + msg->header.stamp.nanosec * 1e-9;
-
   constexpr size_t GRAPH_COL_SIZE = 5;
-  for (size_t i = 0; i < msg->status.size(); ++i) {
-    const auto & status = msg->status.at(i);
 
+  for (const auto & status : msg->status) {
+    const size_t num_current_metrics = topic_widgets_map_[topic_name].size();
     if (metrics_.count(status.name) == 0) {
-      auto metric = Metric(status);
+      const auto metric = Metric(status);
       metrics_.emplace(status.name, metric);
-      grid_->addWidget(metric.getTable(), i / GRAPH_COL_SIZE * 2, i % GRAPH_COL_SIZE);
-      grid_->setRowStretch(i / GRAPH_COL_SIZE * 2, false);
-      grid_->addWidget(metric.getChartView(), i / GRAPH_COL_SIZE * 2 + 1, i % GRAPH_COL_SIZE);
-      grid_->setRowStretch(i / GRAPH_COL_SIZE * 2 + 1, true);
-      grid_->setColumnStretch(i % GRAPH_COL_SIZE, true);
+
+      // Calculate grid position
+      const size_t row = num_current_metrics / GRAPH_COL_SIZE * 2 +
+                         1;  // start from 1 to leave space for the topic selector
+      const size_t col = num_current_metrics % GRAPH_COL_SIZE;
+
+      // Get the widgets from the metric
+      const auto tableWidget = metric.getTable();
+      const auto chartViewWidget = metric.getChartView();
+
+      // Add the widgets to the grid layout
+      grid_->addWidget(tableWidget, row, col);
+      grid_->setRowStretch(row, false);
+      grid_->addWidget(chartViewWidget, row + 1, col);
+      grid_->setRowStretch(row + 1, true);
+      grid_->setColumnStretch(col, true);
+
+      // Also add the widgets to the graph_widgets_ vector for easy removal later
+      topic_widgets_map_[topic_name][status.name] = std::make_pair(tableWidget, chartViewWidget);
     }
 
     metrics_.at(status.name).updateData(time, status);

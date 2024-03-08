@@ -19,6 +19,7 @@
 #ifndef Q_MOC_RUN
 #include <QChartView>
 #include <QColor>
+#include <QComboBox>
 #include <QGridLayout>
 #include <QHeaderView>
 #include <QLabel>
@@ -36,7 +37,8 @@
 #include <limits>
 #include <string>
 #include <unordered_map>
-
+#include <utility>
+#include <vector>
 namespace rviz_plugins
 {
 
@@ -186,19 +188,32 @@ public:
   void onInitialize() override;
 
 private Q_SLOTS:
+  void onTopicChanged();
 
 private:
   rclcpp::Node::SharedPtr raw_node_;
   rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp::Subscription<DiagnosticArray>::SharedPtr sub_;
+  std::unordered_map<std::string, rclcpp::Subscription<DiagnosticArray>::SharedPtr> subscriptions_;
+  std::vector<std::string> topics_ = {
+    "/diagnostic/planning_evaluator/metrics", "/diagnostic/perception_online_evaluator/metrics"};
 
   void onTimer();
-  void onMetrics(const DiagnosticArray::ConstSharedPtr msg);
+  void onMetrics(const DiagnosticArray::ConstSharedPtr & msg, const std::string & topic_name);
 
   QGridLayout * grid_;
+  QComboBox * topic_selector_;
+
+  // <topic_name, <metric_name, <table, chart>>>
+  std::unordered_map<
+    std::string, std::unordered_map<std::string, std::pair<QTableWidget *, QChartView *>>>
+    topic_widgets_map_;
 
   std::mutex mutex_;
   std::unordered_map<std::string, Metric> metrics_;
+
+  void updateWidgetVisibility(const std::string & target_topic, const bool show);
+  void showCurrentTopicWidgets();
+  void hideInactiveTopicWidgets();
 };
 }  // namespace rviz_plugins
 
