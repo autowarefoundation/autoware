@@ -4,6 +4,13 @@ on:
   schedule:
     - cron: 0 12 * * *
   workflow_dispatch:
+    inputs:
+      artifacts-destination:
+        type: choice
+        description: Built images will be saved as tarball
+        options:
+          - tarball
+        default: tarball
 
 jobs:
   build-main-self-hosted:
@@ -17,11 +24,12 @@ jobs:
         include:
           - name: no-cuda
             base_image_env: base_image
+            lib_dir: aarch64
             setup-args: --no-nvidia
             additional-tag-suffix: ""
           - name: cuda
-            base_image_env: cuda_base_image
-            setup-args: --no-cuda-drivers
+            base_image_env: base_image
+            lib_dir: aarch64
             additional-tag-suffix: -cuda
     steps:
       # https://github.com/actions/checkout/issues/211
@@ -45,15 +53,15 @@ jobs:
       - name: Build 'autoware-universe'
         uses: ./.github/actions/docker-build-and-push
         with:
-          bake-target: autoware-universe
+          bake-target: autoware-openadk
           build-args: |
             *.platform=linux/arm64
             *.args.ROS_DISTRO=${{ env.rosdistro }}
             *.args.BASE_IMAGE=${{ env[format('{0}', matrix.base_image_env)] }}
-            *.args.PREBUILT_BASE_IMAGE=${{ env.prebuilt_base_image }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
-          tag-prefix: ${{ env.rosdistro }}-
+            *.args.LIB_DIR=${{ matrix.lib_dir }}
           tag-suffix: ${{ matrix.additional-tag-suffix }}-arm64
+          tag-prefix: ${{ env.rosdistro }}
           allow-push: false
 
       - name: Show disk space
