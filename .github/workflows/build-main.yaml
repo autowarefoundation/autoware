@@ -4,6 +4,14 @@ on:
   schedule:
     - cron: 0 12 * * *
   workflow_dispatch:
+    inputs:
+      artifacts-destination:
+        type: choice
+        description: Destination for the artifacts
+        options:
+          - registry
+          - tarball
+        default: tarball
 
 jobs:
   build-main:
