@@ -7,9 +7,8 @@ on:
     inputs:
       artifacts-destination:
         type: choice
-        description: Destination for the artifacts
+        description: Built images will be saved as tarball
         options:
-          - registry
           - tarball
         default: tarball
 
