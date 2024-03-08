@@ -131,6 +131,8 @@ private:
 
   // Heartbeat
   rclcpp::Time stamp_hazard_status_;
+  bool is_hazard_status_timeout_;
+  void checkHazardStatusTimeout();
 
   // Algorithm
   void transitionTo(const int new_state);
@@ -138,7 +140,7 @@ private:
   void operateMrm();
   autoware_adapi_v1_msgs::msg::MrmState::_behavior_type getCurrentMrmBehavior();
   bool isStopped();
-  bool isEmergency(const autoware_auto_system_msgs::msg::HazardStatus & hazard_status);
+  bool isEmergency();
 };
 
 #endif  // EMERGENCY_HANDLER__EMERGENCY_HANDLER_CORE_HPP_
