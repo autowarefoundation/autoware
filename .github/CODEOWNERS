@@ -77,7 +77,7 @@ evaluator/kinematic_evaluator/** dominik.jargot@robotec.ai fumiya.watanabe@tier4
 evaluator/localization_evaluator/** dominik.jargot@robotec.ai koji.minoda@tier4.jp
 evaluator/perception_online_evaluator/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4.jp kotaro.uetake@tier4.jp kyoichi.sugahara@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp
 evaluator/planning_evaluator/** kyoichi.sugahara@tier4.jp maxime.clement@tier4.jp
-evaluator/tier4_metrics_rviz_plugin/** kyoichi.sugahara@tier4.jp maxime.clement@tier4.jp satoshi.ota@tier4.jp
+evaluator/tier4_metrics_rviz_plugin/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp maxime.clement@tier4.jp satoshi.ota@tier4.jp
 launch/tier4_autoware_api_launch/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp
 launch/tier4_control_launch/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
 launch/tier4_localization_launch/** anh.nguyen.2@tier4.jp kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp ryu.yamamoto@tier4.jp shintaro.sakoda@tier4.jp taiki.yamada@tier4.jp yamato.ando@tier4.jp
@@ -121,7 +121,7 @@ perception/detected_object_feature_remover/** tomoya.kimura@tier4.jp
 perception/detected_object_validation/** dai.nguyen@tier4.jp shintaro.tomie@tier4.jp shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp
 perception/detection_by_tracker/** taekjin.lee@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/elevation_map_loader/** kosuke.takeuchi@tier4.jp shintaro.tomie@tier4.jp taichi.higashide@tier4.jp
-perception/euclidean_cluster/** yukihiro.saito@tier4.jp
+perception/euclidean_cluster/** dai.nguyen@tier4.jp yukihiro.saito@tier4.jp
 perception/ground_segmentation/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp
 perception/image_projection_based_fusion/** dai.nguyen@tier4.jp koji.minoda@tier4.jp kotaro.uetake@tier4.jp shunsuke.miura@tier4.jp tao.zhong@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/lidar_apollo_instance_segmentation/** yukihiro.saito@tier4.jp
@@ -212,7 +212,7 @@ sensing/image_diagnostics/** dai.nguyen@tier4.jp
 sensing/image_transport_decompressor/** yukihiro.saito@tier4.jp
 sensing/imu_corrector/** koji.minoda@tier4.jp taiki.yamada@tier4.jp yamato.ando@tier4.jp
 sensing/livox/livox_tag_filter/** ryohsuke.mitsudome@tier4.jp
-sensing/pointcloud_preprocessor/** abrahammonrroy@yahoo.com kyoichi.sugahara@tier4.jp shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp
+sensing/pointcloud_preprocessor/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp kyoichi.sugahara@tier4.jp shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp
 sensing/radar_scan_to_pointcloud2/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
 sensing/radar_static_pointcloud_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
 sensing/radar_threshold_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
