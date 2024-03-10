@@ -25,6 +25,7 @@
 #include <QLabel>
 #include <QLineSeries>
 #include <QPainter>
+#include <QPushButton>
 #include <QTableWidget>
 #include <QVBoxLayout>
 #endif
@@ -34,11 +35,13 @@
 
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 
+#include <iostream>
 #include <limits>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
 namespace rviz_plugins
 {
 
@@ -148,6 +151,8 @@ public:
 
   QTableWidget * getTable() const { return table; }
 
+  std::unordered_map<std::string, QLabel *> getLabels() const { return labels; }
+
 private:
   static std::optional<std::string> getValue(const DiagnosticStatus & status, std::string && key)
   {
@@ -188,29 +193,58 @@ public:
   void onInitialize() override;
 
 private Q_SLOTS:
+  // Slot functions triggered by UI events
   void onTopicChanged();
+  void onSpecificMetricChanged();
+  void onClearButtonClicked();
+  void onTabChanged();
 
 private:
+  // ROS 2 node and subscriptions for handling metrics data
   rclcpp::Node::SharedPtr raw_node_;
   rclcpp::TimerBase::SharedPtr timer_;
   std::unordered_map<std::string, rclcpp::Subscription<DiagnosticArray>::SharedPtr> subscriptions_;
+
+  // Topics from which metrics are collected
   std::vector<std::string> topics_ = {
     "/diagnostic/planning_evaluator/metrics", "/diagnostic/perception_online_evaluator/metrics"};
 
+  // Timer and metrics message callback
   void onTimer();
   void onMetrics(const DiagnosticArray::ConstSharedPtr & msg, const std::string & topic_name);
 
+  // Functions to update UI based on selected metrics
+  void updateViews();
+  void updateSelectedMetric(const std::string & metric_name);
+
+  // UI components
   QGridLayout * grid_;
   QComboBox * topic_selector_;
+  QTabWidget * tab_widget_;
 
-  // <topic_name, <metric_name, <table, chart>>>
+  // "Specific Metrics" tab components
+  QComboBox * specific_metric_selector_;
+  QChartView * specific_metric_chart_view_;
+  QTableWidget * specific_metric_table_;
+
+  // Selected metrics data
+  std::optional<std::pair<std::string, Metric>> selected_metrics_;
+
+  // Cache for received messages by topics
+  std::unordered_map<std::string, DiagnosticArray::ConstSharedPtr> current_msg_map_;
+
+  // Mapping from topics to metrics widgets (tables and charts)
   std::unordered_map<
     std::string, std::unordered_map<std::string, std::pair<QTableWidget *, QChartView *>>>
     topic_widgets_map_;
 
+  // Synchronization
   std::mutex mutex_;
+
+  // Stored metrics data
   std::unordered_map<std::string, Metric> metrics_;
 
+  // Utility functions for managing widget visibility based on topics
   void updateWidgetVisibility(const std::string & target_topic, const bool show);
   void showCurrentTopicWidgets();
   void hideInactiveTopicWidgets();

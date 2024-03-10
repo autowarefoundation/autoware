@@ -8,11 +8,11 @@ find_package(Qt5 REQUIRED Core Widgets Charts)
 set(QT_WIDGETS_LIB Qt5::Widgets)
 set(QT_CHARTS_LIB Qt5::Charts)
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_definitions(-DQT_NO_KEYWORDS)
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/metrics_visualize_panel.cpp
+  include/metrics_visualize_panel.hpp
 )
 
 target_link_libraries(${PROJECT_NAME}
