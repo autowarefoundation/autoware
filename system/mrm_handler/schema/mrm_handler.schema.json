@@ -16,6 +16,16 @@
           "description": "If the input `operation_mode_availability` topic cannot be received for more than `timeout_operation_mode_availability`, vehicle will make an emergency stop.",
           "default": 0.5
         },
+        "timeout_call_mrm_behavior": {
+          "type": "number",
+          "description": "If a service is requested to the mrm operator and the response is not returned by `timeout_call_mrm_behavior`, the timeout occurs.",
+          "default": 0.01
+        },
+        "timeout_cancel_mrm_behavior": {
+          "type": "number",
+          "description": "If a service is requested to the mrm operator and the response is not returned by `timeout_cancel_mrm_behavior`, the timeout occurs.",
+          "default": 0.01
+        },
         "use_emergency_holding": {
           "type": "boolean",
           "description": "If this parameter is true, the handler does not recover to the NORMAL state.",
@@ -56,6 +66,8 @@
       "required": [
         "update_rate",
         "timeout_operation_mode_availability",
+        "timeout_call_mrm_behavior",
+        "timeout_cancel_mrm_behavior",
         "use_emergency_holding",
         "timeout_emergency_recovery",
         "use_parking_after_stopped",
