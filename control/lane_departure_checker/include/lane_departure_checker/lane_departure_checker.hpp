@@ -121,7 +121,7 @@ public:
   std::vector<std::pair<double, lanelet::Lanelet>> getLaneletsFromPath(
     const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path) const;
 
-  std::optional<lanelet::BasicPolygon2d> getFusedLaneletPolygonForPath(
+  std::optional<tier4_autoware_utils::Polygon2d> getFusedLaneletPolygonForPath(
     const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path) const;
 
   bool checkPathWillLeaveLane(

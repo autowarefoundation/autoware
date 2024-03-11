@@ -110,7 +110,7 @@ std::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pos
 
     const auto cropped_path = lane_departure_checker_->cropPointsOutsideOfLanes(
       lanelet_map_ptr, shift_path, start_segment_idx);
-
+    if (cropped_path.points.empty()) continue;
     shift_path.points = cropped_path.points;
     shift_path.header = planner_data_->route_handler->getRouteHeader();
 

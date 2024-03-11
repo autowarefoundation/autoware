@@ -321,33 +321,39 @@ std::vector<std::pair<double, lanelet::Lanelet>> LaneDepartureChecker::getLanele
     lanelet_map_ptr->laneletLayer, footprint_hull_basic_polygon, 0.0);
 }
 
-std::optional<lanelet::BasicPolygon2d> LaneDepartureChecker::getFusedLaneletPolygonForPath(
+std::optional<tier4_autoware_utils::Polygon2d> LaneDepartureChecker::getFusedLaneletPolygonForPath(
   const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path) const
 {
   const auto lanelets_distance_pair = getLaneletsFromPath(lanelet_map_ptr, path);
-  // Fuse lanelets into a single BasicPolygon2d
-  auto fused_lanelets = [&lanelets_distance_pair]() -> std::optional<lanelet::BasicPolygon2d> {
-    if (lanelets_distance_pair.empty()) return std::nullopt;
-    if (lanelets_distance_pair.size() == 1)
-      return lanelets_distance_pair.at(0).second.polygon2d().basicPolygon();
+  auto to_polygon2d = [](const lanelet::BasicPolygon2d & poly) -> tier4_autoware_utils::Polygon2d {
+    tier4_autoware_utils::Polygon2d p;
+    auto & outer = p.outer();
 
-    lanelet::BasicPolygon2d merged_polygon =
-      lanelets_distance_pair.at(0).second.polygon2d().basicPolygon();
-    for (size_t i = 1; i < lanelets_distance_pair.size(); ++i) {
-      const auto & route_lanelet = lanelets_distance_pair.at(i).second;
-      const auto & poly = route_lanelet.polygon2d().basicPolygon();
-
-      std::vector<lanelet::BasicPolygon2d> lanelet_union_temp;
-      boost::geometry::union_(poly, merged_polygon, lanelet_union_temp);
-
-      // Update merged_polygon by accumulating all merged results
-      merged_polygon.clear();
-      for (const auto & temp_poly : lanelet_union_temp) {
-        merged_polygon.insert(merged_polygon.end(), temp_poly.begin(), temp_poly.end());
-      }
+    for (const auto & p : poly) {
+      tier4_autoware_utils::Point2d p2d(p.x(), p.y());
+      outer.push_back(p2d);
     }
-    if (merged_polygon.empty()) return std::nullopt;
-    return merged_polygon;
+    boost::geometry::correct(p);
+    return p;
+  };
+
+  // Fuse lanelets into a single BasicPolygon2d
+  auto fused_lanelets = [&]() -> std::optional<tier4_autoware_utils::Polygon2d> {
+    if (lanelets_distance_pair.empty()) return std::nullopt;
+    tier4_autoware_utils::MultiPolygon2d lanelet_unions;
+    tier4_autoware_utils::MultiPolygon2d result;
+
+    for (size_t i = 0; i < lanelets_distance_pair.size(); ++i) {
+      const auto & route_lanelet = lanelets_distance_pair.at(i).second;
+      const auto & p = route_lanelet.polygon2d().basicPolygon();
+      tier4_autoware_utils::Polygon2d poly = to_polygon2d(p);
+      boost::geometry::union_(lanelet_unions, poly, result);
+      lanelet_unions = result;
+      result.clear();
+    }
+
+    if (lanelet_unions.empty()) return std::nullopt;
+    return lanelet_unions.front();
   }();
 
   return fused_lanelets;
