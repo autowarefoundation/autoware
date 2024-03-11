@@ -21,6 +21,7 @@
   <depend>diagnostic_msgs</depend>
   <depend>eigen</depend>
   <depend>geometry_msgs</depend>
+  <depend>lanelet2_extension</depend>
   <depend>libgoogle-glog-dev</depend>
   <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
