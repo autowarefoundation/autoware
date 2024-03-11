@@ -78,7 +78,16 @@ void MapUpdateModule::update_map(const geometry_msgs::msg::Point & position)
 
     ndt_ptr_->setParams(param);
 
-    update_ndt(position, *ndt_ptr_);
+    const bool updated = update_ndt(position, *ndt_ptr_);
+    if (!updated) {
+      RCLCPP_ERROR_STREAM_THROTTLE(
+        logger_, *clock_, 1000,
+        "update_ndt failed. If this happens with initial position estimation, make sure that"
+        "(1) the initial position matches the pcd map and (2) the map_loader is working properly.");
+      last_update_position_ = position;
+      ndt_ptr_mutex_->unlock();
+      return;
+    }
     ndt_ptr_->setInputSource(input_source);
     ndt_ptr_mutex_->unlock();
     need_rebuild_ = false;
