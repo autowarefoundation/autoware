@@ -355,12 +355,15 @@ std::pair<bool, VectorXd> MPC::updateStateForDelayCompensation(
   MatrixXd Wd(DIM_X, 1);
   MatrixXd Cd(DIM_Y, DIM_X);
 
+  const double sign_vx = m_is_forward_shift ? 1 : -1;
+
   MatrixXd x_curr = x0_orig;
   double mpc_curr_time = start_time;
   for (size_t i = 0; i < m_input_buffer.size(); ++i) {
     double k, v = 0.0;
     try {
-      k = interpolation::lerp(traj.relative_time, traj.k, mpc_curr_time);
+      // NOTE: When driving backward, the curvature's sign should be reversed.
+      k = interpolation::lerp(traj.relative_time, traj.k, mpc_curr_time) * sign_vx;
       v = interpolation::lerp(traj.relative_time, traj.vx, mpc_curr_time);
     } catch (const std::exception & e) {
       RCLCPP_ERROR(m_logger, "mpc resample failed at delay compensation, stop mpc: %s", e.what());
@@ -446,6 +449,7 @@ MPCMatrix MPC::generateMPCMatrix(
     const double ref_vx = reference_trajectory.vx.at(i);
     const double ref_vx_squared = ref_vx * ref_vx;
 
+    // NOTE: When driving backward, the curvature's sign should be reversed.
     const double ref_k = reference_trajectory.k.at(i) * sign_vx;
     const double ref_smooth_k = reference_trajectory.smooth_k.at(i) * sign_vx;
 
