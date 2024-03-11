@@ -131,7 +131,8 @@ public:
   // wrapper function to test private function filter
   void filter(sensor_msgs::msg::PointCloud2 & out_cloud)
   {
-    scan_ground_filter_->filter(input_msg_ptr_, nullptr, out_cloud);
+    pointcloud_preprocessor::TransformInfo transform_info;
+    scan_ground_filter_->faster_filter(input_msg_ptr_, nullptr, out_cloud, transform_info);
   }
 
   void parse_yaml()
