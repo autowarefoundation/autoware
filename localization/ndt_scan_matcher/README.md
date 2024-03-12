@@ -60,6 +60,10 @@ One optional function is regularization. Please see the regularization chapter i
 
 {{ json_to_markdown("localization/ndt_scan_matcher/schema/sub/frame.json") }}
 
+#### Sensor Points
+
+{{ json_to_markdown("localization/ndt_scan_matcher/schema/sub/sensor_points.json") }}
+
 #### Ndt
 
 {{ json_to_markdown("localization/ndt_scan_matcher/schema/sub/ndt.json") }}

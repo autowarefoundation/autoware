@@ -37,6 +37,11 @@ struct HyperParameters
     std::string map_frame;
   } frame;
 
+  struct SensorPoints
+  {
+    double required_distance;
+  } sensor_points;
+
   pclomp::NdtParams ndt;
   bool ndt_regularization_enable;
 
@@ -90,6 +95,9 @@ public:
     frame.base_frame = node->declare_parameter<std::string>("frame.base_frame");
     frame.ndt_base_frame = node->declare_parameter<std::string>("frame.ndt_base_frame");
     frame.map_frame = node->declare_parameter<std::string>("frame.map_frame");
+
+    sensor_points.required_distance =
+      node->declare_parameter<double>("sensor_points.required_distance");
 
     ndt.trans_epsilon = node->declare_parameter<double>("ndt.trans_epsilon");
     ndt.step_size = node->declare_parameter<double>("ndt.step_size");

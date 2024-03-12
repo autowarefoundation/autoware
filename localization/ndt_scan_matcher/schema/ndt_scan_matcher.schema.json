@@ -21,6 +21,9 @@
             "covariance": { "$ref": "sub/covariance.json#/definitions/covariance" },
             "dynamic_map_loading": {
               "$ref": "sub/dynamic_map_loading.json#/definitions/dynamic_map_loading"
+            },
+            "sensor_points": {
+              "$ref": "sub/sensor_points.json#/definitions/sensor_points"
             }
           },
           "required": [
@@ -30,7 +33,8 @@
             "validation",
             "score_estimation",
             "covariance",
-            "dynamic_map_loading"
+            "dynamic_map_loading",
+            "sensor_points"
           ],
           "additionalProperties": false
         }

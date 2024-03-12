@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Ndt Scan Matcher Node",
+  "definitions": {
+    "sensor_points": {
+      "type": "object",
+      "properties": {
+        "required_distance": {
+          "type": "number",
+          "description": "Required distance of input sensor points [m]. If the max distance of input sensor points is lower than this value, the scan matching will not be performed.",
+          "default": "10.0"
+        }
+      },
+      "required": ["required_distance"],
+      "additionalProperties": false
+    }
+  }
+}

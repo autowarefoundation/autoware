@@ -11,6 +11,12 @@
       map_frame: "map"
 
 
+    sensor_points:
+      # Required distance of input sensor points. [m]
+      # If the max distance of input sensor points is lower than this value, the scan matching will not be performed.
+      required_distance: 10.0
+
+
     ndt:
       # The maximum difference between two consecutive
       # transformations in order to consider convergence

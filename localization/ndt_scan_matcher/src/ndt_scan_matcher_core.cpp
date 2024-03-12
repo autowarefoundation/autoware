@@ -346,6 +346,21 @@ void NDTScanMatcher::callback_sensor_points(
   transform_sensor_measurement(
     sensor_frame, param_.frame.base_frame, sensor_points_in_sensor_frame,
     sensor_points_in_baselink_frame);
+
+  // check max distance of sensor points
+  double max_distance = 0.0;
+  for (const auto & point : sensor_points_in_baselink_frame->points) {
+    const double distance = std::hypot(point.x, point.y, point.z);
+    max_distance = std::max(max_distance, distance);
+  }
+  if (max_distance < param_.sensor_points.required_distance) {
+    RCLCPP_WARN_STREAM(
+      this->get_logger(), "Max distance of sensor points = "
+                            << std::fixed << std::setprecision(3) << max_distance << " [m] < "
+                            << param_.sensor_points.required_distance << " [m]");
+    return;
+  }
+
   ndt_ptr_->setInputSource(sensor_points_in_baselink_frame);
   if (!is_activated_) return;
 
