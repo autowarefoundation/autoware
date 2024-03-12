@@ -5,6 +5,7 @@
   <version>0.0.1</version>
   <description>ByteTrack implementation ported toward Autoware</description>
   <maintainer email="manato.hirabayashi@tier4.jp">Manato HIRABAYASHI</maintainer>
+  <maintainer email="yoshi.ri@tier4.jp">Yoshi RI</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>

@@ -8,6 +8,7 @@
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
   <maintainer email="dai.nguyen@tier4.jp">Dai Nguyen</maintainer>
   <maintainer email="shintaro.tomie@tier4.jp">Shintaro Tomie</maintainer>
+  <maintainer email="yoshi.ri@tier4.jp">Yoshi RI</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
