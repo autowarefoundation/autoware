@@ -79,7 +79,9 @@ protected:
 
     marker_sub_ = rclcpp::create_subscription<MarkerArray>(
       eval_node, "perception_online_evaluator/markers", 10,
-      [this]([[maybe_unused]] const MarkerArray::SharedPtr msg) { has_received_marker_ = true; });
+      [this]([[maybe_unused]] const MarkerArray::ConstSharedPtr msg) {
+        has_received_marker_ = true;
+      });
     uuid_ = generateUUID();
   }
 
