@@ -206,6 +206,7 @@ void DetectionByTracker::setMaxSearchRange()
 void DetectionByTracker::onObjects(
   const tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_msg)
 {
+  debugger_->startMeasureProcessingTime();
   autoware_auto_perception_msgs::msg::DetectedObjects detected_objects;
   detected_objects.header = input_msg->header;
 
@@ -250,6 +251,7 @@ void DetectionByTracker::onObjects(
   }
 
   objects_pub_->publish(detected_objects);
+  debugger_->publishProcessingTime();
 }
 
 void DetectionByTracker::divideUnderSegmentedObjects(

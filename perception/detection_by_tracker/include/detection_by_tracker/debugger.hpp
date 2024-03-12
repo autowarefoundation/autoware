@@ -20,6 +20,8 @@
 #include <euclidean_cluster/voxel_grid_based_euclidean_cluster.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <shape_estimation/shape_estimator.hpp>
+#include <tier4_autoware_utils/ros/debug_publisher.hpp>
+#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
@@ -61,6 +63,11 @@ public:
     divided_objects_pub_ =
       node->create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
         "debug/divided_objects", 1);
+    processing_time_publisher_ =
+      std::make_unique<tier4_autoware_utils::DebugPublisher>(node, "detection_by_tracker");
+    stop_watch_ptr_ =
+      std::make_unique<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>>();
+    this->startStopWatch();
   }
 
   ~Debugger() {}
@@ -80,6 +87,19 @@ public:
   {
     divided_objects_pub_->publish(removeFeature(input));
   }
+  void startStopWatch()
+  {
+    stop_watch_ptr_->tic("cyclic_time");
+    stop_watch_ptr_->tic("processing_time");
+  }
+  void startMeasureProcessingTime() { stop_watch_ptr_->tic("processing_time"); }
+  void publishProcessingTime()
+  {
+    processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+      "debug/cyclic_time_ms", stop_watch_ptr_->toc("cyclic_time", true));
+    processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+      "debug/processing_time_ms", stop_watch_ptr_->toc("processing_time", true));
+  }
 
 private:
   rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr
@@ -90,6 +110,9 @@ private:
     merged_objects_pub_;
   rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr
     divided_objects_pub_;
+  // debug publisher
+  std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<tier4_autoware_utils::DebugPublisher> processing_time_publisher_;
 
   autoware_auto_perception_msgs::msg::DetectedObjects removeFeature(
     const tier4_perception_msgs::msg::DetectedObjectsWithFeature & input)

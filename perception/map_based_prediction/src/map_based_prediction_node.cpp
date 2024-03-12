@@ -646,14 +646,6 @@ ObjectClassification::_label_type changeLabelForPrediction(
   }
 }
 
-StringStamped createStringStamped(const rclcpp::Time & now, const double data)
-{
-  StringStamped msg;
-  msg.stamp = now;
-  msg.data = std::to_string(data);
-  return msg;
-}
-
 // NOTE: These two functions are copied from the route_handler package.
 lanelet::Lanelets getRightOppositeLanelets(
   const std::shared_ptr<lanelet::LaneletMap> & lanelet_map_ptr,
@@ -816,10 +808,15 @@ MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_
   pub_objects_ = this->create_publisher<PredictedObjects>("~/output/objects", rclcpp::QoS{1});
   pub_debug_markers_ =
     this->create_publisher<visualization_msgs::msg::MarkerArray>("maneuver", rclcpp::QoS{1});
-  pub_calculation_time_ = create_publisher<StringStamped>("~/debug/calculation_time", 1);
+  processing_time_publisher_ =
+    std::make_unique<tier4_autoware_utils::DebugPublisher>(this, "map_based_prediction");
 
   set_param_res_ = this->add_on_set_parameters_callback(
     std::bind(&MapBasedPredictionNode::onParam, this, std::placeholders::_1));
+
+  stop_watch_ptr_ = std::make_unique<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>>();
+  stop_watch_ptr_->tic("cyclic_time");
+  stop_watch_ptr_->tic("processing_time");
 }
 
 rcl_interfaces::msg::SetParametersResult MapBasedPredictionNode::onParam(
@@ -893,7 +890,7 @@ void MapBasedPredictionNode::trafficSignalsCallback(const TrafficSignalArray::Co
 
 void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPtr in_objects)
 {
-  stop_watch_.tic();
+  stop_watch_ptr_->toc("processing_time", true);
   // Guard for map pointer and frame transformation
   if (!lanelet_map_ptr_) {
     return;
@@ -1116,8 +1113,12 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
   // Publish Results
   pub_objects_->publish(output);
   pub_debug_markers_->publish(debug_markers);
-  const auto calculation_time_msg = createStringStamped(now(), stop_watch_.toc());
-  pub_calculation_time_->publish(calculation_time_msg);
+  const auto processing_time_ms = stop_watch_ptr_->toc("processing_time", true);
+  const auto cyclic_time_ms = stop_watch_ptr_->toc("cyclic_time", true);
+  processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+    "debug/cyclic_time_ms", cyclic_time_ms);
+  processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+    "debug/processing_time_ms", processing_time_ms);
 }
 
 bool MapBasedPredictionNode::doesPathCrossAnyFence(const PredictedPath & predicted_path)

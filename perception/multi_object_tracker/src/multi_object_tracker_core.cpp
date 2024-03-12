@@ -148,7 +148,7 @@ void TrackerDebugger::publishProcessingTime()
     processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
       "debug/processing_time_ms", processing_time_ms);
     processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
-      "debug/elapsed_time_from_sensor_input_ms", elapsed_time_from_sensor_input_ * 1e3);
+      "debug/pipeline_latency_ms", elapsed_time_from_sensor_input_ * 1e3);
   }
 }
 

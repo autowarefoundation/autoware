@@ -118,6 +118,13 @@ ObjectAssociationMergerNode::ObjectAssociationMergerNode(const rclcpp::NodeOptio
 
   merged_object_pub_ = create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
     "output/object", rclcpp::QoS{1});
+
+  // Debug publisher
+  processing_time_publisher_ =
+    std::make_unique<tier4_autoware_utils::DebugPublisher>(this, "object_association_merger");
+  stop_watch_ptr_ = std::make_unique<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>>();
+  stop_watch_ptr_->tic("cyclic_time");
+  stop_watch_ptr_->tic("processing_time");
 }
 
 void ObjectAssociationMergerNode::objectsCallback(
@@ -128,6 +135,7 @@ void ObjectAssociationMergerNode::objectsCallback(
   if (merged_object_pub_->get_subscription_count() < 1) {
     return;
   }
+  stop_watch_ptr_->toc("processing_time", true);
 
   /* transform to base_link coordinate */
   autoware_auto_perception_msgs::msg::DetectedObjects transformed_objects0, transformed_objects1;
@@ -215,6 +223,11 @@ void ObjectAssociationMergerNode::objectsCallback(
 
   // publish output msg
   merged_object_pub_->publish(output_msg);
+  // publish processing time
+  processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+    "debug/cyclic_time_ms", stop_watch_ptr_->toc("cyclic_time", true));
+  processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+    "debug/processing_time_ms", stop_watch_ptr_->toc("processing_time", true));
 }
 }  // namespace object_association
 
