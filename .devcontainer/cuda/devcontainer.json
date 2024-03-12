@@ -1,7 +1,8 @@
 {
   "name": "Autoware-cuda",
   "build": {
-    "dockerfile": "Dockerfile"
+    "dockerfile": "../Dockerfile",
+    "args": { "BASE_IMAGE": "ghcr.io/autowarefoundation/autoware-openadk:latest-devel-cuda" }
   },
   "remoteUser": "autoware",
   "hostRequirements": {
