@@ -321,10 +321,19 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
   using utils::avoidance::getTargetLanelets;
   using utils::avoidance::separateObjectsByPath;
   using utils::avoidance::updateRoadShoulderDistance;
+  using utils::traffic_light::calcDistanceToRedTrafficLight;
 
   // Separate dynamic objects based on whether they are inside or outside of the expanded lanelets.
   constexpr double MARGIN = 10.0;
-  const auto forward_detection_range = helper_->getForwardDetectionRange();
+  const auto forward_detection_range = [&]() {
+    const auto to_traffic_light = calcDistanceToRedTrafficLight(
+      data.current_lanelets, helper_->getPreviousReferencePath(), planner_data_);
+    if (!to_traffic_light.has_value()) {
+      return helper_->getForwardDetectionRange();
+    }
+    return std::min(helper_->getForwardDetectionRange(), to_traffic_light.value());
+  }();
+
   const auto [object_within_target_lane, object_outside_target_lane] = separateObjectsByPath(
     helper_->getPreviousReferencePath(), helper_->getPreviousSplineShiftPath().path, planner_data_,
     data, parameters_, forward_detection_range + MARGIN, debug);
