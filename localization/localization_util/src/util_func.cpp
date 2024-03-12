@@ -241,7 +241,7 @@ void output_pose_with_cov_to_log(
   rpy.y = rpy.y * 180.0 / M_PI;
   rpy.z = rpy.z * 180.0 / M_PI;
 
-  RCLCPP_INFO_STREAM(
+  RCLCPP_DEBUG_STREAM(
     logger, std::fixed << prefix << "," << pose.position.x << "," << pose.position.y << ","
                        << pose.position.z << "," << pose.orientation.x << "," << pose.orientation.y
                        << "," << pose.orientation.z << "," << pose.orientation.w << "," << rpy.x

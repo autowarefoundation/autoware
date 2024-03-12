@@ -182,7 +182,7 @@ bool MapUpdateModule::update_ndt(const geometry_msgs::msg::Point & position, Ndt
   const auto duration_micro_sec =
     std::chrono::duration_cast<std::chrono::microseconds>(exe_end_time - exe_start_time).count();
   const auto exe_time = static_cast<double>(duration_micro_sec) / 1000.0;
-  RCLCPP_INFO(logger_, "Time duration for creating new ndt_ptr: %lf [ms]", exe_time);
+  RCLCPP_DEBUG(logger_, "Time duration for creating new ndt_ptr: %lf [ms]", exe_time);
   return true;  // Updated
 }
 

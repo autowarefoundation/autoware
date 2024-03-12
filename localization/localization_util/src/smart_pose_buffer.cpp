@@ -40,6 +40,7 @@ std::optional<SmartPoseBuffer::InterpolateResult> SmartPoseBuffer::interpolate(
     const rclcpp::Time time_last = pose_buffer_.back()->header.stamp;
 
     if (target_ros_time < time_first) {
+      RCLCPP_INFO(logger_, "Mismatch between pose timestamp and current timestamp");
       return std::nullopt;
     }
 

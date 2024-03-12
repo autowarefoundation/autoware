@@ -40,7 +40,6 @@ PoseWithCovarianceStamped NdtModule::align_pose(const PoseWithCovarianceStamped 
   RCLCPP_INFO(logger_, "Call NDT align server.");
   const auto res = cli_align_->async_send_request(req).get();
   if (!res->success) {
-    RCLCPP_INFO(logger_, "NDT align server failed.");
     throw ServiceException(
       Initialize::Service::Response::ERROR_ESTIMATION, "NDT align server failed.");
   }

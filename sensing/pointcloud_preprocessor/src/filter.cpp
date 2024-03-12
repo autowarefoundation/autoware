@@ -77,7 +77,7 @@ pointcloud_preprocessor::Filter::Filter(
     latched_indices_ = static_cast<bool>(declare_parameter("latched_indices", false));
     approximate_sync_ = static_cast<bool>(declare_parameter("approximate_sync", false));
 
-    RCLCPP_INFO_STREAM(
+    RCLCPP_DEBUG_STREAM(
       this->get_logger(),
       "Filter (as Component) successfully created with the following parameters:"
         << std::endl

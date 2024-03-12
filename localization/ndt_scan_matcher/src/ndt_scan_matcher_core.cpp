@@ -992,7 +992,7 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_pose(
   result_pose_with_cov_msg.pose.pose = best_particle_ptr->result_pose;
 
   output_pose_with_cov_to_log(get_logger(), "align_pose_output", result_pose_with_cov_msg);
-  RCLCPP_INFO_STREAM(get_logger(), "best_score," << best_particle_ptr->score);
+  RCLCPP_DEBUG_STREAM(get_logger(), "best_score," << best_particle_ptr->score);
 
   return result_pose_with_cov_msg;
 }
