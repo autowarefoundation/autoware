@@ -235,6 +235,10 @@ public:
     std::vector<geometry_msgs::msg::Polygon> occlusion_polygons;
     std::optional<std::pair<geometry_msgs::msg::Point, geometry_msgs::msg::Point>>
       nearest_occlusion_projection{std::nullopt};
+    std::optional<
+      std::tuple<geometry_msgs::msg::Point, geometry_msgs::msg::Point, geometry_msgs::msg::Point>>
+      nearest_occlusion_triangle{std::nullopt};
+    bool static_occlusion{false};
     std::optional<double> static_occlusion_with_traffic_light_timeout{std::nullopt};
 
     std::optional<std::tuple<geometry_msgs::msg::Pose, lanelet::ConstPoint3d, lanelet::Id, uint8_t>>

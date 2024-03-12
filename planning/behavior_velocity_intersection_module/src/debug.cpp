@@ -389,6 +389,22 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
       &debug_marker_array, now);
   }
 
+  if (debug_data_.nearest_occlusion_triangle) {
+    const auto [p1, p2, p3] = debug_data_.nearest_occlusion_triangle.value();
+    const auto color = debug_data_.static_occlusion ? green : red;
+    geometry_msgs::msg::Polygon poly;
+    poly.points.push_back(
+      geometry_msgs::build<geometry_msgs::msg::Point32>().x(p1.x).y(p1.y).z(p1.z));
+    poly.points.push_back(
+      geometry_msgs::build<geometry_msgs::msg::Point32>().x(p2.x).y(p2.y).z(p2.z));
+    poly.points.push_back(
+      geometry_msgs::build<geometry_msgs::msg::Point32>().x(p3.x).y(p3.y).z(p3.z));
+    appendMarkerArray(
+      debug::createPolygonMarkerArray(
+        poly, "nearest_occlusion_triangle", lane_id_, now, 0.3, 0.0, 0.0, std::get<0>(color),
+        std::get<1>(color), std::get<2>(color)),
+      &debug_marker_array, now);
+  }
   if (debug_data_.traffic_light_observation) {
     const auto GREEN = autoware_perception_msgs::msg::TrafficSignalElement::GREEN;
     const auto YELLOW = autoware_perception_msgs::msg::TrafficSignalElement::AMBER;

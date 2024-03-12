@@ -334,13 +334,14 @@ IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
     }
     return nearest;
   };
-  struct NearestOcclusionPoint
+  struct NearestOcclusionInterval
   {
     int64 division_index{0};
     int64 point_index{0};
     double dist{0.0};
     geometry_msgs::msg::Point point;
     geometry_msgs::msg::Point projection;
+    geometry_msgs::msg::Point visible_end;
   } nearest_occlusion_point;
   double min_dist = std::numeric_limits<double>::infinity();
   for (unsigned division_index = 0; division_index < lane_divisions.size(); ++division_index) {
@@ -370,6 +371,8 @@ IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
       continue;
     }
     double acc_dist = 0.0;
+    bool found_min_dist_for_this_division = false;
+    bool is_prev_occluded = false;
     auto acc_dist_it = projection_it;
     for (auto point_it = projection_it; point_it != division.end(); point_it++) {
       const double dist =
@@ -386,11 +389,24 @@ IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
         if (acc_dist < min_dist) {
           min_dist = acc_dist;
           nearest_occlusion_point = {
-            division_index, std::distance(division.begin(), point_it), acc_dist,
+            division_index,
+            std::distance(division.begin(), point_it),
+            acc_dist,
             tier4_autoware_utils::createPoint(point_it->x(), point_it->y(), origin.z),
-            tier4_autoware_utils::createPoint(projection_it->x(), projection_it->y(), origin.z)};
+            tier4_autoware_utils::createPoint(projection_it->x(), projection_it->y(), origin.z),
+            tier4_autoware_utils::createPoint(
+              projection_it->x(), projection_it->y(),
+              origin.z) /* initialize with projection point at first*/};
+          found_min_dist_for_this_division = true;
+        } else if (found_min_dist_for_this_division && is_prev_occluded) {
+          // although this cell is not "nearest" cell, we have found the "nearest" cell on this
+          // division previously in this iteration, and the iterated cells are still OCCLUDED since
+          // then
+          nearest_occlusion_point.visible_end =
+            tier4_autoware_utils::createPoint(point_it->x(), point_it->y(), origin.z);
         }
       }
+      is_prev_occluded = (pixel == OCCLUDED);
     }
   }
 
@@ -400,16 +416,24 @@ IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
 
   debug_data_.nearest_occlusion_projection =
     std::make_pair(nearest_occlusion_point.point, nearest_occlusion_point.projection);
-  LineString2d ego_occlusion_line;
-  ego_occlusion_line.emplace_back(current_pose.position.x, current_pose.position.y);
-  ego_occlusion_line.emplace_back(nearest_occlusion_point.point.x, nearest_occlusion_point.point.y);
+  debug_data_.nearest_occlusion_triangle = std::make_tuple(
+    current_pose.position, nearest_occlusion_point.point, nearest_occlusion_point.visible_end);
+  Polygon2d ego_occlusion_triangle;
+  ego_occlusion_triangle.outer().emplace_back(current_pose.position.x, current_pose.position.y);
+  ego_occlusion_triangle.outer().emplace_back(
+    nearest_occlusion_point.point.x, nearest_occlusion_point.point.y);
+  ego_occlusion_triangle.outer().emplace_back(
+    nearest_occlusion_point.visible_end.x, nearest_occlusion_point.visible_end.y);
+  bg::correct(ego_occlusion_triangle);
   for (const auto & attention_object_info : object_info_manager_.allObjects()) {
     const auto obj_poly =
       tier4_autoware_utils::toPolygon2d(attention_object_info->predicted_object());
-    if (bg::intersects(obj_poly, ego_occlusion_line)) {
+    if (bg::intersects(obj_poly, ego_occlusion_triangle)) {
+      debug_data_.static_occlusion = false;
       return DynamicallyOccluded{min_dist};
     }
   }
+  debug_data_.static_occlusion = true;
   return StaticallyOccluded{min_dist};
 }
 }  // namespace behavior_velocity_planner
