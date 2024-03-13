@@ -6,7 +6,7 @@
   <arg name="occupancy_grid_map_updater"/>
   <arg name="occupancy_grid_map_updater_param_path"/>
   <arg name="pose_initializer_param_path"/>
-
+  <arg name="launch_simulator_perception_modules" default="true"/>
   <arg name="launch_dummy_perception"/>
   <arg name="launch_dummy_vehicle"/>
   <arg name="launch_dummy_localization"/>
@@ -26,97 +26,100 @@
 
   <let name="vehicle_model_pkg" value="$(find-pkg-share $(var vehicle_model)_description)"/>
 
-  <group if="$(var scenario_simulation)">
-    <include file="$(find-pkg-share fault_injection)/launch/fault_injection.launch.xml">
-      <arg name="config_file" value="$(var fault_injection_param_path)"/>
-    </include>
-  </group>
-
-  <!-- Dummy Perception -->
-  <group if="$(var launch_dummy_perception)">
-    <include file="$(find-pkg-share dummy_perception_publisher)/launch/dummy_perception_publisher.launch.xml">
-      <arg name="real" value="$(var perception/enable_detection_failure)"/>
-      <arg name="use_object_recognition" value="$(var perception/enable_object_recognition)"/>
-      <arg name="use_base_link_z" value="$(var perception/use_base_link_z)"/>
-      <arg name="visible_range" value="$(var sensing/visible_range)"/>
-    </include>
-  </group>
-  <group unless="$(var scenario_simulation)">
-    <!-- Occupancy Grid -->
-    <push-ros-namespace namespace="occupancy_grid_map"/>
-    <include file="$(find-pkg-share tier4_perception_launch)/launch/occupancy_grid_map/probabilistic_occupancy_grid_map.launch.xml">
-      <arg name="input_obstacle_pointcloud" value="true"/>
-      <arg name="input_obstacle_and_raw_pointcloud" value="false"/>
-      <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/pointcloud"/>
-      <arg name="output" value="/perception/occupancy_grid_map/map"/>
-      <arg name="occupancy_grid_map_method" value="laserscan_based_occupancy_grid_map"/>
-      <arg name="occupancy_grid_map_param_path" value="$(var laserscan_based_occupancy_grid_map_param_path)"/>
-      <arg name="occupancy_grid_map_updater" value="$(var occupancy_grid_map_updater)"/>
-      <arg name="occupancy_grid_map_updater_param_path" value="$(var occupancy_grid_map_updater_param_path)"/>
-    </include>
-  </group>
-
-  <!-- perception module -->
-  <group>
-    <push-ros-namespace namespace="perception"/>
-    <!-- object recognition -->
-    <group if="$(var perception/enable_object_recognition)">
-      <push-ros-namespace namespace="object_recognition"/>
-      <!-- tracking module -->
-      <group>
-        <push-ros-namespace namespace="tracking"/>
-        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
-          <arg
-            name="object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path"
-            value="$(var object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path)"
-          />
-          <arg name="object_recognition_tracking_radar_object_tracker_tracking_setting_param_path" value="$(var object_recognition_tracking_radar_object_tracker_tracking_setting_param_path)"/>
-          <arg name="object_recognition_tracking_radar_object_tracker_node_param_path" value="$(var object_recognition_tracking_radar_object_tracker_node_param_path)"/>
-          <arg name="object_recognition_tracking_object_merger_data_association_matrix_param_path" value="$(var object_recognition_tracking_object_merger_data_association_matrix_param_path)"/>
-          <arg name="object_recognition_tracking_object_merger_node_param_path" value="$(var object_recognition_tracking_object_merger_node_param_path)"/>
-        </include>
-      </group>
-      <!-- prediction module -->
-      <group>
-        <push-ros-namespace namespace="prediction"/>
-        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/prediction/prediction.launch.xml">
-          <arg name="use_vector_map" value="true"/>
-        </include>
-      </group>
+  <group if="$(var launch_simulator_perception_modules)">
+    <group if="$(var scenario_simulation)">
+      <include file="$(find-pkg-share fault_injection)/launch/fault_injection.launch.xml">
+        <arg name="config_file" value="$(var fault_injection_param_path)"/>
+      </include>
     </group>
 
-    <!-- perception evaluator -->
+    <!-- Dummy Perception -->
+    <group if="$(var launch_dummy_perception)">
+      <include file="$(find-pkg-share dummy_perception_publisher)/launch/dummy_perception_publisher.launch.xml">
+        <arg name="real" value="$(var perception/enable_detection_failure)"/>
+        <arg name="use_object_recognition" value="$(var perception/enable_object_recognition)"/>
+        <arg name="use_base_link_z" value="$(var perception/use_base_link_z)"/>
+        <arg name="visible_range" value="$(var sensing/visible_range)"/>
+      </include>
+    </group>
+
+    <group unless="$(var scenario_simulation)">
+      <!-- Occupancy Grid -->
+      <push-ros-namespace namespace="occupancy_grid_map"/>
+      <include file="$(find-pkg-share tier4_perception_launch)/launch/occupancy_grid_map/probabilistic_occupancy_grid_map.launch.xml">
+        <arg name="input_obstacle_pointcloud" value="true"/>
+        <arg name="input_obstacle_and_raw_pointcloud" value="false"/>
+        <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/pointcloud"/>
+        <arg name="output" value="/perception/occupancy_grid_map/map"/>
+        <arg name="occupancy_grid_map_method" value="laserscan_based_occupancy_grid_map"/>
+        <arg name="occupancy_grid_map_param_path" value="$(var laserscan_based_occupancy_grid_map_param_path)"/>
+        <arg name="occupancy_grid_map_updater" value="$(var occupancy_grid_map_updater)"/>
+        <arg name="occupancy_grid_map_updater_param_path" value="$(var occupancy_grid_map_updater_param_path)"/>
+      </include>
+    </group>
+
+    <!-- perception module -->
     <group>
-      <include file="$(find-pkg-share perception_online_evaluator)/launch/perception_online_evaluator.launch.xml"/>
-    </group>
+      <push-ros-namespace namespace="perception"/>
+      <!-- object recognition -->
+      <group if="$(var perception/enable_object_recognition)">
+        <push-ros-namespace namespace="object_recognition"/>
+        <!-- tracking module -->
+        <group>
+          <push-ros-namespace namespace="tracking"/>
+          <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
+            <arg
+              name="object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path"
+              value="$(var object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path)"
+            />
+            <arg name="object_recognition_tracking_radar_object_tracker_tracking_setting_param_path" value="$(var object_recognition_tracking_radar_object_tracker_tracking_setting_param_path)"/>
+            <arg name="object_recognition_tracking_radar_object_tracker_node_param_path" value="$(var object_recognition_tracking_radar_object_tracker_node_param_path)"/>
+            <arg name="object_recognition_tracking_object_merger_data_association_matrix_param_path" value="$(var object_recognition_tracking_object_merger_data_association_matrix_param_path)"/>
+            <arg name="object_recognition_tracking_object_merger_node_param_path" value="$(var object_recognition_tracking_object_merger_node_param_path)"/>
+          </include>
+        </group>
+        <!-- prediction module -->
+        <group>
+          <push-ros-namespace namespace="prediction"/>
+          <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/prediction/prediction.launch.xml">
+            <arg name="use_vector_map" value="true"/>
+          </include>
+        </group>
+      </group>
 
-    <!-- publish empty objects instead of object recognition module -->
-    <group unless="$(var perception/enable_object_recognition)">
-      <push-ros-namespace namespace="object_recognition"/>
-      <node pkg="dummy_perception_publisher" exec="empty_objects_publisher" name="empty_objects_publisher" output="screen">
-        <remap from="~/output/objects" to="/perception/object_recognition/objects"/>
-      </node>
-    </group>
+      <!-- perception evaluator -->
+      <group>
+        <include file="$(find-pkg-share perception_online_evaluator)/launch/perception_online_evaluator.launch.xml"/>
+      </group>
 
-    <group if="$(var perception/enable_elevation_map)">
-      <push-ros-namespace namespace="obstacle_segmentation/elevation_map"/>
-      <node pkg="elevation_map_loader" exec="elevation_map_loader" name="elevation_map_loader" output="screen">
-        <remap from="output/elevation_map" to="map"/>
-        <remap from="input/pointcloud_map" to="/map/pointcloud_map"/>
-        <remap from="input/vector_map" to="/map/vector_map"/>
-        <param name="use_lane_filter" value="false"/>
-        <param name="use_inpaint" value="true"/>
-        <param name="inpaint_radius" value="1.0"/>
-        <param name="param_file_path" value="$(var obstacle_segmentation_ground_segmentation_elevation_map_param_path)"/>
-        <param name="elevation_map_directory" value="$(find-pkg-share elevation_map_loader)/data/elevation_maps"/>
-        <param name="use_elevation_map_cloud_publisher" value="false"/>
-      </node>
-    </group>
+      <!-- publish empty objects instead of object recognition module -->
+      <group unless="$(var perception/enable_object_recognition)">
+        <push-ros-namespace namespace="object_recognition"/>
+        <node pkg="dummy_perception_publisher" exec="empty_objects_publisher" name="empty_objects_publisher" output="screen">
+          <remap from="~/output/objects" to="/perception/object_recognition/objects"/>
+        </node>
+      </group>
 
-    <!-- traffic light module -->
-    <group if="$(var perception/enable_traffic_light)">
-      <push-ros-namespace namespace="traffic_light_recognition"/>
-      <include file="$(find-pkg-share tier4_perception_launch)/launch/traffic_light_recognition/traffic_light.launch.xml"/>
+      <group if="$(var perception/enable_elevation_map)">
+        <push-ros-namespace namespace="obstacle_segmentation/elevation_map"/>
+        <node pkg="elevation_map_loader" exec="elevation_map_loader" name="elevation_map_loader" output="screen">
+          <remap from="output/elevation_map" to="map"/>
+          <remap from="input/pointcloud_map" to="/map/pointcloud_map"/>
+          <remap from="input/vector_map" to="/map/vector_map"/>
+          <param name="use_lane_filter" value="false"/>
+          <param name="use_inpaint" value="true"/>
+          <param name="inpaint_radius" value="1.0"/>
+          <param name="param_file_path" value="$(var obstacle_segmentation_ground_segmentation_elevation_map_param_path)"/>
+          <param name="elevation_map_directory" value="$(find-pkg-share elevation_map_loader)/data/elevation_maps"/>
+          <param name="use_elevation_map_cloud_publisher" value="false"/>
+        </node>
+      </group>
+
+      <!-- traffic light module -->
+      <group if="$(var perception/enable_traffic_light)">
+        <push-ros-namespace namespace="traffic_light_recognition"/>
+        <include file="$(find-pkg-share tier4_perception_launch)/launch/traffic_light_recognition/traffic_light.launch.xml"/>
+      </group>
     </group>
   </group>
 
