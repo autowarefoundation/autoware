@@ -58,7 +58,7 @@ PointcloudBasedOccupancyGridMapNode::PointcloudBasedOccupancyGridMapNode(
   map_frame_ = this->declare_parameter<std::string>("map_frame");
   base_link_frame_ = this->declare_parameter<std::string>("base_link_frame");
   gridmap_origin_frame_ = this->declare_parameter<std::string>("gridmap_origin_frame");
-  scan_origin_frame_ = this->declare_parameter<std::string>("scan_origin_frame");
+  scan_origin_frame_ = this->declare_parameter<std::string>("scan_origin_frame", "");
   use_height_filter_ = this->declare_parameter<bool>("height_filter.use_height_filter");
   min_height_ = this->declare_parameter<double>("height_filter.min_height");
   max_height_ = this->declare_parameter<double>("height_filter.max_height");
@@ -136,6 +136,11 @@ void PointcloudBasedOccupancyGridMapNode::onPointcloudWithObstacleAndRaw(
   if (stop_watch_ptr_) {
     stop_watch_ptr_->toc("processing_time", true);
   }
+  // if scan_origin_frame_ is "", replace it with input_raw_msg->header.frame_id
+  if (scan_origin_frame_.empty()) {
+    scan_origin_frame_ = input_raw_msg->header.frame_id;
+  }
+
   // Apply height filter
   PointCloud2 cropped_obstacle_pc{};
   PointCloud2 cropped_raw_pc{};

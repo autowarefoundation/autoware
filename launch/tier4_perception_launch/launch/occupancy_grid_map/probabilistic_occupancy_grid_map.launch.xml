@@ -51,6 +51,7 @@
   <!--multi lidar pointclouds based method-->
   <group if="$(eval &quot;'$(var occupancy_grid_map_method)'=='multi_lidar_pointcloud_based_occupancy_grid_map'&quot;)">
     <include file="$(find-pkg-share probabilistic_occupancy_grid_map)/launch/multi_lidar_pointcloud_based_occupancy_grid_map.launch.py">
+      <arg name="input/obstacle_pointcloud" value="$(var input/obstacle_pointcloud)"/>
       <arg name="output" value="/perception/occupancy_grid_map/map"/>
       <arg name="use_intra_process" value="true"/>
       <arg name="use_multithread" value="true"/>

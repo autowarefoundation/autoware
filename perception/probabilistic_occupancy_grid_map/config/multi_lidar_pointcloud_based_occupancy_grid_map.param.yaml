@@ -1,0 +1,53 @@
+# sample grid map fusion parameters for sample sensor kit
+/**:
+    ros__parameters:
+      # shared parameters
+      shared_config:
+        map_frame: "map"
+        base_link_frame: "base_link"
+        # center of the grid map
+        gridmap_origin_frame: "base_link"
+
+        map_resolution: 0.5 # [m]
+        map_length_x: 150.0 # [m]
+        map_length_y: 150.0 # [m]
+
+      # each grid map parameters
+      ogm_creation_config:
+        height_filter:
+          use_height_filter: true
+          min_height: -1.0
+          max_height: 2.0
+        enable_single_frame_mode: true
+        # use sensor pointcloud to filter obstacle pointcloud
+        filter_obstacle_pointcloud_by_raw_pointcloud: true
+
+        grid_map_type: "OccupancyGridMapFixedBlindSpot"
+        OccupancyGridMapFixedBlindSpot:
+          distance_margin: 1.0
+        OccupancyGridMapProjectiveBlindSpot:
+          projection_dz_threshold: 0.01 # [m] for avoiding null division
+          obstacle_separation_threshold: 1.0 # [m] fill the interval between obstacles with unknown for this length
+          pub_debug_grid: false
+
+      # parameter settings for ogm fusion
+      fusion_config:
+        # following parameters are shared: map_frame, base_link_frame, gridmap_origin_frame, map_resolution, map_length
+        # Setting1: tune ogm creation parameters
+        raw_pointcloud_topics: # put each sensor's pointcloud topic
+          - "/sensing/lidar/top/pointcloud"
+          - "/sensing/lidar/left/pointcloud"
+          - "/sensing/lidar/right/pointcloud"
+        fusion_input_ogm_topics:
+          - "/perception/occupancy_grid_map/top_lidar/map"
+          - "/perception/occupancy_grid_map/left_lidar/map"
+          - "/perception/occupancy_grid_map/right_lidar/map"
+        # reliability of each sensor (0.0 ~ 1.0) only work with "log-odds" and "dempster-shafer"
+        input_ogm_reliabilities:
+          - 1.0
+          - 0.6
+          - 0.6
+
+      # Setting2: tune ogm fusion parameters
+      ## choose fusion method from ["overwrite", "log-odds", "dempster-shafer"]
+        fusion_method: "overwrite"
