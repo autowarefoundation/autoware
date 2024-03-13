@@ -442,6 +442,9 @@ private:
   //! unavailable)
   std::optional<std::pair<lanelet::Id, lanelet::ConstPoint3d>> tl_id_and_point_;
   std::optional<TrafficSignalStamped> last_tl_valid_observation_{std::nullopt};
+
+  //! save previous priority level to detect change from NotPrioritized to Prioritized
+  TrafficPrioritizedLevel previous_prioritized_level_{TrafficPrioritizedLevel::NOT_PRIORITIZED};
   /** @} */
 
 private:
@@ -548,7 +551,7 @@ private:
    * To simplify modifyPathVelocityDetail(), this function is used at first
    */
   intersection::Result<BasicData, intersection::InternalError> prepareIntersectionData(
-    const bool is_prioritized, PathWithLaneId * path);
+    PathWithLaneId * path);
 
   /**
    * @brief find the associated stopline road marking of assigned lanelet

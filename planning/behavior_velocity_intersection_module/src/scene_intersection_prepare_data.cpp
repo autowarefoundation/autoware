@@ -166,7 +166,7 @@ using intersection::make_ok;
 using intersection::Result;
 
 Result<IntersectionModule::BasicData, intersection::InternalError>
-IntersectionModule::prepareIntersectionData(const bool is_prioritized, PathWithLaneId * path)
+IntersectionModule::prepareIntersectionData(PathWithLaneId * path)
 {
   const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
   const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
@@ -174,6 +174,18 @@ IntersectionModule::prepareIntersectionData(const bool is_prioritized, PathWithL
   const double baselink2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
   const auto footprint = planner_data_->vehicle_info_.createFootprint(0.0, 0.0);
   const auto & current_pose = planner_data_->current_odometry->pose;
+
+  // ==========================================================================================
+  // update traffic light information
+  // updateTrafficSignalObservation() must be called at first because other traffic signal
+  // fuctions use last_valid_observation_
+  // ==========================================================================================
+  // save previous information before calling updateTrafficSignalObservation()
+  previous_prioritized_level_ = getTrafficPrioritizedLevel();
+  updateTrafficSignalObservation();
+  const auto traffic_prioritized_level = getTrafficPrioritizedLevel();
+  const bool is_prioritized =
+    traffic_prioritized_level == TrafficPrioritizedLevel::FULLY_PRIORITIZED;
 
   // spline interpolation
   const auto interpolated_path_info_opt = util::generateInterpolatedPath(
@@ -264,13 +276,7 @@ IntersectionModule::prepareIntersectionData(const bool is_prioritized, PathWithL
       planner_data_->occupancy_grid->info.resolution);
   }
 
-  // ==========================================================================================
-  // update traffic light information
-  // updateTrafficSignalObservation() must be called at first to because other traffic signal
-  // fuctions use last_valid_observation_
-  // ==========================================================================================
   if (has_traffic_light_) {
-    updateTrafficSignalObservation();
     const bool is_green_solid_on = isGreenSolidOn();
     if (is_green_solid_on && !initial_green_light_observed_time_) {
       const auto assigned_lane_begin_point = assigned_lanelet.centerline().front();

@@ -63,10 +63,23 @@ IntersectionModule::getOcclusionStatus(
      !is_amber_or_red_or_no_tl_info_ever)
       ? detectOcclusion(interpolated_path_info)
       : NotOccluded{};
-  occlusion_stop_state_machine_.setStateWithMarginTime(
-    std::holds_alternative<NotOccluded>(occlusion_status) ? StateMachine::State::GO
-                                                          : StateMachine::STOP,
-    logger_.get_child("occlusion_stop"), *clock_);
+
+  // ==========================================================================================
+  // if the traffic light changed from green to yellow/red, hysteresis time for occlusion is
+  // unnecessary
+  // ==========================================================================================
+  const auto transition_to_prioritized =
+    (previous_prioritized_level_ == TrafficPrioritizedLevel::NOT_PRIORITIZED &&
+     traffic_prioritized_level != TrafficPrioritizedLevel::NOT_PRIORITIZED);
+  if (transition_to_prioritized) {
+    occlusion_stop_state_machine_.setState(StateMachine::State::GO);
+  } else {
+    occlusion_stop_state_machine_.setStateWithMarginTime(
+      std::holds_alternative<NotOccluded>(occlusion_status) ? StateMachine::State::GO
+                                                            : StateMachine::STOP,
+      logger_.get_child("occlusion_stop"), *clock_);
+  }
+
   const bool is_occlusion_cleared_with_margin =
     (occlusion_stop_state_machine_.getState() == StateMachine::State::GO);  // module's detection
   // distinguish if ego detected occlusion or RTC detects occlusion

@@ -148,16 +148,17 @@ static std::string formatOcclusionType(const IntersectionModule::OcclusionType &
 intersection::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   PathWithLaneId * path, [[maybe_unused]] StopReason * stop_reason)
 {
-  const auto traffic_prioritized_level = getTrafficPrioritizedLevel();
-  const bool is_prioritized =
-    traffic_prioritized_level == TrafficPrioritizedLevel::FULLY_PRIORITIZED;
-
-  const auto prepare_data = prepareIntersectionData(is_prioritized, path);
+  const auto prepare_data = prepareIntersectionData(path);
   if (!prepare_data) {
     return prepare_data.err();
   }
   const auto [interpolated_path_info, intersection_stoplines, path_lanelets] = prepare_data.ok();
   const auto & intersection_lanelets = intersection_lanelets_.value();
+
+  // NOTE: this level is based on the updateTrafficSignalObservation() which is latest
+  const auto traffic_prioritized_level = getTrafficPrioritizedLevel();
+  const bool is_prioritized =
+    traffic_prioritized_level == TrafficPrioritizedLevel::FULLY_PRIORITIZED;
 
   // ==========================================================================================
   // stuck detection
