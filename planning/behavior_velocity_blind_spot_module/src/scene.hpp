@@ -106,22 +106,17 @@ public:
 
 private:
   const int64_t lane_id_;
+  const PlannerParam planner_param_;
   TurnDirection turn_direction_{TurnDirection::INVALID};
   bool is_over_pass_judge_line_{false};
-  std::optional<lanelet::ConstLanelet> first_conflicting_lanelet_{std::nullopt};
+  std::optional<lanelet::ConstLanelet> sibling_straight_lanelet_{std::nullopt};
 
   // Parameter
-  PlannerParam planner_param_;
 
   std::optional<InterpolatedPathInfo> generateInterpolatedPathInfo(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path) const;
 
-  std::optional<lanelet::ConstLanelet> getFirstConflictingLanelet(
-    const InterpolatedPathInfo & interpolated_path_info) const;
-
-  std::optional<int> getFirstPointConflictingLanelets(
-    const InterpolatedPathInfo & interpolated_path_info,
-    const lanelet::ConstLanelets & lanelets) const;
+  std::optional<lanelet::ConstLanelet> getSiblingStraightLanelet() const;
 
   /**
    * @brief Generate a stop line and insert it into the path.

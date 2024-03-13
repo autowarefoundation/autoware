@@ -68,11 +68,11 @@ BlindSpotModule::BlindSpotModule(
   const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock),
   lane_id_(lane_id),
+  planner_param_{planner_param},
   turn_direction_(TurnDirection::INVALID),
   is_over_pass_judge_line_(false)
 {
   velocity_factor_.init(PlanningBehavior::REAR_CHECK);
-  planner_param_ = planner_param;
 
   const auto & assigned_lanelet =
     planner_data->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id);
@@ -91,7 +91,7 @@ bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
 
   const auto input_path = *path;
 
-  StateMachine::State current_state = state_machine_.getState();
+  const auto current_state = state_machine_.getState();
   RCLCPP_DEBUG(
     logger_, "lane_id = %ld, state = %s", lane_id_, StateMachine::toString(current_state).c_str());
 
@@ -110,12 +110,8 @@ bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   }
   const auto & interpolated_path_info = interpolated_path_info_opt.value();
 
-  if (!first_conflicting_lanelet_) {
-    first_conflicting_lanelet_ = getFirstConflictingLanelet(interpolated_path_info);
-  }
-  if (!first_conflicting_lanelet_) {
-    RCLCPP_DEBUG(logger_, "[BlindSpotModule::run] failed to find first conflicting lanelet");
-    return false;
+  if (!sibling_straight_lanelet_) {
+    sibling_straight_lanelet_ = getSiblingStraightLanelet();
   }
 
   const auto stoplines_idx_opt = generateStopLine(interpolated_path_info, path);
@@ -263,57 +259,24 @@ std::optional<InterpolatedPathInfo> BlindSpotModule::generateInterpolatedPathInf
   return interpolated_path_info;
 }
 
-std::optional<lanelet::ConstLanelet> BlindSpotModule::getFirstConflictingLanelet(
-  const InterpolatedPathInfo & interpolated_path_info) const
+std::optional<lanelet::ConstLanelet> BlindSpotModule::getSiblingStraightLanelet() const
 {
-  if (!interpolated_path_info.lane_id_interval) {
-    return std::nullopt;
-  }
-
   const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
   const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
 
   const auto assigned_lane = lanelet_map_ptr->laneletLayer.get(lane_id_);
-  const auto conflicting_lanes =
-    lanelet::utils::getConflictingLanelets(routing_graph_ptr, assigned_lane);
-  lanelet::ConstLanelets conflicting_ex_sibling_lanes{};
-  lanelet::ConstLanelets sibling_lanes{};
   for (const auto & prev : routing_graph_ptr->previous(assigned_lane)) {
     for (const auto & following : routing_graph_ptr->following(prev)) {
-      if (!lanelet::utils::contains(sibling_lanes, following)) {
-        sibling_lanes.push_back(following);
-      }
-    }
-  }
-  for (const auto & conflicting : conflicting_lanes) {
-    if (!lanelet::utils::contains(sibling_lanes, conflicting)) {
-      conflicting_ex_sibling_lanes.push_back(conflicting);
-    }
-  }
-
-  const auto [lane_start, lane_end] = interpolated_path_info.lane_id_interval.value();
-  const size_t vehicle_length_idx = static_cast<size_t>(
-    planner_data_->vehicle_info_.max_longitudinal_offset_m / interpolated_path_info.ds);
-  const size_t start =
-    static_cast<size_t>(std::max<int>(0, static_cast<int>(lane_start) - vehicle_length_idx));
-  const auto local_footprint = planner_data_->vehicle_info_.createFootprint(0.0, 0.0);
-  for (size_t i = start; i <= lane_end; ++i) {
-    const auto & pose = interpolated_path_info.path.points.at(i).point.pose;
-    const auto path_footprint = tier4_autoware_utils::transformVector(
-      local_footprint, tier4_autoware_utils::pose2transform(pose));
-    for (const auto & conflicting : conflicting_ex_sibling_lanes) {
-      const auto area2d = conflicting.polygon2d().basicPolygon();
-      const bool is_in_polygon = bg::intersects(area2d, path_footprint);
-      if (is_in_polygon) {
-        return std::make_optional<lanelet::ConstLanelet>(conflicting);
+      if (std::string(following.attributeOr("turn_direction", "else")) == "straight") {
+        return following;
       }
     }
   }
   return std::nullopt;
 }
 
-static std::optional<size_t> getFirstPointInsidePolygonByFootprint(
-  const lanelet::CompoundPolygon2d & polygon, const InterpolatedPathInfo & interpolated_path_info,
+static std::optional<size_t> getFirstPointIntersectsLineByFootprint(
+  const lanelet::ConstLineString2d & line, const InterpolatedPathInfo & interpolated_path_info,
   const tier4_autoware_utils::LinearRing2d & footprint, const double vehicle_length)
 {
   const auto & path_ip = interpolated_path_info.path;
@@ -321,12 +284,12 @@ static std::optional<size_t> getFirstPointInsidePolygonByFootprint(
   const size_t vehicle_length_idx = static_cast<size_t>(vehicle_length / interpolated_path_info.ds);
   const size_t start =
     static_cast<size_t>(std::max<int>(0, static_cast<int>(lane_start) - vehicle_length_idx));
-  const auto area_2d = polygon.basicPolygon();
+  const auto line2d = line.basicLineString();
   for (auto i = start; i <= lane_end; ++i) {
     const auto & base_pose = path_ip.points.at(i).point.pose;
     const auto path_footprint = tier4_autoware_utils::transformVector(
       footprint, tier4_autoware_utils::pose2transform(base_pose));
-    if (bg::intersects(path_footprint, area_2d)) {
+    if (bg::intersects(path_footprint, line2d)) {
       return std::make_optional<size_t>(i);
     }
   }
@@ -389,21 +352,47 @@ std::optional<std::pair<size_t, size_t>> BlindSpotModule::generateStopLine(
   const int margin_idx_dist =
     std::ceil(planner_param_.stop_line_margin / interpolated_path_info.ds);
 
-  const auto first_conflict_idx_ip_opt = getFirstPointInsidePolygonByFootprint(
-    first_conflicting_lanelet_.value().polygon2d(), interpolated_path_info,
-    planner_data_->vehicle_info_.createFootprint(0.0, 0.0),
-    planner_data_->vehicle_info_.max_longitudinal_offset_m);
-  if (!first_conflict_idx_ip_opt) {
-    return std::nullopt;
-  }
-  const int first_conflict_idx_ip = static_cast<int>(first_conflict_idx_ip_opt.value());
+  const auto & path_ip = interpolated_path_info.path;
 
-  const size_t stop_idx_default_ip =
-    static_cast<size_t>(std::max(first_conflict_idx_ip - margin_idx_dist, 0));
-  const size_t stop_idx_critical_ip = static_cast<size_t>(first_conflict_idx_ip);
+  size_t stop_idx_default_ip = 0;
+  size_t stop_idx_critical_ip = 0;
+  if (sibling_straight_lanelet_) {
+    const auto sibling_straight_lanelet = sibling_straight_lanelet_.value();
+    const auto turn_boundary_line = turn_direction_ == TurnDirection::LEFT
+                                      ? sibling_straight_lanelet.leftBound()
+                                      : sibling_straight_lanelet.rightBound();
+    const auto first_conflict_idx_ip_opt = getFirstPointIntersectsLineByFootprint(
+      lanelet::utils::to2D(turn_boundary_line), interpolated_path_info,
+      planner_data_->vehicle_info_.createFootprint(0.0, 0.0),
+      planner_data_->vehicle_info_.max_longitudinal_offset_m);
+    if (!first_conflict_idx_ip_opt) {
+      return std::nullopt;
+    }
+    const int first_conflict_idx_ip = static_cast<int>(first_conflict_idx_ip_opt.value());
+
+    stop_idx_default_ip = static_cast<size_t>(std::max(first_conflict_idx_ip - margin_idx_dist, 0));
+    stop_idx_critical_ip = static_cast<size_t>(first_conflict_idx_ip);
+  } else {
+    // the entry point of the assigned lane
+    const auto & assigned_lanelet =
+      planner_data_->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id_);
+    const auto left_pt = assigned_lanelet.leftBound().front().basicPoint();
+    const auto right_pt = assigned_lanelet.rightBound().front().basicPoint();
+    const auto mid_pt = (left_pt + right_pt) / 2.0;
+    const geometry_msgs::msg::Point mid_point =
+      geometry_msgs::build<geometry_msgs::msg::Point>().x(mid_pt.x()).y(mid_pt.y()).z(mid_pt.z());
+    stop_idx_default_ip = stop_idx_critical_ip =
+      motion_utils::findNearestSegmentIndex(path_ip.points, mid_point);
+    /*
+    // NOTE: it is not ambiguous when the curve starts on the left/right lanelet, so this module
+    inserts stopline at the beginning of the lanelet for baselink
+    stop_idx_default_ip = stop_idx_critical_ip = static_cast<size_t>(std::max<int>(0,
+    static_cast<int>(motion_utils::findNearestSegmentIndex(path_ip.points, mid_point)) -
+    baselink2front_dist));
+    */
+  }
 
   /* insert stop_point to use interpolated path*/
-  const auto & path_ip = interpolated_path_info.path;
   const auto stopline_idx_default_opt = insertPointIndex(
     path_ip.points.at(stop_idx_default_ip).point.pose, path,
     planner_data_->ego_nearest_dist_threshold, planner_data_->ego_nearest_yaw_threshold);
