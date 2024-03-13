@@ -13,13 +13,14 @@
 // limitations under the License.
 //
 //
-// v1.0 Yukihiro Saito
+// Author: v1.0 Yukihiro Saito
 //
 
 #ifndef MULTI_OBJECT_TRACKER__TRACKER__MODEL__UNKNOWN_TRACKER_HPP_
 #define MULTI_OBJECT_TRACKER__TRACKER__MODEL__UNKNOWN_TRACKER_HPP_
 
-#include "tracker_base.hpp"
+#include "multi_object_tracker/tracker/model/tracker_base.hpp"
+#include "multi_object_tracker/tracker/motion_model/cv_motion_model.hpp"
 
 #include <kalman_filter/kalman_filter.hpp>
 
@@ -30,30 +31,20 @@ private:
   rclcpp::Logger logger_;
 
 private:
-  KalmanFilter ekf_;
-  rclcpp::Time last_update_time_;
-  enum IDX {
-    X = 0,
-    Y = 1,
-    VX = 2,
-    VY = 3,
-  };
   struct EkfParams
   {
-    char dim_x = 4;
-    float q_cov_x;
-    float q_cov_y;
-    float q_cov_vx;
-    float q_cov_vy;
-    float p0_cov_vx;
-    float p0_cov_vy;
-    float r_cov_x;
-    float r_cov_y;
-    float p0_cov_x;
-    float p0_cov_y;
+    double r_cov_x;
+    double r_cov_y;
+    double r_cov_vx;
+    double r_cov_vy;
   } ekf_params_;
-  float max_vx_, max_vy_;
-  float z_;
+
+  double z_;
+
+private:
+  CVMotionModel motion_model_;
+  const char DIM = motion_model_.DIM;
+  using IDX = CVMotionModel::IDX;
 
 public:
   UnknownTracker(
@@ -61,10 +52,12 @@ public:
     const geometry_msgs::msg::Transform & self_transform);
 
   bool predict(const rclcpp::Time & time) override;
-  bool predict(const double dt, KalmanFilter & ekf) const;
   bool measure(
     const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
     const geometry_msgs::msg::Transform & self_transform) override;
+  autoware_auto_perception_msgs::msg::DetectedObject getUpdatingObject(
+    const autoware_auto_perception_msgs::msg::DetectedObject & object,
+    const geometry_msgs::msg::Transform & self_transform);
   bool measureWithPose(const autoware_auto_perception_msgs::msg::DetectedObject & object);
   bool measureWithShape(const autoware_auto_perception_msgs::msg::DetectedObject & object);
   bool getTrackedObject(

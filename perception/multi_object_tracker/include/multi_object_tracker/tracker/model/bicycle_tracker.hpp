@@ -20,6 +20,7 @@
 #define MULTI_OBJECT_TRACKER__TRACKER__MODEL__BICYCLE_TRACKER_HPP_
 
 #include "multi_object_tracker/tracker/model/tracker_base.hpp"
+#include "multi_object_tracker/tracker/motion_model/bicycle_motion_model.hpp"
 
 #include <kalman_filter/kalman_filter.hpp>
 
@@ -30,36 +31,15 @@ private:
   rclcpp::Logger logger_;
 
 private:
-  KalmanFilter ekf_;
-  rclcpp::Time last_update_time_;
-  enum IDX { X = 0, Y = 1, YAW = 2, VEL = 3, SLIP = 4 };
   struct EkfParams
   {
-    char dim_x = 5;
-    float q_stddev_acc_long;
-    float q_stddev_acc_lat;
-    float q_stddev_yaw_rate_min;
-    float q_stddev_yaw_rate_max;
-    float q_cov_slip_rate_min;
-    float q_cov_slip_rate_max;
-    float q_max_slip_angle;
-    float p0_cov_vel;
-    float p0_cov_slip;
-    float r_cov_x;
-    float r_cov_y;
-    float r_cov_yaw;
-    float p0_cov_x;
-    float p0_cov_y;
-    float p0_cov_yaw;
+    double r_cov_x;
+    double r_cov_y;
+    double r_cov_yaw;
   } ekf_params_;
 
-  double max_vel_;
-  double max_slip_;
-  double lf_;
-  double lr_;
-  float z_;
+  double z_;
 
-private:
   struct BoundingBox
   {
     double length;
@@ -67,7 +47,11 @@ private:
     double height;
   };
   BoundingBox bounding_box_;
-  BoundingBox last_input_bounding_box_;
+
+private:
+  BicycleMotionModel motion_model_;
+  const char DIM = motion_model_.DIM;
+  using IDX = BicycleMotionModel::IDX;
 
 public:
   BicycleTracker(
@@ -75,10 +59,12 @@ public:
     const geometry_msgs::msg::Transform & self_transform);
 
   bool predict(const rclcpp::Time & time) override;
-  bool predict(const double dt, KalmanFilter & ekf) const;
   bool measure(
     const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
     const geometry_msgs::msg::Transform & self_transform) override;
+  autoware_auto_perception_msgs::msg::DetectedObject getUpdatingObject(
+    const autoware_auto_perception_msgs::msg::DetectedObject & object,
+    const geometry_msgs::msg::Transform & self_transform);
   bool measureWithPose(const autoware_auto_perception_msgs::msg::DetectedObject & object);
   bool measureWithShape(const autoware_auto_perception_msgs::msg::DetectedObject & object);
   bool getTrackedObject(

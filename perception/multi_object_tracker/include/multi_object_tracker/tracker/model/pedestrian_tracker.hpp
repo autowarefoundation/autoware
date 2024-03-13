@@ -20,6 +20,7 @@
 #define MULTI_OBJECT_TRACKER__TRACKER__MODEL__PEDESTRIAN_TRACKER_HPP_
 
 #include "multi_object_tracker/tracker/model/tracker_base.hpp"
+#include "multi_object_tracker/tracker/motion_model/ctrv_motion_model.hpp"
 
 #include <kalman_filter/kalman_filter.hpp>
 
@@ -30,38 +31,15 @@ private:
   rclcpp::Logger logger_;
 
 private:
-  KalmanFilter ekf_;
-  rclcpp::Time last_update_time_;
-  enum IDX {
-    X = 0,
-    Y = 1,
-    YAW = 2,
-    VX = 3,
-    WZ = 4,
-  };
   struct EkfParams
   {
-    char dim_x = 5;
-    float q_cov_x;
-    float q_cov_y;
-    float q_cov_yaw;
-    float q_cov_wz;
-    float q_cov_vx;
-    float p0_cov_vx;
-    float p0_cov_wz;
-    float r_cov_x;
-    float r_cov_y;
-    float r_cov_yaw;
-    float p0_cov_x;
-    float p0_cov_y;
-    float p0_cov_yaw;
+    double r_cov_x;
+    double r_cov_y;
+    double r_cov_yaw;
   } ekf_params_;
 
-  double max_vx_;
-  double max_wz_;
-  float z_;
+  double z_;
 
-private:
   struct BoundingBox
   {
     double length;
@@ -76,16 +54,23 @@ private:
   BoundingBox bounding_box_;
   Cylinder cylinder_;
 
+private:
+  CTRVMotionModel motion_model_;
+  const char DIM = motion_model_.DIM;
+  using IDX = CTRVMotionModel::IDX;
+
 public:
   PedestrianTracker(
     const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
     const geometry_msgs::msg::Transform & self_transform);
 
   bool predict(const rclcpp::Time & time) override;
-  bool predict(const double dt, KalmanFilter & ekf) const;
   bool measure(
     const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
     const geometry_msgs::msg::Transform & self_transform) override;
+  autoware_auto_perception_msgs::msg::DetectedObject getUpdatingObject(
+    const autoware_auto_perception_msgs::msg::DetectedObject & object,
+    const geometry_msgs::msg::Transform & self_transform);
   bool measureWithPose(const autoware_auto_perception_msgs::msg::DetectedObject & object);
   bool measureWithShape(const autoware_auto_perception_msgs::msg::DetectedObject & object);
   bool getTrackedObject(

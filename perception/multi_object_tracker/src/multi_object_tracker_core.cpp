@@ -256,7 +256,7 @@ void MultiObjectTracker::onMeasurement(
     return;
   }
   /* tracker prediction */
-  rclcpp::Time measurement_time = input_objects_msg->header.stamp;
+  const rclcpp::Time measurement_time = input_objects_msg->header.stamp;
   for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr) {
     (*itr)->predict(measurement_time);
   }
@@ -330,7 +330,7 @@ std::shared_ptr<Tracker> MultiObjectTracker::createNewTracker(
 
 void MultiObjectTracker::onTimer()
 {
-  rclcpp::Time current_time = this->now();
+  const rclcpp::Time current_time = this->now();
   const auto self_transform =
     getTransformAnonymous(tf_buffer_, world_frame_id_, "base_link", current_time);
   if (!self_transform) {
@@ -373,10 +373,10 @@ void MultiObjectTracker::sanitizeTracker(
   /* delete collision tracker */
   for (auto itr1 = list_tracker.begin(); itr1 != list_tracker.end(); ++itr1) {
     autoware_auto_perception_msgs::msg::TrackedObject object1;
-    (*itr1)->getTrackedObject(time, object1);
+    if (!(*itr1)->getTrackedObject(time, object1)) continue;
     for (auto itr2 = std::next(itr1); itr2 != list_tracker.end(); ++itr2) {
       autoware_auto_perception_msgs::msg::TrackedObject object2;
-      (*itr2)->getTrackedObject(time, object2);
+      if (!(*itr2)->getTrackedObject(time, object2)) continue;
       const double distance = std::hypot(
         object1.kinematics.pose_with_covariance.pose.position.x -
           object2.kinematics.pose_with_covariance.pose.position.x,
@@ -457,12 +457,12 @@ void MultiObjectTracker::publish(const rclcpp::Time & time)
   for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr) {
     if (!shouldTrackerPublish(*itr)) {  // for debug purpose
       autoware_auto_perception_msgs::msg::TrackedObject object;
-      (*itr)->getTrackedObject(time, object);
+      if (!(*itr)->getTrackedObject(time, object)) continue;
       tentative_objects_msg.objects.push_back(object);
       continue;
     }
     autoware_auto_perception_msgs::msg::TrackedObject object;
-    (*itr)->getTrackedObject(time, object);
+    if (!(*itr)->getTrackedObject(time, object)) continue;
     output_msg.objects.push_back(object);
   }
 
