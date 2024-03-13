@@ -5,3 +5,4 @@
       use_vehicle_reference_yaw: false
       use_vehicle_reference_shape_size: false
       use_boost_bbox_optimizer: false
+      fix_filtered_objects_label_to_unknown: true

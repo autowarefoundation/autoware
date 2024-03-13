@@ -39,14 +39,15 @@ bool ShapeEstimator::estimateShapeAndPose(
   autoware_auto_perception_msgs::msg::Shape shape;
   geometry_msgs::msg::Pose pose;
   // estimate shape
+  bool reverse_to_unknown = false;
   if (!estimateOriginalShapeAndPose(label, cluster, ref_yaw_info, shape, pose)) {
-    return false;
+    reverse_to_unknown = true;
   }
 
   // rule based filter
   if (use_filter_) {
     if (!applyFilter(label, shape, pose)) {
-      return false;
+      reverse_to_unknown = true;
     }
   }
 
@@ -54,10 +55,15 @@ bool ShapeEstimator::estimateShapeAndPose(
   if (use_corrector_) {
     bool use_reference_yaw = ref_yaw_info ? true : false;
     if (!applyCorrector(label, use_reference_yaw, ref_shape_size_info, shape, pose)) {
-      return false;
+      reverse_to_unknown = true;
     }
   }
-
+  if (reverse_to_unknown) {
+    estimateOriginalShapeAndPose(Label::UNKNOWN, cluster, ref_yaw_info, shape, pose);
+    shape_output = shape;
+    pose_output = pose;
+    return false;
+  }
   shape_output = shape;
   pose_output = pose;
   return true;
