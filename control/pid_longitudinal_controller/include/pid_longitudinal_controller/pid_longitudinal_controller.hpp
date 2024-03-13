@@ -25,6 +25,7 @@
 #include "tf2/utils.h"
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
+#include "tier4_autoware_utils/ros/marker_helper.hpp"
 #include "trajectory_follower_base/longitudinal_controller_base.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
@@ -39,6 +40,7 @@
 #include "nav_msgs/msg/odometry.hpp"
 #include "tf2_msgs/msg/tf_message.hpp"
 #include "tier4_debug_msgs/msg/float32_multi_array_stamped.hpp"
+#include "visualization_msgs/msg/marker.hpp"
 
 #include <deque>
 #include <memory>
@@ -50,6 +52,11 @@
 namespace autoware::motion::control::pid_longitudinal_controller
 {
 using autoware_adapi_v1_msgs::msg::OperationModeState;
+using tier4_autoware_utils::createDefaultMarker;
+using tier4_autoware_utils::createMarkerColor;
+using tier4_autoware_utils::createMarkerScale;
+using visualization_msgs::msg::Marker;
+
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
 
 /// \class PidLongitudinalController
@@ -97,6 +104,7 @@ private:
   // ros variables
   rclcpp::Publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr m_pub_slope;
   rclcpp::Publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr m_pub_debug;
+  rclcpp::Publisher<Marker>::SharedPtr m_pub_stop_reason_marker;
 
   rclcpp::Node::OnSetParametersCallbackHandle::SharedPtr m_set_param_res;
   rcl_interfaces::msg::SetParametersResult paramCallback(
@@ -109,7 +117,9 @@ private:
   OperationModeState m_current_operation_mode;
 
   // vehicle info
-  double m_wheel_base;
+  double m_wheel_base{0.0};
+  double m_vehicle_width{0.0};
+  double m_front_overhang{0.0};
   bool m_prev_vehicle_is_under_control{false};
   std::shared_ptr<rclcpp::Time> m_under_control_starting_time{nullptr};
 

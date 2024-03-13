@@ -39,6 +39,8 @@ PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
   m_longitudinal_ctrl_period = node.get_parameter("ctrl_period").as_double();
 
   m_wheel_base = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo().wheel_base_m;
+  m_vehicle_width = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo().vehicle_width_m;
+  m_front_overhang = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo().front_overhang_m;
 
   // parameters for delay compensation
   m_delay_compensation_time = node.declare_parameter<double>("delay_compensation_time");  // [s]
@@ -204,6 +206,7 @@ PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
     "~/output/slope_angle", rclcpp::QoS{1});
   m_pub_debug = node.create_publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>(
     "~/output/longitudinal_diagnostic", rclcpp::QoS{1});
+  m_pub_stop_reason_marker = node.create_publisher<Marker>("~/output/stop_reason", rclcpp::QoS{1});
 
   // set parameter callback
   m_set_param_res = node.add_on_set_parameters_callback(
@@ -597,6 +600,16 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
   const bool keep_stopped_condition = std::fabs(current_vel) < vel_epsilon &&
                                       m_enable_keep_stopped_until_steer_convergence &&
                                       !lateral_sync_data_.is_steer_converged;
+  if (keep_stopped_condition) {
+    auto marker = createDefaultMarker(
+      "map", clock_->now(), "stop_reason", 0, Marker::TEXT_VIEW_FACING,
+      createMarkerScale(0.0, 0.0, 1.0), createMarkerColor(1.0, 1.0, 1.0, 0.999));
+    marker.pose = tier4_autoware_utils::calcOffsetPose(
+      m_current_kinematic_state.pose.pose, m_wheel_base + m_front_overhang,
+      m_vehicle_width / 2 + 2.0, 1.5);
+    marker.text = "steering not\nconverged";
+    m_pub_stop_reason_marker->publish(marker);
+  }
 
   const bool stopping_condition = stop_dist < p.stopping_state_stop_dist;
 
@@ -662,7 +675,6 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     if (emergency_condition) {
       return changeState(ControlState::EMERGENCY);
     }
-
     if (!is_under_control && stopped_condition && keep_stopped_condition) {
       // NOTE: When the ego is stopped on manual driving, since the driving state may transit to
       //       autonomous, keep_stopped_condition should be checked.
@@ -692,7 +704,6 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     if (emergency_condition) {
       return changeState(ControlState::EMERGENCY);
     }
-
     if (stopped_condition) {
       return changeState(ControlState::STOPPED);
     }
