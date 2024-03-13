@@ -139,7 +139,8 @@ void DualReturnOutlierFilterComponent::filter(
     }
   }
 
-  uint32_t horizontal_res = static_cast<uint32_t>((max_azimuth - min_azimuth) / horizontal_bins);
+  uint32_t horizontal_resolution =
+    static_cast<uint32_t>((max_azimuth - min_azimuth) / horizontal_bins);
 
   pcl::PointCloud<PointXYZIRADRT>::Ptr pcl_output(new pcl::PointCloud<PointXYZIRADRT>);
   pcl_output->points.reserve(pcl_input->points.size());
@@ -231,7 +232,8 @@ void DualReturnOutlierFilterComponent::filter(
         continue;
       }
       while ((uint)deleted_azimuths[current_deleted_index] <
-               ((i + static_cast<uint>(min_azimuth / horizontal_res) + 1) * horizontal_res) &&
+               ((i + static_cast<uint>(min_azimuth / horizontal_resolution) + 1) *
+                horizontal_resolution) &&
              current_deleted_index < (deleted_azimuths.size() - 1)) {
         noise_frequency[i] = noise_frequency[i] + 1;
         current_deleted_index++;
@@ -240,7 +242,8 @@ void DualReturnOutlierFilterComponent::filter(
         while ((temp_segment.points[current_temp_segment_index].azimuth < 0.f
                   ? 0.f
                   : temp_segment.points[current_temp_segment_index].azimuth) <
-                 ((i + 1 + static_cast<uint>(min_azimuth / horizontal_res)) * horizontal_res) &&
+                 ((i + 1 + static_cast<uint>(min_azimuth / horizontal_resolution)) *
+                  horizontal_resolution) &&
                current_temp_segment_index < (temp_segment.points.size() - 1)) {
           if (noise_frequency[i] < weak_first_local_noise_threshold_) {
             pcl_output->points.push_back(temp_segment.points[current_temp_segment_index]);
