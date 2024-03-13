@@ -1,9 +1,0 @@
-{
-  "ignorePaths": [
-    "**/perception/**",
-    "sensing/tier4_pcl_extensions/include/**",
-    "perception/bytetrack/lib/**"
-  ],
-  "ignoreRegExpList": [],
-  "words": ["dltype", "tvmgen"]
-}

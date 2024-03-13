@@ -38,6 +38,7 @@ bool ByteTrack::do_inference(ObjectArray & objects)
     bytetrack_objects.emplace_back(bytetrack_obj);
   }
 
+  // cspell: ignore stracks tlwh
   // Update tracker
   std::vector<STrack> output_stracks = tracker_->update(bytetrack_objects);
 

@@ -1,0 +1,5 @@
+{
+  "ignorePaths": ["perception/bytetrack/lib/**"],
+  "ignoreRegExpList": [],
+  "words": ["dltype", "tvmgen"]
+}
