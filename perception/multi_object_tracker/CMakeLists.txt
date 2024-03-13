@@ -26,6 +26,7 @@ set(MULTI_OBJECT_TRACKER_SRC
   src/data_association/mu_successive_shortest_path/mu_successive_shortest_path_wrapper.cpp
   src/tracker/motion_model/motion_model_base.cpp
   src/tracker/motion_model/bicycle_motion_model.cpp
+  # cspell: ignore ctrv
   src/tracker/motion_model/ctrv_motion_model.cpp
   src/tracker/motion_model/cv_motion_model.cpp
   src/tracker/model/tracker_base.cpp

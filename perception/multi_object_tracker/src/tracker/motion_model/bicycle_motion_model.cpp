@@ -28,6 +28,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+// cspell: ignore CTRV
 // Bicycle CTRV motion model
 // CTRV : Constant Turn Rate and constant Velocity
 
