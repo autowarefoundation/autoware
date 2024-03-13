@@ -16,4 +16,7 @@ sudo apt-get update
 
 # Install ccache
 sudo apt-get install -y ccache
+
+# Add ccache to PATH
+echo 'export PATH="/usr/lib/ccache/:$PATH"' >> ~/.bashrc
 ```

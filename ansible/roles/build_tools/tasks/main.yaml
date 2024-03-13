@@ -4,3 +4,11 @@
     name: ccache
     state: latest
     update_cache: true
+
+- name: Ensure ccache is added to PATH
+  ansible.builtin.lineinfile:
+    dest: ~/.bashrc
+    line: export PATH="/usr/lib/ccache/:$PATH"
+    state: present
+    create: true
+    mode: "0644"
