@@ -73,7 +73,8 @@ jobs:
             *.args.BASE_IMAGE=${{ env[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
             *.args.LIB_DIR=${{ matrix.lib_dir }}
-          tag-suffix: ${{ matrix.additional-tag-suffix }}-arm64
+          tag-suffix: ${{ matrix.additional-tag-suffix }}
+          tag-arch: arm64
           tag-prefix: ${{ env.rosdistro }}
           allow-push: true
 
