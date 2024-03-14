@@ -119,9 +119,10 @@ build_images() {
         --set "*.args.BASE_IMAGE=$base_image" \
         --set "*.args.SETUP_ARGS=$setup_args" \
         --set "*.args.LIB_DIR=$lib_dir" \
-        --set "devel.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-devel$image_name_suffix" \
-        --set "prebuilt.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-prebuilt$image_name_suffix" \
-        --set "runtime.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-runtime$image_name_suffix" \
+        --set "base.tags=ghcr.io/autowarefoundation/autoware:latest-base" \
+        --set "devel.tags=ghcr.io/autowarefoundation/autoware:latest-devel$image_name_suffix" \
+        --set "prebuilt.tags=ghcr.io/autowarefoundation/autoware:latest-prebuilt$image_name_suffix" \
+        --set "runtime.tags=ghcr.io/autowarefoundation/autoware:latest-runtime$image_name_suffix" \
         "${targets[@]}"
     set +x
 }
