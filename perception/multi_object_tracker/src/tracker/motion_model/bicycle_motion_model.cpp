@@ -317,7 +317,7 @@ bool BicycleMotionModel::predictStateStep(const double dt, KalmanFilter & ekf) c
 
   // Current state vector X t
   Eigen::MatrixXd X_t(DIM, 1);
-  getStateVector(X_t);
+  ekf.getX(X_t);
 
   const double cos_yaw = std::cos(X_t(IDX::YAW) + X_t(IDX::SLIP));
   const double sin_yaw = std::sin(X_t(IDX::YAW) + X_t(IDX::SLIP));

@@ -441,7 +441,7 @@ inline bool MultiObjectTracker::shouldTrackerPublish(
   return true;
 }
 
-void MultiObjectTracker::publish(const rclcpp::Time & time)
+void MultiObjectTracker::publish(const rclcpp::Time & time) const
 {
   const auto subscriber_count = tracked_objects_pub_->get_subscription_count() +
                                 tracked_objects_pub_->get_intra_process_subscription_count();

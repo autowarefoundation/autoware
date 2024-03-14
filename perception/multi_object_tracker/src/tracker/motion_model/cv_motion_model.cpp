@@ -209,7 +209,7 @@ bool CVMotionModel::predictStateStep(const double dt, KalmanFilter & ekf) const
 
   // Current state vector X t
   Eigen::MatrixXd X_t(DIM, 1);
-  getStateVector(X_t);
+  ekf.getX(X_t);
 
   // Predict state vector X t+1
   Eigen::MatrixXd X_next_t(DIM, 1);  // predicted state
