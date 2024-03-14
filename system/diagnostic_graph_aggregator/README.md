@@ -53,20 +53,27 @@ This feature breaks the generality of the graph and may be changed to a plugin o
 
 ## Examples
 
-- [example_0.yaml](./example/example_0.yaml)
-- [example_1.yaml](./example/example_1.yaml)
-- [example_2.yaml](./example/example_2.yaml)
+This is an example of a diagnostic graph configuration. The configuration can be split into multiple files.
+
+- [main.yaml](./example/graph/main.yaml)
+- [module1.yaml](./example/graph/module1.yaml)
+- [module2.yaml](./example/graph/module2.yaml)
 
 ```bash
-ros2 launch diagnostic_graph_aggregator example.launch.xml
+ros2 launch diagnostic_graph_aggregator example-main.launch.xml
+```
+
+You can reuse the graph by making partial edits. For example, disable hardware checks for simulation.
+
+- [edit.yaml](./example/graph/edit.yaml)
+
+```bash
+ros2 launch diagnostic_graph_aggregator example-edit.launch.xml
 ```
 
 ## Graph file format
 
-- [GraphFile](./doc/format/graph-file.md)
-- [Path](./doc/format/path.md)
-- [Node](./doc/format/node.md)
-  - [Diag](./doc/format/diag.md)
-  - [Unit](./doc/format/unit.md)
-  - [And](./doc/format/and.md)
-  - [Or](./doc/format/or.md)
+- [graph](./doc/format/graph.md)
+- [path](./doc/format/path.md)
+- [node](./doc/format/node.md)
+- [edit](./doc/format/edit.md)

@@ -1,0 +1,6 @@
+files:
+  - { path: $(find-pkg-share diagnostic_graph_aggregator)/example/graph/main.yaml }
+
+edits:
+  - path: /functions/obstacle_detection
+    type: remove
