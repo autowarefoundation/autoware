@@ -13,9 +13,9 @@ target "docker-metadata-action-visualizer" {}
 target "docker-metadata-action-simulator" {}
 
 target "base" {
-  inherits = ["docker-metadata-action-prebuilt"]
+  inherits = ["docker-metadata-action-base"]
   dockerfile = "docker/autoware-openadk/Dockerfile"
-  target = "prebuilt"
+  target = "base"
 }
 
 target "prebuilt" {
@@ -37,25 +37,25 @@ target "runtime" {
 }
 
 target "perception-localization" {
-  inherits = ["docker-metadata-action-runtime"]
+  inherits = ["docker-metadata-action-perception-localization"]
   dockerfile = "docker/autoware-openadk/services/perception-localization/Dockerfile"
   target = "perception-localization"
 }
 
 target "planning-control" {
-  inherits = ["docker-metadata-action-runtime"]
+  inherits = ["docker-metadata-action-planning-control"]
   dockerfile = "docker/autoware-openadk/services/planning-control/Dockerfile"
   target = "planning-control"
 }
 
 target "visualizer" {
-  inherits = ["docker-metadata-action-runtime"]
+  inherits = ["docker-metadata-action-visualizer"]
   dockerfile = "docker/autoware-openadk/services/visualizer/Dockerfile"
   target = "visualizer"
 }
 
 target "simulator" {
-  inherits = ["docker-metadata-action-runtime"]
+  inherits = ["docker-metadata-action-simulator"]
   dockerfile = "docker/autoware-openadk/services/simulator/Dockerfile"
   target = "simulator"
 }
