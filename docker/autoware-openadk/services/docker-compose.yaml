@@ -1,8 +1,8 @@
 version: '2.17'
 
 services:
-  simulator:
-    image: ghcr.io/oguzkaganozt/autoware-openadk:ces-simulator-aarch64
+  perception-localization:
+    image: ghcr.io/oguzkaganozt/autoware-openadk-modular:latest-perception-localization
     volumes:
       - /dev/shm:/dev/shm
     network_mode: "host"
