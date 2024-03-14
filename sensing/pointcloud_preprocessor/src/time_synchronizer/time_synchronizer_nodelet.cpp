@@ -374,6 +374,15 @@ void PointCloudDataSynchronizerComponent::publish()
   // publish transformed raw pointclouds
   for (const auto & e : transformed_raw_points) {
     if (e.second) {
+      if (debug_publisher_) {
+        const auto pipeline_latency_ms =
+          std::chrono::duration<double, std::milli>(
+            std::chrono::nanoseconds(
+              (this->get_clock()->now() - e.second->header.stamp).nanoseconds()))
+            .count();
+        debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+          "debug" + e.first + "/pipeline_latency_ms", pipeline_latency_ms);
+      }
       auto output = std::make_unique<sensor_msgs::msg::PointCloud2>(*e.second);
       transformed_raw_pc_publisher_map_[e.first]->publish(std::move(output));
     } else {
