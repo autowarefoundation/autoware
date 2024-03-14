@@ -66,6 +66,7 @@ jobs:
         uses: ./.github/actions/docker-build-and-push
         with:
           bake-target: autoware-openadk
+          bake-target-modular: autoware-openadk-modular
           build-args: |
             *.platform=linux/arm64
             *.args.ROS_DISTRO=${{ env.rosdistro }}

@@ -1,5 +1,5 @@
 ARG PLATFORM
-FROM ghcr.io/autowarefoundation/autoware-openadk:latest-base-${PLATFORM} as base
+FROM ghcr.io/autowarefoundation/autoware-openadk-modular:latest-base-${PLATFORM} as perception-localization
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG PLATFORM
 ARG ROS_DISTRO
