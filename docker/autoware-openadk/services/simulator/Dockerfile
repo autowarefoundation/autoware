@@ -75,25 +75,11 @@ RUN --mount=type=ssh \
 
 RUN chmod -R 777 /autoware/install/
 
-# Bugfix rviz2 black-screen problem with some nvidia drivers: https://github.com/ros2/rviz/issues/948
-RUN apt update && apt install -y software-properties-common && add-apt-repository ppa:kisak/kisak-mesa && apt install -y \
-  libegl-mesa0 libegl1-mesa-dev libgbm-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri libglapi-mesa libglx-mesa0
+# Copy bash aliases for simulation
+# TO-DO
 
 # Create entrypoint
-# hadolint ignore=DL3059
 COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
-
-# Copy simulation files
-RUN mkdir -p /autoware/scenario-sim
-COPY docker/autoware-openadk/etc/simulation/ /autoware/scenario-sim/
-
-# Copy bash aliases
-COPY docker/autoware-openadk/services/simulator/.bash_aliases /root/.bash_aliases
-
-# Create entrypoint
-# hadolint ignore=DL3059
-RUN echo "source /autoware/install/setup.bash" > /etc/bash.bashrc
-
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]
