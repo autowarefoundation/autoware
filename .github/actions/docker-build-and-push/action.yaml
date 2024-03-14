@@ -5,6 +5,9 @@ inputs:
   bake-target:
     description: ""
     required: true
+  bake-target-modular:
+    description: ""
+    required: true
   build-args:
     description: ""
     required: false
@@ -54,7 +57,7 @@ runs:
       id: meta-base
       uses: docker/metadata-action@v4
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target-modular }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
         bake-target: docker-metadata-action-base
         flavor: |
@@ -129,9 +132,8 @@ runs:
         files: |
           docker/${{ inputs.bake-target }}/docker-bake.hcl
           ${{ steps.meta-base.outputs.bake-file }}
-          ${{ steps.meta-devel.outputs.bake-file }}
-          ${{ steps.meta-prebuilt.outputs.bake-file }}
-          ${{ steps.meta-runtime.outputs.bake-file }}
+        targets: |
+          base
         provenance: false
         set: |
           ${{ inputs.build-args }}
