@@ -7,7 +7,6 @@ target "docker-metadata-action-base" {}
 target "docker-metadata-action-prebuilt" {}
 target "docker-metadata-action-devel" {}
 target "docker-metadata-action-runtime" {}
-target "docker-metadata-action-perception-localization" {}
 target "docker-metadata-action-planning-control" {}
 target "docker-metadata-action-visualizer" {}
 target "docker-metadata-action-simulator" {}
@@ -34,12 +33,6 @@ target "runtime" {
   inherits = ["docker-metadata-action-runtime"]
   dockerfile = "docker/autoware-openadk/Dockerfile"
   target = "runtime"
-}
-
-target "perception-localization" {
-  inherits = ["docker-metadata-action-perception-localization"]
-  dockerfile = "docker/autoware-openadk/services/perception-localization/Dockerfile"
-  target = "perception-localization"
 }
 
 target "planning-control" {
