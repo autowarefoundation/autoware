@@ -1,5 +1,5 @@
 ARG PLATFORM
-FROM ghcr.io/autowarefoundation/autoware-openadk-modular:latest-base-${PLATFORM} as planning-control
+FROM ghcr.io/autowarefoundation/autoware-openadk:latest-base-${PLATFORM} as planning-control
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG PLATFORM
 ARG ROS_DISTRO
