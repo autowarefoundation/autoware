@@ -189,6 +189,7 @@ runs:
         if-no-files-found: error
 
     - name: Output artifact URLs
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       id: output-artifact-urls
       run: |
         echo 'base URL ${{ steps.artifact-upload-step-base.outputs.artifact-url }}'
