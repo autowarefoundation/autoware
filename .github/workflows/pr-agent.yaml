@@ -26,3 +26,6 @@ jobs:
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_KEY_PR_AGENT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github_action_config.auto_review: "false"
+          github_action_config.auto_describe: "false"
+          github_action_config.auto_improve: "false"
