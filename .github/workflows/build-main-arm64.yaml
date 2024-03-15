@@ -1,4 +1,4 @@
-name: build-main-self-hosted
+name: build-main-arm64
 
 on:
   schedule:
@@ -13,7 +13,7 @@ on:
         default: tarball
 
 jobs:
-  build-main-self-hosted:
+  build-main-arm64:
     runs-on: [self-hosted, linux, ARM64]
     strategy:
       fail-fast: false
@@ -51,7 +51,7 @@ jobs:
           fi
 
       - name: Build 'autoware-universe'
-        uses: ./.github/actions/docker-build-and-push
+        uses: ./.github/actions/docker-build-push
         with:
           bake-target: autoware
           build-args: |

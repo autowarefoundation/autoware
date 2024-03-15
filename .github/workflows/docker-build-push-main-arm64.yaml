@@ -4,7 +4,7 @@
 # push-branch: Build only devel and prebuilt. TAGS: date, latest
 # push-tag: Build all. TAGS: version, date, latest
 
-name: docker-build-and-push-main
+name: docker-build-push-main-arm64
 
 on:
   push:
@@ -25,8 +25,8 @@ on:
         default: tarball
 
 jobs:
-  docker-build-and-push-main:
-    runs-on: ubuntu-latest
+  docker-build-push-main-arm64:
+    runs-on: [self-hosted, linux, ARM64]
     strategy:
       fail-fast: false
       matrix:
@@ -36,14 +36,19 @@ jobs:
         include:
           - name: no-cuda
             base_image_env: base_image
-            lib_dir: x86_64
+            lib_dir: aarch64
             setup-args: --no-nvidia
             additional-tag-suffix: ""
           - name: cuda
             base_image_env: base_image
-            lib_dir: x86_64
+            lib_dir: aarch64
             additional-tag-suffix: -cuda
     steps:
+      # https://github.com/actions/checkout/issues/211
+      - name: Change permission of workspace
+        run: |
+          sudo chown -R $USER:$USER ${{ github.workspace }}
+
       - name: Check out repository
         uses: actions/checkout@v4
 
@@ -62,18 +67,33 @@ jobs:
         with:
           bake-target: autoware
           build-args: |
-            *.platform=linux/amd64
+            *.platform=linux/arm64
             *.args.ROS_DISTRO=${{ env.rosdistro }}
             *.args.BASE_IMAGE=${{ env[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
             *.args.LIB_DIR=${{ matrix.lib_dir }}
           tag-suffix: ${{ matrix.additional-tag-suffix }}
-          tag-arch: amd64
+          tag-arch: arm64
           tag-prefix: ${{ env.rosdistro }}
           allow-push: true
 
       - name: Build 'Openadk'
         uses: ./.github/actions/docker-build-and-push-openadk
+        with:
+          bake-target: autoware-openadk
+          build-args: |
+            *.platform=linux/arm64
+            *.args.ROS_DISTRO=${{ env.rosdistro }}
+            *.args.BASE_IMAGE=${{ env[format('{0}', matrix.base_image_env)] }}
+            *.args.SETUP_ARGS=${{ matrix.setup-args }}
+            *.args.LIB_DIR=${{ matrix.lib_dir }}
+          tag-suffix: ${{ matrix.additional-tag-suffix }}
+          tag-arch: arm64
+          tag-prefix: ${{ env.rosdistro }}
+          allow-push: true
+      
+      - name: Build 'Openadk'
+        uses: ./.github/actions/docker-build-push-openadk
         with:
           bake-target: autoware-openadk
           build-args: |
