@@ -92,7 +92,7 @@ RUN --mount=type=ssh \
 WORKDIR /workspace
 
 # Create entrypoint
-COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh
+COPY docker/autoware/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -126,11 +126,11 @@ RUN --mount=type=ssh \
 COPY --from=prebuilt /autoware/install/ /autoware/install/
 
 # Copy bash aliases
-COPY docker/autoware-openadk/etc/.bash_aliases /root/.bash_aliases
+COPY docker/autoware/etc/.bash_aliases /root/.bash_aliases
 RUN echo "source /autoware/install/setup.bash" > /etc/bash.bashrc
 
 # Create entrypoint
-COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh
+COPY docker/autoware/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]

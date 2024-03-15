@@ -62,10 +62,10 @@ jobs:
             cat arm64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
           fi
 
-      - name: Build 'autoware-openadk'
+      - name: Build 'Autoware'
         uses: ./.github/actions/docker-build-push
         with:
-          bake-target: autoware-openadk
+          bake-target: autoware
           build-args: |
             *.platform=linux/arm64
             *.args.ROS_DISTRO=${{ env.rosdistro }}

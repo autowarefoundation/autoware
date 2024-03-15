@@ -2,7 +2,7 @@
   "name": "Autoware",
   "build": {
     "dockerfile": "../Dockerfile",
-    "args": { "BASE_IMAGE": "ghcr.io/autowarefoundation/autoware-openadk:latest-devel" }
+    "args": { "BASE_IMAGE": "ghcr.io/autowarefoundation/autoware:latest-devel" }
   },
   "remoteUser": "autoware",
   "runArgs": [
