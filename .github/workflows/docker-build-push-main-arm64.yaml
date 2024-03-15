@@ -80,7 +80,7 @@ jobs:
       - name: Build 'Openadk'
         uses: ./.github/actions/docker-build-and-push-openadk
         with:
-          bake-target: autoware-openadk
+          bake-target: autoware
           build-args: |
             *.platform=linux/arm64
             *.args.ROS_DISTRO=${{ env.rosdistro }}
@@ -110,3 +110,4 @@ jobs:
       - name: Show disk space
         run: |
           df -h
+          
