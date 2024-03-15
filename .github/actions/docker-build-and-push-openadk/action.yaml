@@ -1,4 +1,4 @@
-name: docker-build-push
+name: docker-build-and-push-openadk
 description: ""
 
 inputs:
@@ -52,39 +52,51 @@ runs:
         echo "$(printf "%s\n" "${tags[@]}")" >> $GITHUB_OUTPUT
         echo "$EOF" >> $GITHUB_OUTPUT
       shell: bash
-
-    - name: Docker meta for prebuilt
-      id: meta-prebuilt
+    
+    # OpenADK modular images meta
+    - name: Docker meta for Openadk:base
+      id: meta-base
       uses: docker/metadata-action@v4
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
-        bake-target: docker-metadata-action-prebuilt
+        bake-target: docker-metadata-action-base
         flavor: |
           latest=false
-          suffix=-prebuilt${{ inputs.tag-suffix }}-${{ inputs.tag-arch }}
-
-    - name: Docker meta for devel
-      id: meta-devel
+          suffix=-base-${{ inputs.tag-arch }}
+    
+    - name: Docker meta for Openadk:planning-control
+      id: meta-planning-control
       uses: docker/metadata-action@v4
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
-        bake-target: docker-metadata-action-devel
+        bake-target: docker-metadata-action-planning-control
         flavor: |
           latest=false
-          suffix=-devel${{ inputs.tag-suffix }}-${{ inputs.tag-arch }}
-
-    - name: Docker meta for runtime
-      id: meta-runtime
+          suffix=-planning-control-${{ inputs.tag-arch }}
+    
+    - name: Docker meta for Openadk:visualizer
+      id: meta-visualizer
       uses: docker/metadata-action@v4
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
-        bake-target: docker-metadata-action-runtime
+        bake-target: docker-metadata-action-visualizer
         flavor: |
-          latest=${{ github.event_name == 'push' && github.ref_type == 'tag' }}
-          suffix=-runtime${{ inputs.tag-suffix }}-${{ inputs.tag-arch }}
+          latest=false
+          suffix=-visualizer-${{ inputs.tag-arch }}
+    
+    - name: Docker meta for Openadk:simulator
+      id: meta-simulator
+      uses: docker/metadata-action@v4
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: ${{ steps.set-docker-tags.outputs.tags }}
+        bake-target: docker-metadata-action-simulator
+        flavor: |
+          latest=false
+          suffix=-simulator-${{ inputs.tag-arch }}
 
     - name: Login to GitHub Container Registry
       if: ${{ github.event_name != 'pull_request' }}
@@ -95,15 +107,16 @@ runs:
         password: ${{ github.token }}
 
     - name: Build and Push to GitHub Container Registry
-      if: ${{ (github.event_name == 'push' || github.event_name == 'schedule' || ( github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
+      if: ${{ github.event_name == 'push' || github.event_name == 'schedule' || ( github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
       uses: docker/bake-action@v3
       with:
         push: ${{ inputs.allow-push == 'true' }}
         files: |
           docker/${{ inputs.bake-target }}/docker-bake.hcl
-          ${{ steps.meta-prebuilt.outputs.bake-file }}
-          ${{ steps.meta-devel.outputs.bake-file }}
-          ${{ steps.meta-runtime.outputs.bake-file }}
+          ${{ steps.meta-base.outputs.bake-file }}
+          ${{ steps.meta-planning-control.outputs.bake-file }}
+          ${{ steps.meta-visualizer.outputs.bake-file }}
+          ${{ steps.meta-simulator.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}
@@ -115,47 +128,61 @@ runs:
         push: false
         files: |
           docker/${{ inputs.bake-target }}/docker-bake.hcl
-          ${{ steps.meta-prebuilt.outputs.bake-file }}
-          ${{ steps.meta-devel.outputs.bake-file }}
-          ${{ steps.meta-runtime.outputs.bake-file }}
+          ${{ steps.meta-base.outputs.bake-file }}
+          ${{ steps.meta-planning-control.outputs.bake-file }}
+          ${{ steps.meta-visualizer.outputs.bake-file }}
+          ${{ steps.meta-simulator.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}
-          prebuilt.output=type=docker,dest=/tmp/prebuilt.tar
-          devel.output=type=docker,dest=/tmp/devel.tar
-          runtime.output=type=docker,dest=/tmp/runtime.tar
+          base.output=type=docker,dest=/tmp/base.tar
+          planning-control.output=type=docker,dest=/tmp/planning-control.tar
+          visualizer.output=type=docker,dest=/tmp/visualizer.tar
+          simulator.output=type=docker,dest=/tmp/simulator.tar
 
-    - name: Upload Artifact - prebuilt
+    - name: Upload Artifact - base
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
-      id: artifact-upload-step-prebuilt
+      id: artifact-upload-step-base
       uses: actions/upload-artifact@v4
       with:
-        name: prebuilt-image${{ inputs.tag-suffix }}
-        path: /tmp/prebuilt.tar
+        name: base-image${{ inputs.tag-suffix }}
+        path: /tmp/base.tar
         retention-days: 7
         compression-level: 6
         overwrite: true
         if-no-files-found: error
 
-    - name: Upload Artifact - devel
+    - name: Upload Artifact - planning-control
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
-      id: artifact-upload-step-devel
+      id: artifact-upload-step-planning-control
       uses: actions/upload-artifact@v4
       with:
-        name: devel-image${{ inputs.tag-suffix }}
-        path: /tmp/devel.tar
+        name: planning-control-image${{ inputs.tag-suffix }}
+        path: /tmp/planning-control.tar
         retention-days: 7
         compression-level: 6
         overwrite: true
         if-no-files-found: error
 
-    - name: Upload Artifact - runtime
+    - name: Upload Artifact - visualizer
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
-      id: artifact-upload-step-runtime
+      id: artifact-upload-step-visualizer
       uses: actions/upload-artifact@v4
       with:
-        name: runtime-image${{ inputs.tag-suffix }}
-        path: /tmp/runtime.tar
+        name: visualizer-image${{ inputs.tag-suffix }}
+        path: /tmp/visualizer.tar
+        retention-days: 7
+        compression-level: 6
+        overwrite: true
+        if-no-files-found: error
+
+    - name: Upload Artifact - simulator
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+      id: artifact-upload-step-simulator
+      uses: actions/upload-artifact@v4
+      with:
+        name: simulator-image${{ inputs.tag-suffix }}
+        path: /tmp/simulator.tar
         retention-days: 7
         compression-level: 6
         overwrite: true
@@ -164,7 +191,8 @@ runs:
     - name: Output artifact URLs
       id: output-artifact-urls
       run: |
-        echo 'prebuilt URL ${{ steps.artifact-upload-step-prebuilt.outputs.artifact-url }}'
-        echo 'devel URL ${{ steps.artifact-upload-step-devel.outputs.artifact-url }}'
-        echo 'runtime URL ${{ steps.artifact-upload-step-runtime.outputs.artifact-url }}'
+        echo 'base URL ${{ steps.artifact-upload-step-base.outputs.artifact-url }}'
+        echo 'planning-control URL ${{ steps.artifact-upload-step-planning-control.outputs.artifact-url }}'
+        echo 'visualizer URL ${{ steps.artifact-upload-step-visualizer.outputs.artifact-url }}'
+        echo 'simulator URL ${{ steps.artifact-upload-step-simulator.outputs.artifact-url }}'
       shell: bash
