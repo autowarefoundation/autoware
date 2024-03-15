@@ -94,25 +94,11 @@ runs:
         username: ${{ github.repository_owner }}
         password: ${{ github.token }}
 
-    - name: Build and Push - prebuilt and devel
-      if: ${{ (github.event_name == 'push' && github.ref_type == 'branch') || github.event_name == 'schedule' }}
+    - name: Build and Push to GitHub Container Registry
+      if: ${{ (github.event_name == 'push' || github.event_name == 'schedule' || ( github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
       uses: docker/bake-action@v3
       with:
         push: ${{ inputs.allow-push == 'true' }}
-        files: |
-          docker/${{ inputs.bake-target }}/docker-bake.hcl
-          ${{ steps.meta-prebuilt.outputs.bake-file }}
-          ${{ steps.meta-devel.outputs.bake-file }}
-          ${{ steps.meta-runtime.outputs.bake-file }}
-        provenance: false
-        set: |
-          ${{ inputs.build-args }}
-
-    - name: Build and Publish to GitHub Container Registry
-      if: ${{ ( github.event_name == 'push' && github.ref_type == 'tag' ) || ( github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
-      uses: docker/bake-action@v3
-      with:
-        push: true
         files: |
           docker/${{ inputs.bake-target }}/docker-bake.hcl
           ${{ steps.meta-prebuilt.outputs.bake-file }}

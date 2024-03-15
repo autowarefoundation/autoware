@@ -115,9 +115,9 @@ set_variables() {
 
     # Set image based on option
     if [ "$option_devel" == "true" ]; then
-        IMAGE="ghcr.io/autowarefoundation/autoware-openadk:latest-devel"
+        IMAGE="ghcr.io/autowarefoundation/autoware:latest-devel"
     else
-        IMAGE="ghcr.io/autowarefoundation/autoware-openadk:latest-runtime"
+        IMAGE="ghcr.io/autowarefoundation/autoware:latest-runtime"
     fi
 }
 

@@ -5,7 +5,7 @@ ARG PLATFORM
 ARG ROS_DISTRO
 
 # Copy install folder from prebuilt
-COPY --from=ghcr.io/autowarefoundation/autoware-openadk:latest-prebuilt-${PLATFORM} /autoware/install/ /autoware/install/
+COPY --from=ghcr.io/autowarefoundation/autoware:latest-prebuilt-${PLATFORM} /autoware/install/ /autoware/install/
 COPY autoware.repos /autoware/
 
 # Dependencies
