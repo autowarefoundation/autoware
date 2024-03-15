@@ -1,0 +1,28 @@
+name: PR-Agent
+
+on:
+  pull_request:
+    types: [opened, labeled, unlabeled, synchronize]
+  issue_comment:
+
+jobs:
+  prevent-no-label-execution-pr-agent:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/prevent-no-label-execution.yaml@v1
+    with:
+      label: tag:pr-agent
+  pr_agent_job:
+    needs: prevent-no-label-execution-pr-agent
+    if: ${{ needs.prevent-no-label-execution-pr-agent.outputs.run == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
+    name: Run pr agent on every pull request, respond to user comments
+    steps:
+      - name: PR Agent action step
+        id: pragent
+        uses: Codium-ai/pr-agent@main
+        env:
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY_PR_AGENT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
