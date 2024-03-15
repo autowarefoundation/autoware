@@ -42,6 +42,7 @@ ObjectPositionFilterNode::ObjectPositionFilterNode(const rclcpp::NodeOptions & n
     "input/object", rclcpp::QoS{1}, std::bind(&ObjectPositionFilterNode::objectCallback, this, _1));
   object_pub_ = this->create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
     "output/object", rclcpp::QoS{1});
+  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
 }
 
 void ObjectPositionFilterNode::objectCallback(
@@ -65,6 +66,7 @@ void ObjectPositionFilterNode::objectCallback(
   }
 
   object_pub_->publish(output_object_msg);
+  published_time_publisher_->publish_if_subscribed(object_pub_, output_object_msg.header.stamp);
 }
 
 bool ObjectPositionFilterNode::isObjectInBounds(

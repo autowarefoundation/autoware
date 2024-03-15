@@ -23,6 +23,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
+#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
+
 #include <algorithm>
 #include <memory>
 #include <optional>
@@ -112,6 +114,8 @@ private:
     const std::vector<TrajectoryPoint> & optimized_points) const;
 
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+
+  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 };
 }  // namespace path_smoother
 

@@ -20,6 +20,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
+#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
@@ -68,6 +69,8 @@ private:
   bool isPolygonOverlapLanelets(const Polygon2d &, const lanelet::ConstLanelets &);
   geometry_msgs::msg::Polygon setFootprint(
     const autoware_auto_perception_msgs::msg::DetectedObject &);
+
+  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 };
 
 }  // namespace object_lanelet_filter

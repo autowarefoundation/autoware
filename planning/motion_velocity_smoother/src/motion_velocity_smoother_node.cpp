@@ -104,6 +104,7 @@ MotionVelocitySmootherNode::MotionVelocitySmootherNode(const rclcpp::NodeOptions
   clock_ = get_clock();
 
   logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
+  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
 }
 
 void MotionVelocitySmootherNode::setupSmoother(const double wheelbase)
@@ -314,6 +315,8 @@ void MotionVelocitySmootherNode::publishTrajectory(const TrajectoryPoints & traj
   Trajectory publishing_trajectory = motion_utils::convertToTrajectory(trajectory);
   publishing_trajectory.header = base_traj_raw_ptr_->header;
   pub_trajectory_->publish(publishing_trajectory);
+  published_time_publisher_->publish_if_subscribed(
+    pub_trajectory_, publishing_trajectory.header.stamp);
 }
 
 void MotionVelocitySmootherNode::onCurrentOdometry(const Odometry::ConstSharedPtr msg)

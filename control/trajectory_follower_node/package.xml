@@ -30,6 +30,7 @@
   <depend>pure_pursuit</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
+  <depend>tier4_autoware_utils</depend>
   <depend>trajectory_follower_base</depend>
   <depend>vehicle_info_util</depend>
   <depend>visualization_msgs</depend>

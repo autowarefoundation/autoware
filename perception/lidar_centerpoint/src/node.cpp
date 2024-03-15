@@ -126,6 +126,7 @@ LidarCenterPointNode::LidarCenterPointNode(const rclcpp::NodeOptions & node_opti
     RCLCPP_INFO(this->get_logger(), "TensorRT engine is built and shutdown node.");
     rclcpp::shutdown();
   }
+  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
 }
 
 void LidarCenterPointNode::pointCloudCallback(
@@ -163,6 +164,7 @@ void LidarCenterPointNode::pointCloudCallback(
 
   if (objects_sub_count > 0) {
     objects_pub_->publish(output_msg);
+    published_time_publisher_->publish_if_subscribed(objects_pub_, output_msg.header.stamp);
   }
 
   // add processing time for debug

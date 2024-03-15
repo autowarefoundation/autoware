@@ -24,6 +24,7 @@
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -269,6 +270,8 @@ private:
   std::shared_ptr<StopObstacle> prev_closest_stop_obstacle_ptr_{nullptr};
 
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+
+  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 };
 }  // namespace motion_planning
 

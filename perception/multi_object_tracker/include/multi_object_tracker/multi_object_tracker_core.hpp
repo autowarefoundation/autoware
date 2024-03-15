@@ -24,6 +24,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
+#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
@@ -106,6 +107,8 @@ private:
   tf2_ros::TransformListener tf_listener_;
 
   std::map<std::uint8_t, std::string> tracker_map_;
+
+  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 
   void onMeasurement(
     const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_objects_msg);

@@ -82,6 +82,7 @@ ObstacleVelocityLimiterNode::ObstacleVelocityLimiterNode(const rclcpp::NodeOptio
     add_on_set_parameters_callback([this](const auto & params) { return onParameter(params); });
 
   logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
+  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
 }
 
 rcl_interfaces::msg::SetParametersResult ObstacleVelocityLimiterNode::onParameter(
@@ -221,6 +222,7 @@ void ObstacleVelocityLimiterNode::onTrajectory(const Trajectory::ConstSharedPtr 
   safe_trajectory.header.stamp = now();
 
   pub_trajectory_->publish(safe_trajectory);
+  published_time_publisher_->publish_if_subscribed(pub_trajectory_, safe_trajectory.header.stamp);
 
   const auto t_end = std::chrono::system_clock::now();
   const auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start);

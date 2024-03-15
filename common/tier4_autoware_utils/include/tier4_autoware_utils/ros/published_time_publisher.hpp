@@ -37,7 +37,8 @@ public:
   {
   }
 
-  void publish(const rclcpp::PublisherBase::ConstSharedPtr & publisher, const rclcpp::Time & stamp)
+  void publish_if_subscribed(
+    const rclcpp::PublisherBase::ConstSharedPtr & publisher, const rclcpp::Time & stamp)
   {
     const auto & gid_key = publisher->get_gid();
 
@@ -57,7 +58,7 @@ public:
     }
   }
 
-  void publish(
+  void publish_if_subscribed(
     const rclcpp::PublisherBase::ConstSharedPtr & publisher, const std_msgs::msg::Header & header)
   {
     const auto & gid_key = publisher->get_gid();

@@ -21,6 +21,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
+#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -148,6 +149,7 @@ private:
   std::shared_ptr<Debugger> debugger_;
   bool using_2d_validator_;
   std::unique_ptr<Validator> validator_;
+  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 
 private:
   void onObjectsAndObstaclePointCloud(

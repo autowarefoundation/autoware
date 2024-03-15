@@ -19,6 +19,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
@@ -26,6 +27,7 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
+#include <memory>
 #include <string>
 
 namespace object_position_filter
@@ -51,6 +53,8 @@ private:
   float lower_bound_y_;
   utils::FilterTargetLabel filter_target_;
   bool isObjectInBounds(const autoware_auto_perception_msgs::msg::DetectedObject & object) const;
+
+  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 };
 
 }  // namespace object_position_filter

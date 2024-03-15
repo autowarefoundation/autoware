@@ -21,6 +21,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
+#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
@@ -109,6 +110,8 @@ private:
 
   // tracker default settings
   TrackerStateParameter tracker_state_parameter_;
+
+  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 
   // merge policy (currently not used)
   struct

@@ -58,6 +58,7 @@ ShapeEstimationNode::ShapeEstimationNode(const rclcpp::NodeOptions & node_option
   stop_watch_ptr_ = std::make_unique<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>>();
   stop_watch_ptr_->tic("cyclic_time");
   stop_watch_ptr_->tic("processing_time");
+  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
 }
 
 void ShapeEstimationNode::callback(const DetectedObjectsWithFeature::ConstSharedPtr input_msg)
@@ -120,7 +121,7 @@ void ShapeEstimationNode::callback(const DetectedObjectsWithFeature::ConstShared
 
   // Publish
   pub_->publish(output_msg);
-
+  published_time_publisher_->publish_if_subscribed(pub_, output_msg.header.stamp);
   processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
     "debug/cyclic_time_ms", stop_watch_ptr_->toc("cyclic_time", true));
   processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(

@@ -34,6 +34,8 @@
 #include "tier4_autoware_utils/ros/self_pose_listener.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
+#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
+
 #include "autoware_adapi_v1_msgs/msg/operation_mode_state.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
@@ -271,6 +273,7 @@ private:
   void publishStopWatchTime();
 
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 };
 }  // namespace motion_velocity_smoother
 

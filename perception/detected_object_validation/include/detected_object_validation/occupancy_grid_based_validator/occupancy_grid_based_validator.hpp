@@ -19,6 +19,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
@@ -42,6 +43,7 @@ private:
   message_filters::Subscriber<nav_msgs::msg::OccupancyGrid> occ_grid_sub_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
+  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 
   typedef message_filters::sync_policies::ApproximateTime<
     autoware_auto_perception_msgs::msg::DetectedObjects, nav_msgs::msg::OccupancyGrid>

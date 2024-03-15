@@ -320,6 +320,7 @@ void ScenarioSelectorNode::publishTrajectory(
   const auto delay_sec = (now - msg->header.stamp).seconds();
   if (delay_sec <= th_max_message_delay_sec_) {
     pub_trajectory_->publish(*msg);
+    published_time_publisher_->publish_if_subscribed(pub_trajectory_, msg->header.stamp);
   } else {
     RCLCPP_WARN_THROTTLE(
       this->get_logger(), *this->get_clock(), std::chrono::milliseconds(1000).count(),
@@ -372,6 +373,7 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
 
   timer_ = rclcpp::create_timer(
     this, get_clock(), period_ns, std::bind(&ScenarioSelectorNode::onTimer, this));
+  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
 }
 
 #include <rclcpp_components/register_node_macro.hpp>

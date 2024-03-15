@@ -23,6 +23,7 @@
 #include <euclidean_cluster/voxel_grid_based_euclidean_cluster.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <shape_estimation/shape_estimator.hpp>
+#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
@@ -82,6 +83,8 @@ private:
   std::map<uint8_t, int> max_search_distance_for_divider_;
 
   detection_by_tracker::utils::TrackerIgnoreLabel tracker_ignore_;
+
+  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 
   void setMaxSearchRange();
 

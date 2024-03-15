@@ -177,6 +177,7 @@ DetectionByTracker::DetectionByTracker(const rclcpp::NodeOptions & node_options)
   cluster_ = std::make_shared<euclidean_cluster::VoxelGridBasedEuclideanCluster>(
     false, 10, 10000, 0.7, 0.3, 0);
   debugger_ = std::make_shared<Debugger>(this);
+  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
 }
 
 void DetectionByTracker::setMaxSearchRange()
@@ -221,6 +222,7 @@ void DetectionByTracker::onObjects(
       !object_recognition_utils::transformObjects(
         objects, input_msg->header.frame_id, tf_buffer_, transformed_objects)) {
       objects_pub_->publish(detected_objects);
+      published_time_publisher_->publish_if_subscribed(objects_pub_, detected_objects.header.stamp);
       return;
     }
     // to simplify post processes, convert tracked_objects to DetectedObjects message.
@@ -251,6 +253,7 @@ void DetectionByTracker::onObjects(
   }
 
   objects_pub_->publish(detected_objects);
+  published_time_publisher_->publish_if_subscribed(objects_pub_, detected_objects.header.stamp);
   debugger_->publishProcessingTime();
 }
 

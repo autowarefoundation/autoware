@@ -246,6 +246,7 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
     createSubscriptionOptions(this));
 
   logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
+  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
 }
 
 void ObstacleStopPlannerNode::onPointCloud(const PointCloud2::ConstSharedPtr input_msg)
@@ -330,6 +331,7 @@ void ObstacleStopPlannerNode::onTrigger(const Trajectory::ConstSharedPtr input_m
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), 3000, "Backward path is NOT supported. publish input as it is.");
     pub_trajectory_->publish(*input_msg);
+    published_time_publisher_->publish_if_subscribed(pub_trajectory_, input_msg->header.stamp);
     return;
   }
 
@@ -380,6 +382,7 @@ void ObstacleStopPlannerNode::onTrigger(const Trajectory::ConstSharedPtr input_m
 
   trajectory.header = input_msg->header;
   pub_trajectory_->publish(trajectory);
+  published_time_publisher_->publish_if_subscribed(pub_trajectory_, trajectory.header.stamp);
 
   Float64Stamped processing_time_ms;
   processing_time_ms.stamp = now();
