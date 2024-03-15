@@ -42,6 +42,8 @@ protected:
   {
     classification_ = classification;
   }
+  void updateClassification(
+    const std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> & classification);
 
 private:
   unique_identifier_msgs::msg::UUID uuid_;
