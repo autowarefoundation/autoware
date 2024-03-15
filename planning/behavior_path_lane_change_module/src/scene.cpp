@@ -1247,9 +1247,9 @@ bool NormalLaneChange::getLaneChangePaths(
       };
 
       // get path on original lanes
-      const auto prepare_velocity = std::max(
+      const auto prepare_velocity = std::clamp(
         current_velocity + sampled_longitudinal_acc * prepare_duration,
-        minimum_lane_changing_velocity);
+        minimum_lane_changing_velocity, getCommonParam().max_vel);
 
       // compute actual longitudinal acceleration
       const double longitudinal_acc_on_prepare =
@@ -1313,8 +1313,9 @@ bool NormalLaneChange::getLaneChangePaths(
         const auto lane_changing_length =
           initial_lane_changing_velocity * lane_changing_time +
           0.5 * longitudinal_acc_on_lane_changing * lane_changing_time * lane_changing_time;
-        const auto terminal_lane_changing_velocity =
-          initial_lane_changing_velocity + longitudinal_acc_on_lane_changing * lane_changing_time;
+        const auto terminal_lane_changing_velocity = std::min(
+          initial_lane_changing_velocity + longitudinal_acc_on_lane_changing * lane_changing_time,
+          getCommonParam().max_vel);
         utils::lane_change::setPrepareVelocity(
           prepare_segment, current_velocity, terminal_lane_changing_velocity);
 

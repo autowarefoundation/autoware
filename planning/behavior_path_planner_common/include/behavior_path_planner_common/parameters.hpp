@@ -42,6 +42,7 @@ struct BehaviorPathPlannerParameters
   // common parameters
   double min_acc;
   double max_acc;
+  double max_vel;
 
   double minimum_pull_over_length;
   double minimum_pull_out_length;
