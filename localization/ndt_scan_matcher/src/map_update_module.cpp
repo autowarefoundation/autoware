@@ -88,7 +88,9 @@ void MapUpdateModule::update_map(const geometry_msgs::msg::Point & position)
       ndt_ptr_mutex_->unlock();
       return;
     }
-    ndt_ptr_->setInputSource(input_source);
+    if (input_source != nullptr) {
+      ndt_ptr_->setInputSource(input_source);
+    }
     ndt_ptr_mutex_->unlock();
     need_rebuild_ = false;
   } else {
@@ -107,7 +109,9 @@ void MapUpdateModule::update_map(const geometry_msgs::msg::Point & position)
     auto dummy_ptr = ndt_ptr_;
     auto input_source = ndt_ptr_->getInputSource();
     ndt_ptr_ = secondary_ndt_ptr_;
-    ndt_ptr_->setInputSource(input_source);
+    if (input_source != nullptr) {
+      ndt_ptr_->setInputSource(input_source);
+    }
     ndt_ptr_mutex_->unlock();
 
     dummy_ptr.reset();
