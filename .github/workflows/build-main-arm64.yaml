@@ -1,31 +1,19 @@
-# EVENTS: push, schedule, workflow_dispatch
-# workflow_dispatch: Build all. No publish to registry; save as tarball.
-# schedule: Build only devel and prebuilt. TAGS: date, latest
-# push-branch: Build only devel and prebuilt. TAGS: date, latest
-# push-tag: Build all. TAGS: version, date, latest
-
-name: docker-build-and-push-main-self-hosted
+name: build-main-arm64
 
 on:
-  push:
-    tags:
-      - adkit-v*.*.*
-    branches:
-      - main
   schedule:
-    - cron: 0 0 1,15 * *
+    - cron: 0 12 * * *
   workflow_dispatch:
     inputs:
       artifacts-destination:
         type: choice
-        description: Destination for the artifacts
+        description: Built images will be saved as tarball
         options:
-          - registry
           - tarball
         default: tarball
 
 jobs:
-  docker-build-and-push-main-self-hosted:
+  build-main-arm64:
     runs-on: [self-hosted, linux, ARM64]
     strategy:
       fail-fast: false
@@ -62,22 +50,24 @@ jobs:
             cat arm64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
           fi
 
-      - name: Build 'autoware-openadk'
-        uses: ./.github/actions/docker-build-and-push
+      - name: Build 'autoware-universe'
+        uses: ./.github/actions/docker-build-push
         with:
           bake-target: autoware-openadk
-          bake-target-modular: autoware-openadk-modular
           build-args: |
             *.platform=linux/arm64
             *.args.ROS_DISTRO=${{ env.rosdistro }}
             *.args.BASE_IMAGE=${{ env[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
             *.args.LIB_DIR=${{ matrix.lib_dir }}
-          tag-suffix: ${{ matrix.additional-tag-suffix }}
-          tag-arch: arm64
+          tag-suffix: ${{ matrix.additional-tag-suffix }}-arm64
           tag-prefix: ${{ env.rosdistro }}
-          allow-push: true
+          allow-push: false
 
       - name: Show disk space
         run: |
           df -h
+
+      - name: Show ccache stats
+        run: |
+          ccache -s

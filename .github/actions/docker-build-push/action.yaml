@@ -1,4 +1,4 @@
-name: docker-build-and-push
+name: docker-build-push
 description: ""
 
 inputs:
@@ -53,7 +53,6 @@ runs:
         echo "$EOF" >> $GITHUB_OUTPUT
       shell: bash
 
-    # Autoware monolithic images
     - name: Docker meta for prebuilt
       id: meta-prebuilt
       uses: docker/metadata-action@v4
