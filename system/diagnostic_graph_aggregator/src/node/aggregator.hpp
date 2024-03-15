@@ -26,11 +26,11 @@
 namespace diagnostic_graph_aggregator
 {
 
-class MainNode : public rclcpp::Node
+class AggregatorNode : public rclcpp::Node
 {
 public:
-  MainNode();
-  ~MainNode();
+  AggregatorNode();
+  ~AggregatorNode();
 
 private:
   Graph graph_;

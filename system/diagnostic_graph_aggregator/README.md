@@ -71,6 +71,12 @@ You can reuse the graph by making partial edits. For example, disable hardware c
 ros2 launch diagnostic_graph_aggregator example-edit.launch.xml
 ```
 
+## Debug tools
+
+- [dump](./doc/tool/dump.md)
+- [converter](./doc/tool/converter.md)
+- [tree](./doc/tool/tree.md)
+
 ## Graph file format
 
 - [graph](./doc/format/graph.md)

@@ -14,8 +14,7 @@
 
 #include "converter.hpp"
 
-#include <memory>
-#include <string>
+#include <algorithm>
 
 namespace diagnostic_graph_aggregator
 {
@@ -35,18 +34,46 @@ std::string level_to_string(DiagnosticLevel level)
   return "UNKNOWN";
 }
 
-ToolNode::ToolNode() : Node("diagnostic_graph_aggregator_converter")
+std::string parent_path(const std::string & path)
+{
+  return path.substr(0, path.rfind('/'));
+}
+
+auto create_tree(const DiagnosticGraph & graph)
+{
+  std::map<std::string, std::unique_ptr<TreeNode>, std::greater<std::string>> tree;
+  for (const auto & node : graph.nodes) {
+    tree.emplace(node.status.name, std::make_unique<TreeNode>(true));
+  }
+  for (const auto & node : graph.nodes) {
+    std::string path = node.status.name;
+    while (path = parent_path(path), !path.empty()) {
+      if (tree.count(path)) break;
+      tree.emplace(path, std::make_unique<TreeNode>(false));
+    }
+  }
+  for (const auto & [path, node] : tree) {
+    const auto parent = parent_path(path);
+    node->parent = parent.empty() ? nullptr : tree[parent].get();
+  }
+  return tree;
+}
+
+ConverterNode::ConverterNode() : Node("converter")
 {
   using std::placeholders::_1;
   const auto qos_graph = rclcpp::QoS(1);
   const auto qos_array = rclcpp::QoS(1);
 
-  const auto callback = std::bind(&ToolNode::on_graph, this, _1);
+  const auto callback = std::bind(&ConverterNode::on_graph, this, _1);
   sub_graph_ = create_subscription<DiagnosticGraph>("/diagnostics_graph", qos_graph, callback);
-  pub_array_ = create_publisher<DiagnosticArray>("/diagnostics_array", qos_array);
+  pub_array_ = create_publisher<DiagnosticArray>("/diagnostics_agg", qos_array);
+
+  initialize_tree_ = false;
+  complement_tree_ = declare_parameter<bool>("complement_tree");
 }
 
-void ToolNode::on_graph(const DiagnosticGraph::ConstSharedPtr msg)
+void ConverterNode::on_graph(const DiagnosticGraph::ConstSharedPtr msg)
 {
   DiagnosticArray message;
   message.header.stamp = msg->stamp;
@@ -63,6 +90,31 @@ void ToolNode::on_graph(const DiagnosticGraph::ConstSharedPtr msg)
       }
     }
   }
+
+  if (complement_tree_ && !initialize_tree_) {
+    initialize_tree_ = true;
+    tree_ = create_tree(*msg);
+  }
+
+  if (complement_tree_) {
+    for (const auto & [path, node] : tree_) {
+      node->level = DiagnosticStatus::OK;
+    }
+    for (const auto & node : msg->nodes) {
+      tree_[node.status.name]->level = node.status.level;
+    }
+    for (const auto & [path, node] : tree_) {
+      if (!node->parent) continue;
+      node->parent->level = std::max(node->parent->level, node->level);
+    }
+    for (const auto & [path, node] : tree_) {
+      if (node->leaf) continue;
+      message.status.emplace_back();
+      message.status.back().name = path;
+      message.status.back().level = node->level;
+    }
+  }
+
   pub_array_->publish(message);
 }
 
@@ -70,10 +122,10 @@ void ToolNode::on_graph(const DiagnosticGraph::ConstSharedPtr msg)
 
 int main(int argc, char ** argv)
 {
-  using diagnostic_graph_aggregator::ToolNode;
+  using diagnostic_graph_aggregator::ConverterNode;
   rclcpp::init(argc, argv);
   rclcpp::executors::SingleThreadedExecutor executor;
-  auto node = std::make_shared<ToolNode>();
+  auto node = std::make_shared<ConverterNode>();
   executor.add_node(node);
   executor.spin();
   executor.remove_node(node);

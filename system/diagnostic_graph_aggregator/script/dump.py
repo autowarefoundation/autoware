@@ -84,7 +84,6 @@ class DumpNode(rclpy.node.Node):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--topic", default="/diagnostics_graph")
-    parser.add_argument("--order", default="index")
     args, unparsed = parser.parse_known_args()
 
     try:

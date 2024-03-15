@@ -59,6 +59,9 @@ if __name__ == "__main__":
         "external_command_checker: joystick_command",
         "external_command_checker: remote_command",
     ]
-    rclpy.init()
-    rclpy.spin(DummyDiagnostics(diags))
-    rclpy.shutdown()
+    try:
+        rclpy.init()
+        rclpy.spin(DummyDiagnostics(diags))
+        rclpy.shutdown()
+    except KeyboardInterrupt:
+        pass

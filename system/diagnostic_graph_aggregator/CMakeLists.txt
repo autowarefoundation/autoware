@@ -22,10 +22,17 @@ ament_auto_add_executable(converter
 )
 target_include_directories(converter PRIVATE src/common)
 
-ament_auto_add_executable(tool
-  src/tool/tool.cpp
+ament_auto_add_executable(tree
+  src/tool/tree.cpp
+  src/tool/utils/loader.cpp
 )
-target_include_directories(tool PRIVATE src/common)
+target_include_directories(tree PRIVATE src/common)
+
+ament_auto_add_executable(plantuml
+  src/tool/plantuml.cpp
+  src/tool/utils/loader.cpp
+)
+target_include_directories(plantuml PRIVATE src/common)
 
 if(BUILD_TESTING)
   get_filename_component(RESOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/test/files ABSOLUTE)

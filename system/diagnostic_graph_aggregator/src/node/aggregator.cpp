@@ -20,7 +20,7 @@
 namespace diagnostic_graph_aggregator
 {
 
-MainNode::MainNode() : Node("diagnostic_graph_aggregator_aggregator")
+AggregatorNode::AggregatorNode() : Node("aggregator")
 {
   // Init diagnostics graph.
   {
@@ -39,7 +39,7 @@ MainNode::MainNode() : Node("diagnostic_graph_aggregator_aggregator")
     const auto qos_input = rclcpp::QoS(declare_parameter<int64_t>("input_qos_depth"));
     const auto qos_graph = rclcpp::QoS(declare_parameter<int64_t>("graph_qos_depth"));
 
-    const auto callback = std::bind(&MainNode::on_diag, this, _1);
+    const auto callback = std::bind(&AggregatorNode::on_diag, this, _1);
     sub_input_ = create_subscription<DiagnosticArray>("/diagnostics", qos_input, callback);
     pub_graph_ = create_publisher<DiagnosticGraph>("/diagnostics_graph", qos_graph);
 
@@ -51,12 +51,12 @@ MainNode::MainNode() : Node("diagnostic_graph_aggregator_aggregator")
   debug_ = declare_parameter<bool>("use_debug_mode");
 }
 
-MainNode::~MainNode()
+AggregatorNode::~AggregatorNode()
 {
   // for unique_ptr
 }
 
-void MainNode::on_timer()
+void AggregatorNode::on_timer()
 {
   const auto stamp = now();
   pub_graph_->publish(graph_.report(stamp));
@@ -64,7 +64,7 @@ void MainNode::on_timer()
   if (modes_) modes_->update(stamp);
 }
 
-void MainNode::on_diag(const DiagnosticArray::ConstSharedPtr msg)
+void AggregatorNode::on_diag(const DiagnosticArray::ConstSharedPtr msg)
 {
   graph_.callback(now(), *msg);
 }
@@ -73,10 +73,10 @@ void MainNode::on_diag(const DiagnosticArray::ConstSharedPtr msg)
 
 int main(int argc, char ** argv)
 {
-  using diagnostic_graph_aggregator::MainNode;
+  using diagnostic_graph_aggregator::AggregatorNode;
   rclcpp::init(argc, argv);
   rclcpp::executors::SingleThreadedExecutor executor;
-  auto node = std::make_shared<MainNode>();
+  auto node = std::make_shared<AggregatorNode>();
   executor.add_node(node);
   executor.spin();
   executor.remove_node(node);
