@@ -1,11 +1,11 @@
 ARG PLATFORM
-FROM ghcr.io/autowarefoundation/autoware-openadk:latest-base-${PLATFORM} as visualizer
+FROM ghcr.io/autowarefoundation/autoware-openadk:latest-base as visualizer
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG PLATFORM
 ARG ROS_DISTRO
 
 # Copy install folder from prebuilt
-COPY --from=ghcr.io/autowarefoundation/autoware:latest-prebuilt-${PLATFORM} /autoware/install/ /autoware/install/
+COPY --from=ghcr.io/autowarefoundation/autoware:latest-prebuilt /autoware/install/ /autoware/install/
 COPY autoware.repos /autoware/
 
 # Dependencies
