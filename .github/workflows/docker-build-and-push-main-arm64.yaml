@@ -4,7 +4,7 @@
 # push-branch: Build only devel and prebuilt. TAGS: date, latest
 # push-tag: Build all. TAGS: version, date, latest
 
-name: docker-build-push-main-arm64
+name: docker-build-and-push-main-arm64
 
 on:
   push:
@@ -25,7 +25,7 @@ on:
         default: tarball
 
 jobs:
-  docker-build-push-main-arm64:
+  docker-build-and-push-main-arm64:
     runs-on: [self-hosted, linux, ARM64]
     strategy:
       fail-fast: false
@@ -63,7 +63,7 @@ jobs:
           fi
 
       - name: Build 'Autoware'
-        uses: ./.github/actions/docker-build-push
+        uses: ./.github/actions/docker-build-and-push
         with:
           bake-target: autoware
           build-args: |
@@ -78,7 +78,7 @@ jobs:
           allow-push: true
       
       - name: Build 'Openadk'
-        uses: ./.github/actions/docker-build-push-openadk
+        uses: ./.github/actions/docker-build-and-push-openadk
         with:
           bake-target: autoware-openadk
           build-args: |

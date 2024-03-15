@@ -58,7 +58,7 @@ jobs:
           fi
 
       - name: Build 'Autoware'
-        uses: ./.github/actions/docker-build-push
+        uses: ./.github/actions/docker-build-and-push
         with:
           bake-target: autoware
           build-args: |
@@ -73,7 +73,7 @@ jobs:
           allow-push: true
       
       - name: Build 'Openadk'
-        uses: ./.github/actions/docker-build-push-openadk
+        uses: ./.github/actions/docker-build-and-push-openadk
         with:
           bake-target: autoware-openadk
           build-args: |
