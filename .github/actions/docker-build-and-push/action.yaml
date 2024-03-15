@@ -95,7 +95,7 @@ runs:
         password: ${{ github.token }}
 
     - name: Build and Push to GitHub Container Registry
-      if: ${{ (github.event_name == 'push' || github.event_name == 'schedule' || ( github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
+      if: ${{ github.event_name == 'push' || github.event_name == 'schedule' || ( github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
       uses: docker/bake-action@v3
       with:
         push: ${{ inputs.allow-push == 'true' }}
