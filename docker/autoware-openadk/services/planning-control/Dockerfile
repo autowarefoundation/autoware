@@ -1,8 +1,7 @@
-ARG PLATFORM
 FROM ghcr.io/autowarefoundation/autoware-openadk:latest-base as planning-control
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG PLATFORM
 ARG ROS_DISTRO
+ARG LIB_DIR
 
 # Copy install folder from prebuilt
 COPY --from=ghcr.io/autowarefoundation/autoware:latest-prebuilt /autoware/install/ /autoware/install/

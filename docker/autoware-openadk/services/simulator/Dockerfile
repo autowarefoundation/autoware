@@ -1,4 +1,3 @@
-ARG PLATFORM
 FROM ghcr.io/autowarefoundation/autoware-openadk:latest-base as simulator-base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG PLATFORM
