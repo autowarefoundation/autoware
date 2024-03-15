@@ -34,7 +34,7 @@ public:
     rclcpp::Node & node, const StartPlannerParameters & parameters,
     const std::shared_ptr<lane_departure_checker::LaneDepartureChecker> lane_departure_checker);
 
-  PlannerType getPlannerType() override { return PlannerType::GEOMETRIC; };
+  PlannerType getPlannerType() const override { return PlannerType::GEOMETRIC; };
   std::optional<PullOutPath> plan(const Pose & start_pose, const Pose & goal_pose) override;
 
   GeometricParallelParking planner_;

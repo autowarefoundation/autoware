@@ -36,7 +36,7 @@ public:
     rclcpp::Node & node, const StartPlannerParameters & parameters,
     std::shared_ptr<LaneDepartureChecker> & lane_departure_checker);
 
-  PlannerType getPlannerType() override { return PlannerType::SHIFT; };
+  PlannerType getPlannerType() const override { return PlannerType::SHIFT; };
   std::optional<PullOutPath> plan(const Pose & start_pose, const Pose & goal_pose) override;
 
   std::vector<PullOutPath> calcPullOutPaths(

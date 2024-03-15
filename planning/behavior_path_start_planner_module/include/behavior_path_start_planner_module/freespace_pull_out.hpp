@@ -38,7 +38,7 @@ public:
     rclcpp::Node & node, const StartPlannerParameters & parameters,
     const vehicle_info_util::VehicleInfo & vehicle_info);
 
-  PlannerType getPlannerType() override { return PlannerType::FREESPACE; }
+  PlannerType getPlannerType() const override { return PlannerType::FREESPACE; }
 
   std::optional<PullOutPath> plan(const Pose & start_pose, const Pose & end_pose) override;
 

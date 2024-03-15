@@ -19,6 +19,7 @@
 #include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
+#include "behavior_path_start_planner_module/pull_out_path.hpp"
 
 #include <route_handler/route_handler.hpp>
 
@@ -50,6 +51,8 @@ lanelet::ConstLanelets getPullOutLanes(
   const std::shared_ptr<const PlannerData> & planner_data, const double backward_length);
 Pose getBackedPose(
   const Pose & current_pose, const double & yaw_shoulder_lane, const double & back_distance);
+PathWithLaneId extractCollisionCheckSection(
+  const PullOutPath & path, const double collision_check_distance_from_end);
 }  // namespace behavior_path_planner::start_planner_utils
 
 #endif  // BEHAVIOR_PATH_START_PLANNER_MODULE__UTIL_HPP_

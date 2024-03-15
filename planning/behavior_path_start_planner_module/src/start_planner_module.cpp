@@ -767,34 +767,16 @@ bool StartPlannerModule::findPullOutPath(
   const Pose & start_pose_candidate, const std::shared_ptr<PullOutPlannerBase> & planner,
   const Pose & refined_start_pose, const Pose & goal_pose, const double collision_check_margin)
 {
-  const auto & dynamic_objects = planner_data_->dynamic_object;
-  const auto pull_out_lanes = start_planner_utils::getPullOutLanes(
-    planner_data_, planner_data_->parameters.backward_path_length + parameters_->max_back_distance);
-  const auto & vehicle_footprint = vehicle_info_.createFootprint();
-  // extract stop objects in pull out lane for collision check
-  const auto stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
-    *dynamic_objects, parameters_->th_moving_object_velocity);
-  auto [pull_out_lane_stop_objects, others] = utils::path_safety_checker::separateObjectsByLanelets(
-    stop_objects, pull_out_lanes, utils::path_safety_checker::isPolygonOverlapLanelet);
-  utils::path_safety_checker::filterObjectsByClass(
-    pull_out_lane_stop_objects, parameters_->object_types_to_check_for_path_generation);
-
   // if start_pose_candidate is far from refined_start_pose, backward driving is necessary
   const bool backward_is_unnecessary =
     tier4_autoware_utils::calcDistance2d(start_pose_candidate, refined_start_pose) < 0.01;
 
+  planner->setCollisionCheckMargin(collision_check_margin);
   planner->setPlannerData(planner_data_);
   const auto pull_out_path = planner->plan(start_pose_candidate, goal_pose);
 
   // If no path is found, return false
   if (!pull_out_path) {
-    return false;
-  }
-
-  // check collision
-  if (utils::checkCollisionBetweenPathFootprintsAndObjects(
-        vehicle_footprint, extractCollisionCheckSection(*pull_out_path, planner->getPlannerType()),
-        pull_out_lane_stop_objects, collision_check_margin)) {
     return false;
   }
 
@@ -806,49 +788,6 @@ bool StartPlannerModule::findPullOutPath(
   updateStatusWithNextPath(*pull_out_path, start_pose_candidate, planner->getPlannerType());
 
   return true;
-}
-
-PathWithLaneId StartPlannerModule::extractCollisionCheckSection(
-  const PullOutPath & path, const behavior_path_planner::PlannerType & planner_type)
-{
-  const std::map<PlannerType, double> collision_check_distances = {
-    {behavior_path_planner::PlannerType::SHIFT,
-     parameters_->shift_collision_check_distance_from_end},
-    {behavior_path_planner::PlannerType::GEOMETRIC,
-     parameters_->geometric_collision_check_distance_from_end}};
-
-  const double collision_check_distance_from_end = collision_check_distances.at(planner_type);
-
-  PathWithLaneId full_path;
-  for (const auto & partial_path : path.partial_paths) {
-    full_path.points.insert(
-      full_path.points.end(), partial_path.points.begin(), partial_path.points.end());
-  }
-
-  // Find the start index for collision check section based on the shift start pose
-  const auto shift_start_idx =
-    motion_utils::findNearestIndex(full_path.points, path.start_pose.position);
-
-  // Find the end index for collision check section based on the end pose and collision check
-  // distance
-  const auto collision_check_end_idx = [&]() -> size_t {
-    const auto end_pose_offset = motion_utils::calcLongitudinalOffsetPose(
-      full_path.points, path.end_pose.position, collision_check_distance_from_end);
-
-    return end_pose_offset
-             ? motion_utils::findNearestIndex(full_path.points, end_pose_offset->position)
-             : full_path.points.size() - 1;  // Use the last point if offset pose is not calculable
-  }();
-
-  // Extract the collision check section from the full path
-  PathWithLaneId collision_check_section;
-  if (shift_start_idx < collision_check_end_idx) {
-    collision_check_section.points.assign(
-      full_path.points.begin() + shift_start_idx,
-      full_path.points.begin() + collision_check_end_idx + 1);
-  }
-
-  return collision_check_section;
 }
 
 void StartPlannerModule::updateStatusWithCurrentPath(
