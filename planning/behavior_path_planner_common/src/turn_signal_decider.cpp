@@ -33,6 +33,8 @@
 
 namespace behavior_path_planner
 {
+using motion_utils::calcSignedArcLength;
+
 double calc_distance(
   const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
   const Pose & input_point, const double nearest_dist_threshold, const double nearest_yaw_threshold)
@@ -43,6 +45,11 @@ double calc_distance(
     path.points, current_pose.position, current_seg_idx, input_point.position, nearest_seg_idx);
 }
 
+/***
+ * @brief:
+ * Gets the turn signal info after comparing the turn signal info output from the behavior path
+ * module and comparing it to turn signal info obtained from intersections.
+ */
 TurnIndicatorsCommand TurnSignalDecider::getTurnSignal(
   const std::shared_ptr<RouteHandler> & route_handler, const PathWithLaneId & path,
   const TurnSignalInfo & turn_signal_info, const Pose & current_pose, const double current_vel,
@@ -606,4 +613,145 @@ geometry_msgs::msg::Quaternion TurnSignalDecider::calc_orientation(
   const double yaw = tier4_autoware_utils::calcAzimuthAngle(src_point, dst_point);
   return tier4_autoware_utils::createQuaternionFromRPY(0.0, pitch, yaw);
 }
+
+std::pair<TurnSignalInfo, bool> TurnSignalDecider::getBehaviorTurnSignalInfo(
+  const ShiftedPath & path, const ShiftLine & shift_line,
+  const lanelet::ConstLanelets & current_lanelets,
+  const std::shared_ptr<RouteHandler> route_handler,
+  const BehaviorPathPlannerParameters & parameters, const Odometry::ConstSharedPtr self_odometry,
+  const double current_shift_length, const bool is_driving_forward, const bool egos_lane_is_shifted,
+  const bool override_ego_stopped_check, const bool is_pull_out) const
+{
+  constexpr double THRESHOLD = 0.1;
+  const auto & p = parameters;
+  const auto & rh = route_handler;
+  const auto & ego_pose = self_odometry->pose.pose;
+  const auto & ego_speed = self_odometry->twist.twist.linear.x;
+
+  if (!is_driving_forward) {
+    TurnSignalInfo turn_signal_info{};
+    turn_signal_info.hazard_signal.command = HazardLightsCommand::ENABLE;
+    const auto back_start_pose = rh->getOriginalStartPose();
+    const Pose & start_pose = self_odometry->pose.pose;
+
+    turn_signal_info.desired_start_point = back_start_pose;
+    turn_signal_info.required_start_point = back_start_pose;
+    // pull_out start_pose is same to backward driving end_pose
+    turn_signal_info.required_end_point = start_pose;
+    turn_signal_info.desired_end_point = start_pose;
+    return std::make_pair(turn_signal_info, false);
+  }
+
+  if (shift_line.start_idx + 1 > path.shift_length.size()) {
+    RCLCPP_WARN(rclcpp::get_logger(__func__), "index inconsistency.");
+    return std::make_pair(TurnSignalInfo{}, true);
+  }
+
+  if (shift_line.start_idx + 1 > path.path.points.size()) {
+    RCLCPP_WARN(rclcpp::get_logger(__func__), "index inconsistency.");
+    return std::make_pair(TurnSignalInfo{}, true);
+  }
+
+  if (shift_line.end_idx + 1 > path.shift_length.size()) {
+    RCLCPP_WARN(rclcpp::get_logger(__func__), "index inconsistency.");
+    return std::make_pair(TurnSignalInfo{}, true);
+  }
+
+  if (shift_line.end_idx + 1 > path.path.points.size()) {
+    RCLCPP_WARN(rclcpp::get_logger(__func__), "index inconsistency.");
+    return std::make_pair(TurnSignalInfo{}, true);
+  }
+
+  const auto [start_shift_length, end_shift_length] =
+    std::invoke([&path, &shift_line, &egos_lane_is_shifted]() -> std::pair<double, double> {
+      const auto temp_start_shift_length = path.shift_length.at(shift_line.start_idx);
+      const auto temp_end_shift_length = path.shift_length.at(shift_line.end_idx);
+      // Shift is done using the target lane and not current ego's lane
+      if (!egos_lane_is_shifted) {
+        return std::make_pair(temp_end_shift_length, -temp_start_shift_length);
+      }
+      return std::make_pair(temp_start_shift_length, temp_end_shift_length);
+    });
+
+  const auto relative_shift_length = end_shift_length - start_shift_length;
+
+  // If shift length is shorter than the threshold, it does not need to turn on blinkers
+  if (std::fabs(relative_shift_length) < p.turn_signal_shift_length_threshold) {
+    return std::make_pair(TurnSignalInfo{}, true);
+  }
+
+  // If the vehicle does not shift anymore, we turn off the blinker
+  if (std::fabs(end_shift_length - current_shift_length) < THRESHOLD) {
+    return std::make_pair(TurnSignalInfo{}, true);
+  }
+
+  const auto get_command = [](const auto & shift_length) {
+    return shift_length > 0.0 ? TurnIndicatorsCommand::ENABLE_LEFT
+                              : TurnIndicatorsCommand::ENABLE_RIGHT;
+  };
+
+  const auto signal_prepare_distance =
+    std::max(ego_speed * p.turn_signal_search_time, p.turn_signal_minimum_search_distance);
+  const auto ego_front_to_shift_start =
+    calcSignedArcLength(path.path.points, ego_pose.position, shift_line.start_idx) -
+    p.vehicle_info.max_longitudinal_offset_m;
+
+  if (signal_prepare_distance < ego_front_to_shift_start) {
+    return std::make_pair(TurnSignalInfo{}, false);
+  }
+
+  const auto blinker_start_pose = path.path.points.at(shift_line.start_idx).point.pose;
+  const auto blinker_end_pose = path.path.points.at(shift_line.end_idx).point.pose;
+  const auto get_start_pose = [&](const auto & ego_to_shift_start) {
+    return ego_to_shift_start > 0.0 ? ego_pose : blinker_start_pose;
+  };
+
+  TurnSignalInfo turn_signal_info{};
+  turn_signal_info.desired_start_point = get_start_pose(ego_front_to_shift_start);
+  turn_signal_info.desired_end_point = blinker_end_pose;
+  turn_signal_info.required_start_point = blinker_start_pose;
+  turn_signal_info.required_end_point = blinker_end_pose;
+  turn_signal_info.turn_signal.command = get_command(relative_shift_length);
+
+  if (!p.turn_signal_on_swerving) {
+    return std::make_pair(turn_signal_info, false);
+  }
+
+  lanelet::ConstLanelet lanelet;
+  const auto query_pose = (egos_lane_is_shifted) ? shift_line.end : shift_line.start;
+  if (!rh->getClosestLaneletWithinRoute(query_pose, &lanelet)) {
+    return std::make_pair(TurnSignalInfo{}, true);
+  }
+
+  const auto left_same_direction_lane = rh->getLeftLanelet(lanelet, true, true);
+  const auto left_opposite_lanes = rh->getLeftOppositeLanelets(lanelet);
+  const auto right_same_direction_lane = rh->getRightLanelet(lanelet, true, true);
+  const auto right_opposite_lanes = rh->getRightOppositeLanelets(lanelet);
+  const auto has_left_lane = left_same_direction_lane.has_value() || !left_opposite_lanes.empty();
+  const auto has_right_lane =
+    right_same_direction_lane.has_value() || !right_opposite_lanes.empty();
+
+  if (
+    !is_pull_out && !existShiftSideLane(
+                      start_shift_length, end_shift_length, !has_left_lane, !has_right_lane,
+                      p.turn_signal_shift_length_threshold)) {
+    return std::make_pair(TurnSignalInfo{}, true);
+  }
+
+  if (!straddleRoadBound(path, shift_line, current_lanelets, p.vehicle_info)) {
+    return std::make_pair(TurnSignalInfo{}, true);
+  }
+
+  constexpr double STOPPED_THRESHOLD = 0.1;  // [m/s]
+  if (ego_speed < STOPPED_THRESHOLD && !override_ego_stopped_check) {
+    if (isNearEndOfShift(
+          start_shift_length, end_shift_length, ego_pose.position, current_lanelets,
+          p.turn_signal_shift_length_threshold)) {
+      return std::make_pair(TurnSignalInfo{}, true);
+    }
+  }
+
+  return std::make_pair(turn_signal_info, false);
+}
+
 }  // namespace behavior_path_planner
