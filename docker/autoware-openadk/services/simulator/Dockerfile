@@ -1,5 +1,5 @@
 ARG PLATFORM
-FROM ghcr.io/autowarefoundation/autoware-openadk:latest-base-${PLATFORM} as simulator-base
+FROM ghcr.io/autowarefoundation/autoware-openadk:latest-base as simulator-base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG PLATFORM
 ARG ROS_DISTRO
@@ -39,7 +39,7 @@ RUN source /opt/ros/"$ROS_DISTRO"/setup.bash \
   /usr/lib/jvm \
   /usr/lib/llvm*
 
-FROM ghcr.io/autowarefoundation/autoware-openadk:base-${ROS_DISTRO}-${PLATFORM} as simulator
+FROM ghcr.io/autowarefoundation/autoware-openadk:base-${ROS_DISTRO} as simulator
 ARG PLATFORM
 ARG ROS_DISTRO
 
