@@ -17,6 +17,7 @@
 
 #include "behavior_path_avoidance_module/data_structs.hpp"
 #include "behavior_path_avoidance_module/utils.hpp"
+#include "behavior_path_planner_common/utils/utils.hpp"
 
 #include <motion_utils/distance/distance.hpp>
 
@@ -132,6 +133,24 @@ public:
   {
     return PathShifter::calcLongitudinalDistFromJerk(
       shift_length, getLateralMaxJerkLimit(), getAvoidanceEgoSpeed());
+  }
+
+  double getFrontConstantDistance(const ObjectData & object) const
+  {
+    const auto object_type = utils::getHighestProbLabel(object.object.classification);
+    const auto object_parameter = parameters_->object_parameters.at(object_type);
+    const auto & additional_buffer_longitudinal =
+      object_parameter.use_conservative_buffer_longitudinal ? data_->parameters.base_link2front
+                                                            : 0.0;
+    return object_parameter.safety_buffer_longitudinal + additional_buffer_longitudinal;
+  }
+
+  double getRearConstantDistance(const ObjectData & object) const
+  {
+    const auto object_type = utils::getHighestProbLabel(object.object.classification);
+    const auto object_parameter = parameters_->object_parameters.at(object_type);
+    return object_parameter.safety_buffer_longitudinal + data_->parameters.base_link2rear +
+           object.length;
   }
 
   double getEgoShift() const

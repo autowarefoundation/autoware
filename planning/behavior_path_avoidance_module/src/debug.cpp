@@ -188,10 +188,25 @@ MarkerArray createObjectInfoMarkerArray(const ObjectDataArray & objects, std::st
   return msg;
 }
 
+MarkerArray createOverhangLaneletMarkerArray(const ObjectDataArray & objects, std::string && ns)
+{
+  MarkerArray msg;
+  msg.markers.reserve(objects.size());
+
+  for (const auto & object : objects) {
+    appendMarkerArray(
+      marker_utils::createLaneletsAreaMarkerArray(
+        {object.overhang_lanelet}, std::string(ns), 0.0, 0.0, 1.0),
+      &msg);
+  }
+
+  return msg;
+}
+
 MarkerArray avoidableObjectsMarkerArray(const ObjectDataArray & objects, std::string && ns)
 {
   MarkerArray msg;
-  msg.markers.reserve(objects.size() * 4);
+  msg.markers.reserve(objects.size() * 5);
 
   appendMarkerArray(
     createObjectsCubeMarkerArray(
@@ -202,6 +217,7 @@ MarkerArray avoidableObjectsMarkerArray(const ObjectDataArray & objects, std::st
   appendMarkerArray(createObjectInfoMarkerArray(objects, ns + "_info"), &msg);
   appendMarkerArray(createObjectPolygonMarkerArray(objects, ns + "_envelope_polygon"), &msg);
   appendMarkerArray(createToDrivableBoundDistance(objects, ns + "_to_drivable_bound"), &msg);
+  appendMarkerArray(createOverhangLaneletMarkerArray(objects, ns + "_overhang_lanelet"), &msg);
 
   return msg;
 }
@@ -209,7 +225,7 @@ MarkerArray avoidableObjectsMarkerArray(const ObjectDataArray & objects, std::st
 MarkerArray unAvoidableObjectsMarkerArray(const ObjectDataArray & objects, std::string && ns)
 {
   MarkerArray msg;
-  msg.markers.reserve(objects.size() * 4);
+  msg.markers.reserve(objects.size() * 5);
 
   appendMarkerArray(
     createObjectsCubeMarkerArray(
@@ -220,6 +236,7 @@ MarkerArray unAvoidableObjectsMarkerArray(const ObjectDataArray & objects, std::
   appendMarkerArray(createObjectInfoMarkerArray(objects, ns + "_info"), &msg);
   appendMarkerArray(createObjectPolygonMarkerArray(objects, ns + "_envelope_polygon"), &msg);
   appendMarkerArray(createToDrivableBoundDistance(objects, ns + "_to_drivable_bound"), &msg);
+  appendMarkerArray(createOverhangLaneletMarkerArray(objects, ns + "_overhang_lanelet"), &msg);
 
   return msg;
 }
@@ -450,6 +467,10 @@ MarkerArray createOtherObjectsMarkerArray(const ObjectDataArray & objects, const
     &msg);
   appendMarkerArray(
     createObjectInfoMarkerArray(filtered_objects, "others_" + convertToSnakeCase(ns) + "_info"),
+    &msg);
+  appendMarkerArray(
+    createOverhangLaneletMarkerArray(
+      filtered_objects, "others_" + convertToSnakeCase(ns) + "_overhang_lanelet"),
     &msg);
 
   return msg;

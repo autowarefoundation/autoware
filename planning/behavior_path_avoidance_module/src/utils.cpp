@@ -478,6 +478,14 @@ bool isWithinIntersection(
     object_polygon, utils::toPolygon2d(lanelet::utils::to2D(polygon.basicPolygon())));
 }
 
+bool isOnEgoLane(const ObjectData & object)
+{
+  const auto & object_pos = object.object.kinematics.initial_pose_with_covariance.pose.position;
+  return boost::geometry::within(
+    lanelet::utils::to2D(lanelet::utils::conversion::toLaneletPoint(object_pos)).basicPoint(),
+    object.overhang_lanelet.polygon2d().basicPolygon());
+}
+
 bool isParallelToEgoLane(const ObjectData & object, const double threshold)
 {
   const auto & object_pose = object.object.kinematics.initial_pose_with_covariance.pose;
@@ -524,6 +532,10 @@ bool isParkedVehicle(
   using lanelet::geometry::toArcCoordinates;
   using lanelet::utils::to2D;
   using lanelet::utils::conversion::toLaneletPoint;
+
+  if (object.is_within_intersection) {
+    return false;
+  }
 
   const auto & object_pos = object.object.kinematics.initial_pose_with_covariance.pose.position;
   const auto centerline_pos =
@@ -613,15 +625,11 @@ bool isParkedVehicle(
   return is_left_side_parked_vehicle || is_right_side_parked_vehicle;
 }
 
-bool isForceAvoidanceTarget(
+bool isAmbiguousStoppedVehicle(
   ObjectData & object, const AvoidancePlanningData & data,
   const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters)
 {
-  if (!parameters->enable_force_avoidance_for_stopped_vehicle) {
-    return false;
-  }
-
   const auto stop_time_longer_than_threshold =
     object.stop_time > parameters->threshold_time_force_avoidance_for_stopped_vehicle;
 
@@ -650,6 +658,10 @@ bool isForceAvoidanceTarget(
     !!rh->getRoutingGraphPtr()->left(object.overhang_lanelet)) {
     RCLCPP_DEBUG(rclcpp::get_logger(__func__), "object isn't on the edge lane.");
     return false;
+  }
+
+  if (!object.is_on_ego_lane) {
+    return true;
   }
 
   const auto & ego_pose = planner_data->self_odometry->pose.pose;
@@ -778,24 +790,17 @@ bool isSatisfiedWithVehicleCondition(
   const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters)
 {
-  using boost::geometry::within;
-  using lanelet::utils::to2D;
-  using lanelet::utils::conversion::toLaneletPoint;
-
   object.behavior = getObjectBehavior(object, parameters);
-  object.is_within_intersection = isWithinIntersection(object, planner_data->route_handler);
+  object.is_on_ego_lane = isOnEgoLane(object);
+  object.is_ambiguous = isAmbiguousStoppedVehicle(object, data, planner_data, parameters);
 
   // from here condition check for vehicle type objects.
-  if (isForceAvoidanceTarget(object, data, planner_data, parameters)) {
+  if (object.is_ambiguous && parameters->enable_force_avoidance_for_stopped_vehicle) {
     return true;
   }
 
   // check vehicle shift ratio
-  const auto & object_pos = object.object.kinematics.initial_pose_with_covariance.pose.position;
-  const auto on_ego_driving_lane = within(
-    to2D(toLaneletPoint(object_pos)).basicPoint(),
-    object.overhang_lanelet.polygon2d().basicPolygon());
-  if (on_ego_driving_lane) {
+  if (object.is_on_ego_lane) {
     if (object.is_parked) {
       return true;
     } else {
@@ -1755,6 +1760,8 @@ void filterTargetObjects(
     }
 
     if (filtering_utils::isVehicleTypeObject(o)) {
+      o.is_within_intersection =
+        filtering_utils::isWithinIntersection(o, planner_data->route_handler);
       o.is_parked = filtering_utils::isParkedVehicle(o, planner_data->route_handler, parameters);
       o.avoid_margin = filtering_utils::getAvoidMargin(o, planner_data, parameters);
 

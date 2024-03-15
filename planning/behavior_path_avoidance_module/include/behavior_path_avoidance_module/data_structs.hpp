@@ -384,7 +384,8 @@ struct ObjectData  // avoidance target
   rclcpp::Time last_move;
   double stop_time{0.0};
 
-  // store the information of the lanelet which the object's overhang is currently occupying
+  // It is one of the ego driving lanelets (closest lanelet to the object) and used in the logic to
+  // check whether the object is on the ego lane.
   lanelet::ConstLanelet overhang_lanelet;
 
   // the position at the detected moment
@@ -419,6 +420,12 @@ struct ObjectData  // avoidance target
 
   // is parked vehicle on road shoulder
   bool is_parked{false};
+
+  // is driving on ego current lane
+  bool is_on_ego_lane{false};
+
+  // is ambiguous stopped vehicle.
+  bool is_ambiguous{false};
 
   // object direction.
   Direction direction{Direction::NONE};

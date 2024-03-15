@@ -132,7 +132,7 @@ void AvoidanceByLaneChangeModuleManager::init(rclcpp::Node * node)
   }
 
   {
-    const std::string ns = "avoidance.target_filtering.force_avoidance.";
+    const std::string ns = "avoidance.target_filtering.avoidance_for_ambiguous_vehicle.";
     p.enable_force_avoidance_for_stopped_vehicle =
       getOrDeclareParameter<bool>(*node, ns + "enable");
     p.threshold_time_force_avoidance_for_stopped_vehicle =
