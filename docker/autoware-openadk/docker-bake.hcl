@@ -11,7 +11,7 @@ target "docker-metadata-action-simulator" {}
 // Autoware Openadk services
 target "base" {
   inherits = ["docker-metadata-action-base"]
-  dockerfile = "docker/autoware-openadk/Dockerfile"
+  dockerfile = "docker/autoware/Dockerfile"
   target = "base"
 }
 
