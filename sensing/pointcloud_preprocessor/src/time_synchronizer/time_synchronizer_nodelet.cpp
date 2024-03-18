@@ -58,7 +58,9 @@ PointCloudDataSynchronizerComponent::PointCloudDataSynchronizerComponent(
   std::string synchronized_pointcloud_postfix;
   {
     output_frame_ = static_cast<std::string>(declare_parameter("output_frame", ""));
-    if (output_frame_.empty()) {
+    keep_input_frame_in_synchronized_pointcloud_ =
+      static_cast<bool>(declare_parameter("keep_input_frame_in_synchronized_pointcloud", false));
+    if (output_frame_.empty() && !keep_input_frame_in_synchronized_pointcloud_) {
       RCLCPP_ERROR(get_logger(), "Need an 'output_frame' parameter to be set before continuing!");
       return;
     }
@@ -351,7 +353,18 @@ PointCloudDataSynchronizerComponent::synchronizeClouds()
       pcl_ros::transformPointCloud(
         adjust_to_old_data_transform, *transformed_cloud_ptr,
         *transformed_delay_compensated_cloud_ptr);
-
+      // transform to sensor frame if needed
+      bool need_transform_to_sensor_frame = (e.second->header.frame_id != output_frame_);
+      if (keep_input_frame_in_synchronized_pointcloud_ && need_transform_to_sensor_frame) {
+        sensor_msgs::msg::PointCloud2::SharedPtr
+          transformed_delay_compensated_cloud_ptr_in_input_frame(
+            new sensor_msgs::msg::PointCloud2());
+        transformPointCloud(
+          transformed_delay_compensated_cloud_ptr,
+          transformed_delay_compensated_cloud_ptr_in_input_frame, e.second->header.frame_id);
+        transformed_delay_compensated_cloud_ptr =
+          transformed_delay_compensated_cloud_ptr_in_input_frame;
+      }
       // gather transformed clouds
       transformed_delay_compensated_cloud_ptr->header.stamp = oldest_stamp;
       transformed_delay_compensated_cloud_ptr->header.frame_id = output_frame_;

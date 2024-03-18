@@ -138,6 +138,7 @@ private:
 
   /** \brief Output TF frame the concatenated points should be transformed to. */
   std::string output_frame_;
+  bool keep_input_frame_in_synchronized_pointcloud_;
 
   /** \brief Input point cloud topics. */
   // XmlRpc::XmlRpcValue input_topics_;

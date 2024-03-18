@@ -112,7 +112,9 @@ PointCloudConcatenateDataSynchronizerComponent::PointCloudConcatenateDataSynchro
     }
 
     // Check if publish synchronized pointcloud
-    publish_synchronized_pointcloud_ = declare_parameter("publish_synchronized_pointcloud", false);
+    publish_synchronized_pointcloud_ = declare_parameter("publish_synchronized_pointcloud", true);
+    keep_input_frame_in_synchronized_pointcloud_ =
+      declare_parameter("keep_input_frame_in_synchronized_pointcloud", true);
     synchronized_pointcloud_postfix_ =
       declare_parameter("synchronized_pointcloud_postfix", "pointcloud");
   }
@@ -397,10 +399,23 @@ PointCloudConcatenateDataSynchronizerComponent::combineClouds(
         pcl::concatenatePointCloud(
           *concat_cloud_ptr, *transformed_delay_compensated_cloud_ptr, *concat_cloud_ptr);
       }
-      // gather transformed clouds
-      transformed_delay_compensated_cloud_ptr->header.stamp = oldest_stamp;
-      transformed_delay_compensated_cloud_ptr->header.frame_id = output_frame_;
-      transformed_clouds[e.first] = transformed_delay_compensated_cloud_ptr;
+      // convert to original sensor frame if necessary
+      bool need_transform_to_sensor_frame = (e.second->header.frame_id != output_frame_);
+      if (keep_input_frame_in_synchronized_pointcloud_ && need_transform_to_sensor_frame) {
+        sensor_msgs::msg::PointCloud2::SharedPtr transformed_cloud_ptr_in_sensor_frame(
+          new sensor_msgs::msg::PointCloud2());
+        pcl_ros::transformPointCloud(
+          (std::string)e.second->header.frame_id, *transformed_delay_compensated_cloud_ptr,
+          *transformed_cloud_ptr_in_sensor_frame, *tf2_buffer_);
+        transformed_cloud_ptr_in_sensor_frame->header.stamp = oldest_stamp;
+        transformed_cloud_ptr_in_sensor_frame->header.frame_id = e.second->header.frame_id;
+        transformed_clouds[e.first] = transformed_cloud_ptr_in_sensor_frame;
+      } else {
+        transformed_delay_compensated_cloud_ptr->header.stamp = oldest_stamp;
+        transformed_delay_compensated_cloud_ptr->header.frame_id = output_frame_;
+        transformed_clouds[e.first] = transformed_delay_compensated_cloud_ptr;
+      }
+
     } else {
       not_subscribed_topic_names_.insert(e.first);
     }
@@ -417,20 +432,6 @@ void PointCloudConcatenateDataSynchronizerComponent::publish()
 
   const auto & transformed_raw_points =
     PointCloudConcatenateDataSynchronizerComponent::combineClouds(concat_cloud_ptr);
-
-  for (const auto & e : cloud_stdmap_) {
-    if (e.second != nullptr) {
-      if (debug_publisher_) {
-        const auto pipeline_latency_ms =
-          std::chrono::duration<double, std::milli>(
-            std::chrono::nanoseconds(
-              (this->get_clock()->now() - e.second->header.stamp).nanoseconds()))
-            .count();
-        debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
-          "debug" + e.first + "/pipeline_latency_ms", pipeline_latency_ms);
-      }
-    }
-  }
 
   // publish concatenated pointcloud
   if (concat_cloud_ptr) {
@@ -468,6 +469,19 @@ void PointCloudConcatenateDataSynchronizerComponent::publish()
       "debug/cyclic_time_ms", cyclic_time_ms);
     debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
       "debug/processing_time_ms", processing_time_ms);
+  }
+  for (const auto & e : cloud_stdmap_) {
+    if (e.second != nullptr) {
+      if (debug_publisher_) {
+        const auto pipeline_latency_ms =
+          std::chrono::duration<double, std::milli>(
+            std::chrono::nanoseconds(
+              (this->get_clock()->now() - e.second->header.stamp).nanoseconds()))
+            .count();
+        debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+          "debug" + e.first + "/pipeline_latency_ms", pipeline_latency_ms);
+      }
+    }
   }
 }
 
