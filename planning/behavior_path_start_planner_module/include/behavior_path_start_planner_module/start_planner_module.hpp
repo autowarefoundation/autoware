@@ -33,6 +33,7 @@
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
+#include <lanelet2_core/Forward.h>
 #include <tf2/utils.h>
 
 #include <atomic>
@@ -240,6 +241,10 @@ private:
   PullOutStatus status_;
   mutable StartPlannerDebugData debug_data_;
 
+  // Keeps track of lanelets that should be ignored when calculating the turnSignalInfo for this
+  // module's output. If the ego vehicle is in this lanelet, the calculation is skipped.
+  std::optional<lanelet::Id> ignore_signal_{std::nullopt};
+
   std::deque<nav_msgs::msg::Odometry::ConstSharedPtr> odometry_buffer_;
 
   std::unique_ptr<rclcpp::Time> last_route_received_time_;
@@ -264,7 +269,7 @@ private:
   std::shared_ptr<LaneDepartureChecker> lane_departure_checker_;
 
   // turn signal
-  TurnSignalInfo calcTurnSignalInfo() const;
+  TurnSignalInfo calcTurnSignalInfo();
 
   void incrementPathIndex();
   PathWithLaneId getCurrentPath() const;

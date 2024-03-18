@@ -1154,103 +1154,70 @@ bool StartPlannerModule::hasFinishedCurrentPath()
   return is_near_target && isStopped();
 }
 
-TurnSignalInfo StartPlannerModule::calcTurnSignalInfo() const
+TurnSignalInfo StartPlannerModule::calcTurnSignalInfo()
 {
-  TurnSignalInfo turn_signal{};  // output
+  const auto path = getFullPath();
+  if (path.points.empty()) return getPreviousModuleOutput().turn_signal_info;
 
   const Pose & current_pose = planner_data_->self_odometry->pose.pose;
-  const Pose & start_pose = status_.pull_out_path.start_pose;
-  const Pose & end_pose = status_.pull_out_path.end_pose;
+  const auto shift_start_idx =
+    motion_utils::findNearestIndex(path.points, status_.pull_out_path.start_pose.position);
+  const auto shift_end_idx =
+    motion_utils::findNearestIndex(path.points, status_.pull_out_path.end_pose.position);
+  const lanelet::ConstLanelets current_lanes = utils::getCurrentLanes(planner_data_);
 
-  // turn on hazard light when backward driving
-  if (!status_.driving_forward) {
-    turn_signal.hazard_signal.command = HazardLightsCommand::ENABLE;
-    const auto back_start_pose = planner_data_->route_handler->getOriginalStartPose();
-    turn_signal.desired_start_point = back_start_pose;
-    turn_signal.required_start_point = back_start_pose;
-    // pull_out start_pose is same to backward driving end_pose
-    turn_signal.required_end_point = start_pose;
-    turn_signal.desired_end_point = start_pose;
-    return turn_signal;
+  const auto is_ignore_signal = [this](const lanelet::Id & id) {
+    if (!ignore_signal_.has_value()) {
+      return false;
+    }
+    return ignore_signal_.value() == id;
+  };
+
+  const auto update_ignore_signal = [this](const lanelet::Id & id, const bool is_ignore) {
+    return is_ignore ? std::make_optional(id) : std::nullopt;
+  };
+
+  lanelet::Lanelet closest_lanelet;
+  lanelet::utils::query::getClosestLanelet(current_lanes, current_pose, &closest_lanelet);
+
+  if (is_ignore_signal(closest_lanelet.id())) {
+    return getPreviousModuleOutput().turn_signal_info;
   }
 
-  // turn on right signal until passing pull_out end point
-  const auto path = getFullPath();
-  // pull out path does not overlap
-  const double distance_from_end =
-    motion_utils::calcSignedArcLength(path.points, end_pose.position, current_pose.position);
+  const double current_shift_length =
+    lanelet::utils::getArcCoordinates(current_lanes, current_pose).distance;
 
-  if (path.points.empty()) {
-    return {};
-  }
+  constexpr bool egos_lane_is_shifted = true;
+  constexpr bool is_pull_out = true;
 
-  // calculate lateral offset from pull out target lane center line
-  lanelet::ConstLanelet closest_road_lane;
-  const double backward_path_length =
-    planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
-  const auto road_lanes = utils::getExtendedCurrentLanes(
-    planner_data_, backward_path_length, std::numeric_limits<double>::max(),
-    /*forward_only_in_route*/ true);
-  lanelet::utils::query::getClosestLanelet(road_lanes, start_pose, &closest_road_lane);
-  const double lateral_offset =
-    lanelet::utils::getLateralDistanceToCenterline(closest_road_lane, start_pose);
-
-  turn_signal.turn_signal.command = std::invoke([&]() {
-    if (distance_from_end >= 0.0) return TurnIndicatorsCommand::DISABLE;
-    if (lateral_offset > parameters_->th_turn_signal_on_lateral_offset)
-      return TurnIndicatorsCommand::ENABLE_RIGHT;
-    if (lateral_offset < -parameters_->th_turn_signal_on_lateral_offset)
-      return TurnIndicatorsCommand::ENABLE_LEFT;
-    return TurnIndicatorsCommand::DISABLE;
-  });
-
-  turn_signal.desired_start_point = start_pose;
-  turn_signal.required_start_point = start_pose;
-  turn_signal.desired_end_point = end_pose;
-
-  // check if intersection exists within search length
-  const bool is_near_intersection = std::invoke([&]() {
-    const double check_length = parameters_->intersection_search_length;
-    double accumulated_length = 0.0;
-    const size_t current_idx = motion_utils::findNearestIndex(path.points, current_pose.position);
-    for (size_t i = current_idx; i < path.points.size() - 1; ++i) {
-      const auto & p = path.points.at(i);
-      for (const auto & lane : planner_data_->route_handler->getLaneletsFromIds(p.lane_ids)) {
-        const std::string turn_direction = lane.attributeOr("turn_direction", "else");
-        if (turn_direction == "right" || turn_direction == "left" || turn_direction == "straight") {
-          return true;
-        }
-      }
-      accumulated_length += tier4_autoware_utils::calcDistance2d(p, path.points.at(i + 1));
-      if (accumulated_length > check_length) {
-        return false;
-      }
+  // In Geometric pull out, the ego stops once and then steers the wheels to the opposite direction.
+  // This sometimes causes the getBehaviorTurnSignalInfo method to detect the ego as stopped and
+  // close to complete its shift, so it wrongly turns off the blinkers, this override helps avoid
+  // this issue.
+  const bool override_ego_stopped_check = std::invoke([&]() {
+    if (status_.planner_type != PlannerType::GEOMETRIC) {
+      return false;
     }
-    return false;
+    constexpr double distance_threshold = 1.0;
+    const auto stop_point = status_.pull_out_path.partial_paths.front().points.back();
+    const double distance_from_ego_to_stop_point = std::abs(motion_utils::calcSignedArcLength(
+      path.points, stop_point.point.pose.position, current_pose.position));
+    return distance_from_ego_to_stop_point < distance_threshold;
   });
 
-  turn_signal.required_end_point = std::invoke([&]() {
-    if (is_near_intersection) return end_pose;
-    const double length_start_to_end =
-      motion_utils::calcSignedArcLength(path.points, start_pose.position, end_pose.position);
-    const auto ratio = std::clamp(
-      parameters_->length_ratio_for_turn_signal_deactivation_near_intersection, 0.0, 1.0);
+  const auto [new_signal, is_ignore] = planner_data_->getBehaviorTurnSignalInfo(
+    path, shift_start_idx, shift_end_idx, current_lanes, current_shift_length,
+    status_.driving_forward, egos_lane_is_shifted, override_ego_stopped_check, is_pull_out);
+  ignore_signal_ = update_ignore_signal(closest_lanelet.id(), is_ignore);
 
-    const double required_end_length = length_start_to_end * ratio;
-    double accumulated_length = 0.0;
-    const size_t start_idx = motion_utils::findNearestIndex(path.points, start_pose.position);
-    for (size_t i = start_idx; i < path.points.size() - 1; ++i) {
-      accumulated_length +=
-        tier4_autoware_utils::calcDistance2d(path.points.at(i), path.points.at(i + 1));
-      if (accumulated_length > required_end_length) {
-        return path.points.at(i).point.pose;
-      }
-    }
-    // not found required end point
-    return end_pose;
-  });
+  const auto original_signal = getPreviousModuleOutput().turn_signal_info;
+  const auto current_seg_idx = planner_data_->findEgoSegmentIndex(path.points);
+  const auto output_turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
+    path, current_pose, current_seg_idx, original_signal, new_signal,
+    planner_data_->parameters.ego_nearest_dist_threshold,
+    planner_data_->parameters.ego_nearest_yaw_threshold);
 
-  return turn_signal;
+  return output_turn_signal_info;
 }
 
 bool StartPlannerModule::isSafePath() const
