@@ -104,7 +104,7 @@ lanelet::ConstLanelets getPullOutLanes(
     /*forward_only_in_route*/ true);
 }
 
-PathWithLaneId extractCollisionCheckSection(
+std::optional<PathWithLaneId> extractCollisionCheckSection(
   const PullOutPath & path, const double collision_check_distance_from_end)
 {
   PathWithLaneId full_path;
@@ -113,6 +113,7 @@ PathWithLaneId extractCollisionCheckSection(
       full_path.points.end(), partial_path.points.begin(), partial_path.points.end());
   }
 
+  if (full_path.points.empty()) return std::nullopt;
   // Find the start index for collision check section based on the shift start pose
   const auto shift_start_idx =
     motion_utils::findNearestIndex(full_path.points, path.start_pose.position);

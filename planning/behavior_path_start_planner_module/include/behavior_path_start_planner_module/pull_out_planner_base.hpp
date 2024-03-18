@@ -83,11 +83,14 @@ protected:
     utils::path_safety_checker::filterObjectsByClass(
       pull_out_lane_stop_objects, parameters_.object_types_to_check_for_path_generation);
 
-    return utils::checkCollisionBetweenPathFootprintsAndObjects(
-      vehicle_footprint_,
+    const auto collision_check_section_path =
       behavior_path_planner::start_planner_utils::extractCollisionCheckSection(
-        pull_out_path, collision_check_distance_from_end),
-      pull_out_lane_stop_objects, collision_check_margin_);
+        pull_out_path, collision_check_distance_from_end);
+    if (!collision_check_section_path) return true;
+
+    return utils::checkCollisionBetweenPathFootprintsAndObjects(
+      vehicle_footprint_, collision_check_section_path.value(), pull_out_lane_stop_objects,
+      collision_check_margin_);
   };
   std::shared_ptr<const PlannerData> planner_data_;
   vehicle_info_util::VehicleInfo vehicle_info_;
