@@ -758,12 +758,18 @@ lanelet::ConstLanelets RouteHandler::getShoulderLaneletSequenceAfter(
 
   double length = 0;
   lanelet::ConstLanelet current_lanelet = lanelet;
+  std::set<lanelet::Id> searched_ids{};
   while (rclcpp::ok() && length < min_length) {
     lanelet::ConstLanelet next_lanelet;
     if (!getFollowingShoulderLanelet(current_lanelet, &next_lanelet)) {
       break;
     }
     lanelet_sequence_forward.push_back(next_lanelet);
+    if (searched_ids.find(next_lanelet.id()) != searched_ids.end()) {
+      // loop shoulder detected
+      break;
+    }
+    searched_ids.insert(next_lanelet.id());
     current_lanelet = next_lanelet;
     length +=
       static_cast<double>(boost::geometry::length(next_lanelet.centerline().basicLineString()));
@@ -794,6 +800,7 @@ lanelet::ConstLanelets RouteHandler::getShoulderLaneletSequenceUpTo(
 
   double length = 0;
   lanelet::ConstLanelet current_lanelet = lanelet;
+  std::set<lanelet::Id> searched_ids{};
   while (rclcpp::ok() && length < min_length) {
     lanelet::ConstLanelet prev_lanelet;
     if (!getPreviousShoulderLanelet(current_lanelet, &prev_lanelet)) {
@@ -801,6 +808,11 @@ lanelet::ConstLanelets RouteHandler::getShoulderLaneletSequenceUpTo(
     }
 
     lanelet_sequence_backward.insert(lanelet_sequence_backward.begin(), prev_lanelet);
+    if (searched_ids.find(prev_lanelet.id()) != searched_ids.end()) {
+      // loop shoulder detected
+      break;
+    }
+    searched_ids.insert(prev_lanelet.id());
     current_lanelet = prev_lanelet;
     length +=
       static_cast<double>(boost::geometry::length(prev_lanelet.centerline().basicLineString()));

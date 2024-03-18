@@ -1856,6 +1856,8 @@ bool GoalPlannerModule::isCrossingPossible(
     Pose end_lane_pose{};
     end_lane_pose.orientation.w = 1.0;
     end_lane_pose.position = lanelet::utils::conversion::toGeomMsgPt(end_lane.centerline().front());
+    // NOTE: this line does not specify the /forward/backward length, so if the shoulders form a
+    // loop, this returns all shoulder lanes in the loop
     end_lane_sequence = route_handler->getShoulderLaneletSequence(end_lane, end_lane_pose);
   } else {
     const double dist = std::numeric_limits<double>::max();
