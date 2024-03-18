@@ -218,8 +218,6 @@ protected:
     LaneChangePaths * candidate_paths, const utils::path_safety_checker::RSSparams rss_params,
     const bool is_stuck, const bool check_safety) const = 0;
 
-  virtual TurnSignalInfo calcTurnSignalInfo() const = 0;
-
   virtual bool isValidPath(const PathWithLaneId & path) const = 0;
 
   virtual bool isAbleToStopSafely() const = 0;
