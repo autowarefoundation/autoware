@@ -16,6 +16,8 @@
       terminal_safe_distance_margin : 3.0 # Stop margin at the goal. This value cannot exceed safe distance margin. [m]
       hold_stop_velocity_threshold: 0.01 # The maximum ego velocity to hold stopping [m/s]
       hold_stop_distance_threshold: 0.3 # The ego keeps stopping if the distance to stop changes within the threshold [m]
+      slow_down_min_acc: -1.0         # slow down min deceleration [m/ss]
+      slow_down_min_jerk: -1.0        # slow down min jerk [m/sss]
 
       nearest_dist_deviation_threshold: 3.0 # [m] for finding nearest index
       nearest_yaw_deviation_threshold: 1.57 # [rad] for finding nearest index
