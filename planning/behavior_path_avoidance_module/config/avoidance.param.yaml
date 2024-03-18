@@ -155,8 +155,10 @@
         # params for avoidance of vehicle type objects that are ambiguous as to whether they are parked.
         avoidance_for_ambiguous_vehicle:
           enable: false                                  # [-]
-          time_threshold: 1.0                            # [s]
-          distance_threshold: 1.0                        # [m]
+          closest_distance_to_wait_and_see: 10.0         # [m]
+          condition:
+            time_threshold: 1.0                          # [s]
+            distance_threshold: 1.0                      # [m]
           ignore_area:
             traffic_light:
               front_distance: 100.0                      # [m]

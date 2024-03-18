@@ -100,7 +100,7 @@ struct AvoidanceParameters
   bool enable_cancel_maneuver{false};
 
   // enable avoidance for all parking vehicle
-  bool enable_force_avoidance_for_stopped_vehicle{false};
+  bool enable_avoidance_for_ambiguous_vehicle{false};
 
   // enable yield maneuver.
   bool enable_yield_maneuver{false};
@@ -184,8 +184,9 @@ struct AvoidanceParameters
   double object_check_min_road_shoulder_width{0.0};
 
   // force avoidance
-  double threshold_time_force_avoidance_for_stopped_vehicle{0.0};
-  double force_avoidance_distance_threshold{0.0};
+  double closest_distance_to_wait_and_see_for_ambiguous_vehicle{0.0};
+  double time_threshold_for_ambiguous_vehicle{0.0};
+  double distance_threshold_for_ambiguous_vehicle{0.0};
 
   // when complete avoidance motion, there is a distance margin with the object
   // for longitudinal direction

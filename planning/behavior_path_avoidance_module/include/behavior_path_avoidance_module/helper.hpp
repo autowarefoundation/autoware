@@ -289,6 +289,35 @@ public:
     });
   }
 
+  bool isReady(const ObjectDataArray & objects) const
+  {
+    if (objects.empty()) {
+      return true;
+    }
+
+    const auto object = objects.front();
+
+    if (!object.is_ambiguous) {
+      return true;
+    }
+
+    if (!object.avoid_margin.has_value()) {
+      return true;
+    }
+
+    const auto is_object_on_right = utils::avoidance::isOnRight(object);
+    const auto desire_shift_length =
+      getShiftLength(object, is_object_on_right, object.avoid_margin.value());
+
+    const auto prepare_distance = getMinimumPrepareDistance();
+    const auto constant_distance = getFrontConstantDistance(object);
+    const auto avoidance_distance = getMinAvoidanceDistance(desire_shift_length);
+
+    return object.longitudinal <
+           prepare_distance + constant_distance + avoidance_distance +
+             parameters_->closest_distance_to_wait_and_see_for_ambiguous_vehicle;
+  }
+
   bool isReady(const AvoidLineArray & new_shift_lines, const double current_shift_length) const
   {
     if (std::abs(current_shift_length) < 1e-3) {

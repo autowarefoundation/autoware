@@ -133,10 +133,13 @@ void AvoidanceByLaneChangeModuleManager::init(rclcpp::Node * node)
 
   {
     const std::string ns = "avoidance.target_filtering.avoidance_for_ambiguous_vehicle.";
-    p.enable_force_avoidance_for_stopped_vehicle =
-      getOrDeclareParameter<bool>(*node, ns + "enable");
-    p.threshold_time_force_avoidance_for_stopped_vehicle =
-      getOrDeclareParameter<double>(*node, ns + "time_threshold");
+    p.enable_avoidance_for_ambiguous_vehicle = getOrDeclareParameter<bool>(*node, ns + "enable");
+    p.closest_distance_to_wait_and_see_for_ambiguous_vehicle =
+      getOrDeclareParameter<double>(*node, ns + "closest_distance_to_wait_and_see");
+    p.time_threshold_for_ambiguous_vehicle =
+      getOrDeclareParameter<double>(*node, ns + "condition.time_threshold");
+    p.distance_threshold_for_ambiguous_vehicle =
+      getOrDeclareParameter<double>(*node, ns + "condition.distance_threshold");
     p.object_ignore_section_traffic_light_in_front_distance =
       getOrDeclareParameter<double>(*node, ns + "ignore_area.traffic_light.front_distance");
     p.object_ignore_section_crosswalk_in_front_distance =

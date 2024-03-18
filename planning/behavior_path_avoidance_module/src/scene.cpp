@@ -522,7 +522,8 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    */
   data.comfortable = helper_->isComfortable(data.new_shift_line);
   data.safe = isSafePath(data.candidate_path, debug);
-  data.ready = helper_->isReady(data.new_shift_line, path_shifter_.getLastShiftLength());
+  data.ready = helper_->isReady(data.new_shift_line, path_shifter_.getLastShiftLength()) &&
+               helper_->isReady(data.target_objects);
 }
 
 void AvoidanceModule::fillEgoStatus(
