@@ -20,6 +20,7 @@
 #include <autoware_internal_msgs/msg/published_time.hpp>
 #include <std_msgs/msg/header.hpp>
 
+#include <cstring>
 #include <functional>
 #include <map>
 #include <string>
