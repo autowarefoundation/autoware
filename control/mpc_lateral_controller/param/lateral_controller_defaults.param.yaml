@@ -1,58 +1,58 @@
 /**:
   ros__parameters:
     # -- system --
-    traj_resample_dist: 0.1 # path resampling interval [m]
-    use_steer_prediction: false # flag for using steer prediction (do not use steer measurement)
-    admissible_position_error: 5.0 # stop mpc calculation when error is larger than the following value
-    admissible_yaw_error_rad: 1.57 # stop mpc calculation when error is larger than the following value
+    traj_resample_dist: 0.1         # path resampling interval [m]
+    use_steer_prediction: false     # flag for using steer prediction (do not use steer measurement)
+    admissible_position_error: 5.0  # stop mpc calculation when error is larger than the following value
+    admissible_yaw_error_rad: 1.57  # stop mpc calculation when error is larger than the following value
 
     # -- path smoothing --
-    enable_path_smoothing: false # flag for path smoothing
+    enable_path_smoothing: false   # flag for path smoothing
     path_filter_moving_ave_num: 25 # param of moving average filter for path smoothing
-    curvature_smoothing_num_traj: 15 # point-to-point index distance used in curvature calculation (for trajectory): curvature is calculated from three points p(i-num), p(i), p(i+num)
-    curvature_smoothing_num_ref_steer: 15 # point-to-point index distance used in curvature calculation (for steer command reference): curvature is calculated from three points p(i-num), p(i), p(i+num)
+    curvature_smoothing_num_traj: 15        # point-to-point index distance used in curvature calculation (for trajectory): curvature is calculated from three points p(i-num), p(i), p(i+num)
+    curvature_smoothing_num_ref_steer: 15   # point-to-point index distance used in curvature calculation (for steer command reference): curvature is calculated from three points p(i-num), p(i), p(i+num)
 
     # -- trajectory extending --
-    extend_trajectory_for_end_yaw_control: true  # flag of trajectory extending for terminal yaw control
+    extend_trajectory_for_end_yaw_control: false  # flag of trajectory extending for terminal yaw control
 
     # -- mpc optimization --
-    qp_solver_type: "osqp" # optimization solver option (unconstraint_fast or osqp)
-    mpc_prediction_horizon: 50 # prediction horizon step
-    mpc_prediction_dt: 0.1 # prediction horizon period [s]
-    mpc_weight_lat_error: 0.1 # lateral error weight in matrix Q
-    mpc_weight_heading_error: 0.0 # heading error weight in matrix Q
-    mpc_weight_heading_error_squared_vel: 0.3 # heading error * velocity weight in matrix Q
-    mpc_weight_steering_input: 1.0 # steering error weight in matrix R
-    mpc_weight_steering_input_squared_vel: 0.25 # steering error * velocity weight in matrix R
-    mpc_weight_lat_jerk: 0.0 # lateral jerk weight in matrix R
-    mpc_weight_steer_rate: 0.0 # steering rate weight in matrix R
-    mpc_weight_steer_acc: 0.000001 # steering angular acceleration weight in matrix R
-    mpc_low_curvature_weight_lat_error: 0.1 # lateral error weight in matrix Q in low curvature point
-    mpc_low_curvature_weight_heading_error: 0.0 # heading error weight in matrix Q in low curvature point
-    mpc_low_curvature_weight_heading_error_squared_vel: 0.3 # heading error * velocity weight in matrix Q in low curvature point
-    mpc_low_curvature_weight_steering_input: 1.0 # steering error weight in matrix R in low curvature point
-    mpc_low_curvature_weight_steering_input_squared_vel: 0.25 # steering error * velocity weight in matrix R in low curvature point
-    mpc_low_curvature_weight_lat_jerk: 0.0 # lateral jerk weight in matrix R in low curvature point
-    mpc_low_curvature_weight_steer_rate: 0.0 # steering rate weight in matrix R in low curvature point
-    mpc_low_curvature_weight_steer_acc: 0.000001 # steering angular acceleration weight in matrix R in low curvature point
-    mpc_low_curvature_thresh_curvature: 0.0 # threshold of curvature to use "low_curvature" parameter (recommend: 0.01~0.03)
-    mpc_weight_terminal_lat_error: 1.0 # terminal lateral error weight in matrix Q to improve mpc stability
-    mpc_weight_terminal_heading_error: 0.1 # terminal heading error weight in matrix Q to improve mpc stability
-    mpc_zero_ff_steer_deg: 0.5 # threshold that feed-forward angle becomes zero
-    mpc_acceleration_limit: 2.0 # limit on the vehicle's acceleration
-    mpc_velocity_time_constant: 0.3 # time constant used for velocity smoothing
-    mpc_min_prediction_length: 5.0 # minimum prediction length
+    qp_solver_type: "osqp"                       # optimization solver option (unconstraint_fast or osqp)
+    mpc_prediction_horizon: 50                   # prediction horizon step
+    mpc_prediction_dt: 0.1                       # prediction horizon period [s]
+    mpc_weight_lat_error: 1.0                    # lateral error weight in matrix Q
+    mpc_weight_heading_error: 0.0                # heading error weight in matrix Q
+    mpc_weight_heading_error_squared_vel: 0.3    # heading error * velocity weight in matrix Q
+    mpc_weight_steering_input: 1.0               # steering error weight in matrix R
+    mpc_weight_steering_input_squared_vel: 0.25  # steering error * velocity weight in matrix R
+    mpc_weight_lat_jerk: 0.1                     # lateral jerk weight in matrix R
+    mpc_weight_steer_rate: 0.0                   # steering rate weight in matrix R
+    mpc_weight_steer_acc: 0.000001               # steering angular acceleration weight in matrix R
+    mpc_low_curvature_weight_lat_error: 0.1                    # lateral error weight in matrix Q in low curvature point
+    mpc_low_curvature_weight_heading_error: 0.0                # heading error weight in matrix Q in low curvature point
+    mpc_low_curvature_weight_heading_error_squared_vel: 0.3    # heading error * velocity weight in matrix Q in low curvature point
+    mpc_low_curvature_weight_steering_input: 1.0               # steering error weight in matrix R in low curvature point
+    mpc_low_curvature_weight_steering_input_squared_vel: 0.25  # steering error * velocity weight in matrix R in low curvature point
+    mpc_low_curvature_weight_lat_jerk: 0.0                     # lateral jerk weight in matrix R in low curvature point
+    mpc_low_curvature_weight_steer_rate: 0.0                   # steering rate weight in matrix R in low curvature point
+    mpc_low_curvature_weight_steer_acc: 0.000001               # steering angular acceleration weight in matrix R in low curvature point
+    mpc_low_curvature_thresh_curvature: 0.0                    # threshold of curvature to use "low_curvature" parameter (recommend: 0.01~0.03)
+    mpc_weight_terminal_lat_error: 1.0           # terminal lateral error weight in matrix Q to improve mpc stability
+    mpc_weight_terminal_heading_error: 0.1       # terminal heading error weight in matrix Q to improve mpc stability
+    mpc_zero_ff_steer_deg: 0.5                   # threshold that feed-forward angle becomes zero
+    mpc_acceleration_limit: 2.0                  # limit on the vehicle's acceleration
+    mpc_velocity_time_constant: 0.3              # time constant used for velocity smoothing
+    mpc_min_prediction_length: 5.0               # minimum prediction length
 
     # -- vehicle model --
     vehicle_model_type: "kinematics" # vehicle model type for mpc prediction. option is kinematics, kinematics_no_delay, and dynamics
-    input_delay: 0.24 # steering input delay time for delay compensation
-    vehicle_model_steer_tau: 0.3 # steering dynamics time constant (1d approximation) [s]
-    steer_rate_lim_dps_list_by_curvature: [10.0, 20.0, 30.0]            # steering angle rate limit list depending on curvature [deg/s]
+    input_delay: 0.24                # steering input delay time for delay compensation
+    vehicle_model_steer_tau: 0.3     # steering dynamics time constant (1d approximation) [s]
+    steer_rate_lim_dps_list_by_curvature: [40.0, 50.0, 60.0]            # steering angle rate limit list depending on curvature [deg/s]
     curvature_list_for_steer_rate_lim: [0.001, 0.002, 0.01]              # curvature list for steering angle rate limit interpolation in ascending order [/m]
-    steer_rate_lim_dps_list_by_velocity: [40.0, 30.0, 20.0]             # steering angle rate limit list depending on velocity [deg/s]
+    steer_rate_lim_dps_list_by_velocity: [60.0, 50.0, 40.0]             # steering angle rate limit list depending on velocity [deg/s]
     velocity_list_for_steer_rate_lim: [10.0, 15.0, 20.0]                  # velocity list for steering angle rate limit interpolation in ascending order [m/s]
-    acceleration_limit: 2.0 # acceleration limit for trajectory velocity modification [m/ss]
-    velocity_time_constant: 0.3 # velocity dynamics time constant  for trajectory velocity modification [s]
+    acceleration_limit: 2.0          # acceleration limit for trajectory velocity modification [m/ss]
+    velocity_time_constant: 0.3      # velocity dynamics time constant  for trajectory velocity modification [s]
 
     # -- lowpass filter for noise reduction --
     steering_lpf_cutoff_hz: 3.0 # cutoff frequency of lowpass filter for steering command [Hz]
@@ -65,7 +65,7 @@
     keep_steer_control_until_converged: true
     new_traj_duration_time: 1.0
     new_traj_end_dist: 0.3
-    mpc_converged_threshold_rps: 0.01 # threshold of mpc convergence check [rad/s]
+    mpc_converged_threshold_rps:  0.01 # threshold of mpc convergence check [rad/s]
 
     # steer offset
     steering_offset:
