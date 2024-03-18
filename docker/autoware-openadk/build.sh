@@ -10,7 +10,6 @@ print_help() {
     echo "  -h              Display this help message"
     echo "  --no-cuda       Disable CUDA support"
     echo "  --platform      Specify the platform (default: current platform)"
-    echo "  --devel-only    Build devel image only"
     echo ""
     echo "Note: The --platform option should be one of 'linux/amd64' or 'linux/arm64'."
 }
@@ -33,9 +32,6 @@ parse_arguments() {
             option_platform="$2"
             shift
             ;;
-        --devel-only)
-            option_devel_only=true
-            ;;
         *)
             echo "Unknown option: $1"
             print_help
@@ -44,25 +40,6 @@ parse_arguments() {
         esac
         shift
     done
-}
-
-# Set CUDA options
-set_cuda_options() {
-    if [ "$option_no_cuda" = "true" ]; then
-        setup_args="--no-nvidia"
-        image_name_suffix=""
-    else
-        image_name_suffix="-cuda"
-    fi
-}
-
-# Set build options
-set_build_options() {
-    if [ "$option_devel_only" = "true" ]; then
-        targets=("devel")
-    else
-        targets=()
-    fi
 }
 
 # Set platform
@@ -94,6 +71,16 @@ load_env() {
     source "$WORKSPACE_ROOT/amd64.env"
     if [ "$platform" = "linux/arm64" ]; then
         source "$WORKSPACE_ROOT/arm64.env"
+    fi
+}
+
+# Set CUDA options
+set_cuda_options() {
+    if [ "$option_no_cuda" = "true" ]; then
+        setup_args="--no-nvidia"
+        image_name_suffix=""
+    else
+        image_name_suffix="-cuda"
     fi
 }
 
