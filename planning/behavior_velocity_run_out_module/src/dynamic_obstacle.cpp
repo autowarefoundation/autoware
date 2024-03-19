@@ -26,6 +26,7 @@
 #include <pcl/filters/voxel_grid.h>
 
 #include <algorithm>
+#include <limits>
 #include <string>
 
 namespace behavior_velocity_planner
@@ -312,6 +313,40 @@ void calculateMinAndMaxVelFromCovariance(
   dynamic_obstacle.max_velocity_mps = max_velocity;
 }
 
+double convertDurationToDouble(const builtin_interfaces::msg::Duration & duration)
+{
+  return duration.sec + duration.nanosec / 1e9;
+}
+
+// Create a path leading up to a specified prediction time
+std::vector<geometry_msgs::msg::Pose> createPathToPredictionTime(
+  const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path, double prediction_time)
+{
+  // Calculate the number of poses to include based on the prediction time and the time step between
+  // poses
+  const double time_step_seconds = convertDurationToDouble(predicted_path.time_step);
+  if (time_step_seconds < std::numeric_limits<double>::epsilon()) {
+    // Handle the case where time_step_seconds is zero or too close to zero
+    RCLCPP_WARN_STREAM(
+      rclcpp::get_logger("run_out: createPathToPredictionTime"),
+      "time_step of the path is too close to zero. Use the input path");
+    const std::vector<geometry_msgs::msg::Pose> input_path(
+      predicted_path.path.begin(), predicted_path.path.end());
+    return input_path;
+  }
+  const size_t poses_to_include =
+    std::min(static_cast<size_t>(prediction_time / time_step_seconds), predicted_path.path.size());
+
+  // Construct the path to the specified prediction time
+  std::vector<geometry_msgs::msg::Pose> path_to_prediction_time;
+  path_to_prediction_time.reserve(poses_to_include);
+  for (size_t i = 0; i < poses_to_include; ++i) {
+    path_to_prediction_time.push_back(predicted_path.path[i]);
+  }
+
+  return path_to_prediction_time;
+}
+
 }  // namespace
 
 DynamicObstacleCreatorForObject::DynamicObstacleCreatorForObject(
@@ -343,8 +378,7 @@ std::vector<DynamicObstacle> DynamicObstacleCreatorForObject::createDynamicObsta
     for (const auto & path : predicted_object.kinematics.predicted_paths) {
       PredictedPath predicted_path;
       predicted_path.confidence = path.confidence;
-      predicted_path.path.resize(path.path.size());
-      std::copy(path.path.cbegin(), path.path.cend(), predicted_path.path.begin());
+      predicted_path.path = createPathToPredictionTime(path, param_.max_prediction_time);
 
       dynamic_obstacle.predicted_paths.emplace_back(predicted_path);
     }
