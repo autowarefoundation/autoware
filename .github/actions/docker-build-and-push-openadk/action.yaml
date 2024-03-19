@@ -118,6 +118,8 @@ runs:
           ${{ steps.meta-visualizer.outputs.bake-file }}
           ${{ steps.meta-simulator.outputs.bake-file }}
         provenance: false
+        targets: |
+          base
         set: |
           ${{ inputs.build-args }}
 
