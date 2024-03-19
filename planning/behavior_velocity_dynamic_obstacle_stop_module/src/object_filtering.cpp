@@ -59,13 +59,37 @@ std::vector<autoware_auto_perception_msgs::msg::PredictedObject> filter_predicte
     return obj_arc_length > ego_data.longitudinal_offset_to_first_path_idx +
                               params.ego_longitudinal_offset + o.shape.dimensions.x / 2.0;
   };
-  for (const auto & object : objects.objects)
+  const auto is_unavoidable = [&](const auto & o) {
+    const auto & o_pose = o.kinematics.initial_pose_with_covariance.pose;
+    const auto o_yaw = tf2::getYaw(o_pose.orientation);
+    const auto ego_yaw = tf2::getYaw(ego_data.pose.orientation);
+    const auto yaw_diff = std::abs(tier4_autoware_utils::normalizeRadian(o_yaw - ego_yaw));
+    const auto opposite_heading = yaw_diff > M_PI_2 + M_PI_4;
+    const auto collision_distance_threshold =
+      params.ego_lateral_offset + o.shape.dimensions.y / 2.0 + params.hysteresis;
+    // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_point_and_angle
+    const auto lat_distance = std::abs(
+      (o_pose.position.y - ego_data.pose.position.y) * std::cos(o_yaw) -
+      (o_pose.position.x - ego_data.pose.position.x) * std::sin(o_yaw));
+    auto has_collision = lat_distance <= collision_distance_threshold;
+    if (ego_data.earliest_stop_pose) {
+      const auto collision_at_earliest_stop_pose =
+        std::abs(
+          (o_pose.position.y - ego_data.earliest_stop_pose->position.y) * std::cos(o_yaw) -
+          (o_pose.position.x - ego_data.earliest_stop_pose->position.x) * std::sin(o_yaw)) <=
+        collision_distance_threshold;
+      has_collision |= collision_at_earliest_stop_pose;
+    }
+    return opposite_heading && has_collision;
+  };
+  for (const auto & object : objects.objects) {
+    const auto is_not_too_slow = object.kinematics.initial_twist_with_covariance.twist.linear.x >=
+                                 params.minimum_object_velocity;
     if (
-      is_vehicle(object) &&
-      object.kinematics.initial_twist_with_covariance.twist.linear.x >=
-        params.minimum_object_velocity &&
-      is_in_range(object) && is_not_too_close(object))
+      is_vehicle(object) && is_not_too_slow && is_in_range(object) && is_not_too_close(object) &&
+      (!params.ignore_unavoidable_collisions || !is_unavoidable(object)))
       filtered_objects.push_back(object);
+  }
   return filtered_objects;
 }
 }  // namespace behavior_velocity_planner::dynamic_obstacle_stop

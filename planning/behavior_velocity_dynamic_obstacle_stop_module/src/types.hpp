@@ -44,6 +44,7 @@ struct PlannerParam
   double ego_longitudinal_offset;
   double ego_lateral_offset;
   double minimum_object_distance_from_ego_path;
+  bool ignore_unavoidable_collisions;
 };
 
 struct EgoData
@@ -54,6 +55,7 @@ struct EgoData
   geometry_msgs::msg::Pose pose;
   tier4_autoware_utils::MultiPolygon2d path_footprints;
   Rtree rtree;
+  std::optional<geometry_msgs::msg::Pose> earliest_stop_pose;
 };
 
 /// @brief debug data

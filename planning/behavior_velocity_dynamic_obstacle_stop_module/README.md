@@ -38,7 +38,10 @@ An object is considered by the module only if it meets all of the following cond
 - it is a vehicle (pedestrians are ignored);
 - it is moving at a velocity higher than defined by the `minimum_object_velocity` parameter;
 - it is not too close to the current position of the ego vehicle;
+- it is not unavoidable (only if parameter `ignore_unavoidable_collisions` is set to `true`);
 - it is close to the ego path.
+
+An object is considered unavoidable if it is heading towards the ego vehicle such that even if ego stops, a collision would still occur (assuming the object keeps driving in a straight line).
 
 For the last condition,
 the object is considered close enough if its lateral distance from the ego path is less than the threshold parameter `minimum_object_distance_from_ego_path` plus half the width of ego and of the object (including the `extra_object_width` parameter).
@@ -74,12 +77,13 @@ the stop point arc length is calculated to be the arc length of the previously f
 
 ### Module Parameters
 
-| Parameter                               | Type   | Description                                                                                |
-| --------------------------------------- | ------ | ------------------------------------------------------------------------------------------ |
-| `extra_object_width`                    | double | [m] extra width around detected objects                                                    |
-| `minimum_object_velocity`               | double | [m/s] objects with a velocity bellow this value are ignored                                |
-| `stop_distance_buffer`                  | double | [m] extra distance to add between the stop point and the collision point                   |
-| `time_horizon`                          | double | [s] time horizon used for collision checks                                                 |
-| `hysteresis`                            | double | [m] once a collision has been detected, this hysteresis is used on the collision detection |
-| `decision_duration_buffer`              | double | [s] duration between no collision being detected and the stop decision being cancelled     |
-| `minimum_object_distance_from_ego_path` | double | [m] minimum distance between the footprints of ego and an object to consider for collision |
+| Parameter                               | Type   | Description                                                                                                        |
+| --------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------ |
+| `extra_object_width`                    | double | [m] extra width around detected objects                                                                            |
+| `minimum_object_velocity`               | double | [m/s] objects with a velocity bellow this value are ignored                                                        |
+| `stop_distance_buffer`                  | double | [m] extra distance to add between the stop point and the collision point                                           |
+| `time_horizon`                          | double | [s] time horizon used for collision checks                                                                         |
+| `hysteresis`                            | double | [m] once a collision has been detected, this hysteresis is used on the collision detection                         |
+| `decision_duration_buffer`              | double | [s] duration between no collision being detected and the stop decision being cancelled                             |
+| `minimum_object_distance_from_ego_path` | double | [m] minimum distance between the footprints of ego and an object to consider for collision                         |
+| `ignore_unavoidable_collisions`         | bool   | [-] if true, ignore collisions that cannot be avoided by stopping (assuming the obstacle continues going straight) |

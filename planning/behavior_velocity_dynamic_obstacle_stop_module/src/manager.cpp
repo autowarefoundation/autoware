@@ -39,6 +39,8 @@ DynamicObstacleStopModuleManager::DynamicObstacleStopModuleManager(rclcpp::Node 
     getOrDeclareParameter<double>(node, ns + ".decision_duration_buffer");
   pp.minimum_object_distance_from_ego_path =
     getOrDeclareParameter<double>(node, ns + ".minimum_object_distance_from_ego_path");
+  pp.ignore_unavoidable_collisions =
+    getOrDeclareParameter<bool>(node, ns + ".ignore_unavoidable_collisions");
 
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
   pp.ego_lateral_offset =

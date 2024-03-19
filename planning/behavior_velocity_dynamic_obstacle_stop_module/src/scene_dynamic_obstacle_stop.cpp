@@ -44,7 +44,9 @@ DynamicObstacleStopModule::DynamicObstacleStopModule(
   const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock), params_(std::move(planner_param))
 {
-  prev_stop_decision_time_ = rclcpp::Time(int64_t{0}, clock->get_clock_type());
+  prev_stop_decision_time_ =
+    clock->now() -
+    rclcpp::Duration(std::chrono::duration<double>(params_.decision_duration_buffer));
   velocity_factor_.init(PlanningBehavior::UNKNOWN);
 }
 
@@ -65,10 +67,20 @@ bool DynamicObstacleStopModule::modifyPathVelocity(PathWithLaneId * path, StopRe
     motion_utils::findNearestSegmentIndex(ego_data.path.points, ego_data.pose.position);
   ego_data.longitudinal_offset_to_first_path_idx = motion_utils::calcLongitudinalOffsetToSegment(
     ego_data.path.points, ego_data.first_path_idx, ego_data.pose.position);
+  const auto min_stop_distance =
+    motion_utils::calcDecelDistWithJerkAndAccConstraints(
+      planner_data_->current_velocity->twist.linear.x, 0.0,
+      planner_data_->current_acceleration->accel.accel.linear.x,
+      planner_data_->max_stop_acceleration_threshold, -planner_data_->max_stop_jerk_threshold,
+      planner_data_->max_stop_jerk_threshold)
+      .value_or(0.0);
+  ego_data.earliest_stop_pose = motion_utils::calcLongitudinalOffsetPose(
+    ego_data.path.points, ego_data.pose.position, min_stop_distance);
 
   make_ego_footprint_rtree(ego_data, params_);
+  const auto start_time = clock_->now();
   const auto has_decided_to_stop =
-    (clock_->now() - prev_stop_decision_time_).seconds() < params_.decision_duration_buffer;
+    (start_time - prev_stop_decision_time_).seconds() < params_.decision_duration_buffer;
   if (!has_decided_to_stop) current_stop_pose_.reset();
   double hysteresis = has_decided_to_stop ? params_.hysteresis : 0.0;
   const auto dynamic_obstacles =
@@ -80,13 +92,6 @@ bool DynamicObstacleStopModule::modifyPathVelocity(PathWithLaneId * path, StopRe
   const auto obstacle_forward_footprints =
     make_forward_footprints(dynamic_obstacles, params_, hysteresis);
   const auto footprints_duration_us = stopwatch.toc("footprints");
-  const auto min_stop_distance =
-    motion_utils::calcDecelDistWithJerkAndAccConstraints(
-      planner_data_->current_velocity->twist.linear.x, 0.0,
-      planner_data_->current_acceleration->accel.accel.linear.x,
-      planner_data_->max_stop_acceleration_threshold, -planner_data_->max_stop_jerk_threshold,
-      planner_data_->max_stop_jerk_threshold)
-      .value_or(0.0);
   stopwatch.tic("collisions");
   const auto collision =
     find_earliest_collision(ego_data, dynamic_obstacles, obstacle_forward_footprints, debug_data_);
@@ -101,14 +106,13 @@ bool DynamicObstacleStopModule::modifyPathVelocity(PathWithLaneId * path, StopRe
                              ? motion_utils::calcLongitudinalOffsetPose(
                                  ego_data.path.points, *collision,
                                  -params_.stop_distance_buffer - params_.ego_longitudinal_offset)
-                             : motion_utils::calcLongitudinalOffsetPose(
-                                 ego_data.path.points, ego_data.pose.position, min_stop_distance);
+                             : ego_data.earliest_stop_pose;
     if (stop_pose) {
       const auto use_new_stop_pose = !has_decided_to_stop || motion_utils::calcSignedArcLength(
                                                                path->points, stop_pose->position,
                                                                current_stop_pose_->position) > 0.0;
       if (use_new_stop_pose) current_stop_pose_ = *stop_pose;
-      prev_stop_decision_time_ = clock_->now();
+      prev_stop_decision_time_ = start_time;
     }
   }
 
