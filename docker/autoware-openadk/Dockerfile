@@ -45,9 +45,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG SETUP_ARGS
 ARG ROS_DISTRO
-ENV CCACHE_DIR=/ccache
-ENV CC="/usr/lib/ccache/gcc"
-ENV CXX="/usr/lib/ccache/g++"
 
 # Set up development environment
 RUN --mount=type=ssh \
