@@ -43,12 +43,6 @@ namespace pointcloud_preprocessor
 using diagnostic_updater::DiagnosticStatusWrapper;
 using diagnostic_updater::Updater;
 
-std::unordered_map<std::string, uint8_t> roi_mode_map_ = {
-  {"No_ROI", 0},
-  {"Fixed_xyz_ROI", 1},
-  {"Fixed_azimuth_ROI", 2},
-};
-
 class DualReturnOutlierFilterComponent : public pointcloud_preprocessor::Filter
 {
 protected:
@@ -85,6 +79,12 @@ private:
   float min_azimuth_deg_;
   float max_azimuth_deg_;
   float max_distance_;
+
+  std::unordered_map<std::string, uint8_t> roi_mode_map_ = {
+    {"No_ROI", 0},
+    {"Fixed_xyz_ROI", 1},
+    {"Fixed_azimuth_ROI", 2},
+  };
 
 public:
   PCL_MAKE_ALIGNED_OPERATOR_NEW
