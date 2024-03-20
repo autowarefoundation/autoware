@@ -28,4 +28,3 @@
     state: present
     create: true
     mode: 0644
-
