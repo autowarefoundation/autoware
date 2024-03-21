@@ -234,13 +234,6 @@ private:
   void insertPrepareVelocity(ShiftedPath & shifted_path) const;
 
   /**
-   * @brief insert decel point in output path in order to yield. the ego decelerates within
-   * accel/jerk constraints.
-   * @param target path.
-   */
-  void insertYieldVelocity(ShiftedPath & shifted_path) const;
-
-  /**
    * @brief calculate stop distance based on object's overhang.
    * @param stop distance.
    */

@@ -692,7 +692,6 @@ void AvoidanceModule::updateEgoBehavior(const AvoidancePlanningData & data, Shif
       break;
     }
     case AvoidanceState::YIELD: {
-      insertYieldVelocity(path);
       insertWaitPoint(isBestEffort(parameters_->policy_deceleration), path);
       break;
     }
@@ -1525,6 +1524,11 @@ void AvoidanceModule::insertWaitPoint(
 {
   const auto & data = avoid_data_;
 
+  // If avoidance path is NOT valid, don't insert any stop points.
+  if (!data.valid) {
+    return;
+  }
+
   if (!data.stop_target_object) {
     return;
   }
@@ -1611,27 +1615,19 @@ void AvoidanceModule::insertStopPoint(
     getEgoPosition(), stop_distance - MARGIN, 0.0, shifted_path.path, stop_pose_);
 }
 
-void AvoidanceModule::insertYieldVelocity(ShiftedPath & shifted_path) const
-{
-  const auto & p = parameters_;
-  const auto & data = avoid_data_;
-
-  if (data.target_objects.empty()) {
-    return;
-  }
-
-  if (helper_->isShifted()) {
-    return;
-  }
-
-  const auto decel_distance = helper_->getFeasibleDecelDistance(p->yield_velocity, false);
-  utils::avoidance::insertDecelPoint(
-    getEgoPosition(), decel_distance, p->yield_velocity, shifted_path.path, slow_pose_);
-}
-
 void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
 {
   const auto & data = avoid_data_;
+
+  // If avoidance path is NOT safe, don't insert any slow down sections.
+  if (!data.safe && !data.stop_target_object) {
+    return;
+  }
+
+  // If avoidance path is NOT safe, don't insert any slow down sections.
+  if (!data.valid) {
+    return;
+  }
 
   // do nothing if there is no avoidance target.
   if (data.target_objects.empty()) {
@@ -1648,26 +1644,45 @@ void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
     return;
   }
 
-  const auto object = data.target_objects.front();
+  const auto itr = std::find_if(
+    data.target_objects.begin(), data.target_objects.end(),
+    [](const auto & o) { return o.avoid_required; });
+
+  const auto object = [&]() -> std::optional<ObjectData> {
+    if (!data.yield_required) {
+      return data.target_objects.front();
+    }
+
+    if (itr == data.target_objects.end()) {
+      return std::nullopt;
+    }
+
+    return *itr;
+  }();
+
+  // do nothing if it can't avoid at the moment and avoidance is NOT definitely necessary.
+  if (!object.has_value()) {
+    return;
+  }
 
   const auto enough_space =
-    object.is_avoidable || object.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
+    object.value().is_avoidable || object.value().reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
   if (!enough_space) {
     return;
   }
 
   // calculate shift length for front object.
   const auto & vehicle_width = planner_data_->parameters.vehicle_width;
-  const auto object_type = utils::getHighestProbLabel(object.object.classification);
+  const auto object_type = utils::getHighestProbLabel(object.value().object.classification);
   const auto object_parameter = parameters_->object_parameters.at(object_type);
-  const auto avoid_margin = object_parameter.lateral_hard_margin * object.distance_factor +
+  const auto avoid_margin = object_parameter.lateral_hard_margin * object.value().distance_factor +
                             object_parameter.lateral_soft_margin + 0.5 * vehicle_width;
-  const auto shift_length =
-    helper_->getShiftLength(object, utils::avoidance::isOnRight(object), avoid_margin);
+  const auto shift_length = helper_->getShiftLength(
+    object.value(), utils::avoidance::isOnRight(object.value()), avoid_margin);
 
   // check slow down feasibility
   const auto min_avoid_distance = helper_->getMinAvoidanceDistance(shift_length);
-  const auto distance_to_object = object.longitudinal;
+  const auto distance_to_object = object.value().longitudinal;
   const auto remaining_distance = distance_to_object - min_avoid_distance;
   const auto decel_distance = helper_->getFeasibleDecelDistance(parameters_->velocity_map.front());
   if (remaining_distance < decel_distance) {
@@ -1675,7 +1690,7 @@ void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
   }
 
   // decide slow down lower limit.
-  const auto lower_speed = object.avoid_required ? 0.0 : parameters_->min_slow_down_speed;
+  const auto lower_speed = object.value().avoid_required ? 0.0 : parameters_->min_slow_down_speed;
 
   // insert slow down speed.
   const double current_target_velocity = PathShifter::calcFeasibleVelocityFromJerk(
