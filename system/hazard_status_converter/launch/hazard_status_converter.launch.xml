@@ -1,3 +1,6 @@
 <launch>
-  <node pkg="hazard_status_converter" exec="converter" name="hazard_status_converter"/>
+  <node pkg="hazard_status_converter" exec="converter" name="hazard_status_converter">
+    <remap from="~/diagnostics_graph" to="/diagnostics_graph"/>
+    <remap from="~/hazard_status" to="/system/emergency/hazard_status"/>
+  </node>
 </launch>

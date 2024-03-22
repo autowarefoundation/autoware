@@ -25,6 +25,11 @@
   <arg name="run_mode" default="online" description="options: online, logging_simulation, planning_simulation"/>
   <arg name="sensor_model" description="sensor model name"/>
 
+  <arg name="use_diagnostic_graph" default="false" description="use diagnostic graph packages"/>
+  <arg name="mrm_handler_param_path" if="$(var use_diagnostic_graph)"/>
+  <arg name="diagnostic_graph_aggregator_param_path" if="$(var use_diagnostic_graph)"/>
+  <arg name="diagnostic_graph_aggregator_graph_path" if="$(var use_diagnostic_graph)"/>
+
   <let name="sensor_launch_pkg" value="$(find-pkg-share $(var sensor_model)_launch)"/>
 
   <!-- Dummy Diag Publisher -->
@@ -65,7 +70,7 @@
     </group>
 
     <!-- Error Monitor -->
-    <group>
+    <group unless="$(var use_diagnostic_graph)">
       <let name="config_file" value="$(var system_error_monitor_param_path)" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
       <let name="config_file" value="$(var system_error_monitor_param_path)" if="$(eval &quot;'$(var run_mode)'=='logging_simulation'&quot;)"/>
       <let name="config_file" value="$(var system_error_monitor_planning_simulator_param_path)" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
@@ -79,7 +84,7 @@
     </group>
 
     <!-- Emergency Handler -->
-    <group>
+    <group unless="$(var use_diagnostic_graph)">
       <include file="$(find-pkg-share emergency_handler)/launch/emergency_handler.launch.xml">
         <arg name="config_file" value="$(var emergency_handler_param_path)"/>
       </include>
@@ -101,6 +106,26 @@
       <include file="$(find-pkg-share mrm_emergency_stop_operator)/launch/mrm_emergency_stop_operator.launch.py">
         <arg name="config_file" value="$(var mrm_emergency_stop_operator_param_path)"/>
       </include>
+    </group>
+
+    <!-- MRM Handler -->
+    <group if="$(var use_diagnostic_graph)">
+      <include file="$(find-pkg-share mrm_handler)/launch/mrm_handler.launch.xml">
+        <arg name="config_file" value="$(var mrm_handler_param_path)"/>
+      </include>
+    </group>
+
+    <!-- Diagnostic Graph Aggregator -->
+    <group if="$(var use_diagnostic_graph)">
+      <include file="$(find-pkg-share diagnostic_graph_aggregator)/launch/aggregator.launch.xml">
+        <arg name="param_file" value="$(var diagnostic_graph_aggregator_param_path)"/>
+        <arg name="graph_file" value="$(var diagnostic_graph_aggregator_graph_path)"/>
+      </include>
+    </group>
+
+    <!-- Hazard Status Converter -->
+    <group if="$(var use_diagnostic_graph)">
+      <include file="$(find-pkg-share hazard_status_converter)/launch/hazard_status_converter.launch.xml"/>
     </group>
   </group>
 

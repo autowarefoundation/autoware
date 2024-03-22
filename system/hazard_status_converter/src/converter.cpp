@@ -127,9 +127,9 @@ namespace hazard_status_converter
 
 Converter::Converter(const rclcpp::NodeOptions & options) : Node("converter", options)
 {
-  pub_hazard_ = create_publisher<HazardStatusStamped>("/hazard_status", rclcpp::QoS(1));
+  pub_hazard_ = create_publisher<HazardStatusStamped>("~/hazard_status", rclcpp::QoS(1));
   sub_graph_ = create_subscription<DiagnosticGraph>(
-    "/diagnostics_graph", rclcpp::QoS(3),
+    "~/diagnostics_graph", rclcpp::QoS(3),
     std::bind(&Converter::on_graph, this, std::placeholders::_1));
 }
 
