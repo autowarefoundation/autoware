@@ -429,7 +429,7 @@ def generate_launch_description():
 
     # component
     add_launch_arg("use_intra_process", "false", "use ROS 2 component container communication")
-    add_launch_arg("use_multithread", "false", "use multithread")
+    add_launch_arg("use_multithread", "true", "use multithread")
     set_container_executable = SetLaunchConfiguration(
         "container_executable",
         "component_container",
