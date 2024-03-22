@@ -45,9 +45,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG SETUP_ARGS
 ARG ROS_DISTRO
-ENV CCACHE_DIR=/ccache
-ENV CC="/usr/lib/ccache/gcc"
-ENV CXX="/usr/lib/ccache/g++"
 
 # Set up development environment
 RUN --mount=type=ssh \
@@ -74,6 +71,7 @@ RUN --mount=type=ssh \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   && find /autoware/install -type d -exec chmod 777 {} \; \
+  && chmod -R 777 /ccache \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
   && rm -rf /autoware/build /autoware/src
 
@@ -87,9 +85,6 @@ RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module dev-tools --download-artifacts openadk \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
-
-# Change working directory to workspace
-WORKDIR /workspace
 
 # Create entrypoint
 COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh
