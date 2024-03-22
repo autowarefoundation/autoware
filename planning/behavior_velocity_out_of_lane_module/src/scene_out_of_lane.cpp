@@ -52,7 +52,7 @@ OutOfLaneModule::OutOfLaneModule(
   const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock), params_(std::move(planner_param))
 {
-  velocity_factor_.init(PlanningBehavior::UNKNOWN);
+  velocity_factor_.init(PlanningBehavior::ROUTE_OBSTACLE);
 }
 
 bool OutOfLaneModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
@@ -175,7 +175,7 @@ bool OutOfLaneModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
     }
     velocity_factor_.set(
       path->points, planner_data_->current_odometry->pose, point_to_insert->point.point.pose,
-      VelocityFactor::UNKNOWN);
+      VelocityFactor::ROUTE_OBSTACLE);
   } else if (!decisions.empty()) {
     RCLCPP_WARN(logger_, "Could not insert stop point (would violate max deceleration limits)");
   }
