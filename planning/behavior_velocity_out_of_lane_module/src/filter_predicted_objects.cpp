@@ -85,7 +85,14 @@ void cut_predicted_path_beyond_red_lights(
   const PlannerData & planner_data, const double object_front_overhang)
 {
   const auto stop_line = find_next_stop_line(predicted_path, planner_data);
-  if (stop_line) cut_predicted_path_beyond_line(predicted_path, *stop_line, object_front_overhang);
+  if (stop_line) {
+    // we use a longer stop line to also cut predicted paths that slightly go around the stop line
+    auto longer_stop_line = *stop_line;
+    const auto diff = stop_line->back() - stop_line->front();
+    longer_stop_line.front() -= diff * 0.5;
+    longer_stop_line.back() += diff * 0.5;
+    cut_predicted_path_beyond_line(predicted_path, longer_stop_line, object_front_overhang);
+  }
 }
 
 autoware_auto_perception_msgs::msg::PredictedObjects filter_predicted_objects(
