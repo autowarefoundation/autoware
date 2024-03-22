@@ -116,7 +116,11 @@ bool DynamicObstacleStopModule::modifyPathVelocity(PathWithLaneId * path, StopRe
     }
   }
 
-  if (current_stop_pose_) motion_utils::insertStopPoint(*current_stop_pose_, 0.0, path->points);
+  if (current_stop_pose_) {
+    motion_utils::insertStopPoint(*current_stop_pose_, 0.0, path->points);
+    velocity_factor_.set(
+      path->points, ego_data.pose, *current_stop_pose_, VelocityFactor::ROUTE_OBSTACLE);
+  }
 
   const auto total_time_us = stopwatch.toc();
   RCLCPP_DEBUG(
