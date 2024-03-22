@@ -837,6 +837,7 @@ void CrosswalkModule::applySafetySlowDownSpeed(
 
   const auto & ego_pos = planner_data_->current_odometry->pose.position;
   const auto ego_path = output;
+  std::optional<Pose> slowdown_pose{std::nullopt};
 
   if (!passed_safety_slow_point_) {
     // Safety slow down distance [m]
@@ -854,6 +855,8 @@ void CrosswalkModule::applySafetySlowDownSpeed(
 
     if (p_safety_slow.has_value()) {
       insertDecelPointWithDebugInfo(p_safety_slow.value(), safety_slow_down_speed, output);
+      slowdown_pose.emplace();
+      slowdown_pose->position = p_safety_slow.value();
     }
 
     if (safety_slow_point_range < 0.0) {
@@ -870,8 +873,13 @@ void CrosswalkModule::applySafetySlowDownSpeed(
         const float original_velocity = p.point.longitudinal_velocity_mps;
         p.point.longitudinal_velocity_mps = std::min(original_velocity, safety_slow_down_speed);
       }
+      if (!output.points.empty()) slowdown_pose = output.points.front().point.pose;
     }
   }
+  if (slowdown_pose)
+    velocity_factor_.set(
+      output.points, planner_data_->current_odometry->pose, *slowdown_pose,
+      VelocityFactor::CROSSWALK);
 }
 
 Polygon2d CrosswalkModule::getAttentionArea(
