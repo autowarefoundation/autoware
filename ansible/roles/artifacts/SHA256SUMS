@@ -1,5 +1,7 @@
 7fe62fcebe0e0f62a000d06aa94d779feb444d933671a4a3189fe01be8c19a00  ./image_projection_based_fusion/pts_backbone_neck_head_pointpainting.onnx
 3ca452ea5ca9467bf782955f75704ba8466841e275e8b8acd991b9911d53249e  ./image_projection_based_fusion/pts_voxel_encoder_pointpainting.onnx
+                                                        HashToAdd ./image_projection_based_fusion/pointpainting.param.yaml
+                                                        HashToAdd ./image_projection_based_fusion/detection_class_remapper.param.yaml
 86348d8c4bced750f54288b01cc471c0d4f1ec9c693466169ef19413731e6ecc  ./lidar_apollo_instance_segmentation/hdl-64.onnx
 eec521ebad7553d0ea2c90472a293aecb7499ab592632f0e100481c8196eb421  ./lidar_apollo_instance_segmentation/vlp-16.onnx
 95ef950bb694bd6de91b7e47f5d191d557e92a7f5e2a6bdf655a8b5eed4075cc  ./lidar_apollo_instance_segmentation/vls-128.onnx
@@ -8,6 +10,9 @@ eec521ebad7553d0ea2c90472a293aecb7499ab592632f0e100481c8196eb421  ./lidar_apollo
 9bb0b634f3664bd098ce7d6a3d8a9fb7cc8d9b8252b27f302c71e43316bab551  ./lidar_centerpoint/pts_backbone_neck_head_centerpoint_tiny.onnx
 dc1a876580d86ee7a341d543f8ade2ede7f43bd032dc5b44155b1f0175405764  ./lidar_centerpoint/pts_voxel_encoder_centerpoint.onnx
 2c53465715c1fd2e9dc5727ef3fca74f4cdf0538f74286b0946e219d0ca5693b  ./lidar_centerpoint/pts_voxel_encoder_centerpoint_tiny.onnx
+                                                        HashToAdd ./lidar_centerpoint/centerpoint.param.yaml
+                                                        HashToAdd ./lidar_centerpoint/detection_class_remapper.param.yaml
+                                                        HashToAdd ./lidar_centerpoint/centerpoint_tiny.param.yaml
 3840b6b3590984e8115d66b12061aea3a2cfaed70b4e8d59457f04b0d6f6a1fc  ./lidar_centerpoint_tvm/centerpoint_backbone-x86_64-llvm-3.0.0-20221221.tar.gz
 41e19de43f30549c325968aee06b4ad0d9701220be819e79d37efdfa86b918d0  ./lidar_centerpoint_tvm/centerpoint_encoder-x86_64-llvm-3.0.0-20221221.tar.gz
 1a5a49eeec5593963eab8d70f48b8a01bfb07e753e9688eb1510ad26e803579d  ./traffic_light_classifier/lamp_labels.txt
