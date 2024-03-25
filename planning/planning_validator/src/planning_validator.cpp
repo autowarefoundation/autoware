@@ -302,7 +302,6 @@ void PlanningValidator::validate(const Trajectory & trajectory)
   }
 
   s.is_valid_interval = checkValidInterval(trajectory);
-  s.is_valid_lateral_acc = checkValidLateralAcceleration(trajectory);
   s.is_valid_longitudinal_max_acc = checkValidMaxLongitudinalAcceleration(trajectory);
   s.is_valid_longitudinal_min_acc = checkValidMinLongitudinalAcceleration(trajectory);
   s.is_valid_velocity_deviation = checkValidVelocityDeviation(trajectory);
@@ -317,6 +316,7 @@ void PlanningValidator::validate(const Trajectory & trajectory)
 
   s.is_valid_relative_angle = checkValidRelativeAngle(resampled);
   s.is_valid_curvature = checkValidCurvature(resampled);
+  s.is_valid_lateral_acc = checkValidLateralAcceleration(resampled);
   s.is_valid_steering = checkValidSteering(resampled);
   s.is_valid_steering_rate = checkValidSteeringRate(resampled);
 
