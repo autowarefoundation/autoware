@@ -580,3 +580,129 @@ TEST_F(EvalTest, testPredictedPathDeviation_deviation0_PEDESTRIAN)
   EXPECT_NEAR(publishObjectsAndGetMetric(last_objects), mean_deviation, epsilon);
 }
 // ==========================================================================================
+
+// ==========================================================================================
+// yaw rate
+TEST_F(EvalTest, testYawRate_0)
+{
+  waitForDummyNode();
+  setTargetMetric("yaw_rate_CAR");
+
+  for (double time = 0; time <= time_delay_; time += time_step_) {
+    const auto objects = makeStraightPredictedObjects(time);
+    publishObjects(objects);
+  }
+
+  const auto last_objects = makeStraightPredictedObjects(time_delay_ + time_step_);
+  EXPECT_NEAR(publishObjectsAndGetMetric(last_objects), 0.0, epsilon);
+}
+
+TEST_F(EvalTest, testYawRate_01)
+{
+  waitForDummyNode();
+  setTargetMetric("yaw_rate_CAR");
+
+  const double yaw_rate = 0.1;
+
+  for (double time = 0; time <= time_delay_; time += time_step_) {
+    const auto objects = rotateObjects(makeStraightPredictedObjects(time), yaw_rate * time);
+    publishObjects(objects);
+  }
+
+  for (double time = time_delay_ + time_step_; time < time_delay_ * 2; time += time_step_) {
+    const auto objects = rotateObjects(makeStraightPredictedObjects(time), yaw_rate * time);
+    EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
+  }
+}
+
+TEST_F(EvalTest, testYawRate_minus_01)
+{
+  waitForDummyNode();
+  setTargetMetric("yaw_rate_CAR");
+
+  const double yaw_rate = 0.1;
+
+  for (double time = 0; time <= time_delay_; time += time_step_) {
+    const auto objects = rotateObjects(makeStraightPredictedObjects(time), -yaw_rate * time);
+    publishObjects(objects);
+  }
+
+  for (double time = time_delay_ + time_step_; time < time_delay_ * 2; time += time_step_) {
+    const auto objects = rotateObjects(makeStraightPredictedObjects(time), -yaw_rate * time);
+    EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
+  }
+}
+
+TEST_F(EvalTest, testYawRate_1)
+{
+  waitForDummyNode();
+  setTargetMetric("yaw_rate_CAR");
+
+  const double yaw_rate = 1.0;
+
+  for (double time = 0; time <= time_delay_; time += time_step_) {
+    const auto objects = rotateObjects(makeStraightPredictedObjects(time), yaw_rate * time);
+    publishObjects(objects);
+  }
+
+  for (double time = time_delay_ + time_step_; time < time_delay_ * 2; time += time_step_) {
+    const auto objects = rotateObjects(makeStraightPredictedObjects(time), yaw_rate * time);
+    EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
+  }
+}
+
+TEST_F(EvalTest, testYawRate_minus_1)
+{
+  waitForDummyNode();
+  setTargetMetric("yaw_rate_CAR");
+
+  const double yaw_rate = 1.0;
+
+  for (double time = 0; time <= time_delay_; time += time_step_) {
+    const auto objects = rotateObjects(makeStraightPredictedObjects(time), -yaw_rate * time);
+    publishObjects(objects);
+  }
+
+  for (double time = time_delay_ + time_step_; time < time_delay_ * 2; time += time_step_) {
+    const auto objects = rotateObjects(makeStraightPredictedObjects(time), -yaw_rate * time);
+    EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
+  }
+}
+
+TEST_F(EvalTest, testYawRate_5)
+{
+  waitForDummyNode();
+  setTargetMetric("yaw_rate_CAR");
+
+  const double yaw_rate = 5.0;
+
+  for (double time = 0; time <= time_delay_; time += time_step_) {
+    const auto objects = rotateObjects(makeStraightPredictedObjects(time), yaw_rate * time);
+    publishObjects(objects);
+  }
+
+  for (double time = time_delay_ + time_step_; time < time_delay_ * 2; time += time_step_) {
+    const auto objects = rotateObjects(makeStraightPredictedObjects(time), yaw_rate * time);
+    EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
+  }
+}
+
+TEST_F(EvalTest, testYawRate_minus_5)
+{
+  waitForDummyNode();
+  setTargetMetric("yaw_rate_CAR");
+
+  const double yaw_rate = 5.0;
+
+  for (double time = 0; time <= time_delay_; time += time_step_) {
+    const auto objects = rotateObjects(makeStraightPredictedObjects(time), -yaw_rate * time);
+    publishObjects(objects);
+  }
+
+  for (double time = time_delay_ + time_step_; time < time_delay_ * 2; time += time_step_) {
+    const auto objects = rotateObjects(makeStraightPredictedObjects(time), -yaw_rate * time);
+    EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
+  }
+}
+// TEST_F(EvalTest, testYawRate_rate01)
+// ==========================================================================================

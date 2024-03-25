@@ -31,6 +31,7 @@ enum class Metric {
   lateral_deviation,
   yaw_deviation,
   predicted_path_deviation,
+  yaw_rate,
   SIZE,
 };
 
@@ -39,18 +40,21 @@ using MetricStatMap = std::unordered_map<std::string, Stat<double>>;
 static const std::unordered_map<std::string, Metric> str_to_metric = {
   {"lateral_deviation", Metric::lateral_deviation},
   {"yaw_deviation", Metric::yaw_deviation},
-  {"predicted_path_deviation", Metric::predicted_path_deviation}};
+  {"predicted_path_deviation", Metric::predicted_path_deviation},
+  {"yaw_rate", Metric::yaw_rate}};
 
 static const std::unordered_map<Metric, std::string> metric_to_str = {
   {Metric::lateral_deviation, "lateral_deviation"},
   {Metric::yaw_deviation, "yaw_deviation"},
-  {Metric::predicted_path_deviation, "predicted_path_deviation"}};
+  {Metric::predicted_path_deviation, "predicted_path_deviation"},
+  {Metric::yaw_rate, "yaw_rate"}};
 
 // Metrics descriptions
 static const std::unordered_map<Metric, std::string> metric_descriptions = {
   {Metric::lateral_deviation, "Lateral_deviation[m]"},
   {Metric::yaw_deviation, "Yaw_deviation[rad]"},
-  {Metric::predicted_path_deviation, "Predicted_path_deviation[m]"}};
+  {Metric::predicted_path_deviation, "Predicted_path_deviation[m]"},
+  {Metric::yaw_rate, "Yaw_rate[rad/s]"}};
 
 namespace details
 {

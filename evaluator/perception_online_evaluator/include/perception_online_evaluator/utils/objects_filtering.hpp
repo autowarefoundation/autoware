@@ -21,6 +21,7 @@
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 
+#include <cmath>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -38,6 +39,9 @@ using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 
 using ClassObjectsMap = std::unordered_map<uint8_t, PredictedObjects>;
+
+bool velocity_filter(
+  const PredictedObject & object, double velocity_threshold, double max_velocity);
 
 std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & classification);
 
@@ -132,6 +136,39 @@ void filterObjectsByClass(
  */
 void filterDeviationCheckObjects(
   PredictedObjects & objects, const std::unordered_map<uint8_t, ObjectParameter> & params);
+
+/**
+ * @brief Filters objects based on their velocity.
+ *
+ * Depending on the remove_above_threshold parameter, this function either removes objects with
+ * velocities above the given threshold or only keeps those objects. It uses the helper function
+ * filterObjectsByVelocity() to do the actual filtering.
+ *
+ * @param objects The objects to be filtered.
+ * @param velocity_threshold The velocity threshold for the filtering.
+ * @param remove_above_threshold If true, objects with velocities above the threshold are removed.
+ *                               If false, only objects with velocities above the threshold are
+ *                               kept.
+ * @return A new collection of objects that have been filtered according to the rules.
+ */
+PredictedObjects filterObjectsByVelocity(
+  const PredictedObjects & objects, const double velocity_threshold,
+  const bool remove_above_threshold = true);
+
+/**
+ * @brief Helper function to filter objects based on their velocity.
+ *
+ * This function iterates over all objects and calculates their velocity norm. If the velocity norm
+ * is within the velocity_threshold and max_velocity range, the object is added to a new collection.
+ * This new collection is then returned.
+ *
+ * @param objects The objects to be filtered.
+ * @param velocity_threshold The minimum velocity for an object to be included in the output.
+ * @param max_velocity The maximum velocity for an object to be included in the output.
+ * @return A new collection of objects that have been filtered according to the rules.
+ */
+PredictedObjects filterObjectsByVelocity(
+  const PredictedObjects & objects, double velocity_threshold, double max_velocity);
 
 }  // namespace perception_diagnostics
 

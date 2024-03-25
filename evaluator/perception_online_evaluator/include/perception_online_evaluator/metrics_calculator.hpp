@@ -72,6 +72,10 @@ using ObjectDataMap = std::unordered_map<std::string, ObjectData>;
 using HistoryPathMap =
   std::unordered_map<std::string, std::pair<std::vector<Pose>, std::vector<Pose>>>;
 
+using StampObjectMap = std::map<rclcpp::Time, PredictedObject>;
+using StampObjectMapIterator = std::map<rclcpp::Time, PredictedObject>::const_iterator;
+using ObjectMap = std::unordered_map<std::string, StampObjectMap>;
+
 class MetricsCalculator
 {
 public:
@@ -98,7 +102,7 @@ private:
   std::shared_ptr<Parameters> parameters_;
 
   // Store predicted objects information and calculation results
-  std::unordered_map<std::string, std::map<rclcpp::Time, PredictedObject>> object_map_;
+  ObjectMap object_map_;
   HistoryPathMap history_path_map_;
 
   rclcpp::Time current_stamp_;
@@ -124,6 +128,7 @@ private:
   MetricStatMap calcPredictedPathDeviationMetrics(const ClassObjectsMap & class_objects_map) const;
   Stat<double> calcPredictedPathDeviationMetrics(
     const PredictedObjects & objects, const double time_horizon) const;
+  MetricStatMap calcYawRateMetrics(const ClassObjectsMap & class_objects_map) const;
 
   bool hasPassedTime(const rclcpp::Time stamp) const;
   bool hasPassedTime(const std::string uuid, const rclcpp::Time stamp) const;
@@ -131,7 +136,11 @@ private:
 
   // Extract object
   rclcpp::Time getClosestStamp(const rclcpp::Time stamp) const;
+  std::optional<StampObjectMapIterator> getClosestObjectIterator(
+    const std::string & uuid, const rclcpp::Time & stamp) const;
   std::optional<PredictedObject> getObjectByStamp(
+    const std::string uuid, const rclcpp::Time stamp) const;
+  std::optional<std::pair<rclcpp::Time, PredictedObject>> getPreviousObjectByStamp(
     const std::string uuid, const rclcpp::Time stamp) const;
   PredictedObjects getObjectsByStamp(const rclcpp::Time stamp) const;
 

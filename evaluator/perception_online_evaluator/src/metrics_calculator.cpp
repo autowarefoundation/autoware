@@ -36,8 +36,14 @@ std::optional<MetricStatMap> MetricsCalculator::calculate(const Metric & metric)
   if (!hasPassedTime(target_stamp)) {
     return {};
   }
-  const auto target_objects = getObjectsByStamp(target_stamp);
-  const ClassObjectsMap class_objects_map = separateObjectsByClass(target_objects);
+  const auto target_stamp_objects = getObjectsByStamp(target_stamp);
+  const auto class_objects_map = separateObjectsByClass(target_stamp_objects);
+
+  // filter stopped objects
+  const auto stopped_objects =
+    filterObjectsByVelocity(target_stamp_objects, parameters_->stopped_velocity_threshold);
+  const auto class_stopped_objects_map = separateObjectsByClass(stopped_objects);
+
   switch (metric) {
     case Metric::lateral_deviation:
       return calcLateralDeviationMetrics(class_objects_map);
@@ -45,6 +51,8 @@ std::optional<MetricStatMap> MetricsCalculator::calculate(const Metric & metric)
       return calcYawDeviationMetrics(class_objects_map);
     case Metric::predicted_path_deviation:
       return calcPredictedPathDeviationMetrics(class_objects_map);
+    case Metric::yaw_rate:
+      return calcYawRateMetrics(class_stopped_objects_map);
     default:
       return {};
   }
@@ -124,16 +132,46 @@ rclcpp::Time MetricsCalculator::getClosestStamp(const rclcpp::Time stamp) const
   return closest_stamp;
 }
 
-std::optional<PredictedObject> MetricsCalculator::getObjectByStamp(
-  const std::string uuid, const rclcpp::Time stamp) const
+std::optional<StampObjectMapIterator> MetricsCalculator::getClosestObjectIterator(
+  const std::string & uuid, const rclcpp::Time & stamp) const
 {
   const auto closest_stamp = getClosestStamp(stamp);
-  auto it = std::lower_bound(
+  const auto it = std::lower_bound(
     object_map_.at(uuid).begin(), object_map_.at(uuid).end(), closest_stamp,
     [](const auto & pair, const rclcpp::Time & val) { return pair.first < val; });
 
-  if (it != object_map_.at(uuid).end() && it->first == closest_stamp) {
-    return it->second;
+  return it != object_map_.at(uuid).end() ? std::optional<StampObjectMapIterator>(it)
+                                          : std::nullopt;
+}
+
+std::optional<PredictedObject> MetricsCalculator::getObjectByStamp(
+  const std::string uuid, const rclcpp::Time stamp) const
+{
+  const auto obj_it_opt = getClosestObjectIterator(uuid, stamp);
+  if (obj_it_opt.has_value()) {
+    const auto it = obj_it_opt.value();
+    if (it->first == getClosestStamp(stamp)) {
+      return it->second;
+    }
+  }
+  return std::nullopt;
+}
+
+std::optional<std::pair<rclcpp::Time, PredictedObject>> MetricsCalculator::getPreviousObjectByStamp(
+  const std::string uuid, const rclcpp::Time stamp) const
+{
+  const auto obj_it_opt = getClosestObjectIterator(uuid, stamp);
+  if (obj_it_opt.has_value()) {
+    auto it = obj_it_opt.value();
+    if (it != object_map_.at(uuid).begin()) {
+      // If it is exactly the closest stamp, move one back to get the previous
+      if (it->first == getClosestStamp(stamp)) {
+        --it;
+      } else {
+        // If it is not the closest stamp, it already points to the previous one due to lower_bound
+      }
+      return std::make_pair(it->first, it->second);
+    }
   }
   return std::nullopt;
 }
@@ -313,9 +351,46 @@ Stat<double> MetricsCalculator::calcPredictedPathDeviationMetrics(
   return stat;
 }
 
+MetricStatMap MetricsCalculator::calcYawRateMetrics(const ClassObjectsMap & class_objects_map) const
+{
+  // calculate yaw rate for each object
+
+  MetricStatMap metric_stat_map{};
+
+  for (const auto & [label, objects] : class_objects_map) {
+    Stat<double> stat{};
+    const auto stamp = rclcpp::Time(objects.header.stamp);
+
+    for (const auto & object : objects.objects) {
+      const auto uuid = tier4_autoware_utils::toHexString(object.object_id);
+      if (!hasPassedTime(uuid, stamp)) {
+        continue;
+      }
+      const auto previous_object_with_stamp_opt = getPreviousObjectByStamp(uuid, stamp);
+      if (!previous_object_with_stamp_opt.has_value()) {
+        continue;
+      }
+      const auto [previous_stamp, previous_object] = previous_object_with_stamp_opt.value();
+
+      const auto time_diff = (stamp - previous_stamp).seconds();
+      if (time_diff < 0.01) {
+        continue;
+      }
+      const auto current_yaw =
+        tf2::getYaw(object.kinematics.initial_pose_with_covariance.pose.orientation);
+      const auto previous_yaw =
+        tf2::getYaw(previous_object.kinematics.initial_pose_with_covariance.pose.orientation);
+      const auto yaw_rate =
+        std::abs(tier4_autoware_utils::normalizeRadian(current_yaw - previous_yaw) / time_diff);
+      stat.add(yaw_rate);
+    }
+    metric_stat_map["yaw_rate_" + convertLabelToString(label)] = stat;
+  }
+  return metric_stat_map;
+}
+
 void MetricsCalculator::setPredictedObjects(const PredictedObjects & objects)
 {
-  // using TimeStamp = builtin_interfaces::msg::Time;
   current_stamp_ = objects.header.stamp;
 
   // store objects to check deviation

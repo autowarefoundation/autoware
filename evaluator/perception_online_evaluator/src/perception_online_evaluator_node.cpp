@@ -280,6 +280,8 @@ void PerceptionOnlineEvaluatorNode::initParameter()
   p->smoothing_window_size = getOrDeclareParameter<int>(*this, "smoothing_window_size");
   p->prediction_time_horizons =
     getOrDeclareParameter<std::vector<double>>(*this, "prediction_time_horizons");
+  p->stopped_velocity_threshold =
+    getOrDeclareParameter<double>(*this, "stopped_velocity_threshold");
 
   // set metrics
   const auto selected_metrics =
