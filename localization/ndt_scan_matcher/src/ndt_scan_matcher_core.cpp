@@ -64,8 +64,8 @@ Eigen::Matrix2d find_rotation_matrix_aligning_covariance_to_principal_axes(
   throw std::runtime_error("Eigen solver failed. Return output_pose_covariance value.");
 }
 
-NDTScanMatcher::NDTScanMatcher()
-: Node("ndt_scan_matcher"),
+NDTScanMatcher::NDTScanMatcher(const rclcpp::NodeOptions & options)
+: Node("ndt_scan_matcher", options),
   tf2_broadcaster_(*this),
   tf2_buffer_(this->get_clock()),
   tf2_listener_(tf2_buffer_),

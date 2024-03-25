@@ -74,7 +74,7 @@ class NDTScanMatcher : public rclcpp::Node
     pclomp::MultiGridNormalDistributionsTransform<PointSource, PointTarget>;
 
 public:
-  NDTScanMatcher();
+  explicit NDTScanMatcher(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
   void service_ndt_align(
