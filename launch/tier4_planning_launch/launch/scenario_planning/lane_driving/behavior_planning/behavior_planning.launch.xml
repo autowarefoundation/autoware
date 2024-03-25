@@ -181,7 +181,7 @@
   />
   <let name="behavior_velocity_planner_launch_modules" value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + '$(var launch_module_list_end)'&quot;)"/>
 
-  <node_container pkg="rclcpp_components" exec="$(var container_type)" name="behavior_planning_container" namespace="" args="" output="screen">
+  <node_container pkg="rclcpp_components" exec="$(var container_type)" name="behavior_planning_container" namespace="" args="" output="both">
     <composable_node pkg="behavior_path_planner" plugin="behavior_path_planner::BehaviorPathPlannerNode" name="behavior_path_planner" namespace="">
       <!-- topic remap -->
       <remap from="~/input/route" to="$(var input_route_topic_name)"/>
