@@ -28,3 +28,14 @@
     state: present
     create: true
     mode: 0644
+
+- name: Create ccache directory
+  ansible.builtin.file:
+    path: /ccache
+    state: directory
+    mode: 0755
+
+- name: Source .bashrc
+  ansible.builtin.shell: source ~/.bashrc
+  args:
+    executable: /bin/bash
