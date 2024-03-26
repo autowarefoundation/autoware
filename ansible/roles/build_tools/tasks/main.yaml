@@ -4,3 +4,27 @@
     name: ccache
     state: latest
     update_cache: true
+
+- name: Add CCACHE_DIR to .bashrc
+  ansible.builtin.lineinfile:
+    dest: ~/.bashrc
+    line: export CCACHE_DIR="/ccache"
+    state: present
+    create: true
+    mode: 0644
+
+- name: Export CC to ccache
+  ansible.builtin.lineinfile:
+    dest: ~/.bashrc
+    line: export CC="/usr/lib/ccache/gcc"
+    state: present
+    create: true
+    mode: 0644
+
+- name: Export CXX to ccache
+  ansible.builtin.lineinfile:
+    dest: ~/.bashrc
+    line: export CXX="/usr/lib/ccache/g++"
+    state: present
+    create: true
+    mode: 0644
