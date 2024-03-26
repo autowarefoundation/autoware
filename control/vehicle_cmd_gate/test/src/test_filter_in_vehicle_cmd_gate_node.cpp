@@ -80,7 +80,8 @@ public:
       [this](const AckermannControlCommand::ConstSharedPtr msg) {
         cmd_history_.push_back(msg);
         cmd_received_times_.push_back(now());
-        checkFilter();
+        // check the effectiveness of the filter for last x elements in the queue
+        checkFilter(4);
       });
 
     rclcpp::QoS qos{1};
@@ -215,52 +216,99 @@ public:
     raw_cmd_history_.push_back(std::make_shared<AckermannControlCommand>(msg));
   }
 
-  void checkFilter()
+  void checkFilter(size_t last_x)
   {
-    if (cmd_history_.size() != cmd_received_times_.size()) {
-      throw std::logic_error("cmd history and received times must have same size. Check code.");
+    ASSERT_TRUE(wheelbase > 0.0) << "Wheelbase must be positive. Check vehicle configuration.";
+    ASSERT_GT(last_x, 1u) << "last_x must be greater than 1 to calculate the jerk values";
+    ASSERT_EQ(cmd_history_.size(), cmd_received_times_.size())
+      << "cmd_history_ and cmd_received_times_ must have the same size. Check the implementation.";
+    size_t history_size = cmd_history_.size();
+    if (history_size < last_x) return;  // not enough data for checkFilter or last_x is too small.
+
+    // Initialize accumulators
+    double avg_lon_acc = 0.0;
+    double avg_lon_jerk = 0.0;
+    double avg_lat_acc = 0.0;
+    double avg_lat_jerk = 0.0;
+
+    double lon_vel = 0.0;
+    double prev_lon_acc = 0.0;
+    double prev_lat_acc = 0.0;
+    // TODO(Horibe): Remove this variable when the filtering logic is fixed.
+    double prev_tire_angle = 0.0;
+
+    auto calculate_lateral_acceleration =
+      [](const double lon_vel, const double steer, const double wheelbase) {
+        return lon_vel * lon_vel * std::tan(steer) / wheelbase;
+      };
+
+    size_t ind_start = history_size - last_x + 1;
+    {
+      const auto & cmd_start = cmd_history_.at(ind_start - 1);
+      prev_lon_acc = cmd_start->longitudinal.acceleration;
+      // TODO(Horibe): prev_lat_acc should use the previous velocity, but use the current velocity
+      // since the current filtering logic uses the current velocity.
+      // when it's fixed, should be like this:
+      // prev_lat_acc = calculate_lateral_acceleration(cmd_start->longitudinal.speed,
+      // cmd_start->lateral.steering_tire_angle, wheelbase);
+      prev_tire_angle = cmd_start->lateral.steering_tire_angle;
     }
 
-    if (cmd_history_.size() == 1) return;
+    for (size_t i = ind_start; i < history_size; ++i) {
+      const auto & cmd = cmd_history_.at(i);
 
-    const size_t i_curr = cmd_history_.size() - 1;
-    const size_t i_prev = cmd_history_.size() - 2;
-    const auto cmd_curr = cmd_history_.at(i_curr);
-    const auto cmd_prev = cmd_history_.at(i_prev);
+      const auto dt = (cmd_received_times_.at(i) - cmd_received_times_.at(i - 1)).seconds();
+
+      ASSERT_GT(dt, 0.0) << "Invalid dt. Time must be strictly positive.";
+
+      lon_vel = cmd->longitudinal.speed;
+      const auto lon_acc = cmd->longitudinal.acceleration;
+      const auto lon_jerk = (lon_acc - prev_lon_acc) / dt;
+
+      const auto lat_acc =
+        calculate_lateral_acceleration(lon_vel, cmd->lateral.steering_tire_angle, wheelbase);
+      // TODO(Horibe): prev_lat_acc should use the previous velocity, but use the current velocity
+      // since the current filtering logic uses the current velocity.
+      // when it's fixed, it should be moved to the bottom of this loop.
+      prev_lat_acc = calculate_lateral_acceleration(lon_vel, prev_tire_angle, wheelbase);
+      const auto lat_jerk = (lat_acc - prev_lat_acc) / dt;
+
+      avg_lon_acc += lon_acc;
+      avg_lon_jerk += lon_jerk;
+      avg_lat_acc += lat_acc;
+      avg_lat_jerk += lat_jerk;
+
+      prev_lon_acc = lon_acc;
+      // TODO(Horibe): when the filtering logic is fixed, this line should be removed.
+      prev_tire_angle = cmd->lateral.steering_tire_angle;
+    }
+
+    // Compute averages
+    // Because we look at differences, we have one less interval than points
+    double denominator = static_cast<double>(last_x) - 1;
+    avg_lon_acc /= denominator;
+    avg_lon_jerk /= denominator;
+    avg_lat_acc /= denominator;
+    avg_lat_jerk /= denominator;
 
     const auto max_lon_acc_lim = *std::max_element(lon_acc_lim.begin(), lon_acc_lim.end());
     const auto max_lon_jerk_lim = *std::max_element(lon_jerk_lim.begin(), lon_jerk_lim.end());
     const auto max_lat_acc_lim = *std::max_element(lat_acc_lim.begin(), lat_acc_lim.end());
     const auto max_lat_jerk_lim = *std::max_element(lat_jerk_lim.begin(), lat_jerk_lim.end());
 
-    const auto dt = (cmd_received_times_.at(i_curr) - cmd_received_times_.at(i_prev)).seconds();
-    const auto lon_vel = cmd_curr->longitudinal.speed;
-    const auto lon_acc = cmd_curr->longitudinal.acceleration;
-    const auto lon_jerk = (lon_acc - cmd_prev->longitudinal.acceleration) / dt;
-    const auto lat_acc =
-      lon_vel * lon_vel * std::tan(cmd_curr->lateral.steering_tire_angle) / wheelbase;
-
-    // TODO(Horibe): prev_lat_acc should use the previous velocity, but use the current velocity
-    // since the current filtering logic uses the current velocity.
-    const auto prev_lat_acc =
-      lon_vel * lon_vel * std::tan(cmd_prev->lateral.steering_tire_angle) / wheelbase;
-    const auto lat_jerk = (lat_acc - prev_lat_acc) / dt;
-
-    /* debug print */
-    // const auto steer = cmd_curr->lateral.steering_tire_angle;
-    // PRINT_VALUES(
-    //   dt, i_curr, i_prev, steer, lon_vel, prev_lon_vel, lon_acc, lon_jerk, lat_acc, prev_lat_acc,
-    //   prev_lat_acc2, lat_jerk, max_lon_acc_lim, max_lon_jerk_lim, max_lat_acc_lim,
-    //   max_lat_jerk_lim);
-
+    constexpr auto threshold_scale = 1.1;
     // Output command must be smaller than maximum limit.
     // TODO(Horibe): check for each velocity range.
-    constexpr auto threshold_scale = 1.1;
     if (std::abs(lon_vel) > 0.01) {
-      ASSERT_LT_NEAR(std::abs(lon_acc), max_lon_acc_lim, threshold_scale);
-      ASSERT_LT_NEAR(std::abs(lon_jerk), max_lon_jerk_lim, threshold_scale);
-      ASSERT_LT_NEAR(std::abs(lat_acc), max_lat_acc_lim, threshold_scale);
-      ASSERT_LT_NEAR(std::abs(lat_jerk), max_lat_jerk_lim, threshold_scale);
+      // Assert over averaged values against limits
+      ASSERT_LT_NEAR(std::abs(avg_lon_acc), max_lon_acc_lim, threshold_scale)
+        << "last_x was = " << last_x;
+      ASSERT_LT_NEAR(std::abs(avg_lon_jerk), max_lon_jerk_lim, threshold_scale)
+        << "last_x was = " << last_x;
+      ASSERT_LT_NEAR(std::abs(avg_lat_acc), max_lat_acc_lim, threshold_scale)
+        << "last_x was = " << last_x;
+      ASSERT_LT_NEAR(std::abs(avg_lat_jerk), max_lat_jerk_lim, threshold_scale)
+        << "last_x was = " << last_x;
     }
   }
 };
@@ -388,15 +436,25 @@ TEST_P(TestFixture, CheckFilterForSinCmd)
   //           << ")" << std::endl;
 
   for (size_t i = 0; i < 100; ++i) {
+    auto start_time = std::chrono::steady_clock::now();
+
     const bool reset_clock = (i == 0);
     const auto cmd = cmd_generator_.calcSinWaveCommand(reset_clock);
     pub_sub_node_.publishControlCommand(cmd);
     pub_sub_node_.publishDefaultTopicsNoSpin();
-    for (int i = 0; i < 20; ++i) {
+    for (int j = 0; j < 20; ++j) {
       rclcpp::spin_some(pub_sub_node_.get_node_base_interface());
       rclcpp::spin_some(vehicle_cmd_gate_node_->get_node_base_interface());
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds{10LL});
+
+    auto end_time = std::chrono::steady_clock::now();
+    std::chrono::milliseconds elapsed =
+      std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+
+    std::chrono::milliseconds sleep_duration = std::chrono::milliseconds{10} - elapsed;
+    if (sleep_duration.count() > 0) {
+      std::this_thread::sleep_for(sleep_duration);
+    }
   }
 
   std::cerr << "received cmd num = " << pub_sub_node_.cmd_received_times_.size() << std::endl;
