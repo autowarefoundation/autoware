@@ -893,7 +893,7 @@ std::vector<DrivableLanes> GoalPlannerModule::generateDrivableLanes() const
   return utils::generateDrivableLanesWithShoulderLanes(current_lanes, pull_over_lanes);
 }
 
-void GoalPlannerModule::setOutput(BehaviorModuleOutput & output) const
+void GoalPlannerModule::setOutput(BehaviorModuleOutput & output)
 {
   output.reference_path = getPreviousModuleOutput().reference_path;
 
@@ -966,7 +966,7 @@ void GoalPlannerModule::setModifiedGoal(BehaviorModuleOutput & output) const
   }
 }
 
-void GoalPlannerModule::setTurnSignalInfo(BehaviorModuleOutput & output) const
+void GoalPlannerModule::setTurnSignalInfo(BehaviorModuleOutput & output)
 {
   const auto original_signal = getPreviousModuleOutput().turn_signal_info;
   const auto new_signal = calcTurnSignalInfo();
@@ -1573,43 +1573,98 @@ bool GoalPlannerModule::isOnModifiedGoal() const
          parameters_->th_arrived_distance;
 }
 
-TurnSignalInfo GoalPlannerModule::calcTurnSignalInfo() const
+TurnSignalInfo GoalPlannerModule::calcTurnSignalInfo()
 {
-  TurnSignalInfo turn_signal{};  // output
+  const auto path = thread_safe_data_.get_pull_over_path()->getFullPath();
+  if (path.points.empty()) return getPreviousModuleOutput().turn_signal_info;
 
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const auto & start_pose = thread_safe_data_.get_pull_over_path()->start_pose;
   const auto & end_pose = thread_safe_data_.get_pull_over_path()->end_pose;
-  const auto full_path = thread_safe_data_.get_pull_over_path()->getFullPath();
 
-  // calc TurnIndicatorsCommand
-  {
-    const double distance_to_end =
-      calcSignedArcLength(full_path.points, current_pose.position, end_pose.position);
-    const bool is_before_end_pose = distance_to_end >= 0.0;
-    if (is_before_end_pose) {
-      if (left_side_parking_) {
-        turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
-      } else {
-        turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
-      }
-    } else {
-      turn_signal.turn_signal.command = TurnIndicatorsCommand::NO_COMMAND;
+  const auto shift_start_idx = motion_utils::findNearestIndex(path.points, start_pose.position);
+  const auto shift_end_idx = motion_utils::findNearestIndex(path.points, end_pose.position);
+
+  const auto is_ignore_signal = [this](const lanelet::Id & id) {
+    if (!ignore_signal_.has_value()) {
+      return false;
     }
+    return ignore_signal_.value() == id;
+  };
+
+  const auto update_ignore_signal = [this](const lanelet::Id & id, const bool is_ignore) {
+    return is_ignore ? std::make_optional(id) : std::nullopt;
+  };
+
+  const lanelet::ConstLanelets current_lanes = utils::getExtendedCurrentLanes(
+    planner_data_, parameters_->backward_goal_search_length,
+    parameters_->forward_goal_search_length,
+    /*forward_only_in_route*/ false);
+
+  if (current_lanes.empty()) {
+    return {};
   }
 
-  // calc desired/required start/end point
-  {
-    // ego decelerates so that current pose is the point `turn_light_on_threshold_time` seconds
-    // before starting pull_over
-    turn_signal.desired_start_point =
-      last_approval_data_ && hasDecidedPath() ? last_approval_data_->pose : current_pose;
-    turn_signal.desired_end_point = end_pose;
-    turn_signal.required_start_point = start_pose;
-    turn_signal.required_end_point = end_pose;
+  lanelet::Lanelet closest_lanelet;
+  lanelet::utils::query::getClosestLanelet(current_lanes, current_pose, &closest_lanelet);
+
+  if (is_ignore_signal(closest_lanelet.id())) {
+    return getPreviousModuleOutput().turn_signal_info;
   }
 
-  return turn_signal;
+  const double current_shift_length =
+    lanelet::utils::getArcCoordinates(current_lanes, current_pose).distance;
+
+  constexpr bool egos_lane_is_shifted = true;
+  constexpr bool is_driving_forward = true;
+
+  constexpr bool is_pull_out = false;
+  const bool override_ego_stopped_check = std::invoke([&]() {
+    if (thread_safe_data_.getPullOverPlannerType() == PullOverPlannerType::SHIFT) {
+      return false;
+    }
+    constexpr double distance_threshold = 1.0;
+    const auto stop_point =
+      thread_safe_data_.get_pull_over_path()->partial_paths.front().points.back();
+    const double distance_from_ego_to_stop_point = std::abs(motion_utils::calcSignedArcLength(
+      path.points, stop_point.point.pose.position, current_pose.position));
+    return distance_from_ego_to_stop_point < distance_threshold;
+  });
+
+  const auto [new_signal, is_ignore] = planner_data_->getBehaviorTurnSignalInfo(
+    path, shift_start_idx, shift_end_idx, current_lanes, current_shift_length, is_driving_forward,
+    egos_lane_is_shifted, override_ego_stopped_check, is_pull_out);
+  ignore_signal_ = update_ignore_signal(closest_lanelet.id(), is_ignore);
+
+  return new_signal;
+  // // calc TurnIndicatorsCommand
+  // {
+  //   const double distance_to_end =
+  //     calcSignedArcLength(full_path.points, current_pose.position, end_pose.position);
+  //   const bool is_before_end_pose = distance_to_end >= 0.0;
+  //   if (is_before_end_pose) {
+  //     if (left_side_parking_) {
+  //       turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+  //     } else {
+  //       turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+  //     }
+  //   } else {
+  //     turn_signal.turn_signal.command = TurnIndicatorsCommand::NO_COMMAND;
+  //   }
+  // }
+
+  // // calc desired/required start/end point
+  // {
+  //   // ego decelerates so that current pose is the point `turn_light_on_threshold_time` seconds
+  //   // before starting pull_over
+  //   turn_signal.desired_start_point =
+  //     last_approval_data_ && hasDecidedPath() ? last_approval_data_->pose : current_pose;
+  //   turn_signal.desired_end_point = end_pose;
+  //   turn_signal.required_start_point = start_pose;
+  //   turn_signal.required_end_point = end_pose;
+  // }
+
+  // return turn_signal;
 }
 
 bool GoalPlannerModule::checkOccupancyGridCollision(const PathWithLaneId & path) const
