@@ -41,6 +41,13 @@ inline bool contains_lanelet(const lanelet::ConstLanelets & lanelets, const lane
 /// @return lanelets crossed by the ego vehicle
 lanelet::ConstLanelets calculate_path_lanelets(
   const EgoData & ego_data, const route_handler::RouteHandler & route_handler);
+/// @brief calculate lanelets that may not be crossed by the path but may be overlapped during a
+/// lane change
+/// @param [in] path_lanelets lanelets driven by the ego vehicle
+/// @param [in] route_handler route handler
+/// @return lanelets that may be overlapped by a lane change (and are not already in path_lanelets)
+lanelet::ConstLanelets get_missing_lane_change_lanelets(
+  lanelet::ConstLanelets & path_lanelets, const route_handler::RouteHandler & route_handler);
 /// @brief calculate lanelets that should be ignored
 /// @param [in] ego_data data about the ego vehicle
 /// @param [in] path_lanelets lanelets driven by the ego vehicle
