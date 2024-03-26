@@ -21,6 +21,7 @@
 
 #include <boost/geometry/strategies/agnostic/hull_graham_andrew.hpp>
 
+#include <pcl/filters/passthrough.h>
 #include <pcl/filters/voxel_grid.h>
 #include <tf2/utils.h>
 
@@ -128,6 +129,9 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
   publish_debug_pointcloud_ = declare_parameter<bool>("publish_debug_pointcloud");
   use_predicted_trajectory_ = declare_parameter<bool>("use_predicted_trajectory");
   use_imu_path_ = declare_parameter<bool>("use_imu_path");
+  detection_range_min_height_ = declare_parameter<double>("detection_range_min_height");
+  detection_range_max_height_margin_ =
+    declare_parameter<double>("detection_range_max_height_margin");
   voxel_grid_x_ = declare_parameter<double>("voxel_grid_x");
   voxel_grid_y_ = declare_parameter<double>("voxel_grid_y");
   voxel_grid_z_ = declare_parameter<double>("voxel_grid_z");
@@ -221,9 +225,19 @@ void AEB::onPointCloud(const PointCloud2::ConstSharedPtr input_msg)
     pcl::fromROSMsg(transformed_points, *pointcloud_ptr);
   }
 
+  // apply z-axis filter for removing False Positive points
+  PointCloud::Ptr height_filtered_pointcloud_ptr(new PointCloud);
+  pcl::PassThrough<pcl::PointXYZ> height_filter;
+  height_filter.setInputCloud(pointcloud_ptr);
+  height_filter.setFilterFieldName("z");
+  height_filter.setFilterLimits(
+    detection_range_min_height_,
+    vehicle_info_.vehicle_height_m + detection_range_max_height_margin_);
+  height_filter.filter(*height_filtered_pointcloud_ptr);
+
   pcl::VoxelGrid<pcl::PointXYZ> filter;
   PointCloud::Ptr no_height_filtered_pointcloud_ptr(new PointCloud);
-  filter.setInputCloud(pointcloud_ptr);
+  filter.setInputCloud(height_filtered_pointcloud_ptr);
   filter.setLeafSize(voxel_grid_x_, voxel_grid_y_, voxel_grid_z_);
   filter.filter(*no_height_filtered_pointcloud_ptr);
 
