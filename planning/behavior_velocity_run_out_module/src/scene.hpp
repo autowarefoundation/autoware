@@ -17,6 +17,7 @@
 
 #include "debug.hpp"
 #include "dynamic_obstacle.hpp"
+#include "object_recognition_utils/object_recognition_utils.hpp"
 #include "state_machine.hpp"
 #include "utils.hpp"
 

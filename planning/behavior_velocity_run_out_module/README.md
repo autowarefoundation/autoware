@@ -2,7 +2,7 @@
 
 ### Role
 
-`run_out` is the module that decelerates and stops for dynamic obstacles such as pedestrians and bicycles.
+`run_out` is the module that decelerates and stops for dynamic obstacles such as pedestrians, bicycles and motorcycles.
 
 ![brief](./docs/run_out_overview.svg)
 
@@ -179,17 +179,18 @@ You can choose whether to use this feature by parameter of `slow_down_limit.enab
 
 ### Module Parameters
 
-| Parameter               | Type   | Description                                                                                                              |
-| ----------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `detection_method`      | string | [-] candidate: Object, ObjectWithoutPath, Points                                                                         |
-| `use_partition_lanelet` | bool   | [-] whether to use partition lanelet map data                                                                            |
-| `specify_decel_jerk`    | bool   | [-] whether to specify jerk when ego decelerates                                                                         |
-| `stop_margin`           | double | [m] the vehicle decelerates to be able to stop with this margin                                                          |
-| `passing_margin`        | double | [m] the vehicle begins to accelerate if the vehicle's front in predicted position is ahead of the obstacle + this margin |
-| `deceleration_jerk`     | double | [m/s^3] ego decelerates with this jerk when stopping for obstacles                                                       |
-| `detection_distance`    | double | [m] ahead distance from ego to detect the obstacles                                                                      |
-| `detection_span`        | double | [m] calculate collision with this span to reduce calculation time                                                        |
-| `min_vel_ego_kmph`      | double | [km/h] min velocity to calculate time to collision                                                                       |
+| Parameter               | Type             | Description                                                                                                                                                                                          |
+| ----------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `detection_method`      | string           | [-] candidate: Object, ObjectWithoutPath, Points                                                                                                                                                     |
+| `target_obstacle_types` | vector of string | [-] specifies which obstacle types will be considered by the module, if the obstacles classification type is not written here, it will be ignored. candidate: ["PEDESTRIAN", "BICYCLE","MOTORCYCLE"] |
+| `use_partition_lanelet` | bool             | [-] whether to use partition lanelet map data                                                                                                                                                        |
+| `specify_decel_jerk`    | bool             | [-] whether to specify jerk when ego decelerates                                                                                                                                                     |
+| `stop_margin`           | double           | [m] the vehicle decelerates to be able to stop with this margin                                                                                                                                      |
+| `passing_margin`        | double           | [m] the vehicle begins to accelerate if the vehicle's front in predicted position is ahead of the obstacle + this margin                                                                             |
+| `deceleration_jerk`     | double           | [m/s^3] ego decelerates with this jerk when stopping for obstacles                                                                                                                                   |
+| `detection_distance`    | double           | [m] ahead distance from ego to detect the obstacles                                                                                                                                                  |
+| `detection_span`        | double           | [m] calculate collision with this span to reduce calculation time                                                                                                                                    |
+| `min_vel_ego_kmph`      | double           | [km/h] min velocity to calculate time to collision                                                                                                                                                   |
 
 | Parameter /detection_area | Type   | Description                                  |
 | ------------------------- | ------ | -------------------------------------------- |

@@ -18,6 +18,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace behavior_velocity_planner
 {
@@ -57,6 +58,8 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
   {
     auto & p = planner_param_.run_out;
     p.detection_method = getOrDeclareParameter<std::string>(node, ns + ".detection_method");
+    p.target_obstacle_types =
+      getOrDeclareParameter<std::vector<std::string>>(node, ns + ".target_obstacle_types");
     p.use_partition_lanelet = getOrDeclareParameter<bool>(node, ns + ".use_partition_lanelet");
     p.use_ego_cut_line = getOrDeclareParameter<bool>(node, ns + ".use_ego_cut_line");
     p.suppress_on_crosswalk = getOrDeclareParameter<bool>(node, ns + ".suppress_on_crosswalk");

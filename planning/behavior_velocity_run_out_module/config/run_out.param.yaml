@@ -2,6 +2,7 @@
   ros__parameters:
     run_out:
       detection_method: "Object"  # [-] candidate: Object, ObjectWithoutPath, Points
+      target_obstacle_types: ["PEDESTRIAN", "BICYCLE", "MOTORCYCLE"] # [-] Obstacle types considered by this module
       use_partition_lanelet: true # [-] whether to use partition lanelet map data
       suppress_on_crosswalk: true # [-] whether to suppress on crosswalk lanelet
       use_ego_cut_line: true      # [-] filter obstacles that pass the backside of ego: if a dynamic obstacle's predicted path intersects this line, it is ignored

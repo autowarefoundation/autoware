@@ -332,21 +332,22 @@ std::vector<DynamicObstacle> RunOutModule::checkCollisionWithObstacles(
   std::vector<geometry_msgs::msg::Point> poly, const float travel_time,
   const std::vector<std::pair<int64_t, lanelet::ConstLanelet>> & crosswalk_lanelets) const
 {
+  using object_recognition_utils::convertLabelToString;
   const auto bg_poly_vehicle = run_out_utils::createBoostPolyFromMsg(poly);
 
   // check collision for each objects
   std::vector<DynamicObstacle> obstacles_collision;
   for (const auto & obstacle : dynamic_obstacles) {
     // get classification that has highest probability
-    const auto classification = run_out_utils::getHighestProbLabel(obstacle.classifications);
-
-    // detect only pedestrian and bicycle
-    if (
-      classification != ObjectClassification::PEDESTRIAN &&
-      classification != ObjectClassification::BICYCLE) {
+    const auto classification =
+      convertLabelToString(run_out_utils::getHighestProbLabel(obstacle.classifications));
+    const auto & target_obstacle_types = planner_param_.run_out.target_obstacle_types;
+    // detect only pedestrians, bicycles or motorcycles
+    const auto it =
+      std::find(target_obstacle_types.begin(), target_obstacle_types.end(), classification);
+    if (it == target_obstacle_types.end()) {
       continue;
     }
-
     // calculate predicted obstacle pose for min velocity and max velocity
     const auto predicted_obstacle_pose_min_vel =
       calcPredictedObstaclePose(obstacle.predicted_paths, travel_time, obstacle.min_velocity_mps);

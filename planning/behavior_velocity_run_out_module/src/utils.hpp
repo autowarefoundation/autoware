@@ -55,6 +55,7 @@ struct CommonParam
 struct RunOutParam
 {
   std::string detection_method;
+  std::vector<std::string> target_obstacle_types;
   bool use_partition_lanelet;
   bool suppress_on_crosswalk;
   bool specify_decel_jerk;
