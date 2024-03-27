@@ -45,7 +45,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG SETUP_ARGS
 ARG ROS_DISTRO
-ENV CCACHE_DIR=/ccache
+ENV CCACHE_DIR="/var/tmp/ccache"
 ENV CC="/usr/lib/ccache/gcc"
 ENV CXX="/usr/lib/ccache/g++"
 
@@ -74,7 +74,7 @@ RUN --mount=type=ssh \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   && find /autoware/install -type d -exec chmod 777 {} \; \
-  && chmod -R 777 /ccache \
+  && chmod -R 777 /var/tmp/ccache \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
   && rm -rf /autoware/build /autoware/src
 
