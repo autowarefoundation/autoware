@@ -195,6 +195,14 @@ BehaviorModuleOutput NormalLaneChange::generateOutput()
 {
   BehaviorModuleOutput output;
 
+  if (!status_.is_valid_path) {
+    output.path = prev_module_path_;
+    output.reference_path = prev_module_reference_path_;
+    output.drivable_area_info = prev_drivable_area_info_;
+    output.turn_signal_info = prev_turn_signal_info_;
+    return output;
+  }
+
   if (isAbortState() && abort_path_) {
     output.path = abort_path_->path;
     output.reference_path = prev_module_reference_path_;
