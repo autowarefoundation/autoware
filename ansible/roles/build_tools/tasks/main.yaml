@@ -39,3 +39,4 @@
   ansible.builtin.shell: source ~/.bashrc
   args:
     executable: /bin/bash
+  changed_when: false
