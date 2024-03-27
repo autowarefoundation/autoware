@@ -1,5 +1,9 @@
 # default_ad_api
 
+## Notes
+
+Components that relay services must be executed by the Multi-Threaded Executor.
+
 ## Features
 
 This package is a default implementation AD API.

@@ -17,6 +17,9 @@
 
 #include <rclcpp/qos.hpp>
 
+#include <autoware_adapi_v1_msgs/msg/door_status_array.hpp>
+#include <autoware_adapi_v1_msgs/srv/get_door_layout.hpp>
+#include <autoware_adapi_v1_msgs/srv/set_door_command.hpp>
 #include <autoware_auto_vehicle_msgs/msg/gear_report.hpp>
 #include <autoware_auto_vehicle_msgs/msg/hazard_lights_report.hpp>
 #include <autoware_auto_vehicle_msgs/msg/steering_report.hpp>
@@ -66,6 +69,27 @@ struct EnergyStatus
 {
   using Message = tier4_vehicle_msgs::msg::BatteryStatus;
   static constexpr char name[] = "/vehicle/status/battery_charge";
+  static constexpr size_t depth = 1;
+  static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
+  static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_VOLATILE;
+};
+
+struct DoorCommand
+{
+  using Service = autoware_adapi_v1_msgs::srv::SetDoorCommand;
+  static constexpr char name[] = "/vehicle/doors/command";
+};
+
+struct DoorLayout
+{
+  using Service = autoware_adapi_v1_msgs::srv::GetDoorLayout;
+  static constexpr char name[] = "/vehicle/doors/layout";
+};
+
+struct DoorStatus
+{
+  using Message = autoware_adapi_v1_msgs::msg::DoorStatusArray;
+  static constexpr char name[] = "/vehicle/doors/status";
   static constexpr size_t depth = 1;
   static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
   static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_VOLATILE;

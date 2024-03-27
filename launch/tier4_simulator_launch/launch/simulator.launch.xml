@@ -10,6 +10,7 @@
   <arg name="launch_dummy_perception"/>
   <arg name="launch_dummy_vehicle"/>
   <arg name="launch_dummy_localization"/>
+  <arg name="launch_dummy_doors"/>
   <arg name="launch_diagnostic_converter"/>
   <arg name="vehicle_info_param_file"/>
 
@@ -133,6 +134,11 @@
       <arg name="stop_check_enabled" value="false"/>
       <arg name="config_file" value="$(var pose_initializer_param_path)"/>
     </include>
+  </group>
+
+  <!-- Dummy doors -->
+  <group if="$(var launch_dummy_doors)">
+    <include file="$(find-pkg-share vehicle_door_simulator)/launch/vehicle_door_simulator.launch.xml"/>
   </group>
 
   <!-- Diagnostic Converter -->

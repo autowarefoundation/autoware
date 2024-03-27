@@ -12,6 +12,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/route_tool.cpp
   src/route_panel.cpp
+  src/door_panel.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

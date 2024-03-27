@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="vehicle_door_simulator" exec="dummy_doors" name="dummy_doors">
+    <remap from="~/doors/command" to="/vehicle/doors/command"/>
+    <remap from="~/doors/layout" to="/vehicle/doors/layout"/>
+    <remap from="~/doors/status" to="/vehicle/doors/status"/>
+  </node>
+</launch>
