@@ -16,6 +16,8 @@
   ansible.builtin.apt:
     name:
       - libcudnn8-dev={{ cudnn_version }}
+      - libnvinfer-headers-dev={{ tensorrt_version }}
+      - libnvinfer-headers-plugin-dev={{ tensorrt_version }}
       - libnvinfer-dev={{ tensorrt_version }}
       - libnvinfer-plugin-dev={{ tensorrt_version }}
       - libnvinfer-headers-dev={{ tensorrt_version }}
