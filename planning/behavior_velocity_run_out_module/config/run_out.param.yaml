@@ -4,6 +4,7 @@
       detection_method: "Object"  # [-] candidate: Object, ObjectWithoutPath, Points
       use_partition_lanelet: true # [-] whether to use partition lanelet map data
       suppress_on_crosswalk: true # [-] whether to suppress on crosswalk lanelet
+      use_ego_cut_line: true      # [-] filter obstacles that pass the backside of ego: if a dynamic obstacle's predicted path intersects this line, it is ignored
       specify_decel_jerk: true    # [-] whether to specify jerk when ego decelerates
       stop_margin: 2.5            # [m] the vehicle decelerates to be able to stop with this margin
       passing_margin: 1.1         # [m] the vehicle begins to accelerate if the vehicle's front in predicted position is ahead of the obstacle + this margin
@@ -11,6 +12,7 @@
       detection_distance: 45.0    # [m] ahead distance from ego to detect the obstacles
       detection_span: 1.0         # [m] calculate collision with this span to reduce calculation time
       min_vel_ego_kmph: 3.6       # [km/h] min velocity to calculate time to collision
+      ego_cut_line_length: 3.0    # The width of the ego's cut line
 
       # Parameter to create abstracted dynamic obstacles
       dynamic_obstacle:
