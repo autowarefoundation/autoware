@@ -371,7 +371,7 @@ struct ObjectData  // avoidance target
   double distance_factor{0.0};
 
   // count up when object disappeared. Removed when it exceeds threshold.
-  rclcpp::Time last_seen;
+  rclcpp::Time last_seen{rclcpp::Clock(RCL_ROS_TIME).now()};
   double lost_time{0.0};
 
   // count up when object moved. Removed when it exceeds threshold.

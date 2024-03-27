@@ -80,13 +80,13 @@ void LaneChangeInterface::updateData()
     getPreviousModuleOutput().reference_path, getPreviousModuleOutput().path);
   module_type_->setPreviousDrivableAreaInfo(getPreviousModuleOutput().drivable_area_info);
   module_type_->setPreviousTurnSignalInfo(getPreviousModuleOutput().turn_signal_info);
+  module_type_->updateSpecialData();
 
   if (isWaitingApproval()) {
     module_type_->updateLaneChangeStatus();
   }
   updateDebugMarker();
 
-  module_type_->updateSpecialData();
   module_type_->resetStopPose();
 }
 
