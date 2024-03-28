@@ -190,6 +190,9 @@ void GoalPlannerModule::onTimer()
 
   // check if new pull over path candidates are needed to be generated
   const bool need_update = std::invoke([&]() {
+    if (isOnModifiedGoal()) {
+      return false;
+    }
     if (hasDeviatedFromCurrentPreviousModulePath()) {
       RCLCPP_DEBUG(getLogger(), "has deviated from current previous module path");
       return false;
