@@ -18,8 +18,7 @@
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>autoware_auto_perception_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
-  <depend>behavior_path_planner</depend>
-  <depend>behavior_velocity_planner</depend>
+  <depend>behavior_path_planner_common</depend>
   <depend>geometry_msgs</depend>
   <depend>global_parameter_loader</depend>
   <depend>interpolation</depend>
@@ -43,6 +42,8 @@
   <test_depend>ament_cmake_gmock</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
+  <test_depend>behavior_path_planner</test_depend>
+  <test_depend>behavior_velocity_planner</test_depend>
   <test_depend>ros_testing</test_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>

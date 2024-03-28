@@ -7,8 +7,6 @@ find_package(builtin_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(OpenCV REQUIRED)
 
 rosidl_generate_interfaces(
   static_centerline_optimizer
@@ -25,16 +23,6 @@ ament_auto_add_executable(main
   src/main.cpp
   src/static_centerline_optimizer_node.cpp
   src/utils.cpp
-)
-
-target_include_directories(main
-  SYSTEM PUBLIC
-    ${OpenCV_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIR}
-)
-
-target_link_libraries(main
-  ${OpenCV_LIBRARIES}
 )
 
 if(${rosidl_cmake_VERSION} VERSION_LESS 2.5.0)
