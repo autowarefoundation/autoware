@@ -430,6 +430,9 @@ void FreespacePlannerNode::onTimer()
   }
 
   if (is_completed_) {
+    partial_trajectory_.header = odom_->header;
+    const auto stop_trajectory = createStopTrajectory(partial_trajectory_);
+    trajectory_pub_->publish(stop_trajectory);
     return;
   }
 
