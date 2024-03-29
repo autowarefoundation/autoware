@@ -879,7 +879,7 @@ void CrosswalkModule::applySafetySlowDownSpeed(
   if (slowdown_pose)
     velocity_factor_.set(
       output.points, planner_data_->current_odometry->pose, *slowdown_pose,
-      VelocityFactor::CROSSWALK);
+      VelocityFactor::APPROACHING);
 }
 
 Polygon2d CrosswalkModule::getAttentionArea(

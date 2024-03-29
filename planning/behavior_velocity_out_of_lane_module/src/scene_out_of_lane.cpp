@@ -166,16 +166,19 @@ bool OutOfLaneModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
                     1;
     planning_utils::insertVelocity(
       *path, point_to_insert->point, point_to_insert->slowdown.velocity, path_idx);
+    auto stop_pose_reached = false;
     if (point_to_insert->slowdown.velocity == 0.0) {
+      const auto dist_to_stop_pose = motion_utils::calcSignedArcLength(
+        path->points, ego_data.pose.position, point_to_insert->point.point.pose.position);
+      if (ego_data.velocity < 1e-3 && dist_to_stop_pose < 1e-3) stop_pose_reached = true;
       tier4_planning_msgs::msg::StopFactor stop_factor;
       stop_factor.stop_pose = point_to_insert->point.point.pose;
-      stop_factor.dist_to_stop_pose = motion_utils::calcSignedArcLength(
-        path->points, ego_data.pose.position, point_to_insert->point.point.pose.position);
+      stop_factor.dist_to_stop_pose = dist_to_stop_pose;
       planning_utils::appendStopReason(stop_factor, stop_reason);
     }
     velocity_factor_.set(
       path->points, planner_data_->current_odometry->pose, point_to_insert->point.point.pose,
-      VelocityFactor::ROUTE_OBSTACLE);
+      stop_pose_reached ? VelocityFactor::STOPPED : VelocityFactor::APPROACHING, "out_of_lane");
   } else if (!decisions.empty()) {
     RCLCPP_WARN(logger_, "Could not insert stop point (would violate max deceleration limits)");
   }

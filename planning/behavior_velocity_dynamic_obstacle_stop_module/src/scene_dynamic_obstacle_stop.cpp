@@ -47,7 +47,7 @@ DynamicObstacleStopModule::DynamicObstacleStopModule(
   prev_stop_decision_time_ =
     clock->now() -
     rclcpp::Duration(std::chrono::duration<double>(params_.decision_duration_buffer));
-  velocity_factor_.init(PlanningBehavior::UNKNOWN);
+  velocity_factor_.init(PlanningBehavior::ROUTE_OBSTACLE);
 }
 
 bool DynamicObstacleStopModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
@@ -118,8 +118,13 @@ bool DynamicObstacleStopModule::modifyPathVelocity(PathWithLaneId * path, StopRe
 
   if (current_stop_pose_) {
     motion_utils::insertStopPoint(*current_stop_pose_, 0.0, path->points);
+    const auto stop_pose_reached =
+      planner_data_->current_velocity->twist.linear.x < 1e-3 &&
+      tier4_autoware_utils::calcDistance2d(ego_data.pose, *current_stop_pose_) < 1e-3;
     velocity_factor_.set(
-      path->points, ego_data.pose, *current_stop_pose_, VelocityFactor::ROUTE_OBSTACLE);
+      path->points, ego_data.pose, *current_stop_pose_,
+      stop_pose_reached ? VelocityFactor::STOPPED : VelocityFactor::APPROACHING,
+      "dynamic_obstacle_stop");
   }
 
   const auto total_time_us = stopwatch.toc();
