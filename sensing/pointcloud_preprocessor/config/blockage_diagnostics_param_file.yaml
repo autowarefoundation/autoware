@@ -4,6 +4,8 @@
     blockage_count_threshold: 50
     blockage_buffering_frames: 2
     blockage_buffering_interval: 1
+    enable_dust_diag: false
+    publish_debug_image: false
     dust_ratio_threshold: 0.2
     dust_count_threshold: 10
     dust_kernel_size: 2

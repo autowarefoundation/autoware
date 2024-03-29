@@ -85,6 +85,8 @@ private:
   bool is_channel_order_top2down_;
   int blockage_buffering_frames_;
   int blockage_buffering_interval_;
+  bool enable_dust_diag_;
+  bool publish_debug_image_;
   int dust_kernel_size_;
   int dust_buffering_frames_;
   int dust_buffering_interval_;
