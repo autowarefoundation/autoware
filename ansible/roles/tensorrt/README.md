@@ -37,9 +37,9 @@ sudo apt-get install -y \
 libcudnn8-dev=${cudnn_version} \
 libnvinfer-dev=${tensorrt_version} \
 libnvinfer-plugin-dev=${tensorrt_version} \
+libnvinfer-headers-dev=${tensorrt_version} \
 libnvinfer-headers-plugin-dev=${tensorrt_version} \
 libnvparsers-dev=${tensorrt_version} \
-libnvinfer-headers-dev=${tensorrt_version} \
 libnvonnxparsers-dev=${tensorrt_version}
 
 sudo apt-mark hold \
