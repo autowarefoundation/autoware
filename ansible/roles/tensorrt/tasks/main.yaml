@@ -16,10 +16,10 @@
   ansible.builtin.apt:
     name:
       - libcudnn8-dev={{ cudnn_version }}
-      - libnvinfer-headers-dev={{ tensorrt_version }}
-      - libnvinfer-headers-plugin-dev={{ tensorrt_version }}
       - libnvinfer-dev={{ tensorrt_version }}
       - libnvinfer-plugin-dev={{ tensorrt_version }}
+      - libnvinfer-headers-dev={{ tensorrt_version }}
+      - libnvinfer-headers-plugin-dev={{ tensorrt_version }}
       - libnvparsers-dev={{ tensorrt_version }}
       - libnvonnxparsers-dev={{ tensorrt_version }}
     allow_change_held_packages: true
