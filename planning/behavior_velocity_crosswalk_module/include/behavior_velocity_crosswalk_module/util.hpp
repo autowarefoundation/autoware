@@ -67,6 +67,7 @@ struct DebugData
   bool ignore_crosswalk{false};
   double base_link2front;
   double stop_judge_range{};
+  std::string virtual_wall_suffix{};
 
   geometry_msgs::msg::Pose first_stop_pose;
   geometry_msgs::msg::Point nearest_collision_point;

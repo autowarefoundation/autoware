@@ -135,8 +135,8 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
   cp.occlusion_min_size = getOrDeclareParameter<double>(node, ns + ".occlusion.min_size");
   cp.occlusion_free_space_max = getOrDeclareParameter<int>(node, ns + ".occlusion.free_space_max");
   cp.occlusion_occupied_min = getOrDeclareParameter<int>(node, ns + ".occlusion.occupied_min");
-  cp.occlusion_ignore_with_red_traffic_light =
-    getOrDeclareParameter<bool>(node, ns + ".occlusion.ignore_with_red_traffic_light");
+  cp.occlusion_ignore_with_traffic_light =
+    getOrDeclareParameter<bool>(node, ns + ".occlusion.ignore_with_traffic_light");
   cp.occlusion_ignore_behind_predicted_objects =
     getOrDeclareParameter<bool>(node, ns + ".occlusion.ignore_behind_predicted_objects");
 

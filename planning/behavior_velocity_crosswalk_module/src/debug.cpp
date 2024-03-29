@@ -190,6 +190,7 @@ motion_utils::VirtualWalls CrosswalkModule::createVirtualWalls()
     virtual_walls.push_back(wall);
   }
   wall.style = motion_utils::VirtualWallType::slowdown;
+  wall.text += debug_data_.virtual_wall_suffix;
   for (const auto & p : debug_data_.slow_poses) {
     wall.pose = calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
     virtual_walls.push_back(wall);

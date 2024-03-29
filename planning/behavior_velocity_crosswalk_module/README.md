@@ -209,7 +209,7 @@ This range is meant to be large when ego is far from the crosswalk and small whe
 In order to avoid flickering decisions, a time buffer can be used such that the decision to add (or remove) the slow down is only taken
 after an occlusion is detected (or not detected) for a consecutive time defined by the `time_buffer` parameter.
 
-To ignore occlusions when the pedestrian light is red, `ignore_with_red_traffic_light` should be set to true.
+To ignore occlusions when the crosswalk has a traffic light, `ignore_with_traffic_light` should be set to true.
 
 To ignore temporary occlusions caused by moving objects,
 `ignore_behind_predicted_objects` should be set to true.
@@ -230,7 +230,7 @@ To inflate the masking behind objects, their footprint can be made bigger using 
 | `min_size`                                     | [m]   | double      | minimum size of an occlusion (square side size)                                                                                                 |
 | `free_space_max`                               | [-]   | double      | maximum value of a free space cell in the occupancy grid                                                                                        |
 | `occupied_min`                                 | [-]   | double      | minimum value of an occupied cell in the occupancy grid                                                                                         |
-| `ignore_with_red_traffic_light`                | [-]   | bool        | if true, occlusions at crosswalks with traffic lights are ignored                                                                               |
+| `ignore_with_traffic_light`                    | [-]   | bool        | if true, occlusions at crosswalks with traffic lights are ignored                                                                               |
 | `ignore_behind_predicted_objects`              | [-]   | bool        | if true, occlusions behind predicted objects are ignored                                                                                        |
 | `ignore_velocity_thresholds.default`           | [m/s] | double      | occlusions are only ignored behind objects with a higher or equal velocity                                                                      |
 | `ignore_velocity_thresholds.custom_labels`     | [-]   | string list | labels for which to define a non-default velocity threshold (see `autoware_auto_perception_msgs::msg::ObjectClassification` for all the labels) |
