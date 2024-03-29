@@ -18,6 +18,7 @@
 #include "debug.hpp"
 #include "footprint.hpp"
 #include "object_filtering.hpp"
+#include "object_stop_decision.hpp"
 #include "types.hpp"
 
 #include <behavior_velocity_planner_common/utilization/debug.hpp>
