@@ -55,7 +55,8 @@ using tier4_perception_msgs::msg::DetectedObjectsWithFeature;
 using tier4_perception_msgs::msg::DetectedObjectWithFeature;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 using autoware_auto_perception_msgs::msg::ObjectClassification;
-template <class Msg, class ObjType, class Msg2D>
+
+template <class TargetMsg3D, class ObjType, class Msg2D>
 class FusionNode : public rclcpp::Node
 {
 public:
@@ -72,10 +73,10 @@ protected:
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr input_camera_info_msg,
     const std::size_t camera_id);
 
-  virtual void preprocess(Msg & output_msg);
+  virtual void preprocess(TargetMsg3D & output_msg);
 
   // callback for Msg subscription
-  virtual void subCallback(const typename Msg::ConstSharedPtr input_msg);
+  virtual void subCallback(const typename TargetMsg3D::ConstSharedPtr input_msg);
 
   // callback for roi subscription
 
@@ -83,13 +84,13 @@ protected:
     const typename Msg2D::ConstSharedPtr input_roi_msg, const std::size_t roi_i);
 
   virtual void fuseOnSingleImage(
-    const Msg & input_msg, const std::size_t image_id, const Msg2D & input_roi_msg,
-    const sensor_msgs::msg::CameraInfo & camera_info, Msg & output_msg) = 0;
+    const TargetMsg3D & input_msg, const std::size_t image_id, const Msg2D & input_roi_msg,
+    const sensor_msgs::msg::CameraInfo & camera_info, TargetMsg3D & output_msg) = 0;
 
   // set args if you need
-  virtual void postprocess(Msg & output_msg);
+  virtual void postprocess(TargetMsg3D & output_msg);
 
-  virtual void publish(const Msg & output_msg);
+  virtual void publish(const TargetMsg3D & output_msg);
 
   void timer_callback();
   void setPeriod(const int64_t new_period);
@@ -110,7 +111,7 @@ protected:
   std::vector<std::string> input_camera_topics_;
 
   /** \brief A vector of subscriber. */
-  typename rclcpp::Subscription<Msg>::SharedPtr sub_;
+  typename rclcpp::Subscription<TargetMsg3D>::SharedPtr sub_;
   std::vector<typename rclcpp::Subscription<Msg2D>::SharedPtr> rois_subs_;
 
   // offsets between cameras and the lidars
@@ -118,13 +119,13 @@ protected:
 
   // cache for fusion
   std::vector<bool> is_fused_;
-  std::pair<int64_t, typename Msg::SharedPtr>
+  std::pair<int64_t, typename TargetMsg3D::SharedPtr>
     cached_msg_;  // first element is the timestamp in nanoseconds, second element is the message
   std::vector<std::map<int64_t, typename Msg2D::ConstSharedPtr>> cached_roi_msgs_;
   std::mutex mutex_cached_msgs_;
 
   // output publisher
-  typename rclcpp::Publisher<Msg>::SharedPtr pub_ptr_;
+  typename rclcpp::Publisher<TargetMsg3D>::SharedPtr pub_ptr_;
 
   // debugger
   std::shared_ptr<Debugger> debugger_;

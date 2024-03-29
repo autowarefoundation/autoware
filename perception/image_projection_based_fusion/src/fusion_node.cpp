@@ -40,8 +40,8 @@ static double processing_time_ms = 0;
 namespace image_projection_based_fusion
 {
 
-template <class Msg, class ObjType, class Msg2D>
-FusionNode<Msg, ObjType, Msg2D>::FusionNode(
+template <class TargetMsg3D, class ObjType, class Msg2D>
+FusionNode<TargetMsg3D, ObjType, Msg2D>::FusionNode(
   const std::string & node_name, const rclcpp::NodeOptions & options)
 : Node(node_name, options), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_)
 {
@@ -106,12 +106,13 @@ FusionNode<Msg, ObjType, Msg2D>::FusionNode(
   }
 
   // subscribers
-  std::function<void(const typename Msg::ConstSharedPtr msg)> sub_callback =
+  std::function<void(const typename TargetMsg3D::ConstSharedPtr msg)> sub_callback =
     std::bind(&FusionNode::subCallback, this, std::placeholders::_1);
-  sub_ = this->create_subscription<Msg>("input", rclcpp::QoS(1).best_effort(), sub_callback);
+  sub_ =
+    this->create_subscription<TargetMsg3D>("input", rclcpp::QoS(1).best_effort(), sub_callback);
 
   // publisher
-  pub_ptr_ = this->create_publisher<Msg>("output", rclcpp::QoS{1});
+  pub_ptr_ = this->create_publisher<TargetMsg3D>("output", rclcpp::QoS{1});
 
   // Set timer
   const auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -145,22 +146,24 @@ FusionNode<Msg, ObjType, Msg2D>::FusionNode(
   filter_scope_max_z_ = declare_parameter<double>("filter_scope_max_z");
 }
 
-template <class Msg, class Obj, class Msg2D>
-void FusionNode<Msg, Obj, Msg2D>::cameraInfoCallback(
+template <class TargetMsg3D, class Obj, class Msg2D>
+void FusionNode<TargetMsg3D, Obj, Msg2D>::cameraInfoCallback(
   const sensor_msgs::msg::CameraInfo::ConstSharedPtr input_camera_info_msg,
   const std::size_t camera_id)
 {
   camera_info_map_[camera_id] = *input_camera_info_msg;
 }
 
-template <class Msg, class Obj, class Msg2D>
-void FusionNode<Msg, Obj, Msg2D>::preprocess(Msg & ouput_msg __attribute__((unused)))
+template <class TargetMsg3D, class Obj, class Msg2D>
+void FusionNode<TargetMsg3D, Obj, Msg2D>::preprocess(TargetMsg3D & ouput_msg
+                                                     __attribute__((unused)))
 {
   // do nothing by default
 }
 
-template <class Msg, class Obj, class Msg2D>
-void FusionNode<Msg, Obj, Msg2D>::subCallback(const typename Msg::ConstSharedPtr input_msg)
+template <class TargetMsg3D, class Obj, class Msg2D>
+void FusionNode<TargetMsg3D, Obj, Msg2D>::subCallback(
+  const typename TargetMsg3D::ConstSharedPtr input_msg)
 {
   if (cached_msg_.second != nullptr) {
     stop_watch_ptr_->toc("processing_time", true);
@@ -202,7 +205,7 @@ void FusionNode<Msg, Obj, Msg2D>::subCallback(const typename Msg::ConstSharedPtr
 
   stop_watch_ptr_->toc("processing_time", true);
 
-  typename Msg::SharedPtr output_msg = std::make_shared<Msg>(*input_msg);
+  typename TargetMsg3D::SharedPtr output_msg = std::make_shared<TargetMsg3D>(*input_msg);
 
   preprocess(*output_msg);
 
@@ -291,8 +294,8 @@ void FusionNode<Msg, Obj, Msg2D>::subCallback(const typename Msg::ConstSharedPtr
   }
 }
 
-template <class Msg, class Obj, class Msg2D>
-void FusionNode<Msg, Obj, Msg2D>::roiCallback(
+template <class TargetMsg3D, class Obj, class Msg2D>
+void FusionNode<TargetMsg3D, Obj, Msg2D>::roiCallback(
   const typename Msg2D::ConstSharedPtr input_roi_msg, const std::size_t roi_i)
 {
   stop_watch_ptr_->toc("processing_time", true);
@@ -356,14 +359,15 @@ void FusionNode<Msg, Obj, Msg2D>::roiCallback(
   (cached_roi_msgs_.at(roi_i))[timestamp_nsec] = input_roi_msg;
 }
 
-template <class Msg, class Obj, class Msg2D>
-void FusionNode<Msg, Obj, Msg2D>::postprocess(Msg & output_msg __attribute__((unused)))
+template <class TargetMsg3D, class Obj, class Msg2D>
+void FusionNode<TargetMsg3D, Obj, Msg2D>::postprocess(TargetMsg3D & output_msg
+                                                      __attribute__((unused)))
 {
   // do nothing by default
 }
 
-template <class Msg, class Obj, class Msg2D>
-void FusionNode<Msg, Obj, Msg2D>::timer_callback()
+template <class TargetMsg3D, class Obj, class Msg2D>
+void FusionNode<TargetMsg3D, Obj, Msg2D>::timer_callback()
 {
   using std::chrono_literals::operator""ms;
   timer_->cancel();
@@ -401,8 +405,8 @@ void FusionNode<Msg, Obj, Msg2D>::timer_callback()
   }
 }
 
-template <class Msg, class Obj, class Msg2D>
-void FusionNode<Msg, Obj, Msg2D>::setPeriod(const int64_t new_period)
+template <class TargetMsg3D, class Obj, class Msg2D>
+void FusionNode<TargetMsg3D, Obj, Msg2D>::setPeriod(const int64_t new_period)
 {
   if (!timer_) {
     return;
@@ -418,8 +422,8 @@ void FusionNode<Msg, Obj, Msg2D>::setPeriod(const int64_t new_period)
   }
 }
 
-template <class Msg, class Obj, class Msg2D>
-void FusionNode<Msg, Obj, Msg2D>::publish(const Msg & output_msg)
+template <class TargetMsg3D, class Obj, class Msg2D>
+void FusionNode<TargetMsg3D, Obj, Msg2D>::publish(const TargetMsg3D & output_msg)
 {
   if (pub_ptr_->get_subscription_count() < 1) {
     return;
