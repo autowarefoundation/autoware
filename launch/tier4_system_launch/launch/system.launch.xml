@@ -29,6 +29,7 @@
   <arg name="mrm_handler_param_path" if="$(var use_diagnostic_graph)"/>
   <arg name="diagnostic_graph_aggregator_param_path" if="$(var use_diagnostic_graph)"/>
   <arg name="diagnostic_graph_aggregator_graph_path" if="$(var use_diagnostic_graph)"/>
+  <arg name="diagnostic_graph_aggregator_planning_simulator_graph_path" if="$(var use_diagnostic_graph)"/>
 
   <let name="sensor_launch_pkg" value="$(find-pkg-share $(var sensor_model)_launch)"/>
 
@@ -117,9 +118,12 @@
 
     <!-- Diagnostic Graph Aggregator -->
     <group if="$(var use_diagnostic_graph)">
+      <let name="graph_file" value="$(var diagnostic_graph_aggregator_graph_path)" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
+      <let name="graph_file" value="$(var diagnostic_graph_aggregator_graph_path)" if="$(eval &quot;'$(var run_mode)'=='logging_simulation'&quot;)"/>
+      <let name="graph_file" value="$(var diagnostic_graph_aggregator_planning_simulator_graph_path)" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
       <include file="$(find-pkg-share diagnostic_graph_aggregator)/launch/aggregator.launch.xml">
         <arg name="param_file" value="$(var diagnostic_graph_aggregator_param_path)"/>
-        <arg name="graph_file" value="$(var diagnostic_graph_aggregator_graph_path)"/>
+        <arg name="graph_file" value="$(var graph_file)"/>
       </include>
     </group>
 
