@@ -27,8 +27,6 @@ In addition to these 4 steps, 2 mechanisms are in place to make the stop point o
 The `hysteresis` parameter is used when a stop point was already being inserted in the previous iteration
 and it increases the range where dynamic objects are considered close enough to the ego path to be used by the module.
 
-The `decision_duration_buffer` parameter defines the duration when the module will keep inserted the previous stop point, even after no collisions were found.
-
 #### Filter dynamic objects
 
 ![filtering example](docs/DynamicObstacleStop-Filtering.drawio.svg)
@@ -75,6 +73,15 @@ If a stop point was inserted in the previous iteration of the module, its arc le
 Finally,
 the stop point arc length is calculated to be the arc length of the previously found collision point minus the `stop_distance_buffer` and the ego vehicle longitudinal offset, clamped between the minimum and maximum values.
 
+#### Duration buffer
+
+To prevent chatter caused by noisy perception, two duration parameters are used.
+
+- `add_stop_duration_buffer` represents the duration of consecutive collision detection with an object for the corresponding stop point to be added.
+- `remove_stop_duration_buffer` represents the duration of consecutive non-detection of collision with an object for the corresponding stop point to be removed.
+
+Timers and collision points are tracked for each dynamic object independently.
+
 ### Module Parameters
 
 | Parameter                               | Type   | Description                                                                                                        |
@@ -84,6 +91,7 @@ the stop point arc length is calculated to be the arc length of the previously f
 | `stop_distance_buffer`                  | double | [m] extra distance to add between the stop point and the collision point                                           |
 | `time_horizon`                          | double | [s] time horizon used for collision checks                                                                         |
 | `hysteresis`                            | double | [m] once a collision has been detected, this hysteresis is used on the collision detection                         |
-| `decision_duration_buffer`              | double | [s] duration between no collision being detected and the stop decision being cancelled                             |
+| `add_stop_duration_buffer`              | double | [s] duration where a collision must be continuously detected before a stop decision is added                       |
+| `remove_stop_duration_buffer`           | double | [s] duration between no collision being detected and the stop decision being remove                                |
 | `minimum_object_distance_from_ego_path` | double | [m] minimum distance between the footprints of ego and an object to consider for collision                         |
 | `ignore_unavoidable_collisions`         | bool   | [-] if true, ignore collisions that cannot be avoided by stopping (assuming the obstacle continues going straight) |

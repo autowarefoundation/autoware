@@ -1,4 +1,4 @@
-// Copyright 2023 TIER IV, Inc.
+// Copyright 2023-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #include "debug.hpp"
+
+#include "types.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
@@ -36,22 +38,46 @@ std::vector<visualization_msgs::msg::Marker> make_delete_markers(
   return markers;
 }
 
-std::vector<visualization_msgs::msg::Marker> make_dynamic_obstacle_markers(
-  const std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & obstacles)
+void add_markers(
+  visualization_msgs::msg::MarkerArray & array, size_t & prev_nb,
+  const std::vector<visualization_msgs::msg::Marker> & markers, const std::string & ns)
+{
+  array.markers.insert(array.markers.end(), markers.begin(), markers.end());
+  const auto delete_markers = debug::make_delete_markers(markers.size(), prev_nb, ns);
+  array.markers.insert(array.markers.end(), delete_markers.begin(), delete_markers.end());
+  prev_nb = markers.size();
+}
+
+std::vector<visualization_msgs::msg::Marker> make_collision_markers(
+  const ObjectStopDecisionMap & object_map, const std::string & ns, const double z,
+  const rclcpp::Time & now)
 {
   std::vector<visualization_msgs::msg::Marker> markers;
   visualization_msgs::msg::Marker marker;
   marker.header.frame_id = "map";
   marker.header.stamp = rclcpp::Time(0);
-  marker.ns = "dynamic_obstacles";
+  marker.ns = ns;
   marker.id = 0;
-  marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
   marker.action = visualization_msgs::msg::Marker::ADD;
-  marker.scale = tier4_autoware_utils::createMarkerScale(1.0, 1.0, 1.0);
-  marker.color = tier4_autoware_utils::createMarkerColor(1.0, 0.1, 0.1, 1.0);
-  marker.text = "dynamic obstacle";
-  for (const auto & obstacle : obstacles) {
-    marker.pose = obstacle.kinematics.initial_pose_with_covariance.pose;
+  marker.scale = tier4_autoware_utils::createMarkerScale(0.2, 0.2, 0.5);
+  marker.color = tier4_autoware_utils::createMarkerColor(0.6, 0.0, 0.6, 1.0);
+  for (const auto & [object_uuid, decision] : object_map) {
+    marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
+    marker.text = object_uuid.substr(0, 5) + "\n";
+    if (decision.should_be_avoided()) {
+      marker.text += "avoiding\nlast detection = ";
+      marker.text += std::to_string((now - *decision.last_stop_decision_time).seconds());
+      marker.text += "s\n";
+    } else {
+      marker.text += "first detection = ";
+      marker.text += std::to_string((now - *decision.start_detection_time).seconds());
+      marker.text += "s\n";
+    }
+    marker.pose.position = decision.collision_point;
+    marker.pose.position.z = z;
+    markers.push_back(marker);
+    ++marker.id;
+    marker.type = visualization_msgs::msg::Marker::SPHERE;
     markers.push_back(marker);
     ++marker.id;
   }

@@ -1,4 +1,4 @@
-// Copyright 2023 TIER IV, Inc.
+// Copyright 2023-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 #ifndef SCENE_DYNAMIC_OBSTACLE_STOP_HPP_
 #define SCENE_DYNAMIC_OBSTACLE_STOP_HPP_
 
+#include "object_stop_decision.hpp"
 #include "types.hpp"
 
 #include <behavior_velocity_planner_common/scene_module_interface.hpp>
@@ -48,8 +49,7 @@ public:
 
 private:
   PlannerParam params_;
-  rclcpp::Time prev_stop_decision_time_;
-  std::optional<geometry_msgs::msg::Pose> current_stop_pose_;
+  ObjectStopDecisionMap object_map_;
 
 protected:
   int64_t module_id_{};

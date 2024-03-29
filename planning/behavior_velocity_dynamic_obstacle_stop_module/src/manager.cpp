@@ -35,8 +35,9 @@ DynamicObstacleStopModuleManager::DynamicObstacleStopModuleManager(rclcpp::Node 
   pp.stop_distance_buffer = getOrDeclareParameter<double>(node, ns + ".stop_distance_buffer");
   pp.time_horizon = getOrDeclareParameter<double>(node, ns + ".time_horizon");
   pp.hysteresis = getOrDeclareParameter<double>(node, ns + ".hysteresis");
-  pp.decision_duration_buffer =
-    getOrDeclareParameter<double>(node, ns + ".decision_duration_buffer");
+  pp.add_duration_buffer = getOrDeclareParameter<double>(node, ns + ".add_stop_duration_buffer");
+  pp.remove_duration_buffer =
+    getOrDeclareParameter<double>(node, ns + ".remove_stop_duration_buffer");
   pp.minimum_object_distance_from_ego_path =
     getOrDeclareParameter<double>(node, ns + ".minimum_object_distance_from_ego_path");
   pp.ignore_unavoidable_collisions =

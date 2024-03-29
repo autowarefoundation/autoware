@@ -1,4 +1,4 @@
-// Copyright 2023 TIER IV, Inc.
+// Copyright 2023-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 #ifndef TYPES_HPP_
 #define TYPES_HPP_
 
+#include <rclcpp/time.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
@@ -24,13 +25,14 @@
 #include <boost/geometry/index/rtree.hpp>
 
 #include <optional>
+#include <string>
 #include <utility>
 #include <vector>
 
 namespace behavior_velocity_planner::dynamic_obstacle_stop
 {
-typedef std::pair<tier4_autoware_utils::Box2d, size_t> BoxIndexPair;
-typedef boost::geometry::index::rtree<BoxIndexPair, boost::geometry::index::rstar<16, 4>> Rtree;
+using BoxIndexPair = std::pair<tier4_autoware_utils::Box2d, size_t>;
+using Rtree = boost::geometry::index::rtree<BoxIndexPair, boost::geometry::index::rstar<16, 4>>;
 
 /// @brief parameters for the "out of lane" module
 struct PlannerParam
@@ -40,7 +42,8 @@ struct PlannerParam
   double stop_distance_buffer;
   double time_horizon;
   double hysteresis;
-  double decision_duration_buffer;
+  double add_duration_buffer;
+  double remove_duration_buffer;
   double ego_longitudinal_offset;
   double ego_lateral_offset;
   double minimum_object_distance_from_ego_path;
@@ -63,20 +66,24 @@ struct DebugData
 {
   tier4_autoware_utils::MultiPolygon2d obstacle_footprints{};
   size_t prev_dynamic_obstacles_nb{};
-  tier4_autoware_utils::MultiPolygon2d collisions{};
-  size_t prev_collisions_nb{};
   tier4_autoware_utils::MultiPolygon2d ego_footprints{};
   size_t prev_ego_footprints_nb{};
   std::optional<geometry_msgs::msg::Pose> stop_pose{};
+  size_t prev_collisions_nb{};
+  double z{};
   void reset_data()
   {
     obstacle_footprints.clear();
-    collisions.clear();
     ego_footprints.clear();
     stop_pose.reset();
   }
 };
 
+struct Collision
+{
+  geometry_msgs::msg::Point point;
+  std::string object_uuid;
+};
 }  // namespace behavior_velocity_planner::dynamic_obstacle_stop
 
 #endif  // TYPES_HPP_
