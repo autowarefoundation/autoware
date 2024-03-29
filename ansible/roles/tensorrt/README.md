@@ -39,6 +39,7 @@ libnvinfer-dev=${tensorrt_version} \
 libnvinfer-plugin-dev=${tensorrt_version} \
 libnvinfer-headers-plugin-dev=${tensorrt_version} \
 libnvparsers-dev=${tensorrt_version} \
+libnvinfer-headers-dev=${tensorrt_version} \
 libnvonnxparsers-dev=${tensorrt_version}
 
 sudo apt-mark hold \
@@ -47,5 +48,6 @@ libnvinfer-dev \
 libnvinfer-plugin-dev \
 libnvparsers-dev \
 libnvonnxparsers-dev \
+libnvinfer-headers-dev \
 libnvinfer-headers-plugin-dev
 ```
