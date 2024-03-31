@@ -22,7 +22,7 @@ In the linear MPC formulation, all motion and constraint expressions are linear.
 
 $$
 \begin{gather}
-x_{k+1}=Ax_{k}+Bu_{k}+w_{k}, y_{k}=Cx_{k} \tag{1} \\
+x_{k+1}=Ax_{k}+Bu_{k}+w_{k}, y_{k}=Cx_{k} \tag{1} \\\
 x_{k}\in R^{n},u_{k}\in R^{m},w_{k}\in R^{n}, y_{k}\in R^{l}, A\in R^{n\times n}, B\in R^{n\times m}, C\in R^{l \times n}
 \end{gather}
 $$
@@ -47,10 +47,10 @@ Then, when $k=2$, using also equation (2), we get
 
 $$
 \begin{align}
-x_{2} & = Ax_{1} + Bu_{1} + w_{1} \\
-& = A(Ax_{0} + Bu_{0} + w_{0}) + Bu_{1} + w_{1} \\
-& = A^{2}x_{0} + ABu_{0} + Aw_{0} + Bu_{1} + w_{1} \\
-& = A^{2}x_{0} + \begin{bmatrix}AB & B \end{bmatrix}\begin{bmatrix}u_{0}\\ u_{1} \end{bmatrix} + \begin{bmatrix}A & I \end{bmatrix}\begin{bmatrix}w_{0}\\ w_{1} \end{bmatrix} \tag{3}
+x_{2} & = Ax_{1} + Bu_{1} + w_{1} \\\
+& = A(Ax_{0} + Bu_{0} + w_{0}) + Bu_{1} + w_{1} \\\
+& = A^{2}x_{0} + ABu_{0} + Aw_{0} + Bu_{1} + w_{1} \\\
+& = A^{2}x_{0} + \begin{bmatrix}AB & B \end{bmatrix}\begin{bmatrix}u_{0}\\\ u_{1} \end{bmatrix} + \begin{bmatrix}A & I \end{bmatrix}\begin{bmatrix}w_{0}\\\ w_{1} \end{bmatrix} \tag{3}
 \end{align}
 $$
 
@@ -58,10 +58,10 @@ When $k=3$ , from equation (3)
 
 $$
 \begin{align}
-x_{3} & = Ax_{2} + Bu_{2} + w_{2} \\
-& = A(A^{2}x_{0} + ABu_{0} + Bu_{1} + Aw_{0} + w_{1} ) + Bu_{2} + w_{2} \\
-& = A^{3}x_{0} + A^{2}Bu_{0} + ABu_{1} + A^{2}w_{0} + Aw_{1} + Bu_{2} + w_{2} \\
-& = A^{3}x_{0} + \begin{bmatrix}A^{2}B & AB & B  \end{bmatrix}\begin{bmatrix}u_{0}\\ u_{1} \\ u_{2} \end{bmatrix} + \begin{bmatrix} A^{2} & A & I \end{bmatrix}\begin{bmatrix}w_{0}\\ w_{1} \\ w_{2} \end{bmatrix} \tag{4}
+x_{3} & = Ax_{2} + Bu_{2} + w_{2} \\\
+& = A(A^{2}x_{0} + ABu_{0} + Bu_{1} + Aw_{0} + w_{1} ) + Bu_{2} + w_{2} \\\
+& = A^{3}x_{0} + A^{2}Bu_{0} + ABu_{1} + A^{2}w_{0} + Aw_{1} + Bu_{2} + w_{2} \\\
+& = A^{3}x_{0} + \begin{bmatrix}A^{2}B & AB & B  \end{bmatrix}\begin{bmatrix}u_{0}\\\ u_{1} \\\ u_{2} \end{bmatrix} + \begin{bmatrix} A^{2} & A & I \end{bmatrix}\begin{bmatrix}w_{0}\\\ w_{1} \\\ w_{2} \end{bmatrix} \tag{4}
 \end{align}
 $$
 
@@ -69,7 +69,7 @@ If $k=n$ , then
 
 $$
 \begin{align}
-x_{n} = A^{n}x_{0} + \begin{bmatrix}A^{n-1}B & A^{n-2}B & \dots  & B  \end{bmatrix}\begin{bmatrix}u_{0}\\ u_{1} \\ \vdots  \\ u_{n-1} \end{bmatrix} + \begin{bmatrix} A^{n-1} & A^{n-2} & \dots & I \end{bmatrix}\begin{bmatrix}w_{0}\\ w_{1} \\ \vdots \\ w_{n-1} \end{bmatrix}
+x_{n} = A^{n}x_{0} + \begin{bmatrix}A^{n-1}B & A^{n-2}B & \dots  & B  \end{bmatrix}\begin{bmatrix}u_{0}\\\ u_{1} \\\ \vdots  \\\ u_{n-1} \end{bmatrix} + \begin{bmatrix} A^{n-1} & A^{n-2} & \dots & I \end{bmatrix}\begin{bmatrix}w_{0}\\\ w_{1} \\\ \vdots \\\ w_{n-1} \end{bmatrix}
 \tag{5}
 \end{align}
 $$
@@ -78,8 +78,8 @@ Putting all of them together with (2) to (5) yields the following matrix equatio
 
 $$
 \begin{align}
-\begin{bmatrix}x_{1}\\ x_{2} \\ x_{3} \\ \vdots  \\ x_{n} \end{bmatrix} = \begin{bmatrix}A^{1}\\ A^{2} \\ A^{3} \\ \vdots  \\ A^{n} \end{bmatrix}x_{0} + \begin{bmatrix}B & 0 & \dots  & & 0 \\ AB & B & 0 & \dots & 0  \\ A^{2}B & AB & B & \dots & 0 \\ \vdots & \vdots & & & 0 \\ A^{n-1}B & A^{n-2}B & \dots & AB & B \end{bmatrix}\begin{bmatrix}u_{0}\\ u_{1} \\ u_{2} \\ \vdots  \\ u_{n-1} \end{bmatrix} \\ +
-\begin{bmatrix}I & 0 & \dots  & & 0 \\ A & I & 0 & \dots & 0  \\ A^{2} & A & I & \dots & 0 \\ \vdots & \vdots & & & 0 \\ A^{n-1} & A^{n-2} & \dots & A & I \end{bmatrix}\begin{bmatrix}w_{0}\\ w_{1} \\ w_{2} \\ \vdots  \\ w_{n-1} \end{bmatrix}
+\begin{bmatrix}x_{1}\\\ x_{2} \\\ x_{3} \\\ \vdots  \\\ x_{n} \end{bmatrix} = \begin{bmatrix}A^{1}\\\ A^{2} \\\ A^{3} \\\ \vdots  \\\ A^{n} \end{bmatrix}x_{0} + \begin{bmatrix}B & 0 & \dots  & & 0 \\\ AB & B & 0 & \dots & 0  \\\ A^{2}B & AB & B & \dots & 0 \\\ \vdots & \vdots & & & 0 \\\ A^{n-1}B & A^{n-2}B & \dots & AB & B \end{bmatrix}\begin{bmatrix}u_{0}\\\ u_{1} \\\ u_{2} \\\ \vdots  \\\ u_{n-1} \end{bmatrix} \\\ +
+\begin{bmatrix}I & 0 & \dots  & & 0 \\\ A & I & 0 & \dots & 0  \\\ A^{2} & A & I & \dots & 0 \\\ \vdots & \vdots & & & 0 \\\ A^{n-1} & A^{n-2} & \dots & A & I \end{bmatrix}\begin{bmatrix}w_{0}\\\ w_{1} \\\ w_{2} \\\ \vdots  \\\ w_{n-1} \end{bmatrix}
 \tag{6}
 \end{align}
 $$
@@ -88,7 +88,7 @@ In this case, the measurements (outputs) become; $y_{k}=Cx_{k}$, so
 
 $$
 \begin{align}
-\begin{bmatrix}y_{1}\\ y_{2} \\ y_{3} \\ \vdots  \\ y_{n} \end{bmatrix} = \begin{bmatrix}C & 0 & \dots  & & 0 \\ 0 & C & 0 & \dots & 0  \\ 0 & 0 & C & \dots & 0 \\ \vdots & & & \ddots & 0 \\ 0 & \dots & 0 & 0 & C \end{bmatrix}\begin{bmatrix}x_{1}\\ x_{2} \\ x_{3} \\ \vdots  \\ x_{n} \end{bmatrix} \tag{7}
+\begin{bmatrix}y_{1}\\\ y_{2} \\\ y_{3} \\\ \vdots  \\\ y_{n} \end{bmatrix} = \begin{bmatrix}C & 0 & \dots  & & 0 \\\ 0 & C & 0 & \dots & 0  \\\ 0 & 0 & C & \dots & 0 \\\ \vdots & & & \ddots & 0 \\\ 0 & \dots & 0 & 0 & C \end{bmatrix}\begin{bmatrix}x_{1}\\\ x_{2} \\\ x_{3} \\\ \vdots  \\\ x_{n} \end{bmatrix} \tag{7}
 \end{align}
 $$
 
@@ -124,8 +124,8 @@ Substituting equation (8) into equation (9) and tidying up the equation for $U$.
 
 $$
 \begin{align}
-J(U) &= (H(Fx_{0}+GU+SW)-Y_{ref})^{T}Q(H(Fx_{0}+GU+SW)-Y_{ref})+(U-U_{ref})^{T}R(U-U_{ref}) \\
-& =U^{T}(G^{T}H^{T}QHG+R)U+2\left\{(H(Fx_{0}+SW)-Y_{ref})^{T}QHG-U_{ref}^{T}R\right\}U +(\rm{constant}) \tag{10}
+J(U) &= (H(Fx_{0}+GU+SW)-Y_{ref})^{T}Q(H(Fx_{0}+GU+SW)-Y_{ref})+(U-U_{ref})^{T}R(U-U_{ref}) \\\
+& =U^{T}(G^{T}H^{T}QHG+R)U+2\lbrace\{(H(Fx_{0}+SW)-Y_{ref})^{T}QHG-U_{ref}^{T}R\rbrace\}U +(\rm{constant}) \tag{10}
 \end{align}
 $$
 
@@ -141,9 +141,9 @@ For a nonlinear kinematic vehicle model, the discrete-time update equations are 
 
 $$
 \begin{align}
-x_{k+1} &= x_{k} + v\cos\theta_{k} \text{d}t \\
-y_{k+1} &= y_{k} + v\sin\theta_{k} \text{d}t \\
-\theta_{k+1} &= \theta_{k} + \frac{v\tan\delta_{k}}{L} \text{d}t \tag{11} \\
+x_{k+1} &= x_{k} + v\cos\theta_{k} \text{d}t \\\
+y_{k+1} &= y_{k} + v\sin\theta_{k} \text{d}t \\\
+\theta_{k+1} &= \theta_{k} + \frac{v\tan\delta_{k}}{L} \text{d}t \tag{11} \\\
 \delta_{k+1} &= \delta_{k} - \tau^{-1}\left(\delta_{k}-\delta_{des}\right)\text{d}t
 \end{align}
 $$
@@ -171,9 +171,9 @@ We make small angle assumptions for the following derivations of linear equation
 
 $$
 \begin{align}
-y_{k+1} &= y_{k} + v\sin\theta_{k} \text{d}t \\
+y_{k+1} &= y_{k} + v\sin\theta_{k} \text{d}t \\\
 \theta_{k+1} &= \theta_{k} + \frac{v\tan\delta_{k}}{L} \text{d}t - \kappa_{r}v\cos\theta_{k}\text{d}t
-\tag{12} \\
+\tag{12} \\\
 \delta_{k+1} &= \delta_{k} - \tau^{-1}\left(\delta_{k}-\delta_{des}\right)\text{d}t
 \end{align}
 $$
@@ -202,9 +202,9 @@ Substituting this equation into equation (12), and approximate $\Delta\delta$ to
 
 $$
 \begin{align}
-\tan\delta &\simeq \tan\delta_{r} + \frac{\text{d}\tan\delta}{\text{d}\delta} \Biggm|_{\delta=\delta_{r}}\Delta\delta \\
-&= \tan \delta_{r} + \frac{1}{\cos^{2}\delta_{r}}\Delta\delta \\
-&= \tan \delta_{r} + \frac{1}{\cos^{2}\delta_{r}}\left(\delta-\delta_{r}\right) \\
+\tan\delta &\simeq \tan\delta_{r} + \frac{\text{d}\tan\delta}{\text{d}\delta} \Biggm|_{\delta=\delta_{r}}\Delta\delta \\\
+&= \tan \delta_{r} + \frac{1}{\cos^{2}\delta_{r}}\Delta\delta \\\
+&= \tan \delta_{r} + \frac{1}{\cos^{2}\delta_{r}}\left(\delta-\delta_{r}\right) \\\
 &= \tan \delta_{r} - \frac{\delta_{r}}{\cos^{2}\delta_{r}} + \frac{1}{\cos^{2}\delta_{r}}\delta
 \end{align}
 $$
@@ -213,9 +213,9 @@ Using this, $\theta_{k+1}$ can be expressed
 
 $$
 \begin{align}
-\theta_{k+1} &= \theta_{k} + \frac{v\tan\delta_{k}}{L}\text{d}t - \kappa_{r}v\cos\delta_{k}\text{d}t \\
-&\simeq \theta_{k} + \frac{v}{L}\text{d}t\left(\tan\delta_{r} - \frac{\delta_{r}}{\cos^{2}\delta_{r}} + \frac{1}{\cos^{2}\delta_{r}}\delta_{k} \right) - \kappa_{r}v\text{d}t \\
-&= \theta_{k} + \frac{v}{L}\text{d}t\left(L\kappa_{r} - \frac{\delta_{r}}{\cos^{2}\delta_{r}} + \frac{1}{\cos^{2}\delta_{r}}\delta_{k} \right) - \kappa_{r}v\text{d}t \\
+\theta_{k+1} &= \theta_{k} + \frac{v\tan\delta_{k}}{L}\text{d}t - \kappa_{r}v\cos\delta_{k}\text{d}t \\\
+&\simeq \theta_{k} + \frac{v}{L}\text{d}t\left(\tan\delta_{r} - \frac{\delta_{r}}{\cos^{2}\delta_{r}} + \frac{1}{\cos^{2}\delta_{r}}\delta_{k} \right) - \kappa_{r}v\text{d}t \\\
+&= \theta_{k} + \frac{v}{L}\text{d}t\left(L\kappa_{r} - \frac{\delta_{r}}{\cos^{2}\delta_{r}} + \frac{1}{\cos^{2}\delta_{r}}\delta_{k} \right) - \kappa_{r}v\text{d}t \\\
 &= \theta_{k} + \frac{v}{L}\frac{\text{d}t}{\cos^{2}\delta_{r}}\delta_{k} - \frac{v}{L}\frac{\delta_{r}\text{d}t}{\cos^{2}\delta_{r}}
 \end{align}
 $$
@@ -224,7 +224,7 @@ Finally, the linearized time-varying model equation becomes;
 
 $$
 \begin{align}
-\begin{bmatrix} y_{k+1} \\ \theta_{k+1} \\ \delta_{k+1} \end{bmatrix} = \begin{bmatrix} 1 & v\text{d}t & 0 \\ 0 & 1 & \frac{v}{L}\frac{\text{d}t}{\cos^{2}\delta_{r}} \\ 0 & 0 & 1 - \tau^{-1}\text{d}t \end{bmatrix} \begin{bmatrix} y_{k} \\ \theta_{k} \\ \delta_{k} \end{bmatrix} + \begin{bmatrix} 0 \\ 0 \\ \tau^{-1}\text{d}t \end{bmatrix}\delta_{des} + \begin{bmatrix} 0 \\ -\frac{v}{L}\frac{\delta_{r}\text{d}t}{\cos^{2}\delta_{r}} \\ 0 \end{bmatrix}
+\begin{bmatrix} y_{k+1} \\\ \theta_{k+1} \\\ \delta_{k+1} \end{bmatrix} = \begin{bmatrix} 1 & v\text{d}t & 0 \\\ 0 & 1 & \frac{v}{L}\frac{\text{d}t}{\cos^{2}\delta_{r}} \\\ 0 & 0 & 1 - \tau^{-1}\text{d}t \end{bmatrix} \begin{bmatrix} y_{k} \\\ \theta_{k} \\\ \delta_{k} \end{bmatrix} + \begin{bmatrix} 0 \\\ 0 \\\ \tau^{-1}\text{d}t \end{bmatrix}\delta_{des} + \begin{bmatrix} 0 \\\ -\frac{v}{L}\frac{\delta_{r}\text{d}t}{\cos^{2}\delta_{r}} \\\ 0 \end{bmatrix}
 \end{align}
 $$
 
@@ -243,23 +243,23 @@ Using this equation, write down the update equation likewise (2) ~ (6)
 $$
 \begin{align}
 \begin{bmatrix}
- x_{1} \\ x_{2} \\ x_{3} \\ \vdots \\ x_{n}
+ x_{1} \\\ x_{2} \\\ x_{3} \\\ \vdots \\\ x_{n}
 \end{bmatrix}
 = \begin{bmatrix}
- A_{1} \\ A_{1}A_{0} \\ A_{2}A_{1}A_{0} \\ \vdots \\ \prod_{i=0}^{n-1} A_{k}
+ A_{1} \\\ A_{1}A_{0} \\\ A_{2}A_{1}A_{0} \\\ \vdots \\\ \prod_{i=0}^{n-1} A_{k}
 \end{bmatrix}
 x_{0} +
 \begin{bmatrix}
- B_{0} & 0 & \dots & & 0 \\ A_{1}B_{0} & B_{1} & 0 & \dots & 0 \\ A_{2}A_{1}B_{0} & A_{2}B_{1} & B_{2} & \dots & 0 \\ \vdots & \vdots & &\ddots & 0 \\ \prod_{i=1}^{n-1} A_{k}B_{0} & \prod_{i=2}^{n-1} A_{k}B_{1} & \dots & A_{n-1}B_{n-1} & B_{n-1}
+ B_{0} & 0 & \dots & & 0 \\\ A_{1}B_{0} & B_{1} & 0 & \dots & 0 \\\ A_{2}A_{1}B_{0} & A_{2}B_{1} & B_{2} & \dots & 0 \\\ \vdots & \vdots & &\ddots & 0 \\\ \prod_{i=1}^{n-1} A_{k}B_{0} & \prod_{i=2}^{n-1} A_{k}B_{1} & \dots & A_{n-1}B_{n-1} & B_{n-1}
 \end{bmatrix}
 \begin{bmatrix}
- u_{0} \\ u_{1} \\ u_{2} \\ \vdots \\ u_{n-1}
+ u_{0} \\\ u_{1} \\\ u_{2} \\\ \vdots \\\ u_{n-1}
 \end{bmatrix} +
 \begin{bmatrix}
-I & 0 & \dots & & 0 \\ A_{1} & I & 0 & \dots & 0 \\ A_{2}A_{1} & A_{2} & I & \dots & 0 \\ \vdots & \vdots & &\ddots & 0 \\ \prod_{i=1}^{n-1} A_{k} & \prod_{i=2}^{n-1} A_{k} & \dots & A_{n-1} & I
+I & 0 & \dots & & 0 \\\ A_{1} & I & 0 & \dots & 0 \\\ A_{2}A_{1} & A_{2} & I & \dots & 0 \\\ \vdots & \vdots & &\ddots & 0 \\\ \prod_{i=1}^{n-1} A_{k} & \prod_{i=2}^{n-1} A_{k} & \dots & A_{n-1} & I
 \end{bmatrix}
 \begin{bmatrix}
- w_{0} \\ w_{1} \\ w_{2} \\ \vdots \\ w_{n-1}
+ w_{0} \\\ w_{1} \\\ w_{2} \\\ \vdots \\\ w_{n-1}
 \end{bmatrix}
 \end{align}
 $$
@@ -280,7 +280,7 @@ As an example, let's determine the weight matrix $Q_{1}$ of the evaluation funct
 
 $$
 \begin{align}
-Q_{1} = \begin{bmatrix} q_{e} & 0 & 0 & 0 & 0& 0 \\ 0 & q_{\theta} & 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & q_{e} & 0 & 0 \\ 0 & 0 & 0 & 0 & q_{\theta} & 0 \\ 0 & 0 & 0 & 0 & 0 & 0 \end{bmatrix}
+Q_{1} = \begin{bmatrix} q_{e} & 0 & 0 & 0 & 0& 0 \\\ 0 & q_{\theta} & 0 & 0 & 0 & 0 \\\ 0 & 0 & 0 & 0 & 0 & 0 \\\ 0 & 0 & 0 & q_{e} & 0 & 0 \\\ 0 & 0 & 0 & 0 & q_{\theta} & 0 \\\ 0 & 0 & 0 & 0 & 0 & 0 \end{bmatrix}
 \end{align}
 $$
 
@@ -302,7 +302,7 @@ For instance, write $Q_{2}$ as follows for the $n=2$ system.
 
 $$
 \begin{align}
-Q_{2} = \begin{bmatrix} 0 & 0 & 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 & 0 & 0 \\ 0 & 0 & q_{d} & 0 & 0 & -q_{d} \\ 0 & 0 & 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 & 0 & 0 \\ 0 & 0 & -q_{d} & 0 & 0 & q_{d} \end{bmatrix}
+Q_{2} = \begin{bmatrix} 0 & 0 & 0 & 0 & 0 & 0 \\\ 0 & 0 & 0 & 0 & 0 & 0 \\\ 0 & 0 & q_{d} & 0 & 0 & -q_{d} \\\ 0 & 0 & 0 & 0 & 0 & 0 \\\ 0 & 0 & 0 & 0 & 0 & 0 \\\ 0 & 0 & -q_{d} & 0 & 0 & q_{d} \end{bmatrix}
 \end{align}
 $$
 
@@ -340,7 +340,7 @@ We can also put constraints on the input deviations. As the derivative of steeri
 
 $$
 \begin{align}
-\dot{u}_{min} < \dot{u} < \dot{u}_{max}
+\dot u_{min} < \dot u < \dot u_{max}
 \end{align}
 $$
 
@@ -348,7 +348,7 @@ We discretize $\dot{u}$ as $\left(u_{k} - u_{k-1}\right)/\text{d}t$ and multiply
 
 $$
 \begin{align}
-\dot{u}_{min}\text{d}t < u_{k} - u_{k-1} < \dot{u}_{max}\text{d}t
+\dot u_{min}\text{d}t < u_{k} - u_{k-1} < \dot u_{max}\text{d}t
 \end{align}
 $$
 
@@ -356,8 +356,8 @@ Along the prediction or control horizon, i.e for setting $n=3$
 
 $$
 \begin{align}
-\dot{u}_{min}\text{d}t < u_{1} - u_{0} < \dot{u}_{max}\text{d}t \\
-\dot{u}_{min}\text{d}t < u_{2} - u_{1} < \dot{u}_{max}\text{d}t
+\dot u_{min}\text{d}t < u_{1} - u_{0} < \dot u_{max}\text{d}t \\\
+\dot u_{min}\text{d}t < u_{2} - u_{1} < \dot u_{max}\text{d}t
 \end{align}
 $$
 
@@ -365,10 +365,10 @@ and aligning the inequality signs
 
 $$
 \begin{align}
-u_{1} - u_{0} &< \dot{u}_{max}\text{d}t \\ +
-u_{1} + u_{0} &< -\dot{u}_{min}\text{d}t \\
-u_{2} - u_{1} &< \dot{u}_{max}\text{d}t \\ +
-u_{2} + u_{1} &< - \dot{u}_{min}\text{d}t
+u_{1} - u_{0} &< \dot u_{max}\text{d}t \\\ +
+u_{1} + u_{0} &< -\dot u_{min}\text{d}t \\\
+u_{2} - u_{1} &< \dot u_{max}\text{d}t \\\ +
+u_{2} + u_{1} &< - \dot u_{min}\text{d}t
 \end{align}
 $$
 
@@ -384,6 +384,6 @@ Thus, putting this inequality to fit the form above, the constraints against $\d
 
 $$
 \begin{align}
-\begin{bmatrix} -1 & 1 & 0 \\ 1 & -1 & 0 \\ 0 & -1 & 1 \\ 0 & 1 & -1 \end{bmatrix}\begin{bmatrix} u_{0} \\ u_{1} \\ u_{2} \end{bmatrix} \leq \begin{bmatrix} \dot{u}_{max}\text{d}t \\ -\dot{u}_{min}\text{d}t \\ \dot{u}_{max}\text{d}t \\ -\dot{u}_{min}\text{d}t \end{bmatrix}
+\begin{bmatrix} -1 & 1 & 0 \\\ 1 & -1 & 0 \\\ 0 & -1 & 1 \\\ 0 & 1 & -1 \end{bmatrix}\begin{bmatrix} u_{0} \\\ u_{1} \\\ u_{2} \end{bmatrix} \leq \begin{bmatrix} \dot u_{max}\text{d}t \\\ -\dot u_{min}\text{d}t \\\ \dot u_{max}\text{d}t \\\ -\dot u_{min}\text{d}t \end{bmatrix}
 \end{align}
 $$
