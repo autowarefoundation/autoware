@@ -121,7 +121,7 @@ bool DynamicObstacleStopModule::modifyPathVelocity(PathWithLaneId * path, StopRe
   }
 
   const auto total_time_us = stopwatch.toc();
-  RCLCPP_INFO(
+  RCLCPP_DEBUG(
     logger_,
     "Total time = %2.2fus\n\tpreprocessing = %2.2fus\n\tfootprints = "
     "%2.2fus\n\tcollisions = %2.2fus\n",
