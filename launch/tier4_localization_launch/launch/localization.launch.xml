@@ -2,6 +2,7 @@
 <launch>
   <arg name="pose_source" description="A string consisting of ndt, yabloc, artag and eagleye joined by underscores no matter the order. e.g. ndt_yabloc"/>
   <arg name="twist_source"/>
+  <arg name="initial_pose"/>
   <arg name="system_run_mode"/>
 
   <!-- parameter paths for ndt -->

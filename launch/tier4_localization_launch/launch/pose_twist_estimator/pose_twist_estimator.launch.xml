@@ -21,6 +21,11 @@
   <let name="use_eagleye_twist" value="$(eval &quot;'eagleye' == '$(var twist_source)'&quot;)"/>
   <let name="use_gyro_odom_twist" value="$(eval &quot;'gyro_odom' == '$(var twist_source)'&quot;)"/>
 
+  <!-- set initial pose -->
+  <let name="user_defined_initial_pose/enable" value="$(eval &quot;len($(var initial_pose)) == 7&quot;)"/>
+  <let name="user_defined_initial_pose/pose" value="$(var initial_pose)" if="$(var user_defined_initial_pose/enable)"/>
+  <let name="user_defined_initial_pose/pose" value="[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]" unless="$(var user_defined_initial_pose/enable)"/>
+
   <!-- NDT Scan Matcher Launch (as pose estimator) -->
   <group if="$(var use_ndt_pose)">
     <push-ros-namespace namespace="pose_estimator"/>
@@ -91,6 +96,8 @@
     </group>
 
     <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
+      <arg name="user_defined_initial_pose/enable" value="$(var user_defined_initial_pose/enable)"/>
+      <arg name="user_defined_initial_pose/pose" value="$(var user_defined_initial_pose/pose)"/>
       <arg name="ndt_enabled" value="$(var use_ndt_pose)"/>
       <arg name="yabloc_enabled" value="$(var use_yabloc_pose)"/>
       <arg name="gnss_enabled" value="$(var gnss_enabled)"/>

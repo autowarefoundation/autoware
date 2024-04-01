@@ -23,13 +23,20 @@
 using ServiceException = component_interface_utils::ServiceException;
 using Initialize = localization_interface::Initialize;
 
-EkfLocalizationTriggerModule::EkfLocalizationTriggerModule(rclcpp::Node * node)
-: logger_(node->get_logger())
+EkfLocalizationTriggerModule::EkfLocalizationTriggerModule(rclcpp::Node * node) : node_(node)
 {
-  client_ekf_trigger_ = node->create_client<SetBool>("ekf_trigger_node");
+  client_ekf_trigger_ = node_->create_client<SetBool>("ekf_trigger_node");
 }
 
-void EkfLocalizationTriggerModule::send_request(bool flag) const
+void EkfLocalizationTriggerModule::wait_for_service()
+{
+  while (!client_ekf_trigger_->wait_for_service(std::chrono::seconds(1))) {
+    RCLCPP_INFO(node_->get_logger(), "EKF triggering service is not available, waiting...");
+  }
+  RCLCPP_INFO(node_->get_logger(), "EKF triggering service is available!");
+}
+
+void EkfLocalizationTriggerModule::send_request(bool flag, bool need_spin) const
 {
   const auto req = std::make_shared<SetBool::Request>();
   std::string command_name;
@@ -46,10 +53,14 @@ void EkfLocalizationTriggerModule::send_request(bool flag) const
 
   auto future_ekf = client_ekf_trigger_->async_send_request(req);
 
+  if (need_spin) {
+    rclcpp::spin_until_future_complete(node_->get_node_base_interface(), future_ekf);
+  }
+
   if (future_ekf.get()->success) {
-    RCLCPP_INFO(logger_, "EKF %s succeeded", command_name.c_str());
+    RCLCPP_INFO(node_->get_logger(), "EKF %s succeeded", command_name.c_str());
   } else {
-    RCLCPP_INFO(logger_, "EKF %s failed", command_name.c_str());
+    RCLCPP_INFO(node_->get_logger(), "EKF %s failed", command_name.c_str());
     throw ServiceException(
       Initialize::Service::Response::ERROR_ESTIMATION, "EKF " + command_name + " failed");
   }

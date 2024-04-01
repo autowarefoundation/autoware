@@ -57,6 +57,31 @@ PoseInitializer::PoseInitializer() : Node("pose_initializer")
   logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 
   change_state(State::Message::UNINITIALIZED);
+
+  if (declare_parameter<bool>("user_defined_initial_pose.enable")) {
+    const auto initial_pose_array =
+      declare_parameter<std::vector<double>>("user_defined_initial_pose.pose");
+    if (initial_pose_array.size() != 7) {
+      throw std::invalid_argument(
+        "Could not set user defined initial pose. The size of initial_pose is " +
+        std::to_string(initial_pose_array.size()) + ". It must be 7.");
+    } else if (
+      std::abs(initial_pose_array[3]) < 1e-6 && std::abs(initial_pose_array[4]) < 1e-6 &&
+      std::abs(initial_pose_array[5]) < 1e-6 && std::abs(initial_pose_array[6]) < 1e-6) {
+      throw std::invalid_argument("Input quaternion is invalid. All elements are close to zero.");
+    } else {
+      geometry_msgs::msg::Pose initial_pose;
+      initial_pose.position.x = initial_pose_array[0];
+      initial_pose.position.y = initial_pose_array[1];
+      initial_pose.position.z = initial_pose_array[2];
+      initial_pose.orientation.x = initial_pose_array[3];
+      initial_pose.orientation.y = initial_pose_array[4];
+      initial_pose.orientation.z = initial_pose_array[5];
+      initial_pose.orientation.w = initial_pose_array[6];
+
+      set_user_defined_initial_pose(initial_pose);
+    }
+  }
 }
 
 PoseInitializer::~PoseInitializer()
@@ -71,6 +96,47 @@ void PoseInitializer::change_state(State::Message::_state_type state)
   pub_state_->publish(state_);
 }
 
+// To execute in the constructor, you need to call ros spin.
+// Conversely, ros spin should not be called elsewhere
+void PoseInitializer::change_node_trigger(bool flag, bool need_spin)
+{
+  try {
+    if (ekf_localization_trigger_) {
+      ekf_localization_trigger_->wait_for_service();
+      ekf_localization_trigger_->send_request(flag, need_spin);
+    }
+    if (ndt_localization_trigger_) {
+      ndt_localization_trigger_->wait_for_service();
+      ndt_localization_trigger_->send_request(flag, need_spin);
+    }
+  } catch (const ServiceException & error) {
+    throw;
+  }
+}
+
+void PoseInitializer::set_user_defined_initial_pose(const geometry_msgs::msg::Pose initial_pose)
+{
+  try {
+    change_state(State::Message::INITIALIZING);
+    change_node_trigger(false, true);
+
+    PoseWithCovarianceStamped pose;
+    pose.header.frame_id = "map";
+    pose.header.stamp = now();
+    pose.pose.pose = initial_pose;
+    pose.pose.covariance = output_pose_covariance_;
+    pub_reset_->publish(pose);
+
+    change_node_trigger(true, true);
+    change_state(State::Message::INITIALIZED);
+
+    RCLCPP_INFO(get_logger(), "Set user defined initial pose");
+  } catch (const ServiceException & error) {
+    change_state(State::Message::UNINITIALIZED);
+    RCLCPP_WARN(get_logger(), "Could not set user defined initial pose");
+  }
+}
+
 void PoseInitializer::on_initialize(
   const Initialize::Service::Request::SharedPtr req,
   const Initialize::Service::Response::SharedPtr res)
@@ -82,12 +148,8 @@ void PoseInitializer::on_initialize(
   }
   try {
     change_state(State::Message::INITIALIZING);
-    if (ekf_localization_trigger_) {
-      ekf_localization_trigger_->send_request(false);
-    }
-    if (ndt_localization_trigger_) {
-      ndt_localization_trigger_->send_request(false);
-    }
+    change_node_trigger(false, false);
+
     auto pose = req->pose.empty() ? get_gnss_pose() : req->pose.front();
     if (ndt_) {
       pose = ndt_->align_pose(pose);
@@ -98,12 +160,8 @@ void PoseInitializer::on_initialize(
     }
     pose.pose.covariance = output_pose_covariance_;
     pub_reset_->publish(pose);
-    if (ekf_localization_trigger_) {
-      ekf_localization_trigger_->send_request(true);
-    }
-    if (ndt_localization_trigger_) {
-      ndt_localization_trigger_->send_request(true);
-    }
+
+    change_node_trigger(true, false);
     res->status.success = true;
     change_state(State::Message::INITIALIZED);
   } catch (const ServiceException & error) {
