@@ -567,15 +567,20 @@ bool NormalLaneChange::isNearEndOfCurrentLanes(
   const auto lane_change_buffer =
     utils::lane_change::calcMinimumLaneChangeLength(*lane_change_parameters_, shift_intervals);
 
-  auto distance_to_end = utils::getDistanceToEndOfLane(current_pose, current_lanes);
+  const auto distance_to_lane_change_end = std::invoke([&]() {
+    auto distance_to_end = utils::getDistanceToEndOfLane(current_pose, current_lanes);
 
-  if (!target_lanes.empty() && route_handler->isInGoalRouteSection(target_lanes.back())) {
-    distance_to_end = std::min(
-      distance_to_end,
-      utils::getSignedDistance(current_pose, route_handler->getGoalPose(), current_lanes));
-  }
+    if (!target_lanes.empty() && route_handler->isInGoalRouteSection(target_lanes.back())) {
+      distance_to_end = std::min(
+        distance_to_end,
+        utils::getSignedDistance(current_pose, route_handler->getGoalPose(), current_lanes));
+    }
 
-  return (std::max(0.0, distance_to_end) - lane_change_buffer) < threshold;
+    return std::max(0.0, distance_to_end) - lane_change_buffer;
+  });
+
+  lane_change_debug_.distance_to_end_of_current_lane = distance_to_lane_change_end;
+  return distance_to_lane_change_end < threshold;
 }
 
 bool NormalLaneChange::hasFinishedLaneChange() const
@@ -593,6 +598,10 @@ bool NormalLaneChange::hasFinishedLaneChange() const
   }
 
   const auto reach_lane_change_end = dist_to_lane_change_end + finish_judge_buffer < 0.0;
+
+  lane_change_debug_.distance_to_lane_change_finished =
+    dist_to_lane_change_end + finish_judge_buffer;
+
   if (!reach_lane_change_end) {
     return false;
   }
@@ -600,22 +609,23 @@ bool NormalLaneChange::hasFinishedLaneChange() const
   const auto arc_length = lanelet::utils::getArcCoordinates(status_.target_lanes, current_pose);
   const auto reach_target_lane =
     std::abs(arc_length.distance) < lane_change_parameters_->finish_judge_lateral_threshold;
-  if (!reach_target_lane) {
-    return false;
-  }
 
-  return true;
+  lane_change_debug_.distance_to_lane_change_finished = arc_length.distance;
+
+  return reach_target_lane;
 }
 
 bool NormalLaneChange::isAbleToReturnCurrentLane() const
 {
   if (status_.lane_change_path.path.points.size() < 2) {
+    lane_change_debug_.is_able_to_return_to_current_lane = false;
     return false;
   }
 
   if (!utils::isEgoWithinOriginalLane(
         status_.current_lanes, getEgoPose(), planner_data_->parameters,
         lane_change_parameters_->cancel.overhang_tolerance)) {
+    lane_change_debug_.is_able_to_return_to_current_lane = false;
     return false;
   }
 
@@ -633,12 +643,15 @@ bool NormalLaneChange::isAbleToReturnCurrentLane() const
     dist += calcSignedArcLength(status_.lane_change_path.path.points, idx, idx + 1);
     if (dist > estimated_travel_dist) {
       const auto & estimated_pose = status_.lane_change_path.path.points.at(idx + 1).point.pose;
-      return utils::isEgoWithinOriginalLane(
+      auto is_ego_within_original_lane = utils::isEgoWithinOriginalLane(
         status_.current_lanes, estimated_pose, planner_data_->parameters,
         lane_change_parameters_->cancel.overhang_tolerance);
+      lane_change_debug_.is_able_to_return_to_current_lane = is_ego_within_original_lane;
+      return is_ego_within_original_lane;
     }
   }
 
+  lane_change_debug_.is_able_to_return_to_current_lane = true;
   return true;
 }
 
@@ -679,17 +692,18 @@ bool NormalLaneChange::isAbleToStopSafely() const
 bool NormalLaneChange::hasFinishedAbort() const
 {
   if (!abort_path_) {
+    lane_change_debug_.is_abort = true;
     return true;
   }
 
   const auto distance_to_finish = calcSignedArcLength(
     abort_path_->path.points, getEgoPosition(), abort_path_->info.shift_line.end.position);
+  lane_change_debug_.distance_to_abort_finished = distance_to_finish;
 
-  if (distance_to_finish < 0.0) {
-    return true;
-  }
+  const auto has_finished_abort = distance_to_finish < 0.0;
+  lane_change_debug_.is_abort = has_finished_abort;
 
-  return false;
+  return has_finished_abort;
 }
 
 bool NormalLaneChange::isAbortState() const
@@ -706,6 +720,7 @@ bool NormalLaneChange::isAbortState() const
     return false;
   }
 
+  lane_change_debug_.is_abort = true;
   return true;
 }
 int NormalLaneChange::getNumToPreferredLane(const lanelet::ConstLanelet & lane) const
@@ -859,6 +874,10 @@ LaneChangeTargetObjects NormalLaneChange::getTargetObjects(
   const auto backward_length = lane_change_parameters_->backward_lane_length;
   const auto target_backward_lanes = behavior_path_planner::utils::getBackwardLanelets(
     route_handler, target_lanes, current_pose, backward_length);
+
+  lane_change_debug_.current_lanes = current_lanes;
+  lane_change_debug_.target_lanes = target_lanes;
+  lane_change_debug_.target_backward_lanes = target_backward_lanes;
 
   // filter objects to get target object index
   const auto target_obj_index =
@@ -2043,6 +2062,7 @@ bool NormalLaneChange::isVehicleStuck(
 bool NormalLaneChange::isVehicleStuck(const lanelet::ConstLanelets & current_lanes) const
 {
   if (current_lanes.empty()) {
+    lane_change_debug_.is_stuck = false;
     return false;  // can not check
   }
 
@@ -2062,7 +2082,10 @@ bool NormalLaneChange::isVehicleStuck(const lanelet::ConstLanelets & current_lan
                                   getCommonParam().base_link2front + DETECTION_DISTANCE_MARGIN;
   RCLCPP_DEBUG(logger_, "max_lane_change_length: %f, max_acc: %f", max_lane_change_length, max_acc);
 
-  return isVehicleStuck(current_lanes, detection_distance);
+  auto is_vehicle_stuck = isVehicleStuck(current_lanes, detection_distance);
+
+  lane_change_debug_.is_stuck = is_vehicle_stuck;
+  return is_vehicle_stuck;
 }
 
 void NormalLaneChange::setStopPose(const Pose & stop_pose)

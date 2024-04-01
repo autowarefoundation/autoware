@@ -17,15 +17,18 @@
 #include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
 #include <behavior_path_lane_change_module/utils/markers.hpp>
+#include <lanelet2_extension/visualization/visualization.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <geometry_msgs/msg/detail/pose__struct.hpp>
 #include <visualization_msgs/msg/detail/marker__struct.hpp>
 #include <visualization_msgs/msg/detail/marker_array__struct.hpp>
 
 #include <cstdint>
 #include <cstdlib>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -122,8 +125,39 @@ MarkerArray showFilteredObjects(
   return marker_array;
 }
 
-MarkerArray createDebugMarkerArray(const Debug & debug_data)
+MarkerArray showExecutionInfo(const Debug & debug_data, const geometry_msgs::msg::Pose & ego_pose)
 {
+  auto default_text_marker = [&]() {
+    return createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "execution_info", 0, Marker::TEXT_VIEW_FACING,
+      createMarkerScale(0.5, 0.5, 0.5), colors::white());
+  };
+
+  MarkerArray marker_array;
+
+  auto safety_check_info_text = default_text_marker();
+  safety_check_info_text.pose = ego_pose;
+  safety_check_info_text.pose.position.z += 4.0;
+
+  std::ostringstream ss;
+
+  ss << "\nDistToEndOfCurrentLane: " << std::setprecision(5)
+     << debug_data.distance_to_end_of_current_lane
+     << "\nDistToLaneChangeFinished: " << debug_data.distance_to_lane_change_finished
+     << (debug_data.is_stuck ? "\nVehicleStuck" : "")
+     << (debug_data.is_able_to_return_to_current_lane ? "\nAbleToReturnToCurrentLane" : "")
+     << (debug_data.is_abort ? "\nAborting" : "")
+     << "\nDistanceToAbortFinished: " << debug_data.distance_to_abort_finished;
+
+  safety_check_info_text.text = ss.str();
+  marker_array.markers.push_back(safety_check_info_text);
+  return marker_array;
+}
+
+MarkerArray createDebugMarkerArray(
+  const Debug & debug_data, const geometry_msgs::msg::Pose & ego_pose)
+{
+  using lanelet::visualization::laneletsAsTriangleMarkerArray;
   using marker_utils::showPolygon;
   using marker_utils::showPredictedPath;
   using marker_utils::showSafetyCheckInfo;
@@ -140,6 +174,20 @@ MarkerArray createDebugMarkerArray(const Debug & debug_data)
   const auto add = [&debug_marker](const MarkerArray & added) {
     tier4_autoware_utils::appendMarkerArray(added, &debug_marker);
   };
+
+  if (!debug_data.execution_area.points.empty()) {
+    add(createPolygonMarkerArray(
+      debug_data.execution_area, "execution_area", 0, 0.16, 1.0, 0.69, 0.1));
+  }
+
+  add(showExecutionInfo(debug_data, ego_pose));
+
+  // lanes
+  add(laneletsAsTriangleMarkerArray(
+    "current_lanes", debug_data.current_lanes, colors::light_yellow(0.2)));
+  add(laneletsAsTriangleMarkerArray("target_lanes", debug_data.target_lanes, colors::aqua(0.2)));
+  add(laneletsAsTriangleMarkerArray(
+    "target_backward_lanes", debug_data.target_backward_lanes, colors::blue(0.2)));
 
   add(showAllValidLaneChangePath(debug_valid_paths, "lane_change_valid_paths"));
   add(showFilteredObjects(
@@ -160,11 +208,6 @@ MarkerArray createDebugMarkerArray(const Debug & debug_data)
     add(showPolygon(
       debug_collision_check_object_after_approval,
       "ego_and_target_polygon_relation_after_approval"));
-  }
-
-  if (!debug_data.execution_area.points.empty()) {
-    add(createPolygonMarkerArray(
-      debug_data.execution_area, "execution_area", 0, 0.16, 1.0, 0.69, 0.1));
   }
 
   return debug_marker;

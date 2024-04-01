@@ -21,6 +21,9 @@
 
 #include <geometry_msgs/msg/detail/polygon__struct.hpp>
 
+#include <lanelet2_core/Forward.h>
+
+#include <limits>
 #include <string>
 
 namespace behavior_path_planner::data::lane_change
@@ -34,7 +37,17 @@ struct Debug
   CollisionCheckDebugMap collision_check_objects_after_approval;
   LaneChangeTargetObjects filtered_objects;
   geometry_msgs::msg::Polygon execution_area;
+  geometry_msgs::msg::Pose ego_pose;
+  lanelet::ConstLanelets current_lanes;
+  lanelet::ConstLanelets target_lanes;
+  lanelet::ConstLanelets target_backward_lanes;
   double collision_check_object_debug_lifetime{0.0};
+  double distance_to_end_of_current_lane{std::numeric_limits<double>::max()};
+  double distance_to_lane_change_finished{std::numeric_limits<double>::max()};
+  double distance_to_abort_finished{std::numeric_limits<double>::max()};
+  bool is_able_to_return_to_current_lane{false};
+  bool is_stuck{false};
+  bool is_abort{false};
 
   void reset()
   {
@@ -44,7 +57,18 @@ struct Debug
     filtered_objects.current_lane.clear();
     filtered_objects.target_lane.clear();
     filtered_objects.other_lane.clear();
+    execution_area.points.clear();
+    current_lanes.clear();
+    target_lanes.clear();
+    target_backward_lanes.clear();
+
     collision_check_object_debug_lifetime = 0.0;
+    distance_to_end_of_current_lane = std::numeric_limits<double>::max();
+    distance_to_lane_change_finished = std::numeric_limits<double>::max();
+    distance_to_abort_finished = std::numeric_limits<double>::max();
+    is_able_to_return_to_current_lane = false;
+    is_stuck = false;
+    is_abort = false;
   }
 };
 }  // namespace behavior_path_planner::data::lane_change

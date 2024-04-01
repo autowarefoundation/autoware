@@ -20,6 +20,7 @@
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 
 #include <geometry_msgs/msg/detail/polygon__struct.hpp>
+#include <geometry_msgs/msg/detail/pose__struct.hpp>
 #include <visualization_msgs/msg/detail/marker_array__struct.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
@@ -42,7 +43,9 @@ MarkerArray showFilteredObjects(
   const ExtendedPredictedObjects & target_lane_objects,
   const ExtendedPredictedObjects & other_lane_objects, const std::string & ns);
 MarkerArray createExecutionArea(const geometry_msgs::msg::Polygon & execution_area);
-MarkerArray createDebugMarkerArray(const Debug & debug_data);
+MarkerArray showExecutionInfo(const Debug & debug_data, const geometry_msgs::msg::Pose & ego_pose);
+MarkerArray createDebugMarkerArray(
+  const Debug & debug_data, const geometry_msgs::msg::Pose & ego_pose);
 
 }  // namespace marker_utils::lane_change_markers
 #endif  // BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__MARKERS_HPP_
