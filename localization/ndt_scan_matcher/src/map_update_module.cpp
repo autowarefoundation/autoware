@@ -48,7 +48,8 @@ MapUpdateModule::MapUpdateModule(
 bool MapUpdateModule::should_update_map(const geometry_msgs::msg::Point & position)
 {
   if (last_update_position_ == std::nullopt) {
-    return false;
+    need_rebuild_ = true;
+    return true;
   }
 
   const double dx = position.x - last_update_position_.value().x;
