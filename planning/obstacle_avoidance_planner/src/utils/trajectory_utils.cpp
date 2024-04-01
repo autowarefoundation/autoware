@@ -79,6 +79,24 @@ std::vector<ReferencePoint> convertToReferencePoints(
   return ref_points;
 }
 
+std::vector<ReferencePoint> sanitizePoints(const std::vector<ReferencePoint> & points)
+{
+  std::vector<ReferencePoint> output;
+  for (size_t i = 0; i < points.size(); i++) {
+    if (i > 0) {
+      const auto & current_pos = points.at(i).pose.position;
+      const auto & prev_pos = points.at(i - 1).pose.position;
+      if (
+        std::fabs(current_pos.x - prev_pos.x) < 1e-6 &&
+        std::fabs(current_pos.y - prev_pos.y) < 1e-6) {
+        continue;
+      }
+    }
+    output.push_back(points.at(i));
+  }
+  return output;
+}
+
 void compensateLastPose(
   const PathPoint & last_path_point, std::vector<TrajectoryPoint> & traj_points,
   const double delta_dist_threshold, const double delta_yaw_threshold)

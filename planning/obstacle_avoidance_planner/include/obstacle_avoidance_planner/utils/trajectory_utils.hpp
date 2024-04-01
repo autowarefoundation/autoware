@@ -129,6 +129,8 @@ ReferencePoint convertToReferencePoint(const TrajectoryPoint & traj_point);
 std::vector<ReferencePoint> convertToReferencePoints(
   const std::vector<TrajectoryPoint> & traj_points);
 
+std::vector<ReferencePoint> sanitizePoints(const std::vector<ReferencePoint> & points);
+
 void compensateLastPose(
   const PathPoint & last_path_point, std::vector<TrajectoryPoint> & traj_points,
   const double delta_dist_threshold, const double delta_yaw_threshold);

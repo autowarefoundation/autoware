@@ -567,6 +567,9 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
   ref_points = motion_utils::cropPoints(
     ref_points, p.ego_pose.position, ego_seg_idx, forward_traj_length + tmp_margin,
     backward_traj_length + tmp_margin);
+
+  // remove repeated points
+  ref_points = trajectory_utils::sanitizePoints(ref_points);
   SplineInterpolationPoints2d ref_points_spline(ref_points);
   ego_seg_idx = trajectory_utils::findEgoSegmentIndex(ref_points, p.ego_pose, ego_nearest_param_);
 
@@ -586,6 +589,7 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
   // NOTE: This must be after backward cropping.
   //       New start point may be added and resampled. Spline calculation is required.
   updateFixedPoint(ref_points);
+  ref_points = trajectory_utils::sanitizePoints(ref_points);
   ref_points_spline = SplineInterpolationPoints2d(ref_points);
 
   // 6. update bounds
