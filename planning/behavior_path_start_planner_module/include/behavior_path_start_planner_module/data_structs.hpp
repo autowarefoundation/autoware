@@ -84,6 +84,7 @@ struct StartPlannerParameters
   double minimum_lateral_acc{0.0};
   double maximum_curvature{0.0};  // maximum curvature considered in the path generation
   double deceleration_interval{0.0};
+  double maximum_longitudinal_deviation{0.0};
   // geometric pull out
   bool enable_geometric_pull_out{false};
   double geometric_collision_check_distance_from_end;

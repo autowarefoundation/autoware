@@ -27,6 +27,7 @@
       shift_collision_check_distance_from_end: -10.0
       minimum_shift_pull_out_distance: 0.0
       deceleration_interval: 15.0
+      maximum_longitudinal_deviation: 1.0 # Note, should be the same or less than planning validator's "longitudinal_distance_deviation"
       lateral_jerk: 0.5
       lateral_acceleration_sampling_num: 3
       minimum_lateral_acc: 0.15

@@ -88,6 +88,8 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
   p.minimum_lateral_acc = node->declare_parameter<double>(ns + "minimum_lateral_acc");
   p.maximum_curvature = node->declare_parameter<double>(ns + "maximum_curvature");
   p.deceleration_interval = node->declare_parameter<double>(ns + "deceleration_interval");
+  p.maximum_longitudinal_deviation =
+    node->declare_parameter<double>(ns + "maximum_longitudinal_deviation");
   // geometric pull out
   p.enable_geometric_pull_out = node->declare_parameter<bool>(ns + "enable_geometric_pull_out");
   p.geometric_collision_check_distance_from_end =
@@ -424,6 +426,8 @@ void StartPlannerModuleManager::updateModuleParams(
     updateParam<double>(parameters, ns + "minimum_lateral_acc", p->minimum_lateral_acc);
     updateParam<double>(parameters, ns + "maximum_curvature", p->maximum_curvature);
     updateParam<double>(parameters, ns + "deceleration_interval", p->deceleration_interval);
+    updateParam<double>(
+      parameters, ns + "maximum_longitudinal_deviation", p->maximum_longitudinal_deviation);
     updateParam<bool>(parameters, ns + "enable_geometric_pull_out", p->enable_geometric_pull_out);
     updateParam<bool>(parameters, ns + "divide_pull_out_path", p->divide_pull_out_path);
     updateParam<double>(
