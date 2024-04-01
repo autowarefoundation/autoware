@@ -18,6 +18,7 @@
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/geometry/pose_deviation.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
+#include <tier4_autoware_utils/ros/uuid_helper.hpp>
 #include <tier4_autoware_utils/transform/transforms.hpp>
 
 #include <boost/geometry/algorithms/covered_by.hpp>
@@ -373,6 +374,7 @@ std::vector<DynamicObstacle> DynamicObstacleCreatorForObject::createDynamicObsta
     }
     dynamic_obstacle.classifications = predicted_object.classification;
     dynamic_obstacle.shape = predicted_object.shape;
+    dynamic_obstacle.uuid = predicted_object.object_id;
 
     // get predicted paths of predicted_objects
     for (const auto & path : predicted_object.kinematics.predicted_paths) {
@@ -418,6 +420,7 @@ std::vector<DynamicObstacle> DynamicObstacleCreatorForObjectWithoutPath::createD
       param_.max_prediction_time);
     predicted_path.confidence = 1.0;
     dynamic_obstacle.predicted_paths.emplace_back(predicted_path);
+    dynamic_obstacle.uuid = predicted_object.object_id;
 
     dynamic_obstacles.emplace_back(dynamic_obstacle);
   }
@@ -490,7 +493,7 @@ std::vector<DynamicObstacle> DynamicObstacleCreatorForPoints::createDynamicObsta
       param_.max_prediction_time);
     predicted_path.confidence = 1.0;
     dynamic_obstacle.predicted_paths.emplace_back(predicted_path);
-
+    dynamic_obstacle.uuid = tier4_autoware_utils::generateUUID();
     dynamic_obstacles.emplace_back(dynamic_obstacle);
   }
 

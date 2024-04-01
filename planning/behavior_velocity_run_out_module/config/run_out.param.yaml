@@ -3,6 +3,7 @@
     run_out:
       detection_method: "Object"  # [-] candidate: Object, ObjectWithoutPath, Points
       target_obstacle_types: ["PEDESTRIAN", "BICYCLE", "MOTORCYCLE"] # [-] Obstacle types considered by this module
+      exclude_obstacles_already_in_path: true # If the obstacle is already on the ego's path footprint, ignore it.
       use_partition_lanelet: true # [-] whether to use partition lanelet map data
       suppress_on_crosswalk: true # [-] whether to suppress on crosswalk lanelet
       use_ego_cut_line: true      # [-] filter obstacles that pass the backside of ego: if a dynamic obstacle's predicted path intersects this line, it is ignored
@@ -14,6 +15,8 @@
       detection_span: 1.0         # [m] calculate collision with this span to reduce calculation time
       min_vel_ego_kmph: 3.6       # [km/h] min velocity to calculate time to collision
       ego_cut_line_length: 3.0    # The width of the ego's cut line
+      ego_footprint_extra_margin: 0.5 # [m] expand the ego vehicles' footprint by this value on all sides when building the ego footprint path
+      keep_obstacle_on_path_time_threshold: 1.0 # [s] How much time a previous run out target obstacle is kept in the run out candidate list if it enters the ego path.
 
       # Parameter to create abstracted dynamic obstacles
       dynamic_obstacle:

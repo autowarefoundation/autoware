@@ -22,6 +22,7 @@
 #include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <behavior_velocity_planner_common/utilization/util.hpp>
 
+#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <message_filters/subscriber.h>

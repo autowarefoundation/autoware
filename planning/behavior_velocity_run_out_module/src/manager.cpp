@@ -62,6 +62,8 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
       getOrDeclareParameter<std::vector<std::string>>(node, ns + ".target_obstacle_types");
     p.use_partition_lanelet = getOrDeclareParameter<bool>(node, ns + ".use_partition_lanelet");
     p.use_ego_cut_line = getOrDeclareParameter<bool>(node, ns + ".use_ego_cut_line");
+    p.exclude_obstacles_already_in_path =
+      getOrDeclareParameter<bool>(node, ns + ".exclude_obstacles_already_in_path");
     p.suppress_on_crosswalk = getOrDeclareParameter<bool>(node, ns + ".suppress_on_crosswalk");
     p.specify_decel_jerk = getOrDeclareParameter<bool>(node, ns + ".specify_decel_jerk");
     p.stop_margin = getOrDeclareParameter<double>(node, ns + ".stop_margin");
@@ -71,6 +73,10 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
     p.detection_span = getOrDeclareParameter<double>(node, ns + ".detection_span");
     p.min_vel_ego_kmph = getOrDeclareParameter<double>(node, ns + ".min_vel_ego_kmph");
     p.ego_cut_line_length = getOrDeclareParameter<double>(node, ns + ".ego_cut_line_length");
+    p.ego_footprint_extra_margin =
+      getOrDeclareParameter<double>(node, ns + ".ego_footprint_extra_margin");
+    p.keep_obstacle_on_path_time_threshold =
+      getOrDeclareParameter<double>(node, ns + ".keep_obstacle_on_path_time_threshold");
   }
 
   {

@@ -108,6 +108,14 @@ You can choose whether to use this feature by parameter of `use_partition_lanele
 
 ![brief](./docs/exclude_obstacles_by_partition.svg)
 
+##### Exclude obstacles by label
+
+This module only acts on target obstacles defined by the `target_obstacle_types` parameter. If an obstacle of a type not specified by said parameter is detected, it will be ignored by this module.
+
+##### Exclude obstacles that are already on the ego vehicle's path
+
+In the cases were an obstacle is already on the ego vehicle's path, it cannot "cut in" into the ego's path anymore (which is the situation this module tries to handle) so it might be useful to exclude obstacles already on the vehicle's footprint path. By setting the parameter `exclude_obstacles_already_in_path` to true, this module will exclude the obstacles that are considered to be already on the ego vehicle's path for more than `keep_obstacle_on_path_time_threshold`. The module considers the ego vehicle's closest path point to each obstacle's current position, and determines the lateral distance between the obstacle and the right and left sides of the ego vehicle. If the obstacle is located within the left and right extremes of the vehicle for that pose, then it is considered to be inside the ego vehicle's footprint path and it is excluded. The virtual width of the vehicle used to detect if an obstacle is within the path or not, can be adjusted by the `ego_footprint_extra_margin` parameter.
+
 ##### Exclude obstacles that cross the ego vehicle's "cut line"
 
 This module can exclude obstacles that have predicted paths that will cross the back side of the ego vehicle. It excludes obstacles if their predicted path crosses the ego's "cut line". The "cut line" is a virtual line segment that is perpendicular to the ego vehicle and that passes through the ego's base link.
