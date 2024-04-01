@@ -115,7 +115,7 @@ protected:
 
   PredictedObject makePredictedObject(
     const std::vector<std::pair<double, double>> & predicted_path,
-    const uint8_t label = ObjectClassification::CAR)
+    const uint8_t label = ObjectClassification::CAR, const double velocity = 2.0)
   {
     PredictedObject object;
     object.object_id = uuid_;
@@ -132,6 +132,10 @@ protected:
     object.kinematics.initial_pose_with_covariance.pose.orientation.y = 0.0;
     object.kinematics.initial_pose_with_covariance.pose.orientation.z = 0.0;
     object.kinematics.initial_pose_with_covariance.pose.orientation.w = 1.0;
+
+    object.kinematics.initial_twist_with_covariance.twist.linear.x = velocity;
+    object.kinematics.initial_twist_with_covariance.twist.linear.y = 0.0;
+    object.kinematics.initial_twist_with_covariance.twist.linear.z = 0.0;
 
     autoware_auto_perception_msgs::msg::PredictedPath path;
     for (size_t i = 0; i < predicted_path.size(); ++i) {
@@ -155,34 +159,35 @@ protected:
 
   PredictedObjects makePredictedObjects(
     const std::vector<std::pair<double, double>> & predicted_path,
-    const uint8_t label = ObjectClassification::CAR)
+    const uint8_t label = ObjectClassification::CAR, const double velocity = 2.0)
   {
     PredictedObjects objects;
-    objects.objects.push_back(makePredictedObject(predicted_path, label));
+    objects.objects.push_back(makePredictedObject(predicted_path, label, velocity));
     objects.header.stamp = rclcpp::Time(0);
     return objects;
   }
 
   PredictedObjects makeStraightPredictedObjects(
-    const double time, const uint8_t label = ObjectClassification::CAR)
+    const double time, const uint8_t label = ObjectClassification::CAR, const double velocity = 2.0)
   {
     std::vector<std::pair<double, double>> predicted_path;
     for (size_t i = 0; i <= time_horizon_ / time_step_; i++) {
-      predicted_path.push_back({velocity_ * (time + i * time_step_), 0.0});
+      predicted_path.push_back({velocity * (time + i * time_step_), 0.0});
     }
-    auto objects = makePredictedObjects(predicted_path, label);
+    auto objects = makePredictedObjects(predicted_path, label, velocity);
     objects.header.stamp = rclcpp::Time(0) + rclcpp::Duration::from_seconds(time);
     return objects;
   }
 
   PredictedObjects makeDeviatedStraightPredictedObjects(
-    const double time, const double deviation, const uint8_t label = ObjectClassification::CAR)
+    const double time, const double deviation, const uint8_t label = ObjectClassification::CAR,
+    const double velocity = 2.0)
   {
     std::vector<std::pair<double, double>> predicted_path;
     for (size_t i = 0; i <= time_horizon_ / time_step_; i++) {
-      predicted_path.push_back({velocity_ * (time + i * time_step_), deviation});
+      predicted_path.push_back({velocity * (time + i * time_step_), deviation});
     }
-    auto objects = makePredictedObjects(predicted_path, label);
+    auto objects = makePredictedObjects(predicted_path, label, velocity);
     objects.header.stamp = rclcpp::Time(0) + rclcpp::Duration::from_seconds(time);
     return objects;
   }
@@ -249,7 +254,6 @@ protected:
   double time_delay_ = 5.0;
   double time_step_ = 0.5;
   double time_horizon_ = 10.0;
-  double velocity_ = 2.0;
 
   unique_identifier_msgs::msg::UUID uuid_;
 };
@@ -589,11 +593,12 @@ TEST_F(EvalTest, testYawRate_0)
   setTargetMetric("yaw_rate_CAR");
 
   for (double time = 0; time <= time_delay_; time += time_step_) {
-    const auto objects = makeStraightPredictedObjects(time);
+    const auto objects = makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0);
     publishObjects(objects);
   }
 
-  const auto last_objects = makeStraightPredictedObjects(time_delay_ + time_step_);
+  const auto last_objects =
+    makeStraightPredictedObjects(time_delay_ + time_step_, ObjectClassification::CAR, 0.0);
   EXPECT_NEAR(publishObjectsAndGetMetric(last_objects), 0.0, epsilon);
 }
 
@@ -605,12 +610,14 @@ TEST_F(EvalTest, testYawRate_01)
   const double yaw_rate = 0.1;
 
   for (double time = 0; time <= time_delay_; time += time_step_) {
-    const auto objects = rotateObjects(makeStraightPredictedObjects(time), yaw_rate * time);
+    const auto objects = rotateObjects(
+      makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), yaw_rate * time);
     publishObjects(objects);
   }
 
   for (double time = time_delay_ + time_step_; time < time_delay_ * 2; time += time_step_) {
-    const auto objects = rotateObjects(makeStraightPredictedObjects(time), yaw_rate * time);
+    const auto objects = rotateObjects(
+      makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), yaw_rate * time);
     EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
   }
 }
@@ -623,12 +630,14 @@ TEST_F(EvalTest, testYawRate_minus_01)
   const double yaw_rate = 0.1;
 
   for (double time = 0; time <= time_delay_; time += time_step_) {
-    const auto objects = rotateObjects(makeStraightPredictedObjects(time), -yaw_rate * time);
+    const auto objects = rotateObjects(
+      makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), -yaw_rate * time);
     publishObjects(objects);
   }
 
   for (double time = time_delay_ + time_step_; time < time_delay_ * 2; time += time_step_) {
-    const auto objects = rotateObjects(makeStraightPredictedObjects(time), -yaw_rate * time);
+    const auto objects = rotateObjects(
+      makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), -yaw_rate * time);
     EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
   }
 }
@@ -641,12 +650,14 @@ TEST_F(EvalTest, testYawRate_1)
   const double yaw_rate = 1.0;
 
   for (double time = 0; time <= time_delay_; time += time_step_) {
-    const auto objects = rotateObjects(makeStraightPredictedObjects(time), yaw_rate * time);
+    const auto objects = rotateObjects(
+      makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), yaw_rate * time);
     publishObjects(objects);
   }
 
   for (double time = time_delay_ + time_step_; time < time_delay_ * 2; time += time_step_) {
-    const auto objects = rotateObjects(makeStraightPredictedObjects(time), yaw_rate * time);
+    const auto objects = rotateObjects(
+      makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), yaw_rate * time);
     EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
   }
 }
@@ -659,12 +670,14 @@ TEST_F(EvalTest, testYawRate_minus_1)
   const double yaw_rate = 1.0;
 
   for (double time = 0; time <= time_delay_; time += time_step_) {
-    const auto objects = rotateObjects(makeStraightPredictedObjects(time), -yaw_rate * time);
+    const auto objects = rotateObjects(
+      makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), -yaw_rate * time);
     publishObjects(objects);
   }
 
   for (double time = time_delay_ + time_step_; time < time_delay_ * 2; time += time_step_) {
-    const auto objects = rotateObjects(makeStraightPredictedObjects(time), -yaw_rate * time);
+    const auto objects = rotateObjects(
+      makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), -yaw_rate * time);
     EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
   }
 }
@@ -677,12 +690,14 @@ TEST_F(EvalTest, testYawRate_5)
   const double yaw_rate = 5.0;
 
   for (double time = 0; time <= time_delay_; time += time_step_) {
-    const auto objects = rotateObjects(makeStraightPredictedObjects(time), yaw_rate * time);
+    const auto objects = rotateObjects(
+      makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), yaw_rate * time);
     publishObjects(objects);
   }
 
   for (double time = time_delay_ + time_step_; time < time_delay_ * 2; time += time_step_) {
-    const auto objects = rotateObjects(makeStraightPredictedObjects(time), yaw_rate * time);
+    const auto objects = rotateObjects(
+      makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), yaw_rate * time);
     EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
   }
 }
@@ -695,12 +710,14 @@ TEST_F(EvalTest, testYawRate_minus_5)
   const double yaw_rate = 5.0;
 
   for (double time = 0; time <= time_delay_; time += time_step_) {
-    const auto objects = rotateObjects(makeStraightPredictedObjects(time), -yaw_rate * time);
+    const auto objects = rotateObjects(
+      makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), -yaw_rate * time);
     publishObjects(objects);
   }
 
   for (double time = time_delay_ + time_step_; time < time_delay_ * 2; time += time_step_) {
-    const auto objects = rotateObjects(makeStraightPredictedObjects(time), -yaw_rate * time);
+    const auto objects = rotateObjects(
+      makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), -yaw_rate * time);
     EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
   }
 }
