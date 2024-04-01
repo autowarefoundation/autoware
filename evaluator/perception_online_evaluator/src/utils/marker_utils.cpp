@@ -111,14 +111,14 @@ MarkerArray createPointsMarkerArray(
 
 MarkerArray createDeviationLines(
   const std::vector<Pose> poses1, const std::vector<Pose> poses2, const std::string & ns,
-  const float r, const float g, const float b)
+  const int32_t & first_id, const float r, const float g, const float b)
 {
   MarkerArray msg;
 
   const size_t max_idx = std::min(poses1.size(), poses2.size());
   for (size_t i = 0; i < max_idx; ++i) {
     auto marker = createDefaultMarker(
-      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, i, Marker::LINE_STRIP,
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, first_id + i, Marker::LINE_STRIP,
       createMarkerScale(0.005, 0.0, 0.0), createMarkerColor(r, g, b, 0.5));
     marker.points.push_back(poses1.at(i).position);
     marker.points.push_back(poses2.at(i).position);
@@ -144,14 +144,15 @@ MarkerArray createPoseMarkerArray(
 }
 
 MarkerArray createPosesMarkerArray(
-  const std::vector<Pose> poses, std::string && ns, const float & r, const float & g,
-  const float & b, const float & x_scale, const float & y_scale, const float & z_scale)
+  const std::vector<Pose> poses, std::string && ns, const int32_t & first_id, const float & r,
+  const float & g, const float & b, const float & x_scale, const float & y_scale,
+  const float & z_scale)
 {
   MarkerArray msg;
 
   for (size_t i = 0; i < poses.size(); ++i) {
     Marker marker = createDefaultMarker(
-      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, i, Marker::ARROW,
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, first_id + i, Marker::ARROW,
       createMarkerScale(x_scale, y_scale, z_scale), createMarkerColor(r, g, b, 0.5));
     marker.pose = poses.at(i);
     msg.markers.push_back(marker);

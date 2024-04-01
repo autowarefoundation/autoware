@@ -63,8 +63,8 @@ MarkerArray createPoseMarkerArray(
   const float & b);
 
 MarkerArray createPosesMarkerArray(
-  const std::vector<Pose> poses, std::string && ns, const float & r, const float & g,
-  const float & b, const float & x_scale = 0.5, const float & y_scale = 0.2,
+  const std::vector<Pose> poses, std::string && ns, const int32_t & first_id, const float & r,
+  const float & g, const float & b, const float & x_scale = 0.5, const float & y_scale = 0.2,
   const float & z_scale = 0.2);
 
 std_msgs::msg::ColorRGBA createColorFromString(const std::string & str);
@@ -75,7 +75,7 @@ MarkerArray createObjectPolygonMarkerArray(
 
 MarkerArray createDeviationLines(
   const std::vector<Pose> poses1, const std::vector<Pose> poses2, const std::string & ns,
-  const float r, const float g, const float b);
+  const int32_t & first_id, const float r, const float g, const float b);
 
 }  // namespace marker_utils
 

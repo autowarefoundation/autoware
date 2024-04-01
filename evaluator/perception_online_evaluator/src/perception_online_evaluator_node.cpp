@@ -132,50 +132,74 @@ void PerceptionOnlineEvaluatorNode::publishDebugMarker()
     tier4_autoware_utils::appendMarkerArray(added, &marker);
   };
 
-  const auto history_path_map = metrics_calculator_.getHistoryPathMap();
   const auto & p = parameters_->debug_marker_parameters;
 
-  for (const auto & [uuid, history_path] : history_path_map) {
-    {
-      const auto c = createColorFromString(uuid + "_raw");
-      if (p.show_history_path) {
-        add(createPointsMarkerArray(history_path.first, "history_path_" + uuid, 0, c.r, c.g, c.b));
+  // visualize history path
+  {
+    const auto history_path_map = metrics_calculator_.getHistoryPathMap();
+    int32_t history_path_first_id = 0;
+    int32_t smoothed_history_path_first_id = 0;
+    size_t i = 0;
+    for (const auto & [uuid, history_path] : history_path_map) {
+      {
+        const auto c = createColorFromString(uuid + "_raw");
+        if (p.show_history_path) {
+          add(createPointsMarkerArray(history_path.first, "history_path", i, c.r, c.g, c.b));
+        }
+        if (p.show_history_path_arrows) {
+          add(createPosesMarkerArray(
+            history_path.first, "history_path_arrows", history_path_first_id, c.r, c.g, c.b, 0.1,
+            0.05, 0.05));
+          history_path_first_id += history_path.first.size();
+        }
       }
-      if (p.show_history_path_arrows) {
-        add(createPosesMarkerArray(
-          history_path.first, "history_path_arrows_" + uuid, c.r, c.g, c.b, 0.1, 0.05, 0.05));
+      {
+        const auto c = createColorFromString(uuid);
+        if (p.show_smoothed_history_path) {
+          add(createPointsMarkerArray(
+            history_path.second, "smoothed_history_path", i, c.r, c.g, c.b));
+        }
+        if (p.show_smoothed_history_path_arrows) {
+          add(createPosesMarkerArray(
+            history_path.second, "smoothed_history_path_arrows", smoothed_history_path_first_id,
+            c.r, c.g, c.b, 0.1, 0.05, 0.05));
+          smoothed_history_path_first_id += history_path.second.size();
+        }
       }
-    }
-    {
-      const auto c = createColorFromString(uuid);
-      if (p.show_smoothed_history_path) {
-        add(createPointsMarkerArray(
-          history_path.second, "smoothed_history_path_" + uuid, 0, c.r, c.g, c.b));
-      }
-      if (p.show_smoothed_history_path_arrows) {
-        add(createPosesMarkerArray(
-          history_path.second, "smoothed_history_path_arrows_" + uuid, c.r, c.g, c.b, 0.1, 0.05,
-          0.05));
-      }
+      i++;
     }
   }
-  const auto object_data_map = metrics_calculator_.getDebugObjectData();
-  for (const auto & [uuid, object_data] : object_data_map) {
-    const auto c = createColorFromString(uuid);
-    const auto predicted_path = object_data.getPredictedPath();
-    const auto history_path = object_data.getHistoryPath();
-    if (p.show_predicted_path) {
-      add(createPosesMarkerArray(predicted_path, "predicted_path_" + uuid, 0, 0, 1));
-    }
-    if (p.show_predicted_path_gt) {
-      add(createPosesMarkerArray(history_path, "predicted_path_gt_" + uuid, 1, 0, 0));
-    }
-    if (p.show_deviation_lines) {
-      add(createDeviationLines(predicted_path, history_path, "deviation_lines_" + uuid, 1, 1, 1));
-    }
-    if (p.show_object_polygon) {
-      add(createObjectPolygonMarkerArray(
-        object_data.object, "object_polygon_" + uuid, 0, c.r, c.g, c.b));
+
+  // visualize predicted path of past objects
+  {
+    int32_t predicted_path_first_id = 0;
+    int32_t history_path_first_id = 0;
+    int32_t deviation_lines_first_id = 0;
+    size_t i = 0;
+    const auto object_data_map = metrics_calculator_.getDebugObjectData();
+    for (const auto & [uuid, object_data] : object_data_map) {
+      const auto c = createColorFromString(uuid);
+      const auto predicted_path = object_data.getPredictedPath();
+      const auto history_path = object_data.getHistoryPath();
+      if (p.show_predicted_path) {
+        add(createPosesMarkerArray(
+          predicted_path, "predicted_path", predicted_path_first_id, 0, 0, 1));
+        predicted_path_first_id += predicted_path.size();
+      }
+      if (p.show_predicted_path_gt) {
+        add(createPosesMarkerArray(
+          history_path, "predicted_path_gt", history_path_first_id, 1, 0, 0));
+        history_path_first_id += history_path.size();
+      }
+      if (p.show_deviation_lines) {
+        add(createDeviationLines(
+          predicted_path, history_path, "deviation_lines", deviation_lines_first_id, 1, 1, 1));
+        deviation_lines_first_id += predicted_path.size();
+      }
+      if (p.show_object_polygon) {
+        add(createObjectPolygonMarkerArray(object_data.object, "object_polygon", i, c.r, c.g, c.b));
+      }
+      i++;
     }
   }
 
