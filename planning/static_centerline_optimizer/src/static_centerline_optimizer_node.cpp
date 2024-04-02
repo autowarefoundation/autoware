@@ -18,6 +18,7 @@
 #include "lanelet2_extension/utility/query.hpp"
 #include "lanelet2_extension/utility/utilities.hpp"
 #include "map_loader/lanelet2_map_loader_node.hpp"
+#include "map_projection_loader/load_info_from_lanelet2_map.hpp"
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "obstacle_avoidance_planner/node.hpp"
@@ -28,6 +29,7 @@
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/ros/parameter.hpp"
 
+#include <geography_utils/lanelet2_projector.hpp>
 #include <mission_planner/mission_planner_plugin.hpp>
 #include <pluginlib/class_loader.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
@@ -331,13 +333,16 @@ void StaticCenterlineOptimizerNode::load_map(const std::string & lanelet2_input_
   // load map by the map_loader package
   map_bin_ptr_ = [&]() -> HADMapBin::ConstSharedPtr {
     // load map
-    tier4_map_msgs::msg::MapProjectorInfo map_projector_info;
-    map_projector_info.projector_type = tier4_map_msgs::msg::MapProjectorInfo::MGRS;
+    const auto map_projector_info = load_info_from_lanelet2_map(lanelet2_input_file_path);
     const auto map_ptr =
       Lanelet2MapLoaderNode::load_map(lanelet2_input_file_path, map_projector_info);
     if (!map_ptr) {
       return nullptr;
     }
+
+    // NOTE: generate map projector for lanelet::write().
+    //       Without this, lat/lon of the generated LL2 map will be wrong.
+    map_projector_ = geography_utils::get_lanelet2_projector(map_projector_info);
 
     // NOTE: The original map is stored here since the various ids in the lanelet map will change
     //       after lanelet::utils::overwriteLaneletCenterline, and saving map will fail.
@@ -750,7 +755,7 @@ void StaticCenterlineOptimizerNode::save_map(
   RCLCPP_INFO(get_logger(), "Updated centerline in map.");
 
   // save map with modified center line
-  lanelet::write(lanelet2_output_file_path, *original_map_ptr_);
+  lanelet::write(lanelet2_output_file_path, *original_map_ptr_, *map_projector_);
   RCLCPP_INFO(get_logger(), "Saved map.");
 }
 }  // namespace static_centerline_optimizer

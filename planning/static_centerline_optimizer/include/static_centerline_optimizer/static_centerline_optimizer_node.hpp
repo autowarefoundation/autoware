@@ -22,6 +22,8 @@
 #include "static_centerline_optimizer/type_alias.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
+#include <geography_utils/lanelet2_projector.hpp>
+
 #include "std_msgs/msg/bool.hpp"
 #include "std_msgs/msg/int32.hpp"
 
@@ -69,6 +71,7 @@ private:
   lanelet::LaneletMapPtr original_map_ptr_{nullptr};
   HADMapBin::ConstSharedPtr map_bin_ptr_{nullptr};
   std::shared_ptr<RouteHandler> route_handler_ptr_{nullptr};
+  std::unique_ptr<lanelet::Projector> map_projector_{nullptr};
 
   int traj_start_index_{0};
   int traj_end_index_{0};
