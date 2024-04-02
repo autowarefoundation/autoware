@@ -537,6 +537,10 @@ void PredictedPathCheckerNode::filterObstacles(
   const Pose & ego_pose, const TrajectoryPoints & traj, const double dist_threshold,
   const bool use_prediction, PredictedObjects & filtered_objects)
 {
+  if (traj.size() < 2) {
+    RCLCPP_ERROR(rclcpp::get_logger("predicted_path_checker"), "Trajectory size is less than 2.");
+    return;
+  }
   filtered_objects.header.frame_id = object_ptr_.get()->header.frame_id;
   filtered_objects.header.stamp = this->now();
 
