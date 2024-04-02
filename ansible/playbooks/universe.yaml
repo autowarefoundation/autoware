@@ -16,7 +16,7 @@
       prompt: |-
         [Warning] ROS 2 is required for Autoware. Please refer to https://docs.ros.org/en/humble/Installation.html for more information.
         Install ROS 2? [y/N]
-      default: "y"
+      default: y
       private: false
   pre_tasks:
     - name: Verify OS
