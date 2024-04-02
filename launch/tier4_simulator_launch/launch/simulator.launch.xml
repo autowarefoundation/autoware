@@ -127,6 +127,8 @@
   <!-- Dummy localization -->
   <group if="$(var launch_dummy_localization)">
     <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
+      <arg name="user_defined_initial_pose/enable" value="false"/>
+      <arg name="user_defined_initial_pose/pose" value="[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]"/>
       <arg name="ndt_enabled" value="false"/>
       <arg name="gnss_enabled" value="false"/>
       <arg name="ekf_enabled" value="false"/>
