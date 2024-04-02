@@ -52,7 +52,7 @@
 - name: Display warning if ROS 2 package is held
   ansible.builtin.debug:
     msg: ROS package 'ros-{{ rosdistro + '-' + ros2_installation_type }}' is apt-mark hold. Skipping installation.
-  when: install_result.changed == false
+  when: not install_result.changed
 
 - name: Add PATH to .bashrc
   ansible.builtin.lineinfile:
