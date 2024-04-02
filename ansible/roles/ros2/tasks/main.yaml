@@ -35,7 +35,7 @@
     update_cache: true
 
 - name: Check if ros-{{ rosdistro }}-{{ ros2_installation_type }} is held
-  command: apt-mark showhold
+  ansible.builtin.command: apt-mark showhold
   register: held_ros_packages
   changed_when: false
 
