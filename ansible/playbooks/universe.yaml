@@ -12,7 +12,7 @@
         [Warning] Should the ONNX model files and other artifacts be downloaded alongside setting up the development environment.
         Download artifacts? [y/N]
       private: false
-    - name: prompt_install_new_ros2
+    - name: prompt_install_ros2_desktop
       prompt: |-
         [Warning] ROS 2 is required for Autoware. Please refer to https://docs.ros.org/en/humble/Installation.html for more information.
         Install ROS 2? [y/N]
@@ -42,10 +42,10 @@
   roles:
     # Autoware base dependencies
     - role: autoware.dev_env.ros2
-      when: prompt_install_new_ros2 == 'y'
+      when: prompt_install_ros2_desktop == 'y'
     - role: autoware.dev_env.ros2_dev_tools
     - role: autoware.dev_env.rmw_implementation
-      when: prompt_install_new_ros2 == 'y'
+      when: prompt_install_ros2_desktop == 'y'
     - role: autoware.dev_env.gdown
     - role: autoware.dev_env.build_tools
 
