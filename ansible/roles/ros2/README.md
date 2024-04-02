@@ -4,6 +4,8 @@ This role installs [ROS 2](http://www.ros2.org/) following [this page](https://d
 
 Additional steps may be needed depending on the `rosdistro` you choose.
 
+To prevent the update of the ROS 2 packages, if ros-`distro`-desktop is held, the installation process for the packages will be skipped and output warining.
+
 <!-- TODO: Add these steps to the role if Humble requires. -->
 
 ```bash

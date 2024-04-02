@@ -34,12 +34,25 @@
     state: present
     update_cache: true
 
+- name: Check if ros-{{ rosdistro }}-{{ ros2_installation_type }} is held
+  command: apt-mark showhold
+  register: held_ros_packages
+  changed_when: false
+
 - name: Install ros-{{ rosdistro + '-' + ros2_installation_type }}
   become: true
   ansible.builtin.apt:
     name: ros-{{ rosdistro }}-{{ ros2_installation_type }}
     state: latest
     update_cache: true
+  when: "'ros-' + rosdistro + '-' + ros2_installation_type not in held_ros_packages.stdout"
+  register: install_result
+  failed_when: false
+
+- name: Display warning if ROS 2 package is held
+  ansible.builtin.debug:
+    msg: ROS package 'ros-{{ rosdistro + '-' + ros2_installation_type }}' is apt-mark hold. Skipping installation.
+  when: install_result.changed == false
 
 - name: Add PATH to .bashrc
   ansible.builtin.lineinfile:
