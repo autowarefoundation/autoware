@@ -56,6 +56,7 @@
   <node pkg="static_centerline_optimizer" exec="main" name="static_centerline_optimizer">
     <remap from="lanelet2_map_topic" to="$(var lanelet2_map_topic)"/>
     <remap from="input_centerline" to="~/input_centerline"/>
+    <remap from="output_whole_centerline" to="~/output_whole_centerline"/>
     <remap from="output_centerline" to="~/output_centerline"/>
     <remap from="debug/raw_centerline" to="~/debug/raw_centerline"/>
     <remap from="debug/unsafe_footprints" to="~/debug/unsafe_footprints"/>
