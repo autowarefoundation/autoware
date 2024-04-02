@@ -29,6 +29,8 @@
 namespace object_recognition_utils
 {
 using tier4_autoware_utils::Polygon2d;
+// minimum area to avoid division by zero
+static const double MIN_AREA = 1e-6;
 
 inline double getConvexShapeArea(const Polygon2d & source_polygon, const Polygon2d & target_polygon)
 {
@@ -66,10 +68,12 @@ template <class T1, class T2>
 double get2dIoU(const T1 source_object, const T2 target_object, const double min_union_area = 0.01)
 {
   const auto source_polygon = tier4_autoware_utils::toPolygon2d(source_object);
+  if (boost::geometry::area(source_polygon) < MIN_AREA) return 0.0;
   const auto target_polygon = tier4_autoware_utils::toPolygon2d(target_object);
+  if (boost::geometry::area(target_polygon) < MIN_AREA) return 0.0;
 
   const double intersection_area = getIntersectionArea(source_polygon, target_polygon);
-  if (intersection_area == 0.0) return 0.0;
+  if (intersection_area < MIN_AREA) return 0.0;
   const double union_area = getUnionArea(source_polygon, target_polygon);
 
   const double iou =
@@ -81,7 +85,9 @@ template <class T1, class T2>
 double get2dGeneralizedIoU(const T1 & source_object, const T2 & target_object)
 {
   const auto source_polygon = tier4_autoware_utils::toPolygon2d(source_object);
+  if (boost::geometry::area(source_polygon) < MIN_AREA) return 0.0;
   const auto target_polygon = tier4_autoware_utils::toPolygon2d(target_object);
+  if (boost::geometry::area(target_polygon) < MIN_AREA) return 0.0;
 
   const double intersection_area = getIntersectionArea(source_polygon, target_polygon);
   const double union_area = getUnionArea(source_polygon, target_polygon);
@@ -95,11 +101,13 @@ template <class T1, class T2>
 double get2dPrecision(const T1 source_object, const T2 target_object)
 {
   const auto source_polygon = tier4_autoware_utils::toPolygon2d(source_object);
+  const double source_area = boost::geometry::area(source_polygon);
+  if (source_area < MIN_AREA) return 0.0;
   const auto target_polygon = tier4_autoware_utils::toPolygon2d(target_object);
+  if (boost::geometry::area(target_polygon) < MIN_AREA) return 0.0;
 
   const double intersection_area = getIntersectionArea(source_polygon, target_polygon);
-  if (intersection_area == 0.0) return 0.0;
-  const double source_area = boost::geometry::area(source_polygon);
+  if (intersection_area < MIN_AREA) return 0.0;
 
   return std::min(1.0, intersection_area / source_area);
 }
@@ -108,11 +116,13 @@ template <class T1, class T2>
 double get2dRecall(const T1 source_object, const T2 target_object)
 {
   const auto source_polygon = tier4_autoware_utils::toPolygon2d(source_object);
+  if (boost::geometry::area(source_polygon) < MIN_AREA) return 0.0;
   const auto target_polygon = tier4_autoware_utils::toPolygon2d(target_object);
+  const double target_area = boost::geometry::area(target_polygon);
+  if (target_area < MIN_AREA) return 0.0;
 
   const double intersection_area = getIntersectionArea(source_polygon, target_polygon);
-  if (intersection_area == 0.0) return 0.0;
-  const double target_area = boost::geometry::area(target_polygon);
+  if (intersection_area < MIN_AREA) return 0.0;
 
   return std::min(1.0, intersection_area / target_area);
 }
