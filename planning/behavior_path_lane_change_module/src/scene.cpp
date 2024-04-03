@@ -889,23 +889,27 @@ LaneChangeTargetObjects NormalLaneChange::getTargetObjects(
   target_objects.other_lane.reserve(target_obj_index.other_lane.size());
 
   // objects in current lane
+  const auto is_check_prepare_phase = check_prepare_phase();
   for (const auto & obj_idx : target_obj_index.current_lane) {
     const auto extended_object = utils::lane_change::transform(
-      objects.objects.at(obj_idx), common_parameters, *lane_change_parameters_);
+      objects.objects.at(obj_idx), common_parameters, *lane_change_parameters_,
+      is_check_prepare_phase);
     target_objects.current_lane.push_back(extended_object);
   }
 
   // objects in target lane
   for (const auto & obj_idx : target_obj_index.target_lane) {
     const auto extended_object = utils::lane_change::transform(
-      objects.objects.at(obj_idx), common_parameters, *lane_change_parameters_);
+      objects.objects.at(obj_idx), common_parameters, *lane_change_parameters_,
+      is_check_prepare_phase);
     target_objects.target_lane.push_back(extended_object);
   }
 
   // objects in other lane
   for (const auto & obj_idx : target_obj_index.other_lane) {
     const auto extended_object = utils::lane_change::transform(
-      objects.objects.at(obj_idx), common_parameters, *lane_change_parameters_);
+      objects.objects.at(obj_idx), common_parameters, *lane_change_parameters_,
+      is_check_prepare_phase);
     target_objects.other_lane.push_back(extended_object);
   }
 
@@ -969,8 +973,8 @@ LaneChangeTargetObjectIndices NormalLaneChange::filterObject(
     const auto obj_velocity_norm = std::hypot(
       object.kinematics.initial_twist_with_covariance.twist.linear.x,
       object.kinematics.initial_twist_with_covariance.twist.linear.y);
-    const auto extended_object =
-      utils::lane_change::transform(object, common_parameters, *lane_change_parameters_);
+    const auto extended_object = utils::lane_change::transform(
+      object, common_parameters, *lane_change_parameters_, check_prepare_phase());
 
     const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object);
 
@@ -2111,6 +2115,35 @@ void NormalLaneChange::updateStopTime()
   }
 
   stop_watch_.tic("stop_time");
+}
+
+bool NormalLaneChange::check_prepare_phase() const
+{
+  const auto & route_handler = getRouteHandler();
+  const auto & vehicle_info = getCommonParam().vehicle_info;
+
+  const auto check_in_general_lanes =
+    lane_change_parameters_->enable_collision_check_for_prepare_phase_in_general_lanes;
+
+  lanelet::ConstLanelet current_lane;
+  if (!route_handler->getClosestLaneletWithinRoute(getEgoPose(), &current_lane)) {
+    RCLCPP_DEBUG(
+      logger_, "Unable to get current lane. Default to %s.",
+      (check_in_general_lanes ? "true" : "false"));
+    return check_in_general_lanes;
+  }
+
+  const auto ego_footprint = utils::lane_change::getEgoCurrentFootprint(getEgoPose(), vehicle_info);
+
+  const auto check_in_intersection = std::invoke([&]() {
+    if (!lane_change_parameters_->enable_collision_check_for_prepare_phase_in_intersection) {
+      return false;
+    }
+
+    return utils::lane_change::isWithinIntersection(route_handler, current_lane, ego_footprint);
+  });
+
+  return check_in_intersection || check_in_general_lanes;
 }
 
 }  // namespace behavior_path_planner

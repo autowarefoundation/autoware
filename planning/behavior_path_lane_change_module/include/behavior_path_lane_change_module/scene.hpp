@@ -174,6 +174,8 @@ protected:
 
   bool isVehicleStuck(const lanelet::ConstLanelets & current_lanes) const;
 
+  bool check_prepare_phase() const;
+
   double calcMaximumLaneChangeLength(
     const lanelet::ConstLanelet & current_terminal_lanelet, const double max_acc) const;
 

@@ -551,13 +551,14 @@ The following parameters are configurable in [lane_change.param.yaml](https://gi
 
 #### Additional parameters
 
-| Name                                       | Unit  | Type    | Description                                                                                                                                                | Default value |
-| :----------------------------------------- | ----- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| `enable_collision_check_at_prepare_phase`  | [-]   | boolean | Perform collision check starting from prepare phase. If `false`, collision check only evaluated for lane changing phase.                                   | false         |
-| `prepare_phase_ignore_target_speed_thresh` | [m/s] | double  | Ignore collision check in prepare phase of object speed that is lesser that the configured value. `enable_collision_check_at_prepare_phase` must be `true` | 0.1           |
-| `check_objects_on_current_lanes`           | [-]   | boolean | If true, the lane change module check objects on current lanes when performing collision assessment.                                                       | false         |
-| `check_objects_on_other_lanes`             | [-]   | boolean | If true, the lane change module include objects on other lanes. when performing collision assessment                                                       | false         |
-| `use_all_predicted_path`                   | [-]   | boolean | If false, use only the predicted path that has the maximum confidence.                                                                                     | true          |
+| Name                                                     | Unit  | Type    | Description                                                                                                                                                                                                | Default value |
+| :------------------------------------------------------- | ----- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `enable_collision_check_for_prepare_phase.general_lanes` | [-]   | boolean | Perform collision check starting from the prepare phase for situations not explicitly covered by other settings (e.g., intersections). If `false`, collision check only evaluated for lane changing phase. | false         |
+| `enable_collision_check_for_prepare_phase.intersection`  | [-]   | boolean | Perform collision check starting from prepare phase when ego is in intersection. If `false`, collision check only evaluated for lane changing phase.                                                       | false         |
+| `prepare_phase_ignore_target_speed_thresh`               | [m/s] | double  | Ignore collision check in prepare phase of object speed that is lesser that the configured value. `enable_collision_check_at_prepare_phase` must be `true`                                                 | 0.1           |
+| `check_objects_on_current_lanes`                         | [-]   | boolean | If true, the lane change module check objects on current lanes when performing collision assessment.                                                                                                       | false         |
+| `check_objects_on_other_lanes`                           | [-]   | boolean | If true, the lane change module include objects on other lanes. when performing collision assessment                                                                                                       | false         |
+| `use_all_predicted_path`                                 | [-]   | boolean | If false, use only the predicted path that has the maximum confidence.                                                                                                                                     | true          |
 
 #### safety constraints during lane change path is computed
 
