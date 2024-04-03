@@ -439,7 +439,8 @@ PathWithLaneId getReferencePathFromTargetLane(
       .get_child("getReferencePathFromTargetLane"),
     "start: %f, end: %f", s_start, s_end);
 
-  if (s_end - s_start < lane_changing_length) {
+  constexpr double epsilon = 1e-4;
+  if (s_end - s_start + epsilon < lane_changing_length) {
     return PathWithLaneId();
   }
 
