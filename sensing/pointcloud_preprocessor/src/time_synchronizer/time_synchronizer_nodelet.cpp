@@ -83,7 +83,12 @@ PointCloudDataSynchronizerComponent::PointCloudDataSynchronizerComponent(
     timeout_sec_ = static_cast<double>(declare_parameter("timeout_sec", 0.1));
 
     input_offset_ = declare_parameter("input_offset", std::vector<double>{});
-    if (!input_offset_.empty() && input_topics_.size() != input_offset_.size()) {
+
+    // If input_offset_ is not defined, set all offsets to 0
+    if (input_offset_.empty()) {
+      input_offset_.resize(input_topics_.size(), 0.0);
+      RCLCPP_INFO(get_logger(), "Input offset is not defined. Set all offsets to 0.0.");
+    } else if (input_topics_.size() != input_offset_.size()) {
       RCLCPP_ERROR(get_logger(), "The number of topics does not match the number of offsets.");
       return;
     }
