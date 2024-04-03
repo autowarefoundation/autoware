@@ -1,10 +1,6 @@
 name: docker-build-and-push-main
 
 on:
-  push:
-    tags:
-      - v*
-      - "[0-9]+.[0-9]+*"
   schedule:
     - cron: 0 0 1,15 * *
   workflow_dispatch:
@@ -17,16 +13,11 @@ jobs:
       matrix:
         name:
           - no-cuda
-          - cuda
         include:
           - name: no-cuda
             base_image_env: base_image
             setup-args: --no-nvidia
             additional-tag-suffix: ""
-          - name: cuda
-            base_image_env: cuda_base_image
-            setup-args: --no-cuda-drivers
-            additional-tag-suffix: -cuda
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
