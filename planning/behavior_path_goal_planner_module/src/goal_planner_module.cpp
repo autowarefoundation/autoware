@@ -1640,34 +1640,6 @@ TurnSignalInfo GoalPlannerModule::calcTurnSignalInfo()
   ignore_signal_ = update_ignore_signal(closest_lanelet.id(), is_ignore);
 
   return new_signal;
-  // // calc TurnIndicatorsCommand
-  // {
-  //   const double distance_to_end =
-  //     calcSignedArcLength(full_path.points, current_pose.position, end_pose.position);
-  //   const bool is_before_end_pose = distance_to_end >= 0.0;
-  //   if (is_before_end_pose) {
-  //     if (left_side_parking_) {
-  //       turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
-  //     } else {
-  //       turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
-  //     }
-  //   } else {
-  //     turn_signal.turn_signal.command = TurnIndicatorsCommand::NO_COMMAND;
-  //   }
-  // }
-
-  // // calc desired/required start/end point
-  // {
-  //   // ego decelerates so that current pose is the point `turn_light_on_threshold_time` seconds
-  //   // before starting pull_over
-  //   turn_signal.desired_start_point =
-  //     last_approval_data_ && hasDecidedPath() ? last_approval_data_->pose : current_pose;
-  //   turn_signal.desired_end_point = end_pose;
-  //   turn_signal.required_start_point = start_pose;
-  //   turn_signal.required_end_point = end_pose;
-  // }
-
-  // return turn_signal;
 }
 
 bool GoalPlannerModule::checkOccupancyGridCollision(const PathWithLaneId & path) const
