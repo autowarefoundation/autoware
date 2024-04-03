@@ -43,9 +43,7 @@ Example:
 
 ## Parameters
 
-| Name          | Type  | Description                                          |
-| ------------- | ----- | ---------------------------------------------------- |
-| `split_range` | float | the distance boundary to divide detected objects [m] |
+{{ json_to_markdown("perception/object_range_splitter/schema/object_range_splitter.schema.json") }}
 
 ## Assumptions / Known limits
 

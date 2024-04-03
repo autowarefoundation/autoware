@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for object_range_splitter",
+  "type": "object",
+  "definitions": {
+    "object_range_splitter": {
+      "type": "object",
+      "properties": {
+        "split_range": {
+          "type": "number",
+          "description": "object_range_splitter is a package to divide detected objects into two messages by the distance from the origin",
+          "default": "30.0"
+        }
+      },
+      "required": ["split_range"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/object_range_splitter"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
