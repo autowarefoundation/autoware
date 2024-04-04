@@ -10,6 +10,7 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_auto_system_msgs</depend>
   <depend>diagnostic_msgs</depend>
   <depend>rclcpp</depend>

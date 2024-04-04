@@ -17,6 +17,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
+#include <autoware_auto_system_msgs/msg/autoware_state.hpp>
 #include <autoware_auto_system_msgs/msg/hazard_status_stamped.hpp>
 #include <tier4_system_msgs/msg/diagnostic_graph.hpp>
 
@@ -33,11 +35,20 @@ public:
   explicit Converter(const rclcpp::NodeOptions & options);
 
 private:
+  using AutowareState = autoware_auto_system_msgs::msg::AutowareState;
+  using OperationMode = autoware_adapi_v1_msgs::msg::OperationModeState;
   using DiagnosticGraph = tier4_system_msgs::msg::DiagnosticGraph;
   using HazardStatusStamped = autoware_auto_system_msgs::msg::HazardStatusStamped;
+  rclcpp::Subscription<AutowareState>::SharedPtr sub_state_;
+  rclcpp::Subscription<OperationMode>::SharedPtr sub_mode_;
   rclcpp::Subscription<DiagnosticGraph>::SharedPtr sub_graph_;
   rclcpp::Publisher<HazardStatusStamped>::SharedPtr pub_hazard_;
+  void on_state(const AutowareState::ConstSharedPtr msg);
+  void on_mode(const OperationMode::ConstSharedPtr msg);
   void on_graph(const DiagnosticGraph::ConstSharedPtr msg);
+
+  AutowareState::ConstSharedPtr state_;
+  OperationMode::ConstSharedPtr mode_;
 };
 
 }  // namespace hazard_status_converter
