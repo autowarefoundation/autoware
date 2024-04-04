@@ -381,12 +381,17 @@ MetricStatMap MetricsCalculator::calcYawRateMetrics(const ClassObjectsMap & clas
       if (time_diff < 0.01) {
         continue;
       }
-      const auto current_yaw =
+      const double current_yaw =
         tf2::getYaw(object.kinematics.initial_pose_with_covariance.pose.orientation);
-      const auto previous_yaw =
+      const double previous_yaw =
         tf2::getYaw(previous_object.kinematics.initial_pose_with_covariance.pose.orientation);
-      const auto yaw_rate =
-        std::abs(tier4_autoware_utils::normalizeRadian(current_yaw - previous_yaw) / time_diff);
+      const double yaw_diff =
+        std::abs(tier4_autoware_utils::normalizeRadian(current_yaw - previous_yaw));
+      // if yaw_diff is close to PI, reversal of orientation is likely occurring, so ignore it
+      if (std::abs(M_PI - yaw_diff) < 0.1) {
+        continue;
+      }
+      const auto yaw_rate = yaw_diff / time_diff;
       stat.add(yaw_rate);
     }
     metric_stat_map["yaw_rate_" + convertLabelToString(label)] = stat;

@@ -214,6 +214,7 @@ rcl_interfaces::msg::SetParametersResult PerceptionOnlineEvaluatorNode::onParame
   auto & p = parameters_;
 
   updateParam<size_t>(parameters, "smoothing_window_size", p->smoothing_window_size);
+  updateParam<double>(parameters, "stopped_velocity_threshold", p->stopped_velocity_threshold);
 
   // update metrics
   {
