@@ -11,6 +11,7 @@ This module allows for the evaluation of how accurately perception results are g
 - Calculates lateral deviation between the predicted path and the actual traveled trajectory.
 - Calculates lateral deviation between the smoothed traveled trajectory and the perceived position to evaluate the stability of lateral position recognition.
 - Calculates yaw deviation between the smoothed traveled trajectory and the perceived position to evaluate the stability of yaw recognition.
+- Calculates yaw rate based on the yaw of the object received in the previous cycle to evaluate the stability of the yaw rate recognition.
 
 ## Inputs / Outputs
 
