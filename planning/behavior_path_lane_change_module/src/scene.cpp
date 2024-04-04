@@ -1293,9 +1293,8 @@ bool NormalLaneChange::getLaneChangePaths(
         (prepare_duration < 1e-3) ? 0.0
                                   : ((prepare_velocity - current_velocity) / prepare_duration);
 
-      const double prepare_length =
-        current_velocity * prepare_duration +
-        0.5 * longitudinal_acc_on_prepare * std::pow(prepare_duration, 2);
+      const auto prepare_length = utils::lane_change::calcPhaseLength(
+        current_velocity, getCommonParam().max_vel, longitudinal_acc_on_prepare, prepare_duration);
 
       auto prepare_segment = getPrepareSegment(current_lanes, backward_path_length, prepare_length);
 
@@ -1347,9 +1346,9 @@ bool NormalLaneChange::getLaneChangePaths(
           utils::lane_change::calcLaneChangingAcceleration(
             initial_lane_changing_velocity, max_path_velocity, lane_changing_time,
             sampled_longitudinal_acc);
-        const auto lane_changing_length =
-          initial_lane_changing_velocity * lane_changing_time +
-          0.5 * longitudinal_acc_on_lane_changing * lane_changing_time * lane_changing_time;
+        const auto lane_changing_length = utils::lane_change::calcPhaseLength(
+          initial_lane_changing_velocity, getCommonParam().max_vel,
+          longitudinal_acc_on_lane_changing, lane_changing_time);
         const auto terminal_lane_changing_velocity = std::min(
           initial_lane_changing_velocity + longitudinal_acc_on_lane_changing * lane_changing_time,
           getCommonParam().max_vel);
