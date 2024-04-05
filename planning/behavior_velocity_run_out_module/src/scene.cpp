@@ -144,6 +144,16 @@ bool RunOutModule::modifyPathVelocity(
   debug_ptr_->setDebugValues(
     DebugValues::TYPE::CALCULATION_TIME_COLLISION_CHECK, elapsed_collision_check.count() / 1000.0);
 
+  // If no new obstacle is detected, we check if the stop point should be maintained for more time.
+  auto should_maintain_stop_point = [&](const bool is_stopping_point_inserted) -> bool {
+    if (!stop_point_generation_time_.has_value() || is_stopping_point_inserted) {
+      return false;
+    }
+    const auto now = clock_->now().seconds();
+    const double elapsed_time_since_stop_wall_was_generated =
+      (now - stop_point_generation_time_.value());
+    return elapsed_time_since_stop_wall_was_generated < planner_param_.run_out.keep_stop_point_time;
+  };
   // insert stop point for the detected obstacle
   if (planner_param_.approaching.enable) {
     // after a certain amount of time has elapsed since the ego stopped,
@@ -152,7 +162,23 @@ bool RunOutModule::modifyPathVelocity(
       dynamic_obstacle, *planner_data_, planner_param_, extended_smoothed_path, *path);
   } else {
     // just insert zero velocity for stopping
-    insertStoppingVelocity(dynamic_obstacle, current_pose, current_vel, current_acc, *path);
+    std::optional<geometry_msgs::msg::Pose> stop_point;
+    const bool is_stopping_point_inserted = insertStoppingVelocity(
+      dynamic_obstacle, current_pose, current_vel, current_acc, *path, stop_point);
+
+    stop_point_generation_time_ = (is_stopping_point_inserted)
+                                    ? std::make_optional(clock_->now().seconds())
+                                    : stop_point_generation_time_;
+    last_stop_point_ = (is_stopping_point_inserted) ? stop_point : last_stop_point_;
+
+    const bool is_maintain_stop_point = should_maintain_stop_point(is_stopping_point_inserted);
+    if (is_maintain_stop_point) {
+      insertStopPoint(last_stop_point_, *path);
+      // debug
+      debug_ptr_->setAccelReason(RunOutDebug::AccelReason::STOP);
+      debug_ptr_->pushStopPose(tier4_autoware_utils::calcOffsetPose(
+        *last_stop_point_, planner_param_.vehicle_param.base_to_front, 0, 0));
+    }
   }
 
   // apply max jerk limit if the ego can't stop with specified max jerk and acc
@@ -230,10 +256,8 @@ std::optional<DynamicObstacle> RunOutModule::detectCollision(
 
     debug_ptr_->pushCollisionPoints(obstacle_selected->collision_points);
     debug_ptr_->pushNearestCollisionPoint(obstacle_selected->nearest_collision_point);
-
     return obstacle_selected;
   }
-
   // no collision detected
   first_detected_time_.reset();
   return {};
@@ -717,14 +741,14 @@ std::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
   return stop_point;
 }
 
-void RunOutModule::insertStopPoint(
+bool RunOutModule::insertStopPoint(
   const std::optional<geometry_msgs::msg::Pose> stop_point,
   autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
   // no stop point
   if (!stop_point) {
     RCLCPP_DEBUG_STREAM(logger_, "already has same point");
-    return;
+    return false;
   }
 
   // find nearest point index behind the stop point
@@ -736,15 +760,15 @@ void RunOutModule::insertStopPoint(
   if (
     insert_idx == path.points.size() - 1 &&
     planning_utils::isAheadOf(*stop_point, path.points.at(insert_idx).point.pose)) {
-    return;
+    return false;
   }
 
   // to PathPointWithLaneId
   autoware_auto_planning_msgs::msg::PathPointWithLaneId stop_point_with_lane_id;
   stop_point_with_lane_id = path.points.at(nearest_seg_idx);
   stop_point_with_lane_id.point.pose = *stop_point;
-
   planning_utils::insertVelocity(path, stop_point_with_lane_id, 0.0, insert_idx);
+  return true;
 }
 
 void RunOutModule::insertVelocityForState(
@@ -806,14 +830,24 @@ void RunOutModule::insertVelocityForState(
   }
 }
 
-void RunOutModule::insertStoppingVelocity(
+bool RunOutModule::insertStoppingVelocity(
   const std::optional<DynamicObstacle> & dynamic_obstacle,
   const geometry_msgs::msg::Pose & current_pose, const float current_vel, const float current_acc,
   PathWithLaneId & output_path)
 {
-  const auto stop_point =
+  std::optional<geometry_msgs::msg::Pose> stopping_point;
+  return insertStoppingVelocity(
+    dynamic_obstacle, current_pose, current_vel, current_acc, output_path, stopping_point);
+}
+
+bool RunOutModule::insertStoppingVelocity(
+  const std::optional<DynamicObstacle> & dynamic_obstacle,
+  const geometry_msgs::msg::Pose & current_pose, const float current_vel, const float current_acc,
+  PathWithLaneId & output_path, std::optional<geometry_msgs::msg::Pose> & stopping_point)
+{
+  stopping_point =
     calcStopPoint(dynamic_obstacle, output_path, current_pose, current_vel, current_acc);
-  insertStopPoint(stop_point, output_path);
+  return insertStopPoint(stopping_point, output_path);
 }
 
 void RunOutModule::insertApproachingVelocity(

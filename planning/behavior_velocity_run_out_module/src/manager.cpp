@@ -77,6 +77,7 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
       getOrDeclareParameter<double>(node, ns + ".ego_footprint_extra_margin");
     p.keep_obstacle_on_path_time_threshold =
       getOrDeclareParameter<double>(node, ns + ".keep_obstacle_on_path_time_threshold");
+    p.keep_stop_point_time = getOrDeclareParameter<double>(node, ns + ".keep_stop_point_time");
   }
 
   {

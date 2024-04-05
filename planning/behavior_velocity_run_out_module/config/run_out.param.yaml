@@ -17,6 +17,7 @@
       ego_cut_line_length: 3.0    # The width of the ego's cut line
       ego_footprint_extra_margin: 0.5 # [m] expand the ego vehicles' footprint by this value on all sides when building the ego footprint path
       keep_obstacle_on_path_time_threshold: 1.0 # [s] How much time a previous run out target obstacle is kept in the run out candidate list if it enters the ego path.
+      keep_stop_point_time: 1.0   # [s] If a stop point is issued by this module, keep the stop point for this many seconds. Only works if approach is disabled
 
       # Parameter to create abstracted dynamic obstacles
       dynamic_obstacle:

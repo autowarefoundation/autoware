@@ -68,6 +68,7 @@ struct RunOutParam
   double ego_cut_line_length;
   double ego_footprint_extra_margin;
   double keep_obstacle_on_path_time_threshold;
+  double keep_stop_point_time;
   float detection_distance;
   float detection_span;
   float min_vel_ego_kmph;

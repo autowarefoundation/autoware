@@ -66,6 +66,9 @@ private:
   std::shared_ptr<RunOutDebug> debug_ptr_;
   std::unique_ptr<run_out_utils::StateMachine> state_machine_;
   std::shared_ptr<rclcpp::Time> first_detected_time_;
+  std::optional<double> stop_point_generation_time_;
+  std::optional<geometry_msgs::msg::Pose> last_stop_point_;
+
   std::optional<unique_identifier_msgs::msg::UUID> last_stop_obstacle_uuid_;
   std::unordered_map<std::string, double> obstacle_in_ego_path_times_;
 
@@ -119,7 +122,7 @@ private:
     const geometry_msgs::msg::Pose & current_pose, const float current_vel,
     const float current_acc) const;
 
-  void insertStopPoint(
+  bool insertStopPoint(
     const std::optional<geometry_msgs::msg::Pose> stop_point,
     autoware_auto_planning_msgs::msg::PathWithLaneId & path);
 
@@ -128,10 +131,15 @@ private:
     const PlannerParam & planner_param, const PathWithLaneId & smoothed_path,
     PathWithLaneId & output_path);
 
-  void insertStoppingVelocity(
+  bool insertStoppingVelocity(
     const std::optional<DynamicObstacle> & dynamic_obstacle,
     const geometry_msgs::msg::Pose & current_pose, const float current_vel, const float current_acc,
     PathWithLaneId & output_path);
+
+  bool insertStoppingVelocity(
+    const std::optional<DynamicObstacle> & dynamic_obstacle,
+    const geometry_msgs::msg::Pose & current_pose, const float current_vel, const float current_acc,
+    PathWithLaneId & output_path, std::optional<geometry_msgs::msg::Pose> & stopping_point);
 
   void insertApproachingVelocity(
     const DynamicObstacle & dynamic_obstacle, const geometry_msgs::msg::Pose & current_pose,
