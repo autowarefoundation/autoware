@@ -327,15 +327,19 @@ void ObstaclePointCloudBasedValidator::onObjectsAndObstaclePointCloud(
     // objects_pub_->publish(*input_objects);
     return;
   }
+  bool validation_is_ready = true;
   if (!validator_->setKdtreeInputCloud(input_obstacle_pointcloud)) {
-    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5, "cannot receive pointcloud");
-    return;
+    RCLCPP_WARN_THROTTLE(
+      this->get_logger(), *this->get_clock(), 5,
+      "obstacle pointcloud is empty! Can not validate objects.");
+    validation_is_ready = false;
   }
 
   for (size_t i = 0; i < transformed_objects.objects.size(); ++i) {
     const auto & transformed_object = transformed_objects.objects.at(i);
     const auto & object = input_objects->objects.at(i);
-    const auto validated = validator_->validate_object(transformed_object);
+    const auto validated =
+      validation_is_ready ? validator_->validate_object(transformed_object) : false;
     if (debugger_) {
       debugger_->addNeighborPointcloud(validator_->getDebugNeighborPointCloud());
       debugger_->addPointcloudWithinPolygon(validator_->getDebugPointCloudWithinObject());
