@@ -18,27 +18,17 @@ RUN --mount=type=ssh \
 RUN source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --parallel-workers 8 \
   && find /autoware/install -type d -exec chmod 777 {} \; \
-  && apt-get clean \
-  && find /usr/lib/$PLATFORM-linux-gnu -name "*.a" -type f -delete \
+ && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
+  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
   && find / -name "*.o" -type f -delete \
   && find / -name "*.h" -type f -delete \
   && find / -name "*.hpp" -type f -delete \
-  && rm -rf /var/lib/apt/lists/* \
-  /autoware/src \ 
-  /autoware/autoware.repos \
-  /root/.local/pipx \
-  /opt/ros/humble/include \
-  /etc/apt/sources.list.d/cuda*.list \
-  /etc/apt/sources.list.d/docker.list \
-  /etc/apt/sources.list.d/nvidia-docker.list \
-  "$HOME"/.cache \
-  /usr/include \
-  /usr/share/doc \ 
-  /usr/lib/gcc \
-  /usr/lib/jvm \
-  /usr/lib/llvm*
+  && rm -rf /autoware/src /autoware/ansible /autoware/autoware.repos \
+    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
+    /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
+    /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
-FROM ghcr.io/autowarefoundation/autoware-openadk:base-${ROS_DISTRO} as simulator
+FROM ghcr.io/autowarefoundation/autoware-openadk:latest-base as simulator
 ARG PLATFORM
 ARG ROS_DISTRO
 
@@ -52,25 +42,15 @@ RUN --mount=type=ssh \
   && apt-get update \
   && rosdep update \
   && DEBIAN_FRONTEND=noninteractive rosdep install -y --rosdistro "$ROS_DISTRO" --ignore-src --from-paths src \
-  && apt-get clean \
-  && find /usr/lib/$PLATFORM-linux-gnu -name "*.a" -type f -delete \
+ && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
+  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
   && find / -name "*.o" -type f -delete \
   && find / -name "*.h" -type f -delete \
   && find / -name "*.hpp" -type f -delete \
-  && rm -rf /var/lib/apt/lists/* \
-  /autoware/src \ 
-  /autoware/autoware.repos \
-  /root/.local/pipx \
-  /opt/ros/humble/include \
-  /etc/apt/sources.list.d/cuda*.list \
-  /etc/apt/sources.list.d/docker.list \
-  /etc/apt/sources.list.d/nvidia-docker.list \
-  "$HOME"/.cache \
-  /usr/include \
-  /usr/share/doc \ 
-  /usr/lib/gcc \
-  /usr/lib/jvm \
-  /usr/lib/llvm*
+  && rm -rf /autoware/src /autoware/ansible /autoware/autoware.repos \
+    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
+    /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
+    /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
 RUN chmod -R 777 /autoware/install/
 
