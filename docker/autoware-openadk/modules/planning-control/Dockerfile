@@ -1,4 +1,4 @@
-FROM ghcr.io/autowarefoundation/autoware-openadk:latest-base as visualizer
+FROM ghcr.io/autowarefoundation/autoware-openadk:latest-base as planning-control
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -9,7 +9,9 @@ COPY autoware.repos /autoware/
 
 # Dependencies
 RUN --mount=type=ssh \
-  mkdir src \
+  ./setup-dev-env.sh -y --module planning-control --runtime openadk \
+  && pip uninstall -y ansible ansible-core \
+  && mkdir src \
   && vcs import src < autoware.repos \
   && apt-get update \
   && rosdep update \
@@ -25,7 +27,7 @@ RUN --mount=type=ssh \
     /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
 # Copy launch file
-COPY docker/autoware-openadk/services/visualizer/launch/ /autoware/install/visualizer/share/visualizer/launch/
+COPY docker/autoware-openadk/modules/planning-control/planning_control.launch.xml /autoware/install/planning_control/share/planning_control/launch/
 
 # Create entrypoint
 COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh

@@ -16,7 +16,7 @@ print_help() {
 }
 
 SCRIPT_DIR=$(readlink -f "$(dirname "$0")")
-WORKSPACE_ROOT="$SCRIPT_DIR/../"
+WORKSPACE_ROOT="$SCRIPT_DIR/../.."
 
 # Parse arguments
 parse_arguments() {
@@ -111,7 +111,7 @@ build_images() {
     echo "Targets: ${targets[*]}"
 
     set -x
-    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/autoware/docker-bake.hcl" \
+    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" \
         --set "*.context=$WORKSPACE_ROOT" \
         --set "*.ssh=default" \
         --set "*.platform=$platform" \

@@ -15,7 +15,7 @@ print_help() {
 }
 
 SCRIPT_DIR=$(readlink -f "$(dirname "$0")")
-WORKSPACE_ROOT="$SCRIPT_DIR/../"
+WORKSPACE_ROOT="$SCRIPT_DIR/../.."
 
 # Parse arguments
 parse_arguments() {
@@ -98,7 +98,7 @@ build_images() {
     echo "Targets: ${targets[*]}"
 
     set -x
-    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/autoware-openadk/docker-bake.hcl" \
+    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" \
         --set "*.context=$WORKSPACE_ROOT" \
         --set "*.ssh=default" \
         --set "*.platform=$platform" \
@@ -117,7 +117,6 @@ build_images() {
 # Main script execution
 parse_arguments "$@"
 set_cuda_options
-set_build_options
 set_platform
 set_arch_lib_dir
 load_env
