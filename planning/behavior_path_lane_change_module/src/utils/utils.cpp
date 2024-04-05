@@ -37,6 +37,8 @@
 
 #include <geometry_msgs/msg/detail/pose__struct.hpp>
 
+#include <boost/geometry/algorithms/detail/disjoint/interface.hpp>
+
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/geometry/LineString.h>
 #include <lanelet2_core/geometry/Point.h>
@@ -1183,6 +1185,17 @@ bool isWithinIntersection(
 
   return boost::geometry::within(
     polygon, utils::toPolygon2d(lanelet::utils::to2D(lanelet_polygon.basicPolygon())));
+}
+
+bool isWithinTurnDirectionLanes(const lanelet::ConstLanelet & lanelet, const Polygon2d & polygon)
+{
+  const std::string turn_direction = lanelet.attributeOr("turn_direction", "else");
+  if (turn_direction == "else" || turn_direction == "straight") {
+    return false;
+  }
+
+  return !boost::geometry::disjoint(
+    polygon, utils::toPolygon2d(lanelet::utils::to2D(lanelet.polygon2d().basicPolygon())));
 }
 
 double calcPhaseLength(

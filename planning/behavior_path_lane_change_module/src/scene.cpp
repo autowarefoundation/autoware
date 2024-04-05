@@ -2142,7 +2142,15 @@ bool NormalLaneChange::check_prepare_phase() const
     return utils::lane_change::isWithinIntersection(route_handler, current_lane, ego_footprint);
   });
 
-  return check_in_intersection || check_in_general_lanes;
+  const auto check_in_turns = std::invoke([&]() {
+    if (!lane_change_parameters_->enable_collision_check_for_prepare_phase_in_turns) {
+      return false;
+    }
+
+    return utils::lane_change::isWithinTurnDirectionLanes(current_lane, ego_footprint);
+  });
+
+  return check_in_intersection || check_in_turns || check_in_general_lanes;
 }
 
 }  // namespace behavior_path_planner

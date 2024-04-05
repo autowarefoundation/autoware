@@ -259,6 +259,21 @@ bool isWithinIntersection(
   const Polygon2d & polygon);
 
 /**
+ * @brief Determines if a polygon is within lanes designated for turning.
+ *
+ * Checks if a polygon overlaps with lanelets tagged for turning directions (excluding 'straight').
+ * It evaluates the lanelet's 'turn_direction' attribute and determines overlap with the lanelet's
+ * area.
+ *
+ * @param lanelet Lanelet representing the road segment whose turn direction is to be evaluated.
+ * @param polygon The polygon to be checked for its presence within turn direction lanes.
+ *
+ * @return bool True if the polygon is within a lane designated for turning, false if it is within a
+ *              straight lane or no turn direction is specified.
+ */
+bool isWithinTurnDirectionLanes(const lanelet::ConstLanelet & lanelet, const Polygon2d & polygon);
+
+/**
  * @brief Calculates the distance required during a lane change operation.
  *
  * Used for computing prepare or lane change length based on current and maximum velocity,
