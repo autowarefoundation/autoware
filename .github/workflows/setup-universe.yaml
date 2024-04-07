@@ -10,6 +10,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run setup script
         run: |
           ./setup-dev-env.sh -y -v universe
