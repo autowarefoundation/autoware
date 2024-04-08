@@ -313,6 +313,10 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
     p.use_shorten_margin_immediately =
       getOrDeclareParameter<bool>(*node, ns + "use_shorten_margin_immediately");
 
+    if (p.policy_approval != "per_shift_line" && p.policy_approval != "per_avoidance_maneuver") {
+      throw std::domain_error("invalid policy. please select 'best_effort' or 'reliable'.");
+    }
+
     if (p.policy_deceleration != "best_effort" && p.policy_deceleration != "reliable") {
       throw std::domain_error("invalid policy. please select 'best_effort' or 'reliable'.");
     }

@@ -92,6 +92,76 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
   }
 
   {
+    const auto set_target_flag = [&](const uint8_t & object_type, const std::string & ns) {
+      if (p->object_parameters.count(object_type) == 0) {
+        return;
+      }
+      updateParam<bool>(parameters, ns, p->object_parameters.at(object_type).is_avoidance_target);
+    };
+
+    const std::string ns = "avoidance.target_filtering.";
+    set_target_flag(ObjectClassification::CAR, ns + "target_type.car");
+    set_target_flag(ObjectClassification::TRUCK, ns + "target_type.truck");
+    set_target_flag(ObjectClassification::TRAILER, ns + "target_type.trailer");
+    set_target_flag(ObjectClassification::BUS, ns + "target_type.bus");
+    set_target_flag(ObjectClassification::PEDESTRIAN, ns + "target_type.pedestrian");
+    set_target_flag(ObjectClassification::BICYCLE, ns + "target_type.bicycle");
+    set_target_flag(ObjectClassification::MOTORCYCLE, ns + "target_type.motorcycle");
+    set_target_flag(ObjectClassification::UNKNOWN, ns + "target_type.unknown");
+
+    updateParam<double>(
+      parameters, ns + "object_check_goal_distance", p->object_check_goal_distance);
+    updateParam<double>(
+      parameters, ns + "object_check_return_pose_distance", p->object_check_return_pose_distance);
+    updateParam<double>(
+      parameters, ns + "threshold_distance_object_is_on_center",
+      p->threshold_distance_object_is_on_center);
+    updateParam<double>(
+      parameters, ns + "object_check_shiftable_ratio", p->object_check_shiftable_ratio);
+    updateParam<double>(
+      parameters, ns + "object_check_min_road_shoulder_width",
+      p->object_check_min_road_shoulder_width);
+    updateParam<double>(
+      parameters, ns + "object_last_seen_threshold", p->object_last_seen_threshold);
+  }
+
+  {
+    const std::string ns = "avoidance.target_filtering.detection_area.";
+    updateParam<bool>(parameters, ns + "static", p->use_static_detection_area);
+    updateParam<double>(
+      parameters, ns + "min_forward_distance", p->object_check_min_forward_distance);
+    updateParam<double>(
+      parameters, ns + "max_forward_distance", p->object_check_max_forward_distance);
+    updateParam<double>(parameters, ns + "backward_distance", p->object_check_backward_distance);
+  }
+
+  {
+    const std::string ns = "avoidance.avoidance.lateral.avoidance_for_ambiguous_vehicle.";
+    updateParam<bool>(parameters, ns + "enable", p->enable_avoidance_for_ambiguous_vehicle);
+    updateParam<double>(
+      parameters, ns + "closest_distance_to_wait_and_see",
+      p->closest_distance_to_wait_and_see_for_ambiguous_vehicle);
+    updateParam<double>(
+      parameters, ns + "condition.time_threshold", p->time_threshold_for_ambiguous_vehicle);
+    updateParam<double>(
+      parameters, ns + "condition.distance_threshold", p->distance_threshold_for_ambiguous_vehicle);
+    updateParam<double>(
+      parameters, ns + "ignore_area.traffic_light.front_distance",
+      p->object_ignore_section_traffic_light_in_front_distance);
+    updateParam<double>(
+      parameters, ns + "ignore_area.crosswalk.front_distance",
+      p->object_ignore_section_crosswalk_in_front_distance);
+    updateParam<double>(
+      parameters, ns + "ignore_area.crosswalk.behind_distance",
+      p->object_ignore_section_crosswalk_behind_distance);
+  }
+
+  {
+    const std::string ns = "avoidance.target_filtering.intersection.";
+    updateParam<double>(parameters, ns + "yaw_deviation", p->object_check_yaw_deviation);
+  }
+
+  {
     const std::string ns = "avoidance.avoidance.lateral.";
     updateParam<double>(
       parameters, ns + "lateral_execution_threshold", p->lateral_execution_threshold);
@@ -107,6 +177,7 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
     const std::string ns = "avoidance.avoidance.longitudinal.";
     updateParam<double>(parameters, ns + "min_prepare_time", p->min_prepare_time);
     updateParam<double>(parameters, ns + "max_prepare_time", p->max_prepare_time);
+    updateParam<double>(parameters, ns + "min_prepare_distance", p->min_prepare_distance);
     updateParam<double>(parameters, ns + "min_slow_down_speed", p->min_slow_down_speed);
     updateParam<double>(parameters, ns + "buf_slow_down_speed", p->buf_slow_down_speed);
   }
@@ -115,6 +186,33 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
     const std::string ns = "avoidance.stop.";
     updateParam<double>(parameters, ns + "max_distance", p->stop_max_distance);
     updateParam<double>(parameters, ns + "stop_buffer", p->stop_buffer);
+  }
+
+  {
+    const std::string ns = "avoidance.policy.";
+    updateParam<std::string>(parameters, ns + "make_approval_request", p->policy_approval);
+    updateParam<std::string>(parameters, ns + "deceleration", p->policy_deceleration);
+    updateParam<std::string>(parameters, ns + "lateral_margin", p->policy_lateral_margin);
+    updateParam<bool>(
+      parameters, ns + "use_shorten_margin_immediately", p->use_shorten_margin_immediately);
+
+    if (p->policy_approval != "per_shift_line" && p->policy_approval != "per_avoidance_maneuver") {
+      RCLCPP_ERROR(
+        rclcpp::get_logger(__func__),
+        "invalid policy. please select 'per_shift_line' or 'per_avoidance_maneuver'.");
+    }
+
+    if (p->policy_deceleration != "best_effort" && p->policy_deceleration != "reliable") {
+      RCLCPP_ERROR(
+        rclcpp::get_logger(__func__),
+        "invalid deceleration policy. Please select 'best_effort' or 'reliable'.");
+    }
+
+    if (p->policy_lateral_margin != "best_effort" && p->policy_lateral_margin != "reliable") {
+      RCLCPP_ERROR(
+        rclcpp::get_logger(__func__),
+        "invalid lateral margin policy. Please select 'best_effort' or 'reliable'.");
+    }
   }
 
   {
