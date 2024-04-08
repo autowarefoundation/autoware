@@ -190,6 +190,10 @@ void MultiObjectTracker::onMeasurement(
     if (tracker) list_tracker_.push_back(tracker);
   }
 
+  // debugger time
+  debugger_->endMeasurementTime(this->now());
+
+  // Publish objects if the timer is not enabled
   if (publish_timer_ == nullptr) {
     publish(measurement_time);
   }
@@ -337,6 +341,7 @@ inline bool MultiObjectTracker::shouldTrackerPublish(
 
 void MultiObjectTracker::publish(const rclcpp::Time & time) const
 {
+  debugger_->startPublishTime(this->now());
   const auto subscriber_count = tracked_objects_pub_->get_subscription_count() +
                                 tracked_objects_pub_->get_intra_process_subscription_count();
   if (subscriber_count < 1) {

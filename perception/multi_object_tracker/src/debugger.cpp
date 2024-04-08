@@ -108,16 +108,35 @@ void TrackerDebugger::startMeasurementTime(
     processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
       "debug/input_latency_ms", input_latency_ms);
   }
+  // initialize debug time stamps
+  if (!is_initialized_) {
+    stamp_publish_output_ = now;
+    is_initialized_ = true;
+  }
+}
+
+void TrackerDebugger::endMeasurementTime(const rclcpp::Time & now)
+{
+  stamp_process_end_ = now;
+}
+
+void TrackerDebugger::startPublishTime(const rclcpp::Time & now)
+{
+  stamp_publish_start_ = now;
 }
 
 void TrackerDebugger::endPublishTime(const rclcpp::Time & now, const rclcpp::Time & object_time)
 {
   const auto current_time = now;
-  // pipeline latency: time from sensor measurement to publish
+  // pipeline latency: time from sensor measurement to publish, used for 'checkDelay'
   pipeline_latency_ms_ = (current_time - last_input_stamp_).seconds() * 1e3;
-  if (debug_settings_.publish_processing_time) {
-    // processing time: time between input and publish
-    double processing_time_ms = (current_time - stamp_process_start_).seconds() * 1e3;
+  if (debug_settings_.publish_processing_time && is_initialized_) {
+    // processing latency: time between input and publish
+    double processing_latency_ms = ((current_time - stamp_process_start_).seconds()) * 1e3;
+    // processing time: only the time spent in the tracking processes
+    double processing_time_ms = ((current_time - stamp_publish_start_).seconds() +
+                                 (stamp_process_end_ - stamp_process_start_).seconds()) *
+                                1e3;
     // cycle time: time between two consecutive publish
     double cyclic_time_ms = (current_time - stamp_publish_output_).seconds() * 1e3;
     // measurement to tracked-object time: time from the sensor measurement to the publishing object
@@ -131,6 +150,8 @@ void TrackerDebugger::endPublishTime(const rclcpp::Time & now, const rclcpp::Tim
       "debug/cyclic_time_ms", cyclic_time_ms);
     processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
       "debug/processing_time_ms", processing_time_ms);
+    processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+      "debug/processing_latency_ms", processing_latency_ms);
     processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
       "debug/meas_to_tracked_object_ms", measurement_to_object_ms);
   }
