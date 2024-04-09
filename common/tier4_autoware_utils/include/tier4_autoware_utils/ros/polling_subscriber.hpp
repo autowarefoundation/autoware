@@ -38,7 +38,8 @@ public:
     noexec_subscription_options.callback_group = noexec_callback_group;
 
     subscriber_ = node->create_subscription<T>(
-      topic_name, rclcpp::QoS{1}, [node](const typename T::ConstSharedPtr msg) { assert(false); },
+      topic_name, rclcpp::QoS{1},
+      [node]([[maybe_unused]] const typename T::ConstSharedPtr msg) { assert(false); },
       noexec_subscription_options);
   };
   bool updateLatestData()
