@@ -5,6 +5,14 @@
     state: latest
     update_cache: true
 
+- name: Add PATH to .bashrc
+  ansible.builtin.lineinfile:
+    dest: ~/.bashrc
+    line: export PATH="/usr/lib/ccache/:$PATH"
+    state: present
+    create: true
+    mode: 0644
+
 - name: Add CCACHE_DIR to .bashrc
   ansible.builtin.lineinfile:
     dest: ~/.bashrc
