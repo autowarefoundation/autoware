@@ -334,6 +334,8 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
     p.max_deceleration = getOrDeclareParameter<double>(*node, ns + "max_deceleration");
     p.max_jerk = getOrDeclareParameter<double>(*node, ns + "max_jerk");
     p.max_acceleration = getOrDeclareParameter<double>(*node, ns + "max_acceleration");
+    p.min_velocity_to_limit_max_acceleration =
+      getOrDeclareParameter<double>(*node, ns + "min_velocity_to_limit_max_acceleration");
   }
 
   // constraints (lateral)

@@ -245,6 +245,19 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
   }
 
   {
+    const std::string ns = "avoidance.constraints.longitudinal.";
+
+    updateParam<double>(parameters, ns + "nominal_deceleration", p->nominal_deceleration);
+    updateParam<double>(parameters, ns + "nominal_jerk", p->nominal_jerk);
+    updateParam<double>(parameters, ns + "max_deceleration", p->max_deceleration);
+    updateParam<double>(parameters, ns + "max_jerk", p->max_jerk);
+    updateParam<double>(parameters, ns + "max_acceleration", p->max_acceleration);
+    updateParam<double>(
+      parameters, ns + "min_velocity_to_limit_max_acceleration",
+      p->min_velocity_to_limit_max_acceleration);
+  }
+
+  {
     const std::string ns = "avoidance.shift_line_pipeline.";
     updateParam<double>(
       parameters, ns + "trim.quantize_filter_threshold", p->quantize_filter_threshold);

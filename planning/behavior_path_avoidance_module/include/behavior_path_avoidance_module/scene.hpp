@@ -234,6 +234,12 @@ private:
   void insertPrepareVelocity(ShiftedPath & shifted_path) const;
 
   /**
+   * @brief insert max velocity in output path to limit acceleration.
+   * @param target path.
+   */
+  void insertAvoidanceVelocity(ShiftedPath & shifted_path) const;
+
+  /**
    * @brief calculate stop distance based on object's overhang.
    * @param stop distance.
    */

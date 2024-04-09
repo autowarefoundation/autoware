@@ -686,6 +686,7 @@ void AvoidanceModule::updateEgoBehavior(const AvoidancePlanningData & data, Shif
   }
 
   insertPrepareVelocity(path);
+  insertAvoidanceVelocity(path);
 
   switch (data.state) {
     case AvoidanceState::NOT_AVOID: {
@@ -1723,6 +1724,52 @@ void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
 
   slow_pose_ = motion_utils::calcLongitudinalOffsetPose(
     shifted_path.path.points, start_idx, distance_to_object);
+}
+
+void AvoidanceModule::insertAvoidanceVelocity(ShiftedPath & shifted_path) const
+{
+  const auto & data = avoid_data_;
+
+  // do nothing if no shift line is approved.
+  if (path_shifter_.getShiftLines().empty()) {
+    return;
+  }
+
+  // do nothing if there is no avoidance target.
+  if (data.target_objects.empty()) {
+    return;
+  }
+
+  const auto [distance_to_accel_end_point, v_max] =
+    helper_->getDistanceToAccelEndPoint(shifted_path.path);
+  if (distance_to_accel_end_point < 1e-3) {
+    return;
+  }
+
+  const auto start_idx = planner_data_->findEgoIndex(shifted_path.path.points);
+  for (size_t i = start_idx; i < shifted_path.path.points.size(); ++i) {
+    const auto distance_from_ego = calcSignedArcLength(shifted_path.path.points, start_idx, i);
+
+    // slow down speed is inserted only in front of the object.
+    const auto accel_distance = distance_to_accel_end_point - distance_from_ego;
+    if (accel_distance < 0.0) {
+      break;
+    }
+
+    const double v_target_square =
+      v_max * v_max - 2.0 * parameters_->max_acceleration * accel_distance;
+    if (v_target_square < 1e-3) {
+      break;
+    }
+
+    // target speed with nominal jerk limits.
+    const double v_target = std::max(getEgoSpeed(), std::sqrt(v_target_square));
+    const double v_original = shifted_path.path.points.at(i).point.longitudinal_velocity_mps;
+    shifted_path.path.points.at(i).point.longitudinal_velocity_mps = std::min(v_original, v_target);
+  }
+
+  slow_pose_ = motion_utils::calcLongitudinalOffsetPose(
+    shifted_path.path.points, start_idx, distance_to_accel_end_point);
 }
 
 std::shared_ptr<AvoidanceDebugMsgArray> AvoidanceModule::get_debug_msg_array() const

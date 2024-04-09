@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace behavior_path_planner::helper::avoidance
@@ -32,7 +33,10 @@ namespace behavior_path_planner::helper::avoidance
 using behavior_path_planner::PathShifter;
 using behavior_path_planner::PlannerData;
 using motion_utils::calcDecelDistWithJerkAndAccConstraints;
+using motion_utils::calcLongitudinalOffsetPose;
+using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestIndex;
+using tier4_autoware_utils::getPose;
 
 class AvoidanceHelper
 {
@@ -60,6 +64,11 @@ public:
   double getEgoSpeed() const { return std::abs(data_->self_odometry->twist.twist.linear.x); }
 
   geometry_msgs::msg::Pose getEgoPose() const { return data_->self_odometry->pose.pose; }
+
+  geometry_msgs::msg::Point getEgoPosition() const
+  {
+    return data_->self_odometry->pose.pose.position;
+  }
 
   static size_t getConstraintsMapIndex(const double velocity, const std::vector<double> & values)
   {
@@ -262,6 +271,20 @@ public:
     return *itr;
   }
 
+  std::pair<double, double> getDistanceToAccelEndPoint(const PathWithLaneId & path)
+  {
+    updateAccelEndPoint(path);
+
+    if (!max_v_point_.has_value()) {
+      return std::make_pair(0.0, std::numeric_limits<double>::max());
+    }
+
+    const auto start_idx = data_->findEgoIndex(path.points);
+    const auto distance =
+      calcSignedArcLength(path.points, start_idx, max_v_point_.value().first.position);
+    return std::make_pair(distance, max_v_point_.value().second);
+  }
+
   double getFeasibleDecelDistance(
     const double target_velocity, const bool use_hard_constraints = true) const
   {
@@ -367,6 +390,56 @@ public:
     return true;
   }
 
+  void updateAccelEndPoint(const PathWithLaneId & path)
+  {
+    const auto & p = parameters_;
+    const auto & a_now = data_->self_acceleration->accel.accel.linear.x;
+    if (a_now < 0.0) {
+      max_v_point_ = std::nullopt;
+      return;
+    }
+
+    if (getEgoSpeed() < p->min_velocity_to_limit_max_acceleration) {
+      max_v_point_ = std::nullopt;
+      return;
+    }
+
+    if (max_v_point_.has_value()) {
+      return;
+    }
+
+    const auto v0 = getEgoSpeed() + p->buf_slow_down_speed;
+
+    const auto t_neg_jerk = std::max(0.0, a_now - p->max_acceleration) / p->max_jerk;
+    const auto v_neg_jerk = v0 + a_now * t_neg_jerk + std::pow(t_neg_jerk, 2.0) / 2.0;
+    const auto x_neg_jerk = v0 * t_neg_jerk + a_now * std::pow(t_neg_jerk, 2.0) / 2.0 +
+                            p->max_jerk * std::pow(t_neg_jerk, 3.0) / 6.0;
+
+    const auto & v_max = data_->parameters.max_vel;
+    if (v_max < v_neg_jerk) {
+      max_v_point_ = std::nullopt;
+      return;
+    }
+
+    const auto t_max_accel = (v_max - v_neg_jerk) / p->max_acceleration;
+    const auto x_max_accel =
+      v_neg_jerk * t_max_accel + p->max_acceleration * std::pow(t_max_accel, 2.0) / 2.0;
+
+    const auto point =
+      calcLongitudinalOffsetPose(path.points, getEgoPosition(), x_neg_jerk + x_max_accel);
+    if (point.has_value()) {
+      max_v_point_ = std::make_pair(point.value(), v_max);
+      return;
+    }
+
+    const auto x_end = calcSignedArcLength(path.points, getEgoPosition(), path.points.size() - 1);
+    const auto t_end =
+      (std::sqrt(v0 * v0 + 2.0 * p->max_acceleration * x_end) - v0) / p->max_acceleration;
+    const auto v_end = v0 + p->max_acceleration * t_end;
+
+    max_v_point_ = std::make_pair(getPose(path.points.back()), v_end);
+  }
+
   void reset()
   {
     prev_reference_path_ = PathWithLaneId();
@@ -417,6 +490,8 @@ private:
   ShiftedPath prev_linear_shift_path_;
 
   lanelet::ConstLanelets prev_driving_lanes_;
+
+  std::optional<std::pair<Pose, double>> max_v_point_;
 };
 }  // namespace behavior_path_planner::helper::avoidance
 

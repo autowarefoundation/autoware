@@ -287,7 +287,8 @@
           nominal_jerk: 0.5                             # [m/sss]
           max_deceleration: -1.5                        # [m/ss]
           max_jerk: 1.0                                 # [m/sss]
-          max_acceleration: 1.0                         # [m/ss]
+          max_acceleration: 0.5                         # [m/ss]
+          min_velocity_to_limit_max_acceleration: 2.78  # [m/ss]
 
       shift_line_pipeline:
         trim:

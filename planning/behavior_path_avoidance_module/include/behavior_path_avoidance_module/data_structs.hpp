@@ -143,6 +143,9 @@ struct AvoidanceParameters
   // To prevent large acceleration while avoidance.
   double max_acceleration{0.0};
 
+  // To prevent large acceleration while avoidance.
+  double min_velocity_to_limit_max_acceleration{0.0};
+
   // upper distance for envelope polygon expansion.
   double upper_distance_for_polygon_expansion{0.0};
 
