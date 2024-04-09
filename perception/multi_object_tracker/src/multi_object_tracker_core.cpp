@@ -68,6 +68,7 @@ boost::optional<geometry_msgs::msg::Transform> getTransformAnonymous(
 
 MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("multi_object_tracker", node_options),
+  last_published_time_(this->now()),
   tf_buffer_(this->get_clock()),
   tf_listener_(tf_buffer_)
 {
@@ -83,7 +84,7 @@ MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
     create_publisher<autoware_auto_perception_msgs::msg::TrackedObjects>("output", rclcpp::QoS{1});
 
   // Parameters
-  double publish_rate = declare_parameter<double>("publish_rate");
+  double publish_rate = declare_parameter<double>("publish_rate");  // [hz]
   world_frame_id_ = declare_parameter<std::string>("world_frame_id");
   bool enable_delay_compensation{declare_parameter<bool>("enable_delay_compensation")};
 
@@ -94,11 +95,15 @@ MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
     this->get_node_base_interface(), this->get_node_timers_interface());
   tf_buffer_.setCreateTimerInterface(cti);
 
-  // Create ROS time based timer
+  // Create ROS time based timer.
+  // If the delay compensation is enabled, the timer is used to publish the output at the correct
+  // time.
   if (enable_delay_compensation) {
-    const auto period_ns = rclcpp::Rate(publish_rate).period();
+    publisher_period_ = 1.0 / publish_rate;    // [s]
+    constexpr double timer_multiplier = 20.0;  // 20 times frequent for publish timing check
+    const auto timer_period = rclcpp::Rate(publish_rate * timer_multiplier).period();
     publish_timer_ = rclcpp::create_timer(
-      this, get_clock(), period_ns, std::bind(&MultiObjectTracker::onTimer, this));
+      this, get_clock(), timer_period, std::bind(&MultiObjectTracker::onTimer, this));
   }
 
   const auto tmp = this->declare_parameter<std::vector<int64_t>>("can_assign_matrix");
@@ -179,7 +184,7 @@ void MultiObjectTracker::onMeasurement(
   }
 
   /* life cycle check */
-  checkTrackerLifeCycle(list_tracker_, measurement_time, *self_transform);
+  checkTrackerLifeCycle(list_tracker_, measurement_time);
   /* sanitize trackers */
   sanitizeTracker(list_tracker_, measurement_time);
 
@@ -198,7 +203,14 @@ void MultiObjectTracker::onMeasurement(
 
   // Publish objects if the timer is not enabled
   if (publish_timer_ == nullptr) {
+    // Publish if the delay compensation is disabled
     publish(measurement_time);
+  } else {
+    // Publish if the next publish time is close
+    const double minimum_publish_interval = publisher_period_ * 0.70;  // 70% of the period
+    if ((this->now() - last_published_time_).seconds() > minimum_publish_interval) {
+      checkAndPublish(this->now());
+    }
   }
 }
 
@@ -232,24 +244,32 @@ std::shared_ptr<Tracker> MultiObjectTracker::createNewTracker(
 void MultiObjectTracker::onTimer()
 {
   const rclcpp::Time current_time = this->now();
-  const auto self_transform =
-    getTransformAnonymous(tf_buffer_, world_frame_id_, "base_link", current_time);
-  if (!self_transform) {
-    return;
+  // check the publish period
+  const auto elapsed_time = (current_time - last_published_time_).seconds();
+  // if the elapsed time is over the period, publish objects with prediction
+  constexpr double maximum_latency_ratio = 1.11;  // 11% margin
+  const double maximum_publish_latency = publisher_period_ * maximum_latency_ratio;
+  if (elapsed_time > maximum_publish_latency) {
+    checkAndPublish(current_time);
   }
+}
 
+void MultiObjectTracker::checkAndPublish(const rclcpp::Time & time)
+{
   /* life cycle check */
-  checkTrackerLifeCycle(list_tracker_, current_time, *self_transform);
+  checkTrackerLifeCycle(list_tracker_, time);
   /* sanitize trackers */
-  sanitizeTracker(list_tracker_, current_time);
+  sanitizeTracker(list_tracker_, time);
 
   // Publish
-  publish(current_time);
+  publish(time);
+
+  // Update last published time
+  last_published_time_ = this->now();
 }
 
 void MultiObjectTracker::checkTrackerLifeCycle(
-  std::list<std::shared_ptr<Tracker>> & list_tracker, const rclcpp::Time & time,
-  [[maybe_unused]] const geometry_msgs::msg::Transform & self_transform)
+  std::list<std::shared_ptr<Tracker>> & list_tracker, const rclcpp::Time & time)
 {
   /* params */
   constexpr float max_elapsed_time = 1.0;
