@@ -85,10 +85,6 @@ lanelet::ConstLanelets getAdjacentLane(
   const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters, const bool is_right_shift);
 
-lanelet::ConstLanelets getTargetLanelets(
-  const std::shared_ptr<const PlannerData> & planner_data, lanelet::ConstLanelets & route_lanelets,
-  const double left_offset, const double right_offset);
-
 lanelet::ConstLanelets getCurrentLanesFromPath(
   const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data);
 

@@ -575,9 +575,11 @@ bool isNeverAvoidanceTarget(
   }
 
   if (object.is_on_ego_lane) {
-    if (
-      planner_data->route_handler->getRightLanelet(object.overhang_lanelet).has_value() &&
-      planner_data->route_handler->getLeftLanelet(object.overhang_lanelet).has_value()) {
+    const auto right_lane =
+      planner_data->route_handler->getRightLanelet(object.overhang_lanelet, true, false);
+    const auto left_lane =
+      planner_data->route_handler->getLeftLanelet(object.overhang_lanelet, true, false);
+    if (right_lane.has_value() && left_lane.has_value()) {
       object.reason = AvoidanceDebugFactor::NOT_PARKING_OBJECT;
       RCLCPP_DEBUG(rclcpp::get_logger(__func__), "object isn't on the edge lane. never avoid it.");
       return true;
@@ -1217,43 +1219,6 @@ std::vector<DrivableAreaInfo::Obstacle> generateObstaclePolygonsForDrivableArea(
       {object.object.kinematics.initial_pose_with_covariance.pose, obj_poly, !isOnRight(object)});
   }
   return obstacles_for_drivable_area;
-}
-
-lanelet::ConstLanelets getTargetLanelets(
-  const std::shared_ptr<const PlannerData> & planner_data, lanelet::ConstLanelets & route_lanelets,
-  const double left_offset, const double right_offset)
-{
-  const auto & rh = planner_data->route_handler;
-
-  lanelet::ConstLanelets target_lanelets{};
-  for (const auto & lane : route_lanelets) {
-    auto l_offset = 0.0;
-    auto r_offset = 0.0;
-
-    const auto opt_left_lane = rh->getLeftLanelet(lane);
-    if (opt_left_lane) {
-      target_lanelets.push_back(opt_left_lane.value());
-    } else {
-      l_offset = left_offset;
-    }
-
-    const auto opt_right_lane = rh->getRightLanelet(lane);
-    if (opt_right_lane) {
-      target_lanelets.push_back(opt_right_lane.value());
-    } else {
-      r_offset = right_offset;
-    }
-
-    const auto right_opposite_lanes = rh->getRightOppositeLanelets(lane);
-    if (!right_opposite_lanes.empty()) {
-      target_lanelets.push_back(right_opposite_lanes.front());
-    }
-
-    const auto expand_lane = lanelet::utils::getExpandedLanelet(lane, l_offset, r_offset);
-    target_lanelets.push_back(expand_lane);
-  }
-
-  return target_lanelets;
 }
 
 lanelet::ConstLanelets getCurrentLanesFromPath(

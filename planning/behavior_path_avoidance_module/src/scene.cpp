@@ -318,7 +318,6 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
   using utils::avoidance::fillAvoidanceNecessity;
   using utils::avoidance::fillObjectStoppableJudge;
   using utils::avoidance::filterTargetObjects;
-  using utils::avoidance::getTargetLanelets;
   using utils::avoidance::separateObjectsByPath;
   using utils::avoidance::updateRoadShoulderDistance;
   using utils::traffic_light::calcDistanceToRedTrafficLight;
