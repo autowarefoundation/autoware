@@ -26,6 +26,8 @@
 #include <boost/geometry/algorithms/union.hpp>
 #include <boost/geometry/strategies/strategies.hpp>
 
+#include <limits>
+
 namespace behavior_path_planner::utils::path_safety_checker
 {
 
@@ -560,7 +562,7 @@ bool checkCollision(
 {
   const auto collided_polygons = getCollidedPolygons(
     planned_path, predicted_ego_path, target_object, target_object_path, common_parameters,
-    rss_parameters, hysteresis_factor, debug);
+    rss_parameters, hysteresis_factor, std::numeric_limits<double>::max(), debug);
   return collided_polygons.empty();
 }
 
@@ -570,7 +572,7 @@ std::vector<Polygon2d> getCollidedPolygons(
   const ExtendedPredictedObject & target_object,
   const PredictedPathWithPolygon & target_object_path,
   const BehaviorPathPlannerParameters & common_parameters, const RSSparams & rss_parameters,
-  double hysteresis_factor, CollisionCheckDebug & debug)
+  double hysteresis_factor, const double max_velocity_limit, CollisionCheckDebug & debug)
 {
   {
     debug.ego_predicted_path = predicted_ego_path;
@@ -586,7 +588,7 @@ std::vector<Polygon2d> getCollidedPolygons(
     // get object information at current time
     const auto & obj_pose = obj_pose_with_poly.pose;
     const auto & obj_polygon = obj_pose_with_poly.poly;
-    const auto & object_velocity = obj_pose_with_poly.velocity;
+    const auto object_velocity = obj_pose_with_poly.velocity;
 
     // get ego information at current time
     // Note: we can create these polygons in advance. However, it can decrease the readability and
@@ -599,7 +601,7 @@ std::vector<Polygon2d> getCollidedPolygons(
     }
     const auto & ego_pose = interpolated_data->pose;
     const auto & ego_polygon = interpolated_data->poly;
-    const auto & ego_velocity = interpolated_data->velocity;
+    const auto ego_velocity = std::min(interpolated_data->velocity, max_velocity_limit);
 
     // check overlap
     if (boost::geometry::overlaps(ego_polygon, obj_polygon)) {

@@ -172,6 +172,8 @@ protected:
   bool isVehicleStuck(
     const lanelet::ConstLanelets & current_lanes, const double obstacle_check_distance) const;
 
+  double get_max_velocity_for_safety_check() const;
+
   bool isVehicleStuck(const lanelet::ConstLanelets & current_lanes) const;
 
   bool check_prepare_phase() const;

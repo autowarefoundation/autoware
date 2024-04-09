@@ -38,6 +38,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <tier4_planning_msgs/msg/detail/velocity_limit__struct.hpp>
 #include <tier4_planning_msgs/msg/lateral_offset.hpp>
 
 #include <limits>
@@ -65,6 +66,7 @@ using route_handler::RouteHandler;
 using tier4_planning_msgs::msg::LateralOffset;
 using PlanResult = PathWithLaneId::SharedPtr;
 using lanelet::TrafficLight;
+using tier4_planning_msgs::msg::VelocityLimit;
 using unique_identifier_msgs::msg::UUID;
 
 struct TrafficSignalStamped
@@ -161,6 +163,7 @@ struct PlannerData
   std::map<int64_t, TrafficSignalStamped> traffic_light_id_map;
   BehaviorPathPlannerParameters parameters{};
   drivable_area_expansion::DrivableAreaExpansionParameters drivable_area_expansion_parameters{};
+  VelocityLimit::ConstSharedPtr external_limit_max_velocity{};
 
   mutable std::vector<geometry_msgs::msg::Pose> drivable_area_expansion_prev_path_poses{};
   mutable std::vector<double> drivable_area_expansion_prev_curvatures{};

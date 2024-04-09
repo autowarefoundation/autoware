@@ -1967,7 +1967,7 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
     for (const auto & obj_path : obj_predicted_paths) {
       const auto collided_polygons = utils::path_safety_checker::getCollidedPolygons(
         path, ego_predicted_path, obj, obj_path, common_parameters, rss_params, 1.0,
-        current_debug_data.second);
+        get_max_velocity_for_safety_check(), current_debug_data.second);
 
       if (collided_polygons.empty()) {
         utils::path_safety_checker::updateCollisionCheckDebugMap(
@@ -2060,6 +2060,17 @@ bool NormalLaneChange::isVehicleStuck(
     "No stationary objects found in obstacle_check_distance and Ego is not in "
     "terminal of current lanes");
   return false;
+}
+
+double NormalLaneChange::get_max_velocity_for_safety_check() const
+{
+  const auto external_velocity_limit_ptr = planner_data_->external_limit_max_velocity;
+  if (external_velocity_limit_ptr) {
+    return std::min(
+      static_cast<double>(external_velocity_limit_ptr->max_velocity), getCommonParam().max_vel);
+  }
+
+  return getCommonParam().max_vel;
 }
 
 bool NormalLaneChange::isVehicleStuck(const lanelet::ConstLanelets & current_lanes) const

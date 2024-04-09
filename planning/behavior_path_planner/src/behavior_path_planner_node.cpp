@@ -112,6 +112,11 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       current_scenario_ = std::make_shared<Scenario>(*msg);
     },
     createSubscriptionOptions(this));
+  external_limit_max_velocity_subscriber_ =
+    create_subscription<tier4_planning_msgs::msg::VelocityLimit>(
+      "/planning/scenario_planning/max_velocity", 1,
+      std::bind(&BehaviorPathPlannerNode::on_external_velocity_limiter, this, _1),
+      createSubscriptionOptions(this));
 
   // route_handler
   vector_map_subscriber_ = create_subscription<HADMapBin>(
@@ -820,6 +825,19 @@ void BehaviorPathPlannerNode::onOperationMode(const OperationModeState::ConstSha
 {
   const std::lock_guard<std::mutex> lock(mutex_pd_);
   planner_data_->operation_mode = msg;
+}
+
+void BehaviorPathPlannerNode::on_external_velocity_limiter(
+  const tier4_planning_msgs::msg::VelocityLimit::ConstSharedPtr msg)
+{
+  // Note: Using this parameter during path planning might cause unexpected deceleration or jerk.
+  // Therefore, do not use it for anything other than safety checks.
+  if (!msg) {
+    return;
+  }
+
+  const std::lock_guard<std::mutex> lock(mutex_pd_);
+  planner_data_->external_limit_max_velocity = msg;
 }
 void BehaviorPathPlannerNode::onLateralOffset(const LateralOffset::ConstSharedPtr msg)
 {
