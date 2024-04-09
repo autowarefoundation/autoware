@@ -641,7 +641,10 @@ void AvoidanceModule::fillDebugData(
   const auto constant_distance = helper_->getFrontConstantDistance(o_front);
   const auto & vehicle_width = planner_data_->parameters.vehicle_width;
 
-  const auto max_avoid_margin = object_parameter.lateral_hard_margin * o_front.distance_factor +
+  const auto lateral_hard_margin = o_front.is_parked
+                                     ? object_parameter.lateral_hard_margin_for_parked_vehicle
+                                     : object_parameter.lateral_hard_margin;
+  const auto max_avoid_margin = lateral_hard_margin * o_front.distance_factor +
                                 object_parameter.lateral_soft_margin + 0.5 * vehicle_width;
 
   const auto avoidance_distance = helper_->getSharpAvoidanceDistance(
@@ -1431,7 +1434,10 @@ double AvoidanceModule::calcDistanceToStopLine(const ObjectData & object) const
   const auto object_type = utils::getHighestProbLabel(object.object.classification);
   const auto object_parameter = parameters_->object_parameters.at(object_type);
 
-  const auto avoid_margin = object_parameter.lateral_hard_margin * object.distance_factor +
+  const auto lateral_hard_margin = object.is_parked
+                                     ? object_parameter.lateral_hard_margin_for_parked_vehicle
+                                     : object_parameter.lateral_hard_margin;
+  const auto avoid_margin = lateral_hard_margin * object.distance_factor +
                             object_parameter.lateral_soft_margin + 0.5 * vehicle_width;
   const auto avoidance_distance = helper_->getMinAvoidanceDistance(
     helper_->getShiftLength(object, utils::avoidance::isOnRight(object), avoid_margin));
@@ -1675,7 +1681,10 @@ void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
   const auto & vehicle_width = planner_data_->parameters.vehicle_width;
   const auto object_type = utils::getHighestProbLabel(object.value().object.classification);
   const auto object_parameter = parameters_->object_parameters.at(object_type);
-  const auto avoid_margin = object_parameter.lateral_hard_margin * object.value().distance_factor +
+  const auto lateral_hard_margin = object.value().is_parked
+                                     ? object_parameter.lateral_hard_margin_for_parked_vehicle
+                                     : object_parameter.lateral_hard_margin;
+  const auto avoid_margin = lateral_hard_margin * object.value().distance_factor +
                             object_parameter.lateral_soft_margin + 0.5 * vehicle_width;
   const auto shift_length = helper_->getShiftLength(
     object.value(), utils::avoidance::isOnRight(object.value()), avoid_margin);
