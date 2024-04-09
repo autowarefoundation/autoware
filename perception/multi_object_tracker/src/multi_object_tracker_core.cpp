@@ -135,10 +135,14 @@ MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
 void MultiObjectTracker::onMeasurement(
   const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_objects_msg)
 {
+  // Get the time of the measurement
+  const rclcpp::Time measurement_time =
+    rclcpp::Time(input_objects_msg->header.stamp, this->now().get_clock_type());
+
   /* keep the latest input stamp and check transform*/
-  debugger_->startMeasurementTime(this->now(), rclcpp::Time(input_objects_msg->header.stamp));
-  const auto self_transform = getTransformAnonymous(
-    tf_buffer_, "base_link", world_frame_id_, input_objects_msg->header.stamp);
+  debugger_->startMeasurementTime(this->now(), measurement_time);
+  const auto self_transform =
+    getTransformAnonymous(tf_buffer_, "base_link", world_frame_id_, measurement_time);
   if (!self_transform) {
     return;
   }
@@ -150,7 +154,6 @@ void MultiObjectTracker::onMeasurement(
     return;
   }
   /* tracker prediction */
-  const rclcpp::Time measurement_time = input_objects_msg->header.stamp;
   for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr) {
     (*itr)->predict(measurement_time);
   }

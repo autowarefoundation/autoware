@@ -18,12 +18,7 @@
 
 #include <memory>
 
-TrackerDebugger::TrackerDebugger(rclcpp::Node & node)
-: diagnostic_updater_(&node),
-  node_(node),
-  last_input_stamp_(node.now()),
-  stamp_process_start_(node.now()),
-  stamp_publish_output_(node.now())
+TrackerDebugger::TrackerDebugger(rclcpp::Node & node) : diagnostic_updater_(&node), node_(node)
 {
   // declare debug parameters to decide whether to publish debug topics
   loadParameters();
@@ -39,7 +34,15 @@ TrackerDebugger::TrackerDebugger(rclcpp::Node & node)
         "debug/tentative_objects", rclcpp::QoS{1});
   }
 
-  // initialize stop watch and diagnostics
+  // initialize timestamps
+  const rclcpp::Time now = node_.now();
+  last_input_stamp_ = now;
+  stamp_process_start_ = now;
+  stamp_process_end_ = now;
+  stamp_publish_start_ = now;
+  stamp_publish_output_ = now;
+
+  // setup diagnostics
   setupDiagnostics();
 }
 
@@ -73,7 +76,11 @@ void TrackerDebugger::loadParameters()
 
 void TrackerDebugger::checkDelay(diagnostic_updater::DiagnosticStatusWrapper & stat)
 {
-  const double delay = pipeline_latency_ms_;  // [s]
+  if (!is_initialized_) {
+    stat.summary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Measurement time is not set.");
+    return;
+  }
+  const double & delay = pipeline_latency_ms_;  // [s]
 
   if (delay == 0.0) {
     stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "Detection delay is not calculated.");
@@ -127,18 +134,21 @@ void TrackerDebugger::startPublishTime(const rclcpp::Time & now)
 
 void TrackerDebugger::endPublishTime(const rclcpp::Time & now, const rclcpp::Time & object_time)
 {
-  const auto current_time = now;
+  // if the measurement time is not set, do not publish debug information
+  if (!is_initialized_) return;
+
   // pipeline latency: time from sensor measurement to publish, used for 'checkDelay'
-  pipeline_latency_ms_ = (current_time - last_input_stamp_).seconds() * 1e3;
-  if (debug_settings_.publish_processing_time && is_initialized_) {
+  pipeline_latency_ms_ = (now - last_input_stamp_).seconds() * 1e3;
+
+  if (debug_settings_.publish_processing_time) {
     // processing latency: time between input and publish
-    double processing_latency_ms = ((current_time - stamp_process_start_).seconds()) * 1e3;
+    double processing_latency_ms = ((now - stamp_process_start_).seconds()) * 1e3;
     // processing time: only the time spent in the tracking processes
-    double processing_time_ms = ((current_time - stamp_publish_start_).seconds() +
+    double processing_time_ms = ((now - stamp_publish_start_).seconds() +
                                  (stamp_process_end_ - stamp_process_start_).seconds()) *
                                 1e3;
     // cycle time: time between two consecutive publish
-    double cyclic_time_ms = (current_time - stamp_publish_output_).seconds() * 1e3;
+    double cyclic_time_ms = (now - stamp_publish_output_).seconds() * 1e3;
     // measurement to tracked-object time: time from the sensor measurement to the publishing object
     // time If there is not latency compensation, this value is zero
     double measurement_to_object_ms = (object_time - last_input_stamp_).seconds() * 1e3;
@@ -155,5 +165,5 @@ void TrackerDebugger::endPublishTime(const rclcpp::Time & now, const rclcpp::Tim
     processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
       "debug/meas_to_tracked_object_ms", measurement_to_object_ms);
   }
-  stamp_publish_output_ = current_time;
+  stamp_publish_output_ = now;
 }
