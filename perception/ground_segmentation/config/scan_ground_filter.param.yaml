@@ -15,3 +15,4 @@
     center_pcl_shift: 0.0
     radial_divider_angle_deg: 1.0
     use_recheck_ground_cluster: true
+    use_lowest_point: true

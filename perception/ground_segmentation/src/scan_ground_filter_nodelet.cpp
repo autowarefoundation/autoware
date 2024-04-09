@@ -57,6 +57,7 @@ ScanGroundFilterComponent::ScanGroundFilterComponent(const rclcpp::NodeOptions &
     split_height_distance_ = declare_parameter<float>("split_height_distance");
     use_virtual_ground_point_ = declare_parameter<bool>("use_virtual_ground_point");
     use_recheck_ground_cluster_ = declare_parameter<bool>("use_recheck_ground_cluster");
+    use_lowest_point_ = declare_parameter<bool>("use_lowest_point");
     radial_dividers_num_ = std::ceil(2.0 * M_PI / radial_divider_angle_rad_);
     vehicle_info_ = VehicleInfoUtil(*this).getVehicleInfo();
 
@@ -316,14 +317,15 @@ void ScanGroundFilterComponent::checkBreakGndGrid(
 }
 
 void ScanGroundFilterComponent::recheckGroundCluster(
-  PointsCentroid & gnd_cluster, const float non_ground_threshold,
+  PointsCentroid & gnd_cluster, const float non_ground_threshold, const bool use_lowest_point,
   pcl::PointIndices & non_ground_indices)
 {
-  const float min_gnd_height = gnd_cluster.getMinHeight();
+  float reference_height =
+    use_lowest_point ? gnd_cluster.getMinHeight() : gnd_cluster.getAverageHeight();
   const pcl::PointIndices & gnd_indices = gnd_cluster.getIndicesRef();
   const std::vector<float> & height_list = gnd_cluster.getHeightListRef();
   for (size_t i = 0; i < height_list.size(); ++i) {
-    if (height_list.at(i) >= min_gnd_height + non_ground_threshold) {
+    if (height_list.at(i) >= reference_height + non_ground_threshold) {
       non_ground_indices.indices.push_back(gnd_indices.indices.at(i));
     }
   }
@@ -403,7 +405,8 @@ void ScanGroundFilterComponent::classifyPointCloudGridScan(
       if (p->grid_id > prev_p->grid_id && ground_cluster.getAverageRadius() > 0.0) {
         // check if the prev grid have ground point cloud
         if (use_recheck_ground_cluster_) {
-          recheckGroundCluster(ground_cluster, non_ground_height_threshold_, out_no_ground_indices);
+          recheckGroundCluster(
+            ground_cluster, non_ground_height_threshold_, use_lowest_point_, out_no_ground_indices);
         }
         curr_gnd_grid.radius = ground_cluster.getAverageRadius();
         curr_gnd_grid.avg_height = ground_cluster.getAverageHeight();

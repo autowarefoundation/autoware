@@ -194,6 +194,8 @@ private:
     split_height_distance_;  // useful for close points
   bool use_virtual_ground_point_;
   bool use_recheck_ground_cluster_;  // to enable recheck ground cluster
+  bool use_lowest_point_;  // to select lowest point for reference in recheck ground cluster,
+                           // otherwise select middle point
   size_t radial_dividers_num_;
   VehicleInfo vehicle_info_;
 
@@ -258,7 +260,7 @@ private:
    * @param non_ground_indices Output non-ground PointCloud indices
    */
   void recheckGroundCluster(
-    PointsCentroid & gnd_cluster, const float non_ground_threshold,
+    PointsCentroid & gnd_cluster, const float non_ground_threshold, const bool use_lowest_point,
     pcl::PointIndices & non_ground_indices);
   /*!
    * Returns the resulting complementary PointCloud, one with the points kept

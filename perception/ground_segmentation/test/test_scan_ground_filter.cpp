@@ -83,6 +83,7 @@ protected:
       rclcpp::Parameter("radial_divider_angle_deg", radial_divider_angle_deg_));
     parameters.emplace_back(
       rclcpp::Parameter("use_recheck_ground_cluster", use_recheck_ground_cluster_));
+    parameters.emplace_back(rclcpp::Parameter("use_lowest_point", use_lowest_point_));
 
     options.parameter_overrides(parameters);
 
@@ -157,6 +158,7 @@ public:
     center_pcl_shift_ = params["center_pcl_shift"].as<float>();
     radial_divider_angle_deg_ = params["radial_divider_angle_deg"].as<float>();
     use_recheck_ground_cluster_ = params["use_recheck_ground_cluster"].as<bool>();
+    use_lowest_point_ = params["use_lowest_point"].as<bool>();
   }
 
   float global_slope_max_angle_deg_ = 0.0;
@@ -174,6 +176,7 @@ public:
   float center_pcl_shift_;
   float radial_divider_angle_deg_;
   bool use_recheck_ground_cluster_;
+  bool use_lowest_point_;
 };
 
 TEST_F(ScanGroundFilterTest, TestCase1)
