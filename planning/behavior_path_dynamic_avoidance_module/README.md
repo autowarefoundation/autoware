@@ -4,15 +4,16 @@ This module is under development.
 
 ## Purpose / Role
 
-This module provides avoidance functions for vehicles, pedestrians, and obstacles in the vicinity of the ego's path in combination with the obstacle_avoidance module.
+This module provides avoidance functions for vehicles, pedestrians, and obstacles in the vicinity of the ego's path in combination with the [obstacle_avoidance_planner](https://autowarefoundation.github.io/autoware.universe/main/planning/obstacle_avoidance_planner/).
 Each module performs the following roles.
-Dynamic Avoidance module: This module cuts off the drivable area according to the position and velocity of the target to be avoided.
-Obstacle Avoidance module: This module modifies the path to be followed so that it fits within the drivable area received.
+Dynamic Avoidance module cuts off the drivable area according to the position and velocity of the target to be avoided.
+Obstacle Avoidance module modifies the path to be followed so that it fits within the received drivable area.
 
-Avoidance functions are also provided by the Avoidance module, which allows avoidance through the outside of own lanes but not against moving objects.
+Avoidance functions are also provided by the [Avoidance module](https://autowarefoundation.github.io/autoware.universe/main/planning/behavior_path_avoidance_module/), but these modules have different roles.
+The Avoidance module performs avoidance through the outside of own lanes but cannot avoid the moving objects.
 On the other hand, this module can avoid moving objects.
-For this reason, the word "dynamic" is used in its name.
-The table below lists the avoidance modules that can be used for each situation.
+For this reason, the word "dynamic" is used in the modules's name.
+The table below lists the avoidance modules that can handle each situation.
 
 |                          |                         avoid within the own lane                          | avoid through the outside of own lanes |
 | :----------------------- | :------------------------------------------------------------------------: | :------------------------------------: |
@@ -23,7 +24,6 @@ The table below lists the avoidance modules that can be used for each situation.
 
 Here, we describe the policy of inner algorithms.
 The inner algorithms can be separated into two parts: The first decide whether to avoid the obstacles and the second cuts off the drivable area against the corresponding obstacle.
-If you are interested in more details, please see the code itself.
 
 ### Select obstacles to avoid
 
@@ -31,11 +31,10 @@ To decide whether to avoid an object, both the predicted path and the state (pos
 The type of objects the user wants this module to avoid is also required.
 Using this information, the module decides to _avoid_ objects that _obstruct the ego's passage_ and _can be avoided_.
 
-The definition of _obstruct own passage_ is implemented as the object that collides within seconds.
-This process wastes computational cost by doing it for all objects; thus, filtering by the relative position and speed of the object with respect to the ego's path is also done as an auxiliary process.
-The other, _can be avoided_ denotes whether it can be avoided without risk to passengers or other vehicles.
-For this purpose, it is judged whether the obstacle can be avoided by satisfying the constraints of lateral acceleration and lateral jerk.
-For example, the module decides not to avoid an object that is too close or fast in the lateral direction because it cannot be avoided.
+The definition of _obstruct the ego's passage_ is implemented as the object that collides within seconds.
+The other, _can be avoided_ denotes whether it can be avoided without risk to the passengers or the other vehicles.
+For this purpose, the module judges whether the obstacle can be avoided with satisfying the constraints of lateral acceleration and lateral jerk.
+For example, the module decides not to avoid an object that is too close or fast in the lateral direction.
 
 ### Cuts off the drivable area against the selected obstacles
 
