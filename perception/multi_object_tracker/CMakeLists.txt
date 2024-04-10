@@ -47,12 +47,14 @@ ament_auto_add_library(multi_object_tracker_node SHARED
 
 target_link_libraries(multi_object_tracker_node
   Eigen3::Eigen
-  glog::glog
 )
 
-rclcpp_components_register_node(multi_object_tracker_node
-  PLUGIN "MultiObjectTracker"
-  EXECUTABLE multi_object_tracker
+ament_auto_add_executable(${PROJECT_NAME}
+  src/multi_object_tracker_node.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+  multi_object_tracker_node glog
 )
 
 ament_auto_package(INSTALL_TO_SHARE
