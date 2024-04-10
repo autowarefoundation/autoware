@@ -292,6 +292,17 @@ void AstarSearch::setPath(const AstarNode & goal_node)
   // From the goal node to the start node
   const AstarNode * node = &goal_node;
 
+  // push exact goal pose first
+  geometry_msgs::msg::PoseStamped pose;
+  pose.header = header;
+  pose.pose = local2global(costmap_, goal_pose_);
+
+  PlannerWaypoint pw;
+  pw.pose = pose;
+  pw.is_back = node->is_back;
+  waypoints_.waypoints.push_back(pw);
+
+  // push astar nodes poses
   while (node != nullptr) {
     geometry_msgs::msg::PoseStamped pose;
     pose.header = header;
