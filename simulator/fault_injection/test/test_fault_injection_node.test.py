@@ -167,11 +167,11 @@ class TestFaultInjectionLink(unittest.TestCase):
 
         # Verify the latest message
         for stat in msg_buffer[-1].status:
-            if stat.name == "fault_injection: CPU Load Average":
+            if stat.name == ": CPU Load Average":
                 self.assertEqual(stat.level, DiagnosticStatus.OK)
-            elif stat.name == "fault_injection: CPU Temperature":
+            elif stat.name == ": CPU Temperature":
                 self.assertEqual(stat.level, DiagnosticStatus.ERROR)
-            elif stat.name == "fault_injection: CPU Usage":
+            elif stat.name == ": CPU Usage":
                 self.assertEqual(stat.level, DiagnosticStatus.ERROR)
             else:
                 self.fail(f"Unexpected status name: {stat.name}")

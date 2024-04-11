@@ -27,7 +27,9 @@ launch_test test/test_fault_injection_node.test.py
 
 ### Output
 
-None.
+| Name           | Type                                    | Description       |
+| -------------- | --------------------------------------- | ----------------- |
+| `/diagnostics` | `diagnostic_msgs::msg::DiagnosticArray` | Dummy diagnostics |
 
 ## Parameters
 

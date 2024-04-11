@@ -16,8 +16,8 @@
 #define FAULT_INJECTION__FAULT_INJECTION_NODE_HPP_
 
 #include "fault_injection/diagnostic_storage.hpp"
+#include "fault_injection/fault_injection_diag_updater.hpp"
 
-#include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <tier4_simulation_msgs/msg/simulation_events.hpp>
@@ -36,23 +36,15 @@ public:
 
 private:
   // Subscribers
-  void onSimulationEvents(const SimulationEvents::ConstSharedPtr msg);
+  void on_simulation_events(const SimulationEvents::ConstSharedPtr msg);
   rclcpp::Subscription<SimulationEvents>::SharedPtr sub_simulation_events_;
 
-  // Parameter Server
-  rcl_interfaces::msg::SetParametersResult onSetParam(
-    const std::vector<rclcpp::Parameter> & params);
-  OnSetParametersCallbackHandle::SharedPtr set_param_res_;
-
-  void updateEventDiag(
+  void update_event_diag(
     diagnostic_updater::DiagnosticStatusWrapper & wrap, const std::string & event_name);
 
-  void addDiag(
-    const diagnostic_msgs::msg::DiagnosticStatus & status, diagnostic_updater::Updater & updater);
+  std::vector<DiagConfig> read_event_diag_list();
 
-  std::vector<DiagConfig> readEventDiagList();
-
-  diagnostic_updater::Updater updater_;
+  FaultInjectionDiagUpdater updater_;
 
   DiagnosticStorage diagnostic_storage_;
 };

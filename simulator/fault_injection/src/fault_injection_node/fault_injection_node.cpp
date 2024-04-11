@@ -43,30 +43,26 @@ using rosidl_generator_traits::to_yaml;
 
 FaultInjectionNode::FaultInjectionNode(rclcpp::NodeOptions node_options)
 : Node("fault_injection", node_options.automatically_declare_parameters_from_overrides(true)),
-  updater_(this)
+  updater_(this, 0.05)
 {
-  updater_.setHardwareID("fault_injection");
+  updater_.set_hardware_id("fault_injection");
 
   using std::placeholders::_1;
-
-  // Parameter Server
-  set_param_res_ =
-    this->add_on_set_parameters_callback(std::bind(&FaultInjectionNode::onSetParam, this, _1));
 
   // Subscriber
   sub_simulation_events_ = this->create_subscription<SimulationEvents>(
     "~/input/simulation_events", rclcpp::QoS{rclcpp::KeepLast(10)},
-    std::bind(&FaultInjectionNode::onSimulationEvents, this, _1));
+    std::bind(&FaultInjectionNode::on_simulation_events, this, _1));
 
   // Load all config
-  for (const auto & diag : readEventDiagList()) {
+  for (const auto & diag : read_event_diag_list()) {
     diagnostic_storage_.registerEvent(diag);
     updater_.add(
-      diag.diag_name, std::bind(&FaultInjectionNode::updateEventDiag, this, _1, diag.sim_name));
+      diag.diag_name, std::bind(&FaultInjectionNode::update_event_diag, this, _1, diag.sim_name));
   }
 }
 
-void FaultInjectionNode::onSimulationEvents(const SimulationEvents::ConstSharedPtr msg)
+void FaultInjectionNode::on_simulation_events(const SimulationEvents::ConstSharedPtr msg)
 {
   RCLCPP_DEBUG(this->get_logger(), "Received data: %s", to_yaml(*msg).c_str());
   for (const auto & event : msg->fault_injection_events) {
@@ -76,7 +72,7 @@ void FaultInjectionNode::onSimulationEvents(const SimulationEvents::ConstSharedP
   }
 }
 
-void FaultInjectionNode::updateEventDiag(
+void FaultInjectionNode::update_event_diag(
   diagnostic_updater::DiagnosticStatusWrapper & wrap, const std::string & event_name)
 {
   const auto diag = diagnostic_storage_.getDiag(event_name);
@@ -86,30 +82,7 @@ void FaultInjectionNode::updateEventDiag(
   wrap.hardware_id = diag.hardware_id;
 }
 
-rcl_interfaces::msg::SetParametersResult FaultInjectionNode::onSetParam(
-  const std::vector<rclcpp::Parameter> & params)
-{
-  rcl_interfaces::msg::SetParametersResult result;
-
-  RCLCPP_DEBUG(this->get_logger(), "call onSetParam");
-
-  try {
-    double value;
-    if (tier4_autoware_utils::updateParam(params, "diagnostic_updater.period", value)) {
-      updater_.setPeriod(value);
-    }
-  } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
-    result.successful = false;
-    result.reason = e.what();
-    return result;
-  }
-
-  result.successful = true;
-  result.reason = "success";
-  return result;
-}
-
-std::vector<DiagConfig> FaultInjectionNode::readEventDiagList()
+std::vector<DiagConfig> FaultInjectionNode::read_event_diag_list()
 {
   // Expected parameter name is "event_diag_list.param_name".
   // In this case, depth is 2.
