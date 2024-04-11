@@ -2286,4 +2286,11 @@ bool RouteHandler::findDrivableLanePath(
   return drivable_lane_path_found;
 }
 
+lanelet::ConstLanelets RouteHandler::getClosestLanelets(
+  const geometry_msgs::msg::Pose & target_pose) const
+{
+  lanelet::ConstLanelets target_lanelets;
+  lanelet::utils::query::getCurrentLanelets(road_lanelets_, target_pose, &target_lanelets);
+  return target_lanelets;
+}
 }  // namespace route_handler

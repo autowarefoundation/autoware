@@ -39,6 +39,7 @@ def generate_test_description():
             {"lanelet2_map_path": lanelet2_map_path},
             {"run_background": False},
             {"rviz": False},
+            {"centerline_source": "optimization_trajectory_base"},
             {"lanelet2_input_file_path": lanelet2_map_path},
             {"lanelet2_output_file_path": "/tmp/lanelet2_map.osm"},
             {"start_lanelet_id": 215},

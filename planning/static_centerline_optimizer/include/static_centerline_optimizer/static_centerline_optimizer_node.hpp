@@ -16,6 +16,7 @@
 #define STATIC_CENTERLINE_OPTIMIZER__STATIC_CENTERLINE_OPTIMIZER_NODE_HPP_
 
 #include "rclcpp/rclcpp.hpp"
+#include "static_centerline_optimizer/centerline_source/optimization_trajectory_based_centerline.hpp"
 #include "static_centerline_optimizer/srv/load_map.hpp"
 #include "static_centerline_optimizer/srv/plan_path.hpp"
 #include "static_centerline_optimizer/srv/plan_route.hpp"
@@ -25,6 +26,7 @@
 #include <geography_utils/lanelet2_projector.hpp>
 
 #include "std_msgs/msg/bool.hpp"
+#include "std_msgs/msg/float32.hpp"
 #include "std_msgs/msg/int32.hpp"
 
 #include <memory>
@@ -37,6 +39,12 @@ using static_centerline_optimizer::srv::LoadMap;
 using static_centerline_optimizer::srv::PlanPath;
 using static_centerline_optimizer::srv::PlanRoute;
 
+struct CenterlineWithRoute
+{
+  std::vector<TrajectoryPoint> centerline{};
+  std::vector<lanelet::Id> route_lane_ids{};
+};
+
 class StaticCenterlineOptimizerNode : public rclcpp::Node
 {
 public:
@@ -44,11 +52,6 @@ public:
   void run();
 
 private:
-  struct CenterlineWithRoute
-  {
-    std::vector<TrajectoryPoint> centerline{};
-    std::vector<lanelet::Id> route_lane_ids{};
-  };
   // load map
   void load_map(const std::string & lanelet2_input_file_path);
   void on_load_map(
@@ -60,13 +63,12 @@ private:
   void on_plan_route(
     const PlanRoute::Request::SharedPtr request, const PlanRoute::Response::SharedPtr response);
 
-  // plan path
+  // plan centerline
   CenterlineWithRoute generate_centerline_with_route();
-  std::vector<TrajectoryPoint> plan_path(const std::vector<lanelet::Id> & route_lane_ids);
-  std::vector<TrajectoryPoint> optimize_trajectory(const Path & raw_path) const;
   void on_plan_path(
     const PlanPath::Request::SharedPtr request, const PlanPath::Response::SharedPtr response);
 
+  void update_centerline_range(const int traj_start_index, const int traj_end_index);
   void evaluate(
     const std::vector<lanelet::Id> & route_lane_ids,
     const std::vector<TrajectoryPoint> & optimized_traj_points);
@@ -88,19 +90,19 @@ private:
     BagEgoTrajectoryBase,
   };
   CenterlineSource centerline_source_;
+  OptimizationTrajectoryBasedCenterline optimization_trajectory_based_centerline_;
 
   // publisher
   rclcpp::Publisher<HADMapBin>::SharedPtr pub_map_bin_{nullptr};
-  rclcpp::Publisher<PathWithLaneId>::SharedPtr pub_raw_path_with_lane_id_{nullptr};
-  rclcpp::Publisher<Path>::SharedPtr pub_raw_path_{nullptr};
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_unsafe_footprints_{nullptr};
-  rclcpp::Publisher<Trajectory>::SharedPtr pub_whole_optimized_centerline_{nullptr};
-  rclcpp::Publisher<Trajectory>::SharedPtr pub_optimized_centerline_{nullptr};
+  rclcpp::Publisher<Trajectory>::SharedPtr pub_whole_centerline_{nullptr};
+  rclcpp::Publisher<Trajectory>::SharedPtr pub_centerline_{nullptr};
 
   // subscriber
   rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr sub_traj_start_index_;
   rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr sub_traj_end_index_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_save_map_;
+  rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_traj_resample_interval_;
 
   // service
   rclcpp::Service<LoadMap>::SharedPtr srv_load_map_;
