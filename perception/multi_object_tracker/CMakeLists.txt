@@ -23,6 +23,7 @@ include_directories(
 set(MULTI_OBJECT_TRACKER_SRC
   src/multi_object_tracker_core.cpp
   src/debugger.cpp
+  src/processor/processor.cpp
   src/data_association/data_association.cpp
   src/data_association/mu_successive_shortest_path/mu_successive_shortest_path_wrapper.cpp
   src/tracker/motion_model/motion_model_base.cpp

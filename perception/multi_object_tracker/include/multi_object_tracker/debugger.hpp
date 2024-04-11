@@ -56,6 +56,7 @@ public:
   } debug_settings_;
   double pipeline_latency_ms_ = 0.0;
   diagnostic_updater::Updater diagnostic_updater_;
+  bool shouldPublishTentativeObjects() const { return debug_settings_.publish_tentative_objects; }
 
 private:
   void loadParameters();
