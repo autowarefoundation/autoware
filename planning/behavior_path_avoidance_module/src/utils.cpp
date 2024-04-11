@@ -874,8 +874,7 @@ double getRoadShoulderDistance(
       }
 
       {
-        const auto p2 =
-          calcOffsetPose(p_tmp, 0.0, (isOnRight(object) ? -100.0 : 100.0), 0.0).position;
+        const auto p2 = calcOffsetPose(p_tmp, 0.0, (isOnRight(object) ? -1.0 : 1.0), 0.0).position;
         const auto opt_intersect =
           tier4_autoware_utils::intersect(p1.second, p2, bound.at(i - 1), bound.at(i));
 
