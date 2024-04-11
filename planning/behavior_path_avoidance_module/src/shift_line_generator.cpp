@@ -871,7 +871,7 @@ AvoidLineArray ShiftLineGenerator::applyTrimProcess(
   // - Combine avoid points that have almost same gradient.
   // this is to remove the noise.
   {
-    const auto THRESHOLD = parameters_->same_grad_filter_1_threshold;
+    const auto THRESHOLD = parameters_->th_similar_grad_1;
     applySimilarGradFilter(sl_array_trimmed, THRESHOLD);
     debug.step3_grad_filtered_1st = sl_array_trimmed;
   }
@@ -879,7 +879,7 @@ AvoidLineArray ShiftLineGenerator::applyTrimProcess(
   // - Quantize the shift length to reduce the shift point noise
   // This is to remove the noise coming from detection accuracy, interpolation, resampling, etc.
   {
-    const auto THRESHOLD = parameters_->quantize_filter_threshold;
+    const auto THRESHOLD = parameters_->quantize_size;
     applyQuantizeProcess(sl_array_trimmed, THRESHOLD);
     debug.step3_quantize_filtered = sl_array_trimmed;
   }
@@ -893,14 +893,14 @@ AvoidLineArray ShiftLineGenerator::applyTrimProcess(
 
   // - Combine avoid points that have almost same gradient (again)
   {
-    const auto THRESHOLD = parameters_->same_grad_filter_2_threshold;
+    const auto THRESHOLD = parameters_->th_similar_grad_2;
     applySimilarGradFilter(sl_array_trimmed, THRESHOLD);
     debug.step3_grad_filtered_2nd = sl_array_trimmed;
   }
 
   // - Combine avoid points that have almost same gradient (again)
   {
-    const auto THRESHOLD = parameters_->same_grad_filter_3_threshold;
+    const auto THRESHOLD = parameters_->th_similar_grad_3;
     applySimilarGradFilter(sl_array_trimmed, THRESHOLD);
     debug.step3_grad_filtered_3rd = sl_array_trimmed;
   }

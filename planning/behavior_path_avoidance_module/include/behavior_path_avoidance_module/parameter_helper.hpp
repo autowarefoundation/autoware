@@ -40,10 +40,7 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
     p.resample_interval_for_output =
       getOrDeclareParameter<double>(*node, ns + "resample_interval_for_output");
     p.enable_bound_clipping = getOrDeclareParameter<bool>(*node, ns + "enable_bound_clipping");
-    p.enable_cancel_maneuver = getOrDeclareParameter<bool>(*node, ns + "enable_cancel_maneuver");
     p.disable_path_update = getOrDeclareParameter<bool>(*node, ns + "disable_path_update");
-    p.publish_debug_marker = getOrDeclareParameter<bool>(*node, ns + "publish_debug_marker");
-    p.print_debug_info = getOrDeclareParameter<bool>(*node, ns + "print_debug_info");
   }
 
   // drivable area
@@ -61,11 +58,8 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
   {
     const auto get_object_param = [&](std::string && ns) {
       ObjectParameter param{};
-      param.execute_num = getOrDeclareParameter<int>(*node, ns + "execute_num");
-      param.moving_speed_threshold =
-        getOrDeclareParameter<double>(*node, ns + "moving_speed_threshold");
-      param.moving_time_threshold =
-        getOrDeclareParameter<double>(*node, ns + "moving_time_threshold");
+      param.moving_speed_threshold = getOrDeclareParameter<double>(*node, ns + "th_moving_speed");
+      param.moving_time_threshold = getOrDeclareParameter<double>(*node, ns + "th_moving_time");
       param.max_expand_ratio = getOrDeclareParameter<double>(*node, ns + "max_expand_ratio");
       param.envelope_buffer_margin =
         getOrDeclareParameter<double>(*node, ns + "envelope_buffer_margin");
@@ -75,8 +69,7 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
         getOrDeclareParameter<double>(*node, ns + "lateral_margin.hard_margin");
       param.lateral_hard_margin_for_parked_vehicle =
         getOrDeclareParameter<double>(*node, ns + "lateral_margin.hard_margin_for_parked_vehicle");
-      param.safety_buffer_longitudinal =
-        getOrDeclareParameter<double>(*node, ns + "safety_buffer_longitudinal");
+      param.longitudinal_margin = getOrDeclareParameter<double>(*node, ns + "longitudinal_margin");
       param.use_conservative_buffer_longitudinal =
         getOrDeclareParameter<bool>(*node, ns + "use_conservative_buffer_longitudinal");
       return param;
@@ -124,16 +117,20 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
       getOrDeclareParameter<double>(*node, ns + "object_check_goal_distance");
     p.object_check_return_pose_distance =
       getOrDeclareParameter<double>(*node, ns + "object_check_return_pose_distance");
-    p.threshold_distance_object_is_on_center =
-      getOrDeclareParameter<double>(*node, ns + "threshold_distance_object_is_on_center");
-    p.object_check_shiftable_ratio =
-      getOrDeclareParameter<double>(*node, ns + "object_check_shiftable_ratio");
-    p.object_check_min_road_shoulder_width =
-      getOrDeclareParameter<double>(*node, ns + "object_check_min_road_shoulder_width");
     p.object_check_yaw_deviation =
       getOrDeclareParameter<double>(*node, ns + "intersection.yaw_deviation");
     p.object_last_seen_threshold =
-      getOrDeclareParameter<double>(*node, ns + "object_last_seen_threshold");
+      getOrDeclareParameter<double>(*node, ns + "max_compensation_time");
+  }
+
+  {
+    const std::string ns = "avoidance.target_filtering.parked_vehicle.";
+    p.threshold_distance_object_is_on_center =
+      getOrDeclareParameter<double>(*node, ns + "th_offset_from_centerline");
+    p.object_check_shiftable_ratio =
+      getOrDeclareParameter<double>(*node, ns + "th_shiftable_ratio");
+    p.object_check_min_road_shoulder_width =
+      getOrDeclareParameter<double>(*node, ns + "min_road_shoulder_width");
   }
 
   {
@@ -142,9 +139,9 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
     p.closest_distance_to_wait_and_see_for_ambiguous_vehicle =
       getOrDeclareParameter<double>(*node, ns + "closest_distance_to_wait_and_see");
     p.time_threshold_for_ambiguous_vehicle =
-      getOrDeclareParameter<double>(*node, ns + "condition.time_threshold");
+      getOrDeclareParameter<double>(*node, ns + "condition.th_stopped_time");
     p.distance_threshold_for_ambiguous_vehicle =
-      getOrDeclareParameter<double>(*node, ns + "condition.distance_threshold");
+      getOrDeclareParameter<double>(*node, ns + "condition.th_moving_distance");
     p.object_ignore_section_traffic_light_in_front_distance =
       getOrDeclareParameter<double>(*node, ns + "ignore_area.traffic_light.front_distance");
     p.object_ignore_section_crosswalk_in_front_distance =
@@ -244,16 +241,13 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
   // avoidance maneuver (lateral)
   {
     const std::string ns = "avoidance.avoidance.lateral.";
-    p.soft_road_shoulder_margin =
-      getOrDeclareParameter<double>(*node, ns + "soft_road_shoulder_margin");
-    p.hard_road_shoulder_margin =
-      getOrDeclareParameter<double>(*node, ns + "hard_road_shoulder_margin");
-    p.lateral_execution_threshold =
-      getOrDeclareParameter<double>(*node, ns + "lateral_execution_threshold");
+    p.soft_drivable_bound_margin =
+      getOrDeclareParameter<double>(*node, ns + "soft_drivable_bound_margin");
+    p.hard_drivable_bound_margin =
+      getOrDeclareParameter<double>(*node, ns + "hard_drivable_bound_margin");
+    p.lateral_execution_threshold = getOrDeclareParameter<double>(*node, ns + "th_avoid_execution");
     p.lateral_small_shift_threshold =
-      getOrDeclareParameter<double>(*node, ns + "lateral_small_shift_threshold");
-    p.lateral_avoid_check_threshold =
-      getOrDeclareParameter<double>(*node, ns + "lateral_avoid_check_threshold");
+      getOrDeclareParameter<double>(*node, ns + "th_small_shift_length");
     p.max_right_shift_length = getOrDeclareParameter<double>(*node, ns + "max_right_shift_length");
     p.max_left_shift_length = getOrDeclareParameter<double>(*node, ns + "max_left_shift_length");
     p.max_deviation_from_lane =
@@ -287,6 +281,12 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
     p.dead_line_buffer_for_goal = getOrDeclareParameter<double>(*node, ns + "goal.buffer");
     p.dead_line_buffer_for_traffic_light =
       getOrDeclareParameter<double>(*node, ns + "traffic_light.buffer");
+  }
+
+  // cancel
+  {
+    const std::string ns = "avoidance.cancel.";
+    p.enable_cancel_maneuver = getOrDeclareParameter<bool>(*node, ns + "enable");
   }
 
   // yield
@@ -369,17 +369,19 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
   // shift line pipeline
   {
     const std::string ns = "avoidance.shift_line_pipeline.";
-    p.quantize_filter_threshold =
-      getOrDeclareParameter<double>(*node, ns + "trim.quantize_filter_threshold");
-    p.same_grad_filter_1_threshold =
-      getOrDeclareParameter<double>(*node, ns + "trim.same_grad_filter_1_threshold");
-    p.same_grad_filter_2_threshold =
-      getOrDeclareParameter<double>(*node, ns + "trim.same_grad_filter_2_threshold");
-    p.same_grad_filter_3_threshold =
-      getOrDeclareParameter<double>(*node, ns + "trim.same_grad_filter_3_threshold");
-    p.sharp_shift_filter_threshold =
-      getOrDeclareParameter<double>(*node, ns + "trim.sharp_shift_filter_threshold");
+    p.quantize_size = getOrDeclareParameter<double>(*node, ns + "trim.quantize_size");
+    p.th_similar_grad_1 = getOrDeclareParameter<double>(*node, ns + "trim.th_similar_grad_1");
+    p.th_similar_grad_2 = getOrDeclareParameter<double>(*node, ns + "trim.th_similar_grad_2");
+    p.th_similar_grad_3 = getOrDeclareParameter<double>(*node, ns + "trim.th_similar_grad_3");
   }
+
+  // debug
+  {
+    const std::string ns = "avoidance.debug.";
+    p.publish_debug_marker = getOrDeclareParameter<bool>(*node, ns + "marker");
+    p.print_debug_info = getOrDeclareParameter<bool>(*node, ns + "console");
+  }
+
   return p;
 }
 }  // namespace behavior_path_planner

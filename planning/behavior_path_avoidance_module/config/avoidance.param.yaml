@@ -2,11 +2,11 @@
 /**:
   ros__parameters:
     avoidance:
-      resample_interval_for_planning: 0.3               # [m]
-      resample_interval_for_output: 4.0                 # [m]
+      resample_interval_for_planning: 0.3               # [m] FOR DEVELOPER
+      resample_interval_for_output: 4.0                 # [m] FOR DEVELOPER
+
       # avoidance module common setting
       enable_bound_clipping: false
-      enable_cancel_maneuver: true
       disable_path_update: false
 
       # drivable area setting
@@ -16,215 +16,203 @@
       use_hatched_road_markings: true
       use_freespace_areas: true
 
-      # for debug
-      publish_debug_marker: false
-      print_debug_info: false
-
       # avoidance is performed for the object type with true
       target_object:
         car:
-          execute_num: 1                               # [-]
-          moving_speed_threshold: 1.0                  # [m/s]
-          moving_time_threshold: 2.0                   # [s]
+          th_moving_speed: 1.0                          # [m/s]
+          th_moving_time: 2.0                           # [s]
+          longitudinal_margin: 0.0                      # [m]
           lateral_margin:
-            soft_margin: 0.7                           # [m]
-            hard_margin: 0.3                           # [m]
-            hard_margin_for_parked_vehicle: 0.3        # [m]
-          max_expand_ratio: 0.0                        # [-]
-          envelope_buffer_margin: 0.5                  # [m]
-          safety_buffer_longitudinal: 0.0              # [m]
-          use_conservative_buffer_longitudinal: true   # [-] When set to true, the base_link2front is added to the longitudinal buffer before avoidance.
+            soft_margin: 0.3                            # [m]
+            hard_margin: 0.2                            # [m]
+            hard_margin_for_parked_vehicle: 0.7         # [m]
+          max_expand_ratio: 0.0                         # [-] FOR DEVELOPER
+          envelope_buffer_margin: 0.5                   # [m] FOR DEVELOPER
+          use_conservative_buffer_longitudinal: true    # [-] When set to true, the base_link2front is added to the longitudinal buffer before avoidance.
         truck:
-          execute_num: 1
-          moving_speed_threshold: 1.0                  # 3.6km/h
-          moving_time_threshold: 2.0
+          th_moving_speed: 1.0
+          th_moving_time: 2.0
+          longitudinal_margin: 0.0
           lateral_margin:
-            soft_margin: 0.9                           # [m]
-            hard_margin: 0.1                           # [m]
-            hard_margin_for_parked_vehicle: 0.1        # [m]
+            soft_margin: 0.3
+            hard_margin: 0.2
+            hard_margin_for_parked_vehicle: 0.7
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.5
-          safety_buffer_longitudinal: 0.0
           use_conservative_buffer_longitudinal: true
         bus:
-          execute_num: 1
-          moving_speed_threshold: 1.0                  # 3.6km/h
-          moving_time_threshold: 2.0
+          th_moving_speed: 1.0
+          th_moving_time: 2.0
+          longitudinal_margin: 0.0
           lateral_margin:
-            soft_margin: 0.9                           # [m]
-            hard_margin: 0.1                           # [m]
-            hard_margin_for_parked_vehicle: 0.1        # [m]
+            soft_margin: 0.3
+            hard_margin: 0.2
+            hard_margin_for_parked_vehicle: 0.7
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.5
-          safety_buffer_longitudinal: 0.0
           use_conservative_buffer_longitudinal: true
         trailer:
-          execute_num: 1
-          moving_speed_threshold: 1.0                  # 3.6km/h
-          moving_time_threshold: 2.0
+          th_moving_speed: 1.0
+          th_moving_time: 2.0
+          longitudinal_margin: 0.0
           lateral_margin:
-            soft_margin: 0.9                           # [m]
-            hard_margin: 0.1                           # [m]
-            hard_margin_for_parked_vehicle: 0.1        # [m]
+            soft_margin: 0.3
+            hard_margin: 0.2
+            hard_margin_for_parked_vehicle: 0.7
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.5
-          safety_buffer_longitudinal: 0.0
           use_conservative_buffer_longitudinal: true
         unknown:
-          execute_num: 1
-          moving_speed_threshold: 0.28                 # 1.0km/h
-          moving_time_threshold: 1.0
+          th_moving_speed: 0.28
+          th_moving_time: 1.0
+          longitudinal_margin: 0.0
           lateral_margin:
-            soft_margin: 0.7                           # [m]
-            hard_margin: -0.2                          # [m]
-            hard_margin_for_parked_vehicle: -0.2       # [m]
+            soft_margin: 0.7
+            hard_margin: -0.2
+            hard_margin_for_parked_vehicle: -0.2
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.1
-          safety_buffer_longitudinal: 0.0
           use_conservative_buffer_longitudinal: true
         bicycle:
-          execute_num: 1
-          moving_speed_threshold: 0.28                 # 1.0km/h
-          moving_time_threshold: 1.0
+          th_moving_speed: 0.28
+          th_moving_time: 1.0
+          longitudinal_margin: 1.0
           lateral_margin:
-            soft_margin: 0.7                           # [m]
-            hard_margin: 0.5                           # [m]
-            hard_margin_for_parked_vehicle: 0.5        # [m]
+            soft_margin: 0.7
+            hard_margin: 0.5
+            hard_margin_for_parked_vehicle: 0.5
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.5
-          safety_buffer_longitudinal: 1.0
           use_conservative_buffer_longitudinal: true
         motorcycle:
-          execute_num: 1
-          moving_speed_threshold: 1.0                  # 3.6km/h
-          moving_time_threshold: 1.0
+          th_moving_speed: 1.0
+          th_moving_time: 1.0
+          longitudinal_margin: 1.0
           lateral_margin:
-            soft_margin: 0.7                           # [m]
-            hard_margin: 0.3                           # [m]
-            hard_margin_for_parked_vehicle: 0.3        # [m]
+            soft_margin: 0.7
+            hard_margin: 0.3
+            hard_margin_for_parked_vehicle: 0.3
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.5
-          safety_buffer_longitudinal: 1.0
           use_conservative_buffer_longitudinal: true
         pedestrian:
-          execute_num: 1
-          moving_speed_threshold: 0.28                 # 1.0km/h
-          moving_time_threshold: 1.0
+          th_moving_speed: 0.28
+          th_moving_time: 1.0
+          longitudinal_margin: 1.0
           lateral_margin:
-            soft_margin: 0.7                           # [m]
-            hard_margin: 0.5                           # [m]
-            hard_margin_for_parked_vehicle: 0.5        # [m]
+            soft_margin: 0.7
+            hard_margin: 0.5
+            hard_margin_for_parked_vehicle: 0.5
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.5
-          safety_buffer_longitudinal: 1.0
           use_conservative_buffer_longitudinal: true
-        lower_distance_for_polygon_expansion: 30.0      # [m]
-        upper_distance_for_polygon_expansion: 100.0     # [m]
+        lower_distance_for_polygon_expansion: 30.0      # [m] FOR DEVELOPER
+        upper_distance_for_polygon_expansion: 100.0     # [m] FOR DEVELOPER
 
       # For target object filtering
       target_filtering:
         # avoidance target type
         target_type:
-          car: true                                      # [-]
-          truck: true                                    # [-]
-          bus: true                                      # [-]
-          trailer: true                                  # [-]
-          unknown: true                                  # [-]
-          bicycle: true                                  # [-]
-          motorcycle: true                               # [-]
-          pedestrian: true                               # [-]
+          car: true                                     # [-]
+          truck: true                                   # [-]
+          bus: true                                     # [-]
+          trailer: true                                 # [-]
+          unknown: true                                 # [-]
+          bicycle: true                                 # [-]
+          motorcycle: true                              # [-]
+          pedestrian: true                              # [-]
         # detection range
-        object_check_goal_distance: 20.0                 # [m]
-        object_check_return_pose_distance: 20.0          # [m]
-        # filtering parking objects
-        threshold_distance_object_is_on_center: 1.0     # [m]
-        object_check_shiftable_ratio: 0.6               # [-]
-        object_check_min_road_shoulder_width: 0.5       # [m]
+        object_check_goal_distance: 20.0                # [m]
+        object_check_return_pose_distance: 20.0         # [m]
         # lost object compensation
-        object_last_seen_threshold: 2.0
+        max_compensation_time: 2.0
 
         # detection area generation parameters
         detection_area:
-          static: false                                  # [-]
-          min_forward_distance: 50.0                     # [m]
-          max_forward_distance: 150.0                    # [m]
-          backward_distance: 10.0                        # [m]
+          static: false                                 # [-]
+          min_forward_distance: 50.0                    # [m]
+          max_forward_distance: 150.0                   # [m]
+          backward_distance: 10.0                       # [m]
+
+        # filtering parking objects
+        parked_vehicle:
+          th_offset_from_centerline: 1.0                # [m]
+          th_shiftable_ratio: 0.8                       # [-]
+          min_road_shoulder_width: 0.5                  # [m] FOR DEVELOPER
 
         # params for avoidance of vehicle type objects that are ambiguous as to whether they are parked.
         avoidance_for_ambiguous_vehicle:
-          enable: false                                  # [-]
-          closest_distance_to_wait_and_see: 10.0         # [m]
+          enable: true                                  # [-]
+          closest_distance_to_wait_and_see: 10.0        # [m]
           condition:
-            time_threshold: 1.0                          # [s]
-            distance_threshold: 1.0                      # [m]
+            th_stopped_time: 3.0                        # [s]
+            th_moving_distance: 1.0                     # [m]
           ignore_area:
             traffic_light:
-              front_distance: 100.0                      # [m]
+              front_distance: 100.0                     # [m]
             crosswalk:
-              front_distance: 30.0                       # [m]
-              behind_distance: 30.0                      # [m]
+              front_distance: 30.0                      # [m]
+              behind_distance: 30.0                     # [m]
 
         # params for filtering objects that are in intersection
         intersection:
-          yaw_deviation: 0.349                           # [rad] (default 20.0deg)
+          yaw_deviation: 0.349                          # [rad] (default 20.0deg)
 
       # For safety check
       safety_check:
         # safety check target type
         target_type:
-          car: true                                      # [-]
-          truck: true                                    # [-]
-          bus: true                                      # [-]
-          trailer: true                                  # [-]
-          unknown: false                                 # [-]
-          bicycle: true                                  # [-]
-          motorcycle: true                               # [-]
-          pedestrian: true                               # [-]
+          car: true                                     # [-]
+          truck: true                                   # [-]
+          bus: true                                     # [-]
+          trailer: true                                 # [-]
+          unknown: false                                # [-]
+          bicycle: true                                 # [-]
+          motorcycle: true                              # [-]
+          pedestrian: true                              # [-]
         # safety check configuration
-        enable: true                                     # [-]
-        check_current_lane: false                        # [-]
-        check_shift_side_lane: true                      # [-]
-        check_other_side_lane: false                     # [-]
-        check_unavoidable_object: false                  # [-]
-        check_other_object: true                         # [-]
+        enable: true                                    # [-]
+        check_current_lane: false                       # [-]
+        check_shift_side_lane: true                     # [-]
+        check_other_side_lane: false                    # [-]
+        check_unavoidable_object: false                 # [-]
+        check_other_object: true                        # [-]
         # collision check parameters
-        check_all_predicted_path: false                  # [-]
-        safety_check_backward_distance: 100.0            # [m]
-        hysteresis_factor_expand_rate: 1.5               # [-]
-        hysteresis_factor_safe_count: 10                 # [-]
+        check_all_predicted_path: false                 # [-]
+        safety_check_backward_distance: 100.0           # [m]
+        hysteresis_factor_expand_rate: 1.5              # [-]
+        hysteresis_factor_safe_count: 3                 # [-]
         # predicted path parameters
-        min_velocity: 1.38                               # [m/s]
-        max_velocity: 50.0                               # [m/s]
-        time_resolution: 0.5                             # [s]
-        time_horizon_for_front_object: 3.0               # [s]
-        time_horizon_for_rear_object: 10.0               # [s]
-        delay_until_departure: 0.0                       # [s]
+        min_velocity: 1.38                              # [m/s]
+        max_velocity: 50.0                              # [m/s]
+        time_resolution: 0.5                            # [s]
+        time_horizon_for_front_object: 3.0              # [s]
+        time_horizon_for_rear_object: 10.0              # [s]
+        delay_until_departure: 0.0                      # [s]
         # rss parameters
-        extended_polygon_policy: "along_path"            # [-] select "rectangle" or "along_path"
-        expected_front_deceleration: -1.0                # [m/ss]
-        expected_rear_deceleration: -1.0                 # [m/ss]
-        rear_vehicle_reaction_time: 2.0                  # [s]
-        rear_vehicle_safety_time_margin: 1.0             # [s]
-        lateral_distance_max_threshold: 0.75             # [m]
-        longitudinal_distance_min_threshold: 3.0         # [m]
-        longitudinal_velocity_delta_time: 0.8            # [s]
+        extended_polygon_policy: "along_path"           # [-] select "rectangle" or "along_path"
+        expected_front_deceleration: -1.0               # [m/ss]
+        expected_rear_deceleration: -1.0                # [m/ss]
+        rear_vehicle_reaction_time: 2.0                 # [s]
+        rear_vehicle_safety_time_margin: 1.0            # [s]
+        lateral_distance_max_threshold: 2.0             # [m]
+        longitudinal_distance_min_threshold: 3.0        # [m]
+        longitudinal_velocity_delta_time: 0.0           # [s]
 
       # For avoidance maneuver
       avoidance:
         # avoidance lateral parameters
         lateral:
-          lateral_execution_threshold: 0.09             # [m]
-          lateral_small_shift_threshold: 0.101          # [m]
-          lateral_avoid_check_threshold: 0.1            # [m]
-          soft_road_shoulder_margin: 0.3                # [m]
-          hard_road_shoulder_margin: 0.3                # [m]
-          max_right_shift_length: 5.0
-          max_left_shift_length: 5.0
-          max_deviation_from_lane: 0.5                  # [m]
+          th_avoid_execution: 0.09                      # [m] FOR DEVELOPER
+          th_small_shift_length: 0.101                  # [m] FOR DEVELOPER
+          soft_drivable_bound_margin: 0.3               # [m]
+          hard_drivable_bound_margin: 0.3               # [m]
+          max_right_shift_length: 5.0                   # [m] FOR DEVELOPER
+          max_left_shift_length: 5.0                    # [m] FOR DEVELOPER
+          max_deviation_from_lane: 0.2                  # [m]
           # approve the next shift line after reaching this percentage of the current shift line length.
-          # this parameter should be within range of 0.0 to 1.0.
           # this parameter is added to allow waiting for the return of shift approval until the occlusion behind the avoid target is clear.
-          # this feature can be disabled by setting this parameter to 1.0. (in that case, avoidance module creates return shift as soon as possible.)
+          # this feature can be disabled by setting this parameter to 0.0.
           ratio_for_return_shift_approval: 0.5          # [-]
         # avoidance distance parameters
         longitudinal:
@@ -232,16 +220,20 @@
           max_prepare_time: 2.0                         # [s]
           min_prepare_distance: 1.0                     # [m]
           min_slow_down_speed: 1.38                     # [m/s]
-          buf_slow_down_speed: 0.56                     # [m/s]
-          nominal_avoidance_speed: 8.33                 # [m/s]
+          buf_slow_down_speed: 0.56                     # [m/s] FOR DEVELOPER
+          nominal_avoidance_speed: 8.33                 # [m/s] FOR DEVELOPER
         # return dead line
         return_dead_line:
           goal:
             enable: true                                # [-]
-            buffer: 30.0                                # [m]
+            buffer: 3.0                                 # [m]
           traffic_light:
             enable: true                                # [-]
             buffer: 3.0                                 # [m]
+
+      # For cancel maneuver
+      cancel:
+        enable: true                                    # [-]
 
       # For yield maneuver
       yield:
@@ -251,7 +243,7 @@
       # For stop maneuver
       stop:
         max_distance: 20.0                              # [m]
-        stop_buffer: 1.0                                # [m]
+        stop_buffer: 1.0                                # [m] FOR DEVELOPER
 
       policy:
         # policy for rtc request. select "per_shift_line" or "per_avoidance_maneuver".
@@ -273,6 +265,10 @@
         # if true, module doesn't wait deceleration and outputs avoidance path by best effort margin.
         use_shorten_margin_immediately: true            # [-]
 
+      # --------------------------------------
+      # FOLLOWING PARAMETERS ARE FOR DEVELOPER
+      # --------------------------------------
+
       constraints:
         # lateral constraints
         lateral:
@@ -292,8 +288,12 @@
 
       shift_line_pipeline:
         trim:
-          quantize_filter_threshold: 0.1
-          same_grad_filter_1_threshold: 0.1
-          same_grad_filter_2_threshold: 0.2
-          same_grad_filter_3_threshold: 0.5
-          sharp_shift_filter_threshold: 0.2
+          quantize_size: 0.1
+          th_similar_grad_1: 0.1
+          th_similar_grad_2: 0.2
+          th_similar_grad_3: 0.5
+
+      # for debug
+      debug:
+        marker: false
+        console: false

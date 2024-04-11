@@ -162,7 +162,7 @@ bool AvoidanceModule::isSatisfiedSuccessCondition(const AvoidancePlanningData & 
 
   const bool has_shift_point = !path_shifter_.getShiftLines().empty();
   const bool has_base_offset =
-    std::abs(path_shifter_.getBaseOffset()) > parameters_->lateral_avoid_check_threshold;
+    std::abs(path_shifter_.getBaseOffset()) > parameters_->lateral_execution_threshold;
 
   // Nothing to do. -> EXIT.
   if (!has_shift_point && !has_base_offset) {
@@ -734,7 +734,7 @@ bool AvoidanceModule::isSafePath(
     for (size_t i = ego_idx; i < shifted_path.shift_length.size(); i++) {
       const auto length = shifted_path.shift_length.at(i);
 
-      if (parameters_->lateral_avoid_check_threshold < length) {
+      if (parameters_->lateral_execution_threshold < length) {
         return true;
       }
     }
@@ -746,7 +746,7 @@ bool AvoidanceModule::isSafePath(
     for (size_t i = ego_idx; i < shifted_path.shift_length.size(); i++) {
       const auto length = shifted_path.shift_length.at(i);
 
-      if (parameters_->lateral_avoid_check_threshold < -1.0 * length) {
+      if (parameters_->lateral_execution_threshold < -1.0 * length) {
         return true;
       }
     }
@@ -1222,7 +1222,7 @@ bool AvoidanceModule::isValidShiftLine(
   // check if the vehicle is in road. (yaw angle is not considered)
   {
     const auto minimum_distance = 0.5 * planner_data_->parameters.vehicle_width +
-                                  parameters_->hard_road_shoulder_margin -
+                                  parameters_->hard_drivable_bound_margin -
                                   parameters_->max_deviation_from_lane;
 
     const size_t start_idx = shift_lines.front().start_idx;

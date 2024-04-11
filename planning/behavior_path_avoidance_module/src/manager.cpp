@@ -46,18 +46,11 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
 
   auto p = parameters_;
 
-  {
-    const std::string ns = "avoidance.";
-    updateParam<bool>(parameters, ns + "enable_safety_check", p->enable_safety_check);
-    updateParam<bool>(parameters, ns + "publish_debug_marker", p->publish_debug_marker);
-    updateParam<bool>(parameters, ns + "print_debug_info", p->print_debug_info);
-  }
-
   const auto update_object_param = [&p, &parameters](
                                      const auto & semantic, const std::string & ns) {
     auto & config = p->object_parameters.at(semantic);
-    updateParam<double>(parameters, ns + "moving_speed_threshold", config.moving_speed_threshold);
-    updateParam<double>(parameters, ns + "moving_time_threshold", config.moving_time_threshold);
+    updateParam<double>(parameters, ns + "th_moving_speed", config.moving_speed_threshold);
+    updateParam<double>(parameters, ns + "th_moving_time", config.moving_time_threshold);
     updateParam<double>(parameters, ns + "max_expand_ratio", config.max_expand_ratio);
     updateParam<double>(parameters, ns + "envelope_buffer_margin", config.envelope_buffer_margin);
     updateParam<double>(parameters, ns + "lateral_margin.soft_margin", config.lateral_soft_margin);
@@ -65,8 +58,7 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
     updateParam<double>(
       parameters, ns + "lateral_margin.hard_margin_for_parked_vehicle",
       config.lateral_hard_margin_for_parked_vehicle);
-    updateParam<double>(
-      parameters, ns + "safety_buffer_longitudinal", config.safety_buffer_longitudinal);
+    updateParam<double>(parameters, ns + "longitudinal_margin", config.longitudinal_margin);
     updateParam<bool>(
       parameters, ns + "use_conservative_buffer_longitudinal",
       config.use_conservative_buffer_longitudinal);
@@ -113,16 +105,16 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
       parameters, ns + "object_check_goal_distance", p->object_check_goal_distance);
     updateParam<double>(
       parameters, ns + "object_check_return_pose_distance", p->object_check_return_pose_distance);
+    updateParam<double>(parameters, ns + "max_compensation_time", p->object_last_seen_threshold);
+  }
+
+  {
+    const std::string ns = "avoidance.target_filtering.parked_vehicle.";
     updateParam<double>(
-      parameters, ns + "threshold_distance_object_is_on_center",
-      p->threshold_distance_object_is_on_center);
+      parameters, ns + "th_offset_from_centerline", p->threshold_distance_object_is_on_center);
+    updateParam<double>(parameters, ns + "th_shiftable_ratio", p->object_check_shiftable_ratio);
     updateParam<double>(
-      parameters, ns + "object_check_shiftable_ratio", p->object_check_shiftable_ratio);
-    updateParam<double>(
-      parameters, ns + "object_check_min_road_shoulder_width",
-      p->object_check_min_road_shoulder_width);
-    updateParam<double>(
-      parameters, ns + "object_last_seen_threshold", p->object_last_seen_threshold);
+      parameters, ns + "min_road_shoulder_width", p->object_check_min_road_shoulder_width);
   }
 
   {
@@ -142,9 +134,9 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
       parameters, ns + "closest_distance_to_wait_and_see",
       p->closest_distance_to_wait_and_see_for_ambiguous_vehicle);
     updateParam<double>(
-      parameters, ns + "condition.time_threshold", p->time_threshold_for_ambiguous_vehicle);
+      parameters, ns + "condition.th_stopped_time", p->time_threshold_for_ambiguous_vehicle);
     updateParam<double>(
-      parameters, ns + "condition.distance_threshold", p->distance_threshold_for_ambiguous_vehicle);
+      parameters, ns + "condition.th_moving_distance", p->distance_threshold_for_ambiguous_vehicle);
     updateParam<double>(
       parameters, ns + "ignore_area.traffic_light.front_distance",
       p->object_ignore_section_traffic_light_in_front_distance);
@@ -163,14 +155,12 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
 
   {
     const std::string ns = "avoidance.avoidance.lateral.";
+    updateParam<double>(parameters, ns + "th_avoid_execution", p->lateral_execution_threshold);
+    updateParam<double>(parameters, ns + "th_small_shift_length", p->lateral_small_shift_threshold);
     updateParam<double>(
-      parameters, ns + "lateral_execution_threshold", p->lateral_execution_threshold);
+      parameters, ns + "soft_drivable_bound_margin", p->soft_drivable_bound_margin);
     updateParam<double>(
-      parameters, ns + "lateral_small_shift_threshold", p->lateral_small_shift_threshold);
-    updateParam<double>(
-      parameters, ns + "lateral_avoid_check_threshold", p->lateral_avoid_check_threshold);
-    updateParam<double>(parameters, ns + "soft_road_shoulder_margin", p->soft_road_shoulder_margin);
-    updateParam<double>(parameters, ns + "hard_road_shoulder_margin", p->hard_road_shoulder_margin);
+      parameters, ns + "hard_drivable_bound_margin", p->hard_drivable_bound_margin);
   }
 
   {
@@ -259,16 +249,16 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
 
   {
     const std::string ns = "avoidance.shift_line_pipeline.";
-    updateParam<double>(
-      parameters, ns + "trim.quantize_filter_threshold", p->quantize_filter_threshold);
-    updateParam<double>(
-      parameters, ns + "trim.same_grad_filter_1_threshold", p->same_grad_filter_1_threshold);
-    updateParam<double>(
-      parameters, ns + "trim.same_grad_filter_2_threshold", p->same_grad_filter_2_threshold);
-    updateParam<double>(
-      parameters, ns + "trim.same_grad_filter_3_threshold", p->same_grad_filter_3_threshold);
-    updateParam<double>(
-      parameters, ns + "trim.sharp_shift_filter_threshold", p->sharp_shift_filter_threshold);
+    updateParam<double>(parameters, ns + "trim.quantize_size", p->quantize_size);
+    updateParam<double>(parameters, ns + "trim.th_similar_grad_1", p->th_similar_grad_1);
+    updateParam<double>(parameters, ns + "trim.th_similar_grad_2", p->th_similar_grad_2);
+    updateParam<double>(parameters, ns + "trim.th_similar_grad_3", p->th_similar_grad_3);
+  }
+
+  {
+    const std::string ns = "avoidance.debug.";
+    updateParam<bool>(parameters, ns + "marker", p->publish_debug_marker);
+    updateParam<bool>(parameters, ns + "console", p->print_debug_info);
   }
 
   std::for_each(observers_.begin(), observers_.end(), [&p](const auto & observer) {

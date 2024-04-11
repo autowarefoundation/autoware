@@ -151,15 +151,14 @@ public:
     const auto & additional_buffer_longitudinal =
       object_parameter.use_conservative_buffer_longitudinal ? data_->parameters.base_link2front
                                                             : 0.0;
-    return object_parameter.safety_buffer_longitudinal + additional_buffer_longitudinal;
+    return object_parameter.longitudinal_margin + additional_buffer_longitudinal;
   }
 
   double getRearConstantDistance(const ObjectData & object) const
   {
     const auto object_type = utils::getHighestProbLabel(object.object.classification);
     const auto object_parameter = parameters_->object_parameters.at(object_type);
-    return object_parameter.safety_buffer_longitudinal + data_->parameters.base_link2rear +
-           object.length;
+    return object_parameter.longitudinal_margin + data_->parameters.base_link2rear + object.length;
   }
 
   double getEgoShift() const
@@ -370,7 +369,7 @@ public:
 
   bool isShifted() const
   {
-    return std::abs(getEgoShift()) > parameters_->lateral_avoid_check_threshold;
+    return std::abs(getEgoShift()) > parameters_->lateral_execution_threshold;
   }
 
   bool isInitialized() const
