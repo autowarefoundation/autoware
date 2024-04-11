@@ -44,6 +44,11 @@ public:
   void run();
 
 private:
+  struct CenterlineWithRoute
+  {
+    std::vector<TrajectoryPoint> centerline{};
+    std::vector<lanelet::Id> route_lane_ids{};
+  };
   // load map
   void load_map(const std::string & lanelet2_input_file_path);
   void on_load_map(
@@ -56,6 +61,7 @@ private:
     const PlanRoute::Request::SharedPtr request, const PlanRoute::Response::SharedPtr response);
 
   // plan path
+  CenterlineWithRoute generate_centerline_with_route();
   std::vector<TrajectoryPoint> plan_path(const std::vector<lanelet::Id> & route_lane_ids);
   std::vector<TrajectoryPoint> optimize_trajectory(const Path & raw_path) const;
   void on_plan_path(
@@ -65,8 +71,8 @@ private:
     const std::vector<lanelet::Id> & route_lane_ids,
     const std::vector<TrajectoryPoint> & optimized_traj_points);
   void save_map(
-    const std::string & lanelet2_output_file_path, const std::vector<lanelet::Id> & route_lane_ids,
-    const std::vector<TrajectoryPoint> & optimized_traj_points);
+    const std::string & lanelet2_output_file_path,
+    const CenterlineWithRoute & centerline_with_route);
 
   lanelet::LaneletMapPtr original_map_ptr_{nullptr};
   HADMapBin::ConstSharedPtr map_bin_ptr_{nullptr};
@@ -75,12 +81,13 @@ private:
 
   int traj_start_index_{0};
   int traj_end_index_{0};
-  struct MetaDataToSaveMap
-  {
-    std::vector<TrajectoryPoint> optimized_traj_points{};
-    std::vector<lanelet::Id> route_lane_ids{};
+  std::optional<CenterlineWithRoute> centerline_with_route_{std::nullopt};
+
+  enum class CenterlineSource {
+    OptimizationTrajectoryBase = 0,
+    BagEgoTrajectoryBase,
   };
-  std::optional<MetaDataToSaveMap> meta_data_to_save_map_{std::nullopt};
+  CenterlineSource centerline_source_;
 
   // publisher
   rclcpp::Publisher<HADMapBin>::SharedPtr pub_map_bin_{nullptr};

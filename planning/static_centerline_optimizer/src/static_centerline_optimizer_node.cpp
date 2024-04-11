@@ -240,46 +240,44 @@ StaticCenterlineOptimizerNode::StaticCenterlineOptimizerNode(
   sub_traj_start_index_ = create_subscription<std_msgs::msg::Int32>(
     "/centerline_updater_helper/traj_start_index", rclcpp::QoS{1},
     [this](const std_msgs::msg::Int32 & msg) {
-      if (!meta_data_to_save_map_ || traj_end_index_ + 1 < msg.data) {
+      if (!centerline_with_route_ || traj_end_index_ + 1 < msg.data) {
         return;
       }
       traj_start_index_ = msg.data;
 
-      const auto & d = meta_data_to_save_map_;
-      const auto selected_optimized_traj_points = std::vector<TrajectoryPoint>(
-        d->optimized_traj_points.begin() + traj_start_index_,
-        d->optimized_traj_points.begin() + traj_end_index_ + 1);
+      const auto & c = *centerline_with_route_;
+      const auto selected_centerline = std::vector<TrajectoryPoint>(
+        c.centerline.begin() + traj_start_index_, c.centerline.begin() + traj_end_index_ + 1);
 
-      pub_optimized_centerline_->publish(motion_utils::convertToTrajectory(
-        selected_optimized_traj_points, createHeader(this->now())));
+      pub_optimized_centerline_->publish(
+        motion_utils::convertToTrajectory(selected_centerline, createHeader(this->now())));
     });
   sub_traj_end_index_ = create_subscription<std_msgs::msg::Int32>(
     "/centerline_updater_helper/traj_end_index", rclcpp::QoS{1},
     [this](const std_msgs::msg::Int32 & msg) {
-      if (!meta_data_to_save_map_ || msg.data + 1 < traj_start_index_) {
+      if (!centerline_with_route_ || msg.data + 1 < traj_start_index_) {
         return;
       }
       traj_end_index_ = msg.data;
 
-      const auto & d = meta_data_to_save_map_;
-      const auto selected_optimized_traj_points = std::vector<TrajectoryPoint>(
-        d->optimized_traj_points.begin() + traj_start_index_,
-        d->optimized_traj_points.begin() + traj_end_index_ + 1);
+      const auto & c = *centerline_with_route_;
+      const auto selected_centerline = std::vector<TrajectoryPoint>(
+        c.centerline.begin() + traj_start_index_, c.centerline.begin() + traj_end_index_ + 1);
 
-      pub_optimized_centerline_->publish(motion_utils::convertToTrajectory(
-        selected_optimized_traj_points, createHeader(this->now())));
+      pub_optimized_centerline_->publish(
+        motion_utils::convertToTrajectory(selected_centerline, createHeader(this->now())));
     });
   sub_save_map_ = create_subscription<std_msgs::msg::Bool>(
     "/centerline_updater_helper/save_map", rclcpp::QoS{1}, [this](const std_msgs::msg::Bool & msg) {
       const auto lanelet2_output_file_path =
         tier4_autoware_utils::getOrDeclareParameter<std::string>(
           *this, "lanelet2_output_file_path");
-      if (!meta_data_to_save_map_ || msg.data) {
-        const auto & d = meta_data_to_save_map_;
-        const auto selected_optimized_traj_points = std::vector<TrajectoryPoint>(
-          d->optimized_traj_points.begin() + traj_start_index_,
-          d->optimized_traj_points.begin() + traj_end_index_ + 1);
-        save_map(lanelet2_output_file_path, d->route_lane_ids, selected_optimized_traj_points);
+      if (!centerline_with_route_ || msg.data) {
+        const auto & c = *centerline_with_route_;
+        const auto selected_centerline = std::vector<TrajectoryPoint>(
+          c.centerline.begin() + traj_start_index_, c.centerline.begin() + traj_end_index_ + 1);
+        save_map(
+          lanelet2_output_file_path, CenterlineWithRoute{selected_centerline, c.route_lane_ids});
       }
     });
 
@@ -306,6 +304,17 @@ StaticCenterlineOptimizerNode::StaticCenterlineOptimizerNode(
 
   // vehicle info
   vehicle_info_ = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+
+  centerline_source_ = [&]() {
+    const auto centerline_source_param = declare_parameter<std::string>("centerline_source");
+    if (centerline_source_param == "optimization_trajectory_base") {
+      return CenterlineSource::OptimizationTrajectoryBase;
+    } else if (centerline_source_param == "bag_ego_trajectory_base") {
+      return CenterlineSource::BagEgoTrajectoryBase;
+    }
+    throw std::logic_error(
+      "The centerline source is not supported in static_centerline_optimizer.");
+  }();
 }
 
 void StaticCenterlineOptimizerNode::run()
@@ -314,18 +323,31 @@ void StaticCenterlineOptimizerNode::run()
   const auto lanelet2_input_file_path = declare_parameter<std::string>("lanelet2_input_file_path");
   const auto lanelet2_output_file_path =
     declare_parameter<std::string>("lanelet2_output_file_path");
-  const lanelet::Id start_lanelet_id = declare_parameter<int64_t>("start_lanelet_id");
-  const lanelet::Id end_lanelet_id = declare_parameter<int64_t>("end_lanelet_id");
 
   // process
   load_map(lanelet2_input_file_path);
-  const auto route_lane_ids = plan_route(start_lanelet_id, end_lanelet_id);
-  const auto optimized_traj_points = plan_path(route_lane_ids);
+  const auto centerline_with_route = generate_centerline_with_route();
   traj_start_index_ = 0;
-  traj_end_index_ = optimized_traj_points.size() - 1;
-  save_map(lanelet2_output_file_path, route_lane_ids, optimized_traj_points);
+  traj_end_index_ = centerline_with_route.centerline.size() - 1;
+  save_map(lanelet2_output_file_path, centerline_with_route);
 
-  meta_data_to_save_map_ = MetaDataToSaveMap{optimized_traj_points, route_lane_ids};
+  centerline_with_route_ = centerline_with_route;
+}
+
+StaticCenterlineOptimizerNode::CenterlineWithRoute
+StaticCenterlineOptimizerNode::generate_centerline_with_route()
+{
+  if (centerline_source_ == CenterlineSource::OptimizationTrajectoryBase) {
+    const lanelet::Id start_lanelet_id = declare_parameter<int64_t>("start_lanelet_id");
+    const lanelet::Id end_lanelet_id = declare_parameter<int64_t>("end_lanelet_id");
+    const auto route_lane_ids = plan_route(start_lanelet_id, end_lanelet_id);
+    const auto optimized_traj_points = plan_path(route_lane_ids);
+    return CenterlineWithRoute{optimized_traj_points, route_lane_ids};
+  } else if (centerline_source_ == CenterlineSource::BagEgoTrajectoryBase) {
+    return CenterlineWithRoute{};
+  }
+
+  throw std::logic_error("The centerline source is not supported in static_centerline_optimizer.");
 }
 
 void StaticCenterlineOptimizerNode::load_map(const std::string & lanelet2_input_file_path)
@@ -741,17 +763,17 @@ void StaticCenterlineOptimizerNode::evaluate(
 }
 
 void StaticCenterlineOptimizerNode::save_map(
-  const std::string & lanelet2_output_file_path, const std::vector<lanelet::Id> & route_lane_ids,
-  const std::vector<TrajectoryPoint> & optimized_traj_points)
+  const std::string & lanelet2_output_file_path, const CenterlineWithRoute & centerline_with_route)
 {
   if (!route_handler_ptr_) {
     return;
   }
 
-  const auto route_lanelets = get_lanelets_from_ids(*route_handler_ptr_, route_lane_ids);
+  const auto & c = centerline_with_route;
+  const auto route_lanelets = get_lanelets_from_ids(*route_handler_ptr_, c.route_lane_ids);
 
   // update centerline in map
-  utils::update_centerline(*route_handler_ptr_, route_lanelets, optimized_traj_points);
+  utils::update_centerline(*route_handler_ptr_, route_lanelets, c.centerline);
   RCLCPP_INFO(get_logger(), "Updated centerline in map.");
 
   // save map with modified center line
