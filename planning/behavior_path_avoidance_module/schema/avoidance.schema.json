@@ -104,11 +104,6 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
-                },
-                "use_conservative_buffer_longitudinal": {
-                  "type": "boolean",
-                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
-                  "default": "true"
                 }
               },
               "required": [
@@ -171,11 +166,6 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
-                },
-                "use_conservative_buffer_longitudinal": {
-                  "type": "boolean",
-                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
-                  "default": "true"
                 }
               },
               "required": [
@@ -238,11 +228,6 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
-                },
-                "use_conservative_buffer_longitudinal": {
-                  "type": "boolean",
-                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
-                  "default": "true"
                 }
               },
               "required": [
@@ -305,11 +290,6 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
-                },
-                "use_conservative_buffer_longitudinal": {
-                  "type": "boolean",
-                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
-                  "default": "true"
                 }
               },
               "required": [
@@ -372,11 +352,6 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
-                },
-                "use_conservative_buffer_longitudinal": {
-                  "type": "boolean",
-                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
-                  "default": "true"
                 }
               },
               "required": [
@@ -439,11 +414,6 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
-                },
-                "use_conservative_buffer_longitudinal": {
-                  "type": "boolean",
-                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
-                  "default": "true"
                 }
               },
               "required": [
@@ -506,11 +476,6 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
-                },
-                "use_conservative_buffer_longitudinal": {
-                  "type": "boolean",
-                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
-                  "default": "true"
                 }
               },
               "required": [
@@ -573,11 +538,6 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
-                },
-                "use_conservative_buffer_longitudinal": {
-                  "type": "boolean",
-                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
-                  "default": "true"
                 }
               },
               "required": [
@@ -1150,6 +1110,16 @@
                   "type": "number",
                   "description": "Nominal avoidance speed.",
                   "default": 8.33
+                },
+                "consider_front_overhang": {
+                  "type": "boolean",
+                  "description": "Flag to consider vehicle front overhang in shift line generation logic.",
+                  "default": true
+                },
+                "consider_rear_overhang": {
+                  "type": "boolean",
+                  "description": "Flag to consider vehicle rear overhang in shift line generation logic.",
+                  "default": true
                 }
               },
               "required": [
@@ -1158,7 +1128,9 @@
                 "min_prepare_distance",
                 "min_slow_down_speed",
                 "buf_slow_down_speed",
-                "nominal_avoidance_speed"
+                "nominal_avoidance_speed",
+                "consider_front_overhang",
+                "consider_rear_overhang"
               ],
               "additionalProperties": false
             },

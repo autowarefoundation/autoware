@@ -28,7 +28,6 @@
             hard_margin_for_parked_vehicle: 0.7         # [m]
           max_expand_ratio: 0.0                         # [-] FOR DEVELOPER
           envelope_buffer_margin: 0.5                   # [m] FOR DEVELOPER
-          use_conservative_buffer_longitudinal: true    # [-] When set to true, the base_link2front is added to the longitudinal buffer before avoidance.
         truck:
           th_moving_speed: 1.0
           th_moving_time: 2.0
@@ -39,7 +38,6 @@
             hard_margin_for_parked_vehicle: 0.7
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.5
-          use_conservative_buffer_longitudinal: true
         bus:
           th_moving_speed: 1.0
           th_moving_time: 2.0
@@ -50,7 +48,6 @@
             hard_margin_for_parked_vehicle: 0.7
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.5
-          use_conservative_buffer_longitudinal: true
         trailer:
           th_moving_speed: 1.0
           th_moving_time: 2.0
@@ -61,7 +58,6 @@
             hard_margin_for_parked_vehicle: 0.7
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.5
-          use_conservative_buffer_longitudinal: true
         unknown:
           th_moving_speed: 0.28
           th_moving_time: 1.0
@@ -72,7 +68,6 @@
             hard_margin_for_parked_vehicle: -0.2
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.1
-          use_conservative_buffer_longitudinal: true
         bicycle:
           th_moving_speed: 0.28
           th_moving_time: 1.0
@@ -83,7 +78,6 @@
             hard_margin_for_parked_vehicle: 0.5
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.5
-          use_conservative_buffer_longitudinal: true
         motorcycle:
           th_moving_speed: 1.0
           th_moving_time: 1.0
@@ -94,7 +88,6 @@
             hard_margin_for_parked_vehicle: 0.3
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.5
-          use_conservative_buffer_longitudinal: true
         pedestrian:
           th_moving_speed: 0.28
           th_moving_time: 1.0
@@ -105,7 +98,6 @@
             hard_margin_for_parked_vehicle: 0.5
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.5
-          use_conservative_buffer_longitudinal: true
         lower_distance_for_polygon_expansion: 30.0      # [m] FOR DEVELOPER
         upper_distance_for_polygon_expansion: 100.0     # [m] FOR DEVELOPER
 
@@ -222,6 +214,8 @@
           min_slow_down_speed: 1.38                     # [m/s]
           buf_slow_down_speed: 0.56                     # [m/s] FOR DEVELOPER
           nominal_avoidance_speed: 8.33                 # [m/s] FOR DEVELOPER
+          consider_front_overhang: true                 # [-]
+          consider_rear_overhang: true                  # [-]
         # return dead line
         return_dead_line:
           goal:

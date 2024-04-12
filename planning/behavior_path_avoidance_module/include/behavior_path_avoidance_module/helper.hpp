@@ -148,16 +148,19 @@ public:
   {
     const auto object_type = utils::getHighestProbLabel(object.object.classification);
     const auto object_parameter = parameters_->object_parameters.at(object_type);
-    const auto & additional_buffer_longitudinal =
-      object_parameter.use_conservative_buffer_longitudinal ? data_->parameters.base_link2front
-                                                            : 0.0;
-    return object_parameter.longitudinal_margin + additional_buffer_longitudinal;
+    if (!parameters_->consider_front_overhang) {
+      return object_parameter.longitudinal_margin;
+    }
+    return object_parameter.longitudinal_margin + data_->parameters.base_link2front;
   }
 
   double getRearConstantDistance(const ObjectData & object) const
   {
     const auto object_type = utils::getHighestProbLabel(object.object.classification);
     const auto object_parameter = parameters_->object_parameters.at(object_type);
+    if (!parameters_->consider_rear_overhang) {
+      return object_parameter.longitudinal_margin;
+    }
     return object_parameter.longitudinal_margin + data_->parameters.base_link2rear + object.length;
   }
 

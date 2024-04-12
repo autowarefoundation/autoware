@@ -70,8 +70,6 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
       param.lateral_hard_margin_for_parked_vehicle =
         getOrDeclareParameter<double>(*node, ns + "lateral_margin.hard_margin_for_parked_vehicle");
       param.longitudinal_margin = getOrDeclareParameter<double>(*node, ns + "longitudinal_margin");
-      param.use_conservative_buffer_longitudinal =
-        getOrDeclareParameter<bool>(*node, ns + "use_conservative_buffer_longitudinal");
       return param;
     };
 
@@ -270,6 +268,8 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
     p.buf_slow_down_speed = getOrDeclareParameter<double>(*node, ns + "buf_slow_down_speed");
     p.nominal_avoidance_speed =
       getOrDeclareParameter<double>(*node, ns + "nominal_avoidance_speed");
+    p.consider_front_overhang = getOrDeclareParameter<bool>(*node, ns + "consider_front_overhang");
+    p.consider_rear_overhang = getOrDeclareParameter<bool>(*node, ns + "consider_rear_overhang");
   }
 
   // avoidance maneuver (return shift dead line)
