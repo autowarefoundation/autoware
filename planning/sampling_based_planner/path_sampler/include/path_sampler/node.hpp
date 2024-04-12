@@ -37,7 +37,7 @@ class PathSampler : public rclcpp::Node
 public:
   explicit PathSampler(const rclcpp::NodeOptions & node_options);
 
-protected:  // for the static_centerline_optimizer package
+protected:  // for the static_centerline_generator package
   // argument variables
   vehicle_info_util::VehicleInfo vehicle_info_{};
   mutable DebugData debug_data_{};

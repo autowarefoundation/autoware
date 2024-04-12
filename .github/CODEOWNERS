@@ -205,7 +205,7 @@ planning/sampling_based_planner/frenet_planner/** maxime.clement@tier4.jp
 planning/sampling_based_planner/path_sampler/** maxime.clement@tier4.jp
 planning/sampling_based_planner/sampler_common/** maxime.clement@tier4.jp
 planning/scenario_selector/** fumiya.watanabe@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
-planning/static_centerline_optimizer/** kosuke.takeuchi@tier4.jp takayuki.murooka@tier4.jp
+planning/static_centerline_generator/** kosuke.takeuchi@tier4.jp takayuki.murooka@tier4.jp
 planning/surround_obstacle_checker/** satoshi.ota@tier4.jp
 sensing/gnss_poser/** anh.nguyen.2@tier4.jp kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp ryu.yamamoto@tier4.jp shintaro.sakoda@tier4.jp taiki.yamada@tier4.jp yamato.ando@tier4.jp
 sensing/image_diagnostics/** dai.nguyen@tier4.jp

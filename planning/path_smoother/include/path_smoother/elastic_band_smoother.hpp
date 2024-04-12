@@ -38,7 +38,7 @@ class ElasticBandSmoother : public rclcpp::Node
 public:
   explicit ElasticBandSmoother(const rclcpp::NodeOptions & node_options);
 
-  // NOTE: This is for the static_centerline_optimizer package which utilizes the following
+  // NOTE: This is for the static_centerline_generator package which utilizes the following
   // instance.
   std::shared_ptr<EBPathSmoother> getElasticBandSmoother() const { return eb_path_smoother_ptr_; }
 
