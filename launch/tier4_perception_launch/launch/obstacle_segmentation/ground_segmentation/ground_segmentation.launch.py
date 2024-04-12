@@ -281,7 +281,7 @@ class GroundSegmentationPipeline:
         use_additional = bool(additional_lidars)
         relay_topic = "all_lidars/pointcloud"
         common_pipeline_output = (
-            "single_frame/pointcloud" if use_additional or use_ransac else output_topic
+            "common/pointcloud" if use_additional or use_ransac else output_topic
         )
 
         components = self.create_common_pipeline(
