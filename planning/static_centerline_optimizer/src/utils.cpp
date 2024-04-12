@@ -45,6 +45,11 @@ lanelet::Point3d createPoint3d(const double x, const double y, const double z = 
 
 namespace utils
 {
+rclcpp::QoS create_transient_local_qos()
+{
+  return rclcpp::QoS{1}.transient_local();
+}
+
 lanelet::ConstLanelets get_lanelets_from_ids(
   const RouteHandler & route_handler, const std::vector<lanelet::Id> & lane_ids)
 {

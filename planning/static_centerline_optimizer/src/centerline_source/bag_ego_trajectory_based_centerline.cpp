@@ -26,9 +26,11 @@ std::vector<TrajectoryPoint> generate_centerline_with_bag(rclcpp::Node & node)
 {
   const auto bag_filename = node.declare_parameter<std::string>("bag_filename");
 
+  // open rosbag
   rosbag2_cpp::Reader bag_reader;
   bag_reader.open(bag_filename);
 
+  // extract 2D position of ego's trajectory from rosbag
   rclcpp::Serialization<nav_msgs::msg::Odometry> bag_serialization;
   std::vector<TrajectoryPoint> centerline_traj_points;
   while (bag_reader.has_next()) {
@@ -55,8 +57,6 @@ std::vector<TrajectoryPoint> generate_centerline_with_bag(rclcpp::Node & node)
     }
     TrajectoryPoint centerline_traj_point;
     centerline_traj_point.pose.position = ros_msg->pose.pose.position;
-    // std::cerr << centerline_traj_point.pose.position.x << " "
-    //           << centerline_traj_point.pose.position.y << std::endl;
     centerline_traj_points.push_back(centerline_traj_point);
   }
 

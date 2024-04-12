@@ -31,6 +31,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace static_centerline_optimizer
@@ -81,8 +82,7 @@ private:
   std::shared_ptr<RouteHandler> route_handler_ptr_{nullptr};
   std::unique_ptr<lanelet::Projector> map_projector_{nullptr};
 
-  int traj_start_index_{0};
-  int traj_end_index_{0};
+  std::pair<int, int> traj_range_indices_{0, 0};
   std::optional<CenterlineWithRoute> centerline_with_route_{std::nullopt};
 
   enum class CenterlineSource {

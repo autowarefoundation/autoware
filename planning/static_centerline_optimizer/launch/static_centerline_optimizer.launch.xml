@@ -5,8 +5,7 @@
   <!-- flag -->
   <arg name="run_background" default="false"/>
   <arg name="rviz" default="true"/>
-  <!-- <arg name="centerline_source" default="optimization_trajectory_base" description="select from optimization_trajectory_base and bag_ego_trajectory_base"/> -->
-  <arg name="centerline_source" default="bag_ego_trajectory_base" description="select from optimization_trajectory_base and bag_ego_trajectory_base"/>
+  <arg name="centerline_source" default="optimization_trajectory_base" description="select from optimization_trajectory_base and bag_ego_trajectory_base"/>
   <arg name="bag_filename" default="bag.db3"/>
 
   <!-- mandatory arguments when run_background is true -->

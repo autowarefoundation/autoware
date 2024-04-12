@@ -20,6 +20,7 @@
 #include "path_smoother/elastic_band_smoother.hpp"
 #include "static_centerline_optimizer/static_centerline_optimizer_node.hpp"
 #include "static_centerline_optimizer/utils.hpp"
+#include "tier4_autoware_utils/ros/parameter.hpp"
 
 namespace static_centerline_optimizer
 {
@@ -30,10 +31,6 @@ rclcpp::NodeOptions create_node_options()
   return rclcpp::NodeOptions{};
 }
 
-rclcpp::QoS create_transient_local_qos()
-{
-  return rclcpp::QoS{1}.transient_local();
-}
 Path convert_to_path(const PathWithLaneId & path_with_lane_id)
 {
   Path path;
@@ -66,8 +63,9 @@ Trajectory convert_to_trajectory(const Path & path)
 OptimizationTrajectoryBasedCenterline::OptimizationTrajectoryBasedCenterline(rclcpp::Node & node)
 {
   pub_raw_path_with_lane_id_ =
-    node.create_publisher<PathWithLaneId>("input_centerline", create_transient_local_qos());
-  pub_raw_path_ = node.create_publisher<Path>("debug/raw_centerline", create_transient_local_qos());
+    node.create_publisher<PathWithLaneId>("input_centerline", utils::create_transient_local_qos());
+  pub_raw_path_ =
+    node.create_publisher<Path>("debug/raw_centerline", utils::create_transient_local_qos());
 }
 
 std::vector<TrajectoryPoint>
@@ -82,20 +80,13 @@ OptimizationTrajectoryBasedCenterline::generate_centerline_with_optimization(
 
   // get ego nearest search parameters and resample interval in behavior_path_planner
   const double ego_nearest_dist_threshold =
-    node.has_parameter("ego_nearest_dist_threshold")
-      ? node.get_parameter("ego_nearest_dist_threshold").as_double()
-      : node.declare_parameter<double>("ego_nearest_dist_threshold");
+    tier4_autoware_utils::getOrDeclareParameter<double>(node, "ego_nearest_dist_threshold");
   const double ego_nearest_yaw_threshold =
-    node.has_parameter("ego_nearest_yaw_threshold")
-      ? node.get_parameter("ego_nearest_yaw_threshold").as_double()
-      : node.declare_parameter<double>("ego_nearest_yaw_threshold");
-  const double behavior_path_interval = node.has_parameter("output_path_interval")
-                                          ? node.get_parameter("output_path_interval").as_double()
-                                          : node.declare_parameter<double>("output_path_interval");
+    tier4_autoware_utils::getOrDeclareParameter<double>(node, "ego_nearest_yaw_threshold");
+  const double behavior_path_interval =
+    tier4_autoware_utils::getOrDeclareParameter<double>(node, "output_path_interval");
   const double behavior_vel_interval =
-    node.has_parameter("behavior_output_path_interval")
-      ? node.get_parameter("behavior_output_path_interval").as_double()
-      : node.declare_parameter<double>("behavior_output_path_interval");
+    tier4_autoware_utils::getOrDeclareParameter<double>(node, "behavior_output_path_interval");
 
   // extract path with lane id from lanelets
   const auto raw_path_with_lane_id = [&]() {

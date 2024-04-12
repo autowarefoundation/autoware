@@ -18,8 +18,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "static_centerline_optimizer/type_alias.hpp"
 
-#include <memory>
-#include <string>
 #include <vector>
 
 namespace static_centerline_optimizer

@@ -28,6 +28,8 @@ namespace static_centerline_optimizer
 {
 namespace utils
 {
+rclcpp::QoS create_transient_local_qos();
+
 lanelet::ConstLanelets get_lanelets_from_ids(
   const RouteHandler & route_handler, const std::vector<lanelet::Id> & lane_ids);
 
