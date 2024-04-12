@@ -1,0 +1,1465 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for behavior_path_avoidance_module",
+  "type": "object",
+  "definitions": {
+    "behavior_path_avoidance_module": {
+      "type": "object",
+      "properties": {
+        "resample_interval_for_planning": {
+          "type": "number",
+          "description": "Path resample interval for avoidance planning path.",
+          "default": "0.3"
+        },
+        "resample_interval_for_output": {
+          "type": "number",
+          "description": "Path resample interval for output path. Too short interval increases computational cost for latter modules.",
+          "default": "4.0"
+        },
+        "enable_bound_clipping": {
+          "type": "boolean",
+          "description": "Enable clipping left and right bound of drivable area when obstacles are in the drivable area.",
+          "default": "false"
+        },
+        "disable_path_update": {
+          "type": "boolean",
+          "description": "Disable path update.",
+          "default": "false"
+        },
+        "use_adjacent_lane": {
+          "type": "boolean",
+          "description": "Extend avoidance trajectory to adjacent lanes that has same direction. If false, avoidance only happen in current lane.",
+          "default": "true"
+        },
+        "use_opposite_lane": {
+          "type": "boolean",
+          "description": "Extend avoidance trajectory to opposite direction lane. `use_adjacent_lane` must be `true` to take effects.",
+          "default": "true"
+        },
+        "use_hatched_road_markings": {
+          "type": "boolean",
+          "description": "Extend drivable to hatched road marking area.",
+          "default": "true"
+        },
+        "use_intersection_areas": {
+          "type": "boolean",
+          "description": "Extend drivable to intersection area.",
+          "default": "true"
+        },
+        "use_freespace_areas": {
+          "type": "boolean",
+          "description": "Extend drivable to freespace area.",
+          "default": "true"
+        },
+        "target_object": {
+          "type": "object",
+          "properties": {
+            "car": {
+              "type": "object",
+              "properties": {
+                "th_moving_speed": {
+                  "type": "number",
+                  "description": "Objects with speed greater than this will be judged as moving ones.",
+                  "default": 1.0,
+                  "minimum": 0.0
+                },
+                "th_moving_time": {
+                  "type": "number",
+                  "description": "Objects keep moving longer duration than this will be excluded from avoidance target.",
+                  "default": 1.0
+                },
+                "longitudinal_margin": {
+                  "type": "number",
+                  "description": "Creates an additional longitudinal gap that will prevent the vehicle from getting to near to the obstacle.",
+                  "default": 0.0
+                },
+                "lateral_margin": {
+                  "type": "object",
+                  "properties": {
+                    "soft_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.3
+                    },
+                    "hard_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.2
+                    },
+                    "hard_margin_for_parked_vehicle": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.7
+                    }
+                  },
+                  "required": ["soft_margin", "hard_margin", "hard_margin_for_parked_vehicle"],
+                  "additionalProperties": false
+                },
+                "envelope_buffer_margin": {
+                  "type": "number",
+                  "description": "The buffer between raw boundary box of detected objects and enveloped polygon that is used for avoidance path generation.",
+                  "default": 0.5
+                },
+                "max_expand_ratio": {
+                  "type": "number",
+                  "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
+                  "default": 0.0
+                },
+                "use_conservative_buffer_longitudinal": {
+                  "type": "boolean",
+                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
+                  "default": "true"
+                }
+              },
+              "required": [
+                "th_moving_speed",
+                "th_moving_time",
+                "longitudinal_margin",
+                "lateral_margin",
+                "envelope_buffer_margin",
+                "max_expand_ratio"
+              ],
+              "additionalProperties": false
+            },
+            "truck": {
+              "type": "object",
+              "properties": {
+                "th_moving_speed": {
+                  "type": "number",
+                  "description": "Objects with speed greater than this will be judged as moving ones.",
+                  "default": 1.0,
+                  "minimum": 0.0
+                },
+                "th_moving_time": {
+                  "type": "number",
+                  "description": "Objects keep moving longer duration than this will be excluded from avoidance target.",
+                  "default": 1.0
+                },
+                "longitudinal_margin": {
+                  "type": "number",
+                  "description": "Creates an additional longitudinal gap that will prevent the vehicle from getting to near to the obstacle.",
+                  "default": 0.0
+                },
+                "lateral_margin": {
+                  "type": "object",
+                  "properties": {
+                    "soft_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.3
+                    },
+                    "hard_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.2
+                    },
+                    "hard_margin_for_parked_vehicle": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.7
+                    }
+                  },
+                  "required": ["soft_margin", "hard_margin", "hard_margin_for_parked_vehicle"],
+                  "additionalProperties": false
+                },
+                "envelope_buffer_margin": {
+                  "type": "number",
+                  "description": "The buffer between raw boundary box of detected objects and enveloped polygon that is used for avoidance path generation.",
+                  "default": 0.5
+                },
+                "max_expand_ratio": {
+                  "type": "number",
+                  "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
+                  "default": 0.0
+                },
+                "use_conservative_buffer_longitudinal": {
+                  "type": "boolean",
+                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
+                  "default": "true"
+                }
+              },
+              "required": [
+                "th_moving_speed",
+                "th_moving_time",
+                "longitudinal_margin",
+                "lateral_margin",
+                "envelope_buffer_margin",
+                "max_expand_ratio"
+              ],
+              "additionalProperties": false
+            },
+            "bus": {
+              "type": "object",
+              "properties": {
+                "th_moving_speed": {
+                  "type": "number",
+                  "description": "Objects with speed greater than this will be judged as moving ones.",
+                  "default": 1.0,
+                  "minimum": 0.0
+                },
+                "th_moving_time": {
+                  "type": "number",
+                  "description": "Objects keep moving longer duration than this will be excluded from avoidance target.",
+                  "default": 1.0
+                },
+                "longitudinal_margin": {
+                  "type": "number",
+                  "description": "Creates an additional longitudinal gap that will prevent the vehicle from getting to near to the obstacle.",
+                  "default": 0.0
+                },
+                "lateral_margin": {
+                  "type": "object",
+                  "properties": {
+                    "soft_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.3
+                    },
+                    "hard_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.2
+                    },
+                    "hard_margin_for_parked_vehicle": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.7
+                    }
+                  },
+                  "required": ["soft_margin", "hard_margin", "hard_margin_for_parked_vehicle"],
+                  "additionalProperties": false
+                },
+                "envelope_buffer_margin": {
+                  "type": "number",
+                  "description": "The buffer between raw boundary box of detected objects and enveloped polygon that is used for avoidance path generation.",
+                  "default": 0.5
+                },
+                "max_expand_ratio": {
+                  "type": "number",
+                  "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
+                  "default": 0.0
+                },
+                "use_conservative_buffer_longitudinal": {
+                  "type": "boolean",
+                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
+                  "default": "true"
+                }
+              },
+              "required": [
+                "th_moving_speed",
+                "th_moving_time",
+                "longitudinal_margin",
+                "lateral_margin",
+                "envelope_buffer_margin",
+                "max_expand_ratio"
+              ],
+              "additionalProperties": false
+            },
+            "trailer": {
+              "type": "object",
+              "properties": {
+                "th_moving_speed": {
+                  "type": "number",
+                  "description": "Objects with speed greater than this will be judged as moving ones.",
+                  "default": 1.0,
+                  "minimum": 0.0
+                },
+                "th_moving_time": {
+                  "type": "number",
+                  "description": "Objects keep moving longer duration than this will be excluded from avoidance target.",
+                  "default": 1.0
+                },
+                "longitudinal_margin": {
+                  "type": "number",
+                  "description": "Creates an additional longitudinal gap that will prevent the vehicle from getting to near to the obstacle.",
+                  "default": 0.0
+                },
+                "lateral_margin": {
+                  "type": "object",
+                  "properties": {
+                    "soft_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.3
+                    },
+                    "hard_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.2
+                    },
+                    "hard_margin_for_parked_vehicle": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.7
+                    }
+                  },
+                  "required": ["soft_margin", "hard_margin", "hard_margin_for_parked_vehicle"],
+                  "additionalProperties": false
+                },
+                "envelope_buffer_margin": {
+                  "type": "number",
+                  "description": "The buffer between raw boundary box of detected objects and enveloped polygon that is used for avoidance path generation.",
+                  "default": 0.5
+                },
+                "max_expand_ratio": {
+                  "type": "number",
+                  "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
+                  "default": 0.0
+                },
+                "use_conservative_buffer_longitudinal": {
+                  "type": "boolean",
+                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
+                  "default": "true"
+                }
+              },
+              "required": [
+                "th_moving_speed",
+                "th_moving_time",
+                "longitudinal_margin",
+                "lateral_margin",
+                "envelope_buffer_margin",
+                "max_expand_ratio"
+              ],
+              "additionalProperties": false
+            },
+            "unknown": {
+              "type": "object",
+              "properties": {
+                "th_moving_speed": {
+                  "type": "number",
+                  "description": "Objects with speed greater than this will be judged as moving ones.",
+                  "default": 1.0,
+                  "minimum": 0.0
+                },
+                "th_moving_time": {
+                  "type": "number",
+                  "description": "Objects keep moving longer duration than this will be excluded from avoidance target.",
+                  "default": 1.0
+                },
+                "longitudinal_margin": {
+                  "type": "number",
+                  "description": "Creates an additional longitudinal gap that will prevent the vehicle from getting to near to the obstacle.",
+                  "default": 0.0
+                },
+                "lateral_margin": {
+                  "type": "object",
+                  "properties": {
+                    "soft_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.7
+                    },
+                    "hard_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": -0.2
+                    },
+                    "hard_margin_for_parked_vehicle": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": -0.2
+                    }
+                  },
+                  "required": ["soft_margin", "hard_margin", "hard_margin_for_parked_vehicle"],
+                  "additionalProperties": false
+                },
+                "envelope_buffer_margin": {
+                  "type": "number",
+                  "description": "The buffer between raw boundary box of detected objects and enveloped polygon that is used for avoidance path generation.",
+                  "default": 0.1
+                },
+                "max_expand_ratio": {
+                  "type": "number",
+                  "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
+                  "default": 0.0
+                },
+                "use_conservative_buffer_longitudinal": {
+                  "type": "boolean",
+                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
+                  "default": "true"
+                }
+              },
+              "required": [
+                "th_moving_speed",
+                "th_moving_time",
+                "longitudinal_margin",
+                "lateral_margin",
+                "envelope_buffer_margin",
+                "max_expand_ratio"
+              ],
+              "additionalProperties": false
+            },
+            "motorcycle": {
+              "type": "object",
+              "properties": {
+                "th_moving_speed": {
+                  "type": "number",
+                  "description": "Objects with speed greater than this will be judged as moving ones.",
+                  "default": 1.0,
+                  "minimum": 0.0
+                },
+                "th_moving_time": {
+                  "type": "number",
+                  "description": "Objects keep moving longer duration than this will be excluded from avoidance target.",
+                  "default": 1.0
+                },
+                "longitudinal_margin": {
+                  "type": "number",
+                  "description": "Creates an additional longitudinal gap that will prevent the vehicle from getting to near to the obstacle.",
+                  "default": 0.0
+                },
+                "lateral_margin": {
+                  "type": "object",
+                  "properties": {
+                    "soft_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.7
+                    },
+                    "hard_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.5
+                    },
+                    "hard_margin_for_parked_vehicle": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.5
+                    }
+                  },
+                  "required": ["soft_margin", "hard_margin", "hard_margin_for_parked_vehicle"],
+                  "additionalProperties": false
+                },
+                "envelope_buffer_margin": {
+                  "type": "number",
+                  "description": "The buffer between raw boundary box of detected objects and enveloped polygon that is used for avoidance path generation.",
+                  "default": 0.5
+                },
+                "max_expand_ratio": {
+                  "type": "number",
+                  "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
+                  "default": 0.0
+                },
+                "use_conservative_buffer_longitudinal": {
+                  "type": "boolean",
+                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
+                  "default": "true"
+                }
+              },
+              "required": [
+                "th_moving_speed",
+                "th_moving_time",
+                "longitudinal_margin",
+                "lateral_margin",
+                "envelope_buffer_margin",
+                "max_expand_ratio"
+              ],
+              "additionalProperties": false
+            },
+            "bicycle": {
+              "type": "object",
+              "properties": {
+                "th_moving_speed": {
+                  "type": "number",
+                  "description": "Objects with speed greater than this will be judged as moving ones.",
+                  "default": 1.0,
+                  "minimum": 0.0
+                },
+                "th_moving_time": {
+                  "type": "number",
+                  "description": "Objects keep moving longer duration than this will be excluded from avoidance target.",
+                  "default": 1.0
+                },
+                "longitudinal_margin": {
+                  "type": "number",
+                  "description": "Creates an additional longitudinal gap that will prevent the vehicle from getting to near to the obstacle.",
+                  "default": 0.0
+                },
+                "lateral_margin": {
+                  "type": "object",
+                  "properties": {
+                    "soft_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.7
+                    },
+                    "hard_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.3
+                    },
+                    "hard_margin_for_parked_vehicle": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.3
+                    }
+                  },
+                  "required": ["soft_margin", "hard_margin", "hard_margin_for_parked_vehicle"],
+                  "additionalProperties": false
+                },
+                "envelope_buffer_margin": {
+                  "type": "number",
+                  "description": "The buffer between raw boundary box of detected objects and enveloped polygon that is used for avoidance path generation.",
+                  "default": 0.5
+                },
+                "max_expand_ratio": {
+                  "type": "number",
+                  "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
+                  "default": 0.0
+                },
+                "use_conservative_buffer_longitudinal": {
+                  "type": "boolean",
+                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
+                  "default": "true"
+                }
+              },
+              "required": [
+                "th_moving_speed",
+                "th_moving_time",
+                "longitudinal_margin",
+                "lateral_margin",
+                "envelope_buffer_margin",
+                "max_expand_ratio"
+              ],
+              "additionalProperties": false
+            },
+            "pedestrian": {
+              "type": "object",
+              "properties": {
+                "th_moving_speed": {
+                  "type": "number",
+                  "description": "Objects with speed greater than this will be judged as moving ones.",
+                  "default": 1.0,
+                  "minimum": 0.0
+                },
+                "th_moving_time": {
+                  "type": "number",
+                  "description": "Objects keep moving longer duration than this will be excluded from avoidance target.",
+                  "default": 1.0
+                },
+                "longitudinal_margin": {
+                  "type": "number",
+                  "description": "Creates an additional longitudinal gap that will prevent the vehicle from getting to near to the obstacle.",
+                  "default": 0.0
+                },
+                "lateral_margin": {
+                  "type": "object",
+                  "properties": {
+                    "soft_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.7
+                    },
+                    "hard_margin": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.5
+                    },
+                    "hard_margin_for_parked_vehicle": {
+                      "type": "number",
+                      "description": "Lateral distance between ego and avoidance targets.",
+                      "default": 0.5
+                    }
+                  },
+                  "required": ["soft_margin", "hard_margin", "hard_margin_for_parked_vehicle"],
+                  "additionalProperties": false
+                },
+                "envelope_buffer_margin": {
+                  "type": "number",
+                  "description": "The buffer between raw boundary box of detected objects and enveloped polygon that is used for avoidance path generation.",
+                  "default": 0.5
+                },
+                "max_expand_ratio": {
+                  "type": "number",
+                  "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
+                  "default": 0.0
+                },
+                "use_conservative_buffer_longitudinal": {
+                  "type": "boolean",
+                  "description": "When set to true, the base_link2front is added to the longitudinal buffer before avoidance.",
+                  "default": "true"
+                }
+              },
+              "required": [
+                "th_moving_speed",
+                "th_moving_time",
+                "longitudinal_margin",
+                "lateral_margin",
+                "envelope_buffer_margin",
+                "max_expand_ratio"
+              ],
+              "additionalProperties": false
+            },
+            "lower_distance_for_polygon_expansion": {
+              "type": "number",
+              "description": "If the distance between the ego and object is less than this, the expand ratio will be zero.",
+              "default": 30.0
+            },
+            "upper_distance_for_polygon_expansion": {
+              "type": "number",
+              "description": "If the distance between the ego and object is larger than this, the expand ratio will be max_expand_ratio.",
+              "default": 100.0
+            }
+          },
+          "required": [
+            "car",
+            "truck",
+            "bus",
+            "trailer",
+            "unknown",
+            "bicycle",
+            "motorcycle",
+            "pedestrian",
+            "lower_distance_for_polygon_expansion",
+            "upper_distance_for_polygon_expansion"
+          ],
+          "additionalProperties": false
+        },
+        "target_filtering": {
+          "type": "object",
+          "properties": {
+            "target_type": {
+              "type": "object",
+              "properties": {
+                "car": {
+                  "type": "boolean",
+                  "description": "Enable avoidance maneuver for CAR.",
+                  "default": "true"
+                },
+                "truck": {
+                  "type": "boolean",
+                  "description": "Enable avoidance maneuver for TRUCK.",
+                  "default": "true"
+                },
+                "bus": {
+                  "type": "boolean",
+                  "description": "Enable avoidance maneuver for BUS.",
+                  "default": "true"
+                },
+                "trailer": {
+                  "type": "boolean",
+                  "description": "Enable avoidance maneuver for TRAILER.",
+                  "default": "true"
+                },
+                "unknown": {
+                  "type": "boolean",
+                  "description": "Enable avoidance maneuver for UNKNOWN.",
+                  "default": "true"
+                },
+                "bicycle": {
+                  "type": "boolean",
+                  "description": "Enable avoidance maneuver for BICYCLE.",
+                  "default": "true"
+                },
+                "motorcycle": {
+                  "type": "boolean",
+                  "description": "Enable avoidance maneuver for MOTORCYCLE.",
+                  "default": "true"
+                },
+                "pedestrian": {
+                  "type": "boolean",
+                  "description": "Enable avoidance maneuver for PEDESTRIAN.",
+                  "default": "true"
+                }
+              },
+              "required": [
+                "car",
+                "truck",
+                "bus",
+                "trailer",
+                "unknown",
+                "bicycle",
+                "motorcycle",
+                "pedestrian"
+              ],
+              "additionalProperties": false
+            },
+            "object_check_goal_distance": {
+              "type": "number",
+              "description": "If the distance between object and goal position is less than this parameter, the module do not return center line.",
+              "default": 20.0
+            },
+            "object_check_return_pose_distance": {
+              "type": "number",
+              "description": "If the distance between object and return position is less than this parameter, the module do not return center line.",
+              "default": 20.0
+            },
+            "max_compensation_time": {
+              "type": "number",
+              "description": "For the compensation of the detection lost. The object is registered once it is observed as an avoidance target. When the detection loses, the timer will start and the object will be un-registered when the time exceeds this limit.",
+              "default": 2.0
+            },
+            "detection_area": {
+              "type": "object",
+              "properties": {
+                "static": {
+                  "type": "boolean",
+                  "description": "If true, the detection area longitudinal range is calculated based on current ego speed.",
+                  "default": "false"
+                },
+                "min_forward_distance": {
+                  "type": "number",
+                  "description": "Minimum forward distance to search the avoidance target.",
+                  "default": 50.0
+                },
+                "max_forward_distance": {
+                  "type": "number",
+                  "description": "Maximum forward distance to search the avoidance target.",
+                  "default": 150.0
+                },
+                "backward_distance": {
+                  "type": "number",
+                  "description": "Backward distance to search the avoidance target.",
+                  "default": 10.0
+                }
+              },
+              "required": [
+                "static",
+                "min_forward_distance",
+                "max_forward_distance",
+                "backward_distance"
+              ],
+              "additionalProperties": false
+            },
+            "parked_vehicle": {
+              "type": "object",
+              "properties": {
+                "th_offset_from_centerline": {
+                  "type": "number",
+                  "description": "Vehicles around the center line within this distance will be excluded from avoidance target.",
+                  "default": 1.0
+                },
+                "th_shiftable_ratio": {
+                  "type": "number",
+                  "description": "Vehicles around the center line within this distance will be excluded from avoidance target.",
+                  "default": 0.8,
+                  "minimum": 0.0,
+                  "maximum": 1.0
+                },
+                "min_road_shoulder_width": {
+                  "type": "number",
+                  "description": "Width considered as a road shoulder if the lane does not have a road shoulder target.",
+                  "default": 0.5
+                }
+              },
+              "required": [
+                "th_offset_from_centerline",
+                "th_shiftable_ratio",
+                "min_road_shoulder_width"
+              ],
+              "additionalProperties": false
+            },
+            "avoidance_for_ambiguous_vehicle": {
+              "type": "object",
+              "properties": {
+                "enable": {
+                  "type": "boolean",
+                  "description": "Enable avoidance maneuver for ambiguous vehicles.",
+                  "default": "true"
+                },
+                "closest_distance_to_wait_and_see": {
+                  "type": "number",
+                  "description": "Start avoidance maneuver after the distance to ambiguous vehicle is less than this param.",
+                  "default": 10.0
+                },
+                "condition": {
+                  "type": "object",
+                  "properties": {
+                    "th_stopped_time": {
+                      "type": "number",
+                      "description": "Never avoid object whose stopped time is less than this param.",
+                      "default": 3.0
+                    },
+                    "th_moving_distance": {
+                      "type": "number",
+                      "description": "Never avoid object which moves more than this param.",
+                      "default": 1.0
+                    }
+                  },
+                  "required": ["th_stopped_time", "th_moving_distance"],
+                  "additionalProperties": false
+                },
+                "ignore_area": {
+                  "type": "object",
+                  "properties": {
+                    "traffic_light": {
+                      "type": "object",
+                      "properties": {
+                        "front_distance": {
+                          "type": "number",
+                          "description": "If the distance between traffic light and vehicle is less than this parameter, this module will ignore it.",
+                          "default": 100.0
+                        }
+                      },
+                      "required": ["front_distance"],
+                      "additionalProperties": false
+                    },
+                    "crosswalk": {
+                      "type": "object",
+                      "properties": {
+                        "front_distance": {
+                          "type": "number",
+                          "description": "If the front distance between crosswalk and vehicle is less than this parameter, this module will ignore it.",
+                          "default": 30.0
+                        },
+                        "behind_distance": {
+                          "type": "number",
+                          "description": "If the back distance between crosswalk and vehicle is less than this parameter, this module will ignore it.",
+                          "default": 30.0
+                        }
+                      },
+                      "required": ["front_distance", "behind_distance"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["traffic_light", "crosswalk"],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "enable",
+                "closest_distance_to_wait_and_see",
+                "condition",
+                "ignore_area"
+              ],
+              "additionalProperties": false
+            },
+            "intersection": {
+              "type": "object",
+              "properties": {
+                "yaw_deviation": {
+                  "type": "number",
+                  "description": "Yaw deviation threshold param to judge if the object is not merging or deviating vehicle.",
+                  "default": 0.349
+                }
+              },
+              "required": ["yaw_deviation"],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "target_type",
+            "object_check_goal_distance",
+            "object_check_return_pose_distance",
+            "max_compensation_time",
+            "detection_area",
+            "parked_vehicle",
+            "avoidance_for_ambiguous_vehicle",
+            "intersection"
+          ],
+          "additionalProperties": false
+        },
+        "safety_check": {
+          "type": "object",
+          "properties": {
+            "target_type": {
+              "type": "object",
+              "properties": {
+                "car": {
+                  "type": "boolean",
+                  "description": "Enable safety_check for CAR.",
+                  "default": "true"
+                },
+                "truck": {
+                  "type": "boolean",
+                  "description": "Enable safety_check for TRUCK.",
+                  "default": "true"
+                },
+                "bus": {
+                  "type": "boolean",
+                  "description": "Enable safety_check for BUS.",
+                  "default": "true"
+                },
+                "trailer": {
+                  "type": "boolean",
+                  "description": "Enable safety_check for TRAILER.",
+                  "default": "true"
+                },
+                "unknown": {
+                  "type": "boolean",
+                  "description": "Enable safety_check for UNKNOWN.",
+                  "default": "false"
+                },
+                "bicycle": {
+                  "type": "boolean",
+                  "description": "Enable safety_check for BICYCLE.",
+                  "default": "true"
+                },
+                "motorcycle": {
+                  "type": "boolean",
+                  "description": "Enable safety_check for MOTORCYCLE.",
+                  "default": "true"
+                },
+                "pedestrian": {
+                  "type": "boolean",
+                  "description": "Enable safety_check for PEDESTRIAN.",
+                  "default": "true"
+                }
+              },
+              "required": [
+                "car",
+                "truck",
+                "bus",
+                "trailer",
+                "unknown",
+                "bicycle",
+                "motorcycle",
+                "pedestrian"
+              ],
+              "additionalProperties": false
+            },
+            "enable": {
+              "type": "boolean",
+              "description": "Enable to use safety check feature.",
+              "default": "true"
+            },
+            "check_current_lane": {
+              "type": "boolean",
+              "description": "Check objects on current driving lane.",
+              "default": "true"
+            },
+            "check_shift_side_lane": {
+              "type": "boolean",
+              "description": "Check objects on shift side lane.",
+              "default": "true"
+            },
+            "check_other_side_lane": {
+              "type": "boolean",
+              "description": "Check objects on other side lane.",
+              "default": "true"
+            },
+            "check_unavoidable_object": {
+              "type": "boolean",
+              "description": "Check collision between ego and unavoidable objects.",
+              "default": "true"
+            },
+            "check_other_object": {
+              "type": "boolean",
+              "description": "Check collision between ego and non avoidance target objects.",
+              "default": "true"
+            },
+            "check_all_predicted_path": {
+              "type": "boolean",
+              "description": "Check all prediction path of safety check target objects.",
+              "default": "true"
+            },
+            "safety_check_backward_distance": {
+              "type": "number",
+              "description": "Backward distance to search the dynamic objects.",
+              "default": 100.0
+            },
+            "hysteresis_factor_expand_rate": {
+              "type": "number",
+              "description": "Hysteresis factor that be used for chattering prevention.",
+              "default": 2.0
+            },
+            "hysteresis_factor_safe_count": {
+              "type": "integer",
+              "description": "Hysteresis count that be used for chattering prevention.",
+              "default": 10
+            },
+            "min_velocity": {
+              "type": "number",
+              "description": "Minimum velocity of the ego vehicle's predicted path.",
+              "default": 1.38
+            },
+            "max_velocity": {
+              "type": "number",
+              "description": "Maximum velocity of the ego vehicle's predicted path.",
+              "default": 50.0
+            },
+            "time_resolution": {
+              "type": "number",
+              "description": "Time resolution for the ego vehicle's predicted path.",
+              "default": 0.5
+            },
+            "time_horizon_for_front_object": {
+              "type": "number",
+              "description": "Time horizon for predicting front objects.",
+              "default": 3.0
+            },
+            "time_horizon_for_rear_object": {
+              "type": "number",
+              "description": "Time horizon for predicting rear objects.",
+              "default": 10.0
+            },
+            "delay_until_departure": {
+              "type": "number",
+              "description": "Delay until the ego vehicle departs.",
+              "default": 1.0
+            },
+            "extended_polygon_policy": {
+              "type": "string",
+              "enum": ["rectangle", "along_path"],
+              "description": "See https://github.com/autowarefoundation/autoware.universe/pull/6336.",
+              "default": "along_path"
+            },
+            "expected_front_deceleration": {
+              "type": "number",
+              "description": "The front object's maximum deceleration when the front vehicle perform sudden braking.",
+              "default": -1.0
+            },
+            "expected_rear_deceleration": {
+              "type": "number",
+              "description": "The rear object's maximum deceleration when the rear vehicle perform sudden braking.",
+              "default": -1.0
+            },
+            "rear_vehicle_reaction_time": {
+              "type": "number",
+              "description": "The reaction time of the rear vehicle driver which starts from the driver noticing the sudden braking of the front vehicle until the driver step on the brake.",
+              "default": 2.0
+            },
+            "rear_vehicle_safety_time_margin": {
+              "type": "number",
+              "description": "The time buffer for the rear vehicle to come into complete stop when its driver perform sudden braking.",
+              "default": 1.0
+            },
+            "lateral_distance_max_threshold": {
+              "type": "number",
+              "description": "The lateral distance threshold that is used to determine whether lateral distance between two object is enough and whether lane change is safe.",
+              "default": 2.0
+            },
+            "longitudinal_distance_min_threshold": {
+              "type": "number",
+              "description": "The longitudinal distance threshold that is used to determine whether longitudinal distance between two object is enough and whether lane change is safe.",
+              "default": 3.0
+            },
+            "longitudinal_velocity_delta_time": {
+              "type": "number",
+              "description": "The time multiplier that is used to compute the actual gap between vehicle at each predicted points (not RSS distance)",
+              "default": 0.0
+            }
+          },
+          "required": [
+            "target_type",
+            "enable",
+            "check_current_lane",
+            "check_shift_side_lane",
+            "check_other_side_lane",
+            "check_unavoidable_object",
+            "check_other_object",
+            "check_all_predicted_path",
+            "safety_check_backward_distance",
+            "hysteresis_factor_expand_rate",
+            "hysteresis_factor_safe_count",
+            "min_velocity",
+            "max_velocity",
+            "time_resolution",
+            "time_horizon_for_front_object",
+            "time_horizon_for_rear_object",
+            "delay_until_departure",
+            "extended_polygon_policy",
+            "expected_front_deceleration",
+            "expected_rear_deceleration",
+            "rear_vehicle_reaction_time",
+            "rear_vehicle_safety_time_margin",
+            "lateral_distance_max_threshold",
+            "longitudinal_distance_min_threshold",
+            "longitudinal_velocity_delta_time"
+          ],
+          "additionalProperties": false
+        },
+        "avoidance": {
+          "type": "object",
+          "properties": {
+            "lateral": {
+              "type": "object",
+              "properties": {
+                "th_avoid_execution": {
+                  "type": "number",
+                  "description": "The lateral distance deviation threshold between the current path and suggested avoidance point to execute avoidance.",
+                  "default": 0.09
+                },
+                "th_small_shift_length": {
+                  "type": "number",
+                  "description": "The shift lines whose lateral offset is less than this will be applied with other ones.",
+                  "default": 0.101
+                },
+                "soft_drivable_bound_margin": {
+                  "type": "number",
+                  "description": "Keep distance to drivable bound.",
+                  "default": 0.3
+                },
+                "hard_drivable_bound_margin": {
+                  "type": "number",
+                  "description": "Keep distance to drivable bound.",
+                  "default": 0.3
+                },
+                "max_right_shift_length": {
+                  "type": "number",
+                  "description": "Maximum shift length for right direction",
+                  "default": 5.0
+                },
+                "max_left_shift_length": {
+                  "type": "number",
+                  "description": "Maximum shift length for left direction.",
+                  "default": 5.0
+                },
+                "max_deviation_from_lane": {
+                  "type": "number",
+                  "description": "Use in validation phase to check if the avoidance path is in drivable area.",
+                  "default": 0.2
+                },
+                "ratio_for_return_shift_approval": {
+                  "type": "number",
+                  "description": "This parameter is added to allow waiting for the return of shift approval until the occlusion behind the avoid target is clear.",
+                  "default": 0.5,
+                  "minimum": 0.0,
+                  "maximum": 1.0
+                }
+              },
+              "required": [
+                "th_avoid_execution",
+                "th_small_shift_length",
+                "soft_drivable_bound_margin",
+                "hard_drivable_bound_margin",
+                "max_deviation_from_lane",
+                "ratio_for_return_shift_approval"
+              ],
+              "additionalProperties": false
+            },
+            "longitudinal": {
+              "type": "object",
+              "properties": {
+                "min_prepare_time": {
+                  "type": "number",
+                  "description": "Avoidance shift starts from point ahead of this time x ego speed at least.",
+                  "default": 1.0
+                },
+                "max_prepare_time": {
+                  "type": "number",
+                  "description": "Avoidance shift starts from point ahead of this time x ego speed if possible.",
+                  "default": 2.0
+                },
+                "min_prepare_distance": {
+                  "type": "number",
+                  "description": "Minimum prepare distance.",
+                  "default": 1.0
+                },
+                "min_slow_down_speed": {
+                  "type": "number",
+                  "description": "Minimum slow speed for avoidance prepare section.",
+                  "default": 1.38
+                },
+                "buf_slow_down_speed": {
+                  "type": "number",
+                  "description": "Buffer for controller tracking error. Basically, vehicle always cannot follow velocity profile precisely. Therefore, the module inserts lower speed than target speed that satisfies conditions to avoid object within accel/jerk constraints so that the avoidance path always can be output even if the current speed is a little bit higher than target speed.",
+                  "default": 0.56
+                },
+                "nominal_avoidance_speed": {
+                  "type": "number",
+                  "description": "Nominal avoidance speed.",
+                  "default": 8.33
+                }
+              },
+              "required": [
+                "min_prepare_time",
+                "max_prepare_time",
+                "min_prepare_distance",
+                "min_slow_down_speed",
+                "buf_slow_down_speed",
+                "nominal_avoidance_speed"
+              ],
+              "additionalProperties": false
+            },
+            "return_dead_line": {
+              "type": "object",
+              "properties": {
+                "goal": {
+                  "type": "object",
+                  "properties": {
+                    "enable": {
+                      "type": "boolean",
+                      "description": "Insert stop point in order to return original lane before reaching goal.",
+                      "default": "true"
+                    },
+                    "buffer": {
+                      "type": "number",
+                      "description": "Buffer distance to return original lane before reaching goal.",
+                      "default": 3.0
+                    }
+                  },
+                  "required": ["enable", "buffer"],
+                  "additionalProperties": false
+                },
+                "traffic_light": {
+                  "type": "object",
+                  "properties": {
+                    "enable": {
+                      "type": "boolean",
+                      "description": "Insert stop point in order to return original lane before reaching traffic light.",
+                      "default": "true"
+                    },
+                    "buffer": {
+                      "type": "number",
+                      "description": "Buffer distance to return original lane before reaching traffic light.",
+                      "default": 3.0
+                    }
+                  },
+                  "required": ["enable", "buffer"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["goal", "traffic_light"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["lateral", "longitudinal", "return_dead_line"],
+          "additionalProperties": false
+        },
+        "stop": {
+          "type": "object",
+          "properties": {
+            "max_distance": {
+              "type": "number",
+              "description": "Maximum stop distance in the situation where avoidance maneuver is not approved or in yield maneuver.",
+              "default": 20.0
+            },
+            "stop_buffer": {
+              "type": "number",
+              "description": "Buffer distance in the situation where avoidance maneuver is not approved or in yield maneuver.",
+              "default": 1.0
+            }
+          },
+          "required": ["max_distance", "stop_buffer"],
+          "additionalProperties": false
+        },
+        "yield": {
+          "type": "object",
+          "properties": {
+            "enable": {
+              "type": "boolean",
+              "description": "Flag to enable yield maneuver.",
+              "default": "true"
+            },
+            "enable_during_shifting": {
+              "type": "boolean",
+              "description": "Flag to enable yield maneuver during shifting.",
+              "default": "false"
+            }
+          },
+          "required": ["enable", "enable_during_shifting"],
+          "additionalProperties": false
+        },
+        "cancel": {
+          "type": "object",
+          "properties": {
+            "enable": {
+              "type": "boolean",
+              "description": "Flag to enable cancel maneuver.",
+              "default": "true"
+            }
+          },
+          "required": ["enable"],
+          "additionalProperties": false
+        },
+        "policy": {
+          "type": "object",
+          "properties": {
+            "make_approval_request": {
+              "type": "string",
+              "enum": ["per_shift_line", "per_avoidance_maneuver"],
+              "description": "policy for rtc request. select `per_shift_line` or `per_avoidance_maneuver`. `per_shift_line`: request approval for each shift line. `per_avoidance_maneuver`: request approval for avoidance maneuver (avoid + return).",
+              "default": "per_shift_line"
+            },
+            "deceleration": {
+              "type": "string",
+              "enum": ["reliable", "best_effort"],
+              "description": "policy for vehicle slow down behavior. select `best_effort` or `reliable`. `best_effort`: slow down deceleration & jerk are limited by constraints but there is a possibility that the vehicle can't stop in front of the vehicle. `reliable`: insert stop or slow down point with ignoring decel/jerk constraints. make it possible to increase chance to avoid but uncomfortable deceleration maybe happen.",
+              "default": "best_effort"
+            },
+            "lateral_margin": {
+              "type": "string",
+              "enum": ["reliable", "best_effort"],
+              "description": "policy for voidance lateral margin. select `best_effort` or `reliable`. `best_effort`: output avoidance path with shorten lateral margin when there is no enough longitudinal margin to avoid. `reliable`: module output avoidance path with safe (rtc cooperate) state only when the vehicle can avoid with expected lateral margin.",
+              "default": "best_effort"
+            },
+            "use_shorten_margin_immediately": {
+              "type": "boolean",
+              "description": "if true, module doesn't wait deceleration and outputs avoidance path by best effort margin.",
+              "default": "true"
+            }
+          },
+          "required": ["make_approval_request"],
+          "additionalProperties": false
+        },
+        "constraints": {
+          "type": "object",
+          "properties": {
+            "lateral": {
+              "type": "object",
+              "properties": {
+                "velocity": {
+                  "type": "array",
+                  "description": "Velocity array to decide current lateral accel/jerk limit.",
+                  "default": [1.0, 1.38, 11.1]
+                },
+                "max_accel_values": {
+                  "type": "array",
+                  "description": "Avoidance path gets sharp up to this accel limit when there is not enough distance from ego.",
+                  "default": [0.5, 0.5, 0.5]
+                },
+                "min_jerk_values": {
+                  "type": "array",
+                  "description": "Avoidance path is generated with this jerk when there is enough distance from ego.",
+                  "default": [0.2, 0.2, 0.2]
+                },
+                "max_jerk_values": {
+                  "type": "array",
+                  "description": "Avoidance path gets sharp up to this jerk limit when there is not enough distance from ego.",
+                  "default": [1.0, 1.0, 1.0]
+                }
+              },
+              "required": ["velocity", "max_accel_values", "min_jerk_values", "max_jerk_values"],
+              "additionalProperties": false
+            },
+            "longitudinal": {
+              "type": "object",
+              "properties": {
+                "nominal_deceleration": {
+                  "type": "number",
+                  "description": "Nominal deceleration limit.",
+                  "default": -1.0
+                },
+                "nominal_jerk": {
+                  "type": "number",
+                  "description": "Nominal jerk limit.",
+                  "default": 0.5
+                },
+                "max_deceleration": {
+                  "type": "number",
+                  "description": "Max deceleration limit.",
+                  "default": -1.5
+                },
+                "max_jerk": {
+                  "type": "number",
+                  "description": "Max jerk limit.",
+                  "default": 1.0
+                },
+                "max_acceleration": {
+                  "type": "number",
+                  "description": "Maximum acceleration during avoidance.",
+                  "default": 0.5
+                },
+                "min_velocity_to_limit_max_acceleration": {
+                  "type": "number",
+                  "description": "If the ego speed is faster than this param, the module applies acceleration limit `max_acceleration`.",
+                  "default": 2.78
+                }
+              },
+              "required": [
+                "nominal_deceleration",
+                "nominal_jerk",
+                "max_deceleration",
+                "max_jerk",
+                "max_acceleration",
+                "min_velocity_to_limit_max_acceleration"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": ["lateral", "longitudinal"],
+          "additionalProperties": false
+        },
+        "shift_line_pipeline": {
+          "type": "object",
+          "properties": {
+            "trim": {
+              "type": "object",
+              "properties": {
+                "quantize_size": {
+                  "type": "number",
+                  "description": "Lateral shift length quantize size.",
+                  "default": 0.1
+                },
+                "th_similar_grad_1": {
+                  "type": "number",
+                  "description": "Lateral shift length threshold to merge similar gradient shift lines.",
+                  "default": 0.1
+                },
+                "th_similar_grad_2": {
+                  "type": "number",
+                  "description": "Lateral shift length threshold to merge similar gradient shift lines.",
+                  "default": 0.2
+                },
+                "th_similar_grad_3": {
+                  "type": "number",
+                  "description": "Lateral shift length threshold to merge similar gradient shift lines.",
+                  "default": 0.5
+                }
+              },
+              "required": [
+                "quantize_size",
+                "th_similar_grad_1",
+                "th_similar_grad_2",
+                "th_similar_grad_3"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": ["trim"],
+          "additionalProperties": false
+        },
+        "debug": {
+          "type": "object",
+          "properties": {
+            "marker": {
+              "type": "boolean",
+              "description": "Publish debug marker.",
+              "default": "false"
+            },
+            "console": {
+              "type": "boolean",
+              "description": "Output debug info on console.",
+              "default": "false"
+            }
+          },
+          "required": ["marker", "console"],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "resample_interval_for_planning",
+        "resample_interval_for_output",
+        "enable_bound_clipping",
+        "use_adjacent_lane",
+        "use_opposite_lane",
+        "use_hatched_road_markings",
+        "use_intersection_areas",
+        "use_freespace_areas",
+        "target_object",
+        "target_filtering",
+        "safety_check",
+        "avoidance",
+        "stop",
+        "yield",
+        "cancel",
+        "policy",
+        "constraints",
+        "shift_line_pipeline",
+        "debug"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "properties": {
+        "ros__parameters": {
+          "type": "object",
+          "properties": {
+            "avoidance": {
+              "$ref": "#/definitions/behavior_path_avoidance_module"
+            }
+          },
+          "required": ["avoidance"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
