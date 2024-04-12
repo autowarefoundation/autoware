@@ -93,26 +93,56 @@ void StartPlannerModule::onFreespacePlannerTimer()
 {
   const ScopedFlag flag(is_freespace_planner_cb_running_);
 
-  if (getCurrentStatus() == ModuleStatus::IDLE) {
+  std::shared_ptr<const PlannerData> local_planner_data{nullptr};
+  std::optional<ModuleStatus> current_status_opt{std::nullopt};
+  std::optional<StartPlannerParameters> parameters_opt{std::nullopt};
+  std::optional<PullOutStatus> pull_out_status_opt{std::nullopt};
+  bool is_stopped;
+
+  // making a local copy of thread sensitive data
+  {
+    std::lock_guard<std::mutex> guard(start_planner_data_mutex_);
+    if (start_planner_data_) {
+      const auto & start_planner_data = start_planner_data_.value();
+      local_planner_data = std::make_shared<PlannerData>(start_planner_data.planner_data);
+      current_status_opt = start_planner_data.current_status;
+      parameters_opt = start_planner_data.parameters;
+      pull_out_status_opt = start_planner_data.main_thread_pull_out_status;
+      is_stopped = start_planner_data.is_stopped;
+    }
+  }
+  // finish copying thread sensitive data
+  if (!local_planner_data || !current_status_opt || !parameters_opt || !pull_out_status_opt) {
     return;
   }
 
-  if (!planner_data_) {
+  const auto & current_status = current_status_opt.value();
+  const auto & parameters = parameters_opt.value();
+  const auto & pull_out_status = pull_out_status_opt.value();
+
+  if (current_status == ModuleStatus::IDLE) {
     return;
   }
 
-  if (!planner_data_->costmap) {
+  if (!local_planner_data->costmap) {
     return;
   }
 
   const bool is_new_costmap =
-    (clock_->now() - planner_data_->costmap->header.stamp).seconds() < 1.0;
+    (clock_->now() - local_planner_data->costmap->header.stamp).seconds() < 1.0;
   if (!is_new_costmap) {
     return;
   }
 
-  if (isStuck()) {
-    planFreespacePath();
+  const bool is_stuck = is_stopped && pull_out_status.planner_type == PlannerType::STOP &&
+                        !pull_out_status.found_pull_out_path;
+  if (is_stuck) {
+    const auto free_space_status =
+      planFreespacePath(parameters, local_planner_data, pull_out_status);
+    if (free_space_status) {
+      std::lock_guard<std::mutex> guard(start_planner_data_mutex_);
+      freespace_thread_status_ = free_space_status;
+    }
   }
 }
 
@@ -172,6 +202,38 @@ void StartPlannerModule::updateObjectsFilteringParams(
 
 void StartPlannerModule::updateData()
 {
+  // The method PlannerManager::run() calls SceneModuleInterface::setData and
+  // SceneModuleInterface::setPreviousModuleOutput() before this module's run() method is called
+  // with module_ptr->run(). Then module_ptr->run() invokes StartPlannerModule::updateData and,
+  // finally, the planWaitingApproval()/plan() methods are called by run(). So we can copy the
+  // latest current_status to start_planner_data_ here for later usage.
+
+  // NOTE: onFreespacePlannerTimer copies start_planner_data to its thread local variable, so we
+  // need to lock start_planner_data_ here to avoid data race. But the following clone process is
+  // lightweight because most of the member variables of PlannerData/RouteHandler is
+  // shared_ptrs/bool
+  // making a local copy of thread sensitive data
+  {
+    std::lock_guard<std::mutex> guard(start_planner_data_mutex_);
+    if (!start_planner_data_) {
+      start_planner_data_ = StartPlannerData();
+    }
+    start_planner_data_.value().update(
+      *parameters_, *planner_data_, getCurrentStatus(), status_, isStopped());
+    if (freespace_thread_status_) {
+      // if freespace solution is available, copy it to status_ on main thread
+      const auto & freespace_status = freespace_thread_status_.value();
+      status_.pull_out_path = freespace_status.pull_out_path;
+      status_.pull_out_start_pose = freespace_status.pull_out_start_pose;
+      status_.planner_type = freespace_status.planner_type;
+      status_.found_pull_out_path = freespace_status.found_pull_out_path;
+      status_.driving_forward = freespace_status.driving_forward;
+      // and then reset it
+      freespace_thread_status_ = std::nullopt;
+    }
+  }
+  // finish copying thread sensitive data
+
   if (receivedNewRoute()) {
     resetStatus();
     DEBUG_PRINT("StartPlannerModule::updateData() received new route, reset status");
@@ -1128,19 +1190,6 @@ bool StartPlannerModule::needToPrepareBlinkerBeforeStartDrivingForward() const
   return elapsed < parameters_->prepare_time_before_start;
 }
 
-bool StartPlannerModule::isStuck()
-{
-  if (!isStopped()) {
-    return false;
-  }
-
-  if (status_.planner_type == PlannerType::STOP || !status_.found_pull_out_path) {
-    return true;
-  }
-
-  return false;
-}
-
 bool StartPlannerModule::hasFinishedCurrentPath()
 {
   const auto current_path = getCurrentPath();
@@ -1336,19 +1385,21 @@ BehaviorModuleOutput StartPlannerModule::generateStopOutput()
   return output;
 }
 
-bool StartPlannerModule::planFreespacePath()
+std::optional<PullOutStatus> StartPlannerModule::planFreespacePath(
+  const StartPlannerParameters & parameters,
+  const std::shared_ptr<const PlannerData> & planner_data, const PullOutStatus & pull_out_status)
 {
-  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
-  const auto & route_handler = planner_data_->route_handler;
+  const Pose & current_pose = planner_data->self_odometry->pose.pose;
+  const auto & route_handler = planner_data->route_handler;
 
-  const double end_pose_search_start_distance = parameters_->end_pose_search_start_distance;
-  const double end_pose_search_end_distance = parameters_->end_pose_search_end_distance;
-  const double end_pose_search_interval = parameters_->end_pose_search_interval;
+  const double end_pose_search_start_distance = parameters.end_pose_search_start_distance;
+  const double end_pose_search_end_distance = parameters.end_pose_search_end_distance;
+  const double end_pose_search_interval = parameters.end_pose_search_interval;
 
   const double backward_path_length =
-    planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
+    planner_data->parameters.backward_path_length + parameters.max_back_distance;
   const auto current_lanes = utils::getExtendedCurrentLanes(
-    planner_data_, backward_path_length, std::numeric_limits<double>::max(),
+    planner_data, backward_path_length, std::numeric_limits<double>::max(),
     /*forward_only_in_route*/ true);
 
   const auto current_arc_coords = lanelet::utils::getArcCoordinates(current_lanes, current_pose);
@@ -1361,23 +1412,23 @@ bool StartPlannerModule::planFreespacePath()
 
   for (const auto & p : center_line_path.points) {
     const Pose end_pose = p.point.pose;
-    freespace_planner_->setPlannerData(planner_data_);
+    freespace_planner_->setPlannerData(planner_data);
     auto freespace_path = freespace_planner_->plan(current_pose, end_pose);
 
     if (!freespace_path) {
       continue;
     }
 
-    const std::lock_guard<std::mutex> lock(mutex_);
-    status_.pull_out_path = *freespace_path;
-    status_.pull_out_start_pose = current_pose;
-    status_.planner_type = freespace_planner_->getPlannerType();
-    status_.found_pull_out_path = true;
-    status_.driving_forward = true;
-    return true;
+    auto status = pull_out_status;
+    status.pull_out_path = *freespace_path;
+    status.pull_out_start_pose = current_pose;
+    status.planner_type = freespace_planner_->getPlannerType();
+    status.found_pull_out_path = true;
+    status.driving_forward = true;
+    return std::make_optional<PullOutStatus>(status);
   }
 
-  return false;
+  return std::nullopt;
 }
 
 void StartPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) const
@@ -1664,5 +1715,44 @@ void StartPlannerModule::logPullOutStatus(rclcpp::Logger::Level log_level) const
   logFunc("  ModuleStatus: %s", current_status.c_str());
 
   logFunc("=======================================");
+}
+
+StartPlannerModule::StartPlannerData StartPlannerModule::StartPlannerData::clone() const
+{
+  StartPlannerData start_planner_data;
+  start_planner_data.update(
+    parameters, planner_data, current_status, main_thread_pull_out_status, is_stopped);
+  return start_planner_data;
+}
+
+void StartPlannerModule::StartPlannerData::update(
+  const StartPlannerParameters & parameters_, const PlannerData & planner_data_,
+  const ModuleStatus & current_status_, const PullOutStatus & pull_out_status_,
+  const bool is_stopped_)
+{
+  parameters = parameters_;
+  planner_data = planner_data_;
+  // TODO(Mamoru Sobue): in the future we will add planner_data->is_route_handler_updated flag to
+  // avoid the copy overhead of lanelet objects inside the RouteHandler. behavior_path_planner can
+  // tell us the flag if map/route changed, so we can skip route_handler update if it
+  // is false in the following way
+  /*
+    auto route_handler_self = planner_data.route_handler;
+    planner_data = planner_data_; // sync planer_data to planner_data_, planner_data.route_handler
+    is once re-pointed
+
+    if (!planner_data_->is_route_handler_updated && route_handler_self != nullptr) {
+      // we do not need to sync planner_data.route_handler with that of planner_data_
+      // re-point to the original again
+      planner_data.route_handler = route_handler_self;
+    } else {
+      // this is actually heavy if the lanelet_map is HUGE
+      planner_data.route_handler = std::make_shared<RouteHandler>(*(planner_data_.route_handler));
+    }
+   */
+  planner_data.route_handler = std::make_shared<RouteHandler>(*(planner_data_.route_handler));
+  current_status = current_status_;
+  main_thread_pull_out_status = pull_out_status_;
+  is_stopped = is_stopped_;
 }
 }  // namespace behavior_path_planner

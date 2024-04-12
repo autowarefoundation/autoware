@@ -51,7 +51,7 @@ public:
   }
   virtual ~PullOutPlannerBase() = default;
 
-  void setPlannerData(std::shared_ptr<const PlannerData> & planner_data)
+  void setPlannerData(const std::shared_ptr<const PlannerData> & planner_data)
   {
     planner_data_ = planner_data;
   }
