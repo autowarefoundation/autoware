@@ -1360,7 +1360,7 @@ void MapBasedPredictionNode::removeOldObjectsHistory(
     const double latest_object_time = rclcpp::Time(object_data.back().header.stamp).seconds();
 
     // Delete Old Objects
-    if (current_time - latest_object_time > 2.0) {
+    if (current_time - latest_object_time > object_buffer_time_length_) {
       invalid_object_id.push_back(object_id);
       continue;
     }
@@ -1368,7 +1368,7 @@ void MapBasedPredictionNode::removeOldObjectsHistory(
     // Delete old information
     while (!object_data.empty()) {
       const double post_object_time = rclcpp::Time(object_data.front().header.stamp).seconds();
-      if (current_time - post_object_time > 2.0) {
+      if (current_time - post_object_time > object_buffer_time_length_) {
         // Delete Old Position
         object_data.pop_front();
       } else {
