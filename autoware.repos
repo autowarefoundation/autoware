@@ -2,119 +2,119 @@ repositories:
   # core
   core/autoware_msgs:
     type: git
-    url: https://github.com/autowarefoundation/autoware_msgs.git
+    url: git@github.com:autowarefoundation/autoware_msgs.git
     version: main
   core/autoware_adapi_msgs:
     type: git
-    url: https://github.com/autowarefoundation/autoware_adapi_msgs.git
+    url: git@github.com:autowarefoundation/autoware_adapi_msgs.git
     version: main
   core/autoware_internal_msgs:
     type: git
-    url: https://github.com/autowarefoundation/autoware_internal_msgs.git
+    url: git@github.com:autowarefoundation/autoware_internal_msgs.git
     version: main
   core/autoware_common:
     type: git
-    url: https://github.com/autowarefoundation/autoware_common.git
+    url: git@github.com:autowarefoundation/autoware_common.git
     version: main
   core/autoware.core:
     type: git
-    url: https://github.com/autowarefoundation/autoware.core.git
+    url: git@github.com:autowarefoundation/autoware.core.git
     version: main
   core/external/autoware_auto_msgs: # TODO(mfc): Remove when autoware_msgs is merged
     type: git
-    url: https://github.com/tier4/autoware_auto_msgs.git
+    url: git@github.com:tier4/autoware_auto_msgs.git
     version: tier4/main
   # universe
   universe/autoware.universe:
     type: git
-    url: https://github.com/autowarefoundation/autoware.universe.git
+    url: git@github.com:autowarefoundation/autoware.universe.git
     version: main
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
-    url: https://github.com/tier4/tier4_ad_api_adaptor.git
+    url: git@github.com:tier4/tier4_ad_api_adaptor.git
     version: tier4/universe
   universe/external/tier4_autoware_msgs:
     type: git
-    url: https://github.com/tier4/tier4_autoware_msgs.git
+    url: git@github.com:tier4/tier4_autoware_msgs.git
     version: tier4/universe
   universe/external/morai_msgs:
     type: git
-    url: https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs.git
+    url: git@github.com:MORAI-Autonomous/MORAI-ROS2_morai_msgs.git
     version: main
   universe/external/muSSP:
     type: git
-    url: https://github.com/tier4/muSSP.git
+    url: git@github.com:tier4/muSSP.git
     version: tier4/main
   universe/external/ndt_omp:
     type: git
-    url: https://github.com/tier4/ndt_omp.git
+    url: git@github.com:tier4/ndt_omp.git
     version: tier4/main
   universe/external/pointcloud_to_laserscan:
     type: git
-    url: https://github.com/tier4/pointcloud_to_laserscan.git
+    url: git@github.com:tier4/pointcloud_to_laserscan.git
     version: tier4/main
   universe/external/eagleye:
     type: git
-    url: https://github.com/MapIV/eagleye.git
+    url: git@github.com:MapIV/eagleye.git
     version: autoware-main
   universe/external/rtklib_ros_bridge:
     type: git
-    url: https://github.com/MapIV/rtklib_ros_bridge.git
+    url: git@github.com:MapIV/rtklib_ros_bridge.git
     version: ros2-v0.1.0
   universe/external/llh_converter:
     type: git
-    url: https://github.com/MapIV/llh_converter.git
+    url: git@github.com:MapIV/llh_converter.git
     version: ros2
-  universe/external/ament_cmake: # TODO(mitsudome-r): remove when https://github.com/ament/ament_cmake/pull/448 is merged
+  universe/external/ament_cmake: # TODO(mitsudome-r): remove when git@github.com:ament/ament_cmake/pull/448 is merged
     type: git
-    url: https://github.com/autowarefoundation/ament_cmake.git
+    url: git@github.com:autowarefoundation/ament_cmake.git
     version: feat/faster_ament_libraries_deduplicate
   universe/external/glog:  # TODO(Horibe): to use isGoogleInitialized() API in v0.6.0. Remove when the rosdep glog version is updated to v0.6.0 (already updated in Ubuntu 24.04)
     type: git
-    url: https://github.com/tier4/glog.git
+    url: git@github.com:tier4/glog.git
     version: v0.6.0_t4-ros
   # launcher
   launcher/autoware_launch:
     type: git
-    url: https://github.com/autowarefoundation/autoware_launch.git
+    url: git@github.com:autowarefoundation/autoware_launch.git
     version: main
   # sensor_component
   sensor_component/external/sensor_component_description:
     type: git
-    url: https://github.com/tier4/sensor_component_description.git
+    url: git@github.com:tier4/sensor_component_description.git
     version: main
   sensor_component/external/tamagawa_imu_driver:
     type: git
-    url: https://github.com/tier4/tamagawa_imu_driver.git
+    url: git@github.com:tier4/tamagawa_imu_driver.git
     version: ros2
   sensor_component/external/nebula:
     type: git
-    url: https://github.com/tier4/nebula.git
+    url: git@github.com:tier4/nebula.git
     version: main
   sensor_component/external/transport_drivers:
     type: git
-    url: https://github.com/MapIV/transport_drivers.git
+    url: git@github.com:MapIV/transport_drivers.git
     version: boost
   # sensor_kit
   sensor_kit/sample_sensor_kit_launch:
     type: git
-    url: https://github.com/autowarefoundation/sample_sensor_kit_launch.git
+    url: git@github.com:autowarefoundation/sample_sensor_kit_launch.git
     version: main
   sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
     type: git
-    url: https://github.com/RobotecAI/awsim_sensor_kit_launch.git
+    url: git@github.com:RobotecAI/awsim_sensor_kit_launch.git
     version: main
   # vehicle
   vehicle/sample_vehicle_launch:
     type: git
-    url: https://github.com/autowarefoundation/sample_vehicle_launch.git
+    url: git@github.com:autowarefoundation/sample_vehicle_launch.git
     version: main
   vehicle/external/pacmod_interface:
     type: git
-    url: https://github.com/tier4/pacmod_interface.git
+    url: git@github.com:tier4/pacmod_interface.git
     version: main
   # param
   param/autoware_individual_params:
     type: git
-    url: https://github.com/autowarefoundation/autoware_individual_params.git
+    url: git@github.com:autowarefoundation/autoware_individual_params.git
     version: main
