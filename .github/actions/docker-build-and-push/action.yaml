@@ -182,3 +182,8 @@ runs:
         echo 'devel URL ${{ steps.artifact-upload-step-devel.outputs.artifact-url }}'
         echo 'runtime URL ${{ steps.artifact-upload-step-runtime.outputs.artifact-url }}'
       shell: bash
+    
+    - name: Show ccache stats
+      run: |
+        ccache -s
+      shell: bash
