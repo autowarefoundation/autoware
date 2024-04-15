@@ -16,7 +16,6 @@
 #define BEHAVIOR_PATH_GOAL_PLANNER_MODULE__SHIFT_PULL_OVER_HPP_
 
 #include "behavior_path_goal_planner_module/pull_over_planner_base.hpp"
-#include "behavior_path_planner_common/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 
@@ -34,9 +33,7 @@ class ShiftPullOver : public PullOverPlannerBase
 public:
   ShiftPullOver(
     rclcpp::Node & node, const GoalPlannerParameters & parameters,
-    const LaneDepartureChecker & lane_departure_checker,
-    const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map);
-
+    const LaneDepartureChecker & lane_departure_checker);
   PullOverPlannerType getPlannerType() const override { return PullOverPlannerType::SHIFT; };
   std::optional<PullOverPath> plan(const Pose & goal_pose) override;
 
@@ -57,7 +54,6 @@ protected:
     const Pose & start_pose, const Pose & end_pose, const double resample_interval);
 
   LaneDepartureChecker lane_departure_checker_{};
-  std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map_{};
 
   bool left_side_parking_{true};
 };
