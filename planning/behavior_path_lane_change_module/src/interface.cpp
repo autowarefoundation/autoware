@@ -136,8 +136,7 @@ BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
 {
   *prev_approved_path_ = getPreviousModuleOutput().path;
 
-  BehaviorModuleOutput out;
-  out = module_type_->getTerminalLaneChangePath();
+  BehaviorModuleOutput out = getPreviousModuleOutput();
   module_type_->insertStopPoint(module_type_->getLaneChangeStatus().current_lanes, out.path);
   out.turn_signal_info =
     getCurrentTurnSignalInfo(out.path, getPreviousModuleOutput().turn_signal_info);
