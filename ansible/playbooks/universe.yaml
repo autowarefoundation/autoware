@@ -16,7 +16,7 @@
       prompt: |-
         [Warning] Do you want to install recommended development tools for Autoware? [y/N]
       private: false
-      default: true
+      default: 'y'
   pre_tasks:
     - name: Verify OS
       ansible.builtin.fail:
@@ -57,7 +57,7 @@
 
     # Autoware devel dependencies
     - role: autoware.dev_env.dev_tools
-      when: install_devel == 'true'
+      when: install_devel == 'y'
 
     # ONNX files and other artifacts
     - role: autoware.dev_env.artifacts
