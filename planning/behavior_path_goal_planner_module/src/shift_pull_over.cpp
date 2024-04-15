@@ -28,9 +28,11 @@ namespace behavior_path_planner
 {
 ShiftPullOver::ShiftPullOver(
   rclcpp::Node & node, const GoalPlannerParameters & parameters,
-  const LaneDepartureChecker & lane_departure_checker)
+  const LaneDepartureChecker & lane_departure_checker,
+  const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map)
 : PullOverPlannerBase{node, parameters},
   lane_departure_checker_{lane_departure_checker},
+  occupancy_grid_map_{occupancy_grid_map},
   left_side_parking_{parameters.parking_policy == ParkingPolicy::LEFT_SIDE}
 {
 }
