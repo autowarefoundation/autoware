@@ -16,7 +16,7 @@
       prompt: |-
         [Warning] Do you want to install recommended development tools for Autoware? [y/N]
       private: false
-      default: 'y'
+      default: "y"
   pre_tasks:
     - name: Verify OS
       ansible.builtin.fail:
