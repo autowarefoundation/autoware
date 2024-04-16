@@ -23,3 +23,6 @@ capture/
 
 # CodeChecker
 .codechecker/
+
+# Node.js
+node_modules/

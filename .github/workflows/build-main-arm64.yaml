@@ -67,7 +67,3 @@ jobs:
       - name: Show disk space
         run: |
           df -h
-
-      - name: Show ccache stats
-        run: |
-          ccache -s
