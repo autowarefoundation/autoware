@@ -106,19 +106,33 @@ void VoxelBasedApproximateCompareMapFilterComponent::filter(
 {
   std::scoped_lock lock(mutex_);
   stop_watch_ptr_->toc("processing_time", true);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_input(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_output(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::fromROSMsg(*input, *pcl_input);
-  pcl_output->points.reserve(pcl_input->points.size());
-  for (size_t i = 0; i < pcl_input->points.size(); ++i) {
-    if (voxel_based_approximate_map_loader_->is_close_to_map(
-          pcl_input->points.at(i), distance_threshold_)) {
+  int point_step = input->point_step;
+  int offset_x = input->fields[pcl::getFieldIndex(*input, "x")].offset;
+  int offset_y = input->fields[pcl::getFieldIndex(*input, "y")].offset;
+  int offset_z = input->fields[pcl::getFieldIndex(*input, "z")].offset;
+
+  output.data.resize(input->data.size());
+  output.point_step = point_step;
+  size_t output_size = 0;
+  for (size_t global_offset = 0; global_offset < input->data.size(); global_offset += point_step) {
+    pcl::PointXYZ point{};
+    std::memcpy(&point.x, &input->data[global_offset + offset_x], sizeof(float));
+    std::memcpy(&point.y, &input->data[global_offset + offset_y], sizeof(float));
+    std::memcpy(&point.z, &input->data[global_offset + offset_z], sizeof(float));
+    if (voxel_based_approximate_map_loader_->is_close_to_map(point, distance_threshold_)) {
       continue;
     }
-    pcl_output->points.push_back(pcl_input->points.at(i));
+    std::memcpy(&output.data[output_size], &input->data[global_offset], point_step);
+    output_size += point_step;
   }
-  pcl::toROSMsg(*pcl_output, output);
   output.header = input->header;
+  output.fields = input->fields;
+  output.data.resize(output_size);
+  output.height = input->height;
+  output.width = output_size / point_step / output.height;
+  output.row_step = output_size / output.height;
+  output.is_bigendian = input->is_bigendian;
+  output.is_dense = input->is_dense;
 
   // add processing time for debug
   if (debug_publisher_) {
