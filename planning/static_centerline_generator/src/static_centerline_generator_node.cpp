@@ -47,6 +47,7 @@
 #include <lanelet2_projection/UTM.h>
 
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <limits>
 #include <memory>
@@ -336,6 +337,13 @@ CenterlineWithRoute StaticCenterlineGeneratorNode::generate_centerline_with_rout
 
 void StaticCenterlineGeneratorNode::load_map(const std::string & lanelet2_input_file_path)
 {
+  // copy the input LL2 map to the temporary file for debugging
+  const std::string debug_input_file_dir{"/tmp/static_centerline_generator/input/"};
+  std::filesystem::create_directories(debug_input_file_dir);
+  std::filesystem::copy(
+    lanelet2_input_file_path, debug_input_file_dir + "lanelet2_map.osm",
+    std::filesystem::copy_options::overwrite_existing);
+
   // load map by the map_loader package
   map_bin_ptr_ = [&]() -> HADMapBin::ConstSharedPtr {
     // load map
@@ -635,5 +643,12 @@ void StaticCenterlineGeneratorNode::save_map(
   // save map with modified center line
   lanelet::write(lanelet2_output_file_path, *original_map_ptr_, *map_projector_);
   RCLCPP_INFO(get_logger(), "Saved map.");
+
+  // copy the output LL2 map to the temporary file for debugging
+  const std::string debug_output_file_dir{"/tmp/static_centerline_generator/output/"};
+  std::filesystem::create_directories(debug_output_file_dir);
+  std::filesystem::copy(
+    lanelet2_output_file_path, debug_output_file_dir + "lanelet2_map.osm",
+    std::filesystem::copy_options::overwrite_existing);
 }
 }  // namespace static_centerline_generator
