@@ -78,65 +78,65 @@ We formulate a quadratic problem minimizing the diagonal length of the rhombus o
 
 ![eb](../media/eb.svg){: style="width:600px"}
 
-Assuming that $k$'th point is $\boldsymbol{p}_k = (x_k, y_k)$, the objective function is as follows.
+Assuming that $k$'th point is $\mathbf{p}_k = (x_k, y_k)$, the objective function is as follows.
 
 $$
 \begin{align}
-\ J & = \min \sum_{k=1}^{n-2} ||(\boldsymbol{p}_{k+1} - \boldsymbol{p}_{k}) - (\boldsymbol{p}_{k} - \boldsymbol{p}_{k-1})||^2 \\
-\ & = \min \sum_{k=1}^{n-2} ||\boldsymbol{p}_{k+1} - 2 \boldsymbol{p}_{k} + \boldsymbol{p}_{k-1}||^2 \\
-\ & = \min \sum_{k=1}^{n-2} \{(x_{k+1} - x_k + x_{k-1})^2 + (y_{k+1} - y_k + y_{k-1})^2\} \\
+\ J & = \min \sum_{k=1}^{n-2} ||(\mathbf{p}_{k+1} - \mathbf{p}_{k}) - (\mathbf{p}_{k} - \mathbf{p}_{k-1})||^2 \\\
+\ & = \min \sum_{k=1}^{n-2} ||\mathbf{p}_{k+1} - 2 \mathbf{p}_{k} + \mathbf{p}_{k-1}||^2 \\\
+\ & = \min \sum_{k=1}^{n-2} \{(x_{k+1} - x_k + x_{k-1})^2 + (y_{k+1} - y_k + y_{k-1})^2\} \\\
 \ & = \min
     \begin{pmatrix}
-        \ x_0 \\
-        \ x_1 \\
-        \ x_2 \\
-        \vdots \\
-        \ x_{n-3}\\
-        \ x_{n-2} \\
-        \ x_{n-1} \\
-        \ y_0 \\
-        \ y_1 \\
-        \ y_2 \\
-        \vdots \\
-        \ y_{n-3}\\
-        \ y_{n-2} \\
-        \ y_{n-1} \\
+        \ x_0 \\\
+        \ x_1 \\\
+        \ x_2 \\\
+        \vdots \\\
+        \ x_{n-3}\\\
+        \ x_{n-2} \\\
+        \ x_{n-1} \\\
+        \ y_0 \\\
+        \ y_1 \\\
+        \ y_2 \\\
+        \vdots \\\
+        \ y_{n-3}\\\
+        \ y_{n-2} \\\
+        \ y_{n-1} \\\
     \end{pmatrix}^T
     \begin{pmatrix}
-      1 & -2 & 1 & 0 & \dots& \\
-      -2 & 5 & -4 & 1 & 0 &\dots   \\
-      1 & -4 & 6 & -4 & 1 & \\
-      0 & 1 & -4 & 6 & -4 &   \\
-      \vdots & 0 & \ddots&\ddots& \ddots   \\
-      & \vdots & & & \\
-      & & & 1 & -4 & 6 & -4 & 1 \\
-      & & & & 1 & -4 & 5 & -2 \\
-      & & & & & 1 & -2 &  1& \\
-      & & & & & & & &1 & -2 & 1 & 0 & \dots& \\
-      & & & & & & & &-2 & 5 & -4 & 1 & 0 &\dots   \\
-      & & & & & & & &1 & -4 & 6 & -4 & 1 & \\
-      & & & & & & & &0 & 1 & -4 & 6 & -4 &   \\
-      & & & & & & & &\vdots & 0 & \ddots&\ddots& \ddots   \\
-      & & & & & & & & & \vdots & & & \\
-      & & & & & & & & & & & 1 & -4 & 6 & -4 & 1 \\
-      & & & & & & & & & & & & 1 & -4 & 5 & -2 \\
-      & & & & & & & & & & & & & 1 & -2 &  1& \\
+      1 & -2 & 1 & 0 & \dots& \\\
+      -2 & 5 & -4 & 1 & 0 &\dots   \\\
+      1 & -4 & 6 & -4 & 1 & \\\
+      0 & 1 & -4 & 6 & -4 &   \\\
+      \vdots & 0 & \ddots&\ddots& \ddots   \\\
+      & \vdots & & & \\\
+      & & & 1 & -4 & 6 & -4 & 1 \\\
+      & & & & 1 & -4 & 5 & -2 \\\
+      & & & & & 1 & -2 &  1& \\\
+      & & & & & & & &1 & -2 & 1 & 0 & \dots& \\\
+      & & & & & & & &-2 & 5 & -4 & 1 & 0 &\dots   \\\
+      & & & & & & & &1 & -4 & 6 & -4 & 1 & \\\
+      & & & & & & & &0 & 1 & -4 & 6 & -4 &   \\\
+      & & & & & & & &\vdots & 0 & \ddots&\ddots& \ddots   \\\
+      & & & & & & & & & \vdots & & & \\\
+      & & & & & & & & & & & 1 & -4 & 6 & -4 & 1 \\\
+      & & & & & & & & & & & & 1 & -4 & 5 & -2 \\\
+      & & & & & & & & & & & & & 1 & -2 &  1& \\\
     \end{pmatrix}
     \begin{pmatrix}
-        \ x_0 \\
-        \ x_1 \\
-        \ x_2 \\
-        \vdots \\
-        \ x_{n-3}\\
-        \ x_{n-2} \\
-        \ x_{n-1} \\
-        \ y_0 \\
-        \ y_1 \\
-        \ y_2 \\
-        \vdots \\
-        \ y_{n-3}\\
-        \ y_{n-2} \\
-        \ y_{n-1} \\
+        \ x_0 \\\
+        \ x_1 \\\
+        \ x_2 \\\
+        \vdots \\\
+        \ x_{n-3}\\\
+        \ x_{n-2} \\\
+        \ x_{n-1} \\\
+        \ y_0 \\\
+        \ y_1 \\\
+        \ y_2 \\\
+        \vdots \\\
+        \ y_{n-3}\\\
+        \ y_{n-2} \\\
+        \ y_{n-1} \\\
     \end{pmatrix}
 \end{align}
 $$
