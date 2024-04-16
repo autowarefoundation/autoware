@@ -14,6 +14,9 @@ inputs:
   tag-suffix:
     description: ""
     required: false
+  tag-arch:
+    description: ""
+    required: false
   allow-push:
     description: ""
     default: "true"
@@ -59,7 +62,7 @@ runs:
         bake-target: docker-metadata-action-prebuilt
         flavor: |
           latest=false
-          suffix=-prebuilt${{ inputs.tag-suffix }}
+          suffix=-prebuilt${{ inputs.tag-suffix }}-${{ inputs.tag-arch }}
 
     - name: Docker meta for devel
       id: meta-devel
@@ -70,10 +73,9 @@ runs:
         bake-target: docker-metadata-action-devel
         flavor: |
           latest=false
-          suffix=-devel${{ inputs.tag-suffix }}
+          suffix=-devel${{ inputs.tag-suffix }}-${{ inputs.tag-arch }}
 
     - name: Docker meta for runtime
-      if: ${{ github.event_name == 'workflow_dispatch' }} || ${{ (github.event_name == 'push' && github.ref_type == 'tag') }}
       id: meta-runtime
       uses: docker/metadata-action@v4
       with:
@@ -82,7 +84,7 @@ runs:
         bake-target: docker-metadata-action-runtime
         flavor: |
           latest=${{ github.event_name == 'push' && github.ref_type == 'tag' }}
-          suffix=-runtime${{ inputs.tag-suffix }}
+          suffix=-runtime${{ inputs.tag-suffix }}-${{ inputs.tag-arch }}
 
     - name: Login to GitHub Container Registry
       if: ${{ github.event_name != 'pull_request' }}
@@ -92,8 +94,8 @@ runs:
         username: ${{ github.repository_owner }}
         password: ${{ github.token }}
 
-    - name: Build and Push - prebuilt and devel
-      if: ${{ (github.event_name == 'push' && github.ref_type == 'branch') || github.event_name == 'schedule' }}
+    - name: Build and Push to GitHub Container Registry
+      if: ${{ github.event_name == 'push' || github.event_name == 'schedule' || ( github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
       uses: docker/bake-action@v3
       with:
         push: ${{ inputs.allow-push == 'true' }}
@@ -101,22 +103,6 @@ runs:
           docker/${{ inputs.bake-target }}/docker-bake.hcl
           ${{ steps.meta-prebuilt.outputs.bake-file }}
           ${{ steps.meta-devel.outputs.bake-file }}
-        targets: |
-          prebuilt
-          devel
-        provenance: false
-        set: |
-          ${{ inputs.build-args }}
-
-    - name: Build and Publish to GitHub Container Registry
-      if: ${{ ( github.event_name == 'push' && github.ref_type == 'tag' ) || ( github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
-      uses: docker/bake-action@v3
-      with:
-        push: true
-        files: |
-          docker/${{ inputs.bake-target }}/docker-bake.hcl
-          ${{ steps.meta-devel.outputs.bake-file }}
-          ${{ steps.meta-prebuilt.outputs.bake-file }}
           ${{ steps.meta-runtime.outputs.bake-file }}
         provenance: false
         set: |
@@ -129,8 +115,8 @@ runs:
         push: false
         files: |
           docker/${{ inputs.bake-target }}/docker-bake.hcl
-          ${{ steps.meta-devel.outputs.bake-file }}
           ${{ steps.meta-prebuilt.outputs.bake-file }}
+          ${{ steps.meta-devel.outputs.bake-file }}
           ${{ steps.meta-runtime.outputs.bake-file }}
         provenance: false
         set: |
@@ -176,6 +162,7 @@ runs:
         if-no-files-found: error
 
     - name: Output artifact URLs
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       id: output-artifact-urls
       run: |
         echo 'prebuilt URL ${{ steps.artifact-upload-step-prebuilt.outputs.artifact-url }}'
