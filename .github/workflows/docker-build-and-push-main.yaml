@@ -71,7 +71,7 @@ jobs:
           tag-arch: amd64
           tag-prefix: ${{ env.rosdistro }}
           allow-push: true
-      
+
       - name: Build 'Openadk'
         uses: ./.github/actions/docker-build-and-push-openadk
         with:
