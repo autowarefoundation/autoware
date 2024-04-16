@@ -37,6 +37,12 @@ enum class Metric {
 
 using MetricStatMap = std::unordered_map<std::string, Stat<double>>;
 
+struct PredictedPathDeviationMetrics
+{
+  Stat<double> mean;
+  Stat<double> variance;
+};
+
 static const std::unordered_map<std::string, Metric> str_to_metric = {
   {"lateral_deviation", Metric::lateral_deviation},
   {"yaw_deviation", Metric::yaw_deviation},

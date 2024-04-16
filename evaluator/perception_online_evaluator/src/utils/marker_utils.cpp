@@ -119,7 +119,7 @@ MarkerArray createDeviationLines(
   for (size_t i = 0; i < max_idx; ++i) {
     auto marker = createDefaultMarker(
       "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, first_id + i, Marker::LINE_STRIP,
-      createMarkerScale(0.005, 0.0, 0.0), createMarkerColor(r, g, b, 0.5));
+      createMarkerScale(0.01, 0.0, 0.0), createMarkerColor(r, g, b, 0.5));
     marker.points.push_back(poses1.at(i).position);
     marker.points.push_back(poses2.at(i).position);
     msg.markers.push_back(marker);

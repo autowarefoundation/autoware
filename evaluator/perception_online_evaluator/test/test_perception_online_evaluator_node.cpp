@@ -497,7 +497,7 @@ TEST_F(EvalTest, testYawDeviation_deviation0_PEDESTRIAN)
 }
 
 // ==========================================================================================
-// predicted path deviation{
+// predicted path deviation
 TEST_F(EvalTest, testPredictedPathDeviation_deviation0)
 {
   waitForDummyNode();
@@ -582,6 +582,145 @@ TEST_F(EvalTest, testPredictedPathDeviation_deviation0_PEDESTRIAN)
   const double num_points = time_delay_ / time_step_ + 1;
   const double mean_deviation = deviation * (num_points - 1) / num_points;
   EXPECT_NEAR(publishObjectsAndGetMetric(last_objects), mean_deviation, epsilon);
+}
+// ==========================================================================================
+
+// ==========================================================================================
+// predicted path deviation variance
+TEST_F(EvalTest, testPredictedPathDeviationVariance_deviation0)
+{
+  waitForDummyNode();
+
+  setTargetMetric("predicted_path_deviation_variance_CAR_5.00");
+
+  const auto init_objects = makeStraightPredictedObjects(0);
+  publishObjects(init_objects);
+
+  const double deviation = 0.0;
+  for (double time = time_step_; time < time_delay_; time += time_step_) {
+    const auto objects = makeDeviatedStraightPredictedObjects(time, deviation);
+    publishObjects(objects);
+  }
+  const auto last_objects = makeDeviatedStraightPredictedObjects(time_delay_, deviation);
+
+  EXPECT_NEAR(publishObjectsAndGetMetric(last_objects), 0.0, epsilon);
+}
+
+TEST_F(EvalTest, testPredictedPathDeviationVariance_deviation1)
+{
+  waitForDummyNode();
+
+  setTargetMetric("predicted_path_deviation_variance_CAR_5.00");
+
+  const auto init_objects = makeStraightPredictedObjects(0);
+  publishObjects(init_objects);
+
+  const double deviation = 1.0;
+  for (double time = time_step_; time < time_delay_; time += time_step_) {
+    const auto objects = makeDeviatedStraightPredictedObjects(time, deviation);
+    publishObjects(objects);
+  }
+  const auto last_objects = makeDeviatedStraightPredictedObjects(time_delay_, deviation);
+
+  const double num_points = time_delay_ / time_step_ + 1;
+  // deviations
+  //   All    - 11 points (num_points)
+  //   0.0[m] -  1 points
+  //   1.0[m] - 10 points
+  const double mean_deviation = deviation * (num_points - 1) / num_points;
+  const double variance =
+    (pow(0.0 - mean_deviation, 2) + 10 * pow(1.0 - mean_deviation, 2)) / num_points;
+
+  EXPECT_NEAR(publishObjectsAndGetMetric(last_objects), variance, epsilon);
+}
+
+TEST_F(EvalTest, testPredictedPathDeviationVariance_deviationIncreasing)
+{
+  waitForDummyNode();
+
+  setTargetMetric("predicted_path_deviation_variance_CAR_5.00");
+
+  const auto init_objects = makeStraightPredictedObjects(0);
+  publishObjects(init_objects);
+
+  const double deviation_step = 0.1;
+  double deviation = deviation_step;
+  for (double time = time_step_; time < time_delay_; time += time_step_) {
+    const auto objects = makeDeviatedStraightPredictedObjects(time, deviation);
+    publishObjects(objects);
+    deviation += deviation_step;
+  }
+  const auto last_objects = makeDeviatedStraightPredictedObjects(time_delay_, deviation);
+
+  const double num_points = time_delay_ / time_step_ + 1;
+  // deviations
+  //   All          - 11 points (num_points)
+  //   0.0[m]       -  1 points
+  //   0.1[m]       -  1 points
+  //   0.2[m]       -  1 points
+  //      :
+  //   0.9[m]       -  1 points
+  //   1.0[m]       -  1 points
+  const double mean_deviation = std::invoke([&]() {
+    double sum = 0.0;
+    for (size_t i = 0; i < num_points; ++i) {
+      sum += static_cast<double>(i) * deviation_step;
+    }
+    return sum / num_points;
+  });
+  double sum_squared_deviations = 0.0;
+  for (size_t i = 0; i < num_points; ++i) {
+    const double deviation = static_cast<double>(i) * deviation_step;
+    sum_squared_deviations += pow(deviation - mean_deviation, 2);
+  }
+  const double variance = sum_squared_deviations / num_points;
+
+  EXPECT_NEAR(publishObjectsAndGetMetric(last_objects), variance, epsilon);
+}
+
+TEST_F(EvalTest, testPredictedPathDeviationVariance_deviationOscillating)
+{
+  waitForDummyNode();
+
+  setTargetMetric("predicted_path_deviation_variance_CAR_5.00");
+
+  const auto init_objects = makeStraightPredictedObjects(0);
+  publishObjects(init_objects);
+
+  const std::vector<double> deviations = {-0.1, -0.2, -0.1, 0.0, 0.1, 0.2, 0.1, 0.0, -0.1, -0.2};
+  for (size_t i = 0; i < deviations.size() - 1; ++i) {
+    const double time = static_cast<double>(i + 1) * time_step_;
+    const auto objects = makeDeviatedStraightPredictedObjects(time, deviations[i]);
+    publishObjects(objects);
+  }
+
+  const double num_points = deviations.size() + 1;
+  // deviations
+  //   All          - 11 points (num_points)
+  //   0.0[m]       -  1 points
+  //  -0.1[m]       -  1 points
+  //  -0.2[m]       -  1 points
+  //  -0.1[m]       -  1 points
+  //  -0.0[m]       -  1 points
+  //   0.1[m]       -  1 points
+  //   0.2[m]       -  1 points
+  //   0.1[m]       -  1 points
+  //   0.0[m]       -  1 points
+  //  -0.1[m]       -  1 points
+  //  -0.2[m]       -  1 points
+  const double mean_deviation =
+    std::accumulate(
+      deviations.begin(), deviations.end(), 0.0,
+      [](double sum, double deviation) { return sum + std::abs(deviation); }) /
+    num_points;
+
+  double sum_squared_deviations = pow(0 - mean_deviation, 2);
+  for (const auto deviation : deviations) {
+    sum_squared_deviations += pow(std::abs(deviation) - mean_deviation, 2);
+  }
+  const double variance = sum_squared_deviations / num_points;
+  const auto last_objects = makeDeviatedStraightPredictedObjects(time_delay_, deviations.back());
+  EXPECT_NEAR(publishObjectsAndGetMetric(last_objects), variance, epsilon);
 }
 // ==========================================================================================
 

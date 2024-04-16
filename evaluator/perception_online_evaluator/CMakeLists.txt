@@ -31,6 +31,7 @@ target_link_libraries(${PROJECT_NAME}_node glog::glog)
 if(BUILD_TESTING)
   ament_add_ros_isolated_gtest(test_${PROJECT_NAME}
     test/test_perception_online_evaluator_node.cpp
+    TIMEOUT 180
   )
   target_link_libraries(test_${PROJECT_NAME}
     ${PROJECT_NAME}_node

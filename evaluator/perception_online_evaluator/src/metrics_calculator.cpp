@@ -152,11 +152,17 @@ std::optional<StampObjectMapIterator> MetricsCalculator::getClosestObjectIterato
 std::optional<PredictedObject> MetricsCalculator::getObjectByStamp(
   const std::string uuid, const rclcpp::Time stamp) const
 {
+  constexpr double eps = 0.01;
+  constexpr double close_time_threshold = 0.1;
+
   const auto obj_it_opt = getClosestObjectIterator(uuid, stamp);
   if (obj_it_opt.has_value()) {
     const auto it = obj_it_opt.value();
-    if (it->first == getClosestStamp(stamp)) {
-      return it->second;
+    if (std::abs((it->first - getClosestStamp(stamp)).seconds()) < eps) {
+      const double time_diff = std::abs((it->first - stamp).seconds());
+      if (time_diff < close_time_threshold) {
+        return it->second;
+      }
     }
   }
   return std::nullopt;
@@ -256,31 +262,34 @@ MetricStatMap MetricsCalculator::calcPredictedPathDeviationMetrics(
   MetricStatMap metric_stat_map{};
   for (const auto & [label, objects] : class_objects_map) {
     for (const double time_horizon : time_horizons) {
-      const auto stat = calcPredictedPathDeviationMetrics(objects, time_horizon);
+      const auto metrics = calcPredictedPathDeviationMetrics(objects, time_horizon);
       std::ostringstream stream;
       stream << std::fixed << std::setprecision(2) << time_horizon;
       std::string time_horizon_str = stream.str();
       metric_stat_map
-        ["predicted_path_deviation_" + convertLabelToString(label) + "_" + time_horizon_str] = stat;
+        ["predicted_path_deviation_" + convertLabelToString(label) + "_" + time_horizon_str] =
+          metrics.mean;
+      metric_stat_map
+        ["predicted_path_deviation_variance_" + convertLabelToString(label) + "_" +
+         time_horizon_str] = metrics.variance;
     }
   }
   return metric_stat_map;
 }
 
-Stat<double> MetricsCalculator::calcPredictedPathDeviationMetrics(
+PredictedPathDeviationMetrics MetricsCalculator::calcPredictedPathDeviationMetrics(
   const PredictedObjects & objects, const double time_horizon) const
 {
-  // For each object, select the predicted path that is closest to the history path and store the
-  // distance to the history path
+  // Step 1: For each object and its predicted paths, calculate the deviation between each predicted
+  // path pose and the corresponding historical path pose. Store the deviations in
+  // deviation_map_for_paths.
   std::unordered_map<std::string, std::unordered_map<size_t, std::vector<double>>>
     deviation_map_for_paths;
-  // For debugging. Save the pairs of predicted path pose and history path pose.
-  // Visualize the correspondence in rviz from the node.
+
+  // For debugging: Save the pairs of predicted path pose and history path pose.
   std::unordered_map<std::string, std::vector<std::pair<Pose, Pose>>>
     debug_predicted_path_pairs_map;
 
-  // Find the corresponding pose in the history path for each pose of the predicted path of each
-  // object, and record the distances
   const auto stamp = objects.header.stamp;
   for (const auto & object : objects.objects) {
     const auto uuid = tier4_autoware_utils::toHexString(object.object_id);
@@ -309,30 +318,36 @@ Stat<double> MetricsCalculator::calcPredictedPathDeviationMetrics(
         const double distance =
           tier4_autoware_utils::calcDistance2d(p.position, history_pose.position);
         deviation_map_for_paths[uuid][i].push_back(distance);
-        // debug
+
+        // Save debug information
         debug_predicted_path_pairs_map[path_id].push_back(std::make_pair(p, history_pose));
       }
     }
   }
 
-  // Select the predicted path with the smallest deviation for each object
+  // Step 2: For each object, select the predicted path with the smallest mean deviation.
+  // Store the selected path's deviations in deviation_map_for_objects.
   std::unordered_map<std::string, std::vector<double>> deviation_map_for_objects;
   for (const auto & [uuid, deviation_map] : deviation_map_for_paths) {
-    size_t min_deviation_index = 0;
-    double min_sum_deviation = std::numeric_limits<double>::max();
+    std::optional<std::pair<size_t, double>> min_deviation;
     for (const auto & [i, deviations] : deviation_map) {
       if (deviations.empty()) {
         continue;
       }
       const double sum = std::accumulate(deviations.begin(), deviations.end(), 0.0);
-      if (sum < min_sum_deviation) {
-        min_sum_deviation = sum;
-        min_deviation_index = i;
+      const double mean = sum / deviations.size();
+      if (!min_deviation.has_value() || mean < min_deviation.value().second) {
+        min_deviation = std::make_pair(i, mean);
       }
     }
-    deviation_map_for_objects[uuid] = deviation_map.at(min_deviation_index);
 
-    // debug: save the delayed target object and the corresponding predicted path
+    if (!min_deviation.has_value()) {
+      continue;
+    }
+
+    // Save the delayed target object and the corresponding predicted path for debugging
+    const auto [min_deviation_index, min_mean_deviation] = min_deviation.value();
+    deviation_map_for_objects[uuid] = deviation_map.at(min_deviation_index);
     const auto path_id = uuid + "_" + std::to_string(min_deviation_index);
     const auto target_stamp_object = getObjectByStamp(uuid, stamp);
     if (target_stamp_object.has_value()) {
@@ -343,17 +358,26 @@ Stat<double> MetricsCalculator::calcPredictedPathDeviationMetrics(
     }
   }
 
-  // Store the deviation as a metric
-  Stat<double> stat;
-  for (const auto & [uuid, deviations] : deviation_map_for_objects) {
-    if (deviations.empty()) {
-      continue;
-    }
-    for (const auto & deviation : deviations) {
-      stat.add(deviation);
+  // Step 3: Calculate the mean and variance of the deviations for each object's selected predicted
+  // path. Store the results in the PredictedPathDeviationMetrics structure.
+  PredictedPathDeviationMetrics metrics;
+  for (const auto & [object_id, object_path_deviations] : deviation_map_for_objects) {
+    if (!object_path_deviations.empty()) {
+      const double sum_of_deviations =
+        std::accumulate(object_path_deviations.begin(), object_path_deviations.end(), 0.0);
+      const double mean_deviation = sum_of_deviations / object_path_deviations.size();
+      metrics.mean.add(mean_deviation);
+      double sum_of_squared_deviations = 0.0;
+      for (const auto path_point_deviation : object_path_deviations) {
+        sum_of_squared_deviations += std::pow(path_point_deviation - mean_deviation, 2);
+      }
+      const double variance_deviation = sum_of_squared_deviations / object_path_deviations.size();
+
+      metrics.variance.add(variance_deviation);
     }
   }
-  return stat;
+
+  return metrics;
 }
 
 MetricStatMap MetricsCalculator::calcYawRateMetrics(const ClassObjectsMap & class_objects_map) const

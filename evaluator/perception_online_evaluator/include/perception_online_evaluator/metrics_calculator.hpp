@@ -126,7 +126,7 @@ private:
   MetricStatMap calcLateralDeviationMetrics(const ClassObjectsMap & class_objects_map) const;
   MetricStatMap calcYawDeviationMetrics(const ClassObjectsMap & class_objects_map) const;
   MetricStatMap calcPredictedPathDeviationMetrics(const ClassObjectsMap & class_objects_map) const;
-  Stat<double> calcPredictedPathDeviationMetrics(
+  PredictedPathDeviationMetrics calcPredictedPathDeviationMetrics(
     const PredictedObjects & objects, const double time_horizon) const;
   MetricStatMap calcYawRateMetrics(const ClassObjectsMap & class_objects_map) const;
 
