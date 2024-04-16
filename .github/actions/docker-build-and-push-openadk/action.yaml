@@ -52,9 +52,9 @@ runs:
         echo "$(printf "%s\n" "${tags[@]}")" >> $GITHUB_OUTPUT
         echo "$EOF" >> $GITHUB_OUTPUT
       shell: bash
-
-    # OpenADK modular images meta
-    - name: Docker meta for Openadk:base
+    
+    # openadk modular images meta
+    - name: Docker meta for openadk:base
       id: meta-base
       uses: docker/metadata-action@v4
       with:
@@ -64,8 +64,8 @@ runs:
         flavor: |
           latest=false
           suffix=-base-${{ inputs.tag-arch }}
-
-    - name: Docker meta for Openadk:planning-control
+    
+    - name: Docker meta for openadk:planning-control
       id: meta-planning-control
       uses: docker/metadata-action@v4
       with:
@@ -75,8 +75,8 @@ runs:
         flavor: |
           latest=false
           suffix=-planning-control-${{ inputs.tag-arch }}
-
-    - name: Docker meta for Openadk:visualizer
+    
+    - name: Docker meta for openadk:visualizer
       id: meta-visualizer
       uses: docker/metadata-action@v4
       with:
@@ -86,8 +86,8 @@ runs:
         flavor: |
           latest=false
           suffix=-visualizer-${{ inputs.tag-arch }}
-
-    - name: Docker meta for Openadk:simulator
+    
+    - name: Docker meta for openadk:simulator
       id: meta-simulator
       uses: docker/metadata-action@v4
       with:
