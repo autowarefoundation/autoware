@@ -2,4 +2,4 @@ repositories:
   tools:
     type: git
     url: https://github.com/autowarefoundation/autoware_tools.git
-    version: main
+    version: 7bc7ea40281bc3ee5e849884dd715dc5f7be63ae
