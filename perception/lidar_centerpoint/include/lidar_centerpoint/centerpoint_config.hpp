@@ -28,7 +28,7 @@ public:
     const std::vector<double> & point_cloud_range, const std::vector<double> & voxel_size,
     const std::size_t downsample_factor, const std::size_t encoder_in_feature_size,
     const float score_threshold, const float circle_nms_dist_threshold,
-    const std::vector<double> yaw_norm_thresholds)
+    const std::vector<double> yaw_norm_thresholds, const bool has_variance)
   {
     class_size_ = class_size;
     point_feature_size_ = point_feature_size;
@@ -48,6 +48,15 @@ public:
     }
     downsample_factor_ = downsample_factor;
     encoder_in_feature_size_ = encoder_in_feature_size;
+
+    if (has_variance) {
+      has_variance_ = true;
+      head_out_offset_size_ = 4;
+      head_out_z_size_ = 2;
+      head_out_dim_size_ = 6;
+      head_out_rot_size_ = 4;
+      head_out_vel_size_ = 4;
+    }
 
     if (score_threshold > 0 && score_threshold < 1) {
       score_threshold_ = score_threshold;
@@ -97,11 +106,12 @@ public:
   std::size_t encoder_in_feature_size_{9};
   const std::size_t encoder_out_feature_size_{32};
   const std::size_t head_out_size_{6};
-  const std::size_t head_out_offset_size_{2};
-  const std::size_t head_out_z_size_{1};
-  const std::size_t head_out_dim_size_{3};
-  const std::size_t head_out_rot_size_{2};
-  const std::size_t head_out_vel_size_{2};
+  bool has_variance_{false};
+  std::size_t head_out_offset_size_{2};
+  std::size_t head_out_z_size_{1};
+  std::size_t head_out_dim_size_{3};
+  std::size_t head_out_rot_size_{2};
+  std::size_t head_out_vel_size_{2};
 
   // post-process params
   float score_threshold_{0.35f};

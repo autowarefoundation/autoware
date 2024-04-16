@@ -58,7 +58,7 @@ __global__ void generateBoxes3D_kernel(
   const float * out_rot, const float * out_vel, const float voxel_size_x, const float voxel_size_y,
   const float range_min_x, const float range_min_y, const std::size_t down_grid_size_x,
   const std::size_t down_grid_size_y, const std::size_t downsample_factor, const int class_size,
-  const float * yaw_norm_thresholds, Box3D * det_boxes3d)
+  const bool has_variance, const float * yaw_norm_thresholds, Box3D * det_boxes3d)
 {
   // generate boxes3d from the outputs of the network.
   // shape of out_*: (N, DOWN_GRID_SIZE_Y, DOWN_GRID_SIZE_X)
@@ -107,6 +107,34 @@ __global__ void generateBoxes3D_kernel(
   det_boxes3d[idx].yaw = atan2f(yaw_sin, yaw_cos);
   det_boxes3d[idx].vel_x = vel_x;
   det_boxes3d[idx].vel_y = vel_y;
+
+  if (has_variance) {
+    const float offset_x_variance = out_offset[down_grid_size * 2 + idx];
+    const float offset_y_variance = out_offset[down_grid_size * 3 + idx];
+    const float z_variance = out_z[down_grid_size * 1 + idx];
+    const float w_variance = out_dim[down_grid_size * 3 + idx];
+    const float l_variance = out_dim[down_grid_size * 4 + idx];
+    const float h_variance = out_dim[down_grid_size * 5 + idx];
+    const float yaw_sin_log_variance = out_rot[down_grid_size * 2 + idx];
+    const float yaw_cos_log_variance = out_rot[down_grid_size * 3 + idx];
+    const float vel_x_variance = out_vel[down_grid_size * 2 + idx];
+    const float vel_y_variance = out_vel[down_grid_size * 3 + idx];
+
+    det_boxes3d[idx].x_variance = voxel_size_x * downsample_factor * expf(offset_x_variance);
+    det_boxes3d[idx].y_variance = voxel_size_x * downsample_factor * expf(offset_y_variance);
+    det_boxes3d[idx].z_variance = expf(z_variance);
+    det_boxes3d[idx].length_variance = expf(l_variance);
+    det_boxes3d[idx].width_variance = expf(w_variance);
+    det_boxes3d[idx].height_variance = expf(h_variance);
+    const float yaw_sin_sq = yaw_sin * yaw_sin;
+    const float yaw_cos_sq = yaw_cos * yaw_cos;
+    const float yaw_norm_sq = (yaw_sin_sq + yaw_cos_sq) * (yaw_sin_sq + yaw_cos_sq);
+    det_boxes3d[idx].yaw_variance =
+      (yaw_cos_sq * expf(yaw_sin_log_variance) + yaw_sin_sq * expf(yaw_cos_log_variance)) /
+      yaw_norm_sq;
+    det_boxes3d[idx].vel_x_variance = expf(vel_x_variance);
+    det_boxes3d[idx].vel_y_variance = expf(vel_y_variance);
+  }
 }
 
 PostProcessCUDA::PostProcessCUDA(const CenterPointConfig & config) : config_(config)
@@ -131,7 +159,7 @@ cudaError_t PostProcessCUDA::generateDetectedBoxes3D_launch(
     out_heatmap, out_offset, out_z, out_dim, out_rot, out_vel, config_.voxel_size_x_,
     config_.voxel_size_y_, config_.range_min_x_, config_.range_min_y_, config_.down_grid_size_x_,
     config_.down_grid_size_y_, config_.downsample_factor_, config_.class_size_,
-    thrust::raw_pointer_cast(yaw_norm_thresholds_d_.data()),
+    config_.has_variance_, thrust::raw_pointer_cast(yaw_norm_thresholds_d_.data()),
     thrust::raw_pointer_cast(boxes3d_d_.data()));
 
   // suppress by score

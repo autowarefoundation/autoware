@@ -14,6 +14,7 @@
     iou_nms_threshold: 0.1
     yaw_norm_thresholds: [0.3, 0.3, 0.3, 0.3, 0.0]
     score_threshold: 0.35
+    has_variance: false
     has_twist: false
     trt_precision: fp16
     densification_num_past_frames: 1

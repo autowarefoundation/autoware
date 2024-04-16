@@ -25,7 +25,7 @@ using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 
 void box3DToDetectedObject(
   const Box3D & box3d, const std::vector<std::string> & class_names, const bool has_twist,
-  autoware_auto_perception_msgs::msg::DetectedObject & obj)
+  const bool has_variance, autoware_auto_perception_msgs::msg::DetectedObject & obj)
 {
   // TODO(yukke42): the value of classification confidence of DNN, not probability.
   obj.existence_probability = box3d.score;
@@ -58,6 +58,10 @@ void box3DToDetectedObject(
   obj.shape.type = autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX;
   obj.shape.dimensions =
     tier4_autoware_utils::createTranslation(box3d.length, box3d.width, box3d.height);
+  if (has_variance) {
+    obj.kinematics.has_position_covariance = has_variance;
+    obj.kinematics.pose_with_covariance.covariance = convertPoseCovarianceMatrix(box3d);
+  }
 
   // twist
   if (has_twist) {
@@ -68,6 +72,10 @@ void box3DToDetectedObject(
     twist.angular.z = 2 * (std::atan2(vel_y, vel_x) - yaw);
     obj.kinematics.twist_with_covariance.twist = twist;
     obj.kinematics.has_twist = has_twist;
+    if (has_variance) {
+      obj.kinematics.has_twist_covariance = has_variance;
+      obj.kinematics.twist_with_covariance.covariance = convertTwistCovarianceMatrix(box3d);
+    }
   }
 }
 
@@ -90,6 +98,26 @@ uint8_t getSemanticType(const std::string & class_name)
   } else {
     return Label::UNKNOWN;
   }
+}
+
+std::array<double, 36> convertPoseCovarianceMatrix(const Box3D & box3d)
+{
+  using POSE_IDX = tier4_autoware_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  std::array<double, 36> pose_covariance{};
+  pose_covariance[POSE_IDX::X_X] = box3d.x_variance;
+  pose_covariance[POSE_IDX::Y_Y] = box3d.y_variance;
+  pose_covariance[POSE_IDX::Z_Z] = box3d.z_variance;
+  pose_covariance[POSE_IDX::YAW_YAW] = box3d.yaw_variance;
+  return pose_covariance;
+}
+
+std::array<double, 36> convertTwistCovarianceMatrix(const Box3D & box3d)
+{
+  using POSE_IDX = tier4_autoware_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  std::array<double, 36> twist_covariance{};
+  twist_covariance[POSE_IDX::X_X] = box3d.vel_x_variance;
+  twist_covariance[POSE_IDX::Y_Y] = box3d.vel_y_variance;
+  return twist_covariance;
 }
 
 }  // namespace centerpoint

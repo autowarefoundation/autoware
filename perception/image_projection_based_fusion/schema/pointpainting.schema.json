@@ -60,6 +60,11 @@
               "minimum": 0.0,
               "maximum": 1.0
             },
+            "has_variance": {
+              "type": "boolean",
+              "description": "Indicates whether the model outputs variance value.",
+              "default": false
+            },
             "has_twist": {
               "type": "boolean",
               "description": "Indicates whether the model outputs twist value.",

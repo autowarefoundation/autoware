@@ -60,6 +60,7 @@ protected:
   std::map<std::string, float> class_index_;
   std::map<std::string, std::function<bool(int)>> isClassTable_;
   std::vector<double> pointcloud_range;
+  bool has_variance_{false};
   bool has_twist_{false};
 
   centerpoint::NonMaximumSuppression iou_bev_nms_;

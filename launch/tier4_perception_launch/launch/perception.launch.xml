@@ -36,7 +36,7 @@
   <arg name="traffic_light_arbiter_param_path"/>
 
   <!-- CenterPoint model parameters -->
-  <arg name="centerpoint_model_name" default="centerpoint_tiny" description="options: `centerpoint` or `centerpoint_tiny`"/>
+  <arg name="centerpoint_model_name" default="centerpoint_tiny" description="options: `centerpoint`, `centerpoint_tiny` or `centerpoint_sigma`"/>
   <arg name="centerpoint_model_path" default="$(var data_path)/lidar_centerpoint"/>
 
   <!-- PointPainting model parameters -->

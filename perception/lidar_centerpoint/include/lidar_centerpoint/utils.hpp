@@ -33,6 +33,17 @@ struct Box3D
   float yaw;
   float vel_x;
   float vel_y;
+
+  // variance
+  float x_variance;
+  float y_variance;
+  float z_variance;
+  float length_variance;
+  float width_variance;
+  float height_variance;
+  float yaw_variance;
+  float vel_x_variance;
+  float vel_y_variance;
 };
 
 // cspell: ignore divup
