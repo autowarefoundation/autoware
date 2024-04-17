@@ -21,6 +21,7 @@ import math
 from threading import Lock
 import time
 
+from PIL import Image
 import imageio
 import matplotlib
 import matplotlib.pyplot as plt
@@ -218,7 +219,19 @@ class TTCVisualizer(Node):
     def cleanup(self):
         if self.args.save:
             kwargs_write = {"fps": self.args.fps, "quantizer": "nq"}
-            imageio.mimsave("./" + self.args.gif + ".gif", self.images, **kwargs_write)
+            max_size_total = 0
+            max_size = None
+            for image in self.images:
+                (w, h) = image.size
+                if w * h > max_size_total:
+                    max_size = image.size
+                    max_size_total = w * h
+            reshaped = []
+            for image in self.images:
+                reshaped.append(image.resize(max_size))
+
+            imageio.mimsave("./" + self.args.gif + ".gif", reshaped, **kwargs_write)
+            print("saved fig")
         rclpy.shutdown()
 
     def on_plot_timer(self):
@@ -241,6 +254,7 @@ class TTCVisualizer(Node):
             if self.args.save:
                 image = np.frombuffer(self.fig.canvas.tostring_rgb(), dtype="uint8")
                 image = image.reshape(self.fig.canvas.get_width_height()[::-1] + (3,))
+                image = Image.fromarray(image.astype(np.uint8))
                 self.images.append(image)
 
     def on_ego_ttc(self, msg):

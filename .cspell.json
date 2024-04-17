@@ -1,5 +1,8 @@
 {
-  "ignorePaths": ["perception/bytetrack/lib/**"],
+  "ignorePaths": [
+    "perception/bytetrack/lib/**",
+    "planning/behavior_velocity_intersection_module/scripts/**"
+  ],
   "ignoreRegExpList": [],
-  "words": ["dltype", "tvmgen"]
+  "words": ["dltype", "tvmgen", "fromarray"]
 }

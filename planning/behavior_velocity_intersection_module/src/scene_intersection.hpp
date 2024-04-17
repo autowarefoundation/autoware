@@ -754,7 +754,8 @@ private:
   void updateObjectInfoManagerCollision(
     const intersection::PathLanelets & path_lanelets, const TimeDistanceArray & time_distance_array,
     const TrafficPrioritizedLevel & traffic_prioritized_level,
-    const bool passed_1st_judge_line_first_time, const bool passed_2nd_judge_line_first_time);
+    const bool passed_1st_judge_line_first_time, const bool passed_2nd_judge_line_first_time,
+    tier4_debug_msgs::msg::Float64MultiArrayStamped * object_ttc_time_array);
 
   void cutPredictPathWithinDuration(
     const builtin_interfaces::msg::Time & object_stamp, const double time_thr,
