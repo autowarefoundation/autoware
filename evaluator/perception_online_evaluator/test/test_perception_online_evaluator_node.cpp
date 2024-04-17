@@ -77,11 +77,6 @@ protected:
     objects_pub_ = rclcpp::create_publisher<PredictedObjects>(
       dummy_node, "/perception_online_evaluator/input/objects", 1);
 
-    marker_sub_ = rclcpp::create_subscription<MarkerArray>(
-      eval_node, "perception_online_evaluator/markers", 10,
-      [this]([[maybe_unused]] const MarkerArray::ConstSharedPtr msg) {
-        has_received_marker_ = true;
-      });
     uuid_ = generateUUID();
   }
 
@@ -229,12 +224,10 @@ protected:
 
   void waitForDummyNode()
   {
-    // wait for the marker to be published
-    publishObjects(makeStraightPredictedObjects(0));
-    while (!has_received_marker_) {
+    // Wait until the publisher is connected to the dummy node
+    while (objects_pub_->get_subscription_count() == 0) {
       rclcpp::spin_some(dummy_node);
       rclcpp::sleep_for(std::chrono::milliseconds(100));
-      rclcpp::spin_some(eval_node);
     }
   }
 
@@ -248,8 +241,6 @@ protected:
   // Pub/Sub
   rclcpp::Publisher<PredictedObjects>::SharedPtr objects_pub_;
   rclcpp::Subscription<DiagnosticArray>::SharedPtr metric_sub_;
-  rclcpp::Subscription<MarkerArray>::SharedPtr marker_sub_;
-  bool has_received_marker_{false};
 
   double time_delay_ = 5.0;
   double time_step_ = 0.5;
