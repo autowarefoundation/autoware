@@ -8,14 +8,20 @@ This module allows for the evaluation of how accurately perception results are g
 
 ## Inner-workings / Algorithms
 
-- Calculates lateral deviation between the predicted path and the actual traveled trajectory.
-- Calculates lateral deviation between the smoothed traveled trajectory and the perceived position to evaluate the stability of lateral position recognition.
-- Calculates yaw deviation between the smoothed traveled trajectory and the perceived position to evaluate the stability of yaw recognition.
-- Calculates yaw rate based on the yaw of the object received in the previous cycle to evaluate the stability of the yaw rate recognition.
+The evaluated metrics are as follows:
+
+- predicted_path_deviation
+- predicted_path_deviation_variance
+- lateral_deviation
+- yaw_deviation
+- yaw_rate
 
 ### Predicted Path Deviation / Predicted Path Deviation Variance
 
-Compare the predicted path of past objects with their actual traveled path to determine the deviation. For each object, calculate the mean distance between the predicted path points and the corresponding points on the actual path, up to the specified time step. In other words, this calculates the Average Displacement Error (ADE). The target object to be evaluated is the object from $T_N$ seconds ago, where $T_N$ is the maximum value of the prediction time horizon $[T_1, T_2, ..., T_N]$.
+Compare the predicted path of past objects with their actual traveled path to determine the deviation for **MOVING OBJECTS**. For each object, calculate the mean distance between the predicted path points and the corresponding points on the actual path, up to the specified time step. In other words, this calculates the Average Displacement Error (ADE). The target object to be evaluated is the object from $T_N$ seconds ago, where $T_N$ is the maximum value of the prediction time horizon $[T_1, T_2, ..., T_N]$.
+
+> [!NOTE]
+> The object from $T_N$ seconds ago is the target object for all metrics. This is to unify the time of the target object across metrics.
 
 ![path_deviation_each_object](./images/path_deviation_each_object.drawio.svg)
 
@@ -63,6 +69,25 @@ $$
 - $Var_{min}$ : Minimum variance of the predicted path deviation through all objects
 
 The actual metric name is determined by the object class and time horizon. For example, `predicted_path_deviation_variance_CAR_5.00`
+
+### Lateral Deviation
+
+Calculates lateral deviation between the smoothed traveled trajectory and the perceived position to evaluate the stability of lateral position recognition for **MOVING OBJECTS**. The smoothed traveled trajectory is calculated by applying a centered moving average filter whose window size is specified by the parameter `smoothing_window_size`. The lateral deviation is calculated by comparing the smoothed traveled trajectory with the perceived position of the past object whose timestamp is $T=T_n$ seconds ago. For stopped objects, the smoothed traveled trajectory is unstable, so this metric is not calculated.
+
+![lateral_deviation](./images/lateral_deviation.drawio.svg)
+
+### Yaw Deviation
+
+Calculates the deviation between the recognized yaw angle of an past object and the yaw azimuth angle of the smoothed traveled trajectory for **MOVING OBJECTS**. The smoothed traveled trajectory is calculated by applying a centered moving average filter whose window size is specified by the parameter `smoothing_window_size`. The yaw deviation is calculated by comparing the yaw azimuth angle of smoothed traveled trajectory with the perceived orientation of the past object whose timestamp is $T=T_n$ seconds ago.
+For stopped objects, the smoothed traveled trajectory is unstable, so this metric is not calculated.
+
+![yaw_deviation](./images/yaw_deviation.drawio.svg)
+
+### Yaw Rate
+
+Calculates the yaw rate of an object based on the change in yaw angle from the previous time step. It is evaluated for **STATIONARY OBJECTS** and assesses the stability of yaw rate recognition. The yaw rate is calculated by comparing the yaw angle of the past object with the yaw angle of the object received in the previous cycle. Here, t2 is the timestamp that is $T_n$ seconds ago.
+
+![yaw_rate](./images/yaw_rate.drawio.svg)
 
 ## Inputs / Outputs
 
