@@ -64,5 +64,10 @@ private:
     const ConfigLogger::Response::SharedPtr response);
 };
 
+class LoggerLevelConfigureNode : public rclcpp::Node, public LoggerLevelConfigure
+{
+public:
+  explicit LoggerLevelConfigureNode(const rclcpp::NodeOptions & node_options);
+};
 }  // namespace tier4_autoware_utils
 #endif  // TIER4_AUTOWARE_UTILS__ROS__LOGGER_LEVEL_CONFIGURE_HPP_

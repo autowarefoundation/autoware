@@ -31,12 +31,14 @@ Planning:
   behavior_path_planner:
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
       logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner
-    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/container_logger_configure
       logger_name: tier4_autoware_utils
 
   behavior_path_planner_avoidance:
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
       logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner.avoidance
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning
+      logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner.avoidance.utils
 
   behavior_path_planner_goal_planner:
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
@@ -57,7 +59,7 @@ Planning:
   behavior_velocity_planner:
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner
       logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_velocity_planner
-    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/container_logger_configure
       logger_name: tier4_autoware_utils
 
   behavior_velocity_planner_intersection:
@@ -67,13 +69,13 @@ Planning:
   motion_obstacle_avoidance:
     - node_name: /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner
       logger_name: planning.scenario_planning.lane_driving.motion_planning.obstacle_avoidance_planner
-    - node_name: /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner
+    - node_name: /planning/scenario_planning/lane_driving/motion_planning/container_logger_configure
       logger_name: tier4_autoware_utils
 
   motion_velocity_smoother:
     - node_name: /planning/scenario_planning/motion_velocity_smoother
       logger_name: planning.scenario_planning.motion_velocity_smoother
-    - node_name: /planning/scenario_planning/motion_velocity_smoother
+    - node_name: /planning/scenario_planning/lane_driving/motion_planning/container_logger_configure
       logger_name: tier4_autoware_utils
 
 # ============================================================
@@ -83,19 +85,19 @@ Control:
   lateral_controller:
     - node_name: /control/trajectory_follower/controller_node_exe
       logger_name: control.trajectory_follower.controller_node_exe.lateral_controller
-    - node_name: /control/trajectory_follower/controller_node_exe
+    - node_name: /control/container_logger_configure
       logger_name: tier4_autoware_utils
 
   longitudinal_controller:
     - node_name: /control/trajectory_follower/controller_node_exe
       logger_name: control.trajectory_follower.controller_node_exe.longitudinal_controller
-    - node_name: /control/trajectory_follower/controller_node_exe
+    - node_name: /control/container_logger_configure
       logger_name: tier4_autoware_utils
 
   vehicle_cmd_gate:
     - node_name: /control/vehicle_cmd_gate
       logger_name: control.vehicle_cmd_gate
-    - node_name: /control/vehicle_cmd_gate
+    - node_name: /control/container_logger_configure
       logger_name: tier4_autoware_utils
 
 # ============================================================
@@ -104,17 +106,9 @@ Control:
 
 Common:
   tier4_autoware_utils:
-    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/container_logger_configure
       logger_name: tier4_autoware_utils
-    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner
+    - node_name: /planning/scenario_planning/lane_driving/motion_planning/container_logger_configure
       logger_name: tier4_autoware_utils
-    - node_name: /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner
-      logger_name: tier4_autoware_utils
-    - node_name: /planning/scenario_planning/lane_driving/motion_planning/path_smoother
-      logger_name: tier4_autoware_utils
-    - node_name: /planning/scenario_planning/motion_velocity_smoother
-      logger_name: tier4_autoware_utils
-    - node_name: /control/trajectory_follower/controller_node_exe
-      logger_name: tier4_autoware_utils
-    - node_name: /control/vehicle_cmd_gate
+    - node_name: /control/container_logger_configure
       logger_name: tier4_autoware_utils

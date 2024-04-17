@@ -6,6 +6,10 @@
     <composable_node pkg="glog_component" plugin="GlogComponent" name="glog_component" namespace=""/>
   </node_container>
 
+  <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
+    <composable_node pkg="tier4_autoware_utils" plugin="tier4_autoware_utils::LoggerLevelConfigureNode" name="config_logger" namespace=""/>
+  </load_composable_node>
+
   <!-- path smoothing -->
   <group>
     <group if="$(eval &quot;'$(var motion_path_smoother_type)' == 'elastic_band'&quot;)">
