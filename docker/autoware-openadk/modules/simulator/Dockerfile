@@ -1,6 +1,7 @@
 FROM ghcr.io/autowarefoundation/autoware-openadk:latest-base as simulator
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG PLATFORM
+ARG LIB_DIR
 ARG ROS_DISTRO
 
 COPY simulator.repos /autoware/
