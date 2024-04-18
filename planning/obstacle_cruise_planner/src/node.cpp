@@ -552,9 +552,10 @@ std::vector<Polygon2d> ObstacleCruisePlannerNode::createOneStepPolygons(
   const geometry_msgs::msg::Pose & current_ego_pose, const double lat_margin) const
 {
   const auto & p = behavior_determination_param_;
-  const bool is_enable_current_pose_consideration = p.enable_to_consider_current_pose;
-  const double step_length = p.decimate_trajectory_step_length;
-  const double time_to_convergence = p.time_to_convergence;
+
+  const double front_length = vehicle_info.max_longitudinal_offset_m;
+  const double rear_length = vehicle_info.rear_overhang_m;
+  const double vehicle_width = vehicle_info.vehicle_width_m;
 
   const size_t nearest_idx =
     motion_utils::findNearestSegmentIndex(traj_points, current_ego_pose.position);
@@ -563,41 +564,68 @@ std::vector<Polygon2d> ObstacleCruisePlannerNode::createOneStepPolygons(
     tier4_autoware_utils::inverseTransformPose(current_ego_pose, nearest_pose);
   const double current_ego_lat_error = current_ego_pose_error.position.y;
   const double current_ego_yaw_error = tf2::getYaw(current_ego_pose_error.orientation);
-  double time_elapsed = 0.0;
+  double time_elapsed{0.0};
 
-  std::vector<Polygon2d> polygons;
-  std::vector<geometry_msgs::msg::Pose> last_poses = {traj_points.at(0).pose};
-  if (is_enable_current_pose_consideration) {
-    last_poses.push_back(current_ego_pose);
-  }
-
+  std::vector<Polygon2d> output_polygons;
+  Polygon2d tmp_polys{};
   for (size_t i = 0; i < traj_points.size(); ++i) {
     std::vector<geometry_msgs::msg::Pose> current_poses = {traj_points.at(i).pose};
 
     // estimate the future ego pose with assuming that the pose error against the reference path
     // will decrease to zero by the time_to_convergence
-    if (is_enable_current_pose_consideration && time_elapsed < time_to_convergence) {
-      const double rem_ratio = (time_to_convergence - time_elapsed) / time_to_convergence;
+    if (p.enable_to_consider_current_pose && time_elapsed < p.time_to_convergence) {
+      const double rem_ratio = (p.time_to_convergence - time_elapsed) / p.time_to_convergence;
       geometry_msgs::msg::Pose indexed_pose_err;
       indexed_pose_err.set__orientation(
         tier4_autoware_utils::createQuaternionFromYaw(current_ego_yaw_error * rem_ratio));
       indexed_pose_err.set__position(
         tier4_autoware_utils::createPoint(0.0, current_ego_lat_error * rem_ratio, 0.0));
-
       current_poses.push_back(
         tier4_autoware_utils::transformPose(indexed_pose_err, traj_points.at(i).pose));
-
       if (traj_points.at(i).longitudinal_velocity_mps != 0.0) {
-        time_elapsed += step_length / std::abs(traj_points.at(i).longitudinal_velocity_mps);
+        time_elapsed +=
+          p.decimate_trajectory_step_length / std::abs(traj_points.at(i).longitudinal_velocity_mps);
       } else {
         time_elapsed = std::numeric_limits<double>::max();
       }
     }
-    polygons.push_back(
-      polygon_utils::createOneStepPolygon(last_poses, current_poses, vehicle_info, lat_margin));
-    last_poses = current_poses;
+
+    Polygon2d idx_poly{};
+    for (const auto & pose : current_poses) {
+      if (i == 0 && traj_points.at(i).longitudinal_velocity_mps > 1e-3) {
+        boost::geometry::append(
+          idx_poly,
+          tier4_autoware_utils::toFootprint(pose, front_length, rear_length, vehicle_width)
+            .outer());
+        boost::geometry::append(
+          idx_poly,
+          tier4_autoware_utils::fromMsg(tier4_autoware_utils::calcOffsetPose(
+                                          pose, front_length, vehicle_width * 0.5 + lat_margin, 0.0)
+                                          .position)
+            .to_2d());
+        boost::geometry::append(
+          idx_poly, tier4_autoware_utils::fromMsg(
+                      tier4_autoware_utils::calcOffsetPose(
+                        pose, front_length, -vehicle_width * 0.5 - lat_margin, 0.0)
+                        .position)
+                      .to_2d());
+      } else {
+        boost::geometry::append(
+          idx_poly, tier4_autoware_utils::toFootprint(
+                      pose, front_length, rear_length, vehicle_width + lat_margin * 2.0)
+                      .outer());
+      }
+    }
+
+    boost::geometry::append(tmp_polys, idx_poly.outer());
+    Polygon2d hull_polygon;
+    boost::geometry::convex_hull(tmp_polys, hull_polygon);
+    boost::geometry::correct(hull_polygon);
+
+    output_polygons.push_back(hull_polygon);
+    tmp_polys = std::move(idx_poly);
   }
-  return polygons;
+  return output_polygons;
 }
 
 std::vector<Obstacle> ObstacleCruisePlannerNode::convertToObstacles(
