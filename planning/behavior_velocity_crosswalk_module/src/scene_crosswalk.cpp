@@ -1075,7 +1075,7 @@ void CrosswalkModule::updateObjectState(
     object_info_manager_.update(
       obj_uuid, obj_pos, std::hypot(obj_vel.x, obj_vel.y), clock_->now(), is_ego_yielding,
       has_traffic_light, collision_point, object.classification.front().label, planner_param_,
-      crosswalk_.polygon2d().basicPolygon());
+      crosswalk_.polygon2d().basicPolygon(), attention_area);
 
     const auto collision_state = object_info_manager_.getCollisionState(obj_uuid);
     if (collision_point) {
