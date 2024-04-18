@@ -330,8 +330,9 @@ TargetObjectsOnLane createTargetObjectsOnLane(
 
   lanelet::ConstLanelets all_left_lanelets;
   lanelet::ConstLanelets all_right_lanelets;
+  // TODO(sugahara): consider right side parking and define right shoulder lanelets
+  lanelet::ConstLanelets all_left_shoulder_lanelets;
 
-  // Define lambda functions to update left and right lanelets
   const auto update_left_lanelets = [&](const lanelet::ConstLanelet & target_lane) {
     const auto left_lanelets = route_handler->getAllLeftSharedLinestringLanelets(
       target_lane, include_opposite, invert_opposite);
@@ -345,13 +346,23 @@ TargetObjectsOnLane createTargetObjectsOnLane(
       all_right_lanelets.end(), right_lanelets.begin(), right_lanelets.end());
   };
 
-  // Update left and right lanelets for each current lane
+  const auto update_left_shoulder_lanelet = [&](const lanelet::ConstLanelet & target_lane) {
+    lanelet::ConstLanelet neighbor_shoulder_lane{};
+    const bool shoulder_lane_is_found =
+      route_handler->getLeftShoulderLanelet(target_lane, &neighbor_shoulder_lane);
+    if (shoulder_lane_is_found) {
+      all_left_shoulder_lanelets.insert(all_left_shoulder_lanelets.end(), neighbor_shoulder_lane);
+    }
+  };
+
   for (const auto & current_lane : current_lanes) {
     update_left_lanelets(current_lane);
     update_right_lanelets(current_lane);
+    update_left_shoulder_lanelet(current_lane);
   }
 
   TargetObjectsOnLane target_objects_on_lane{};
+
   const auto append_objects_on_lane = [&](auto & lane_objects, const auto & check_lanes) {
     std::for_each(
       filtered_objects.objects.begin(), filtered_objects.objects.end(), [&](const auto & object) {
@@ -362,7 +373,7 @@ TargetObjectsOnLane createTargetObjectsOnLane(
       });
   };
 
-  // TODO(Sugahara): Consider shoulder and other lane objects
+  // TODO(Sugahara): Consider other lane objects
   if (object_lane_configuration.check_current_lane && !current_lanes.empty()) {
     append_objects_on_lane(target_objects_on_lane.on_current_lane, current_lanes);
   }
@@ -371,6 +382,9 @@ TargetObjectsOnLane createTargetObjectsOnLane(
   }
   if (object_lane_configuration.check_right_lane && !all_right_lanelets.empty()) {
     append_objects_on_lane(target_objects_on_lane.on_right_lane, all_right_lanelets);
+  }
+  if (object_lane_configuration.check_shoulder_lane && !all_left_shoulder_lanelets.empty()) {
+    append_objects_on_lane(target_objects_on_lane.on_shoulder_lane, all_left_shoulder_lanelets);
   }
 
   return target_objects_on_lane;
