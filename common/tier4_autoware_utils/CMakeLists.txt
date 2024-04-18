@@ -18,11 +18,6 @@ ament_auto_add_library(tier4_autoware_utils SHARED
   src/system/backtrace.cpp
 )
 
-rclcpp_components_register_node(tier4_autoware_utils
-  PLUGIN "tier4_autoware_utils::LoggerLevelConfigureNode"
-  EXECUTABLE logger_level_configure_node
-)
-
 if(BUILD_TESTING)
   find_package(ament_cmake_ros REQUIRED)
 

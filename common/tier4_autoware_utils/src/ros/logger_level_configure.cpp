@@ -58,11 +58,4 @@ void LoggerLevelConfigure::onLoggerConfigService(
   return;
 }
 
-LoggerLevelConfigureNode::LoggerLevelConfigureNode(const rclcpp::NodeOptions & node_options)
-: Node("logger_level_configure_node", node_options), LoggerLevelConfigure(this)
-{
-}
-
 }  // namespace tier4_autoware_utils
-#include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(tier4_autoware_utils::LoggerLevelConfigureNode)

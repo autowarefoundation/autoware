@@ -5,7 +5,6 @@
   <arg name="mission_planner_param_path" default="$(find-pkg-share mission_planner)/config/mission_planner.param.yaml"/>
 
   <node_container pkg="rclcpp_components" exec="component_container_mt" name="mission_planner_container" namespace="">
-    <composable_node pkg="tier4_autoware_utils" plugin="tier4_autoware_utils::LoggerLevelConfigureNode" name="container_logger_configure" namespace=""/>
     <composable_node pkg="mission_planner" plugin="mission_planner::MissionPlanner" name="mission_planner" namespace="">
       <param from="$(var mission_planner_param_path)"/>
       <remap from="~/input/modified_goal" to="$(var modified_goal_topic_name)"/>

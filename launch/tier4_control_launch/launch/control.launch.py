@@ -381,12 +381,6 @@ def launch_setup(context, *args, **kwargs):
                 package="rclcpp_components",
                 executable=LaunchConfiguration("container_executable"),
                 composable_node_descriptions=[
-                    ComposableNode(
-                        package="tier4_autoware_utils",
-                        plugin="tier4_autoware_utils::LoggerLevelConfigureNode",
-                        name="container_logger_configure",
-                        namespace="control_validator_container",
-                    ),
                     control_validator_component,
                     ComposableNode(
                         package="glog_component",
