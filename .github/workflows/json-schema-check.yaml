@@ -10,7 +10,7 @@ jobs:
     outputs:
       run-check: ${{ steps.paths_filter.outputs.json_or_yaml }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: paths_filter
         with:
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run json-schema-check
         uses: autowarefoundation/autoware-github-actions/json-schema-check@v1
