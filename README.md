@@ -1,7 +1,49 @@
 # Autoware - the world's leading open-source software project for autonomous driving
 
 ![Autoware_RViz](https://user-images.githubusercontent.com/63835446/158918717-58d6deaf-93fb-47f9-891d-e242b02cba7b.png)
-[![Discord](https://img.shields.io/discord/953808765935816715?label=Autoware%20Discord&style=for-the-badge)](https://discord.gg/Q94UsPvReQ)
+
+<!--- Contributors -->
+<p align="center">
+    <a href="https://github.com/autowarefoundation/autoware.universe/graphs/contributors" alt="Autoware Universe Contributors">
+        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware.universe?style=flat&label=Autoware%20Universe%20Contributors" /></a>
+    <a href="https://github.com/autowarefoundation/autoware/graphs/contributors" alt="Autoware Contributors">
+        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware?style=flat&label=Autoware%20Contributors" /></a>
+</p>
+
+<!--- Commit Activity -->
+<p align="center">
+    <a href="https://github.com/autowarefoundation/autoware.universe/pulse" alt="Autoware Universe Activity">
+        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware.universe?style=flat&label=Autoware%20Universe%20Commit%20Activity" /></a>
+    <a href="https://github.com/autowarefoundation/autoware/pulse" alt="Autoware Activity">
+        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware?style=flat&label=Autoware%20Commit%20Activity" /></a>
+</p>
+
+<!--- License -->
+<p align="center">
+    <a href="https://github.com/autowarefoundation/autoware/blob/main/LICENSE" alt="License">
+        <img src="https://img.shields.io/github/license/autowarefoundation/autoware?style=flat&label=License" /></a>
+</p>
+
+<!--- CI Reports -->
+<p align="center">
+    <a href="https://github.com/autowarefoundation/autoware/actions/workflows/build-main.yaml?query=branch%3Amain" alt="Build Main CI">
+        <img src="https://img.shields.io/github/actions/workflow/status/autowarefoundation/autoware/build-main.yaml?style=flat&label=build-main" /></a>
+    <a href="https://app.codecov.io/gh/autowarefoundation/autoware.universe" alt="Code Coverage">
+        <img src="https://img.shields.io/codecov/c/gh/autowarefoundation/autoware.universe?style=flat&label=Coverage&logo=codecov&logoColor=white" /></a>
+</p>
+
+<!--- Social Media -->
+<p align="center">
+    <a href="https://discord.gg/Q94UsPvReQ">
+        <img src="https://img.shields.io/discord/953808765935816715?logo=discord&logoColor=white&style=flat&label=Autoware%20Discord"
+            alt="Autoware Discord"></a>
+    <a href="https://twitter.com/intent/follow?screen_name=AutowareFdn">
+        <img src="https://img.shields.io/twitter/follow/AutowareFdn?logo=x&logoColor=white&style=flat"
+            alt="Autoware Twitter / X"></a>
+    <a href="https://www.linkedin.com/company/the-autoware-foundation/">
+        <img src="https://img.shields.io/badge/Linkedin-Autoware%20Foundation-0a66c2?logo=linkedin&logoColor=white&style=flat"
+            alt="Autoware Twitter / X"></a>
+</p>
 
 Autoware is an open-source software stack for self-driving vehicles, built on the [Robot Operating System (ROS)](https://www.ros.org/). It includes all of the necessary functions to drive an autonomous vehicles from localization and object detection to route planning and control, and was created with the aim of enabling as many individuals and organizations as possible to contribute to open innovations in autonomous driving technology.
 
