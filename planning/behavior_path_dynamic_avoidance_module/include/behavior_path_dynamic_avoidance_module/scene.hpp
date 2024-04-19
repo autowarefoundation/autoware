@@ -16,6 +16,7 @@
 #define BEHAVIOR_PATH_DYNAMIC_AVOIDANCE_MODULE__SCENE_HPP_
 
 #include "behavior_path_planner_common/interface/scene_module_interface.hpp"
+#include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
@@ -54,17 +55,36 @@ std::vector<T> getAllKeys(const std::unordered_map<T, S> & map)
 namespace behavior_path_planner
 {
 using autoware_auto_perception_msgs::msg::PredictedPath;
+using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using tier4_autoware_utils::Polygon2d;
 
 struct MinMaxValue
 {
   double min_value{0.0};
   double max_value{0.0};
+  MinMaxValue operator+(const double scalar) const
+  {
+    MinMaxValue ret;
+    ret.min_value = min_value + scalar;
+    ret.max_value = max_value + scalar;
+    return ret;
+  };
+  void swap() { std::swap(min_value, max_value); }
 };
 
 enum class PolygonGenerationMethod {
   EGO_PATH_BASE = 0,
   OBJECT_PATH_BASE,
+};
+
+enum class ObjectType {
+  OUT_OF_SCOPE = 0,  // The module do not care about this type of objects.
+  REGULATED,    // The module assumes this type of objects move in parallel against lanes. Drivable
+                // areas are divided proportionately with the ego. Typically, cars, bus and trucks
+                // are classified to this type.
+  UNREGULATED,  // The module does not assume the objects move in parallel against lanes and
+                // assigns drivable area with priority to ego. Typically, pedestrians should be
+                // classified to this type.
 };
 
 struct DynamicAvoidanceParameters
@@ -103,12 +123,18 @@ struct DynamicAvoidanceParameters
   double max_overtaking_crossing_object_angle{0.0};
   double min_oncoming_crossing_object_vel{0.0};
   double max_oncoming_crossing_object_angle{0.0};
+  double max_pedestrian_crossing_vel{0.0};
   double max_stopped_object_vel{0.0};
 
   // drivable area generation
   PolygonGenerationMethod polygon_generation_method{};
   double min_obj_path_based_lon_polygon_margin{0.0};
   double lat_offset_from_obstacle{0.0};
+  double margin_distance_around_pedestrian{0.0};
+
+  double end_time_to_consider{0.0};
+  double threshold_confidence{0.0};
+
   double max_lat_offset_to_avoid{0.0};
   double max_time_for_lat_shift{0.0};
   double lpf_gain_for_lat_avoid_to_offset{0.0};
@@ -148,6 +174,7 @@ public:
       const bool arg_is_object_on_ego_path,
       const std::optional<rclcpp::Time> & arg_latest_time_inside_ego_path)
     : uuid(tier4_autoware_utils::toHexString(predicted_object.object_id)),
+      label(predicted_object.classification.front().label),
       pose(predicted_object.kinematics.initial_pose_with_covariance.pose),
       shape(predicted_object.shape),
       vel(arg_vel),
@@ -161,6 +188,7 @@ public:
     }
 
     std::string uuid{};
+    uint8_t label{};
     geometry_msgs::msg::Pose pose{};
     autoware_auto_perception_msgs::msg::Shape shape;
     double vel{0.0};
@@ -178,6 +206,7 @@ public:
     std::vector<PathPointWithLaneId> ref_path_points_for_obj_poly;
     LatFeasiblePaths ego_lat_feasible_paths;
 
+    // add additional information (not update to the latest data)
     void update(
       const MinMaxValue & arg_lon_offset_to_avoid, const MinMaxValue & arg_lat_offset_to_avoid,
       const bool arg_is_collision_left, const bool arg_should_be_avoided,
@@ -216,7 +245,7 @@ public:
 
       // increase counter
       if (counter_map_.count(uuid) != 0) {
-        counter_map_.at(uuid) = std::min(max_count_ + 1, std::max(1, counter_map_.at(uuid) + 1));
+        counter_map_.at(uuid) = std::min(max_count_, std::max(1, counter_map_.at(uuid) + 1));
       } else {
         counter_map_.emplace(uuid, 1);
       }
@@ -236,7 +265,7 @@ public:
       }
       for (const auto & uuid : not_updated_uuids) {
         if (counter_map_.count(uuid) != 0) {
-          counter_map_.at(uuid) = std::max(min_count_ - 1, std::min(-1, counter_map_.at(uuid) - 1));
+          counter_map_.at(uuid) = std::max(0, counter_map_.at(uuid) - 1);
         } else {
           counter_map_.emplace(uuid, -1);
         }
@@ -253,7 +282,7 @@ public:
         std::remove_if(
           valid_object_uuids_.begin(), valid_object_uuids_.end(),
           [&](const auto & uuid) {
-            return counter_map_.count(uuid) == 0 || counter_map_.at(uuid) < max_count_;
+            return counter_map_.count(uuid) == 0 || counter_map_.at(uuid) < min_count_;
           }),
         valid_object_uuids_.end());
 
@@ -340,13 +369,23 @@ private:
     const double max_lon_offset;
     const double min_lon_offset;
   };
+  struct EgoPathReservePoly
+  {
+    const tier4_autoware_utils::Polygon2d left_avoid;
+    const tier4_autoware_utils::Polygon2d right_avoid;
+  };
 
   bool canTransitSuccessState() override;
 
   bool canTransitFailureState() override { return false; }
 
-  bool isLabelTargetObstacle(const uint8_t label) const;
-  void updateTargetObjects();
+  ObjectType getObjectType(const uint8_t label) const;
+  void registerRegulatedObjects(const std::vector<DynamicAvoidanceObject> & prev_objects);
+  void registerUnregulatedObjects(const std::vector<DynamicAvoidanceObject> & prev_objects);
+  void determineWhetherToAvoidAgainstRegulatedObjects(
+    const std::vector<DynamicAvoidanceObject> & prev_objects);
+  void determineWhetherToAvoidAgainstUnregulatedObjects(
+    const std::vector<DynamicAvoidanceObject> & prev_objects);
   LatFeasiblePaths generateLateralFeasiblePaths(
     const geometry_msgs::msg::Pose & ego_pose, const double ego_vel) const;
   void updateRefPathBeforeLaneChange(const std::vector<PathPointWithLaneId> & ego_ref_path_points);
@@ -378,18 +417,24 @@ private:
     const geometry_msgs::msg::Pose & obj_pose, const Polygon2d & obj_points, const double obj_vel,
     const PredictedPath & obj_path, const autoware_auto_perception_msgs::msg::Shape & obj_shape,
     const TimeWhileCollision & time_while_collision) const;
-  std::optional<MinMaxValue> calcMinMaxLateralOffsetToAvoid(
+  std::optional<MinMaxValue> calcMinMaxLateralOffsetToAvoidRegulatedObject(
     const std::vector<PathPointWithLaneId> & ref_path_points_for_obj_poly,
     const Polygon2d & obj_points, const geometry_msgs::msg::Point & obj_pos, const double obj_vel,
     const bool is_collision_left, const double obj_normal_vel,
     const std::optional<DynamicAvoidanceObject> & prev_object) const;
-
+  std::optional<MinMaxValue> calcMinMaxLateralOffsetToAvoidUnregulatedObject(
+    const std::vector<PathPointWithLaneId> & ref_path_points_for_obj_poly,
+    const std::optional<DynamicAvoidanceObject> & prev_object,
+    const DynamicAvoidanceObject & object) const;
   std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> getAdjacentLanes(
     const double forward_distance, const double backward_distance) const;
   std::optional<tier4_autoware_utils::Polygon2d> calcEgoPathBasedDynamicObstaclePolygon(
     const DynamicAvoidanceObject & object) const;
   std::optional<tier4_autoware_utils::Polygon2d> calcObjectPathBasedDynamicObstaclePolygon(
     const DynamicAvoidanceObject & object) const;
+  std::optional<tier4_autoware_utils::Polygon2d> calcPredictedPathBasedDynamicObstaclePolygon(
+    const DynamicAvoidanceObject & object, const EgoPathReservePoly & ego_path_poly) const;
+  EgoPathReservePoly calcEgoPathReservePoly(const PathWithLaneId & ego_path) const;
 
   void printIgnoreReason(const std::string & obj_uuid, const std::string & reason)
   {
@@ -406,6 +451,10 @@ private:
   std::shared_ptr<DynamicAvoidanceParameters> parameters_;
 
   TargetObjectsManager target_objects_manager_;
+
+  mutable tier4_autoware_utils::StopWatch<
+    std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
+    stop_watch_;
 };
 }  // namespace behavior_path_planner
 

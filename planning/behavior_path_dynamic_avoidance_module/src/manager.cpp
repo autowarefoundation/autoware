@@ -99,6 +99,8 @@ void DynamicAvoidanceModuleManager::init(rclcpp::Node * node)
       node->declare_parameter<double>(ns + "crossing_object.min_oncoming_object_vel");
     p.max_oncoming_crossing_object_angle =
       node->declare_parameter<double>(ns + "crossing_object.max_oncoming_object_angle");
+    p.max_pedestrian_crossing_vel =
+      node->declare_parameter<double>(ns + "crossing_object.max_pedestrian_crossing_vel");
 
     p.max_stopped_object_vel =
       node->declare_parameter<double>(ns + "stopped_object.max_object_vel");
@@ -111,6 +113,12 @@ void DynamicAvoidanceModuleManager::init(rclcpp::Node * node)
     p.min_obj_path_based_lon_polygon_margin =
       node->declare_parameter<double>(ns + "object_path_base.min_longitudinal_polygon_margin");
     p.lat_offset_from_obstacle = node->declare_parameter<double>(ns + "lat_offset_from_obstacle");
+    p.margin_distance_around_pedestrian =
+      node->declare_parameter<double>(ns + "margin_distance_around_pedestrian");
+    p.end_time_to_consider =
+      node->declare_parameter<double>(ns + "predicted_path.end_time_to_consider");
+    p.threshold_confidence =
+      node->declare_parameter<double>(ns + "predicted_path.threshold_confidence");
     p.max_lat_offset_to_avoid = node->declare_parameter<double>(ns + "max_lat_offset_to_avoid");
     p.max_time_for_lat_shift =
       node->declare_parameter<double>(ns + "max_time_for_object_lat_shift");
@@ -214,6 +222,9 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
     updateParam<double>(
       parameters, ns + "crossing_object.max_oncoming_object_angle",
       p->max_oncoming_crossing_object_angle);
+    updateParam<double>(
+      parameters, ns + "crossing_object.max_pedestrian_crossing_vel",
+      p->max_pedestrian_crossing_vel);
 
     updateParam<double>(
       parameters, ns + "stopped_object.max_object_vel", p->max_stopped_object_vel);
@@ -231,6 +242,12 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
       parameters, ns + "object_path_base.min_longitudinal_polygon_margin",
       p->min_obj_path_based_lon_polygon_margin);
     updateParam<double>(parameters, ns + "lat_offset_from_obstacle", p->lat_offset_from_obstacle);
+    updateParam<double>(
+      parameters, ns + "margin_distance_around_pedestrian", p->margin_distance_around_pedestrian);
+    updateParam<double>(
+      parameters, ns + "predicted_path.end_time_to_consider", p->end_time_to_consider);
+    updateParam<double>(
+      parameters, ns + "predicted_path.threshold_confidence", p->threshold_confidence);
     updateParam<double>(parameters, ns + "max_lat_offset_to_avoid", p->max_lat_offset_to_avoid);
     updateParam<double>(
       parameters, ns + "max_time_for_object_lat_shift", p->max_time_for_lat_shift);
