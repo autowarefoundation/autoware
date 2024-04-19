@@ -15,7 +15,7 @@ RUN --mount=type=ssh \
   && vcs import src/simulator/scenario_simulator/external < src/simulator/scenario_simulator/dependency_humble.repos \
   && apt-get update \
   && rosdep update \
-  && DEBIAN_FRONTEND=noninteractive rosdep install -y --rosdistro "$ROS_DISTRO" --from-paths src --ignore-src 
+  && DEBIAN_FRONTEND=noninteractive rosdep install -y --rosdistro "$ROS_DISTRO" --from-paths src --ignore-src
 
 RUN --mount=type=ssh \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \

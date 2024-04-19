@@ -1,4 +1,4 @@
-version: '2.17'
+version: "2.17"
 
 services:
   simulator:
@@ -9,7 +9,7 @@ services:
     environment:
       - ROS_DOMAIN_ID=88
     command: ros2 launch scenario_test_runner scenario_test_runner.launch.py architecture_type:=awf/universe record:=false scenario:=/autoware/test-scenario/yield_maneuver_demo.yaml sensor_model:=sample_sensor_kit vehicle_model:=sample_vehicle map_path:=/autoware/test-scenario/map/
-  
+
   planning-control:
     image: ghcr.io/oguzkaganozt/autoware-openadk:latest-planning-control
     volumes:

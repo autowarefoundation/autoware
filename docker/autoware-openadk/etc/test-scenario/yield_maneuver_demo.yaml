@@ -4,9 +4,9 @@ OpenSCENARIO:
   FileHeader:
     revMajor: 1
     revMinor: 1
-    date: '2023-05-31T12:21:01.427Z'
-    description: ''
-    author: 'MEHMET DOGRU (last modified by: MEHMET DOGRU)'
+    date: "2023-05-31T12:21:01.427Z"
+    description: ""
+    author: "MEHMET DOGRU (last modified by: MEHMET DOGRU)"
   ParameterDeclarations:
     ParameterDeclaration: []
   CatalogLocations:
@@ -22,7 +22,7 @@ OpenSCENARIO:
     ScenarioObject:
       - name: ego
         Vehicle:
-          name: ''
+          name: ""
           vehicleCategory: car
           BoundingBox:
             Center:
@@ -54,14 +54,14 @@ OpenSCENARIO:
             Property: []
         ObjectController:
           Controller:
-            name: ''
+            name: ""
             Properties:
               Property:
                 - name: isEgo
-                  value: 'true'
+                  value: "true"
       - name: Npc1
         Vehicle:
-          name: ''
+          name: ""
           vehicleCategory: car
           BoundingBox:
             Center:
@@ -93,12 +93,12 @@ OpenSCENARIO:
             Property: []
         ObjectController:
           Controller:
-            name: ''
+            name: ""
             Properties:
               Property: []
       - name: Npc2
         Vehicle:
-          name: ''
+          name: ""
           vehicleCategory: car
           BoundingBox:
             Center:
@@ -130,12 +130,12 @@ OpenSCENARIO:
             Property: []
         ObjectController:
           Controller:
-            name: ''
+            name: ""
             Properties:
               Property: []
       - name: Npc3
         Vehicle:
-          name: ''
+          name: ""
           vehicleCategory: car
           BoundingBox:
             Center:
@@ -167,7 +167,7 @@ OpenSCENARIO:
             Property: []
         ObjectController:
           Controller:
-            name: ''
+            name: ""
             Properties:
               Property: []
       - name: Misc0
@@ -195,8 +195,8 @@ OpenSCENARIO:
               - TeleportAction:
                   Position:
                     LanePosition:
-                      roadId: ''
-                      laneId: '8221'
+                      roadId: ""
+                      laneId: "8221"
                       s: 5.012
                       offset: -0.195
                       Orientation:
@@ -208,8 +208,8 @@ OpenSCENARIO:
                   AcquirePositionAction:
                     Position:
                       LanePosition:
-                        roadId: ''
-                        laneId: '8655'
+                        roadId: ""
+                        laneId: "8655"
                         s: 13.3982
                         offset: -0.2066
                         Orientation:
@@ -231,8 +231,8 @@ OpenSCENARIO:
               - TeleportAction:
                   Position:
                     LanePosition:
-                      roadId: ''
-                      laneId: '524'
+                      roadId: ""
+                      laneId: "524"
                       s: 2.4883
                       offset: -0.0846
                       Orientation:
@@ -243,13 +243,13 @@ OpenSCENARIO:
               - RoutingAction:
                   AssignRouteAction:
                     Route:
-                      name: ''
+                      name: ""
                       closed: false
                       Waypoint:
                         - Position:
                             LanePosition:
-                              roadId: ''
-                              laneId: '8633'
+                              roadId: ""
+                              laneId: "8633"
                               s: 0.095
                               offset: 0.0544
                               Orientation:
@@ -260,8 +260,8 @@ OpenSCENARIO:
                           routeStrategy: shortest
                         - Position:
                             LanePosition:
-                              roadId: ''
-                              laneId: '8633'
+                              roadId: ""
+                              laneId: "8633"
                               s: 0.1006
                               offset: 0.0544
                               Orientation:
@@ -282,18 +282,18 @@ OpenSCENARIO:
               - ControllerAction:
                   AssignControllerAction:
                     Controller:
-                      name: ''
+                      name: ""
                       Properties:
                         Property:
                           - name: maxSpeed
-                            value: '10'
+                            value: "10"
           - entityRef: Npc2
             PrivateAction:
               - TeleportAction:
                   Position:
                     LanePosition:
-                      roadId: ''
-                      laneId: '407'
+                      roadId: ""
+                      laneId: "407"
                       s: 18.6792
                       offset: -0.1775
                       Orientation:
@@ -304,13 +304,13 @@ OpenSCENARIO:
               - RoutingAction:
                   AssignRouteAction:
                     Route:
-                      name: ''
+                      name: ""
                       closed: false
                       Waypoint:
                         - Position:
                             LanePosition:
-                              roadId: ''
-                              laneId: '8586'
+                              roadId: ""
+                              laneId: "8586"
                               s: 10.3856
                               offset: -0.0657
                               Orientation:
@@ -321,8 +321,8 @@ OpenSCENARIO:
                           routeStrategy: shortest
                         - Position:
                             LanePosition:
-                              roadId: ''
-                              laneId: '8586'
+                              roadId: ""
+                              laneId: "8586"
                               s: 10.3855
                               offset: -0.0657
                               Orientation:
@@ -343,18 +343,18 @@ OpenSCENARIO:
               - ControllerAction:
                   AssignControllerAction:
                     Controller:
-                      name: ''
+                      name: ""
                       Properties:
                         Property:
                           - name: maxSpeed
-                            value: '10'
+                            value: "10"
           - entityRef: Npc3
             PrivateAction:
               - TeleportAction:
                   Position:
                     LanePosition:
-                      roadId: ''
-                      laneId: '2724'
+                      roadId: ""
+                      laneId: "2724"
                       s: 191.143
                       offset: 0.0593
                       Orientation:
@@ -365,13 +365,13 @@ OpenSCENARIO:
               - RoutingAction:
                   AssignRouteAction:
                     Route:
-                      name: ''
+                      name: ""
                       closed: false
                       Waypoint:
                         - Position:
                             LanePosition:
-                              roadId: ''
-                              laneId: '8586'
+                              roadId: ""
+                              laneId: "8586"
                               s: 2.1981
                               offset: -0.1575
                               Orientation:
@@ -382,8 +382,8 @@ OpenSCENARIO:
                           routeStrategy: shortest
                         - Position:
                             LanePosition:
-                              roadId: ''
-                              laneId: '8586'
+                              roadId: ""
+                              laneId: "8586"
                               s: 2.1982
                               offset: -0.1575
                               Orientation:
@@ -404,11 +404,11 @@ OpenSCENARIO:
               - ControllerAction:
                   AssignControllerAction:
                     Controller:
-                      name: ''
+                      name: ""
                       Properties:
                         Property:
                           - name: maxSpeed
-                            value: '10'
+                            value: "10"
           - entityRef: Misc0
             PrivateAction:
               - TeleportAction:
@@ -421,7 +421,7 @@ OpenSCENARIO:
                       p: 0
                       r: 0
     Story:
-      - name: ''
+      - name: ""
         Act:
           - name: act_stop
             ManeuverGroup:
@@ -432,12 +432,12 @@ OpenSCENARIO:
                   EntityRef:
                     - entityRef: Npc1
                 Maneuver:
-                  - name: ''
+                  - name: ""
                     Event:
                       - name: Stopdasdas
                         priority: parallel
                         Action:
-                          - name: ''
+                          - name: ""
                             PrivateAction:
                               LongitudinalAction:
                                 SpeedAction:
@@ -451,7 +451,7 @@ OpenSCENARIO:
                         StartTrigger:
                           ConditionGroup:
                             - Condition:
-                                - name: ''
+                                - name: ""
                                   delay: 0
                                   conditionEdge: none
                                   ByEntityCondition:
@@ -463,8 +463,8 @@ OpenSCENARIO:
                                       ReachPositionCondition:
                                         Position:
                                           LanePosition:
-                                            roadId: ''
-                                            laneId: '8633'
+                                            roadId: ""
+                                            laneId: "8633"
                                             s: 0.095
                                             offset: 0.0544
                                             Orientation:
@@ -476,7 +476,7 @@ OpenSCENARIO:
             StartTrigger:
               ConditionGroup:
                 - Condition:
-                    - name: ''
+                    - name: ""
                       delay: 0
                       conditionEdge: none
                       ByEntityCondition:
@@ -488,8 +488,8 @@ OpenSCENARIO:
                           ReachPositionCondition:
                             Position:
                               LanePosition:
-                                roadId: ''
-                                laneId: '8633'
+                                roadId: ""
+                                laneId: "8633"
                                 s: 0.095
                                 offset: 0.0544
                                 Orientation:
@@ -507,12 +507,12 @@ OpenSCENARIO:
                   EntityRef:
                     - entityRef: Npc2
                 Maneuver:
-                  - name: ''
+                  - name: ""
                     Event:
                       - name: asdf
                         priority: parallel
                         Action:
-                          - name: ''
+                          - name: ""
                             PrivateAction:
                               LongitudinalAction:
                                 SpeedAction:
@@ -526,7 +526,7 @@ OpenSCENARIO:
                         StartTrigger:
                           ConditionGroup:
                             - Condition:
-                                - name: ''
+                                - name: ""
                                   delay: 0
                                   conditionEdge: none
                                   ByEntityCondition:
@@ -538,8 +538,8 @@ OpenSCENARIO:
                                       ReachPositionCondition:
                                         Position:
                                           LanePosition:
-                                            roadId: ''
-                                            laneId: '8586'
+                                            roadId: ""
+                                            laneId: "8586"
                                             s: 10.3856
                                             offset: -0.0657
                                             Orientation:
@@ -551,7 +551,7 @@ OpenSCENARIO:
             StartTrigger:
               ConditionGroup:
                 - Condition:
-                    - name: ''
+                    - name: ""
                       delay: 0
                       conditionEdge: none
                       ByEntityCondition:
@@ -563,8 +563,8 @@ OpenSCENARIO:
                           ReachPositionCondition:
                             Position:
                               LanePosition:
-                                roadId: ''
-                                laneId: '8586'
+                                roadId: ""
+                                laneId: "8586"
                                 s: 10.3856
                                 offset: -0.0657
                                 Orientation:
@@ -582,12 +582,12 @@ OpenSCENARIO:
                   EntityRef:
                     - entityRef: Npc3
                 Maneuver:
-                  - name: ''
+                  - name: ""
                     Event:
                       - name: ghghg
                         priority: parallel
                         Action:
-                          - name: ''
+                          - name: ""
                             PrivateAction:
                               LongitudinalAction:
                                 SpeedAction:
@@ -601,7 +601,7 @@ OpenSCENARIO:
                         StartTrigger:
                           ConditionGroup:
                             - Condition:
-                                - name: ''
+                                - name: ""
                                   delay: 0
                                   conditionEdge: none
                                   ByEntityCondition:
@@ -613,8 +613,8 @@ OpenSCENARIO:
                                       ReachPositionCondition:
                                         Position:
                                           LanePosition:
-                                            roadId: ''
-                                            laneId: '8586'
+                                            roadId: ""
+                                            laneId: "8586"
                                             s: 2.1981
                                             offset: -0.1575
                                             Orientation:
@@ -626,7 +626,7 @@ OpenSCENARIO:
             StartTrigger:
               ConditionGroup:
                 - Condition:
-                    - name: ''
+                    - name: ""
                       delay: 0
                       conditionEdge: none
                       ByEntityCondition:
@@ -638,8 +638,8 @@ OpenSCENARIO:
                           ReachPositionCondition:
                             Position:
                               LanePosition:
-                                roadId: ''
-                                laneId: '8586'
+                                roadId: ""
+                                laneId: "8586"
                                 s: 2.1981
                                 offset: -0.1575
                                 Orientation:
@@ -657,12 +657,12 @@ OpenSCENARIO:
                   EntityRef:
                     - entityRef: Npc3
                 Maneuver:
-                  - name: ''
+                  - name: ""
                     Event:
                       - name: lane_change
                         priority: parallel
                         Action:
-                          - name: ''
+                          - name: ""
                             PrivateAction:
                               LateralAction:
                                 LaneChangeAction:
@@ -672,11 +672,11 @@ OpenSCENARIO:
                                     dynamicsShape: cubic
                                   LaneChangeTarget:
                                     AbsoluteTargetLane:
-                                      value: '3264'
+                                      value: "3264"
                         StartTrigger:
                           ConditionGroup:
                             - Condition:
-                                - name: ''
+                                - name: ""
                                   delay: 0
                                   conditionEdge: none
                                   ByEntityCondition:
@@ -695,7 +695,7 @@ OpenSCENARIO:
             StartTrigger:
               ConditionGroup:
                 - Condition:
-                    - name: ''
+                    - name: ""
                       delay: 0
                       conditionEdge: none
                       ByValueCondition:
@@ -705,20 +705,20 @@ OpenSCENARIO:
           - name: _EndCondition
             ManeuverGroup:
               - maximumExecutionCount: 1
-                name: ''
+                name: ""
                 Actors:
                   selectTriggeringEntities: false
                   EntityRef:
                     - entityRef: ego
                 Maneuver:
-                  - name: ''
+                  - name: ""
                     Event:
-                      - name: ''
+                      - name: ""
                         priority: parallel
                         StartTrigger:
                           ConditionGroup:
                             - Condition:
-                                - name: ''
+                                - name: ""
                                   delay: 0
                                   conditionEdge: none
                                   ByEntityCondition:
@@ -730,8 +730,8 @@ OpenSCENARIO:
                                       ReachPositionCondition:
                                         Position:
                                           LanePosition:
-                                            roadId: ''
-                                            laneId: '8655'
+                                            roadId: ""
+                                            laneId: "8655"
                                             s: 13.3982
                                             offset: -0.2066
                                             Orientation:
@@ -741,16 +741,16 @@ OpenSCENARIO:
                                               r: 0
                                         tolerance: 1
                         Action:
-                          - name: ''
+                          - name: ""
                             UserDefinedAction:
                               CustomCommandAction:
                                 type: exitSuccess
-                      - name: ''
+                      - name: ""
                         priority: parallel
                         StartTrigger:
                           ConditionGroup:
                             - Condition:
-                                - name: ''
+                                - name: ""
                                   delay: 0
                                   conditionEdge: none
                                   ByValueCondition:
@@ -758,7 +758,7 @@ OpenSCENARIO:
                                       value: 180
                                       rule: greaterThan
                             - Condition:
-                                - name: ''
+                                - name: ""
                                   delay: 0
                                   conditionEdge: none
                                   ByEntityCondition:
@@ -771,7 +771,7 @@ OpenSCENARIO:
                                         EntityRef:
                                           entityRef: Misc0
                             - Condition:
-                                - name: ''
+                                - name: ""
                                   delay: 0
                                   conditionEdge: none
                                   ByEntityCondition:
@@ -784,7 +784,7 @@ OpenSCENARIO:
                                         EntityRef:
                                           entityRef: Npc1
                             - Condition:
-                                - name: ''
+                                - name: ""
                                   delay: 0
                                   conditionEdge: none
                                   ByEntityCondition:
@@ -797,7 +797,7 @@ OpenSCENARIO:
                                         EntityRef:
                                           entityRef: Npc2
                             - Condition:
-                                - name: ''
+                                - name: ""
                                   delay: 0
                                   conditionEdge: none
                                   ByEntityCondition:
@@ -810,14 +810,14 @@ OpenSCENARIO:
                                         EntityRef:
                                           entityRef: Npc3
                         Action:
-                          - name: ''
+                          - name: ""
                             UserDefinedAction:
                               CustomCommandAction:
                                 type: exitFailure
             StartTrigger:
               ConditionGroup:
                 - Condition:
-                    - name: ''
+                    - name: ""
                       delay: 0
                       conditionEdge: none
                       ByValueCondition:
