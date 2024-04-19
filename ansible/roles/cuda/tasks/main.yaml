@@ -36,7 +36,7 @@
       - libcurand-dev-{{ cuda__dash_case_cuda_version.stdout }}
       - cuda-nvml-dev-{{ cuda__dash_case_cuda_version.stdout }}
     update_cache: true
-  when: install_devel == 'true'
+  when: install_devel == 'y'
 
 - name: Install CUDA libraries except for cuda-drivers
   become: true
@@ -47,7 +47,7 @@
       - libcublas-{{ cuda__dash_case_cuda_version.stdout }}
       - libcurand-{{ cuda__dash_case_cuda_version.stdout }}
     update_cache: true
-  when: install_devel == 'false'
+  when: install_devel == 'N'
 
 - name: Install extra CUDA libraries for x86_64
   become: true
