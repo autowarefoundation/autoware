@@ -5,6 +5,7 @@
   <version>0.0.0</version>
   <description>The image_transport_decompressor package</description>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
+  <maintainer email="kenzo.lobos@tier4.jp">Kenzo Lobos-Tsunekawa</maintainer>
   <license>Apache License 2.0</license>
 
   <!-- Original license -->
