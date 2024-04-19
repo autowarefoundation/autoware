@@ -76,10 +76,7 @@ bool LaneChangeInterface::isExecutionReady() const
 
 void LaneChangeInterface::updateData()
 {
-  module_type_->setPreviousModulePaths(
-    getPreviousModuleOutput().reference_path, getPreviousModuleOutput().path);
-  module_type_->setPreviousDrivableAreaInfo(getPreviousModuleOutput().drivable_area_info);
-  module_type_->setPreviousTurnSignalInfo(getPreviousModuleOutput().turn_signal_info);
+  module_type_->setPreviousModuleOutput(getPreviousModuleOutput());
   module_type_->updateSpecialData();
 
   if (isWaitingApproval()) {

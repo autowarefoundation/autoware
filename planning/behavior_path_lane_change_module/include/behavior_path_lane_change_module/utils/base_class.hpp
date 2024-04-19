@@ -111,25 +111,9 @@ public:
 
   virtual bool specialExpiredCheck() const { return false; }
 
-  virtual void setPreviousModulePaths(
-    const PathWithLaneId & prev_module_reference_path, const PathWithLaneId & prev_module_path)
+  void setPreviousModuleOutput(const BehaviorModuleOutput & prev_module_output)
   {
-    if (!prev_module_reference_path.points.empty()) {
-      prev_module_reference_path_ = prev_module_reference_path;
-    }
-    if (!prev_module_path.points.empty()) {
-      prev_module_path_ = prev_module_path;
-    }
-  };
-
-  virtual void setPreviousDrivableAreaInfo(const DrivableAreaInfo & prev_drivable_area_info)
-  {
-    prev_drivable_area_info_ = prev_drivable_area_info;
-  }
-
-  virtual void setPreviousTurnSignalInfo(const TurnSignalInfo & prev_turn_signal_info)
-  {
-    prev_turn_signal_info_ = prev_turn_signal_info;
+    prev_module_output_ = prev_module_output;
   }
 
   virtual void updateSpecialData() {}
@@ -233,10 +217,7 @@ protected:
   std::shared_ptr<LaneChangeParameters> lane_change_parameters_{};
   std::shared_ptr<LaneChangePath> abort_path_{};
   std::shared_ptr<const PlannerData> planner_data_{};
-  PathWithLaneId prev_module_reference_path_{};
-  PathWithLaneId prev_module_path_{};
-  DrivableAreaInfo prev_drivable_area_info_{};
-  TurnSignalInfo prev_turn_signal_info_{};
+  BehaviorModuleOutput prev_module_output_{};
   std::optional<Pose> lane_change_stop_pose_{std::nullopt};
 
   PathWithLaneId prev_approved_path_{};

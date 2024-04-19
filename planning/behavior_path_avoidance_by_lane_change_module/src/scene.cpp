@@ -125,7 +125,7 @@ AvoidancePlanningData AvoidanceByLaneChange::calcAvoidancePlanningData(
   // reference pose
   data.reference_pose = getEgoPose();
 
-  data.reference_path_rough = prev_module_path_;
+  data.reference_path_rough = prev_module_output_.path;
 
   const auto resample_interval = avoidance_parameters_->resample_interval_for_planning;
   data.reference_path = utils::resamplePathWithSpline(data.reference_path_rough, resample_interval);

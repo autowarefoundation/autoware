@@ -140,52 +140,41 @@ LaneChangePath NormalLaneChange::getLaneChangePath() const
 
 BehaviorModuleOutput NormalLaneChange::getTerminalLaneChangePath() const
 {
-  BehaviorModuleOutput output;
+  auto output = prev_module_output_;
 
   if (isAbortState() && abort_path_) {
     output.path = abort_path_->path;
-    output.reference_path = prev_module_reference_path_;
-    output.turn_signal_info = prev_turn_signal_info_;
     extendOutputDrivableArea(output);
     const auto current_seg_idx = planner_data_->findEgoSegmentIndex(output.path.points);
     output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
-      output.path, getEgoPose(), current_seg_idx, prev_turn_signal_info_, output.turn_signal_info,
-      planner_data_->parameters.ego_nearest_dist_threshold,
+      output.path, getEgoPose(), current_seg_idx, prev_module_output_.turn_signal_info,
+      output.turn_signal_info, planner_data_->parameters.ego_nearest_dist_threshold,
       planner_data_->parameters.ego_nearest_yaw_threshold);
     return output;
   }
 
   const auto current_lanes = getCurrentLanes();
   if (current_lanes.empty()) {
-    RCLCPP_WARN(logger_, "Current lanes not found!!! Something wrong.");
-    output.path = prev_module_path_;
-    output.reference_path = prev_module_reference_path_;
-    output.drivable_area_info = prev_drivable_area_info_;
-    output.turn_signal_info = prev_turn_signal_info_;
-    return output;
+    RCLCPP_DEBUG(logger_, "Current lanes not found. Returning previous module's path as output.");
+    return prev_module_output_;
   }
 
   const auto terminal_path =
     calcTerminalLaneChangePath(current_lanes, getLaneChangeLanes(current_lanes, direction_));
   if (!terminal_path) {
-    RCLCPP_DEBUG(logger_, "Terminal path not found!!!");
-    output.path = prev_module_path_;
-    output.reference_path = prev_module_reference_path_;
-    output.drivable_area_info = prev_drivable_area_info_;
-    output.turn_signal_info = prev_turn_signal_info_;
-    return output;
+    RCLCPP_DEBUG(logger_, "Terminal path not found. Returning previous module's path as output.");
+    return prev_module_output_;
   }
 
   output.path = terminal_path->path;
-  output.reference_path = prev_module_reference_path_;
   output.turn_signal_info = updateOutputTurnSignal();
 
   extendOutputDrivableArea(output);
 
   const auto current_seg_idx = planner_data_->findEgoSegmentIndex(output.path.points);
   output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
-    output.path, getEgoPose(), current_seg_idx, prev_turn_signal_info_, output.turn_signal_info,
-    planner_data_->parameters.ego_nearest_dist_threshold,
+    output.path, getEgoPose(), current_seg_idx, prev_module_output_.turn_signal_info,
+    output.turn_signal_info, planner_data_->parameters.ego_nearest_dist_threshold,
     planner_data_->parameters.ego_nearest_yaw_threshold);
 
   return output;
@@ -193,20 +182,14 @@ BehaviorModuleOutput NormalLaneChange::getTerminalLaneChangePath() const
 
 BehaviorModuleOutput NormalLaneChange::generateOutput()
 {
-  BehaviorModuleOutput output;
-
   if (!status_.is_valid_path) {
-    output.path = prev_module_path_;
-    output.reference_path = prev_module_reference_path_;
-    output.drivable_area_info = prev_drivable_area_info_;
-    output.turn_signal_info = prev_turn_signal_info_;
-    return output;
+    RCLCPP_DEBUG(logger_, "No valid path found. Returning previous module's path as output.");
+    return prev_module_output_;
   }
 
+  auto output = prev_module_output_;
   if (isAbortState() && abort_path_) {
     output.path = abort_path_->path;
-    output.reference_path = prev_module_reference_path_;
-    output.turn_signal_info = prev_turn_signal_info_;
     insertStopPoint(status_.current_lanes, output.path);
   } else {
     output.path = getLaneChangePath().path;
@@ -235,8 +218,8 @@ BehaviorModuleOutput NormalLaneChange::generateOutput()
 
   const auto current_seg_idx = planner_data_->findEgoSegmentIndex(output.path.points);
   output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
-    output.path, getEgoPose(), current_seg_idx, prev_turn_signal_info_, output.turn_signal_info,
-    planner_data_->parameters.ego_nearest_dist_threshold,
+    output.path, getEgoPose(), current_seg_idx, prev_module_output_.turn_signal_info,
+    output.turn_signal_info, planner_data_->parameters.ego_nearest_dist_threshold,
     planner_data_->parameters.ego_nearest_yaw_threshold);
 
   return output;
@@ -256,8 +239,8 @@ void NormalLaneChange::extendOutputDrivableArea(BehaviorModuleOutput & output) c
   // for new architecture
   DrivableAreaInfo current_drivable_area_info;
   current_drivable_area_info.drivable_lanes = expanded_lanes;
-  output.drivable_area_info =
-    utils::combineDrivableAreaInfo(current_drivable_area_info, prev_drivable_area_info_);
+  output.drivable_area_info = utils::combineDrivableAreaInfo(
+    current_drivable_area_info, prev_module_output_.drivable_area_info);
 }
 
 void NormalLaneChange::insertStopPoint(
@@ -506,7 +489,7 @@ TurnSignalInfo NormalLaneChange::updateOutputTurnSignal() const
 
 lanelet::ConstLanelets NormalLaneChange::getCurrentLanes() const
 {
-  return utils::getCurrentLanesFromPath(prev_module_path_, planner_data_);
+  return utils::getCurrentLanesFromPath(prev_module_output_.path, planner_data_);
 }
 
 lanelet::ConstLanelets NormalLaneChange::getLaneChangeLanes(
@@ -738,10 +721,10 @@ std::pair<double, double> NormalLaneChange::calcCurrentMinMaxAcceleration() cons
   const auto vehicle_max_acc = std::min(p.max_acc, lane_change_parameters_->max_longitudinal_acc);
 
   const auto ego_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    prev_module_path_.points, getEgoPose(), p.ego_nearest_dist_threshold,
+    prev_module_output_.path.points, getEgoPose(), p.ego_nearest_dist_threshold,
     p.ego_nearest_yaw_threshold);
   const auto max_path_velocity =
-    prev_module_path_.points.at(ego_seg_idx).point.longitudinal_velocity_mps;
+    prev_module_output_.path.points.at(ego_seg_idx).point.longitudinal_velocity_mps;
 
   // calculate minimum and maximum acceleration
   const auto min_acc = utils::lane_change::calcMinimumAcceleration(
@@ -765,7 +748,7 @@ double NormalLaneChange::calcMaximumLaneChangeLength(
 std::vector<double> NormalLaneChange::sampleLongitudinalAccValues(
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes) const
 {
-  if (prev_module_path_.points.empty()) {
+  if (prev_module_output_.path.points.empty()) {
     return {};
   }
 
@@ -852,7 +835,7 @@ PathWithLaneId NormalLaneChange::getPrepareSegment(
     return PathWithLaneId();
   }
 
-  auto prepare_segment = prev_module_path_;
+  auto prepare_segment = prev_module_output_.path;
   const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     prepare_segment.points, getEgoPose(), 3.0, 1.0);
   utils::clipPathLength(prepare_segment, current_seg_idx, prepare_length, backward_path_length);
@@ -1570,7 +1553,7 @@ std::optional<LaneChangePath> NormalLaneChange::calcTerminalLaneChangePath(
   }
 
   const auto lane_changing_start_pose = motion_utils::calcLongitudinalOffsetPose(
-    prev_module_path_.points, current_lane_terminal_point,
+    prev_module_output_.path.points, current_lane_terminal_point,
     -(lane_change_buffer + next_lane_change_buffer + distance_to_terminal_from_goal));
 
   if (!lane_changing_start_pose) {
@@ -1653,7 +1636,7 @@ std::optional<LaneChangePath> NormalLaneChange::calcTerminalLaneChangePath(
     lane_changing_start_pose.value(), target_segment.points.front().point.pose,
     target_lane_reference_path, shift_length);
 
-  auto reference_segment = prev_module_path_;
+  auto reference_segment = prev_module_output_.path;
   const double length_to_lane_changing_start = motion_utils::calcSignedArcLength(
     reference_segment.points, reference_segment.points.front().point.pose.position,
     lane_changing_start_pose->position);
@@ -1877,7 +1860,7 @@ bool NormalLaneChange::calcAbortPath()
     RCLCPP_ERROR(logger_, "failed to generate abort shifted path.");
   }
 
-  PathWithLaneId reference_lane_segment = prev_module_path_;
+  auto reference_lane_segment = prev_module_output_.path;
   {
     const auto terminal_path =
       calcTerminalLaneChangePath(reference_lanelets, selected_path.info.target_lanes);
@@ -2163,5 +2146,4 @@ bool NormalLaneChange::check_prepare_phase() const
 
   return check_in_intersection || check_in_turns || check_in_general_lanes;
 }
-
 }  // namespace behavior_path_planner
