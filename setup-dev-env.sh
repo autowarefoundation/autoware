@@ -121,9 +121,9 @@ fi
 # Check installation of dev package
 if [ "$option_runtime" = "true" ]; then
     ansible_args+=("--extra-vars" "ros2_installation_type=ros-base") # ROS installation type, default "desktop"
-    ansible_args+=("--extra-vars" "install_devel=false")
+    ansible_args+=("--extra-vars" "install_devel=N")
 else
-    ansible_args+=("--extra-vars" "install_devel=true")
+    ansible_args+=("--extra-vars" "install_devel=y")
 fi
 
 # Check downloading artifacts
