@@ -113,12 +113,12 @@ map/map_loader/** anh.nguyen.2@tier4.jp kento.yabuuchi.2@tier4.jp koji.minoda@ti
 map/map_projection_loader/** anh.nguyen.2@tier4.jp kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp ryu.yamamoto@tier4.jp shintaro.sakoda@tier4.jp taiki.yamada@tier4.jp yamato.ando@tier4.jp
 map/map_tf_generator/** anh.nguyen.2@tier4.jp kento.yabuuchi.2@tier4.jp masahiro.sakamoto@tier4.jp ryu.yamamoto@tier4.jp shintaro.sakoda@tier4.jp taiki.yamada@tier4.jp yamato.ando@tier4.jp
 map/util/lanelet2_map_preprocessor/** anh.nguyen.2@tier4.jp kento.yabuuchi.2@tier4.jp masahiro.sakamoto@tier4.jp ryohsuke.mitsudome@tier4.jp ryu.yamamoto@tier4.jp shintaro.sakoda@tier4.jp taiki.yamada@tier4.jp yamato.ando@tier4.jp
-perception/bytetrack/** manato.hirabayashi@tier4.jp
+perception/bytetrack/** manato.hirabayashi@tier4.jp yoshi.ri@tier4.jp
 perception/cluster_merger/** dai.nguyen@tier4.jp shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp
 perception/compare_map_segmentation/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp yukihiro.saito@tier4.jp
 perception/crosswalk_traffic_light_estimator/** satoshi.ota@tier4.jp shunsuke.miura@tier4.jp tao.zhong@tier4.jp
 perception/detected_object_feature_remover/** tomoya.kimura@tier4.jp
-perception/detected_object_validation/** dai.nguyen@tier4.jp shintaro.tomie@tier4.jp shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp
+perception/detected_object_validation/** dai.nguyen@tier4.jp shintaro.tomie@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/detection_by_tracker/** taekjin.lee@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/elevation_map_loader/** kosuke.takeuchi@tier4.jp shintaro.tomie@tier4.jp taichi.higashide@tier4.jp
 perception/euclidean_cluster/** dai.nguyen@tier4.jp yukihiro.saito@tier4.jp
@@ -222,6 +222,7 @@ sensing/vehicle_velocity_converter/** ryu.yamamoto@tier4.jp
 simulator/dummy_perception_publisher/** yukihiro.saito@tier4.jp
 simulator/fault_injection/** keisuke.shima@tier4.jp
 simulator/simple_planning_simulator/** takamasa.horibe@tier4.jp tomoya.kimura@tier4.jp
+simulator/vehicle_door_simulator/** isamu.takagi@tier4.jp
 system/autoware_auto_msgs_adapter/** isamu.takagi@tier4.jp mfc@leodrive.ai
 system/bluetooth_monitor/** fumihito.ito@tier4.jp
 system/component_state_monitor/** isamu.takagi@tier4.jp
