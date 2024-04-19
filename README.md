@@ -4,32 +4,39 @@
 
 <!--- Contributors -->
 <p align="center">
-    <a href="https://github.com/autowarefoundation/autoware.universe/graphs/contributors" alt="Autoware Universe Contributors">
-        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware.universe?style=flat&label=Autoware%20Universe%20Contributors" /></a>
-    <a href="https://github.com/autowarefoundation/autoware/graphs/contributors" alt="Autoware Contributors">
-        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware?style=flat&label=Autoware%20Contributors" /></a>
+    <a href="https://github.com/autowarefoundation/autoware.universe/graphs/contributors">
+        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware.universe?style=flat&label=Autoware%20Universe%20Contributors"
+            alt="Autoware Universe Contributors" /></a>
+    <a href="https://github.com/autowarefoundation/autoware/graphs/contributors">
+        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware?style=flat&label=Autoware%20Contributors"
+            alt="Autoware Contributors" /></a>
 </p>
 
 <!--- Commit Activity -->
 <p align="center">
-    <a href="https://github.com/autowarefoundation/autoware.universe/pulse" alt="Autoware Universe Activity">
-        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware.universe?style=flat&label=Autoware%20Universe%20Commit%20Activity" /></a>
-    <a href="https://github.com/autowarefoundation/autoware/pulse" alt="Autoware Activity">
-        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware?style=flat&label=Autoware%20Commit%20Activity" /></a>
+    <a href="https://github.com/autowarefoundation/autoware.universe/pulse">
+        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware.universe?style=flat&label=Autoware%20Universe%20Commit%20Activity"
+            alt="Autoware Universe Activity" /></a>
+    <a href="https://github.com/autowarefoundation/autoware/pulse">
+        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware?style=flat&label=Autoware%20Commit%20Activity"
+            alt="Autoware Activity" /></a>
 </p>
 
 <!--- License -->
 <p align="center">
-    <a href="https://github.com/autowarefoundation/autoware/blob/main/LICENSE" alt="License">
-        <img src="https://img.shields.io/github/license/autowarefoundation/autoware?style=flat&label=License" /></a>
+    <a href="https://github.com/autowarefoundation/autoware/blob/main/LICENSE">
+        <img src="https://img.shields.io/github/license/autowarefoundation/autoware?style=flat&label=License"
+            alt="License" /></a>
 </p>
 
 <!--- CI Reports -->
 <p align="center">
-    <a href="https://github.com/autowarefoundation/autoware/actions/workflows/build-main.yaml?query=branch%3Amain" alt="Build Main CI">
-        <img src="https://img.shields.io/github/actions/workflow/status/autowarefoundation/autoware/build-main.yaml?style=flat&label=build-main" /></a>
-    <a href="https://app.codecov.io/gh/autowarefoundation/autoware.universe" alt="Code Coverage">
-        <img src="https://img.shields.io/codecov/c/gh/autowarefoundation/autoware.universe?style=flat&label=Coverage&logo=codecov&logoColor=white" /></a>
+    <a href="https://github.com/autowarefoundation/autoware/actions/workflows/build-main.yaml?query=branch%3Amain">
+        <img src="https://img.shields.io/github/actions/workflow/status/autowarefoundation/autoware/build-main.yaml?style=flat&label=build-main"
+            alt="Build Main CI" /></a>
+    <a href="https://app.codecov.io/gh/autowarefoundation/autoware.universe">
+        <img src="https://img.shields.io/codecov/c/gh/autowarefoundation/autoware.universe?style=flat&label=Coverage&logo=codecov&logoColor=white"
+            alt="Code Coverage" /></a>
 </p>
 
 <!--- Social Media -->
