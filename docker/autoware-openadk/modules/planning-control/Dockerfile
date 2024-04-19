@@ -9,7 +9,7 @@ COPY autoware.repos /autoware/
 
 # Dependencies
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module planning-control --runtime openadk \
+  ./setup-dev-env.sh -y --module planning-control --no-cuda-drivers --runtime openadk \
   && pip uninstall -y ansible ansible-core \
   && mkdir src \
   && vcs import src < autoware.repos \
@@ -28,6 +28,10 @@ RUN --mount=type=ssh \
 
 # Copy launch file
 COPY docker/autoware-openadk/modules/planning-control/planning_control.launch.xml /autoware/install/planning_control/share/planning_control/launch/
+
+# Copy test-scenario files
+RUN mkdir -p /autoware/test-scenario
+COPY docker/autoware-openadk/etc/test-scenario/ /autoware/test-scenario/
 
 # Create entrypoint
 COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh
