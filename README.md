@@ -49,7 +49,7 @@
             alt="Autoware Twitter / X"></a>
     <a href="https://www.linkedin.com/company/the-autoware-foundation/">
         <img src="https://img.shields.io/badge/Linkedin-Autoware%20Foundation-0a66c2?logo=linkedin&logoColor=white&style=flat"
-            alt="Autoware Twitter / X"></a>
+            alt="Autoware Linkedin"></a>
 </p>
 
 Autoware is an open-source software stack for self-driving vehicles, built on the [Robot Operating System (ROS)](https://www.ros.org/). It includes all of the necessary functions to drive an autonomous vehicles from localization and object detection to route planning and control, and was created with the aim of enabling as many individuals and organizations as possible to contribute to open innovations in autonomous driving technology.
