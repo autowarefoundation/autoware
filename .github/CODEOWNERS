@@ -209,10 +209,10 @@ planning/static_centerline_generator/** kosuke.takeuchi@tier4.jp takayuki.murook
 planning/surround_obstacle_checker/** satoshi.ota@tier4.jp
 sensing/gnss_poser/** anh.nguyen.2@tier4.jp kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp ryu.yamamoto@tier4.jp shintaro.sakoda@tier4.jp taiki.yamada@tier4.jp yamato.ando@tier4.jp
 sensing/image_diagnostics/** dai.nguyen@tier4.jp
-sensing/image_transport_decompressor/** yukihiro.saito@tier4.jp
+sensing/image_transport_decompressor/** kenzo.lobos@tier4.jp yukihiro.saito@tier4.jp
 sensing/imu_corrector/** koji.minoda@tier4.jp taiki.yamada@tier4.jp yamato.ando@tier4.jp
-sensing/livox/livox_tag_filter/** ryohsuke.mitsudome@tier4.jp
-sensing/pointcloud_preprocessor/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp kyoichi.sugahara@tier4.jp shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp
+sensing/livox/livox_tag_filter/** kenzo.lobos@tier4.jp ryohsuke.mitsudome@tier4.jp
+sensing/pointcloud_preprocessor/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp kenzo.lobos@tier4.jp kyoichi.sugahara@tier4.jp shunsuke.miura@tier4.jp yihsiang.fang@tier4.jp yukihiro.saito@tier4.jp
 sensing/radar_scan_to_pointcloud2/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
 sensing/radar_static_pointcloud_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
 sensing/radar_threshold_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
