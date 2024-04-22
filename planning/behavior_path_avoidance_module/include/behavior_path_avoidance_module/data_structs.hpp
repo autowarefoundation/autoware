@@ -322,7 +322,6 @@ struct AvoidanceParameters
 
   // debug
   bool publish_debug_marker = false;
-  bool print_debug_info = false;
 };
 
 struct ObjectData  // avoidance target

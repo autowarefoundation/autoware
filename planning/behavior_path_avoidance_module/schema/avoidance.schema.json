@@ -1379,14 +1379,9 @@
               "type": "boolean",
               "description": "Publish debug marker.",
               "default": "false"
-            },
-            "console": {
-              "type": "boolean",
-              "description": "Output debug info on console.",
-              "default": "false"
             }
           },
-          "required": ["marker", "console"],
+          "required": ["marker"],
           "additionalProperties": false
         }
       },

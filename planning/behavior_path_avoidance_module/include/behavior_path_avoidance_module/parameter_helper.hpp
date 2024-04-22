@@ -379,7 +379,6 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
   {
     const std::string ns = "avoidance.debug.";
     p.publish_debug_marker = getOrDeclareParameter<bool>(*node, ns + "marker");
-    p.print_debug_info = getOrDeclareParameter<bool>(*node, ns + "console");
   }
 
   return p;

@@ -257,7 +257,6 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
   {
     const std::string ns = "avoidance.debug.";
     updateParam<bool>(parameters, ns + "marker", p->publish_debug_marker);
-    updateParam<bool>(parameters, ns + "console", p->print_debug_info);
   }
 
   std::for_each(observers_.begin(), observers_.end(), [&p](const auto & observer) {

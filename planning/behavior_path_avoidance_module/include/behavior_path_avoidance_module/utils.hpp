@@ -31,6 +31,9 @@ using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityAndPoly
 using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
 using behavior_path_planner::utils::path_safety_checker::PredictedPathWithPolygon;
 
+static constexpr const char * logger_namespace =
+  "planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner.avoidance.utils";
+
 bool isOnRight(const ObjectData & obj);
 
 double calcShiftLength(

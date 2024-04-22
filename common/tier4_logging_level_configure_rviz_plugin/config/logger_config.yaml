@@ -37,6 +37,8 @@ Planning:
   behavior_path_planner_avoidance:
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
       logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner.avoidance
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
+      logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner.avoidance.utils
 
   behavior_path_planner_goal_planner:
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
