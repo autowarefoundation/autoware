@@ -89,9 +89,7 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
   stop_watch_.tic("total_time");
   debug_info_.clear();
 
-  if (!root_lanelet_) {
-    root_lanelet_ = updateRootLanelet(data);
-  }
+  if (!current_route_lanelet_) resetCurrentRouteLanelet(data);
 
   std::for_each(
     manager_ptrs_.begin(), manager_ptrs_.end(), [&data](const auto & m) { m->setData(data); });
@@ -416,8 +414,7 @@ BehaviorModuleOutput PlannerManager::runKeepLastModules(
   return output;
 }
 
-BehaviorModuleOutput PlannerManager::getReferencePath(
-  const std::shared_ptr<PlannerData> & data) const
+BehaviorModuleOutput PlannerManager::getReferencePath(const std::shared_ptr<PlannerData> & data)
 {
   const auto & route_handler = data->route_handler;
   const auto & pose = data->self_odometry->pose.pose;
@@ -428,20 +425,41 @@ BehaviorModuleOutput PlannerManager::getReferencePath(
     std::max(p.backward_path_length, p.backward_path_length + extra_margin);
 
   const auto lanelet_sequence = route_handler->getLaneletSequence(
-    root_lanelet_.value(), pose, backward_length, std::numeric_limits<double>::max());
+    current_route_lanelet_.value(), pose, backward_length, p.forward_path_length);
 
   lanelet::ConstLanelet closest_lane{};
-  if (lanelet::utils::query::getClosestLaneletWithConstrains(
-        lanelet_sequence, pose, &closest_lane, p.ego_nearest_dist_threshold,
-        p.ego_nearest_yaw_threshold)) {
-    return utils::getReferencePath(closest_lane, data);
-  }
+  const auto could_calculate_closest_lanelet =
+    lanelet::utils::query::getClosestLaneletWithConstrains(
+      lanelet_sequence, pose, &closest_lane, p.ego_nearest_dist_threshold,
+      p.ego_nearest_yaw_threshold) ||
+    lanelet::utils::query::getClosestLanelet(lanelet_sequence, pose, &closest_lane);
 
-  if (lanelet::utils::query::getClosestLanelet(lanelet_sequence, pose, &closest_lane)) {
-    return utils::getReferencePath(closest_lane, data);
-  }
+  if (could_calculate_closest_lanelet)
+    current_route_lanelet_ = closest_lane;
+  else
+    resetCurrentRouteLanelet(data);
 
-  return {};  // something wrong.
+  const auto reference_path = utils::getReferencePath(*current_route_lanelet_, data);
+  publishDebugRootReferencePath(reference_path);
+  return reference_path;
+}
+
+void PlannerManager::publishDebugRootReferencePath(const BehaviorModuleOutput & reference_path)
+{
+  using visualization_msgs::msg::Marker;
+  MarkerArray array;
+  Marker m = tier4_autoware_utils::createDefaultMarker(
+    "map", clock_.now(), "root_reference_path", 0UL, Marker::LINE_STRIP,
+    tier4_autoware_utils::createMarkerScale(1.0, 1.0, 1.0),
+    tier4_autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 1.0));
+  for (const auto & p : reference_path.path.points) m.points.push_back(p.point.pose.position);
+  array.markers.push_back(m);
+  m.points.clear();
+  m.id = 1UL;
+  for (const auto & p : current_route_lanelet_->polygon3d().basicPolygon())
+    m.points.emplace_back().set__x(p.x()).set__y(p.y()).set__z(p.z());
+  array.markers.push_back(m);
+  debug_publisher_ptr_->publish<MarkerArray>("root_reference_path", array);
 }
 
 SceneModulePtr PlannerManager::selectHighestPriorityModule(
@@ -770,7 +788,8 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
   }();
 
   /**
-   * remove success module immediately. if lane change module has succeeded, update root lanelet.
+   * remove success module immediately. if lane change module has succeeded, update current route
+   * lanelet.
    */
   {
     const auto move_to_end = [](auto & modules, const auto & cond) {
@@ -801,10 +820,9 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
       std::find_if(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), success_module_cond);
 
     if (std::any_of(itr, approved_module_ptrs_.end(), [](const auto & m) {
-          return m->isRootLaneletToBeUpdated();
-        })) {
-      root_lanelet_ = updateRootLanelet(data);
-    }
+          return m->isCurrentRouteLaneletToBeReset();
+        }))
+      resetCurrentRouteLanelet(data);
 
     std::for_each(itr, approved_module_ptrs_.end(), [&](auto & m) {
       debug_info_.emplace_back(m, Action::DELETE, "From Approved");
@@ -873,62 +891,6 @@ void PlannerManager::updateCandidateModules(
    * sort by priority. sorted_request_modules.front() is the highest priority module.
    */
   sortByPriority(candidate_module_ptrs_);
-}
-
-void PlannerManager::resetRootLanelet(const std::shared_ptr<PlannerData> & data)
-{
-  if (!root_lanelet_) {
-    root_lanelet_ = updateRootLanelet(data);
-    return;
-  }
-
-  // when lane change module is running, don't update root lanelet.
-  const bool is_lane_change_running = std::invoke([&]() {
-    const auto lane_change_itr = std::find_if(
-      approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
-      [](const auto & m) { return m->isRootLaneletToBeUpdated(); });
-    return lane_change_itr != approved_module_ptrs_.end();
-  });
-  if (is_lane_change_running) {
-    return;
-  }
-
-  const auto root_lanelet = updateRootLanelet(data);
-
-  // if root_lanelet is not route lanelets, reset root lanelet.
-  // this can be caused by rerouting.
-  const auto & route_handler = data->route_handler;
-  if (!route_handler->isRouteLanelet(root_lanelet_.value())) {
-    root_lanelet_ = root_lanelet;
-    return;
-  }
-
-  // check ego is in same lane
-  if (root_lanelet_.value().id() == root_lanelet.id()) {
-    return;
-  }
-
-  // check ego is in next lane
-  const auto next_lanelets = route_handler->getRoutingGraphPtr()->following(root_lanelet_.value());
-  for (const auto & next : next_lanelets) {
-    if (next.id() == root_lanelet.id()) {
-      return;
-    }
-  }
-
-  if (!approved_module_ptrs_.empty()) {
-    return;
-  }
-
-  for (const auto & m : candidate_module_ptrs_) {
-    if (m->isLockedNewModuleLaunch()) {
-      return;
-    }
-  }
-
-  root_lanelet_ = root_lanelet;
-
-  RCLCPP_INFO_EXPRESSION(logger_, verbose_, "change ego's following lane. reset.");
 }
 
 void PlannerManager::print() const

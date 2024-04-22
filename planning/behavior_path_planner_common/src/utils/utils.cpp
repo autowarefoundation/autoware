@@ -1114,16 +1114,15 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
   return centerline_path;
 }
 
-PathWithLaneId getCenterLinePathFromRootLanelet(
-  const lanelet::ConstLanelet & root_lanelet,
-  const std::shared_ptr<const PlannerData> & planner_data)
+PathWithLaneId getCenterLinePathFromLanelet(
+  const lanelet::ConstLanelet & lanelet, const std::shared_ptr<const PlannerData> & planner_data)
 {
   const auto & route_handler = planner_data->route_handler;
   const auto & current_pose = planner_data->self_odometry->pose.pose;
   const auto & p = planner_data->parameters;
 
   const auto reference_lanes = route_handler->getLaneletSequence(
-    root_lanelet, current_pose, p.backward_path_length, p.forward_path_length);
+    lanelet, current_pose, p.backward_path_length, p.forward_path_length);
 
   return getCenterLinePath(
     *route_handler, reference_lanes, current_pose, p.backward_path_length, p.forward_path_length,

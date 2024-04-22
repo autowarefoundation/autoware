@@ -259,7 +259,7 @@ public:
     return is_waiting_approval_ || current_state_ == ModuleStatus::WAITING_APPROVAL;
   }
 
-  virtual bool isRootLaneletToBeUpdated() const { return false; }
+  virtual bool isCurrentRouteLaneletToBeReset() const { return false; }
 
   bool isLockedNewModuleLaunch() const { return is_locked_new_module_launch_; }
 
