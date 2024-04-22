@@ -72,7 +72,7 @@ void OccupancyGridMapProjectiveBlindSpot::updateWithPointCloud(
   utils::transformPointcloud(map_raw_pointcloud, scan2map_pose, scan_raw_pointcloud);
   utils::transformPointcloud(map_obstacle_pointcloud, scan2map_pose, scan_obstacle_pointcloud);
 
-  // Create angle bins
+  // Create angle bins and sort points by range
   struct BinInfo3D
   {
     BinInfo3D(
@@ -110,6 +110,12 @@ void OccupancyGridMapProjectiveBlindSpot::updateWithPointCloud(
     raw_pointcloud_angle_bins.at(angle_bin_index)
       .emplace_back(std::hypot(*iter_y, *iter_x), *iter_wx, *iter_wy, *iter_wz);
   }
+  for (auto & raw_pointcloud_angle_bin : raw_pointcloud_angle_bins) {
+    std::sort(raw_pointcloud_angle_bin.begin(), raw_pointcloud_angle_bin.end(), [](auto a, auto b) {
+      return a.range < b.range;
+    });
+  }
+  // Create obstacle angle bins and sort points by range
   for (PointCloud2ConstIterator<float> iter_x(scan_obstacle_pointcloud, "x"),
        iter_y(scan_obstacle_pointcloud, "y"), iter_z(scan_obstacle_pointcloud, "z"),
        iter_wx(map_obstacle_pointcloud, "x"), iter_wy(map_obstacle_pointcloud, "y"),
@@ -121,6 +127,12 @@ void OccupancyGridMapProjectiveBlindSpot::updateWithPointCloud(
     const double angle = atan2(*iter_y, *iter_x);
     const int angle_bin_index = (angle - min_angle) / angle_increment;
     const double range = std::hypot(*iter_x, *iter_y);
+    // Ignore obstacle points exceed the range of the raw points
+    if (raw_pointcloud_angle_bins.at(angle_bin_index).empty()) {
+      continue;  // No raw point in this angle bin
+    } else if (range > raw_pointcloud_angle_bins.at(angle_bin_index).back().range) {
+      continue;  // Obstacle point exceeds the range of the raw points
+    }
     if (dz > projection_dz_threshold_) {
       const double ratio = obstacle_z / dz;
       const double projection_length = range * ratio;
@@ -136,17 +148,10 @@ void OccupancyGridMapProjectiveBlindSpot::updateWithPointCloud(
           std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
     }
   }
-
-  // Sort by distance
   for (auto & obstacle_pointcloud_angle_bin : obstacle_pointcloud_angle_bins) {
     std::sort(
       obstacle_pointcloud_angle_bin.begin(), obstacle_pointcloud_angle_bin.end(),
       [](auto a, auto b) { return a.range < b.range; });
-  }
-  for (auto & raw_pointcloud_angle_bin : raw_pointcloud_angle_bins) {
-    std::sort(raw_pointcloud_angle_bin.begin(), raw_pointcloud_angle_bin.end(), [](auto a, auto b) {
-      return a.range < b.range;
-    });
   }
 
   grid_map::Costmap2DConverter<grid_map::GridMap> converter;
@@ -177,22 +182,13 @@ void OccupancyGridMapProjectiveBlindSpot::updateWithPointCloud(
 
   // First step: Initialize cells to the final point with freespace
   for (size_t bin_index = 0; bin_index < obstacle_pointcloud_angle_bins.size(); ++bin_index) {
-    const auto & obstacle_pointcloud_angle_bin = obstacle_pointcloud_angle_bins.at(bin_index);
     const auto & raw_pointcloud_angle_bin = raw_pointcloud_angle_bins.at(bin_index);
 
     BinInfo3D ray_end;
-    if (raw_pointcloud_angle_bin.empty() && obstacle_pointcloud_angle_bin.empty()) {
+    if (raw_pointcloud_angle_bin.empty()) {
       continue;
-    } else if (raw_pointcloud_angle_bin.empty()) {
-      ray_end = obstacle_pointcloud_angle_bin.back();
-    } else if (obstacle_pointcloud_angle_bin.empty()) {
-      ray_end = raw_pointcloud_angle_bin.back();
     } else {
-      const auto & farthest_obstacle_this_bin = obstacle_pointcloud_angle_bin.back();
-      const auto & farthest_raw_this_bin = raw_pointcloud_angle_bin.back();
-      ray_end = is_visible_beyond_obstacle(farthest_obstacle_this_bin, farthest_raw_this_bin)
-                  ? farthest_raw_this_bin
-                  : farthest_obstacle_this_bin;
+      ray_end = raw_pointcloud_angle_bin.back();
     }
     raytrace(
       scan_origin.position.x, scan_origin.position.y, ray_end.wx, ray_end.wy,

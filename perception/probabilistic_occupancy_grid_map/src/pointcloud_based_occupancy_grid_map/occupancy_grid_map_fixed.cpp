@@ -71,7 +71,7 @@ void OccupancyGridMapFixedBlindSpot::updateWithPointCloud(
   utils::transformPointcloud(map_raw_pointcloud, scan2map_pose, scan_raw_pointcloud);
   utils::transformPointcloud(map_obstacle_pointcloud, scan2map_pose, scan_obstacle_pointcloud);
 
-  // Create angle bins
+  // Create angle bins and sort by distance
   struct BinInfo
   {
     BinInfo() = default;
@@ -96,45 +96,43 @@ void OccupancyGridMapFixedBlindSpot::updateWithPointCloud(
     raw_pointcloud_angle_bins.at(angle_bin_index)
       .push_back(BinInfo(std::hypot(*iter_y, *iter_x), *iter_wx, *iter_wy));
   }
-  for (PointCloud2ConstIterator<float> iter_x(scan_obstacle_pointcloud, "x"),
-       iter_y(scan_obstacle_pointcloud, "y"), iter_wx(map_obstacle_pointcloud, "x"),
-       iter_wy(map_obstacle_pointcloud, "y");
-       iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_wx, ++iter_wy) {
-    const double angle = atan2(*iter_y, *iter_x);
-    int angle_bin_index = (angle - min_angle) / angle_increment;
-    obstacle_pointcloud_angle_bins.at(angle_bin_index)
-      .push_back(BinInfo(std::hypot(*iter_y, *iter_x), *iter_wx, *iter_wy));
-  }
-
-  // Sort by distance
-  for (auto & obstacle_pointcloud_angle_bin : obstacle_pointcloud_angle_bins) {
-    std::sort(
-      obstacle_pointcloud_angle_bin.begin(), obstacle_pointcloud_angle_bin.end(),
-      [](auto a, auto b) { return a.range < b.range; });
-  }
   for (auto & raw_pointcloud_angle_bin : raw_pointcloud_angle_bins) {
     std::sort(raw_pointcloud_angle_bin.begin(), raw_pointcloud_angle_bin.end(), [](auto a, auto b) {
       return a.range < b.range;
     });
   }
+  // create and sort bin for obstacle pointcloud
+  for (PointCloud2ConstIterator<float> iter_x(scan_obstacle_pointcloud, "x"),
+       iter_y(scan_obstacle_pointcloud, "y"), iter_wx(map_obstacle_pointcloud, "x"),
+       iter_wy(map_obstacle_pointcloud, "y");
+       iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_wx, ++iter_wy) {
+    const double angle = atan2(*iter_y, *iter_x);
+    const int angle_bin_index = (angle - min_angle) / angle_increment;
+    const double range = std::hypot(*iter_y, *iter_x);
+    // Ignore obstacle points exceed the range of the raw points
+    if (raw_pointcloud_angle_bins.at(angle_bin_index).empty()) {
+      continue;  // No raw point in this angle bin
+    } else if (range > raw_pointcloud_angle_bins.at(angle_bin_index).back().range) {
+      continue;  // Obstacle point exceeds the range of the raw points
+    }
+    obstacle_pointcloud_angle_bins.at(angle_bin_index)
+      .push_back(BinInfo(range, *iter_wx, *iter_wy));
+  }
+  for (auto & obstacle_pointcloud_angle_bin : obstacle_pointcloud_angle_bins) {
+    std::sort(
+      obstacle_pointcloud_angle_bin.begin(), obstacle_pointcloud_angle_bin.end(),
+      [](auto a, auto b) { return a.range < b.range; });
+  }
 
   // First step: Initialize cells to the final point with freespace
   for (size_t bin_index = 0; bin_index < obstacle_pointcloud_angle_bins.size(); ++bin_index) {
-    auto & obstacle_pointcloud_angle_bin = obstacle_pointcloud_angle_bins.at(bin_index);
     auto & raw_pointcloud_angle_bin = raw_pointcloud_angle_bins.at(bin_index);
 
     BinInfo end_distance;
-    if (raw_pointcloud_angle_bin.empty() && obstacle_pointcloud_angle_bin.empty()) {
+    if (raw_pointcloud_angle_bin.empty()) {
       continue;
-    } else if (raw_pointcloud_angle_bin.empty()) {
-      end_distance = obstacle_pointcloud_angle_bin.back();
-    } else if (obstacle_pointcloud_angle_bin.empty()) {
-      end_distance = raw_pointcloud_angle_bin.back();
     } else {
-      end_distance = obstacle_pointcloud_angle_bin.back().range + distance_margin_ <
-                         raw_pointcloud_angle_bin.back().range
-                       ? raw_pointcloud_angle_bin.back()
-                       : obstacle_pointcloud_angle_bin.back();
+      end_distance = raw_pointcloud_angle_bin.back();
     }
     raytrace(
       scan_origin.position.x, scan_origin.position.y, end_distance.wx, end_distance.wy,
