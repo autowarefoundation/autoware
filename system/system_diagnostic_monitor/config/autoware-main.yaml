@@ -1,0 +1,70 @@
+files:
+  - { path: $(find-pkg-share system_diagnostic_monitor)/config/map.yaml }
+  - { path: $(find-pkg-share system_diagnostic_monitor)/config/localization.yaml }
+  - { path: $(find-pkg-share system_diagnostic_monitor)/config/planning.yaml }
+  - { path: $(find-pkg-share system_diagnostic_monitor)/config/perception.yaml }
+  - { path: $(find-pkg-share system_diagnostic_monitor)/config/control.yaml }
+  - { path: $(find-pkg-share system_diagnostic_monitor)/config/vehicle.yaml }
+  - { path: $(find-pkg-share system_diagnostic_monitor)/config/system.yaml }
+
+units:
+  - path: /autoware/modes/stop
+    type: ok
+
+  - path: /autoware/modes/autonomous
+    type: and
+    list:
+      - { type: link, link: /autoware/map }
+      - { type: link, link: /autoware/localization }
+      - { type: link, link: /autoware/planning }
+      - { type: link, link: /autoware/perception }
+      - { type: link, link: /autoware/control }
+      - { type: link, link: /autoware/vehicle }
+      - { type: link, link: /autoware/system }
+
+  - path: /autoware/modes/local
+    type: and
+    list:
+      - { type: link, link: /autoware/vehicle }
+      - { type: link, link: /autoware/system }
+      - { type: link, link: /autoware/control/local }
+
+  - path: /autoware/modes/remote
+    type: and
+    list:
+      - { type: link, link: /autoware/vehicle }
+      - { type: link, link: /autoware/system }
+      - { type: link, link: /autoware/control/remote }
+
+  - path: /autoware/modes/emergency_stop
+    type: and
+    list:
+      - { type: link, link: /autoware/vehicle }
+      - { type: link, link: /autoware/system }
+
+  - path: /autoware/modes/comfortable_stop
+    type: and
+    list:
+      - { type: link, link: /autoware/map }
+      - { type: link, link: /autoware/localization }
+      - { type: link, link: /autoware/planning }
+      - { type: link, link: /autoware/perception }
+      - { type: link, link: /autoware/control }
+      - { type: link, link: /autoware/vehicle }
+      - { type: link, link: /autoware/system }
+
+  - path: /autoware/modes/pull_over
+    type: and
+    list:
+      - { type: link, link: /autoware/map }
+      - { type: link, link: /autoware/localization }
+      - { type: link, link: /autoware/planning }
+      - { type: link, link: /autoware/perception }
+      - { type: link, link: /autoware/control }
+      - { type: link, link: /autoware/vehicle }
+      - { type: link, link: /autoware/system }
+
+  - path: /autoware/debug/tools
+    type: and
+    list:
+      - { type: link, link: /autoware/system/service_log_checker }

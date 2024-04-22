@@ -1,4 +1,4 @@
-nodes:
+units:
   - path: /functions/pose_estimation
     type: and
     list:
@@ -12,12 +12,15 @@ nodes:
 
   - path: /sensing/lidars/top
     type: diag
-    diag: "lidar_driver/top: status"
+    node: lidar_driver_top
+    name: status
 
   - path: /sensing/lidars/front
     type: diag
-    diag: "lidar_driver/front: status"
+    node: lidar_driver_front
+    name: status
 
   - path: /sensing/radars/front
     type: diag
-    diag: "radar_driver/front: status"
+    node: radar_driver_front
+    name: status

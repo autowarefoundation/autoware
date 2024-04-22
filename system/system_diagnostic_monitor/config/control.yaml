@@ -1,0 +1,73 @@
+units:
+  - path: /autoware/control
+    type: and
+    list:
+      - { type: link, link: /autoware/control/topic_rate_check/trajectory_follower }
+      - { type: link, link: /autoware/control/topic_rate_check/control_command }
+      - { type: link, link: /autoware/control/node_alive_monitoring/vehicle_cmd_gate }
+      - { type: link, link: /autoware/control/emergency_braking }
+      - { type: link, link: /autoware/control/performance_monitoring/lane_departure }
+      - { type: link, link: /autoware/control/performance_monitoring/trajectory_deviation }
+      - { type: link, link: /autoware/control/performance_monitoring/control_state }
+
+  - path: /autoware/control/local
+    type: and
+    list:
+      - { type: link, link: /autoware/control/topic_rate_check/selector }
+      - { type: link, link: /autoware/control/topic_rate_check/local }
+
+  - path: /autoware/control/remote
+    type: and
+    list:
+      - { type: link, link: /autoware/control/topic_rate_check/selector }
+      - { type: link, link: /autoware/control/topic_rate_check/remote }
+
+  - path: /autoware/control/topic_rate_check/trajectory_follower
+    type: diag
+    node: topic_state_monitor_trajectory_follower_control_cmd
+    name: control_topic_status
+
+  - path: /autoware/control/topic_rate_check/control_command
+    type: diag
+    node: topic_state_monitor_control_command_control_cmd
+    name: control_topic_status
+
+  - path: /autoware/control/node_alive_monitoring/vehicle_cmd_gate
+    type: diag
+    node: vehicle_cmd_gate
+    name: heartbeat
+
+  - path: /autoware/control/emergency_braking
+    type: diag
+    node: autonomous_emergency_braking
+    name: aeb_emergency_stop
+
+  - path: /autoware/control/performance_monitoring/lane_departure
+    type: diag
+    node: lane_departure_checker_node
+    name: lane_departure
+
+  - path: /autoware/control/performance_monitoring/trajectory_deviation
+    type: diag
+    node: lane_departure_checker_node
+    name: trajectory_deviation
+
+  - path: /autoware/control/performance_monitoring/control_state
+    type: diag
+    node: controller_node_exe
+    name: control_state
+
+  - path: /autoware/control/topic_rate_check/selector
+    type: diag
+    node: external_cmd_selector
+    name: heartbeat
+
+  - path: /autoware/control/topic_rate_check/local
+    type: diag
+    node: joy_controller
+    name: joy_controller_connection
+
+  - path: /autoware/control/topic_rate_check/remote
+    type: diag
+    node: external_cmd_converter
+    name: remote_control_topic_status

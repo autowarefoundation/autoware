@@ -22,29 +22,34 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 namespace diagnostic_graph_aggregator
 {
 
-class Graph final
+class Graph
 {
 public:
-  Graph();
-  ~Graph();
+  void create(const std::string & file, const std::string & id = "");
+  void update(const rclcpp::Time & stamp);
+  bool update(const rclcpp::Time & stamp, const DiagnosticStatus & status);
+  const auto & nodes() const { return nodes_; }
+  const auto & diags() const { return diags_; }
+  const auto & units() const { return units_; }
+  DiagGraphStruct create_struct(const rclcpp::Time & stamp) const;
+  DiagGraphStatus create_status(const rclcpp::Time & stamp) const;
 
-  void init(const std::string & file);
-  void callback(const rclcpp::Time & stamp, const DiagnosticArray & array);
-  void debug();
-  DiagnosticGraph report(const rclcpp::Time & stamp);
-  std::vector<BaseUnit *> nodes() const;
+  Graph();   // For unique_ptr members.
+  ~Graph();  // For unique_ptr members.
 
 private:
-  std::vector<std::unique_ptr<BaseUnit>> nodes_;
+  // Note: keep order correspondence between links and unit children for viewer.
+  std::vector<std::unique_ptr<NodeUnit>> nodes_;
+  std::vector<std::unique_ptr<DiagUnit>> diags_;
+  std::vector<std::unique_ptr<UnitLink>> links_;
   std::vector<BaseUnit *> units_;
-  std::unordered_map<std::string, DiagUnit *> diags_;
-  std::unordered_map<std::string, DiagnosticLevel> unknowns_;
+  std::unordered_map<std::string, DiagUnit *> names_;
+  std::string id_;
 };
 
 }  // namespace diagnostic_graph_aggregator

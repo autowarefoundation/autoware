@@ -1,0 +1,16 @@
+units:
+  - path: /autoware/map
+    type: and
+    list:
+      - { type: link, link: /autoware/map/topic_rate_check/vector_map }
+      - { type: link, link: /autoware/map/topic_rate_check/pointcloud_map }
+
+  - path: /autoware/map/topic_rate_check/vector_map
+    type: diag
+    node: topic_state_monitor_vector_map
+    name: map_topic_status
+
+  - path: /autoware/map/topic_rate_check/pointcloud_map
+    type: diag
+    node: topic_state_monitor_pointcloud_map
+    name: map_topic_status"

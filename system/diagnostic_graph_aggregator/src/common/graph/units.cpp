@@ -14,168 +14,216 @@
 
 #include "units.hpp"
 
+#include "config.hpp"
 #include "error.hpp"
+#include "loader.hpp"
 
 #include <algorithm>
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace diagnostic_graph_aggregator
 {
 
-using LinkList = std::vector<std::pair<const BaseUnit *, bool>>;
-
-void merge(LinkList & a, const LinkList & b, bool uses)
+void UnitLink::initialize_object(BaseUnit * parent, BaseUnit * child)
 {
-  for (const auto & [node, used] : b) {
-    a.push_back(std::make_pair(node, used && uses));
-  }
+  parent_ = parent;
+  child_ = child;
 }
 
-auto resolve(const BaseUnit::NodeDict & dict, const std::vector<UnitConfig::SharedPtr> & children)
+void UnitLink::initialize_struct()
 {
-  std::vector<BaseUnit *> result;
-  for (const auto & child : children) {
-    result.push_back(dict.configs.at(child));
+  struct_.parent = parent_->index();
+  struct_.child = child_->index();
+  struct_.is_leaf = child_->is_leaf();
+}
+
+void UnitLink::initialize_status()
+{
+  // Do nothing.
+}
+
+BaseUnit::BaseUnit(const UnitLoader & unit)
+{
+  index_ = unit.index();
+  parents_ = unit.parents();
+}
+
+bool BaseUnit::update()
+{
+  // Update the level of this unit.
+  update_status();
+
+  // If the level does not change, it will not affect the parents.
+  const auto curr_level = level();
+  if (curr_level == prev_level_) return false;
+  prev_level_ = curr_level;
+
+  // If the level changes, the parents also need to be updated.
+  bool result = false;
+  for (const auto & link : parents_) {
+    const auto unit = link->parent();
+    result = result || unit->update();
   }
   return result;
 }
 
-BaseUnit::BaseUnit(const std::string & path) : path_(path)
+NodeUnit::NodeUnit(const UnitLoader & unit) : BaseUnit(unit)
 {
-  index_ = 0;
-  level_ = DiagnosticStatus::OK;
+  struct_.path = unit.path();
+  status_.level = DiagnosticStatus::STALE;
 }
 
-BaseUnit::NodeData BaseUnit::status() const
+void NodeUnit::initialize_struct()
 {
-  if (path_.empty()) {
-    return {level_, links_};
-  } else {
-    return {level_, {std::make_pair(this, true)}};
-  }
+  struct_.type = type();
 }
 
-BaseUnit::NodeData BaseUnit::report() const
+void NodeUnit::initialize_status()
 {
-  return {level_, links_};
+  if (child_links().size() == 0) update();
 }
 
-void DiagUnit::init(const UnitConfig::SharedPtr & config, const NodeDict &)
+LeafUnit::LeafUnit(const UnitLoader & unit) : BaseUnit(unit)
 {
-  name_ = config->data.take_text("diag");
-  timeout_ = config->data.take<double>("timeout", 1.0);
+  const auto node = unit.data().required("node").text();
+  const auto name = unit.data().required("name").text();
+  const auto sep = node.empty() ? "" : ": ";
+
+  struct_.path = unit.path();
+  struct_.name = node + sep + name;
+  status_.level = DiagnosticStatus::STALE;
 }
 
-void DiagUnit::update(const rclcpp::Time & stamp)
+void LeafUnit::initialize_struct()
 {
-  if (diagnostics_) {
-    const auto updated = diagnostics_.value().first;
+  struct_.type = type();
+}
+
+void LeafUnit::initialize_status()
+{
+  if (child_links().size() == 0) update();
+}
+
+DiagUnit::DiagUnit(const UnitLoader & unit) : LeafUnit(unit)
+{
+  timeout_ = unit.data().optional("timeout").real(1.0);
+}
+
+void DiagUnit::update_status()
+{
+  // Do nothing. The level is updated by on_diag and on_time.
+}
+
+bool DiagUnit::on_diag(const rclcpp::Time & stamp, const DiagnosticStatus & status)
+{
+  last_updated_time_ = stamp;
+  status_.level = status.level;
+  status_.message = status.message;
+  status_.hardware_id = status.hardware_id;
+  status_.values = status.values;
+  return update();
+}
+
+bool DiagUnit::on_time(const rclcpp::Time & stamp)
+{
+  if (last_updated_time_) {
+    const auto updated = last_updated_time_.value();
     const auto elapsed = (stamp - updated).seconds();
     if (timeout_ < elapsed) {
-      diagnostics_ = std::nullopt;
+      last_updated_time_ = std::nullopt;
+      status_ = DiagLeafStatus();
+      status_.level = DiagnosticStatus::STALE;
     }
   }
+  return update();
+}
 
-  if (diagnostics_) {
-    level_ = diagnostics_.value().second.level;
-  } else {
-    level_ = DiagnosticStatus::STALE;
+MaxUnit::MaxUnit(const UnitLoader & unit) : NodeUnit(unit)
+{
+  links_ = unit.children();
+}
+
+void MaxUnit::update_status()
+{
+  DiagnosticLevel level = DiagnosticStatus::OK;
+  for (const auto & link : links_) {
+    level = std::max(level, link->child()->level());
   }
+  status_.level = std::min(level, DiagnosticStatus::ERROR);
 }
 
-void DiagUnit::callback(const rclcpp::Time & stamp, const DiagnosticStatus & status)
+void ShortCircuitMaxUnit::update_status()
 {
-  diagnostics_ = std::make_pair(stamp, status);
-}
-
-AndUnit::AndUnit(const std::string & path, bool short_circuit) : BaseUnit(path)
-{
-  short_circuit_ = short_circuit;
-}
-
-void AndUnit::init(const UnitConfig::SharedPtr & config, const NodeDict & dict)
-{
-  children_ = resolve(dict, config->children);
-}
-
-void AndUnit::update(const rclcpp::Time &)
-{
-  if (children_.empty()) {
-    return;
+  // TODO(Takagi, Isamu): update link flags.
+  DiagnosticLevel level = DiagnosticStatus::OK;
+  for (const auto & link : links_) {
+    level = std::max(level, link->child()->level());
   }
+  status_.level = std::min(level, DiagnosticStatus::ERROR);
+}
 
-  bool uses = true;
-  level_ = DiagnosticStatus::OK;
-  links_ = LinkList();
+MinUnit::MinUnit(const UnitLoader & unit) : NodeUnit(unit)
+{
+  links_ = unit.children();
+}
 
-  for (const auto & child : children_) {
-    const auto status = child->status();
-    level_ = std::max(level_, status.level);
-    merge(links_, status.links, uses);
-    if (short_circuit_ && level_ != DiagnosticStatus::OK) {
-      uses = false;
+void MinUnit::update_status()
+{
+  DiagnosticLevel level = DiagnosticStatus::OK;
+  if (!links_.empty()) {
+    level = DiagnosticStatus::STALE;
+    for (const auto & link : links_) {
+      level = std::min(level, link->child()->level());
     }
   }
-  level_ = std::min(level_, DiagnosticStatus::ERROR);
+  status_.level = std::min(level, DiagnosticStatus::ERROR);
 }
 
-void OrUnit::init(const UnitConfig::SharedPtr & config, const NodeDict & dict)
+RemapUnit::RemapUnit(const UnitLoader & unit) : NodeUnit(unit)
 {
-  children_ = resolve(dict, config->children);
+  link_ = unit.child();
 }
 
-void OrUnit::update(const rclcpp::Time &)
+void RemapUnit::update_status()
 {
-  if (children_.empty()) {
-    return;
-  }
-
-  level_ = DiagnosticStatus::ERROR;
-  links_ = LinkList();
-
-  for (const auto & child : children_) {
-    const auto status = child->status();
-    level_ = std::min(level_, status.level);
-    merge(links_, status.links, true);
-  }
-  level_ = std::min(level_, DiagnosticStatus::ERROR);
+  const auto level = link_->child()->level();
+  status_.level = (level == level_from_) ? level_to_ : level;
 }
 
-RemapUnit::RemapUnit(const std::string & path, DiagnosticLevel remap_warn) : BaseUnit(path)
+WarnToOkUnit::WarnToOkUnit(const UnitLoader & unit) : RemapUnit(unit)
 {
-  remap_warn_ = remap_warn;
+  level_from_ = DiagnosticStatus::WARN;
+  level_to_ = DiagnosticStatus::OK;
 }
 
-void RemapUnit::init(const UnitConfig::SharedPtr & config, const NodeDict & dict)
+WarnToErrorUnit::WarnToErrorUnit(const UnitLoader & unit) : RemapUnit(unit)
 {
-  if (config->children.size() != 1) {
-    throw error<InvalidValue>("list size must be 1", config->data);
-  }
-  children_ = resolve(dict, config->children);
+  level_from_ = DiagnosticStatus::WARN;
+  level_to_ = DiagnosticStatus::ERROR;
 }
 
-void RemapUnit::update(const rclcpp::Time &)
+void ConstUnit::update_status()
 {
-  const auto status = children_.front()->status();
-  level_ = status.level;
-  links_ = status.links;
-
-  if (level_ == DiagnosticStatus::WARN) level_ = remap_warn_;
+  // Do nothing. This unit always returns the same level.
 }
 
-DebugUnit::DebugUnit(const std::string & path, DiagnosticLevel level) : BaseUnit(path)
+OkUnit::OkUnit(const UnitLoader & unit) : ConstUnit(unit)
 {
-  level_ = level;  // overwrite
+  status_.level = DiagnosticStatus::OK;
 }
 
-void DebugUnit::init(const UnitConfig::SharedPtr &, const NodeDict &)
+WarnUnit::WarnUnit(const UnitLoader & unit) : ConstUnit(unit)
 {
+  status_.level = DiagnosticStatus::WARN;
 }
 
-void DebugUnit::update(const rclcpp::Time &)
+ErrorUnit::ErrorUnit(const UnitLoader & unit) : ConstUnit(unit)
 {
+  status_.level = DiagnosticStatus::ERROR;
+}
+
+StaleUnit::StaleUnit(const UnitLoader & unit) : ConstUnit(unit)
+{
+  status_.level = DiagnosticStatus::STALE;
 }
 
 }  // namespace diagnostic_graph_aggregator

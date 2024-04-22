@@ -1,0 +1,11 @@
+files:
+  - { path: $(find-pkg-share system_diagnostic_monitor)/config/autoware-main.yaml }
+
+edits:
+  - { type: remove, path: /autoware/map/topic_rate_check/pointcloud_map }
+  - { type: remove, path: /autoware/localization/matching_score }
+  - { type: remove, path: /autoware/localization/accuracy }
+  - { type: remove, path: /autoware/localization/sensor_fusion_status }
+  - { type: remove, path: /autoware/localization/topic_rate_check/pose_twist_fusion }
+  - { type: remove, path: /autoware/perception/topic_rate_check/pointcloud }
+  - { type: remove, path: /autoware/control/emergency_braking }

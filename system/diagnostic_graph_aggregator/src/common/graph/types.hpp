@@ -17,22 +17,47 @@
 
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <tier4_system_msgs/msg/diag_graph_status.hpp>
+#include <tier4_system_msgs/msg/diag_graph_struct.hpp>
+#include <tier4_system_msgs/msg/diag_leaf_status.hpp>
+#include <tier4_system_msgs/msg/diag_leaf_struct.hpp>
+#include <tier4_system_msgs/msg/diag_link_status.hpp>
+#include <tier4_system_msgs/msg/diag_link_struct.hpp>
+#include <tier4_system_msgs/msg/diag_node_status.hpp>
+#include <tier4_system_msgs/msg/diag_node_struct.hpp>
 #include <tier4_system_msgs/msg/diagnostic_graph.hpp>
 #include <tier4_system_msgs/msg/diagnostic_link.hpp>
 #include <tier4_system_msgs/msg/diagnostic_node.hpp>
+
+#include <vector>
 
 namespace diagnostic_graph_aggregator
 {
 
 using diagnostic_msgs::msg::DiagnosticArray;
 using diagnostic_msgs::msg::DiagnosticStatus;
-using tier4_system_msgs::msg::DiagnosticGraph;
-using tier4_system_msgs::msg::DiagnosticLink;
-using tier4_system_msgs::msg::DiagnosticNode;
+using tier4_system_msgs::msg::DiagGraphStatus;
+using tier4_system_msgs::msg::DiagGraphStruct;
+using tier4_system_msgs::msg::DiagLeafStatus;
+using tier4_system_msgs::msg::DiagLeafStruct;
+using tier4_system_msgs::msg::DiagLinkStatus;
+using tier4_system_msgs::msg::DiagLinkStruct;
+using tier4_system_msgs::msg::DiagNodeStatus;
+using tier4_system_msgs::msg::DiagNodeStruct;
 using DiagnosticLevel = DiagnosticStatus::_level_type;
 
+struct PathConfig;
+struct EditConfig;
+struct UnitConfig;
+struct LinkConfig;
+
+class TreeData;
+class UnitLink;
 class BaseUnit;
+class NodeUnit;
 class DiagUnit;
+class Graph;
+class UnitLoader;
 
 }  // namespace diagnostic_graph_aggregator
 

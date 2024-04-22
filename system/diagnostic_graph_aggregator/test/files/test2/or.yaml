@@ -1,10 +1,12 @@
-nodes:
+units:
   - path: output
     type: or
     list:
       - path: input-0
         type: diag
-        diag: "test: input-0"
+        node: test
+        name: input-0
       - path: input-1
         type: diag
-        diag: "test: input-1"
+        node: test
+        name: input-1

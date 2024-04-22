@@ -1,4 +1,4 @@
-nodes:
+units:
   - path: /foo/bar
     type: and
     list:

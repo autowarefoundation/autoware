@@ -1,0 +1,121 @@
+# TODO(Takagi, Isamu): This file is under construction.
+units:
+  - path: /autoware/system/resources/clock/offset
+    diag: ": NTP Offset"
+    timeout: 10.0
+
+  - path: /autoware/system/resources/cpu/offset
+    diag: ": CPU Temperature"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/cpu/usage
+    diag: ": CPU Usage"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/cpu/thermal_throttling
+    diag: ": CPU Thermal Throttling"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/cpu/frequency
+    diag: ": CPU Frequency"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/cpu/load_average
+    diag: ": CPU Load Average"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/gpu/temperature
+    diag: ": GPU Temperature"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/gpu/usage
+    diag: ": GPU Usage"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/gpu/memory_usage
+    diag: ": GPU Memory Usage"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/gpu/thermal_throttling
+    diag: ": GPU Thermal Throttling"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/gpu/frequency
+    diag: ": GPU Frequency"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/memory/usage
+    diag: ": Memory Usage"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/network/usage
+    diag: ": Network Usage"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/network/traffic
+    diag: ": Network Traffic"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/network/crc
+    diag: ": Network CRC Error"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/network/packet_reassembles
+    diag: ": IP Packet Reassembles Failed"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/storage/temperature
+    diag: ": HDD Temperature"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/storage/recovered_error
+    diag: ": HDD RecoveredError"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/storage/read_data_rate
+    diag: ": HDD ReadDataRate"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/storage/write_data_rate
+    diag: ": HDD WriteDataRate"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/storage/read_iops
+    diag: ": HDD ReadIOPS"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/storage/write_iops
+    diag: ": HDD WriteIOPS"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/storage/usage
+    diag: ": HDD Usage"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/storage/power_on_hours
+    diag: ": HDD PowerOnHours"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/storage/total_data_written
+    diag: ": HDD TotalDataWritten"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/storage/connection
+    diag: ": HDD Connection"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/process/high_load
+    diag: ": High-load"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/process/high_mem
+    diag: ": High-mem"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/process/tasks_summary
+    diag: ": Tasks Summary"
+    timeout: 3.0
+
+  - path: /autoware/system/resources/voltage/battery
+    diag: ": CMOS Battery Status"
+    timeout: 3.0

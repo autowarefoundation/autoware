@@ -2,7 +2,7 @@ files:
   - { path: $(dirname)/module1.yaml }
   - { path: $(dirname)/module2.yaml }
 
-nodes:
+units:
   - path: /autoware/modes/stop
     type: ok
 

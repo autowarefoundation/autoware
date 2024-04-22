@@ -1,0 +1,16 @@
+units:
+  - path: /autoware/perception
+    type: and
+    list:
+      - { type: link, link: /autoware/perception/topic_rate_check/objects }
+      - { type: link, link: /autoware/perception/topic_rate_check/pointcloud }
+
+  - path: /autoware/perception/topic_rate_check/objects
+    type: diag
+    node: topic_state_monitor_object_recognition_objects
+    name: perception_topic_status
+
+  - path: /autoware/perception/topic_rate_check/pointcloud
+    type: diag
+    node: topic_state_monitor_obstacle_segmentation_pointcloud
+    name: perception_topic_status

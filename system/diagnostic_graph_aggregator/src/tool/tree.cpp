@@ -12,47 +12,49 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "utils/loader.hpp"
+#include "graph/graph.hpp"
+#include "graph/units.hpp"
 
 #include <iostream>
 
 namespace diagnostic_graph_aggregator
 {
 
-void dump_node(const GraphNode * node, const std::string & indent = "", bool root = true)
+void dump_unit(const BaseUnit * unit, const std::string & indent = "", bool root = true)
 {
-  const auto path = node->path.empty() ? "" : node->path + " ";
-  const auto type = "(" + node->type + ")";
+  const auto path = unit->path().empty() ? "" : unit->path() + " ";
+  const auto type = "(" + unit->type() + ")";
   std::cout << indent << "- " << path << type << std::endl;
 
-  if (root || node->parents.size() == 1) {
-    for (const auto child : node->children) {
-      dump_node(child, indent + "    ", false);
+  if (root || unit->parent_size() == 1) {
+    for (const auto link : unit->child_links()) {
+      dump_unit(link->child(), indent + "    ", false);
     }
   }
 }
 
 void dump_root(const std::string & path)
 {
-  const auto graph = load_graph_nodes(path);
+  Graph graph;
+  graph.create(path);
 
-  std::cout << "===== root nodes =================================" << std::endl;
-  for (const auto & node : graph.nodes) {
-    if (node->parents.size() == 0 && node->children.size() != 0) {
-      dump_node(node);
+  std::cout << "===== Top-level trees ============================" << std::endl;
+  for (const auto & unit : graph.units()) {
+    if (unit->parent_size() == 0 && unit->child_links().size() != 0) {
+      dump_unit(unit);
     }
   }
-  std::cout << "===== intermediate nodes =========================" << std::endl;
-  for (const auto & node : graph.nodes) {
-    if (node->parents.size() >= 2) {
-      dump_node(node);
+  std::cout << "===== Subtrees ===================================" << std::endl;
+  for (const auto & unit : graph.units()) {
+    if (unit->parent_size() >= 2 && unit->child_links().size() != 0) {
+      dump_unit(unit);
     }
   }
 
-  std::cout << "===== isolated nodes =============================" << std::endl;
-  for (const auto & node : graph.nodes) {
-    if (node->parents.size() == 0 && node->children.size() == 0) {
-      dump_node(node);
+  std::cout << "===== Isolated units =============================" << std::endl;
+  for (const auto & unit : graph.units()) {
+    if (unit->parent_size() == 0 && unit->child_links().size() == 0) {
+      dump_unit(unit);
     }
   }
 }

@@ -1,7 +1,8 @@
-nodes:
+units:
   - path: output
     type: warn-to-error
-    list:
-      - path: input-0
-        type: diag
-        diag: "test: input-0"
+    item:
+      path: input-0
+      type: diag
+      node: test
+      name: input-0

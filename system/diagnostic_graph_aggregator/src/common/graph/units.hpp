@@ -15,120 +15,212 @@
 #ifndef COMMON__GRAPH__UNITS_HPP_
 #define COMMON__GRAPH__UNITS_HPP_
 
-#include "config.hpp"
+#include "names.hpp"
 #include "types.hpp"
 
 #include <rclcpp/time.hpp>
 
-#include <memory>
 #include <optional>
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
 
 namespace diagnostic_graph_aggregator
 {
 
+class UnitLink
+{
+public:
+  void initialize_object(BaseUnit * parent, BaseUnit * child);
+  void initialize_struct();
+  void initialize_status();
+  DiagLinkStruct create_struct() const { return struct_; }
+  DiagLinkStatus create_status() const { return status_; }
+  BaseUnit * parent() const { return parent_; }
+  BaseUnit * child() const { return child_; }
+
+private:
+  BaseUnit * parent_;
+  BaseUnit * child_;
+  DiagLinkStruct struct_;
+  DiagLinkStatus status_;
+};
+
 class BaseUnit
 {
 public:
-  struct NodeDict
-  {
-    std::unordered_map<UnitConfig::SharedPtr, BaseUnit *> configs;
-    std::unordered_map<std::string, BaseUnit *> paths;
-  };
-  struct NodeData
-  {
-    DiagnosticLevel level;
-    std::vector<std::pair<const BaseUnit *, bool>> links;
-  };
-  using UniquePtr = std::unique_ptr<BaseUnit>;
-  using UniquePtrList = std::vector<std::unique_ptr<BaseUnit>>;
-
-  explicit BaseUnit(const std::string & path);
+  explicit BaseUnit(const UnitLoader & unit);
   virtual ~BaseUnit() = default;
-  virtual void init(const UnitConfig::SharedPtr & config, const NodeDict & dict) = 0;
-  virtual void update(const rclcpp::Time & stamp) = 0;
+  virtual DiagnosticLevel level() const = 0;
+  virtual std::string path() const = 0;
   virtual std::string type() const = 0;
-
-  NodeData status() const;
-  NodeData report() const;
-  DiagnosticLevel level() const { return level_; }
-
-  auto path() const { return path_; }
-  auto children() const { return children_; }
-
+  virtual std::vector<UnitLink *> child_links() const = 0;
+  virtual bool is_leaf() const = 0;
   size_t index() const { return index_; }
-  void set_index(const size_t index) { index_ = index; }
+  size_t parent_size() const { return parents_.size(); }
 
 protected:
-  DiagnosticLevel level_;
-  std::string path_;
-  std::vector<BaseUnit *> children_;
-  std::vector<std::pair<const BaseUnit *, bool>> links_;
+  bool update();
 
 private:
+  virtual void update_status() = 0;
   size_t index_;
+  std::vector<UnitLink *> parents_;
+  std::optional<DiagnosticLevel> prev_level_;
 };
 
-class DiagUnit : public BaseUnit
+class NodeUnit : public BaseUnit
 {
 public:
-  using BaseUnit::BaseUnit;
-  void init(const UnitConfig::SharedPtr & config, const NodeDict & dict) override;
-  void update(const rclcpp::Time & stamp) override;
-  std::string type() const override { return "diag"; }
+  explicit NodeUnit(const UnitLoader & unit);
+  void initialize_struct();
+  void initialize_status();
+  bool is_leaf() const override { return false; }
+  DiagNodeStruct create_struct() const { return struct_; }
+  DiagNodeStatus create_status() const { return status_; }
+  DiagnosticLevel level() const override { return status_.level; }
+  std::string path() const override { return struct_.path; }
 
-  std::string name() const { return name_; }
-  void callback(const rclcpp::Time & stamp, const DiagnosticStatus & status);
+protected:
+  DiagNodeStruct struct_;
+  DiagNodeStatus status_;
+};
+
+class LeafUnit : public BaseUnit
+{
+public:
+  explicit LeafUnit(const UnitLoader & unit);
+  void initialize_struct();
+  void initialize_status();
+  bool is_leaf() const override { return true; }
+  DiagLeafStruct create_struct() const { return struct_; }
+  DiagLeafStatus create_status() const { return status_; }
+  DiagnosticLevel level() const override { return status_.level; }
+  std::string name() const { return struct_.name; }
+  std::string path() const override { return struct_.path; }
+
+protected:
+  DiagLeafStruct struct_;
+  DiagLeafStatus status_;
+};
+
+class DiagUnit : public LeafUnit
+{
+public:
+  explicit DiagUnit(const UnitLoader & unit);
+  std::string type() const override { return unit_name::diag; }
+  std::vector<UnitLink *> child_links() const override { return {}; }
+  bool on_time(const rclcpp::Time & stamp);
+  bool on_diag(const rclcpp::Time & stamp, const DiagnosticStatus & status);
 
 private:
+  void update_status() override;
   double timeout_;
-  std::optional<std::pair<rclcpp::Time, DiagnosticStatus>> diagnostics_;
-  std::string name_;
+  std::optional<rclcpp::Time> last_updated_time_;
 };
 
-class AndUnit : public BaseUnit
+class MaxUnit : public NodeUnit
 {
 public:
-  AndUnit(const std::string & path, bool short_circuit);
-  void init(const UnitConfig::SharedPtr & config, const NodeDict & dict) override;
-  void update(const rclcpp::Time & stamp) override;
-  std::string type() const override { return short_circuit_ ? "short-circuit-and" : "and"; }
+  explicit MaxUnit(const UnitLoader & unit);
+  std::string type() const override { return unit_name::max; }
+  std::vector<UnitLink *> child_links() const override { return links_; }
+
+protected:
+  std::vector<UnitLink *> links_;
 
 private:
-  bool short_circuit_;
+  void update_status() override;
 };
 
-class OrUnit : public BaseUnit
+class ShortCircuitMaxUnit : public MaxUnit
 {
 public:
-  using BaseUnit::BaseUnit;
-  void init(const UnitConfig::SharedPtr & config, const NodeDict & dict) override;
-  void update(const rclcpp::Time & stamp) override;
-  std::string type() const override { return "or"; }
-};
-
-class RemapUnit : public BaseUnit
-{
-public:
-  RemapUnit(const std::string & path, DiagnosticLevel remap_warn);
-  void init(const UnitConfig::SharedPtr & config, const NodeDict & dict) override;
-  void update(const rclcpp::Time & stamp) override;
-  std::string type() const override { return "remap"; }
+  using MaxUnit::MaxUnit;
+  std::string type() const override { return unit_name::short_circuit_max; }
 
 private:
-  DiagnosticLevel remap_warn_;
+  void update_status() override;
 };
 
-class DebugUnit : public BaseUnit
+class MinUnit : public NodeUnit
 {
 public:
-  DebugUnit(const std::string & path, DiagnosticLevel level);
-  void init(const UnitConfig::SharedPtr & config, const NodeDict & dict) override;
-  void update(const rclcpp::Time & stamp) override;
-  std::string type() const override { return "const"; }
+  explicit MinUnit(const UnitLoader & unit);
+  std::string type() const override { return unit_name::min; }
+  std::vector<UnitLink *> child_links() const override { return links_; }
+
+protected:
+  std::vector<UnitLink *> links_;
+
+private:
+  void update_status() override;
+};
+
+class RemapUnit : public NodeUnit
+{
+public:
+  explicit RemapUnit(const UnitLoader & unit);
+  std::vector<UnitLink *> child_links() const override { return {link_}; }
+
+protected:
+  UnitLink * link_;
+  DiagnosticLevel level_from_;
+  DiagnosticLevel level_to_;
+
+private:
+  void update_status() override;
+};
+
+class WarnToOkUnit : public RemapUnit
+{
+public:
+  explicit WarnToOkUnit(const UnitLoader & unit);
+  std::string type() const override { return unit_name::warn_to_ok; }
+};
+
+class WarnToErrorUnit : public RemapUnit
+{
+public:
+  explicit WarnToErrorUnit(const UnitLoader & unit);
+  std::string type() const override { return unit_name::warn_to_error; }
+};
+
+class ConstUnit : public NodeUnit
+{
+public:
+  using NodeUnit::NodeUnit;
+  std::vector<UnitLink *> child_links() const override { return {}; }
+
+private:
+  void update_status() override;
+};
+
+class OkUnit : public ConstUnit
+{
+public:
+  explicit OkUnit(const UnitLoader & unit);
+  std::string type() const override { return unit_name::ok; }
+};
+
+class WarnUnit : public ConstUnit
+{
+public:
+  explicit WarnUnit(const UnitLoader & unit);
+  std::string type() const override { return unit_name::warn; }
+};
+
+class ErrorUnit : public ConstUnit
+{
+public:
+  explicit ErrorUnit(const UnitLoader & unit);
+  std::string type() const override { return unit_name::error; }
+};
+
+class StaleUnit : public ConstUnit
+{
+public:
+  explicit StaleUnit(const UnitLoader & unit);
+  std::string type() const override { return unit_name::stale; }
 };
 
 }  // namespace diagnostic_graph_aggregator

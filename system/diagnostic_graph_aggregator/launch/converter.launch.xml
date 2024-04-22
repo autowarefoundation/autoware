@@ -1,6 +1,0 @@
-<launch>
-  <arg name="complement"/>
-  <node pkg="diagnostic_graph_aggregator" exec="converter" name="converter">
-    <param name="complement_tree" value="$(var complement)"/>
-  </node>
-</launch>

@@ -1,0 +1,16 @@
+units:
+  - path: /autoware/vehicle
+    type: and
+    list:
+      - { type: link, link: /autoware/vehicle/topic_rate_check/velocity }
+      - { type: link, link: /autoware/vehicle/topic_rate_check/steering }
+
+  - path: /autoware/vehicle/topic_rate_check/velocity
+    type: diag
+    node: topic_state_monitor_vehicle_status_velocity_status
+    name: vehicle_topic_status
+
+  - path: /autoware/vehicle/topic_rate_check/steering
+    type: diag
+    node: topic_state_monitor_vehicle_status_steering_status
+    name: vehicle_topic_status

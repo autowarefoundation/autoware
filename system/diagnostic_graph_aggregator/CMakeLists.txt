@@ -5,32 +5,27 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/common/graph/error.cpp
+  src/common/graph/data.cpp
   src/common/graph/config.cpp
-  src/common/graph/debug.cpp
+  src/common/graph/loader.cpp
   src/common/graph/graph.cpp
   src/common/graph/units.cpp
 )
 
 ament_auto_add_executable(aggregator
   src/node/aggregator.cpp
-  src/node/plugin/modes.cpp
+  src/node/availability.cpp
 )
 target_include_directories(aggregator PRIVATE src/common)
 
-ament_auto_add_executable(converter
-  src/node/converter.cpp
-)
-target_include_directories(converter PRIVATE src/common)
-
 ament_auto_add_executable(tree
   src/tool/tree.cpp
-  src/tool/utils/loader.cpp
 )
 target_include_directories(tree PRIVATE src/common)
 
 ament_auto_add_executable(plantuml
   src/tool/plantuml.cpp
-  src/tool/utils/loader.cpp
 )
 target_include_directories(plantuml PRIVATE src/common)
 
@@ -44,11 +39,5 @@ if(BUILD_TESTING)
   target_compile_definitions(gtest_${PROJECT_NAME} PRIVATE TEST_RESOURCE_PATH="${RESOURCE_PATH}")
   target_include_directories(gtest_${PROJECT_NAME} PRIVATE src/common)
 endif()
-
-install(PROGRAMS
-  script/dump.py
-  RENAME dump
-  DESTINATION lib/${PROJECT_NAME}
-)
 
 ament_auto_package(INSTALL_TO_SHARE config example launch)

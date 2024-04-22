@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+
+import rclpy
+from rqt_diagnostic_graph_monitor.module import MonitorModule
+
+if __name__ == "__main__":
+    try:
+        rclpy.init()
+        node = rclpy.create_node("test_rqt_diagnostic_graph_monitor")
+        test = MonitorModule(node)
+        rclpy.spin(node)
+        rclpy.shutdown()
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt")

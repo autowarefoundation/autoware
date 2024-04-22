@@ -3,20 +3,25 @@
 ## Overview
 
 The diagnostic graph aggregator node subscribes to diagnostic array and publishes aggregated diagnostic graph.
-As shown in the diagram below, this node introduces extra diagnostic status for intermediate functional unit.
-Diagnostic status dependencies will be directed acyclic graph (DAG).
+As shown in the diagram below, this node introduces extra diagnostic status for intermediate functional units.
 
 ![overview](./doc/overview.drawio.svg)
 
-## Diagnostics graph message
+## Diagnostic graph structures
 
-The diagnostics graph that this node outputs is a combination of diagnostic status and connections between them.
-This graph consists of an array of diagnostic nodes, and each node has a status and links.
-This link contains an index indicating the position of the node in the graph.
-Therefore, the graph can be reconstructed from the array of nodes using links.
-The following is an example of a message representing the graph in the overview section.
+The diagnostic graph is actually a set of fault tree analysis (FTA) for each operation mode of Autoware.
+Since the status of the same node may be referenced by multiple nodes, the overall structure is a directed acyclic graph (DAG).
+Each node in the diagnostic graph represents the diagnostic status of a specific functional unit, including the input diagnostics.
+So we define this as "unit", and call the unit corresponding to the input diagnosis "diag unit" and the others "node unit".
 
-![message](./doc/message.drawio.svg)
+Every unit has an error level that is the same as DiagnosticStatus, a unit type, and optionally a unit path.
+In addition, every diag unit has a message, a hardware_id, and values that are the same as DiagnosticStatus.
+The unit type represents how the unit status is calculated, such as AND or OR.
+The unit path is any unique string that represents the functionality of the unit.
+
+NOTE: This feature is currently under development.
+The diagnostic graph also supports "link" because there are cases where connections between units have additional status.
+For example, it is natural that many functional units will have an error status until initialization is complete.
 
 ## Operation mode availability
 
@@ -34,11 +39,13 @@ This feature breaks the generality of the graph and may be changed to a plugin o
 
 ## Interfaces
 
-| Interface Type | Interface Name                        | Data Type                                         | Description        |
-| -------------- | ------------------------------------- | ------------------------------------------------- | ------------------ |
-| subscription   | `/diagnostics`                        | `diagnostic_msgs/msg/DiagnosticArray`             | Diagnostics input. |
-| publisher      | `/diagnostics_graph`                  | `tier4_system_msgs/msg/DiagnosticGraph`           | Diagnostics graph. |
-| publisher      | `/system/operation_mode/availability` | `tier4_system_msgs/msg/OperationModeAvailability` | mode availability. |
+| Interface Type | Interface Name                        | Data Type                                         | Description                        |
+| -------------- | ------------------------------------- | ------------------------------------------------- | ---------------------------------- |
+| subscription   | `/diagnostics`                        | `diagnostic_msgs/msg/DiagnosticArray`             | Diagnostics input.                 |
+| publisher      | `/diagnostics_graph/unknowns`         | `diagnostic_msgs/msg/DiagnosticArray`             | Diagnostics not included in graph. |
+| publisher      | `/diagnostics_graph/struct`           | `tier4_system_msgs/msg/DiagGraphStruct`           | Diagnostic graph (static part).    |
+| publisher      | `/diagnostics_graph/status`           | `tier4_system_msgs/msg/DiagGraphStatus`           | Diagnostic graph (dynamic part).   |
+| publisher      | `/system/operation_mode/availability` | `tier4_system_msgs/msg/OperationModeAvailability` | Operation mode availability.       |
 
 ## Parameters
 
@@ -49,7 +56,6 @@ This feature breaks the generality of the graph and may be changed to a plugin o
 | `input_qos_depth`                 | `uint`    | QoS depth of input array topic.            |
 | `graph_qos_depth`                 | `uint`    | QoS depth of output graph topic.           |
 | `use_operation_mode_availability` | `bool`    | Use operation mode availability publisher. |
-| `use_debug_mode`                  | `bool`    | Use debug output to stdout.                |
 
 ## Examples
 
@@ -73,13 +79,12 @@ ros2 launch diagnostic_graph_aggregator example-edit.launch.xml
 
 ## Debug tools
 
-- [dump](./doc/tool/dump.md)
-- [converter](./doc/tool/converter.md)
 - [tree](./doc/tool/tree.md)
+- [diagnostic_graph_utils](../diagnostic_graph_utils/README.md)
 
 ## Graph file format
 
 - [graph](./doc/format/graph.md)
 - [path](./doc/format/path.md)
-- [node](./doc/format/node.md)
+- [unit](./doc/format/unit.md)
 - [edit](./doc/format/edit.md)

@@ -1,0 +1,90 @@
+units:
+  - path: /autoware/planning
+    type: short-circuit-and
+    list:
+      - type: link
+        link: /autoware/planning/routing/state
+      - type: and
+        list:
+          - { type: link, link: /autoware/planning/topic_rate_check/route }
+          - { type: link, link: /autoware/planning/topic_rate_check/trajectory }
+          - { type: link, link: /autoware/planning/trajectory_validation }
+
+  - path: /autoware/planning/trajectory_validation
+    type: and
+    list:
+      - { type: link, link: /autoware/planning/trajectory_validation/finite }
+      - { type: link, link: /autoware/planning/trajectory_validation/interval }
+      - { type: link, link: /autoware/planning/trajectory_validation/curvature }
+      - { type: link, link: /autoware/planning/trajectory_validation/angle }
+      - { type: link, link: /autoware/planning/trajectory_validation/lateral_acceleration }
+      - { type: link, link: /autoware/planning/trajectory_validation/acceleration }
+      - { type: link, link: /autoware/planning/trajectory_validation/deceleration }
+      - { type: link, link: /autoware/planning/trajectory_validation/steering }
+      - { type: link, link: /autoware/planning/trajectory_validation/steering_rate }
+      - { type: link, link: /autoware/planning/trajectory_validation/velocity_deviation }
+
+  - path: /autoware/planning/routing/state
+    type: diag
+    node: component_state_diagnostics
+    name: route_state
+
+  - path: /autoware/planning/topic_rate_check/route
+    type: diag
+    node: topic_state_monitor_mission_planning_route
+    name: planning_topic_status
+
+  - path: /autoware/planning/topic_rate_check/trajectory
+    type: diag
+    node: topic_state_monitor_scenario_planning_trajectory
+    name: planning_topic_status
+
+  - path: /autoware/planning/trajectory_validation/finite
+    type: diag
+    node: planning_validator
+    name: trajectory_validation_finite
+
+  - path: /autoware/planning/trajectory_validation/interval
+    type: diag
+    node: planning_validator
+    name: trajectory_validation_interval
+
+  - path: /autoware/planning/trajectory_validation/curvature
+    type: diag
+    node: planning_validator
+    name: trajectory_validation_curvature
+
+  - path: /autoware/planning/trajectory_validation/angle
+    type: diag
+    node: planning_validator
+    name: trajectory_validation_relative_angle
+
+  - path: /autoware/planning/trajectory_validation/lateral_acceleration
+    type: diag
+    node: planning_validator
+    name: trajectory_validation_lateral_acceleration
+
+  - path: /autoware/planning/trajectory_validation/acceleration
+    type: diag
+    node: planning_validator
+    name: trajectory_validation_acceleration
+
+  - path: /autoware/planning/trajectory_validation/deceleration
+    type: diag
+    node: planning_validator
+    name: trajectory_validation_deceleration
+
+  - path: /autoware/planning/trajectory_validation/steering
+    type: diag
+    node: planning_validator
+    name: trajectory_validation_steering
+
+  - path: /autoware/planning/trajectory_validation/steering_rate
+    type: diag
+    node: planning_validator
+    name: trajectory_validation_steering_rate
+
+  - path: /autoware/planning/trajectory_validation/velocity_deviation
+    type: diag
+    node: planning_validator
+    name: trajectory_validation_velocity_deviation

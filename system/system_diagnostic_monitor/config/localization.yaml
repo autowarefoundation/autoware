@@ -1,0 +1,43 @@
+units:
+  - path: /autoware/localization
+    type: short-circuit-and
+    list:
+      - type: link
+        link: /autoware/localization/state
+      - type: and
+        list:
+          - { type: link, link: /autoware/localization/topic_rate_check/transform }
+          - { type: link, link: /autoware/localization/topic_rate_check/pose_twist_fusion }
+          - { type: link, link: /autoware/localization/matching_score }
+          - { type: link, link: /autoware/localization/accuracy }
+          - { type: link, link: /autoware/localization/sensor_fusion_status }
+
+  - path: /autoware/localization/state
+    type: diag
+    node: component_state_diagnostics
+    name: localization_state
+
+  - path: /autoware/localization/topic_rate_check/transform
+    type: diag
+    node: topic_state_monitor_transform_map_to_base_link
+    name: localization_topic_status
+
+  - path: /autoware/localization/topic_rate_check/pose_twist_fusion
+    type: diag
+    node: topic_state_monitor_pose_twist_fusion_filter_pose
+    name: localization_topic_status
+
+  - path: /autoware/localization/matching_score
+    type: diag
+    node: ""
+    name: ndt_scan_matcher
+
+  - path: /autoware/localization/accuracy
+    type: diag
+    node: localization
+    name: localization_error_monitor
+
+  - path: /autoware/localization/sensor_fusion_status
+    type: diag
+    node: localization
+    name: ekf_localizer

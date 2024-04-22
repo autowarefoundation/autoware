@@ -15,13 +15,14 @@
 #ifndef NODE__AGGREGATOR_HPP_
 #define NODE__AGGREGATOR_HPP_
 
+#include "availability.hpp"
 #include "graph/graph.hpp"
-#include "graph/types.hpp"
-#include "plugin/modes.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>
+#include <string>
+#include <unordered_map>
 
 namespace diagnostic_graph_aggregator
 {
@@ -34,14 +35,17 @@ public:
 
 private:
   Graph graph_;
-  std::unique_ptr<OperationModes> modes_;
+  std::unique_ptr<ModesAvailability> modes_;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<DiagnosticArray>::SharedPtr sub_input_;
-  rclcpp::Publisher<DiagnosticGraph>::SharedPtr pub_graph_;
+  rclcpp::Publisher<DiagnosticArray>::SharedPtr pub_unknown_;
+  rclcpp::Publisher<DiagGraphStruct>::SharedPtr pub_struct_;
+  rclcpp::Publisher<DiagGraphStatus>::SharedPtr pub_status_;
+  DiagnosticArray create_unknown_diags(const rclcpp::Time & stamp);
   void on_timer();
-  void on_diag(const DiagnosticArray::ConstSharedPtr msg);
+  void on_diag(const DiagnosticArray & msg);
 
-  bool debug_;
+  std::unordered_map<std::string, DiagnosticStatus> unknown_diags_;
 };
 
 }  // namespace diagnostic_graph_aggregator

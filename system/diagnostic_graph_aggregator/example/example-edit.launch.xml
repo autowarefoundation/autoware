@@ -1,10 +1,6 @@
 <launch>
-  <arg name="complement" default="false"/>
-  <include file="$(find-pkg-share diagnostic_graph_aggregator)/launch/diagnostic_graph_aggregator.launch.xml">
+  <include file="$(find-pkg-share diagnostic_graph_aggregator)/launch/aggregator.launch.xml">
     <arg name="graph_file" value="$(find-pkg-share diagnostic_graph_aggregator)/example/graph/edit.yaml"/>
-  </include>
-  <include file="$(find-pkg-share diagnostic_graph_aggregator)/launch/converter.launch.xml">
-    <arg name="complement" value="$(var complement)"/>
   </include>
   <executable cmd="python3 $(find-pkg-share diagnostic_graph_aggregator)/example/dummy-diags.py"/>
 </launch>

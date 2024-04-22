@@ -56,11 +56,14 @@ DiagnosticArray create_input(const std::vector<uint8_t> & levels)
   return array;
 };
 
-uint8_t get_output(const DiagnosticGraph & graph)
+uint8_t get_output(const Graph & graph, const rclcpp::Time & stamp)
 {
-  for (const auto & node : graph.nodes) {
-    if (node.status.name == "output") {
-      return node.status.level;
+  const auto struct_nodes = graph.create_struct(stamp).nodes;
+  const auto status_nodes = graph.create_status(stamp).nodes;
+
+  for (size_t i = 0; i < struct_nodes.size(); ++i) {
+    if (struct_nodes[i].path == "output") {
+      return status_nodes[i].level;
     }
   }
   throw std::runtime_error("output node is not found");
@@ -68,13 +71,17 @@ uint8_t get_output(const DiagnosticGraph & graph)
 
 TEST_P(GraphTest, Aggregation)
 {
-  const auto param = GetParam();
   const auto stamp = rclcpp::Clock().now();
+  const auto param = GetParam();
   Graph graph;
-  graph.init(resource(param.config));
-  graph.callback(stamp, create_input(param.inputs));
+  graph.create(resource(param.config));
 
-  const auto output = get_output(graph.report(stamp));
+  const auto array = create_input(param.inputs);
+  for (const auto & status : array.status) {
+    graph.update(stamp, status);
+  }
+
+  const auto output = get_output(graph, stamp);
   EXPECT_EQ(output, param.result);
 }
 

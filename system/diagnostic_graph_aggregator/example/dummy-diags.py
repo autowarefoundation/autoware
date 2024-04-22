@@ -53,9 +53,9 @@ class DummyDiagnostics(rclpy.node.Node):
 
 if __name__ == "__main__":
     diags = [
-        "lidar_driver/top: status",
-        "lidar_driver/front: status",
-        "radar_driver/front: status",
+        "lidar_driver_top: status",
+        "lidar_driver_front: status",
+        "radar_driver_front: status",
         "external_command_checker: joystick_command",
         "external_command_checker: remote_command",
     ]

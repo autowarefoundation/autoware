@@ -15,16 +15,12 @@
 #ifndef CONVERTER_HPP_
 #define CONVERTER_HPP_
 
+#include <diagnostic_graph_utils/subscription.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
-#include <autoware_auto_system_msgs/msg/autoware_state.hpp>
 #include <autoware_auto_system_msgs/msg/hazard_status_stamped.hpp>
-#include <tier4_system_msgs/msg/diagnostic_graph.hpp>
 
-#include <string>
-#include <unordered_map>
-#include <vector>
+#include <unordered_set>
 
 namespace hazard_status_converter
 {
@@ -35,20 +31,16 @@ public:
   explicit Converter(const rclcpp::NodeOptions & options);
 
 private:
-  using AutowareState = autoware_auto_system_msgs::msg::AutowareState;
-  using OperationMode = autoware_adapi_v1_msgs::msg::OperationModeState;
-  using DiagnosticGraph = tier4_system_msgs::msg::DiagnosticGraph;
   using HazardStatusStamped = autoware_auto_system_msgs::msg::HazardStatusStamped;
-  rclcpp::Subscription<AutowareState>::SharedPtr sub_state_;
-  rclcpp::Subscription<OperationMode>::SharedPtr sub_mode_;
-  rclcpp::Subscription<DiagnosticGraph>::SharedPtr sub_graph_;
+  using DiagGraph = diagnostic_graph_utils::DiagGraph;
+  using DiagUnit = diagnostic_graph_utils::DiagUnit;
+  void on_create(DiagGraph::ConstSharedPtr graph);
+  void on_update(DiagGraph::ConstSharedPtr graph);
+  diagnostic_graph_utils::DiagGraphSubscription sub_graph_;
   rclcpp::Publisher<HazardStatusStamped>::SharedPtr pub_hazard_;
-  void on_state(const AutowareState::ConstSharedPtr msg);
-  void on_mode(const OperationMode::ConstSharedPtr msg);
-  void on_graph(const DiagnosticGraph::ConstSharedPtr msg);
 
-  AutowareState::ConstSharedPtr state_;
-  OperationMode::ConstSharedPtr mode_;
+  DiagUnit * auto_mode_root_;
+  std::unordered_set<DiagUnit *> auto_mode_tree_;
 };
 
 }  // namespace hazard_status_converter
