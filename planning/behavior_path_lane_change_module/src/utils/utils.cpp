@@ -49,6 +49,8 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
+#include <memory>
+#include <numeric>
 #include <optional>
 #include <string>
 #include <vector>
@@ -77,29 +79,40 @@ double calcLaneChangeResampleInterval(
 }
 
 double calcMinimumLaneChangeLength(
-  const LaneChangeParameters & lane_change_parameters, const std::vector<double> & shift_intervals,
-  const double length_to_intersection)
+  const LaneChangeParameters & lane_change_parameters, const std::vector<double> & shift_intervals)
 {
   if (shift_intervals.empty()) {
     return 0.0;
   }
 
-  const double & vel = lane_change_parameters.minimum_lane_changing_velocity;
-  const auto lat_acc = lane_change_parameters.lane_change_lat_acc_map.find(vel);
-  const double & max_lateral_acc = lat_acc.second;
-  const double & lateral_jerk = lane_change_parameters.lane_changing_lateral_jerk;
-  const double & finish_judge_buffer = lane_change_parameters.lane_change_finish_judge_buffer;
-  const double & backward_buffer = lane_change_parameters.backward_length_buffer_for_end_of_lane;
+  const auto min_vel = lane_change_parameters.minimum_lane_changing_velocity;
+  const auto [min_lat_acc, max_lat_acc] =
+    lane_change_parameters.lane_change_lat_acc_map.find(min_vel);
+  const auto lat_jerk = lane_change_parameters.lane_changing_lateral_jerk;
+  const auto finish_judge_buffer = lane_change_parameters.lane_change_finish_judge_buffer;
 
-  double accumulated_length = length_to_intersection;
-  for (const auto & shift_interval : shift_intervals) {
-    const double t =
-      PathShifter::calcShiftTimeFromJerk(shift_interval, lateral_jerk, max_lateral_acc);
-    accumulated_length += vel * t + finish_judge_buffer;
+  const auto calc_sum = [&](double sum, double shift_interval) {
+    const auto t = PathShifter::calcShiftTimeFromJerk(shift_interval, lat_jerk, max_lat_acc);
+    return sum + (min_vel * t + finish_judge_buffer);
+  };
+
+  const auto total_length =
+    std::accumulate(shift_intervals.begin(), shift_intervals.end(), 0.0, calc_sum);
+
+  const auto backward_buffer = lane_change_parameters.backward_length_buffer_for_end_of_lane;
+  return total_length + backward_buffer * (static_cast<double>(shift_intervals.size()) - 1.0);
+}
+
+double calcMinimumLaneChangeLength(
+  const std::shared_ptr<RouteHandler> & route_handler, const lanelet::ConstLanelet & lane,
+  const LaneChangeParameters & lane_change_parameters, Direction direction)
+{
+  if (!route_handler) {
+    return std::numeric_limits<double>::max();
   }
-  accumulated_length += backward_buffer * (shift_intervals.size() - 1.0);
 
-  return accumulated_length;
+  const auto shift_intervals = route_handler->getLateralIntervalsToPreferredLane(lane, direction);
+  return utils::lane_change::calcMinimumLaneChangeLength(lane_change_parameters, shift_intervals);
 }
 
 double calcMaximumLaneChangeLength(
@@ -110,31 +123,34 @@ double calcMaximumLaneChangeLength(
     return 0.0;
   }
 
-  const double & finish_judge_buffer = lane_change_parameters.lane_change_finish_judge_buffer;
-  const double & lateral_jerk = lane_change_parameters.lane_changing_lateral_jerk;
-  const double & t_prepare = lane_change_parameters.lane_change_prepare_duration;
+  const auto finish_judge_buffer = lane_change_parameters.lane_change_finish_judge_buffer;
+  const auto lat_jerk = lane_change_parameters.lane_changing_lateral_jerk;
+  const auto t_prepare = lane_change_parameters.lane_change_prepare_duration;
 
-  double vel = current_velocity;
-  double accumulated_length = 0.0;
-  for (const auto & shift_interval : shift_intervals) {
+  auto vel = current_velocity;
+
+  const auto calc_sum = [&](double sum, double shift_interval) {
     // prepare section
-    const double prepare_length = vel * t_prepare + 0.5 * max_acc * t_prepare * t_prepare;
+    const auto prepare_length = vel * t_prepare + 0.5 * max_acc * t_prepare * t_prepare;
     vel = vel + max_acc * t_prepare;
 
     // lane changing section
-    const auto lat_acc = lane_change_parameters.lane_change_lat_acc_map.find(vel);
-    const double t_lane_changing =
-      PathShifter::calcShiftTimeFromJerk(shift_interval, lateral_jerk, lat_acc.second);
-    const double lane_changing_length =
+    const auto [min_lat_acc, max_lat_acc] =
+      lane_change_parameters.lane_change_lat_acc_map.find(vel);
+    const auto t_lane_changing =
+      PathShifter::calcShiftTimeFromJerk(shift_interval, lat_jerk, max_lat_acc);
+    const auto lane_changing_length =
       vel * t_lane_changing + 0.5 * max_acc * t_lane_changing * t_lane_changing;
 
-    accumulated_length += prepare_length + lane_changing_length + finish_judge_buffer;
     vel = vel + max_acc * t_lane_changing;
-  }
-  accumulated_length +=
-    lane_change_parameters.backward_length_buffer_for_end_of_lane * (shift_intervals.size() - 1.0);
+    return sum + (prepare_length + lane_changing_length + finish_judge_buffer);
+  };
 
-  return accumulated_length;
+  const auto total_length =
+    std::accumulate(shift_intervals.begin(), shift_intervals.end(), 0.0, calc_sum);
+
+  const auto backward_buffer = lane_change_parameters.backward_length_buffer_for_end_of_lane;
+  return total_length + backward_buffer * (static_cast<double>(shift_intervals.size()) - 1.0);
 }
 
 double calcMinimumAcceleration(
@@ -658,23 +674,24 @@ double getLateralShift(const LaneChangePath & path)
 }
 
 bool hasEnoughLengthToLaneChangeAfterAbort(
-  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
+  const std::shared_ptr<RouteHandler> & route_handler, const lanelet::ConstLanelets & current_lanes,
   const Pose & current_pose, const double abort_return_dist,
   const LaneChangeParameters & lane_change_parameters, const Direction direction)
 {
-  const auto shift_intervals =
-    route_handler.getLateralIntervalsToPreferredLane(current_lanes.back(), direction);
-  const double minimum_lane_change_length =
-    calcMinimumLaneChangeLength(lane_change_parameters, shift_intervals);
+  if (current_lanes.empty()) {
+    return false;
+  }
+
+  const auto minimum_lane_change_length = calcMinimumLaneChangeLength(
+    route_handler, current_lanes.back(), lane_change_parameters, direction);
   const auto abort_plus_lane_change_length = abort_return_dist + minimum_lane_change_length;
   if (abort_plus_lane_change_length > utils::getDistanceToEndOfLane(current_pose, current_lanes)) {
     return false;
   }
 
   if (
-    route_handler.isInGoalRouteSection(current_lanes.back()) &&
     abort_plus_lane_change_length >
-      utils::getSignedDistance(current_pose, route_handler.getGoalPose(), current_lanes)) {
+    utils::getSignedDistance(current_pose, route_handler->getGoalPose(), current_lanes)) {
     return false;
   }
 

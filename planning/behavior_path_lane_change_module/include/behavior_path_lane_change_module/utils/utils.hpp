@@ -58,8 +58,11 @@ double calcLaneChangeResampleInterval(
   const double lane_changing_length, const double lane_changing_velocity);
 
 double calcMinimumLaneChangeLength(
-  const LaneChangeParameters & lane_change_parameters, const std::vector<double> & shift_intervals,
-  const double length_to_intersection = 0.0);
+  const LaneChangeParameters & lane_change_parameters, const std::vector<double> & shift_intervals);
+
+double calcMinimumLaneChangeLength(
+  const std::shared_ptr<RouteHandler> & route_handler, const lanelet::ConstLanelet & lane,
+  const LaneChangeParameters & lane_change_parameters, Direction direction);
 
 double calcMaximumLaneChangeLength(
   const double current_velocity, const LaneChangeParameters & lane_change_parameters,
@@ -139,7 +142,7 @@ std::vector<DrivableLanes> generateDrivableLanes(
 double getLateralShift(const LaneChangePath & path);
 
 bool hasEnoughLengthToLaneChangeAfterAbort(
-  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
+  const std::shared_ptr<RouteHandler> & route_handler, const lanelet::ConstLanelets & current_lanes,
   const Pose & curent_pose, const double abort_return_dist,
   const LaneChangeParameters & lane_change_parameters, const Direction direction);
 
