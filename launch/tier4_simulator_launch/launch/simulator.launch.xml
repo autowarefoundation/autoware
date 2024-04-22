@@ -21,6 +21,7 @@
   <arg name="fusion_only" default="true" description="enable only camera and V2X fusion when enabling traffic light"/>
   <arg name="perception/use_base_link_z" default="true" description="dummy perception uses base_link z axis coordinate if it is true"/>
   <arg name="sensing/visible_range" default="300.0" description="visible range when using dummy perception"/>
+  <arg name="use_perception_online_evaluator" default="false" description="use perception online evaluator"/>
 
   <arg name="vehicle_model" description="vehicle model name"/>
   <arg name="initial_engage_state" default="true" description="/vehicle/engage state after starting Autoware"/>
@@ -89,7 +90,7 @@
       </group>
 
       <!-- perception evaluator -->
-      <group>
+      <group if="$(var use_perception_online_evaluator)">
         <include file="$(find-pkg-share perception_online_evaluator)/launch/perception_online_evaluator.launch.xml"/>
       </group>
 
