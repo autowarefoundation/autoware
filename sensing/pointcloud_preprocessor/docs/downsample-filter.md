@@ -18,6 +18,10 @@ The `downsample_filter` is a node that reduces the number of points.
 
 `pcl::VoxelGrid` is used, which points in each voxel are approximated with their centroid.
 
+### Pickup Based Voxel Grid Downsample Filter
+
+This algorithm samples a single actual point existing within the voxel, not the centroid. The computation cost is low compared to Centroid Based Voxel Grid Filter.
+
 ## Inputs / Outputs
 
 These implementations inherit `pointcloud_preprocessor::Filter` class, please refer [README](../README.md).
@@ -52,7 +56,19 @@ These implementations inherit `pointcloud_preprocessor::Filter` class, please re
 | `voxel_size_y` | double | 0.3           | voxel size y [m] |
 | `voxel_size_z` | double | 0.1           | voxel size z [m] |
 
+### Pickup Based Voxel Grid Downsample Filter
+
+| Name           | Type   | Default Value | Description      |
+| -------------- | ------ | ------------- | ---------------- |
+| `voxel_size_x` | double | 1.0           | voxel size x [m] |
+| `voxel_size_y` | double | 1.0           | voxel size y [m] |
+| `voxel_size_z` | double | 1.0           | voxel size z [m] |
+
 ## Assumptions / Known limits
+
+<!-- cspell: ignore martinus -->
+
+This implementation uses the `robin_hood.h` hashing library by martinus, available under the MIT License at [martinus/robin-hood-hashing](https://github.com/martinus/robin-hood-hashing) on GitHub. Special thanks to martinus for this contribution.
 
 ## (Optional) Error detection and handling
 

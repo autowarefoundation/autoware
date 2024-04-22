@@ -65,6 +65,7 @@ ament_auto_add_library(pointcloud_preprocessor_filter SHARED
   src/downsample_filter/voxel_grid_downsample_filter_nodelet.cpp
   src/downsample_filter/random_downsample_filter_nodelet.cpp
   src/downsample_filter/approximate_downsample_filter_nodelet.cpp
+  src/downsample_filter/pickup_based_voxel_grid_downsample_filter.cpp
   src/outlier_filter/ring_outlier_filter_nodelet.cpp
   src/outlier_filter/voxel_grid_outlier_filter_nodelet.cpp
   src/outlier_filter/radius_search_2d_outlier_filter_nodelet.cpp
@@ -113,6 +114,11 @@ rclcpp_components_register_node(pointcloud_preprocessor_filter
 rclcpp_components_register_node(pointcloud_preprocessor_filter
   PLUGIN "pointcloud_preprocessor::VoxelGridDownsampleFilterComponent"
   EXECUTABLE voxel_grid_downsample_filter_node)
+
+# -- Pickup Based Voxel Grid Downsample Filter --
+rclcpp_components_register_node(pointcloud_preprocessor_filter
+  PLUGIN "pointcloud_preprocessor::PickupBasedVoxelGridDownsampleFilterComponent"
+  EXECUTABLE pickup_based_voxel_grid_downsample_filter_node)
 
 # -- Random Downsample Filter --
 rclcpp_components_register_node(pointcloud_preprocessor_filter
@@ -213,7 +219,6 @@ ament_auto_package(INSTALL_TO_SHARE
   launch
   config
 )
-
 
 if(BUILD_TESTING)
   add_ros_test(
