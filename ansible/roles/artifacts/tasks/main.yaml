@@ -150,7 +150,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/detection_class_remapper.param.yaml
     dest: "{{ data_dir }}/lidar_centerpoint/detection_class_remapper.param.yaml"
     mode: "644"
-    checksum: sha256:
+    checksum: sha256:5c5e8028a064cd47c62edeb39f2446ed
 - name: Download lidar_centerpoint/deploy_metadata.yaml
   become: true
   ansible.builtin.get_url:
