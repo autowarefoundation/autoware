@@ -46,7 +46,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/pointpainting/v4/detection_class_remapper.param.yaml
     dest: "{{ data_dir }}/image_projection_based_fusion/detection_class_remapper.param.yaml"
     mode: "644"
-    checksum: sha256:c711f8875ece9b527dfe31ffc75f8c0de2e77945ef67860a959a4e04c36772d5 
+    checksum: sha256:c711f8875ece9b527dfe31ffc75f8c0de2e77945ef67860a959a4e04c36772d5
 - name: Download image_projection_based_fusion/pointpainting_ml_package.param.yaml
   become: true
   ansible.builtin.get_url:
