@@ -46,14 +46,14 @@
     url: https://awf.ml.dev.web.auto/perception/models/pointpainting/v4/detection_class_remapper.param.yaml
     dest: "{{ data_dir }}/image_projection_based_fusion/detection_class_remapper.param.yaml"
     mode: "644"
-    checksum: sha256:5c5e8028a064cd47c62edeb39f2446ed
+    checksum: sha256:c711f8875ece9b527dfe31ffc75f8c0de2e77945ef67860a959a4e04c36772d5 
 - name: Download image_projection_based_fusion/pointpainting_ml_package.param.yaml
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/pointpainting/v4/pointpainting_ml_package.param.yaml
     dest: "{{ data_dir }}/image_projection_based_fusion/pointpainting_ml_package.param.yaml"
     mode: "644"
-    checksum: sha256:ee036b98e1f7a3403c23b34a4a907733
+    checksum: sha256:2a72f75ca4b49c6b88c0bd2f34c634173420d76a6925e6298d9ca5e012df3f32
 # lidar_apollo_instance_segmentation
 - name: Create lidar_apollo_instance_segmentation directory inside {{ data_dir }}
   ansible.builtin.file:
@@ -129,35 +129,35 @@
     url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/centerpoint_ml_package.param.yaml
     dest: "{{ data_dir }}/lidar_centerpoint/centerpoint_ml_package.param.yaml"
     mode: "644"
-    checksum: sha256:9871cf4f59126def03d5935ae5061a82
+    checksum: sha256:54b88fa0c1bbd6d611d1ec55e483d05bed7a4c0e15877c05eb7d9cf240246ab8
 - name: Download lidar_centerpoint/centerpoint_ml_package.param.yaml
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/centerpoint_tiny_ml_package.param.yaml
     dest: "{{ data_dir }}/lidar_centerpoint/centerpoint_tiny_ml_package.param.yaml"
     mode: "644"
-    checksum: sha256:8c59ce1aeed3d6e79d600fd17acfc020
+    checksum: sha256:6a40d2282b9c36cc547add7d016f315329c875b6f571dd5c612c6892fbaaabb5
 - name: Download lidar_centerpoint/centerpoint_sigma_ml_package.param.yaml
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/centerpoint_sigma_ml_package.param.yaml
     dest: "{{ data_dir }}/lidar_centerpoint/centerpoint_sigma_ml_package.param.yaml"
     mode: "644"
-    checksum: sha256:b82812155518099ebb133f4039e83d17
+    checksum: sha256:9946b342a6f457b19fdfe9f02041dbd3cf0b9cefe052663e04e241ec2b6e9c76
 - name: Download lidar_centerpoint/detection_class_remapper.param.yaml
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/detection_class_remapper.param.yaml
     dest: "{{ data_dir }}/lidar_centerpoint/detection_class_remapper.param.yaml"
     mode: "644"
-    checksum: sha256:5c5e8028a064cd47c62edeb39f2446ed
+    checksum: sha256:c711f8875ece9b527dfe31ffc75f8c0de2e77945ef67860a959a4e04c36772d5
 - name: Download lidar_centerpoint/deploy_metadata.yaml
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/deploy_metadata.yaml
     dest: "{{ data_dir }}/lidar_centerpoint/deploy_metadata.yaml"
     mode: "644"
-    checksum: sha256:0d6b759bd62067880fa46a0822f7d1d0
+    checksum: sha256:152536f053c3750b60d349800e1b983b418029d6dadf087614a00c661942a178
 # tensorrt_yolox
 - name: Create tensorrt_yolox directory inside {{ data_dir }}
   ansible.builtin.file:
