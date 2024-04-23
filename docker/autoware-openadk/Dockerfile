@@ -1,4 +1,4 @@
-# hadolint global ignore=DL3006,DL3008,DL3009,DL3015,DL3013,DL3027,DL3042
+# hadolint global ignore=DL3006,DL3008,DL3013
 ARG BASE_IMAGE
 
 FROM $BASE_IMAGE as base
@@ -6,7 +6,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
 # Install apt packages
-# hadolint ignore=DL3008
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
   git \
   ssh \
@@ -33,7 +32,7 @@ WORKDIR /autoware
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module base --runtime openadk \
   && pip uninstall -y ansible ansible-core \
-  && pip install vcstool \
+  && pip install --no-cache-dir vcstool \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
   && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
 
