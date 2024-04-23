@@ -81,7 +81,7 @@ AutowareScreenCapturePanel::AutowareScreenCapturePanel(QWidget * parent)
   state_ = State::WAITING_FOR_CAPTURE;
 }
 
-void AutowareScreenCapturePanel::onCaptureTrigger(
+void AutowareScreenCapturePanel::onCaptureVideoTrigger(
   [[maybe_unused]] const std_srvs::srv::Trigger::Request::SharedPtr req,
   const std_srvs::srv::Trigger::Response::SharedPtr res)
 {
@@ -90,12 +90,24 @@ void AutowareScreenCapturePanel::onCaptureTrigger(
   res->message = stateToString(state_);
 }
 
+void AutowareScreenCapturePanel::onCaptureScreenShotTrigger(
+  [[maybe_unused]] const std_srvs::srv::Trigger::Request::SharedPtr req,
+  const std_srvs::srv::Trigger::Response::SharedPtr res)
+{
+  onClickScreenCapture();
+  res->success = true;
+  res->message = stateToString(state_);
+}
+
 void AutowareScreenCapturePanel::onInitialize()
 {
   raw_node_ = this->getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
-  capture_service_ = raw_node_->create_service<std_srvs::srv::Trigger>(
-    "/debug/service/capture_screen",
-    std::bind(&AutowareScreenCapturePanel::onCaptureTrigger, this, _1, _2));
+  capture_video_srv_ = raw_node_->create_service<std_srvs::srv::Trigger>(
+    "/debug/capture/video",
+    std::bind(&AutowareScreenCapturePanel::onCaptureVideoTrigger, this, _1, _2));
+  capture_screen_shot_srv_ = raw_node_->create_service<std_srvs::srv::Trigger>(
+    "/debug/capture/screen_shot",
+    std::bind(&AutowareScreenCapturePanel::onCaptureScreenShotTrigger, this, _1, _2));
 }
 
 void onPrefixChanged()

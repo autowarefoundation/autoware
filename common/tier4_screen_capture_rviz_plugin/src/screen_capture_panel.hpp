@@ -60,7 +60,10 @@ public:
   void onTimer();
   void save(rviz_common::Config config) const override;
   void load(const rviz_common::Config & config) override;
-  void onCaptureTrigger(
+  void onCaptureVideoTrigger(
+    const std_srvs::srv::Trigger::Request::SharedPtr req,
+    const std_srvs::srv::Trigger::Response::SharedPtr res);
+  void onCaptureScreenShotTrigger(
     const std_srvs::srv::Trigger::Request::SharedPtr req,
     const std_srvs::srv::Trigger::Response::SharedPtr res);
 
@@ -98,7 +101,8 @@ private:
   }
 
 protected:
-  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr capture_service_;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr capture_video_srv_;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr capture_screen_shot_srv_;
   rclcpp::Node::SharedPtr raw_node_;
 };
 

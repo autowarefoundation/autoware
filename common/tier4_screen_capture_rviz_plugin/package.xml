@@ -5,6 +5,8 @@
   <version>0.0.0</version>
   <description>The screen capture package</description>
   <maintainer email="taiki.tanaka@tier4.jp">Taiki, Tanaka</maintainer>
+  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
+  <maintainer email="kyoichi.sugahara@tier4.jp">Kyoichi Sugahara</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
