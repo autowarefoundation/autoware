@@ -25,7 +25,7 @@
     allow_change_held_packages: true
     allow_downgrade: true
     update_cache: true
-  when: install_devel == 'true'
+  when: install_devel == 'y'
 
 # apt-mark hold
 - name: Prevent CUDA-related packages from upgrading
@@ -53,4 +53,4 @@
     - libnvinfer-headers-plugin-dev
     - libnvparsers-dev
     - libnvonnxparsers-dev
-  when: install_devel == 'true'
+  when: install_devel == 'y'
