@@ -141,7 +141,13 @@ public:
   virtual BehaviorModuleOutput run()
   {
     updateData();
-    return isWaitingApproval() ? planWaitingApproval() : plan();
+    const auto output = isWaitingApproval() ? planWaitingApproval() : plan();
+    try {
+      motion_utils::validateNonEmpty(output.path.points);
+    } catch (const std::exception & ex) {
+      throw std::invalid_argument("[" + name_ + "]" + ex.what());
+    }
+    return output;
   }
 
   /**
