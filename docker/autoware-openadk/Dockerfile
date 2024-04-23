@@ -49,6 +49,7 @@ ENV CCACHE_DIR="/var/tmp/ccache"
 ENV CC="/usr/lib/ccache/gcc"
 ENV CXX="/usr/lib/ccache/g++"
 
+# cspell: ignore libcu libnv
 # Set up development environment
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers openadk \
