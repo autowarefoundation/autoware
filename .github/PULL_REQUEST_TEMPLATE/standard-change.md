@@ -18,14 +18,14 @@
 
 <!-- Describe any changed interfaces, such as topics, services, or parameters. -->
 
-### ROS2 Topic Changes
+### ROS Topic Changes
 
 <!-- | Topic Name       | Type                | Direction | Update Description                                            | -->
 <!-- | ---------------- | ------------------- | --------- | ------------------------------------------------------------- | -->
 <!-- | `/example_topic` | `std_msgs/String`   | Subscribe | Description of what the topic is used for in the system       | -->
-<!-- | `/another_topic` | `sensor_msgs/Image` | Publish   | Also explain if it is added / modified /deleleted with the PR | -->
+<!-- | `/another_topic` | `sensor_msgs/Image` | Publish   | Also explain if it is added / modified / deleted with the PR | -->
 
-### ROS2 Parameter Changes
+### ROS Parameter Changes
 
 <!-- | Parameter Name       | Default Value | Update Description                                  | -->
 <!-- | -------------------- | ------------- | --------------------------------------------------- | -->
