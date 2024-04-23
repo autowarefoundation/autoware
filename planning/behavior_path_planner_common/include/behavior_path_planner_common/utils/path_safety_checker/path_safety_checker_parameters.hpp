@@ -31,6 +31,7 @@
 namespace behavior_path_planner::utils::path_safety_checker
 {
 
+using autoware_auto_perception_msgs::msg::PredictedObject;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using tier4_autoware_utils::Polygon2d;
@@ -79,6 +80,17 @@ struct ExtendedPredictedObject
   autoware_auto_perception_msgs::msg::Shape shape;
   std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classification;
   std::vector<PredictedPathWithPolygon> predicted_paths;
+
+  ExtendedPredictedObject() = default;
+  explicit ExtendedPredictedObject(const PredictedObject & object)
+  : uuid(object.object_id),
+    initial_pose(object.kinematics.initial_pose_with_covariance),
+    initial_twist(object.kinematics.initial_twist_with_covariance),
+    initial_acceleration(object.kinematics.initial_acceleration_with_covariance),
+    shape(object.shape),
+    classification(object.classification)
+  {
+  }
 };
 using ExtendedPredictedObjects = std::vector<ExtendedPredictedObject>;
 

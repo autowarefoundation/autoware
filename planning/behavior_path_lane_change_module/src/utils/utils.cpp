@@ -1112,12 +1112,7 @@ ExtendedPredictedObject transform(
   [[maybe_unused]] const BehaviorPathPlannerParameters & common_parameters,
   const LaneChangeParameters & lane_change_parameters, const bool check_at_prepare_phase)
 {
-  ExtendedPredictedObject extended_object;
-  extended_object.uuid = object.object_id;
-  extended_object.initial_pose = object.kinematics.initial_pose_with_covariance;
-  extended_object.initial_twist = object.kinematics.initial_twist_with_covariance;
-  extended_object.initial_acceleration = object.kinematics.initial_acceleration_with_covariance;
-  extended_object.shape = object.shape;
+  ExtendedPredictedObject extended_object(object);
 
   const auto & time_resolution = lane_change_parameters.prediction_time_resolution;
   const auto & prepare_duration = lane_change_parameters.lane_change_prepare_duration;

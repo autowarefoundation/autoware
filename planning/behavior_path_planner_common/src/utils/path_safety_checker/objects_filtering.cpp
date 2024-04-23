@@ -289,13 +289,7 @@ ExtendedPredictedObject transform(
   const PredictedObject & object, const double safety_check_time_horizon,
   const double safety_check_time_resolution)
 {
-  ExtendedPredictedObject extended_object;
-  extended_object.uuid = object.object_id;
-  extended_object.initial_pose = object.kinematics.initial_pose_with_covariance;
-  extended_object.initial_twist = object.kinematics.initial_twist_with_covariance;
-  extended_object.initial_acceleration = object.kinematics.initial_acceleration_with_covariance;
-  extended_object.shape = object.shape;
-  extended_object.classification = object.classification;
+  ExtendedPredictedObject extended_object(object);
 
   const auto obj_velocity = extended_object.initial_twist.twist.linear.x;
 
