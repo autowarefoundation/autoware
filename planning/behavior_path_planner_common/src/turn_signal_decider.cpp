@@ -136,6 +136,12 @@ std::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo(
   const size_t current_seg_idx, const RouteHandler & route_handler,
   const double nearest_dist_threshold, const double nearest_yaw_threshold)
 {
+  const auto requires_turn_signal = [&](const auto & lane_attribute) {
+    constexpr double stop_velocity_threshold = 0.1;
+    return (
+      lane_attribute == "right" || lane_attribute == "left" ||
+      (lane_attribute == "straight" && current_vel < stop_velocity_threshold));
+  };
   // base search distance
   const double base_search_distance =
     intersection_search_time_ * current_vel + intersection_search_distance_;
@@ -164,25 +170,18 @@ std::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo(
     if (processed_lanes.find(lane_id) != processed_lanes.end()) continue;
     auto current_lane = route_handler.getLaneletsFromId(lane_id);
     lanelet::ConstLanelets combined_lane_elems{};
-    while (rclcpp::ok()) {
+    // Get the lane and its attribute
+    const std::string lane_attribute =
+      current_lane.attributeOr("turn_direction", std::string("none"));
+    if (!requires_turn_signal(lane_attribute)) continue;
+
+    do {
       processed_lanes.insert(current_lane.id());
       combined_lane_elems.push_back(current_lane);
-
-      // Get the lane and its attribute
-      const std::string lane_attribute =
-        current_lane.attributeOr("turn_direction", std::string("none"));
-
-      // check next lane has the same attribute
       lanelet::ConstLanelet next_lane{};
-      if (!route_handler.getNextLaneletWithinRoute(current_lane, &next_lane)) {
-        break;
-      }
-      if (next_lane.attributeOr("turn_direction", std::string("none")) != lane_attribute) {
-        break;
-      }
-
       current_lane = next_lane;
-    }
+    } while (route_handler.getNextLaneletWithinRoute(current_lane, &current_lane) &&
+             current_lane.attributeOr("turn_direction", std::string("none")) == lane_attribute);
 
     if (!combined_lane_elems.empty()) {
       // store combined lane and its front lane
@@ -254,28 +253,22 @@ std::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo(
         desired_start_point_map_.erase(lane_id);
       }
       continue;
-    } else if (search_distance < dist_to_front_point) {
+    } else if (search_distance <= dist_to_front_point) {
       continue;
     }
-
-    constexpr double stop_velocity_threshold = 0.1;
-    if (dist_to_front_point < search_distance) {
-      if (
-        lane_attribute == "right" || lane_attribute == "left" ||
-        (lane_attribute == "straight" && current_vel < stop_velocity_threshold)) {
-        // update map if necessary
-        if (desired_start_point_map_.find(lane_id) == desired_start_point_map_.end()) {
-          desired_start_point_map_.emplace(lane_id, current_pose);
-        }
-
-        TurnSignalInfo turn_signal_info{};
-        turn_signal_info.desired_start_point = desired_start_point_map_.at(lane_id);
-        turn_signal_info.required_start_point = lane_front_pose;
-        turn_signal_info.required_end_point = get_required_end_point(combined_lane.centerline3d());
-        turn_signal_info.desired_end_point = lane_back_pose;
-        turn_signal_info.turn_signal.command = g_signal_map.at(lane_attribute);
-        signal_queue.push(turn_signal_info);
+    if (requires_turn_signal(lane_attribute)) {
+      // update map if necessary
+      if (desired_start_point_map_.find(lane_id) == desired_start_point_map_.end()) {
+        desired_start_point_map_.emplace(lane_id, current_pose);
       }
+
+      TurnSignalInfo turn_signal_info{};
+      turn_signal_info.desired_start_point = desired_start_point_map_.at(lane_id);
+      turn_signal_info.required_start_point = lane_front_pose;
+      turn_signal_info.required_end_point = get_required_end_point(combined_lane.centerline3d());
+      turn_signal_info.desired_end_point = lane_back_pose;
+      turn_signal_info.turn_signal.command = g_signal_map.at(lane_attribute);
+      signal_queue.push(turn_signal_info);
     }
   }
 
