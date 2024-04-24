@@ -39,22 +39,9 @@ RUN --mount=type=ssh \
 # Create entrypoint
 CMD ["/bin/bash"]
 
-FROM base as prebuilt
+FROM base as rosdep-installed
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
-ARG SETUP_ARGS
-ENV CCACHE_DIR="/var/tmp/ccache"
-ENV CC="/usr/lib/ccache/gcc"
-ENV CXX="/usr/lib/ccache/g++"
-
-# cspell: ignore libcu libnv
-# Set up development environment
-RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers openadk \
-  && pip uninstall -y ansible ansible-core \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
-  && find / -name 'libcu*.a' -delete \
-  && find / -name 'libnv*.a' -delete
 
 # Copy repository files
 COPY autoware.repos /autoware/
@@ -66,6 +53,24 @@ RUN --mount=type=ssh \
   && apt-get update \
   && rosdep update \
   && DEBIAN_FRONTEND=noninteractive rosdep install -y --ignore-src --from-paths src --rosdistro "$ROS_DISTRO" \
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+
+FROM rosdep-installed as prebuilt
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ARG SETUP_ARGS
+ENV CCACHE_DIR="/var/tmp/ccache"
+ENV CC="/usr/lib/ccache/gcc"
+ENV CXX="/usr/lib/ccache/g++"
+
+# cspell: ignore libcu libnv
+# Set up development environment and build release binaries
+RUN --mount=type=ssh \
+  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers openadk \
+  && pip uninstall -y ansible ansible-core \
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
+  && find / -name 'libcu*.a' -delete \
+  && find / -name 'libnv*.a' -delete \
   && source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --cmake-args \
     " -Wno-dev" \
@@ -74,7 +79,6 @@ RUN --mount=type=ssh \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   && find /autoware/install -type d -exec chmod 777 {} \; \
   && chmod -R 777 /var/tmp/ccache \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
   && rm -rf /autoware/build /autoware/src
 
 CMD ["/bin/bash"]
@@ -94,22 +98,16 @@ RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base as runtime
+FROM rosdep-installed as runtime
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
 ARG SETUP_ARGS
 
 # Set up runtime environment and artifacts
-COPY autoware.repos /autoware/
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadk \
   && pip uninstall -y ansible ansible-core \
-  && mkdir src \
-  && vcs import src < autoware.repos \
-  && rosdep update \
-  && DEBIAN_FRONTEND=noninteractive rosdep install -y --dependency-types=exec --ignore-src --from-paths src --rosdistro "$ROS_DISTRO" \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
   && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
   && find / -name "*.o" -type f -delete \
   && find / -name "*.h" -type f -delete \

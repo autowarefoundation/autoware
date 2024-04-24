@@ -45,13 +45,13 @@
     - role: autoware.dev_env.rmw_implementation
     - role: autoware.dev_env.gdown
     - role: autoware.dev_env.build_tools
+    - role: autoware.dev_env.pacmod
+      when: rosdistro != 'rolling'
 
     # Autoware module dependencies
     - role: autoware.dev_env.geographiclib
     - role: autoware.dev_env.cuda
       when: prompt_install_nvidia == 'y'
-    - role: autoware.dev_env.pacmod
-      when: rosdistro != 'rolling'
     - role: autoware.dev_env.tensorrt
       when: prompt_install_nvidia == 'y'
 
