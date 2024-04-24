@@ -68,6 +68,7 @@ RUN --mount=type=ssh \
   && DEBIAN_FRONTEND=noninteractive rosdep install -y --ignore-src --from-paths src --rosdistro "$ROS_DISTRO" \
   && source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --cmake-args \
+    " -GNinja" \
     " -Wno-dev" \
     " --no-warn-unused-cli" \
     -DCMAKE_BUILD_TYPE=Release \
