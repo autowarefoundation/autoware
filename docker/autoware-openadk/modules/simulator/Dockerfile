@@ -6,21 +6,20 @@ ARG ROS_DISTRO
 
 COPY simulator.repos /autoware/
 COPY autoware.repos /autoware/
-COPY --from=ghcr.io/autowarefoundation/autoware:latest-prebuilt /autoware/install/ /autoware/install/
 
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module planning-control --no-cuda-drivers --runtime openadk \
-  && mkdir src \
+  mkdir src \
   && vcs import src < simulator.repos \
   && vcs import src/simulator/scenario_simulator/external < src/simulator/scenario_simulator/dependency_humble.repos \
   && apt-get update \
+  && apt-get install ros-humble-topic-tools ros-humble-diagnostics ros-humble-xacro -y \
   && rosdep update \
   && DEBIAN_FRONTEND=noninteractive rosdep install -y --rosdistro "$ROS_DISTRO" --from-paths src --ignore-src
 
 RUN --mount=type=ssh \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
-  && find /autoware/install -type d -exec chmod 777 {} \; \
+  && find /autoware/install -type d -exec chmod -R 777 {} \; \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
   && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
   && find / -name "*.o" -type f -delete \
