@@ -924,6 +924,8 @@ TEST_F(EvalTest, testYawRate_5)
   setTargetMetric("yaw_rate_CAR");
 
   const double yaw_rate = 5.0;
+  const double yaw_rate_flip_fixed =
+    std::min(yaw_rate, (M_PI - yaw_rate * time_step_) / time_step_);
 
   for (double time = 0; time <= time_delay_ + 0.01; time += time_step_) {
     const auto objects = rotateObjects(
@@ -936,7 +938,7 @@ TEST_F(EvalTest, testYawRate_5)
     const auto objects = rotateObjects(
       makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), yaw_rate * time);
     publishEgoTF(time);
-    EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
+    EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate_flip_fixed, epsilon);
   }
 }
 
@@ -946,6 +948,8 @@ TEST_F(EvalTest, testYawRate_minus_5)
   setTargetMetric("yaw_rate_CAR");
 
   const double yaw_rate = 5.0;
+  const double yaw_rate_flip_fixed =
+    std::min(yaw_rate, (M_PI - yaw_rate * time_step_) / time_step_);
 
   for (double time = 0; time <= time_delay_ + 0.01; time += time_step_) {
     const auto objects = rotateObjects(
@@ -958,7 +962,7 @@ TEST_F(EvalTest, testYawRate_minus_5)
     const auto objects = rotateObjects(
       makeStraightPredictedObjects(time, ObjectClassification::CAR, 0.0), -yaw_rate * time);
     publishEgoTF(time);
-    EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate, epsilon);
+    EXPECT_NEAR(publishObjectsAndGetMetric(objects), yaw_rate_flip_fixed, epsilon);
   }
 }
 // ==========================================================================================
