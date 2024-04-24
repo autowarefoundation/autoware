@@ -15,6 +15,9 @@ The evaluated metrics are as follows:
 - lateral_deviation
 - yaw_deviation
 - yaw_rate
+- total_objects_count
+- average_objects_count
+- interval_objects_count
 
 ### Predicted Path Deviation / Predicted Path Deviation Variance
 
@@ -89,6 +92,67 @@ Calculates the yaw rate of an object based on the change in yaw angle from the p
 
 ![yaw_rate](./images/yaw_rate.drawio.svg)
 
+### Object Counts
+
+Counts the number of detections for each object class within the specified detection range. These metrics are measured for the most recent object not past objects.
+
+![detection_counts](./images/detection_counts.drawio.svg)
+
+In the provided illustration, the range $R$ is determined by a combination of lists of radii (e.g., $r_1, r_2, \ldots$) and heights (e.g., $h_1, h_2, \ldots$).
+For example,
+
+- the number of CAR in range $R = (r_1, h_1)$ equals 1
+- the number of CAR in range $R = (r_1, h_2)$ equals 2
+- the number of CAR in range $R = (r_2, h_1)$ equals 3
+- the number of CAR in range $R = (r_2, h_2)$ equals 4
+
+#### Total Object Count
+
+Counts the number of unique objects for each class within the specified detection range. The total object count is calculated as follows:
+
+$$
+\begin{align}
+\text{Total Object Count (Class, Range)} = \left| \bigcup_{t=0}^{T_{\text{now}}} \{ \text{uuid} \mid \text{class}(t, \text{uuid}) = C \wedge \text{position}(t, \text{uuid}) \in R \} \right|
+\end{align}
+$$
+
+where:
+
+- $\bigcup$ represents the union across all frames from $t = 0$ to $T_{\text{now}}$, which ensures that each uuid is counted only once.
+- $\text{class}(t, \text{uuid}) = C$ specifies that the object with uuid at time $t$ belongs to class $C$.
+- $\text{position}(t, \text{uuid}) \in R$ indicates that the object with uuid at time $t$ is within the specified range $R$.
+- $\left| \{ \ldots \} \right|$ denotes the cardinality of the set, which counts the number of unique uuids that meet the class and range criteria across all considered times.
+
+#### Average Object Count
+
+Counts the average number of objects for each class within the specified detection range. This metric measures how many objects were detected in one frame, without considering uuids. The average object count is calculated as follows:
+
+$$
+\begin{align}
+\text{Average Object Count (Class, Range)} = \frac{1}{N} \sum_{t=0}^{T_{\text{now}}} \left| \{ \text{object} \mid \text{class}(t, \text{object}) = C \wedge \text{position}(t, \text{object}) \in R \} \right|
+\end{align}
+$$
+
+where:
+
+- $N$ represents the total number of frames within the time period time to $T\_{\text{now}}$ (it is precisely `detection_count_purge_seconds`)
+- $text{object}$ denotes the number of objects that meet the class and range criteria at time $t$.
+
+#### Interval Object Count
+
+Counts the average number of objects for each class within the specified detection range over the last `objects_count_window_seconds`. This metric measures how many objects were detected in one frame, without considering uuids. The interval object count is calculated as follows:
+
+$$
+\begin{align}
+\text{Interval Object Count (Class, Range)} = \frac{1}{W} \sum_{t=T_{\text{now}} - T_W}^{T_{\text{now}}} \left| \{ \text{object} \mid \text{class}(t, \text{object}) = C \wedge \text{position}(t, \text{object}) \in R \} \right|
+\end{align}
+$$
+
+where:
+
+- $W$ represents the total number of frames within the last `objects_count_window_seconds`.
+- $T_W$ represents the time window `objects_count_window_seconds`
+
 ## Inputs / Outputs
 
 | Name              | Type                                                   | Description                                       |
@@ -99,14 +163,24 @@ Calculates the yaw rate of an object based on the change in yaw angle from the p
 
 ## Parameters
 
-| Name                              | Type         | Description                                                                                      |
-| --------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ |
-| `selected_metrics`                | List         | Metrics to be evaluated, such as lateral deviation, yaw deviation, and predicted path deviation. |
-| `smoothing_window_size`           | Integer      | Determines the window size for smoothing path, should be an odd number.                          |
-| `prediction_time_horizons`        | list[double] | Time horizons for prediction evaluation in seconds.                                              |
-| `stopped_velocity_threshold`      | double       | threshold velocity to check if vehicle is stopped                                                |
-| `target_object.*.check_deviation` | bool         | Whether to check deviation for specific object types (car, truck, etc.).                         |
-| `debug_marker.*`                  | bool         | Debugging parameters for marker visualization (history path, predicted path, etc.).              |
+| Name                                                   | Type         | Description                                                                                                                                     |
+| ------------------------------------------------------ | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `selected_metrics`                                     | List         | Metrics to be evaluated, such as lateral deviation, yaw deviation, and predicted path deviation.                                                |
+| `smoothing_window_size`                                | Integer      | Determines the window size for smoothing path, should be an odd number.                                                                         |
+| `prediction_time_horizons`                             | list[double] | Time horizons for prediction evaluation in seconds.                                                                                             |
+| `stopped_velocity_threshold`                           | double       | threshold velocity to check if vehicle is stopped                                                                                               |
+| `detection_radius_list`                                | list[double] | Detection radius for objects to be evaluated.(used for objects count only)                                                                      |
+| `detection_height_list`                                | list[double] | Detection height for objects to be evaluated. (used for objects count only)                                                                     |
+| `detection_count_purge_seconds`                        | double       | Time window for purging object detection counts.                                                                                                |
+| `objects_count_window_seconds`                         | double       | Time window for keeping object detection counts. The number of object detections within this time window is stored in `detection_count_vector_` |
+| `target_object.*.check_lateral_deviation`              | bool         | Whether to check lateral deviation for specific object types (car, truck, etc.).                                                                |
+| `target_object.*.check_yaw_deviation`                  | bool         | Whether to check yaw deviation for specific object types (car, truck, etc.).                                                                    |
+| `target_object.*.check_predicted_path_deviation`       | bool         | Whether to check predicted path deviation for specific object types (car, truck, etc.).                                                         |
+| `target_object.*.check_yaw_rate`                       | bool         | Whether to check yaw rate for specific object types (car, truck, etc.).                                                                         |
+| `target_object.*.check_total_objects_count`            | bool         | Whether to check total object count for specific object types (car, truck, etc.).                                                               |
+| `target_object.*.check_average_objects_count`          | bool         | Whether to check average object count for specific object types (car, truck, etc.).                                                             |
+| `target_object.*.check_interval_average_objects_count` | bool         | Whether to check interval average object count for specific object types (car, truck, etc.).                                                    |
+| `debug_marker.*`                                       | bool         | Debugging parameters for marker visualization (history path, predicted path, etc.).                                                             |
 
 ## Assumptions / Known limits
 

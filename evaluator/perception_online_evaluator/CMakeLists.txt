@@ -12,6 +12,7 @@ ament_auto_add_library(${PROJECT_NAME}_node SHARED
   src/metrics_calculator.cpp
   src/${PROJECT_NAME}_node.cpp
   src/metrics/deviation_metrics.cpp
+  src/metrics/detection_count.cpp
   src/utils/marker_utils.cpp
   src/utils/objects_filtering.cpp
 )
@@ -31,7 +32,7 @@ target_link_libraries(${PROJECT_NAME}_node glog::glog)
 if(BUILD_TESTING)
   ament_add_ros_isolated_gtest(test_${PROJECT_NAME}
     test/test_perception_online_evaluator_node.cpp
-    TIMEOUT 180
+    TIMEOUT 300
   )
   target_link_libraries(test_${PROJECT_NAME}
     ${PROJECT_NAME}_node

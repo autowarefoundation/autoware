@@ -5,6 +5,7 @@
       - yaw_deviation
       - predicted_path_deviation
       - yaw_rate
+      - objects_count
 
     # this should be an odd number, because it includes the target point
     smoothing_window_size: 11
@@ -12,24 +13,75 @@
     prediction_time_horizons: [1.0, 2.0, 3.0, 5.0]
 
     stopped_velocity_threshold: 1.0
-
+    detection_radius_list: [50.0, 100.0, 150.0, 200.0]
+    detection_height_list: [10.0]
+    detection_count_purge_seconds: 36000.0
+    objects_count_window_seconds: 1.0
     target_object:
       car:
-        check_deviation: true
+        check_lateral_deviation: true
+        check_yaw_deviation: true
+        check_predicted_path_deviation: true
+        check_yaw_rate: true
+        check_total_objects_count: true
+        check_average_objects_count: false
+        check_interval_average_objects_count: false
       truck:
-        check_deviation: true
+        check_lateral_deviation: true
+        check_yaw_deviation: true
+        check_predicted_path_deviation: true
+        check_yaw_rate: true
+        check_total_objects_count: true
+        check_average_objects_count: false
+        check_interval_average_objects_count: false
       bus:
-        check_deviation: true
+        check_lateral_deviation: true
+        check_yaw_deviation: true
+        check_predicted_path_deviation: true
+        check_yaw_rate: true
+        check_total_objects_count: true
+        check_average_objects_count: false
+        check_interval_average_objects_count: false
       trailer:
-        check_deviation: true
+        check_lateral_deviation: true
+        check_yaw_deviation: true
+        check_predicted_path_deviation: true
+        check_yaw_rate: true
+        check_total_objects_count: true
+        check_average_objects_count: false
+        check_interval_average_objects_count: false
       bicycle:
-        check_deviation: true
+        check_lateral_deviation: true
+        check_yaw_deviation: true
+        check_predicted_path_deviation: true
+        check_yaw_rate: true
+        check_total_objects_count: true
+        check_average_objects_count: false
+        check_interval_average_objects_count: false
       motorcycle:
-        check_deviation: true
+        check_lateral_deviation: true
+        check_yaw_deviation: true
+        check_predicted_path_deviation: true
+        check_yaw_rate: true
+        check_total_objects_count: true
+        check_average_objects_count: false
+        check_interval_average_objects_count: false
       pedestrian:
-        check_deviation: true
+        check_lateral_deviation: true
+        check_yaw_deviation: true
+        check_predicted_path_deviation: true
+        check_yaw_rate: true
+        check_total_objects_count: true
+        check_average_objects_count: false
+        check_interval_average_objects_count: false
       unknown:
-        check_deviation: false
+        check_lateral_deviation: false
+        check_yaw_deviation: false
+        check_predicted_path_deviation: false
+        check_yaw_rate: false
+        check_total_objects_count: true
+        check_average_objects_count: true
+        check_interval_average_objects_count: true
 
     debug_marker:
       history_path: false

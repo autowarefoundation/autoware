@@ -40,6 +40,7 @@ using autoware_auto_perception_msgs::msg::PredictedObjects;
 using diagnostic_msgs::msg::DiagnosticArray;
 using diagnostic_msgs::msg::DiagnosticStatus;
 using nav_msgs::msg::Odometry;
+using TFMessage = tf2_msgs::msg::TFMessage;
 
 using MarkerArray = visualization_msgs::msg::MarkerArray;
 

@@ -15,6 +15,7 @@
 #include "perception_online_evaluator/metrics_calculator.hpp"
 
 #include "motion_utils/trajectory/trajectory.hpp"
+#include "object_recognition_utils/object_classification.hpp"
 #include "object_recognition_utils/object_recognition_utils.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
@@ -23,41 +24,59 @@
 namespace perception_diagnostics
 {
 using object_recognition_utils::convertLabelToString;
+using tier4_autoware_utils::inverseTransformPoint;
 
 std::optional<MetricStatMap> MetricsCalculator::calculate(const Metric & metric) const
 {
-  if (object_map_.empty()) {
-    return {};
+  // clang-format off
+  const bool use_past_objects = metric == Metric::lateral_deviation        ||
+                                metric == Metric::yaw_deviation            ||
+                                metric == Metric::predicted_path_deviation ||
+                                metric == Metric::yaw_rate;
+  // clang-format on
+
+  // todo(kosuke55): todo separate function and add timestamp of checked objects to diagnostics
+  if (use_past_objects) {
+    if (object_map_.empty()) {
+      return {};
+    }
+    // time delay is max element of parameters_->prediction_time_horizons
+    const double time_delay = getTimeDelay();
+    const auto target_stamp = current_stamp_ - rclcpp::Duration::from_seconds(time_delay);
+    if (!hasPassedTime(target_stamp)) {
+      return {};
+    }
+    const auto target_stamp_objects = getObjectsByStamp(target_stamp);
+
+    // extract moving objects
+    const auto moving_objects = filterObjectsByVelocity(
+      target_stamp_objects, parameters_->stopped_velocity_threshold,
+      /*remove_above_threshold=*/false);
+    const auto class_moving_objects_map = separateObjectsByClass(moving_objects);
+
+    // extract stopped objects
+    const auto stopped_objects =
+      filterObjectsByVelocity(target_stamp_objects, parameters_->stopped_velocity_threshold);
+    const auto class_stopped_objects_map = separateObjectsByClass(stopped_objects);
+
+    switch (metric) {
+      case Metric::lateral_deviation:
+        return calcLateralDeviationMetrics(class_moving_objects_map);
+      case Metric::yaw_deviation:
+        return calcYawDeviationMetrics(class_moving_objects_map);
+      case Metric::predicted_path_deviation:
+        return calcPredictedPathDeviationMetrics(class_moving_objects_map);
+      case Metric::yaw_rate:
+        return calcYawRateMetrics(class_stopped_objects_map);
+      default:
+        return {};
+    }
   }
 
-  // time delay is max element of parameters_->prediction_time_horizons
-  const double time_delay = getTimeDelay();
-  const auto target_stamp = current_stamp_ - rclcpp::Duration::from_seconds(time_delay);
-  if (!hasPassedTime(target_stamp)) {
-    return {};
-  }
-  const auto target_stamp_objects = getObjectsByStamp(target_stamp);
-
-  // extract moving objects
-  const auto moving_objects = filterObjectsByVelocity(
-    target_stamp_objects, parameters_->stopped_velocity_threshold,
-    /*remove_above_threshold=*/false);
-  const auto class_moving_objects_map = separateObjectsByClass(moving_objects);
-
-  // extract stopped objects
-  const auto stopped_objects =
-    filterObjectsByVelocity(target_stamp_objects, parameters_->stopped_velocity_threshold);
-  const auto class_stopped_objects_map = separateObjectsByClass(stopped_objects);
-
+  // use latest objects
   switch (metric) {
-    case Metric::lateral_deviation:
-      return calcLateralDeviationMetrics(class_moving_objects_map);
-    case Metric::yaw_deviation:
-      return calcYawDeviationMetrics(class_moving_objects_map);
-    case Metric::predicted_path_deviation:
-      return calcPredictedPathDeviationMetrics(class_moving_objects_map);
-    case Metric::yaw_rate:
-      return calcYawRateMetrics(class_stopped_objects_map);
+    case Metric::objects_count:
+      return calcObjectsCountMetrics();
     default:
       return {};
   }
@@ -211,6 +230,11 @@ MetricStatMap MetricsCalculator::calcLateralDeviationMetrics(
 {
   MetricStatMap metric_stat_map{};
   for (const auto & [label, objects] : class_objects_map) {
+    if (
+      parameters_->object_parameters.find(label) == parameters_->object_parameters.end() ||
+      !parameters_->object_parameters.at(label).check_lateral_deviation) {
+      continue;
+    }
     Stat<double> stat{};
     const auto stamp = rclcpp::Time(objects.header.stamp);
     for (const auto & object : objects.objects) {
@@ -235,6 +259,11 @@ MetricStatMap MetricsCalculator::calcYawDeviationMetrics(
 {
   MetricStatMap metric_stat_map{};
   for (const auto & [label, objects] : class_objects_map) {
+    if (
+      parameters_->object_parameters.find(label) == parameters_->object_parameters.end() ||
+      !parameters_->object_parameters.at(label).check_yaw_deviation) {
+      continue;
+    }
     Stat<double> stat{};
     const auto stamp = rclcpp::Time(objects.header.stamp);
     for (const auto & object : objects.objects) {
@@ -261,6 +290,11 @@ MetricStatMap MetricsCalculator::calcPredictedPathDeviationMetrics(
 
   MetricStatMap metric_stat_map{};
   for (const auto & [label, objects] : class_objects_map) {
+    if (
+      parameters_->object_parameters.find(label) == parameters_->object_parameters.end() ||
+      !parameters_->object_parameters.at(label).check_predicted_path_deviation) {
+      continue;
+    }
     for (const double time_horizon : time_horizons) {
       const auto metrics = calcPredictedPathDeviationMetrics(objects, time_horizon);
       std::ostringstream stream;
@@ -385,7 +419,6 @@ MetricStatMap MetricsCalculator::calcYawRateMetrics(const ClassObjectsMap & clas
   // calculate yaw rate for each object
 
   MetricStatMap metric_stat_map{};
-
   for (const auto & [label, objects] : class_objects_map) {
     Stat<double> stat{};
     const auto stamp = rclcpp::Time(objects.header.stamp);
@@ -423,22 +456,58 @@ MetricStatMap MetricsCalculator::calcYawRateMetrics(const ClassObjectsMap & clas
   return metric_stat_map;
 }
 
-void MetricsCalculator::setPredictedObjects(const PredictedObjects & objects)
+MetricStatMap MetricsCalculator::calcObjectsCountMetrics() const
+{
+  MetricStatMap metric_stat_map;
+  // calculate the average number of objects in the detection area in all past frames
+  const auto overall_average_count = detection_counter_.getOverallAverageCount();
+  for (const auto & [label, range_and_count] : overall_average_count) {
+    for (const auto & [range, count] : range_and_count) {
+      metric_stat_map["average_objects_count_" + convertLabelToString(label) + "_" + range].add(
+        count);
+    }
+  }
+  // calculate the average number of objects in the detection area in the past
+  // `objects_count_window_seconds`
+  const auto average_count =
+    detection_counter_.getAverageCount(parameters_->objects_count_window_seconds);
+  for (const auto & [label, range_and_count] : average_count) {
+    for (const auto & [range, count] : range_and_count) {
+      metric_stat_map["interval_average_objects_count_" + convertLabelToString(label) + "_" + range]
+        .add(count);
+    }
+  }
+
+  // calculate the total number of objects in the detection area
+  const auto total_count = detection_counter_.getTotalCount();
+  for (const auto & [label, range_and_count] : total_count) {
+    for (const auto & [range, count] : range_and_count) {
+      metric_stat_map["total_objects_count_" + convertLabelToString(label) + "_" + range].add(
+        count);
+    }
+  }
+
+  return metric_stat_map;
+}
+
+void MetricsCalculator::setPredictedObjects(
+  const PredictedObjects & objects, const tf2_ros::Buffer & tf_buffer)
 {
   current_stamp_ = objects.header.stamp;
 
   // store objects to check deviation
   {
-    auto deviation_check_objects = objects;
-    filterDeviationCheckObjects(deviation_check_objects, parameters_->object_parameters);
     using tier4_autoware_utils::toHexString;
-    for (const auto & object : deviation_check_objects.objects) {
+    for (const auto & object : objects.objects) {
       std::string uuid = toHexString(object.object_id);
       updateObjects(uuid, current_stamp_, object);
     }
     deleteOldObjects(current_stamp_);
     updateHistoryPath();
   }
+
+  // store objects to calculate object count
+  detection_counter_.addObjects(objects, tf_buffer);
 }
 
 void MetricsCalculator::deleteOldObjects(const rclcpp::Time stamp)

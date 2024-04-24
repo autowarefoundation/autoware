@@ -15,21 +15,27 @@
 #ifndef PERCEPTION_ONLINE_EVALUATOR__METRICS_CALCULATOR_HPP_
 #define PERCEPTION_ONLINE_EVALUATOR__METRICS_CALCULATOR_HPP_
 
+#include "perception_online_evaluator/metrics/detection_count.hpp"
 #include "perception_online_evaluator/metrics/deviation_metrics.hpp"
 #include "perception_online_evaluator/metrics/metric.hpp"
 #include "perception_online_evaluator/parameters.hpp"
 #include "perception_online_evaluator/stat.hpp"
 #include "perception_online_evaluator/utils/objects_filtering.hpp"
+#include "tf2_ros/buffer.h"
 
 #include <rclcpp/time.hpp>
 
+#include "autoware_auto_perception_msgs/msg/object_classification.hpp"
 #include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <optional>
+#include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -39,6 +45,7 @@ using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
+using metrics::DetectionCounter;
 using unique_identifier_msgs::msg::UUID;
 
 struct ObjectData
@@ -80,7 +87,9 @@ class MetricsCalculator
 {
 public:
   explicit MetricsCalculator(const std::shared_ptr<Parameters> & parameters)
-  : parameters_(parameters){};
+  : parameters_(parameters), detection_counter_(parameters)
+  {
+  }
 
   /**
    * @brief calculate
@@ -92,8 +101,11 @@ public:
   /**
    * @brief set the dynamic objects used to calculate obstacle metrics
    * @param [in] objects predicted objects
+   * @param [in] tf_buffer tf buffer
    */
-  void setPredictedObjects(const PredictedObjects & objects);
+  void setPredictedObjects(const PredictedObjects & objects, const tf2_ros::Buffer & tf_buffer);
+
+  void updateObjectsCountMap(const PredictedObjects & objects, const tf2_ros::Buffer & tf_buffer);
 
   HistoryPathMap getHistoryPathMap() const { return history_path_map_; }
   ObjectDataMap getDebugObjectData() const { return debug_target_object_; }
@@ -106,6 +118,8 @@ private:
   HistoryPathMap history_path_map_;
 
   rclcpp::Time current_stamp_;
+
+  DetectionCounter detection_counter_;
 
   // debug
   mutable ObjectDataMap debug_target_object_;
@@ -129,6 +143,7 @@ private:
   PredictedPathDeviationMetrics calcPredictedPathDeviationMetrics(
     const PredictedObjects & objects, const double time_horizon) const;
   MetricStatMap calcYawRateMetrics(const ClassObjectsMap & class_objects_map) const;
+  MetricStatMap calcObjectsCountMetrics() const;
 
   bool hasPassedTime(const rclcpp::Time stamp) const;
   bool hasPassedTime(const std::string uuid, const rclcpp::Time stamp) const;

@@ -27,43 +27,6 @@ bool velocity_filter(const PredictedObject & object, double velocity_threshold, 
 }
 }  // namespace filter
 
-ObjectTypesToCheck getDeviationCheckObjectTypes(
-  const std::unordered_map<uint8_t, ObjectParameter> & params)
-{
-  ObjectTypesToCheck object_types_to_check;
-  for (const auto & [object_class, object_param] : params) {
-    switch (object_class) {
-      case ObjectClassification::CAR:
-        object_types_to_check.check_car = object_param.check_deviation;
-        break;
-      case ObjectClassification::TRUCK:
-        object_types_to_check.check_truck = object_param.check_deviation;
-        break;
-      case ObjectClassification::BUS:
-        object_types_to_check.check_bus = object_param.check_deviation;
-        break;
-      case ObjectClassification::TRAILER:
-        object_types_to_check.check_trailer = object_param.check_deviation;
-        break;
-      case ObjectClassification::BICYCLE:
-        object_types_to_check.check_bicycle = object_param.check_deviation;
-        break;
-      case ObjectClassification::MOTORCYCLE:
-        object_types_to_check.check_motorcycle = object_param.check_deviation;
-        break;
-      case ObjectClassification::PEDESTRIAN:
-        object_types_to_check.check_pedestrian = object_param.check_deviation;
-        break;
-      case ObjectClassification::UNKNOWN:
-        object_types_to_check.check_unknown = object_param.check_deviation;
-        break;
-      default:
-        break;
-    }
-  }
-  return object_types_to_check;
-}
-
 std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & classification)
 {
   std::uint8_t label = ObjectClassification::UNKNOWN;
@@ -113,13 +76,6 @@ void filterObjectsByClass(
   };
 
   filterObjects(objects, filter);
-}
-
-void filterDeviationCheckObjects(
-  PredictedObjects & objects, const std::unordered_map<uint8_t, ObjectParameter> & params)
-{
-  const auto object_types = getDeviationCheckObjectTypes(params);
-  filterObjectsByClass(objects, object_types);
 }
 
 PredictedObjects filterObjectsByVelocity(
