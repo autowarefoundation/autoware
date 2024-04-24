@@ -2,4 +2,5 @@
   ros__parameters:
     fuse_unknown_only: true
     min_cluster_size: 2
+    max_cluster_size: 20
     cluster_2d_tolerance: 0.5

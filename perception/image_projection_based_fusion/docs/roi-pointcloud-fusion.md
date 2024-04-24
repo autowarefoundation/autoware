@@ -37,6 +37,7 @@ The node `roi_pointcloud_fusion` is to cluster the pointcloud based on Region Of
 | Name                   | Type   | Description                                                                                  |
 | ---------------------- | ------ | -------------------------------------------------------------------------------------------- |
 | `min_cluster_size`     | int    | the minimum number of points that a cluster needs to contain in order to be considered valid |
+| `max_cluster_size`     | int    | the maximum number of points that a cluster needs to contain in order to be considered valid |
 | `cluster_2d_tolerance` | double | cluster tolerance measured in radial direction                                               |
 | `rois_number`          | int    | the number of input rois                                                                     |
 

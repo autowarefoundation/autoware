@@ -35,6 +35,7 @@ RoiPointCloudFusionNode::RoiPointCloudFusionNode(const rclcpp::NodeOptions & opt
 {
   fuse_unknown_only_ = declare_parameter<bool>("fuse_unknown_only");
   min_cluster_size_ = declare_parameter<int>("min_cluster_size");
+  max_cluster_size_ = declare_parameter<int>("max_cluster_size");
   cluster_2d_tolerance_ = declare_parameter<double>("cluster_2d_tolerance");
   pub_objects_ptr_ =
     this->create_publisher<DetectedObjectsWithFeature>("output_clusters", rclcpp::QoS{1});
@@ -138,7 +139,9 @@ void RoiPointCloudFusionNode::fuseOnSingleImage(
       auto & feature_obj = output_objs.at(i);
       const auto & check_roi = feature_obj.feature.roi;
       auto & cluster = clusters.at(i);
-
+      if (cluster.points.size() >= static_cast<size_t>(max_cluster_size_)) {
+        continue;
+      }
       if (
         check_roi.x_offset <= normalized_projected_point.x() &&
         check_roi.y_offset <= normalized_projected_point.y() &&
@@ -152,7 +155,7 @@ void RoiPointCloudFusionNode::fuseOnSingleImage(
   // refine and update output_fused_objects_
   updateOutputFusedObjects(
     output_objs, clusters, input_pointcloud_msg.header, input_roi_msg.header, tf_buffer_,
-    min_cluster_size_, cluster_2d_tolerance_, output_fused_objects_);
+    min_cluster_size_, max_cluster_size_, cluster_2d_tolerance_, output_fused_objects_);
 }
 
 bool RoiPointCloudFusionNode::out_of_scope(__attribute__((unused))

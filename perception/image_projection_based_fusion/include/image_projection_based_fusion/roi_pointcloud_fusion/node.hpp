@@ -26,6 +26,7 @@ class RoiPointCloudFusionNode
 {
 private:
   int min_cluster_size_{1};
+  int max_cluster_size_{20};
   bool fuse_unknown_only_{true};
   double cluster_2d_tolerance_;
 

@@ -16,6 +16,11 @@
           "description": "The minimum number of points that a cluster must contain to be considered as valid.",
           "default": 2
         },
+        "max_cluster_size": {
+          "type": "integer",
+          "description": "The maximum number of points that a cluster must contain to be considered as valid.",
+          "default": 20
+        },
         "cluster_2d_tolerance": {
           "type": "number",
           "description": "A cluster tolerance measured in radial direction [m]",

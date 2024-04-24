@@ -83,8 +83,8 @@ PointCloud closest_cluster(
 void updateOutputFusedObjects(
   std::vector<DetectedObjectWithFeature> & output_objs, const std::vector<PointCloud> & clusters,
   const std_msgs::msg::Header & in_cloud_header, const std_msgs::msg::Header & in_roi_header,
-  const tf2_ros::Buffer & tf_buffer, const int min_cluster_size, const float cluster_2d_tolerance,
-  std::vector<DetectedObjectWithFeature> & output_fused_objects)
+  const tf2_ros::Buffer & tf_buffer, const int min_cluster_size, const int max_cluster_size,
+  const float cluster_2d_tolerance, std::vector<DetectedObjectWithFeature> & output_fused_objects)
 {
   if (output_objs.size() != clusters.size()) {
     return;
@@ -107,7 +107,9 @@ void updateOutputFusedObjects(
   for (std::size_t i = 0; i < output_objs.size(); ++i) {
     PointCloud cluster = clusters.at(i);
     auto & feature_obj = output_objs.at(i);
-    if (cluster.points.size() < std::size_t(min_cluster_size)) {
+    if (
+      cluster.points.size() < std::size_t(min_cluster_size) ||
+      cluster.points.size() >= std::size_t(max_cluster_size)) {
       continue;
     }
 
