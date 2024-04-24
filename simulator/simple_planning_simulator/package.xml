@@ -21,6 +21,7 @@
   <depend>geometry_msgs</depend>
   <depend>lanelet2_core</depend>
   <depend>lanelet2_extension</depend>
+  <depend>learning_based_vehicle_model</depend>
   <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>

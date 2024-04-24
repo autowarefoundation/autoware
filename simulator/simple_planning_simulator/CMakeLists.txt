@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.14)
 project(simple_planning_simulator)
 
 find_package(autoware_cmake REQUIRED)
+find_package(Python3 COMPONENTS Interpreter Development)
+find_package(learning_based_vehicle_model REQUIRED)
 autoware_package()
 
 # Component
@@ -14,15 +16,13 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/simple_planning_simulator/vehicle_model/sim_model_ideal_steer_acc.cpp
   src/simple_planning_simulator/vehicle_model/sim_model_ideal_steer_acc_geared.cpp
   src/simple_planning_simulator/vehicle_model/sim_model_delay_steer_vel.cpp
+  src/simple_planning_simulator/vehicle_model/sim_model_learned_steer_vel.cpp
   src/simple_planning_simulator/vehicle_model/sim_model_delay_steer_acc.cpp
   src/simple_planning_simulator/vehicle_model/sim_model_delay_steer_acc_geared.cpp
   src/simple_planning_simulator/vehicle_model/sim_model_delay_steer_map_acc_geared.cpp
   src/simple_planning_simulator/utils/csv_loader.cpp
 )
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
-
-target_compile_options(${PROJECT_NAME} PRIVATE -Wno-old-style-cast) # RCLCPP_ERROR_THROTTLE() has built-in old-style casts.
-
+target_include_directories(${PROJECT_NAME} PUBLIC ${Python3_INCLUDE_DIRS} ${learning_based_vehicle_model_INCLUDE_DIRS})
 # Node executable
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "simulation::simple_planning_simulator::SimplePlanningSimulator"

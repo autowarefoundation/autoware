@@ -63,28 +63,34 @@ The purpose of this simulator is for the integration test of planning and contro
 - `DELAY_STEER_ACC`
 - `DELAY_STEER_ACC_GEARED`
 - `DELAY_STEER_MAP_ACC_GEARED`: applies 1D dynamics and time delay to the steering and acceleration commands. The simulated acceleration is determined by a value converted through the provided acceleration map. This model is valuable for an accurate simulation with acceleration deviations in a real vehicle.
+- `LEARNED_STEER_VEL`: launches learned python models. More about this [here](../learning_based_vehicle_model).
 
 The `IDEAL` model moves ideally as commanded, while the `DELAY` model moves based on a 1st-order with time delay model. The `STEER` means the model receives the steer command. The `VEL` means the model receives the target velocity command, while the `ACC` model receives the target acceleration command. The `GEARED` suffix means that the motion will consider the gear command: the vehicle moves only one direction following the gear.
 
 The table below shows which models correspond to what parameters. The model names are written in abbreviated form (e.g. IDEAL_STEER_VEL = I_ST_V).
 
-| Name                       | Type   | Description                                                                                                 | I_ST_V | I_ST_A | I_ST_A_G | D_ST_V | D_ST_A | D_ST_A_G | D_ST_M_ACC_G | Default value | unit    |
-| :------------------------- | :----- | :---------------------------------------------------------------------------------------------------------- | :----- | :----- | :------- | :----- | :----- | :------- | :----------- | :------------ | :------ |
-| acc_time_delay             | double | dead time for the acceleration input                                                                        | x      | x      | x        | x      | o      | o        | o            | 0.1           | [s]     |
-| steer_time_delay           | double | dead time for the steering input                                                                            | x      | x      | x        | o      | o      | o        | o            | 0.24          | [s]     |
-| vel_time_delay             | double | dead time for the velocity input                                                                            | x      | x      | x        | o      | x      | x        | x            | 0.25          | [s]     |
-| acc_time_constant          | double | time constant of the 1st-order acceleration dynamics                                                        | x      | x      | x        | x      | o      | o        | o            | 0.1           | [s]     |
-| steer_time_constant        | double | time constant of the 1st-order steering dynamics                                                            | x      | x      | x        | o      | o      | o        | o            | 0.27          | [s]     |
-| steer_dead_band            | double | dead band for steering angle                                                                                | x      | x      | x        | o      | o      | o        | x            | 0.0           | [rad]   |
-| vel_time_constant          | double | time constant of the 1st-order velocity dynamics                                                            | x      | x      | x        | o      | x      | x        | x            | 0.5           | [s]     |
-| vel_lim                    | double | limit of velocity                                                                                           | x      | x      | x        | o      | o      | o        | o            | 50.0          | [m/s]   |
-| vel_rate_lim               | double | limit of acceleration                                                                                       | x      | x      | x        | o      | o      | o        | o            | 7.0           | [m/ss]  |
-| steer_lim                  | double | limit of steering angle                                                                                     | x      | x      | x        | o      | o      | o        | o            | 1.0           | [rad]   |
-| steer_rate_lim             | double | limit of steering angle change rate                                                                         | x      | x      | x        | o      | o      | o        | o            | 5.0           | [rad/s] |
-| steer_bias                 | double | bias for steering angle                                                                                     | x      | x      | x        | o      | o      | o        | o            | 0.0           | [rad]   |
-| debug_acc_scaling_factor   | double | scaling factor for accel command                                                                            | x      | x      | x        | x      | o      | o        | x            | 1.0           | [-]     |
-| debug_steer_scaling_factor | double | scaling factor for steer command                                                                            | x      | x      | x        | x      | o      | o        | x            | 1.0           | [-]     |
-| acceleration_map_path      | string | path to csv file for acceleration map which converts velocity and ideal acceleration to actual acceleration | x      | x      | x        | x      | x      | x        | o            | -             | [-]     |
+| Name                       | Type   | Description                                                                                                 | I_ST_V | I_ST_A | I_ST_A_G | D_ST_V | D_ST_A | D_ST_A_G | D_ST_M_ACC_G | L_S_V | Default value | unit    |
+| :------------------------- | :----- | :---------------------------------------------------------------------------------------------------------- | :----- | :----- | :------- | :----- | :----- | :------- | :----------- | :---- | :------------ | :------ |
+| acc_time_delay             | double | dead time for the acceleration input                                                                        | x      | x      | x        | x      | o      | o        | o            | x     | 0.1           | [s]     |
+| steer_time_delay           | double | dead time for the steering input                                                                            | x      | x      | x        | o      | o      | o        | o            | x     | 0.24          | [s]     |
+| vel_time_delay             | double | dead time for the velocity input                                                                            | x      | x      | x        | o      | x      | x        | x            | x     | 0.25          | [s]     |
+| acc_time_constant          | double | time constant of the 1st-order acceleration dynamics                                                        | x      | x      | x        | x      | o      | o        | o            | x     | 0.1           | [s]     |
+| steer_time_constant        | double | time constant of the 1st-order steering dynamics                                                            | x      | x      | x        | o      | o      | o        | o            | x     | 0.27          | [s]     |
+| steer_dead_band            | double | dead band for steering angle                                                                                | x      | x      | x        | o      | o      | o        | x            | x     | 0.0           | [rad]   |
+| vel_time_constant          | double | time constant of the 1st-order velocity dynamics                                                            | x      | x      | x        | o      | x      | x        | x            | x     | 0.5           | [s]     |
+| vel_lim                    | double | limit of velocity                                                                                           | x      | x      | x        | o      | o      | o        | o            | x     | 50.0          | [m/s]   |
+| vel_rate_lim               | double | limit of acceleration                                                                                       | x      | x      | x        | o      | o      | o        | o            | x     | 7.0           | [m/ss]  |
+| steer_lim                  | double | limit of steering angle                                                                                     | x      | x      | x        | o      | o      | o        | o            | x     | 1.0           | [rad]   |
+| steer_rate_lim             | double | limit of steering angle change rate                                                                         | x      | x      | x        | o      | o      | o        | o            | x     | 5.0           | [rad/s] |
+| steer_bias                 | double | bias for steering angle                                                                                     | x      | x      | x        | o      | o      | o        | o            | x     | 0.0           | [rad]   |
+| debug_acc_scaling_factor   | double | scaling factor for accel command                                                                            | x      | x      | x        | x      | o      | o        | x            | x     | 1.0           | [-]     |
+| debug_steer_scaling_factor | double | scaling factor for steer command                                                                            | x      | x      | x        | x      | o      | o        | x            | x     | 1.0           | [-]     |
+| acceleration_map_path      | string | path to csv file for acceleration map which converts velocity and ideal acceleration to actual acceleration | x      | x      | x        | x      | x      | x        | o            | x     | -             | [-]     |
+| model_module_paths         | string | path to a python module where the model is implemented                                                      | x      | x      | x        | x      | x      | x        | x            | o     | -             | [-]     |
+| model_param_paths          | string | path to the file where model parameters are stored (can be empty string if no parameter file is required)   | x      | x      | x        | x      | x      | x        | x            | o     | -             | [-]     |
+| model_class_names          | string | name of the class that implements the model                                                                 | x      | x      | x        | x      | x      | x        | x            | o     | -             | [-]     |
+
+_Note:_ Parameters `model_module_paths`, `model_param_paths`, and `model_class_names` need to have the same length.
 
 The `acceleration_map` is used only for `DELAY_STEER_MAP_ACC_GEARED` and it shows the acceleration command on the vertical axis and the current velocity on the horizontal axis, with each cell representing the converted acceleration command that is actually used in the simulator's motion calculation. Values in between are linearly interpolated.
 
@@ -118,6 +124,25 @@ default,  0.00,  1.39,  2.78,  4.17,  5.56,  6.94,  8.33,  9.72, 11.11, 12.50, 1
 <!-- deadzone_delta_steer | double | dead zone for the steering dynamics                  | x      | x      | x        | o      | o      | 0.0      | [rad]         |         | -->
 
 _Note_: The steering/velocity/acceleration dynamics is modeled by a first order system with a deadtime in a _delay_ model. The definition of the _time constant_ is the time it takes for the step response to rise up to 63% of its final value. The _deadtime_ is a delay in the response to a control input.
+
+### Example of LEARNED_STEER_VEL model
+
+We created a few basic models to showcase how `LEARNED_STEER_VEL` works.
+
+1. Install [a library](https://github.com/atomyks/control_analysis_pipeline/tree/v0.1_autoware) that contains basic Python models. (branch: `v0.1_autoware`)
+
+2. In a file `src/vehicle/sample_vehicle_launch/sample_vehicle_description/config/simulator_model.param.yaml` set `vehicle_model_type` to `LEARNED_STEER_VEL`. In the same file set the following parameters. These models are for testing and do not require any parameter file.
+
+```yaml
+model_module_paths:
+  [
+    "control_analysis_pipeline.autoware_models.vehicle.kinematic",
+    "control_analysis_pipeline.autoware_models.steering.steer_example",
+    "control_analysis_pipeline.autoware_models.drive.drive_example",
+  ]
+model_param_paths: ["", "", ""]
+model_class_names: ["KinematicModel", "SteerExample", "DriveExample"]
+```
 
 ### Default TF configuration
 
