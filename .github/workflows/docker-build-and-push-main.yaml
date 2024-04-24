@@ -1,8 +1,6 @@
 name: docker-build-and-push-main
 
 on:
-  schedule:
-    - cron: 0 0 1,15 * *
   workflow_dispatch:
 
 jobs:
@@ -12,9 +10,9 @@ jobs:
       fail-fast: false
       matrix:
         name:
-          - no-cuda
+          - no-nvidia
         include:
-          - name: no-cuda
+          - name: no-nvidia
             base_image_env: base_image
             setup-args: --no-nvidia
             additional-tag-suffix: ""
@@ -40,7 +38,6 @@ jobs:
             *.platform=linux/amd64
             *.args.ROS_DISTRO=${{ env.rosdistro }}
             *.args.BASE_IMAGE=${{ env[format('{0}', matrix.base_image_env)] }}
-            *.args.PREBUILT_BASE_IMAGE=${{ env.prebuilt_base_image }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
           tag-prefix: ${{ env.rosdistro }}-
           tag-suffix: ${{ matrix.additional-tag-suffix }}-amd64

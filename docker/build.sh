@@ -9,15 +9,12 @@ WORKSPACE_ROOT="$SCRIPT_DIR/../"
 args=()
 while [ "$1" != "" ]; do
     case "$1" in
-    --no-cuda)
-        option_no_cuda=true
+    --no-nvidia)
+        option_no_nvidia=true
         ;;
     --platform)
         option_platform="$2"
         shift
-        ;;
-    --no-prebuilt)
-        option_no_prebuilt=true
         ;;
     *)
         args+=("$1")
@@ -27,20 +24,12 @@ while [ "$1" != "" ]; do
 done
 
 # Set CUDA options
-if [ "$option_no_cuda" = "true" ]; then
+if [ "$option_no_nvidia" = "true" ]; then
     setup_args="--no-nvidia"
     image_name_suffix=""
 else
     setup_args="--no-cuda-drivers"
     image_name_suffix="-cuda"
-fi
-
-# Set prebuilt options
-if [ "$option_no_prebuilt" = "true" ]; then
-    targets=("devel")
-else
-    # default targets include devel and prebuilt
-    targets=()
 fi
 
 # Set platform
@@ -69,9 +58,8 @@ docker buildx bake --no-cache --load --progress=plain -f "$SCRIPT_DIR/autoware-u
     --set "*.platform=$platform" \
     --set "*.args.ROS_DISTRO=$rosdistro" \
     --set "*.args.BASE_IMAGE=$base_image" \
-    --set "*.args.PREBUILT_BASE_IMAGE=$prebuilt_base_image" \
     --set "*.args.SETUP_ARGS=$setup_args" \
-    --set "devel.tags=ghcr.io/automotiveaichallenge/autoware-universe:$rosdistro-latest$image_name_suffix" \
+    --set "devel.tags=ghcr.io/automotiveaichallenge/autoware-universe:$rosdistro-latest-devel$image_name_suffix" \
     --set "prebuilt.tags=ghcr.io/automotiveaichallenge/autoware-universe:$rosdistro-latest-prebuilt$image_name_suffix" \
-    "${targets[@]}"
+    --set "runtime.tags=ghcr.io/automotiveaichallenge/autoware-universe:$rosdistro-latest-runtime$image_name_suffix"
 set +x

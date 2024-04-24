@@ -27,56 +27,19 @@ runs:
         sudo apt-get -y install jq
       shell: bash
 
-    # workflow_dispatch: latest, date
-    # schedule: latest, date
-    # tag: semver
-    - name: Set Docker tags
-      id: set-docker-tags
-      run: |
-        tags=()
-        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          tags+=("latest")
-          tags+=("{{date 'YYYYMMDD'}}")
-        else
-          tags+=("type=schedule,pattern=latest")
-          tags+=("type=schedule,pattern={{date 'YYYYMMDD'}}")
-          tags+=("type=semver,pattern={{version}}")
-          tags+=("type=match,pattern=\d+.\d+")
-        fi
-
-        # Workaround for multiline strings
-        # https://github.community/t/set-output-truncates-multiline-strings/16852
-        tags_multiline=$(printf "%s\n" "${tags[@]}")
-        tags_multiline="${tags_multiline//'%'/'%25'}"
-        tags_multiline="${tags_multiline//$'\n'/'%0A'}"
-        tags_multiline="${tags_multiline//$'\r'/'%0D'}"
-
-        echo ::set-output name=tags::$tags_multiline
-      shell: bash
-
-    - name: Docker meta for devel
-      id: meta-devel
+    - name: Docker meta for runtime
+      id: meta-runtime
       uses: docker/metadata-action@v4
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
-        tags: ${{ steps.set-docker-tags.outputs.tags }}
-        bake-target: docker-metadata-action-devel
+        tags: |
+          type=raw,value=latest
+          type=raw,value={{date 'YYYYMMDD'}}
+        bake-target: docker-metadata-action-runtime
         flavor: |
           latest=false
           prefix=${{ inputs.tag-prefix }}
           suffix=${{ inputs.tag-suffix }}
-
-    - name: Docker meta for prebuilt
-      id: meta-prebuilt
-      uses: docker/metadata-action@v4
-      with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
-        tags: ${{ steps.set-docker-tags.outputs.tags }}
-        bake-target: docker-metadata-action-prebuilt
-        flavor: |
-          latest=false
-          prefix=${{ inputs.tag-prefix }}
-          suffix=-prebuilt${{ inputs.tag-suffix }}
 
     - name: Login to GitHub Container Registry
       if: ${{ github.event_name != 'pull_request' }}
@@ -93,7 +56,6 @@ runs:
         push: ${{ github.event_name == 'schedule' || github.ref_name == github.event.repository.default_branch || github.event_name == 'push'}}
         files: |
           docker/${{ inputs.bake-target }}/docker-bake.hcl
-          ${{ steps.meta-devel.outputs.bake-file }}
-          ${{ steps.meta-prebuilt.outputs.bake-file }}
+          ${{ steps.meta-runtime.outputs.bake-file }}
         set: |
           ${{ inputs.build-args }}
