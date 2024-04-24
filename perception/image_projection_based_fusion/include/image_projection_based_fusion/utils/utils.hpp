@@ -54,6 +54,12 @@ namespace image_projection_based_fusion
 {
 
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
+using PointCloud2 = sensor_msgs::msg::PointCloud2;
+struct PointData
+{
+  float distance;
+  size_t orig_index;
+};
 std::optional<geometry_msgs::msg::TransformStamped> getTransformStamped(
   const tf2_ros::Buffer & tf_buffer, const std::string & target_frame_id,
   const std::string & source_frame_id, const rclcpp::Time & time);
@@ -63,15 +69,16 @@ Eigen::Affine3d transformToEigen(const geometry_msgs::msg::Transform & t);
 void convertCluster2FeatureObject(
   const std_msgs::msg::Header & header, const PointCloud & cluster,
   DetectedObjectWithFeature & feature_obj);
-PointCloud closest_cluster(
-  PointCloud & cluster, const double cluster_2d_tolerance, const int min_cluster_size,
-  const pcl::PointXYZ & center);
+void closest_cluster(
+  const PointCloud2 & cluster, const double cluster_2d_tolerance, const int min_cluster_size,
+  const pcl::PointXYZ & center, PointCloud2 & out_cluster);
 
 void updateOutputFusedObjects(
-  std::vector<DetectedObjectWithFeature> & output_objs, const std::vector<PointCloud> & clusters,
-  const std_msgs::msg::Header & in_cloud_header, const std_msgs::msg::Header & in_roi_header,
-  const tf2_ros::Buffer & tf_buffer, const int min_cluster_size, const int max_cluster_size,
-  const float cluster_2d_tolerance, std::vector<DetectedObjectWithFeature> & output_fused_objects);
+  std::vector<DetectedObjectWithFeature> & output_objs, std::vector<PointCloud2> & clusters,
+  const std::vector<size_t> clusters_data_size, const PointCloud2 & in_cloud,
+  const std_msgs::msg::Header & in_roi_header, const tf2_ros::Buffer & tf_buffer,
+  const int min_cluster_size, const int max_cluster_size, const float cluster_2d_tolerance,
+  std::vector<DetectedObjectWithFeature> & output_fused_objects);
 
 geometry_msgs::msg::Point getCentroid(const sensor_msgs::msg::PointCloud2 & pointcloud);
 

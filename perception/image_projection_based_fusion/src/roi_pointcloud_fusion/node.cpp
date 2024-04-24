@@ -115,31 +115,44 @@ void RoiPointCloudFusionNode::fuseOnSingleImage(
     }
     transform_stamped = transform_stamped_optional.value();
   }
+  int point_step = input_pointcloud_msg.point_step;
+  int x_offset = input_pointcloud_msg.fields[pcl::getFieldIndex(input_pointcloud_msg, "x")].offset;
+  int y_offset = input_pointcloud_msg.fields[pcl::getFieldIndex(input_pointcloud_msg, "y")].offset;
+  int z_offset = input_pointcloud_msg.fields[pcl::getFieldIndex(input_pointcloud_msg, "z")].offset;
 
   sensor_msgs::msg::PointCloud2 transformed_cloud;
   tf2::doTransform(input_pointcloud_msg, transformed_cloud, transform_stamped);
 
-  std::vector<PointCloud> clusters;
+  std::vector<sensor_msgs::msg::PointCloud2> clusters;
+  std::vector<size_t> clusters_data_size;
   clusters.resize(output_objs.size());
-
-  for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(transformed_cloud, "x"),
-       iter_y(transformed_cloud, "y"), iter_z(transformed_cloud, "z"),
-       iter_orig_x(input_pointcloud_msg, "x"), iter_orig_y(input_pointcloud_msg, "y"),
-       iter_orig_z(input_pointcloud_msg, "z");
-       iter_x != iter_x.end();
-       ++iter_x, ++iter_y, ++iter_z, ++iter_orig_x, ++iter_orig_y, ++iter_orig_z) {
-    if (*iter_z <= 0.0) {
+  for (auto & cluster : clusters) {
+    cluster.point_step = input_pointcloud_msg.point_step;
+    cluster.height = input_pointcloud_msg.height;
+    cluster.fields = input_pointcloud_msg.fields;
+    cluster.data.resize(max_cluster_size_ * input_pointcloud_msg.point_step);
+    clusters_data_size.push_back(0);
+  }
+  for (size_t offset = 0; offset < input_pointcloud_msg.data.size(); offset += point_step) {
+    const float transformed_x =
+      *reinterpret_cast<const float *>(&transformed_cloud.data[offset + x_offset]);
+    const float transformed_y =
+      *reinterpret_cast<const float *>(&transformed_cloud.data[offset + y_offset]);
+    const float transformed_z =
+      *reinterpret_cast<const float *>(&transformed_cloud.data[offset + z_offset]);
+    if (transformed_z <= 0.0) {
       continue;
     }
-    Eigen::Vector4d projected_point = projection * Eigen::Vector4d(*iter_x, *iter_y, *iter_z, 1.0);
+    Eigen::Vector4d projected_point =
+      projection * Eigen::Vector4d(transformed_x, transformed_y, transformed_z, 1.0);
     Eigen::Vector2d normalized_projected_point = Eigen::Vector2d(
       projected_point.x() / projected_point.z(), projected_point.y() / projected_point.z());
-
     for (std::size_t i = 0; i < output_objs.size(); ++i) {
       auto & feature_obj = output_objs.at(i);
       const auto & check_roi = feature_obj.feature.roi;
       auto & cluster = clusters.at(i);
-      if (cluster.points.size() >= static_cast<size_t>(max_cluster_size_)) {
+
+      if (clusters_data_size.at(i) >= static_cast<size_t>(max_cluster_size_ * point_step)) {
         continue;
       }
       if (
@@ -147,15 +160,17 @@ void RoiPointCloudFusionNode::fuseOnSingleImage(
         check_roi.y_offset <= normalized_projected_point.y() &&
         check_roi.x_offset + check_roi.width >= normalized_projected_point.x() &&
         check_roi.y_offset + check_roi.height >= normalized_projected_point.y()) {
-        cluster.push_back(pcl::PointXYZ(*iter_orig_x, *iter_orig_y, *iter_orig_z));
+        std::memcpy(
+          &cluster.data[clusters_data_size.at(i)], &input_pointcloud_msg.data[offset], point_step);
+        clusters_data_size.at(i) += point_step;
       }
     }
   }
 
   // refine and update output_fused_objects_
   updateOutputFusedObjects(
-    output_objs, clusters, input_pointcloud_msg.header, input_roi_msg.header, tf_buffer_,
-    min_cluster_size_, max_cluster_size_, cluster_2d_tolerance_, output_fused_objects_);
+    output_objs, clusters, clusters_data_size, input_pointcloud_msg, input_roi_msg.header,
+    tf_buffer_, min_cluster_size_, max_cluster_size_, cluster_2d_tolerance_, output_fused_objects_);
 }
 
 bool RoiPointCloudFusionNode::out_of_scope(__attribute__((unused))

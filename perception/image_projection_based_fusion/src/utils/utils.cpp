@@ -50,41 +50,68 @@ void convertCluster2FeatureObject(
   feature_obj.object.existence_probability = 1.0f;
 }
 
-PointCloud closest_cluster(
-  PointCloud & cluster, const double cluster_2d_tolerance, const int min_cluster_size,
-  const pcl::PointXYZ & center)
+void closest_cluster(
+  const PointCloud2 & cluster, const double cluster_2d_tolerance, const int min_cluster_size,
+  const pcl::PointXYZ & center, PointCloud2 & out_cluster)
 {
   // sort point by distance to camera origin
 
-  auto func = [center](const pcl::PointXYZ & p1, const pcl::PointXYZ & p2) {
-    return tier4_autoware_utils::calcDistance2d(center, p1) <
-           tier4_autoware_utils::calcDistance2d(center, p2);
-  };
-  std::sort(cluster.begin(), cluster.end(), func);
-  PointCloud out_cluster;
-  for (auto & point : cluster) {
-    if (out_cluster.empty()) {
-      out_cluster.push_back(point);
-      continue;
-    }
-    if (tier4_autoware_utils::calcDistance2d(out_cluster.back(), point) < cluster_2d_tolerance) {
-      out_cluster.push_back(point);
-      continue;
-    }
-    if (out_cluster.size() >= static_cast<std::size_t>(min_cluster_size)) {
-      return out_cluster;
-    }
-    out_cluster.clear();
-    out_cluster.push_back(point);
+  int x_offset = cluster.fields[pcl::getFieldIndex(cluster, "x")].offset;
+  int y_offset = cluster.fields[pcl::getFieldIndex(cluster, "y")].offset;
+  int z_offset = cluster.fields[pcl::getFieldIndex(cluster, "z")].offset;
+  int point_step = cluster.point_step;
+  auto func = [](const PointData & p1, const PointData & p2) { return p1.distance < p2.distance; };
+  // Create and sort points_data by distance to camera origin
+  std::vector<PointData> points_data;
+  for (size_t i = 0; i < cluster.data.size() / point_step; ++i) {
+    PointData point_data;
+    pcl::PointXYZ point;
+    std::memcpy(&point.x, &cluster.data[i * point_step + x_offset], sizeof(float));
+    std::memcpy(&point.y, &cluster.data[i * point_step + y_offset], sizeof(float));
+    std::memcpy(&point.z, &cluster.data[i * point_step + z_offset], sizeof(float));
+
+    point_data.distance = tier4_autoware_utils::calcDistance2d(center, point);
+    point_data.orig_index = i;
+    points_data.push_back(point_data);
   }
-  return out_cluster;
+  std::sort(points_data.begin(), points_data.end(), func);
+  // extract closest points as output cluster
+  out_cluster.data.resize(cluster.data.size());
+  out_cluster.point_step = cluster.point_step;
+  out_cluster.height = cluster.height;
+  size_t out_cluster_size = 0;
+  for (size_t i = 0; i < points_data.size(); ++i) {
+    if (out_cluster_size == 0) {
+      std::memcpy(
+        &out_cluster.data[out_cluster_size],
+        &cluster.data[points_data.at(i).orig_index * point_step], point_step);
+      out_cluster_size += point_step;
+      continue;
+    }
+    if (points_data.at(i).distance - points_data.at(i - 1).distance < cluster_2d_tolerance) {
+      std::memcpy(
+        &out_cluster.data[out_cluster_size],
+        &cluster.data[points_data.at(i).orig_index * point_step], point_step);
+      out_cluster_size += point_step;
+      continue;
+    }
+    if (i >= static_cast<size_t>(min_cluster_size)) {
+      out_cluster.data.resize(out_cluster_size);
+      return;
+    }
+    std::memcpy(
+      &out_cluster.data[0], &cluster.data[points_data.at(i).orig_index * point_step], point_step);
+    out_cluster_size = point_step;
+  }
+  out_cluster.data.resize(out_cluster_size);
 }
 
 void updateOutputFusedObjects(
-  std::vector<DetectedObjectWithFeature> & output_objs, const std::vector<PointCloud> & clusters,
-  const std_msgs::msg::Header & in_cloud_header, const std_msgs::msg::Header & in_roi_header,
-  const tf2_ros::Buffer & tf_buffer, const int min_cluster_size, const int max_cluster_size,
-  const float cluster_2d_tolerance, std::vector<DetectedObjectWithFeature> & output_fused_objects)
+  std::vector<DetectedObjectWithFeature> & output_objs, std::vector<PointCloud2> & clusters,
+  const std::vector<size_t> clusters_data_size, const PointCloud2 & in_cloud,
+  const std_msgs::msg::Header & in_roi_header, const tf2_ros::Buffer & tf_buffer,
+  const int min_cluster_size, const int max_cluster_size, const float cluster_2d_tolerance,
+  std::vector<DetectedObjectWithFeature> & output_fused_objects)
 {
   if (output_objs.size() != clusters.size()) {
     return;
@@ -92,6 +119,7 @@ void updateOutputFusedObjects(
   Eigen::Vector3d orig_camera_frame, orig_point_frame;
   Eigen::Affine3d camera2lidar_affine;
   orig_camera_frame << 0.0, 0.0, 0.0;
+  const std_msgs::msg::Header & in_cloud_header = in_cloud.header;
   {
     const auto transform_stamped_optional = getTransformStamped(
       tf_buffer, in_cloud_header.frame_id, in_roi_header.frame_id, in_roi_header.stamp);
@@ -105,27 +133,33 @@ void updateOutputFusedObjects(
     pcl::PointXYZ(orig_point_frame.x(), orig_point_frame.y(), orig_point_frame.z());
 
   for (std::size_t i = 0; i < output_objs.size(); ++i) {
-    PointCloud cluster = clusters.at(i);
+    auto & cluster = clusters.at(i);
+    cluster.data.resize(clusters_data_size.at(i));
     auto & feature_obj = output_objs.at(i);
     if (
-      cluster.points.size() < std::size_t(min_cluster_size) ||
-      cluster.points.size() >= std::size_t(max_cluster_size)) {
+      cluster.data.size() < std::size_t(min_cluster_size * cluster.point_step) ||
+      cluster.data.size() >= std::size_t(max_cluster_size * cluster.point_step)) {
       continue;
     }
 
     // TODO(badai-nguyen): change to interface to select refine criteria like closest, largest
     //  to output refine cluster and centroid
-    auto refine_cluster =
-      closest_cluster(cluster, cluster_2d_tolerance, min_cluster_size, camera_orig_point_frame);
-    if (refine_cluster.points.size() < std::size_t(min_cluster_size)) {
+    sensor_msgs::msg::PointCloud2 refine_cluster;
+    closest_cluster(
+      cluster, cluster_2d_tolerance, min_cluster_size, camera_orig_point_frame, refine_cluster);
+    if (refine_cluster.data.size() < std::size_t(min_cluster_size * cluster.point_step)) {
       continue;
     }
 
-    refine_cluster.width = refine_cluster.points.size();
-    refine_cluster.height = 1;
-    refine_cluster.is_dense = false;
-    // convert cluster to object
-    convertCluster2FeatureObject(in_cloud_header, refine_cluster, feature_obj);
+    refine_cluster.width = refine_cluster.data.size() / in_cloud.point_step / in_cloud.height;
+    refine_cluster.row_step = refine_cluster.data.size() / in_cloud.height;
+    refine_cluster.is_bigendian = in_cloud.is_bigendian;
+    refine_cluster.is_dense = in_cloud.is_dense;
+    refine_cluster.header = in_cloud.header;
+    refine_cluster.fields = in_cloud.fields;
+    feature_obj.object.kinematics.pose_with_covariance.pose.position = getCentroid(refine_cluster);
+    feature_obj.object.existence_probability = 1.0f;
+    feature_obj.feature.cluster = refine_cluster;
     output_fused_objects.push_back(feature_obj);
   }
 }
