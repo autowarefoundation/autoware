@@ -51,10 +51,14 @@ Planning:
   behavior_path_avoidance_by_lane_change:
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
       logger_name: lane_change.AVOIDANCE_BY_LANE_CHANGE
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
+      logger_name: lane_change.utils
 
   behavior_path_lane_change:
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
       logger_name: lane_change.NORMAL
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
+      logger_name: lane_change.utils
 
   behavior_velocity_planner:
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner

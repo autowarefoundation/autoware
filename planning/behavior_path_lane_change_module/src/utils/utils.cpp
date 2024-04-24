@@ -69,6 +69,12 @@ using tier4_autoware_utils::Polygon2d;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using lanelet::ArcCoordinates;
 
+rclcpp::Logger get_logger()
+{
+  constexpr const char * name{"lane_change.utils"};
+  return rclcpp::get_logger(name);
+}
+
 double calcLaneChangeResampleInterval(
   const double lane_changing_length, const double lane_changing_velocity)
 {
@@ -334,7 +340,6 @@ std::optional<LaneChangePath> constructCandidatePath(
   const auto terminal_lane_changing_velocity = lane_change_info.terminal_lane_changing_velocity;
   const auto longitudinal_acceleration = lane_change_info.longitudinal_acceleration;
   const auto lane_change_velocity = lane_change_info.velocity;
-  const auto lane_change_length = lane_change_info.length;
 
   PathShifter path_shifter;
   path_shifter.setPath(target_lane_reference_path);
@@ -350,40 +355,24 @@ std::optional<LaneChangePath> constructCandidatePath(
   path_shifter.setLateralAccelerationLimit(std::abs(lane_change_info.lateral_acceleration));
 
   if (!path_shifter.generate(&shifted_path, offset_back)) {
-    RCLCPP_DEBUG(
-      rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
-      "failed to generate shifted path.");
+    RCLCPP_DEBUG(get_logger(), "Failed to generate shifted path.");
   }
 
   // TODO(Zulfaqar Azmi): have to think of a more feasible solution for points being remove by path
   // shifter.
   if (shifted_path.path.points.size() < shift_line.end_idx + 1) {
-    RCLCPP_DEBUG(
-      rclcpp::get_logger("behavior_path_planner").get_child("utils").get_child(__func__),
-      "path points are removed by PathShifter.");
+    RCLCPP_DEBUG(get_logger(), "Path points are removed by PathShifter.");
     return std::nullopt;
   }
 
-  const auto & prepare_length = lane_change_length.prepare;
-  const auto & lane_changing_length = lane_change_length.lane_changing;
-
   LaneChangePath candidate_path;
   candidate_path.info = lane_change_info;
-
-  RCLCPP_DEBUG(
-    rclcpp::get_logger("behavior_path_planner")
-      .get_child("lane_change")
-      .get_child("util")
-      .get_child("constructCandidatePath"),
-    "prepare_length: %f, lane_change: %f", prepare_length, lane_changing_length);
 
   const auto lane_change_end_idx =
     motion_utils::findNearestIndex(shifted_path.path.points, candidate_path.info.lane_changing_end);
 
   if (!lane_change_end_idx) {
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
-      "lane change end idx not found on target path.");
+    RCLCPP_DEBUG(get_logger(), "Lane change end idx not found on target path.");
     return std::nullopt;
   }
 
@@ -419,6 +408,9 @@ std::optional<LaneChangePath> constructCandidatePath(
       tf2::getYaw(prepare_segment_second_last_point.orientation) -
       tf2::getYaw(lane_change_start_from_shifted.orientation)));
     if (yaw_diff2 > tier4_autoware_utils::deg2rad(5.0)) {
+      RCLCPP_DEBUG(
+        get_logger(), "Excessive yaw difference %.3f which exceeds the 5 degrees threshold.",
+        tier4_autoware_utils::rad2deg(yaw_diff2));
       return std::nullopt;
     }
   }
@@ -449,13 +441,6 @@ PathWithLaneId getReferencePathFromTargetLane(
     }
     return std::min(dist_from_lc_start, target_lane_length - next_lane_change_buffer);
   });
-
-  RCLCPP_DEBUG(
-    rclcpp::get_logger("behavior_path_planner")
-      .get_child("lane_change")
-      .get_child("util")
-      .get_child("getReferencePathFromTargetLane"),
-    "start: %f, end: %f", s_start, s_end);
 
   constexpr double epsilon = 1e-4;
   if (s_end - s_start + epsilon < lane_changing_length) {
@@ -493,12 +478,6 @@ ShiftLine getLaneChangingShiftLine(
   shift_line.end_idx =
     motion_utils::findNearestIndex(reference_path.points, lane_changing_end_pose.position);
 
-  RCLCPP_DEBUG(
-    rclcpp::get_logger("behavior_path_planner")
-      .get_child("lane_change")
-      .get_child("util")
-      .get_child("getLaneChangingShiftLine"),
-    "shift_line distance: %f", shift_length);
   return shift_line;
 }
 
