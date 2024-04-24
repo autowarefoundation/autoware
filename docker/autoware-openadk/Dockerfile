@@ -64,6 +64,7 @@ RUN --mount=type=ssh \
   mkdir src \
   && vcs import src < autoware.repos \
   && apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends ninja-build \
   && rosdep update \
   && DEBIAN_FRONTEND=noninteractive rosdep install -y --ignore-src --from-paths src --rosdistro "$ROS_DISTRO" \
   && source /opt/ros/"$ROS_DISTRO"/setup.bash \
