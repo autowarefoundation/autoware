@@ -74,6 +74,24 @@ The black cells, green box, and red box, respectively, indicate obstacles,
 start configuration, and goal configuration.
 The sequence of the blue boxes indicate the solution path.
 
+## Extension to Python module (only A\* supported)
+
+There is an implementation of the extension to the python module.
+You can try A\* search via Python by setting follows:
+
+- parameters,
+- costmap,
+- start pose,
+- goal pose.
+
+Then, you can get
+
+- success or failure,
+- searched trajectory.
+
+The example code is [scripts/example/example.py](scripts/example/example.py).
+Note that you need to build this package and source the setup shell script in advance.
+
 ## License notice
 
 Files `src/reeds_shepp.cpp` and `include/astar_search/reeds_shepp.h`
