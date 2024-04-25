@@ -12,8 +12,8 @@
   <arg name="car_traffic_light_classifier_model_name" default="traffic_light_classifier_mobilenetv2_batch_6.onnx" description="classifier onnx model filename"/>
   <arg name="pedestrian_traffic_light_classifier_model_name" default="ped_traffic_light_classifier_mobilenetv2_batch_6.onnx" description="classifier onnx model filename"/>
   <arg name="input/cloud" default="/sensing/lidar/top/pointcloud_raw" description="point cloud for occlusion prediction"/>
+  <arg name="judged/traffic_signals" default="/perception/traffic_light_recognition/judged/traffic_signals"/>
   <arg name="internal/traffic_signals" default="/perception/traffic_light_recognition/internal/traffic_signals"/>
-  <arg name="fusion/traffic_signals" default="/perception/traffic_light_recognition/fusion/traffic_signals"/>
   <arg name="external/traffic_signals" default="/perception/traffic_light_recognition/external/traffic_signals"/>
   <arg name="output/traffic_signals" default="/perception/traffic_light_recognition/traffic_signals"/>
   <arg name="use_crosswalk_traffic_light_estimator" default="true" description="output pedestrian's traffic light signals"/>
@@ -144,25 +144,7 @@
       <param name="camera_namespaces" value="$(var all_camera_namespaces)"/>
       <param name="perform_group_fusion" value="true"/>
       <remap from="~/input/vector_map" to="/map/vector_map"/>
-      <remap from="~/output/traffic_signals" to="$(var fusion/traffic_signals)"/>
-    </node>
-  </group>
-
-  <group if="$(var use_crosswalk_traffic_light_estimator)">
-    <node pkg="crosswalk_traffic_light_estimator" exec="crosswalk_traffic_light_estimator_node" name="crosswalk_traffic_light_estimator" output="screen">
-      <remap from="~/input/vector_map" to="/map/vector_map"/>
-      <remap from="~/input/route" to="/planning/mission_planning/route"/>
-      <remap from="~/input/classified/traffic_signals" to="$(var fusion/traffic_signals)"/>
       <remap from="~/output/traffic_signals" to="$(var internal/traffic_signals)"/>
-      <param from="$(var crosswalk_traffic_light_estimator_param_file)"/>
-    </node>
-  </group>
-
-  <group unless="$(var use_crosswalk_traffic_light_estimator)">
-    <node pkg="topic_tools" exec="relay" name="fusion_signals_relay" output="screen">
-      <param name="input_topic" value="$(var fusion/traffic_signals)"/>
-      <param name="output_topic" value="$(var internal/traffic_signals)"/>
-      <param name="type" value="autoware_auto_perception_msgs/msg/TrafficSignalArray"/>
     </node>
   </group>
 
@@ -171,9 +153,28 @@
     <include file="$(find-pkg-share traffic_light_arbiter)/launch/traffic_light_arbiter.launch.xml">
       <arg name="perception_traffic_signals" value="$(var internal/traffic_signals)"/>
       <arg name="external_traffic_signals" value="$(var external/traffic_signals)"/>
-      <arg name="output_traffic_signals" value="$(var output/traffic_signals)"/>
+      <arg name="output_traffic_signals" value="$(var judged/traffic_signals)"/>
     </include>
   </group>
+
+  <group if="$(var use_crosswalk_traffic_light_estimator)">
+    <node pkg="crosswalk_traffic_light_estimator" exec="crosswalk_traffic_light_estimator_node" name="crosswalk_traffic_light_estimator" output="screen">
+      <remap from="~/input/vector_map" to="/map/vector_map"/>
+      <remap from="~/input/route" to="/planning/mission_planning/route"/>
+      <remap from="~/input/classified/traffic_signals" to="$(var judged/traffic_signals)"/>
+      <remap from="~/output/traffic_signals" to="$(var output/traffic_signals)"/>
+      <param from="$(var crosswalk_traffic_light_estimator_param_file)"/>
+    </node>
+  </group>
+
+  <group unless="$(var use_crosswalk_traffic_light_estimator)">
+    <node pkg="topic_tools" exec="relay" name="fusion_signals_relay" output="screen">
+      <param name="input_topic" value="$(var judged/traffic_signals)"/>
+      <param name="output_topic" value="$(var output/traffic_signals)"/>
+      <param name="type" value="autoware_auto_perception_msgs/msg/TrafficSignalArray"/>
+    </node>
+  </group>
+
   <!-- visualizer -->
   <group>
     <include file="$(find-pkg-share traffic_light_visualization)/launch/traffic_light_map_visualizer.launch.xml"/>
