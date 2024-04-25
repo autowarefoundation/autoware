@@ -40,7 +40,7 @@ jobs:
             *.args.BASE_IMAGE=${{ env[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
           tag-prefix: ${{ env.rosdistro }}-
-          tag-suffix: ${{ matrix.additional-tag-suffix }}-amd64
+          tag-suffix: ${{ matrix.additional-tag-suffix }}
 
       - name: Show disk space
         run: |
