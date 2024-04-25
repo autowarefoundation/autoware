@@ -1,5 +1,5 @@
 group "default" {
-  targets = ["visualizer", "planning-control"]
+  targets = ["simulator"]
 }
 
 // For docker/metadata-action

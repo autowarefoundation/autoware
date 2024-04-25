@@ -2,4 +2,4 @@
 
 set -e
 
-docker compose -f modules/docker-compose.yml up
+docker compose -f modules/docker-compose.yaml up

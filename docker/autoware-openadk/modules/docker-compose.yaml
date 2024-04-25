@@ -2,19 +2,32 @@ version: "2.17"
 
 services:
   simulator:
-    image: ghcr.io/oguzkaganozt/autoware-openadk:latest-simulator
+    image: ghcr.io/autowarefoundation/autoware-openadk:latest-simulator
     volumes:
       - /dev/shm:/dev/shm
     network_mode: "host"
     environment:
       - ROS_DOMAIN_ID=88
-    command: ros2 launch scenario_test_runner scenario_test_runner.launch.py architecture_type:=awf/universe record:=false scenario:=/autoware/test-scenario/yield_maneuver_demo.yaml sensor_model:=sample_sensor_kit vehicle_model:=sample_vehicle map_path:=/autoware/test-scenario/map/
+    command: ros2 launch scenario_test_runner scenario_test_runner.launch.py architecture_type:=awf/universe record:=false scenario:=/autoware/test-scenario/yield_maneuver_demo.yaml sensor_model:=sample_sensor_kit vehicle_model:=sample_vehicle map_path:=/autoware/test-scenario/map/ launch_autoware:=False initialize_duration:=45
 
   planning-control:
-    image: ghcr.io/oguzkaganozt/autoware-openadk:latest-planning-control
+    image: ghcr.io/autowarefoundation/autoware-openadk:latest-planning-control
     volumes:
       - /dev/shm:/dev/shm
+      - /tmp/.X11-unix:/tmp/.X11-unix
     network_mode: "host"
     environment:
+      - DISPLAY=$DISPLAY
       - ROS_DOMAIN_ID=88
-    command: ros2 launch autoware_launch planning_simulator.launch.xml map_path:=/autoware/test-scenario/map/ vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit scenario_simulation:=true use_foa:=false perception/enable_traffic_light:=false
+    command: ros2 launch autoware_launch planning_simulator.launch.xml map_path:=/autoware/test-scenario/map/ vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit scenario_simulation:=true use_foa:=false perception/enable_traffic_light:=false rviz:=false
+
+  visualizer:
+    image: ghcr.io/autowarefoundation/autoware-openadk:latest-visualizer
+    volumes:
+      - /dev/shm:/dev/shm
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    network_mode: "host"
+    environment:
+      - DISPLAY=$DISPLAY
+      - ROS_DOMAIN_ID=88
+    command: /autoware/test-scenario/rviz/launch_rviz.sh
