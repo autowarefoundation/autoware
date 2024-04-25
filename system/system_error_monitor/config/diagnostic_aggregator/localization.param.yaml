@@ -18,10 +18,10 @@
           type: diagnostic_aggregator/AnalyzerGroup
           path: performance_monitoring
           analyzers:
-            matching_score:
+            scan_matching_status:
               type: diagnostic_aggregator/GenericAnalyzer
-              path: matching_score
-              contains: ["ndt_scan_matcher"]
+              path: scan_matching_status
+              contains: ["ndt_scan_matcher: scan_matching_status"]
               timeout: 1.0
 
             localization_error_ellipse:

@@ -8,7 +8,7 @@ units:
         list:
           - { type: link, link: /autoware/localization/topic_rate_check/transform }
           - { type: link, link: /autoware/localization/topic_rate_check/pose_twist_fusion }
-          - { type: link, link: /autoware/localization/matching_score }
+          - { type: link, link: /autoware/localization/scan_matching_status }
           - { type: link, link: /autoware/localization/accuracy }
           - { type: link, link: /autoware/localization/sensor_fusion_status }
 
@@ -27,10 +27,10 @@ units:
     node: topic_state_monitor_pose_twist_fusion_filter_pose
     name: localization_topic_status
 
-  - path: /autoware/localization/matching_score
+  - path: /autoware/localization/scan_matching_status
     type: diag
-    node: ""
-    name: ndt_scan_matcher
+    node: ndt_scan_matcher
+    name: scan_matching_status
 
   - path: /autoware/localization/accuracy
     type: diag

@@ -3,7 +3,7 @@ files:
 
 edits:
   - { type: remove, path: /autoware/map/topic_rate_check/pointcloud_map }
-  - { type: remove, path: /autoware/localization/matching_score }
+  - { type: remove, path: /autoware/localization/scan_matching_status }
   - { type: remove, path: /autoware/localization/accuracy }
   - { type: remove, path: /autoware/localization/sensor_fusion_status }
   - { type: remove, path: /autoware/localization/topic_rate_check/pose_twist_fusion }

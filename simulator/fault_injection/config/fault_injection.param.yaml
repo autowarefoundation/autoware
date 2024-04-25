@@ -3,7 +3,7 @@
     event_diag_list:
       vehicle_is_out_of_lane: ": lane_departure"
       trajectory_deviation_is_high: ": trajectory_deviation"
-      localization_matching_score_is_low: ": ndt_scan_matcher"
+      localization_matching_score_is_low: ": scan_matching_status"
       localization_accuracy_is_low: ": localization_error_ellipse"
       map_version_is_different: ": map_version"
       trajectory_is_invalid: ": trajectory_point_validation"
