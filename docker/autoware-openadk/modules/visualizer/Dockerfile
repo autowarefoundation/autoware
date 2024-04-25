@@ -26,9 +26,6 @@ RUN --mount=type=ssh \
     /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
     /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
-# Copy launch file
-COPY docker/autoware-openadk/modules/visualizer/visualizer.launch.xml /autoware/install/visualizer/share/visualizer/launch/
-
 # Copy test-scenario files
 RUN mkdir -p /autoware/test-scenario
 COPY docker/autoware-openadk/etc/test-scenario/ /autoware/test-scenario/
