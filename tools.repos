@@ -2,4 +2,4 @@ repositories:
   tools:
     type: git
     url: https://github.com/autowarefoundation/autoware_tools.git
-    version: main
+    version: autoware_msgs
