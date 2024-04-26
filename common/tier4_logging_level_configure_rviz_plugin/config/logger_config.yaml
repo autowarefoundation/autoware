@@ -82,6 +82,10 @@ Planning:
     - node_name: /planning/scenario_planning/motion_velocity_smoother
       logger_name: tier4_autoware_utils
 
+  route_handler:
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
+      logger_name: route_handler
+
 # ============================================================
 # control
 # ============================================================
