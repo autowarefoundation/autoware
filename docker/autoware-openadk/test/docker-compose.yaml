@@ -8,7 +8,7 @@ services:
     network_mode: "host"
     environment:
       - ROS_DOMAIN_ID=88
-    command: ros2 launch scenario_test_runner scenario_test_runner.launch.py architecture_type:=awf/universe record:=false scenario:=/autoware/test-scenario/yield_maneuver_demo.yaml sensor_model:=sample_sensor_kit vehicle_model:=sample_vehicle map_path:=/autoware/test-scenario/map/ launch_autoware:=False initialize_duration:=45
+    command: ros2 launch scenario_test_runner scenario_test_runner.launch.py architecture_type:=awf/universe record:=false scenario:=/autoware/test-scenario/yield_maneuver_demo.yaml sensor_model:=sample_sensor_kit vehicle_model:=sample_vehicle map_path:=/autoware/test-scenario/map/ launch_autoware:=False initialize_duration:=60 global_frame_rate:=12
 
   planning-control:
     image: ghcr.io/autowarefoundation/autoware-openadk:latest-planning-control
