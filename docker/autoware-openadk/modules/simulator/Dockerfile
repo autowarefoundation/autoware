@@ -12,7 +12,6 @@ RUN --mount=type=ssh \
   && vcs import src < simulator.repos \
   && vcs import src/simulator/scenario_simulator/external < src/simulator/scenario_simulator/dependency_humble.repos \
   && apt-get update \
-  # && apt-get install ros-humble-topic-tools ros-humble-diagnostics ros-humble-xacro -y \
   && rosdep update \
   && DEBIAN_FRONTEND=noninteractive rosdep install -y --rosdistro "$ROS_DISTRO" --from-paths src --ignore-src
 

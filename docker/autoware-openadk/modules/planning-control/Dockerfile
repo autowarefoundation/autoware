@@ -27,7 +27,7 @@ RUN --mount=type=ssh \
     /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
 # Copy launch file
-COPY docker/autoware-openadk/modules/planning-control/planning_control.launch.xml /autoware/install/planning_control/share/planning_control/launch/
+COPY docker/autoware-openadk/modules/planning-control/planning_control.launch.xml /autoware/install/planning_control.launch.xml
 
 # Copy test-scenario files
 RUN mkdir -p /autoware/test-scenario
