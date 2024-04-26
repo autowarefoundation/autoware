@@ -18,6 +18,7 @@
 #define FMT_HEADER_ONLY
 
 #include "localization_util/smart_pose_buffer.hpp"
+#include "ndt_scan_matcher/diagnostics_module.hpp"
 #include "ndt_scan_matcher/hyper_parameters.hpp"
 #include "ndt_scan_matcher/map_update_module.hpp"
 
@@ -62,6 +63,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
@@ -77,20 +79,31 @@ public:
   explicit NDTScanMatcher(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
-  void service_ndt_align(
-    const tier4_localization_msgs::srv::PoseWithCovarianceStamped::Request::SharedPtr req,
-    tier4_localization_msgs::srv::PoseWithCovarianceStamped::Response::SharedPtr res);
+  void callback_timer();
+
+  void callback_initial_pose(
+    geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr initial_pose_msg_ptr);
+  void callback_initial_pose_main(
+    const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr initial_pose_msg_ptr);
+
+  void callback_regularization_pose(
+    geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr pose_conv_msg_ptr);
+
+  void callback_sensor_points(
+    sensor_msgs::msg::PointCloud2::ConstSharedPtr sensor_points_msg_in_sensor_frame);
+  bool callback_sensor_points_main(
+    sensor_msgs::msg::PointCloud2::ConstSharedPtr sensor_points_msg_in_sensor_frame);
+
   void service_trigger_node(
     const std_srvs::srv::SetBool::Request::SharedPtr req,
     std_srvs::srv::SetBool::Response::SharedPtr res);
 
-  void callback_timer();
-  void callback_sensor_points(
-    sensor_msgs::msg::PointCloud2::ConstSharedPtr sensor_points_msg_in_sensor_frame);
-  void callback_initial_pose(
-    geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr initial_pose_msg_ptr);
-  void callback_regularization_pose(
-    geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr pose_conv_msg_ptr);
+  void service_ndt_align(
+    const tier4_localization_msgs::srv::PoseWithCovarianceStamped::Request::SharedPtr req,
+    tier4_localization_msgs::srv::PoseWithCovarianceStamped::Response::SharedPtr res);
+  void service_ndt_align_main(
+    const tier4_localization_msgs::srv::PoseWithCovarianceStamped::Request::SharedPtr req,
+    tier4_localization_msgs::srv::PoseWithCovarianceStamped::Response::SharedPtr res);
 
   geometry_msgs::msg::PoseWithCovarianceStamped align_pose(
     const geometry_msgs::msg::PoseWithCovarianceStamped & initial_pose_with_cov);
@@ -116,11 +129,6 @@ private:
     const geometry_msgs::msg::PoseWithCovarianceStamped & initial_pose_old_msg,
     const geometry_msgs::msg::PoseWithCovarianceStamped & initial_pose_new_msg);
 
-  bool validate_num_iteration(const int iter_num, const int max_iter_num);
-  bool validate_score(
-    const double score, const double score_threshold, const std::string & score_name);
-  bool validate_converged_param(
-    const double & transform_probability, const double & nearest_voxel_transformation_likelihood);
   static int count_oscillation(const std::vector<geometry_msgs::msg::Pose> & result_pose_msg_array);
 
   std::array<double, 36> rotate_covariance(
@@ -130,8 +138,6 @@ private:
     const rclcpp::Time & sensor_ros_time);
 
   void add_regularization_pose(const rclcpp::Time & sensor_ros_time);
-
-  void publish_diagnostic();
 
   rclcpp::TimerBase::SharedPtr map_update_timer_;
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr initial_pose_sub_;
@@ -168,7 +174,6 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr ndt_marker_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr
     ndt_monte_carlo_initial_pose_marker_pub_;
-  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostics_pub_;
 
   rclcpp::Service<tier4_localization_msgs::srv::PoseWithCovarianceStamped>::SharedPtr service_;
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_trigger_node_;
@@ -180,7 +185,6 @@ private:
   rclcpp::CallbackGroup::SharedPtr timer_callback_group_;
 
   std::shared_ptr<NormalDistributionsTransform> ndt_ptr_;
-  std::shared_ptr<std::map<std::string, std::string>> state_ptr_;
 
   Eigen::Matrix4f base_to_sensor_matrix_;
 
@@ -194,6 +198,12 @@ private:
   std::unique_ptr<SmartPoseBuffer> regularization_pose_buffer_;
 
   std::atomic<bool> is_activated_;
+  std::unique_ptr<DiagnosticsModule> diagnostics_scan_points_;
+  std::unique_ptr<DiagnosticsModule> diagnostics_initial_pose_;
+  std::unique_ptr<DiagnosticsModule> diagnostics_regularization_pose_;
+  std::unique_ptr<DiagnosticsModule> diagnostics_map_update_;
+  std::unique_ptr<DiagnosticsModule> diagnostics_ndt_align_;
+  std::unique_ptr<DiagnosticsModule> diagnostics_trigger_node_;
   std::unique_ptr<MapUpdateModule> map_update_module_;
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 
