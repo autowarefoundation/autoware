@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Centerpoint ML model",
+  "type": "object",
+  "definitions": {
+    "centerpoint_ml_package": {
+      "type": "object",
+      "properties": {
+        "model_params": {
+          "type": "object",
+          "description": "Parameters for model configuration.",
+          "properties": {
+            "class_names": {
+              "type": "array",
+              "description": "An array of class names will be predicted.",
+              "default": ["CAR", "TRUCK", "BUS", "BICYCLE", "PEDESTRIAN"],
+              "uniqueItems": true
+            },
+            "point_feature_size": {
+              "type": "integer",
+              "description": "A number of channels of point feature layer.",
+              "default": 4
+            },
+            "max_voxel_size": {
+              "type": "integer",
+              "description": "A maximum size of voxel grid.",
+              "default": 40000
+            },
+            "point_cloud_range": {
+              "type": "array",
+              "description": "An array of distance ranges of each class, this must have same length with `class_names`.",
+              "default": [-76.8, -76.8, -4.0, 76.8, 76.8, 6.0]
+            },
+            "voxel_size": {
+              "type": "array",
+              "description": "An array of voxel grid sizes for PointPainting, this must have same length with `paint_class_names`.",
+              "default": [0.32, 0.32, 10.0]
+            },
+            "down_sample_factor": {
+              "type": "integer",
+              "description": "A scale factor of downsampling points",
+              "default": 1,
+              "minimum": 1
+            },
+            "encoder_in_feature_size": {
+              "type": "integer",
+              "description": "A size of encoder input feature channels.",
+              "default": 9
+            }
+          }
+        }
+      },
+      "required": ["model_params"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/centerpoint_ml_package"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

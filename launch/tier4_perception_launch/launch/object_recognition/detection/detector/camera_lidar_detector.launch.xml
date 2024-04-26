@@ -82,8 +82,9 @@
       <arg name="output/objects" value="objects"/>
       <arg name="model_name" value="$(var lidar_detection_model)"/>
       <arg name="model_path" value="$(var pointpainting_model_path)"/>
-      <arg name="model_param_path" value="$(var lidar_model_param_path)/$(var lidar_detection_model).param.yaml"/>
-      <arg name="class_remapper_param_path" value="$(var lidar_model_param_path)/detection_class_remapper.param.yaml"/>
+      <arg name="model_param_path" value="$(var lidar_model_param_path)/pointpainting.param.yaml"/>
+      <arg name="ml_package_param_path" value="$(var model_path)/pointpainting_ml_package.param.yaml"/>
+      <arg name="class_remapper_param_path" value="$(var model_path)/detection_class_remapper.param.yaml"/>
 
       <arg name="use_pointcloud_container" value="true"/>
       <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>

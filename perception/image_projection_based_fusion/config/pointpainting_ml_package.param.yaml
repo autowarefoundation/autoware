@@ -1,0 +1,13 @@
+/**:
+  ros__parameters:
+    model_params:
+      class_names: ["CAR", "TRUCK", "BUS", "BICYCLE", "PEDESTRIAN"]
+      paint_class_names: ["CAR", "BICYCLE", "PEDESTRIAN"]
+      point_feature_size: 7 # x, y, z, time-lag and car, pedestrian, bicycle
+      max_voxel_size: 40000
+      point_cloud_range: [-121.6, -76.8, -3.0, 121.6, 76.8, 5.0]
+      voxel_size: [0.32, 0.32, 8.0]
+      downsample_factor: 1
+      encoder_in_feature_size: 12
+      has_twist: false
+      has_variance: false

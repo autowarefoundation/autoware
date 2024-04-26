@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Parameters for Point Painting Fusion Node",
+  "title": "Parameters for Lidar Centerpoint Node",
   "type": "object",
   "definitions": {
-    "pointpainting": {
+    "centerpoint": {
       "type": "object",
       "properties": {
         "trt_precision": {
@@ -12,37 +12,27 @@
           "default": "fp16",
           "enum": ["fp32", "fp16"]
         },
-        "densification_params": {
-          "type": "object",
-          "description": "Parameters for pointcloud densification.",
-          "properties": {
-            "world_frame_id": {
-              "type": "string",
-              "description": "A name of frame id where world coordinates system is defined with respect to.",
-              "default": "map"
-            },
-            "num_past_frames": {
-              "type": "integer",
-              "description": "A number of past frames to be considered as same input frame.",
-              "default": 0,
-              "minimum": 0
-            }
-          }
-        },
         "post_process_params": {
           "type": "object",
           "properties": {
             "score_threshold": {
               "type": "number",
               "description": "A threshold value of existence probability score, all of objects with score less than this threshold are ignored.",
-              "default": 0.4,
+              "default": 0.35,
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "yaw_norm_thresholds": {
+              "type": "array",
+              "description": "An array of distance threshold values of norm of yaw [rad].",
+              "default": [0.3, 0.3, 0.3, 0.3, 0.0],
               "minimum": 0.0,
               "maximum": 1.0
             },
             "circle_nms_dist_threshold": {
               "type": "number",
               "description": "",
-              "default": 0.3,
+              "default": 0.5,
               "minimum": 0.0,
               "maximum": 1.0
             },
@@ -65,18 +55,6 @@
               "minimum": 0.0,
               "maximum": 1.0
             },
-            "yaw_norm_thresholds": {
-              "type": "array",
-              "description": "An array of distance threshold values of norm of yaw [rad].",
-              "default": [0.3, 0.3, 0.3, 0.3, 0.0],
-              "minimum": 0.0,
-              "maximum": 1.0
-            },
-            "has_variance": {
-              "type": "boolean",
-              "description": "Indicates whether the model outputs variance value.",
-              "default": false
-            },
             "has_twist": {
               "type": "boolean",
               "description": "Indicates whether the model outputs twist value.",
@@ -84,19 +62,25 @@
             }
           }
         },
-        "omp_params": {
+        "densification_params": {
           "type": "object",
+          "description": "Parameters for pointcloud densification.",
           "properties": {
-            "num_threads": {
+            "world_frame_id": {
+              "type": "string",
+              "description": "A name of frame id where world coordinates system is defined with respect to.",
+              "default": "map"
+            },
+            "num_past_frames": {
               "type": "integer",
-              "description": "The number of threads that is set to the environment variable OMP_NUM_THREADS.",
+              "description": "A number of past frames to be considered as same input frame.",
               "default": 1,
-              "minimum": 1
+              "minimum": 0
             }
           }
         }
       },
-      "required": []
+      "required": ["post_process_params", "densification_params"]
     }
   },
   "properties": {
@@ -104,7 +88,7 @@
       "type": "object",
       "properties": {
         "ros__parameters": {
-          "$ref": "#/definitions/pointpainting"
+          "$ref": "#/definitions/centerpoint"
         }
       },
       "required": ["ros__parameters"]

@@ -21,8 +21,9 @@
   <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
   <arg name="model_name" default="pointpainting" description="options: `pointpainting`"/>
   <arg name="model_path" default="$(var data_path)/image_projection_based_fusion"/>
-  <arg name="model_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/$(var model_name).param.yaml"/>
-  <arg name="class_remapper_param_path" default="$(find-pkg-share lidar_centerpoint)/config/detection_class_remapper.param.yaml"/>
+  <arg name="model_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/pointpainting.param.yaml"/>
+  <arg name="ml_package_param_path" default="$(var model_path)/$(var model_name)_ml_package.param.yaml"/>
+  <arg name="class_remapper_param_path" default="$(var model_path)/detection_class_remapper.param.yaml"/>
   <arg name="sync_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_sync.param.yaml"/>
   <arg name="build_only" default="false" description="shutdown node after TensorRT engine file is built"/>
 
@@ -48,6 +49,7 @@
         <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
         <remap from="~/output/objects" to="$(var output/objects)"/>
         <param from="$(var model_param_path)" allow_substs="true"/>
+        <param from="$(var ml_package_param_path)" allow_substs="true"/>
         <param from="$(var sync_param_path)"/>
         <param from="$(var class_remapper_param_path)"/>
         <param name="rois_number" value="$(var input/rois_number)"/>
@@ -89,6 +91,7 @@
       <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
       <remap from="~/output/objects" to="$(var output/objects)"/>
       <param from="$(var model_param_path)" allow_substs="true"/>
+      <param from="$(var ml_package_param_path)" allow_substs="true"/>
       <param from="$(var sync_param_path)"/>
       <param from="$(var class_remapper_param_path)"/>
       <param name="rois_number" value="$(var input/rois_number)"/>

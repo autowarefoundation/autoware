@@ -102,7 +102,7 @@ PointPaintingFusionNode::PointPaintingFusionNode(const rclcpp::NodeOptions & opt
   const float circle_nms_dist_threshold = static_cast<float>(
     this->declare_parameter<double>("post_process_params.circle_nms_dist_threshold"));
   const auto yaw_norm_thresholds =
-    this->declare_parameter<std::vector<double>>("model_params.yaw_norm_thresholds");
+    this->declare_parameter<std::vector<double>>("post_process_params.yaw_norm_thresholds");
   // densification param
   const std::string densification_world_frame_id =
     this->declare_parameter<std::string>("densification_params.world_frame_id");
@@ -140,8 +140,8 @@ PointPaintingFusionNode::PointPaintingFusionNode(const rclcpp::NodeOptions & opt
       isClassTable_.erase(cls);
     }
   }
-  has_variance_ = this->declare_parameter<bool>("has_variance");
   has_twist_ = this->declare_parameter<bool>("model_params.has_twist");
+  has_variance_ = this->declare_parameter<bool>("model_params.has_variance");
   const std::size_t point_feature_size = static_cast<std::size_t>(
     this->declare_parameter<std::int64_t>("model_params.point_feature_size"));
   const std::size_t max_voxel_size =
