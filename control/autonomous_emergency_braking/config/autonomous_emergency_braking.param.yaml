@@ -3,6 +3,7 @@
     publish_debug_pointcloud: false
     use_predicted_trajectory: true
     use_imu_path: true
+    path_footprint_extra_margin: 1.0
     detection_range_min_height: 0.0
     detection_range_max_height_margin: 0.0
     voxel_grid_x: 0.05
@@ -14,6 +15,9 @@
     t_response: 1.0
     a_ego_min: -3.0
     a_obj_min: -1.0
+    cluster_tolerance: 0.1 #[m]
+    minimum_cluster_size: 10
+    maximum_cluster_size: 10000
     imu_prediction_time_horizon: 1.5
     imu_prediction_time_interval: 0.1
     mpc_prediction_time_horizon: 1.5

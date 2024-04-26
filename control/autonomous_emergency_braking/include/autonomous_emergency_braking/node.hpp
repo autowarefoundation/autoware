@@ -18,6 +18,7 @@
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
@@ -64,7 +65,6 @@ using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 using Path = std::vector<geometry_msgs::msg::Pose>;
 using Vector3 = geometry_msgs::msg::Vector3;
-
 struct ObjectData
 {
   rclcpp::Time stamp;
@@ -138,15 +138,19 @@ public:
   // main function
   void onCheckCollision(DiagnosticStatusWrapper & stat);
   bool checkCollision(MarkerArray & debug_markers);
-  bool hasCollision(
-    const double current_v, const Path & ego_path, const std::vector<ObjectData> & objects);
+  bool hasCollision(const double current_v, const ObjectData & closest_object);
 
-  Path generateEgoPath(const double curr_v, const double curr_w, std::vector<Polygon2d> & polygons);
-  std::optional<Path> generateEgoPath(
-    const Trajectory & predicted_traj, std::vector<Polygon2d> & polygons);
-  void createObjectData(
+  Path generateEgoPath(const double curr_v, const double curr_w);
+  std::optional<Path> generateEgoPath(const Trajectory & predicted_traj);
+  std::vector<Polygon2d> generatePathFootprint(const Path & path, const double extra_width_margin);
+
+  void createObjectDataUsingPointCloudClusters(
     const Path & ego_path, const std::vector<Polygon2d> & ego_polys, const rclcpp::Time & stamp,
-    std::vector<ObjectData> & objects);
+    std::vector<ObjectData> & objects,
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_points_ptr);
+
+  void cropPointCloudWithEgoFootprintPath(
+    const std::vector<Polygon2d> & ego_polys, pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_objects);
 
   void addMarker(
     const rclcpp::Time & current_time, const Path & path, const std::vector<Polygon2d> & polygons,
@@ -175,6 +179,7 @@ public:
   bool publish_debug_pointcloud_;
   bool use_predicted_trajectory_;
   bool use_imu_path_;
+  double path_footprint_extra_margin_;
   double detection_range_min_height_;
   double detection_range_max_height_margin_;
   double voxel_grid_x_;
@@ -186,6 +191,9 @@ public:
   double t_response_;
   double a_ego_min_;
   double a_obj_min_;
+  double cluster_tolerance_;
+  int minimum_cluster_size_;
+  int maximum_cluster_size_;
   double imu_prediction_time_horizon_;
   double imu_prediction_time_interval_;
   double mpc_prediction_time_horizon_;

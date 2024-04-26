@@ -86,19 +86,27 @@ where $v$ and $\omega$ are current longitudinal velocity and angular velocity re
 
 ### 3. Get target obstacles from the input point cloud
 
-After generating the ego predicted path, we select target obstacles from the input point cloud. This obstacle filtering has two major steps, which are rough filtering and rigorous filtering.
+After generating the ego predicted path, we select target obstacles from the input point cloud. This obstacle filtering has three major steps, which are rough filtering, noise filtering with clustering and rigorous filtering.
 
 #### Rough filtering
 
-In rough filtering step, we select target obstacle with simple filter. Create a search area up to a certain distance (default 5[m]) away from the predicted path of the ego vehicle and ignore the point cloud (obstacles) that are not within it. The image of the rough filtering is illustrated below.
+In rough filtering step, we select target obstacle with simple filter. Create a search area up to a certain distance (default is half of the ego vehicle width plus the `path_footprint_extra_margin` parameter) away from the predicted path of the ego vehicle and ignore the point cloud that are not within it. The image of the rough filtering is illustrated below.
 
 ![rough_filtering](./image/obstacle_filtering_1.drawio.svg)
 
+#### Noise filtering with clustering and convex hulls
+
+To prevent the AEB from considering noisy points, euclidean clustering is performed on the filtered point cloud. The points in the point cloud that are not close enough to other points to form a cluster are discarded. The parameters `cluster_tolerance`, `minimum_cluster_size` and `maximum_cluster_size` can be used to tune the clustering and the size of objects to be ignored, for more information about the clustering method used by the AEB module, please check the official documentation on euclidean clustering of the PCL library: <https://pcl.readthedocs.io/projects/tutorials/en/master/cluster_extraction.html>.
+
+Furthermore, a 2D convex hull is created around each detected cluster, the vertices of each hull represent the most extreme/outside points of the cluster. These vertices are then checked in the next step.
+
 #### Rigorous filtering
 
-After rough filtering, it performs a geometric collision check to determine whether the filtered obstacles actually have possibility to collide with the ego vehicle. In this check, the ego vehicle is represented as a rectangle, and the point cloud obstacles are represented as points.
+After Noise filtering, it performs a geometric collision check to determine whether the filtered obstacles/hull vertices actually have possibility to collide with the ego vehicle. In this check, the ego vehicle is represented as a rectangle, and the point cloud obstacles are represented as points. Only the vertices with a possibility of collision are kept.
 
 ![rigorous_filtering](./image/obstacle_filtering_2.drawio.svg)
+
+Finally, the vertex that is closest to the ego vehicle is chosen as the candidate for collision checking: Since rss distance is used to judge if a collision will happen or not, if the closest vertex to the ego is deemed to be safe, the rest of the vertices (and the points in the clusters) will also be safe.
 
 ### 4. Collision check with target obstacles
 
