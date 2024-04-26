@@ -21,4 +21,5 @@ rclcpp_components_register_node(livox_tag_filter
 
 ament_auto_package(INSTALL_TO_SHARE
   launch
+  config
 )

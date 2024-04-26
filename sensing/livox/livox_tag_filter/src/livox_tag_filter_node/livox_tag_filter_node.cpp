@@ -40,7 +40,7 @@ LivoxTagFilterNode::LivoxTagFilterNode(const rclcpp::NodeOptions & node_options)
 : Node("livox_tag_filter", node_options)
 {
   // Parameter
-  ignore_tags_ = this->declare_parameter("ignore_tags", std::vector<std::int64_t>{});
+  ignore_tags_ = this->declare_parameter<std::vector<std::int64_t>>("ignore_tags");
 
   // Subscriber
   using std::placeholders::_1;

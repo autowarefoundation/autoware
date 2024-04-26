@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Livox Tag Filter Parameters",
+  "type": "object",
+  "definitions": {
+    "livox_tag_filter": {
+      "type": "object",
+      "properties": {
+        "ignore_tags": {
+          "type": "array",
+          "description": "ignored tags (int array) (See the table in the readme file)",
+          "default": "[]"
+        }
+      },
+      "required": ["ignore_tags"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/livox_tag_filter"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
