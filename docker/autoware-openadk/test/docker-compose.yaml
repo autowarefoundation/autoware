@@ -1,23 +1,25 @@
 version: "2.17"
 
 services:
-  simulator:
-    image: ghcr.io/autowarefoundation/autoware-openadk:latest-simulator
-    volumes:
-      - /dev/shm:/dev/shm
-    network_mode: "host"
-    environment:
-      - ROS_DOMAIN_ID=88
-    command: ros2 launch scenario_test_runner scenario_test_runner.launch.py architecture_type:=awf/universe record:=false scenario:=/autoware/test-scenario/yield_maneuver_demo.yaml sensor_model:=sample_sensor_kit vehicle_model:=sample_vehicle map_path:=/autoware/test-scenario/map/ launch_autoware:=False initialize_duration:=60 global_frame_rate:=12
-
   planning-control:
     image: ghcr.io/autowarefoundation/autoware-openadk:latest-planning-control
     volumes:
       - /dev/shm:/dev/shm
     network_mode: "host"
     environment:
-      - ROS_DOMAIN_ID=88
+      - ROS_LOCALHOST_ONLY=1
     command: ros2 launch autoware_launch planning_simulator.launch.xml map_path:=/autoware/test-scenario/map/ vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit scenario_simulation:=true use_foa:=false perception/enable_traffic_light:=false rviz:=false
+
+  simulator:
+    image: ghcr.io/autowarefoundation/autoware-openadk:latest-simulator
+    volumes:
+      - /dev/shm:/dev/shm
+    network_mode: "host"
+    environment:
+      - ROS_LOCALHOST_ONLY=1
+    depends_on:
+      - planning-control
+    command: ros2 launch scenario_test_runner scenario_test_runner.launch.py architecture_type:=awf/universe record:=false scenario:=/autoware/test-scenario/yield_maneuver_demo.yaml sensor_model:=sample_sensor_kit vehicle_model:=sample_vehicle map_path:=/autoware/test-scenario/map/ launch_autoware:=False initialize_duration:=60 global_frame_rate:=12
 
   visualizer:
     image: ghcr.io/autowarefoundation/autoware-openadk:latest-visualizer
@@ -27,5 +29,7 @@ services:
     network_mode: "host"
     environment:
       - DISPLAY=$DISPLAY
-      - ROS_DOMAIN_ID=88
+      - ROS_LOCALHOST_ONLY=1
+    depends_on:
+      - simulator
     command: /autoware/test-scenario/rviz/launch_rviz.sh
