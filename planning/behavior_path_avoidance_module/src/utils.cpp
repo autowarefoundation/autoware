@@ -551,15 +551,6 @@ bool isNeverAvoidanceTarget(
   const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters)
 {
-  const auto & object_pose = object.object.kinematics.initial_pose_with_covariance.pose;
-  const auto is_moving_distance_longer_than_threshold =
-    tier4_autoware_utils::calcDistance2d(object.init_pose, object_pose) >
-    parameters->distance_threshold_for_ambiguous_vehicle;
-  if (is_moving_distance_longer_than_threshold) {
-    object.reason = AvoidanceDebugFactor::MOVING_OBJECT;
-    return true;
-  }
-
   if (object.is_within_intersection) {
     if (object.behavior == ObjectData::Behavior::NONE) {
       object.reason = "ParallelToEgoLane";
@@ -749,6 +740,15 @@ bool isSatisfiedWithVehicleCondition(
     object.stop_time > parameters->time_threshold_for_ambiguous_vehicle;
   if (!stop_time_longer_than_threshold) {
     object.reason = "AmbiguousStoppedVehicle(wait-and-see)";
+    return false;
+  }
+
+  const auto & current_pose = object.object.kinematics.initial_pose_with_covariance.pose;
+  const auto is_moving_distance_longer_than_threshold =
+    calcDistance2d(object.init_pose, current_pose) >
+    parameters->distance_threshold_for_ambiguous_vehicle;
+  if (is_moving_distance_longer_than_threshold) {
+    object.reason = "AmbiguousStoppedVehicle";
     return false;
   }
 
@@ -1384,6 +1384,7 @@ void fillObjectMovingTime(
     object_data.last_stop = now;
     object_data.move_time = 0.0;
     if (is_new_object) {
+      object_data.init_pose = object_data.object.kinematics.initial_pose_with_covariance.pose;
       object_data.stop_time = 0.0;
       object_data.last_move = now;
       stopped_objects.push_back(object_data);
@@ -1392,11 +1393,13 @@ void fillObjectMovingTime(
       same_id_obj->last_stop = now;
       same_id_obj->move_time = 0.0;
       object_data.stop_time = same_id_obj->stop_time;
+      object_data.init_pose = same_id_obj->init_pose;
     }
     return;
   }
 
   if (is_new_object) {
+    object_data.init_pose = object_data.object.kinematics.initial_pose_with_covariance.pose;
     object_data.move_time = std::numeric_limits<double>::infinity();
     object_data.stop_time = 0.0;
     object_data.last_move = now;
@@ -1406,6 +1409,7 @@ void fillObjectMovingTime(
   object_data.last_stop = same_id_obj->last_stop;
   object_data.move_time = (now - same_id_obj->last_stop).seconds();
   object_data.stop_time = 0.0;
+  object_data.init_pose = object_data.object.kinematics.initial_pose_with_covariance.pose;
 
   if (object_data.move_time > object_parameter.moving_time_threshold) {
     stopped_objects.erase(same_id_obj);
@@ -1450,22 +1454,6 @@ void fillAvoidanceNecessity(
 
   // TRUE -> ? (check with hysteresis factor)
   object_data.avoid_required = check_necessity(parameters->hysteresis_factor_expand_rate);
-}
-
-void fillInitialPose(ObjectData & object_data, ObjectDataArray & detected_objects)
-{
-  const auto id = object_data.object.object_id;
-  const auto same_id_obj = std::find_if(
-    detected_objects.begin(), detected_objects.end(),
-    [&id](const auto & o) { return o.object.object_id == id; });
-
-  if (same_id_obj != detected_objects.end()) {
-    object_data.init_pose = same_id_obj->init_pose;
-    return;
-  }
-
-  object_data.init_pose = object_data.object.kinematics.initial_pose_with_covariance.pose;
-  detected_objects.push_back(object_data);
 }
 
 void fillObjectStoppableJudge(

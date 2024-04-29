@@ -424,9 +424,6 @@ private:
   // TODO(Satoshi OTA) create detected object manager.
   ObjectDataArray registered_objects_;
 
-  // TODO(Satoshi OTA) remove mutable.
-  mutable ObjectDataArray detected_objects_;
-
   // TODO(Satoshi OTA) remove this variable.
   mutable ObjectDataArray ego_stopped_objects_;
 
