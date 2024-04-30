@@ -23,7 +23,7 @@
         "pose_gate_dist": {
           "type": "number",
           "description": "Limit of Mahalanobis distance used for outliers detection",
-          "default": 10000.0
+          "default": 49.5
         }
       },
       "required": [

@@ -18,7 +18,7 @@
         "twist_gate_dist": {
           "type": "number",
           "description": "Limit of Mahalanobis distance used for outliers detection",
-          "default": 10000.0
+          "default": 46.1
         }
       },
       "required": ["twist_additional_delay", "twist_smoothing_steps", "twist_gate_dist"],

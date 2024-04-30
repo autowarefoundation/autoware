@@ -13,13 +13,13 @@
       pose_additional_delay: 0.0
       pose_measure_uncertainty_time: 0.01
       pose_smoothing_steps: 5
-      pose_gate_dist: 10000.0
+      pose_gate_dist: 49.5 # corresponds to significance level = 10^-10
 
     twist_measurement:
       # for twist measurement
       twist_additional_delay: 0.0
       twist_smoothing_steps: 2
-      twist_gate_dist: 10000.0
+      twist_gate_dist: 46.1 # corresponds to significance level = 10^-10
 
     process_noise:
       # for process model

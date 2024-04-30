@@ -130,6 +130,26 @@ Increasing the number will improve the smoothness of the estimation, but may hav
 - `proc_stddev_yaw_c` : This parameter describes the correlation between the yaw and yaw rate. A large value means the change in yaw does not correlate to the estimated yaw rate. If this is set to 0, it means the change in estimated yaw is equal to yaw rate. Usually, this should be set to 0.
 - `proc_stddev_yaw_bias_c` : This parameter is the standard deviation for the rate of change in yaw bias. In most cases, yaw bias is constant, so it can be very small, but must be non-zero.
 
+### 3. Tune gate parameters
+
+EKF performs gating using Mahalanobis distance before updating by observation. The gate size is determined by the `pose_gate_dist` parameter and the `twist_gate_dist`. If the Mahalanobis distance is larger than this value, the observation is ignored.
+
+This gating process is based on a statistical test using the chi-square distribution. As modeled, we assume that the Mahalanobis distance follows a chi-square distribution with 3 degrees of freedom for pose and 2 degrees of freedom for twist.
+
+Currently, the accuracy of covariance estimation itself is not very good, so it is recommended to set the significance level to a very small value to reduce rejection due to false positives.
+
+| Significance level | Threshold for 2 dof | Threshold for 3 dof |
+| ------------------ | ------------------- | ------------------- |
+| $10 ^ {-2}$        | 9.21                | 11.3                |
+| $10 ^ {-3}$        | 13.8                | 16.3                |
+| $10 ^ {-4}$        | 18.4                | 21.1                |
+| $10 ^ {-5}$        | 23.0                | 25.9                |
+| $10 ^ {-6}$        | 27.6                | 30.7                |
+| $10 ^ {-7}$        | 32.2                | 35.4                |
+| $10 ^ {-8}$        | 36.8                | 40.1                |
+| $10 ^ {-9}$        | 41.4                | 44.8                |
+| $10 ^ {-10}$       | 46.1                | 49.5                |
+
 ## Kalman Filter Model
 
 ### kinematics model in update function
