@@ -681,6 +681,18 @@
               ],
               "additionalProperties": false
             },
+            "merging_vehicle": {
+              "type": "object",
+              "properties": {
+                "th_overhang_distance": {
+                  "type": "number",
+                  "description": "Distance threshold between overhang point and ego lane's centerline. If the nearest overhang point of merging/deviating vehicle is less than this param, the module never avoid it. (Basically, the ego stops behind of it.)",
+                  "default": 0.5
+                }
+              },
+              "required": ["th_overhang_distance"],
+              "additionalProperties": false
+            },
             "parked_vehicle": {
               "type": "object",
               "properties": {
@@ -803,6 +815,7 @@
             "object_check_return_pose_distance",
             "max_compensation_time",
             "detection_area",
+            "merging_vehicle",
             "parked_vehicle",
             "avoidance_for_ambiguous_vehicle",
             "intersection"

@@ -132,6 +132,10 @@
           th_shiftable_ratio: 0.8                       # [-]
           min_road_shoulder_width: 0.5                  # [m] FOR DEVELOPER
 
+        # for merging/deviating vehicle
+        merging_vehicle:
+          th_overhang_distance: 0.0                     # [m]
+
         # params for avoidance of vehicle type objects that are ambiguous as to whether they are parked.
         avoidance_for_ambiguous_vehicle:
           enable: true                                  # [-]

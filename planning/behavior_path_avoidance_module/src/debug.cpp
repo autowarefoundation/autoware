@@ -578,6 +578,7 @@ MarkerArray createDebugMarkerArray(
     addObjects(data.other_objects, std::string("TooNearToGoal"));
     addObjects(data.other_objects, std::string("ParallelToEgoLane"));
     addObjects(data.other_objects, std::string("MergingToEgoLane"));
+    addObjects(data.other_objects, std::string("DeviatingFromEgoLane"));
     addObjects(data.other_objects, std::string("UnstableObject"));
     addObjects(data.other_objects, std::string("AmbiguousStoppedVehicle"));
     addObjects(data.other_objects, std::string("AmbiguousStoppedVehicle(wait-and-see)"));

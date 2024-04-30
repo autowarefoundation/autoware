@@ -583,6 +583,46 @@ bool isNeverAvoidanceTarget(
     }
   }
 
+  if (object.behavior == ObjectData::Behavior::MERGING) {
+    object.reason = "MergingToEgoLane";
+    if (
+      isOnRight(object) && !object.is_parked &&
+      object.overhang_points.front().first > parameters->th_overhang_distance) {
+      RCLCPP_DEBUG(
+        rclcpp::get_logger(logger_namespace),
+        "merging vehicle. but overhang distance is larger than threshold.");
+      return true;
+    }
+    if (
+      !isOnRight(object) && !object.is_parked &&
+      object.overhang_points.front().first < -1.0 * parameters->th_overhang_distance) {
+      RCLCPP_DEBUG(
+        rclcpp::get_logger(logger_namespace),
+        "merging vehicle. but overhang distance is larger than threshold.");
+      return true;
+    }
+  }
+
+  if (object.behavior == ObjectData::Behavior::DEVIATING) {
+    object.reason = "DeviatingFromEgoLane";
+    if (
+      isOnRight(object) && !object.is_parked &&
+      object.overhang_points.front().first > parameters->th_overhang_distance) {
+      RCLCPP_DEBUG(
+        rclcpp::get_logger(logger_namespace),
+        "deviating vehicle. but overhang distance is larger than threshold.");
+      return true;
+    }
+    if (
+      !isOnRight(object) && !object.is_parked &&
+      object.overhang_points.front().first < -1.0 * parameters->th_overhang_distance) {
+      RCLCPP_DEBUG(
+        rclcpp::get_logger(logger_namespace),
+        "deviating vehicle. but overhang distance is larger than threshold.");
+      return true;
+    }
+  }
+
   if (object.is_on_ego_lane) {
     const auto right_lane =
       planner_data->route_handler->getRightLanelet(object.overhang_lanelet, true, false);
