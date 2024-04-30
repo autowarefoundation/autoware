@@ -418,33 +418,41 @@ bool isParkedVehicle(
 
   bool is_left_side_parked_vehicle = false;
   if (!isOnRight(object)) {
-    auto [object_shiftable_distance, sub_type] = [&]() {
-      const auto most_left_road_lanelet =
-        route_handler->getMostLeftLanelet(object.overhang_lanelet);
-      const auto most_left_lanelet_candidates =
-        route_handler->getLaneletMapPtr()->laneletLayer.findUsages(
-          most_left_road_lanelet.leftBound());
-
-      lanelet::ConstLanelet most_left_lanelet = most_left_road_lanelet;
-      const lanelet::Attribute sub_type =
-        most_left_lanelet.attribute(lanelet::AttributeName::Subtype);
-
-      for (const auto & ll : most_left_lanelet_candidates) {
-        const lanelet::Attribute sub_type = ll.attribute(lanelet::AttributeName::Subtype);
-        if (sub_type.value() == "road_shoulder") {
-          most_left_lanelet = ll;
-        }
+    const auto most_left_lanelet = [&]() {
+      auto same_direction_lane =
+        route_handler->getMostLeftLanelet(object.overhang_lanelet, true, true);
+      const lanelet::Attribute & sub_type =
+        same_direction_lane.attribute(lanelet::AttributeName::Subtype);
+      if (sub_type == "road_shoulder") {
+        return same_direction_lane;
       }
 
-      const auto center_to_left_boundary = distance2d(
-        to2D(most_left_lanelet.leftBound().basicLineString()),
-        to2D(toLaneletPoint(centerline_pos)).basicPoint());
+      const auto opposite_lanes = route_handler->getLeftOppositeLanelets(same_direction_lane);
+      if (opposite_lanes.empty()) {
+        return same_direction_lane;
+      }
 
-      return std::make_pair(
-        center_to_left_boundary - 0.5 * object.object.shape.dimensions.y, sub_type);
+      return static_cast<lanelet::ConstLanelet>(opposite_lanes.front().invert());
     }();
 
-    if (sub_type.value() != "road_shoulder") {
+    const auto center_to_left_boundary = distance2d(
+      to2D(most_left_lanelet.leftBound().basicLineString()),
+      to2D(toLaneletPoint(centerline_pos)).basicPoint());
+
+    double object_shiftable_distance =
+      center_to_left_boundary - 0.5 * object.object.shape.dimensions.y;
+
+    const lanelet::Attribute & sub_type =
+      most_left_lanelet.attribute(lanelet::AttributeName::Subtype);
+    if (sub_type == "road_shoulder") {
+      // assuming it's parked vehicle if its CoG is within road shoulder lanelet.
+      if (boost::geometry::within(
+            to2D(toLaneletPoint(object_pos)).basicPoint(),
+            most_left_lanelet.polygon2d().basicPolygon())) {
+        return true;
+      }
+    } else {
+      // assuming there is 0.5m road shoulder even if it's not defined explicitly in HDMap.
       object_shiftable_distance += parameters->object_check_min_road_shoulder_width;
     }
 
@@ -458,33 +466,41 @@ bool isParkedVehicle(
 
   bool is_right_side_parked_vehicle = false;
   if (isOnRight(object)) {
-    auto [object_shiftable_distance, sub_type] = [&]() {
-      const auto most_right_road_lanelet =
-        route_handler->getMostRightLanelet(object.overhang_lanelet);
-      const auto most_right_lanelet_candidates =
-        route_handler->getLaneletMapPtr()->laneletLayer.findUsages(
-          most_right_road_lanelet.rightBound());
-
-      lanelet::ConstLanelet most_right_lanelet = most_right_road_lanelet;
-      const lanelet::Attribute sub_type =
-        most_right_lanelet.attribute(lanelet::AttributeName::Subtype);
-
-      for (const auto & ll : most_right_lanelet_candidates) {
-        const lanelet::Attribute sub_type = ll.attribute(lanelet::AttributeName::Subtype);
-        if (sub_type.value() == "road_shoulder") {
-          most_right_lanelet = ll;
-        }
+    const auto most_right_lanelet = [&]() {
+      auto same_direction_lane =
+        route_handler->getMostRightLanelet(object.overhang_lanelet, true, true);
+      const lanelet::Attribute & sub_type =
+        same_direction_lane.attribute(lanelet::AttributeName::Subtype);
+      if (sub_type == "road_shoulder") {
+        return same_direction_lane;
       }
 
-      const auto center_to_right_boundary = distance2d(
-        to2D(most_right_lanelet.rightBound().basicLineString()),
-        to2D(toLaneletPoint(centerline_pos)).basicPoint());
+      const auto opposite_lanes = route_handler->getRightOppositeLanelets(same_direction_lane);
+      if (opposite_lanes.empty()) {
+        return same_direction_lane;
+      }
 
-      return std::make_pair(
-        center_to_right_boundary - 0.5 * object.object.shape.dimensions.y, sub_type);
+      return static_cast<lanelet::ConstLanelet>(opposite_lanes.front().invert());
     }();
 
-    if (sub_type.value() != "road_shoulder") {
+    const auto center_to_right_boundary = distance2d(
+      to2D(most_right_lanelet.rightBound().basicLineString()),
+      to2D(toLaneletPoint(centerline_pos)).basicPoint());
+
+    double object_shiftable_distance =
+      center_to_right_boundary - 0.5 * object.object.shape.dimensions.y;
+
+    const lanelet::Attribute & sub_type =
+      most_right_lanelet.attribute(lanelet::AttributeName::Subtype);
+    if (sub_type == "road_shoulder") {
+      // assuming it's parked vehicle if its CoG is within road shoulder lanelet.
+      if (boost::geometry::within(
+            to2D(toLaneletPoint(object_pos)).basicPoint(),
+            most_right_lanelet.polygon2d().basicPolygon())) {
+        return true;
+      }
+    } else {
+      // assuming there is 0.5m road shoulder even if it's not defined explicitly in HDMap.
       object_shiftable_distance += parameters->object_check_min_road_shoulder_width;
     }
 
