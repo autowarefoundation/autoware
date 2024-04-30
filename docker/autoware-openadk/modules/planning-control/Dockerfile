@@ -29,10 +29,6 @@ RUN --mount=type=ssh \
 # Copy launch file
 COPY docker/autoware-openadk/modules/planning-control/planning_control.launch.xml /autoware/install/planning_control.launch.xml
 
-# Copy test-scenario files
-RUN mkdir -p /autoware/test-scenario
-COPY docker/autoware-openadk/test/test-scenario/ /autoware/test-scenario/
-
 # Create entrypoint
 COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh

@@ -38,10 +38,6 @@ RUN --mount=type=ssh \
 
 COPY --from=ghcr.io/autowarefoundation/autoware-openadk:latest-prebuilt /autoware/install /autoware/install
 
-# Copy test-scenario files
-RUN mkdir -p /autoware/test-scenario
-COPY docker/autoware-openadk/test/test-scenario/ /autoware/test-scenario/
-
 # Create entrypoint
 COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
