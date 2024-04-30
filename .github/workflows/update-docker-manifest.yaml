@@ -12,6 +12,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Combine multi arch images for 'autoware'
+        uses: ./.github/actions/combine-multi-arch-images
+        with:
+          package-name: autoware
+
       - name: Combine multi arch images for 'autoware-openadk'
         uses: ./.github/actions/combine-multi-arch-images
         with:

@@ -75,10 +75,10 @@ jobs:
           mkdir src
           vcs import src < autoware.repos
 
-      - name: Build 'autoware-openadk'
+      - name: Build 'Autoware'
         uses: ./.github/actions/docker-build-and-push
         with:
-          bake-target: autoware-openadk
+          bake-target: autoware
           build-args: |
             *.platform=linux/arm64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
@@ -87,7 +87,23 @@ jobs:
             *.args.LIB_DIR=${{ matrix.lib_dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }},mode=max
-          tag-suffix: ${{ matrix.additional-tag-suffix }}-arm64
+          tag-suffix: ${{ matrix.additional-tag-suffix }}
+          tag-arch: arm64
+          tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
+          allow-push: true
+
+      - name: Build 'Openadk'
+        uses: ./.github/actions/docker-build-and-push-openadk
+        with:
+          bake-target: openadk
+          build-args: |
+            *.platform=linux/arm64
+            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
+            *.args.SETUP_ARGS=${{ matrix.setup-args }}
+            *.args.LIB_DIR=${{ matrix.lib_dir }}
+          tag-suffix: ${{ matrix.additional-tag-suffix }}
+          tag-arch: arm64
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           allow-push: true
 

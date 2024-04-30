@@ -10,13 +10,12 @@ print_help() {
     echo "  -h              Display this help message"
     echo "  --no-cuda       Disable CUDA support"
     echo "  --platform      Specify the platform (default: current platform)"
-    echo "  --devel-only    Build devel image only"
     echo ""
     echo "Note: The --platform option should be one of 'linux/amd64' or 'linux/arm64'."
 }
 
 SCRIPT_DIR=$(readlink -f "$(dirname "$0")")
-WORKSPACE_ROOT="$SCRIPT_DIR/../"
+WORKSPACE_ROOT="$SCRIPT_DIR/../.."
 
 # Parse arguments
 parse_arguments() {
@@ -33,9 +32,6 @@ parse_arguments() {
             option_platform="$2"
             shift
             ;;
-        --devel-only)
-            option_devel_only=true
-            ;;
         *)
             echo "Unknown option: $1"
             print_help
@@ -44,25 +40,6 @@ parse_arguments() {
         esac
         shift
     done
-}
-
-# Set CUDA options
-set_cuda_options() {
-    if [ "$option_no_cuda" = "true" ]; then
-        setup_args="--no-nvidia"
-        image_name_suffix=""
-    else
-        image_name_suffix="-cuda"
-    fi
-}
-
-# Set build options
-set_build_options() {
-    if [ "$option_devel_only" = "true" ]; then
-        targets=("devel")
-    else
-        targets=()
-    fi
 }
 
 # Set platform
@@ -97,6 +74,16 @@ load_env() {
     fi
 }
 
+# Set CUDA options
+set_cuda_options() {
+    if [ "$option_no_cuda" = "true" ]; then
+        setup_args="--no-nvidia"
+        image_name_suffix=""
+    else
+        image_name_suffix="-cuda"
+    fi
+}
+
 # Build images
 build_images() {
     # https://github.com/docker/buildx/issues/484
@@ -111,7 +98,7 @@ build_images() {
     echo "Targets: ${targets[*]}"
 
     set -x
-    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/autoware-openadk/docker-bake.hcl" \
+    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" \
         --set "*.context=$WORKSPACE_ROOT" \
         --set "*.ssh=default" \
         --set "*.platform=$platform" \
@@ -119,9 +106,10 @@ build_images() {
         --set "*.args.BASE_IMAGE=$base_image" \
         --set "*.args.SETUP_ARGS=$setup_args" \
         --set "*.args.LIB_DIR=$lib_dir" \
-        --set "devel.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-devel$image_name_suffix" \
-        --set "prebuilt.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-prebuilt$image_name_suffix" \
-        --set "runtime.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-runtime$image_name_suffix" \
+        --set "base.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-base" \
+        --set "planning-control.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-planning-control" \
+        --set "visualizer.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-visualizer" \
+        --set "simulator.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-simulator" \
         "${targets[@]}"
     set +x
 }
@@ -129,7 +117,6 @@ build_images() {
 # Main script execution
 parse_arguments "$@"
 set_cuda_options
-set_build_options
 set_platform
 set_arch_lib_dir
 load_env

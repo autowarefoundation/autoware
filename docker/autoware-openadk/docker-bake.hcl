@@ -1,26 +1,34 @@
 group "default" {
-  targets = ["prebuilt", "devel", "runtime"]
+  targets = ["base", "planning-control", "simulator", "visualizer"]
 }
 
 // For docker/metadata-action
-target "docker-metadata-action-prebuilt" {}
-target "docker-metadata-action-devel" {}
-target "docker-metadata-action-runtime" {}
+target "docker-metadata-action-base" {}
+target "docker-metadata-action-planning-control" {}
+target "docker-metadata-action-visualizer" {}
+target "docker-metadata-action-simulator" {}
 
-target "prebuilt" {
-  inherits = ["docker-metadata-action-prebuilt"]
-  dockerfile = "docker/autoware-openadk/Dockerfile"
-  target = "prebuilt"
+// Autoware openadk modules
+target "base" {
+  inherits = ["docker-metadata-action-base"]
+  dockerfile = "docker/autoware/Dockerfile"
+  target = "base"
 }
 
-target "devel" {
-  inherits = ["docker-metadata-action-devel"]
-  dockerfile = "docker/autoware-openadk/Dockerfile"
-  target = "devel"
+target "planning-control" {
+  inherits = ["docker-metadata-action-planning-control"]
+  dockerfile = "docker/autoware-openadk/modules/planning-control/Dockerfile"
+  target = "planning-control"
 }
 
-target "runtime" {
-  inherits = ["docker-metadata-action-runtime"]
-  dockerfile = "docker/autoware-openadk/Dockerfile"
-  target = "runtime"
+target "visualizer" {
+  inherits = ["docker-metadata-action-visualizer"]
+  dockerfile = "docker/autoware-openadk/modules/visualizer/Dockerfile"
+  target = "visualizer"
+}
+
+target "simulator" {
+  inherits = ["docker-metadata-action-simulator"]
+  dockerfile = "docker/autoware-openadk/modules/simulator/Dockerfile"
+  target = "simulator"
 }

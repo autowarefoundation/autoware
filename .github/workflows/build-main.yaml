@@ -43,9 +43,9 @@ jobs:
         uses: ./.github/actions/free-disk-space
 
       - name: Build 'autoware-universe'
-        uses: ./.github/actions/docker-build-and-push
+        uses: ./.github/actions/docker-build-push
         with:
-          bake-target: autoware-openadk
+          bake-target: autoware
           build-args: |
             *.platform=linux/amd64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
