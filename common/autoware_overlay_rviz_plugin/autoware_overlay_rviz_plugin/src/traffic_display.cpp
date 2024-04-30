@@ -48,7 +48,7 @@ TrafficDisplay::TrafficDisplay()
 }
 
 void TrafficDisplay::updateTrafficLightData(
-  const autoware_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr & msg)
+  const autoware_perception_msgs::msg::TrafficSignal::ConstSharedPtr & msg)
 {
   current_traffic_ = *msg;
 }
@@ -70,8 +70,8 @@ void TrafficDisplay::drawTrafficLightIndicator(QPainter & painter, const QRectF 
     backgroundRect.top() + circleRect.height() + 30));
   painter.drawEllipse(circleRect);
 
-  if (!current_traffic_.signals.empty()) {
-    switch (current_traffic_.signals[0].elements[0].color) {
+  if (!current_traffic_.elements.empty()) {
+    switch (current_traffic_.elements[0].color) {
       case 1:
         painter.setBrush(QBrush(tl_red_));
         painter.drawEllipse(circleRect);

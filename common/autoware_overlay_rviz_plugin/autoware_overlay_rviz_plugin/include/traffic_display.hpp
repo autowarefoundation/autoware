@@ -24,7 +24,6 @@
 #include <rviz_common/ros_topic_display.hpp>
 
 #include <autoware_perception_msgs/msg/traffic_signal.hpp>
-#include <autoware_perception_msgs/msg/traffic_signal_array.hpp>
 #include <autoware_perception_msgs/msg/traffic_signal_element.hpp>
 
 #include <OgreColourValue.h>
@@ -40,8 +39,8 @@ public:
   TrafficDisplay();
   void drawTrafficLightIndicator(QPainter & painter, const QRectF & backgroundRect);
   void updateTrafficLightData(
-    const autoware_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr & msg);
-  autoware_perception_msgs::msg::TrafficSignalArray current_traffic_;
+    const autoware_perception_msgs::msg::TrafficSignal::ConstSharedPtr & msg);
+  autoware_perception_msgs::msg::TrafficSignal current_traffic_;
 
 private:
   QImage traffic_light_image_;
