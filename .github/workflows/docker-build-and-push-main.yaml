@@ -71,7 +71,7 @@ jobs:
           vcs import src < autoware.repos
 
       - name: Build 'Autoware'
-        uses: ./.github/actions/docker-build-push
+        uses: ./.github/actions/docker-build-and-push
         with:
           bake-target: autoware
           build-args: |

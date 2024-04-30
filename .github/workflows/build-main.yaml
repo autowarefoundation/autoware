@@ -43,7 +43,7 @@ jobs:
         uses: ./.github/actions/free-disk-space
 
       - name: Build 'autoware-universe'
-        uses: ./.github/actions/docker-build-push
+        uses: ./.github/actions/docker-build-and-push
         with:
           bake-target: autoware
           build-args: |
