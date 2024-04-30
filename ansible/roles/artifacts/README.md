@@ -12,11 +12,20 @@ Default `data_dir` location is `~/autoware_data`.
 
 Install ansible following the instructions in the [ansible installation guide](../../README.md#ansible-installation).
 
-Install ansible collections following the instructions in the [ansible collections installation](../../README.md#install-ansible-collections). When a new playbook is added, the collections must be updated with these instructions.
-
 ### Download artifacts
 
-```yaml
+#### Install ansible collections
+
+```bash
+cd ~/autoware # The root directory of the cloned repository
+ansible-galaxy collection install -f -r "ansible-galaxy-requirements.yaml"
+```
+
+This step should be repeated when a new playbook is added.
+
+#### Run the playbook
+
+```bash
 ansible-playbook autoware.dev_env.download_artifacts -e "data_dir=$HOME/autoware_data" --ask-become-pass
 ```
 
