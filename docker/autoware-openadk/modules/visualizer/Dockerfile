@@ -28,7 +28,7 @@ RUN --mount=type=ssh \
 
 # Copy test-scenario files
 RUN mkdir -p /autoware/test-scenario
-COPY docker/autoware-openadk/etc/test-scenario/ /autoware/test-scenario/
+COPY docker/autoware-openadk/test/test-scenario/ /autoware/test-scenario/
 
 # Create entrypoint
 COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh
