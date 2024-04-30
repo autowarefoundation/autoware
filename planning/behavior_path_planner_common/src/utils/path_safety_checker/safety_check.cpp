@@ -90,7 +90,7 @@ bool isTargetObjectFront(
 
 Polygon2d createExtendedPolygon(
   const Pose & base_link_pose, const vehicle_info_util::VehicleInfo & vehicle_info,
-  const double lon_length, const double lat_margin, const double is_stopped_obj,
+  const double lon_length, const double lat_margin, const bool is_stopped_obj,
   CollisionCheckDebug & debug)
 {
   const double & base_to_front = vehicle_info.max_longitudinal_offset_m;
@@ -131,7 +131,7 @@ Polygon2d createExtendedPolygon(
 
 Polygon2d createExtendedPolygon(
   const Pose & obj_pose, const Shape & shape, const double lon_length, const double lat_margin,
-  const double is_stopped_obj, CollisionCheckDebug & debug)
+  const bool is_stopped_obj, CollisionCheckDebug & debug)
 {
   const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose, shape);
   if (obj_polygon.outer().empty()) {
@@ -189,7 +189,7 @@ Polygon2d createExtendedPolygon(
 Polygon2d createExtendedPolygonAlongPath(
   const PathWithLaneId & planned_path, const Pose & base_link_pose,
   const vehicle_info_util::VehicleInfo & vehicle_info, const double lon_length,
-  const double lat_margin, const double is_stopped_obj, CollisionCheckDebug & debug)
+  const double lat_margin, const bool is_stopped_obj, CollisionCheckDebug & debug)
 {
   const double & base_to_front = vehicle_info.max_longitudinal_offset_m;
   const double & width = vehicle_info.vehicle_width_m;
