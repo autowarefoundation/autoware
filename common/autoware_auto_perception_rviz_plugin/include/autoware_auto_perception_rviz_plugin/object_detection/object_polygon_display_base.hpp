@@ -112,6 +112,12 @@ public:
     m_confidence_interval_property->addOption("95%", 2);
     m_confidence_interval_property->addOption("99%", 3);
 
+    m_object_fill_type_property = new rviz_common::properties::EnumProperty(
+      "Object Fill Type", "skeleton", "Change object fill type in visualization", this);
+    m_object_fill_type_property->addOption(
+      "skeleton", static_cast<int>(detail::ObjectFillType::Skeleton));
+    m_object_fill_type_property->addOption("Fill", static_cast<int>(detail::ObjectFillType::Fill));
+
     // iterate over default values to create and initialize the properties.
     for (const auto & map_property_it : detail::kDefaultObjectPropertyValues) {
       const auto & class_property_values = map_property_it.second;
@@ -189,9 +195,13 @@ protected:
     const bool & is_orientation_available) const
   {
     const std_msgs::msg::ColorRGBA color_rgba = get_color_rgba(labels);
+    const auto fill_type =
+      static_cast<detail::ObjectFillType>(m_object_fill_type_property->getOptionInt());
+
     if (m_display_type_property->getOptionInt() == 0) {
       return detail::get_shape_marker_ptr(
-        shape_msg, centroid, orientation, color_rgba, line_width, is_orientation_available);
+        shape_msg, centroid, orientation, color_rgba, line_width, is_orientation_available,
+        fill_type);
     } else if (m_display_type_property->getOptionInt() == 1) {
       return detail::get_2d_shape_marker_ptr(
         shape_msg, centroid, orientation, color_rgba, line_width, is_orientation_available);
@@ -526,6 +536,8 @@ private:
   rviz_common::properties::EnumProperty * m_simple_visualize_mode_property;
   // Property to set confidence interval of state estimations
   rviz_common::properties::EnumProperty * m_confidence_interval_property;
+  // Property to set visualization type
+  rviz_common::properties::EnumProperty * m_object_fill_type_property;
   // Property to enable/disable label visualization
   rviz_common::properties::BoolProperty m_display_label_property;
   // Property to enable/disable uuid visualization
