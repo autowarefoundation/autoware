@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<root version="2.3.8">
+<root>
  <tabbed_widget name="Main Window" parent="main_window">
   <Tab containers="1" tab_name="Lateral Controller">
    <Container>
@@ -9,37 +9,37 @@
        <plot mode="TimeSeries" style="Lines">
         <range bottom="-1.152264" top="1.022526" right="118.796638" left="76.172500"/>
         <limitY/>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.5" color="#1f77b4">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[5]" color="#1f77b4">
          <transform alias="lateral error" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.8" color="#d62728">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[8]" color="#d62728">
          <transform alias="yaw error" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.0" color="#1ac938">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[0]" color="#1ac938">
          <transform alias="steer cmd (final)" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.2" color="#ff7f0e">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[2]" color="#ff7f0e">
          <transform alias="steer cmd (FF-filtered)" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.3" color="#f14cc1">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[3]" color="#f14cc1">
          <transform alias="steer cmd (FF-raw)" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.4" color="#9467bd">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[4]" color="#9467bd">
          <transform alias="steer measured" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.1" color="#17becf">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[1]" color="#17becf">
          <transform alias="steer cmd (mpc-raw)" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
@@ -50,12 +50,12 @@
        <plot mode="TimeSeries" style="Lines">
         <range bottom="-0.069444" top="2.847222" right="118.796638" left="76.172500"/>
         <limitY/>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.9" color="#1f77b4">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[9]" color="#1f77b4">
          <transform alias="trajectory velocity" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.10" color="#d62728">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[10]" color="#d62728">
          <transform alias="current velocity" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
@@ -66,12 +66,12 @@
        <plot mode="TimeSeries" style="Lines">
         <range bottom="-0.460804" top="0.984813" right="118.796638" left="76.172500"/>
         <limitY/>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.14" color="#d62728">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[14]" color="#d62728">
          <transform alias="smoothed" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.15" color="#1f77b4">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[15]" color="#1f77b4">
          <transform alias="raw" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
@@ -84,22 +84,22 @@
        <plot mode="TimeSeries" style="Lines">
         <range bottom="-0.045019" top="1.491571" right="118.796638" left="76.172500"/>
         <limitY/>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.11" color="#1ac938">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[11]" color="#1ac938">
          <transform alias="steering cmd" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.12" color="#ff7f0e">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[12]" color="#ff7f0e">
          <transform alias="steering measured " name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.13" color="#d62728">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[13]" color="#d62728">
          <transform alias="path curvature (smoothed)" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.17" color="#1f77b4">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[17]" color="#1f77b4">
          <transform alias="steering predicted" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
@@ -110,12 +110,12 @@
        <plot mode="TimeSeries" style="Lines">
         <range bottom="-3.295688" top="3.281428" right="118.796638" left="76.172500"/>
         <limitY/>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.7" color="#1ac938">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[7]" color="#1ac938">
          <transform alias="desired yaw" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/lateral/diagnostic/data.6" color="#ff7f0e">
+        <curve name="/control/trajectory_follower/lateral/diagnostic/data[6]" color="#ff7f0e">
          <transform alias="current yaw" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
@@ -141,52 +141,52 @@
        <plot mode="TimeSeries" style="Lines">
         <range bottom="-46.710209" top="91.855136" right="109.929097" left="76.129089"/>
         <limitY/>
-        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.3" color="#1ac938">
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[3]" color="#1ac938">
          <transform alias="FF" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.14" color="#ff7f0e">
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[14]" color="#ff7f0e">
          <transform alias="FF+FB" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.19" color="#f14cc1">
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[19]" color="#f14cc1">
          <transform alias="FB-P" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.20" color="#9467bd">
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[20]" color="#9467bd">
          <transform alias="FB-I" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.21" color="#17becf">
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[21]" color="#17becf">
          <transform alias="FB-D" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.15" color="#bcbd22">
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[15]" color="#bcbd22">
          <transform alias="acc filtered" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.16" color="#1f77b4">
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[16]" color="#1f77b4">
          <transform alias="jerk filtered" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.17" color="#d62728">
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[17]" color="#d62728">
          <transform alias="slope added" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.18" color="#1ac938">
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[18]" color="#1ac938">
          <transform alias="final" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
         </curve>
-        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.25" color="#ff7f0e">
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[25]" color="#ff7f0e">
          <transform alias="calculated" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
@@ -197,7 +197,7 @@
        <plot mode="TimeSeries" style="Lines">
         <range bottom="-0.050000" top="2.050000" right="109.929097" left="76.129089"/>
         <limitY/>
-        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.13" color="#d62728">
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[13]" color="#d62728">
          <transform alias="0:Drive 1:Stopping 2:Stopped 3:Emergency" name="Scale/Offset">
           <options value_scale="1.0" time_offset="0" value_offset="0"/>
          </transform>
@@ -209,22 +209,22 @@
       <plot mode="TimeSeries" style="Lines">
        <range bottom="-0.070625" top="2.895625" right="109.929097" left="76.129089"/>
        <limitY/>
-       <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.2" color="#17becf">
+       <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[2]" color="#17becf">
         <transform alias="target" name="Scale/Offset">
          <options value_scale="1.0" time_offset="0" value_offset="0"/>
         </transform>
        </curve>
-       <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.1" color="#9467bd">
+       <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[1]" color="#9467bd">
         <transform alias="current" name="Scale/Offset">
          <options value_scale="1.0" time_offset="0" value_offset="0"/>
         </transform>
        </curve>
-       <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.4" color="#bcbd22">
+       <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[4]" color="#bcbd22">
         <transform alias="closest" name="Scale/Offset">
          <options value_scale="1.0" time_offset="0" value_offset="0"/>
         </transform>
        </curve>
-       <curve name="/control/trajectory_follower/longitudinal/diagnostic/data.24" color="#1f77b4">
+       <curve name="/control/trajectory_follower/longitudinal/diagnostic/data[24]" color="#1f77b4">
         <transform alias="predicted" name="Scale/Offset">
          <options value_scale="1.0" time_offset="0" value_offset="0"/>
         </transform>
@@ -241,33 +241,42 @@
  <!-- - - - - - - - - - - - - - - -->
  <Plugins>
   <plugin ID="DataLoad CSV">
-   <default time_axis=""/>
+   <parameters time_axis="" delimiter="0"/>
   </plugin>
-  <plugin ID="DataLoad ROS 2 bags">
+  <plugin ID="DataLoad MCAP"/>
+  <plugin ID="DataLoad ROS2 bags"> <!-- cspell:disable-line -->
    <use_header_stamp value="false"/>
    <discard_large_arrays value="true"/>
-   <max_array_size value="99"/>
+   <max_array_size value="100"/>
+   <boolean_strings_to_number value="true"/>
+   <remove_suffix_from_strings value="true"/>
+   <selected_topics value=""/>
   </plugin>
   <plugin ID="DataLoad ULog"/>
-  <plugin ID="ROS 2 Topic Subscriber">
+  <plugin ID="MQTT Subscriber (Mosquitto)"/>
+  <plugin ID="ROS2 Topic Subscriber"> <!-- cspell:disable-line -->
    <use_header_stamp value="false"/>
    <discard_large_arrays value="false"/>
-   <max_array_size value="true"/>
-   <selected_topics>
-    <topic name="/control/trajectory_follower/longitudinal/diagnostic"/>
-    <topic name="/control/trajectory_follower/lateral/diagnostic"/>
-    <topic name="/vehicle/status/control_mode"/>
-   </selected_topics>
+   <max_array_size value="100"/>
+   <boolean_strings_to_number value="false"/>
+   <remove_suffix_from_strings value="false"/>
+   <selected_topics value="/control/trajectory_follower/longitudinal/diagnostic;/control/trajectory_follower/lateral/diagnostic;/vehicle/status/control_mode"/>
   </plugin>
   <plugin ID="UDP Server"/>
   <plugin ID="WebSocket Server"/>
   <plugin ID="ZMQ Subscriber"/>
-  <plugin status="idle" ID="CSV Exporter"/>
-  <plugin status="idle" ID="ROS 2 Topic Re-Publisher"/>
+  <plugin ID="Fast Fourier Transform"/>
+  <plugin ID="Quaternion to RPY"/>
+  <plugin ID="Reactive Script Editor">
+   <library code="--[[ Helper function to create a series from arrays&#xa;&#xa; new_series: a series previously created with ScatterXY.new(name)&#xa; prefix:     prefix of the timeseries, before the index of the array&#xa; suffix_X:   suffix to complete the name of the series containing the X value. If [nil], use the index of the array.&#xa; suffix_Y:   suffix to complete the name of the series containing the Y value&#xa; timestamp:   usually the tracker_time variable&#xa;              &#xa; Example:&#xa; &#xa; Assuming we have multiple series in the form:&#xa; &#xa;   /trajectory/node.{X}/position/x&#xa;   /trajectory/node.{X}/position/y&#xa;   &#xa; where {N} is the index of the array (integer). We can create a reactive series from the array with:&#xa; &#xa;   new_series = ScatterXY.new(&quot;my_trajectory&quot;) &#xa;   CreateSeriesFromArray( new_series, &quot;/trajectory/node&quot;, &quot;position/x&quot;, &quot;position/y&quot;, tracker_time );&#xa;--]]&#xa;&#xa;function CreateSeriesFromArray( new_series, prefix, suffix_X, suffix_Y, timestamp )&#xa;  &#xa;  --- clear previous values&#xa;  new_series:clear()&#xa;  &#xa;  --- Append points to new_series&#xa;  index = 0&#xa;  while(true) do&#xa;&#xa;    x = index;&#xa;    -- if not nil, get the X coordinate from a series&#xa;    if suffix_X ~= nil then &#xa;      series_x = TimeseriesView.find( string.format( &quot;%s.%d/%s&quot;, prefix, index, suffix_X) )&#xa;      if series_x == nil then break end&#xa;      x = series_x:atTime(timestamp)&#x9; &#xa;    end&#xa;    &#xa;    series_y = TimeseriesView.find( string.format( &quot;%s.%d/%s&quot;, prefix, index, suffix_Y) )&#xa;    if series_y == nil then break end &#xa;    y = series_y:atTime(timestamp)&#xa;    &#xa;    new_series:push_back(x,y)&#xa;    index = index+1&#xa;  end&#xa;end&#xa;&#xa;--[[ Similar to the built-in function GetSeriesNames(), but select only the names with a give prefix. --]]&#xa;&#xa;function GetSeriesNamesByPrefix(prefix)&#xa;  -- GetSeriesNames(9 is a built-in function&#xa;  all_names = GetSeriesNames()&#xa;  filtered_names = {}&#xa;  for i, name in ipairs(all_names)  do&#xa;    -- check the prefix&#xa;    if name:find(prefix, 1, #prefix) then&#xa;      table.insert(filtered_names, name);&#xa;    end&#xa;  end&#xa;  return filtered_names&#xa;end&#xa;&#xa;--[[ Modify an existing series, applying offsets to all their X and Y values&#xa;&#xa; series: an existing timeseries, obtained with TimeseriesView.find(name)&#xa; delta_x: offset to apply to each x value&#xa; delta_y: offset to apply to each y value &#xa;  &#xa;--]]&#xa;&#xa;function ApplyOffsetInPlace(series, delta_x, delta_y)&#xa;  -- use C++ indices, not Lua indices&#xa;  for index=0, series:size()-1 do&#xa;    x,y = series:at(index)&#xa;    series:set(index, x + delta_x, y + delta_y)&#xa;  end&#xa;end&#xa;"/>
+   <scripts/>
+  </plugin>
+  <plugin ID="CSV Exporter"/>
+  <plugin ID="ROS2 Topic Re-Publisher"/> <!-- cspell:disable-line -->
  </Plugins>
  <!-- - - - - - - - - - - - - - - -->
  <previouslyLoaded_Datafiles/>
- <previouslyLoaded_Streamer name="ROS 2 Topic Subscriber"/>
+ <previouslyLoaded_Streamer name="ROS2 Topic Subscriber"/> <!-- cspell:disable-line -->
  <!-- - - - - - - - - - - - - - - -->
  <customMathEquations/>
  <snippets/>
