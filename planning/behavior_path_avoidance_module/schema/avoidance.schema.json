@@ -686,7 +686,7 @@
               "properties": {
                 "th_overhang_distance": {
                   "type": "number",
-                  "description": "Distance threshold between overhang point and ego lane's centerline. If the nearest overhang point of merging/deviating vehicle is less than this param, the module never avoid it. (Basically, the ego stops behind of it.)",
+                  "description": "Distance threshold to ignore merging/deviating vehicle to/from ego driving lane. The distance represents how the object polygon overlaps ego lane, and it's calculated from polygon overhang point and lane centerline. If the distance is more than this param, the module never avoid the object. (Basically, the ego stops behind of it.)",
                   "default": 0.5
                 }
               },

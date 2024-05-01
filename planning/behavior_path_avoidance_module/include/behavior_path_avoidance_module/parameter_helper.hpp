@@ -132,6 +132,11 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
   }
 
   {
+    const std::string ns = "avoidance.target_filtering.merging_vehicle.";
+    p.th_overhang_distance = getOrDeclareParameter<double>(*node, ns + "th_overhang_distance");
+  }
+
+  {
     const std::string ns = "avoidance.target_filtering.avoidance_for_ambiguous_vehicle.";
     p.enable_avoidance_for_ambiguous_vehicle = getOrDeclareParameter<bool>(*node, ns + "enable");
     p.closest_distance_to_wait_and_see_for_ambiguous_vehicle =
