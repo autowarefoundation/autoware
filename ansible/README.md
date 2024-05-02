@@ -12,9 +12,7 @@ sudo apt-get purge ansible
 
 # Install pipx
 sudo apt-get -y update
-sudo apt-get -y install python3-pip python3-venv
-
-python3 -m pip install --user pipx
+sudo apt-get -y install pipx
 
 # Add pipx to the system PATH
 python3 -m pipx ensurepath
