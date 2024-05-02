@@ -164,7 +164,7 @@ void AvoidanceByLaneChange::fillAvoidanceTargetObjects(
       [](const auto & object) {
         ObjectData other_object;
         other_object.object = object;
-        other_object.reason = "OutOfTargetArea";
+        other_object.info = ObjectInfo::OUT_OF_TARGET_AREA;
         return other_object;
       });
   }

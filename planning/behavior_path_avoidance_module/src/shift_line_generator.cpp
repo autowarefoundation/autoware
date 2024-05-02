@@ -19,14 +19,11 @@
 
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
-#include <tier4_planning_msgs/msg/detail/avoidance_debug_factor__struct.hpp>
-
 namespace behavior_path_planner::utils::avoidance
 {
 
 using tier4_autoware_utils::generateUUID;
 using tier4_autoware_utils::getPoint;
-using tier4_planning_msgs::msg::AvoidanceDebugFactor;
 
 namespace
 {
@@ -182,7 +179,7 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
 
     // prepare distance is not enough. unavoidable.
     if (avoidance_distance < 1e-3) {
-      object.reason = AvoidanceDebugFactor::REMAINING_DISTANCE_LESS_THAN_ZERO;
+      object.info = ObjectInfo::INSUFFICIENT_LONGITUDINAL_DISTANCE;
       return std::nullopt;
     }
 
@@ -200,10 +197,10 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
     // avoidance distance is not enough. unavoidable.
     if (!isBestEffort(parameters_->policy_deceleration)) {
       if (avoidance_distance < helper_->getMinAvoidanceDistance(avoiding_shift) + LON_DIST_BUFFER) {
-        object.reason = AvoidanceDebugFactor::REMAINING_DISTANCE_LESS_THAN_ZERO;
+        object.info = ObjectInfo::INSUFFICIENT_LONGITUDINAL_DISTANCE;
         return std::nullopt;
       } else {
-        object.reason = AvoidanceDebugFactor::TOO_LARGE_JERK;
+        object.info = ObjectInfo::NEED_DECELERATION;
         return std::nullopt;
       }
     }
@@ -213,7 +210,7 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
       avoidance_distance, helper_->getLateralMaxJerkLimit(), helper_->getAvoidanceEgoSpeed());
 
     if (std::abs(feasible_relative_shift_length) < parameters_->lateral_execution_threshold) {
-      object.reason = "LessThanExecutionThreshold";
+      object.info = ObjectInfo::LESS_THAN_EXECUTION_THRESHOLD;
       return std::nullopt;
     }
 
@@ -224,7 +221,7 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
     if (
       avoidance_distance <
       helper_->getMinAvoidanceDistance(feasible_shift_length) + LON_DIST_BUFFER) {
-      object.reason = AvoidanceDebugFactor::REMAINING_DISTANCE_LESS_THAN_ZERO;
+      object.info = ObjectInfo::INSUFFICIENT_LONGITUDINAL_DISTANCE;
       return std::nullopt;
     }
 
@@ -238,7 +235,7 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
       0.5 * data_->parameters.vehicle_width + lateral_hard_margin;
     if (infeasible) {
       RCLCPP_DEBUG(rclcpp::get_logger(""), "feasible shift length is not enough to avoid. ");
-      object.reason = AvoidanceDebugFactor::TOO_LARGE_JERK;
+      object.info = ObjectInfo::NEED_DECELERATION;
       return std::nullopt;
     }
 
@@ -254,7 +251,7 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
   AvoidOutlines outlines;
   for (auto & o : data.target_objects) {
     if (!o.avoid_margin.has_value()) {
-      o.reason = AvoidanceDebugFactor::INSUFFICIENT_LATERAL_MARGIN;
+      o.info = ObjectInfo::INSUFFICIENT_DRIVABLE_SPACE;
       if (o.avoid_required && is_forward_object(o)) {
         break;
       } else {
@@ -266,7 +263,7 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
     const auto desire_shift_length =
       helper_->getShiftLength(o, is_object_on_right, o.avoid_margin.value());
     if (utils::avoidance::isSameDirectionShift(is_object_on_right, desire_shift_length)) {
-      o.reason = AvoidanceDebugFactor::SAME_DIRECTION_SHIFT;
+      o.info = ObjectInfo::SAME_DIRECTION_SHIFT;
       if (o.avoid_required && is_forward_object(o)) {
         break;
       } else {
@@ -377,7 +374,7 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
     } else if (is_valid_shift_line(al_avoid) && is_valid_shift_line(al_return)) {
       outlines.emplace_back(al_avoid, al_return);
     } else {
-      o.reason = "InvalidShiftLine";
+      o.info = ObjectInfo::INVALID_SHIFT_LINE;
       continue;
     }
 

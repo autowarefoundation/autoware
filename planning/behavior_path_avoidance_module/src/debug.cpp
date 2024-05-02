@@ -21,8 +21,6 @@
 #include <magic_enum.hpp>
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
-#include <tier4_planning_msgs/msg/avoidance_debug_factor.hpp>
-
 #include <string>
 #include <vector>
 
@@ -176,7 +174,8 @@ MarkerArray createObjectInfoMarkerArray(const ObjectDataArray & objects, std::st
       marker.id = uuidToInt32(object.object.object_id);
       marker.pose.position.z += 2.0;
       std::ostringstream string_stream;
-      string_stream << object.reason << (object.is_parked ? "(PARKED)" : "");
+      string_stream << magic_enum::enum_name(object.info) << (object.is_parked ? "(PARKED)" : "");
+      string_stream << (object.is_ambiguous ? "(WAIT AND SEE)" : "");
       marker.text = string_stream.str();
       marker.color = createMarkerColor(1.0, 1.0, 1.0, 0.999);
       marker.scale = createMarkerScale(0.6, 0.6, 0.6);
@@ -441,14 +440,12 @@ MarkerArray createTargetObjectsMarkerArray(const ObjectDataArray & objects, cons
   return msg;
 }
 
-MarkerArray createOtherObjectsMarkerArray(const ObjectDataArray & objects, const std::string & ns)
+MarkerArray createOtherObjectsMarkerArray(const ObjectDataArray & objects, const ObjectInfo & info)
 {
-  using behavior_path_planner::utils::convertToSnakeCase;
-
-  const auto filtered_objects = [&objects, &ns]() {
+  const auto filtered_objects = [&objects, &info]() {
     ObjectDataArray ret{};
     for (const auto & o : objects) {
-      if (o.reason != ns) {
+      if (o.info != info) {
         continue;
       }
       ret.push_back(o);
@@ -460,18 +457,20 @@ MarkerArray createOtherObjectsMarkerArray(const ObjectDataArray & objects, const
   MarkerArray msg;
   msg.markers.reserve(filtered_objects.size() * 2);
 
+  std::ostringstream string_stream;
+  string_stream << magic_enum::enum_name(info);
+
+  std::string ns = string_stream.str();
+  transform(ns.begin(), ns.end(), ns.begin(), tolower);
+
   appendMarkerArray(
     createObjectsCubeMarkerArray(
-      filtered_objects, "others_" + convertToSnakeCase(ns) + "_cube",
-      createMarkerScale(3.0, 1.5, 1.5), createMarkerColor(0.0, 1.0, 0.0, 0.8)),
+      filtered_objects, "others_" + ns + "_cube", createMarkerScale(3.0, 1.5, 1.5),
+      createMarkerColor(0.0, 1.0, 0.0, 0.8)),
     &msg);
+  appendMarkerArray(createObjectInfoMarkerArray(filtered_objects, "others_" + ns + "_info"), &msg);
   appendMarkerArray(
-    createObjectInfoMarkerArray(filtered_objects, "others_" + convertToSnakeCase(ns) + "_info"),
-    &msg);
-  appendMarkerArray(
-    createOverhangLaneletMarkerArray(
-      filtered_objects, "others_" + convertToSnakeCase(ns) + "_overhang_lanelet"),
-    &msg);
+    createOverhangLaneletMarkerArray(filtered_objects, "others_" + ns + "_overhang_lanelet"), &msg);
 
   return msg;
 }
@@ -528,7 +527,6 @@ MarkerArray createDebugMarkerArray(
   using marker_utils::showPolygon;
   using marker_utils::showPredictedPath;
   using marker_utils::showSafetyCheckInfo;
-  using tier4_planning_msgs::msg::AvoidanceDebugFactor;
 
   const auto current_time = rclcpp::Clock{RCL_ROS_TIME}.now();
   MarkerArray msg;
@@ -564,24 +562,22 @@ MarkerArray createDebugMarkerArray(
 
   // ignore objects
   {
-    addObjects(data.other_objects, AvoidanceDebugFactor::OBJECT_IS_BEHIND_THRESHOLD);
-    addObjects(data.other_objects, AvoidanceDebugFactor::OBJECT_IS_IN_FRONT_THRESHOLD);
-    addObjects(data.other_objects, AvoidanceDebugFactor::OBJECT_IS_NOT_TYPE);
-    addObjects(data.other_objects, AvoidanceDebugFactor::OBJECT_BEHIND_PATH_GOAL);
-    addObjects(data.other_objects, AvoidanceDebugFactor::TOO_NEAR_TO_CENTERLINE);
-    addObjects(data.other_objects, AvoidanceDebugFactor::NOT_PARKING_OBJECT);
-    addObjects(data.other_objects, std::string("MovingObject"));
-    addObjects(data.other_objects, std::string("CrosswalkUser"));
-    addObjects(data.other_objects, std::string("OutOfTargetArea"));
-    addObjects(data.other_objects, std::string("NotNeedAvoidance"));
-    addObjects(data.other_objects, std::string("LessThanExecutionThreshold"));
-    addObjects(data.other_objects, std::string("TooNearToGoal"));
-    addObjects(data.other_objects, std::string("ParallelToEgoLane"));
-    addObjects(data.other_objects, std::string("MergingToEgoLane"));
-    addObjects(data.other_objects, std::string("DeviatingFromEgoLane"));
-    addObjects(data.other_objects, std::string("UnstableObject"));
-    addObjects(data.other_objects, std::string("AmbiguousStoppedVehicle"));
-    addObjects(data.other_objects, std::string("AmbiguousStoppedVehicle(wait-and-see)"));
+    addObjects(data.other_objects, ObjectInfo::FURTHER_THAN_THRESHOLD);
+    addObjects(data.other_objects, ObjectInfo::IS_NOT_TARGET_OBJECT);
+    addObjects(data.other_objects, ObjectInfo::FURTHER_THAN_GOAL);
+    addObjects(data.other_objects, ObjectInfo::TOO_NEAR_TO_CENTERLINE);
+    addObjects(data.other_objects, ObjectInfo::IS_NOT_PARKING_OBJECT);
+    addObjects(data.other_objects, ObjectInfo::MOVING_OBJECT);
+    addObjects(data.other_objects, ObjectInfo::CROSSWALK_USER);
+    addObjects(data.other_objects, ObjectInfo::OUT_OF_TARGET_AREA);
+    addObjects(data.other_objects, ObjectInfo::ENOUGH_LATERAL_DISTANCE);
+    addObjects(data.other_objects, ObjectInfo::LESS_THAN_EXECUTION_THRESHOLD);
+    addObjects(data.other_objects, ObjectInfo::TOO_NEAR_TO_GOAL);
+    addObjects(data.other_objects, ObjectInfo::PARALLEL_TO_EGO_LANE);
+    addObjects(data.other_objects, ObjectInfo::MERGING_TO_EGO_LANE);
+    addObjects(data.other_objects, ObjectInfo::DEVIATING_FROM_EGO_LANE);
+    addObjects(data.other_objects, ObjectInfo::UNSTABLE_OBJECT);
+    addObjects(data.other_objects, ObjectInfo::AMBIGUOUS_STOPPED_VEHICLE);
   }
 
   // shift line pre-process

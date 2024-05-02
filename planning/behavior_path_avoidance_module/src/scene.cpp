@@ -31,7 +31,6 @@
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include "tier4_planning_msgs/msg/detail/avoidance_debug_msg_array__struct.hpp"
-#include <tier4_planning_msgs/msg/detail/avoidance_debug_factor__struct.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -52,7 +51,6 @@ using tier4_autoware_utils::calcLateralDeviation;
 using tier4_autoware_utils::getPoint;
 using tier4_autoware_utils::getPose;
 using tier4_autoware_utils::toHexString;
-using tier4_planning_msgs::msg::AvoidanceDebugFactor;
 
 namespace
 {
@@ -119,9 +117,8 @@ bool AvoidanceModule::isExecutionRequested() const
   }
 
   return std::any_of(
-    avoid_data_.target_objects.begin(), avoid_data_.target_objects.end(), [](const auto & o) {
-      return o.is_avoidable || o.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
-    });
+    avoid_data_.target_objects.begin(), avoid_data_.target_objects.end(),
+    [this](const auto & o) { return !helper_->isAbsolutelyNotAvoidable(o); });
 }
 
 bool AvoidanceModule::isExecutionReady() const
@@ -136,10 +133,9 @@ bool AvoidanceModule::isExecutionReady() const
 
 bool AvoidanceModule::isSatisfiedSuccessCondition(const AvoidancePlanningData & data) const
 {
-  const bool has_avoidance_target =
-    std::any_of(data.target_objects.begin(), data.target_objects.end(), [](const auto & o) {
-      return o.is_avoidable || o.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
-    });
+  const bool has_avoidance_target = std::any_of(
+    data.target_objects.begin(), data.target_objects.end(),
+    [this](const auto & o) { return !helper_->isAbsolutelyNotAvoidable(o); });
 
   if (has_avoidance_target) {
     return false;
@@ -337,7 +333,7 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
 
   for (const auto & object : object_outside_target_lane.objects) {
     ObjectData other_object = createObjectData(data, object);
-    other_object.reason = "OutOfTargetArea";
+    other_object.info = ObjectInfo::OUT_OF_TARGET_AREA;
     data.other_objects.push_back(other_object);
   }
 
@@ -367,8 +363,6 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
       debug_info.object_id = toHexString(o.object.object_id);
       debug_info.longitudinal_distance = o.longitudinal;
       debug_info.lateral_distance_from_centerline = o.to_centerline;
-      debug_info.allow_avoidance = o.reason == "";
-      debug_info.failed_reason = o.reason;
       debug_info_array.push_back(debug_info);
     };
 
@@ -530,12 +524,11 @@ void AvoidanceModule::fillEgoStatus(
    * if the both of following two conditions are satisfied, the module surely avoid the object.
    * Condition1: there is risk to collide with object without avoidance.
    * Condition2: there is enough space to avoid.
-   * In TOO_LARGE_JERK condition, it is possible to avoid object by deceleration even if the flag
+   * In NEED_DECELERATION condition, it is possible to avoid object by deceleration even if the flag
    * is_avoidable is FALSE. So, the module inserts stop point for such a object.
    */
   for (const auto & o : data.target_objects) {
-    const auto enough_space = o.is_avoidable || o.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
-    if (o.avoid_required && enough_space) {
+    if (o.avoid_required && !helper_->isAbsolutelyNotAvoidable(o)) {
       data.avoid_required = true;
       data.stop_target_object = o;
       data.to_stop_line = o.to_stop_line;
@@ -1667,9 +1660,7 @@ void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
     return;
   }
 
-  const auto enough_space =
-    object.value().is_avoidable || object.value().reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
-  if (!enough_space) {
+  if (helper_->isAbsolutelyNotAvoidable(object.value())) {
     return;
   }
 

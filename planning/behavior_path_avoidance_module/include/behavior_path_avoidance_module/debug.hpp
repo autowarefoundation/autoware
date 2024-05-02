@@ -31,6 +31,7 @@ using behavior_path_planner::AvoidancePlanningData;
 using behavior_path_planner::AvoidLineArray;
 using behavior_path_planner::DebugData;
 using behavior_path_planner::ObjectDataArray;
+using behavior_path_planner::ObjectInfo;
 using behavior_path_planner::PathShifter;
 using behavior_path_planner::ShiftLineArray;
 using geometry_msgs::msg::Pose;
@@ -47,7 +48,7 @@ MarkerArray createPredictedVehiclePositions(const PathWithLaneId & path, std::st
 
 MarkerArray createTargetObjectsMarkerArray(const ObjectDataArray & objects, const std::string & ns);
 
-MarkerArray createOtherObjectsMarkerArray(const ObjectDataArray & objects, const std::string & ns);
+MarkerArray createOtherObjectsMarkerArray(const ObjectDataArray & objects, const ObjectInfo & info);
 
 MarkerArray createDebugMarkerArray(
   const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug);

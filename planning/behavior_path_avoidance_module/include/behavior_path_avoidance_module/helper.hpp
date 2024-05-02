@@ -343,6 +343,20 @@ public:
              parameters_->closest_distance_to_wait_and_see_for_ambiguous_vehicle;
   }
 
+  static bool isAbsolutelyNotAvoidable(const ObjectData & object)
+  {
+    if (object.is_avoidable) {
+      return false;
+    }
+
+    // can avoid it after deceleration.
+    if (object.info == ObjectInfo::NEED_DECELERATION) {
+      return false;
+    }
+
+    return true;
+  }
+
   bool isReady(const AvoidLineArray & new_shift_lines, const double current_shift_length) const
   {
     if (std::abs(current_shift_length) < 1e-3) {

@@ -53,6 +53,34 @@ using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 
 using route_handler::Direction;
 
+enum class ObjectInfo {
+  NONE = 0,
+  // ignore reasons
+  OUT_OF_TARGET_AREA,
+  FURTHER_THAN_THRESHOLD,
+  FURTHER_THAN_GOAL,
+  IS_NOT_TARGET_OBJECT,
+  IS_NOT_PARKING_OBJECT,
+  TOO_NEAR_TO_CENTERLINE,
+  TOO_NEAR_TO_GOAL,
+  MOVING_OBJECT,
+  UNSTABLE_OBJECT,
+  CROSSWALK_USER,
+  ENOUGH_LATERAL_DISTANCE,
+  LESS_THAN_EXECUTION_THRESHOLD,
+  PARALLEL_TO_EGO_LANE,
+  MERGING_TO_EGO_LANE,
+  DEVIATING_FROM_EGO_LANE,
+  // unavoidable reasons
+  NEED_DECELERATION,
+  SAME_DIRECTION_SHIFT,
+  INSUFFICIENT_DRIVABLE_SPACE,
+  INSUFFICIENT_LONGITUDINAL_DISTANCE,
+  INVALID_SHIFT_LINE,
+  // others
+  AMBIGUOUS_STOPPED_VEHICLE,
+};
+
 struct ObjectParameter
 {
   bool is_avoidance_target{false};
@@ -423,8 +451,8 @@ struct ObjectData  // avoidance target
   // overhang points (sort by distance)
   std::vector<std::pair<double, Point>> overhang_points{};
 
-  // unavoidable reason
-  std::string reason{};
+  // object detail info
+  ObjectInfo info{ObjectInfo::NONE};
 
   // lateral avoid margin
   std::optional<double> avoid_margin{std::nullopt};

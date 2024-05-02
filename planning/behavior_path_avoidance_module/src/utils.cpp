@@ -27,7 +27,6 @@
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
 #include <geometry_msgs/msg/detail/transform_stamped__struct.hpp>
-#include <tier4_planning_msgs/msg/detail/avoidance_debug_factor__struct.hpp>
 
 #include <boost/geometry/algorithms/buffer.hpp>
 #include <boost/geometry/algorithms/convex_hull.hpp>
@@ -62,7 +61,6 @@ using tier4_autoware_utils::calcYawDeviation;
 using tier4_autoware_utils::createQuaternionFromRPY;
 using tier4_autoware_utils::getPose;
 using tier4_autoware_utils::pose2transform;
-using tier4_planning_msgs::msg::AvoidanceDebugFactor;
 using tier4_planning_msgs::msg::AvoidanceDebugMsg;
 
 namespace
@@ -569,14 +567,14 @@ bool isNeverAvoidanceTarget(
 {
   if (object.is_within_intersection) {
     if (object.behavior == ObjectData::Behavior::NONE) {
-      object.reason = "ParallelToEgoLane";
+      object.info = ObjectInfo::PARALLEL_TO_EGO_LANE;
       RCLCPP_DEBUG(
         rclcpp::get_logger(logger_namespace), "object belongs to ego lane. never avoid it.");
       return true;
     }
 
     if (object.behavior == ObjectData::Behavior::MERGING) {
-      object.reason = "MergingToEgoLane";
+      object.info = ObjectInfo::MERGING_TO_EGO_LANE;
       RCLCPP_DEBUG(
         rclcpp::get_logger(logger_namespace), "object belongs to ego lane. never avoid it.");
       return true;
@@ -584,7 +582,7 @@ bool isNeverAvoidanceTarget(
   }
 
   if (object.behavior == ObjectData::Behavior::MERGING) {
-    object.reason = "MergingToEgoLane";
+    object.info = ObjectInfo::MERGING_TO_EGO_LANE;
     if (
       isOnRight(object) && !object.is_parked &&
       object.overhang_points.front().first > parameters->th_overhang_distance) {
@@ -604,7 +602,7 @@ bool isNeverAvoidanceTarget(
   }
 
   if (object.behavior == ObjectData::Behavior::DEVIATING) {
-    object.reason = "DeviatingFromEgoLane";
+    object.info = ObjectInfo::DEVIATING_FROM_EGO_LANE;
     if (
       isOnRight(object) && !object.is_parked &&
       object.overhang_points.front().first > parameters->th_overhang_distance) {
@@ -629,7 +627,7 @@ bool isNeverAvoidanceTarget(
     const auto left_lane =
       planner_data->route_handler->getLeftLanelet(object.overhang_lanelet, true, false);
     if (right_lane.has_value() && left_lane.has_value()) {
-      object.reason = AvoidanceDebugFactor::NOT_PARKING_OBJECT;
+      object.info = ObjectInfo::IS_NOT_PARKING_OBJECT;
       RCLCPP_DEBUG(
         rclcpp::get_logger(logger_namespace), "object isn't on the edge lane. never avoid it.");
       return true;
@@ -638,7 +636,7 @@ bool isNeverAvoidanceTarget(
 
   if (isCloseToStopFactor(object, data, planner_data, parameters)) {
     if (object.is_on_ego_lane && !object.is_parked) {
-      object.reason = AvoidanceDebugFactor::NOT_PARKING_OBJECT;
+      object.info = ObjectInfo::IS_NOT_PARKING_OBJECT;
       RCLCPP_DEBUG(
         rclcpp::get_logger(logger_namespace), "object is close to stop factor. never avoid it.");
       return true;
@@ -666,11 +664,11 @@ bool isObviousAvoidanceTarget(
   }
 
   if (!object.is_parked) {
-    object.reason = AvoidanceDebugFactor::NOT_PARKING_OBJECT;
+    object.info = ObjectInfo::IS_NOT_PARKING_OBJECT;
   }
 
   if (object.behavior == ObjectData::Behavior::MERGING) {
-    object.reason = "MergingToEgoLane";
+    object.info = ObjectInfo::MERGING_TO_EGO_LANE;
   }
 
   return false;
@@ -683,13 +681,13 @@ bool isSatisfiedWithCommonCondition(
 {
   // Step1. filtered by target object type.
   if (!isAvoidanceTargetObjectType(object.object, parameters)) {
-    object.reason = AvoidanceDebugFactor::OBJECT_IS_NOT_TYPE;
+    object.info = ObjectInfo::IS_NOT_TARGET_OBJECT;
     return false;
   }
 
   // Step2. filtered stopped objects.
   if (filtering_utils::isMovingObject(object, parameters)) {
-    object.reason = AvoidanceDebugFactor::MOVING_OBJECT;
+    object.info = ObjectInfo::MOVING_OBJECT;
     return false;
   }
 
@@ -698,12 +696,12 @@ bool isSatisfiedWithCommonCondition(
   fillLongitudinalAndLengthByClosestEnvelopeFootprint(data.reference_path_rough, ego_pos, object);
 
   if (object.longitudinal < -parameters->object_check_backward_distance) {
-    object.reason = AvoidanceDebugFactor::OBJECT_IS_BEHIND_THRESHOLD;
+    object.info = ObjectInfo::FURTHER_THAN_THRESHOLD;
     return false;
   }
 
   if (object.longitudinal > forward_detection_range) {
-    object.reason = AvoidanceDebugFactor::OBJECT_IS_IN_FRONT_THRESHOLD;
+    object.info = ObjectInfo::FURTHER_THAN_THRESHOLD;
     return false;
   }
 
@@ -719,7 +717,7 @@ bool isSatisfiedWithCommonCondition(
       : std::numeric_limits<double>::max();
 
   if (object.longitudinal > to_goal_distance) {
-    object.reason = AvoidanceDebugFactor::OBJECT_BEHIND_PATH_GOAL;
+    object.info = ObjectInfo::FURTHER_THAN_GOAL;
     return false;
   }
 
@@ -727,7 +725,7 @@ bool isSatisfiedWithCommonCondition(
     if (
       object.longitudinal + object.length / 2 + parameters->object_check_goal_distance >
       to_goal_distance) {
-      object.reason = "TooNearToGoal";
+      object.info = ObjectInfo::TOO_NEAR_TO_GOAL;
       return false;
     }
   }
@@ -742,7 +740,7 @@ bool isSatisfiedWithNonVehicleCondition(
 {
   // avoidance module ignore pedestrian and bicycle around crosswalk
   if (isWithinCrosswalk(object, planner_data->route_handler->getOverallGraphPtr())) {
-    object.reason = "CrosswalkUser";
+    object.info = ObjectInfo::CROSSWALK_USER;
     return false;
   }
 
@@ -751,7 +749,7 @@ bool isSatisfiedWithNonVehicleCondition(
   object.to_centerline =
     lanelet::utils::getArcCoordinates(data.current_lanelets, object_pose).distance;
   if (std::abs(object.to_centerline) < parameters->threshold_distance_object_is_on_center) {
-    object.reason = AvoidanceDebugFactor::TOO_NEAR_TO_CENTERLINE;
+    object.info = ObjectInfo::TOO_NEAR_TO_CENTERLINE;
     return false;
   }
 
@@ -788,14 +786,14 @@ bool isSatisfiedWithVehicleCondition(
   // from here, filtering for ambiguous vehicle.
 
   if (!parameters->enable_avoidance_for_ambiguous_vehicle) {
-    object.reason = "AmbiguousStoppedVehicle";
+    object.info = ObjectInfo::AMBIGUOUS_STOPPED_VEHICLE;
     return false;
   }
 
   const auto stop_time_longer_than_threshold =
     object.stop_time > parameters->time_threshold_for_ambiguous_vehicle;
   if (!stop_time_longer_than_threshold) {
-    object.reason = "AmbiguousStoppedVehicle(wait-and-see)";
+    object.info = ObjectInfo::AMBIGUOUS_STOPPED_VEHICLE;
     return false;
   }
 
@@ -804,25 +802,25 @@ bool isSatisfiedWithVehicleCondition(
     calcDistance2d(object.init_pose, current_pose) >
     parameters->distance_threshold_for_ambiguous_vehicle;
   if (is_moving_distance_longer_than_threshold) {
-    object.reason = "AmbiguousStoppedVehicle";
+    object.info = ObjectInfo::AMBIGUOUS_STOPPED_VEHICLE;
     return false;
   }
 
   if (object.is_within_intersection) {
     if (object.behavior == ObjectData::Behavior::DEVIATING) {
-      object.reason = "AmbiguousStoppedVehicle(wait-and-see)";
+      object.info = ObjectInfo::AMBIGUOUS_STOPPED_VEHICLE;
       object.is_ambiguous = true;
       return true;
     }
   } else {
     if (object.behavior == ObjectData::Behavior::MERGING) {
-      object.reason = "AmbiguousStoppedVehicle(wait-and-see)";
+      object.info = ObjectInfo::AMBIGUOUS_STOPPED_VEHICLE;
       object.is_ambiguous = true;
       return true;
     }
 
     if (object.behavior == ObjectData::Behavior::DEVIATING) {
-      object.reason = "AmbiguousStoppedVehicle(wait-and-see)";
+      object.info = ObjectInfo::AMBIGUOUS_STOPPED_VEHICLE;
       object.is_ambiguous = true;
       return true;
     }
@@ -833,7 +831,7 @@ bool isSatisfiedWithVehicleCondition(
     }
   }
 
-  object.reason = AvoidanceDebugFactor::NOT_PARKING_OBJECT;
+  object.info = ObjectInfo::IS_NOT_PARKING_OBJECT;
   return false;
 }
 
@@ -847,12 +845,12 @@ bool isNoNeedAvoidanceBehavior(
   const auto shift_length = calcShiftLength(
     isOnRight(object), object.overhang_points.front().first, object.avoid_margin.value());
   if (!isShiftNecessary(isOnRight(object), shift_length)) {
-    object.reason = "NotNeedAvoidance";
+    object.info = ObjectInfo::ENOUGH_LATERAL_DISTANCE;
     return true;
   }
 
   if (std::abs(shift_length) < parameters->lateral_execution_threshold) {
-    object.reason = "LessThanExecutionThreshold";
+    object.info = ObjectInfo::LESS_THAN_EXECUTION_THRESHOLD;
     return true;
   }
 
@@ -1702,7 +1700,7 @@ void filterTargetObjects(
     constexpr double STOP_TIME_THRESHOLD = 3.0;  // [s]
     if (filtering_utils::isUnknownTypeObject(o)) {
       if (o.stop_time < STOP_TIME_THRESHOLD) {
-        o.reason = "UnstableObject";
+        o.info = ObjectInfo::UNSTABLE_OBJECT;
         data.other_objects.push_back(o);
         continue;
       }
