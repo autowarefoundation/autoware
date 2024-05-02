@@ -87,6 +87,17 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
   logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
+void MissionPlanner::publish_pose_log(const Pose & pose, const std::string & pose_type)
+{
+  const auto & p = pose.position;
+  RCLCPP_INFO(
+    this->get_logger(), "%s pose - x: %f, y: %f, z: %f", pose_type.c_str(), p.x, p.y, p.z);
+  const auto & quaternion = pose.orientation;
+  RCLCPP_INFO(
+    this->get_logger(), "%s orientation - qx: %f, qy: %f, qz: %f, qw: %f", pose_type.c_str(),
+    quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+}
+
 void MissionPlanner::check_initialization()
 {
   auto logger = get_logger();
@@ -247,6 +258,9 @@ void MissionPlanner::on_set_lanelet_route(
   change_route(route);
   change_state(RouteState::SET);
   res->status.success = true;
+
+  publish_pose_log(odometry_->pose.pose, "initial");
+  publish_pose_log(req->goal_pose, "goal");
 }
 
 void MissionPlanner::on_set_waypoint_route(
@@ -292,6 +306,9 @@ void MissionPlanner::on_set_waypoint_route(
   change_route(route);
   change_state(RouteState::SET);
   res->status.success = true;
+
+  publish_pose_log(odometry_->pose.pose, "initial");
+  publish_pose_log(req->goal_pose, "goal");
 }
 
 void MissionPlanner::change_route()
