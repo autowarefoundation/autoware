@@ -13,12 +13,8 @@ RUN --mount=type=ssh \
   && vcs import src/simulator/scenario_simulator/external < src/simulator/scenario_simulator/dependency_humble.repos \
   && apt-get update \
   && rosdep update \
-  && DEBIAN_FRONTEND=noninteractive rosdep install -y --rosdistro "$ROS_DISTRO" --from-paths src --ignore-src
-
-RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module planning-control --no-cuda-drivers --runtime openadk \
-  && pip uninstall -y ansible ansible-core \
   && source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && DEBIAN_FRONTEND=noninteractive rosdep install -y -t exec --rosdistro "$ROS_DISTRO" --from-paths src --ignore-src \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
   && find /autoware/install -type d -exec chmod -R 777 {} \; \
   && rm -rf src/* \

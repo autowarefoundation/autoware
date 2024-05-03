@@ -9,13 +9,11 @@ COPY autoware.repos /autoware/
 
 # Dependencies
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module planning-control --no-cuda-drivers --runtime openadk \
-  && pip uninstall -y ansible ansible-core \
-  && mkdir src \
+  mkdir src \
   && vcs import src < autoware.repos \
   && apt-get update \
   && rosdep update \
-  && DEBIAN_FRONTEND=noninteractive rosdep install -y --ignore-src --from-paths src --rosdistro "$ROS_DISTRO" \
+  && DEBIAN_FRONTEND=noninteractive rosdep install -y -t exec --ignore-src --from-paths src --rosdistro "$ROS_DISTRO" \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
   && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
   && find / -name "*.o" -type f -delete \
