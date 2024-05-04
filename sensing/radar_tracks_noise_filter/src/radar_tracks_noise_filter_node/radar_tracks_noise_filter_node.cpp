@@ -56,7 +56,7 @@ RadarTrackCrossingNoiseFilterNode::RadarTrackCrossingNoiseFilterNode(
 
   // Subscriber
   sub_tracks_ = create_subscription<RadarTracks>(
-    "~/input/tracks", rclcpp::QoS{1},
+    "~/input/tracks", rclcpp::QoS{1}.best_effort(),
     std::bind(&RadarTrackCrossingNoiseFilterNode::onTracks, this, std::placeholders::_1));
 
   // Publisher

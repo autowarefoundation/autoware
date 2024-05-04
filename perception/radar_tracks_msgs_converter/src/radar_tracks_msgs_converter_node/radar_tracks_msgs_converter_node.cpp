@@ -87,7 +87,7 @@ RadarTracksMsgsConverterNode::RadarTracksMsgsConverterNode(const rclcpp::NodeOpt
 
   // Subscriber
   sub_radar_ = create_subscription<RadarTracks>(
-    "~/input/radar_objects", rclcpp::QoS{1},
+    "~/input/radar_objects", rclcpp::QoS{1}.best_effort(),
     std::bind(&RadarTracksMsgsConverterNode::onRadarTracks, this, _1));
   sub_odometry_ = create_subscription<Odometry>(
     "~/input/odometry", rclcpp::QoS{1},
