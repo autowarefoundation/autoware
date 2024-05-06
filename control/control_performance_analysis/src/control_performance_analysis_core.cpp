@@ -401,7 +401,7 @@ std::pair<bool, Pose> ControlPerformanceAnalysisCore::calculateClosestPose()
   if (
     !interpolated_pose_ptr_ || !interpolated_velocity_ptr_ || !interpolated_acceleration_ptr_ ||
     !interpolated_steering_angle_ptr_) {
-    std::make_pair(false, interp_point.pose);
+    return std::make_pair(false, interp_point.pose);
   }
 
   return std::make_pair(true, interp_point.pose);
