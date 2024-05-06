@@ -447,6 +447,8 @@ std::vector<double> splineTwoPoints(
   std::vector<double> base_s, std::vector<double> base_x, const double begin_diff,
   const double end_diff, std::vector<double> new_s)
 {
+  assert(base_s.size() == 2 && base_x.size() == 2);
+
   const double h = base_s.at(1) - base_s.at(0);
 
   const double c = begin_diff;
