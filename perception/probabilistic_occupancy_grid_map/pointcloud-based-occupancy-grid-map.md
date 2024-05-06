@@ -77,18 +77,34 @@ $$
 | ----------------------------- | ------------------------- | ------------------ |
 | `~/output/occupancy_grid_map` | `nav_msgs::OccupancyGrid` | occupancy grid map |
 
+### Related topics
+
+If you set `downsample_input_pointcloud` to `true`, the input pointcloud will be downsampled and following topics are also used.
+
+- pointcloud_based_occupancy_grid_map method
+
+```yaml
+# downsampled raw and obstacle pointcloud
+/perception/occupancy_grid_map/obstacle/downsample/pointcloud
+/perception/occupancy_grid_map/raw/downsample/pointcloud
+```
+
 ## Parameters
 
 ### Node Parameters
 
-| Name                | Type   | Description                                                                                                                      |
-| ------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| `map_frame`         | string | map frame                                                                                                                        |
-| `base_link_frame`   | string | base_link frame                                                                                                                  |
-| `use_height_filter` | bool   | whether to height filter for `~/input/obstacle_pointcloud` and `~/input/raw_pointcloud`? By default, the height is set to -1~2m. |
-| `map_length`        | double | The length of the map. -100 if it is 50~50[m]                                                                                    |
-| `map_resolution`    | double | The map cell resolution [m]                                                                                                      |
-| `grid_map_type`     | string | The type of grid map for estimating `UNKNOWN` region behind obstacle point clouds                                                |
+| Name                          | Type   | Description                                                                                                                      |
+| ----------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `map_frame`                   | string | map frame                                                                                                                        |
+| `base_link_frame`             | string | base_link frame                                                                                                                  |
+| `use_height_filter`           | bool   | whether to height filter for `~/input/obstacle_pointcloud` and `~/input/raw_pointcloud`? By default, the height is set to -1~2m. |
+| `map_length`                  | double | The length of the map. -100 if it is 50~50[m]                                                                                    |
+| `map_resolution`              | double | The map cell resolution [m]                                                                                                      |
+| `grid_map_type`               | string | The type of grid map for estimating `UNKNOWN` region behind obstacle point clouds                                                |
+| `scan_origin`                 | string | The origin of the scan. It should be a sensor frame.                                                                             |
+| `pub_debug_grid`              | bool   | Whether to publish debug grid maps                                                                                               |
+| `downsample_input_pointcloud` | bool   | Whether to downsample the input pointclouds. The downsampled pointclouds are used for the ray tracing.                           |
+| `downsample_voxel_size`       | double | The voxel size for the downsampled pointclouds.                                                                                  |
 
 ## Assumptions / Known limits
 

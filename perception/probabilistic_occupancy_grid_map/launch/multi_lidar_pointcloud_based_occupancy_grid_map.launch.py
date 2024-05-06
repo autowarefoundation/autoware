@@ -92,6 +92,57 @@ def get_ogm_creation_config(total_config: dict, list_iter: int) -> dict:
     return ogm_creation_config
 
 
+# generate downsample node
+def get_downsample_filter_node(setting: dict) -> ComposableNode:
+    plugin_str = setting["plugin"]
+    voxel_size = setting["voxel_size"]
+    node_name = setting["node_name"]
+    return ComposableNode(
+        package="pointcloud_preprocessor",
+        plugin=plugin_str,
+        name=node_name,
+        remappings=[
+            ("input", setting["input_topic"]),
+            ("output", setting["output_topic"]),
+        ],
+        parameters=[
+            {
+                "voxel_size_x": voxel_size,
+                "voxel_size_y": voxel_size,
+                "voxel_size_z": voxel_size,
+            }
+        ],
+        extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
+    )
+
+
+def get_downsample_preprocess_nodes(voxel_size: float, raw_pointcloud_topics: list) -> list:
+    nodes = []
+    for i in range(len(raw_pointcloud_topics)):
+        raw_pointcloud_topic: str = raw_pointcloud_topics[i]
+        frame_name: str = raw_pointcloud_topic.split("/")[
+            -2
+        ]  # `/sensing/lidar/top/pointcloud` -> `top
+        processed_pointcloud_topic: str = frame_name + "/raw/downsample/pointcloud"
+        raw_settings = {
+            "plugin": "pointcloud_preprocessor::PickupBasedVoxelGridDownsampleFilterComponent",
+            "node_name": "raw_pc_downsample_filter_" + frame_name,
+            "input_topic": raw_pointcloud_topic,
+            "output_topic": processed_pointcloud_topic,
+            "voxel_size": voxel_size,
+        }
+        nodes.append(get_downsample_filter_node(raw_settings))
+    obstacle_settings = {
+        "plugin": "pointcloud_preprocessor::PickupBasedVoxelGridDownsampleFilterComponent",
+        "node_name": "obstacle_pc_downsample_filter",
+        "input_topic": LaunchConfiguration("input/obstacle_pointcloud"),
+        "output_topic": "/perception/occupancy_grid_map/obstacle/downsample/pointcloud",
+        "voxel_size": voxel_size,
+    }
+    nodes.append(get_downsample_filter_node(obstacle_settings))
+    return nodes
+
+
 def launch_setup(context, *args, **kwargs):
     """Launch fusion based occupancy grid map creation nodes.
 
@@ -118,26 +169,51 @@ def launch_setup(context, *args, **kwargs):
         LaunchConfiguration("pointcloud_container_name").perform(context),
     )
 
+    # Down sample settings
+    downsample_input_pointcloud: bool = total_config["downsample_input_pointcloud"]
+    downsample_voxel_size: float = total_config["downsample_voxel_size"]
+
+    # get obstacle pointcloud
+    obstacle_pointcloud_topic: str = (
+        "/perception/occupancy_grid_map/obstacle/downsample/pointcloud"
+        if downsample_input_pointcloud
+        else LaunchConfiguration("input/obstacle_pointcloud").perform(context)
+    )
+
     for i in range(number_of_nodes):
         # load parameter file
         ogm_creation_config = get_ogm_creation_config(total_config, i)
         ogm_creation_config["updater_type"] = LaunchConfiguration("updater_type").perform(context)
         ogm_creation_config.update(updater_config)
 
+        raw_pointcloud_topic: str = fusion_config["raw_pointcloud_topics"][i]
+        frame_name: str = raw_pointcloud_topic.split("/")[
+            -2
+        ]  # assume `/sensing/lidar/top/pointcloud` -> `top
+        if downsample_input_pointcloud:
+            raw_pointcloud_topic = "raw/downsample/pointcloud"
+
         # generate composable node
         node = ComposableNode(
             package="probabilistic_occupancy_grid_map",
             plugin="occupancy_grid_map::PointcloudBasedOccupancyGridMapNode",
-            name="occupancy_grid_map_node_in_" + str(i),
+            name="occupancy_grid_map_node",
+            namespace=frame_name,
             remappings=[
-                ("~/input/obstacle_pointcloud", LaunchConfiguration("input/obstacle_pointcloud")),
-                ("~/input/raw_pointcloud", fusion_config["raw_pointcloud_topics"][i]),
+                ("~/input/obstacle_pointcloud", obstacle_pointcloud_topic),
+                ("~/input/raw_pointcloud", raw_pointcloud_topic),
                 ("~/output/occupancy_grid_map", fusion_config["fusion_input_ogm_topics"][i]),
             ],
             parameters=[ogm_creation_config],
             extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
         )
         gridmap_generation_composable_nodes.append(node)
+
+    if downsample_input_pointcloud:
+        downsample_nodes = get_downsample_preprocess_nodes(
+            downsample_voxel_size, fusion_config["raw_pointcloud_topics"]
+        )
+        gridmap_generation_composable_nodes.extend(downsample_nodes)
 
     # 2. launch occupancy grid map fusion node
     gridmap_fusion_node = [

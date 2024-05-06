@@ -72,6 +72,26 @@ Additional argument is shown below:
 | `input_obstacle_pointcloud`         | `false`                        | only for laserscan based method. If true, the node subscribe obstacle pointcloud              |
 | `input_obstacle_and_raw_pointcloud` | `true`                         | only for laserscan based method. If true, the node subscribe both obstacle and raw pointcloud |
 
+### Downsample input pointcloud(Optional)
+
+If you set `downsample_input_pointcloud` to `true`, the input pointcloud will be downsampled and following topics are also used. This feature is currently only for the pointcloud based occupancy grid map.
+
+- pointcloud_based_occupancy_grid_map method
+
+```yaml
+# downsampled raw and obstacle pointcloud
+/perception/occupancy_grid_map/obstacle/downsample/pointcloud
+/perception/occupancy_grid_map/raw/downsample/pointcloud
+```
+
+- multi_lidar_pointcloud_based_point_cloud
+
+```yaml
+# downsampled raw and obstacle pointcloud
+/perception/occupancy_grid_map/obstacle/downsample/pointcloud
+/perception/occupancy_grid_map/<sensor_name>/raw/downsample/pointcloud
+```
+
 ### Test
 
 This package provides unit tests using `gtest`.

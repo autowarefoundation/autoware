@@ -12,6 +12,10 @@
         map_length_x: 150.0 # [m]
         map_length_y: 150.0 # [m]
 
+      # downsample input pointcloud
+      downsample_input_pointcloud: true
+      downsample_voxel_size: 0.25 # [m]
+
       # each grid map parameters
       ogm_creation_config:
         height_filter:
@@ -20,7 +24,7 @@
           max_height: 2.0
         enable_single_frame_mode: true
         # use sensor pointcloud to filter obstacle pointcloud
-        filter_obstacle_pointcloud_by_raw_pointcloud: true
+        filter_obstacle_pointcloud_by_raw_pointcloud: false
 
         grid_map_type: "OccupancyGridMapFixedBlindSpot"
         OccupancyGridMapFixedBlindSpot:

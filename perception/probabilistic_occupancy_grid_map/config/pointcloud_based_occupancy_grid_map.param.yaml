@@ -8,6 +8,10 @@
       min_height: -1.0
       max_height: 2.0
 
+    # downsample input pointcloud
+    downsample_input_pointcloud: true
+    downsample_voxel_size: 0.25 # [m]
+
     enable_single_frame_mode: false
     # use sensor pointcloud to filter obstacle pointcloud
     filter_obstacle_pointcloud_by_raw_pointcloud: false
