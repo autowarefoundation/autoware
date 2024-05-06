@@ -37,7 +37,9 @@ namespace types
 // We don't currently require code to comply to MISRA, but we should try to where it is
 // easily possible.
 using bool8_t = bool;
+#if __cplusplus < 201811L || !__cpp_char8_t
 using char8_t = char;
+#endif
 using uchar8_t = unsigned char;
 // If we ever compile on a platform where this is not true, float32_t and float64_t definitions
 // need to be adjusted.
