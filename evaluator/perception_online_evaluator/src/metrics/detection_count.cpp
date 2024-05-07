@@ -68,7 +68,7 @@ void DetectionCounter::addObjects(
   }
 
   const auto timestamp = objects.header.stamp;
-  unique_timestamps_.insert(timestamp).second;
+  unique_timestamps_.insert(timestamp);
 
   for (const auto & object : objects.objects) {
     const auto uuid = toHexString(object.object_id);
@@ -119,7 +119,7 @@ void DetectionCounter::updateDetectionMap(
   const std::string uuid, const std::uint8_t classification, const std::string & range,
   const rclcpp::Time & timestamp)
 {
-  seen_uuids_[classification][range].insert(uuid).second;
+  seen_uuids_[classification][range].insert(uuid);
 
   // Record the detection time for averaging
   time_series_counts_[classification][range].push_back(timestamp);
