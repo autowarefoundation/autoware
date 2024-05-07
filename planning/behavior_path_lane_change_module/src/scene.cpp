@@ -1939,6 +1939,11 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
 {
   PathSafetyStatus path_safety_status;
 
+  if (collision_check_objects.empty()) {
+    RCLCPP_DEBUG(logger_, "There is nothing to check.");
+    return path_safety_status;
+  }
+
   const auto & path = lane_change_path.path;
   const auto & common_parameters = planner_data_->parameters;
   const auto current_pose = getEgoPose();
