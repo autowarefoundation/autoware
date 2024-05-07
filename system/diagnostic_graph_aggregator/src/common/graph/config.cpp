@@ -232,8 +232,8 @@ void apply_edits(FileConfig & config)
       if (remove_links.count(link) == 0) {
         filtered_list.push_back(link);
       }
-      unit->list = filtered_list;
     }
+    unit->list = filtered_list;
   }
 
   // Remove units and links.
