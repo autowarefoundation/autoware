@@ -398,11 +398,13 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
   auto get_gap_between_ego_and_lane_border =
     [&](
       geometry_msgs::msg::Pose & ego_overhang_point_as_pose,
-      const bool ego_is_merging_from_the_left) -> std::optional<double> {
+      const bool ego_is_merging_from_the_left) -> std::optional<std::pair<double, double>> {
     const auto local_vehicle_footprint = vehicle_info_.createFootprint();
     const auto vehicle_footprint =
       transformVector(local_vehicle_footprint, tier4_autoware_utils::pose2transform(current_pose));
     double smallest_lateral_gap_between_ego_and_border = std::numeric_limits<double>::max();
+    double corresponding_lateral_gap_with_other_lane_bound = std::numeric_limits<double>::max();
+
     for (const auto & point : vehicle_footprint) {
       geometry_msgs::msg::Pose point_pose;
       point_pose.position.x = point.x();
@@ -413,9 +415,12 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
       lanelet::utils::query::getClosestLanelet(target_lanes, point_pose, &closest_lanelet);
       lanelet::ConstLanelet closest_lanelet_const(closest_lanelet.constData());
 
-      const lanelet::ConstLineString2d current_lane_bound = (ego_is_merging_from_the_left)
-                                                              ? closest_lanelet_const.rightBound2d()
-                                                              : closest_lanelet_const.leftBound2d();
+      const auto [current_lane_bound, other_side_lane_bound] =
+        (ego_is_merging_from_the_left)
+          ? std::make_pair(
+              closest_lanelet_const.rightBound2d(), closest_lanelet_const.leftBound2d())
+          : std::make_pair(
+              closest_lanelet_const.leftBound2d(), closest_lanelet_const.rightBound2d());
       const double current_point_lateral_gap =
         calc_absolute_lateral_offset(current_lane_bound, point_pose);
       if (current_point_lateral_gap < smallest_lateral_gap_between_ego_and_border) {
@@ -423,19 +428,35 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
         ego_overhang_point_as_pose.position.x = point.x();
         ego_overhang_point_as_pose.position.y = point.y();
         ego_overhang_point_as_pose.position.z = 0.0;
+        corresponding_lateral_gap_with_other_lane_bound =
+          calc_absolute_lateral_offset(other_side_lane_bound, point_pose);
       }
     }
+
     if (smallest_lateral_gap_between_ego_and_border == std::numeric_limits<double>::max()) {
       return std::nullopt;
     }
-    return smallest_lateral_gap_between_ego_and_border;
+    return std::make_pair(
+      (smallest_lateral_gap_between_ego_and_border),
+      (corresponding_lateral_gap_with_other_lane_bound));
   };
 
   geometry_msgs::msg::Pose ego_overhang_point_as_pose;
-  const auto gap_between_ego_and_lane_border =
+  const auto gaps_with_lane_borders_pair =
     get_gap_between_ego_and_lane_border(ego_overhang_point_as_pose, ego_is_merging_from_the_left);
-  if (!gap_between_ego_and_lane_border) return false;
 
+  if (!gaps_with_lane_borders_pair.has_value()) {
+    return false;
+  }
+
+  const auto & gap_between_ego_and_lane_border = gaps_with_lane_borders_pair.value().first;
+  const auto & corresponding_lateral_gap_with_other_lane_bound =
+    gaps_with_lane_borders_pair.value().second;
+
+  // middle of the lane is crossed, no need to check for collisions anymore
+  if (gap_between_ego_and_lane_border < corresponding_lateral_gap_with_other_lane_bound) {
+    return true;
+  }
   // Get the lanelets that will be queried for target objects
   const auto relevant_lanelets = std::invoke([&]() -> std::optional<lanelet::ConstLanelets> {
     lanelet::Lanelet closest_lanelet;
@@ -485,7 +506,7 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
   if (!closest_object_width) return false;
   // Decide if the closest object does not fit in the gap left by the ego vehicle.
   return closest_object_width.value() + parameters_->extra_width_margin_for_rear_obstacle >
-         gap_between_ego_and_lane_border.value();
+         gap_between_ego_and_lane_border;
 }
 
 bool StartPlannerModule::isCloseToOriginalStartPose() const
