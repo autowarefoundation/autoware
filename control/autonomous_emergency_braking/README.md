@@ -108,6 +108,33 @@ After Noise filtering, it performs a geometric collision check to determine whet
 
 Finally, the vertex that is closest to the ego vehicle is chosen as the candidate for collision checking: Since rss distance is used to judge if a collision will happen or not, if the closest vertex to the ego is deemed to be safe, the rest of the vertices (and the points in the clusters) will also be safe.
 
+#### Obstacle velocity estimation
+
+Once the position of the closest obstacle/point is determined, the AEB modules uses the history of previously detected objects to estimate the closest object speed using the following equations:
+
+$$
+d_{t} = o_{time stamp} - prev_{time stamp}
+$$
+
+$$
+d_{pos} = norm(o_{pos} - prev_{pos})
+$$
+
+$$
+v_{norm} = d_{pos} / d_{t}
+$$
+
+Where $o_{time stamp}$ and $prev_{time stamp}$ are the timestamps of the point clouds used to detect the current closest object and the closest object of the previous point cloud frame, and $o_{pos}$ and $prev_{pos}$ are the positions of those objects, respectively.
+
+Finally, the velocity vector is compared against the ego's predicted path to get the longitudinal velocity $v_{obj}$:
+
+$$
+v_{obj} = v_{norm} * Cos(yaw_{diff}) + v_{ego}
+$$
+
+where $yaw_{diff}$ is the difference in yaw between the ego path and the displacement vector $$v_{pos} = o_{pos} - prev_{pos} $$ and $v_{ego}$ is the ego's speed, which accounts for the movement of points caused by the ego moving and not the object.
+All these equations are performed disregarding the z axis (in 2D).
+
 ### 4. Collision check with target obstacles
 
 In the fourth step, it checks the collision with filtered obstacles using RSS distance. RSS is formulated as:

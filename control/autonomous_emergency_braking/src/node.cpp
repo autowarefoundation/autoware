@@ -14,7 +14,6 @@
 
 #include "autonomous_emergency_braking/node.hpp"
 
-#include <motion_utils/trajectory/trajectory.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
@@ -107,33 +106,37 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
   collision_data_keeper_(this->get_clock())
 {
   // Subscribers
-  sub_point_cloud_ = this->create_subscription<PointCloud2>(
-    "~/input/pointcloud", rclcpp::SensorDataQoS(),
-    std::bind(&AEB::onPointCloud, this, std::placeholders::_1));
+  {
+    sub_point_cloud_ = this->create_subscription<PointCloud2>(
+      "~/input/pointcloud", rclcpp::SensorDataQoS(),
+      std::bind(&AEB::onPointCloud, this, std::placeholders::_1));
 
-  sub_velocity_ = this->create_subscription<VelocityReport>(
-    "~/input/velocity", rclcpp::QoS{1}, std::bind(&AEB::onVelocity, this, std::placeholders::_1));
+    sub_velocity_ = this->create_subscription<VelocityReport>(
+      "~/input/velocity", rclcpp::QoS{1}, std::bind(&AEB::onVelocity, this, std::placeholders::_1));
 
-  sub_imu_ = this->create_subscription<Imu>(
-    "~/input/imu", rclcpp::QoS{1}, std::bind(&AEB::onImu, this, std::placeholders::_1));
+    sub_imu_ = this->create_subscription<Imu>(
+      "~/input/imu", rclcpp::QoS{1}, std::bind(&AEB::onImu, this, std::placeholders::_1));
 
-  sub_predicted_traj_ = this->create_subscription<Trajectory>(
-    "~/input/predicted_trajectory", rclcpp::QoS{1},
-    std::bind(&AEB::onPredictedTrajectory, this, std::placeholders::_1));
+    sub_predicted_traj_ = this->create_subscription<Trajectory>(
+      "~/input/predicted_trajectory", rclcpp::QoS{1},
+      std::bind(&AEB::onPredictedTrajectory, this, std::placeholders::_1));
 
-  sub_autoware_state_ = this->create_subscription<AutowareState>(
-    "/autoware/state", rclcpp::QoS{1},
-    std::bind(&AEB::onAutowareState, this, std::placeholders::_1));
+    sub_autoware_state_ = this->create_subscription<AutowareState>(
+      "/autoware/state", rclcpp::QoS{1},
+      std::bind(&AEB::onAutowareState, this, std::placeholders::_1));
+  }
 
   // Publisher
-  pub_obstacle_pointcloud_ =
-    this->create_publisher<sensor_msgs::msg::PointCloud2>("~/debug/obstacle_pointcloud", 1);
-  debug_ego_path_publisher_ = this->create_publisher<MarkerArray>("~/debug/markers", 1);
-
+  {
+    pub_obstacle_pointcloud_ =
+      this->create_publisher<sensor_msgs::msg::PointCloud2>("~/debug/obstacle_pointcloud", 1);
+    debug_ego_path_publisher_ = this->create_publisher<MarkerArray>("~/debug/markers", 1);
+  }
   // Diagnostics
-  updater_.setHardwareID("autonomous_emergency_braking");
-  updater_.add("aeb_emergency_stop", this, &AEB::onCheckCollision);
-
+  {
+    updater_.setHardwareID("autonomous_emergency_braking");
+    updater_.add("aeb_emergency_stop", this, &AEB::onCheckCollision);
+  }
   // parameter
   publish_debug_pointcloud_ = declare_parameter<bool>("publish_debug_pointcloud");
   use_predicted_trajectory_ = declare_parameter<bool>("use_predicted_trajectory");
@@ -161,8 +164,12 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
   mpc_prediction_time_horizon_ = declare_parameter<double>("mpc_prediction_time_horizon");
   mpc_prediction_time_interval_ = declare_parameter<double>("mpc_prediction_time_interval");
 
-  const auto collision_keeping_sec = declare_parameter<double>("collision_keeping_sec");
-  collision_data_keeper_.setTimeout(collision_keeping_sec);
+  {  // Object history data keeper setup
+    const auto previous_obstacle_keep_time =
+      declare_parameter<double>("previous_obstacle_keep_time");
+    const auto collision_keeping_sec = declare_parameter<double>("collision_keeping_sec");
+    collision_data_keeper_.setTimeout(collision_keeping_sec, previous_obstacle_keep_time);
+  }
 
   // start time
   const double aeb_hz = declare_parameter<double>("aeb_hz");
@@ -297,13 +304,14 @@ void AEB::onCheckCollision(DiagnosticStatusWrapper & stat)
   MarkerArray debug_markers;
   checkCollision(debug_markers);
 
-  if (!collision_data_keeper_.checkExpired()) {
+  if (!collision_data_keeper_.checkCollisionExpired()) {
     const std::string error_msg = "[AEB]: Emergency Brake";
     const auto diag_level = DiagnosticStatus::ERROR;
     stat.summary(diag_level, error_msg);
     const auto & data = collision_data_keeper_.get();
     stat.addf("RSS", "%.2f", data.rss);
     stat.addf("Distance", "%.2f", data.distance_to_object);
+    stat.addf("Object Speed", "%.2f", data.velocity);
     addCollisionMarker(data, debug_markers);
   } else {
     const std::string error_msg = "[AEB]: No Collision";
@@ -337,7 +345,7 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
 
   auto check_collision = [&](
                            const auto & path, const colorTuple & debug_colors,
-                           const std::string & debug_ns, const rclcpp::Time & current_time,
+                           const std::string & debug_ns,
                            pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_objects) {
     // Crop out Pointcloud using an extra wide ego path
     const auto expanded_ego_polys =
@@ -347,25 +355,40 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
     // Check which points of the cropped point cloud are on the ego path, and get the closest one
     std::vector<ObjectData> objects_from_point_clusters;
     const auto ego_polys = generatePathFootprint(path, expand_width_);
+    const auto current_time = obstacle_ros_pointcloud_ptr_->header.stamp;
     createObjectDataUsingPointCloudClusters(
       path, ego_polys, current_time, objects_from_point_clusters, filtered_objects);
 
+    // Get only the closest object and calculate its speed
+    const auto closest_object_point = std::invoke([&]() -> std::optional<ObjectData> {
+      const auto closest_object_point_itr = std::min_element(
+        objects_from_point_clusters.begin(), objects_from_point_clusters.end(),
+        [](const auto & o1, const auto & o2) {
+          return o1.distance_to_object < o2.distance_to_object;
+        });
+
+      if (closest_object_point_itr == objects_from_point_clusters.end()) {
+        return std::nullopt;
+      }
+      const auto closest_object_speed = collision_data_keeper_.calcObjectSpeedFromHistory(
+        *closest_object_point_itr, path, current_v);
+      if (!closest_object_speed.has_value()) {
+        return std::nullopt;
+      }
+      closest_object_point_itr->velocity = closest_object_speed.value();
+      return std::make_optional<ObjectData>(*closest_object_point_itr);
+    });
+
     // Add debug markers
-    const auto [color_r, color_g, color_b, color_a] = debug_colors;
-    addMarker(
-      current_time, path, ego_polys, objects_from_point_clusters, color_r, color_g, color_b,
-      color_a, debug_ns, debug_markers);
-
-    // Get only the closest object
-    const auto closest_object_point = std::min_element(
-      objects_from_point_clusters.begin(), objects_from_point_clusters.end(),
-      [](const auto & o1, const auto & o2) {
-        return o1.distance_to_object < o2.distance_to_object;
-      });
-
-    // check for empty vector
-    return (closest_object_point != objects_from_point_clusters.end())
-             ? hasCollision(current_v, *closest_object_point)
+    {
+      const auto [color_r, color_g, color_b, color_a] = debug_colors;
+      addMarker(
+        this->get_clock()->now(), path, ego_polys, objects_from_point_clusters,
+        closest_object_point, color_r, color_g, color_b, color_a, debug_ns, debug_markers);
+    }
+    // check collision using rss distance
+    return (closest_object_point.has_value())
+             ? hasCollision(current_v, closest_object_point.value())
              : false;
   };
 
@@ -376,9 +399,8 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
     constexpr colorTuple debug_color = {0.0 / 256.0, 148.0 / 256.0, 205.0 / 256.0, 0.999};
     const std::string ns = "ego";
     const auto ego_path = generateEgoPath(current_v, current_w);
-    const auto current_time = get_clock()->now();
 
-    return check_collision(ego_path, debug_color, ns, current_time, filtered_objects);
+    return check_collision(ego_path, debug_color, ns, filtered_objects);
   };
 
   // step4. make function to check collision with predicted trajectory from control module
@@ -389,12 +411,11 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
     const auto predicted_path_opt = generateEgoPath(*predicted_traj_ptr);
 
     if (!predicted_path_opt) return false;
-    const auto current_time = predicted_traj_ptr->header.stamp;
     constexpr colorTuple debug_color = {0.0 / 256.0, 100.0 / 256.0, 0.0 / 256.0, 0.999};
     const std::string ns = "predicted";
     const auto & predicted_path = predicted_path_opt.value();
 
-    return check_collision(predicted_path, debug_color, ns, current_time, filtered_objects);
+    return check_collision(predicted_path, debug_color, ns, filtered_objects);
   };
 
   // Data of filtered point cloud
@@ -423,7 +444,7 @@ bool AEB::hasCollision(const double current_v, const ObjectData & closest_object
     ObjectData collision_data = closest_object;
     collision_data.rss = rss_dist;
     collision_data.distance_to_object = closest_object.distance_to_object;
-    collision_data_keeper_.update(collision_data);
+    collision_data_keeper_.setCollisionData(collision_data);
     return true;
   }
   return false;
@@ -622,8 +643,9 @@ void AEB::cropPointCloudWithEgoFootprintPath(
 
 void AEB::addMarker(
   const rclcpp::Time & current_time, const Path & path, const std::vector<Polygon2d> & polygons,
-  const std::vector<ObjectData> & objects, const double color_r, const double color_g,
-  const double color_b, const double color_a, const std::string & ns, MarkerArray & debug_markers)
+  const std::vector<ObjectData> & objects, const std::optional<ObjectData> & closest_object,
+  const double color_r, const double color_g, const double color_b, const double color_a,
+  const std::string & ns, MarkerArray & debug_markers)
 {
   auto path_marker = tier4_autoware_utils::createDefaultMarker(
     "base_link", current_time, ns + "_path", 0L, Marker::LINE_STRIP,
@@ -659,6 +681,23 @@ void AEB::addMarker(
     object_data_marker.points.push_back(e.position);
   }
   debug_markers.markers.push_back(object_data_marker);
+
+  // Visualize planner type text
+  if (closest_object.has_value()) {
+    const auto & obj = closest_object.value();
+    const auto color = tier4_autoware_utils::createMarkerColor(0.95, 0.95, 0.95, 0.999);
+    auto closest_object_velocity_marker_array = tier4_autoware_utils::createDefaultMarker(
+      "base_link", obj.stamp, ns + "_closest_object_velocity", 0,
+      visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
+      tier4_autoware_utils::createMarkerScale(0.0, 0.0, 0.7), color);
+    closest_object_velocity_marker_array.pose.position = obj.position;
+    const auto ego_velocity = current_velocity_ptr_->longitudinal_velocity;
+    closest_object_velocity_marker_array.text =
+      "Object velocity: " + std::to_string(obj.velocity) + " [m/s]\n";
+    closest_object_velocity_marker_array.text +=
+      "Object relative velocity to ego: " + std::to_string(obj.velocity - ego_velocity) + " [m/s]";
+    debug_markers.markers.push_back(closest_object_velocity_marker_array);
+  }
 }
 
 void AEB::addCollisionMarker(const ObjectData & data, MarkerArray & debug_markers)
