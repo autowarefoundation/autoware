@@ -1513,8 +1513,7 @@ lanelet::ConstLanelets getExtendedCurrentLanesFromPath(
   return lanes;
 }
 
-// TODO(Azu): In the future, get back lanelet within `to_back_dist` [m] from queried lane
-lanelet::ConstLanelets getBackwardLanelets(
+std::vector<lanelet::ConstLanelets> getPrecedingLanelets(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
   const Pose & current_pose, const double backward_length)
 {
@@ -1529,18 +1528,21 @@ lanelet::ConstLanelets getBackwardLanelets(
   }
 
   const auto & front_lane = target_lanes.front();
-  const auto preceding_lanes = route_handler.getPrecedingLaneletSequence(
+  return route_handler.getPrecedingLaneletSequence(
     front_lane, std::abs(backward_length - arc_length.length), {front_lane});
+}
+
+lanelet::ConstLanelets getBackwardLanelets(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
+  const Pose & current_pose, const double backward_length)
+{
+  const auto preceding_lanes =
+    getPrecedingLanelets(route_handler, target_lanes, current_pose, backward_length);
+  const auto calc_sum = [](size_t sum, const auto & lanes) { return sum + lanes.size(); };
+  const auto num_of_lanes =
+    std::accumulate(preceding_lanes.begin(), preceding_lanes.end(), 0u, calc_sum);
 
   lanelet::ConstLanelets backward_lanes{};
-  const auto num_of_lanes = std::invoke([&preceding_lanes]() {
-    size_t sum{0};
-    for (const auto & lanes : preceding_lanes) {
-      sum += lanes.size();
-    }
-    return sum;
-  });
-
   backward_lanes.reserve(num_of_lanes);
 
   for (const auto & lanes : preceding_lanes) {

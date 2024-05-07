@@ -79,7 +79,9 @@ protected:
       *dynamic_objects, parameters_.th_moving_object_velocity);
     auto [pull_out_lane_stop_objects, others] =
       utils::path_safety_checker::separateObjectsByLanelets(
-        stop_objects, pull_out_lanes, utils::path_safety_checker::isPolygonOverlapLanelet);
+        stop_objects, pull_out_lanes, [](const auto & obj, const auto & lane) {
+          return utils::path_safety_checker::isPolygonOverlapLanelet(obj, lane);
+        });
     utils::path_safety_checker::filterObjectsByClass(
       pull_out_lane_stop_objects, parameters_.object_types_to_check_for_path_generation);
 

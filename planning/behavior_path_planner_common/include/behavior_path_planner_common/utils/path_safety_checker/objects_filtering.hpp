@@ -69,6 +69,12 @@ bool isCentroidWithinLanelet(const PredictedObject & object, const lanelet::Cons
  */
 bool isPolygonOverlapLanelet(const PredictedObject & object, const lanelet::ConstLanelet & lanelet);
 
+bool isPolygonOverlapLanelet(
+  const PredictedObject & object, const tier4_autoware_utils::Polygon2d & lanelet_polygon);
+
+bool isPolygonOverlapLanelet(
+  const PredictedObject & object, const lanelet::BasicPolygon2d & lanelet_polygon);
+
 /**
  * @brief Filters objects based on various criteria.
  *
@@ -279,6 +285,15 @@ void filterObjects(PredictedObjects & selected, PredictedObjects & removed, Func
   selected.objects.erase(partitioned, selected.objects.end());
 }
 
+template <typename Func>
+void filterObjects(
+  std::vector<PredictedObject> & selected, std::vector<PredictedObject> & removed, Func filter)
+{
+  auto partitioned = std::partition(selected.begin(), selected.end(), filter);
+  removed.insert(removed.end(), partitioned, selected.end());
+  selected.erase(partitioned, selected.end());
+}
+
 /**
  * @brief Filters objects in the 'objects' container based on the provided filter function.
  *
@@ -294,6 +309,13 @@ template <typename Func>
 void filterObjects(PredictedObjects & objects, Func filter)
 {
   [[maybe_unused]] PredictedObjects removed_objects{};
+  filterObjects(objects, removed_objects, filter);
+}
+
+template <typename Func>
+void filterObjects(std::vector<PredictedObject> & objects, Func filter)
+{
+  [[maybe_unused]] std::vector<PredictedObject> removed_objects{};
   filterObjects(objects, removed_objects, filter);
 }
 }  // namespace behavior_path_planner::utils::path_safety_checker

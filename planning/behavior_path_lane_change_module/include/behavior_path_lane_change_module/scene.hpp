@@ -30,10 +30,12 @@ using behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject
 using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityAndPolygonStamped;
 using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
 using behavior_path_planner::utils::path_safety_checker::PredictedPathWithPolygon;
+using data::lane_change::LanesPolygon;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using route_handler::Direction;
+using utils::path_safety_checker::ExtendedPredictedObjects;
 
 class NormalLaneChange : public LaneChangeBase
 {
@@ -115,9 +117,25 @@ protected:
     const lanelet::ConstLanelets & current_lanes,
     const lanelet::ConstLanelets & target_lanes) const;
 
-  LaneChangeTargetObjects getTargetObjects(
+  ExtendedPredictedObjects getTargetObjects(
+    const LaneChangeLanesFilteredObjects & predicted_objects,
+    const lanelet::ConstLanelets & current_lanes) const;
+
+  LaneChangeLanesFilteredObjects filterObjects(
     const lanelet::ConstLanelets & current_lanes,
     const lanelet::ConstLanelets & target_lanes) const;
+
+  void filterOncomingObjects(PredictedObjects & objects) const;
+
+  void filterAheadTerminalObjects(
+    PredictedObjects & objects, const lanelet::ConstLanelets & current_lanes) const;
+
+  void filterObjectsByLanelets(
+    const PredictedObjects & objects, const lanelet::ConstLanelets & current_lanes,
+    const lanelet::ConstLanelets & target_lanes,
+    std::vector<PredictedObject> & current_lane_objects,
+    std::vector<PredictedObject> & target_lane_objects,
+    std::vector<PredictedObject> & other_lane_objects) const;
 
   PathWithLaneId getPrepareSegment(
     const lanelet::ConstLanelets & current_lanes, const double backward_path_length,
@@ -154,17 +172,10 @@ protected:
   bool isValidPath(const PathWithLaneId & path) const override;
 
   PathSafetyStatus isLaneChangePathSafe(
-    const LaneChangePath & lane_change_path, const LaneChangeTargetObjects & target_objects,
-    const utils::path_safety_checker::RSSparams & rss_params, const bool is_stuck,
+    const LaneChangePath & lane_change_path,
+    const ExtendedPredictedObjects & collision_check_objects,
+    const utils::path_safety_checker::RSSparams & rss_params,
     CollisionCheckDebugMap & debug_data) const;
-
-  LaneChangeTargetObjectIndices filterObject(
-    const PredictedObjects & objects, const lanelet::ConstLanelets & current_lanes,
-    const lanelet::ConstLanelets & target_lanes,
-    const lanelet::ConstLanelets & target_backward_lanes) const;
-
-  std::vector<ExtendedPredictedObject> filterObjectsInTargetLane(
-    const LaneChangeTargetObjects & objects, const lanelet::ConstLanelets & target_lanes) const;
 
   //! @brief Check if the ego vehicle is in stuck by a stationary obstacle.
   //! @param obstacle_check_distance Distance to check ahead for any objects that might be

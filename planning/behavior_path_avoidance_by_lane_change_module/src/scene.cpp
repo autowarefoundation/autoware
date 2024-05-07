@@ -145,7 +145,9 @@ void AvoidanceByLaneChange::fillAvoidanceTargetObjects(
   const auto [object_within_target_lane, object_outside_target_lane] =
     utils::path_safety_checker::separateObjectsByLanelets(
       *planner_data_->dynamic_object, data.current_lanelets,
-      utils::path_safety_checker::isPolygonOverlapLanelet);
+      [](const auto & obj, const auto & lane) {
+        return utils::path_safety_checker::isPolygonOverlapLanelet(obj, lane);
+      });
 
   // Assume that the maximum allocation for data.other object is the sum of
   // objects_within_target_lane and object_outside_target_lane. The maximum allocation for

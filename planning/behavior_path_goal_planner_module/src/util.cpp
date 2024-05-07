@@ -145,7 +145,9 @@ PredictedObjects extractObjectsInExpandedPullOverLanes(
     route_handler, left_side, backward_distance, forward_distance, bound_offset);
 
   const auto [objects_in_lanes, others] = utils::path_safety_checker::separateObjectsByLanelets(
-    objects, lanes, utils::path_safety_checker::isPolygonOverlapLanelet);
+    objects, lanes, [](const auto & obj, const auto & lanelet) {
+      return utils::path_safety_checker::isPolygonOverlapLanelet(obj, lanelet);
+    });
 
   return objects_in_lanes;
 }

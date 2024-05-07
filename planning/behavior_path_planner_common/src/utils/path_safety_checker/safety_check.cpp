@@ -43,9 +43,10 @@ void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point &
 }
 
 bool isTargetObjectOncoming(
-  const geometry_msgs::msg::Pose & vehicle_pose, const geometry_msgs::msg::Pose & object_pose)
+  const geometry_msgs::msg::Pose & vehicle_pose, const geometry_msgs::msg::Pose & object_pose,
+  const double angle_threshold)
 {
-  return std::abs(calcYawDeviation(vehicle_pose, object_pose)) > M_PI_2;
+  return std::abs(calcYawDeviation(vehicle_pose, object_pose)) > angle_threshold;
 }
 
 bool isTargetObjectFront(

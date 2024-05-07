@@ -66,8 +66,21 @@ bool isCentroidWithinLanelet(const PredictedObject & object, const lanelet::Cons
 
 bool isPolygonOverlapLanelet(const PredictedObject & object, const lanelet::ConstLanelet & lanelet)
 {
-  const auto object_polygon = tier4_autoware_utils::toPolygon2d(object);
   const auto lanelet_polygon = utils::toPolygon2d(lanelet);
+  return isPolygonOverlapLanelet(object, lanelet_polygon);
+}
+
+bool isPolygonOverlapLanelet(
+  const PredictedObject & object, const tier4_autoware_utils::Polygon2d & lanelet_polygon)
+{
+  const auto object_polygon = tier4_autoware_utils::toPolygon2d(object);
+  return !boost::geometry::disjoint(lanelet_polygon, object_polygon);
+}
+
+bool isPolygonOverlapLanelet(
+  const PredictedObject & object, const lanelet::BasicPolygon2d & lanelet_polygon)
+{
+  const auto object_polygon = tier4_autoware_utils::toPolygon2d(object);
   return !boost::geometry::disjoint(lanelet_polygon, object_polygon);
 }
 

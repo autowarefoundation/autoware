@@ -1198,6 +1198,28 @@ double calcPhaseLength(
   const auto length_with_max_velocity = maximum_velocity * duration;
   return std::min(length_with_acceleration, length_with_max_velocity);
 }
+
+LanesPolygon createLanesPolygon(
+  const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes,
+  const std::vector<lanelet::ConstLanelets> & target_backward_lanes)
+{
+  LanesPolygon lanes_polygon;
+
+  lanes_polygon.current =
+    utils::lane_change::createPolygon(current_lanes, 0.0, std::numeric_limits<double>::max());
+  lanes_polygon.target =
+    utils::lane_change::createPolygon(target_lanes, 0.0, std::numeric_limits<double>::max());
+
+  for (const auto & target_backward_lane : target_backward_lanes) {
+    auto lane_polygon = utils::lane_change::createPolygon(
+      target_backward_lane, 0.0, std::numeric_limits<double>::max());
+
+    if (lane_polygon) {
+      lanes_polygon.target_backward.push_back(*lane_polygon);
+    }
+  }
+  return lanes_polygon;
+}
 }  // namespace behavior_path_planner::utils::lane_change
 
 namespace behavior_path_planner::utils::lane_change::debug

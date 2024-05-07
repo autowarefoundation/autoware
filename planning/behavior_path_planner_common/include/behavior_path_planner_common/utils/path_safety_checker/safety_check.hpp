@@ -43,7 +43,8 @@ using tier4_autoware_utils::Polygon2d;
 using vehicle_info_util::VehicleInfo;
 
 bool isTargetObjectOncoming(
-  const geometry_msgs::msg::Pose & vehicle_pose, const geometry_msgs::msg::Pose & object_pose);
+  const geometry_msgs::msg::Pose & vehicle_pose, const geometry_msgs::msg::Pose & object_pose,
+  const double angle_threshold = M_PI_2);
 
 bool isTargetObjectFront(
   const geometry_msgs::msg::Pose & ego_pose, const Polygon2d & obj_polygon,

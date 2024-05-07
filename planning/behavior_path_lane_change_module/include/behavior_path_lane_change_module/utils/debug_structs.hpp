@@ -35,7 +35,7 @@ struct Debug
   LaneChangePaths valid_paths;
   CollisionCheckDebugMap collision_check_objects;
   CollisionCheckDebugMap collision_check_objects_after_approval;
-  LaneChangeTargetObjects filtered_objects;
+  LaneChangeLanesFilteredObjects filtered_objects;
   geometry_msgs::msg::Polygon execution_area;
   geometry_msgs::msg::Pose ego_pose;
   lanelet::ConstLanelets current_lanes;
