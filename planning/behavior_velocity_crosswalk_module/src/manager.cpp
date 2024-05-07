@@ -90,6 +90,8 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
     getOrDeclareParameter<std::vector<double>>(node, ns + ".pass_judge.ego_pass_later_margin_y");
   cp.ego_pass_later_additional_margin =
     getOrDeclareParameter<double>(node, ns + ".pass_judge.ego_pass_later_additional_margin");
+  cp.ego_min_assumed_speed =
+    getOrDeclareParameter<double>(node, ns + ".pass_judge.ego_min_assumed_speed");
   cp.max_offset_to_crosswalk_for_yield = getOrDeclareParameter<double>(
     node, ns + ".pass_judge.no_stop_decision.max_offset_to_crosswalk_for_yield");
   cp.min_acc_for_no_stop_decision =

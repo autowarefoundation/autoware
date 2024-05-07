@@ -43,6 +43,7 @@
         ego_pass_later_margin_x: [0.0] # [[s]] time to vehicle margin vector for object pass first situation (the module judges that ego don't have to stop at TTV + MARGIN < TTC condition)
         ego_pass_later_margin_y: [13.0] # [[s]] time to collision margin vector for object pass first situation (the module judges that ego don't have to stop at TTV + MARGIN < TTC condition)
         ego_pass_later_additional_margin: 0.5 # [s] additional time margin for object pass first situation to suppress chattering
+        ego_min_assumed_speed: 2.0 # [m/s] assumed speed to calculate the time to collision point
 
         no_stop_decision: # parameters to determine if it is safe to attempt stopping before the crosswalk
           max_offset_to_crosswalk_for_yield: 0.0 # [m] maximum offset from ego's front to crosswalk for yield. Positive value means in front of the crosswalk.

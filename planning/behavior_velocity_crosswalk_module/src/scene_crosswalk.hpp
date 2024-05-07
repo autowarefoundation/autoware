@@ -135,6 +135,7 @@ public:
     std::vector<double> ego_pass_later_margin_x;
     std::vector<double> ego_pass_later_margin_y;
     double ego_pass_later_additional_margin;
+    double ego_min_assumed_speed;
     double max_offset_to_crosswalk_for_yield;
     double min_acc_for_no_stop_decision;
     double max_jerk_for_no_stop_decision;

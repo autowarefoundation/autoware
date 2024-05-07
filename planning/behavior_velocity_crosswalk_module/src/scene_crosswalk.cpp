@@ -810,8 +810,6 @@ CollisionPoint CrosswalkModule::createCollisionPoint(
   const geometry_msgs::msg::Vector3 & obj_vel,
   const std::optional<double> object_crosswalk_passage_direction) const
 {
-  constexpr double min_ego_velocity = 1.38;  // [m/s]
-
   const auto estimated_velocity = std::hypot(obj_vel.x, obj_vel.y);
   const auto velocity = std::max(planner_param_.min_object_velocity, estimated_velocity);
 
@@ -824,7 +822,7 @@ CollisionPoint CrosswalkModule::createCollisionPoint(
   // Hence, here, we use the length that would be appropriate for the ego_pass_first judge.
   collision_point.time_to_collision =
     std::max(0.0, dist_ego2cp - planner_data_->vehicle_info_.min_longitudinal_offset_m) /
-    std::max(ego_vel.x, min_ego_velocity);
+    std::max(ego_vel.x, planner_param_.ego_min_assumed_speed);
   collision_point.time_to_vehicle = std::max(0.0, dist_obj2cp) / velocity;
 
   return collision_point;
