@@ -33,6 +33,8 @@ Planning:
       logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
       logger_name: tier4_autoware_utils
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
+      logger_name: behavior_path_planner.path_shifter
 
   behavior_path_planner_avoidance:
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner

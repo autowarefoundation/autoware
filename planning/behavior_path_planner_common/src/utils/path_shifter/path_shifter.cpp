@@ -116,7 +116,13 @@ bool PathShifter::generate(
   }
 
   for (const auto & shift_line : shift_lines_) {
-    int idx_gap = shift_line.end_idx - shift_line.start_idx;
+    if (shift_line.end_idx < shift_line.start_idx) {
+      RCLCPP_WARN_STREAM_THROTTLE(
+        logger_, clock_, 3000, "Invalid indices: end_idx is less than start_idx");
+      return false;
+    }
+
+    const auto idx_gap = shift_line.end_idx - shift_line.start_idx;
     if (idx_gap <= 1) {
       RCLCPP_WARN_STREAM_THROTTLE(
         logger_, clock_, 3000,
@@ -185,7 +191,7 @@ void PathShifter::applyLinearShifter(ShiftedPath * shifted_path) const
     // For all path.points,
     for (size_t i = 0; i < shifted_path->path.points.size(); ++i) {
       // Set shift length.
-      double ith_shift_length;
+      double ith_shift_length = 0.0;
       if (i < shift_line.start_idx) {
         ith_shift_length = 0.0;
       } else if (shift_line.start_idx <= i && i <= shift_line.end_idx) {
@@ -235,7 +241,8 @@ void PathShifter::applySplineShifter(ShiftedPath * shifted_path, const bool offs
       logger_, "base_distance = %s, base_length = %s", toStr(base_distance).c_str(),
       toStr(base_length).c_str());
 
-    std::vector<double> query_distance, query_length;
+    std::vector<double> query_distance;
+    std::vector<double> query_length;
 
     // For all path.points,
     // Note: start_idx is not included since shift = 0,
@@ -257,7 +264,7 @@ void PathShifter::applySplineShifter(ShiftedPath * shifted_path, const bool offs
       }
     }
 
-    if (offset_back == true) {
+    if (offset_back) {
       // Apply shifting after shift
       for (size_t i = shift_line.end_idx; i < shifted_path->path.points.size(); ++i) {
         addLateralOffsetOnIndexPoint(shifted_path, delta_shift, i);
@@ -272,7 +279,7 @@ void PathShifter::applySplineShifter(ShiftedPath * shifted_path, const bool offs
 }
 
 std::pair<std::vector<double>, std::vector<double>> PathShifter::getBaseLengthsWithoutAccelLimit(
-  const double arclength, const double shift_length, const bool offset_back) const
+  const double arclength, const double shift_length, const bool offset_back)
 {
   const auto s = arclength;
   const auto l = shift_length;
@@ -286,14 +293,13 @@ std::pair<std::vector<double>, std::vector<double>> PathShifter::getBaseLengthsW
 
 std::pair<std::vector<double>, std::vector<double>> PathShifter::getBaseLengthsWithoutAccelLimit(
   const double arclength, const double shift_length, const double velocity,
-  const double longitudinal_acc, const double total_time, const bool offset_back) const
+  const double longitudinal_acc, const double total_time, const bool offset_back)
 {
-  const auto & s = arclength;
-  const auto & l = shift_length;
-  const auto & v0 = velocity;
-  const auto & a = longitudinal_acc;
-  const auto & T = total_time;
-  const double t = T / 4;
+  const auto s = arclength;
+  const auto l = shift_length;
+  const auto v0 = velocity;
+  const auto a = longitudinal_acc;
+  const auto t = total_time / 4;
 
   const double s1 = std::min(v0 * t + 0.5 * a * t * t, s);
   const double v1 = v0 + a * t;
@@ -322,7 +328,7 @@ std::pair<std::vector<double>, std::vector<double>> PathShifter::calcBaseLengths
     return getBaseLengthsWithoutAccelLimit(arclength, shift_length, offset_back);
   }
 
-  const auto & S = arclength;
+  const auto S = arclength;
   const auto L = std::abs(shift_length);
   const auto T = a > acc_threshold ? (-v0 + std::sqrt(v0 * v0 + 2 * a * S)) / a : S / v0;
   const auto lateral_a_max = 8.0 * L / (T * T);
@@ -512,8 +518,7 @@ void PathShifter::removeBehindShiftLineAndSetBaseOffset(const size_t nearest_idx
   setBaseOffset(new_base_offset);
 }
 
-void PathShifter::addLateralOffsetOnIndexPoint(
-  ShiftedPath * path, double offset, size_t index) const
+void PathShifter::addLateralOffsetOnIndexPoint(ShiftedPath * path, double offset, size_t index)
 {
   if (fabs(offset) < 1.0e-8) {
     return;
@@ -527,10 +532,10 @@ void PathShifter::addLateralOffsetOnIndexPoint(
   path->shift_length.at(index) += offset;
 }
 
-void PathShifter::shiftBaseLength(ShiftedPath * path, double offset) const
+void PathShifter::shiftBaseLength(ShiftedPath * path, double offset)
 {
-  constexpr double BASE_OFFSET_THR = 1.0e-4;
-  if (std::abs(offset) > BASE_OFFSET_THR) {
+  constexpr double base_offset_thr = 1.0e-4;
+  if (std::abs(offset) > base_offset_thr) {
     for (size_t i = 0; i < path->path.points.size(); ++i) {
       addLateralOffsetOnIndexPoint(path, offset, i);
     }
@@ -563,11 +568,11 @@ double PathShifter::calcShiftTimeFromJerk(const double lateral, const double jer
 }
 
 double PathShifter::calcFeasibleVelocityFromJerk(
-  const double lateral, const double jerk, const double longitudinal)
+  const double lateral, const double jerk, const double longitudinal_distance)
 {
   const double j = std::abs(jerk);
   const double l = std::abs(lateral);
-  const double d = std::abs(longitudinal);
+  const double d = std::abs(longitudinal_distance);
   if (j < 1.0e-8) {
     return 1.0e10;  // TODO(Horibe) maybe invalid arg?
   }

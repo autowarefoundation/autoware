@@ -94,9 +94,9 @@ public:
   void setLongitudinalAcceleration(const double longitudinal_acc);
 
   /**
-   * @brief  Add shift point. You don't have to care about the start/end_idx.
+   * @brief  Add shift line. You don't have to care about the start/end_idx.
    */
-  void addShiftLine(const ShiftLine & point);
+  void addShiftLine(const ShiftLine & line);
 
   /**
    * @brief  Set new shift point. You don't have to care about the start/end_idx.
@@ -143,7 +143,7 @@ public:
   ////////////////////////////////////////
 
   static double calcFeasibleVelocityFromJerk(
-    const double lateral, const double jerk, const double distance);
+    const double lateral, const double jerk, const double longitudinal_distance);
 
   static double calcLateralDistFromJerk(
     const double longitudinal, const double jerk, const double velocity);
@@ -196,12 +196,12 @@ private:
   std::pair<std::vector<double>, std::vector<double>> calcBaseLengths(
     const double arclength, const double shift_length, const bool offset_back) const;
 
-  std::pair<std::vector<double>, std::vector<double>> getBaseLengthsWithoutAccelLimit(
-    const double arclength, const double shift_length, const bool offset_back) const;
+  static std::pair<std::vector<double>, std::vector<double>> getBaseLengthsWithoutAccelLimit(
+    const double arclength, const double shift_length, const bool offset_back);
 
-  std::pair<std::vector<double>, std::vector<double>> getBaseLengthsWithoutAccelLimit(
+  static std::pair<std::vector<double>, std::vector<double>> getBaseLengthsWithoutAccelLimit(
     const double arclength, const double shift_length, const double velocity,
-    const double longitudinal_acc, const double total_time, const bool offset_back) const;
+    const double longitudinal_acc, const double total_time, const bool offset_back);
 
   /**
    * @brief Calculate path index for shift_lines and set is_index_aligned_ to true.
@@ -235,9 +235,9 @@ private:
    */
   bool checkShiftLinesAlignment(const ShiftLineArray & shift_lines) const;
 
-  void addLateralOffsetOnIndexPoint(ShiftedPath * path, double offset, size_t index) const;
+  static void addLateralOffsetOnIndexPoint(ShiftedPath * path, double offset, size_t index);
 
-  void shiftBaseLength(ShiftedPath * path, double offset) const;
+  static void shiftBaseLength(ShiftedPath * path, double offset);
 
   void setBaseOffset(const double val)
   {
