@@ -304,8 +304,9 @@ CenterlineWithRoute StaticCenterlineGeneratorNode::generate_centerline_with_rout
     } else if (centerline_source_ == CenterlineSource::BagEgoTrajectoryBase) {
       const auto bag_centerline = generate_centerline_with_bag(*this);
       const auto start_lanelets =
-        route_handler_ptr_->getClosestLanelets(bag_centerline.front().pose);
-      const auto end_lanelets = route_handler_ptr_->getClosestLanelets(bag_centerline.back().pose);
+        route_handler_ptr_->getRoadLaneletsAtPose(bag_centerline.front().pose);
+      const auto end_lanelets =
+        route_handler_ptr_->getRoadLaneletsAtPose(bag_centerline.back().pose);
       if (start_lanelets.empty() || end_lanelets.empty()) {
         RCLCPP_ERROR(get_logger(), "Nearest lanelets to the bag's centerline are not found.");
         return CenterlineWithRoute{};

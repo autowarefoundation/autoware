@@ -27,6 +27,7 @@
 #include <lanelet2_core/Forward.h>
 #include <lanelet2_core/primitives/Lanelet.h>
 #include <lanelet2_routing/Forward.h>
+#include <lanelet2_routing/RoutingCost.h>
 #include <lanelet2_traffic_rules/TrafficRules.h>
 
 #include <limits>
@@ -77,6 +78,7 @@ public:
   lanelet::traffic_rules::TrafficRulesPtr getTrafficRulesPtr() const;
   std::shared_ptr<const lanelet::routing::RoutingGraphContainer> getOverallGraphPtr() const;
   lanelet::LaneletMapPtr getLaneletMapPtr() const;
+  static bool isNoDrivableLane(const lanelet::ConstLanelet & llt);
 
   // for routing
   bool planPathLaneletsBetweenCheckpoints(
@@ -324,9 +326,9 @@ public:
     const double check_length) const;
   lanelet::routing::RelationType getRelation(
     const lanelet::ConstLanelet & prev_lane, const lanelet::ConstLanelet & next_lane) const;
-  lanelet::ConstLanelets getShoulderLanelets() const;
   bool isShoulderLanelet(const lanelet::ConstLanelet & lanelet) const;
   bool isRouteLanelet(const lanelet::ConstLanelet & lanelet) const;
+  bool isRoadLanelet(const lanelet::ConstLanelet & lanelet) const;
   lanelet::ConstLanelets getPreferredLanelets() const;
 
   // for path
@@ -341,20 +343,18 @@ public:
     const lanelet::ConstLanelets & lanelets, lanelet::ConstLanelet * target_lanelet) const;
   bool getLeftLaneChangeTargetExceptPreferredLane(
     const lanelet::ConstLanelets & lanelets, lanelet::ConstLanelet * target_lanelet) const;
-  static bool getPullOverTarget(
-    const lanelet::ConstLanelets & lanelets, const Pose & goal_pose,
-    lanelet::ConstLanelet * target_lanelet);
-  static bool getPullOutStartLane(
-    const lanelet::ConstLanelets & lanelets, const Pose & pose, const double vehicle_width,
-    lanelet::ConstLanelet * target_lanelet);
+  std::optional<lanelet::ConstLanelet> getPullOverTarget(const Pose & goal_pose) const;
+  std::optional<lanelet::ConstLanelet> getPullOutStartLane(
+    const Pose & pose, const double vehicle_width) const;
   double getLaneChangeableDistance(const Pose & current_pose, const Direction & direction) const;
-  bool getLeftShoulderLanelet(
-    const lanelet::ConstLanelet & lanelet, lanelet::ConstLanelet * left_lanelet) const;
-  bool getRightShoulderLanelet(
-    const lanelet::ConstLanelet & lanelet, lanelet::ConstLanelet * right_lanelet) const;
+  lanelet::ConstLanelets getRoadLaneletsAtPose(const Pose & pose) const;
+  std::optional<lanelet::ConstLanelet> getLeftShoulderLanelet(
+    const lanelet::ConstLanelet & lanelet) const;
+  std::optional<lanelet::ConstLanelet> getRightShoulderLanelet(
+    const lanelet::ConstLanelet & lanelet) const;
+  lanelet::ConstLanelets getShoulderLaneletsAtPose(const Pose & pose) const;
   lanelet::ConstPolygon3d getIntersectionAreaById(const lanelet::Id id) const;
   bool isPreferredLane(const lanelet::ConstLanelet & lanelet) const;
-  lanelet::ConstLanelets getClosestLanelets(const geometry_msgs::msg::Pose & target_pose) const;
 
 private:
   // MUST
@@ -362,12 +362,10 @@ private:
   lanelet::traffic_rules::TrafficRulesPtr traffic_rules_ptr_;
   std::shared_ptr<const lanelet::routing::RoutingGraphContainer> overall_graphs_ptr_;
   lanelet::LaneletMapPtr lanelet_map_ptr_;
-  lanelet::ConstLanelets road_lanelets_;
   lanelet::ConstLanelets route_lanelets_;
   lanelet::ConstLanelets preferred_lanelets_;
   lanelet::ConstLanelets start_lanelets_;
   lanelet::ConstLanelets goal_lanelets_;
-  lanelet::ConstLanelets shoulder_lanelets_;
   std::shared_ptr<LaneletRoute> route_ptr_{nullptr};
 
   rclcpp::Logger logger_{rclcpp::get_logger("route_handler")};
@@ -409,19 +407,18 @@ private:
     const lanelet::ConstLanelet & lanelet,
     const double min_length = std::numeric_limits<double>::max(),
     const bool only_route_lanes = true) const;
-  bool getFollowingShoulderLanelet(
-    const lanelet::ConstLanelet & lanelet, lanelet::ConstLanelet * following_lanelet) const;
+  std::optional<lanelet::ConstLanelet> getFollowingShoulderLanelet(
+    const lanelet::ConstLanelet & lanelet) const;
   lanelet::ConstLanelets getShoulderLaneletSequenceAfter(
     const lanelet::ConstLanelet & lanelet,
     const double min_length = std::numeric_limits<double>::max()) const;
-  bool getPreviousShoulderLanelet(
-    const lanelet::ConstLanelet & lanelet, lanelet::ConstLanelet * prev_lanelet) const;
+  std::optional<lanelet::ConstLanelet> getPreviousShoulderLanelet(
+    const lanelet::ConstLanelet & lanelet) const;
   lanelet::ConstLanelets getShoulderLaneletSequenceUpTo(
     const lanelet::ConstLanelet & lanelet,
     const double min_length = std::numeric_limits<double>::max()) const;
   lanelet::ConstLanelets getPreviousLaneletSequence(
     const lanelet::ConstLanelets & lanelet_sequence) const;
-  lanelet::ConstLanelets getClosestLaneletSequence(const Pose & pose) const;
   lanelet::ConstLanelets getLaneChangeTargetLanes(const Pose & pose) const;
   lanelet::ConstLanelets getLaneSequenceUpTo(const lanelet::ConstLanelet & lanelet) const;
   lanelet::ConstLanelets getLaneSequenceAfter(const lanelet::ConstLanelet & lanelet) const;
@@ -441,17 +438,41 @@ private:
    */
   bool hasNoDrivableLaneInPath(const lanelet::routing::LaneletPath & path) const;
   /**
-   * @brief Searches for a path between start and goal lanelets that does not include any
-   * no_drivable_lane. If there is more than one path fount, the function returns the shortest path
-   * that does not include any no_drivable_lane.
+   * @brief Searches for the shortest path between start and goal lanelets that does not include any
+   * no_drivable_lane.
    * @param start_lanelet start lanelet
    * @param goal_lanelet goal lanelet
-   * @param drivable_lane_path output path that does not include no_drivable_lane.
-   * @return true if a path without any no_drivable_lane found, false if this path is not found.
+   * @return the lanelet path (if found)
    */
-  bool findDrivableLanePath(
-    const lanelet::ConstLanelet & start_lanelet, const lanelet::ConstLanelet & goal_lanelet,
-    lanelet::routing::LaneletPath & drivable_lane_path) const;
+  std::optional<lanelet::routing::LaneletPath> findDrivableLanePath(
+    const lanelet::ConstLanelet & start_lanelet, const lanelet::ConstLanelet & goal_lanelet) const;
 };
+
+/// @brief custom routing cost with infinity cost for no drivable lanes
+class RoutingCostDrivable : public lanelet::routing::RoutingCostDistance
+{
+public:
+  RoutingCostDrivable() : lanelet::routing::RoutingCostDistance(10.0) {}
+  inline double getCostSucceeding(
+    const lanelet::traffic_rules::TrafficRules & trafficRules,
+    const lanelet::ConstLaneletOrArea & from, const lanelet::ConstLaneletOrArea & to) const
+  {
+    if (
+      (from.isLanelet() && RouteHandler::isNoDrivableLane(*from.lanelet())) ||
+      (to.isLanelet() && RouteHandler::isNoDrivableLane(*to.lanelet())))
+      return std::numeric_limits<double>::infinity();
+    return lanelet::routing::RoutingCostDistance::getCostSucceeding(trafficRules, from, to);
+  }
+  inline double getCostLaneChange(
+    const lanelet::traffic_rules::TrafficRules & trafficRules, const lanelet::ConstLanelets & from,
+    const lanelet::ConstLanelets & to) const noexcept
+  {
+    if (
+      std::any_of(from.begin(), from.end(), RouteHandler::isNoDrivableLane) ||
+      std::any_of(to.begin(), to.end(), RouteHandler::isNoDrivableLane))
+      return std::numeric_limits<double>::infinity();
+    return lanelet::routing::RoutingCostDistance::getCostLaneChange(trafficRules, from, to);
+  }
+};  // class RoutingCostDrivable
 }  // namespace route_handler
 #endif  // ROUTE_HANDLER__ROUTE_HANDLER_HPP_

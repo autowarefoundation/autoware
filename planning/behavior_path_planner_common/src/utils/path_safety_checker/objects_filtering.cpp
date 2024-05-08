@@ -354,11 +354,9 @@ TargetObjectsOnLane createTargetObjectsOnLane(
   };
 
   const auto update_left_shoulder_lanelet = [&](const lanelet::ConstLanelet & target_lane) {
-    lanelet::ConstLanelet neighbor_shoulder_lane{};
-    const bool shoulder_lane_is_found =
-      route_handler->getLeftShoulderLanelet(target_lane, &neighbor_shoulder_lane);
-    if (shoulder_lane_is_found) {
-      all_left_shoulder_lanelets.insert(all_left_shoulder_lanelets.end(), neighbor_shoulder_lane);
+    const auto neighbor_shoulder_lane = route_handler->getLeftShoulderLanelet(target_lane);
+    if (neighbor_shoulder_lane) {
+      all_left_shoulder_lanelets.insert(all_left_shoulder_lanelets.end(), *neighbor_shoulder_lane);
     }
   };
 

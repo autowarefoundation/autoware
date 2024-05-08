@@ -447,12 +447,10 @@ bool GoalPlannerModule::isExecutionRequested() const
 
   // check that goal is in current neighbor shoulder lane
   const bool goal_is_in_current_shoulder_lanes = std::invoke([&]() {
-    lanelet::ConstLanelet neighbor_shoulder_lane{};
     for (const auto & lane : current_lanes) {
-      const bool has_shoulder_lane =
-        left_side_parking_ ? route_handler->getLeftShoulderLanelet(lane, &neighbor_shoulder_lane)
-                           : route_handler->getRightShoulderLanelet(lane, &neighbor_shoulder_lane);
-      if (has_shoulder_lane && lanelet::utils::isInLanelet(goal_pose, neighbor_shoulder_lane)) {
+      const auto shoulder_lane = left_side_parking_ ? route_handler->getLeftShoulderLanelet(lane)
+                                                    : route_handler->getRightShoulderLanelet(lane);
+      if (shoulder_lane && lanelet::utils::isInLanelet(goal_pose, *shoulder_lane)) {
         return true;
       }
     }
@@ -1897,20 +1895,11 @@ bool GoalPlannerModule::isCrossingPossible(
   // Lambda function to get the neighboring lanelet based on left_side_parking_
   auto getNeighboringLane =
     [&](const lanelet::ConstLanelet & lane) -> std::optional<lanelet::ConstLanelet> {
-    lanelet::ConstLanelet neighboring_lane{};
-    if (left_side_parking_) {
-      if (route_handler->getLeftShoulderLanelet(lane, &neighboring_lane)) {
-        return neighboring_lane;
-      } else {
-        return route_handler->getLeftLanelet(lane);
-      }
-    } else {
-      if (route_handler->getRightShoulderLanelet(lane, &neighboring_lane)) {
-        return neighboring_lane;
-      } else {
-        return route_handler->getRightLanelet(lane);
-      }
-    }
+    const auto neighboring_lane = left_side_parking_ ? route_handler->getLeftShoulderLanelet(lane)
+                                                     : route_handler->getRightShoulderLanelet(lane);
+    if (neighboring_lane) return neighboring_lane;
+    return left_side_parking_ ? route_handler->getLeftLanelet(lane)
+                              : route_handler->getRightLanelet(lane);
   };
 
   // Iterate through start_lane_sequence to find a path to end_lane_sequence

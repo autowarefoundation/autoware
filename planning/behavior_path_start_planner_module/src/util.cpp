@@ -90,11 +90,10 @@ lanelet::ConstLanelets getPullOutLanes(
   const auto & route_handler = planner_data->route_handler;
   const auto start_pose = planner_data->route_handler->getOriginalStartPose();
 
-  lanelet::ConstLanelet current_shoulder_lane;
-  if (route_handler->getPullOutStartLane(
-        route_handler->getShoulderLanelets(), start_pose, vehicle_width, &current_shoulder_lane)) {
+  const auto current_shoulder_lane = route_handler->getPullOutStartLane(start_pose, vehicle_width);
+  if (current_shoulder_lane) {
     // pull out from shoulder lane
-    return route_handler->getShoulderLaneletSequence(current_shoulder_lane, start_pose);
+    return route_handler->getShoulderLaneletSequence(*current_shoulder_lane, start_pose);
   }
 
   // pull out from road lane

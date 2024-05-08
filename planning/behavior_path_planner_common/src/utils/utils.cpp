@@ -496,15 +496,12 @@ bool isEgoOutOfRoute(
   const Pose & goal_pose = (modified_goal && modified_goal->uuid == route_handler->getRouteUuid())
                              ? modified_goal->pose
                              : route_handler->getGoalPose();
-  const auto shoulder_lanes = route_handler->getShoulderLanelets();
 
   lanelet::ConstLanelet goal_lane;
-  const bool is_failed_getting_lanelet = std::invoke([&]() {
-    if (utils::isInLanelets(goal_pose, shoulder_lanes)) {
-      return !lanelet::utils::query::getClosestLanelet(shoulder_lanes, goal_pose, &goal_lane);
-    }
-    return !route_handler->getGoalLanelet(&goal_lane);
-  });
+  const auto shoulder_goal_lanes = route_handler->getShoulderLaneletsAtPose(goal_pose);
+  if (!shoulder_goal_lanes.empty()) goal_lane = shoulder_goal_lanes.front();
+  const auto is_failed_getting_lanelet =
+    shoulder_goal_lanes.empty() && !route_handler->getGoalLanelet(&goal_lane);
   if (is_failed_getting_lanelet) {
     RCLCPP_WARN_STREAM(
       rclcpp::get_logger("behavior_path_planner").get_child("util"), "cannot find goal lanelet");
@@ -527,14 +524,7 @@ bool isEgoOutOfRoute(
 
   // If ego vehicle is out of the closest lanelet, return true
   // Check if ego vehicle is in shoulder lane
-  const bool is_in_shoulder_lane = std::invoke([&]() {
-    lanelet::Lanelet closest_shoulder_lanelet;
-    if (!lanelet::utils::query::getClosestLanelet(
-          shoulder_lanes, self_pose, &closest_shoulder_lanelet)) {
-      return false;
-    }
-    return lanelet::utils::isInLanelet(self_pose, closest_shoulder_lanelet);
-  });
+  const bool is_in_shoulder_lane = !route_handler->getShoulderLaneletsAtPose(self_pose).empty();
   // Check if ego vehicle is in road lane
   const bool is_in_road_lane = std::invoke([&]() {
     lanelet::ConstLanelet closest_road_lane;
@@ -1662,13 +1652,6 @@ bool isAllowedGoalModification(const std::shared_ptr<RouteHandler> & route_handl
 bool checkOriginalGoalIsInShoulder(const std::shared_ptr<RouteHandler> & route_handler)
 {
   const Pose & goal_pose = route_handler->getOriginalGoalPose();
-  const auto shoulder_lanes = route_handler->getShoulderLanelets();
-
-  lanelet::ConstLanelet closest_shoulder_lane{};
-  if (lanelet::utils::query::getClosestLanelet(shoulder_lanes, goal_pose, &closest_shoulder_lane)) {
-    return lanelet::utils::isInLanelet(goal_pose, closest_shoulder_lane, 0.1);
-  }
-
-  return false;
+  return !route_handler->getShoulderLaneletsAtPose(goal_pose).empty();
 }
 }  // namespace behavior_path_planner::utils
