@@ -19,8 +19,6 @@ namespace pointcloud_preprocessor
 
 FasterVoxelGridDownsampleFilter::FasterVoxelGridDownsampleFilter()
 {
-  pcl::for_each_type<typename pcl::traits::fieldList<pcl::PointXYZ>::type>(
-    pcl::detail::FieldAdder<pcl::PointXYZ>(xyz_fields_));
   offset_initialized_ = false;
 }
 
@@ -36,9 +34,9 @@ void FasterVoxelGridDownsampleFilter::set_field_offsets(const PointCloud2ConstPt
   x_offset_ = input->fields[pcl::getFieldIndex(*input, "x")].offset;
   y_offset_ = input->fields[pcl::getFieldIndex(*input, "y")].offset;
   z_offset_ = input->fields[pcl::getFieldIndex(*input, "z")].offset;
-  int intensity_index = pcl::getFieldIndex(*input, "intensity");
-  if (intensity_index != -1) {
-    intensity_offset_ = input->fields[intensity_index].offset;
+  intensity_index_ = pcl::getFieldIndex(*input, "intensity");
+  if (intensity_index_ != -1) {
+    intensity_offset_ = input->fields[intensity_index_].offset;
   } else {
     intensity_offset_ = z_offset_ + sizeof(float);
   }
@@ -72,7 +70,7 @@ void FasterVoxelGridDownsampleFilter::filter(
   output.row_step = voxel_centroid_map.size() * input->point_step;
   output.data.resize(output.row_step);
   output.width = voxel_centroid_map.size();
-  pcl_conversions::fromPCL(xyz_fields_, output.fields);
+  output.fields = input->fields;
   output.is_dense = true;  // we filter out invalid points
   output.height = input->height;
   output.is_bigendian = input->is_bigendian;
@@ -83,13 +81,19 @@ void FasterVoxelGridDownsampleFilter::filter(
   copy_centroids_to_output(voxel_centroid_map, output, transform_info);
 }
 
-Eigen::Vector3f FasterVoxelGridDownsampleFilter::get_point_from_global_offset(
+Eigen::Vector4f FasterVoxelGridDownsampleFilter::get_point_from_global_offset(
   const PointCloud2ConstPtr & input, size_t global_offset)
 {
-  Eigen::Vector3f point(
+  float intensity = 0.0;
+  if (intensity_index_ == -1) {
+    intensity = -1.0;
+  } else {
+    intensity = *reinterpret_cast<const float *>(&input->data[global_offset + intensity_offset_]);
+  }
+  Eigen::Vector4f point(
     *reinterpret_cast<const float *>(&input->data[global_offset + x_offset_]),
     *reinterpret_cast<const float *>(&input->data[global_offset + y_offset_]),
-    *reinterpret_cast<const float *>(&input->data[global_offset + z_offset_]));
+    *reinterpret_cast<const float *>(&input->data[global_offset + z_offset_]), intensity);
   return point;
 }
 
@@ -102,10 +106,10 @@ bool FasterVoxelGridDownsampleFilter::get_min_max_voxel(
   max_point.setConstant(-FLT_MAX);
   for (size_t global_offset = 0; global_offset + input->point_step <= input->data.size();
        global_offset += input->point_step) {
-    Eigen::Vector3f point = get_point_from_global_offset(input, global_offset);
+    Eigen::Vector4f point = get_point_from_global_offset(input, global_offset);
     if (std::isfinite(point[0]) && std::isfinite(point[1]), std::isfinite(point[2])) {
-      min_point = min_point.cwiseMin(point);
-      max_point = max_point.cwiseMax(point);
+      min_point = min_point.cwiseMin(point.head<3>());
+      max_point = max_point.cwiseMax(point.head<3>());
     }
   }
 
@@ -142,7 +146,7 @@ FasterVoxelGridDownsampleFilter::calc_centroids_each_voxel(
 
   for (size_t global_offset = 0; global_offset + input->point_step <= input->data.size();
        global_offset += input->point_step) {
-    Eigen::Vector3f point = get_point_from_global_offset(input, global_offset);
+    Eigen::Vector4f point = get_point_from_global_offset(input, global_offset);
     if (std::isfinite(point[0]) && std::isfinite(point[1]), std::isfinite(point[2])) {
       // Calculate the voxel index to which the point belongs
       int ijk0 = static_cast<int>(std::floor(point[0] * inverse_voxel_size_[0]) - min_voxel[0]);
@@ -152,9 +156,9 @@ FasterVoxelGridDownsampleFilter::calc_centroids_each_voxel(
 
       // Add the point to the corresponding centroid
       if (voxel_centroid_map.find(voxel_id) == voxel_centroid_map.end()) {
-        voxel_centroid_map[voxel_id] = Centroid(point[0], point[1], point[2]);
+        voxel_centroid_map[voxel_id] = Centroid(point[0], point[1], point[2], point[3]);
       } else {
-        voxel_centroid_map[voxel_id].add_point(point[0], point[1], point[2]);
+        voxel_centroid_map[voxel_id].add_point(point[0], point[1], point[2], point[3]);
       }
     }
   }

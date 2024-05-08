@@ -45,16 +45,22 @@ private:
     float x;
     float y;
     float z;
+    float intensity;
     uint32_t point_count_;
 
-    Centroid() : x(0), y(0), z(0) {}
-    Centroid(float _x, float _y, float _z) : x(_x), y(_y), z(_z) { this->point_count_ = 1; }
+    Centroid() : x(0), y(0), z(0), intensity(-1.0) {}
+    Centroid(float _x, float _y, float _z, float _intensity)
+    : x(_x), y(_y), z(_z), intensity(_intensity)
+    {
+      this->point_count_ = 1;
+    }
 
-    void add_point(float _x, float _y, float _z)
+    void add_point(float _x, float _y, float _z, float _intensity)
     {
       this->x += _x;
       this->y += _y;
       this->z += _z;
+      this->intensity += _intensity;
       this->point_count_++;
     }
 
@@ -62,20 +68,20 @@ private:
     {
       Eigen::Vector4f centroid(
         (this->x / this->point_count_), (this->y / this->point_count_),
-        (this->z / this->point_count_), 1.0f);
+        (this->z / this->point_count_), (this->intensity / this->point_count_));
       return centroid;
     }
   };
 
   Eigen::Vector3f inverse_voxel_size_;
-  std::vector<pcl::PCLPointField> xyz_fields_;
   int x_offset_;
   int y_offset_;
   int z_offset_;
+  int intensity_index_;
   int intensity_offset_;
   bool offset_initialized_;
 
-  Eigen::Vector3f get_point_from_global_offset(
+  Eigen::Vector4f get_point_from_global_offset(
     const PointCloud2ConstPtr & input, size_t global_offset);
 
   bool get_min_max_voxel(
