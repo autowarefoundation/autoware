@@ -50,9 +50,9 @@ cv::Mat ProjectorModule::project_image(const cv::Mat & mask_image)
     cv::findContours(masks[i], contours, cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
 
     std::vector<std::vector<cv::Point> > projected_contours;
-    for (auto contour : contours) {
+    for (const auto & contour : contours) {
       std::vector<cv::Point> projected;
-      for (auto c : contour) {
+      for (const auto & c : contour) {
         auto opt = project_func_(c);
         if (!opt.has_value()) continue;
 
