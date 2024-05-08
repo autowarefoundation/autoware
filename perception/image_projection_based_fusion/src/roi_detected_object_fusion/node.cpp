@@ -86,15 +86,12 @@ void RoiDetectedObjectFusionNode::fuseOnSingleImage(
     object2camera_affine = transformToEigen(transform_stamped_optional.value().transform);
   }
 
-  Eigen::Matrix4d camera_projection;
-  camera_projection << camera_info.p.at(0), camera_info.p.at(1), camera_info.p.at(2),
-    camera_info.p.at(3), camera_info.p.at(4), camera_info.p.at(5), camera_info.p.at(6),
-    camera_info.p.at(7), camera_info.p.at(8), camera_info.p.at(9), camera_info.p.at(10),
-    camera_info.p.at(11);
+  image_geometry::PinholeCameraModel pinhole_camera_model;
+  pinhole_camera_model.fromCameraInfo(camera_info);
 
   const auto object_roi_map = generateDetectedObjectRoIs(
     input_object_msg, static_cast<double>(camera_info.width),
-    static_cast<double>(camera_info.height), object2camera_affine, camera_projection);
+    static_cast<double>(camera_info.height), object2camera_affine, pinhole_camera_model);
   fuseObjectsOnImage(input_object_msg, input_roi_msg.feature_objects, object_roi_map);
 
   if (debugger_) {
@@ -109,7 +106,8 @@ void RoiDetectedObjectFusionNode::fuseOnSingleImage(
 std::map<std::size_t, DetectedObjectWithFeature>
 RoiDetectedObjectFusionNode::generateDetectedObjectRoIs(
   const DetectedObjects & input_object_msg, const double image_width, const double image_height,
-  const Eigen::Affine3d & object2camera_affine, const Eigen::Matrix4d & camera_projection)
+  const Eigen::Affine3d & object2camera_affine,
+  const image_geometry::PinholeCameraModel & pinhole_camera_model)
 {
   std::map<std::size_t, DetectedObjectWithFeature> object_roi_map;
   int64_t timestamp_nsec =
@@ -148,13 +146,8 @@ RoiDetectedObjectFusionNode::generateDetectedObjectRoIs(
         continue;
       }
 
-      Eigen::Vector2d proj_point;
-      {
-        Eigen::Vector4d proj_point_hom =
-          camera_projection * Eigen::Vector4d(point.x(), point.y(), point.z(), 1.0);
-        proj_point = Eigen::Vector2d(
-          proj_point_hom.x() / (proj_point_hom.z()), proj_point_hom.y() / (proj_point_hom.z()));
-      }
+      Eigen::Vector2d proj_point = calcRawImageProjectedPoint(
+        pinhole_camera_model, cv::Point3d(point.x(), point.y(), point.z()));
 
       min_x = std::min(proj_point.x(), min_x);
       min_y = std::min(proj_point.y(), min_y);
