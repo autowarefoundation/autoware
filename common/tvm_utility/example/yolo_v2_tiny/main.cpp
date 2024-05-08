@@ -200,6 +200,8 @@ public:
             }
           }
 
+          if (max_ind == -1) continue;
+
           // Decode and copy class probabilities
           std::vector<float> class_probabilities{};
           float p_total = 0;
