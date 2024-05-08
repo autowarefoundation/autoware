@@ -388,16 +388,10 @@ void ScanGroundFilterComponent::classifyPointCloudGridScan(
       }
 
       // initialize lists of previous gnd grids
-      if (prev_list_init == false && initialized_first_gnd_grid == true) {
+      if (!prev_list_init) {
         float h = ground_cluster.getAverageHeight();
         float r = ground_cluster.getAverageRadius();
         initializeFirstGndGrids(h, r, p->grid_id, gnd_grids);
-        prev_list_init = true;
-      }
-
-      if (prev_list_init == false && initialized_first_gnd_grid == false) {
-        // assume first gnd grid is zero
-        initializeFirstGndGrids(0.0f, p->radius, p->grid_id, gnd_grids);
         prev_list_init = true;
       }
 
