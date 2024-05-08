@@ -25,6 +25,7 @@
 
 namespace behavior_path_planner::utils::avoidance
 {
+
 using behavior_path_planner::PlannerData;
 using behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject;
 using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityAndPolygonStamped;

@@ -17,6 +17,7 @@
 
 #include "behavior_path_avoidance_module/data_structs.hpp"
 #include "behavior_path_avoidance_module/helper.hpp"
+#include "behavior_path_avoidance_module/type_alias.hpp"
 #include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
 #include <memory>

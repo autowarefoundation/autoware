@@ -15,16 +15,12 @@
 #ifndef BEHAVIOR_PATH_AVOIDANCE_MODULE__DATA_STRUCTS_HPP_
 #define BEHAVIOR_PATH_AVOIDANCE_MODULE__DATA_STRUCTS_HPP_
 
+#include "behavior_path_avoidance_module/type_alias.hpp"
 #include "behavior_path_planner_common/data_manager.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
 #include <rclcpp/time.hpp>
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
-
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 
 #include <lanelet2_core/primitives/Lanelet.h>
 #include <lanelet2_core/primitives/LineString.h>
@@ -38,19 +34,8 @@
 
 namespace behavior_path_planner
 {
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedPath;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
-
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
-using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
-
-using geometry_msgs::msg::Point;
-using geometry_msgs::msg::Pose;
 
 using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
-
 using route_handler::Direction;
 
 enum class ObjectInfo {

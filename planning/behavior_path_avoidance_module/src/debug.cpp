@@ -19,24 +19,12 @@
 
 #include <lanelet2_extension/visualization/visualization.hpp>
 #include <magic_enum.hpp>
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
 #include <string>
 #include <vector>
 
-namespace marker_utils::avoidance_marker
+namespace behavior_path_planner::utils::avoidance
 {
-
-using tier4_autoware_utils::appendMarkerArray;
-using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::calcOffsetPose;
-using tier4_autoware_utils::createDefaultMarker;
-using tier4_autoware_utils::createMarkerColor;
-using tier4_autoware_utils::createMarkerScale;
-using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::getPose;
-using visualization_msgs::msg::Marker;
-
 namespace
 {
 
@@ -650,7 +638,7 @@ MarkerArray createDebugMarkerArray(
 
   return msg;
 }
-}  // namespace marker_utils::avoidance_marker
+}  // namespace behavior_path_planner::utils::avoidance
 
 std::string toStrInfo(const behavior_path_planner::ShiftLineArray & sl_arr)
 {

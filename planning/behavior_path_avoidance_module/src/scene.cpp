@@ -26,11 +26,6 @@
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
-
-#include "tier4_planning_msgs/msg/detail/avoidance_debug_msg_array__struct.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -41,17 +36,6 @@
 
 namespace behavior_path_planner
 {
-
-using motion_utils::calcLongitudinalOffsetPose;
-using motion_utils::calcSignedArcLength;
-using motion_utils::findNearestIndex;
-using tier4_autoware_utils::appendMarkerArray;
-using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::calcLateralDeviation;
-using tier4_autoware_utils::getPoint;
-using tier4_autoware_utils::getPose;
-using tier4_autoware_utils::toHexString;
-
 namespace
 {
 bool isDrivingSameLane(
@@ -281,7 +265,7 @@ void AvoidanceModule::fillFundamentalData(AvoidancePlanningData & data, DebugDat
   // arclength from ego pose (used in many functions)
   data.arclength_from_ego = utils::calcPathArcLengthArray(
     data.reference_path, 0, data.reference_path.points.size(),
-    calcSignedArcLength(data.reference_path.points, getEgoPosition(), 0));
+    motion_utils::calcSignedArcLength(data.reference_path.points, getEgoPosition(), 0));
 
   data.to_return_point = utils::avoidance::calcDistanceToReturnDeadLine(
     data.current_lanelets, data.reference_path_rough, planner_data_, parameters_);
@@ -379,7 +363,8 @@ ObjectData AvoidanceModule::createObjectData(
 
   const auto & path_points = data.reference_path.points;
   const auto & object_pose = object.kinematics.initial_pose_with_covariance.pose;
-  const auto object_closest_index = findNearestIndex(path_points, object_pose.position);
+  const auto object_closest_index =
+    motion_utils::findNearestIndex(path_points, object_pose.position);
   const auto object_closest_pose = path_points.at(object_closest_index).point.pose;
   const auto object_type = utils::getHighestProbLabel(object.classification);
   const auto object_parameter = parameters_->object_parameters.at(object_type);
@@ -424,7 +409,7 @@ bool AvoidanceModule::canYieldManeuver(const AvoidancePlanningData & data) const
   const auto registered_lines = path_shifter_.getShiftLines();
   if (!registered_lines.empty()) {
     const size_t idx = planner_data_->findEgoIndex(path_shifter_.getReferencePath().points);
-    const auto to_shift_start_point = calcSignedArcLength(
+    const auto to_shift_start_point = motion_utils::calcSignedArcLength(
       path_shifter_.getReferencePath().points, idx, registered_lines.front().start_idx);
     if (to_shift_start_point < helper_->getMinimumPrepareDistance()) {
       RCLCPP_DEBUG(
@@ -640,7 +625,7 @@ void AvoidanceModule::fillDebugData(
   const auto prepare_distance = helper_->getNominalPrepareDistance();
   const auto total_avoid_distance = prepare_distance + avoidance_distance + constant_distance;
 
-  dead_pose_ = calcLongitudinalOffsetPose(
+  dead_pose_ = motion_utils::calcLongitudinalOffsetPose(
     data.reference_path.points, getEgoPosition(), o_front.longitudinal - total_avoid_distance);
 
   if (!dead_pose_) {
@@ -827,8 +812,8 @@ PathWithLaneId AvoidanceModule::extendBackwardLength(const PathWithLaneId & orig
       return a.start_idx < b.start_idx;
     });
     return std::max(
-      max_dist,
-      calcSignedArcLength(previous_path.points, lines.front().start.position, getEgoPosition()));
+      max_dist, motion_utils::calcSignedArcLength(
+                  previous_path.points, lines.front().start.position, getEgoPosition()));
   }();
 
   const auto extra_margin = 10.0;  // Since distance does not consider arclength, but just line.
@@ -845,7 +830,9 @@ PathWithLaneId AvoidanceModule::extendBackwardLength(const PathWithLaneId & orig
 
   size_t clip_idx = 0;
   for (size_t i = 0; i < prev_ego_idx; ++i) {
-    if (backward_length > calcSignedArcLength(previous_path.points, clip_idx, *prev_ego_idx)) {
+    if (
+      backward_length >
+      motion_utils::calcSignedArcLength(previous_path.points, clip_idx, *prev_ego_idx)) {
       break;
     }
     clip_idx = i;
@@ -1363,7 +1350,7 @@ void AvoidanceModule::updateRTCData()
 
 void AvoidanceModule::updateInfoMarker(const AvoidancePlanningData & data) const
 {
-  using marker_utils::avoidance_marker::createTargetObjectsMarkerArray;
+  using utils::avoidance::createTargetObjectsMarkerArray;
 
   info_marker_.markers.clear();
   appendMarkerArray(
@@ -1379,7 +1366,7 @@ void AvoidanceModule::updateDebugMarker(
     return;
   }
 
-  debug_marker_ = marker_utils::avoidance_marker::createDebugMarkerArray(data, shifter, debug);
+  debug_marker_ = utils::avoidance::createDebugMarkerArray(data, shifter, debug);
 }
 
 void AvoidanceModule::updateAvoidanceDebugData(
@@ -1458,7 +1445,7 @@ void AvoidanceModule::insertReturnDeadLine(
   // Consider the difference in path length between the shifted path and original path (the path
   // that is shifted inward has a shorter distance to the end of the path than the other one.)
   const auto & to_reference_path_end = data.arclength_from_ego.back();
-  const auto to_shifted_path_end = calcSignedArcLength(
+  const auto to_shifted_path_end = motion_utils::calcSignedArcLength(
     shifted_path.path.points, getEgoPosition(), shifted_path.path.points.size() - 1);
   const auto buffer = std::max(0.0, to_shifted_path_end - to_reference_path_end);
 
@@ -1495,7 +1482,8 @@ void AvoidanceModule::insertReturnDeadLine(
 
   const auto start_idx = planner_data_->findEgoIndex(shifted_path.path.points);
   for (size_t i = start_idx; i < shifted_path.path.points.size(); ++i) {
-    const auto distance_from_ego = calcSignedArcLength(shifted_path.path.points, start_idx, i);
+    const auto distance_from_ego =
+      motion_utils::calcSignedArcLength(shifted_path.path.points, start_idx, i);
 
     // slow down speed is inserted only in front of the object.
     const auto shift_longitudinal_distance = to_stop_line - distance_from_ego;
@@ -1589,7 +1577,7 @@ void AvoidanceModule::insertStopPoint(
   }();
 
   const auto stop_distance =
-    calcSignedArcLength(shifted_path.path.points, getEgoPosition(), stop_idx);
+    motion_utils::calcSignedArcLength(shifted_path.path.points, getEgoPosition(), stop_idx);
 
   // If we don't need to consider deceleration constraints, insert a deceleration point
   // and return immediately
@@ -1700,7 +1688,8 @@ void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
 
   const auto start_idx = planner_data_->findEgoIndex(shifted_path.path.points);
   for (size_t i = start_idx; i < shifted_path.path.points.size(); ++i) {
-    const auto distance_from_ego = calcSignedArcLength(shifted_path.path.points, start_idx, i);
+    const auto distance_from_ego =
+      motion_utils::calcSignedArcLength(shifted_path.path.points, start_idx, i);
 
     // slow down speed is inserted only in front of the object.
     const auto shift_longitudinal_distance = distance_to_object - distance_from_ego;
@@ -1743,7 +1732,8 @@ void AvoidanceModule::insertAvoidanceVelocity(ShiftedPath & shifted_path) const
 
   const auto start_idx = planner_data_->findEgoIndex(shifted_path.path.points);
   for (size_t i = start_idx; i < shifted_path.path.points.size(); ++i) {
-    const auto distance_from_ego = calcSignedArcLength(shifted_path.path.points, start_idx, i);
+    const auto distance_from_ego =
+      motion_utils::calcSignedArcLength(shifted_path.path.points, start_idx, i);
 
     // slow down speed is inserted only in front of the object.
     const auto accel_distance = distance_to_accel_end_point - distance_from_ego;

@@ -17,13 +17,8 @@
 #include "behavior_path_avoidance_module/utils.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
 
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
-
 namespace behavior_path_planner::utils::avoidance
 {
-
-using tier4_autoware_utils::generateUUID;
-using tier4_autoware_utils::getPoint;
 
 namespace
 {
