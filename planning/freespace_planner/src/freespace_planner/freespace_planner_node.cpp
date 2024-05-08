@@ -444,7 +444,9 @@ void FreespacePlannerNode::onTimer()
     return;
   }
 
-  if (isPlanRequired()) {
+  // Must stop before replanning any new trajectory
+  const bool is_reset_required = !reset_in_progress_ && isPlanRequired();
+  if (is_reset_required) {
     // Stop before planning new trajectory
     const auto stop_trajectory = partial_trajectory_.points.empty()
                                    ? createStopTrajectory(current_pose_)
@@ -455,8 +457,21 @@ void FreespacePlannerNode::onTimer()
 
     reset();
 
-    // Plan new trajectory
-    planTrajectory();
+    reset_in_progress_ = true;
+  }
+
+  if (reset_in_progress_) {
+    const auto is_stopped = isStopped(odom_buffer_, node_param_.th_stopped_velocity_mps);
+    if (is_stopped) {
+      // Plan new trajectory
+      planTrajectory();
+      reset_in_progress_ = false;
+    } else {
+      // Will keep current stop trajectory
+      RCLCPP_WARN_THROTTLE(
+        get_logger(), *get_clock(), 1000,
+        "Waiting for the vehicle to stop before generating a new trajectory.");
+    }
   }
 
   // StopTrajectory
