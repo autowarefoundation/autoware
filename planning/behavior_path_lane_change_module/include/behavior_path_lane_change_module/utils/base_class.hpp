@@ -187,6 +187,8 @@ public:
 
   void resetStopPose() { lane_change_stop_pose_ = std::nullopt; }
 
+  virtual TurnSignalInfo get_current_turn_signal_info() = 0;
+
 protected:
   virtual lanelet::ConstLanelets getCurrentLanes() const = 0;
 

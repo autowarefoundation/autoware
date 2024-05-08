@@ -93,9 +93,6 @@ public:
 
   MarkerArray getModuleVirtualWall() override;
 
-  TurnSignalInfo getCurrentTurnSignalInfo(
-    const PathWithLaneId & path, const TurnSignalInfo & original_turn_signal_info);
-
   // TODO(someone): remove this, and use base class function
   [[deprecated]] BehaviorModuleOutput run() override
   {
