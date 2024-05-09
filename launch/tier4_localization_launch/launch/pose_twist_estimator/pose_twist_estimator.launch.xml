@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="use_autoware_pose_covariance_modifier" default="false"/>
   <!-- only when running with a real vehicle, the pose_initializer judges the stop -->
   <let name="stop_check_enabled" if="$(eval &quot;'$(var system_run_mode)'=='online'&quot;)" value="true"/>
   <let name="stop_check_enabled" if="$(eval &quot;'$(var system_run_mode)'=='logging_simulation'&quot;)" value="false"/>
@@ -29,7 +30,20 @@
   <!-- NDT Scan Matcher Launch (as pose estimator) -->
   <group if="$(var use_ndt_pose)">
     <push-ros-namespace namespace="pose_estimator"/>
-    <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/ndt_scan_matcher.launch.xml"/>
+    <let
+      name="ndt_output_pose_with_cov_topic_name"
+      if="$(eval &quot;'$(var use_autoware_pose_covariance_modifier)'=='true'&quot;)"
+      value="/localization/pose_estimator/ndt_scan_matcher/pose_with_covariance"
+    />
+    <let name="ndt_output_pose_with_cov_topic_name" unless="$(eval &quot;'$(var use_autoware_pose_covariance_modifier)'=='true'&quot;)" value="/localization/pose_estimator/pose_with_covariance"/>
+    <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/ndt_scan_matcher.launch.xml">
+      <arg name="output_pose_with_covariance_topic" value="$(var ndt_output_pose_with_cov_topic_name)"/>
+    </include>
+
+    <!-- Autoware Pose Covariance Modifier Node Launch -->
+    <group if="$(var use_autoware_pose_covariance_modifier)">
+      <include file="$(find-pkg-share autoware_pose_covariance_modifier)/launch/pose_covariance_modifier.launch.xml"/>
+    </group>
   </group>
 
   <!-- YabLoc Launch (as pose estimator) -->

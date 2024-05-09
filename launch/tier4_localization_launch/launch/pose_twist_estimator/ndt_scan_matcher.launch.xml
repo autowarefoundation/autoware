@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="output_pose_with_covariance_topic" default="/localization/pose_estimator/pose_with_covariance"/>
   <group>
     <include file="$(find-pkg-share ndt_scan_matcher)/launch/ndt_scan_matcher.launch.xml">
       <arg name="input_pointcloud" value="/localization/util/downsample/pointcloud"/>
@@ -8,7 +9,7 @@
       <arg name="input_service_trigger_node" value="/localization/pose_estimator/trigger_node"/>
 
       <arg name="output_pose_topic" value="/localization/pose_estimator/pose"/>
-      <arg name="output_pose_with_covariance_topic" value="/localization/pose_estimator/pose_with_covariance"/>
+      <arg name="output_pose_with_covariance_topic" value="$(var output_pose_with_covariance_topic)"/>
 
       <arg name="client_map_loader" value="/map/get_differential_pointcloud_map"/>
 

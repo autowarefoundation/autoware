@@ -1,0 +1,24 @@
+/**:
+  ros__parameters:
+    # If GNSS yaw standard deviation values are larger than this, trust only NDT
+    threshold_gnss_stddev_yaw_deg_max: 0.3
+
+    # If GNSS position Z standard deviation values are larger than this, trust only NDT
+    threshold_gnss_stddev_z_max: 0.1
+
+    # If GNSS position XY standard deviation values are lower than this, trust only GNSS
+    threshold_gnss_stddev_xy_bound_lower: 0.1
+
+    # If GNSS position XY standard deviation values are higher than this, trust only NDT
+    threshold_gnss_stddev_xy_bound_upper: 0.25
+
+    # Lower bound value for standard deviation of NDT positions (x, y, z) when used with GNSS
+    ndt_std_dev_bound_lower: 0.14
+
+    # Upper bound value for standard deviation of NDT positions (x, y, z) when used with GNSS
+    ndt_std_dev_bound_upper: 0.30
+
+    # If GNSS data is not received for this duration, trust only NDT
+    gnss_pose_timeout_sec: 1.0
+
+    enable_debug_topics: true

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="autoware_pose_covariance_modifier/input_gnss_pose_with_cov_topic" default="/sensing/gnss/pose_with_covariance"/>
+  <arg name="autoware_pose_covariance_modifier/input_ndt_pose_with_cov_topic" default="/localization/pose_estimator/ndt_scan_matcher/pose_with_covariance"/>
+  <arg name="autoware_pose_covariance_modifier/output_pose_with_covariance_topic" default="/localization/pose_estimator/pose_with_covariance"/>
+  <arg name="param_file" default="$(find-pkg-share autoware_pose_covariance_modifier)/config/pose_covariance_modifier.param.yaml"/>
+
+  <node pkg="autoware_pose_covariance_modifier" exec="autoware_pose_covariance_modifier_node" name="pose_covariance_modifier_node" output="screen">
+    <remap from="input_gnss_pose_with_cov_topic" to="$(var autoware_pose_covariance_modifier/input_gnss_pose_with_cov_topic)"/>
+    <remap from="input_ndt_pose_with_cov_topic" to="$(var autoware_pose_covariance_modifier/input_ndt_pose_with_cov_topic)"/>
+    <remap from="output_pose_with_covariance_topic" to="$(var autoware_pose_covariance_modifier/output_pose_with_covariance_topic)"/>
+    <param from="$(var param_file)"/>
+  </node>
+</launch>
