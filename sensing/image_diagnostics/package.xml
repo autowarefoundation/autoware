@@ -5,6 +5,7 @@
   <version>0.1.0</version>
   <description>The image_diagnostics_package</description>
   <maintainer email="dai.nguyen@tier4.jp">Dai Nguyen</maintainer>
+  <maintainer email="yoshi.ri@tier4.jp">Yoshi Ri</maintainer>
   <license>Apache License 2.0</license>
 
   <author email="dai.nguyen@tier4.jp">Dai Nguyen</author>

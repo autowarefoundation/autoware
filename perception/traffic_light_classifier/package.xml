@@ -6,6 +6,7 @@
   <description>The traffic_light_classifier package</description>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
+  <maintainer email="tao.zhong@tier4.jp">Tao Zhong</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
