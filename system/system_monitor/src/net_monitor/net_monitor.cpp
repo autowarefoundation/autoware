@@ -258,7 +258,7 @@ void NetMonitor::monitor_traffic(diagnostic_updater::DiagnosticStatusWrapper & s
         if (line.empty()) continue;
 
         boost::split(list, line, boost::is_any_of("\t"), boost::token_compress_on);
-        if (list.size() >= 3) {
+        if (list.size() > 3) {
           status.add(fmt::format("nethogs {}: program", index), list[3].c_str());
           status.add(fmt::format("nethogs {}: sent (KB/s)", index), list[1].c_str());
           status.add(fmt::format("nethogs {}: received (KB/sec)", index), list[2].c_str());
