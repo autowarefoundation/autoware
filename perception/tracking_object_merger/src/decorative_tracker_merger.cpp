@@ -88,8 +88,10 @@ DecorativeTrackerMergerNode::DecorativeTrackerMergerNode(const rclcpp::NodeOptio
   tf_listener_(tf_buffer_)
 {
   // glog for debug
-  google::InitGoogleLogging("decorative_object_merger_node");
-  google::InstallFailureSignalHandler();
+  if (!google::IsGoogleLoggingInitialized()) {
+    google::InitGoogleLogging("decorative_object_merger_node");
+    google::InstallFailureSignalHandler();
+  }
 
   // Subscriber
   sub_main_objects_ = create_subscription<TrackedObjects>(

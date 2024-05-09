@@ -43,8 +43,10 @@ PerceptionOnlineEvaluatorNode::PerceptionOnlineEvaluatorNode(
 {
   using std::placeholders::_1;
 
-  google::InitGoogleLogging("perception_online_evaluator_node");
-  google::InstallFailureSignalHandler();
+  if (!google::IsGoogleLoggingInitialized()) {
+    google::InitGoogleLogging("perception_online_evaluator_node");
+    google::InstallFailureSignalHandler();
+  }
 
   objects_sub_ = create_subscription<PredictedObjects>(
     "~/input/objects", 1, std::bind(&PerceptionOnlineEvaluatorNode::onObjects, this, _1));

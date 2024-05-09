@@ -13,7 +13,7 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
-  <depend>libgoogle-glog-dev</depend>
+  <depend>glog</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
 

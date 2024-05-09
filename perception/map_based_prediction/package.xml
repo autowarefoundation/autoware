@@ -17,9 +17,9 @@
 
   <depend>autoware_auto_perception_msgs</depend>
   <depend>autoware_perception_msgs</depend>
+  <depend>glog</depend>
   <depend>interpolation</depend>
   <depend>lanelet2_extension</depend>
-  <depend>libgoogle-glog-dev</depend>
   <depend>motion_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

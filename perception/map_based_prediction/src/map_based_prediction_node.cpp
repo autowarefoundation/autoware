@@ -715,8 +715,10 @@ void replaceObjectYawWithLaneletsYaw(
 MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_options)
 : Node("map_based_prediction", node_options), debug_accumulated_time_(0.0)
 {
-  google::InitGoogleLogging("map_based_prediction_node");
-  google::InstallFailureSignalHandler();
+  if (!google::IsGoogleLoggingInitialized()) {
+    google::InitGoogleLogging("map_based_prediction_node");
+    google::InstallFailureSignalHandler();
+  }
   enable_delay_compensation_ = declare_parameter<bool>("enable_delay_compensation");
   prediction_time_horizon_ = declare_parameter<double>("prediction_time_horizon");
   lateral_control_time_horizon_ =

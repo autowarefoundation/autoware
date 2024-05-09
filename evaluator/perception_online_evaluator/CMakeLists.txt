@@ -6,8 +6,6 @@ autoware_package()
 
 find_package(pluginlib REQUIRED)
 
-find_package(glog REQUIRED)
-
 ament_auto_add_library(${PROJECT_NAME}_node SHARED
   src/metrics_calculator.cpp
   src/${PROJECT_NAME}_node.cpp

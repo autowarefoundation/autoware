@@ -18,8 +18,10 @@
 
 int main(int argc, char ** argv)
 {
-  google::InitGoogleLogging(argv[0]);
-  google::InstallFailureSignalHandler();
+  if (!google::IsGoogleLoggingInitialized()) {
+    google::InitGoogleLogging(argv[0]);
+    google::InstallFailureSignalHandler();
+  }
 
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<yabloc::ground_server::GroundServer>());

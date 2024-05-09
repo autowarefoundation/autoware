@@ -16,8 +16,8 @@
   <depend>autoware_auto_perception_msgs</depend>
   <depend>diagnostic_updater</depend>
   <depend>eigen</depend>
+  <depend>glog</depend>
   <depend>kalman_filter</depend>
-  <depend>libgoogle-glog-dev</depend>
   <depend>mussp</depend>
   <depend>object_recognition_utils</depend>
   <depend>rclcpp</depend>

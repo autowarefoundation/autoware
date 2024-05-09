@@ -20,8 +20,10 @@
 
 int main(int argc, char ** argv)
 {
-  google::InitGoogleLogging(argv[0]);  // NOLINT
-  google::InstallFailureSignalHandler();
+  if (!google::IsGoogleLoggingInitialized()) {
+    google::InitGoogleLogging(argv[0]);  // NOLINT
+    google::InstallFailureSignalHandler();
+  }
 
   rclcpp::init(argc, argv);
   rclcpp::NodeOptions options;

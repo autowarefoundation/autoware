@@ -196,8 +196,10 @@ RadarObjectTrackerNode::RadarObjectTrackerNode(const rclcpp::NodeOptions & node_
   tf_listener_(tf_buffer_)
 {
   // glog for debug
-  google::InitGoogleLogging("radar_object_tracker");
-  google::InstallFailureSignalHandler();
+  if (!google::IsGoogleLoggingInitialized()) {
+    google::InitGoogleLogging("radar_object_tracker");
+    google::InstallFailureSignalHandler();
+  }
 
   // Create publishers and subscribers
   detected_object_sub_ = create_subscription<autoware_auto_perception_msgs::msg::DetectedObjects>(

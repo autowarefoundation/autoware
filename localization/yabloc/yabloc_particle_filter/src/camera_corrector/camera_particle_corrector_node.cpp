@@ -18,8 +18,10 @@
 
 int main(int argc, char * argv[])
 {
-  google::InitGoogleLogging(argv[0]);
-  google::InstallFailureSignalHandler();
+  if (!google::IsGoogleLoggingInitialized()) {
+    google::InitGoogleLogging(argv[0]);
+    google::InstallFailureSignalHandler();
+  }
 
   namespace mpf = yabloc::modularized_particle_filter;
   rclcpp::init(argc, argv);
