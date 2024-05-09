@@ -220,11 +220,6 @@ std::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
     shifted_path.path.points.push_back(p);
   }
 
-  // set the same z as the goal
-  for (auto & p : shifted_path.path.points) {
-    p.point.pose.position.z = goal_pose.position.z;
-  }
-
   // set lane_id and velocity to shifted_path
   for (size_t i = path_shifter.getShiftLines().front().start_idx;
        i < shifted_path.path.points.size() - 1; ++i) {
