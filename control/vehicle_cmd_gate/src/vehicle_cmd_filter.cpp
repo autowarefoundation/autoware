@@ -90,6 +90,11 @@ void VehicleCmdFilter::setParam(const VehicleCmdFilterParam & p)
   }
 }
 
+VehicleCmdFilterParam VehicleCmdFilter::getParam() const
+{
+  return param_;
+}
+
 void VehicleCmdFilter::limitLongitudinalWithVel(AckermannControlCommand & input) const
 {
   input.longitudinal.speed = std::max(

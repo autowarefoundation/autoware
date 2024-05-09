@@ -15,6 +15,7 @@
 #include "vehicle_cmd_gate.hpp"
 
 #include "marker_helper.hpp"
+#include "tier4_autoware_utils/ros/update_param.hpp"
 
 #include <rclcpp/logging.hpp>
 #include <tier4_api_utils/tier4_api_utils.hpp>
@@ -244,6 +245,76 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
   logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 
   published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
+
+  // Parameter Callback
+  set_param_res_ =
+    this->add_on_set_parameters_callback(std::bind(&VehicleCmdGate::onParameter, this, _1));
+}
+
+rcl_interfaces::msg::SetParametersResult VehicleCmdGate::onParameter(
+  const std::vector<rclcpp::Parameter> & parameters)
+{
+  using tier4_autoware_utils::updateParam;
+  // Parameter
+  updateParam<bool>(parameters, "use_emergency_handling", use_emergency_handling_);
+  updateParam<bool>(
+    parameters, "check_external_emergency_heartbeat", check_external_emergency_heartbeat_);
+  updateParam<double>(
+    parameters, "system_emergency_heartbeat_timeout", system_emergency_heartbeat_timeout_);
+  updateParam<double>(
+    parameters, "external_emergency_stop_heartbeat_timeout",
+    external_emergency_stop_heartbeat_timeout_);
+  updateParam<double>(parameters, "stop_hold_acceleration", stop_hold_acceleration_);
+  updateParam<double>(parameters, "emergency_acceleration", emergency_acceleration_);
+  updateParam<double>(
+    parameters, "moderate_stop_service_acceleration", moderate_stop_service_acceleration_);
+  updateParam<double>(parameters, "stop_check_duration", stop_check_duration_);
+  updateParam<bool>(parameters, "enable_cmd_limit_filter", enable_cmd_limit_filter_);
+  updateParam<int>(
+    parameters, "filter_activated_count_threshold", filter_activated_count_threshold_);
+  updateParam<double>(
+    parameters, "filter_activated_velocity_threshold", filter_activated_velocity_threshold_);
+
+  // Vehicle Parameter
+  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  {
+    VehicleCmdFilterParam p = filter_.getParam();
+    p.wheel_base = vehicle_info.wheel_base_m;
+    updateParam<double>(parameters, "nominal.vel_lim", p.vel_lim);
+    updateParam<std::vector<double>>(
+      parameters, "nominal.reference_speed_points", p.reference_speed_points);
+    updateParam<std::vector<double>>(parameters, "nominal.steer_lim", p.steer_lim);
+    updateParam<std::vector<double>>(parameters, "nominal.steer_rate_lim", p.steer_rate_lim);
+    updateParam<std::vector<double>>(parameters, "nominal.lon_acc_lim", p.lon_acc_lim);
+    updateParam<std::vector<double>>(parameters, "nominal.lon_jerk_lim", p.lon_jerk_lim);
+    updateParam<std::vector<double>>(parameters, "nominal.lat_acc_lim", p.lat_acc_lim);
+    updateParam<std::vector<double>>(parameters, "nominal.lat_jerk_lim", p.lat_jerk_lim);
+    updateParam<std::vector<double>>(
+      parameters, "nominal.actual_steer_diff_lim", p.actual_steer_diff_lim);
+    filter_.setParam(p);
+  }
+
+  {
+    VehicleCmdFilterParam p = filter_on_transition_.getParam();
+    p.wheel_base = vehicle_info.wheel_base_m;
+    updateParam<double>(parameters, "on_transition.vel_lim", p.vel_lim);
+    updateParam<std::vector<double>>(
+      parameters, "on_transition.reference_speed_points", p.reference_speed_points);
+    updateParam<std::vector<double>>(parameters, "on_transition.steer_lim", p.steer_lim);
+    updateParam<std::vector<double>>(parameters, "on_transition.steer_rate_lim", p.steer_rate_lim);
+    updateParam<std::vector<double>>(parameters, "on_transition.lon_acc_lim", p.lon_acc_lim);
+    updateParam<std::vector<double>>(parameters, "on_transition.lon_jerk_lim", p.lon_jerk_lim);
+    updateParam<std::vector<double>>(parameters, "on_transition.lat_acc_lim", p.lat_acc_lim);
+    updateParam<std::vector<double>>(parameters, "on_transition.lat_jerk_lim", p.lat_jerk_lim);
+    updateParam<std::vector<double>>(
+      parameters, "on_transition.actual_steer_diff_lim", p.actual_steer_diff_lim);
+    filter_on_transition_.setParam(p);
+  }
+
+  rcl_interfaces::msg::SetParametersResult result;
+  result.successful = true;
+  result.reason = "success";
+  return result;
 }
 
 bool VehicleCmdGate::isHeartbeatTimeout(
