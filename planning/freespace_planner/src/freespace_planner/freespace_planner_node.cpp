@@ -321,6 +321,8 @@ void FreespacePlannerNode::onRoute(const LaneletRoute::ConstSharedPtr msg)
   goal_pose_.header = msg->header;
   goal_pose_.pose = msg->goal_pose;
 
+  is_new_parking_cycle_ = true;
+
   reset();
 }
 
@@ -447,13 +449,16 @@ void FreespacePlannerNode::onTimer()
   // Must stop before replanning any new trajectory
   const bool is_reset_required = !reset_in_progress_ && isPlanRequired();
   if (is_reset_required) {
-    // Stop before planning new trajectory
-    const auto stop_trajectory = partial_trajectory_.points.empty()
-                                   ? createStopTrajectory(current_pose_)
-                                   : createStopTrajectory(partial_trajectory_);
-    trajectory_pub_->publish(stop_trajectory);
-    debug_pose_array_pub_->publish(trajectory2PoseArray(stop_trajectory));
-    debug_partial_pose_array_pub_->publish(trajectory2PoseArray(stop_trajectory));
+    // Stop before planning new trajectory, except in a new parking cycle as the vehicle already
+    // stops.
+    if (!is_new_parking_cycle_) {
+      const auto stop_trajectory = partial_trajectory_.points.empty()
+                                     ? createStopTrajectory(current_pose_)
+                                     : createStopTrajectory(partial_trajectory_);
+      trajectory_pub_->publish(stop_trajectory);
+      debug_pose_array_pub_->publish(trajectory2PoseArray(stop_trajectory));
+      debug_partial_pose_array_pub_->publish(trajectory2PoseArray(stop_trajectory));
+    }
 
     reset();
 
@@ -476,6 +481,7 @@ void FreespacePlannerNode::onTimer()
 
   // StopTrajectory
   if (trajectory_.points.size() <= 1) {
+    is_new_parking_cycle_ = false;
     return;
   }
 
@@ -487,6 +493,8 @@ void FreespacePlannerNode::onTimer()
   trajectory_pub_->publish(partial_trajectory_);
   debug_pose_array_pub_->publish(trajectory2PoseArray(trajectory_));
   debug_partial_pose_array_pub_->publish(trajectory2PoseArray(partial_trajectory_));
+
+  is_new_parking_cycle_ = false;
 }
 
 void FreespacePlannerNode::planTrajectory()
