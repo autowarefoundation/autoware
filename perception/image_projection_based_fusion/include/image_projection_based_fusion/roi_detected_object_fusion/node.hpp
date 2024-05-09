@@ -18,8 +18,6 @@
 #include "image_projection_based_fusion/fusion_node.hpp"
 #include "tier4_autoware_utils/ros/debug_publisher.hpp"
 
-#include <image_projection_based_fusion/utils/utils.hpp>
-
 #include "autoware_auto_perception_msgs/msg/object_classification.hpp"
 
 #include <map>
@@ -47,8 +45,7 @@ protected:
 
   std::map<std::size_t, DetectedObjectWithFeature> generateDetectedObjectRoIs(
     const DetectedObjects & input_object_msg, const double image_width, const double image_height,
-    const Eigen::Affine3d & object2camera_affine,
-    const image_geometry::PinholeCameraModel & pinhole_camera_model);
+    const Eigen::Affine3d & object2camera_affine, const Eigen::Matrix4d & camera_projection);
 
   void fuseObjectsOnImage(
     const DetectedObjects & input_object_msg,
