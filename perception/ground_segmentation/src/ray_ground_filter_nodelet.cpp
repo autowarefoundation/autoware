@@ -257,20 +257,53 @@ void RayGroundFilterComponent::ClassifyPointCloud(
 //   return (true);
 // }
 
-void RayGroundFilterComponent::ExtractPointsIndices(
-  const pcl::PointCloud<PointType_>::Ptr in_cloud_ptr, const pcl::PointIndices & in_indices,
-  pcl::PointCloud<PointType_>::Ptr out_only_indices_cloud_ptr,
-  pcl::PointCloud<PointType_>::Ptr out_removed_indices_cloud_ptr)
+void RayGroundFilterComponent::initializePointCloud2(
+  const PointCloud2::ConstSharedPtr & in_cloud_ptr, PointCloud2::SharedPtr & out_cloud_msg_ptr)
 {
-  pcl::ExtractIndices<PointType_> extract_ground;
-  extract_ground.setInputCloud(in_cloud_ptr);
-  extract_ground.setIndices(pcl::make_shared<pcl::PointIndices>(in_indices));
+  out_cloud_msg_ptr->header = in_cloud_ptr->header;
+  out_cloud_msg_ptr->height = in_cloud_ptr->height;
+  out_cloud_msg_ptr->fields = in_cloud_ptr->fields;
+  out_cloud_msg_ptr->is_bigendian = in_cloud_ptr->is_bigendian;
+  out_cloud_msg_ptr->point_step = in_cloud_ptr->point_step;
+  out_cloud_msg_ptr->is_dense = in_cloud_ptr->is_dense;
+  out_cloud_msg_ptr->data.resize(in_cloud_ptr->data.size());
+}
 
-  extract_ground.setNegative(false);  // true removes the indices, false leaves only the indices
-  extract_ground.filter(*out_only_indices_cloud_ptr);
-
-  extract_ground.setNegative(true);  // true removes the indices, false leaves only the indices
-  extract_ground.filter(*out_removed_indices_cloud_ptr);
+void RayGroundFilterComponent::ExtractPointsIndices(
+  const PointCloud2::ConstSharedPtr in_cloud_ptr, pcl::PointIndices & in_indices,
+  PointCloud2::SharedPtr ground_cloud_msg_ptr, PointCloud2::SharedPtr no_ground_cloud_msg_ptr)
+{
+  initializePointCloud2(in_cloud_ptr, ground_cloud_msg_ptr);
+  initializePointCloud2(in_cloud_ptr, no_ground_cloud_msg_ptr);
+  int point_step = in_cloud_ptr->point_step;
+  size_t ground_count = 0;
+  size_t no_ground_count = 0;
+  std::vector<bool> is_ground_idx(in_cloud_ptr->width, false);
+  for (const auto & idx : in_indices.indices) {
+    if (std::size_t(idx) >= is_ground_idx.size()) {
+      continue;
+    }
+    is_ground_idx[idx] = true;
+  }
+  for (size_t i = 0; i < is_ground_idx.size(); ++i) {
+    if (is_ground_idx[i]) {
+      std::memcpy(
+        &ground_cloud_msg_ptr->data[ground_count * point_step], &in_cloud_ptr->data[i * point_step],
+        point_step);
+      ground_count++;
+    } else {
+      std::memcpy(
+        &no_ground_cloud_msg_ptr->data[no_ground_count * point_step],
+        &in_cloud_ptr->data[i * point_step], point_step);
+      no_ground_count++;
+    }
+  }
+  ground_cloud_msg_ptr->data.resize(ground_count * point_step);
+  no_ground_cloud_msg_ptr->data.resize(no_ground_count * point_step);
+  ground_cloud_msg_ptr->width = ground_count;
+  no_ground_cloud_msg_ptr->width = no_ground_count;
+  ground_cloud_msg_ptr->row_step = ground_count * point_step;
+  no_ground_cloud_msg_ptr->row_step = no_ground_count * point_step;
 }
 
 void RayGroundFilterComponent::filter(
@@ -299,14 +332,11 @@ void RayGroundFilterComponent::filter(
   pcl::PointCloud<PointType_>::Ptr no_ground_cloud_ptr(new pcl::PointCloud<PointType_>);
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr radials_cloud_ptr(new pcl::PointCloud<pcl::PointXYZRGB>);
 
-  ExtractPointsIndices(
-    current_sensor_cloud_ptr, ground_indices, ground_cloud_ptr, no_ground_cloud_ptr);
-
   sensor_msgs::msg::PointCloud2::SharedPtr no_ground_cloud_msg_ptr(
     new sensor_msgs::msg::PointCloud2);
-  pcl::toROSMsg(*no_ground_cloud_ptr, *no_ground_cloud_msg_ptr);
-  no_ground_cloud_msg_ptr->header = input->header;
+  sensor_msgs::msg::PointCloud2::SharedPtr ground_cloud_msg_ptr(new sensor_msgs::msg::PointCloud2);
 
+  ExtractPointsIndices(input, ground_indices, ground_cloud_msg_ptr, no_ground_cloud_msg_ptr);
   output = *no_ground_cloud_msg_ptr;
 }
 
