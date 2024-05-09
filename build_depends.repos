@@ -41,3 +41,7 @@ repositories:
     type: git
     url: https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs.git
     version: main
+  universe/external/glog:  # TODO: to use isGoogleInitialized() API in v0.6.0. Remove when the rosdep glog version is updated to v0.6.0 (already updated in Ubuntu 24.04)
+    type: git
+    url: https://github.com/tier4/glog.git
+    version: v0.6.0_t4-ros
