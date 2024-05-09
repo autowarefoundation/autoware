@@ -108,7 +108,7 @@ bool CNNClassifier::getTrafficSignals(
 void CNNClassifier::outputDebugImage(
   cv::Mat & debug_image, const tier4_perception_msgs::msg::TrafficLight & traffic_signal)
 {
-  float probability;
+  float probability = 0.0f;
   std::string label;
   for (std::size_t i = 0; i < traffic_signal.elements.size(); i++) {
     auto light = traffic_signal.elements.at(i);
