@@ -186,7 +186,6 @@ public:
 
     clearWaitingApproval();
     removeRTCStatus();
-    publishRTCStatus();
     unlockNewModuleLaunch();
     unlockOutputPath();
     steering_factor_interface_ptr_->clearSteeringFactors();
@@ -194,18 +193,6 @@ public:
     stop_reason_ = StopReason();
 
     processOnExit();
-  }
-
-  /**
-   * @brief Publish status if the module is requested to run
-   */
-  void publishRTCStatus()
-  {
-    for (const auto & [module_name, ptr] : rtc_interface_ptr_map_) {
-      if (ptr) {
-        ptr->publishCooperateStatus(clock_->now());
-      }
-    }
   }
 
   void publishObjectsOfInterestMarker()

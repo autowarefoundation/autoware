@@ -191,8 +191,10 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
     return BehaviorModuleOutput{};  // something wrong.
   }();
 
-  std::for_each(
-    manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->updateObserver(); });
+  std::for_each(manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) {
+    m->updateObserver();
+    m->publishRTCStatus();
+  });
 
   generateCombinedDrivableArea(result_output, data);
 

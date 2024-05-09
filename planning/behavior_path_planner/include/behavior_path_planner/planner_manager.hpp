@@ -290,8 +290,6 @@ private:
 
     module_ptr->updateCurrentState();
 
-    module_ptr->publishRTCStatus();
-
     module_ptr->publishSteeringFactor();
 
     module_ptr->publishObjectsOfInterestMarker();
@@ -323,7 +321,6 @@ private:
   void deleteExpiredModules(SceneModulePtr & module_ptr) const
   {
     module_ptr->onExit();
-    module_ptr->publishRTCStatus();
     module_ptr->publishObjectsOfInterestMarker();
     module_ptr.reset();
   }
