@@ -16,7 +16,6 @@
 #define BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GEOMETRIC_PULL_OVER_HPP_
 
 #include "behavior_path_goal_planner_module/pull_over_planner_base.hpp"
-#include "behavior_path_planner_common/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
 #include "behavior_path_planner_common/utils/parking_departure/geometric_parallel_parking.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
@@ -34,9 +33,7 @@ class GeometricPullOver : public PullOverPlannerBase
 public:
   GeometricPullOver(
     rclcpp::Node & node, const GoalPlannerParameters & parameters,
-    const LaneDepartureChecker & lane_departure_checker,
-    const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
-    const bool is_forward);
+    const LaneDepartureChecker & lane_departure_checker, const bool is_forward);
 
   PullOverPlannerType getPlannerType() const override
   {
@@ -61,7 +58,6 @@ public:
 protected:
   ParallelParkingParameters parallel_parking_parameters_;
   LaneDepartureChecker lane_departure_checker_{};
-  std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map_;
   bool is_forward_{true};
   bool left_side_parking_{true};
 

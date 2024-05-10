@@ -90,35 +90,35 @@ struct SortByWeightedDistance
 };
 
 GoalSearcher::GoalSearcher(
-  const GoalPlannerParameters & parameters, const LinearRing2d & vehicle_footprint,
-  const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map)
+  const GoalPlannerParameters & parameters, const LinearRing2d & vehicle_footprint)
 : GoalSearcherBase{parameters},
   vehicle_footprint_{vehicle_footprint},
-  occupancy_grid_map_{occupancy_grid_map},
   left_side_parking_{parameters.parking_policy == ParkingPolicy::LEFT_SIDE}
 {
 }
 
-GoalCandidates GoalSearcher::search()
+GoalCandidates GoalSearcher::search(
+  const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
+  const std::shared_ptr<const PlannerData> & planner_data)
 {
   GoalCandidates goal_candidates{};
 
-  const auto & route_handler = planner_data_->route_handler;
+  const auto & route_handler = planner_data->route_handler;
   const double forward_length = parameters_.forward_goal_search_length;
   const double backward_length = parameters_.backward_goal_search_length;
   const double margin_from_boundary = parameters_.margin_from_boundary;
   const double lateral_offset_interval = parameters_.lateral_offset_interval;
   const double max_lateral_offset = parameters_.max_lateral_offset;
   const double ignore_distance_from_lane_start = parameters_.ignore_distance_from_lane_start;
-  const double vehicle_width = planner_data_->parameters.vehicle_width;
-  const double base_link2front = planner_data_->parameters.base_link2front;
-  const double base_link2rear = planner_data_->parameters.base_link2rear;
+  const double vehicle_width = planner_data->parameters.vehicle_width;
+  const double base_link2front = planner_data->parameters.base_link2front;
+  const double base_link2rear = planner_data->parameters.base_link2rear;
 
   const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
     *route_handler, left_side_parking_, parameters_.backward_goal_search_length,
     parameters_.forward_goal_search_length);
   auto lanes = utils::getExtendedCurrentLanes(
-    planner_data_, backward_length, forward_length,
+    planner_data, backward_length, forward_length,
     /*forward_only_in_route*/ false);
   lanes.insert(lanes.end(), pull_over_lanes.begin(), pull_over_lanes.end());
 
@@ -193,17 +193,18 @@ GoalCandidates GoalSearcher::search()
       goal_candidates.push_back(goal_candidate);
     }
   }
-  createAreaPolygons(original_search_poses);
+  createAreaPolygons(original_search_poses, planner_data);
 
-  update(goal_candidates);
+  update(goal_candidates, occupancy_grid_map, planner_data);
 
   return goal_candidates;
 }
 
 void GoalSearcher::countObjectsToAvoid(
-  GoalCandidates & goal_candidates, const PredictedObjects & objects) const
+  GoalCandidates & goal_candidates, const PredictedObjects & objects,
+  const std::shared_ptr<const PlannerData> & planner_data) const
 {
-  const auto & route_handler = planner_data_->route_handler;
+  const auto & route_handler = planner_data->route_handler;
   const double forward_length = parameters_.forward_goal_search_length;
   const double backward_length = parameters_.backward_goal_search_length;
 
@@ -225,7 +226,7 @@ void GoalSearcher::countObjectsToAvoid(
 
   // generate current lane center line path to check collision with objects
   const auto current_lanes = utils::getExtendedCurrentLanes(
-    planner_data_, parameters_.backward_goal_search_length, parameters_.forward_goal_search_length,
+    planner_data, parameters_.backward_goal_search_length, parameters_.forward_goal_search_length,
     /*forward_only_in_route*/ false);
   const auto current_center_line_path = std::invoke([&]() -> PathWithLaneId {
     const double s_start =
@@ -264,16 +265,19 @@ void GoalSearcher::countObjectsToAvoid(
   }
 }
 
-void GoalSearcher::update(GoalCandidates & goal_candidates) const
+void GoalSearcher::update(
+  GoalCandidates & goal_candidates,
+  const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
+  const std::shared_ptr<const PlannerData> & planner_data) const
 {
   const auto pull_over_lane_stop_objects =
     goal_planner_utils::extractStaticObjectsInExpandedPullOverLanes(
-      *(planner_data_->route_handler), left_side_parking_, parameters_.backward_goal_search_length,
+      *(planner_data->route_handler), left_side_parking_, parameters_.backward_goal_search_length,
       parameters_.forward_goal_search_length, parameters_.detection_bound_offset,
-      *(planner_data_->dynamic_object), parameters_.th_moving_object_velocity);
+      *(planner_data->dynamic_object), parameters_.th_moving_object_velocity);
 
   if (parameters_.prioritize_goals_before_objects) {
-    countObjectsToAvoid(goal_candidates, pull_over_lane_stop_objects);
+    countObjectsToAvoid(goal_candidates, pull_over_lane_stop_objects, planner_data);
   }
 
   if (parameters_.goal_priority == "minimum_weighted_distance") {
@@ -293,7 +297,7 @@ void GoalSearcher::update(GoalCandidates & goal_candidates) const
     const Pose goal_pose = goal_candidate.goal_pose;
 
     // check collision with footprint
-    if (checkCollision(goal_pose, pull_over_lane_stop_objects)) {
+    if (checkCollision(goal_pose, pull_over_lane_stop_objects, occupancy_grid_map)) {
       goal_candidate.is_safe = false;
       continue;
     }
@@ -301,9 +305,10 @@ void GoalSearcher::update(GoalCandidates & goal_candidates) const
     // check longitudinal margin with pull over lane objects
     constexpr bool filter_inside = true;
     const auto target_objects = goal_planner_utils::filterObjectsByLateralDistance(
-      goal_pose, planner_data_->parameters.vehicle_width, pull_over_lane_stop_objects,
+      goal_pose, planner_data->parameters.vehicle_width, pull_over_lane_stop_objects,
       parameters_.object_recognition_collision_check_hard_margins.back(), filter_inside);
-    if (checkCollisionWithLongitudinalDistance(goal_pose, target_objects)) {
+    if (checkCollisionWithLongitudinalDistance(
+          goal_pose, target_objects, occupancy_grid_map, planner_data)) {
       goal_candidate.is_safe = false;
       continue;
     }
@@ -316,7 +321,9 @@ void GoalSearcher::update(GoalCandidates & goal_candidates) const
 // current planner_data_ and margin scale factor.
 // And is_safe is not updated in this function.
 bool GoalSearcher::isSafeGoalWithMarginScaleFactor(
-  const GoalCandidate & goal_candidate, const double margin_scale_factor) const
+  const GoalCandidate & goal_candidate, const double margin_scale_factor,
+  const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
+  const std::shared_ptr<const PlannerData> & planner_data) const
 {
   if (!parameters_.use_object_recognition) {
     return true;
@@ -326,9 +333,9 @@ bool GoalSearcher::isSafeGoalWithMarginScaleFactor(
 
   const auto pull_over_lane_stop_objects =
     goal_planner_utils::extractStaticObjectsInExpandedPullOverLanes(
-      *(planner_data_->route_handler), left_side_parking_, parameters_.backward_goal_search_length,
+      *(planner_data->route_handler), left_side_parking_, parameters_.backward_goal_search_length,
       parameters_.forward_goal_search_length, parameters_.detection_bound_offset,
-      *(planner_data_->dynamic_object), parameters_.th_moving_object_velocity);
+      *(planner_data->dynamic_object), parameters_.th_moving_object_velocity);
 
   const double margin =
     parameters_.object_recognition_collision_check_hard_margins.back() * margin_scale_factor;
@@ -341,23 +348,26 @@ bool GoalSearcher::isSafeGoalWithMarginScaleFactor(
   // check longitudinal margin with pull over lane objects
   constexpr bool filter_inside = true;
   const auto target_objects = goal_planner_utils::filterObjectsByLateralDistance(
-    goal_pose, planner_data_->parameters.vehicle_width, pull_over_lane_stop_objects, margin,
+    goal_pose, planner_data->parameters.vehicle_width, pull_over_lane_stop_objects, margin,
     filter_inside);
-  if (checkCollisionWithLongitudinalDistance(goal_pose, target_objects)) {
+  if (checkCollisionWithLongitudinalDistance(
+        goal_pose, target_objects, occupancy_grid_map, planner_data)) {
     return false;
   }
 
   return true;
 }
 
-bool GoalSearcher::checkCollision(const Pose & pose, const PredictedObjects & objects) const
+bool GoalSearcher::checkCollision(
+  const Pose & pose, const PredictedObjects & objects,
+  const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map) const
 {
   if (parameters_.use_occupancy_grid_for_goal_search) {
-    const Pose pose_grid_coords = global2local(occupancy_grid_map_->getMap(), pose);
+    const Pose pose_grid_coords = global2local(occupancy_grid_map->getMap(), pose);
     const auto idx = pose2index(
-      occupancy_grid_map_->getMap(), pose_grid_coords, occupancy_grid_map_->getParam().theta_size);
+      occupancy_grid_map->getMap(), pose_grid_coords, occupancy_grid_map->getParam().theta_size);
     const bool check_out_of_range = false;
-    if (occupancy_grid_map_->detectCollision(idx, check_out_of_range)) {
+    if (occupancy_grid_map->detectCollision(idx, check_out_of_range)) {
       return true;
     }
   }
@@ -373,7 +383,9 @@ bool GoalSearcher::checkCollision(const Pose & pose, const PredictedObjects & ob
 }
 
 bool GoalSearcher::checkCollisionWithLongitudinalDistance(
-  const Pose & ego_pose, const PredictedObjects & objects) const
+  const Pose & ego_pose, const PredictedObjects & objects,
+  const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
+  const std::shared_ptr<const PlannerData> & planner_data) const
 {
   if (
     parameters_.use_occupancy_grid_for_goal_search &&
@@ -385,22 +397,22 @@ bool GoalSearcher::checkCollisionWithLongitudinalDistance(
     // check forward collision
     const Pose ego_pose_moved_forward = calcOffsetPose(ego_pose, offset, 0, 0);
     const Pose forward_pose_grid_coords =
-      global2local(occupancy_grid_map_->getMap(), ego_pose_moved_forward);
+      global2local(occupancy_grid_map->getMap(), ego_pose_moved_forward);
     const auto forward_idx = pose2index(
-      occupancy_grid_map_->getMap(), forward_pose_grid_coords,
-      occupancy_grid_map_->getParam().theta_size);
-    if (occupancy_grid_map_->detectCollision(forward_idx, check_out_of_range)) {
+      occupancy_grid_map->getMap(), forward_pose_grid_coords,
+      occupancy_grid_map->getParam().theta_size);
+    if (occupancy_grid_map->detectCollision(forward_idx, check_out_of_range)) {
       return true;
     }
 
     // check backward collision
     const Pose ego_pose_moved_backward = calcOffsetPose(ego_pose, -offset, 0, 0);
     const Pose backward_pose_grid_coords =
-      global2local(occupancy_grid_map_->getMap(), ego_pose_moved_backward);
+      global2local(occupancy_grid_map->getMap(), ego_pose_moved_backward);
     const auto backward_idx = pose2index(
-      occupancy_grid_map_->getMap(), backward_pose_grid_coords,
-      occupancy_grid_map_->getParam().theta_size);
-    if (occupancy_grid_map_->detectCollision(backward_idx, check_out_of_range)) {
+      occupancy_grid_map->getMap(), backward_pose_grid_coords,
+      occupancy_grid_map->getParam().theta_size);
+    if (occupancy_grid_map->detectCollision(backward_idx, check_out_of_range)) {
       return true;
     }
   }
@@ -408,23 +420,24 @@ bool GoalSearcher::checkCollisionWithLongitudinalDistance(
   if (parameters_.use_object_recognition) {
     if (
       utils::calcLongitudinalDistanceFromEgoToObjects(
-        ego_pose, planner_data_->parameters.base_link2front,
-        planner_data_->parameters.base_link2rear, objects) < parameters_.longitudinal_margin) {
+        ego_pose, planner_data->parameters.base_link2front, planner_data->parameters.base_link2rear,
+        objects) < parameters_.longitudinal_margin) {
       return true;
     }
   }
   return false;
 }
 
-void GoalSearcher::createAreaPolygons(std::vector<Pose> original_search_poses)
+void GoalSearcher::createAreaPolygons(
+  std::vector<Pose> original_search_poses, const std::shared_ptr<const PlannerData> & planner_data)
 {
   using tier4_autoware_utils::MultiPolygon2d;
   using tier4_autoware_utils::Point2d;
   using tier4_autoware_utils::Polygon2d;
 
-  const double vehicle_width = planner_data_->parameters.vehicle_width;
-  const double base_link2front = planner_data_->parameters.base_link2front;
-  const double base_link2rear = planner_data_->parameters.base_link2rear;
+  const double vehicle_width = planner_data->parameters.vehicle_width;
+  const double base_link2front = planner_data->parameters.base_link2front;
+  const double base_link2rear = planner_data->parameters.base_link2rear;
   const double max_lateral_offset = parameters_.max_lateral_offset;
 
   const auto appendPointToPolygon =
@@ -506,10 +519,11 @@ bool GoalSearcher::isInAreas(const LinearRing2d & footprint, const BasicPolygons
 }
 
 GoalCandidate GoalSearcher::getClosetGoalCandidateAlongLanes(
-  const GoalCandidates & goal_candidates) const
+  const GoalCandidates & goal_candidates,
+  const std::shared_ptr<const PlannerData> & planner_data) const
 {
   const auto current_lanes = utils::getExtendedCurrentLanes(
-    planner_data_, parameters_.backward_goal_search_length, parameters_.forward_goal_search_length,
+    planner_data, parameters_.backward_goal_search_length, parameters_.forward_goal_search_length,
     /*forward_only_in_route*/ false);
 
   // Define a lambda function to compute the arc length for a given goal candidate.

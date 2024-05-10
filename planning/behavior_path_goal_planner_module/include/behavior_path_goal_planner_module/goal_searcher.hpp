@@ -29,33 +29,45 @@ using BasicPolygons2d = std::vector<lanelet::BasicPolygon2d>;
 class GoalSearcher : public GoalSearcherBase
 {
 public:
-  GoalSearcher(
-    const GoalPlannerParameters & parameters, const LinearRing2d & vehicle_footprint,
-    const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map);
+  GoalSearcher(const GoalPlannerParameters & parameters, const LinearRing2d & vehicle_footprint);
 
-  GoalCandidates search() override;
-  void update(GoalCandidates & goal_candidates) const override;
+  GoalCandidates search(
+    const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
+    const std::shared_ptr<const PlannerData> & planner_data) override;
+  void update(
+    GoalCandidates & goal_candidates,
+    const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
+    const std::shared_ptr<const PlannerData> & planner_data) const override;
 
   // todo(kosuke55): Functions for this specific use should not be in the interface,
   // so it is better to consider interface design when we implement other goal searchers.
   GoalCandidate getClosetGoalCandidateAlongLanes(
-    const GoalCandidates & goal_candidates) const override;
+    const GoalCandidates & goal_candidates,
+    const std::shared_ptr<const PlannerData> & planner_data) const override;
   bool isSafeGoalWithMarginScaleFactor(
-    const GoalCandidate & goal_candidate, const double margin_scale_factor) const override;
+    const GoalCandidate & goal_candidate, const double margin_scale_factor,
+    const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
+    const std::shared_ptr<const PlannerData> & planner_data) const override;
 
 private:
   void countObjectsToAvoid(
-    GoalCandidates & goal_candidates, const PredictedObjects & objects) const;
-  void createAreaPolygons(std::vector<Pose> original_search_poses);
-  bool checkCollision(const Pose & pose, const PredictedObjects & objects) const;
+    GoalCandidates & goal_candidates, const PredictedObjects & objects,
+    const std::shared_ptr<const PlannerData> & planner_data) const;
+  void createAreaPolygons(
+    std::vector<Pose> original_search_poses,
+    const std::shared_ptr<const PlannerData> & planner_data);
+  bool checkCollision(
+    const Pose & pose, const PredictedObjects & objects,
+    const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map) const;
   bool checkCollisionWithLongitudinalDistance(
-    const Pose & ego_pose, const PredictedObjects & objects) const;
+    const Pose & ego_pose, const PredictedObjects & objects,
+    const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
+    const std::shared_ptr<const PlannerData> & planner_data) const;
   BasicPolygons2d getNoParkingAreaPolygons(const lanelet::ConstLanelets & lanes) const;
   BasicPolygons2d getNoStoppingAreaPolygons(const lanelet::ConstLanelets & lanes) const;
   bool isInAreas(const LinearRing2d & footprint, const BasicPolygons2d & areas) const;
 
   LinearRing2d vehicle_footprint_{};
-  std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map_{};
   bool left_side_parking_{true};
 };
 }  // namespace behavior_path_planner
