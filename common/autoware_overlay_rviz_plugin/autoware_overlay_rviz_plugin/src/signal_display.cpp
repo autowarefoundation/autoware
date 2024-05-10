@@ -39,11 +39,11 @@ namespace autoware_overlay_rviz_plugin
 SignalDisplay::SignalDisplay()
 {
   property_width_ = new rviz_common::properties::IntProperty(
-    "Width", 517, "Width of the overlay", this, SLOT(updateOverlaySize()));
+    "Width", 550, "Width of the overlay", this, SLOT(updateOverlaySize()));
   property_height_ = new rviz_common::properties::IntProperty(
-    "Height", 175, "Height of the overlay", this, SLOT(updateOverlaySize()));
+    "Height", 100, "Height of the overlay", this, SLOT(updateOverlaySize()));
   property_left_ = new rviz_common::properties::IntProperty(
-    "Left", 10, "Left position of the overlay", this, SLOT(updateOverlayPosition()));
+    "Left", 0, "Left position of the overlay", this, SLOT(updateOverlayPosition()));
   property_top_ = new rviz_common::properties::IntProperty(
     "Top", 10, "Top position of the overlay", this, SLOT(updateOverlayPosition()));
   property_signal_color_ = new rviz_common::properties::ColorProperty(
@@ -325,16 +325,18 @@ void SignalDisplay::drawWidget(QImage & hud)
   QPainter painter(&hud);
   painter.setRenderHint(QPainter::Antialiasing, true);
 
-  QRectF backgroundRect(0, 0, 322, hud.height());
+  QRectF backgroundRect(0, 0, 550, hud.height());
   drawHorizontalRoundedRectangle(painter, backgroundRect);
 
   // Draw components
-  if (steering_wheel_display_) {
-    steering_wheel_display_->drawSteeringWheel(painter, backgroundRect);
-  }
   if (gear_display_) {
     gear_display_->drawGearIndicator(painter, backgroundRect);
   }
+
+  if (steering_wheel_display_) {
+    steering_wheel_display_->drawSteeringWheel(painter, backgroundRect);
+  }
+
   if (speed_display_) {
     speed_display_->drawSpeedDisplay(painter, backgroundRect);
   }
@@ -342,18 +344,12 @@ void SignalDisplay::drawWidget(QImage & hud)
     turn_signals_display_->drawArrows(painter, backgroundRect, property_signal_color_->getColor());
   }
 
-  // a 27px space between the two halves of the HUD
-
-  QRectF smallerBackgroundRect(340, 0, 190.0 / 2, hud.height());
-
-  drawVerticalRoundedRectangle(painter, smallerBackgroundRect);
-
   if (traffic_display_) {
-    traffic_display_->drawTrafficLightIndicator(painter, smallerBackgroundRect);
+    traffic_display_->drawTrafficLightIndicator(painter, backgroundRect);
   }
 
   if (speed_limit_display_) {
-    speed_limit_display_->drawSpeedLimitIndicator(painter, smallerBackgroundRect);
+    speed_limit_display_->drawSpeedLimitIndicator(painter, backgroundRect);
   }
 
   painter.end();
@@ -364,8 +360,8 @@ void SignalDisplay::drawHorizontalRoundedRectangle(
 {
   painter.setRenderHint(QPainter::Antialiasing, true);
   QColor colorFromHSV;
-  colorFromHSV.setHsv(0, 0, 0);  // Hue, Saturation, Value
-  colorFromHSV.setAlphaF(0.65);  // Transparency
+  colorFromHSV.setHsv(0, 0, 29);  // Hue, Saturation, Value
+  colorFromHSV.setAlphaF(0.60);   // Transparency
 
   painter.setBrush(colorFromHSV);
 
@@ -404,7 +400,9 @@ void SignalDisplay::updateOverlaySize()
 void SignalDisplay::updateOverlayPosition()
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  overlay_->setPosition(property_left_->getInt(), property_top_->getInt());
+  overlay_->setPosition(
+    property_left_->getInt(), property_top_->getInt(), HorizontalAlignment::CENTER,
+    VerticalAlignment::TOP);
   queueRender();
 }
 

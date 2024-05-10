@@ -72,12 +72,12 @@ void TurnSignalsDisplay::updateHazardLightsData(
 void TurnSignalsDisplay::drawArrows(
   QPainter & painter, const QRectF & backgroundRect, const QColor & color)
 {
-  QImage scaledLeftArrow = arrowImage.scaled(64, 43, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+  QImage scaledLeftArrow = arrowImage.scaled(50, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation);
   scaledLeftArrow = coloredImage(scaledLeftArrow, gray);
   QImage scaledRightArrow = scaledLeftArrow.mirrored(true, false);
-  int arrowYPos = (backgroundRect.height() / 3 - scaledLeftArrow.height() / 2);
-  int leftArrowXPos = backgroundRect.width() / 4 - scaledLeftArrow.width();  // Adjust as needed
-  int rightArrowXPos = backgroundRect.width() * 3 / 4;                       // Adjust as needed
+  int arrowYPos = (backgroundRect.height() / 2 - scaledLeftArrow.height() / 2 - 4);
+  int leftArrowXPos = backgroundRect.left() + scaledLeftArrow.width() * 2 + 180;
+  int rightArrowXPos = backgroundRect.right() - scaledRightArrow.width() * 3 - 175;
 
   bool leftActive =
     (current_turn_signal_ == autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport::ENABLE_LEFT ||

@@ -81,18 +81,19 @@ void GearDisplay::drawGearIndicator(QPainter & painter, const QRectF & backgroun
       break;
   }
 
-  QFont gearFont("Quicksand", 16, QFont::Bold);
+  QFont gearFont("Quicksand", 12, QFont::Bold);
   painter.setFont(gearFont);
   QPen borderPen(gray);
-  borderPen.setWidth(4);
+  borderPen.setWidth(1);
   painter.setPen(borderPen);
 
-  int gearBoxSize = 30;
-  int gearX = backgroundRect.left() + 30 + gearBoxSize;
-  int gearY = backgroundRect.height() - gearBoxSize - 20;
+  double gearBoxSize = 37.5;
+  double gearX = backgroundRect.left() + 54;
+  double gearY = backgroundRect.height() / 2 - gearBoxSize / 2;
   QRect gearRect(gearX, gearY, gearBoxSize, gearBoxSize);
-  painter.setBrush(QColor(0, 0, 0, 0));
+  painter.setBrush(gray);
   painter.drawRoundedRect(gearRect, 10, 10);
+  painter.setPen(Qt::black);
   painter.drawText(gearRect, Qt::AlignCenter, QString::fromStdString(gearString));
 }
 
