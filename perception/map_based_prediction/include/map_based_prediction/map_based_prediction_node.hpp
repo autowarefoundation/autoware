@@ -99,6 +99,13 @@ struct PredictedRefPath
   Maneuver maneuver;
 };
 
+struct PredictionTimeHorizon
+{
+  double vehicle;
+  double pedestrian;
+  double unknown;
+};
+
 using LaneletsData = std::vector<LaneletData>;
 using ManeuverProbability = std::unordered_map<Maneuver, float>;
 using autoware_auto_mapping_msgs::msg::HADMapBin;
@@ -161,7 +168,7 @@ private:
 
   // Parameters
   bool enable_delay_compensation_;
-  double prediction_time_horizon_;
+  PredictionTimeHorizon prediction_time_horizon_;
   double lateral_control_time_horizon_;
   double prediction_time_horizon_rate_for_validate_lane_length_;
   double prediction_sampling_time_interval_;
@@ -238,7 +245,7 @@ private:
 
   std::vector<PredictedRefPath> getPredictedReferencePath(
     const TrackedObject & object, const LaneletsData & current_lanelets_data,
-    const double object_detected_time);
+    const double object_detected_time, const double time_horizon);
   Maneuver predictObjectManeuver(
     const TrackedObject & object, const LaneletData & current_lanelet_data,
     const double object_detected_time);

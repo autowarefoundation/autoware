@@ -23,18 +23,16 @@
 namespace map_based_prediction
 {
 PathGenerator::PathGenerator(
-  const double time_horizon, const double lateral_time_horizon, const double sampling_time_interval,
-  const double min_crosswalk_user_velocity)
-: time_horizon_(time_horizon),
-  lateral_time_horizon_(lateral_time_horizon),
-  sampling_time_interval_(sampling_time_interval),
+  const double sampling_time_interval, const double min_crosswalk_user_velocity)
+: sampling_time_interval_(sampling_time_interval),
   min_crosswalk_user_velocity_(min_crosswalk_user_velocity)
 {
 }
 
-PredictedPath PathGenerator::generatePathForNonVehicleObject(const TrackedObject & object)
+PredictedPath PathGenerator::generatePathForNonVehicleObject(
+  const TrackedObject & object, const double duration)
 {
-  return generateStraightPath(object);
+  return generateStraightPath(object, duration);
 }
 
 PredictedPath PathGenerator::generatePathToTargetPoint(
@@ -71,7 +69,8 @@ PredictedPath PathGenerator::generatePathToTargetPoint(
 }
 
 PredictedPath PathGenerator::generatePathForCrosswalkUser(
-  const TrackedObject & object, const CrosswalkEdgePoints & reachable_crosswalk) const
+  const TrackedObject & object, const CrosswalkEdgePoints & reachable_crosswalk,
+  const double duration) const
 {
   PredictedPath predicted_path{};
   const double ep = 0.001;
@@ -88,7 +87,7 @@ PredictedPath PathGenerator::generatePathForCrosswalkUser(
   const auto velocity = std::max(std::hypot(obj_vel.x, obj_vel.y), min_crosswalk_user_velocity_);
   const auto arrival_time = pedestrian_to_entry_point.norm() / velocity;
 
-  for (double dt = 0.0; dt < time_horizon_ + ep; dt += sampling_time_interval_) {
+  for (double dt = 0.0; dt < duration + ep; dt += sampling_time_interval_) {
     geometry_msgs::msg::Pose world_frame_pose;
     if (dt < arrival_time) {
       world_frame_pose.position.x =
@@ -131,39 +130,43 @@ PredictedPath PathGenerator::generatePathForCrosswalkUser(
   return predicted_path;
 }
 
-PredictedPath PathGenerator::generatePathForLowSpeedVehicle(const TrackedObject & object) const
+PredictedPath PathGenerator::generatePathForLowSpeedVehicle(
+  const TrackedObject & object, const double duration) const
 {
   PredictedPath path;
   path.time_step = rclcpp::Duration::from_seconds(sampling_time_interval_);
   const double ep = 0.001;
-  for (double dt = 0.0; dt < time_horizon_ + ep; dt += sampling_time_interval_) {
+  for (double dt = 0.0; dt < duration + ep; dt += sampling_time_interval_) {
     path.path.push_back(object.kinematics.pose_with_covariance.pose);
   }
 
   return path;
 }
 
-PredictedPath PathGenerator::generatePathForOffLaneVehicle(const TrackedObject & object)
+PredictedPath PathGenerator::generatePathForOffLaneVehicle(
+  const TrackedObject & object, const double duration)
 {
-  return generateStraightPath(object);
+  return generateStraightPath(object, duration);
 }
 
 PredictedPath PathGenerator::generatePathForOnLaneVehicle(
-  const TrackedObject & object, const PosePath & ref_paths, const double speed_limit)
+  const TrackedObject & object, const PosePath & ref_paths, const double duration,
+  const double lateral_duration, const double speed_limit)
 {
   if (ref_paths.size() < 2) {
-    return generateStraightPath(object);
+    return generateStraightPath(object, duration);
   }
 
-  return generatePolynomialPath(object, ref_paths, speed_limit);
+  return generatePolynomialPath(object, ref_paths, speed_limit, duration, lateral_duration);
 }
 
-PredictedPath PathGenerator::generateStraightPath(const TrackedObject & object) const
+PredictedPath PathGenerator::generateStraightPath(
+  const TrackedObject & object, const double longitudinal_duration) const
 {
   const auto & object_pose = object.kinematics.pose_with_covariance.pose;
   const auto & object_twist = object.kinematics.twist_with_covariance.twist;
   constexpr double ep = 0.001;
-  const double duration = time_horizon_ + ep;
+  const double duration = longitudinal_duration + ep;
 
   PredictedPath path;
   path.time_step = rclcpp::Duration::from_seconds(sampling_time_interval_);
@@ -178,11 +181,12 @@ PredictedPath PathGenerator::generateStraightPath(const TrackedObject & object) 
 }
 
 PredictedPath PathGenerator::generatePolynomialPath(
-  const TrackedObject & object, const PosePath & ref_path, const double speed_limit)
+  const TrackedObject & object, const PosePath & ref_path, const double duration,
+  const double lateral_duration, const double speed_limit)
 {
   // Get current Frenet Point
   const double ref_path_len = motion_utils::calcArcLength(ref_path);
-  const auto current_point = getFrenetPoint(object, ref_path, speed_limit);
+  const auto current_point = getFrenetPoint(object, ref_path, speed_limit, duration);
 
   // Step1. Set Target Frenet Point
   // Note that we do not set position s,
@@ -196,13 +200,13 @@ PredictedPath PathGenerator::generatePolynomialPath(
 
   // Step2. Generate Predicted Path on a Frenet coordinate
   const auto frenet_predicted_path =
-    generateFrenetPath(current_point, terminal_point, ref_path_len);
+    generateFrenetPath(current_point, terminal_point, ref_path_len, duration, lateral_duration);
 
   // Step3. Interpolate Reference Path for converting predicted path coordinate
   const auto interpolated_ref_path = interpolateReferencePath(ref_path, frenet_predicted_path);
 
   if (frenet_predicted_path.size() < 2 || interpolated_ref_path.size() < 2) {
-    return generateStraightPath(object);
+    return generateStraightPath(object, duration);
   }
 
   // Step4. Convert predicted trajectory from Frenet to Cartesian coordinate
@@ -210,11 +214,10 @@ PredictedPath PathGenerator::generatePolynomialPath(
 }
 
 FrenetPath PathGenerator::generateFrenetPath(
-  const FrenetPoint & current_point, const FrenetPoint & target_point, const double max_length)
+  const FrenetPoint & current_point, const FrenetPoint & target_point, const double max_length,
+  const double duration, const double lateral_duration)
 {
   FrenetPath path;
-  const double duration = time_horizon_;
-  const double lateral_duration = lateral_time_horizon_;
 
   // Compute Lateral and Longitudinal Coefficients to generate the trajectory
   const Eigen::Vector3d lat_coeff =
@@ -385,7 +388,8 @@ PredictedPath PathGenerator::convertToPredictedPath(
 }
 
 FrenetPoint PathGenerator::getFrenetPoint(
-  const TrackedObject & object, const PosePath & ref_path, const double speed_limit)
+  const TrackedObject & object, const PosePath & ref_path, const double duration,
+  const double speed_limit)
 {
   FrenetPoint frenet_point;
   const auto obj_point = object.kinematics.pose_with_covariance.pose.position;
@@ -411,7 +415,7 @@ FrenetPoint PathGenerator::getFrenetPoint(
       : 0.0;
 
   // Using a decaying acceleration model. Consult the README for more information about the model.
-  const double t_h = time_horizon_;
+  const double t_h = duration;
   const float λ = std::log(2) / acceleration_exponential_half_life_;
 
   auto have_same_sign = [](double a, double b) -> bool {
