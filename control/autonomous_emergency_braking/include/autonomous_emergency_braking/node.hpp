@@ -142,13 +142,14 @@ public:
   {
     // remove old msg from deque
     const auto now = clock_->now();
-    std::remove_if(
-      obstacle_velocity_history_.begin(), obstacle_velocity_history_.end(),
-      [&](const auto & velocity_time_pair) {
-        const auto & vel_time = velocity_time_pair.second;
-        return ((now - vel_time).nanoseconds() * 1e-9 > previous_obstacle_keep_time_);
-      });
-
+    obstacle_velocity_history_.erase(
+      std::remove_if(
+        obstacle_velocity_history_.begin(), obstacle_velocity_history_.end(),
+        [&](const auto & velocity_time_pair) {
+          const auto & vel_time = velocity_time_pair.second;
+          return ((now - vel_time).nanoseconds() * 1e-9 > previous_obstacle_keep_time_);
+        }),
+      obstacle_velocity_history_.end());
     obstacle_velocity_history_.emplace_back(
       std::make_pair(current_object_velocity, current_object_velocity_time_stamp));
   }
@@ -204,8 +205,6 @@ public:
     });
 
     if (!estimated_velocity_opt.has_value()) {
-      this->setPreviousObjectData(closest_object);
-      this->resetVelocityHistory();
       return std::nullopt;
     }
 
