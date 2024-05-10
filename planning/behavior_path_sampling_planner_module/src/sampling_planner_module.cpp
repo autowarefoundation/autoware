@@ -54,19 +54,19 @@ SamplingPlannerModule::SamplingPlannerModule(
       sampler_common::Path & path, const sampler_common::Constraints & constraints,
       const MultiPoint2d & footprint) -> bool {
       if (!footprint.empty()) {
-        path.constraint_results.drivable_area =
+        path.constraint_results.inside_drivable_area =
           bg::within(footprint, constraints.drivable_polygons);
       }
 
       for (const auto & f : footprint) {
         const auto collision_index = constraints.rtree.qbegin(bgi::intersects(f));
         if (collision_index != constraints.rtree.qend()) {
-          path.constraint_results.collision = false;
+          path.constraint_results.collision_free = false;
           break;
         }
       }
 
-      return path.constraint_results.collision && path.constraint_results.drivable_area;
+      return path.constraint_results.collision_free && path.constraint_results.inside_drivable_area;
     });
 
   hard_constraints_.emplace_back(
@@ -74,14 +74,14 @@ SamplingPlannerModule::SamplingPlannerModule(
       sampler_common::Path & path, const sampler_common::Constraints & constraints,
       [[maybe_unused]] const MultiPoint2d & footprint) -> bool {
       if (path.curvatures.empty()) {
-        path.constraint_results.curvature = false;
+        path.constraint_results.valid_curvature = false;
         return false;
       }
       const bool curvatures_satisfied =
         std::all_of(path.curvatures.begin(), path.curvatures.end(), [&](const auto & v) -> bool {
           return (v > constraints.hard.min_curvature) && (v < constraints.hard.max_curvature);
         });
-      path.constraint_results.curvature = curvatures_satisfied;
+      path.constraint_results.valid_curvature = curvatures_satisfied;
       return curvatures_satisfied;
     });
 
@@ -267,9 +267,9 @@ bool SamplingPlannerModule::isReferencePathSafe() const
     [](
       sampler_common::Path & path, const sampler_common::Constraints & constraints,
       const MultiPoint2d & footprint) -> bool {
-      path.constraint_results.collision =
+      path.constraint_results.collision_free =
         !sampler_common::constraints::has_collision(footprint, constraints.obstacle_polygons);
-      return path.constraint_results.collision;
+      return path.constraint_results.collision_free;
     });
   evaluateHardConstraints(
     reference_path, internal_params_->constraints, footprint, hard_constraints_reference_path);
@@ -591,7 +591,7 @@ BehaviorModuleOutput SamplingPlannerModule::plan()
       sampler_common::constraints::buildFootprintPoints(path, internal_params_->constraints);
     std::vector<bool> hard_constraints_results =
       evaluateHardConstraints(path, internal_params_->constraints, footprint, hard_constraints_);
-    path.constraint_results.curvature = true;
+    path.constraint_results.valid_curvature = true;
     debug_data_.footprints.push_back(footprint);
     std::vector<double> soft_constraints_results = evaluateSoftConstraints(
       path, internal_params_->constraints, soft_constraints_, soft_constraints_input);

@@ -95,7 +95,10 @@ protected:  // for the static_centerline_generator package
   void copyVelocity(
     const std::vector<TrajectoryPoint> & from_traj, std::vector<TrajectoryPoint> & to_traj,
     const geometry_msgs::msg::Pose & ego_pose);
-  std::vector<TrajectoryPoint> generatePath(const PlannerData & planner_data);
+  sampler_common::Path generatePath(const PlannerData & planner_data);
+  std::vector<sampler_common::Path> generateCandidatesFromPreviousPath(
+    const PlannerData & planner_data, const sampler_common::transform::Spline2D & path_spline);
+  std::vector<TrajectoryPoint> generateTrajectoryPoints(const PlannerData & planner_data);
   void publishVirtualWall(const geometry_msgs::msg::Pose & stop_pose) const;
   void publishDebugMarker(const std::vector<TrajectoryPoint> & traj_points) const;
 };

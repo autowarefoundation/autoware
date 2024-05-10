@@ -16,6 +16,7 @@
 
 #include "sampler_common/constraints/footprint.hpp"
 
+#include <boost/geometry.hpp>
 #include <boost/geometry/algorithms/within.hpp>
 
 #include <vector>
@@ -30,11 +31,12 @@ bool satisfyMinMax(const std::vector<double> & values, const double min, const d
   return true;
 }
 
-bool has_collision(const MultiPoint2d & footprint, const MultiPolygon2d & obstacles)
+bool has_collision(
+  const MultiPoint2d & footprint, const MultiPolygon2d & obstacles, const double min_distance)
 {
+  if (footprint.empty()) return false;
   for (const auto & o : obstacles)
-    for (const auto & p : footprint)
-      if (boost::geometry::within(p, o)) return true;
+    if (boost::geometry::distance(o, footprint) <= min_distance) return true;
   return false;
 }
 
@@ -42,14 +44,15 @@ MultiPoint2d checkHardConstraints(Path & path, const Constraints & constraints)
 {
   const auto footprint = buildFootprintPoints(path, constraints);
   if (!footprint.empty()) {
-    if (!boost::geometry::within(footprint, constraints.drivable_polygons)) {
-      path.constraint_results.drivable_area = false;
-    }
+    if (constraints.hard.limit_footprint_inside_drivable_area)
+      path.constraint_results.inside_drivable_area =
+        boost::geometry::within(footprint, constraints.drivable_polygons);
+    path.constraint_results.collision_free = !has_collision(
+      footprint, constraints.obstacle_polygons, constraints.hard.min_dist_from_obstacles);
   }
-  path.constraint_results.collision = !has_collision(footprint, constraints.obstacle_polygons);
   if (!satisfyMinMax(
         path.curvatures, constraints.hard.min_curvature, constraints.hard.max_curvature)) {
-    path.constraint_results.curvature = false;
+    path.constraint_results.valid_curvature = false;
   }
   return footprint;
 }

@@ -46,6 +46,12 @@ struct Parameters
     bool force_zero_heading{};
     bool smooth_reference{};
   } preprocessing{};
+
+  struct
+  {
+    double max_lat_dev{};
+    double direct_reuse_dist{};
+  } path_reuse{};
 };
 
 #endif  // PATH_SAMPLER__PARAMETERS_HPP_

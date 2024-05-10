@@ -84,12 +84,20 @@ PathSampler::PathSampler(const rclcpp::NodeOptions & node_options)
       declare_parameter<double>("constraints.hard.max_curvature");
     params_.constraints.hard.min_curvature =
       declare_parameter<double>("constraints.hard.min_curvature");
+    params_.constraints.hard.min_dist_from_obstacles =
+      declare_parameter<double>("constraints.hard.min_distance_from_obstacles");
+    params_.constraints.hard.limit_footprint_inside_drivable_area =
+      declare_parameter<bool>("constraints.hard.limit_footprint_inside_drivable_area");
     params_.constraints.soft.lateral_deviation_weight =
       declare_parameter<double>("constraints.soft.lateral_deviation_weight");
     params_.constraints.soft.length_weight =
       declare_parameter<double>("constraints.soft.length_weight");
     params_.constraints.soft.curvature_weight =
       declare_parameter<double>("constraints.soft.curvature_weight");
+    params_.path_reuse.max_lat_dev =
+      declare_parameter<double>("path_reuse.maximum_lateral_deviation");
+    params_.path_reuse.direct_reuse_dist =
+      declare_parameter<double>("path_reuse.direct_reuse_distance");
     params_.sampling.enable_frenet = declare_parameter<bool>("sampling.enable_frenet");
     params_.sampling.enable_bezier = declare_parameter<bool>("sampling.enable_bezier");
     params_.sampling.resolution = declare_parameter<double>("sampling.resolution");
@@ -144,6 +152,12 @@ rcl_interfaces::msg::SetParametersResult PathSampler::onParam(
 
   updateParam(parameters, "constraints.hard.max_curvature", params_.constraints.hard.max_curvature);
   updateParam(parameters, "constraints.hard.min_curvature", params_.constraints.hard.min_curvature);
+  updateParam(
+    parameters, "constraints.hard.min_distance_from_obstacles",
+    params_.constraints.hard.min_dist_from_obstacles);
+  updateParam(
+    parameters, "constraints.hard.limit_footprint_inside_drivable_area",
+    params_.constraints.hard.limit_footprint_inside_drivable_area);
   updateParam(
     parameters, "constraints.soft.lateral_deviation_weight",
     params_.constraints.soft.lateral_deviation_weight);
@@ -243,9 +257,8 @@ void PathSampler::onPath(const Path::SharedPtr path_ptr)
   const auto generated_traj_points = generateTrajectory(planner_data);
   // 3. extend trajectory to connect the optimized trajectory and the following path smoothly
   if (!generated_traj_points.empty()) {
-    auto full_traj_points = extendTrajectory(planner_data.traj_points, generated_traj_points);
     const auto output_traj_msg =
-      motion_utils::convertToTrajectory(full_traj_points, path_ptr->header);
+      motion_utils::convertToTrajectory(generated_traj_points, path_ptr->header);
     traj_pub_->publish(output_traj_msg);
   } else {
     auto stopping_traj = trajectory_utils::convertToTrajectoryPoints(planner_data.traj_points);
@@ -367,7 +380,7 @@ std::vector<TrajectoryPoint> PathSampler::generateTrajectory(const PlannerData &
 
   const auto & input_traj_points = planner_data.traj_points;
 
-  auto generated_traj_points = generatePath(planner_data);
+  auto generated_traj_points = generateTrajectoryPoints(planner_data);
 
   copyVelocity(input_traj_points, generated_traj_points, planner_data.ego_pose);
   copyZ(input_traj_points, generated_traj_points);
@@ -377,65 +390,89 @@ std::vector<TrajectoryPoint> PathSampler::generateTrajectory(const PlannerData &
   return generated_traj_points;
 }
 
-std::vector<TrajectoryPoint> PathSampler::generatePath(const PlannerData & planner_data)
+std::vector<sampler_common::Path> PathSampler::generateCandidatesFromPreviousPath(
+  const PlannerData & planner_data, const sampler_common::transform::Spline2D & path_spline)
 {
-  std::vector<TrajectoryPoint> trajectory;
-  time_keeper_ptr_->tic(__func__);
-  const auto & p = planner_data;
+  std::vector<sampler_common::Path> candidates;
+  if (!prev_path_ || prev_path_->points.size() < 2) return candidates;
+  // Update previous path
+  sampler_common::State current_state;
+  current_state.pose = {planner_data.ego_pose.position.x, planner_data.ego_pose.position.y};
+  current_state.heading = tf2::getYaw(planner_data.ego_pose.orientation);
+  const auto closest_iter = std::min_element(
+    prev_path_->points.begin(), prev_path_->points.end() - 1,
+    [&](const auto & p1, const auto & p2) {
+      return boost::geometry::distance(p1, current_state.pose) <=
+             boost::geometry::distance(p2, current_state.pose);
+    });
+  if (closest_iter != prev_path_->points.end()) {
+    const auto current_idx = std::distance(prev_path_->points.begin(), closest_iter);
+    const auto length_offset = prev_path_->lengths[current_idx];
+    for (auto & l : prev_path_->lengths) l -= length_offset;
+    constexpr auto behind_dist = -5.0;  // [m] TODO(Maxime): param
+    auto behind_idx = current_idx;
+    while (behind_idx > 0 && prev_path_->lengths[behind_idx] > behind_dist) --behind_idx;
+    *prev_path_ = *prev_path_->subset(behind_idx, prev_path_->points.size());
 
-  const auto path_spline = preparePathSpline(p.traj_points, params_.preprocessing.smooth_reference);
+    // Use previous path for replanning
+    const auto prev_path_length = prev_path_->lengths.back();
+    const auto reuse_step = prev_path_length / params_.sampling.previous_path_reuse_points_nb;
+    for (double reuse_length = reuse_step; reuse_length <= prev_path_length;
+         reuse_length += reuse_step) {
+      sampler_common::State reuse_state;
+      size_t reuse_idx = 0;
+      for (reuse_idx = 0; reuse_idx + 1 < prev_path_->lengths.size() &&
+                          prev_path_->lengths[reuse_idx] < reuse_length;
+           ++reuse_idx)
+        ;
+      if (reuse_idx == 0UL) continue;
+      const auto reused_path = *prev_path_->subset(0UL, reuse_idx);
+      reuse_state.curvature = reused_path.curvatures.back();
+      reuse_state.pose = reused_path.points.back();
+      reuse_state.heading = reused_path.yaws.back();
+      reuse_state.frenet = path_spline.frenet(reuse_state.pose);
+      auto paths = generateCandidatePaths(reuse_state, path_spline, reuse_length, params_);
+      for (auto & p : paths) candidates.push_back(reused_path.extend(p));
+    }
+  }
+  return candidates;
+}
+
+sampler_common::Path PathSampler::generatePath(const PlannerData & planner_data)
+{
+  time_keeper_ptr_->tic(__func__);
+  sampler_common::Path generated_path{};
+
+  if (prev_path_ && prev_path_->points.size() > 1) {
+    sampler_common::constraints::checkHardConstraints(*prev_path_, params_.constraints);
+    if (prev_path_->constraint_results.isValid()) {
+      const auto prev_path_spline =
+        preparePathSpline(trajectory_utils::convertToTrajectoryPoints(*prev_path_), false);
+      const auto frenet_p = prev_path_spline.frenet(
+        {planner_data.ego_pose.position.x, planner_data.ego_pose.position.y});
+      if (std::abs(frenet_p.d) > params_.path_reuse.max_lat_dev || frenet_p.s < 0.0)
+        resetPreviousData();
+      else if (frenet_p.s <= params_.path_reuse.direct_reuse_dist)
+        return *prev_path_;
+    } else {
+      resetPreviousData();
+    }
+  }
+  const auto path_spline =
+    preparePathSpline(planner_data.traj_points, params_.preprocessing.smooth_reference);
   sampler_common::State current_state;
   current_state.pose = {planner_data.ego_pose.position.x, planner_data.ego_pose.position.y};
   current_state.heading = tf2::getYaw(planner_data.ego_pose.orientation);
 
   const auto planning_state = getPlanningState(current_state, path_spline);
-  prepareConstraints(params_.constraints, *in_objects_ptr_, p.left_bound, p.right_bound);
+  prepareConstraints(
+    params_.constraints, *in_objects_ptr_, planner_data.left_bound, planner_data.right_bound);
 
   auto candidate_paths = generateCandidatePaths(planning_state, path_spline, 0.0, params_);
-  if (prev_path_ && prev_path_->lengths.size() > 1) {
-    // Update previous path
-    constexpr auto max_deviation = 2.0;  // [m] TODO(Maxime): param
-    const auto closest_iter = std::min_element(
-      prev_path_->points.begin(), prev_path_->points.end() - 1,
-      [&](const auto & p1, const auto & p2) {
-        return boost::geometry::distance(p1, current_state.pose) <=
-               boost::geometry::distance(p2, current_state.pose);
-      });
-    if (
-      closest_iter != prev_path_->points.end() &&
-      boost::geometry::distance(*closest_iter, current_state.pose) <= max_deviation) {
-      const auto current_idx = std::distance(prev_path_->points.begin(), closest_iter);
-      const auto length_offset = prev_path_->lengths[current_idx];
-      for (auto & l : prev_path_->lengths) l -= length_offset;
-      constexpr auto behind_dist = -5.0;  // [m] TODO(Maxime): param
-      auto behind_idx = current_idx;
-      while (behind_idx > 0 && prev_path_->lengths[behind_idx] > behind_dist) --behind_idx;
-      *prev_path_ = *prev_path_->subset(behind_idx, prev_path_->points.size());
-
-      // Use previous path for replanning
-      const auto prev_path_length = prev_path_->lengths.back();
-      const auto reuse_step = prev_path_length / params_.sampling.previous_path_reuse_points_nb;
-      for (double reuse_length = reuse_step; reuse_length <= prev_path_length;
-           reuse_length += reuse_step) {
-        sampler_common::State reuse_state;
-        size_t reuse_idx = 0;
-        for (reuse_idx = 0; reuse_idx + 1 < prev_path_->lengths.size() &&
-                            prev_path_->lengths[reuse_idx] < reuse_length;
-             ++reuse_idx)
-          ;
-        if (reuse_idx == 0UL) continue;
-        const auto reused_path = *prev_path_->subset(0UL, reuse_idx);
-        reuse_state.curvature = reused_path.curvatures.back();
-        reuse_state.pose = reused_path.points.back();
-        reuse_state.heading = reused_path.yaws.back();
-        reuse_state.frenet = path_spline.frenet(reuse_state.pose);
-        auto paths = generateCandidatePaths(reuse_state, path_spline, reuse_length, params_);
-        for (auto & p : paths) candidate_paths.push_back(reused_path.extend(p));
-      }
-    } else {
-      resetPreviousData();
-    }
-  }
+  const auto candidates_from_prev_path =
+    generateCandidatesFromPreviousPath(planner_data, path_spline);
+  candidate_paths.insert(
+    candidate_paths.end(), candidates_from_prev_path.begin(), candidates_from_prev_path.end());
   debug_data_.footprints.clear();
   for (auto & path : candidate_paths) {
     const auto footprint =
@@ -457,9 +494,7 @@ std::vector<TrajectoryPoint> PathSampler::generatePath(const PlannerData & plann
   };
   const auto selected_path_idx = best_path_idx(candidate_paths);
   if (selected_path_idx) {
-    const auto & selected_path = candidate_paths[*selected_path_idx];
-    trajectory = trajectory_utils::convertToTrajectoryPoints(selected_path);
-    prev_path_ = selected_path;
+    generated_path = candidate_paths[*selected_path_idx];
   } else {
     RCLCPP_WARN(
       get_logger(), "No valid path found (out of %lu) outputting %s\n", candidate_paths.size(),
@@ -468,18 +503,28 @@ std::vector<TrajectoryPoint> PathSampler::generatePath(const PlannerData & plann
     int da = 0;
     int k = 0;
     for (const auto & p : candidate_paths) {
-      coll += static_cast<int>(!p.constraint_results.collision);
-      da += static_cast<int>(!p.constraint_results.drivable_area);
-      k += static_cast<int>(!p.constraint_results.curvature);
+      coll += static_cast<int>(!p.constraint_results.collision_free);
+      da += static_cast<int>(!p.constraint_results.inside_drivable_area);
+      k += static_cast<int>(!p.constraint_results.valid_curvature);
     }
     RCLCPP_WARN(get_logger(), "\tInvalid coll/da/k = %d/%d/%d\n", coll, da, k);
-    if (prev_path_) trajectory = trajectory_utils::convertToTrajectoryPoints(*prev_path_);
+    if (prev_path_) generated_path = *prev_path_;
   }
   time_keeper_ptr_->toc(__func__, "    ");
   debug_data_.previous_sampled_candidates_nb = debug_data_.sampled_candidates.size();
   debug_data_.sampled_candidates = candidate_paths;
   debug_data_.obstacles = params_.constraints.obstacle_polygons;
-  return trajectory;
+
+  prev_path_ = generated_path;
+  return generated_path;
+}
+
+std::vector<TrajectoryPoint> PathSampler::generateTrajectoryPoints(const PlannerData & planner_data)
+{
+  std::vector<TrajectoryPoint> trajectory;
+  time_keeper_ptr_->tic(__func__);
+  const auto path = generatePath(planner_data);
+  return trajectory_utils::convertToTrajectoryPoints(path);
 }
 
 void PathSampler::publishVirtualWall(const geometry_msgs::msg::Pose & stop_pose) const

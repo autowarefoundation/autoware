@@ -22,7 +22,9 @@ namespace sampler_common::constraints
 {
 /// @brief Check if the path satisfies the hard constraints
 MultiPoint2d checkHardConstraints(Path & path, const Constraints & constraints);
-bool has_collision(const MultiPoint2d & footprint, const MultiPolygon2d & obstacles);
+bool has_collision(
+  const MultiPoint2d & footprint, const MultiPolygon2d & obstacles,
+  const double min_distance = 0.0);
 bool satisfyMinMax(const std::vector<double> & values, const double min, const double max);
 
 }  // namespace sampler_common::constraints

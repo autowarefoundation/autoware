@@ -50,13 +50,16 @@ typedef boost::geometry::index::rtree<BoxIndexPair, boost::geometry::index::rsta
 /// @brief data about constraint check results of a given path
 struct ConstraintResults
 {
-  bool collision = true;
-  bool curvature = true;
-  bool drivable_area = true;
+  bool collision_free = true;
+  bool valid_curvature = true;
+  bool inside_drivable_area = true;
 
-  [[nodiscard]] bool isValid() const { return collision && curvature && drivable_area; }
+  [[nodiscard]] bool isValid() const
+  {
+    return collision_free && valid_curvature && inside_drivable_area;
+  }
 
-  void clear() { collision = curvature = drivable_area = true; }
+  void clear() { collision_free = valid_curvature = inside_drivable_area = true; }
 };
 struct FrenetPoint
 {
@@ -136,9 +139,9 @@ struct Path
       dest.insert(dest.end(), std::next(second.begin(), offset), second.end());
     };
     ext(extended_path.points, points, path.points);
+    if (!poses.empty()) ext(extended_path.poses, poses, path.poses);
     ext(extended_path.curvatures, curvatures, path.curvatures);
     ext(extended_path.yaws, yaws, path.yaws);
-    ext(extended_path.poses, poses, path.poses);
     extended_path.lengths.insert(extended_path.lengths.end(), lengths.begin(), lengths.end());
     const auto last_base_length = lengths.empty() ? 0.0 : lengths.back() + length_offset;
     for (size_t i = offset; i < path.lengths.size(); ++i)
@@ -346,6 +349,8 @@ struct Constraints
   {
     double min_curvature;
     double max_curvature;
+    double min_dist_from_obstacles;
+    bool limit_footprint_inside_drivable_area;
   } hard{};
   LinearRing2d ego_footprint;
   double ego_width;
