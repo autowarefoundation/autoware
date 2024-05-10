@@ -92,7 +92,6 @@ private:
   // member
   PathWithLaneId refined_path_{};
   PathWithLaneId reference_path_{};
-  PathWithLaneId prev_reference_{};
   lanelet::ConstLanelets current_lanelets_;
   std::shared_ptr<SideShiftParameters> parameters_;
 

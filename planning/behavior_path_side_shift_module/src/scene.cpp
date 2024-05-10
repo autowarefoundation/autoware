@@ -202,9 +202,6 @@ void SideShiftModule::updateData()
   const auto reference_pose = prev_output_.shift_length.empty()
                                 ? planner_data_->self_odometry->pose.pose
                                 : utils::getUnshiftedEgoPose(getEgoPose(), prev_output_);
-  if (prev_reference_.points.empty()) {
-    prev_reference_ = getPreviousModuleOutput().path;
-  }
   if (getPreviousModuleOutput().reference_path.points.empty()) {
     return;
   }
@@ -433,13 +430,14 @@ PathWithLaneId SideShiftModule::extendBackwardLength(const PathWithLaneId & orig
   const auto backward_length = std::max(
     planner_data_->parameters.backward_path_length, longest_dist_to_shift_point + extra_margin);
 
+  const auto & prev_reference = getPreviousModuleOutput().path;
   const size_t orig_ego_idx = findNearestIndex(original_path.points, getEgoPose().position);
-  const size_t prev_ego_idx = findNearestSegmentIndex(
-    prev_reference_.points, getPoint(original_path.points.at(orig_ego_idx)));
+  const size_t prev_ego_idx =
+    findNearestSegmentIndex(prev_reference.points, getPoint(original_path.points.at(orig_ego_idx)));
 
   size_t clip_idx = 0;
   for (size_t i = 0; i < prev_ego_idx; ++i) {
-    if (backward_length > calcSignedArcLength(prev_reference_.points, clip_idx, prev_ego_idx)) {
+    if (backward_length > calcSignedArcLength(prev_reference.points, clip_idx, prev_ego_idx)) {
       break;
     }
     clip_idx = i;
@@ -448,8 +446,8 @@ PathWithLaneId SideShiftModule::extendBackwardLength(const PathWithLaneId & orig
   PathWithLaneId extended_path{};
   {
     extended_path.points.insert(
-      extended_path.points.end(), prev_reference_.points.begin() + clip_idx,
-      prev_reference_.points.begin() + prev_ego_idx);
+      extended_path.points.end(), prev_reference.points.begin() + clip_idx,
+      prev_reference.points.begin() + prev_ego_idx);
   }
 
   {
