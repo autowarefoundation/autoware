@@ -12,23 +12,9 @@
           "description": "flag to enable the time delay compensation for the position of the object"
         },
         "prediction_time_horizon": {
-          "properties": {
-            "vehicle": {
-              "type": "number",
-              "default": "15.0",
-              "description": "predict time duration for predicted path of vehicle"
-            },
-            "pedestrian": {
-              "type": "number",
-              "default": "10.0",
-              "description": "predict time duration for predicted path of pedestrian"
-            },
-            "unknown": {
-              "type": "number",
-              "default": "10.0",
-              "description": "predict time duration for predicted path of unknown"
-            }
-          }
+          "type": "number",
+          "default": "10.0",
+          "description": "predict time duration for predicted path"
         },
         "lateral_control_time_horizon": {
           "type": "number",

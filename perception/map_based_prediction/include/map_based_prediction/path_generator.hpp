@@ -80,23 +80,21 @@ using PosePath = std::vector<geometry_msgs::msg::Pose>;
 class PathGenerator
 {
 public:
-  PathGenerator(const double sampling_time_interval, const double min_crosswalk_user_velocity);
+  PathGenerator(
+    const double time_horizon, const double lateral_time_horizon,
+    const double sampling_time_interval, const double min_crosswalk_user_velocity);
 
-  PredictedPath generatePathForNonVehicleObject(
-    const TrackedObject & object, const double duration);
+  PredictedPath generatePathForNonVehicleObject(const TrackedObject & object);
 
-  PredictedPath generatePathForLowSpeedVehicle(
-    const TrackedObject & object, const double duration) const;
+  PredictedPath generatePathForLowSpeedVehicle(const TrackedObject & object) const;
 
-  PredictedPath generatePathForOffLaneVehicle(const TrackedObject & object, const double duration);
+  PredictedPath generatePathForOffLaneVehicle(const TrackedObject & object);
 
   PredictedPath generatePathForOnLaneVehicle(
-    const TrackedObject & object, const PosePath & ref_paths, const double duration,
-    const double lateral_duration, const double speed_limit = 0.0);
+    const TrackedObject & object, const PosePath & ref_paths, const double speed_limit = 0.0);
 
   PredictedPath generatePathForCrosswalkUser(
-    const TrackedObject & object, const CrosswalkEdgePoints & reachable_crosswalk,
-    const double duration) const;
+    const TrackedObject & object, const CrosswalkEdgePoints & reachable_crosswalk) const;
 
   PredictedPath generatePathToTargetPoint(
     const TrackedObject & object, const Eigen::Vector2d & point) const;
@@ -113,21 +111,21 @@ public:
 
 private:
   // Parameters
+  double time_horizon_;
+  double lateral_time_horizon_;
   double sampling_time_interval_;
   double min_crosswalk_user_velocity_;
   bool use_vehicle_acceleration_;
   double acceleration_exponential_half_life_;
 
   // Member functions
-  PredictedPath generateStraightPath(const TrackedObject & object, const double duration) const;
+  PredictedPath generateStraightPath(const TrackedObject & object) const;
 
   PredictedPath generatePolynomialPath(
-    const TrackedObject & object, const PosePath & ref_path, const double duration,
-    const double lateral_duration, const double speed_limit = 0.0);
+    const TrackedObject & object, const PosePath & ref_path, const double speed_limit = 0.0);
 
   FrenetPath generateFrenetPath(
-    const FrenetPoint & current_point, const FrenetPoint & target_point, const double max_length,
-    const double duration, const double lateral_duration);
+    const FrenetPoint & current_point, const FrenetPoint & target_point, const double max_length);
   Eigen::Vector3d calcLatCoefficients(
     const FrenetPoint & current_point, const FrenetPoint & target_point, const double T);
   Eigen::Vector2d calcLonCoefficients(
@@ -141,8 +139,7 @@ private:
     const PosePath & ref_path);
 
   FrenetPoint getFrenetPoint(
-    const TrackedObject & object, const PosePath & ref_path, const double duration,
-    const double speed_limit = 0.0);
+    const TrackedObject & object, const PosePath & ref_path, const double speed_limit = 0.0);
 };
 }  // namespace map_based_prediction
 
