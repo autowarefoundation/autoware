@@ -87,6 +87,11 @@ public:
     previous_obstacle_keep_time_ = previous_obstacle_keep_time;
   }
 
+  std::pair<double, double> getTimeout()
+  {
+    return {collision_keep_time_, previous_obstacle_keep_time_};
+  }
+
   bool checkObjectDataExpired(std::optional<ObjectData> & data, const double timeout)
   {
     if (!data.has_value()) return true;
@@ -246,6 +251,8 @@ public:
   void onTimer();
   void onPredictedTrajectory(const Trajectory::ConstSharedPtr input_msg);
   void onAutowareState(const AutowareState::ConstSharedPtr input_msg);
+  rcl_interfaces::msg::SetParametersResult onParameter(
+    const std::vector<rclcpp::Parameter> & parameters);
 
   bool isDataReady();
 
@@ -321,6 +328,8 @@ public:
   double mpc_prediction_time_horizon_;
   double mpc_prediction_time_interval_;
   CollisionDataKeeper collision_data_keeper_;
+  // Parameter callback
+  OnSetParametersCallbackHandle::SharedPtr set_param_res_;
 };
 }  // namespace autoware::motion::control::autonomous_emergency_braking
 

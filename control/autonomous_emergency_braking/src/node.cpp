@@ -19,6 +19,7 @@
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
+#include <tier4_autoware_utils/ros/update_param.hpp>
 
 #include <boost/geometry/algorithms/convex_hull.hpp>
 #include <boost/geometry/algorithms/within.hpp>
@@ -34,7 +35,6 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/surface/convex_hull.h>
 #include <tf2/utils.h>
-
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -171,10 +171,57 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
     collision_data_keeper_.setTimeout(collision_keeping_sec, previous_obstacle_keep_time);
   }
 
+  // Parameter Callback
+  set_param_res_ =
+    add_on_set_parameters_callback(std::bind(&AEB::onParameter, this, std::placeholders::_1));
+
   // start time
   const double aeb_hz = declare_parameter<double>("aeb_hz");
   const auto period_ns = rclcpp::Rate(aeb_hz).period();
   timer_ = rclcpp::create_timer(this, this->get_clock(), period_ns, std::bind(&AEB::onTimer, this));
+}
+
+rcl_interfaces::msg::SetParametersResult AEB::onParameter(
+  const std::vector<rclcpp::Parameter> & parameters)
+{
+  using tier4_autoware_utils::updateParam;
+  updateParam<bool>(parameters, "publish_debug_pointcloud", publish_debug_pointcloud_);
+  updateParam<bool>(parameters, "use_predicted_trajectory", use_predicted_trajectory_);
+  updateParam<bool>(parameters, "use_imu_path", use_imu_path_);
+  updateParam<double>(parameters, "path_footprint_extra_margin", path_footprint_extra_margin_);
+  updateParam<double>(parameters, "detection_range_min_height", detection_range_min_height_);
+  updateParam<double>(
+    parameters, "detection_range_max_height_margin", detection_range_max_height_margin_);
+  updateParam<double>(parameters, "voxel_grid_x", voxel_grid_x_);
+  updateParam<double>(parameters, "voxel_grid_y", voxel_grid_y_);
+  updateParam<double>(parameters, "voxel_grid_z", voxel_grid_z_);
+  updateParam<double>(parameters, "min_generated_path_length", min_generated_path_length_);
+  updateParam<double>(parameters, "expand_width", expand_width_);
+  updateParam<double>(parameters, "longitudinal_offset", longitudinal_offset_);
+  updateParam<double>(parameters, "t_response", t_response_);
+  updateParam<double>(parameters, "a_ego_min", a_ego_min_);
+  updateParam<double>(parameters, "a_obj_min", a_obj_min_);
+
+  updateParam<double>(parameters, "cluster_tolerance", cluster_tolerance_);
+  updateParam<int>(parameters, "minimum_cluster_size", minimum_cluster_size_);
+  updateParam<int>(parameters, "maximum_cluster_size", maximum_cluster_size_);
+
+  updateParam<double>(parameters, "imu_prediction_time_horizon", imu_prediction_time_horizon_);
+  updateParam<double>(parameters, "imu_prediction_time_interval", imu_prediction_time_interval_);
+  updateParam<double>(parameters, "mpc_prediction_time_horizon", mpc_prediction_time_horizon_);
+  updateParam<double>(parameters, "mpc_prediction_time_interval", mpc_prediction_time_interval_);
+
+  {  // Object history data keeper setup
+    auto [previous_obstacle_keep_time, collision_keeping_sec] = collision_data_keeper_.getTimeout();
+    updateParam<double>(parameters, "previous_obstacle_keep_time", previous_obstacle_keep_time);
+    updateParam<double>(parameters, "collision_keeping_sec", collision_keeping_sec);
+    collision_data_keeper_.setTimeout(collision_keeping_sec, previous_obstacle_keep_time);
+  }
+
+  rcl_interfaces::msg::SetParametersResult result;
+  result.successful = true;
+  result.reason = "success";
+  return result;
 }
 
 void AEB::onTimer()
