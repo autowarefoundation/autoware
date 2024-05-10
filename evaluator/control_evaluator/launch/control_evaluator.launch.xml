@@ -1,0 +1,12 @@
+<launch>
+  <arg name="input/diagnostics" default="/diagnostics"/>
+
+  <!-- control evaluator -->
+  <group>
+    <node name="control_evaluator" exec="control_evaluator" pkg="control_evaluator">
+      <param from="$(find-pkg-share control_evaluator)/param/control_evaluator.defaults.yaml"/>
+      <remap from="~/input/diagnostics" to="$(var input/diagnostics)"/>
+      <remap from="~/metrics" to="/diagnostic/control_evaluator/metrics"/>
+    </node>
+  </group>
+</launch>
