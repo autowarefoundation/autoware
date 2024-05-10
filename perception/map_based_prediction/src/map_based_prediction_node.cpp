@@ -1145,7 +1145,7 @@ bool MapBasedPredictionNode::doesPathCrossFence(
   const PredictedPath & predicted_path, const lanelet::ConstLineString3d & fence_line)
 {
   // check whether the predicted path cross with fence
-  for (size_t i = 0; i < predicted_path.path.size(); ++i) {
+  for (size_t i = 0; i < predicted_path.path.size() - 1; ++i) {
     for (size_t j = 0; j < fence_line.size() - 1; ++j) {
       if (isIntersecting(
             predicted_path.path[i].position, predicted_path.path[i + 1].position, fence_line[j],
