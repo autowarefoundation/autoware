@@ -250,7 +250,7 @@ void MissionPlanner::on_set_lanelet_route(
 
   if (is_reroute && !check_reroute_safety(*current_route_, route)) {
     cancel_route();
-    change_state(is_reroute ? RouteState::SET : RouteState::UNSET);
+    change_state(RouteState::SET);
     throw service_utils::ServiceException(
       ResponseCode::ERROR_REROUTE_FAILED, "New route is not safe. Reroute failed.");
   }
@@ -298,7 +298,7 @@ void MissionPlanner::on_set_waypoint_route(
 
   if (is_reroute && !check_reroute_safety(*current_route_, route)) {
     cancel_route();
-    change_state(is_reroute ? RouteState::SET : RouteState::UNSET);
+    change_state(RouteState::SET);
     throw service_utils::ServiceException(
       ResponseCode::ERROR_REROUTE_FAILED, "New route is not safe. Reroute failed.");
   }
