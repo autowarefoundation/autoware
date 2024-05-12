@@ -74,9 +74,9 @@ repositories:
     url: https://github.com/tier4/glog.git
     version: v0.6.0_t4-ros
   # launcher
-  launcher/autoware_launch:
+  launcher/autoware_launch.tutorial_vehicle:
     type: git
-    url: https://github.com/autowarefoundation/autoware_launch.git
+    url: https://github.com/hidechun/autoware_launch.tutorial_vehicle.git
     version: main
   # sensor_component
   sensor_component/external/sensor_component_description:
@@ -96,9 +96,9 @@ repositories:
     url: https://github.com/MapIV/transport_drivers.git
     version: boost
   # sensor_kit
-  sensor_kit/sample_sensor_kit_launch:
+  sensor_kit/tutorial_vehicle_sensor_kit_launch:
     type: git
-    url: https://github.com/autowarefoundation/sample_sensor_kit_launch.git
+    url: https://github.com/hidechun/tutorial_vehicle_sensor_kit_launch.git
     version: main
   sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
     type: git
@@ -109,16 +109,16 @@ repositories:
     url: https://github.com/autowarefoundation/awsim_labs_sensor_kit_launch.git
     version: main
   # vehicle
-  vehicle/sample_vehicle_launch:
+  vehicle/tutorial_vehicle_launch:
     type: git
-    url: https://github.com/autowarefoundation/sample_vehicle_launch.git
+    url: https://github.com/hidechun/tutorial_vehicle_launch.git
     version: main
   vehicle/external/pacmod_interface:
     type: git
     url: https://github.com/tier4/pacmod_interface.git
     version: main
   # param
-  param/autoware_individual_params:
+  param/tutorial_vehicle_individual_params:
     type: git
-    url: https://github.com/autowarefoundation/autoware_individual_params.git
+    url: https://github.com/hidechun/tutorial_vehicle_individual_params.git
     version: main
