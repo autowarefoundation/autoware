@@ -703,17 +703,19 @@ void AccelBrakeMapCalibrator::takeConsistencyOfAccelMap()
 {
   const double bit = std::pow(1e-01, precision_);
   for (std::size_t ped_idx = 0; ped_idx < update_accel_map_value_.size() - 1; ped_idx++) {
-    for (std::size_t vel_idx = 0; vel_idx < update_accel_map_value_.at(0).size() - 1; vel_idx++) {
+    for (std::size_t vel_idx = update_accel_map_value_.at(0).size() - 1;; vel_idx--) {
+      if (vel_idx == 0) break;
+
       const double current_acc = update_accel_map_value_.at(ped_idx).at(vel_idx);
       const double next_ped_acc = update_accel_map_value_.at(ped_idx + 1).at(vel_idx);
-      const double next_vel_acc = update_accel_map_value_.at(ped_idx).at(vel_idx + 1);
+      const double prev_vel_acc = update_accel_map_value_.at(ped_idx).at(vel_idx - 1);
 
-      if (current_acc <= next_vel_acc) {
+      if (current_acc + bit >= prev_vel_acc) {
         // the higher the velocity, the lower the acceleration
-        update_accel_map_value_.at(ped_idx).at(vel_idx + 1) = current_acc - bit;
+        update_accel_map_value_.at(ped_idx).at(vel_idx - 1) = current_acc + bit;
       }
 
-      if (current_acc >= next_ped_acc) {
+      if (current_acc + bit >= next_ped_acc) {
         // the higher the accel pedal, the higher the acceleration
         update_accel_map_value_.at(ped_idx + 1).at(vel_idx) = current_acc + bit;
       }
