@@ -73,6 +73,8 @@ visualization_msgs::msg::MarkerArray createPolygonMarkerArray(
 
 RunOutDebug::RunOutDebug(rclcpp::Node & node) : node_(node)
 {
+  accel_reason_ = AccelReason::UNKNOWN;
+
   pub_debug_values_ =
     node.create_publisher<Float32MultiArrayStamped>("~/debug/run_out/debug_values", 1);
   pub_accel_reason_ = node.create_publisher<Int32Stamped>("~/debug/run_out/accel_reason", 1);

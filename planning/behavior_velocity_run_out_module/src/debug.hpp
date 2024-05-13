@@ -86,6 +86,7 @@ public:
     NO_OBSTACLE = 1,
     PASS = 2,
     LOW_JERK = 3,
+    UNKNOWN = 4,
   };
 
   struct TextWithPosition
