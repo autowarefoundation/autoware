@@ -34,12 +34,18 @@ namespace tier4_calibration_rviz_plugin
 AccelBrakeMapCalibratorButtonPanel::AccelBrakeMapCalibratorButtonPanel(QWidget * parent)
 : rviz_common::Panel(parent)
 {
-  topic_label_ = new QLabel("Topic name of update suggest ");
+  topic_label_ = new QLabel("topic: ");
   topic_label_->setAlignment(Qt::AlignCenter);
 
   topic_edit_ =
     new QLineEdit("/vehicle/calibration/accel_brake_map_calibrator/output/update_suggest");
   connect(topic_edit_, SIGNAL(textEdited(QString)), SLOT(editTopic()));
+
+  service_label_ = new QLabel("service: ");
+  service_label_->setAlignment(Qt::AlignCenter);
+
+  service_edit_ = new QLineEdit("/vehicle/calibration/accel_brake_map_calibrator/update_map_dir");
+  connect(service_edit_, SIGNAL(textEdited(QString)), SLOT(editService()));
 
   calibration_button_ = new QPushButton("Wait for subscribe topic");
   calibration_button_->setEnabled(false);
@@ -56,8 +62,13 @@ AccelBrakeMapCalibratorButtonPanel::AccelBrakeMapCalibratorButtonPanel(QWidget *
   topic_layout->addWidget(topic_label_);
   topic_layout->addWidget(topic_edit_);
 
+  auto * service_layout = new QHBoxLayout;
+  service_layout->addWidget(service_label_);
+  service_layout->addWidget(service_edit_);
+
   auto * v_layout = new QVBoxLayout;
   v_layout->addLayout(topic_layout);
+  v_layout->addLayout(service_layout);
   v_layout->addWidget(calibration_button_);
   v_layout->addWidget(status_label_);
 
@@ -75,13 +86,19 @@ void AccelBrakeMapCalibratorButtonPanel::onInitialize()
       &AccelBrakeMapCalibratorButtonPanel::callbackUpdateSuggest, this, std::placeholders::_1));
 
   client_ = raw_node->create_client<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap>(
-    "/vehicle/calibration/accel_brake_map_calibrator/update_map_dir");
+    service_edit_->text().toStdString());
 }
 
 void AccelBrakeMapCalibratorButtonPanel::callbackUpdateSuggest(
   const std_msgs::msg::Bool::ConstSharedPtr msg)
 {
   if (after_calib_) {
+    return;
+  }
+
+  if (!client_ || !client_->service_is_ready()) {
+    calibration_button_->setText("wait for service");
+    calibration_button_->setEnabled(false);
     return;
   }
 
@@ -98,15 +115,32 @@ void AccelBrakeMapCalibratorButtonPanel::callbackUpdateSuggest(
 
 void AccelBrakeMapCalibratorButtonPanel::editTopic()
 {
-  update_suggest_sub_.reset();
   rclcpp::Node::SharedPtr raw_node =
     this->getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
-  update_suggest_sub_ = raw_node->create_subscription<std_msgs::msg::Bool>(
-    topic_edit_->text().toStdString(), 10,
-    std::bind(
-      &AccelBrakeMapCalibratorButtonPanel::callbackUpdateSuggest, this, std::placeholders::_1));
+  try {
+    update_suggest_sub_.reset();
+    update_suggest_sub_ = raw_node->create_subscription<std_msgs::msg::Bool>(
+      topic_edit_->text().toStdString(), 10,
+      std::bind(
+        &AccelBrakeMapCalibratorButtonPanel::callbackUpdateSuggest, this, std::placeholders::_1));
+  } catch (const rclcpp::exceptions::InvalidTopicNameError & e) {
+    RCLCPP_WARN_STREAM(raw_node->get_logger(), e.what());
+  }
   calibration_button_->setText("Wait for subscribe topic");
   calibration_button_->setEnabled(false);
+}
+
+void AccelBrakeMapCalibratorButtonPanel::editService()
+{
+  rclcpp::Node::SharedPtr raw_node =
+    this->getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
+  try {
+    client_.reset();
+    client_ = raw_node->create_client<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap>(
+      service_edit_->text().toStdString());
+  } catch (const rclcpp::exceptions::InvalidServiceNameError & e) {
+    RCLCPP_WARN_STREAM(raw_node->get_logger(), e.what());
+  }
 }
 
 void AccelBrakeMapCalibratorButtonPanel::pushCalibrationButton()

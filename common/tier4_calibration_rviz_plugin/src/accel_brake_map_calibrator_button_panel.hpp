@@ -46,6 +46,7 @@ public:
 
 public Q_SLOTS:  // NOLINT for Qt
   void editTopic();
+  void editService();
   void pushCalibrationButton();
 
 protected:
@@ -56,6 +57,8 @@ protected:
 
   QLabel * topic_label_;
   QLineEdit * topic_edit_;
+  QLabel * service_label_;
+  QLineEdit * service_edit_;
   QPushButton * calibration_button_;
   QLabel * status_label_;
 };
