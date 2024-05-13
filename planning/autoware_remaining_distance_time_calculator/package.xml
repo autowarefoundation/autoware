@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>autoware_remaining_distance_time_calculator</name>
+  <version>0.1.0</version>
+  <description>Calculates and publishes remaining distance and time of the mission.</description>
+
+  <maintainer email="ahmed.ebrahim@leodrive.ai">Ahmed Ebrahim</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+
+  <depend>autoware_internal_msgs</depend>
+  <depend>autoware_planning_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>motion_utils</depend>
+  <depend>nav_msgs</depend>
+  <depend>planning_test_utils</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>route_handler</depend>
+  <depend>std_msgs</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>tier4_planning_msgs</depend>
+
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

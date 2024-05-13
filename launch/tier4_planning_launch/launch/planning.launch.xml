@@ -43,5 +43,10 @@
     <group>
       <include file="$(find-pkg-share planning_evaluator)/launch/planning_evaluator.launch.xml"/>
     </group>
+
+    <!-- mission remaining distance and time calculator -->
+    <group>
+      <include file="$(find-pkg-share autoware_remaining_distance_time_calculator)/launch/remaining_distance_time_calculator.launch.xml"/>
+    </group>
   </group>
 </launch>

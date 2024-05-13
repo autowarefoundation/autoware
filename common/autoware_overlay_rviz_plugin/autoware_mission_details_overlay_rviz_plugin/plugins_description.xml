@@ -1,0 +1,5 @@
+<library path="autoware_mission_details_overlay_rviz_plugin">
+  <class name="autoware_mission_details_overlay_rviz_plugin/MissionDetailsDisplay" type="autoware::mission_details_overlay_rviz_plugin::MissionDetailsDisplay" base_class_type="rviz_common::Display">
+    <description>Mission Details overlay plugin for the 3D view.</description>
+  </class>
+</library>

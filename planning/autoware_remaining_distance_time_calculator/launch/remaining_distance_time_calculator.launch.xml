@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="remaining_distance_time_calculator_param_path" default="$(find-pkg-share autoware_remaining_distance_time_calculator)/config/remaining_distance_time_calculator.param.yaml"/>
+  <arg name="input_odometry" default="/localization/kinematic_state"/>
+  <arg name="input_map" default="/map/vector_map"/>
+  <arg name="input_route" default="/planning/mission_planning/route"/>
+
+  <node pkg="autoware_remaining_distance_time_calculator" exec="autoware_remaining_distance_time_calculator_node" name="remaining_distance_time_calculator" output="screen">
+    <!-- param -->
+    <param from="$(var remaining_distance_time_calculator_param_path)"/>
+
+    <!-- input -->
+    <remap from="~/input/odometry" to="$(var input_odometry)"/>
+    <remap from="~/input/map" to="$(var input_map)"/>
+    <remap from="~/input/route" to="$(var input_route)"/>
+
+    <!-- output -->
+    <remap from="~/output/mission_remaining_distance_time" to="/planning/mission_remaining_distance_time"/>
+  </node>
+</launch>
