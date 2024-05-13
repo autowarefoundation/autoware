@@ -39,6 +39,8 @@ struct PlannerParam
   std::string mode;                  // mode used to consider a conflict with an object
   bool skip_if_already_overlapping;  // if true, do not run the module when ego already overlaps
                                      // another lane
+  bool ignore_overlaps_over_lane_changeable_lanelets;  // if true, overlaps on lane changeable
+                                                       // lanelets are ignored
 
   double time_threshold;        // [s](mode="threshold") objects time threshold
   double intervals_ego_buffer;  // [s](mode="intervals") buffer to extend the ego time range

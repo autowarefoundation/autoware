@@ -3,6 +3,7 @@
     out_of_lane:  # module to stop or slowdown before overlapping another lane with other objects
       mode: ttc # mode used to consider a conflict with an object. "threshold", "intervals", or "ttc"
       skip_if_already_overlapping: true # do not run this module when ego already overlaps another lane
+      ignore_overlaps_over_lane_changeable_lanelets: true  # if true, overlaps on lane changeable lanelets are ignored
 
       threshold:
         time_threshold: 5.0  # [s] consider objects that will reach an overlap within this time

@@ -78,6 +78,15 @@ lanelet::ConstLanelets calculate_path_lanelets(
   return path_lanelets;
 }
 
+void add_lane_changeable_lanelets(
+  lanelet::ConstLanelets & lanelets_to_ignore, const lanelet::ConstLanelets & path_lanelets,
+  const route_handler::RouteHandler & route_handler)
+{
+  for (const auto & path_lanelet : path_lanelets)
+    for (const auto & ll : route_handler.getLaneChangeableNeighbors(path_lanelet))
+      if (!contains_lanelet(lanelets_to_ignore, ll.id())) lanelets_to_ignore.push_back(ll);
+}
+
 lanelet::ConstLanelets calculate_ignored_lanelets(
   const EgoData & ego_data, const lanelet::ConstLanelets & path_lanelets,
   const route_handler::RouteHandler & route_handler, const PlannerParam & params)
@@ -93,6 +102,8 @@ lanelet::ConstLanelets calculate_ignored_lanelets(
     const auto is_path_lanelet = contains_lanelet(path_lanelets, l.second.id());
     if (!is_path_lanelet) ignored_lanelets.push_back(l.second);
   }
+  if (params.ignore_overlaps_over_lane_changeable_lanelets)
+    add_lane_changeable_lanelets(ignored_lanelets, path_lanelets, route_handler);
   return ignored_lanelets;
 }
 
