@@ -27,6 +27,9 @@
       timeout_set_for_no_intention_to_walk: [1.0, 0.0] # [s] values of map
     # parameter for shoulder lane prediction
     prediction_time_horizon_rate_for_validate_shoulder_lane_length: 0.8
+    use_crosswalk_user_history:
+      match_lost_and_appeared_users: false
+      remember_lost_users: false
 
     # parameters for lc prediction
     lane_change_detection:

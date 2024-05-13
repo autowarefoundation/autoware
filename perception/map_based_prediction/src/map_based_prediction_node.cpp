@@ -585,6 +585,52 @@ bool hasPotentialToReach(
   return false;
 }
 
+template <typename T>
+std::unordered_set<std::string> removeOldObjectsHistory(
+  const double current_time, const double buffer_time,
+  std::unordered_map<std::string, std::deque<T>> & target_objects)
+{
+  std::unordered_set<std::string> invalid_object_id;
+  for (auto iter = target_objects.begin(); iter != target_objects.end(); ++iter) {
+    const std::string object_id = iter->first;
+    std::deque<T> & object_data = iter->second;
+
+    // If object data is empty, we are going to delete the buffer for the obstacle
+    if (object_data.empty()) {
+      invalid_object_id.insert(object_id);
+      continue;
+    }
+
+    const double latest_object_time = rclcpp::Time(object_data.back().header.stamp).seconds();
+
+    // Delete Old Objects
+    if (current_time - latest_object_time > buffer_time) {
+      invalid_object_id.insert(object_id);
+      continue;
+    }
+
+    // Delete old information
+    while (!object_data.empty()) {
+      const double post_object_time = rclcpp::Time(object_data.front().header.stamp).seconds();
+      if (current_time - post_object_time <= buffer_time) {
+        break;
+      }
+      object_data.pop_front();
+    }
+
+    if (object_data.empty()) {
+      invalid_object_id.insert(object_id);
+      continue;
+    }
+  }
+
+  for (const auto & key : invalid_object_id) {
+    target_objects.erase(key);
+  }
+
+  return invalid_object_id;
+}
+
 /**
  * @brief change label for prediction
  *
@@ -776,7 +822,10 @@ MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_
    * parameter control the estimated path length = vx * th * (rate)  */
   prediction_time_horizon_rate_for_validate_lane_length_ =
     declare_parameter<double>("prediction_time_horizon_rate_for_validate_shoulder_lane_length");
-
+  match_lost_and_appeared_crosswalk_users_ =
+    declare_parameter<bool>("use_crosswalk_user_history.match_lost_and_appeared_users");
+  remember_lost_crosswalk_users_ =
+    declare_parameter<bool>("use_crosswalk_user_history.remember_lost_users");
   use_vehicle_acceleration_ = declare_parameter<bool>("use_vehicle_acceleration");
   speed_limit_multiplier_ = declare_parameter<double>("speed_limit_multiplier");
   acceleration_exponential_half_life_ =
@@ -918,7 +967,19 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
 
   // Remove old objects information in object history
   const double objects_detected_time = rclcpp::Time(in_objects->header.stamp).seconds();
-  removeOldObjectsHistory(objects_detected_time, in_objects);
+  removeOldObjectsHistory(objects_detected_time, object_buffer_time_length_, road_users_history);
+  removeStaleTrafficLightInfo(in_objects);
+
+  auto invalidated_crosswalk_users = removeOldObjectsHistory(
+    objects_detected_time, object_buffer_time_length_, crosswalk_users_history_);
+  // delete matches that point to invalid object
+  for (auto it = known_matches_.begin(); it != known_matches_.end();) {
+    if (invalidated_crosswalk_users.count(it->second)) {
+      it = known_matches_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 
   // result output
   PredictedObjects output;
@@ -927,6 +988,20 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
 
   // result debug
   visualization_msgs::msg::MarkerArray debug_markers;
+
+  // get current crosswalk users for later prediction
+  std::unordered_map<std::string, TrackedObject> current_crosswalk_users;
+  for (const auto & object : in_objects->objects) {
+    const auto label_for_prediction =
+      changeLabelForPrediction(object.classification.front().label, object, lanelet_map_ptr_);
+    if (
+      label_for_prediction == ObjectClassification::PEDESTRIAN ||
+      label_for_prediction == ObjectClassification::BICYCLE) {
+      const std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
+      current_crosswalk_users.emplace(object_id, object);
+    }
+  }
+  std::unordered_set<std::string> predicted_crosswalk_users_ids;
 
   for (const auto & object : in_objects->objects) {
     std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
@@ -948,6 +1023,12 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
     switch (label) {
       case ObjectClassification::PEDESTRIAN:
       case ObjectClassification::BICYCLE: {
+        std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
+        if (match_lost_and_appeared_crosswalk_users_) {
+          object_id = tryMatchNewObjectToDisappeared(object_id, current_crosswalk_users);
+        }
+        predicted_crosswalk_users_ids.insert(object_id);
+        updateCrosswalkUserHistory(output.header, transformed_object, object_id);
         const auto predicted_object_crosswalk =
           getPredictedObjectAsCrosswalkUser(transformed_object);
         output.objects.push_back(predicted_object_crosswalk);
@@ -965,7 +1046,7 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
         const auto current_lanelets = getCurrentLanelets(transformed_object);
 
         // Update Objects History
-        updateObjectsHistory(output.header, transformed_object, current_lanelets);
+        updateRoadUsersHistory(output.header, transformed_object, current_lanelets);
 
         // For off lane obstacles
         if (current_lanelets.empty()) {
@@ -1113,6 +1194,19 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
     }
   }
 
+  // process lost crosswalk users to tackle unstable detection
+  if (remember_lost_crosswalk_users_) {
+    for (const auto & [id, crosswalk_user] : crosswalk_users_history_) {
+      // get a predicted path for crosswalk users in history who didn't get path yet using latest
+      // message
+      if (predicted_crosswalk_users_ids.count(id) == 0) {
+        const auto predicted_object =
+          getPredictedObjectAsCrosswalkUser(crosswalk_user.back().tracked_object);
+        output.objects.push_back(predicted_object);
+      }
+    }
+  }
+
   // Publish Results
   pub_objects_->publish(output);
   published_time_publisher_->publish_if_subscribed(pub_objects_, output.header.stamp);
@@ -1123,6 +1217,79 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
     "debug/cyclic_time_ms", cyclic_time_ms);
   processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
     "debug/processing_time_ms", processing_time_ms);
+}
+
+void MapBasedPredictionNode::updateCrosswalkUserHistory(
+  const std_msgs::msg::Header & header, const TrackedObject & object, const std::string & object_id)
+{
+  CrosswalkUserData crosswalk_user_data;
+  crosswalk_user_data.header = header;
+  crosswalk_user_data.tracked_object = object;
+
+  if (crosswalk_users_history_.count(object_id) == 0) {
+    crosswalk_users_history_.emplace(object_id, std::deque<CrosswalkUserData>{crosswalk_user_data});
+    return;
+  }
+
+  crosswalk_users_history_.at(object_id).push_back(crosswalk_user_data);
+}
+
+std::string MapBasedPredictionNode::tryMatchNewObjectToDisappeared(
+  const std::string & object_id, std::unordered_map<std::string, TrackedObject> & current_users)
+{
+  const auto known_match_opt = [&]() -> std::optional<std::string> {
+    if (!known_matches_.count(object_id)) {
+      return std::nullopt;
+    }
+
+    std::string match_id = known_matches_[object_id];
+    // object in the history is already matched to something (possibly itself)
+    if (crosswalk_users_history_.count(match_id)) {
+      // avoid matching two appeared users to one user in history
+      current_users[match_id] = crosswalk_users_history_[match_id].back().tracked_object;
+      return match_id;
+    } else {
+      RCLCPP_WARN_STREAM(
+        get_logger(), "Crosswalk user was "
+                        << object_id << "was matched to " << match_id
+                        << " but history for the crosswalk user was deleted. Rematching");
+    }
+    return std::nullopt;
+  }();
+  //  early return if the match is already known
+  if (known_match_opt.has_value()) {
+    return known_match_opt.value();
+  }
+
+  std::string match_id = object_id;
+  double best_score = std::numeric_limits<double>::max();
+  const auto object_pos = current_users[object_id].kinematics.pose_with_covariance.pose.position;
+  for (const auto & [user_id, user_history] : crosswalk_users_history_) {
+    // user present in current_users and will be matched to itself
+    if (current_users.count(user_id)) {
+      continue;
+    }
+    // TODO(dkoldaev): implement more sophisticated scoring, for now simply dst to last position in
+    // history
+    const auto match_candidate_pos =
+      user_history.back().tracked_object.kinematics.pose_with_covariance.pose.position;
+    const double score =
+      std::hypot(match_candidate_pos.x - object_pos.x, match_candidate_pos.y - object_pos.y);
+    if (score < best_score) {
+      best_score = score;
+      match_id = user_id;
+    }
+  }
+
+  if (object_id != match_id) {
+    RCLCPP_INFO_STREAM(
+      get_logger(), "[Map Based Prediction]: Matched " << object_id << " to " << match_id);
+    // avoid matching two appeared users to one user in history
+    current_users[match_id] = crosswalk_users_history_[match_id].back().tracked_object;
+  }
+
+  known_matches_[object_id] = match_id;
+  return match_id;
 }
 
 bool MapBasedPredictionNode::doesPathCrossAnyFence(const PredictedPath & predicted_path)
@@ -1345,49 +1512,9 @@ void MapBasedPredictionNode::updateObjectData(TrackedObject & object)
   return;
 }
 
-void MapBasedPredictionNode::removeOldObjectsHistory(
-  const double current_time, const TrackedObjects::ConstSharedPtr in_objects)
+void MapBasedPredictionNode::removeStaleTrafficLightInfo(
+  const TrackedObjects::ConstSharedPtr in_objects)
 {
-  std::vector<std::string> invalid_object_id;
-  for (auto iter = objects_history_.begin(); iter != objects_history_.end(); ++iter) {
-    const std::string object_id = iter->first;
-    std::deque<ObjectData> & object_data = iter->second;
-
-    // If object data is empty, we are going to delete the buffer for the obstacle
-    if (object_data.empty()) {
-      invalid_object_id.push_back(object_id);
-      continue;
-    }
-
-    const double latest_object_time = rclcpp::Time(object_data.back().header.stamp).seconds();
-
-    // Delete Old Objects
-    if (current_time - latest_object_time > object_buffer_time_length_) {
-      invalid_object_id.push_back(object_id);
-      continue;
-    }
-
-    // Delete old information
-    while (!object_data.empty()) {
-      const double post_object_time = rclcpp::Time(object_data.front().header.stamp).seconds();
-      if (current_time - post_object_time > object_buffer_time_length_) {
-        // Delete Old Position
-        object_data.pop_front();
-      } else {
-        break;
-      }
-    }
-
-    if (object_data.empty()) {
-      invalid_object_id.push_back(object_id);
-      continue;
-    }
-  }
-
-  for (const auto & key : invalid_object_id) {
-    objects_history_.erase(key);
-  }
-
   for (auto it = stopped_times_against_green_.begin(); it != stopped_times_against_green_.end();) {
     const bool isDisappeared = std::none_of(
       in_objects->objects.begin(), in_objects->objects.end(),
@@ -1502,9 +1629,9 @@ bool MapBasedPredictionNode::checkCloseLaneletCondition(
   // If the object is in the objects history, we check if the target lanelet is
   // inside the current lanelets id or following lanelets
   const std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
-  if (objects_history_.count(object_id) != 0) {
+  if (road_users_history.count(object_id) != 0) {
     const std::vector<lanelet::ConstLanelet> & possible_lanelet =
-      objects_history_.at(object_id).back().future_possible_lanelets;
+      road_users_history.at(object_id).back().future_possible_lanelets;
 
     bool not_in_possible_lanelet =
       std::find(possible_lanelet.begin(), possible_lanelet.end(), lanelet.second) ==
@@ -1571,7 +1698,7 @@ float MapBasedPredictionNode::calculateLocalLikelihood(
   return static_cast<float>(1.0 / dist);
 }
 
-void MapBasedPredictionNode::updateObjectsHistory(
+void MapBasedPredictionNode::updateRoadUsersHistory(
   const std_msgs::msg::Header & header, const TrackedObject & object,
   const LaneletsData & current_lanelets_data)
 {
@@ -1595,13 +1722,13 @@ void MapBasedPredictionNode::updateObjectsHistory(
     single_object_data.lateral_kinematics_set[current_lane] = lateral_kinematics;
   }
 
-  if (objects_history_.count(object_id) == 0) {
+  if (road_users_history.count(object_id) == 0) {
     // New Object(Create a new object in object histories)
     std::deque<ObjectData> object_data = {single_object_data};
-    objects_history_.emplace(object_id, object_data);
+    road_users_history.emplace(object_id, object_data);
   } else {
     // Object that is already in the object buffer
-    std::deque<ObjectData> & object_data = objects_history_.at(object_id);
+    std::deque<ObjectData> & object_data = road_users_history.at(object_id);
     // get previous object data and update
     const auto prev_object_data = object_data.back();
     updateLateralKinematicsVector(
@@ -1789,10 +1916,10 @@ Maneuver MapBasedPredictionNode::predictObjectManeuver(
   }();
 
   const std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
-  if (objects_history_.count(object_id) == 0) {
+  if (road_users_history.count(object_id) == 0) {
     return current_maneuver;
   }
-  auto & object_info = objects_history_.at(object_id);
+  auto & object_info = road_users_history.at(object_id);
 
   // update maneuver in object history
   if (!object_info.empty()) {
@@ -1828,11 +1955,11 @@ Maneuver MapBasedPredictionNode::predictObjectManeuverByTimeToLaneChange(
 {
   // Step1. Check if we have the object in the buffer
   const std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
-  if (objects_history_.count(object_id) == 0) {
+  if (road_users_history.count(object_id) == 0) {
     return Maneuver::LANE_FOLLOW;
   }
 
-  const std::deque<ObjectData> & object_info = objects_history_.at(object_id);
+  const std::deque<ObjectData> & object_info = road_users_history.at(object_id);
 
   // Step2. Check if object history length longer than history_time_length
   const int latest_id = static_cast<int>(object_info.size()) - 1;
@@ -1899,11 +2026,11 @@ Maneuver MapBasedPredictionNode::predictObjectManeuverByLatDiffDistance(
 {
   // Step1. Check if we have the object in the buffer
   const std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
-  if (objects_history_.count(object_id) == 0) {
+  if (road_users_history.count(object_id) == 0) {
     return Maneuver::LANE_FOLLOW;
   }
 
-  const std::deque<ObjectData> & object_info = objects_history_.at(object_id);
+  const std::deque<ObjectData> & object_info = road_users_history.at(object_id);
   const double current_time = (this->get_clock()->now()).seconds();
 
   // Step2. Get the previous id
@@ -2060,12 +2187,12 @@ void MapBasedPredictionNode::updateFuturePossibleLanelets(
   const TrackedObject & object, const lanelet::routing::LaneletPaths & paths)
 {
   std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
-  if (objects_history_.count(object_id) == 0) {
+  if (road_users_history.count(object_id) == 0) {
     return;
   }
 
   std::vector<lanelet::ConstLanelet> & possible_lanelets =
-    objects_history_.at(object_id).back().future_possible_lanelets;
+    road_users_history.at(object_id).back().future_possible_lanelets;
   for (const auto & path : paths) {
     for (const auto & lanelet : path) {
       bool not_in_buffer = std::find(possible_lanelets.begin(), possible_lanelets.end(), lanelet) ==
