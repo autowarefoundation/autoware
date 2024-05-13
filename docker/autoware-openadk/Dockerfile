@@ -103,6 +103,7 @@ COPY --from=src-imported /autoware/src/sensor_component /autoware/src/sensor_com
 COPY --from=src-imported /autoware/src/sensor_kit /autoware/src/sensor_kit
 COPY --from=src-imported /autoware/src/universe /autoware/src/universe
 COPY --from=autoware-core /autoware/install /opt/autoware/
+# hadolint ignore=SC1091
 RUN --mount=type=ssh \
   apt-get update \
   && rosdep update \
