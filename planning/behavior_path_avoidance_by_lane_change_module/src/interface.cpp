@@ -57,7 +57,10 @@ void AvoidanceByLaneChangeInterface::updateRTCStatus(
     return (dir == Direction::LEFT) ? "left" : "right";
   });
 
+  const auto state = isWaitingApproval() ? State::WAITING_FOR_EXECUTION : State::RUNNING;
+
   rtc_interface_ptr_map_.at(direction)->updateCooperateStatus(
-    uuid_map_.at(direction), isExecutionReady(), start_distance, finish_distance, clock_->now());
+    uuid_map_.at(direction), isExecutionReady(), state, start_distance, finish_distance,
+    clock_->now());
 }
 }  // namespace behavior_path_planner

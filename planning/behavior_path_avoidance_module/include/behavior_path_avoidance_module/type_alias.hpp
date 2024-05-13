@@ -28,6 +28,7 @@
 #include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
+#include <tier4_rtc_msgs/msg/state.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 namespace behavior_path_planner
@@ -49,6 +50,7 @@ using visualization_msgs::msg::MarkerArray;
 // tier4 msgs
 using tier4_planning_msgs::msg::AvoidanceDebugMsg;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
+using tier4_rtc_msgs::msg::State;
 
 // tier4 utils functions
 using tier4_autoware_utils::appendMarkerArray;

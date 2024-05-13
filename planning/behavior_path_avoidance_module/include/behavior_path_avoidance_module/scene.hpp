@@ -77,15 +77,17 @@ private:
   {
     if (candidate.lateral_shift > 0.0) {
       rtc_interface_ptr_map_.at("left")->updateCooperateStatus(
-        uuid_map_.at("left"), isExecutionReady(), candidate.start_distance_to_path_change,
-        candidate.finish_distance_to_path_change, clock_->now());
+        uuid_map_.at("left"), isExecutionReady(), State::WAITING_FOR_EXECUTION,
+        candidate.start_distance_to_path_change, candidate.finish_distance_to_path_change,
+        clock_->now());
       candidate_uuid_ = uuid_map_.at("left");
       return;
     }
     if (candidate.lateral_shift < 0.0) {
       rtc_interface_ptr_map_.at("right")->updateCooperateStatus(
-        uuid_map_.at("right"), isExecutionReady(), candidate.start_distance_to_path_change,
-        candidate.finish_distance_to_path_change, clock_->now());
+        uuid_map_.at("right"), isExecutionReady(), State::WAITING_FOR_EXECUTION,
+        candidate.start_distance_to_path_change, candidate.finish_distance_to_path_change,
+        clock_->now());
       candidate_uuid_ = uuid_map_.at("right");
       return;
     }
@@ -108,7 +110,7 @@ private:
         motion_utils::calcSignedArcLength(path.points, ego_idx, left_shift.start_pose.position);
       const double finish_distance = start_distance + left_shift.relative_longitudinal;
       rtc_interface_ptr_map_.at("left")->updateCooperateStatus(
-        left_shift.uuid, true, start_distance, finish_distance, clock_->now());
+        left_shift.uuid, true, State::RUNNING, start_distance, finish_distance, clock_->now());
       if (finish_distance > -1.0e-03) {
         steering_factor_interface_ptr_->updateSteeringFactor(
           {left_shift.start_pose, left_shift.finish_pose}, {start_distance, finish_distance},
@@ -121,7 +123,7 @@ private:
         motion_utils::calcSignedArcLength(path.points, ego_idx, right_shift.start_pose.position);
       const double finish_distance = start_distance + right_shift.relative_longitudinal;
       rtc_interface_ptr_map_.at("right")->updateCooperateStatus(
-        right_shift.uuid, true, start_distance, finish_distance, clock_->now());
+        right_shift.uuid, true, State::RUNNING, start_distance, finish_distance, clock_->now());
       if (finish_distance > -1.0e-03) {
         steering_factor_interface_ptr_->updateSteeringFactor(
           {right_shift.start_pose, right_shift.finish_pose}, {start_distance, finish_distance},

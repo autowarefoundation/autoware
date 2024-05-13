@@ -41,6 +41,7 @@
 #include <tier4_planning_msgs/msg/stop_factor.hpp>
 #include <tier4_planning_msgs/msg/stop_reason.hpp>
 #include <tier4_planning_msgs/msg/stop_reason_array.hpp>
+#include <tier4_rtc_msgs/msg/state.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
 #include <visualization_msgs/msg/detail/marker_array__struct.hpp>
 
@@ -67,6 +68,7 @@ using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using tier4_planning_msgs::msg::StopFactor;
 using tier4_planning_msgs::msg::StopReason;
 using tier4_planning_msgs::msg::StopReasonArray;
+using tier4_rtc_msgs::msg::State;
 using unique_identifier_msgs::msg::UUID;
 using visualization_msgs::msg::MarkerArray;
 using PlanResult = PathWithLaneId::SharedPtr;
@@ -490,8 +492,9 @@ protected:
   {
     for (const auto & [module_name, ptr] : rtc_interface_ptr_map_) {
       if (ptr) {
+        const auto state = isWaitingApproval() ? State::WAITING_FOR_EXECUTION : State::RUNNING;
         ptr->updateCooperateStatus(
-          uuid_map_.at(module_name), isExecutionReady(), start_distance, finish_distance,
+          uuid_map_.at(module_name), isExecutionReady(), state, start_distance, finish_distance,
           clock_->now());
       }
     }

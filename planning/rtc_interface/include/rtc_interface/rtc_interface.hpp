@@ -24,6 +24,7 @@
 #include "tier4_rtc_msgs/msg/cooperate_status.hpp"
 #include "tier4_rtc_msgs/msg/cooperate_status_array.hpp"
 #include "tier4_rtc_msgs/msg/module.hpp"
+#include "tier4_rtc_msgs/msg/state.hpp"
 #include "tier4_rtc_msgs/srv/auto_mode.hpp"
 #include "tier4_rtc_msgs/srv/cooperate_commands.hpp"
 #include <unique_identifier_msgs/msg/uuid.hpp>
@@ -41,6 +42,7 @@ using tier4_rtc_msgs::msg::CooperateResponse;
 using tier4_rtc_msgs::msg::CooperateStatus;
 using tier4_rtc_msgs::msg::CooperateStatusArray;
 using tier4_rtc_msgs::msg::Module;
+using tier4_rtc_msgs::msg::State;
 using tier4_rtc_msgs::srv::AutoMode;
 using tier4_rtc_msgs::srv::CooperateCommands;
 using unique_identifier_msgs::msg::UUID;
@@ -51,8 +53,8 @@ public:
   RTCInterface(rclcpp::Node * node, const std::string & name, const bool enable_rtc = true);
   void publishCooperateStatus(const rclcpp::Time & stamp);
   void updateCooperateStatus(
-    const UUID & uuid, const bool safe, const double start_distance, const double finish_distance,
-    const rclcpp::Time & stamp);
+    const UUID & uuid, const bool safe, const uint8_t state, const double start_distance,
+    const double finish_distance, const rclcpp::Time & stamp);
   void removeCooperateStatus(const UUID & uuid);
   void clearCooperateStatus();
   bool isActivated(const UUID & uuid) const;
