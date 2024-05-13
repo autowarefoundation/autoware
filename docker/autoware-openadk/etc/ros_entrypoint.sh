@@ -10,6 +10,7 @@ GROUP_NAME=${LOCAL_GROUP}
 # Check if any of the variables are empty
 if [[ -z $USER_ID || -z $USER_NAME || -z $GROUP_ID || -z $GROUP_NAME ]]; then
     source "/opt/ros/$ROS_DISTRO/setup.bash"
+    source /opt/autoware/setup.bash
     source /autoware/install/setup.bash
     exec "$@"
 else
@@ -25,6 +26,7 @@ else
     # Source ROS2
     # hadolint ignore=SC1090
     source "/opt/ros/$ROS_DISTRO/setup.bash"
+    source /opt/autoware/setup.bash
     source /autoware/install/setup.bash
 
     # Execute the command as the user

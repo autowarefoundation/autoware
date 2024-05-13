@@ -50,13 +50,9 @@ RUN --mount=type=ssh \
   mkdir src \
   && vcs import src < autoware.repos
 
-FROM base as prebuilt
+FROM base as openadk-base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
 ARG SETUP_ARGS
-ENV CCACHE_DIR="/var/tmp/ccache"
-ENV CC="/usr/lib/ccache/gcc"
-ENV CXX="/usr/lib/ccache/g++"
 
 # cspell: ignore libcu libnv
 # Set up development environment
@@ -67,8 +63,15 @@ RUN --mount=type=ssh \
   && find / -name 'libcu*.a' -delete \
   && find / -name 'libnv*.a' -delete
 
-# Install rosdep dependencies
-COPY --from=src-imported /autoware/src /autoware/src
+FROM openadk-base as autoware-core
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/var/tmp/ccache"
+ENV CC="/usr/lib/ccache/gcc"
+ENV CXX="/usr/lib/ccache/g++"
+
+# Install rosdep dependencies and build core packages
+COPY --from=src-imported /autoware/src/core /autoware/src/core
 RUN --mount=type=ssh \
   apt-get update \
   && rosdep update \
@@ -85,6 +88,36 @@ RUN --mount=type=ssh \
   && rm -rf /autoware/build /autoware/src
 
 CMD ["/bin/bash"]
+
+FROM openadk-base as prebuilt
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/var/tmp/ccache"
+ENV CC="/usr/lib/ccache/gcc"
+ENV CXX="/usr/lib/ccache/g++"
+
+# Install rosdep dependencies and build the other packages
+COPY --from=src-imported /autoware/src/launcher /autoware/src/launcher
+COPY --from=src-imported /autoware/src/param /autoware/src/param
+COPY --from=src-imported /autoware/src/sensor_component /autoware/src/sensor_component
+COPY --from=src-imported /autoware/src/sensor_kit /autoware/src/sensor_kit
+COPY --from=src-imported /autoware/src/universe /autoware/src/universe
+COPY --from=autoware-core /autoware/install /opt/autoware/
+RUN --mount=type=ssh \
+  apt-get update \
+  && rosdep update \
+  && DEBIAN_FRONTEND=noninteractive rosdep install -y --ignore-src --from-paths src --rosdistro "$ROS_DISTRO" \
+  && source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --cmake-args \
+    " -Wno-dev" \
+    " --no-warn-unused-cli" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  && find /autoware/install -type d -exec chmod 777 {} \; \
+  && chmod -R 777 /var/tmp/ccache \
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
+  && rm -rf /autoware/build /autoware/src
 
 FROM prebuilt as devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -126,11 +159,12 @@ RUN --mount=type=ssh \
     /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
 # Copy prebuilt binaries
-COPY --from=prebuilt /autoware/install/ /autoware/install/
+COPY --from=autoware-core /autoware/install /opt/autoware/
+COPY --from=prebuilt /autoware/install /opt/autoware/
 
 # Copy bash aliases
 COPY docker/autoware-openadk/etc/.bash_aliases /root/.bash_aliases
-RUN echo "source /autoware/install/setup.bash" > /etc/bash.bashrc
+RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 
 # Create entrypoint
 COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh
