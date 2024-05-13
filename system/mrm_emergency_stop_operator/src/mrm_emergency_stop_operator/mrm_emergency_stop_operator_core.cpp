@@ -14,6 +14,8 @@
 
 #include "mrm_emergency_stop_operator/mrm_emergency_stop_operator_core.hpp"
 
+#include <tier4_autoware_utils/ros/update_param.hpp>
+
 namespace mrm_emergency_stop_operator
 {
 
@@ -49,6 +51,23 @@ MrmEmergencyStopOperator::MrmEmergencyStopOperator(const rclcpp::NodeOptions & n
   // Initialize
   status_.state = MrmBehaviorStatus::AVAILABLE;
   is_prev_control_cmd_subscribed_ = false;
+
+  // Parameter Callback
+  set_param_res_ = add_on_set_parameters_callback(
+    std::bind(&MrmEmergencyStopOperator::onParameter, this, std::placeholders::_1));
+}
+
+rcl_interfaces::msg::SetParametersResult MrmEmergencyStopOperator::onParameter(
+  const std::vector<rclcpp::Parameter> & parameters)
+{
+  using tier4_autoware_utils::updateParam;
+  updateParam<double>(parameters, "target_acceleration", params_.target_acceleration);
+  updateParam<double>(parameters, "target_jerk", params_.target_jerk);
+
+  rcl_interfaces::msg::SetParametersResult result;
+  result.successful = true;
+  result.reason = "success";
+  return result;
 }
 
 void MrmEmergencyStopOperator::onControlCommand(AckermannControlCommand::ConstSharedPtr msg)
