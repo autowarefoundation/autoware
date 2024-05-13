@@ -121,9 +121,32 @@
     description="if use_radar_tracking_fusion:=true, radar information is merged in tracking launch. Otherwise, radar information is merged in detection launch."
   />
 
+  <!-- Downsample pointcloud for perception usage -->
+  <arg name="downsample_perception_common_pointcloud" default="false"/>
+  <arg name="common_downsample_voxel_size_x" default="0.05"/>
+  <arg name="common_downsample_voxel_size_y" default="0.05"/>
+  <arg name="common_downsample_voxel_size_z" default="0.05"/>
+
   <!-- Perception module -->
   <group>
     <push-ros-namespace namespace="perception"/>
+    <!-- Perception common preprocess -->
+    <let name="downsampled_pointcloud" value="/perception/common/pointcloud"/>
+    <let name="perception_pointcloud" value="$(var input/pointcloud)" unless="$(var downsample_input_pointcloud)"/>
+    <let name="perception_pointcloud" value="$(var downsampled_pointcloud)" if="$(var downsample_input_pointcloud)"/>
+    <group if="$(var downsample_input_pointcloud)">
+      <push-ros-namespace namespace="common"/>
+      <load_composable_node target="$(var pointcloud_container_name)">
+        <composable_node pkg="pointcloud_preprocessor" plugin="pointcloud_preprocessor::PickupBasedVoxelGridDownsampleFilterComponent" name="pointcloud_downsample_node" namespace="">
+          <remap from="input" to="$(var input/pointcloud)"/>
+          <remap from="output" to="$(var downsampled_pointcloud)"/>
+          <param name="voxel_size_x" value="$(var common_downsample_voxel_size_x)"/>
+          <param name="voxel_size_y" value="$(var common_downsample_voxel_size_y)"/>
+          <param name="voxel_size_z" value="$(var common_downsample_voxel_size_z)"/>
+          <extra_arg name="use_intra_process_comms" value="true"/>
+        </composable_node>
+      </load_composable_node>
+    </group>
 
     <!-- Object segmentation module -->
     <group>
@@ -133,7 +156,7 @@
         <arg name="use_intra_process" value="true"/>
         <arg name="use_multithread" value="true"/>
         <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
-        <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+        <arg name="input/pointcloud" value="$(var perception_pointcloud)"/>
       </include>
     </group>
 
@@ -142,7 +165,7 @@
       <push-ros-namespace namespace="occupancy_grid_map"/>
       <include file="$(find-pkg-share tier4_perception_launch)/launch/occupancy_grid_map/probabilistic_occupancy_grid_map.launch.xml">
         <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/single_frame/pointcloud"/>
-        <arg name="input/raw_pointcloud" value="$(var input/pointcloud)"/>
+        <arg name="input/raw_pointcloud" value="$(var perception_pointcloud)"/>
         <arg name="output" value="/perception/occupancy_grid_map/map"/>
         <arg name="use_intra_process" value="true"/>
         <arg name="use_multithread" value="true"/>
@@ -162,7 +185,7 @@
         <push-ros-namespace namespace="detection"/>
         <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/detection.launch.xml">
           <arg name="mode" value="$(var mode)"/>
-          <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+          <arg name="input/pointcloud" value="$(var perception_pointcloud)"/>
           <arg name="lidar_detection_model" value="$(var lidar_detection_model)"/>
           <arg name="image_raw0" value="$(var image_raw0)"/>
           <arg name="camera_info0" value="$(var camera_info0)"/>
