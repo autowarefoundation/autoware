@@ -43,23 +43,6 @@ Polygon2d pointsToPoly(const Point2d p0, const Point2d p1, const double radius)
   return line_poly;
 }
 
-std::vector<std::pair<grid_map::Position, grid_map::Position>> pointsToRays(
-  const grid_map::Position p0, const grid_map::Position p1, const double radius)
-{
-  using grid_map::Position;
-  std::vector<std::pair<Position, Position>> lines;
-  const double angle = atan2(p0.y() - p1.y(), p0.x() - p1.x());
-  const double r = radius;
-  lines.emplace_back(std::make_pair(p0, p1));
-  lines.emplace_back(std::make_pair(
-    Position(p0.x() + r * sin(angle), p0.y() - r * cos(angle)),
-    Position(p1.x() + r * sin(angle), p1.y() - r * cos(angle))));
-  lines.emplace_back(std::make_pair(
-    Position(p1.x() - r * sin(angle), p1.y() + r * cos(angle)),
-    Position(p0.x() - r * sin(angle), p0.y() + r * cos(angle))));
-  return lines;
-}
-
 void findOcclusionSpots(
   std::vector<grid_map::Position> & occlusion_spot_positions, const grid_map::GridMap & grid,
   const Polygon2d & polygon, [[maybe_unused]] double min_size)
@@ -86,36 +69,21 @@ bool isCollisionFree(
   const double radius)
 {
   const grid_map::Matrix & grid_data = grid["layer"];
-  bool polys = true;
   try {
-    if (polys) {
-      Point2d occlusion_p = {p1.x(), p1.y()};
-      Point2d collision_p = {p2.x(), p2.y()};
-      Polygon2d polygon = pointsToPoly(occlusion_p, collision_p, radius);
-      grid_map::Polygon grid_polygon;
-      for (const auto & point : polygon.outer()) {
-        grid_polygon.addVertex({point.x(), point.y()});
+    Point2d occlusion_p = {p1.x(), p1.y()};
+    Point2d collision_p = {p2.x(), p2.y()};
+    Polygon2d polygon = pointsToPoly(occlusion_p, collision_p, radius);
+    grid_map::Polygon grid_polygon;
+    for (const auto & point : polygon.outer()) {
+      grid_polygon.addVertex({point.x(), point.y()});
+    }
+    for (grid_map_utils::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd();
+         ++iterator) {
+      const grid_map::Index & index = *iterator;
+      if (grid_data(index.x(), index.y()) == grid_utils::occlusion_cost_value::OCCUPIED) {
+        return false;
       }
-      for (grid_map_utils::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd();
-           ++iterator) {
-        const grid_map::Index & index = *iterator;
-        if (grid_data(index.x(), index.y()) == grid_utils::occlusion_cost_value::OCCUPIED) {
-          return false;
-        }
-      }
-    } else {
-      std::vector<std::pair<grid_map::Position, grid_map::Position>> lines =
-        pointsToRays(p1, p2, radius);
-      for (const auto & p : lines) {
-        for (grid_map::LineIterator iterator(grid, p.first, p.second); !iterator.isPastEnd();
-             ++iterator) {
-          const grid_map::Index & index = *iterator;
-          if (grid_data(index.x(), index.y()) == grid_utils::occlusion_cost_value::OCCUPIED) {
-            return false;
-          }
-        }
-      }
-    }  // polys or not
+    }
   } catch (const std::invalid_argument & e) {
     std::cerr << e.what() << std::endl;
     return false;
@@ -324,7 +292,7 @@ void imageToOccupancyGrid(const cv::Mat & cv_image, nav_msgs::msg::OccupancyGrid
       const int idx = (height - 1 - y) + (width - 1 - x) * height;
       unsigned char intensity = cv_image.at<unsigned char>(y, x);
       if (intensity == grid_utils::occlusion_cost_value::FREE_SPACE) {
-        intensity = grid_utils::occlusion_cost_value::FREE_SPACE;
+        // do nothing
       } else if (intensity == grid_utils::occlusion_cost_value::UNKNOWN_IMAGE) {
         intensity = grid_utils::occlusion_cost_value::UNKNOWN;
       } else if (intensity == grid_utils::occlusion_cost_value::OCCUPIED_IMAGE) {
@@ -348,14 +316,12 @@ void toQuantizedImage(
       unsigned char intensity = occupancy_grid.data.at(idx);
       if (intensity <= param.free_space_max) {
         continue;
-      } else if (param.free_space_max < intensity && intensity < param.occupied_min) {
+      } else if (intensity < param.occupied_min) {
         intensity = grid_utils::occlusion_cost_value::UNKNOWN_IMAGE;
         occlusion_image->at<unsigned char>(y, x) = intensity;
-      } else if (param.occupied_min <= intensity) {
+      } else {
         intensity = grid_utils::occlusion_cost_value::OCCUPIED_IMAGE;
         border_image->at<unsigned char>(y, x) = intensity;
-      } else {
-        throw std::logic_error("behavior_velocity[occlusion_spot_grid]: invalid if clause");
       }
     }
   }

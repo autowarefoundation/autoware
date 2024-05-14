@@ -241,7 +241,8 @@ void calcSlowDownPointsForPossibleCollision(
 std::optional<PossibleCollisionInfo> generateOneNotableCollisionFromOcclusionSpot(
   const grid_map::GridMap & grid, const std::vector<grid_map::Position> & occlusion_spot_positions,
   const double offset_from_start_to_ego, const Point2d base_point,
-  const lanelet::ConstLanelet & path_lanelet, const PlannerParam & param, DebugData & debug_data);
+  const lanelet::ConstLanelet & path_lanelet, const PlannerParam & param,
+  const DebugData & debug_data);
 //!< @brief generate possible collisions coming from occlusion spots on the side of the path
 bool generatePossibleCollisionsFromGridMap(
   std::vector<PossibleCollisionInfo> & possible_collisions, const grid_map::GridMap & grid,

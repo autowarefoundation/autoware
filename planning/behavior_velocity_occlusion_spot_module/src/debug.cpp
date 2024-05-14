@@ -118,7 +118,7 @@ MarkerArray makeDebugInfoMarkers(T & debug_data)
 {
   // add slow down markers for occlusion spot
   MarkerArray debug_markers;
-  auto & possible_collisions = debug_data.possible_collisions;
+  const auto & possible_collisions = debug_data.possible_collisions;
   size_t id = 0;
   // draw obstacle collision
   for (const auto & pc : possible_collisions) {
