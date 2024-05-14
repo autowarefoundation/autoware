@@ -132,9 +132,9 @@
     <push-ros-namespace namespace="perception"/>
     <!-- Perception common preprocess -->
     <let name="downsampled_pointcloud" value="/perception/common/pointcloud"/>
-    <let name="perception_pointcloud" value="$(var input/pointcloud)" unless="$(var downsample_input_pointcloud)"/>
-    <let name="perception_pointcloud" value="$(var downsampled_pointcloud)" if="$(var downsample_input_pointcloud)"/>
-    <group if="$(var downsample_input_pointcloud)">
+    <let name="perception_pointcloud" value="$(var input/pointcloud)" unless="$(var downsample_perception_common_pointcloud)"/>
+    <let name="perception_pointcloud" value="$(var downsampled_pointcloud)" if="$(var downsample_perception_common_pointcloud)"/>
+    <group if="$(var downsample_perception_common_pointcloud)">
       <push-ros-namespace namespace="common"/>
       <load_composable_node target="$(var pointcloud_container_name)">
         <composable_node pkg="pointcloud_preprocessor" plugin="pointcloud_preprocessor::PickupBasedVoxelGridDownsampleFilterComponent" name="pointcloud_downsample_node" namespace="">
