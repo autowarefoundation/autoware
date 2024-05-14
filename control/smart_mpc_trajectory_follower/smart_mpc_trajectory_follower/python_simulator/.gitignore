@@ -1,0 +1,13 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# workspace specific settings
+train_drive_*.png
+test_feedforward_*/
+test_pure_pursuit_*/
+test_python_*/
+python_sim_log_*/
+sim_setting.json
+auto_test_result_*.csv

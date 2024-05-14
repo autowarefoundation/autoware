@@ -1,0 +1,30 @@
+trained_model_parameter:
+  control_application:
+    use_trained_model: false
+    update_trained_model: false
+    max_train_data_size: 10000
+    error_decay: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+    use_trained_model_diff: true
+    use_sg_for_trained_model_diff: true
+    sg_deg_for_trained_model_diff: 0
+    sg_window_size_for_trained_model_diff: 25
+    use_sg_for_noise: true
+    sg_deg_for_noise: 0
+    sg_window_size_for_noise: 15
+    use_x_noise: false
+    use_y_noise: false
+    use_v_noise: false
+    use_theta_noise: false
+    use_acc_noise: false
+    use_steer_noise: false
+  smoothing:
+    acc_sigma_for_learning: 5.0
+    steer_sigma_for_learning: 5.0
+    acc_des_sigma_for_learning: 5.0
+    steer_des_sigma_for_learning: 5.0
+    x_out_sigma_for_learning: 30.0
+    y_out_sigma_for_learning: 30.0
+    v_out_sigma_for_learning: 30.0
+    theta_out_sigma_for_learning: 10.0
+    acc_out_sigma_for_learning: 5.0
+    steer_out_sigma_for_learning: 5.0
