@@ -228,23 +228,23 @@ private:
     using tier4_autoware_utils::transformVector;
 
     const auto footprint = vehicle_info.createFootprint();
+    const auto start_itr = std::next(path.path.points.begin(), shift_line.start_idx);
+    const auto end_itr = std::next(path.path.points.begin(), shift_line.end_idx);
 
-    for (const auto & lane : lanes) {
-      for (size_t i = shift_line.start_idx; i < shift_line.end_idx; ++i) {
-        const auto transform = pose2transform(path.path.points.at(i).point.pose);
-        const auto shifted_vehicle_footprint = transformVector(footprint, transform);
+    return std::any_of(start_itr, end_itr, [&footprint, &lanes](const auto & point) {
+      const auto transform = pose2transform(point.point.pose);
+      const auto shifted_vehicle_footprint = transformVector(footprint, transform);
 
-        if (intersects(lane.leftBound2d().basicLineString(), shifted_vehicle_footprint)) {
-          return true;
-        }
+      auto check_for_vehicle_and_bound_intersection =
+        [&shifted_vehicle_footprint](const auto & lane) {
+          const auto & left_bound = lane.leftBound2d().basicLineString();
+          const auto & right_bound = lane.rightBound2d().basicLineString();
+          return intersects(left_bound, shifted_vehicle_footprint) ||
+                 intersects(right_bound, shifted_vehicle_footprint);
+        };
 
-        if (intersects(lane.rightBound2d().basicLineString(), shifted_vehicle_footprint)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+      return std::any_of(lanes.begin(), lanes.end(), check_for_vehicle_and_bound_intersection);
+    });
   };
 
   inline bool isNearEndOfShift(
