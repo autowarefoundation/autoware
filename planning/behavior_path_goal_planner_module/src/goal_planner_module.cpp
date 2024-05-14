@@ -936,6 +936,26 @@ std::optional<std::pair<PullOverPath, GoalCandidate>> GoalPlannerModule::selectP
   const std::vector<PullOverPath> & pull_over_path_candidates,
   const GoalCandidates & goal_candidates, const double collision_check_margin) const
 {
+  const auto & goal_pose = planner_data_->route_handler->getOriginalGoalPose();
+  const double backward_length =
+    parameters_->backward_goal_search_length + parameters_->decide_path_distance;
+  const auto & prev_module_output_path = getPreviousModuleOutput().path;
+  const double prev_path_front_to_goal_dist = calcSignedArcLength(
+    prev_module_output_path.points, prev_module_output_path.points.front().point.pose.position,
+    goal_pose.position);
+  const auto & long_tail_reference_path = [&]() {
+    if (prev_path_front_to_goal_dist > backward_length) {
+      return prev_module_output_path;
+    }
+    // get road lanes which is at least backward_length[m] behind the goal
+    const auto road_lanes = utils::getExtendedCurrentLanesFromPath(
+      prev_module_output_path, planner_data_, backward_length, 0.0,
+      /*forward_only_in_route*/ false);
+    const auto goal_pose_length = lanelet::utils::getArcCoordinates(road_lanes, goal_pose).length;
+    return planner_data_->route_handler->getCenterLinePath(
+      road_lanes, std::max(0.0, goal_pose_length - backward_length),
+      goal_pose_length + parameters_->forward_goal_search_length);
+  }();
   for (const auto & pull_over_path : pull_over_path_candidates) {
     // check if goal is safe
     const auto goal_candidate_it = std::find_if(
@@ -947,7 +967,7 @@ std::optional<std::pair<PullOverPath, GoalCandidate>> GoalPlannerModule::selectP
       continue;
     }
 
-    if (!hasEnoughDistance(pull_over_path)) {
+    if (!hasEnoughDistance(pull_over_path, long_tail_reference_path)) {
       continue;
     }
 
@@ -1873,7 +1893,8 @@ bool GoalPlannerModule::checkObjectsCollision(
   return utils::path_safety_checker::checkPolygonsIntersects(ego_polygons_expanded, obj_polygons);
 }
 
-bool GoalPlannerModule::hasEnoughDistance(const PullOverPath & pull_over_path) const
+bool GoalPlannerModule::hasEnoughDistance(
+  const PullOverPath & pull_over_path, const PathWithLaneId & long_tail_reference_path) const
 {
   const Pose & current_pose = planner_data_->self_odometry->pose.pose;
   const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
@@ -1885,7 +1906,7 @@ bool GoalPlannerModule::hasEnoughDistance(const PullOverPath & pull_over_path) c
   // otherwise, the goal would change immediately after departure.
   const bool is_separated_path = pull_over_path.partial_paths.size() > 1;
   const double distance_to_start = calcSignedArcLength(
-    pull_over_path.getFullPath().points, current_pose.position, pull_over_path.start_pose.position);
+    long_tail_reference_path.points, current_pose.position, pull_over_path.start_pose.position);
   const double distance_to_restart = parameters_->decide_path_distance / 2;
   const double eps_vel = 0.01;
   const bool is_stopped = std::abs(current_vel) < eps_vel;

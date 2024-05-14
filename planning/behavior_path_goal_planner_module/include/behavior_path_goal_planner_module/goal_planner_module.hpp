@@ -582,7 +582,8 @@ private:
   void updateStatus(const BehaviorModuleOutput & output);
 
   // validation
-  bool hasEnoughDistance(const PullOverPath & pull_over_path) const;
+  bool hasEnoughDistance(
+    const PullOverPath & pull_over_path, const PathWithLaneId & long_tail_reference_path) const;
   bool isCrossingPossible(
     const lanelet::ConstLanelet & start_lane, const lanelet::ConstLanelet & end_lane) const;
   bool isCrossingPossible(
