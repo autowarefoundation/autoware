@@ -28,19 +28,25 @@ TEST(TreeStructuredParzenEstimatorTest, TPE_is_better_than_random_search_on_sphe
     return value;
   };
 
-  constexpr int64_t kOuterTrialsNum = 10;
-  constexpr int64_t kInnerTrialsNum = 100;
+  constexpr int64_t kOuterTrialsNum = 20;
+  constexpr int64_t kInnerTrialsNum = 200;
   std::cout << std::fixed;
   std::vector<double> mean_scores;
-  for (const int64_t n_startup_trials : {kInnerTrialsNum, kInnerTrialsNum / 10}) {
+  const int64_t n_startup_trials = kInnerTrialsNum / 10;
+  const std::string method = ((n_startup_trials == kInnerTrialsNum) ? "Random" : "TPE");
+
+  const std::vector<double> sample_mean(5, 0.0);
+  const std::vector<double> sample_stddev{1.0, 1.0, 0.1, 0.1, 0.1};
+
+  for (const int64_t n_startup_trials : {kInnerTrialsNum, kInnerTrialsNum / 2}) {
     const std::string method = ((n_startup_trials == kInnerTrialsNum) ? "Random" : "TPE");
 
     std::vector<double> scores;
     for (int64_t i = 0; i < kOuterTrialsNum; i++) {
       double best_score = std::numeric_limits<double>::lowest();
-      const std::vector<bool> is_loop_variable(6, false);
       TreeStructuredParzenEstimator estimator(
-        TreeStructuredParzenEstimator::Direction::MAXIMIZE, n_startup_trials, is_loop_variable);
+        TreeStructuredParzenEstimator::Direction::MAXIMIZE, n_startup_trials, sample_mean,
+        sample_stddev);
       for (int64_t trial = 0; trial < kInnerTrialsNum; trial++) {
         const TreeStructuredParzenEstimator::Input input = estimator.get_next_input();
         const double score = -sphere_function(input);
