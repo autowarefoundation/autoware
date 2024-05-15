@@ -358,6 +358,7 @@ double SimplePlanningSimulator::calculate_ego_pitch() const
 void SimplePlanningSimulator::on_timer()
 {
   if (!is_initialized_) {
+    publish_control_mode_report();
     RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000, "waiting initialization...");
     return;
   }
