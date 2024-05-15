@@ -1,4 +1,4 @@
-# Autoware Planning Test Manager
+# Planning Interface Test Manager
 
 ## Background
 

@@ -15,8 +15,8 @@
 #include "obstacle_velocity_limiter/obstacle_velocity_limiter_node.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include <planning_test_utils/planning_interface_test_manager.hpp>
-#include <planning_test_utils/planning_interface_test_manager_utils.hpp>
+#include <autoware_planning_test_manager/autoware_planning_test_manager.hpp>
+#include <planning_test_utils/planning_test_utils.hpp>
 
 #include <gtest/gtest.h>
 

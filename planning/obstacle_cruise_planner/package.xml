@@ -20,6 +20,7 @@
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_auto_perception_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_planning_test_manager</depend>
   <depend>geometry_msgs</depend>
   <depend>interpolation</depend>
   <depend>lanelet2_extension</depend>
@@ -27,7 +28,6 @@
   <depend>nav_msgs</depend>
   <depend>object_recognition_utils</depend>
   <depend>osqp_interface</depend>
-  <depend>planning_test_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>signal_processing</depend>

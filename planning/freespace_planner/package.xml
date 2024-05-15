@@ -16,11 +16,11 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_planning_test_manager</depend>
   <depend>freespace_planning_algorithms</depend>
   <depend>geometry_msgs</depend>
   <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
-  <depend>planning_test_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>route_handler</depend>

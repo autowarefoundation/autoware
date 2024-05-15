@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANNING_TEST_UTILS__PLANNING_INTERFACE_TEST_MANAGER_UTILS_HPP_
-#define PLANNING_TEST_UTILS__PLANNING_INTERFACE_TEST_MANAGER_UTILS_HPP_
+#ifndef PLANNING_TEST_UTILS__PLANNING_TEST_UTILS_HPP_
+#define PLANNING_TEST_UTILS__PLANNING_TEST_UTILS_HPP_
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -556,4 +556,4 @@ PathWithLaneId loadPathWithLaneIdInYaml()
 
 }  // namespace test_utils
 
-#endif  // PLANNING_TEST_UTILS__PLANNING_INTERFACE_TEST_MANAGER_UTILS_HPP_
+#endif  // PLANNING_TEST_UTILS__PLANNING_TEST_UTILS_HPP_
