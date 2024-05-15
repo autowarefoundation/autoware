@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>autoware_static_centerline_generator</name>
+  <version>0.1.0</version>
+  <description>The autoware_static_centerline_generator package</description>
+  <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
+  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
+  <license>Apache License 2.0</license>
+
+  <author email="takayuki.murooka@tier4.jp">Takayuki Murooka</author>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+
+  <build_depend>rosidl_default_generators</build_depend>
+
+  <depend>autoware_auto_mapping_msgs</depend>
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>behavior_path_planner_common</depend>
+  <depend>geography_utils</depend>
+  <depend>geometry_msgs</depend>
+  <depend>global_parameter_loader</depend>
+  <depend>interpolation</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>map_loader</depend>
+  <depend>map_projection_loader</depend>
+  <depend>mission_planner</depend>
+  <depend>motion_utils</depend>
+  <depend>obstacle_avoidance_planner</depend>
+  <depend>osqp_interface</depend>
+  <depend>path_smoother</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>route_handler</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>tier4_map_msgs</depend>
+  <depend>vehicle_info_util</depend>
+
+  <exec_depend>python3-flask-cors</exec_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <test_depend>ament_cmake_gmock</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+  <test_depend>behavior_path_planner</test_depend>
+  <test_depend>behavior_velocity_planner</test_depend>
+  <test_depend>ros_testing</test_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

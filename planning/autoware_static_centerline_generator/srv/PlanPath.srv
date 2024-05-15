@@ -1,0 +1,6 @@
+uint32 map_id
+int64[] route
+---
+autoware_static_centerline_generator/PointsWithLaneId[] points_with_lane_ids
+string message
+int64[] unconnected_lane_ids

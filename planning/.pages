@@ -67,7 +67,7 @@ nav:
       - 'About Motion Velocity Smoother': planning/motion_velocity_smoother
       - 'About Motion Velocity Smoother (Japanese)': planning/motion_velocity_smoother/README.ja
   - 'Scenario Selector': planning/scenario_selector
-  - 'Static Centerline Generator': planning/static_centerline_generator
+  - 'Static Centerline Generator': planning/autoware_static_centerline_generator
   - 'API and Library':
     - 'Costmap Generator': planning/costmap_generator
     - 'External Velocity Limit Selector': planning/external_velocity_limit_selector
