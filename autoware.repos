@@ -111,3 +111,20 @@ repositories:
     type: git
     url: git@github.com:Futu-reADS/ft_maps.git
     version: awsim_nishishinjuku
+  future_packages/master_planner:
+    type: git
+    url: git@github.com:Futu-reADS/master_planner.git
+    version: dev/ftd_ui_integration
+  # UI
+  future_packages/user_interface/ftd_ui_frontend:
+    type: git
+    url: git@github.com:Futu-reADS/ftd_ui_frontend.git
+    version: main
+  future_packages/user_interface/ftd_bridge_backend:
+    type: git
+    url: git@github.com:Futu-reADS/ftd_bridge_backend.git
+    version: main
+  future_packages/run_autoware_script:
+    type: git
+    url: git@github.com:Futu-reADS/run_autoware_script.git
+    version: ftd
