@@ -21,7 +21,7 @@
 namespace diagnostic_graph_aggregator
 {
 
-AggregatorNode::AggregatorNode() : Node("aggregator")
+AggregatorNode::AggregatorNode(const rclcpp::NodeOptions & options) : Node("aggregator", options)
 {
   const auto stamp = now();
 
@@ -99,14 +99,5 @@ void AggregatorNode::on_diag(const DiagnosticArray & msg)
 
 }  // namespace diagnostic_graph_aggregator
 
-int main(int argc, char ** argv)
-{
-  using diagnostic_graph_aggregator::AggregatorNode;
-  rclcpp::init(argc, argv);
-  rclcpp::executors::SingleThreadedExecutor executor;
-  auto node = std::make_shared<AggregatorNode>();
-  executor.add_node(node);
-  executor.spin();
-  executor.remove_node(node);
-  rclcpp::shutdown();
-}
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(diagnostic_graph_aggregator::AggregatorNode)

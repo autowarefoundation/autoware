@@ -30,7 +30,7 @@ namespace diagnostic_graph_aggregator
 class AggregatorNode : public rclcpp::Node
 {
 public:
-  AggregatorNode();
+  explicit AggregatorNode(const rclcpp::NodeOptions & options);
   ~AggregatorNode();
 
 private:
