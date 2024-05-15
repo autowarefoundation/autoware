@@ -26,7 +26,7 @@
 class ServiceLogChecker : public rclcpp::Node
 {
 public:
-  ServiceLogChecker();
+  explicit ServiceLogChecker(const rclcpp::NodeOptions & options);
 
 private:
   using ServiceLog = tier4_system_msgs::msg::ServiceLog;

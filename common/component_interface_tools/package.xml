@@ -13,6 +13,7 @@
   <depend>diagnostic_updater</depend>
   <depend>fmt</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>tier4_system_msgs</depend>
   <depend>yaml_cpp_vendor</depend>
 

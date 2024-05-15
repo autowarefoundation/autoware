@@ -22,7 +22,8 @@
 #define FMT_HEADER_ONLY
 #include <fmt/format.h>
 
-ServiceLogChecker::ServiceLogChecker() : Node("service_log_checker"), diagnostics_(this)
+ServiceLogChecker::ServiceLogChecker(const rclcpp::NodeOptions & options)
+: Node("service_log_checker", options), diagnostics_(this)
 {
   sub_ = create_subscription<ServiceLog>(
     "/service_log", 50, std::bind(&ServiceLogChecker::on_service_log, this, std::placeholders::_1));
@@ -98,13 +99,5 @@ void ServiceLogChecker::update_diagnostics(diagnostic_updater::DiagnosticStatusW
   }
 }
 
-int main(int argc, char ** argv)
-{
-  rclcpp::init(argc, argv);
-  rclcpp::executors::SingleThreadedExecutor executor;
-  auto node = std::make_shared<ServiceLogChecker>();
-  executor.add_node(node);
-  executor.spin();
-  executor.remove_node(node);
-  rclcpp::shutdown();
-}
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(ServiceLogChecker)
