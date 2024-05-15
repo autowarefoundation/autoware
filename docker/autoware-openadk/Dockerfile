@@ -6,7 +6,10 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
 # Install apt packages
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
+RUN --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,sharing=locked,target=/var/lib/apt \
+  rm /etc/apt/apt.conf.d/docker-clean \
+  && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
   git \
   ssh \
   wget \
@@ -17,7 +20,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-ins
   vim \
   unzip \
   lsb-release \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 # Add GitHub to known hosts for private repositories
 RUN mkdir -p ~/.ssh \
@@ -30,10 +33,12 @@ WORKDIR /autoware
 
 # Set up base environment
 RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,sharing=locked,target=/var/lib/apt \
   ./setup-dev-env.sh -y --module base --runtime openadk \
   && pip uninstall -y ansible ansible-core \
   && pip install --no-cache-dir vcstool \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
   && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
 
 # Create entrypoint
@@ -50,9 +55,11 @@ ENV CXX="/usr/lib/ccache/g++"
 # cspell: ignore libcu libnv
 # Set up development environment
 RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,sharing=locked,target=/var/lib/apt \
   ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers openadk \
   && pip uninstall -y ansible ansible-core \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
+  && apt-get autoremove -y && rm -rf $HOME"/.cache \
   && find / -name 'libcu*.a' -delete \
   && find / -name 'libnv*.a' -delete
 
@@ -61,6 +68,8 @@ COPY autoware.repos /autoware/
 
 # Install rosdep dependencies
 RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,sharing=locked,target=/var/lib/apt \
   mkdir src \
   && vcs import src < autoware.repos \
   && apt-get update \
@@ -74,7 +83,7 @@ RUN --mount=type=ssh \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   && find /autoware/install -type d -exec chmod 777 {} \; \
   && chmod -R 777 /var/tmp/ccache \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
   && rm -rf /autoware/build /autoware/src
 
 CMD ["/bin/bash"]
@@ -84,9 +93,11 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install development tools and artifacts
 RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,sharing=locked,target=/var/lib/apt \
   ./setup-dev-env.sh -y --module dev-tools --download-artifacts openadk \
   && pip uninstall -y ansible ansible-core \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 # Create entrypoint
 COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh
@@ -103,13 +114,15 @@ ARG SETUP_ARGS
 # Set up runtime environment and artifacts
 COPY autoware.repos /autoware/
 RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,sharing=locked,target=/var/lib/apt \
   ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadk \
   && pip uninstall -y ansible ansible-core \
   && mkdir src \
   && vcs import src < autoware.repos \
   && rosdep update \
   && DEBIAN_FRONTEND=noninteractive rosdep install -y --dependency-types=exec --ignore-src --from-paths src --rosdistro "$ROS_DISTRO" \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
   && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
   && find / -name "*.o" -type f -delete \
   && find / -name "*.h" -type f -delete \
