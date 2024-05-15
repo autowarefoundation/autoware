@@ -1,5 +1,5 @@
 
-// Copyright 2022 TIER IV, Inc.
+// Copyright 2022-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_VELOCITY_PLANNER_COMMON__VELOCITY_FACTOR_INTERFACE_HPP_
-#define BEHAVIOR_VELOCITY_PLANNER_COMMON__VELOCITY_FACTOR_INTERFACE_HPP_
+#ifndef MOTION_UTILS__FACTOR__VELOCITY_FACTOR_INTERFACE_HPP_
+#define MOTION_UTILS__FACTOR__VELOCITY_FACTOR_INTERFACE_HPP_
 
 #include <autoware_adapi_v1_msgs/msg/planning_behavior.hpp>
 #include <autoware_adapi_v1_msgs/msg/velocity_factor.hpp>
@@ -25,35 +25,31 @@
 #include <string>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace motion_utils
 {
-
 using autoware_adapi_v1_msgs::msg::PlanningBehavior;
 using autoware_adapi_v1_msgs::msg::VelocityFactor;
-using autoware_adapi_v1_msgs::msg::VelocityFactorArray;
-using geometry_msgs::msg::Pose;
 using VelocityFactorBehavior = VelocityFactor::_behavior_type;
 using VelocityFactorStatus = VelocityFactor::_status_type;
+using geometry_msgs::msg::Pose;
 
 class VelocityFactorInterface
 {
 public:
-  VelocityFactorInterface() { behavior_ = VelocityFactor::UNKNOWN; }
-
-  VelocityFactor get() const { return velocity_factor_; }
-  void init(const VelocityFactorBehavior behavior) { behavior_ = behavior; }
+  [[nodiscard]] VelocityFactor get() const { return velocity_factor_; }
+  void init(const VelocityFactorBehavior & behavior) { behavior_ = behavior; }
   void reset() { velocity_factor_.behavior = PlanningBehavior::UNKNOWN; }
 
   void set(
     const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
     const Pose & curr_pose, const Pose & stop_pose, const VelocityFactorStatus status,
-    const std::string detail = "");
+    const std::string & detail = "");
 
 private:
-  VelocityFactorBehavior behavior_;
-  VelocityFactor velocity_factor_;
+  VelocityFactorBehavior behavior_{VelocityFactor::UNKNOWN};
+  VelocityFactor velocity_factor_{};
 };
 
-}  // namespace behavior_velocity_planner
+}  // namespace motion_utils
 
-#endif  // BEHAVIOR_VELOCITY_PLANNER_COMMON__VELOCITY_FACTOR_INTERFACE_HPP_
+#endif  // MOTION_UTILS__FACTOR__VELOCITY_FACTOR_INTERFACE_HPP_

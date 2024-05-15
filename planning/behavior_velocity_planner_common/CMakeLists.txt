@@ -6,7 +6,6 @@ autoware_package()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/scene_module_interface.cpp
-  src/velocity_factor_interface.cpp
   src/utilization/path_utilization.cpp
   src/utilization/trajectory_utils.cpp
   src/utilization/arc_lane_util.cpp
