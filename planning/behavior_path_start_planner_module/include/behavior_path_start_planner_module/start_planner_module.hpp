@@ -74,6 +74,8 @@ struct PullOutStatus
   //! record the first time when ego started forward-driving (maybe after backward driving
   //! completion) in AUTONOMOUS operation mode
   std::optional<rclcpp::Time> first_engaged_and_driving_forward_time{std::nullopt};
+  // record if the ego has departed from the start point
+  bool has_departed{false};
 
   PullOutStatus() {}
 };

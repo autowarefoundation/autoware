@@ -247,6 +247,13 @@ void StartPlannerModule::updateData()
     status_.first_engaged_and_driving_forward_time = clock_->now();
   }
 
+  constexpr double moving_velocity_threshold = 0.1;
+  const double & ego_velocity = planner_data_->self_odometry->twist.twist.linear.x;
+  if (status_.first_engaged_and_driving_forward_time && ego_velocity > moving_velocity_threshold) {
+    // Ego is engaged, and has moved
+    status_.has_departed = true;
+  }
+
   status_.backward_driving_complete = hasFinishedBackwardDriving();
   if (status_.backward_driving_complete) {
     updateStatusAfterBackwardDriving();
@@ -1265,8 +1272,10 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo()
   // In Geometric pull out, the ego stops once and then steers the wheels to the opposite direction.
   // This sometimes causes the getBehaviorTurnSignalInfo method to detect the ego as stopped and
   // close to complete its shift, so it wrongly turns off the blinkers, this override helps avoid
-  // this issue.
-  const bool override_ego_stopped_check = std::invoke([&]() {
+  // this issue. Also, if the ego is not engaged (so it is stopped), the blinkers should still be
+  // activated.
+
+  const bool geometric_planner_has_not_finished_first_path = std::invoke([&]() {
     if (status_.planner_type != PlannerType::GEOMETRIC) {
       return false;
     }
@@ -1276,6 +1285,9 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo()
       path.points, stop_point.point.pose.position, current_pose.position));
     return distance_from_ego_to_stop_point < distance_threshold;
   });
+
+  const bool override_ego_stopped_check =
+    !status_.has_departed || geometric_planner_has_not_finished_first_path;
 
   const auto [new_signal, is_ignore] = planner_data_->getBehaviorTurnSignalInfo(
     path, shift_start_idx, shift_end_idx, current_lanes, current_shift_length,

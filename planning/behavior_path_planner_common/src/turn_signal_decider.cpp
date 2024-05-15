@@ -731,10 +731,13 @@ std::pair<TurnSignalInfo, bool> TurnSignalDecider::getBehaviorTurnSignalInfo(
     return std::make_pair(TurnSignalInfo{}, true);
   }
 
-  if (!straddleRoadBound(path, shift_line, current_lanelets, p.vehicle_info)) {
+  // Check if the ego will cross lane bounds.
+  // Note that pull out requires blinkers, even if the ego does not cross lane bounds
+  if (!is_pull_out && !straddleRoadBound(path, shift_line, current_lanelets, p.vehicle_info)) {
     return std::make_pair(TurnSignalInfo{}, true);
   }
 
+  // If the ego has stopped and its close to completing its shift, turn off the blinkers
   constexpr double STOPPED_THRESHOLD = 0.1;  // [m/s]
   if (ego_speed < STOPPED_THRESHOLD && !override_ego_stopped_check) {
     if (isNearEndOfShift(
