@@ -6,7 +6,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
 # Install apt packages
-RUN --mount=type=cache,target=/var/cache/apt \
+RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
   --mount=type=cache,sharing=locked,target=/var/lib/apt \
   rm /etc/apt/apt.conf.d/docker-clean \
   && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
@@ -33,7 +33,7 @@ WORKDIR /autoware
 
 # Set up base environment
 RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,sharing=locked,target=/var/cache/apt \
   --mount=type=cache,sharing=locked,target=/var/lib/apt \
   ./setup-dev-env.sh -y --module base --runtime openadk \
   && pip uninstall -y ansible ansible-core \
@@ -55,7 +55,7 @@ ENV CXX="/usr/lib/ccache/g++"
 # cspell: ignore libcu libnv
 # Set up development environment
 RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,sharing=locked,target=/var/cache/apt \
   --mount=type=cache,sharing=locked,target=/var/lib/apt \
   ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers openadk \
   && pip uninstall -y ansible ansible-core \
@@ -68,7 +68,7 @@ COPY autoware.repos /autoware/
 
 # Install rosdep dependencies
 RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,sharing=locked,target=/var/cache/apt \
   --mount=type=cache,sharing=locked,target=/var/lib/apt \
   mkdir src \
   && vcs import src < autoware.repos \
@@ -93,7 +93,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install development tools and artifacts
 RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,sharing=locked,target=/var/cache/apt \
   --mount=type=cache,sharing=locked,target=/var/lib/apt \
   ./setup-dev-env.sh -y --module dev-tools --download-artifacts openadk \
   && pip uninstall -y ansible ansible-core \
@@ -114,7 +114,7 @@ ARG SETUP_ARGS
 # Set up runtime environment and artifacts
 COPY autoware.repos /autoware/
 RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,sharing=locked,target=/var/cache/apt \
   --mount=type=cache,sharing=locked,target=/var/lib/apt \
   ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadk \
   && pip uninstall -y ansible ansible-core \
