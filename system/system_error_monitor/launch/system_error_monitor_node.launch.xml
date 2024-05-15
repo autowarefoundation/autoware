@@ -11,7 +11,7 @@
 
   <arg name="emergency_hazard_level" default="2" description="1: Safe Fault, 2: Latent Fault, 3: Single Point Fault"/>
 
-  <node pkg="system_error_monitor" exec="system_error_monitor" name="system_error_monitor" output="screen">
+  <node pkg="system_error_monitor" exec="system_error_monitor_node" name="system_error_monitor" output="screen">
     <remap from="input/diag_array" to="/diagnostics_agg"/>
     <remap from="~/input/autoware_state" to="/autoware/state"/>
     <remap from="~/input/current_gate_mode" to="/control/current_gate_mode"/>

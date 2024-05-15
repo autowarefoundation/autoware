@@ -15,6 +15,7 @@
   <depend>diagnostic_msgs</depend>
   <depend>fmt</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>std_srvs</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>tier4_control_msgs</depend>

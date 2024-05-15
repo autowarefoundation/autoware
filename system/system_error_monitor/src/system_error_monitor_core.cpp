@@ -202,10 +202,10 @@ int isInNoFaultCondition(
 }
 }  // namespace
 
-AutowareErrorMonitor::AutowareErrorMonitor()
+AutowareErrorMonitor::AutowareErrorMonitor(const rclcpp::NodeOptions & options)
 : Node(
     "system_error_monitor",
-    rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true)),
+    rclcpp::NodeOptions(options).automatically_declare_parameters_from_overrides(true)),
   diag_array_stamp_(0, 0, this->get_clock()->get_clock_type()),
   autoware_state_stamp_(0, 0, this->get_clock()->get_clock_type()),
   current_gate_mode_stamp_(0, 0, this->get_clock()->get_clock_type()),
@@ -720,3 +720,6 @@ void AutowareErrorMonitor::loggingErrors(
       logger_name, get_clock(), 5000, "[Single Point Fault]: " + hazard_diag.message);
   }
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(AutowareErrorMonitor)
