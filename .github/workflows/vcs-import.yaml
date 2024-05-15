@@ -24,7 +24,7 @@ jobs:
             /var/lib/apt
           key: apt-${{ runner.os }}-${{ github.ref_name }}
           restore-keys: |
-            apt-
+            apt-${{ runner.os }}-
 
       - name: Install pip for rosdep
         run: |
