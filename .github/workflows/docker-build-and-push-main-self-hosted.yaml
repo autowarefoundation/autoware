@@ -68,6 +68,8 @@ jobs:
           bake-target: autoware-openadk
           build-args: |
             *.platform=linux/arm64
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}:buildcache
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}:buildcache,mode=max
             *.args.ROS_DISTRO=${{ env.rosdistro }}
             *.args.BASE_IMAGE=${{ env[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
