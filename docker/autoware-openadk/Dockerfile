@@ -59,7 +59,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,sharing=locked,target=/var/lib/apt \
   ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers openadk \
   && pip uninstall -y ansible ansible-core \
-  && apt-get autoremove -y && rm -rf $HOME"/.cache \
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
   && find / -name 'libcu*.a' -delete \
   && find / -name 'libnv*.a' -delete
 
