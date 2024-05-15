@@ -16,6 +16,13 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Cache apt archives
+        uses: actions/cache@v3
+        with:
+          path: |
+            /var/cache/apt
+            /var/lib/apt
+
       - name: Install pip for rosdep
         run: |
           sudo apt-get -y update
