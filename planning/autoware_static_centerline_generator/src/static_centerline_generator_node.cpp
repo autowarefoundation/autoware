@@ -169,7 +169,7 @@ std::vector<TrajectoryPoint> resample_trajectory_points(
 
 StaticCenterlineGeneratorNode::StaticCenterlineGeneratorNode(
   const rclcpp::NodeOptions & node_options)
-: Node("autoware_static_centerline_generator", node_options)
+: Node("static_centerline_generator", node_options)
 {
   // publishers
   pub_map_bin_ =
@@ -217,19 +217,19 @@ StaticCenterlineGeneratorNode::StaticCenterlineGeneratorNode(
   // services
   callback_group_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   srv_load_map_ = create_service<LoadMap>(
-    "/planning/autoware_static_centerline_generator/load_map",
+    "/planning/static_centerline_generator/load_map",
     std::bind(
       &StaticCenterlineGeneratorNode::on_load_map, this, std::placeholders::_1,
       std::placeholders::_2),
     rmw_qos_profile_services_default, callback_group_);
   srv_plan_route_ = create_service<PlanRoute>(
-    "/planning/autoware_static_centerline_generator/plan_route",
+    "/planning/static_centerline_generator/plan_route",
     std::bind(
       &StaticCenterlineGeneratorNode::on_plan_route, this, std::placeholders::_1,
       std::placeholders::_2),
     rmw_qos_profile_services_default, callback_group_);
   srv_plan_path_ = create_service<PlanPath>(
-    "/planning/autoware_static_centerline_generator/plan_path",
+    "/planning/static_centerline_generator/plan_path",
     std::bind(
       &StaticCenterlineGeneratorNode::on_plan_path, this, std::placeholders::_1,
       std::placeholders::_2),

@@ -155,7 +155,7 @@ class CenterlineUpdaterHelper(Node):
         transient_local_qos = QoSProfile(depth=1, durability=QoSDurabilityPolicy.TRANSIENT_LOCAL)
         self.sub_whole_centerline = self.create_subscription(
             Trajectory,
-            "/autoware_static_centerline_generator/output_whole_centerline",
+            "/static_centerline_generator/output_whole_centerline",
             self.onWholeCenterline,
             transient_local_qos,
         )

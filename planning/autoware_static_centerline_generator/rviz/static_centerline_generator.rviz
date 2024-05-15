@@ -130,7 +130,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /autoware_static_centerline_generator/input_centerline
+        Value: /static_centerline_generator/input_centerline
       Value: true
       View Drivable Area:
         Alpha: 0.9990000128746033
@@ -179,7 +179,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /autoware_static_centerline_generator/output_centerline
+        Value: /static_centerline_generator/output_centerline
       Value: true
       View Footprint:
         Alpha: 1
@@ -222,7 +222,7 @@ Visualization Manager:
             Filter size: 10
             History Policy: Keep Last
             Reliability Policy: Reliable
-            Value: /autoware_static_centerline_generator/debug/raw_centerline
+            Value: /static_centerline_generator/debug/raw_centerline
           Value: false
           View Drivable Area:
             Alpha: 0.9990000128746033
@@ -268,7 +268,7 @@ Visualization Manager:
             Durability Policy: Transient Local
             History Policy: Keep Last
             Reliability Policy: Reliable
-            Value: /autoware_static_centerline_generator/debug/unsafe_footprints
+            Value: /static_centerline_generator/debug/unsafe_footprints
           Value: true
       Enabled: false
       Name: debug
