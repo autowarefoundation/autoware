@@ -93,7 +93,10 @@ COPY --from=src-imported /rosdep-build-depend-packages.txt /tmp/rosdep-build-dep
 RUN --mount=type=ssh \
   apt-get update \
   && cat /tmp/rosdep-build-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+
+# Build Autoware
+RUN source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --cmake-args \
     " -Wno-dev" \
     " --no-warn-unused-cli" \
@@ -101,7 +104,6 @@ RUN --mount=type=ssh \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   && find /autoware/install -type d -exec chmod 777 {} \; \
   && chmod -R 777 /var/tmp/ccache \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
   && rm -rf /autoware/build /autoware/src
 
 CMD ["/bin/bash"]
