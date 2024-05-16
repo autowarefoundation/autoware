@@ -25,12 +25,6 @@ runs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    - name: Install jq
-      run: |
-        sudo apt-get -y update
-        sudo apt-get -y install jq
-      shell: bash
-
     - name: Set Docker tags
       id: set-docker-tags
       run: |
@@ -123,7 +117,6 @@ runs:
           ${{ inputs.build-args }}
 
     - name: Build and Save Artifacts
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       uses: docker/bake-action@v3
       with:
         push: false

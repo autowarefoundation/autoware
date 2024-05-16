@@ -7,13 +7,7 @@
 name: docker-build-and-push-main
 
 on:
-  push:
-    tags:
-      - adkit-v*.*.*
-    branches:
-      - main
-  schedule:
-    - cron: 0 0 1,15 * *
+  pull_request:
   workflow_dispatch:
     inputs:
       artifacts-destination:
@@ -26,7 +20,7 @@ on:
 
 jobs:
   docker-build-and-push-main:
-    runs-on: ubuntu-latest
+    runs-on: buildjet-4vcpu-ubuntu-2204
     strategy:
       fail-fast: false
       matrix:
@@ -44,11 +38,21 @@ jobs:
             lib_dir: x86_64
             additional-tag-suffix: -cuda
     steps:
+      - name: Check if PR author is the specific user
+        id: author-check
+        run: |
+          PR_AUTHOR=$(jq -r '.pull_request.user.login' "$GITHUB_EVENT_PATH")
+          if [[ "$PR_AUTHOR" == "youtalk" ]]; then
+            echo "$PR_AUTHOR is a target user"
+            echo "author-found=true" >> $GITHUB_OUTPUT
+          else
+            echo "$PR_AUTHOR is not a target user"
+            echo "author-found=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
       - name: Check out repository
         uses: actions/checkout@v4
-
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
 
       - name: Load env
         run: |
@@ -58,6 +62,7 @@ jobs:
           fi
 
       - name: Build 'autoware-openadk'
+        if: steps.author-check.outputs.author-found == 'true'
         uses: ./.github/actions/docker-build-and-push
         with:
           bake-target: autoware-openadk
@@ -70,7 +75,3 @@ jobs:
           tag-suffix: ${{ matrix.additional-tag-suffix }}-amd64
           tag-prefix: ${{ env.rosdistro }}
           allow-push: true
-
-      - name: Show disk space
-        run: |
-          df -h
