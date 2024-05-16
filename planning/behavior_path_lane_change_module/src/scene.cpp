@@ -1974,11 +1974,11 @@ bool NormalLaneChange::calcAbortPath()
 
   auto reference_lane_segment = prev_module_output_.path;
   {
-    const auto terminal_path =
-      calcTerminalLaneChangePath(reference_lanelets, selected_path.info.target_lanes);
-    if (terminal_path) {
-      reference_lane_segment = terminal_path->path;
-    }
+    // const auto terminal_path =
+    //   calcTerminalLaneChangePath(reference_lanelets, selected_path.info.target_lanes);
+    // if (terminal_path) {
+    //   reference_lane_segment = terminal_path->path;
+    // }
     const auto return_pose = shifted_path.path.points.at(abort_return_idx).point.pose;
     const auto seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       reference_lane_segment.points, return_pose, common_param.ego_nearest_dist_threshold,
