@@ -912,8 +912,14 @@ double getRoadShoulderDistance(
         }
       }
 
+      const auto envelope_polygon_width =
+        boost::geometry::area(object.envelope_poly) /
+        std::max(object.length, 1e-3);  // prevent division by zero
+
       {
-        const auto p2 = calcOffsetPose(p_tmp, 0.0, (isOnRight(object) ? -1.0 : 1.0), 0.0).position;
+        const auto p2 =
+          calcOffsetPose(p_tmp, 0.0, (isOnRight(object) ? -0.5 : 0.5) * envelope_polygon_width, 0.0)
+            .position;
         const auto opt_intersect =
           tier4_autoware_utils::intersect(p1.second, p2, bound.at(i - 1), bound.at(i));
 
