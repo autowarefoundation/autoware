@@ -62,7 +62,7 @@ jobs:
           fi
 
       - name: Build 'autoware-openadk'
-        if: steps.author-check.outputs.author-found == 'true'
+        if: steps.author-check.outputs.author-found == 'true' || ${{ github.event_name == 'workflow_dispatch' }}
         uses: ./.github/actions/docker-build-and-push
         with:
           bake-target: autoware-openadk
