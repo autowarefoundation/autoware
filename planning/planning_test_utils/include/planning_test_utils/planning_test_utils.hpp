@@ -23,7 +23,6 @@
 #include <lanelet2_extension/projection/mgrs_projector.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <route_handler/route_handler.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
@@ -37,7 +36,9 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <tf2_msgs/msg/tf_message.hpp>
 #include <tier4_planning_msgs/msg/scenario.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
@@ -71,7 +72,6 @@ using geometry_msgs::msg::PoseStamped;
 using geometry_msgs::msg::TransformStamped;
 using nav_msgs::msg::OccupancyGrid;
 using nav_msgs::msg::Odometry;
-using route_handler::RouteHandler;
 using sensor_msgs::msg::PointCloud2;
 using tf2_msgs::msg::TFMessage;
 using tier4_autoware_utils::createPoint;
@@ -267,46 +267,6 @@ Scenario makeScenarioMsg(const std::string scenario)
   return scenario_msg;
 }
 
-Pose createPoseFromLaneID(const lanelet::Id & lane_id)
-{
-  auto map_bin_msg = makeMapBinMsg();
-  // create route_handler
-  auto route_handler = std::make_shared<RouteHandler>();
-  route_handler->setMap(map_bin_msg);
-
-  // get middle idx of the lanelet
-  const auto lanelet = route_handler->getLaneletsFromId(lane_id);
-  const auto center_line = lanelet.centerline();
-  const size_t middle_point_idx = std::floor(center_line.size() / 2.0);
-
-  // get middle position of the lanelet
-  geometry_msgs::msg::Point middle_pos;
-  middle_pos.x = center_line[middle_point_idx].x();
-  middle_pos.y = center_line[middle_point_idx].y();
-
-  // get next middle position of the lanelet
-  geometry_msgs::msg::Point next_middle_pos;
-  next_middle_pos.x = center_line[middle_point_idx + 1].x();
-  next_middle_pos.y = center_line[middle_point_idx + 1].y();
-
-  // calculate middle pose
-  geometry_msgs::msg::Pose middle_pose;
-  middle_pose.position = middle_pos;
-  const double yaw = tier4_autoware_utils::calcAzimuthAngle(middle_pos, next_middle_pos);
-  middle_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(yaw);
-
-  return middle_pose;
-}
-
-Odometry makeInitialPoseFromLaneId(const lanelet::Id & lane_id)
-{
-  Odometry current_odometry;
-  current_odometry.pose.pose = createPoseFromLaneID(lane_id);
-  current_odometry.header.frame_id = "map";
-
-  return current_odometry;
-}
-
 RouteSections combineConsecutiveRouteSections(
   const RouteSections & route_sections1, const RouteSections & route_sections2)
 {
@@ -320,53 +280,6 @@ RouteSections combineConsecutiveRouteSections(
     route_sections.insert(route_sections.end(), route_sections2.begin(), route_sections2.end());
   }
   return route_sections;
-}
-
-// Function to create a route from given start and goal lanelet ids
-// start pose and goal pose are set to the middle of the lanelet
-LaneletRoute makeBehaviorRouteFromLaneId(const int & start_lane_id, const int & goal_lane_id)
-{
-  LaneletRoute route;
-  route.header.frame_id = "map";
-  auto start_pose = createPoseFromLaneID(start_lane_id);
-  auto goal_pose = createPoseFromLaneID(goal_lane_id);
-  route.start_pose = start_pose;
-  route.goal_pose = goal_pose;
-
-  auto map_bin_msg = makeMapBinMsg();
-  // create route_handler
-  auto route_handler = std::make_shared<RouteHandler>();
-  route_handler->setMap(map_bin_msg);
-
-  LaneletRoute route_msg;
-  RouteSections route_sections;
-  lanelet::ConstLanelets all_route_lanelets;
-
-  // Plan the path between checkpoints (start and goal poses)
-  lanelet::ConstLanelets path_lanelets;
-  if (!route_handler->planPathLaneletsBetweenCheckpoints(start_pose, goal_pose, &path_lanelets)) {
-    return route_msg;
-  }
-
-  // Add all path_lanelets to all_route_lanelets
-  for (const auto & lane : path_lanelets) {
-    all_route_lanelets.push_back(lane);
-  }
-  // create local route sections
-  route_handler->setRouteLanelets(path_lanelets);
-  const auto local_route_sections = route_handler->createMapSegments(path_lanelets);
-  route_sections = combineConsecutiveRouteSections(route_sections, local_route_sections);
-  for (const auto & route_section : route_sections) {
-    for (const auto & primitive : route_section.primitives) {
-      std::cerr << "primitive: " << primitive.id << std::endl;
-    }
-    std::cerr << "preferred_primitive id : " << route_section.preferred_primitive.id << std::endl;
-  }
-  route_handler->setRouteLanelets(all_route_lanelets);
-  route.segments = route_sections;
-
-  route.allow_modification = false;
-  return route;
 }
 
 // this is for the test lanelet2_map.osm
