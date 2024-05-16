@@ -3,7 +3,7 @@
 
   <group>
     <push-ros-namespace namespace="default_ad_api/helpers"/>
-    <node pkg="ad_api_adaptors" exec="initial_pose_adaptor" name="initial_pose_adaptor">
+    <node pkg="ad_api_adaptors" exec="initial_pose_adaptor_node">
       <param from="$(find-pkg-share ad_api_adaptors)/config/initial_pose.param.yaml"/>
       <param name="map_height_fitter.map_loader_name" value="/map/pointcloud_map_loader"/>
       <param name="map_height_fitter.target" value="$(var rviz_initial_pose_auto_fix_target)"/>
@@ -12,7 +12,7 @@
       <remap from="~/partial_map_load" to="/map/get_partial_pointcloud_map"/>
       <remap from="~/vector_map" to="/map/vector_map"/>
     </node>
-    <node pkg="ad_api_adaptors" exec="routing_adaptor" name="routing_adaptor">
+    <node pkg="ad_api_adaptors" exec="routing_adaptor_node">
       <remap from="~/input/fixed_goal" to="/planning/mission_planning/goal"/>
       <remap from="~/input/rough_goal" to="/rviz/routing/rough_goal"/>
       <remap from="~/input/reroute" to="/rviz/routing/reroute"/>

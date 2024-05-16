@@ -19,7 +19,8 @@
 namespace ad_api_adaptors
 {
 
-RoutingAdaptor::RoutingAdaptor() : Node("routing_adaptor")
+RoutingAdaptor::RoutingAdaptor(const rclcpp::NodeOptions & options)
+: Node("routing_adaptor", options)
 {
   using std::placeholders::_1;
 
@@ -110,13 +111,5 @@ void RoutingAdaptor::on_reroute(const PoseStamped::ConstSharedPtr pose)
 
 }  // namespace ad_api_adaptors
 
-int main(int argc, char ** argv)
-{
-  rclcpp::init(argc, argv);
-  rclcpp::executors::SingleThreadedExecutor executor;
-  auto node = std::make_shared<ad_api_adaptors::RoutingAdaptor>();
-  executor.add_node(node);
-  executor.spin();
-  executor.remove_node(node);
-  rclcpp::shutdown();
-}
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(ad_api_adaptors::RoutingAdaptor)

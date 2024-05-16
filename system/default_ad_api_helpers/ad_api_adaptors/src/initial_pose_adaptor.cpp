@@ -34,7 +34,8 @@ std::array<double, 36> get_covariance_parameter(rclcpp::Node * node, const std::
   return array;
 }
 
-InitialPoseAdaptor::InitialPoseAdaptor() : Node("initial_pose_adaptor"), fitter_(this)
+InitialPoseAdaptor::InitialPoseAdaptor(const rclcpp::NodeOptions & options)
+: Node("initial_pose_adaptor", options), fitter_(this)
 {
   rviz_particle_covariance_ = get_covariance_parameter(this, "initial_pose_particle_covariance");
   sub_initial_pose_ = create_subscription<PoseWithCovarianceStamped>(
@@ -61,13 +62,5 @@ void InitialPoseAdaptor::on_initial_pose(const PoseWithCovarianceStamped::ConstS
 
 }  // namespace ad_api_adaptors
 
-int main(int argc, char ** argv)
-{
-  rclcpp::init(argc, argv);
-  rclcpp::executors::MultiThreadedExecutor executor;
-  auto node = std::make_shared<ad_api_adaptors::InitialPoseAdaptor>();
-  executor.add_node(node);
-  executor.spin();
-  executor.remove_node(node);
-  rclcpp::shutdown();
-}
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(ad_api_adaptors::InitialPoseAdaptor)
