@@ -1,4 +1,4 @@
-name: docker-build-and-push-openadk
+name: docker-build-and-push-openadkit
 description: ""
 
 inputs:
@@ -53,8 +53,8 @@ runs:
         echo "$EOF" >> $GITHUB_OUTPUT
       shell: bash
 
-    # openadk modular images meta
-    - name: Docker meta for openadk:base
+    # openadkit modular images meta
+    - name: Docker meta for openadkit:base
       id: meta-base
       uses: docker/metadata-action@v4
       with:
@@ -65,7 +65,7 @@ runs:
           latest=false
           suffix=-base-${{ inputs.tag-arch }}
 
-    - name: Docker meta for openadk:planning-control
+    - name: Docker meta for openadkit:planning-control
       id: meta-planning-control
       uses: docker/metadata-action@v4
       with:
@@ -76,7 +76,7 @@ runs:
           latest=false
           suffix=-planning-control-${{ inputs.tag-arch }}
 
-    - name: Docker meta for openadk:visualizer
+    - name: Docker meta for openadkit:visualizer
       id: meta-visualizer
       uses: docker/metadata-action@v4
       with:
@@ -87,7 +87,7 @@ runs:
           latest=false
           suffix=-visualizer-${{ inputs.tag-arch }}
 
-    - name: Docker meta for openadk:simulator
+    - name: Docker meta for openadkit:simulator
       id: meta-simulator
       uses: docker/metadata-action@v4
       with:

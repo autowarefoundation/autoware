@@ -1,4 +1,4 @@
-FROM ghcr.io/autowarefoundation/autoware-openadk:latest-base as visualizer
+FROM ghcr.io/autowarefoundation/autoware-openadkit:latest-base as visualizer
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -25,7 +25,7 @@ RUN --mount=type=ssh \
     /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
 # Create entrypoint
-COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh
+COPY docker/openadkit/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]

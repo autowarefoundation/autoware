@@ -10,7 +10,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 SCRIPT_DIR=$(readlink -f "$(dirname "$0")")
-WORKSPACE_ROOT="$SCRIPT_DIR/../.."
+WORKSPACE_ROOT="$SCRIPT_DIR/.."
 source "$WORKSPACE_ROOT/amd64.env"
 if [ "$(uname -m)" = "aarch64" ]; then
     source "$WORKSPACE_ROOT/arm64.env"

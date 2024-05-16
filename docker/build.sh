@@ -16,7 +16,7 @@ print_help() {
 }
 
 SCRIPT_DIR=$(readlink -f "$(dirname "$0")")
-WORKSPACE_ROOT="$SCRIPT_DIR/../.."
+WORKSPACE_ROOT="$SCRIPT_DIR/.."
 
 # Parse arguments
 parse_arguments() {

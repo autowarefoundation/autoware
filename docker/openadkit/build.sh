@@ -106,10 +106,10 @@ build_images() {
         --set "*.args.BASE_IMAGE=$base_image" \
         --set "*.args.SETUP_ARGS=$setup_args" \
         --set "*.args.LIB_DIR=$lib_dir" \
-        --set "base.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-base" \
-        --set "planning-control.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-planning-control" \
-        --set "visualizer.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-visualizer" \
-        --set "simulator.tags=ghcr.io/autowarefoundation/autoware-openadk:latest-simulator" \
+        --set "base.tags=ghcr.io/autowarefoundation/autoware-openadkit:latest-base" \
+        --set "planning-control.tags=ghcr.io/autowarefoundation/autoware-openadkit:latest-planning-control" \
+        --set "visualizer.tags=ghcr.io/autowarefoundation/autoware-openadkit:latest-visualizer" \
+        --set "simulator.tags=ghcr.io/autowarefoundation/autoware-openadkit:latest-simulator" \
         "${targets[@]}"
     set +x
 }

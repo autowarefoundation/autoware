@@ -85,10 +85,10 @@ jobs:
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           allow-push: true
 
-      - name: Build 'Openadk'
-        uses: ./.github/actions/docker-build-and-push-openadk
+      - name: Build 'Openadkit'
+        uses: ./.github/actions/docker-build-and-push-openadkit
         with:
-          bake-target: autoware-openadk
+          bake-target: openadkit
           build-args: |
             *.platform=linux/amd64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
