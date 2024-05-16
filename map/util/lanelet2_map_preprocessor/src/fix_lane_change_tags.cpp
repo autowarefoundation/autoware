@@ -48,11 +48,6 @@ bool loadLaneletMap(
   return true;
 }
 
-bool exists(std::unordered_set<lanelet::Id> & set, lanelet::Id element)
-{
-  return std::find(set.begin(), set.end(), element) != set.end();
-}
-
 lanelet::Lanelets convertToVector(lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   lanelet::Lanelets lanelets;

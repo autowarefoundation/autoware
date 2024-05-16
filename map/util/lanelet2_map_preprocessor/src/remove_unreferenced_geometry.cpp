@@ -43,11 +43,6 @@ bool loadLaneletMap(
   return true;
 }
 
-bool exists(std::unordered_set<lanelet::Id> & set, lanelet::Id element)
-{
-  return std::find(set.begin(), set.end(), element) != set.end();
-}
-
 lanelet::Points3d convertPointsLayerToPoints(lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   lanelet::Points3d points;
