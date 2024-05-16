@@ -19,7 +19,8 @@
 namespace automatic_pose_initializer
 {
 
-AutomaticPoseInitializer::AutomaticPoseInitializer() : Node("automatic_pose_initializer")
+AutomaticPoseInitializer::AutomaticPoseInitializer(const rclcpp::NodeOptions & options)
+: Node("automatic_pose_initializer", options)
 {
   const auto adaptor = component_interface_utils::NodeAdaptor(this);
   group_cli_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -48,13 +49,5 @@ void AutomaticPoseInitializer::on_timer()
 
 }  // namespace automatic_pose_initializer
 
-int main(int argc, char ** argv)
-{
-  rclcpp::init(argc, argv);
-  rclcpp::executors::MultiThreadedExecutor executor;
-  auto node = std::make_shared<automatic_pose_initializer::AutomaticPoseInitializer>();
-  executor.add_node(node);
-  executor.spin();
-  executor.remove_node(node);
-  rclcpp::shutdown();
-}
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(automatic_pose_initializer::AutomaticPoseInitializer)

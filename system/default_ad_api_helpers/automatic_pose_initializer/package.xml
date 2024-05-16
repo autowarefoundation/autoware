@@ -16,6 +16,7 @@
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>component_interface_utils</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

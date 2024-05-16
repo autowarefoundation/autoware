@@ -25,7 +25,7 @@ namespace automatic_pose_initializer
 class AutomaticPoseInitializer : public rclcpp::Node
 {
 public:
-  AutomaticPoseInitializer();
+  explicit AutomaticPoseInitializer(const rclcpp::NodeOptions & options);
 
 private:
   void on_timer();
