@@ -17,6 +17,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <memory>
+#include <stdexcept>
 #include <string>
 
 namespace tier4_autoware_utils
@@ -27,10 +29,11 @@ class InterProcessPollingSubscriber
 {
 private:
   typename rclcpp::Subscription<T>::SharedPtr subscriber_;
-  std::optional<T> data_;
+  typename T::SharedPtr data_;
 
 public:
-  explicit InterProcessPollingSubscriber(rclcpp::Node * node, const std::string & topic_name)
+  explicit InterProcessPollingSubscriber(
+    rclcpp::Node * node, const std::string & topic_name, const rclcpp::QoS & qos = rclcpp::QoS{1})
   {
     auto noexec_callback_group =
       node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive, false);
@@ -38,26 +41,25 @@ public:
     noexec_subscription_options.callback_group = noexec_callback_group;
 
     subscriber_ = node->create_subscription<T>(
-      topic_name, rclcpp::QoS{1},
+      topic_name, qos,
       [node]([[maybe_unused]] const typename T::ConstSharedPtr msg) { assert(false); },
       noexec_subscription_options);
+    if (qos.get_rmw_qos_profile().depth > 1) {
+      throw std::invalid_argument(
+        "InterProcessPollingSubscriber will be used with depth > 1, which may cause inefficient "
+        "serialization while updateLatestData()");
+    }
   };
-  bool updateLatestData()
+  typename T::ConstSharedPtr takeData()
   {
+    auto new_data = std::make_shared<T>();
     rclcpp::MessageInfo message_info;
-    T tmp;
-    // The queue size (QoS) must be 1 to get the last message data.
-    if (subscriber_->take(tmp, message_info)) {
-      data_ = tmp;
+    const bool success = subscriber_->take(*new_data, message_info);
+    if (success) {
+      data_ = new_data;
     }
-    return data_.has_value();
-  };
-  const T & getData() const
-  {
-    if (!data_.has_value()) {
-      throw std::runtime_error("Bad_optional_access in class InterProcessPollingSubscriber");
-    }
-    return data_.value();
+
+    return data_;
   };
 };
 

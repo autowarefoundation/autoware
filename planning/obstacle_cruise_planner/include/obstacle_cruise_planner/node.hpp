@@ -55,15 +55,19 @@ private:
     const std::vector<TrajectoryPoint> & traj_points,
     const vehicle_info_util::VehicleInfo & vehicle_info,
     const geometry_msgs::msg::Pose & current_ego_pose, const double lat_margin = 0.0) const;
-  std::vector<Obstacle> convertToObstacles(const std::vector<TrajectoryPoint> & traj_points) const;
+  std::vector<Obstacle> convertToObstacles(
+    const Odometry & odometry, const PredictedObjects & objects,
+    const std::vector<TrajectoryPoint> & traj_points) const;
   std::tuple<std::vector<StopObstacle>, std::vector<CruiseObstacle>, std::vector<SlowDownObstacle>>
   determineEgoBehaviorAgainstObstacles(
+    const Odometry & odometry, const PredictedObjects & objecrts,
     const std::vector<TrajectoryPoint> & traj_points, const std::vector<Obstacle> & obstacles);
   std::vector<TrajectoryPoint> decimateTrajectoryPoints(
-    const std::vector<TrajectoryPoint> & traj_points) const;
+    const Odometry & odometry, const std::vector<TrajectoryPoint> & traj_points) const;
   std::optional<StopObstacle> createStopObstacle(
-    const std::vector<TrajectoryPoint> & traj_points, const std::vector<Polygon2d> & traj_polys,
-    const Obstacle & obstacle, const double precise_lateral_dist) const;
+    const Odometry & odometry, const std::vector<TrajectoryPoint> & traj_points,
+    const std::vector<Polygon2d> & traj_polys, const Obstacle & obstacle,
+    const double precise_lateral_dist) const;
   bool isStopObstacle(const uint8_t label) const;
   bool isInsideCruiseObstacle(const uint8_t label) const;
   bool isOutsideCruiseObstacle(const uint8_t label) const;
@@ -88,12 +92,14 @@ private:
   bool isObstacleCrossing(
     const std::vector<TrajectoryPoint> & traj_points, const Obstacle & obstacle) const;
   double calcCollisionTimeMargin(
-    const std::vector<PointWithStamp> & collision_points,
+    const Odometry & odometry, const std::vector<PointWithStamp> & collision_points,
     const std::vector<TrajectoryPoint> & traj_points, const bool is_driving_forward) const;
   std::optional<SlowDownObstacle> createSlowDownObstacle(
-    const std::vector<TrajectoryPoint> & traj_points, const Obstacle & obstacle,
-    const double precise_lat_dist);
-  PlannerData createPlannerData(const std::vector<TrajectoryPoint> & traj_points) const;
+    const Odometry & odometry, const std::vector<TrajectoryPoint> & traj_points,
+    const Obstacle & obstacle, const double precise_lat_dist);
+  PlannerData createPlannerData(
+    const Odometry & odometry, const AccelWithCovarianceStamped & acc,
+    const std::vector<TrajectoryPoint> & traj_points) const;
 
   void checkConsistency(
     const rclcpp::Time & current_time, const PredictedObjects & predicted_objects,
