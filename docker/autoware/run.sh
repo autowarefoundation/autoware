@@ -38,10 +38,10 @@ print_help() {
     echo -e "  ${GREEN}--help/-h${NC}       Display this help message"
     echo -e "  ${GREEN}--data-path${NC}     Specify to mount data files into /autoware_data"
     echo -e "  ${GREEN}--map-path${NC}      Specify to mount map files into /autoware_map (mandatory if no custom launch command is provided)"
-    echo -e "  ${GREEN}--no-nvidia${NC}     Disable NVIDIA GPU support"
     echo -e "  ${GREEN}--devel${NC}         Launch the latest Autoware development environment with shell access"
+    echo -e "  ${GREEN}--workspace${NC}     (--devel only)Specify the directory to mount into /workspace, by default it uses current directory (pwd) as workspace"
+    echo -e "  ${GREEN}--no-nvidia${NC}     Disable NVIDIA GPU support"
     echo -e "  ${GREEN}--headless${NC}      Run Autoware in headless mode (default: false)"
-    echo -e "  ${GREEN}--workspace${NC}     Specify to mount the workspace into /workspace"
     echo ""
 }
 
@@ -99,29 +99,24 @@ set_variables() {
         # Set image based on option
         IMAGE="ghcr.io/autowarefoundation/autoware:latest-devel"
 
-    # Mount data path
-    DATA="-v ${DATA_PATH}:/autoware_data:ro"
-
-    # Mount map path if provided
-    MAP="-v ${MAP_PATH}:/autoware_map:ro"
-
-    # Set workspace path if provided and login with local user
-    if [ "$WORKSPACE_PATH" != "" ]; then
-        USER_ID="-e LOCAL_UID=$(id -u) -e LOCAL_GID=$(id -g) -e LOCAL_USER=$(id -un) -e LOCAL_GROUP=$(id -gn)"
+        # Set workspace path, if not provided use the current directory
+        if [ "$WORKSPACE_PATH" = "" ]; then
+            WORKSPACE_PATH=$(pwd)
+        fi
         WORKSPACE="-v ${WORKSPACE_PATH}:/workspace"
-    fi
 
-    # Set default launch command if not provided
-    if [ "$LAUNCH_CMD" == "" ]; then
-        if [ "$WORKSPACE_PATH" != "" ]; then
-            LAUNCH_CMD="/bin/bash"
-        else
-            USER_ID="-e LOCAL_UID=$(id -u) -e LOCAL_GID=$(id -g) -e LOCAL_USER=$(id -un) -e LOCAL_GROUP=$(id -gn)"
-            WORKSPACE="-v ${WORKSPACE_PATH}:/workspace"
+        # Set user ID and group ID to match the local user
+        USER_ID="-e LOCAL_UID=$(id -u) -e LOCAL_GID=$(id -g) -e LOCAL_USER=$(id -un) -e LOCAL_GROUP=$(id -gn)"
+
+        # Set map path
+        if [ "$MAP_PATH" != "" ]; then
+            MAP="-v ${MAP_PATH}:/autoware_map:ro"
         fi
 
         # Set launch command
-        LAUNCH_CMD="/bin/bash"
+        if [ "$LAUNCH_CMD" = "" ]; then
+            LAUNCH_CMD="/bin/bash"
+        fi
     else
         # Set image based on option
         IMAGE="ghcr.io/autowarefoundation/autoware:latest-runtime"
