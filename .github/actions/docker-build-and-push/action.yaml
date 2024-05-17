@@ -53,6 +53,17 @@ runs:
         echo "$EOF" >> $GITHUB_OUTPUT
       shell: bash
 
+    - name: Docker meta for base
+      id: meta-base
+      uses: docker/metadata-action@v4
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: ${{ steps.set-docker-tags.outputs.tags }}
+        bake-target: docker-metadata-action-base
+        flavor: |
+          latest=false
+          suffix=-base${{ inputs.tag-suffix }}-${{ inputs.tag-arch }}
+
     - name: Docker meta for prebuilt
       id: meta-prebuilt
       uses: docker/metadata-action@v4
@@ -100,7 +111,7 @@ runs:
       with:
         push: ${{ inputs.allow-push == 'true' }}
         files: |
-          docker/${{ inputs.bake-target }}/docker-bake.hcl
+          docker/docker-bake.hcl
           ${{ steps.meta-prebuilt.outputs.bake-file }}
           ${{ steps.meta-devel.outputs.bake-file }}
           ${{ steps.meta-runtime.outputs.bake-file }}
@@ -114,7 +125,7 @@ runs:
       with:
         push: false
         files: |
-          docker/${{ inputs.bake-target }}/docker-bake.hcl
+          docker/docker-bake.hcl
           ${{ steps.meta-prebuilt.outputs.bake-file }}
           ${{ steps.meta-devel.outputs.bake-file }}
           ${{ steps.meta-runtime.outputs.bake-file }}
