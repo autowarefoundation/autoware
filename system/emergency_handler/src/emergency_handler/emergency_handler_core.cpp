@@ -18,7 +18,8 @@
 #include <string>
 #include <utility>
 
-EmergencyHandler::EmergencyHandler() : Node("emergency_handler")
+EmergencyHandler::EmergencyHandler(const rclcpp::NodeOptions & options)
+: Node("emergency_handler", options)
 {
   // Parameter
   param_.update_rate = declare_parameter<int>("update_rate");
@@ -459,3 +460,6 @@ bool EmergencyHandler::isStopped()
 
   return false;
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(EmergencyHandler)

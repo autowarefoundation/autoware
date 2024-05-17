@@ -53,7 +53,7 @@ struct Param
 class EmergencyHandler : public rclcpp::Node
 {
 public:
-  EmergencyHandler();
+  explicit EmergencyHandler(const rclcpp::NodeOptions & options);
 
 private:
   // Subscribers

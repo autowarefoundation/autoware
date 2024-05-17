@@ -16,7 +16,7 @@
   <arg name="config_file" default="$(find-pkg-share emergency_handler)/config/emergency_handler.param.yaml"/>
 
   <!-- emergency_handler -->
-  <node pkg="emergency_handler" exec="emergency_handler" name="emergency_handler" output="screen">
+  <node pkg="emergency_handler" exec="emergency_handler_node" name="emergency_handler" output="screen">
     <remap from="~/input/hazard_status" to="$(var input_hazard_status)"/>
     <remap from="~/input/prev_control_command" to="$(var input_prev_control_command)"/>
     <remap from="~/input/odometry" to="$(var input_odometry)"/>
