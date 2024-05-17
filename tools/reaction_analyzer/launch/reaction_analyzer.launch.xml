@@ -1,0 +1,67 @@
+<launch>
+  <arg name="reaction_analyzer_param_path" default="$(find-pkg-share reaction_analyzer)/param/reaction_analyzer.param.yaml"/>
+
+  <!-- reaction analyzer publishes own perception objects for planning_control mode -->
+  <arg name="launch_simulator_perception_modules" default="false"/>
+
+  <!-- Arguments for occupancy_grid_map -->
+  <arg name="laserscan_based_occupancy_grid_map_param_path" default="$(find-pkg-share autoware_launch)/config/perception/occupancy_grid_map/laserscan_based_occupancy_grid_map.param.yaml"/>
+  <arg name="occupancy_grid_map_updater" default="binary_bayes_filter" description="options: binary_bayes_filter"/>
+  <arg name="occupancy_grid_map_updater_param_path" default="$(find-pkg-share autoware_launch)/config/perception/occupancy_grid_map/$(var occupancy_grid_map_updater)_updater.param.yaml"/>
+
+  <!-- running_mode: planning_control or perception_planning -->
+  <arg name="running_mode" default="planning_control"/>
+
+  <!-- Essential parameters -->
+  <arg name="map_path" description="point cloud and lanelet2 map directory path"/>
+  <arg name="vehicle_model" default="sample_vehicle" description="vehicle model name"/>
+  <arg name="sensor_model" default="sample_sensor_kit" description="sensor model name"/>
+
+  <group if="$(eval &quot;'$(var running_mode)'=='perception_planning'&quot;)">
+    <include file="$(find-pkg-share autoware_launch)/launch/e2e_simulator.launch.xml">
+      <arg name="map_path" value="$(var map_path)"/>
+      <arg name="vehicle_model" value="$(var vehicle_model)"/>
+      <arg name="sensor_model" value="$(var sensor_model)"/>
+      <arg name="use_sim_time" value="false"/>
+    </include>
+  </group>
+  <group if="$(eval &quot;'$(var running_mode)'=='planning_control'&quot;)">
+    <include file="$(find-pkg-share autoware_launch)/launch/planning_simulator.launch.xml">
+      <arg name="map_path" value="$(var map_path)"/>
+      <arg name="vehicle_model" value="$(var vehicle_model)"/>
+      <arg name="sensor_model" value="$(var sensor_model)"/>
+      <arg name="launch_simulator_perception_modules" value="$(var launch_simulator_perception_modules)"/>
+    </include>
+
+    <!-- Occupancy Grid -->
+    <push-ros-namespace namespace="occupancy_grid_map"/>
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/occupancy_grid_map/probabilistic_occupancy_grid_map.launch.xml">
+      <arg name="input_obstacle_pointcloud" value="true"/>
+      <arg name="input_obstacle_and_raw_pointcloud" value="false"/>
+      <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/pointcloud"/>
+      <arg name="output" value="/perception/occupancy_grid_map/map"/>
+      <arg name="occupancy_grid_map_method" value="laserscan_based_occupancy_grid_map"/>
+      <arg name="occupancy_grid_map_param_path" value="$(var laserscan_based_occupancy_grid_map_param_path)"/>
+      <arg name="occupancy_grid_map_updater" value="$(var occupancy_grid_map_updater)"/>
+      <arg name="occupancy_grid_map_updater_param_path" value="$(var occupancy_grid_map_updater_param_path)"/>
+    </include>
+  </group>
+
+  <node_container pkg="rclcpp_components" exec="component_container_mt" name="reaction_analyzer_container" namespace="" args="" output="screen">
+    <composable_node pkg="reaction_analyzer" plugin="reaction_analyzer::ReactionAnalyzerNode" name="reaction_analyzer" namespace="">
+      <param from="$(var reaction_analyzer_param_path)"/>
+      <param name="running_mode" value="$(var running_mode)"/>
+      <remap from="output/pointcloud" to="/perception/obstacle_segmentation/pointcloud"/>
+      <remap from="output/objects" to="/perception/object_recognition/objects"/>
+      <remap from="output/initialpose" to="/initialpose"/>
+      <remap from="output/goal" to="/planning/mission_planning/goal"/>
+      <remap from="service/change_to_autonomous" to="/api/operation_mode/change_to_autonomous"/>
+      <remap from="input/kinematics" to="/localization/kinematic_state"/>
+      <remap from="input/localization_initialization_state" to="/api/localization/initialization_state"/>
+      <remap from="input/routing_state" to="/api/routing/state"/>
+      <remap from="input/operation_mode_state" to="/api/operation_mode/state"/>
+      <remap from="input/ground_truth_pose" to="/awsim/ground_truth/vehicle/pose"/>
+      <extra_arg name="use_intra_process_comms" value="false"/>
+    </composable_node>
+  </node_container>
+</launch>

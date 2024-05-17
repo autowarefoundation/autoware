@@ -1,0 +1,117 @@
+/**:
+  ros__parameters:
+    timer_period: 0.033 # s
+    test_iteration: 10
+    output_file_path: <PATH_TO_OUTPUT_FOLDER>
+    spawn_time_after_init: 10.0 # s for perception_planning mode
+    spawn_distance_threshold: 15.0 # m # for planning_control mode
+    poses:
+      initialization_pose:
+        x: 81546.984375
+        y: 50011.96875
+        z: 0.0
+        roll: 0.0
+        pitch: 0.0
+        yaw: 11.1130405
+      goal_pose:
+        x: 81643.0703125
+        y: 50029.8828125
+        z: 0.0
+        roll: 0.0
+        pitch: 0.0
+        yaw: 13.12
+      entity_params:
+        x: 81633.86068376624
+        y: 50028.383586673124
+        z: 42.44818343779461
+        roll: 0.0
+        pitch: 0.0
+        yaw: 11.8235848
+        x_dimension: 3.95
+        y_dimension: 1.77
+        z_dimension: 1.43
+    topic_publisher:
+      path_bag_without_object: <PATH_TO_YOUR_BAGS>/rosbag2_awsim_labs/rosbag2_awsim_labs.db3
+      path_bag_with_object: <PATH_TO_YOUR_BAGS>/rosbag2_awsim_labs_obstacle/rosbag2_awsim_labs_obstacle.db3
+      pointcloud_publisher:
+        pointcloud_publisher_type: "sync_header_sync_publish" # "async_header_sync_publish", "sync_header_sync_publish" or "async_publish"
+        pointcloud_publisher_period: 0.1 # s
+        publish_only_pointcloud_with_object: false # use it only for debug purposes. If true, only pointclouds with object will be published
+      spawned_pointcloud_sampling_distance: 0.1 # m for planning_control mode
+      dummy_perception_publisher_period: 0.1 # s for planning_control mode
+    subscriber:
+      reaction_params:
+        first_brake_params:
+          debug_control_commands: false
+          control_cmd_buffer_time_interval: 1.0 # s
+          min_number_descending_order_control_cmd: 3
+          min_jerk_for_brake_cmd: 0.3 # m/s^3
+        search_zero_vel_params:
+          max_looking_distance: 15.0 # m
+        search_entity_params:
+          search_radius_offset: 0.0 # m
+      reaction_chain:
+        obstacle_cruise_planner:
+          topic_name: /planning/scenario_planning/lane_driving/trajectory
+          time_debug_topic_name: /planning/scenario_planning/lane_driving/trajectory/debug/published_time
+          message_type: autoware_auto_planning_msgs/msg/Trajectory
+        scenario_selector:
+          topic_name: /planning/scenario_planning/scenario_selector/trajectory
+          time_debug_topic_name: /planning/scenario_planning/scenario_selector/trajectory/debug/published_time
+          message_type: autoware_auto_planning_msgs/msg/Trajectory
+        motion_velocity_smoother:
+          topic_name: /planning/scenario_planning/motion_velocity_smoother/trajectory
+          time_debug_topic_name: /planning/scenario_planning/motion_velocity_smoother/trajectory/debug/published_time
+          message_type: autoware_auto_planning_msgs/msg/Trajectory
+        planning_validator:
+          topic_name: /planning/scenario_planning/trajectory
+          time_debug_topic_name: /planning/scenario_planning/trajectory/debug/published_time
+          message_type: autoware_auto_planning_msgs/msg/Trajectory
+        trajectory_follower:
+          topic_name: /control/trajectory_follower/control_cmd
+          time_debug_topic_name: /control/trajectory_follower/control_cmd/debug/published_time
+          message_type: autoware_auto_control_msgs/msg/AckermannControlCommand
+        vehicle_cmd_gate:
+          topic_name: /control/command/control_cmd
+          time_debug_topic_name: /control/command/control_cmd/debug/published_time
+          message_type: autoware_auto_control_msgs/msg/AckermannControlCommand
+        common_ground_filter:
+          topic_name: /perception/obstacle_segmentation/single_frame/pointcloud
+          time_debug_topic_name: /perception/obstacle_segmentation/single_frame/pointcloud/debug/published_time
+          message_type: sensor_msgs/msg/PointCloud2
+        occupancy_grid_map_outlier:
+          topic_name: /perception/obstacle_segmentation/pointcloud
+          time_debug_topic_name: /perception/obstacle_segmentation/pointcloud/debug/published_time
+          message_type: sensor_msgs/msg/PointCloud2
+        multi_object_tracker:
+          topic_name: /perception/object_recognition/tracking/near_objects
+          time_debug_topic_name: /perception/object_recognition/tracking/near_objects/debug/published_time
+          message_type: autoware_auto_perception_msgs/msg/TrackedObjects
+        lidar_centerpoint:
+          topic_name: /perception/object_recognition/detection/centerpoint/objects
+          time_debug_topic_name: /perception/object_recognition/detection/centerpoint/objects/debug/published_time
+          message_type: autoware_auto_perception_msgs/msg/DetectedObjects
+        obstacle_pointcloud_based_validator:
+          topic_name: /perception/object_recognition/detection/centerpoint/validation/objects
+          time_debug_topic_name: /perception/object_recognition/detection/centerpoint/validation/objects/debug/published_time
+          message_type: autoware_auto_perception_msgs/msg/DetectedObjects
+        decorative_tracker_merger:
+          topic_name: /perception/object_recognition/tracking/objects
+          time_debug_topic_name: /perception/object_recognition/tracking/objects/debug/published_time
+          message_type: autoware_auto_perception_msgs/msg/TrackedObjects
+        detected_object_feature_remover:
+          topic_name: /perception/object_recognition/detection/clustering/objects
+          time_debug_topic_name: /perception/object_recognition/detection/clustering/objects/debug/published_time
+          message_type: autoware_auto_perception_msgs/msg/DetectedObjects
+        detection_by_tracker:
+          topic_name: /perception/object_recognition/detection/detection_by_tracker/objects
+          time_debug_topic_name: /perception/object_recognition/detection/detection_by_tracker/objects/debug/published_time
+          message_type: autoware_auto_perception_msgs/msg/DetectedObjects
+        object_lanelet_filter:
+          topic_name: /perception/object_recognition/detection/objects
+          time_debug_topic_name: /perception/object_recognition/detection/objects/debug/published_time
+          message_type: autoware_auto_perception_msgs/msg/DetectedObjects
+        map_based_prediction:
+          topic_name: /perception/object_recognition/objects
+          time_debug_topic_name: /perception/object_recognition/objects/debug/published_time
+          message_type: autoware_auto_perception_msgs/msg/PredictedObjects
