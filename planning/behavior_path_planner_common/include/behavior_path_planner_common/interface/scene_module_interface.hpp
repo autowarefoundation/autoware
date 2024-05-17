@@ -187,7 +187,6 @@ public:
     RCLCPP_DEBUG(getLogger(), "%s %s", name_.c_str(), __func__);
 
     clearWaitingApproval();
-    removeRTCStatus();
     unlockNewModuleLaunch();
     unlockOutputPath();
     steering_factor_interface_ptr_->clearSteeringFactors();

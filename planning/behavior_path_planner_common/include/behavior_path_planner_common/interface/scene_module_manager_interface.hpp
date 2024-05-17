@@ -103,6 +103,7 @@ public:
   {
     for (const auto & [module_name, ptr] : rtc_interface_ptr_map_) {
       if (ptr) {
+        ptr->removeExpiredCooperateStatus();
         ptr->publishCooperateStatus(rclcpp::Clock(RCL_ROS_TIME).now());
       }
     }

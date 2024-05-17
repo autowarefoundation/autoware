@@ -247,7 +247,11 @@ protected:
 
   void removeRTCStatus(const UUID & uuid) { rtc_interface_.removeCooperateStatus(uuid); }
 
-  void publishRTCStatus(const Time & stamp) { rtc_interface_.publishCooperateStatus(stamp); }
+  void publishRTCStatus(const Time & stamp)
+  {
+    rtc_interface_.removeExpiredCooperateStatus();
+    rtc_interface_.publishCooperateStatus(stamp);
+  }
 
   UUID getUUID(const int64_t & module_id) const;
 

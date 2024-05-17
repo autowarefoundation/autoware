@@ -265,6 +265,18 @@ void RTCInterface::removeStoredCommand(const UUID & uuid)
   }
 }
 
+void RTCInterface::removeExpiredCooperateStatus()
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  const auto itr = std::remove_if(
+    registered_status_.statuses.begin(), registered_status_.statuses.end(),
+    [](const auto & status) {
+      return (rclcpp::Clock{RCL_ROS_TIME}.now() - status.stamp).seconds() > 10.0;
+    });
+
+  registered_status_.statuses.erase(itr, registered_status_.statuses.end());
+}
+
 void RTCInterface::clearCooperateStatus()
 {
   std::lock_guard<std::mutex> lock(mutex_);

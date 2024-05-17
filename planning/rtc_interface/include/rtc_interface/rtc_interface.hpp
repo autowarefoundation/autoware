@@ -56,6 +56,7 @@ public:
     const UUID & uuid, const bool safe, const uint8_t state, const double start_distance,
     const double finish_distance, const rclcpp::Time & stamp);
   void removeCooperateStatus(const UUID & uuid);
+  void removeExpiredCooperateStatus();
   void clearCooperateStatus();
   bool isActivated(const UUID & uuid) const;
   bool isRegistered(const UUID & uuid) const;

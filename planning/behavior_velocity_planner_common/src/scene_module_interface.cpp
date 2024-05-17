@@ -272,7 +272,10 @@ void SceneModuleManagerInterfaceWithRTC::deleteExpiredModules(
 
   for (const auto & scene_module : copied_scene_modules) {
     if (isModuleExpired(scene_module)) {
-      removeRTCStatus(getUUID(scene_module->getModuleId()));
+      const UUID uuid = getUUID(scene_module->getModuleId());
+      updateRTCStatus(
+        uuid, scene_module->isSafe(), State::SUCCEEDED, std::numeric_limits<double>::lowest(),
+        clock_->now());
       removeUUID(scene_module->getModuleId());
       unregisterModule(scene_module);
     }
