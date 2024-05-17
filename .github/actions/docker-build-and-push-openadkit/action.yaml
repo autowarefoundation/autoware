@@ -53,18 +53,7 @@ runs:
         echo "$EOF" >> $GITHUB_OUTPUT
       shell: bash
 
-    # openadkit modular images meta
-    - name: Docker meta for openadkit:base
-      id: meta-base
-      uses: docker/metadata-action@v4
-      with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
-        tags: ${{ steps.set-docker-tags.outputs.tags }}
-        bake-target: docker-metadata-action-base
-        flavor: |
-          latest=false
-          suffix=-base-${{ inputs.tag-arch }}
-
+    # openadkit modular images metadata
     - name: Docker meta for openadkit:planning-control
       id: meta-planning-control
       uses: docker/metadata-action@v4
@@ -113,13 +102,10 @@ runs:
         push: ${{ inputs.allow-push == 'true' }}
         files: |
           docker/${{ inputs.bake-target }}/docker-bake.hcl
-          ${{ steps.meta-base.outputs.bake-file }}
           ${{ steps.meta-planning-control.outputs.bake-file }}
           ${{ steps.meta-visualizer.outputs.bake-file }}
           ${{ steps.meta-simulator.outputs.bake-file }}
         provenance: false
-        targets: |
-          base
         set: |
           ${{ inputs.build-args }}
 
@@ -130,29 +116,15 @@ runs:
         push: false
         files: |
           docker/${{ inputs.bake-target }}/docker-bake.hcl
-          ${{ steps.meta-base.outputs.bake-file }}
           ${{ steps.meta-planning-control.outputs.bake-file }}
           ${{ steps.meta-visualizer.outputs.bake-file }}
           ${{ steps.meta-simulator.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}
-          base.output=type=docker,dest=/tmp/base.tar
           planning-control.output=type=docker,dest=/tmp/planning-control.tar
           visualizer.output=type=docker,dest=/tmp/visualizer.tar
           simulator.output=type=docker,dest=/tmp/simulator.tar
-
-    - name: Upload Artifact - base
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
-      id: artifact-upload-step-base
-      uses: actions/upload-artifact@v4
-      with:
-        name: base-image${{ inputs.tag-suffix }}
-        path: /tmp/base.tar
-        retention-days: 7
-        compression-level: 6
-        overwrite: true
-        if-no-files-found: error
 
     - name: Upload Artifact - planning-control
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
@@ -194,7 +166,6 @@ runs:
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       id: output-artifact-urls
       run: |
-        echo 'base URL ${{ steps.artifact-upload-step-base.outputs.artifact-url }}'
         echo 'planning-control URL ${{ steps.artifact-upload-step-planning-control.outputs.artifact-url }}'
         echo 'visualizer URL ${{ steps.artifact-upload-step-visualizer.outputs.artifact-url }}'
         echo 'simulator URL ${{ steps.artifact-upload-step-simulator.outputs.artifact-url }}'
