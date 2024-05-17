@@ -61,6 +61,22 @@ ShapeEstimationNode::ShapeEstimationNode(const rclcpp::NodeOptions & node_option
   published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
 }
 
+static autoware_auto_perception_msgs::msg::ObjectClassification::_label_type get_label(
+  const autoware_auto_perception_msgs::msg::DetectedObject::_classification_type & classification)
+{
+  if (classification.empty()) {
+    return Label::UNKNOWN;
+  }
+  return classification.front().label;
+}
+
+static bool label_is_vehicle(
+  const autoware_auto_perception_msgs::msg::ObjectClassification::_label_type & label)
+{
+  return Label::CAR == label || Label::TRUCK == label || Label::BUS == label ||
+         Label::TRAILER == label;
+}
+
 void ShapeEstimationNode::callback(const DetectedObjectsWithFeature::ConstSharedPtr input_msg)
 {
   stop_watch_ptr_->toc("processing_time", true);
@@ -76,11 +92,9 @@ void ShapeEstimationNode::callback(const DetectedObjectsWithFeature::ConstShared
   // Estimate shape for each object and pack msg
   for (const auto & feature_object : input_msg->feature_objects) {
     const auto & object = feature_object.object;
-    const auto & label = object.classification.front().label;
+    const auto label = get_label(object.classification);
+    const auto is_vehicle = label_is_vehicle(label);
     const auto & feature = feature_object.feature;
-    const bool is_vehicle = Label::CAR == label || Label::TRUCK == label || Label::BUS == label ||
-                            Label::TRAILER == label;
-
     // convert ros to pcl
     pcl::PointCloud<pcl::PointXYZ>::Ptr cluster(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::fromROSMsg(feature.cluster, *cluster);
