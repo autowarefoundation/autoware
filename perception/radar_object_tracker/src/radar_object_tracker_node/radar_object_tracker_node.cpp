@@ -14,6 +14,7 @@
 
 #include "radar_object_tracker/radar_object_tracker_node/radar_object_tracker_node.hpp"
 
+#include "radar_object_tracker/utils/radar_object_tracker_utils.hpp"
 #include "radar_object_tracker/utils/utils.hpp"
 
 #include <Eigen/Core>
@@ -35,158 +36,6 @@
 #include <utility>
 #include <vector>
 #define EIGEN_MPL2_ONLY
-
-namespace
-{
-boost::optional<geometry_msgs::msg::Transform> getTransformAnonymous(
-  const tf2_ros::Buffer & tf_buffer, const std::string & source_frame_id,
-  const std::string & target_frame_id, const rclcpp::Time & time)
-{
-  try {
-    // check if the frames are ready
-    std::string errstr;  // This argument prevents error msg from being displayed in the terminal.
-    if (!tf_buffer.canTransform(
-          target_frame_id, source_frame_id, tf2::TimePointZero, tf2::Duration::zero(), &errstr)) {
-      return boost::none;
-    }
-
-    geometry_msgs::msg::TransformStamped self_transform_stamped;
-    self_transform_stamped = tf_buffer.lookupTransform(
-      /*target*/ target_frame_id, /*src*/ source_frame_id, time,
-      rclcpp::Duration::from_seconds(0.5));
-    return self_transform_stamped.transform;
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_WARN_STREAM(rclcpp::get_logger("radar_object_tracker"), ex.what());
-    return boost::none;
-  }
-}
-
-// check if lanelet is close enough to the target lanelet
-bool isDuplicated(
-  const std::pair<double, lanelet::ConstLanelet> & target_lanelet,
-  const lanelet::ConstLanelets & lanelets)
-{
-  const double CLOSE_LANELET_THRESHOLD = 0.1;
-  for (const auto & lanelet : lanelets) {
-    const auto target_lanelet_end_p = target_lanelet.second.centerline2d().back();
-    const auto lanelet_end_p = lanelet.centerline2d().back();
-    const double dist = std::hypot(
-      target_lanelet_end_p.x() - lanelet_end_p.x(), target_lanelet_end_p.y() - lanelet_end_p.y());
-    if (dist < CLOSE_LANELET_THRESHOLD) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-// check if the lanelet is valid for object tracking
-bool checkCloseLaneletCondition(
-  const std::pair<double, lanelet::Lanelet> & lanelet, const TrackedObject & object,
-  const double max_distance_from_lane, const double max_angle_diff_from_lane)
-{
-  // Step1. If we only have one point in the centerline, we will ignore the lanelet
-  if (lanelet.second.centerline().size() <= 1) {
-    return false;
-  }
-
-  // Step2. Check if the obstacle is inside or close enough to the lanelet
-  lanelet::BasicPoint2d search_point(
-    object.kinematics.pose_with_covariance.pose.position.x,
-    object.kinematics.pose_with_covariance.pose.position.y);
-  if (!lanelet::geometry::inside(lanelet.second, search_point)) {
-    const auto distance = lanelet.first;
-    if (distance > max_distance_from_lane) {
-      return false;
-    }
-  }
-
-  // Step3. Calculate the angle difference between the lane angle and obstacle angle
-  const double object_yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
-  const double lane_yaw = lanelet::utils::getLaneletAngle(
-    lanelet.second, object.kinematics.pose_with_covariance.pose.position);
-  const double delta_yaw = object_yaw - lane_yaw;
-  const double normalized_delta_yaw = tier4_autoware_utils::normalizeRadian(delta_yaw);
-  const double abs_norm_delta = std::fabs(normalized_delta_yaw);
-
-  // Step4. Check if the closest lanelet is valid, and add all
-  // of the lanelets that are below max_dist and max_delta_yaw
-  const double object_vel = object.kinematics.twist_with_covariance.twist.linear.x;
-  const bool is_yaw_reversed = M_PI - max_angle_diff_from_lane < abs_norm_delta && object_vel < 0.0;
-  if (is_yaw_reversed || abs_norm_delta < max_angle_diff_from_lane) {
-    return true;
-  }
-
-  return false;
-}
-
-lanelet::ConstLanelets getClosestValidLanelets(
-  const TrackedObject & object, const lanelet::LaneletMapPtr & lanelet_map_ptr,
-  const double max_distance_from_lane, const double max_angle_diff_from_lane)
-{
-  // obstacle point
-  lanelet::BasicPoint2d search_point(
-    object.kinematics.pose_with_covariance.pose.position.x,
-    object.kinematics.pose_with_covariance.pose.position.y);
-
-  // nearest lanelet
-  std::vector<std::pair<double, lanelet::Lanelet>> surrounding_lanelets =
-    lanelet::geometry::findNearest(lanelet_map_ptr->laneletLayer, search_point, 10);
-
-  // No Closest Lanelets
-  if (surrounding_lanelets.empty()) {
-    return {};
-  }
-
-  lanelet::ConstLanelets closest_lanelets;
-  for (const auto & lanelet : surrounding_lanelets) {
-    // Check if the close lanelets meet the necessary condition for start lanelets and
-    // Check if similar lanelet is inside the closest lanelet
-    if (
-      !checkCloseLaneletCondition(
-        lanelet, object, max_distance_from_lane, max_angle_diff_from_lane) ||
-      isDuplicated(lanelet, closest_lanelets)) {
-      continue;
-    }
-
-    closest_lanelets.push_back(lanelet.second);
-  }
-
-  return closest_lanelets;
-}
-
-bool hasValidVelocityDirectionToLanelet(
-  const TrackedObject & object, const lanelet::ConstLanelets & lanelets,
-  const double max_lateral_velocity)
-{
-  // get object velocity direction
-  const double object_yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
-  const double object_vel_x = object.kinematics.twist_with_covariance.twist.linear.x;
-  const double object_vel_y = object.kinematics.twist_with_covariance.twist.linear.y;
-  const double object_vel_yaw = std::atan2(object_vel_y, object_vel_x);  // local frame
-  const double object_vel_yaw_global =
-    tier4_autoware_utils::normalizeRadian(object_yaw + object_vel_yaw);
-  const double object_vel = std::hypot(object_vel_x, object_vel_y);
-
-  for (const auto & lanelet : lanelets) {
-    // get lanelet angle
-    const double lane_yaw = lanelet::utils::getLaneletAngle(
-      lanelet, object.kinematics.pose_with_covariance.pose.position);
-    const double delta_yaw = object_vel_yaw_global - lane_yaw;
-    const double normalized_delta_yaw = tier4_autoware_utils::normalizeRadian(delta_yaw);
-
-    // get lateral velocity
-    const double lane_vel = object_vel * std::sin(normalized_delta_yaw);
-    // std::cout << "lane_vel: " << lane_vel <<  "  , delta yaw:" <<  normalized_delta_yaw << "  ,
-    // object_vel " << object_vel <<std::endl;
-    if (std::fabs(lane_vel) < max_lateral_velocity) {
-      return true;
-    }
-  }
-  return false;
-}
-
-}  // namespace
 
 using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 
@@ -291,7 +140,7 @@ void RadarObjectTrackerNode::onMap(const HADMapBin::ConstSharedPtr msg)
 void RadarObjectTrackerNode::onMeasurement(
   const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_objects_msg)
 {
-  const auto self_transform = getTransformAnonymous(
+  const auto self_transform = radar_object_tracker_utils::getTransformAnonymous(
     tf_buffer_, "base_link", world_frame_id_, input_objects_msg->header.stamp);
   if (!self_transform) {
     return;
@@ -387,8 +236,8 @@ std::shared_ptr<Tracker> RadarObjectTrackerNode::createNewTracker(
 void RadarObjectTrackerNode::onTimer()
 {
   rclcpp::Time current_time = this->now();
-  const auto self_transform =
-    getTransformAnonymous(tf_buffer_, world_frame_id_, "base_link", current_time);
+  const auto self_transform = radar_object_tracker_utils::getTransformAnonymous(
+    tf_buffer_, world_frame_id_, "base_link", current_time);
   if (!self_transform) {
     return;
   }
@@ -434,14 +283,15 @@ void RadarObjectTrackerNode::mapBasedNoiseFilter(
   for (auto itr = list_tracker.begin(); itr != list_tracker.end(); ++itr) {
     autoware_auto_perception_msgs::msg::TrackedObject object;
     (*itr)->getTrackedObject(time, object);
-    const auto closest_lanelets = getClosestValidLanelets(
+    const auto closest_lanelets = radar_object_tracker_utils::getClosestValidLanelets(
       object, lanelet_map_ptr_, max_distance_from_lane_, max_angle_diff_from_lane_);
 
     // 1. If the object is not close to any lanelet, delete the tracker
     const bool no_closest_lanelet = closest_lanelets.empty();
     // 2. If the object velocity direction is not close to the lanelet direction, delete the tracker
     const bool is_velocity_direction_close_to_lanelet =
-      hasValidVelocityDirectionToLanelet(object, closest_lanelets, max_lateral_velocity_);
+      radar_object_tracker_utils::hasValidVelocityDirectionToLanelet(
+        object, closest_lanelets, max_lateral_velocity_);
     if (no_closest_lanelet || !is_velocity_direction_close_to_lanelet) {
       // std::cout << "object removed due to map based noise filter" << " no close lanelet: " <<
       // no_closest_lanelet << " velocity direction flag:" << is_velocity_direction_close_to_lanelet
