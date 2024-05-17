@@ -18,7 +18,7 @@
 #include <string>
 #include <utility>
 
-MrmHandler::MrmHandler() : Node("mrm_handler")
+MrmHandler::MrmHandler(const rclcpp::NodeOptions & options) : Node("mrm_handler", options)
 {
   // Parameter
   param_.update_rate = declare_parameter<int>("update_rate", 10);
@@ -597,3 +597,6 @@ bool MrmHandler::isArrivedAtGoal()
 
   return operation_mode_state_->mode == OperationModeState::STOP;
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(MrmHandler)

@@ -60,7 +60,7 @@ struct Param
 class MrmHandler : public rclcpp::Node
 {
 public:
-  MrmHandler();
+  explicit MrmHandler(const rclcpp::NodeOptions & options);
 
 private:
   // type

@@ -18,6 +18,7 @@
   <depend>autoware_auto_vehicle_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>tier4_system_msgs</depend>
