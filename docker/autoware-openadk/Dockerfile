@@ -53,7 +53,7 @@ RUN --mount=type=ssh \
   && vcs import src < autoware.repos
 
 # Generate install package lists
-RUN rosdep keys --dependency-types=build --ignore-src --from-paths src \
+RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
     | sed 's/ \+/\n/g'\
