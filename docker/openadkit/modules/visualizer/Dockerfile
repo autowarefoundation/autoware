@@ -1,4 +1,4 @@
-FROM ghcr.io/autowarefoundation/autoware-openadkit:latest-base as visualizer
+FROM ghcr.io/autowarefoundation/autoware:latest-base as visualizer
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR

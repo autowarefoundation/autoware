@@ -20,4 +20,4 @@ jobs:
       - name: Combine multi arch images for 'openadkit'
         uses: ./.github/actions/combine-multi-arch-images
         with:
-          package-name: autoware-openadkit
+          package-name: openadkit

@@ -1,4 +1,4 @@
-FROM ghcr.io/autowarefoundation/autoware-openadkit:latest-base as planning-control
+FROM ghcr.io/autowarefoundation/autoware:latest-base as planning-control
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
