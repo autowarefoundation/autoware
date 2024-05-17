@@ -93,6 +93,7 @@ COPY --from=src-imported /rosdep-build-depend-packages.txt /tmp/rosdep-build-dep
 RUN --mount=type=ssh \
   apt-get update \
   && cat /tmp/rosdep-build-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && apt-get install -y --no-install-recommends ros-"$ROS_DISTRO"-cudnn-cmake-module \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Build Autoware
