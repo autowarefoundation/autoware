@@ -60,7 +60,7 @@ private:
     const std::vector<TrajectoryPoint> & traj_points) const;
   std::tuple<std::vector<StopObstacle>, std::vector<CruiseObstacle>, std::vector<SlowDownObstacle>>
   determineEgoBehaviorAgainstObstacles(
-    const Odometry & odometry, const PredictedObjects & objecrts,
+    const Odometry & odometry, const PredictedObjects & objects,
     const std::vector<TrajectoryPoint> & traj_points, const std::vector<Obstacle> & obstacles);
   std::vector<TrajectoryPoint> decimateTrajectoryPoints(
     const Odometry & odometry, const std::vector<TrajectoryPoint> & traj_points) const;
