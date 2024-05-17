@@ -147,6 +147,20 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     TARGETS centerpoint_cuda_lib
     DESTINATION lib
   )
+
+  if(BUILD_TESTING)
+    find_package(ament_cmake_gtest REQUIRED)
+    ament_auto_add_gtest(test_detection_class_remapper
+      test/test_detection_class_remapper.cpp
+    )
+    ament_auto_add_gtest(test_ros_utils
+      test/test_ros_utils.cpp
+    )
+    ament_auto_add_gtest(test_nms
+      test/test_nms.cpp
+    )
+  endif()
+
 else()
   find_package(ament_cmake_auto REQUIRED)
   ament_auto_find_build_dependencies()
