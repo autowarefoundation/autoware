@@ -20,6 +20,7 @@
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
@@ -224,18 +225,28 @@ private:
   rclcpp::Clock::SharedPtr clock_;
 };
 
+static rclcpp::SensorDataQoS SingleDepthSensorQoS()
+{
+  rclcpp::SensorDataQoS qos;
+  qos.get_rmw_qos_profile().depth = 1;
+  return qos;
+}
+
 class AEB : public rclcpp::Node
 {
 public:
   explicit AEB(const rclcpp::NodeOptions & node_options);
 
   // subscriber
-  rclcpp::Subscription<PointCloud2>::SharedPtr sub_point_cloud_;
-  rclcpp::Subscription<VelocityReport>::SharedPtr sub_velocity_;
-  rclcpp::Subscription<Imu>::SharedPtr sub_imu_;
-  rclcpp::Subscription<Trajectory>::SharedPtr sub_predicted_traj_;
-  rclcpp::Subscription<AutowareState>::SharedPtr sub_autoware_state_;
-
+  tier4_autoware_utils::InterProcessPollingSubscriber<PointCloud2> sub_point_cloud_{
+    this, "~/input/pointcloud", SingleDepthSensorQoS()};
+  tier4_autoware_utils::InterProcessPollingSubscriber<VelocityReport> sub_velocity_{
+    this, "~/input/velocity"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<Imu> sub_imu_{this, "~/input/imu"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<Trajectory> sub_predicted_traj_{
+    this, "~/input/predicted_trajectory"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<AutowareState> sub_autoware_state_{
+    this, "/autoware/state"};
   // publisher
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_obstacle_pointcloud_;
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_ego_path_publisher_;  // debug
@@ -245,15 +256,12 @@ public:
 
   // callback
   void onPointCloud(const PointCloud2::ConstSharedPtr input_msg);
-  void onVelocity(const VelocityReport::ConstSharedPtr input_msg);
   void onImu(const Imu::ConstSharedPtr input_msg);
   void onTimer();
-  void onPredictedTrajectory(const Trajectory::ConstSharedPtr input_msg);
-  void onAutowareState(const AutowareState::ConstSharedPtr input_msg);
   rcl_interfaces::msg::SetParametersResult onParameter(
     const std::vector<rclcpp::Parameter> & parameters);
 
-  bool isDataReady();
+  bool fetchLatestData();
 
   // main function
   void onCheckCollision(DiagnosticStatusWrapper & stat);

@@ -105,27 +105,6 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
   vehicle_info_(vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo()),
   collision_data_keeper_(this->get_clock())
 {
-  // Subscribers
-  {
-    sub_point_cloud_ = this->create_subscription<PointCloud2>(
-      "~/input/pointcloud", rclcpp::SensorDataQoS(),
-      std::bind(&AEB::onPointCloud, this, std::placeholders::_1));
-
-    sub_velocity_ = this->create_subscription<VelocityReport>(
-      "~/input/velocity", rclcpp::QoS{1}, std::bind(&AEB::onVelocity, this, std::placeholders::_1));
-
-    sub_imu_ = this->create_subscription<Imu>(
-      "~/input/imu", rclcpp::QoS{1}, std::bind(&AEB::onImu, this, std::placeholders::_1));
-
-    sub_predicted_traj_ = this->create_subscription<Trajectory>(
-      "~/input/predicted_trajectory", rclcpp::QoS{1},
-      std::bind(&AEB::onPredictedTrajectory, this, std::placeholders::_1));
-
-    sub_autoware_state_ = this->create_subscription<AutowareState>(
-      "/autoware/state", rclcpp::QoS{1},
-      std::bind(&AEB::onAutowareState, this, std::placeholders::_1));
-  }
-
   // Publisher
   {
     pub_obstacle_pointcloud_ =
@@ -229,11 +208,6 @@ void AEB::onTimer()
   updater_.force_update();
 }
 
-void AEB::onVelocity(const VelocityReport::ConstSharedPtr input_msg)
-{
-  current_velocity_ptr_ = input_msg;
-}
-
 void AEB::onImu(const Imu::ConstSharedPtr input_msg)
 {
   // transform imu
@@ -251,17 +225,6 @@ void AEB::onImu(const Imu::ConstSharedPtr input_msg)
 
   angular_velocity_ptr_ = std::make_shared<Vector3>();
   tf2::doTransform(input_msg->angular_velocity, *angular_velocity_ptr_, transform_stamped);
-}
-
-void AEB::onPredictedTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr input_msg)
-{
-  predicted_traj_ptr_ = input_msg;
-}
-
-void AEB::onAutowareState(const AutowareState::ConstSharedPtr input_msg)
-{
-  autoware_state_ = input_msg;
 }
 
 void AEB::onPointCloud(const PointCloud2::ConstSharedPtr input_msg)
@@ -316,29 +279,42 @@ void AEB::onPointCloud(const PointCloud2::ConstSharedPtr input_msg)
   obstacle_ros_pointcloud_ptr_->header = input_msg->header;
 }
 
-bool AEB::isDataReady()
+bool AEB::fetchLatestData()
 {
   const auto missing = [this](const auto & name) {
     RCLCPP_INFO_SKIPFIRST_THROTTLE(get_logger(), *get_clock(), 5000, "[AEB] waiting for %s", name);
     return false;
   };
 
+  current_velocity_ptr_ = sub_velocity_.takeData();
   if (!current_velocity_ptr_) {
     return missing("ego velocity");
   }
 
+  const auto pointcloud_ptr = sub_point_cloud_.takeData();
+  if (!pointcloud_ptr) {
+    return missing("object pointcloud message");
+  }
+  onPointCloud(pointcloud_ptr);
   if (!obstacle_ros_pointcloud_ptr_) {
     return missing("object pointcloud");
   }
 
+  const auto imu_ptr = sub_imu_.takeData();
+  if (use_imu_path_ && !imu_ptr) {
+    return missing("imu message");
+  }
+  onImu(imu_ptr);
   if (use_imu_path_ && !angular_velocity_ptr_) {
     return missing("imu");
   }
 
+  predicted_traj_ptr_ = sub_predicted_traj_.takeData();
   if (use_predicted_trajectory_ && !predicted_traj_ptr_) {
     return missing("control predicted trajectory");
   }
 
+  autoware_state_ = sub_autoware_state_.takeData();
   if (!autoware_state_) {
     return missing("autoware_state");
   }
@@ -375,7 +351,7 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
   using colorTuple = std::tuple<double, double, double, double>;
 
   // step1. check data
-  if (!isDataReady()) {
+  if (!fetchLatestData()) {
     return false;
   }
 
