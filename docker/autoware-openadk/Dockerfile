@@ -59,14 +59,16 @@ RUN rosdep keys --dependency-types=build --ignore-src --from-paths src \
     | sed 's/ \+/\n/g'\
     | sort \
     > /rosdep-build-depend-packages.txt \
-    || true
+    || true \
+    && cat /rosdep-build-depend-packages.txt
 RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
     | sed 's/ \+/\n/g'\
     | sort \
     > /rosdep-exec-depend-packages.txt \
-    || true
+    || true \
+    && cat /rosdep-exec-depend-packages.txt
 
 FROM base as prebuilt
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
