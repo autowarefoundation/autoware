@@ -3,8 +3,8 @@ name: load-env
 on:
   workflow_call:
     outputs:
-      base-image:
-        value: ${{ jobs.load-env.outputs.base-image }}
+      base_image:
+        value: ${{ jobs.load-env.outputs.base_image }}
       rosdistro:
         value: ${{ jobs.load-env.outputs.rosdistro }}
 
@@ -12,7 +12,7 @@ jobs:
   load-env:
     runs-on: ubuntu-latest
     outputs:
-      base-image: ${{ steps.set-env.outputs.base-image }}
+      base_image: ${{ steps.set-env.outputs.base_image }}
       rosdistro: ${{ steps.set-env.outputs.rosdistro }}
     steps:
       - name: Check out repository
@@ -28,5 +28,5 @@ jobs:
       - name: Set env
         id: set-env
         run: |
-          echo "base-image=${{ env.base_image }}" >> $GITHUB_OUTPUT
+          echo "base_image=${{ env.base_image }}" >> $GITHUB_OUTPUT
           echo "rosdistro=${{ env.rosdistro }}" >> $GITHUB_OUTPUT

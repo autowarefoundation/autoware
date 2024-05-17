@@ -13,7 +13,11 @@ on:
         default: tarball
 
 jobs:
+  load-env:
+    uses: ./.github/workflows/load-env.yaml
+
   build-main-self-hosted:
+    needs: load-env
     runs-on: [self-hosted, linux, ARM64]
     strategy:
       fail-fast: false
@@ -43,27 +47,20 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      - name: Load env
-        run: |
-          cat amd64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
-          if [ "$(uname -m)" = "aarch64" ]; then
-            cat arm64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
-          fi
-
       - name: Build 'autoware-universe'
         uses: ./.github/actions/docker-build-and-push
         with:
           bake-target: autoware-openadk
           build-args: |
             *.platform=linux/arm64
-            *.args.ROS_DISTRO=${{ env.rosdistro }}
-            *.args.BASE_IMAGE=${{ env[format('{0}', matrix.base_image_env)] }}
+            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
             *.args.LIB_DIR=${{ matrix.lib_dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }},mode=max
           tag-suffix: ${{ matrix.additional-tag-suffix }}-arm64
-          tag-prefix: ${{ env.rosdistro }}
+          tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           allow-push: false
 
       - name: Show disk space
