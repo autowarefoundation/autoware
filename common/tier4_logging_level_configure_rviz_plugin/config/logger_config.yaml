@@ -35,6 +35,8 @@ Planning:
       logger_name: tier4_autoware_utils
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
       logger_name: behavior_path_planner.path_shifter
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
+      logger_name: motion_utils
 
   behavior_path_planner_avoidance:
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
@@ -67,6 +69,8 @@ Planning:
       logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_velocity_planner
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner
       logger_name: tier4_autoware_utils
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner
+      logger_name: motion_utils
 
   behavior_velocity_planner_intersection:
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner
@@ -77,12 +81,16 @@ Planning:
       logger_name: planning.scenario_planning.lane_driving.motion_planning.obstacle_avoidance_planner
     - node_name: /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner
       logger_name: tier4_autoware_utils
+    - node_name: /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner
+      logger_name: motion_utils
 
   motion_velocity_smoother:
     - node_name: /planning/scenario_planning/motion_velocity_smoother
       logger_name: planning.scenario_planning.motion_velocity_smoother
     - node_name: /planning/scenario_planning/motion_velocity_smoother
       logger_name: tier4_autoware_utils
+    - node_name: /planning/scenario_planning/motion_velocity_smoother
+      logger_name: motion_utils
 
   route_handler:
     - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
@@ -97,12 +105,16 @@ Control:
       logger_name: control.trajectory_follower.controller_node_exe.lateral_controller
     - node_name: /control/trajectory_follower/controller_node_exe
       logger_name: tier4_autoware_utils
+    - node_name: /control/trajectory_follower/controller_node_exe
+      logger_name: motion_utils
 
   longitudinal_controller:
     - node_name: /control/trajectory_follower/controller_node_exe
       logger_name: control.trajectory_follower.controller_node_exe.longitudinal_controller
     - node_name: /control/trajectory_follower/controller_node_exe
       logger_name: tier4_autoware_utils
+    - node_name: /control/trajectory_follower/controller_node_exe
+      logger_name: motion_utils
 
   vehicle_cmd_gate:
     - node_name: /control/vehicle_cmd_gate

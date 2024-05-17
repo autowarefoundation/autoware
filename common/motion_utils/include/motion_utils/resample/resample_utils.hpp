@@ -27,7 +27,11 @@ namespace resample_utils
 {
 constexpr double close_s_threshold = 1e-6;
 
-#define log_error(message) std::cerr << "\033[31m " << message << " \033[0m" << std::endl;
+static inline rclcpp::Logger get_logger()
+{
+  constexpr const char * logger{"motion_utils.resample_utils"};
+  return rclcpp::get_logger(logger);
+}
 
 template <class T>
 bool validate_size(const T & points)
@@ -62,27 +66,27 @@ bool validate_arguments(const T & input_points, const std::vector<double> & resa
 {
   // Check size of the arguments
   if (!validate_size(input_points)) {
-    log_error("[resample_utils] invalid argument: The number of input points is less than 2");
+    RCLCPP_DEBUG(get_logger(), "invalid argument: The number of input points is less than 2");
     tier4_autoware_utils::print_backtrace();
     return false;
   }
   if (!validate_size(resampling_intervals)) {
-    log_error(
-      "[resample_utils] invalid argument: The number of resampling intervals is less than 2");
+    RCLCPP_DEBUG(
+      get_logger(), "invalid argument: The number of resampling intervals is less than 2");
     tier4_autoware_utils::print_backtrace();
     return false;
   }
 
   // Check resampling range
   if (!validate_resampling_range(input_points, resampling_intervals)) {
-    log_error("[resample_utils] invalid argument: resampling interval is longer than input points");
+    RCLCPP_DEBUG(get_logger(), "invalid argument: resampling interval is longer than input points");
     tier4_autoware_utils::print_backtrace();
     return false;
   }
 
   // Check duplication
   if (!validate_points_duplication(input_points)) {
-    log_error("[resample_utils] invalid argument: input points has some duplicated points");
+    RCLCPP_DEBUG(get_logger(), "invalid argument: input points has some duplicated points");
     tier4_autoware_utils::print_backtrace();
     return false;
   }
@@ -95,23 +99,23 @@ bool validate_arguments(const T & input_points, const double resampling_interval
 {
   // Check size of the arguments
   if (!validate_size(input_points)) {
-    log_error("[resample_utils] invalid argument: The number of input points is less than 2");
+    RCLCPP_DEBUG(get_logger(), "invalid argument: The number of input points is less than 2");
     tier4_autoware_utils::print_backtrace();
     return false;
   }
 
   // check resampling interval
   if (resampling_interval < motion_utils::overlap_threshold) {
-    log_error(
-      "[resample_utils] invalid argument: resampling interval is less than " +
-      std::to_string(motion_utils::overlap_threshold));
+    RCLCPP_DEBUG(
+      get_logger(), "invalid argument: resampling interval is less than %f",
+      motion_utils::overlap_threshold);
     tier4_autoware_utils::print_backtrace();
     return false;
   }
 
   // Check duplication
   if (!validate_points_duplication(input_points)) {
-    log_error("[resample_utils] invalid argument: input points has some duplicated points");
+    RCLCPP_DEBUG(get_logger(), "invalid argument: input points has some duplicated points");
     tier4_autoware_utils::print_backtrace();
     return false;
   }

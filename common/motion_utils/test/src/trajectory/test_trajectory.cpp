@@ -1876,40 +1876,34 @@ TEST(trajectory, insertTargetPoint)
 
   // Invalid target point(In front of begin point)
   {
-    testing::internal::CaptureStderr();
     auto traj_out = traj;
 
     const auto p_target = createPoint(-1.0, 0.0, 0.0);
     const size_t base_idx = findNearestSegmentIndex(traj.points, p_target);
     const auto insert_idx = insertTargetPoint(base_idx, p_target, traj_out.points);
 
-    EXPECT_NE(testing::internal::GetCapturedStderr().find("sharp angle"), std::string::npos);
     EXPECT_EQ(insert_idx, std::nullopt);
   }
 
   // Invalid target point(Behind of end point)
   {
-    testing::internal::CaptureStderr();
     auto traj_out = traj;
 
     const auto p_target = createPoint(10.0, 0.0, 0.0);
     const size_t base_idx = findNearestSegmentIndex(traj.points, p_target);
     const auto insert_idx = insertTargetPoint(base_idx, p_target, traj_out.points);
 
-    EXPECT_NE(testing::internal::GetCapturedStderr().find("sharp angle"), std::string::npos);
     EXPECT_EQ(insert_idx, std::nullopt);
   }
 
   // Invalid target point(Huge lateral offset)
   {
-    testing::internal::CaptureStderr();
     auto traj_out = traj;
 
     const auto p_target = createPoint(4.0, 10.0, 0.0);
     const size_t base_idx = findNearestSegmentIndex(traj.points, p_target);
     const auto insert_idx = insertTargetPoint(base_idx, p_target, traj_out.points);
 
-    EXPECT_NE(testing::internal::GetCapturedStderr().find("sharp angle"), std::string::npos);
     EXPECT_EQ(insert_idx, std::nullopt);
   }
 
@@ -2304,13 +2298,11 @@ TEST(trajectory, insertTargetPoint_Length)
 
   // Invalid target point(Huge lateral offset)
   {
-    testing::internal::CaptureStderr();
     auto traj_out = traj;
 
     const auto p_target = createPoint(4.0, 10.0, 0.0);
     const auto insert_idx = insertTargetPoint(4.0, p_target, traj_out.points);
 
-    EXPECT_NE(testing::internal::GetCapturedStderr().find("sharp angle."), std::string::npos);
     EXPECT_EQ(insert_idx, std::nullopt);
   }
 
@@ -4310,40 +4302,34 @@ TEST(trajectory, insertStopPoint_with_pose_and_segment_index)
 
   // Invalid target point(In front of begin point)
   {
-    testing::internal::CaptureStderr();
     auto traj_out = traj;
 
     const auto p_target = createPoint(-1.0, 0.0, 0.0);
     const size_t base_idx = findNearestSegmentIndex(traj.points, p_target);
     const auto insert_idx = insertStopPoint(base_idx, p_target, traj_out.points);
 
-    EXPECT_NE(testing::internal::GetCapturedStderr().find("sharp angle."), std::string::npos);
     EXPECT_EQ(insert_idx, std::nullopt);
   }
 
   // Invalid target point(Behind of end point)
   {
-    testing::internal::CaptureStderr();
     auto traj_out = traj;
 
     const auto p_target = createPoint(10.0, 0.0, 0.0);
     const size_t base_idx = findNearestSegmentIndex(traj.points, p_target);
     const auto insert_idx = insertStopPoint(base_idx, p_target, traj_out.points);
 
-    EXPECT_NE(testing::internal::GetCapturedStderr().find("sharp angle."), std::string::npos);
     EXPECT_EQ(insert_idx, std::nullopt);
   }
 
   // Invalid target point(Huge lateral offset)
   {
-    testing::internal::CaptureStderr();
     auto traj_out = traj;
 
     const auto p_target = createPoint(4.0, 10.0, 0.0);
     const size_t base_idx = findNearestSegmentIndex(traj.points, p_target);
     const auto insert_idx = insertStopPoint(base_idx, p_target, traj_out.points);
 
-    EXPECT_NE(testing::internal::GetCapturedStderr().find("sharp angle."), std::string::npos);
     EXPECT_EQ(insert_idx, std::nullopt);
   }
 
