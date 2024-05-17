@@ -62,7 +62,7 @@ runs:
         bake-target: docker-metadata-action-base
         flavor: |
           latest=false
-          suffix=-base${{ inputs.tag-suffix }}-${{ inputs.tag-arch }}
+          suffix=-base$-${{ inputs.tag-arch }}
 
     - name: Docker meta for prebuilt
       id: meta-prebuilt
