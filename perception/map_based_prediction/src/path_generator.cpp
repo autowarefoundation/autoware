@@ -32,7 +32,7 @@ PathGenerator::PathGenerator(
 {
 }
 
-PredictedPath PathGenerator::generatePathForNonVehicleObject(const TrackedObject & object)
+PredictedPath PathGenerator::generatePathForNonVehicleObject(const TrackedObject & object) const
 {
   return generateStraightPath(object);
 }
@@ -143,13 +143,13 @@ PredictedPath PathGenerator::generatePathForLowSpeedVehicle(const TrackedObject 
   return path;
 }
 
-PredictedPath PathGenerator::generatePathForOffLaneVehicle(const TrackedObject & object)
+PredictedPath PathGenerator::generatePathForOffLaneVehicle(const TrackedObject & object) const
 {
   return generateStraightPath(object);
 }
 
 PredictedPath PathGenerator::generatePathForOnLaneVehicle(
-  const TrackedObject & object, const PosePath & ref_paths, const double speed_limit)
+  const TrackedObject & object, const PosePath & ref_paths, const double speed_limit) const
 {
   if (ref_paths.size() < 2) {
     return generateStraightPath(object);
@@ -178,7 +178,7 @@ PredictedPath PathGenerator::generateStraightPath(const TrackedObject & object) 
 }
 
 PredictedPath PathGenerator::generatePolynomialPath(
-  const TrackedObject & object, const PosePath & ref_path, const double speed_limit)
+  const TrackedObject & object, const PosePath & ref_path, const double speed_limit) const
 {
   // Get current Frenet Point
   const double ref_path_len = motion_utils::calcArcLength(ref_path);
@@ -210,7 +210,8 @@ PredictedPath PathGenerator::generatePolynomialPath(
 }
 
 FrenetPath PathGenerator::generateFrenetPath(
-  const FrenetPoint & current_point, const FrenetPoint & target_point, const double max_length)
+  const FrenetPoint & current_point, const FrenetPoint & target_point,
+  const double max_length) const
 {
   FrenetPath path;
   const double duration = time_horizon_;
@@ -252,7 +253,7 @@ FrenetPath PathGenerator::generateFrenetPath(
 }
 
 Eigen::Vector3d PathGenerator::calcLatCoefficients(
-  const FrenetPoint & current_point, const FrenetPoint & target_point, const double T)
+  const FrenetPoint & current_point, const FrenetPoint & target_point, const double T) const
 {
   // Lateral Path Calculation
   // Quintic polynomial for d
@@ -278,7 +279,7 @@ Eigen::Vector3d PathGenerator::calcLatCoefficients(
 }
 
 Eigen::Vector2d PathGenerator::calcLonCoefficients(
-  const FrenetPoint & current_point, const FrenetPoint & target_point, const double T)
+  const FrenetPoint & current_point, const FrenetPoint & target_point, const double T) const
 {
   // Longitudinal Path Calculation
   // Quadric polynomial
@@ -296,7 +297,7 @@ Eigen::Vector2d PathGenerator::calcLonCoefficients(
 }
 
 PosePath PathGenerator::interpolateReferencePath(
-  const PosePath & base_path, const FrenetPath & frenet_predicted_path)
+  const PosePath & base_path, const FrenetPath & frenet_predicted_path) const
 {
   PosePath interpolated_path;
   const size_t interpolate_num = frenet_predicted_path.size();
@@ -356,7 +357,8 @@ PosePath PathGenerator::interpolateReferencePath(
 }
 
 PredictedPath PathGenerator::convertToPredictedPath(
-  const TrackedObject & object, const FrenetPath & frenet_predicted_path, const PosePath & ref_path)
+  const TrackedObject & object, const FrenetPath & frenet_predicted_path,
+  const PosePath & ref_path) const
 {
   PredictedPath predicted_path;
   predicted_path.time_step = rclcpp::Duration::from_seconds(sampling_time_interval_);
@@ -385,7 +387,7 @@ PredictedPath PathGenerator::convertToPredictedPath(
 }
 
 FrenetPoint PathGenerator::getFrenetPoint(
-  const TrackedObject & object, const PosePath & ref_path, const double speed_limit)
+  const TrackedObject & object, const PosePath & ref_path, const double speed_limit) const
 {
   FrenetPoint frenet_point;
   const auto obj_point = object.kinematics.pose_with_covariance.pose.position;

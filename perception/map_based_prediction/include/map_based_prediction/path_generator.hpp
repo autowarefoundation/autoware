@@ -84,14 +84,14 @@ public:
     const double time_horizon, const double lateral_time_horizon,
     const double sampling_time_interval, const double min_crosswalk_user_velocity);
 
-  PredictedPath generatePathForNonVehicleObject(const TrackedObject & object);
+  PredictedPath generatePathForNonVehicleObject(const TrackedObject & object) const;
 
   PredictedPath generatePathForLowSpeedVehicle(const TrackedObject & object) const;
 
-  PredictedPath generatePathForOffLaneVehicle(const TrackedObject & object);
+  PredictedPath generatePathForOffLaneVehicle(const TrackedObject & object) const;
 
   PredictedPath generatePathForOnLaneVehicle(
-    const TrackedObject & object, const PosePath & ref_paths, const double speed_limit = 0.0);
+    const TrackedObject & object, const PosePath & ref_paths, const double speed_limit = 0.0) const;
 
   PredictedPath generatePathForCrosswalkUser(
     const TrackedObject & object, const CrosswalkEdgePoints & reachable_crosswalk) const;
@@ -122,24 +122,25 @@ private:
   PredictedPath generateStraightPath(const TrackedObject & object) const;
 
   PredictedPath generatePolynomialPath(
-    const TrackedObject & object, const PosePath & ref_path, const double speed_limit = 0.0);
+    const TrackedObject & object, const PosePath & ref_path, const double speed_limit = 0.0) const;
 
   FrenetPath generateFrenetPath(
-    const FrenetPoint & current_point, const FrenetPoint & target_point, const double max_length);
+    const FrenetPoint & current_point, const FrenetPoint & target_point,
+    const double max_length) const;
   Eigen::Vector3d calcLatCoefficients(
-    const FrenetPoint & current_point, const FrenetPoint & target_point, const double T);
+    const FrenetPoint & current_point, const FrenetPoint & target_point, const double T) const;
   Eigen::Vector2d calcLonCoefficients(
-    const FrenetPoint & current_point, const FrenetPoint & target_point, const double T);
+    const FrenetPoint & current_point, const FrenetPoint & target_point, const double T) const;
 
   PosePath interpolateReferencePath(
-    const PosePath & base_path, const FrenetPath & frenet_predicted_path);
+    const PosePath & base_path, const FrenetPath & frenet_predicted_path) const;
 
   PredictedPath convertToPredictedPath(
     const TrackedObject & object, const FrenetPath & frenet_predicted_path,
-    const PosePath & ref_path);
+    const PosePath & ref_path) const;
 
   FrenetPoint getFrenetPoint(
-    const TrackedObject & object, const PosePath & ref_path, const double speed_limit = 0.0);
+    const TrackedObject & object, const PosePath & ref_path, const double speed_limit = 0.0) const;
 };
 }  // namespace map_based_prediction
 
