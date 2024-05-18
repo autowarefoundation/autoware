@@ -93,6 +93,7 @@ COPY --from=src-imported /rosdep-all-depend-packages.txt /tmp/rosdep-all-depend-
 RUN --mount=type=ssh \
   apt-get update \
   && cat /tmp/rosdep-all-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && apt-get install -y --no-install-recommends ros-${ROS_DISTRO}-pacmod3 \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Build Autoware
