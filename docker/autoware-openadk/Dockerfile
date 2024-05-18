@@ -32,7 +32,6 @@ WORKDIR /autoware
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module base --runtime openadk \
   && pip uninstall -y ansible ansible-core \
-  && pip install --no-cache-dir vcstool \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
   && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
 
@@ -42,6 +41,11 @@ CMD ["/bin/bash"]
 FROM $BASE_IMAGE as src-imported
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
+
+RUN --mount=type=ssh \
+  ./setup-dev-env.sh -y rosdep \
+  && pip uninstall -y ansible ansible-core \
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 WORKDIR /autoware
 COPY autoware.repos /autoware/
