@@ -58,9 +58,9 @@ RUN rosdep keys --ignore-src --from-paths src \
     | grep -v '^#' \
     | sed 's/ \+/\n/g'\
     | sort \
-    > /rosdep-build-depend-packages.txt \
+    > /rosdep-all-depend-packages.txt \
     || true \
-    && cat /rosdep-build-depend-packages.txt
+    && cat /rosdep-all-depend-packages.txt
 RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -89,10 +89,10 @@ RUN --mount=type=ssh \
 
 # Install rosdep dependencies
 COPY --from=src-imported /autoware/src /autoware/src
-COPY --from=src-imported /rosdep-build-depend-packages.txt /tmp/rosdep-build-depend-packages.txt
+COPY --from=src-imported /rosdep-all-depend-packages.txt /tmp/rosdep-all-depend-packages.txt
 RUN --mount=type=ssh \
   apt-get update \
-  && cat /tmp/rosdep-build-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && cat /tmp/rosdep-all-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Build Autoware
