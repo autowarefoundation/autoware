@@ -45,13 +45,11 @@ ARG ROS_DISTRO
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y rosdep \
   && pip uninstall -y ansible ansible-core \
+  && pip install --no-cache-dir vcstool \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 WORKDIR /autoware
 COPY autoware.repos /autoware/
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
-    python3-vcstool \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 RUN --mount=type=ssh \
   mkdir src \
   && vcs import src < autoware.repos
