@@ -26,8 +26,6 @@
       when: module == 'base'
     - role: autoware.dev_env.build_tools
       when: module == 'all' and install_devel=='y'
-    - role: autoware.dev_env.pacmod
-      when: module == 'base'
 
     # Module specific dependencies
     - role: autoware.dev_env.geographiclib
@@ -36,6 +34,8 @@
       when: (module == 'perception-localization' or module == 'all') and prompt_install_nvidia=='y'
     - role: autoware.dev_env.tensorrt
       when: (module == 'perception-localization' or module == 'all') and prompt_install_nvidia=='y'
+    - role: autoware.dev_env.pacmod
+      when: module == 'planning-control' or module == 'perception-localization' or module == 'all'
 
     # Development environment
     - role: autoware.dev_env.dev_tools
