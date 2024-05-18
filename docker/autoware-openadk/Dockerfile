@@ -93,6 +93,7 @@ RUN --mount=type=ssh \
 # Install rosdep dependencies
 COPY --from=src-imported /autoware/src /autoware/src
 COPY --from=src-imported /rosdep-all-depend-packages.txt /tmp/rosdep-all-depend-packages.txt
+# hadolint ignore=SC2002
 RUN --mount=type=ssh \
   apt-get update \
   && cat /tmp/rosdep-all-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
@@ -134,6 +135,7 @@ ARG SETUP_ARGS
 
 # Set up runtime environment and artifacts
 COPY --from=src-imported /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
+# hadolint ignore=SC2002
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadk \
   && pip uninstall -y ansible ansible-core \
