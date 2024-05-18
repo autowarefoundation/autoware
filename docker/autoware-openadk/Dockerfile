@@ -42,6 +42,11 @@ FROM $BASE_IMAGE as src-imported
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
+# Copy files
+COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
+COPY ansible/ /autoware/ansible/
+WORKDIR /autoware
+
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y rosdep \
   && pip uninstall -y ansible ansible-core \
