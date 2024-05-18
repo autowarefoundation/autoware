@@ -45,10 +45,7 @@ ARG ROS_DISTRO
 
 WORKDIR /autoware
 COPY autoware.repos /autoware/
-# Register the pacmod3_msgs repository
-RUN sh -c 'echo "deb [trusted=yes] https://s3.amazonaws.com/autonomoustuff-repo/ $(lsb_release -sc) main" \
-    > /etc/apt/sources.list.d/autonomoustuff-public.list' \
-  && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
     python3-vcstool \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 RUN --mount=type=ssh \
