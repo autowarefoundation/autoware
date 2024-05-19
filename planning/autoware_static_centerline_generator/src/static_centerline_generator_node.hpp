@@ -23,11 +23,10 @@
 #include "type_alias.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
-#include <geography_utils/lanelet2_projector.hpp>
-
 #include "std_msgs/msg/bool.hpp"
 #include "std_msgs/msg/float32.hpp"
 #include "std_msgs/msg/int32.hpp"
+#include "tier4_map_msgs/msg/map_projector_info.hpp"
 
 #include <memory>
 #include <string>
@@ -39,6 +38,7 @@ namespace autoware::static_centerline_generator
 using autoware_static_centerline_generator::srv::LoadMap;
 using autoware_static_centerline_generator::srv::PlanPath;
 using autoware_static_centerline_generator::srv::PlanRoute;
+using tier4_map_msgs::msg::MapProjectorInfo;
 
 struct CenterlineWithRoute
 {
@@ -66,6 +66,8 @@ private:
 
   // plan centerline
   CenterlineWithRoute generate_centerline_with_route();
+  std::vector<lanelet::Id> get_route_lane_ids_from_points(
+    const std::vector<TrajectoryPoint> & points);
   void on_plan_path(
     const PlanPath::Request::SharedPtr request, const PlanPath::Response::SharedPtr response);
 
@@ -80,7 +82,7 @@ private:
   lanelet::LaneletMapPtr original_map_ptr_{nullptr};
   HADMapBin::ConstSharedPtr map_bin_ptr_{nullptr};
   std::shared_ptr<RouteHandler> route_handler_ptr_{nullptr};
-  std::unique_ptr<lanelet::Projector> map_projector_{nullptr};
+  std::unique_ptr<MapProjectorInfo> map_projector_info_{nullptr};
 
   std::pair<int, int> traj_range_indices_{0, 0};
   std::optional<CenterlineWithRoute> centerline_with_route_{std::nullopt};

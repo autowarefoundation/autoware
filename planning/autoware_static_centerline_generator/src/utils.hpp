@@ -42,7 +42,7 @@ PathWithLaneId get_path_with_lane_id(
   const double nearest_ego_yaw_threshold);
 
 void update_centerline(
-  RouteHandler & route_handler, const lanelet::ConstLanelets & lanelets,
+  lanelet::LaneletMapPtr lanelet_map_ptr, const lanelet::ConstLanelets & lanelets,
   const std::vector<TrajectoryPoint> & new_centerline);
 
 MarkerArray create_footprint_marker(

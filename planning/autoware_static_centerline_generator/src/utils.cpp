@@ -35,12 +35,19 @@ nav_msgs::msg::Odometry::ConstSharedPtr convert_to_odometry(const geometry_msgs:
   return odometry_ptr;
 }
 
-lanelet::Point3d createPoint3d(const double x, const double y, const double z = 19.0)
+lanelet::Point3d createPoint3d(const double x, const double y, const double z)
 {
   lanelet::Point3d point(lanelet::utils::getId());
+
+  // position
+  point.x() = x;
+  point.y() = y;
+  point.z() = z;
+
+  // attributes
   point.setAttribute("local_x", x);
   point.setAttribute("local_y", y);
-  point.setAttribute("ele", z);
+  // NOTE: It seems that the attribute "ele" is assigned automatically.
 
   return point;
 }
@@ -76,11 +83,13 @@ geometry_msgs::msg::Pose get_center_pose(
   geometry_msgs::msg::Point middle_pos;
   middle_pos.x = center_line[middle_point_idx].x();
   middle_pos.y = center_line[middle_point_idx].y();
+  middle_pos.z = center_line[middle_point_idx].z();
 
   // get next middle position of the lanelet
   geometry_msgs::msg::Point next_middle_pos;
   next_middle_pos.x = center_line[middle_point_idx + 1].x();
   next_middle_pos.y = center_line[middle_point_idx + 1].y();
+  next_middle_pos.z = center_line[middle_point_idx + 1].z();
 
   // calculate middle pose
   geometry_msgs::msg::Pose middle_pose;
@@ -119,13 +128,13 @@ PathWithLaneId get_path_with_lane_id(
 }
 
 void update_centerline(
-  RouteHandler & route_handler, const lanelet::ConstLanelets & lanelets,
+  lanelet::LaneletMapPtr lanelet_map_ptr, const lanelet::ConstLanelets & lanelets,
   const std::vector<TrajectoryPoint> & new_centerline)
 {
   // get lanelet as reference to update centerline
   lanelet::Lanelets lanelets_ref;
   for (const auto & lanelet : lanelets) {
-    for (auto & lanelet_ref : route_handler.getLaneletMapPtr()->laneletLayer) {
+    for (auto & lanelet_ref : lanelet_map_ptr->laneletLayer) {
       if (lanelet_ref.id() == lanelet.id()) {
         lanelets_ref.push_back(lanelet_ref);
       }
@@ -148,13 +157,13 @@ void update_centerline(
 
         // set center point
         centerline.push_back(center_point);
-        route_handler.getLaneletMapPtr()->add(center_point);
+        lanelet_map_ptr->add(center_point);
         break;
       }
 
       if (!centerline.empty()) {
         // set centerline
-        route_handler.getLaneletMapPtr()->add(centerline);
+        lanelet_map_ptr->add(centerline);
         lanelet_ref.setCenterline(centerline);
 
         // prepare new centerline
@@ -166,7 +175,7 @@ void update_centerline(
       auto & lanelet_ref = lanelets_ref.at(lanelet_idx);
 
       // set centerline
-      route_handler.getLaneletMapPtr()->add(centerline);
+      lanelet_map_ptr->add(centerline);
       lanelet_ref.setCenterline(centerline);
     }
   }

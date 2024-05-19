@@ -21,6 +21,7 @@
 #include "lanelet2_extension/utility/utilities.hpp"
 #include "map_loader/lanelet2_map_loader_node.hpp"
 #include "map_projection_loader/load_info_from_lanelet2_map.hpp"
+#include "map_projection_loader/map_projection_loader.hpp"
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
@@ -36,7 +37,6 @@
 #include "std_msgs/msg/bool.hpp"
 #include "std_msgs/msg/float32.hpp"
 #include "std_msgs/msg/int32.hpp"
-#include <tier4_map_msgs/msg/map_projector_info.hpp>
 
 #include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/algorithms/distance.hpp>
@@ -204,8 +204,10 @@ StaticCenterlineGeneratorNode::StaticCenterlineGeneratorNode(
         const auto selected_centerline = std::vector<TrajectoryPoint>(
           c.centerline.begin() + traj_range_indices_.first,
           c.centerline.begin() + traj_range_indices_.second + 1);
+        const auto selected_route_lane_ids = get_route_lane_ids_from_points(selected_centerline);
         save_map(
-          lanelet2_output_file_path, CenterlineWithRoute{selected_centerline, c.route_lane_ids});
+          lanelet2_output_file_path,
+          CenterlineWithRoute{selected_centerline, selected_route_lane_ids});
       }
     });
   sub_traj_resample_interval_ = create_subscription<std_msgs::msg::Float32>(
@@ -280,6 +282,8 @@ void StaticCenterlineGeneratorNode::run()
   load_map(lanelet2_input_file_path);
   const auto centerline_with_route = generate_centerline_with_route();
   traj_range_indices_ = std::make_pair(0, centerline_with_route.centerline.size() - 1);
+
+  evaluate(centerline_with_route.route_lane_ids, centerline_with_route.centerline);
   save_map(lanelet2_output_file_path, centerline_with_route);
 
   centerline_with_route_ = centerline_with_route;
@@ -304,19 +308,7 @@ CenterlineWithRoute StaticCenterlineGeneratorNode::generate_centerline_with_rout
       return CenterlineWithRoute{optimized_centerline, route_lane_ids};
     } else if (centerline_source_ == CenterlineSource::BagEgoTrajectoryBase) {
       const auto bag_centerline = generate_centerline_with_bag(*this);
-      const auto start_lanelets =
-        route_handler_ptr_->getRoadLaneletsAtPose(bag_centerline.front().pose);
-      const auto end_lanelets =
-        route_handler_ptr_->getRoadLaneletsAtPose(bag_centerline.back().pose);
-      if (start_lanelets.empty() || end_lanelets.empty()) {
-        RCLCPP_ERROR(get_logger(), "Nearest lanelets to the bag's centerline are not found.");
-        return CenterlineWithRoute{};
-      }
-
-      const lanelet::Id start_lanelet_id = start_lanelets.front().id();
-      const lanelet::Id end_lanelet_id = end_lanelets.front().id();
-      const auto route_lane_ids = plan_route(start_lanelet_id, end_lanelet_id);
-
+      const auto route_lane_ids = get_route_lane_ids_from_points(bag_centerline);
       return CenterlineWithRoute{bag_centerline, route_lane_ids};
     }
     throw std::logic_error(
@@ -337,6 +329,24 @@ CenterlineWithRoute StaticCenterlineGeneratorNode::generate_centerline_with_rout
   return centerline_with_route;
 }
 
+std::vector<lanelet::Id> StaticCenterlineGeneratorNode::get_route_lane_ids_from_points(
+  const std::vector<TrajectoryPoint> & points)
+{
+  const auto start_lanelets = route_handler_ptr_->getRoadLaneletsAtPose(points.front().pose);
+  const auto end_lanelets = route_handler_ptr_->getRoadLaneletsAtPose(points.back().pose);
+  if (start_lanelets.empty() || end_lanelets.empty()) {
+    RCLCPP_ERROR(get_logger(), "Nearest lanelets to the bag's points are not found.");
+    return std::vector<lanelet::Id>{};
+  }
+
+  const lanelet::Id start_lanelet_id = start_lanelets.front().id();
+  const lanelet::Id end_lanelet_id = end_lanelets.front().id();
+  if (start_lanelet_id == end_lanelet_id) {
+    return std::vector<lanelet::Id>{start_lanelet_id};
+  }
+  return plan_route(start_lanelet_id, end_lanelet_id);
+}
+
 void StaticCenterlineGeneratorNode::load_map(const std::string & lanelet2_input_file_path)
 {
   // copy the input LL2 map to the temporary file for debugging
@@ -349,21 +359,18 @@ void StaticCenterlineGeneratorNode::load_map(const std::string & lanelet2_input_
   // load map by the map_loader package
   map_bin_ptr_ = [&]() -> HADMapBin::ConstSharedPtr {
     // load map
-    const auto map_projector_info = load_info_from_lanelet2_map(lanelet2_input_file_path);
+    map_projector_info_ =
+      std::make_unique<MapProjectorInfo>(load_info_from_lanelet2_map(lanelet2_input_file_path));
     const auto map_ptr =
-      Lanelet2MapLoaderNode::load_map(lanelet2_input_file_path, map_projector_info);
+      Lanelet2MapLoaderNode::load_map(lanelet2_input_file_path, *map_projector_info_);
     if (!map_ptr) {
       return nullptr;
     }
 
-    // NOTE: generate map projector for lanelet::write().
-    //       Without this, lat/lon of the generated LL2 map will be wrong.
-    map_projector_ = geography_utils::get_lanelet2_projector(map_projector_info);
-
-    // NOTE: The original map is stored here since the various ids in the lanelet map will change
-    //       after lanelet::utils::overwriteLaneletCenterline, and saving map will fail.
+    // NOTE: The original map is stored here since the centerline will be added to all the
+    //       lanelet when lanelet::utils::overwriteLaneletCenterline is called.
     original_map_ptr_ =
-      Lanelet2MapLoaderNode::load_map(lanelet2_input_file_path, map_projector_info);
+      Lanelet2MapLoaderNode::load_map(lanelet2_input_file_path, *map_projector_info_);
 
     // overwrite more dense centerline
     lanelet::utils::overwriteLaneletsCenterline(map_ptr, 5.0, false);
@@ -639,11 +646,13 @@ void StaticCenterlineGeneratorNode::save_map(
   const auto route_lanelets = utils::get_lanelets_from_ids(*route_handler_ptr_, c.route_lane_ids);
 
   // update centerline in map
-  utils::update_centerline(*route_handler_ptr_, route_lanelets, c.centerline);
+  utils::update_centerline(original_map_ptr_, route_lanelets, c.centerline);
   RCLCPP_INFO(get_logger(), "Updated centerline in map.");
 
   // save map with modified center line
-  lanelet::write(lanelet2_output_file_path, *original_map_ptr_, *map_projector_);
+  std::filesystem::create_directory("/tmp/static_centerline_generator");  // TODO(murooka)
+  const auto map_projector = geography_utils::get_lanelet2_projector(*map_projector_info_);
+  lanelet::write(lanelet2_output_file_path, *original_map_ptr_, *map_projector);
   RCLCPP_INFO(get_logger(), "Saved map.");
 
   // copy the output LL2 map to the temporary file for debugging

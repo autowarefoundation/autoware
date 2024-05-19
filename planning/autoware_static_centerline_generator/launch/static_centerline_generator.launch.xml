@@ -10,7 +10,7 @@
 
   <!-- mandatory arguments when run_background is true -->
   <arg name="lanelet2_input_file_path" default=""/>
-  <arg name="lanelet2_output_file_path" default="/tmp/lanelet2_map.osm"/>
+  <arg name="lanelet2_output_file_path" default="/tmp/static_centerline_generator/lanelet2_map.osm"/>
   <arg name="start_lanelet_id" default=""/>
   <arg name="end_lanelet_id" default=""/>
 
