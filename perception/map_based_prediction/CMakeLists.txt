@@ -26,6 +26,22 @@ rclcpp_components_register_node(map_based_prediction_node
   EXECUTABLE map_based_prediction
 )
 
+## Tests
+if(BUILD_TESTING)
+  find_package(ament_cmake_ros REQUIRED)
+  list(APPEND AMENT_LINT_AUTO_EXCLUDE ament_cmake_uncrustify)
+
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
+  file(GLOB_RECURSE test_files test/**/*.cpp)
+  ament_add_ros_isolated_gtest(test_map_based_prediction ${test_files})
+
+  target_link_libraries(test_map_based_prediction
+  map_based_prediction_node
+  )
+endif()
+
 ament_auto_package(
   INSTALL_TO_SHARE
   config
