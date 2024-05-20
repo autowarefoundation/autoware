@@ -180,13 +180,6 @@ double DataAssociation::calcScoreBetweenObjects(
   const std::uint8_t object0_label =
     object_recognition_utils::getHighestProbLabel(object0.classification);
 
-  std::vector<double> tracker_pose = {
-    object1.kinematics.pose_with_covariance.pose.position.x,
-    object1.kinematics.pose_with_covariance.pose.position.y};
-  std::vector<double> measurement_pose = {
-    object0.kinematics.pose_with_covariance.pose.position.x,
-    object0.kinematics.pose_with_covariance.pose.position.y};
-
   double score = 0.0;
   if (can_assign_matrix_(object1_label, object0_label)) {
     const double max_dist = max_dist_matrix_(object1_label, object0_label);
