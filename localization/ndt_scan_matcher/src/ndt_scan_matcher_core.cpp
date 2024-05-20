@@ -464,17 +464,14 @@ bool NDTScanMatcher::callback_sensor_points_main(
   diagnostics_scan_points_->addKeyValue("transform_probability", ndt_result.transform_probability);
   diagnostics_scan_points_->addKeyValue(
     "nearest_voxel_transformation_likelihood", ndt_result.nearest_voxel_transformation_likelihood);
-  std::string score_name = "";
   double score = 0.0;
   double score_threshold = 0.0;
   if (param_.score_estimation.converged_param_type == ConvergedParamType::TRANSFORM_PROBABILITY) {
-    score_name = "Transform Probability";
     score = ndt_result.transform_probability;
     score_threshold = param_.score_estimation.converged_param_transform_probability;
   } else if (
     param_.score_estimation.converged_param_type ==
     ConvergedParamType::NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD) {
-    score_name = "Nearest Voxel Transformation Likelihood";
     score = ndt_result.nearest_voxel_transformation_likelihood;
     score_threshold =
       param_.score_estimation.converged_param_nearest_voxel_transformation_likelihood;
