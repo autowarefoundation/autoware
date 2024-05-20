@@ -1,4 +1,5 @@
-FROM ghcr.io/autowarefoundation/autoware:latest-base as visualizer
+ARG ARCH
+FROM ghcr.io/autowarefoundation/autoware:latest-base-${ARCH} as visualizer
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR

@@ -81,7 +81,7 @@ jobs:
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
             *.args.LIB_DIR=${{ matrix.lib_dir }}
           tag-suffix: ${{ matrix.additional-tag-suffix }}
-          tag-arch: amd64
+          tag-arch: -amd64
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           allow-push: true
 
@@ -98,7 +98,7 @@ jobs:
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }},mode=max
           tag-suffix: ${{ matrix.additional-tag-suffix }}
-          tag-arch: amd64
+          tag-arch: -amd64
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           allow-push: true
 

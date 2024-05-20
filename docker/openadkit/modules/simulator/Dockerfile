@@ -1,4 +1,5 @@
-FROM ghcr.io/autowarefoundation/autoware:latest-base as simulator
+ARG ARCH
+FROM ghcr.io/autowarefoundation/autoware:latest-base-${ARCH} as simulator
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG PLATFORM
 ARG LIB_DIR

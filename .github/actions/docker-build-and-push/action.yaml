@@ -62,7 +62,7 @@ runs:
         bake-target: docker-metadata-action-base
         flavor: |
           latest=false
-          suffix=-base$-${{ inputs.tag-arch }}
+          suffix=-base${{ inputs.tag-arch }}
 
     - name: Docker meta for prebuilt
       id: meta-prebuilt
@@ -73,7 +73,7 @@ runs:
         bake-target: docker-metadata-action-prebuilt
         flavor: |
           latest=false
-          suffix=-prebuilt${{ inputs.tag-suffix }}-${{ inputs.tag-arch }}
+          suffix=-prebuilt${{ inputs.tag-suffix }}${{ inputs.tag-arch }}
 
     - name: Docker meta for devel
       id: meta-devel
@@ -84,7 +84,7 @@ runs:
         bake-target: docker-metadata-action-devel
         flavor: |
           latest=false
-          suffix=-devel${{ inputs.tag-suffix }}-${{ inputs.tag-arch }}
+          suffix=-devel${{ inputs.tag-suffix }}${{ inputs.tag-arch }}
 
     - name: Docker meta for runtime
       id: meta-runtime
@@ -95,7 +95,7 @@ runs:
         bake-target: docker-metadata-action-runtime
         flavor: |
           latest=${{ github.event_name == 'push' && github.ref_type == 'tag' }}
-          suffix=-runtime${{ inputs.tag-suffix }}-${{ inputs.tag-arch }}
+          suffix=-runtime${{ inputs.tag-suffix }}${{ inputs.tag-arch }}
 
     - name: Login to GitHub Container Registry
       if: ${{ github.event_name != 'pull_request' }}
