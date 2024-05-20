@@ -97,7 +97,7 @@ jobs:
             *.args.LIB_DIR=${{ matrix.lib_dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }},mode=max
-            *.args.ARCH: amd64
+            *.args.ARCH=amd64
           tag-suffix: ${{ matrix.additional-tag-suffix }}
           tag-arch: -amd64
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}

@@ -102,7 +102,7 @@ jobs:
             *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
             *.args.LIB_DIR=${{ matrix.lib_dir }}
-            *.args.ARCH: arm64
+            *.args.ARCH=arm64
           tag-suffix: ${{ matrix.additional-tag-suffix }}
           tag-arch: -arm64
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
