@@ -129,7 +129,7 @@ set_variables() {
             exit 1
         else
             MAP="-v ${MAP_PATH}:/autoware_map:ro"
-        fi        
+        fi
 
         # Set default launch command if not provided
         if [ "$LAUNCH_CMD" = "" ]; then
