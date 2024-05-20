@@ -44,18 +44,18 @@ PointWithStamp calcNearestCollisionPoint(
   return collision_points.at(min_idx);
 }
 
-// NOTE: max_lat_dist is used for efficient calculation to suppress boost::geometry's polygon
+// NOTE: max_dist is used for efficient calculation to suppress boost::geometry's polygon
 // calculation.
 std::optional<std::pair<size_t, std::vector<PointWithStamp>>> getCollisionIndex(
   const std::vector<TrajectoryPoint> & traj_points, const std::vector<Polygon2d> & traj_polygons,
   const geometry_msgs::msg::Pose & object_pose, const rclcpp::Time & object_time,
-  const Shape & object_shape, const double max_lat_dist = std::numeric_limits<double>::max())
+  const Shape & object_shape, const double max_dist = std::numeric_limits<double>::max())
 {
   const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object_pose, object_shape);
   for (size_t i = 0; i < traj_polygons.size(); ++i) {
     const double approximated_dist =
       tier4_autoware_utils::calcDistance2d(traj_points.at(i).pose, object_pose);
-    if (approximated_dist > max_lat_dist) {
+    if (approximated_dist > max_dist) {
       continue;
     }
 

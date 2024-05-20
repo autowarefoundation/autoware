@@ -1079,7 +1079,11 @@ ObstacleCruisePlannerNode::createCollisionPointsForInsideCruiseObstacle(
   std::vector<size_t> collision_index;
   const auto collision_points = polygon_utils::getCollisionPoints(
     traj_points, traj_polys, obstacle.stamp, resampled_predicted_path, obstacle.shape, now(),
-    is_driving_forward_, collision_index);
+    is_driving_forward_, collision_index,
+    calcObstacleMaxLength(obstacle.shape) + p.decimate_trajectory_step_length +
+      std::hypot(
+        vehicle_info_.vehicle_length_m,
+        vehicle_info_.vehicle_width_m * 0.5 + p.max_lat_margin_for_cruise));
   return collision_points;
 }
 
@@ -1119,7 +1123,10 @@ ObstacleCruisePlannerNode::createCollisionPointsForOutsideCruiseObstacle(
   const auto collision_points = polygon_utils::getCollisionPoints(
     traj_points, traj_polys, obstacle.stamp, resampled_predicted_path, obstacle.shape, now(),
     is_driving_forward_, collision_index,
-    vehicle_info_.vehicle_width_m + p.max_lat_margin_for_cruise,
+    calcObstacleMaxLength(obstacle.shape) + p.decimate_trajectory_step_length +
+      std::hypot(
+        vehicle_info_.vehicle_length_m,
+        vehicle_info_.vehicle_width_m * 0.5 + p.max_lat_margin_for_cruise),
     p.max_prediction_time_for_collision_check);
   if (collision_points.empty()) {
     // Ignore vehicle obstacles outside the trajectory without collision
@@ -1196,7 +1203,11 @@ std::optional<StopObstacle> ObstacleCruisePlannerNode::createStopObstacle(
     std::vector<size_t> collision_index;
     const auto collision_points = polygon_utils::getCollisionPoints(
       traj_points, traj_polys, obstacle.stamp, resampled_predicted_path, obstacle.shape, now(),
-      is_driving_forward_, collision_index);
+      is_driving_forward_, collision_index,
+      calcObstacleMaxLength(obstacle.shape) + p.decimate_trajectory_step_length +
+        std::hypot(
+          vehicle_info_.vehicle_length_m,
+          vehicle_info_.vehicle_width_m * 0.5 + p.max_lat_margin_for_stop));
     if (collision_points.empty()) {
       RCLCPP_INFO_EXPRESSION(
         get_logger(), enable_debug_info_,
