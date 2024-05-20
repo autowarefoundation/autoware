@@ -127,4 +127,4 @@ repositories:
   future_packages/run_autoware_script:
     type: git
     url: git@github.com:Futu-reADS/run_autoware_script.git
-    version: ftd
+    version: china_test_3_ftd
