@@ -168,7 +168,7 @@ TEST(PathGenerator, test_generatePathForCrosswalkUser)
   // Generate dummy object
   TrackedObject tracked_object = generate_static_object(ObjectClassification::PEDESTRIAN);
 
-  // Generage dummy crosswalk
+  // Generate dummy crosswalk
   map_based_prediction::CrosswalkEdgePoints reachable_crosswalk;
   reachable_crosswalk.front_center_point << 0.0, 0.0;
   reachable_crosswalk.front_right_point << 1.0, 0.0;
