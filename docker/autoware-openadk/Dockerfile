@@ -50,14 +50,10 @@ WORKDIR /autoware
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y rosdep \
   && pip uninstall -y ansible ansible-core \
-  && pip install --no-cache-dir vcstool \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
-WORKDIR /autoware
-COPY autoware.repos /autoware/
-RUN --mount=type=ssh \
-  mkdir src \
-  && vcs import src < autoware.repos
+# Copy repository files
+COPY src /autoware/src
 
 # Generate install package lists
 RUN rosdep update && rosdep keys --ignore-src --from-paths src \
@@ -110,7 +106,7 @@ RUN source /opt/ros/"$ROS_DISTRO"/setup.bash \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   && find /autoware/install -type d -exec chmod 777 {} \; \
   && chmod -R 777 /var/tmp/ccache \
-  && rm -rf /autoware/build /autoware/src
+  && rm -rf /autoware/build
 
 CMD ["/bin/bash"]
 
