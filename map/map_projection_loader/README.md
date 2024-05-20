@@ -21,6 +21,10 @@ sample-map-rosbag
 └── pointcloud_map_metadata.yaml
 ```
 
+There are three types of transformations from latitude and longitude to XYZ coordinate system as shown in the figure below. Please refer to the following details for the necessary parameters for each projector type.
+
+![node_diagram](docs/map_projector_type.svg)
+
 ### Using local coordinate
 
 ```yaml
