@@ -58,11 +58,6 @@ private:
   using RouteSections = std::vector<autoware_planning_msgs::msg::LaneletSegment>;
   using Pose = geometry_msgs::msg::Pose;
   bool is_graph_ready_;
-  lanelet::LaneletMapPtr lanelet_map_ptr_;
-  lanelet::routing::RoutingGraphPtr routing_graph_ptr_;
-  lanelet::traffic_rules::TrafficRulesPtr traffic_rules_ptr_;
-  lanelet::ConstLanelets road_lanelets_;
-  lanelet::ConstLanelets shoulder_lanelets_;
   route_handler::RouteHandler route_handler_;
 
   DefaultPlannerParameters param_;

@@ -1,4 +1,4 @@
-// Copyright 2019 Autoware Foundation
+// Copyright 2019-2024 Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 #define LANELET2_PLUGINS__UTILITY_FUNCTIONS_HPP_
 
 #include <rclcpp/rclcpp.hpp>
+#include <route_handler/route_handler.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
@@ -50,10 +51,10 @@ void insert_marker_array(
  * @brief create a single merged lanelet whose left/right bounds consist of the leftmost/rightmost
  * bound of the original lanelets or the left/right bound of its adjacent road_shoulder respectively
  * @param lanelets topologically sorted sequence of lanelets
- * @param shoulder_lanelets list of possible road_shoulder lanelets to combine with lanelets
+ * @param route_handler route handler to query the lanelet map
  */
 lanelet::ConstLanelet combine_lanelets_with_shoulder(
-  const lanelet::ConstLanelets & lanelets, const lanelet::ConstLanelets & shoulder_lanelets);
+  const lanelet::ConstLanelets & lanelets, const route_handler::RouteHandler & route_handler);
 
 std::vector<geometry_msgs::msg::Point> convertCenterlineToPoints(const lanelet::Lanelet & lanelet);
 geometry_msgs::msg::Pose convertBasicPoint3dToPose(
