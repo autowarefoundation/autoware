@@ -1,9 +1,0 @@
-<library path="tier4_calibration_rviz_plugin">
-  <class name="tier4_calibration_rviz_plugin/AccelBrakeMapCalibratorButtonPanel"
-          type="tier4_calibration_rviz_plugin::AccelBrakeMapCalibratorButtonPanel"
-          base_class_type="rviz_common::Panel">
-      <description>
-        execution button of accel brake map calibration.
-      </description>
-  </class>
-</library>

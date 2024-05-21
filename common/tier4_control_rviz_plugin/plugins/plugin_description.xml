@@ -1,7 +1,0 @@
-<library path="tier4_control_rviz_plugin">
-  <class name="rviz_plugins/ManualController"
-         type="rviz_plugins::ManualController"
-         base_class_type="rviz_common::Panel">
-         <description>ManualController</description>
-  </class>
-</library>

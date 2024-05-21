@@ -1,8 +1,0 @@
-<library path="mission_planner_rviz_plugin">
-  <class type="rviz_plugins::MrmGoalTool" base_class_type="rviz_common::Tool">
-    <description>MrmGoalTool</description>
-  </class>
-  <class type="rviz_plugins::RouteSelectorPanel" base_class_type="rviz_common::Panel">
-    <description>RouteSelectorPanel</description>
-  </class>
-</library>

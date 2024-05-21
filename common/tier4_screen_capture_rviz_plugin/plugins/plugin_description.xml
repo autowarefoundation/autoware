@@ -1,9 +1,0 @@
-<library path="tier4_screen_capture_rviz_plugin">
-
-  <class
-    type="AutowareScreenCapturePanel"
-    base_class_type="rviz_common::Panel">
-    <description>AutowareScreenCapturePanel</description>
-  </class>
-
-</library>

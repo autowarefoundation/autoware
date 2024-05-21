@@ -1,9 +1,0 @@
-<library path="rtc_manager_rviz_plugin">
-
-  <class
-    type="rviz_plugins::RTCManagerPanel"
-    base_class_type="rviz_common::Panel">
-    <description>RTCManagerPanel</description>
-  </class>
-
-</library>
