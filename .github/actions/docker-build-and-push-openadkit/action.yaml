@@ -5,6 +5,9 @@ inputs:
   bake-target:
     description: ""
     required: true
+  bake-images:
+    description: ""
+    required: false
   build-args:
     description: ""
     required: false
@@ -106,6 +109,8 @@ runs:
           ${{ steps.meta-visualizer.outputs.bake-file }}
           ${{ steps.meta-simulator.outputs.bake-file }}
         provenance: false
+        targets: |
+          ${{ inputs.bake-images }}
         set: |
           ${{ inputs.build-args }}
 
@@ -120,6 +125,8 @@ runs:
           ${{ steps.meta-visualizer.outputs.bake-file }}
           ${{ steps.meta-simulator.outputs.bake-file }}
         provenance: false
+        targets: |
+          ${{ inputs.bake-images }}
         set: |
           ${{ inputs.build-args }}
           planning-control.output=type=docker,dest=/tmp/planning-control.tar

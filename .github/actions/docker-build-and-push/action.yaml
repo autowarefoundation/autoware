@@ -5,6 +5,9 @@ inputs:
   bake-target:
     description: ""
     required: true
+  bake-images:
+    description: ""
+    required: false
   build-args:
     description: ""
     required: false
@@ -117,6 +120,8 @@ runs:
           ${{ steps.meta-devel.outputs.bake-file }}
           ${{ steps.meta-runtime.outputs.bake-file }}
         provenance: false
+        targets: |
+          ${{ inputs.bake-images }}
         set: |
           ${{ inputs.build-args }}
 
@@ -132,6 +137,8 @@ runs:
           ${{ steps.meta-devel.outputs.bake-file }}
           ${{ steps.meta-runtime.outputs.bake-file }}
         provenance: false
+        targets: |
+          ${{ inputs.bake-images }}
         set: |
           ${{ inputs.build-args }}
           base.output=type=docker,dest=/tmp/base.tar

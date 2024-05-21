@@ -43,10 +43,12 @@ jobs:
             lib_dir: aarch64
             setup-args: --no-nvidia
             additional-tag-suffix: ""
+            bake-images: [default]
           - name: cuda
             base_image_env: base_image
             lib_dir: aarch64
             additional-tag-suffix: -cuda
+            bake-images: [prebuilt, devel, runtime]
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
@@ -90,9 +92,11 @@ jobs:
           tag-suffix: ${{ matrix.additional-tag-suffix }}
           tag-arch: -arm64
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
+          bake-images: ${{ matrix.bake-images }}
           allow-push: true
 
       - name: Build 'Openadkit'
+        if: ${{ matrix.name == 'no-cuda' }}
         uses: ./.github/actions/docker-build-and-push-openadkit
         with:
           bake-target: openadkit
@@ -106,6 +110,7 @@ jobs:
           tag-suffix: ${{ matrix.additional-tag-suffix }}
           tag-arch: -arm64
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
+          bake-images: ${{ matrix.bake-images }}
           allow-push: true
 
       - name: Show disk space
