@@ -102,9 +102,7 @@ RANSACGroundFilterComponent::RANSACGroundFilterComponent(const rclcpp::NodeOptio
     unit_vec_ = Eigen::Vector3d::UnitX();
   } else if (unit_axis_ == "y") {
     unit_vec_ = Eigen::Vector3d::UnitY();
-  } else if (unit_axis_ == "z") {
-    unit_vec_ = Eigen::Vector3d::UnitZ();
-  } else {
+  } else {  // including (unit_axis_ == "z")
     unit_vec_ = Eigen::Vector3d::UnitZ();
   }
 
@@ -384,9 +382,7 @@ rcl_interfaces::msg::SetParametersResult RANSACGroundFilterComponent::paramCallb
       unit_vec_ = Eigen::Vector3d::UnitX();
     } else if (unit_axis_ == "y") {
       unit_vec_ = Eigen::Vector3d::UnitY();
-    } else if (unit_axis_ == "z") {
-      unit_vec_ = Eigen::Vector3d::UnitZ();
-    } else {
+    } else {  // including (unit_axis_ == "z")
       unit_vec_ = Eigen::Vector3d::UnitZ();
     }
     RCLCPP_DEBUG(get_logger(), "Setting unit_axis to: %s.", unit_axis_.c_str());
