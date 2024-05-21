@@ -84,6 +84,7 @@ private:
   rclcpp::Service<AutoMode>::SharedPtr srv_auto_mode_;
   rclcpp::CallbackGroup::SharedPtr callback_group_;
   rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::Clock::SharedPtr clock_;
   rclcpp::Logger logger_;
 
   Module module_;
