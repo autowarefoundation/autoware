@@ -4,7 +4,7 @@
 # push-branch: Build only devel and prebuilt. TAGS: date, latest
 # push-tag: Build all. TAGS: version, date, latest
 
-name: docker-build-and-push-main
+name: docker-build-main
 
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
   load-env:
     uses: ./.github/workflows/load-env.yaml
 
-  docker-build-and-push-main:
+  docker-build-main:
     needs: load-env
     runs-on: ubuntu-latest
     strategy:

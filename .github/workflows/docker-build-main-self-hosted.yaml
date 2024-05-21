@@ -4,7 +4,7 @@
 # push-branch: Build only devel and prebuilt. TAGS: date, latest
 # push-tag: Build all. TAGS: version, date, latest
 
-name: docker-build-and-push-main-self-hosted
+name: docker-build-main-self-hosted
 
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
   load-env:
     uses: ./.github/workflows/load-env.yaml
 
-  docker-build-and-push-main-self-hosted:
+  docker-build-main-self-hosted:
     needs: load-env
     runs-on: [self-hosted, linux, ARM64]
     strategy:
