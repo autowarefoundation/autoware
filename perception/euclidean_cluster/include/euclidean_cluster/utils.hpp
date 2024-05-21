@@ -31,6 +31,9 @@ void convertPointCloudClusters2Msg(
   const std_msgs::msg::Header & header,
   const std::vector<pcl::PointCloud<pcl::PointXYZ>> & clusters,
   tier4_perception_msgs::msg::DetectedObjectsWithFeature & msg);
+void convertPointCloudClusters2Msg(
+  const std_msgs::msg::Header & header, const std::vector<sensor_msgs::msg::PointCloud2> & clusters,
+  tier4_perception_msgs::msg::DetectedObjectsWithFeature & msg);
 void convertObjectMsg2SensorMsg(
   const tier4_perception_msgs::msg::DetectedObjectsWithFeature & input,
   sensor_msgs::msg::PointCloud2 & output);

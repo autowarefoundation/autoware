@@ -16,6 +16,9 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
@@ -40,6 +43,10 @@ public:
   virtual bool cluster(
     const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & pointcloud,
     std::vector<pcl::PointCloud<pcl::PointXYZ>> & clusters) = 0;
+
+  virtual bool cluster(
+    const sensor_msgs::msg::PointCloud2::ConstSharedPtr & input_msg,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature & output_clusters) = 0;
 
 protected:
   bool use_height_ = true;
