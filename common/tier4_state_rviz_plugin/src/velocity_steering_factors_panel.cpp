@@ -14,7 +14,7 @@
 //  limitations under the License.
 //
 
-#include "velocity_steering_factors_panel.hpp"
+#include "include/velocity_steering_factors_panel.hpp"
 
 #include <QGridLayout>
 #include <QHBoxLayout>

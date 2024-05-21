@@ -14,14 +14,12 @@
 //  limitations under the License.
 //
 
-#include "autoware_state_panel.hpp"
+#include "include/autoware_state_panel.hpp"
 
-#include <QGridLayout>
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QString>
-#include <QVBoxLayout>
 #include <rviz_common/display_context.hpp>
+
+#include <qcolor.h>
+#include <qscrollarea.h>
 
 #include <memory>
 #include <string>
@@ -35,181 +33,59 @@ namespace rviz_plugins
 {
 AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(parent)
 {
-  // Gear
-  auto * gear_prefix_label_ptr = new QLabel("GEAR: ");
-  gear_prefix_label_ptr->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-  gear_label_ptr_ = new QLabel("INIT");
-  gear_label_ptr_->setAlignment(Qt::AlignCenter);
-  auto * gear_layout = new QHBoxLayout;
-  gear_layout->addWidget(gear_prefix_label_ptr);
-  gear_layout->addWidget(gear_label_ptr_);
-
-  // Velocity Limit
-  velocity_limit_button_ptr_ = new QPushButton("Send Velocity Limit");
-  pub_velocity_limit_input_ = new QSpinBox();
-  pub_velocity_limit_input_->setRange(-100.0, 100.0);
-  pub_velocity_limit_input_->setValue(0.0);
-  pub_velocity_limit_input_->setSingleStep(5.0);
-  connect(velocity_limit_button_ptr_, SIGNAL(clicked()), this, SLOT(onClickVelocityLimit()));
-
-  // Emergency Button
-  emergency_button_ptr_ = new QPushButton("Set Emergency");
-  connect(emergency_button_ptr_, SIGNAL(clicked()), this, SLOT(onClickEmergencyButton()));
+  // Panel Configuration
+  this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
   // Layout
-  auto * v_layout = new QVBoxLayout;
-  auto * velocity_limit_layout = new QHBoxLayout();
-  v_layout->addWidget(makeOperationModeGroup());
-  v_layout->addWidget(makeControlModeGroup());
-  {
-    auto * h_layout = new QHBoxLayout();
-    h_layout->addWidget(makeRoutingGroup());
-    h_layout->addWidget(makeLocalizationGroup());
-    h_layout->addWidget(makeMotionGroup());
-    h_layout->addWidget(makeFailSafeGroup());
-    v_layout->addLayout(h_layout);
-  }
 
-  v_layout->addLayout(gear_layout);
-  velocity_limit_layout->addWidget(velocity_limit_button_ptr_);
-  velocity_limit_layout->addWidget(pub_velocity_limit_input_);
-  velocity_limit_layout->addWidget(new QLabel("  [km/h]"));
-  velocity_limit_layout->addWidget(emergency_button_ptr_);
-  v_layout->addLayout(velocity_limit_layout);
-  setLayout(v_layout);
-}
+  // Create a new container widget
+  QWidget * containerWidget = new QWidget(this);
+  containerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-QGroupBox * AutowareStatePanel::makeOperationModeGroup()
-{
-  auto * group = new QGroupBox("OperationMode");
-  auto * grid = new QGridLayout;
+  containerWidget->setStyleSheet(
+    QString("QWidget { background-color: %1; color: %2; }")
+      .arg(autoware::state_rviz_plugin::colors::default_colors.background.c_str())
+      .arg(autoware::state_rviz_plugin::colors::default_colors.on_surface.c_str()));
 
-  operation_mode_label_ptr_ = new QLabel("INIT");
-  operation_mode_label_ptr_->setAlignment(Qt::AlignCenter);
-  operation_mode_label_ptr_->setStyleSheet("border:1px solid black;");
-  grid->addWidget(operation_mode_label_ptr_, 0, 0, 0, 1);
+  auto * containerLayout = new QVBoxLayout(containerWidget);
+  // Set the alignment of the layout
+  containerLayout->setAlignment(Qt::AlignTop);
+  containerLayout->setSpacing(1);
 
-  auto_button_ptr_ = new QPushButton("AUTO");
-  auto_button_ptr_->setCheckable(true);
-  connect(auto_button_ptr_, SIGNAL(clicked()), SLOT(onClickAutonomous()));
-  grid->addWidget(auto_button_ptr_, 0, 1);
+  auto * operation_mode_group = makeOperationModeGroup();
+  auto * diagnostic_v_layout = new QVBoxLayout;
+  auto * localization_group = makeLocalizationGroup();
+  auto * motion_group = makeMotionGroup();
+  auto * fail_safe_group = makeFailSafeGroup();
+  auto * routing_group = makeRoutingGroup();
+  auto * velocity_limit_group = makeVelocityLimitGroup();
+  // auto * diagnostic_group = makeDiagnosticGroup();
 
-  stop_button_ptr_ = new QPushButton("STOP");
-  stop_button_ptr_->setCheckable(true);
-  connect(stop_button_ptr_, SIGNAL(clicked()), SLOT(onClickStop()));
-  grid->addWidget(stop_button_ptr_, 0, 2);
+  diagnostic_v_layout->addLayout(routing_group);
+  // diagnostic_v_layout->addSpacing(5);
+  diagnostic_v_layout->addLayout(localization_group);
+  // diagnostic_v_layout->addSpacing(5);
+  diagnostic_v_layout->addLayout(motion_group);
+  // diagnostic_v_layout->addSpacing(5);
+  diagnostic_v_layout->addLayout(fail_safe_group);
 
-  local_button_ptr_ = new QPushButton("LOCAL");
-  local_button_ptr_->setCheckable(true);
-  connect(local_button_ptr_, SIGNAL(clicked()), SLOT(onClickLocal()));
-  grid->addWidget(local_button_ptr_, 1, 1);
+  // containerLayout->addLayout(diagnostic_group);
 
-  remote_button_ptr_ = new QPushButton("REMOTE");
-  remote_button_ptr_->setCheckable(true);
-  connect(remote_button_ptr_, SIGNAL(clicked()), SLOT(onClickRemote()));
-  grid->addWidget(remote_button_ptr_, 1, 2);
+  containerLayout->addLayout(operation_mode_group);
+  // containerLayout->addSpacing(5);
+  containerLayout->addLayout(diagnostic_v_layout);
+  // main_v_layout->addSpacing(5);
+  containerLayout->addLayout(velocity_limit_group);
 
-  group->setLayout(grid);
-  return group;
-}
+  // Create a QScrollArea
+  QScrollArea * scrollArea = new QScrollArea(this);
+  scrollArea->setWidgetResizable(true);
+  scrollArea->setWidget(containerWidget);
 
-QGroupBox * AutowareStatePanel::makeControlModeGroup()
-{
-  auto * group = new QGroupBox("AutowareControl");
-  auto * grid = new QGridLayout;
-
-  control_mode_label_ptr_ = new QLabel("INIT");
-  control_mode_label_ptr_->setAlignment(Qt::AlignCenter);
-  control_mode_label_ptr_->setStyleSheet("border:1px solid black;");
-  grid->addWidget(control_mode_label_ptr_, 0, 0);
-
-  enable_button_ptr_ = new QPushButton("Enable");
-  enable_button_ptr_->setCheckable(true);
-  connect(enable_button_ptr_, SIGNAL(clicked()), SLOT(onClickAutowareControl()));
-  grid->addWidget(enable_button_ptr_, 0, 1);
-
-  disable_button_ptr_ = new QPushButton("Disable");
-  disable_button_ptr_->setCheckable(true);
-  connect(disable_button_ptr_, SIGNAL(clicked()), SLOT(onClickDirectControl()));
-  grid->addWidget(disable_button_ptr_, 0, 2);
-
-  group->setLayout(grid);
-  return group;
-}
-
-QGroupBox * AutowareStatePanel::makeRoutingGroup()
-{
-  auto * group = new QGroupBox("Routing");
-  auto * grid = new QGridLayout;
-
-  routing_label_ptr_ = new QLabel("INIT");
-  routing_label_ptr_->setAlignment(Qt::AlignCenter);
-  routing_label_ptr_->setStyleSheet("border:1px solid black;");
-  grid->addWidget(routing_label_ptr_, 0, 0);
-
-  clear_route_button_ptr_ = new QPushButton("Clear Route");
-  clear_route_button_ptr_->setCheckable(true);
-  connect(clear_route_button_ptr_, SIGNAL(clicked()), SLOT(onClickClearRoute()));
-  grid->addWidget(clear_route_button_ptr_, 1, 0);
-
-  group->setLayout(grid);
-  return group;
-}
-
-QGroupBox * AutowareStatePanel::makeLocalizationGroup()
-{
-  auto * group = new QGroupBox("Localization");
-  auto * grid = new QGridLayout;
-
-  localization_label_ptr_ = new QLabel("INIT");
-  localization_label_ptr_->setAlignment(Qt::AlignCenter);
-  localization_label_ptr_->setStyleSheet("border:1px solid black;");
-  grid->addWidget(localization_label_ptr_, 0, 0);
-
-  init_by_gnss_button_ptr_ = new QPushButton("Init by GNSS");
-  connect(init_by_gnss_button_ptr_, SIGNAL(clicked()), SLOT(onClickInitByGnss()));
-  grid->addWidget(init_by_gnss_button_ptr_, 1, 0);
-
-  group->setLayout(grid);
-  return group;
-}
-
-QGroupBox * AutowareStatePanel::makeMotionGroup()
-{
-  auto * group = new QGroupBox("Motion");
-  auto * grid = new QGridLayout;
-
-  motion_label_ptr_ = new QLabel("INIT");
-  motion_label_ptr_->setAlignment(Qt::AlignCenter);
-  motion_label_ptr_->setStyleSheet("border:1px solid black;");
-  grid->addWidget(motion_label_ptr_, 0, 0);
-
-  accept_start_button_ptr_ = new QPushButton("Accept Start");
-  accept_start_button_ptr_->setCheckable(true);
-  connect(accept_start_button_ptr_, SIGNAL(clicked()), SLOT(onClickAcceptStart()));
-  grid->addWidget(accept_start_button_ptr_, 1, 0);
-
-  group->setLayout(grid);
-  return group;
-}
-
-QGroupBox * AutowareStatePanel::makeFailSafeGroup()
-{
-  auto * group = new QGroupBox("FailSafe");
-  auto * grid = new QGridLayout;
-
-  mrm_state_label_ptr_ = new QLabel("INIT");
-  mrm_state_label_ptr_->setAlignment(Qt::AlignCenter);
-  mrm_state_label_ptr_->setStyleSheet("border:1px solid black;");
-  grid->addWidget(mrm_state_label_ptr_, 0, 0);
-
-  mrm_behavior_label_ptr_ = new QLabel("INIT");
-  mrm_behavior_label_ptr_->setAlignment(Qt::AlignCenter);
-  mrm_behavior_label_ptr_->setStyleSheet("border:1px solid black;");
-  grid->addWidget(mrm_behavior_label_ptr_, 1, 0);
-
-  group->setLayout(grid);
-  return group;
+  // Main layout for AutowareStatePanel
+  QVBoxLayout * mainLayout = new QVBoxLayout(this);
+  mainLayout->addWidget(scrollArea);
+  setLayout(mainLayout);
 }
 
 void AutowareStatePanel::onInitialize()
@@ -268,9 +144,9 @@ void AutowareStatePanel::onInitialize()
     "/api/fail_safe/mrm_state", rclcpp::QoS{1}.transient_local(),
     std::bind(&AutowareStatePanel::onMRMState, this, _1));
 
-  // Others
-  sub_gear_ = raw_node_->create_subscription<autoware_auto_vehicle_msgs::msg::GearReport>(
-    "/vehicle/status/gear_status", 10, std::bind(&AutowareStatePanel::onShift, this, _1));
+  // // Diagnostics
+  // sub_diag_ = raw_node_->create_subscription<DiagnosticArray>(
+  //   "/diagnostics", 10, std::bind(&AutowareStatePanel::onDiagnostics, this, _1));
 
   sub_emergency_ = raw_node_->create_subscription<tier4_external_api_msgs::msg::Emergency>(
     "/api/autoware/get/emergency", 10, std::bind(&AutowareStatePanel::onEmergencyStatus, this, _1));
@@ -280,174 +156,498 @@ void AutowareStatePanel::onInitialize()
 
   pub_velocity_limit_ = raw_node_->create_publisher<tier4_planning_msgs::msg::VelocityLimit>(
     "/planning/scenario_planning/max_velocity_default", rclcpp::QoS{1}.transient_local());
+
+  QObject::connect(segmented_button, &CustomSegmentedButton::buttonClicked, this, [this](int id) {
+    const QList<QAbstractButton *> buttons = segmented_button->getButtonGroup()->buttons();
+
+    // Check if the button ID is within valid range
+    if (id < 0 || id >= buttons.size()) {
+      return;
+    }
+
+    // Ensure the button is not null
+    QAbstractButton * abstractButton = segmented_button->getButtonGroup()->button(id);
+    if (!abstractButton) {
+      return;
+    }
+
+    QPushButton * button = qobject_cast<QPushButton *>(abstractButton);
+    if (button) {
+      // Call the corresponding function for each button
+      if (button == auto_button_ptr_) {
+        onClickAutonomous();
+      } else if (button == local_button_ptr_) {
+        onClickLocal();
+      } else if (button == remote_button_ptr_) {
+        onClickRemote();
+      } else if (button == stop_button_ptr_) {
+        onClickStop();
+      }
+    } else {
+      // qDebug() << "Button not found with ID:" << id;
+    }
+  });
+}
+
+QVBoxLayout * AutowareStatePanel::makeOperationModeGroup()
+{
+  control_mode_switch_ptr_ = new CustomToggleSwitch(this);
+  connect(
+    control_mode_switch_ptr_, &QCheckBox::stateChanged, this,
+    &AutowareStatePanel::onSwitchStateChanged);
+
+  control_mode_label_ptr_ = new QLabel("Autoware Control");
+  control_mode_label_ptr_->setStyleSheet(
+    QString("color: %1; font-weight: bold;")
+      .arg(autoware::state_rviz_plugin::colors::default_colors.on_secondary_container.c_str()));
+
+  CustomContainer * group1 = new CustomContainer(this);
+
+  auto * horizontal_layout = new QHBoxLayout;
+  horizontal_layout->setSpacing(10);
+  horizontal_layout->setContentsMargins(0, 0, 0, 0);
+
+  horizontal_layout->addWidget(control_mode_switch_ptr_);
+  horizontal_layout->addWidget(control_mode_label_ptr_);
+
+  // add switch and label to the container
+  group1->setContentsMargins(0, 0, 0, 10);
+  group1->getLayout()->addLayout(horizontal_layout, 0, 0, 1, 1, Qt::AlignLeft);
+
+  // Create the CustomSegmentedButton
+  segmented_button = new CustomSegmentedButton(this);
+  auto_button_ptr_ = segmented_button->addButton("Auto");
+  local_button_ptr_ = segmented_button->addButton("Local");
+  remote_button_ptr_ = segmented_button->addButton("Remote");
+  stop_button_ptr_ = segmented_button->addButton("Stop");
+
+  QVBoxLayout * groupLayout = new QVBoxLayout;
+  // set these widgets to show up at the left and not stretch more than needed
+  groupLayout->setAlignment(Qt::AlignCenter);
+  groupLayout->setContentsMargins(10, 0, 0, 0);
+  groupLayout->addWidget(group1);
+  // groupLayout->addSpacing(5);
+  groupLayout->addWidget(segmented_button, 0, Qt::AlignCenter);
+  return groupLayout;
+}
+
+QVBoxLayout * AutowareStatePanel::makeRoutingGroup()
+{
+  auto * group = new QVBoxLayout;
+
+  auto * custom_container = new CustomContainer(this);
+
+  routing_icon = new CustomIconLabel(
+    QColor(autoware::state_rviz_plugin::colors::default_colors.primary.c_str()));
+
+  clear_route_button_ptr_ = new CustomElevatedButton("Clear Route");
+  clear_route_button_ptr_->setCheckable(true);
+  clear_route_button_ptr_->setCursor(Qt::PointingHandCursor);
+  connect(clear_route_button_ptr_, SIGNAL(clicked()), SLOT(onClickClearRoute()));
+
+  routing_label_ptr_ = new QLabel("Routing | Unknown");
+  routing_label_ptr_->setStyleSheet(
+    QString("color: %1; font-weight: bold;")
+      .arg(autoware::state_rviz_plugin::colors::default_colors.on_secondary_container.c_str()));
+
+  auto * horizontal_layout = new QHBoxLayout;
+  horizontal_layout->setSpacing(10);
+  horizontal_layout->setContentsMargins(0, 0, 0, 0);
+
+  horizontal_layout->addWidget(routing_icon);
+  horizontal_layout->addWidget(routing_label_ptr_);
+
+  custom_container->getLayout()->addLayout(horizontal_layout, 0, 0, 1, 1, Qt::AlignLeft);
+  custom_container->getLayout()->addWidget(clear_route_button_ptr_, 0, 2, 1, 4, Qt::AlignRight);
+
+  custom_container->setContentsMargins(10, 0, 0, 0);
+
+  group->addWidget(custom_container);
+
+  return group;
+}
+
+QVBoxLayout * AutowareStatePanel::makeLocalizationGroup()
+{
+  auto * group = new QVBoxLayout;
+  auto * custom_container = new CustomContainer(this);
+
+  init_by_gnss_button_ptr_ = new CustomElevatedButton("Initialize with GNSS");
+  init_by_gnss_button_ptr_->setCursor(Qt::PointingHandCursor);
+  connect(init_by_gnss_button_ptr_, SIGNAL(clicked()), SLOT(onClickInitByGnss()));
+
+  localization_icon = new CustomIconLabel(
+    QColor(autoware::state_rviz_plugin::colors::default_colors.primary.c_str()));
+  localization_label_ptr_ = new QLabel("Localization | Unknown");
+  localization_label_ptr_->setStyleSheet(
+    QString("color: %1; font-weight: bold;")
+      .arg(autoware::state_rviz_plugin::colors::default_colors.on_secondary_container.c_str()));
+
+  auto * horizontal_layout = new QHBoxLayout;
+  horizontal_layout->setSpacing(10);
+  horizontal_layout->setContentsMargins(0, 0, 0, 0);
+
+  horizontal_layout->addWidget(localization_icon);
+  horizontal_layout->addWidget(localization_label_ptr_);
+
+  custom_container->getLayout()->addLayout(horizontal_layout, 0, 0, 1, 1, Qt::AlignLeft);
+  custom_container->getLayout()->addWidget(init_by_gnss_button_ptr_, 0, 2, 1, 4, Qt::AlignRight);
+
+  custom_container->setContentsMargins(10, 0, 0, 0);
+
+  group->addWidget(custom_container);
+  return group;
+}
+
+QVBoxLayout * AutowareStatePanel::makeMotionGroup()
+{
+  auto * group = new QVBoxLayout;
+  auto * custom_container = new CustomContainer(this);
+
+  accept_start_button_ptr_ = new CustomElevatedButton("Accept Start");
+  accept_start_button_ptr_->setCheckable(true);
+  accept_start_button_ptr_->setCursor(Qt::PointingHandCursor);
+  connect(accept_start_button_ptr_, SIGNAL(clicked()), SLOT(onClickAcceptStart()));
+
+  motion_icon = new CustomIconLabel(
+    QColor(autoware::state_rviz_plugin::colors::default_colors.primary.c_str()));
+  motion_label_ptr_ = new QLabel("Motion | Unknown");
+  motion_label_ptr_->setStyleSheet(
+    QString("color: %1; font-weight: bold;")
+      .arg(autoware::state_rviz_plugin::colors::default_colors.on_secondary_container.c_str()));
+
+  auto * horizontal_layout = new QHBoxLayout;
+  horizontal_layout->setSpacing(10);
+  horizontal_layout->setContentsMargins(0, 0, 0, 0);
+  horizontal_layout->setAlignment(Qt::AlignLeft);
+
+  horizontal_layout->addWidget(motion_icon);
+  horizontal_layout->addWidget(motion_label_ptr_);
+
+  custom_container->getLayout()->addLayout(horizontal_layout, 0, 0, 1, 1, Qt::AlignLeft);
+  custom_container->getLayout()->addWidget(accept_start_button_ptr_, 0, 2, 1, 4, Qt::AlignRight);
+
+  custom_container->setContentsMargins(10, 0, 0, 0);
+
+  group->addWidget(custom_container);
+
+  return group;
+}
+
+QVBoxLayout * AutowareStatePanel::makeFailSafeGroup()
+{
+  auto * group = new QVBoxLayout;
+  auto * v_layout = new QVBoxLayout;
+  auto * custom_container1 = new CustomContainer(this);
+  auto * custom_container2 = new CustomContainer(this);
+
+  mrm_state_icon = new CustomIconLabel(
+    QColor(autoware::state_rviz_plugin::colors::default_colors.primary.c_str()));
+  mrm_behavior_icon = new CustomIconLabel(
+    QColor(autoware::state_rviz_plugin::colors::default_colors.primary.c_str()));
+
+  mrm_state_label_ptr_ = new QLabel("MRM State | Unknown");
+  mrm_behavior_label_ptr_ = new QLabel("MRM Behavior | Unknown");
+
+  // change text color
+  mrm_state_label_ptr_->setStyleSheet(
+    QString("color: %1; font-weight: bold;")
+      .arg(autoware::state_rviz_plugin::colors::default_colors.on_secondary_container.c_str()));
+  mrm_behavior_label_ptr_->setStyleSheet(
+    QString("color: %1; font-weight: bold;")
+      .arg(autoware::state_rviz_plugin::colors::default_colors.on_secondary_container.c_str()));
+
+  auto * horizontal_layout = new QHBoxLayout;
+  horizontal_layout->setSpacing(10);
+  horizontal_layout->setContentsMargins(0, 0, 0, 0);
+
+  horizontal_layout->addWidget(mrm_state_icon);
+  horizontal_layout->addWidget(mrm_state_label_ptr_);
+
+  custom_container1->getLayout()->addLayout(horizontal_layout, 0, 0, 1, 1, Qt::AlignLeft);
+
+  auto * horizontal_layout2 = new QHBoxLayout;
+  horizontal_layout2->setSpacing(10);
+  horizontal_layout2->setContentsMargins(0, 0, 0, 0);
+
+  horizontal_layout2->addWidget(mrm_behavior_icon);
+  horizontal_layout2->addWidget(mrm_behavior_label_ptr_);
+
+  custom_container2->getLayout()->addLayout(horizontal_layout2, 0, 0, 1, 1, Qt::AlignLeft);
+
+  v_layout->addWidget(custom_container1);
+  // v_layout->addSpacing(5);
+  v_layout->addWidget(custom_container2);
+
+  group->setContentsMargins(10, 0, 0, 0);
+
+  group->addLayout(v_layout);
+  return group;
+}
+
+/* QVBoxLayout * AutowareStatePanel::makeDiagnosticGroup()
+{
+  auto * group = new QVBoxLayout;
+
+  // Create the scroll area
+  QScrollArea * scrollArea = new QScrollArea;
+  scrollArea->setFixedHeight(66);  // Adjust the height as needed
+  scrollArea->setWidgetResizable(true);
+  scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+  // Create a widget to contain the layout
+  QWidget * scrollAreaWidgetContents = new QWidget;
+  // use layout to contain the diagnostic label and the diagnostic level
+  diagnostic_layout_ = new QVBoxLayout();
+  diagnostic_layout_->setSpacing(5);                   // Set space between items
+  diagnostic_layout_->setContentsMargins(5, 5, 5, 5);  // Set margins within the layout
+
+  // Add a QLabel to display the title of what this is
+  auto * tsm_label_title_ptr_ = new QLabel("Topic State Monitor: ");
+  // Set the layout on the widget
+  scrollAreaWidgetContents->setLayout(diagnostic_layout_);
+
+  // Set the widget on the scroll area
+  scrollArea->setWidget(scrollAreaWidgetContents);
+
+  group->addWidget(tsm_label_title_ptr_);
+  group->addWidget(scrollArea);
+
+  return group;
+} */
+
+QVBoxLayout * AutowareStatePanel::makeVelocityLimitGroup()
+{
+  // Velocity Limit
+  velocity_limit_setter_ptr_ = new QLabel("Set Velocity Limit");
+  // set its width to fit the text
+  velocity_limit_setter_ptr_->setFixedWidth(
+    velocity_limit_setter_ptr_->fontMetrics().horizontalAdvance("Set Velocity Limit"));
+
+  velocity_limit_value_label_ = new QLabel("0");
+  velocity_limit_value_label_->setMaximumWidth(
+    velocity_limit_value_label_->fontMetrics().horizontalAdvance("0"));
+
+  CustomSlider * pub_velocity_limit_slider_ = new CustomSlider(Qt::Horizontal);
+  pub_velocity_limit_slider_->setRange(0, 100);
+  pub_velocity_limit_slider_->setValue(0);
+  pub_velocity_limit_slider_->setMaximumWidth(300);
+
+  connect(pub_velocity_limit_slider_, &QSlider::sliderPressed, this, [this]() {
+    sliderIsDragging = true;  // User starts dragging the handle
+  });
+
+  connect(pub_velocity_limit_slider_, &QSlider::sliderReleased, this, [this]() {
+    sliderIsDragging = false;  // User finished dragging
+    onClickVelocityLimit();    // Call when handle is released after dragging
+  });
+
+  connect(pub_velocity_limit_slider_, &QSlider::valueChanged, this, [this](int value) {
+    this->velocity_limit_value_label_->setText(QString::number(value));
+    velocity_limit_value_label_->setMaximumWidth(
+      velocity_limit_value_label_->fontMetrics().horizontalAdvance(QString::number(value)));
+    if (!sliderIsDragging) {   // If the value changed without dragging, it's a click on the track
+      onClickVelocityLimit();  // Call the function immediately since it's not a drag operation
+    }
+  });
+
+  // Emergency Button
+  emergency_button_ptr_ = new CustomElevatedButton("Set Emergency");
+
+  emergency_button_ptr_->setCursor(Qt::PointingHandCursor);
+  // set fixed width to fit the text
+  connect(emergency_button_ptr_, SIGNAL(clicked()), this, SLOT(onClickEmergencyButton()));
+  auto * utility_layout = new QVBoxLayout;
+  auto * velocity_limit_layout = new QHBoxLayout;
+  QLabel * velocity_limit_label = new QLabel("km/h");
+
+  velocity_limit_layout->addWidget(pub_velocity_limit_slider_);
+  velocity_limit_layout->addSpacing(5);
+  velocity_limit_layout->addWidget(velocity_limit_value_label_);
+  velocity_limit_layout->addWidget(velocity_limit_label);
+
+  // Velocity Limit layout
+  utility_layout->addSpacing(15);
+  utility_layout->addWidget(velocity_limit_setter_ptr_);
+  utility_layout->addSpacing(10);
+  utility_layout->addLayout(velocity_limit_layout);
+  utility_layout->addSpacing(25);
+  utility_layout->addWidget(emergency_button_ptr_);
+
+  utility_layout->setContentsMargins(15, 0, 15, 0);
+
+  return utility_layout;
 }
 
 void AutowareStatePanel::onOperationMode(const OperationModeState::ConstSharedPtr msg)
 {
-  auto changeButtonState = [this](
-                             QPushButton * button, const bool is_desired_mode_available,
-                             const uint8_t current_mode = OperationModeState::UNKNOWN,
-                             const uint8_t desired_mode = OperationModeState::STOP) {
-    if (is_desired_mode_available && current_mode != desired_mode) {
-      activateButton(button);
-    } else {
-      deactivateButton(button);
-    }
+  auto updateButtonState = [](
+                             CustomSegmentedButtonItem * button, bool is_available,
+                             uint8_t current_mode, uint8_t desired_mode, bool disable) {
+    bool is_checked = (current_mode == desired_mode);
+    button->setHovered(false);
+
+    button->setActivated(is_checked);
+    button->setChecked(is_checked);
+    button->setDisabledButton(disable || !is_available);
+    button->setCheckableButton(!disable && is_available && !is_checked);
   };
 
-  QString text = "";
-  QString style_sheet = "";
-  // Operation Mode
-  switch (msg->mode) {
-    case OperationModeState::AUTONOMOUS:
-      text = "AUTONOMOUS";
-      style_sheet = "background-color: #00FF00;";  // green
-      break;
+  bool disable_buttons = msg->is_in_transition;
 
-    case OperationModeState::LOCAL:
-      text = "LOCAL";
-      style_sheet = "background-color: #FFFF00;";  // yellow
-      break;
+  updateButtonState(
+    auto_button_ptr_, msg->is_autonomous_mode_available, msg->mode, OperationModeState::AUTONOMOUS,
+    disable_buttons);
+  updateButtonState(
+    stop_button_ptr_, msg->is_stop_mode_available, msg->mode, OperationModeState::STOP,
+    disable_buttons);
+  updateButtonState(
+    local_button_ptr_, msg->is_local_mode_available, msg->mode, OperationModeState::LOCAL,
+    disable_buttons);
+  updateButtonState(
+    remote_button_ptr_, msg->is_remote_mode_available, msg->mode, OperationModeState::REMOTE,
+    disable_buttons);
 
-    case OperationModeState::REMOTE:
-      text = "REMOTE";
-      style_sheet = "background-color: #FFFF00;";  // yellow
-      break;
+  // toggle switch for control mode
+  auto changeToggleSwitchState = [](CustomToggleSwitch * toggle_switch, const bool is_enabled) {
+    // Flick the switch without triggering its function
+    bool old_state = toggle_switch->blockSignals(true);
+    toggle_switch->setCheckedState(!is_enabled);
+    toggle_switch->blockSignals(old_state);
+  };
 
-    case OperationModeState::STOP:
-      text = "STOP";
-      style_sheet = "background-color: #FFA500;";  // orange
-      break;
-
-    default:
-      text = "UNKNOWN";
-      style_sheet = "background-color: #FF0000;";  // red
-      break;
+  if (!msg->is_in_transition) {
+    // would cause an on/off/on flicker if in transition
+    changeToggleSwitchState(control_mode_switch_ptr_, !msg->is_autoware_control_enabled);
   }
-
-  if (msg->is_in_transition) {
-    text += "\n(TRANSITION)";
-  }
-
-  updateLabel(operation_mode_label_ptr_, text, style_sheet);
-
-  // Control Mode
-  if (msg->is_autoware_control_enabled) {
-    updateLabel(control_mode_label_ptr_, "Enable", "background-color: #00FF00;");  // green
-  } else {
-    updateLabel(control_mode_label_ptr_, "Disable", "background-color: #FFFF00;");  // yellow
-  }
-
-  // Button
-  changeButtonState(
-    auto_button_ptr_, msg->is_autonomous_mode_available, msg->mode, OperationModeState::AUTONOMOUS);
-  changeButtonState(
-    stop_button_ptr_, msg->is_stop_mode_available, msg->mode, OperationModeState::STOP);
-  changeButtonState(
-    local_button_ptr_, msg->is_local_mode_available, msg->mode, OperationModeState::LOCAL);
-  changeButtonState(
-    remote_button_ptr_, msg->is_remote_mode_available, msg->mode, OperationModeState::REMOTE);
-
-  changeButtonState(enable_button_ptr_, !msg->is_autoware_control_enabled);
-  changeButtonState(disable_button_ptr_, msg->is_autoware_control_enabled);
 }
 
 void AutowareStatePanel::onRoute(const RouteState::ConstSharedPtr msg)
 {
-  QString text = "";
-  QString style_sheet = "";
+  IconState state;
+  QColor bgColor;
+  QString route_state = "Routing | Unknown";
+
   switch (msg->state) {
     case RouteState::UNSET:
-      text = "UNSET";
-      style_sheet = "background-color: #FFFF00;";  // yellow
+      state = Pending;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.warning.c_str());
+      route_state = "Routing | Unset";
       break;
 
     case RouteState::SET:
-      text = "SET";
-      style_sheet = "background-color: #00FF00;";  // green
+      state = Active;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.success.c_str());
+      route_state = "Routing | Set";
       break;
 
     case RouteState::ARRIVED:
-      text = "ARRIVED";
-      style_sheet = "background-color: #FFA500;";  // orange
+      state = Danger;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.danger.c_str());
+      route_state = "Routing | Arrived";
       break;
 
     case RouteState::CHANGING:
-      text = "CHANGING";
-      style_sheet = "background-color: #FFFF00;";  // yellow
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.warning.c_str());
+      state = Pending;
+      route_state = "Routing | Changing";
       break;
 
     default:
-      text = "UNKNOWN";
-      style_sheet = "background-color: #FF0000;";  // red
+      state = None;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.info.c_str());
       break;
   }
 
-  updateLabel(routing_label_ptr_, text, style_sheet);
+  routing_icon->updateStyle(state, bgColor);
+  routing_label_ptr_->setText(route_state);
 
   if (msg->state == RouteState::SET) {
     activateButton(clear_route_button_ptr_);
   } else {
+    clear_route_button_ptr_->setStyleSheet(
+      QString("QPushButton {"
+              "background-color: %1;color: %2;"
+              "border: 2px solid %3;"
+              "font-weight: bold;"
+              "}")
+        .arg(autoware::state_rviz_plugin::colors::default_colors.surface_container_highest.c_str())
+        .arg(autoware::state_rviz_plugin::colors::default_colors.outline.c_str())
+        .arg(
+          autoware::state_rviz_plugin::colors::default_colors.surface_container_highest.c_str()));
     deactivateButton(clear_route_button_ptr_);
   }
 }
 
 void AutowareStatePanel::onLocalization(const LocalizationInitializationState::ConstSharedPtr msg)
 {
-  QString text = "";
-  QString style_sheet = "";
+  IconState state;
+  QColor bgColor;
+  QString localization_state = "Localization | Unknown";
+
   switch (msg->state) {
     case LocalizationInitializationState::UNINITIALIZED:
-      text = "UNINITIALIZED";
-      style_sheet = "background-color: #FFFF00;";  // yellow
-      break;
-
-    case LocalizationInitializationState::INITIALIZING:
-      text = "INITIALIZING";
-      style_sheet = "background-color: #FFA500;";  // orange
+      state = None;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.info.c_str());
+      localization_state = "Localization | Uninitialized";
       break;
 
     case LocalizationInitializationState::INITIALIZED:
-      text = "INITIALIZED";
-      style_sheet = "background-color: #00FF00;";  // green
+      state = Active;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.success.c_str());
+      localization_state = "Localization | Initialized";
+      break;
+
+    case LocalizationInitializationState::INITIALIZING:
+      state = Pending;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.warning.c_str());
+      localization_state = "Localization | Initializing";
       break;
 
     default:
-      text = "UNKNOWN";
-      style_sheet = "background-color: #FF0000;";  // red
+      state = None;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.info.c_str());
       break;
   }
 
-  updateLabel(localization_label_ptr_, text, style_sheet);
+  localization_icon->updateStyle(state, bgColor);
+  localization_label_ptr_->setText(localization_state);
 }
 
 void AutowareStatePanel::onMotion(const MotionState::ConstSharedPtr msg)
 {
-  QString text = "";
-  QString style_sheet = "";
+  IconState state;
+  QColor bgColor;
+  QString motion_state = "Motion | Unknown";
+
   switch (msg->state) {
     case MotionState::STARTING:
-      text = "STARTING";
-      style_sheet = "background-color: #FFFF00;";  // yellow
-      break;
-
-    case MotionState::STOPPED:
-      text = "STOPPED";
-      style_sheet = "background-color: #FFA500;";  // orange
+      state = Pending;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.warning.c_str());
+      motion_state = "Motion | Starting";
       break;
 
     case MotionState::MOVING:
-      text = "MOVING";
-      style_sheet = "background-color: #00FF00;";  // green
+      state = Active;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.success.c_str());
+      motion_state = "Motion | Moving";
+      break;
+
+    case MotionState::STOPPED:
+      state = None;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.danger.c_str());
+      motion_state = "Motion | Stopped";
       break;
 
     default:
-      text = "UNKNOWN";
-      style_sheet = "background-color: #FF0000;";  // red
+      state = Danger;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.info.c_str());
       break;
   }
 
-  updateLabel(motion_label_ptr_, text, style_sheet);
+  motion_icon->updateStyle(state, bgColor);
+  motion_label_ptr_->setText(motion_state);
 
   if (msg->state == MotionState::STARTING) {
     activateButton(accept_start_button_ptr_);
@@ -458,94 +658,85 @@ void AutowareStatePanel::onMotion(const MotionState::ConstSharedPtr msg)
 
 void AutowareStatePanel::onMRMState(const MRMState::ConstSharedPtr msg)
 {
-  // state
-  {
-    QString text = "";
-    QString style_sheet = "";
-    switch (msg->state) {
-      case MRMState::NONE:
-        text = "NONE";
-        style_sheet = "background-color: #00FF00;";  // green
-        break;
+  IconState state;
+  QColor bgColor;
+  QString mrm_state = "MRM State | Unknown";
 
-      case MRMState::MRM_OPERATING:
-        text = "MRM_OPERATING";
-        style_sheet = "background-color: #FFA500;";  // orange
-        break;
+  switch (msg->state) {
+    case MRMState::NONE:
+      state = None;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.info.c_str());
+      mrm_state = "MRM State | Inactive";
+      break;
 
-      case MRMState::MRM_SUCCEEDED:
-        text = "MRM_SUCCEEDED";
-        style_sheet = "background-color: #FFFF00;";  // yellow
-        break;
+    case MRMState::MRM_OPERATING:
+      state = Active;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.info.c_str());
+      mrm_state = "MRM State | Operating";
+      break;
 
-      case MRMState::MRM_FAILED:
-        text = "MRM_FAILED";
-        style_sheet = "background-color: #FF0000;";  // red
-        break;
+    case MRMState::MRM_SUCCEEDED:
+      state = Active;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.success.c_str());
+      mrm_state = "MRM State | Successful";
+      break;
 
-      default:
-        text = "UNKNOWN";
-        style_sheet = "background-color: #FF0000;";  // red
-        break;
-    }
+    case MRMState::MRM_FAILED:
+      state = Danger;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.danger.c_str());
+      mrm_state = "MRM State | Failed";
+      break;
 
-    updateLabel(mrm_state_label_ptr_, text, style_sheet);
+    default:
+      state = None;
+      bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.info.c_str());
+      mrm_state = "MRM State | Unknown";
+      break;
   }
+
+  mrm_state_icon->updateStyle(state, bgColor);
+  mrm_state_label_ptr_->setText(mrm_state);
 
   // behavior
   {
-    QString text = "";
-    QString style_sheet = "";
+    IconState state;
+    QColor bgColor;
+    QString mrm_behavior = "MRM Behavior | Unknown";
+
     switch (msg->behavior) {
       case MRMState::NONE:
-        text = "NONE";
-        style_sheet = "background-color: #00FF00;";  // green
+        state = Crash;
+        bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.info.c_str());
+        mrm_behavior = "MRM Behavior | Inactive";
         break;
 
       case MRMState::PULL_OVER:
-        text = "PULL_OVER";
-        style_sheet = "background-color: #FFFF00;";  // yellow
+        state = Crash;
+        bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.success.c_str());
+        mrm_behavior = "MRM Behavior | Pull Over";
         break;
 
       case MRMState::COMFORTABLE_STOP:
-        text = "COMFORTABLE_STOP";
-        style_sheet = "background-color: #FFFF00;";  // yellow
+        state = Crash;
+        bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.warning.c_str());
+        mrm_behavior = "MRM Behavior | Comfortable Stop";
         break;
 
       case MRMState::EMERGENCY_STOP:
-        text = "EMERGENCY_STOP";
-        style_sheet = "background-color: #FFA500;";  // orange
+        state = Crash;
+        bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.danger.c_str());
+        mrm_behavior = "MRM Behavior | Emergency Stop";
         break;
 
       default:
-        text = "UNKNOWN";
-        style_sheet = "background-color: #FF0000;";  // red
+        state = Crash;
+        bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.info.c_str());
+        mrm_behavior = "MRM Behavior | Unknown";
         break;
     }
 
-    updateLabel(mrm_behavior_label_ptr_, text, style_sheet);
-  }
-}
-
-void AutowareStatePanel::onShift(
-  const autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr msg)
-{
-  switch (msg->report) {
-    case autoware_auto_vehicle_msgs::msg::GearReport::PARK:
-      gear_label_ptr_->setText("PARKING");
-      break;
-    case autoware_auto_vehicle_msgs::msg::GearReport::REVERSE:
-      gear_label_ptr_->setText("REVERSE");
-      break;
-    case autoware_auto_vehicle_msgs::msg::GearReport::DRIVE:
-      gear_label_ptr_->setText("DRIVE");
-      break;
-    case autoware_auto_vehicle_msgs::msg::GearReport::NEUTRAL:
-      gear_label_ptr_->setText("NEUTRAL");
-      break;
-    case autoware_auto_vehicle_msgs::msg::GearReport::LOW:
-      gear_label_ptr_->setText("LOW");
-      break;
+    mrm_behavior_icon->updateStyle(state, bgColor);
+    mrm_behavior_label_ptr_->setText(mrm_behavior);
   }
 }
 
@@ -554,18 +745,37 @@ void AutowareStatePanel::onEmergencyStatus(
 {
   current_emergency_ = msg->emergency;
   if (msg->emergency) {
-    emergency_button_ptr_->setText(QString::fromStdString("Clear Emergency"));
-    emergency_button_ptr_->setStyleSheet("background-color: #FF0000;");
+    emergency_button_ptr_->updateStyle(
+      "Clear Emergency",
+      QColor(autoware::state_rviz_plugin::colors::default_colors.error_container.c_str()),
+      QColor(autoware::state_rviz_plugin::colors::default_colors.on_error_container.c_str()),
+      QColor(autoware::state_rviz_plugin::colors::default_colors.on_error.c_str()),
+      QColor(autoware::state_rviz_plugin::colors::default_colors.on_error_container.c_str()),
+      QColor(autoware::state_rviz_plugin::colors::default_colors.error_container.c_str()));
   } else {
-    emergency_button_ptr_->setText(QString::fromStdString("Set Emergency"));
-    emergency_button_ptr_->setStyleSheet("background-color: #00FF00;");
+    emergency_button_ptr_->updateStyle(
+      "Set Emergency", QColor(autoware::state_rviz_plugin::colors::default_colors.primary.c_str()),
+      QColor(autoware::state_rviz_plugin::colors::default_colors.on_primary.c_str()),
+      QColor(autoware::state_rviz_plugin::colors::default_colors.on_primary_container.c_str()),
+      QColor(autoware::state_rviz_plugin::colors::default_colors.on_primary.c_str()),
+      QColor(autoware::state_rviz_plugin::colors::default_colors.surface_tint.c_str()));
+  }
+}
+
+void AutowareStatePanel::onSwitchStateChanged(int state)
+{
+  if (state == 0) {
+    // call the control mode function
+    onClickDirectControl();
+  } else if (state == 2) {
+    onClickAutowareControl();
   }
 }
 
 void AutowareStatePanel::onClickVelocityLimit()
 {
   auto velocity_limit = std::make_shared<tier4_planning_msgs::msg::VelocityLimit>();
-  velocity_limit->max_velocity = pub_velocity_limit_input_->value() / 3.6;
+  velocity_limit->max_velocity = velocity_limit_value_label_->text().toDouble() / 3.6;
   pub_velocity_limit_->publish(*velocity_limit);
 }
 

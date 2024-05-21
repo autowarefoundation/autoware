@@ -17,12 +17,26 @@
 #ifndef AUTOWARE_STATE_PANEL_HPP_
 #define AUTOWARE_STATE_PANEL_HPP_
 
-#include <QGroupBox>
+#include "custom_button.hpp"
+#include "custom_container.hpp"
+#include "custom_icon_label.hpp"
+#include "custom_label.hpp"
+#include "custom_segmented_button.hpp"
+#include "custom_segmented_button_item.hpp"
+#include "custom_slider.hpp"
+#include "custom_toggle_switch.hpp"
+#include "material_colors.hpp"
+
+#include <QChar>
+#include <QColor>
+#include <QHBoxLayout>
 #include <QLabel>
-#include <QLayout>
 #include <QPushButton>
+#include <QSlider>
 #include <QSpinBox>
-#include <QTableWidget>
+#include <QString>
+#include <QVBoxLayout>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/panel.hpp>
 
@@ -36,11 +50,17 @@
 #include <autoware_adapi_v1_msgs/srv/clear_route.hpp>
 #include <autoware_adapi_v1_msgs/srv/initialize_localization.hpp>
 #include <autoware_auto_vehicle_msgs/msg/gear_report.hpp>
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <tier4_external_api_msgs/msg/emergency.hpp>
 #include <tier4_external_api_msgs/srv/set_emergency.hpp>
 #include <tier4_planning_msgs/msg/velocity_limit.hpp>
 
+#include <qlabel.h>
+
 #include <memory>
+#include <string>
+#include <unordered_map>
 
 namespace rviz_plugins
 {
@@ -56,6 +76,8 @@ class AutowareStatePanel : public rviz_common::Panel
   using MotionState = autoware_adapi_v1_msgs::msg::MotionState;
   using AcceptStart = autoware_adapi_v1_msgs::srv::AcceptStart;
   using MRMState = autoware_adapi_v1_msgs::msg::MrmState;
+  using DiagnosticArray = diagnostic_msgs::msg::DiagnosticArray;
+  using DiagnosticStatus = diagnostic_msgs::msg::DiagnosticStatus;
 
   Q_OBJECT
 
@@ -75,17 +97,19 @@ public Q_SLOTS:  // NOLINT for Qt
   void onClickAcceptStart();
   void onClickVelocityLimit();
   void onClickEmergencyButton();
+  void onSwitchStateChanged(int state);
 
 protected:
   // Layout
-  QGroupBox * makeOperationModeGroup();
-  QGroupBox * makeControlModeGroup();
-  QGroupBox * makeRoutingGroup();
-  QGroupBox * makeLocalizationGroup();
-  QGroupBox * makeMotionGroup();
-  QGroupBox * makeFailSafeGroup();
+  QVBoxLayout * makeVelocityLimitGroup();
+  QVBoxLayout * makeOperationModeGroup();
+  QVBoxLayout * makeRoutingGroup();
+  QVBoxLayout * makeLocalizationGroup();
+  QVBoxLayout * makeMotionGroup();
+  QVBoxLayout * makeFailSafeGroup();
+  // QVBoxLayout * makeDiagnosticGroup();
 
-  void onShift(const autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr msg);
+  // void onShift(const autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr msg);
   void onEmergencyStatus(const tier4_external_api_msgs::msg::Emergency::ConstSharedPtr msg);
 
   rclcpp::Node::SharedPtr raw_node_;
@@ -97,13 +121,15 @@ protected:
 
   rclcpp::Publisher<tier4_planning_msgs::msg::VelocityLimit>::SharedPtr pub_velocity_limit_;
 
+  QLabel * velocity_limit_value_label_{nullptr};
+  bool sliderIsDragging = false;
+
   // Operation Mode
-  //// Gate Mode
   QLabel * operation_mode_label_ptr_{nullptr};
-  QPushButton * stop_button_ptr_{nullptr};
-  QPushButton * auto_button_ptr_{nullptr};
-  QPushButton * local_button_ptr_{nullptr};
-  QPushButton * remote_button_ptr_{nullptr};
+  CustomSegmentedButtonItem * stop_button_ptr_{nullptr};
+  CustomSegmentedButtonItem * auto_button_ptr_{nullptr};
+  CustomSegmentedButtonItem * local_button_ptr_{nullptr};
+  CustomSegmentedButtonItem * remote_button_ptr_{nullptr};
 
   rclcpp::Subscription<OperationModeState>::SharedPtr sub_operation_mode_;
   rclcpp::Client<ChangeOperationMode>::SharedPtr client_change_to_autonomous_;
@@ -112,6 +138,8 @@ protected:
   rclcpp::Client<ChangeOperationMode>::SharedPtr client_change_to_remote_;
 
   //// Control Mode
+  CustomSegmentedButton * segmented_button;
+  CustomToggleSwitch * control_mode_switch_ptr_{nullptr};
   QLabel * control_mode_label_ptr_{nullptr};
   QPushButton * enable_button_ptr_{nullptr};
   QPushButton * disable_button_ptr_{nullptr};
@@ -123,8 +151,9 @@ protected:
   void changeOperationMode(const rclcpp::Client<ChangeOperationMode>::SharedPtr client);
 
   // Routing
+  CustomIconLabel * routing_icon{nullptr};
+  CustomElevatedButton * clear_route_button_ptr_{nullptr};
   QLabel * routing_label_ptr_{nullptr};
-  QPushButton * clear_route_button_ptr_{nullptr};
 
   rclcpp::Subscription<RouteState>::SharedPtr sub_route_;
   rclcpp::Client<ClearRoute>::SharedPtr client_clear_route_;
@@ -132,8 +161,9 @@ protected:
   void onRoute(const RouteState::ConstSharedPtr msg);
 
   // Localization
+  CustomIconLabel * localization_icon{nullptr};
+  CustomElevatedButton * init_by_gnss_button_ptr_{nullptr};
   QLabel * localization_label_ptr_{nullptr};
-  QPushButton * init_by_gnss_button_ptr_{nullptr};
 
   rclcpp::Subscription<LocalizationInitializationState>::SharedPtr sub_localization_;
   rclcpp::Client<InitializeLocalization>::SharedPtr client_init_by_gnss_;
@@ -141,8 +171,9 @@ protected:
   void onLocalization(const LocalizationInitializationState::ConstSharedPtr msg);
 
   // Motion
+  CustomIconLabel * motion_icon{nullptr};
+  CustomElevatedButton * accept_start_button_ptr_{nullptr};
   QLabel * motion_label_ptr_{nullptr};
-  QPushButton * accept_start_button_ptr_{nullptr};
 
   rclcpp::Subscription<MotionState>::SharedPtr sub_motion_;
   rclcpp::Client<AcceptStart>::SharedPtr client_accept_start_;
@@ -150,7 +181,9 @@ protected:
   void onMotion(const MotionState::ConstSharedPtr msg);
 
   // FailSafe
+  CustomIconLabel * mrm_state_icon{nullptr};
   QLabel * mrm_state_label_ptr_{nullptr};
+  CustomIconLabel * mrm_behavior_icon{nullptr};
   QLabel * mrm_behavior_label_ptr_{nullptr};
 
   rclcpp::Subscription<MRMState>::SharedPtr sub_mrm_;
@@ -158,11 +191,11 @@ protected:
   void onMRMState(const MRMState::ConstSharedPtr msg);
 
   // Others
-  QPushButton * velocity_limit_button_ptr_;
+  QLabel * velocity_limit_setter_ptr_;
   QLabel * gear_label_ptr_;
 
   QSpinBox * pub_velocity_limit_input_;
-  QPushButton * emergency_button_ptr_;
+  CustomElevatedButton * emergency_button_ptr_;
 
   bool current_emergency_{false};
 
@@ -189,6 +222,17 @@ protected:
   {
     label->setText(text);
     label->setStyleSheet(style_sheet);
+  }
+  static void updateCustomLabel(
+    CustomLabel * label, QString text, QColor bg_color, QColor text_color)
+  {
+    label->updateStyle(text, bg_color, text_color);
+  }
+
+  static void updateButton(QPushButton * button, QString text, QString style_sheet)
+  {
+    button->setText(text);
+    button->setStyleSheet(style_sheet);
   }
 
   static void activateButton(QAbstractButton * button)
