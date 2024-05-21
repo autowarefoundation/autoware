@@ -1,0 +1,93 @@
+header:
+  stamp:
+    sec: 1715936953
+    nanosec: 67206425
+  frame_id: map
+start_pose:
+  position:
+    x: -50.0
+    y: 1.75
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+goal_pose:
+  position:
+    x: 70.0
+    y: -1.75
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+segments:
+  - preferred_primitive:
+      id: 4765
+      primitive_type: ""
+    primitives:
+      - id: 4765
+        primitive_type: lane
+      - id: 9590
+        primitive_type: lane
+  - preferred_primitive:
+      id: 4770
+      primitive_type: ""
+    primitives:
+      - id: 4770
+        primitive_type: lane
+      - id: 5072
+        primitive_type: lane
+  - preferred_primitive:
+      id: 4775
+      primitive_type: ""
+    primitives:
+      - id: 4775
+        primitive_type: lane
+      - id: 9594
+        primitive_type: lane
+  - preferred_primitive:
+      id: 9598
+      primitive_type: ""
+    primitives:
+      - id: 4424
+        primitive_type: lane
+      - id: 9598
+        primitive_type: lane
+  - preferred_primitive:
+      id: 5084
+      primitive_type: ""
+    primitives:
+      - id: 4780
+        primitive_type: lane
+      - id: 5084
+        primitive_type: lane
+  - preferred_primitive:
+      id: 5088
+      primitive_type: ""
+    primitives:
+      - id: 4785
+        primitive_type: lane
+      - id: 5088
+        primitive_type: lane
+uuid:
+  uuid:
+    - 231
+    - 254
+    - 143
+    - 227
+    - 194
+    - 8
+    - 220
+    - 88
+    - 30
+    - 194
+    - 172
+    - 147
+    - 127
+    - 143
+    - 176
+    - 133
+allow_modification: false

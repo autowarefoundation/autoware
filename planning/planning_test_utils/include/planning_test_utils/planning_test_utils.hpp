@@ -193,14 +193,10 @@ OccupancyGrid makeCostMapMsg(size_t width = 150, size_t height = 150, double res
   return costmap_msg;
 }
 
-HADMapBin makeMapBinMsg()
+HADMapBin make_map_bin_msg(
+  const std::string & absolute_path, const double center_line_resolution = 5.0)
 {
-  const auto planning_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("planning_test_utils");
-  const auto lanelet2_path = planning_test_utils_dir + "/test_map/lanelet2_map.osm";
-  double center_line_resolution = 5.0;
-  // load map from file
-  const auto map = loadMap(lanelet2_path);
+  const auto map = loadMap(absolute_path);
   if (!map) {
     return autoware_auto_mapping_msgs::msg::HADMapBin_<std::allocator<void>>{};
   }
@@ -210,8 +206,18 @@ HADMapBin makeMapBinMsg()
 
   // create map bin msg
   const auto map_bin_msg =
-    convertToMapBinMsg(map, lanelet2_path, rclcpp::Clock(RCL_ROS_TIME).now());
+    convertToMapBinMsg(map, absolute_path, rclcpp::Clock(RCL_ROS_TIME).now());
   return map_bin_msg;
+}
+
+HADMapBin makeMapBinMsg()
+{
+  const auto planning_test_utils_dir =
+    ament_index_cpp::get_package_share_directory("planning_test_utils");
+  const auto lanelet2_path = planning_test_utils_dir + "/test_map/lanelet2_map.osm";
+  double center_line_resolution = 5.0;
+
+  return make_map_bin_msg(lanelet2_path, center_line_resolution);
 }
 
 Odometry makeOdometry(const double shift = 0.0)

@@ -1,0 +1,41 @@
+start_pose:
+  position:
+    x: 1.0
+    y: 2.0
+    z: 3.0
+  orientation:
+    x: 0.1
+    y: 0.2
+    z: 0.3
+    w: 0.4
+goal_pose:
+  position:
+    x: 4.0
+    y: 5.0
+    z: 6.0
+  orientation:
+    x: 0.5
+    y: 0.6
+    z: 0.7
+    w: 0.8
+segments:
+  - preferred_primitive:
+      id: 11
+      primitive_type: ""
+    primitives:
+      - id: 22
+        primitive_type: lane
+      - id: 33
+        primitive_type: lane
+  - preferred_primitive:
+      id: 44
+      primitive_type: ""
+    primitives:
+      - id: 55
+        primitive_type: lane
+      - id: 66
+        primitive_type: lane
+      - id: 77
+        primitive_type: lane
+      - id: 88
+        primitive_type: lane
