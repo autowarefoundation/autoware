@@ -143,7 +143,7 @@ runs:
         retention-days: 7
         compression-level: 6
         overwrite: true
-        if-no-files-found: error
+        if-no-files-found: warn
 
     - name: Upload Artifact - visualizer
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
@@ -155,7 +155,7 @@ runs:
         retention-days: 7
         compression-level: 6
         overwrite: true
-        if-no-files-found: error
+        if-no-files-found: warn
 
     - name: Upload Artifact - simulator
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
@@ -167,7 +167,7 @@ runs:
         retention-days: 7
         compression-level: 6
         overwrite: true
-        if-no-files-found: error
+        if-no-files-found: warn
 
     - name: Output artifact URLs
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}

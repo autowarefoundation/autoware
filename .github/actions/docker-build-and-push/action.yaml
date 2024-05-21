@@ -156,7 +156,7 @@ runs:
         retention-days: 7
         compression-level: 6
         overwrite: true
-        if-no-files-found: error
+        if-no-files-found: warn
 
     - name: Upload Artifact - prebuilt
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
@@ -168,7 +168,7 @@ runs:
         retention-days: 7
         compression-level: 6
         overwrite: true
-        if-no-files-found: error
+        if-no-files-found: warn
 
     - name: Remove tar file - prebuilt
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
@@ -186,7 +186,7 @@ runs:
         retention-days: 7
         compression-level: 6
         overwrite: true
-        if-no-files-found: error
+        if-no-files-found: warn
 
     - name: Remove tar file - devel
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
@@ -204,7 +204,7 @@ runs:
         retention-days: 7
         compression-level: 6
         overwrite: true
-        if-no-files-found: error
+        if-no-files-found: warn
 
     - name: Remove tar file - runtime
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
