@@ -26,6 +26,7 @@
 #include <rclcpp/node.hpp>
 #include <rclcpp/time.hpp>
 
+#include <limits>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -138,9 +139,15 @@ private:
   void removeCandidateRTCStatus()
   {
     if (rtc_interface_ptr_map_.at("left")->isRegistered(candidate_uuid_)) {
-      rtc_interface_ptr_map_.at("left")->removeCooperateStatus(candidate_uuid_);
-    } else if (rtc_interface_ptr_map_.at("right")->isRegistered(candidate_uuid_)) {
-      rtc_interface_ptr_map_.at("right")->removeCooperateStatus(candidate_uuid_);
+      rtc_interface_ptr_map_.at("left")->updateCooperateStatus(
+        candidate_uuid_, true, State::FAILED, std::numeric_limits<double>::lowest(),
+        std::numeric_limits<double>::lowest(), clock_->now());
+    }
+
+    if (rtc_interface_ptr_map_.at("right")->isRegistered(candidate_uuid_)) {
+      rtc_interface_ptr_map_.at("right")->updateCooperateStatus(
+        candidate_uuid_, true, State::FAILED, std::numeric_limits<double>::lowest(),
+        std::numeric_limits<double>::lowest(), clock_->now());
     }
   }
 
@@ -362,10 +369,21 @@ private:
 
     unlockNewModuleLaunch();
 
+    for (const auto & left_shift : left_shift_array_) {
+      rtc_interface_ptr_map_.at("left")->updateCooperateStatus(
+        left_shift.uuid, true, State::FAILED, std::numeric_limits<double>::lowest(),
+        std::numeric_limits<double>::lowest(), clock_->now());
+    }
+
+    for (const auto & right_shift : right_shift_array_) {
+      rtc_interface_ptr_map_.at("right")->updateCooperateStatus(
+        right_shift.uuid, true, State::FAILED, std::numeric_limits<double>::lowest(),
+        std::numeric_limits<double>::lowest(), clock_->now());
+    }
+
     if (!path_shifter_.getShiftLines().empty()) {
       left_shift_array_.clear();
       right_shift_array_.clear();
-      removeRTCStatus();
     }
 
     generator_.reset();
