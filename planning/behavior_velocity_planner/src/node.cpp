@@ -311,6 +311,7 @@ void BehaviorVelocityPlannerNode::onParam()
   // lock(mutex_);
   planner_data_.velocity_smoother_ =
     std::make_unique<motion_velocity_smoother::AnalyticalJerkConstrainedSmoother>(*this);
+  planner_data_.velocity_smoother_->setWheelBase(planner_data_.vehicle_info_.wheel_base_m);
 }
 
 void BehaviorVelocityPlannerNode::onLaneletMap(
