@@ -89,8 +89,8 @@ RUN --mount=type=ssh \
   && find / -name 'libnv*.a' -delete
 
 # Install rosdep dependencies
-# hadolint ignore=SC2002
 COPY --from=src-imported /rosdep-all-depend-packages.txt /tmp/rosdep-all-depend-packages.txt
+# hadolint ignore=SC2002
 RUN --mount=type=ssh \
   apt-get update \
   && cat /tmp/rosdep-all-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
