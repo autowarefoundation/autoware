@@ -43,12 +43,12 @@ jobs:
             lib_dir: aarch64
             setup-args: --no-nvidia
             additional-tag-suffix: ""
-            bake-images: [default]
+            bake-images: default
           - name: cuda
             base_image_env: base_image
             lib_dir: aarch64
             additional-tag-suffix: -cuda
-            bake-images: [prebuilt, devel, runtime]
+            bake-images: prebuilt,devel,runtime
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace

@@ -43,12 +43,12 @@ jobs:
             lib_dir: x86_64
             setup-args: --no-nvidia
             additional-tag-suffix: ""
-            bake-images: [default]
+            bake-images: default
           - name: cuda
             base_image_env: base_image
             lib_dir: x86_64
             additional-tag-suffix: -cuda
-            bake-images: [prebuilt, devel, runtime]
+            bake-images: prebuilt,devel,runtime
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
