@@ -66,3 +66,19 @@ ament_auto_package(INSTALL_TO_SHARE
   launch
   config
 )
+
+## Tests
+if(BUILD_TESTING)
+  find_package(ament_cmake_ros REQUIRED)
+  list(APPEND AMENT_LINT_AUTO_EXCLUDE ament_cmake_uncrustify)
+
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
+  file(GLOB_RECURSE test_files test/**/*.cpp)
+  ament_add_ros_isolated_gtest(test_shape_estimation ${test_files})
+
+  target_link_libraries(test_shape_estimation
+  shape_estimation_node
+  )
+endif()
