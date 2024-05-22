@@ -6,7 +6,7 @@ services:
     volumes:
       - /dev/shm:/dev/shm
       - /home/${USER}/autoware_artifacts/test-artifacts:/autoware/test-scenario/
-    network_mode: "host"
+    network_mode: host
     environment:
       - ROS_LOCALHOST_ONLY=1
     command: ros2 launch autoware_launch planning_simulator.launch.xml map_path:=/autoware/test-scenario/map/ vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit scenario_simulation:=true use_foa:=false perception/enable_traffic_light:=false rviz:=false
@@ -16,7 +16,7 @@ services:
     volumes:
       - /dev/shm:/dev/shm
       - /home/${USER}/autoware_artifacts/test-artifacts:/autoware/test-scenario/
-    network_mode: "host"
+    network_mode: host
     environment:
       - ROS_LOCALHOST_ONLY=1
     command: ros2 launch scenario_test_runner scenario_test_runner.launch.py architecture_type:=awf/universe record:=false scenario:=/autoware/test-scenario/yield_maneuver_demo.yaml sensor_model:=sample_sensor_kit vehicle_model:=sample_vehicle map_path:=/autoware/test-scenario/map launch_autoware:=False initialize_duration:=60 global_frame_rate:=12
@@ -27,7 +27,7 @@ services:
       - /dev/shm:/dev/shm
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /home/${USER}/autoware_artifacts/test-artifacts:/autoware/test-scenario/
-    network_mode: "host"
+    network_mode: host
     environment:
       - DISPLAY=$DISPLAY
       - ROS_LOCALHOST_ONLY=1
