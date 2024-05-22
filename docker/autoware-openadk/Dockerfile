@@ -5,27 +5,15 @@ FROM $BASE_IMAGE as base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
-# Install apt packages
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
-  git \
-  ssh \
-  wget \
-  cmake \
-  curl \
-  gosu \
-  gnupg \
-  vim \
-  unzip \
-  lsb-release \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
-
 # Add GitHub to known hosts for private repositories
-RUN mkdir -p ~/.ssh \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
+  ssh \
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
+  && mkdir -p ~/.ssh \
   && ssh-keyscan github.com >> ~/.ssh/known_hosts
 
 # Copy files
-COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
-COPY ansible/ /autoware/ansible/
+COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env ansible /autoware/
 WORKDIR /autoware
 
 # Set up base environment
