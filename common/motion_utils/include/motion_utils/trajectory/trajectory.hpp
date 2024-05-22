@@ -1921,20 +1921,21 @@ insertOrientation<std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>
  * radians (default: M_PI_2)
  */
 template <class T>
-void removeInvalidOrientationPoints(T & points, const double max_yaw_diff = M_PI_2)
+void removeFirstInvalidOrientationPoints(T & points, const double max_yaw_diff = M_PI_2)
 {
-  for (size_t i = 1; i < points.size();) {
-    const auto p1 = tier4_autoware_utils::getPose(points.at(i - 1));
-    const auto p2 = tier4_autoware_utils::getPose(points.at(i));
+  for (auto itr = points.begin(); std::next(itr) != points.end();) {
+    const auto p1 = tier4_autoware_utils::getPose(*itr);
+    const auto p2 = tier4_autoware_utils::getPose(*std::next(itr));
     const double yaw1 = tf2::getYaw(p1.orientation);
     const double yaw2 = tf2::getYaw(p2.orientation);
 
     if (
       max_yaw_diff < std::abs(tier4_autoware_utils::normalizeRadian(yaw1 - yaw2)) ||
       !tier4_autoware_utils::isDrivingForward(p1, p2)) {
-      points.erase(points.begin() + i);
+      points.erase(std::next(itr));
+      return;
     } else {
-      ++i;
+      itr++;
     }
   }
 }
