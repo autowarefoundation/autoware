@@ -95,7 +95,6 @@ build_images() {
     echo "Setup args: $setup_args"
     echo "Lib dir: $lib_dir"
     echo "Image name suffix: $image_name_suffix"
-    echo "Targets: ${targets[*]}"
 
     set -x
     docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" \
@@ -109,8 +108,7 @@ build_images() {
         --set "base.tags=ghcr.io/autowarefoundation/openadkit:latest-base" \
         --set "planning-control.tags=ghcr.io/autowarefoundation/openadkit:latest-planning-control" \
         --set "visualizer.tags=ghcr.io/autowarefoundation/openadkit:latest-visualizer" \
-        --set "simulator.tags=ghcr.io/autowarefoundation/openadkit:latest-simulator" \
-        "${targets[@]}"
+        --set "simulator.tags=ghcr.io/autowarefoundation/openadkit:latest-simulator" 
     set +x
 }
 
