@@ -125,7 +125,7 @@ ARG SETUP_ARGS
 COPY --from=src-imported /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadk \
+  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers --runtime openadk \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
