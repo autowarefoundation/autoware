@@ -109,6 +109,7 @@ build_images() {
     echo "Image name suffix: $image_name_suffix"
     echo "Targets: ${targets[*]}"
 
+    # shellcheck disable=SC2154
     set -x
     docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" \
         --set "*.context=$WORKSPACE_ROOT" \
