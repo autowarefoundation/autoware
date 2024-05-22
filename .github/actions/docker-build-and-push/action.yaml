@@ -151,6 +151,11 @@ runs:
         overwrite: true
         if-no-files-found: error
 
+    - name: Remove tar file - prebuilt
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+      run: |
+        rm /tmp/prebuilt.tar
+
     - name: Upload Artifact - devel
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       id: artifact-upload-step-devel
@@ -163,6 +168,11 @@ runs:
         overwrite: true
         if-no-files-found: error
 
+    - name: Remove tar file - devel
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+      run: |
+        rm /tmp/devel.tar
+
     - name: Upload Artifact - runtime
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       id: artifact-upload-step-runtime
@@ -174,6 +184,11 @@ runs:
         compression-level: 6
         overwrite: true
         if-no-files-found: error
+
+    - name: Remove tar file - runtime
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+      run: |
+        rm /tmp/runtime.tar
 
     - name: Output artifact URLs
       id: output-artifact-urls
