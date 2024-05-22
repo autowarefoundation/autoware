@@ -14,7 +14,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-ins
   && ssh-keyscan github.com >> ~/.ssh/known_hosts
 
 # Copy files
-COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env ansible /autoware/
+COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env ansible/ /autoware/
 WORKDIR /autoware
 
 # Set up base environment
