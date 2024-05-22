@@ -155,6 +155,7 @@ runs:
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       run: |
         rm /tmp/prebuilt.tar
+      shell: bash
 
     - name: Upload Artifact - devel
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
@@ -172,6 +173,7 @@ runs:
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       run: |
         rm /tmp/devel.tar
+      shell: bash
 
     - name: Upload Artifact - runtime
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
@@ -189,6 +191,7 @@ runs:
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       run: |
         rm /tmp/runtime.tar
+      shell: bash
 
     - name: Output artifact URLs
       id: output-artifact-urls
