@@ -58,10 +58,9 @@ set_cuda_options() {
 
 # Set build options
 set_build_options() {
+    targets=()
     if [ "$option_devel_only" = "true" ]; then
         targets=("devel")
-    else
-        targets=()
     fi
 }
 
