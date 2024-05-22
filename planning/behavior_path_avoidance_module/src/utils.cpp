@@ -2221,7 +2221,7 @@ DrivableLanes generateExpandedDrivableLanes(
           break;
         }
         if (i == max_recursive_search_num - 1) {
-          RCLCPP_ERROR(
+          RCLCPP_DEBUG(
             rclcpp::get_logger(logger_namespace), "Drivable area expansion reaches max iteration.");
         }
       }
