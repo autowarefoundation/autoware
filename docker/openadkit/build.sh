@@ -108,7 +108,7 @@ build_images() {
         --set "base.tags=ghcr.io/autowarefoundation/openadkit:latest-base" \
         --set "planning-control.tags=ghcr.io/autowarefoundation/openadkit:latest-planning-control" \
         --set "visualizer.tags=ghcr.io/autowarefoundation/openadkit:latest-visualizer" \
-        --set "simulator.tags=ghcr.io/autowarefoundation/openadkit:latest-simulator" 
+        --set "simulator.tags=ghcr.io/autowarefoundation/openadkit:latest-simulator"
     set +x
 }
 
