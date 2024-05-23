@@ -82,12 +82,12 @@
   />
   <let
     name="behavior_path_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::ExternalRequestLaneChangeRightModuleManager, '&quot;)"
+    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'autoware::behavior_path_planner::ExternalRequestLaneChangeRightModuleManager, '&quot;)"
     if="$(var launch_external_request_lane_change_right_module)"
   />
   <let
     name="behavior_path_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::ExternalRequestLaneChangeLeftModuleManager, '&quot;)"
+    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'autoware::behavior_path_planner::ExternalRequestLaneChangeLeftModuleManager, '&quot;)"
     if="$(var launch_external_request_lane_change_left_module)"
   />
   <let

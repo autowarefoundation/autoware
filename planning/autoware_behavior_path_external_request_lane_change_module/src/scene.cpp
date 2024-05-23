@@ -12,17 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_external_request_lane_change_module/scene.hpp"
+#include "scene.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 
 #include <memory>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
+using ::behavior_path_planner::LaneChangeModuleType;
+
 ExternalRequestLaneChange::ExternalRequestLaneChange(
   const std::shared_ptr<LaneChangeParameters> & parameters, Direction direction)
 : NormalLaneChange(parameters, LaneChangeModuleType::EXTERNAL_REQUEST, direction)
 {
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

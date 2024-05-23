@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_external_request_lane_change_module/manager.hpp"
+#include "manager.hpp"
 
-#include "behavior_path_external_request_lane_change_module/scene.hpp"
 #include "behavior_path_lane_change_module/interface.hpp"
+#include "scene.hpp"
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
+using ::behavior_path_planner::LaneChangeInterface;
 
 std::unique_ptr<SceneModuleInterface>
 ExternalRequestLaneChangeRightModuleManager::createNewSceneModuleInstance()
@@ -38,12 +39,12 @@ ExternalRequestLaneChangeLeftModuleManager::createNewSceneModuleInstance()
     std::make_unique<ExternalRequestLaneChange>(parameters_, direction_));
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_path_planner::ExternalRequestLaneChangeRightModuleManager,
-  behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::ExternalRequestLaneChangeRightModuleManager,
+  ::behavior_path_planner::SceneModuleManagerInterface)
 PLUGINLIB_EXPORT_CLASS(
-  behavior_path_planner::ExternalRequestLaneChangeLeftModuleManager,
-  behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::ExternalRequestLaneChangeLeftModuleManager,
+  ::behavior_path_planner::SceneModuleManagerInterface)
