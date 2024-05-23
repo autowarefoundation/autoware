@@ -40,14 +40,10 @@ WORKDIR /autoware
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y rosdep \
   && pip uninstall -y ansible ansible-core \
-  && pip install --no-cache-dir vcstool \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
-WORKDIR /autoware
-COPY autoware.repos /autoware/
-RUN --mount=type=ssh \
-  mkdir src \
-  && vcs import src < autoware.repos
+# Copy repository files
+COPY src /autoware/src
 
 # Generate install package lists
 RUN rosdep update && rosdep keys --ignore-src --from-paths src \
@@ -83,7 +79,6 @@ RUN --mount=type=ssh \
   && find / -name 'libnv*.a' -delete
 
 # Install rosdep dependencies
-COPY --from=src-imported /autoware/src /autoware/src
 COPY --from=src-imported /rosdep-all-depend-packages.txt /tmp/rosdep-all-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
@@ -92,6 +87,7 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Build Autoware
+COPY --from=src-imported /autoware/src /autoware/src
 RUN source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --cmake-args \
     " -Wno-dev" \
