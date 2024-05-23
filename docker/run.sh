@@ -20,7 +20,7 @@ fi
 option_no_nvidia=false
 option_devel=false
 option_headless=false
-DATA_PATH=""
+DATA_PATH="${HOME}/autoware_data"
 MAP_PATH=""
 WORKSPACE_PATH=""
 USER_ID=""
@@ -106,6 +106,9 @@ set_variables() {
     fi
 
     # Mount data path if provided
+    if [ ! -d "$DATA_PATH" ]; then
+        # TODO(youtalk)
+    fi
     DATA="-v ${DATA_PATH}:/autoware_data:ro"
 
     # Mount map path if provided
