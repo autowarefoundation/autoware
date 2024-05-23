@@ -383,7 +383,20 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
   // debug
   {
     const std::string ns = "avoidance.debug.";
-    p.publish_debug_marker = getOrDeclareParameter<bool>(*node, ns + "marker");
+    p.enable_other_objects_marker =
+      getOrDeclareParameter<bool>(*node, ns + "enable_other_objects_marker");
+    p.enable_other_objects_info =
+      getOrDeclareParameter<bool>(*node, ns + "enable_other_objects_info");
+    p.enable_detection_area_marker =
+      getOrDeclareParameter<bool>(*node, ns + "enable_detection_area_marker");
+    p.enable_drivable_bound_marker =
+      getOrDeclareParameter<bool>(*node, ns + "enable_drivable_bound_marker");
+    p.enable_safety_check_marker =
+      getOrDeclareParameter<bool>(*node, ns + "enable_safety_check_marker");
+    p.enable_shift_line_marker =
+      getOrDeclareParameter<bool>(*node, ns + "enable_shift_line_marker");
+    p.enable_lane_marker = getOrDeclareParameter<bool>(*node, ns + "enable_lane_marker");
+    p.enable_misc_marker = getOrDeclareParameter<bool>(*node, ns + "enable_misc_marker");
   }
 
   return p;

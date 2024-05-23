@@ -1388,13 +1388,57 @@
         "debug": {
           "type": "object",
           "properties": {
-            "marker": {
+            "enable_other_objects_marker": {
               "type": "boolean",
-              "description": "Publish debug marker.",
+              "description": "Publish other objects marker.",
+              "default": "false"
+            },
+            "enable_other_objects_info": {
+              "type": "boolean",
+              "description": "Publish other objects detail information.",
+              "default": "false"
+            },
+            "enable_detection_area_marker": {
+              "type": "boolean",
+              "description": "Publish detection area.",
+              "default": "false"
+            },
+            "enable_drivable_bound_marker": {
+              "type": "boolean",
+              "description": "Publish drivable area boundary.",
+              "default": "false"
+            },
+            "enable_safety_check_marker": {
+              "type": "boolean",
+              "description": "Publish safety check information.",
+              "default": "false"
+            },
+            "enable_shift_line_marker": {
+              "type": "boolean",
+              "description": "Publish shift line information.",
+              "default": "false"
+            },
+            "enable_lane_marker": {
+              "type": "boolean",
+              "description": "Publish lane information.",
+              "default": "false"
+            },
+            "enable_misc_marker": {
+              "type": "boolean",
+              "description": "Publish misc markers.",
               "default": "false"
             }
           },
-          "required": ["marker"],
+          "required": [
+            "enable_other_objects_marker",
+            "enable_other_objects_info",
+            "enable_detection_area_marker",
+            "enable_drivable_bound_marker",
+            "enable_safety_check_marker",
+            "enable_shift_line_marker",
+            "enable_lane_marker",
+            "enable_misc_marker"
+          ],
           "additionalProperties": false
         }
       },

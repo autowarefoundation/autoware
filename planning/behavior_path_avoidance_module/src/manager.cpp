@@ -261,7 +261,17 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
 
   {
     const std::string ns = "avoidance.debug.";
-    updateParam<bool>(parameters, ns + "marker", p->publish_debug_marker);
+    updateParam<bool>(
+      parameters, ns + "enable_other_objects_marker", p->enable_other_objects_marker);
+    updateParam<bool>(parameters, ns + "enable_other_objects_info", p->enable_other_objects_info);
+    updateParam<bool>(
+      parameters, ns + "enable_detection_area_marker", p->enable_detection_area_marker);
+    updateParam<bool>(
+      parameters, ns + "enable_drivable_bound_marker", p->enable_drivable_bound_marker);
+    updateParam<bool>(parameters, ns + "enable_safety_check_marker", p->enable_safety_check_marker);
+    updateParam<bool>(parameters, ns + "enable_shift_line_marker", p->enable_shift_line_marker);
+    updateParam<bool>(parameters, ns + "enable_lane_marker", p->enable_lane_marker);
+    updateParam<bool>(parameters, ns + "enable_misc_marker", p->enable_misc_marker);
   }
 
   std::for_each(observers_.begin(), observers_.end(), [&p](const auto & observer) {

@@ -337,7 +337,14 @@ struct AvoidanceParameters
   bool enable_bound_clipping{false};
 
   // debug
-  bool publish_debug_marker = false;
+  bool enable_other_objects_marker{false};
+  bool enable_other_objects_info{false};
+  bool enable_detection_area_marker{false};
+  bool enable_drivable_bound_marker{false};
+  bool enable_safety_check_marker{false};
+  bool enable_shift_line_marker{false};
+  bool enable_lane_marker{false};
+  bool enable_misc_marker{false};
 };
 
 struct ObjectData  // avoidance target

@@ -18,11 +18,13 @@
 #include "behavior_path_avoidance_module/data_structs.hpp"
 #include "behavior_path_avoidance_module/type_alias.hpp"
 
+#include <memory>
 #include <string>
 
 namespace behavior_path_planner::utils::avoidance
 {
 
+using behavior_path_planner::AvoidanceParameters;
 using behavior_path_planner::AvoidancePlanningData;
 using behavior_path_planner::AvoidLineArray;
 using behavior_path_planner::DebugData;
@@ -42,10 +44,12 @@ MarkerArray createPredictedVehiclePositions(const PathWithLaneId & path, std::st
 
 MarkerArray createTargetObjectsMarkerArray(const ObjectDataArray & objects, const std::string & ns);
 
-MarkerArray createOtherObjectsMarkerArray(const ObjectDataArray & objects, const ObjectInfo & info);
+MarkerArray createOtherObjectsMarkerArray(
+  const ObjectDataArray & objects, const ObjectInfo & info, const bool verbose);
 
 MarkerArray createDebugMarkerArray(
-  const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug);
+  const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug,
+  const std::shared_ptr<AvoidanceParameters> & parameters);
 }  // namespace behavior_path_planner::utils::avoidance
 
 std::string toStrInfo(const behavior_path_planner::ShiftLineArray & sl_arr);

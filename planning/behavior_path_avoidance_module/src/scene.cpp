@@ -1360,12 +1360,7 @@ void AvoidanceModule::updateDebugMarker(
   const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug) const
 {
   debug_marker_.markers.clear();
-
-  if (!parameters_->publish_debug_marker) {
-    return;
-  }
-
-  debug_marker_ = utils::avoidance::createDebugMarkerArray(data, shifter, debug);
+  debug_marker_ = utils::avoidance::createDebugMarkerArray(data, shifter, debug, parameters_);
 }
 
 void AvoidanceModule::updateAvoidanceDebugData(
