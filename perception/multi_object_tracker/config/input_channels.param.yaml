@@ -1,0 +1,82 @@
+/**:
+  ros__parameters:
+    input_channels:
+      detected_objects:
+        topic: "/perception/object_recognition/detection/objects"
+        can_spawn_new_tracker: true
+        optional:
+          name: "detected_objects"
+          short_name: "all"
+      # LIDAR - rule-based
+      lidar_clustering:
+        topic: "/perception/object_recognition/detection/clustering/objects"
+        can_spawn_new_tracker: true
+        optional:
+          name: "clustering"
+          short_name: "Lcl"
+      # LIDAR - DNN
+      lidar_centerpoint:
+        topic: "/perception/object_recognition/detection/centerpoint/objects"
+        can_spawn_new_tracker: true
+        optional:
+          name: "centerpoint"
+          short_name: "Lcp"
+      lidar_centerpoint_validated:
+        topic: "/perception/object_recognition/detection/centerpoint/validation/objects"
+        can_spawn_new_tracker: true
+        optional:
+          name: "centerpoint"
+          short_name: "Lcp"
+      lidar_apollo:
+        topic: "/perception/object_recognition/detection/apollo/objects"
+        can_spawn_new_tracker: true
+        optional:
+          name: "apollo"
+          short_name: "Lap"
+      lidar_apollo_validated:
+        topic: "/perception/object_recognition/detection/apollo/validation/objects"
+        can_spawn_new_tracker: true
+        optional:
+          name: "apollo"
+          short_name: "Lap"
+      # LIDAR-CAMERA - DNN
+      # cspell:ignore lidar_pointpainitng pointpainting
+      lidar_pointpainitng:
+        topic: "/perception/object_recognition/detection/pointpainting/objects"
+        can_spawn_new_tracker: true
+        optional:
+          name: "pointpainting"
+          short_name: "Lpp"
+      lidar_pointpainting_validated:
+        topic: "/perception/object_recognition/detection/pointpainting/validation/objects"
+        can_spawn_new_tracker: true
+        optional:
+          name: "pointpainting"
+          short_name: "Lpp"
+      # CAMERA-LIDAR
+      camera_lidar_fusion:
+        topic: "/perception/object_recognition/detection/clustering/camera_lidar_fusion/objects"
+        can_spawn_new_tracker: true
+        optional:
+          name: "camera_lidar_fusion"
+          short_name: "CLf"
+      # CAMERA-LIDAR+TRACKER
+      detection_by_tracker:
+        topic: "/perception/object_recognition/detection/detection_by_tracker/objects"
+        can_spawn_new_tracker: false
+        optional:
+          name: "detection_by_tracker"
+          short_name: "dbT"
+      # RADAR
+      radar:
+        topic: "/sensing/radar/detected_objects"
+        can_spawn_new_tracker: true
+        optional:
+          name: "radar"
+          short_name: "R"
+      radar_far:
+        topic: "/perception/object_recognition/detection/radar/far_objects"
+        can_spawn_new_tracker: true
+        optional:
+          name: "radar_far"
+          short_name: "Rf"

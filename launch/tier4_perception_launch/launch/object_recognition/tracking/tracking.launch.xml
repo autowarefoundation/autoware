@@ -17,6 +17,7 @@
     <!--multi object tracking-->
     <include file="$(find-pkg-share multi_object_tracker)/launch/multi_object_tracker.launch.xml">
       <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path)"/>
+      <arg name="input_channels_path" value="$(var object_recognition_tracking_multi_object_tracker_input_channels_param_path)"/>
       <arg name="tracker_setting_path" value="$(var object_recognition_tracking_multi_object_tracker_node_param_path)"/>
     </include>
   </group>
@@ -26,6 +27,7 @@
     <!--multi object tracking for near objects-->
     <include file="$(find-pkg-share multi_object_tracker)/launch/multi_object_tracker.launch.xml">
       <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path)"/>
+      <arg name="input_channels_path" value="$(var object_recognition_tracking_multi_object_tracker_input_channels_param_path)"/>
       <arg name="tracker_setting_path" value="$(var object_recognition_tracking_multi_object_tracker_node_param_path)"/>
       <arg name="output" value="/perception/object_recognition/tracking/near_objects"/>
     </include>

@@ -22,11 +22,14 @@ using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 
 MultipleVehicleTracker::MultipleVehicleTracker(
   const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
-  const geometry_msgs::msg::Transform & self_transform)
-: Tracker(time, object.classification),
-  normal_vehicle_tracker_(time, object, self_transform),
-  big_vehicle_tracker_(time, object, self_transform)
+  const geometry_msgs::msg::Transform & self_transform, const size_t channel_size,
+  const uint & channel_index)
+: Tracker(time, object.classification, channel_size),
+  normal_vehicle_tracker_(time, object, self_transform, channel_size, channel_index),
+  big_vehicle_tracker_(time, object, self_transform, channel_size, channel_index)
 {
+  // initialize existence probability
+  initializeExistenceProbabilities(channel_index, object.existence_probability);
 }
 
 bool MultipleVehicleTracker::predict(const rclcpp::Time & time)

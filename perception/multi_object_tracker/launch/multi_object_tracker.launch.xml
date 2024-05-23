@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <arg name="input" default="/perception/object_recognition/detection/objects"/>
+  <arg name="selected_input_channels" default="['detected_objects']"/>
   <arg name="output" default="objects"/>
   <arg name="tracker_setting_path" default="$(find-pkg-share multi_object_tracker)/config/multi_object_tracker_node.param.yaml"/>
   <arg name="data_association_matrix_path" default="$(find-pkg-share multi_object_tracker)/config/data_association_matrix.param.yaml"/>
+  <arg name="input_channels_path" default="$(find-pkg-share multi_object_tracker)/config/input_channels.param.yaml"/>
 
   <node pkg="multi_object_tracker" exec="multi_object_tracker" name="multi_object_tracker" output="screen">
-    <remap from="input" to="$(var input)"/>
+    <param name="selected_input_channels" value="$(var selected_input_channels)"/>
     <remap from="output" to="$(var output)"/>
     <param from="$(var tracker_setting_path)"/>
     <param from="$(var data_association_matrix_path)"/>
+    <param from="$(var input_channels_path)"/>
   </node>
 </launch>

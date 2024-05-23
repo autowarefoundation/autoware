@@ -61,7 +61,8 @@ private:
 public:
   NormalVehicleTracker(
     const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
-    const geometry_msgs::msg::Transform & self_transform);
+    const geometry_msgs::msg::Transform & self_transform, const size_t channel_size,
+    const uint & channel_index);
 
   bool predict(const rclcpp::Time & time) override;
   bool measure(

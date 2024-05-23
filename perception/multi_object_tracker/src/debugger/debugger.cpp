@@ -1,4 +1,4 @@
-// Copyright 2024 Tier IV, Inc.
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,14 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-//
 
-#include "multi_object_tracker/debugger.hpp"
+#include "multi_object_tracker/debugger/debugger.hpp"
 
 #include <memory>
 
-TrackerDebugger::TrackerDebugger(rclcpp::Node & node) : diagnostic_updater_(&node), node_(node)
+TrackerDebugger::TrackerDebugger(rclcpp::Node & node, const std::string & frame_id)
+: node_(node), diagnostic_updater_(&node), object_debugger_(frame_id)
 {
   // declare debug parameters to decide whether to publish debug topics
   loadParameters();
@@ -31,7 +30,12 @@ TrackerDebugger::TrackerDebugger(rclcpp::Node & node) : diagnostic_updater_(&nod
   if (debug_settings_.publish_tentative_objects) {
     debug_tentative_objects_pub_ =
       node_.create_publisher<autoware_auto_perception_msgs::msg::TrackedObjects>(
-        "debug/tentative_objects", rclcpp::QoS{1});
+        "~/debug/tentative_objects", rclcpp::QoS{1});
+  }
+
+  if (debug_settings_.publish_debug_markers) {
+    debug_objects_markers_pub_ = node_.create_publisher<visualization_msgs::msg::MarkerArray>(
+      "~/debug/objects_markers", rclcpp::QoS{1});
   }
 
   // initialize timestamps
@@ -46,14 +50,6 @@ TrackerDebugger::TrackerDebugger(rclcpp::Node & node) : diagnostic_updater_(&nod
   setupDiagnostics();
 }
 
-void TrackerDebugger::setupDiagnostics()
-{
-  diagnostic_updater_.setHardwareID(node_.get_name());
-  diagnostic_updater_.add(
-    "Perception delay check from original header stamp", this, &TrackerDebugger::checkDelay);
-  diagnostic_updater_.setPeriod(0.1);
-}
-
 void TrackerDebugger::loadParameters()
 {
   try {
@@ -61,6 +57,7 @@ void TrackerDebugger::loadParameters()
       node_.declare_parameter<bool>("publish_processing_time");
     debug_settings_.publish_tentative_objects =
       node_.declare_parameter<bool>("publish_tentative_objects");
+    debug_settings_.publish_debug_markers = node_.declare_parameter<bool>("publish_debug_markers");
     debug_settings_.diagnostics_warn_delay =
       node_.declare_parameter<double>("diagnostics_warn_delay");
     debug_settings_.diagnostics_error_delay =
@@ -69,10 +66,31 @@ void TrackerDebugger::loadParameters()
     RCLCPP_WARN(node_.get_logger(), "Failed to declare parameter: %s", e.what());
     debug_settings_.publish_processing_time = false;
     debug_settings_.publish_tentative_objects = false;
+    debug_settings_.publish_debug_markers = false;
     debug_settings_.diagnostics_warn_delay = 0.5;
     debug_settings_.diagnostics_error_delay = 1.0;
   }
 }
+
+void TrackerDebugger::setupDiagnostics()
+{
+  diagnostic_updater_.setHardwareID(node_.get_name());
+  diagnostic_updater_.add(
+    "Perception delay check from original header stamp", this, &TrackerDebugger::checkDelay);
+  diagnostic_updater_.setPeriod(0.1);
+}
+
+// Object publishing functions
+
+void TrackerDebugger::publishTentativeObjects(
+  const autoware_auto_perception_msgs::msg::TrackedObjects & tentative_objects) const
+{
+  if (debug_settings_.publish_tentative_objects) {
+    debug_tentative_objects_pub_->publish(tentative_objects);
+  }
+}
+
+// Time measurement functions
 
 void TrackerDebugger::checkDelay(diagnostic_updater::DiagnosticStatusWrapper & stat)
 {
@@ -95,14 +113,6 @@ void TrackerDebugger::checkDelay(diagnostic_updater::DiagnosticStatusWrapper & s
   }
 
   stat.add("Detection delay", delay);
-}
-
-void TrackerDebugger::publishTentativeObjects(
-  const autoware_auto_perception_msgs::msg::TrackedObjects & tentative_objects) const
-{
-  if (debug_settings_.publish_tentative_objects) {
-    debug_tentative_objects_pub_->publish(tentative_objects);
-  }
 }
 
 void TrackerDebugger::startMeasurementTime(
@@ -166,4 +176,34 @@ void TrackerDebugger::endPublishTime(const rclcpp::Time & now, const rclcpp::Tim
       "debug/meas_to_tracked_object_ms", measurement_to_object_ms);
   }
   stamp_publish_output_ = now;
+}
+
+void TrackerDebugger::collectObjectInfo(
+  const rclcpp::Time & message_time, const std::list<std::shared_ptr<Tracker>> & list_tracker,
+  const uint & channel_index,
+  const autoware_auto_perception_msgs::msg::DetectedObjects & detected_objects,
+  const std::unordered_map<int, int> & direct_assignment,
+  const std::unordered_map<int, int> & reverse_assignment)
+{
+  if (!debug_settings_.publish_debug_markers) return;
+  object_debugger_.collect(
+    message_time, list_tracker, channel_index, detected_objects, direct_assignment,
+    reverse_assignment);
+}
+
+// ObjectDebugger
+void TrackerDebugger::publishObjectsMarkers()
+{
+  if (!debug_settings_.publish_debug_markers) return;
+
+  visualization_msgs::msg::MarkerArray marker_message;
+  // process data
+  object_debugger_.process();
+
+  // publish markers
+  object_debugger_.getMessage(marker_message);
+  debug_objects_markers_pub_->publish(marker_message);
+
+  // reset object data
+  object_debugger_.reset();
 }

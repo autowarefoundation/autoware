@@ -1,4 +1,4 @@
-// Copyright 2024 Tier IV, Inc.
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,8 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-//
 
 #include "multi_object_tracker/processor/processor.hpp"
 
@@ -25,8 +23,9 @@
 
 using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 
-TrackerProcessor::TrackerProcessor(const std::map<std::uint8_t, std::string> & tracker_map)
-: tracker_map_(tracker_map)
+TrackerProcessor::TrackerProcessor(
+  const std::map<std::uint8_t, std::string> & tracker_map, const size_t & channel_size)
+: tracker_map_(tracker_map), channel_size_(channel_size)
 {
   // Set tracker lifetime parameters
   max_elapsed_time_ = 1.0;  // [s]
@@ -50,7 +49,7 @@ void TrackerProcessor::predict(const rclcpp::Time & time)
 void TrackerProcessor::update(
   const autoware_auto_perception_msgs::msg::DetectedObjects & detected_objects,
   const geometry_msgs::msg::Transform & self_transform,
-  const std::unordered_map<int, int> & direct_assignment)
+  const std::unordered_map<int, int> & direct_assignment, const uint & channel_index)
 {
   int tracker_idx = 0;
   const auto & time = detected_objects.header.stamp;
@@ -59,9 +58,10 @@ void TrackerProcessor::update(
     if (direct_assignment.find(tracker_idx) != direct_assignment.end()) {  // found
       const auto & associated_object =
         detected_objects.objects.at(direct_assignment.find(tracker_idx)->second);
-      (*(tracker_itr))->updateWithMeasurement(associated_object, time, self_transform);
+      (*(tracker_itr))
+        ->updateWithMeasurement(associated_object, time, self_transform, channel_index);
     } else {  // not found
-      (*(tracker_itr))->updateWithoutMeasurement();
+      (*(tracker_itr))->updateWithoutMeasurement(time);
     }
   }
 }
@@ -69,7 +69,7 @@ void TrackerProcessor::update(
 void TrackerProcessor::spawn(
   const autoware_auto_perception_msgs::msg::DetectedObjects & detected_objects,
   const geometry_msgs::msg::Transform & self_transform,
-  const std::unordered_map<int, int> & reverse_assignment)
+  const std::unordered_map<int, int> & reverse_assignment, const uint & channel_index)
 {
   const auto & time = detected_objects.header.stamp;
   for (size_t i = 0; i < detected_objects.objects.size(); ++i) {
@@ -77,34 +77,43 @@ void TrackerProcessor::spawn(
       continue;
     }
     const auto & new_object = detected_objects.objects.at(i);
-    std::shared_ptr<Tracker> tracker = createNewTracker(new_object, time, self_transform);
+    std::shared_ptr<Tracker> tracker =
+      createNewTracker(new_object, time, self_transform, channel_index);
     if (tracker) list_tracker_.push_back(tracker);
   }
 }
 
 std::shared_ptr<Tracker> TrackerProcessor::createNewTracker(
   const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
-  const geometry_msgs::msg::Transform & self_transform) const
+  const geometry_msgs::msg::Transform & self_transform, const uint & channel_index) const
 {
   const std::uint8_t label = object_recognition_utils::getHighestProbLabel(object.classification);
   if (tracker_map_.count(label) != 0) {
     const auto tracker = tracker_map_.at(label);
     if (tracker == "bicycle_tracker")
-      return std::make_shared<BicycleTracker>(time, object, self_transform);
+      return std::make_shared<BicycleTracker>(
+        time, object, self_transform, channel_size_, channel_index);
     if (tracker == "big_vehicle_tracker")
-      return std::make_shared<BigVehicleTracker>(time, object, self_transform);
+      return std::make_shared<BigVehicleTracker>(
+        time, object, self_transform, channel_size_, channel_index);
     if (tracker == "multi_vehicle_tracker")
-      return std::make_shared<MultipleVehicleTracker>(time, object, self_transform);
+      return std::make_shared<MultipleVehicleTracker>(
+        time, object, self_transform, channel_size_, channel_index);
     if (tracker == "normal_vehicle_tracker")
-      return std::make_shared<NormalVehicleTracker>(time, object, self_transform);
+      return std::make_shared<NormalVehicleTracker>(
+        time, object, self_transform, channel_size_, channel_index);
     if (tracker == "pass_through_tracker")
-      return std::make_shared<PassThroughTracker>(time, object, self_transform);
+      return std::make_shared<PassThroughTracker>(
+        time, object, self_transform, channel_size_, channel_index);
     if (tracker == "pedestrian_and_bicycle_tracker")
-      return std::make_shared<PedestrianAndBicycleTracker>(time, object, self_transform);
+      return std::make_shared<PedestrianAndBicycleTracker>(
+        time, object, self_transform, channel_size_, channel_index);
     if (tracker == "pedestrian_tracker")
-      return std::make_shared<PedestrianTracker>(time, object, self_transform);
+      return std::make_shared<PedestrianTracker>(
+        time, object, self_transform, channel_size_, channel_index);
   }
-  return std::make_shared<UnknownTracker>(time, object, self_transform);
+  return std::make_shared<UnknownTracker>(
+    time, object, self_transform, channel_size_, channel_index);
 }
 
 void TrackerProcessor::prune(const rclcpp::Time & time)

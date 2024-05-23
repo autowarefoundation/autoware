@@ -27,7 +27,7 @@ int main(int argc, char ** argv)
 
   rclcpp::init(argc, argv);
   rclcpp::NodeOptions options;
-  auto multi_object_tracker = std::make_shared<MultiObjectTracker>(options);
+  auto multi_object_tracker = std::make_shared<multi_object_tracker::MultiObjectTracker>(options);
   rclcpp::executors::SingleThreadedExecutor exec;
   exec.add_node(multi_object_tracker);
   exec.spin();

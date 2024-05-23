@@ -44,13 +44,17 @@ using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 
 BigVehicleTracker::BigVehicleTracker(
   const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
-  const geometry_msgs::msg::Transform & self_transform)
-: Tracker(time, object.classification),
+  const geometry_msgs::msg::Transform & self_transform, const size_t channel_size,
+  const uint & channel_index)
+: Tracker(time, object.classification, channel_size),
   logger_(rclcpp::get_logger("BigVehicleTracker")),
   z_(object.kinematics.pose_with_covariance.pose.position.z),
   tracking_offset_(Eigen::Vector2d::Zero())
 {
   object_ = object;
+
+  // initialize existence probability
+  initializeExistenceProbabilities(channel_index, object.existence_probability);
 
   // Initialize parameters
   // measurement noise covariance: detector uncertainty + ego vehicle motion uncertainty

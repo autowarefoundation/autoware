@@ -17,5 +17,6 @@
     # debug parameters
     publish_processing_time: false
     publish_tentative_objects: false
+    publish_debug_markers: false
     diagnostics_warn_delay: 0.5      # [sec]
     diagnostics_error_delay: 1.0     # [sec]

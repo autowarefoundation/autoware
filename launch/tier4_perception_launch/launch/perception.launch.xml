@@ -22,6 +22,7 @@
   <arg name="object_recognition_detection_object_range_splitter_radar_param_path"/>
   <arg name="object_recognition_detection_object_range_splitter_radar_fusion_param_path"/>
   <arg name="object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path"/>
+  <arg name="object_recognition_tracking_multi_object_tracker_input_channels_param_path"/>
   <arg name="object_recognition_tracking_multi_object_tracker_node_param_path"/>
   <arg name="object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path"/>
   <arg name="object_recognition_tracking_radar_object_tracker_tracking_setting_param_path"/>

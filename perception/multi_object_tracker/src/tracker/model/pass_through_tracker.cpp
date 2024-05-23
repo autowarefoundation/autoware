@@ -37,13 +37,17 @@
 
 PassThroughTracker::PassThroughTracker(
   const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
-  const geometry_msgs::msg::Transform & /*self_transform*/)
-: Tracker(time, object.classification),
+  const geometry_msgs::msg::Transform & /*self_transform*/, const size_t channel_size,
+  const uint & channel_index)
+: Tracker(time, object.classification, channel_size),
   logger_(rclcpp::get_logger("PassThroughTracker")),
   last_update_time_(time)
 {
   object_ = object;
   prev_observed_object_ = object;
+
+  // initialize existence probability
+  initializeExistenceProbabilities(channel_index, object.existence_probability);
 }
 
 bool PassThroughTracker::predict(const rclcpp::Time & time)

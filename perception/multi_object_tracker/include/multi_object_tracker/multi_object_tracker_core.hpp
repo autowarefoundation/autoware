@@ -20,7 +20,8 @@
 #define MULTI_OBJECT_TRACKER__MULTI_OBJECT_TRACKER_CORE_HPP_
 
 #include "multi_object_tracker/data_association/data_association.hpp"
-#include "multi_object_tracker/debugger.hpp"
+#include "multi_object_tracker/debugger/debugger.hpp"
+#include "multi_object_tracker/processor/input_manager.hpp"
 #include "multi_object_tracker/processor/processor.hpp"
 #include "multi_object_tracker/tracker/model/tracker_base.hpp"
 
@@ -48,7 +49,15 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
+
+namespace multi_object_tracker
+{
+
+using DetectedObject = autoware_auto_perception_msgs::msg::DetectedObject;
+using DetectedObjects = autoware_auto_perception_msgs::msg::DetectedObjects;
+using TrackedObjects = autoware_auto_perception_msgs::msg::TrackedObjects;
 
 class MultiObjectTracker : public rclcpp::Node
 {
@@ -57,10 +66,8 @@ public:
 
 private:
   // ROS interface
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::TrackedObjects>::SharedPtr
-    tracked_objects_pub_;
-  rclcpp::Subscription<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr
-    detected_object_sub_;
+  rclcpp::Publisher<TrackedObjects>::SharedPtr tracked_objects_pub_;
+  rclcpp::Subscription<DetectedObjects>::SharedPtr detected_object_sub_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
 
@@ -78,15 +85,24 @@ private:
   std::unique_ptr<DataAssociation> data_association_;
   std::unique_ptr<TrackerProcessor> processor_;
 
+  // input manager
+  std::unique_ptr<InputManager> input_manager_;
+
+  std::vector<InputChannel> input_channels_{};
+  size_t input_channel_size_{};
+
   // callback functions
-  void onMeasurement(
-    const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_objects_msg);
   void onTimer();
+  void onTrigger();
+  void onMessage(const ObjectsList & objects_list);
 
   // publish processes
+  void runProcess(const DetectedObjects & input_objects_msg, const uint & channel_index);
   void checkAndPublish(const rclcpp::Time & time);
   void publish(const rclcpp::Time & time) const;
   inline bool shouldTrackerPublish(const std::shared_ptr<const Tracker> tracker) const;
 };
+
+}  // namespace multi_object_tracker
 
 #endif  // MULTI_OBJECT_TRACKER__MULTI_OBJECT_TRACKER_CORE_HPP_

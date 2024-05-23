@@ -22,11 +22,14 @@ using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 
 PedestrianAndBicycleTracker::PedestrianAndBicycleTracker(
   const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
-  const geometry_msgs::msg::Transform & self_transform)
-: Tracker(time, object.classification),
-  pedestrian_tracker_(time, object, self_transform),
-  bicycle_tracker_(time, object, self_transform)
+  const geometry_msgs::msg::Transform & self_transform, const size_t channel_size,
+  const uint & channel_index)
+: Tracker(time, object.classification, channel_size),
+  pedestrian_tracker_(time, object, self_transform, channel_size, channel_index),
+  bicycle_tracker_(time, object, self_transform, channel_size, channel_index)
 {
+  // initialize existence probability
+  initializeExistenceProbabilities(channel_index, object.existence_probability);
 }
 
 bool PedestrianAndBicycleTracker::predict(const rclcpp::Time & time)

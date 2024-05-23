@@ -46,31 +46,38 @@ Example:
 
 ### Input
 
-| Name      | Type                                                  | Description |
-| --------- | ----------------------------------------------------- | ----------- |
-| `~/input` | `autoware_auto_perception_msgs::msg::DetectedObjects` | obstacles   |
+Multiple inputs are pre-defined in the input channel parameters (described below) and the inputs can be configured
+
+| Name                      | Type                       | Description            |
+| ------------------------- | -------------------------- | ---------------------- |
+| `selected_input_channels` | `std::vector<std::string>` | array of channel names |
+
+- default value: `selected_input_channels:="['detected_objects']"`, merged DetectedObject message
+- multi-input example: `selected_input_channels:="['lidar_centerpoint','camera_lidar_fusion','detection_by_tracker','radar_far']"`
 
 ### Output
 
-| Name       | Type                                                 | Description        |
-| ---------- | ---------------------------------------------------- | ------------------ |
-| `~/output` | `autoware_auto_perception_msgs::msg::TrackedObjects` | modified obstacles |
+| Name       | Type                                                 | Description     |
+| ---------- | ---------------------------------------------------- | --------------- |
+| `~/output` | `autoware_auto_perception_msgs::msg::TrackedObjects` | tracked objects |
 
 ## Parameters
 
-<!-- Write parameters of this package.
+### Input Channel parameters
 
-Example:
-  ### Node Parameters
+Available input channels are defined in [input_channels.param.yaml](config/input_channels.param.yaml).
 
-  | Name                   | Type | Description                     |
-  | ---------------------- | ---- | ------------------------------- |
-  | `output_debug_markers` | bool | whether to output debug markers |
--->
+| Name                              | Type                                                  | Description                           |
+| --------------------------------- | ----------------------------------------------------- | ------------------------------------- |
+| `<channel>`                       |                                                       | the name of channel                   |
+| `<channel>.topic`                 | `autoware_auto_perception_msgs::msg::DetectedObjects` | detected objects                      |
+| `<channel>.can_spawn_new_tracker` | `bool`                                                | a switch allow to spawn a new tracker |
+| `<channel>.optional.name`         | `std::string`                                         | channel name for analysis             |
+| `<channel>.optional.short_name`   | `std::string`                                         | short name for visualization          |
 
 ### Core Parameters
 
-Node parameters are defined in [multi_object_tracker.param.yaml](config/multi_object_tracker.param.yaml) and association parameters are defined in [data_association.param.yaml](config/data_association.param.yaml).
+Node parameters are defined in [multi_object_tracker_node.param.yaml](config/multi_object_tracker_node.param.yaml) and association parameters are defined in [data_association_matrix.param.yaml](config/data_association_matrix.param.yaml).
 
 #### Node parameters
 
@@ -80,6 +87,9 @@ Node parameters are defined in [multi_object_tracker.param.yaml](config/multi_ob
 | `world_frame_id`            | double | object kinematics definition frame                                                                                          |
 | `enable_delay_compensation` | bool   | if True, tracker use timers to schedule publishers and use prediction step to extrapolate object state at desired timestamp |
 | `publish_rate`              | double | Timer frequency to output with delay compensation                                                                           |
+| `publish_processing_time`   | bool   | enable to publish debug message of process time information                                                                 |
+| `publish_tentative_objects` | bool   | enable to publish tentative tracked objects, which have lower confidence                                                    |
+| `publish_debug_markers`     | bool   | enable to publish debug markers, which indicates association of multi-inputs, existence probability of each detection       |
 
 #### Association parameters
 
@@ -92,13 +102,6 @@ Node parameters are defined in [multi_object_tracker.param.yaml](config/multi_ob
 | `max_rad_matrix`    | double | Maximum angle table for data association    |
 
 ## Assumptions / Known limits
-
-<!-- Write assumptions and limitations of your implementation.
-
-Example:
-  This algorithm assumes obstacles are not moving, so if they rapidly move after the vehicle started to avoid them, it might collide with them.
-  Also, this algorithm doesn't care about blind spots. In general, since too close obstacles aren't visible due to the sensing performance limit, please take enough margin to obstacles.
--->
 
 See the [model explanations](models.md).
 

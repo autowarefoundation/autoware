@@ -35,6 +35,59 @@
 
 class Tracker
 {
+private:
+  unique_identifier_msgs::msg::UUID uuid_;
+
+  // classification
+  std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classification_;
+
+  // existence states
+  int no_measurement_count_;
+  int total_no_measurement_count_;
+  int total_measurement_count_;
+  rclcpp::Time last_update_with_measurement_time_;
+  std::vector<float> existence_probabilities_;
+  float total_existence_probability_;
+
+public:
+  Tracker(
+    const rclcpp::Time & time,
+    const std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> & classification,
+    const size_t & channel_size);
+  virtual ~Tracker() {}
+
+  void initializeExistenceProbabilities(
+    const uint & channel_index, const float & existence_probability);
+  bool getExistenceProbabilityVector(std::vector<float> & existence_vector) const
+  {
+    existence_vector = existence_probabilities_;
+    return existence_vector.size() > 0;
+  }
+  bool updateWithMeasurement(
+    const autoware_auto_perception_msgs::msg::DetectedObject & object,
+    const rclcpp::Time & measurement_time, const geometry_msgs::msg::Transform & self_transform,
+    const uint & channel_index);
+  bool updateWithoutMeasurement(const rclcpp::Time & now);
+
+  // classification
+  std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> getClassification() const
+  {
+    return classification_;
+  }
+  std::uint8_t getHighestProbLabel() const
+  {
+    return object_recognition_utils::getHighestProbLabel(classification_);
+  }
+
+  // existence states
+  int getNoMeasurementCount() const { return no_measurement_count_; }
+  int getTotalNoMeasurementCount() const { return total_no_measurement_count_; }
+  int getTotalMeasurementCount() const { return total_measurement_count_; }
+  double getElapsedTimeFromLastUpdate(const rclcpp::Time & current_time) const
+  {
+    return (current_time - last_update_with_measurement_time_).seconds();
+  }
+
 protected:
   unique_identifier_msgs::msg::UUID getUUID() const { return uuid_; }
   void setClassification(
@@ -45,44 +98,10 @@ protected:
   void updateClassification(
     const std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> & classification);
 
-private:
-  unique_identifier_msgs::msg::UUID uuid_;
-  std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classification_;
-  int no_measurement_count_;
-  int total_no_measurement_count_;
-  int total_measurement_count_;
-  rclcpp::Time last_update_with_measurement_time_;
-
+  // virtual functions
 public:
-  Tracker(
-    const rclcpp::Time & time,
-    const std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> & classification);
-  virtual ~Tracker() {}
-  bool updateWithMeasurement(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object,
-    const rclcpp::Time & measurement_time, const geometry_msgs::msg::Transform & self_transform);
-  bool updateWithoutMeasurement();
-  std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> getClassification() const
-  {
-    return classification_;
-  }
-  std::uint8_t getHighestProbLabel() const
-  {
-    return object_recognition_utils::getHighestProbLabel(classification_);
-  }
-  int getNoMeasurementCount() const { return no_measurement_count_; }
-  int getTotalNoMeasurementCount() const { return total_no_measurement_count_; }
-  int getTotalMeasurementCount() const { return total_measurement_count_; }
-  double getElapsedTimeFromLastUpdate(const rclcpp::Time & current_time) const
-  {
-    return (current_time - last_update_with_measurement_time_).seconds();
-  }
   virtual geometry_msgs::msg::PoseWithCovariance getPoseWithCovariance(
     const rclcpp::Time & time) const;
-
-  /*
-   * Pure virtual function
-   */
 
 protected:
   virtual bool measure(
