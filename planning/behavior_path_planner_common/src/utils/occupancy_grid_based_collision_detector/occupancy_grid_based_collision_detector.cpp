@@ -110,6 +110,14 @@ void OccupancyGridBasedCollisionDetector::setMap(const nav_msgs::msg::OccupancyG
   }
 }
 
+static IndexXY position2index(
+  const nav_msgs::msg::OccupancyGrid & costmap, const geometry_msgs::msg::Point & position_local)
+{
+  const int index_x = position_local.x / costmap.info.resolution;
+  const int index_y = position_local.y / costmap.info.resolution;
+  return {index_x, index_y};
+}
+
 void OccupancyGridBasedCollisionDetector::computeCollisionIndexes(
   int theta_index, std::vector<IndexXY> & indexes_2d)
 {
@@ -131,12 +139,11 @@ void OccupancyGridBasedCollisionDetector::computeCollisionIndexes(
     const double offset_x = std::cos(base_theta) * x - std::sin(base_theta) * y;
     const double offset_y = std::sin(base_theta) * x + std::cos(base_theta) * y;
 
-    geometry_msgs::msg::Pose pose_local;
-    pose_local.position.x = base_pose.position.x + offset_x;
-    pose_local.position.y = base_pose.position.y + offset_y;
+    geometry_msgs::msg::Point position_local;
+    position_local.x = base_pose.position.x + offset_x;
+    position_local.y = base_pose.position.y + offset_y;
 
-    const auto index = pose2index(costmap_, pose_local, param_.theta_size);
-    const auto index_2d = IndexXY{index.x, index.y};
+    const auto index_2d = position2index(costmap_, position_local);
     indexes_2d.push_back(index_2d);
   };
 
