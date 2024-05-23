@@ -16,6 +16,24 @@ This module has following assumptions.
 
 ![aeb_range](./image/range.drawio.svg)
 
+### IMU path generation: steering angle vs IMU's angular velocity
+
+Currently, the IMU-based path is generated using the angular velocity obtained by the IMU itself. It has been suggested that the steering angle could be used instead onf the angular velocity.
+
+The pros and cons of both approaches are:
+
+IMU angular velocity:
+
+- (+) Usually, it has high accuracy
+- (-)Vehicle vibration might introduce noise.
+
+Steering angle:
+
+- (+) Not so noisy
+- (-) May have a steering offset or a wrong gear ratio, and the steering angle of Autoware and the real steering may not be the same.
+
+For the moment, there are no plans to implement the steering angle on the path creation process of the AEB module.
+
 ### Limitations
 
 - AEB might not be able to react with obstacles that are close to the ground. It depends on the performance of the pre-processing methods applied to the point cloud.
