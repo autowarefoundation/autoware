@@ -24,8 +24,8 @@
 
 using std::placeholders::_1;
 
-Twist2Accel::Twist2Accel(const std::string & node_name, const rclcpp::NodeOptions & node_options)
-: rclcpp::Node(node_name, node_options)
+Twist2Accel::Twist2Accel(const rclcpp::NodeOptions & node_options)
+: rclcpp::Node("twist2accel", node_options)
 {
   sub_odom_ = create_subscription<nav_msgs::msg::Odometry>(
     "input/odom", 1, std::bind(&Twist2Accel::callbackOdometry, this, _1));
@@ -103,3 +103,6 @@ void Twist2Accel::estimateAccel(const geometry_msgs::msg::TwistStamped::SharedPt
   pub_accel_->publish(accel_msg);
   prev_twist_ptr_ = msg;
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(Twist2Accel)

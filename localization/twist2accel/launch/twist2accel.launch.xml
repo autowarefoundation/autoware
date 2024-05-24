@@ -4,7 +4,7 @@
   <arg name="in_odom" default="in_odom"/>
   <arg name="in_twist" default="in_twist"/>
   <arg name="out_accel" default="out_accel"/>
-  <node pkg="twist2accel" exec="twist2accel" name="twist2accel" output="screen">
+  <node pkg="twist2accel" exec="twist2accel_node" output="both">
     <remap from="input/odom" to="$(var in_odom)"/>
     <remap from="input/twist" to="$(var in_twist)"/>
     <remap from="output/accel" to="$(var out_accel)"/>

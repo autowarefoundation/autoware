@@ -40,7 +40,7 @@
 class Twist2Accel : public rclcpp::Node
 {
 public:
-  Twist2Accel(const std::string & node_name, const rclcpp::NodeOptions & options);
+  explicit Twist2Accel(const rclcpp::NodeOptions & options);
 
 private:
   rclcpp::Publisher<geometry_msgs::msg::AccelWithCovarianceStamped>::SharedPtr
