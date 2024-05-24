@@ -24,7 +24,7 @@
 #include <cstddef>
 #include <functional>
 
-Pose2Twist::Pose2Twist() : Node("pose2twist_core")
+Pose2Twist::Pose2Twist(const rclcpp::NodeOptions & options) : rclcpp::Node("pose2twist", options)
 {
   using std::placeholders::_1;
 
@@ -129,3 +129,6 @@ void Pose2Twist::callbackPose(geometry_msgs::msg::PoseStamped::SharedPtr pose_ms
   angular_z_msg.data = twist_msg.twist.angular.z;
   angular_z_pub_->publish(angular_z_msg);
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(Pose2Twist)

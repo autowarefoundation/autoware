@@ -19,6 +19,7 @@
 
   <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tier4_debug_msgs</depend>
 

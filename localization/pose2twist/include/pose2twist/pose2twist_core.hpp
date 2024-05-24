@@ -24,7 +24,7 @@
 class Pose2Twist : public rclcpp::Node
 {
 public:
-  Pose2Twist();
+  explicit Pose2Twist(const rclcpp::NodeOptions & options);
   ~Pose2Twist() = default;
 
 private:
