@@ -13,7 +13,7 @@
     prediction_time_horizons: [1.0, 2.0, 3.0, 5.0]
 
     stopped_velocity_threshold: 1.0
-    detection_radius_list: [50.0, 100.0, 150.0, 200.0]
+    detection_radius_list: [20.0, 40.0, 60.0, 80.0, 100.0, 120.0, 140.0, 160.0, 180.0, 200.0]
     detection_height_list: [10.0]
     detection_count_purge_seconds: 36000.0
     objects_count_window_seconds: 1.0
