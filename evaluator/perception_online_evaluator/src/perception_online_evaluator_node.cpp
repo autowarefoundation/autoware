@@ -69,16 +69,25 @@ void PerceptionOnlineEvaluatorNode::publishMetrics()
 
   // calculate metrics
   for (const Metric & metric : parameters_->metrics) {
-    const auto metric_stat_map = metrics_calculator_.calculate(Metric(metric));
-    if (!metric_stat_map.has_value()) {
+    const auto metric_result = metrics_calculator_.calculate(Metric(metric));
+    if (!metric_result.has_value()) {
       continue;
     }
 
-    for (const auto & [metric, stat] : metric_stat_map.value()) {
-      if (stat.count() > 0) {
-        metrics_msg.status.push_back(generateDiagnosticStatus(metric, stat));
-      }
-    }
+    std::visit(
+      [&metrics_msg, this](auto && arg) {
+        using T = std::decay_t<decltype(arg)>;
+        for (const auto & [metric, value] : arg) {
+          if constexpr (std::is_same_v<T, MetricStatMap>) {
+            if (value.count() > 0) {
+              metrics_msg.status.push_back(generateDiagnosticStatus(metric, value));
+            }
+          } else if constexpr (std::is_same_v<T, MetricValueMap>) {
+            metrics_msg.status.push_back(generateDiagnosticStatus(metric, value));
+          }
+        }
+      },
+      metric_result.value());
   }
 
   // publish metrics
@@ -106,6 +115,22 @@ DiagnosticStatus PerceptionOnlineEvaluatorNode::generateDiagnosticStatus(
   status.values.push_back(key_value);
   key_value.key = "mean";
   key_value.value = std::to_string(metric_stat.mean());
+  status.values.push_back(key_value);
+
+  return status;
+}
+
+DiagnosticStatus PerceptionOnlineEvaluatorNode::generateDiagnosticStatus(
+  const std::string metric, const double value) const
+{
+  DiagnosticStatus status;
+
+  status.level = status.OK;
+  status.name = metric;
+
+  diagnostic_msgs::msg::KeyValue key_value;
+  key_value.key = "metric_value";
+  key_value.value = std::to_string(value);
   status.values.push_back(key_value);
 
   return status;

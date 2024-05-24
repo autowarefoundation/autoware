@@ -61,6 +61,8 @@ public:
 
   DiagnosticStatus generateDiagnosticStatus(
     const std::string metric, const Stat<double> & metric_stat) const;
+  DiagnosticStatus generateDiagnosticStatus(
+    const std::string metric, const double metric_value) const;
 
 private:
   // Subscribers and publishers

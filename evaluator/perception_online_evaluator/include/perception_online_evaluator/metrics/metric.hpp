@@ -20,6 +20,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <variant>
 #include <vector>
 
 namespace perception_diagnostics
@@ -36,7 +37,11 @@ enum class Metric {
   SIZE,
 };
 
+// Each metric has a different return type. (statistic or just a one value etc).
+// To handle them all in the MetricsCalculator::calculate function, define MetricsMap as a variant
 using MetricStatMap = std::unordered_map<std::string, Stat<double>>;
+using MetricValueMap = std::unordered_map<std::string, double>;
+using MetricsMap = std::variant<MetricStatMap, MetricValueMap>;
 
 struct PredictedPathDeviationMetrics
 {
