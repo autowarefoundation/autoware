@@ -118,8 +118,8 @@ runs:
           ${{ inputs.bake-images }}
         set: |
           ${{ inputs.build-args }}
-
-    - name: Build and Save Artifacts
+    
+    - name: Build Only
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       uses: docker/bake-action@v3
       with:
@@ -133,71 +133,94 @@ runs:
         provenance: false
         targets: |
           ${{ inputs.bake-images }}
-        set: |
-          ${{ inputs.build-args }}
-          prebuilt.output=type=docker,dest=/tmp/prebuilt.tar
-          devel.output=type=docker,dest=/tmp/devel.tar
-          runtime.output=type=docker,dest=/tmp/runtime.tar
-
-    - name: Upload Artifact - prebuilt
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
-      id: artifact-upload-step-prebuilt
-      uses: actions/upload-artifact@v4
-      with:
-        name: prebuilt-image${{ inputs.tag-suffix }}
-        path: /tmp/prebuilt.tar
-        retention-days: 7
-        compression-level: 6
-        overwrite: true
-        if-no-files-found: warn
-
-    - name: Remove tar file - prebuilt
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
-      run: |
-        rm /tmp/prebuilt.tar
-      shell: bash
-
-    - name: Upload Artifact - devel
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
-      id: artifact-upload-step-devel
-      uses: actions/upload-artifact@v4
-      with:
-        name: devel-image${{ inputs.tag-suffix }}
-        path: /tmp/devel.tar
-        retention-days: 7
-        compression-level: 6
-        overwrite: true
-        if-no-files-found: warn
-
-    - name: Remove tar file - devel
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
-      run: |
-        rm /tmp/devel.tar
-      shell: bash
-
-    - name: Upload Artifact - runtime
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
-      id: artifact-upload-step-runtime
-      uses: actions/upload-artifact@v4
-      with:
-        name: runtime-image${{ inputs.tag-suffix }}
-        path: /tmp/runtime.tar
-        retention-days: 7
-        compression-level: 6
-        overwrite: true
-        if-no-files-found: warn
-
-    - name: Remove tar file - runtime
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
-      run: |
-        rm /tmp/runtime.tar
-      shell: bash
 
     - name: Output artifact URLs
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
-      id: output-artifact-urls
+      id: warn-no-artifacts
       run: |
-        echo 'prebuilt URL ${{ steps.artifact-upload-step-prebuilt.outputs.artifact-url }}'
-        echo 'devel URL ${{ steps.artifact-upload-step-devel.outputs.artifact-url }}'
-        echo 'runtime URL ${{ steps.artifact-upload-step-runtime.outputs.artifact-url }}'
+        echo 'No artifacts uploaded because of disk space issue'
       shell: bash
+
+    # TODO:Enable after solving the issue with the disk space
+    # - name: Build and Save Artifacts
+    #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+    #   uses: docker/bake-action@v3
+    #   with:
+    #     push: false
+    #     files: |
+    #       docker/docker-bake.hcl
+    #       ${{ steps.meta-base.outputs.bake-file }}
+    #       ${{ steps.meta-prebuilt.outputs.bake-file }}
+    #       ${{ steps.meta-devel.outputs.bake-file }}
+    #       ${{ steps.meta-runtime.outputs.bake-file }}
+    #     provenance: false
+    #     targets: |
+    #       ${{ inputs.bake-images }}
+    #     set: |
+    #       ${{ inputs.build-args }}
+    #       prebuilt.output=type=docker,dest=/tmp/prebuilt.tar
+    #       devel.output=type=docker,dest=/tmp/devel.tar
+    #       runtime.output=type=docker,dest=/tmp/runtime.tar
+
+    # - name: Upload Artifact - prebuilt
+    #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+    #   id: artifact-upload-step-prebuilt
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: prebuilt-image${{ inputs.tag-suffix }}
+    #     path: /tmp/prebuilt.tar
+    #     retention-days: 7
+    #     compression-level: 6
+    #     overwrite: true
+    #     if-no-files-found: warn
+
+    # - name: Remove tar file - prebuilt
+    #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+    #   run: |
+    #     rm /tmp/prebuilt.tar
+    #   shell: bash
+
+    # - name: Upload Artifact - devel
+    #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+    #   id: artifact-upload-step-devel
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: devel-image${{ inputs.tag-suffix }}
+    #     path: /tmp/devel.tar
+    #     retention-days: 7
+    #     compression-level: 6
+    #     overwrite: true
+    #     if-no-files-found: warn
+
+    # - name: Remove tar file - devel
+    #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+    #   run: |
+    #     rm /tmp/devel.tar
+    #   shell: bash
+
+    # - name: Upload Artifact - runtime
+    #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+    #   id: artifact-upload-step-runtime
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: runtime-image${{ inputs.tag-suffix }}
+    #     path: /tmp/runtime.tar
+    #     retention-days: 7
+    #     compression-level: 6
+    #     overwrite: true
+    #     if-no-files-found: warn
+
+    # - name: Remove tar file - runtime
+    #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+    #   run: |
+    #     rm /tmp/runtime.tar
+    #   shell: bash
+
+    # - name: Output artifact URLs
+    #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+    #   id: output-artifact-urls
+    #   run: |
+    #     echo 'prebuilt URL ${{ steps.artifact-upload-step-prebuilt.outputs.artifact-url }}'
+    #     echo 'devel URL ${{ steps.artifact-upload-step-devel.outputs.artifact-url }}'
+    #     echo 'runtime URL ${{ steps.artifact-upload-step-runtime.outputs.artifact-url }}'
+    #   shell: bash
