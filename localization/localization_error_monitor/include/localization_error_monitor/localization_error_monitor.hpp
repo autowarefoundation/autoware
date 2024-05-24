@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LOCALIZATION_ERROR_MONITOR__NODE_HPP_
-#define LOCALIZATION_ERROR_MONITOR__NODE_HPP_
+#ifndef LOCALIZATION_ERROR_MONITOR__LOCALIZATION_ERROR_MONITOR_HPP_
+#define LOCALIZATION_ERROR_MONITOR__LOCALIZATION_ERROR_MONITOR_HPP_
 
 #include <Eigen/Dense>
 #include <rclcpp/rclcpp.hpp>
@@ -58,7 +58,7 @@ private:
   double measureSizeEllipseAlongBodyFrame(const Eigen::Matrix2d & Pinv, double theta);
 
 public:
-  LocalizationErrorMonitor();
+  explicit LocalizationErrorMonitor(const rclcpp::NodeOptions & options);
   ~LocalizationErrorMonitor() = default;
 };
-#endif  // LOCALIZATION_ERROR_MONITOR__NODE_HPP_
+#endif  // LOCALIZATION_ERROR_MONITOR__LOCALIZATION_ERROR_MONITOR_HPP_

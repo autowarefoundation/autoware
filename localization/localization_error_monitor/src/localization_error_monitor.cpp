@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "localization_error_monitor/node.hpp"
+#include "localization_error_monitor/localization_error_monitor.hpp"
 
 #include "localization_error_monitor/diagnostics.hpp"
 
@@ -32,7 +32,8 @@
 #include <string>
 #include <utility>
 
-LocalizationErrorMonitor::LocalizationErrorMonitor() : Node("localization_error_monitor")
+LocalizationErrorMonitor::LocalizationErrorMonitor(const rclcpp::NodeOptions & options)
+: Node("localization_error_monitor", options)
 {
   scale_ = this->declare_parameter<double>("scale");
   error_ellipse_size_ = this->declare_parameter<double>("error_ellipse_size");
@@ -143,3 +144,6 @@ double LocalizationErrorMonitor::measureSizeEllipseAlongBodyFrame(
   double d = std::sqrt((e.transpose() * Pinv * e)(0, 0) / Pinv.determinant());
   return d;
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(LocalizationErrorMonitor)
