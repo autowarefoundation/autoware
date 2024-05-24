@@ -23,7 +23,7 @@
 #include <string>
 
 PoseInstabilityDetector::PoseInstabilityDetector(const rclcpp::NodeOptions & options)
-: Node("pose_instability_detector", options),
+: rclcpp::Node("pose_instability_detector", options),
   threshold_diff_position_x_(this->declare_parameter<double>("threshold_diff_position_x")),
   threshold_diff_position_y_(this->declare_parameter<double>("threshold_diff_position_y")),
   threshold_diff_position_z_(this->declare_parameter<double>("threshold_diff_position_z")),
@@ -174,3 +174,6 @@ void PoseInstabilityDetector::callback_timer()
   prev_odometry_ = latest_odometry_;
   twist_buffer_.clear();
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(PoseInstabilityDetector)

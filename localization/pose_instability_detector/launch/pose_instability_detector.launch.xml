@@ -6,7 +6,7 @@
   <arg name="input_odometry" default="~/input/odometry"/>
   <arg name="input_twist" default="~/input/twist"/>
 
-  <node pkg="pose_instability_detector" exec="pose_instability_detector" name="$(var node_name)" output="log">
+  <node pkg="pose_instability_detector" exec="pose_instability_detector_node" name="$(var node_name)" output="both">
     <remap from="~/input/odometry" to="$(var input_odometry)"/>
     <remap from="~/input/twist" to="$(var input_twist)"/>
     <param from="$(var param_file)"/>
