@@ -39,18 +39,15 @@ OperationModeNode::OperationModeNode(const rclcpp::NodeOptions & options)
   adaptor.init_cli(cli_mode_, group_cli_);
   adaptor.init_cli(cli_control_, group_cli_);
 
-  const std::vector<std::string> module_names = {
-    "sensing", "perception", "map", "localization", "planning", "control", "vehicle", "system",
+  const auto name = "/system/operation_mode/availability";
+  const auto qos = rclcpp::QoS(1);
+  const auto callback = [this](const OperationModeAvailability::ConstSharedPtr msg) {
+    mode_available_[OperationModeState::Message::STOP] = msg->stop;
+    mode_available_[OperationModeState::Message::AUTONOMOUS] = msg->autonomous;
+    mode_available_[OperationModeState::Message::LOCAL] = msg->local;
+    mode_available_[OperationModeState::Message::REMOTE] = msg->remote;
   };
-
-  for (size_t i = 0; i < module_names.size(); ++i) {
-    const auto name = "/system/component_state_monitor/component/autonomous/" + module_names[i];
-    const auto qos = rclcpp::QoS(1).transient_local();
-    const auto callback = [this, i, module_names](const ModeChangeAvailable::ConstSharedPtr msg) {
-      module_states_[module_names[i]] = msg->available;
-    };
-    sub_module_states_.push_back(create_subscription<ModeChangeAvailable>(name, qos, callback));
-  }
+  sub_availability_ = create_subscription<OperationModeAvailability>(name, qos, callback);
 
   timer_ = rclcpp::create_timer(
     this, get_clock(), rclcpp::Rate(5.0).period(), std::bind(&OperationModeNode::on_timer, this));
@@ -60,8 +57,8 @@ OperationModeNode::OperationModeNode(const rclcpp::NodeOptions & options)
   mode_available_[OperationModeState::Message::UNKNOWN] = false;
   mode_available_[OperationModeState::Message::STOP] = true;
   mode_available_[OperationModeState::Message::AUTONOMOUS] = false;
-  mode_available_[OperationModeState::Message::LOCAL] = true;
-  mode_available_[OperationModeState::Message::REMOTE] = true;
+  mode_available_[OperationModeState::Message::LOCAL] = false;
+  mode_available_[OperationModeState::Message::REMOTE] = false;
 }
 
 template <class ResponseT>
@@ -135,23 +132,6 @@ void OperationModeNode::on_state(const OperationModeState::Message::ConstSharedP
 
 void OperationModeNode::on_timer()
 {
-  bool autonomous_available = true;
-  std::string unhealthy_components = "";
-  for (const auto & state : module_states_) {
-    if (!state.second) {
-      unhealthy_components += unhealthy_components.empty() ? state.first : ", " + state.first;
-    }
-    autonomous_available &= state.second;
-  }
-  mode_available_[OperationModeState::Message::AUTONOMOUS] = autonomous_available;
-
-  if (!unhealthy_components.empty()) {
-    RCLCPP_INFO_THROTTLE(
-      get_logger(), *get_clock(), 3000,
-      "%s component state is unhealthy. Autonomous is not available.",
-      unhealthy_components.c_str());
-  }
-
   update_state();
 }
 

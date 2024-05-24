@@ -1,6 +1,8 @@
 <launch>
+  <arg name="param_file" default="$(find-pkg-share diagnostic_graph_aggregator)/config/default.param.yaml"/>
   <arg name="graph_file" default="$(find-pkg-share system_diagnostic_monitor)/config/autoware-main.yaml"/>
   <include file="$(find-pkg-share diagnostic_graph_aggregator)/launch/aggregator.launch.xml">
+    <arg name="param_file" value="$(var param_file)"/>
     <arg name="graph_file" value="$(var graph_file)"/>
   </include>
   <node pkg="system_diagnostic_monitor" exec="component_state_diagnostics" name="component_state_diagnostics"/>

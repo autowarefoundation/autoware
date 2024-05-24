@@ -25,7 +25,7 @@
 #include <vector>
 
 // TODO(Takagi, Isamu): define interface
-#include <tier4_system_msgs/msg/mode_change_available.hpp>
+#include <tier4_system_msgs/msg/operation_mode_availability.hpp>
 
 // This file should be included after messages.
 #include "utils/types.hpp"
@@ -47,7 +47,7 @@ private:
   using ChangeToRemote = autoware_ad_api::operation_mode::ChangeToRemote;
   using OperationModeRequest = system_interface::ChangeOperationMode::Service::Request;
   using AutowareControlRequest = system_interface::ChangeAutowareControl::Service::Request;
-  using ModeChangeAvailable = tier4_system_msgs::msg::ModeChangeAvailable;
+  using OperationModeAvailability = tier4_system_msgs::msg::OperationModeAvailability;
 
   OperationModeState::Message curr_state_;
   OperationModeState::Message prev_state_;
@@ -65,9 +65,7 @@ private:
   Sub<system_interface::OperationModeState> sub_state_;
   Cli<system_interface::ChangeOperationMode> cli_mode_;
   Cli<system_interface::ChangeAutowareControl> cli_control_;
-
-  std::unordered_map<std::string, bool> module_states_;
-  std::vector<rclcpp::Subscription<ModeChangeAvailable>::SharedPtr> sub_module_states_;
+  rclcpp::Subscription<OperationModeAvailability>::SharedPtr sub_availability_;
 
   void on_change_to_stop(
     const ChangeToStop::Service::Request::SharedPtr req,

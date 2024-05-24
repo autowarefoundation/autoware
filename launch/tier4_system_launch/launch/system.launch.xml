@@ -25,11 +25,12 @@
   <arg name="run_mode" default="online" description="options: online, logging_simulation, planning_simulation"/>
   <arg name="sensor_model" description="sensor model name"/>
 
-  <arg name="use_diagnostic_graph" default="false" description="use diagnostic graph packages"/>
-  <arg name="mrm_handler_param_path" if="$(var use_diagnostic_graph)"/>
-  <arg name="diagnostic_graph_aggregator_param_path" if="$(var use_diagnostic_graph)"/>
-  <arg name="diagnostic_graph_aggregator_graph_path" if="$(var use_diagnostic_graph)"/>
-  <arg name="diagnostic_graph_aggregator_planning_simulator_graph_path" if="$(var use_diagnostic_graph)"/>
+  <!-- Emergency handler will be replaced by MRM handler. -->
+  <arg name="use_emergency_handler" default="true" description="use emergency handler packages"/>
+  <arg name="mrm_handler_param_path"/>
+  <arg name="diagnostic_graph_aggregator_param_path"/>
+  <arg name="diagnostic_graph_aggregator_graph_path_main"/>
+  <arg name="diagnostic_graph_aggregator_graph_path_psim"/>
 
   <let name="sensor_launch_pkg" value="$(find-pkg-share $(var sensor_model)_launch)"/>
 
@@ -57,6 +58,13 @@
       </include>
     </group>
 
+    <!-- Duplicated Node Checker -->
+    <group>
+      <include file="$(find-pkg-share duplicated_node_checker)/launch/duplicated_node_checker.launch.xml">
+        <arg name="config_file" value="$(var duplicated_node_checker_param_path)"/>
+      </include>
+    </group>
+
     <!-- Service Log Checker -->
     <group>
       <include file="$(find-pkg-share component_interface_tools)/launch/service_log_checker.launch.xml"/>
@@ -67,33 +75,6 @@
       <include file="$(find-pkg-share component_state_monitor)/launch/component_state_monitor.launch.py">
         <arg name="mode" value="$(var run_mode)"/>
         <arg name="file" value="$(var component_state_monitor_topic_path)"/>
-      </include>
-    </group>
-
-    <!-- Error Monitor -->
-    <group unless="$(var use_diagnostic_graph)">
-      <let name="config_file" value="$(var system_error_monitor_param_path)" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
-      <let name="config_file" value="$(var system_error_monitor_param_path)" if="$(eval &quot;'$(var run_mode)'=='logging_simulation'&quot;)"/>
-      <let name="config_file" value="$(var system_error_monitor_planning_simulator_param_path)" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
-      <include file="$(find-pkg-share system_error_monitor)/launch/system_error_monitor.launch.xml">
-        <arg name="config_file" value="$(var config_file)"/>
-        <arg name="extra_agg_config_file_sensing" value="$(var sensor_launch_pkg)/config/diagnostic_aggregator/sensor_kit.param.yaml"/>
-        <arg name="extra_agg_config_file_system" value="$(var diagnostic_aggregator_system_param_path)"/>
-        <arg name="extra_agg_config_file_vehicle" value="$(var diagnostic_aggregator_vehicle_param_path)"/>
-        <arg name="use_emergency_hold" value="false"/>
-      </include>
-    </group>
-
-    <!-- Emergency Handler -->
-    <group unless="$(var use_diagnostic_graph)">
-      <include file="$(find-pkg-share emergency_handler)/launch/emergency_handler.launch.xml">
-        <arg name="config_file" value="$(var emergency_handler_param_path)"/>
-      </include>
-    </group>
-
-    <group>
-      <include file="$(find-pkg-share duplicated_node_checker)/launch/duplicated_node_checker.launch.xml">
-        <arg name="config_file" value="$(var duplicated_node_checker_param_path)"/>
       </include>
     </group>
 
@@ -109,27 +90,48 @@
       </include>
     </group>
 
-    <!-- MRM Handler -->
-    <group if="$(var use_diagnostic_graph)">
-      <include file="$(find-pkg-share mrm_handler)/launch/mrm_handler.launch.xml">
-        <arg name="config_file" value="$(var mrm_handler_param_path)"/>
+    <!-- Error Monitor -->
+    <group if="$(var use_emergency_handler)">
+      <let name="config_file" value="$(var system_error_monitor_param_path)" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
+      <let name="config_file" value="$(var system_error_monitor_param_path)" if="$(eval &quot;'$(var run_mode)'=='logging_simulation'&quot;)"/>
+      <let name="config_file" value="$(var system_error_monitor_planning_simulator_param_path)" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
+      <include file="$(find-pkg-share system_error_monitor)/launch/system_error_monitor.launch.xml">
+        <arg name="config_file" value="$(var config_file)"/>
+        <arg name="extra_agg_config_file_sensing" value="$(var sensor_launch_pkg)/config/diagnostic_aggregator/sensor_kit.param.yaml"/>
+        <arg name="extra_agg_config_file_system" value="$(var diagnostic_aggregator_system_param_path)"/>
+        <arg name="extra_agg_config_file_vehicle" value="$(var diagnostic_aggregator_vehicle_param_path)"/>
+        <arg name="use_emergency_hold" value="false"/>
+      </include>
+    </group>
+
+    <!-- Emergency Handler -->
+    <group if="$(var use_emergency_handler)">
+      <include file="$(find-pkg-share emergency_handler)/launch/emergency_handler.launch.xml">
+        <arg name="config_file" value="$(var emergency_handler_param_path)"/>
       </include>
     </group>
 
     <!-- Diagnostic Graph Aggregator -->
-    <group if="$(var use_diagnostic_graph)">
-      <let name="graph_file" value="$(var diagnostic_graph_aggregator_graph_path)" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
-      <let name="graph_file" value="$(var diagnostic_graph_aggregator_graph_path)" if="$(eval &quot;'$(var run_mode)'=='logging_simulation'&quot;)"/>
-      <let name="graph_file" value="$(var diagnostic_graph_aggregator_planning_simulator_graph_path)" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
-      <include file="$(find-pkg-share diagnostic_graph_aggregator)/launch/aggregator.launch.xml">
+    <group>
+      <let name="diagnostic_graph_aggregator_graph_path" value="$(var diagnostic_graph_aggregator_graph_path_main)" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
+      <let name="diagnostic_graph_aggregator_graph_path" value="$(var diagnostic_graph_aggregator_graph_path_main)" if="$(eval &quot;'$(var run_mode)'=='logging_simulation'&quot;)"/>
+      <let name="diagnostic_graph_aggregator_graph_path" value="$(var diagnostic_graph_aggregator_graph_path_psim)" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
+      <include file="$(find-pkg-share system_diagnostic_monitor)/launch/system_diagnostic_monitor.launch.xml">
         <arg name="param_file" value="$(var diagnostic_graph_aggregator_param_path)"/>
-        <arg name="graph_file" value="$(var graph_file)"/>
+        <arg name="graph_file" value="$(var diagnostic_graph_aggregator_graph_path)"/>
       </include>
     </group>
 
     <!-- Hazard Status Converter -->
-    <group if="$(var use_diagnostic_graph)">
+    <group unless="$(var use_emergency_handler)">
       <include file="$(find-pkg-share hazard_status_converter)/launch/hazard_status_converter.launch.xml"/>
+    </group>
+
+    <!-- MRM Handler -->
+    <group unless="$(var use_emergency_handler)">
+      <include file="$(find-pkg-share mrm_handler)/launch/mrm_handler.launch.xml">
+        <arg name="config_file" value="$(var mrm_handler_param_path)"/>
+      </include>
     </group>
   </group>
 
