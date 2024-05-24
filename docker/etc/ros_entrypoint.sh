@@ -22,7 +22,7 @@ else
     # Add sudo privileges to the user
     echo "$USER_NAME ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
 
-    # Source ROS2
+    # Source ROS 2
     # hadolint ignore=SC1090
     source "/opt/ros/$ROS_DISTRO/setup.bash"
     source /autoware/install/setup.bash

@@ -31,12 +31,6 @@ runs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    - name: Install jq
-      run: |
-        sudo apt-get -y update
-        sudo apt-get -y install jq
-      shell: bash
-
     - name: Set Docker tags
       id: set-docker-tags
       run: |

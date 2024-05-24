@@ -31,12 +31,6 @@ runs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    - name: Install jq
-      run: |
-        sudo apt-get -y update
-        sudo apt-get -y install jq
-      shell: bash
-
     - name: Set Docker tags
       id: set-docker-tags
       run: |
@@ -141,22 +135,9 @@ runs:
           ${{ inputs.bake-images }}
         set: |
           ${{ inputs.build-args }}
-          base.output=type=docker,dest=/tmp/base.tar
           prebuilt.output=type=docker,dest=/tmp/prebuilt.tar
           devel.output=type=docker,dest=/tmp/devel.tar
           runtime.output=type=docker,dest=/tmp/runtime.tar
-
-    - name: Upload Artifact - base
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
-      id: artifact-upload-step-base
-      uses: actions/upload-artifact@v4
-      with:
-        name: base-image${{ inputs.tag-suffix }}
-        path: /tmp/base.tar
-        retention-days: 7
-        compression-level: 6
-        overwrite: true
-        if-no-files-found: warn
 
     - name: Upload Artifact - prebuilt
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
@@ -216,7 +197,6 @@ runs:
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       id: output-artifact-urls
       run: |
-        echo 'base URL ${{ steps.artifact-upload-step-base.outputs.artifact-url }}'
         echo 'prebuilt URL ${{ steps.artifact-upload-step-prebuilt.outputs.artifact-url }}'
         echo 'devel URL ${{ steps.artifact-upload-step-devel.outputs.artifact-url }}'
         echo 'runtime URL ${{ steps.artifact-upload-step-runtime.outputs.artifact-url }}'

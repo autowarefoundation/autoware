@@ -48,7 +48,7 @@ jobs:
             base_image_env: base_image
             lib_dir: aarch64
             additional-tag-suffix: -cuda
-            bake-images: prebuilt,devel,runtime
+            bake-images: default
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
@@ -95,7 +95,7 @@ jobs:
           bake-images: ${{ matrix.bake-images }}
           allow-push: true
 
-      - name: Build 'Openadkit'
+      - name: Build 'Open AD Kit'
         if: ${{ matrix.name == 'no-cuda' }}
         uses: ./.github/actions/docker-build-and-push-openadkit
         with:

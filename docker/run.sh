@@ -37,9 +37,9 @@ print_help() {
     echo -e "Options:"
     echo -e "  ${GREEN}--help/-h${NC}       Display this help message"
     echo -e "  ${GREEN}--data-path${NC}     Specify to mount data files into /autoware_data"
-    echo -e "  ${GREEN}--map-path${NC}      Specify to mount map files into /autoware_map (mandatory if no custom launch command is provided)"
+    echo -e "  ${GREEN}--map-path${NC}      Specify to mount map files into /autoware_map (mandatory for runtime)"
     echo -e "  ${GREEN}--devel${NC}         Launch the latest Autoware development environment with shell access"
-    echo -e "  ${GREEN}--workspace${NC}     (--devel only)Specify the directory to mount into /workspace, by default it uses current directory (pwd) as workspace"
+    echo -e "  ${GREEN}--workspace${NC}     (--devel only)Specify the directory to mount into /workspace, by default it uses current directory (pwd)"
     echo -e "  ${GREEN}--no-nvidia${NC}     Disable NVIDIA GPU support"
     echo -e "  ${GREEN}--headless${NC}      Run Autoware in headless mode (default: false)"
     echo ""
@@ -93,7 +93,7 @@ parse_arguments() {
     done
 }
 
-# Set docker image used and workspace variables
+# Set the docker image and workspace variables
 set_variables() {
     if [ "$option_devel" = "true" ]; then
         # Set image based on option
@@ -173,9 +173,12 @@ main() {
         echo -e "${GREEN}Launching Autoware${NC}"
     fi
     echo -e "${GREEN}IMAGE:${NC} ${IMAGE}"
-    echo -e "${GREEN}DATA PATH(mounted):${NC} ${DATA_PATH}:/autoware_data"
-    echo -e "${GREEN}MAP PATH(mounted):${NC} ${MAP_PATH}:/autoware_map"
-    echo -e "${GREEN}WORKSPACE(mounted):${NC} ${WORKSPACE_PATH}:/workspace"
+    if [ "$option_devel" = "true" ]; then
+        echo -e "${GREEN}WORKSPACE PATH(mounted):${NC} ${WORKSPACE_PATH}:/workspace"
+    fi
+    if [ "$MAP_PATH" != "" ]; then
+        echo -e "${GREEN}MAP PATH(mounted):${NC} ${MAP_PATH}:/autoware_map"
+    fi
     echo -e "${GREEN}LAUNCH CMD:${NC} ${LAUNCH_CMD}"
     echo -e "${GREEN}-----------------------------------------------------------------${NC}"
 
