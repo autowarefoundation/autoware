@@ -97,16 +97,18 @@ public:
     return std::max(getEgoSpeed(), values.at(idx));
   }
 
-  double getMinimumPrepareDistance() const
+  double getNominalPrepareDistance(const double velocity) const
   {
     const auto & p = parameters_;
-    return std::max(getEgoSpeed() * p->min_prepare_time, p->min_prepare_distance);
+    const auto & values = p->velocity_map;
+    const auto idx = getConstraintsMapIndex(velocity, values);
+    return std::max(values.at(idx) * p->max_prepare_time, p->min_prepare_distance);
   }
 
   double getNominalPrepareDistance() const
   {
     const auto & p = parameters_;
-    return std::max(getEgoSpeed() * p->max_prepare_time, p->min_prepare_distance);
+    return std::max(getAvoidanceEgoSpeed() * p->max_prepare_time, p->min_prepare_distance);
   }
 
   double getNominalAvoidanceDistance(const double shift_length) const
@@ -298,6 +300,13 @@ public:
     return std::numeric_limits<double>::max();
   }
 
+  bool isEnoughPrepareDistance(const double prepare_distance) const
+  {
+    const auto & p = parameters_;
+    return prepare_distance >
+           std::max(getEgoSpeed() * p->min_prepare_distance, p->min_prepare_distance);
+  }
+
   bool isComfortable(const AvoidLineArray & shift_lines) const
   {
     const auto JERK_BUFFER = 0.1;  // [m/sss]
@@ -328,7 +337,7 @@ public:
     const auto desire_shift_length =
       getShiftLength(object, is_object_on_right, object.avoid_margin.value());
 
-    const auto prepare_distance = getMinimumPrepareDistance();
+    const auto prepare_distance = getNominalPrepareDistance(0.0);
     const auto constant_distance = getFrontConstantDistance(object);
     const auto avoidance_distance = getMinAvoidanceDistance(desire_shift_length);
 

@@ -1916,7 +1916,7 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
     std::for_each(objects.begin(), objects.end(), [&p, &ret, &parameters](const auto & object) {
       if (filtering_utils::isSafetyCheckTargetObjectType(object.object, parameters)) {
         // check only moving objects
-        if (filtering_utils::isMovingObject(object, parameters)) {
+        if (filtering_utils::isMovingObject(object, parameters) || !object.is_parked) {
           ret.objects.push_back(object.object);
         }
       }

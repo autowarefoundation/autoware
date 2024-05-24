@@ -409,9 +409,9 @@ bool AvoidanceModule::canYieldManeuver(const AvoidancePlanningData & data) const
   const auto registered_lines = path_shifter_.getShiftLines();
   if (!registered_lines.empty()) {
     const size_t idx = planner_data_->findEgoIndex(path_shifter_.getReferencePath().points);
-    const auto to_shift_start_point = motion_utils::calcSignedArcLength(
+    const auto prepare_distance = motion_utils::calcSignedArcLength(
       path_shifter_.getReferencePath().points, idx, registered_lines.front().start_idx);
-    if (to_shift_start_point < helper_->getMinimumPrepareDistance()) {
+    if (!helper_->isEnoughPrepareDistance(prepare_distance)) {
       RCLCPP_DEBUG(
         getLogger(),
         "Distance to shift start point is less than minimum prepare distance. The distance is not "
@@ -1412,10 +1412,11 @@ double AvoidanceModule::calcDistanceToStopLine(const ObjectData & object) const
   const auto avoidance_distance = helper_->getMinAvoidanceDistance(
     helper_->getShiftLength(object, utils::avoidance::isOnRight(object), avoid_margin));
   const auto constant_distance = helper_->getFrontConstantDistance(object);
+  const auto prepare_distance = helper_->getNominalPrepareDistance(0.0);
 
   return object.longitudinal -
          std::min(
-           avoidance_distance + constant_distance + p->min_prepare_distance + p->stop_buffer,
+           avoidance_distance + constant_distance + prepare_distance + p->stop_buffer,
            p->stop_max_distance);
 }
 
@@ -1444,7 +1445,7 @@ void AvoidanceModule::insertReturnDeadLine(
   const auto buffer = std::max(0.0, to_shifted_path_end - to_reference_path_end);
 
   const auto min_return_distance =
-    helper_->getMinAvoidanceDistance(shift_length) + helper_->getMinimumPrepareDistance();
+    helper_->getMinAvoidanceDistance(shift_length) + helper_->getNominalPrepareDistance(0.0);
   const auto to_stop_line = data.to_return_point - min_return_distance - buffer;
 
   // If we don't need to consider deceleration constraints, insert a deceleration point
