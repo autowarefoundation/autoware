@@ -11,7 +11,7 @@
 
   <arg name="config_file" default="$(find-pkg-share gyro_odometer)/config/gyro_odometer.param.yaml"/>
 
-  <node pkg="gyro_odometer" exec="gyro_odometer" name="gyro_odometer" output="screen">
+  <node pkg="gyro_odometer" exec="gyro_odometer_node" output="both">
     <remap from="vehicle/twist_with_covariance" to="$(var input_vehicle_twist_with_covariance_topic)"/>
 
     <remap from="imu" to="$(var input_imu_topic)"/>

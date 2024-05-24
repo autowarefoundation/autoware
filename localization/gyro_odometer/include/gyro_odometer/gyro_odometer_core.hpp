@@ -36,14 +36,17 @@
 #include <memory>
 #include <string>
 
-class GyroOdometer : public rclcpp::Node
+namespace autoware::gyro_odometer
+{
+
+class GyroOdometerNode : public rclcpp::Node
 {
 private:
   using COV_IDX = tier4_autoware_utils::xyz_covariance_index::XYZ_COV_IDX;
 
 public:
-  explicit GyroOdometer(const rclcpp::NodeOptions & options);
-  ~GyroOdometer();
+  explicit GyroOdometerNode(const rclcpp::NodeOptions & node_options);
+  ~GyroOdometerNode();
 
 private:
   void callbackVehicleTwist(
@@ -74,5 +77,7 @@ private:
   std::deque<geometry_msgs::msg::TwistWithCovarianceStamped> vehicle_twist_queue_;
   std::deque<sensor_msgs::msg::Imu> gyro_queue_;
 };
+
+}  // namespace autoware::gyro_odometer
 
 #endif  // GYRO_ODOMETER__GYRO_ODOMETER_CORE_HPP_

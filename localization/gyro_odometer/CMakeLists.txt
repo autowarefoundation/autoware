@@ -4,16 +4,11 @@ project(gyro_odometer)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-ament_auto_add_executable(${PROJECT_NAME}
-  src/gyro_odometer_node.cpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
   src/gyro_odometer_core.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} fmt)
-
-ament_auto_add_library(gyro_odometer_node SHARED
-  src/gyro_odometer_core.cpp
-)
 
 if(BUILD_TESTING)
   ament_add_ros_isolated_gtest(test_gyro_odometer
@@ -25,10 +20,15 @@ if(BUILD_TESTING)
     rclcpp
   )
   target_link_libraries(test_gyro_odometer
-    gyro_odometer_node
+    ${PROJECT_NAME}
   )
 endif()
 
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::gyro_odometer::GyroOdometerNode"
+  EXECUTABLE ${PROJECT_NAME}_node
+  EXECUTOR SingleThreadedExecutor
+)
 
 ament_auto_package(INSTALL_TO_SHARE
   launch

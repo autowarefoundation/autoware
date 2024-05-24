@@ -108,7 +108,8 @@ TEST(GyroOdometer, TestGyroOdometerWithImuAndVelocity)
   expected_output_twist.twist.twist.angular.y = input_imu.angular_velocity.y;
   expected_output_twist.twist.twist.angular.z = input_imu.angular_velocity.z;
 
-  auto gyro_odometer_node = std::make_shared<GyroOdometer>(getNodeOptionsWithDefaultParams());
+  auto gyro_odometer_node =
+    std::make_shared<autoware::gyro_odometer::GyroOdometerNode>(getNodeOptionsWithDefaultParams());
   auto imu_generator = std::make_shared<ImuGenerator>();
   auto velocity_generator = std::make_shared<VelocityGenerator>();
   auto gyro_odometer_validator_node = std::make_shared<GyroOdometerValidator>();
@@ -135,7 +136,8 @@ TEST(GyroOdometer, TestGyroOdometerImuOnly)
 {
   Imu input_imu = generateSampleImu();
 
-  auto gyro_odometer_node = std::make_shared<GyroOdometer>(getNodeOptionsWithDefaultParams());
+  auto gyro_odometer_node =
+    std::make_shared<autoware::gyro_odometer::GyroOdometerNode>(getNodeOptionsWithDefaultParams());
   auto imu_generator = std::make_shared<ImuGenerator>();
   auto gyro_odometer_validator_node = std::make_shared<GyroOdometerValidator>();
 

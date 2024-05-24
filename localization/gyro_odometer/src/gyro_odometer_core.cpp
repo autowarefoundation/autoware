@@ -14,6 +14,8 @@
 
 #include "gyro_odometer/gyro_odometer_core.hpp"
 
+#include <rclcpp/rclcpp.hpp>
+
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #else
@@ -24,6 +26,42 @@
 #include <cmath>
 #include <memory>
 #include <string>
+
+namespace autoware::gyro_odometer
+{
+
+GyroOdometerNode::GyroOdometerNode(const rclcpp::NodeOptions & node_options)
+: Node("gyro_odometer", node_options),
+  output_frame_(declare_parameter<std::string>("output_frame")),
+  message_timeout_sec_(declare_parameter<double>("message_timeout_sec")),
+  vehicle_twist_arrived_(false),
+  imu_arrived_(false)
+{
+  transform_listener_ = std::make_shared<tier4_autoware_utils::TransformListener>(this);
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
+
+  vehicle_twist_sub_ = create_subscription<geometry_msgs::msg::TwistWithCovarianceStamped>(
+    "vehicle/twist_with_covariance", rclcpp::QoS{100},
+    std::bind(&GyroOdometerNode::callbackVehicleTwist, this, std::placeholders::_1));
+
+  imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(
+    "imu", rclcpp::QoS{100},
+    std::bind(&GyroOdometerNode::callbackImu, this, std::placeholders::_1));
+
+  twist_raw_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>("twist_raw", rclcpp::QoS{10});
+  twist_with_covariance_raw_pub_ = create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>(
+    "twist_with_covariance_raw", rclcpp::QoS{10});
+
+  twist_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>("twist", rclcpp::QoS{10});
+  twist_with_covariance_pub_ = create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>(
+    "twist_with_covariance", rclcpp::QoS{10});
+
+  // TODO(YamatoAndo) createTimer
+}
+
+GyroOdometerNode::~GyroOdometerNode()
+{
+}
 
 std::array<double, 9> transformCovariance(const std::array<double, 9> & cov)
 {
@@ -100,39 +138,7 @@ geometry_msgs::msg::TwistWithCovarianceStamped concatGyroAndOdometer(
   return twist_with_cov;
 }
 
-GyroOdometer::GyroOdometer(const rclcpp::NodeOptions & options)
-: Node("gyro_odometer", options),
-  output_frame_(declare_parameter<std::string>("output_frame")),
-  message_timeout_sec_(declare_parameter<double>("message_timeout_sec")),
-  vehicle_twist_arrived_(false),
-  imu_arrived_(false)
-{
-  transform_listener_ = std::make_shared<tier4_autoware_utils::TransformListener>(this);
-  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
-
-  vehicle_twist_sub_ = create_subscription<geometry_msgs::msg::TwistWithCovarianceStamped>(
-    "vehicle/twist_with_covariance", rclcpp::QoS{100},
-    std::bind(&GyroOdometer::callbackVehicleTwist, this, std::placeholders::_1));
-
-  imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(
-    "imu", rclcpp::QoS{100}, std::bind(&GyroOdometer::callbackImu, this, std::placeholders::_1));
-
-  twist_raw_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>("twist_raw", rclcpp::QoS{10});
-  twist_with_covariance_raw_pub_ = create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>(
-    "twist_with_covariance_raw", rclcpp::QoS{10});
-
-  twist_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>("twist", rclcpp::QoS{10});
-  twist_with_covariance_pub_ = create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>(
-    "twist_with_covariance", rclcpp::QoS{10});
-
-  // TODO(YamatoAndo) createTimer
-}
-
-GyroOdometer::~GyroOdometer()
-{
-}
-
-void GyroOdometer::callbackVehicleTwist(
+void GyroOdometerNode::callbackVehicleTwist(
   const geometry_msgs::msg::TwistWithCovarianceStamped::ConstSharedPtr vehicle_twist_ptr)
 {
   vehicle_twist_arrived_ = true;
@@ -173,7 +179,7 @@ void GyroOdometer::callbackVehicleTwist(
   gyro_queue_.clear();
 }
 
-void GyroOdometer::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_msg_ptr)
+void GyroOdometerNode::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_msg_ptr)
 {
   imu_arrived_ = true;
   if (!vehicle_twist_arrived_) {
@@ -241,7 +247,7 @@ void GyroOdometer::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_m
   gyro_queue_.clear();
 }
 
-void GyroOdometer::publishData(
+void GyroOdometerNode::publishData(
   const geometry_msgs::msg::TwistWithCovarianceStamped & twist_with_cov_raw)
 {
   geometry_msgs::msg::TwistStamped twist_raw;
@@ -269,3 +275,8 @@ void GyroOdometer::publishData(
   twist_pub_->publish(twist);
   twist_with_covariance_pub_->publish(twist_with_covariance);
 }
+
+}  // namespace autoware::gyro_odometer
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::gyro_odometer::GyroOdometerNode)
