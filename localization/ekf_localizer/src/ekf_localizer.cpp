@@ -40,8 +40,8 @@
 
 using std::placeholders::_1;
 
-EKFLocalizer::EKFLocalizer(const std::string & node_name, const rclcpp::NodeOptions & node_options)
-: rclcpp::Node(node_name, node_options),
+EKFLocalizer::EKFLocalizer(const rclcpp::NodeOptions & node_options)
+: rclcpp::Node("ekf_localizer", node_options),
   warning_(std::make_shared<Warning>(this)),
   params_(this),
   ekf_dt_(params_.ekf_dt),
@@ -479,3 +479,6 @@ void EKFLocalizer::serviceTriggerNode(
   res->success = true;
   return;
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(EKFLocalizer)

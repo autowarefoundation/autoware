@@ -102,7 +102,7 @@ private:
 class EKFLocalizer : public rclcpp::Node
 {
 public:
-  EKFLocalizer(const std::string & node_name, const rclcpp::NodeOptions & options);
+  explicit EKFLocalizer(const rclcpp::NodeOptions & options);
 
 private:
   const std::shared_ptr<Warning> warning_;

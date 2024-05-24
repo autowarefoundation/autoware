@@ -13,7 +13,7 @@ include_directories(
 
 ament_auto_find_build_dependencies()
 
-ament_auto_add_library(ekf_localizer_lib SHARED
+ament_auto_add_library(${PROJECT_NAME} SHARED
   src/ekf_localizer.cpp
   src/covariance.cpp
   src/diagnostics.cpp
@@ -24,21 +24,20 @@ ament_auto_add_library(ekf_localizer_lib SHARED
   src/ekf_module.cpp
 )
 
-target_link_libraries(ekf_localizer_lib Eigen3::Eigen)
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "EKFLocalizer"
+  EXECUTABLE ${PROJECT_NAME}_node
+  EXECUTOR SingleThreadedExecutor
+)
 
-ament_auto_add_executable(ekf_localizer src/ekf_localizer_node.cpp)
-
-target_compile_options(ekf_localizer PUBLIC -g -Wall -Wextra -Wpedantic -Werror)
-
-target_link_libraries(ekf_localizer ekf_localizer_lib)
-target_include_directories(ekf_localizer PUBLIC include)
+target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
 
 function(add_testcase filepath)
   get_filename_component(filename ${filepath} NAME)
   string(REGEX REPLACE ".cpp" "" test_name ${filename})
 
   ament_add_gtest(${test_name} ${filepath})
-  target_link_libraries("${test_name}" ekf_localizer_lib)
+  target_link_libraries("${test_name}" ${PROJECT_NAME})
   ament_target_dependencies(${test_name} ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS})
 endfunction()
 
