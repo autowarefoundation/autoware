@@ -3,7 +3,7 @@
   <arg name="input_odom_name" default="ekf_odom"/>
   <arg name="output_odom_name" default="stop_filter_odom"/>
   <arg name="debug_stop_flag" default="debug/stop_flag"/>
-  <node pkg="stop_filter" exec="stop_filter" name="stop_filter" output="screen">
+  <node pkg="stop_filter" exec="stop_filter_node" output="both">
     <remap from="input/odom" to="$(var input_odom_name)"/>
 
     <remap from="output/odom" to="$(var output_odom_name)"/>

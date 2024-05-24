@@ -24,8 +24,8 @@
 
 using std::placeholders::_1;
 
-StopFilter::StopFilter(const std::string & node_name, const rclcpp::NodeOptions & node_options)
-: rclcpp::Node(node_name, node_options)
+StopFilter::StopFilter(const rclcpp::NodeOptions & node_options)
+: rclcpp::Node("stop_filter", node_options)
 {
   vx_threshold_ = declare_parameter<double>("vx_threshold");
   wz_threshold_ = declare_parameter<double>("wz_threshold");
@@ -57,3 +57,6 @@ void StopFilter::callbackOdometry(const nav_msgs::msg::Odometry::SharedPtr msg)
   pub_stop_flag_->publish(stop_flag_msg);
   pub_odom_->publish(odom_msg);
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(StopFilter)
