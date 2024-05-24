@@ -26,7 +26,7 @@ namespace perception_diagnostics
 using object_recognition_utils::convertLabelToString;
 using tier4_autoware_utils::inverseTransformPoint;
 
-std::optional<MetricsMap> MetricsCalculator::calculate(const Metric & metric) const
+std::optional<MetricStatMap> MetricsCalculator::calculate(const Metric & metric) const
 {
   // clang-format off
   const bool use_past_objects = metric == Metric::lateral_deviation        ||
@@ -455,14 +455,15 @@ MetricStatMap MetricsCalculator::calcYawRateMetrics(const ClassObjectsMap & clas
   return metric_stat_map;
 }
 
-MetricValueMap MetricsCalculator::calcObjectsCountMetrics() const
+MetricStatMap MetricsCalculator::calcObjectsCountMetrics() const
 {
-  MetricValueMap metric_stat_map;
+  MetricStatMap metric_stat_map;
   // calculate the average number of objects in the detection area in all past frames
   const auto overall_average_count = detection_counter_.getOverallAverageCount();
   for (const auto & [label, range_and_count] : overall_average_count) {
     for (const auto & [range, count] : range_and_count) {
-      metric_stat_map["average_objects_count_" + convertLabelToString(label) + "_" + range] = count;
+      metric_stat_map["average_objects_count_" + convertLabelToString(label) + "_" + range].add(
+        count);
     }
   }
   // calculate the average number of objects in the detection area in the past
@@ -471,8 +472,8 @@ MetricValueMap MetricsCalculator::calcObjectsCountMetrics() const
     detection_counter_.getAverageCount(parameters_->objects_count_window_seconds);
   for (const auto & [label, range_and_count] : average_count) {
     for (const auto & [range, count] : range_and_count) {
-      metric_stat_map
-        ["interval_average_objects_count_" + convertLabelToString(label) + "_" + range] = count;
+      metric_stat_map["interval_average_objects_count_" + convertLabelToString(label) + "_" + range]
+        .add(count);
     }
   }
 
@@ -480,7 +481,8 @@ MetricValueMap MetricsCalculator::calcObjectsCountMetrics() const
   const auto total_count = detection_counter_.getTotalCount();
   for (const auto & [label, range_and_count] : total_count) {
     for (const auto & [range, count] : range_and_count) {
-      metric_stat_map["total_objects_count_" + convertLabelToString(label) + "_" + range] = count;
+      metric_stat_map["total_objects_count_" + convertLabelToString(label) + "_" + range].add(
+        count);
     }
   }
 

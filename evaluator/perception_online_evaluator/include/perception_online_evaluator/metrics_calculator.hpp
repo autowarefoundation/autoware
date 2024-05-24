@@ -96,7 +96,7 @@ public:
    * @param [in] metric Metric enum value
    * @return map of string describing the requested metric and the calculated value
    */
-  std::optional<MetricsMap> calculate(const Metric & metric) const;
+  std::optional<MetricStatMap> calculate(const Metric & metric) const;
 
   /**
    * @brief set the dynamic objects used to calculate obstacle metrics
@@ -143,7 +143,7 @@ private:
   PredictedPathDeviationMetrics calcPredictedPathDeviationMetrics(
     const PredictedObjects & objects, const double time_horizon) const;
   MetricStatMap calcYawRateMetrics(const ClassObjectsMap & class_objects_map) const;
-  MetricValueMap calcObjectsCountMetrics() const;
+  MetricStatMap calcObjectsCountMetrics() const;
 
   bool hasPassedTime(const rclcpp::Time stamp) const;
   bool hasPassedTime(const std::string uuid, const rclcpp::Time stamp) const;
