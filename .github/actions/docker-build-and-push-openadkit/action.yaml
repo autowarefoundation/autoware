@@ -107,7 +107,7 @@ runs:
           ${{ inputs.bake-images }}
         set: |
           ${{ inputs.build-args }}
-    
+
     - name: Build only
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       uses: docker/bake-action@v3
@@ -121,7 +121,7 @@ runs:
         provenance: false
         targets: |
           ${{ inputs.bake-images }}
-  
+
     - name: Output artifact URLs
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       id: warn-no-artifacts

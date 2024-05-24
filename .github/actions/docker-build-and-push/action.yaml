@@ -118,7 +118,7 @@ runs:
           ${{ inputs.bake-images }}
         set: |
           ${{ inputs.build-args }}
-    
+
     - name: Build Only
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
       uses: docker/bake-action@v3
