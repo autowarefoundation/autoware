@@ -30,13 +30,13 @@ DEFAULT_LAUNCH_CMD="ros2 launch autoware_launch autoware.launch.xml data_path:=/
 # Function to print help message
 print_help() {
     echo -e "\n------------------------------------------------------------"
-    echo -e "${RED}Note:${NC} The --data-path and --map-path options are mandatory if not custom launch command given. Please provide exact paths to the data and map files."
+    echo -e "${RED}Note:${NC} The --map-path option is mandatory if not custom launch command given. Please provide exact path to the map files."
     echo -e "      Default launch command: ${GREEN}${DEFAULT_LAUNCH_CMD}${NC}"
     echo -e "------------------------------------------------------------"
     echo -e "${RED}Usage:${NC} run.sh [OPTIONS] [LAUNCH_CMD](optional)"
     echo -e "Options:"
     echo -e "  ${GREEN}--help/-h${NC}       Display this help message"
-    echo -e "  ${GREEN}--data-path${NC}     Specify to mount data files into /autoware_data (mandatory if no custom launch command is provided)"
+    echo -e "  ${GREEN}--data-path${NC}     Specify to mount data files into /autoware_data"
     echo -e "  ${GREEN}--map-path${NC}      Specify to mount map files into /autoware_map (mandatory if no custom launch command is provided)"
     echo -e "  ${GREEN}--no-nvidia${NC}     Disable NVIDIA GPU support"
     echo -e "  ${GREEN}--devel${NC}         Use the latest development version of Autoware"
@@ -95,17 +95,13 @@ parse_arguments() {
 
 # Set image and workspace variables
 set_variables() {
-    # Check if data and map paths are provided for default launch command
-    if [ "$DATA_PATH" == "" ] && [ "$LAUNCH_CMD" == "" ]; then
-        print_help
-        exit 1
-    fi
+    # Check if map path is provided for default launch command
     if [ "$MAP_PATH" == "" ] && [ "$LAUNCH_CMD" == "" ]; then
         print_help
         exit 1
     fi
 
-    # Mount data path if provided
+    # Mount data path
     DATA="-v ${DATA_PATH}:/autoware_data:ro"
 
     # Mount map path if provided
