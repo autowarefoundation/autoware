@@ -90,3 +90,7 @@ jobs:
           tag-suffix: ${{ matrix.additional-tag-suffix }}-amd64
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           allow-push: true
+
+      - name: Show disk space
+        run: |
+          df -h

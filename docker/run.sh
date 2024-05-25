@@ -20,11 +20,12 @@ fi
 option_no_nvidia=false
 option_devel=false
 option_headless=false
+DATA_PATH="${HOME}/autoware_data"
 MAP_PATH=""
 WORKSPACE_PATH=""
 USER_ID=""
 WORKSPACE=""
-DEFAULT_LAUNCH_CMD="ros2 launch autoware_launch autoware.launch.xml map_path:=/autoware_map vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit"
+DEFAULT_LAUNCH_CMD="ros2 launch autoware_launch autoware.launch.xml data_path:=/autoware_data map_path:=/autoware_map vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit"
 
 # Function to print help message
 print_help() {
@@ -35,6 +36,7 @@ print_help() {
     echo -e "${RED}Usage:${NC} run.sh [OPTIONS] [LAUNCH_CMD](optional)"
     echo -e "Options:"
     echo -e "  ${GREEN}--help/-h${NC}       Display this help message"
+    echo -e "  ${GREEN}--data-path${NC}     Specify to mount data files into /autoware_data"
     echo -e "  ${GREEN}--map-path${NC}      Specify to mount map files into /autoware_map (mandatory if no custom launch command is provided)"
     echo -e "  ${GREEN}--no-nvidia${NC}     Disable NVIDIA GPU support"
     echo -e "  ${GREEN}--devel${NC}         Use the latest development version of Autoware"
@@ -62,6 +64,10 @@ parse_arguments() {
             ;;
         --workspace)
             WORKSPACE_PATH="$2"
+            shift
+            ;;
+        --data-path)
+            DATA_PATH="$2"
             shift
             ;;
         --map-path)
@@ -94,6 +100,9 @@ set_variables() {
         print_help
         exit 1
     fi
+
+    # Mount data path if provided
+    DATA="-v ${DATA_PATH}:/autoware_data:ro"
 
     # Mount map path if provided
     MAP="-v ${MAP_PATH}:/autoware_map:ro"
@@ -150,6 +159,7 @@ main() {
 
     echo -e "${GREEN}\n-----------------------LAUNCHING CONTAINER-----------------------"
     echo -e "${GREEN}IMAGE:${NC} ${IMAGE}"
+    echo -e "${GREEN}DATA PATH(mounted):${NC} ${DATA_PATH}:/autoware_data"
     echo -e "${GREEN}MAP PATH(mounted):${NC} ${MAP_PATH}:/autoware_map"
     echo -e "${GREEN}WORKSPACE(mounted):${NC} ${WORKSPACE_PATH}:/workspace"
     echo -e "${GREEN}LAUNCH CMD:${NC} ${LAUNCH_CMD}"
@@ -159,7 +169,7 @@ main() {
     set -x
     docker run -it --rm --net=host ${GPU_FLAG} ${USER_ID} ${MOUNT_X} \
         -e XAUTHORITY=${XAUTHORITY} -e XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR -e NVIDIA_DRIVER_CAPABILITIES=all -v /etc/localtime:/etc/localtime:ro \
-        ${WORKSPACE} ${MAP} ${IMAGE} \
+        ${WORKSPACE} ${DATA} ${MAP} ${IMAGE} \
         ${LAUNCH_CMD}
 }
 
