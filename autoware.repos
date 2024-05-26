@@ -111,6 +111,14 @@ repositories:
     type: git
     url: git@github.com:Futu-reADS/ft_maps.git
     version: awsim_nishishinjuku
+  sensor_component/external/hesai:
+    type: git
+    url: git@github.com:Futu-reADS/HesaiLidar_ROS_2.0.git
+    version: hesai_future
+  future_packages/ifb_driver_package:
+    type: git
+    url: git@github.com:Futu-reADS/ifb_driver_package.git
+    version: okinawa_testbed
   future_packages/master_planner:
     type: git
     url: git@github.com:Futu-reADS/master_planner.git
