@@ -22,20 +22,24 @@ else()
   endif()
 endif()
 
-find_package(glog REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common io registration)
 include_directories(${PCL_INCLUDE_DIRS})
 
-ament_auto_add_executable(ndt_scan_matcher
+ament_auto_add_library(${PROJECT_NAME} SHARED
   src/diagnostics_module.cpp
   src/map_update_module.cpp
   src/ndt_scan_matcher_core.cpp
-  src/ndt_scan_matcher_node.cpp
   src/particle.cpp
 )
 
 link_directories(${PCL_LIBRARY_DIRS})
-target_link_libraries(ndt_scan_matcher ${PCL_LIBRARIES} glog::glog)
+target_link_libraries(ndt_scan_matcher ${PCL_LIBRARIES})
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "NDTScanMatcher"
+  EXECUTABLE ${PROJECT_NAME}_node
+  EXECUTOR MultiThreadedExecutor
+)
 
 if(BUILD_TESTING)
   add_launch_test(
@@ -46,19 +50,9 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   ament_auto_add_gtest(standard_sequence_for_initial_pose_estimation
     test/test_cases/standard_sequence_for_initial_pose_estimation.cpp
-    src/diagnostics_module.cpp
-    src/map_update_module.cpp
-    src/ndt_scan_matcher_core.cpp
-#    src/ndt_scan_matcher_node.cpp
-    src/particle.cpp
   )
   ament_auto_add_gtest(once_initialize_at_out_of_map_then_initialize_correctly
     test/test_cases/once_initialize_at_out_of_map_then_initialize_correctly.cpp
-    src/diagnostics_module.cpp
-    src/map_update_module.cpp
-    src/ndt_scan_matcher_core.cpp
-#    src/ndt_scan_matcher_node.cpp
-    src/particle.cpp
   )
 endif()
 

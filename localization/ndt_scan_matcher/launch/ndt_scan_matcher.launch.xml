@@ -14,7 +14,7 @@
 
   <arg name="node_name" default="ndt_scan_matcher" description="Use a different name for this node"/>
 
-  <node pkg="ndt_scan_matcher" exec="ndt_scan_matcher" name="$(var node_name)" output="log">
+  <node pkg="ndt_scan_matcher" exec="ndt_scan_matcher_node" name="$(var node_name)" output="both">
     <remap from="points_raw" to="$(var input_pointcloud)"/>
     <remap from="ekf_pose_with_covariance" to="$(var input_initial_pose_topic)"/>
     <remap from="regularization_pose_with_covariance" to="$(var input_regularization_pose_topic)"/>
