@@ -121,6 +121,8 @@ runs:
         provenance: false
         targets: |
           ${{ inputs.bake-images }}
+        set: |
+          ${{ inputs.build-args }}
 
     - name: Output artifact URLs
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
