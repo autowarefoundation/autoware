@@ -42,6 +42,7 @@ def get_default_config():
 def generate_launch_description():
     components = [
         create_api_node("autoware_state", "AutowareStateNode"),
+        create_api_node("diagnostics", "DiagnosticsNode"),
         create_api_node("fail_safe", "FailSafeNode"),
         create_api_node("heartbeat", "HeartbeatNode"),
         create_api_node("interface", "InterfaceNode"),

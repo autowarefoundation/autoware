@@ -55,12 +55,20 @@ class DiagLink
 public:
   using DiagLinkStruct = tier4_system_msgs::msg::DiagLinkStruct;
   using DiagLinkStatus = tier4_system_msgs::msg::DiagLinkStatus;
-  explicit DiagLink(const DiagLinkStruct & msg) : struct_(msg) {}
+  DiagLink(const DiagLinkStruct & msg, DiagUnit * parent, DiagUnit * child) : struct_(msg)
+  {
+    parent_ = parent;
+    child_ = child;
+  }
   void update(const DiagLinkStatus & msg) { status_ = msg; }
+  DiagUnit * parent() const { return parent_; }
+  DiagUnit * child() const { return child_; }
 
 private:
   DiagLinkStruct struct_;
   DiagLinkStatus status_;
+  DiagUnit * parent_;
+  DiagUnit * child_;
 };
 
 class DiagNode : public DiagUnit
@@ -114,6 +122,7 @@ public:
   bool update(const DiagGraphStatus & msg);
   rclcpp::Time created_stamp() const { return created_stamp_; }
   rclcpp::Time updated_stamp() const { return updated_stamp_; }
+  std::string id() const { return id_; }
   std::vector<DiagUnit *> units() const;
   std::vector<DiagNode *> nodes() const;
   std::vector<DiagLeaf *> diags() const;

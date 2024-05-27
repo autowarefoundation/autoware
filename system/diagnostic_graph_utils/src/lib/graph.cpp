@@ -54,7 +54,7 @@ void DiagGraph::create(const DiagGraphStruct & msg)
   for (const auto & data : msg.links) {
     DiagNode * parent = nodes_.at(data.parent).get();
     DiagUnit * child = get_child(data.is_leaf, data.child);
-    const auto link = links_.emplace_back(std::make_unique<DiagLink>(data)).get();
+    const auto link = links_.emplace_back(std::make_unique<DiagLink>(data, parent, child)).get();
     parent->add_child({link, child});
   }
 }
