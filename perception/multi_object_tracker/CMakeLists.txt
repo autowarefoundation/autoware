@@ -44,17 +44,18 @@ set(MULTI_OBJECT_TRACKER_SRC
   src/tracker/model/pass_through_tracker.cpp
 )
 
-ament_auto_add_library(multi_object_tracker_node SHARED
+ament_auto_add_library(${PROJECT_NAME} SHARED
   ${MULTI_OBJECT_TRACKER_SRC}
 )
 
-target_link_libraries(multi_object_tracker_node
+target_link_libraries(${PROJECT_NAME}
   Eigen3::Eigen
   glog::glog
 )
 
-ament_auto_add_executable(${PROJECT_NAME}
-  src/multi_object_tracker_node.cpp
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "multi_object_tracker::MultiObjectTracker"
+  EXECUTABLE ${PROJECT_NAME}_node
 )
 
 ament_auto_package(INSTALL_TO_SHARE
