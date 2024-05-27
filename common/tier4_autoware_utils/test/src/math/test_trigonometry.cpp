@@ -40,3 +40,13 @@ TEST(trigonometry, cos)
         tier4_autoware_utils::cos(x * static_cast<float>(i))) < 10e-5);
   }
 }
+
+TEST(trigonometry, sin_and_cos)
+{
+  float x = 4.f * tier4_autoware_utils::pi / 128.f;
+  for (int i = 0; i < 128; i++) {
+    const auto sin_and_cos = tier4_autoware_utils::sin_and_cos(x * static_cast<float>(i));
+    EXPECT_TRUE(std::abs(std::sin(x * static_cast<float>(i)) - sin_and_cos.first) < 10e-7);
+    EXPECT_TRUE(std::abs(std::cos(x * static_cast<float>(i)) - sin_and_cos.second) < 10e-7);
+  }
+}

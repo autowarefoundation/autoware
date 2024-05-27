@@ -15,12 +15,16 @@
 #ifndef TIER4_AUTOWARE_UTILS__MATH__TRIGONOMETRY_HPP_
 #define TIER4_AUTOWARE_UTILS__MATH__TRIGONOMETRY_HPP_
 
+#include <utility>
+
 namespace tier4_autoware_utils
 {
 
 float sin(float radian);
 
 float cos(float radian);
+
+std::pair<float, float> sin_and_cos(float radian);
 
 }  // namespace tier4_autoware_utils
 

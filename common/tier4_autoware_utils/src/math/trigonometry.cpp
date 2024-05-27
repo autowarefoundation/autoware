@@ -49,4 +49,27 @@ float cos(float radian)
   return sin(radian + static_cast<float>(tier4_autoware_utils::pi) / 2.f);
 }
 
+std::pair<float, float> sin_and_cos(float radian)
+{
+  constexpr float tmp =
+    (180.f / static_cast<float>(tier4_autoware_utils::pi)) * (discrete_arcs_num_360 / 360.f);
+  const float degree = radian * tmp;
+  size_t idx =
+    (static_cast<int>(std::round(degree)) % discrete_arcs_num_360 + discrete_arcs_num_360) %
+    discrete_arcs_num_360;
+
+  if (idx < discrete_arcs_num_90) {
+    return {g_sin_table[idx], g_sin_table[discrete_arcs_num_90 - idx]};
+  } else if (discrete_arcs_num_90 <= idx && idx < 2 * discrete_arcs_num_90) {
+    idx = 2 * discrete_arcs_num_90 - idx;
+    return {g_sin_table[idx], -g_sin_table[discrete_arcs_num_90 - idx]};
+  } else if (2 * discrete_arcs_num_90 <= idx && idx < 3 * discrete_arcs_num_90) {
+    idx = idx - 2 * discrete_arcs_num_90;
+    return {-g_sin_table[idx], -g_sin_table[discrete_arcs_num_90 - idx]};
+  } else {  // 3 * discrete_arcs_num_90 <= idx && idx < 4 * discrete_arcs_num_90
+    idx = 4 * discrete_arcs_num_90 - idx;
+    return {-g_sin_table[idx], g_sin_table[discrete_arcs_num_90 - idx]};
+  }
+}
+
 }  // namespace tier4_autoware_utils
