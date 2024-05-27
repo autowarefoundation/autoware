@@ -10,6 +10,8 @@ rules:
   comments:
     level: error
     min-spaces-from-content: 1 # To be compatible with C++ and Python
+  comments-indentation: # Set to warning as it's sometimes fails to detect vscode auto-commenting https://github.com/adrienverge/yamllint/issues/384
+    level: warning
   document-start:
     level: error
     present: false # Don't need document start markers
