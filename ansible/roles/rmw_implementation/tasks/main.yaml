@@ -9,6 +9,8 @@
     name: ros-{{ rosdistro }}-{{ rmw_implementation__dash_case_rmw_implementation.stdout }}
     state: latest
     update_cache: true
+  register: apt_install_result
+  failed_when: "'Held packages were changed' not in apt_install_result.msg"
 
 - name: Add RMW_IMPLEMENTATION to .bashrc
   ansible.builtin.lineinfile:
