@@ -305,7 +305,7 @@ std::optional<std::pair<size_t, size_t>> BlindSpotModule::generateStopLine(
   const InterpolatedPathInfo & interpolated_path_info,
   autoware_auto_planning_msgs::msg::PathWithLaneId * path) const
 {
-  // NOTE: this is optionallly int for later subtraction
+  // NOTE: this is optionally int for later subtraction
   const int margin_idx_dist =
     std::ceil(planner_param_.stop_line_margin / interpolated_path_info.ds);
 
@@ -326,7 +326,7 @@ std::optional<std::pair<size_t, size_t>> BlindSpotModule::generateStopLine(
       return std::nullopt;
     }
 
-    // NOTE: this is optionallly int for later subtraction
+    // NOTE: this is optionally int for later subtraction
     const auto first_conflict_idx_ip = static_cast<int>(first_conflict_idx_ip_opt.value());
 
     stop_idx_default_ip = static_cast<size_t>(std::max(first_conflict_idx_ip - margin_idx_dist, 0));

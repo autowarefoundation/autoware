@@ -143,7 +143,7 @@ private:
 
   void initializeRTCStatus();
   BlindSpotDecision modifyPathVelocityDetail(PathWithLaneId * path, StopReason * stop_reason);
-  // setDafe(), setDistance()
+  // setSafe(), setDistance()
   void setRTCStatus(
     const BlindSpotDecision & decision,
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path);
