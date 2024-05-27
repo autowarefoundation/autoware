@@ -29,6 +29,14 @@ namespace tensorrt_yolox
 TrtYoloXNode::TrtYoloXNode(const rclcpp::NodeOptions & node_options)
 : Node("tensorrt_yolox", node_options)
 {
+  {
+    stop_watch_ptr_ =
+      std::make_unique<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>>();
+    debug_publisher_ =
+      std::make_unique<tier4_autoware_utils::DebugPublisher>(this, "tensorrt_yolox");
+    stop_watch_ptr_->tic("cyclic_time");
+    stop_watch_ptr_->tic("processing_time");
+  }
   using std::placeholders::_1;
   using std::chrono_literals::operator""ms;
 
@@ -132,6 +140,7 @@ void TrtYoloXNode::onConnect()
 
 void TrtYoloXNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
 {
+  stop_watch_ptr_->toc("processing_time", true);
   tier4_perception_msgs::msg::DetectedObjectsWithFeature out_objects;
 
   cv_bridge::CvImagePtr in_image_ptr;
@@ -173,6 +182,22 @@ void TrtYoloXNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
 
   out_objects.header = msg->header;
   objects_pub_->publish(out_objects);
+
+  if (debug_publisher_) {
+    const double processing_time_ms = stop_watch_ptr_->toc("processing_time", true);
+    const double cyclic_time_ms = stop_watch_ptr_->toc("cyclic_time", true);
+    const double pipeline_latency_ms =
+      std::chrono::duration<double, std::milli>(
+        std::chrono::nanoseconds(
+          (this->get_clock()->now() - out_objects.header.stamp).nanoseconds()))
+        .count();
+    debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+      "debug/cyclic_time_ms", cyclic_time_ms);
+    debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+      "debug/processing_time_ms", processing_time_ms);
+    debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+      "debug/pipeline_latency_ms", pipeline_latency_ms);
+  }
 }
 
 bool TrtYoloXNode::readLabelFile(const std::string & label_path)

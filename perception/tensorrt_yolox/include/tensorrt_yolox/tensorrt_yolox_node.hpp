@@ -19,6 +19,8 @@
 #include <opencv2/opencv.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tensorrt_yolox/tensorrt_yolox.hpp>
+#include <tier4_autoware_utils/ros/debug_publisher.hpp>
+#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/header.hpp>
@@ -61,6 +63,8 @@ private:
 
   LabelMap label_map_;
   std::unique_ptr<tensorrt_yolox::TrtYoloX> trt_yolox_;
+  std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<tier4_autoware_utils::DebugPublisher> debug_publisher_;
 };
 
 }  // namespace tensorrt_yolox
