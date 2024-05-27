@@ -4,7 +4,7 @@
   <arg name="map_projector_info_path" description="Path to the yaml file"/>
   <arg name="lanelet2_map_path" description="Path to the lanelet2 map file"/>
 
-  <node pkg="map_projection_loader" exec="map_projection_loader" name="map_projection_loader" output="screen">
+  <node pkg="map_projection_loader" exec="map_projection_loader_node" output="both">
     <param from="$(var param_path)" allow_substs="true"/>
   </node>
 </launch>

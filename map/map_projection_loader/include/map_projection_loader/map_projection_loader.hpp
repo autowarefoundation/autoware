@@ -29,7 +29,7 @@ tier4_map_msgs::msg::MapProjectorInfo load_map_projector_info(
 class MapProjectionLoader : public rclcpp::Node
 {
 public:
-  MapProjectionLoader();
+  explicit MapProjectionLoader(const rclcpp::NodeOptions & options);
 
 private:
   using MapProjectorInfo = map_interface::MapProjectorInfo;

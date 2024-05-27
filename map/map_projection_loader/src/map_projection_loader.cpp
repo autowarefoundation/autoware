@@ -82,7 +82,8 @@ tier4_map_msgs::msg::MapProjectorInfo load_map_projector_info(
   return msg;
 }
 
-MapProjectionLoader::MapProjectionLoader() : Node("map_projection_loader")
+MapProjectionLoader::MapProjectionLoader(const rclcpp::NodeOptions & options)
+: rclcpp::Node("map_projection_loader", options)
 {
   const std::string yaml_filename = this->declare_parameter<std::string>("map_projector_info_path");
   const std::string lanelet2_map_filename =
@@ -96,3 +97,6 @@ MapProjectionLoader::MapProjectionLoader() : Node("map_projection_loader")
   adaptor.init_pub(publisher_);
   publisher_->publish(msg);
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(MapProjectionLoader)

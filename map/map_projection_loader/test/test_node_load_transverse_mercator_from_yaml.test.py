@@ -44,7 +44,7 @@ def generate_test_description():
 
     map_projection_loader_node = Node(
         package="map_projection_loader",
-        executable="map_projection_loader",
+        executable="map_projection_loader_node",
         output="screen",
         parameters=[
             {
