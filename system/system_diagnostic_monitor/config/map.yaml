@@ -13,4 +13,4 @@ units:
   - path: /autoware/map/topic_rate_check/pointcloud_map
     type: diag
     node: topic_state_monitor_pointcloud_map
-    name: map_topic_status"
+    name: map_topic_status

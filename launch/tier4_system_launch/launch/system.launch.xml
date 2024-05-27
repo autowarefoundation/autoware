@@ -29,8 +29,7 @@
   <arg name="use_emergency_handler" default="true" description="use emergency handler packages"/>
   <arg name="mrm_handler_param_path"/>
   <arg name="diagnostic_graph_aggregator_param_path"/>
-  <arg name="diagnostic_graph_aggregator_graph_path_main"/>
-  <arg name="diagnostic_graph_aggregator_graph_path_psim"/>
+  <arg name="diagnostic_graph_aggregator_graph_path"/>
 
   <let name="sensor_launch_pkg" value="$(find-pkg-share $(var sensor_model)_launch)"/>
 
@@ -113,9 +112,6 @@
 
     <!-- Diagnostic Graph Aggregator -->
     <group>
-      <let name="diagnostic_graph_aggregator_graph_path" value="$(var diagnostic_graph_aggregator_graph_path_main)" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
-      <let name="diagnostic_graph_aggregator_graph_path" value="$(var diagnostic_graph_aggregator_graph_path_main)" if="$(eval &quot;'$(var run_mode)'=='logging_simulation'&quot;)"/>
-      <let name="diagnostic_graph_aggregator_graph_path" value="$(var diagnostic_graph_aggregator_graph_path_psim)" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
       <include file="$(find-pkg-share system_diagnostic_monitor)/launch/system_diagnostic_monitor.launch.xml">
         <arg name="param_file" value="$(var diagnostic_graph_aggregator_param_path)"/>
         <arg name="graph_file" value="$(var diagnostic_graph_aggregator_graph_path)"/>
