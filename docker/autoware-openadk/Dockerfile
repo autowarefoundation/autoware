@@ -23,9 +23,9 @@ COPY ansible/ /autoware/ansible/
 WORKDIR /autoware
 
 # Set up base environment
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  --mount=type=ssh \
   ./setup-dev-env.sh -y --module base --runtime openadk \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
@@ -45,9 +45,9 @@ WORKDIR /autoware
 
 RUN rm -f /etc/apt/apt.conf.d/docker-clean \
   && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  --mount=type=ssh \
   ./setup-dev-env.sh -y rosdep \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
@@ -81,9 +81,9 @@ ENV CXX="/usr/lib/ccache/g++"
 
 # cspell: ignore libcu libnv
 # Set up development environment
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  --mount=type=ssh \
   ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers openadk \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
@@ -95,7 +95,6 @@ COPY --from=src-imported /rosdep-all-depend-packages.txt /tmp/rosdep-all-depend-
 # hadolint ignore=SC2002
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  --mount=type=ssh \
   apt-get update \
   && cat /tmp/rosdep-all-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
@@ -118,9 +117,9 @@ FROM prebuilt as devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install development tools and artifacts
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  --mount=type=ssh \
   ./setup-dev-env.sh -y --module dev-tools openadk \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
@@ -140,9 +139,9 @@ ARG SETUP_ARGS
 # Set up runtime environment and artifacts
 COPY --from=src-imported /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
 # hadolint ignore=SC2002
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  --mount=type=ssh \
   ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers --runtime openadk \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
