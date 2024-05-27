@@ -18,7 +18,7 @@ nav:
         - 'Side Shift': planning/behavior_path_side_shift_module
         - 'Start Planner': planning/behavior_path_start_planner_module
   - 'Behavior Velocity Planner':
-    - 'About Behavior Velocity': planning/behavior_velocity_planner
+    - 'About Behavior Velocity': planning/autoware_behavior_velocity_planner
     - 'Template for Custom Module': planning/behavior_velocity_template_module
     - 'Available Module':
         - 'Blind Spot': planning/behavior_velocity_blind_spot_module

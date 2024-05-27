@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(behavior_velocity_planner)
+project(autoware_behavior_velocity_planner)
 
 find_package(autoware_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
@@ -19,7 +19,7 @@ ament_auto_add_library(${PROJECT_NAME}_lib SHARED
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}_lib
-  PLUGIN "behavior_velocity_planner::BehaviorVelocityPlannerNode"
+  PLUGIN "autoware::behavior_velocity_planner::BehaviorVelocityPlannerNode"
   EXECUTABLE ${PROJECT_NAME}_node
 )
 

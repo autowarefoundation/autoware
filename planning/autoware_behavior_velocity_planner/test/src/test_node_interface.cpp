@@ -23,7 +23,7 @@
 #include <cmath>
 #include <vector>
 
-using behavior_velocity_planner::BehaviorVelocityPlannerNode;
+using autoware::behavior_velocity_planner::BehaviorVelocityPlannerNode;
 using planning_test_utils::PlanningInterfaceTestManager;
 
 std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
@@ -50,7 +50,7 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
   const auto planning_test_utils_dir =
     ament_index_cpp::get_package_share_directory("planning_test_utils");
   const auto behavior_velocity_planner_dir =
-    ament_index_cpp::get_package_share_directory("behavior_velocity_planner");
+    ament_index_cpp::get_package_share_directory("autoware_behavior_velocity_planner");
   const auto motion_velocity_smoother_dir =
     ament_index_cpp::get_package_share_directory("motion_velocity_smoother");
 

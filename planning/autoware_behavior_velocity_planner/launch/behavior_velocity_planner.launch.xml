@@ -30,7 +30,7 @@
   <!-- <arg name="behavior_velocity_planner_template_module_param_path"/> -->
   <arg name="behavior_velocity_planner_param_file" default="$(find-pkg-share behavior_velocity_planner)/config/behavior_velocity_planner.param.yaml"/>
 
-  <node pkg="behavior_velocity_planner" exec="behavior_velocity_planner_node" name="behavior_velocity_planner" output="screen">
+  <node pkg="autoware_behavior_velocity_planner" exec="behavior_velocity_planner_node" name="behavior_velocity_planner" output="screen">
     <!-- topic remap -->
     <remap from="~/input/path_with_lane_id" to="path_with_lane_id"/>
     <remap from="~/input/vector_map" to="/map/vector_map"/>

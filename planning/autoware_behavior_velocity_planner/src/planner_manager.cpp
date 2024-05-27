@@ -19,7 +19,7 @@
 #include <memory>
 #include <string>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace
 {
@@ -50,7 +50,7 @@ diagnostic_msgs::msg::DiagnosticStatus makeStopReasonDiag(
 }  // namespace
 
 BehaviorVelocityPlannerManager::BehaviorVelocityPlannerManager()
-: plugin_loader_("behavior_velocity_planner", "behavior_velocity_planner::PluginInterface")
+: plugin_loader_("autoware_behavior_velocity_planner", "behavior_velocity_planner::PluginInterface")
 {
 }
 
@@ -128,4 +128,4 @@ diagnostic_msgs::msg::DiagnosticStatus BehaviorVelocityPlannerManager::getStopRe
 {
   return stop_reason_diag_;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

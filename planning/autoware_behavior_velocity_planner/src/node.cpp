@@ -52,7 +52,7 @@ rclcpp::SubscriptionOptions createSubscriptionOptions(rclcpp::Node * node_ptr)
 }
 }  // namespace
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace
 {
@@ -436,14 +436,15 @@ autoware_auto_planning_msgs::msg::Path BehaviorVelocityPlannerNode::generatePath
     std::make_shared<const PlannerData>(planner_data), *input_path_msg);
 
   // screening
-  const auto filtered_path = filterLitterPathPoint(to_path(velocity_planned_path));
+  const auto filtered_path =
+    ::behavior_velocity_planner::filterLitterPathPoint(to_path(velocity_planned_path));
 
   // interpolation
-  const auto interpolated_path_msg =
-    interpolatePath(filtered_path, forward_path_length_, behavior_output_path_interval_);
+  const auto interpolated_path_msg = ::behavior_velocity_planner::interpolatePath(
+    filtered_path, forward_path_length_, behavior_output_path_interval_);
 
   // check stop point
-  output_path_msg = filterStopPathPoint(interpolated_path_msg);
+  output_path_msg = ::behavior_velocity_planner::filterStopPathPoint(interpolated_path_msg);
 
   output_path_msg.header.frame_id = "map";
   output_path_msg.header.stamp = this->now();
@@ -477,7 +478,7 @@ void BehaviorVelocityPlannerNode::publishDebugMarker(
   }
   debug_viz_pub_->publish(output_msg);
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(behavior_velocity_planner::BehaviorVelocityPlannerNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::behavior_velocity_planner::BehaviorVelocityPlannerNode)

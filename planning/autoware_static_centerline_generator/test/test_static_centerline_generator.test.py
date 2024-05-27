@@ -59,7 +59,7 @@ def generate_test_description():
                 "config/behavior_path_planner.param.yaml",
             ),
             os.path.join(
-                get_package_share_directory("behavior_velocity_planner"),
+                get_package_share_directory("autoware_behavior_velocity_planner"),
                 "config/behavior_velocity_planner.param.yaml",
             ),
             os.path.join(
