@@ -31,6 +31,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace behavior_velocity_planner
@@ -58,16 +59,40 @@ struct InterpolatedPathInfo
   std::optional<std::pair<size_t, size_t>> lane_id_interval{std::nullopt};
 };
 
+/**
+ * @brief represent action
+ */
+struct InternalError
+{
+  const std::string error;
+};
+
+struct OverPassJudge
+{
+  const std::string report;
+};
+
+struct Unsafe
+{
+  const size_t stop_line_idx;
+  const std::optional<autoware_auto_perception_msgs::msg::PredictedObject> collision_obstacle;
+};
+
+struct Safe
+{
+  const size_t stop_line_idx;
+};
+
+using BlindSpotDecision = std::variant<InternalError, OverPassJudge, Unsafe, Safe>;
+
 class BlindSpotModule : public SceneModuleInterface
 {
 public:
-  enum class TurnDirection { LEFT = 0, RIGHT, INVALID };
+  enum class TurnDirection { LEFT, RIGHT };
 
   struct DebugData
   {
-    geometry_msgs::msg::Pose virtual_wall_pose;
-    geometry_msgs::msg::Pose stop_point_pose;
-    geometry_msgs::msg::Pose judge_point_pose;
+    std::optional<geometry_msgs::msg::Pose> virtual_wall_pose{std::nullopt};
     std::vector<lanelet::CompoundPolygon3d> conflict_areas;
     std::vector<lanelet::CompoundPolygon3d> detection_areas;
     std::vector<lanelet::CompoundPolygon3d> opposite_conflict_areas;
@@ -91,9 +116,9 @@ public:
   };
 
   BlindSpotModule(
-    const int64_t module_id, const int64_t lane_id, std::shared_ptr<const PlannerData> planner_data,
-    const PlannerParam & planner_param, const rclcpp::Logger logger,
-    const rclcpp::Clock::SharedPtr clock);
+    const int64_t module_id, const int64_t lane_id, const TurnDirection turn_direction,
+    const std::shared_ptr<const PlannerData> planner_data, const PlannerParam & planner_param,
+    const rclcpp::Logger logger, const rclcpp::Clock::SharedPtr clock);
 
   /**
    * @brief plan go-stop velocity at traffic crossing with collision check between reference path
@@ -105,18 +130,39 @@ public:
   std::vector<motion_utils::VirtualWall> createVirtualWalls() override;
 
 private:
+  // (semi) const variables
   const int64_t lane_id_;
   const PlannerParam planner_param_;
-  TurnDirection turn_direction_{TurnDirection::INVALID};
-  bool is_over_pass_judge_line_{false};
+  const TurnDirection turn_direction_;
   std::optional<lanelet::ConstLanelet> sibling_straight_lanelet_{std::nullopt};
 
+  // state variables
+  bool is_over_pass_judge_line_{false};
+
   // Parameter
+
+  void initializeRTCStatus();
+  BlindSpotDecision modifyPathVelocityDetail(PathWithLaneId * path, StopReason * stop_reason);
+  // setDafe(), setDistance()
+  void setRTCStatus(
+    const BlindSpotDecision & decision,
+    const autoware_auto_planning_msgs::msg::PathWithLaneId & path);
+  template <typename Decision>
+  void setRTCStatusByDecision(
+    const Decision & decision, const autoware_auto_planning_msgs::msg::PathWithLaneId & path);
+  // stop/GO
+  void reactRTCApproval(
+    const BlindSpotDecision & decision, PathWithLaneId * path, StopReason * stop_reason);
+  template <typename Decision>
+  void reactRTCApprovalByDecision(
+    const Decision & decision, autoware_auto_planning_msgs::msg::PathWithLaneId * path,
+    StopReason * stop_reason);
 
   std::optional<InterpolatedPathInfo> generateInterpolatedPathInfo(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path) const;
 
-  std::optional<lanelet::ConstLanelet> getSiblingStraightLanelet() const;
+  std::optional<lanelet::ConstLanelet> getSiblingStraightLanelet(
+    const std::shared_ptr<const PlannerData> planner_data) const;
 
   /**
    * @brief Generate a stop line and insert it into the path.
@@ -131,6 +177,10 @@ private:
     const InterpolatedPathInfo & interpolated_path_info,
     autoware_auto_planning_msgs::msg::PathWithLaneId * path) const;
 
+  std::optional<OverPassJudge> isOverPassJudge(
+    const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+    const geometry_msgs::msg::Pose & stop_point_pose) const;
+
   /**
    * @brief Check obstacle is in blind spot areas.
    * Condition1: Object's position is in broad blind spot area.
@@ -141,12 +191,8 @@ private:
    * @param closest_idx closest path point index from ego car in path points
    * @return true when an object is detected in blind spot
    */
-  bool checkObstacleInBlindSpot(
-    lanelet::LaneletMapConstPtr lanelet_map_ptr,
-    lanelet::routing::RoutingGraphPtr routing_graph_ptr,
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-    const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_ptr,
-    const int closest_idx, const geometry_msgs::msg::Pose & stop_line_pose);
+  std::optional<autoware_auto_perception_msgs::msg::PredictedObject> isCollisionDetected(
+    const BlindSpotPolygons & area);
 
   /**
    * @brief Create half lanelet
@@ -168,9 +214,7 @@ private:
    * @return Blind spot polygons
    */
   std::optional<BlindSpotPolygons> generateBlindSpotPolygons(
-    lanelet::LaneletMapConstPtr lanelet_map_ptr,
-    lanelet::routing::RoutingGraphPtr routing_graph_ptr,
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int closest_idx,
+    const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
     const geometry_msgs::msg::Pose & pose) const;
 
   /**

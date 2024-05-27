@@ -63,14 +63,17 @@ void BlindSpotModuleManager::launchNewModules(
     }
 
     // Is turning lane?
-    const std::string turn_direction = ll.attributeOr("turn_direction", "else");
-    if (turn_direction != "left" && turn_direction != "right") {
+    const std::string turn_direction_str = ll.attributeOr("turn_direction", "else");
+    if (turn_direction_str != "left" && turn_direction_str != "right") {
       continue;
     }
+    const auto turn_direction = turn_direction_str == "left"
+                                  ? BlindSpotModule::TurnDirection::LEFT
+                                  : BlindSpotModule::TurnDirection::RIGHT;
 
     registerModule(std::make_shared<BlindSpotModule>(
-      module_id, lane_id, planner_data_, planner_param_, logger_.get_child("blind_spot_module"),
-      clock_));
+      module_id, lane_id, turn_direction, planner_data_, planner_param_,
+      logger_.get_child("blind_spot_module"), clock_));
     generateUUID(module_id);
     updateRTCStatus(
       getUUID(module_id), true, State::WAITING_FOR_EXECUTION, std::numeric_limits<double>::lowest(),

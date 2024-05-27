@@ -71,55 +71,16 @@ visualization_msgs::msg::MarkerArray createLaneletPolygonsMarkerArray(
   return msg;
 }
 
-visualization_msgs::msg::MarkerArray createPoseMarkerArray(
-  const geometry_msgs::msg::Pose & pose, const StateMachine::State & state, const std::string & ns,
-  const int64_t id, const double r, const double g, const double b)
-{
-  visualization_msgs::msg::MarkerArray msg;
-
-  if (state == StateMachine::State::STOP) {
-    visualization_msgs::msg::Marker marker_line{};
-    marker_line.header.frame_id = "map";
-    marker_line.ns = ns + "_line";
-    marker_line.id = id;
-    marker_line.lifetime = rclcpp::Duration::from_seconds(0.3);
-    marker_line.type = visualization_msgs::msg::Marker::LINE_STRIP;
-    marker_line.action = visualization_msgs::msg::Marker::ADD;
-    marker_line.pose.orientation = createMarkerOrientation(0, 0, 0, 1.0);
-    marker_line.scale = createMarkerScale(0.1, 0.0, 0.0);
-    marker_line.color = createMarkerColor(r, g, b, 0.999);
-
-    const double yaw = tf2::getYaw(pose.orientation);
-
-    const double a = 3.0;
-    geometry_msgs::msg::Point p0;
-    p0.x = pose.position.x - a * std::sin(yaw);
-    p0.y = pose.position.y + a * std::cos(yaw);
-    p0.z = pose.position.z;
-    marker_line.points.push_back(p0);
-
-    geometry_msgs::msg::Point p1;
-    p1.x = pose.position.x + a * std::sin(yaw);
-    p1.y = pose.position.y - a * std::cos(yaw);
-    p1.z = pose.position.z;
-    marker_line.points.push_back(p1);
-
-    msg.markers.push_back(marker_line);
-  }
-
-  return msg;
-}
-
 }  // namespace
 
 motion_utils::VirtualWalls BlindSpotModule::createVirtualWalls()
 {
   motion_utils::VirtualWalls virtual_walls;
 
-  if (!isActivated() && !is_over_pass_judge_line_) {
+  if (debug_data_.virtual_wall_pose) {
     motion_utils::VirtualWall wall;
     wall.text = "blind_spot";
-    wall.pose = debug_data_.virtual_wall_pose;
+    wall.pose = debug_data_.virtual_wall_pose.value();
     wall.ns = std::to_string(module_id_) + "_";
     virtual_walls.push_back(wall);
   }
@@ -130,18 +91,7 @@ visualization_msgs::msg::MarkerArray BlindSpotModule::createDebugMarkerArray()
 {
   visualization_msgs::msg::MarkerArray debug_marker_array;
 
-  const auto state = state_machine_.getState();
   const auto now = this->clock_->now();
-
-  appendMarkerArray(
-    createPoseMarkerArray(
-      debug_data_.stop_point_pose, state, "stop_point_pose", module_id_, 1.0, 0.0, 0.0),
-    &debug_marker_array, now);
-
-  appendMarkerArray(
-    createPoseMarkerArray(
-      debug_data_.judge_point_pose, state, "judge_point_pose", module_id_, 1.0, 1.0, 0.5),
-    &debug_marker_array, now);
 
   appendMarkerArray(
     createLaneletPolygonsMarkerArray(
