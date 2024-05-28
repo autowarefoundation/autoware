@@ -5,22 +5,12 @@ FROM $BASE_IMAGE as base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
-# Install apt packages
+# Install apt packages and add GitHub to known hosts for private repositories
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
-  git \
-  ssh \
-  wget \
-  cmake \
-  curl \
   gosu \
-  gnupg \
-  vim \
-  unzip \
-  lsb-release \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
-
-# Add GitHub to known hosts for private repositories
-RUN mkdir -p ~/.ssh \
+  ssh \
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
+  && mkdir -p ~/.ssh \
   && ssh-keyscan github.com >> ~/.ssh/known_hosts
 
 # Copy files
@@ -50,14 +40,10 @@ WORKDIR /autoware
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y rosdep \
   && pip uninstall -y ansible ansible-core \
-  && pip install --no-cache-dir vcstool \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
-WORKDIR /autoware
-COPY autoware.repos /autoware/
-RUN --mount=type=ssh \
-  mkdir src \
-  && vcs import src < autoware.repos
+# Copy repository files
+COPY src /autoware/src
 
 # Generate install package lists
 RUN rosdep update && rosdep keys --ignore-src --from-paths src \
@@ -93,7 +79,6 @@ RUN --mount=type=ssh \
   && find / -name 'libnv*.a' -delete
 
 # Install rosdep dependencies
-COPY --from=src-imported /autoware/src /autoware/src
 COPY --from=src-imported /rosdep-all-depend-packages.txt /tmp/rosdep-all-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
@@ -102,7 +87,8 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Build Autoware
-RUN source /opt/ros/"$ROS_DISTRO"/setup.bash \
+COPY --from=src-imported /autoware/src /autoware/src
+RUN --mount=type=cache,target=/var/tmp/ccache source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --cmake-args \
     " -Wno-dev" \
     " --no-warn-unused-cli" \
@@ -119,7 +105,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install development tools and artifacts
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module dev-tools --download-artifacts openadk \
+  ./setup-dev-env.sh -y --module dev-tools openadk \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
@@ -139,7 +125,7 @@ ARG SETUP_ARGS
 COPY --from=src-imported /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadk \
+  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers --runtime openadk \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
