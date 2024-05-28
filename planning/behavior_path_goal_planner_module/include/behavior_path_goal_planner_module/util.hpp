@@ -16,6 +16,7 @@
 #define BEHAVIOR_PATH_GOAL_PLANNER_MODULE__UTIL_HPP_
 
 #include "behavior_path_goal_planner_module/goal_searcher_base.hpp"
+#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 
@@ -41,6 +42,7 @@ using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
+using Polygon2d = tier4_autoware_utils::Polygon2d;
 
 lanelet::ConstLanelets getPullOverLanes(
   const RouteHandler & route_handler, const bool left_side, const double backward_distance,
@@ -84,6 +86,10 @@ PathWithLaneId extendPath(
 PathWithLaneId extendPath(
   const PathWithLaneId & prev_module_path, const PathWithLaneId & reference_path,
   const Pose & extend_pose);
+
+std::vector<Polygon2d> createPathFootPrints(
+  const PathWithLaneId & path, const double base_to_front, const double base_to_rear,
+  const double width);
 
 // debug
 MarkerArray createPullOverAreaMarkerArray(

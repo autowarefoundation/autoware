@@ -433,4 +433,17 @@ PathWithLaneId extendPath(
   return extendPath(target_path, reference_path, extend_distance);
 }
 
+std::vector<Polygon2d> createPathFootPrints(
+  const PathWithLaneId & path, const double base_to_front, const double base_to_rear,
+  const double width)
+{
+  std::vector<Polygon2d> footprints;
+  for (const auto & point : path.points) {
+    const auto & pose = point.point.pose;
+    footprints.push_back(
+      tier4_autoware_utils::toFootprint(pose, base_to_front, base_to_rear, width));
+  }
+  return footprints;
+}
+
 }  // namespace behavior_path_planner::goal_planner_utils
