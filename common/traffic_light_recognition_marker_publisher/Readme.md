@@ -1,4 +1,4 @@
-# path_distance_calculator
+# Traffic Light Recognition Marker Publisher
 
 ## Purpose
 

@@ -1,0 +1,1 @@
+# Autoware Point Types
