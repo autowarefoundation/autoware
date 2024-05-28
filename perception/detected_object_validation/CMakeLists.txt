@@ -85,6 +85,12 @@ rclcpp_components_register_node(occupancy_grid_based_validator
   EXECUTABLE occupancy_grid_based_validator_node
 )
 
+if(BUILD_TESTING)
+  ament_auto_add_gtest(detection_object_validation_tests
+    test/test_utils.cpp
+  )
+endif()
+
 ament_auto_package(INSTALL_TO_SHARE
   launch
   config
