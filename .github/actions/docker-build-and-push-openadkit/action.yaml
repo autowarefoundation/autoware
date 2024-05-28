@@ -60,7 +60,7 @@ runs:
         bake-target: docker-metadata-action-planning-control
         flavor: |
           latest=false
-          suffix=-planning-control-${{ inputs.tag-arch }}
+          suffix=-planning-control${{ inputs.tag-arch }}
 
     - name: Docker meta for openadkit:visualizer
       id: meta-visualizer
@@ -71,7 +71,7 @@ runs:
         bake-target: docker-metadata-action-visualizer
         flavor: |
           latest=false
-          suffix=-visualizer-${{ inputs.tag-arch }}
+          suffix=-visualizer${{ inputs.tag-arch }}
 
     - name: Docker meta for openadkit:simulator
       id: meta-simulator
@@ -82,7 +82,7 @@ runs:
         bake-target: docker-metadata-action-simulator
         flavor: |
           latest=false
-          suffix=-simulator-${{ inputs.tag-arch }}
+          suffix=-simulator${{ inputs.tag-arch }}
 
     - name: Login to GitHub Container Registry
       if: ${{ github.event_name != 'pull_request' }}
