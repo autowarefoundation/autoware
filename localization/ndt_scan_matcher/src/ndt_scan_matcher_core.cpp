@@ -214,7 +214,8 @@ void NDTScanMatcher::callback_initial_pose_main(
   const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr initial_pose_msg_ptr)
 {
   diagnostics_initial_pose_->addKeyValue(
-    "topic_time_stamp", static_cast<rclcpp::Time>(initial_pose_msg_ptr->header.stamp).seconds());
+    "topic_time_stamp",
+    static_cast<rclcpp::Time>(initial_pose_msg_ptr->header.stamp).nanoseconds());
 
   // check is_activated
   diagnostics_initial_pose_->addKeyValue("is_activated", static_cast<bool>(is_activated_));
@@ -255,7 +256,7 @@ void NDTScanMatcher::callback_regularization_pose(
   diagnostics_regularization_pose_->clear();
 
   diagnostics_regularization_pose_->addKeyValue(
-    "topic_time_stamp", static_cast<rclcpp::Time>(pose_conv_msg_ptr->header.stamp).seconds());
+    "topic_time_stamp", static_cast<rclcpp::Time>(pose_conv_msg_ptr->header.stamp).nanoseconds());
 
   regularization_pose_buffer_->push_back(pose_conv_msg_ptr);
 
@@ -295,7 +296,7 @@ bool NDTScanMatcher::callback_sensor_points_main(
 
   // check topic_time_stamp
   const rclcpp::Time sensor_ros_time = sensor_points_msg_in_sensor_frame->header.stamp;
-  diagnostics_scan_points_->addKeyValue("topic_time_stamp", sensor_ros_time.seconds());
+  diagnostics_scan_points_->addKeyValue("topic_time_stamp", sensor_ros_time.nanoseconds());
 
   // check sensor_points_size
   const size_t sensor_points_size = sensor_points_msg_in_sensor_frame->width;
@@ -867,7 +868,7 @@ void NDTScanMatcher::service_trigger_node(
   std_srvs::srv::SetBool::Response::SharedPtr res)
 {
   diagnostics_trigger_node_->clear();
-  diagnostics_trigger_node_->addKeyValue("service_call_time_stamp", this->now().seconds());
+  diagnostics_trigger_node_->addKeyValue("service_call_time_stamp", this->now().nanoseconds());
 
   is_activated_ = req->data;
   if (is_activated_) {
@@ -905,7 +906,7 @@ void NDTScanMatcher::service_ndt_align_main(
   const tier4_localization_msgs::srv::PoseWithCovarianceStamped::Request::SharedPtr req,
   tier4_localization_msgs::srv::PoseWithCovarianceStamped::Response::SharedPtr res)
 {
-  diagnostics_ndt_align_->addKeyValue("service_call_time_stamp", this->now().seconds());
+  diagnostics_ndt_align_->addKeyValue("service_call_time_stamp", this->now().nanoseconds());
 
   // get TF from pose_frame to map_frame
   const std::string & target_frame = param_.frame.map_frame;
