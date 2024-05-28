@@ -4,6 +4,9 @@ project(planning_test_utils)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
+ament_auto_add_library(planning_test_utils SHARED
+  src/planning_test_utils.cpp)
+
 ament_auto_add_library(mock_data_parser SHARED
   src/mock_data_parser.cpp)
 

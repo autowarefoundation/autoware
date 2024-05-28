@@ -79,20 +79,248 @@ using tier4_autoware_utils::createQuaternionFromRPY;
 using tier4_planning_msgs::msg::Scenario;
 using unique_identifier_msgs::msg::UUID;
 
+/**
+ * @brief Creates a Pose message with the specified position and orientation.
+ *
+ * This function initializes a geometry_msgs::msg::Pose message with the
+ * given position (x, y, z) and orientation (roll, pitch, yaw).
+ *
+ * @param x The x-coordinate of the position.
+ * @param y The y-coordinate of the position.
+ * @param z The z-coordinate of the position.
+ * @param roll The roll component of the orientation (in radians).
+ * @param pitch The pitch component of the orientation (in radians).
+ * @param yaw The yaw component of the orientation (in radians).
+ * @return A geometry_msgs::msg::Pose message with the specified position
+ * and orientation.
+ */
 geometry_msgs::msg::Pose createPose(
-  double x, double y, double z, double roll, double pitch, double yaw)
-{
-  geometry_msgs::msg::Pose p;
-  p.position = createPoint(x, y, z);
-  p.orientation = createQuaternionFromRPY(roll, pitch, yaw);
-  return p;
-}
+  double x, double y, double z, double roll, double pitch, double yaw);
 
-geometry_msgs::msg::Pose createPose(const std::array<double, 4> & pose3d)
-{
-  return createPose(pose3d[0], pose3d[1], pose3d[2], 0.0, 0.0, pose3d[3]);
-}
+/**
+ * @brief Creates a Pose message from a 4-element array representing a 3D pose.
+ *
+ * This function initializes a geometry_msgs::msg::Pose message using a
+ * std::array of four doubles, where the first three elements represent the
+ * position (x, y, z) and the fourth element represents the yaw orientation.
+ * The roll and pitch orientations are assumed to be zero.
+ *
+ * @param pose3d A std::array of four doubles representing the 3D pose. The
+ * first element is the x-coordinate, the second is the y-coordinate, the
+ * third is the z-coordinate, and the fourth is the yaw orientation.
+ * @return A geometry_msgs::msg::Pose message with the specified position
+ * and yaw orientation, with roll and pitch set to zero.
+ */
+geometry_msgs::msg::Pose createPose(const std::array<double, 4> & pose3d);
 
+/**
+ * @brief Creates a LaneletSegment with the specified ID.
+ *
+ * Initializes a LaneletSegment containing a single LaneletPrimitive with the
+ * given ID and a primitive type of "lane".
+ *
+ * @param id The ID for the LaneletPrimitive and preferred primitive.
+ * @return A LaneletSegment with the specified ID.
+ */
+LaneletSegment createLaneletSegment(int id);
+
+/**
+ * @brief Loads a Lanelet map from a specified file.
+ *
+ * This function loads a Lanelet2 map using the given filename. It uses the MGRS
+ * projector and checks for any errors during the loading process. If errors
+ * are found, they are logged, and the function returns nullptr.
+ *
+ * @param lanelet2_filename The filename of the Lanelet2 map to load.
+ * @return A LaneletMapPtr to the loaded map, or nullptr if there were errors.
+ */
+lanelet::LaneletMapPtr loadMap(const std::string & lanelet2_filename);
+
+/**
+ * @brief Converts a Lanelet map to a HADMapBin message.
+ *
+ * This function converts a given Lanelet map to a HADMapBin message. It also
+ * parses the format and map versions from the specified filename and includes
+ * them in the message. The timestamp for the message is set to the provided time.
+ *
+ * @param map The Lanelet map to convert.
+ * @param lanelet2_filename The filename of the Lanelet2 map, used to parse format and map versions.
+ * @param now The current time to set in the message header.
+ * @return A HADMapBin message containing the converted map data.
+ */
+HADMapBin convertToMapBinMsg(
+  const lanelet::LaneletMapPtr map, const std::string & lanelet2_filename,
+  const rclcpp::Time & now);
+
+/**
+ * @brief Creates a normal Lanelet route with predefined start and goal poses.
+ *
+ * This function initializes a LaneletRoute with a predefined start and goal pose.
+ *
+ * @return A LaneletRoute with the specified start and goal poses.
+ */
+LaneletRoute makeNormalRoute();
+
+/**
+ * @brief Creates an OccupancyGrid message with the specified dimensions and resolution.
+ *
+ * This function initializes an OccupancyGrid message with given width, height, and resolution.
+ * All cells in the grid are initialized to zero.
+ *
+ * @param width The width of the occupancy grid.
+ * @param height The height of the occupancy grid.
+ * @param resolution The resolution of the occupancy grid.
+ * @return An OccupancyGrid message with the specified dimensions and resolution.
+ */
+OccupancyGrid makeCostMapMsg(size_t width = 150, size_t height = 150, double resolution = 0.2);
+
+/**
+ * @brief Creates a HADMapBin message from a Lanelet map file.
+ *
+ * This function loads a Lanelet map from the given file, overwrites the
+ * centerline with the specified resolution, and converts the map to a HADMapBin message.
+ *
+ * @param absolute_path The absolute path to the Lanelet2 map file.
+ * @param center_line_resolution The resolution for the centerline.
+ * @return A HADMapBin message containing the map data.
+ */
+HADMapBin make_map_bin_msg(
+  const std::string & absolute_path, const double center_line_resolution = 5.0);
+
+/**
+ * @brief Creates a HADMapBin message using a predefined Lanelet2 map file.
+ *
+ * This function loads a lanelet2_map.osm from the test_map folder in the
+ * planning_test_utils package, overwrites the centerline with a resolution of 5.0,
+ * and converts the map to a HADMapBin message.
+ *
+ * @return A HADMapBin message containing the map data.
+ */
+HADMapBin makeMapBinMsg();
+
+/**
+ * @brief Creates an Odometry message with a specified shift.
+ *
+ * This function initializes an Odometry message with a pose shifted by the given amount at y
+ * direction. x pose, z pose, and yaw angle remains zero.
+ *
+ * @param shift The amount by which to shift the pose.
+ * @return An Odometry message with the specified shift.
+ */
+Odometry makeOdometry(const double shift = 0.0);
+
+/**
+ * @brief Creates an initial Odometry message with a specified shift.
+ *
+ * This function initializes an Odometry message with a pose shifted by the given amount,
+ * accounting for a specific yaw angle.
+ *
+ * @param shift The amount by which to shift the pose.
+ * @return An Odometry message with the specified shift.
+ */
+Odometry makeInitialPose(const double shift = 0.0);
+
+/**
+ * @brief Creates a TFMessage with the specified frame IDs.
+ *
+ * This function initializes a TFMessage with a transform containing the given frame IDs.
+ * The transform includes a specific translation and rotation.
+ *
+ * @param target_node The node to use for obtaining the current time.
+ * @param frame_id The ID of the parent frame.
+ * @param child_frame_id The ID of the child frame.
+ * @return A TFMessage containing the transform.
+ */
+TFMessage makeTFMsg(
+  rclcpp::Node::SharedPtr target_node, std::string && frame_id = "",
+  std::string && child_frame_id = "");
+
+/**
+ * @brief Creates a Scenario message with the specified scenario.
+ *
+ * This function initializes a Scenario message with the current scenario and a list of activating
+ * scenarios.
+ *
+ * @param scenario The name of the current scenario.
+ * @return A Scenario message with the specified scenario.
+ */
+Scenario makeScenarioMsg(const std::string & scenario);
+
+/**
+ * @brief Combines two sets of consecutive RouteSections.
+ *
+ * This function combines two sets of RouteSections, removing the overlapping end section from the
+ * first set.
+ *
+ * @param route_sections1 The first set of RouteSections.
+ * @param route_sections2 The second set of RouteSections.
+ * @return A combined set of RouteSections.
+ */
+RouteSections combineConsecutiveRouteSections(
+  const RouteSections & route_sections1, const RouteSections & route_sections2);
+
+/**
+ * @brief Creates a predefined behavior Lanelet route.
+ *
+ * This function initializes a LaneletRoute with predefined start and goal poses,
+ * a list of lanelet segment IDs, and a fixed UUID.
+ * this is for the test lanelet2_map.osm
+ * file hash: a9f84cff03b55a64917bc066451276d2293b0a54f5c088febca0c7fdf2f245d5
+ *
+ * @return A LaneletRoute with the specified attributes.
+ */
+LaneletRoute makeBehaviorNormalRoute();
+
+/**
+ * @brief Spins multiple ROS nodes a specified number of times.
+ *
+ * This function spins the given test and target nodes for the specified number of iterations.
+ *
+ * @param test_node The test node to spin.
+ * @param target_node The target node to spin.
+ * @param repeat_count The number of times to spin the nodes.
+ */
+void spinSomeNodes(
+  rclcpp::Node::SharedPtr test_node, rclcpp::Node::SharedPtr target_node,
+  const int repeat_count = 1);
+
+/**
+ * @brief Updates node options with parameter files.
+ *
+ * This function updates the given node options to include the specified parameter files.
+ *
+ * @param node_options The node options to update.
+ * @param params_files A vector of parameter file paths to add to the node options.
+ */
+void updateNodeOptions(
+  rclcpp::NodeOptions & node_options, const std::vector<std::string> & params_files);
+
+/**
+ * @brief Loads a PathWithLaneId message from a YAML file.
+ *
+ * This function loads a PathWithLaneId message from a YAML file located in the
+ * planning_test_utils package.
+ *
+ * @return A PathWithLaneId message containing the loaded data.
+ */
+PathWithLaneId loadPathWithLaneIdInYaml();
+
+/**
+ * @brief Generates a trajectory with specified parameters.
+ *
+ * This function generates a trajectory of type T with a given number of points,
+ * point interval, velocity, initial theta, delta theta, and optionally an
+ * overlapping point index.
+ *
+ * @tparam T The type of the trajectory.
+ * @param num_points The number of points in the trajectory.
+ * @param point_interval The distance between consecutive points.
+ * @param velocity The longitudinal velocity for each point.
+ * @param init_theta The initial theta angle.
+ * @param delta_theta The change in theta per point.
+ * @param overlapping_point_index The index of the point to overlap (default is max size_t value).
+ * @return A trajectory of type T with the specified parameters.
+ */
 template <class T>
 T generateTrajectory(
   const size_t num_points, const double point_interval, const double velocity = 0.0,
@@ -121,197 +349,17 @@ T generateTrajectory(
   return traj;
 }
 
-LaneletSegment createLaneletSegment(int id)
-{
-  LaneletPrimitive primitive;
-  primitive.id = id;
-  primitive.primitive_type = "lane";
-  LaneletSegment segment;
-  segment.preferred_primitive.id = id;
-  segment.primitives.push_back(primitive);
-  return segment;
-}
-
-lanelet::LaneletMapPtr loadMap(const std::string & lanelet2_filename)
-{
-  lanelet::ErrorMessages errors{};
-  lanelet::projection::MGRSProjector projector{};
-  const lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, projector, &errors);
-  if (errors.empty()) {
-    return map;
-  }
-
-  for (const auto & error : errors) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("map_loader"), error);
-  }
-  return nullptr;
-}
-
-HADMapBin convertToMapBinMsg(
-  const lanelet::LaneletMapPtr map, const std::string & lanelet2_filename, const rclcpp::Time & now)
-{
-  std::string format_version{}, map_version{};
-  lanelet::io_handlers::AutowareOsmParser::parseVersions(
-    lanelet2_filename, &format_version, &map_version);
-
-  HADMapBin map_bin_msg;
-  map_bin_msg.header.stamp = now;
-  map_bin_msg.header.frame_id = "map";
-  map_bin_msg.format_version = format_version;
-  map_bin_msg.map_version = map_version;
-  lanelet::utils::conversion::toBinMsg(map, &map_bin_msg);
-
-  return map_bin_msg;
-}
-
-LaneletRoute makeNormalRoute()
-{
-  const std::array<double, 4> start_pose{5.5, 4., 0., M_PI_2};
-  const std::array<double, 4> goal_pose{8.0, 26.3, 0, 0};
-  LaneletRoute route;
-  route.header.frame_id = "map";
-  route.start_pose = createPose(start_pose);
-  route.goal_pose = createPose(goal_pose);
-  return route;
-}
-
-OccupancyGrid makeCostMapMsg(size_t width = 150, size_t height = 150, double resolution = 0.2)
-{
-  nav_msgs::msg::OccupancyGrid costmap_msg;
-
-  // create info
-  costmap_msg.header.frame_id = "map";
-  costmap_msg.info.width = width;
-  costmap_msg.info.height = height;
-  costmap_msg.info.resolution = resolution;
-
-  // create data
-  const size_t n_elem = width * height;
-  for (size_t i = 0; i < n_elem; ++i) {
-    costmap_msg.data.push_back(0.0);
-  }
-  return costmap_msg;
-}
-
-HADMapBin make_map_bin_msg(
-  const std::string & absolute_path, const double center_line_resolution = 5.0)
-{
-  const auto map = loadMap(absolute_path);
-  if (!map) {
-    return autoware_auto_mapping_msgs::msg::HADMapBin_<std::allocator<void>>{};
-  }
-
-  // overwrite centerline
-  lanelet::utils::overwriteLaneletsCenterline(map, center_line_resolution, false);
-
-  // create map bin msg
-  const auto map_bin_msg =
-    convertToMapBinMsg(map, absolute_path, rclcpp::Clock(RCL_ROS_TIME).now());
-  return map_bin_msg;
-}
-
-HADMapBin makeMapBinMsg()
-{
-  const auto planning_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("planning_test_utils");
-  const auto lanelet2_path = planning_test_utils_dir + "/test_map/lanelet2_map.osm";
-  double center_line_resolution = 5.0;
-
-  return make_map_bin_msg(lanelet2_path, center_line_resolution);
-}
-
-Odometry makeOdometry(const double shift = 0.0)
-{
-  Odometry odometry;
-  const std::array<double, 4> start_pose{0.0, shift, 0.0, 0.0};
-  odometry.pose.pose = createPose(start_pose);
-  odometry.header.frame_id = "map";
-  return odometry;
-}
-
-Odometry makeInitialPose(const double shift = 0.0)
-{
-  Odometry current_odometry;
-  const auto yaw = 0.9724497591854532;
-  const auto shift_x = shift * std::sin(yaw);
-  const auto shift_y = shift * std::cos(yaw);
-  const std::array<double, 4> start_pose{
-    3722.16015625 + shift_x, 73723.515625 + shift_y, 0.233112560494183, yaw};
-  current_odometry.pose.pose = test_utils::createPose(start_pose);
-  current_odometry.header.frame_id = "map";
-  return current_odometry;
-}
-
-TFMessage makeTFMsg(
-  rclcpp::Node::SharedPtr target_node, std::string frame_id = "", std::string child_frame_id = "")
-{
-  TFMessage tf_msg;
-  geometry_msgs::msg::Quaternion quaternion;
-  quaternion.x = 0.;
-  quaternion.y = 0.;
-  quaternion.z = 0.23311256049418302;
-  quaternion.w = 0.9724497591854532;
-
-  TransformStamped tf;
-  tf.header.stamp = target_node->get_clock()->now();
-  tf.header.frame_id = frame_id;
-  tf.child_frame_id = child_frame_id;
-  tf.transform.translation.x = 3722.16015625;
-  tf.transform.translation.y = 73723.515625;
-  tf.transform.translation.z = 0;
-  tf.transform.rotation = quaternion;
-
-  tf_msg.transforms.emplace_back(std::move(tf));
-  return tf_msg;
-}
-
-Scenario makeScenarioMsg(const std::string scenario)
-{
-  Scenario scenario_msg;
-  scenario_msg.current_scenario = scenario;
-  scenario_msg.activating_scenarios = {scenario};
-  return scenario_msg;
-}
-
-RouteSections combineConsecutiveRouteSections(
-  const RouteSections & route_sections1, const RouteSections & route_sections2)
-{
-  RouteSections route_sections;
-  route_sections.reserve(route_sections1.size() + route_sections2.size());
-  if (!route_sections1.empty()) {
-    // remove end route section because it is overlapping with first one in next route_section
-    route_sections.insert(route_sections.end(), route_sections1.begin(), route_sections1.end() - 1);
-  }
-  if (!route_sections2.empty()) {
-    route_sections.insert(route_sections.end(), route_sections2.begin(), route_sections2.end());
-  }
-  return route_sections;
-}
-
-// this is for the test lanelet2_map.osm
-// file hash: a9f84cff03b55a64917bc066451276d2293b0a54f5c088febca0c7fdf2f245d5
-LaneletRoute makeBehaviorNormalRoute()
-{
-  LaneletRoute route;
-  route.header.frame_id = "map";
-  route.start_pose =
-    createPose({3722.16015625, 73723.515625, 0.233112560494183, 0.9724497591854532});
-  route.goal_pose =
-    createPose({3778.362060546875, 73721.2734375, -0.5107480274693206, 0.8597304533609347});
-
-  std::vector<int> primitive_ids = {9102, 9178, 54, 112};
-  for (int id : primitive_ids) {
-    route.segments.push_back(createLaneletSegment(id));
-  }
-
-  std::array<uint8_t, 16> uuid_bytes{210, 87,  16,  126, 98,  151, 58, 28,
-                                     252, 221, 230, 92,  122, 170, 46, 6};
-  route.uuid.uuid = uuid_bytes;
-
-  route.allow_modification = false;
-  return route;
-}
-
+/**
+ * @brief Creates a publisher with appropriate QoS settings.
+ *
+ * This function creates a publisher for a given topic name and message type with appropriate
+ * QoS settings, depending on the message type.
+ *
+ * @tparam T The type of the message to publish.
+ * @param test_node The node to create the publisher on.
+ * @param topic_name The name of the topic to publish to.
+ * @param publisher A reference to the publisher to be created.
+ */
 template <typename T>
 void createPublisherWithQoS(
   rclcpp::Node::SharedPtr test_node, std::string topic_name,
@@ -329,6 +377,16 @@ void createPublisherWithQoS(
   }
 }
 
+/**
+ * @brief Sets up a publisher for a given topic.
+ *
+ * This function sets up a publisher for a given topic using createPublisherWithQoS.
+ *
+ * @tparam T The type of the message to publish.
+ * @param test_node The node to create the publisher on.
+ * @param topic_name The name of the topic to publish to.
+ * @param publisher A reference to the publisher to be set.
+ */
 template <typename T>
 void setPublisher(
   rclcpp::Node::SharedPtr test_node, std::string topic_name,
@@ -337,6 +395,18 @@ void setPublisher(
   createPublisherWithQoS(test_node, topic_name, publisher);
 }
 
+/**
+ * @brief Creates a subscription with appropriate QoS settings.
+ *
+ * This function creates a subscription for a given topic name and message type with appropriate
+ * QoS settings, depending on the message type.
+ *
+ * @tparam T The type of the message to subscribe to.
+ * @param test_node The node to create the subscription on.
+ * @param topic_name The name of the topic to subscribe to.
+ * @param callback The callback function to call when a message is received.
+ * @param subscriber A reference to the subscription to be created.
+ */
 template <typename T>
 void createSubscription(
   rclcpp::Node::SharedPtr test_node, std::string topic_name,
@@ -350,6 +420,17 @@ void createSubscription(
   }
 }
 
+/**
+ * @brief Sets up a subscriber for a given topic.
+ *
+ * This function sets up a subscriber for a given topic using createSubscription.
+ *
+ * @tparam T The type of the message to subscribe to.
+ * @param test_node The node to create the subscription on.
+ * @param topic_name The name of the topic to subscribe to.
+ * @param subscriber A reference to the subscription to be set.
+ * @param count A reference to a counter that increments on message receipt.
+ */
 template <typename T>
 void setSubscriber(
   rclcpp::Node::SharedPtr test_node, std::string topic_name,
@@ -359,32 +440,32 @@ void setSubscriber(
     test_node, topic_name, [&count](const typename T::ConstSharedPtr) { count++; }, subscriber);
 }
 
-void spinSomeNodes(
-  rclcpp::Node::SharedPtr test_node, rclcpp::Node::SharedPtr target_node,
-  const int repeat_count = 1)
-{
-  rclcpp::executors::SingleThreadedExecutor executor;
-  executor.add_node(test_node);
-  executor.add_node(target_node);
-  for (int i = 0; i < repeat_count; i++) {
-    executor.spin_some(std::chrono::milliseconds(100));
-    rclcpp::sleep_for(std::chrono::milliseconds(100));
-  }
-}
-
+/**
+ * @brief Publishes data to a target node.
+ *
+ * This function publishes data to a target node on a given topic, ensuring that the topic has
+ * subscribers and retrying a specified number of times.
+ *
+ * @tparam T The type of the message to publish.
+ * @param test_node The node to create the publisher on.
+ * @param target_node The target node to publish the message to.
+ * @param topic_name The name of the topic to publish to.
+ * @param publisher A shared pointer to the publisher.
+ * @param data The data to publish.
+ * @param repeat_count The number of times to retry publishing.
+ */
 template <typename T>
 void publishToTargetNode(
   rclcpp::Node::SharedPtr test_node, rclcpp::Node::SharedPtr target_node, std::string topic_name,
   typename rclcpp::Publisher<T>::SharedPtr publisher, T data, const int repeat_count = 3)
 {
   if (topic_name.empty()) {
-    int status;
+    int status = 1;
     char * demangled_name = abi::__cxa_demangle(typeid(data).name(), nullptr, nullptr, &status);
     if (status == 0) {
       throw std::runtime_error(std::string("Topic name for ") + demangled_name + " is empty");
-    } else {
-      throw std::runtime_error(std::string("Topic name for ") + typeid(data).name() + " is empty");
     }
+    throw std::runtime_error(std::string("Topic name for ") + typeid(data).name() + " is empty");
   }
 
   test_utils::setPublisher<T>(test_node, topic_name, publisher);
@@ -394,83 +475,6 @@ void publishToTargetNode(
     throw std::runtime_error("No subscriber for " + topic_name);
   }
   test_utils::spinSomeNodes(test_node, target_node, repeat_count);
-}
-
-void updateNodeOptions(
-  rclcpp::NodeOptions & node_options, const std::vector<std::string> & params_files)
-{
-  std::vector<const char *> arguments;
-  arguments.push_back("--ros-args");
-  arguments.push_back("--params-file");
-  for (const auto & param_file : params_files) {
-    arguments.push_back(param_file.c_str());
-    arguments.push_back("--params-file");
-  }
-  arguments.pop_back();
-
-  node_options.arguments(std::vector<std::string>{arguments.begin(), arguments.end()});
-}
-
-PathWithLaneId loadPathWithLaneIdInYaml()
-{
-  const auto planning_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("planning_test_utils");
-  const auto yaml_path = planning_test_utils_dir + "/config/path_with_lane_id_data.yaml";
-  YAML::Node yaml_node = YAML::LoadFile(yaml_path);
-  PathWithLaneId path_msg;
-
-  // Convert YAML data to PathWithLaneId message
-  // Fill the header
-  path_msg.header.stamp.sec = yaml_node["header"]["stamp"]["sec"].as<int>();
-  path_msg.header.stamp.nanosec = yaml_node["header"]["stamp"]["nanosec"].as<uint32_t>();
-  path_msg.header.frame_id = yaml_node["header"]["frame_id"].as<std::string>();
-
-  // Fill the points
-  for (const auto & point_node : yaml_node["points"]) {
-    PathPointWithLaneId point;
-    // Fill the PathPoint data
-    point.point.pose.position.x = point_node["point"]["pose"]["position"]["x"].as<double>();
-    point.point.pose.position.y = point_node["point"]["pose"]["position"]["y"].as<double>();
-    point.point.pose.position.z = point_node["point"]["pose"]["position"]["z"].as<double>();
-    point.point.pose.orientation.x = point_node["point"]["pose"]["orientation"]["x"].as<double>();
-    point.point.pose.orientation.y = point_node["point"]["pose"]["orientation"]["y"].as<double>();
-    point.point.pose.orientation.z = point_node["point"]["pose"]["orientation"]["z"].as<double>();
-    point.point.pose.orientation.w = point_node["point"]["pose"]["orientation"]["w"].as<double>();
-    point.point.longitudinal_velocity_mps =
-      point_node["point"]["longitudinal_velocity_mps"].as<float>();
-    point.point.lateral_velocity_mps = point_node["point"]["lateral_velocity_mps"].as<float>();
-    point.point.heading_rate_rps = point_node["point"]["heading_rate_rps"].as<float>();
-    point.point.is_final = point_node["point"]["is_final"].as<bool>();
-    // Fill the lane_ids
-    for (const auto & lane_id_node : point_node["lane_ids"]) {
-      point.lane_ids.push_back(lane_id_node.as<int64_t>());
-    }
-
-    path_msg.points.push_back(point);
-  }
-
-  // Fill the left_bound
-  for (const auto & point_node : yaml_node["left_bound"]) {
-    Point point;
-    // Fill the Point data (left_bound)
-    point.x = point_node["x"].as<double>();
-    point.y = point_node["y"].as<double>();
-    point.z = point_node["z"].as<double>();
-
-    path_msg.left_bound.push_back(point);
-  }
-
-  // Fill the right_bound
-  for (const auto & point_node : yaml_node["right_bound"]) {
-    Point point;
-    // Fill the Point data
-    point.x = point_node["x"].as<double>();
-    point.y = point_node["y"].as<double>();
-    point.z = point_node["z"].as<double>();
-
-    path_msg.right_bound.push_back(point);
-  }
-  return path_msg;
 }
 
 }  // namespace test_utils
