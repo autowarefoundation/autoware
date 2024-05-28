@@ -19,6 +19,7 @@
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>nlohmann-json-dev</depend>
+  <depend>pybind11_vendor</depend>
   <depend>rosbag2_cpp</depend>
   <depend>std_msgs</depend>
   <depend>tf2</depend>
