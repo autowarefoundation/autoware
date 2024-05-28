@@ -508,9 +508,12 @@ protected:
   {
     for (const auto & [module_name, ptr] : rtc_interface_ptr_map_) {
       if (ptr) {
-        ptr->updateCooperateStatus(
-          uuid_map_.at(module_name), true, State::SUCCEEDED, std::numeric_limits<double>::lowest(),
-          std::numeric_limits<double>::lowest(), clock_->now());
+        if (ptr->isRegistered(uuid_map_.at(module_name))) {
+          ptr->updateCooperateStatus(
+            uuid_map_.at(module_name), true, State::SUCCEEDED,
+            std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest(),
+            clock_->now());
+        }
       }
     }
   }

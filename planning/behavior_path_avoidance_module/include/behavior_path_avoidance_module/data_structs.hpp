@@ -501,11 +501,9 @@ using AvoidOutlines = std::vector<AvoidOutline>;
  * avoidance state
  */
 enum class AvoidanceState {
-  NOT_AVOID = 0,
-  AVOID_EXECUTE,
-  YIELD,
-  AVOID_PATH_READY,
-  AVOID_PATH_NOT_READY,
+  RUNNING = 0,
+  CANCEL,
+  SUCCEEDED,
 };
 
 /*
@@ -514,7 +512,7 @@ enum class AvoidanceState {
 struct AvoidancePlanningData
 {
   // ego final state
-  AvoidanceState state{AvoidanceState::NOT_AVOID};
+  AvoidanceState state{AvoidanceState::RUNNING};
 
   // un-shifted pose (for current lane detection)
   Pose reference_pose;
@@ -565,8 +563,6 @@ struct AvoidancePlanningData
   bool valid{false};
 
   bool ready{false};
-
-  bool success{false};
 
   bool comfortable{false};
 
