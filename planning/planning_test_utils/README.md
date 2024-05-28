@@ -1,92 +1,40 @@
-# Autoware Planning Test Manager
+# Test Utils
 
 ## Background
 
-In each node of the planning module, when exceptional input, such as unusual routes or significantly deviated ego-position, is given, the node may not be prepared for such input and could crash. As a result, debugging node crashes can be time-consuming. For example, if an empty trajectory is given as input and it was not anticipated during implementation, the node might crash due to the unaddressed exceptional input when changes are merged, during scenario testing or while the system is running on an actual vehicle.
+Several Autoware's components and modules have already adopted unit testing, so a common library to ease the process of writing unit tests is necessary.
 
 ## Purpose
 
-The purpose is to provide a utility for implementing tests to ensure that node operates correctly when receiving exceptional input. By utilizing this utility and implementing tests for exceptional input, the purpose is to reduce bugs that are only discovered when actually running the system, by requiring measures for exceptional input before merging PRs.
+The objective of the `test_utils` is to develop a unit testing library for the Autoware components. This library will include
 
-## Features
+- commonly used functions
+- input/mock data parser
+- maps for testing
+- common routes and mock data for testing.
 
-### Confirmation of normal operation
+## Available Maps
 
-For the test target node, confirm that the node operates correctly and publishes the required messages for subsequent nodes. To do this, test_node publish the necessary messages and confirm that the node's output is being published.
+The following maps are available [here](https://github.com/autowarefoundation/autoware.universe/tree/main/planning/planning_test_utils/test_map)
 
-### Robustness confirmation for special inputs
+### Common
 
-After confirming normal operation, ensure that the test target node does not crash when given exceptional input. To do this, provide exceptional input from the test_node and confirm that the node does not crash.
+The common map contains multiple types of usable inputs, including shoulder lanes, intersections, and some regulatory elements. The common map is named `lanelet2_map.osm` in the folder.
 
-(WIP)
+![common](./images/common.png)
 
-## Usage
+### 2 km Straight
 
-```cpp
+The 2 km straight lanelet map consists of two lanes that run in the same direction. The map is named `2km_test.osm`.
 
-TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
-{
-  rclcpp::init(0, nullptr);
+![two_km](./images/2km-test.png)
 
-  // instantiate test_manager with PlanningInterfaceTestManager type
-  auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
+The following illustrates the design of the map.
 
-  // get package directories for necessary configuration files
-  const auto planning_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("planning_test_utils");
-  const auto target_node_dir =
-    ament_index_cpp::get_package_share_directory("target_node");
+![straight_diagram](./images/2km-test.svg)
 
-  // set arguments to get the config file
-  node_options.arguments(
-    {"--ros-args", "--params-file",
-     planning_test_utils_dir + "/config/test_vehicle_info.param.yaml", "--params-file",
-     planning_validator_dir + "/config/planning_validator.param.yaml"});
+## Example use cases
 
-  // instantiate the TargetNode with node_options
-  auto test_target_node = std::make_shared<TargetNode>(node_options);
+### Autoware Planning Test Manager
 
-  // publish the necessary topics from test_manager second argument is topic name
-  test_manager->publishOdometry(test_target_node, "/localization/kinematic_state");
-  test_manager->publishMaxVelocity(
-    test_target_node, "motion_velocity_smoother/input/external_velocity_limit_mps");
-
-  // set scenario_selector's input topic name(this topic is changed to test node)
-  test_manager->setTrajectoryInputTopicName("input/parking/trajectory");
-
-  // test with normal trajectory
-  ASSERT_NO_THROW(test_manager->testWithNominalTrajectory(test_target_node));
-
-  // make sure target_node is running
-  EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
-
-  // test with trajectory input with empty/one point/overlapping point
-  ASSERT_NO_THROW(test_manager->testWithAbnormalTrajectory(test_target_node));
-
-  // shutdown ROS context
-  rclcpp::shutdown();
-}
-```
-
-## Implemented tests
-
-| Node                       | Test name                                                                                 | exceptional input | output         | Exceptional input pattern                                                             |
-| -------------------------- | ----------------------------------------------------------------------------------------- | ----------------- | -------------- | ------------------------------------------------------------------------------------- |
-| planning_validator         | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
-| motion_velocity_smoother   | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
-| obstacle_cruise_planner    | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
-| obstacle_stop_planner      | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
-| obstacle_velocity_limiter  | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
-| obstacle_avoidance_planner | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
-| scenario_selector          | NodeTestWithExceptionTrajectoryLaneDrivingMode NodeTestWithExceptionTrajectoryParkingMode | trajectory        | scenario       | Empty, single point, path with duplicate points for scenarios:LANEDRIVING and PARKING |
-| freespace_planner          | NodeTestWithExceptionRoute                                                                | route             | trajectory     | Empty route                                                                           |
-| behavior_path_planner      | NodeTestWithExceptionRoute NodeTestWithOffTrackEgoPose                                    | route             | route odometry | Empty route Off-lane ego-position                                                     |
-| behavior_velocity_planner  | NodeTestWithExceptionPathWithLaneID                                                       | path_with_lane_id | path           | Empty path                                                                            |
-
-## Important Notes
-
-During test execution, when launching a node, parameters are loaded from the parameter file within each package. Therefore, when adding parameters, it is necessary to add the required parameters to the parameter file in the target node package. This is to prevent the node from being unable to launch if there are missing parameters when retrieving them from the parameter file during node launch.
-
-## Future extensions / Unimplemented parts
-
-(WIP)
+The goal of the [Autoware Planning Test Manager](https://autowarefoundation.github.io/autoware.universe/main/planning/autoware_planning_test_manager/) is to test planning module nodes. The `PlanningInterfaceTestManager` class ([source code](https://github.com/autowarefoundation/autoware.universe/blob/main/planning/autoware_planning_test_manager/src/autoware_planning_test_manager.cpp)) creates wrapper functions based on the `test_utils` functions.
