@@ -57,7 +57,7 @@ public:
   using String = std_msgs::msg::String;
   using PointCloud2 = sensor_msgs::msg::PointCloud2;
   using Point = geometry_msgs::msg::Point;
-  GroundServer();
+  explicit GroundServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
   const bool force_zero_tilt_;

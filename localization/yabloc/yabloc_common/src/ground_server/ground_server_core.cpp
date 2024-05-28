@@ -30,8 +30,8 @@
 
 namespace yabloc::ground_server
 {
-GroundServer::GroundServer()
-: Node("ground_server"),
+GroundServer::GroundServer(const rclcpp::NodeOptions & options)
+: Node("ground_server", options),
   force_zero_tilt_(declare_parameter<bool>("force_zero_tilt")),
   R(declare_parameter<int>("R")),
   K(declare_parameter<int>("K"))
@@ -248,3 +248,6 @@ GroundServer::GroundPlane GroundServer::estimate_ground(const Point & point)
 }
 
 }  // namespace yabloc::ground_server
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(yabloc::ground_server::GroundServer)

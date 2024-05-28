@@ -39,7 +39,7 @@ public:
   using Marker = visualization_msgs::msg::Marker;
   using MarkerArray = visualization_msgs::msg::MarkerArray;
 
-  Ll2Decomposer();
+  explicit Ll2Decomposer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
   rclcpp::Publisher<Cloud2>::SharedPtr pub_road_marking_;

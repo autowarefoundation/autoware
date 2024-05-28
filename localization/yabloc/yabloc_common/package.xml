@@ -19,11 +19,11 @@
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>cv_bridge</depend>
   <depend>geometry_msgs</depend>
-  <depend>glog</depend>
   <depend>lanelet2_core</depend>
   <depend>lanelet2_extension</depend>
   <depend>pcl_conversions</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
   <depend>signal_processing</depend>
   <depend>sophus</depend>

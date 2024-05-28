@@ -1,5 +1,7 @@
 <launch>
   <arg name="input_particle_pose" default="/localization/pose_twist_fusion_filter/pose"/>
+  <arg name="ground_server_param_path" default="$(find-pkg-share yabloc_common)/config/ground_server.param.yaml"/>
+  <arg name="ll2_decomposer_param_path" default="$(find-pkg-share yabloc_common)/config/ll2_decomposer.param.yaml"/>
 
   <!-- ground server -->
   <arg name="output_height" default="height"/>
@@ -7,7 +9,7 @@
   <arg name="output_ground_markers" default="ground_markers"/>
   <arg name="output_ground_status" default="ground_status"/>
   <arg name="output_near_cloud" default="near_cloud"/>
-  <node name="ground_server" pkg="yabloc_common" exec="ground_server_node" output="screen" args="--ros-args --log-level warn">
+  <node pkg="yabloc_common" exec="yabloc_ground_server_node" output="both">
     <param from="$(var ground_server_param_path)"/>
 
     <remap from="~/input/vector_map" to="/map/vector_map"/>
@@ -25,7 +27,7 @@
   <arg name="output_ll2_bounding_box" default="ll2_bounding_box"/>
   <arg name="output_sign_board_marker" default="sign_board_marker"/>
 
-  <node name="ll2_decomposer" pkg="yabloc_common" exec="ll2_decomposer_node" output="screen" args="--ros-args --log-level warn">
+  <node pkg="yabloc_common" exec="yabloc_ll2_decomposer_node" output="both">
     <param from="$(var ll2_decomposer_param_path)"/>
 
     <remap from="~/input/vector_map" to="/map/vector_map"/>

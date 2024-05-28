@@ -24,7 +24,7 @@
 
 namespace yabloc::ll2_decomposer
 {
-Ll2Decomposer::Ll2Decomposer() : Node("ll2_to_image")
+Ll2Decomposer::Ll2Decomposer(const rclcpp::NodeOptions & options) : Node("ll2_to_image", options)
 {
   using std::placeholders::_1;
   const rclcpp::QoS latch_qos = rclcpp::QoS(10).transient_local();
@@ -263,3 +263,6 @@ void Ll2Decomposer::publish_additional_marker(const lanelet::LaneletMapPtr & lan
 }
 
 }  // namespace yabloc::ll2_decomposer
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(yabloc::ll2_decomposer::Ll2Decomposer)

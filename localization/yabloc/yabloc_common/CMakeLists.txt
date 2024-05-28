@@ -23,9 +23,6 @@ find_package(Sophus REQUIRED)
 # because it rewrite CMAKE_NO_SYSTEM_FROM_IMPORTED to TRUE.
 set(CMAKE_NO_SYSTEM_FROM_IMPORTED FALSE)
 
-# glog
-find_package(glog REQUIRED)
-
 # ===================================================
 # GeographicLib
 find_package(PkgConfig)
@@ -45,7 +42,10 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/static_tf_subscriber.cpp
   src/extract_line_segments.cpp
   src/transform_line_segments.cpp
-  src/color.cpp)
+  src/color.cpp
+  src/ground_server/ground_server_core.cpp
+  src/ground_server/polygon_operation.cpp
+  src/ll2_decomposer/ll2_decomposer_core.cpp)
 target_include_directories(
   ${PROJECT_NAME} PUBLIC include
 )
@@ -63,23 +63,18 @@ target_link_libraries(${PROJECT_NAME} Geographic ${PCL_LIBRARIES} Sophus::Sophus
 # ===================================================
 # Executables
 # ground_server
-set(TARGET ground_server_node)
-ament_auto_add_executable(${TARGET}
-  src/ground_server/ground_server_core.cpp
-  src/ground_server/ground_server_node.cpp
-  src/ground_server/polygon_operation.cpp)
-target_include_directories(${TARGET} PUBLIC include)
-target_include_directories(${TARGET} SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
-target_link_libraries(${TARGET} ${PCL_LIBRARIES} Sophus::Sophus glog::glog)
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "yabloc::ground_server::GroundServer"
+  EXECUTABLE yabloc_ground_server_node
+  EXECUTOR SingleThreadedExecutor
+)
 
 # ll2_decomposer
-set(TARGET ll2_decomposer_node)
-ament_auto_add_executable(${TARGET}
-  src/ll2_decomposer/ll2_decomposer_core.cpp
-  src/ll2_decomposer/ll2_decomposer_node.cpp)
-target_include_directories(${TARGET} PUBLIC include)
-target_include_directories(${TARGET} SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
-target_link_libraries(${TARGET} ${PCL_LIBRARIES})
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "yabloc::ll2_decomposer::Ll2Decomposer"
+  EXECUTABLE yabloc_ll2_decomposer_node
+  EXECUTOR SingleThreadedExecutor
+)
 
 # ===================================================
 ament_export_dependencies(PCL Sophus)
