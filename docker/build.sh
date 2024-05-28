@@ -99,7 +99,7 @@ load_env() {
 # Clone repositories
 clone_repositories() {
     cd "$WORKSPACE_ROOT"
-    mkdir -p src
+    mkdir src
     vcs import src <autoware/autoware.repos
 }
 
