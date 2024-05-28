@@ -36,7 +36,7 @@ private:
   using MapProjectorInfo = map_interface::MapProjectorInfo;
 
 public:
-  GeoPoseProjector();
+  explicit GeoPoseProjector(const rclcpp::NodeOptions & options);
 
 private:
   void on_geo_pose(const GeoPoseWithCovariance::ConstSharedPtr msg);

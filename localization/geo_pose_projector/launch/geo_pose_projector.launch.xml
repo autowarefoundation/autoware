@@ -4,7 +4,7 @@
   <arg name="output_pose" default="/pose_with_covariance"/>
   <arg name="param_path" default="$(find-pkg-share geo_pose_projector)/config/geo_pose_projector.param.yaml"/>
 
-  <node pkg="geo_pose_projector" exec="geo_pose_projector" name="geo_pose_projector" output="screen">
+  <node pkg="geo_pose_projector" exec="geo_pose_projector_node" output="both">
     <remap from="input_geo_pose" to="$(var input_geo_pose)"/>
     <remap from="output_pose" to="$(var output_pose)"/>
 
