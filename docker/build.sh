@@ -96,6 +96,13 @@ load_env() {
     fi
 }
 
+# Clone repositories
+clone_repositories() {
+    cd "$WORKSPACE_ROOT"
+    mkdir -p src
+    vcs import src < autoware/autoware.repos
+}
+
 # Build images
 build_images() {
     # https://github.com/docker/buildx/issues/484
@@ -133,4 +140,5 @@ set_build_options
 set_platform
 set_arch_lib_dir
 load_env
+clone_repositories
 build_images
