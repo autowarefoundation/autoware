@@ -21,6 +21,7 @@
   <depend>rclcpp</depend>
   <depend>rosidl_runtime_cpp</depend>
   <depend>tier4_control_msgs</depend>
+  <depend>tier4_localization_msgs</depend>
   <depend>tier4_map_msgs</depend>
   <depend>tier4_planning_msgs</depend>
   <depend>tier4_system_msgs</depend>

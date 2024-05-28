@@ -14,6 +14,8 @@
 
 #include "localization.hpp"
 
+#include "utils/localization_conversion.hpp"
+
 namespace default_ad_api
 {
 
@@ -23,7 +25,15 @@ LocalizationNode::LocalizationNode(const rclcpp::NodeOptions & options)
   const auto adaptor = component_interface_utils::NodeAdaptor(this);
   group_cli_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   adaptor.relay_message(pub_state_, sub_state_);
-  adaptor.relay_service(cli_initialize_, srv_initialize_, group_cli_);
+  adaptor.init_cli(cli_initialize_);
+  adaptor.init_srv(srv_initialize_, this, &LocalizationNode::on_initialize, group_cli_);
+}
+
+void LocalizationNode::on_initialize(
+  const autoware_ad_api::localization::Initialize::Service::Request::SharedPtr req,
+  const autoware_ad_api::localization::Initialize::Service::Response::SharedPtr res)
+{
+  res->status = localization_conversion::convert_call(cli_initialize_, req);
 }
 
 }  // namespace default_ad_api

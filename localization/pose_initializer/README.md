@@ -17,9 +17,9 @@ This node depends on the map height fitter library.
 
 ### Services
 
-| Name                       | Type                                                | Description           |
-| -------------------------- | --------------------------------------------------- | --------------------- |
-| `/localization/initialize` | autoware_adapi_v1_msgs::srv::InitializeLocalization | initial pose from api |
+| Name                       | Type                                                 | Description           |
+| -------------------------- | ---------------------------------------------------- | --------------------- |
+| `/localization/initialize` | tier4_localization_msgs::srv::InitializeLocalization | initial pose from api |
 
 ### Clients
 
@@ -46,3 +46,86 @@ This node depends on the map height fitter library.
 This `pose_initializer` is used via default AD API. For detailed description of the API description, please refer to [the description of `default_ad_api`](https://github.com/autowarefoundation/autoware.universe/blob/main/system/default_ad_api/document/localization.md).
 
 <img src="../../system/default_ad_api/document/images/localization.drawio.svg" alt="drawing" width="800"/>
+
+## Initialize pose via CLI
+
+### Using the GNSS estimated position
+
+```bash
+ros2 service call /localization/initialize tier4_localization_msgs/srv/InitializeLocalization
+```
+
+The GNSS estimated position is used as the initial guess, and the localization algorithm automatically estimates a more accurate position.
+
+### Using the input position
+
+```bash
+ros2 service call /localization/initialize tier4_localization_msgs/srv/InitializeLocalization "
+pose_with_covariance:
+  - header:
+      frame_id: map
+    pose:
+      pose:
+        position:
+          x: 89571.1640625
+          y: 42301.1875
+          z: -3.1565165519714355
+        orientation:
+          x: 0.0
+          y: 0.0
+          z: 0.28072773940524687
+          w: 0.9597874433062874
+      covariance: [0.25, 0, 0, 0, 0, 0, 0, 0.25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.06853891909122467]
+method: 0
+"
+```
+
+The input position is used as the initial guess, and the localization algorithm automatically estimates a more accurate position.
+
+### Direct initial position set
+
+```bash
+ros2 service call /localization/initialize tier4_localization_msgs/srv/InitializeLocalization "
+pose_with_covariance:
+  - header:
+      frame_id: map
+    pose:
+      pose:
+        position:
+          x: 89571.1640625
+          y: 42301.1875
+          z: -3.1565165519714355
+        orientation:
+          x: 0.0
+          y: 0.0
+          z: 0.28072773940524687
+          w: 0.9597874433062874
+      covariance: [0.25, 0, 0, 0, 0, 0, 0, 0.25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.06853891909122467]
+method: 1
+"
+```
+
+The initial position is set directly by the input position without going through localization algorithm.
+
+### Via ros2 topic pub
+
+```bash
+ros2 topic pub --once /initialpose geometry_msgs/msg/PoseWithCovarianceStamped "
+header:
+  frame_id: map
+pose:
+  pose:
+    position:
+      x: 89571.1640625
+      y: 42301.1875
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.28072773940524687
+      w: 0.9597874433062874
+"
+```
+
+It behaves the same as "initialpose (from rviz)".
+The position.z and the covariance will be overwritten by [ad_api_adaptors](https://github.com/autowarefoundation/autoware.universe/tree/main/system/default_ad_api_helpers/ad_api_adaptors), so there is no need to input them.
