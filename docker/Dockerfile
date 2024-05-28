@@ -26,7 +26,7 @@ WORKDIR /autoware
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module base --runtime openadk \
+  ./setup-dev-env.sh -y --module base --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
   && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
@@ -84,7 +84,7 @@ ENV CXX="/usr/lib/ccache/g++"
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers openadk \
+  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
   && find / -name 'libcu*.a' -delete \
@@ -120,12 +120,12 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module dev-tools openadk \
+  ./setup-dev-env.sh -y --module dev-tools openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 # Create entrypoint
-COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh
+COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -142,7 +142,7 @@ COPY --from=src-imported /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depen
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers --runtime openadk \
+  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
@@ -160,11 +160,11 @@ RUN --mount=type=ssh \
 COPY --from=prebuilt /autoware/install/ /autoware/install/
 
 # Copy bash aliases
-COPY docker/autoware-openadk/etc/.bash_aliases /root/.bash_aliases
+COPY docker/etc/.bash_aliases /root/.bash_aliases
 RUN echo "source /autoware/install/setup.bash" > /etc/bash.bashrc
 
 # Create entrypoint
-COPY docker/autoware-openadk/etc/ros_entrypoint.sh /ros_entrypoint.sh
+COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]
