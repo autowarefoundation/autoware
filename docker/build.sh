@@ -100,7 +100,7 @@ load_env() {
 clone_repositories() {
     cd "$WORKSPACE_ROOT"
     mkdir -p src
-    vcs import src < autoware/autoware.repos
+    vcs import src <autoware/autoware.repos
 }
 
 # Build images
