@@ -70,10 +70,10 @@ jobs:
           mkdir src
           vcs import src < autoware.repos
 
-      - name: Build 'autoware-openadk'
+      - name: Build 'Autoware'
         uses: ./.github/actions/docker-build-and-push
         with:
-          bake-target: autoware-openadk
+          bake-target: autoware
           build-args: |
             *.platform=linux/amd64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
