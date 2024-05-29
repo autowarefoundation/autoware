@@ -25,7 +25,11 @@ on:
         default: tarball
 
 jobs:
+  load-env:
+    uses: ./.github/workflows/load-env.yaml
+
   docker-build-and-push-main:
+    needs: load-env
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -47,15 +51,24 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Install vcstool
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install python3-pip
+          pip install --no-cache-dir vcstool
+
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      - name: Load env
+      - name: Run vcs import
         run: |
-          cat amd64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
-          if [ "$(uname -m)" = "aarch64" ]; then
-            cat arm64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
-          fi
+          mkdir src
+          vcs import src < autoware.repos
 
       - name: Build 'autoware-openadk'
         uses: ./.github/actions/docker-build-and-push
@@ -63,12 +76,14 @@ jobs:
           bake-target: autoware-openadk
           build-args: |
             *.platform=linux/amd64
-            *.args.ROS_DISTRO=${{ env.rosdistro }}
-            *.args.BASE_IMAGE=${{ env[format('{0}', matrix.base_image_env)] }}
+            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
             *.args.LIB_DIR=${{ matrix.lib_dir }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }},mode=max
           tag-suffix: ${{ matrix.additional-tag-suffix }}-amd64
-          tag-prefix: ${{ env.rosdistro }}
+          tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           allow-push: true
 
       - name: Show disk space

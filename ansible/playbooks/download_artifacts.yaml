@@ -1,0 +1,4 @@
+- name: Download Autoware artifacts
+  hosts: localhost
+  roles:
+    - autoware.dev_env.artifacts
