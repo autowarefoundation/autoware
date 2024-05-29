@@ -27,7 +27,7 @@ DiagnosticsNode::DiagnosticsNode(const rclcpp::NodeOptions & options) : Node("di
   pub_struct_ = create_publisher<autoware_adapi_v1_msgs::msg::DiagGraphStruct>(
     "/api/system/diagnostics/struct", rclcpp::QoS(1).transient_local());
   pub_status_ = create_publisher<autoware_adapi_v1_msgs::msg::DiagGraphStatus>(
-    "/api/system/diagnostics/status", rclcpp::QoS(1));
+    "/api/system/diagnostics/status", rclcpp::QoS(1).best_effort());
 
   sub_graph_.register_create_callback(std::bind(&DiagnosticsNode::on_create, this, _1));
   sub_graph_.register_update_callback(std::bind(&DiagnosticsNode::on_update, this, _1));
