@@ -95,6 +95,10 @@ repositories:
     type: git
     url: git@github.com:MapIV/transport_drivers.git
     version: boost
+  sensor_component/external/ars408_driver:
+    type: git
+    url: git@github.com:IUTSmartMining/ars408_driver.git
+    version: main
   # sensor_kit
   sensor_kit/sample_sensor_kit_launch:
     type: git
