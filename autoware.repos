@@ -110,7 +110,7 @@ repositories:
     version: main
   sensor_kit/awsim_labs_sensor_kit_launch:
     type: git
-    url: https://github.com/autowarefoundation/awsim_labs_sensor_kit_launch.git
+    url: git@github.com:autowarefoundation/awsim_labs_sensor_kit_launch.git
     version: main
   # vehicle
   vehicle/sample_vehicle_launch:
