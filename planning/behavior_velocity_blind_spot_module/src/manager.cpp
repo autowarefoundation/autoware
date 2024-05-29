@@ -36,17 +36,20 @@ BlindSpotModuleManager::BlindSpotModuleManager(rclcpp::Node & node)
   planner_param_.use_pass_judge_line =
     getOrDeclareParameter<bool>(node, ns + ".use_pass_judge_line");
   planner_param_.stop_line_margin = getOrDeclareParameter<double>(node, ns + ".stop_line_margin");
-  planner_param_.backward_length = getOrDeclareParameter<double>(node, ns + ".backward_length");
+  planner_param_.backward_detection_length =
+    getOrDeclareParameter<double>(node, ns + ".backward_detection_length");
   planner_param_.ignore_width_from_center_line =
     getOrDeclareParameter<double>(node, ns + ".ignore_width_from_center_line");
-  planner_param_.max_future_movement_time =
-    getOrDeclareParameter<double>(node, ns + ".max_future_movement_time");
-  planner_param_.threshold_yaw_diff =
-    getOrDeclareParameter<double>(node, ns + ".threshold_yaw_diff");
   planner_param_.adjacent_extend_width =
     getOrDeclareParameter<double>(node, ns + ".adjacent_extend_width");
   planner_param_.opposite_adjacent_extend_width =
     getOrDeclareParameter<double>(node, ns + ".opposite_adjacent_extend_width");
+  planner_param_.max_future_movement_time =
+    getOrDeclareParameter<double>(node, ns + ".max_future_movement_time");
+  planner_param_.ttc_min = getOrDeclareParameter<double>(node, ns + ".ttc_min");
+  planner_param_.ttc_max = getOrDeclareParameter<double>(node, ns + ".ttc_max");
+  planner_param_.ttc_ego_minimal_velocity =
+    getOrDeclareParameter<double>(node, ns + ".ttc_ego_minimal_velocity");
 }
 
 void BlindSpotModuleManager::launchNewModules(

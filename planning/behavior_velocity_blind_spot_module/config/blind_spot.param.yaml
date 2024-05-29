@@ -3,10 +3,12 @@
     blind_spot:
       use_pass_judge_line: true
       stop_line_margin: 1.0 # [m]
-      backward_length: 50.0 # [m]
+      backward_detection_length: 100.0 # [m]
       ignore_width_from_center_line: 0.7 # [m]
-      max_future_movement_time: 10.0 # [second]
-      threshold_yaw_diff: 0.523 # [rad]
       adjacent_extend_width: 1.5 # [m]
       opposite_adjacent_extend_width: 1.5 # [m]
+      max_future_movement_time: 10.0 # [second]
+      ttc_min: -5.0 # [s]
+      ttc_max: 5.0 # [s]
+      ttc_ego_minimal_velocity: 5.0 # [m/s]
       enable_rtc: false # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval

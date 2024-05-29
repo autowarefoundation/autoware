@@ -93,15 +93,12 @@ visualization_msgs::msg::MarkerArray BlindSpotModule::createDebugMarkerArray()
 
   const auto now = this->clock_->now();
 
-  appendMarkerArray(
-    createLaneletPolygonsMarkerArray(
-      debug_data_.conflict_areas, "conflict_area", module_id_, 0.0, 0.5, 0.5),
-    &debug_marker_array, now);
-
-  appendMarkerArray(
-    createLaneletPolygonsMarkerArray(
-      debug_data_.detection_areas, "detection_area", module_id_, 0.5, 0.0, 0.0),
-    &debug_marker_array, now);
+  if (debug_data_.detection_area) {
+    appendMarkerArray(
+      createLaneletPolygonsMarkerArray(
+        {debug_data_.detection_area.value()}, "detection_area", module_id_, 0.5, 0.0, 0.0),
+      &debug_marker_array, now);
+  }
 
   appendMarkerArray(
     debug::createObjectsMarkerArray(
