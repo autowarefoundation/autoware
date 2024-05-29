@@ -162,6 +162,9 @@ endif()
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
+  ament_auto_add_gtest(test_calc_iou_functions
+    test/test_calc_iou_functions.cpp
+  )
   ament_auto_add_gtest(test_utils
     test/test_utils.cpp
   )
