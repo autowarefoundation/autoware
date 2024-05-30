@@ -43,6 +43,15 @@ ObjectLaneletFilterNode::ObjectLaneletFilterNode(const rclcpp::NodeOptions & nod
   filter_target_.MOTORCYCLE = declare_parameter<bool>("filter_target_label.MOTORCYCLE", false);
   filter_target_.BICYCLE = declare_parameter<bool>("filter_target_label.BICYCLE", false);
   filter_target_.PEDESTRIAN = declare_parameter<bool>("filter_target_label.PEDESTRIAN", false);
+  // Set filter settings
+  filter_settings_.polygon_overlap_filter =
+    declare_parameter<bool>("filter_settings.polygon_overlap_filter.enabled");
+  filter_settings_.lanelet_direction_filter =
+    declare_parameter<bool>("filter_settings.lanelet_direction_filter.enabled");
+  filter_settings_.lanelet_direction_filter_velocity_yaw_threshold =
+    declare_parameter<double>("filter_settings.lanelet_direction_filter.velocity_yaw_threshold");
+  filter_settings_.lanelet_direction_filter_object_speed_threshold =
+    declare_parameter<double>("filter_settings.lanelet_direction_filter.object_speed_threshold");
 
   // Set publisher/subscriber
   map_sub_ = this->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
@@ -97,27 +106,13 @@ void ObjectLaneletFilterNode::objectCallback(
   lanelet::ConstLanelets intersected_shoulder_lanelets =
     getIntersectedLanelets(convex_hull, shoulder_lanelets_);
 
-  int index = 0;
-  for (const auto & object : transformed_objects.objects) {
-    const auto footprint = setFootprint(object);
-    const auto & label = object.classification.front().label;
-    if (filter_target_.isTarget(label)) {
-      Polygon2d polygon;
-      for (const auto & point : footprint.points) {
-        const geometry_msgs::msg::Point32 point_transformed =
-          tier4_autoware_utils::transformPoint(point, object.kinematics.pose_with_covariance.pose);
-        polygon.outer().emplace_back(point_transformed.x, point_transformed.y);
-      }
-      polygon.outer().push_back(polygon.outer().front());
-      if (isPolygonOverlapLanelets(polygon, intersected_road_lanelets)) {
-        output_object_msg.objects.emplace_back(input_msg->objects.at(index));
-      } else if (isPolygonOverlapLanelets(polygon, intersected_shoulder_lanelets)) {
-        output_object_msg.objects.emplace_back(input_msg->objects.at(index));
-      }
-    } else {
-      output_object_msg.objects.emplace_back(input_msg->objects.at(index));
-    }
-    ++index;
+  // filtering process
+  for (size_t index = 0; index < transformed_objects.objects.size(); ++index) {
+    const auto & transformed_object = transformed_objects.objects.at(index);
+    const auto & input_object = input_msg->objects.at(index);
+    filterObject(
+      transformed_object, input_object, intersected_road_lanelets, intersected_shoulder_lanelets,
+      output_object_msg);
   }
   object_pub_->publish(output_object_msg);
   published_time_publisher_->publish_if_subscribed(object_pub_, output_object_msg.header.stamp);
@@ -130,6 +125,55 @@ void ObjectLaneletFilterNode::objectCallback(
       .count();
   debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
     "debug/pipeline_latency_ms", pipeline_latency);
+}
+
+bool ObjectLaneletFilterNode::filterObject(
+  const autoware_auto_perception_msgs::msg::DetectedObject & transformed_object,
+  const autoware_auto_perception_msgs::msg::DetectedObject & input_object,
+  const lanelet::ConstLanelets & intersected_road_lanelets,
+  const lanelet::ConstLanelets & intersected_shoulder_lanelets,
+  autoware_auto_perception_msgs::msg::DetectedObjects & output_object_msg)
+{
+  const auto & label = transformed_object.classification.front().label;
+  if (filter_target_.isTarget(label)) {
+    bool filter_pass = true;
+    // 1. is polygon overlap with road lanelets or shoulder lanelets
+    if (filter_settings_.polygon_overlap_filter) {
+      Polygon2d polygon;
+      const auto footprint = setFootprint(transformed_object);
+      for (const auto & point : footprint.points) {
+        const geometry_msgs::msg::Point32 point_transformed = tier4_autoware_utils::transformPoint(
+          point, transformed_object.kinematics.pose_with_covariance.pose);
+        polygon.outer().emplace_back(point_transformed.x, point_transformed.y);
+      }
+      polygon.outer().push_back(polygon.outer().front());
+      const bool is_polygon_overlap =
+        isPolygonOverlapLanelets(polygon, intersected_road_lanelets) ||
+        isPolygonOverlapLanelets(polygon, intersected_shoulder_lanelets);
+      filter_pass = filter_pass && is_polygon_overlap;
+    }
+
+    // 2. check if objects velocity is the same with the lanelet direction
+    const bool orientation_not_available =
+      transformed_object.kinematics.orientation_availability ==
+      autoware_auto_perception_msgs::msg::TrackedObjectKinematics::UNAVAILABLE;
+    if (filter_settings_.lanelet_direction_filter && !orientation_not_available) {
+      const bool is_same_direction =
+        isSameDirectionWithLanelets(intersected_road_lanelets, transformed_object) ||
+        isSameDirectionWithLanelets(intersected_shoulder_lanelets, transformed_object);
+      filter_pass = filter_pass && is_same_direction;
+    }
+
+    // push back to output object
+    if (filter_pass) {
+      output_object_msg.objects.emplace_back(input_object);
+      return true;
+    }
+  } else {
+    output_object_msg.objects.emplace_back(input_object);
+    return true;
+  }
+  return false;
 }
 
 geometry_msgs::msg::Polygon ObjectLaneletFilterNode::setFootprint(
@@ -198,6 +242,42 @@ bool ObjectLaneletFilterNode::isPolygonOverlapLanelets(
       return true;
     }
   }
+  return false;
+}
+
+bool ObjectLaneletFilterNode::isSameDirectionWithLanelets(
+  const lanelet::ConstLanelets & lanelets,
+  const autoware_auto_perception_msgs::msg::DetectedObject & object)
+{
+  const double object_yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
+  const double object_velocity_norm = std::hypot(
+    object.kinematics.twist_with_covariance.twist.linear.x,
+    object.kinematics.twist_with_covariance.twist.linear.y);
+  const double object_velocity_yaw = std::atan2(
+                                       object.kinematics.twist_with_covariance.twist.linear.y,
+                                       object.kinematics.twist_with_covariance.twist.linear.x) +
+                                     object_yaw;
+
+  if (object_velocity_norm < filter_settings_.lanelet_direction_filter_object_speed_threshold) {
+    return true;
+  }
+  for (const auto & lanelet : lanelets) {
+    const bool is_in_lanelet =
+      lanelet::utils::isInLanelet(object.kinematics.pose_with_covariance.pose, lanelet, 0.0);
+    if (!is_in_lanelet) {
+      continue;
+    }
+    const double lane_yaw = lanelet::utils::getLaneletAngle(
+      lanelet, object.kinematics.pose_with_covariance.pose.position);
+    const double delta_yaw = object_velocity_yaw - lane_yaw;
+    const double normalized_delta_yaw = tier4_autoware_utils::normalizeRadian(delta_yaw);
+    const double abs_norm_delta_yaw = std::fabs(normalized_delta_yaw);
+
+    if (abs_norm_delta_yaw < filter_settings_.lanelet_direction_filter_velocity_yaw_threshold) {
+      return true;
+    }
+  }
+
   return false;
 }
 
