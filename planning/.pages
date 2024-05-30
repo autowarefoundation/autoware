@@ -63,6 +63,10 @@ nav:
     - 'Surround Obstacle Checker':
       - 'About Surround Obstacle Checker': planning/surround_obstacle_checker
       - 'About Surround Obstacle Checker (Japanese)': planning/surround_obstacle_checker/surround_obstacle_checker-design.ja
+    - 'Motion Velocity Planner':
+      - 'About Motion Velocity Planner': planning/autoware_motion_velocity_planner_node/
+      - 'Available Modules':
+        - 'Out of Lane': planning/autoware_motion_velocity_planner_out_of_lane_module/
     - 'Motion Velocity Smoother':
       - 'About Motion Velocity Smoother': planning/motion_velocity_smoother
       - 'About Motion Velocity Smoother (Japanese)': planning/motion_velocity_smoother/README.ja

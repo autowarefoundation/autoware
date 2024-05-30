@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for the Motion Velocity Planner",
+  "type": "object",
+  "definitions": {
+    "motion_velocity_planner": {
+      "type": "object",
+      "properties": {
+        "smooth_velocity_before_planning": {
+          "type": "boolean",
+          "default": true,
+          "description": "if true, smooth the velocity profile of the input trajectory before planning"
+        }
+      },
+      "required": ["smooth_velocity_before_planning"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/motion_velocity_planner"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- common -->
+  <arg name="common_param_path"/>
+  <arg name="vehicle_param_file"/>
+  <arg name="nearest_search_param_path"/>
+
+  <!-- launch module -->
+  <arg name="motion_velocity_planner_launch_modules"/>
+
+  <!-- module config path -->
+  <arg name="motion_velocity_config_path"/>
+  <arg name="motion_velocity_planner_param_path"/>
+  <arg name="motion_velocity_planner_out_of_lane_module_param_path"/>
+  <!-- <arg name="motion_velocity_planner_template_module_param_path"/> -->
+  <arg name="motion_velocity_planner_param_file" default="$(find-pkg-share autoware_motion_velocity_planner_node)/config/motion_velocity_planner.param.yaml"/>
+
+  <node pkg="autoware_motion_velocity_planner_node" exec="motion_velocity_planner_node_exe" name="motion_velocity_planner" output="screen">
+    <!-- topic remap -->
+    <remap from="~/input/trajectory" to="trajectory"/>
+    <remap from="~/input/vector_map" to="/map/vector_map"/>
+    <remap from="~/input/vehicle_odometry" to="/localization/kinematic_state"/>
+    <remap from="~/input/accel" to="/localization/acceleration"/>
+    <remap from="~/input/dynamic_objects" to="/perception/object_recognition/objects"/>
+    <remap from="~/input/no_ground_pointcloud" to="/perception/obstacle_segmentation/pointcloud"/>
+    <remap from="~/input/traffic_signals" to="/perception/traffic_light_recognition/traffic_signals"/>
+    <remap from="~/input/virtual_traffic_light_states" to="/perception/virtual_traffic_light_states"/>
+    <remap from="~/input/occupancy_grid" to="/perception/occupancy_grid_map/map"/>
+    <remap from="~/output/trajectory" to="trajectory"/>
+    <!-- params -->
+    <param name="launch_modules" value="$(var motion_velocity_planner_launch_modules)"/>
+    <!-- load config -->
+    <param from="$(var common_param_path)"/>
+    <param from="$(var vehicle_param_file)"/>
+    <param from="$(var nearest_search_param_path)"/>
+    <param from="$(var motion_velocity_planner_param_path)"/>
+    <param from="$(var motion_velocity_planner_out_of_lane_module_param_path)"/>
+    <!-- <param from="$(var motion_velocity_planner_template_param_path)"/> -->
+
+    <param from="$(var motion_velocity_planner_param_file)"/>
+  </node>
+</launch>

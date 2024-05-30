@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>autoware_motion_velocity_out_of_lane_module</name>
+  <version>0.1.0</version>
+  <description>The motion_velocity_out_of_lane_module package</description>
+
+  <maintainer email="maxime.clement@tier4.jp">Maxime Clement</maintainer>
+  <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
+  <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>
+  <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_motion_velocity_planner_common</depend>
+  <depend>geometry_msgs</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>libboost-dev</depend>
+  <depend>motion_utils</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>route_handler</depend>
+  <depend>tf2</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>tier4_planning_msgs</depend>
+  <depend>traffic_light_utils</depend>
+  <depend>vehicle_info_util</depend>
+  <depend>visualization_msgs</depend>
+
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

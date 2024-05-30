@@ -2,6 +2,24 @@
   <arg name="interface_input_topic" default="/planning/scenario_planning/lane_driving/behavior_planning/path"/>
   <arg name="interface_output_topic" default="/planning/scenario_planning/lane_driving/trajectory"/>
 
+  <arg name="launch_motion_out_of_lane_module" default="true"/>
+  <arg name="launch_dynamic_obstacle_stop_module" default="true"/>
+  <arg name="launch_module_list_end" default="&quot;&quot;]"/>
+
+  <!-- assemble launch config for motion velocity planner -->
+  <arg name="motion_velocity_planner_launch_modules" default="["/>
+  <let
+    name="motion_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var motion_velocity_planner_launch_modules)' + 'autoware::motion_velocity_planner::OutOfLaneModule, '&quot;)"
+    if="$(var launch_motion_out_of_lane_module)"
+  />
+  <let
+    name="motion_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var motion_velocity_planner_launch_modules)' + 'motion_velocity_planner::DynamicObstacleStopModule, '&quot;)"
+    if="$(var launch_dynamic_obstacle_stop_module)"
+  />
+  <let name="motion_velocity_planner_launch_modules" value="$(eval &quot;'$(var motion_velocity_planner_launch_modules)' + '$(var launch_module_list_end)'&quot;)"/>
+
   <node_container pkg="rclcpp_components" exec="$(var container_type)" name="motion_planning_container" namespace="" args="" output="screen">
     <composable_node pkg="glog_component" plugin="GlogComponent" name="glog_component" namespace=""/>
   </node_container>
@@ -91,12 +109,44 @@
     </group>
   </group>
 
-  <!-- velocity limiter -->
+  <!-- plan slowdown or stops on the final trajectory -->
+  <group>
+    <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
+      <composable_node pkg="autoware_motion_velocity_planner_node" plugin="autoware::motion_velocity_planner::MotionVelocityPlannerNode" name="motion_velocity_planner" namespace="">
+        <!-- topic remap -->
+        <remap from="~/input/trajectory" to="obstacle_avoidance_planner/trajectory"/>
+        <remap from="~/input/vector_map" to="/map/vector_map"/>
+        <remap from="~/input/vehicle_odometry" to="/localization/kinematic_state"/>
+        <remap from="~/input/accel" to="/localization/acceleration"/>
+        <remap from="~/input/dynamic_objects" to="/perception/object_recognition/objects"/>
+        <remap from="~/input/no_ground_pointcloud" to="/perception/obstacle_segmentation/pointcloud"/>
+        <remap from="~/input/traffic_signals" to="/perception/traffic_light_recognition/traffic_signals"/>
+        <remap from="~/input/virtual_traffic_light_states" to="/perception/virtual_traffic_light_states"/>
+        <remap from="~/input/occupancy_grid" to="/perception/occupancy_grid_map/map"/>
+        <remap from="~/output/trajectory" to="motion_velocity_planner/trajectory"/>
+        <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons"/>
+        <remap from="~/output/velocity_factors" to="/planning/velocity_factors/motion_velocity_planner"/>
+        <!-- params -->
+        <param name="launch_modules" value="$(var motion_velocity_planner_launch_modules)"/>
+        <param from="$(var common_param_path)"/>
+        <param from="$(var vehicle_param_file)"/>
+        <param from="$(var nearest_search_param_path)"/>
+        <param from="$(var motion_velocity_smoother_param_path)"/>
+        <param from="$(var motion_velocity_smoother_type_param_path)"/>
+        <param from="$(var motion_velocity_planner_param_path)"/>
+        <param from="$(var motion_velocity_planner_out_of_lane_module_param_path)"/>
+        <!-- <param from="$(var motion_velocity_planner_template_param_path)"/> -->
+        <!-- composable node config -->
+        <extra_arg name="use_intra_process_comms" value="false"/>
+      </composable_node>
+    </load_composable_node>
+  </group>
+  <!-- velocity limiter TODO(Maxime): move this node to the motion_velocity_planner -->
   <group>
     <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
       <composable_node pkg="obstacle_velocity_limiter" plugin="obstacle_velocity_limiter::ObstacleVelocityLimiterNode" name="obstacle_velocity_limiter" namespace="">
         <!-- topic remap -->
-        <remap from="~/input/trajectory" to="obstacle_avoidance_planner/trajectory"/>
+        <remap from="~/input/trajectory" to="motion_velocity_planner/trajectory"/>
         <remap from="~/input/odometry" to="/localization/kinematic_state"/>
         <remap from="~/input/dynamic_obstacles" to="/perception/object_recognition/objects"/>
         <remap from="~/input/occupancy_grid" to="/perception/occupancy_grid_map/map"/>

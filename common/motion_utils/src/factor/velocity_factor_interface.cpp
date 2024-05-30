@@ -15,12 +15,16 @@
 #include <motion_utils/factor/velocity_factor_interface.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 
+#include <autoware_auto_planning_msgs/msg/path_point.hpp>
+#include <autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp>
+#include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
+
 namespace motion_utils
 {
+template <class PointType>
 void VelocityFactorInterface::set(
-  const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
-  const Pose & curr_pose, const Pose & stop_pose, const VelocityFactorStatus status,
-  const std::string & detail)
+  const std::vector<PointType> & points, const Pose & curr_pose, const Pose & stop_pose,
+  const VelocityFactorStatus status, const std::string & detail)
 {
   const auto & curr_point = curr_pose.position;
   const auto & stop_point = stop_pose.position;
@@ -31,5 +35,15 @@ void VelocityFactorInterface::set(
   velocity_factor_.status = status;
   velocity_factor_.detail = detail;
 }
+
+template void VelocityFactorInterface::set<autoware_auto_planning_msgs::msg::PathPointWithLaneId>(
+  const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> &, const Pose &,
+  const Pose &, const VelocityFactorStatus, const std::string &);
+template void VelocityFactorInterface::set<autoware_auto_planning_msgs::msg::PathPoint>(
+  const std::vector<autoware_auto_planning_msgs::msg::PathPoint> &, const Pose &, const Pose &,
+  const VelocityFactorStatus, const std::string &);
+template void VelocityFactorInterface::set<autoware_auto_planning_msgs::msg::TrajectoryPoint>(
+  const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> &, const Pose &,
+  const Pose &, const VelocityFactorStatus, const std::string &);
 
 }  // namespace motion_utils

@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>autoware_motion_velocity_planner_node</name>
+  <version>0.1.0</version>
+  <description>Node of the motion_velocity_planner</description>
+
+  <maintainer email="maxime.clement@tier4.jp">Maxime Clement</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <author email="maxime.clement@tier4.jp">Maxime Clement</author>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+  <buildtool_depend>eigen3_cmake_module</buildtool_depend>
+
+  <build_depend>rosidl_default_generators</build_depend>
+
+  <depend>autoware_auto_mapping_msgs</depend>
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_motion_velocity_planner_common</depend>
+  <depend>diagnostic_msgs</depend>
+  <depend>eigen</depend>
+  <depend>geometry_msgs</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>libboost-dev</depend>
+  <depend>motion_utils</depend>
+  <depend>motion_velocity_smoother</depend>
+  <depend>pcl_conversions</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>tier4_planning_msgs</depend>
+  <depend>visualization_msgs</depend>
+
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+  <test_depend>autoware_motion_velocity_out_of_lane_module</test_depend>
+  <test_depend>autoware_planning_test_manager</test_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
