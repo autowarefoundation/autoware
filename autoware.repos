@@ -3,100 +3,100 @@ repositories:
   core/autoware_msgs:
     type: git
     url: git@github.com:Futu-reADS/autoware_msgs.git
-    version: main
+    version: main  # OK
   core/autoware_adapi_msgs:
     type: git
     url: git@github.com:Futu-reADS/autoware_adapi_msgs.git
-    version: main
+    version: main  # OK
   core/autoware_internal_msgs:
     type: git
     url: git@github.com:Futu-reADS/autoware_internal_msgs.git
-    version: main
+    version: main  # OK
   core/autoware_common:
     type: git
     url: git@github.com:Futu-reADS/autoware_common.git
-    version: main
+    version: main  # OK
   core/autoware.core:
     type: git
     url: git@github.com:Futu-reADS/autoware.core.git
-    version: main
+    version: main  # OK
   core/external/autoware_auto_msgs: # TODO(mfc): Remove when autoware_msgs is merged
     type: git
     url: git@github.com:Futu-reADS/autoware_auto_msgs.git
-    version: tier4/main
+    version: tier4/main  #  OK
   # universe
   universe/autoware.universe:
     type: git
     url: git@github.com:Futu-reADS/autoware.universe.git
-    version: main_ftd
+    version: dev/ftd/china_test_3 # OK  # main_ftd
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
     url: git@github.com:Futu-reADS/tier4_ad_api_adaptor.git
-    version: tier4/universe
+    version: tier4/universe  # OK
   universe/external/tier4_autoware_msgs:
     type: git
     url: git@github.com:Futu-reADS/tier4_autoware_msgs.git
-    version: tier4/universe
+    version: tier4/universe  # OK 
   universe/external/morai_msgs:
     type: git
     url: git@github.com:Futu-reADS/MORAI-ROS2_morai_msgs.git
-    version: main
+    version: main    # OK
   universe/external/muSSP:
     type: git
     url: git@github.com:Futu-reADS/muSSP.git
-    version: tier4/main
+    version: tier4/main    # OK
   universe/external/ndt_omp:
     type: git
     url: git@github.com:Futu-reADS/ndt_omp.git
-    version: tier4/main
+    version: tier4/main    # OK
   universe/external/pointcloud_to_laserscan:
     type: git
     url: git@github.com:Futu-reADS/pointcloud_to_laserscan.git
-    version: tier4/main
+    version: tier4/main    # OK
   universe/external/eagleye:
     type: git
     url: git@github.com:Futu-reADS/eagleye.git
-    version: autoware-main
+    version: autoware-main    # OK
   universe/external/rtklib_ros_bridge:
     type: git
     url: git@github.com:Futu-reADS/rtklib_ros_bridge.git
-    version: ros2-v0.1.0
+    version: ros2-v0.1.0    # OK
   universe/external/llh_converter:
     type: git
     url: git@github.com:Futu-reADS/llh_converter.git
-    version: ros2
+    version: ros2    # OK
   universe/external/ament_cmake: # TODO(mitsudome-r): remove when https://github.com/ament/ament_cmake/pull/448 is merged
     type: git
     url: https://github.com/autowarefoundation/ament_cmake.git
-    version: feat/faster_ament_libraries_deduplicate
+    version: feat/faster_ament_libraries_deduplicate    # OK
   # launcher
   launcher/autoware_launch:
     type: git
     url: git@github.com:Futu-reADS/autoware_launch.FTD.git
-    version: main_ftd
+    version: dev/ftd/china_test_3     # OK # main_ftd
   # sensor_component
   sensor_component/external/sensor_component_description:
     type: git
     url: git@github.com:Futu-reADS/sensor_component_description.git
-    version: main
+    version: main    # OK
   sensor_component/external/nebula:
     type: git
     url: git@github.com:Futu-reADS/nebula.git
-    version: main
+    version: main    # OK
   sensor_component/external/transport_drivers:
     type: git
     url: git@github.com:Futu-reADS/transport_drivers.git
-    version: boost
+    version: boost    # OK
   # sensor_kit
   sensor_kit/ftd_sensor_kit_launch: 
     type: git
     url: git@github.com:Futu-reADS/ftd_sensor_kit_launch.git
-    version: awsim_main
+    version: dev/china_test_3    # OK # awsim_main
   # vehicle
   vehicle/ftd_vehicle_launch:
     type: git
     url: git@github.com:Futu-reADS/ftd_vehicle_launch.git
-    version: awsim_main
+    version: dev/china_test_3  # OK # awsim_main
 #  vehicle/external/pacmod_interface:
 #    type: git
 #    url: git@github.com:Futu-reADS/pacmod_interface.git
@@ -105,34 +105,34 @@ repositories:
   param/autoware_individual_params:
     type: git
     url: git@github.com:Futu-reADS/autoware_individual_params.git
-    version: ftd
+    version: dev/ftd/china_test_3    # OK # ftd
   # futu-re
   future_packages/ft_maps:
     type: git
     url: git@github.com:Futu-reADS/ft_maps.git
-    version: awsim_nishishinjuku
+    version: dev/ftd/china_test_3    # OK # awsim_nishishinjuku
   sensor_component/external/hesai:
     type: git
     url: git@github.com:Futu-reADS/HesaiLidar_ROS_2.0.git
-    version: hesai_future
+    version: hesai_future    # OK
   future_packages/ifb_driver_package:
     type: git
     url: git@github.com:Futu-reADS/ifb_driver_package.git
-    version: okinawa_testbed
+    version: dev/deli1/china_test_3  # OK # okinawa_testbed
   future_packages/master_planner:
     type: git
     url: git@github.com:Futu-reADS/master_planner.git
-    version: dev/ftd_ui_integration
+    version: dev/ftd/china_test_3    # OK # dev/ftd_ui_integration
   # UI
   future_packages/user_interface/ftd_ui_frontend:
     type: git
     url: git@github.com:Futu-reADS/ftd_ui_frontend.git
-    version: main
+    version: dev/china_test_3  # OK  # main
   future_packages/user_interface/ftd_bridge_backend:
     type: git
     url: git@github.com:Futu-reADS/ftd_bridge_backend.git
-    version: main
+    version: dev/china_test_3  # OK  # main
   future_packages/run_autoware_script:
     type: git
     url: git@github.com:Futu-reADS/run_autoware_script.git
-    version: china_test_3_ftd
+    version: china_test_3_ftd    # OK
