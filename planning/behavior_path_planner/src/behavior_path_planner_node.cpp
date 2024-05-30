@@ -260,6 +260,8 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.turn_signal_search_time = declare_parameter<double>("turn_signal_search_time");
   p.turn_signal_shift_length_threshold =
     declare_parameter<double>("turn_signal_shift_length_threshold");
+  p.turn_signal_remaining_shift_length_threshold =
+    declare_parameter<double>("turn_signal_remaining_shift_length_threshold");
   p.turn_signal_on_swerving = declare_parameter<bool>("turn_signal_on_swerving");
 
   p.enable_akima_spline_first = declare_parameter<bool>("enable_akima_spline_first");

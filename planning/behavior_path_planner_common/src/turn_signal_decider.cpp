@@ -615,7 +615,6 @@ std::pair<TurnSignalInfo, bool> TurnSignalDecider::getBehaviorTurnSignalInfo(
   const double current_shift_length, const bool is_driving_forward, const bool egos_lane_is_shifted,
   const bool override_ego_stopped_check, const bool is_pull_out) const
 {
-  constexpr double THRESHOLD = 0.1;
   const auto & p = parameters;
   const auto & rh = route_handler;
   const auto & ego_pose = self_odometry->pose.pose;
@@ -674,7 +673,9 @@ std::pair<TurnSignalInfo, bool> TurnSignalDecider::getBehaviorTurnSignalInfo(
   }
 
   // If the vehicle does not shift anymore, we turn off the blinker
-  if (std::fabs(end_shift_length - current_shift_length) < THRESHOLD) {
+  if (
+    std::fabs(end_shift_length - current_shift_length) <
+    p.turn_signal_remaining_shift_length_threshold) {
     return std::make_pair(TurnSignalInfo{}, true);
   }
 

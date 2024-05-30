@@ -20,14 +20,15 @@ Currently, this algorithm can sometimes give unnatural (not wrong) blinkers in c
 
 ## Parameters for turn signal decider
 
-| Name                                            | Unit | Type   | Description                                                                  | Default value |
-| :---------------------------------------------- | :--- | :----- | :--------------------------------------------------------------------------- | :------------ |
-| turn_signal_intersection_search_distance        | [m]  | double | constant search distance to decide activation of blinkers at intersections   | 30            |
-| turn_signal_intersection_angle_threshold_degree | deg  | double | angle threshold to determined the end point of intersection required section | 15            |
-| turn_signal_minimum_search_distance             | [m]  | double | minimum search distance for avoidance and lane change                        | 10            |
-| turn_signal_search_time                         | [s]  | double | search time for to decide activation of blinkers                             | 3.0           |
-| turn_signal_shift_length_threshold              | [m]  | double | shift length threshold to decide activation of blinkers                      | 0.3           |
-| turn_signal_on_swerving                         | [-]  | bool   | flag to activate blinkers when swerving                                      | true          |
+| Name                                            | Unit | Type   | Description                                                                                                                     | Default value |
+| :---------------------------------------------- | :--- | :----- | :------------------------------------------------------------------------------------------------------------------------------ | :------------ |
+| turn_signal_intersection_search_distance        | [m]  | double | constant search distance to decide activation of blinkers at intersections                                                      | 30            |
+| turn_signal_intersection_angle_threshold_degree | deg  | double | angle threshold to determined the end point of intersection required section                                                    | 15            |
+| turn_signal_minimum_search_distance             | [m]  | double | minimum search distance for avoidance and lane change                                                                           | 10            |
+| turn_signal_search_time                         | [s]  | double | search time for to decide activation of blinkers                                                                                | 3.0           |
+| turn_signal_shift_length_threshold              | [m]  | double | shift length threshold to decide activation of blinkers                                                                         | 0.3           |
+| turn_signal_remaining_shift_length_threshold    | [m]  | double | When the ego's current shift length minus its end shift length is less than this threshold, the turn signal will be turned off. | 0.1           |
+| turn_signal_on_swerving                         | [-]  | bool   | flag to activate blinkers when swerving                                                                                         | true          |
 
 Note that the default values for `turn_signal_intersection_search_distance` and `turn_signal_search_time` is strictly followed by [Japanese Road Traffic Laws](https://www.japaneselawtranslation.go.jp/ja/laws/view/2962). So if your country does not allow to use these default values, you should change these values in configuration files.
 
