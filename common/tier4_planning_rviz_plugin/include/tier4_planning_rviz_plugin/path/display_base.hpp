@@ -316,6 +316,9 @@ protected:
         node->detachAllObjects();
         node->removeAndDestroyAllChildren();
         this->scene_manager_->destroySceneNode(node);
+
+        rviz_rendering::MovableText * text = velocity_texts_.at(i);
+        delete text;
       }
       velocity_texts_.resize(msg_ptr->points.size());
       velocity_text_nodes_.resize(msg_ptr->points.size());
@@ -339,6 +342,9 @@ protected:
         node->detachAllObjects();
         node->removeAndDestroyAllChildren();
         this->scene_manager_->destroySceneNode(node);
+
+        rviz_rendering::MovableText * text = slope_texts_.at(i);
+        delete text;
       }
       slope_texts_.resize(msg_ptr->points.size());
       slope_text_nodes_.resize(msg_ptr->points.size());
