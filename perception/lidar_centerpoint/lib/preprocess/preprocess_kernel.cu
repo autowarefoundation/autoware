@@ -78,6 +78,11 @@ cudaError_t generateVoxels_random_launch(
 {
   dim3 blocks((points_size + 256 - 1) / 256);
   dim3 threads(256);
+
+  if (blocks.x == 0) {
+    return cudaGetLastError();
+  }
+
   generateVoxels_random_kernel<<<blocks, threads, 0, stream>>>(
     points, points_size, min_x_range, max_x_range, min_y_range, max_y_range, min_z_range,
     max_z_range, pillar_x_size, pillar_y_size, pillar_z_size, grid_y_size, grid_x_size, mask,
