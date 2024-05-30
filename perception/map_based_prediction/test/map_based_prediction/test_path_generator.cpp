@@ -52,19 +52,17 @@ TEST(PathGenerator, test_generatePathForNonVehicleObject)
 {
   // Generate Path generator
   const double prediction_time_horizon = 10.0;
-  const double lateral_control_time_horizon = 5.0;
   const double prediction_sampling_time_interval = 0.5;
   const double min_crosswalk_user_velocity = 0.1;
   const map_based_prediction::PathGenerator path_generator = map_based_prediction::PathGenerator(
-    prediction_time_horizon, lateral_control_time_horizon, prediction_sampling_time_interval,
-    min_crosswalk_user_velocity);
+    prediction_sampling_time_interval, min_crosswalk_user_velocity);
 
   // Generate pedestrian object
   TrackedObject tracked_object = generate_static_object(ObjectClassification::PEDESTRIAN);
 
   // Generate predicted path
   const PredictedPath predicted_path =
-    path_generator.generatePathForNonVehicleObject(tracked_object);
+    path_generator.generatePathForNonVehicleObject(tracked_object, prediction_time_horizon);
 
   // Check
   EXPECT_FALSE(predicted_path.path.empty());
@@ -77,19 +75,17 @@ TEST(PathGenerator, test_generatePathForLowSpeedVehicle)
 {
   // Generate Path generator
   const double prediction_time_horizon = 10.0;
-  const double lateral_control_time_horizon = 5.0;
   const double prediction_sampling_time_interval = 0.5;
   const double min_crosswalk_user_velocity = 0.1;
   const map_based_prediction::PathGenerator path_generator = map_based_prediction::PathGenerator(
-    prediction_time_horizon, lateral_control_time_horizon, prediction_sampling_time_interval,
-    min_crosswalk_user_velocity);
+    prediction_sampling_time_interval, min_crosswalk_user_velocity);
 
   // Generate dummy object
   TrackedObject tracked_object = generate_static_object(ObjectClassification::CAR);
 
   // Generate predicted path
   const PredictedPath predicted_path =
-    path_generator.generatePathForLowSpeedVehicle(tracked_object);
+    path_generator.generatePathForLowSpeedVehicle(tracked_object, prediction_time_horizon);
 
   // Check
   EXPECT_FALSE(predicted_path.path.empty());
@@ -102,17 +98,16 @@ TEST(PathGenerator, test_generatePathForOffLaneVehicle)
 {
   // Generate Path generator
   const double prediction_time_horizon = 10.0;
-  const double lateral_control_time_horizon = 5.0;
   const double prediction_sampling_time_interval = 0.5;
   const double min_crosswalk_user_velocity = 0.1;
   const map_based_prediction::PathGenerator path_generator = map_based_prediction::PathGenerator(
-    prediction_time_horizon, lateral_control_time_horizon, prediction_sampling_time_interval,
-    min_crosswalk_user_velocity);
+    prediction_sampling_time_interval, min_crosswalk_user_velocity);
 
   // Generate dummy object
   TrackedObject tracked_object = generate_static_object(ObjectClassification::CAR);
 
-  const PredictedPath predicted_path = path_generator.generatePathForOffLaneVehicle(tracked_object);
+  const PredictedPath predicted_path =
+    path_generator.generatePathForOffLaneVehicle(tracked_object, prediction_time_horizon);
 
   // Check
   EXPECT_FALSE(predicted_path.path.empty());
@@ -129,8 +124,7 @@ TEST(PathGenerator, test_generatePathForOnLaneVehicle)
   const double prediction_sampling_time_interval = 0.5;
   const double min_crosswalk_user_velocity = 0.1;
   const map_based_prediction::PathGenerator path_generator = map_based_prediction::PathGenerator(
-    prediction_time_horizon, lateral_control_time_horizon, prediction_sampling_time_interval,
-    min_crosswalk_user_velocity);
+    prediction_sampling_time_interval, min_crosswalk_user_velocity);
 
   // Generate dummy object
   TrackedObject tracked_object = generate_static_object(ObjectClassification::CAR);
@@ -144,8 +138,8 @@ TEST(PathGenerator, test_generatePathForOnLaneVehicle)
   ref_paths.push_back(pose);
 
   // Generate predicted path
-  const PredictedPath predicted_path =
-    path_generator.generatePathForOnLaneVehicle(tracked_object, ref_paths);
+  const PredictedPath predicted_path = path_generator.generatePathForOnLaneVehicle(
+    tracked_object, ref_paths, prediction_time_horizon, lateral_control_time_horizon);
 
   // Check
   EXPECT_FALSE(predicted_path.path.empty());
@@ -158,12 +152,10 @@ TEST(PathGenerator, test_generatePathForCrosswalkUser)
 {
   // Generate Path generator
   const double prediction_time_horizon = 10.0;
-  const double lateral_control_time_horizon = 5.0;
   const double prediction_sampling_time_interval = 0.5;
   const double min_crosswalk_user_velocity = 0.1;
   const map_based_prediction::PathGenerator path_generator = map_based_prediction::PathGenerator(
-    prediction_time_horizon, lateral_control_time_horizon, prediction_sampling_time_interval,
-    min_crosswalk_user_velocity);
+    prediction_sampling_time_interval, min_crosswalk_user_velocity);
 
   // Generate dummy object
   TrackedObject tracked_object = generate_static_object(ObjectClassification::PEDESTRIAN);
@@ -178,8 +170,8 @@ TEST(PathGenerator, test_generatePathForCrosswalkUser)
   reachable_crosswalk.back_left_point << -1.0, 1.0;
 
   // Generate predicted path
-  const PredictedPath predicted_path =
-    path_generator.generatePathForCrosswalkUser(tracked_object, reachable_crosswalk);
+  const PredictedPath predicted_path = path_generator.generatePathForCrosswalkUser(
+    tracked_object, reachable_crosswalk, prediction_time_horizon);
 
   // Check
   EXPECT_FALSE(predicted_path.path.empty());
@@ -191,13 +183,10 @@ TEST(PathGenerator, test_generatePathForCrosswalkUser)
 TEST(PathGenerator, test_generatePathToTargetPoint)
 {
   // Generate Path generator
-  const double prediction_time_horizon = 10.0;
-  const double lateral_control_time_horizon = 5.0;
   const double prediction_sampling_time_interval = 0.5;
   const double min_crosswalk_user_velocity = 0.1;
   const map_based_prediction::PathGenerator path_generator = map_based_prediction::PathGenerator(
-    prediction_time_horizon, lateral_control_time_horizon, prediction_sampling_time_interval,
-    min_crosswalk_user_velocity);
+    prediction_sampling_time_interval, min_crosswalk_user_velocity);
 
   // Generate dummy object
   TrackedObject tracked_object = generate_static_object(ObjectClassification::CAR);
