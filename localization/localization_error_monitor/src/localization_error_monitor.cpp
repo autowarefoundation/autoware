@@ -129,7 +129,7 @@ void LocalizationErrorMonitor::onOdom(nav_msgs::msg::Odometry::ConstSharedPtr in
   diag_merged_status.hardware_id = this->get_name();
 
   diagnostic_msgs::msg::DiagnosticArray diag_msg;
-  diag_msg.header.stamp = this->now();
+  diag_msg.header.stamp = input_msg->header.stamp;
   diag_msg.status.push_back(diag_merged_status);
   diag_pub_->publish(diag_msg);
 }
