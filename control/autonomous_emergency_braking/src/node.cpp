@@ -301,10 +301,13 @@ bool AEB::fetchLatestData()
   }
 
   const auto imu_ptr = sub_imu_.takeData();
-  if (use_imu_path_ && !imu_ptr) {
-    return missing("imu message");
+  if (use_imu_path_) {
+    if (!imu_ptr) {
+      return missing("imu message");
+    }
+    // imu_ptr is valid
+    onImu(imu_ptr);
   }
-  onImu(imu_ptr);
   if (use_imu_path_ && !angular_velocity_ptr_) {
     return missing("imu");
   }
