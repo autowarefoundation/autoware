@@ -24,6 +24,7 @@
   <depend>lanelet2_extension</depend>
   <depend>localization_util</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>

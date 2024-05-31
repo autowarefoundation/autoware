@@ -65,7 +65,7 @@
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
 ArTagBasedLocalizer::ArTagBasedLocalizer(const rclcpp::NodeOptions & options)
-: Node("ar_tag_based_localizer", options), cam_info_received_(false)
+: rclcpp::Node("ar_tag_based_localizer", options), cam_info_received_(false)
 {
   /*
     Declare node parameters
@@ -346,3 +346,6 @@ std::vector<landmark_manager::Landmark> ArTagBasedLocalizer::detect_landmarks(
 
   return landmarks;
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(ArTagBasedLocalizer)
