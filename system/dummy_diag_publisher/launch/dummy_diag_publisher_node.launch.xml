@@ -4,7 +4,7 @@
   <arg name="update_rate" default="10.0"/>
 
   <group>
-    <node pkg="dummy_diag_publisher" exec="dummy_diag_publisher" name="dummy_diag_publisher" output="screen">
+    <node pkg="dummy_diag_publisher" exec="dummy_diag_publisher_node" name="dummy_diag_publisher" output="screen">
       <param from="$(var config_file)"/>
       <param from="$(var extra_config_file_sensor)"/>
       <param name="update_rate" value="$(var update_rate)"/>

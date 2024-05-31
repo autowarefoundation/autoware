@@ -245,12 +245,14 @@ void DummyDiagPublisher::onTimer()
   updater_.force_update();
 }
 
-DummyDiagPublisher::DummyDiagPublisher()
-: Node(
-    "dummy_diag_publisher", rclcpp::NodeOptions()
-                              .allow_undeclared_parameters(true)
-                              .automatically_declare_parameters_from_overrides(true)),
-  updater_(this)
+rclcpp::NodeOptions override_options(rclcpp::NodeOptions options)
+{
+  return options.allow_undeclared_parameters(true).automatically_declare_parameters_from_overrides(
+    true);
+}
+
+DummyDiagPublisher::DummyDiagPublisher(const rclcpp::NodeOptions & options)
+: Node("dummy_diag_publisher", override_options(options)), updater_(this)
 
 {
   // Parameter
@@ -277,3 +279,6 @@ DummyDiagPublisher::DummyDiagPublisher()
   timer_ = rclcpp::create_timer(
     this, get_clock(), period_ns, std::bind(&DummyDiagPublisher::onTimer, this));
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(DummyDiagPublisher)
