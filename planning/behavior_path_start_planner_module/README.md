@@ -494,14 +494,15 @@ See also [[1]](https://www.sciencedirect.com/science/article/pii/S14746670153474
 
 #### parameters for geometric pull out
 
-| Name                        | Unit  | Type   | Description                                                                                                                                               | Default value |
-| :-------------------------- | :---- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| enable_geometric_pull_out   | [-]   | bool   | flag whether to enable geometric pull out                                                                                                                 | true          |
-| divide_pull_out_path        | [-]   | bool   | flag whether to divide arc paths. The path is assumed to be divided because the curvature is not continuous. But it requires a stop during the departure. | false         |
-| geometric_pull_out_velocity | [m/s] | double | velocity of geometric pull out                                                                                                                            | 1.0           |
-| arc_path_interval           | [m]   | double | path points interval of arc paths of geometric pull out                                                                                                   | 1.0           |
-| lane_departure_margin       | [m]   | double | margin of deviation to lane right                                                                                                                         | 0.2           |
-| pull_out_max_steer_angle    | [rad] | double | maximum steer angle for path generation                                                                                                                   | 0.26          |
+| Name                                  | Unit  | Type   | Description                                                                                                                                               | Default value |
+| :------------------------------------ | :---- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| enable_geometric_pull_out             | [-]   | bool   | flag whether to enable geometric pull out                                                                                                                 | true          |
+| divide_pull_out_path                  | [-]   | bool   | flag whether to divide arc paths. The path is assumed to be divided because the curvature is not continuous. But it requires a stop during the departure. | false         |
+| geometric_pull_out_velocity           | [m/s] | double | velocity of geometric pull out                                                                                                                            | 1.0           |
+| arc_path_interval                     | [m]   | double | path points interval of arc paths of geometric pull out                                                                                                   | 1.0           |
+| lane_departure_margin                 | [m]   | double | margin of deviation to lane right                                                                                                                         | 0.2           |
+| lane_departure_check_expansion_margin | [m]   | double | margin to expand the ego vehicle footprint when doing lane departure checks                                                                               | 0.0           |
+| pull_out_max_steer_angle              | [rad] | double | maximum steer angle for path generation                                                                                                                   | 0.26          |
 
 ## **backward pull out start point search**
 

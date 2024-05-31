@@ -150,6 +150,7 @@ LaneDepartureCheckerNode::LaneDepartureCheckerNode(const rclcpp::NodeOptions & o
 
   // Core Parameter
   param_.footprint_margin_scale = declare_parameter<double>("footprint_margin_scale");
+  param_.footprint_extra_margin = declare_parameter<double>("footprint_extra_margin");
   param_.resample_interval = declare_parameter<double>("resample_interval");
   param_.max_deceleration = declare_parameter<double>("max_deceleration");
   param_.delay_time = declare_parameter<double>("delay_time");
@@ -403,6 +404,7 @@ rcl_interfaces::msg::SetParametersResult LaneDepartureCheckerNode::onParameter(
 
     // Core
     update_param(parameters, "footprint_margin_scale", param_.footprint_margin_scale);
+    update_param(parameters, "footprint_extra_margin", param_.footprint_extra_margin);
     update_param(parameters, "resample_interval", param_.resample_interval);
     update_param(parameters, "max_deceleration", param_.max_deceleration);
     update_param(parameters, "delay_time", param_.delay_time);

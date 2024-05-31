@@ -65,6 +65,11 @@ StartPlannerModule::StartPlannerModule(
 {
   lane_departure_checker_ = std::make_shared<LaneDepartureChecker>();
   lane_departure_checker_->setVehicleInfo(vehicle_info_);
+  lane_departure_checker::Param lane_departure_checker_params;
+  lane_departure_checker_params.footprint_extra_margin =
+    parameters->lane_departure_check_expansion_margin;
+
+  lane_departure_checker_->setParam(lane_departure_checker_params);
 
   // set enabled planner
   if (parameters_->enable_shift_pull_out) {

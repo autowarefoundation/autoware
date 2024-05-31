@@ -93,6 +93,7 @@ This package includes the following features:
 | Name                       | Type   | Description                                                                        | Default value |
 | :------------------------- | :----- | :--------------------------------------------------------------------------------- | :------------ |
 | footprint_margin_scale     | double | Coefficient for expanding footprint margin. Multiplied by 1 standard deviation.    | 1.0           |
+| footprint_extra_margin     | double | Coefficient for expanding footprint margin. When checking for lane departure       | 0.0           |
 | resample_interval          | double | Minimum Euclidean distance between points when resample trajectory.[m]             | 0.3           |
 | max_deceleration           | double | Maximum deceleration when calculating braking distance.                            | 2.8           |
 | delay_time                 | double | Delay time which took to actuate brake when calculating braking distance. [second] | 1.3           |

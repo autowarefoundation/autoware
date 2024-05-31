@@ -17,6 +17,7 @@
 
     # Core
     footprint_margin_scale: 1.0
+    footprint_extra_margin: 0.0
     resample_interval: 0.3
     max_deceleration: 2.8
     delay_time: 1.3

@@ -11,6 +11,11 @@
           "default": 1.0,
           "description": "Coefficient for expanding footprint margin. Multiplied by 1 standard deviation."
         },
+        "footprint_extra_margin": {
+          "type": "number",
+          "default": 10.0,
+          "description": "Coefficient for expanding footprint margin."
+        },
         "resample_interval": {
           "type": "number",
           "default": 0.3,
@@ -53,6 +58,7 @@
       },
       "required": [
         "footprint_margin_scale",
+        "footprint_extra_margin",
         "resample_interval",
         "max_deceleration",
         "max_lateral_deviation",

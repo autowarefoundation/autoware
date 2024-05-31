@@ -60,6 +60,7 @@ typedef boost::geometry::index::rtree<Segment2d, boost::geometry::index::rstar<1
 struct Param
 {
   double footprint_margin_scale;
+  double footprint_extra_margin;
   double resample_interval;
   double max_deceleration;
   double delay_time;
