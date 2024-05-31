@@ -85,15 +85,16 @@ void DiagnosticsModule::updateLevelAndMessage(const int8_t level, const std::str
   }
 }
 
-void DiagnosticsModule::publish()
+void DiagnosticsModule::publish(const rclcpp::Time & publish_time_stamp)
 {
-  diagnostics_pub_->publish(createDiagnosticsArray());
+  diagnostics_pub_->publish(createDiagnosticsArray(publish_time_stamp));
 }
 
-diagnostic_msgs::msg::DiagnosticArray DiagnosticsModule::createDiagnosticsArray() const
+diagnostic_msgs::msg::DiagnosticArray DiagnosticsModule::createDiagnosticsArray(
+  const rclcpp::Time & publish_time_stamp) const
 {
   diagnostic_msgs::msg::DiagnosticArray diagnostics_msg;
-  diagnostics_msg.header.stamp = clock_->now();
+  diagnostics_msg.header.stamp = publish_time_stamp;
   diagnostics_msg.status.push_back(diagnostics_status_msg_);
 
   if (diagnostics_msg.status.at(0).level == diagnostic_msgs::msg::DiagnosticStatus::OK) {

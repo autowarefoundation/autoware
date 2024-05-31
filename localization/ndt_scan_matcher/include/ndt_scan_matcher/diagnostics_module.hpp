@@ -31,10 +31,11 @@ public:
   template <typename T>
   void addKeyValue(const std::string & key, const T & value);
   void updateLevelAndMessage(const int8_t level, const std::string & message);
-  void publish();
+  void publish(const rclcpp::Time & publish_time_stamp);
 
 private:
-  diagnostic_msgs::msg::DiagnosticArray createDiagnosticsArray() const;
+  diagnostic_msgs::msg::DiagnosticArray createDiagnosticsArray(
+    const rclcpp::Time & publish_time_stamp) const;
 
   rclcpp::Clock::SharedPtr clock_;
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostics_pub_;

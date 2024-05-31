@@ -52,8 +52,6 @@ void MapUpdateModule::callback_timer(
   const bool is_activated, const std::optional<geometry_msgs::msg::Point> & position,
   std::unique_ptr<DiagnosticsModule> & diagnostics_ptr)
 {
-  diagnostics_ptr->addKeyValue("timer_callback_time_stamp", clock_->now().nanoseconds());
-
   // check is_activated
   diagnostics_ptr->addKeyValue("is_activated", is_activated);
   if (!is_activated) {
