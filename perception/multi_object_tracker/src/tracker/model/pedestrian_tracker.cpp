@@ -66,19 +66,23 @@ PedestrianTracker::PedestrianTracker(
 
   // OBJECT SHAPE MODEL
   bounding_box_ = {0.5, 0.5, 1.7};
-  cylinder_ = {0.3, 1.7};
+  cylinder_ = {0.5, 1.7};
   if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
     bounding_box_ = {
       object.shape.dimensions.x, object.shape.dimensions.y, object.shape.dimensions.z};
   } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
     cylinder_ = {object.shape.dimensions.x, object.shape.dimensions.z};
+  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
+    // do not update polygon shape
   }
-  // set minimum size
-  bounding_box_.length = std::max(bounding_box_.length, 0.3);
-  bounding_box_.width = std::max(bounding_box_.width, 0.3);
-  bounding_box_.height = std::max(bounding_box_.height, 0.3);
-  cylinder_.width = std::max(cylinder_.width, 0.3);
-  cylinder_.height = std::max(cylinder_.height, 0.3);
+  // set maximum and minimum size
+  constexpr double max_size = 5.0;
+  constexpr double min_size = 0.3;
+  bounding_box_.length = std::min(std::max(bounding_box_.length, min_size), max_size);
+  bounding_box_.width = std::min(std::max(bounding_box_.width, min_size), max_size);
+  bounding_box_.height = std::min(std::max(bounding_box_.height, min_size), max_size);
+  cylinder_.width = std::min(std::max(cylinder_.width, min_size), max_size);
+  cylinder_.height = std::min(std::max(cylinder_.height, min_size), max_size);
 
   // Set motion model parameters
   {
@@ -209,22 +213,46 @@ bool PedestrianTracker::measureWithShape(
   constexpr double gain_inv = 1.0 - gain;
 
   if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+    // check bound box size abnormality
+    constexpr double size_max = 30.0;  // [m]
+    constexpr double size_min = 0.1;   // [m]
+    if (
+      object.shape.dimensions.x > size_max || object.shape.dimensions.y > size_max ||
+      object.shape.dimensions.z > size_max) {
+      return false;
+    } else if (
+      object.shape.dimensions.x < size_min || object.shape.dimensions.y < size_min ||
+      object.shape.dimensions.z < size_min) {
+      return false;
+    }
+    // update bounding box size
     bounding_box_.length = gain_inv * bounding_box_.length + gain * object.shape.dimensions.x;
     bounding_box_.width = gain_inv * bounding_box_.width + gain * object.shape.dimensions.y;
     bounding_box_.height = gain_inv * bounding_box_.height + gain * object.shape.dimensions.z;
   } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+    // check cylinder size abnormality
+    constexpr double size_max = 30.0;  // [m]
+    constexpr double size_min = 0.1;   // [m]
+    if (object.shape.dimensions.x > size_max || object.shape.dimensions.z > size_max) {
+      return false;
+    } else if (object.shape.dimensions.x < size_min || object.shape.dimensions.z < size_min) {
+      return false;
+    }
     cylinder_.width = gain_inv * cylinder_.width + gain * object.shape.dimensions.x;
     cylinder_.height = gain_inv * cylinder_.height + gain * object.shape.dimensions.z;
   } else {
+    // do not update polygon shape
     return false;
   }
 
-  // set minimum size
-  bounding_box_.length = std::max(bounding_box_.length, 0.3);
-  bounding_box_.width = std::max(bounding_box_.width, 0.3);
-  bounding_box_.height = std::max(bounding_box_.height, 0.3);
-  cylinder_.width = std::max(cylinder_.width, 0.3);
-  cylinder_.height = std::max(cylinder_.height, 0.3);
+  // set maximum and minimum size
+  constexpr double max_size = 5.0;
+  constexpr double min_size = 0.3;
+  bounding_box_.length = std::min(std::max(bounding_box_.length, min_size), max_size);
+  bounding_box_.width = std::min(std::max(bounding_box_.width, min_size), max_size);
+  bounding_box_.height = std::min(std::max(bounding_box_.height, min_size), max_size);
+  cylinder_.width = std::min(std::max(cylinder_.width, min_size), max_size);
+  cylinder_.height = std::min(std::max(cylinder_.height, min_size), max_size);
 
   return true;
 }

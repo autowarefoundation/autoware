@@ -79,16 +79,24 @@ BigVehicleTracker::BigVehicleTracker(
     last_input_bounding_box_ = bounding_box_;
   } else {
     autoware_auto_perception_msgs::msg::DetectedObject bbox_object;
-    utils::convertConvexHullToBoundingBox(object, bbox_object);
-    bounding_box_ = {
-      bbox_object.shape.dimensions.x, bbox_object.shape.dimensions.y,
-      bbox_object.shape.dimensions.z};
+    if (!utils::convertConvexHullToBoundingBox(object, bbox_object)) {
+      RCLCPP_WARN(
+        logger_,
+        "BigVehicleTracker::BigVehicleTracker: Failed to convert convex hull to bounding box.");
+      bounding_box_ = {6.0, 2.0, 2.0};  // default value
+    } else {
+      bounding_box_ = {
+        bbox_object.shape.dimensions.x, bbox_object.shape.dimensions.y,
+        bbox_object.shape.dimensions.z};
+    }
     last_input_bounding_box_ = bounding_box_;
   }
-  // set minimum size
-  bounding_box_.length = std::max(bounding_box_.length, 0.3);
-  bounding_box_.width = std::max(bounding_box_.width, 0.3);
-  bounding_box_.height = std::max(bounding_box_.height, 0.3);
+  // set maximum and minimum size
+  constexpr double max_size = 30.0;
+  constexpr double min_size = 1.0;
+  bounding_box_.length = std::min(std::max(bounding_box_.length, min_size), max_size);
+  bounding_box_.width = std::min(std::max(bounding_box_.width, min_size), max_size);
+  bounding_box_.height = std::min(std::max(bounding_box_.height, min_size), max_size);
 
   // Set motion model parameters
   {
@@ -195,7 +203,12 @@ autoware_auto_perception_msgs::msg::DetectedObject BigVehicleTracker::getUpdatin
   // convert to bounding box if input is convex shape
   autoware_auto_perception_msgs::msg::DetectedObject bbox_object;
   if (object.shape.type != autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
-    utils::convertConvexHullToBoundingBox(object, bbox_object);
+    if (!utils::convertConvexHullToBoundingBox(object, bbox_object)) {
+      RCLCPP_WARN(
+        logger_,
+        "BigVehicleTracker::getUpdatingObject: Failed to convert convex hull to bounding box.");
+      bbox_object = object;
+    }
   } else {
     bbox_object = object;
   }
@@ -306,6 +319,20 @@ bool BigVehicleTracker::measureWithPose(
 bool BigVehicleTracker::measureWithShape(
   const autoware_auto_perception_msgs::msg::DetectedObject & object)
 {
+  if (!object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+    // do not update shape if the input is not a bounding box
+    return false;
+  }
+
+  // check object size abnormality
+  constexpr double size_max = 40.0;  // [m]
+  constexpr double size_min = 1.0;   // [m]
+  if (object.shape.dimensions.x > size_max || object.shape.dimensions.y > size_max) {
+    return false;
+  } else if (object.shape.dimensions.x < size_min || object.shape.dimensions.y < size_min) {
+    return false;
+  }
+
   constexpr double gain = 0.1;
   constexpr double gain_inv = 1.0 - gain;
 
@@ -315,10 +342,13 @@ bool BigVehicleTracker::measureWithShape(
   bounding_box_.height = gain_inv * bounding_box_.height + gain * object.shape.dimensions.z;
   last_input_bounding_box_ = {
     object.shape.dimensions.x, object.shape.dimensions.y, object.shape.dimensions.z};
-  // set minimum size
-  bounding_box_.length = std::max(bounding_box_.length, 0.3);
-  bounding_box_.width = std::max(bounding_box_.width, 0.3);
-  bounding_box_.height = std::max(bounding_box_.height, 0.3);
+
+  // set maximum and minimum size
+  constexpr double max_size = 30.0;
+  constexpr double min_size = 1.0;
+  bounding_box_.length = std::min(std::max(bounding_box_.length, min_size), max_size);
+  bounding_box_.width = std::min(std::max(bounding_box_.width, min_size), max_size);
+  bounding_box_.height = std::min(std::max(bounding_box_.height, min_size), max_size);
 
   // update motion model
   motion_model_.updateExtendedState(bounding_box_.length);
