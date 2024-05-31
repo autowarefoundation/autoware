@@ -7,7 +7,7 @@
   <arg name="output_topic_gnss_pose_cov" default="gnss_pose_cov"/>
   <arg name="output_topic_gnss_fixed" default="gnss_fixed"/>
 
-  <node pkg="gnss_poser" exec="gnss_poser" name="gnss_poser" output="screen">
+  <node pkg="gnss_poser" exec="gnss_poser" name="gnss_poser" output="both">
     <remap from="fix" to="$(var input_topic_fix)"/>
     <remap from="autoware_orientation" to="$(var input_topic_orientation)"/>
     <remap from="gnss_pose" to="$(var output_topic_gnss_pose)"/>
