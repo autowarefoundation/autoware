@@ -101,7 +101,7 @@ set_variables() {
         exit 1
     fi
 
-    # Mount data path if provided
+    # Mount data path
     DATA="-v ${DATA_PATH}:/autoware_data:ro"
 
     # Mount map path if provided
