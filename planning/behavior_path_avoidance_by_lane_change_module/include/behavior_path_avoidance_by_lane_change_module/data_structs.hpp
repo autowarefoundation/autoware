@@ -14,7 +14,7 @@
 #ifndef BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__DATA_STRUCTS_HPP_
 #define BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__DATA_STRUCTS_HPP_
 
-#include "behavior_path_avoidance_module/data_structs.hpp"
+#include "autoware_behavior_path_static_obstacle_avoidance_module/data_structs.hpp"
 
 namespace behavior_path_planner
 {

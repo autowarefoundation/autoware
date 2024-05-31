@@ -7,9 +7,9 @@
   <arg name="enable_all_modules_auto_mode"/>
   <arg name="is_simulation"/>
 
-  <arg name="launch_avoidance_module" default="true"/>
+  <arg name="launch_static_obstacle_avoidance" default="true"/>
   <arg name="launch_avoidance_by_lane_change_module" default="true"/>
-  <arg name="launch_dynamic_avoidance_module" default="true"/>
+  <arg name="launch_dynamic_obstacle_avoidance" default="true"/>
   <arg name="launch_lane_change_right_module" default="true"/>
   <arg name="launch_lane_change_left_module" default="true"/>
   <arg name="launch_external_request_lane_change_right_module" default="true"/>
@@ -42,13 +42,13 @@
   <arg name="behavior_path_planner_launch_modules" default="["/>
   <let
     name="behavior_path_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::AvoidanceModuleManager, '&quot;)"
-    if="$(var launch_avoidance_module)"
+    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::StaticObstacleAvoidanceModuleManager, '&quot;)"
+    if="$(var launch_static_obstacle_avoidance)"
   />
   <let
     name="behavior_path_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::DynamicAvoidanceModuleManager, '&quot;)"
-    if="$(var launch_dynamic_avoidance_module)"
+    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::DynamicObstacleAvoidanceModuleManager, '&quot;)"
+    if="$(var launch_dynamic_obstacle_avoidance)"
   />
   <let
     name="behavior_path_planner_launch_modules"
@@ -206,9 +206,9 @@
       <param name="enable_all_modules_auto_mode" value="$(var enable_all_modules_auto_mode)"/>
       <param name="is_simulation" value="$(var is_simulation)"/>
       <param from="$(var behavior_path_planner_side_shift_module_param_path)"/>
-      <param from="$(var behavior_path_planner_avoidance_module_param_path)"/>
+      <param from="$(var behavior_path_planner_static_obstacle_avoidance_module_param_path)"/>
       <param from="$(var behavior_path_planner_avoidance_by_lc_module_param_path)"/>
-      <param from="$(var behavior_path_planner_dynamic_avoidance_module_param_path)"/>
+      <param from="$(var behavior_path_planner_dynamic_obstacle_avoidance_module_param_path)"/>
       <param from="$(var behavior_path_planner_lane_change_module_param_path)"/>
       <param from="$(var behavior_path_planner_goal_planner_module_param_path)"/>
       <param from="$(var behavior_path_planner_start_planner_module_param_path)"/>

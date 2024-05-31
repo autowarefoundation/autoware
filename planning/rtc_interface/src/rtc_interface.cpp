@@ -62,9 +62,9 @@ Module getModuleType(const std::string & module_name)
     module.type = Module::AVOIDANCE_BY_LC_LEFT;
   } else if (module_name == "avoidance_by_lane_change_right") {
     module.type = Module::AVOIDANCE_BY_LC_RIGHT;
-  } else if (module_name == "avoidance_left") {
+  } else if (module_name == "static_obstacle_avoidance_left") {
     module.type = Module::AVOIDANCE_LEFT;
-  } else if (module_name == "avoidance_right") {
+  } else if (module_name == "static_obstacle_avoidance_right") {
     module.type = Module::AVOIDANCE_RIGHT;
   } else if (module_name == "goal_planner") {
     module.type = Module::GOAL_PLANNER;

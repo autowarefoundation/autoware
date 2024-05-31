@@ -21,7 +21,7 @@
 namespace behavior_path_planner
 {
 // Forward Declaration
-class AvoidanceModule;
+class StaticObstacleAvoidanceModule;
 class AvoidanceByLCModule;
 class ExternalRequestLaneChangeModule;
 class LaneChangeInterface;
@@ -35,7 +35,7 @@ using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 class SceneModuleVisitor
 {
 public:
-  void visitAvoidanceModule(const AvoidanceModule * module) const;
+  void visitAvoidanceModule(const StaticObstacleAvoidanceModule * module) const;
 
   std::shared_ptr<AvoidanceDebugMsgArray> getAvoidanceModuleDebugMsg() const;
 

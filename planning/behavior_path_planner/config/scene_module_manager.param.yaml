@@ -59,7 +59,7 @@
       priority: 1
       max_module_size: 1
 
-    avoidance:
+    static_obstacle_avoidance:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: true
       enable_simultaneous_execution_as_candidate_module: false
@@ -75,7 +75,7 @@
       priority: 3
       max_module_size: 1
 
-    dynamic_avoidance:
+    dynamic_obstacle_avoidance:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: true
       enable_simultaneous_execution_as_candidate_module: true

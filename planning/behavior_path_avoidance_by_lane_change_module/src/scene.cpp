@@ -14,13 +14,13 @@
 
 #include "behavior_path_avoidance_by_lane_change_module/scene.hpp"
 
-#include "behavior_path_avoidance_module/utils.hpp"
+#include "autoware_behavior_path_static_obstacle_avoidance_module/utils.hpp"
 #include "behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner_common/utils/path_utils.hpp"
 #include "behavior_path_planner_common/utils/utils.hpp"
 
-#include <behavior_path_avoidance_module/data_structs.hpp>
+#include <autoware_behavior_path_static_obstacle_avoidance_module/data_structs.hpp>
 #include <behavior_path_lane_change_module/utils/utils.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/logging.hpp>
@@ -103,13 +103,14 @@ void AvoidanceByLaneChange::updateSpecialData()
   if (avoidance_data_.target_objects.empty()) {
     direction_ = Direction::NONE;
   } else {
-    direction_ = utils::avoidance::isOnRight(avoidance_data_.target_objects.front())
+    direction_ = utils::static_obstacle_avoidance::isOnRight(avoidance_data_.target_objects.front())
                    ? Direction::LEFT
                    : Direction::RIGHT;
   }
 
-  utils::avoidance::updateRegisteredObject(registered_objects_, avoidance_data_.target_objects, p);
-  utils::avoidance::compensateDetectionLost(
+  utils::static_obstacle_avoidance::updateRegisteredObject(
+    registered_objects_, avoidance_data_.target_objects, p);
+  utils::static_obstacle_avoidance::compensateDetectionLost(
     registered_objects_, avoidance_data_.target_objects, avoidance_data_.other_objects);
 
   std::sort(
@@ -222,28 +223,29 @@ std::optional<ObjectData> AvoidanceByLaneChange::createObjectData(
   object_data.distance_factor = object_parameter.max_expand_ratio * clamp + 1.0;
 
   // Calc envelop polygon.
-  utils::avoidance::fillObjectEnvelopePolygon(
+  utils::static_obstacle_avoidance::fillObjectEnvelopePolygon(
     object_data, registered_objects_, object_closest_pose, p);
 
   // calc object centroid.
   object_data.centroid = return_centroid<Point2d>(object_data.envelope_poly);
 
   // Calc moving time.
-  utils::avoidance::fillObjectMovingTime(object_data, stopped_objects_, p);
+  utils::static_obstacle_avoidance::fillObjectMovingTime(object_data, stopped_objects_, p);
 
   object_data.direction = calcLateralDeviation(object_closest_pose, object_pose.position) > 0.0
                             ? Direction::LEFT
                             : Direction::RIGHT;
 
   // Find the footprint point closest to the path, set to object_data.overhang_distance.
-  object_data.overhang_points =
-    utils::avoidance::calcEnvelopeOverhangDistance(object_data, data.reference_path);
+  object_data.overhang_points = utils::static_obstacle_avoidance::calcEnvelopeOverhangDistance(
+    object_data, data.reference_path);
 
   // Check whether the the ego should avoid the object.
   const auto & vehicle_width = planner_data_->parameters.vehicle_width;
-  utils::avoidance::fillAvoidanceNecessity(object_data, registered_objects_, vehicle_width, p);
+  utils::static_obstacle_avoidance::fillAvoidanceNecessity(
+    object_data, registered_objects_, vehicle_width, p);
 
-  utils::avoidance::fillLongitudinalAndLengthByClosestEnvelopeFootprint(
+  utils::static_obstacle_avoidance::fillLongitudinalAndLengthByClosestEnvelopeFootprint(
     data.reference_path_rough, getEgoPosition(), object_data);
   return object_data;
 }
@@ -262,7 +264,7 @@ double AvoidanceByLaneChange::calcMinAvoidanceLength(const ObjectData & nearest_
 
   avoidance_helper_->setData(planner_data_);
   const auto shift_length = avoidance_helper_->getShiftLength(
-    nearest_object, utils::avoidance::isOnRight(nearest_object), avoid_margin);
+    nearest_object, utils::static_obstacle_avoidance::isOnRight(nearest_object), avoid_margin);
 
   return avoidance_helper_->getMinAvoidanceDistance(shift_length);
 }

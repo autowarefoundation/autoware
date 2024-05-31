@@ -1,16 +1,14 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>behavior_path_avoidance_by_lane_change_module</name>
+  <name>autoware_behavior_path_dynamic_obstacle_avoidance_module</name>
   <version>0.1.0</version>
-  <description>The behavior_path_avoidance_by_lane_change_module package</description>
+  <description>The autoware_behavior_path_dynamic_obstacle_avoidance_module package</description>
 
+  <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
+  <maintainer email="yuki.takagi@tier4.jp">Yuki Takagi</maintainer>
   <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
-  <maintainer email="zulfaqar.azmi@tier4.jp">Zulfaqar Azmi</maintainer>
-  <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
-  <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
-  <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>
-  <maintainer email="tomohito.ando@tier4.jp">Tomohito Ando</maintainer>
+  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
 
   <license>Apache License 2.0</license>
 
@@ -18,17 +16,20 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
-  <depend>autoware_behavior_path_static_obstacle_avoidance_module</depend>
-  <depend>behavior_path_lane_change_module</depend>
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_auto_vehicle_msgs</depend>
   <depend>behavior_path_planner</depend>
   <depend>behavior_path_planner_common</depend>
+  <depend>geometry_msgs</depend>
+  <depend>lanelet2_core</depend>
   <depend>lanelet2_extension</depend>
   <depend>motion_utils</depend>
+  <depend>object_recognition_utils</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
-  <depend>rtc_interface</depend>
+  <depend>signal_processing</depend>
   <depend>tier4_autoware_utils</depend>
-  <depend>tier4_planning_msgs</depend>
   <depend>visualization_msgs</depend>
 
   <test_depend>ament_cmake_ros</test_depend>
