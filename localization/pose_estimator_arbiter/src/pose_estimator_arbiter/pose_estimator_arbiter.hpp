@@ -47,7 +47,7 @@ class PoseEstimatorArbiter : public rclcpp::Node
   using DiagnosticArray = diagnostic_msgs::msg::DiagnosticArray;
 
 public:
-  PoseEstimatorArbiter();
+  explicit PoseEstimatorArbiter(const rclcpp::NodeOptions & options);
 
 private:
   // Set of running pose estimators specified by ros param `pose_sources`

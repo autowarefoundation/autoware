@@ -42,8 +42,8 @@ static std::unordered_set<PoseEstimatorType> parse_estimator_name_args(
   return running_estimator_list;
 }
 
-PoseEstimatorArbiter::PoseEstimatorArbiter()
-: Node("pose_estimator_arbiter"),
+PoseEstimatorArbiter::PoseEstimatorArbiter(const rclcpp::NodeOptions & options)
+: rclcpp::Node("pose_estimator_arbiter", options),
   running_estimator_list_(parse_estimator_name_args(
     declare_parameter<std::vector<std::string>>("pose_sources"), get_logger())),
   logger_configure_(std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this))
@@ -211,3 +211,6 @@ void PoseEstimatorArbiter::on_timer()
 }
 
 }  // namespace pose_estimator_arbiter
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(pose_estimator_arbiter::PoseEstimatorArbiter)

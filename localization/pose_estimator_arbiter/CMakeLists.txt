@@ -4,29 +4,23 @@ project(pose_estimator_arbiter)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-find_package(glog REQUIRED)
-
 find_package(PCL REQUIRED COMPONENTS common)
 include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
 
 # ==============================
-# switch rule library
-ament_auto_add_library(switch_rule
-  SHARED
+# pose estimator arbiter node
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/pose_estimator_arbiter/pose_estimator_arbiter_core.cpp
   src/pose_estimator_arbiter/switch_rule/enable_all_rule.cpp
 )
-target_include_directories(switch_rule PUBLIC src)
-
-# ==============================
-# pose estimator arbiter node
-ament_auto_add_executable(${PROJECT_NAME}
-  src/pose_estimator_arbiter/pose_estimator_arbiter_core.cpp
-  src/pose_estimator_arbiter/pose_estimator_arbiter_node.cpp
-)
 target_include_directories(${PROJECT_NAME} PUBLIC src)
-target_link_libraries(${PROJECT_NAME} switch_rule glog::glog)
 
-# ==============================
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "pose_estimator_arbiter::PoseEstimatorArbiter"
+  EXECUTABLE ${PROJECT_NAME}_node
+  EXECUTOR MultiThreadedExecutor
+)
+
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
@@ -53,6 +47,7 @@ endif()
 add_subdirectory(example_rule)
 
 # ==============================
-ament_auto_package(INSTALL_TO_SHARE
+ament_auto_package(
+  INSTALL_TO_SHARE
   launch
 )

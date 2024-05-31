@@ -3,7 +3,7 @@
   <arg name="pose_sources" description=""/>
   <arg name="input_pointcloud" description=""/>
 
-  <node pkg="pose_estimator_arbiter" exec="pose_estimator_arbiter" name="pose_estimator_arbiter" output="screen">
+  <node pkg="pose_estimator_arbiter" exec="pose_estimator_arbiter_node" output="both">
     <param name="pose_sources" value="$(var pose_sources)"/>
 
     <!-- ndt -->
