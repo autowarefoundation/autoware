@@ -28,7 +28,7 @@ namespace diagnostic_graph_utils
 class ConverterNode : public rclcpp::Node
 {
 public:
-  ConverterNode();
+  explicit ConverterNode(const rclcpp::NodeOptions & options);
 
 private:
   using DiagnosticArray = diagnostic_msgs::msg::DiagnosticArray;

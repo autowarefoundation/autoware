@@ -28,7 +28,7 @@ namespace diagnostic_graph_utils
 class DumpNode : public rclcpp::Node
 {
 public:
-  DumpNode();
+  explicit DumpNode(const rclcpp::NodeOptions & options);
 
 private:
   void on_create(DiagGraph::ConstSharedPtr graph);

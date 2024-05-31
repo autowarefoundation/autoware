@@ -24,7 +24,7 @@
 namespace diagnostic_graph_utils
 {
 
-DumpNode::DumpNode() : Node("dump")
+DumpNode::DumpNode(const rclcpp::NodeOptions & options) : Node("dump", options)
 {
   using std::placeholders::_1;
   sub_graph_.register_create_callback(std::bind(&DumpNode::on_create, this, _1));
@@ -132,14 +132,5 @@ void DumpNode::on_update(DiagGraph::ConstSharedPtr graph)
 
 }  // namespace diagnostic_graph_utils
 
-int main(int argc, char ** argv)
-{
-  using diagnostic_graph_utils::DumpNode;
-  rclcpp::init(argc, argv);
-  rclcpp::executors::SingleThreadedExecutor executor;
-  auto node = std::make_shared<DumpNode>();
-  executor.add_node(node);
-  executor.spin();
-  executor.remove_node(node);
-  rclcpp::shutdown();
-}
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(diagnostic_graph_utils::DumpNode)

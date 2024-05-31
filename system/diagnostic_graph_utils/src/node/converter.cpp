@@ -19,7 +19,7 @@
 namespace diagnostic_graph_utils
 {
 
-ConverterNode::ConverterNode() : Node("converter")
+ConverterNode::ConverterNode(const rclcpp::NodeOptions & options) : Node("converter", options)
 {
   using std::placeholders::_1;
   pub_array_ = create_publisher<DiagnosticArray>("/diagnostics_array", rclcpp::QoS(1));
@@ -40,14 +40,5 @@ void ConverterNode::on_update(DiagGraph::ConstSharedPtr graph)
 
 }  // namespace diagnostic_graph_utils
 
-int main(int argc, char ** argv)
-{
-  using diagnostic_graph_utils::ConverterNode;
-  rclcpp::init(argc, argv);
-  rclcpp::executors::SingleThreadedExecutor executor;
-  auto node = std::make_shared<ConverterNode>();
-  executor.add_node(node);
-  executor.spin();
-  executor.remove_node(node);
-  rclcpp::shutdown();
-}
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(diagnostic_graph_utils::ConverterNode)

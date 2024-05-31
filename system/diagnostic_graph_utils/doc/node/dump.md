@@ -5,7 +5,7 @@ This tool displays `/diagnostics_graph` in table format.
 ## Usage
 
 ```bash
-ros2 run diagnostic_graph_utils dump
+ros2 run diagnostic_graph_utils dump_node
 ```
 
 ## Examples
@@ -19,7 +19,7 @@ ros2 launch diagnostic_graph_aggregator example-main.launch.xml
 Terminal 2:
 
 ```bash
-ros2 run diagnostic_graph_utils dump
+ros2 run diagnostic_graph_utils dump_node
 ```
 
 Output:

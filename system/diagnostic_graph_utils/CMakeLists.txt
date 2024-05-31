@@ -9,12 +9,19 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/lib/subscription.cpp
 )
 
-ament_auto_add_executable(dump
+ament_auto_add_library(${PROJECT_NAME}_tools SHARED
   src/node/dump.cpp
+  src/node/converter.cpp
 )
 
-ament_auto_add_executable(converter
-  src/node/converter.cpp
+rclcpp_components_register_node(${PROJECT_NAME}_tools
+  PLUGIN "diagnostic_graph_utils::DumpNode"
+  EXECUTABLE dump_node
+)
+
+rclcpp_components_register_node(${PROJECT_NAME}_tools
+  PLUGIN "diagnostic_graph_utils::ConverterNode"
+  EXECUTABLE converter_node
 )
 
 ament_auto_package()

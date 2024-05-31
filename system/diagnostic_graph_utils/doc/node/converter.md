@@ -5,7 +5,7 @@ This tool converts `/diagnostics_graph` to `/diagnostics_array` so it can be rea
 ## Usage
 
 ```bash
-ros2 run diagnostic_graph_utils converter
+ros2 run diagnostic_graph_utils converter_node
 ```
 
 ## Examples
@@ -19,7 +19,7 @@ ros2 launch diagnostic_graph_aggregator example-main.launch.xml
 Terminal 2:
 
 ```bash
-ros2 run diagnostic_graph_utils converter
+ros2 run diagnostic_graph_utils converter_node
 ```
 
 Terminal 3:
