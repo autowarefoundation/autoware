@@ -3,7 +3,7 @@
   "title": "Parameters for Synchronization of RoI Fusion Nodes",
   "type": "object",
   "definitions": {
-    "roi_sync": {
+    "fusion_common": {
       "type": "object",
       "properties": {
         "input_offset_ms": {
@@ -74,7 +74,7 @@
       "type": "object",
       "properties": {
         "ros__parameters": {
-          "$ref": "#/definitions/roi_sync"
+          "$ref": "#/definitions/fusion_common"
         }
       },
       "required": ["ros__parameters"]

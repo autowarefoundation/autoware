@@ -19,7 +19,7 @@
   <arg name="input/clusters" default="clusters"/>
   <arg name="output/clusters" default="labeled_clusters"/>
   <arg name="param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_cluster_fusion.param.yaml"/>
-  <arg name="sync_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_sync.param.yaml"/>
+  <arg name="sync_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/fusion_common.param.yaml"/>
 
   <!-- debug -->
   <arg name="input/image0" default="/image_raw0"/>

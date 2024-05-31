@@ -21,7 +21,7 @@
   <arg name="output_clusters" default="output_clusters"/>
   <arg name="debug/clusters" default="roi_pointcloud_fusion/debug/clusters"/>
   <arg name="param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_pointcloud_fusion.param.yaml"/>
-  <arg name="sync_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_sync.param.yaml"/>
+  <arg name="sync_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/fusion_common.param.yaml"/>
 
   <!-- for eval variable-->
   <arg name="input_rois_number" default="$(var input/rois_number)"/>
