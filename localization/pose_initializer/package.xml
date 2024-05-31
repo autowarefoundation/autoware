@@ -25,6 +25,7 @@
   <depend>map_height_fitter</depend>
   <depend>motion_utils</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>std_srvs</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>tier4_localization_msgs</depend>

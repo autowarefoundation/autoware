@@ -4,8 +4,7 @@ project(pose_initializer)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-ament_auto_add_executable(pose_initializer_node
-  src/pose_initializer/pose_initializer_node.cpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
   src/pose_initializer/pose_initializer_core.cpp
   src/pose_initializer/gnss_module.cpp
   src/pose_initializer/ndt_module.cpp
@@ -13,6 +12,12 @@ ament_auto_add_executable(pose_initializer_node
   src/pose_initializer/stop_check_module.cpp
   src/pose_initializer/ekf_localization_trigger_module.cpp
   src/pose_initializer/ndt_localization_trigger_module.cpp
+)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "PoseInitializer"
+  EXECUTABLE ${PROJECT_NAME}_node
+  EXECUTOR MultiThreadedExecutor
 )
 
 if(BUILD_TESTING)
@@ -30,7 +35,8 @@ if(BUILD_TESTING)
   add_testcase(test/test_copy_vector_to_array.cpp)
 endif()
 
-ament_auto_package(INSTALL_TO_SHARE
+ament_auto_package(
+  INSTALL_TO_SHARE
   launch
   config
 )

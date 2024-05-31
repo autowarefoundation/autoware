@@ -9,7 +9,7 @@
   <arg name="sub_gnss_pose_cov" default="sub_gnss_pose_cov"/>
   <arg name="gnss_initial_pose_auto_fix_target" default="pointcloud_map"/>
 
-  <node pkg="pose_initializer" exec="pose_initializer_node" name="pose_initializer_node">
+  <node pkg="pose_initializer" exec="pose_initializer_node" output="both">
     <param from="$(var config_file)" allow_substs="true"/>
     <remap from="yabloc_align" to="/localization/pose_estimator/yabloc/initializer/yabloc_align_srv"/>
     <remap from="ndt_align" to="/localization/pose_estimator/ndt_align_srv"/>

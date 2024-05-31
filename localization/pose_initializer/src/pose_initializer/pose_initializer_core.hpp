@@ -34,7 +34,7 @@ class NdtLocalizationTriggerModule;
 class PoseInitializer : public rclcpp::Node
 {
 public:
-  PoseInitializer();
+  explicit PoseInitializer(const rclcpp::NodeOptions & options);
   ~PoseInitializer();
 
 private:
