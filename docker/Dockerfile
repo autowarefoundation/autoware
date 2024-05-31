@@ -101,7 +101,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 # Build Autoware
 COPY --from=src-imported /autoware/src /autoware/src
-RUN --mount=type=cache,target=/var/tmp/ccache source /opt/ros/"$ROS_DISTRO"/setup.bash \
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --cmake-args \
     " -Wno-dev" \
     " --no-warn-unused-cli" \
