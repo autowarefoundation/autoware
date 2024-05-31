@@ -23,7 +23,8 @@ using tier4_localization_msgs::srv::PoseWithCovarianceStamped;
 class MapHeightFitterNode : public rclcpp::Node
 {
 public:
-  MapHeightFitterNode() : Node("map_height_fitter"), fitter_(this)
+  explicit MapHeightFitterNode(const rclcpp::NodeOptions & options)
+  : rclcpp::Node("map_height_fitter", options), fitter_(this)
   {
     const auto on_service = [this](
                               const PoseWithCovarianceStamped::Request::SharedPtr req,
@@ -46,13 +47,5 @@ private:
   rclcpp::Service<PoseWithCovarianceStamped>::SharedPtr srv_;
 };
 
-int main(int argc, char ** argv)
-{
-  rclcpp::init(argc, argv);
-  rclcpp::executors::MultiThreadedExecutor executor;
-  auto node = std::make_shared<MapHeightFitterNode>();
-  executor.add_node(node);
-  executor.spin();
-  executor.remove_node(node);
-  rclcpp::shutdown();
-}
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(MapHeightFitterNode)

@@ -5,8 +5,9 @@ find_package(autoware_cmake REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common)
 autoware_package()
 
-ament_auto_add_library(map_height_fitter SHARED
+ament_auto_add_library(${PROJECT_NAME} SHARED
   src/map_height_fitter.cpp
+  src/map_height_fitter_node.cpp
 )
 target_link_libraries(map_height_fitter ${PCL_LIBRARIES})
 
@@ -14,11 +15,14 @@ target_link_libraries(map_height_fitter ${PCL_LIBRARIES})
 # These are treated as errors in compile, so pedantic warnings are disabled for this package.
 target_compile_options(map_height_fitter PRIVATE -Wno-pedantic)
 
-ament_auto_add_executable(node
-  src/node.cpp
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "MapHeightFitterNode"
+  EXECUTABLE ${PROJECT_NAME}_node
+  EXECUTOR MultiThreadedExecutor
 )
 
 ament_auto_package(
   INSTALL_TO_SHARE
   launch
-  config)
+  config
+)
