@@ -91,36 +91,66 @@ The `StartPlannerModule` is designed to initiate its execution based on specific
 
 ### **End Conditions**
 
-The `StartPlannerModule` terminates if the pull out / freespace maneuver has been completed. The `canTransitSuccessState` function assesses these conditions to decide if the module should terminate its execution.
+The `StartPlannerModule` terminates when specific conditions are met, depending on the type of planner being used. The `canTransitSuccessState` function determines whether the module should transition to the success state based on the following criteria:
+
+#### When the Freespace Planner is active
+
+- If the end point of the freespace path is reached, the module transitions to the success state.
+
+#### When any other type of planner is active
+
+The transition to the success state is determined by the following conditions:
+
+- If a reverse path is being generated or the search for a pull out path fails:
+  - The module does not transition to the success state.
+- If the end point of the pull out path's shift section is reached:
+  - The module transitions to the success state.
+
+The flowchart below illustrates the decision-making process in the `canTransitSuccessState` function:
 
 ```plantuml
 @startuml
+@startuml
+skinparam ActivityBackgroundColor #white
+skinparam ActivityBorderColor #black
+skinparam ActivityBorderThickness 1
+skinparam ActivityArrowColor #black
+skinparam ActivityArrowThickness 1
+skinparam ActivityStartColor #black
+skinparam ActivityEndColor #black
+skinparam ActivityDiamondBackgroundColor #white
+skinparam ActivityDiamondBorderColor #black
+skinparam ActivityDiamondFontColor #black
+partition canTransitSuccessState() {
 start
-:Start hasFinishedPullOut();
-
-if (status_.driving_forward && status_.found_pull_out_path) then (yes)
-
-  if (status_.planner_type == FREESPACE) then (yes)
-    :Calculate distance\nto pull_out_path.end_pose;
-    if (distance < th_arrived_distance) then (yes)
-      :return true;\n(Terminate module);
-    else (no)
-      :return false;\n(Continue running);
-    endif
-  else (no)
-    :Calculate arclength for\ncurrent_pose and pull_out_path.end_pose;
-    if (arclength_current - arclength_pull_out_end > offset) then (yes)
-      :return true;\n(Terminate module);
-    else (no)
-      :return false;\n(Continue running);
-    endif
-  endif
-
-else (no)
-  :return false;\n(Continue running);
-endif
-
+if (planner type is FREESPACE?) then (yes)
+if (Has reached freespace end?) then (yes)
+#FF006C:true;
 stop
+else (no)
+:false;
+stop
+endif
+else (no)
+if (driving is forward?) then (yes)
+if (pull out path is found?) then (yes)
+if (Has reached pull out end?) then (yes)
+#FF006C:true;
+stop
+else (no)
+:false;
+stop
+endif
+else (no)
+:false;
+stop
+endif
+else (no)
+:false;
+stop
+endif
+endif
+}
 @enduml
 ```
 
