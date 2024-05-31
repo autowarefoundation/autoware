@@ -646,8 +646,14 @@ std::vector<DrivableLanes> generateDrivableLanes(
 
 double getLateralShift(const LaneChangePath & path)
 {
-  const auto start_idx = path.info.shift_line.start_idx;
-  const auto end_idx = path.info.shift_line.end_idx;
+  if (path.shifted_path.shift_length.empty()) {
+    return 0.0;
+  }
+
+  const auto start_idx =
+    std::min(path.info.shift_line.start_idx, path.shifted_path.shift_length.size() - 1);
+  const auto end_idx =
+    std::min(path.info.shift_line.end_idx, path.shifted_path.shift_length.size() - 1);
 
   return path.shifted_path.shift_length.at(end_idx) - path.shifted_path.shift_length.at(start_idx);
 }

@@ -125,6 +125,18 @@ protected:
 
   ModuleStatus setInitState() const override { return ModuleStatus::WAITING_APPROVAL; };
 
+  void updateRTCStatus(
+    const double start_distance, const double finish_distance, const bool safe,
+    const uint8_t & state)
+  {
+    for (const auto & [module_name, ptr] : rtc_interface_ptr_map_) {
+      if (ptr) {
+        ptr->updateCooperateStatus(
+          uuid_map_.at(module_name), safe, state, start_distance, finish_distance, clock_->now());
+      }
+    }
+  }
+
   void updateDebugMarker() const;
 
   void updateSteeringFactorPtr(const BehaviorModuleOutput & output);
