@@ -20,7 +20,7 @@ pcl::PointCloud<pcl::PointNormal> extract_near_line_segments(
   const pcl::PointCloud<pcl::PointNormal> & line_segments, const Sophus::SE3f & transform,
   const float max_range)
 {
-  constexpr double sqrt_two = std::sqrt(2);
+  constexpr double sqrt_two = 1.41421356237309504880;
   const Eigen::Vector3f pose_vector = transform.translation();
 
   // All line segments contained in a square with max_range on one side must be taken out,
