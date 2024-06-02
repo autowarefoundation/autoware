@@ -22,6 +22,7 @@
 #include "path_smoother/type_alias.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
+#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
@@ -72,9 +73,6 @@ private:
   CommonParam common_param_{};
   EgoNearestParam ego_nearest_param_{};
 
-  // variables for subscribers
-  Odometry::ConstSharedPtr ego_state_ptr_;
-
   // variables for previous information
   std::shared_ptr<std::vector<TrajectoryPoint>> prev_optimized_traj_points_ptr_;
 
@@ -84,7 +82,7 @@ private:
 
   // interface subscriber
   rclcpp::Subscription<Path>::SharedPtr path_sub_;
-  rclcpp::Subscription<Odometry>::SharedPtr odom_sub_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> odom_sub_{this, "~/input/odometry"};
 
   // debug publisher
   rclcpp::Publisher<Trajectory>::SharedPtr debug_extended_traj_pub_;
@@ -104,7 +102,8 @@ private:
   void resetPreviousData();
 
   // main functions
-  bool isDataReady(const Path & path, rclcpp::Clock clock) const;
+  bool isDataReady(
+    const Path & path, const Odometry::ConstSharedPtr ego_state_ptr, rclcpp::Clock clock) const;
   void applyInputVelocity(
     std::vector<TrajectoryPoint> & output_traj_points,
     const std::vector<TrajectoryPoint> & input_traj_points,
