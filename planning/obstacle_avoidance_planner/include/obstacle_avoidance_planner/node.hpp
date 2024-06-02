@@ -22,6 +22,7 @@
 #include "obstacle_avoidance_planner/type_alias.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
+#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
@@ -83,16 +84,14 @@ protected:  // for the static_centerline_generator package
   TrajectoryParam traj_param_{};
   EgoNearestParam ego_nearest_param_{};
 
-  // variables for subscribers
-  Odometry::ConstSharedPtr ego_state_ptr_;
-
   // interface publisher
   rclcpp::Publisher<Trajectory>::SharedPtr traj_pub_;
   rclcpp::Publisher<MarkerArray>::SharedPtr virtual_wall_pub_;
 
   // interface subscriber
   rclcpp::Subscription<Path>::SharedPtr path_sub_;
-  rclcpp::Subscription<Odometry>::SharedPtr odom_sub_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> ego_odom_sub_{
+    this, "~/input/odometry"};
 
   // debug publisher
   rclcpp::Publisher<Trajectory>::SharedPtr debug_extended_traj_pub_;
@@ -113,8 +112,9 @@ protected:  // for the static_centerline_generator package
   void resetPreviousData();
 
   // main functions
-  bool isDataReady(const Path & path, rclcpp::Clock clock) const;
-  PlannerData createPlannerData(const Path & path) const;
+  bool checkInputPath(const Path & path, rclcpp::Clock clock) const;
+  PlannerData createPlannerData(
+    const Path & path, const Odometry::ConstSharedPtr ego_odom_ptr) const;
   std::vector<TrajectoryPoint> generateOptimizedTrajectory(const PlannerData & planner_data);
   std::vector<TrajectoryPoint> extendTrajectory(
     const std::vector<TrajectoryPoint> & traj_points,
