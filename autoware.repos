@@ -73,6 +73,10 @@ repositories:
     type: git
     url: https://github.com/tier4/glog.git
     version: v0.6.0_t4-ros
+  universe/external/autoware_auto_msgs_adapter: # TODO(mitsudome-r): Remove when transition period to autoware_msgs is over
+    type: git
+    url: https://github.com/autowarefoundation/autoware_auto_msgs_adapter.git
+    version: main
   # launcher
   launcher/autoware_launch:
     type: git
