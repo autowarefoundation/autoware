@@ -49,7 +49,7 @@
       - ros-{{ rosdistro }}-plotjuggler-ros
     state: latest
     update_cache: true
-  when: "'ros-' + rosdistro + '-' + plotjuggler-ros not in held_ros_packages.stdout"
+  when: "'ros-' + rosdistro + '-plotjuggler-ros' not in held_ros_packages.stdout"
   register: install_result
   failed_when: false
 
