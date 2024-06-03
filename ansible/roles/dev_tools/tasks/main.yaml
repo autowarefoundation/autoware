@@ -57,4 +57,3 @@
   ansible.builtin.debug:
     msg: ROS package 'ros-{{ rosdistro }}-plotjuggler-ros' is apt-mark hold. Skipping installation.
   when: not install_result.changed
-
