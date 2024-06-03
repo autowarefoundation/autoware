@@ -139,17 +139,9 @@ bool ObjectLaneletFilterNode::filterObject(
     bool filter_pass = true;
     // 1. is polygon overlap with road lanelets or shoulder lanelets
     if (filter_settings_.polygon_overlap_filter) {
-      Polygon2d polygon;
-      const auto footprint = setFootprint(transformed_object);
-      for (const auto & point : footprint.points) {
-        const geometry_msgs::msg::Point32 point_transformed = tier4_autoware_utils::transformPoint(
-          point, transformed_object.kinematics.pose_with_covariance.pose);
-        polygon.outer().emplace_back(point_transformed.x, point_transformed.y);
-      }
-      polygon.outer().push_back(polygon.outer().front());
       const bool is_polygon_overlap =
-        isPolygonOverlapLanelets(polygon, intersected_road_lanelets) ||
-        isPolygonOverlapLanelets(polygon, intersected_shoulder_lanelets);
+        isObjectOverlapLanelets(transformed_object, intersected_road_lanelets) ||
+        isObjectOverlapLanelets(transformed_object, intersected_shoulder_lanelets);
       filter_pass = filter_pass && is_polygon_overlap;
     }
 
@@ -232,6 +224,39 @@ lanelet::ConstLanelets ObjectLaneletFilterNode::getIntersectedLanelets(
     }
   }
   return intersected_lanelets;
+}
+
+bool ObjectLaneletFilterNode::isObjectOverlapLanelets(
+  const autoware_auto_perception_msgs::msg::DetectedObject & object,
+  const lanelet::ConstLanelets & intersected_lanelets)
+{
+  // if has bounding box, use polygon overlap
+  if (utils::hasBoundingBox(object)) {
+    Polygon2d polygon;
+    const auto footprint = setFootprint(object);
+    for (const auto & point : footprint.points) {
+      const geometry_msgs::msg::Point32 point_transformed =
+        tier4_autoware_utils::transformPoint(point, object.kinematics.pose_with_covariance.pose);
+      polygon.outer().emplace_back(point_transformed.x, point_transformed.y);
+    }
+    polygon.outer().push_back(polygon.outer().front());
+    return isPolygonOverlapLanelets(polygon, intersected_lanelets);
+  } else {
+    // if object do not have bounding box, check each footprint is inside polygon
+    for (const auto & point : object.shape.footprint.points) {
+      const geometry_msgs::msg::Point32 point_transformed =
+        tier4_autoware_utils::transformPoint(point, object.kinematics.pose_with_covariance.pose);
+      geometry_msgs::msg::Pose point2d;
+      point2d.position.x = point_transformed.x;
+      point2d.position.y = point_transformed.y;
+      for (const auto & lanelet : intersected_lanelets) {
+        if (lanelet::utils::isInLanelet(point2d, lanelet, 0.0)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }
 
 bool ObjectLaneletFilterNode::isPolygonOverlapLanelets(

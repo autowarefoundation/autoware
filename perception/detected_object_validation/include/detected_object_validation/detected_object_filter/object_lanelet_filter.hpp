@@ -80,6 +80,9 @@ private:
   LinearRing2d getConvexHull(const autoware_auto_perception_msgs::msg::DetectedObjects &);
   lanelet::ConstLanelets getIntersectedLanelets(
     const LinearRing2d &, const lanelet::ConstLanelets &);
+  bool isObjectOverlapLanelets(
+    const autoware_auto_perception_msgs::msg::DetectedObject & object,
+    const lanelet::ConstLanelets & intersected_lanelets);
   bool isPolygonOverlapLanelets(const Polygon2d &, const lanelet::ConstLanelets &);
   bool isSameDirectionWithLanelets(
     const lanelet::ConstLanelets & lanelets,

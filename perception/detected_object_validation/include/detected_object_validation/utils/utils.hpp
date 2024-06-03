@@ -15,8 +15,9 @@
 #ifndef DETECTED_OBJECT_VALIDATION__UTILS__UTILS_HPP_
 #define DETECTED_OBJECT_VALIDATION__UTILS__UTILS_HPP_
 
-#include <cstdint>
+#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
 
+#include <cstdint>
 namespace utils
 {
 struct FilterTargetLabel
@@ -31,6 +32,21 @@ struct FilterTargetLabel
   bool PEDESTRIAN;
   bool isTarget(const uint8_t label) const;
 };  // struct FilterTargetLabel
+
+inline bool hasBoundingBox(const autoware_auto_perception_msgs::msg::DetectedObject & object)
+{
+  if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+    return true;
+  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+    return true;
+  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
+    return false;
+  } else {
+    // unknown shape type.
+    return false;
+  }
+}
+
 }  // namespace utils
 
 #endif  // DETECTED_OBJECT_VALIDATION__UTILS__UTILS_HPP_
