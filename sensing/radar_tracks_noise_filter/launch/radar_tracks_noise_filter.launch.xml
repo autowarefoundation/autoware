@@ -2,7 +2,7 @@
   <arg name="input/tracks" default="~/input/tracks"/>
   <arg name="output/noise_tracks" default="~/output/noise_tracks"/>
   <arg name="output/filtered_tracks" default="~/output/filtered_tracks"/>
-  <arg name="param_path" default="$(find-pkg-share radar_tracks_noise_filter)/config/object_velocity_splitter.param.yaml"/>
+  <arg name="param_path" default="$(find-pkg-share radar_tracks_noise_filter)/config/radar_tracks_noise_filter.param.yaml"/>
 
   <node pkg="radar_tracks_noise_filter" exec="radar_tracks_noise_filter_node" name="radar_tracks_noise_filter" output="screen">
     <remap from="~/input/tracks" to="$(var input/tracks)"/>
