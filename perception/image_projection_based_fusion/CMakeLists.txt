@@ -168,6 +168,9 @@ if(BUILD_TESTING)
   ament_auto_add_gtest(test_utils
     test/test_utils.cpp
   )
+  ament_auto_add_gtest(test_geometry
+    test/test_geometry.cpp
+  )
 endif()
 
 ament_auto_package(INSTALL_TO_SHARE
