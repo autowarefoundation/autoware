@@ -27,7 +27,7 @@
 #include <functional>
 #include <memory>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 /**
  * @brief Constructor for the TemplateModuleManager class.
@@ -37,7 +37,7 @@ namespace behavior_velocity_planner
  *
  * @param node A reference to the ROS node.
  */
-class TemplateModuleManager : public SceneModuleManagerInterface
+class TemplateModuleManager : public ::behavior_velocity_planner::SceneModuleManagerInterface
 {
 public:
   explicit TemplateModuleManager(rclcpp::Node & node);
@@ -53,7 +53,7 @@ public:
   const char * getModuleName() override { return "template"; }
 
 private:
-  double dummy_parameter{0.0};
+  double dummy_parameter_{0.0};
 
   /**
    * @brief Launch new modules based on the provided path.
@@ -84,10 +84,11 @@ private:
  * The TemplateModulePlugin class is used to integrate the TemplateModuleManager into the Behavior
  * Velocity Planner.
  */
-class TemplateModulePlugin : public PluginWrapper<TemplateModuleManager>
+class TemplateModulePlugin
+: public ::behavior_velocity_planner::PluginWrapper<TemplateModuleManager>
 {
 };
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // MANAGER_HPP_

@@ -41,7 +41,7 @@ The managing of your modules is defined in manager.hpp and manager.cpp. The mana
 #### Constructor `TemplateModuleManager`
 
 - This is the constructor of the `TemplateModuleManager` class, and it takes an `rclcpp::Node` reference as a parameter.
-- It initializes a member variable `dummy_parameter` to 0.0.
+- It initializes a member variable `dummy_parameter_` to 0.0.
 
 #### `getModuleName()` Method
 

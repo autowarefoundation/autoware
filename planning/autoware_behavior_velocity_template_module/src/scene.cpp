@@ -21,7 +21,7 @@
 
 #include <string>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 TemplateModule::TemplateModule(
@@ -49,4 +49,4 @@ bool TemplateModule::modifyPathVelocity(
   return false;
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
