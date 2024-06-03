@@ -37,7 +37,7 @@
     state: latest
     update_cache: true
 
-- name: Hold check of ros-{{ rosdistro }}-plotjuggler-ros
+- name: Hold check of ros-{{ rosdistro + '-plotjuggler-ros' }}
   ansible.builtin.command: apt-mark showhold
   register: held_ros_packages
   changed_when: false
