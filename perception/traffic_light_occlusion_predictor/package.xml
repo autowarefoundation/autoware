@@ -12,7 +12,6 @@
 
   <build_depend>autoware_cmake</build_depend>
 
-  <depend>autoware_auto_geometry</depend>
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>image_geometry</depend>
