@@ -12,7 +12,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
   gosu \
-  python3-rosdep \
   ssh \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
   && mkdir -p ~/.ssh \
@@ -57,7 +56,11 @@ RUN --mount=type=ssh \
 COPY src /autoware/src
 
 # Generate install package lists
-RUN rosdep update && rosdep keys --ignore-src --from-paths src \
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    python3-rosdep \
+  && rosdep update \
+  && rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
     | sed 's/ \+/\n/g'\
