@@ -2,7 +2,6 @@
 common/autoware_ad_api_specs/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp
 common/autoware_auto_common/** opensource@apex.ai satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 common/autoware_perception_rviz_plugin/** opensource@apex.ai satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taiki.tanaka@tier4.jp takeshi.miura@tier4.jp yoshi.ri@tier4.jp
-common/autoware_auto_tf2/** jit.ray.c@gmail.com satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 common/autoware_overlay_rviz_plugin/autoware_mission_details_overlay_rviz_plugin/** ahmed.ebrahim@leodrive.ai
 common/autoware_overlay_rviz_plugin/autoware_overlay_rviz_plugin/** khalil@leodrive.ai
 common/autoware_point_types/** taichi.higashide@tier4.jp

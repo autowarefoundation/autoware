@@ -21,8 +21,6 @@
 #include "simple_planning_simulator/utils/csv_loader.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model_interface.hpp"
 
-#include <autoware_auto_common/common/types.hpp>
-
 #include <deque>
 #include <iostream>
 #include <queue>

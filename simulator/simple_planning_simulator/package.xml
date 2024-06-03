@@ -20,7 +20,6 @@
   <depend>autoware_auto_control_msgs</depend>
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
-  <depend>autoware_auto_tf2</depend>
   <depend>autoware_auto_vehicle_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_core</depend>

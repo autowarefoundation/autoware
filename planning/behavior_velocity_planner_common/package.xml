@@ -22,7 +22,6 @@
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
-  <depend>autoware_auto_tf2</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_velocity_smoother</depend>
   <depend>diagnostic_msgs</depend>

@@ -45,7 +45,6 @@
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_auto_perception_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
-  <depend>autoware_auto_tf2</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>freespace_planning_algorithms</depend>
   <depend>geometry_msgs</depend>

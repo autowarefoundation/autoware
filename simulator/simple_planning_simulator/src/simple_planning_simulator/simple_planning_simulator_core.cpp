@@ -14,7 +14,6 @@
 
 #include "simple_planning_simulator/simple_planning_simulator_core.hpp"
 
-#include "autoware_auto_tf2/tf2_autoware_auto_msgs.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model.hpp"
