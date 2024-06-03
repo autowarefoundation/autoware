@@ -11,10 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__PREDICTED_OBJECTS_DISPLAY_HPP_
-#define AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__PREDICTED_OBJECTS_DISPLAY_HPP_
+#ifndef AUTOWARE_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__PREDICTED_OBJECTS_DISPLAY_HPP_
+#define AUTOWARE_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__PREDICTED_OBJECTS_DISPLAY_HPP_
 
-#include "autoware_auto_perception_rviz_plugin/object_detection/object_polygon_display_base.hpp"
+#include "autoware_perception_rviz_plugin/object_detection/object_polygon_display_base.hpp"
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 
@@ -38,7 +38,7 @@ namespace rviz_plugins
 namespace object_detection
 {
 /// \brief Class defining rviz plugin to visualize PredictedObjects
-class AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC PredictedObjectsDisplay
+class AUTOWARE_PERCEPTION_RVIZ_PLUGIN_PUBLIC PredictedObjectsDisplay
 : public ObjectPolygonDisplayBase<autoware_auto_perception_msgs::msg::PredictedObjects>
 {
   Q_OBJECT
@@ -153,4 +153,4 @@ private:
 }  // namespace rviz_plugins
 }  // namespace autoware
 
-#endif  // AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__PREDICTED_OBJECTS_DISPLAY_HPP_
+#endif  // AUTOWARE_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__PREDICTED_OBJECTS_DISPLAY_HPP_

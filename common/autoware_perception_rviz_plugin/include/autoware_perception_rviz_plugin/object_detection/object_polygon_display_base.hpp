@@ -11,12 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__OBJECT_POLYGON_DISPLAY_BASE_HPP_
-#define AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__OBJECT_POLYGON_DISPLAY_BASE_HPP_
+#ifndef AUTOWARE_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__OBJECT_POLYGON_DISPLAY_BASE_HPP_
+#define AUTOWARE_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__OBJECT_POLYGON_DISPLAY_BASE_HPP_
 
-#include "autoware_auto_perception_rviz_plugin/common/color_alpha_property.hpp"
-#include "autoware_auto_perception_rviz_plugin/object_detection/object_polygon_detail.hpp"
-#include "autoware_auto_perception_rviz_plugin/visibility_control.hpp"
+#include "autoware_perception_rviz_plugin/common/color_alpha_property.hpp"
+#include "autoware_perception_rviz_plugin/object_detection/object_polygon_detail.hpp"
+#include "autoware_perception_rviz_plugin/visibility_control.hpp"
 
 #include <rviz_common/display.hpp>
 #include <rviz_common/properties/color_property.hpp>
@@ -46,7 +46,7 @@ namespace object_detection
 ///        classes.
 /// \tparam MsgT PredictedObjects or TrackedObjects or DetectedObjects type
 template <typename MsgT>
-class AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC ObjectPolygonDisplayBase
+class AUTOWARE_PERCEPTION_RVIZ_PLUGIN_PUBLIC ObjectPolygonDisplayBase
 : public rviz_common::RosTopicDisplay<MsgT>
 {
 public:
@@ -431,7 +431,7 @@ protected:
     return ss.str();
   }
 
-  std_msgs::msg::ColorRGBA AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC
+  std_msgs::msg::ColorRGBA AUTOWARE_PERCEPTION_RVIZ_PLUGIN_PUBLIC
   get_color_from_uuid(const std::string & uuid) const
   {
     int i = (static_cast<int>(uuid.at(0)) * 4 + static_cast<int>(uuid.at(1))) %
@@ -576,4 +576,4 @@ private:
 }  // namespace rviz_plugins
 }  // namespace autoware
 
-#endif  // AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__OBJECT_POLYGON_DISPLAY_BASE_HPP_
+#endif  // AUTOWARE_PERCEPTION_RVIZ_PLUGIN__OBJECT_DETECTION__OBJECT_POLYGON_DISPLAY_BASE_HPP_

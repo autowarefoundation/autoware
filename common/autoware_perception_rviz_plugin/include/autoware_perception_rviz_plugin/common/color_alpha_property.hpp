@@ -11,10 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__COMMON__COLOR_ALPHA_PROPERTY_HPP_
-#define AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__COMMON__COLOR_ALPHA_PROPERTY_HPP_
+#ifndef AUTOWARE_PERCEPTION_RVIZ_PLUGIN__COMMON__COLOR_ALPHA_PROPERTY_HPP_
+#define AUTOWARE_PERCEPTION_RVIZ_PLUGIN__COMMON__COLOR_ALPHA_PROPERTY_HPP_
 
-#include "autoware_auto_perception_rviz_plugin/visibility_control.hpp"
+#include "autoware_perception_rviz_plugin/visibility_control.hpp"
 
 #include <rviz_common/display.hpp>
 #include <rviz_common/properties/color_property.hpp>
@@ -31,7 +31,7 @@ namespace rviz_plugins
 namespace common
 {
 /// \brief Class to define Color and Alpha values as plugin properties
-class AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC ColorAlphaProperty
+class AUTOWARE_PERCEPTION_RVIZ_PLUGIN_PUBLIC ColorAlphaProperty
 {
 public:
   /// \brief Constructor
@@ -56,4 +56,4 @@ private:
 }  // namespace rviz_plugins
 }  // namespace autoware
 
-#endif  // AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN__COMMON__COLOR_ALPHA_PROPERTY_HPP_
+#endif  // AUTOWARE_PERCEPTION_RVIZ_PLUGIN__COMMON__COLOR_ALPHA_PROPERTY_HPP_

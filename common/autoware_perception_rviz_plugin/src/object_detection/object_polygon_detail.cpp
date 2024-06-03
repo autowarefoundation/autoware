@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License..
 
-#include "autoware_auto_perception_rviz_plugin/object_detection/object_polygon_detail.hpp"
+#include "autoware_perception_rviz_plugin/object_detection/object_polygon_detail.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Eigen>

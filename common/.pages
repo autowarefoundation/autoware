@@ -31,7 +31,7 @@ nav:
       - 'Introduction': common/tvm_utility
       - 'YOLOv2 Tiny Example': common/tvm_utility/tvm-utility-yolo-v2-tiny-tests
   - 'RVIZ2 Plugins':
-    - 'autoware_auto_perception_rviz_plugin': common/autoware_auto_perception_rviz_plugin
+    - 'autoware_perception_rviz_plugin': common/autoware_perception_rviz_plugin
     - 'autoware_overlay_rviz_plugin': common/autoware_overlay_rviz_plugin/autoware_overlay_rviz_plugin
     - 'autoware_mission_details_overlay_rviz_plugin': common/autoware_overlay_rviz_plugin/autoware_mission_details_overlay_rviz_plugin
     - 'bag_time_manager_rviz_plugin': common/bag_time_manager_rviz_plugin

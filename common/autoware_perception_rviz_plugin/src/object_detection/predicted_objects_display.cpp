@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_auto_perception_rviz_plugin/object_detection/predicted_objects_display.hpp"
+#include "autoware_perception_rviz_plugin/object_detection/predicted_objects_display.hpp"
 
 #include <memory>
 #include <set>
