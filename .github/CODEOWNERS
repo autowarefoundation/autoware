@@ -218,7 +218,6 @@ simulator/fault_injection/** keisuke.shima@tier4.jp
 simulator/learning_based_vehicle_model/** maxime.clement@tier4.jp nagy.tomas@tier4.jp
 simulator/simple_planning_simulator/** mamoru.sobue@tier4.jp maxime.clement@tier4.jp takamasa.horibe@tier4.jp temkei.kem@tier4.jp tomoya.kimura@tier4.jp zulfaqar.azmi@tier4.jp
 simulator/vehicle_door_simulator/** isamu.takagi@tier4.jp
-system/autoware_auto_msgs_adapter/** isamu.takagi@tier4.jp mfc@leodrive.ai
 system/bluetooth_monitor/** fumihito.ito@tier4.jp
 system/component_state_monitor/** isamu.takagi@tier4.jp
 system/default_ad_api/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp yukihiro.saito@tier4.jp
