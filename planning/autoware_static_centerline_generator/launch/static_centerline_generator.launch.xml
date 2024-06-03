@@ -28,10 +28,7 @@
     default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/behavior_velocity_planner.param.yaml"
   />
   <arg name="path_smoother_param" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/motion_planning/path_smoother/elastic_band_smoother.param.yaml"/>
-  <arg
-    name="obstacle_avoidance_planner_param"
-    default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/obstacle_avoidance_planner.param.yaml"
-  />
+  <arg name="path_optimizer_param" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/motion_planning/autoware_path_optimizer/path_optimizer.param.yaml"/>
   <arg name="mission_planner_param" default="$(find-pkg-share autoware_launch)/config/planning/mission_planning/mission_planner/mission_planner.param.yaml"/>
 
   <!-- Global parameters (for PathFootprint in tier4_planning_rviz_plugin) -->
@@ -76,7 +73,7 @@
     <param from="$(var behavior_path_planner_param)"/>
     <param from="$(var behavior_velocity_planner_param)"/>
     <param from="$(var path_smoother_param)"/>
-    <param from="$(var obstacle_avoidance_planner_param)"/>
+    <param from="$(var path_optimizer_param)"/>
     <param from="$(var mission_planner_param)"/>
     <!-- node param -->
     <param from="$(find-pkg-share autoware_static_centerline_generator)/config/static_centerline_generator.param.yaml"/>

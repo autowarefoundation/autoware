@@ -14,11 +14,11 @@
 
 #include "node.hpp"
 
+#include <autoware_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp>
 #include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <motion_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp>
 #include <tier4_autoware_utils/ros/wait_for_param.hpp>
 #include <tier4_autoware_utils/transform/transforms.hpp>
 
@@ -310,7 +310,7 @@ void BehaviorVelocityPlannerNode::onParam()
   // constructed. It would be required if it was a callback. std::lock_guard<std::mutex>
   // lock(mutex_);
   planner_data_.velocity_smoother_ =
-    std::make_unique<motion_velocity_smoother::AnalyticalJerkConstrainedSmoother>(*this);
+    std::make_unique<autoware_velocity_smoother::AnalyticalJerkConstrainedSmoother>(*this);
   planner_data_.velocity_smoother_->setWheelBase(planner_data_.vehicle_info_.wheel_base_m);
 }
 

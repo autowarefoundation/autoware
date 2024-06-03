@@ -69,9 +69,9 @@ If the reference path is not smooth, the resulting candidates will probably be u
 
 Failure to find a valid trajectory current results in a suddenly stopping trajectory.
 
-## Comparison with the `obstacle_avoidance_planner`
+## Comparison with the `autoware_path_optimizer`
 
-The `obstacle_avoidance_planner` uses an optimization based approach,
+The `autoware_path_optimizer` uses an optimization based approach,
 finding the optimal solution of a mathematical problem if it exists.
 When no solution can be found, it is often hard to identify the issue due to the intermediate mathematical representation of the problem.
 

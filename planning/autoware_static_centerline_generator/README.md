@@ -5,7 +5,7 @@
 This package statically calculates the centerline satisfying path footprints inside the drivable area.
 
 On narrow-road driving, the default centerline, which is the middle line between lanelets' right and left boundaries, often causes path footprints outside the drivable area.
-To make path footprints inside the drivable area, we use online path shape optimization by [the obstacle_avoidance_planner package](https://github.com/autowarefoundation/autoware.universe/tree/main/planning/obstacle_avoidance_planner/).
+To make path footprints inside the drivable area, we use online path shape optimization by [the autoware_path_optimizer package](https://github.com/autowarefoundation/autoware.universe/tree/main/planning/autoware_path_optimizer/).
 
 Instead of online path shape optimization, we introduce static centerline optimization.
 With this static centerline optimization, we have following advantages.

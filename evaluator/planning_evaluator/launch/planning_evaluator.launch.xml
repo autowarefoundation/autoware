@@ -1,7 +1,7 @@
 <launch>
   <arg name="input/odometry" default="/localization/kinematic_state"/>
   <arg name="input/trajectory" default="/planning/scenario_planning/trajectory"/>
-  <arg name="input/reference_trajectory" default="/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/trajectory"/>
+  <arg name="input/reference_trajectory" default="/planning/scenario_planning/lane_driving/motion_planning/path_optimizer/trajectory"/>
   <arg name="input/objects" default="/perception/object_recognition/objects"/>
   <arg name="input/modified_goal" default="/planning/scenario_planning/modified_goal"/>
 

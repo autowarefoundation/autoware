@@ -14,9 +14,9 @@
 
 #include "centerline_source/optimization_trajectory_based_centerline.hpp"
 
+#include "autoware_path_optimizer/node.hpp"
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
-#include "obstacle_avoidance_planner/node.hpp"
 #include "path_smoother/elastic_band_smoother.hpp"
 #include "static_centerline_generator_node.hpp"
 #include "tier4_autoware_utils/ros/parameter.hpp"
@@ -130,7 +130,7 @@ std::vector<TrajectoryPoint> OptimizationTrajectoryBasedCenterline::optimize_tra
   const auto eb_path_smoother_ptr =
     path_smoother::ElasticBandSmoother(create_node_options()).getElasticBandSmoother();
   const auto mpt_optimizer_ptr =
-    obstacle_avoidance_planner::ObstacleAvoidancePlanner(create_node_options()).getMPTOptimizer();
+    autoware_path_optimizer::PathOptimizer(create_node_options()).getMPTOptimizer();
 
   // NOTE: The optimization is executed every valid_optimized_traj_points_num points.
   constexpr int valid_optimized_traj_points_num = 10;
@@ -156,9 +156,9 @@ std::vector<TrajectoryPoint> OptimizationTrajectoryBasedCenterline::optimize_tra
     const auto smoothed_traj_points =
       eb_path_smoother_ptr->smoothTrajectory(raw_traj_points, virtual_ego_pose);
 
-    // road collision avoidance by model predictive trajectory in the obstacle_avoidance_planner
+    // road collision avoidance by model predictive trajectory in the autoware_path_optimizer
     // package
-    const obstacle_avoidance_planner::PlannerData planner_data{
+    const autoware_path_optimizer::PlannerData planner_data{
       raw_path.header, smoothed_traj_points, raw_path.left_bound, raw_path.right_bound,
       virtual_ego_pose};
     const auto optimized_traj_points = mpt_optimizer_ptr->optimizeTrajectory(planner_data);

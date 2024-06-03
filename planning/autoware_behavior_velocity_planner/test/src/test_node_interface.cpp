@@ -51,8 +51,8 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
     ament_index_cpp::get_package_share_directory("planning_test_utils");
   const auto behavior_velocity_planner_dir =
     ament_index_cpp::get_package_share_directory("autoware_behavior_velocity_planner");
-  const auto motion_velocity_smoother_dir =
-    ament_index_cpp::get_package_share_directory("motion_velocity_smoother");
+  const auto velocity_smoother_dir =
+    ament_index_cpp::get_package_share_directory("autoware_velocity_smoother");
 
   const auto get_behavior_velocity_module_config = [](const std::string & module) {
     const auto package_name = "behavior_velocity_" + module + "_module";
@@ -83,27 +83,26 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
   node_options.parameter_overrides(params);
 
   test_utils::updateNodeOptions(
-    node_options,
-    {planning_test_utils_dir + "/config/test_common.param.yaml",
-     planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
-     planning_test_utils_dir + "/config/test_vehicle_info.param.yaml",
-     motion_velocity_smoother_dir + "/config/default_motion_velocity_smoother.param.yaml",
-     motion_velocity_smoother_dir + "/config/Analytical.param.yaml",
-     behavior_velocity_planner_dir + "/config/behavior_velocity_planner.param.yaml",
-     get_behavior_velocity_module_config("blind_spot"),
-     get_behavior_velocity_module_config("crosswalk"),
-     get_behavior_velocity_module_config("walkway"),
-     get_behavior_velocity_module_config("detection_area"),
-     get_behavior_velocity_module_config("intersection"),
-     get_behavior_velocity_module_config("no_stopping_area"),
-     get_behavior_velocity_module_config("occlusion_spot"),
-     get_behavior_velocity_module_config("run_out"),
-     get_behavior_velocity_module_config("speed_bump"),
-     get_behavior_velocity_module_config("stop_line"),
-     get_behavior_velocity_module_config("traffic_light"),
-     get_behavior_velocity_module_config("virtual_traffic_light"),
-     get_behavior_velocity_module_config("out_of_lane"),
-     get_behavior_velocity_module_config("no_drivable_lane")});
+    node_options, {planning_test_utils_dir + "/config/test_common.param.yaml",
+                   planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
+                   planning_test_utils_dir + "/config/test_vehicle_info.param.yaml",
+                   velocity_smoother_dir + "/config/default_velocity_smoother.param.yaml",
+                   velocity_smoother_dir + "/config/Analytical.param.yaml",
+                   behavior_velocity_planner_dir + "/config/behavior_velocity_planner.param.yaml",
+                   get_behavior_velocity_module_config("blind_spot"),
+                   get_behavior_velocity_module_config("crosswalk"),
+                   get_behavior_velocity_module_config("walkway"),
+                   get_behavior_velocity_module_config("detection_area"),
+                   get_behavior_velocity_module_config("intersection"),
+                   get_behavior_velocity_module_config("no_stopping_area"),
+                   get_behavior_velocity_module_config("occlusion_spot"),
+                   get_behavior_velocity_module_config("run_out"),
+                   get_behavior_velocity_module_config("speed_bump"),
+                   get_behavior_velocity_module_config("stop_line"),
+                   get_behavior_velocity_module_config("traffic_light"),
+                   get_behavior_velocity_module_config("virtual_traffic_light"),
+                   get_behavior_velocity_module_config("out_of_lane"),
+                   get_behavior_velocity_module_config("no_drivable_lane")});
 
   // TODO(Takagi, Isamu): set launch_modules
   // TODO(Kyoichi Sugahara) set to true launch_virtual_traffic_light

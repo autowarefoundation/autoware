@@ -31,7 +31,7 @@ class TrajectoryVisualizer(Node):
 
         self.sub_original_traj = self.create_subscription(
             Trajectory,
-            "/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/trajectory",
+            "/planning/scenario_planning/lane_driving/motion_planning/path_optimizer/trajectory",
             self.plotOriginalTrajectory,
             1,
         )

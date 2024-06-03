@@ -242,7 +242,7 @@
       <param from="$(var common_param_path)"/>
       <param from="$(var vehicle_param_file)"/>
       <param from="$(var nearest_search_param_path)"/>
-      <param from="$(var motion_velocity_smoother_param_path)"/>
+      <param from="$(var velocity_smoother_param_path)"/>
       <param from="$(var behavior_velocity_smoother_type_param_path)"/>
       <param from="$(var behavior_velocity_planner_common_param_path)"/>
       <param name="launch_modules" value="$(var behavior_velocity_planner_launch_modules)"/>

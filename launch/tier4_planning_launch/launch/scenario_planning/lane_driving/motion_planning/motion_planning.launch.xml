@@ -60,18 +60,18 @@
 
   <!-- generate kinematic-feasible path -->
   <group>
-    <group if="$(eval &quot;'$(var motion_path_planner_type)' == 'obstacle_avoidance_planner'&quot;)">
+    <group if="$(eval &quot;'$(var motion_path_planner_type)' == 'path_optimizer'&quot;)">
       <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
-        <composable_node pkg="obstacle_avoidance_planner" plugin="obstacle_avoidance_planner::ObstacleAvoidancePlanner" name="obstacle_avoidance_planner" namespace="">
+        <composable_node pkg="autoware_path_optimizer" plugin="autoware_path_optimizer::PathOptimizer" name="path_optimizer" namespace="">
           <!-- topic remap -->
           <remap from="~/input/path" to="path_smoother/path"/>
           <remap from="~/input/odometry" to="/localization/kinematic_state"/>
-          <remap from="~/output/path" to="obstacle_avoidance_planner/trajectory"/>
+          <remap from="~/output/path" to="path_optimizer/trajectory"/>
           <!-- params -->
           <param from="$(var common_param_path)"/>
           <param from="$(var vehicle_param_file)"/>
           <param from="$(var nearest_search_param_path)"/>
-          <param from="$(var obstacle_avoidance_planner_param_path)"/>
+          <param from="$(var path_optimizer_param_path)"/>
           <!-- composable node config -->
           <extra_arg name="use_intra_process_comms" value="false"/>
         </composable_node>
@@ -84,7 +84,7 @@
           <!-- topic remap -->
           <remap from="~/input/path" to="path_smoother/path"/>
           <remap from="~/input/odometry" to="/localization/kinematic_state"/>
-          <remap from="~/output/path" to="obstacle_avoidance_planner/trajectory"/>
+          <remap from="~/output/path" to="path_optimizer/trajectory"/>
           <!-- params -->
           <param from="$(var common_param_path)"/>
           <param from="$(var vehicle_param_file)"/>
@@ -101,7 +101,7 @@
         <composable_node pkg="planning_topic_converter" plugin="planning_topic_converter::PathToTrajectory" name="path_to_trajectory_converter" namespace="">
           <!-- params -->
           <param name="input_topic" value="path_smoother/path"/>
-          <param name="output_topic" value="obstacle_avoidance_planner/trajectory"/>
+          <param name="output_topic" value="path_optimizer/trajectory"/>
           <!-- composable node config -->
           <extra_arg name="use_intra_process_comms" value="false"/>
         </composable_node>
@@ -114,7 +114,7 @@
     <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
       <composable_node pkg="autoware_motion_velocity_planner_node" plugin="autoware::motion_velocity_planner::MotionVelocityPlannerNode" name="motion_velocity_planner" namespace="">
         <!-- topic remap -->
-        <remap from="~/input/trajectory" to="obstacle_avoidance_planner/trajectory"/>
+        <remap from="~/input/trajectory" to="path_optimizer/trajectory"/>
         <remap from="~/input/vector_map" to="/map/vector_map"/>
         <remap from="~/input/vehicle_odometry" to="/localization/kinematic_state"/>
         <remap from="~/input/accel" to="/localization/acceleration"/>
@@ -131,8 +131,8 @@
         <param from="$(var common_param_path)"/>
         <param from="$(var vehicle_param_file)"/>
         <param from="$(var nearest_search_param_path)"/>
-        <param from="$(var motion_velocity_smoother_param_path)"/>
-        <param from="$(var motion_velocity_smoother_type_param_path)"/>
+        <param from="$(var velocity_smoother_param_path)"/>
+        <param from="$(var motion_velocity_planner_velocity_smoother_type_param_path)"/>
         <param from="$(var motion_velocity_planner_param_path)"/>
         <param from="$(var motion_velocity_planner_out_of_lane_module_param_path)"/>
         <!-- <param from="$(var motion_velocity_planner_template_param_path)"/> -->
@@ -146,7 +146,7 @@
     <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
       <composable_node pkg="obstacle_velocity_limiter" plugin="obstacle_velocity_limiter::ObstacleVelocityLimiterNode" name="obstacle_velocity_limiter" namespace="">
         <!-- topic remap -->
-        <remap from="~/input/trajectory" to="motion_velocity_planner/trajectory"/>
+        <remap from="~/input/trajectory" to="path_optimizer/trajectory"/>
         <remap from="~/input/odometry" to="/localization/kinematic_state"/>
         <remap from="~/input/dynamic_obstacles" to="/perception/object_recognition/objects"/>
         <remap from="~/input/occupancy_grid" to="/perception/occupancy_grid_map/map"/>

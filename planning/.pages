@@ -43,10 +43,10 @@ nav:
       - 'RRT*': planning/freespace_planning_algorithms/rrtstar
   - 'Mission Planner': planning/mission_planner
   - 'Motion Planning':
-    - 'Obstacle Avoidance Planner':
-      - 'About Obstacle Avoidance': planning/obstacle_avoidance_planner
-      - 'Model Predictive Trajectory (MPT)': planning/obstacle_avoidance_planner/docs/mpt
-      - 'How to Debug': planning/obstacle_avoidance_planner/docs/debug
+    - 'Path Optimizer':
+      - 'About Path Optimizer': planning/autoware_path_optimizer
+      - 'Model Predictive Trajectory (MPT)': planning/autoware_path_optimizer/docs/mpt
+      - 'How to Debug': planning/autoware_path_optimizer/docs/debug
     - 'Obstacle Cruise Planner':
       - 'About Obstacle Cruise': planning/obstacle_cruise_planner
       - 'How to Debug': planning/obstacle_cruise_planner/docs/debug

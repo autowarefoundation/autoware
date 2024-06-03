@@ -1,0 +1,13 @@
+<launch>
+  <arg name="input_path_topic" default="input/path"/>
+  <arg name="output_path_topic" default="output/path"/>
+  <arg name="enable_debug_info" default="false"/>
+  <arg name="param_path" default="$(find-pkg-share autoware_path_optimizer)/config/path_optimizer.param.yaml"/>
+  <node pkg="autoware_path_optimizer" exec="path_optimizer_node" name="path_optimizer_node" output="screen">
+    <remap from="~/input/path" to="$(var input_path_topic)"/>
+    <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+    <remap from="~/output/path" to="$(var output_path_topic)"/>
+    <param from="$(var param_path)"/>
+    <param name="enable_debug_info" value="$(var enable_debug_info)"/>
+  </node>
+</launch>

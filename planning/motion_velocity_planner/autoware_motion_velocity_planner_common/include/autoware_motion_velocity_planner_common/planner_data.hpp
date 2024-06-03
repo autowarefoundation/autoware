@@ -15,7 +15,7 @@
 #ifndef AUTOWARE_MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 #define AUTOWARE_MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 
-#include <motion_velocity_smoother/smoother/smoother_base.hpp>
+#include <autoware_velocity_smoother/smoother/smoother_base.hpp>
 #include <route_handler/route_handler.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
@@ -81,7 +81,7 @@ struct PlannerData
   tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr virtual_traffic_light_states;
 
   // velocity smoother
-  std::shared_ptr<motion_velocity_smoother::SmootherBase> velocity_smoother_{};
+  std::shared_ptr<autoware_velocity_smoother::SmootherBase> velocity_smoother_{};
   // parameters
   vehicle_info_util::VehicleInfo vehicle_info_;
 

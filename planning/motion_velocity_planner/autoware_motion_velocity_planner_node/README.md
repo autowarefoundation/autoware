@@ -54,5 +54,5 @@ In addition, the following parameters should be provided to the node:
 - [nearest search parameters](https://github.com/autowarefoundation/autoware_launch/blob/main/autoware_launch/config/planning/scenario_planning/common/nearest_search.param.yaml);
 - [vehicle info parameters](https://github.com/autowarefoundation/sample_vehicle_launch/blob/main/sample_vehicle_description/config/vehicle_info.param.yaml);
 - [common planning parameters](https://github.com/autowarefoundation/autoware_launch/blob/main/autoware_launch/config/planning/scenario_planning/common/common.param.yaml);
-- [smoother parameters](https://autowarefoundation.github.io/autoware.universe/main/planning/motion_velocity_smoother/#parameters)
+- [smoother parameters](https://autowarefoundation.github.io/autoware.universe/main/planning/autoware_velocity_smoother/#parameters)
 - Parameters of each plugin that will be loaded.

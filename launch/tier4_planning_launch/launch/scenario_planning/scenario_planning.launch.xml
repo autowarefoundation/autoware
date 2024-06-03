@@ -21,22 +21,22 @@
     <group>
       <include file="$(find-pkg-share external_velocity_limit_selector)/launch/external_velocity_limit_selector.launch.xml">
         <arg name="common_param_path" value="$(var common_param_path)"/>
-        <arg name="param_path" value="$(var motion_velocity_smoother_param_path)"/>
+        <arg name="param_path" value="$(var velocity_smoother_param_path)"/>
       </include>
     </group>
     <!-- motion velocity smoother -->
     <group>
-      <node_container pkg="rclcpp_components" exec="component_container" name="motion_velocity_smoother_container" namespace="">
-        <composable_node pkg="motion_velocity_smoother" plugin="motion_velocity_smoother::MotionVelocitySmootherNode" name="motion_velocity_smoother" namespace="">
-          <param name="algorithm_type" value="$(var motion_velocity_smoother_type)"/>
+      <node_container pkg="rclcpp_components" exec="component_container" name="velocity_smoother_container" namespace="">
+        <composable_node pkg="autoware_velocity_smoother" plugin="autoware_velocity_smoother::VelocitySmootherNode" name="velocity_smoother" namespace="">
+          <param name="algorithm_type" value="$(var velocity_smoother_type)"/>
           <param from="$(var common_param_path)"/>
           <param from="$(var nearest_search_param_path)"/>
-          <param from="$(var motion_velocity_smoother_param_path)"/>
+          <param from="$(var velocity_smoother_param_path)"/>
           <param from="$(var velocity_smoother_type_param_path)"/>
 
           <param name="publish_debug_trajs" value="false"/>
           <remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory"/>
-          <remap from="~/output/trajectory" to="/planning/scenario_planning/motion_velocity_smoother/trajectory"/>
+          <remap from="~/output/trajectory" to="/planning/scenario_planning/velocity_smoother/trajectory"/>
 
           <remap from="~/input/external_velocity_limit_mps" to="/planning/scenario_planning/max_velocity"/>
           <remap from="~/input/acceleration" to="/localization/acceleration"/>

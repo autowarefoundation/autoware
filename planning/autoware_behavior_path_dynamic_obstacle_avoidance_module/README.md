@@ -4,7 +4,7 @@ This module is under development.
 
 ## Purpose / Role
 
-This module provides avoidance functions for vehicles, pedestrians, and obstacles in the vicinity of the ego's path in combination with the [obstacle_avoidance_planner](https://autowarefoundation.github.io/autoware.universe/main/planning/obstacle_avoidance_planner/).
+This module provides avoidance functions for vehicles, pedestrians, and obstacles in the vicinity of the ego's path in combination with the [autoware_path_optimizer](https://autowarefoundation.github.io/autoware.universe/main/planning/autoware_path_optimizer/).
 Each module performs the following roles.
 Dynamic Avoidance module cuts off the drivable area according to the position and velocity of the target to be avoided.
 Obstacle Avoidance module modifies the path to be followed so that it fits within the received drivable area.

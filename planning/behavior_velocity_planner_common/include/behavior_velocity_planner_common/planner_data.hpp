@@ -17,8 +17,8 @@
 
 #include "route_handler/route_handler.hpp"
 
+#include <autoware_velocity_smoother/smoother/smoother_base.hpp>
 #include <behavior_velocity_planner_common/utilization/util.hpp>
-#include <motion_velocity_smoother/smoother/smoother_base.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
@@ -88,7 +88,7 @@ struct PlannerData
   bool is_simulation = false;
 
   // velocity smoother
-  std::shared_ptr<motion_velocity_smoother::SmootherBase> velocity_smoother_;
+  std::shared_ptr<autoware_velocity_smoother::SmootherBase> velocity_smoother_;
   // route handler
   std::shared_ptr<route_handler::RouteHandler> route_handler_;
   // parameters

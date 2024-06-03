@@ -1,0 +1,34 @@
+<launch>
+  <!-- common param -->
+  <arg name="common_param_path" default="$(find-pkg-share autoware_velocity_smoother)/config/default_common.param.yaml"/>
+  <arg name="nearest_search_param_path"/>
+
+  <!-- input/output -->
+  <arg name="input_trajectory" default="/planning/scenario_planning/scenario_selector/trajectory"/>
+  <arg name="output_trajectory" default="/planning/scenario_planning/trajectory"/>
+
+  <!-- debug flags -->
+  <arg name="publish_debug_trajs" default="false"/>
+  <arg name="velocity_smoother_type" default="JerkFiltered"/>
+  <!-- Analytical, JerkFiltered, L2, or Linf -->
+
+  <arg name="param_path" default="$(find-pkg-share autoware_velocity_smoother)/config/default_velocity_smoother.param.yaml"/>
+  <arg name="velocity_smoother_param_path" default="$(find-pkg-share autoware_velocity_smoother)/config/$(var velocity_smoother_type).param.yaml"/>
+
+  <node pkg="autoware_velocity_smoother" exec="velocity_smoother_node" name="velocity_smoother_node" output="screen">
+    <param from="$(var common_param_path)"/>
+    <param from="$(var nearest_search_param_path)"/>
+    <param from="$(var param_path)"/>
+    <param from="$(var velocity_smoother_param_path)"/>
+    <param name="publish_debug_trajs" value="$(var publish_debug_trajs)"/>
+    <param name="algorithm_type" value="$(var velocity_smoother_type)"/>
+    <remap from="~/input/trajectory" to="$(var input_trajectory)"/>
+    <remap from="~/output/trajectory" to="$(var output_trajectory)"/>
+    <remap from="~/input/external_velocity_limit_mps" to="/planning/scenario_planning/max_velocity"/>
+    <remap from="~/input/acceleration" to="/localization/acceleration"/>
+    <remap from="~/input/operation_mode_state" to="/system/operation_mode/state"/>
+    <!-- Topic for setting maximum speed from the outside (input topic) -->
+    <remap from="~/output/current_velocity_limit_mps" to="/planning/scenario_planning/current_max_velocity"/>
+    <!-- Topic for displaying the set maximum speed (output topic) -->
+  </node>
+</launch>
