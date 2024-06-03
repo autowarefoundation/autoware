@@ -12,6 +12,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
   gosu \
+  python3-rosdep \
   ssh \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
   && mkdir -p ~/.ssh \
@@ -97,6 +98,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-all-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && apt-get install -y --no-install-recommends \
+    python3-colcon-common-extensions \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 # Build Autoware
