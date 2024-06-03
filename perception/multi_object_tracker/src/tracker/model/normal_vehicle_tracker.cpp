@@ -148,9 +148,9 @@ NormalVehicleTracker::NormalVehicleTracker(
       constexpr double p0_stddev_y = 0.3;  // in object coordinate [m]
       constexpr double p0_stddev_yaw =
         tier4_autoware_utils::deg2rad(25);  // in map coordinate [rad]
-      constexpr double p0_cov_x = std::pow(p0_stddev_x, 2.0);
-      constexpr double p0_cov_y = std::pow(p0_stddev_y, 2.0);
-      constexpr double p0_cov_yaw = std::pow(p0_stddev_yaw, 2.0);
+      constexpr double p0_cov_x = p0_stddev_x * p0_stddev_x;
+      constexpr double p0_cov_y = p0_stddev_y * p0_stddev_y;
+      constexpr double p0_cov_yaw = p0_stddev_yaw * p0_stddev_yaw;
 
       const double cos_yaw = std::cos(yaw);
       const double sin_yaw = std::sin(yaw);
