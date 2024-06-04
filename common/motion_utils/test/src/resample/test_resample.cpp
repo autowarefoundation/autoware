@@ -27,15 +27,15 @@
 
 namespace
 {
-using autoware_auto_planning_msgs::msg::Path;
-using autoware_auto_planning_msgs::msg::PathPoint;
-using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::Path;
+using autoware_planning_msgs::msg::PathPoint;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 using tier4_autoware_utils::createPoint;
 using tier4_autoware_utils::createQuaternionFromRPY;
 using tier4_autoware_utils::transformPoint;
+using tier4_planning_msgs::msg::PathPointWithLaneId;
+using tier4_planning_msgs::msg::PathWithLaneId;
 
 constexpr double epsilon = 1e-6;
 
@@ -297,7 +297,7 @@ TEST(resample_path_with_lane_id, resample_path_by_vector)
 
   // Output key is not same as input
   {
-    autoware_auto_planning_msgs::msg::PathWithLaneId path;
+    tier4_planning_msgs::msg::PathWithLaneId path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPointWithLaneId(
@@ -403,7 +403,7 @@ TEST(resample_path_with_lane_id, resample_path_by_vector)
 
   // Duplicated points in the original path
   {
-    autoware_auto_planning_msgs::msg::PathWithLaneId path;
+    tier4_planning_msgs::msg::PathWithLaneId path;
     path.points.resize(11);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPointWithLaneId(
@@ -437,7 +437,7 @@ TEST(resample_path_with_lane_id, resample_path_by_vector)
   {
     // Input path size is not enough for interpolation
     {
-      autoware_auto_planning_msgs::msg::PathWithLaneId path;
+      tier4_planning_msgs::msg::PathWithLaneId path;
       path.points.resize(1);
       for (size_t i = 0; i < 1; ++i) {
         path.points.at(i) = generateTestPathPointWithLaneId(
@@ -470,7 +470,7 @@ TEST(resample_path_with_lane_id, resample_path_by_vector)
 
     // Resampled Arclength size is not enough for interpolation
     {
-      autoware_auto_planning_msgs::msg::PathWithLaneId path;
+      tier4_planning_msgs::msg::PathWithLaneId path;
       path.points.resize(10);
       for (size_t i = 0; i < 10; ++i) {
         path.points.at(i) = generateTestPathPointWithLaneId(
@@ -504,7 +504,7 @@ TEST(resample_path_with_lane_id, resample_path_by_vector)
 
     // Resampled Arclength is longer than input path
     {
-      autoware_auto_planning_msgs::msg::PathWithLaneId path;
+      tier4_planning_msgs::msg::PathWithLaneId path;
       path.points.resize(10);
       for (size_t i = 0; i < 10; ++i) {
         path.points.at(i) = generateTestPathPointWithLaneId(
@@ -543,7 +543,7 @@ TEST(resample_path_with_lane_id, resample_path_by_vector_backward)
   using motion_utils::resamplePath;
 
   {
-    autoware_auto_planning_msgs::msg::PathWithLaneId path;
+    tier4_planning_msgs::msg::PathWithLaneId path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPointWithLaneId(
@@ -651,7 +651,7 @@ TEST(resample_path_with_lane_id, resample_path_by_vector_backward)
 
   // change initial orientation
   {
-    autoware_auto_planning_msgs::msg::PathWithLaneId path;
+    tier4_planning_msgs::msg::PathWithLaneId path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPointWithLaneId(
@@ -775,7 +775,7 @@ TEST(resample_path_with_lane_id, resample_path_by_vector_non_default)
 
   // Lerp x, y
   {
-    autoware_auto_planning_msgs::msg::PathWithLaneId path;
+    tier4_planning_msgs::msg::PathWithLaneId path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPointWithLaneId(
@@ -852,7 +852,7 @@ TEST(resample_path_with_lane_id, resample_path_by_vector_non_default)
 
   // Slerp z
   {
-    autoware_auto_planning_msgs::msg::PathWithLaneId path;
+    tier4_planning_msgs::msg::PathWithLaneId path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPointWithLaneId(
@@ -931,7 +931,7 @@ TEST(resample_path_with_lane_id, resample_path_by_vector_non_default)
 
   // Lerp v
   {
-    autoware_auto_planning_msgs::msg::PathWithLaneId path;
+    tier4_planning_msgs::msg::PathWithLaneId path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPointWithLaneId(
@@ -1626,7 +1626,7 @@ TEST(resample_path, resample_path_by_vector)
 
   // Output key is not same as input
   {
-    autoware_auto_planning_msgs::msg::Path path;
+    autoware_planning_msgs::msg::Path path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
@@ -1708,7 +1708,7 @@ TEST(resample_path, resample_path_by_vector)
   {
     // Input path size is not enough for interpolation
     {
-      autoware_auto_planning_msgs::msg::Path path;
+      autoware_planning_msgs::msg::Path path;
       path.points.resize(1);
       for (size_t i = 0; i < 1; ++i) {
         path.points.at(i) =
@@ -1742,7 +1742,7 @@ TEST(resample_path, resample_path_by_vector)
 
     // Resampled Arclength size is not enough for interpolation
     {
-      autoware_auto_planning_msgs::msg::Path path;
+      autoware_planning_msgs::msg::Path path;
       path.points.resize(10);
       for (size_t i = 0; i < 10; ++i) {
         path.points.at(i) =
@@ -1776,7 +1776,7 @@ TEST(resample_path, resample_path_by_vector)
 
     // Resampled Arclength is longer than input path
     {
-      autoware_auto_planning_msgs::msg::Path path;
+      autoware_planning_msgs::msg::Path path;
       path.points.resize(10);
       for (size_t i = 0; i < 10; ++i) {
         path.points.at(i) =
@@ -1815,7 +1815,7 @@ TEST(resample_path, resample_path_by_vector_backward)
   using motion_utils::resamplePath;
 
   {
-    autoware_auto_planning_msgs::msg::Path path;
+    autoware_planning_msgs::msg::Path path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, M_PI, i * 1.0, i * 0.5, i * 0.1);
@@ -1896,7 +1896,7 @@ TEST(resample_path, resample_path_by_vector_backward)
 
   // change initial orientation
   {
-    autoware_auto_planning_msgs::msg::Path path;
+    autoware_planning_msgs::msg::Path path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, M_PI, i * 1.0, i * 0.5, i * 0.1);
@@ -1994,7 +1994,7 @@ TEST(resample_path, resample_path_by_vector_non_default)
 
   // Lerp x, y
   {
-    autoware_auto_planning_msgs::msg::Path path;
+    autoware_planning_msgs::msg::Path path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
@@ -2053,7 +2053,7 @@ TEST(resample_path, resample_path_by_vector_non_default)
 
   // Slerp z
   {
-    autoware_auto_planning_msgs::msg::Path path;
+    autoware_planning_msgs::msg::Path path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) =
@@ -2115,7 +2115,7 @@ TEST(resample_path, resample_path_by_vector_non_default)
 
   // Lerp v
   {
-    autoware_auto_planning_msgs::msg::Path path;
+    autoware_planning_msgs::msg::Path path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
@@ -2179,7 +2179,7 @@ TEST(resample_path, resample_path_by_same_interval)
 
   // Same point resampling
   {
-    autoware_auto_planning_msgs::msg::Path path;
+    autoware_planning_msgs::msg::Path path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
@@ -2241,7 +2241,7 @@ TEST(resample_path, resample_path_by_same_interval)
 
   // Normal Case without zero point
   {
-    autoware_auto_planning_msgs::msg::Path path;
+    autoware_planning_msgs::msg::Path path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
@@ -2269,7 +2269,7 @@ TEST(resample_path, resample_path_by_same_interval)
 
   // Normal Case without stop point but with terminal point
   {
-    autoware_auto_planning_msgs::msg::Path path;
+    autoware_planning_msgs::msg::Path path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
@@ -2314,7 +2314,7 @@ TEST(resample_path, resample_path_by_same_interval)
 
   // Normal Case without stop point but with terminal point (Boundary Condition)
   {
-    autoware_auto_planning_msgs::msg::Path path;
+    autoware_planning_msgs::msg::Path path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
@@ -2360,7 +2360,7 @@ TEST(resample_path, resample_path_by_same_interval)
 
   // Normal Case with duplicated zero point
   {
-    autoware_auto_planning_msgs::msg::Path path;
+    autoware_planning_msgs::msg::Path path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
@@ -2390,7 +2390,7 @@ TEST(resample_path, resample_path_by_same_interval)
 
   // Normal Case with zero point
   {
-    autoware_auto_planning_msgs::msg::Path path;
+    autoware_planning_msgs::msg::Path path;
     path.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
@@ -2532,7 +2532,7 @@ TEST(resample_path, resample_path_by_same_interval)
   {
     // Input path size is not enough for resample
     {
-      autoware_auto_planning_msgs::msg::Path path;
+      autoware_planning_msgs::msg::Path path;
       path.points.resize(1);
       for (size_t i = 0; i < 1; ++i) {
         path.points.at(i) =
@@ -2565,7 +2565,7 @@ TEST(resample_path, resample_path_by_same_interval)
 
     // Resample interval is invalid
     {
-      autoware_auto_planning_msgs::msg::Path path;
+      autoware_planning_msgs::msg::Path path;
       path.points.resize(10);
       for (size_t i = 0; i < 10; ++i) {
         path.points.at(i) =
@@ -2598,7 +2598,7 @@ TEST(resample_path, resample_path_by_same_interval)
 
     // Resample interval is invalid (Negative value)
     {
-      autoware_auto_planning_msgs::msg::Path path;
+      autoware_planning_msgs::msg::Path path;
       path.points.resize(10);
       for (size_t i = 0; i < 10; ++i) {
         path.points.at(i) =
@@ -2698,7 +2698,7 @@ TEST(resample_trajectory, resample_trajectory_by_vector)
 
   // Output key is not same as input
   {
-    autoware_auto_planning_msgs::msg::Trajectory traj;
+    autoware_planning_msgs::msg::Trajectory traj;
     traj.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       traj.points.at(i) =
@@ -2787,7 +2787,7 @@ TEST(resample_trajectory, resample_trajectory_by_vector)
   {
     // Input path size is not enough for interpolation
     {
-      autoware_auto_planning_msgs::msg::Trajectory traj;
+      autoware_planning_msgs::msg::Trajectory traj;
       traj.points.resize(1);
       for (size_t i = 0; i < 1; ++i) {
         traj.points.at(i) =
@@ -2821,7 +2821,7 @@ TEST(resample_trajectory, resample_trajectory_by_vector)
 
     // Resampled Arclength size is not enough for interpolation
     {
-      autoware_auto_planning_msgs::msg::Trajectory traj;
+      autoware_planning_msgs::msg::Trajectory traj;
       traj.points.resize(10);
       for (size_t i = 0; i < 10; ++i) {
         traj.points.at(i) =
@@ -2855,7 +2855,7 @@ TEST(resample_trajectory, resample_trajectory_by_vector)
 
     // Resampled Arclength is longer than input path
     {
-      autoware_auto_planning_msgs::msg::Trajectory traj;
+      autoware_planning_msgs::msg::Trajectory traj;
       traj.points.resize(10);
       for (size_t i = 0; i < 10; ++i) {
         traj.points.at(i) =
@@ -2895,7 +2895,7 @@ TEST(resample_trajectory, resample_trajectory_by_vector_non_default)
 
   // Lerp x, y
   {
-    autoware_auto_planning_msgs::msg::Trajectory traj;
+    autoware_planning_msgs::msg::Trajectory traj;
     traj.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       traj.points.at(i) =
@@ -2959,7 +2959,7 @@ TEST(resample_trajectory, resample_trajectory_by_vector_non_default)
 
   // Slerp z
   {
-    autoware_auto_planning_msgs::msg::Trajectory traj;
+    autoware_planning_msgs::msg::Trajectory traj;
     traj.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       traj.points.at(i) = generateTestTrajectoryPoint(
@@ -3025,7 +3025,7 @@ TEST(resample_trajectory, resample_trajectory_by_vector_non_default)
 
   // Lerp twist
   {
-    autoware_auto_planning_msgs::msg::Trajectory traj;
+    autoware_planning_msgs::msg::Trajectory traj;
     traj.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       traj.points.at(i) =
@@ -3094,7 +3094,7 @@ TEST(resample_trajectory, resample_trajectory_by_same_interval)
 
   // Same point resampling
   {
-    autoware_auto_planning_msgs::msg::Trajectory traj;
+    autoware_planning_msgs::msg::Trajectory traj;
     traj.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       traj.points.at(i) =
@@ -3160,7 +3160,7 @@ TEST(resample_trajectory, resample_trajectory_by_same_interval)
 
   // Normal Case without zero point
   {
-    autoware_auto_planning_msgs::msg::Trajectory traj;
+    autoware_planning_msgs::msg::Trajectory traj;
     traj.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       traj.points.at(i) =
@@ -3190,7 +3190,7 @@ TEST(resample_trajectory, resample_trajectory_by_same_interval)
 
   // Normal Case without stop point but with terminal point
   {
-    autoware_auto_planning_msgs::msg::Trajectory traj;
+    autoware_planning_msgs::msg::Trajectory traj;
     traj.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       traj.points.at(i) =
@@ -3238,7 +3238,7 @@ TEST(resample_trajectory, resample_trajectory_by_same_interval)
 
   // Normal Case without stop point but with terminal point (Boundary Condition)
   {
-    autoware_auto_planning_msgs::msg::Trajectory traj;
+    autoware_planning_msgs::msg::Trajectory traj;
     traj.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       traj.points.at(i) =
@@ -3287,7 +3287,7 @@ TEST(resample_trajectory, resample_trajectory_by_same_interval)
 
   // Normal Case with duplicated zero point
   {
-    autoware_auto_planning_msgs::msg::Trajectory traj;
+    autoware_planning_msgs::msg::Trajectory traj;
     traj.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       traj.points.at(i) =
@@ -3319,7 +3319,7 @@ TEST(resample_trajectory, resample_trajectory_by_same_interval)
 
   // Normal Case with zero point
   {
-    autoware_auto_planning_msgs::msg::Trajectory traj;
+    autoware_planning_msgs::msg::Trajectory traj;
     traj.points.resize(10);
     for (size_t i = 0; i < 10; ++i) {
       traj.points.at(i) =
@@ -3470,7 +3470,7 @@ TEST(resample_trajectory, resample_trajectory_by_same_interval)
   {
     // Input path size is not enough for resample
     {
-      autoware_auto_planning_msgs::msg::Trajectory traj;
+      autoware_planning_msgs::msg::Trajectory traj;
       traj.points.resize(1);
       for (size_t i = 0; i < 1; ++i) {
         traj.points.at(i) =
@@ -3503,7 +3503,7 @@ TEST(resample_trajectory, resample_trajectory_by_same_interval)
 
     // Resample interval is invalid
     {
-      autoware_auto_planning_msgs::msg::Trajectory traj;
+      autoware_planning_msgs::msg::Trajectory traj;
       traj.points.resize(10);
       for (size_t i = 0; i < 10; ++i) {
         traj.points.at(i) =
@@ -3536,7 +3536,7 @@ TEST(resample_trajectory, resample_trajectory_by_same_interval)
 
     // Resample interval is invalid (Negative value)
     {
-      autoware_auto_planning_msgs::msg::Trajectory traj;
+      autoware_planning_msgs::msg::Trajectory traj;
       traj.points.resize(10);
       for (size_t i = 0; i < 10; ++i) {
         traj.points.at(i) =

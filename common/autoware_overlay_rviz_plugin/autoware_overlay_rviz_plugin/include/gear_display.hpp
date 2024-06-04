@@ -23,7 +23,7 @@
 #include <rviz_common/properties/int_property.hpp>
 #include <rviz_common/ros_topic_display.hpp>
 
-#include "autoware_auto_vehicle_msgs/msg/gear_report.hpp"
+#include "autoware_vehicle_msgs/msg/gear_report.hpp"
 
 #include <OgreColourValue.h>
 #include <OgreMaterial.h>
@@ -37,7 +37,7 @@ class GearDisplay
 public:
   GearDisplay();
   void drawGearIndicator(QPainter & painter, const QRectF & backgroundRect);
-  void updateGearData(const autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr & msg);
+  void updateGearData(const autoware_vehicle_msgs::msg::GearReport::ConstSharedPtr & msg);
 
 private:
   int current_gear_;  // Internal variable to store current gear

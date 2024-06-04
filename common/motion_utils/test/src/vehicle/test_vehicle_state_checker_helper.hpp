@@ -15,11 +15,11 @@
 #ifndef VEHICLE__TEST_VEHICLE_STATE_CHECKER_HELPER_HPP_
 #define VEHICLE__TEST_VEHICLE_STATE_CHECKER_HELPER_HPP_
 
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
+#include <autoware_planning_msgs/msg/trajectory_point.hpp>
 
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 
 inline Trajectory generateTrajectoryWithStopPoint(const geometry_msgs::msg::Pose & goal_pose)
 {

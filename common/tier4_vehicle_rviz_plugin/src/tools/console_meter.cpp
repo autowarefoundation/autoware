@@ -164,7 +164,7 @@ void ConsoleMeterDisplay::update(float wall_dt, float ros_dt)
 }
 
 void ConsoleMeterDisplay::processMessage(
-  const autoware_auto_vehicle_msgs::msg::VelocityReport::ConstSharedPtr msg_ptr)
+  const autoware_vehicle_msgs::msg::VelocityReport::ConstSharedPtr msg_ptr)
 {
   if (!isEnabled()) {
     return;

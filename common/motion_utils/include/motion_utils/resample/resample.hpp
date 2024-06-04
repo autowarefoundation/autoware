@@ -15,9 +15,9 @@
 #ifndef MOTION_UTILS__RESAMPLE__RESAMPLE_HPP_
 #define MOTION_UTILS__RESAMPLE__RESAMPLE_HPP_
 
-#include "autoware_auto_planning_msgs/msg/detail/path__struct.hpp"
-#include "autoware_auto_planning_msgs/msg/detail/path_with_lane_id__struct.hpp"
-#include "autoware_auto_planning_msgs/msg/detail/trajectory__struct.hpp"
+#include "autoware_planning_msgs/msg/path.hpp"
+#include "autoware_planning_msgs/msg/trajectory.hpp"
+#include "tier4_planning_msgs/msg/path_with_lane_id.hpp"
 
 #include <vector>
 
@@ -113,8 +113,8 @@ std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
  *        longitudinal and lateral velocity. Otherwise, it uses linear interpolation
  * @return resampled path
  */
-autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
+tier4_planning_msgs::msg::PathWithLaneId resamplePath(
+  const tier4_planning_msgs::msg::PathWithLaneId & input_path,
   const std::vector<double> & resampled_arclength, const bool use_akima_spline_for_xy = false,
   const bool use_lerp_for_z = true, const bool use_zero_order_hold_for_v = true);
 
@@ -136,11 +136,10 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
  * @param resample_input_path_stop_point If true, resample closest stop point in input path
  * @return resampled path
  */
-autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
-  const double resample_interval, const bool use_akima_spline_for_xy = false,
-  const bool use_lerp_for_z = true, const bool use_zero_order_hold_for_v = true,
-  const bool resample_input_path_stop_point = true);
+tier4_planning_msgs::msg::PathWithLaneId resamplePath(
+  const tier4_planning_msgs::msg::PathWithLaneId & input_path, const double resample_interval,
+  const bool use_akima_spline_for_xy = false, const bool use_lerp_for_z = true,
+  const bool use_zero_order_hold_for_v = true, const bool resample_input_path_stop_point = true);
 
 /**
  * @brief A resampling function for a path. Note that in a default setting, position xy are
@@ -159,8 +158,8 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
  *        longitudinal and lateral velocity. Otherwise, it uses linear interpolation
  * @return resampled path
  */
-autoware_auto_planning_msgs::msg::Path resamplePath(
-  const autoware_auto_planning_msgs::msg::Path & input_path,
+autoware_planning_msgs::msg::Path resamplePath(
+  const autoware_planning_msgs::msg::Path & input_path,
   const std::vector<double> & resampled_arclength, const bool use_akima_spline_for_xy = false,
   const bool use_lerp_for_z = true, const bool use_zero_order_hold_for_v = true);
 
@@ -181,8 +180,8 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
  * @param resample_input_path_stop_point If true, resample closest stop point in input path
  * @return resampled path
  */
-autoware_auto_planning_msgs::msg::Path resamplePath(
-  const autoware_auto_planning_msgs::msg::Path & input_path, const double resample_interval,
+autoware_planning_msgs::msg::Path resamplePath(
+  const autoware_planning_msgs::msg::Path & input_path, const double resample_interval,
   const bool use_akima_spline_for_xy = false, const bool use_lerp_for_z = true,
   const bool use_zero_order_hold_for_twist = true,
   const bool resample_input_path_stop_point = true);
@@ -205,8 +204,8 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
  *        longitudinal, lateral velocity and acceleration. Otherwise, it uses linear interpolation
  * @return resampled trajectory
  */
-autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory & input_trajectory,
+autoware_planning_msgs::msg::Trajectory resampleTrajectory(
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory,
   const std::vector<double> & resampled_arclength, const bool use_akima_spline_for_xy = false,
   const bool use_lerp_for_z = true, const bool use_zero_order_hold_for_twist = true);
 
@@ -230,10 +229,10 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
  *        trajectory
  * @return resampled trajectory
  */
-autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory & input_trajectory,
-  const double resample_interval, const bool use_akima_spline_for_xy = false,
-  const bool use_lerp_for_z = true, const bool use_zero_order_hold_for_twist = true,
+autoware_planning_msgs::msg::Trajectory resampleTrajectory(
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double resample_interval,
+  const bool use_akima_spline_for_xy = false, const bool use_lerp_for_z = true,
+  const bool use_zero_order_hold_for_twist = true,
   const bool resample_input_trajectory_stop_point = true);
 }  // namespace motion_utils
 

@@ -199,7 +199,7 @@ TEST(spline_interpolation, SplineInterpolationPoints2d)
 
 TEST(spline_interpolation, SplineInterpolationPoints2dPolymorphism)
 {
-  using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+  using autoware_planning_msgs::msg::TrajectoryPoint;
   using tier4_autoware_utils::createPoint;
 
   std::vector<geometry_msgs::msg::Point> points;

@@ -27,9 +27,8 @@
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
 
-#include <autoware_auto_planning_msgs/msg/path.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_planning_msgs/msg/path.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -39,6 +38,7 @@
 #include <geometry_msgs/msg/twist_with_covariance.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <tf2/utils.h>
 
@@ -129,21 +129,19 @@ inline geometry_msgs::msg::Point getPoint(const geometry_msgs::msg::PoseWithCova
 }
 
 template <>
-inline geometry_msgs::msg::Point getPoint(const autoware_auto_planning_msgs::msg::PathPoint & p)
+inline geometry_msgs::msg::Point getPoint(const autoware_planning_msgs::msg::PathPoint & p)
 {
   return p.pose.position;
 }
 
 template <>
-inline geometry_msgs::msg::Point getPoint(
-  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+inline geometry_msgs::msg::Point getPoint(const tier4_planning_msgs::msg::PathPointWithLaneId & p)
 {
   return p.point.pose.position;
 }
 
 template <>
-inline geometry_msgs::msg::Point getPoint(
-  const autoware_auto_planning_msgs::msg::TrajectoryPoint & p)
+inline geometry_msgs::msg::Point getPoint(const autoware_planning_msgs::msg::TrajectoryPoint & p)
 {
   return p.pose.position;
 }
@@ -168,20 +166,19 @@ inline geometry_msgs::msg::Pose getPose(const geometry_msgs::msg::PoseStamped & 
 }
 
 template <>
-inline geometry_msgs::msg::Pose getPose(const autoware_auto_planning_msgs::msg::PathPoint & p)
+inline geometry_msgs::msg::Pose getPose(const autoware_planning_msgs::msg::PathPoint & p)
 {
   return p.pose;
 }
 
 template <>
-inline geometry_msgs::msg::Pose getPose(
-  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+inline geometry_msgs::msg::Pose getPose(const tier4_planning_msgs::msg::PathPointWithLaneId & p)
 {
   return p.point.pose;
 }
 
 template <>
-inline geometry_msgs::msg::Pose getPose(const autoware_auto_planning_msgs::msg::TrajectoryPoint & p)
+inline geometry_msgs::msg::Pose getPose(const autoware_planning_msgs::msg::TrajectoryPoint & p)
 {
   return p.pose;
 }
@@ -194,20 +191,19 @@ double getLongitudinalVelocity([[maybe_unused]] const T & p)
 }
 
 template <>
-inline double getLongitudinalVelocity(const autoware_auto_planning_msgs::msg::PathPoint & p)
+inline double getLongitudinalVelocity(const autoware_planning_msgs::msg::PathPoint & p)
 {
   return p.longitudinal_velocity_mps;
 }
 
 template <>
-inline double getLongitudinalVelocity(
-  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+inline double getLongitudinalVelocity(const tier4_planning_msgs::msg::PathPointWithLaneId & p)
 {
   return p.point.longitudinal_velocity_mps;
 }
 
 template <>
-inline double getLongitudinalVelocity(const autoware_auto_planning_msgs::msg::TrajectoryPoint & p)
+inline double getLongitudinalVelocity(const autoware_planning_msgs::msg::TrajectoryPoint & p)
 {
   return p.longitudinal_velocity_mps;
 }
@@ -233,21 +229,21 @@ inline void setPose(const geometry_msgs::msg::Pose & pose, geometry_msgs::msg::P
 
 template <>
 inline void setPose(
-  const geometry_msgs::msg::Pose & pose, autoware_auto_planning_msgs::msg::PathPoint & p)
+  const geometry_msgs::msg::Pose & pose, autoware_planning_msgs::msg::PathPoint & p)
 {
   p.pose = pose;
 }
 
 template <>
 inline void setPose(
-  const geometry_msgs::msg::Pose & pose, autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+  const geometry_msgs::msg::Pose & pose, tier4_planning_msgs::msg::PathPointWithLaneId & p)
 {
   p.point.pose = pose;
 }
 
 template <>
 inline void setPose(
-  const geometry_msgs::msg::Pose & pose, autoware_auto_planning_msgs::msg::TrajectoryPoint & p)
+  const geometry_msgs::msg::Pose & pose, autoware_planning_msgs::msg::TrajectoryPoint & p)
 {
   p.pose = pose;
 }
@@ -269,21 +265,21 @@ void setLongitudinalVelocity([[maybe_unused]] const float velocity, [[maybe_unus
 
 template <>
 inline void setLongitudinalVelocity(
-  const float velocity, autoware_auto_planning_msgs::msg::TrajectoryPoint & p)
+  const float velocity, autoware_planning_msgs::msg::TrajectoryPoint & p)
 {
   p.longitudinal_velocity_mps = velocity;
 }
 
 template <>
 inline void setLongitudinalVelocity(
-  const float velocity, autoware_auto_planning_msgs::msg::PathPoint & p)
+  const float velocity, autoware_planning_msgs::msg::PathPoint & p)
 {
   p.longitudinal_velocity_mps = velocity;
 }
 
 template <>
 inline void setLongitudinalVelocity(
-  const float velocity, autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+  const float velocity, tier4_planning_msgs::msg::PathPointWithLaneId & p)
 {
   p.point.longitudinal_velocity_mps = velocity;
 }

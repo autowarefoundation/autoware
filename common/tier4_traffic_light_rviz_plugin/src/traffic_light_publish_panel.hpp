@@ -26,8 +26,8 @@
 #include <rclcpp/timer.hpp>
 #include <rviz_common/panel.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_perception_msgs/msg/traffic_signal_array.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
+#include <autoware_perception_msgs/msg/traffic_light_group_array.hpp>
 #endif
 
 #include <set>
@@ -35,10 +35,10 @@
 namespace rviz_plugins
 {
 
-using autoware_auto_mapping_msgs::msg::HADMapBin;
-using autoware_perception_msgs::msg::TrafficSignal;
-using autoware_perception_msgs::msg::TrafficSignalArray;
-using autoware_perception_msgs::msg::TrafficSignalElement;
+using autoware_map_msgs::msg::LaneletMapBin;
+using autoware_perception_msgs::msg::TrafficLightElement;
+using autoware_perception_msgs::msg::TrafficLightGroup;
+using autoware_perception_msgs::msg::TrafficLightGroupArray;
 class TrafficLightPublishPanel : public rviz_common::Panel
 {
   Q_OBJECT
@@ -56,12 +56,12 @@ public Q_SLOTS:
 protected:
   void onTimer();
   void createWallTimer();
-  void onVectorMap(const HADMapBin::ConstSharedPtr msg);
+  void onVectorMap(const LaneletMapBin::ConstSharedPtr msg);
 
   rclcpp::Node::SharedPtr raw_node_;
   rclcpp::TimerBase::SharedPtr pub_timer_;
-  rclcpp::Publisher<TrafficSignalArray>::SharedPtr pub_traffic_signals_;
-  rclcpp::Subscription<HADMapBin>::SharedPtr sub_vector_map_;
+  rclcpp::Publisher<TrafficLightGroupArray>::SharedPtr pub_traffic_signals_;
+  rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_vector_map_;
 
   QSpinBox * publishing_rate_input_;
   QComboBox * traffic_light_id_input_;
@@ -74,7 +74,7 @@ protected:
   QPushButton * publish_button_;
   QTableWidget * traffic_table_;
 
-  TrafficSignalArray extra_traffic_signals_;
+  TrafficLightGroupArray extra_traffic_signals_;
 
   bool enable_publish_{false};
   std::set<int> traffic_light_ids_;

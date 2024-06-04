@@ -23,8 +23,8 @@
 #include <rviz_common/properties/int_property.hpp>
 #include <rviz_common/ros_topic_display.hpp>
 
-#include <autoware_auto_vehicle_msgs/msg/hazard_lights_report.hpp>
-#include <autoware_auto_vehicle_msgs/msg/turn_indicators_report.hpp>
+#include <autoware_vehicle_msgs/msg/hazard_lights_report.hpp>
+#include <autoware_vehicle_msgs/msg/turn_indicators_report.hpp>
 
 #include <OgreColourValue.h>
 #include <OgreMaterial.h>
@@ -41,9 +41,9 @@ public:
   TurnSignalsDisplay();
   void drawArrows(QPainter & painter, const QRectF & backgroundRect, const QColor & color);
   void updateTurnSignalsData(
-    const autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport::ConstSharedPtr & msg);
+    const autoware_vehicle_msgs::msg::TurnIndicatorsReport::ConstSharedPtr & msg);
   void updateHazardLightsData(
-    const autoware_auto_vehicle_msgs::msg::HazardLightsReport::ConstSharedPtr & msg);
+    const autoware_vehicle_msgs::msg::HazardLightsReport::ConstSharedPtr & msg);
 
 private:
   QImage arrowImage;

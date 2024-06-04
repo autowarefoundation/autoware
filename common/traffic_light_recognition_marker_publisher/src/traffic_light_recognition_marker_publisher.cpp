@@ -26,17 +26,17 @@ TrafficLightRecognitionMarkerPublisher::TrafficLightRecognitionMarkerPublisher(
 {
   using std::placeholders::_1;
 
-  sub_map_ptr_ = this->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+  sub_map_ptr_ = this->create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
     "~/input/lanelet2_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&TrafficLightRecognitionMarkerPublisher::onMap, this, _1));
-  sub_tlr_ptr_ = this->create_subscription<autoware_auto_perception_msgs::msg::TrafficSignalArray>(
+  sub_tlr_ptr_ = this->create_subscription<autoware_perception_msgs::msg::TrafficLightGroupArray>(
     "~/input/traffic_signals", rclcpp::QoS{1},
     std::bind(&TrafficLightRecognitionMarkerPublisher::onTrafficSignalArray, this, _1));
   pub_marker_ptr_ =
     this->create_publisher<visualization_msgs::msg::MarkerArray>("~/output/marker", rclcpp::QoS{1});
 }
 
-void TrafficLightRecognitionMarkerPublisher::onMap(const HADMapBin::ConstSharedPtr msg_ptr)
+void TrafficLightRecognitionMarkerPublisher::onMap(const LaneletMapBin::ConstSharedPtr msg_ptr)
 {
   is_map_ready_ = false;
   lanelet::LaneletMapPtr viz_lanelet_map(new lanelet::LaneletMap);
@@ -70,10 +70,10 @@ void TrafficLightRecognitionMarkerPublisher::onTrafficSignalArray(
   }
   MarkerArray markers;
   marker_id = 0;
-  for (const auto & tl : msg_ptr->signals) {
-    if (tl_position_map_.count(tl.map_primitive_id) == 0) continue;
-    auto tl_position = tl_position_map_[tl.map_primitive_id];
-    for (const auto tl_light : tl.lights) {
+  for (const auto & tl : msg_ptr->traffic_light_groups) {
+    if (tl_position_map_.count(tl.traffic_light_group_id) == 0) continue;
+    auto tl_position = tl_position_map_[tl.traffic_light_group_id];
+    for (const auto tl_light : tl.elements) {
       const auto marker = getTrafficLightMarker(tl_position, tl_light.color, tl_light.shape);
       markers.markers.emplace_back(marker);
       marker_id++;

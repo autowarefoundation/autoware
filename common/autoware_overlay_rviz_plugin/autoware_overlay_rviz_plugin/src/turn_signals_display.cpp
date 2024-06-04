@@ -46,7 +46,7 @@ TurnSignalsDisplay::TurnSignalsDisplay() : current_turn_signal_(0)
 }
 
 void TurnSignalsDisplay::updateTurnSignalsData(
-  const autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport::ConstSharedPtr & msg)
+  const autoware_vehicle_msgs::msg::TurnIndicatorsReport::ConstSharedPtr & msg)
 {
   try {
     // Assuming msg->report is the field you're interested in
@@ -58,7 +58,7 @@ void TurnSignalsDisplay::updateTurnSignalsData(
 }
 
 void TurnSignalsDisplay::updateHazardLightsData(
-  const autoware_auto_vehicle_msgs::msg::HazardLightsReport::ConstSharedPtr & msg)
+  const autoware_vehicle_msgs::msg::HazardLightsReport::ConstSharedPtr & msg)
 {
   try {
     // Assuming msg->report is the field you're interested in
@@ -80,11 +80,11 @@ void TurnSignalsDisplay::drawArrows(
   int rightArrowXPos = backgroundRect.right() - scaledRightArrow.width() * 3 - 175;
 
   bool leftActive =
-    (current_turn_signal_ == autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport::ENABLE_LEFT ||
-     current_hazard_lights_ == autoware_auto_vehicle_msgs::msg::HazardLightsReport::ENABLE);
+    (current_turn_signal_ == autoware_vehicle_msgs::msg::TurnIndicatorsReport::ENABLE_LEFT ||
+     current_hazard_lights_ == autoware_vehicle_msgs::msg::HazardLightsReport::ENABLE);
   bool rightActive =
-    (current_turn_signal_ == autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport::ENABLE_RIGHT ||
-     current_hazard_lights_ == autoware_auto_vehicle_msgs::msg::HazardLightsReport::ENABLE);
+    (current_turn_signal_ == autoware_vehicle_msgs::msg::TurnIndicatorsReport::ENABLE_RIGHT ||
+     current_hazard_lights_ == autoware_vehicle_msgs::msg::HazardLightsReport::ENABLE);
 
   // Color the arrows based on the state of the turn signals and hazard lights by having them blink
   // on and off

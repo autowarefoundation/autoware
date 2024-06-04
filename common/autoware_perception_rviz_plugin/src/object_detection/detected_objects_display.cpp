@@ -40,7 +40,7 @@ void DetectedObjectsDisplay::processMessage(DetectedObjects::ConstSharedPtr msg)
       object.kinematics.pose_with_covariance.pose.orientation, object.classification,
       get_line_width(),
       object.kinematics.orientation_availability ==
-        autoware_auto_perception_msgs::msg::DetectedObjectKinematics::AVAILABLE);
+        autoware_perception_msgs::msg::DetectedObjectKinematics::AVAILABLE);
     if (shape_marker) {
       auto shape_marker_ptr = shape_marker.value();
       shape_marker_ptr->header = msg->header;

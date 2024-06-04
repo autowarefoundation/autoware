@@ -27,7 +27,7 @@
 #include <rviz_rendering/objects/movable_text.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
-#include <autoware_auto_planning_msgs/msg/path.hpp>
+#include <autoware_planning_msgs/msg/path.hpp>
 
 #include <OgreBillboardSet.h>
 #include <OgreManualObject.h>

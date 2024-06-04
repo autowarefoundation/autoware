@@ -16,7 +16,7 @@ This plugin also can engage from the panel.
 | `/api/localization/initialization_state` | `autoware_adapi_v1_msgs::msg::LocalizationInitializationState` | The topic represents the state of localization initialization |
 | `/api/motion/state`                      | `autoware_adapi_v1_msgs::msg::MotionState`                     | The topic represents the state of motion                      |
 | `/api/autoware/get/emergency`            | `tier4_external_api_msgs::msg::Emergency`                      | The topic represents the state of external emergency          |
-| `/vehicle/status/gear_status`            | `autoware_auto_vehicle_msgs::msg::GearReport`                  | The topic represents the state of gear                        |
+| `/vehicle/status/gear_status`            | `autoware_vehicle_msgs::msg::GearReport`                       | The topic represents the state of gear                        |
 
 ### Output
 

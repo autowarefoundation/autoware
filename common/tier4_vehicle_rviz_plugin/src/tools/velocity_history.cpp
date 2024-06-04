@@ -102,7 +102,7 @@ void VelocityHistoryDisplay::reset()
 }
 
 bool VelocityHistoryDisplay::validateFloats(
-  const autoware_auto_vehicle_msgs::msg::VelocityReport::ConstSharedPtr & msg_ptr)
+  const autoware_vehicle_msgs::msg::VelocityReport::ConstSharedPtr & msg_ptr)
 {
   if (!rviz_common::validateFloats(msg_ptr->longitudinal_velocity)) {
     return false;
@@ -120,7 +120,7 @@ void VelocityHistoryDisplay::update(float wall_dt, float ros_dt)
 }
 
 void VelocityHistoryDisplay::processMessage(
-  const autoware_auto_vehicle_msgs::msg::VelocityReport::ConstSharedPtr msg_ptr)
+  const autoware_vehicle_msgs::msg::VelocityReport::ConstSharedPtr msg_ptr)
 {
   if (!isEnabled()) {
     return;

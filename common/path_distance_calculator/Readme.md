@@ -11,10 +11,10 @@ Note that the distance means the arc-length along the path, not the Euclidean di
 
 ### Input
 
-| Name                                                              | Type                                     | Description    |
-| ----------------------------------------------------------------- | ---------------------------------------- | -------------- |
-| `/planning/scenario_planning/lane_driving/behavior_planning/path` | `autoware_auto_planning_msgs::msg::Path` | Reference path |
-| `/tf`                                                             | `tf2_msgs/TFMessage`                     | TF (self-pose) |
+| Name                                                              | Type                                | Description    |
+| ----------------------------------------------------------------- | ----------------------------------- | -------------- |
+| `/planning/scenario_planning/lane_driving/behavior_planning/path` | `autoware_planning_msgs::msg::Path` | Reference path |
+| `/tf`                                                             | `tf2_msgs/TFMessage`                | TF (self-pose) |
 
 ### Output
 

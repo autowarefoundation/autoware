@@ -15,13 +15,13 @@ This plugin provides a visual and easy-to-understand display of vehicle speed, t
 
 | Name                                                    | Type                                                    | Description                          |
 | ------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------ |
-| `/vehicle/status/velocity_status`                       | `autoware_auto_vehicle_msgs::msg::VelocityReport`       | The topic is vehicle velocity        |
-| `/vehicle/status/turn_indicators_status`                | `autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport` | The topic is status of turn signal   |
-| `/vehicle/status/hazard_status`                         | `autoware_auto_vehicle_msgs::msg::HazardReport`         | The topic is status of hazard        |
-| `/vehicle/status/steering_status`                       | `autoware_auto_vehicle_msgs::msg::SteeringReport`       | The topic is status of steering      |
-| `/vehicle/status/gear_status`                           | `autoware_auto_vehicle_msgs::msg::GearReport`           | The topic is status of gear          |
+| `/vehicle/status/velocity_status`                       | `autoware_vehicle_msgs::msg::VelocityReport`            | The topic is vehicle velocity        |
+| `/vehicle/status/turn_indicators_status`                | `autoware_vehicle_msgs::msg::TurnIndicatorsReport`      | The topic is status of turn signal   |
+| `/vehicle/status/hazard_status`                         | `autoware_vehicle_msgs::msg::HazardReport`              | The topic is status of hazard        |
+| `/vehicle/status/steering_status`                       | `autoware_vehicle_msgs::msg::SteeringReport`            | The topic is status of steering      |
+| `/vehicle/status/gear_status`                           | `autoware_vehicle_msgs::msg::GearReport`                | The topic is status of gear          |
 | `/planning/scenario_planning/current_max_velocity`      | `tier4_planning_msgs::msg::VelocityLimit`               | The topic is velocity limit          |
-| `/perception/traffic_light_recognition/traffic_signals` | `autoware_perception_msgs::msg::TrafficSignalArray`     | The topic is status of traffic light |
+| `/perception/traffic_light_recognition/traffic_signals` | `autoware_perception_msgs::msg::TrafficLightGroupArray` | The topic is status of traffic light |
 
 ## Parameter
 

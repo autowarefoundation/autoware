@@ -1,4 +1,4 @@
-// Copyright 2023 Tier IV, Inc.
+// Copyright 2021 Tier IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "motion_utils/trajectory/conversion.hpp"
+#ifndef MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
+#define MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
 
-#include <algorithm>
+#include "autoware_planning_msgs/msg/trajectory.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
+
+#include <vector>
 
 namespace motion_utils
 {
@@ -30,25 +34,15 @@ namespace motion_utils
  * points larger than the capacity. (Tier IV)
  */
 autoware_planning_msgs::msg::Trajectory convertToTrajectory(
-  const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & trajectory,
-  const std_msgs::msg::Header & header)
-{
-  autoware_planning_msgs::msg::Trajectory output{};
-  output.header = header;
-  for (const auto & pt : trajectory) output.points.push_back(pt);
-  return output;
-}
+  const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & trajectory);
 
 /**
  * @brief Convert autoware_planning_msgs::msg::Trajectory to
  * std::vector<autoware_planning_msgs::msg::TrajectoryPoint>.
  */
 std::vector<autoware_planning_msgs::msg::TrajectoryPoint> convertToTrajectoryPointArray(
-  const autoware_planning_msgs::msg::Trajectory & trajectory)
-{
-  std::vector<autoware_planning_msgs::msg::TrajectoryPoint> output(trajectory.points.size());
-  std::copy(trajectory.points.begin(), trajectory.points.end(), output.begin());
-  return output;
-}
+  const autoware_planning_msgs::msg::Trajectory & trajectory);
 
 }  // namespace motion_utils
+
+#endif  // MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_

@@ -50,7 +50,7 @@
 #include <QPainter>
 #include <rviz_common/uniform_string_stream.hpp>
 
-#include <autoware_auto_system_msgs/msg/hazard_status_stamped.hpp>
+#include <autoware_system_msgs/msg/hazard_status_stamped.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 
 #include <X11/Xlib.h>
@@ -162,7 +162,7 @@ void MrmSummaryOverlayDisplay::update(float wall_dt, float ros_dt)
   // MRM summary
   std::vector<std::string> mrm_comfortable_stop_summary_list = {};
   std::vector<std::string> mrm_emergency_stop_summary_list = {};
-  int hazard_level = autoware_auto_system_msgs::msg::HazardStatus::NO_FAULT;
+  int hazard_level = autoware_system_msgs::msg::HazardStatus::NO_FAULT;
   {
     std::lock_guard<std::mutex> message_lock(mutex_);
     if (last_msg_ptr_) {
@@ -207,7 +207,7 @@ void MrmSummaryOverlayDisplay::update(float wall_dt, float ros_dt)
   std::ostringstream output_text;
 
   // Display the MRM Summary only when there is a fault
-  if (hazard_level != autoware_auto_system_msgs::msg::HazardStatus::NO_FAULT) {
+  if (hazard_level != autoware_system_msgs::msg::HazardStatus::NO_FAULT) {
     // Broadcasting the Basic Error Infos
     int number_of_comfortable_stop_messages =
       static_cast<int>(mrm_comfortable_stop_summary_list.size());
@@ -243,7 +243,7 @@ void MrmSummaryOverlayDisplay::update(float wall_dt, float ros_dt)
 }
 
 void MrmSummaryOverlayDisplay::processMessage(
-  const autoware_auto_system_msgs::msg::HazardStatusStamped::ConstSharedPtr msg_ptr)
+  const autoware_system_msgs::msg::HazardStatusStamped::ConstSharedPtr msg_ptr)
 {
   if (!isEnabled()) {
     return;

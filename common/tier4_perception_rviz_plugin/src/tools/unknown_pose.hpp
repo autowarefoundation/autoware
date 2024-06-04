@@ -48,8 +48,8 @@
 namespace rviz_plugins
 {
 
-using autoware_auto_perception_msgs::msg::ObjectClassification;
-using autoware_auto_perception_msgs::msg::Shape;
+using autoware_perception_msgs::msg::ObjectClassification;
+using autoware_perception_msgs::msg::Shape;
 using dummy_perception_publisher::msg::Object;
 
 class UnknownInitialPoseTool : public InteractiveObjectTool

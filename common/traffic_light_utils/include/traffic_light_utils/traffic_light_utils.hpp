@@ -15,8 +15,8 @@
 #ifndef TRAFFIC_LIGHT_UTILS__TRAFFIC_LIGHT_UTILS_HPP_
 #define TRAFFIC_LIGHT_UTILS__TRAFFIC_LIGHT_UTILS_HPP_
 
-#include "autoware_perception_msgs/msg/traffic_signal.hpp"
-#include "autoware_perception_msgs/msg/traffic_signal_element.hpp"
+#include "autoware_perception_msgs/msg/traffic_light_element.hpp"
+#include "autoware_perception_msgs/msg/traffic_light_group.hpp"
 #include "tier4_perception_msgs/msg/traffic_light.hpp"
 #include "tier4_perception_msgs/msg/traffic_light_element.hpp"
 #include "tier4_perception_msgs/msg/traffic_light_roi.hpp"
@@ -50,7 +50,7 @@ void setSignalUnknown(tier4_perception_msgs::msg::TrafficLight & signal, float c
  * @return True if a circle-shaped light with the specified color is found, false otherwise.
  */
 bool hasTrafficLightCircleColor(
-  const autoware_perception_msgs::msg::TrafficSignal & tl_state, const uint8_t & lamp_color);
+  const autoware_perception_msgs::msg::TrafficLightGroup & tl_state, const uint8_t & lamp_color);
 
 /**
  * @brief Checks if a traffic light state includes a light with the specified shape.
@@ -62,7 +62,7 @@ bool hasTrafficLightCircleColor(
  * @return True if a light with the specified shape is found, false otherwise.
  */
 bool hasTrafficLightShape(
-  const autoware_perception_msgs::msg::TrafficSignal & tl_state, const uint8_t & lamp_shape);
+  const autoware_perception_msgs::msg::TrafficLightGroup & tl_state, const uint8_t & lamp_shape);
 
 /**
  * @brief Determines if a traffic signal indicates a stop for the given lanelet.
@@ -78,7 +78,7 @@ bool hasTrafficLightShape(
  */
 bool isTrafficSignalStop(
   const lanelet::ConstLanelet & lanelet,
-  const autoware_perception_msgs::msg::TrafficSignal & tl_state);
+  const autoware_perception_msgs::msg::TrafficLightGroup & tl_state);
 
 tf2::Vector3 getTrafficLightTopLeft(const lanelet::ConstLineString3d & traffic_light);
 

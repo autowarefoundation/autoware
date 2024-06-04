@@ -25,7 +25,7 @@
 #include <rviz_default_plugins/displays/marker/marker_common.hpp>
 #include <rviz_default_plugins/displays/marker_array/marker_array_display.hpp>
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
 #include <bitset>
@@ -53,7 +53,7 @@ public:
   using Color = std::array<float, 3U>;
   using Marker = visualization_msgs::msg::Marker;
   using MarkerCommon = rviz_default_plugins::displays::MarkerCommon;
-  using ObjectClassificationMsg = autoware_auto_perception_msgs::msg::ObjectClassification;
+  using ObjectClassificationMsg = autoware_perception_msgs::msg::ObjectClassification;
   using RosTopicDisplay = rviz_common::RosTopicDisplay<MsgT>;
 
   using PolygonPropertyMap =
@@ -189,7 +189,7 @@ protected:
   /// \return Marker ptr. Id and header will have to be set by the caller
   template <typename ClassificationContainerT>
   std::optional<Marker::SharedPtr> get_shape_marker_ptr(
-    const autoware_auto_perception_msgs::msg::Shape & shape_msg,
+    const autoware_perception_msgs::msg::Shape & shape_msg,
     const geometry_msgs::msg::Point & centroid, const geometry_msgs::msg::Quaternion & orientation,
     const ClassificationContainerT & labels, const double & line_width,
     const bool & is_orientation_available) const
@@ -212,7 +212,7 @@ protected:
 
   template <typename ClassificationContainerT>
   visualization_msgs::msg::Marker::SharedPtr get_2d_shape_marker_ptr(
-    const autoware_auto_perception_msgs::msg::Shape & shape_msg,
+    const autoware_perception_msgs::msg::Shape & shape_msg,
     const geometry_msgs::msg::Point & centroid, const geometry_msgs::msg::Quaternion & orientation,
     const std_msgs::msg::ColorRGBA & color_rgba, const double & line_width,
     const bool & is_orientation_available);
@@ -363,8 +363,8 @@ protected:
 
   std::optional<Marker::SharedPtr> get_predicted_path_marker_ptr(
     const unique_identifier_msgs::msg::UUID & uuid,
-    const autoware_auto_perception_msgs::msg::Shape & shape,
-    const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path) const
+    const autoware_perception_msgs::msg::Shape & shape,
+    const autoware_perception_msgs::msg::PredictedPath & predicted_path) const
   {
     if (m_display_predicted_paths_property.getBool()) {
       const std::string uuid_str = uuid_to_string(uuid);
@@ -379,7 +379,7 @@ protected:
 
   std::optional<Marker::SharedPtr> get_path_confidence_marker_ptr(
     const unique_identifier_msgs::msg::UUID & uuid,
-    const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path) const
+    const autoware_perception_msgs::msg::PredictedPath & predicted_path) const
   {
     if (m_display_path_confidence_property.getBool()) {
       const std::string uuid_str = uuid_to_string(uuid);

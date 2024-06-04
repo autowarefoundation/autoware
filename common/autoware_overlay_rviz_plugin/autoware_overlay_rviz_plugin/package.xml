@@ -11,8 +11,8 @@
 
   <license>BSD-3-Clause</license>
 
-  <depend>autoware_auto_vehicle_msgs</depend>
   <depend>autoware_perception_msgs</depend>
+  <depend>autoware_vehicle_msgs</depend>
   <depend>boost</depend>
   <depend>rviz_common</depend>
   <depend>rviz_ogre_vendor</depend>

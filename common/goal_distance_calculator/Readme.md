@@ -10,10 +10,10 @@ This node publishes deviation of self-pose from goal pose.
 
 ### Input
 
-| Name                               | Type                                      | Description           |
-| ---------------------------------- | ----------------------------------------- | --------------------- |
-| `/planning/mission_planning/route` | `autoware_auto_planning_msgs::msg::Route` | Used to get goal pose |
-| `/tf`                              | `tf2_msgs/TFMessage`                      | TF (self-pose)        |
+| Name                               | Type                                 | Description           |
+| ---------------------------------- | ------------------------------------ | --------------------- |
+| `/planning/mission_planning/route` | `autoware_planning_msgs::msg::Route` | Used to get goal pose |
+| `/tf`                              | `tf2_msgs/TFMessage`                 | TF (self-pose)        |
 
 ### Output
 

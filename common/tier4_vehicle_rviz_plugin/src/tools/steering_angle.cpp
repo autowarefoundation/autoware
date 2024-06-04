@@ -167,7 +167,7 @@ void SteeringAngleDisplay::update(float wall_dt, float ros_dt)
 }
 
 void SteeringAngleDisplay::processMessage(
-  const autoware_auto_vehicle_msgs::msg::SteeringReport::ConstSharedPtr msg_ptr)
+  const autoware_vehicle_msgs::msg::SteeringReport::ConstSharedPtr msg_ptr)
 {
   if (!isEnabled()) {
     return;

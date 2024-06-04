@@ -28,13 +28,13 @@
 #include <tier4_autoware_utils/math/normalization.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
 
-#include <autoware_auto_vehicle_msgs/msg/velocity_report.hpp>
+#include <autoware_vehicle_msgs/msg/velocity_report.hpp>
 #endif
 
 namespace rviz_plugins
 {
 class ConsoleMeterDisplay
-: public rviz_common::RosTopicDisplay<autoware_auto_vehicle_msgs::msg::VelocityReport>
+: public rviz_common::RosTopicDisplay<autoware_vehicle_msgs::msg::VelocityReport>
 {
   Q_OBJECT
 
@@ -52,7 +52,7 @@ private Q_SLOTS:
 protected:
   void update(float wall_dt, float ros_dt) override;
   void processMessage(
-    const autoware_auto_vehicle_msgs::msg::VelocityReport::ConstSharedPtr msg_ptr) override;
+    const autoware_vehicle_msgs::msg::VelocityReport::ConstSharedPtr msg_ptr) override;
   jsk_rviz_plugins::OverlayObject::Ptr overlay_;
   rviz_common::properties::ColorProperty * property_text_color_;
   rviz_common::properties::IntProperty * property_left_;
@@ -86,7 +86,7 @@ private:
   Arc outer_arc_;
 
   std::mutex mutex_;
-  autoware_auto_vehicle_msgs::msg::VelocityReport::ConstSharedPtr last_msg_ptr_;
+  autoware_vehicle_msgs::msg::VelocityReport::ConstSharedPtr last_msg_ptr_;
 };
 
 }  // namespace rviz_plugins

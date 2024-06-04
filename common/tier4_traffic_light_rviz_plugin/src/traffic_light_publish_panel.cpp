@@ -139,66 +139,66 @@ void TrafficLightPublishPanel::onSetTrafficLightState()
   const auto shape = light_shape_combo_->currentText();
   const auto status = light_status_combo_->currentText();
 
-  TrafficSignalElement traffic_light;
+  TrafficLightElement traffic_light;
   traffic_light.confidence = traffic_light_confidence_input_->value();
 
   if (color == "RED") {
-    traffic_light.color = TrafficSignalElement::RED;
+    traffic_light.color = TrafficLightElement::RED;
   } else if (color == "AMBER") {
-    traffic_light.color = TrafficSignalElement::AMBER;
+    traffic_light.color = TrafficLightElement::AMBER;
   } else if (color == "GREEN") {
-    traffic_light.color = TrafficSignalElement::GREEN;
+    traffic_light.color = TrafficLightElement::GREEN;
   } else if (color == "WHITE") {
-    traffic_light.color = TrafficSignalElement::WHITE;
+    traffic_light.color = TrafficLightElement::WHITE;
   } else if (color == "UNKNOWN") {
-    traffic_light.color = TrafficSignalElement::UNKNOWN;
+    traffic_light.color = TrafficLightElement::UNKNOWN;
   }
 
   if (shape == "CIRCLE") {
-    traffic_light.shape = TrafficSignalElement::CIRCLE;
+    traffic_light.shape = TrafficLightElement::CIRCLE;
   } else if (shape == "LEFT_ARROW") {
-    traffic_light.shape = TrafficSignalElement::LEFT_ARROW;
+    traffic_light.shape = TrafficLightElement::LEFT_ARROW;
   } else if (shape == "RIGHT_ARROW") {
-    traffic_light.shape = TrafficSignalElement::RIGHT_ARROW;
+    traffic_light.shape = TrafficLightElement::RIGHT_ARROW;
   } else if (shape == "UP_ARROW") {
-    traffic_light.shape = TrafficSignalElement::UP_ARROW;
+    traffic_light.shape = TrafficLightElement::UP_ARROW;
   } else if (shape == "DOWN_ARROW") {
-    traffic_light.shape = TrafficSignalElement::DOWN_ARROW;
+    traffic_light.shape = TrafficLightElement::DOWN_ARROW;
   } else if (shape == "DOWN_LEFT_ARROW") {
-    traffic_light.shape = TrafficSignalElement::DOWN_LEFT_ARROW;
+    traffic_light.shape = TrafficLightElement::DOWN_LEFT_ARROW;
   } else if (shape == "DOWN_RIGHT_ARROW") {
-    traffic_light.shape = TrafficSignalElement::DOWN_RIGHT_ARROW;
+    traffic_light.shape = TrafficLightElement::DOWN_RIGHT_ARROW;
   } else if (shape == "UNKNOWN") {
-    traffic_light.shape = TrafficSignalElement::UNKNOWN;
+    traffic_light.shape = TrafficLightElement::UNKNOWN;
   }
 
   if (status == "SOLID_OFF") {
-    traffic_light.status = TrafficSignalElement::SOLID_OFF;
+    traffic_light.status = TrafficLightElement::SOLID_OFF;
   } else if (status == "SOLID_ON") {
-    traffic_light.status = TrafficSignalElement::SOLID_ON;
+    traffic_light.status = TrafficLightElement::SOLID_ON;
   } else if (status == "FLASHING") {
-    traffic_light.status = TrafficSignalElement::FLASHING;
+    traffic_light.status = TrafficLightElement::FLASHING;
   } else if (status == "UNKNOWN") {
-    traffic_light.status = TrafficSignalElement::UNKNOWN;
+    traffic_light.status = TrafficLightElement::UNKNOWN;
   }
 
-  TrafficSignal traffic_signal;
+  TrafficLightGroup traffic_signal;
   traffic_signal.elements.push_back(traffic_light);
-  traffic_signal.traffic_signal_id = traffic_light_id;
+  traffic_signal.traffic_light_group_id = traffic_light_id;
 
-  for (auto & signal : extra_traffic_signals_.signals) {
-    if (signal.traffic_signal_id == traffic_light_id) {
+  for (auto & signal : extra_traffic_signals_.traffic_light_groups) {
+    if (signal.traffic_light_group_id == traffic_light_id) {
       signal = traffic_signal;
       return;
     }
   }
 
-  extra_traffic_signals_.signals.push_back(traffic_signal);
+  extra_traffic_signals_.traffic_light_groups.push_back(traffic_signal);
 }
 
 void TrafficLightPublishPanel::onResetTrafficLightState()
 {
-  extra_traffic_signals_.signals.clear();
+  extra_traffic_signals_.traffic_light_groups.clear();
   enable_publish_ = false;
 
   publish_button_->setText("PUBLISH");
@@ -218,10 +218,10 @@ void TrafficLightPublishPanel::onInitialize()
   using std::placeholders::_1;
   raw_node_ = this->getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
 
-  pub_traffic_signals_ = raw_node_->create_publisher<TrafficSignalArray>(
+  pub_traffic_signals_ = raw_node_->create_publisher<TrafficLightGroupArray>(
     "/perception/traffic_light_recognition/traffic_signals", rclcpp::QoS(1));
 
-  sub_vector_map_ = raw_node_->create_subscription<HADMapBin>(
+  sub_vector_map_ = raw_node_->create_subscription<LaneletMapBin>(
     "/map/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&TrafficLightPublishPanel::onVectorMap, this, _1));
   createWallTimer();
@@ -252,20 +252,20 @@ void TrafficLightPublishPanel::onTimer()
     pub_traffic_signals_->publish(extra_traffic_signals_);
   }
 
-  traffic_table_->setRowCount(extra_traffic_signals_.signals.size());
+  traffic_table_->setRowCount(extra_traffic_signals_.traffic_light_groups.size());
 
-  if (extra_traffic_signals_.signals.empty()) {
+  if (extra_traffic_signals_.traffic_light_groups.empty()) {
     return;
   }
 
-  for (size_t i = 0; i < extra_traffic_signals_.signals.size(); ++i) {
-    const auto & signal = extra_traffic_signals_.signals.at(i);
+  for (size_t i = 0; i < extra_traffic_signals_.traffic_light_groups.size(); ++i) {
+    const auto & signal = extra_traffic_signals_.traffic_light_groups.at(i);
 
     if (signal.elements.empty()) {
       continue;
     }
 
-    auto id_label = new QLabel(QString::number(signal.traffic_signal_id));
+    auto id_label = new QLabel(QString::number(signal.traffic_light_group_id));
     id_label->setAlignment(Qt::AlignCenter);
 
     auto color_label = new QLabel();
@@ -273,23 +273,23 @@ void TrafficLightPublishPanel::onTimer()
 
     const auto & light = signal.elements.front();
     switch (light.color) {
-      case TrafficSignalElement::RED:
+      case TrafficLightElement::RED:
         color_label->setText("RED");
         color_label->setStyleSheet("background-color: #FF0000;");
         break;
-      case TrafficSignalElement::AMBER:
+      case TrafficLightElement::AMBER:
         color_label->setText("AMBER");
         color_label->setStyleSheet("background-color: #FFBF00;");
         break;
-      case TrafficSignalElement::GREEN:
+      case TrafficLightElement::GREEN:
         color_label->setText("GREEN");
         color_label->setStyleSheet("background-color: #7CFC00;");
         break;
-      case TrafficSignalElement::WHITE:
+      case TrafficLightElement::WHITE:
         color_label->setText("WHITE");
         color_label->setStyleSheet("background-color: #FFFFFF;");
         break;
-      case TrafficSignalElement::UNKNOWN:
+      case TrafficLightElement::UNKNOWN:
         color_label->setText("UNKNOWN");
         color_label->setStyleSheet("background-color: #808080;");
         break;
@@ -301,28 +301,28 @@ void TrafficLightPublishPanel::onTimer()
     shape_label->setAlignment(Qt::AlignCenter);
 
     switch (light.shape) {
-      case TrafficSignalElement::CIRCLE:
+      case TrafficLightElement::CIRCLE:
         shape_label->setText("CIRCLE");
         break;
-      case TrafficSignalElement::LEFT_ARROW:
+      case TrafficLightElement::LEFT_ARROW:
         shape_label->setText("LEFT_ARROW");
         break;
-      case TrafficSignalElement::RIGHT_ARROW:
+      case TrafficLightElement::RIGHT_ARROW:
         shape_label->setText("RIGHT_ARROW");
         break;
-      case TrafficSignalElement::UP_ARROW:
+      case TrafficLightElement::UP_ARROW:
         shape_label->setText("UP_ARROW");
         break;
-      case TrafficSignalElement::DOWN_ARROW:
+      case TrafficLightElement::DOWN_ARROW:
         shape_label->setText("DOWN_ARROW");
         break;
-      case TrafficSignalElement::DOWN_LEFT_ARROW:
+      case TrafficLightElement::DOWN_LEFT_ARROW:
         shape_label->setText("DOWN_LEFT_ARROW");
         break;
-      case TrafficSignalElement::DOWN_RIGHT_ARROW:
+      case TrafficLightElement::DOWN_RIGHT_ARROW:
         shape_label->setText("DOWN_RIGHT_ARROW");
         break;
-      case TrafficSignalElement::UNKNOWN:
+      case TrafficLightElement::UNKNOWN:
         shape_label->setText("UNKNOWN");
         break;
       default:
@@ -333,16 +333,16 @@ void TrafficLightPublishPanel::onTimer()
     status_label->setAlignment(Qt::AlignCenter);
 
     switch (light.status) {
-      case TrafficSignalElement::SOLID_OFF:
+      case TrafficLightElement::SOLID_OFF:
         status_label->setText("SOLID_OFF");
         break;
-      case TrafficSignalElement::SOLID_ON:
+      case TrafficLightElement::SOLID_ON:
         status_label->setText("SOLID_ON");
         break;
-      case TrafficSignalElement::FLASHING:
+      case TrafficLightElement::FLASHING:
         status_label->setText("FLASHING");
         break;
-      case TrafficSignalElement::UNKNOWN:
+      case TrafficLightElement::UNKNOWN:
         status_label->setText("UNKNOWN");
         break;
       default:
@@ -361,7 +361,7 @@ void TrafficLightPublishPanel::onTimer()
   traffic_table_->update();
 }
 
-void TrafficLightPublishPanel::onVectorMap(const HADMapBin::ConstSharedPtr msg)
+void TrafficLightPublishPanel::onVectorMap(const LaneletMapBin::ConstSharedPtr msg)
 {
   if (received_vector_map_) return;
   // NOTE: examples from map_loader/lanelet2_map_visualization_node.cpp

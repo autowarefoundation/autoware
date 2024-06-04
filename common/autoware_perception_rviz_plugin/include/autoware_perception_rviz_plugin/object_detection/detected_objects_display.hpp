@@ -16,7 +16,7 @@
 
 #include "autoware_perception_rviz_plugin/object_detection/object_polygon_display_base.hpp"
 
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
 
 namespace autoware
 {
@@ -26,12 +26,12 @@ namespace object_detection
 {
 /// \brief Class defining rviz plugin to visualize DetectedObjects
 class AUTOWARE_PERCEPTION_RVIZ_PLUGIN_PUBLIC DetectedObjectsDisplay
-: public ObjectPolygonDisplayBase<autoware_auto_perception_msgs::msg::DetectedObjects>
+: public ObjectPolygonDisplayBase<autoware_perception_msgs::msg::DetectedObjects>
 {
   Q_OBJECT
 
 public:
-  using DetectedObjects = autoware_auto_perception_msgs::msg::DetectedObjects;
+  using DetectedObjects = autoware_perception_msgs::msg::DetectedObjects;
 
   DetectedObjectsDisplay();
 

@@ -24,14 +24,14 @@
 #include <rviz_common/properties/int_property.hpp>
 #include <rviz_common/ros_topic_display.hpp>
 
-#include <autoware_auto_vehicle_msgs/msg/hazard_lights_report.hpp>
-#include <autoware_auto_vehicle_msgs/msg/turn_indicators_report.hpp>
+#include <autoware_vehicle_msgs/msg/hazard_lights_report.hpp>
+#include <autoware_vehicle_msgs/msg/turn_indicators_report.hpp>
 #endif
 
 namespace rviz_plugins
 {
 class TurnSignalDisplay
-: public rviz_common::RosTopicDisplay<autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport>
+: public rviz_common::RosTopicDisplay<autoware_vehicle_msgs::msg::TurnIndicatorsReport>
 {
   Q_OBJECT
 
@@ -49,7 +49,7 @@ private Q_SLOTS:
 protected:
   void update(float wall_dt, float ros_dt) override;
   void processMessage(
-    const autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport::ConstSharedPtr msg_ptr) override;
+    const autoware_vehicle_msgs::msg::TurnIndicatorsReport::ConstSharedPtr msg_ptr) override;
   jsk_rviz_plugins::OverlayObject::Ptr overlay_;
   rviz_common::properties::IntProperty * property_left_;
   rviz_common::properties::IntProperty * property_top_;
@@ -62,7 +62,7 @@ private:
   QPointF left_arrow_polygon_[7];
 
   std::mutex mutex_;
-  autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport::ConstSharedPtr last_msg_ptr_;
+  autoware_vehicle_msgs::msg::TurnIndicatorsReport::ConstSharedPtr last_msg_ptr_;
 };
 
 }  // namespace rviz_plugins

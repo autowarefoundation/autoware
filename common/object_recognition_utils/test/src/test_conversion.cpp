@@ -28,10 +28,10 @@ geometry_msgs::msg::Point32 createPoint32(const double x, const double y, const 
   return p;
 }
 
-autoware_auto_perception_msgs::msg::ObjectClassification createObjectClassification(
+autoware_perception_msgs::msg::ObjectClassification createObjectClassification(
   const std::uint8_t label, const double probability)
 {
-  autoware_auto_perception_msgs::msg::ObjectClassification classification;
+  autoware_perception_msgs::msg::ObjectClassification classification;
   classification.label = label;
   classification.probability = probability;
 
@@ -42,10 +42,10 @@ autoware_auto_perception_msgs::msg::ObjectClassification createObjectClassificat
 // NOTE: covariance is not checked
 TEST(conversion, test_toDetectedObject)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
   using object_recognition_utils::toDetectedObject;
 
-  autoware_auto_perception_msgs::msg::TrackedObject tracked_obj;
+  autoware_perception_msgs::msg::TrackedObject tracked_obj;
   // existence probability
   tracked_obj.existence_probability = 1.0;
   // classification
@@ -160,10 +160,10 @@ TEST(conversion, test_toDetectedObject)
 // NOTE: covariance is not checked
 TEST(conversion, test_toTrackedObject)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
   using object_recognition_utils::toTrackedObject;
 
-  autoware_auto_perception_msgs::msg::DetectedObject detected_obj;
+  autoware_perception_msgs::msg::DetectedObject detected_obj;
   // existence probability
   detected_obj.existence_probability = 1.0;
   // classification

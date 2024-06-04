@@ -68,7 +68,7 @@ pluginlib_export_plugin_description_file(rviz_common plugins_description.xml)
 ament_target_dependencies(${PROJECT_NAME} PUBLIC
   rviz_common
   rviz_rendering
-  autoware_auto_vehicle_msgs
+  autoware_vehicle_msgs
   tier4_planning_msgs
   autoware_perception_msgs
 )

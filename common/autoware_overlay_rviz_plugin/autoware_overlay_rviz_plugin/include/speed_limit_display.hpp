@@ -23,7 +23,7 @@
 #include <rviz_common/properties/int_property.hpp>
 #include <rviz_common/ros_topic_display.hpp>
 
-#include "autoware_auto_vehicle_msgs/msg/velocity_report.hpp"
+#include "autoware_vehicle_msgs/msg/velocity_report.hpp"
 #include <tier4_planning_msgs/msg/velocity_limit.hpp>
 
 #include <OgreColourValue.h>
@@ -39,7 +39,7 @@ public:
   SpeedLimitDisplay();
   void drawSpeedLimitIndicator(QPainter & painter, const QRectF & backgroundRect);
   void updateSpeedLimitData(const tier4_planning_msgs::msg::VelocityLimit::ConstSharedPtr msg);
-  void updateSpeedData(const autoware_auto_vehicle_msgs::msg::VelocityReport::ConstSharedPtr & msg);
+  void updateSpeedData(const autoware_vehicle_msgs::msg::VelocityReport::ConstSharedPtr & msg);
 
 private:
   float current_limit;   // Internal variable to store current gear

@@ -25,7 +25,7 @@ constexpr double epsilon = 1e-06;
 
 namespace
 {
-using autoware_auto_perception_msgs::msg::PredictedPath;
+using autoware_perception_msgs::msg::PredictedPath;
 using tier4_autoware_utils::createPoint;
 using tier4_autoware_utils::createQuaternionFromRPY;
 using tier4_autoware_utils::transformPoint;

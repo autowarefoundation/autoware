@@ -16,7 +16,7 @@
 
 #include "autoware_perception_rviz_plugin/object_detection/object_polygon_display_base.hpp"
 
-#include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
+#include <autoware_perception_msgs/msg/tracked_objects.hpp>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -34,13 +34,13 @@ namespace object_detection
 {
 /// \brief Class defining rviz plugin to visualize TrackedObjects
 class AUTOWARE_PERCEPTION_RVIZ_PLUGIN_PUBLIC TrackedObjectsDisplay
-: public ObjectPolygonDisplayBase<autoware_auto_perception_msgs::msg::TrackedObjects>
+: public ObjectPolygonDisplayBase<autoware_perception_msgs::msg::TrackedObjects>
 {
   Q_OBJECT
 
 public:
-  using TrackedObject = autoware_auto_perception_msgs::msg::TrackedObject;
-  using TrackedObjects = autoware_auto_perception_msgs::msg::TrackedObjects;
+  using TrackedObject = autoware_perception_msgs::msg::TrackedObject;
+  using TrackedObjects = autoware_perception_msgs::msg::TrackedObjects;
 
   TrackedObjectsDisplay();
 

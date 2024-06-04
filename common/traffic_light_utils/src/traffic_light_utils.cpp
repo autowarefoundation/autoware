@@ -52,11 +52,11 @@ void setSignalUnknown(tier4_perception_msgs::msg::TrafficLight & signal, float c
 }
 
 bool hasTrafficLightCircleColor(
-  const autoware_perception_msgs::msg::TrafficSignal & tl_state, const uint8_t & lamp_color)
+  const autoware_perception_msgs::msg::TrafficLightGroup & tl_state, const uint8_t & lamp_color)
 {
   const auto it_lamp =
     std::find_if(tl_state.elements.begin(), tl_state.elements.end(), [&lamp_color](const auto & x) {
-      return x.shape == autoware_perception_msgs::msg::TrafficSignalElement::CIRCLE &&
+      return x.shape == autoware_perception_msgs::msg::TrafficLightElement::CIRCLE &&
              x.color == lamp_color;
     });
 
@@ -64,7 +64,7 @@ bool hasTrafficLightCircleColor(
 }
 
 bool hasTrafficLightShape(
-  const autoware_perception_msgs::msg::TrafficSignal & tl_state, const uint8_t & lamp_shape)
+  const autoware_perception_msgs::msg::TrafficLightGroup & tl_state, const uint8_t & lamp_shape)
 {
   const auto it_lamp = std::find_if(
     tl_state.elements.begin(), tl_state.elements.end(),
@@ -75,10 +75,10 @@ bool hasTrafficLightShape(
 
 bool isTrafficSignalStop(
   const lanelet::ConstLanelet & lanelet,
-  const autoware_perception_msgs::msg::TrafficSignal & tl_state)
+  const autoware_perception_msgs::msg::TrafficLightGroup & tl_state)
 {
   if (hasTrafficLightCircleColor(
-        tl_state, autoware_perception_msgs::msg::TrafficSignalElement::GREEN)) {
+        tl_state, autoware_perception_msgs::msg::TrafficLightElement::GREEN)) {
     return false;
   }
 
@@ -90,18 +90,18 @@ bool isTrafficSignalStop(
   if (
     turn_direction == "right" &&
     hasTrafficLightShape(
-      tl_state, autoware_perception_msgs::msg::TrafficSignalElement::RIGHT_ARROW)) {
+      tl_state, autoware_perception_msgs::msg::TrafficLightElement::RIGHT_ARROW)) {
     return false;
   }
   if (
     turn_direction == "left" &&
     hasTrafficLightShape(
-      tl_state, autoware_perception_msgs::msg::TrafficSignalElement::LEFT_ARROW)) {
+      tl_state, autoware_perception_msgs::msg::TrafficLightElement::LEFT_ARROW)) {
     return false;
   }
   if (
     turn_direction == "straight" &&
-    hasTrafficLightShape(tl_state, autoware_perception_msgs::msg::TrafficSignalElement::UP_ARROW)) {
+    hasTrafficLightShape(tl_state, autoware_perception_msgs::msg::TrafficLightElement::UP_ARROW)) {
     return false;
   }
 

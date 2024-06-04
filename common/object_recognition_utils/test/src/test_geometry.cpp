@@ -50,7 +50,7 @@ TEST(geometry, getPose)
   }
 
   {
-    autoware_auto_perception_msgs::msg::DetectedObject p;
+    autoware_perception_msgs::msg::DetectedObject p;
     p.kinematics.pose_with_covariance.pose.position.x = x_ans;
     p.kinematics.pose_with_covariance.pose.position.y = y_ans;
     p.kinematics.pose_with_covariance.pose.position.z = z_ans;
@@ -70,7 +70,7 @@ TEST(geometry, getPose)
   }
 
   {
-    autoware_auto_perception_msgs::msg::TrackedObject p;
+    autoware_perception_msgs::msg::TrackedObject p;
     p.kinematics.pose_with_covariance.pose.position.x = x_ans;
     p.kinematics.pose_with_covariance.pose.position.y = y_ans;
     p.kinematics.pose_with_covariance.pose.position.z = z_ans;
@@ -90,7 +90,7 @@ TEST(geometry, getPose)
   }
 
   {
-    autoware_auto_perception_msgs::msg::PredictedObject p;
+    autoware_perception_msgs::msg::PredictedObject p;
     p.kinematics.initial_pose_with_covariance.pose.position.x = x_ans;
     p.kinematics.initial_pose_with_covariance.pose.position.y = y_ans;
     p.kinematics.initial_pose_with_covariance.pose.position.z = z_ans;

@@ -17,7 +17,7 @@
 
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
-#include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
+#include <autoware_perception_msgs/msg/predicted_path.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
 #include <boost/optional.hpp>
@@ -34,7 +34,7 @@ namespace object_recognition_utils
  * @return interpolated pose
  */
 boost::optional<geometry_msgs::msg::Pose> calcInterpolatedPose(
-  const autoware_auto_perception_msgs::msg::PredictedPath & path, const double relative_time);
+  const autoware_perception_msgs::msg::PredictedPath & path, const double relative_time);
 
 /**
  * @brief Resampling predicted path by time step vector. Note this function does not substitute
@@ -44,8 +44,8 @@ boost::optional<geometry_msgs::msg::Pose> calcInterpolatedPose(
  * time_step*(num_of_path_points)]
  * @return resampled path
  */
-autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
-  const autoware_auto_perception_msgs::msg::PredictedPath & path,
+autoware_perception_msgs::msg::PredictedPath resamplePredictedPath(
+  const autoware_perception_msgs::msg::PredictedPath & path,
   const std::vector<double> & resampled_time, const bool use_spline_for_xy = true,
   const bool use_spline_for_z = false);
 
@@ -57,10 +57,10 @@ autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
  * @param sampling_horizon sampling time horizon
  * @return resampled path
  */
-autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
-  const autoware_auto_perception_msgs::msg::PredictedPath & path,
-  const double sampling_time_interval, const double sampling_horizon,
-  const bool use_spline_for_xy = true, const bool use_spline_for_z = false);
+autoware_perception_msgs::msg::PredictedPath resamplePredictedPath(
+  const autoware_perception_msgs::msg::PredictedPath & path, const double sampling_time_interval,
+  const double sampling_horizon, const bool use_spline_for_xy = true,
+  const bool use_spline_for_z = false);
 }  // namespace object_recognition_utils
 
 #endif  // OBJECT_RECOGNITION_UTILS__PREDICTED_PATH_UTILS_HPP_

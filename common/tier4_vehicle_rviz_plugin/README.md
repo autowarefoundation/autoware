@@ -11,12 +11,12 @@ This plugin provides a visual and easy-to-understand display of vehicle speed, t
 
 ### Input
 
-| Name                              | Type                                                    | Description                        |
-| --------------------------------- | ------------------------------------------------------- | ---------------------------------- |
-| `/vehicle/status/velocity_status` | `autoware_auto_vehicle_msgs::msg::VelocityReport`       | The topic is vehicle twist         |
-| `/control/turn_signal_cmd`        | `autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport` | The topic is status of turn signal |
-| `/vehicle/status/steering_status` | `autoware_auto_vehicle_msgs::msg::SteeringReport`       | The topic is status of steering    |
-| `/localization/acceleration`      | `geometry_msgs::msg::AccelWithCovarianceStamped`        | The topic is the acceleration      |
+| Name                              | Type                                               | Description                        |
+| --------------------------------- | -------------------------------------------------- | ---------------------------------- |
+| `/vehicle/status/velocity_status` | `autoware_vehicle_msgs::msg::VelocityReport`       | The topic is vehicle twist         |
+| `/control/turn_signal_cmd`        | `autoware_vehicle_msgs::msg::TurnIndicatorsReport` | The topic is status of turn signal |
+| `/vehicle/status/steering_status` | `autoware_vehicle_msgs::msg::SteeringReport`       | The topic is status of steering    |
+| `/localization/acceleration`      | `geometry_msgs::msg::AccelWithCovarianceStamped`   | The topic is the acceleration      |
 
 ## Parameter
 

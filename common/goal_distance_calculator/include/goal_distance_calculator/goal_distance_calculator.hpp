@@ -18,7 +18,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/pose_deviation.hpp>
 
-#include <autoware_auto_planning_msgs/msg/route.hpp>
+#include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include <boost/optional.hpp>
@@ -34,7 +34,7 @@ struct Param
 struct Input
 {
   geometry_msgs::msg::PoseStamped::ConstSharedPtr current_pose;
-  autoware_auto_planning_msgs::msg::Route::ConstSharedPtr route;
+  autoware_planning_msgs::msg::LaneletRoute::ConstSharedPtr route;
 };
 
 struct Output

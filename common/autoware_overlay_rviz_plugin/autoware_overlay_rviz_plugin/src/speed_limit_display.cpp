@@ -57,7 +57,7 @@ void SpeedLimitDisplay::updateSpeedLimitData(
 }
 
 void SpeedLimitDisplay::updateSpeedData(
-  const autoware_auto_vehicle_msgs::msg::VelocityReport::ConstSharedPtr & msg)
+  const autoware_vehicle_msgs::msg::VelocityReport::ConstSharedPtr & msg)
 {
   try {
     float speed = msg->longitudinal_velocity;

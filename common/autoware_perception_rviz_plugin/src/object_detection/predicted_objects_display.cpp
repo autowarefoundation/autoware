@@ -295,7 +295,7 @@ void PredictedObjectsDisplay::update(float wall_dt, float ros_dt)
 
   lock.unlock();
 
-  ObjectPolygonDisplayBase<autoware_auto_perception_msgs::msg::PredictedObjects>::update(
+  ObjectPolygonDisplayBase<autoware_perception_msgs::msg::PredictedObjects>::update(
     wall_dt, ros_dt);
 }
 

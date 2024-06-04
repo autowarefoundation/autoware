@@ -20,10 +20,10 @@ constexpr double epsilon = 1e-06;
 
 namespace
 {
-autoware_auto_perception_msgs::msg::ObjectClassification createObjectClassification(
+autoware_perception_msgs::msg::ObjectClassification createObjectClassification(
   const std::uint8_t label, const double probability)
 {
-  autoware_auto_perception_msgs::msg::ObjectClassification classification;
+  autoware_perception_msgs::msg::ObjectClassification classification;
   classification.label = label;
   classification.probability = probability;
 
@@ -34,17 +34,17 @@ autoware_auto_perception_msgs::msg::ObjectClassification createObjectClassificat
 
 TEST(object_classification, test_getHighestProbLabel)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
   using object_recognition_utils::getHighestProbLabel;
 
   {  // empty
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classifications;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classifications;
     std::uint8_t label = getHighestProbLabel(classifications);
     EXPECT_EQ(label, ObjectClassification::UNKNOWN);
   }
 
   {  // normal case
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classifications;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classifications;
     classifications.push_back(createObjectClassification(ObjectClassification::CAR, 0.5));
     classifications.push_back(createObjectClassification(ObjectClassification::TRUCK, 0.8));
     classifications.push_back(createObjectClassification(ObjectClassification::BUS, 0.7));
@@ -54,7 +54,7 @@ TEST(object_classification, test_getHighestProbLabel)
   }
 
   {  // labels with the same probability
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classifications;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classifications;
     classifications.push_back(createObjectClassification(ObjectClassification::CAR, 0.8));
     classifications.push_back(createObjectClassification(ObjectClassification::TRUCK, 0.8));
     classifications.push_back(createObjectClassification(ObjectClassification::BUS, 0.7));
@@ -67,7 +67,7 @@ TEST(object_classification, test_getHighestProbLabel)
 // Test isVehicle
 TEST(object_classification, test_isVehicle)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
   using object_recognition_utils::isVehicle;
 
   {  // True Case with uint8_t
@@ -87,7 +87,7 @@ TEST(object_classification, test_isVehicle)
 
   // True Case with object_classifications
   {  // normal case
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classification;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classification;
     classification.push_back(createObjectClassification(ObjectClassification::CAR, 0.5));
     classification.push_back(createObjectClassification(ObjectClassification::TRUCK, 0.8));
     classification.push_back(createObjectClassification(ObjectClassification::BUS, 0.7));
@@ -96,7 +96,7 @@ TEST(object_classification, test_isVehicle)
 
   // False Case with object_classifications
   {  // false case
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classification;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classification;
     classification.push_back(createObjectClassification(ObjectClassification::PEDESTRIAN, 0.8));
     classification.push_back(createObjectClassification(ObjectClassification::BICYCLE, 0.7));
     EXPECT_FALSE(isVehicle(classification));
@@ -106,7 +106,7 @@ TEST(object_classification, test_isVehicle)
 // TEST isCarLikeVehicle
 TEST(object_classification, test_isCarLikeVehicle)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
   using object_recognition_utils::isCarLikeVehicle;
 
   {  // True Case with uint8_t
@@ -126,7 +126,7 @@ TEST(object_classification, test_isCarLikeVehicle)
 
   // True Case with object_classifications
   {  // normal case
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classification;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classification;
     classification.push_back(createObjectClassification(ObjectClassification::CAR, 0.5));
     classification.push_back(createObjectClassification(ObjectClassification::TRUCK, 0.8));
     classification.push_back(createObjectClassification(ObjectClassification::BICYCLE, 0.7));
@@ -135,7 +135,7 @@ TEST(object_classification, test_isCarLikeVehicle)
 
   // False Case with object_classifications
   {  // false case
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classification;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classification;
     classification.push_back(createObjectClassification(ObjectClassification::MOTORCYCLE, 0.8));
     classification.push_back(createObjectClassification(ObjectClassification::BICYCLE, 0.8));
     EXPECT_FALSE(isCarLikeVehicle(classification));
@@ -146,7 +146,7 @@ TEST(object_classification, test_isCarLikeVehicle)
   // getHighestProbLabel() returns only first highest-scored label.
   // so, in edge case it returns a label earlier added.
   {  // When car and non-car label has same probability
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classification;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classification;
     classification.push_back(createObjectClassification(ObjectClassification::MOTORCYCLE, 0.8));
     classification.push_back(createObjectClassification(ObjectClassification::CAR, 0.8));
     EXPECT_FALSE(
@@ -157,7 +157,7 @@ TEST(object_classification, test_isCarLikeVehicle)
 // TEST isLargeVehicle
 TEST(object_classification, test_isLargeVehicle)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
   using object_recognition_utils::isLargeVehicle;
 
   {  // True Case with uint8_t
@@ -176,7 +176,7 @@ TEST(object_classification, test_isLargeVehicle)
   }
 
   {  // false case
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classification;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classification;
     classification.push_back(createObjectClassification(ObjectClassification::MOTORCYCLE, 0.8));
     classification.push_back(createObjectClassification(ObjectClassification::BICYCLE, 0.8));
     classification.push_back(createObjectClassification(ObjectClassification::CAR, 0.8));
@@ -188,7 +188,7 @@ TEST(object_classification, test_isLargeVehicle)
   // getHighestProbLabel() returns only first highest-scored label.
   // so, in edge case it returns a label earlier added.
   {  // When large-vehicle and non-large-vehicle label has same probability
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classification;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classification;
     classification.push_back(createObjectClassification(ObjectClassification::BUS, 0.8));
     classification.push_back(createObjectClassification(ObjectClassification::CAR, 0.8));
     EXPECT_TRUE(isLargeVehicle(classification));  // evaluated with earlier appended "BUS" label
@@ -197,18 +197,18 @@ TEST(object_classification, test_isLargeVehicle)
 
 TEST(object_classification, test_getHighestProbClassification)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
   using object_recognition_utils::getHighestProbClassification;
 
   {  // empty
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classifications;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classifications;
     auto classification = getHighestProbClassification(classifications);
     EXPECT_EQ(classification.label, ObjectClassification::UNKNOWN);
     EXPECT_DOUBLE_EQ(classification.probability, 0.0);
   }
 
   {  // normal case
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classifications;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classifications;
     classifications.push_back(createObjectClassification(ObjectClassification::CAR, 0.5));
     classifications.push_back(createObjectClassification(ObjectClassification::TRUCK, 0.8));
     classifications.push_back(createObjectClassification(ObjectClassification::BUS, 0.7));
@@ -219,7 +219,7 @@ TEST(object_classification, test_getHighestProbClassification)
   }
 
   {  // labels with the same probability
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classifications;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classifications;
     classifications.push_back(createObjectClassification(ObjectClassification::CAR, 0.8));
     classifications.push_back(createObjectClassification(ObjectClassification::TRUCK, 0.8));
     classifications.push_back(createObjectClassification(ObjectClassification::BUS, 0.7));
@@ -232,7 +232,7 @@ TEST(object_classification, test_getHighestProbClassification)
 
 TEST(object_classification, test_fromString)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
   using object_recognition_utils::toLabel;
   using object_recognition_utils::toObjectClassification;
   using object_recognition_utils::toObjectClassifications;
@@ -266,7 +266,7 @@ TEST(object_classification, test_fromString)
 
 TEST(object_classification, test_convertLabelToString)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
   using object_recognition_utils::convertLabelToString;
 
   // from label
@@ -290,7 +290,7 @@ TEST(object_classification, test_convertLabelToString)
 
   // from ObjectClassifications
   {
-    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classifications;
+    std::vector<autoware_perception_msgs::msg::ObjectClassification> classifications;
     classifications.push_back(createObjectClassification(ObjectClassification::CAR, 0.5));
     classifications.push_back(createObjectClassification(ObjectClassification::TRUCK, 0.8));
     classifications.push_back(createObjectClassification(ObjectClassification::BUS, 0.7));

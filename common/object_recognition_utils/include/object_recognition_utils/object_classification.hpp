@@ -15,14 +15,14 @@
 #ifndef OBJECT_RECOGNITION_UTILS__OBJECT_CLASSIFICATION_HPP_
 #define OBJECT_RECOGNITION_UTILS__OBJECT_CLASSIFICATION_HPP_
 
-#include "autoware_auto_perception_msgs/msg/object_classification.hpp"
+#include "autoware_perception_msgs/msg/object_classification.hpp"
 
 #include <string>
 #include <vector>
 
 namespace object_recognition_utils
 {
-using autoware_auto_perception_msgs::msg::ObjectClassification;
+using autoware_perception_msgs::msg::ObjectClassification;
 
 inline ObjectClassification getHighestProbClassification(
   const std::vector<ObjectClassification> & object_classifications)

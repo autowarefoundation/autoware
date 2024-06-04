@@ -1,4 +1,4 @@
-# autoware_auto_perception_plugin
+# autoware_perception_rviz_plugin
 
 ## Purpose
 
@@ -19,9 +19,9 @@ Example:
 
 #### Input Types
 
-| Name | Type                                                  | Description            |
-| ---- | ----------------------------------------------------- | ---------------------- |
-|      | `autoware_auto_perception_msgs::msg::DetectedObjects` | detection result array |
+| Name | Type                                             | Description            |
+| ---- | ------------------------------------------------ | ---------------------- |
+|      | `autoware_perception_msgs::msg::DetectedObjects` | detection result array |
 
 #### Visualization Result
 
@@ -31,9 +31,9 @@ Example:
 
 #### Input Types
 
-| Name | Type                                                 | Description           |
-| ---- | ---------------------------------------------------- | --------------------- |
-|      | `autoware_auto_perception_msgs::msg::TrackedObjects` | tracking result array |
+| Name | Type                                            | Description           |
+| ---- | ----------------------------------------------- | --------------------- |
+|      | `autoware_perception_msgs::msg::TrackedObjects` | tracking result array |
 
 #### Visualization Result
 
@@ -45,9 +45,9 @@ Overwrite tracking results with detection results.
 
 #### Input Types
 
-| Name | Type                                                   | Description             |
-| ---- | ------------------------------------------------------ | ----------------------- |
-|      | `autoware_auto_perception_msgs::msg::PredictedObjects` | prediction result array |
+| Name | Type                                              | Description             |
+| ---- | ------------------------------------------------- | ----------------------- |
+|      | `autoware_perception_msgs::msg::PredictedObjects` | prediction result array |
 
 #### Visualization Result
 

@@ -56,7 +56,7 @@ SteeringWheelDisplay::SteeringWheelDisplay()
 }
 
 void SteeringWheelDisplay::updateSteeringData(
-  const autoware_auto_vehicle_msgs::msg::SteeringReport::ConstSharedPtr & msg)
+  const autoware_vehicle_msgs::msg::SteeringReport::ConstSharedPtr & msg)
 {
   try {
     // Assuming msg->steering_angle is the field you're interested in

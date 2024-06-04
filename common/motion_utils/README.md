@@ -47,7 +47,7 @@ The second function finds the nearest index in the lane whose id is `lane_id`.
 
 ```cpp
 size_t findNearestIndexFromLaneId(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const tier4_planning_msgs::msg::PathWithLaneId & path,
   const geometry_msgs::msg::Point & pos, const int64_t lane_id);
 ```
 
@@ -112,6 +112,6 @@ const double length_from_ego_to_obj = calcSignedArcLength(points, ego_pose, ego_
 
 ## For developers
 
-Some of the template functions in `trajectory.hpp` are mostly used for specific types (`autoware_auto_planning_msgs::msg::PathPoint`, `autoware_auto_planning_msgs::msg::PathPoint`, `autoware_auto_planning_msgs::msg::TrajectoryPoint`), so they are exported as `extern template` functions to speed-up compilation time.
+Some of the template functions in `trajectory.hpp` are mostly used for specific types (`autoware_planning_msgs::msg::PathPoint`, `autoware_planning_msgs::msg::PathPoint`, `autoware_planning_msgs::msg::TrajectoryPoint`), so they are exported as `extern template` functions to speed-up compilation time.
 
 `motion_utils.hpp` header file was removed because the source files that directly/indirectly include this file took a long time for preprocessing.

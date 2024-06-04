@@ -21,8 +21,8 @@
 #include <lanelet2_extension/visualization/visualization.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_perception_msgs/msg/traffic_signal_array.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
+#include <autoware_perception_msgs/msg/traffic_light_group_array.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
@@ -32,21 +32,21 @@
 class TrafficLightRecognitionMarkerPublisher : public rclcpp::Node
 {
 public:
-  using HADMapBin = autoware_auto_mapping_msgs::msg::HADMapBin;
-  using TrafficSignalArray = autoware_auto_perception_msgs::msg::TrafficSignalArray;
-  using TrafficLight = autoware_auto_perception_msgs::msg::TrafficLight;
+  using LaneletMapBin = autoware_map_msgs::msg::LaneletMapBin;
+  using TrafficSignalArray = autoware_perception_msgs::msg::TrafficLightGroupArray;
+  using TrafficLight = autoware_perception_msgs::msg::TrafficLightElement;
   using MarkerArray = visualization_msgs::msg::MarkerArray;
   using Pose = geometry_msgs::msg::Pose;
 
   explicit TrafficLightRecognitionMarkerPublisher(const rclcpp::NodeOptions & options);
 
 private:
-  rclcpp::Subscription<HADMapBin>::SharedPtr sub_map_ptr_;
-  rclcpp::Subscription<autoware_auto_perception_msgs::msg::TrafficSignalArray>::SharedPtr
+  rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_map_ptr_;
+  rclcpp::Subscription<autoware_perception_msgs::msg::TrafficLightGroupArray>::SharedPtr
     sub_tlr_ptr_;
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_ptr_;
 
-  void onMap(const HADMapBin::ConstSharedPtr msg_ptr);
+  void onMap(const LaneletMapBin::ConstSharedPtr msg_ptr);
   void onTrafficSignalArray(const TrafficSignalArray::ConstSharedPtr msg_ptr);
   visualization_msgs::msg::Marker getTrafficLightMarker(
     const Pose & tl_pose, const uint8_t tl_color, const uint8_t tl_shape);

@@ -48,9 +48,9 @@ GoalDistanceCalculatorNode::GoalDistanceCalculatorNode(const rclcpp::NodeOptions
   goal_distance_calculator_->setParam(param_);
 
   // Subscriber
-  sub_route_ = create_subscription<autoware_auto_planning_msgs::msg::Route>(
+  sub_route_ = create_subscription<autoware_planning_msgs::msg::LaneletRoute>(
     "/planning/mission_planning/route", queue_size,
-    [&](const autoware_auto_planning_msgs::msg::Route::SharedPtr msg_ptr) { route_ = msg_ptr; });
+    [&](const autoware_planning_msgs::msg::LaneletRoute::SharedPtr msg_ptr) { route_ = msg_ptr; });
 
   // Wait for first self pose
   self_pose_listener_.waitForFirstPose();

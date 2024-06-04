@@ -17,7 +17,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 
@@ -26,7 +26,7 @@
 namespace motion_utils
 {
 
-using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::Trajectory;
 using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::Odometry;
 

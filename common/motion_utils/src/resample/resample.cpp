@@ -181,8 +181,8 @@ std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
   return resamplePoseVector(points, resampling_arclength, use_akima_spline_for_xy, use_lerp_for_z);
 }
 
-autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
+tier4_planning_msgs::msg::PathWithLaneId resamplePath(
+  const tier4_planning_msgs::msg::PathWithLaneId & input_path,
   const std::vector<double> & resampled_arclength, const bool use_akima_spline_for_xy,
   const bool use_lerp_for_z, const bool use_zero_order_hold_for_v)
 {
@@ -333,13 +333,13 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
     return input_path;
   }
 
-  autoware_auto_planning_msgs::msg::PathWithLaneId resampled_path;
+  tier4_planning_msgs::msg::PathWithLaneId resampled_path;
   resampled_path.header = input_path.header;
   resampled_path.left_bound = input_path.left_bound;
   resampled_path.right_bound = input_path.right_bound;
   resampled_path.points.resize(interpolated_pose.size());
   for (size_t i = 0; i < resampled_path.points.size(); ++i) {
-    autoware_auto_planning_msgs::msg::PathPoint path_point;
+    autoware_planning_msgs::msg::PathPoint path_point;
     path_point.pose = interpolated_pose.at(i);
     path_point.longitudinal_velocity_mps = interpolated_v_lon.at(i);
     path_point.lateral_velocity_mps = interpolated_v_lat.at(i);
@@ -352,9 +352,9 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   return resampled_path;
 }
 
-autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
-  const double resample_interval, const bool use_akima_spline_for_xy, const bool use_lerp_for_z,
+tier4_planning_msgs::msg::PathWithLaneId resamplePath(
+  const tier4_planning_msgs::msg::PathWithLaneId & input_path, const double resample_interval,
+  const bool use_akima_spline_for_xy, const bool use_lerp_for_z,
   const bool use_zero_order_hold_for_v, const bool resample_input_path_stop_point)
 {
   // validate arguments
@@ -363,7 +363,7 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   }
 
   // transform input_path
-  std::vector<autoware_auto_planning_msgs::msg::PathPoint> transformed_input_path(
+  std::vector<autoware_planning_msgs::msg::PathPoint> transformed_input_path(
     input_path.points.size());
   for (size_t i = 0; i < input_path.points.size(); ++i) {
     transformed_input_path.at(i) = input_path.points.at(i).point;
@@ -418,8 +418,8 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
     use_zero_order_hold_for_v);
 }
 
-autoware_auto_planning_msgs::msg::Path resamplePath(
-  const autoware_auto_planning_msgs::msg::Path & input_path,
+autoware_planning_msgs::msg::Path resamplePath(
+  const autoware_planning_msgs::msg::Path & input_path,
   const std::vector<double> & resampled_arclength, const bool use_akima_spline_for_xy,
   const bool use_lerp_for_z, const bool use_zero_order_hold_for_v)
 {
@@ -483,13 +483,13 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
     return input_path;
   }
 
-  autoware_auto_planning_msgs::msg::Path resampled_path;
+  autoware_planning_msgs::msg::Path resampled_path;
   resampled_path.header = input_path.header;
   resampled_path.left_bound = input_path.left_bound;
   resampled_path.right_bound = input_path.right_bound;
   resampled_path.points.resize(interpolated_pose.size());
   for (size_t i = 0; i < resampled_path.points.size(); ++i) {
-    autoware_auto_planning_msgs::msg::PathPoint path_point;
+    autoware_planning_msgs::msg::PathPoint path_point;
     path_point.pose = interpolated_pose.at(i);
     path_point.longitudinal_velocity_mps = interpolated_v_lon.at(i);
     path_point.lateral_velocity_mps = interpolated_v_lat.at(i);
@@ -500,8 +500,8 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
   return resampled_path;
 }
 
-autoware_auto_planning_msgs::msg::Path resamplePath(
-  const autoware_auto_planning_msgs::msg::Path & input_path, const double resample_interval,
+autoware_planning_msgs::msg::Path resamplePath(
+  const autoware_planning_msgs::msg::Path & input_path, const double resample_interval,
   const bool use_akima_spline_for_xy, const bool use_lerp_for_z,
   const bool use_zero_order_hold_for_twist, const bool resample_input_path_stop_point)
 {
@@ -559,8 +559,8 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
     use_zero_order_hold_for_twist);
 }
 
-autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory & input_trajectory,
+autoware_planning_msgs::msg::Trajectory resampleTrajectory(
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory,
   const std::vector<double> & resampled_arclength, const bool use_akima_spline_for_xy,
   const bool use_lerp_for_z, const bool use_zero_order_hold_for_twist)
 {
@@ -646,11 +646,11 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
     return input_trajectory;
   }
 
-  autoware_auto_planning_msgs::msg::Trajectory resampled_trajectory;
+  autoware_planning_msgs::msg::Trajectory resampled_trajectory;
   resampled_trajectory.header = input_trajectory.header;
   resampled_trajectory.points.resize(interpolated_pose.size());
   for (size_t i = 0; i < resampled_trajectory.points.size(); ++i) {
-    autoware_auto_planning_msgs::msg::TrajectoryPoint traj_point;
+    autoware_planning_msgs::msg::TrajectoryPoint traj_point;
     traj_point.pose = interpolated_pose.at(i);
     traj_point.longitudinal_velocity_mps = interpolated_v_lon.at(i);
     traj_point.lateral_velocity_mps = interpolated_v_lat.at(i);
@@ -665,9 +665,9 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   return resampled_trajectory;
 }
 
-autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory & input_trajectory,
-  const double resample_interval, const bool use_akima_spline_for_xy, const bool use_lerp_for_z,
+autoware_planning_msgs::msg::Trajectory resampleTrajectory(
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double resample_interval,
+  const bool use_akima_spline_for_xy, const bool use_lerp_for_z,
   const bool use_zero_order_hold_for_twist, const bool resample_input_trajectory_stop_point)
 {
   // validate arguments

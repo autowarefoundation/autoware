@@ -59,14 +59,14 @@
 #include <rviz_common/properties/int_property.hpp>
 #include <rviz_common/ros_topic_display.hpp>
 
-#include <autoware_auto_system_msgs/msg/hazard_status_stamped.hpp>
+#include <autoware_system_msgs/msg/hazard_status_stamped.hpp>
 
 #endif
 
 namespace rviz_plugins
 {
 class MrmSummaryOverlayDisplay
-: public rviz_common::RosTopicDisplay<autoware_auto_system_msgs::msg::HazardStatusStamped>
+: public rviz_common::RosTopicDisplay<autoware_system_msgs::msg::HazardStatusStamped>
 
 {
   Q_OBJECT
@@ -85,7 +85,7 @@ private Q_SLOTS:
 protected:
   void update(float wall_dt, float ros_dt) override;
   void processMessage(
-    const autoware_auto_system_msgs::msg::HazardStatusStamped::ConstSharedPtr msg_ptr) override;
+    const autoware_system_msgs::msg::HazardStatusStamped::ConstSharedPtr msg_ptr) override;
   jsk_rviz_plugins::OverlayObject::Ptr overlay_;
   rviz_common::properties::ColorProperty * property_text_color_;
   rviz_common::properties::IntProperty * property_left_;
@@ -101,7 +101,7 @@ private:
   static constexpr int hand_width_ = 4;
 
   std::mutex mutex_;
-  autoware_auto_system_msgs::msg::HazardStatusStamped::ConstSharedPtr last_msg_ptr_;
+  autoware_system_msgs::msg::HazardStatusStamped::ConstSharedPtr last_msg_ptr_;
 };
 }  // namespace rviz_plugins
 

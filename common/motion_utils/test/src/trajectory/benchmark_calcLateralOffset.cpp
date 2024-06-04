@@ -22,7 +22,7 @@
 
 namespace
 {
-using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::Trajectory;
 using tier4_autoware_utils::createPoint;
 using tier4_autoware_utils::createQuaternionFromRPY;
 

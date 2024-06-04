@@ -23,7 +23,7 @@
 #include <rviz_common/properties/int_property.hpp>
 #include <rviz_common/ros_topic_display.hpp>
 
-#include "autoware_auto_vehicle_msgs/msg/steering_report.hpp"
+#include "autoware_vehicle_msgs/msg/steering_report.hpp"
 
 #include <OgreColourValue.h>
 #include <OgreMaterial.h>
@@ -37,8 +37,7 @@ class SteeringWheelDisplay
 public:
   SteeringWheelDisplay();
   void drawSteeringWheel(QPainter & painter, const QRectF & backgroundRect);
-  void updateSteeringData(
-    const autoware_auto_vehicle_msgs::msg::SteeringReport::ConstSharedPtr & msg);
+  void updateSteeringData(const autoware_vehicle_msgs::msg::SteeringReport::ConstSharedPtr & msg);
 
 private:
   float steering_angle_ = 0.0f;

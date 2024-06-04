@@ -16,7 +16,7 @@
 
 #include "autoware_perception_rviz_plugin/object_detection/object_polygon_display_base.hpp"
 
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
 
 #include <boost/functional/hash.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -39,12 +39,12 @@ namespace object_detection
 {
 /// \brief Class defining rviz plugin to visualize PredictedObjects
 class AUTOWARE_PERCEPTION_RVIZ_PLUGIN_PUBLIC PredictedObjectsDisplay
-: public ObjectPolygonDisplayBase<autoware_auto_perception_msgs::msg::PredictedObjects>
+: public ObjectPolygonDisplayBase<autoware_perception_msgs::msg::PredictedObjects>
 {
   Q_OBJECT
 
 public:
-  using PredictedObjects = autoware_auto_perception_msgs::msg::PredictedObjects;
+  using PredictedObjects = autoware_perception_msgs::msg::PredictedObjects;
 
   PredictedObjectsDisplay();
   ~PredictedObjectsDisplay()

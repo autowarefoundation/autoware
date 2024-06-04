@@ -17,8 +17,10 @@
 
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
-#include "autoware_auto_planning_msgs/msg/detail/path_with_lane_id__struct.hpp"
-#include "autoware_auto_planning_msgs/msg/detail/trajectory__struct.hpp"
+#include "autoware_planning_msgs/msg/trajectory.hpp"
+#include "tier4_planning_msgs/msg/path_with_lane_id.hpp"
+
+#include <boost/optional.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -34,8 +36,8 @@ namespace motion_utils
  * twist information
  * @return resampled path(poses)
  */
-autoware_auto_planning_msgs::msg::TrajectoryPoint calcInterpolatedPoint(
-  const autoware_auto_planning_msgs::msg::Trajectory & trajectory,
+autoware_planning_msgs::msg::TrajectoryPoint calcInterpolatedPoint(
+  const autoware_planning_msgs::msg::Trajectory & trajectory,
   const geometry_msgs::msg::Pose & target_pose, const bool use_zero_order_hold_for_twist = false,
   const double dist_threshold = std::numeric_limits<double>::max(),
   const double yaw_threshold = std::numeric_limits<double>::max());
@@ -49,8 +51,8 @@ autoware_auto_planning_msgs::msg::TrajectoryPoint calcInterpolatedPoint(
  * twist information
  * @return resampled path(poses)
  */
-autoware_auto_planning_msgs::msg::PathPointWithLaneId calcInterpolatedPoint(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+tier4_planning_msgs::msg::PathPointWithLaneId calcInterpolatedPoint(
+  const tier4_planning_msgs::msg::PathWithLaneId & path,
   const geometry_msgs::msg::Pose & target_pose, const bool use_zero_order_hold_for_twist = false,
   const double dist_threshold = std::numeric_limits<double>::max(),
   const double yaw_threshold = std::numeric_limits<double>::max());

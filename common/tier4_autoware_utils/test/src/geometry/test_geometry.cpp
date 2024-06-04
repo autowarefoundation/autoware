@@ -90,7 +90,7 @@ TEST(geometry, getPoint)
   }
 
   {
-    autoware_auto_planning_msgs::msg::PathPoint p;
+    autoware_planning_msgs::msg::PathPoint p;
     p.pose.position.x = x_ans;
     p.pose.position.y = y_ans;
     p.pose.position.z = z_ans;
@@ -101,7 +101,7 @@ TEST(geometry, getPoint)
   }
 
   {
-    autoware_auto_planning_msgs::msg::TrajectoryPoint p;
+    autoware_planning_msgs::msg::TrajectoryPoint p;
     p.pose.position.x = x_ans;
     p.pose.position.y = y_ans;
     p.pose.position.z = z_ans;
@@ -163,7 +163,7 @@ TEST(geometry, getPose)
   }
 
   {
-    autoware_auto_planning_msgs::msg::PathPoint p;
+    autoware_planning_msgs::msg::PathPoint p;
     p.pose.position.x = x_ans;
     p.pose.position.y = y_ans;
     p.pose.position.z = z_ans;
@@ -182,7 +182,7 @@ TEST(geometry, getPose)
   }
 
   {
-    autoware_auto_planning_msgs::msg::TrajectoryPoint p;
+    autoware_planning_msgs::msg::TrajectoryPoint p;
     p.pose.position.x = x_ans;
     p.pose.position.y = y_ans;
     p.pose.position.z = z_ans;
@@ -208,13 +208,13 @@ TEST(geometry, getLongitudinalVelocity)
   const double velocity = 1.0;
 
   {
-    autoware_auto_planning_msgs::msg::PathPoint p;
+    autoware_planning_msgs::msg::PathPoint p;
     p.longitudinal_velocity_mps = velocity;
     EXPECT_DOUBLE_EQ(getLongitudinalVelocity(p), velocity);
   }
 
   {
-    autoware_auto_planning_msgs::msg::TrajectoryPoint p;
+    autoware_planning_msgs::msg::TrajectoryPoint p;
     p.longitudinal_velocity_mps = velocity;
     EXPECT_DOUBLE_EQ(getLongitudinalVelocity(p), velocity);
   }
@@ -266,7 +266,7 @@ TEST(geometry, setPose)
   }
 
   {
-    autoware_auto_planning_msgs::msg::PathPoint p_out{};
+    autoware_planning_msgs::msg::PathPoint p_out{};
     setPose(p, p_out);
     EXPECT_DOUBLE_EQ(p_out.pose.position.x, x_ans);
     EXPECT_DOUBLE_EQ(p_out.pose.position.y, y_ans);
@@ -278,7 +278,7 @@ TEST(geometry, setPose)
   }
 
   {
-    autoware_auto_planning_msgs::msg::TrajectoryPoint p_out{};
+    autoware_planning_msgs::msg::TrajectoryPoint p_out{};
     setPose(p, p_out);
     EXPECT_DOUBLE_EQ(p_out.pose.position.x, x_ans);
     EXPECT_DOUBLE_EQ(p_out.pose.position.y, y_ans);
@@ -313,13 +313,13 @@ TEST(geometry, setLongitudinalVelocity)
   const double velocity = 1.0;
 
   {
-    autoware_auto_planning_msgs::msg::PathPoint p{};
+    autoware_planning_msgs::msg::PathPoint p{};
     setLongitudinalVelocity(velocity, p);
     EXPECT_DOUBLE_EQ(p.longitudinal_velocity_mps, velocity);
   }
 
   {
-    autoware_auto_planning_msgs::msg::TrajectoryPoint p{};
+    autoware_planning_msgs::msg::TrajectoryPoint p{};
     setLongitudinalVelocity(velocity, p);
     EXPECT_DOUBLE_EQ(p.longitudinal_velocity_mps, velocity);
   }

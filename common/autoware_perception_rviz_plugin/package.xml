@@ -18,7 +18,7 @@
   <build_depend>libboost-dev</build_depend>
   <build_depend>qtbase5-dev</build_depend>
 
-  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_perception_msgs</depend>
   <depend>rviz_common</depend>
   <depend>rviz_default_plugins</depend>
 

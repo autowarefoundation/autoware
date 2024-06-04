@@ -50,7 +50,7 @@ namespace detail
 using Marker = visualization_msgs::msg::Marker;
 
 visualization_msgs::msg::Marker::SharedPtr get_path_confidence_marker_ptr(
-  const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
+  const autoware_perception_msgs::msg::PredictedPath & predicted_path,
   const std_msgs::msg::ColorRGBA & path_confidence_color)
 {
   auto marker_ptr = std::make_shared<Marker>();
@@ -70,8 +70,8 @@ visualization_msgs::msg::Marker::SharedPtr get_path_confidence_marker_ptr(
 }
 
 visualization_msgs::msg::Marker::SharedPtr get_predicted_path_marker_ptr(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
-  const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
+  const autoware_perception_msgs::msg::Shape & shape,
+  const autoware_perception_msgs::msg::PredictedPath & predicted_path,
   const std_msgs::msg::ColorRGBA & predicted_path_color, const bool is_simple)
 {
   auto marker_ptr = std::make_shared<Marker>();
@@ -492,7 +492,7 @@ visualization_msgs::msg::Marker::SharedPtr get_existence_probability_marker_ptr(
 }
 
 visualization_msgs::msg::Marker::SharedPtr get_shape_marker_ptr(
-  const autoware_auto_perception_msgs::msg::Shape & shape_msg,
+  const autoware_perception_msgs::msg::Shape & shape_msg,
   const geometry_msgs::msg::Point & centroid, const geometry_msgs::msg::Quaternion & orientation,
   const std_msgs::msg::ColorRGBA & color_rgba, const double & line_width,
   const bool & is_orientation_available, const ObjectFillType fill_type)
@@ -502,7 +502,7 @@ visualization_msgs::msg::Marker::SharedPtr get_shape_marker_ptr(
   marker_ptr->color = color_rgba;
   marker_ptr->scale.x = line_width;
 
-  using autoware_auto_perception_msgs::msg::Shape;
+  using autoware_perception_msgs::msg::Shape;
   if (shape_msg.type == Shape::BOUNDING_BOX) {
     if (fill_type == ObjectFillType::Skeleton) {
       marker_ptr->type = visualization_msgs::msg::Marker::LINE_LIST;
@@ -542,7 +542,7 @@ visualization_msgs::msg::Marker::SharedPtr get_shape_marker_ptr(
 }
 
 visualization_msgs::msg::Marker::SharedPtr get_2d_shape_marker_ptr(
-  const autoware_auto_perception_msgs::msg::Shape & shape_msg,
+  const autoware_perception_msgs::msg::Shape & shape_msg,
   const geometry_msgs::msg::Point & centroid, const geometry_msgs::msg::Quaternion & orientation,
   const std_msgs::msg::ColorRGBA & color_rgba, const double & line_width,
   const bool & is_orientation_available)
@@ -550,7 +550,7 @@ visualization_msgs::msg::Marker::SharedPtr get_2d_shape_marker_ptr(
   auto marker_ptr = std::make_shared<Marker>();
   marker_ptr->ns = std::string("shape");
 
-  using autoware_auto_perception_msgs::msg::Shape;
+  using autoware_perception_msgs::msg::Shape;
   if (shape_msg.type == Shape::BOUNDING_BOX) {
     marker_ptr->type = visualization_msgs::msg::Marker::LINE_LIST;
     calc_2d_bounding_box_bottom_line_list(shape_msg, marker_ptr->points);
@@ -597,7 +597,7 @@ void calc_line_list_from_points(
 }
 
 void calc_bounding_box_line_list(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
+  const autoware_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points)
 {
   const double length_half = shape.dimensions.x * 0.5;
@@ -620,7 +620,7 @@ void calc_bounding_box_line_list(
 }
 
 void calc_bounding_box_direction_line_list(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
+  const autoware_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points)
 {
   // direction triangle
@@ -646,7 +646,7 @@ void calc_bounding_box_direction_line_list(
 }
 
 void calc_bounding_box_orientation_line_list(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
+  const autoware_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points)
 {
   const double length_half = shape.dimensions.x * 0.5;
@@ -671,7 +671,7 @@ void calc_bounding_box_orientation_line_list(
 }
 
 void calc_2d_bounding_box_bottom_line_list(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
+  const autoware_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points)
 {
   const double length_half = shape.dimensions.x * 0.5;
@@ -697,7 +697,7 @@ void calc_2d_bounding_box_bottom_line_list(
 }
 
 void calc_2d_bounding_box_bottom_direction_line_list(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
+  const autoware_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points)
 {
   const double length_half = shape.dimensions.x * 0.5;
@@ -721,7 +721,7 @@ void calc_2d_bounding_box_bottom_direction_line_list(
 }
 
 void calc_2d_bounding_box_bottom_orientation_line_list(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
+  const autoware_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points)
 {
   const double length_half = shape.dimensions.x * 0.5;
@@ -746,7 +746,7 @@ void calc_2d_bounding_box_bottom_orientation_line_list(
 }
 
 void calc_cylinder_line_list(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
+  const autoware_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points)
 {
   const double radius = shape.dimensions.x * 0.5;
@@ -789,7 +789,7 @@ void calc_cylinder_line_list(
 }
 
 void calc_2d_cylinder_bottom_line_list(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
+  const autoware_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points)
 {
   const double radius = shape.dimensions.x * 0.5;
@@ -837,7 +837,7 @@ void calc_circle_line_list(
 }
 
 void calc_polygon_line_list(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
+  const autoware_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points)
 {
   if (shape.footprint.points.size() < 2) {
@@ -890,7 +890,7 @@ void calc_polygon_line_list(
 }
 
 void calc_2d_polygon_bottom_line_list(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
+  const autoware_perception_msgs::msg::Shape & shape,
   std::vector<geometry_msgs::msg::Point> & points)
 {
   if (shape.footprint.points.size() < 2) {
@@ -917,7 +917,7 @@ void calc_2d_polygon_bottom_line_list(
 }
 
 void calc_path_line_list(
-  const autoware_auto_perception_msgs::msg::PredictedPath & paths,
+  const autoware_perception_msgs::msg::PredictedPath & paths,
   std::vector<geometry_msgs::msg::Point> & points, const bool is_simple)
 {
   const int circle_line_num = is_simple ? 5 : 10;
