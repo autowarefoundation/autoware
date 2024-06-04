@@ -20,8 +20,8 @@
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/accel_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -39,9 +39,9 @@
 namespace utils
 {
 
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::TransformStamped;
@@ -85,14 +85,14 @@ Polygon2d convertBoundingBoxObjectToGeometryPolygon(
   const double & base_to_width);
 
 Polygon2d convertCylindricalObjectToGeometryPolygon(
-  const Pose & current_pose, const autoware_auto_perception_msgs::msg::Shape & obj_shape);
+  const Pose & current_pose, const autoware_perception_msgs::msg::Shape & obj_shape);
 
 Polygon2d convertPolygonObjectToGeometryPolygon(
-  const Pose & current_pose, const autoware_auto_perception_msgs::msg::Shape & obj_shape);
+  const Pose & current_pose, const autoware_perception_msgs::msg::Shape & obj_shape);
 
 Polygon2d convertObjToPolygon(const PredictedObject & obj);
 
-double calcObstacleMaxLength(const autoware_auto_perception_msgs::msg::Shape & shape);
+double calcObstacleMaxLength(const autoware_perception_msgs::msg::Shape & shape);
 
 void getCurrentObjectPose(
   PredictedObject & predicted_object, const rclcpp::Time & obj_base_time,

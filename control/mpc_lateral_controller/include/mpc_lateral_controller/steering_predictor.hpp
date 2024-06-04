@@ -17,14 +17,14 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp"
+#include "autoware_control_msgs/msg/lateral.hpp"
 
 #include <memory>
 #include <vector>
 
 namespace autoware::motion::control::mpc_lateral_controller
 {
-using autoware_auto_control_msgs::msg::AckermannLateralCommand;
+using autoware_control_msgs::msg::Lateral;
 
 class SteeringPredictor
 {
@@ -61,7 +61,7 @@ private:
   double m_input_delay;
 
   // Buffer of sent control commands.
-  std::vector<AckermannLateralCommand> m_ctrl_cmd_vec;
+  std::vector<Lateral> m_ctrl_cmd_vec;
 
   /**
    * @brief Get the sum of all steering commands over the given time range.

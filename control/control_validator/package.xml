@@ -20,7 +20,7 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
   <build_depend>rosidl_default_generators</build_depend>
 
-  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_planning_msgs</depend>
   <depend>diagnostic_updater</depend>
   <depend>geometry_msgs</depend>
   <depend>motion_utils</depend>

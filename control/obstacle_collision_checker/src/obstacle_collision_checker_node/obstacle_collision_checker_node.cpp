@@ -76,10 +76,10 @@ ObstacleCollisionCheckerNode::ObstacleCollisionCheckerNode(const rclcpp::NodeOpt
   sub_obstacle_pointcloud_ = create_subscription<sensor_msgs::msg::PointCloud2>(
     "input/obstacle_pointcloud", rclcpp::SensorDataQoS(),
     std::bind(&ObstacleCollisionCheckerNode::onObstaclePointcloud, this, _1));
-  sub_reference_trajectory_ = create_subscription<autoware_auto_planning_msgs::msg::Trajectory>(
+  sub_reference_trajectory_ = create_subscription<autoware_planning_msgs::msg::Trajectory>(
     "input/reference_trajectory", 1,
     std::bind(&ObstacleCollisionCheckerNode::onReferenceTrajectory, this, _1));
-  sub_predicted_trajectory_ = create_subscription<autoware_auto_planning_msgs::msg::Trajectory>(
+  sub_predicted_trajectory_ = create_subscription<autoware_planning_msgs::msg::Trajectory>(
     "input/predicted_trajectory", 1,
     std::bind(&ObstacleCollisionCheckerNode::onPredictedTrajectory, this, _1));
   sub_odom_ = create_subscription<nav_msgs::msg::Odometry>(
@@ -109,13 +109,13 @@ void ObstacleCollisionCheckerNode::onObstaclePointcloud(
 }
 
 void ObstacleCollisionCheckerNode::onReferenceTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory::SharedPtr msg)
+  const autoware_planning_msgs::msg::Trajectory::SharedPtr msg)
 {
   reference_trajectory_ = msg;
 }
 
 void ObstacleCollisionCheckerNode::onPredictedTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory::SharedPtr msg)
+  const autoware_planning_msgs::msg::Trajectory::SharedPtr msg)
 {
   predicted_trajectory_ = msg;
 }

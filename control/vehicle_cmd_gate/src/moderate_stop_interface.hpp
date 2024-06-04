@@ -19,8 +19,6 @@
 #include <component_interface_utils/rclcpp.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
-
 #include <string>
 #include <unordered_map>
 

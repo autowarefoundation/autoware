@@ -36,8 +36,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/self_pose_listener.hpp>
 
-#include <autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_control_msgs/msg/lateral.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -79,15 +79,15 @@ public:
 private:
   // Subscriber
   tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};
-  rclcpp::Subscription<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr sub_trajectory_;
+  rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr sub_trajectory_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_current_odometry_;
 
-  autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr trajectory_;
+  autoware_planning_msgs::msg::Trajectory::ConstSharedPtr trajectory_;
   nav_msgs::msg::Odometry::ConstSharedPtr current_odometry_;
 
   bool isDataReady();
 
-  void onTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr msg);
+  void onTrajectory(const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr msg);
   void onCurrentOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
 
   // TF
@@ -96,8 +96,7 @@ private:
   geometry_msgs::msg::PoseStamped::ConstSharedPtr current_pose_;
 
   // Publisher
-  rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannLateralCommand>::SharedPtr
-    pub_ctrl_cmd_;
+  rclcpp::Publisher<autoware_control_msgs::msg::Lateral>::SharedPtr pub_ctrl_cmd_;
 
   void publishCommand(const double target_curvature);
 
@@ -117,7 +116,7 @@ private:
   std::unique_ptr<PurePursuit> pure_pursuit_;
 
   boost::optional<double> calcTargetCurvature();
-  boost::optional<autoware_auto_planning_msgs::msg::TrajectoryPoint> calcTargetPoint() const;
+  boost::optional<autoware_planning_msgs::msg::TrajectoryPoint> calcTargetPoint() const;
 
   // Debug
   mutable DebugData debug_data_;

@@ -23,7 +23,7 @@ namespace pure_pursuit
 namespace planning_utils
 {
 double calcArcLengthFromWayPoint(
-  const autoware_auto_planning_msgs::msg::Trajectory & input_path, const size_t src_idx,
+  const autoware_planning_msgs::msg::Trajectory & input_path, const size_t src_idx,
   const size_t dst_idx)
 {
   double length = 0;
@@ -101,7 +101,7 @@ double convertCurvatureToSteeringAngle(double wheel_base, double kappa)
 }
 
 std::vector<geometry_msgs::msg::Pose> extractPoses(
-  const autoware_auto_planning_msgs::msg::Trajectory & trajectory)
+  const autoware_planning_msgs::msg::Trajectory & trajectory)
 {
   std::vector<geometry_msgs::msg::Pose> poses;
 

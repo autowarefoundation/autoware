@@ -35,13 +35,11 @@ AutonomousMode::AutonomousMode(rclcpp::Node * node)
 {
   vehicle_info_ = vehicle_info_util::VehicleInfoUtil(*node).getVehicleInfo();
 
-  sub_control_cmd_ = node->create_subscription<AckermannControlCommand>(
-    "control_cmd", 1,
-    [this](const AckermannControlCommand::SharedPtr msg) { control_cmd_ = *msg; });
-  sub_trajectory_follower_control_cmd_ = node->create_subscription<AckermannControlCommand>(
-    "trajectory_follower_control_cmd", 1, [this](const AckermannControlCommand::SharedPtr msg) {
-      trajectory_follower_control_cmd_ = *msg;
-    });
+  sub_control_cmd_ = node->create_subscription<Control>(
+    "control_cmd", 1, [this](const Control::SharedPtr msg) { control_cmd_ = *msg; });
+  sub_trajectory_follower_control_cmd_ = node->create_subscription<Control>(
+    "trajectory_follower_control_cmd", 1,
+    [this](const Control::SharedPtr msg) { trajectory_follower_control_cmd_ = *msg; });
 
   sub_kinematics_ = node->create_subscription<Odometry>(
     "kinematics", 1, [this](const Odometry::SharedPtr msg) { kinematics_ = *msg; });
@@ -220,7 +218,7 @@ bool AutonomousMode::isModeChangeAvailable()
   }
 
   const auto current_speed = kinematics_.twist.twist.linear.x;
-  const auto target_control_speed = control_cmd_.longitudinal.speed;
+  const auto target_control_speed = control_cmd_.longitudinal.velocity;
   const auto & param = engage_acceptable_param_;
 
   if (!enable_engage_on_driving_ && std::fabs(current_speed) > 1.0e-2) {
@@ -267,7 +265,7 @@ bool AutonomousMode::isModeChangeAvailable()
   // No engagement if the vehicle is moving but the target speed is zero.
   const bool is_stop_cmd_indicated =
     std::abs(target_control_speed) < 0.01 ||
-    std::abs(trajectory_follower_control_cmd_.longitudinal.speed) < 0.01;
+    std::abs(trajectory_follower_control_cmd_.longitudinal.velocity) < 0.01;
   const bool stop_ok = !(std::abs(current_speed) > 0.1 && is_stop_cmd_indicated);
 
   // No engagement if the large acceleration is commanded.

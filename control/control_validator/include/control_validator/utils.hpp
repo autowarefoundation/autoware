@@ -18,7 +18,7 @@
 #include <motion_utils/trajectory/conversion.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 
 #include <string>
 #include <utility>
@@ -26,8 +26,8 @@
 
 namespace control_validator
 {
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 using geometry_msgs::msg::Pose;
 using motion_utils::convertToTrajectory;
 using motion_utils::convertToTrajectoryPointArray;

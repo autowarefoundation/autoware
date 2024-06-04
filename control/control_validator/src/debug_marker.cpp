@@ -40,7 +40,7 @@ void ControlValidatorDebugMarkerPublisher::clearMarkers()
 }
 
 void ControlValidatorDebugMarkerPublisher::pushPoseMarker(
-  const autoware_auto_planning_msgs::msg::TrajectoryPoint & p, const std::string & ns, int id)
+  const autoware_planning_msgs::msg::TrajectoryPoint & p, const std::string & ns, int id)
 {
   pushPoseMarker(p.pose, ns, id);
 }

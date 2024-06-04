@@ -62,9 +62,9 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
       throw std::domain_error("[LongitudinalController] invalid algorithm");
   }
 
-  sub_ref_path_ = create_subscription<autoware_auto_planning_msgs::msg::Trajectory>(
+  sub_ref_path_ = create_subscription<autoware_planning_msgs::msg::Trajectory>(
     "~/input/reference_trajectory", rclcpp::QoS{1}, std::bind(&Controller::onTrajectory, this, _1));
-  sub_steering_ = create_subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>(
+  sub_steering_ = create_subscription<autoware_vehicle_msgs::msg::SteeringReport>(
     "~/input/current_steering", rclcpp::QoS{1}, std::bind(&Controller::onSteering, this, _1));
   sub_odometry_ = create_subscription<nav_msgs::msg::Odometry>(
     "~/input/current_odometry", rclcpp::QoS{1}, std::bind(&Controller::onOdometry, this, _1));
@@ -73,7 +73,7 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
   sub_operation_mode_ = create_subscription<OperationModeState>(
     "~/input/current_operation_mode", rclcpp::QoS{1},
     [this](const OperationModeState::SharedPtr msg) { current_operation_mode_ptr_ = msg; });
-  control_cmd_pub_ = create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>(
+  control_cmd_pub_ = create_publisher<autoware_control_msgs::msg::Control>(
     "~/output/control_cmd", rclcpp::QoS{1}.transient_local());
   pub_processing_time_lat_ms_ =
     create_publisher<Float64Stamped>("~/lateral/debug/processing_time_ms", 1);
@@ -112,7 +112,7 @@ Controller::LongitudinalControllerMode Controller::getLongitudinalControllerMode
   return LongitudinalControllerMode::INVALID;
 }
 
-void Controller::onTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::SharedPtr msg)
+void Controller::onTrajectory(const autoware_planning_msgs::msg::Trajectory::SharedPtr msg)
 {
   current_trajectory_ptr_ = msg;
 }
@@ -122,7 +122,7 @@ void Controller::onOdometry(const nav_msgs::msg::Odometry::SharedPtr msg)
   current_odometry_ptr_ = msg;
 }
 
-void Controller::onSteering(const autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr msg)
+void Controller::onSteering(const autoware_vehicle_msgs::msg::SteeringReport::SharedPtr msg)
 {
   current_steering_ptr_ = msg;
 }
@@ -227,7 +227,7 @@ void Controller::callbackTimerControl()
   if (isTimeOut(lon_out, lat_out)) return;
 
   // 5. publish control command
-  autoware_auto_control_msgs::msg::AckermannControlCommand out;
+  autoware_control_msgs::msg::Control out;
   out.stamp = this->now();
   out.lateral = lat_out.control_cmd;
   out.longitudinal = lon_out.control_cmd;

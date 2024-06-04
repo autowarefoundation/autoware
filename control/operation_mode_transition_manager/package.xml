@@ -11,9 +11,8 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
   <build_depend>rosidl_default_generators</build_depend>
 
-  <depend>autoware_auto_control_msgs</depend>
-  <depend>autoware_auto_system_msgs</depend>
-  <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>autoware_control_msgs</depend>
+  <depend>autoware_vehicle_msgs</depend>
   <depend>component_interface_specs</depend>
   <depend>component_interface_utils</depend>
   <depend>geometry_msgs</depend>

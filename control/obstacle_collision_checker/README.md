@@ -57,13 +57,13 @@ If any collision is found on predicted path, this module sets `ERROR` level as d
 
 ### Input
 
-| Name                                           | Type                                           | Description                                                        |
-| ---------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------ |
-| `~/input/trajectory`                           | `autoware_auto_planning_msgs::msg::Trajectory` | Reference trajectory                                               |
-| `~/input/trajectory`                           | `autoware_auto_planning_msgs::msg::Trajectory` | Predicted trajectory                                               |
-| `/perception/obstacle_segmentation/pointcloud` | `sensor_msgs::msg::PointCloud2`                | Pointcloud of obstacles which the ego-vehicle should stop or avoid |
-| `/tf`                                          | `tf2_msgs::msg::TFMessage`                     | TF                                                                 |
-| `/tf_static`                                   | `tf2_msgs::msg::TFMessage`                     | TF static                                                          |
+| Name                                           | Type                                      | Description                                                        |
+| ---------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------ |
+| `~/input/trajectory`                           | `autoware_planning_msgs::msg::Trajectory` | Reference trajectory                                               |
+| `~/input/trajectory`                           | `autoware_planning_msgs::msg::Trajectory` | Predicted trajectory                                               |
+| `/perception/obstacle_segmentation/pointcloud` | `sensor_msgs::msg::PointCloud2`           | Pointcloud of obstacles which the ego-vehicle should stop or avoid |
+| `/tf`                                          | `tf2_msgs::msg::TFMessage`                | TF                                                                 |
+| `/tf_static`                                   | `tf2_msgs::msg::TFMessage`                | TF static                                                          |
 
 ### Output
 

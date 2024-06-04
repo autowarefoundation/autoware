@@ -19,9 +19,9 @@
 #include <diagnostic_updater/update_functions.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_vehicle_msgs/msg/gear_command.hpp>
-#include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
-#include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
+#include <autoware_vehicle_msgs/msg/gear_command.hpp>
+#include <autoware_vehicle_msgs/msg/hazard_lights_command.hpp>
+#include <autoware_vehicle_msgs/msg/turn_indicators_command.hpp>
 #include <tier4_control_msgs/msg/external_command_selector_mode.hpp>
 #include <tier4_control_msgs/srv/external_command_select.hpp>
 #include <tier4_external_api_msgs/msg/control_command_stamped.hpp>
@@ -39,9 +39,9 @@ public:
 private:
   using CommandSourceSelect = tier4_control_msgs::srv::ExternalCommandSelect;
   using CommandSourceMode = tier4_control_msgs::msg::ExternalCommandSelectorMode;
-  using InternalGearShift = autoware_auto_vehicle_msgs::msg::GearCommand;
-  using InternalTurnSignal = autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
-  using InternalHazardSignal = autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
+  using InternalGearShift = autoware_vehicle_msgs::msg::GearCommand;
+  using InternalTurnSignal = autoware_vehicle_msgs::msg::TurnIndicatorsCommand;
+  using InternalHazardSignal = autoware_vehicle_msgs::msg::HazardLightsCommand;
   using InternalHeartbeat = tier4_external_api_msgs::msg::Heartbeat;
   using ExternalControlCommand = tier4_external_api_msgs::msg::ControlCommandStamped;
   using ExternalGearShift = tier4_external_api_msgs::msg::GearShiftStamped;

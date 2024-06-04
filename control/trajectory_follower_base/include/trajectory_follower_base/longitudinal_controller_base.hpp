@@ -19,7 +19,7 @@
 #include "trajectory_follower_base/input_data.hpp"
 #include "trajectory_follower_base/sync_data.hpp"
 
-#include "autoware_auto_control_msgs/msg/longitudinal_command.hpp"
+#include "autoware_control_msgs/msg/longitudinal.hpp"
 
 #include <boost/optional.hpp>
 
@@ -27,7 +27,7 @@ namespace autoware::motion::control::trajectory_follower
 {
 struct LongitudinalOutput
 {
-  autoware_auto_control_msgs::msg::LongitudinalCommand control_cmd;
+  autoware_control_msgs::msg::Longitudinal control_cmd;
   LongitudinalSyncData sync_data;
 };
 class LongitudinalControllerBase

@@ -161,7 +161,7 @@ double applyDiffLimitFilter(
 
 geometry_msgs::msg::Pose findTrajectoryPoseAfterDistance(
   const size_t src_idx, const double distance,
-  const autoware_auto_planning_msgs::msg::Trajectory & trajectory)
+  const autoware_planning_msgs::msg::Trajectory & trajectory)
 {
   double remain_dist = distance;
   geometry_msgs::msg::Pose p = trajectory.points.back().pose;

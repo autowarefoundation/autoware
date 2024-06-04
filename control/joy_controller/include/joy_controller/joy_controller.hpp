@@ -19,8 +19,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
-#include <autoware_auto_vehicle_msgs/msg/engage.hpp>
+#include <autoware_control_msgs/msg/control.hpp>
+#include <autoware_vehicle_msgs/msg/engage.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/joy.hpp>
@@ -81,15 +81,14 @@ private:
   void onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
 
   // Publisher
-  rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr
-    pub_control_command_;
+  rclcpp::Publisher<autoware_control_msgs::msg::Control>::SharedPtr pub_control_command_;
   rclcpp::Publisher<tier4_external_api_msgs::msg::ControlCommandStamped>::SharedPtr
     pub_external_control_command_;
   rclcpp::Publisher<tier4_external_api_msgs::msg::GearShiftStamped>::SharedPtr pub_shift_;
   rclcpp::Publisher<tier4_external_api_msgs::msg::TurnSignalStamped>::SharedPtr pub_turn_signal_;
   rclcpp::Publisher<tier4_external_api_msgs::msg::Heartbeat>::SharedPtr pub_heartbeat_;
   rclcpp::Publisher<tier4_control_msgs::msg::GateMode>::SharedPtr pub_gate_mode_;
-  rclcpp::Publisher<autoware_auto_vehicle_msgs::msg::Engage>::SharedPtr pub_vehicle_engage_;
+  rclcpp::Publisher<autoware_vehicle_msgs::msg::Engage>::SharedPtr pub_vehicle_engage_;
 
   void publishControlCommand();
   void publishExternalControlCommand();
@@ -106,7 +105,7 @@ private:
   rclcpp::Client<tier4_external_api_msgs::srv::Engage>::SharedPtr client_autoware_engage_;
 
   // Previous State
-  autoware_auto_control_msgs::msg::AckermannControlCommand prev_control_command_;
+  autoware_control_msgs::msg::Control prev_control_command_;
   tier4_external_api_msgs::msg::ControlCommand prev_external_control_command_;
   GearShiftType prev_shift_ = tier4_external_api_msgs::msg::GearShift::NONE;
   TurnSignalType prev_turn_signal_ = tier4_external_api_msgs::msg::TurnSignal::NONE;

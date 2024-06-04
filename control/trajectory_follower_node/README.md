@@ -129,19 +129,19 @@ Giving the longitudinal controller information about steer convergence allows it
 
 #### Inputs
 
-- `autoware_auto_planning_msgs/Trajectory` : reference trajectory to follow.
+- `autoware_planning_msgs/Trajectory` : reference trajectory to follow.
 - `nav_msgs/Odometry`: current odometry
-- `autoware_auto_vehicle_msgs/SteeringReport` current steering
+- `autoware_vehicle_msgs/SteeringReport` current steering
 
 #### Outputs
 
-- `autoware_auto_control_msgs/AckermannControlCommand`: message containing both lateral and longitudinal commands.
+- `autoware_control_msgs/Control`: message containing both lateral and longitudinal commands.
 
 #### Parameter
 
 - `ctrl_period`: control commands publishing period
 - `timeout_thr_sec`: duration in second after which input messages are discarded.
-  - Each time the node receives lateral and longitudinal commands from each controller, it publishes an `AckermannControlCommand` if the following two conditions are met.
+  - Each time the node receives lateral and longitudinal commands from each controller, it publishes an `Control` if the following two conditions are met.
     1. Both commands have been received.
     2. The last received commands are not older than defined by `timeout_thr_sec`.
 - `lateral_controller_mode`: `mpc` or `pure_pursuit`

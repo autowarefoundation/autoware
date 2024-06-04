@@ -109,11 +109,11 @@ public:
     return points;
   }
 
-  std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> toTrajectoryPoints() const
+  std::vector<autoware_planning_msgs::msg::TrajectoryPoint> toTrajectoryPoints() const
   {
-    std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> points;
+    std::vector<autoware_planning_msgs::msg::TrajectoryPoint> points;
     for (size_t i = 0; i < x.size(); ++i) {
-      autoware_auto_planning_msgs::msg::TrajectoryPoint point;
+      autoware_planning_msgs::msg::TrajectoryPoint point;
       point.pose.position.x = x.at(i);
       point.pose.position.y = y.at(i);
       point.pose.position.z = z.at(i);

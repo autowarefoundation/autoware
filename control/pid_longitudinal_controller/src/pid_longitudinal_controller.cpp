@@ -232,8 +232,7 @@ void PidLongitudinalController::setCurrentOperationMode(const OperationModeState
   m_current_operation_mode = msg;
 }
 
-void PidLongitudinalController::setTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory & msg)
+void PidLongitudinalController::setTrajectory(const autoware_planning_msgs::msg::Trajectory & msg)
 {
   if (!longitudinal_utils::isValidTrajectory(msg)) {
     RCLCPP_ERROR_THROTTLE(logger_, *clock_, 3000, "received invalid trajectory. ignore.");
@@ -820,13 +819,13 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
 }
 
 // Do not use nearest_idx here
-autoware_auto_control_msgs::msg::LongitudinalCommand PidLongitudinalController::createCtrlCmdMsg(
+autoware_control_msgs::msg::Longitudinal PidLongitudinalController::createCtrlCmdMsg(
   const Motion & ctrl_cmd, const double & current_vel)
 {
   // publish control command
-  autoware_auto_control_msgs::msg::LongitudinalCommand cmd{};
+  autoware_control_msgs::msg::Longitudinal cmd{};
   cmd.stamp = clock_->now();
-  cmd.speed = static_cast<decltype(cmd.speed)>(ctrl_cmd.vel);
+  cmd.velocity = static_cast<decltype(cmd.velocity)>(ctrl_cmd.vel);
   cmd.acceleration = static_cast<decltype(cmd.acceleration)>(ctrl_cmd.acc);
 
   // store current velocity history
@@ -926,7 +925,7 @@ void PidLongitudinalController::storeAccelCmd(const double accel)
 {
   if (m_control_state == ControlState::DRIVE) {
     // convert format
-    autoware_auto_control_msgs::msg::LongitudinalCommand cmd;
+    autoware_control_msgs::msg::Longitudinal cmd;
     cmd.stamp = clock_->now();
     cmd.acceleration = static_cast<decltype(cmd.acceleration)>(accel);
 
@@ -994,10 +993,9 @@ PidLongitudinalController::Motion PidLongitudinalController::keepBrakeBeforeStop
   return output_motion;
 }
 
-std::pair<autoware_auto_planning_msgs::msg::TrajectoryPoint, size_t>
+std::pair<autoware_planning_msgs::msg::TrajectoryPoint, size_t>
 PidLongitudinalController::calcInterpolatedTrajPointAndSegment(
-  const autoware_auto_planning_msgs::msg::Trajectory & traj,
-  const geometry_msgs::msg::Pose & pose) const
+  const autoware_planning_msgs::msg::Trajectory & traj, const geometry_msgs::msg::Pose & pose) const
 {
   if (traj.points.size() == 1) {
     return std::make_pair(traj.points.at(0), 0);

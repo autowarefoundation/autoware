@@ -25,7 +25,7 @@
 #include <Eigen/Geometry>
 #include <experimental/optional>  // NOLINT
 
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
+#include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 
 #include <cmath>
@@ -37,8 +37,8 @@ namespace autoware::motion::control::pid_longitudinal_controller
 namespace longitudinal_utils
 {
 
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Quaternion;
@@ -150,7 +150,7 @@ double applyDiffLimitFilter(
  */
 geometry_msgs::msg::Pose findTrajectoryPoseAfterDistance(
   const size_t src_idx, const double distance,
-  const autoware_auto_planning_msgs::msg::Trajectory & trajectory);
+  const autoware_planning_msgs::msg::Trajectory & trajectory);
 
 }  // namespace longitudinal_utils
 }  // namespace autoware::motion::control::pid_longitudinal_controller

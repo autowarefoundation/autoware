@@ -17,7 +17,7 @@
 
 #include "data.hpp"
 
-#include <autoware_auto_vehicle_msgs/msg/engage.hpp>
+#include <autoware_vehicle_msgs/msg/engage.hpp>
 #include <tier4_control_msgs/msg/external_command_selector_mode.hpp>
 #include <tier4_control_msgs/msg/gate_mode.hpp>
 #include <tier4_control_msgs/srv/external_command_select.hpp>
@@ -33,7 +33,7 @@ public:
   std::optional<OperationMode> get_mode() const;
 
 private:
-  using AutowareEngage = autoware_auto_vehicle_msgs::msg::Engage;
+  using AutowareEngage = autoware_vehicle_msgs::msg::Engage;
   using GateMode = tier4_control_msgs::msg::GateMode;
   using SelectorModeMsg = tier4_control_msgs::msg::ExternalCommandSelectorMode;
   using SelectorModeSrv = tier4_control_msgs::srv::ExternalCommandSelect;

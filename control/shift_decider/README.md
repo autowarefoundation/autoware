@@ -37,15 +37,15 @@ stop
 
 ### Input
 
-| Name                  | Type                                                       | Description                  |
-| --------------------- | ---------------------------------------------------------- | ---------------------------- |
-| `~/input/control_cmd` | `autoware_auto_control_msgs::msg::AckermannControlCommand` | Control command for vehicle. |
+| Name                  | Type                                  | Description                  |
+| --------------------- | ------------------------------------- | ---------------------------- |
+| `~/input/control_cmd` | `autoware_control_msgs::msg::Control` | Control command for vehicle. |
 
 ### Output
 
-| Name               | Type                                           | Description                        |
-| ------------------ | ---------------------------------------------- | ---------------------------------- |
-| `~output/gear_cmd` | `autoware_auto_vehicle_msgs::msg::GearCommand` | Gear for drive forward / backward. |
+| Name               | Type                                      | Description                        |
+| ------------------ | ----------------------------------------- | ---------------------------------- |
+| `~output/gear_cmd` | `autoware_vehicle_msgs::msg::GearCommand` | Gear for drive forward / backward. |
 
 ## Parameters
 

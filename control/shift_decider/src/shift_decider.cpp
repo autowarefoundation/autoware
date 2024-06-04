@@ -33,29 +33,28 @@ ShiftDecider::ShiftDecider(const rclcpp::NodeOptions & node_options)
   park_on_goal_ = declare_parameter<bool>("park_on_goal");
 
   pub_shift_cmd_ =
-    create_publisher<autoware_auto_vehicle_msgs::msg::GearCommand>("output/gear_cmd", durable_qos);
-  sub_control_cmd_ = create_subscription<autoware_auto_control_msgs::msg::AckermannControlCommand>(
+    create_publisher<autoware_vehicle_msgs::msg::GearCommand>("output/gear_cmd", durable_qos);
+  sub_control_cmd_ = create_subscription<autoware_control_msgs::msg::Control>(
     "input/control_cmd", queue_size, std::bind(&ShiftDecider::onControlCmd, this, _1));
-  sub_autoware_state_ = create_subscription<autoware_auto_system_msgs::msg::AutowareState>(
+  sub_autoware_state_ = create_subscription<autoware_system_msgs::msg::AutowareState>(
     "input/state", queue_size, std::bind(&ShiftDecider::onAutowareState, this, _1));
-  sub_current_gear_ = create_subscription<autoware_auto_vehicle_msgs::msg::GearReport>(
+  sub_current_gear_ = create_subscription<autoware_vehicle_msgs::msg::GearReport>(
     "input/current_gear", queue_size, std::bind(&ShiftDecider::onCurrentGear, this, _1));
 
   initTimer(0.1);
 }
 
-void ShiftDecider::onControlCmd(
-  autoware_auto_control_msgs::msg::AckermannControlCommand::SharedPtr msg)
+void ShiftDecider::onControlCmd(autoware_control_msgs::msg::Control::SharedPtr msg)
 {
   control_cmd_ = msg;
 }
 
-void ShiftDecider::onAutowareState(autoware_auto_system_msgs::msg::AutowareState::SharedPtr msg)
+void ShiftDecider::onAutowareState(autoware_system_msgs::msg::AutowareState::SharedPtr msg)
 {
   autoware_state_ = msg;
 }
 
-void ShiftDecider::onCurrentGear(autoware_auto_vehicle_msgs::msg::GearReport::SharedPtr msg)
+void ShiftDecider::onCurrentGear(autoware_vehicle_msgs::msg::GearReport::SharedPtr msg)
 {
   current_gear_ptr_ = msg;
 }
@@ -72,15 +71,15 @@ void ShiftDecider::onTimer()
 
 void ShiftDecider::updateCurrentShiftCmd()
 {
-  using autoware_auto_system_msgs::msg::AutowareState;
-  using autoware_auto_vehicle_msgs::msg::GearCommand;
+  using autoware_system_msgs::msg::AutowareState;
+  using autoware_vehicle_msgs::msg::GearCommand;
 
   shift_cmd_.stamp = now();
   static constexpr double vel_threshold = 0.01;  // to prevent chattering
   if (autoware_state_->state == AutowareState::DRIVING) {
-    if (control_cmd_->longitudinal.speed > vel_threshold) {
+    if (control_cmd_->longitudinal.velocity > vel_threshold) {
       shift_cmd_.command = GearCommand::DRIVE;
-    } else if (control_cmd_->longitudinal.speed < -vel_threshold) {
+    } else if (control_cmd_->longitudinal.velocity < -vel_threshold) {
       shift_cmd_.command = GearCommand::REVERSE;
     } else {
       shift_cmd_.command = prev_shift_command;

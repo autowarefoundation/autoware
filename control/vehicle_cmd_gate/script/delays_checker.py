@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from autoware_auto_control_msgs.msg import AckermannControlCommand
-from autoware_auto_vehicle_msgs.msg import Engage
+from autoware_control_msgs.msg import Control
+from autoware_vehicle_msgs.msg import Engage
 from geometry_msgs.msg import AccelWithCovarianceStamped
 from nav_msgs.msg import Odometry
 import rclpy
@@ -68,13 +68,13 @@ class DelaysChecker(Node):
         )
         self.sub_engage = self.create_subscription(Engage, engage_topic, self.CallBackEngage, 1)
         self.sub_in_gate_cmd = self.create_subscription(
-            AckermannControlCommand,
+            Control,
             in_gate_cmd_topic,
             self.CallBackInCmd,
             1,
         )
         self.sub_out_gate_cmd = self.create_subscription(
-            AckermannControlCommand,
+            Control,
             out_gate_cmd_topic,
             self.CallBackOutCmd,
             1,

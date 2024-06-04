@@ -8,38 +8,38 @@
 
 ### Input
 
-| Name                                        | Type                                                       | Description                                                          |
-| ------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------- |
-| `~/input/steering`                          | `autoware_auto_vehicle_msgs::msg::SteeringReport`          | steering status                                                      |
-| `~/input/auto/control_cmd`                  | `autoware_auto_control_msgs::msg::AckermannControlCommand` | command for lateral and longitudinal velocity from planning module   |
-| `~/input/auto/turn_indicators_cmd`          | `autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand`   | turn indicators command from planning module                         |
-| `~/input/auto/hazard_lights_cmd`            | `autoware_auto_vehicle_msgs::msg::HazardLightsCommand`     | hazard lights command from planning module                           |
-| `~/input/auto/gear_cmd`                     | `autoware_auto_vehicle_msgs::msg::GearCommand`             | gear command from planning module                                    |
-| `~/input/external/control_cmd`              | `autoware_auto_control_msgs::msg::AckermannControlCommand` | command for lateral and longitudinal velocity from external          |
-| `~/input/external/turn_indicators_cmd`      | `autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand`   | turn indicators command from external                                |
-| `~/input/external/hazard_lights_cmd`        | `autoware_auto_vehicle_msgs::msg::HazardLightsCommand`     | hazard lights command from external                                  |
-| `~/input/external/gear_cmd`                 | `autoware_auto_vehicle_msgs::msg::GearCommand`             | gear command from external                                           |
-| `~/input/external_emergency_stop_heartbeat` | `tier4_external_api_msgs::msg::Heartbeat`                  | heartbeat                                                            |
-| `~/input/gate_mode`                         | `tier4_control_msgs::msg::GateMode`                        | gate mode (AUTO or EXTERNAL)                                         |
-| `~/input/emergency/control_cmd`             | `autoware_auto_control_msgs::msg::AckermannControlCommand` | command for lateral and longitudinal velocity from emergency handler |
-| `~/input/emergency/hazard_lights_cmd`       | `autoware_auto_vehicle_msgs::msg::HazardLightsCommand`     | hazard lights command from emergency handler                         |
-| `~/input/emergency/gear_cmd`                | `autoware_auto_vehicle_msgs::msg::GearCommand`             | gear command from emergency handler                                  |
-| `~/input/engage`                            | `autoware_auto_vehicle_msgs::msg::Engage`                  | engage signal                                                        |
-| `~/input/operation_mode`                    | `autoware_adapi_v1_msgs::msg::OperationModeState`          | operation mode of Autoware                                           |
+| Name                                        | Type                                                | Description                                                          |
+| ------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------------- |
+| `~/input/steering`                          | `autoware_vehicle_msgs::msg::SteeringReport`        | steering status                                                      |
+| `~/input/auto/control_cmd`                  | `autoware_control_msgs::msg::Control`               | command for lateral and longitudinal velocity from planning module   |
+| `~/input/auto/turn_indicators_cmd`          | `autoware_vehicle_msgs::msg::TurnIndicatorsCommand` | turn indicators command from planning module                         |
+| `~/input/auto/hazard_lights_cmd`            | `autoware_vehicle_msgs::msg::HazardLightsCommand`   | hazard lights command from planning module                           |
+| `~/input/auto/gear_cmd`                     | `autoware_vehicle_msgs::msg::GearCommand`           | gear command from planning module                                    |
+| `~/input/external/control_cmd`              | `autoware_control_msgs::msg::Control`               | command for lateral and longitudinal velocity from external          |
+| `~/input/external/turn_indicators_cmd`      | `autoware_vehicle_msgs::msg::TurnIndicatorsCommand` | turn indicators command from external                                |
+| `~/input/external/hazard_lights_cmd`        | `autoware_vehicle_msgs::msg::HazardLightsCommand`   | hazard lights command from external                                  |
+| `~/input/external/gear_cmd`                 | `autoware_vehicle_msgs::msg::GearCommand`           | gear command from external                                           |
+| `~/input/external_emergency_stop_heartbeat` | `tier4_external_api_msgs::msg::Heartbeat`           | heartbeat                                                            |
+| `~/input/gate_mode`                         | `tier4_control_msgs::msg::GateMode`                 | gate mode (AUTO or EXTERNAL)                                         |
+| `~/input/emergency/control_cmd`             | `autoware_control_msgs::msg::Control`               | command for lateral and longitudinal velocity from emergency handler |
+| `~/input/emergency/hazard_lights_cmd`       | `autoware_vehicle_msgs::msg::HazardLightsCommand`   | hazard lights command from emergency handler                         |
+| `~/input/emergency/gear_cmd`                | `autoware_vehicle_msgs::msg::GearCommand`           | gear command from emergency handler                                  |
+| `~/input/engage`                            | `autoware_vehicle_msgs::msg::Engage`                | engage signal                                                        |
+| `~/input/operation_mode`                    | `autoware_adapi_v1_msgs::msg::OperationModeState`   | operation mode of Autoware                                           |
 
 ### Output
 
-| Name                                   | Type                                                       | Description                                              |
-| -------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------- |
-| `~/output/vehicle_cmd_emergency`       | `autoware_auto_system_msgs::msg::EmergencyState`           | emergency state which was originally in vehicle command  |
-| `~/output/command/control_cmd`         | `autoware_auto_control_msgs::msg::AckermannControlCommand` | command for lateral and longitudinal velocity to vehicle |
-| `~/output/command/turn_indicators_cmd` | `autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand`   | turn indicators command to vehicle                       |
-| `~/output/command/hazard_lights_cmd`   | `autoware_auto_vehicle_msgs::msg::HazardLightsCommand`     | hazard lights command to vehicle                         |
-| `~/output/command/gear_cmd`            | `autoware_auto_vehicle_msgs::msg::GearCommand`             | gear command to vehicle                                  |
-| `~/output/gate_mode`                   | `tier4_control_msgs::msg::GateMode`                        | gate mode (AUTO or EXTERNAL)                             |
-| `~/output/engage`                      | `autoware_auto_vehicle_msgs::msg::Engage`                  | engage signal                                            |
-| `~/output/external_emergency`          | `tier4_external_api_msgs::msg::Emergency`                  | external emergency signal                                |
-| `~/output/operation_mode`              | `tier4_system_msgs::msg::OperationMode`                    | current operation mode of the vehicle_cmd_gate           |
+| Name                                   | Type                                                | Description                                              |
+| -------------------------------------- | --------------------------------------------------- | -------------------------------------------------------- |
+| `~/output/vehicle_cmd_emergency`       | `tier4_vehicle_msgs::msg::VehicleEmergencyStamped`  | emergency state which was originally in vehicle command  |
+| `~/output/command/control_cmd`         | `autoware_control_msgs::msg::Control`               | command for lateral and longitudinal velocity to vehicle |
+| `~/output/command/turn_indicators_cmd` | `autoware_vehicle_msgs::msg::TurnIndicatorsCommand` | turn indicators command to vehicle                       |
+| `~/output/command/hazard_lights_cmd`   | `autoware_vehicle_msgs::msg::HazardLightsCommand`   | hazard lights command to vehicle                         |
+| `~/output/command/gear_cmd`            | `autoware_vehicle_msgs::msg::GearCommand`           | gear command to vehicle                                  |
+| `~/output/gate_mode`                   | `tier4_control_msgs::msg::GateMode`                 | gate mode (AUTO or EXTERNAL)                             |
+| `~/output/engage`                      | `autoware_vehicle_msgs::msg::Engage`                | engage signal                                            |
+| `~/output/external_emergency`          | `tier4_external_api_msgs::msg::Emergency`           | external emergency signal                                |
+| `~/output/operation_mode`              | `tier4_system_msgs::msg::OperationMode`             | current operation mode of the vehicle_cmd_gate           |
 
 ## Parameters
 

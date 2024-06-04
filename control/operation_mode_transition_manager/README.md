@@ -58,15 +58,15 @@ For the mode transition:
 
 For the transition availability/completion check:
 
-- /control/command/control_cmd [`autoware_auto_control_msgs/msg/AckermannControlCommand`]: vehicle control signal
+- /control/command/control_cmd [`autoware_control_msgs/msg/Control`]: vehicle control signal
 - /localization/kinematic_state [`nav_msgs/msg/Odometry`]: ego vehicle state
-- /planning/scenario_planning/trajectory [`autoware_auto_planning_msgs/msg/Trajectory`]: planning trajectory
-- /vehicle/status/control_mode [`autoware_auto_vehicle_msgs/msg/ControlModeReport`]: vehicle control mode (autonomous/manual)
+- /planning/scenario_planning/trajectory [`autoware_planning_msgs/msg/Trajectory`]: planning trajectory
+- /vehicle/status/control_mode [`autoware_vehicle_msgs/msg/ControlModeReport`]: vehicle control mode (autonomous/manual)
 - /control/vehicle_cmd_gate/operation_mode [`autoware_adapi_v1_msgs/msg/OperationModeState`]: the operation mode in the `vehicle_cmd_gate`. (To be removed)
 
 For the backward compatibility (to be removed):
 
-- /api/autoware/get/engage [`autoware_auto_vehicle_msgs/msg/Engage`]
+- /api/autoware/get/engage [`autoware_vehicle_msgs/msg/Engage`]
 - /control/current_gate_mode [`tier4_control_msgs/msg/GateMode`]
 - /control/external_cmd_selector/current_selector_mode [`tier4_control_msgs/msg/ExternalCommandSelectorMode`]
 
@@ -76,9 +76,9 @@ For the backward compatibility (to be removed):
 - /control/operation_mode_transition_manager/debug_info [`operation_mode_transition_manager/msg/OperationModeTransitionManagerDebug`]: detailed information about the operation mode transition
 
 - /control/gate_mode_cmd [`tier4_control_msgs/msg/GateMode`]: to change the `vehicle_cmd_gate` state to use its features (to be removed)
-- /autoware/engage [`autoware_auto_vehicle_msgs/msg/Engage`]:
+- /autoware/engage [`autoware_vehicle_msgs/msg/Engage`]:
 
-- /control/control_mode_request [`autoware_auto_vehicle_msgs/srv/ControlModeCommand`]: to change the vehicle control mode (autonomous/manual)
+- /control/control_mode_request [`autoware_vehicle_msgs/srv/ControlModeCommand`]: to change the vehicle control mode (autonomous/manual)
 - /control/external_cmd_selector/select_external_command [`tier4_control_msgs/srv/ExternalCommandSelect`]:
 
 ## Parameters

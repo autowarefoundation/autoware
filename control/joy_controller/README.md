@@ -30,15 +30,15 @@ ros2 launch joy_controller joy_controller.launch.xml config_file:=/path/to/your/
 
 ### Output topics
 
-| Name                                | Type                                                     | Description                              |
-| ----------------------------------- | -------------------------------------------------------- | ---------------------------------------- |
-| `~/output/control_command`          | autoware_auto_control_msgs::msg::AckermannControlCommand | lateral and longitudinal control command |
-| `~/output/external_control_command` | tier4_external_api_msgs::msg::ControlCommandStamped      | lateral and longitudinal control command |
-| `~/output/shift`                    | tier4_external_api_msgs::msg::GearShiftStamped           | gear command                             |
-| `~/output/turn_signal`              | tier4_external_api_msgs::msg::TurnSignalStamped          | turn signal command                      |
-| `~/output/gate_mode`                | tier4_control_msgs::msg::GateMode                        | gate mode (Auto or External)             |
-| `~/output/heartbeat`                | tier4_external_api_msgs::msg::Heartbeat                  | heartbeat                                |
-| `~/output/vehicle_engage`           | autoware_auto_vehicle_msgs::msg::Engage                  | vehicle engage                           |
+| Name                                | Type                                                | Description                              |
+| ----------------------------------- | --------------------------------------------------- | ---------------------------------------- |
+| `~/output/control_command`          | autoware_control_msgs::msg::Control                 | lateral and longitudinal control command |
+| `~/output/external_control_command` | tier4_external_api_msgs::msg::ControlCommandStamped | lateral and longitudinal control command |
+| `~/output/shift`                    | tier4_external_api_msgs::msg::GearShiftStamped      | gear command                             |
+| `~/output/turn_signal`              | tier4_external_api_msgs::msg::TurnSignalStamped     | turn signal command                      |
+| `~/output/gate_mode`                | tier4_control_msgs::msg::GateMode                   | gate mode (Auto or External)             |
+| `~/output/heartbeat`                | tier4_external_api_msgs::msg::Heartbeat             | heartbeat                                |
+| `~/output/vehicle_engage`           | autoware_vehicle_msgs::msg::Engage                  | vehicle engage                           |
 
 ## Parameters
 

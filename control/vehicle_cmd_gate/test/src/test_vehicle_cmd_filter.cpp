@@ -24,7 +24,7 @@
 #define ASSERT_LT_NEAR(x, y) ASSERT_LT(x, y + THRESHOLD)
 #define ASSERT_GT_NEAR(x, y) ASSERT_GT(x, y - THRESHOLD)
 
-using autoware_auto_control_msgs::msg::AckermannControlCommand;
+using autoware_control_msgs::msg::Control;
 using vehicle_cmd_gate::LimitArray;
 
 constexpr double NOMINAL_INTERVAL = 1.0;
@@ -49,38 +49,37 @@ void setFilterParams(
   f.setParam(p);
 }
 
-AckermannControlCommand genCmd(double s, double sr, double v, double a)
+Control genCmd(double s, double sr, double v, double a)
 {
-  AckermannControlCommand cmd;
+  Control cmd;
   cmd.lateral.steering_tire_angle = s;
   cmd.lateral.steering_tire_rotation_rate = sr;
-  cmd.longitudinal.speed = v;
+  cmd.longitudinal.velocity = v;
   cmd.longitudinal.acceleration = a;
   return cmd;
 }
 
 // calc from ego velocity
-double calcLatAcc(const AckermannControlCommand & cmd, const double wheelbase, const double ego_v)
+double calcLatAcc(const Control & cmd, const double wheelbase, const double ego_v)
 {
   return ego_v * ego_v * std::tan(cmd.lateral.steering_tire_angle) / wheelbase;
 }
 
 // calc from command velocity
-double calcLatAcc(const AckermannControlCommand & cmd, const double wheelbase)
+double calcLatAcc(const Control & cmd, const double wheelbase)
 {
-  double v = cmd.longitudinal.speed;
+  double v = cmd.longitudinal.velocity;
   return v * v * std::tan(cmd.lateral.steering_tire_angle) / wheelbase;
 }
 
 // calc from command velocity
 double calcLatJerk(
-  const AckermannControlCommand & cmd, const AckermannControlCommand & prev_cmd,
-  const double wheelbase, const double dt)
+  const Control & cmd, const Control & prev_cmd, const double wheelbase, const double dt)
 {
-  const auto prev_v = prev_cmd.longitudinal.speed;
+  const auto prev_v = prev_cmd.longitudinal.velocity;
   const auto prev = prev_v * prev_v * std::tan(prev_cmd.lateral.steering_tire_angle) / wheelbase;
 
-  const auto curr_v = cmd.longitudinal.speed;
+  const auto curr_v = cmd.longitudinal.velocity;
   const auto curr = curr_v * curr_v * std::tan(cmd.lateral.steering_tire_angle) / wheelbase;
 
   return (curr - prev) / dt;
@@ -88,8 +87,8 @@ double calcLatJerk(
 
 // calc from ego velocity
 double calcLatJerk(
-  const AckermannControlCommand & cmd, const AckermannControlCommand & prev_cmd,
-  const double wheelbase, const double dt, const double ego_v)
+  const Control & cmd, const Control & prev_cmd, const double wheelbase, const double dt,
+  const double ego_v)
 {
   const auto prev = ego_v * ego_v * std::tan(prev_cmd.lateral.steering_tire_angle) / wheelbase;
 
@@ -100,8 +99,8 @@ double calcLatJerk(
 
 void test_1d_limit(
   double ego_v, double V_LIM, double A_LIM, double J_LIM, double LAT_A_LIM, double LAT_J_LIM,
-  double STEER_DIFF, double STEER_LIM, double STEER_RATE_LIM,
-  const AckermannControlCommand & prev_cmd, const AckermannControlCommand & raw_cmd)
+  double STEER_DIFF, double STEER_LIM, double STEER_RATE_LIM, const Control & prev_cmd,
+  const Control & raw_cmd)
 {
   const double WHEELBASE = 3.0;
   const double DT = 0.1;  // [s]
@@ -119,11 +118,11 @@ void test_1d_limit(
     filter.limitLongitudinalWithVel(filtered_cmd);
 
     // check if the filtered value does not exceed the limit.
-    ASSERT_LT_NEAR(filtered_cmd.longitudinal.speed, V_LIM);
+    ASSERT_LT_NEAR(filtered_cmd.longitudinal.velocity, V_LIM);
 
     // check if the undesired filter is not applied.
-    if (std::abs(raw_cmd.longitudinal.speed) < V_LIM) {
-      ASSERT_NEAR(filtered_cmd.longitudinal.speed, raw_cmd.longitudinal.speed, THRESHOLD);
+    if (std::abs(raw_cmd.longitudinal.velocity) < V_LIM) {
+      ASSERT_NEAR(filtered_cmd.longitudinal.velocity, raw_cmd.longitudinal.velocity, THRESHOLD);
     }
   }
 
@@ -145,14 +144,14 @@ void test_1d_limit(
     }
 
     // check if the filtered value does not exceed the limit.
-    const double v_max = prev_cmd.longitudinal.speed + A_LIM * DT;
-    const double v_min = prev_cmd.longitudinal.speed - A_LIM * DT;
-    ASSERT_LT_NEAR(filtered_cmd.longitudinal.speed, v_max);
-    ASSERT_GT_NEAR(filtered_cmd.longitudinal.speed, v_min);
+    const double v_max = prev_cmd.longitudinal.velocity + A_LIM * DT;
+    const double v_min = prev_cmd.longitudinal.velocity - A_LIM * DT;
+    ASSERT_LT_NEAR(filtered_cmd.longitudinal.velocity, v_max);
+    ASSERT_GT_NEAR(filtered_cmd.longitudinal.velocity, v_min);
 
     // check if the undesired filter is not applied.
-    if (v_min < raw_cmd.longitudinal.speed && raw_cmd.longitudinal.speed < v_max) {
-      ASSERT_NEAR(filtered_cmd.longitudinal.speed, raw_cmd.longitudinal.speed, THRESHOLD);
+    if (v_min < raw_cmd.longitudinal.velocity && raw_cmd.longitudinal.velocity < v_max) {
+      ASSERT_NEAR(filtered_cmd.longitudinal.velocity, raw_cmd.longitudinal.velocity, THRESHOLD);
     }
   }
 
@@ -241,10 +240,10 @@ TEST(VehicleCmdFilter, VehicleCmdFilter)
   const std::vector<double> steer_rate_lim_arr = {0.01, 1.0, 100.0};
   const std::vector<double> ego_v_arr = {0.0, 0.1, 1.0, 3.0, 15.0};
 
-  const std::vector<AckermannControlCommand> prev_cmd_arr = {
+  const std::vector<Control> prev_cmd_arr = {
     genCmd(0.0, 0.0, 0.0, 0.0), genCmd(1.0, 1.0, 1.0, 1.0)};
 
-  const std::vector<AckermannControlCommand> raw_cmd_arr = {
+  const std::vector<Control> raw_cmd_arr = {
     genCmd(1.0, 1.0, 1.0, 1.0), genCmd(10.0, -1.0, -1.0, -1.0)};
 
   for (const auto & v : v_arr) {
@@ -294,10 +293,10 @@ TEST(VehicleCmdFilter, VehicleCmdFilterInterpolate)
   const auto DT = 0.033;
 
   const auto orig_cmd = []() {
-    AckermannControlCommand cmd;
+    Control cmd;
     cmd.lateral.steering_tire_angle = 0.5;
     cmd.lateral.steering_tire_rotation_rate = 0.5;
-    cmd.longitudinal.speed = 30.0;
+    cmd.longitudinal.velocity = 30.0;
     cmd.longitudinal.acceleration = 10.0;
     cmd.longitudinal.jerk = 10.0;
     return cmd;
@@ -353,7 +352,7 @@ TEST(VehicleCmdFilter, VehicleCmdFilterInterpolate)
   // vel lim
   {
     set_speed_and_reset_prev(0.0);
-    EXPECT_NEAR(_limitLongitudinalWithVel(orig_cmd).longitudinal.speed, 20.0, ep);
+    EXPECT_NEAR(_limitLongitudinalWithVel(orig_cmd).longitudinal.velocity, 20.0, ep);
   }
 
   // steer angle lim
@@ -389,7 +388,7 @@ TEST(VehicleCmdFilter, VehicleCmdFilterInterpolate)
     const auto calcSteerRateFromAngle = [&](const auto & cmd) {
       return (cmd.steering_tire_angle - 0.0) / DT;
     };
-    autoware_auto_control_msgs::msg::AckermannLateralCommand filtered;
+    autoware_control_msgs::msg::Lateral filtered;
 
     set_speed_and_reset_prev(0.0);
     filtered = _limitSteerRate(orig_cmd).lateral;
@@ -521,7 +520,7 @@ TEST(VehicleCmdFilter, VehicleCmdFilterInterpolate)
   // p.reference_speed_points = std::vector<double>{2.0, 4.0, 10.0};
   // p.lat_jerk_lim = std::vector<double>{0.9, 0.7, 0.1};
   const auto _calcLatJerk = [&](const auto & cmd, const double ego_v) {
-    return calcLatJerk(cmd, AckermannControlCommand{}, WHEELBASE, DT, ego_v);
+    return calcLatJerk(cmd, Control{}, WHEELBASE, DT, ego_v);
   };
   {
     // since the lateral acceleration and jerk is 0 when the velocity is 0, the target value is 0

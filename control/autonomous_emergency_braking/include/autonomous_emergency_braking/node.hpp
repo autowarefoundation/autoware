@@ -23,9 +23,9 @@
 #include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
-#include <autoware_auto_system_msgs/msg/autoware_state.hpp>
-#include <autoware_auto_vehicle_msgs/msg/velocity_report.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
+#include <autoware_system_msgs/msg/autoware_state.hpp>
+#include <autoware_vehicle_msgs/msg/velocity_report.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/imu.hpp>
@@ -52,9 +52,9 @@
 namespace autoware::motion::control::autonomous_emergency_braking
 {
 
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_system_msgs::msg::AutowareState;
-using autoware_auto_vehicle_msgs::msg::VelocityReport;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_system_msgs::msg::AutowareState;
+using autoware_vehicle_msgs::msg::VelocityReport;
 using nav_msgs::msg::Odometry;
 using sensor_msgs::msg::Imu;
 using sensor_msgs::msg::PointCloud2;

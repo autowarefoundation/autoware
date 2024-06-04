@@ -19,10 +19,10 @@
 import time
 
 from autoware_adapi_v1_msgs.msg import OperationModeState
-from autoware_auto_control_msgs.msg import AckermannControlCommand
-from autoware_auto_planning_msgs.msg import Trajectory
-from autoware_auto_planning_msgs.msg import TrajectoryPoint
-from autoware_auto_vehicle_msgs.msg import SteeringReport
+from autoware_control_msgs.msg import Control
+from autoware_planning_msgs.msg import Trajectory
+from autoware_planning_msgs.msg import TrajectoryPoint
+from autoware_vehicle_msgs.msg import SteeringReport
 from builtin_interfaces.msg import Duration
 from geometry_msgs.msg import AccelWithCovarianceStamped
 from geometry_msgs.msg import PoseStamped
@@ -128,7 +128,7 @@ class PyMPCTrajectoryFollower(Node):
         self.sub_reload_mpc_param_trigger_
 
         self.sub_control_command_control_cmd_ = self.create_subscription(
-            AckermannControlCommand,
+            Control,
             "/control/command/control_cmd",
             self.onControlCommandControlCmd,
             3,
@@ -136,7 +136,7 @@ class PyMPCTrajectoryFollower(Node):
         self.sub_control_command_control_cmd_
 
         self.control_cmd_pub_ = self.create_publisher(
-            AckermannControlCommand,
+            Control,
             "/control/trajectory_follower/control_cmd",
             1,
         )
@@ -699,7 +699,7 @@ class PyMPCTrajectoryFollower(Node):
             else:
                 steer_cmd = 0.0
 
-        cmd_msg = AckermannControlCommand()
+        cmd_msg = Control()
         cmd_msg.stamp = cmd_msg.lateral.stamp = cmd_msg.longitudinal.stamp = (
             self.get_clock().now().to_msg()
         )

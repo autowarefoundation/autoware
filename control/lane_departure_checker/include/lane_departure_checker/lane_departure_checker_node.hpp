@@ -22,9 +22,9 @@
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
 #include <tier4_autoware_utils/ros/processing_time_publisher.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -42,7 +42,7 @@
 
 namespace lane_departure_checker
 {
-using autoware_auto_mapping_msgs::msg::HADMapBin;
+using autoware_map_msgs::msg::LaneletMapBin;
 
 struct NodeParam
 {
@@ -67,7 +67,7 @@ public:
 private:
   // Subscriber
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
-  rclcpp::Subscription<HADMapBin>::SharedPtr sub_lanelet_map_bin_;
+  rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_lanelet_map_bin_;
   rclcpp::Subscription<LaneletRoute>::SharedPtr sub_route_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_reference_trajectory_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_predicted_trajectory_;
@@ -87,7 +87,7 @@ private:
 
   // Callback
   void onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
-  void onLaneletMapBin(const HADMapBin::ConstSharedPtr msg);
+  void onLaneletMapBin(const LaneletMapBin::ConstSharedPtr msg);
   void onRoute(const LaneletRoute::ConstSharedPtr msg);
   void onReferenceTrajectory(const Trajectory::ConstSharedPtr msg);
   void onPredictedTrajectory(const Trajectory::ConstSharedPtr msg);

@@ -18,9 +18,9 @@
 TEST(test_obstacle_collision_checker, filterPointCloudByTrajectory)
 {
   pcl::PointCloud<pcl::PointXYZ> pcl;
-  autoware_auto_planning_msgs::msg::Trajectory trajectory;
+  autoware_planning_msgs::msg::Trajectory trajectory;
   pcl::PointXYZ pcl_point;
-  autoware_auto_planning_msgs::msg::TrajectoryPoint traj_point;
+  autoware_planning_msgs::msg::TrajectoryPoint traj_point;
   pcl_point.y = 0.0;
   traj_point.pose.position.y = 0.99;
   for (double x = 0.0; x < 10.0; x += 1.0) {

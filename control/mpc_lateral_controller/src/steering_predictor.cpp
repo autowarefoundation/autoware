@@ -47,7 +47,7 @@ double SteeringPredictor::calcSteerPrediction()
 void SteeringPredictor::storeSteerCmd(const double steer)
 {
   const auto time_delayed = m_clock->now() + rclcpp::Duration::from_seconds(m_input_delay);
-  AckermannLateralCommand cmd;
+  Lateral cmd;
   cmd.stamp = time_delayed;
   cmd.steering_tire_angle = static_cast<float>(steer);
 

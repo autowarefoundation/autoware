@@ -95,24 +95,23 @@ VehicleCmdFilterParam VehicleCmdFilter::getParam() const
   return param_;
 }
 
-void VehicleCmdFilter::limitLongitudinalWithVel(AckermannControlCommand & input) const
+void VehicleCmdFilter::limitLongitudinalWithVel(Control & input) const
 {
-  input.longitudinal.speed = std::max(
-    std::min(static_cast<double>(input.longitudinal.speed), param_.vel_lim), -param_.vel_lim);
+  input.longitudinal.velocity = std::max(
+    std::min(static_cast<double>(input.longitudinal.velocity), param_.vel_lim), -param_.vel_lim);
 }
 
-void VehicleCmdFilter::limitLongitudinalWithAcc(
-  const double dt, AckermannControlCommand & input) const
+void VehicleCmdFilter::limitLongitudinalWithAcc(const double dt, Control & input) const
 {
   const auto lon_acc_lim = getLonAccLim();
   input.longitudinal.acceleration = std::max(
     std::min(static_cast<double>(input.longitudinal.acceleration), lon_acc_lim), -lon_acc_lim);
-  input.longitudinal.speed =
-    limitDiff(input.longitudinal.speed, prev_cmd_.longitudinal.speed, lon_acc_lim * dt);
+  input.longitudinal.velocity =
+    limitDiff(input.longitudinal.velocity, prev_cmd_.longitudinal.velocity, lon_acc_lim * dt);
 }
 
 void VehicleCmdFilter::VehicleCmdFilter::limitLongitudinalWithJerk(
-  const double dt, AckermannControlCommand & input) const
+  const double dt, Control & input) const
 {
   const auto lon_jerk_lim = getLonJerkLim();
   input.longitudinal.acceleration = limitDiff(
@@ -124,7 +123,7 @@ void VehicleCmdFilter::VehicleCmdFilter::limitLongitudinalWithJerk(
 // Use ego vehicle speed (not speed command) for the lateral acceleration calculation, otherwise the
 // filtered steering angle oscillates if the input velocity oscillates.
 void VehicleCmdFilter::limitLateralWithLatAcc(
-  [[maybe_unused]] const double dt, AckermannControlCommand & input) const
+  [[maybe_unused]] const double dt, Control & input) const
 {
   const auto lat_acc_lim = getLatAccLim();
 
@@ -138,8 +137,7 @@ void VehicleCmdFilter::limitLateralWithLatAcc(
 
 // Use ego vehicle speed (not speed command) for the lateral acceleration calculation, otherwise the
 // filtered steering angle oscillates if the input velocity oscillates.
-void VehicleCmdFilter::limitLateralWithLatJerk(
-  const double dt, AckermannControlCommand & input) const
+void VehicleCmdFilter::limitLateralWithLatJerk(const double dt, Control & input) const
 {
   double curr_latacc = calcLatAcc(input, current_speed_);
   double prev_latacc = calcLatAcc(prev_cmd_, current_speed_);
@@ -156,8 +154,7 @@ void VehicleCmdFilter::limitLateralWithLatJerk(
   }
 }
 
-void VehicleCmdFilter::limitActualSteerDiff(
-  const double current_steer_angle, AckermannControlCommand & input) const
+void VehicleCmdFilter::limitActualSteerDiff(const double current_steer_angle, Control & input) const
 {
   const auto actual_steer_diff_lim = getSteerDiffLim();
 
@@ -166,7 +163,7 @@ void VehicleCmdFilter::limitActualSteerDiff(
   input.lateral.steering_tire_angle = current_steer_angle + ds;
 }
 
-void VehicleCmdFilter::limitLateralSteer(AckermannControlCommand & input) const
+void VehicleCmdFilter::limitLateralSteer(Control & input) const
 {
   const float steer_limit = getSteerLim();
 
@@ -185,7 +182,7 @@ void VehicleCmdFilter::limitLateralSteer(AckermannControlCommand & input) const
   }
 }
 
-void VehicleCmdFilter::limitLateralSteerRate(const double dt, AckermannControlCommand & input) const
+void VehicleCmdFilter::limitLateralSteerRate(const double dt, Control & input) const
 {
   const float steer_rate_limit = getSteerRateLim();
 
@@ -201,7 +198,7 @@ void VehicleCmdFilter::limitLateralSteerRate(const double dt, AckermannControlCo
 }
 
 void VehicleCmdFilter::filterAll(
-  const double dt, const double current_steer_angle, AckermannControlCommand & cmd,
+  const double dt, const double current_steer_angle, Control & cmd,
   IsFilterActivated & is_activated) const
 {
   const auto cmd_orig = cmd;
@@ -219,14 +216,14 @@ void VehicleCmdFilter::filterAll(
 }
 
 IsFilterActivated VehicleCmdFilter::checkIsActivated(
-  const AckermannControlCommand & c1, const AckermannControlCommand & c2, const double tol)
+  const Control & c1, const Control & c2, const double tol)
 {
   IsFilterActivated msg;
   msg.is_activated_on_steering =
     std::abs(c1.lateral.steering_tire_angle - c2.lateral.steering_tire_angle) > tol;
   msg.is_activated_on_steering_rate =
     std::abs(c1.lateral.steering_tire_rotation_rate - c2.lateral.steering_tire_rotation_rate) > tol;
-  msg.is_activated_on_speed = std::abs(c1.longitudinal.speed - c2.longitudinal.speed) > tol;
+  msg.is_activated_on_speed = std::abs(c1.longitudinal.velocity - c2.longitudinal.velocity) > tol;
   msg.is_activated_on_acceleration =
     std::abs(c1.longitudinal.acceleration - c2.longitudinal.acceleration) > tol;
   msg.is_activated_on_jerk = std::abs(c1.longitudinal.jerk - c2.longitudinal.jerk) > tol;
@@ -244,13 +241,13 @@ double VehicleCmdFilter::calcSteerFromLatacc(const double v, const double latacc
   return std::atan(latacc * param_.wheel_base / v_sq);
 }
 
-double VehicleCmdFilter::calcLatAcc(const AckermannControlCommand & cmd) const
+double VehicleCmdFilter::calcLatAcc(const Control & cmd) const
 {
-  double v = cmd.longitudinal.speed;
+  double v = cmd.longitudinal.velocity;
   return v * v * std::tan(cmd.lateral.steering_tire_angle) / param_.wheel_base;
 }
 
-double VehicleCmdFilter::calcLatAcc(const AckermannControlCommand & cmd, const double v) const
+double VehicleCmdFilter::calcLatAcc(const Control & cmd, const double v) const
 {
   return v * v * std::tan(cmd.lateral.steering_tire_angle) / param_.wheel_base;
 }

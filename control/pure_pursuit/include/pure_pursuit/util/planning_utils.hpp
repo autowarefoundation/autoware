@@ -23,7 +23,7 @@
 #include <Eigen/Geometry>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 
@@ -51,7 +51,7 @@ namespace planning_utils
 {
 constexpr double ERROR = 1e-6;
 double calcArcLengthFromWayPoint(
-  const autoware_auto_planning_msgs::msg::Trajectory & input_path, const size_t src_idx,
+  const autoware_planning_msgs::msg::Trajectory & input_path, const size_t src_idx,
   const size_t dst_idx);
 double calcCurvature(
   const geometry_msgs::msg::Point & target, const geometry_msgs::msg::Pose & curr_pose);
@@ -66,7 +66,7 @@ double calcRadius(
 double convertCurvatureToSteeringAngle(double wheel_base, double kappa);
 
 std::vector<geometry_msgs::msg::Pose> extractPoses(
-  const autoware_auto_planning_msgs::msg::Trajectory & motions);
+  const autoware_planning_msgs::msg::Trajectory & motions);
 
 std::pair<bool, int32_t> findClosestIdxWithDistAngThr(
   const std::vector<geometry_msgs::msg::Pose> & poses,

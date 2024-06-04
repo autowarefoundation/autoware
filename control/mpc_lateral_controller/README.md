@@ -63,15 +63,15 @@ The tracking is not accurate if the first point of the reference trajectory is a
 
 Set the following from the [controller_node](../trajectory_follower_node/README.md)
 
-- `autoware_auto_planning_msgs/Trajectory` : reference trajectory to follow.
+- `autoware_planning_msgs/Trajectory` : reference trajectory to follow.
 - `nav_msgs/Odometry`: current odometry
-- `autoware_auto_vehicle_msgs/SteeringReport`: current steering
+- `autoware_vehicle_msgs/SteeringReport`: current steering
 
 ### Outputs
 
 Return LateralOutput which contains the following to the controller node
 
-- `autoware_auto_control_msgs/AckermannLateralCommand`
+- `autoware_control_msgs/Lateral`
 - LateralSyncData
   - steer angle convergence
 

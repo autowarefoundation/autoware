@@ -25,13 +25,13 @@ Error acceleration calculations are made based on the velocity calculations abov
 
 ### Input topics
 
-| Name                                     | Type                                                     | Description                                 |
-| ---------------------------------------- | -------------------------------------------------------- | ------------------------------------------- |
-| `/planning/scenario_planning/trajectory` | autoware_auto_planning_msgs::msg::Trajectory             | Output trajectory from planning module.     |
-| `/control/command/control_cmd`           | autoware_auto_control_msgs::msg::AckermannControlCommand | Output control command from control module. |
-| `/vehicle/status/steering_status`        | autoware_auto_vehicle_msgs::msg::SteeringReport          | Steering information from vehicle.          |
-| `/localization/kinematic_state`          | nav_msgs::msg::Odometry                                  | Use twist from odometry.                    |
-| `/tf`                                    | tf2_msgs::msg::TFMessage                                 | Extract ego pose from tf.                   |
+| Name                                     | Type                                       | Description                                 |
+| ---------------------------------------- | ------------------------------------------ | ------------------------------------------- |
+| `/planning/scenario_planning/trajectory` | autoware_planning_msgs::msg::Trajectory    | Output trajectory from planning module.     |
+| `/control/command/control_cmd`           | autoware_control_msgs::msg::Control        | Output control command from control module. |
+| `/vehicle/status/steering_status`        | autoware_vehicle_msgs::msg::SteeringReport | Steering information from vehicle.          |
+| `/localization/kinematic_state`          | nav_msgs::msg::Odometry                    | Use twist from odometry.                    |
+| `/tf`                                    | tf2_msgs::msg::TFMessage                   | Extract ego pose from tf.                   |
 
 ### Output topics
 

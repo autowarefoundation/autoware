@@ -16,8 +16,8 @@
 #include "mpc_lateral_controller/mpc_trajectory.hpp"
 #include "mpc_lateral_controller/mpc_utils.hpp"
 
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
 
 #include <memory>
 #include <vector>
@@ -25,8 +25,8 @@
 namespace
 {
 namespace MPCUtils = autoware::motion::control::mpc_lateral_controller::MPCUtils;
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 
 TrajectoryPoint makePoint(const double x, const double y, const float vx)
 {

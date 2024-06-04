@@ -298,7 +298,7 @@ Polygon2d convertBoundingBoxObjectToGeometryPolygon(
 }
 
 Polygon2d convertCylindricalObjectToGeometryPolygon(
-  const Pose & current_pose, const autoware_auto_perception_msgs::msg::Shape & obj_shape)
+  const Pose & current_pose, const autoware_perception_msgs::msg::Shape & obj_shape)
 {
   Polygon2d object_polygon;
 
@@ -320,7 +320,7 @@ Polygon2d convertCylindricalObjectToGeometryPolygon(
 }
 
 Polygon2d convertPolygonObjectToGeometryPolygon(
-  const Pose & current_pose, const autoware_auto_perception_msgs::msg::Shape & obj_shape)
+  const Pose & current_pose, const autoware_perception_msgs::msg::Shape & obj_shape)
 {
   Polygon2d object_polygon;
   tf2::Transform tf_map2obj;
@@ -350,15 +350,15 @@ void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point &
 Polygon2d convertObjToPolygon(const PredictedObject & obj)
 {
   Polygon2d object_polygon{};
-  if (obj.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+  if (obj.shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
     object_polygon = utils::convertCylindricalObjectToGeometryPolygon(
       obj.kinematics.initial_pose_with_covariance.pose, obj.shape);
-  } else if (obj.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+  } else if (obj.shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
     const double & length_m = obj.shape.dimensions.x / 2;
     const double & width_m = obj.shape.dimensions.y / 2;
     object_polygon = utils::convertBoundingBoxObjectToGeometryPolygon(
       obj.kinematics.initial_pose_with_covariance.pose, length_m, length_m, width_m);
-  } else if (obj.shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
+  } else if (obj.shape.type == autoware_perception_msgs::msg::Shape::POLYGON) {
     object_polygon = utils::convertPolygonObjectToGeometryPolygon(
       obj.kinematics.initial_pose_with_covariance.pose, obj.shape);
   } else {
@@ -377,13 +377,13 @@ bool isFrontObstacle(const Pose & ego_pose, const geometry_msgs::msg::Point & ob
   return base_pose_vec.dot(obstacle_vec) >= 0;
 }
 
-double calcObstacleMaxLength(const autoware_auto_perception_msgs::msg::Shape & shape)
+double calcObstacleMaxLength(const autoware_perception_msgs::msg::Shape & shape)
 {
-  if (shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+  if (shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
     return std::hypot(shape.dimensions.x / 2.0, shape.dimensions.y / 2.0);
-  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+  } else if (shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
     return shape.dimensions.x / 2.0;
-  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
+  } else if (shape.type == autoware_perception_msgs::msg::Shape::POLYGON) {
     double max_length_to_point = 0.0;
     for (const auto rel_point : shape.footprint.points) {
       const double length_to_point = std::hypot(rel_point.x, rel_point.y);

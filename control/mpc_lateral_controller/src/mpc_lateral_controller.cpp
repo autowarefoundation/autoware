@@ -239,7 +239,7 @@ trajectory_follower::LateralOutput MpcLateralController::run(
     m_current_steering.steering_tire_angle -= steering_offset_->getOffset();
   }
 
-  AckermannLateralCommand ctrl_cmd;
+  Lateral ctrl_cmd;
   Trajectory predicted_traj;
   Float32MultiArrayStamped debug_values;
 
@@ -309,7 +309,7 @@ trajectory_follower::LateralOutput MpcLateralController::run(
   return createLateralOutput(ctrl_cmd, is_mpc_solved);
 }
 
-bool MpcLateralController::isSteerConverged(const AckermannLateralCommand & cmd) const
+bool MpcLateralController::isSteerConverged(const Lateral & cmd) const
 {
   // wait for a while to propagate the trajectory shape to the output command when the trajectory
   // shape is changed.
@@ -381,17 +381,17 @@ void MpcLateralController::setTrajectory(
   }
 }
 
-AckermannLateralCommand MpcLateralController::getStopControlCommand() const
+Lateral MpcLateralController::getStopControlCommand() const
 {
-  AckermannLateralCommand cmd;
+  Lateral cmd;
   cmd.steering_tire_angle = static_cast<decltype(cmd.steering_tire_angle)>(m_steer_cmd_prev);
   cmd.steering_tire_rotation_rate = 0.0;
   return cmd;
 }
 
-AckermannLateralCommand MpcLateralController::getInitialControlCommand() const
+Lateral MpcLateralController::getInitialControlCommand() const
 {
-  AckermannLateralCommand cmd;
+  Lateral cmd;
   cmd.steering_tire_angle = m_current_steering.steering_tire_angle;
   cmd.steering_tire_rotation_rate = 0.0;
   return cmd;
@@ -429,8 +429,7 @@ bool MpcLateralController::isStoppedState() const
   }
 }
 
-AckermannLateralCommand MpcLateralController::createCtrlCmdMsg(
-  const AckermannLateralCommand & ctrl_cmd)
+Lateral MpcLateralController::createCtrlCmdMsg(const Lateral & ctrl_cmd)
 {
   auto out = ctrl_cmd;
   out.stamp = clock_->now();
@@ -456,7 +455,7 @@ void MpcLateralController::publishDebugValues(Float32MultiArrayStamped & debug_v
   m_pub_steer_offset->publish(offset);
 }
 
-void MpcLateralController::setSteeringToHistory(const AckermannLateralCommand & steering)
+void MpcLateralController::setSteeringToHistory(const Lateral & steering)
 {
   const auto time = clock_->now();
   if (m_mpc_steering_history.empty()) {

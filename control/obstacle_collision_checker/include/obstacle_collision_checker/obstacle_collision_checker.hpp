@@ -18,7 +18,7 @@
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -52,15 +52,15 @@ struct Input
   geometry_msgs::msg::Twist::ConstSharedPtr current_twist;
   sensor_msgs::msg::PointCloud2::ConstSharedPtr obstacle_pointcloud;
   geometry_msgs::msg::TransformStamped::ConstSharedPtr obstacle_transform;
-  autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr reference_trajectory;
-  autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr predicted_trajectory;
+  autoware_planning_msgs::msg::Trajectory::ConstSharedPtr reference_trajectory;
+  autoware_planning_msgs::msg::Trajectory::ConstSharedPtr predicted_trajectory;
 };
 
 struct Output
 {
   std::map<std::string, double> processing_time_map;
   bool will_collide;
-  autoware_auto_planning_msgs::msg::Trajectory resampled_trajectory;
+  autoware_planning_msgs::msg::Trajectory resampled_trajectory;
   std::vector<LinearRing2d> vehicle_footprints;
   std::vector<LinearRing2d> vehicle_passing_areas;
 };
@@ -78,14 +78,14 @@ private:
   vehicle_info_util::VehicleInfo vehicle_info_;
 
   //! This function assumes the input trajectory is sampled dense enough
-  static autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
-    const autoware_auto_planning_msgs::msg::Trajectory & trajectory, const double interval);
+  static autoware_planning_msgs::msg::Trajectory resampleTrajectory(
+    const autoware_planning_msgs::msg::Trajectory & trajectory, const double interval);
 
-  static autoware_auto_planning_msgs::msg::Trajectory cutTrajectory(
-    const autoware_auto_planning_msgs::msg::Trajectory & trajectory, const double length);
+  static autoware_planning_msgs::msg::Trajectory cutTrajectory(
+    const autoware_planning_msgs::msg::Trajectory & trajectory, const double length);
 
   static std::vector<LinearRing2d> createVehicleFootprints(
-    const autoware_auto_planning_msgs::msg::Trajectory & trajectory, const Param & param,
+    const autoware_planning_msgs::msg::Trajectory & trajectory, const Param & param,
     const vehicle_info_util::VehicleInfo & vehicle_info);
 
   static std::vector<LinearRing2d> createVehiclePassingAreas(

@@ -17,7 +17,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
@@ -32,8 +32,7 @@ public:
   explicit ControlValidatorDebugMarkerPublisher(rclcpp::Node * node);
 
   void pushPoseMarker(
-    const autoware_auto_planning_msgs::msg::TrajectoryPoint & p, const std::string & ns,
-    int id = 0);
+    const autoware_planning_msgs::msg::TrajectoryPoint & p, const std::string & ns, int id = 0);
   void pushPoseMarker(const geometry_msgs::msg::Pose & pose, const std::string & ns, int id = 0);
   void pushVirtualWall(const geometry_msgs::msg::Pose & pose);
   void pushWarningMsg(const geometry_msgs::msg::Pose & pose, const std::string & msg);

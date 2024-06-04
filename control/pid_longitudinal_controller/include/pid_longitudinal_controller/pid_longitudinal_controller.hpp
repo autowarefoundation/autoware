@@ -33,9 +33,8 @@
 #include <Eigen/Geometry>
 
 #include "autoware_adapi_v1_msgs/msg/operation_mode_state.hpp"
-#include "autoware_auto_control_msgs/msg/longitudinal_command.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
-#include "autoware_auto_vehicle_msgs/msg/vehicle_odometry.hpp"
+#include "autoware_control_msgs/msg/longitudinal.hpp"
+#include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tf2_msgs/msg/tf_message.hpp"
@@ -88,7 +87,7 @@ private:
   struct ControlData
   {
     bool is_far_from_trajectory{false};
-    autoware_auto_planning_msgs::msg::Trajectory interpolated_traj{};
+    autoware_planning_msgs::msg::Trajectory interpolated_traj{};
     size_t nearest_idx{0};  // nearest_idx = 0 when nearest_idx is not found with findNearestIdx
     size_t target_idx{0};
     StateAfterDelay state_after_delay{0.0, 0.0, 0.0};
@@ -113,7 +112,7 @@ private:
   // pointers for ros topic
   nav_msgs::msg::Odometry m_current_kinematic_state;
   geometry_msgs::msg::AccelWithCovarianceStamped m_current_accel;
-  autoware_auto_planning_msgs::msg::Trajectory m_trajectory;
+  autoware_planning_msgs::msg::Trajectory m_trajectory;
   OperationModeState m_current_operation_mode;
 
   // vehicle info
@@ -218,7 +217,7 @@ private:
   double m_ego_nearest_yaw_threshold;
 
   // buffer of send command
-  std::vector<autoware_auto_control_msgs::msg::LongitudinalCommand> m_ctrl_cmd_vec;
+  std::vector<autoware_control_msgs::msg::Longitudinal> m_ctrl_cmd_vec;
 
   // for calculating dt
   std::shared_ptr<rclcpp::Time> m_prev_control_time{nullptr};
@@ -270,7 +269,7 @@ private:
    * @brief set reference trajectory with received message
    * @param [in] msg trajectory message
    */
-  void setTrajectory(const autoware_auto_planning_msgs::msg::Trajectory & msg);
+  void setTrajectory(const autoware_planning_msgs::msg::Trajectory & msg);
 
   bool isReady(const trajectory_follower::InputData & input_data) override;
 
@@ -309,7 +308,7 @@ private:
    * @param [in] ctrl_cmd calculated control command to control velocity
    * @param [in] current_vel current velocity of the vehicle
    */
-  autoware_auto_control_msgs::msg::LongitudinalCommand createCtrlCmdMsg(
+  autoware_control_msgs::msg::Longitudinal createCtrlCmdMsg(
     const Motion & ctrl_cmd, const double & current_vel);
 
   /**
@@ -371,9 +370,9 @@ private:
    * @param [in] point vehicle position
    * @param [in] nearest_idx index of the trajectory point nearest to the vehicle position
    */
-  std::pair<autoware_auto_planning_msgs::msg::TrajectoryPoint, size_t>
+  std::pair<autoware_planning_msgs::msg::TrajectoryPoint, size_t>
   calcInterpolatedTrajPointAndSegment(
-    const autoware_auto_planning_msgs::msg::Trajectory & traj,
+    const autoware_planning_msgs::msg::Trajectory & traj,
     const geometry_msgs::msg::Pose & pose) const;
 
   /**

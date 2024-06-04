@@ -254,7 +254,7 @@ void AutowareJoyControllerNode::onTimer()
 
 void AutowareJoyControllerNode::publishControlCommand()
 {
-  autoware_auto_control_msgs::msg::AckermannControlCommand cmd;
+  autoware_control_msgs::msg::Control cmd;
   cmd.stamp = this->now();
   {
     cmd.lateral.steering_tire_angle = steer_ratio_ * joy_->steer();
@@ -262,24 +262,24 @@ void AutowareJoyControllerNode::publishControlCommand()
 
     if (joy_->accel()) {
       cmd.longitudinal.acceleration = accel_ratio_ * joy_->accel();
-      cmd.longitudinal.speed =
+      cmd.longitudinal.velocity =
         twist_->twist.linear.x + velocity_gain_ * cmd.longitudinal.acceleration;
-      cmd.longitudinal.speed =
-        std::min(cmd.longitudinal.speed, static_cast<float>(max_forward_velocity_));
+      cmd.longitudinal.velocity =
+        std::min(cmd.longitudinal.velocity, static_cast<float>(max_forward_velocity_));
     }
 
     if (joy_->brake()) {
-      cmd.longitudinal.speed = 0.0;
+      cmd.longitudinal.velocity = 0.0;
       cmd.longitudinal.acceleration = -brake_ratio_ * joy_->brake();
     }
 
     // Backward
     if (joy_->accel() && joy_->brake()) {
       cmd.longitudinal.acceleration = backward_accel_ratio_ * joy_->accel();
-      cmd.longitudinal.speed =
+      cmd.longitudinal.velocity =
         twist_->twist.linear.x - velocity_gain_ * cmd.longitudinal.acceleration;
-      cmd.longitudinal.speed =
-        std::max(cmd.longitudinal.speed, static_cast<float>(-max_backward_velocity_));
+      cmd.longitudinal.velocity =
+        std::max(cmd.longitudinal.velocity, static_cast<float>(-max_backward_velocity_));
     }
   }
 
@@ -426,7 +426,7 @@ void AutowareJoyControllerNode::publishAutowareEngage()
 
 void AutowareJoyControllerNode::publishVehicleEngage()
 {
-  autoware_auto_vehicle_msgs::msg::Engage engage;
+  autoware_vehicle_msgs::msg::Engage engage;
 
   if (joy_->vehicle_engage()) {
     engage.engage = true;
@@ -492,8 +492,7 @@ AutowareJoyControllerNode::AutowareJoyControllerNode(const rclcpp::NodeOptions &
 
   // Publisher
   pub_control_command_ =
-    this->create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>(
-      "output/control_command", 1);
+    this->create_publisher<autoware_control_msgs::msg::Control>("output/control_command", 1);
   pub_external_control_command_ =
     this->create_publisher<tier4_external_api_msgs::msg::ControlCommandStamped>(
       "output/external_control_command", 1);
@@ -505,7 +504,7 @@ AutowareJoyControllerNode::AutowareJoyControllerNode(const rclcpp::NodeOptions &
   pub_heartbeat_ =
     this->create_publisher<tier4_external_api_msgs::msg::Heartbeat>("output/heartbeat", 1);
   pub_vehicle_engage_ =
-    this->create_publisher<autoware_auto_vehicle_msgs::msg::Engage>("output/vehicle_engage", 1);
+    this->create_publisher<autoware_vehicle_msgs::msg::Engage>("output/vehicle_engage", 1);
 
   // Service Client
   client_emergency_stop_ = this->create_client<tier4_external_api_msgs::srv::SetEmergency>(

@@ -53,9 +53,9 @@ void AdapiPauseInterface::publish()
   }
 }
 
-void AdapiPauseInterface::update(const AckermannControlCommand & control)
+void AdapiPauseInterface::update(const Control & control)
 {
-  is_start_requested_ = eps < std::abs(control.longitudinal.speed);
+  is_start_requested_ = eps < std::abs(control.longitudinal.velocity);
 }
 
 void AdapiPauseInterface::on_pause(

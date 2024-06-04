@@ -75,9 +75,9 @@ void ControlPerformanceAnalysisCore::setCurrentPose(const Pose & msg)
   current_vec_pose_ptr_ = std::make_shared<Pose>(msg);
 }
 
-void ControlPerformanceAnalysisCore::setCurrentControlValue(const AckermannControlCommand & msg)
+void ControlPerformanceAnalysisCore::setCurrentControlValue(const Control & msg)
 {
-  current_control_ptr_ = std::make_shared<AckermannControlCommand>(msg);
+  current_control_ptr_ = std::make_shared<Control>(msg);
 }
 
 std::pair<bool, int32_t> ControlPerformanceAnalysisCore::findClosestPrevWayPointIdx_path_direction()

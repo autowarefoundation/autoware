@@ -172,7 +172,7 @@ LaneDepartureCheckerNode::LaneDepartureCheckerNode(const rclcpp::NodeOptions & o
   // Subscriber
   sub_odom_ = this->create_subscription<nav_msgs::msg::Odometry>(
     "~/input/odometry", 1, std::bind(&LaneDepartureCheckerNode::onOdometry, this, _1));
-  sub_lanelet_map_bin_ = this->create_subscription<HADMapBin>(
+  sub_lanelet_map_bin_ = this->create_subscription<LaneletMapBin>(
     "~/input/lanelet_map_bin", rclcpp::QoS{1}.transient_local(),
     std::bind(&LaneDepartureCheckerNode::onLaneletMapBin, this, _1));
   sub_route_ = this->create_subscription<LaneletRoute>(
@@ -206,7 +206,7 @@ void LaneDepartureCheckerNode::onOdometry(const nav_msgs::msg::Odometry::ConstSh
   current_odom_ = msg;
 }
 
-void LaneDepartureCheckerNode::onLaneletMapBin(const HADMapBin::ConstSharedPtr msg)
+void LaneDepartureCheckerNode::onLaneletMapBin(const LaneletMapBin::ConstSharedPtr msg)
 {
   lanelet_map_ = std::make_shared<lanelet::LaneletMap>();
   lanelet::utils::conversion::fromBinMsg(*msg, lanelet_map_, &traffic_rules_, &routing_graph_);

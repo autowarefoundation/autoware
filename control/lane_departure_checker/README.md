@@ -49,10 +49,10 @@ This package includes the following features:
 ### Input
 
 - /localization/kinematic_state [`nav_msgs::msg::Odometry`]
-- /map/vector_map [`autoware_auto_mapping_msgs::msg::HADMapBin`]
+- /map/vector_map [`autoware_map_msgs::msg::LaneletMapBin`]
 - /planning/mission_planning/route [`autoware_planning_msgs::msg::LaneletRoute`]
-- /planning/scenario_planning/trajectory [`autoware_auto_planning_msgs::msg::Trajectory`]
-- /control/trajectory_follower/predicted_trajectory [`autoware_auto_planning_msgs::msg::Trajectory`]
+- /planning/scenario_planning/trajectory [`autoware_planning_msgs::msg::Trajectory`]
+- /control/trajectory_follower/predicted_trajectory [`autoware_planning_msgs::msg::Trajectory`]
 
 ### Output
 

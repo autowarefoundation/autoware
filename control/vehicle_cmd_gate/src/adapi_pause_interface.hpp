@@ -19,7 +19,7 @@
 #include <component_interface_utils/rclcpp.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
+#include <autoware_control_msgs/msg/control.hpp>
 
 namespace vehicle_cmd_gate
 {
@@ -28,7 +28,7 @@ class AdapiPauseInterface
 {
 private:
   static constexpr double eps = 1e-3;
-  using AckermannControlCommand = autoware_auto_control_msgs::msg::AckermannControlCommand;
+  using Control = autoware_control_msgs::msg::Control;
   using SetPause = control_interface::SetPause;
   using IsPaused = control_interface::IsPaused;
   using IsStartRequested = control_interface::IsStartRequested;
@@ -37,7 +37,7 @@ public:
   explicit AdapiPauseInterface(rclcpp::Node * node);
   bool is_paused();
   void publish();
-  void update(const AckermannControlCommand & control);
+  void update(const Control & control);
 
 private:
   bool is_paused_;

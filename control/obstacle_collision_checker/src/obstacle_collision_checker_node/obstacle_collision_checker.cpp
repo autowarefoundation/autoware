@@ -54,7 +54,7 @@ pcl::PointCloud<pcl::PointXYZ> getTransformedPointCloud(
 
 pcl::PointCloud<pcl::PointXYZ> filterPointCloudByTrajectory(
   const pcl::PointCloud<pcl::PointXYZ> & pointcloud,
-  const autoware_auto_planning_msgs::msg::Trajectory & trajectory, const double radius)
+  const autoware_planning_msgs::msg::Trajectory & trajectory, const double radius)
 {
   pcl::PointCloud<pcl::PointXYZ> filtered_pointcloud;
   for (const auto & point : pointcloud.points) {
@@ -121,10 +121,10 @@ Output ObstacleCollisionChecker::update(const Input & input)
   return output;
 }
 
-autoware_auto_planning_msgs::msg::Trajectory ObstacleCollisionChecker::resampleTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory & trajectory, const double interval)
+autoware_planning_msgs::msg::Trajectory ObstacleCollisionChecker::resampleTrajectory(
+  const autoware_planning_msgs::msg::Trajectory & trajectory, const double interval)
 {
-  autoware_auto_planning_msgs::msg::Trajectory resampled;
+  autoware_planning_msgs::msg::Trajectory resampled;
   resampled.header = trajectory.header;
 
   resampled.points.push_back(trajectory.points.front());
@@ -143,10 +143,10 @@ autoware_auto_planning_msgs::msg::Trajectory ObstacleCollisionChecker::resampleT
   return resampled;
 }
 
-autoware_auto_planning_msgs::msg::Trajectory ObstacleCollisionChecker::cutTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory & trajectory, const double length)
+autoware_planning_msgs::msg::Trajectory ObstacleCollisionChecker::cutTrajectory(
+  const autoware_planning_msgs::msg::Trajectory & trajectory, const double length)
 {
-  autoware_auto_planning_msgs::msg::Trajectory cut;
+  autoware_planning_msgs::msg::Trajectory cut;
   cut.header = trajectory.header;
 
   double total_length = 0.0;
@@ -169,7 +169,7 @@ autoware_auto_planning_msgs::msg::Trajectory ObstacleCollisionChecker::cutTrajec
     if (remain_distance <= points_distance) {
       const Eigen::Vector3d p_interpolated = p1 + remain_distance * (p2 - p1).normalized();
 
-      autoware_auto_planning_msgs::msg::TrajectoryPoint p;
+      autoware_planning_msgs::msg::TrajectoryPoint p;
       p.pose.position.x = p_interpolated.x();
       p.pose.position.y = p_interpolated.y();
       p.pose.position.z = p_interpolated.z();
@@ -187,7 +187,7 @@ autoware_auto_planning_msgs::msg::Trajectory ObstacleCollisionChecker::cutTrajec
 }
 
 std::vector<LinearRing2d> ObstacleCollisionChecker::createVehicleFootprints(
-  const autoware_auto_planning_msgs::msg::Trajectory & trajectory, const Param & param,
+  const autoware_planning_msgs::msg::Trajectory & trajectory, const Param & param,
   const vehicle_info_util::VehicleInfo & vehicle_info)
 {
   // Create vehicle footprint in base_link coordinate

@@ -23,12 +23,12 @@ The current mode is set via service, `remote` is remotely operated, `local` is t
 
 ### Output topics
 
-| Name                                                   | Type                                                   | Description                                     |
-| ------------------------------------------------------ | ------------------------------------------------------ | ----------------------------------------------- |
-| `/control/external_cmd_selector/current_selector_mode` | TBD                                                    | Current selected mode, remote or local.         |
-| `/diagnostics`                                         | diagnostic_msgs::msg::DiagnosticArray                  | Check if node is active or not.                 |
-| `/external/selected/external_control_cmd`              | TBD                                                    | Pass through control command with current mode. |
-| `/external/selected/gear_cmd`                          | autoware_auto_vehicle_msgs::msg::GearCommand           | Pass through gear command with current mode.    |
-| `/external/selected/hazard_lights_cmd`                 | autoware_auto_vehicle_msgs::msg::HazardLightsCommand   | Pass through hazard light with current mode.    |
-| `/external/selected/heartbeat`                         | TBD                                                    | Pass through heartbeat with current mode.       |
-| `/external/selected/turn_indicators_cmd`               | autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand | Pass through turn indicator with current mode.  |
+| Name                                                   | Type                                              | Description                                     |
+| ------------------------------------------------------ | ------------------------------------------------- | ----------------------------------------------- |
+| `/control/external_cmd_selector/current_selector_mode` | TBD                                               | Current selected mode, remote or local.         |
+| `/diagnostics`                                         | diagnostic_msgs::msg::DiagnosticArray             | Check if node is active or not.                 |
+| `/external/selected/external_control_cmd`              | TBD                                               | Pass through control command with current mode. |
+| `/external/selected/gear_cmd`                          | autoware_vehicle_msgs::msg::GearCommand           | Pass through gear command with current mode.    |
+| `/external/selected/hazard_lights_cmd`                 | autoware_vehicle_msgs::msg::HazardLightsCommand   | Pass through hazard light with current mode.    |
+| `/external/selected/heartbeat`                         | TBD                                               | Pass through heartbeat with current mode.       |
+| `/external/selected/turn_indicators_cmd`               | autoware_vehicle_msgs::msg::TurnIndicatorsCommand | Pass through turn indicator with current mode.  |

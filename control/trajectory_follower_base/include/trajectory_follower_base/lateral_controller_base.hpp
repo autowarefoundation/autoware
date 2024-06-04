@@ -19,7 +19,7 @@
 #include "trajectory_follower_base/input_data.hpp"
 #include "trajectory_follower_base/sync_data.hpp"
 
-#include "autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp"
+#include "autoware_control_msgs/msg/lateral.hpp"
 
 #include <boost/optional.hpp>
 
@@ -27,7 +27,7 @@ namespace autoware::motion::control::trajectory_follower
 {
 struct LateralOutput
 {
-  autoware_auto_control_msgs::msg::AckermannLateralCommand control_cmd;
+  autoware_control_msgs::msg::Lateral control_cmd;
   LateralSyncData sync_data;
 };
 
