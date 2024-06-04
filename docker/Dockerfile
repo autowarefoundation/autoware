@@ -59,6 +59,7 @@ COPY src /autoware/src
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     python3-rosdep \
+  && rosdep init \
   && rosdep update \
   && rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
