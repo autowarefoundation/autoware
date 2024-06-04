@@ -11,7 +11,7 @@ on:
     tags:
       - openadkit-v*.*.*
   schedule:
-    - cron: 0 0 1,15 * *
+    - cron: 0 12 * * *
   workflow_dispatch:
     inputs:
       artifacts-destination:
