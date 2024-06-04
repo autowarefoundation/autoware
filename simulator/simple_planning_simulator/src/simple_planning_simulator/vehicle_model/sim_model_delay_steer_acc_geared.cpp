@@ -14,7 +14,7 @@
 
 #include "simple_planning_simulator/vehicle_model/sim_model_delay_steer_acc_geared.hpp"
 
-#include "autoware_auto_vehicle_msgs/msg/gear_command.hpp"
+#include "autoware_vehicle_msgs/msg/gear_command.hpp"
 
 #include <algorithm>
 
@@ -160,7 +160,7 @@ void SimModelDelaySteerAccGeared::updateStateWithGear(
     state(IDX::ACCX) = (state(IDX::VX) - prev_state(IDX::VX)) / std::max(dt, 1.0e-5);
   };
 
-  using autoware_auto_vehicle_msgs::msg::GearCommand;
+  using autoware_vehicle_msgs::msg::GearCommand;
   if (
     gear == GearCommand::DRIVE || gear == GearCommand::DRIVE_2 || gear == GearCommand::DRIVE_3 ||
     gear == GearCommand::DRIVE_4 || gear == GearCommand::DRIVE_5 || gear == GearCommand::DRIVE_6 ||

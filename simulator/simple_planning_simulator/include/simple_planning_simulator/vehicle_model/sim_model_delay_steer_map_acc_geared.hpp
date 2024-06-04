@@ -200,7 +200,7 @@ private:
    * @brief update state considering current gear
    * @param [in] state current state
    * @param [in] prev_state previous state
-   * @param [in] gear current gear (defined in autoware_auto_msgs/GearCommand)
+   * @param [in] gear current gear (defined in autoware_msgs/GearCommand)
    * @param [in] dt delta time to update state
    */
   void updateStateWithGear(

@@ -7,14 +7,14 @@ autoware_package()
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/InitialState.msg"
   "msg/Object.msg"
-  DEPENDENCIES autoware_auto_perception_msgs tier4_perception_msgs geometry_msgs std_msgs unique_identifier_msgs
+  DEPENDENCIES autoware_perception_msgs tier4_perception_msgs geometry_msgs std_msgs unique_identifier_msgs
 )
 
 # See ndt_omp package for documentation on why PCL is special
 find_package(PCL REQUIRED COMPONENTS common filters)
 
 set(${PROJECT_NAME}_DEPENDENCIES
-  autoware_auto_perception_msgs
+  autoware_perception_msgs
   tier4_perception_msgs
   pcl_conversions
   rclcpp

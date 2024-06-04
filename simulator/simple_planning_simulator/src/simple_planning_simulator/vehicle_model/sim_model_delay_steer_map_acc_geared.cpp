@@ -14,7 +14,7 @@
 
 #include "simple_planning_simulator/vehicle_model/sim_model_delay_steer_map_acc_geared.hpp"
 
-#include "autoware_auto_vehicle_msgs/msg/gear_command.hpp"
+#include "autoware_vehicle_msgs/msg/gear_command.hpp"
 
 #include <algorithm>
 
@@ -134,7 +134,7 @@ Eigen::VectorXd SimModelDelaySteerMapAccGeared::calcModel(
 void SimModelDelaySteerMapAccGeared::updateStateWithGear(
   Eigen::VectorXd & state, const Eigen::VectorXd & prev_state, const uint8_t gear, const double dt)
 {
-  using autoware_auto_vehicle_msgs::msg::GearCommand;
+  using autoware_vehicle_msgs::msg::GearCommand;
   if (
     gear == GearCommand::DRIVE || gear == GearCommand::DRIVE_2 || gear == GearCommand::DRIVE_3 ||
     gear == GearCommand::DRIVE_4 || gear == GearCommand::DRIVE_5 || gear == GearCommand::DRIVE_6 ||

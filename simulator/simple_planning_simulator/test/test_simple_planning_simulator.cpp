@@ -24,8 +24,8 @@
 
 #include <memory>
 
-using autoware_auto_control_msgs::msg::AckermannControlCommand;
-using autoware_auto_vehicle_msgs::msg::GearCommand;
+using autoware_control_msgs::msg::Control;
+using autoware_vehicle_msgs::msg::GearCommand;
 using geometry_msgs::msg::PoseWithCovarianceStamped;
 using nav_msgs::msg::Odometry;
 
@@ -51,14 +51,14 @@ public:
       "output/odometry", rclcpp::QoS{1},
       [this](const Odometry::ConstSharedPtr msg) { current_odom_ = msg; });
     pub_ackermann_command_ =
-      create_publisher<AckermannControlCommand>("input/ackermann_control_command", rclcpp::QoS{1});
+      create_publisher<Control>("input/ackermann_control_command", rclcpp::QoS{1});
     pub_initialpose_ =
       create_publisher<PoseWithCovarianceStamped>("input/initialpose", rclcpp::QoS{1});
     pub_gear_cmd_ = create_publisher<GearCommand>("input/gear_command", rclcpp::QoS{1});
   }
 
   rclcpp::Subscription<Odometry>::SharedPtr current_odom_sub_;
-  rclcpp::Publisher<AckermannControlCommand>::SharedPtr pub_ackermann_command_;
+  rclcpp::Publisher<Control>::SharedPtr pub_ackermann_command_;
   rclcpp::Publisher<GearCommand>::SharedPtr pub_gear_cmd_;
   rclcpp::Publisher<PoseWithCovarianceStamped>::SharedPtr pub_initialpose_;
 
@@ -66,7 +66,7 @@ public:
 };
 
 /**
- * @brief Generate an AckermannControlCommand message
+ * @brief Generate an Control message
  * @param [in] t timestamp
  * @param [in] steer [rad] steering
  * @param [in] steer_rate [rad/s] steering rotation rate
@@ -74,17 +74,17 @@ public:
  * @param [in] acc [m/s²] acceleration
  * @param [in] jerk [m/s3] jerk
  */
-AckermannControlCommand cmdGen(
+Control cmdGen(
   const builtin_interfaces::msg::Time & t, double steer, double steer_rate, double vel, double acc,
   double jerk)
 {
-  AckermannControlCommand cmd;
+  Control cmd;
   cmd.stamp = t;
   cmd.lateral.stamp = t;
   cmd.lateral.steering_tire_angle = steer;
   cmd.lateral.steering_tire_rotation_rate = steer_rate;
   cmd.longitudinal.stamp = t;
-  cmd.longitudinal.speed = vel;
+  cmd.longitudinal.velocity = vel;
   cmd.longitudinal.acceleration = acc;
   cmd.longitudinal.jerk = jerk;
   return cmd;
@@ -125,8 +125,7 @@ void sendGear(
  * @param [in] pub_sub_node pointer to the node used for communication
  */
 void sendCommand(
-  const AckermannControlCommand & cmd, rclcpp::Node::SharedPtr sim_node,
-  std::shared_ptr<PubSubNode> pub_sub_node)
+  const Control & cmd, rclcpp::Node::SharedPtr sim_node, std::shared_ptr<PubSubNode> pub_sub_node)
 {
   for (int i = 0; i < 150; ++i) {
     pub_sub_node->pub_ackermann_command_->publish(cmd);

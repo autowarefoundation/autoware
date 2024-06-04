@@ -19,8 +19,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/tracked_objects.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 
@@ -59,7 +59,7 @@ struct ObjectInfo
   geometry_msgs::msg::PoseWithCovariance pose_covariance_;
   // convert to TrackedObject
   // (todo) currently need object input to get id and header information, but it should be removed
-  autoware_auto_perception_msgs::msg::TrackedObject toTrackedObject(
+  autoware_perception_msgs::msg::TrackedObject toTrackedObject(
     const dummy_perception_publisher::msg::Object & object) const;
 };
 
@@ -114,7 +114,7 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_pub_;
   rclcpp::Publisher<tier4_perception_msgs::msg::DetectedObjectsWithFeature>::SharedPtr
     detected_object_with_feature_pub_;
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::TrackedObjects>::SharedPtr
+  rclcpp::Publisher<autoware_perception_msgs::msg::TrackedObjects>::SharedPtr
     ground_truth_objects_pub_;
   rclcpp::Subscription<dummy_perception_publisher::msg::Object>::SharedPtr object_sub_;
   rclcpp::TimerBase::SharedPtr timer_;

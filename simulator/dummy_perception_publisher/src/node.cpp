@@ -33,8 +33,8 @@
 #include <utility>
 #include <vector>
 
-using autoware_auto_perception_msgs::msg::TrackedObject;
-using autoware_auto_perception_msgs::msg::TrackedObjects;
+using autoware_perception_msgs::msg::TrackedObject;
+using autoware_perception_msgs::msg::TrackedObjects;
 
 ObjectInfo::ObjectInfo(
   const dummy_perception_publisher::msg::Object & object, const rclcpp::Time & current_time)
@@ -169,7 +169,7 @@ DummyPerceptionPublisherNode::DummyPerceptionPublisherNode()
   // optional ground truth publisher
   if (publish_ground_truth_objects_) {
     ground_truth_objects_pub_ =
-      this->create_publisher<autoware_auto_perception_msgs::msg::TrackedObjects>(
+      this->create_publisher<autoware_perception_msgs::msg::TrackedObjects>(
         "~/output/debug/ground_truth_objects", qos);
   }
 
@@ -182,7 +182,7 @@ void DummyPerceptionPublisherNode::timerCallback()
 {
   // output msgs
   tier4_perception_msgs::msg::DetectedObjectsWithFeature output_dynamic_object_msg;
-  autoware_auto_perception_msgs::msg::TrackedObjects output_ground_truth_objects_msg;
+  autoware_perception_msgs::msg::TrackedObjects output_ground_truth_objects_msg;
   geometry_msgs::msg::PoseStamped output_moved_object_pose;
   sensor_msgs::msg::PointCloud2 output_pointcloud_msg;
   std_msgs::msg::Header header;
@@ -282,7 +282,7 @@ void DummyPerceptionPublisherNode::timerCallback()
       feature_object.object.kinematics.twist_with_covariance =
         object.initial_state.twist_covariance;
       feature_object.object.kinematics.orientation_availability =
-        autoware_auto_perception_msgs::msg::DetectedObjectKinematics::UNAVAILABLE;
+        autoware_perception_msgs::msg::DetectedObjectKinematics::UNAVAILABLE;
       feature_object.object.kinematics.has_twist = false;
       tf2::toMsg(
         tf_base_link2noised_moved_object,

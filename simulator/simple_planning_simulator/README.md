@@ -18,23 +18,23 @@ The purpose of this simulator is for the integration test of planning and contro
 ### input
 
 - input/initialpose [`geometry_msgs/msg/PoseWithCovarianceStamped`] : for initial pose
-- input/ackermann_control_command [`autoware_auto_msgs/msg/AckermannControlCommand`] : target command to drive a vehicle
-- input/manual_ackermann_control_command [`autoware_auto_msgs/msg/AckermannControlCommand`] : manual target command to drive a vehicle (used when control_mode_request = Manual)
-- input/gear_command [`autoware_auto_vehicle_msgs/msg/GearCommand`] : target gear command.
-- input/manual_gear_command [`autoware_auto_vehicle_msgs/msg/GearCommand`] : target gear command (used when control_mode_request = Manual)
-- input/turn_indicators_command [`autoware_auto_vehicle_msgs/msg/TurnIndicatorsCommand`] : target turn indicator command
-- input/hazard_lights_command [`autoware_auto_vehicle_msgs/msg/HazardLightsCommand`] : target hazard lights command
+- input/ackermann_control_command [`autoware_control_msgs/msg/Control`] : target command to drive a vehicle
+- input/manual_ackermann_control_command [`autoware_control_msgs/msg/Control`] : manual target command to drive a vehicle (used when control_mode_request = Manual)
+- input/gear_command [`autoware_vehicle_msgs/msg/GearCommand`] : target gear command.
+- input/manual_gear_command [`autoware_vehicle_msgs/msg/GearCommand`] : target gear command (used when control_mode_request = Manual)
+- input/turn_indicators_command [`autoware_vehicle_msgs/msg/TurnIndicatorsCommand`] : target turn indicator command
+- input/hazard_lights_command [`autoware_vehicle_msgs/msg/HazardLightsCommand`] : target hazard lights command
 - input/control_mode_request [`tier4_vehicle_msgs::srv::ControlModeRequest`] : mode change for Auto/Manual driving
 
 ### output
 
 - /tf [`tf2_msgs/msg/TFMessage`] : simulated vehicle pose (base_link)
 - /output/odometry [`nav_msgs/msg/Odometry`] : simulated vehicle pose and twist
-- /output/steering [`autoware_auto_vehicle_msgs/msg/SteeringReport`] : simulated steering angle
-- /output/control_mode_report [`autoware_auto_vehicle_msgs/msg/ControlModeReport`] : current control mode (Auto/Manual)
-- /output/gear_report [`autoware_auto_vehicle_msgs/msg/ControlModeReport`] : simulated gear
-- /output/turn_indicators_report [`autoware_auto_vehicle_msgs/msg/ControlModeReport`] : simulated turn indicator status
-- /output/hazard_lights_report [`autoware_auto_vehicle_msgs/msg/ControlModeReport`] : simulated hazard lights status
+- /output/steering [`autoware_vehicle_msgs/msg/SteeringReport`] : simulated steering angle
+- /output/control_mode_report [`autoware_vehicle_msgs/msg/ControlModeReport`] : current control mode (Auto/Manual)
+- /output/gear_report [`autoware_vehicle_msgs/msg/ControlModeReport`] : simulated gear
+- /output/turn_indicators_report [`autoware_vehicle_msgs/msg/ControlModeReport`] : simulated turn indicator status
+- /output/hazard_lights_report [`autoware_vehicle_msgs/msg/ControlModeReport`] : simulated hazard lights status
 
 ## Inner-workings / Algorithms
 

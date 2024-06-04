@@ -43,10 +43,10 @@ using namespace std::literals::chrono_literals;
 namespace
 {
 
-autoware_auto_vehicle_msgs::msg::VelocityReport to_velocity_report(
+autoware_vehicle_msgs::msg::VelocityReport to_velocity_report(
   const std::shared_ptr<SimModelInterface> vehicle_model_ptr)
 {
-  autoware_auto_vehicle_msgs::msg::VelocityReport velocity;
+  autoware_vehicle_msgs::msg::VelocityReport velocity;
   velocity.longitudinal_velocity = static_cast<double>(vehicle_model_ptr->getVx());
   velocity.lateral_velocity = 0.0F;
   velocity.heading_rate = static_cast<double>(vehicle_model_ptr->getWz());
@@ -67,10 +67,10 @@ nav_msgs::msg::Odometry to_odometry(
   return odometry;
 }
 
-autoware_auto_vehicle_msgs::msg::SteeringReport to_steering_report(
+autoware_vehicle_msgs::msg::SteeringReport to_steering_report(
   const std::shared_ptr<SimModelInterface> vehicle_model_ptr)
 {
-  autoware_auto_vehicle_msgs::msg::SteeringReport steer;
+  autoware_vehicle_msgs::msg::SteeringReport steer;
   steer.steering_tire_angle = static_cast<double>(vehicle_model_ptr->getSteer());
   return steer;
 }
@@ -108,21 +108,19 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
   using std::placeholders::_1;
   using std::placeholders::_2;
 
-  sub_map_ = create_subscription<HADMapBin>(
+  sub_map_ = create_subscription<LaneletMapBin>(
     "input/vector_map", rclcpp::QoS(10).transient_local(),
     std::bind(&SimplePlanningSimulator::on_map, this, _1));
   sub_init_pose_ = create_subscription<PoseWithCovarianceStamped>(
     "input/initialpose", QoS{1}, std::bind(&SimplePlanningSimulator::on_initialpose, this, _1));
   sub_init_twist_ = create_subscription<TwistStamped>(
     "input/initialtwist", QoS{1}, std::bind(&SimplePlanningSimulator::on_initialtwist, this, _1));
-  sub_ackermann_cmd_ = create_subscription<AckermannControlCommand>(
+  sub_ackermann_cmd_ = create_subscription<Control>(
     "input/ackermann_control_command", QoS{1},
-    [this](const AckermannControlCommand::ConstSharedPtr msg) { current_ackermann_cmd_ = *msg; });
-  sub_manual_ackermann_cmd_ = create_subscription<AckermannControlCommand>(
+    [this](const Control::ConstSharedPtr msg) { current_ackermann_cmd_ = *msg; });
+  sub_manual_ackermann_cmd_ = create_subscription<Control>(
     "input/manual_ackermann_control_command", QoS{1},
-    [this](const AckermannControlCommand::ConstSharedPtr msg) {
-      current_manual_ackermann_cmd_ = *msg;
-    });
+    [this](const Control::ConstSharedPtr msg) { current_manual_ackermann_cmd_ = *msg; });
   sub_gear_cmd_ = create_subscription<GearCommand>(
     "input/gear_command", QoS{1},
     [this](const GearCommand::ConstSharedPtr msg) { current_gear_cmd_ = *msg; });
@@ -419,7 +417,7 @@ void SimplePlanningSimulator::on_timer()
   publish_tf(current_odometry_);
 }
 
-void SimplePlanningSimulator::on_map(const HADMapBin::ConstSharedPtr msg)
+void SimplePlanningSimulator::on_map(const LaneletMapBin::ConstSharedPtr msg)
 {
   auto lanelet_map_ptr = std::make_shared<lanelet::LaneletMap>();
 
@@ -469,14 +467,13 @@ void SimplePlanningSimulator::on_set_pose(
   response->status = tier4_api_utils::response_success();
 }
 
-void SimplePlanningSimulator::set_input(
-  const AckermannControlCommand & cmd, const double acc_by_slope)
+void SimplePlanningSimulator::set_input(const Control & cmd, const double acc_by_slope)
 {
   const auto steer = cmd.lateral.steering_tire_angle;
-  const auto vel = cmd.longitudinal.speed;
+  const auto vel = cmd.longitudinal.velocity;
   const auto accel = cmd.longitudinal.acceleration;
 
-  using autoware_auto_vehicle_msgs::msg::GearCommand;
+  using autoware_vehicle_msgs::msg::GearCommand;
   Eigen::VectorXd input(vehicle_model_ptr_->getDimU());
   const auto gear = vehicle_model_ptr_->getGear();
 
