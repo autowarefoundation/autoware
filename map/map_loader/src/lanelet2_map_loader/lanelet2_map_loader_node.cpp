@@ -86,7 +86,7 @@ void Lanelet2MapLoaderNode::on_map_projector_info(
 
   // create publisher and publish
   pub_map_bin_ =
-    create_publisher<HADMapBin>("output/lanelet2_map", rclcpp::QoS{1}.transient_local());
+    create_publisher<LaneletMapBin>("output/lanelet2_map", rclcpp::QoS{1}.transient_local());
   pub_map_bin_->publish(map_bin_msg);
   RCLCPP_INFO(get_logger(), "Succeeded to load lanelet2_map. Map is published.");
 }
@@ -141,18 +141,18 @@ lanelet::LaneletMapPtr Lanelet2MapLoaderNode::load_map(
   return nullptr;
 }
 
-HADMapBin Lanelet2MapLoaderNode::create_map_bin_msg(
+LaneletMapBin Lanelet2MapLoaderNode::create_map_bin_msg(
   const lanelet::LaneletMapPtr map, const std::string & lanelet2_filename, const rclcpp::Time & now)
 {
   std::string format_version{}, map_version{};
   lanelet::io_handlers::AutowareOsmParser::parseVersions(
     lanelet2_filename, &format_version, &map_version);
 
-  HADMapBin map_bin_msg;
+  LaneletMapBin map_bin_msg;
   map_bin_msg.header.stamp = now;
   map_bin_msg.header.frame_id = "map";
-  map_bin_msg.format_version = format_version;
-  map_bin_msg.map_version = map_version;
+  map_bin_msg.version_map_format = format_version;
+  map_bin_msg.version_map = map_version;
   lanelet::utils::conversion::toBinMsg(map, &map_bin_msg);
 
   return map_bin_msg;

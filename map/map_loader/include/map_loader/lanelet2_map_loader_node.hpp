@@ -19,7 +19,7 @@
 #include <component_interface_utils/rclcpp.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <tier4_map_msgs/msg/map_projector_info.hpp>
 
 #include <lanelet2_projection/UTM.h>
@@ -27,7 +27,7 @@
 #include <memory>
 #include <string>
 
-using autoware_auto_mapping_msgs::msg::HADMapBin;
+using autoware_map_msgs::msg::LaneletMapBin;
 using tier4_map_msgs::msg::MapProjectorInfo;
 
 class Lanelet2MapLoaderNode : public rclcpp::Node
@@ -38,7 +38,7 @@ public:
   static lanelet::LaneletMapPtr load_map(
     const std::string & lanelet2_filename,
     const tier4_map_msgs::msg::MapProjectorInfo & projector_info);
-  static HADMapBin create_map_bin_msg(
+  static LaneletMapBin create_map_bin_msg(
     const lanelet::LaneletMapPtr map, const std::string & lanelet2_filename,
     const rclcpp::Time & now);
 
@@ -48,7 +48,7 @@ private:
   void on_map_projector_info(const MapProjectorInfo::Message::ConstSharedPtr msg);
 
   component_interface_utils::Subscription<MapProjectorInfo>::SharedPtr sub_map_projector_info_;
-  rclcpp::Publisher<HADMapBin>::SharedPtr pub_map_bin_;
+  rclcpp::Publisher<LaneletMapBin>::SharedPtr pub_map_bin_;
 };
 
 #endif  // MAP_LOADER__LANELET2_MAP_LOADER_NODE_HPP_

@@ -17,7 +17,7 @@
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_map_msgs/srv/get_partial_point_cloud_map.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -38,7 +38,7 @@ struct MapHeightFitter::Impl
 
   explicit Impl(rclcpp::Node * node);
   void on_pcd_map(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
-  void on_vector_map(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
+  void on_vector_map(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg);
   bool get_partial_point_cloud_map(const Point & point);
   double get_ground_height(const Point & point) const;
   std::optional<Point> fit(const Point & position, const std::string & frame);
@@ -59,7 +59,7 @@ struct MapHeightFitter::Impl
 
   // for fitting by vector_map_loader
   lanelet::LaneletMapPtr vector_map_;
-  rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr sub_vector_map_;
+  rclcpp::Subscription<autoware_map_msgs::msg::LaneletMapBin>::SharedPtr sub_vector_map_;
 };
 
 MapHeightFitter::Impl::Impl(rclcpp::Node * node) : tf2_listener_(tf2_buffer_), node_(node)
@@ -95,7 +95,7 @@ MapHeightFitter::Impl::Impl(rclcpp::Node * node) : tf2_listener_(tf2_buffer_), n
 
   } else if (fit_target_ == "vector_map") {
     const auto durable_qos = rclcpp::QoS(1).transient_local();
-    sub_vector_map_ = node_->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+    sub_vector_map_ = node_->create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
       "~/vector_map", durable_qos,
       std::bind(&MapHeightFitter::Impl::on_vector_map, this, std::placeholders::_1));
 
@@ -163,7 +163,7 @@ bool MapHeightFitter::Impl::get_partial_point_cloud_map(const Point & point)
 }
 
 void MapHeightFitter::Impl::on_vector_map(
-  const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg)
+  const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg)
 {
   vector_map_ = std::make_shared<lanelet::LaneletMap>();
   lanelet::utils::conversion::fromBinMsg(*msg, vector_map_);

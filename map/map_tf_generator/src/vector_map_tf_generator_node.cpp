@@ -15,7 +15,7 @@
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/geometry/Point.h>
@@ -34,7 +34,7 @@ public:
     map_frame_ = declare_parameter<std::string>("map_frame");
     viewer_frame_ = declare_parameter<std::string>("viewer_frame");
 
-    sub_ = create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+    sub_ = create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
       "vector_map", rclcpp::QoS{1}.transient_local(),
       std::bind(&VectorMapTFGeneratorNode::onVectorMap, this, std::placeholders::_1));
 
@@ -44,12 +44,12 @@ public:
 private:
   std::string map_frame_;
   std::string viewer_frame_;
-  rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr sub_;
+  rclcpp::Subscription<autoware_map_msgs::msg::LaneletMapBin>::SharedPtr sub_;
 
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_broadcaster_;
   std::shared_ptr<lanelet::LaneletMap> lanelet_map_ptr_;
 
-  void onVectorMap(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg)
+  void onVectorMap(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg)
   {
     lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
     lanelet::utils::conversion::fromBinMsg(*msg, lanelet_map_ptr_);

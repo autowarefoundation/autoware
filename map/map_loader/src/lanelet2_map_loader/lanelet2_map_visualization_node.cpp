@@ -39,7 +39,7 @@
 #include <lanelet2_extension/visualization/visualization.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
@@ -73,7 +73,7 @@ Lanelet2MapVisualizationNode::Lanelet2MapVisualizationNode(const rclcpp::NodeOpt
 
   viz_lanelets_centerline_ = true;
 
-  sub_map_bin_ = this->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+  sub_map_bin_ = this->create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
     "input/lanelet2_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&Lanelet2MapVisualizationNode::onMapBin, this, _1));
 
@@ -82,7 +82,7 @@ Lanelet2MapVisualizationNode::Lanelet2MapVisualizationNode(const rclcpp::NodeOpt
 }
 
 void Lanelet2MapVisualizationNode::onMapBin(
-  const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg)
+  const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg)
 {
   lanelet::LaneletMapPtr viz_lanelet_map(new lanelet::LaneletMap);
 

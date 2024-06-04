@@ -130,7 +130,7 @@ Please see [the description of `GetSelectedPointCloudMap.srv`](https://github.co
 
 ### Feature
 
-lanelet2_map_loader loads Lanelet2 file and publishes the map data as autoware_auto_mapping_msgs/HADMapBin message.
+lanelet2_map_loader loads Lanelet2 file and publishes the map data as autoware_map_msgs/LaneletMapBin message.
 The node projects lan/lon coordinates into arbitrary coordinates defined in `/map/map_projector_info` from `map_projection_loader`.
 Please see [tier4_autoware_msgs/msg/MapProjectorInfo.msg](https://github.com/tier4/tier4_autoware_msgs/blob/tier4/universe/tier4_map_msgs/msg/MapProjectorInfo.msg) for supported projector types.
 
@@ -144,7 +144,7 @@ Please see [tier4_autoware_msgs/msg/MapProjectorInfo.msg](https://github.com/tie
 
 ### Published Topics
 
-- ~output/lanelet2_map (autoware_auto_mapping_msgs/HADMapBin) : Binary data of loaded Lanelet2 Map
+- ~output/lanelet2_map (autoware_map_msgs/LaneletMapBin) : Binary data of loaded Lanelet2 Map
 
 ### Parameters
 
@@ -156,7 +156,7 @@ Please see [tier4_autoware_msgs/msg/MapProjectorInfo.msg](https://github.com/tie
 
 ### Feature
 
-lanelet2_map_visualization visualizes autoware_auto_mapping_msgs/HADMapBin messages into visualization_msgs/MarkerArray.
+lanelet2_map_visualization visualizes autoware_map_msgs/LaneletMapBin messages into visualization_msgs/MarkerArray.
 
 ### How to Run
 
@@ -164,7 +164,7 @@ lanelet2_map_visualization visualizes autoware_auto_mapping_msgs/HADMapBin messa
 
 ### Subscribed Topics
 
-- ~input/lanelet2_map (autoware_auto_mapping_msgs/HADMapBin) : binary data of Lanelet2 Map
+- ~input/lanelet2_map (autoware_map_msgs/LaneletMapBin) : binary data of Lanelet2 Map
 
 ### Published Topics
 

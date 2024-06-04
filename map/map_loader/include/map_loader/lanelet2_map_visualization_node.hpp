@@ -17,7 +17,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <string>
@@ -29,12 +29,12 @@ public:
   explicit Lanelet2MapVisualizationNode(const rclcpp::NodeOptions & options);
 
 private:
-  rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr sub_map_bin_;
+  rclcpp::Subscription<autoware_map_msgs::msg::LaneletMapBin>::SharedPtr sub_map_bin_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_marker_;
 
   bool viz_lanelets_centerline_;
 
-  void onMapBin(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
+  void onMapBin(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg);
 };
 
 #endif  // MAP_LOADER__LANELET2_MAP_VISUALIZATION_NODE_HPP_
