@@ -14,9 +14,9 @@
 
 #include "../src/filter_predicted_objects.hpp"
 
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/predicted_path.hpp>
 
 #include <gtest/gtest.h>
 #include <lanelet2_core/geometry/LineString.h>
@@ -24,7 +24,7 @@
 TEST(TestCollisionDistance, CutPredictedPathBeyondLine)
 {
   using autoware::motion_velocity_planner::out_of_lane::cut_predicted_path_beyond_line;
-  autoware_auto_perception_msgs::msg::PredictedPath predicted_path;
+  autoware_perception_msgs::msg::PredictedPath predicted_path;
   lanelet::BasicLineString2d stop_line;
   double object_front_overhang = 0.0;
   const auto eps = 1e-9;

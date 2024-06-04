@@ -18,7 +18,7 @@
 #include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <algorithm>
 #include <optional>
@@ -159,8 +159,7 @@ std::optional<PathIndexWithOffset> findOffsetSegment(
 }
 
 std::optional<PathIndexWithOffset> findOffsetSegment(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t index,
-  const double offset);
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t index, const double offset);
 
 template <class T>
 geometry_msgs::msg::Pose calcTargetPose(const T & path, const PathIndexWithOffset & offset_segment)
@@ -192,7 +191,7 @@ geometry_msgs::msg::Pose calcTargetPose(const T & path, const PathIndexWithOffse
 }
 
 std::optional<PathIndexWithPose> createTargetPoint(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const LineString2d & stop_line,
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const LineString2d & stop_line,
   const size_t lane_id, const double margin, const double vehicle_offset);
 
 }  // namespace arc_lane_utils

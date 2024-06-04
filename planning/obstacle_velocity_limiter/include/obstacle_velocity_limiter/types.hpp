@@ -17,17 +17,17 @@
 
 #include "tier4_autoware_utils/geometry/boost_geometry.hpp"
 
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
+#include <autoware_planning_msgs/msg/trajectory_point.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 namespace obstacle_velocity_limiter
 {
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 using nav_msgs::msg::OccupancyGrid;
 using PointCloud = sensor_msgs::msg::PointCloud2;
 using Float = decltype(TrajectoryPoint::longitudinal_velocity_mps);

@@ -96,11 +96,11 @@ void BehaviorVelocityPlannerManager::removeScenePlugin(
   }
 }
 
-autoware_auto_planning_msgs::msg::PathWithLaneId BehaviorVelocityPlannerManager::planPathVelocity(
+tier4_planning_msgs::msg::PathWithLaneId BehaviorVelocityPlannerManager::planPathVelocity(
   const std::shared_ptr<const PlannerData> & planner_data,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path_msg)
+  const tier4_planning_msgs::msg::PathWithLaneId & input_path_msg)
 {
-  autoware_auto_planning_msgs::msg::PathWithLaneId output_path_msg = input_path_msg;
+  tier4_planning_msgs::msg::PathWithLaneId output_path_msg = input_path_msg;
 
   int first_stop_path_point_index = static_cast<int>(output_path_msg.points.size() - 1);
   std::string stop_reason_msg("path_end");

@@ -32,8 +32,8 @@
 namespace motion_planning
 {
 
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObjects;
 using motion_utils::calcDecelDistWithJerkAndAccConstraints;
 using motion_utils::findFirstNearestIndexWithSoftConstraints;
 using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
@@ -632,7 +632,7 @@ Polygon2d convertBoundingBoxObjectToGeometryPolygon(
 }
 
 Polygon2d convertCylindricalObjectToGeometryPolygon(
-  const Pose & current_pose, const autoware_auto_perception_msgs::msg::Shape & obj_shape)
+  const Pose & current_pose, const autoware_perception_msgs::msg::Shape & obj_shape)
 {
   Polygon2d object_polygon;
 
@@ -655,7 +655,7 @@ Polygon2d convertCylindricalObjectToGeometryPolygon(
 }
 
 Polygon2d convertPolygonObjectToGeometryPolygon(
-  const Pose & current_pose, const autoware_auto_perception_msgs::msg::Shape & obj_shape)
+  const Pose & current_pose, const autoware_perception_msgs::msg::Shape & obj_shape)
 {
   Polygon2d object_polygon;
   tf2::Transform tf_map2obj;
@@ -698,13 +698,13 @@ bool isFrontObstacle(const Pose & ego_pose, const geometry_msgs::msg::Point & ob
   return base_pose_vec.dot(obstacle_vec) >= 0;
 }
 
-double calcObstacleMaxLength(const autoware_auto_perception_msgs::msg::Shape & shape)
+double calcObstacleMaxLength(const autoware_perception_msgs::msg::Shape & shape)
 {
-  if (shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+  if (shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
     return std::hypot(shape.dimensions.x / 2.0, shape.dimensions.y / 2.0);
-  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+  } else if (shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
     return shape.dimensions.x / 2.0;
-  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
+  } else if (shape.type == autoware_perception_msgs::msg::Shape::POLYGON) {
     double max_length_to_point = 0.0;
     for (const auto rel_point : shape.footprint.points) {
       const double length_to_point = std::hypot(rel_point.x, rel_point.y);

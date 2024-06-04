@@ -17,7 +17,7 @@
 
 #include <gtest/gtest.h>
 
-using LABEL = autoware_auto_perception_msgs::msg::ObjectClassification;
+using LABEL = autoware_perception_msgs::msg::ObjectClassification;
 
 class ObjectsToCostMapTest : public ::testing::Test
 {
@@ -69,10 +69,10 @@ grid_y
 */
 TEST_F(ObjectsToCostMapTest, TestMakeCostmapFromObjects)
 {
-  auto objs = std::make_shared<autoware_auto_perception_msgs::msg::PredictedObjects>();
-  autoware_auto_perception_msgs::msg::PredictedObject object;
+  auto objs = std::make_shared<autoware_perception_msgs::msg::PredictedObjects>();
+  autoware_perception_msgs::msg::PredictedObject object;
 
-  object.classification.push_back(autoware_auto_perception_msgs::msg::ObjectClassification{});
+  object.classification.push_back(autoware_perception_msgs::msg::ObjectClassification{});
   object.classification.at(0).label = LABEL::CAR;
   object.classification.at(0).probability = 0.8;
 
@@ -85,7 +85,7 @@ TEST_F(ObjectsToCostMapTest, TestMakeCostmapFromObjects)
   object.kinematics.initial_pose_with_covariance.pose.orientation.z = 0;
   object.kinematics.initial_pose_with_covariance.pose.orientation.w = 1;
 
-  object.shape.type = autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX;
+  object.shape.type = autoware_perception_msgs::msg::Shape::BOUNDING_BOX;
   object.shape.dimensions.x = 5;
   object.shape.dimensions.y = 3;
   object.shape.dimensions.z = 2;

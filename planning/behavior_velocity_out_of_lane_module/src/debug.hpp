@@ -62,7 +62,7 @@ void add_lanelet_markers(
 /// @param [in] prev_nb previous number of markers (used to delete the extra ones)
 void add_range_markers(
   visualization_msgs::msg::MarkerArray & debug_marker_array, const OverlapRanges & ranges,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t first_path_idx,
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t first_path_idx,
   const double z, const size_t prev_nb);
 }  // namespace behavior_velocity_planner::out_of_lane::debug
 

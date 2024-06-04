@@ -35,31 +35,30 @@ namespace behavior_velocity_planner
 namespace bg = boost::geometry;
 
 bool IntersectionModule::isTargetCollisionVehicleType(
-  const autoware_auto_perception_msgs::msg::PredictedObject & object) const
+  const autoware_perception_msgs::msg::PredictedObject & object) const
 {
   const auto label = object.classification.at(0).label;
   const auto & p = planner_param_.collision_detection.target_type;
 
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::CAR && p.car) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::CAR && p.car) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::BUS && p.bus) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::BUS && p.bus) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK && p.truck) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::TRUCK && p.truck) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER && p.trailer) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::TRAILER && p.trailer) {
     return true;
   }
-  if (
-    label == autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE && p.motorcycle) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::MOTORCYCLE && p.motorcycle) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE && p.bicycle) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::BICYCLE && p.bicycle) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN && p.unknown) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::UNKNOWN && p.unknown) {
     return true;
   }
   return false;
@@ -208,8 +207,8 @@ void IntersectionModule::updateObjectInfoManagerCollision(
     bool safe_under_traffic_control = false;
     const auto label = predicted_object.classification.at(0).label;
     const auto expected_deceleration =
-      (label == autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE ||
-       label == autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE)
+      (label == autoware_perception_msgs::msg::ObjectClassification::MOTORCYCLE ||
+       label == autoware_perception_msgs::msg::ObjectClassification::BICYCLE)
         ? planner_param_.collision_detection.ignore_on_amber_traffic_light
             .object_expected_deceleration.bike
         : planner_param_.collision_detection.ignore_on_amber_traffic_light
@@ -232,7 +231,7 @@ void IntersectionModule::updateObjectInfoManagerCollision(
     // check the PredictedPath in the ascending order of its confidence to save the safe/unsafe
     // CollisionKnowledge for most probable path
     // ==========================================================================================
-    std::list<const autoware_auto_perception_msgs::msg::PredictedPath *> sorted_predicted_paths;
+    std::list<const autoware_perception_msgs::msg::PredictedPath *> sorted_predicted_paths;
     for (unsigned i = 0; i < predicted_object.kinematics.predicted_paths.size(); ++i) {
       sorted_predicted_paths.push_back(&predicted_object.kinematics.predicted_paths.at(i));
     }
@@ -400,7 +399,7 @@ void IntersectionModule::updateObjectInfoManagerCollision(
 
 void IntersectionModule::cutPredictPathWithinDuration(
   const builtin_interfaces::msg::Time & object_stamp, const double time_thr,
-  autoware_auto_perception_msgs::msg::PredictedPath * path) const
+  autoware_perception_msgs::msg::PredictedPath * path) const
 {
   const rclcpp::Time current_time = clock_->now();
   const auto original_path = path->path;
@@ -597,7 +596,7 @@ std::string IntersectionModule::generateDetectionBlameDiagnosis(
 }
 
 std::string IntersectionModule::generateEgoRiskEvasiveDiagnosis(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
   const IntersectionModule::TimeDistanceArray & ego_time_distance_array,
   const std::vector<std::pair<
     IntersectionModule::CollisionStatus::BlameType, std::shared_ptr<intersection::ObjectInfo>>> &
@@ -811,7 +810,7 @@ std::optional<size_t> IntersectionModule::checkAngleForTargetLanelets(
 }
 
 IntersectionModule::TimeDistanceArray IntersectionModule::calcIntersectionPassingTime(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const bool is_prioritized,
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const bool is_prioritized,
   const intersection::IntersectionStopLines & intersection_stoplines,
   tier4_debug_msgs::msg::Float64MultiArrayStamped * ego_ttc_array) const
 {

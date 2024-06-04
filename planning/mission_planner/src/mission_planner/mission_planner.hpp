@@ -44,7 +44,7 @@
 namespace mission_planner
 {
 
-using autoware_auto_mapping_msgs::msg::HADMapBin;
+using autoware_map_msgs::msg::LaneletMapBin;
 using autoware_planning_msgs::msg::LaneletPrimitive;
 using autoware_planning_msgs::msg::LaneletRoute;
 using autoware_planning_msgs::msg::LaneletSegment;
@@ -84,19 +84,19 @@ private:
 
   rclcpp::Subscription<PoseWithUuidStamped>::SharedPtr sub_modified_goal_;
   rclcpp::Subscription<Odometry>::SharedPtr sub_odometry_;
-  rclcpp::Subscription<HADMapBin>::SharedPtr sub_vector_map_;
+  rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_vector_map_;
   rclcpp::Subscription<RerouteAvailability>::SharedPtr sub_reroute_availability_;
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_;
 
   Odometry::ConstSharedPtr odometry_;
-  HADMapBin::ConstSharedPtr map_ptr_;
+  LaneletMapBin::ConstSharedPtr map_ptr_;
   RerouteAvailability::ConstSharedPtr reroute_availability_;
   RouteState state_;
   LaneletRoute::ConstSharedPtr current_route_;
   lanelet::LaneletMapPtr lanelet_map_ptr_{nullptr};
 
   void on_odometry(const Odometry::ConstSharedPtr msg);
-  void on_map(const HADMapBin::ConstSharedPtr msg);
+  void on_map(const LaneletMapBin::ConstSharedPtr msg);
   void on_reroute_availability(const RerouteAvailability::ConstSharedPtr msg);
   void on_modified_goal(const PoseWithUuidStamped::ConstSharedPtr msg);
 

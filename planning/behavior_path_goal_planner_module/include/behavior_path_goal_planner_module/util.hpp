@@ -21,11 +21,11 @@
 #include <lane_departure_checker/lane_departure_checker.hpp>
 
 #include "visualization_msgs/msg/detail/marker_array__struct.hpp"
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/predicted_path.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <lanelet2_core/Forward.h>
 
@@ -35,11 +35,11 @@
 
 namespace behavior_path_planner::goal_planner_utils
 {
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_perception_msgs::msg::PredictedPath;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::PredictedPath;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
+using tier4_planning_msgs::msg::PathWithLaneId;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 using Polygon2d = tier4_autoware_utils::Polygon2d;

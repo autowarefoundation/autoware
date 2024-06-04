@@ -49,7 +49,7 @@ VirtualTrafficLightModuleManager::VirtualTrafficLightModuleManager(rclcpp::Node 
 }
 
 void VirtualTrafficLightModuleManager::launchNewModules(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   for (const auto & m : planning_utils::getRegElemMapOnPath<VirtualTrafficLight>(
          path, planner_data_->route_handler_->getLaneletMapPtr(),
@@ -67,7 +67,7 @@ void VirtualTrafficLightModuleManager::launchNewModules(
 
 std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 VirtualTrafficLightModuleManager::getModuleExpiredFunction(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto id_set = planning_utils::getLaneletIdSetOnPath<VirtualTrafficLight>(
     path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_odometry->pose);

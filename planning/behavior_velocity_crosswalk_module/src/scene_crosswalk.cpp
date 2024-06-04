@@ -674,7 +674,7 @@ std::optional<double> CrosswalkModule::findEgoPassageDirectionAlongPath(
 }
 
 std::optional<double> CrosswalkModule::findObjectPassageDirectionAlongVehicleLane(
-  const autoware_auto_perception_msgs::msg::PredictedPath & path) const
+  const autoware_perception_msgs::msg::PredictedPath & path) const
 {
   using tier4_autoware_utils::Segment2d;
 
@@ -1127,8 +1127,7 @@ bool CrosswalkModule::isRedSignalForPedestrians() const
     }
 
     for (const auto & element : lights) {
-      if (
-        element.color == TrafficSignalElement::RED && element.shape == TrafficSignalElement::CIRCLE)
+      if (element.color == TrafficLightElement::RED && element.shape == TrafficLightElement::CIRCLE)
         return true;
     }
   }

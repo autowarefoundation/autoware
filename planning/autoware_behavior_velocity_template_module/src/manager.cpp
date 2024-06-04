@@ -38,7 +38,7 @@ TemplateModuleManager::TemplateModuleManager(rclcpp::Node & node)
 }
 
 void TemplateModuleManager::launchNewModules(
-  [[maybe_unused]] const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  [[maybe_unused]] const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   int64_t module_id = 0;
   if (!isModuleRegistered(module_id)) {
@@ -49,7 +49,7 @@ void TemplateModuleManager::launchNewModules(
 
 std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 TemplateModuleManager::getModuleExpiredFunction(
-  [[maybe_unused]] const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  [[maybe_unused]] const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   return []([[maybe_unused]] const std::shared_ptr<SceneModuleInterface> & scene_module) -> bool {
     return false;

@@ -38,7 +38,7 @@ std::optional<geometry_msgs::msg::Point> find_closest_collision_point(
 /// @return the point of earliest collision along the ego path
 std::vector<Collision> find_collisions(
   const EgoData & ego_data,
-  const std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & objects,
+  const std::vector<autoware_perception_msgs::msg::PredictedObject> & objects,
   const tier4_autoware_utils::MultiPolygon2d & obstacle_forward_footprints);
 
 }  // namespace behavior_velocity_planner::dynamic_obstacle_stop

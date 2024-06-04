@@ -29,7 +29,7 @@
  * This test checks the diagnostics message published from the planning_validator node
  */
 
-using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::Trajectory;
 using diagnostic_msgs::msg::DiagnosticArray;
 using diagnostic_msgs::msg::DiagnosticStatus;
 using nav_msgs::msg::Odometry;

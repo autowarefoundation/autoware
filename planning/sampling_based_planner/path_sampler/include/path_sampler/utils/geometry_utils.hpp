@@ -24,8 +24,8 @@
 #include "path_sampler/type_alias.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
-#include "autoware_auto_planning_msgs/msg/path_point.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
+#include "autoware_planning_msgs/msg/path_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory.hpp"
 
 #include "boost/optional/optional_fwd.hpp"
 

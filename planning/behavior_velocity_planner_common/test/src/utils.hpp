@@ -15,23 +15,23 @@
 #ifndef UTILS_HPP_
 #define UTILS_HPP_
 
-#include <autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tier4_planning_msgs/msg/path_point_with_lane_id.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <tf2/utils.h>
 
 namespace test
 {
 
-inline autoware_auto_planning_msgs::msg::PathWithLaneId generatePath(
+inline tier4_planning_msgs::msg::PathWithLaneId generatePath(
   double x0, double y0, double x, double y, int nb_points)
 {
-  autoware_auto_planning_msgs::msg::PathWithLaneId path{};
+  tier4_planning_msgs::msg::PathWithLaneId path{};
   double x_step = (x - x0) / (nb_points - 1);
   double y_step = (y - y0) / (nb_points - 1);
   for (int i = 0; i < nb_points; ++i) {
-    autoware_auto_planning_msgs::msg::PathPointWithLaneId point{};
+    tier4_planning_msgs::msg::PathPointWithLaneId point{};
     point.point.pose.position.x = x0 + x_step * i;
     point.point.pose.position.y = y0 + y_step * i;
     point.point.pose.position.z = 0.0;

@@ -61,7 +61,7 @@ using ObjectStopDecisionMap = std::unordered_map<std::string, ObjectStopDecision
 void update_object_map(
   ObjectStopDecisionMap & object_map, const std::vector<Collision> & collisions,
   const rclcpp::Time & now,
-  const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & path_points,
+  const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & path_points,
   const PlannerParam & params);
 
 /// @brief find the earliest collision requiring a stop along the ego path

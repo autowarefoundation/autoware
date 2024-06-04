@@ -51,7 +51,7 @@ DetectionAreaModuleManager::DetectionAreaModuleManager(rclcpp::Node & node)
 }
 
 void DetectionAreaModuleManager::launchNewModules(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   for (const auto & detection_area_with_lane_id :
        planning_utils::getRegElemMapOnPath<DetectionArea>(
@@ -74,7 +74,7 @@ void DetectionAreaModuleManager::launchNewModules(
 
 std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 DetectionAreaModuleManager::getModuleExpiredFunction(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto detection_area_id_set = planning_utils::getRegElemIdSetOnPath<DetectionArea>(
     path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_odometry->pose);

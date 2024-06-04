@@ -20,7 +20,7 @@
 #include <route_handler/route_handler.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
@@ -45,7 +45,7 @@ class DefaultPlanner : public mission_planner::PlannerPlugin
 {
 public:
   void initialize(rclcpp::Node * node) override;
-  void initialize(rclcpp::Node * node, const HADMapBin::ConstSharedPtr msg) override;
+  void initialize(rclcpp::Node * node, const LaneletMapBin::ConstSharedPtr msg) override;
   bool ready() const override;
   LaneletRoute plan(const RoutePoints & points) override;
   void updateRoute(const PlannerPlugin::LaneletRoute & route) override;
@@ -63,11 +63,11 @@ private:
   DefaultPlannerParameters param_;
 
   rclcpp::Node * node_;
-  rclcpp::Subscription<HADMapBin>::SharedPtr map_subscriber_;
+  rclcpp::Subscription<LaneletMapBin>::SharedPtr map_subscriber_;
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_goal_footprint_marker_;
 
   void initialize_common(rclcpp::Node * node);
-  void map_callback(const HADMapBin::ConstSharedPtr msg);
+  void map_callback(const LaneletMapBin::ConstSharedPtr msg);
 
   /**
    * @brief check if the goal_footprint is within the combined lanelet of route_lanelets plus the

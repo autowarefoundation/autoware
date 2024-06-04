@@ -20,7 +20,7 @@
 
 #include <tier4_autoware_utils/ros/transform_listener.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
 namespace drivable_area_expansion
@@ -43,7 +43,7 @@ Polygon2d create_footprint(const geometry_msgs::msg::Pose & pose, const Polygon2
 /// @param[in] params expansion parameters containing extra offsets to add to the dynamic objects
 /// @return footprint polygons of the object's predicted paths
 MultiPolygon2d create_object_footprints(
-  const autoware_auto_perception_msgs::msg::PredictedObjects & objects,
+  const autoware_perception_msgs::msg::PredictedObjects & objects,
   const DrivableAreaExpansionParameters & params);
 }  // namespace drivable_area_expansion
 #endif  // BEHAVIOR_PATH_PLANNER_COMMON__UTILS__DRIVABLE_AREA_EXPANSION__FOOTPRINTS_HPP_

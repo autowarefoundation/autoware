@@ -56,8 +56,7 @@ NoStoppingAreaModule::NoStoppingAreaModule(
 }
 
 boost::optional<LineString2d> NoStoppingAreaModule::getStopLineGeometry2d(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const double stop_line_margin) const
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const double stop_line_margin) const
 {
   // get stop line from map
   {
@@ -216,8 +215,7 @@ bool NoStoppingAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason 
 
 bool NoStoppingAreaModule::checkStuckVehiclesInNoStoppingArea(
   const Polygon2d & poly,
-  const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr &
-    predicted_obj_arr_ptr)
+  const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr & predicted_obj_arr_ptr)
 {
   // stuck points by predicted objects
   for (const auto & object : predicted_obj_arr_ptr->objects) {
@@ -250,7 +248,7 @@ bool NoStoppingAreaModule::checkStuckVehiclesInNoStoppingArea(
   return false;
 }
 bool NoStoppingAreaModule::checkStopLinesInNoStoppingArea(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const Polygon2d & poly)
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const Polygon2d & poly)
 {
   const double stop_vel = std::numeric_limits<float>::min();
   // stuck points by stop line
@@ -278,14 +276,14 @@ bool NoStoppingAreaModule::checkStopLinesInNoStoppingArea(
 }
 
 Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const geometry_msgs::msg::Pose & ego_pose, const double margin, const double extra_dist) const
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const geometry_msgs::msg::Pose & ego_pose,
+  const double margin, const double extra_dist) const
 {
   Polygon2d ego_area;  // open polygon
   double dist_from_start_sum = 0.0;
   const double interpolation_interval = 0.5;
   bool is_in_area = false;
-  autoware_auto_planning_msgs::msg::PathWithLaneId interpolated_path;
+  tier4_planning_msgs::msg::PathWithLaneId interpolated_path;
   if (!splineInterpolate(path, interpolation_interval, interpolated_path, logger_)) {
     return ego_area;
   }
@@ -350,19 +348,19 @@ Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
 }
 
 bool NoStoppingAreaModule::isTargetStuckVehicleType(
-  const autoware_auto_perception_msgs::msg::PredictedObject & object) const
+  const autoware_perception_msgs::msg::PredictedObject & object) const
 {
   if (
     object.classification.front().label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::CAR ||
+      autoware_perception_msgs::msg::ObjectClassification::CAR ||
     object.classification.front().label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::BUS ||
+      autoware_perception_msgs::msg::ObjectClassification::BUS ||
     object.classification.front().label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK ||
+      autoware_perception_msgs::msg::ObjectClassification::TRUCK ||
     object.classification.front().label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER ||
+      autoware_perception_msgs::msg::ObjectClassification::TRAILER ||
     object.classification.front().label ==
-      autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE) {
+      autoware_perception_msgs::msg::ObjectClassification::MOTORCYCLE) {
     return true;
   }
   return false;
@@ -404,13 +402,13 @@ bool NoStoppingAreaModule::isStoppable(
 }
 
 void NoStoppingAreaModule::insertStopPoint(
-  autoware_auto_planning_msgs::msg::PathWithLaneId & path, const PathIndexWithPose & stop_point)
+  tier4_planning_msgs::msg::PathWithLaneId & path, const PathIndexWithPose & stop_point)
 {
   size_t insert_idx = static_cast<size_t>(stop_point.first + 1);
   const auto stop_pose = stop_point.second;
 
   // To PathPointWithLaneId
-  autoware_auto_planning_msgs::msg::PathPointWithLaneId stop_point_with_lane_id;
+  tier4_planning_msgs::msg::PathPointWithLaneId stop_point_with_lane_id;
   stop_point_with_lane_id = path.points.at(insert_idx);
   stop_point_with_lane_id.point.pose = stop_pose;
   stop_point_with_lane_id.point.longitudinal_velocity_mps = 0.0;

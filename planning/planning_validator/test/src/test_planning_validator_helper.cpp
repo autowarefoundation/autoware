@@ -19,8 +19,8 @@
 
 #include <math.h>
 
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 using tier4_autoware_utils::createQuaternionFromYaw;
 
 Trajectory generateTrajectoryWithConstantAcceleration(

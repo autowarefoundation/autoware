@@ -20,7 +20,7 @@
 #include "osqp_interface/osqp_interface.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
 
 #include "boost/optional.hpp"
 

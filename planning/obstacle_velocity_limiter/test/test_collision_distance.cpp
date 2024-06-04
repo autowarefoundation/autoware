@@ -17,8 +17,8 @@
 #include "obstacle_velocity_limiter/types.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
 
 #include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/io/wkt/write.hpp>
@@ -384,8 +384,8 @@ TEST(TestCollisionDistance, arcDistance)
 
 TEST(TestCollisionDistance, createObjPolygons)
 {
-  using autoware_auto_perception_msgs::msg::PredictedObject;
-  using autoware_auto_perception_msgs::msg::PredictedObjects;
+  using autoware_perception_msgs::msg::PredictedObject;
+  using autoware_perception_msgs::msg::PredictedObjects;
   using obstacle_velocity_limiter::createObjectPolygons;
 
   PredictedObjects objects;

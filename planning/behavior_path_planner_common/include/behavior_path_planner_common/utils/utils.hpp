@@ -21,16 +21,16 @@
 #include <route_handler/route_handler.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
-#include <autoware_auto_planning_msgs/msg/path.hpp>
-#include <autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/predicted_path.hpp>
+#include <autoware_planning_msgs/msg/path.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
+#include <tier4_planning_msgs/msg/path_point_with_lane_id.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <lanelet2_core/Forward.h>
 
@@ -41,19 +41,19 @@
 
 namespace behavior_path_planner::utils
 {
-using autoware_auto_perception_msgs::msg::ObjectClassification;
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_perception_msgs::msg::PredictedPath;
+using autoware_perception_msgs::msg::ObjectClassification;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::PredictedPath;
 
-using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Vector3;
 using route_handler::RouteHandler;
 using tier4_autoware_utils::LinearRing2d;
 using tier4_autoware_utils::Polygon2d;
+using tier4_planning_msgs::msg::PathPointWithLaneId;
+using tier4_planning_msgs::msg::PathWithLaneId;
 
 struct PolygonPoint
 {

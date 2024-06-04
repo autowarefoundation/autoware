@@ -17,7 +17,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 
 #include <string>
 #include <utility>
@@ -25,8 +25,8 @@
 
 namespace planning_validator
 {
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 
 std::pair<double, size_t> getMaxValAndIdx(const std::vector<double> & v);
 

@@ -21,7 +21,7 @@
 #include <motion_utils/factor/velocity_factor_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
+#include <autoware_planning_msgs/msg/trajectory_point.hpp>
 
 #include <memory>
 #include <string>
@@ -37,7 +37,7 @@ public:
   virtual void init(rclcpp::Node & node, const std::string & module_name) = 0;
   virtual void update_parameters(const std::vector<rclcpp::Parameter> & parameters) = 0;
   virtual VelocityPlanningResult plan(
-    const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & ego_trajectory_points,
+    const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & ego_trajectory_points,
     const std::shared_ptr<const PlannerData> planner_data) = 0;
   virtual std::string get_module_name() const = 0;
   motion_utils::VelocityFactorInterface velocity_factor_interface_;

@@ -32,7 +32,7 @@ NoDrivableLaneModuleManager::NoDrivableLaneModuleManager(rclcpp::Node & node)
 }
 
 void NoDrivableLaneModuleManager::launchNewModules(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   for (const auto & ll : planning_utils::getLaneletsOnPath(
          path, planner_data_->route_handler_->getLaneletMapPtr(),
@@ -56,7 +56,7 @@ void NoDrivableLaneModuleManager::launchNewModules(
 
 std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 NoDrivableLaneModuleManager::getModuleExpiredFunction(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto lane_id_set = planning_utils::getLaneIdSetOnPath(
     path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_odometry->pose);

@@ -20,7 +20,7 @@
 #include <rclcpp/logger.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_object_kinematics.hpp>
+#include <autoware_perception_msgs/msg/predicted_object_kinematics.hpp>
 
 #include <lanelet2_core/Forward.h>
 #include <lanelet2_routing/Forward.h>
@@ -38,16 +38,14 @@ namespace behavior_velocity_planner::util
  * @return if insertion was successful return the inserted point index
  */
 std::optional<size_t> insertPointIndex(
-  const geometry_msgs::msg::Pose & in_pose,
-  autoware_auto_planning_msgs::msg::PathWithLaneId * inout_path,
+  const geometry_msgs::msg::Pose & in_pose, tier4_planning_msgs::msg::PathWithLaneId * inout_path,
   const double ego_nearest_dist_threshold, const double ego_nearest_yaw_threshold);
 
 /**
  * @brief check if a PathPointWithLaneId contains any of the given lane ids
  */
 bool hasLaneIds(
-  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p,
-  const std::set<lanelet::Id> & ids);
+  const tier4_planning_msgs::msg::PathPointWithLaneId & p, const std::set<lanelet::Id> & ids);
 
 /**
  * @brief find the first contiguous interval of the path points that contains the specified lane ids
@@ -55,7 +53,7 @@ bool hasLaneIds(
  * found, returns the pair (start-1, end)
  */
 std::optional<std::pair<size_t, size_t>> findLaneIdsInterval(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & p, const std::set<lanelet::Id> & ids);
+  const tier4_planning_msgs::msg::PathWithLaneId & p, const std::set<lanelet::Id> & ids);
 
 /**
  * @brief return the index of the first point which is inside the given polygon
@@ -63,7 +61,7 @@ std::optional<std::pair<size_t, size_t>> findLaneIdsInterval(
  * @param[in] search_forward flag for search direction
  */
 std::optional<size_t> getFirstPointInsidePolygon(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const tier4_planning_msgs::msg::PathWithLaneId & path,
   const std::pair<size_t, size_t> lane_interval, const lanelet::CompoundPolygon3d & polygon,
   const bool search_forward = true);
 
@@ -75,7 +73,7 @@ std::optional<size_t> getFirstPointInsidePolygon(
  * @return true if ego is over the target_idx
  */
 bool isOverTargetIndex(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
   const geometry_msgs::msg::Pose & current_pose, const size_t target_idx);
 
 /**
@@ -86,7 +84,7 @@ bool isOverTargetIndex(
  * @return true if ego is over the target_idx
  */
 bool isBeforeTargetIndex(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
   const geometry_msgs::msg::Pose & current_pose, const size_t target_idx);
 
 std::optional<tier4_autoware_utils::Polygon2d> getIntersectionArea(
@@ -102,11 +100,11 @@ bool hasAssociatedTrafficLight(lanelet::ConstLanelet lane);
  */
 std::optional<intersection::InterpolatedPathInfo> generateInterpolatedPath(
   const lanelet::Id lane_id, const std::set<lanelet::Id> & associative_lane_ids,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path, const double ds,
+  const tier4_planning_msgs::msg::PathWithLaneId & input_path, const double ds,
   const rclcpp::Logger logger);
 
 geometry_msgs::msg::Pose getObjectPoseWithVelocityDirection(
-  const autoware_auto_perception_msgs::msg::PredictedObjectKinematics & obj_state);
+  const autoware_perception_msgs::msg::PredictedObjectKinematics & obj_state);
 
 /**
  * @brief this function sorts the set of lanelets topologically using topological sort and merges

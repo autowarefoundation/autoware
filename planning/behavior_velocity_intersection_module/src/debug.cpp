@@ -406,8 +406,8 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
       &debug_marker_array, now);
   }
   if (debug_data_.traffic_light_observation) {
-    const auto GREEN = autoware_perception_msgs::msg::TrafficSignalElement::GREEN;
-    const auto YELLOW = autoware_perception_msgs::msg::TrafficSignalElement::AMBER;
+    const auto GREEN = autoware_perception_msgs::msg::TrafficLightElement::GREEN;
+    const auto YELLOW = autoware_perception_msgs::msg::TrafficLightElement::AMBER;
 
     const auto [ego, tl_point, id, color] = debug_data_.traffic_light_observation.value();
     geometry_msgs::msg::Point tl_point_point;

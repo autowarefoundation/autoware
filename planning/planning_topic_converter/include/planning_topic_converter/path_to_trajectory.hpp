@@ -18,18 +18,18 @@
 #include "planning_topic_converter/converter_base.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-#include <autoware_auto_planning_msgs/msg/path.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_planning_msgs/msg/path.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 
 #include <string>
 
 namespace planning_topic_converter
 {
 
-using autoware_auto_planning_msgs::msg::Path;
-using autoware_auto_planning_msgs::msg::PathPoint;
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::Path;
+using autoware_planning_msgs::msg::PathPoint;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 
 class PathToTrajectory : public ConverterBase<Path, Trajectory>
 {

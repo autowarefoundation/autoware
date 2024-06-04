@@ -30,7 +30,7 @@ namespace behavior_path_planner
 
 void AvoidanceByLaneChangeModuleManager::init(rclcpp::Node * node)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
   using tier4_autoware_utils::getOrDeclareParameter;
 
   // init manager interface

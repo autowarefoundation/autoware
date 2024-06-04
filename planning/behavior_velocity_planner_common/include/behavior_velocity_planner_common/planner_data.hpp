@@ -21,9 +21,9 @@
 #include <behavior_velocity_planner_common/utilization/util.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_perception_msgs/msg/traffic_signal_array.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/traffic_light_group_array.hpp>
 #include <geometry_msgs/msg/accel_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
@@ -66,7 +66,7 @@ struct PlannerData
   geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr current_acceleration;
   static constexpr double velocity_buffer_time_sec = 10.0;
   std::deque<geometry_msgs::msg::TwistStamped> velocity_buffer;
-  autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr predicted_objects;
+  autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr predicted_objects;
   pcl::PointCloud<pcl::PointXYZ>::ConstPtr no_ground_pointcloud;
   // occupancy grid
   nav_msgs::msg::OccupancyGrid::ConstSharedPtr occupancy_grid;

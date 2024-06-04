@@ -24,10 +24,10 @@
 #include <lanelet2_extension/regulatory_elements/no_stopping_area.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <boost/optional.hpp>
 
@@ -101,7 +101,7 @@ private:
    * @return true if the object has a target type
    */
   bool isTargetStuckVehicleType(
-    const autoware_auto_perception_msgs::msg::PredictedObject & object) const;
+    const autoware_perception_msgs::msg::PredictedObject & object) const;
 
   /**
    * @brief Check if there is a stopped vehicle in stuck vehicle detect area.
@@ -111,8 +111,7 @@ private:
    */
   bool checkStuckVehiclesInNoStoppingArea(
     const Polygon2d & poly,
-    const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr &
-      predicted_obj_arr_ptr);
+    const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr & predicted_obj_arr_ptr);
 
   /**
    * @brief Check if there is a stop line in "stop line detect area".
@@ -121,7 +120,7 @@ private:
    * @return true if exists
    */
   bool checkStopLinesInNoStoppingArea(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const Polygon2d & poly);
+    const tier4_planning_msgs::msg::PathWithLaneId & path, const Polygon2d & poly);
 
   /**
    * @brief Calculate the polygon of the path from the ego-car position to the end of the
@@ -133,7 +132,7 @@ private:
    * @return generated polygon
    */
   Polygon2d generateEgoNoStoppingAreaLanePolygon(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+    const tier4_planning_msgs::msg::PathWithLaneId & path,
     const geometry_msgs::msg::Pose & ego_pose, const double margin, const double extra_dist) const;
 
   /**
@@ -144,8 +143,7 @@ private:
    * @return generated stop line
    */
   boost::optional<LineString2d> getStopLineGeometry2d(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-    const double stop_line_margin) const;
+    const tier4_planning_msgs::msg::PathWithLaneId & path, const double stop_line_margin) const;
 
   /**
    * @brief Calculate if it's possible for ego-vehicle to stop before area consider jerk limit
@@ -162,7 +160,7 @@ private:
    * @param stop_point    stop line point on the lane
    */
   void insertStopPoint(
-    autoware_auto_planning_msgs::msg::PathWithLaneId & path, const PathIndexWithPose & stop_point);
+    tier4_planning_msgs::msg::PathWithLaneId & path, const PathIndexWithPose & stop_point);
 
   // Key Feature
   const lanelet::autoware::NoStoppingArea & no_stopping_area_reg_elem_;

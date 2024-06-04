@@ -56,7 +56,7 @@ if(BUILD_TESTING)
   )
   ament_target_dependencies(test_planning_validator
     rclcpp
-    autoware_auto_planning_msgs
+    autoware_planning_msgs
   )
   target_link_libraries(test_planning_validator
   planning_validator_component

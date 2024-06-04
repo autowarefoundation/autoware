@@ -146,22 +146,22 @@ For example a value of `1` means all trajectory points will be evaluated while a
 
 ### Inputs
 
-| Name                          | Type                                             | Description                                        |
-| ----------------------------- | ------------------------------------------------ | -------------------------------------------------- |
-| `~/input/trajectory`          | `autoware_auto_planning_msgs/Trajectory`         | Reference trajectory                               |
-| `~/input/occupancy_grid`      | `nav_msgs/OccupancyGrid`                         | Occupancy grid with obstacle information           |
-| `~/input/obstacle_pointcloud` | `sensor_msgs/PointCloud2`                        | Pointcloud containing only obstacle points         |
-| `~/input/dynamic_obstacles`   | `autoware_auto_perception_msgs/PredictedObjects` | Dynamic objects                                    |
-| `~/input/odometry`            | `nav_msgs/Odometry`                              | Odometry used to retrieve the current ego velocity |
-| `~/input/map`                 | `autoware_auto_mapping_msgs/HADMapBin`           | Vector map used to retrieve static obstacles       |
+| Name                          | Type                                        | Description                                        |
+| ----------------------------- | ------------------------------------------- | -------------------------------------------------- |
+| `~/input/trajectory`          | `autoware_planning_msgs/Trajectory`         | Reference trajectory                               |
+| `~/input/occupancy_grid`      | `nav_msgs/OccupancyGrid`                    | Occupancy grid with obstacle information           |
+| `~/input/obstacle_pointcloud` | `sensor_msgs/PointCloud2`                   | Pointcloud containing only obstacle points         |
+| `~/input/dynamic_obstacles`   | `autoware_perception_msgs/PredictedObjects` | Dynamic objects                                    |
+| `~/input/odometry`            | `nav_msgs/Odometry`                         | Odometry used to retrieve the current ego velocity |
+| `~/input/map`                 | `autoware_map_msgs/LaneletMapBin`           | Vector map used to retrieve static obstacles       |
 
 ### Outputs
 
-| Name                            | Type                                     | Description                                              |
-| ------------------------------- | ---------------------------------------- | -------------------------------------------------------- |
-| `~/output/trajectory`           | `autoware_auto_planning_msgs/Trajectory` | Trajectory with adjusted velocities                      |
-| `~/output/debug_markers`        | `visualization_msgs/MarkerArray`         | Debug markers (envelopes, obstacle polygons)             |
-| `~/output/runtime_microseconds` | `tier4_debug_msgs/Float64`               | Time taken to calculate the trajectory (in microseconds) |
+| Name                            | Type                                | Description                                              |
+| ------------------------------- | ----------------------------------- | -------------------------------------------------------- |
+| `~/output/trajectory`           | `autoware_planning_msgs/Trajectory` | Trajectory with adjusted velocities                      |
+| `~/output/debug_markers`        | `visualization_msgs/MarkerArray`    | Debug markers (envelopes, obstacle polygons)             |
+| `~/output/runtime_microseconds` | `tier4_debug_msgs/Float64`          | Time taken to calculate the trajectory (in microseconds) |
 
 ## Parameters
 

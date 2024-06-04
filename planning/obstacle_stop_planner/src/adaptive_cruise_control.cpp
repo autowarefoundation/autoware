@@ -198,7 +198,7 @@ void AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
   const TrajectoryPoints & trajectory, const int nearest_collision_point_idx,
   const geometry_msgs::msg::Pose self_pose, const pcl::PointXYZ & nearest_collision_point,
   const rclcpp::Time nearest_collision_point_time,
-  const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr object_ptr,
+  const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr object_ptr,
   const nav_msgs::msg::Odometry::ConstSharedPtr current_odometry_ptr, bool * need_to_stop,
   TrajectoryPoints * output_trajectory, const std_msgs::msg::Header trajectory_header)
 {
@@ -306,7 +306,7 @@ void AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
     calcUpperVelocity(col_point_distance, point_velocity, current_velocity);
   pub_debug_->publish(debug_values_);
 
-  if (target_object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+  if (target_object.shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
     // if the target object is obstacle return stop true
     RCLCPP_DEBUG_THROTTLE(
       node_->get_logger(), *node_->get_clock(), std::chrono::milliseconds(1000).count(),
@@ -399,7 +399,7 @@ double AdaptiveCruiseController::calcTrajYaw(
 }
 
 std::optional<double> AdaptiveCruiseController::estimatePointVelocityFromObject(
-  const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr object_ptr,
+  const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr object_ptr,
   const double traj_yaw, const pcl::PointXYZ & nearest_collision_point)
 {
   geometry_msgs::msg::Point nearest_collision_p_ros;

@@ -398,7 +398,7 @@ TargetObjectsOnLane createTargetObjectsOnLane(
 bool isTargetObjectType(
   const PredictedObject & object, const ObjectTypesToCheck & target_object_types)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
   const auto t = utils::getHighestProbLabel(object.classification);
   return (
     (t == ObjectClassification::CAR && target_object_types.check_car) ||

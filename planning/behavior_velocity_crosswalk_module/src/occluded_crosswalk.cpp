@@ -84,11 +84,11 @@ std::vector<lanelet::BasicPolygon2d> calculate_detection_areas(
   return detection_areas;
 }
 
-std::vector<autoware_auto_perception_msgs::msg::PredictedObject> select_and_inflate_objects(
-  const std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & objects,
+std::vector<autoware_perception_msgs::msg::PredictedObject> select_and_inflate_objects(
+  const std::vector<autoware_perception_msgs::msg::PredictedObject> & objects,
   const std::vector<double> velocity_thresholds, const double inflate_size)
 {
-  std::vector<autoware_auto_perception_msgs::msg::PredictedObject> selected_objects;
+  std::vector<autoware_perception_msgs::msg::PredictedObject> selected_objects;
   for (const auto & o : objects) {
     const auto vel_threshold = velocity_thresholds[o.classification.front().label];
     if (o.kinematics.initial_twist_with_covariance.twist.linear.x >= vel_threshold) {
@@ -103,7 +103,7 @@ std::vector<autoware_auto_perception_msgs::msg::PredictedObject> select_and_infl
 
 void clear_occlusions_behind_objects(
   grid_map::GridMap & grid_map,
-  const std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & objects)
+  const std::vector<autoware_perception_msgs::msg::PredictedObject> & objects)
 {
   const auto angle_cmp = [&](const auto & p1, const auto & p2) {
     const auto d1 = p1 - grid_map.getPosition();
@@ -139,7 +139,7 @@ bool is_crosswalk_occluded(
   const lanelet::ConstLanelet & crosswalk_lanelet,
   const nav_msgs::msg::OccupancyGrid & occupancy_grid,
   const geometry_msgs::msg::Point & path_intersection, const double detection_range,
-  const std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & dynamic_objects,
+  const std::vector<autoware_perception_msgs::msg::PredictedObject> & dynamic_objects,
   const behavior_velocity_planner::CrosswalkModule::PlannerParam & params)
 {
   grid_map::GridMap grid_map;

@@ -38,8 +38,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -65,8 +65,8 @@
 
 namespace freespace_planner
 {
-using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::LaneletRoute;
+using autoware_planning_msgs::msg::Trajectory;
 using freespace_planning_algorithms::AbstractPlanningAlgorithm;
 using freespace_planning_algorithms::AstarParam;
 using freespace_planning_algorithms::AstarSearch;

@@ -80,7 +80,7 @@ private:
     const CenterlineWithRoute & centerline_with_route);
 
   lanelet::LaneletMapPtr original_map_ptr_{nullptr};
-  HADMapBin::ConstSharedPtr map_bin_ptr_{nullptr};
+  LaneletMapBin::ConstSharedPtr map_bin_ptr_{nullptr};
   std::shared_ptr<RouteHandler> route_handler_ptr_{nullptr};
   std::unique_ptr<MapProjectorInfo> map_projector_info_{nullptr};
 
@@ -95,7 +95,7 @@ private:
   OptimizationTrajectoryBasedCenterline optimization_trajectory_based_centerline_;
 
   // publisher
-  rclcpp::Publisher<HADMapBin>::SharedPtr pub_map_bin_{nullptr};
+  rclcpp::Publisher<LaneletMapBin>::SharedPtr pub_map_bin_{nullptr};
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_unsafe_footprints_{nullptr};
   rclcpp::Publisher<Trajectory>::SharedPtr pub_whole_centerline_{nullptr};
   rclcpp::Publisher<Trajectory>::SharedPtr pub_centerline_{nullptr};

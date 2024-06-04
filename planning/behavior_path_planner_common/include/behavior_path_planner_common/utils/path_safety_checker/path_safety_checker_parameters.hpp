@@ -17,7 +17,7 @@
 
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 
@@ -31,7 +31,7 @@
 namespace behavior_path_planner::utils::path_safety_checker
 {
 
-using autoware_auto_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObject;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using tier4_autoware_utils::Polygon2d;
@@ -77,8 +77,8 @@ struct ExtendedPredictedObject
   geometry_msgs::msg::PoseWithCovariance initial_pose;
   geometry_msgs::msg::TwistWithCovariance initial_twist;
   geometry_msgs::msg::AccelWithCovariance initial_acceleration;
-  autoware_auto_perception_msgs::msg::Shape shape;
-  std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classification;
+  autoware_perception_msgs::msg::Shape shape;
+  std::vector<autoware_perception_msgs::msg::ObjectClassification> classification;
   std::vector<PredictedPathWithPolygon> predicted_paths;
 
   ExtendedPredictedObject() = default;
@@ -230,7 +230,7 @@ struct CollisionCheckDebug
   std::vector<PoseWithVelocityAndPolygonStamped> obj_predicted_path;  ///< object's predicted path.
   Polygon2d extended_ego_polygon{};  ///< Ego vehicle's extended collision polygon.
   Polygon2d extended_obj_polygon{};  ///< Detected object's extended collision polygon.
-  autoware_auto_perception_msgs::msg::Shape obj_shape;  ///< object's shape.
+  autoware_perception_msgs::msg::Shape obj_shape;  ///< object's shape.
 };
 using CollisionCheckDebugPair = std::pair<boost::uuids::uuid, CollisionCheckDebug>;
 using CollisionCheckDebugMap =

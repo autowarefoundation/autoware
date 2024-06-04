@@ -13,7 +13,8 @@
 
   <build_depend>autoware_cmake</build_depend>
 
-  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_perception_msgs</depend>
+  <depend>autoware_planning_msgs</depend>
   <depend>bezier_sampler</depend>
   <depend>frenet_planner</depend>
   <depend>geometry_msgs</depend>

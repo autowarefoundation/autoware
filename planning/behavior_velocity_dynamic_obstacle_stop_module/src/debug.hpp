@@ -21,7 +21,7 @@
 #include <rclcpp/time.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 

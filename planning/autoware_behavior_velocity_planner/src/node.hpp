@@ -24,15 +24,15 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/path.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_planning_msgs/msg/path.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tier4_api_msgs/msg/crosswalk_status.hpp>
 #include <tier4_api_msgs/msg/intersection_status.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 #include <tier4_planning_msgs/msg/velocity_limit.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
@@ -46,9 +46,9 @@
 
 namespace autoware::behavior_velocity_planner
 {
-using autoware_auto_mapping_msgs::msg::HADMapBin;
 using autoware_behavior_velocity_planner::srv::LoadPlugin;
 using autoware_behavior_velocity_planner::srv::UnloadPlugin;
+using autoware_map_msgs::msg::LaneletMapBin;
 using ::behavior_velocity_planner::TrafficSignalStamped;
 using tier4_planning_msgs::msg::VelocityLimit;
 
@@ -63,31 +63,30 @@ private:
   tf2_ros::TransformListener tf_listener_;
 
   // subscriber
-  rclcpp::Subscription<autoware_auto_planning_msgs::msg::PathWithLaneId>::SharedPtr
+  rclcpp::Subscription<tier4_planning_msgs::msg::PathWithLaneId>::SharedPtr
     trigger_sub_path_with_lane_id_;
-  rclcpp::Subscription<autoware_auto_perception_msgs::msg::PredictedObjects>::SharedPtr
+  rclcpp::Subscription<autoware_perception_msgs::msg::PredictedObjects>::SharedPtr
     sub_predicted_objects_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_no_ground_pointcloud_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_vehicle_odometry_;
   rclcpp::Subscription<geometry_msgs::msg::AccelWithCovarianceStamped>::SharedPtr sub_acceleration_;
-  rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr sub_lanelet_map_;
-  rclcpp::Subscription<autoware_perception_msgs::msg::TrafficSignalArray>::SharedPtr
+  rclcpp::Subscription<autoware_map_msgs::msg::LaneletMapBin>::SharedPtr sub_lanelet_map_;
+  rclcpp::Subscription<autoware_perception_msgs::msg::TrafficLightGroupArray>::SharedPtr
     sub_traffic_signals_;
   rclcpp::Subscription<tier4_v2x_msgs::msg::VirtualTrafficLightStateArray>::SharedPtr
     sub_virtual_traffic_light_states_;
   rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr sub_occupancy_grid_;
   rclcpp::Subscription<VelocityLimit>::SharedPtr sub_external_velocity_limit_;
 
-  void onTrigger(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg);
+  void onTrigger(const tier4_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg);
   void onPredictedObjects(
-    const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr msg);
+    const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr msg);
   void onNoGroundPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
   void onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
   void onAcceleration(const geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr msg);
-  void onLaneletMap(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
+  void onLaneletMap(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg);
   void onTrafficSignals(
-    const autoware_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr msg);
+    const autoware_perception_msgs::msg::TrafficLightGroupArray::ConstSharedPtr msg);
   void onVirtualTrafficLightStates(
     const tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr msg);
   void onOccupancyGrid(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg);
@@ -95,11 +94,11 @@ private:
   void onParam();
 
   // publisher
-  rclcpp::Publisher<autoware_auto_planning_msgs::msg::Path>::SharedPtr path_pub_;
+  rclcpp::Publisher<autoware_planning_msgs::msg::Path>::SharedPtr path_pub_;
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticStatus>::SharedPtr stop_reason_diag_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_viz_pub_;
 
-  void publishDebugMarker(const autoware_auto_planning_msgs::msg::Path & path);
+  void publishDebugMarker(const autoware_planning_msgs::msg::Path & path);
 
   //  parameter
   double forward_path_length_;
@@ -110,7 +109,7 @@ private:
   PlannerData planner_data_;
   BehaviorVelocityPlannerManager planner_manager_;
   bool is_driving_forward_{true};
-  HADMapBin::ConstSharedPtr map_ptr_{nullptr};
+  LaneletMapBin::ConstSharedPtr map_ptr_{nullptr};
   bool has_received_map_;
 
   rclcpp::Service<LoadPlugin>::SharedPtr srv_load_plugin_;
@@ -127,8 +126,8 @@ private:
   // function
   geometry_msgs::msg::PoseStamped getCurrentPose();
   bool isDataReady(const PlannerData planner_data, rclcpp::Clock clock) const;
-  autoware_auto_planning_msgs::msg::Path generatePath(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg,
+  autoware_planning_msgs::msg::Path generatePath(
+    const tier4_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg,
     const PlannerData & planner_data);
 
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;

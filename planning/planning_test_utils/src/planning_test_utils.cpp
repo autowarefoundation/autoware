@@ -56,7 +56,7 @@ lanelet::LaneletMapPtr loadMap(const std::string & lanelet2_filename)
   return nullptr;
 }
 
-HADMapBin convertToMapBinMsg(
+LaneletMapBin convertToMapBinMsg(
   const lanelet::LaneletMapPtr map, const std::string & lanelet2_filename, const rclcpp::Time & now)
 {
   std::string format_version{};
@@ -64,11 +64,11 @@ HADMapBin convertToMapBinMsg(
   lanelet::io_handlers::AutowareOsmParser::parseVersions(
     lanelet2_filename, &format_version, &map_version);
 
-  HADMapBin map_bin_msg;
+  LaneletMapBin map_bin_msg;
   map_bin_msg.header.stamp = now;
   map_bin_msg.header.frame_id = "map";
-  map_bin_msg.format_version = format_version;
-  map_bin_msg.map_version = map_version;
+  map_bin_msg.version_map_format = format_version;
+  map_bin_msg.version_map = map_version;
   lanelet::utils::conversion::toBinMsg(map, &map_bin_msg);
 
   return map_bin_msg;
@@ -103,11 +103,12 @@ OccupancyGrid makeCostMapMsg(size_t width, size_t height, double resolution)
   return costmap_msg;
 }
 
-HADMapBin make_map_bin_msg(const std::string & absolute_path, const double center_line_resolution)
+LaneletMapBin make_map_bin_msg(
+  const std::string & absolute_path, const double center_line_resolution)
 {
   const auto map = loadMap(absolute_path);
   if (!map) {
-    return autoware_auto_mapping_msgs::msg::HADMapBin_<std::allocator<void>>{};
+    return autoware_map_msgs::msg::LaneletMapBin_<std::allocator<void>>{};
   }
 
   // overwrite centerline
@@ -119,7 +120,7 @@ HADMapBin make_map_bin_msg(const std::string & absolute_path, const double cente
   return map_bin_msg;
 }
 
-HADMapBin makeMapBinMsg()
+LaneletMapBin makeMapBinMsg()
 {
   const auto planning_test_utils_dir =
     ament_index_cpp::get_package_share_directory("planning_test_utils");

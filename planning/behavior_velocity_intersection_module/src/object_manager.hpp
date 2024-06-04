@@ -17,7 +17,7 @@
 
 #include <rclcpp/time.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
@@ -104,7 +104,7 @@ class ObjectInfo
 public:
   explicit ObjectInfo(const unique_identifier_msgs::msg::UUID & uuid);
 
-  const autoware_auto_perception_msgs::msg::PredictedObject & predicted_object() const
+  const autoware_perception_msgs::msg::PredictedObject & predicted_object() const
   {
     return predicted_object_;
   };
@@ -126,7 +126,7 @@ public:
    * @brief update predicted_object_, attention_lanelet, stopline, dist_to_stopline
    */
   void initialize(
-    const autoware_auto_perception_msgs::msg::PredictedObject & predicted_object,
+    const autoware_perception_msgs::msg::PredictedObject & predicted_object,
     std::optional<lanelet::ConstLanelet> attention_lanelet_opt,
     std::optional<lanelet::ConstLineString3d> stopline_opt);
 
@@ -193,7 +193,7 @@ public:
   const std::string uuid_str;
 
 private:
-  autoware_auto_perception_msgs::msg::PredictedObject predicted_object_;
+  autoware_perception_msgs::msg::PredictedObject predicted_object_;
 
   //! null if the object in intersection_area but not in attention_area
   std::optional<lanelet::ConstLanelet> attention_lanelet_opt{std::nullopt};
@@ -283,9 +283,8 @@ private:
  * @brief return the CollisionInterval struct if the predicted path collides ego path geometrically
  */
 std::optional<intersection::CollisionInterval> findPassageInterval(
-  const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
-  const autoware_auto_perception_msgs::msg::Shape & shape,
-  const lanelet::BasicPolygon2d & ego_lane_poly,
+  const autoware_perception_msgs::msg::PredictedPath & predicted_path,
+  const autoware_perception_msgs::msg::Shape & shape, const lanelet::BasicPolygon2d & ego_lane_poly,
   const std::optional<lanelet::ConstLanelet> & first_attention_lane_opt,
   const std::optional<lanelet::ConstLanelet> & second_attention_lane_opt);
 

@@ -42,7 +42,7 @@
 namespace
 {
 namespace utils = behavior_velocity_planner::occlusion_spot_utils;
-using autoware_auto_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObject;
 std::vector<PredictedObject> extractStuckVehicle(
   const std::vector<PredictedObject> & vehicles, const double stop_velocity)
 {

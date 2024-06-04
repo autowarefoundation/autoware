@@ -200,8 +200,7 @@ bool OccupancyGridBasedCollisionDetector::hasObstacleOnPath(
 }
 
 bool OccupancyGridBasedCollisionDetector::hasObstacleOnPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const bool check_out_of_range) const
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const bool check_out_of_range) const
 {
   for (const auto & p : path.points) {
     const auto pose_local = global2local(costmap_, p.point.pose);

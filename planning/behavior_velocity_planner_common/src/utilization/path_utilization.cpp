@@ -26,8 +26,8 @@ constexpr double DOUBLE_EPSILON = 1e-6;
 namespace behavior_velocity_planner
 {
 bool splineInterpolate(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input, const double interval,
-  autoware_auto_planning_msgs::msg::PathWithLaneId & output, const rclcpp::Logger logger)
+  const tier4_planning_msgs::msg::PathWithLaneId & input, const double interval,
+  tier4_planning_msgs::msg::PathWithLaneId & output, const rclcpp::Logger logger)
 {
   if (input.points.size() < 2) {
     RCLCPP_DEBUG(logger, "Do not interpolate because path size is 1.");
@@ -47,8 +47,8 @@ bool splineInterpolate(
  * is the velocity of the closest point for the input "sub-path" which consists of the points before
  * the interpolated point.
  */
-autoware_auto_planning_msgs::msg::Path interpolatePath(
-  const autoware_auto_planning_msgs::msg::Path & path, const double length, const double interval)
+autoware_planning_msgs::msg::Path interpolatePath(
+  const autoware_planning_msgs::msg::Path & path, const double length, const double interval)
 {
   const auto logger{rclcpp::get_logger("behavior_velocity_planner").get_child("path_utilization")};
 
@@ -125,10 +125,10 @@ autoware_auto_planning_msgs::msg::Path interpolatePath(
   return motion_utils::resamplePath(path, s_out);
 }
 
-autoware_auto_planning_msgs::msg::Path filterLitterPathPoint(
-  const autoware_auto_planning_msgs::msg::Path & path)
+autoware_planning_msgs::msg::Path filterLitterPathPoint(
+  const autoware_planning_msgs::msg::Path & path)
 {
-  autoware_auto_planning_msgs::msg::Path filtered_path;
+  autoware_planning_msgs::msg::Path filtered_path;
 
   const double epsilon = 0.01;
   size_t latest_id = 0;
@@ -153,10 +153,10 @@ autoware_auto_planning_msgs::msg::Path filterLitterPathPoint(
 
   return filtered_path;
 }
-autoware_auto_planning_msgs::msg::Path filterStopPathPoint(
-  const autoware_auto_planning_msgs::msg::Path & path)
+autoware_planning_msgs::msg::Path filterStopPathPoint(
+  const autoware_planning_msgs::msg::Path & path)
 {
-  autoware_auto_planning_msgs::msg::Path filtered_path = path;
+  autoware_planning_msgs::msg::Path filtered_path = path;
   bool found_stop = false;
   for (size_t i = 0; i < filtered_path.points.size(); ++i) {
     if (std::fabs(filtered_path.points.at(i).longitudinal_velocity_mps) < 0.01) {

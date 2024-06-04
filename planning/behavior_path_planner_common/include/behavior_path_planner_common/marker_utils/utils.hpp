@@ -20,10 +20,10 @@
 
 #include <vehicle_info_util/vehicle_info.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/predicted_path.hpp>
 #include <geometry_msgs/msg/polygon.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <lanelet2_core/Forward.h>
@@ -34,9 +34,8 @@
 
 namespace marker_utils
 {
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_perception_msgs::msg::PredictedPath;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::PredictedPath;
 using behavior_path_planner::DrivableLanes;
 using behavior_path_planner::ShiftLineArray;
 using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebugMap;
@@ -50,6 +49,7 @@ using geometry_msgs::msg::Twist;
 using geometry_msgs::msg::Vector3;
 using std_msgs::msg::ColorRGBA;
 using tier4_autoware_utils::Polygon2d;
+using tier4_planning_msgs::msg::PathWithLaneId;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 

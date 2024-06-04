@@ -15,10 +15,10 @@
 #ifndef AUTOWARE_PATH_OPTIMIZER__TYPE_ALIAS_HPP_
 #define AUTOWARE_PATH_OPTIMIZER__TYPE_ALIAS_HPP_
 
-#include "autoware_auto_planning_msgs/msg/path.hpp"
-#include "autoware_auto_planning_msgs/msg/path_point.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/path.hpp"
+#include "autoware_planning_msgs/msg/path_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/twist.hpp"
@@ -33,10 +33,10 @@ namespace autoware_path_optimizer
 // std_msgs
 using std_msgs::msg::Header;
 // planning
-using autoware_auto_planning_msgs::msg::Path;
-using autoware_auto_planning_msgs::msg::PathPoint;
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::Path;
+using autoware_planning_msgs::msg::PathPoint;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 // navigation
 using nav_msgs::msg::Odometry;
 // visualization

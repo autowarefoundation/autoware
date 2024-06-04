@@ -18,7 +18,7 @@
 
 #include <vector>
 
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 using autoware_velocity_smoother::trajectory_utils::TrajectoryPoints;
 
 TrajectoryPoints genStraightTrajectory(const size_t size)

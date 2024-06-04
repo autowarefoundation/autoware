@@ -18,8 +18,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <route_handler/route_handler.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_internal_msgs/msg/mission_remaining_distance_time.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
@@ -50,7 +50,7 @@ public:
 
 private:
   using LaneletRoute = autoware_planning_msgs::msg::LaneletRoute;
-  using HADMapBin = autoware_auto_mapping_msgs::msg::HADMapBin;
+  using HADMapBin = autoware_map_msgs::msg::LaneletMapBin;
   using Odometry = nav_msgs::msg::Odometry;
   using VelocityLimit = tier4_planning_msgs::msg::VelocityLimit;
   using MissionRemainingDistanceTime = autoware_internal_msgs::msg::MissionRemainingDistanceTime;

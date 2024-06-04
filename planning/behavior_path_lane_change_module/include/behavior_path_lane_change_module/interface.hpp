@@ -25,9 +25,9 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <tf2/utils.h>
 
@@ -37,11 +37,11 @@
 
 namespace behavior_path_planner
 {
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using objects_of_interest_marker_interface::ColorName;
 using objects_of_interest_marker_interface::ObjectsOfInterestMarkerInterface;
+using tier4_planning_msgs::msg::PathWithLaneId;
 
 class LaneChangeInterface : public SceneModuleInterface
 {

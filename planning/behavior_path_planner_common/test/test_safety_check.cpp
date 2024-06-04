@@ -27,7 +27,7 @@
 
 constexpr double epsilon = 1e-6;
 
-using autoware_auto_perception_msgs::msg::Shape;
+using autoware_perception_msgs::msg::Shape;
 using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
@@ -143,7 +143,7 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedObjPolygon)
     obj_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(0.0);
 
     Shape shape;
-    shape.type = autoware_auto_perception_msgs::msg::Shape::POLYGON;
+    shape.type = autoware_perception_msgs::msg::Shape::POLYGON;
     shape.footprint.points.resize(5);
     shape.footprint.points.at(0).x = 3.0;
     shape.footprint.points.at(0).y = 0.0;

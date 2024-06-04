@@ -72,7 +72,7 @@ void MotionVelocityPlannerManager::update_module_parameters(
 }
 
 std::vector<VelocityPlanningResult> MotionVelocityPlannerManager::plan_velocities(
-  const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & ego_trajectory_points,
+  const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & ego_trajectory_points,
   const std::shared_ptr<const PlannerData> planner_data)
 {
   std::vector<VelocityPlanningResult> results;

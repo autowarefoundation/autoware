@@ -19,9 +19,9 @@
 
 #include "autoware_adapi_v1_msgs/msg/planning_behavior.hpp"
 #include "autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp"
-#include "autoware_auto_perception_msgs/msg/predicted_object.hpp"
-#include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
+#include "autoware_perception_msgs/msg/predicted_object.hpp"
+#include "autoware_perception_msgs/msg/predicted_objects.hpp"
+#include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "geometry_msgs/msg/accel_stamped.hpp"
 #include "geometry_msgs/msg/accel_with_covariance_stamped.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
@@ -38,13 +38,13 @@
 using autoware_adapi_v1_msgs::msg::PlanningBehavior;
 using autoware_adapi_v1_msgs::msg::VelocityFactor;
 using autoware_adapi_v1_msgs::msg::VelocityFactorArray;
-using autoware_auto_perception_msgs::msg::ObjectClassification;
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_perception_msgs::msg::PredictedPath;
-using autoware_auto_perception_msgs::msg::Shape;
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_perception_msgs::msg::ObjectClassification;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::PredictedPath;
+using autoware_perception_msgs::msg::Shape;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 using geometry_msgs::msg::AccelStamped;
 using geometry_msgs::msg::AccelWithCovarianceStamped;
 using geometry_msgs::msg::Twist;

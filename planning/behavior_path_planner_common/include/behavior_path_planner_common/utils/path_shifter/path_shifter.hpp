@@ -19,8 +19,8 @@
 #include <rclcpp/logging.hpp>
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/point.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
 #include <optional>
@@ -29,11 +29,11 @@
 #include <vector>
 namespace behavior_path_planner
 {
-using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using tier4_autoware_utils::generateUUID;
+using tier4_planning_msgs::msg::PathPointWithLaneId;
+using tier4_planning_msgs::msg::PathWithLaneId;
 using unique_identifier_msgs::msg::UUID;
 
 struct ShiftLine

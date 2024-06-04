@@ -163,12 +163,12 @@ void DefaultPlanner::initialize_common(rclcpp::Node * node)
 void DefaultPlanner::initialize(rclcpp::Node * node)
 {
   initialize_common(node);
-  map_subscriber_ = node_->create_subscription<HADMapBin>(
+  map_subscriber_ = node_->create_subscription<LaneletMapBin>(
     "~/input/vector_map", rclcpp::QoS{10}.transient_local(),
     std::bind(&DefaultPlanner::map_callback, this, std::placeholders::_1));
 }
 
-void DefaultPlanner::initialize(rclcpp::Node * node, const HADMapBin::ConstSharedPtr msg)
+void DefaultPlanner::initialize(rclcpp::Node * node, const LaneletMapBin::ConstSharedPtr msg)
 {
   initialize_common(node);
   map_callback(msg);
@@ -179,7 +179,7 @@ bool DefaultPlanner::ready() const
   return is_graph_ready_;
 }
 
-void DefaultPlanner::map_callback(const HADMapBin::ConstSharedPtr msg)
+void DefaultPlanner::map_callback(const LaneletMapBin::ConstSharedPtr msg)
 {
   route_handler_.setMap(*msg);
   is_graph_ready_ = true;

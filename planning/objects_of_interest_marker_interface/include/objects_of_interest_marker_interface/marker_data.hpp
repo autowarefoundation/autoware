@@ -15,7 +15,7 @@
 #ifndef OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_DATA_HPP_
 #define OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_DATA_HPP_
 
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <std_msgs/msg/color_rgba.hpp>
 
@@ -24,7 +24,7 @@ namespace objects_of_interest_marker_interface
 struct ObjectMarkerData
 {
   geometry_msgs::msg::Pose pose{};
-  autoware_auto_perception_msgs::msg::Shape shape{};
+  autoware_perception_msgs::msg::Shape shape{};
   std_msgs::msg::ColorRGBA color;
 };
 

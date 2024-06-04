@@ -22,7 +22,7 @@
 #include <sampler_common/structures.hpp>
 #include <sampler_common/transform/spline_transform.hpp>
 
-#include "autoware_auto_planning_msgs/msg/path.hpp"
+#include "autoware_planning_msgs/msg/path.hpp"
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <tf2/utils.h>

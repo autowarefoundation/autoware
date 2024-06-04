@@ -18,14 +18,14 @@
 #include "autoware_velocity_smoother/resample.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
 
 #include <limits>
 #include <vector>
 
 namespace autoware_velocity_smoother
 {
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
 
 class SmootherBase

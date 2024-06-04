@@ -19,10 +19,10 @@
 #include <route_handler/route_handler.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_perception_msgs/msg/traffic_signal.hpp>
-#include <autoware_perception_msgs/msg/traffic_signal_array.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/traffic_light_group.hpp>
+#include <autoware_perception_msgs/msg/traffic_light_group_array.hpp>
 #include <geometry_msgs/msg/accel_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
@@ -50,7 +50,7 @@ namespace autoware::motion_velocity_planner
 struct TrafficSignalStamped
 {
   builtin_interfaces::msg::Time stamp;
-  autoware_perception_msgs::msg::TrafficSignal signal;
+  autoware_perception_msgs::msg::TrafficLightGroup signal;
 };
 struct PlannerData
 {
@@ -63,7 +63,7 @@ struct PlannerData
   geometry_msgs::msg::PoseStamped::ConstSharedPtr current_odometry;
   geometry_msgs::msg::TwistStamped::ConstSharedPtr current_velocity;
   geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr current_acceleration;
-  autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr predicted_objects;
+  autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr predicted_objects;
   pcl::PointCloud<pcl::PointXYZ>::ConstPtr no_ground_pointcloud;
   nav_msgs::msg::OccupancyGrid::ConstSharedPtr occupancy_grid;
   std::shared_ptr<route_handler::RouteHandler> route_handler;

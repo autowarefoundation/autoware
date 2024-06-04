@@ -34,8 +34,8 @@
 #include <motion_utils/distance/distance.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
+#include <autoware_vehicle_msgs/msg/hazard_lights_command.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <lanelet2_core/Forward.h>
 
@@ -50,7 +50,7 @@
 
 namespace behavior_path_planner
 {
-using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
+using autoware_vehicle_msgs::msg::HazardLightsCommand;
 using geometry_msgs::msg::PoseArray;
 using lane_departure_checker::LaneDepartureChecker;
 using nav_msgs::msg::OccupancyGrid;

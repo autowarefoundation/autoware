@@ -146,8 +146,7 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
   setDynamicObstacleCreator(node, debug_ptr_);
 }
 
-void RunOutModuleManager::launchNewModules(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+void RunOutModuleManager::launchNewModules(const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   if (path.points.empty()) {
     return;
@@ -162,8 +161,7 @@ void RunOutModuleManager::launchNewModules(
 }
 
 std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
-RunOutModuleManager::getModuleExpiredFunction(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+RunOutModuleManager::getModuleExpiredFunction(const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   return
     [&path]([[maybe_unused]] const std::shared_ptr<SceneModuleInterface> & scene_module) -> bool {

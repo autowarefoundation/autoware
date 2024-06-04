@@ -22,7 +22,7 @@
 #include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <behavior_velocity_planner_common/utilization/util.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <message_filters/subscriber.h>
@@ -44,17 +44,17 @@
 
 namespace behavior_velocity_planner
 {
-using autoware_auto_perception_msgs::msg::ObjectClassification;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_perception_msgs::msg::Shape;
-using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using autoware_perception_msgs::msg::ObjectClassification;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::Shape;
 using run_out_utils::DynamicObstacle;
 using run_out_utils::DynamicObstacleData;
 using run_out_utils::DynamicObstacleParam;
 using run_out_utils::PlannerParam;
 using run_out_utils::PredictedPath;
-using PathPointsWithLaneId = std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId>;
+using tier4_planning_msgs::msg::PathPointWithLaneId;
+using tier4_planning_msgs::msg::PathWithLaneId;
+using PathPointsWithLaneId = std::vector<tier4_planning_msgs::msg::PathPointWithLaneId>;
 
 /**
  * @brief base class for creating dynamic obstacles from multiple types of input

@@ -28,13 +28,13 @@ class PluginWrapper : public PluginInterface
 {
 public:
   void init(rclcpp::Node & node) override { scene_manager_ = std::make_unique<T>(node); }
-  void plan(autoware_auto_planning_msgs::msg::PathWithLaneId * path) override
+  void plan(tier4_planning_msgs::msg::PathWithLaneId * path) override
   {
     scene_manager_->plan(path);
   };
   void updateSceneModuleInstances(
     const std::shared_ptr<const PlannerData> & planner_data,
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override
+    const tier4_planning_msgs::msg::PathWithLaneId & path) override
   {
     scene_manager_->updateSceneModuleInstances(planner_data, path);
   }

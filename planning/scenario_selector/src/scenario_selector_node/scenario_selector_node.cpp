@@ -91,7 +91,7 @@ bool isInParkingLot(
 }
 
 bool isNearTrajectoryEnd(
-  const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr trajectory,
+  const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr trajectory,
   const geometry_msgs::msg::Pose & current_pose, const double th_dist)
 {
   if (!trajectory || trajectory->points.empty()) {
@@ -120,8 +120,8 @@ bool isStopped(
 
 }  // namespace
 
-autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr
-ScenarioSelectorNode::getScenarioTrajectory(const std::string & scenario)
+autoware_planning_msgs::msg::Trajectory::ConstSharedPtr ScenarioSelectorNode::getScenarioTrajectory(
+  const std::string & scenario)
 {
   if (scenario == tier4_planning_msgs::msg::Scenario::LANEDRIVING) {
     return lane_driving_trajectory_;
@@ -185,8 +185,7 @@ void ScenarioSelectorNode::updateCurrentScenario()
   }
 }
 
-void ScenarioSelectorNode::onMap(
-  const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg)
+void ScenarioSelectorNode::onMap(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg)
 {
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
   lanelet::utils::conversion::fromBinMsg(
@@ -290,7 +289,7 @@ void ScenarioSelectorNode::onTimer()
 }
 
 void ScenarioSelectorNode::onLaneDrivingTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr msg)
+  const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr msg)
 {
   lane_driving_trajectory_ = msg;
 
@@ -302,7 +301,7 @@ void ScenarioSelectorNode::onLaneDrivingTrajectory(
 }
 
 void ScenarioSelectorNode::onParkingTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr msg)
+  const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr msg)
 {
   parking_trajectory_ = msg;
 
@@ -314,7 +313,7 @@ void ScenarioSelectorNode::onParkingTrajectory(
 }
 
 void ScenarioSelectorNode::publishTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr msg)
+  const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr msg)
 {
   const auto now = this->now();
   const auto delay_sec = (now - msg->header.stamp).seconds();
@@ -340,16 +339,15 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
   is_parking_completed_(false)
 {
   // Input
-  sub_lane_driving_trajectory_ =
-    this->create_subscription<autoware_auto_planning_msgs::msg::Trajectory>(
-      "input/lane_driving/trajectory", rclcpp::QoS{1},
-      std::bind(&ScenarioSelectorNode::onLaneDrivingTrajectory, this, std::placeholders::_1));
+  sub_lane_driving_trajectory_ = this->create_subscription<autoware_planning_msgs::msg::Trajectory>(
+    "input/lane_driving/trajectory", rclcpp::QoS{1},
+    std::bind(&ScenarioSelectorNode::onLaneDrivingTrajectory, this, std::placeholders::_1));
 
-  sub_parking_trajectory_ = this->create_subscription<autoware_auto_planning_msgs::msg::Trajectory>(
+  sub_parking_trajectory_ = this->create_subscription<autoware_planning_msgs::msg::Trajectory>(
     "input/parking/trajectory", rclcpp::QoS{1},
     std::bind(&ScenarioSelectorNode::onParkingTrajectory, this, std::placeholders::_1));
 
-  sub_lanelet_map_ = this->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+  sub_lanelet_map_ = this->create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
     "input/lanelet_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&ScenarioSelectorNode::onMap, this, std::placeholders::_1));
   sub_route_ = this->create_subscription<autoware_planning_msgs::msg::LaneletRoute>(
@@ -365,7 +363,7 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
   // Output
   pub_scenario_ =
     this->create_publisher<tier4_planning_msgs::msg::Scenario>("output/scenario", rclcpp::QoS{1});
-  pub_trajectory_ = this->create_publisher<autoware_auto_planning_msgs::msg::Trajectory>(
+  pub_trajectory_ = this->create_publisher<autoware_planning_msgs::msg::Trajectory>(
     "output/trajectory", rclcpp::QoS{1});
 
   // Timer Callback

@@ -57,9 +57,9 @@ ObstacleVelocityLimiterNode::ObstacleVelocityLimiterNode(const rclcpp::NodeOptio
   sub_odom_ = create_subscription<nav_msgs::msg::Odometry>(
     "~/input/odometry", rclcpp::QoS{1},
     [this](const nav_msgs::msg::Odometry::ConstSharedPtr msg) { current_odometry_ptr_ = msg; });
-  map_sub_ = create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+  map_sub_ = create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
     "~/input/map", rclcpp::QoS{1}.transient_local(),
-    [this](const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg) {
+    [this](const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg) {
       lanelet::utils::conversion::fromBinMsg(*msg, lanelet_map_ptr_);
       static_map_obstacles_ =
         extractStaticObstacles(*lanelet_map_ptr_, obstacle_params_.static_map_tags);

@@ -19,14 +19,14 @@
 #include "behavior_path_planner_common/turn_signal_decider.hpp"
 #include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <vector>
 
 namespace behavior_path_planner
 {
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using behavior_path_planner::TurnSignalInfo;
+using tier4_planning_msgs::msg::PathWithLaneId;
 struct LaneChangePath
 {
   PathWithLaneId path{};

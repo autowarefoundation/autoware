@@ -17,7 +17,7 @@
 #include <lanelet2_extension/utility/query.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 
-#include <autoware_auto_planning_msgs/msg/path_point.hpp>
+#include <autoware_planning_msgs/msg/path_point.hpp>
 
 #include <boost/geometry/algorithms/correct.hpp>
 
@@ -39,7 +39,7 @@
 namespace
 {
 size_t calcPointIndexFromSegmentIndex(
-  const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
+  const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & points,
   const geometry_msgs::msg::Point & point, const size_t seg_idx)
 {
   const size_t prev_point_idx = seg_idx;
@@ -54,7 +54,7 @@ size_t calcPointIndexFromSegmentIndex(
   return next_point_idx;
 }
 
-using autoware_auto_planning_msgs::msg::PathPoint;
+using autoware_planning_msgs::msg::PathPoint;
 
 PathPoint getLerpPathPointWithLaneId(const PathPoint p0, const PathPoint p1, const double ratio)
 {
@@ -93,7 +93,7 @@ namespace behavior_velocity_planner
 {
 namespace planning_utils
 {
-using autoware_auto_planning_msgs::msg::PathPoint;
+using autoware_planning_msgs::msg::PathPoint;
 using motion_utils::calcLongitudinalOffsetToSegment;
 using motion_utils::calcSignedArcLength;
 using motion_utils::validateNonEmpty;
@@ -105,7 +105,7 @@ using tier4_autoware_utils::createQuaternionFromYaw;
 using tier4_autoware_utils::getPoint;
 
 size_t calcSegmentIndexFromPointIndex(
-  const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
+  const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & points,
   const geometry_msgs::msg::Point & point, const size_t idx)
 {
   if (idx == 0) {
@@ -304,7 +304,7 @@ bool isAheadOf(const geometry_msgs::msg::Pose & target, const geometry_msgs::msg
 
 geometry_msgs::msg::Pose getAheadPose(
   const size_t start_idx, const double ahead_dist,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   if (path.points.size() == 0) {
     return geometry_msgs::msg::Pose{};
@@ -605,9 +605,8 @@ std::vector<int64_t> getSubsequentLaneIdsSetOnPath(
 
 // TODO(murooka) remove calcSignedArcLength using findNearestSegmentIndex
 bool isOverLine(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const geometry_msgs::msg::Pose & self_pose, const geometry_msgs::msg::Pose & line_pose,
-  const double offset)
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const geometry_msgs::msg::Pose & self_pose,
+  const geometry_msgs::msg::Pose & line_pose, const double offset)
 {
   return motion_utils::calcSignedArcLength(path.points, self_pose.position, line_pose.position) +
            offset <

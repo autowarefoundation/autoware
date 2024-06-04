@@ -52,8 +52,7 @@ BlindSpotModuleManager::BlindSpotModuleManager(rclcpp::Node & node)
     getOrDeclareParameter<double>(node, ns + ".ttc_ego_minimal_velocity");
 }
 
-void BlindSpotModuleManager::launchNewModules(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+void BlindSpotModuleManager::launchNewModules(const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   for (const auto & ll : planning_utils::getLaneletsOnPath(
          path, planner_data_->route_handler_->getLaneletMapPtr(),
@@ -86,7 +85,7 @@ void BlindSpotModuleManager::launchNewModules(
 
 std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 BlindSpotModuleManager::getModuleExpiredFunction(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto lane_id_set = planning_utils::getLaneIdSetOnPath(
     path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_odometry->pose);

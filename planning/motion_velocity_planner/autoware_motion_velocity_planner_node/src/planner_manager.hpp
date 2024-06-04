@@ -20,9 +20,9 @@
 #include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
@@ -45,7 +45,7 @@ public:
   void unload_module_plugin(rclcpp::Node & node, const std::string & name);
   void update_module_parameters(const std::vector<rclcpp::Parameter> & parameters);
   std::vector<VelocityPlanningResult> plan_velocities(
-    const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & ego_trajectory_points,
+    const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & ego_trajectory_points,
     const std::shared_ptr<const PlannerData> planner_data);
 
 private:

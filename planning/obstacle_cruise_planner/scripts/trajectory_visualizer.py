@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from autoware_auto_planning_msgs.msg import Trajectory
+from autoware_planning_msgs.msg import Trajectory
 from geometry_msgs.msg import Pose
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import TwistStamped

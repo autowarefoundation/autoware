@@ -117,7 +117,7 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
 }
 
 void OcclusionSpotModuleManager::launchNewModules(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   if (path.points.empty()) return;
   // general
@@ -130,7 +130,7 @@ void OcclusionSpotModuleManager::launchNewModules(
 
 std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 OcclusionSpotModuleManager::getModuleExpiredFunction(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   return [path]([[maybe_unused]] const std::shared_ptr<SceneModuleInterface> & scene_module) {
     return false;

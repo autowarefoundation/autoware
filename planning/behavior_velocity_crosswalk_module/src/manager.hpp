@@ -23,8 +23,8 @@
 #include <lanelet2_extension/regulatory_elements/crosswalk.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <tier4_api_msgs/msg/crosswalk_status.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <functional>
 #include <memory>
@@ -35,7 +35,7 @@
 namespace behavior_velocity_planner
 {
 
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using tier4_planning_msgs::msg::PathWithLaneId;
 
 class CrosswalkModuleManager : public SceneModuleManagerInterfaceWithRTC
 {

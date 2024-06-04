@@ -17,9 +17,9 @@
 
 #include <route_handler/route_handler.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <geometry_msgs/msg/pose.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 
@@ -99,7 +99,7 @@ struct Slowdown
 struct SlowdownToInsert
 {
   Slowdown slowdown;
-  autoware_auto_planning_msgs::msg::PathWithLaneId::_points_type::value_type point;
+  tier4_planning_msgs::msg::PathWithLaneId::_points_type::value_type point;
 };
 
 /// @brief bound of an overlap range (either the first, or last bound)
@@ -135,7 +135,7 @@ struct OverlapRange
     std::vector<Overlap> overlaps;
     std::optional<Slowdown> decision;
     RangeTimes times;
-    std::optional<autoware_auto_perception_msgs::msg::PredictedObject> object{};
+    std::optional<autoware_perception_msgs::msg::PredictedObject> object{};
   } debug;
 };
 using OverlapRanges = std::vector<OverlapRange>;
@@ -172,7 +172,7 @@ struct OtherLane
 /// @brief data related to the ego vehicle
 struct EgoData
 {
-  autoware_auto_planning_msgs::msg::PathWithLaneId path{};
+  tier4_planning_msgs::msg::PathWithLaneId path{};
   size_t first_path_idx{};
   double velocity{};   // [m/s]
   double max_decel{};  // [m/s²]
@@ -184,7 +184,7 @@ struct DecisionInputs
 {
   OverlapRanges ranges{};
   EgoData ego_data;
-  autoware_auto_perception_msgs::msg::PredictedObjects objects{};
+  autoware_perception_msgs::msg::PredictedObjects objects{};
   std::shared_ptr<route_handler::RouteHandler> route_handler{};
   lanelet::ConstLanelets lanelets{};
 };
@@ -201,7 +201,7 @@ struct DebugData
   lanelet::ConstLanelets path_lanelets;
   lanelet::ConstLanelets ignored_lanelets;
   lanelet::ConstLanelets other_lanelets;
-  autoware_auto_planning_msgs::msg::PathWithLaneId path;
+  tier4_planning_msgs::msg::PathWithLaneId path;
   size_t first_path_idx;
 
   size_t prev_footprints = 0;

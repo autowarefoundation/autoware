@@ -173,7 +173,7 @@ StaticCenterlineGeneratorNode::StaticCenterlineGeneratorNode(
 {
   // publishers
   pub_map_bin_ =
-    create_publisher<HADMapBin>("lanelet2_map_topic", utils::create_transient_local_qos());
+    create_publisher<LaneletMapBin>("lanelet2_map_topic", utils::create_transient_local_qos());
   pub_whole_centerline_ =
     create_publisher<Trajectory>("output_whole_centerline", utils::create_transient_local_qos());
   pub_centerline_ =
@@ -357,7 +357,7 @@ void StaticCenterlineGeneratorNode::load_map(const std::string & lanelet2_input_
     std::filesystem::copy_options::overwrite_existing);
 
   // load map by the map_loader package
-  map_bin_ptr_ = [&]() -> HADMapBin::ConstSharedPtr {
+  map_bin_ptr_ = [&]() -> LaneletMapBin::ConstSharedPtr {
     // load map
     map_projector_info_ =
       std::make_unique<MapProjectorInfo>(load_info_from_lanelet2_map(lanelet2_input_file_path));
@@ -379,7 +379,7 @@ void StaticCenterlineGeneratorNode::load_map(const std::string & lanelet2_input_
     const auto map_bin_msg =
       Lanelet2MapLoaderNode::create_map_bin_msg(map_ptr, lanelet2_input_file_path, now());
 
-    return std::make_shared<HADMapBin>(map_bin_msg);
+    return std::make_shared<LaneletMapBin>(map_bin_msg);
   }();
 
   // check if map_bin_ptr_ is not null pointer

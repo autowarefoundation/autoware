@@ -19,8 +19,8 @@
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 
-#include <autoware_perception_msgs/msg/traffic_signal.hpp>
-#include <autoware_perception_msgs/msg/traffic_signal_element.hpp>
+#include <autoware_perception_msgs/msg/traffic_light_element.hpp>
+#include <autoware_perception_msgs/msg/traffic_light_group.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
 #include <lanelet2_core/Forward.h>
@@ -33,8 +33,8 @@
 namespace behavior_path_planner::utils::traffic_light
 {
 
-using autoware_perception_msgs::msg::TrafficSignal;
-using autoware_perception_msgs::msg::TrafficSignalElement;
+using autoware_perception_msgs::msg::TrafficLightElement;
+using autoware_perception_msgs::msg::TrafficLightGroup;
 using geometry_msgs::msg::Pose;
 
 /**

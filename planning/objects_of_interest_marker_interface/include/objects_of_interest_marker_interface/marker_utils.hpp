@@ -23,7 +23,7 @@
 #include <tier4_autoware_utils/math/trigonometry.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <std_msgs/msg/color_rgba.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>

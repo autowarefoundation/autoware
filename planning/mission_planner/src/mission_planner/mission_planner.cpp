@@ -21,7 +21,7 @@
 #include <lanelet2_extension/utility/route_checker.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <lanelet2_core/geometry/LineString.h>
@@ -58,7 +58,7 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
   const auto durable_qos = rclcpp::QoS(1).transient_local();
   sub_odometry_ = create_subscription<Odometry>(
     "~/input/odometry", rclcpp::QoS(1), std::bind(&MissionPlanner::on_odometry, this, _1));
-  sub_vector_map_ = create_subscription<HADMapBin>(
+  sub_vector_map_ = create_subscription<LaneletMapBin>(
     "~/input/vector_map", durable_qos, std::bind(&MissionPlanner::on_map, this, _1));
   sub_reroute_availability_ = create_subscription<RerouteAvailability>(
     "~/input/reroute_availability", rclcpp::QoS(1),
@@ -141,7 +141,7 @@ void MissionPlanner::on_reroute_availability(const RerouteAvailability::ConstSha
   reroute_availability_ = msg;
 }
 
-void MissionPlanner::on_map(const HADMapBin::ConstSharedPtr msg)
+void MissionPlanner::on_map(const LaneletMapBin::ConstSharedPtr msg)
 {
   map_ptr_ = msg;
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();

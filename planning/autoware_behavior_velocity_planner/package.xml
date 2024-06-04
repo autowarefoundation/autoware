@@ -34,9 +34,9 @@
 
   <build_depend>rosidl_default_generators</build_depend>
 
-  <depend>autoware_auto_mapping_msgs</depend>
-  <depend>autoware_auto_perception_msgs</depend>
-  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_map_msgs</depend>
+  <depend>autoware_perception_msgs</depend>
+  <depend>autoware_planning_msgs</depend>
   <depend>autoware_velocity_smoother</depend>
   <depend>behavior_velocity_planner_common</depend>
   <depend>diagnostic_msgs</depend>

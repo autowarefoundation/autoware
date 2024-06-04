@@ -18,7 +18,7 @@
 #include "obstacle_velocity_limiter/parameters.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
 
-#include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
+#include <autoware_planning_msgs/msg/trajectory_point.hpp>
 
 #include <vector>
 

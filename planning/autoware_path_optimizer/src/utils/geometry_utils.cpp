@@ -20,8 +20,8 @@
 
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
-#include "autoware_auto_planning_msgs/msg/path_point.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/path_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
 #include "geometry_msgs/msg/point32.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 

@@ -92,30 +92,30 @@ After the optimization, a resampling called `post resampling` is performed befor
 
 ### Input
 
-| Name                                       | Type                                     | Description                   |
-| ------------------------------------------ | ---------------------------------------- | ----------------------------- |
-| `~/input/trajectory`                       | `autoware_auto_planning_msgs/Trajectory` | Reference trajectory          |
-| `/planning/scenario_planning/max_velocity` | `std_msgs/Float32`                       | External velocity limit [m/s] |
-| `/localization/kinematic_state`            | `nav_msgs/Odometry`                      | Current odometry              |
-| `/tf`                                      | `tf2_msgs/TFMessage`                     | TF                            |
-| `/tf_static`                               | `tf2_msgs/TFMessage`                     | TF static                     |
+| Name                                       | Type                                | Description                   |
+| ------------------------------------------ | ----------------------------------- | ----------------------------- |
+| `~/input/trajectory`                       | `autoware_planning_msgs/Trajectory` | Reference trajectory          |
+| `/planning/scenario_planning/max_velocity` | `std_msgs/Float32`                  | External velocity limit [m/s] |
+| `/localization/kinematic_state`            | `nav_msgs/Odometry`                 | Current odometry              |
+| `/tf`                                      | `tf2_msgs/TFMessage`                | TF                            |
+| `/tf_static`                               | `tf2_msgs/TFMessage`                | TF static                     |
 
 ### Output
 
-| Name                                               | Type                                     | Description                                                                                               |
-| -------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `~/output/trajectory`                              | `autoware_auto_planning_msgs/Trajectory` | Modified trajectory                                                                                       |
-| `/planning/scenario_planning/current_max_velocity` | `std_msgs/Float32`                       | Current external velocity limit [m/s]                                                                     |
-| `~/closest_velocity`                               | `std_msgs/Float32`                       | Planned velocity closest to ego base_link (for debug)                                                     |
-| `~/closest_acceleration`                           | `std_msgs/Float32`                       | Planned acceleration closest to ego base_link (for debug)                                                 |
-| `~/closest_jerk`                                   | `std_msgs/Float32`                       | Planned jerk closest to ego base_link (for debug)                                                         |
-| `~/debug/trajectory_raw`                           | `autoware_auto_planning_msgs/Trajectory` | Extracted trajectory (for debug)                                                                          |
-| `~/debug/trajectory_external_velocity_limited`     | `autoware_auto_planning_msgs/Trajectory` | External velocity limited trajectory (for debug)                                                          |
-| `~/debug/trajectory_lateral_acc_filtered`          | `autoware_auto_planning_msgs/Trajectory` | Lateral acceleration limit filtered trajectory (for debug)                                                |
-| `~/debug/trajectory_steering_rate_limited`         | `autoware_auto_planning_msgs/Trajectory` | Steering angle rate limit filtered trajectory (for debug)                                                 |
-| `~/debug/trajectory_time_resampled`                | `autoware_auto_planning_msgs/Trajectory` | Time resampled trajectory (for debug)                                                                     |
-| `~/distance_to_stopline`                           | `std_msgs/Float32`                       | Distance to stop line from current ego pose (max 50 m) (for debug)                                        |
-| `~/stop_speed_exceeded`                            | `std_msgs/Bool`                          | It publishes `true` if planned velocity on the point which the maximum velocity is zero is over threshold |
+| Name                                               | Type                                | Description                                                                                               |
+| -------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `~/output/trajectory`                              | `autoware_planning_msgs/Trajectory` | Modified trajectory                                                                                       |
+| `/planning/scenario_planning/current_max_velocity` | `std_msgs/Float32`                  | Current external velocity limit [m/s]                                                                     |
+| `~/closest_velocity`                               | `std_msgs/Float32`                  | Planned velocity closest to ego base_link (for debug)                                                     |
+| `~/closest_acceleration`                           | `std_msgs/Float32`                  | Planned acceleration closest to ego base_link (for debug)                                                 |
+| `~/closest_jerk`                                   | `std_msgs/Float32`                  | Planned jerk closest to ego base_link (for debug)                                                         |
+| `~/debug/trajectory_raw`                           | `autoware_planning_msgs/Trajectory` | Extracted trajectory (for debug)                                                                          |
+| `~/debug/trajectory_external_velocity_limited`     | `autoware_planning_msgs/Trajectory` | External velocity limited trajectory (for debug)                                                          |
+| `~/debug/trajectory_lateral_acc_filtered`          | `autoware_planning_msgs/Trajectory` | Lateral acceleration limit filtered trajectory (for debug)                                                |
+| `~/debug/trajectory_steering_rate_limited`         | `autoware_planning_msgs/Trajectory` | Steering angle rate limit filtered trajectory (for debug)                                                 |
+| `~/debug/trajectory_time_resampled`                | `autoware_planning_msgs/Trajectory` | Time resampled trajectory (for debug)                                                                     |
+| `~/distance_to_stopline`                           | `std_msgs/Float32`                  | Distance to stop line from current ego pose (max 50 m) (for debug)                                        |
+| `~/stop_speed_exceeded`                            | `std_msgs/Bool`                     | It publishes `true` if planned velocity on the point which the maximum velocity is zero is over threshold |
 
 ## Parameters
 

@@ -31,7 +31,6 @@
 #include <utility>
 #include <vector>
 
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using lanelet::utils::getArcCoordinates;
@@ -40,6 +39,7 @@ using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::inverseTransformPoint;
 using tier4_autoware_utils::normalizeRadian;
 using tier4_autoware_utils::transformPose;
+using tier4_planning_msgs::msg::PathWithLaneId;
 
 namespace behavior_path_planner
 {

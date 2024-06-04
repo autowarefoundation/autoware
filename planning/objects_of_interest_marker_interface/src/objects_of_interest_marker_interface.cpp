@@ -20,7 +20,7 @@
 
 namespace objects_of_interest_marker_interface
 {
-using autoware_auto_perception_msgs::msg::Shape;
+using autoware_perception_msgs::msg::Shape;
 using geometry_msgs::msg::Pose;
 using std_msgs::msg::ColorRGBA;
 using visualization_msgs::msg::Marker;

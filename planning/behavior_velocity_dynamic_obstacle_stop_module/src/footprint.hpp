@@ -30,7 +30,7 @@ namespace behavior_velocity_planner::dynamic_obstacle_stop
 /// @param [in] hysteresis [m] extra lateral distance to add to the footprints
 /// @return forward footprint of the obstacle
 tier4_autoware_utils::MultiPolygon2d make_forward_footprints(
-  const std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & obstacles,
+  const std::vector<autoware_perception_msgs::msg::PredictedObject> & obstacles,
   const PlannerParam & params, const double hysteresis);
 /// @brief create the footprint of the given obstacle and its projection over a fixed time horizon
 /// @param [in] obstacle obstacle
@@ -38,7 +38,7 @@ tier4_autoware_utils::MultiPolygon2d make_forward_footprints(
 /// @param [in] hysteresis [m] extra lateral distance to add to the footprint
 /// @return forward footprint of the obstacle
 tier4_autoware_utils::Polygon2d make_forward_footprint(
-  const autoware_auto_perception_msgs::msg::PredictedObject & obstacle, const PlannerParam & params,
+  const autoware_perception_msgs::msg::PredictedObject & obstacle, const PlannerParam & params,
   const double hysteresis);
 /// @brief project a footprint to the given pose
 /// @param [in] base_footprint footprint to project

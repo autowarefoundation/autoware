@@ -171,7 +171,7 @@ void PlanningInterfaceTestManager::publishTrafficSignals(
   rclcpp::Node::SharedPtr target_node, std::string topic_name)
 {
   test_utils::publishToTargetNode(
-    test_node_, target_node, topic_name, traffic_signals_pub_, TrafficSignalArray{});
+    test_node_, target_node, topic_name, traffic_signals_pub_, TrafficLightGroupArray{});
 }
 
 void PlanningInterfaceTestManager::publishVirtualTrafficLightState(
@@ -293,7 +293,7 @@ void PlanningInterfaceTestManager::publishNominalPath(
 {
   test_utils::publishToTargetNode(
     test_node_, target_node, topic_name, normal_path_pub_,
-    motion_utils::convertToPath<autoware_auto_planning_msgs::msg::PathWithLaneId>(
+    motion_utils::convertToPath<tier4_planning_msgs::msg::PathWithLaneId>(
       test_utils::loadPathWithLaneIdInYaml()),
     5);
 }

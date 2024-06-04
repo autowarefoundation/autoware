@@ -119,8 +119,8 @@ Scene modules receives necessary data and RTC command, and outputs candidate pat
 | IN  | `tier4_planning_msgs::srv::CooperateCommands` | contains approval data for scene module's path modification. ([details](https://github.com/autowarefoundation/autoware.universe/blob/main/planning/rtc_interface/README.md))    |
 | OUT | `behavior_path_planner::BehaviorModuleOutput` | contains modified path, turn signal information, etc...                                                                                                                         |
 | OUT | `tier4_planning_msgs::msg::CooperateStatus`   | contains RTC cooperate status. ([details](https://github.com/autowarefoundation/autoware.universe/blob/main/planning/rtc_interface/README.md))                                  |
-| OUT | `autoware_auto_planning_msgs::msg::Path`      | candidate path output by a module that has not received approval for path change. when it approved, the ego's following path is switched to this path. (just for visualization) |
-| OUT | `autoware_auto_planning_msgs::msg::Path`      | reference path generated from the centerline of the lane the ego is going to follow. (just for visualization)                                                                   |
+| OUT | `autoware_planning_msgs::msg::Path`           | candidate path output by a module that has not received approval for path change. when it approved, the ego's following path is switched to this path. (just for visualization) |
+| OUT | `autoware_planning_msgs::msg::Path`           | reference path generated from the centerline of the lane the ego is going to follow. (just for visualization)                                                                   |
 | OUT | `visualization_msgs::msg::MarkerArray`        | virtual wall, debug info, etc...                                                                                                                                                |
 
 Scene modules running on the manager are stored on the **candidate modules stack** or **approved modules stack** depending on the condition whether the path modification has been approved or not.

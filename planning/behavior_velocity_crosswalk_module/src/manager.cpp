@@ -143,19 +143,17 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
     getOrDeclareParameter<bool>(node, ns + ".occlusion.ignore_behind_predicted_objects");
 
   cp.occlusion_ignore_velocity_thresholds.resize(
-    autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN + 1,
+    autoware_perception_msgs::msg::ObjectClassification::PEDESTRIAN + 1,
     getOrDeclareParameter<double>(node, ns + ".occlusion.ignore_velocity_thresholds.default"));
   const auto get_label = [](const std::string & s) {
-    if (s == "CAR") return autoware_auto_perception_msgs::msg::ObjectClassification::CAR;
-    if (s == "TRUCK") return autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK;
-    if (s == "BUS") return autoware_auto_perception_msgs::msg::ObjectClassification::BUS;
-    if (s == "TRAILER") return autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER;
-    if (s == "MOTORCYCLE")
-      return autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE;
-    if (s == "BICYCLE") return autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE;
-    if (s == "PEDESTRIAN")
-      return autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN;
-    return autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN;
+    if (s == "CAR") return autoware_perception_msgs::msg::ObjectClassification::CAR;
+    if (s == "TRUCK") return autoware_perception_msgs::msg::ObjectClassification::TRUCK;
+    if (s == "BUS") return autoware_perception_msgs::msg::ObjectClassification::BUS;
+    if (s == "TRAILER") return autoware_perception_msgs::msg::ObjectClassification::TRAILER;
+    if (s == "MOTORCYCLE") return autoware_perception_msgs::msg::ObjectClassification::MOTORCYCLE;
+    if (s == "BICYCLE") return autoware_perception_msgs::msg::ObjectClassification::BICYCLE;
+    if (s == "PEDESTRIAN") return autoware_perception_msgs::msg::ObjectClassification::PEDESTRIAN;
+    return autoware_perception_msgs::msg::ObjectClassification::UNKNOWN;
   };
   const auto custom_labels = getOrDeclareParameter<std::vector<std::string>>(
     node, ns + ".occlusion.ignore_velocity_thresholds.custom_labels");

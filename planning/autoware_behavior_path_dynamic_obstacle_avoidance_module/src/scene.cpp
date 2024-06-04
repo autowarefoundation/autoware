@@ -128,13 +128,13 @@ std::pair<double, double> projectObstacleVelocityToTrajectory(
   return std::make_pair(projected_velocity[0], projected_velocity[1]);
 }
 
-double calcObstacleMaxLength(const autoware_auto_perception_msgs::msg::Shape & shape)
+double calcObstacleMaxLength(const autoware_perception_msgs::msg::Shape & shape)
 {
-  if (shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+  if (shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
     return std::hypot(shape.dimensions.x / 2.0, shape.dimensions.y / 2.0);
-  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+  } else if (shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
     return shape.dimensions.x / 2.0;
-  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
+  } else if (shape.type == autoware_perception_msgs::msg::Shape::POLYGON) {
     double max_length_to_point = 0.0;
     for (const auto rel_point : shape.footprint.points) {
       const double length_to_point = std::hypot(rel_point.x, rel_point.y);
@@ -148,13 +148,13 @@ double calcObstacleMaxLength(const autoware_auto_perception_msgs::msg::Shape & s
   throw std::logic_error("The shape type is not supported in dynamic_avoidance.");
 }
 
-double calcObstacleWidth(const autoware_auto_perception_msgs::msg::Shape & shape)
+double calcObstacleWidth(const autoware_perception_msgs::msg::Shape & shape)
 {
-  if (shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+  if (shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
     return shape.dimensions.y;
-  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+  } else if (shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
     return shape.dimensions.x;
-  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
+  } else if (shape.type == autoware_perception_msgs::msg::Shape::POLYGON) {
     double max_length_to_point = 0.0;
     for (const auto rel_point : shape.footprint.points) {
       const double length_to_point = std::hypot(rel_point.x, rel_point.y);
@@ -458,7 +458,7 @@ BehaviorModuleOutput DynamicObstacleAvoidanceModule::planWaitingApproval()
 
 ObjectType DynamicObstacleAvoidanceModule::getObjectType(const uint8_t label) const
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
 
   if (label == ObjectClassification::CAR && parameters_->avoid_car) {
     return ObjectType::REGULATED;
@@ -1121,8 +1121,8 @@ DynamicObstacleAvoidanceModule::DecisionWithReason DynamicObstacleAvoidanceModul
 }
 
 [[maybe_unused]] bool DynamicObstacleAvoidanceModule::willObjectBeOutsideEgoChangingPath(
-  const geometry_msgs::msg::Pose & obj_pose,
-  const autoware_auto_perception_msgs::msg::Shape & obj_shape, const double obj_vel) const
+  const geometry_msgs::msg::Pose & obj_pose, const autoware_perception_msgs::msg::Shape & obj_shape,
+  const double obj_vel) const
 {
   if (!ref_path_before_lane_change_ || obj_vel < 0.0) {
     return false;
@@ -1183,7 +1183,7 @@ DynamicObstacleAvoidanceModule::getAdjacentLanes(
 DynamicObstacleAvoidanceModule::LatLonOffset
 DynamicObstacleAvoidanceModule::getLateralLongitudinalOffset(
   const std::vector<PathPointWithLaneId> & ego_path, const geometry_msgs::msg::Pose & obj_pose,
-  const autoware_auto_perception_msgs::msg::Shape & obj_shape) const
+  const autoware_perception_msgs::msg::Shape & obj_shape) const
 {
   const size_t obj_seg_idx = motion_utils::findNearestSegmentIndex(ego_path, obj_pose.position);
   const auto obj_points = tier4_autoware_utils::toPolygon2d(obj_pose, obj_shape);
@@ -1218,7 +1218,7 @@ DynamicObstacleAvoidanceModule::getLateralLongitudinalOffset(
 MinMaxValue DynamicObstacleAvoidanceModule::calcMinMaxLongitudinalOffsetToAvoid(
   const std::vector<PathPointWithLaneId> & ref_path_points_for_obj_poly,
   const geometry_msgs::msg::Pose & obj_pose, const Polygon2d & obj_points, const double obj_vel,
-  const PredictedPath & obj_path, const autoware_auto_perception_msgs::msg::Shape & obj_shape,
+  const PredictedPath & obj_path, const autoware_perception_msgs::msg::Shape & obj_shape,
   const TimeWhileCollision & time_while_collision) const
 {
   const size_t obj_seg_idx =
@@ -1290,8 +1290,7 @@ MinMaxValue DynamicObstacleAvoidanceModule::calcMinMaxLongitudinalOffsetToAvoid(
 
 double DynamicObstacleAvoidanceModule::calcValidLengthToAvoid(
   const PredictedPath & obj_path, const geometry_msgs::msg::Pose & obj_pose,
-  const autoware_auto_perception_msgs::msg::Shape & obj_shape,
-  const bool is_object_same_direction) const
+  const autoware_perception_msgs::msg::Shape & obj_shape, const bool is_object_same_direction) const
 {
   const auto & input_path_points = getPreviousModuleOutput().path.points;
   const size_t obj_seg_idx =

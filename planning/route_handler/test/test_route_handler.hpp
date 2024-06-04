@@ -28,7 +28,7 @@
 #include <rclcpp/logging.hpp>
 #include <route_handler/route_handler.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 
 #include <lanelet2_io/Io.h>
 
@@ -37,7 +37,7 @@
 namespace route_handler::test
 {
 
-using autoware_auto_mapping_msgs::msg::HADMapBin;
+using autoware_map_msgs::msg::LaneletMapBin;
 
 class TestRouteHandler : public ::testing::Test
 {

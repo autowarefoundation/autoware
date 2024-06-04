@@ -20,7 +20,7 @@
 #include <frenet_planner/frenet_planner.hpp>
 #include <path_sampler/prepare_inputs.hpp>
 
-#include <autoware_auto_planning_msgs/msg/path.hpp>
+#include <autoware_planning_msgs/msg/path.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 

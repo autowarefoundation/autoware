@@ -28,7 +28,7 @@ namespace behavior_velocity_planner::out_of_lane
 /// @param [in] stop_line stop line used for cutting
 /// @param [in] object_front_overhang extra distance to cut ahead of the stop line
 void cut_predicted_path_beyond_line(
-  autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
+  autoware_perception_msgs::msg::PredictedPath & predicted_path,
   const lanelet::BasicLineString2d & stop_line, const double object_front_overhang);
 
 /// @brief find the next red light stop line along the given path
@@ -36,21 +36,21 @@ void cut_predicted_path_beyond_line(
 /// @param [in] planner_data planner data with stop line information
 /// @return the first red light stop line found along the path (if any)
 std::optional<const lanelet::BasicLineString2d> find_next_stop_line(
-  const autoware_auto_perception_msgs::msg::PredictedPath & path, const PlannerData & planner_data);
+  const autoware_perception_msgs::msg::PredictedPath & path, const PlannerData & planner_data);
 
 /// @brief cut predicted path beyond stop lines of red lights
 /// @param [inout] predicted_path predicted path to cut
 /// @param [in] planner_data planner data to get the map and traffic light information
 void cut_predicted_path_beyond_red_lights(
-  autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
-  const PlannerData & planner_data, const double object_front_overhang);
+  autoware_perception_msgs::msg::PredictedPath & predicted_path, const PlannerData & planner_data,
+  const double object_front_overhang);
 
 /// @brief filter predicted objects and their predicted paths
 /// @param [in] planner_data planner data
 /// @param [in] ego_data ego data
 /// @param [in] params parameters
 /// @return filtered predicted objects
-autoware_auto_perception_msgs::msg::PredictedObjects filter_predicted_objects(
+autoware_perception_msgs::msg::PredictedObjects filter_predicted_objects(
   const PlannerData & planner_data, const EgoData & ego_data, const PlannerParam & params);
 }  // namespace behavior_velocity_planner::out_of_lane
 

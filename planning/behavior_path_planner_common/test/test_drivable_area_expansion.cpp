@@ -176,7 +176,7 @@ TEST(DrivableAreaExpansionProjection, expand_drivable_area)
 {
   drivable_area_expansion::DrivableAreaExpansionParameters params;
   drivable_area_expansion::PredictedObjects dynamic_objects;
-  autoware_auto_mapping_msgs::msg::HADMapBin map;
+  autoware_map_msgs::msg::LaneletMapBin map;
   lanelet::LaneletMapPtr empty_lanelet_map_ptr = std::make_shared<lanelet::LaneletMap>();
   lanelet::utils::conversion::toBinMsg(empty_lanelet_map_ptr, &map);
   route_handler::RouteHandler route_handler(map);

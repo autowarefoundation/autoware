@@ -59,7 +59,7 @@ polygon_t createObjectPolygon(
 }
 
 multi_polygon_t createObjectPolygons(
-  const autoware_auto_perception_msgs::msg::PredictedObjects & objects, const double buffer,
+  const autoware_perception_msgs::msg::PredictedObjects & objects, const double buffer,
   const double min_velocity)
 {
   multi_polygon_t polygons;

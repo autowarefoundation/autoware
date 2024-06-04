@@ -19,16 +19,16 @@ Note that the velocity is just taken over from the input path.
 
 ### input
 
-| Name               | Type                                 | Description                                        |
-| ------------------ | ------------------------------------ | -------------------------------------------------- |
-| `~/input/path`     | autoware_auto_planning_msgs/msg/Path | Reference path and the corresponding drivable area |
-| `~/input/odometry` | nav_msgs/msg/Odometry                | Current Velocity of ego vehicle                    |
+| Name               | Type                            | Description                                        |
+| ------------------ | ------------------------------- | -------------------------------------------------- |
+| `~/input/path`     | autoware_planning_msgs/msg/Path | Reference path and the corresponding drivable area |
+| `~/input/odometry` | nav_msgs/msg/Odometry           | Current Velocity of ego vehicle                    |
 
 ### output
 
-| Name                  | Type                                       | Description                                                       |
-| --------------------- | ------------------------------------------ | ----------------------------------------------------------------- |
-| `~/output/trajectory` | autoware_auto_planning_msgs/msg/Trajectory | Optimized trajectory that is feasible to drive and collision-free |
+| Name                  | Type                                  | Description                                                       |
+| --------------------- | ------------------------------------- | ----------------------------------------------------------------- |
+| `~/output/trajectory` | autoware_planning_msgs/msg/Trajectory | Optimized trajectory that is feasible to drive and collision-free |
 
 ## Flowchart
 

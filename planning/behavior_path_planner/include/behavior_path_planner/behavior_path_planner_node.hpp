@@ -24,19 +24,19 @@
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/path.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
-#include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
+#include <autoware_planning_msgs/msg/path.hpp>
 #include <autoware_planning_msgs/msg/pose_with_uuid_stamped.hpp>
+#include <autoware_vehicle_msgs/msg/hazard_lights_command.hpp>
+#include <autoware_vehicle_msgs/msg/turn_indicators_command.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <tier4_planning_msgs/msg/approval.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 #include <tier4_planning_msgs/msg/path_change_module.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 #include <tier4_planning_msgs/msg/reroute_availability.hpp>
 #include <tier4_planning_msgs/msg/scenario.hpp>
 #include <tier4_planning_msgs/msg/stop_reason_array.hpp>
@@ -52,22 +52,22 @@
 namespace behavior_path_planner
 {
 using autoware_adapi_v1_msgs::msg::OperationModeState;
-using autoware_auto_mapping_msgs::msg::HADMapBin;
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_planning_msgs::msg::Path;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
-using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
-using autoware_perception_msgs::msg::TrafficSignalArray;
+using autoware_map_msgs::msg::LaneletMapBin;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::TrafficLightGroupArray;
 using autoware_planning_msgs::msg::LaneletRoute;
+using autoware_planning_msgs::msg::Path;
 using autoware_planning_msgs::msg::PoseWithUuidStamped;
+using autoware_vehicle_msgs::msg::HazardLightsCommand;
+using autoware_vehicle_msgs::msg::TurnIndicatorsCommand;
 using nav_msgs::msg::OccupancyGrid;
 using nav_msgs::msg::Odometry;
 using rcl_interfaces::msg::SetParametersResult;
 using steering_factor_interface::SteeringFactorInterface;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using tier4_planning_msgs::msg::LateralOffset;
+using tier4_planning_msgs::msg::PathWithLaneId;
 using tier4_planning_msgs::msg::RerouteAvailability;
 using tier4_planning_msgs::msg::Scenario;
 using tier4_planning_msgs::msg::StopReasonArray;
@@ -87,14 +87,14 @@ public:
 
 private:
   rclcpp::Subscription<LaneletRoute>::SharedPtr route_subscriber_;
-  rclcpp::Subscription<HADMapBin>::SharedPtr vector_map_subscriber_;
+  rclcpp::Subscription<LaneletMapBin>::SharedPtr vector_map_subscriber_;
   rclcpp::Subscription<Odometry>::SharedPtr velocity_subscriber_;
   rclcpp::Subscription<AccelWithCovarianceStamped>::SharedPtr acceleration_subscriber_;
   rclcpp::Subscription<Scenario>::SharedPtr scenario_subscriber_;
   rclcpp::Subscription<PredictedObjects>::SharedPtr perception_subscriber_;
   rclcpp::Subscription<OccupancyGrid>::SharedPtr occupancy_grid_subscriber_;
   rclcpp::Subscription<OccupancyGrid>::SharedPtr costmap_subscriber_;
-  rclcpp::Subscription<TrafficSignalArray>::SharedPtr traffic_signals_subscriber_;
+  rclcpp::Subscription<TrafficLightGroupArray>::SharedPtr traffic_signals_subscriber_;
   rclcpp::Subscription<LateralOffset>::SharedPtr lateral_offset_subscriber_;
   rclcpp::Subscription<OperationModeState>::SharedPtr operation_mode_subscriber_;
   rclcpp::Publisher<PathWithLaneId>::SharedPtr path_publisher_;
@@ -118,7 +118,7 @@ private:
   std::unique_ptr<SteeringFactorInterface> steering_factor_interface_ptr_;
   Scenario::SharedPtr current_scenario_{nullptr};
 
-  HADMapBin::ConstSharedPtr map_ptr_{nullptr};
+  LaneletMapBin::ConstSharedPtr map_ptr_{nullptr};
   LaneletRoute::ConstSharedPtr route_ptr_{nullptr};
   bool has_received_map_{false};
   bool has_received_route_{false};
@@ -140,8 +140,8 @@ private:
   void onPerception(const PredictedObjects::ConstSharedPtr msg);
   void onOccupancyGrid(const OccupancyGrid::ConstSharedPtr msg);
   void onCostMap(const OccupancyGrid::ConstSharedPtr msg);
-  void onTrafficSignals(const TrafficSignalArray::ConstSharedPtr msg);
-  void onMap(const HADMapBin::ConstSharedPtr map_msg);
+  void onTrafficSignals(const TrafficLightGroupArray::ConstSharedPtr msg);
+  void onMap(const LaneletMapBin::ConstSharedPtr map_msg);
   void onRoute(const LaneletRoute::ConstSharedPtr route_msg);
   void onOperationMode(const OperationModeState::ConstSharedPtr msg);
   void onLateralOffset(const LateralOffset::ConstSharedPtr msg);

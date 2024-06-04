@@ -15,8 +15,8 @@
 #ifndef PATH_UTILS_HPP_
 #define PATH_UTILS_HPP_
 
-#include <autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp>
 #include <geometry_msgs/msg/point.hpp>
+#include <tier4_planning_msgs/msg/path_point_with_lane_id.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -31,7 +31,7 @@ namespace run_out_utils
 {
 
 geometry_msgs::msg::Point findLongitudinalNearestPoint(
-  const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
+  const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & points,
   const geometry_msgs::msg::Point & src_point,
   const std::vector<geometry_msgs::msg::Point> & target_points);
 

@@ -17,14 +17,14 @@
 
 #include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <utility>
 #include <vector>
 
 namespace behavior_path_planner
 {
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using tier4_planning_msgs::msg::PathWithLaneId;
 struct PullOutPath
 {
   std::vector<PathWithLaneId> partial_paths{};

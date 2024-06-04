@@ -40,7 +40,7 @@ std::string to_string(const unique_identifier_msgs::msg::UUID & uuid)
 
 tier4_autoware_utils::Polygon2d createOneStepPolygon(
   const geometry_msgs::msg::Pose & prev_pose, const geometry_msgs::msg::Pose & next_pose,
-  const autoware_auto_perception_msgs::msg::Shape & shape)
+  const autoware_perception_msgs::msg::Shape & shape)
 {
   namespace bg = boost::geometry;
   const auto prev_poly = tier4_autoware_utils::toPolygon2d(prev_pose, shape);
@@ -73,7 +73,7 @@ ObjectInfo::ObjectInfo(const unique_identifier_msgs::msg::UUID & uuid) : uuid_st
 }
 
 void ObjectInfo::initialize(
-  const autoware_auto_perception_msgs::msg::PredictedObject & object,
+  const autoware_perception_msgs::msg::PredictedObject & object,
   std::optional<lanelet::ConstLanelet> attention_lanelet_opt_,
   std::optional<lanelet::ConstLineString3d> stopline_opt_)
 {
@@ -250,9 +250,8 @@ std::vector<std::shared_ptr<ObjectInfo>> ObjectInfoManager::allObjects() const
 }
 
 std::optional<intersection::CollisionInterval> findPassageInterval(
-  const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
-  const autoware_auto_perception_msgs::msg::Shape & shape,
-  const lanelet::BasicPolygon2d & ego_lane_poly,
+  const autoware_perception_msgs::msg::PredictedPath & predicted_path,
+  const autoware_perception_msgs::msg::Shape & shape, const lanelet::BasicPolygon2d & ego_lane_poly,
   const std::optional<lanelet::ConstLanelet> & first_attention_lane_opt,
   const std::optional<lanelet::ConstLanelet> & second_attention_lane_opt)
 {

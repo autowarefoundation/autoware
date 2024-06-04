@@ -44,7 +44,7 @@ MarkerArray createObjectsCubeMarkerArray(
   const ObjectDataArray & objects, std::string && ns, const Vector3 & scale,
   const ColorRGBA & color)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
 
   MarkerArray msg;
 

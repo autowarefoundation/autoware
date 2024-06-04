@@ -41,7 +41,7 @@ Polygon2d create_footprint(const geometry_msgs::msg::Pose & pose, const Polygon2
 }
 
 MultiPolygon2d create_object_footprints(
-  const autoware_auto_perception_msgs::msg::PredictedObjects & objects,
+  const autoware_perception_msgs::msg::PredictedObjects & objects,
   const DrivableAreaExpansionParameters & params)
 {
   MultiPolygon2d footprints;

@@ -22,9 +22,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
-#include <autoware_auto_planning_msgs/msg/path.hpp>
-#include <autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp>
 #include <autoware_planning_msgs/msg/lanelet_primitive.hpp>
+#include <autoware_planning_msgs/msg/path.hpp>
+#include <tier4_planning_msgs/msg/path_point_with_lane_id.hpp>
 
 #include <lanelet2_core/geometry/Lanelet.h>
 #include <lanelet2_core/primitives/LaneletSequence.h>
@@ -43,12 +43,12 @@
 
 namespace
 {
-using autoware_auto_planning_msgs::msg::Path;
-using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_planning_msgs::msg::LaneletPrimitive;
+using autoware_planning_msgs::msg::Path;
 using geometry_msgs::msg::Pose;
 using lanelet::utils::to2D;
+using tier4_planning_msgs::msg::PathPointWithLaneId;
+using tier4_planning_msgs::msg::PathWithLaneId;
 
 bool exists(const std::vector<LaneletPrimitive> & primitives, const int64_t & id)
 {
@@ -133,13 +133,13 @@ std::string toString(const geometry_msgs::msg::Pose & pose)
 
 namespace route_handler
 {
-RouteHandler::RouteHandler(const HADMapBin & map_msg)
+RouteHandler::RouteHandler(const LaneletMapBin & map_msg)
 {
   setMap(map_msg);
   route_ptr_ = nullptr;
 }
 
-void RouteHandler::setMap(const HADMapBin & map_msg)
+void RouteHandler::setMap(const LaneletMapBin & map_msg)
 {
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
   lanelet::utils::conversion::fromBinMsg(

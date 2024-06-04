@@ -37,12 +37,12 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_adapi_v1_msgs</depend>
-  <depend>autoware_auto_perception_msgs</depend>
-  <depend>autoware_auto_planning_msgs</depend>
-  <depend>autoware_auto_vehicle_msgs</depend>
   <depend>autoware_perception_msgs</depend>
+  <depend>autoware_planning_msgs</depend>
   <depend>autoware_planning_test_manager</depend>
+  <depend>autoware_vehicle_msgs</depend>
   <depend>behavior_path_planner_common</depend>
+  <depend>behaviortree_cpp_v3</depend>
   <depend>freespace_planning_algorithms</depend>
   <depend>frenet_planner</depend>
   <depend>geometry_msgs</depend>

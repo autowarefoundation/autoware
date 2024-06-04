@@ -119,7 +119,7 @@ namespace behavior_velocity_planner
 namespace bg = boost::geometry;
 
 std::optional<intersection::StuckStop> IntersectionModule::isStuckStatus(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const tier4_planning_msgs::msg::PathWithLaneId & path,
   const intersection::IntersectionStopLines & intersection_stoplines,
   const intersection::PathLanelets & path_lanelets) const
 {
@@ -171,62 +171,60 @@ std::optional<intersection::StuckStop> IntersectionModule::isStuckStatus(
 }
 
 bool IntersectionModule::isTargetStuckVehicleType(
-  const autoware_auto_perception_msgs::msg::PredictedObject & object) const
+  const autoware_perception_msgs::msg::PredictedObject & object) const
 {
   const auto label = object.classification.at(0).label;
   const auto & p = planner_param_.stuck_vehicle.target_type;
 
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::CAR && p.car) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::CAR && p.car) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::BUS && p.bus) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::BUS && p.bus) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK && p.truck) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::TRUCK && p.truck) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER && p.trailer) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::TRAILER && p.trailer) {
     return true;
   }
-  if (
-    label == autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE && p.motorcycle) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::MOTORCYCLE && p.motorcycle) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE && p.bicycle) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::BICYCLE && p.bicycle) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN && p.unknown) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::UNKNOWN && p.unknown) {
     return true;
   }
   return false;
 }
 
 bool IntersectionModule::isTargetYieldStuckVehicleType(
-  const autoware_auto_perception_msgs::msg::PredictedObject & object) const
+  const autoware_perception_msgs::msg::PredictedObject & object) const
 {
   const auto label = object.classification.at(0).label;
   const auto & p = planner_param_.yield_stuck.target_type;
 
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::CAR && p.car) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::CAR && p.car) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::BUS && p.bus) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::BUS && p.bus) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK && p.truck) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::TRUCK && p.truck) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER && p.trailer) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::TRAILER && p.trailer) {
     return true;
   }
-  if (
-    label == autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE && p.motorcycle) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::MOTORCYCLE && p.motorcycle) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE && p.bicycle) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::BICYCLE && p.bicycle) {
     return true;
   }
-  if (label == autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN && p.unknown) {
+  if (label == autoware_perception_msgs::msg::ObjectClassification::UNKNOWN && p.unknown) {
     return true;
   }
   return false;
@@ -309,7 +307,7 @@ bool IntersectionModule::checkStuckVehicleInIntersection(
 }
 
 std::optional<intersection::YieldStuckStop> IntersectionModule::isYieldStuckStatus(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const tier4_planning_msgs::msg::PathWithLaneId & path,
   const intersection::InterpolatedPathInfo & interpolated_path_info,
   const intersection::IntersectionStopLines & intersection_stoplines) const
 {

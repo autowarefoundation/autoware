@@ -26,7 +26,7 @@
 
 namespace
 {
-using TrajectoryPoints = std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>;
+using TrajectoryPoints = std::vector<autoware_planning_msgs::msg::TrajectoryPoint>;
 
 geometry_msgs::msg::Pose lerpByPose(
   const geometry_msgs::msg::Pose & p1, const geometry_msgs::msg::Pose & p2, const double t)

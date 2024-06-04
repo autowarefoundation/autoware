@@ -15,11 +15,11 @@
 #ifndef PATH_SAMPLER__TYPE_ALIAS_HPP_
 #define PATH_SAMPLER__TYPE_ALIAS_HPP_
 
-#include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"
-#include "autoware_auto_planning_msgs/msg/path.hpp"
-#include "autoware_auto_planning_msgs/msg/path_point.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_perception_msgs/msg/predicted_objects.hpp"
+#include "autoware_planning_msgs/msg/path.hpp"
+#include "autoware_planning_msgs/msg/path_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/twist.hpp"
@@ -33,12 +33,12 @@ namespace path_sampler
 // std_msgs
 using std_msgs::msg::Header;
 // planning
-using autoware_auto_planning_msgs::msg::Path;
-using autoware_auto_planning_msgs::msg::PathPoint;
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::Path;
+using autoware_planning_msgs::msg::PathPoint;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 // perception
-using autoware_auto_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::PredictedObjects;
 // navigation
 using nav_msgs::msg::Odometry;
 // visualization

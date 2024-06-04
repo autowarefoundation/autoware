@@ -94,8 +94,8 @@ bool buildDetectionAreaPolygon(
 }
 
 void calcSlowDownPointsForPossibleCollision(
-  const int closest_idx, const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const double offset, std::vector<PossibleCollisionInfo> & possible_collisions)
+  const int closest_idx, const tier4_planning_msgs::msg::PathWithLaneId & path, const double offset,
+  std::vector<PossibleCollisionInfo> & possible_collisions)
 {
   if (possible_collisions.empty()) {
     return;

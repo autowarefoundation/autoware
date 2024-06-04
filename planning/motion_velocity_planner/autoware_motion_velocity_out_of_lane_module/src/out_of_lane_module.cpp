@@ -147,7 +147,7 @@ void OutOfLaneModule::update_parameters(const std::vector<rclcpp::Parameter> & p
 }
 
 VelocityPlanningResult OutOfLaneModule::plan(
-  const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & ego_trajectory_points,
+  const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & ego_trajectory_points,
   const std::shared_ptr<const PlannerData> planner_data)
 {
   VelocityPlanningResult result;

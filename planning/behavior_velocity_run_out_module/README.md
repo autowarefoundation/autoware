@@ -71,14 +71,14 @@ This module can handle multiple types of obstacles by creating abstracted dynami
 
 Abstracted obstacle data has following information.
 
-| Name             | Type                                                                    | Description                                                                                                            |
-| ---------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| pose             | `geometry_msgs::msg::Pose`                                              | pose of the obstacle                                                                                                   |
-| classifications  | `std::vector<autoware_auto_perception_msgs::msg::ObjectClassification>` | classifications with probability                                                                                       |
-| shape            | `autoware_auto_perception_msgs::msg::Shape`                             | shape of the obstacle                                                                                                  |
-| predicted_paths  | `std::vector<DynamicObstacle::PredictedPath>`                           | predicted paths with confidence. this data doesn't have time step because we use minimum and maximum velocity instead. |
-| min_velocity_mps | `float`                                                                 | minimum velocity of the obstacle. specified by parameter of `dynamic_obstacle.min_vel_kmph`                            |
-| max_velocity_mps | `float`                                                                 | maximum velocity of the obstacle. specified by parameter of `dynamic_obstacle.max_vel_kmph`                            |
+| Name             | Type                                                               | Description                                                                                                            |
+| ---------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| pose             | `geometry_msgs::msg::Pose`                                         | pose of the obstacle                                                                                                   |
+| classifications  | `std::vector<autoware_perception_msgs::msg::ObjectClassification>` | classifications with probability                                                                                       |
+| shape            | `autoware_perception_msgs::msg::Shape`                             | shape of the obstacle                                                                                                  |
+| predicted_paths  | `std::vector<DynamicObstacle::PredictedPath>`                      | predicted paths with confidence. this data doesn't have time step because we use minimum and maximum velocity instead. |
+| min_velocity_mps | `float`                                                            | minimum velocity of the obstacle. specified by parameter of `dynamic_obstacle.min_vel_kmph`                            |
+| max_velocity_mps | `float`                                                            | maximum velocity of the obstacle. specified by parameter of `dynamic_obstacle.max_vel_kmph`                            |
 
 Enter the maximum/minimum velocity of the object as a parameter, adding enough margin to the expected velocity. This parameter is used to create polygons for [collision detection](.#Collision-detection).
 

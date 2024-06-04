@@ -17,10 +17,10 @@
 
 #include "tier4_autoware_utils/geometry/boost_geometry.hpp"
 
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/path_point.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_planning_msgs/msg/path_point.hpp>
 #include <geometry_msgs/msg/point.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <boost/geometry/index/rtree.hpp>
 
@@ -29,12 +29,12 @@
 
 namespace drivable_area_expansion
 {
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_planning_msgs::msg::PathPoint;
-using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_planning_msgs::msg::PathPoint;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
+using tier4_planning_msgs::msg::PathPointWithLaneId;
+using tier4_planning_msgs::msg::PathWithLaneId;
 
 using tier4_autoware_utils::LineString2d;
 using tier4_autoware_utils::MultiLineString2d;

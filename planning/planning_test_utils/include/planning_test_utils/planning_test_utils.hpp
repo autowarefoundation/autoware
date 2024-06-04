@@ -26,19 +26,19 @@
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_planning_msgs/msg/lanelet_primitive.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <autoware_planning_msgs/msg/lanelet_segment.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
+#include <tier4_planning_msgs/msg/path_point_with_lane_id.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 #include <tier4_planning_msgs/msg/scenario.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
@@ -57,14 +57,14 @@
 namespace test_utils
 {
 using autoware_adapi_v1_msgs::msg::OperationModeState;
-using autoware_auto_mapping_msgs::msg::HADMapBin;
-using autoware_auto_planning_msgs::msg::Path;
-using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_map_msgs::msg::LaneletMapBin;
 using autoware_planning_msgs::msg::LaneletPrimitive;
 using autoware_planning_msgs::msg::LaneletRoute;
 using autoware_planning_msgs::msg::LaneletSegment;
+using autoware_planning_msgs::msg::Path;
+using autoware_planning_msgs::msg::Trajectory;
+using tier4_planning_msgs::msg::PathPointWithLaneId;
+using tier4_planning_msgs::msg::PathWithLaneId;
 using RouteSections = std::vector<autoware_planning_msgs::msg::LaneletSegment>;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
@@ -137,18 +137,18 @@ LaneletSegment createLaneletSegment(int id);
 lanelet::LaneletMapPtr loadMap(const std::string & lanelet2_filename);
 
 /**
- * @brief Converts a Lanelet map to a HADMapBin message.
+ * @brief Converts a Lanelet map to a LaneletMapBin message.
  *
- * This function converts a given Lanelet map to a HADMapBin message. It also
+ * This function converts a given Lanelet map to a LaneletMapBin message. It also
  * parses the format and map versions from the specified filename and includes
  * them in the message. The timestamp for the message is set to the provided time.
  *
  * @param map The Lanelet map to convert.
  * @param lanelet2_filename The filename of the Lanelet2 map, used to parse format and map versions.
  * @param now The current time to set in the message header.
- * @return A HADMapBin message containing the converted map data.
+ * @return A LaneletMapBin message containing the converted map data.
  */
-HADMapBin convertToMapBinMsg(
+LaneletMapBin convertToMapBinMsg(
   const lanelet::LaneletMapPtr map, const std::string & lanelet2_filename,
   const rclcpp::Time & now);
 
@@ -175,28 +175,28 @@ LaneletRoute makeNormalRoute();
 OccupancyGrid makeCostMapMsg(size_t width = 150, size_t height = 150, double resolution = 0.2);
 
 /**
- * @brief Creates a HADMapBin message from a Lanelet map file.
+ * @brief Creates a LaneletMapBin message from a Lanelet map file.
  *
  * This function loads a Lanelet map from the given file, overwrites the
- * centerline with the specified resolution, and converts the map to a HADMapBin message.
+ * centerline with the specified resolution, and converts the map to a LaneletMapBin message.
  *
  * @param absolute_path The absolute path to the Lanelet2 map file.
  * @param center_line_resolution The resolution for the centerline.
- * @return A HADMapBin message containing the map data.
+ * @return A LaneletMapBin message containing the map data.
  */
-HADMapBin make_map_bin_msg(
+LaneletMapBin make_map_bin_msg(
   const std::string & absolute_path, const double center_line_resolution = 5.0);
 
 /**
- * @brief Creates a HADMapBin message using a predefined Lanelet2 map file.
+ * @brief Creates a LaneletMapBin message using a predefined Lanelet2 map file.
  *
  * This function loads a lanelet2_map.osm from the test_map folder in the
  * planning_test_utils package, overwrites the centerline with a resolution of 5.0,
- * and converts the map to a HADMapBin message.
+ * and converts the map to a LaneletMapBin message.
  *
- * @return A HADMapBin message containing the map data.
+ * @return A LaneletMapBin message containing the map data.
  */
-HADMapBin makeMapBinMsg();
+LaneletMapBin makeMapBinMsg();
 
 /**
  * @brief Creates an Odometry message with a specified shift.
@@ -366,7 +366,7 @@ void createPublisherWithQoS(
   std::shared_ptr<rclcpp::Publisher<T>> & publisher)
 {
   if constexpr (
-    std::is_same_v<T, LaneletRoute> || std::is_same_v<T, HADMapBin> ||
+    std::is_same_v<T, LaneletRoute> || std::is_same_v<T, LaneletMapBin> ||
     std::is_same_v<T, OperationModeState>) {
     rclcpp::QoS qos(rclcpp::KeepLast(1));
     qos.reliable();

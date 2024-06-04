@@ -21,8 +21,8 @@
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
 
-#include "autoware_auto_planning_msgs/msg/path_point.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/path_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
 #include "geometry_msgs/msg/point32.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 

@@ -19,7 +19,7 @@
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <memory>
 #include <vector>

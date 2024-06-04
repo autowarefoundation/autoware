@@ -62,7 +62,7 @@ std::optional<geometry_msgs::msg::Point> find_closest_collision_point(
 
 std::vector<Collision> find_collisions(
   const EgoData & ego_data,
-  const std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & objects,
+  const std::vector<autoware_perception_msgs::msg::PredictedObject> & objects,
   const tier4_autoware_utils::MultiPolygon2d & object_forward_footprints)
 {
   std::vector<Collision> collisions;

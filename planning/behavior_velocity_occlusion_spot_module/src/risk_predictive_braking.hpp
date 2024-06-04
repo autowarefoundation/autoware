@@ -17,7 +17,7 @@
 
 #include "occlusion_spot_utils.hpp"
 
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <algorithm>
 #include <vector>

@@ -54,7 +54,7 @@ Polygon2d createBoostPolyFromMsg(const std::vector<geometry_msgs::msg::Point> & 
 
 std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & classification)
 {
-  std::uint8_t label = autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN;
+  std::uint8_t label = autoware_perception_msgs::msg::ObjectClassification::UNKNOWN;
   float highest_prob = 0.0;
   for (const auto & _class : classification) {
     if (highest_prob < _class.probability) {

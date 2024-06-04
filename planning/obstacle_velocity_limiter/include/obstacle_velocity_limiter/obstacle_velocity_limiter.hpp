@@ -19,7 +19,7 @@
 #include "obstacle_velocity_limiter/parameters.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
 
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 
 #include <string>
@@ -63,8 +63,8 @@ void calculateSteeringAngles(Trajectory & trajectory, const Float wheel_base);
 /// @param[in] min_vel minimum velocity for an object to be masked
 /// @return polygon masks around dynamic objects
 multi_polygon_t createPolygonMasks(
-  const autoware_auto_perception_msgs::msg::PredictedObjects & dynamic_obstacles,
-  const Float buffer, const Float min_vel);
+  const autoware_perception_msgs::msg::PredictedObjects & dynamic_obstacles, const Float buffer,
+  const Float min_vel);
 
 /// @brief create footprint polygons from projection lines
 /// @details A footprint is create for each group of lines. Each group of lines is assumed to share

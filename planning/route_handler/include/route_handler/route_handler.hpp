@@ -17,11 +17,11 @@
 
 #include <rclcpp/logger.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <autoware_planning_msgs/msg/lanelet_segment.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
 #include <lanelet2_core/Forward.h>
@@ -37,13 +37,13 @@
 
 namespace route_handler
 {
-using autoware_auto_mapping_msgs::msg::HADMapBin;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using autoware_map_msgs::msg::LaneletMapBin;
 using autoware_planning_msgs::msg::LaneletRoute;
 using autoware_planning_msgs::msg::LaneletSegment;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseStamped;
 using std_msgs::msg::Header;
+using tier4_planning_msgs::msg::PathWithLaneId;
 using unique_identifier_msgs::msg::UUID;
 using RouteSections = std::vector<autoware_planning_msgs::msg::LaneletSegment>;
 
@@ -55,10 +55,10 @@ class RouteHandler
 {
 public:
   RouteHandler() = default;
-  explicit RouteHandler(const HADMapBin & map_msg);
+  explicit RouteHandler(const LaneletMapBin & map_msg);
 
   // non-const methods
-  void setMap(const HADMapBin & map_msg);
+  void setMap(const LaneletMapBin & map_msg);
   void setRoute(const LaneletRoute & route_msg);
   void setRouteLanelets(const lanelet::ConstLanelets & path_lanelets);
   void clearRoute();

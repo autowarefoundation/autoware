@@ -26,7 +26,7 @@ from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtWidgets import QSlider
 from PyQt5.QtWidgets import QWidget
-from autoware_auto_planning_msgs.msg import Trajectory
+from autoware_planning_msgs.msg import Trajectory
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSDurabilityPolicy

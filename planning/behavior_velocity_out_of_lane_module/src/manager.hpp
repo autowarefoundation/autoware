@@ -22,11 +22,11 @@
 #include <behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
@@ -51,10 +51,10 @@ private:
   PlannerParam planner_param_;
   int64_t module_id_;
 
-  void launchNewModules(const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
+  void launchNewModules(const tier4_planning_msgs::msg::PathWithLaneId & path) override;
 
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
+    const tier4_planning_msgs::msg::PathWithLaneId & path) override;
 };
 
 class OutOfLaneModulePlugin : public PluginWrapper<OutOfLaneModuleManager>

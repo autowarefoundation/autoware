@@ -27,8 +27,8 @@
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <tier4_debug_msgs/msg/float64_multi_array_stamped.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <lanelet2_core/Forward.h>
 #include <lanelet2_core/primitives/LineString.h>
@@ -225,13 +225,13 @@ public:
     std::optional<std::vector<lanelet::CompoundPolygon3d>> yield_stuck_detect_area{std::nullopt};
 
     std::optional<geometry_msgs::msg::Polygon> candidate_collision_ego_lane_polygon{std::nullopt};
-    autoware_auto_perception_msgs::msg::PredictedObjects safe_under_traffic_control_targets;
-    autoware_auto_perception_msgs::msg::PredictedObjects unsafe_targets;
-    autoware_auto_perception_msgs::msg::PredictedObjects misjudge_targets;
-    autoware_auto_perception_msgs::msg::PredictedObjects too_late_detect_targets;
-    autoware_auto_perception_msgs::msg::PredictedObjects stuck_targets;
-    autoware_auto_perception_msgs::msg::PredictedObjects yield_stuck_targets;
-    autoware_auto_perception_msgs::msg::PredictedObjects parked_targets;
+    autoware_perception_msgs::msg::PredictedObjects safe_under_traffic_control_targets;
+    autoware_perception_msgs::msg::PredictedObjects unsafe_targets;
+    autoware_perception_msgs::msg::PredictedObjects misjudge_targets;
+    autoware_perception_msgs::msg::PredictedObjects too_late_detect_targets;
+    autoware_perception_msgs::msg::PredictedObjects stuck_targets;
+    autoware_perception_msgs::msg::PredictedObjects yield_stuck_targets;
+    autoware_perception_msgs::msg::PredictedObjects parked_targets;
     std::vector<geometry_msgs::msg::Polygon> occlusion_polygons;
     std::optional<std::pair<geometry_msgs::msg::Point, geometry_msgs::msg::Point>>
       nearest_occlusion_projection{std::nullopt};
@@ -513,15 +513,14 @@ private:
    * @brief set RTC value according to calculated DecisionResult
    */
   void prepareRTCStatus(
-    const intersection::DecisionResult &,
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path);
+    const intersection::DecisionResult &, const tier4_planning_msgs::msg::PathWithLaneId & path);
 
   /**
    * @brief act based on current RTC approval
    */
   void reactRTCApproval(
     const intersection::DecisionResult & decision_result,
-    autoware_auto_planning_msgs::msg::PathWithLaneId * path, StopReason * stop_reason);
+    tier4_planning_msgs::msg::PathWithLaneId * path, StopReason * stop_reason);
   /** @}*/
 
 private:
@@ -569,7 +568,7 @@ private:
     const lanelet::ConstLanelet & first_attention_lane,
     const std::optional<lanelet::CompoundPolygon3d> & second_attention_area_opt,
     const intersection::InterpolatedPathInfo & interpolated_path_info,
-    autoware_auto_planning_msgs::msg::PathWithLaneId * original_path) const;
+    tier4_planning_msgs::msg::PathWithLaneId * original_path) const;
 
   /**
    * @brief generate IntersectionLanelets
@@ -639,15 +638,15 @@ private:
    * intersection_lanelets.first_conflicting_lane(). They are ensured in prepareIntersectionData()
    */
   std::optional<intersection::StuckStop> isStuckStatus(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+    const tier4_planning_msgs::msg::PathWithLaneId & path,
     const intersection::IntersectionStopLines & intersection_stoplines,
     const intersection::PathLanelets & path_lanelets) const;
 
   bool isTargetStuckVehicleType(
-    const autoware_auto_perception_msgs::msg::PredictedObject & object) const;
+    const autoware_perception_msgs::msg::PredictedObject & object) const;
 
   bool isTargetYieldStuckVehicleType(
-    const autoware_auto_perception_msgs::msg::PredictedObject & object) const;
+    const autoware_perception_msgs::msg::PredictedObject & object) const;
 
   /**
    * @brief check stuck
@@ -669,7 +668,7 @@ private:
    * intersection_stoplines.default_stopline, intersection_stoplines.first_attention_stopline
    */
   std::optional<intersection::YieldStuckStop> isYieldStuckStatus(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+    const tier4_planning_msgs::msg::PathWithLaneId & path,
     const intersection::InterpolatedPathInfo & interpolated_path_info,
     const intersection::IntersectionStopLines & intersection_stoplines) const;
 
@@ -726,7 +725,7 @@ private:
    * intersection_stoplines.occlusion_stopline
    */
   PassJudgeStatus isOverPassJudgeLinesStatus(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const bool is_occlusion_state,
+    const tier4_planning_msgs::msg::PathWithLaneId & path, const bool is_occlusion_state,
     const intersection::IntersectionStopLines & intersection_stoplines);
   /** @} */
 
@@ -739,7 +738,7 @@ private:
    * @{
    */
   bool isTargetCollisionVehicleType(
-    const autoware_auto_perception_msgs::msg::PredictedObject & object) const;
+    const autoware_perception_msgs::msg::PredictedObject & object) const;
 
   /**
    * @brief find the objects on attention_area/intersection_area and update positional information
@@ -759,7 +758,7 @@ private:
 
   void cutPredictPathWithinDuration(
     const builtin_interfaces::msg::Time & object_stamp, const double time_thr,
-    autoware_auto_perception_msgs::msg::PredictedPath * predicted_path) const;
+    autoware_perception_msgs::msg::PredictedPath * predicted_path) const;
 
   /**
    * @brief check if there are any objects around the stoplines on the attention areas when ego
@@ -790,7 +789,7 @@ private:
    * situation
    */
   std::string generateEgoRiskEvasiveDiagnosis(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
+    const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
     const TimeDistanceArray & ego_time_distance_array,
     const std::vector<
       std::pair<CollisionStatus::BlameType, std::shared_ptr<intersection::ObjectInfo>>> &
@@ -818,7 +817,7 @@ private:
    * intersection_stoplines.first_attention_stopline
    */
   TimeDistanceArray calcIntersectionPassingTime(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const bool is_prioritized,
+    const tier4_planning_msgs::msg::PathWithLaneId & path, const bool is_prioritized,
     const intersection::IntersectionStopLines & intersection_stoplines,
     tier4_debug_msgs::msg::Float64MultiArrayStamped * debug_ttc_array) const;
   /** @} */

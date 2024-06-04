@@ -29,7 +29,7 @@
 namespace behavior_velocity_planner::dynamic_obstacle_stop
 {
 tier4_autoware_utils::MultiPolygon2d make_forward_footprints(
-  const std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & obstacles,
+  const std::vector<autoware_perception_msgs::msg::PredictedObject> & obstacles,
   const PlannerParam & params, const double hysteresis)
 {
   tier4_autoware_utils::MultiPolygon2d forward_footprints;
@@ -41,7 +41,7 @@ tier4_autoware_utils::MultiPolygon2d make_forward_footprints(
 }
 
 tier4_autoware_utils::Polygon2d make_forward_footprint(
-  const autoware_auto_perception_msgs::msg::PredictedObject & obstacle, const PlannerParam & params,
+  const autoware_perception_msgs::msg::PredictedObject & obstacle, const PlannerParam & params,
   const double hysteresis)
 {
   const auto & shape = obstacle.shape.dimensions;

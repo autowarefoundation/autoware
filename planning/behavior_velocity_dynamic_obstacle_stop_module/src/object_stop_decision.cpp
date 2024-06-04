@@ -23,7 +23,7 @@ namespace behavior_velocity_planner::dynamic_obstacle_stop
 void update_object_map(
   ObjectStopDecisionMap & object_map, const std::vector<Collision> & collisions,
   const rclcpp::Time & now,
-  const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & path_points,
+  const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & path_points,
   const PlannerParam & params)
 {
   for (auto & [object, decision] : object_map) decision.collision_detected = false;

@@ -21,16 +21,16 @@
 #include "behavior_path_start_planner_module/pull_out_path.hpp"
 #include "behavior_path_start_planner_module/util.hpp"
 
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <memory>
 
 namespace behavior_path_planner
 {
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using tier4_autoware_utils::LinearRing2d;
+using tier4_planning_msgs::msg::PathWithLaneId;
 
 enum class PlannerType {
   NONE = 0,

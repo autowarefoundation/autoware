@@ -17,8 +17,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <tier4_debug_msgs/msg/float32_multi_array_stamped.hpp>
 
@@ -31,9 +31,9 @@
 
 namespace motion_planning
 {
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
-using autoware_auto_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObject;
 class AdaptiveCruiseController
 {
 public:
@@ -45,7 +45,7 @@ public:
     const TrajectoryPoints & trajectory, const int nearest_collision_point_idx,
     const geometry_msgs::msg::Pose self_pose, const pcl::PointXYZ & nearest_collision_point,
     const rclcpp::Time nearest_collision_point_time,
-    const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr object_ptr,
+    const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr object_ptr,
     const nav_msgs::msg::Odometry::ConstSharedPtr current_velocity_ptr, bool * need_to_stop,
     TrajectoryPoints * output_trajectory, const std_msgs::msg::Header trajectory_header);
 
@@ -192,7 +192,7 @@ private:
     const std_msgs::msg::Header & trajectory_header);
   double calcTrajYaw(const TrajectoryPoints & trajectory, const int collision_point_idx);
   std::optional<double> estimatePointVelocityFromObject(
-    const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr object_ptr,
+    const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr object_ptr,
     const double traj_yaw, const pcl::PointXYZ & nearest_collision_point);
   std::optional<double> estimatePointVelocityFromPcl(
     const double traj_yaw, const pcl::PointXYZ & nearest_collision_point,

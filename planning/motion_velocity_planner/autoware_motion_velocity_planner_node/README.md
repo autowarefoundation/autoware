@@ -17,23 +17,23 @@ This means that to stop before a wall, a stop point is inserted in the trajector
 
 ## Input topics
 
-| Name                                   | Type                                                 | Description                   |
-| -------------------------------------- | ---------------------------------------------------- | ----------------------------- |
-| `~/input/trajectory`                   | autoware_auto_planning_msgs::msg::Trajectory         | input trajectory              |
-| `~/input/vector_map`                   | autoware_auto_mapping_msgs::msg::HADMapBin           | vector map                    |
-| `~/input/vehicle_odometry`             | nav_msgs::msg::Odometry                              | vehicle position and velocity |
-| `~/input/accel`                        | geometry_msgs::msg::AccelWithCovarianceStamped       | vehicle acceleration          |
-| `~/input/dynamic_objects`              | autoware_auto_perception_msgs::msg::PredictedObjects | dynamic objects               |
-| `~/input/no_ground_pointcloud`         | sensor_msgs::msg::PointCloud2                        | obstacle pointcloud           |
-| `~/input/traffic_signals`              | autoware_perception_msgs::msg::TrafficSignalArray    | traffic light states          |
-| `~/input/virtual_traffic_light_states` | tier4_v2x_msgs::msg::VirtualTrafficLightStateArray   | virtual traffic light states  |
-| `~/input/occupancy_grid`               | nav_msgs::msg::OccupancyGrid                         | occupancy grid                |
+| Name                                   | Type                                                  | Description                   |
+| -------------------------------------- | ----------------------------------------------------- | ----------------------------- |
+| `~/input/trajectory`                   | autoware_planning_msgs::msg::Trajectory               | input trajectory              |
+| `~/input/vector_map`                   | autoware_map_msgs::msg::LaneletMapBin                 | vector map                    |
+| `~/input/vehicle_odometry`             | nav_msgs::msg::Odometry                               | vehicle position and velocity |
+| `~/input/accel`                        | geometry_msgs::msg::AccelWithCovarianceStamped        | vehicle acceleration          |
+| `~/input/dynamic_objects`              | autoware_perception_msgs::msg::PredictedObjects       | dynamic objects               |
+| `~/input/no_ground_pointcloud`         | sensor_msgs::msg::PointCloud2                         | obstacle pointcloud           |
+| `~/input/traffic_signals`              | autoware_perception_msgs::msg::TrafficLightGroupArray | traffic light states          |
+| `~/input/virtual_traffic_light_states` | tier4_v2x_msgs::msg::VirtualTrafficLightStateArray    | virtual traffic light states  |
+| `~/input/occupancy_grid`               | nav_msgs::msg::OccupancyGrid                          | occupancy grid                |
 
 ## Output topics
 
 | Name                        | Type                                              | Description                                        |
 | --------------------------- | ------------------------------------------------- | -------------------------------------------------- |
-| `~/output/trajectory`       | autoware_auto_planning_msgs::msg::Trajectory      | Ego trajectory with updated velocity profile       |
+| `~/output/trajectory`       | autoware_planning_msgs::msg::Trajectory           | Ego trajectory with updated velocity profile       |
 | `~/output/velocity_factors` | autoware_adapi_v1_msgs::msg::VelocityFactorsArray | factors causing change in the ego velocity profile |
 
 ## Services

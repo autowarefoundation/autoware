@@ -53,7 +53,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
 
 #include <string>
 
@@ -71,7 +71,7 @@ public:
   grid_map::Matrix makeCostmapFromObjects(
     const grid_map::GridMap & costmap, const double expand_polygon_size,
     const double size_of_expansion_kernel,
-    const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr in_objects);
+    const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr in_objects);
 
 private:
   const int NUMBER_OF_POINTS;
@@ -84,7 +84,7 @@ private:
   /// \param[in] expand_rectangle_size: expanding 4 points
   /// \param[out] 4 rectangle points
   Eigen::MatrixXd makeRectanglePoints(
-    const autoware_auto_perception_msgs::msg::PredictedObject & in_object,
+    const autoware_perception_msgs::msg::PredictedObject & in_object,
     const double expand_rectangle_size);
 
   /// \brief make polygon(grid_map::Polygon) from 4 rectangle's points
@@ -93,7 +93,7 @@ private:
   /// \param[out] polygon with 4 rectangle points
   grid_map::Polygon makePolygonFromObjectBox(
     const std_msgs::msg::Header & header,
-    const autoware_auto_perception_msgs::msg::PredictedObject & in_object,
+    const autoware_perception_msgs::msg::PredictedObject & in_object,
     const double expand_rectangle_size);
 
   /// \brief make expanded point from convex hull's point
@@ -111,7 +111,7 @@ private:
   /// \param[out] polygon object with convex hull points
   grid_map::Polygon makePolygonFromObjectConvexHull(
     const std_msgs::msg::Header & header,
-    const autoware_auto_perception_msgs::msg::PredictedObject & in_object,
+    const autoware_perception_msgs::msg::PredictedObject & in_object,
     const double expand_polygon_size);
 
   /// \brief set cost in polygon by using DynamicObject's score

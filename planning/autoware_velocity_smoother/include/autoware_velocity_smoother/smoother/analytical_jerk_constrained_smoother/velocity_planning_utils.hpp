@@ -18,7 +18,7 @@
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -29,8 +29,8 @@ namespace autoware_velocity_smoother
 {
 namespace analytical_velocity_planning_utils
 {
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
-using TrajectoryPoints = std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>;
+using autoware_planning_msgs::msg::TrajectoryPoint;
+using TrajectoryPoints = std::vector<autoware_planning_msgs::msg::TrajectoryPoint>;
 
 bool calcStopDistWithJerkAndAccConstraints(
   const double v0, const double a0, const double jerk_acc, const double jerk_dec,

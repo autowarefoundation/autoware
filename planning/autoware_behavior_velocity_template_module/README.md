@@ -50,13 +50,13 @@ The managing of your modules is defined in manager.hpp and manager.cpp. The mana
 
 #### `launchNewModules()` Method
 
-- This is a private method that takes an argument of type `autoware_auto_planning_msgs::msg::PathWithLaneId`.
+- This is a private method that takes an argument of type `tier4_planning_msgs::msg::PathWithLaneId`.
 - It is responsible for launching new modules based on the provided path information (PathWithLaneId). The implementation of this method involves initializing and configuring modules specific to your behavior velocity planner by using the `TemplateModule` class.
 - In the provided source code, it initializes a `module_id` to 0 and checks if a module with the same ID is already registered. If not, it registers a new `TemplateModule` with the module ID. Note that each module managed by the `TemplateModuleManager` should have a unique ID. The template code registers a single module, so the `module_id` is set as 0 for simplicity.
 
 #### `getModuleExpiredFunction()` Method
 
-- This is a private method that takes an argument of type `autoware_auto_planning_msgs::msg::PathWithLaneId`.
+- This is a private method that takes an argument of type `tier4_planning_msgs::msg::PathWithLaneId`.
 - It returns a `std::function<bool(const std::shared_ptr<SceneModuleInterface>&)>`. This function is used by the behavior velocity planner to determine whether a particular module has expired or not based on the given path.
 - The implementation of this method is expected to return a function that can be used to check the expiration status of modules.
 

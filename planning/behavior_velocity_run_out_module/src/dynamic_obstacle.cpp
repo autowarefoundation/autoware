@@ -321,7 +321,7 @@ double convertDurationToDouble(const builtin_interfaces::msg::Duration & duratio
 
 // Create a path leading up to a specified prediction time
 std::vector<geometry_msgs::msg::Pose> createPathToPredictionTime(
-  const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path, double prediction_time)
+  const autoware_perception_msgs::msg::PredictedPath & predicted_path, double prediction_time)
 {
   // Calculate the number of poses to include based on the prediction time and the time step between
   // poses

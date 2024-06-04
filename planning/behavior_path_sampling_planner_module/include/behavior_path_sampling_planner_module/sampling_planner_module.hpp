@@ -41,8 +41,8 @@
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
-#include "autoware_auto_planning_msgs/msg/path_with_lane_id.hpp"
 #include "tier4_planning_msgs/msg/lateral_offset.hpp"
+#include "tier4_planning_msgs/msg/path_with_lane_id.hpp"
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/algorithms/within.hpp>
@@ -58,7 +58,7 @@
 #include <vector>
 namespace behavior_path_planner
 {
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 struct SamplingPlannerData
 {
   // input

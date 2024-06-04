@@ -19,14 +19,14 @@
 #include <autoware_behavior_path_static_obstacle_avoidance_module/data_structs.hpp>
 #include <rclcpp/node.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detail/object_classification__struct.hpp>
+#include <autoware_perception_msgs/msg/detail/object_classification__struct.hpp>
 
 #include <string>
 #include <vector>
 
 namespace behavior_path_planner
 {
-using autoware_auto_perception_msgs::msg::ObjectClassification;
+using autoware_perception_msgs::msg::ObjectClassification;
 using tier4_autoware_utils::getOrDeclareParameter;
 
 AvoidanceParameters getParameter(rclcpp::Node * node)

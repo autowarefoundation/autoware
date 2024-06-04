@@ -75,7 +75,7 @@ std::optional<Point2d> findNearestCollisionPoint(
 }
 
 bool createTargetPoint(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input, const LineString2d & stop_line,
+  const tier4_planning_msgs::msg::PathWithLaneId & input, const LineString2d & stop_line,
   const double offset, size_t & target_point_idx, Eigen::Vector2d & target_point)
 {
   if (input.points.size() < 2) {
@@ -140,7 +140,7 @@ bool createTargetPoint(
 }
 
 bool calcStopPointAndInsertIndex(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
+  const tier4_planning_msgs::msg::PathWithLaneId & input_path,
   const lanelet::ConstLineString3d & lanelet_stop_lines, const double & offset,
   const double & stop_line_extend_length, Eigen::Vector2d & stop_line_point,
   size_t & stop_line_point_idx)
@@ -394,12 +394,11 @@ bool TrafficLightModule::isTrafficSignalTimedOut() const
   return false;
 }
 
-autoware_auto_planning_msgs::msg::PathWithLaneId TrafficLightModule::insertStopPose(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input,
-  const size_t & insert_target_point_idx, const Eigen::Vector2d & target_point,
-  tier4_planning_msgs::msg::StopReason * stop_reason)
+tier4_planning_msgs::msg::PathWithLaneId TrafficLightModule::insertStopPose(
+  const tier4_planning_msgs::msg::PathWithLaneId & input, const size_t & insert_target_point_idx,
+  const Eigen::Vector2d & target_point, tier4_planning_msgs::msg::StopReason * stop_reason)
 {
-  autoware_auto_planning_msgs::msg::PathWithLaneId modified_path;
+  tier4_planning_msgs::msg::PathWithLaneId modified_path;
   modified_path = input;
 
   // Create stop pose

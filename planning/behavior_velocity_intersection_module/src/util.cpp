@@ -45,8 +45,7 @@ namespace behavior_velocity_planner::util
 namespace bg = boost::geometry;
 
 static std::optional<size_t> getDuplicatedPointIdx(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const geometry_msgs::msg::Point & point)
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const geometry_msgs::msg::Point & point)
 {
   for (size_t i = 0; i < path.points.size(); i++) {
     const auto & p = path.points.at(i).point.pose.position;
@@ -61,8 +60,7 @@ static std::optional<size_t> getDuplicatedPointIdx(
 }
 
 std::optional<size_t> insertPointIndex(
-  const geometry_msgs::msg::Pose & in_pose,
-  autoware_auto_planning_msgs::msg::PathWithLaneId * inout_path,
+  const geometry_msgs::msg::Pose & in_pose, tier4_planning_msgs::msg::PathWithLaneId * inout_path,
   const double ego_nearest_dist_threshold, const double ego_nearest_yaw_threshold)
 {
   const auto duplicate_idx_opt = getDuplicatedPointIdx(*inout_path, in_pose.position);
@@ -75,8 +73,7 @@ std::optional<size_t> insertPointIndex(
   // vector.insert(i) inserts element on the left side of v[i]
   // the velocity need to be zero order hold(from prior point)
   int insert_idx = closest_idx;
-  autoware_auto_planning_msgs::msg::PathPointWithLaneId inserted_point =
-    inout_path->points.at(closest_idx);
+  tier4_planning_msgs::msg::PathPointWithLaneId inserted_point = inout_path->points.at(closest_idx);
   if (planning_utils::isAheadOf(in_pose, inout_path->points.at(closest_idx).point.pose)) {
     ++insert_idx;
   } else {
@@ -94,8 +91,7 @@ std::optional<size_t> insertPointIndex(
 }
 
 bool hasLaneIds(
-  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p,
-  const std::set<lanelet::Id> & ids)
+  const tier4_planning_msgs::msg::PathPointWithLaneId & p, const std::set<lanelet::Id> & ids)
 {
   for (const auto & pid : p.lane_ids) {
     if (ids.find(pid) != ids.end()) {
@@ -106,7 +102,7 @@ bool hasLaneIds(
 }
 
 std::optional<std::pair<size_t, size_t>> findLaneIdsInterval(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & p, const std::set<lanelet::Id> & ids)
+  const tier4_planning_msgs::msg::PathWithLaneId & p, const std::set<lanelet::Id> & ids)
 {
   bool found = false;
   size_t start = 0;
@@ -183,7 +179,7 @@ getFirstPointInsidePolygonsByFootprint(
 }
 
 std::optional<size_t> getFirstPointInsidePolygon(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const tier4_planning_msgs::msg::PathWithLaneId & path,
   const std::pair<size_t, size_t> lane_interval, const lanelet::CompoundPolygon3d & polygon,
   const bool search_forward)
 {
@@ -316,7 +312,7 @@ mergeLaneletsByTopologicalSort(
 }
 
 bool isOverTargetIndex(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
   const geometry_msgs::msg::Pose & current_pose, const size_t target_idx)
 {
   if (closest_idx == target_idx) {
@@ -327,7 +323,7 @@ bool isOverTargetIndex(
 }
 
 bool isBeforeTargetIndex(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
   const geometry_msgs::msg::Pose & current_pose, const size_t target_idx)
 {
   if (closest_idx == target_idx) {
@@ -362,7 +358,7 @@ bool hasAssociatedTrafficLight(lanelet::ConstLanelet lane)
 
 std::optional<intersection::InterpolatedPathInfo> generateInterpolatedPath(
   const lanelet::Id lane_id, const std::set<lanelet::Id> & associative_lane_ids,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path, const double ds,
+  const tier4_planning_msgs::msg::PathWithLaneId & input_path, const double ds,
   const rclcpp::Logger logger)
 {
   intersection::InterpolatedPathInfo interpolated_path_info;
@@ -378,7 +374,7 @@ std::optional<intersection::InterpolatedPathInfo> generateInterpolatedPath(
 }
 
 geometry_msgs::msg::Pose getObjectPoseWithVelocityDirection(
-  const autoware_auto_perception_msgs::msg::PredictedObjectKinematics & obj_state)
+  const autoware_perception_msgs::msg::PredictedObjectKinematics & obj_state)
 {
   if (obj_state.initial_twist_with_covariance.twist.linear.x >= 0) {
     return obj_state.initial_pose_with_covariance.pose;

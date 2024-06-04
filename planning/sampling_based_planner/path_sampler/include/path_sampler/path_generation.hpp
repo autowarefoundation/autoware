@@ -22,7 +22,7 @@
 #include "sampler_common/structures.hpp"
 #include "sampler_common/transform/spline_transform.hpp"
 
-#include <autoware_auto_planning_msgs/msg/path.hpp>
+#include <autoware_planning_msgs/msg/path.hpp>
 
 #include <vector>
 

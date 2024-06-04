@@ -20,7 +20,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <std_msgs/msg/color_rgba.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -47,7 +47,7 @@ public:
    * @param color_name Color name
    */
   void insertObjectData(
-    const geometry_msgs::msg::Pose & pose, const autoware_auto_perception_msgs::msg::Shape & shape,
+    const geometry_msgs::msg::Pose & pose, const autoware_perception_msgs::msg::Shape & shape,
     const ColorName & color_name);
 
   /**
@@ -57,7 +57,7 @@ public:
    * @param color Color data with alpha
    */
   void insertObjectDataWithCustomColor(
-    const geometry_msgs::msg::Pose & pose, const autoware_auto_perception_msgs::msg::Shape & shape,
+    const geometry_msgs::msg::Pose & pose, const autoware_perception_msgs::msg::Shape & shape,
     const std_msgs::msg::ColorRGBA & color);
 
   /**

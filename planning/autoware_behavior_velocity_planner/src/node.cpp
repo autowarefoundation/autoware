@@ -57,10 +57,10 @@ namespace autoware::behavior_velocity_planner
 namespace
 {
 
-autoware_auto_planning_msgs::msg::Path to_path(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path_with_id)
+autoware_planning_msgs::msg::Path to_path(
+  const tier4_planning_msgs::msg::PathWithLaneId & path_with_id)
 {
-  autoware_auto_planning_msgs::msg::Path path;
+  autoware_planning_msgs::msg::Path path;
   for (const auto & path_point : path_with_id.points) {
     path.points.push_back(path_point.point);
   }
@@ -79,13 +79,13 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
 
   // Trigger Subscriber
   trigger_sub_path_with_lane_id_ =
-    this->create_subscription<autoware_auto_planning_msgs::msg::PathWithLaneId>(
+    this->create_subscription<tier4_planning_msgs::msg::PathWithLaneId>(
       "~/input/path_with_lane_id", 1, std::bind(&BehaviorVelocityPlannerNode::onTrigger, this, _1),
       createSubscriptionOptions(this));
 
   // Subscribers
   sub_predicted_objects_ =
-    this->create_subscription<autoware_auto_perception_msgs::msg::PredictedObjects>(
+    this->create_subscription<autoware_perception_msgs::msg::PredictedObjects>(
       "~/input/dynamic_objects", 1,
       std::bind(&BehaviorVelocityPlannerNode::onPredictedObjects, this, _1),
       createSubscriptionOptions(this));
@@ -99,12 +99,12 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   sub_acceleration_ = this->create_subscription<geometry_msgs::msg::AccelWithCovarianceStamped>(
     "~/input/accel", 1, std::bind(&BehaviorVelocityPlannerNode::onAcceleration, this, _1),
     createSubscriptionOptions(this));
-  sub_lanelet_map_ = this->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+  sub_lanelet_map_ = this->create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
     "~/input/vector_map", rclcpp::QoS(10).transient_local(),
     std::bind(&BehaviorVelocityPlannerNode::onLaneletMap, this, _1),
     createSubscriptionOptions(this));
   sub_traffic_signals_ =
-    this->create_subscription<autoware_perception_msgs::msg::TrafficSignalArray>(
+    this->create_subscription<autoware_perception_msgs::msg::TrafficLightGroupArray>(
       "~/input/traffic_signals", 1,
       std::bind(&BehaviorVelocityPlannerNode::onTrafficSignals, this, _1),
       createSubscriptionOptions(this));
@@ -130,7 +130,7 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   onParam();
 
   // Publishers
-  path_pub_ = this->create_publisher<autoware_auto_planning_msgs::msg::Path>("~/output/path", 1);
+  path_pub_ = this->create_publisher<autoware_planning_msgs::msg::Path>("~/output/path", 1);
   stop_reason_diag_pub_ =
     this->create_publisher<diagnostic_msgs::msg::DiagnosticStatus>("~/output/stop_reason", 1);
   debug_viz_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/path", 1);
@@ -231,7 +231,7 @@ void BehaviorVelocityPlannerNode::onOccupancyGrid(
 }
 
 void BehaviorVelocityPlannerNode::onPredictedObjects(
-  const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr msg)
+  const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr msg)
 {
   std::lock_guard<std::mutex> lock(mutex_);
   planner_data_.predicted_objects = msg;
@@ -315,7 +315,7 @@ void BehaviorVelocityPlannerNode::onParam()
 }
 
 void BehaviorVelocityPlannerNode::onLaneletMap(
-  const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg)
+  const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg)
 {
   std::lock_guard<std::mutex> lock(mutex_);
 
@@ -324,7 +324,7 @@ void BehaviorVelocityPlannerNode::onLaneletMap(
 }
 
 void BehaviorVelocityPlannerNode::onTrafficSignals(
-  const autoware_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr msg)
+  const autoware_perception_msgs::msg::TrafficLightGroupArray::ConstSharedPtr msg)
 {
   std::lock_guard<std::mutex> lock(mutex_);
 
@@ -333,28 +333,30 @@ void BehaviorVelocityPlannerNode::onTrafficSignals(
   const auto traffic_light_id_map_last_observed_old =
     planner_data_.traffic_light_id_map_last_observed_;
   planner_data_.traffic_light_id_map_last_observed_.clear();
-  for (const auto & signal : msg->signals) {
+  for (const auto & signal : msg->traffic_light_groups) {
     TrafficSignalStamped traffic_signal;
     traffic_signal.stamp = msg->stamp;
     traffic_signal.signal = signal;
-    planner_data_.traffic_light_id_map_raw_[signal.traffic_signal_id] = traffic_signal;
+    planner_data_.traffic_light_id_map_raw_[signal.traffic_light_group_id] = traffic_signal;
     const bool is_unknown_observation =
       std::any_of(signal.elements.begin(), signal.elements.end(), [](const auto & element) {
-        return element.color == autoware_perception_msgs::msg::TrafficSignalElement::UNKNOWN;
+        return element.color == autoware_perception_msgs::msg::TrafficLightElement::UNKNOWN;
       });
     // if the observation is UNKNOWN and past observation is available, only update the timestamp
     // and keep the body of the info
-    const auto old_data = traffic_light_id_map_last_observed_old.find(signal.traffic_signal_id);
+    const auto old_data =
+      traffic_light_id_map_last_observed_old.find(signal.traffic_light_group_id);
     if (is_unknown_observation && old_data != traffic_light_id_map_last_observed_old.end()) {
       // copy last observation
-      planner_data_.traffic_light_id_map_last_observed_[signal.traffic_signal_id] =
+      planner_data_.traffic_light_id_map_last_observed_[signal.traffic_light_group_id] =
         old_data->second;
       // update timestamp
-      planner_data_.traffic_light_id_map_last_observed_[signal.traffic_signal_id].stamp =
+      planner_data_.traffic_light_id_map_last_observed_[signal.traffic_light_group_id].stamp =
         msg->stamp;
     } else {
       // if (1)the observation is not UNKNOWN or (2)the very first observation is UNKNOWN
-      planner_data_.traffic_light_id_map_last_observed_[signal.traffic_signal_id] = traffic_signal;
+      planner_data_.traffic_light_id_map_last_observed_[signal.traffic_light_group_id] =
+        traffic_signal;
     }
   }
 }
@@ -373,7 +375,7 @@ void BehaviorVelocityPlannerNode::onVirtualTrafficLightStates(
 }
 
 void BehaviorVelocityPlannerNode::onTrigger(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg)
+  const tier4_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg)
 {
   std::unique_lock<std::mutex> lk(mutex_);
 
@@ -396,7 +398,7 @@ void BehaviorVelocityPlannerNode::onTrigger(
     return;
   }
 
-  const autoware_auto_planning_msgs::msg::Path output_path_msg =
+  const autoware_planning_msgs::msg::Path output_path_msg =
     generatePath(input_path_msg, planner_data_);
 
   lk.unlock();
@@ -410,11 +412,11 @@ void BehaviorVelocityPlannerNode::onTrigger(
   }
 }
 
-autoware_auto_planning_msgs::msg::Path BehaviorVelocityPlannerNode::generatePath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg,
+autoware_planning_msgs::msg::Path BehaviorVelocityPlannerNode::generatePath(
+  const tier4_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg,
   const PlannerData & planner_data)
 {
-  autoware_auto_planning_msgs::msg::Path output_path_msg;
+  autoware_planning_msgs::msg::Path output_path_msg;
 
   // TODO(someone): support backward path
   const auto is_driving_forward = motion_utils::isDrivingForward(input_path_msg->points);
@@ -456,8 +458,7 @@ autoware_auto_planning_msgs::msg::Path BehaviorVelocityPlannerNode::generatePath
   return output_path_msg;
 }
 
-void BehaviorVelocityPlannerNode::publishDebugMarker(
-  const autoware_auto_planning_msgs::msg::Path & path)
+void BehaviorVelocityPlannerNode::publishDebugMarker(const autoware_planning_msgs::msg::Path & path)
 {
   visualization_msgs::msg::MarkerArray output_msg;
   for (size_t i = 0; i < path.points.size(); ++i) {

@@ -67,7 +67,7 @@ PathWithLaneId resamplePathWithSpline(
     return path;
   }
 
-  std::vector<autoware_auto_planning_msgs::msg::PathPoint> transformed_path(path.points.size());
+  std::vector<autoware_planning_msgs::msg::PathPoint> transformed_path(path.points.size());
   for (size_t i = 0; i < path.points.size(); ++i) {
     transformed_path.at(i) = path.points.at(i).point;
   }

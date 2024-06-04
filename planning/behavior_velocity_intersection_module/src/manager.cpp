@@ -297,12 +297,12 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
 
   decision_state_pub_ =
     node.create_publisher<std_msgs::msg::String>("~/debug/intersection/decision_state", 1);
-  tl_observation_pub_ = node.create_publisher<autoware_perception_msgs::msg::TrafficSignal>(
+  tl_observation_pub_ = node.create_publisher<autoware_perception_msgs::msg::TrafficLightGroup>(
     "~/debug/intersection_traffic_signal", 1);
 }
 
 void IntersectionModuleManager::launchNewModules(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto routing_graph = planner_data_->route_handler_->getRoutingGraphPtr();
   const auto lanelet_map = planner_data_->route_handler_->getLaneletMapPtr();
@@ -356,7 +356,7 @@ void IntersectionModuleManager::launchNewModules(
 
 std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 IntersectionModuleManager::getModuleExpiredFunction(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto lane_set = planning_utils::getLaneletsOnPath(
     path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_odometry->pose);
@@ -446,7 +446,7 @@ void IntersectionModuleManager::setActivation()
 }
 
 void IntersectionModuleManager::deleteExpiredModules(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto isModuleExpired = getModuleExpiredFunction(path);
 
@@ -483,7 +483,7 @@ MergeFromPrivateModuleManager::MergeFromPrivateModuleManager(rclcpp::Node & node
 }
 
 void MergeFromPrivateModuleManager::launchNewModules(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto routing_graph = planner_data_->route_handler_->getRoutingGraphPtr();
   const auto lanelet_map = planner_data_->route_handler_->getLaneletMapPtr();
@@ -550,7 +550,7 @@ void MergeFromPrivateModuleManager::launchNewModules(
 
 std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 MergeFromPrivateModuleManager::getModuleExpiredFunction(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+  const tier4_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto lane_set = planning_utils::getLaneletsOnPath(
     path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_odometry->pose);

@@ -51,7 +51,7 @@ namespace surround_obstacle_checker
 namespace bg = boost::geometry;
 using Point2d = bg::model::d2::point_xy<double>;
 using Polygon2d = bg::model::polygon<Point2d>;
-using autoware_auto_perception_msgs::msg::ObjectClassification;
+using autoware_perception_msgs::msg::ObjectClassification;
 using tier4_autoware_utils::createPoint;
 using tier4_autoware_utils::pose2transform;
 

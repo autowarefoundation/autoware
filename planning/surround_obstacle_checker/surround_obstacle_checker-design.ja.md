@@ -78,13 +78,13 @@ Stop condition の項で述べたように、状態によって障害物判定�
 
 ### Input
 
-| Name                                           | Type                                                   | Description                                                        |
-| ---------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------ |
-| `/perception/obstacle_segmentation/pointcloud` | `sensor_msgs::msg::PointCloud2`                        | Pointcloud of obstacles which the ego-vehicle should stop or avoid |
-| `/perception/object_recognition/objects`       | `autoware_auto_perception_msgs::msg::PredictedObjects` | Dynamic objects                                                    |
-| `/localization/kinematic_state`                | `nav_msgs::msg::Odometry`                              | Current twist                                                      |
-| `/tf`                                          | `tf2_msgs::msg::TFMessage`                             | TF                                                                 |
-| `/tf_static`                                   | `tf2_msgs::msg::TFMessage`                             | TF static                                                          |
+| Name                                           | Type                                              | Description                                                        |
+| ---------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------ |
+| `/perception/obstacle_segmentation/pointcloud` | `sensor_msgs::msg::PointCloud2`                   | Pointcloud of obstacles which the ego-vehicle should stop or avoid |
+| `/perception/object_recognition/objects`       | `autoware_perception_msgs::msg::PredictedObjects` | Dynamic objects                                                    |
+| `/localization/kinematic_state`                | `nav_msgs::msg::Odometry`                         | Current twist                                                      |
+| `/tf`                                          | `tf2_msgs::msg::TFMessage`                        | TF                                                                 |
+| `/tf_static`                                   | `tf2_msgs::msg::TFMessage`                        | TF static                                                          |
 
 ### Output
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This package provides tools that convert topic type among types are defined in <https://github.com/tier4/autoware_auto_msgs>.
+This package provides tools that convert topic type among types are defined in <https://github.com/autowarefoundation/autoware_msgs>.
 
 ## Inner-workings / Algorithms
 

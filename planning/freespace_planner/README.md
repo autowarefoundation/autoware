@@ -13,19 +13,19 @@ In other words, the output trajectory doesn't include both forward and backward 
 
 ### Input topics
 
-| Name                    | Type                               | Description                                               |
-| ----------------------- | ---------------------------------- | --------------------------------------------------------- |
-| `~input/route`          | autoware_auto_planning_msgs::Route | route and goal pose                                       |
-| `~input/occupancy_grid` | nav_msgs::OccupancyGrid            | costmap, for drivable areas                               |
-| `~input/odometry`       | nav_msgs::Odometry                 | vehicle velocity, for checking whether vehicle is stopped |
-| `~input/scenario`       | tier4_planning_msgs::Scenario      | scenarios to be activated, for node activation            |
+| Name                    | Type                          | Description                                               |
+| ----------------------- | ----------------------------- | --------------------------------------------------------- |
+| `~input/route`          | autoware_planning_msgs::Route | route and goal pose                                       |
+| `~input/occupancy_grid` | nav_msgs::OccupancyGrid       | costmap, for drivable areas                               |
+| `~input/odometry`       | nav_msgs::Odometry            | vehicle velocity, for checking whether vehicle is stopped |
+| `~input/scenario`       | tier4_planning_msgs::Scenario | scenarios to be activated, for node activation            |
 
 ### Output topics
 
-| Name                 | Type                                    | Description                                |
-| -------------------- | --------------------------------------- | ------------------------------------------ |
-| `~output/trajectory` | autoware_auto_planning_msgs::Trajectory | trajectory to be followed                  |
-| `is_completed`       | bool (implemented as rosparam)          | whether all split trajectory are published |
+| Name                 | Type                               | Description                                |
+| -------------------- | ---------------------------------- | ------------------------------------------ |
+| `~output/trajectory` | autoware_planning_msgs::Trajectory | trajectory to be followed                  |
+| `is_completed`       | bool (implemented as rosparam)     | whether all split trajectory are published |
 
 ### Output TFs
 

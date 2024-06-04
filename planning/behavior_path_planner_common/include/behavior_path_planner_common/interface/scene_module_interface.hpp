@@ -36,8 +36,8 @@
 
 #include <autoware_adapi_v1_msgs/msg/planning_behavior.hpp>
 #include <autoware_adapi_v1_msgs/msg/steering_factor_array.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 #include <tier4_planning_msgs/msg/stop_factor.hpp>
 #include <tier4_planning_msgs/msg/stop_reason.hpp>
 #include <tier4_planning_msgs/msg/stop_reason_array.hpp>
@@ -58,7 +58,6 @@ namespace behavior_path_planner
 {
 using autoware_adapi_v1_msgs::msg::PlanningBehavior;
 using autoware_adapi_v1_msgs::msg::SteeringFactor;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using objects_of_interest_marker_interface::ColorName;
 using objects_of_interest_marker_interface::ObjectsOfInterestMarkerInterface;
 using rtc_interface::RTCInterface;
@@ -66,6 +65,7 @@ using steering_factor_interface::SteeringFactorInterface;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::generateUUID;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
+using tier4_planning_msgs::msg::PathWithLaneId;
 using tier4_planning_msgs::msg::StopFactor;
 using tier4_planning_msgs::msg::StopReason;
 using tier4_planning_msgs::msg::StopReasonArray;
@@ -520,7 +520,7 @@ protected:
 
   void setObjectsOfInterestData(
     const geometry_msgs::msg::Pose & obj_pose,
-    const autoware_auto_perception_msgs::msg::Shape & obj_shape, const ColorName & color_name)
+    const autoware_perception_msgs::msg::Shape & obj_shape, const ColorName & color_name)
   {
     for (const auto & [module_name, ptr] : objects_of_interest_marker_interface_ptr_map_) {
       if (ptr) {

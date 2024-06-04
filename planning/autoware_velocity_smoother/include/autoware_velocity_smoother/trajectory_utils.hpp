@@ -15,8 +15,8 @@
 #ifndef AUTOWARE_VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_
 #define AUTOWARE_VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_
 
-#include "autoware_auto_planning_msgs/msg/detail/trajectory_point__struct.hpp"
-#include "geometry_msgs/msg/detail/pose__struct.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
+#include "geometry_msgs/msg/pose.hpp"
 
 #include <map>
 #include <optional>
@@ -25,7 +25,7 @@
 
 namespace autoware_velocity_smoother::trajectory_utils
 {
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
 using geometry_msgs::msg::Pose;
 

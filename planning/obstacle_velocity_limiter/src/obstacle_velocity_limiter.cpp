@@ -35,8 +35,8 @@ Float calculateSafeVelocity(
 }
 
 multi_polygon_t createPolygonMasks(
-  const autoware_auto_perception_msgs::msg::PredictedObjects & dynamic_obstacles,
-  const Float buffer, const Float min_vel)
+  const autoware_perception_msgs::msg::PredictedObjects & dynamic_obstacles, const Float buffer,
+  const Float min_vel)
 {
   return createObjectPolygons(dynamic_obstacles, buffer, min_vel);
 }

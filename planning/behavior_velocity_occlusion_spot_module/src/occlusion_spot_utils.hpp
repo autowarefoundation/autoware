@@ -23,11 +23,11 @@
 #include <lanelet2_extension/visualization/visualization.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/path.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_planning_msgs/msg/path.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
@@ -48,19 +48,19 @@
 
 namespace behavior_velocity_planner
 {
-using autoware_auto_perception_msgs::msg::ObjectClassification;
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_planning_msgs::msg::Path;
-using autoware_auto_planning_msgs::msg::PathPoint;
-using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using autoware_perception_msgs::msg::ObjectClassification;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_planning_msgs::msg::Path;
+using autoware_planning_msgs::msg::PathPoint;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using lanelet::BasicLineString2d;
 using lanelet::BasicPoint2d;
 using lanelet::BasicPolygon2d;
 using lanelet::LaneletMapPtr;
+using tier4_planning_msgs::msg::PathPointWithLaneId;
+using tier4_planning_msgs::msg::PathWithLaneId;
 using DetectionAreaIdx = std::optional<std::pair<double, double>>;
 using BasicPolygons2d = std::vector<lanelet::BasicPolygon2d>;
 

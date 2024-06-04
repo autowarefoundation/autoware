@@ -24,10 +24,10 @@
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
-#include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
+#include <autoware_vehicle_msgs/msg/hazard_lights_command.hpp>
+#include <autoware_vehicle_msgs/msg/turn_indicators_command.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <boost/geometry/algorithms/intersects.hpp>
 
@@ -42,13 +42,13 @@
 
 namespace behavior_path_planner
 {
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
-using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
+using autoware_vehicle_msgs::msg::HazardLightsCommand;
+using autoware_vehicle_msgs::msg::TurnIndicatorsCommand;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using nav_msgs::msg::Odometry;
 using route_handler::RouteHandler;
+using tier4_planning_msgs::msg::PathWithLaneId;
 
 const std::map<std::string, uint8_t> g_signal_map = {
   {"left", TurnIndicatorsCommand::ENABLE_LEFT},

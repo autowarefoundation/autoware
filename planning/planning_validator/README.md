@@ -31,10 +31,10 @@ The following features are to be implemented.
 
 The `planning_validator` takes in the following inputs:
 
-| Name                 | Type                                   | Description                                    |
-| -------------------- | -------------------------------------- | ---------------------------------------------- |
-| `~/input/kinematics` | nav_msgs/Odometry                      | ego pose and twist                             |
-| `~/input/trajectory` | autoware_auto_planning_msgs/Trajectory | target trajectory to be validated in this node |
+| Name                 | Type                              | Description                                    |
+| -------------------- | --------------------------------- | ---------------------------------------------- |
+| `~/input/kinematics` | nav_msgs/Odometry                 | ego pose and twist                             |
+| `~/input/trajectory` | autoware_planning_msgs/Trajectory | target trajectory to be validated in this node |
 
 ### Outputs
 
@@ -42,7 +42,7 @@ It outputs the following:
 
 | Name                         | Type                                       | Description                                                               |
 | ---------------------------- | ------------------------------------------ | ------------------------------------------------------------------------- |
-| `~/output/trajectory`        | autoware_auto_planning_msgs/Trajectory     | validated trajectory                                                      |
+| `~/output/trajectory`        | autoware_planning_msgs/Trajectory          | validated trajectory                                                      |
 | `~/output/validation_status` | planning_validator/PlanningValidatorStatus | validator status to inform the reason why the trajectory is valid/invalid |
 | `/diagnostics`               | diagnostic_msgs/DiagnosticStatus           | diagnostics to report errors                                              |
 

@@ -23,7 +23,7 @@
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tier4_debug_msgs/msg/string_stamped.hpp>
 
@@ -49,15 +49,15 @@
 namespace behavior_velocity_planner
 {
 namespace bg = boost::geometry;
-using autoware_auto_perception_msgs::msg::ObjectClassification;
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using autoware_perception_msgs::msg::TrafficSignalElement;
+using autoware_perception_msgs::msg::ObjectClassification;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::TrafficLightElement;
 using lanelet::autoware::Crosswalk;
 using tier4_api_msgs::msg::CrosswalkStatus;
 using tier4_autoware_utils::Polygon2d;
 using tier4_autoware_utils::StopWatch;
+using tier4_planning_msgs::msg::PathWithLaneId;
 
 namespace
 {
@@ -353,7 +353,7 @@ private:
   std::optional<double> findEgoPassageDirectionAlongPath(
     const PathWithLaneId & sparse_resample_path) const;
   std::optional<double> findObjectPassageDirectionAlongVehicleLane(
-    const autoware_auto_perception_msgs::msg::PredictedPath & path) const;
+    const autoware_perception_msgs::msg::PredictedPath & path) const;
 
   std::optional<CollisionPoint> getCollisionPoint(
     const PathWithLaneId & ego_path, const PredictedObject & object,

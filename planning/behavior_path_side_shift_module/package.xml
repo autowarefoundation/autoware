@@ -18,7 +18,7 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
-  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_planning_msgs</depend>
   <depend>behavior_path_planner</depend>
   <depend>behavior_path_planner_common</depend>
   <depend>geometry_msgs</depend>

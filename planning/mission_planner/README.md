@@ -47,10 +47,10 @@ It distributes route requests and planning results according to current MRM oper
 
 ### Subscriptions
 
-| Name                    | Type                                 | Description            |
-| ----------------------- | ------------------------------------ | ---------------------- |
-| `~/input/vector_map`    | autoware_auto_mapping_msgs/HADMapBin | vector map of Lanelet2 |
-| `~/input/modified_goal` | geometry_msgs/PoseWithUuidStamped    | modified goal pose     |
+| Name                  | Type                                | Description            |
+| --------------------- | ----------------------------------- | ---------------------- |
+| `input/vector_map`    | autoware_map_msgs/msg/LaneletMapBin | vector map of Lanelet2 |
+| `input/modified_goal` | geometry_msgs/PoseWithUuidStamped   | modified goal pose     |
 
 ### Publications
 
@@ -70,7 +70,7 @@ It distributes route requests and planning results according to current MRM oper
 ![route_sections](./media/route_sections.svg)
 
 Route section, whose type is `autoware_planning_msgs/LaneletSegment`, is a "slice" of a road that bundles lane changeable lanes.
-Note that the most atomic unit of route is `autoware_auto_mapping_msgs/LaneletPrimitive`, which has the unique id of a lane in a vector map and its type.
+Note that the most atomic unit of route is `autoware_planning_msgs/LaneletPrimitive`, which has the unique id of a lane in a vector map and its type.
 Therefore, route message does not contain geometric information about the lane since we did not want to have planning module’s message to have dependency on map data structure.
 
 The ROS message of route section contains following three elements for each route section.

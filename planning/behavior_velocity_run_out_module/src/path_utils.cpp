@@ -18,7 +18,7 @@
 namespace behavior_velocity_planner::run_out_utils
 {
 geometry_msgs::msg::Point findLongitudinalNearestPoint(
-  const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
+  const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & points,
   const geometry_msgs::msg::Point & src_point,
   const std::vector<geometry_msgs::msg::Point> & target_points)
 {

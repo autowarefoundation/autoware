@@ -15,7 +15,7 @@
 
 namespace behavior_path_planner
 {
-using autoware_auto_planning_msgs::msg::PathPoint;
+using autoware_planning_msgs::msg::PathPoint;
 using geometry_msgs::msg::Twist;
 PathWithLaneId generateStraightSamplePathWithLaneId(
   float initial_pose_value, float pose_increment, size_t point_sample)

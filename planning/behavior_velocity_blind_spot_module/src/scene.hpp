@@ -20,10 +20,10 @@
 #include <behavior_velocity_planner_common/utilization/state_machine.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <geometry_msgs/msg/point.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
@@ -42,7 +42,7 @@ namespace behavior_velocity_planner
 struct InterpolatedPathInfo
 {
   /** the interpolated path */
-  autoware_auto_planning_msgs::msg::PathWithLaneId path;
+  tier4_planning_msgs::msg::PathWithLaneId path;
   /** discretization interval of interpolation */
   double ds{0.0};
   /** the intersection lanelet id */
@@ -67,7 +67,7 @@ struct OverPassJudge
 struct Unsafe
 {
   const size_t stop_line_idx;
-  const std::optional<autoware_auto_perception_msgs::msg::PredictedObject> collision_obstacle;
+  const std::optional<autoware_perception_msgs::msg::PredictedObject> collision_obstacle;
 };
 
 struct Safe
@@ -86,7 +86,7 @@ public:
   {
     std::optional<geometry_msgs::msg::Pose> virtual_wall_pose{std::nullopt};
     std::optional<lanelet::CompoundPolygon3d> detection_area;
-    autoware_auto_perception_msgs::msg::PredictedObjects conflicting_targets;
+    autoware_perception_msgs::msg::PredictedObjects conflicting_targets;
   };
 
 public:
@@ -135,21 +135,20 @@ private:
   BlindSpotDecision modifyPathVelocityDetail(PathWithLaneId * path, StopReason * stop_reason);
   // setSafe(), setDistance()
   void setRTCStatus(
-    const BlindSpotDecision & decision,
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path);
+    const BlindSpotDecision & decision, const tier4_planning_msgs::msg::PathWithLaneId & path);
   template <typename Decision>
   void setRTCStatusByDecision(
-    const Decision & decision, const autoware_auto_planning_msgs::msg::PathWithLaneId & path);
+    const Decision & decision, const tier4_planning_msgs::msg::PathWithLaneId & path);
   // stop/GO
   void reactRTCApproval(
     const BlindSpotDecision & decision, PathWithLaneId * path, StopReason * stop_reason);
   template <typename Decision>
   void reactRTCApprovalByDecision(
-    const Decision & decision, autoware_auto_planning_msgs::msg::PathWithLaneId * path,
+    const Decision & decision, tier4_planning_msgs::msg::PathWithLaneId * path,
     StopReason * stop_reason);
 
   std::optional<InterpolatedPathInfo> generateInterpolatedPathInfo(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path) const;
+    const tier4_planning_msgs::msg::PathWithLaneId & input_path) const;
 
   std::optional<lanelet::ConstLanelet> getSiblingStraightLanelet(
     const std::shared_ptr<const PlannerData> planner_data) const;
@@ -165,10 +164,10 @@ private:
    */
   std::optional<std::pair<size_t, size_t>> generateStopLine(
     const InterpolatedPathInfo & interpolated_path_info,
-    autoware_auto_planning_msgs::msg::PathWithLaneId * path) const;
+    tier4_planning_msgs::msg::PathWithLaneId * path) const;
 
   std::optional<OverPassJudge> isOverPassJudge(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+    const tier4_planning_msgs::msg::PathWithLaneId & path,
     const geometry_msgs::msg::Pose & stop_point_pose) const;
 
   double computeTimeToPassStopLine(
@@ -185,7 +184,7 @@ private:
    * @param closest_idx closest path point index from ego car in path points
    * @return true when an object is detected in blind spot
    */
-  std::optional<autoware_auto_perception_msgs::msg::PredictedObject> isCollisionDetected(
+  std::optional<autoware_perception_msgs::msg::PredictedObject> isCollisionDetected(
     const lanelet::ConstLanelets & blind_spot_lanelets,
     const geometry_msgs::msg::Pose & stop_line_pose, const lanelet::CompoundPolygon3d & area,
     const double ego_time_to_reach_stop_line);
@@ -203,7 +202,7 @@ private:
     const lanelet::ConstLanelet lanelet, const TurnDirection direction) const;
 
   lanelet::ConstLanelets generateBlindSpotLanelets(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path) const;
+    const tier4_planning_msgs::msg::PathWithLaneId & path) const;
 
   /**
    * @brief Make blind spot areas. Narrow area is made from closest path point to stop line index.
@@ -213,7 +212,7 @@ private:
    * @return Blind spot polygons
    */
   std::optional<lanelet::CompoundPolygon3d> generateBlindSpotPolygons(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
+    const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
     const lanelet::ConstLanelets & blind_spot_lanelets,
     const geometry_msgs::msg::Pose & pose) const;
 
@@ -222,17 +221,16 @@ private:
    * @param object Dynamic object
    * @return True when object belong to targeted classes
    */
-  bool isTargetObjectType(const autoware_auto_perception_msgs::msg::PredictedObject & object) const;
+  bool isTargetObjectType(const autoware_perception_msgs::msg::PredictedObject & object) const;
 
   /**
    * @brief Modify objects predicted path. remove path point if the time exceeds timer_thr.
    * @param objects_ptr target objects
    * @param time_thr    time threshold to cut path
    */
-  autoware_auto_perception_msgs::msg::PredictedObject cutPredictPathWithDuration(
+  autoware_perception_msgs::msg::PredictedObject cutPredictPathWithDuration(
     const std_msgs::msg::Header & header,
-    const autoware_auto_perception_msgs::msg::PredictedObject & object,
-    const double time_thr) const;
+    const autoware_perception_msgs::msg::PredictedObject & object, const double time_thr) const;
 
   StateMachine state_machine_;  //! for state
 

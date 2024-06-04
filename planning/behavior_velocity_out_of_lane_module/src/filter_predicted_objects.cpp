@@ -27,7 +27,7 @@
 namespace behavior_velocity_planner::out_of_lane
 {
 void cut_predicted_path_beyond_line(
-  autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
+  autoware_perception_msgs::msg::PredictedPath & predicted_path,
   const lanelet::BasicLineString2d & stop_line, const double object_front_overhang)
 {
   auto stop_line_idx = 0UL;
@@ -57,7 +57,7 @@ void cut_predicted_path_beyond_line(
 }
 
 std::optional<const lanelet::BasicLineString2d> find_next_stop_line(
-  const autoware_auto_perception_msgs::msg::PredictedPath & path, const PlannerData & planner_data)
+  const autoware_perception_msgs::msg::PredictedPath & path, const PlannerData & planner_data)
 {
   lanelet::ConstLanelets lanelets;
   lanelet::BasicLineString2d query_line;
@@ -81,8 +81,8 @@ std::optional<const lanelet::BasicLineString2d> find_next_stop_line(
 }
 
 void cut_predicted_path_beyond_red_lights(
-  autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
-  const PlannerData & planner_data, const double object_front_overhang)
+  autoware_perception_msgs::msg::PredictedPath & predicted_path, const PlannerData & planner_data,
+  const double object_front_overhang)
 {
   const auto stop_line = find_next_stop_line(predicted_path, planner_data);
   if (stop_line) {
@@ -95,15 +95,15 @@ void cut_predicted_path_beyond_red_lights(
   }
 }
 
-autoware_auto_perception_msgs::msg::PredictedObjects filter_predicted_objects(
+autoware_perception_msgs::msg::PredictedObjects filter_predicted_objects(
   const PlannerData & planner_data, const EgoData & ego_data, const PlannerParam & params)
 {
-  autoware_auto_perception_msgs::msg::PredictedObjects filtered_objects;
+  autoware_perception_msgs::msg::PredictedObjects filtered_objects;
   filtered_objects.header = planner_data.predicted_objects->header;
   for (const auto & object : planner_data.predicted_objects->objects) {
     const auto is_pedestrian =
       std::find_if(object.classification.begin(), object.classification.end(), [](const auto & c) {
-        return c.label == autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN;
+        return c.label == autoware_perception_msgs::msg::ObjectClassification::PEDESTRIAN;
       }) != object.classification.end();
     if (is_pedestrian) continue;
 

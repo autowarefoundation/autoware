@@ -21,8 +21,8 @@
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -45,15 +45,15 @@ using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseArray;
 using std_msgs::msg::Header;
 
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
 using vehicle_info_util::VehicleInfo;
 
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObjects;
 using PointVariant = std::variant<float, double>;
 
 std::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
@@ -111,10 +111,10 @@ void getLateralNearestPointForPredictedObject(
 Pose getVehicleCenterFromBase(const Pose & base_pose, const VehicleInfo & vehicle_info);
 
 Polygon2d convertPolygonObjectToGeometryPolygon(
-  const Pose & current_pose, const autoware_auto_perception_msgs::msg::Shape & obj_shape);
+  const Pose & current_pose, const autoware_perception_msgs::msg::Shape & obj_shape);
 
 Polygon2d convertCylindricalObjectToGeometryPolygon(
-  const Pose & current_pose, const autoware_auto_perception_msgs::msg::Shape & obj_shape);
+  const Pose & current_pose, const autoware_perception_msgs::msg::Shape & obj_shape);
 
 Polygon2d convertBoundingBoxObjectToGeometryPolygon(
   const Pose & current_pose, const double & base_to_front, const double & base_to_rear,
@@ -145,7 +145,7 @@ std::optional<PredictedObject> getObstacleFromUuid(
 
 bool isFrontObstacle(const Pose & ego_pose, const geometry_msgs::msg::Point & obstacle_pos);
 
-double calcObstacleMaxLength(const autoware_auto_perception_msgs::msg::Shape & shape);
+double calcObstacleMaxLength(const autoware_perception_msgs::msg::Shape & shape);
 
 rclcpp::SubscriptionOptions createSubscriptionOptions(rclcpp::Node * node_ptr);
 

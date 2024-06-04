@@ -18,8 +18,8 @@
 #include "motion_utils/trajectory/conversion.hpp"
 #include "path_smoother/utils/geometry_utils.hpp"
 
-#include "autoware_auto_planning_msgs/msg/path_point.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/path_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
 #include "geometry_msgs/msg/point32.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 

@@ -53,8 +53,8 @@
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <tier4_planning_msgs/msg/scenario.hpp>
 
 #include <grid_map_msgs/msg/grid_map.h>
@@ -84,7 +84,7 @@ private:
   bool use_parkinglot_;
 
   lanelet::LaneletMapPtr lanelet_map_;
-  autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_;
+  autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_;
   sensor_msgs::msg::PointCloud2::ConstSharedPtr points_;
 
   std::string costmap_frame_;
@@ -114,9 +114,8 @@ private:
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr pub_occupancy_grid_;
 
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_points_;
-  rclcpp::Subscription<autoware_auto_perception_msgs::msg::PredictedObjects>::SharedPtr
-    sub_objects_;
-  rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr sub_lanelet_bin_map_;
+  rclcpp::Subscription<autoware_perception_msgs::msg::PredictedObjects>::SharedPtr sub_objects_;
+  rclcpp::Subscription<autoware_map_msgs::msg::LaneletMapBin>::SharedPtr sub_lanelet_bin_map_;
   rclcpp::Subscription<tier4_planning_msgs::msg::Scenario>::SharedPtr sub_scenario_;
 
   rclcpp::TimerBase::SharedPtr timer_;
@@ -143,12 +142,12 @@ private:
   void initLaneletMap();
 
   /// \brief callback for loading lanelet2 map
-  void onLaneletMapBin(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
+  void onLaneletMapBin(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg);
 
   /// \brief callback for DynamicObjectArray
   /// \param[in] in_objects input DynamicObjectArray usually from prediction or perception
   /// component
-  void onObjects(const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr msg);
+  void onObjects(const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr msg);
 
   /// \brief callback for sensor_msgs::PointCloud2
   /// \param[in] in_points input sensor_msgs::PointCloud2. Assuming ground-filtered pointcloud
@@ -190,7 +189,7 @@ private:
   /// \brief calculate cost from DynamicObjectArray
   /// \param[in] in_objects: subscribed DynamicObjectArray
   grid_map::Matrix generateObjectsCostmap(
-    const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr in_objects);
+    const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr in_objects);
 
   /// \brief calculate cost from lanelet2 map
   grid_map::Matrix generatePrimitivesCostmap();

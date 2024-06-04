@@ -57,7 +57,7 @@ public:
   struct ModuleData
   {
     geometry_msgs::msg::Pose head_pose{};
-    autoware_auto_planning_msgs::msg::PathWithLaneId path{};
+    tier4_planning_msgs::msg::PathWithLaneId path{};
     std::optional<geometry_msgs::msg::Pose> stop_head_pose_at_stop_line;
     std::optional<geometry_msgs::msg::Pose> stop_head_pose_at_end_line;
   };
@@ -119,11 +119,11 @@ private:
   bool hasRightOfWay(const tier4_v2x_msgs::msg::VirtualTrafficLightState & state);
 
   void insertStopVelocityAtStopLine(
-    autoware_auto_planning_msgs::msg::PathWithLaneId * path,
+    tier4_planning_msgs::msg::PathWithLaneId * path,
     tier4_planning_msgs::msg::StopReason * stop_reason, const size_t end_line_idx);
 
   void insertStopVelocityAtEndLine(
-    autoware_auto_planning_msgs::msg::PathWithLaneId * path,
+    tier4_planning_msgs::msg::PathWithLaneId * path,
     tier4_planning_msgs::msg::StopReason * stop_reason, const size_t end_line_idx);
 };
 }  // namespace behavior_velocity_planner

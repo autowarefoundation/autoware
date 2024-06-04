@@ -24,8 +24,8 @@
 #include "path_sampler/type_alias.hpp"
 #include "sampler_common/structures.hpp"
 
-#include "autoware_auto_planning_msgs/msg/path_point.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
+#include "autoware_planning_msgs/msg/path_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory.hpp"
 
 #include <algorithm>
 #include <limits>

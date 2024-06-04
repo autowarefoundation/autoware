@@ -15,17 +15,17 @@
 #ifndef BEHAVIOR_PATH_SIDE_SHIFT_MODULE__UTILS_HPP_
 #define BEHAVIOR_PATH_SIDE_SHIFT_MODULE__UTILS_HPP_
 
-#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
+#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 namespace behavior_path_planner
 {
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::TransformStamped;
+using tier4_planning_msgs::msg::PathWithLaneId;
 
 void setOrientation(PathWithLaneId * path);
 

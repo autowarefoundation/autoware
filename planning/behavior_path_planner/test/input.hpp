@@ -17,21 +17,21 @@
 
 #endif  // INPUT_HPP_
 
-#include "autoware_auto_planning_msgs/msg/path_point.hpp"
-#include "autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp"
-#include "autoware_auto_planning_msgs/msg/path_with_lane_id.hpp"
+#include "autoware_planning_msgs/msg/path_point.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/twist.hpp"
+#include "tier4_planning_msgs/msg/path_point_with_lane_id.hpp"
+#include "tier4_planning_msgs/msg/path_with_lane_id.hpp"
 
 #include <vector>
 
 namespace behavior_path_planner
 {
-using autoware_auto_planning_msgs::msg::PathPoint;
-using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
-using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using autoware_planning_msgs::msg::PathPoint;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
+using tier4_planning_msgs::msg::PathPointWithLaneId;
+using tier4_planning_msgs::msg::PathWithLaneId;
 PathWithLaneId generateStraightSamplePathWithLaneId(
   float initial_pose_value, float pose_increment, size_t point_sample);
 

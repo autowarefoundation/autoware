@@ -54,7 +54,7 @@ visualization_msgs::msg::MarkerArray createPolygonMarkerArray(
 }
 
 visualization_msgs::msg::MarkerArray createPathMarkerArray(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const std::string & ns,
+  const tier4_planning_msgs::msg::PathWithLaneId & path, const std::string & ns,
   const int64_t lane_id, const rclcpp::Time & now, const double x, const double y, const double z,
   const double r, const double g, const double b)
 {
@@ -83,7 +83,7 @@ visualization_msgs::msg::MarkerArray createPathMarkerArray(
 }
 
 visualization_msgs::msg::MarkerArray createObjectsMarkerArray(
-  const autoware_auto_perception_msgs::msg::PredictedObjects & objects, const std::string & ns,
+  const autoware_perception_msgs::msg::PredictedObjects & objects, const std::string & ns,
   const int64_t module_id, const rclcpp::Time & now, const double r, const double g, const double b)
 {
   visualization_msgs::msg::MarkerArray msg;

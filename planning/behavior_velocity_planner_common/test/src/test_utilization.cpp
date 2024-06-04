@@ -82,8 +82,8 @@ TEST(smoothDeceleration, calculateMaxSlowDownVelocity)
 
 TEST(specialInterpolation, specialInterpolation)
 {
-  using autoware_auto_planning_msgs::msg::Path;
-  using autoware_auto_planning_msgs::msg::PathPoint;
+  using autoware_planning_msgs::msg::Path;
+  using autoware_planning_msgs::msg::PathPoint;
   using behavior_velocity_planner::interpolatePath;
   using motion_utils::calcSignedArcLength;
   using motion_utils::searchZeroVelocityIndex;

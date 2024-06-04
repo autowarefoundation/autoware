@@ -21,8 +21,8 @@
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
-#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
+#include <autoware_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_perception_msgs/msg/predicted_path.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 
@@ -31,9 +31,9 @@
 namespace behavior_path_planner::utils::path_safety_checker
 {
 
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedPath;
-using autoware_auto_perception_msgs::msg::Shape;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedPath;
+using autoware_perception_msgs::msg::Shape;
 using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
