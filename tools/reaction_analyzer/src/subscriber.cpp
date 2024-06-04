@@ -189,12 +189,12 @@ void SubscriberBase::reset()
 // Callbacks
 
 void SubscriberBase::on_control_command(
-  const std::string & node_name, const AckermannControlCommand::ConstSharedPtr & msg_ptr)
+  const std::string & node_name, const Control::ConstSharedPtr & msg_ptr)
 {
   std::lock_guard<std::mutex> lock(mutex_);
   auto & variant = message_buffers_[node_name];
   if (!std::holds_alternative<ControlCommandBuffer>(variant)) {
-    ControlCommandBuffer buffer(std::vector<AckermannControlCommand>{*msg_ptr}, std::nullopt);
+    ControlCommandBuffer buffer(std::vector<Control>{*msg_ptr}, std::nullopt);
     variant = buffer;
   }
   auto & cmd_buffer = std::get<ControlCommandBuffer>(variant);
@@ -212,7 +212,7 @@ void SubscriberBase::on_control_command(
     // TODO(brkay54): update here if message_filters package add support for the messages which
     // does not have header
     const auto & subscriber_variant =
-      std::get<SubscriberVariables<AckermannControlCommand>>(subscriber_variables_map_[node_name]);
+      std::get<SubscriberVariables<Control>>(subscriber_variables_map_[node_name]);
 
     // check if the cache was initialized or not, if there is, use it to set the published time
     if (subscriber_variant.cache_) {
@@ -636,24 +636,23 @@ std::optional<SubscriberVariablesVariant> SubscriberBase::get_subscriber_variabl
   const TopicConfig & topic_config)
 {
   switch (topic_config.message_type) {
-    case SubscriberMessageType::ACKERMANN_CONTROL_COMMAND: {
-      SubscriberVariables<AckermannControlCommand> subscriber_variable;
+    case SubscriberMessageType::CONTROL: {
+      SubscriberVariables<Control> subscriber_variable;
 
       if (!topic_config.time_debug_topic_address.empty()) {
         // If not empty, user should define a time debug topic
         // NOTE: Because message_filters package does not support the messages without headers, we
         // can not use the synchronizer. After we reacted, we are going to use the cache
-        // of the both PublishedTime and AckermannControlCommand subscribers to find the messages
+        // of the both PublishedTime and Control subscribers to find the messages
         // which have same header time.
 
-        std::function<void(const AckermannControlCommand::ConstSharedPtr &)> callback =
-          [this, topic_config](const AckermannControlCommand::ConstSharedPtr & ptr) {
+        std::function<void(const Control::ConstSharedPtr &)> callback =
+          [this, topic_config](const Control::ConstSharedPtr & ptr) {
             this->on_control_command(topic_config.node_name, ptr);
           };
-        subscriber_variable.sub1_ =
-          std::make_unique<message_filters::Subscriber<AckermannControlCommand>>(
-            node_, topic_config.topic_address, rclcpp::QoS(1).get_rmw_qos_profile(),
-            create_subscription_options(node_));
+        subscriber_variable.sub1_ = std::make_unique<message_filters::Subscriber<Control>>(
+          node_, topic_config.topic_address, rclcpp::QoS(1).get_rmw_qos_profile(),
+          create_subscription_options(node_));
 
         subscriber_variable.sub1_->registerCallback(std::bind(callback, std::placeholders::_1));
 
@@ -665,15 +664,14 @@ std::optional<SubscriberVariablesVariant> SubscriberBase::get_subscriber_variabl
           *subscriber_variable.sub2_, cache_size);
 
       } else {
-        std::function<void(const AckermannControlCommand::ConstSharedPtr &)> callback =
-          [this, topic_config](const AckermannControlCommand::ConstSharedPtr & ptr) {
+        std::function<void(const Control::ConstSharedPtr &)> callback =
+          [this, topic_config](const Control::ConstSharedPtr & ptr) {
             this->on_control_command(topic_config.node_name, ptr);
           };
 
-        subscriber_variable.sub1_ =
-          std::make_unique<message_filters::Subscriber<AckermannControlCommand>>(
-            node_, topic_config.topic_address, rclcpp::QoS(1).get_rmw_qos_profile(),
-            create_subscription_options(node_));
+        subscriber_variable.sub1_ = std::make_unique<message_filters::Subscriber<Control>>(
+          node_, topic_config.topic_address, rclcpp::QoS(1).get_rmw_qos_profile(),
+          create_subscription_options(node_));
 
         subscriber_variable.sub1_->registerCallback(std::bind(callback, std::placeholders::_1));
         RCLCPP_WARN(
@@ -915,8 +913,7 @@ std::optional<SubscriberVariablesVariant> SubscriberBase::get_subscriber_variabl
   }
 }
 
-std::optional<size_t> SubscriberBase::find_first_brake_idx(
-  const std::vector<AckermannControlCommand> & cmd_array)
+std::optional<size_t> SubscriberBase::find_first_brake_idx(const std::vector<Control> & cmd_array)
 {
   if (
     cmd_array.size() <
@@ -975,7 +972,7 @@ std::optional<size_t> SubscriberBase::find_first_brake_idx(
 }
 
 void SubscriberBase::set_control_command_to_buffer(
-  std::vector<AckermannControlCommand> & buffer, const AckermannControlCommand & cmd) const
+  std::vector<Control> & buffer, const Control & cmd) const
 {
   const auto last_cmd_time = cmd.stamp;
   if (!buffer.empty()) {

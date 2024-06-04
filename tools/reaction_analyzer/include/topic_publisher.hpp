@@ -20,12 +20,12 @@
 #include <tf2_eigen/tf2_eigen/tf2_eigen.hpp>
 #include <utils.hpp>
 
-#include <autoware_auto_vehicle_msgs/msg/control_mode_report.hpp>
-#include <autoware_auto_vehicle_msgs/msg/gear_report.hpp>
-#include <autoware_auto_vehicle_msgs/msg/hazard_lights_report.hpp>
-#include <autoware_auto_vehicle_msgs/msg/steering_report.hpp>
-#include <autoware_auto_vehicle_msgs/msg/turn_indicators_report.hpp>
-#include <autoware_auto_vehicle_msgs/msg/velocity_report.hpp>
+#include <autoware_vehicle_msgs/msg/control_mode_report.hpp>
+#include <autoware_vehicle_msgs/msg/gear_report.hpp>
+#include <autoware_vehicle_msgs/msg/hazard_lights_report.hpp>
+#include <autoware_vehicle_msgs/msg/steering_report.hpp>
+#include <autoware_vehicle_msgs/msg/turn_indicators_report.hpp>
+#include <autoware_vehicle_msgs/msg/velocity_report.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
@@ -45,12 +45,12 @@
 
 namespace reaction_analyzer::topic_publisher
 {
-using autoware_auto_control_msgs::msg::AckermannControlCommand;
-using autoware_auto_perception_msgs::msg::DetectedObject;
-using autoware_auto_perception_msgs::msg::DetectedObjects;
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_control_msgs::msg::Control;
+using autoware_perception_msgs::msg::DetectedObject;
+using autoware_perception_msgs::msg::DetectedObjects;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_planning_msgs::msg::Trajectory;
 using geometry_msgs::msg::Pose;
 using nav_msgs::msg::Odometry;
 using sensor_msgs::msg::PointCloud2;
@@ -164,12 +164,12 @@ using PublisherVariablesVariant = std::variant<
   PublisherVariables<geometry_msgs::msg::PoseWithCovarianceStamped>,
   PublisherVariables<geometry_msgs::msg::PoseStamped>, PublisherVariables<nav_msgs::msg::Odometry>,
   PublisherVariables<sensor_msgs::msg::Imu>,
-  PublisherVariables<autoware_auto_vehicle_msgs::msg::ControlModeReport>,
-  PublisherVariables<autoware_auto_vehicle_msgs::msg::GearReport>,
-  PublisherVariables<autoware_auto_vehicle_msgs::msg::HazardLightsReport>,
-  PublisherVariables<autoware_auto_vehicle_msgs::msg::SteeringReport>,
-  PublisherVariables<autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport>,
-  PublisherVariables<autoware_auto_vehicle_msgs::msg::VelocityReport>>;
+  PublisherVariables<autoware_vehicle_msgs::msg::ControlModeReport>,
+  PublisherVariables<autoware_vehicle_msgs::msg::GearReport>,
+  PublisherVariables<autoware_vehicle_msgs::msg::HazardLightsReport>,
+  PublisherVariables<autoware_vehicle_msgs::msg::SteeringReport>,
+  PublisherVariables<autoware_vehicle_msgs::msg::TurnIndicatorsReport>,
+  PublisherVariables<autoware_vehicle_msgs::msg::VelocityReport>>;
 
 using LidarOutputPair = std::pair<
   std::shared_ptr<PublisherVariables<PointCloud2>>,

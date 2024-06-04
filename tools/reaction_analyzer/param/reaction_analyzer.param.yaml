@@ -54,27 +54,27 @@
         obstacle_cruise_planner:
           topic_name: /planning/scenario_planning/lane_driving/trajectory
           time_debug_topic_name: /planning/scenario_planning/lane_driving/trajectory/debug/published_time
-          message_type: autoware_auto_planning_msgs/msg/Trajectory
+          message_type: autoware_planning_msgs/msg/Trajectory
         scenario_selector:
           topic_name: /planning/scenario_planning/scenario_selector/trajectory
           time_debug_topic_name: /planning/scenario_planning/scenario_selector/trajectory/debug/published_time
-          message_type: autoware_auto_planning_msgs/msg/Trajectory
+          message_type: autoware_planning_msgs/msg/Trajectory
         motion_velocity_smoother:
           topic_name: /planning/scenario_planning/motion_velocity_smoother/trajectory
           time_debug_topic_name: /planning/scenario_planning/motion_velocity_smoother/trajectory/debug/published_time
-          message_type: autoware_auto_planning_msgs/msg/Trajectory
+          message_type: autoware_planning_msgs/msg/Trajectory
         planning_validator:
           topic_name: /planning/scenario_planning/trajectory
           time_debug_topic_name: /planning/scenario_planning/trajectory/debug/published_time
-          message_type: autoware_auto_planning_msgs/msg/Trajectory
+          message_type: autoware_planning_msgs/msg/Trajectory
         trajectory_follower:
           topic_name: /control/trajectory_follower/control_cmd
           time_debug_topic_name: /control/trajectory_follower/control_cmd/debug/published_time
-          message_type: autoware_auto_control_msgs/msg/AckermannControlCommand
+          message_type: autoware_control_msgs/msg/Control
         vehicle_cmd_gate:
           topic_name: /control/command/control_cmd
           time_debug_topic_name: /control/command/control_cmd/debug/published_time
-          message_type: autoware_auto_control_msgs/msg/AckermannControlCommand
+          message_type: autoware_control_msgs/msg/Control
         common_ground_filter:
           topic_name: /perception/obstacle_segmentation/single_frame/pointcloud
           time_debug_topic_name: /perception/obstacle_segmentation/single_frame/pointcloud/debug/published_time
@@ -86,32 +86,32 @@
         multi_object_tracker:
           topic_name: /perception/object_recognition/tracking/near_objects
           time_debug_topic_name: /perception/object_recognition/tracking/near_objects/debug/published_time
-          message_type: autoware_auto_perception_msgs/msg/TrackedObjects
+          message_type: autoware_perception_msgs/msg/TrackedObjects
         lidar_centerpoint:
           topic_name: /perception/object_recognition/detection/centerpoint/objects
           time_debug_topic_name: /perception/object_recognition/detection/centerpoint/objects/debug/published_time
-          message_type: autoware_auto_perception_msgs/msg/DetectedObjects
+          message_type: autoware_perception_msgs/msg/DetectedObjects
         obstacle_pointcloud_based_validator:
           topic_name: /perception/object_recognition/detection/centerpoint/validation/objects
           time_debug_topic_name: /perception/object_recognition/detection/centerpoint/validation/objects/debug/published_time
-          message_type: autoware_auto_perception_msgs/msg/DetectedObjects
+          message_type: autoware_perception_msgs/msg/DetectedObjects
         decorative_tracker_merger:
           topic_name: /perception/object_recognition/tracking/objects
           time_debug_topic_name: /perception/object_recognition/tracking/objects/debug/published_time
-          message_type: autoware_auto_perception_msgs/msg/TrackedObjects
+          message_type: autoware_perception_msgs/msg/TrackedObjects
         detected_object_feature_remover:
           topic_name: /perception/object_recognition/detection/clustering/objects
           time_debug_topic_name: /perception/object_recognition/detection/clustering/objects/debug/published_time
-          message_type: autoware_auto_perception_msgs/msg/DetectedObjects
+          message_type: autoware_perception_msgs/msg/DetectedObjects
         detection_by_tracker:
           topic_name: /perception/object_recognition/detection/detection_by_tracker/objects
           time_debug_topic_name: /perception/object_recognition/detection/detection_by_tracker/objects/debug/published_time
-          message_type: autoware_auto_perception_msgs/msg/DetectedObjects
+          message_type: autoware_perception_msgs/msg/DetectedObjects
         object_lanelet_filter:
           topic_name: /perception/object_recognition/detection/objects
           time_debug_topic_name: /perception/object_recognition/detection/objects/debug/published_time
-          message_type: autoware_auto_perception_msgs/msg/DetectedObjects
+          message_type: autoware_perception_msgs/msg/DetectedObjects
         map_based_prediction:
           topic_name: /perception/object_recognition/objects
           time_debug_topic_name: /perception/object_recognition/objects/debug/published_time
-          message_type: autoware_auto_perception_msgs/msg/PredictedObjects
+          message_type: autoware_perception_msgs/msg/PredictedObjects

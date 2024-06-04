@@ -201,21 +201,21 @@ for each of the nodes.
   - `sensor_msgs/msg/Image`
   - `geometry_msgs/msg/PoseWithCovarianceStamped`
   - `sensor_msgs/msg/Imu`
-  - `autoware_auto_vehicle_msgs/msg/ControlModeReport`
-  - `autoware_auto_vehicle_msgs/msg/GearReport`
-  - `autoware_auto_vehicle_msgs/msg/HazardLightsReport`
-  - `autoware_auto_vehicle_msgs/msg/SteeringReport`
-  - `autoware_auto_vehicle_msgs/msg/TurnIndicatorsReport`
-  - `autoware_auto_vehicle_msgs/msg/VelocityReport`
+  - `autoware_vehicle_msgs/msg/ControlModeReport`
+  - `autoware_vehicle_msgs/msg/GearReport`
+  - `autoware_vehicle_msgs/msg/HazardLightsReport`
+  - `autoware_vehicle_msgs/msg/SteeringReport`
+  - `autoware_vehicle_msgs/msg/TurnIndicatorsReport`
+  - `autoware_vehicle_msgs/msg/VelocityReport`
 
 - **Subscriber Message Types:**
 
   - `sensor_msgs/msg/PointCloud2`
-  - `autoware_auto_perception_msgs/msg/DetectedObjects`
-  - `autoware_auto_perception_msgs/msg/TrackedObjects`
-  - `autoware_auto_msgs/msg/PredictedObject`
-  - `autoware_auto_planning_msgs/msg/Trajectory`
-  - `autoware_auto_control_msgs/msg/AckermannControlCommand`
+  - `autoware_perception_msgs/msg/DetectedObjects`
+  - `autoware_perception_msgs/msg/TrackedObjects`
+  - `autoware_perception_msgs/msg/PredictedObject`
+  - `autoware_planning_msgs/msg/Trajectory`
+  - `autoware_control_msgs/msg/Control`
 
 - **Reaction Types:**
   - `FIRST_BRAKE`

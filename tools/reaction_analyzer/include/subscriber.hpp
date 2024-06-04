@@ -39,23 +39,23 @@
 
 namespace reaction_analyzer::subscriber
 {
-using autoware_auto_control_msgs::msg::AckermannControlCommand;
-using autoware_auto_perception_msgs::msg::DetectedObject;
-using autoware_auto_perception_msgs::msg::DetectedObjects;
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_perception_msgs::msg::TrackedObject;
-using autoware_auto_perception_msgs::msg::TrackedObjects;
-using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_control_msgs::msg::Control;
 using autoware_internal_msgs::msg::PublishedTime;
+using autoware_perception_msgs::msg::DetectedObject;
+using autoware_perception_msgs::msg::DetectedObjects;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::TrackedObject;
+using autoware_perception_msgs::msg::TrackedObjects;
+using autoware_planning_msgs::msg::Trajectory;
 using geometry_msgs::msg::Pose;
 using nav_msgs::msg::Odometry;
 using sensor_msgs::msg::PointCloud2;
 
 // Buffers to be used to store subscribed messages' data, pipeline Header, and PublishedTime
 using MessageBuffer = std::optional<PublishedTime>;
-// We need to store the past AckermannControlCommands to analyze the first brake
-using ControlCommandBuffer = std::pair<std::vector<AckermannControlCommand>, MessageBuffer>;
+// We need to store the past Control to analyze the first brake
+using ControlCommandBuffer = std::pair<std::vector<Control>, MessageBuffer>;
 // Variant to store different types of buffers
 using MessageBufferVariant = std::variant<ControlCommandBuffer, MessageBuffer>;
 
@@ -67,7 +67,7 @@ struct SubscriberVariables
   std::unique_ptr<message_filters::Subscriber<MessageType>> sub1_;
   std::unique_ptr<message_filters::Subscriber<PublishedTime>> sub2_;
   std::unique_ptr<message_filters::Synchronizer<ExactTimePolicy>> synchronizer_;
-  // tmp: only for the messages who don't have header e.g. AckermannControlCommand
+  // tmp: only for the messages who don't have header e.g. Control
   std::unique_ptr<message_filters::Cache<PublishedTime>> cache_;
 };
 
@@ -75,7 +75,7 @@ struct SubscriberVariables
 using SubscriberVariablesVariant = std::variant<
   SubscriberVariables<PointCloud2>, SubscriberVariables<DetectedObjects>,
   SubscriberVariables<TrackedObjects>, SubscriberVariables<PredictedObjects>,
-  SubscriberVariables<Trajectory>, SubscriberVariables<AckermannControlCommand>>;
+  SubscriberVariables<Trajectory>, SubscriberVariables<Control>>;
 
 // The configuration of the topic to be subscribed which are defined in reaction_chain
 struct TopicConfig
@@ -153,14 +153,11 @@ private:
   bool init_subscribers();
   std::optional<SubscriberVariablesVariant> get_subscriber_variable(
     const TopicConfig & topic_config);
-  std::optional<size_t> find_first_brake_idx(
-    const std::vector<AckermannControlCommand> & cmd_array);
-  void set_control_command_to_buffer(
-    std::vector<AckermannControlCommand> & buffer, const AckermannControlCommand & cmd) const;
+  std::optional<size_t> find_first_brake_idx(const std::vector<Control> & cmd_array);
+  void set_control_command_to_buffer(std::vector<Control> & buffer, const Control & cmd) const;
 
   // Callbacks for modules are subscribed
-  void on_control_command(
-    const std::string & node_name, const AckermannControlCommand::ConstSharedPtr & msg_ptr);
+  void on_control_command(const std::string & node_name, const Control::ConstSharedPtr & msg_ptr);
   void on_trajectory(const std::string & node_name, const Trajectory::ConstSharedPtr & msg_ptr);
   void on_trajectory(
     const std::string & node_name, const Trajectory::ConstSharedPtr & msg_ptr,

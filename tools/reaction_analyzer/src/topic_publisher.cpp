@@ -512,22 +512,22 @@ void TopicPublisher::init_rosbag_publisher_buffer(
     } else if (message_type == PublisherMessageType::IMU) {
       set_message<sensor_msgs::msg::Imu>(current_topic, *bag_message, is_empty_area_message);
     } else if (message_type == PublisherMessageType::CONTROL_MODE_REPORT) {
-      set_message<autoware_auto_vehicle_msgs::msg::ControlModeReport>(
+      set_message<autoware_vehicle_msgs::msg::ControlModeReport>(
         current_topic, *bag_message, is_empty_area_message);
     } else if (message_type == PublisherMessageType::GEAR_REPORT) {
-      set_message<autoware_auto_vehicle_msgs::msg::GearReport>(
+      set_message<autoware_vehicle_msgs::msg::GearReport>(
         current_topic, *bag_message, is_empty_area_message);
     } else if (message_type == PublisherMessageType::HAZARD_LIGHTS_REPORT) {
-      set_message<autoware_auto_vehicle_msgs::msg::HazardLightsReport>(
+      set_message<autoware_vehicle_msgs::msg::HazardLightsReport>(
         current_topic, *bag_message, is_empty_area_message);
     } else if (message_type == PublisherMessageType::STEERING_REPORT) {
-      set_message<autoware_auto_vehicle_msgs::msg::SteeringReport>(
+      set_message<autoware_vehicle_msgs::msg::SteeringReport>(
         current_topic, *bag_message, is_empty_area_message);
     } else if (message_type == PublisherMessageType::TURN_INDICATORS_REPORT) {
-      set_message<autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport>(
+      set_message<autoware_vehicle_msgs::msg::TurnIndicatorsReport>(
         current_topic, *bag_message, is_empty_area_message);
     } else if (message_type == PublisherMessageType::VELOCITY_REPORT) {
-      set_message<autoware_auto_vehicle_msgs::msg::VelocityReport>(
+      set_message<autoware_vehicle_msgs::msg::VelocityReport>(
         current_topic, *bag_message, is_empty_area_message);
     }
   }
