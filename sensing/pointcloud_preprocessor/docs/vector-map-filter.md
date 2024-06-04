@@ -10,10 +10,10 @@ The `vector_map_filter` is a node that removes points on the outside of lane by 
 
 ### Input
 
-| Name                 | Type                                         | Description      |
-| -------------------- | -------------------------------------------- | ---------------- |
-| `~/input/points`     | `sensor_msgs::msg::PointCloud2`              | reference points |
-| `~/input/vector_map` | `autoware_auto_mapping_msgs::msg::HADMapBin` | vector map       |
+| Name                 | Type                                    | Description      |
+| -------------------- | --------------------------------------- | ---------------- |
+| `~/input/points`     | `sensor_msgs::msg::PointCloud2`         | reference points |
+| `~/input/vector_map` | `autoware_map_msgs::msg::LaneletMapBin` | vector map       |
 
 ### Output
 

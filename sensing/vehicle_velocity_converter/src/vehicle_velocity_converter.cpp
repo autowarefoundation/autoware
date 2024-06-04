@@ -22,7 +22,7 @@ VehicleVelocityConverter::VehicleVelocityConverter() : Node("vehicle_velocity_co
   frame_id_ = declare_parameter<std::string>("frame_id");
   speed_scale_factor_ = declare_parameter<double>("speed_scale_factor");
 
-  vehicle_report_sub_ = create_subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>(
+  vehicle_report_sub_ = create_subscription<autoware_vehicle_msgs::msg::VelocityReport>(
     "velocity_status", rclcpp::QoS{100},
     std::bind(&VehicleVelocityConverter::callbackVelocityReport, this, std::placeholders::_1));
 
@@ -31,7 +31,7 @@ VehicleVelocityConverter::VehicleVelocityConverter() : Node("vehicle_velocity_co
 }
 
 void VehicleVelocityConverter::callbackVelocityReport(
-  const autoware_auto_vehicle_msgs::msg::VelocityReport::SharedPtr msg)
+  const autoware_vehicle_msgs::msg::VelocityReport::SharedPtr msg)
 {
   if (msg->header.frame_id != frame_id_) {
     RCLCPP_WARN(get_logger(), "frame_id is not base_link.");

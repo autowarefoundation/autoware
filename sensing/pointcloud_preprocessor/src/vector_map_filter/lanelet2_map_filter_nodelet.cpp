@@ -51,7 +51,7 @@ Lanelet2MapFilterComponent::Lanelet2MapFilterComponent(const rclcpp::NodeOptions
 
   // Set subscriber
   {
-    map_sub_ = this->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+    map_sub_ = this->create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
       "input/vector_map", rclcpp::QoS{1}.transient_local(),
       std::bind(&Lanelet2MapFilterComponent::mapCallback, this, _1));
     pointcloud_sub_ = this->create_subscription<PointCloud2>(
@@ -259,7 +259,7 @@ void Lanelet2MapFilterComponent::pointcloudCallback(const PointCloud2ConstPtr cl
 }
 
 void Lanelet2MapFilterComponent::mapCallback(
-  const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr map_msg)
+  const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr map_msg)
 {
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
   lanelet::utils::conversion::fromBinMsg(*map_msg, lanelet_map_ptr_);

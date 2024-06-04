@@ -2,15 +2,15 @@
 
 ## Purpose
 
-This package converts autoware_auto_vehicle_msgs::msg::VehicleReport message to geometry_msgs::msg::TwistWithCovarianceStamped for gyro odometer node.
+This package converts autoware_vehicle_msgs::msg::VehicleReport message to geometry_msgs::msg::TwistWithCovarianceStamped for gyro odometer node.
 
 ## Inputs / Outputs
 
 ### Input
 
-| Name              | Type                                             | Description      |
-| ----------------- | ------------------------------------------------ | ---------------- |
-| `velocity_status` | `autoware_auto_vehicle_msgs::msg::VehicleReport` | vehicle velocity |
+| Name              | Type                                        | Description      |
+| ----------------- | ------------------------------------------- | ---------------- |
+| `velocity_status` | `autoware_vehicle_msgs::msg::VehicleReport` | vehicle velocity |
 
 ### Output
 
