@@ -40,7 +40,7 @@ MrmHandler::MrmHandler(const rclcpp::NodeOptions & options) : Node("mrm_handler"
   sub_odom_ = create_subscription<nav_msgs::msg::Odometry>(
     "~/input/odometry", rclcpp::QoS{1}, std::bind(&MrmHandler::onOdometry, this, _1));
   // subscribe control mode
-  sub_control_mode_ = create_subscription<autoware_auto_vehicle_msgs::msg::ControlModeReport>(
+  sub_control_mode_ = create_subscription<autoware_vehicle_msgs::msg::ControlModeReport>(
     "~/input/control_mode", rclcpp::QoS{1}, std::bind(&MrmHandler::onControlMode, this, _1));
   sub_operation_mode_availability_ =
     create_subscription<tier4_system_msgs::msg::OperationModeAvailability>(
@@ -60,10 +60,10 @@ MrmHandler::MrmHandler(const rclcpp::NodeOptions & options) : Node("mrm_handler"
     std::bind(&MrmHandler::onOperationModeState, this, _1));
 
   // Publisher
-  pub_hazard_cmd_ = create_publisher<autoware_auto_vehicle_msgs::msg::HazardLightsCommand>(
+  pub_hazard_cmd_ = create_publisher<autoware_vehicle_msgs::msg::HazardLightsCommand>(
     "~/output/hazard", rclcpp::QoS{1});
   pub_gear_cmd_ =
-    create_publisher<autoware_auto_vehicle_msgs::msg::GearCommand>("~/output/gear", rclcpp::QoS{1});
+    create_publisher<autoware_vehicle_msgs::msg::GearCommand>("~/output/gear", rclcpp::QoS{1});
   pub_mrm_state_ =
     create_publisher<autoware_adapi_v1_msgs::msg::MrmState>("~/output/mrm/state", rclcpp::QoS{1});
 
@@ -85,7 +85,7 @@ MrmHandler::MrmHandler(const rclcpp::NodeOptions & options) : Node("mrm_handler"
 
   // Initialize
   odom_ = std::make_shared<const nav_msgs::msg::Odometry>();
-  control_mode_ = std::make_shared<const autoware_auto_vehicle_msgs::msg::ControlModeReport>();
+  control_mode_ = std::make_shared<const autoware_vehicle_msgs::msg::ControlModeReport>();
   mrm_pull_over_status_ = std::make_shared<const tier4_system_msgs::msg::MrmBehaviorStatus>();
   mrm_comfortable_stop_status_ =
     std::make_shared<const tier4_system_msgs::msg::MrmBehaviorStatus>();
@@ -108,7 +108,7 @@ void MrmHandler::onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
 }
 
 void MrmHandler::onControlMode(
-  const autoware_auto_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr msg)
+  const autoware_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr msg)
 {
   control_mode_ = msg;
 }
@@ -167,7 +167,7 @@ void MrmHandler::onOperationModeState(
 
 void MrmHandler::publishHazardCmd()
 {
-  using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
+  using autoware_vehicle_msgs::msg::HazardLightsCommand;
   HazardLightsCommand msg;
 
   msg.stamp = this->now();
@@ -187,7 +187,7 @@ void MrmHandler::publishHazardCmd()
 
 void MrmHandler::publishGearCmd()
 {
-  using autoware_auto_vehicle_msgs::msg::GearCommand;
+  using autoware_vehicle_msgs::msg::GearCommand;
   GearCommand msg;
 
   msg.stamp = this->now();
@@ -444,7 +444,7 @@ void MrmHandler::transitionTo(const int new_state)
 void MrmHandler::updateMrmState()
 {
   using autoware_adapi_v1_msgs::msg::MrmState;
-  using autoware_auto_vehicle_msgs::msg::ControlModeReport;
+  using autoware_vehicle_msgs::msg::ControlModeReport;
 
   // Check emergency
   const bool is_emergency = isEmergency();

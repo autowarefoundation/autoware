@@ -19,7 +19,7 @@
 #include <autoware_ad_api_specs/operation_mode.hpp>
 #include <autoware_ad_api_specs/routing.hpp>
 
-#include <autoware_auto_system_msgs/msg/autoware_state.hpp>
+#include <autoware_system_msgs/msg/autoware_state.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <tier4_system_msgs/msg/mode_change_available.hpp>
 
@@ -44,7 +44,7 @@ private:
   Sub<autoware_ad_api::routing::RouteState> sub_routing_;
   Sub<autoware_ad_api::operation_mode::OperationModeState> sub_operation_mode_;
 
-  using AutowareState = autoware_auto_system_msgs::msg::AutowareState;
+  using AutowareState = autoware_system_msgs::msg::AutowareState;
   using LocalizationState = autoware_ad_api::localization::InitializationState::Message;
   using RoutingState = autoware_ad_api::routing::RouteState::Message;
   using OperationModeState = autoware_ad_api::operation_mode::OperationModeState::Message;

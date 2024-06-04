@@ -15,10 +15,9 @@
   <depend>autoware_ad_api_specs</depend>
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_adapi_version_msgs</depend>
-  <depend>autoware_auto_planning_msgs</depend>
-  <depend>autoware_auto_system_msgs</depend>
-  <depend>autoware_auto_vehicle_msgs</depend>
   <depend>autoware_planning_msgs</depend>
+  <depend>autoware_system_msgs</depend>
+  <depend>autoware_vehicle_msgs</depend>
   <depend>component_interface_specs</depend>
   <depend>component_interface_utils</depend>
   <depend>diagnostic_graph_utils</depend>

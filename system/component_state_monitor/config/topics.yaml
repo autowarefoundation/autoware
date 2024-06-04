@@ -4,7 +4,7 @@
   args:
     node_name_suffix: vector_map
     topic: /map/vector_map
-    topic_type: autoware_auto_mapping_msgs/msg/HADMapBin
+    topic_type: autoware_map_msgs/msg/LaneletMapBin
     best_effort: false
     transient_local: true
     warn_rate: 0.0
@@ -69,7 +69,7 @@
   args:
     node_name_suffix: object_recognition_objects
     topic: /perception/object_recognition/objects
-    topic_type: autoware_auto_perception_msgs/msg/PredictedObjects
+    topic_type: autoware_perception_msgs/msg/PredictedObjects
     best_effort: false
     transient_local: false
     warn_rate: 5.0
@@ -82,7 +82,7 @@
   args:
     node_name_suffix: traffic_light_recognition_traffic_signals
     topic: /perception/traffic_light_recognition/traffic_signals
-    topic_type: autoware_perception_msgs/msg/TrafficSignalArray
+    topic_type: autoware_perception_msgs/msg/TrafficLightGroupArray
     best_effort: false
     transient_local: false
     warn_rate: 5.0
@@ -108,7 +108,7 @@
   args:
     node_name_suffix: scenario_planning_trajectory
     topic: /planning/scenario_planning/trajectory
-    topic_type: autoware_auto_planning_msgs/msg/Trajectory
+    topic_type: autoware_planning_msgs/msg/Trajectory
     best_effort: false
     transient_local: false
     warn_rate: 5.0
@@ -121,7 +121,7 @@
   args:
     node_name_suffix: trajectory_follower_control_cmd
     topic: /control/trajectory_follower/control_cmd
-    topic_type: autoware_auto_control_msgs/msg/AckermannControlCommand
+    topic_type: autoware_control_msgs/msg/Control
     best_effort: false
     transient_local: false
     warn_rate: 5.0
@@ -134,7 +134,7 @@
   args:
     node_name_suffix: control_command_control_cmd
     topic: /control/command/control_cmd
-    topic_type: autoware_auto_control_msgs/msg/AckermannControlCommand
+    topic_type: autoware_control_msgs/msg/Control
     best_effort: false
     transient_local: false
     warn_rate: 5.0
@@ -147,7 +147,7 @@
   args:
     node_name_suffix: vehicle_status_velocity_status
     topic: /vehicle/status/velocity_status
-    topic_type: autoware_auto_vehicle_msgs/msg/VelocityReport
+    topic_type: autoware_vehicle_msgs/msg/VelocityReport
     best_effort: false
     transient_local: false
     warn_rate: 5.0
@@ -160,7 +160,7 @@
   args:
     node_name_suffix: vehicle_status_steering_status
     topic: /vehicle/status/steering_status
-    topic_type: autoware_auto_vehicle_msgs/msg/SteeringReport
+    topic_type: autoware_vehicle_msgs/msg/SteeringReport
     best_effort: false
     transient_local: false
     warn_rate: 5.0
@@ -173,7 +173,7 @@
   args:
     node_name_suffix: system_emergency_control_cmd
     topic: /system/emergency/control_cmd
-    topic_type: autoware_auto_control_msgs/msg/AckermannControlCommand
+    topic_type: autoware_control_msgs/msg/Control
     best_effort: false
     transient_local: false
     warn_rate: 5.0

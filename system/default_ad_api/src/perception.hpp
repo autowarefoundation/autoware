@@ -22,7 +22,7 @@
 #include <autoware_adapi_v1_msgs/msg/dynamic_object.hpp>
 #include <autoware_adapi_v1_msgs/msg/dynamic_object_path.hpp>
 #include <autoware_adapi_v1_msgs/msg/object_classification.hpp>
-#include <autoware_auto_perception_msgs/msg/shape.hpp>
+#include <autoware_perception_msgs/msg/shape.hpp>
 #include <shape_msgs/msg/solid_primitive.hpp>
 
 #include <unordered_map>

@@ -24,9 +24,9 @@
 // Autoware
 #include <autoware_adapi_v1_msgs/msg/mrm_state.hpp>
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
-#include <autoware_auto_vehicle_msgs/msg/control_mode_report.hpp>
-#include <autoware_auto_vehicle_msgs/msg/gear_command.hpp>
-#include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
+#include <autoware_vehicle_msgs/msg/control_mode_report.hpp>
+#include <autoware_vehicle_msgs/msg/gear_command.hpp>
+#include <autoware_vehicle_msgs/msg/hazard_lights_command.hpp>
 #include <tier4_system_msgs/msg/mrm_behavior_status.hpp>
 #include <tier4_system_msgs/msg/operation_mode_availability.hpp>
 #include <tier4_system_msgs/srv/operate_mrm.hpp>
@@ -68,8 +68,7 @@ private:
 
   // Subscribers
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::ControlModeReport>::SharedPtr
-    sub_control_mode_;
+  rclcpp::Subscription<autoware_vehicle_msgs::msg::ControlModeReport>::SharedPtr sub_control_mode_;
   rclcpp::Subscription<tier4_system_msgs::msg::OperationModeAvailability>::SharedPtr
     sub_operation_mode_availability_;
   rclcpp::Subscription<tier4_system_msgs::msg::MrmBehaviorStatus>::SharedPtr
@@ -82,7 +81,7 @@ private:
     sub_operation_mode_state_;
 
   nav_msgs::msg::Odometry::ConstSharedPtr odom_;
-  autoware_auto_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr control_mode_;
+  autoware_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr control_mode_;
   tier4_system_msgs::msg::OperationModeAvailability::ConstSharedPtr operation_mode_availability_;
   tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr mrm_pull_over_status_;
   tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr mrm_comfortable_stop_status_;
@@ -90,7 +89,7 @@ private:
   autoware_adapi_v1_msgs::msg::OperationModeState::ConstSharedPtr operation_mode_state_;
 
   void onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
-  void onControlMode(const autoware_auto_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr msg);
+  void onControlMode(const autoware_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr msg);
   void onOperationModeAvailability(
     const tier4_system_msgs::msg::OperationModeAvailability::ConstSharedPtr msg);
   void onMrmPullOverStatus(const tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr msg);
@@ -105,9 +104,8 @@ private:
 
   // rclcpp::Publisher<tier4_vehicle_msgs::msg::ShiftStamped>::SharedPtr pub_shift_;
   // rclcpp::Publisher<tier4_vehicle_msgs::msg::TurnSignal>::SharedPtr pub_turn_signal_;
-  rclcpp::Publisher<autoware_auto_vehicle_msgs::msg::HazardLightsCommand>::SharedPtr
-    pub_hazard_cmd_;
-  rclcpp::Publisher<autoware_auto_vehicle_msgs::msg::GearCommand>::SharedPtr pub_gear_cmd_;
+  rclcpp::Publisher<autoware_vehicle_msgs::msg::HazardLightsCommand>::SharedPtr pub_hazard_cmd_;
+  rclcpp::Publisher<autoware_vehicle_msgs::msg::GearCommand>::SharedPtr pub_gear_cmd_;
 
   void publishHazardCmd();
   void publishGearCmd();

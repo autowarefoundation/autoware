@@ -24,7 +24,7 @@ using ObjectClassification = autoware_adapi_v1_msgs::msg::ObjectClassification;
 using DynamicObject = autoware_adapi_v1_msgs::msg::DynamicObject;
 using DynamicObjectPath = autoware_adapi_v1_msgs::msg::DynamicObjectPath;
 using API_Shape = shape_msgs::msg::SolidPrimitive;
-using Shape = autoware_auto_perception_msgs::msg::Shape;
+using Shape = autoware_perception_msgs::msg::Shape;
 
 std::unordered_map<uint8_t, uint8_t> shape_type_ = {
   {Shape::BOUNDING_BOX, API_Shape::BOX},

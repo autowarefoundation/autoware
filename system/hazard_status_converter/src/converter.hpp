@@ -18,7 +18,7 @@
 #include <diagnostic_graph_utils/subscription.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_system_msgs/msg/hazard_status_stamped.hpp>
+#include <autoware_system_msgs/msg/hazard_status_stamped.hpp>
 
 #include <unordered_set>
 
@@ -31,7 +31,7 @@ public:
   explicit Converter(const rclcpp::NodeOptions & options);
 
 private:
-  using HazardStatusStamped = autoware_auto_system_msgs::msg::HazardStatusStamped;
+  using HazardStatusStamped = autoware_system_msgs::msg::HazardStatusStamped;
   using DiagGraph = diagnostic_graph_utils::DiagGraph;
   using DiagUnit = diagnostic_graph_utils::DiagUnit;
   void on_create(DiagGraph::ConstSharedPtr graph);

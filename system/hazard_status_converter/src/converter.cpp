@@ -61,7 +61,7 @@ void Converter::on_update(DiagGraph::ConstSharedPtr graph)
 {
   using DiagnosticStatus = diagnostic_msgs::msg::DiagnosticStatus;
   using DiagnosticLevel = DiagnosticStatus::_level_type;
-  using HazardStatus = autoware_auto_system_msgs::msg::HazardStatus;
+  using HazardStatus = autoware_system_msgs::msg::HazardStatus;
   using HazardLevel = HazardStatus::_level_type;
 
   const auto get_hazard_level = [](DiagnosticLevel unit_level, DiagnosticLevel root_level) {
