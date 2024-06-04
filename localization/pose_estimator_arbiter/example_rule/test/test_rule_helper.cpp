@@ -18,7 +18,7 @@
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 
 #include <boost/geometry/geometry.hpp>
 
@@ -59,7 +59,7 @@ TEST_F(MockNode, poseEstimatorArea)
   lanelet::LaneletMapPtr lanelet_map(new lanelet::LaneletMap);
   lanelet_map->add(create_polygon3d());
 
-  using HADMapBin = autoware_auto_mapping_msgs::msg::HADMapBin;
+  using HADMapBin = autoware_map_msgs::msg::LaneletMapBin;
   using Point = geometry_msgs::msg::Point;
   HADMapBin msg;
   lanelet::utils::conversion::toBinMsg(lanelet_map, &msg);

@@ -21,7 +21,7 @@
 #include <signal_processing/lowpass_filter_1d.hpp>
 #include <yabloc_common/ground_plane.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -44,7 +44,7 @@ class GroundServer : public rclcpp::Node
 {
 public:
   using GroundPlane = common::GroundPlane;
-  using HADMapBin = autoware_auto_mapping_msgs::msg::HADMapBin;
+  using LaneletMapBin = autoware_map_msgs::msg::LaneletMapBin;
 
   using Pose = geometry_msgs::msg::Pose;
   using PoseStamped = geometry_msgs::msg::PoseStamped;
@@ -65,7 +65,7 @@ private:
   const int K;
 
   // Subscriber
-  rclcpp::Subscription<HADMapBin>::SharedPtr sub_map_;
+  rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_map_;
   rclcpp::Subscription<PoseStamped>::SharedPtr sub_pose_stamped_;
   rclcpp::Subscription<PoseCovStamped>::SharedPtr sub_initial_pose_;
   // Publisher
@@ -86,7 +86,7 @@ private:
   std::vector<int> last_indices_;
 
   // Callback
-  void on_map(const HADMapBin & msg);
+  void on_map(const LaneletMapBin & msg);
   void on_initial_pose(const PoseCovStamped & msg);
   void on_pose_stamped(const PoseStamped & msg);
 

@@ -27,7 +27,7 @@ VectorMapBasedRule::VectorMapBasedRule(
 
   // Register callback
   shared_data_->vector_map.register_callback(
-    [this](autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg) -> void {
+    [this](autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg) -> void {
       pose_estimator_area_->init(msg);
     });
 

@@ -38,7 +38,7 @@ Ll2Decomposer::Ll2Decomposer(const rclcpp::NodeOptions & options) : Node("ll2_to
 
   // Subscriber
   auto cb_map = std::bind(&Ll2Decomposer::on_map, this, _1);
-  sub_map_ = create_subscription<HADMapBin>("~/input/vector_map", map_qos, cb_map);
+  sub_map_ = create_subscription<LaneletMapBin>("~/input/vector_map", map_qos, cb_map);
 
   auto load_lanelet2_labels =
     [this](const std::string & param_name, std::set<std::string> & labels) -> void {
@@ -102,7 +102,7 @@ pcl::PointCloud<pcl::PointXYZL> Ll2Decomposer::load_bounding_boxes(
   return cloud;
 }
 
-void Ll2Decomposer::on_map(const HADMapBin & msg)
+void Ll2Decomposer::on_map(const LaneletMapBin & msg)
 {
   RCLCPP_INFO_STREAM(get_logger(), "subscribed binary vector map");
   lanelet::LaneletMapPtr lanelet_map(new lanelet::LaneletMap);

@@ -70,7 +70,7 @@
 
 class ArTagBasedLocalizer : public rclcpp::Node
 {
-  using HADMapBin = autoware_auto_mapping_msgs::msg::HADMapBin;
+  using LaneletMapBin = autoware_map_msgs::msg::LaneletMapBin;
   using Image = sensor_msgs::msg::Image;
   using CameraInfo = sensor_msgs::msg::CameraInfo;
   using Pose = geometry_msgs::msg::Pose;
@@ -86,7 +86,7 @@ public:
   explicit ArTagBasedLocalizer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
-  void map_bin_callback(const HADMapBin::ConstSharedPtr & msg);
+  void map_bin_callback(const LaneletMapBin::ConstSharedPtr & msg);
   void image_callback(const Image::ConstSharedPtr & msg);
   void cam_info_callback(const CameraInfo::ConstSharedPtr & msg);
   void ekf_pose_callback(const PoseWithCovarianceStamped::ConstSharedPtr & msg);
@@ -106,7 +106,7 @@ private:
   std::unique_ptr<tf2_ros::TransformListener> tf_listener_;
 
   // Subscribers
-  rclcpp::Subscription<HADMapBin>::SharedPtr map_bin_sub_;
+  rclcpp::Subscription<LaneletMapBin>::SharedPtr map_bin_sub_;
   rclcpp::Subscription<Image>::SharedPtr image_sub_;
   rclcpp::Subscription<CameraInfo>::SharedPtr cam_info_sub_;
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr ekf_pose_sub_;

@@ -111,7 +111,7 @@ ArTagBasedLocalizer::ArTagBasedLocalizer(const rclcpp::NodeOptions & options)
     Subscribers
   */
   using std::placeholders::_1;
-  map_bin_sub_ = this->create_subscription<HADMapBin>(
+  map_bin_sub_ = this->create_subscription<LaneletMapBin>(
     "~/input/lanelet2_map", rclcpp::QoS(10).durability(rclcpp::DurabilityPolicy::TransientLocal),
     std::bind(&ArTagBasedLocalizer::map_bin_callback, this, _1));
 
@@ -140,7 +140,7 @@ ArTagBasedLocalizer::ArTagBasedLocalizer(const rclcpp::NodeOptions & options)
   RCLCPP_INFO(this->get_logger(), "Setup of ar_tag_based_localizer node is successful!");
 }
 
-void ArTagBasedLocalizer::map_bin_callback(const HADMapBin::ConstSharedPtr & msg)
+void ArTagBasedLocalizer::map_bin_callback(const LaneletMapBin::ConstSharedPtr & msg)
 {
   landmark_manager_.parse_landmarks(msg, "apriltag_16h5");
   const MarkerArray marker_msg = landmark_manager_.get_landmarks_as_marker_array_msg();

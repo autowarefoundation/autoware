@@ -17,7 +17,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -35,7 +35,7 @@ class Ll2Decomposer : public rclcpp::Node
 {
 public:
   using Cloud2 = sensor_msgs::msg::PointCloud2;
-  using HADMapBin = autoware_auto_mapping_msgs::msg::HADMapBin;
+  using LaneletMapBin = autoware_map_msgs::msg::LaneletMapBin;
   using Marker = visualization_msgs::msg::Marker;
   using MarkerArray = visualization_msgs::msg::MarkerArray;
 
@@ -47,12 +47,12 @@ private:
   rclcpp::Publisher<Cloud2>::SharedPtr pub_bounding_box_;
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_;
 
-  rclcpp::Subscription<HADMapBin>::SharedPtr sub_map_;
+  rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_map_;
   std::set<std::string> road_marking_labels_;
   std::set<std::string> sign_board_labels_;
   std::set<std::string> bounding_box_labels_;
 
-  void on_map(const HADMapBin & msg);
+  void on_map(const LaneletMapBin & msg);
 
   pcl::PointNormal to_point_normal(
     const lanelet::ConstPoint3d & from, const lanelet::ConstPoint3d & to) const;

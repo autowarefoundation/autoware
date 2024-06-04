@@ -19,7 +19,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include "autoware_auto_mapping_msgs/msg/had_map_bin.hpp"
+#include "autoware_map_msgs/msg/lanelet_map_bin.hpp"
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -41,7 +41,7 @@ class LandmarkManager
 {
 public:
   void parse_landmarks(
-    const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr & msg,
+    const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr & msg,
     const std::string & target_subtype);
 
   [[nodiscard]] std::vector<landmark_manager::Landmark> get_landmarks() const;

@@ -15,10 +15,10 @@ It estimates the height and tilt of the ground from lanelet2.
 
 #### Input
 
-| Name               | Type                                         | Description         |
-| ------------------ | -------------------------------------------- | ------------------- |
-| `input/vector_map` | `autoware_auto_mapping_msgs::msg::HADMapBin` | vector map          |
-| `input/pose`       | `geometry_msgs::msg::PoseStamped`            | estimated self pose |
+| Name               | Type                                    | Description         |
+| ------------------ | --------------------------------------- | ------------------- |
+| `input/vector_map` | `autoware_map_msgs::msg::LaneletMapBin` | vector map          |
+| `input/pose`       | `geometry_msgs::msg::PoseStamped`       | estimated self pose |
 
 #### Output
 
@@ -44,9 +44,9 @@ This node extracts the elements related to the road surface markings and yabloc 
 
 #### Input
 
-| Name               | Type                                         | Description |
-| ------------------ | -------------------------------------------- | ----------- |
-| `input/vector_map` | `autoware_auto_mapping_msgs::msg::HADMapBin` | vector map  |
+| Name               | Type                                    | Description |
+| ------------------ | --------------------------------------- | ----------- |
+| `input/vector_map` | `autoware_map_msgs::msg::LaneletMapBin` | vector map  |
 
 #### Output
 

@@ -43,7 +43,7 @@ GroundServer::GroundServer(const rclcpp::NodeOptions & options)
   auto on_pose = std::bind(&GroundServer::on_pose_stamped, this, _1);
   auto on_map = std::bind(&GroundServer::on_map, this, _1);
 
-  sub_map_ = create_subscription<HADMapBin>("~/input/vector_map", map_qos, on_map);
+  sub_map_ = create_subscription<LaneletMapBin>("~/input/vector_map", map_qos, on_map);
   sub_pose_stamped_ = create_subscription<PoseStamped>("~/input/pose", 10, on_pose);
 
   pub_ground_height_ = create_publisher<Float32>("~/output/height", 10);
@@ -100,7 +100,7 @@ void GroundServer::on_pose_stamped(const PoseStamped & msg)
   }
 }
 
-void GroundServer::on_map(const HADMapBin & msg)
+void GroundServer::on_map(const LaneletMapBin & msg)
 {
   lanelet::LaneletMapPtr lanelet_map(new lanelet::LaneletMap);
   lanelet::utils::conversion::fromBinMsg(msg, lanelet_map);

@@ -93,7 +93,7 @@ For switching rule:
 
 | Name                          | Type                                                         | Description                       |
 | ----------------------------- | ------------------------------------------------------------ | --------------------------------- |
-| `/input/vector_map`           | autoware_auto_mapping_msgs::msg::HADMapBin                   | vector map                        |
+| `/input/vector_map`           | autoware_map_msgs::msg::LaneletMapBin                        | vector map                        |
 | `/input/pose_with_covariance` | geometry_msgs::msg::PoseWithCovarianceStamped                | localization final output         |
 | `/input/initialization_state` | autoware_adapi_v1_msgs::msg::LocalizationInitializationState | localization initialization state |
 

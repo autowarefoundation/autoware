@@ -28,7 +28,7 @@ namespace landmark_manager
 {
 
 void LandmarkManager::parse_landmarks(
-  const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr & msg,
+  const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr & msg,
   const std::string & target_subtype)
 {
   std::vector<lanelet::Polygon3d> landmarks =

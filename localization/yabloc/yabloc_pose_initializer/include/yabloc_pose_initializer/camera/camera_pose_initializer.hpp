@@ -23,7 +23,7 @@
 #include <opencv2/core.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -40,7 +40,7 @@ public:
   using PoseCovStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
   using PointCloud2 = sensor_msgs::msg::PointCloud2;
   using Image = sensor_msgs::msg::Image;
-  using HADMapBin = autoware_auto_mapping_msgs::msg::HADMapBin;
+  using LaneletMapBin = autoware_map_msgs::msg::LaneletMapBin;
   using RequestPoseAlignment = tier4_localization_msgs::srv::PoseWithCovarianceStamped;
 
   CameraPoseInitializer();
@@ -52,7 +52,7 @@ private:
   std::unique_ptr<initializer::ProjectorModule> projector_module_{nullptr};
 
   rclcpp::Subscription<PoseCovStamped>::SharedPtr sub_initialpose_;
-  rclcpp::Subscription<HADMapBin>::SharedPtr sub_map_;
+  rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_map_;
   rclcpp::Subscription<Image>::SharedPtr sub_image_;
 
   rclcpp::Service<RequestPoseAlignment>::SharedPtr align_server_;
@@ -63,7 +63,7 @@ private:
 
   std::unique_ptr<SemanticSegmentation> semantic_segmentation_{nullptr};
 
-  void on_map(const HADMapBin & msg);
+  void on_map(const LaneletMapBin & msg);
   void on_service(
     const RequestPoseAlignment::Request::SharedPtr,
     RequestPoseAlignment::Response::SharedPtr request);

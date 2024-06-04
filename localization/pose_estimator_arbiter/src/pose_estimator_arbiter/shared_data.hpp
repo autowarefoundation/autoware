@@ -16,7 +16,7 @@
 #define POSE_ESTIMATOR_ARBITER__SHARED_DATA_HPP_
 
 #include <autoware_adapi_v1_msgs/msg/localization_initialization_state.hpp>
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -77,7 +77,7 @@ public:
   using Image = sensor_msgs::msg::Image;
   using PoseCovStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
   using PointCloud2 = sensor_msgs::msg::PointCloud2;
-  using HADMapBin = autoware_auto_mapping_msgs::msg::HADMapBin;
+  using HADMapBin = autoware_map_msgs::msg::LaneletMapBin;
   using InitializationState = autoware_adapi_v1_msgs::msg::LocalizationInitializationState;
 
   SharedData() {}

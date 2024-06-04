@@ -16,7 +16,7 @@
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 
 #include <gtest/gtest.h>
 #include <lanelet2_core/LaneletMap.h>
@@ -71,7 +71,7 @@ TEST_F(MockNode, vectorMapBasedRule)
     lanelet::LaneletMapPtr lanelet_map(new lanelet::LaneletMap);
     lanelet_map->add(create_polygon3d());
 
-    using HADMapBin = autoware_auto_mapping_msgs::msg::HADMapBin;
+    using HADMapBin = autoware_map_msgs::msg::LaneletMapBin;
     HADMapBin msg;
     lanelet::utils::conversion::toBinMsg(lanelet_map, &msg);
 
