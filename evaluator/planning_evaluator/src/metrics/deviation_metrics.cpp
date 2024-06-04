@@ -22,8 +22,8 @@ namespace planning_diagnostics
 {
 namespace metrics
 {
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 
 Stat<double> calcLateralDeviation(const Trajectory & ref, const Trajectory & traj)
 {

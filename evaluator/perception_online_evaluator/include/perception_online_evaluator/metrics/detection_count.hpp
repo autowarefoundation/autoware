@@ -21,8 +21,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include "autoware_auto_perception_msgs/msg/object_classification.hpp"
-#include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"
+#include "autoware_perception_msgs/msg/object_classification.hpp"
+#include "autoware_perception_msgs/msg/predicted_objects.hpp"
 #include <geometry_msgs/msg/pose.hpp>
 
 #include <iomanip>
@@ -37,8 +37,8 @@ namespace perception_diagnostics
 {
 namespace metrics
 {
-using autoware_auto_perception_msgs::msg::ObjectClassification;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::ObjectClassification;
+using autoware_perception_msgs::msg::PredictedObjects;
 
 struct DetectionRange
 {

@@ -17,7 +17,7 @@
 
 #include <vehicle_info_util/vehicle_info.hpp>
 
-#include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"
+#include "autoware_perception_msgs/msg/predicted_objects.hpp"
 #include <geometry_msgs/msg/polygon.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
@@ -30,7 +30,7 @@
 namespace marker_utils
 {
 
-using autoware_auto_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObject;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using std_msgs::msg::ColorRGBA;

@@ -17,8 +17,8 @@
 
 #include "planning_evaluator/stat.hpp"
 
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
 
 namespace planning_diagnostics
 {
@@ -26,7 +26,7 @@ namespace metrics
 {
 namespace utils
 {
-using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::Trajectory;
 
 /**
  * @brief find the index in the trajectory at the given distance of the given index

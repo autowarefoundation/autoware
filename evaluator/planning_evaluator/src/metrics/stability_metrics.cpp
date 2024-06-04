@@ -19,7 +19,7 @@
 
 #include <Eigen/Core>
 
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
 
 #include <algorithm>
 
@@ -27,7 +27,7 @@ namespace planning_diagnostics
 {
 namespace metrics
 {
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 
 Stat<double> calcFrechetDistance(const Trajectory & traj1, const Trajectory & traj2)
 {

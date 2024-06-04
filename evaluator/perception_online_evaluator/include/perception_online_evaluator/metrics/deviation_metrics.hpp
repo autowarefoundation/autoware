@@ -17,7 +17,7 @@
 
 #include "perception_online_evaluator/stat.hpp"
 
-#include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
+#include <autoware_perception_msgs/msg/predicted_path.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
 #include <vector>
@@ -26,7 +26,7 @@ namespace perception_diagnostics
 {
 namespace metrics
 {
-using autoware_auto_perception_msgs::msg::PredictedPath;
+using autoware_perception_msgs::msg::PredictedPath;
 using geometry_msgs::msg::Pose;
 
 /**

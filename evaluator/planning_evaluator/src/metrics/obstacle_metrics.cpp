@@ -18,7 +18,7 @@
 
 #include <Eigen/Core>
 
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -27,7 +27,7 @@ namespace planning_diagnostics
 {
 namespace metrics
 {
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 using tier4_autoware_utils::calcDistance2d;
 
 Stat<double> calcDistanceToObstacle(const PredictedObjects & obstacles, const Trajectory & traj)

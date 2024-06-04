@@ -19,8 +19,8 @@
 #include <perception_online_evaluator/perception_online_evaluator_node.hpp>
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
@@ -35,11 +35,11 @@
 #include <vector>
 
 using EvalNode = perception_diagnostics::PerceptionOnlineEvaluatorNode;
-using PredictedObjects = autoware_auto_perception_msgs::msg::PredictedObjects;
-using PredictedObject = autoware_auto_perception_msgs::msg::PredictedObject;
+using PredictedObjects = autoware_perception_msgs::msg::PredictedObjects;
+using PredictedObject = autoware_perception_msgs::msg::PredictedObject;
 using DiagnosticArray = diagnostic_msgs::msg::DiagnosticArray;
 using MarkerArray = visualization_msgs::msg::MarkerArray;
-using ObjectClassification = autoware_auto_perception_msgs::msg::ObjectClassification;
+using ObjectClassification = autoware_perception_msgs::msg::ObjectClassification;
 using nav_msgs::msg::Odometry;
 using TFMessage = tf2_msgs::msg::TFMessage;
 
@@ -172,7 +172,7 @@ protected:
     object.kinematics.initial_twist_with_covariance.twist.linear.y = 0.0;
     object.kinematics.initial_twist_with_covariance.twist.linear.z = 0.0;
 
-    autoware_auto_perception_msgs::msg::PredictedPath path;
+    autoware_perception_msgs::msg::PredictedPath path;
     for (size_t i = 0; i < predicted_path.size(); ++i) {
       geometry_msgs::msg::Pose pose;
       pose.position.x = predicted_path[i].first;

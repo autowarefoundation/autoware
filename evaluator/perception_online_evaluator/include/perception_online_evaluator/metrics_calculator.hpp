@@ -25,8 +25,8 @@
 
 #include <rclcpp/time.hpp>
 
-#include "autoware_auto_perception_msgs/msg/object_classification.hpp"
-#include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"
+#include "autoware_perception_msgs/msg/object_classification.hpp"
+#include "autoware_perception_msgs/msg/predicted_objects.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
@@ -41,8 +41,8 @@
 
 namespace perception_diagnostics
 {
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObjects;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using metrics::DetectionCounter;
