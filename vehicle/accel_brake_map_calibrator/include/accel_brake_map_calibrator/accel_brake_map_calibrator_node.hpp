@@ -27,8 +27,8 @@
 
 #include <Eigen/Dense>
 
-#include "autoware_auto_vehicle_msgs/msg/steering_report.hpp"
-#include "autoware_auto_vehicle_msgs/msg/velocity_report.hpp"
+#include "autoware_vehicle_msgs/msg/steering_report.hpp"
+#include "autoware_vehicle_msgs/msg/velocity_report.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/occupancy_grid.hpp"
 #include "std_msgs/msg/bool.hpp"
@@ -56,8 +56,8 @@
 namespace accel_brake_map_calibrator
 {
 
-using autoware_auto_vehicle_msgs::msg::SteeringReport;
-using autoware_auto_vehicle_msgs::msg::VelocityReport;
+using autoware_vehicle_msgs::msg::SteeringReport;
+using autoware_vehicle_msgs::msg::VelocityReport;
 using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::OccupancyGrid;
 using raw_vehicle_cmd_converter::AccelMap;

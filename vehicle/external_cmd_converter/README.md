@@ -7,16 +7,16 @@
 | Name                        | Type                                         | Description                                                                                                       |
 | --------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `~/in/external_control_cmd` | tier4_external_api_msgs::msg::ControlCommand | target `throttle/brake/steering_angle/steering_angle_velocity` is necessary to calculate desired control command. |
-| `~/input/shift_cmd"`        | autoware_auto_vehicle_msgs::GearCommand      | current command of gear.                                                                                          |
+| `~/input/shift_cmd"`        | autoware_vehicle_msgs::GearCommand           | current command of gear.                                                                                          |
 | `~/input/emergency_stop`    | tier4_external_api_msgs::msg::Heartbeat      | emergency heart beat for external command.                                                                        |
 | `~/input/current_gate_mode` | tier4_control_msgs::msg::GateMode            | topic for gate mode.                                                                                              |
 | `~/input/odometry`          | navigation_msgs::Odometry                    | twist topic in odometry is used.                                                                                  |
 
 ## Output topics
 
-| Name                | Type                                                     | Description                                                        |
-| ------------------- | -------------------------------------------------------- | ------------------------------------------------------------------ |
-| `~/out/control_cmd` | autoware_auto_control_msgs::msg::AckermannControlCommand | ackermann control command converted from selected external command |
+| Name                | Type                                | Description                                                        |
+| ------------------- | ----------------------------------- | ------------------------------------------------------------------ |
+| `~/out/control_cmd` | autoware_control_msgs::msg::Control | ackermann control command converted from selected external command |
 
 ## Parameters
 

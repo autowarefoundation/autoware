@@ -20,8 +20,8 @@
 #include <raw_vehicle_cmd_converter/brake_map.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
-#include <autoware_auto_vehicle_msgs/msg/gear_command.hpp>
+#include <autoware_control_msgs/msg/control.hpp>
+#include <autoware_vehicle_msgs/msg/gear_command.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <tier4_control_msgs/msg/gate_mode.hpp>
 #include <tier4_external_api_msgs/msg/control_command_stamped.hpp>
@@ -32,13 +32,12 @@
 
 namespace external_cmd_converter
 {
-using GearCommand = autoware_auto_vehicle_msgs::msg::GearCommand;
-using AckermannControlCommand = autoware_auto_control_msgs::msg::AckermannControlCommand;
+using GearCommand = autoware_vehicle_msgs::msg::GearCommand;
+using Control = autoware_control_msgs::msg::Control;
 using ExternalControlCommand = tier4_external_api_msgs::msg::ControlCommandStamped;
 using Odometry = nav_msgs::msg::Odometry;
 using raw_vehicle_cmd_converter::AccelMap;
 using raw_vehicle_cmd_converter::BrakeMap;
-using ControlCommandStamped = autoware_auto_control_msgs::msg::AckermannControlCommand;
 using Odometry = nav_msgs::msg::Odometry;
 
 class ExternalCmdConverterNode : public rclcpp::Node
@@ -48,7 +47,7 @@ public:
 
 private:
   // Publisher
-  rclcpp::Publisher<AckermannControlCommand>::SharedPtr pub_cmd_;
+  rclcpp::Publisher<Control>::SharedPtr pub_cmd_;
   rclcpp::Publisher<tier4_external_api_msgs::msg::ControlCommandStamped>::SharedPtr
     pub_current_cmd_;
 

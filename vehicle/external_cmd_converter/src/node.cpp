@@ -26,7 +26,7 @@ ExternalCmdConverterNode::ExternalCmdConverterNode(const rclcpp::NodeOptions & n
 {
   using std::placeholders::_1;
 
-  pub_cmd_ = create_publisher<AckermannControlCommand>("out/control_cmd", rclcpp::QoS{1});
+  pub_cmd_ = create_publisher<Control>("out/control_cmd", rclcpp::QoS{1});
   pub_current_cmd_ =
     create_publisher<ExternalControlCommand>("out/latest_external_control_cmd", rclcpp::QoS{1});
   sub_velocity_ = create_subscription<Odometry>(
@@ -142,11 +142,11 @@ void ExternalCmdConverterNode::onExternalCmd(const ExternalControlCommand::Const
   }
 
   // Publish ControlCommand
-  autoware_auto_control_msgs::msg::AckermannControlCommand output;
+  autoware_control_msgs::msg::Control output;
   output.stamp = cmd_ptr->stamp;
   output.lateral.steering_tire_angle = cmd_ptr->control.steering_angle;
   output.lateral.steering_tire_rotation_rate = cmd_ptr->control.steering_angle_velocity;
-  output.longitudinal.speed = ref_velocity;
+  output.longitudinal.velocity = ref_velocity;
   output.longitudinal.acceleration = ref_acceleration;
 
   pub_cmd_->publish(output);

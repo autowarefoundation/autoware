@@ -17,10 +17,10 @@ Calculate yaw rate error and then calculate steering error recursively by least 
 
 ### Input
 
-| Name            | Type                                              | Description   |
-| --------------- | ------------------------------------------------- | ------------- |
-| `~/input/twist` | `geometry_msgs::msg::TwistStamped`                | vehicle twist |
-| `~/input/steer` | `autoware_auto_vehicle_msgs::msg::SteeringReport` | steering      |
+| Name            | Type                                         | Description   |
+| --------------- | -------------------------------------------- | ------------- |
+| `~/input/twist` | `geometry_msgs::msg::TwistStamped`           | vehicle twist |
+| `~/input/steer` | `autoware_vehicle_msgs::msg::SteeringReport` | steering      |
 
 ### Output
 

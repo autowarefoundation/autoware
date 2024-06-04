@@ -23,8 +23,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
-#include <autoware_auto_vehicle_msgs/msg/steering_report.hpp>
+#include <autoware_control_msgs/msg/control.hpp>
+#include <autoware_vehicle_msgs/msg/steering_report.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <tier4_debug_msgs/msg/float32_multi_array_stamped.hpp>
@@ -36,12 +36,12 @@
 
 namespace raw_vehicle_cmd_converter
 {
-using AckermannControlCommand = autoware_auto_control_msgs::msg::AckermannControlCommand;
+using Control = autoware_control_msgs::msg::Control;
 using tier4_debug_msgs::msg::Float32MultiArrayStamped;
 using tier4_vehicle_msgs::msg::ActuationCommandStamped;
 using TwistStamped = geometry_msgs::msg::TwistStamped;
 using Odometry = nav_msgs::msg::Odometry;
-using Steering = autoware_auto_vehicle_msgs::msg::SteeringReport;
+using Steering = autoware_vehicle_msgs::msg::SteeringReport;
 
 class DebugValues
 {
@@ -77,7 +77,7 @@ public:
   //!< @brief subscriber for current velocity
   rclcpp::Subscription<Odometry>::SharedPtr sub_velocity_;
   //!< @brief subscriber for vehicle command
-  rclcpp::Subscription<AckermannControlCommand>::SharedPtr sub_control_cmd_;
+  rclcpp::Subscription<Control>::SharedPtr sub_control_cmd_;
   //!< @brief subscriber for steering
   rclcpp::Subscription<Steering>::SharedPtr sub_steering_;
 
@@ -85,7 +85,7 @@ public:
 
   std::unique_ptr<TwistStamped> current_twist_ptr_;  // [m/s]
   std::unique_ptr<double> current_steer_ptr_;
-  AckermannControlCommand::ConstSharedPtr control_cmd_ptr_;
+  Control::ConstSharedPtr control_cmd_ptr_;
   AccelMap accel_map_;
   BrakeMap brake_map_;
   SteerMap steer_map_;
@@ -110,7 +110,7 @@ public:
   double calculateBrakeMap(const double current_velocity, const double desired_acc);
   double calculateSteer(const double vel, const double steering, const double steer_rate);
   void onSteering(const Steering::ConstSharedPtr msg);
-  void onControlCmd(const AckermannControlCommand::ConstSharedPtr msg);
+  void onControlCmd(const Control::ConstSharedPtr msg);
   void onVelocity(const Odometry::ConstSharedPtr msg);
   void publishActuationCmd();
   // for debugging

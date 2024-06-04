@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-from autoware_auto_vehicle_msgs.msg import VelocityReport
+from autoware_vehicle_msgs.msg import VelocityReport
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSDurabilityPolicy
