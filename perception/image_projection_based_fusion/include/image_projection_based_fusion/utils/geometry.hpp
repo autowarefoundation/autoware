@@ -20,7 +20,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <autoware_auto_perception_msgs/msg/shape.hpp>
+#include <autoware_perception_msgs/msg/shape.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <sensor_msgs/msg/region_of_interest.hpp>
 
@@ -29,7 +29,7 @@
 namespace image_projection_based_fusion
 {
 
-using autoware_auto_perception_msgs::msg::Shape;
+using autoware_perception_msgs::msg::Shape;
 using geometry_msgs::msg::Pose;
 
 double calcIoU(

@@ -15,8 +15,8 @@
 #ifndef SHAPE_ESTIMATION__SHAPE_ESTIMATOR_HPP_
 #define SHAPE_ESTIMATION__SHAPE_ESTIMATOR_HPP_
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
-#include <autoware_auto_perception_msgs/msg/shape.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/shape.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
 #include <boost/optional.hpp>
@@ -35,7 +35,7 @@ struct ReferenceYawInfo
 
 struct ReferenceShapeSizeInfo
 {
-  autoware_auto_perception_msgs::msg::Shape shape;
+  autoware_perception_msgs::msg::Shape shape;
   /**
    * @brief
    * Fix mode : use the reference shape size as fixed value.
@@ -51,15 +51,14 @@ private:
   bool estimateOriginalShapeAndPose(
     const uint8_t label, const pcl::PointCloud<pcl::PointXYZ> & cluster,
     const boost::optional<ReferenceYawInfo> & ref_yaw_info,
-    autoware_auto_perception_msgs::msg::Shape & shape_output,
-    geometry_msgs::msg::Pose & pose_output);
+    autoware_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output);
   bool applyFilter(
-    const uint8_t label, const autoware_auto_perception_msgs::msg::Shape & shape,
+    const uint8_t label, const autoware_perception_msgs::msg::Shape & shape,
     const geometry_msgs::msg::Pose & pose);
   bool applyCorrector(
     const uint8_t label, const bool use_reference_yaw,
     const boost::optional<ReferenceShapeSizeInfo> & ref_shape_size_info,
-    autoware_auto_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose);
+    autoware_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose);
 
   bool use_corrector_;
   bool use_filter_;
@@ -74,8 +73,7 @@ public:
     const uint8_t label, const pcl::PointCloud<pcl::PointXYZ> & cluster,
     const boost::optional<ReferenceYawInfo> & ref_yaw_info,
     const boost::optional<ReferenceShapeSizeInfo> & ref_shape_size_info,
-    autoware_auto_perception_msgs::msg::Shape & shape_output,
-    geometry_msgs::msg::Pose & pose_output);
+    autoware_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output);
 };
 
 #endif  // SHAPE_ESTIMATION__SHAPE_ESTIMATOR_HPP_

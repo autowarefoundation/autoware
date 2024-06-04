@@ -25,7 +25,7 @@
 #include <tier4_autoware_utils/math/normalization.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
@@ -851,10 +851,10 @@ MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_
   sub_objects_ = this->create_subscription<TrackedObjects>(
     "~/input/objects", 1,
     std::bind(&MapBasedPredictionNode::objectsCallback, this, std::placeholders::_1));
-  sub_map_ = this->create_subscription<HADMapBin>(
+  sub_map_ = this->create_subscription<LaneletMapBin>(
     "/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&MapBasedPredictionNode::mapCallback, this, std::placeholders::_1));
-  sub_traffic_signals_ = this->create_subscription<TrafficSignalArray>(
+  sub_traffic_signals_ = this->create_subscription<TrafficLightGroupArray>(
     "/traffic_signals", 1,
     std::bind(&MapBasedPredictionNode::trafficSignalsCallback, this, std::placeholders::_1));
 
@@ -913,13 +913,15 @@ PredictedObject MapBasedPredictionNode::convertToPredictedObject(
   predicted_object.kinematics = convertToPredictedKinematics(tracked_object.kinematics);
   predicted_object.classification = tracked_object.classification;
   predicted_object.object_id = tracked_object.object_id;
-  predicted_object.shape = tracked_object.shape;
+  predicted_object.shape.type = tracked_object.shape.type;
+  predicted_object.shape.footprint = tracked_object.shape.footprint;
+  predicted_object.shape.dimensions = tracked_object.shape.dimensions;
   predicted_object.existence_probability = tracked_object.existence_probability;
 
   return predicted_object;
 }
 
-void MapBasedPredictionNode::mapCallback(const HADMapBin::ConstSharedPtr msg)
+void MapBasedPredictionNode::mapCallback(const LaneletMapBin::ConstSharedPtr msg)
 {
   RCLCPP_DEBUG(get_logger(), "[Map Based Prediction]: Start loading lanelet");
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
@@ -934,11 +936,12 @@ void MapBasedPredictionNode::mapCallback(const HADMapBin::ConstSharedPtr msg)
   crosswalks_.insert(crosswalks_.end(), walkways.begin(), walkways.end());
 }
 
-void MapBasedPredictionNode::trafficSignalsCallback(const TrafficSignalArray::ConstSharedPtr msg)
+void MapBasedPredictionNode::trafficSignalsCallback(
+  const TrafficLightGroupArray::ConstSharedPtr msg)
 {
   traffic_signal_id_map_.clear();
-  for (const auto & signal : msg->signals) {
-    traffic_signal_id_map_[signal.traffic_signal_id] = signal;
+  for (const auto & signal : msg->traffic_light_groups) {
+    traffic_signal_id_map_[signal.traffic_light_group_id] = signal;
   }
 }
 
@@ -1113,7 +1116,7 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
         TrackedObject yaw_fixed_transformed_object = transformed_object;
         if (
           transformed_object.kinematics.orientation_availability ==
-          autoware_auto_perception_msgs::msg::TrackedObjectKinematics::UNAVAILABLE) {
+          autoware_perception_msgs::msg::TrackedObjectKinematics::UNAVAILABLE) {
           replaceObjectYawWithLaneletsYaw(current_lanelets, yaw_fixed_transformed_object);
         }
         // Generate Predicted Path
@@ -1473,7 +1476,7 @@ void MapBasedPredictionNode::updateObjectData(TrackedObject & object)
 {
   if (
     object.kinematics.orientation_availability ==
-    autoware_auto_perception_msgs::msg::DetectedObjectKinematics::AVAILABLE) {
+    autoware_perception_msgs::msg::DetectedObjectKinematics::AVAILABLE) {
     return;
   }
 
@@ -1494,7 +1497,7 @@ void MapBasedPredictionNode::updateObjectData(TrackedObject & object)
   if (abs_object_speed < min_abs_speed) return;
 
   switch (object.kinematics.orientation_availability) {
-    case autoware_auto_perception_msgs::msg::DetectedObjectKinematics::SIGN_UNKNOWN: {
+    case autoware_perception_msgs::msg::DetectedObjectKinematics::SIGN_UNKNOWN: {
       const auto original_yaw =
         tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
       // flip the angle
@@ -1523,7 +1526,7 @@ void MapBasedPredictionNode::removeStaleTrafficLightInfo(
   for (auto it = stopped_times_against_green_.begin(); it != stopped_times_against_green_.end();) {
     const bool isDisappeared = std::none_of(
       in_objects->objects.begin(), in_objects->objects.end(),
-      [&it](autoware_auto_perception_msgs::msg::TrackedObject obj) {
+      [&it](autoware_perception_msgs::msg::TrackedObject obj) {
         return tier4_autoware_utils::toHexString(obj.object_id) == it->first.first;
       });
     if (isDisappeared) {
@@ -2414,7 +2417,7 @@ std::optional<lanelet::Id> MapBasedPredictionNode::getTrafficSignalId(
   return traffic_light_reg_elems.front()->id();
 }
 
-std::optional<TrafficSignalElement> MapBasedPredictionNode::getTrafficSignalElement(
+std::optional<TrafficLightElement> MapBasedPredictionNode::getTrafficSignalElement(
   const lanelet::Id & id)
 {
   if (traffic_signal_id_map_.count(id) != 0) {
@@ -2435,12 +2438,12 @@ bool MapBasedPredictionNode::calcIntentionToCrossWithTrafficSignal(
 {
   const auto signal_color = [&] {
     const auto elem_opt = getTrafficSignalElement(signal_id);
-    return elem_opt ? elem_opt.value().color : TrafficSignalElement::UNKNOWN;
+    return elem_opt ? elem_opt.value().color : TrafficLightElement::UNKNOWN;
   }();
 
   const auto key = std::make_pair(tier4_autoware_utils::toHexString(object.object_id), signal_id);
   if (
-    signal_color == TrafficSignalElement::GREEN &&
+    signal_color == TrafficLightElement::GREEN &&
     tier4_autoware_utils::calcNorm(object.kinematics.twist_with_covariance.twist.linear) <
       threshold_velocity_assumed_as_stopping_) {
     stopped_times_against_green_.try_emplace(key, this->get_clock()->now());
@@ -2485,7 +2488,7 @@ bool MapBasedPredictionNode::calcIntentionToCrossWithTrafficSignal(
     // If the pedestrian disappears, another function erases the old data.
   }
 
-  if (signal_color == TrafficSignalElement::RED) {
+  if (signal_color == TrafficLightElement::RED) {
     return false;
   }
 

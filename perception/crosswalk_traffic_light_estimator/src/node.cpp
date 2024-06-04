@@ -85,7 +85,7 @@ CrosswalkTrafficLightEstimatorNode::CrosswalkTrafficLightEstimatorNode(
   last_detect_color_hold_time_ = declare_parameter<double>("last_detect_color_hold_time");
   last_colors_hold_time_ = declare_parameter<double>("last_colors_hold_time");
 
-  sub_map_ = create_subscription<HADMapBin>(
+  sub_map_ = create_subscription<LaneletMapBin>(
     "~/input/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&CrosswalkTrafficLightEstimatorNode::onMap, this, _1));
   sub_route_ = create_subscription<LaneletRoute>(
@@ -100,7 +100,7 @@ CrosswalkTrafficLightEstimatorNode::CrosswalkTrafficLightEstimatorNode(
   pub_processing_time_ = std::make_shared<DebugPublisher>(this, "~/debug");
 }
 
-void CrosswalkTrafficLightEstimatorNode::onMap(const HADMapBin::ConstSharedPtr msg)
+void CrosswalkTrafficLightEstimatorNode::onMap(const LaneletMapBin::ConstSharedPtr msg)
 {
   RCLCPP_DEBUG(get_logger(), "[CrosswalkTrafficLightEstimatorNode]: Start loading lanelet");
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
@@ -160,8 +160,8 @@ void CrosswalkTrafficLightEstimatorNode::onTrafficLightArray(
   TrafficSignalArray output = *msg;
 
   TrafficLightIdMap traffic_light_id_map;
-  for (const auto & traffic_signal : msg->signals) {
-    traffic_light_id_map[traffic_signal.traffic_signal_id] =
+  for (const auto & traffic_signal : msg->traffic_light_groups) {
+    traffic_light_id_map[traffic_signal.traffic_light_group_id] =
       std::pair<TrafficSignal, rclcpp::Time>(traffic_signal, get_clock()->now());
   }
   for (const auto & crosswalk : conflicting_crosswalks_) {
@@ -198,7 +198,7 @@ void CrosswalkTrafficLightEstimatorNode::updateLastDetectedSignal(
       continue;
     }
 
-    const auto & id = input_traffic_signal.second.first.traffic_signal_id;
+    const auto & id = input_traffic_signal.second.first.traffic_light_group_id;
 
     if (last_detect_color_.count(id) == 0) {
       last_detect_color_.insert(std::make_pair(id, input_traffic_signal.second));
@@ -210,7 +210,7 @@ void CrosswalkTrafficLightEstimatorNode::updateLastDetectedSignal(
 
   std::vector<int32_t> erase_id_list;
   for (auto & last_traffic_signal : last_detect_color_) {
-    const auto & id = last_traffic_signal.second.first.traffic_signal_id;
+    const auto & id = last_traffic_signal.second.first.traffic_light_group_id;
 
     if (traffic_light_id_map.count(id) == 0) {
       // hold signal recognition results for [last_detect_color_hold_time_] seconds.
@@ -243,7 +243,7 @@ void CrosswalkTrafficLightEstimatorNode::updateLastDetectedSignals(
       continue;
     }
 
-    const auto & id = input_traffic_signal.second.first.traffic_signal_id;
+    const auto & id = input_traffic_signal.second.first.traffic_light_group_id;
 
     if (last_colors_.count(id) == 0) {
       std::vector<TrafficSignalAndTime> signal{input_traffic_signal.second};
@@ -284,9 +284,9 @@ void CrosswalkTrafficLightEstimatorNode::setCrosswalkTrafficSignal(
 
   std::unordered_map<lanelet::Id, size_t> valid_id2idx_map;  // detected traffic light
 
-  for (size_t i = 0; i < msg.signals.size(); ++i) {
-    auto signal = msg.signals[i];
-    valid_id2idx_map[signal.traffic_signal_id] = i;
+  for (size_t i = 0; i < msg.traffic_light_groups.size(); ++i) {
+    auto signal = msg.traffic_light_groups[i];
+    valid_id2idx_map[signal.traffic_light_group_id] = i;
   }
 
   for (const auto & tl_reg_elem : tl_reg_elems) {
@@ -294,10 +294,10 @@ void CrosswalkTrafficLightEstimatorNode::setCrosswalkTrafficSignal(
     // if valid prediction exists, overwrite the estimation; else, use the estimation
     if (valid_id2idx_map.count(id)) {
       size_t idx = valid_id2idx_map[id];
-      auto signal = msg.signals[idx];
+      auto signal = msg.traffic_light_groups[idx];
       updateFlashingState(signal);  // check if it is flashing
       // update output msg according to flashing and current state
-      output.signals[idx].elements[0].color = updateAndGetColorState(signal);
+      output.traffic_light_groups[idx].elements[0].color = updateAndGetColorState(signal);
     } else {
       TrafficSignal output_traffic_signal;
       TrafficSignalElement output_traffic_signal_element;
@@ -305,15 +305,15 @@ void CrosswalkTrafficLightEstimatorNode::setCrosswalkTrafficSignal(
       output_traffic_signal_element.shape = TrafficSignalElement::CIRCLE;
       output_traffic_signal_element.confidence = 1.0;
       output_traffic_signal.elements.push_back(output_traffic_signal_element);
-      output_traffic_signal.traffic_signal_id = id;
-      output.signals.push_back(output_traffic_signal);
+      output_traffic_signal.traffic_light_group_id = id;
+      output.traffic_light_groups.push_back(output_traffic_signal);
     }
   }
 }
 
 void CrosswalkTrafficLightEstimatorNode::updateFlashingState(const TrafficSignal & signal)
 {
-  const auto id = signal.traffic_signal_id;
+  const auto id = signal.traffic_light_group_id;
 
   // no record of detected color in last_detect_color_hold_time_
   if (is_flashing_.count(id) == 0) {
@@ -350,7 +350,7 @@ void CrosswalkTrafficLightEstimatorNode::updateFlashingState(const TrafficSignal
 
 uint8_t CrosswalkTrafficLightEstimatorNode::updateAndGetColorState(const TrafficSignal & signal)
 {
-  const auto id = signal.traffic_signal_id;
+  const auto id = signal.traffic_light_group_id;
   const auto color = signal.elements[0].color;
 
   if (current_color_state_.count(id) == 0) {
@@ -524,15 +524,17 @@ boost::optional<uint8_t> CrosswalkTrafficLightEstimatorNode::getHighestConfidenc
 
 void CrosswalkTrafficLightEstimatorNode::removeDuplicateIds(TrafficSignalArray & signal_array) const
 {
-  auto & signals = signal_array.signals;
+  auto & signals = signal_array.traffic_light_groups;
   std::sort(signals.begin(), signals.end(), [](const auto & s1, const auto & s2) {
-    return s1.traffic_signal_id < s2.traffic_signal_id;
+    return s1.traffic_light_group_id < s2.traffic_light_group_id;
   });
 
   signals.erase(
     std::unique(
       signals.begin(), signals.end(),
-      [](const auto & s1, const auto s2) { return s1.traffic_signal_id == s2.traffic_signal_id; }),
+      [](const auto & s1, const auto s2) {
+        return s1.traffic_light_group_id == s2.traffic_light_group_id;
+      }),
     signals.end());
 }
 

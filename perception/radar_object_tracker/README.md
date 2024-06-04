@@ -26,16 +26,16 @@ See more details in the [models.md](models.md).
 
 ### Input
 
-| Name          | Type                                                  | Description      |
-| ------------- | ----------------------------------------------------- | ---------------- |
-| `~/input`     | `autoware_auto_perception_msgs::msg::DetectedObjects` | Detected objects |
-| `/vector/map` | `autoware_auto_msgs::msg::HADMapBin`                  | Map data         |
+| Name          | Type                                             | Description      |
+| ------------- | ------------------------------------------------ | ---------------- |
+| `~/input`     | `autoware_perception_msgs::msg::DetectedObjects` | Detected objects |
+| `/vector/map` | `autoware_map_msgs::msg::LaneletMapBin`          | Map data         |
 
 ### Output
 
-| Name       | Type                                                 | Description     |
-| ---------- | ---------------------------------------------------- | --------------- |
-| `~/output` | `autoware_auto_perception_msgs::msg::TrackedObjects` | Tracked objects |
+| Name       | Type                                            | Description     |
+| ---------- | ----------------------------------------------- | --------------- |
+| `~/output` | `autoware_perception_msgs::msg::TrackedObjects` | Tracked objects |
 
 ## Parameters
 

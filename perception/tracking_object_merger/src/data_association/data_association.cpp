@@ -129,8 +129,8 @@ void DataAssociation::assign(
  * @return Eigen::MatrixXd
  */
 Eigen::MatrixXd DataAssociation::calcScoreMatrix(
-  const autoware_auto_perception_msgs::msg::TrackedObjects & objects0,
-  const autoware_auto_perception_msgs::msg::TrackedObjects & objects1)
+  const autoware_perception_msgs::msg::TrackedObjects & objects0,
+  const autoware_perception_msgs::msg::TrackedObjects & objects1)
 {
   Eigen::MatrixXd score_matrix =
     Eigen::MatrixXd::Zero(objects1.objects.size(), objects0.objects.size());
@@ -154,7 +154,7 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
  * @return Eigen::MatrixXd
  */
 Eigen::MatrixXd DataAssociation::calcScoreMatrix(
-  const autoware_auto_perception_msgs::msg::TrackedObjects & objects0,
+  const autoware_perception_msgs::msg::TrackedObjects & objects0,
   const std::vector<TrackerState> & trackers)
 {
   Eigen::MatrixXd score_matrix = Eigen::MatrixXd::Zero(trackers.size(), objects0.objects.size());
@@ -172,8 +172,8 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
 }
 
 double DataAssociation::calcScoreBetweenObjects(
-  const autoware_auto_perception_msgs::msg::TrackedObject & object0,
-  const autoware_auto_perception_msgs::msg::TrackedObject & object1) const
+  const autoware_perception_msgs::msg::TrackedObject & object0,
+  const autoware_perception_msgs::msg::TrackedObject & object1) const
 {
   const std::uint8_t object1_label =
     object_recognition_utils::getHighestProbLabel(object1.classification);

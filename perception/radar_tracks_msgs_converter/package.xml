@@ -15,7 +15,7 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
-  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_perception_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>radar_msgs</depend>

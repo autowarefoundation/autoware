@@ -1,6 +1,6 @@
 # simple_object_merger
 
-This package can merge multiple topics of [autoware_auto_perception_msgs/msg/DetectedObject](https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/DetectedObject.idl) with low calculation cost.
+This package can merge multiple topics of [autoware_perception_msgs/msg/DetectedObject](https://github.com/autowarefoundation/autoware_msgs/tree/main/autoware_perception_msgs/msg/DetectedObject.msg) with low calculation cost.
 
 ## Design
 
@@ -31,11 +31,11 @@ Because this package does not have matching processing, there are overlapping ob
 
 ### Input
 
-Input topics is defined by the parameter of `input_topics` (List[string]). The type of input topics is `std::vector<autoware_auto_perception_msgs/msg/DetectedObjects.msg>`.
+Input topics is defined by the parameter of `input_topics` (List[string]). The type of input topics is `std::vector<autoware_perception_msgs/msg/DetectedObjects.msg>`.
 
 ### Output
 
-- `~/output/objects` (`autoware_auto_perception_msgs/msg/DetectedObjects.msg`)
+- `~/output/objects` (`autoware_perception_msgs/msg/DetectedObjects.msg`)
   - Merged objects combined from input topics.
 
 ### Parameters

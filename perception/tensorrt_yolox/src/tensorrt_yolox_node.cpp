@@ -16,7 +16,7 @@
 
 #include "object_recognition_utils/object_classification.hpp"
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
 
 #include <algorithm>
 #include <memory>

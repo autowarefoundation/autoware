@@ -17,11 +17,11 @@
 #include "multi_object_tracker/tracker/tracker.hpp"
 #include "object_recognition_utils/object_recognition_utils.hpp"
 
-#include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
+#include <autoware_perception_msgs/msg/tracked_objects.hpp>
 
 #include <iterator>
 
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+using Label = autoware_perception_msgs::msg::ObjectClassification;
 
 TrackerProcessor::TrackerProcessor(
   const std::map<std::uint8_t, std::string> & tracker_map, const size_t & channel_size)
@@ -47,7 +47,7 @@ void TrackerProcessor::predict(const rclcpp::Time & time)
 }
 
 void TrackerProcessor::update(
-  const autoware_auto_perception_msgs::msg::DetectedObjects & detected_objects,
+  const autoware_perception_msgs::msg::DetectedObjects & detected_objects,
   const geometry_msgs::msg::Transform & self_transform,
   const std::unordered_map<int, int> & direct_assignment, const uint & channel_index)
 {
@@ -67,7 +67,7 @@ void TrackerProcessor::update(
 }
 
 void TrackerProcessor::spawn(
-  const autoware_auto_perception_msgs::msg::DetectedObjects & detected_objects,
+  const autoware_perception_msgs::msg::DetectedObjects & detected_objects,
   const geometry_msgs::msg::Transform & self_transform,
   const std::unordered_map<int, int> & reverse_assignment, const uint & channel_index)
 {
@@ -84,7 +84,7 @@ void TrackerProcessor::spawn(
 }
 
 std::shared_ptr<Tracker> TrackerProcessor::createNewTracker(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+  const autoware_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
   const geometry_msgs::msg::Transform & self_transform, const uint & channel_index) const
 {
   const std::uint8_t label = object_recognition_utils::getHighestProbLabel(object.classification);
@@ -143,12 +143,12 @@ void TrackerProcessor::removeOverlappedTracker(const rclcpp::Time & time)
 {
   // Iterate through the list of trackers
   for (auto itr1 = list_tracker_.begin(); itr1 != list_tracker_.end(); ++itr1) {
-    autoware_auto_perception_msgs::msg::TrackedObject object1;
+    autoware_perception_msgs::msg::TrackedObject object1;
     if (!(*itr1)->getTrackedObject(time, object1)) continue;
 
     // Compare the current tracker with the remaining trackers
     for (auto itr2 = std::next(itr1); itr2 != list_tracker_.end(); ++itr2) {
-      autoware_auto_perception_msgs::msg::TrackedObject object2;
+      autoware_perception_msgs::msg::TrackedObject object2;
       if (!(*itr2)->getTrackedObject(time, object2)) continue;
 
       // Calculate the distance between the two objects
@@ -220,15 +220,14 @@ bool TrackerProcessor::isConfidentTracker(const std::shared_ptr<Tracker> & track
 }
 
 void TrackerProcessor::getTrackedObjects(
-  const rclcpp::Time & time,
-  autoware_auto_perception_msgs::msg::TrackedObjects & tracked_objects) const
+  const rclcpp::Time & time, autoware_perception_msgs::msg::TrackedObjects & tracked_objects) const
 {
   tracked_objects.header.stamp = time;
   for (const auto & tracker : list_tracker_) {
     // Skip if the tracker is not confident
     if (!isConfidentTracker(tracker)) continue;
     // Get the tracked object, extrapolated to the given time
-    autoware_auto_perception_msgs::msg::TrackedObject tracked_object;
+    autoware_perception_msgs::msg::TrackedObject tracked_object;
     if (tracker->getTrackedObject(time, tracked_object)) {
       tracked_objects.objects.push_back(tracked_object);
     }
@@ -237,12 +236,12 @@ void TrackerProcessor::getTrackedObjects(
 
 void TrackerProcessor::getTentativeObjects(
   const rclcpp::Time & time,
-  autoware_auto_perception_msgs::msg::TrackedObjects & tentative_objects) const
+  autoware_perception_msgs::msg::TrackedObjects & tentative_objects) const
 {
   tentative_objects.header.stamp = time;
   for (const auto & tracker : list_tracker_) {
     if (!isConfidentTracker(tracker)) {
-      autoware_auto_perception_msgs::msg::TrackedObject tracked_object;
+      autoware_perception_msgs::msg::TrackedObject tracked_object;
       if (tracker->getTrackedObject(time, tracked_object)) {
         tentative_objects.objects.push_back(tracked_object);
       }

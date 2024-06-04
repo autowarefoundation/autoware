@@ -40,9 +40,9 @@ Simply looking at the overlap between the unknown object and the tracker does no
 
 ### Output
 
-| Name       | Type                                                  | Description |
-| ---------- | ----------------------------------------------------- | ----------- |
-| `~/output` | `autoware_auto_perception_msgs::msg::DetectedObjects` | objects     |
+| Name       | Type                                             | Description |
+| ---------- | ------------------------------------------------ | ----------- |
+| `~/output` | `autoware_perception_msgs::msg::DetectedObjects` | objects     |
 
 ## Parameters
 

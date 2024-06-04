@@ -25,8 +25,8 @@
 #include <shape_estimation/shape_estimator.hpp>
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/tracked_objects.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
@@ -51,14 +51,14 @@
 class TrackerHandler
 {
 private:
-  std::deque<autoware_auto_perception_msgs::msg::TrackedObjects> objects_buffer_;
+  std::deque<autoware_perception_msgs::msg::TrackedObjects> objects_buffer_;
 
 public:
   TrackerHandler() = default;
   void onTrackedObjects(
-    const autoware_auto_perception_msgs::msg::TrackedObjects::ConstSharedPtr input_objects_msg);
+    const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr input_objects_msg);
   bool estimateTrackedObjects(
-    const rclcpp::Time & time, autoware_auto_perception_msgs::msg::TrackedObjects & output);
+    const rclcpp::Time & time, autoware_perception_msgs::msg::TrackedObjects & output);
 };
 
 class DetectionByTracker : public rclcpp::Node
@@ -67,8 +67,8 @@ public:
   explicit DetectionByTracker(const rclcpp::NodeOptions & node_options);
 
 private:
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr objects_pub_;
-  rclcpp::Subscription<autoware_auto_perception_msgs::msg::TrackedObjects>::SharedPtr trackers_sub_;
+  rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr objects_pub_;
+  rclcpp::Subscription<autoware_perception_msgs::msg::TrackedObjects>::SharedPtr trackers_sub_;
   rclcpp::Subscription<tier4_perception_msgs::msg::DetectedObjectsWithFeature>::SharedPtr
     initial_objects_sub_;
 
@@ -92,20 +92,20 @@ private:
     const tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_msg);
 
   void divideUnderSegmentedObjects(
-    const autoware_auto_perception_msgs::msg::DetectedObjects & tracked_objects,
+    const autoware_perception_msgs::msg::DetectedObjects & tracked_objects,
     const tier4_perception_msgs::msg::DetectedObjectsWithFeature & in_objects,
-    autoware_auto_perception_msgs::msg::DetectedObjects & out_no_found_tracked_objects,
+    autoware_perception_msgs::msg::DetectedObjects & out_no_found_tracked_objects,
     tier4_perception_msgs::msg::DetectedObjectsWithFeature & out_objects);
 
   float optimizeUnderSegmentedObject(
-    const autoware_auto_perception_msgs::msg::DetectedObject & target_object,
+    const autoware_perception_msgs::msg::DetectedObject & target_object,
     const sensor_msgs::msg::PointCloud2 & under_segmented_cluster,
     tier4_perception_msgs::msg::DetectedObjectWithFeature & output);
 
   void mergeOverSegmentedObjects(
-    const autoware_auto_perception_msgs::msg::DetectedObjects & tracked_objects,
+    const autoware_perception_msgs::msg::DetectedObjects & tracked_objects,
     const tier4_perception_msgs::msg::DetectedObjectsWithFeature & in_objects,
-    autoware_auto_perception_msgs::msg::DetectedObjects & out_no_found_tracked_objects,
+    autoware_perception_msgs::msg::DetectedObjects & out_no_found_tracked_objects,
     tier4_perception_msgs::msg::DetectedObjectsWithFeature & out_objects);
 };
 

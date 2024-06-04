@@ -37,7 +37,7 @@
 #include <Eigen/Geometry>
 
 UnknownTracker::UnknownTracker(
-  const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
+  const rclcpp::Time & time, const autoware_perception_msgs::msg::DetectedObject & object,
   const geometry_msgs::msg::Transform & /*self_transform*/, const size_t channel_size,
   const uint & channel_index)
 : Tracker(time, object.classification, channel_size),
@@ -140,11 +140,11 @@ bool UnknownTracker::predict(const rclcpp::Time & time)
   return motion_model_.predictState(time);
 }
 
-autoware_auto_perception_msgs::msg::DetectedObject UnknownTracker::getUpdatingObject(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object,
+autoware_perception_msgs::msg::DetectedObject UnknownTracker::getUpdatingObject(
+  const autoware_perception_msgs::msg::DetectedObject & object,
   const geometry_msgs::msg::Transform & /*self_transform*/)
 {
-  autoware_auto_perception_msgs::msg::DetectedObject updating_object = object;
+  autoware_perception_msgs::msg::DetectedObject updating_object = object;
 
   // UNCERTAINTY MODEL
   if (!object.kinematics.has_position_covariance) {
@@ -165,8 +165,7 @@ autoware_auto_perception_msgs::msg::DetectedObject UnknownTracker::getUpdatingOb
   return updating_object;
 }
 
-bool UnknownTracker::measureWithPose(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object)
+bool UnknownTracker::measureWithPose(const autoware_perception_msgs::msg::DetectedObject & object)
 {
   // update motion model
   bool is_updated = false;
@@ -187,7 +186,7 @@ bool UnknownTracker::measureWithPose(
 }
 
 bool UnknownTracker::measure(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+  const autoware_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
   const geometry_msgs::msg::Transform & self_transform)
 {
   // keep the latest input object
@@ -204,7 +203,7 @@ bool UnknownTracker::measure(
   }
 
   // update object
-  const autoware_auto_perception_msgs::msg::DetectedObject updating_object =
+  const autoware_perception_msgs::msg::DetectedObject updating_object =
     getUpdatingObject(object, self_transform);
   measureWithPose(updating_object);
 
@@ -212,7 +211,7 @@ bool UnknownTracker::measure(
 }
 
 bool UnknownTracker::getTrackedObject(
-  const rclcpp::Time & time, autoware_auto_perception_msgs::msg::TrackedObject & object) const
+  const rclcpp::Time & time, autoware_perception_msgs::msg::TrackedObject & object) const
 {
   object = object_recognition_utils::toTrackedObject(object_);
   object.object_id = getUUID();

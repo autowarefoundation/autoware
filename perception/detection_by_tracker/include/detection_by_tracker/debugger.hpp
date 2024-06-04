@@ -23,8 +23,8 @@
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/tracked_objects.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
@@ -51,18 +51,14 @@ class Debugger
 public:
   explicit Debugger(rclcpp::Node * node)
   {
-    initial_objects_pub_ =
-      node->create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
-        "debug/initial_objects", 1);
-    tracked_objects_pub_ =
-      node->create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
-        "debug/tracked_objects", 1);
-    merged_objects_pub_ =
-      node->create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
-        "debug/merged_objects", 1);
-    divided_objects_pub_ =
-      node->create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
-        "debug/divided_objects", 1);
+    initial_objects_pub_ = node->create_publisher<autoware_perception_msgs::msg::DetectedObjects>(
+      "debug/initial_objects", 1);
+    tracked_objects_pub_ = node->create_publisher<autoware_perception_msgs::msg::DetectedObjects>(
+      "debug/tracked_objects", 1);
+    merged_objects_pub_ = node->create_publisher<autoware_perception_msgs::msg::DetectedObjects>(
+      "debug/merged_objects", 1);
+    divided_objects_pub_ = node->create_publisher<autoware_perception_msgs::msg::DetectedObjects>(
+      "debug/divided_objects", 1);
     processing_time_publisher_ =
       std::make_unique<tier4_autoware_utils::DebugPublisher>(node, "detection_by_tracker");
     stop_watch_ptr_ =
@@ -75,7 +71,7 @@ public:
   {
     initial_objects_pub_->publish(removeFeature(input));
   }
-  void publishTrackedObjects(const autoware_auto_perception_msgs::msg::DetectedObjects & input)
+  void publishTrackedObjects(const autoware_perception_msgs::msg::DetectedObjects & input)
   {
     tracked_objects_pub_->publish(input);
   }
@@ -102,22 +98,18 @@ public:
   }
 
 private:
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr
-    initial_objects_pub_;
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr
-    tracked_objects_pub_;
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr
-    merged_objects_pub_;
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr
-    divided_objects_pub_;
+  rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr initial_objects_pub_;
+  rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr tracked_objects_pub_;
+  rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr merged_objects_pub_;
+  rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr divided_objects_pub_;
   // debug publisher
   std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
   std::unique_ptr<tier4_autoware_utils::DebugPublisher> processing_time_publisher_;
 
-  autoware_auto_perception_msgs::msg::DetectedObjects removeFeature(
+  autoware_perception_msgs::msg::DetectedObjects removeFeature(
     const tier4_perception_msgs::msg::DetectedObjectsWithFeature & input)
   {
-    autoware_auto_perception_msgs::msg::DetectedObjects objects;
+    autoware_perception_msgs::msg::DetectedObjects objects;
     objects.header = input.header;
     for (const auto & feature_object : input.feature_objects) {
       objects.objects.push_back(feature_object.object);

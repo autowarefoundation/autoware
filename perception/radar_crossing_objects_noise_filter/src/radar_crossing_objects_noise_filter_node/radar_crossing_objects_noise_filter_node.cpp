@@ -52,8 +52,8 @@ bool update_param(
 
 namespace radar_crossing_objects_noise_filter
 {
-using autoware_auto_perception_msgs::msg::DetectedObject;
-using autoware_auto_perception_msgs::msg::DetectedObjects;
+using autoware_perception_msgs::msg::DetectedObject;
+using autoware_perception_msgs::msg::DetectedObjects;
 
 RadarCrossingObjectsNoiseFilterNode::RadarCrossingObjectsNoiseFilterNode(
   const rclcpp::NodeOptions & node_options)

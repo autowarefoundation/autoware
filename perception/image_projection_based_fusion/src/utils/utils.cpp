@@ -204,7 +204,7 @@ void addShapeAndKinematic(
   polygon_centroid.x = polygon_centroid.x / static_cast<double>(cluster2d_convex.size());
   polygon_centroid.y = polygon_centroid.y / static_cast<double>(cluster2d_convex.size());
 
-  autoware_auto_perception_msgs::msg::Shape shape;
+  autoware_perception_msgs::msg::Shape shape;
   for (size_t i = 0; i < cluster2d_convex.size(); ++i) {
     geometry_msgs::msg::Point32 point;
     point.x = cluster2d_convex.at(i).x / 1000.0;
@@ -212,7 +212,7 @@ void addShapeAndKinematic(
     point.z = 0.0;
     shape.footprint.points.push_back(point);
   }
-  shape.type = autoware_auto_perception_msgs::msg::Shape::POLYGON;
+  shape.type = autoware_perception_msgs::msg::Shape::POLYGON;
   constexpr float eps = 0.01;
   shape.dimensions.x = 0;
   shape.dimensions.y = 0;

@@ -14,7 +14,7 @@
 
 #include "lidar_apollo_instance_segmentation/debugger.hpp"
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <pcl/point_cloud.h>
@@ -32,7 +32,7 @@ Debugger::Debugger(rclcpp::Node * node)
 void Debugger::publishColoredPointCloud(
   const tier4_perception_msgs::msg::DetectedObjectsWithFeature & input)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::ObjectClassification;
   pcl::PointCloud<pcl::PointXYZRGB> colored_pointcloud;
   for (size_t i = 0; i < input.feature_objects.size(); i++) {
     pcl::PointCloud<pcl::PointXYZI> object_pointcloud;

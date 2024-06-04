@@ -50,7 +50,7 @@ bool update_param(
   return true;
 }
 
-double get_distance(const autoware_auto_perception_msgs::msg::DetectedObject & object)
+double get_distance(const autoware_perception_msgs::msg::DetectedObject & object)
 {
   const auto & position = object.kinematics.pose_with_covariance.pose.position;
   return std::hypot(position.x, position.y);
@@ -60,8 +60,8 @@ double get_distance(const autoware_auto_perception_msgs::msg::DetectedObject & o
 
 namespace radar_object_clustering
 {
-using autoware_auto_perception_msgs::msg::DetectedObject;
-using autoware_auto_perception_msgs::msg::DetectedObjects;
+using autoware_perception_msgs::msg::DetectedObject;
+using autoware_perception_msgs::msg::DetectedObjects;
 
 RadarObjectClusteringNode::RadarObjectClusteringNode(const rclcpp::NodeOptions & node_options)
 : Node("radar_object_clustering", node_options)
@@ -166,7 +166,7 @@ void RadarObjectClusteringNode::onObjects(const DetectedObjects::ConstSharedPtr 
 
     // Fixed size correction
     if (node_param_.is_fixed_size) {
-      clustered_output_object.shape.type = autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX;
+      clustered_output_object.shape.type = autoware_perception_msgs::msg::Shape::BOUNDING_BOX;
       clustered_output_object.shape.dimensions.x = node_param_.size_x;
       clustered_output_object.shape.dimensions.y = node_param_.size_y;
       clustered_output_object.shape.dimensions.z = node_param_.size_z;

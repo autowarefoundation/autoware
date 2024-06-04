@@ -57,9 +57,9 @@ Multiple inputs are pre-defined in the input channel parameters (described below
 
 ### Output
 
-| Name       | Type                                                 | Description     |
-| ---------- | ---------------------------------------------------- | --------------- |
-| `~/output` | `autoware_auto_perception_msgs::msg::TrackedObjects` | tracked objects |
+| Name       | Type                                            | Description     |
+| ---------- | ----------------------------------------------- | --------------- |
+| `~/output` | `autoware_perception_msgs::msg::TrackedObjects` | tracked objects |
 
 ## Parameters
 
@@ -67,13 +67,13 @@ Multiple inputs are pre-defined in the input channel parameters (described below
 
 Available input channels are defined in [input_channels.param.yaml](config/input_channels.param.yaml).
 
-| Name                              | Type                                                  | Description                           |
-| --------------------------------- | ----------------------------------------------------- | ------------------------------------- |
-| `<channel>`                       |                                                       | the name of channel                   |
-| `<channel>.topic`                 | `autoware_auto_perception_msgs::msg::DetectedObjects` | detected objects                      |
-| `<channel>.can_spawn_new_tracker` | `bool`                                                | a switch allow to spawn a new tracker |
-| `<channel>.optional.name`         | `std::string`                                         | channel name for analysis             |
-| `<channel>.optional.short_name`   | `std::string`                                         | short name for visualization          |
+| Name                              | Type                                             | Description                           |
+| --------------------------------- | ------------------------------------------------ | ------------------------------------- |
+| `<channel>`                       |                                                  | the name of channel                   |
+| `<channel>.topic`                 | `autoware_perception_msgs::msg::DetectedObjects` | detected objects                      |
+| `<channel>.can_spawn_new_tracker` | `bool`                                           | a switch allow to spawn a new tracker |
+| `<channel>.optional.name`         | `std::string`                                    | channel name for analysis             |
+| `<channel>.optional.short_name`   | `std::string`                                    | short name for visualization          |
 
 ### Core Parameters
 

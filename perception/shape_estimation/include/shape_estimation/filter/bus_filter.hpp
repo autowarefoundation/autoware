@@ -26,7 +26,7 @@ public:
   ~BusFilter() = default;
 
   bool filter(
-    const autoware_auto_perception_msgs::msg::Shape & shape_output,
+    const autoware_perception_msgs::msg::Shape & shape_output,
     const geometry_msgs::msg::Pose & pose_output) override;
 };
 

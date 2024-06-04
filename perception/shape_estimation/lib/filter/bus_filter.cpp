@@ -15,7 +15,7 @@
 #include "shape_estimation/filter/bus_filter.hpp"
 
 bool BusFilter::filter(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
+  const autoware_perception_msgs::msg::Shape & shape,
   [[maybe_unused]] const geometry_msgs::msg::Pose & pose)
 {
   constexpr float min_width = 2.0;

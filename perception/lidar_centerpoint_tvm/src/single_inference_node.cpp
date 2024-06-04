@@ -95,7 +95,7 @@ SingleInferenceLidarCenterPointNode::SingleInferenceLidarCenterPointNode(
 }
 
 std::vector<Eigen::Vector3d> SingleInferenceLidarCenterPointNode::getVertices(
-  const autoware_auto_perception_msgs::msg::Shape & shape, const Eigen::Affine3d & pose) const
+  const autoware_perception_msgs::msg::Shape & shape, const Eigen::Affine3d & pose) const
 {
   std::vector<Eigen::Vector3d> vertices;
   Eigen::Vector3d vertex;
@@ -159,10 +159,10 @@ void SingleInferenceLidarCenterPointNode::detect(
     return;
   }
 
-  autoware_auto_perception_msgs::msg::DetectedObjects output_msg;
+  autoware_perception_msgs::msg::DetectedObjects output_msg;
   output_msg.header = msg.header;
   for (const auto & box3d : det_boxes3d) {
-    autoware_auto_perception_msgs::msg::DetectedObject obj;
+    autoware_perception_msgs::msg::DetectedObject obj;
     box3DToDetectedObject(box3d, class_names_, rename_car_to_truck_and_bus_, has_twist_, obj);
     output_msg.objects.emplace_back(obj);
   }
@@ -175,7 +175,7 @@ void SingleInferenceLidarCenterPointNode::detect(
 }
 
 void SingleInferenceLidarCenterPointNode::dumpDetectionsAsMesh(
-  const autoware_auto_perception_msgs::msg::DetectedObjects & objects_msg,
+  const autoware_perception_msgs::msg::DetectedObjects & objects_msg,
   const std::string & output_path) const
 {
   std::ofstream ofs(output_path, std::ofstream::out);

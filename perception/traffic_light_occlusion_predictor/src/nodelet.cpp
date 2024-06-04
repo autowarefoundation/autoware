@@ -51,7 +51,7 @@ TrafficLightOcclusionPredictorNodelet::TrafficLightOcclusionPredictorNodelet(
   using std::placeholders::_4;
 
   // subscribers
-  map_sub_ = create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+  map_sub_ = create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
     "~/input/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&TrafficLightOcclusionPredictorNodelet::mapCallback, this, _1));
 
@@ -97,7 +97,7 @@ TrafficLightOcclusionPredictorNodelet::TrafficLightOcclusionPredictorNodelet(
 }
 
 void TrafficLightOcclusionPredictorNodelet::mapCallback(
-  const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr input_msg)
+  const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr input_msg)
 {
   traffic_light_position_map_.clear();
   auto lanelet_map_ptr = std::make_shared<lanelet::LaneletMap>();

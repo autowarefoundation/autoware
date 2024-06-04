@@ -14,11 +14,11 @@
 
 #include "detected_object_validation/utils/utils.hpp"
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
 
 #include <gtest/gtest.h>
 
-using AutowareLabel = autoware_auto_perception_msgs::msg::ObjectClassification;
+using AutowareLabel = autoware_perception_msgs::msg::ObjectClassification;
 
 utils::FilterTargetLabel createFilterTargetAll()
 {

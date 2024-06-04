@@ -112,7 +112,7 @@ LidarCenterPointNode::LidarCenterPointNode(const rclcpp::NodeOptions & node_opti
   pointcloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
     "~/input/pointcloud", rclcpp::SensorDataQoS{}.keep_last(1),
     std::bind(&LidarCenterPointNode::pointCloudCallback, this, std::placeholders::_1));
-  objects_pub_ = this->create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
+  objects_pub_ = this->create_publisher<autoware_perception_msgs::msg::DetectedObjects>(
     "~/output/objects", rclcpp::QoS{1});
 
   // initialize debug tool
@@ -151,15 +151,15 @@ void LidarCenterPointNode::pointCloudCallback(
     return;
   }
 
-  std::vector<autoware_auto_perception_msgs::msg::DetectedObject> raw_objects;
+  std::vector<autoware_perception_msgs::msg::DetectedObject> raw_objects;
   raw_objects.reserve(det_boxes3d.size());
   for (const auto & box3d : det_boxes3d) {
-    autoware_auto_perception_msgs::msg::DetectedObject obj;
+    autoware_perception_msgs::msg::DetectedObject obj;
     box3DToDetectedObject(box3d, class_names_, has_twist_, has_variance_, obj);
     raw_objects.emplace_back(obj);
   }
 
-  autoware_auto_perception_msgs::msg::DetectedObjects output_msg;
+  autoware_perception_msgs::msg::DetectedObjects output_msg;
   output_msg.header = input_pointcloud_msg->header;
   output_msg.objects = iou_bev_nms_.apply(raw_objects);
 

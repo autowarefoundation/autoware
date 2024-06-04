@@ -15,7 +15,7 @@
 #include "shape_estimation/filter/no_filter.hpp"
 
 bool NoFilter::filter(
-  [[maybe_unused]] const autoware_auto_perception_msgs::msg::Shape & shape,
+  [[maybe_unused]] const autoware_perception_msgs::msg::Shape & shape,
   [[maybe_unused]] const geometry_msgs::msg::Pose & pose)
 {
   return true;

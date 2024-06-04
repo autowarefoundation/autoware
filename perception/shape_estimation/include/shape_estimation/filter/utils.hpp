@@ -15,13 +15,13 @@
 #ifndef SHAPE_ESTIMATION__FILTER__UTILS_HPP_
 #define SHAPE_ESTIMATION__FILTER__UTILS_HPP_
 
-#include <autoware_auto_perception_msgs/msg/shape.hpp>
+#include <autoware_perception_msgs/msg/shape.hpp>
 
 namespace utils
 {
 bool filterVehicleBoundingBox(
-  const autoware_auto_perception_msgs::msg::Shape & shape, const float min_width,
-  const float max_width, const float max_length);
+  const autoware_perception_msgs::msg::Shape & shape, const float min_width, const float max_width,
+  const float max_length);
 }  // namespace utils
 
 #endif  // SHAPE_ESTIMATION__FILTER__UTILS_HPP_

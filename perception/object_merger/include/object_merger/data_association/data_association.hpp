@@ -30,7 +30,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
 
 class DataAssociation
 {
@@ -51,8 +51,8 @@ public:
     const Eigen::MatrixXd & src, std::unordered_map<int, int> & direct_assignment,
     std::unordered_map<int, int> & reverse_assignment);
   Eigen::MatrixXd calcScoreMatrix(
-    const autoware_auto_perception_msgs::msg::DetectedObjects & objects0,
-    const autoware_auto_perception_msgs::msg::DetectedObjects & objects1);
+    const autoware_perception_msgs::msg::DetectedObjects & objects0,
+    const autoware_perception_msgs::msg::DetectedObjects & objects1);
   virtual ~DataAssociation() {}
 };
 

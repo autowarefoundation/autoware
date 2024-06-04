@@ -26,8 +26,8 @@
 #include <Eigen/Core>
 #include <rclcpp/rclcpp.hpp>
 
-#include "autoware_auto_perception_msgs/msg/detected_object.hpp"
-#include "autoware_auto_perception_msgs/msg/tracked_object.hpp"
+#include "autoware_perception_msgs/msg/detected_object.hpp"
+#include "autoware_perception_msgs/msg/tracked_object.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "unique_identifier_msgs/msg/uuid.hpp"
 
@@ -39,7 +39,7 @@ private:
   unique_identifier_msgs::msg::UUID uuid_;
 
   // classification
-  std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classification_;
+  std::vector<autoware_perception_msgs::msg::ObjectClassification> classification_;
 
   // existence states
   int no_measurement_count_;
@@ -52,7 +52,7 @@ private:
 public:
   Tracker(
     const rclcpp::Time & time,
-    const std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> & classification,
+    const std::vector<autoware_perception_msgs::msg::ObjectClassification> & classification,
     const size_t & channel_size);
   virtual ~Tracker() {}
 
@@ -64,13 +64,13 @@ public:
     return existence_vector.size() > 0;
   }
   bool updateWithMeasurement(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object,
+    const autoware_perception_msgs::msg::DetectedObject & object,
     const rclcpp::Time & measurement_time, const geometry_msgs::msg::Transform & self_transform,
     const uint & channel_index);
   bool updateWithoutMeasurement(const rclcpp::Time & now);
 
   // classification
-  std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> getClassification() const
+  std::vector<autoware_perception_msgs::msg::ObjectClassification> getClassification() const
   {
     return classification_;
   }
@@ -91,12 +91,12 @@ public:
 protected:
   unique_identifier_msgs::msg::UUID getUUID() const { return uuid_; }
   void setClassification(
-    const std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> & classification)
+    const std::vector<autoware_perception_msgs::msg::ObjectClassification> & classification)
   {
     classification_ = classification;
   }
   void updateClassification(
-    const std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> & classification);
+    const std::vector<autoware_perception_msgs::msg::ObjectClassification> & classification);
 
   // virtual functions
 public:
@@ -105,13 +105,12 @@ public:
 
 protected:
   virtual bool measure(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+    const autoware_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
     const geometry_msgs::msg::Transform & self_transform) = 0;
 
 public:
   virtual bool getTrackedObject(
-    const rclcpp::Time & time,
-    autoware_auto_perception_msgs::msg::TrackedObject & object) const = 0;
+    const rclcpp::Time & time, autoware_perception_msgs::msg::TrackedObject & object) const = 0;
   virtual bool predict(const rclcpp::Time & time) = 0;
 };
 

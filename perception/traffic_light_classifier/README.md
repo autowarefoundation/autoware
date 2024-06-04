@@ -8,8 +8,8 @@ traffic_light_classifier is a package for classifying traffic light labels using
 
 ### cnn_classifier
 
-Traffic light labels are classified by EfficientNet-b1 or MobileNet-v2.  
-Totally 83400 (58600 for training, 14800 for evaluation and 10000 for test) TIER IV internal images of Japanese traffic lights were used for fine-tuning.  
+Traffic light labels are classified by EfficientNet-b1 or MobileNet-v2.
+Totally 83400 (58600 for training, 14800 for evaluation and 10000 for test) TIER IV internal images of Japanese traffic lights were used for fine-tuning.
 The information of the models is listed here:
 
 | Name            | Input Size | Test Accuracy |

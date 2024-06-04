@@ -1,6 +1,6 @@
 # radar_tracks_msgs_converter
 
-This package converts from [radar_msgs/msg/RadarTracks](https://github.com/ros-perception/radar_msgs/blob/ros2/msg/RadarTracks.msg) into [autoware_auto_perception_msgs/msg/DetectedObject](https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/DetectedObject.idl) and [autoware_auto_perception_msgs/msg/TrackedObject](https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/TrackedObject.idl).
+This package converts from [radar_msgs/msg/RadarTracks](https://github.com/ros-perception/radar_msgs/blob/ros2/msg/RadarTracks.msg) into [autoware_perception_msgs/msg/DetectedObject]<https://github.com/autowarefoundation/autoware_msgs/tree/main/autoware_perception_msgs/msg/DetectedObject.msg)> and [autoware_perception_msgs/msg/TrackedObject](https://github.com/autowarefoundation/autoware_msgs/tree/main/autoware_perception_msgs/msg/TrackedObject.msg).
 
 - Calculation cost is O(n).
   - n: The number of radar objects
@@ -10,7 +10,7 @@ This package converts from [radar_msgs/msg/RadarTracks](https://github.com/ros-p
 ### Background
 
 Autoware uses [radar_msgs/msg/RadarTracks.msg](https://github.com/ros-perception/radar_msgs/blob/ros2/msg/RadarTracks.msg) as radar objects input data.
-To use radar objects data for Autoware perception module easily, `radar_tracks_msgs_converter` converts message type from `radar_msgs/msg/RadarTracks.msg` to `autoware_auto_perception_msgs/msg/DetectedObject`.
+To use radar objects data for Autoware perception module easily, `radar_tracks_msgs_converter` converts message type from `radar_msgs/msg/RadarTracks.msg` to `autoware_perception_msgs/msg/DetectedObject`.
 In addition, because many detection module have an assumption on base_link frame, `radar_tracks_msgs_converter` provide the functions of transform frame_id.
 
 ### Note
@@ -30,7 +30,7 @@ Label id is defined as below.
 | PEDESTRIAN | 32007      | 7        |
 
 Additional vendor-specific classifications are permitted starting from 32000 in [radar_msgs/msg/RadarTrack.msg](https://github.com/ros-perception/radar_msgs/blob/ros2/msg/RadarTrack.msg).
-Autoware objects label is defined in [ObjectClassification.idl](https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/ObjectClassification.idl)
+Autoware objects label is defined in [ObjectClassification](https://github.com/autowarefoundation/autoware_msgs/tree/main/autoware_perception_msgs/msg/ObjectClassification.msg)
 
 ## Interface
 
@@ -43,10 +43,10 @@ Autoware objects label is defined in [ObjectClassification.idl](https://gitlab.c
 
 ### Output
 
-- `~/output/radar_detected_objects` (`autoware_auto_perception_msgs/msg/DetectedObject.idl`)
+- `~/output/radar_detected_objects` (`autoware_perception_msgs/msg/DetectedObject.idl`)
   - DetectedObject topic converted to Autoware message.
   - This is used for radar sensor fusion detection and radar detection.
-- `~/output/radar_tracked_objects` (`autoware_auto_perception_msgs/msg/TrackedObject.idl`)
+- `~/output/radar_tracked_objects` (`autoware_perception_msgs/msg/TrackedObject.idl`)
   - TrackedObject topic converted to Autoware message.
   - This is used for tracking layer sensor fusion.
 

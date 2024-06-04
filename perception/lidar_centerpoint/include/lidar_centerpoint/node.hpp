@@ -24,10 +24,10 @@
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detected_object_kinematics.hpp>
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
-#include <autoware_auto_perception_msgs/msg/shape.hpp>
+#include <autoware_perception_msgs/msg/detected_object_kinematics.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/shape.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <memory>
@@ -49,7 +49,7 @@ private:
   tf2_ros::TransformListener tf_listener_{tf_buffer_};
 
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_sub_;
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr objects_pub_;
+  rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr objects_pub_;
 
   float score_threshold_{0.0};
   std::vector<std::string> class_names_;

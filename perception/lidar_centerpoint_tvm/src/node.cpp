@@ -89,7 +89,7 @@ LidarCenterPointTVMNode::LidarCenterPointTVMNode(const rclcpp::NodeOptions & nod
   pointcloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
     "~/input/pointcloud", rclcpp::SensorDataQoS{}.keep_last(1),
     std::bind(&LidarCenterPointTVMNode::pointCloudCallback, this, std::placeholders::_1));
-  objects_pub_ = this->create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
+  objects_pub_ = this->create_publisher<autoware_perception_msgs::msg::DetectedObjects>(
     "~/output/objects", rclcpp::QoS{1});
 
   // initialize debug tool
@@ -122,10 +122,10 @@ void LidarCenterPointTVMNode::pointCloudCallback(
     return;
   }
 
-  autoware_auto_perception_msgs::msg::DetectedObjects output_msg;
+  autoware_perception_msgs::msg::DetectedObjects output_msg;
   output_msg.header = input_pointcloud_msg->header;
   for (const auto & box3d : det_boxes3d) {
-    autoware_auto_perception_msgs::msg::DetectedObject obj;
+    autoware_perception_msgs::msg::DetectedObject obj;
     box3DToDetectedObject(box3d, class_names_, rename_car_to_truck_and_bus_, has_twist_, obj);
     output_msg.objects.emplace_back(obj);
   }

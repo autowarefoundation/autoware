@@ -39,13 +39,13 @@ bool update_param(
   return true;
 }
 
-autoware_auto_perception_msgs::msg::DetectedObjects::SharedPtr getTransformedObjects(
-  autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr objects,
+autoware_perception_msgs::msg::DetectedObjects::SharedPtr getTransformedObjects(
+  autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr objects,
   const std::string & target_frame_id,
   geometry_msgs::msg::TransformStamped::ConstSharedPtr transform)
 {
-  autoware_auto_perception_msgs::msg::DetectedObjects::SharedPtr output_objects =
-    std::const_pointer_cast<autoware_auto_perception_msgs::msg::DetectedObjects>(objects);
+  autoware_perception_msgs::msg::DetectedObjects::SharedPtr output_objects =
+    std::const_pointer_cast<autoware_perception_msgs::msg::DetectedObjects>(objects);
 
   if (objects->header.frame_id == target_frame_id) {
     return output_objects;

@@ -17,14 +17,14 @@
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 
-using autoware_auto_perception_msgs::msg::ObjectClassification;
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedObjectKinematics;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_perception_msgs::msg::PredictedPath;
-using autoware_auto_perception_msgs::msg::TrackedObject;
-using autoware_auto_perception_msgs::msg::TrackedObjectKinematics;
-using autoware_auto_perception_msgs::msg::TrackedObjects;
+using autoware_perception_msgs::msg::ObjectClassification;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObjectKinematics;
+using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_perception_msgs::msg::PredictedPath;
+using autoware_perception_msgs::msg::TrackedObject;
+using autoware_perception_msgs::msg::TrackedObjectKinematics;
+using autoware_perception_msgs::msg::TrackedObjects;
 
 TrackedObject generate_static_object(const int label)
 {

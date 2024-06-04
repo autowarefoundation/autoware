@@ -29,8 +29,8 @@
 
 namespace radar_fusion_to_detected_object
 {
-using autoware_auto_perception_msgs::msg::DetectedObject;
-using autoware_auto_perception_msgs::msg::DetectedObjects;
+using autoware_perception_msgs::msg::DetectedObject;
+using autoware_perception_msgs::msg::DetectedObjects;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::PoseWithCovariance;
 using geometry_msgs::msg::Twist;

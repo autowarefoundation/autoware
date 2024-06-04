@@ -23,11 +23,11 @@ The lidar points are projected onto the output of an image-only 2d object detect
 
 ### Output
 
-| Name                     | Type                                                  | Description              |
-| ------------------------ | ----------------------------------------------------- | ------------------------ |
-| `output`                 | `sensor_msgs::msg::PointCloud2`                       | painted pointcloud       |
-| `~/output/objects`       | `autoware_auto_perception_msgs::msg::DetectedObjects` | detected objects         |
-| `~/debug/image_raw[0-7]` | `sensor_msgs::msg::Image`                             | images for visualization |
+| Name                     | Type                                             | Description              |
+| ------------------------ | ------------------------------------------------ | ------------------------ |
+| `output`                 | `sensor_msgs::msg::PointCloud2`                  | painted pointcloud       |
+| `~/output/objects`       | `autoware_perception_msgs::msg::DetectedObjects` | detected objects         |
+| `~/debug/image_raw[0-7]` | `sensor_msgs::msg::Image`                        | images for visualization |
 
 ## Parameters
 

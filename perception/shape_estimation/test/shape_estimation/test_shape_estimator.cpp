@@ -81,7 +81,7 @@ TEST(BoundingBoxShapeModel, test_estimateShape)
     createLShapeCluster(length, width, height, 0.0, 0.0, 0.0);
 
   // Generate shape and pose output
-  autoware_auto_perception_msgs::msg::Shape shape_output;
+  autoware_perception_msgs::msg::Shape shape_output;
   geometry_msgs::msg::Pose pose_output;
 
   // Test estimateShape
@@ -89,7 +89,7 @@ TEST(BoundingBoxShapeModel, test_estimateShape)
   EXPECT_TRUE(result);
 
   // Check shape_output
-  EXPECT_EQ(shape_output.type, autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX);
+  EXPECT_EQ(shape_output.type, autoware_perception_msgs::msg::Shape::BOUNDING_BOX);
   EXPECT_NEAR(shape_output.dimensions.x, length, length * 0.1);
   EXPECT_NEAR(shape_output.dimensions.y, width, width * 0.1);
   EXPECT_NEAR(shape_output.dimensions.z, height, height * 0.1);
@@ -125,7 +125,7 @@ TEST(BoundingBoxShapeModel, test_estimateShape_rotated)
     BoundingBoxShapeModel(ref_yaw_info, use_boost_bbox_optimizer);
 
   // Generate shape and pose output
-  autoware_auto_perception_msgs::msg::Shape shape_output;
+  autoware_perception_msgs::msg::Shape shape_output;
   geometry_msgs::msg::Pose pose_output;
 
   // Test estimateShape
@@ -133,7 +133,7 @@ TEST(BoundingBoxShapeModel, test_estimateShape_rotated)
   EXPECT_TRUE(result);
 
   // Check shape_output
-  EXPECT_EQ(shape_output.type, autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX);
+  EXPECT_EQ(shape_output.type, autoware_perception_msgs::msg::Shape::BOUNDING_BOX);
   EXPECT_NEAR(shape_output.dimensions.x, length, length * 0.1);
   EXPECT_NEAR(shape_output.dimensions.y, width, width * 0.1);
   EXPECT_NEAR(shape_output.dimensions.z, height, height * 0.1);
@@ -157,7 +157,7 @@ TEST(CylinderShapeModel, test_estimateShape)
   // Generate cluster
   pcl::PointCloud<pcl::PointXYZ> cluster = createLShapeCluster(4.0, 2.0, 1.0, 0.0, 0.0, 0.0);
   // Generate shape and pose output
-  autoware_auto_perception_msgs::msg::Shape shape_output;
+  autoware_perception_msgs::msg::Shape shape_output;
   geometry_msgs::msg::Pose pose_output;
 
   // Test estimateShape
@@ -175,7 +175,7 @@ TEST(ConvexHullShapeModel, test_estimateShape)
   pcl::PointCloud<pcl::PointXYZ> cluster = createLShapeCluster(2.0, 1.0, 1.0, 0.0, 0.0, 0.0);
 
   // Generate shape and pose output
-  autoware_auto_perception_msgs::msg::Shape shape_output;
+  autoware_perception_msgs::msg::Shape shape_output;
   geometry_msgs::msg::Pose pose_output;
 
   // Test estimateShape
@@ -208,10 +208,10 @@ TEST(ShapeEstimator, test_estimateShapeAndPose)
   boost::optional<ReferenceShapeSizeInfo> ref_shape_size_info = boost::none;
 
   ref_yaw_info = ReferenceYawInfo{static_cast<float>(yaw), static_cast<float>(deg2rad(10.0))};
-  const auto label = autoware_auto_perception_msgs::msg::ObjectClassification::CAR;
+  const auto label = autoware_perception_msgs::msg::ObjectClassification::CAR;
 
   // Generate shape and pose output
-  autoware_auto_perception_msgs::msg::Shape shape_output;
+  autoware_perception_msgs::msg::Shape shape_output;
   geometry_msgs::msg::Pose pose_output;
 
   // Test estimateShapeAndPose
@@ -220,7 +220,7 @@ TEST(ShapeEstimator, test_estimateShapeAndPose)
   EXPECT_TRUE(result);
 
   // Check shape_output
-  EXPECT_EQ(shape_output.type, autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX);
+  EXPECT_EQ(shape_output.type, autoware_perception_msgs::msg::Shape::BOUNDING_BOX);
   EXPECT_NEAR(shape_output.dimensions.x, length, length * 0.1);
   EXPECT_NEAR(shape_output.dimensions.y, width, width * 0.1);
   EXPECT_NEAR(shape_output.dimensions.z, height, height * 0.1);

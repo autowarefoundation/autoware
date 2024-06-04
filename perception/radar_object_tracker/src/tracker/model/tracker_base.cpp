@@ -23,7 +23,7 @@
 
 Tracker::Tracker(
   const rclcpp::Time & time,
-  const std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> & classification)
+  const std::vector<autoware_perception_msgs::msg::ObjectClassification> & classification)
 : classification_(classification),
   no_measurement_count_(0),
   total_no_measurement_count_(0),
@@ -37,7 +37,7 @@ Tracker::Tracker(
 }
 
 bool Tracker::updateWithMeasurement(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object,
+  const autoware_perception_msgs::msg::DetectedObject & object,
   const rclcpp::Time & measurement_time, const geometry_msgs::msg::Transform & self_transform)
 {
   no_measurement_count_ = 0;
@@ -57,7 +57,7 @@ bool Tracker::updateWithoutMeasurement()
 geometry_msgs::msg::PoseWithCovariance Tracker::getPoseWithCovariance(
   const rclcpp::Time & time) const
 {
-  autoware_auto_perception_msgs::msg::TrackedObject object;
+  autoware_perception_msgs::msg::TrackedObject object;
   getTrackedObject(time, object);
   return object.kinematics.pose_with_covariance;
 }

@@ -183,7 +183,7 @@ DetectedObjects RadarTracksMsgsConverterNode::convertTrackedObjectsToDetectedObj
     // kinematics setting
     DetectedObjectKinematics kinematics;
     kinematics.orientation_availability =
-      autoware_auto_perception_msgs::msg::DetectedObjectKinematics::SIGN_UNKNOWN;
+      autoware_perception_msgs::msg::DetectedObjectKinematics::SIGN_UNKNOWN;
     kinematics.has_twist = true;
     kinematics.has_twist_covariance = true;
     kinematics.twist_with_covariance = object.kinematics.twist_with_covariance;

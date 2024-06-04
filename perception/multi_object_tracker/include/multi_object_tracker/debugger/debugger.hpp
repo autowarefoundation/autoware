@@ -23,8 +23,8 @@
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/tracked_objects.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include <list>
@@ -54,7 +54,7 @@ private:
 
   // ROS node, publishers
   rclcpp::Node & node_;
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::TrackedObjects>::SharedPtr
+  rclcpp::Publisher<autoware_perception_msgs::msg::TrackedObjects>::SharedPtr
     debug_tentative_objects_pub_;
   std::unique_ptr<tier4_autoware_utils::DebugPublisher> processing_time_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_objects_markers_pub_;
@@ -80,7 +80,7 @@ public:
   // Object publishing
   bool shouldPublishTentativeObjects() const { return debug_settings_.publish_tentative_objects; }
   void publishTentativeObjects(
-    const autoware_auto_perception_msgs::msg::TrackedObjects & tentative_objects) const;
+    const autoware_perception_msgs::msg::TrackedObjects & tentative_objects) const;
 
   // Time measurement
   void startMeasurementTime(
@@ -98,7 +98,7 @@ public:
   void collectObjectInfo(
     const rclcpp::Time & message_time, const std::list<std::shared_ptr<Tracker>> & list_tracker,
     const uint & channel_index,
-    const autoware_auto_perception_msgs::msg::DetectedObjects & detected_objects,
+    const autoware_perception_msgs::msg::DetectedObjects & detected_objects,
     const std::unordered_map<int, int> & direct_assignment,
     const std::unordered_map<int, int> & reverse_assignment);
   void publishObjectsMarkers();

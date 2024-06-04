@@ -17,7 +17,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "autoware_auto_perception_msgs/msg/detected_objects.hpp"
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
 
 #include <deque>
 #include <functional>
@@ -28,7 +28,7 @@
 
 namespace multi_object_tracker
 {
-using DetectedObjects = autoware_auto_perception_msgs::msg::DetectedObjects;
+using DetectedObjects = autoware_perception_msgs::msg::DetectedObjects;
 using ObjectsList = std::vector<std::pair<uint, DetectedObjects>>;
 
 struct InputChannel
@@ -52,7 +52,7 @@ public:
     func_trigger_ = func_trigger;
   }
 
-  void onMessage(const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr msg);
+  void onMessage(const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr msg);
   void updateTimingStatus(const rclcpp::Time & now, const rclcpp::Time & objects_time);
 
   bool isTimeInitialized() const { return initial_count_ > 0; }

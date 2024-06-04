@@ -30,7 +30,7 @@ TEST(objectToVertices, test_objectToVertices)
   pose.orientation.z = std::sin(angle);
   pose.orientation.w = std::cos(angle);
   {
-    autoware_auto_perception_msgs::msg::Shape shape;
+    autoware_perception_msgs::msg::Shape shape;
     shape.type = 0;
     shape.dimensions.x = 4.0;
     shape.dimensions.y = 6.0;
@@ -50,7 +50,7 @@ TEST(objectToVertices, test_objectToVertices)
 
   {
     // Test at Shape::CYLINDER
-    autoware_auto_perception_msgs::msg::Shape shape;
+    autoware_perception_msgs::msg::Shape shape;
     shape.type = 1;
     shape.dimensions.x = 4.0;
     shape.dimensions.y = 6.0;
@@ -70,7 +70,7 @@ TEST(objectToVertices, test_objectToVertices)
 
   {
     // Test at Shape::POLYGON (Nothing to do)
-    autoware_auto_perception_msgs::msg::Shape shape;
+    autoware_perception_msgs::msg::Shape shape;
     shape.type = 2;
     std::vector<Eigen::Vector3d> vertices;
 

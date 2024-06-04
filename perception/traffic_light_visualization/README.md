@@ -17,10 +17,10 @@ The `traffic_light_visualization` is a package that includes two visualizing nod
 
 #### Input
 
-| Name                 | Type                                            | Description              |
-| -------------------- | ----------------------------------------------- | ------------------------ |
-| `~/input/tl_state`   | `tier4_perception_msgs::msg::TrafficLightArray` | status of traffic lights |
-| `~/input/vector_map` | `autoware_auto_mapping_msgs::msg::HADMapBin`    | vector map               |
+| Name                 | Type                                                 | Description              |
+| -------------------- | ---------------------------------------------------- | ------------------------ |
+| `~/input/tl_state`   | `tier4_perception_msgs::msg::TrafficLightGroupArray` | status of traffic lights |
+| `~/input/vector_map` | `autoware_map_msgs::msg::LaneletMapBin`              | vector map               |
 
 #### Output
 

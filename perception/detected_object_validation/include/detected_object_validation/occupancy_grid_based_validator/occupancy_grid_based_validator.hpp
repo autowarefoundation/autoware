@@ -21,7 +21,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 
 #include <message_filters/subscriber.h>
@@ -38,15 +38,15 @@ public:
   explicit OccupancyGridBasedValidator(const rclcpp::NodeOptions & node_options);
 
 private:
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr objects_pub_;
-  message_filters::Subscriber<autoware_auto_perception_msgs::msg::DetectedObjects> objects_sub_;
+  rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr objects_pub_;
+  message_filters::Subscriber<autoware_perception_msgs::msg::DetectedObjects> objects_sub_;
   message_filters::Subscriber<nav_msgs::msg::OccupancyGrid> occ_grid_sub_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
   std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 
   typedef message_filters::sync_policies::ApproximateTime<
-    autoware_auto_perception_msgs::msg::DetectedObjects, nav_msgs::msg::OccupancyGrid>
+    autoware_perception_msgs::msg::DetectedObjects, nav_msgs::msg::OccupancyGrid>
     SyncPolicy;
   typedef message_filters::Synchronizer<SyncPolicy> Sync;
   Sync sync_;
@@ -54,19 +54,19 @@ private:
   bool enable_debug_;
 
   void onObjectsAndOccGrid(
-    const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr & input_objects,
+    const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr & input_objects,
     const nav_msgs::msg::OccupancyGrid::ConstSharedPtr & input_occ_grid);
 
   cv::Mat fromOccupancyGrid(const nav_msgs::msg::OccupancyGrid & occupancy_grid);
   std::optional<cv::Mat> getMask(
     const nav_msgs::msg::OccupancyGrid & occupancy_grid,
-    const autoware_auto_perception_msgs::msg::DetectedObject & object);
+    const autoware_perception_msgs::msg::DetectedObject & object);
   std::optional<cv::Mat> getMask(
     const nav_msgs::msg::OccupancyGrid & occupancy_grid,
-    const autoware_auto_perception_msgs::msg::DetectedObject & object, cv::Mat mask);
+    const autoware_perception_msgs::msg::DetectedObject & object, cv::Mat mask);
   void showDebugImage(
     const nav_msgs::msg::OccupancyGrid & ros_occ_grid,
-    const autoware_auto_perception_msgs::msg::DetectedObjects & objects, const cv::Mat & occ_grid);
+    const autoware_perception_msgs::msg::DetectedObjects & objects, const cv::Mat & occ_grid);
 };
 }  // namespace occupancy_grid_based_validator
 

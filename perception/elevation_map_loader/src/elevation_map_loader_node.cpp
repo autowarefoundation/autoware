@@ -93,7 +93,7 @@ ElevationMapLoaderNode::ElevationMapLoaderNode(const rclcpp::NodeOptions & optio
   sub_map_hash_ = create_subscription<tier4_external_api_msgs::msg::MapHash>(
     "/api/autoware/get/map/info/hash", durable_qos,
     std::bind(&ElevationMapLoaderNode::onMapHash, this, _1));
-  sub_vector_map_ = this->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+  sub_vector_map_ = this->create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
     "input/vector_map", durable_qos, std::bind(&ElevationMapLoaderNode::onVectorMap, this, _1));
   if (use_sequential_load) {
     {
@@ -237,7 +237,7 @@ void ElevationMapLoaderNode::onPointCloudMapMetaData(
 }
 
 void ElevationMapLoaderNode::onVectorMap(
-  const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr vector_map)
+  const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr vector_map)
 {
   RCLCPP_INFO(this->get_logger(), "subscribe vector_map");
   data_manager_.lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();

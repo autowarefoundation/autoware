@@ -46,8 +46,8 @@
 
 #include "lidar_apollo_instance_segmentation/cluster2d.hpp"
 
-#include <autoware_auto_perception_msgs/msg/detected_object_kinematics.hpp>
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/detected_object_kinematics.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
 
 #include <pcl_conversions/pcl_conversions.h>
 #ifdef ROS_DISTRO_GALACTIC
@@ -252,14 +252,14 @@ void Cluster2D::classify(const float * inferred_data)
 tier4_perception_msgs::msg::DetectedObjectWithFeature Cluster2D::obstacleToObject(
   const Obstacle & in_obstacle, const std_msgs::msg::Header & in_header)
 {
-  using autoware_auto_perception_msgs::msg::DetectedObjectKinematics;
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::DetectedObjectKinematics;
+  using autoware_perception_msgs::msg::ObjectClassification;
 
   tier4_perception_msgs::msg::DetectedObjectWithFeature resulting_object;
   // pcl::PointCloud<pcl::PointXYZI> in_cluster = *(in_obstacle.cloud_ptr);
 
   resulting_object.object.classification.emplace_back(
-    autoware_auto_perception_msgs::build<ObjectClassification>()
+    autoware_perception_msgs::build<ObjectClassification>()
       .label(ObjectClassification::UNKNOWN)
       .probability(in_obstacle.score));
   if (in_obstacle.meta_type == MetaType::META_PEDESTRIAN) {

@@ -17,7 +17,7 @@
 
 #include "shape_estimation/shape_estimator.hpp"
 
-#include <autoware_auto_perception_msgs/msg/shape.hpp>
+#include <autoware_perception_msgs/msg/shape.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
 namespace corrector_utils
@@ -33,15 +33,15 @@ struct CorrectionBBParameters
 };
 
 bool correctWithDefaultValue(
-  const CorrectionBBParameters & param, autoware_auto_perception_msgs::msg::Shape & shape_output,
+  const CorrectionBBParameters & param, autoware_perception_msgs::msg::Shape & shape_output,
   geometry_msgs::msg::Pose & pose_output);
 
 bool correctWithReferenceYawAndShapeSize(
   const ReferenceShapeSizeInfo & ref_shape_size_info,
-  autoware_auto_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output);
+  autoware_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output);
 
 bool correctWithReferenceYaw(
-  const CorrectionBBParameters & param, autoware_auto_perception_msgs::msg::Shape & shape_output,
+  const CorrectionBBParameters & param, autoware_perception_msgs::msg::Shape & shape_output,
   geometry_msgs::msg::Pose & pose_output);
 
 }  // namespace corrector_utils

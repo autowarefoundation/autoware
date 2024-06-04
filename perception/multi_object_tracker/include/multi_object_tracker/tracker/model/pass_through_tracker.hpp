@@ -26,23 +26,23 @@
 class PassThroughTracker : public Tracker
 {
 private:
-  autoware_auto_perception_msgs::msg::DetectedObject object_;
-  autoware_auto_perception_msgs::msg::DetectedObject prev_observed_object_;
+  autoware_perception_msgs::msg::DetectedObject object_;
+  autoware_perception_msgs::msg::DetectedObject prev_observed_object_;
   rclcpp::Logger logger_;
   rclcpp::Time last_update_time_;
 
 public:
   PassThroughTracker(
-    const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
+    const rclcpp::Time & time, const autoware_perception_msgs::msg::DetectedObject & object,
     const geometry_msgs::msg::Transform & self_transform, const size_t channel_size,
     const uint & channel_index);
   bool predict(const rclcpp::Time & time) override;
   bool measure(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+    const autoware_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
     const geometry_msgs::msg::Transform & self_transform) override;
   bool getTrackedObject(
     const rclcpp::Time & time,
-    autoware_auto_perception_msgs::msg::TrackedObject & object) const override;
+    autoware_perception_msgs::msg::TrackedObject & object) const override;
   virtual ~PassThroughTracker() {}
 };
 

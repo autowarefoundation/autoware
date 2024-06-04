@@ -38,7 +38,7 @@
 namespace corrector_utils
 {
 bool correctWithDefaultValue(
-  const CorrectionBBParameters & param, autoware_auto_perception_msgs::msg::Shape & shape,
+  const CorrectionBBParameters & param, autoware_perception_msgs::msg::Shape & shape,
   geometry_msgs::msg::Pose & pose)
 {
   // TODO(Yukihiro Saito): refactor following code
@@ -258,7 +258,7 @@ bool correctWithDefaultValue(
 }
 
 bool correctWithReferenceYaw(
-  const CorrectionBBParameters & param, autoware_auto_perception_msgs::msg::Shape & shape,
+  const CorrectionBBParameters & param, autoware_perception_msgs::msg::Shape & shape,
   geometry_msgs::msg::Pose & pose)
 {
   // TODO(Taichi Higashide): refactor following code
@@ -329,8 +329,8 @@ bool correctWithReferenceYaw(
 }
 
 bool correctWithReferenceYawAndShapeSize(
-  const ReferenceShapeSizeInfo & ref_shape_size_info,
-  autoware_auto_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose)
+  const ReferenceShapeSizeInfo & ref_shape_size_info, autoware_perception_msgs::msg::Shape & shape,
+  geometry_msgs::msg::Pose & pose)
 {
   /*
   c1 is nearest point and other points are arranged like below

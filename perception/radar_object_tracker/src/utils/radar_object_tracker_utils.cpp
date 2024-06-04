@@ -58,8 +58,8 @@ bool isDuplicated(
 
 bool checkCloseLaneletCondition(
   const std::pair<double, lanelet::Lanelet> & lanelet,
-  const autoware_auto_perception_msgs::msg::TrackedObject & object,
-  const double max_distance_from_lane, const double max_angle_diff_from_lane)
+  const autoware_perception_msgs::msg::TrackedObject & object, const double max_distance_from_lane,
+  const double max_angle_diff_from_lane)
 {
   if (lanelet.second.centerline().size() <= 1) {
     return false;
@@ -95,7 +95,7 @@ bool checkCloseLaneletCondition(
 }
 
 lanelet::ConstLanelets getClosestValidLanelets(
-  const autoware_auto_perception_msgs::msg::TrackedObject & object,
+  const autoware_perception_msgs::msg::TrackedObject & object,
   const lanelet::LaneletMapPtr & lanelet_map_ptr, const double max_distance_from_lane,
   const double max_angle_diff_from_lane)
 {
@@ -126,7 +126,7 @@ lanelet::ConstLanelets getClosestValidLanelets(
 }
 
 bool hasValidVelocityDirectionToLanelet(
-  const autoware_auto_perception_msgs::msg::TrackedObject & object,
+  const autoware_perception_msgs::msg::TrackedObject & object,
   const lanelet::ConstLanelets & lanelets, const double max_lateral_velocity)
 {
   const double object_yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);

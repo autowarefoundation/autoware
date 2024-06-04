@@ -18,10 +18,10 @@
 
 #include "multi_object_tracker/tracker/model/pedestrian_and_bicycle_tracker.hpp"
 
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+using Label = autoware_perception_msgs::msg::ObjectClassification;
 
 PedestrianAndBicycleTracker::PedestrianAndBicycleTracker(
-  const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
+  const rclcpp::Time & time, const autoware_perception_msgs::msg::DetectedObject & object,
   const geometry_msgs::msg::Transform & self_transform, const size_t channel_size,
   const uint & channel_index)
 : Tracker(time, object.classification, channel_size),
@@ -40,7 +40,7 @@ bool PedestrianAndBicycleTracker::predict(const rclcpp::Time & time)
 }
 
 bool PedestrianAndBicycleTracker::measure(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+  const autoware_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
   const geometry_msgs::msg::Transform & self_transform)
 {
   pedestrian_tracker_.measure(object, time, self_transform);
@@ -51,9 +51,9 @@ bool PedestrianAndBicycleTracker::measure(
 }
 
 bool PedestrianAndBicycleTracker::getTrackedObject(
-  const rclcpp::Time & time, autoware_auto_perception_msgs::msg::TrackedObject & object) const
+  const rclcpp::Time & time, autoware_perception_msgs::msg::TrackedObject & object) const
 {
-  using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+  using Label = autoware_perception_msgs::msg::ObjectClassification;
   const uint8_t label = getHighestProbLabel();
 
   if (label == Label::PEDESTRIAN) {

@@ -17,7 +17,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "autoware_auto_perception_msgs/msg/detected_objects.hpp"
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
 
 #include <chrono>
 #include <memory>
@@ -26,8 +26,8 @@
 
 namespace radar_object_clustering
 {
-using autoware_auto_perception_msgs::msg::DetectedObject;
-using autoware_auto_perception_msgs::msg::DetectedObjects;
+using autoware_perception_msgs::msg::DetectedObject;
+using autoware_perception_msgs::msg::DetectedObjects;
 
 class RadarObjectClusteringNode : public rclcpp::Node
 {

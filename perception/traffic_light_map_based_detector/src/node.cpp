@@ -162,7 +162,7 @@ MapBasedDetector::MapBasedDetector(const rclcpp::NodeOptions & node_options)
   }
 
   // subscribers
-  map_sub_ = create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+  map_sub_ = create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
     "~/input/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&MapBasedDetector::mapCallback, this, _1));
   camera_info_sub_ = create_subscription<sensor_msgs::msg::CameraInfo>(
@@ -389,7 +389,7 @@ bool MapBasedDetector::getTrafficLightRoi(
 }
 
 void MapBasedDetector::mapCallback(
-  const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr input_msg)
+  const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr input_msg)
 {
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
 

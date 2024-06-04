@@ -12,29 +12,29 @@ The successive shortest path algorithm is used to solve the data association pro
 
 ### Input
 
-| Name            | Type                                                  | Description       |
-| --------------- | ----------------------------------------------------- | ----------------- |
-| `input/object0` | `autoware_auto_perception_msgs::msg::DetectedObjects` | detection objects |
-| `input/object1` | `autoware_auto_perception_msgs::msg::DetectedObjects` | detection objects |
+| Name            | Type                                             | Description       |
+| --------------- | ------------------------------------------------ | ----------------- |
+| `input/object0` | `autoware_perception_msgs::msg::DetectedObjects` | detection objects |
+| `input/object1` | `autoware_perception_msgs::msg::DetectedObjects` | detection objects |
 
 ### Output
 
-| Name            | Type                                                  | Description      |
-| --------------- | ----------------------------------------------------- | ---------------- |
-| `output/object` | `autoware_auto_perception_msgs::msg::DetectedObjects` | modified Objects |
+| Name            | Type                                             | Description      |
+| --------------- | ------------------------------------------------ | ---------------- |
+| `output/object` | `autoware_perception_msgs::msg::DetectedObjects` | modified Objects |
 
 ## Parameters
 
-| Name                        | Type                  | Description                                                                                                                                                                                                                           |
-| --------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `can_assign_matrix`         | double                | Assignment table for data association                                                                                                                                                                                                 |
-| `max_dist_matrix`           | double                | Maximum distance table for data association                                                                                                                                                                                           |
-| `max_area_matrix`           | double                | Maximum area table for data association                                                                                                                                                                                               |
-| `min_area_matrix`           | double                | Minimum area table for data association                                                                                                                                                                                               |
-| `max_rad_matrix`            | double                | Maximum angle table for data association                                                                                                                                                                                              |
-| `base_link_frame_id`        | double                | association frame                                                                                                                                                                                                                     |
-| `distance_threshold_list`   | `std::vector<double>` | Distance threshold for each class used in judging overlap. The class order depends on [ObjectClassification](https://github.com/tier4/autoware_auto_msgs/blob/tier4/main/autoware_auto_perception_msgs/msg/ObjectClassification.idl). |
-| `generalized_iou_threshold` | `std::vector<double>` | Generalized IoU threshold for each class                                                                                                                                                                                              |
+| Name                        | Type                  | Description                                                                                                                                                                                                                        |
+| --------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `can_assign_matrix`         | double                | Assignment table for data association                                                                                                                                                                                              |
+| `max_dist_matrix`           | double                | Maximum distance table for data association                                                                                                                                                                                        |
+| `max_area_matrix`           | double                | Maximum area table for data association                                                                                                                                                                                            |
+| `min_area_matrix`           | double                | Minimum area table for data association                                                                                                                                                                                            |
+| `max_rad_matrix`            | double                | Maximum angle table for data association                                                                                                                                                                                           |
+| `base_link_frame_id`        | double                | association frame                                                                                                                                                                                                                  |
+| `distance_threshold_list`   | `std::vector<double>` | Distance threshold for each class used in judging overlap. The class order depends on [ObjectClassification](https://github.com/autowarefoundation/autoware_msgs/blob/main/autoware_perception_msgs/msg/ObjectClassification.msg). |
+| `generalized_iou_threshold` | `std::vector<double>` | Generalized IoU threshold for each class                                                                                                                                                                                           |
 
 ## Tips
 

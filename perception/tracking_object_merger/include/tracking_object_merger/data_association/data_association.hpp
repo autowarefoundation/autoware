@@ -31,8 +31,8 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/tracked_objects.hpp>
 
 #include <string>
 
@@ -57,14 +57,14 @@ public:
     const Eigen::MatrixXd & src, std::unordered_map<int, int> & direct_assignment,
     std::unordered_map<int, int> & reverse_assignment);
   Eigen::MatrixXd calcScoreMatrix(
-    const autoware_auto_perception_msgs::msg::TrackedObjects & objects0,
-    const autoware_auto_perception_msgs::msg::TrackedObjects & objects1);
+    const autoware_perception_msgs::msg::TrackedObjects & objects0,
+    const autoware_perception_msgs::msg::TrackedObjects & objects1);
   Eigen::MatrixXd calcScoreMatrix(
-    const autoware_auto_perception_msgs::msg::TrackedObjects & objects0,
+    const autoware_perception_msgs::msg::TrackedObjects & objects0,
     const std::vector<TrackerState> & trackers);
   double calcScoreBetweenObjects(
-    const autoware_auto_perception_msgs::msg::TrackedObject & object0,
-    const autoware_auto_perception_msgs::msg::TrackedObject & object1) const;
+    const autoware_perception_msgs::msg::TrackedObject & object0,
+    const autoware_perception_msgs::msg::TrackedObject & object1) const;
   virtual ~DataAssociation() {}
 };
 

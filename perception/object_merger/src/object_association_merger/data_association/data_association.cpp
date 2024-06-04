@@ -113,19 +113,19 @@ void DataAssociation::assign(
 }
 
 Eigen::MatrixXd DataAssociation::calcScoreMatrix(
-  const autoware_auto_perception_msgs::msg::DetectedObjects & objects0,
-  const autoware_auto_perception_msgs::msg::DetectedObjects & objects1)
+  const autoware_perception_msgs::msg::DetectedObjects & objects0,
+  const autoware_perception_msgs::msg::DetectedObjects & objects1)
 {
   Eigen::MatrixXd score_matrix =
     Eigen::MatrixXd::Zero(objects1.objects.size(), objects0.objects.size());
   for (size_t objects1_idx = 0; objects1_idx < objects1.objects.size(); ++objects1_idx) {
-    const autoware_auto_perception_msgs::msg::DetectedObject & object1 =
+    const autoware_perception_msgs::msg::DetectedObject & object1 =
       objects1.objects.at(objects1_idx);
     const std::uint8_t object1_label =
       object_recognition_utils::getHighestProbLabel(object1.classification);
 
     for (size_t objects0_idx = 0; objects0_idx < objects0.objects.size(); ++objects0_idx) {
-      const autoware_auto_perception_msgs::msg::DetectedObject & object0 =
+      const autoware_perception_msgs::msg::DetectedObject & object0 =
         objects0.objects.at(objects0_idx);
       const std::uint8_t object0_label =
         object_recognition_utils::getHighestProbLabel(object0.classification);

@@ -18,7 +18,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/ros/transform_listener.hpp"
 
-#include "autoware_auto_perception_msgs/msg/detected_objects.hpp"
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
 
 #include <chrono>
 #include <memory>
@@ -27,8 +27,8 @@
 
 namespace simple_object_merger
 {
-using autoware_auto_perception_msgs::msg::DetectedObject;
-using autoware_auto_perception_msgs::msg::DetectedObjects;
+using autoware_perception_msgs::msg::DetectedObject;
+using autoware_perception_msgs::msg::DetectedObjects;
 
 class SimpleObjectMergerNode : public rclcpp::Node
 {

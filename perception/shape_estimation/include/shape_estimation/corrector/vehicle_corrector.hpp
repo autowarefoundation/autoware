@@ -33,7 +33,7 @@ public:
   virtual ~VehicleCorrector() = default;
 
   bool correct(
-    autoware_auto_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose) override
+    autoware_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose) override
   {
     // Guard
     if (!params_) return false;

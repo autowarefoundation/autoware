@@ -33,11 +33,11 @@ TEST(DetectionClassRemapperTest, MapClasses)
   remapper.setParameters(allow_remapping_by_area_matrix, min_area_matrix, max_area_matrix);
 
   // Create a DetectedObjects message with some objects
-  autoware_auto_perception_msgs::msg::DetectedObjects msg;
+  autoware_perception_msgs::msg::DetectedObjects msg;
 
   // CAR with area 4.0, which is out of the range for remapping
-  autoware_auto_perception_msgs::msg::DetectedObject obj1;
-  autoware_auto_perception_msgs::msg::ObjectClassification obj1_classification;
+  autoware_perception_msgs::msg::DetectedObject obj1;
+  autoware_perception_msgs::msg::ObjectClassification obj1_classification;
   obj1.shape.dimensions.x = 2.0;
   obj1.shape.dimensions.y = 2.0;
   obj1_classification.label = 0;
@@ -46,8 +46,8 @@ TEST(DetectionClassRemapperTest, MapClasses)
   msg.objects.push_back(obj1);
 
   // TRUCK with area 16.0, which is in the range for remapping to TRAILER
-  autoware_auto_perception_msgs::msg::DetectedObject obj2;
-  autoware_auto_perception_msgs::msg::ObjectClassification obj2_classification;
+  autoware_perception_msgs::msg::DetectedObject obj2;
+  autoware_perception_msgs::msg::ObjectClassification obj2_classification;
   obj2.shape.dimensions.x = 8.0;
   obj2.shape.dimensions.y = 2.0;
   obj2_classification.label = 1;
@@ -56,8 +56,8 @@ TEST(DetectionClassRemapperTest, MapClasses)
   msg.objects.push_back(obj2);
 
   // TRAILER with area 9.0, which is in the range for remapping to TRUCK
-  autoware_auto_perception_msgs::msg::DetectedObject obj3;
-  autoware_auto_perception_msgs::msg::ObjectClassification obj3_classification;
+  autoware_perception_msgs::msg::DetectedObject obj3;
+  autoware_perception_msgs::msg::ObjectClassification obj3_classification;
   obj3.shape.dimensions.x = 3.0;
   obj3.shape.dimensions.y = 3.0;
   obj3_classification.label = 2;
@@ -66,8 +66,8 @@ TEST(DetectionClassRemapperTest, MapClasses)
   msg.objects.push_back(obj3);
 
   // TRAILER with area 12.0, which is out of the range for remapping
-  autoware_auto_perception_msgs::msg::DetectedObject obj4;
-  autoware_auto_perception_msgs::msg::ObjectClassification obj4_classification;
+  autoware_perception_msgs::msg::DetectedObject obj4;
+  autoware_perception_msgs::msg::ObjectClassification obj4_classification;
   obj4.shape.dimensions.x = 4.0;
   obj4.shape.dimensions.y = 3.0;
   obj4_classification.label = 2;

@@ -13,16 +13,16 @@ In the debug image above, the red DetectedObject is the validated object. The bl
 
 ### Input
 
-| Name                          | Type                                                  | Description                             |
-| ----------------------------- | ----------------------------------------------------- | --------------------------------------- |
-| `~/input/detected_objects`    | `autoware_auto_perception_msgs::msg::DetectedObjects` | DetectedObjects                         |
-| `~/input/obstacle_pointcloud` | `sensor_msgs::msg::PointCloud2`                       | Obstacle point cloud of dynamic objects |
+| Name                          | Type                                             | Description                             |
+| ----------------------------- | ------------------------------------------------ | --------------------------------------- |
+| `~/input/detected_objects`    | `autoware_perception_msgs::msg::DetectedObjects` | DetectedObjects                         |
+| `~/input/obstacle_pointcloud` | `sensor_msgs::msg::PointCloud2`                  | Obstacle point cloud of dynamic objects |
 
 ### Output
 
-| Name               | Type                                                  | Description               |
-| ------------------ | ----------------------------------------------------- | ------------------------- |
-| `~/output/objects` | `autoware_auto_perception_msgs::msg::DetectedObjects` | validated DetectedObjects |
+| Name               | Type                                             | Description               |
+| ------------------ | ------------------------------------------------ | ------------------------- |
+| `~/output/objects` | `autoware_perception_msgs::msg::DetectedObjects` | validated DetectedObjects |
 
 ## Parameters
 

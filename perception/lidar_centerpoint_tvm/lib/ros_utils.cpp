@@ -24,18 +24,18 @@ namespace perception
 namespace lidar_centerpoint_tvm
 {
 
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+using Label = autoware_perception_msgs::msg::ObjectClassification;
 
 void box3DToDetectedObject(
   const Box3D & box3d, const std::vector<std::string> & class_names,
   const bool rename_car_to_truck_and_bus, const bool has_twist,
-  autoware_auto_perception_msgs::msg::DetectedObject & obj)
+  autoware_perception_msgs::msg::DetectedObject & obj)
 {
   // TODO(yukke42): the value of classification confidence of DNN, not probability.
   obj.existence_probability = box3d.score;
 
   // classification
-  autoware_auto_perception_msgs::msg::ObjectClassification classification;
+  autoware_perception_msgs::msg::ObjectClassification classification;
   classification.probability = 1.0f;
   if (box3d.label >= 0 && static_cast<size_t>(box3d.label) < class_names.size()) {
     classification.label = getSemanticType(class_names[box3d.label]);
@@ -58,7 +58,7 @@ void box3DToDetectedObject(
 
   if (isCarLikeVehicleLabel(classification.label)) {
     obj.kinematics.orientation_availability =
-      autoware_auto_perception_msgs::msg::DetectedObjectKinematics::SIGN_UNKNOWN;
+      autoware_perception_msgs::msg::DetectedObjectKinematics::SIGN_UNKNOWN;
   }
 
   obj.classification.emplace_back(classification);
@@ -70,7 +70,7 @@ void box3DToDetectedObject(
     tier4_autoware_utils::createPoint(box3d.x, box3d.y, box3d.z);
   obj.kinematics.pose_with_covariance.pose.orientation =
     tier4_autoware_utils::createQuaternionFromYaw(yaw);
-  obj.shape.type = autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX;
+  obj.shape.type = autoware_perception_msgs::msg::Shape::BOUNDING_BOX;
   obj.shape.dimensions =
     tier4_autoware_utils::createTranslation(box3d.length, box3d.width, box3d.height);
 

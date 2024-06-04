@@ -29,7 +29,7 @@ TEST(NonMaximumSuppressionTest, Apply)
   std::vector<centerpoint::DetectedObject> input_objects(4);
 
   // Object 1
-  autoware_auto_perception_msgs::msg::ObjectClassification obj1_classification;
+  autoware_perception_msgs::msg::ObjectClassification obj1_classification;
   obj1_classification.label = 0;  // Assuming "car" has label 0
   obj1_classification.probability = 1.0;
   input_objects[0].classification = {obj1_classification};  // Assuming "car" has label 0
@@ -39,12 +39,12 @@ TEST(NonMaximumSuppressionTest, Apply)
   input_objects[0].kinematics.pose_with_covariance.pose.orientation.y = 0.0;
   input_objects[0].kinematics.pose_with_covariance.pose.orientation.z = 0.0;
   input_objects[0].kinematics.pose_with_covariance.pose.orientation.w = 1.0;
-  input_objects[0].shape.type = autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX;
+  input_objects[0].shape.type = autoware_perception_msgs::msg::Shape::BOUNDING_BOX;
   input_objects[0].shape.dimensions.x = 4.0;
   input_objects[0].shape.dimensions.y = 2.0;
 
   // Object 2 (overlaps with Object 1)
-  autoware_auto_perception_msgs::msg::ObjectClassification obj2_classification;
+  autoware_perception_msgs::msg::ObjectClassification obj2_classification;
   obj2_classification.label = 0;  // Assuming "car" has label 0
   obj2_classification.probability = 1.0;
   input_objects[1].classification = {obj2_classification};  // Assuming "car" has label 0
@@ -54,12 +54,12 @@ TEST(NonMaximumSuppressionTest, Apply)
   input_objects[1].kinematics.pose_with_covariance.pose.orientation.y = 0.0;
   input_objects[1].kinematics.pose_with_covariance.pose.orientation.z = 0.0;
   input_objects[1].kinematics.pose_with_covariance.pose.orientation.w = 1.0;
-  input_objects[1].shape.type = autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX;
+  input_objects[1].shape.type = autoware_perception_msgs::msg::Shape::BOUNDING_BOX;
   input_objects[1].shape.dimensions.x = 4.0;
   input_objects[1].shape.dimensions.y = 2.0;
 
   // Object 3
-  autoware_auto_perception_msgs::msg::ObjectClassification obj3_classification;
+  autoware_perception_msgs::msg::ObjectClassification obj3_classification;
   obj3_classification.label = 0;  // Assuming "car" has label 0
   obj3_classification.probability = 1.0;
   input_objects[2].classification = {obj3_classification};  // Assuming "car" has label 0
@@ -69,12 +69,12 @@ TEST(NonMaximumSuppressionTest, Apply)
   input_objects[2].kinematics.pose_with_covariance.pose.orientation.y = 0.0;
   input_objects[2].kinematics.pose_with_covariance.pose.orientation.z = 0.0;
   input_objects[2].kinematics.pose_with_covariance.pose.orientation.w = 1.0;
-  input_objects[2].shape.type = autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX;
+  input_objects[2].shape.type = autoware_perception_msgs::msg::Shape::BOUNDING_BOX;
   input_objects[2].shape.dimensions.x = 4.0;
   input_objects[2].shape.dimensions.y = 2.0;
 
   // Object 4 (different class)
-  autoware_auto_perception_msgs::msg::ObjectClassification obj4_classification;
+  autoware_perception_msgs::msg::ObjectClassification obj4_classification;
   obj4_classification.label = 1;  // Assuming "pedestrian" has label 1
   obj4_classification.probability = 1.0;
   input_objects[3].classification = {obj4_classification};  // Assuming "pedestrian" has label 1
@@ -84,7 +84,7 @@ TEST(NonMaximumSuppressionTest, Apply)
   input_objects[3].kinematics.pose_with_covariance.pose.orientation.y = 0.0;
   input_objects[3].kinematics.pose_with_covariance.pose.orientation.z = 0.0;
   input_objects[3].kinematics.pose_with_covariance.pose.orientation.w = 1.0;
-  input_objects[3].shape.type = autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX;
+  input_objects[3].shape.type = autoware_perception_msgs::msg::Shape::BOUNDING_BOX;
   input_objects[3].shape.dimensions.x = 0.5;
   input_objects[3].shape.dimensions.y = 0.5;
 

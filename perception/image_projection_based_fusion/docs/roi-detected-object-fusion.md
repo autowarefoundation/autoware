@@ -23,19 +23,19 @@ The DetectedObject has three possible shape choices/implementations, where the p
 
 | Name                     | Type                                                     | Description                                                |
 | ------------------------ | -------------------------------------------------------- | ---------------------------------------------------------- |
-| `input`                  | `autoware_auto_perception_msgs::msg::DetectedObjects`    | input detected objects                                     |
+| `input`                  | `autoware_perception_msgs::msg::DetectedObjects`         | input detected objects                                     |
 | `input/camera_info[0-7]` | `sensor_msgs::msg::CameraInfo`                           | camera information to project 3d points onto image planes. |
 | `input/rois[0-7]`        | `tier4_perception_msgs::msg::DetectedObjectsWithFeature` | ROIs from each image.                                      |
 | `input/image_raw[0-7]`   | `sensor_msgs::msg::Image`                                | images for visualization.                                  |
 
 ### Output
 
-| Name                      | Type                                                  | Description                |
-| ------------------------- | ----------------------------------------------------- | -------------------------- |
-| `output`                  | `autoware_auto_perception_msgs::msg::DetectedObjects` | detected objects           |
-| `~/debug/image_raw[0-7]`  | `sensor_msgs::msg::Image`                             | images for visualization,  |
-| `~/debug/fused_objects`   | `autoware_auto_perception_msgs::msg::DetectedObjects` | fused detected objects     |
-| `~/debug/ignored_objects` | `autoware_auto_perception_msgs::msg::DetectedObjects` | not fused detected objects |
+| Name                      | Type                                             | Description                |
+| ------------------------- | ------------------------------------------------ | -------------------------- |
+| `output`                  | `autoware_perception_msgs::msg::DetectedObjects` | detected objects           |
+| `~/debug/image_raw[0-7]`  | `sensor_msgs::msg::Image`                        | images for visualization,  |
+| `~/debug/fused_objects`   | `autoware_perception_msgs::msg::DetectedObjects` | fused detected objects     |
+| `~/debug/ignored_objects` | `autoware_perception_msgs::msg::DetectedObjects` | not fused detected objects |
 
 ## Parameters
 

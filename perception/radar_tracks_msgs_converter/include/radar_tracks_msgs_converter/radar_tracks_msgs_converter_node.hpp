@@ -18,12 +18,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/ros/transform_listener.hpp"
 
-#include "autoware_auto_perception_msgs/msg/detected_objects.hpp"
-#include "autoware_auto_perception_msgs/msg/object_classification.hpp"
-#include "autoware_auto_perception_msgs/msg/shape.hpp"
-#include "autoware_auto_perception_msgs/msg/tracked_object.hpp"
-#include "autoware_auto_perception_msgs/msg/tracked_object_kinematics.hpp"
-#include "autoware_auto_perception_msgs/msg/tracked_objects.hpp"
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
+#include "autoware_perception_msgs/msg/object_classification.hpp"
+#include "autoware_perception_msgs/msg/shape.hpp"
+#include "autoware_perception_msgs/msg/tracked_object.hpp"
+#include "autoware_perception_msgs/msg/tracked_object_kinematics.hpp"
+#include "autoware_perception_msgs/msg/tracked_objects.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "radar_msgs/msg/radar_tracks.hpp"
 
@@ -34,14 +34,14 @@
 
 namespace radar_tracks_msgs_converter
 {
-using autoware_auto_perception_msgs::msg::DetectedObject;
-using autoware_auto_perception_msgs::msg::DetectedObjectKinematics;
-using autoware_auto_perception_msgs::msg::DetectedObjects;
-using autoware_auto_perception_msgs::msg::ObjectClassification;
-using autoware_auto_perception_msgs::msg::Shape;
-using autoware_auto_perception_msgs::msg::TrackedObject;
-using autoware_auto_perception_msgs::msg::TrackedObjectKinematics;
-using autoware_auto_perception_msgs::msg::TrackedObjects;
+using autoware_perception_msgs::msg::DetectedObject;
+using autoware_perception_msgs::msg::DetectedObjectKinematics;
+using autoware_perception_msgs::msg::DetectedObjects;
+using autoware_perception_msgs::msg::ObjectClassification;
+using autoware_perception_msgs::msg::Shape;
+using autoware_perception_msgs::msg::TrackedObject;
+using autoware_perception_msgs::msg::TrackedObjectKinematics;
+using autoware_perception_msgs::msg::TrackedObjects;
 using nav_msgs::msg::Odometry;
 using radar_msgs::msg::RadarTrack;
 using radar_msgs::msg::RadarTracks;

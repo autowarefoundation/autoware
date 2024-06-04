@@ -23,7 +23,7 @@
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include "tier4_external_api_msgs/msg/map_hash.hpp"
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_map_msgs/msg/point_cloud_map_meta_data.hpp>
 #include <autoware_map_msgs/srv/get_selected_point_cloud_map.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -64,7 +64,7 @@ public:
 
 private:
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_pointcloud_map_;
-  rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr sub_vector_map_;
+  rclcpp::Subscription<autoware_map_msgs::msg::LaneletMapBin>::SharedPtr sub_vector_map_;
   rclcpp::Subscription<tier4_external_api_msgs::msg::MapHash>::SharedPtr sub_map_hash_;
   rclcpp::Subscription<autoware_map_msgs::msg::PointCloudMapMetaData>::SharedPtr
     sub_pointcloud_metadata_;
@@ -76,7 +76,7 @@ private:
   void onPointcloudMap(const sensor_msgs::msg::PointCloud2::ConstSharedPtr pointcloud_map);
   void onMapHash(const tier4_external_api_msgs::msg::MapHash::ConstSharedPtr map_hash);
   void timerCallback();
-  void onVectorMap(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr vector_map);
+  void onVectorMap(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr vector_map);
   void onPointCloudMapMetaData(
     const autoware_map_msgs::msg::PointCloudMapMetaData pointcloud_map_metadata);
   void receiveMap();

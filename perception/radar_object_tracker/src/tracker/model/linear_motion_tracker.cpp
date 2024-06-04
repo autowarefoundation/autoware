@@ -42,7 +42,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+using Label = autoware_perception_msgs::msg::ObjectClassification;
 
 // initialize static parameter
 bool LinearMotionTracker::is_initialized_ = false;
@@ -57,7 +57,7 @@ bool LinearMotionTracker::trust_twist_input_;
 bool LinearMotionTracker::use_polar_coordinate_in_measurement_noise_;
 
 LinearMotionTracker::LinearMotionTracker(
-  const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
+  const rclcpp::Time & time, const autoware_perception_msgs::msg::DetectedObject & object,
   const std::string & tracker_param_file, const std::uint8_t & /*label*/)
 : Tracker(time, object.classification),
   logger_(rclcpp::get_logger("LinearMotionTracker")),
@@ -161,10 +161,10 @@ LinearMotionTracker::LinearMotionTracker(
   P.block<2, 2>(IDX::AX, IDX::AX) = P_a_xy;
 
   // init shape
-  if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+  if (object.shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
     bounding_box_ = {
       object.shape.dimensions.x, object.shape.dimensions.y, object.shape.dimensions.z};
-  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+  } else if (object.shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
     cylinder_ = {object.shape.dimensions.x, object.shape.dimensions.z};
   }
 
@@ -350,7 +350,7 @@ bool LinearMotionTracker::predict(const double dt, KalmanFilter & ekf) const
 }
 
 bool LinearMotionTracker::measureWithPose(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object,
+  const autoware_perception_msgs::msg::DetectedObject & object,
   const geometry_msgs::msg::Transform & self_transform)
 {
   // Observation pattern will be:
@@ -509,16 +509,16 @@ bool LinearMotionTracker::measureWithPose(
 }
 
 bool LinearMotionTracker::measureWithShape(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object)
+  const autoware_perception_msgs::msg::DetectedObject & object)
 {
   // just use first order low pass filter
   const float gain = filter_tau_ / (filter_tau_ + filter_dt_);
 
-  if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+  if (object.shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
     bounding_box_.length = gain * bounding_box_.length + (1.0 - gain) * object.shape.dimensions.x;
     bounding_box_.width = gain * bounding_box_.width + (1.0 - gain) * object.shape.dimensions.y;
     bounding_box_.height = gain * bounding_box_.height + (1.0 - gain) * object.shape.dimensions.z;
-  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+  } else if (object.shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
     cylinder_.width = gain * cylinder_.width + (1.0 - gain) * object.shape.dimensions.x;
     cylinder_.height = gain * cylinder_.height + (1.0 - gain) * object.shape.dimensions.z;
   } else {
@@ -529,7 +529,7 @@ bool LinearMotionTracker::measureWithShape(
 }
 
 bool LinearMotionTracker::measure(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+  const autoware_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
   const geometry_msgs::msg::Transform & self_transform)
 {
   const auto & current_classification = getClassification();
@@ -552,7 +552,7 @@ bool LinearMotionTracker::measure(
 }
 
 bool LinearMotionTracker::getTrackedObject(
-  const rclcpp::Time & time, autoware_auto_perception_msgs::msg::TrackedObject & object) const
+  const rclcpp::Time & time, autoware_perception_msgs::msg::TrackedObject & object) const
 {
   object = object_recognition_utils::toTrackedObject(object_);
   object.object_id = getUUID();
@@ -595,10 +595,10 @@ bool LinearMotionTracker::getTrackedObject(
     pose_with_cov.pose.orientation.w = filtered_quaternion.w();
     if (trust_yaw_input_) {
       object.kinematics.orientation_availability =
-        autoware_auto_perception_msgs::msg::TrackedObjectKinematics::SIGN_UNKNOWN;
+        autoware_perception_msgs::msg::TrackedObjectKinematics::SIGN_UNKNOWN;
     } else {
       object.kinematics.orientation_availability =
-        autoware_auto_perception_msgs::msg::TrackedObjectKinematics::UNAVAILABLE;
+        autoware_perception_msgs::msg::TrackedObjectKinematics::UNAVAILABLE;
     }
   }
   // twist
@@ -670,15 +670,15 @@ bool LinearMotionTracker::getTrackedObject(
   acceleration_with_cov.covariance[utils::MSG_COV_IDX::YAW_YAW] = no_info_cov;
 
   // set shape
-  if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+  if (object.shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
     object.shape.dimensions.x = bounding_box_.length;
     object.shape.dimensions.y = bounding_box_.width;
     object.shape.dimensions.z = bounding_box_.height;
-  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+  } else if (object.shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
     object.shape.dimensions.x = cylinder_.width;
     object.shape.dimensions.y = cylinder_.width;
     object.shape.dimensions.z = cylinder_.height;
-  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
+  } else if (object.shape.type == autoware_perception_msgs::msg::Shape::POLYGON) {
     const auto origin_yaw = tf2::getYaw(object_.kinematics.pose_with_covariance.pose.orientation);
     const auto ekf_pose_yaw = tf2::getYaw(pose_with_cov.pose.orientation);
     object.shape.footprint =

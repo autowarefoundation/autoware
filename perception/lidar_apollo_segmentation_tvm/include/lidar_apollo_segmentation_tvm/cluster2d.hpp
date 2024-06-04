@@ -19,7 +19,6 @@
 #include <lidar_apollo_segmentation_tvm/util.hpp>
 #include <lidar_apollo_segmentation_tvm/visibility_control.hpp>
 
-#include <autoware_auto_perception_msgs/msg/point_clusters.hpp>
 #include <tier4_perception_msgs/msg/detected_object_with_feature.hpp>
 #include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 

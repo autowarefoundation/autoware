@@ -23,7 +23,7 @@
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <message_filters/subscriber.h>
@@ -70,10 +70,10 @@ public:
   virtual bool setKdtreeInputCloud(
     const sensor_msgs::msg::PointCloud2::ConstSharedPtr & input_pointcloud) = 0;
   virtual bool validate_object(
-    const autoware_auto_perception_msgs::msg::DetectedObject & transformed_object) = 0;
+    const autoware_perception_msgs::msg::DetectedObject & transformed_object) = 0;
   virtual std::optional<float> getMaxRadius(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object) = 0;
-  size_t getThresholdPointCloud(const autoware_auto_perception_msgs::msg::DetectedObject & object);
+    const autoware_perception_msgs::msg::DetectedObject & object) = 0;
+  size_t getThresholdPointCloud(const autoware_perception_msgs::msg::DetectedObject & object);
   virtual pcl::PointCloud<pcl::PointXYZ>::Ptr getDebugNeighborPointCloud() = 0;
 };
 
@@ -95,12 +95,10 @@ public:
   }
 
   bool setKdtreeInputCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & input_cloud);
-  bool validate_object(
-    const autoware_auto_perception_msgs::msg::DetectedObject & transformed_object);
-  std::optional<float> getMaxRadius(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object);
+  bool validate_object(const autoware_perception_msgs::msg::DetectedObject & transformed_object);
+  std::optional<float> getMaxRadius(const autoware_perception_msgs::msg::DetectedObject & object);
   std::optional<size_t> getPointCloudWithinObject(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object,
+    const autoware_perception_msgs::msg::DetectedObject & object,
     const pcl::PointCloud<pcl::PointXY>::Ptr neighbor_pointcloud);
 };
 class Validator3D : public Validator
@@ -117,12 +115,10 @@ public:
     return neighbor_pointcloud_;
   }
   bool setKdtreeInputCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & input_cloud);
-  bool validate_object(
-    const autoware_auto_perception_msgs::msg::DetectedObject & transformed_object);
-  std::optional<float> getMaxRadius(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object);
+  bool validate_object(const autoware_perception_msgs::msg::DetectedObject & transformed_object);
+  std::optional<float> getMaxRadius(const autoware_perception_msgs::msg::DetectedObject & object);
   std::optional<size_t> getPointCloudWithinObject(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object,
+    const autoware_perception_msgs::msg::DetectedObject & object,
     const pcl::PointCloud<pcl::PointXYZ>::Ptr neighbor_pointcloud);
 };
 
@@ -132,15 +128,15 @@ public:
   explicit ObstaclePointCloudBasedValidator(const rclcpp::NodeOptions & node_options);
 
 private:
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr objects_pub_;
-  message_filters::Subscriber<autoware_auto_perception_msgs::msg::DetectedObjects> objects_sub_;
+  rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr objects_pub_;
+  message_filters::Subscriber<autoware_perception_msgs::msg::DetectedObjects> objects_sub_;
   message_filters::Subscriber<sensor_msgs::msg::PointCloud2> obstacle_pointcloud_sub_;
   std::unique_ptr<tier4_autoware_utils::DebugPublisher> debug_publisher_{nullptr};
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
 
   typedef message_filters::sync_policies::ApproximateTime<
-    autoware_auto_perception_msgs::msg::DetectedObjects, sensor_msgs::msg::PointCloud2>
+    autoware_perception_msgs::msg::DetectedObjects, sensor_msgs::msg::PointCloud2>
     SyncPolicy;
   typedef message_filters::Synchronizer<SyncPolicy> Sync;
   Sync sync_;
@@ -153,7 +149,7 @@ private:
 
 private:
   void onObjectsAndObstaclePointCloud(
-    const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr & input_objects,
+    const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr & input_objects,
     const sensor_msgs::msg::PointCloud2::ConstSharedPtr & input_obstacle_pointcloud);
 };
 }  // namespace obstacle_pointcloud_based_validator

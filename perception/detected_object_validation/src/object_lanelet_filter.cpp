@@ -54,12 +54,12 @@ ObjectLaneletFilterNode::ObjectLaneletFilterNode(const rclcpp::NodeOptions & nod
     declare_parameter<double>("filter_settings.lanelet_direction_filter.object_speed_threshold");
 
   // Set publisher/subscriber
-  map_sub_ = this->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+  map_sub_ = this->create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
     "input/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&ObjectLaneletFilterNode::mapCallback, this, _1));
-  object_sub_ = this->create_subscription<autoware_auto_perception_msgs::msg::DetectedObjects>(
+  object_sub_ = this->create_subscription<autoware_perception_msgs::msg::DetectedObjects>(
     "input/object", rclcpp::QoS{1}, std::bind(&ObjectLaneletFilterNode::objectCallback, this, _1));
-  object_pub_ = this->create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
+  object_pub_ = this->create_publisher<autoware_perception_msgs::msg::DetectedObjects>(
     "output/object", rclcpp::QoS{1});
 
   debug_publisher_ =
@@ -68,7 +68,7 @@ ObjectLaneletFilterNode::ObjectLaneletFilterNode(const rclcpp::NodeOptions & nod
 }
 
 void ObjectLaneletFilterNode::mapCallback(
-  const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr map_msg)
+  const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr map_msg)
 {
   lanelet_frame_id_ = map_msg->header.frame_id;
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
@@ -79,19 +79,19 @@ void ObjectLaneletFilterNode::mapCallback(
 }
 
 void ObjectLaneletFilterNode::objectCallback(
-  const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_msg)
+  const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_msg)
 {
   // Guard
   if (object_pub_->get_subscription_count() < 1) return;
 
-  autoware_auto_perception_msgs::msg::DetectedObjects output_object_msg;
+  autoware_perception_msgs::msg::DetectedObjects output_object_msg;
   output_object_msg.header = input_msg->header;
 
   if (!lanelet_map_ptr_) {
     RCLCPP_ERROR(get_logger(), "No vector map received.");
     return;
   }
-  autoware_auto_perception_msgs::msg::DetectedObjects transformed_objects;
+  autoware_perception_msgs::msg::DetectedObjects transformed_objects;
   if (!object_recognition_utils::transformObjects(
         *input_msg, lanelet_frame_id_, tf_buffer_, transformed_objects)) {
     RCLCPP_ERROR(get_logger(), "Failed transform to %s.", lanelet_frame_id_.c_str());
@@ -128,11 +128,11 @@ void ObjectLaneletFilterNode::objectCallback(
 }
 
 bool ObjectLaneletFilterNode::filterObject(
-  const autoware_auto_perception_msgs::msg::DetectedObject & transformed_object,
-  const autoware_auto_perception_msgs::msg::DetectedObject & input_object,
+  const autoware_perception_msgs::msg::DetectedObject & transformed_object,
+  const autoware_perception_msgs::msg::DetectedObject & input_object,
   const lanelet::ConstLanelets & intersected_road_lanelets,
   const lanelet::ConstLanelets & intersected_shoulder_lanelets,
-  autoware_auto_perception_msgs::msg::DetectedObjects & output_object_msg)
+  autoware_perception_msgs::msg::DetectedObjects & output_object_msg)
 {
   const auto & label = transformed_object.classification.front().label;
   if (filter_target_.isTarget(label)) {
@@ -148,7 +148,7 @@ bool ObjectLaneletFilterNode::filterObject(
     // 2. check if objects velocity is the same with the lanelet direction
     const bool orientation_not_available =
       transformed_object.kinematics.orientation_availability ==
-      autoware_auto_perception_msgs::msg::TrackedObjectKinematics::UNAVAILABLE;
+      autoware_perception_msgs::msg::TrackedObjectKinematics::UNAVAILABLE;
     if (filter_settings_.lanelet_direction_filter && !orientation_not_available) {
       const bool is_same_direction =
         isSameDirectionWithLanelets(intersected_road_lanelets, transformed_object) ||
@@ -169,10 +169,10 @@ bool ObjectLaneletFilterNode::filterObject(
 }
 
 geometry_msgs::msg::Polygon ObjectLaneletFilterNode::setFootprint(
-  const autoware_auto_perception_msgs::msg::DetectedObject & detected_object)
+  const autoware_perception_msgs::msg::DetectedObject & detected_object)
 {
   geometry_msgs::msg::Polygon footprint;
-  if (detected_object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+  if (detected_object.shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
     const auto object_size = detected_object.shape.dimensions;
     const double x_front = object_size.x / 2.0;
     const double x_rear = -object_size.x / 2.0;
@@ -194,7 +194,7 @@ geometry_msgs::msg::Polygon ObjectLaneletFilterNode::setFootprint(
 }
 
 LinearRing2d ObjectLaneletFilterNode::getConvexHull(
-  const autoware_auto_perception_msgs::msg::DetectedObjects & detected_objects)
+  const autoware_perception_msgs::msg::DetectedObjects & detected_objects)
 {
   MultiPoint2d candidate_points;
   for (const auto & object : detected_objects.objects) {
@@ -227,7 +227,7 @@ lanelet::ConstLanelets ObjectLaneletFilterNode::getIntersectedLanelets(
 }
 
 bool ObjectLaneletFilterNode::isObjectOverlapLanelets(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object,
+  const autoware_perception_msgs::msg::DetectedObject & object,
   const lanelet::ConstLanelets & intersected_lanelets)
 {
   // if has bounding box, use polygon overlap
@@ -272,7 +272,7 @@ bool ObjectLaneletFilterNode::isPolygonOverlapLanelets(
 
 bool ObjectLaneletFilterNode::isSameDirectionWithLanelets(
   const lanelet::ConstLanelets & lanelets,
-  const autoware_auto_perception_msgs::msg::DetectedObject & object)
+  const autoware_perception_msgs::msg::DetectedObject & object)
 {
   const double object_yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
   const double object_velocity_norm = std::hypot(

@@ -39,7 +39,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
-#include "autoware_auto_perception_msgs/msg/shape.hpp"
+#include "autoware_perception_msgs/msg/shape.hpp"
 #include "tier4_perception_msgs/msg/detected_object_with_feature.hpp"
 
 #include <pcl/point_cloud.h>

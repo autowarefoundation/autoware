@@ -17,10 +17,10 @@
 
 #include <lidar_centerpoint_tvm/utils.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detected_object_kinematics.hpp>
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
-#include <autoware_auto_perception_msgs/msg/shape.hpp>
+#include <autoware_perception_msgs/msg/detected_object_kinematics.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/shape.hpp>
 
 #include <string>
 #include <vector>
@@ -34,7 +34,7 @@ namespace lidar_centerpoint_tvm
 void box3DToDetectedObject(
   const Box3D & box3d, const std::vector<std::string> & class_names,
   const bool rename_car_to_truck_and_bus, const bool has_twist,
-  autoware_auto_perception_msgs::msg::DetectedObject & obj);
+  autoware_perception_msgs::msg::DetectedObject & obj);
 
 uint8_t getSemanticType(const std::string & class_name);
 

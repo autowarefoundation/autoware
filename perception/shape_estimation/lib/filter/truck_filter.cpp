@@ -15,7 +15,7 @@
 #include "shape_estimation/filter/truck_filter.hpp"
 
 bool TruckFilter::filter(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
+  const autoware_perception_msgs::msg::Shape & shape,
   [[maybe_unused]] const geometry_msgs::msg::Pose & pose)
 {
   constexpr float min_width = 1.5;

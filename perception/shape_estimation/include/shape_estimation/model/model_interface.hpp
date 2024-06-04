@@ -15,7 +15,7 @@
 #ifndef SHAPE_ESTIMATION__MODEL__MODEL_INTERFACE_HPP_
 #define SHAPE_ESTIMATION__MODEL__MODEL_INTERFACE_HPP_
 
-#include <autoware_auto_perception_msgs/msg/shape.hpp>
+#include <autoware_perception_msgs/msg/shape.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
 #include <pcl/point_cloud.h>
@@ -33,7 +33,7 @@ public:
 
   virtual bool estimate(
     const pcl::PointCloud<pcl::PointXYZ> & cluster,
-    autoware_auto_perception_msgs::msg::Shape & shape_output,
+    autoware_perception_msgs::msg::Shape & shape_output,
     geometry_msgs::msg::Pose & pose_output) = 0;
 };
 

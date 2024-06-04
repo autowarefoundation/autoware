@@ -58,7 +58,7 @@ bool InputStream::getTimestamps(
 }
 
 void InputStream::onMessage(
-  const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr msg)
+  const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr msg)
 {
   const DetectedObjects objects = *msg;
   objects_que_.push_back(objects);

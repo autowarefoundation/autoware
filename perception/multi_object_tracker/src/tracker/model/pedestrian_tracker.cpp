@@ -40,10 +40,10 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+using Label = autoware_perception_msgs::msg::ObjectClassification;
 
 PedestrianTracker::PedestrianTracker(
-  const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
+  const rclcpp::Time & time, const autoware_perception_msgs::msg::DetectedObject & object,
   const geometry_msgs::msg::Transform & /*self_transform*/, const size_t channel_size,
   const uint & channel_index)
 : Tracker(time, object.classification, channel_size),
@@ -67,12 +67,12 @@ PedestrianTracker::PedestrianTracker(
   // OBJECT SHAPE MODEL
   bounding_box_ = {0.5, 0.5, 1.7};
   cylinder_ = {0.5, 1.7};
-  if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+  if (object.shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
     bounding_box_ = {
       object.shape.dimensions.x, object.shape.dimensions.y, object.shape.dimensions.z};
-  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+  } else if (object.shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
     cylinder_ = {object.shape.dimensions.x, object.shape.dimensions.z};
-  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
+  } else if (object.shape.type == autoware_perception_msgs::msg::Shape::POLYGON) {
     // do not update polygon shape
   }
   // set maximum and minimum size
@@ -160,11 +160,11 @@ bool PedestrianTracker::predict(const rclcpp::Time & time)
   return motion_model_.predictState(time);
 }
 
-autoware_auto_perception_msgs::msg::DetectedObject PedestrianTracker::getUpdatingObject(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object,
+autoware_perception_msgs::msg::DetectedObject PedestrianTracker::getUpdatingObject(
+  const autoware_perception_msgs::msg::DetectedObject & object,
   const geometry_msgs::msg::Transform & /*self_transform*/)
 {
-  autoware_auto_perception_msgs::msg::DetectedObject updating_object = object;
+  autoware_perception_msgs::msg::DetectedObject updating_object = object;
 
   // UNCERTAINTY MODEL
   if (!object.kinematics.has_position_covariance) {
@@ -186,7 +186,7 @@ autoware_auto_perception_msgs::msg::DetectedObject PedestrianTracker::getUpdatin
 }
 
 bool PedestrianTracker::measureWithPose(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object)
+  const autoware_perception_msgs::msg::DetectedObject & object)
 {
   // update motion model
   bool is_updated = false;
@@ -207,12 +207,12 @@ bool PedestrianTracker::measureWithPose(
 }
 
 bool PedestrianTracker::measureWithShape(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object)
+  const autoware_perception_msgs::msg::DetectedObject & object)
 {
   constexpr double gain = 0.1;
   constexpr double gain_inv = 1.0 - gain;
 
-  if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+  if (object.shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
     // check bound box size abnormality
     constexpr double size_max = 30.0;  // [m]
     constexpr double size_min = 0.1;   // [m]
@@ -229,7 +229,7 @@ bool PedestrianTracker::measureWithShape(
     bounding_box_.length = gain_inv * bounding_box_.length + gain * object.shape.dimensions.x;
     bounding_box_.width = gain_inv * bounding_box_.width + gain * object.shape.dimensions.y;
     bounding_box_.height = gain_inv * bounding_box_.height + gain * object.shape.dimensions.z;
-  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+  } else if (object.shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
     // check cylinder size abnormality
     constexpr double size_max = 30.0;  // [m]
     constexpr double size_min = 0.1;   // [m]
@@ -258,7 +258,7 @@ bool PedestrianTracker::measureWithShape(
 }
 
 bool PedestrianTracker::measure(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+  const autoware_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
   const geometry_msgs::msg::Transform & self_transform)
 {
   // keep the latest input object
@@ -280,7 +280,7 @@ bool PedestrianTracker::measure(
   }
 
   // update object
-  const autoware_auto_perception_msgs::msg::DetectedObject updating_object =
+  const autoware_perception_msgs::msg::DetectedObject updating_object =
     getUpdatingObject(object, self_transform);
   measureWithPose(updating_object);
   measureWithShape(updating_object);
@@ -290,7 +290,7 @@ bool PedestrianTracker::measure(
 }
 
 bool PedestrianTracker::getTrackedObject(
-  const rclcpp::Time & time, autoware_auto_perception_msgs::msg::TrackedObject & object) const
+  const rclcpp::Time & time, autoware_perception_msgs::msg::TrackedObject & object) const
 {
   object = object_recognition_utils::toTrackedObject(object_);
   object.object_id = getUUID();
@@ -311,15 +311,15 @@ bool PedestrianTracker::getTrackedObject(
   pose_with_cov.pose.position.z = z_;
 
   // set shape
-  if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+  if (object.shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
     object.shape.dimensions.x = bounding_box_.length;
     object.shape.dimensions.y = bounding_box_.width;
     object.shape.dimensions.z = bounding_box_.height;
-  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+  } else if (object.shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
     object.shape.dimensions.x = cylinder_.width;
     object.shape.dimensions.y = cylinder_.width;
     object.shape.dimensions.z = cylinder_.height;
-  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
+  } else if (object.shape.type == autoware_perception_msgs::msg::Shape::POLYGON) {
     const auto origin_yaw = tf2::getYaw(object_.kinematics.pose_with_covariance.pose.orientation);
     const auto ekf_pose_yaw = tf2::getYaw(pose_with_cov.pose.orientation);
     object.shape.footprint =

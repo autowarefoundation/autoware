@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The `object_position_filter` is a node that filters detected object based on x,y values.  
+The `object_position_filter` is a node that filters detected object based on x,y values.
 The objects only inside of the x, y bound will be published.
 
 ## Inner-workings / Algorithms
@@ -11,15 +11,15 @@ The objects only inside of the x, y bound will be published.
 
 ### Input
 
-| Name           | Type                                                  | Description            |
-| -------------- | ----------------------------------------------------- | ---------------------- |
-| `input/object` | `autoware_auto_perception_msgs::msg::DetectedObjects` | input detected objects |
+| Name           | Type                                             | Description            |
+| -------------- | ------------------------------------------------ | ---------------------- |
+| `input/object` | `autoware_perception_msgs::msg::DetectedObjects` | input detected objects |
 
 ### Output
 
-| Name            | Type                                                  | Description               |
-| --------------- | ----------------------------------------------------- | ------------------------- |
-| `output/object` | `autoware_auto_perception_msgs::msg::DetectedObjects` | filtered detected objects |
+| Name            | Type                                             | Description               |
+| --------------- | ------------------------------------------------ | ------------------------- |
+| `output/object` | `autoware_perception_msgs::msg::DetectedObjects` | filtered detected objects |
 
 ## Parameters
 

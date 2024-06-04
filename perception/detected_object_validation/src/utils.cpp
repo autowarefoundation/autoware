@@ -14,11 +14,11 @@
 
 #include "detected_object_validation/utils/utils.hpp"
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
 
 namespace utils
 {
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+using Label = autoware_perception_msgs::msg::ObjectClassification;
 
 bool FilterTargetLabel::isTarget(const uint8_t label) const
 {

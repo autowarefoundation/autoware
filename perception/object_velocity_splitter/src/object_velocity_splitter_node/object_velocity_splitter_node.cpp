@@ -42,8 +42,8 @@ bool update_param(
 
 namespace object_velocity_splitter
 {
-using autoware_auto_perception_msgs::msg::DetectedObject;
-using autoware_auto_perception_msgs::msg::DetectedObjects;
+using autoware_perception_msgs::msg::DetectedObject;
+using autoware_perception_msgs::msg::DetectedObjects;
 
 ObjectVelocitySplitterNode::ObjectVelocitySplitterNode(const rclcpp::NodeOptions & node_options)
 : Node("object_velocity_splitter", node_options)

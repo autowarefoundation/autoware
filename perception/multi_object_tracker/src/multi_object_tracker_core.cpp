@@ -67,7 +67,7 @@ boost::optional<geometry_msgs::msg::Transform> getTransformAnonymous(
 
 namespace multi_object_tracker
 {
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+using Label = autoware_perception_msgs::msg::ObjectClassification;
 
 MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("multi_object_tracker", node_options),

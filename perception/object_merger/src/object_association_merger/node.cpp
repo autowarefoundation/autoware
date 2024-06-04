@@ -27,13 +27,13 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+using Label = autoware_perception_msgs::msg::ObjectClassification;
 
 namespace
 {
 bool isUnknownObjectOverlapped(
-  const autoware_auto_perception_msgs::msg::DetectedObject & unknown_object,
-  const autoware_auto_perception_msgs::msg::DetectedObject & known_object,
+  const autoware_perception_msgs::msg::DetectedObject & unknown_object,
+  const autoware_perception_msgs::msg::DetectedObject & known_object,
   const double precision_threshold, const double recall_threshold,
   std::map<int, double> distance_threshold_map,
   const std::map<int, double> generalized_iou_threshold_map)
@@ -116,7 +116,7 @@ ObjectAssociationMergerNode::ObjectAssociationMergerNode(const rclcpp::NodeOptio
   sync_ptr_->registerCallback(
     std::bind(&ObjectAssociationMergerNode::objectsCallback, this, _1, _2));
 
-  merged_object_pub_ = create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
+  merged_object_pub_ = create_publisher<autoware_perception_msgs::msg::DetectedObjects>(
     "output/object", rclcpp::QoS{1});
 
   // Debug publisher
@@ -129,8 +129,8 @@ ObjectAssociationMergerNode::ObjectAssociationMergerNode(const rclcpp::NodeOptio
 }
 
 void ObjectAssociationMergerNode::objectsCallback(
-  const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr & input_objects0_msg,
-  const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr & input_objects1_msg)
+  const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr & input_objects0_msg,
+  const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr & input_objects1_msg)
 {
   // Guard
   if (merged_object_pub_->get_subscription_count() < 1) {
@@ -139,7 +139,7 @@ void ObjectAssociationMergerNode::objectsCallback(
   stop_watch_ptr_->toc("processing_time", true);
 
   /* transform to base_link coordinate */
-  autoware_auto_perception_msgs::msg::DetectedObjects transformed_objects0, transformed_objects1;
+  autoware_perception_msgs::msg::DetectedObjects transformed_objects0, transformed_objects1;
   if (
     !object_recognition_utils::transformObjects(
       *input_objects0_msg, base_link_frame_id_, tf_buffer_, transformed_objects0) ||
@@ -149,7 +149,7 @@ void ObjectAssociationMergerNode::objectsCallback(
   }
 
   // build output msg
-  autoware_auto_perception_msgs::msg::DetectedObjects output_msg;
+  autoware_perception_msgs::msg::DetectedObjects output_msg;
   output_msg.header = input_objects0_msg->header;
 
   /* global nearest neighbor */
@@ -192,7 +192,7 @@ void ObjectAssociationMergerNode::objectsCallback(
 
   // Remove overlapped unknown object
   if (remove_overlapped_unknown_objects_) {
-    std::vector<autoware_auto_perception_msgs::msg::DetectedObject> unknown_objects, known_objects;
+    std::vector<autoware_perception_msgs::msg::DetectedObject> unknown_objects, known_objects;
     unknown_objects.reserve(output_msg.objects.size());
     known_objects.reserve(output_msg.objects.size());
     for (const auto & object : output_msg.objects) {

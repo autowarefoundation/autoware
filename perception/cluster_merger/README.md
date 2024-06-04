@@ -19,9 +19,9 @@ The clusters of merged topics are simply concatenated from clusters of input top
 
 ### Output
 
-| Name              | Type                                                  | Description     |
-| ----------------- | ----------------------------------------------------- | --------------- |
-| `output/clusters` | `autoware_auto_perception_msgs::msg::DetectedObjects` | merged clusters |
+| Name              | Type                                                     | Description     |
+| ----------------- | -------------------------------------------------------- | --------------- |
+| `output/clusters` | `tier4_perception_msgs::msg::DetectedObjectsWithFeature` | merged clusters |
 
 ## Parameters
 

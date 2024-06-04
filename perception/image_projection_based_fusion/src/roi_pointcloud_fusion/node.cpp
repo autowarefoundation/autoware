@@ -87,7 +87,7 @@ void RoiPointCloudFusionNode::fuseOnSingleImage(
   for (const auto & feature_obj : input_roi_msg.feature_objects) {
     if (fuse_unknown_only_) {
       bool is_roi_label_unknown = feature_obj.object.classification.front().label ==
-                                  autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN;
+                                  autoware_perception_msgs::msg::ObjectClassification::UNKNOWN;
       if (is_roi_label_unknown) {
         output_objs.push_back(feature_obj);
       }

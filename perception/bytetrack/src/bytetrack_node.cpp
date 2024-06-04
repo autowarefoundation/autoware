@@ -17,7 +17,7 @@
 #include <bytetrack/bytetrack_node.hpp>
 #include <rclcpp/qos.hpp>
 
-#include "autoware_auto_perception_msgs/msg/object_classification.hpp"
+#include "autoware_perception_msgs/msg/object_classification.hpp"
 
 #include <rmw/qos_profiles.h>
 
@@ -62,7 +62,7 @@ void ByteTrackNode::on_connect()
 void ByteTrackNode::on_rect(
   const tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr msg)
 {
-  using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+  using Label = autoware_perception_msgs::msg::ObjectClassification;
 
   tier4_perception_msgs::msg::DetectedObjectsWithFeature out_objects;
   tier4_perception_msgs::msg::DynamicObjectArray out_objects_uuid;
@@ -97,7 +97,7 @@ void ByteTrackNode::on_rect(
     object.feature.roi.height = static_cast<uint32_t>(output_height);
     object.object.existence_probability = tracked_object.score;
     object.object.classification.emplace_back(
-      autoware_auto_perception_msgs::build<Label>().label(tracked_object.type).probability(1.0f));
+      autoware_perception_msgs::build<Label>().label(tracked_object.type).probability(1.0f));
 
     out_objects.feature_objects.push_back(object);
 

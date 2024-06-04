@@ -15,7 +15,7 @@
 #include "shape_estimation/corrector/no_corrector.hpp"
 
 bool NoCorrector::correct(
-  [[maybe_unused]] autoware_auto_perception_msgs::msg::Shape & shape_output,
+  [[maybe_unused]] autoware_perception_msgs::msg::Shape & shape_output,
   [[maybe_unused]] geometry_msgs::msg::Pose & pose_output)
 {
   return true;

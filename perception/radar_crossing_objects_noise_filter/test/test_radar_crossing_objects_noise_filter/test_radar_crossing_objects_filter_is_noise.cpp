@@ -33,11 +33,11 @@ std::shared_ptr<radar_crossing_objects_noise_filter::RadarCrossingObjectsNoiseFi
   return node;
 }
 
-autoware_auto_perception_msgs::msg::DetectedObject get_object(
+autoware_perception_msgs::msg::DetectedObject get_object(
   geometry_msgs::msg::Vector3 velocity, geometry_msgs::msg::Point position,
   geometry_msgs::msg::Quaternion orientation)
 {
-  autoware_auto_perception_msgs::msg::DetectedObject object;
+  autoware_perception_msgs::msg::DetectedObject object;
   object.kinematics.twist_with_covariance.twist.linear = velocity;
   object.kinematics.pose_with_covariance.pose.position = position;
   object.kinematics.pose_with_covariance.pose.orientation = orientation;

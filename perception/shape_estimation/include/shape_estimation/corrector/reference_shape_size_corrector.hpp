@@ -32,7 +32,7 @@ public:
   virtual ~ReferenceShapeBasedVehicleCorrector() = default;
 
   bool correct(
-    autoware_auto_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose) override
+    autoware_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose) override
   {
     return corrector_utils::correctWithReferenceYawAndShapeSize(ref_shape_size_info_, shape, pose);
   }

@@ -20,10 +20,10 @@
 #include <lidar_centerpoint_tvm/visibility_control.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detected_object_kinematics.hpp>
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
-#include <autoware_auto_perception_msgs/msg/shape.hpp>
+#include <autoware_perception_msgs/msg/detected_object_kinematics.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/shape.hpp>
 
 #include <memory>
 #include <string>
@@ -43,9 +43,9 @@ public:
 private:
   void detect(const std::string & pcd_path, const std::string & detections_path);
   std::vector<Eigen::Vector3d> getVertices(
-    const autoware_auto_perception_msgs::msg::Shape & shape, const Eigen::Affine3d & pose) const;
+    const autoware_perception_msgs::msg::Shape & shape, const Eigen::Affine3d & pose) const;
   void dumpDetectionsAsMesh(
-    const autoware_auto_perception_msgs::msg::DetectedObjects & objects_msg,
+    const autoware_perception_msgs::msg::DetectedObjects & objects_msg,
     const std::string & output_path) const;
 
   tf2_ros::Buffer tf_buffer_;

@@ -22,11 +22,11 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
-#include <autoware_auto_perception_msgs/msg/shape.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_object.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_object_kinematics.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/shape.hpp>
+#include <autoware_perception_msgs/msg/tracked_object.hpp>
+#include <autoware_perception_msgs/msg/tracked_object_kinematics.hpp>
+#include <autoware_perception_msgs/msg/tracked_objects.hpp>
 #include <geometry_msgs/msg/polygon.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -42,8 +42,8 @@
 #include <tuple>
 #include <vector>
 
-using autoware_auto_perception_msgs::msg::TrackedObject;
-using autoware_auto_perception_msgs::msg::TrackedObjects;
+using autoware_perception_msgs::msg::TrackedObject;
+using autoware_perception_msgs::msg::TrackedObjects;
 namespace utils
 {
 enum MSG_COV_IDX {
@@ -107,7 +107,7 @@ namespace merger_utils
 enum MergePolicy : int { SKIP = 0, OVERWRITE = 1, FUSION = 2 };
 
 // object kinematics velocity merger
-autoware_auto_perception_msgs::msg::TrackedObjectKinematics objectKinematicsVXMerger(
+autoware_perception_msgs::msg::TrackedObjectKinematics objectKinematicsVXMerger(
   const TrackedObject & main_obj, const TrackedObject & sub_obj, const MergePolicy policy);
 
 // object classification merger
@@ -118,7 +118,7 @@ TrackedObject objectClassificationMerger(
 float probabilityMerger(const float main_prob, const float sub_prob, const MergePolicy policy);
 
 // shape merger
-autoware_auto_perception_msgs::msg::Shape shapeMerger(
+autoware_perception_msgs::msg::Shape shapeMerger(
   const TrackedObject & main_obj, const TrackedObject & sub_obj, const MergePolicy policy);
 
 // update tracked object

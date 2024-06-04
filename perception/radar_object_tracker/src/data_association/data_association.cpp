@@ -150,7 +150,7 @@ void DataAssociation::assign(
 }
 
 Eigen::MatrixXd DataAssociation::calcScoreMatrix(
-  const autoware_auto_perception_msgs::msg::DetectedObjects & measurements,
+  const autoware_perception_msgs::msg::DetectedObjects & measurements,
   const std::list<std::shared_ptr<Tracker>> & trackers, const bool debug_log,
   const std::string & file_name)
 {
@@ -173,14 +173,14 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
 
     for (size_t measurement_idx = 0; measurement_idx < measurements.objects.size();
          ++measurement_idx) {
-      const autoware_auto_perception_msgs::msg::DetectedObject & measurement_object =
+      const autoware_perception_msgs::msg::DetectedObject & measurement_object =
         measurements.objects.at(measurement_idx);
       const std::uint8_t measurement_label =
         object_recognition_utils::getHighestProbLabel(measurement_object.classification);
       // Create a JSON object to hold the log data for this pair
       nlohmann::json pair_log_data;
 
-      autoware_auto_perception_msgs::msg::TrackedObject tracked_object;
+      autoware_perception_msgs::msg::TrackedObject tracked_object;
       (*tracker_itr)->getTrackedObject(measurements.header.stamp, tracked_object);
 
       std::vector<double> tracker_pose = {

@@ -16,9 +16,9 @@
 
 namespace util
 {
-using TrafficSignalArray = autoware_perception_msgs::msg::TrafficSignalArray;
-using TrafficSignal = autoware_perception_msgs::msg::TrafficSignal;
-using Element = autoware_perception_msgs::msg::TrafficSignalElement;
+using TrafficSignalArray = autoware_perception_msgs::msg::TrafficLightGroupArray;
+using TrafficSignal = autoware_perception_msgs::msg::TrafficLightGroup;
+using Element = autoware_perception_msgs::msg::TrafficLightElement;
 using Time = builtin_interfaces::msg::Time;
 
 // Finds a signal by its ID within a TrafficSignalArray
@@ -38,8 +38,8 @@ std::unordered_map<lanelet::Id, TrafficSignal> create_id_signal_map(
   const TrafficSignalArray & traffic_signals)
 {
   std::unordered_map<lanelet::Id, TrafficSignal> id_signal_map;
-  for (const auto & traffic_signal : traffic_signals.signals) {
-    id_signal_map[traffic_signal.traffic_signal_id] = traffic_signal;
+  for (const auto & traffic_signal : traffic_signals.traffic_light_groups) {
+    id_signal_map[traffic_signal.traffic_light_group_id] = traffic_signal;
   }
 
   return id_signal_map;
@@ -85,7 +85,7 @@ std::vector<Element> create_unknown_elements(
 TrafficSignal create_unknown_signal(const TrafficSignal & traffic_signal)
 {
   TrafficSignal unknown_signal;
-  unknown_signal.traffic_signal_id = traffic_signal.traffic_signal_id;
+  unknown_signal.traffic_light_group_id = traffic_signal.traffic_light_group_id;
   for (const auto & element : traffic_signal.elements) {
     // Confidence is set to a default value as it is not relevant for unknown signals
     const auto unknown_element =
@@ -102,7 +102,7 @@ TrafficSignal create_unknown_signal(const TrafficSignal & signal1, const Traffic
   TrafficSignal unknown_signal;
 
   // Assumes that both signals have the same traffic_signal_id
-  unknown_signal.traffic_signal_id = signal1.traffic_signal_id;
+  unknown_signal.traffic_light_group_id = signal1.traffic_light_group_id;
 
   const auto unknown_elements = create_unknown_elements(signal1.elements, signal2.elements);
   for (const auto & element : unknown_elements) {
@@ -140,10 +140,10 @@ std::unordered_set<lanelet::Id> create_signal_id_set(
 {
   std::unordered_set<lanelet::Id> signal_id_set;
   for (const auto & traffic_signal : signals1) {
-    signal_id_set.emplace(traffic_signal.traffic_signal_id);
+    signal_id_set.emplace(traffic_signal.traffic_light_group_id);
   }
   for (const auto & traffic_signal : signals2) {
-    signal_id_set.emplace(traffic_signal.traffic_signal_id);
+    signal_id_set.emplace(traffic_signal.traffic_light_group_id);
   }
 
   return signal_id_set;
@@ -180,7 +180,7 @@ TrafficSignal get_highest_confidence_signal(
   TrafficSignal highest_confidence_signal;
 
   // Assumes that both signals have the same traffic_signal_id
-  highest_confidence_signal.traffic_signal_id = perception_signal->traffic_signal_id;
+  highest_confidence_signal.traffic_light_group_id = perception_signal->traffic_light_group_id;
 
   // For each shape, finds the element with the highest confidence and adds it to the signal
   for (const auto & [shape, elements] : shape_element_map) {
@@ -206,7 +206,7 @@ Time get_newer_stamp(const Time & stamp1, const Time & stamp2)
 
 }  // namespace util
 
-autoware_perception_msgs::msg::TrafficSignalArray SignalMatchValidator::validateSignals(
+autoware_perception_msgs::msg::TrafficLightGroupArray SignalMatchValidator::validateSignals(
   const TrafficSignalArray & perception_signals, const TrafficSignalArray & external_signals)
 {
   TrafficSignalArray validated_signals;
@@ -220,8 +220,8 @@ autoware_perception_msgs::msg::TrafficSignalArray SignalMatchValidator::validate
 
   // Create the unique set of the received id,
   // then compare the signal element for each received signal id
-  const auto received_signal_id_set =
-    util::create_signal_id_set(perception_signals.signals, external_signals.signals);
+  const auto received_signal_id_set = util::create_signal_id_set(
+    perception_signals.traffic_light_groups, external_signals.traffic_light_groups);
 
   for (const auto & signal_id : received_signal_id_set) {
     const auto perception_result = util::find_signal_by_id(perception_id_signal_map, signal_id);
@@ -234,7 +234,7 @@ autoware_perception_msgs::msg::TrafficSignalArray SignalMatchValidator::validate
     // We don't validate the pedestrian signals
     // TODO(TomohitoAndo): Validate pedestrian signals
     if (isPedestrianSignal(signal_id)) {
-      validated_signals.signals.emplace_back(util::get_highest_confidence_signal(
+      validated_signals.traffic_light_groups.emplace_back(util::get_highest_confidence_signal(
         perception_result, external_result, external_priority_));
 
       continue;
@@ -243,12 +243,12 @@ autoware_perception_msgs::msg::TrafficSignalArray SignalMatchValidator::validate
     // If either of the signal is not received, treat as unknown signal
     if (!perception_result && external_result) {
       const auto unknown_signal = util::create_unknown_signal(*external_result);
-      validated_signals.signals.emplace_back(unknown_signal);
+      validated_signals.traffic_light_groups.emplace_back(unknown_signal);
       continue;
     }
     if (!external_result && perception_result) {
       const auto unknown_signal = util::create_unknown_signal(*perception_result);
-      validated_signals.signals.emplace_back(unknown_signal);
+      validated_signals.traffic_light_groups.emplace_back(unknown_signal);
       continue;
     }
 
@@ -256,12 +256,12 @@ autoware_perception_msgs::msg::TrafficSignalArray SignalMatchValidator::validate
     if (!util::are_all_elements_equivalent(
           perception_result->elements, external_result->elements)) {
       const auto unknown_signal = util::create_unknown_signal(*perception_result, *external_result);
-      validated_signals.signals.emplace_back(unknown_signal);
+      validated_signals.traffic_light_groups.emplace_back(unknown_signal);
       continue;
     }
 
     // Both results are same, then insert the received color
-    validated_signals.signals.emplace_back(*perception_result);
+    validated_signals.traffic_light_groups.emplace_back(*perception_result);
   }
 
   return validated_signals;

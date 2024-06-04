@@ -38,7 +38,7 @@
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
 
-#include <autoware_auto_perception_msgs/msg/tracked_object.hpp>
+#include <autoware_perception_msgs/msg/tracked_object.hpp>
 
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/convert.h>
@@ -60,16 +60,16 @@ bool isDuplicated(
 
 bool checkCloseLaneletCondition(
   const std::pair<double, lanelet::Lanelet> & lanelet,
-  const autoware_auto_perception_msgs::msg::TrackedObject & object,
-  const double max_distance_from_lane, const double max_angle_diff_from_lane);
+  const autoware_perception_msgs::msg::TrackedObject & object, const double max_distance_from_lane,
+  const double max_angle_diff_from_lane);
 
 lanelet::ConstLanelets getClosestValidLanelets(
-  const autoware_auto_perception_msgs::msg::TrackedObject & object,
+  const autoware_perception_msgs::msg::TrackedObject & object,
   const lanelet::LaneletMapPtr & lanelet_map_ptr, const double max_distance_from_lane,
   const double max_angle_diff_from_lane);
 
 bool hasValidVelocityDirectionToLanelet(
-  const autoware_auto_perception_msgs::msg::TrackedObject & object,
+  const autoware_perception_msgs::msg::TrackedObject & object,
   const lanelet::ConstLanelets & lanelets, const double max_lateral_velocity);
 
 }  // namespace radar_object_tracker_utils

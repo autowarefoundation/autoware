@@ -14,13 +14,13 @@
 
 #include "detection_by_tracker/utils.hpp"
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
 
 namespace detection_by_tracker
 {
 namespace utils
 {
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+using Label = autoware_perception_msgs::msg::ObjectClassification;
 
 bool TrackerIgnoreLabel::isIgnore(const uint8_t label) const
 {

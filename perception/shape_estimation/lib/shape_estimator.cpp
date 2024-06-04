@@ -21,7 +21,7 @@
 #include <iostream>
 #include <memory>
 
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+using Label = autoware_perception_msgs::msg::ObjectClassification;
 
 ShapeEstimator::ShapeEstimator(bool use_corrector, bool use_filter, bool use_boost_bbox_optimizer)
 : use_corrector_(use_corrector),
@@ -34,9 +34,9 @@ bool ShapeEstimator::estimateShapeAndPose(
   const uint8_t label, const pcl::PointCloud<pcl::PointXYZ> & cluster,
   const boost::optional<ReferenceYawInfo> & ref_yaw_info,
   const boost::optional<ReferenceShapeSizeInfo> & ref_shape_size_info,
-  autoware_auto_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output)
+  autoware_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output)
 {
-  autoware_auto_perception_msgs::msg::Shape shape;
+  autoware_perception_msgs::msg::Shape shape;
   geometry_msgs::msg::Pose pose;
   // estimate shape
   bool reverse_to_unknown = false;
@@ -72,7 +72,7 @@ bool ShapeEstimator::estimateShapeAndPose(
 bool ShapeEstimator::estimateOriginalShapeAndPose(
   const uint8_t label, const pcl::PointCloud<pcl::PointXYZ> & cluster,
   const boost::optional<ReferenceYawInfo> & ref_yaw_info,
-  autoware_auto_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output)
+  autoware_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output)
 {
   // estimate shape
   std::unique_ptr<ShapeEstimationModelInterface> model_ptr;
@@ -90,7 +90,7 @@ bool ShapeEstimator::estimateOriginalShapeAndPose(
 }
 
 bool ShapeEstimator::applyFilter(
-  const uint8_t label, const autoware_auto_perception_msgs::msg::Shape & shape,
+  const uint8_t label, const autoware_perception_msgs::msg::Shape & shape,
   const geometry_msgs::msg::Pose & pose)
 {
   std::unique_ptr<ShapeEstimationFilterInterface> filter_ptr;
@@ -112,7 +112,7 @@ bool ShapeEstimator::applyFilter(
 bool ShapeEstimator::applyCorrector(
   const uint8_t label, const bool use_reference_yaw,
   const boost::optional<ReferenceShapeSizeInfo> & ref_shape_size_info,
-  autoware_auto_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose)
+  autoware_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose)
 {
   std::unique_ptr<ShapeEstimationCorrectorInterface> corrector_ptr;
 

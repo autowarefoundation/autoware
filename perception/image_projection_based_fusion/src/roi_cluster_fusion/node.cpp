@@ -53,7 +53,7 @@ void RoiClusterFusionNode::preprocess(DetectedObjectsWithFeature & output_cluste
   if (!use_cluster_semantic_type_) {
     for (auto & feature_object : output_cluster_msg.feature_objects) {
       feature_object.object.classification.front().label =
-        autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN;
+        autoware_perception_msgs::msg::ObjectClassification::UNKNOWN;
       feature_object.object.existence_probability = 0.0;
     }
   }
@@ -68,7 +68,7 @@ void RoiClusterFusionNode::postprocess(DetectedObjectsWithFeature & output_clust
   known_objects.feature_objects.reserve(output_cluster_msg.feature_objects.size());
   for (auto & feature_object : output_cluster_msg.feature_objects) {
     bool is_roi_label_known = feature_object.object.classification.front().label !=
-                              autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN;
+                              autoware_perception_msgs::msg::ObjectClassification::UNKNOWN;
     if (
       is_roi_label_known ||
       feature_object.object.existence_probability >= min_roi_existence_prob_) {

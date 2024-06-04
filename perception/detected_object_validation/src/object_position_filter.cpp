@@ -38,20 +38,20 @@ ObjectPositionFilterNode::ObjectPositionFilterNode(const rclcpp::NodeOptions & n
   filter_target_.PEDESTRIAN = declare_parameter<bool>("filter_target_label.PEDESTRIAN", false);
 
   // Set publisher/subscriber
-  object_sub_ = this->create_subscription<autoware_auto_perception_msgs::msg::DetectedObjects>(
+  object_sub_ = this->create_subscription<autoware_perception_msgs::msg::DetectedObjects>(
     "input/object", rclcpp::QoS{1}, std::bind(&ObjectPositionFilterNode::objectCallback, this, _1));
-  object_pub_ = this->create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
+  object_pub_ = this->create_publisher<autoware_perception_msgs::msg::DetectedObjects>(
     "output/object", rclcpp::QoS{1});
   published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
 }
 
 void ObjectPositionFilterNode::objectCallback(
-  const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_msg)
+  const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_msg)
 {
   // Guard
   if (object_pub_->get_subscription_count() < 1) return;
 
-  autoware_auto_perception_msgs::msg::DetectedObjects output_object_msg;
+  autoware_perception_msgs::msg::DetectedObjects output_object_msg;
   output_object_msg.header = input_msg->header;
 
   for (const auto & object : input_msg->objects) {
@@ -70,7 +70,7 @@ void ObjectPositionFilterNode::objectCallback(
 }
 
 bool ObjectPositionFilterNode::isObjectInBounds(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object) const
+  const autoware_perception_msgs::msg::DetectedObject & object) const
 {
   const auto & position = object.kinematics.pose_with_covariance.pose.position;
   return position.x > lower_bound_x_ && position.x < upper_bound_x_ &&

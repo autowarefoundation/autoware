@@ -14,7 +14,7 @@
 
 #include <lidar_apollo_segmentation_tvm/cluster2d.hpp>
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
 #include <geometry_msgs/msg/point32.hpp>
 
 #include <pcl/PCLPointCloud2.h>
@@ -235,13 +235,13 @@ void Cluster2D::classify(const float * inferred_data)
 tier4_perception_msgs::msg::DetectedObjectWithFeature Cluster2D::obstacleToObject(
   const Obstacle & in_obstacle) const
 {
-  using autoware_auto_perception_msgs::msg::DetectedObjectKinematics;
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using autoware_perception_msgs::msg::DetectedObjectKinematics;
+  using autoware_perception_msgs::msg::ObjectClassification;
 
   tier4_perception_msgs::msg::DetectedObjectWithFeature resulting_object;
 
   resulting_object.object.classification.emplace_back(
-    autoware_auto_perception_msgs::build<ObjectClassification>()
+    autoware_perception_msgs::build<ObjectClassification>()
       .label(ObjectClassification::UNKNOWN)
       .probability(in_obstacle.score));
   if (in_obstacle.meta_type == MetaType::META_PEDESTRIAN) {

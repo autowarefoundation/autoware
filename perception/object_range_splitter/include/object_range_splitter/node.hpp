@@ -17,7 +17,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
 
 #include <memory>
 
@@ -30,13 +30,13 @@ public:
 
 private:
   void objectCallback(
-    const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_msg);
+    const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_msg);
 
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr
+  rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr
     long_range_object_pub_;
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr
+  rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr
     short_range_object_pub_;
-  rclcpp::Subscription<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr sub_;
+  rclcpp::Subscription<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr sub_;
 
   // ROS Parameters
   float spilt_range_;

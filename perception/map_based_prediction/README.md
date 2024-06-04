@@ -210,21 +210,21 @@ If the target object is inside the road or crosswalk, this module outputs one or
 
 ### Input
 
-| Name                                                     | Type                                                 | Description                                                |
-| -------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------- |
-| `~/perception/object_recognition/tracking/objects`       | `autoware_auto_perception_msgs::msg::TrackedObjects` | tracking objects without predicted path.                   |
-| `~/vector_map`                                           | `autoware_auto_mapping_msgs::msg::HADMapBin`         | binary data of Lanelet2 Map.                               |
-| '~/perception/traffic_light_recognition/traffic_signals' | 'autoware_perception_msgs::msg::TrafficSignalArray;' | rearranged information on the corresponding traffic lights |
+| Name                                                     | Type                                                    | Description                                                |
+| -------------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------- |
+| `~/perception/object_recognition/tracking/objects`       | `autoware_perception_msgs::msg::TrackedObjects`         | tracking objects without predicted path.                   |
+| `~/vector_map`                                           | `autoware_map_msgs::msg::LaneletMapBin`                 | binary data of Lanelet2 Map.                               |
+| `~/perception/traffic_light_recognition/traffic_signals` | `autoware_perception_msgs::msg::TrafficLightGroupArray` | rearranged information on the corresponding traffic lights |
 
 ### Output
 
-| Name                         | Type                                                   | Description                                                                           |
-| ---------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| `~/input/objects`            | `autoware_auto_perception_msgs::msg::TrackedObjects`   | tracking objects. Default is set to `/perception/object_recognition/tracking/objects` |
-| `~/output/objects`           | `autoware_auto_perception_msgs::msg::PredictedObjects` | tracking objects with predicted path.                                                 |
-| `~/objects_path_markers`     | `visualization_msgs::msg::MarkerArray`                 | marker for visualization.                                                             |
-| `~/debug/processing_time_ms` | `std_msgs::msg::Float64`                               | processing time of this module.                                                       |
-| `~/debug/cyclic_time_ms`     | `std_msgs::msg::Float64`                               | cyclic time of this module.                                                           |
+| Name                         | Type                                              | Description                                                                           |
+| ---------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `~/input/objects`            | `autoware_perception_msgs::msg::TrackedObjects`   | tracking objects. Default is set to `/perception/object_recognition/tracking/objects` |
+| `~/output/objects`           | `autoware_perception_msgs::msg::PredictedObjects` | tracking objects with predicted path.                                                 |
+| `~/objects_path_markers`     | `visualization_msgs::msg::MarkerArray`            | marker for visualization.                                                             |
+| `~/debug/processing_time_ms` | `std_msgs::msg::Float64`                          | processing time of this module.                                                       |
+| `~/debug/cyclic_time_ms`     | `std_msgs::msg::Float64`                          | cyclic time of this module.                                                           |
 
 ## Parameters
 

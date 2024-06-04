@@ -19,10 +19,10 @@
 #include <Eigen/Geometry>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_object.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_object_kinematics.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/tracked_object.hpp>
+#include <autoware_perception_msgs/msg/tracked_object_kinematics.hpp>
+#include <autoware_perception_msgs/msg/tracked_objects.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
@@ -32,8 +32,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-using autoware_auto_perception_msgs::msg::TrackedObject;
-using autoware_auto_perception_msgs::msg::TrackedObjects;
+using autoware_perception_msgs::msg::TrackedObject;
+using autoware_perception_msgs::msg::TrackedObjects;
 
 // Enum classes to distinguish input sources
 enum class MEASUREMENT_STATE : int {
@@ -94,7 +94,7 @@ public:
     const TrackedObject & tracked_object);
   TrackerState(
     const MEASUREMENT_STATE input_source, const rclcpp::Time & last_update_time,
-    const autoware_auto_perception_msgs::msg::TrackedObject & tracked_object,
+    const autoware_perception_msgs::msg::TrackedObject & tracked_object,
     const unique_identifier_msgs::msg::UUID & uuid);
 
   ~TrackerState();

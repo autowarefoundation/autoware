@@ -17,7 +17,7 @@
 #include <node.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
 
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
+#include <autoware_perception_msgs/msg/object_classification.hpp>
 
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -32,7 +32,7 @@
 #include <memory>
 #include <string>
 
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+using Label = autoware_perception_msgs::msg::ObjectClassification;
 
 ShapeEstimationNode::ShapeEstimationNode(const rclcpp::NodeOptions & node_options)
 : Node("shape_estimation", node_options)
@@ -61,8 +61,8 @@ ShapeEstimationNode::ShapeEstimationNode(const rclcpp::NodeOptions & node_option
   published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
 }
 
-static autoware_auto_perception_msgs::msg::ObjectClassification::_label_type get_label(
-  const autoware_auto_perception_msgs::msg::DetectedObject::_classification_type & classification)
+static autoware_perception_msgs::msg::ObjectClassification::_label_type get_label(
+  const autoware_perception_msgs::msg::DetectedObject::_classification_type & classification)
 {
   if (classification.empty()) {
     return Label::UNKNOWN;
@@ -71,7 +71,7 @@ static autoware_auto_perception_msgs::msg::ObjectClassification::_label_type get
 }
 
 static bool label_is_vehicle(
-  const autoware_auto_perception_msgs::msg::ObjectClassification::_label_type & label)
+  const autoware_perception_msgs::msg::ObjectClassification::_label_type & label)
 {
   return Label::CAR == label || Label::TRUCK == label || Label::BUS == label ||
          Label::TRAILER == label;
@@ -105,7 +105,7 @@ void ShapeEstimationNode::callback(const DetectedObjectsWithFeature::ConstShared
     }
 
     // estimate shape and pose
-    autoware_auto_perception_msgs::msg::Shape shape;
+    autoware_perception_msgs::msg::Shape shape;
     geometry_msgs::msg::Pose pose;
     boost::optional<ReferenceYawInfo> ref_yaw_info = boost::none;
     boost::optional<ReferenceShapeSizeInfo> ref_shape_size_info = boost::none;

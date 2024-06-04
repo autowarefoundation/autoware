@@ -37,7 +37,7 @@
 #include <vector>
 #define EIGEN_MPL2_ONLY
 
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+using Label = autoware_perception_msgs::msg::ObjectClassification;
 
 RadarObjectTrackerNode::RadarObjectTrackerNode(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("radar_object_tracker", node_options),
@@ -51,12 +51,12 @@ RadarObjectTrackerNode::RadarObjectTrackerNode(const rclcpp::NodeOptions & node_
   }
 
   // Create publishers and subscribers
-  detected_object_sub_ = create_subscription<autoware_auto_perception_msgs::msg::DetectedObjects>(
+  detected_object_sub_ = create_subscription<autoware_perception_msgs::msg::DetectedObjects>(
     "input", rclcpp::QoS{1},
     std::bind(&RadarObjectTrackerNode::onMeasurement, this, std::placeholders::_1));
   tracked_objects_pub_ =
-    create_publisher<autoware_auto_perception_msgs::msg::TrackedObjects>("output", rclcpp::QoS{1});
-  sub_map_ = this->create_subscription<HADMapBin>(
+    create_publisher<autoware_perception_msgs::msg::TrackedObjects>("output", rclcpp::QoS{1});
+  sub_map_ = this->create_subscription<LaneletMapBin>(
     "/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&RadarObjectTrackerNode::onMap, this, std::placeholders::_1));
 
@@ -127,7 +127,7 @@ RadarObjectTrackerNode::RadarObjectTrackerNode(const rclcpp::NodeOptions & node_
 }
 
 // load map information to node parameter
-void RadarObjectTrackerNode::onMap(const HADMapBin::ConstSharedPtr msg)
+void RadarObjectTrackerNode::onMap(const LaneletMapBin::ConstSharedPtr msg)
 {
   RCLCPP_INFO(get_logger(), "[Radar Object Tracker]: Start loading lanelet");
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
@@ -138,7 +138,7 @@ void RadarObjectTrackerNode::onMap(const HADMapBin::ConstSharedPtr msg)
 }
 
 void RadarObjectTrackerNode::onMeasurement(
-  const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_objects_msg)
+  const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_objects_msg)
 {
   const auto self_transform = radar_object_tracker_utils::getTransformAnonymous(
     tf_buffer_, "base_link", world_frame_id_, input_objects_msg->header.stamp);
@@ -147,7 +147,7 @@ void RadarObjectTrackerNode::onMeasurement(
   }
 
   /* transform to world coordinate */
-  autoware_auto_perception_msgs::msg::DetectedObjects transformed_objects;
+  autoware_perception_msgs::msg::DetectedObjects transformed_objects;
   if (!object_recognition_utils::transformObjects(
         *input_objects_msg, world_frame_id_, tf_buffer_, transformed_objects)) {
     return;
@@ -210,7 +210,7 @@ void RadarObjectTrackerNode::onMeasurement(
 }
 
 std::shared_ptr<Tracker> RadarObjectTrackerNode::createNewTracker(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+  const autoware_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
   const geometry_msgs::msg::Transform & /*self_transform*/) const
 {
   const std::uint8_t label = object_recognition_utils::getHighestProbLabel(object.classification);
@@ -281,7 +281,7 @@ void RadarObjectTrackerNode::mapBasedNoiseFilter(
   std::list<std::shared_ptr<Tracker>> & list_tracker, const rclcpp::Time & time)
 {
   for (auto itr = list_tracker.begin(); itr != list_tracker.end(); ++itr) {
-    autoware_auto_perception_msgs::msg::TrackedObject object;
+    autoware_perception_msgs::msg::TrackedObject object;
     (*itr)->getTrackedObject(time, object);
     const auto closest_lanelets = radar_object_tracker_utils::getClosestValidLanelets(
       object, lanelet_map_ptr_, max_distance_from_lane_, max_angle_diff_from_lane_);
@@ -309,7 +309,7 @@ void RadarObjectTrackerNode::distanceBasedNoiseFilter(
 {
   // remove objects that are too close
   for (auto itr = list_tracker.begin(); itr != list_tracker.end(); ++itr) {
-    autoware_auto_perception_msgs::msg::TrackedObject object;
+    autoware_perception_msgs::msg::TrackedObject object;
     (*itr)->getTrackedObject(time, object);
     const double distance = std::hypot(
       object.kinematics.pose_with_covariance.pose.position.x - self_transform.translation.x,
@@ -330,10 +330,10 @@ void RadarObjectTrackerNode::sanitizeTracker(
   constexpr double distance_threshold = 5.0;
   /* delete collision tracker */
   for (auto itr1 = list_tracker.begin(); itr1 != list_tracker.end(); ++itr1) {
-    autoware_auto_perception_msgs::msg::TrackedObject object1;
+    autoware_perception_msgs::msg::TrackedObject object1;
     (*itr1)->getTrackedObject(time, object1);
     for (auto itr2 = std::next(itr1); itr2 != list_tracker.end(); ++itr2) {
-      autoware_auto_perception_msgs::msg::TrackedObject object2;
+      autoware_perception_msgs::msg::TrackedObject object2;
       (*itr2)->getTrackedObject(time, object2);
       const double distance = std::hypot(
         object1.kinematics.pose_with_covariance.pose.position.x -
@@ -406,14 +406,14 @@ void RadarObjectTrackerNode::publish(const rclcpp::Time & time) const
     return;
   }
   // Create output msg
-  autoware_auto_perception_msgs::msg::TrackedObjects output_msg;
+  autoware_perception_msgs::msg::TrackedObjects output_msg;
   output_msg.header.frame_id = world_frame_id_;
   output_msg.header.stamp = time;
   for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr) {
     if (!shouldTrackerPublish(*itr)) {
       continue;
     }
-    autoware_auto_perception_msgs::msg::TrackedObject object;
+    autoware_perception_msgs::msg::TrackedObject object;
     (*itr)->getTrackedObject(time, object);
     output_msg.objects.push_back(object);
   }

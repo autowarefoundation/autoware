@@ -25,7 +25,7 @@ public:
   ~NoFilter() = default;
 
   bool filter(
-    const autoware_auto_perception_msgs::msg::Shape & shape,
+    const autoware_perception_msgs::msg::Shape & shape,
     const geometry_msgs::msg::Pose & pose) override;
 };
 

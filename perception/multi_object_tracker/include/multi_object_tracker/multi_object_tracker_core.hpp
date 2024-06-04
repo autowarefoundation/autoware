@@ -27,8 +27,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/tracked_objects.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include <tf2/LinearMath/Transform.h>
@@ -55,9 +55,9 @@
 namespace multi_object_tracker
 {
 
-using DetectedObject = autoware_auto_perception_msgs::msg::DetectedObject;
-using DetectedObjects = autoware_auto_perception_msgs::msg::DetectedObjects;
-using TrackedObjects = autoware_auto_perception_msgs::msg::TrackedObjects;
+using DetectedObject = autoware_perception_msgs::msg::DetectedObject;
+using DetectedObjects = autoware_perception_msgs::msg::DetectedObjects;
+using TrackedObjects = autoware_perception_msgs::msg::TrackedObjects;
 
 class MultiObjectTracker : public rclcpp::Node
 {

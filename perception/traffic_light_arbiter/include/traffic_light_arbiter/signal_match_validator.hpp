@@ -18,7 +18,7 @@
 #include <lanelet2_extension/utility/query.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_perception_msgs/msg/traffic_signal_array.hpp>
+#include <autoware_perception_msgs/msg/traffic_light_group_array.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 
@@ -38,9 +38,9 @@
 class SignalMatchValidator
 {
 public:
-  using TrafficSignalArray = autoware_perception_msgs::msg::TrafficSignalArray;
-  using TrafficSignal = autoware_perception_msgs::msg::TrafficSignal;
-  using TrafficSignalElement = autoware_perception_msgs::msg::TrafficSignalElement;
+  using TrafficSignalArray = autoware_perception_msgs::msg::TrafficLightGroupArray;
+  using TrafficSignal = autoware_perception_msgs::msg::TrafficLightGroup;
+  using TrafficSignalElement = autoware_perception_msgs::msg::TrafficLightElement;
   using TrafficLightConstPtr = lanelet::TrafficLightConstPtr;
 
   /**

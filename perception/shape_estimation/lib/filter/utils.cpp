@@ -17,14 +17,14 @@
 namespace utils
 {
 bool filterVehicleBoundingBox(
-  const autoware_auto_perception_msgs::msg::Shape & shape, const float min_width,
-  const float max_width, const float max_length)
+  const autoware_perception_msgs::msg::Shape & shape, const float min_width, const float max_width,
+  const float max_length)
 {
   const float x = shape.dimensions.x;
   const float y = shape.dimensions.y;
   const float s = x * y;
 
-  if (shape.type != autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+  if (shape.type != autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
     return true;
   }
   if (x < min_width && y < min_width) {

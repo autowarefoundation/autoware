@@ -16,7 +16,7 @@
 
 #include <gtest/gtest.h>
 
-using autoware_auto_perception_msgs::msg::TrackedObject;
+using autoware_perception_msgs::msg::TrackedObject;
 using radar_object_tracker_utils::checkCloseLaneletCondition;
 
 // helper function to create a dummy straight lanelet

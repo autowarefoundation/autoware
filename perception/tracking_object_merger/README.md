@@ -79,12 +79,12 @@ tracker_state_parameter:
 
 #### input/parameters
 
-| topic name                      | message type                                    | description                                                                           |
-| ------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `~input/main_object`            | `autoware_auto_perception_msgs::TrackedObjects` | Dominant tracking objects. Output will be published with this dominant object stamps. |
-| `~input/sub_object`             | `autoware_auto_perception_msgs::TrackedObjects` | Sub tracking objects.                                                                 |
-| `output/object`                 | `autoware_auto_perception_msgs::TrackedObjects` | Merged tracking objects.                                                              |
-| `debug/interpolated_sub_object` | `autoware_auto_perception_msgs::TrackedObjects` | Interpolated sub tracking objects.                                                    |
+| topic name                      | message type                               | description                                                                           |
+| ------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------- |
+| `~input/main_object`            | `autoware_perception_msgs::TrackedObjects` | Dominant tracking objects. Output will be published with this dominant object stamps. |
+| `~input/sub_object`             | `autoware_perception_msgs::TrackedObjects` | Sub tracking objects.                                                                 |
+| `output/object`                 | `autoware_perception_msgs::TrackedObjects` | Merged tracking objects.                                                              |
+| `debug/interpolated_sub_object` | `autoware_perception_msgs::TrackedObjects` | Interpolated sub tracking objects.                                                    |
 
 Default parameters are set in [config/decorative_tracker_merger.param.yaml](./config/decorative_tracker_merger.param.yaml).
 

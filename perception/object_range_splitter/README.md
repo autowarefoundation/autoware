@@ -30,16 +30,16 @@ Example:
 
 ### Input
 
-| Name           | Type                                                  | Description      |
-| -------------- | ----------------------------------------------------- | ---------------- |
-| `input/object` | `autoware_auto_perception_msgs::msg::DetectedObjects` | detected objects |
+| Name           | Type                                             | Description      |
+| -------------- | ------------------------------------------------ | ---------------- |
+| `input/object` | `autoware_perception_msgs::msg::DetectedObjects` | detected objects |
 
 ### Output
 
-| Name                        | Type                                                  | Description                  |
-| --------------------------- | ----------------------------------------------------- | ---------------------------- |
-| `output/long_range_object`  | `autoware_auto_perception_msgs::msg::DetectedObjects` | long range detected objects  |
-| `output/short_range_object` | `autoware_auto_perception_msgs::msg::DetectedObjects` | short range detected objects |
+| Name                        | Type                                             | Description                  |
+| --------------------------- | ------------------------------------------------ | ---------------------------- |
+| `output/long_range_object`  | `autoware_perception_msgs::msg::DetectedObjects` | long range detected objects  |
+| `output/short_range_object` | `autoware_perception_msgs::msg::DetectedObjects` | short range detected objects |
 
 ## Parameters
 

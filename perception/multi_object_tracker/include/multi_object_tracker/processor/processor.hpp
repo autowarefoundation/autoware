@@ -19,8 +19,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
+#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include <autoware_perception_msgs/msg/tracked_objects.hpp>
 
 #include <list>
 #include <map>
@@ -39,11 +39,11 @@ public:
   // tracker processes
   void predict(const rclcpp::Time & time);
   void update(
-    const autoware_auto_perception_msgs::msg::DetectedObjects & transformed_objects,
+    const autoware_perception_msgs::msg::DetectedObjects & transformed_objects,
     const geometry_msgs::msg::Transform & self_transform,
     const std::unordered_map<int, int> & direct_assignment, const uint & channel_index);
   void spawn(
-    const autoware_auto_perception_msgs::msg::DetectedObjects & detected_objects,
+    const autoware_perception_msgs::msg::DetectedObjects & detected_objects,
     const geometry_msgs::msg::Transform & self_transform,
     const std::unordered_map<int, int> & reverse_assignment, const uint & channel_index);
   void prune(const rclcpp::Time & time);
@@ -52,10 +52,10 @@ public:
   bool isConfidentTracker(const std::shared_ptr<Tracker> & tracker) const;
   void getTrackedObjects(
     const rclcpp::Time & time,
-    autoware_auto_perception_msgs::msg::TrackedObjects & tracked_objects) const;
+    autoware_perception_msgs::msg::TrackedObjects & tracked_objects) const;
   void getTentativeObjects(
     const rclcpp::Time & time,
-    autoware_auto_perception_msgs::msg::TrackedObjects & tentative_objects) const;
+    autoware_perception_msgs::msg::TrackedObjects & tentative_objects) const;
 
   void getExistenceProbabilities(std::vector<std::vector<float>> & existence_vectors) const;
 
@@ -74,7 +74,7 @@ private:
   void removeOldTracker(const rclcpp::Time & time);
   void removeOverlappedTracker(const rclcpp::Time & time);
   std::shared_ptr<Tracker> createNewTracker(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+    const autoware_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
     const geometry_msgs::msg::Transform & self_transform, const uint & channel_index) const;
 };
 

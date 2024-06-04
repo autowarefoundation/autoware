@@ -18,7 +18,7 @@
 #include <lanelet2_extension/regulatory_elements/autoware_traffic_light.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
@@ -72,7 +72,7 @@ private:
   };
 
 private:
-  rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr map_sub_;
+  rclcpp::Subscription<autoware_map_msgs::msg::LaneletMapBin>::SharedPtr map_sub_;
   rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_sub_;
   rclcpp::Subscription<autoware_planning_msgs::msg::LaneletRoute>::SharedPtr route_sub_;
   /**
@@ -120,7 +120,7 @@ private:
    *
    * @param input_msg
    */
-  void mapCallback(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr input_msg);
+  void mapCallback(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr input_msg);
   /**
    * @brief callback function for the camera info message. The main process function of the node
    *

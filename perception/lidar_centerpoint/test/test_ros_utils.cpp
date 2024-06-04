@@ -42,12 +42,12 @@ TEST(TestSuite, box3DToDetectedObject)
     box3d.vel_x_variance = 0.5;
     box3d.vel_y_variance = 0.6;
 
-    autoware_auto_perception_msgs::msg::DetectedObject obj;
+    autoware_perception_msgs::msg::DetectedObject obj;
     centerpoint::box3DToDetectedObject(box3d, class_names, true, true, obj);
 
     EXPECT_FLOAT_EQ(obj.existence_probability, 0.8f);
     EXPECT_EQ(
-      obj.classification[0].label, autoware_auto_perception_msgs::msg::ObjectClassification::CAR);
+      obj.classification[0].label, autoware_perception_msgs::msg::ObjectClassification::CAR);
     EXPECT_FLOAT_EQ(obj.kinematics.pose_with_covariance.pose.position.x, 1.0);
     EXPECT_FLOAT_EQ(obj.kinematics.pose_with_covariance.pose.position.y, 2.0);
     EXPECT_FLOAT_EQ(obj.kinematics.pose_with_covariance.pose.position.z, 3.0);
@@ -65,13 +65,12 @@ TEST(TestSuite, box3DToDetectedObject)
     box3d.score = 0.5f;
     box3d.label = 10;  // Invalid
 
-    autoware_auto_perception_msgs::msg::DetectedObject obj;
+    autoware_perception_msgs::msg::DetectedObject obj;
     centerpoint::box3DToDetectedObject(box3d, class_names, false, false, obj);
 
     EXPECT_FLOAT_EQ(obj.existence_probability, 0.5f);
     EXPECT_EQ(
-      obj.classification[0].label,
-      autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN);
+      obj.classification[0].label, autoware_perception_msgs::msg::ObjectClassification::UNKNOWN);
     EXPECT_FALSE(obj.kinematics.has_position_covariance);
     EXPECT_FALSE(obj.kinematics.has_twist);
     EXPECT_FALSE(obj.kinematics.has_twist_covariance);
@@ -81,29 +80,27 @@ TEST(TestSuite, box3DToDetectedObject)
 TEST(TestSuite, getSemanticType)
 {
   EXPECT_EQ(
-    centerpoint::getSemanticType("CAR"),
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR);
+    centerpoint::getSemanticType("CAR"), autoware_perception_msgs::msg::ObjectClassification::CAR);
   EXPECT_EQ(
     centerpoint::getSemanticType("TRUCK"),
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK);
+    autoware_perception_msgs::msg::ObjectClassification::TRUCK);
   EXPECT_EQ(
-    centerpoint::getSemanticType("BUS"),
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS);
+    centerpoint::getSemanticType("BUS"), autoware_perception_msgs::msg::ObjectClassification::BUS);
   EXPECT_EQ(
     centerpoint::getSemanticType("TRAILER"),
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER);
+    autoware_perception_msgs::msg::ObjectClassification::TRAILER);
   EXPECT_EQ(
     centerpoint::getSemanticType("BICYCLE"),
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE);
+    autoware_perception_msgs::msg::ObjectClassification::BICYCLE);
   EXPECT_EQ(
     centerpoint::getSemanticType("MOTORBIKE"),
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE);
+    autoware_perception_msgs::msg::ObjectClassification::MOTORCYCLE);
   EXPECT_EQ(
     centerpoint::getSemanticType("PEDESTRIAN"),
-    autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN);
+    autoware_perception_msgs::msg::ObjectClassification::PEDESTRIAN);
   EXPECT_EQ(
     centerpoint::getSemanticType("UNKNOWN"),
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN);
+    autoware_perception_msgs::msg::ObjectClassification::UNKNOWN);
 }
 
 TEST(TestSuite, convertPoseCovarianceMatrix)

@@ -18,7 +18,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include <autoware_auto_perception_msgs/msg/shape.hpp>
+#include <autoware_perception_msgs/msg/shape.hpp>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -28,7 +28,7 @@
 
 bool CylinderShapeModel::estimate(
   const pcl::PointCloud<pcl::PointXYZ> & cluster,
-  autoware_auto_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output)
+  autoware_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output)
 {
   // calc min and max z for cylinder length
   float min_z = cluster.empty() ? 0.0 : cluster.at(0).z;
@@ -50,7 +50,7 @@ bool CylinderShapeModel::estimate(
   constexpr float ep = 0.001;
   radius = std::max(radius, static_cast<float>(ep));
 
-  shape_output.type = autoware_auto_perception_msgs::msg::Shape::CYLINDER;
+  shape_output.type = autoware_perception_msgs::msg::Shape::CYLINDER;
   shape_output.dimensions.x = static_cast<float>(radius) * 2.0;
   shape_output.dimensions.y = static_cast<float>(radius) * 2.0;
   shape_output.dimensions.z = std::max((max_z - min_z), ep);
