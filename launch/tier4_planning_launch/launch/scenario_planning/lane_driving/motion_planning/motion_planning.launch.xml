@@ -50,7 +50,7 @@
           <!-- params -->
           <param name="input_topic" value="$(var interface_input_topic)"/>
           <param name="output_topic" value="path_smoother/path"/>
-          <param name="type" value="autoware_auto_planning_msgs/msg/Trajectory"/>
+          <param name="type" value="autoware_planning_msgs/msg/Trajectory"/>
           <!-- composable node config -->
           <extra_arg name="use_intra_process_comms" value="false"/>
         </composable_node>
@@ -221,7 +221,7 @@
           <!-- params -->
           <param name="input_topic" value="obstacle_velocity_limiter/trajectory"/>
           <param name="output_topic" value="$(var interface_output_topic)"/>
-          <param name="type" value="autoware_auto_planning_msgs/msg/Trajectory"/>
+          <param name="type" value="autoware_planning_msgs/msg/Trajectory"/>
           <!-- composable node config -->
           <extra_arg name="use_intra_process_comms" value="false"/>
         </composable_node>
