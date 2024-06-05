@@ -28,7 +28,7 @@ using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::toMsg;
 using namespace std::literals::string_literals;
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace
 {
@@ -147,4 +147,4 @@ visualization_msgs::msg::MarkerArray VirtualTrafficLightModule::createDebugMarke
 
   return debug_marker_array;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

@@ -65,6 +65,7 @@
 
   <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_behavior_velocity_virtual_traffic_light_module</test_depend>
   <test_depend>autoware_lint_common</test_depend>
   <test_depend>behavior_velocity_blind_spot_module</test_depend>
   <test_depend>behavior_velocity_crosswalk_module</test_depend>
@@ -78,7 +79,6 @@
   <test_depend>behavior_velocity_speed_bump_module</test_depend>
   <test_depend>behavior_velocity_stop_line_module</test_depend>
   <test_depend>behavior_velocity_traffic_light_module</test_depend>
-  <test_depend>behavior_velocity_virtual_traffic_light_module</test_depend>
   <test_depend>behavior_velocity_walkway_module</test_depend>
   <!--<test_depend>autoware_behavior_velocity_template_module</test_depend>-->
 

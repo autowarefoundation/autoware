@@ -34,7 +34,7 @@ nav:
         - 'Speed Bump': planning/behavior_velocity_speed_bump_module
         - 'Stop Line': planning/behavior_velocity_stop_line_module
         - 'Traffic Light': planning/behavior_velocity_traffic_light_module
-        - 'Virtual Traffic Light': planning/behavior_velocity_virtual_traffic_light_module
+        - 'Virtual Traffic Light': planning/autoware_behavior_velocity_virtual_traffic_light_module
         - 'Walkway': planning/behavior_velocity_walkway_module
   - 'Parking':
     - 'Freespace Planner':

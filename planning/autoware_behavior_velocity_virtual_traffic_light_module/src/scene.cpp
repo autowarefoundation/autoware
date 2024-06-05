@@ -23,8 +23,13 @@
 #include <string>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
+using ::behavior_velocity_planner::PlanningBehavior;
+using ::behavior_velocity_planner::SceneModuleInterface;
+using ::behavior_velocity_planner::VelocityFactor;
+namespace arc_lane_utils = ::behavior_velocity_planner::arc_lane_utils;
+namespace planning_utils = ::behavior_velocity_planner::planning_utils;
 namespace
 {
 using tier4_autoware_utils::calcDistance2d;
@@ -618,4 +623,4 @@ void VirtualTrafficLightModule::insertStopVelocityAtEndLine(
   module_data_.stop_head_pose_at_end_line =
     calcHeadPose(stop_pose, planner_data_->vehicle_info_.max_longitudinal_offset_m);
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

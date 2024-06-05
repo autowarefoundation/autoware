@@ -54,8 +54,15 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
   const auto velocity_smoother_dir =
     ament_index_cpp::get_package_share_directory("autoware_velocity_smoother");
 
-  const auto get_behavior_velocity_module_config = [](const std::string & module) {
+  // TODO(esteve): delete when all the modules are migrated to autoware_behavior_velocity_*
+  const auto get_behavior_velocity_module_config_no_prefix = [](const std::string & module) {
     const auto package_name = "behavior_velocity_" + module + "_module";
+    const auto package_path = ament_index_cpp::get_package_share_directory(package_name);
+    return package_path + "/config/" + module + ".param.yaml";
+  };
+
+  const auto get_behavior_velocity_module_config = [](const std::string & module) {
+    const auto package_name = "autoware_behavior_velocity_" + module + "_module";
     const auto package_path = ament_index_cpp::get_package_share_directory(package_name);
     return package_path + "/config/" + module + ".param.yaml";
   };
@@ -68,7 +75,7 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
   module_names.emplace_back("behavior_velocity_planner::MergeFromPrivateModulePlugin");
   module_names.emplace_back("behavior_velocity_planner::BlindSpotModulePlugin");
   module_names.emplace_back("behavior_velocity_planner::DetectionAreaModulePlugin");
-  module_names.emplace_back("behavior_velocity_planner::VirtualTrafficLightModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::VirtualTrafficLightModulePlugin");
   module_names.emplace_back("behavior_velocity_planner::NoStoppingAreaModulePlugin");
   module_names.emplace_back("behavior_velocity_planner::StopLineModulePlugin");
   module_names.emplace_back("behavior_velocity_planner::OcclusionSpotModulePlugin");
@@ -89,20 +96,20 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
                    velocity_smoother_dir + "/config/default_velocity_smoother.param.yaml",
                    velocity_smoother_dir + "/config/Analytical.param.yaml",
                    behavior_velocity_planner_dir + "/config/behavior_velocity_planner.param.yaml",
-                   get_behavior_velocity_module_config("blind_spot"),
-                   get_behavior_velocity_module_config("crosswalk"),
-                   get_behavior_velocity_module_config("walkway"),
-                   get_behavior_velocity_module_config("detection_area"),
-                   get_behavior_velocity_module_config("intersection"),
-                   get_behavior_velocity_module_config("no_stopping_area"),
-                   get_behavior_velocity_module_config("occlusion_spot"),
-                   get_behavior_velocity_module_config("run_out"),
-                   get_behavior_velocity_module_config("speed_bump"),
-                   get_behavior_velocity_module_config("stop_line"),
-                   get_behavior_velocity_module_config("traffic_light"),
+                   get_behavior_velocity_module_config_no_prefix("blind_spot"),
+                   get_behavior_velocity_module_config_no_prefix("crosswalk"),
+                   get_behavior_velocity_module_config_no_prefix("walkway"),
+                   get_behavior_velocity_module_config_no_prefix("detection_area"),
+                   get_behavior_velocity_module_config_no_prefix("intersection"),
+                   get_behavior_velocity_module_config_no_prefix("no_stopping_area"),
+                   get_behavior_velocity_module_config_no_prefix("occlusion_spot"),
+                   get_behavior_velocity_module_config_no_prefix("run_out"),
+                   get_behavior_velocity_module_config_no_prefix("speed_bump"),
+                   get_behavior_velocity_module_config_no_prefix("stop_line"),
+                   get_behavior_velocity_module_config_no_prefix("traffic_light"),
                    get_behavior_velocity_module_config("virtual_traffic_light"),
-                   get_behavior_velocity_module_config("out_of_lane"),
-                   get_behavior_velocity_module_config("no_drivable_lane")});
+                   get_behavior_velocity_module_config_no_prefix("out_of_lane"),
+                   get_behavior_velocity_module_config_no_prefix("no_drivable_lane")});
 
   // TODO(Takagi, Isamu): set launch_modules
   // TODO(Kyoichi Sugahara) set to true launch_virtual_traffic_light

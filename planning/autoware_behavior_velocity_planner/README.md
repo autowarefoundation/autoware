@@ -14,7 +14,7 @@ It loads modules as plugins. Please refer to the links listed below for detail o
 - [Intersection](../behavior_velocity_intersection_module/README.md)
 - [MergeFromPrivate](../behavior_velocity_intersection_module/README.md#merge-from-private)
 - [Stop Line](../behavior_velocity_stop_line_module/README.md)
-- [Virtual Traffic Light](../behavior_velocity_virtual_traffic_light_module/README.md)
+- [Virtual Traffic Light](../autoware_behavior_velocity_virtual_traffic_light_module/README.md)
 - [Traffic Light](../behavior_velocity_traffic_light_module/README.md)
 - [Occlusion Spot](../behavior_velocity_occlusion_spot_module/README.md)
 - [No Stopping Area](../behavior_velocity_no_stopping_area_module/README.md)
