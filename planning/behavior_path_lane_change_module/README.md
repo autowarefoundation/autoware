@@ -296,7 +296,7 @@ First, we divide the target objects into obstacles in the target lane, obstacles
 
 ![object lanes](./images/lane_objects.drawio.svg)
 
-Furthermore, to change lanes behind a vehicle waiting at a traffic light, we skip the safety check for the stopping vehicles near the traffic light. The explanation for parked car detection is written in [documentation for avoidance module](../behavior_path_avoidance_module/README.md).
+Furthermore, to change lanes behind a vehicle waiting at a traffic light, we skip the safety check for the stopping vehicles near the traffic light. The explanation for parked car detection is written in [documentation for avoidance module](../autoware_behavior_path_static_obstacle_avoidance_module/README.md).
 
 The detection area for the target lane can be expanded beyond its original boundaries to enable detection of objects that are outside the target lane's limits.
 

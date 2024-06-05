@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Parameters for behavior_path_avoidance_module",
+  "title": "Parameters for behavior_path_static_obstacle_avoidance_module",
   "type": "object",
   "definitions": {
-    "behavior_path_avoidance_module": {
+    "behavior_path_static_obstacle_avoidance_module": {
       "type": "object",
       "properties": {
         "resample_interval_for_planning": {
@@ -1473,7 +1473,7 @@
           "type": "object",
           "properties": {
             "avoidance": {
-              "$ref": "#/definitions/behavior_path_avoidance_module"
+              "$ref": "#/definitions/behavior_path_static_obstacle_avoidance_module"
             }
           },
           "required": ["avoidance"],

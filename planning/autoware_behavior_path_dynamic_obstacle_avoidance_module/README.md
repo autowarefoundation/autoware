@@ -9,8 +9,8 @@ Each module performs the following roles.
 Dynamic Avoidance module cuts off the drivable area according to the position and velocity of the target to be avoided.
 Obstacle Avoidance module modifies the path to be followed so that it fits within the received drivable area.
 
-Avoidance functions are also provided by the [Avoidance module](https://autowarefoundation.github.io/autoware.universe/main/planning/behavior_path_avoidance_module/), but these modules have different roles.
-The Avoidance module performs avoidance through the outside of own lanes but cannot avoid the moving objects.
+Static obstacle's avoidance functions are also provided by the [Static Avoidance module](https://autowarefoundation.github.io/autoware.universe/main/planning/autoware_behavior_path_static_obstacle_avoidance_module/), but these modules have different roles.
+The Static Obstacle Avoidance module performs avoidance through the outside of own lanes but cannot avoid the moving objects.
 On the other hand, this module can avoid moving objects.
 For this reason, the word "dynamic" is used in the module's name.
 The table below lists the avoidance modules that can handle each situation.
