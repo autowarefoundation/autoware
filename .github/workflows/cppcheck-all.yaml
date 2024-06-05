@@ -1,0 +1,60 @@
+name: cppcheck-all
+
+on:
+  pull_request:
+  schedule:
+    - cron: 0 0 * * *
+  workflow_dispatch:
+
+jobs:
+  cppcheck-all:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake git libpcre3-dev
+
+      # cppcheck from apt does not yet support --check-level args, and thus install from source
+      - name: Install Cppcheck from source
+        run: |
+          mkdir /tmp/cppcheck
+          git clone https://github.com/danmar/cppcheck.git /tmp/cppcheck
+          cd /tmp/cppcheck
+          git checkout 2.14.1
+          mkdir build
+          cd build
+          cmake ..
+          make -j $(nproc)
+          sudo make install
+
+      - name: Run Cppcheck on all files
+        continue-on-error: true
+        id: cppcheck
+        run: |
+          cppcheck --enable=all --inconclusive --check-level=exhaustive --error-exitcode=1 --xml . 2> cppcheck-report.xml
+        shell: bash
+
+      - name: Count errors by error ID and severity
+        run: |
+          #!/bin/bash
+          temp_file=$(mktemp)
+          grep -oP '(?<=id=")[^"]+" severity="[^"]+' cppcheck-report.xml | sed 's/" severity="/,/g' > "$temp_file"
+          echo "Error counts by error ID and severity:"
+          sort "$temp_file" | uniq -c
+          rm "$temp_file"
+        shell: bash
+
+      - name: Upload Cppcheck report
+        uses: actions/upload-artifact@v2
+        with:
+          name: cppcheck-report
+          path: cppcheck-report.xml
+
+      - name: Fail the job if Cppcheck failed
+        if: steps.cppcheck.outcome == 'failure'
+        run: exit 1

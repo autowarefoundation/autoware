@@ -1,0 +1,65 @@
+name: cppcheck-differential
+
+on:
+  pull_request:
+
+jobs:
+  cppcheck-differential:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake git libpcre3-dev
+
+      # cppcheck from apt does not yet support --check-level args, and thus install from source
+      - name: Install Cppcheck from source
+        run: |
+          mkdir /tmp/cppcheck
+          git clone https://github.com/danmar/cppcheck.git /tmp/cppcheck
+          cd /tmp/cppcheck
+          git checkout 2.14.1
+          mkdir build
+          cd build
+          cmake ..
+          make -j $(nproc)
+          sudo make install
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+          git diff --name-only FETCH_HEAD ${{ github.sha }} > changed_files.txt
+          cat changed_files.txt
+
+      - name: Run Cppcheck on changed files
+        continue-on-error: true
+        id: cppcheck
+        run: |
+          files=$(cat changed_files.txt | grep -E '\.(cpp|hpp)$' || true)
+          if [ -n "$files" ]; then
+            echo "Running Cppcheck on changed files: $files"
+            cppcheck --enable=all --inconclusive --check-level=exhaustive --error-exitcode=1 --suppressions-list=.cppcheck_suppressions $files 2> cppcheck-report.txt
+          else
+            echo "No C++ files changed."
+            touch cppcheck-report.txt
+          fi
+        shell: bash
+
+      - name: Show cppcheck-report result
+        run: |
+          cat cppcheck-report.txt
+
+      - name: Upload Cppcheck report
+        uses: actions/upload-artifact@v2
+        with:
+          name: cppcheck-report
+          path: cppcheck-report.txt
+
+      - name: Fail the job if Cppcheck failed
+        if: steps.cppcheck.outcome == 'failure'
+        run: exit 1
