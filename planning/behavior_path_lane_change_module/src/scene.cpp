@@ -204,7 +204,7 @@ TurnSignalInfo NormalLaneChange::get_current_turn_signal_info()
     }
 
     // check the priority of turn signals
-    return getTurnSignalDecider().use_prior_turn_signal(
+    return getTurnSignalDecider().overwrite_turn_signal(
       path, current_pose, current_nearest_seg_idx, original_turn_signal_info,
       current_turn_signal_info, nearest_dist_threshold, nearest_yaw_threshold);
   }
@@ -226,7 +226,7 @@ BehaviorModuleOutput NormalLaneChange::getTerminalLaneChangePath() const
     output.path = abort_path_->path;
     extendOutputDrivableArea(output);
     const auto current_seg_idx = planner_data_->findEgoSegmentIndex(output.path.points);
-    output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
+    output.turn_signal_info = planner_data_->turn_signal_decider.overwrite_turn_signal(
       output.path, getEgoPose(), current_seg_idx, prev_module_output_.turn_signal_info,
       output.turn_signal_info, planner_data_->parameters.ego_nearest_dist_threshold,
       planner_data_->parameters.ego_nearest_yaw_threshold);
@@ -252,7 +252,7 @@ BehaviorModuleOutput NormalLaneChange::getTerminalLaneChangePath() const
   extendOutputDrivableArea(output);
 
   const auto current_seg_idx = planner_data_->findEgoSegmentIndex(output.path.points);
-  output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
+  output.turn_signal_info = planner_data_->turn_signal_decider.overwrite_turn_signal(
     output.path, getEgoPose(), current_seg_idx, prev_module_output_.turn_signal_info,
     output.turn_signal_info, planner_data_->parameters.ego_nearest_dist_threshold,
     planner_data_->parameters.ego_nearest_yaw_threshold);
@@ -297,7 +297,7 @@ BehaviorModuleOutput NormalLaneChange::generateOutput()
   extendOutputDrivableArea(output);
 
   const auto current_seg_idx = planner_data_->findEgoSegmentIndex(output.path.points);
-  output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
+  output.turn_signal_info = planner_data_->turn_signal_decider.overwrite_turn_signal(
     output.path, getEgoPose(), current_seg_idx, prev_module_output_.turn_signal_info,
     output.turn_signal_info, planner_data_->parameters.ego_nearest_dist_threshold,
     planner_data_->parameters.ego_nearest_yaw_threshold);

@@ -64,6 +64,17 @@ struct TurnSignalInfo
     hazard_signal.command = HazardLightsCommand::NO_COMMAND;
   }
 
+  TurnSignalInfo(const Pose & start, const Pose & end)
+  {
+    turn_signal.command = TurnIndicatorsCommand::NO_COMMAND;
+    hazard_signal.command = HazardLightsCommand::NO_COMMAND;
+
+    desired_start_point = start;
+    desired_end_point = end;
+    required_start_point = start;
+    required_end_point = end;
+  }
+
   // desired turn signal
   TurnIndicatorsCommand turn_signal;
   HazardLightsCommand hazard_signal;
@@ -92,6 +103,11 @@ public:
     const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
     const TurnSignalInfo & intersection_signal_info, const TurnSignalInfo & behavior_signal_info,
     const double nearest_dist_threshold, const double nearest_yaw_threshold);
+
+  TurnSignalInfo overwrite_turn_signal(
+    const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
+    const TurnSignalInfo & original_signal, const TurnSignalInfo & new_signal,
+    const double nearest_dist_threshold, const double nearest_yaw_threshold) const;
 
   TurnSignalInfo use_prior_turn_signal(
     const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
