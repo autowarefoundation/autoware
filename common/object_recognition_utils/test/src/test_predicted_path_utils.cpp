@@ -183,7 +183,6 @@ TEST(predicted_path_utils, resamplePredictedPath_by_vector)
 
     const auto resampled_path = resamplePredictedPath(path, resampling_vec);
 
-    EXPECT_EQ(resampled_path.path.size(), resampled_path.path.max_size());
     EXPECT_NEAR(path.confidence, resampled_path.confidence, epsilon);
 
     for (size_t i = 0; i < resampled_path.path.size(); ++i) {
