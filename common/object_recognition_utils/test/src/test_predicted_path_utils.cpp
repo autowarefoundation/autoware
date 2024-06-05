@@ -174,7 +174,7 @@ TEST(predicted_path_utils, resamplePredictedPath_by_vector)
     }
   }
 
-  // Resample which exceeds the maximum size
+  // Resample the path with more than 100 points
   {
     std::vector<double> resampling_vec(101);
     for (size_t i = 0; i < 101; ++i) {
@@ -186,7 +186,7 @@ TEST(predicted_path_utils, resamplePredictedPath_by_vector)
     EXPECT_EQ(resampled_path.path.size(), resampled_path.path.max_size());
     EXPECT_NEAR(path.confidence, resampled_path.confidence, epsilon);
 
-    for (size_t i = 0; i < resampled_path.path.max_size(); ++i) {
+    for (size_t i = 0; i < resampled_path.path.size(); ++i) {
       EXPECT_NEAR(resampled_path.path.at(i).position.x, resampling_vec.at(i), epsilon);
       EXPECT_NEAR(resampled_path.path.at(i).position.y, 0.0, epsilon);
       EXPECT_NEAR(resampled_path.path.at(i).position.z, 0.0, epsilon);
