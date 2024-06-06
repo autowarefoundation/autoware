@@ -90,11 +90,11 @@ RUN --mount=type=ssh \
 COPY --from=src-imported /autoware/src /autoware/src
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
-  && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
+  && colcon build --cmake-args \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+    " -Wno-dev" \
+    " --no-warn-unused-cli" \
   && find /autoware/install -type d -exec chmod 777 {} \; \
   && chmod -R 777 /var/tmp/ccache \
   && rm -rf /autoware/build /autoware/src
