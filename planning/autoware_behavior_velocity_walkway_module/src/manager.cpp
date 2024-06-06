@@ -23,11 +23,15 @@
 #include <string>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
+using ::behavior_velocity_planner::SceneModuleManagerInterface;
 using lanelet::autoware::Crosswalk;
 using tier4_autoware_utils::getOrDeclareParameter;
+namespace planning_utils = ::behavior_velocity_planner::planning_utils;
+using ::behavior_velocity_planner::getCrosswalkIdSetOnPath;
+using ::behavior_velocity_planner::getCrosswalksOnPath;
 
 WalkwayModuleManager::WalkwayModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
@@ -100,8 +104,9 @@ WalkwayModuleManager::getModuleExpiredFunction(const PathWithLaneId & path)
     return walkway_id_set.count(scene_module->getModuleId()) == 0;
   };
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_velocity_planner::WalkwayModulePlugin, behavior_velocity_planner::PluginInterface)
+  autoware::behavior_velocity_planner::WalkwayModulePlugin,
+  ::behavior_velocity_planner::PluginInterface)

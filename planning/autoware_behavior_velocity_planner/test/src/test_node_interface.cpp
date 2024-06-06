@@ -69,7 +69,7 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
 
   std::vector<std::string> module_names;
   module_names.emplace_back("behavior_velocity_planner::CrosswalkModulePlugin");
-  module_names.emplace_back("behavior_velocity_planner::WalkwayModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::WalkwayModulePlugin");
   module_names.emplace_back("behavior_velocity_planner::TrafficLightModulePlugin");
   module_names.emplace_back("behavior_velocity_planner::IntersectionModulePlugin");
   module_names.emplace_back("behavior_velocity_planner::MergeFromPrivateModulePlugin");
@@ -98,7 +98,7 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
                    behavior_velocity_planner_dir + "/config/behavior_velocity_planner.param.yaml",
                    get_behavior_velocity_module_config_no_prefix("blind_spot"),
                    get_behavior_velocity_module_config_no_prefix("crosswalk"),
-                   get_behavior_velocity_module_config_no_prefix("walkway"),
+                   get_behavior_velocity_module_config("walkway"),
                    get_behavior_velocity_module_config_no_prefix("detection_area"),
                    get_behavior_velocity_module_config_no_prefix("intersection"),
                    get_behavior_velocity_module_config_no_prefix("no_stopping_area"),

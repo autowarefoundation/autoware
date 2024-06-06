@@ -22,7 +22,7 @@
 
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 using motion_utils::createSlowDownVirtualWallMarker;
@@ -34,6 +34,7 @@ using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
 using visualization_msgs::msg::Marker;
+namespace planning_utils = ::behavior_velocity_planner::planning_utils;
 
 namespace
 {
@@ -98,4 +99,4 @@ visualization_msgs::msg::MarkerArray WalkwayModule::createDebugMarkerArray()
 
   return debug_marker_array;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

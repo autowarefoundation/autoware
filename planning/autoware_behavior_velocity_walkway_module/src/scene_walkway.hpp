@@ -31,8 +31,12 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
+using ::behavior_velocity_planner::DebugData;
+using ::behavior_velocity_planner::PathWithLaneId;
+using ::behavior_velocity_planner::SceneModuleInterface;
+using ::behavior_velocity_planner::StopReason;
 
 class WalkwayModule : public SceneModuleInterface
 {
@@ -77,6 +81,6 @@ private:
   // flag to use regulatory element
   const bool use_regulatory_element_;
 };
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // SCENE_WALKWAY_HPP_

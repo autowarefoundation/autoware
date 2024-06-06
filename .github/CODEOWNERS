@@ -148,6 +148,7 @@ planning/autoware_behavior_path_external_request_lane_change_module/** fumiya.wa
 planning/autoware_behavior_velocity_planner/** kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp makoto.kurihara@tier4.jp mamoru.sobue@tier4.jp maxime.clement@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takayuki.murooka@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp
 planning/autoware_behavior_velocity_template_module/** daniel.sanchez@tier4.jp
 planning/autoware_behavior_velocity_virtual_traffic_light_module/** kosuke.takeuchi@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
+planning/autoware_behavior_velocity_walkway_module/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 planning/autoware_planning_test_manager/** kyoichi.sugahara@tier4.jp takamasa.horibe@tier4.jp
 planning/autoware_remaining_distance_time_calculator/** ahmed.ebrahim@leodrive.ai
 planning/autoware_static_centerline_generator/** kosuke.takeuchi@tier4.jp takayuki.murooka@tier4.jp
@@ -175,7 +176,6 @@ planning/autoware_behavior_velocity_run_out_module/** kosuke.takeuchi@tier4.jp m
 planning/behavior_velocity_speed_bump_module/** mdogru@leodrive.ai shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_stop_line_module/** fumiya.watanabe@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp zhe.shen@tier4.jp
 planning/behavior_velocity_traffic_light_module/** mamoru.sobue@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
-planning/behavior_velocity_walkway_module/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 planning/costmap_generator/** kosuke.takeuchi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
 planning/autoware_external_velocity_limit_selector/** satoshi.ota@tier4.jp shinnosuke.hirakawa@tier4.jp shumpei.wakabayashi@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp
 planning/freespace_planner/** kosuke.takeuchi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp

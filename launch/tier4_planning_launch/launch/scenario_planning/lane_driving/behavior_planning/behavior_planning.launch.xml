@@ -106,7 +106,7 @@
   />
   <let
     name="behavior_velocity_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::WalkwayModulePlugin, '&quot;)"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'autoware::behavior_velocity_planner::WalkwayModulePlugin, '&quot;)"
     if="$(var launch_walkway_module)"
   />
   <let

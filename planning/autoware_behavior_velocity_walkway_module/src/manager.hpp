@@ -31,9 +31,11 @@
 #include <set>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
-
+using ::behavior_velocity_planner::PluginWrapper;
+using ::behavior_velocity_planner::SceneModuleInterface;
+using ::behavior_velocity_planner::SceneModuleManagerInterface;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
 class WalkwayModuleManager : public SceneModuleManagerInterface
@@ -56,6 +58,6 @@ class WalkwayModulePlugin : public PluginWrapper<WalkwayModuleManager>
 {
 };
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // MANAGER_HPP_
