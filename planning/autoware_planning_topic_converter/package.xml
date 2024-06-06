@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>planning_topic_converter</name>
+  <name>autoware_planning_topic_converter</name>
   <version>0.1.0</version>
-  <description>The planning_topic_converter package</description>
+  <description>The autoware_planning_topic_converter package</description>
 
   <maintainer email="satoshi.ota@tier4.jp">Satoshi OTA</maintainer>
   <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>

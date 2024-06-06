@@ -86,5 +86,5 @@ nav:
       - 'Stop Reason Visualizer': https://github.com/autowarefoundation/autoware_tools/blob/main/planning/planning_debug_tools/doc-stop-reason-visualizer.md
     - 'Planning Test Utils': planning/planning_test_utils
     - 'Planning Test Manager': planning/autoware_planning_test_manager
-    - 'Planning Topic Converter': planning/planning_topic_converter
+    - 'Planning Topic Converter': planning/autoware_planning_topic_converter
     - 'Planning Validator': planning/planning_validator

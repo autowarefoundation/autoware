@@ -12,7 +12,7 @@ The tools in this package are provided as composable ROS 2 component nodes, so t
 
 ```xml
 <load_composable_node target="container_name">
-  <composable_node pkg="planning_topic_converter" plugin="planning_topic_converter::PathToTrajectory" name="path_to_trajectory_converter" namespace="">
+  <composable_node pkg="planning_topic_converter" plugin="autoware::planning_topic_converter::PathToTrajectory" name="path_to_trajectory_converter" namespace="">
   <!-- params -->
   <param name="input_topic" value="foo"/>
   <param name="output_topic" value="bar"/>

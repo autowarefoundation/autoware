@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANNING_TOPIC_CONVERTER__PATH_TO_TRAJECTORY_HPP_
-#define PLANNING_TOPIC_CONVERTER__PATH_TO_TRAJECTORY_HPP_
+#ifndef AUTOWARE_PLANNING_TOPIC_CONVERTER__PATH_TO_TRAJECTORY_HPP_
+#define AUTOWARE_PLANNING_TOPIC_CONVERTER__PATH_TO_TRAJECTORY_HPP_
 
-#include "planning_topic_converter/converter_base.hpp"
+#include "autoware_planning_topic_converter/converter_base.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include <autoware_planning_msgs/msg/path.hpp>
@@ -23,7 +23,7 @@
 
 #include <string>
 
-namespace planning_topic_converter
+namespace autoware::planning_topic_converter
 {
 
 using autoware_planning_msgs::msg::Path;
@@ -40,6 +40,6 @@ private:
   void process(const Path::ConstSharedPtr msg) override;
 };
 
-}  // namespace planning_topic_converter
+}  // namespace autoware::planning_topic_converter
 
-#endif  // PLANNING_TOPIC_CONVERTER__PATH_TO_TRAJECTORY_HPP_
+#endif  // AUTOWARE_PLANNING_TOPIC_CONVERTER__PATH_TO_TRAJECTORY_HPP_

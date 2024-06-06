@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(planning_topic_converter)
+project(autoware_planning_topic_converter)
 
 ### Compile options
 if(NOT CMAKE_CXX_STANDARD)
@@ -17,7 +17,7 @@ ament_auto_add_library(planning_topic_converter SHARED
 )
 
 rclcpp_components_register_node(planning_topic_converter
-  PLUGIN "planning_topic_converter::PathToTrajectory"
+  PLUGIN "autoware::planning_topic_converter::PathToTrajectory"
   EXECUTABLE path_to_trajectory_converter
 )
 

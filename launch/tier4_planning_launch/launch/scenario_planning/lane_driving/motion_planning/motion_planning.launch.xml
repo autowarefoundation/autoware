@@ -98,7 +98,7 @@
 
     <group if="$(eval &quot;'$(var motion_path_planner_type)' == 'none'&quot;)">
       <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
-        <composable_node pkg="planning_topic_converter" plugin="planning_topic_converter::PathToTrajectory" name="path_to_trajectory_converter" namespace="">
+        <composable_node pkg="autoware_planning_topic_converter" plugin="autoware::planning_topic_converter::PathToTrajectory" name="path_to_trajectory_converter" namespace="">
           <!-- params -->
           <param name="input_topic" value="path_smoother/path"/>
           <param name="output_topic" value="path_optimizer/trajectory"/>

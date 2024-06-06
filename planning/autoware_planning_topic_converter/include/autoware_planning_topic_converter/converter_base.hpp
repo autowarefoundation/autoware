@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANNING_TOPIC_CONVERTER__CONVERTER_BASE_HPP_
-#define PLANNING_TOPIC_CONVERTER__CONVERTER_BASE_HPP_
+#ifndef AUTOWARE_PLANNING_TOPIC_CONVERTER__CONVERTER_BASE_HPP_
+#define AUTOWARE_PLANNING_TOPIC_CONVERTER__CONVERTER_BASE_HPP_
 
 #include "rclcpp/rclcpp.hpp"
 
 #include <memory>
 #include <string>
 
-namespace planning_topic_converter
+namespace autoware::planning_topic_converter
 {
 
 template <typename InputType, typename OutputType>
@@ -46,6 +46,6 @@ protected:
 private:
 };
 
-}  // namespace planning_topic_converter
+}  // namespace autoware::planning_topic_converter
 
-#endif  // PLANNING_TOPIC_CONVERTER__CONVERTER_BASE_HPP_
+#endif  // AUTOWARE_PLANNING_TOPIC_CONVERTER__CONVERTER_BASE_HPP_

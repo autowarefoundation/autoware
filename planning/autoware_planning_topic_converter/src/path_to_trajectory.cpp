@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "planning_topic_converter/path_to_trajectory.hpp"
+#include "autoware_planning_topic_converter/path_to_trajectory.hpp"
 
 #include <motion_utils/trajectory/conversion.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
-namespace planning_topic_converter
+namespace autoware::planning_topic_converter
 {
 namespace
 {
@@ -54,7 +54,7 @@ void PathToTrajectory::process(const Path::ConstSharedPtr msg)
   pub_->publish(output);
 }
 
-}  // namespace planning_topic_converter
+}  // namespace autoware::planning_topic_converter
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(planning_topic_converter::PathToTrajectory)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::planning_topic_converter::PathToTrajectory)

@@ -189,7 +189,7 @@ planning/obstacle_stop_planner/** berkay@leodrive.ai bnk@leodrive.ai satoshi.ota
 planning/obstacle_velocity_limiter/** maxime.clement@tier4.jp
 planning/path_smoother/** maxime.clement@tier4.jp takayuki.murooka@tier4.jp
 planning/planning_test_utils/** kyoichi.sugahara@tier4.jp mamoru.sobue@tier4.jp takamasa.horibe@tier4.jp zulfaqar.azmi@tier4.jp
-planning/planning_topic_converter/** kosuke.takeuchi@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp
+planning/autoware_planning_topic_converter/** kosuke.takeuchi@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp
 planning/planning_validator/** kosuke.takeuchi@tier4.jp takamasa.horibe@tier4.jp
 planning/route_handler/** fumiya.watanabe@tier4.jp go.sakayori@tier4.jp kosuke.takeuchi@tier4.jp mamoru.sobue@tier4.jp takayuki.murooka@tier4.jp zulfaqar.azmi@tier4.jp
 planning/rtc_interface/** fumiya.watanabe@tier4.jp kyoichi.sugahara@tier4.jp satoshi.ota@tier4.jp taiki.tanaka@tier4.jp
