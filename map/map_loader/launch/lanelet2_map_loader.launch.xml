@@ -4,16 +4,16 @@
   <arg name="lanelet2_map_topic" default="vector_map"/>
   <arg name="lanelet2_map_marker_topic" default="vector_map_marker"/>
 
-  <node pkg="map_loader" exec="map_hash_generator" name="map_hash_generator">
+  <node pkg="map_loader" exec="map_hash_generator" name="map_hash_generator" output="both">
     <param from="$(var lanelet2_map_loader_param_path)" allow_substs="true"/>
   </node>
 
-  <node pkg="map_loader" exec="lanelet2_map_loader" name="lanelet2_map_loader">
+  <node pkg="map_loader" exec="lanelet2_map_loader" name="lanelet2_map_loader" output="both">
     <remap from="output/lanelet2_map" to="$(var lanelet2_map_topic)"/>
     <param from="$(var lanelet2_map_loader_param_path)" allow_substs="true"/>
   </node>
 
-  <node pkg="map_loader" exec="lanelet2_map_visualization" name="lanelet2_map_visualization">
+  <node pkg="map_loader" exec="lanelet2_map_visualization" name="lanelet2_map_visualization" output="both">
     <remap from="input/lanelet2_map" to="$(var lanelet2_map_topic)"/>
     <remap from="output/lanelet2_map_marker" to="$(var lanelet2_map_marker_topic)"/>
   </node>
