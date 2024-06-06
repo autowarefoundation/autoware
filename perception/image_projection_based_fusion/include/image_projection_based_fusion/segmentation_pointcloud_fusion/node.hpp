@@ -48,6 +48,13 @@ protected:
     const CameraInfo & camera_info, PointCloud2 & output_pointcloud_msg) override;
 
   bool out_of_scope(const PointCloud2 & filtered_cloud);
+  inline void copyPointCloud(
+    const PointCloud2 & input, const int point_step, const size_t global_offset,
+    PointCloud2 & output, size_t & output_pointcloud_size)
+  {
+    std::memcpy(&output.data[output_pointcloud_size], &input.data[global_offset], point_step);
+    output_pointcloud_size += point_step;
+  }
 };
 
 }  // namespace image_projection_based_fusion
