@@ -26,6 +26,13 @@ jobs:
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_KEY_PR_AGENT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          github_action_config.auto_review: "false"
-          github_action_config.auto_describe: "false"
-          github_action_config.auto_improve: "false"
+          github_action_config.auto_review: false
+          github_action_config.auto_describe: false
+          github_action_config.auto_improve: false
+          # https://github.com/Codium-ai/pr-agent/blob/main/pr_agent/settings/configuration.toml
+          pr_description.publish_labels: false
+          config.model: gpt-4o
+          config.model_turbo: gpt-4o
+          config.max_model_tokens: 64000
+          pr_code_suggestions.max_context_tokens: 12000
+          pr_code_suggestions.commitable_code_suggestions: true
