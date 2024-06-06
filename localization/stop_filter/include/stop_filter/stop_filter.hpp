@@ -52,6 +52,6 @@ private:
   /**
    * @brief set odometry measurement
    */
-  void callbackOdometry(const nav_msgs::msg::Odometry::SharedPtr msg);
+  void callback_odometry(const nav_msgs::msg::Odometry::SharedPtr msg);
 };
 #endif  // STOP_FILTER__STOP_FILTER_HPP_
