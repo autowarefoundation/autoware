@@ -39,6 +39,14 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-${{ matrix.lib_dir }}-${{ matrix.name }}
+          restore-keys: |
+            ccache-${{ matrix.lib_dir }}
+
       - name: Install vcstool
         run: |
           sudo apt-get -y update
