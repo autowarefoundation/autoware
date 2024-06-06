@@ -28,7 +28,7 @@ using tier4_autoware_utils::createMarkerOrientation;
 using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace
 {
@@ -368,4 +368,4 @@ motion_utils::VirtualWalls RunOutModule::createVirtualWalls()
   return debug_ptr_->createVirtualWalls();
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

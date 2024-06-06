@@ -79,7 +79,7 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
   module_names.emplace_back("behavior_velocity_planner::NoStoppingAreaModulePlugin");
   module_names.emplace_back("behavior_velocity_planner::StopLineModulePlugin");
   module_names.emplace_back("behavior_velocity_planner::OcclusionSpotModulePlugin");
-  module_names.emplace_back("behavior_velocity_planner::RunOutModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::RunOutModulePlugin");
   module_names.emplace_back("behavior_velocity_planner::SpeedBumpModulePlugin");
   module_names.emplace_back("behavior_velocity_planner::OutOfLaneModulePlugin");
   module_names.emplace_back("behavior_velocity_planner::NoDrivableLaneModulePlugin");
@@ -103,7 +103,7 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
                    get_behavior_velocity_module_config_no_prefix("intersection"),
                    get_behavior_velocity_module_config_no_prefix("no_stopping_area"),
                    get_behavior_velocity_module_config_no_prefix("occlusion_spot"),
-                   get_behavior_velocity_module_config_no_prefix("run_out"),
+                   get_behavior_velocity_module_config("run_out"),
                    get_behavior_velocity_module_config_no_prefix("speed_bump"),
                    get_behavior_velocity_module_config_no_prefix("stop_line"),
                    get_behavior_velocity_module_config_no_prefix("traffic_light"),

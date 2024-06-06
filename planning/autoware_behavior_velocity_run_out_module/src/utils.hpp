@@ -29,7 +29,7 @@
 
 #include <string>
 #include <vector>
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace run_out_utils
 {
@@ -38,6 +38,8 @@ using autoware_perception_msgs::msg::ObjectClassification;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_perception_msgs::msg::Shape;
 using autoware_planning_msgs::msg::PathPoint;
+using ::behavior_velocity_planner::PlannerData;
+using ::behavior_velocity_planner::Polygons2d;
 using tier4_autoware_utils::Box2d;
 using tier4_autoware_utils::LineString2d;
 using tier4_autoware_utils::Point2d;
@@ -271,5 +273,5 @@ Polygons2d createMandatoryDetectionAreaPolygon(
   const PathWithLaneId & path, const PlannerData & planner_data,
   const PlannerParam & planner_param);
 }  // namespace run_out_utils
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 #endif  // UTILS_HPP_

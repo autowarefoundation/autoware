@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>behavior_velocity_run_out_module</name>
+  <name>autoware_behavior_velocity_run_out_module</name>
   <version>0.1.0</version>
-  <description>The behavior_velocity_run_out_module package</description>
+  <description>The autoware_behavior_velocity_run_out_module package</description>
 
   <maintainer email="tomohito.ando@tier4.jp">Tomohito Ando</maintainer>
   <maintainer email="makoto.kurihara@tier4.jp">Makoto Kurihara</maintainer>

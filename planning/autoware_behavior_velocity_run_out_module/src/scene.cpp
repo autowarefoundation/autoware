@@ -34,10 +34,14 @@
 #include <limits>
 #include <utility>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
+using ::behavior_velocity_planner::PlanningBehavior;
 using object_recognition_utils::convertLabelToString;
+namespace planning_utils = ::behavior_velocity_planner::planning_utils;
+using ::behavior_velocity_planner::getCrosswalksOnPath;
+using ::behavior_velocity_planner::Polygon2d;
 
 RunOutModule::RunOutModule(
   const int64_t module_id, const std::shared_ptr<const PlannerData> & planner_data,
@@ -1031,4 +1035,4 @@ bool RunOutModule::isMomentaryDetection()
 
   return elapsed_time_since_detection < planner_param_.ignore_momentary_detection.time_threshold;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

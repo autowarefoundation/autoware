@@ -156,7 +156,7 @@
   />
   <let
     name="behavior_velocity_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::RunOutModulePlugin, '&quot;)"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'autoware::behavior_velocity_planner::RunOutModulePlugin, '&quot;)"
     if="$(var launch_run_out_module)"
   />
   <let

@@ -30,8 +30,10 @@
 #include <limits>
 #include <string>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
+using ::behavior_velocity_planner::Point2d;
+using ::behavior_velocity_planner::splineInterpolate;
 namespace
 {
 // create quaternion facing to the nearest trajectory point
@@ -600,4 +602,4 @@ void DynamicObstacleCreatorForPoints::onSynchronizedPointCloud(
   std::lock_guard<std::mutex> lock(mutex_);
   obstacle_points_map_filtered_ = lateral_nearest_points;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

@@ -1,4 +1,4 @@
-// Copyright 2022 TIER IV, Inc.
+// Copyright 2023 Tier IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,29 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PATH_UTILS_HPP_
-#define PATH_UTILS_HPP_
+#include "path_utils.hpp"
 
-#include <geometry_msgs/msg/point.hpp>
-#include <tier4_planning_msgs/msg/path_point_with_lane_id.hpp>
-
-#include <algorithm>
-#include <limits>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
-namespace behavior_velocity_planner
+#include <motion_utils/trajectory/trajectory.hpp>
+namespace autoware::behavior_velocity_planner::run_out_utils
 {
-namespace run_out_utils
-{
-
 geometry_msgs::msg::Point findLongitudinalNearestPoint(
   const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & points,
   const geometry_msgs::msg::Point & src_point,
-  const std::vector<geometry_msgs::msg::Point> & target_points);
+  const std::vector<geometry_msgs::msg::Point> & target_points)
+{
+  float min_dist = std::numeric_limits<float>::max();
+  geometry_msgs::msg::Point min_dist_point{};
 
-}  // namespace run_out_utils
-}  // namespace behavior_velocity_planner
-#endif  // PATH_UTILS_HPP_
+  for (const auto & p : target_points) {
+    const float dist = motion_utils::calcSignedArcLength(points, src_point, p);
+    if (dist < min_dist) {
+      min_dist = dist;
+      min_dist_point = p;
+    }
+  }
+
+  return min_dist_point;
+}
+
+}  // namespace autoware::behavior_velocity_planner::run_out_utils

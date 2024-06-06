@@ -19,7 +19,7 @@
 
 #include <string>
 
-namespace behavior_velocity_planner::run_out_utils
+namespace autoware::behavior_velocity_planner::run_out_utils
 {
 
 class StateMachine
@@ -53,6 +53,6 @@ private:
   std::optional<DynamicObstacle> prev_obstacle_{};
   std::optional<DynamicObstacle> target_obstacle_{};
 };
-}  // namespace behavior_velocity_planner::run_out_utils
+}  // namespace autoware::behavior_velocity_planner::run_out_utils
 
 #endif  // STATE_MACHINE_HPP_

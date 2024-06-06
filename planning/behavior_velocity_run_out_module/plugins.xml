@@ -1,3 +1,0 @@
-<library path="behavior_velocity_run_out_module">
-  <class type="behavior_velocity_planner::RunOutModulePlugin" base_class_type="behavior_velocity_planner::PluginInterface"/>
-</library>
