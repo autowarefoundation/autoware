@@ -206,17 +206,6 @@ SurroundObstacleCheckerNode::SurroundObstacleCheckerNode(const rclcpp::NodeOptio
   pub_velocity_limit_ = this->create_publisher<VelocityLimit>(
     "~/output/max_velocity", rclcpp::QoS{1}.transient_local());
 
-  // Subscribers
-  sub_pointcloud_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-    "~/input/pointcloud", rclcpp::SensorDataQoS(),
-    std::bind(&SurroundObstacleCheckerNode::onPointCloud, this, std::placeholders::_1));
-  sub_dynamic_objects_ = this->create_subscription<PredictedObjects>(
-    "~/input/objects", 1,
-    std::bind(&SurroundObstacleCheckerNode::onDynamicObjects, this, std::placeholders::_1));
-  sub_odometry_ = this->create_subscription<nav_msgs::msg::Odometry>(
-    "~/input/odometry", 1,
-    std::bind(&SurroundObstacleCheckerNode::onOdometry, this, std::placeholders::_1));
-
   // Parameter callback
   set_param_res_ = this->add_on_set_parameters_callback(
     std::bind(&SurroundObstacleCheckerNode::onParam, this, std::placeholders::_1));
@@ -282,6 +271,10 @@ rcl_interfaces::msg::SetParametersResult SurroundObstacleCheckerNode::onParam(
 
 void SurroundObstacleCheckerNode::onTimer()
 {
+  odometry_ptr_ = sub_odometry_.takeData();
+  pointcloud_ptr_ = sub_pointcloud_.takeData();
+  object_ptr_ = sub_dynamic_objects_.takeData();
+
   if (!odometry_ptr_) {
     RCLCPP_INFO_THROTTLE(
       this->get_logger(), *this->get_clock(), 5000 /* ms */, "waiting for current velocity...");
@@ -375,22 +368,6 @@ void SurroundObstacleCheckerNode::onTimer()
 
   pub_stop_reason_->publish(no_start_reason_diag);
   debug_ptr_->publish();
-}
-
-void SurroundObstacleCheckerNode::onPointCloud(
-  const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
-{
-  pointcloud_ptr_ = msg;
-}
-
-void SurroundObstacleCheckerNode::onDynamicObjects(const PredictedObjects::ConstSharedPtr msg)
-{
-  object_ptr_ = msg;
-}
-
-void SurroundObstacleCheckerNode::onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
-{
-  odometry_ptr_ = msg;
 }
 
 std::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacle() const
