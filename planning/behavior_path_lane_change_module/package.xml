@@ -19,8 +19,8 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
+  <depend>autoware_behavior_path_planner_common</depend>
   <depend>behavior_path_planner</depend>
-  <depend>behavior_path_planner_common</depend>
   <depend>motion_utils</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>

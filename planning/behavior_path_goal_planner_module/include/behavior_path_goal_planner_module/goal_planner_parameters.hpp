@@ -16,8 +16,8 @@
 #ifndef BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GOAL_PLANNER_PARAMETERS_HPP_
 #define BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GOAL_PLANNER_PARAMETERS_HPP_
 
-#include "behavior_path_planner_common/utils/parking_departure/geometric_parallel_parking.hpp"
-#include "behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
+#include "autoware_behavior_path_planner_common/utils/parking_departure/geometric_parallel_parking.hpp"
+#include "autoware_behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 
 #include <freespace_planning_algorithms/abstract_algorithm.hpp>
 #include <freespace_planning_algorithms/astar_search.hpp>

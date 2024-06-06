@@ -15,7 +15,7 @@
 #ifndef BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__MANAGER_HPP_
 #define BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__MANAGER_HPP_
 
-#include "behavior_path_planner_common/interface/scene_module_manager_interface.hpp"
+#include "autoware_behavior_path_planner_common/interface/scene_module_manager_interface.hpp"
 #include "behavior_path_sampling_planner_module/sampling_planner_module.hpp"
 #include "behavior_path_sampling_planner_module/sampling_planner_parameters.hpp"
 

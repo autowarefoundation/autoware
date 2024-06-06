@@ -5,10 +5,10 @@ nav:
     - 'Concept':
         - 'Planner Manager': planning/behavior_path_planner/docs/behavior_path_planner_manager_design
         - 'Scene Module Interface': planning/behavior_path_planner/docs/behavior_path_planner_interface_design
-        - 'Path Generation': planning/behavior_path_planner_common/docs/behavior_path_planner_path_generation_design
-        - 'Collision Assessment/Safety Check': planning/behavior_path_planner_common/docs/behavior_path_planner_safety_check
-        - 'Dynamic Drivable Area': planning/behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design
-        - 'Turn Signal': planning/behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design
+        - 'Path Generation': planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design
+        - 'Collision Assessment/Safety Check': planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_safety_check
+        - 'Dynamic Drivable Area': planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design
+        - 'Turn Signal': planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design
     - 'Scene Module':
         - 'Avoidance by Lane Change': planning/behavior_path_avoidance_by_lane_change_module
         - 'Dynamic Obstacle Avoidance': planning/autoware_behavior_path_dynamic_obstacle_avoidance_module

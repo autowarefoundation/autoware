@@ -356,7 +356,7 @@ Perform safety checks on moving objects. If the object is determined to be dange
 
 This module has two methods of safety check, `RSS` and `integral_predicted_polygon`.
 
-`RSS` method is a method commonly used by other behavior path planner modules, see [RSS based safety check utils explanation](../behavior_path_planner_common/docs/behavior_path_planner_safety_check.md).
+`RSS` method is a method commonly used by other behavior path planner modules, see [RSS based safety check utils explanation](../autoware_behavior_path_planner_common/docs/behavior_path_planner_safety_check.md).
 
 `integral_predicted_polygon` is a more safety-oriented method. This method is implemented because speeds during pull over are lower than during driving, and fewer objects travel along the edge of the lane. (It is sometimes too reactive and may be less available.)
 This method integrates the footprints of egos and objects at a given time and checks for collisions between them.

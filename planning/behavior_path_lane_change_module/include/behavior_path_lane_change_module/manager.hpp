@@ -15,8 +15,8 @@
 #ifndef BEHAVIOR_PATH_LANE_CHANGE_MODULE__MANAGER_HPP_
 #define BEHAVIOR_PATH_LANE_CHANGE_MODULE__MANAGER_HPP_
 
+#include "autoware_behavior_path_planner_common/interface/scene_module_manager_interface.hpp"
 #include "behavior_path_lane_change_module/utils/data_structs.hpp"
-#include "behavior_path_planner_common/interface/scene_module_manager_interface.hpp"
 #include "route_handler/route_handler.hpp"
 
 #include <rclcpp/rclcpp.hpp>

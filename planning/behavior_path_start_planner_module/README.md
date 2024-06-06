@@ -250,7 +250,7 @@ This ordering is beneficial when the priority is to minimize the backward distan
 
 ### 2. Collision detection with dynamic obstacles
 
-- **Applying RSS in Dynamic Collision Detection**: Collision detection is based on the RSS (Responsibility-Sensitive Safety) model to evaluate if a safe distance is maintained. See [safety check feature explanation](../behavior_path_planner_common/docs/behavior_path_planner_safety_check.md)
+- **Applying RSS in Dynamic Collision Detection**: Collision detection is based on the RSS (Responsibility-Sensitive Safety) model to evaluate if a safe distance is maintained. See [safety check feature explanation](../autoware_behavior_path_planner_common/docs/behavior_path_planner_safety_check.md)
 
 - **Collision check performed range**: Safety checks for collisions with dynamic objects are conducted within the defined boundaries between the start and end points of each maneuver, ensuring the ego vehicle does not impede or hinder the progress of dynamic objects that come from behind it.
 

@@ -15,10 +15,10 @@
 #ifndef BEHAVIOR_PATH_PLANNER__BEHAVIOR_PATH_PLANNER_NODE_HPP_
 #define BEHAVIOR_PATH_PLANNER__BEHAVIOR_PATH_PLANNER_NODE_HPP_
 
+#include "autoware_behavior_path_planner_common/data_manager.hpp"
+#include "autoware_behavior_path_planner_common/interface/scene_module_interface.hpp"
+#include "autoware_behavior_path_planner_common/interface/steering_factor_interface.hpp"
 #include "behavior_path_planner/planner_manager.hpp"
-#include "behavior_path_planner_common/data_manager.hpp"
-#include "behavior_path_planner_common/interface/scene_module_interface.hpp"
-#include "behavior_path_planner_common/interface/steering_factor_interface.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>

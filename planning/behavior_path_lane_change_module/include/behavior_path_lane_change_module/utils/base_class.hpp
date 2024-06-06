@@ -14,13 +14,13 @@
 #ifndef BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__BASE_CLASS_HPP_
 #define BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__BASE_CLASS_HPP_
 
+#include "autoware_behavior_path_planner_common/interface/scene_module_interface.hpp"
+#include "autoware_behavior_path_planner_common/turn_signal_decider.hpp"
+#include "autoware_behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 #include "behavior_path_lane_change_module/utils/data_structs.hpp"
 #include "behavior_path_lane_change_module/utils/debug_structs.hpp"
 #include "behavior_path_lane_change_module/utils/path.hpp"
 #include "behavior_path_lane_change_module/utils/utils.hpp"
-#include "behavior_path_planner_common/interface/scene_module_interface.hpp"
-#include "behavior_path_planner_common/turn_signal_decider.hpp"
-#include "behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include <magic_enum.hpp>

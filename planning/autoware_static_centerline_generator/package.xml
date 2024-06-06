@@ -15,11 +15,11 @@
 
   <build_depend>rosidl_default_generators</build_depend>
 
+  <depend>autoware_behavior_path_planner_common</depend>
   <depend>autoware_map_msgs</depend>
   <depend>autoware_path_optimizer</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
-  <depend>behavior_path_planner_common</depend>
   <depend>geography_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>global_parameter_loader</depend>

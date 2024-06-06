@@ -14,9 +14,9 @@
 
 #include "behavior_path_start_planner_module/geometric_pull_out.hpp"
 
-#include "behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
-#include "behavior_path_planner_common/utils/path_utils.hpp"
-#include "behavior_path_planner_common/utils/utils.hpp"
+#include "autoware_behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
+#include "autoware_behavior_path_planner_common/utils/path_utils.hpp"
+#include "autoware_behavior_path_planner_common/utils/utils.hpp"
 #include "behavior_path_start_planner_module/util.hpp"
 #include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
