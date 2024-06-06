@@ -14,7 +14,6 @@
 
 import launch
 from launch.actions import DeclareLaunchArgument
-from launch.actions import GroupAction
 from launch.actions import OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -78,22 +77,7 @@ def launch_setup(context, *args, **kwargs):
         ],
     )
 
-    map_to_odom_tf_publisher = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        name="static_map_to_odom_tf_publisher",
-        output="screen",
-        arguments=[
-            "--frame-id",
-            "map",
-            "--child-frame-id",
-            "odom",
-        ],
-    )
-
-    group = GroupAction([simple_planning_simulator_node, map_to_odom_tf_publisher])
-
-    return [group]
+    return [simple_planning_simulator_node]
 
 
 def generate_launch_description():
