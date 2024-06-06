@@ -23,7 +23,8 @@
 
 namespace yabloc::line_segment_detector
 {
-LineSegmentDetector::LineSegmentDetector() : Node("line_detector")
+LineSegmentDetector::LineSegmentDetector(const rclcpp::NodeOptions & options)
+: Node("line_detector", options)
 {
   using std::placeholders::_1;
 
@@ -106,3 +107,6 @@ std::vector<cv::Mat> LineSegmentDetector::remove_too_outer_elements(
 }
 
 }  // namespace yabloc::line_segment_detector
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(yabloc::line_segment_detector::LineSegmentDetector)

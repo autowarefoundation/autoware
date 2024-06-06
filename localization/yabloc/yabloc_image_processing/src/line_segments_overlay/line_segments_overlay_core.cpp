@@ -23,8 +23,8 @@
 
 namespace yabloc::line_segments_overlay
 {
-LineSegmentsOverlay::LineSegmentsOverlay()
-: Node("overlay_lanelet2"),
+LineSegmentsOverlay::LineSegmentsOverlay(const rclcpp::NodeOptions & options)
+: Node("line_segments_overlay", options),
   max_buffer_size_(static_cast<size_t>(declare_parameter<int>("max_buffer_size", 5)))
 {
   using std::placeholders::_1;
@@ -90,3 +90,6 @@ void LineSegmentsOverlay::on_line_segments(const PointCloud2::ConstSharedPtr & l
 }
 
 }  // namespace yabloc::line_segments_overlay
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(yabloc::line_segments_overlay::LineSegmentsOverlay)

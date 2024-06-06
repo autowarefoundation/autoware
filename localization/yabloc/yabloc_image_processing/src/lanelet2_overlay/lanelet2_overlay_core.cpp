@@ -28,8 +28,8 @@
 
 namespace yabloc::lanelet2_overlay
 {
-Lanelet2Overlay::Lanelet2Overlay()
-: Node("lanelet2_overlay"), tf_subscriber_(get_clock()), pose_buffer_{40}
+Lanelet2Overlay::Lanelet2Overlay(const rclcpp::NodeOptions & options)
+: Node("lanelet2_overlay", options), tf_subscriber_(get_clock()), pose_buffer_{40}
 {
   using std::placeholders::_1;
 
@@ -211,3 +211,6 @@ void Lanelet2Overlay::make_vis_marker(
 }
 
 }  // namespace yabloc::lanelet2_overlay
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(yabloc::lanelet2_overlay::Lanelet2Overlay)

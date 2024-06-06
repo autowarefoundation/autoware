@@ -34,7 +34,7 @@ public:
   using Image = sensor_msgs::msg::Image;
   using LineSegment = pcl::PointXYZLNormal;
   using LineSegments = pcl::PointCloud<LineSegment>;
-  LineSegmentsOverlay();
+  explicit LineSegmentsOverlay(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
   void on_image(const Image::ConstSharedPtr & img_msg);

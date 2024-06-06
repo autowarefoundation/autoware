@@ -10,7 +10,7 @@
   <arg name="resized_info" description=""/>
 
   <!-- lanelet2 overlay monitor -->
-  <node name="lanelet2_overlay" pkg="yabloc_image_processing" exec="lanelet2_overlay_node" output="screen" args="--ros-args --log-level warn">
+  <node pkg="yabloc_image_processing" exec="yabloc_lanelet2_overlay_node" output="both">
     <remap from="~/input/image_raw" to="$(var resized_image)"/>
     <remap from="~/input/camera_info" to="$(var resized_info)"/>
     <remap from="~/input/pose" to="$(var input_overlaid_pose)"/>
@@ -23,7 +23,7 @@
   </node>
 
   <!-- line segments overlay monitor -->
-  <node name="line_segments_overlay" pkg="yabloc_image_processing" exec="line_segments_overlay_node" output="screen">
+  <node pkg="yabloc_image_processing" exec="yabloc_line_segments_overlay_node" output="both">
     <remap from="~/input/image_raw" to="$(var resized_image)"/>
     <remap from="~/input/line_segments" to="$(var input_debug_line_segments)"/>
     <remap from="~/debug/image_with_colored_line_segments" to="$(var output_image_with_colored_line_segments)"/>

@@ -39,7 +39,7 @@ public:
   using PointCloud2 = sensor_msgs::msg::PointCloud2;
   using Image = sensor_msgs::msg::Image;
 
-  SegmentFilter();
+  explicit SegmentFilter(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
   using ProjectFunc = std::function<std::optional<Eigen::Vector3f>(const Eigen::Vector3f &)>;

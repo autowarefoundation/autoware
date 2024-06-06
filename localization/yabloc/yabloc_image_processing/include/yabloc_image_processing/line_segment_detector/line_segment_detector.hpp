@@ -42,7 +42,7 @@ public:
   using Image = sensor_msgs::msg::Image;
   using PointCloud2 = sensor_msgs::msg::PointCloud2;
 
-  LineSegmentDetector();
+  explicit LineSegmentDetector(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
   rclcpp::Subscription<Image>::SharedPtr sub_image_;

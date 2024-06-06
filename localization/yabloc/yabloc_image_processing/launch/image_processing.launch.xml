@@ -5,7 +5,7 @@
   <arg name="resized_info" default="/sensing/camera/undistorted/camera_info"/>
 
   <!-- undistort -->
-  <node name="undistort" pkg="yabloc_image_processing" exec="undistort_node" output="screen" args="--ros-args --log-level warn">
+  <node pkg="yabloc_image_processing" exec="yabloc_undistort_node" output="both">
     <param from="$(var undistort_param_path)"/>
 
     <remap from="~/input/image_raw" to="$(var src_image)"/>
@@ -18,7 +18,7 @@
   <!-- line segment detector -->
   <arg name="output_image_with_line_segments" default="image_with_line_segments"/>
   <arg name="output_line_segments_cloud" default="line_segments_cloud"/>
-  <node name="line_segment_detector" pkg="yabloc_image_processing" exec="line_segment_detector_node" output="screen" args="--ros-args --log-level warn">
+  <node pkg="yabloc_image_processing" exec="yabloc_line_segment_detector_node" output="both">
     <remap from="~/input/image_raw" to="$(var resized_image)"/>
     <remap from="~/debug/image_with_line_segments" to="$(var output_image_with_line_segments)"/>
     <remap from="~/output/line_segments_cloud" to="$(var output_line_segments_cloud)"/>
@@ -27,7 +27,7 @@
   <!-- graph based segmentation -->
   <arg name="output_graph_segmented" default="graph_segmented"/>
   <arg name="output_segmented_image" default="segmented_image"/>
-  <node name="graph_segment" pkg="yabloc_image_processing" exec="graph_segment_node" output="screen" args="--ros-args --log-level warn">
+  <node pkg="yabloc_image_processing" exec="yabloc_graph_segment_node" output="both">
     <param from="$(var graph_segment_param_path)"/>
     <remap from="~/input/image_raw" to="$(var resized_image)"/>
     <remap from="~/output/mask_image" to="$(var output_graph_segmented)"/>
@@ -40,7 +40,7 @@
   <arg name="output_projected_line_segments_cloud" default="projected_line_segments_cloud"/>
   <arg name="output_projected_image" default="projected_image"/>
   <arg name="output_debug_line_segments" default="debug/line_segments_cloud"/>
-  <node name="segment_filter" pkg="yabloc_image_processing" exec="segment_filter_node" output="screen" args="--ros-args --log-level info">
+  <node pkg="yabloc_image_processing" exec="yabloc_segment_filter_node" output="both">
     <param from="$(var segment_filter_param_path)"/>
 
     <remap from="~/input/line_segments_cloud" to="$(var input_line_segments_cloud)"/>

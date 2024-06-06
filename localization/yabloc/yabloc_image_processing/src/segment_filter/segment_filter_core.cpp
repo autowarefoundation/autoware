@@ -23,8 +23,8 @@
 
 namespace yabloc::segment_filter
 {
-SegmentFilter::SegmentFilter()
-: Node("segment_filter"),
+SegmentFilter::SegmentFilter(const rclcpp::NodeOptions & options)
+: Node("segment_filter", options),
   image_size_(declare_parameter<int>("image_size")),
   max_range_(declare_parameter<float>("max_range")),
   min_segment_length_(declare_parameter<float>("min_segment_length")),
@@ -282,3 +282,6 @@ std::set<int> SegmentFilter::filter_by_mask(
 }
 
 }  // namespace yabloc::segment_filter
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(yabloc::segment_filter::SegmentFilter)

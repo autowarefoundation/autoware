@@ -23,8 +23,8 @@
 
 namespace yabloc::graph_segment
 {
-GraphSegment::GraphSegment()
-: Node("graph_segment"),
+GraphSegment::GraphSegment(const rclcpp::NodeOptions & options)
+: Node("graph_segment", options),
   target_height_ratio_(declare_parameter<float>("target_height_ratio")),
   target_candidate_box_width_(declare_parameter<int>("target_candidate_box_width"))
 {
@@ -159,3 +159,6 @@ void GraphSegment::draw_and_publish_image(
 }
 
 }  // namespace yabloc::graph_segment
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(yabloc::graph_segment::GraphSegment)

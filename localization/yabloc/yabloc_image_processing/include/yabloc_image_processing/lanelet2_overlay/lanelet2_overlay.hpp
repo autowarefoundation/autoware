@@ -47,7 +47,7 @@ public:
   using Image = sensor_msgs::msg::Image;
   using Float32Array = std_msgs::msg::Float32MultiArray;
 
-  Lanelet2Overlay();
+  explicit Lanelet2Overlay(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
   common::StaticTfSubscriber tf_subscriber_;

@@ -37,8 +37,8 @@ public:
   using CameraInfo = sensor_msgs::msg::CameraInfo;
   using Image = sensor_msgs::msg::Image;
 
-  UndistortNode()
-  : Node("undistort"),
+  explicit UndistortNode(const rclcpp::NodeOptions & options)
+  : Node("undistort", options),
     OUTPUT_WIDTH(declare_parameter<int>("width")),
     OVERRIDE_FRAME_ID(declare_parameter<std::string>("override_frame_id"))
   {
@@ -166,10 +166,5 @@ private:
 };
 }  // namespace yabloc::undistort
 
-int main(int argc, char * argv[])
-{
-  rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<yabloc::undistort::UndistortNode>());
-  rclcpp::shutdown();
-  return 0;
-}
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(yabloc::undistort::UndistortNode)

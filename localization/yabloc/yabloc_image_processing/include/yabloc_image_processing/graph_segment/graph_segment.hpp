@@ -32,7 +32,7 @@ class GraphSegment : public rclcpp::Node
 public:
   using PointCloud2 = sensor_msgs::msg::PointCloud2;
   using Image = sensor_msgs::msg::Image;
-  GraphSegment();
+  explicit GraphSegment(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
   const float target_height_ratio_;
