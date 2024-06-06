@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "external_velocity_limit_selector/external_velocity_limit_selector_node.hpp"
+#include "autoware_external_velocity_limit_selector/external_velocity_limit_selector_node.hpp"
 
 #include <deque>
 #include <memory>
@@ -20,6 +20,9 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+namespace autoware::external_velocity_limit_selector
+{
 
 namespace
 {
@@ -236,6 +239,8 @@ void ExternalVelocityLimitSelectorNode::updateVelocityLimit()
 
   hardest_limit_ = getHardestLimit(velocity_limit_table_, node_param_);
 }
+}  // namespace autoware::external_velocity_limit_selector
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(ExternalVelocityLimitSelectorNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::external_velocity_limit_selector::ExternalVelocityLimitSelectorNode)

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EXTERNAL_VELOCITY_LIMIT_SELECTOR__EXTERNAL_VELOCITY_LIMIT_SELECTOR_NODE_HPP_
-#define EXTERNAL_VELOCITY_LIMIT_SELECTOR__EXTERNAL_VELOCITY_LIMIT_SELECTOR_NODE_HPP_
+#ifndef AUTOWARE_EXTERNAL_VELOCITY_LIMIT_SELECTOR__EXTERNAL_VELOCITY_LIMIT_SELECTOR_NODE_HPP_
+#define AUTOWARE_EXTERNAL_VELOCITY_LIMIT_SELECTOR__EXTERNAL_VELOCITY_LIMIT_SELECTOR_NODE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -25,6 +25,9 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+
+namespace autoware::external_velocity_limit_selector
+{
 
 using tier4_debug_msgs::msg::StringStamped;
 using tier4_planning_msgs::msg::VelocityLimit;
@@ -77,5 +80,6 @@ private:
   VelocityLimit hardest_limit_{};
   VelocityLimitTable velocity_limit_table_;
 };
+}  // namespace autoware::external_velocity_limit_selector
 
-#endif  // EXTERNAL_VELOCITY_LIMIT_SELECTOR__EXTERNAL_VELOCITY_LIMIT_SELECTOR_NODE_HPP_
+#endif  // AUTOWARE_EXTERNAL_VELOCITY_LIMIT_SELECTOR__EXTERNAL_VELOCITY_LIMIT_SELECTOR_NODE_HPP_

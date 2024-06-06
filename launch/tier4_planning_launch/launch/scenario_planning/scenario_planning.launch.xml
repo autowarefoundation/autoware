@@ -19,7 +19,7 @@
   <group>
     <!-- external velocity limit selector -->
     <group>
-      <include file="$(find-pkg-share external_velocity_limit_selector)/launch/external_velocity_limit_selector.launch.xml">
+      <include file="$(find-pkg-share autoware_external_velocity_limit_selector)/launch/external_velocity_limit_selector.launch.xml">
         <arg name="common_param_path" value="$(var common_param_path)"/>
         <arg name="param_path" value="$(var velocity_smoother_param_path)"/>
       </include>

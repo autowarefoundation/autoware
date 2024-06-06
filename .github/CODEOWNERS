@@ -177,7 +177,7 @@ planning/behavior_velocity_stop_line_module/** fumiya.watanabe@tier4.jp shumpei.
 planning/behavior_velocity_traffic_light_module/** mamoru.sobue@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_walkway_module/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 planning/costmap_generator/** kosuke.takeuchi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
-planning/external_velocity_limit_selector/** satoshi.ota@tier4.jp shinnosuke.hirakawa@tier4.jp shumpei.wakabayashi@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp
+planning/autoware_external_velocity_limit_selector/** satoshi.ota@tier4.jp shinnosuke.hirakawa@tier4.jp shumpei.wakabayashi@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp
 planning/freespace_planner/** kosuke.takeuchi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
 planning/freespace_planning_algorithms/** kosuke.takeuchi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
 planning/mission_planner/** isamu.takagi@tier4.jp kosuke.takeuchi@tier4.jp mamoru.sobue@tier4.jp ryohsuke.mitsudome@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp

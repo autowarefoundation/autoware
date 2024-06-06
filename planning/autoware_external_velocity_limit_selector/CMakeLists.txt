@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(external_velocity_limit_selector)
+project(autoware_external_velocity_limit_selector)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -9,7 +9,7 @@ ament_auto_add_library(external_velocity_limit_selector_node SHARED
 )
 
 rclcpp_components_register_node(external_velocity_limit_selector_node
-  PLUGIN "ExternalVelocityLimitSelectorNode"
+  PLUGIN "autoware::external_velocity_limit_selector::ExternalVelocityLimitSelectorNode"
   EXECUTABLE external_velocity_limit_selector
 )
 
