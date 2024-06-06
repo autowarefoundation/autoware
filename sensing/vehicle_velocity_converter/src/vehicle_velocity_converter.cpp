@@ -14,7 +14,8 @@
 
 #include "vehicle_velocity_converter/vehicle_velocity_converter.hpp"
 
-VehicleVelocityConverter::VehicleVelocityConverter() : Node("vehicle_velocity_converter")
+VehicleVelocityConverter::VehicleVelocityConverter(const rclcpp::NodeOptions & options)
+: rclcpp::Node("vehicle_velocity_converter", options)
 {
   // set covariance value for twist with covariance msg
   stddev_vx_ = declare_parameter<double>("velocity_stddev_xx");
@@ -52,3 +53,6 @@ void VehicleVelocityConverter::callbackVelocityReport(
 
   twist_with_covariance_pub_->publish(twist_with_covariance_msg);
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(VehicleVelocityConverter)

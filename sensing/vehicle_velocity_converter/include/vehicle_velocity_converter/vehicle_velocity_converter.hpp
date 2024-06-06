@@ -28,7 +28,7 @@
 class VehicleVelocityConverter : public rclcpp::Node
 {
 public:
-  VehicleVelocityConverter();
+  explicit VehicleVelocityConverter(const rclcpp::NodeOptions & options);
   ~VehicleVelocityConverter() = default;
 
 private:
