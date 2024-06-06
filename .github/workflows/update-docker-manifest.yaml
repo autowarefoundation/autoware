@@ -16,3 +16,8 @@ jobs:
         uses: ./.github/actions/combine-multi-arch-images
         with:
           package-name: autoware
+
+      - name: Combine multi arch images for 'Open AD Kit'
+        uses: ./.github/actions/combine-multi-arch-images
+        with:
+          package-name: openadkit

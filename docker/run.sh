@@ -6,7 +6,7 @@ set -e
 # Define terminal colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-# BLUE='\033[0;34m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 SCRIPT_DIR=$(readlink -f "$(dirname "$0")")
@@ -20,28 +20,26 @@ fi
 option_no_nvidia=false
 option_devel=false
 option_headless=false
-DATA_PATH="${HOME}/autoware_data"
 MAP_PATH=""
 WORKSPACE_PATH=""
 USER_ID=""
 WORKSPACE=""
-DEFAULT_LAUNCH_CMD="ros2 launch autoware_launch autoware.launch.xml data_path:=/autoware_data map_path:=/autoware_map vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit"
+DEFAULT_LAUNCH_CMD="ros2 launch autoware_launch autoware.launch.xml map_path:=/autoware_map vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit"
 
 # Function to print help message
 print_help() {
     echo -e "\n------------------------------------------------------------"
-    echo -e "${RED}Note:${NC} The --map-path option is mandatory if not custom launch command given. Please provide exact path to the map files."
+    echo -e "${RED}Note:${NC} The --map-path option is mandatory for the runtime. For development environment with shell access, use --devel option."
     echo -e "      Default launch command: ${GREEN}${DEFAULT_LAUNCH_CMD}${NC}"
     echo -e "------------------------------------------------------------"
     echo -e "${RED}Usage:${NC} run.sh [OPTIONS] [LAUNCH_CMD](optional)"
     echo -e "Options:"
     echo -e "  ${GREEN}--help/-h${NC}       Display this help message"
-    echo -e "  ${GREEN}--data-path${NC}     Specify to mount data files into /autoware_data"
-    echo -e "  ${GREEN}--map-path${NC}      Specify to mount map files into /autoware_map (mandatory if no custom launch command is provided)"
+    echo -e "  ${GREEN}--map-path${NC}      Specify to mount map files into /autoware_map (mandatory for runtime)"
+    echo -e "  ${GREEN}--devel${NC}         Launch the latest Autoware development environment with shell access"
+    echo -e "  ${GREEN}--workspace${NC}     (--devel only)Specify the directory to mount into /workspace, by default it uses current directory (pwd)"
     echo -e "  ${GREEN}--no-nvidia${NC}     Disable NVIDIA GPU support"
-    echo -e "  ${GREEN}--devel${NC}         Use the latest development version of Autoware"
     echo -e "  ${GREEN}--headless${NC}      Run Autoware in headless mode (default: false)"
-    echo -e "  ${GREEN}--workspace${NC}     Specify to mount the workspace into /workspace"
     echo ""
 }
 
@@ -64,10 +62,6 @@ parse_arguments() {
             ;;
         --workspace)
             WORKSPACE_PATH="$2"
-            shift
-            ;;
-        --data-path)
-            DATA_PATH="$2"
             shift
             ;;
         --map-path)
@@ -93,40 +87,48 @@ parse_arguments() {
     done
 }
 
-# Set image and workspace variables
+# Set the docker image and workspace variables
 set_variables() {
-    # Check if map path is provided for default launch command
-    if [ "$MAP_PATH" == "" ] && [ "$LAUNCH_CMD" == "" ]; then
-        print_help
-        exit 1
-    fi
+    if [ "$option_devel" = "true" ]; then
+        # Set image based on option
+        IMAGE="ghcr.io/autowarefoundation/autoware:latest-devel"
 
-    # Mount data path
-    DATA="-v ${DATA_PATH}:/autoware_data:ro"
-
-    # Mount map path if provided
-    MAP="-v ${MAP_PATH}:/autoware_map:ro"
-
-    # Set workspace path if provided and login with local user
-    if [ "$WORKSPACE_PATH" != "" ]; then
-        USER_ID="-e LOCAL_UID=$(id -u) -e LOCAL_GID=$(id -g) -e LOCAL_USER=$(id -un) -e LOCAL_GROUP=$(id -gn)"
+        # Set workspace path, if not provided use the current directory
+        if [ "$WORKSPACE_PATH" = "" ]; then
+            WORKSPACE_PATH=$(pwd)
+        fi
         WORKSPACE="-v ${WORKSPACE_PATH}:/workspace"
-    fi
 
-    # Set default launch command if not provided
-    if [ "$LAUNCH_CMD" == "" ]; then
-        if [ "$WORKSPACE_PATH" != "" ]; then
+        # Set user ID and group ID to match the local user
+        USER_ID="-e LOCAL_UID=$(id -u) -e LOCAL_GID=$(id -g) -e LOCAL_USER=$(id -un) -e LOCAL_GROUP=$(id -gn)"
+
+        # Set map path
+        if [ "$MAP_PATH" != "" ]; then
+            MAP="-v ${MAP_PATH}:/autoware_map:ro"
+        fi
+
+        # Set launch command
+        if [ "$LAUNCH_CMD" = "" ]; then
             LAUNCH_CMD="/bin/bash"
+        fi
+    else
+        # Set image based on option
+        IMAGE="ghcr.io/autowarefoundation/autoware:latest-runtime"
+
+        # Set map path
+        if [ "$MAP_PATH" = "" ]; then
+            echo -e "\n------------------------------------------------------------"
+            echo -e "${RED}Note:${NC} The --map-path option is mandatory for the runtime. For development environment with shell access, use --devel option."
+            echo -e "------------------------------------------------------------"
+            exit 1
         else
+            MAP="-v ${MAP_PATH}:/autoware_map:ro"
+        fi
+
+        # Set default launch command if not provided
+        if [ "$LAUNCH_CMD" = "" ]; then
             LAUNCH_CMD=${DEFAULT_LAUNCH_CMD}
         fi
-    fi
-
-    # Set image based on option
-    if [ "$option_devel" == "true" ]; then
-        IMAGE="ghcr.io/autowarefoundation/autoware:latest-devel"
-    else
-        IMAGE="ghcr.io/autowarefoundation/autoware:latest-runtime"
     fi
 }
 
@@ -157,11 +159,20 @@ main() {
     set_gpu_flag
     set_x_display
 
-    echo -e "${GREEN}\n-----------------------LAUNCHING CONTAINER-----------------------"
+    if [ "$option_devel" = "true" ]; then
+        echo -e "${GREEN}-----------------------------------------------------------------${NC}"
+        echo -e "${BLUE}Launching Autoware development environment${NC}"
+    else
+        echo -e "${GREEN}-----------------------------------------------------------------${NC}"
+        echo -e "${GREEN}Launching Autoware${NC}"
+    fi
     echo -e "${GREEN}IMAGE:${NC} ${IMAGE}"
-    echo -e "${GREEN}DATA PATH(mounted):${NC} ${DATA_PATH}:/autoware_data"
-    echo -e "${GREEN}MAP PATH(mounted):${NC} ${MAP_PATH}:/autoware_map"
-    echo -e "${GREEN}WORKSPACE(mounted):${NC} ${WORKSPACE_PATH}:/workspace"
+    if [ "$option_devel" = "true" ]; then
+        echo -e "${GREEN}WORKSPACE PATH(mounted):${NC} ${WORKSPACE_PATH}:/workspace"
+    fi
+    if [ "$MAP_PATH" != "" ]; then
+        echo -e "${GREEN}MAP PATH(mounted):${NC} ${MAP_PATH}:/autoware_map"
+    fi
     echo -e "${GREEN}LAUNCH CMD:${NC} ${LAUNCH_CMD}"
     echo -e "${GREEN}-----------------------------------------------------------------${NC}"
 
@@ -169,7 +180,7 @@ main() {
     set -x
     docker run -it --rm --net=host ${GPU_FLAG} ${USER_ID} ${MOUNT_X} \
         -e XAUTHORITY=${XAUTHORITY} -e XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR -e NVIDIA_DRIVER_CAPABILITIES=all -v /etc/localtime:/etc/localtime:ro \
-        ${WORKSPACE} ${DATA} ${MAP} ${IMAGE} \
+        ${WORKSPACE} ${MAP} ${IMAGE} \
         ${LAUNCH_CMD}
 }
 

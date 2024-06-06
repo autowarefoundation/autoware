@@ -10,13 +10,12 @@ print_help() {
     echo "  -h              Display this help message"
     echo "  --no-cuda       Disable CUDA support"
     echo "  --platform      Specify the platform (default: current platform)"
-    echo "  --devel-only    Build devel image only"
     echo ""
     echo "Note: The --platform option should be one of 'linux/amd64' or 'linux/arm64'."
 }
 
 SCRIPT_DIR=$(readlink -f "$(dirname "$0")")
-WORKSPACE_ROOT="$SCRIPT_DIR/.."
+WORKSPACE_ROOT="$SCRIPT_DIR/../.."
 
 # Parse arguments
 parse_arguments() {
@@ -33,9 +32,6 @@ parse_arguments() {
             option_platform="$2"
             shift
             ;;
-        --devel-only)
-            option_devel_only=true
-            ;;
         *)
             echo "Unknown option: $1"
             print_help
@@ -44,24 +40,6 @@ parse_arguments() {
         esac
         shift
     done
-}
-
-# Set CUDA options
-set_cuda_options() {
-    if [ "$option_no_cuda" = "true" ]; then
-        setup_args="--no-nvidia"
-        image_name_suffix=""
-    else
-        image_name_suffix="-cuda"
-    fi
-}
-
-# Set build options
-set_build_options() {
-    targets=()
-    if [ "$option_devel_only" = "true" ]; then
-        targets=("devel")
-    fi
 }
 
 # Set platform
@@ -96,11 +74,14 @@ load_env() {
     fi
 }
 
-# Clone repositories
-clone_repositories() {
-    cd "$WORKSPACE_ROOT"
-    mkdir src
-    vcs import src <autoware/autoware.repos
+# Set CUDA options
+set_cuda_options() {
+    if [ "$option_no_cuda" = "true" ]; then
+        setup_args="--no-nvidia"
+        image_name_suffix=""
+    else
+        image_name_suffix="-cuda"
+    fi
 }
 
 # Build images
@@ -114,7 +95,6 @@ build_images() {
     echo "Setup args: $setup_args"
     echo "Lib dir: $lib_dir"
     echo "Image name suffix: $image_name_suffix"
-    echo "Targets: ${targets[*]}"
 
     set -x
     docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" \
@@ -125,20 +105,16 @@ build_images() {
         --set "*.args.BASE_IMAGE=$base_image" \
         --set "*.args.SETUP_ARGS=$setup_args" \
         --set "*.args.LIB_DIR=$lib_dir" \
-        --set "base.tags=ghcr.io/autowarefoundation/autoware:latest-base" \
-        --set "devel.tags=ghcr.io/autowarefoundation/autoware:latest-devel$image_name_suffix" \
-        --set "prebuilt.tags=ghcr.io/autowarefoundation/autoware:latest-prebuilt$image_name_suffix" \
-        --set "runtime.tags=ghcr.io/autowarefoundation/autoware:latest-runtime$image_name_suffix" \
-        "${targets[@]}"
+        --set "planning-control.tags=ghcr.io/autowarefoundation/openadkit:latest-planning-control" \
+        --set "visualizer.tags=ghcr.io/autowarefoundation/openadkit:latest-visualizer" \
+        --set "simulator.tags=ghcr.io/autowarefoundation/openadkit:latest-simulator"
     set +x
 }
 
 # Main script execution
 parse_arguments "$@"
 set_cuda_options
-set_build_options
 set_platform
 set_arch_lib_dir
 load_env
-clone_repositories
 build_images

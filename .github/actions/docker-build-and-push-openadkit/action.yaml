@@ -1,0 +1,197 @@
+name: docker-build-and-push-openadkit
+description: ""
+
+inputs:
+  bake-target:
+    description: ""
+    required: true
+  bake-images:
+    description: ""
+    required: false
+  build-args:
+    description: ""
+    required: false
+  tag-prefix:
+    description: ""
+    required: false
+  tag-suffix:
+    description: ""
+    required: false
+  tag-arch:
+    description: ""
+    required: false
+  allow-push:
+    description: ""
+    default: "true"
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Set Docker tags
+      id: set-docker-tags
+      run: |
+        tags=()
+        if [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref_type }}" == "tag" ]; then
+            tags+=("$(echo "${{ github.ref }}" | sed -E 's/.*([vV][0-9]+\.[0-9]+\.[0-9]+).*/\1/')")
+        fi
+
+        tags+=("{{date 'YYYYMMDD'}}")
+        tags+=("latest")
+        tags+=("latest-${{ inputs.tag-prefix }}")
+
+        # Output multiline strings: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "tags<<$EOF" >> $GITHUB_OUTPUT
+        echo "$(printf "%s\n" "${tags[@]}")" >> $GITHUB_OUTPUT
+        echo "$EOF" >> $GITHUB_OUTPUT
+      shell: bash
+
+    # openadkit modular images metadata
+    - name: Docker meta for openadkit:planning-control
+      id: meta-planning-control
+      uses: docker/metadata-action@v4
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: ${{ steps.set-docker-tags.outputs.tags }}
+        bake-target: docker-metadata-action-planning-control
+        flavor: |
+          latest=false
+          suffix=-planning-control${{ inputs.tag-arch }}
+
+    - name: Docker meta for openadkit:visualizer
+      id: meta-visualizer
+      uses: docker/metadata-action@v4
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: ${{ steps.set-docker-tags.outputs.tags }}
+        bake-target: docker-metadata-action-visualizer
+        flavor: |
+          latest=false
+          suffix=-visualizer${{ inputs.tag-arch }}
+
+    - name: Docker meta for openadkit:simulator
+      id: meta-simulator
+      uses: docker/metadata-action@v4
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: ${{ steps.set-docker-tags.outputs.tags }}
+        bake-target: docker-metadata-action-simulator
+        flavor: |
+          latest=false
+          suffix=-simulator${{ inputs.tag-arch }}
+
+    - name: Login to GitHub Container Registry
+      if: ${{ github.event_name != 'pull_request' }}
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ github.token }}
+
+    - name: Build and Push to GitHub Container Registry
+      if: ${{ github.event_name == 'push' || github.event_name == 'schedule' || ( github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
+      uses: docker/bake-action@v3
+      with:
+        push: ${{ inputs.allow-push == 'true' }}
+        files: |
+          docker/${{ inputs.bake-target }}/docker-bake.hcl
+          ${{ steps.meta-planning-control.outputs.bake-file }}
+          ${{ steps.meta-visualizer.outputs.bake-file }}
+          ${{ steps.meta-simulator.outputs.bake-file }}
+        provenance: false
+        targets: |
+          ${{ inputs.bake-images }}
+        set: |
+          ${{ inputs.build-args }}
+
+    - name: Build only
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+      uses: docker/bake-action@v3
+      with:
+        push: false
+        files: |
+          docker/${{ inputs.bake-target }}/docker-bake.hcl
+          ${{ steps.meta-planning-control.outputs.bake-file }}
+          ${{ steps.meta-visualizer.outputs.bake-file }}
+          ${{ steps.meta-simulator.outputs.bake-file }}
+        provenance: false
+        targets: |
+          ${{ inputs.bake-images }}
+        set: |
+          ${{ inputs.build-args }}
+
+    - name: Output artifact URLs
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+      id: warn-no-artifacts
+      run: |
+        echo 'No artifacts uploaded because of disk space issue'
+      shell: bash
+
+    # TODO:Enable after solving the issue with the disk space
+    # - name: Build and Save Artifacts
+    #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+    #   uses: docker/bake-action@v3
+    #   with:
+    #     push: false
+    #     files: |
+    #       docker/${{ inputs.bake-target }}/docker-bake.hcl
+    #       ${{ steps.meta-planning-control.outputs.bake-file }}
+    #       ${{ steps.meta-visualizer.outputs.bake-file }}
+    #       ${{ steps.meta-simulator.outputs.bake-file }}
+    #     provenance: false
+    #     targets: |
+    #       ${{ inputs.bake-images }}
+    #     set: |
+    #       ${{ inputs.build-args }}
+    #       planning-control.output=type=docker,dest=/tmp/planning-control.tar
+    #       visualizer.output=type=docker,dest=/tmp/visualizer.tar
+    #       simulator.output=type=docker,dest=/tmp/simulator.tar
+
+    # - name: Upload Artifact - planning-control
+    #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+    #   id: artifact-upload-step-planning-control
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: planning-control-image${{ inputs.tag-suffix }}
+    #     path: /tmp/planning-control.tar
+    #     retention-days: 7
+    #     compression-level: 6
+    #     overwrite: true
+    #     if-no-files-found: warn
+
+    # - name: Upload Artifact - visualizer
+    #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+    #   id: artifact-upload-step-visualizer
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: visualizer-image${{ inputs.tag-suffix }}
+    #     path: /tmp/visualizer.tar
+    #     retention-days: 7
+    #     compression-level: 6
+    #     overwrite: true
+    #     if-no-files-found: warn
+
+    # - name: Upload Artifact - simulator
+    #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+    #   id: artifact-upload-step-simulator
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: simulator-image${{ inputs.tag-suffix }}
+    #     path: /tmp/simulator.tar
+    #     retention-days: 7
+    #     compression-level: 6
+    #     overwrite: true
+    #     if-no-files-found: warn
+
+    # - name: Output artifact URLs
+    #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
+    #   id: output-artifact-urls
+    #   run: |
+    #     echo 'planning-control URL ${{ steps.artifact-upload-step-planning-control.outputs.artifact-url }}'
+    #     echo 'visualizer URL ${{ steps.artifact-upload-step-visualizer.outputs.artifact-url }}'
+    #     echo 'simulator URL ${{ steps.artifact-upload-step-simulator.outputs.artifact-url }}'
+    #   shell: bash
