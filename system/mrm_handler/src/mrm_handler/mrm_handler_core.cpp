@@ -453,48 +453,48 @@ void MrmHandler::updateMrmState()
   // Check emergency
   const bool is_emergency = isEmergency();
 
+  // Send recovery events if is not an emergency
+  if (!is_emergency) {
+    if (mrm_state_.state != MrmState::NORMAL) transitionTo(MrmState::NORMAL);
+    return;
+  }
+
   // Get mode
   const bool is_auto_mode = control_mode_->mode == ControlModeReport::AUTONOMOUS;
 
   // State Machine
-  if (mrm_state_.state == MrmState::NORMAL) {
-    // NORMAL
-    if (is_auto_mode && is_emergency) {
-      transitionTo(MrmState::MRM_OPERATING);
-      return;
-    }
-  } else {
-    // Emergency
-    // Send recovery events if "not emergency"
-    if (!is_emergency) {
-      transitionTo(MrmState::NORMAL);
-      return;
-    }
-
-    if (mrm_state_.state == MrmState::MRM_OPERATING) {
-      // TODO(TetsuKawa): Check MRC is accomplished
-      if (mrm_state_.behavior == MrmState::PULL_OVER) {
-        if (isStopped() && isArrivedAtGoal()) {
-          transitionTo(MrmState::MRM_SUCCEEDED);
-          return;
-        }
-      } else {
-        if (isStopped()) {
-          transitionTo(MrmState::MRM_SUCCEEDED);
-          return;
-        }
-      }
-    } else if (mrm_state_.state == MrmState::MRM_SUCCEEDED) {
-      const auto current_mrm_behavior = getCurrentMrmBehavior();
-      if (current_mrm_behavior != mrm_state_.behavior) {
+  switch (mrm_state_.state) {
+    case MrmState::NORMAL:
+      if (is_auto_mode) {
         transitionTo(MrmState::MRM_OPERATING);
       }
-    } else if (mrm_state_.state == MrmState::MRM_FAILED) {
+      return;
+
+    case MrmState::MRM_OPERATING:
+      if (!isStopped()) return;
+      if (mrm_state_.behavior != MrmState::PULL_OVER) {
+        transitionTo(MrmState::MRM_SUCCEEDED);
+        return;
+      }
+      if (isArrivedAtGoal()) {
+        transitionTo(MrmState::MRM_SUCCEEDED);
+      }
+      return;
+
+    case MrmState::MRM_SUCCEEDED:
+      if (mrm_state_.behavior != getCurrentMrmBehavior()) {
+        transitionTo(MrmState::MRM_OPERATING);
+      }
+      return;
+    case MrmState::MRM_FAILED:
       // Do nothing(only checking common recovery events)
-    } else {
+      return;
+
+    default: {
       const auto msg = "invalid state: " + std::to_string(mrm_state_.state);
       throw std::runtime_error(msg);
     }
+      return;
   }
 }
 
