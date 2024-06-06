@@ -1,13 +1,12 @@
-name: cppcheck-all
+name: cppcheck-daily
 
 on:
-  pull_request:
   schedule:
     - cron: 0 0 * * *
   workflow_dispatch:
 
 jobs:
-  cppcheck-all:
+  cppcheck-daily:
     runs-on: ubuntu-latest
 
     steps:
