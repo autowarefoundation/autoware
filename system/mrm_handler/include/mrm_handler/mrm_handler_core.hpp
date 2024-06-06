@@ -147,12 +147,14 @@ private:
 
   // Algorithm
   bool is_emergency_holding_ = false;
+  uint8_t last_gear_command_{autoware_vehicle_msgs::msg::GearCommand::DRIVE};
   void transitionTo(const int new_state);
   void updateMrmState();
   void operateMrm();
   void handleFailedRequest();
   autoware_adapi_v1_msgs::msg::MrmState::_behavior_type getCurrentMrmBehavior();
   bool isStopped();
+  bool isDrivingBackwards();
   bool isEmergency() const;
   bool isArrivedAtGoal();
 };
