@@ -3,7 +3,7 @@
   <arg name="input_trajectory" default="/planning/scenario_planning/velocity_smoother/trajectory"/>
   <arg name="output_trajectory" default="/planning/scenario_planning/trajectory"/>
 
-  <node name="autoware_planning_validator" exec="planning_validator_node" pkg="autoware_planning_validator" output="screen">
+  <node name="planning_validator" exec="planning_validator_node" pkg="autoware_planning_validator" output="screen">
     <!-- load config a file -->
     <param from="$(var planning_validator_param_path)"/>
 
