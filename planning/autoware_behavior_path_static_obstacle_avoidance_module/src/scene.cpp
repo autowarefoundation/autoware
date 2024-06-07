@@ -1208,32 +1208,45 @@ bool StaticObstacleAvoidanceModule::isValidShiftLine(
     }
   }
 
+  const auto is_return_shift =
+    [](const double start_shift_length, const double end_shift_length, const double threshold) {
+      return std::abs(start_shift_length) > threshold && std::abs(end_shift_length) < threshold;
+    };
+
   // check if the vehicle is in road. (yaw angle is not considered)
   {
     const auto minimum_distance = 0.5 * planner_data_->parameters.vehicle_width +
                                   parameters_->hard_drivable_bound_margin -
                                   parameters_->max_deviation_from_lane;
 
-    const size_t start_idx = shift_lines.front().start_idx;
-    const size_t end_idx = shift_lines.back().end_idx;
+    for (const auto & shift_line : shift_lines) {
+      const size_t start_idx = shift_line.start_idx;
+      const size_t end_idx = shift_line.end_idx;
 
-    const auto path = shifter_for_validate.getReferencePath();
-    const auto left_bound = lanelet::utils::to2D(toLineString3d(avoid_data_.left_bound));
-    const auto right_bound = lanelet::utils::to2D(toLineString3d(avoid_data_.right_bound));
-    for (size_t i = start_idx; i <= end_idx; ++i) {
-      const auto p = getPoint(path.points.at(i));
-      lanelet::BasicPoint2d basic_point{p.x, p.y};
+      if (is_return_shift(
+            shift_line.start_shift_length, shift_line.end_shift_length,
+            parameters_->lateral_small_shift_threshold)) {
+        continue;
+      }
 
-      const auto shift_length = proposed_shift_path.shift_length.at(i);
-      const auto THRESHOLD = minimum_distance + std::abs(shift_length);
+      const auto path = shifter_for_validate.getReferencePath();
+      const auto left_bound = lanelet::utils::to2D(toLineString3d(avoid_data_.left_bound));
+      const auto right_bound = lanelet::utils::to2D(toLineString3d(avoid_data_.right_bound));
+      for (size_t i = start_idx; i <= end_idx; ++i) {
+        const auto p = getPoint(path.points.at(i));
+        lanelet::BasicPoint2d basic_point{p.x, p.y};
 
-      if (
-        boost::geometry::distance(basic_point, (shift_length > 0.0 ? left_bound : right_bound)) <
-        THRESHOLD) {
-        RCLCPP_DEBUG_THROTTLE(
-          getLogger(), *clock_, 1000,
-          "following latest new shift line may cause deviation from drivable area.");
-        return false;
+        const auto shift_length = proposed_shift_path.shift_length.at(i);
+        const auto THRESHOLD = minimum_distance + std::abs(shift_length);
+
+        if (
+          boost::geometry::distance(basic_point, (shift_length > 0.0 ? left_bound : right_bound)) <
+          THRESHOLD) {
+          RCLCPP_DEBUG_THROTTLE(
+            getLogger(), *clock_, 1000,
+            "following latest new shift line may cause deviation from drivable area.");
+          return false;
+        }
       }
     }
   }
