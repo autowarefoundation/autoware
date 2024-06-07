@@ -43,6 +43,8 @@ private:
 
   // parameter
   std::string polygon_type_;
+  bool use_z_filter_ = false;
+  float z_threshold_;
 
 public:
   PCL_MAKE_ALIGNED_OPERATOR_NEW

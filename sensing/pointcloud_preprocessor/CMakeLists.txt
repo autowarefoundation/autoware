@@ -221,6 +221,14 @@ ament_auto_package(INSTALL_TO_SHARE
 )
 
 if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  find_package(ament_cmake_gtest)
+  ament_lint_auto_find_test_dependencies()
+  ament_add_gtest(test_utilities
+    test/test_utilities.cpp
+  )
+  target_link_libraries(test_utilities pointcloud_preprocessor_filter)
+
   add_ros_test(
     test/test_distortion_corrector.py
     TIMEOUT "30"
