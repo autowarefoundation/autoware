@@ -520,7 +520,7 @@ bool MrmHandler::isStopped()
   auto odom = sub_odom_.takeData();
   if (odom == nullptr) return false;
   constexpr auto th_stopped_velocity = 0.001;
-  return (std::abs(odom->twist.twist.linear.x < th_stopped_velocity) < th_stopped_velocity);
+  return (std::abs(odom->twist.twist.linear.x) < th_stopped_velocity);
 }
 
 bool MrmHandler::isDrivingBackwards()
