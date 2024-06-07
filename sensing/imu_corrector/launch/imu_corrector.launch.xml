@@ -4,7 +4,7 @@
   <arg name="output_topic" default="imu_data"/>
   <arg name="param_file" default="$(find-pkg-share imu_corrector)/config/imu_corrector.param.yaml"/>
 
-  <node pkg="imu_corrector" exec="imu_corrector" name="imu_corrector" output="screen">
+  <node pkg="imu_corrector" exec="imu_corrector_node" output="both">
     <remap from="input" to="$(var input_topic)"/>
     <remap from="output" to="$(var output_topic)"/>
     <param from="$(var param_file)"/>

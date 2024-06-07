@@ -42,7 +42,7 @@ private:
   using Odometry = nav_msgs::msg::Odometry;
 
 public:
-  GyroBiasEstimator();
+  explicit GyroBiasEstimator(const rclcpp::NodeOptions & options);
 
 private:
   void update_diagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat);

@@ -6,7 +6,7 @@
   <arg name="gyro_bias_estimator_param_file" default="$(find-pkg-share imu_corrector)/config/gyro_bias_estimator.param.yaml"/>
   <arg name="imu_corrector_param_file" default="$(find-pkg-share imu_corrector)/config/imu_corrector.param.yaml"/>
 
-  <node pkg="imu_corrector" exec="gyro_bias_estimator" name="gyro_bias_estimator" output="screen">
+  <node pkg="imu_corrector" exec="gyro_bias_estimator_node" output="both">
     <remap from="~/input/imu_raw" to="$(var input_imu_raw)"/>
     <remap from="~/input/odom" to="$(var input_odom)"/>
     <remap from="~/output/gyro_bias" to="$(var output_gyro_bias)"/>

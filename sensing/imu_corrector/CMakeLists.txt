@@ -4,27 +4,32 @@ project(imu_corrector)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-ament_auto_add_library(gyro_bias_estimation_module SHARED
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/imu_corrector_core.cpp
+)
+
+ament_auto_add_library(gyro_bias_estimator SHARED
+  src/gyro_bias_estimator.cpp
   src/gyro_bias_estimation_module.cpp
 )
 
-ament_auto_add_executable(imu_corrector
-  src/imu_corrector_core.cpp
-  src/imu_corrector_node.cpp
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "imu_corrector::ImuCorrector"
+  EXECUTABLE ${PROJECT_NAME}_node
+  EXECUTOR SingleThreadedExecutor
 )
 
-ament_auto_add_executable(gyro_bias_estimator
-  src/gyro_bias_estimator.cpp
-  src/gyro_bias_estimator_node.cpp
+rclcpp_components_register_node(gyro_bias_estimator
+  PLUGIN "imu_corrector::GyroBiasEstimator"
+  EXECUTABLE gyro_bias_estimator_node
+  EXECUTOR SingleThreadedExecutor
 )
-
-target_link_libraries(gyro_bias_estimator gyro_bias_estimation_module)
 
 function(add_testcase filepath)
   get_filename_component(filename ${filepath} NAME)
   string(REGEX REPLACE ".cpp" "" test_name ${filename})
   ament_add_gmock(${test_name} ${filepath})
-  target_link_libraries("${test_name}" gyro_bias_estimation_module)
+  target_link_libraries("${test_name}" gyro_bias_estimator)
   ament_target_dependencies(${test_name} ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS})
 endfunction()
 

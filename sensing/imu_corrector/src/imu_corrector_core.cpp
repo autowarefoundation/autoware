@@ -53,8 +53,9 @@ geometry_msgs::msg::Vector3 transformVector3(
 
 namespace imu_corrector
 {
-ImuCorrector::ImuCorrector()
-: Node("imu_corrector"), output_frame_(declare_parameter<std::string>("base_link", "base_link"))
+ImuCorrector::ImuCorrector(const rclcpp::NodeOptions & options)
+: rclcpp::Node("imu_corrector", options),
+  output_frame_(declare_parameter<std::string>("base_link", "base_link"))
 {
   transform_listener_ = std::make_shared<tier4_autoware_utils::TransformListener>(this);
 
@@ -123,3 +124,6 @@ void ImuCorrector::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_m
 }
 
 }  // namespace imu_corrector
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(imu_corrector::ImuCorrector)
