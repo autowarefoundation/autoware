@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef STEER_OFFSET_ESTIMATOR__STEER_OFFSET_ESTIMATOR_NODE_HPP_
-#define STEER_OFFSET_ESTIMATOR__STEER_OFFSET_ESTIMATOR_NODE_HPP_
+#ifndef AUTOWARE_STEER_OFFSET_ESTIMATOR__STEER_OFFSET_ESTIMATOR_NODE_HPP_
+#define AUTOWARE_STEER_OFFSET_ESTIMATOR__STEER_OFFSET_ESTIMATOR_NODE_HPP_
 
 #include "diagnostic_updater/diagnostic_updater.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -24,7 +24,7 @@
 
 #include <memory>
 
-namespace steer_offset_estimator
+namespace autoware::steer_offset_estimator
 {
 using geometry_msgs::msg::TwistStamped;
 using tier4_debug_msgs::msg::Float32Stamped;
@@ -64,6 +64,6 @@ private:
 public:
   explicit SteerOffsetEstimatorNode(const rclcpp::NodeOptions & node_options);
 };
-}  // namespace steer_offset_estimator
+}  // namespace autoware::steer_offset_estimator
 
-#endif  // STEER_OFFSET_ESTIMATOR__STEER_OFFSET_ESTIMATOR_NODE_HPP_
+#endif  // AUTOWARE_STEER_OFFSET_ESTIMATOR__STEER_OFFSET_ESTIMATOR_NODE_HPP_

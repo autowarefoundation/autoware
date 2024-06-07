@@ -1,6 +1,6 @@
 <launch>
   <!-- Parameter -->
-  <arg name="config_file" default="$(find-pkg-share steer_offset_estimator)/config/steer_offset_estimator.param.yaml"/>
+  <arg name="config_file" default="$(find-pkg-share autoware_steer_offset_estimator)/config/steer_offset_estimator.param.yaml"/>
 
   <!-- get wheel base from vehicle info -->
   <include file="$(find-pkg-share global_parameter_loader)/launch/global_params.launch.py"/>
@@ -12,7 +12,7 @@
   </include>
 
   <!-- steer offset estimator -->
-  <node pkg="steer_offset_estimator" exec="steer_offset_estimator" name="steer_offset_estimator" output="screen">
+  <node pkg="autoware_steer_offset_estimator" exec="steer_offset_estimator" name="steer_offset_estimator" output="screen">
     <param from="$(var config_file)"/>
     <remap from="~/input/twist" to="$(var output_twist_topic)"/>
     <remap from="~/input/steer" to="/vehicle/status/steering_status"/>

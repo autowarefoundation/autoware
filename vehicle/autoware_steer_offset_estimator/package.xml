@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>steer_offset_estimator</name>
+  <name>autoware_steer_offset_estimator</name>
   <version>0.1.0</version>
   <description>The steer_offset_estimator</description>
   <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>

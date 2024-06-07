@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "steer_offset_estimator/steer_offset_estimator_node.hpp"
+#include "autoware_steer_offset_estimator/steer_offset_estimator_node.hpp"
 
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <memory>
 #include <utility>
 
-namespace steer_offset_estimator
+namespace autoware::steer_offset_estimator
 {
 SteerOffsetEstimatorNode::SteerOffsetEstimatorNode(const rclcpp::NodeOptions & node_options)
 : Node("steer_offset_estimator", node_options)
@@ -137,7 +137,7 @@ void SteerOffsetEstimatorNode::onTimer()
     pub_steer_offset_cov_->publish(std::move(cov_msg));
   }
 }
-}  // namespace steer_offset_estimator
+}  // namespace autoware::steer_offset_estimator
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(steer_offset_estimator::SteerOffsetEstimatorNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::steer_offset_estimator::SteerOffsetEstimatorNode)

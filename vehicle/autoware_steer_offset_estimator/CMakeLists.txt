@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(steer_offset_estimator)
+project(autoware_steer_offset_estimator)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -18,7 +18,7 @@ ament_auto_add_library(steer_offset_estimator_node SHARED
 )
 
 rclcpp_components_register_node(steer_offset_estimator_node
-  PLUGIN "steer_offset_estimator::SteerOffsetEstimatorNode"
+  PLUGIN "autoware::steer_offset_estimator::SteerOffsetEstimatorNode"
   EXECUTABLE steer_offset_estimator
 )
 
