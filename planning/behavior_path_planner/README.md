@@ -34,7 +34,7 @@ Behavior Path Planner has following scene modules
 | External Lane Change       | WIP                                                                                                                                                                        | LINK                                                                          |
 | Goal Planner               | this module is performed when ego-vehicle is in the road lane and goal is in the shoulder lane. ego-vehicle will stop at the goal.                                         | [LINK](../behavior_path_goal_planner_module/README.md)                        |
 | Start Planner              | this module is performed when ego-vehicle is stationary and footprint of ego-vehicle is included in shoulder lane. This module ends when ego-vehicle merges into the road. | [LINK](../behavior_path_start_planner_module/README.md)                       |
-| Side Shift                 | (for remote control) shift the path to left or right according to an external instruction.                                                                                 | [LINK](../behavior_path_side_shift_module/README.md)                          |
+| Side Shift                 | (for remote control) shift the path to left or right according to an external instruction.                                                                                 | [LINK](../autoware_behavior_path_side_shift_module/README.md)                 |
 
 !!! Note
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_side_shift_module/utils.hpp"
+#include "autoware_behavior_path_side_shift_module/utils.hpp"
 
 #include "autoware_behavior_path_planner_common/utils/utils.hpp"
 

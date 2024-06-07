@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_side_shift_module/scene.hpp"
+#include "autoware_behavior_path_side_shift_module/scene.hpp"
 
 #include "autoware_behavior_path_planner_common/marker_utils/utils.hpp"
 #include "autoware_behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "autoware_behavior_path_planner_common/utils/path_utils.hpp"
 #include "autoware_behavior_path_planner_common/utils/utils.hpp"
-#include "behavior_path_side_shift_module/utils.hpp"
+#include "autoware_behavior_path_side_shift_module/utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 

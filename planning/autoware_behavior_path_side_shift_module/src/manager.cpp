@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_side_shift_module/manager.hpp"
+#include "autoware_behavior_path_side_shift_module/manager.hpp"
 
 #include "tier4_autoware_utils/ros/update_param.hpp"
 

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_SIDE_SHIFT_MODULE__UTILS_HPP_
-#define BEHAVIOR_PATH_SIDE_SHIFT_MODULE__UTILS_HPP_
+#ifndef AUTOWARE_BEHAVIOR_PATH_SIDE_SHIFT_MODULE__UTILS_HPP_
+#define AUTOWARE_BEHAVIOR_PATH_SIDE_SHIFT_MODULE__UTILS_HPP_
 
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -41,4 +41,4 @@ Point transformToGrid(
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_SIDE_SHIFT_MODULE__UTILS_HPP_
+#endif  // AUTOWARE_BEHAVIOR_PATH_SIDE_SHIFT_MODULE__UTILS_HPP_
