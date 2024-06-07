@@ -23,7 +23,7 @@
 #include <limits>
 #include <vector>
 
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 using autoware_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
@@ -86,6 +86,6 @@ public:
 protected:
   BaseParam base_param_;
 };
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother
 
 #endif  // AUTOWARE_VELOCITY_SMOOTHER__SMOOTHER__SMOOTHER_BASE_HPP_

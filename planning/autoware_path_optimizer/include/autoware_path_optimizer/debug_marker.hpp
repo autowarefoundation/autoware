@@ -25,11 +25,11 @@
 #include <string>
 #include <vector>
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 MarkerArray getDebugMarker(
   const DebugData & debug_data,
   const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & optimized_points,
   const vehicle_info_util::VehicleInfo & vehicle_info, const bool publish_extra_marker);
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer
 #endif  // AUTOWARE_PATH_OPTIMIZER__DEBUG_MARKER_HPP_

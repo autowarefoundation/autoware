@@ -36,25 +36,25 @@
 namespace tier4_autoware_utils
 {
 template <>
-geometry_msgs::msg::Point getPoint(const autoware_path_optimizer::ReferencePoint & p)
+geometry_msgs::msg::Point getPoint(const autoware::path_optimizer::ReferencePoint & p)
 {
   return p.pose.position;
 }
 
 template <>
-geometry_msgs::msg::Pose getPose(const autoware_path_optimizer::ReferencePoint & p)
+geometry_msgs::msg::Pose getPose(const autoware::path_optimizer::ReferencePoint & p)
 {
   return p.pose;
 }
 
 template <>
-double getLongitudinalVelocity(const autoware_path_optimizer::ReferencePoint & p)
+double getLongitudinalVelocity(const autoware::path_optimizer::ReferencePoint & p)
 {
   return p.longitudinal_velocity_mps;
 }
 }  // namespace tier4_autoware_utils
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 namespace trajectory_utils
 {
@@ -242,4 +242,4 @@ void insertStopPoint(
   traj_points.insert(traj_points.begin() + stop_seg_idx + 1, additional_traj_point);
 }
 }  // namespace trajectory_utils
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer

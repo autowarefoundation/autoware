@@ -27,7 +27,7 @@
 
 #define VERBOSE_TRAJECTORY_VELOCITY false
 
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 JerkFilteredSmoother::JerkFilteredSmoother(rclcpp::Node & node) : SmootherBase(node)
 {
@@ -480,4 +480,4 @@ TrajectoryPoints JerkFilteredSmoother::resampleTrajectory(
     smoother_param_.jerk_filter_ds);
 }
 
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother

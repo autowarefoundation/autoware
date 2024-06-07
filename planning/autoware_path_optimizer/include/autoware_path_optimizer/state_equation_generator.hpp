@@ -22,7 +22,7 @@
 #include <memory>
 #include <vector>
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 struct ReferencePoint;
 
@@ -58,5 +58,5 @@ private:
   std::unique_ptr<VehicleModelInterface> vehicle_model_ptr_;
   mutable std::shared_ptr<TimeKeeper> time_keeper_ptr_;
 };
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer
 #endif  // AUTOWARE_PATH_OPTIMIZER__STATE_EQUATION_GENERATOR_HPP_

@@ -33,7 +33,7 @@
 #include <string>
 #include <vector>
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 class PathOptimizer : public rclcpp::Node
 {
@@ -141,6 +141,6 @@ private:
 
   std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 };
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer
 
 #endif  // AUTOWARE_PATH_OPTIMIZER__NODE_HPP_

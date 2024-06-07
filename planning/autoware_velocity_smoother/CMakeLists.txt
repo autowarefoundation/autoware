@@ -41,7 +41,7 @@ target_link_libraries(${PROJECT_NAME}_node
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}_node
-  PLUGIN "autoware_velocity_smoother::VelocitySmootherNode"
+  PLUGIN "autoware::velocity_smoother::VelocitySmootherNode"
   EXECUTABLE velocity_smoother_node
 )
 

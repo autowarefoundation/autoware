@@ -241,7 +241,7 @@ void MotionVelocityPlannerNode::on_acceleration(
 void MotionVelocityPlannerNode::set_velocity_smoother_params()
 {
   planner_data_.velocity_smoother_ =
-    std::make_shared<autoware_velocity_smoother::AnalyticalJerkConstrainedSmoother>(*this);
+    std::make_shared<autoware::velocity_smoother::AnalyticalJerkConstrainedSmoother>(*this);
 }
 
 void MotionVelocityPlannerNode::on_lanelet_map(
@@ -399,7 +399,7 @@ autoware::motion_velocity_planner::TrajectoryPoints MotionVelocityPlannerNode::s
     traj_smoothed.begin(), traj_resampled.begin(), traj_resampled.begin() + traj_resampled_closest);
 
   if (external_v_limit) {
-    autoware_velocity_smoother::trajectory_utils::applyMaximumVelocityLimit(
+    autoware::velocity_smoother::trajectory_utils::applyMaximumVelocityLimit(
       traj_resampled_closest, traj_smoothed.size(), external_v_limit->max_velocity, traj_smoothed);
   }
   return traj_smoothed;

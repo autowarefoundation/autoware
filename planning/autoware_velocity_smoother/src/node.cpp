@@ -32,7 +32,7 @@
 #include <vector>
 
 // clang-format on
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 VelocitySmootherNode::VelocitySmootherNode(const rclcpp::NodeOptions & node_options)
 : Node("velocity_smoother", node_options)
@@ -1099,7 +1099,7 @@ TrajectoryPoint VelocitySmootherNode::calcProjectedTrajectoryPointFromEgo(
   return calcProjectedTrajectoryPoint(trajectory, current_odometry_ptr_->pose.pose);
 }
 
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(autoware_velocity_smoother::VelocitySmootherNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::velocity_smoother::VelocitySmootherNode)

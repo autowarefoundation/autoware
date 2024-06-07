@@ -23,7 +23,7 @@
 #include <limits>
 #include <vector>
 
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 L2PseudoJerkSmoother::L2PseudoJerkSmoother(rclcpp::Node & node) : SmootherBase(node)
 {
@@ -242,4 +242,4 @@ TrajectoryPoints L2PseudoJerkSmoother::resampleTrajectory(
     base_param_.resample_param);
 }
 
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother

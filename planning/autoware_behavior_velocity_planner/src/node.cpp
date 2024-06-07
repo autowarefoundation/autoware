@@ -310,7 +310,7 @@ void BehaviorVelocityPlannerNode::onParam()
   // constructed. It would be required if it was a callback. std::lock_guard<std::mutex>
   // lock(mutex_);
   planner_data_.velocity_smoother_ =
-    std::make_unique<autoware_velocity_smoother::AnalyticalJerkConstrainedSmoother>(*this);
+    std::make_unique<autoware::velocity_smoother::AnalyticalJerkConstrainedSmoother>(*this);
   planner_data_.velocity_smoother_->setWheelBase(planner_data_.vehicle_info_.wheel_base_m);
 }
 

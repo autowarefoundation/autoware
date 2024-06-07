@@ -53,7 +53,7 @@
 #include <utility>
 #include <vector>
 
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
@@ -275,6 +275,6 @@ private:
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
   std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 };
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother
 
 #endif  // AUTOWARE_VELOCITY_SMOOTHER__NODE_HPP_

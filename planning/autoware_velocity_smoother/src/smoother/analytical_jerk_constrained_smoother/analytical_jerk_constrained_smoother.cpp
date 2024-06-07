@@ -64,7 +64,7 @@ bool applyMaxVelocity(
 
 }  // namespace
 
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 AnalyticalJerkConstrainedSmoother::AnalyticalJerkConstrainedSmoother(rclcpp::Node & node)
 : SmootherBase(node)
@@ -658,4 +658,4 @@ std::string AnalyticalJerkConstrainedSmoother::strStartIndices(
   return ss.str();
 }
 
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother

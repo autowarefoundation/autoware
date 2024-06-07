@@ -25,7 +25,7 @@
 #include <utility>
 #include <vector>
 
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 using geometry_msgs::msg::Point;
 namespace trajectory_utils
@@ -610,4 +610,4 @@ double calcStopDistance(const TrajectoryPoints & trajectory, const size_t closes
 }
 
 }  // namespace trajectory_utils
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother

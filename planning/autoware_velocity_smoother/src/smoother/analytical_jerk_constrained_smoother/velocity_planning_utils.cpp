@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 namespace analytical_velocity_planning_utils
 {
@@ -353,4 +353,4 @@ double integ_a(double a0, double j0, double t)
 }
 
 }  // namespace analytical_velocity_planning_utils
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother

@@ -29,7 +29,7 @@
 #include <optional>
 #include <tuple>
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 namespace
 {
@@ -1783,4 +1783,4 @@ std::optional<double> MPTOptimizer::calcNormalizedAvoidanceCost(
   }
   return std::clamp(-negative_avoidance_cost / mpt_param_.max_avoidance_cost, 0.0, 1.0);
 }
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer

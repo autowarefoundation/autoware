@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 namespace resampling
 {
@@ -264,4 +264,4 @@ TrajectoryPoints resampleTrajectory(
 }
 
 }  // namespace resampling
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother

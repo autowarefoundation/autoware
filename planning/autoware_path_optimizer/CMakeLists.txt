@@ -41,7 +41,7 @@ target_include_directories(autoware_path_optimizer
 
 # register node
 rclcpp_components_register_node(autoware_path_optimizer
-  PLUGIN "autoware_path_optimizer::PathOptimizer"
+  PLUGIN "autoware::path_optimizer::PathOptimizer"
   EXECUTABLE path_optimizer_node
 )
 

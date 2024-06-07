@@ -28,7 +28,7 @@
 #include "tier4_debug_msgs/msg/string_stamped.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 // std_msgs
 using std_msgs::msg::Header;
@@ -45,6 +45,6 @@ using visualization_msgs::msg::MarkerArray;
 // debug
 using tier4_debug_msgs::msg::Float64Stamped;
 using tier4_debug_msgs::msg::StringStamped;
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer
 
 #endif  // AUTOWARE_PATH_OPTIMIZER__TYPE_ALIAS_HPP_

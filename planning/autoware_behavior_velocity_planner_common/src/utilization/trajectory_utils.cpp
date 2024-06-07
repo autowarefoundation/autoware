@@ -82,7 +82,7 @@ bool smoothPath(
     traj_smoothed.begin(), traj_resampled.begin(), traj_resampled.begin() + traj_resampled_closest);
 
   if (external_v_limit) {
-    autoware_velocity_smoother::trajectory_utils::applyMaximumVelocityLimit(
+    autoware::velocity_smoother::trajectory_utils::applyMaximumVelocityLimit(
       traj_resampled_closest, traj_smoothed.size(), external_v_limit->max_velocity, traj_smoothed);
   }
   out_path = motion_utils::convertToPathWithLaneId<TrajectoryPoints>(traj_smoothed);

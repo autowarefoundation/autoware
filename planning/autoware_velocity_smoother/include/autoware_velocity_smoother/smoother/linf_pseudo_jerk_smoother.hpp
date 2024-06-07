@@ -26,7 +26,7 @@
 
 #include <vector>
 
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 class LinfPseudoJerkSmoother : public SmootherBase
 {
@@ -56,6 +56,6 @@ private:
   autoware::common::osqp::OSQPInterface qp_solver_;
   rclcpp::Logger logger_{rclcpp::get_logger("smoother").get_child("linf_pseudo_jerk_smoother")};
 };
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother
 
 #endif  // AUTOWARE_VELOCITY_SMOOTHER__SMOOTHER__LINF_PSEUDO_JERK_SMOOTHER_HPP_

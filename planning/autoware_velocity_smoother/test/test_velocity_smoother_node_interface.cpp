@@ -22,7 +22,7 @@
 
 #include <vector>
 
-using autoware_velocity_smoother::VelocitySmootherNode;
+using autoware::velocity_smoother::VelocitySmootherNode;
 using planning_test_utils::PlanningInterfaceTestManager;
 
 std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()

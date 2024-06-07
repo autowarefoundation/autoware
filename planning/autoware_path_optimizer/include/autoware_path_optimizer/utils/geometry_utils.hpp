@@ -39,13 +39,13 @@
 namespace tier4_autoware_utils
 {
 template <>
-geometry_msgs::msg::Point getPoint(const autoware_path_optimizer::ReferencePoint & p);
+geometry_msgs::msg::Point getPoint(const autoware::path_optimizer::ReferencePoint & p);
 
 template <>
-geometry_msgs::msg::Pose getPose(const autoware_path_optimizer::ReferencePoint & p);
+geometry_msgs::msg::Pose getPose(const autoware::path_optimizer::ReferencePoint & p);
 }  // namespace tier4_autoware_utils
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 namespace geometry_utils
 {
@@ -68,5 +68,5 @@ bool isOutsideDrivableAreaFromRectangleFootprint(
   const vehicle_info_util::VehicleInfo & vehicle_info,
   const bool use_footprint_polygon_for_outside_drivable_area_check);
 }  // namespace geometry_utils
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer
 #endif  // AUTOWARE_PATH_OPTIMIZER__UTILS__GEOMETRY_UTILS_HPP_

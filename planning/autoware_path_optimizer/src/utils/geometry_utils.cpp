@@ -36,7 +36,7 @@
 #include <stack>
 #include <vector>
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 namespace bg = boost::geometry;
 using tier4_autoware_utils::LinearRing2d;
@@ -207,4 +207,4 @@ bool isOutsideDrivableAreaFromRectangleFootprint(
   return false;
 }
 }  // namespace geometry_utils
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer

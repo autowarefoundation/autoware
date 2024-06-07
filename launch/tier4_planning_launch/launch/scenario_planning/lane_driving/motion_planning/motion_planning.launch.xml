@@ -62,7 +62,7 @@
   <group>
     <group if="$(eval &quot;'$(var motion_path_planner_type)' == 'path_optimizer'&quot;)">
       <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
-        <composable_node pkg="autoware_path_optimizer" plugin="autoware_path_optimizer::PathOptimizer" name="path_optimizer" namespace="">
+        <composable_node pkg="autoware_path_optimizer" plugin="autoware::path_optimizer::PathOptimizer" name="path_optimizer" namespace="">
           <!-- topic remap -->
           <remap from="~/input/path" to="path_smoother/path"/>
           <remap from="~/input/odometry" to="/localization/kinematic_state"/>

@@ -88,7 +88,7 @@ struct PlannerData
   bool is_simulation = false;
 
   // velocity smoother
-  std::shared_ptr<autoware_velocity_smoother::SmootherBase> velocity_smoother_;
+  std::shared_ptr<autoware::velocity_smoother::SmootherBase> velocity_smoother_;
   // route handler
   std::shared_ptr<route_handler::RouteHandler> route_handler_;
   // parameters

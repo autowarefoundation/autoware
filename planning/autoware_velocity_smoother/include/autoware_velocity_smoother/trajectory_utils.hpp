@@ -23,7 +23,7 @@
 #include <tuple>
 #include <vector>
 
-namespace autoware_velocity_smoother::trajectory_utils
+namespace autoware::velocity_smoother::trajectory_utils
 {
 using autoware_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
@@ -77,6 +77,6 @@ std::vector<double> calcVelocityProfileWithConstantJerkAndAccelerationLimit(
 
 double calcStopDistance(const TrajectoryPoints & trajectory, const size_t closest);
 
-}  // namespace autoware_velocity_smoother::trajectory_utils
+}  // namespace autoware::velocity_smoother::trajectory_utils
 
 #endif  // AUTOWARE_VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_

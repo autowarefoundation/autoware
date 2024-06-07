@@ -38,16 +38,16 @@
 namespace tier4_autoware_utils
 {
 template <>
-geometry_msgs::msg::Point getPoint(const autoware_path_optimizer::ReferencePoint & p);
+geometry_msgs::msg::Point getPoint(const autoware::path_optimizer::ReferencePoint & p);
 
 template <>
-geometry_msgs::msg::Pose getPose(const autoware_path_optimizer::ReferencePoint & p);
+geometry_msgs::msg::Pose getPose(const autoware::path_optimizer::ReferencePoint & p);
 
 template <>
-double getLongitudinalVelocity(const autoware_path_optimizer::ReferencePoint & p);
+double getLongitudinalVelocity(const autoware::path_optimizer::ReferencePoint & p);
 }  // namespace tier4_autoware_utils
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 namespace trajectory_utils
 {
@@ -214,5 +214,5 @@ void insertStopPoint(
   std::vector<TrajectoryPoint> & traj_points, const geometry_msgs::msg::Pose & input_stop_pose,
   const size_t stop_seg_idx);
 }  // namespace trajectory_utils
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer
 #endif  // AUTOWARE_PATH_OPTIMIZER__UTILS__TRAJECTORY_UTILS_HPP_

@@ -26,7 +26,7 @@
 
 #include <vector>
 
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 class JerkFilteredSmoother : public SmootherBase
 {
@@ -69,6 +69,6 @@ private:
     const double v0, const double a0, const double a_min, const double j_min,
     const TrajectoryPoints & forward_filtered, const TrajectoryPoints & backward_filtered) const;
 };
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother
 
 #endif  // AUTOWARE_VELOCITY_SMOOTHER__SMOOTHER__JERK_FILTERED_SMOOTHER_HPP_

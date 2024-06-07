@@ -20,7 +20,7 @@
 
 #include <vector>
 
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 namespace resampling
 {
@@ -48,6 +48,6 @@ TrajectoryPoints resampleTrajectory(
   const double nearest_dist_threshold, const double nearest_yaw_threshold,
   const ResampleParam & param, const double nominal_ds, const bool use_zoh_for_v = true);
 }  // namespace resampling
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother
 
 #endif  // AUTOWARE_VELOCITY_SMOOTHER__RESAMPLE_HPP_

@@ -26,7 +26,7 @@
 #include <cmath>
 #include <vector>
 
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 
 namespace
@@ -270,4 +270,4 @@ TrajectoryPoints SmootherBase::applySteeringRateLimit(
   return output;
 }
 
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother

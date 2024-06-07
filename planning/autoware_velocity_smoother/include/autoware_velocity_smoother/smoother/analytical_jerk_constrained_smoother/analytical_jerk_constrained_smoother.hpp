@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-namespace autoware_velocity_smoother
+namespace autoware::velocity_smoother
 {
 class AnalyticalJerkConstrainedSmoother : public SmootherBase
 {
@@ -113,7 +113,7 @@ private:
   std::string strTimes(const std::vector<double> & times) const;
   std::string strStartIndices(const std::vector<size_t> & start_indices) const;
 };
-}  // namespace autoware_velocity_smoother
+}  // namespace autoware::velocity_smoother
 
 // clang-format off
 #endif  // AUTOWARE_VELOCITY_SMOOTHER__SMOOTHER__ANALYTICAL_JERK_CONSTRAINED_SMOOTHER__ANALYTICAL_JERK_CONSTRAINED_SMOOTHER_HPP_  // NOLINT

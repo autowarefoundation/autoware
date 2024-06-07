@@ -24,7 +24,7 @@
 #include <memory>
 #include <vector>
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 class ReplanChecker
 {
@@ -66,6 +66,6 @@ private:
   bool isPathGoalChanged(
     const PlannerData & planner_data, const std::vector<TrajectoryPoint> & prev_traj_points) const;
 };
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer
 
 #endif  // AUTOWARE_PATH_OPTIMIZER__REPLAN_CHECKER_HPP_

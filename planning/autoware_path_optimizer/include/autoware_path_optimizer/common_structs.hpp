@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 struct ReferencePoint;
 struct Bounds;
@@ -153,6 +153,6 @@ struct EgoNearestParam
   double dist_threshold{0.0};
   double yaw_threshold{0.0};
 };
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer
 
 #endif  // AUTOWARE_PATH_OPTIMIZER__COMMON_STRUCTS_HPP_

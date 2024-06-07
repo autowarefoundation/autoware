@@ -16,7 +16,7 @@
 
 #include "autoware_path_optimizer/mpt_optimizer.hpp"
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 // state equation: x = B u + W (u includes x_0)
 // NOTE: Originally, x_t+1 = Ad x_t + Bd u + Wd.
@@ -69,4 +69,4 @@ Eigen::VectorXd StateEquationGenerator::predict(
 {
   return mat.B * U + mat.W;
 }
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer

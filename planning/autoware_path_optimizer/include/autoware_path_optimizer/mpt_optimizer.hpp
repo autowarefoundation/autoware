@@ -34,7 +34,7 @@
 #include <utility>
 #include <vector>
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 struct Bounds
 {
@@ -308,5 +308,5 @@ private:
   size_t getNumberOfSlackVariables() const;
   std::optional<double> calcNormalizedAvoidanceCost(const ReferencePoint & ref_point) const;
 };
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer
 #endif  // AUTOWARE_PATH_OPTIMIZER__MPT_OPTIMIZER_HPP_

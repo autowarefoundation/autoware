@@ -18,7 +18,7 @@
 
 #include "visualization_msgs/msg/marker_array.hpp"
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::createDefaultMarker;
@@ -432,4 +432,4 @@ MarkerArray getDebugMarker(
 
   return marker_array;
 }
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer

@@ -25,7 +25,7 @@
 #include <chrono>
 #include <limits>
 
-namespace autoware_path_optimizer
+namespace autoware::path_optimizer
 {
 namespace
 {
@@ -666,7 +666,7 @@ void PathOptimizer::publishDebugData(const Header & header) const
 
   time_keeper_ptr_->toc(__func__, "  ");
 }
-}  // namespace autoware_path_optimizer
+}  // namespace autoware::path_optimizer
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(autoware_path_optimizer::PathOptimizer)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::path_optimizer::PathOptimizer)
