@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for LiDAR TransFusion Node",
+  "type": "object",
+  "definitions": {
+    "transfusion": {
+      "type": "object",
+      "properties": {
+        "class_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "An array of class names will be predicted.",
+          "default": ["CAR", "TRUCK", "BUS", "BICYCLE", "PEDESTRIAN"],
+          "uniqueItems": true
+        },
+        "trt_precision": {
+          "type": "string",
+          "description": "A precision of TensorRT engine.",
+          "default": "fp16",
+          "enum": ["fp16", "fp32"]
+        },
+        "voxels_num": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "A maximum number of voxels [min, opt, max].",
+          "default": [5000, 30000, 60000]
+        },
+        "point_cloud_range": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "An array of distance ranges of each class.",
+          "default": [-76.8, -76.8, -3.0, 76.8, 76.8, 5.0],
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "voxel_size": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Voxels size [x, y, z].",
+          "default": [0.3, 0.3, 8.0],
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "onnx_path": {
+          "type": "string",
+          "description": "A path to ONNX model file.",
+          "default": "$(var model_path)/transfusion.onnx",
+          "pattern": "\\.onnx$"
+        },
+        "engine_path": {
+          "type": "string",
+          "description": "A path to TensorRT engine file.",
+          "default": "$(var model_path)/transfusion.engine",
+          "pattern": "\\.engine$"
+        },
+        "down_sample_factor": {
+          "type": "integer",
+          "description": "A scale factor of downsampling points",
+          "default": 1,
+          "minimum": 1
+        },
+        "densification_num_past_frames": {
+          "type": "integer",
+          "description": "A number of past frames to be considered as same input frame.",
+          "default": 1,
+          "minimum": 0
+        },
+        "densification_world_frame_id": {
+          "type": "string",
+          "description": "A name of frame id where world coordinates system is defined with respect to.",
+          "default": "map"
+        },
+        "circle_nms_dist_threshold": {
+          "type": "number",
+          "description": "A distance threshold between detections in NMS.",
+          "default": 0.5,
+          "minimum": 0.0
+        },
+        "iou_nms_target_class_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "An array of class names to be target in NMS.",
+          "default": ["CAR"],
+          "uniqueItems": true
+        },
+        "iou_nms_search_distance_2d": {
+          "type": "number",
+          "description": "A maximum distance value to search the nearest objects.",
+          "default": 10.0,
+          "minimum": 0.0
+        },
+        "iou_nms_threshold": {
+          "type": "number",
+          "description": "A threshold value of NMS using IoU score.",
+          "default": 0.1,
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "yaw_norm_thresholds": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0
+          },
+          "description": "A thresholds array of direction vectors norm, all of objects with vector norm less than this threshold are ignored.",
+          "default": [0.3, 0.3, 0.3, 0.3, 0.0]
+        },
+        "score_threshold": {
+          "type": "number",
+          "description": "A threshold value of confidence score, all of objects with score less than this threshold are ignored.",
+          "default": 0.2,
+          "minimum": 0.0
+        }
+      },
+      "required": [
+        "class_names",
+        "trt_precision",
+        "voxels_num",
+        "point_cloud_range",
+        "voxel_size",
+        "onnx_path",
+        "engine_path",
+        "densification_num_past_frames",
+        "densification_world_frame_id",
+        "circle_nms_dist_threshold",
+        "iou_nms_target_class_names",
+        "iou_nms_search_distance_2d",
+        "iou_nms_threshold",
+        "yaw_norm_thresholds",
+        "score_threshold"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/transfusion"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

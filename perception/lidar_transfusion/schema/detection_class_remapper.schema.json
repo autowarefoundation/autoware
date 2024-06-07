@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Detection Class Remapper",
+  "type": "object",
+  "definitions": {
+    "detection_class_remapper": {
+      "type": "object",
+      "properties": {
+        "allow_remapping_by_area_matrix": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "Whether to allow remapping of classes. The order of 8x8 matrix classes comes from ObjectClassification msg.",
+          "default": [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0
+          ],
+          "minItems": 64,
+          "maxItems": 64
+        },
+        "min_area_matrix": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Minimum area for specific class to consider class remapping.",
+          "default": [
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 12.1, 0.0, 36.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 36.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 36.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+          ],
+          "minItems": 64,
+          "maxItems": 64
+        },
+        "max_area_matrix": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Maximum area for specific class to consider class remapping.",
+          "default": [
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 36.0, 0.0, 999.999, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 999.999, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 999.999, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+          ],
+          "minItems": 64,
+          "maxItems": 64
+        }
+      },
+      "required": ["allow_remapping_by_area_matrix", "min_area_matrix", "max_area_matrix"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/detection_class_remapper"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

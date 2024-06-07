@@ -1,0 +1,20 @@
+/**:
+  ros__parameters:
+    # network
+    class_names: ["CAR", "TRUCK", "BUS", "BICYCLE", "PEDESTRIAN"]
+    trt_precision: fp16
+    voxels_num: [5000, 30000, 60000]  # [min, opt, max]
+    point_cloud_range: [-76.8, -76.8, -3.0, 76.8, 76.8, 5.0]  # [x_min, y_min, z_min, x_max, y_max, z_max]
+    voxel_size: [0.3, 0.3, 8.0]  # [x, y, z]
+    onnx_path: "$(var model_path)/transfusion.onnx"
+    engine_path: "$(var model_path)/transfusion.engine"
+    # pre-process params
+    densification_num_past_frames: 1
+    densification_world_frame_id: map
+    # post-process params
+    circle_nms_dist_threshold: 0.5
+    iou_nms_target_class_names: ["CAR"]
+    iou_nms_search_distance_2d: 10.0
+    iou_nms_threshold: 0.1
+    yaw_norm_thresholds: [0.3, 0.3, 0.3, 0.3, 0.0]  # refers to the class_names
+    score_threshold: 0.2

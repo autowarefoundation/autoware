@@ -5,7 +5,7 @@
 
   <!-- Lidar parameters -->
   <arg name="input/pointcloud"/>
-  <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`, `pointpainting`, `clustering`"/>
+  <arg name="lidar_detection_model" default="centerpoint" description="options: `transfusion`, `centerpoint`, `apollo`, `pointpainting`, `clustering`"/>
   <arg name="use_object_filter" default="true" description="use object filter"/>
   <arg name="pointcloud_container_name" default="pointcloud_container"/>
 
