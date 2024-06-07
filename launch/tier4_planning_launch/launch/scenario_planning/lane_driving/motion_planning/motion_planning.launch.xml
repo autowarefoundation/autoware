@@ -80,7 +80,7 @@
 
     <group if="$(eval &quot;'$(var motion_path_planner_type)' == 'path_sampler'&quot;)">
       <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
-        <composable_node pkg="path_sampler" plugin="path_sampler::PathSampler" name="path_sampler" namespace="">
+        <composable_node pkg="autoware_path_sampler" plugin="autoware::path_sampler::PathSampler" name="path_sampler" namespace="">
           <!-- topic remap -->
           <remap from="~/input/path" to="path_smoother/path"/>
           <remap from="~/input/odometry" to="/localization/kinematic_state"/>

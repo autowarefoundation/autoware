@@ -1,0 +1,16 @@
+<launch>
+  <arg name="input_path" />
+  <arg name="input_scenario" />
+  <arg name="output_trajectory" />
+
+  <node pkg="autoware_frenet_planner" type="autoware_frenet_planner" name="autoware_frenet_planner" output="screen">
+    <remap from="~input/path" to="$(arg input_path)" />
+    <remap from="~input/scenario" to="$(arg input_scenario)" />
+    <remap from="~output/trajectory" to="$(arg output_trajectory)" />
+
+    <!-- Node configurations -->
+    <param name="update_rate" value="10.0" />
+
+    <!-- Frenet planner configurations -->
+  </node>
+</launch>

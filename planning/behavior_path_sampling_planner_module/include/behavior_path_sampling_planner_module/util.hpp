@@ -14,8 +14,8 @@
 
 #ifndef BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__UTIL_HPP_
 #define BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__UTIL_HPP_
-#include "sampler_common/structures.hpp"
-#include "sampler_common/transform/spline_transform.hpp"
+#include "autoware_sampler_common/structures.hpp"
+#include "autoware_sampler_common/transform/spline_transform.hpp"
 
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
@@ -40,18 +40,20 @@ struct SoftConstraintsInputs
   lanelet::ConstLanelets closest_lanelets_to_goal;
   behavior_path_planner::PlanResult reference_path;
   behavior_path_planner::PlanResult prev_module_path;
-  std::optional<sampler_common::Path> prev_path;
+  std::optional<autoware::sampler_common::Path> prev_path;
   lanelet::ConstLanelets current_lanes;
 };
 
 using SoftConstraintsFunctionVector = std::vector<std::function<double(
-  sampler_common::Path &, const sampler_common::Constraints &, const SoftConstraintsInputs &)>>;
+  autoware::sampler_common::Path &, const autoware::sampler_common::Constraints &,
+  const SoftConstraintsInputs &)>>;
 
 using HardConstraintsFunctionVector = std::vector<std::function<bool(
-  sampler_common::Path &, const sampler_common::Constraints &, const MultiPoint2d &)>>;
+  autoware::sampler_common::Path &, const autoware::sampler_common::Constraints &,
+  const MultiPoint2d &)>>;
 
 inline std::vector<double> evaluateSoftConstraints(
-  sampler_common::Path & path, const sampler_common::Constraints & constraints,
+  autoware::sampler_common::Path & path, const autoware::sampler_common::Constraints & constraints,
   const SoftConstraintsFunctionVector & soft_constraints_functions,
   const SoftConstraintsInputs & input_data)
 {
@@ -71,7 +73,7 @@ inline std::vector<double> evaluateSoftConstraints(
 }
 
 inline std::vector<bool> evaluateHardConstraints(
-  sampler_common::Path & path, const sampler_common::Constraints & constraints,
+  autoware::sampler_common::Path & path, const autoware::sampler_common::Constraints & constraints,
   const MultiPoint2d & footprint, const HardConstraintsFunctionVector & hard_constraints)
 {
   std::vector<bool> constraints_results;
@@ -86,11 +88,11 @@ inline std::vector<bool> evaluateHardConstraints(
   return constraints_results;
 }
 
-inline sampler_common::State getInitialState(
+inline autoware::sampler_common::State getInitialState(
   const geometry_msgs::msg::Pose & pose,
-  const sampler_common::transform::Spline2D & reference_spline)
+  const autoware::sampler_common::transform::Spline2D & reference_spline)
 {
-  sampler_common::State initial_state;
+  autoware::sampler_common::State initial_state;
   Point2d initial_state_pose{pose.position.x, pose.position.y};
   const auto rpy = tier4_autoware_utils::getRPY(pose.orientation);
   initial_state.pose = initial_state_pose;

@@ -44,14 +44,16 @@ SamplingPlannerModule::SamplingPlannerModule(
   // check if the path is empty
   hard_constraints_.emplace_back(
     [](
-      sampler_common::Path & path, [[maybe_unused]] const sampler_common::Constraints & constraints,
+      autoware::sampler_common::Path & path,
+      [[maybe_unused]] const autoware::sampler_common::Constraints & constraints,
       [[maybe_unused]] const MultiPoint2d & footprint) -> bool {
       return !path.points.empty() && !path.poses.empty();
     });
 
   hard_constraints_.emplace_back(
     [](
-      sampler_common::Path & path, const sampler_common::Constraints & constraints,
+      autoware::sampler_common::Path & path,
+      const autoware::sampler_common::Constraints & constraints,
       const MultiPoint2d & footprint) -> bool {
       if (!footprint.empty()) {
         path.constraint_results.inside_drivable_area =
@@ -71,7 +73,8 @@ SamplingPlannerModule::SamplingPlannerModule(
 
   hard_constraints_.emplace_back(
     [](
-      sampler_common::Path & path, const sampler_common::Constraints & constraints,
+      autoware::sampler_common::Path & path,
+      const autoware::sampler_common::Constraints & constraints,
       [[maybe_unused]] const MultiPoint2d & footprint) -> bool {
       if (path.curvatures.empty()) {
         path.constraint_results.valid_curvature = false;
@@ -96,8 +99,8 @@ SamplingPlannerModule::SamplingPlannerModule(
   //  Yaw difference soft constraint cost -> Considering implementation
   // soft_constraints_.emplace_back(
   //   [&](
-  //     sampler_common::Path & path, [[maybe_unused]] const sampler_common::Constraints &
-  //     constraints,
+  //     autoware::sampler_common::Path & path, [[maybe_unused]] const
+  //     autoware::sampler_common::Constraints & constraints,
   //     [[maybe_unused]] const SoftConstraintsInputs & input_data) -> double {
   //     if (path.points.empty()) return 0.0;
   //     const auto & goal_pose_yaw =
@@ -109,7 +112,8 @@ SamplingPlannerModule::SamplingPlannerModule(
   //  Remaining path length
   soft_constraints_.emplace_back(
     [&](
-      sampler_common::Path & path, [[maybe_unused]] const sampler_common::Constraints & constraints,
+      autoware::sampler_common::Path & path,
+      [[maybe_unused]] const autoware::sampler_common::Constraints & constraints,
       [[maybe_unused]] const SoftConstraintsInputs & input_data) -> double {
       if (path.points.empty()) return 0.0;
       if (path.poses.empty()) return 0.0;
@@ -142,8 +146,8 @@ SamplingPlannerModule::SamplingPlannerModule(
   // Distance to centerline
   soft_constraints_.emplace_back(
     [&](
-      [[maybe_unused]] sampler_common::Path & path,
-      [[maybe_unused]] const sampler_common::Constraints & constraints,
+      [[maybe_unused]] autoware::sampler_common::Path & path,
+      [[maybe_unused]] const autoware::sampler_common::Constraints & constraints,
       [[maybe_unused]] const SoftConstraintsInputs & input_data) -> double {
       if (path.poses.empty()) return 0.0;
       const auto & last_pose = path.poses.back();
@@ -159,7 +163,8 @@ SamplingPlannerModule::SamplingPlannerModule(
   // // Curvature cost
   soft_constraints_.emplace_back(
     [](
-      sampler_common::Path & path, [[maybe_unused]] const sampler_common::Constraints & constraints,
+      autoware::sampler_common::Path & path,
+      [[maybe_unused]] const autoware::sampler_common::Constraints & constraints,
       [[maybe_unused]] const SoftConstraintsInputs & input_data) -> double {
       if (path.curvatures.empty()) return std::numeric_limits<double>::max();
 
@@ -244,7 +249,7 @@ bool SamplingPlannerModule::isReferencePathSafe() const
 
   std::vector<bool> hard_constraints_results;
   auto transform_to_sampling_path = [](const PlanResult plan) {
-    sampler_common::Path path;
+    autoware::sampler_common::Path path;
     for (size_t i = 0; i < plan->points.size(); ++i) {
       const auto x = plan->points[i].point.pose.position.x;
       const auto y = plan->points[i].point.pose.position.y;
@@ -258,17 +263,20 @@ bool SamplingPlannerModule::isReferencePathSafe() const
     }
     return path;
   };
-  sampler_common::Path reference_path = transform_to_sampling_path(prev_module_reference_path);
-  const auto footprint = sampler_common::constraints::buildFootprintPoints(
+  autoware::sampler_common::Path reference_path =
+    transform_to_sampling_path(prev_module_reference_path);
+  const auto footprint = autoware::sampler_common::constraints::buildFootprintPoints(
     reference_path, internal_params_->constraints);
 
   behavior_path_planner::HardConstraintsFunctionVector hard_constraints_reference_path;
   hard_constraints_reference_path.emplace_back(
     [](
-      sampler_common::Path & path, const sampler_common::Constraints & constraints,
+      autoware::sampler_common::Path & path,
+      const autoware::sampler_common::Constraints & constraints,
       const MultiPoint2d & footprint) -> bool {
       path.constraint_results.collision_free =
-        !sampler_common::constraints::has_collision(footprint, constraints.obstacle_polygons);
+        !autoware::sampler_common::constraints::has_collision(
+          footprint, constraints.obstacle_polygons);
       return path.constraint_results.collision_free;
     });
   evaluateHardConstraints(
@@ -295,7 +303,7 @@ SamplingPlannerData SamplingPlannerModule::createPlannerData(
 }
 
 PathWithLaneId SamplingPlannerModule::convertFrenetPathToPathWithLaneID(
-  const frenet_planner::Path frenet_path, const lanelet::ConstLanelets & lanelets,
+  const autoware::frenet_planner::Path frenet_path, const lanelet::ConstLanelets & lanelets,
   const double path_z)
 {
   auto quaternion_from_rpy = [](double roll, double pitch, double yaw) -> tf2::Quaternion {
@@ -348,12 +356,12 @@ PathWithLaneId SamplingPlannerModule::convertFrenetPathToPathWithLaneID(
 }
 
 void SamplingPlannerModule::prepareConstraints(
-  sampler_common::Constraints & constraints,
+  autoware::sampler_common::Constraints & constraints,
   const PredictedObjects::ConstSharedPtr & predicted_objects,
   const std::vector<geometry_msgs::msg::Point> & left_bound,
   const std::vector<geometry_msgs::msg::Point> & right_bound) const
 {
-  constraints.obstacle_polygons = sampler_common::MultiPolygon2d();
+  constraints.obstacle_polygons = autoware::sampler_common::MultiPolygon2d();
   constraints.rtree.clear();
   size_t i = 0;
   for (const auto & o : predicted_objects->objects) {
@@ -370,7 +378,7 @@ void SamplingPlannerModule::prepareConstraints(
 
   // TODO(Maxime): directly use lines instead of polygon
 
-  sampler_common::Polygon2d drivable_area_polygon;
+  autoware::sampler_common::Polygon2d drivable_area_polygon;
   for (const auto & p : right_bound) {
     drivable_area_polygon.outer().emplace_back(p.x, p.y);
   }
@@ -392,7 +400,7 @@ BehaviorModuleOutput SamplingPlannerModule::plan()
   if (reference_path_ptr->points.empty()) {
     return {};
   }
-  auto reference_spline = [&]() -> sampler_common::transform::Spline2D {
+  auto reference_spline = [&]() -> autoware::sampler_common::transform::Spline2D {
     std::vector<double> x;
     std::vector<double> y;
     x.reserve(reference_path_ptr->points.size());
@@ -404,19 +412,19 @@ BehaviorModuleOutput SamplingPlannerModule::plan()
     return {x, y};
   }();
 
-  frenet_planner::FrenetState frenet_initial_state;
-  frenet_planner::SamplingParameters sampling_parameters;
+  autoware::frenet_planner::FrenetState frenet_initial_state;
+  autoware::frenet_planner::SamplingParameters sampling_parameters;
 
   const auto & pose = planner_data_->self_odometry->pose.pose;
-  sampler_common::State initial_state =
+  autoware::sampler_common::State initial_state =
     behavior_path_planner::getInitialState(pose, reference_spline);
   sampling_parameters =
     prepareSamplingParameters(initial_state, reference_spline, *internal_params_);
 
   auto set_frenet_state = [](
-                            const sampler_common::State & initial_state,
-                            const sampler_common::transform::Spline2D & reference_spline,
-                            frenet_planner::FrenetState & frenet_initial_state)
+                            const autoware::sampler_common::State & initial_state,
+                            const autoware::sampler_common::transform::Spline2D & reference_spline,
+                            autoware::frenet_planner::FrenetState & frenet_initial_state)
 
   {
     frenet_initial_state.position = initial_state.frenet;
@@ -496,14 +504,16 @@ BehaviorModuleOutput SamplingPlannerModule::plan()
   const int path_divisions = internal_params_->sampling.previous_path_reuse_points_nb;
   const bool is_extend_previous_path = path_divisions > 0;
 
-  std::vector<frenet_planner::Path> frenet_paths;
+  std::vector<autoware::frenet_planner::Path> frenet_paths;
   // Extend prev path
   if (prev_path_is_valid && is_extend_previous_path) {
-    frenet_planner::Path prev_path_frenet = prev_sampling_path_.value();
+    autoware::frenet_planner::Path prev_path_frenet = prev_sampling_path_.value();
     frenet_paths.push_back(prev_path_frenet);
 
-    auto get_subset = [](const frenet_planner::Path & path, size_t offset) -> frenet_planner::Path {
-      frenet_planner::Path s;
+    auto get_subset = [](
+                        const autoware::frenet_planner::Path & path,
+                        size_t offset) -> autoware::frenet_planner::Path {
+      autoware::frenet_planner::Path s;
       s.points = {path.points.begin(), path.points.begin() + offset};
       s.curvatures = {path.curvatures.begin(), path.curvatures.begin() + offset};
       s.yaws = {path.yaws.begin(), path.yaws.begin() + offset};
@@ -512,7 +522,7 @@ BehaviorModuleOutput SamplingPlannerModule::plan()
       return s;
     };
 
-    sampler_common::State current_state;
+    autoware::sampler_common::State current_state;
     current_state.pose = {ego_pose.position.x, ego_pose.position.y};
 
     const auto closest_iter = std::min_element(
@@ -537,22 +547,22 @@ BehaviorModuleOutput SamplingPlannerModule::plan()
       const auto reused_path = get_subset(prev_path_frenet, reuse_idx);
 
       geometry_msgs::msg::Pose future_pose = reused_path.poses.back();
-      sampler_common::State future_state =
+      autoware::sampler_common::State future_state =
         behavior_path_planner::getInitialState(future_pose, reference_spline);
-      frenet_planner::FrenetState frenet_reuse_state;
+      autoware::frenet_planner::FrenetState frenet_reuse_state;
 
       set_frenet_state(future_state, reference_spline, frenet_reuse_state);
-      frenet_planner::SamplingParameters extension_sampling_parameters =
+      autoware::frenet_planner::SamplingParameters extension_sampling_parameters =
         prepareSamplingParameters(future_state, reference_spline, *internal_params_);
-      auto extension_frenet_paths = frenet_planner::generatePaths(
+      auto extension_frenet_paths = autoware::frenet_planner::generatePaths(
         reference_spline, frenet_reuse_state, extension_sampling_parameters);
       for (auto & p : extension_frenet_paths) {
         if (!p.points.empty()) frenet_paths.push_back(reused_path.extend(p));
       }
     }
   } else {
-    frenet_paths =
-      frenet_planner::generatePaths(reference_spline, frenet_initial_state, sampling_parameters);
+    frenet_paths = autoware::frenet_planner::generatePaths(
+      reference_spline, frenet_initial_state, sampling_parameters);
   }
 
   const auto path_for_calculating_bounds = getPreviousModuleOutput().reference_path;
@@ -587,8 +597,8 @@ BehaviorModuleOutput SamplingPlannerModule::plan()
   std::vector<std::vector<bool>> hard_constraints_results_full;
   std::vector<std::vector<double>> soft_constraints_results_full;
   for (auto & path : frenet_paths) {
-    const auto footprint =
-      sampler_common::constraints::buildFootprintPoints(path, internal_params_->constraints);
+    const auto footprint = autoware::sampler_common::constraints::buildFootprintPoints(
+      path, internal_params_->constraints);
     std::vector<bool> hard_constraints_results =
       evaluateHardConstraints(path, internal_params_->constraints, footprint, hard_constraints_);
     path.constraint_results.valid_curvature = true;
@@ -598,7 +608,7 @@ BehaviorModuleOutput SamplingPlannerModule::plan()
     soft_constraints_results_full.push_back(soft_constraints_results);
   }
 
-  std::vector<sampler_common::Path> candidate_paths;
+  std::vector<autoware::sampler_common::Path> candidate_paths;
   const auto move_to_paths = [&candidate_paths](auto & paths_to_move) {
     candidate_paths.insert(
       candidate_paths.end(), std::make_move_iterator(paths_to_move.begin()),
@@ -917,9 +927,9 @@ DrivableLanes SamplingPlannerModule::generateExpandDrivableLanes(
   return current_drivable_lanes;
 }
 
-frenet_planner::SamplingParameters SamplingPlannerModule::prepareSamplingParameters(
-  const sampler_common::State & initial_state,
-  const sampler_common::transform::Spline2D & path_spline,
+autoware::frenet_planner::SamplingParameters SamplingPlannerModule::prepareSamplingParameters(
+  const autoware::sampler_common::State & initial_state,
+  const autoware::sampler_common::transform::Spline2D & path_spline,
   const SamplingPlannerInternalParameters & params_)
 {
   // calculate target lateral positions
@@ -953,10 +963,10 @@ frenet_planner::SamplingParameters SamplingPlannerModule::prepareSamplingParamet
   } else {
     target_lateral_positions = params_.sampling.target_lateral_positions;
   }
-  frenet_planner::SamplingParameters sampling_parameters;
+  autoware::frenet_planner::SamplingParameters sampling_parameters;
   sampling_parameters.resolution = params_.sampling.resolution;
   const auto max_s = path_spline.lastS();
-  frenet_planner::SamplingParameter p;
+  autoware::frenet_planner::SamplingParameter p;
   for (const auto target_length : params_.sampling.target_lengths) {
     p.target_state.position.s =
       std::min(max_s, path_spline.frenet(initial_state.pose).s + std::max(0.0, target_length));

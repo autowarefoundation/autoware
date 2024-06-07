@@ -15,8 +15,8 @@
 #ifndef BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_PARAMETERS_HPP_
 #define BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_PARAMETERS_HPP_
 
-#include "bezier_sampler/bezier_sampling.hpp"
-#include "sampler_common/structures.hpp"
+#include "autoware_bezier_sampler/bezier_sampling.hpp"
+#include "autoware_sampler_common/structures.hpp"
 
 #include <vector>
 namespace behavior_path_planner
@@ -78,12 +78,12 @@ struct Sampling
   std::vector<double> target_lateral_positions{};
   int nb_target_lateral_positions{};
   Frenet frenet;
-  bezier_sampler::SamplingParameters bezier{};
+  autoware::bezier_sampler::SamplingParameters bezier{};
 };
 
 struct SamplingPlannerInternalParameters
 {
-  sampler_common::Constraints constraints;
+  autoware::sampler_common::Constraints constraints;
   Sampling sampling;
   Preprocessing preprocessing{};
 };
