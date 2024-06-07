@@ -77,7 +77,7 @@ nav:
     - 'External Velocity Limit Selector': planning/autoware_external_velocity_limit_selector
     - 'Objects of Interest Marker Interface': planning/objects_of_interest_marker_interface
     - 'Route Handler': planning/route_handler
-    - 'RTC Interface': planning/rtc_interface
+    - 'RTC Interface': planning/autoware_rtc_interface
   - 'Additional Tools':
     - 'Remaining Distance Time Calculator': planning/autoware_remaining_distance_time_calculator
     - 'RTC Replayer': planning/rtc_replayer

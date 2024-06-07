@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "rtc_interface/rtc_interface.hpp"
+#include "autoware_rtc_interface/rtc_interface.hpp"
 
 #include <chrono>
 
@@ -78,7 +78,7 @@ Module getModuleType(const std::string & module_name)
 
 }  // namespace
 
-namespace rtc_interface
+namespace autoware::rtc_interface
 {
 RTCInterface::RTCInterface(rclcpp::Node * node, const std::string & name, const bool enable_rtc)
 : clock_{node->get_clock()},
@@ -363,4 +363,4 @@ bool RTCInterface::isLocked() const
   return is_locked_;
 }
 
-}  // namespace rtc_interface
+}  // namespace autoware::rtc_interface

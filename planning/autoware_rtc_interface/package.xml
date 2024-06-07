@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>rtc_interface</name>
+  <name>autoware_rtc_interface</name>
   <version>0.1.0</version>
-  <description>The rtc_interface package</description>
+  <description>The autoware_rtc_interface package</description>
 
   <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
   <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>

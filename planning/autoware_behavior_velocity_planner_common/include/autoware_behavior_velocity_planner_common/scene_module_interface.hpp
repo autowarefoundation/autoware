@@ -16,11 +16,11 @@
 #define AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_
 
 #include <autoware_behavior_velocity_planner_common/planner_data.hpp>
+#include <autoware_rtc_interface/rtc_interface.hpp>
 #include <builtin_interfaces/msg/time.hpp>
 #include <motion_utils/factor/velocity_factor_interface.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp>
-#include <rtc_interface/rtc_interface.hpp>
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
 #include <tier4_autoware_utils/ros/parameter.hpp>
 
@@ -48,12 +48,12 @@
 namespace autoware::behavior_velocity_planner
 {
 
+using autoware::rtc_interface::RTCInterface;
 using builtin_interfaces::msg::Time;
 using motion_utils::PlanningBehavior;
 using motion_utils::VelocityFactor;
 using objects_of_interest_marker_interface::ColorName;
 using objects_of_interest_marker_interface::ObjectsOfInterestMarkerInterface;
-using rtc_interface::RTCInterface;
 using tier4_autoware_utils::DebugPublisher;
 using tier4_autoware_utils::getOrDeclareParameter;
 using tier4_debug_msgs::msg::Float64Stamped;

@@ -10,7 +10,7 @@ RTC Interface is an interface to publish the decision status of behavior plannin
 
 ```c++
 // Generate instance (in this example, "intersection" is selected)
-rtc_interface::RTCInterface rtc_interface(node, "intersection");
+autoware::rtc_interface::RTCInterface rtc_interface(node, "intersection");
 
 // Generate UUID
 const unique_identifier_msgs::msg::UUID uuid = generateUUID(getModuleId());
@@ -51,12 +51,12 @@ rtc_interface.removeCooperateStatus(uuid);
 ### RTCInterface (Constructor)
 
 ```c++
-rtc_interface::RTCInterface(rclcpp::Node & node, const std::string & name);
+autoware::rtc_interface::RTCInterface(rclcpp::Node & node, const std::string & name);
 ```
 
 #### Description
 
-A constructor for `rtc_interface::RTCInterface`.
+A constructor for `autoware::rtc_interface::RTCInterface`.
 
 #### Input
 
@@ -72,7 +72,7 @@ An instance of `RTCInterface`
 ### publishCooperateStatus
 
 ```c++
-rtc_interface::publishCooperateStatus(const rclcpp::Time & stamp)
+autoware::rtc_interface::publishCooperateStatus(const rclcpp::Time & stamp)
 ```
 
 #### Description
@@ -90,7 +90,7 @@ Nothing
 ### updateCooperateStatus
 
 ```c++
-rtc_interface::updateCooperateStatus(const unique_identifier_msgs::msg::UUID & uuid, const bool safe, const double start_distance, const double finish_distance, const rclcpp::Time & stamp)
+autoware::rtc_interface::updateCooperateStatus(const unique_identifier_msgs::msg::UUID & uuid, const bool safe, const double start_distance, const double finish_distance, const rclcpp::Time & stamp)
 ```
 
 #### Description
@@ -113,7 +113,7 @@ Nothing
 ### removeCooperateStatus
 
 ```c++
-rtc_interface::removeCooperateStatus(const unique_identifier_msgs::msg::UUID & uuid)
+autoware::rtc_interface::removeCooperateStatus(const unique_identifier_msgs::msg::UUID & uuid)
 ```
 
 #### Description
@@ -131,7 +131,7 @@ Nothing
 ### clearCooperateStatus
 
 ```c++
-rtc_interface::clearCooperateStatus()
+autoware::rtc_interface::clearCooperateStatus()
 ```
 
 #### Description
@@ -149,7 +149,7 @@ Nothing
 ### isActivated
 
 ```c++
-rtc_interface::isActivated(const unique_identifier_msgs::msg::UUID & uuid)
+autoware::rtc_interface::isActivated(const unique_identifier_msgs::msg::UUID & uuid)
 ```
 
 #### Description
@@ -169,7 +169,7 @@ If not, return `false`.
 ### isRegistered
 
 ```c++
-rtc_interface::isRegistered(const unique_identifier_msgs::msg::UUID & uuid)
+autoware::rtc_interface::isRegistered(const unique_identifier_msgs::msg::UUID & uuid)
 ```
 
 #### Description

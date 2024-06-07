@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RTC_INTERFACE__RTC_INTERFACE_HPP_
-#define RTC_INTERFACE__RTC_INTERFACE_HPP_
+#ifndef AUTOWARE_RTC_INTERFACE__RTC_INTERFACE_HPP_
+#define AUTOWARE_RTC_INTERFACE__RTC_INTERFACE_HPP_
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -33,7 +33,7 @@
 #include <string>
 #include <vector>
 
-namespace rtc_interface
+namespace autoware::rtc_interface
 {
 using tier4_rtc_msgs::msg::AutoModeStatus;
 using tier4_rtc_msgs::msg::Command;
@@ -101,6 +101,6 @@ private:
   mutable std::mutex mutex_;
 };
 
-}  // namespace rtc_interface
+}  // namespace autoware::rtc_interface
 
-#endif  // RTC_INTERFACE__RTC_INTERFACE_HPP_
+#endif  // AUTOWARE_RTC_INTERFACE__RTC_INTERFACE_HPP_
