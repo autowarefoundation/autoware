@@ -1,0 +1,129 @@
+---
+# Ensure qt5ct is installed
+- name: Install qt5ct
+  ansible.builtin.apt:
+    name: qt5ct
+    state: present
+  become: yes
+
+# Find the autoware directories
+- name: Find autoware directories
+  ansible.builtin.find:
+    paths: "{{ lookup('env', 'HOME') }}"
+    recurse: yes
+    file_type: directory
+    pattern: autoware
+    use_regex: no
+  register: autoware_dirs
+
+# Check if the found autoware directories contain the ansible folder
+- name: Check if autoware directories contain ansible folder
+  ansible.builtin.stat:
+    path: "{{ item.path }}/ansible"
+  register: autoware_ansible_dirs
+  loop: "{{ autoware_dirs.files }}"
+
+# Set the correct autoware directory
+- name: Set the correct autoware directory
+  set_fact:
+    autoware_dir: "{{ autoware_ansible_dirs.results | selectattr('stat.exists', 'eq', True) | map(attribute='item.path') | list | first }}"
+
+# Fallback to default autoware directory if none found
+- name: Set default autoware directory if none found
+  set_fact:
+    autoware_dir: "{{ lookup('env', 'HOME') }}/autoware"
+  when: autoware_dir is not defined
+
+# Find qt5ct export files
+- name: Find QT_QPA_PLATFORMTHEME export files in Xsession.d
+  ansible.builtin.find:
+    paths: /etc/X11/Xsession.d
+    recurse: yes
+    patterns: "*qt5ct*"
+  register: qt5ct_files
+
+# Comment out the QT_QPA_PLATFORMTHEME export line
+- name: Comment out QT_QPA_PLATFORMTHEME export line
+  become: yes
+  lineinfile:
+    path: "{{ item.path }}"
+    regexp: '^\s*export QT_QPA_PLATFORMTHEME=qt5ct'
+    line: "# export QT_QPA_PLATFORMTHEME=qt5ct"
+  loop: "{{ qt5ct_files.files }}"
+  when: '"export QT_QPA_PLATFORMTHEME=qt5ct" in lookup("file", item.path)'
+
+# Ensure the qt5ct config directory exists
+- name: Ensure qt5ct config directory exists
+  ansible.builtin.file:
+    path: "{{ lookup('env', 'HOME') }}/.config/qt5ct"
+    state: directory
+    mode: "0755"
+
+# Copy base qt5ct.conf if it doesn't exist
+- name: Copy base qt5ct.conf
+  ansible.builtin.copy:
+    src: "{{ autoware_dir }}/ansible/roles/qt5ct_setup/files/base-qt5ct.conf"
+    dest: "{{ lookup('env', 'HOME') }}/.config/qt5ct/qt5ct.conf"
+    mode: "0644"
+    force: no
+
+# Read qt5ct.conf file content
+- name: Read qt5ct.conf file content
+  ansible.builtin.slurp:
+    src: "{{ lookup('env', 'HOME') }}/.config/qt5ct/qt5ct.conf"
+  register: qt5ct_conf_content
+
+- name: Decode qt5ct.conf content
+  set_fact:
+    decoded_content: "{{ qt5ct_conf_content.content | b64decode }}"
+
+- name: Split content into lines
+  set_fact:
+    lines: "{{ decoded_content.split('\n') }}"
+
+- name: Select lines starting with 'stylesheets='
+  set_fact:
+    stylesheets_lines: "{{ lines | select('search', '^stylesheets=') | list }}"
+
+- name: Remove 'stylesheets=' from the start of the lines
+  set_fact:
+    stylesheets_values: "{{ stylesheets_lines | map('regex_replace', '^stylesheets=', '') | list }}"
+
+- name: Get the first value or an empty string
+  set_fact:
+    existing_stylesheets: "{{ stylesheets_values | first | default('') }}"
+
+# Append new stylesheet to qt5ct.conf
+- name: Append new stylesheet to qt5ct.conf
+  ansible.builtin.lineinfile:
+    path: "{{ lookup('env', 'HOME') }}/.config/qt5ct/qt5ct.conf"
+    regexp: "^stylesheets="
+    line: >-
+      stylesheets={{ 
+        existing_stylesheets | default('') | regex_replace(',+', ',') | regex_replace('^,|,$', '') 
+      }},{{ autoware_dir }}/ansible/roles/qt5ct_setup/files/autoware.qss
+  when: autoware_dir + '/ansible/roles/qt5ct_setup/files/autoware.qss' not in existing_stylesheets
+
+# Ensure color_scheme_path is set to /usr/share/qt5ct/colors/darker.conf
+- name: Ensure color_scheme_path is set to darker.conf
+  ansible.builtin.lineinfile:
+    path: "{{ lookup('env', 'HOME') }}/.config/qt5ct/qt5ct.conf"
+    regexp: "^color_scheme_path="
+    line: "color_scheme_path=/usr/share/qt5ct/colors/darker.conf"
+    create: yes
+
+# Ensure style is set to Fusion
+- name: Ensure style is set to Fusion
+  ansible.builtin.lineinfile:
+    path: "{{ lookup('env', 'HOME') }}/.config/qt5ct/qt5ct.conf"
+    regexp: "^style="
+    line: "style=Fusion"
+    create: yes
+
+# Update QSS file paths
+- name: Update QSS file paths
+  become: yes
+  replace:
+    path: "{{ autoware_dir }}/ansible/roles/qt5ct_setup/files/autoware.qss"
+    regexp: 'url\("\./'
+    replace: 'url("{{ autoware_dir }}/ansible/roles/qt5ct_setup/files/autoware-rviz-icons/'
