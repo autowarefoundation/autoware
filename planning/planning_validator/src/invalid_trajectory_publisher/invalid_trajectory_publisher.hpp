@@ -21,7 +21,7 @@
 
 #include <string>
 
-namespace planning_validator
+namespace autoware::planning_validator
 {
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
@@ -41,6 +41,6 @@ private:
 
   Trajectory::ConstSharedPtr current_trajectory_ = nullptr;
 };
-}  // namespace planning_validator
+}  // namespace autoware::planning_validator
 
 #endif  // INVALID_TRAJECTORY_PUBLISHER__INVALID_TRAJECTORY_PUBLISHER_HPP_

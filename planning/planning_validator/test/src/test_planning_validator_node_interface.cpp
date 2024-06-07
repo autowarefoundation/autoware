@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "planning_validator/planning_validator.hpp"
+#include "autoware_planning_validator/planning_validator.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <autoware_planning_test_manager/autoware_planning_test_manager.hpp>
@@ -22,8 +22,8 @@
 
 #include <vector>
 
+using autoware::planning_validator::PlanningValidator;
 using planning_test_utils::PlanningInterfaceTestManager;
-using planning_validator::PlanningValidator;
 
 std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
 {
@@ -46,7 +46,7 @@ std::shared_ptr<PlanningValidator> generateNode()
   const auto planning_test_utils_dir =
     ament_index_cpp::get_package_share_directory("planning_test_utils");
   const auto planning_validator_dir =
-    ament_index_cpp::get_package_share_directory("planning_validator");
+    ament_index_cpp::get_package_share_directory("autoware_planning_validator");
   node_options.arguments(
     {"--ros-args", "--params-file",
      planning_test_utils_dir + "/config/test_vehicle_info.param.yaml", "--params-file",

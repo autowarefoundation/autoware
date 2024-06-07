@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "planning_validator/debug_marker.hpp"
+#include "autoware_planning_validator/debug_marker.hpp"
 
 #include <motion_utils/marker/marker_helper.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
@@ -90,7 +90,7 @@ void PlanningValidatorDebugMarkerPublisher::pushVirtualWall(const geometry_msgs:
 {
   const auto now = node_->get_clock()->now();
   const auto stop_wall_marker =
-    motion_utils::createStopVirtualWallMarker(pose, "planning_validator", now, 0);
+    motion_utils::createStopVirtualWallMarker(pose, "autoware_planning_validator", now, 0);
   tier4_autoware_utils::appendMarkerArray(stop_wall_marker, &marker_array_virtual_wall_, now);
 }
 

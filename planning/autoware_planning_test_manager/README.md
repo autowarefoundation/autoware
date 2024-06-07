@@ -41,7 +41,7 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
   node_options.arguments(
     {"--ros-args", "--params-file",
      planning_test_utils_dir + "/config/test_vehicle_info.param.yaml", "--params-file",
-     planning_validator_dir + "/config/planning_validator.param.yaml"});
+     autoware_planning_validator_dir + "/config/planning_validator.param.yaml"});
 
   // instantiate the TargetNode with node_options
   auto test_target_node = std::make_shared<TargetNode>(node_options);
@@ -70,18 +70,18 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
 
 ## Implemented tests
 
-| Node                      | Test name                                                                                 | exceptional input | output         | Exceptional input pattern                                                             |
-| ------------------------- | ----------------------------------------------------------------------------------------- | ----------------- | -------------- | ------------------------------------------------------------------------------------- |
-| planning_validator        | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
-| velocity_smoother         | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
-| obstacle_cruise_planner   | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
-| obstacle_stop_planner     | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
-| obstacle_velocity_limiter | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
-| path_optimizer            | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
-| scenario_selector         | NodeTestWithExceptionTrajectoryLaneDrivingMode NodeTestWithExceptionTrajectoryParkingMode | trajectory        | scenario       | Empty, single point, path with duplicate points for scenarios:LANEDRIVING and PARKING |
-| freespace_planner         | NodeTestWithExceptionRoute                                                                | route             | trajectory     | Empty route                                                                           |
-| behavior_path_planner     | NodeTestWithExceptionRoute NodeTestWithOffTrackEgoPose                                    | route             | route odometry | Empty route Off-lane ego-position                                                     |
-| behavior_velocity_planner | NodeTestWithExceptionPathWithLaneID                                                       | path_with_lane_id | path           | Empty path                                                                            |
+| Node                        | Test name                                                                                 | exceptional input | output         | Exceptional input pattern                                                             |
+| --------------------------- | ----------------------------------------------------------------------------------------- | ----------------- | -------------- | ------------------------------------------------------------------------------------- |
+| autoware_planning_validator | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
+| velocity_smoother           | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
+| obstacle_cruise_planner     | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
+| obstacle_stop_planner       | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
+| obstacle_velocity_limiter   | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
+| path_optimizer              | NodeTestWithExceptionTrajectory                                                           | trajectory        | trajectory     | Empty, single point, path with duplicate points                                       |
+| scenario_selector           | NodeTestWithExceptionTrajectoryLaneDrivingMode NodeTestWithExceptionTrajectoryParkingMode | trajectory        | scenario       | Empty, single point, path with duplicate points for scenarios:LANEDRIVING and PARKING |
+| freespace_planner           | NodeTestWithExceptionRoute                                                                | route             | trajectory     | Empty route                                                                           |
+| behavior_path_planner       | NodeTestWithExceptionRoute NodeTestWithOffTrackEgoPose                                    | route             | route odometry | Empty route Off-lane ego-position                                                     |
+| behavior_velocity_planner   | NodeTestWithExceptionPathWithLaneID                                                       | path_with_lane_id | path           | Empty path                                                                            |
 
 ## Important Notes
 

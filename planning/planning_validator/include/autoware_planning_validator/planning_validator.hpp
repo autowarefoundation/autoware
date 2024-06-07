@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANNING_VALIDATOR__PLANNING_VALIDATOR_HPP_
-#define PLANNING_VALIDATOR__PLANNING_VALIDATOR_HPP_
+#ifndef AUTOWARE_PLANNING_VALIDATOR__PLANNING_VALIDATOR_HPP_
+#define AUTOWARE_PLANNING_VALIDATOR__PLANNING_VALIDATOR_HPP_
 
-#include "planning_validator/debug_marker.hpp"
-#include "planning_validator/msg/planning_validator_status.hpp"
+#include "autoware_planning_validator/debug_marker.hpp"
+#include "autoware_planning_validator/msg/planning_validator_status.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
@@ -33,14 +33,14 @@
 #include <memory>
 #include <string>
 
-namespace planning_validator
+namespace autoware::planning_validator
 {
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_validator::msg::PlanningValidatorStatus;
 using diagnostic_updater::DiagnosticStatusWrapper;
 using diagnostic_updater::Updater;
 using nav_msgs::msg::Odometry;
-using planning_validator::msg::PlanningValidatorStatus;
 using tier4_autoware_utils::StopWatch;
 using tier4_debug_msgs::msg::Float64Stamped;
 
@@ -141,6 +141,6 @@ private:
 
   StopWatch<std::chrono::milliseconds> stop_watch_;
 };
-}  // namespace planning_validator
+}  // namespace autoware::planning_validator
 
-#endif  // PLANNING_VALIDATOR__PLANNING_VALIDATOR_HPP_
+#endif  // AUTOWARE_PLANNING_VALIDATOR__PLANNING_VALIDATOR_HPP_

@@ -18,7 +18,7 @@
 #include <string>
 #include <utility>
 
-namespace planning_validator
+namespace autoware::planning_validator
 {
 InvalidTrajectoryPublisherNode::InvalidTrajectoryPublisherNode(
   const rclcpp::NodeOptions & node_options)
@@ -72,7 +72,7 @@ void InvalidTrajectoryPublisherNode::onCurrentTrajectory(const Trajectory::Const
   traj_sub_.reset();
 }
 
-}  // namespace planning_validator
+}  // namespace autoware::planning_validator
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(planning_validator::InvalidTrajectoryPublisherNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::planning_validator::InvalidTrajectoryPublisherNode)

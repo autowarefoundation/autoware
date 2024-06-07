@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "planning_validator/debug_marker.hpp"
-#include "planning_validator/planning_validator.hpp"
+#include "autoware_planning_validator/debug_marker.hpp"
+#include "autoware_planning_validator/planning_validator.hpp"
 #include "test_parameter.hpp"
 #include "test_planning_validator_helper.hpp"
 
@@ -21,8 +21,8 @@
 
 #include <string>
 
+using autoware::planning_validator::PlanningValidator;
 using autoware_planning_msgs::msg::Trajectory;
-using planning_validator::PlanningValidator;
 
 TEST(PlanningValidatorTestSuite, checkValidFiniteValueFunction)
 {

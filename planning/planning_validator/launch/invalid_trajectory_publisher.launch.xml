@@ -2,7 +2,7 @@
   <arg name="input/trajectory" default="/planning/scenario_planning/velocity_smoother/trajectory"/>
   <arg name="output/trajectory" default="/planning/scenario_planning/velocity_smoother/trajectory"/>
 
-  <node name="invalid_trajectory_publisher" exec="invalid_trajectory_publisher" pkg="planning_validator" output="screen">
+  <node name="invalid_trajectory_publisher" exec="invalid_trajectory_publisher" pkg="autoware_planning_validator" output="screen">
     <remap from="~/input/trajectory" to="$(var input/trajectory)"/>
     <remap from="~/output/trajectory" to="$(var output/trajectory)"/>
   </node>

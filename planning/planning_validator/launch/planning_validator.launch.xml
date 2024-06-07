@@ -1,9 +1,9 @@
 <launch>
-  <arg name="planning_validator_param_path" default="$(find-pkg-share planning_validator)/config/planning_validator.param.yaml"/>
+  <arg name="planning_validator_param_path" default="$(find-pkg-share autoware_planning_validator)/config/planning_validator.param.yaml"/>
   <arg name="input_trajectory" default="/planning/scenario_planning/velocity_smoother/trajectory"/>
   <arg name="output_trajectory" default="/planning/scenario_planning/trajectory"/>
 
-  <node name="planning_validator" exec="planning_validator_node" pkg="planning_validator" output="screen">
+  <node name="autoware_planning_validator" exec="planning_validator_node" pkg="autoware_planning_validator" output="screen">
     <!-- load config a file -->
     <param from="$(var planning_validator_param_path)"/>
 

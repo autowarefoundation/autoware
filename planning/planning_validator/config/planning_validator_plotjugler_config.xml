@@ -9,21 +9,21 @@
        <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
         <range left="27.700458" top="0.616471" right="66.198363" bottom="0.416471"/>
         <limitY/>
-        <curve name="/planning/planning_validator/validation_status/distance_deviation" color="#1f77b4"/>
+        <curve name="/planning/autoware_planning_validator/validation_status/distance_deviation" color="#1f77b4"/>
        </plot>
       </DockArea>
       <DockArea name="...">
        <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
         <range left="27.700458" top="0.350000" right="66.198363" bottom="0.150000"/>
         <limitY/>
-        <curve name="/planning/planning_validator/validation_status/velocity_deviation" color="#d62728"/>
+        <curve name="/planning/autoware_planning_validator/validation_status/velocity_deviation" color="#d62728"/>
        </plot>
       </DockArea>
       <DockArea name="...">
        <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
         <range left="27.700458" top="0.100003" right="66.198363" bottom="-0.099997"/>
         <limitY/>
-        <curve name="/planning/planning_validator/validation_status/max_curvature" color="#d62728"/>
+        <curve name="/planning/autoware_planning_validator/validation_status/max_curvature" color="#d62728"/>
        </plot>
       </DockArea>
      </DockSplitter>
@@ -32,21 +32,21 @@
        <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
         <range left="27.700458" top="1.000000" right="66.198363" bottom="1.000000"/>
         <limitY/>
-        <curve name="/planning/planning_validator/validation_status/max_interval_distance" color="#1ac938"/>
+        <curve name="/planning/autoware_planning_validator/validation_status/max_interval_distance" color="#1ac938"/>
        </plot>
       </DockArea>
       <DockArea name="...">
        <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
         <range left="27.700458" top="0.000016" right="66.198363" bottom="0.000016"/>
         <limitY/>
-        <curve name="/planning/planning_validator/validation_status/max_lateral_acc" color="#ff7f0e"/>
+        <curve name="/planning/autoware_planning_validator/validation_status/max_lateral_acc" color="#ff7f0e"/>
        </plot>
       </DockArea>
       <DockArea name="...">
        <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
         <range left="27.700458" top="1.118624" right="66.198363" bottom="0.918624"/>
         <limitY/>
-        <curve name="/planning/planning_validator/validation_status/max_longitudinal_acc" color="#f14cc1"/>
+        <curve name="/planning/autoware_planning_validator/validation_status/max_longitudinal_acc" color="#f14cc1"/>
        </plot>
       </DockArea>
      </DockSplitter>
@@ -55,21 +55,21 @@
        <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
         <range left="27.700458" top="0.100003" right="66.198363" bottom="-0.099997"/>
         <limitY/>
-        <curve name="/planning/planning_validator/validation_status/max_relative_angle" color="#9467bd"/>
+        <curve name="/planning/autoware_planning_validator/validation_status/max_relative_angle" color="#9467bd"/>
        </plot>
       </DockArea>
       <DockArea name="...">
        <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
         <range left="27.700458" top="0.100007" right="66.198363" bottom="-0.099993"/>
         <limitY/>
-        <curve name="/planning/planning_validator/validation_status/max_steering" color="#17becf"/>
+        <curve name="/planning/autoware_planning_validator/validation_status/max_steering" color="#17becf"/>
        </plot>
       </DockArea>
       <DockArea name="...">
        <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
         <range left="27.700458" top="0.000011" right="66.198363" bottom="0.000010"/>
         <limitY/>
-        <curve name="/planning/planning_validator/validation_status/max_steering_rate" color="#bcbd22"/>
+        <curve name="/planning/autoware_planning_validator/validation_status/max_steering_rate" color="#bcbd22"/>
        </plot>
       </DockArea>
      </DockSplitter>
@@ -78,7 +78,7 @@
        <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
         <range left="27.700458" top="0.100000" right="66.198363" bottom="-0.100000"/>
         <limitY/>
-        <curve name="/planning/planning_validator/validation_status/min_longitudinal_acc" color="#1f77b4"/>
+        <curve name="/planning/autoware_planning_validator/validation_status/min_longitudinal_acc" color="#1f77b4"/>
        </plot>
       </DockArea>
       <DockSplitter orientation="|" count="2" sizes="0.5;0.5">
@@ -86,23 +86,23 @@
         <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
          <range left="27.700458" top="1.100000" right="66.198363" bottom="0.900000"/>
          <limitY/>
-         <curve name="/planning/planning_validator/validation_status/is_valid_curvature" color="#1ac938"/>
-         <curve name="/planning/planning_validator/validation_status/is_valid_distance_deviation" color="#ff7f0e"/>
-         <curve name="/planning/planning_validator/validation_status/is_valid_finite_value" color="#f14cc1"/>
-         <curve name="/planning/planning_validator/validation_status/is_valid_interval" color="#9467bd"/>
-         <curve name="/planning/planning_validator/validation_status/is_valid_lateral_acc" color="#17becf"/>
+         <curve name="/planning/autoware_planning_validator/validation_status/is_valid_curvature" color="#1ac938"/>
+         <curve name="/planning/autoware_planning_validator/validation_status/is_valid_distance_deviation" color="#ff7f0e"/>
+         <curve name="/planning/autoware_planning_validator/validation_status/is_valid_finite_value" color="#f14cc1"/>
+         <curve name="/planning/autoware_planning_validator/validation_status/is_valid_interval" color="#9467bd"/>
+         <curve name="/planning/autoware_planning_validator/validation_status/is_valid_lateral_acc" color="#17becf"/>
         </plot>
        </DockArea>
        <DockArea name="...">
         <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
          <range left="27.700458" top="1.100000" right="66.198363" bottom="0.900000"/>
          <limitY/>
-         <curve name="/planning/planning_validator/validation_status/is_valid_longitudinal_max_acc" color="#bcbd22"/>
-         <curve name="/planning/planning_validator/validation_status/is_valid_longitudinal_min_acc" color="#1f77b4"/>
-         <curve name="/planning/planning_validator/validation_status/is_valid_relative_angle" color="#d62728"/>
-         <curve name="/planning/planning_validator/validation_status/is_valid_steering" color="#1ac938"/>
-         <curve name="/planning/planning_validator/validation_status/is_valid_steering_rate" color="#ff7f0e"/>
-         <curve name="/planning/planning_validator/validation_status/is_valid_velocity_deviation" color="#f14cc1"/>
+         <curve name="/planning/autoware_planning_validator/validation_status/is_valid_longitudinal_max_acc" color="#bcbd22"/>
+         <curve name="/planning/autoware_planning_validator/validation_status/is_valid_longitudinal_min_acc" color="#1f77b4"/>
+         <curve name="/planning/autoware_planning_validator/validation_status/is_valid_relative_angle" color="#d62728"/>
+         <curve name="/planning/autoware_planning_validator/validation_status/is_valid_steering" color="#1ac938"/>
+         <curve name="/planning/autoware_planning_validator/validation_status/is_valid_steering_rate" color="#ff7f0e"/>
+         <curve name="/planning/autoware_planning_validator/validation_status/is_valid_velocity_deviation" color="#f14cc1"/>
         </plot>
        </DockArea>
       </DockSplitter>

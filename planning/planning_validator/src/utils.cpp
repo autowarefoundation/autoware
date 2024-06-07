@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "planning_validator/utils.hpp"
+#include "autoware_planning_validator/utils.hpp"
 
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
@@ -22,7 +22,7 @@
 #include <utility>
 #include <vector>
 
-namespace planning_validator
+namespace autoware::planning_validator
 {
 using tier4_autoware_utils::calcCurvature;
 using tier4_autoware_utils::calcDistance2d;
@@ -324,4 +324,4 @@ void shiftPose(geometry_msgs::msg::Pose & pose, double longitudinal)
   pose.position.y += std::sin(yaw) * longitudinal;
 }
 
-}  // namespace planning_validator
+}  // namespace autoware::planning_validator

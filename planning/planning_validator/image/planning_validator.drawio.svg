@@ -38,12 +38,12 @@
           >
             <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
               <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
-                planning_validator
+                autoware_planning_validator
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="217" y="84" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="12px" text-anchor="middle">planning_validator</text>
+        <text x="217" y="84" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="12px" text-anchor="middle">autoware_planning_validator</text>
       </switch>
     </g>
     <path d="M 7 51 L 150.63 51.08" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="stroke"/>

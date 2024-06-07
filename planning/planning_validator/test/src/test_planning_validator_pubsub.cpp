@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "planning_validator/planning_validator.hpp"
+#include "autoware_planning_validator/planning_validator.hpp"
 #include "test_parameter.hpp"
 #include "test_planning_validator_helper.hpp"
 
@@ -29,11 +29,11 @@
  * This test checks the diagnostics message published from the planning_validator node
  */
 
+using autoware::planning_validator::PlanningValidator;
 using autoware_planning_msgs::msg::Trajectory;
 using diagnostic_msgs::msg::DiagnosticArray;
 using diagnostic_msgs::msg::DiagnosticStatus;
 using nav_msgs::msg::Odometry;
-using planning_validator::PlanningValidator;
 
 constexpr double epsilon = 0.001;
 constexpr double scale_margin = 1.1;
@@ -101,7 +101,8 @@ bool hasError(const std::vector<DiagnosticArray::ConstSharedPtr> & diags, const 
   throw std::runtime_error(name + " is not contained in the diagnostic message.");
 }
 
-std::pair<std::shared_ptr<planning_validator::PlanningValidator>, std::shared_ptr<PubSubManager>>
+std::pair<
+  std::shared_ptr<autoware::planning_validator::PlanningValidator>, std::shared_ptr<PubSubManager>>
 prepareTest(const Trajectory & trajectory, const Odometry & ego_odom)
 {
   auto validator = std::make_shared<PlanningValidator>(getNodeOptionsWithDefaultParams());

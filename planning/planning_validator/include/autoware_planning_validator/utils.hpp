@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANNING_VALIDATOR__UTILS_HPP_
-#define PLANNING_VALIDATOR__UTILS_HPP_
+#ifndef AUTOWARE_PLANNING_VALIDATOR__UTILS_HPP_
+#define AUTOWARE_PLANNING_VALIDATOR__UTILS_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -23,7 +23,7 @@
 #include <utility>
 #include <vector>
 
-namespace planning_validator
+namespace autoware::planning_validator
 {
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
@@ -65,6 +65,6 @@ bool checkFinite(const TrajectoryPoint & point);
 
 void shiftPose(geometry_msgs::msg::Pose & pose, double longitudinal);
 
-}  // namespace planning_validator
+}  // namespace autoware::planning_validator
 
-#endif  // PLANNING_VALIDATOR__UTILS_HPP_
+#endif  // AUTOWARE_PLANNING_VALIDATOR__UTILS_HPP_
