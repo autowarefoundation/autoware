@@ -17,7 +17,7 @@
 #include "motion_utils/trajectory/path_with_lane_id.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <boost/geometry.hpp>
@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 namespace bg = boost::geometry;
@@ -172,4 +172,4 @@ float calcSlowDownSpeed(const Point32 & p1, const Point32 & p2, const float spee
   return std::clamp(speed, p2.y, p1.y);
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

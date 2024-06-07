@@ -18,9 +18,9 @@
 #include "occlusion_spot_utils.hpp"
 #include "scene_occlusion_spot.hpp"
 
-#include <behavior_velocity_planner_common/plugin_interface.hpp>
-#include <behavior_velocity_planner_common/plugin_wrapper.hpp>
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/plugin_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/plugin_wrapper.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
@@ -37,7 +37,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 class OcclusionSpotModuleManager : public SceneModuleManagerInterface
 {
@@ -63,6 +63,6 @@ class OcclusionSpotModulePlugin : public PluginWrapper<OcclusionSpotModuleManage
 {
 };
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // MANAGER_HPP_

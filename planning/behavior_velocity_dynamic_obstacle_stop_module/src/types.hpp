@@ -29,7 +29,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_velocity_planner::dynamic_obstacle_stop
+namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
 {
 using BoxIndexPair = std::pair<tier4_autoware_utils::Box2d, size_t>;
 using Rtree = boost::geometry::index::rtree<BoxIndexPair, boost::geometry::index::rstar<16, 4>>;
@@ -84,6 +84,6 @@ struct Collision
   geometry_msgs::msg::Point point;
   std::string object_uuid;
 };
-}  // namespace behavior_velocity_planner::dynamic_obstacle_stop
+}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
 
 #endif  // TYPES_HPP_

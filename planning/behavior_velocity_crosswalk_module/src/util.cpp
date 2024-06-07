@@ -14,7 +14,7 @@
 
 #include "behavior_velocity_crosswalk_module/util.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
@@ -45,7 +45,7 @@
 #include <lanelet2_core/geometry/Polygon.h>
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 using motion_utils::calcSignedArcLength;
@@ -62,16 +62,19 @@ std::vector<std::pair<int64_t, lanelet::ConstLanelet>> getCrosswalksOnPath(
 
   // Add current lane id
   const auto nearest_lane_id =
-    behavior_velocity_planner::planning_utils::getNearestLaneId(path, lanelet_map, current_pose);
+    autoware::behavior_velocity_planner::planning_utils::getNearestLaneId(
+      path, lanelet_map, current_pose);
 
   std::vector<lanelet::Id> unique_lane_ids;
   if (nearest_lane_id) {
     // Add subsequent lane_ids from nearest lane_id
-    unique_lane_ids = behavior_velocity_planner::planning_utils::getSubsequentLaneIdsSetOnPath(
-      path, *nearest_lane_id);
+    unique_lane_ids =
+      autoware::behavior_velocity_planner::planning_utils::getSubsequentLaneIdsSetOnPath(
+        path, *nearest_lane_id);
   } else {
     // Add all lane_ids in path
-    unique_lane_ids = behavior_velocity_planner::planning_utils::getSortedLaneIdsFromPath(path);
+    unique_lane_ids =
+      autoware::behavior_velocity_planner::planning_utils::getSortedLaneIdsFromPath(path);
   }
 
   for (const auto lane_id : unique_lane_ids) {
@@ -229,4 +232,4 @@ std::optional<lanelet::ConstLineString3d> getStopLineFromMap(
 
   return stop_line.front();
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

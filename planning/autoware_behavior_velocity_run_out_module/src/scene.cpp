@@ -17,8 +17,8 @@
 #include "behavior_velocity_crosswalk_module/util.hpp"
 #include "path_utils.hpp"
 
-#include <behavior_velocity_planner_common/utilization/trajectory_utils.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/trajectory_utils.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/distance/distance.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
@@ -37,11 +37,8 @@
 namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
-using ::behavior_velocity_planner::PlanningBehavior;
 using object_recognition_utils::convertLabelToString;
-namespace planning_utils = ::behavior_velocity_planner::planning_utils;
-using ::behavior_velocity_planner::getCrosswalksOnPath;
-using ::behavior_velocity_planner::Polygon2d;
+namespace planning_utils = autoware::behavior_velocity_planner::planning_utils;
 
 RunOutModule::RunOutModule(
   const int64_t module_id, const std::shared_ptr<const PlannerData> & planner_data,

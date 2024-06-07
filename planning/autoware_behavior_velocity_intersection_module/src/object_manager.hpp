@@ -52,7 +52,7 @@ struct hash<unique_identifier_msgs::msg::UUID>
 };
 }  // namespace std
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 /**
@@ -287,6 +287,6 @@ std::optional<CollisionInterval> findPassageInterval(
   const std::optional<lanelet::ConstLanelet> & first_attention_lane_opt,
   const std::optional<lanelet::ConstLanelet> & second_attention_lane_opt);
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // OBJECT_MANAGER_HPP_

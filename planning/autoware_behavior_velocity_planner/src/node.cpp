@@ -14,8 +14,8 @@
 
 #include "node.hpp"
 
+#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <autoware_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp>
-#include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
@@ -439,14 +439,14 @@ autoware_planning_msgs::msg::Path BehaviorVelocityPlannerNode::generatePath(
 
   // screening
   const auto filtered_path =
-    ::behavior_velocity_planner::filterLitterPathPoint(to_path(velocity_planned_path));
+    autoware::behavior_velocity_planner::filterLitterPathPoint(to_path(velocity_planned_path));
 
   // interpolation
-  const auto interpolated_path_msg = ::behavior_velocity_planner::interpolatePath(
+  const auto interpolated_path_msg = autoware::behavior_velocity_planner::interpolatePath(
     filtered_path, forward_path_length_, behavior_output_path_interval_);
 
   // check stop point
-  output_path_msg = ::behavior_velocity_planner::filterStopPathPoint(interpolated_path_msg);
+  output_path_msg = autoware::behavior_velocity_planner::filterStopPathPoint(interpolated_path_msg);
 
   output_path_msg.header.frame_id = "map";
   output_path_msg.header.stamp = this->now();

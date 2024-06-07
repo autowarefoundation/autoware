@@ -24,7 +24,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace behavior_velocity_planner::out_of_lane
+namespace autoware::behavior_velocity_planner::out_of_lane
 {
 tier4_autoware_utils::Polygon2d make_base_footprint(
   const PlannerParam & p, const bool ignore_offset)
@@ -87,4 +87,4 @@ lanelet::BasicPolygon2d calculate_current_ego_footprint(
     footprint.emplace_back(p.x() + ego_data.pose.position.x, p.y() + ego_data.pose.position.y);
   return footprint;
 }
-}  // namespace behavior_velocity_planner::out_of_lane
+}  // namespace autoware::behavior_velocity_planner::out_of_lane

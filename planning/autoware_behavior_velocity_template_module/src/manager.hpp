@@ -17,9 +17,9 @@
 
 #include "scene.hpp"
 
-#include <behavior_velocity_planner_common/plugin_interface.hpp>
-#include <behavior_velocity_planner_common/plugin_wrapper.hpp>
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/plugin_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/plugin_wrapper.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
@@ -37,7 +37,8 @@ namespace autoware::behavior_velocity_planner
  *
  * @param node A reference to the ROS node.
  */
-class TemplateModuleManager : public ::behavior_velocity_planner::SceneModuleManagerInterface
+class TemplateModuleManager
+: public autoware::behavior_velocity_planner::SceneModuleManagerInterface
 {
 public:
   explicit TemplateModuleManager(rclcpp::Node & node);
@@ -85,7 +86,7 @@ private:
  * Velocity Planner.
  */
 class TemplateModulePlugin
-: public ::behavior_velocity_planner::PluginWrapper<TemplateModuleManager>
+: public autoware::behavior_velocity_planner::PluginWrapper<TemplateModuleManager>
 {
 };
 

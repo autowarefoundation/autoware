@@ -29,7 +29,7 @@
 #include <optional>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 /// @brief check if the gridmap is occluded at the given index
 /// @param [in] grid_map input grid map
@@ -40,7 +40,7 @@ namespace behavior_velocity_planner
 /// @return true if the index is occluded
 bool is_occluded(
   const grid_map::GridMap & grid_map, const int min_nb_of_cells, const grid_map::Index idx,
-  const behavior_velocity_planner::CrosswalkModule::PlannerParam & params);
+  const autoware::behavior_velocity_planner::CrosswalkModule::PlannerParam & params);
 
 /// @brief interpolate a point beyond the end of the given segment
 /// @param [in] segment input segment
@@ -62,7 +62,7 @@ bool is_crosswalk_occluded(
   const nav_msgs::msg::OccupancyGrid & occupancy_grid,
   const geometry_msgs::msg::Point & path_intersection, const double detection_range,
   const std::vector<autoware_perception_msgs::msg::PredictedObject> & dynamic_objects,
-  const behavior_velocity_planner::CrosswalkModule::PlannerParam & params);
+  const autoware::behavior_velocity_planner::CrosswalkModule::PlannerParam & params);
 
 /// @brief calculate the distance away from the crosswalk that should be checked for occlusions
 /// @param occluded_objects_velocity assumed velocity of the objects coming out of occlusions
@@ -89,6 +89,6 @@ std::vector<autoware_perception_msgs::msg::PredictedObject> select_and_inflate_o
 void clear_occlusions_behind_objects(
   grid_map::GridMap & grid_map,
   const std::vector<autoware_perception_msgs::msg::PredictedObject> & objects);
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // OCCLUDED_CROSSWALK_HPP_

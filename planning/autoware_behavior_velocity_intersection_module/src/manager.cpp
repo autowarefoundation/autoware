@@ -14,8 +14,8 @@
 
 #include "manager.hpp"
 
-#include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <tier4_autoware_utils/ros/parameter.hpp>
 
@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 using tier4_autoware_utils::getOrDeclareParameter;
 
@@ -589,11 +589,12 @@ bool MergeFromPrivateModuleManager::hasSameParentLaneletAndTurnDirectionWithRegi
   return false;
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_velocity_planner::IntersectionModulePlugin, behavior_velocity_planner::PluginInterface)
+  autoware::behavior_velocity_planner::IntersectionModulePlugin,
+  autoware::behavior_velocity_planner::PluginInterface)
 PLUGINLIB_EXPORT_CLASS(
-  behavior_velocity_planner::MergeFromPrivateModulePlugin,
-  behavior_velocity_planner::PluginInterface)
+  autoware::behavior_velocity_planner::MergeFromPrivateModulePlugin,
+  autoware::behavior_velocity_planner::PluginInterface)

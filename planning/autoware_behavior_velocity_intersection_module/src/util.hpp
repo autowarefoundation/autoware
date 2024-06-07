@@ -30,7 +30,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_velocity_planner::util
+namespace autoware::behavior_velocity_planner::util
 {
 
 /**
@@ -141,6 +141,6 @@ getFirstPointInsidePolygonsByFootprint(
 std::vector<lanelet::CompoundPolygon3d> getPolygon3dFromLanelets(
   const lanelet::ConstLanelets & ll_vec);
 
-}  // namespace behavior_velocity_planner::util
+}  // namespace autoware::behavior_velocity_planner::util
 
 #endif  // UTIL_HPP_

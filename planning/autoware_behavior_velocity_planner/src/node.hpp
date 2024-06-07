@@ -20,7 +20,7 @@
 
 #include <autoware_behavior_velocity_planner/srv/load_plugin.hpp>
 #include <autoware_behavior_velocity_planner/srv/unload_plugin.hpp>
-#include <behavior_velocity_planner_common/planner_data.hpp>
+#include <autoware_behavior_velocity_planner_common/planner_data.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
@@ -49,7 +49,6 @@ namespace autoware::behavior_velocity_planner
 using autoware_behavior_velocity_planner::srv::LoadPlugin;
 using autoware_behavior_velocity_planner::srv::UnloadPlugin;
 using autoware_map_msgs::msg::LaneletMapBin;
-using ::behavior_velocity_planner::TrafficSignalStamped;
 using tier4_planning_msgs::msg::VelocityLimit;
 
 class BehaviorVelocityPlannerNode : public rclcpp::Node

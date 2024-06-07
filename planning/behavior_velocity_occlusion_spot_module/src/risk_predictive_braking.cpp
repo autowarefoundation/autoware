@@ -16,12 +16,12 @@
 
 #include "occlusion_spot_utils.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 
 #include <algorithm>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace occlusion_spot_utils
 {
@@ -98,4 +98,4 @@ SafeMotion calculateSafeMotion(const Velocity & v, const double ttv)
   return sm;
 }
 }  // namespace occlusion_spot_utils
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

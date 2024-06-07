@@ -17,9 +17,9 @@
 
 #include "scene.hpp"
 
-#include <behavior_velocity_planner_common/plugin_interface.hpp>
-#include <behavior_velocity_planner_common/plugin_wrapper.hpp>
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/plugin_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/plugin_wrapper.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
@@ -28,7 +28,7 @@
 #include <memory>
 #include <optional>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 class TrafficLightModuleManager : public SceneModuleManagerInterfaceWithRTC
 {
@@ -65,6 +65,6 @@ class TrafficLightModulePlugin : public PluginWrapper<TrafficLightModuleManager>
 {
 };
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // MANAGER_HPP_

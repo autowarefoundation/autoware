@@ -14,8 +14,8 @@
 
 #include "scene.hpp"
 
-#include <behavior_velocity_planner_common/utilization/debug.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/debug.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
@@ -29,7 +29,7 @@
 
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 using std_msgs::msg::ColorRGBA;
 using tier4_autoware_utils::appendMarkerArray;
@@ -191,4 +191,4 @@ motion_utils::VirtualWalls DetectionAreaModule::createVirtualWalls()
   return virtual_walls;
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

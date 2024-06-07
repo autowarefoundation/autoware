@@ -23,7 +23,7 @@
 
 TEST(safeMotion, delay_jerk_acceleration)
 {
-  namespace utils = behavior_velocity_planner::occlusion_spot_utils;
+  namespace utils = autoware::behavior_velocity_planner::occlusion_spot_utils;
   using utils::calculateSafeMotion;
   /**
    * @brief check if calculation is correct in below parameter

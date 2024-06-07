@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
@@ -62,7 +62,7 @@ return p * v;
 */
 }  // namespace
 
-namespace behavior_velocity_planner::arc_lane_utils
+namespace autoware::behavior_velocity_planner::arc_lane_utils
 {
 
 double calcSignedDistance(const geometry_msgs::msg::Pose & p1, const geometry_msgs::msg::Point & p2)
@@ -134,4 +134,4 @@ std::optional<PathIndexWithPose> createTargetPoint(
   const auto front_idx = offset_segment->first;
   return std::make_pair(front_idx, target_pose);
 }
-}  // namespace behavior_velocity_planner::arc_lane_utils
+}  // namespace autoware::behavior_velocity_planner::arc_lane_utils

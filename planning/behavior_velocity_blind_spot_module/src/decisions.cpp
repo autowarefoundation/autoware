@@ -16,7 +16,7 @@
 
 #include <motion_utils/trajectory/trajectory.hpp>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 /*
@@ -150,4 +150,4 @@ void BlindSpotModule::reactRTCApprovalByDecision(
   return;
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

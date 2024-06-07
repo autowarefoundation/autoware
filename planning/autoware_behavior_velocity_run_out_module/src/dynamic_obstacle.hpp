@@ -18,9 +18,9 @@
 #include "debug.hpp"
 #include "utils.hpp"
 
-#include <behavior_velocity_planner_common/planner_data.hpp>
-#include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/planner_data.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -47,7 +47,6 @@ namespace autoware::behavior_velocity_planner
 using autoware_perception_msgs::msg::ObjectClassification;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_perception_msgs::msg::Shape;
-using ::behavior_velocity_planner::PlannerData;
 using run_out_utils::DynamicObstacle;
 using run_out_utils::DynamicObstacleData;
 using run_out_utils::DynamicObstacleParam;
@@ -56,7 +55,6 @@ using run_out_utils::PredictedPath;
 using tier4_planning_msgs::msg::PathPointWithLaneId;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using PathPointsWithLaneId = std::vector<tier4_planning_msgs::msg::PathPointWithLaneId>;
-using ::behavior_velocity_planner::Polygons2d;
 
 /**
  * @brief base class for creating dynamic obstacles from multiple types of input

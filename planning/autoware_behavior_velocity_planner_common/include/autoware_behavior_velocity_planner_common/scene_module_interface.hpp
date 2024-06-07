@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_
-#define BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_
+#ifndef AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_
+#define AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_
 
-#include <behavior_velocity_planner_common/planner_data.hpp>
+#include <autoware_behavior_velocity_planner_common/planner_data.hpp>
 #include <builtin_interfaces/msg/time.hpp>
 #include <motion_utils/factor/velocity_factor_interface.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
@@ -45,7 +45,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <visualization_msgs/msg/marker_array.hpp>
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 using builtin_interfaces::msg::Time;
@@ -276,6 +276,6 @@ protected:
   }
 };
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
-#endif  // BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_
+#endif  // AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_

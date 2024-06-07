@@ -15,7 +15,7 @@
 #ifndef SCENE_HPP_
 #define SCENE_HPP_
 
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <utility>
@@ -23,8 +23,6 @@
 
 namespace autoware::behavior_velocity_planner
 {
-using ::behavior_velocity_planner::SceneModuleInterface;
-using ::behavior_velocity_planner::StopReason;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
 class TemplateModule : public SceneModuleInterface

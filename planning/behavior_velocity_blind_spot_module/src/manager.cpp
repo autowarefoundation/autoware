@@ -14,8 +14,8 @@
 
 #include "manager.hpp"
 
-#include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 
@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 BlindSpotModuleManager::BlindSpotModuleManager(rclcpp::Node & node)
@@ -95,8 +95,9 @@ BlindSpotModuleManager::getModuleExpiredFunction(
   };
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_velocity_planner::BlindSpotModulePlugin, behavior_velocity_planner::PluginInterface)
+  autoware::behavior_velocity_planner::BlindSpotModulePlugin,
+  autoware::behavior_velocity_planner::PluginInterface)

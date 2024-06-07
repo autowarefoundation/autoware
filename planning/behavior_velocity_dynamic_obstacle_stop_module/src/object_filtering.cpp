@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace behavior_velocity_planner::dynamic_obstacle_stop
+namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
 {
 
 /// @brief filter the given predicted objects
@@ -91,4 +91,4 @@ std::vector<autoware_perception_msgs::msg::PredictedObject> filter_predicted_obj
   }
   return filtered_objects;
 }
-}  // namespace behavior_velocity_planner::dynamic_obstacle_stop
+}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop

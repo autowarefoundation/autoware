@@ -17,14 +17,14 @@
 
 #include "util.hpp"
 
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <lanelet2_extension/regulatory_elements/speed_bump.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <utility>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 using tier4_planning_msgs::msg::PathWithLaneId;
 
@@ -81,6 +81,6 @@ private:
   float speed_bump_slow_down_speed_;
 };
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // SCENE_HPP_

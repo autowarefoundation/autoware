@@ -14,7 +14,7 @@
 
 #include "manager.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <tier4_autoware_utils/ros/parameter.hpp>
 
 #include <limits>
@@ -26,12 +26,8 @@
 namespace autoware::behavior_velocity_planner
 {
 
-using ::behavior_velocity_planner::SceneModuleManagerInterface;
 using lanelet::autoware::Crosswalk;
 using tier4_autoware_utils::getOrDeclareParameter;
-namespace planning_utils = ::behavior_velocity_planner::planning_utils;
-using ::behavior_velocity_planner::getCrosswalkIdSetOnPath;
-using ::behavior_velocity_planner::getCrosswalksOnPath;
 
 WalkwayModuleManager::WalkwayModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
@@ -109,4 +105,4 @@ WalkwayModuleManager::getModuleExpiredFunction(const PathWithLaneId & path)
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
   autoware::behavior_velocity_planner::WalkwayModulePlugin,
-  ::behavior_velocity_planner::PluginInterface)
+  autoware::behavior_velocity_planner::PluginInterface)

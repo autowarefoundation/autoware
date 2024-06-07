@@ -20,7 +20,7 @@
 
 #include <algorithm>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 using tier4_autoware_utils::getOrDeclareParameter;
 
@@ -68,9 +68,9 @@ DynamicObstacleStopModuleManager::getModuleExpiredFunction(
     return false;
   };
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_velocity_planner::DynamicObstacleStopModulePlugin,
-  behavior_velocity_planner::PluginInterface)
+  autoware::behavior_velocity_planner::DynamicObstacleStopModulePlugin,
+  autoware::behavior_velocity_planner::PluginInterface)

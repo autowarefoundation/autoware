@@ -15,8 +15,8 @@
 #include "occlusion_spot_utils.hpp"
 #include "scene_occlusion_spot.hpp"
 
-#include <behavior_velocity_planner_common/utilization/debug.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/debug.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace
 {
@@ -227,4 +227,4 @@ motion_utils::VirtualWalls OcclusionSpotModule::createVirtualWalls()
   }
   return virtual_walls;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

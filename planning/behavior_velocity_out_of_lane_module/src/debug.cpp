@@ -18,7 +18,7 @@
 
 #include <visualization_msgs/msg/marker.hpp>
 
-namespace behavior_velocity_planner::out_of_lane::debug
+namespace autoware::behavior_velocity_planner::out_of_lane::debug
 {
 namespace
 {
@@ -184,4 +184,4 @@ void add_range_markers(
     debug_marker_array.markers.push_back(debug_marker);
 }
 
-}  // namespace behavior_velocity_planner::out_of_lane::debug
+}  // namespace autoware::behavior_velocity_planner::out_of_lane::debug

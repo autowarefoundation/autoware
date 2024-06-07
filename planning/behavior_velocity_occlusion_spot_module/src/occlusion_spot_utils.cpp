@@ -16,8 +16,8 @@
 
 #include "risk_predictive_braking.hpp"
 
-#include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <interpolation/spline_interpolation.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
@@ -33,7 +33,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 namespace occlusion_spot_utils
@@ -485,4 +485,4 @@ std::optional<PossibleCollisionInfo> generateOneNotableCollisionFromOcclusionSpo
 }
 
 }  // namespace occlusion_spot_utils
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

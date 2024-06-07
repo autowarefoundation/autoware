@@ -14,7 +14,7 @@
 
 #include "manager.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
 #include <tier4_autoware_utils/ros/parameter.hpp>
 
@@ -28,7 +28,7 @@ namespace autoware::behavior_velocity_planner
 {
 using lanelet::autoware::VirtualTrafficLight;
 using tier4_autoware_utils::getOrDeclareParameter;
-namespace planning_utils = ::behavior_velocity_planner::planning_utils;
+namespace planning_utils = autoware::behavior_velocity_planner::planning_utils;
 
 VirtualTrafficLightModuleManager::VirtualTrafficLightModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
@@ -82,4 +82,4 @@ VirtualTrafficLightModuleManager::getModuleExpiredFunction(
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
   autoware::behavior_velocity_planner::VirtualTrafficLightModulePlugin,
-  behavior_velocity_planner::PluginInterface)
+  autoware::behavior_velocity_planner::PluginInterface)

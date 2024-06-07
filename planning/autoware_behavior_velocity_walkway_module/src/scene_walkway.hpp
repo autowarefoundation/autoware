@@ -18,7 +18,7 @@
 #include "behavior_velocity_crosswalk_module/util.hpp"
 #include "scene_walkway.hpp"
 
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -33,11 +33,6 @@
 
 namespace autoware::behavior_velocity_planner
 {
-using ::behavior_velocity_planner::DebugData;
-using ::behavior_velocity_planner::PathWithLaneId;
-using ::behavior_velocity_planner::SceneModuleInterface;
-using ::behavior_velocity_planner::StopReason;
-
 class WalkwayModule : public SceneModuleInterface
 {
 public:

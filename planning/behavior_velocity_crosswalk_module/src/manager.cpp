@@ -14,7 +14,7 @@
 
 #include "manager.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <tier4_autoware_utils/ros/parameter.hpp>
 
 #include <algorithm>
@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 using lanelet::autoware::Crosswalk;
@@ -229,8 +229,9 @@ CrosswalkModuleManager::getModuleExpiredFunction(const PathWithLaneId & path)
     return crosswalk_id_set.count(scene_module->getModuleId()) == 0;
   };
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_velocity_planner::CrosswalkModulePlugin, behavior_velocity_planner::PluginInterface)
+  autoware::behavior_velocity_planner::CrosswalkModulePlugin,
+  autoware::behavior_velocity_planner::PluginInterface)

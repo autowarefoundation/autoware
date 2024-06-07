@@ -15,9 +15,9 @@
 #ifndef SCENE_HPP_
 #define SCENE_HPP_
 
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
-#include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
-#include <behavior_velocity_planner_common/utilization/state_machine.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/state_machine.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
@@ -34,7 +34,7 @@
 #include <variant>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 /**
  * @brief  wrapper class of interpolated path with lane id
@@ -237,6 +237,6 @@ private:
   // Debug
   mutable DebugData debug_data_;
 };
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // SCENE_HPP_

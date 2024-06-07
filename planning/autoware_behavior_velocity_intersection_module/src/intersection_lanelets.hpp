@@ -27,7 +27,7 @@
 #include <optional>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 /**
@@ -190,6 +190,6 @@ struct PathLanelets
                                          // conflicting lanelets plus the next lane part of the
                                          // path
 };
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // INTERSECTION_LANELETS_HPP_

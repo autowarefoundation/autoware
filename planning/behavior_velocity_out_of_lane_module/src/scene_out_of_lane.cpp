@@ -23,8 +23,8 @@
 #include "overlapping_range.hpp"
 #include "types.hpp"
 
-#include <behavior_velocity_planner_common/utilization/debug.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/debug.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
@@ -41,7 +41,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_velocity_planner::out_of_lane
+namespace autoware::behavior_velocity_planner::out_of_lane
 {
 
 using visualization_msgs::msg::Marker;
@@ -241,4 +241,4 @@ motion_utils::VirtualWalls OutOfLaneModule::createVirtualWalls()
   return virtual_walls;
 }
 
-}  // namespace behavior_velocity_planner::out_of_lane
+}  // namespace autoware::behavior_velocity_planner::out_of_lane

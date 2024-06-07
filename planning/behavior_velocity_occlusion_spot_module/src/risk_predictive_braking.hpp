@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace occlusion_spot_utils
 {
@@ -38,6 +38,6 @@ void applySafeVelocityConsideringPossibleCollision(
 SafeMotion calculateSafeMotion(const Velocity & v, const double ttv);
 
 }  // namespace occlusion_spot_utils
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // RISK_PREDICTIVE_BRAKING_HPP_

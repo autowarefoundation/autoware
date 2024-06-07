@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__BOOST_GEOMETRY_HELPER_HPP_
-#define BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__BOOST_GEOMETRY_HELPER_HPP_
+#ifndef AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__BOOST_GEOMETRY_HELPER_HPP_
+#define AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__BOOST_GEOMETRY_HELPER_HPP_
 
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
@@ -46,7 +46,7 @@ BOOST_GEOMETRY_REGISTER_POINT_3D(
   autoware_planning_msgs::msg::TrajectoryPoint, double, cs::cartesian, pose.position.x,
   pose.position.y, pose.position.z)
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
@@ -77,6 +77,6 @@ Polygon2d upScalePolygon(
 
 geometry_msgs::msg::Polygon toGeomPoly(const Polygon2d & polygon);
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
-#endif  // BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__BOOST_GEOMETRY_HELPER_HPP_
+#endif  // AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__BOOST_GEOMETRY_HELPER_HPP_

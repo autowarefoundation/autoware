@@ -16,8 +16,8 @@
 #include "occlusion_spot_utils.hpp"
 #include "utils.hpp"
 
-#include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 
 #include "geometry_msgs/msg/point.hpp"
 #include "geometry_msgs/msg/vector3.hpp"
@@ -32,8 +32,9 @@ using tier4_planning_msgs::msg::PathWithLaneId;
 
 TEST(calcSlowDownPointsForPossibleCollision, TooManyPossibleCollisions)
 {
-  using behavior_velocity_planner::occlusion_spot_utils::calcSlowDownPointsForPossibleCollision;
-  using behavior_velocity_planner::occlusion_spot_utils::PossibleCollisionInfo;
+  using autoware::behavior_velocity_planner::occlusion_spot_utils::
+    calcSlowDownPointsForPossibleCollision;
+  using autoware::behavior_velocity_planner::occlusion_spot_utils::PossibleCollisionInfo;
   using std::chrono::duration;
   using std::chrono::duration_cast;
   using std::chrono::high_resolution_clock;
@@ -65,8 +66,9 @@ TEST(calcSlowDownPointsForPossibleCollision, TooManyPossibleCollisions)
 
 TEST(calcSlowDownPointsForPossibleCollision, ConsiderSignedOffset)
 {
-  using behavior_velocity_planner::occlusion_spot_utils::calcSlowDownPointsForPossibleCollision;
-  using behavior_velocity_planner::occlusion_spot_utils::PossibleCollisionInfo;
+  using autoware::behavior_velocity_planner::occlusion_spot_utils::
+    calcSlowDownPointsForPossibleCollision;
+  using autoware::behavior_velocity_planner::occlusion_spot_utils::PossibleCollisionInfo;
   using std::chrono::duration;
   using std::chrono::duration_cast;
   using std::chrono::high_resolution_clock;

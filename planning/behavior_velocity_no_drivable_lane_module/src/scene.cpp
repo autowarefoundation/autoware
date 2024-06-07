@@ -18,10 +18,10 @@
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "util.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 using tier4_autoware_utils::createPoint;
 
@@ -283,4 +283,4 @@ void NoDrivableLaneModule::initialize_debug_data(
   }
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

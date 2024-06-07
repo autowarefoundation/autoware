@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_velocity_planner::dynamic_obstacle_stop::debug
+namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop::debug
 {
 std::vector<visualization_msgs::msg::Marker> make_delete_markers(
   const size_t from, const size_t to, const std::string & ns);
@@ -40,6 +40,6 @@ std::vector<visualization_msgs::msg::Marker> make_collision_markers(
   const rclcpp::Time & now);
 std::vector<visualization_msgs::msg::Marker> make_polygon_markers(
   const tier4_autoware_utils::MultiPolygon2d & footprints, const std::string & ns, const double z);
-}  // namespace behavior_velocity_planner::dynamic_obstacle_stop::debug
+}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop::debug
 
 #endif  // DEBUG_HPP_

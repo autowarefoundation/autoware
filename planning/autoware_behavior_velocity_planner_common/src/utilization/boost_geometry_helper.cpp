@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 
 #include <boost/geometry/algorithms/correct.hpp>
 
 #include <algorithm>
 #include <vector>
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 Polygon2d lines2polygon(const LineString2d & left_line, const LineString2d & right_line)
@@ -63,4 +63,4 @@ geometry_msgs::msg::Polygon toGeomPoly(const Polygon2d & polygon)
   }
   return polygon_msg;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

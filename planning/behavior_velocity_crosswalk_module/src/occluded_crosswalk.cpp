@@ -22,11 +22,11 @@
 #include <algorithm>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 bool is_occluded(
   const grid_map::GridMap & grid_map, const int min_nb_of_cells, const grid_map::Index idx,
-  const behavior_velocity_planner::CrosswalkModule::PlannerParam & params)
+  const autoware::behavior_velocity_planner::CrosswalkModule::PlannerParam & params)
 {
   grid_map::Index idx_offset;
   for (idx_offset.x() = 0; idx_offset.x() < min_nb_of_cells; ++idx_offset.x()) {
@@ -140,7 +140,7 @@ bool is_crosswalk_occluded(
   const nav_msgs::msg::OccupancyGrid & occupancy_grid,
   const geometry_msgs::msg::Point & path_intersection, const double detection_range,
   const std::vector<autoware_perception_msgs::msg::PredictedObject> & dynamic_objects,
-  const behavior_velocity_planner::CrosswalkModule::PlannerParam & params)
+  const autoware::behavior_velocity_planner::CrosswalkModule::PlannerParam & params)
 {
   grid_map::GridMap grid_map;
   grid_map::GridMapRosConverter::fromOccupancyGrid(occupancy_grid, "layer", grid_map);
@@ -170,4 +170,4 @@ double calculate_detection_range(
   const auto time_to_crosswalk = dist_ego_to_crosswalk / std::max(min_ego_velocity, ego_velocity);
   return time_to_crosswalk > 0.0 ? time_to_crosswalk / occluded_object_velocity : 20.0;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

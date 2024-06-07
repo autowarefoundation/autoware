@@ -14,7 +14,7 @@
 
 #include "lanelets_selection.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 
 #include <lanelet2_core/geometry/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <string>
 
-namespace behavior_velocity_planner::out_of_lane
+namespace autoware::behavior_velocity_planner::out_of_lane
 {
 
 lanelet::ConstLanelets consecutive_lanelets(
@@ -127,4 +127,4 @@ lanelet::ConstLanelets calculate_other_lanelets(
   }
   return other_lanelets;
 }
-}  // namespace behavior_velocity_planner::out_of_lane
+}  // namespace autoware::behavior_velocity_planner::out_of_lane

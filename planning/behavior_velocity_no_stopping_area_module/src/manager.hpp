@@ -17,9 +17,9 @@
 
 #include "scene_no_stopping_area.hpp"
 
-#include <behavior_velocity_planner_common/plugin_interface.hpp>
-#include <behavior_velocity_planner_common/plugin_wrapper.hpp>
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/plugin_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/plugin_wrapper.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
@@ -27,7 +27,7 @@
 #include <functional>
 #include <memory>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 class NoStoppingAreaModuleManager : public SceneModuleManagerInterfaceWithRTC
 {
@@ -49,6 +49,6 @@ class NoStoppingAreaModulePlugin : public PluginWrapper<NoStoppingAreaModuleMana
 {
 };
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // MANAGER_HPP_

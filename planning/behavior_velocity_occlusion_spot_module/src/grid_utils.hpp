@@ -15,8 +15,8 @@
 #ifndef GRID_UTILS_HPP_
 #define GRID_UTILS_HPP_
 
-#include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_core/iterators/LineIterator.hpp>
 #include <grid_map_ros/GridMapRosConverter.hpp>
@@ -49,7 +49,7 @@
 
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseStamped;
@@ -118,6 +118,6 @@ void denoiseOccupancyGridCV(
   grid_map::GridMap & grid_map, const GridParam & param, const bool is_show_debug_window,
   const int num_iter, const bool use_object_footprints, const bool use_object_ray_casts);
 }  // namespace grid_utils
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // GRID_UTILS_HPP_

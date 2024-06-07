@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__STATE_MACHINE_HPP_
-#define BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__STATE_MACHINE_HPP_
+#ifndef AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__STATE_MACHINE_HPP_
+#define AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__STATE_MACHINE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -21,7 +21,7 @@
 #include <string>
 #include <utility>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 /**
  * @brief Manage stop-go states with safety margin time.
@@ -92,5 +92,5 @@ private:
   std::shared_ptr<rclcpp::Time> start_time_;  //! first time received GO when STOP state
 };
 
-}  // namespace behavior_velocity_planner
-#endif  // BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__STATE_MACHINE_HPP_
+}  // namespace autoware::behavior_velocity_planner
+#endif  // AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__STATE_MACHINE_HPP_

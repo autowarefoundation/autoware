@@ -17,8 +17,8 @@
 
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
-#include <behavior_velocity_planner_common/planner_data.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/planner_data.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
@@ -38,8 +38,6 @@ using autoware_perception_msgs::msg::ObjectClassification;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_perception_msgs::msg::Shape;
 using autoware_planning_msgs::msg::PathPoint;
-using ::behavior_velocity_planner::PlannerData;
-using ::behavior_velocity_planner::Polygons2d;
 using tier4_autoware_utils::Box2d;
 using tier4_autoware_utils::LineString2d;
 using tier4_autoware_utils::Point2d;

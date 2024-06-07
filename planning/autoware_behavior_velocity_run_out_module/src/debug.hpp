@@ -26,7 +26,6 @@
 #include <vector>
 namespace autoware::behavior_velocity_planner
 {
-using ::behavior_velocity_planner::Polygon2d;
 using sensor_msgs::msg::PointCloud2;
 using tier4_debug_msgs::msg::Float32MultiArrayStamped;
 using tier4_debug_msgs::msg::Int32Stamped;

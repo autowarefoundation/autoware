@@ -35,7 +35,7 @@
 
 #include <lanelet2_core/primitives/Polygon.h>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 namespace bg = boost::geometry;
@@ -70,6 +70,6 @@ std::optional<size_t> insertPointWithOffset(
 // returns y (speed) for y=mx+b
 float calcSlowDownSpeed(const Point32 & p1, const Point32 & p2, const float speed_bump_height);
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // UTIL_HPP_

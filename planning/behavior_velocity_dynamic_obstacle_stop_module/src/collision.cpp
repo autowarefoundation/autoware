@@ -24,7 +24,7 @@
 #include <optional>
 #include <vector>
 
-namespace behavior_velocity_planner::dynamic_obstacle_stop
+namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
 {
 
 std::optional<geometry_msgs::msg::Point> find_closest_collision_point(
@@ -80,4 +80,4 @@ std::vector<Collision> find_collisions(
   return collisions;
 }
 
-}  // namespace behavior_velocity_planner::dynamic_obstacle_stop
+}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop

@@ -22,8 +22,8 @@
 #include "object_manager.hpp"
 #include "result.hpp"
 
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
-#include <behavior_velocity_planner_common/utilization/state_machine.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/state_machine.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -43,7 +43,7 @@
 #include <variant>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 class IntersectionModule : public SceneModuleInterface
@@ -818,6 +818,6 @@ private:
   rclcpp::Publisher<tier4_debug_msgs::msg::Float64MultiArrayStamped>::SharedPtr object_ttc_pub_;
 };
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // SCENE_INTERSECTION_HPP_

@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// #include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+// #include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include "motion_utils/trajectory/conversion.hpp"
 
+#include <autoware_behavior_velocity_planner_common/utilization/trajectory_utils.hpp>
 #include <autoware_velocity_smoother/trajectory_utils.hpp>
-#include <behavior_velocity_planner_common/utilization/trajectory_utils.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -33,7 +33,7 @@
 
 #include <memory>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
@@ -89,4 +89,4 @@ bool smoothPath(
   return true;
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

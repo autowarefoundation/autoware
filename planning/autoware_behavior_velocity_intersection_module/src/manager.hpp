@@ -18,9 +18,9 @@
 #include "scene_intersection.hpp"
 #include "scene_merge_from_private_road.hpp"
 
-#include <behavior_velocity_planner_common/plugin_interface.hpp>
-#include <behavior_velocity_planner_common/plugin_wrapper.hpp>
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/plugin_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/plugin_wrapper.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <std_msgs/msg/string.hpp>
@@ -32,7 +32,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 class IntersectionModuleManager : public SceneModuleManagerInterfaceWithRTC
 {
@@ -90,6 +90,6 @@ class MergeFromPrivateModulePlugin : public PluginWrapper<MergeFromPrivateModule
 {
 };
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // MANAGER_HPP_

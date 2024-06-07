@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace grid_utils
 {
@@ -381,4 +381,4 @@ void denoiseOccupancyGridCV(
   grid_map::GridMapRosConverter::fromOccupancyGrid(occupancy_grid, "layer", grid_map);
 }
 }  // namespace grid_utils
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

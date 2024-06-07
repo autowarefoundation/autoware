@@ -14,7 +14,7 @@
 
 #include "manager.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <tier4_autoware_utils/ros/parameter.hpp>
 
 #include <tf2/utils.h>
@@ -24,7 +24,7 @@
 #include <set>
 #include <string>
 #include <utility>
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 using lanelet::TrafficLight;
 using tier4_autoware_utils::getOrDeclareParameter;
@@ -188,8 +188,9 @@ bool TrafficLightModuleManager::hasSameTrafficLight(
   return false;
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_velocity_planner::TrafficLightModulePlugin, behavior_velocity_planner::PluginInterface)
+  autoware::behavior_velocity_planner::TrafficLightModulePlugin,
+  autoware::behavior_velocity_planner::PluginInterface)

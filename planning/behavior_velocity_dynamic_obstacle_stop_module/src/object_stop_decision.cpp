@@ -18,7 +18,7 @@
 
 #include <limits>
 
-namespace behavior_velocity_planner::dynamic_obstacle_stop
+namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
 {
 void update_object_map(
   ObjectStopDecisionMap & object_map, const std::vector<Collision> & collisions,
@@ -66,4 +66,4 @@ std::optional<geometry_msgs::msg::Point> find_earliest_collision(
   return earliest_collision;
 }
 
-}  // namespace behavior_velocity_planner::dynamic_obstacle_stop
+}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop

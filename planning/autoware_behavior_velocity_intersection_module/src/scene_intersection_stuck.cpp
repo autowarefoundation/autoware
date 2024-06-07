@@ -15,7 +15,7 @@
 #include "scene_intersection.hpp"
 #include "util.hpp"
 
-#include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for toGeomPoly
+#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for toGeomPoly
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 
@@ -114,7 +114,7 @@ lanelet::ConstLanelet createLaneletFromArcLength(
 
 }  // namespace
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
@@ -422,4 +422,4 @@ bool IntersectionModule::checkYieldStuckVehicleInIntersection(
   }
   return false;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

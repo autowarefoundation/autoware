@@ -24,7 +24,7 @@
 
 #include <algorithm>
 
-namespace behavior_velocity_planner::out_of_lane
+namespace autoware::behavior_velocity_planner::out_of_lane
 {
 void cut_predicted_path_beyond_line(
   autoware_perception_msgs::msg::PredictedPath & predicted_path,
@@ -143,4 +143,4 @@ autoware_perception_msgs::msg::PredictedObjects filter_predicted_objects(
   return filtered_objects;
 }
 
-}  // namespace behavior_velocity_planner::out_of_lane
+}  // namespace autoware::behavior_velocity_planner::out_of_lane

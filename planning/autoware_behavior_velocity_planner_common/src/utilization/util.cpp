@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 
@@ -89,7 +89,7 @@ geometry_msgs::msg::Pose transformRelCoordinate2D(
 
 }  // namespace
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace planning_utils
 {
@@ -545,11 +545,13 @@ std::vector<lanelet::ConstLanelet> getLaneletsOnPath(
   std::vector<int64_t> unique_lane_ids;
   if (nearest_lane_id) {
     // Add subsequent lane_ids from nearest lane_id
-    unique_lane_ids = behavior_velocity_planner::planning_utils::getSubsequentLaneIdsSetOnPath(
-      path, *nearest_lane_id);
+    unique_lane_ids =
+      autoware::behavior_velocity_planner::planning_utils::getSubsequentLaneIdsSetOnPath(
+        path, *nearest_lane_id);
   } else {
     // Add all lane_ids in path
-    unique_lane_ids = behavior_velocity_planner::planning_utils::getSortedLaneIdsFromPath(path);
+    unique_lane_ids =
+      autoware::behavior_velocity_planner::planning_utils::getSortedLaneIdsFromPath(path);
   }
 
   std::vector<lanelet::ConstLanelet> lanelets;
@@ -692,4 +694,4 @@ std::set<lanelet::Id> getAssociativeIntersectionLanelets(
 }
 
 }  // namespace planning_utils
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

@@ -16,7 +16,7 @@
 
 #include "scene_occlusion_spot.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <tier4_autoware_utils/ros/parameter.hpp>
 
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 using occlusion_spot_utils::DETECTION_METHOD;
 using occlusion_spot_utils::PASS_JUDGE;
@@ -136,8 +136,9 @@ OcclusionSpotModuleManager::getModuleExpiredFunction(
     return false;
   };
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_velocity_planner::OcclusionSpotModulePlugin, behavior_velocity_planner::PluginInterface)
+  autoware::behavior_velocity_planner::OcclusionSpotModulePlugin,
+  autoware::behavior_velocity_planner::PluginInterface)

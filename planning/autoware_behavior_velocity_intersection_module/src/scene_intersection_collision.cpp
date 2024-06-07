@@ -15,8 +15,8 @@
 #include "scene_intersection.hpp"
 #include "util.hpp"
 
-#include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for toGeomPoly
-#include <behavior_velocity_planner_common/utilization/trajectory_utils.hpp>       // for smoothPath
+#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for toGeomPoly
+#include <autoware_behavior_velocity_planner_common/utilization/trajectory_utils.hpp>  // for smoothPath
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <magic_enum.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
@@ -30,7 +30,7 @@
 #include <fmt/format.h>
 #include <lanelet2_core/geometry/Polygon.h>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
@@ -964,4 +964,4 @@ IntersectionModule::TimeDistanceArray IntersectionModule::calcIntersectionPassin
   return time_distance_array;
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

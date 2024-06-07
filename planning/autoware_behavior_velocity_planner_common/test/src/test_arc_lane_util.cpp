@@ -14,17 +14,18 @@
 
 #include "utils.hpp"
 
-#include <behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 
 #include <gtest/gtest.h>
 
 #include <utility>
 
-using PathIndexWithPoint2d = behavior_velocity_planner::arc_lane_utils::PathIndexWithPoint2d;
-using LineString2d = behavior_velocity_planner::LineString2d;
-using Point2d = behavior_velocity_planner::Point2d;
-namespace arc_lane_utils = behavior_velocity_planner::arc_lane_utils;
+using PathIndexWithPoint2d =
+  autoware::behavior_velocity_planner::arc_lane_utils::PathIndexWithPoint2d;
+using LineString2d = autoware::behavior_velocity_planner::LineString2d;
+using Point2d = autoware::behavior_velocity_planner::Point2d;
+namespace arc_lane_utils = autoware::behavior_velocity_planner::arc_lane_utils;
 
 namespace
 {
@@ -121,7 +122,7 @@ TEST(findOffsetSegment, case_backward_offset_segment)
 
 TEST(checkCollision, various_cases)
 {
-  using behavior_velocity_planner::arc_lane_utils::checkCollision;
+  using autoware::behavior_velocity_planner::arc_lane_utils::checkCollision;
   constexpr double epsilon = 1e-6;
 
   {  // normal case with collision

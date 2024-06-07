@@ -14,9 +14,9 @@
 
 #include "scene_no_stopping_area.hpp"
 
-#include <behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
-#include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <interpolation/spline_interpolation.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
@@ -36,7 +36,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
@@ -416,4 +416,4 @@ void NoStoppingAreaModule::insertStopPoint(
   // Insert stop point or replace with zero velocity
   planning_utils::insertVelocity(path, stop_point_with_lane_id, 0.0, insert_idx);
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

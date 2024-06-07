@@ -17,11 +17,11 @@
 
 #include "types.hpp"
 
-#include <behavior_velocity_planner_common/planner_data.hpp>
+#include <autoware_behavior_velocity_planner_common/planner_data.hpp>
 
 #include <optional>
 
-namespace behavior_velocity_planner::out_of_lane
+namespace autoware::behavior_velocity_planner::out_of_lane
 {
 /// @brief cut a predicted path beyond the given stop line
 /// @param [inout] predicted_path predicted path to cut
@@ -52,6 +52,6 @@ void cut_predicted_path_beyond_red_lights(
 /// @return filtered predicted objects
 autoware_perception_msgs::msg::PredictedObjects filter_predicted_objects(
   const PlannerData & planner_data, const EgoData & ego_data, const PlannerParam & params);
-}  // namespace behavior_velocity_planner::out_of_lane
+}  // namespace autoware::behavior_velocity_planner::out_of_lane
 
 #endif  // FILTER_PREDICTED_OBJECTS_HPP_

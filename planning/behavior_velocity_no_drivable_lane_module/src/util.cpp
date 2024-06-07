@@ -17,14 +17,14 @@
 #include "motion_utils/trajectory/path_with_lane_id.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 
 #include <lanelet2_core/geometry/Polygon.h>
 
 #include <algorithm>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 namespace bg = boost::geometry;
@@ -110,4 +110,4 @@ PathWithNoDrivableLanePolygonIntersection getPathIntersectionWithNoDrivableLaneP
   }
   return path_no_drivable_lane_polygon_intersection;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

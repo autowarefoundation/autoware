@@ -14,7 +14,7 @@
 
 #include "scene_walkway.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 
 #include <cmath>
@@ -22,19 +22,11 @@
 namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
-using ::behavior_velocity_planner::getLinestringIntersects;
-using ::behavior_velocity_planner::getPolygonIntersects;
-using ::behavior_velocity_planner::getStopLineFromMap;
-using ::behavior_velocity_planner::PlanningBehavior;
-using ::behavior_velocity_planner::SceneModuleInterface;
-using ::behavior_velocity_planner::StopFactor;
-using ::behavior_velocity_planner::VelocityFactor;
 using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestSegmentIndex;
 using tier4_autoware_utils::createPoint;
 using tier4_autoware_utils::getPose;
-namespace planning_utils = ::behavior_velocity_planner::planning_utils;
 
 WalkwayModule::WalkwayModule(
   const int64_t module_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,

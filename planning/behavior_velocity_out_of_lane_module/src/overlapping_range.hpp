@@ -23,7 +23,7 @@
 
 #include <vector>
 
-namespace behavior_velocity_planner::out_of_lane
+namespace autoware::behavior_velocity_planner::out_of_lane
 {
 
 /// @brief calculate the overlap between the given footprint and lanelet
@@ -55,6 +55,6 @@ OverlapRanges calculate_overlapping_ranges(
   const std::vector<lanelet::BasicPolygon2d> & path_footprints,
   const lanelet::ConstLanelets & path_lanelets, const lanelet::ConstLanelets & lanelets,
   const PlannerParam & params);
-}  // namespace behavior_velocity_planner::out_of_lane
+}  // namespace autoware::behavior_velocity_planner::out_of_lane
 
 #endif  // OVERLAPPING_RANGE_HPP_

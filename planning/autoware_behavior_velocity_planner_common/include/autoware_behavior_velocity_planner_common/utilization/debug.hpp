@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__DEBUG_HPP_
-#define BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__DEBUG_HPP_
+#ifndef AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__DEBUG_HPP_
+#define AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__DEBUG_HPP_
 
 #include <rclcpp/time.hpp>
 
@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace debug
 {
@@ -47,5 +47,5 @@ visualization_msgs::msg::MarkerArray createPointsMarkerArray(
   const int64_t module_id, const rclcpp::Time & now, const double x, const double y, const double z,
   const double r, const double g, const double b);
 }  // namespace debug
-}  // namespace behavior_velocity_planner
-#endif  // BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__DEBUG_HPP_
+}  // namespace autoware::behavior_velocity_planner
+#endif  // AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__DEBUG_HPP_

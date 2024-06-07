@@ -68,21 +68,21 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
   };
 
   std::vector<std::string> module_names;
-  module_names.emplace_back("behavior_velocity_planner::CrosswalkModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::CrosswalkModulePlugin");
   module_names.emplace_back("autoware::behavior_velocity_planner::WalkwayModulePlugin");
-  module_names.emplace_back("behavior_velocity_planner::TrafficLightModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::TrafficLightModulePlugin");
   module_names.emplace_back("autoware::behavior_velocity_planner::IntersectionModulePlugin");
-  module_names.emplace_back("behavior_velocity_planner::MergeFromPrivateModulePlugin");
-  module_names.emplace_back("behavior_velocity_planner::BlindSpotModulePlugin");
-  module_names.emplace_back("behavior_velocity_planner::DetectionAreaModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::MergeFromPrivateModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::BlindSpotModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::DetectionAreaModulePlugin");
   module_names.emplace_back("autoware::behavior_velocity_planner::VirtualTrafficLightModulePlugin");
-  module_names.emplace_back("behavior_velocity_planner::NoStoppingAreaModulePlugin");
-  module_names.emplace_back("behavior_velocity_planner::StopLineModulePlugin");
-  module_names.emplace_back("behavior_velocity_planner::OcclusionSpotModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::NoStoppingAreaModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::StopLineModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::OcclusionSpotModulePlugin");
   module_names.emplace_back("autoware::behavior_velocity_planner::RunOutModulePlugin");
-  module_names.emplace_back("behavior_velocity_planner::SpeedBumpModulePlugin");
-  module_names.emplace_back("behavior_velocity_planner::OutOfLaneModulePlugin");
-  module_names.emplace_back("behavior_velocity_planner::NoDrivableLaneModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::SpeedBumpModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::OutOfLaneModulePlugin");
+  module_names.emplace_back("autoware::behavior_velocity_planner::NoDrivableLaneModulePlugin");
 
   std::vector<rclcpp::Parameter> params;
   params.emplace_back("launch_modules", module_names);

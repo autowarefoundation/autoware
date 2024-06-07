@@ -14,8 +14,8 @@
 
 #include "scene.hpp"
 
-#include <behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 
 #include <tier4_v2x_msgs/msg/key_value.hpp>
@@ -25,11 +25,6 @@
 
 namespace autoware::behavior_velocity_planner
 {
-using ::behavior_velocity_planner::PlanningBehavior;
-using ::behavior_velocity_planner::SceneModuleInterface;
-using ::behavior_velocity_planner::VelocityFactor;
-namespace arc_lane_utils = ::behavior_velocity_planner::arc_lane_utils;
-namespace planning_utils = ::behavior_velocity_planner::planning_utils;
 namespace
 {
 using tier4_autoware_utils::calcDistance2d;
@@ -181,7 +176,8 @@ std::optional<size_t> insertStopVelocityAtCollision(
   auto insert_point = path->points.at(insert_index);
   insert_point.point.pose = interpolated_pose;
   // Insert 0 velocity after stop point or replace velocity with 0
-  behavior_velocity_planner::planning_utils::insertVelocity(*path, insert_point, 0.0, insert_index);
+  autoware::behavior_velocity_planner::planning_utils::insertVelocity(
+    *path, insert_point, 0.0, insert_index);
   return insert_index;
 }
 }  // namespace

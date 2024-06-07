@@ -14,14 +14,14 @@
 
 #include "scene_crosswalk.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/marker/marker_helper.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 
 using motion_utils::createSlowDownVirtualWallMarker;
@@ -207,4 +207,4 @@ visualization_msgs::msg::MarkerArray CrosswalkModule::createDebugMarkerArray()
 
   return debug_marker_array;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

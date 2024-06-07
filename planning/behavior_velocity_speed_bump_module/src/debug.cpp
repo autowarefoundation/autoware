@@ -14,7 +14,7 @@
 
 #include "scene.hpp"
 
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <lanelet2_extension/regulatory_elements/speed_bump.hpp>
 #include <motion_utils/marker/marker_helper.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
@@ -23,7 +23,7 @@
 
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 using motion_utils::createSlowDownVirtualWallMarker;
 using tier4_autoware_utils::appendMarkerArray;
@@ -120,4 +120,4 @@ visualization_msgs::msg::MarkerArray SpeedBumpModule::createDebugMarkerArray()
   return debug_marker_array;
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

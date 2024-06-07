@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <motion_utils/resample/resample.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -23,7 +23,7 @@
 
 constexpr double DOUBLE_EPSILON = 1e-6;
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 bool splineInterpolate(
   const tier4_planning_msgs::msg::PathWithLaneId & input, const double interval,
@@ -168,4 +168,4 @@ autoware_planning_msgs::msg::Path filterStopPathPoint(
   }
   return filtered_path;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

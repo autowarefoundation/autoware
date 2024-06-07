@@ -64,7 +64,7 @@ tier4_autoware_utils::Polygon2d createOneStepPolygon(
 
 }  // namespace
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
@@ -305,4 +305,4 @@ std::optional<CollisionInterval> findPassageInterval(
     lane_position, path, {enter_idx, exit_idx}, {object_enter_time, object_exit_time}};
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

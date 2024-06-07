@@ -25,7 +25,7 @@
 
 #include <tuple>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
@@ -449,4 +449,4 @@ IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
   debug_data_.static_occlusion = true;
   return StaticallyOccluded{min_dist};
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

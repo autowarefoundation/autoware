@@ -17,14 +17,14 @@
 
 #include "util.hpp"
 
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>
 #include <utility>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 using tier4_planning_msgs::msg::PathWithLaneId;
 
@@ -85,6 +85,6 @@ private:
   void initialize_debug_data(
     const lanelet::Lanelet & no_drivable_lane, const geometry_msgs::msg::Point & ego_pos);
 };
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
 #endif  // SCENE_HPP_

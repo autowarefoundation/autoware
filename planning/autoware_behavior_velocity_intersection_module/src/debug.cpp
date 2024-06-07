@@ -15,8 +15,8 @@
 #include "scene_intersection.hpp"
 #include "scene_merge_from_private_road.hpp"
 
-#include <behavior_velocity_planner_common/utilization/debug.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/debug.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
@@ -45,7 +45,7 @@ visualization_msgs::msg::MarkerArray createLaneletPolygonsMarkerArray(
   visualization_msgs::msg::MarkerArray msg;
 
   int32_t i = 0;
-  int32_t uid = behavior_velocity_planner::planning_utils::bitShift(lane_id);
+  int32_t uid = autoware::behavior_velocity_planner::planning_utils::bitShift(lane_id);
   for (const auto & polygon : polygons) {
     visualization_msgs::msg::Marker marker{};
     marker.header.frame_id = "map";
@@ -224,7 +224,7 @@ constexpr std::tuple<float, float, float> light_blue()
 }
 }  // namespace
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::createMarkerColor;
@@ -472,7 +472,7 @@ visualization_msgs::msg::MarkerArray MergeFromPrivateRoadModule::createDebugMark
 
   const auto state = state_machine_.getState();
 
-  int32_t uid = behavior_velocity_planner::planning_utils::bitShift(module_id_);
+  int32_t uid = autoware::behavior_velocity_planner::planning_utils::bitShift(module_id_);
   const auto now = this->clock_->now();
   if (state == StateMachine::State::STOP) {
     appendMarkerArray(
@@ -496,4 +496,4 @@ motion_utils::VirtualWalls MergeFromPrivateRoadModule::createVirtualWalls()
   }
   return virtual_walls;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

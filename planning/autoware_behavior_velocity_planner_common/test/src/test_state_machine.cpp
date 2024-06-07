@@ -14,7 +14,7 @@
 
 #include "utils.hpp"
 
-#include <behavior_velocity_planner_common/utilization/state_machine.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/state_machine.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <gtest/gtest.h>
@@ -23,8 +23,8 @@
 #include <iostream>
 #include <limits>
 
-using StateMachine = behavior_velocity_planner::StateMachine;
-using State = behavior_velocity_planner::StateMachine::State;
+using StateMachine = autoware::behavior_velocity_planner::StateMachine;
+using State = autoware::behavior_velocity_planner::StateMachine::State;
 
 int enumToInt(State s)
 {

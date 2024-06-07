@@ -49,17 +49,18 @@ inline grid_map::GridMap generateGrid(int w, int h, double res)
   grid_map::GridMap grid{};
   grid_map::Length length(w * res, h * res);
   grid.setGeometry(length, res, grid_map::Position(length.x() / 2.0, length.y() / 2.0));
-  grid.add("layer", behavior_velocity_planner::grid_utils::occlusion_cost_value::FREE_SPACE);
+  grid.add(
+    "layer", autoware::behavior_velocity_planner::grid_utils::occlusion_cost_value::FREE_SPACE);
   return grid;
 }
 
-using behavior_velocity_planner::occlusion_spot_utils::PossibleCollisionInfo;
+using autoware::behavior_velocity_planner::occlusion_spot_utils::PossibleCollisionInfo;
 inline void generatePossibleCollisions(
   std::vector<PossibleCollisionInfo> & possible_collisions, double x0, double y0, double x,
   double y, int nb_cols)
 {
-  using behavior_velocity_planner::occlusion_spot_utils::ObstacleInfo;
-  using behavior_velocity_planner::occlusion_spot_utils::PossibleCollisionInfo;
+  using autoware::behavior_velocity_planner::occlusion_spot_utils::ObstacleInfo;
+  using autoware::behavior_velocity_planner::occlusion_spot_utils::PossibleCollisionInfo;
   const double lon = 0.0;  // assume col_x = intersection_x
   const double lat = -1.0;
   const double velocity = 1.0;

@@ -26,7 +26,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_velocity_planner::dynamic_obstacle_stop
+namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
 {
 tier4_autoware_utils::MultiPolygon2d make_forward_footprints(
   const std::vector<autoware_perception_msgs::msg::PredictedObject> & obstacles,
@@ -81,4 +81,4 @@ void make_ego_footprint_rtree(EgoData & ego_data, const PlannerParam & params)
   }
 }
 
-}  // namespace behavior_velocity_planner::dynamic_obstacle_stop
+}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop

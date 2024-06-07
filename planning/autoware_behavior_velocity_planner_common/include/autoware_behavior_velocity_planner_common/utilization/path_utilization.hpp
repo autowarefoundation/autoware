@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__PATH_UTILIZATION_HPP_
-#define BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__PATH_UTILIZATION_HPP_
+#ifndef AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__PATH_UTILIZATION_HPP_
+#define AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__PATH_UTILIZATION_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -22,7 +22,7 @@
 
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 bool splineInterpolate(
   const tier4_planning_msgs::msg::PathWithLaneId & input, const double interval,
@@ -33,6 +33,6 @@ autoware_planning_msgs::msg::Path filterLitterPathPoint(
   const autoware_planning_msgs::msg::Path & path);
 autoware_planning_msgs::msg::Path filterStopPathPoint(
   const autoware_planning_msgs::msg::Path & path);
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
-#endif  // BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__PATH_UTILIZATION_HPP_
+#endif  // AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__PATH_UTILIZATION_HPP_

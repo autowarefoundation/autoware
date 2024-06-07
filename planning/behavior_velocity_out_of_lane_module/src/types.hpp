@@ -31,7 +31,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_velocity_planner::out_of_lane
+namespace autoware::behavior_velocity_planner::out_of_lane
 {
 /// @brief parameters for the "out of lane" module
 struct PlannerParam
@@ -230,6 +230,6 @@ struct DebugData
   }
 };
 
-}  // namespace behavior_velocity_planner::out_of_lane
+}  // namespace autoware::behavior_velocity_planner::out_of_lane
 
 #endif  // TYPES_HPP_

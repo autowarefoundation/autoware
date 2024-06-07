@@ -24,7 +24,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace behavior_velocity_planner::dynamic_obstacle_stop
+namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
 {
 /// @brief representation of a decision to stop for a dynamic object
 struct ObjectStopDecision
@@ -71,6 +71,6 @@ void update_object_map(
 std::optional<geometry_msgs::msg::Point> find_earliest_collision(
   const ObjectStopDecisionMap & object_map, const EgoData & ego_data);
 
-}  // namespace behavior_velocity_planner::dynamic_obstacle_stop
+}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
 
 #endif  // OBJECT_STOP_DECISION_HPP_

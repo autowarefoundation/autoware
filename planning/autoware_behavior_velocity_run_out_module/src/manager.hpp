@@ -17,17 +17,14 @@
 
 #include "scene.hpp"
 
-#include <behavior_velocity_planner_common/plugin_interface.hpp>
-#include <behavior_velocity_planner_common/plugin_wrapper.hpp>
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/plugin_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/plugin_wrapper.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
 
 #include <memory>
 
 namespace autoware::behavior_velocity_planner
 {
-using ::behavior_velocity_planner::PluginWrapper;
-using ::behavior_velocity_planner::SceneModuleInterface;
-using ::behavior_velocity_planner::SceneModuleManagerInterface;
 class RunOutModuleManager : public SceneModuleManagerInterface
 {
 public:

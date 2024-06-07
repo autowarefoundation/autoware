@@ -17,7 +17,7 @@
 
 #include "types.hpp"
 
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_velocity_planner::out_of_lane
+namespace autoware::behavior_velocity_planner::out_of_lane
 {
 class OutOfLaneModule : public SceneModuleInterface
 {
@@ -60,6 +60,6 @@ protected:
   // Debug
   mutable DebugData debug_data_;
 };
-}  // namespace behavior_velocity_planner::out_of_lane
+}  // namespace autoware::behavior_velocity_planner::out_of_lane
 
 #endif  // SCENE_OUT_OF_LANE_HPP_

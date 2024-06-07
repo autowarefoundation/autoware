@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
-#define BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
+#ifndef AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
+#define AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 
 #include "route_handler/route_handler.hpp"
 
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <autoware_velocity_smoother/smoother/smoother_base.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
@@ -45,7 +45,7 @@
 #include <optional>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 class BehaviorVelocityPlannerNode;
 struct PlannerData
@@ -148,6 +148,6 @@ struct PlannerData
     return std::make_optional<TrafficSignalStamped>(traffic_light_id_map.at(id));
   }
 };
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner
 
-#endif  // BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
+#endif  // AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_

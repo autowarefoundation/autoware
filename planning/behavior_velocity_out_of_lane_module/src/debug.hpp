@@ -23,7 +23,7 @@
 
 #include <string>
 
-namespace behavior_velocity_planner::out_of_lane::debug
+namespace autoware::behavior_velocity_planner::out_of_lane::debug
 {
 /// @brief add footprint markers to the given marker array
 /// @param [inout] debug_marker_array marker array
@@ -64,6 +64,6 @@ void add_range_markers(
   visualization_msgs::msg::MarkerArray & debug_marker_array, const OverlapRanges & ranges,
   const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t first_path_idx,
   const double z, const size_t prev_nb);
-}  // namespace behavior_velocity_planner::out_of_lane::debug
+}  // namespace autoware::behavior_velocity_planner::out_of_lane::debug
 
 #endif  // DEBUG_HPP_

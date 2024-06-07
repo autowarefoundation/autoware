@@ -15,8 +15,8 @@
 #include "scene_intersection.hpp"
 #include "util.hpp"
 
-#include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for to_bg2d
-#include <behavior_velocity_planner_common/utilization/util.hpp>  // for planning_utils::
+#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for to_bg2d
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>  // for planning_utils::
 #include <interpolation/spline_interpolation_points_2d.hpp>
 #include <lanelet2_extension/regulatory_elements/road_marking.hpp>  // for lanelet::autoware::RoadMarking
 #include <lanelet2_extension/utility/query.hpp>
@@ -106,7 +106,7 @@ std::optional<std::pair<size_t, const lanelet::CompoundPolygon3d &>> getFirstPoi
       const auto & p = path.points.at(i).point.pose.position;
       for (const auto & polygon : polygons) {
         const auto polygon_2d = lanelet::utils::to2D(polygon);
-        is_in_lanelet = bg::within(behavior_velocity_planner::to_bg2d(p), polygon_2d);
+        is_in_lanelet = bg::within(autoware::behavior_velocity_planner::to_bg2d(p), polygon_2d);
         if (is_in_lanelet) {
           return std::make_optional<std::pair<size_t, const lanelet::CompoundPolygon3d &>>(
             i, polygon);
@@ -122,7 +122,7 @@ std::optional<std::pair<size_t, const lanelet::CompoundPolygon3d &>> getFirstPoi
       const auto & p = path.points.at(i).point.pose.position;
       for (const auto & polygon : polygons) {
         const auto polygon_2d = lanelet::utils::to2D(polygon);
-        is_in_lanelet = bg::within(behavior_velocity_planner::to_bg2d(p), polygon_2d);
+        is_in_lanelet = bg::within(autoware::behavior_velocity_planner::to_bg2d(p), polygon_2d);
         if (is_in_lanelet) {
           return std::make_optional<std::pair<size_t, const lanelet::CompoundPolygon3d &>>(
             i, polygon);
@@ -157,7 +157,7 @@ double getHighestCurvature(const lanelet::ConstLineString3d & centerline)
 
 }  // namespace
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
@@ -907,4 +907,4 @@ std::vector<lanelet::ConstLineString3d> IntersectionModule::generateDetectionLan
   return detection_divisions;
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

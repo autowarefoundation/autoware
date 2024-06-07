@@ -20,7 +20,7 @@
 #include <optional>
 #include <vector>
 
-namespace behavior_velocity_planner::dynamic_obstacle_stop
+namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
 {
 /// @brief find the collision point closest to ego along an object footprint
 /// @param [in] ego_data ego data including its path and footprints used for finding a collision
@@ -41,6 +41,6 @@ std::vector<Collision> find_collisions(
   const std::vector<autoware_perception_msgs::msg::PredictedObject> & objects,
   const tier4_autoware_utils::MultiPolygon2d & obstacle_forward_footprints);
 
-}  // namespace behavior_velocity_planner::dynamic_obstacle_stop
+}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
 
 #endif  // COLLISION_HPP_

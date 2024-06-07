@@ -26,7 +26,7 @@
 #include <optional>
 #include <vector>
 
-namespace behavior_velocity_planner::out_of_lane
+namespace autoware::behavior_velocity_planner::out_of_lane
 {
 
 /// @brief estimate whether ego can decelerate without breaking the deceleration limit
@@ -102,5 +102,5 @@ std::optional<SlowdownToInsert> calculate_slowdown_point(
   }
   return std::nullopt;
 }
-}  // namespace behavior_velocity_planner::out_of_lane
+}  // namespace autoware::behavior_velocity_planner::out_of_lane
 #endif  // CALCULATE_SLOWDOWN_POINTS_HPP_

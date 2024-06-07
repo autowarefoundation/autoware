@@ -15,9 +15,9 @@
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "utils.hpp"
 
-#include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
-#include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 
 #include <gtest/gtest.h>
 
@@ -35,7 +35,7 @@
 
 TEST(is_ahead_of, nominal)
 {
-  using behavior_velocity_planner::planning_utils::isAheadOf;
+  using autoware::behavior_velocity_planner::planning_utils::isAheadOf;
   geometry_msgs::msg::Pose target = test::generatePose(0);
   geometry_msgs::msg::Pose origin = test::generatePose(1);
   bool is_ahead = isAheadOf(target, origin);
@@ -47,7 +47,8 @@ TEST(is_ahead_of, nominal)
 
 TEST(smoothDeceleration, calculateMaxSlowDownVelocity)
 {
-  using behavior_velocity_planner::planning_utils::calcDecelerationVelocityFromDistanceToTarget;
+  using autoware::behavior_velocity_planner::planning_utils::
+    calcDecelerationVelocityFromDistanceToTarget;
   const double current_accel = 1.0;
   const double current_velocity = 5.0;
   const double max_slow_down_jerk = -1.0;
@@ -82,9 +83,9 @@ TEST(smoothDeceleration, calculateMaxSlowDownVelocity)
 
 TEST(specialInterpolation, specialInterpolation)
 {
+  using autoware::behavior_velocity_planner::interpolatePath;
   using autoware_planning_msgs::msg::Path;
   using autoware_planning_msgs::msg::PathPoint;
-  using behavior_velocity_planner::interpolatePath;
   using motion_utils::calcSignedArcLength;
   using motion_utils::searchZeroVelocityIndex;
 

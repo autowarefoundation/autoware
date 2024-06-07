@@ -29,7 +29,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_velocity_planner::out_of_lane
+namespace autoware::behavior_velocity_planner::out_of_lane
 {
 /// @brief calculate the distance along the ego path between ego and some target path index
 /// @param [in] ego_data data related to the ego vehicle
@@ -110,6 +110,6 @@ std::optional<Slowdown> calculate_decision(
 /// @return return the calculated decisions to slowdown or stop
 std::vector<Slowdown> calculate_decisions(
   const DecisionInputs & inputs, const PlannerParam & params, const rclcpp::Logger & logger);
-}  // namespace behavior_velocity_planner::out_of_lane
+}  // namespace autoware::behavior_velocity_planner::out_of_lane
 
 #endif  // DECISIONS_HPP_

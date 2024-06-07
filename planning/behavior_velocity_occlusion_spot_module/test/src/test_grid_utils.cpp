@@ -15,7 +15,7 @@
 #include "grid_utils.hpp"
 #include "utils.hpp"
 
-#include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <gtest/gtest.h>
@@ -38,11 +38,11 @@ struct indexEq
   }
 };
 
-using behavior_velocity_planner::LineString2d;
-using behavior_velocity_planner::Point2d;
-using behavior_velocity_planner::Polygon2d;
-using behavior_velocity_planner::grid_utils::occlusion_cost_value::OCCUPIED;
-using behavior_velocity_planner::grid_utils::occlusion_cost_value::UNKNOWN;
+using autoware::behavior_velocity_planner::LineString2d;
+using autoware::behavior_velocity_planner::Point2d;
+using autoware::behavior_velocity_planner::Polygon2d;
+using autoware::behavior_velocity_planner::grid_utils::occlusion_cost_value::OCCUPIED;
+using autoware::behavior_velocity_planner::grid_utils::occlusion_cost_value::UNKNOWN;
 namespace bg = boost::geometry;
 
 Polygon2d pointsToPoly(const Point2d p0, const Point2d p1, const double radius)

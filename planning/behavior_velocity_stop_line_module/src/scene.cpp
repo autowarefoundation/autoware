@@ -14,14 +14,14 @@
 
 #include "scene.hpp"
 
-#include <behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 
 #include <algorithm>
 #include <vector>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
@@ -177,4 +177,4 @@ geometry_msgs::msg::Point StopLineModule::getCenterOfStopLine(
   center_point.z = (stop_line[0].z() + stop_line[1].z()) / 2.0;
   return center_point;
 }
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

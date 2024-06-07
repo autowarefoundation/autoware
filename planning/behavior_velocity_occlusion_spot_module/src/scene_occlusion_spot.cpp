@@ -17,10 +17,10 @@
 #include "occlusion_spot_utils.hpp"
 #include "risk_predictive_braking.hpp"
 
-#include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
-#include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
-#include <behavior_velocity_planner_common/utilization/trajectory_utils.hpp>
-#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/trajectory_utils.hpp>
+#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 
@@ -41,7 +41,7 @@
 
 namespace
 {
-namespace utils = behavior_velocity_planner::occlusion_spot_utils;
+namespace utils = autoware::behavior_velocity_planner::occlusion_spot_utils;
 using autoware_perception_msgs::msg::PredictedObject;
 std::vector<PredictedObject> extractStuckVehicle(
   const std::vector<PredictedObject> & vehicles, const double stop_velocity)
@@ -56,7 +56,7 @@ std::vector<PredictedObject> extractStuckVehicle(
 }
 }  // namespace
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 namespace utils = occlusion_spot_utils;
 
@@ -201,4 +201,4 @@ bool OcclusionSpotModule::modifyPathVelocity(
   return true;
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

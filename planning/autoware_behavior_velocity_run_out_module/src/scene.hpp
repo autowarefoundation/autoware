@@ -21,7 +21,7 @@
 #include "state_machine.hpp"
 #include "utils.hpp"
 
-#include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
 
 #include <memory>
 #include <optional>
@@ -39,11 +39,6 @@ using tier4_debug_msgs::msg::Float32Stamped;
 using tier4_planning_msgs::msg::PathPointWithLaneId;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using BasicPolygons2d = std::vector<lanelet::BasicPolygon2d>;
-using ::behavior_velocity_planner::PathWithLaneId;
-using ::behavior_velocity_planner::PlannerData;
-using ::behavior_velocity_planner::Polygon2d;
-using ::behavior_velocity_planner::SceneModuleInterface;
-using ::behavior_velocity_planner::StopReason;
 
 class RunOutModule : public SceneModuleInterface
 {

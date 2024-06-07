@@ -20,7 +20,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-namespace behavior_velocity_planner
+namespace autoware::behavior_velocity_planner
 {
 using motion_utils::calcSignedArcLength;
 using tier4_autoware_utils::createPoint;
@@ -169,4 +169,4 @@ bool SpeedBumpModule::applySlowDownSpeed(
     output.points, slow_start_point_idx, slow_end_point_idx, speed_bump_speed);
 }
 
-}  // namespace behavior_velocity_planner
+}  // namespace autoware::behavior_velocity_planner

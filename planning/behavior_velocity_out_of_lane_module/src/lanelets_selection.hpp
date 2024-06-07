@@ -21,7 +21,7 @@
 
 #include <lanelet2_core/LaneletMap.h>
 
-namespace behavior_velocity_planner::out_of_lane
+namespace autoware::behavior_velocity_planner::out_of_lane
 {
 /// @brief checks if a lanelet is already contained in a vector of lanelets
 /// @param [in] lanelets vector to check
@@ -68,6 +68,6 @@ lanelet::ConstLanelets calculate_other_lanelets(
   const EgoData & ego_data, const lanelet::ConstLanelets & path_lanelets,
   const lanelet::ConstLanelets & ignored_lanelets,
   const route_handler::RouteHandler & route_handler, const PlannerParam & params);
-}  // namespace behavior_velocity_planner::out_of_lane
+}  // namespace autoware::behavior_velocity_planner::out_of_lane
 
 #endif  // LANELETS_SELECTION_HPP_
