@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_avoidance_by_lane_change_module/manager.hpp"
+#include "manager.hpp"
 
 #include "autoware_behavior_path_static_obstacle_avoidance_module/parameter_helper.hpp"
-#include "behavior_path_avoidance_by_lane_change_module/data_structs.hpp"
+#include "data_structs.hpp"
 #include "tier4_autoware_utils/ros/parameter.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
 
@@ -25,8 +25,10 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
+using ::behavior_path_planner::getParameter;
+using ::behavior_path_planner::ObjectParameter;
 
 void AvoidanceByLaneChangeModuleManager::init(rclcpp::Node * node)
 {
@@ -191,9 +193,9 @@ AvoidanceByLaneChangeModuleManager::createNewSceneModuleInstance()
     objects_of_interest_marker_interface_ptr_map_);
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_path_planner::AvoidanceByLaneChangeModuleManager,
-  behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::AvoidanceByLaneChangeModuleManager,
+  ::behavior_path_planner::SceneModuleManagerInterface)

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__INTERFACE_HPP_
-#define BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__INTERFACE_HPP_
+#ifndef INTERFACE_HPP_
+#define INTERFACE_HPP_
 
-#include "behavior_path_avoidance_by_lane_change_module/data_structs.hpp"
-#include "behavior_path_avoidance_by_lane_change_module/scene.hpp"
 #include "behavior_path_lane_change_module/interface.hpp"
+#include "data_structs.hpp"
+#include "scene.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -25,8 +25,12 @@
 #include <string>
 #include <unordered_map>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
+using ::behavior_path_planner::LaneChangeInterface;
+using ::behavior_path_planner::ObjectsOfInterestMarkerInterface;
+using ::behavior_path_planner::RTCInterface;
+
 class AvoidanceByLaneChangeInterface : public LaneChangeInterface
 {
 public:
@@ -45,6 +49,6 @@ public:
 protected:
   void updateRTCStatus(const double start_distance, const double finish_distance) override;
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__INTERFACE_HPP_
+#endif  // INTERFACE_HPP_

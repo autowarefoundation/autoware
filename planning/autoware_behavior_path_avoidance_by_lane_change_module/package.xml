@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>behavior_path_avoidance_by_lane_change_module</name>
+  <name>autoware_behavior_path_avoidance_by_lane_change_module</name>
   <version>0.1.0</version>
   <description>The behavior_path_avoidance_by_lane_change_module package</description>
 

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__MANAGER_HPP_
-#define BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__MANAGER_HPP_
+#ifndef MANAGER_HPP_
+#define MANAGER_HPP_
 
-#include "behavior_path_avoidance_by_lane_change_module/data_structs.hpp"
-#include "behavior_path_avoidance_by_lane_change_module/interface.hpp"
 #include "behavior_path_lane_change_module/manager.hpp"
+#include "data_structs.hpp"
+#include "interface.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -26,9 +26,12 @@
 #include <unordered_map>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
-using route_handler::Direction;
+using ::behavior_path_planner::LaneChangeModuleManager;
+using ::behavior_path_planner::LaneChangeModuleType;
+using ::behavior_path_planner::SceneModuleInterface;
+using ::route_handler::Direction;
 
 class AvoidanceByLaneChangeModuleManager : public LaneChangeModuleManager
 {
@@ -47,6 +50,6 @@ public:
 private:
   std::shared_ptr<AvoidanceByLCParameters> avoidance_parameters_;
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__MANAGER_HPP_
+#endif  // MANAGER_HPP_

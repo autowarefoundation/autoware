@@ -12,19 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__SCENE_HPP_
-#define BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__SCENE_HPP_
+#ifndef SCENE_HPP_
+#define SCENE_HPP_
 
 #include "autoware_behavior_path_static_obstacle_avoidance_module/helper.hpp"
-#include "behavior_path_avoidance_by_lane_change_module/data_structs.hpp"
 #include "behavior_path_lane_change_module/scene.hpp"
+#include "data_structs.hpp"
 
 #include <memory>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
+using ::behavior_path_planner::DebugData;
 using AvoidanceDebugData = DebugData;
-using helper::static_obstacle_avoidance::AvoidanceHelper;
+using ::behavior_path_planner::AvoidancePlanningData;
+using ::behavior_path_planner::LaneChangeParameters;
+using ::behavior_path_planner::NormalLaneChange;
+using ::behavior_path_planner::ObjectData;
+using ::behavior_path_planner::ObjectDataArray;
+using ::behavior_path_planner::PredictedObject;
+using ::behavior_path_planner::helper::static_obstacle_avoidance::AvoidanceHelper;
 
 class AvoidanceByLaneChange : public NormalLaneChange
 {
@@ -59,6 +66,6 @@ private:
   double calcMinimumLaneChangeLength() const;
   double calcLateralOffset() const;
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_AVOIDANCE_BY_LANE_CHANGE_MODULE__SCENE_HPP_
+#endif  // SCENE_HPP_

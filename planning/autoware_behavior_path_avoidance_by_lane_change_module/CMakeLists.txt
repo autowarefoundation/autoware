@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(behavior_path_avoidance_by_lane_change_module)
+project(autoware_behavior_path_avoidance_by_lane_change_module)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()

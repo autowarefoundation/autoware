@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_avoidance_by_lane_change_module/scene.hpp"
+#include "scene.hpp"
 
 #include "autoware_behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "autoware_behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
@@ -28,13 +28,19 @@
 #include <boost/geometry/algorithms/centroid.hpp>
 #include <boost/geometry/strategies/cartesian/centroid_bashein_detmer.hpp>
 
+#include <algorithm>
 #include <limits>
 #include <optional>
 #include <utility>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
-using behavior_path_planner::utils::lane_change::debug::createExecutionArea;
+using ::behavior_path_planner::Direction;
+using ::behavior_path_planner::LaneChangeModuleType;
+using ::behavior_path_planner::ObjectInfo;
+using ::behavior_path_planner::Point2d;
+using ::behavior_path_planner::utils::lane_change::debug::createExecutionArea;
+namespace utils = ::behavior_path_planner::utils;
 
 AvoidanceByLaneChange::AvoidanceByLaneChange(
   const std::shared_ptr<LaneChangeParameters> & parameters,
@@ -293,4 +299,4 @@ double AvoidanceByLaneChange::calcLateralOffset() const
   }
   return additional_lat_offset;
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

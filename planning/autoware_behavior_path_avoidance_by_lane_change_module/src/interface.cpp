@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_avoidance_by_lane_change_module/interface.hpp"
+#include "interface.hpp"
 
 #include "autoware_behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "autoware_behavior_path_planner_common/interface/scene_module_visitor.hpp"
@@ -20,8 +20,11 @@
 #include <memory>
 #include <string>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
+using ::behavior_path_planner::State;
+using ::route_handler::Direction;
+
 AvoidanceByLaneChangeInterface::AvoidanceByLaneChangeInterface(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<LaneChangeParameters> & parameters,
@@ -63,4 +66,4 @@ void AvoidanceByLaneChangeInterface::updateRTCStatus(
     uuid_map_.at(direction), isExecutionReady(), state, start_distance, finish_distance,
     clock_->now());
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
