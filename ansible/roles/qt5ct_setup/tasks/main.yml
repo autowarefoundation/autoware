@@ -99,8 +99,8 @@
     path: "{{ lookup('env', 'HOME') }}/.config/qt5ct/qt5ct.conf"
     regexp: "^stylesheets="
     line: >-
-      stylesheets={{ 
-        existing_stylesheets | default('') | regex_replace(',+', ',') | regex_replace('^,|,$', '') 
+      stylesheets={{
+        existing_stylesheets | default('') | regex_replace(',+', ',') | regex_replace('^,|,$', '')
       }},{{ autoware_dir }}/ansible/roles/qt5ct_setup/files/autoware.qss
   when: autoware_dir + '/ansible/roles/qt5ct_setup/files/autoware.qss' not in existing_stylesheets
 
