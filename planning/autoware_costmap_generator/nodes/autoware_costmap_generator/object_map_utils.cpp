@@ -30,7 +30,7 @@
  *
  */
 
-#include "costmap_generator/object_map_utils.hpp"
+#include "autoware_costmap_generator/object_map_utils.hpp"
 
 #include <string>
 #include <vector>

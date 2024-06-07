@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <costmap_generator/points_to_costmap.hpp>
+#include <autoware_costmap_generator/points_to_costmap.hpp>
 
 #include <gtest/gtest.h>
+
+namespace autoware::costmap_generator
+{
 using pointcloud = pcl::PointCloud<pcl::PointXYZ>;
 class PointsToCostmapTest : public ::testing::Test
 {
@@ -216,3 +219,4 @@ TEST_F(PointsToCostmapTest, TestMakeCostmapFromPoints_invalidPoints_outOfGrid)
 
   EXPECT_EQ(nonempty_grid_cell_num, 0);
 }
+}  // namespace autoware::costmap_generator

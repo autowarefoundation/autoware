@@ -42,13 +42,15 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
 
-#include "costmap_generator/objects_to_costmap.hpp"
+#include "autoware_costmap_generator/objects_to_costmap.hpp"
 
 #include <tf2/utils.h>
 
 #include <cmath>
 #include <string>
 
+namespace autoware::costmap_generator
+{
 // Constructor
 ObjectsToCostmap::ObjectsToCostmap()
 : NUMBER_OF_POINTS(4),
@@ -196,3 +198,4 @@ grid_map::Matrix ObjectsToCostmap::makeCostmapFromObjects(
 
   return objects_costmap[OBJECTS_COSTMAP_LAYER_];
 }
+}  // namespace autoware::costmap_generator

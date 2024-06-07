@@ -42,8 +42,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
 
-#ifndef COSTMAP_GENERATOR__OBJECTS_TO_COSTMAP_HPP_
-#define COSTMAP_GENERATOR__OBJECTS_TO_COSTMAP_HPP_
+#ifndef AUTOWARE_COSTMAP_GENERATOR__OBJECTS_TO_COSTMAP_HPP_
+#define AUTOWARE_COSTMAP_GENERATOR__OBJECTS_TO_COSTMAP_HPP_
 
 #include <grid_map_ros/grid_map_ros.hpp>
 
@@ -57,6 +57,8 @@
 
 #include <string>
 
+namespace autoware::costmap_generator
+{
 class ObjectsToCostmap
 {
 public:
@@ -123,5 +125,5 @@ private:
     const grid_map::Polygon & polygon, const std::string & gridmap_layer_name, const float score,
     grid_map::GridMap & objects_costmap);
 };
-
-#endif  // COSTMAP_GENERATOR__OBJECTS_TO_COSTMAP_HPP_
+}  // namespace autoware::costmap_generator
+#endif  // AUTOWARE_COSTMAP_GENERATOR__OBJECTS_TO_COSTMAP_HPP_

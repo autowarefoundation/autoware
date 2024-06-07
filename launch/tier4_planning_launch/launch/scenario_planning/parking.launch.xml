@@ -4,7 +4,7 @@
     <push-ros-namespace namespace="parking"/>
 
     <node_container pkg="rclcpp_components" exec="$(var container_type)" name="parking_container" namespace="" output="screen">
-      <composable_node pkg="costmap_generator" plugin="CostmapGenerator" name="costmap_generator" namespace="">
+      <composable_node pkg="autoware_costmap_generator" plugin="autoware::costmap_generator::CostmapGenerator" name="costmap_generator" namespace="">
         <!-- topic remap -->
         <remap from="~/input/objects" to="/perception/object_recognition/objects"/>
         <remap from="~/input/points_no_ground" to="/perception/obstacle_segmentation/pointcloud"/>

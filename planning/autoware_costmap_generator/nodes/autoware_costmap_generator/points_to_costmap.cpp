@@ -42,10 +42,13 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
 
-#include "costmap_generator/points_to_costmap.hpp"
+#include "autoware_costmap_generator/points_to_costmap.hpp"
 
 #include <string>
 #include <vector>
+
+namespace autoware::costmap_generator
+{
 
 void PointsToCostmap::initGridmapParam(const grid_map::GridMap & gridmap)
 {
@@ -140,3 +143,5 @@ grid_map::Matrix PointsToCostmap::makeCostmapFromPoints(
     gridmap_layer_name, grid_vec);
   return costmap;
 }
+
+}  // namespace autoware::costmap_generator

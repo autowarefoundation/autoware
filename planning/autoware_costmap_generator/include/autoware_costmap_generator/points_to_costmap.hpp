@@ -42,8 +42,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
 
-#ifndef COSTMAP_GENERATOR__POINTS_TO_COSTMAP_HPP_
-#define COSTMAP_GENERATOR__POINTS_TO_COSTMAP_HPP_
+#ifndef AUTOWARE_COSTMAP_GENERATOR__POINTS_TO_COSTMAP_HPP_
+#define AUTOWARE_COSTMAP_GENERATOR__POINTS_TO_COSTMAP_HPP_
 
 #include <grid_map_ros/grid_map_ros.hpp>
 
@@ -52,6 +52,9 @@
 #include <string>
 #include <vector>
 
+namespace autoware::costmap_generator
+
+{
 class PointsToCostmap
 {
 public:
@@ -115,5 +118,6 @@ private:
     const std::string & gridmap_layer_name,
     const std::vector<std::vector<std::vector<double>>> grid_vec);
 };
+}  // namespace autoware::costmap_generator
 
-#endif  // COSTMAP_GENERATOR__POINTS_TO_COSTMAP_HPP_
+#endif  // AUTOWARE_COSTMAP_GENERATOR__POINTS_TO_COSTMAP_HPP_

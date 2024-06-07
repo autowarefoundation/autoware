@@ -42,8 +42,8 @@
  *  OF private_node SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
 
-#include "costmap_generator/costmap_generator.hpp"
-#include "costmap_generator/object_map_utils.hpp"
+#include "autoware_costmap_generator/costmap_generator.hpp"
+#include "autoware_costmap_generator/object_map_utils.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
@@ -157,6 +157,8 @@ pcl::PointCloud<pcl::PointXYZ> getTransformedPointCloud(
 
 }  // namespace
 
+namespace autoware::costmap_generator
+{
 CostmapGenerator::CostmapGenerator(const rclcpp::NodeOptions & node_options)
 : Node("costmap_generator", node_options), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_)
 {
@@ -476,6 +478,7 @@ void CostmapGenerator::publishCostmap(const grid_map::GridMap & costmap)
   out_gridmap_msg->header = header;
   pub_costmap_->publish(*out_gridmap_msg);
 }
+}  // namespace autoware::costmap_generator
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(CostmapGenerator)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::costmap_generator::CostmapGenerator)

@@ -42,11 +42,11 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
 
-#ifndef COSTMAP_GENERATOR__COSTMAP_GENERATOR_HPP_
-#define COSTMAP_GENERATOR__COSTMAP_GENERATOR_HPP_
+#ifndef AUTOWARE_COSTMAP_GENERATOR__COSTMAP_GENERATOR_HPP_
+#define AUTOWARE_COSTMAP_GENERATOR__COSTMAP_GENERATOR_HPP_
 
-#include "costmap_generator/objects_to_costmap.hpp"
-#include "costmap_generator/points_to_costmap.hpp"
+#include "autoware_costmap_generator/objects_to_costmap.hpp"
+#include "autoware_costmap_generator/points_to_costmap.hpp"
 
 #include <grid_map_ros/GridMapRosConverter.hpp>
 #include <grid_map_ros/grid_map_ros.hpp>
@@ -72,6 +72,8 @@
 #include <string>
 #include <vector>
 
+namespace autoware::costmap_generator
+{
 class CostmapGenerator : public rclcpp::Node
 {
 public:
@@ -197,5 +199,6 @@ private:
   /// \brief calculate cost for final output
   grid_map::Matrix generateCombinedCostmap();
 };
+}  // namespace autoware::costmap_generator
 
-#endif  // COSTMAP_GENERATOR__COSTMAP_GENERATOR_HPP_
+#endif  // AUTOWARE_COSTMAP_GENERATOR__COSTMAP_GENERATOR_HPP_

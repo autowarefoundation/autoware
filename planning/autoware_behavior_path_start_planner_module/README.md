@@ -526,7 +526,7 @@ If a safe path cannot be generated from the current position, search backwards f
 ### **freespace pull out**
 
 If the vehicle gets stuck with pull out along lanes, execute freespace pull out.
-To run this feature, you need to set `parking_lot` to the map, `activate_by_scenario` of [costmap_generator](../costmap_generator/README.md) to `false` and `enable_freespace_planner` to `true`
+To run this feature, you need to set `parking_lot` to the map, `activate_by_scenario` of [costmap_generator](../autoware_costmap_generator/README.md) to `false` and `enable_freespace_planner` to `true`
 
 <img src="https://user-images.githubusercontent.com/39142679/270964106-ae688bca-1709-4e06-98c4-90f671bb8246.png" width="600">
 

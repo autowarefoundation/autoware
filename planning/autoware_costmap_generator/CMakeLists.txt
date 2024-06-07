@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(costmap_generator)
+project(autoware_costmap_generator)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -16,9 +16,9 @@ include_directories(
 )
 
 ament_auto_add_library(costmap_generator_lib SHARED
-  nodes/costmap_generator/points_to_costmap.cpp
-  nodes/costmap_generator/objects_to_costmap.cpp
-  nodes/costmap_generator/object_map_utils.cpp
+  nodes/autoware_costmap_generator/points_to_costmap.cpp
+  nodes/autoware_costmap_generator/objects_to_costmap.cpp
+  nodes/autoware_costmap_generator/object_map_utils.cpp
 )
 target_link_libraries(costmap_generator_lib
   ${PCL_LIBRARIES}
@@ -33,7 +33,7 @@ if(${PCL_VERSION} GREATER_EQUAL 1.12.1)
 endif()
 
 ament_auto_add_library(costmap_generator_node SHARED
-  nodes/costmap_generator/costmap_generator_node.cpp
+  nodes/autoware_costmap_generator/costmap_generator_node.cpp
 )
 target_link_libraries(costmap_generator_node
   ${PCL_LIBRARIES}
@@ -41,7 +41,7 @@ target_link_libraries(costmap_generator_node
 )
 
 rclcpp_components_register_node(costmap_generator_node
-  PLUGIN "CostmapGenerator"
+  PLUGIN "autoware::costmap_generator::CostmapGenerator"
   EXECUTABLE costmap_generator
 )
 

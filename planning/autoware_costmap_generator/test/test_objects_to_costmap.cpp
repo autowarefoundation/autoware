@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <costmap_generator/objects_to_costmap.hpp>
+#include <autoware_costmap_generator/objects_to_costmap.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <gtest/gtest.h>
 
+namespace autoware::costmap_generator
+{
 using LABEL = autoware_perception_msgs::msg::ObjectClassification;
 
 class ObjectsToCostMapTest : public ::testing::Test
@@ -134,3 +136,4 @@ TEST_F(ObjectsToCostMapTest, TestMakeCostmapFromObjects)
     }
   }
 }
+}  // namespace autoware::costmap_generator

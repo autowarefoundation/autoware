@@ -6,9 +6,9 @@
   <arg name="output_grid_map" default="~/output/grid_map"/>
   <arg name="output_occupancy_grid" default="~/output/occupancy_grid"/>
 
-  <arg name="costmap_generator_param_file" default="$(find-pkg-share costmap_generator)/config/costmap_generator.param.yaml"/>
+  <arg name="costmap_generator_param_file" default="$(find-pkg-share autoware_costmap_generator)/config/costmap_generator.param.yaml"/>
 
-  <node pkg="costmap_generator" exec="costmap_generator" name="costmap_generator" output="screen">
+  <node pkg="autoware_costmap_generator" exec="costmap_generator" name="costmap_generator" output="screen">
     <remap from="~/input/objects" to="$(var input_objects)"/>
     <remap from="~/input/points_no_ground" to="$(var input_points_no_ground)"/>
     <remap from="~/input/vector_map" to="$(var input_lanelet_map)"/>
