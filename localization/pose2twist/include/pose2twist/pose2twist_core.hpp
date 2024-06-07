@@ -21,6 +21,16 @@
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <tier4_debug_msgs/msg/float32_stamped.hpp>
 
+#ifdef ROS_DISTRO_GALACTIC
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#else
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#endif
+
+// Compute the relative rotation of q2 from q1 as a rotation vector
+geometry_msgs::msg::Vector3 compute_relative_rotation_vector(
+  const tf2::Quaternion & q1, const tf2::Quaternion & q2);
+
 class Pose2Twist : public rclcpp::Node
 {
 public:
