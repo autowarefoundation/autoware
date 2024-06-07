@@ -102,8 +102,8 @@ def launch_setup(context, *args, **kwargs):
 
     # lane departure checker
     lane_departure_component = ComposableNode(
-        package="lane_departure_checker",
-        plugin="lane_departure_checker::LaneDepartureCheckerNode",
+        package="autoware_lane_departure_checker",
+        plugin="autoware::lane_departure_checker::LaneDepartureCheckerNode",
         name="lane_departure_checker_node",
         namespace="trajectory_follower",
         remappings=[

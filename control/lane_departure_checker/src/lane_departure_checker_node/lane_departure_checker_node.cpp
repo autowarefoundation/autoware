@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "lane_departure_checker/lane_departure_checker_node.hpp"
+#include "autoware_lane_departure_checker/lane_departure_checker_node.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
@@ -120,7 +120,7 @@ void update_param(
 
 }  // namespace
 
-namespace lane_departure_checker
+namespace autoware::lane_departure_checker
 {
 LaneDepartureCheckerNode::LaneDepartureCheckerNode(const rclcpp::NodeOptions & options)
 : Node("lane_departure_checker_node", options)
@@ -759,7 +759,7 @@ lanelet::Lanelets LaneDepartureCheckerNode::getRightOppositeLanelets(
   return opposite_lanelets;
 }
 
-}  // namespace lane_departure_checker
+}  // namespace autoware::lane_departure_checker
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(lane_departure_checker::LaneDepartureCheckerNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::lane_departure_checker::LaneDepartureCheckerNode)

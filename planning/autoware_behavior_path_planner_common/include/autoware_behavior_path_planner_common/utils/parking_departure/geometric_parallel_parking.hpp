@@ -18,7 +18,7 @@
 #include "autoware_behavior_path_planner_common/data_manager.hpp"
 #include "autoware_behavior_path_planner_common/parameters.hpp"
 
-#include <lane_departure_checker/lane_departure_checker.hpp>
+#include <autoware_lane_departure_checker/lane_departure_checker.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <geometry_msgs/msg/point.hpp>
@@ -75,7 +75,8 @@ public:
   bool planPullOut(
     const Pose & start_pose, const Pose & goal_pose, const lanelet::ConstLanelets & road_lanes,
     const lanelet::ConstLanelets & shoulder_lanes, const bool left_side_start,
-    const std::shared_ptr<lane_departure_checker::LaneDepartureChecker> lane_departure_checker);
+    const std::shared_ptr<autoware::lane_departure_checker::LaneDepartureChecker>
+      autoware_lane_departure_checker);
   void setParameters(const ParallelParkingParameters & parameters) { parameters_ = parameters; }
   void setPlannerData(const std::shared_ptr<const PlannerData> & planner_data)
   {
@@ -119,7 +120,8 @@ private:
     const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
     const bool is_forward, const bool left_side_parking, const double end_pose_offset,
     const double lane_departure_margin, const double arc_path_interval,
-    const std::shared_ptr<lane_departure_checker::LaneDepartureChecker> lane_departure_checker);
+    const std::shared_ptr<autoware::lane_departure_checker::LaneDepartureChecker>
+      autoware_lane_departure_checker);
   PathWithLaneId generateArcPath(
     const Pose & center, const double radius, const double start_yaw, double end_yaw,
     const double arc_path_interval, const bool is_left_turn, const bool is_forward);

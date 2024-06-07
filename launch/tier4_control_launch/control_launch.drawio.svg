@@ -259,17 +259,17 @@
           >
             <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
               <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                lane_departure_checker_node
+                autoware_lane_departure_checker_node
                 <br/>
                 <br/>
                 <div style="text-align: left">
-                  <span>package: lane_departure_checker_node</span>
+                  <span>package: autoware_lane_departure_checker_node</span>
                 </div>
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="360" y="809" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">lane_departure_checker_node...</text>
+        <text x="360" y="809" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">autoware_lane_departure_checker_node...</text>
       </switch>
     </g>
     <rect x="240" y="880" width="240" height="110" fill="#e1d5e7" stroke="#9673a6" pointer-events="all"/>

@@ -27,7 +27,7 @@
 #include "autoware_behavior_path_start_planner_module/pull_out_path.hpp"
 #include "autoware_behavior_path_start_planner_module/shift_pull_out.hpp"
 
-#include <lane_departure_checker/lane_departure_checker.hpp>
+#include <autoware_lane_departure_checker/lane_departure_checker.hpp>
 #include <vehicle_info_util/vehicle_info.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
@@ -46,13 +46,13 @@
 
 namespace behavior_path_planner
 {
+using autoware::lane_departure_checker::LaneDepartureChecker;
 using behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
 using behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
 using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
 using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
 using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 using geometry_msgs::msg::PoseArray;
-using lane_departure_checker::LaneDepartureChecker;
 using PriorityOrder = std::vector<std::pair<size_t, std::shared_ptr<PullOutPlannerBase>>>;
 
 struct PullOutStatus

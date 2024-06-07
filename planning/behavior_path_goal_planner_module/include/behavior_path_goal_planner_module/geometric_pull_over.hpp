@@ -18,7 +18,7 @@
 #include "autoware_behavior_path_planner_common/utils/parking_departure/geometric_parallel_parking.hpp"
 #include "behavior_path_goal_planner_module/pull_over_planner_base.hpp"
 
-#include <lane_departure_checker/lane_departure_checker.hpp>
+#include <autoware_lane_departure_checker/lane_departure_checker.hpp>
 
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
@@ -27,7 +27,7 @@
 
 namespace behavior_path_planner
 {
-using lane_departure_checker::LaneDepartureChecker;
+using autoware::lane_departure_checker::LaneDepartureChecker;
 class GeometricPullOver : public PullOverPlannerBase
 {
 public:

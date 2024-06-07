@@ -32,7 +32,7 @@
 
 namespace behavior_path_planner
 {
-using lane_departure_checker::LaneDepartureChecker;
+using autoware::lane_departure_checker::LaneDepartureChecker;
 using lanelet::autoware::NoParkingArea;
 using lanelet::autoware::NoStoppingArea;
 using tier4_autoware_utils::calcOffsetPose;

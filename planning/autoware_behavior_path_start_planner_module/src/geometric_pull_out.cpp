@@ -32,7 +32,8 @@ using start_planner_utils::getPullOutLanes;
 
 GeometricPullOut::GeometricPullOut(
   rclcpp::Node & node, const StartPlannerParameters & parameters,
-  const std::shared_ptr<lane_departure_checker::LaneDepartureChecker> lane_departure_checker)
+  const std::shared_ptr<autoware::lane_departure_checker::LaneDepartureChecker>
+    lane_departure_checker)
 : PullOutPlannerBase{node, parameters},
   parallel_parking_parameters_{parameters.parallel_parking_parameters},
   lane_departure_checker_(lane_departure_checker)

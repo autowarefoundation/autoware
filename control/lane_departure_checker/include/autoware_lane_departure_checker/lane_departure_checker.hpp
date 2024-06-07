@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
-#define LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
+#ifndef AUTOWARE_LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
+#define AUTOWARE_LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
 
 #include <rosidl_runtime_cpp/message_initialization.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
@@ -45,7 +45,7 @@
 #include <utility>
 #include <vector>
 
-namespace lane_departure_checker
+namespace autoware::lane_departure_checker
 {
 using autoware_planning_msgs::msg::LaneletRoute;
 using autoware_planning_msgs::msg::Trajectory;
@@ -170,6 +170,6 @@ private:
     const std::vector<LinearRing2d> & vehicle_footprints,
     const SegmentRtree & uncrossable_segments);
 };
-}  // namespace lane_departure_checker
+}  // namespace autoware::lane_departure_checker
 
-#endif  // LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
+#endif  // AUTOWARE_LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_

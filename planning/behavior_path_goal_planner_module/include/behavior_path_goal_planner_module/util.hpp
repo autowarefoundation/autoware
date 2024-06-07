@@ -18,7 +18,7 @@
 #include "behavior_path_goal_planner_module/goal_searcher_base.hpp"
 #include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
-#include <lane_departure_checker/lane_departure_checker.hpp>
+#include <autoware_lane_departure_checker/lane_departure_checker.hpp>
 
 #include "visualization_msgs/msg/detail/marker_array__struct.hpp"
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
