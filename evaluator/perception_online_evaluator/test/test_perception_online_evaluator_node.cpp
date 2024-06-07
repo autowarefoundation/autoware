@@ -141,7 +141,19 @@ protected:
       [=](const DiagnosticArray::ConstSharedPtr msg) {
         const auto it = std::find_if(msg->status.begin(), msg->status.end(), is_target_metric);
         if (it != msg->status.end()) {
-          metric_value_ = boost::lexical_cast<double>(it->values[2].value);
+          const auto mean_it = std::find_if(
+            it->values.begin(), it->values.end(),
+            [](const auto & key_value) { return key_value.key == "mean"; });
+          if (mean_it != it->values.end()) {
+            metric_value_ = boost::lexical_cast<double>(mean_it->value);
+          } else {
+            const auto metric_value_it = std::find_if(
+              it->values.begin(), it->values.end(),
+              [](const auto & key_value) { return key_value.key == "metric_value"; });
+            if (metric_value_it != it->values.end()) {
+              metric_value_ = boost::lexical_cast<double>(metric_value_it->value);
+            }
+          }
           metric_updated_ = true;
         }
       });
