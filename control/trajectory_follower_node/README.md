@@ -45,7 +45,7 @@ struct LateralSyncData {
 }
 }
 
-package mpc_lateral_controller {
+package autoware_mpc_lateral_controller {
 class MPCLateralController {
 isReady(InputData) override
 run(InputData) override

@@ -1,16 +1,14 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>trajectory_follower_node</name>
+  <name>autoware_mpc_lateral_controller</name>
   <version>1.0.0</version>
-  <description>Nodes to follow a trajectory by generating control commands separated into lateral and longitudinal commands</description>
+  <description>MPC-based lateral controller</description>
 
-  <!-- mpc longitudinal controller -->
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
-  <!-- pid lateral controller -->
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
 
-  <license>Apache License 2.0</license>
+  <license>Apache 2.0</license>
 
   <author email="takamasa.horibe@tier4.jp">Takamasa Horibe</author>
   <author email="maxime.clement@tier4.jp">Maxime CLEMENT</author>
@@ -19,30 +17,30 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
-  <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_control_msgs</depend>
-  <depend>autoware_mpc_lateral_controller</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_vehicle_msgs</depend>
+  <depend>diagnostic_msgs</depend>
+  <depend>diagnostic_updater</depend>
+  <depend>eigen</depend>
+  <depend>geometry_msgs</depend>
+  <depend>interpolation</depend>
   <depend>motion_utils</depend>
-  <depend>pid_longitudinal_controller</depend>
-  <depend>pure_pursuit</depend>
+  <depend>osqp_interface</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
   <depend>tier4_autoware_utils</depend>
+  <depend>tier4_debug_msgs</depend>
   <depend>trajectory_follower_base</depend>
   <depend>vehicle_info_util</depend>
-  <depend>visualization_msgs</depend>
-
-  <exec_depend>ros2launch</exec_depend>
 
   <test_depend>ament_cmake_ros</test_depend>
-  <test_depend>ament_index_python</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
-  <test_depend>autoware_testing</test_depend>
-  <test_depend>fake_test_node</test_depend>
-  <test_depend>ros_testing</test_depend>
+  <test_depend>eigen</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

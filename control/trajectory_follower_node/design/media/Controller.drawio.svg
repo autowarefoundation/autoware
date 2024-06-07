@@ -140,7 +140,7 @@
               <div style="display: inline-block; font-size: 11px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">
                 trajectory_follower/
                 <br style="font-size: 11px"/>
-                mpc_lateral_controller
+                autoware_mpc_lateral_controller
               </div>
             </div>
           </div>
