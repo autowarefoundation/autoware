@@ -157,7 +157,7 @@ PredictedPath PathGenerator::generatePathForOnLaneVehicle(
     return generateStraightPath(object, duration);
   }
 
-  return generatePolynomialPath(object, ref_paths, speed_limit, duration, lateral_duration);
+  return generatePolynomialPath(object, ref_paths, duration, lateral_duration, speed_limit);
 }
 
 PredictedPath PathGenerator::generateStraightPath(
