@@ -42,7 +42,8 @@ void MarkerModule::publish_marker(
     marker.type = Marker::ARROW;
     marker.id = i;
     marker.ns = "arrow";
-    marker.color = common::color_scale::rainbow(normalize(scores.at(i)));
+    marker.color =
+      static_cast<std_msgs::msg::ColorRGBA>(common::color_scale::rainbow(normalize(scores.at(i))));
     marker.color.a = 0.5;
 
     marker.pose.position.x = position.x();

@@ -136,7 +136,7 @@ void GnssParticleCorrector::publish_marker(const Eigen::Vector3f & position, boo
     marker.pose.position.z = latest_height_.data;
 
     float prob = i / 4.0f;
-    marker.color = common::color_scale::rainbow(prob);
+    marker.color = static_cast<std_msgs::msg::ColorRGBA>(common::color_scale::rainbow(prob));
     marker.color.a = 0.5f;
     marker.scale.x = 0.1;
     drawCircle(marker.points, weight_manager_.inverse_normal_pdf(prob, is_rtk_fixed));

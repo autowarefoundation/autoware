@@ -93,7 +93,8 @@ private:
       marker.scale.y = 0.1;
       marker.scale.z = 0.1;
 
-      marker.color = common::color_scale::rainbow(bound_weight(p.weight));
+      marker.color =
+        static_cast<std_msgs::msg::ColorRGBA>(common::color_scale::rainbow(bound_weight(p.weight)));
       marker.pose.orientation = p.pose.orientation;
       marker.pose.position.x = p.pose.position.x;
       marker.pose.position.y = p.pose.position.y;
