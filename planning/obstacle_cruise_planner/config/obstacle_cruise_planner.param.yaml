@@ -218,3 +218,15 @@
       lpf_gain_slow_down_vel: 0.99 # low-pass filter gain for slow down velocity
       lpf_gain_lat_dist: 0.999 # low-pass filter gain for lateral distance from obstacle to ego's path
       lpf_gain_dist_to_slow_down: 0.7 # low-pass filter gain for distance to slow down start
+    stop:
+      type_specified_params:
+        labels: # For the listed types, the node try to read the following type specified values
+          - "default"
+          - "unknown"
+        # default: For the default type, which denotes the other types listed above, the following param is defined implicitly, and the other type-specified parameters are not defined.
+          # limit_min_acc: common_param.yaml/limit.min_acc
+        unknown:
+          limit_min_acc: -1.2 # overwrite the deceleration limit, in usually, common_param.yaml/limit.min_acc is referred.
+          sudden_object_acc_threshold: -1.1 # If a stop can be achieved by a deceleration smaller than this value, it is not considered as “sudden stop".
+          sudden_object_dist_threshold: 1000.0 # If a stop distance is longer than this value, it is not considered as “sudden stop".
+          abandon_to_stop: false # If true, the planner gives up to stop when it cannot avoid to run over while maintaining the deceleration limit.

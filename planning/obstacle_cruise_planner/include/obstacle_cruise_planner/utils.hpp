@@ -36,8 +36,7 @@ PoseWithStamp getCurrentObjectPose(
   const PredictedObject & predicted_object, const rclcpp::Time & obj_base_time,
   const rclcpp::Time & current_time, const bool use_prediction);
 
-std::optional<StopObstacle> getClosestStopObstacle(
-  const std::vector<StopObstacle> & stop_obstacles);
+std::vector<StopObstacle> getClosestStopObstacles(const std::vector<StopObstacle> & stop_obstacles);
 
 template <class T>
 size_t getIndexWithLongitudinalOffset(

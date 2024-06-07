@@ -23,6 +23,8 @@
 #include "tier4_autoware_utils/ros/update_param.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
+#include <algorithm>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -42,7 +44,8 @@ public:
     vehicle_info_(vehicle_info),
     ego_nearest_param_(ego_nearest_param),
     debug_data_ptr_(debug_data_ptr),
-    slow_down_param_(SlowDownParam(node))
+    slow_down_param_(SlowDownParam(node)),
+    stop_param_(StopParam(node, longitudinal_info))
   {
     stop_reasons_pub_ = node.create_publisher<StopReasonArray>("~/output/stop_reasons", 1);
     velocity_factors_pub_ =
@@ -91,6 +94,7 @@ public:
     updateCommonParam(parameters);
     updateCruiseParam(parameters);
     slow_down_param_.onParam(parameters);
+    stop_param_.onParam(parameters, longitudinal_info_);
   }
 
   Float32MultiArrayStamped getStopPlanningDebugMessage(const rclcpp::Time & current_time) const
@@ -333,6 +337,84 @@ private:
     double lpf_gain_dist_to_slow_down;
   };
   SlowDownParam slow_down_param_;
+  struct StopParam
+  {
+    struct ObstacleSpecificParams
+    {
+      double limit_min_acc;
+      double sudden_object_acc_threshold;
+      double sudden_object_dist_threshold;
+      bool abandon_to_stop;
+    };
+    const std::unordered_map<uint8_t, std::string> types_maps = {
+      {ObjectClassification::UNKNOWN, "unknown"}, {ObjectClassification::CAR, "car"},
+      {ObjectClassification::TRUCK, "truck"},     {ObjectClassification::BUS, "bus"},
+      {ObjectClassification::TRAILER, "trailer"}, {ObjectClassification::MOTORCYCLE, "motorcycle"},
+      {ObjectClassification::BICYCLE, "bicycle"}, {ObjectClassification::PEDESTRIAN, "pedestrian"}};
+    std::unordered_map<std::string, ObstacleSpecificParams> type_specified_param_list;
+    explicit StopParam(rclcpp::Node & node, const LongitudinalInfo & longitudinal_info)
+    {
+      const std::string param_prefix = "stop.type_specified_params.";
+      std::vector<std::string> obstacle_labels{"default"};
+      obstacle_labels =
+        node.declare_parameter<std::vector<std::string>>(param_prefix + "labels", obstacle_labels);
+
+      for (const auto & type_str : obstacle_labels) {
+        if (type_str != "default") {
+          ObstacleSpecificParams param{
+            node.declare_parameter<double>(param_prefix + type_str + ".limit_min_acc"),
+            node.declare_parameter<double>(
+              param_prefix + type_str + ".sudden_object_acc_threshold"),
+            node.declare_parameter<double>(
+              param_prefix + type_str + ".sudden_object_dist_threshold"),
+            node.declare_parameter<bool>(param_prefix + type_str + ".abandon_to_stop")};
+
+          param.sudden_object_acc_threshold =
+            std::min(param.sudden_object_acc_threshold, longitudinal_info.limit_min_accel);
+          param.limit_min_acc = std::min(param.limit_min_acc, param.sudden_object_acc_threshold);
+
+          type_specified_param_list.emplace(type_str, param);
+        }
+      }
+    }
+    void onParam(
+      const std::vector<rclcpp::Parameter> & parameters, const LongitudinalInfo & longitudinal_info)
+    {
+      const std::string param_prefix = "stop.type_specified_params.";
+      for (auto & [type_str, param] : type_specified_param_list) {
+        if (type_str == "default") {
+          continue;
+        }
+        tier4_autoware_utils::updateParam<double>(
+          parameters, param_prefix + type_str + ".limit_min_acc", param.limit_min_acc);
+        tier4_autoware_utils::updateParam<double>(
+          parameters, param_prefix + type_str + ".sudden_object_acc_threshold",
+          param.sudden_object_acc_threshold);
+        tier4_autoware_utils::updateParam<double>(
+          parameters, param_prefix + type_str + ".sudden_object_dist_threshold",
+          param.sudden_object_dist_threshold);
+        tier4_autoware_utils::updateParam<bool>(
+          parameters, param_prefix + type_str + ".abandon_to_stop", param.abandon_to_stop);
+
+        param.sudden_object_acc_threshold =
+          std::min(param.sudden_object_acc_threshold, longitudinal_info.limit_min_accel);
+        param.limit_min_acc = std::min(param.limit_min_acc, param.sudden_object_acc_threshold);
+      }
+    }
+    std::string getParamType(const ObjectClassification label)
+    {
+      const auto type_str = types_maps.at(label.label);
+      if (type_specified_param_list.count(type_str) == 0) {
+        return "default";
+      }
+      return type_str;
+    }
+    ObstacleSpecificParams getParam(const ObjectClassification label)
+    {
+      return type_specified_param_list.at(getParamType(label));
+    }
+  };
+  StopParam stop_param_;
   double moving_object_speed_threshold;
   double moving_object_hysteresis_range;
   std::vector<SlowDownOutput> prev_slow_down_output_;

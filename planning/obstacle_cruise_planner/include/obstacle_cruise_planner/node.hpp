@@ -272,8 +272,7 @@ private:
   bool is_driving_forward_{true};
   bool enable_slow_down_planning_{false};
 
-  // previous closest obstacle
-  std::shared_ptr<StopObstacle> prev_closest_stop_obstacle_ptr_{nullptr};
+  std::vector<StopObstacle> prev_closest_stop_obstacles_{};
 
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 

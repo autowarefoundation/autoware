@@ -95,16 +95,21 @@ PoseWithStamp getCurrentObjectPose(
   return PoseWithStamp{obj_base_time, *interpolated_pose};
 }
 
-std::optional<StopObstacle> getClosestStopObstacle(const std::vector<StopObstacle> & stop_obstacles)
+std::vector<StopObstacle> getClosestStopObstacles(const std::vector<StopObstacle> & stop_obstacles)
 {
-  std::optional<StopObstacle> candidate_obstacle = std::nullopt;
+  std::vector<StopObstacle> candidates{};
   for (const auto & stop_obstacle : stop_obstacles) {
-    if (
-      !candidate_obstacle || stop_obstacle.dist_to_collide_on_decimated_traj <
-                               candidate_obstacle->dist_to_collide_on_decimated_traj) {
-      candidate_obstacle = stop_obstacle;
+    const auto itr =
+      std::find_if(candidates.begin(), candidates.end(), [&stop_obstacle](const StopObstacle & co) {
+        return co.classification.label == stop_obstacle.classification.label;
+      });
+    if (itr == candidates.end()) {
+      candidates.emplace_back(stop_obstacle);
+    } else if (
+      stop_obstacle.dist_to_collide_on_decimated_traj < itr->dist_to_collide_on_decimated_traj) {
+      *itr = stop_obstacle;
     }
   }
-  return candidate_obstacle;
+  return candidates;
 }
 }  // namespace obstacle_cruise_utils
