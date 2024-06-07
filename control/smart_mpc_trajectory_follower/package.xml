@@ -7,6 +7,9 @@
 
   <!-- mpc longitudinal controller -->
   <maintainer email="masayuki.aino@proxima-ai-tech.com">Masayuki Aino</maintainer>
+  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
+  <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
+  <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
 
   <license>Apache License 2.0</license>
 
