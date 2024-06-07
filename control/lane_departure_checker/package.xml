@@ -6,6 +6,8 @@
   <description>The lane_departure_checker package</description>
   <maintainer email="kyoichi.sugahara@tier4.jp">Kyoichi Sugahara</maintainer>
   <maintainer email="makoto.kurihara@tier4.jp">Makoto Kurihara</maintainer>
+  <maintainer email="zulfaqar.azmi@tier4.jp">Zulfaqar Azmi</maintainer>
+
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
