@@ -1,62 +1,83 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Parameters for Pose Instability Detector Nodes",
+  "title": "Parameters for Pose Instability Detector Node",
   "type": "object",
   "definitions": {
     "pose_instability_detector_node": {
       "type": "object",
       "properties": {
-        "interval_sec": {
+        "timer_period": {
           "type": "number",
           "default": 0.5,
           "exclusiveMinimum": 0,
-          "description": "The interval of timer_callback in seconds."
+          "description": "The period of timer_callback (sec)."
         },
-        "threshold_diff_position_x": {
+        "heading_velocity_maximum": {
           "type": "number",
-          "default": 1.0,
+          "default": 16.667,
           "minimum": 0.0,
-          "description": "The threshold of diff_position x (m)."
+          "description": "The maximum of heading velocity (m/s)."
         },
-        "threshold_diff_position_y": {
+        "heading_velocity_scale_factor_tolerance": {
           "type": "number",
-          "default": 1.0,
+          "default": 3.0,
           "minimum": 0.0,
-          "description": "The threshold of diff_position y (m)."
+          "description": "The tolerance of heading velocity scale factor (%)."
         },
-        "threshold_diff_position_z": {
+        "angular_velocity_maximum": {
           "type": "number",
-          "default": 1.0,
+          "default": 0.523,
           "minimum": 0.0,
-          "description": "The threshold of diff_position z (m)."
+          "description": "The maximum of angular velocity (rad/s)."
         },
-        "threshold_diff_angle_x": {
+        "angular_velocity_scale_factor_tolerance": {
           "type": "number",
-          "default": 1.0,
+          "default": 0.2,
           "minimum": 0.0,
-          "description": "The threshold of diff_angle x (rad)."
+          "description": "The tolerance of angular velocity scale factor (%)."
         },
-        "threshold_diff_angle_y": {
+        "angular_velocity_bias_tolerance": {
           "type": "number",
-          "default": 1.0,
+          "default": 0.00698,
           "minimum": 0.0,
-          "description": "The threshold of diff_angle y (rad)."
+          "description": "The tolerance of angular velocity bias (rad/s)."
         },
-        "threshold_diff_angle_z": {
+        "pose_estimator_longitudinal_tolerance": {
           "type": "number",
-          "default": 1.0,
+          "default": 0.11,
           "minimum": 0.0,
-          "description": "The threshold of diff_angle z (rad)."
+          "description": "The tolerance of longitudinal position of pose estimator (m)."
+        },
+        "pose_estimator_lateral_tolerance": {
+          "type": "number",
+          "default": 0.11,
+          "minimum": 0.0,
+          "description": "The tolerance of lateral position of pose estimator (m)."
+        },
+        "pose_estimator_vertical_tolerance": {
+          "type": "number",
+          "default": 0.11,
+          "minimum": 0.0,
+          "description": "The tolerance of vertical position of pose estimator (m)."
+        },
+        "pose_estimator_angular_tolerance": {
+          "type": "number",
+          "default": 0.0175,
+          "minimum": 0.0,
+          "description": "The tolerance of roll angle of pose estimator (rad)."
         }
       },
       "required": [
-        "interval_sec",
-        "threshold_diff_position_x",
-        "threshold_diff_position_y",
-        "threshold_diff_position_z",
-        "threshold_diff_angle_x",
-        "threshold_diff_angle_y",
-        "threshold_diff_angle_z"
+        "timer_period",
+        "heading_velocity_maximum",
+        "heading_velocity_scale_factor_tolerance",
+        "angular_velocity_maximum",
+        "angular_velocity_scale_factor_tolerance",
+        "angular_velocity_bias_tolerance",
+        "pose_estimator_longitudinal_tolerance",
+        "pose_estimator_lateral_tolerance",
+        "pose_estimator_vertical_tolerance",
+        "pose_estimator_angular_tolerance"
       ]
     }
   },

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "../src/pose_instability_detector.hpp"
+#include "autoware/pose_instability_detector/pose_instability_detector.hpp"
 #include "test_message_helper_node.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
@@ -81,17 +81,17 @@ TEST_F(TestPoseInstabilityDetector, output_ok_when_twist_matches_odometry)  // N
   timestamp.nanosec = 0;
   helper_->send_odometry_message(timestamp, 10.0, 0.0, 0.0);
 
+  // send the twist message1 (move 1m in x direction)
+  timestamp.sec = 0;
+  timestamp.nanosec = 5e8;
+  helper_->send_twist_message(timestamp, 2.0, 0.0, 0.0);
+
   // process the above message (by timer_callback)
   helper_->received_diagnostic_array_flag = false;
   while (!helper_->received_diagnostic_array_flag) {
     executor_.spin_some();
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
-
-  // send the twist message1 (move 1m in x direction)
-  timestamp.sec = 0;
-  timestamp.nanosec = 5e8;
-  helper_->send_twist_message(timestamp, 2.0, 0.0, 0.0);
 
   // send the twist message2 (move 1m in x direction)
   timestamp.sec = 1;
@@ -101,7 +101,9 @@ TEST_F(TestPoseInstabilityDetector, output_ok_when_twist_matches_odometry)  // N
   // send the second odometry message (finish x = 12)
   timestamp.sec = 2;
   timestamp.nanosec = 0;
-  helper_->send_odometry_message(timestamp, 12.0, 0.0, 0.0);
+  helper_->send_odometry_message(timestamp, 14.0, 0.0, 0.0);
+
+  executor_.spin_some();
 
   // process the above messages (by timer_callback)
   helper_->received_diagnostic_array_flag = false;
@@ -124,17 +126,17 @@ TEST_F(TestPoseInstabilityDetector, output_warn_when_twist_is_too_small)  // NOL
   timestamp.nanosec = 0;
   helper_->send_odometry_message(timestamp, 10.0, 0.0, 0.0);
 
+  // send the twist message1 (move 0.1m in x direction)
+  timestamp.sec = 0;
+  timestamp.nanosec = 5e8;
+  helper_->send_twist_message(timestamp, 0.2, 0.0, 0.0);
+
   // process the above message (by timer_callback)
   helper_->received_diagnostic_array_flag = false;
   while (!helper_->received_diagnostic_array_flag) {
     executor_.spin_some();
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
-
-  // send the twist message1 (move 0.1m in x direction)
-  timestamp.sec = 0;
-  timestamp.nanosec = 5e8;
-  helper_->send_twist_message(timestamp, 0.2, 0.0, 0.0);
 
   // send the twist message2 (move 0.1m in x direction)
   timestamp.sec = 1;
@@ -144,7 +146,9 @@ TEST_F(TestPoseInstabilityDetector, output_warn_when_twist_is_too_small)  // NOL
   // send the second odometry message (finish x = 12)
   timestamp.sec = 2;
   timestamp.nanosec = 0;
-  helper_->send_odometry_message(timestamp, 12.0, 0.0, 0.0);
+  helper_->send_odometry_message(timestamp, 14.0, 0.0, 0.0);
+
+  executor_.spin_some();
 
   // process the above messages (by timer_callback)
   helper_->received_diagnostic_array_flag = false;

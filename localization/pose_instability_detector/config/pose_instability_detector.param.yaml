@@ -1,9 +1,15 @@
 /**:
   ros__parameters:
-    interval_sec: 0.5  # [sec]
-    threshold_diff_position_x: 1.0  # [m]
-    threshold_diff_position_y: 1.0  # [m]
-    threshold_diff_position_z: 1.0  # [m]
-    threshold_diff_angle_x: 1.0  # [rad]
-    threshold_diff_angle_y: 1.0  # [rad]
-    threshold_diff_angle_z: 1.0  # [rad]
+    timer_period: 0.5                             # [sec]
+
+    heading_velocity_maximum: 16.667              # [m/s]
+    heading_velocity_scale_factor_tolerance: 3.0  # [%]
+
+    angular_velocity_maximum: 0.523               # [rad/s]
+    angular_velocity_scale_factor_tolerance: 0.2  # [%]
+    angular_velocity_bias_tolerance: 0.00698      # [rad/s]
+
+    pose_estimator_longitudinal_tolerance: 0.11   # [m]
+    pose_estimator_lateral_tolerance: 0.11        # [m]
+    pose_estimator_vertical_tolerance: 0.11       # [m]
+    pose_estimator_angular_tolerance: 0.0175      # [rad]
