@@ -139,7 +139,7 @@ def launch_setup(context, *args, **kwargs):
 
     # autonomous emergency braking
     autonomous_emergency_braking = ComposableNode(
-        package="autonomous_emergency_braking",
+        package="autoware_autonomous_emergency_braking",
         plugin="autoware::motion::control::autonomous_emergency_braking::AEB",
         name="autonomous_emergency_braking",
         remappings=[

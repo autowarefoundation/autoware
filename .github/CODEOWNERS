@@ -44,7 +44,7 @@ common/time_utils/** christopherj.ho@gmail.com shumpei.wakabayashi@tier4.jp tomo
 common/traffic_light_recognition_marker_publisher/** shumpei.wakabayashi@tier4.jp takeshi.miura@tier4.jp tomoya.kimura@tier4.jp
 common/traffic_light_utils/** kotaro.uetake@tier4.jp satoshi.ota@tier4.jp shunsuke.miura@tier4.jp
 common/tvm_utility/** ambroise.vincent@arm.com xinyu.wang@tier4.jp
-control/autonomous_emergency_braking/** daniel.sanchez@tier4.jp mamoru.sobue@tier4.jp takamasa.horibe@tier4.jp tomoya.kimura@tier4.jp
+control/autoware_autonomous_emergency_braking/** daniel.sanchez@tier4.jp mamoru.sobue@tier4.jp takamasa.horibe@tier4.jp tomoya.kimura@tier4.jp
 control/control_performance_analysis/** berkay@leodrive.ai fumiya.watanabe@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 control/control_validator/** kyoichi.sugahara@tier4.jp makoto.kurihara@tier4.jp mamoru.sobue@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
 control/external_cmd_selector/** fumiya.watanabe@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
