@@ -232,7 +232,7 @@
   <!-- surround obstacle check -->
   <group if="$(var launch_surround_obstacle_checker)">
     <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
-      <composable_node pkg="surround_obstacle_checker" plugin="surround_obstacle_checker::SurroundObstacleCheckerNode" name="surround_obstacle_checker" namespace="">
+      <composable_node pkg="autoware_surround_obstacle_checker" plugin="autoware::surround_obstacle_checker::SurroundObstacleCheckerNode" name="surround_obstacle_checker" namespace="">
         <!-- topic remap -->
         <remap from="~/input/odometry" to="/localization/kinematic_state"/>
         <remap from="~/input/objects" to="/perception/object_recognition/objects"/>

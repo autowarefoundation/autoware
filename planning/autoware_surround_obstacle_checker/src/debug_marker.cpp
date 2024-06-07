@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "surround_obstacle_checker/debug_marker.hpp"
+#include "autoware_surround_obstacle_checker/debug_marker.hpp"
 
 #include <motion_utils/marker/marker_helper.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
@@ -25,7 +25,7 @@
 
 #include <memory>
 
-namespace surround_obstacle_checker
+namespace autoware::surround_obstacle_checker
 {
 namespace
 {
@@ -245,4 +245,4 @@ void SurroundObstacleCheckerDebugNode::updateFootprintMargin(
   surround_check_back_distance_ = back_distance;
 }
 
-}  // namespace surround_obstacle_checker
+}  // namespace autoware::surround_obstacle_checker

@@ -3,7 +3,7 @@
   "title": "Parameters for Surround Obstacle Checker Node",
   "type": "object",
   "definitions": {
-    "surround_obstacle_checker": {
+    "autoware_surround_obstacle_checker": {
       "type": "object",
       "properties": {
         "pointcloud": {
@@ -385,7 +385,7 @@
       "type": "object",
       "properties": {
         "ros__parameters": {
-          "$ref": "#/definitions/surround_obstacle_checker"
+          "$ref": "#/definitions/autoware_surround_obstacle_checker"
         }
       },
       "required": ["ros__parameters"],

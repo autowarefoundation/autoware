@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "surround_obstacle_checker/node.hpp"
+#include "autoware_surround_obstacle_checker/node.hpp"
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/update_param.hpp>
@@ -46,7 +46,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-namespace surround_obstacle_checker
+namespace autoware::surround_obstacle_checker
 {
 namespace bg = boost::geometry;
 using Point2d = bg::model::d2::point_xy<double>;
@@ -541,7 +541,7 @@ bool SurroundObstacleCheckerNode::isStopRequired(
   return false;
 }
 
-}  // namespace surround_obstacle_checker
+}  // namespace autoware::surround_obstacle_checker
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(surround_obstacle_checker::SurroundObstacleCheckerNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::surround_obstacle_checker::SurroundObstacleCheckerNode)

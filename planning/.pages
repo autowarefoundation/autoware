@@ -61,8 +61,8 @@ nav:
       - 'Frenet Planner': planning/sampling_based_planner/frenet_planner
       - 'Bezier Sampler': planning/sampling_based_planner/bezier_sampler
     - 'Surround Obstacle Checker':
-      - 'About Surround Obstacle Checker': planning/surround_obstacle_checker
-      - 'About Surround Obstacle Checker (Japanese)': planning/surround_obstacle_checker/surround_obstacle_checker-design.ja
+      - 'About Surround Obstacle Checker': planning/autoware_surround_obstacle_checker
+      - 'About Surround Obstacle Checker (Japanese)': planning/autoware_surround_obstacle_checker/surround_obstacle_checker-design.ja
     - 'Motion Velocity Planner':
       - 'About Motion Velocity Planner': planning/autoware_motion_velocity_planner_node/
       - 'Available Modules':

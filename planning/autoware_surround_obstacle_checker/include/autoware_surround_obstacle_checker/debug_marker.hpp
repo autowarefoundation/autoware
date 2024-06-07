@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SURROUND_OBSTACLE_CHECKER__DEBUG_MARKER_HPP_
-#define SURROUND_OBSTACLE_CHECKER__DEBUG_MARKER_HPP_
+#ifndef AUTOWARE_SURROUND_OBSTACLE_CHECKER__DEBUG_MARKER_HPP_
+#define AUTOWARE_SURROUND_OBSTACLE_CHECKER__DEBUG_MARKER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
@@ -31,7 +31,7 @@
 #include <memory>
 #include <string>
 
-namespace surround_obstacle_checker
+namespace autoware::surround_obstacle_checker
 {
 
 using autoware_adapi_v1_msgs::msg::PlanningBehavior;
@@ -98,5 +98,5 @@ private:
   std::shared_ptr<geometry_msgs::msg::Pose> stop_pose_ptr_;
   rclcpp::Clock::SharedPtr clock_;
 };
-}  // namespace surround_obstacle_checker
-#endif  // SURROUND_OBSTACLE_CHECKER__DEBUG_MARKER_HPP_
+}  // namespace autoware::surround_obstacle_checker
+#endif  // AUTOWARE_SURROUND_OBSTACLE_CHECKER__DEBUG_MARKER_HPP_

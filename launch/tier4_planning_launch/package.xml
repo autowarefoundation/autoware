@@ -62,6 +62,7 @@
   <exec_depend>autoware_path_optimizer</exec_depend>
   <exec_depend>autoware_planning_topic_converter</exec_depend>
   <exec_depend>autoware_remaining_distance_time_calculator</exec_depend>
+  <exec_depend>autoware_surround_obstacle_checker</exec_depend>
   <exec_depend>autoware_velocity_smoother</exec_depend>
   <exec_depend>behavior_path_planner</exec_depend>
   <exec_depend>costmap_generator</exec_depend>
@@ -74,7 +75,6 @@
   <exec_depend>planning_evaluator</exec_depend>
   <exec_depend>planning_validator</exec_depend>
   <exec_depend>scenario_selector</exec_depend>
-  <exec_depend>surround_obstacle_checker</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

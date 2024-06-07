@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(surround_obstacle_checker)
+project(autoware_surround_obstacle_checker)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -23,7 +23,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "surround_obstacle_checker::SurroundObstacleCheckerNode"
+  PLUGIN "autoware::surround_obstacle_checker::SurroundObstacleCheckerNode"
   EXECUTABLE ${PROJECT_NAME}_node
 )
 

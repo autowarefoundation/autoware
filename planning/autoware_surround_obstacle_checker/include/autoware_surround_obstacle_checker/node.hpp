@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SURROUND_OBSTACLE_CHECKER__NODE_HPP_
-#define SURROUND_OBSTACLE_CHECKER__NODE_HPP_
+#ifndef AUTOWARE_SURROUND_OBSTACLE_CHECKER__NODE_HPP_
+#define AUTOWARE_SURROUND_OBSTACLE_CHECKER__NODE_HPP_
 
-#include "surround_obstacle_checker/debug_marker.hpp"
+#include "autoware_surround_obstacle_checker/debug_marker.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 #include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
@@ -43,7 +43,7 @@
 #include <utility>
 #include <vector>
 
-namespace surround_obstacle_checker
+namespace autoware::surround_obstacle_checker
 {
 
 using autoware_perception_msgs::msg::PredictedObjects;
@@ -149,6 +149,6 @@ private:
 
   std::unordered_map<std::string, int> label_map_;
 };
-}  // namespace surround_obstacle_checker
+}  // namespace autoware::surround_obstacle_checker
 
-#endif  // SURROUND_OBSTACLE_CHECKER__NODE_HPP_
+#endif  // AUTOWARE_SURROUND_OBSTACLE_CHECKER__NODE_HPP_
