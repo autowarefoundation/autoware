@@ -38,10 +38,10 @@ Pose2Twist::Pose2Twist(const rclcpp::NodeOptions & options) : rclcpp::Node("pose
     create_publisher<tier4_debug_msgs::msg::Float32Stamped>("angular_z", durable_qos);
   // Note: this callback publishes topics above
   pose_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>(
-    "pose", queue_size, std::bind(&Pose2Twist::callbackPose, this, _1));
+    "pose", queue_size, std::bind(&Pose2Twist::callback_pose, this, _1));
 }
 
-double calcDiffForRadian(const double lhs_rad, const double rhs_rad)
+double calc_diff_for_radian(const double lhs_rad, const double rhs_rad)
 {
   double diff_rad = lhs_rad - rhs_rad;
   if (diff_rad > M_PI) {
@@ -53,7 +53,7 @@ double calcDiffForRadian(const double lhs_rad, const double rhs_rad)
 }
 
 // x: roll, y: pitch, z: yaw
-geometry_msgs::msg::Vector3 getRPY(const geometry_msgs::msg::Pose & pose)
+geometry_msgs::msg::Vector3 get_rpy(const geometry_msgs::msg::Pose & pose)
 {
   geometry_msgs::msg::Vector3 rpy;
   tf2::Quaternion q(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
@@ -61,12 +61,12 @@ geometry_msgs::msg::Vector3 getRPY(const geometry_msgs::msg::Pose & pose)
   return rpy;
 }
 
-geometry_msgs::msg::Vector3 getRPY(geometry_msgs::msg::PoseStamped::SharedPtr pose)
+geometry_msgs::msg::Vector3 get_rpy(geometry_msgs::msg::PoseStamped::SharedPtr pose)
 {
-  return getRPY(pose->pose);
+  return get_rpy(pose->pose);
 }
 
-geometry_msgs::msg::TwistStamped calcTwist(
+geometry_msgs::msg::TwistStamped calc_twist(
   geometry_msgs::msg::PoseStamped::SharedPtr pose_a,
   geometry_msgs::msg::PoseStamped::SharedPtr pose_b)
 {
@@ -79,8 +79,8 @@ geometry_msgs::msg::TwistStamped calcTwist(
     return twist;
   }
 
-  const auto pose_a_rpy = getRPY(pose_a);
-  const auto pose_b_rpy = getRPY(pose_b);
+  const auto pose_a_rpy = get_rpy(pose_a);
+  const auto pose_b_rpy = get_rpy(pose_b);
 
   geometry_msgs::msg::Vector3 diff_xyz;
   geometry_msgs::msg::Vector3 diff_rpy;
@@ -88,9 +88,9 @@ geometry_msgs::msg::TwistStamped calcTwist(
   diff_xyz.x = pose_b->pose.position.x - pose_a->pose.position.x;
   diff_xyz.y = pose_b->pose.position.y - pose_a->pose.position.y;
   diff_xyz.z = pose_b->pose.position.z - pose_a->pose.position.z;
-  diff_rpy.x = calcDiffForRadian(pose_b_rpy.x, pose_a_rpy.x);
-  diff_rpy.y = calcDiffForRadian(pose_b_rpy.y, pose_a_rpy.y);
-  diff_rpy.z = calcDiffForRadian(pose_b_rpy.z, pose_a_rpy.z);
+  diff_rpy.x = calc_diff_for_radian(pose_b_rpy.x, pose_a_rpy.x);
+  diff_rpy.y = calc_diff_for_radian(pose_b_rpy.y, pose_a_rpy.y);
+  diff_rpy.z = calc_diff_for_radian(pose_b_rpy.z, pose_a_rpy.z);
 
   geometry_msgs::msg::TwistStamped twist;
   twist.header = pose_b->header;
@@ -106,27 +106,27 @@ geometry_msgs::msg::TwistStamped calcTwist(
   return twist;
 }
 
-void Pose2Twist::callbackPose(geometry_msgs::msg::PoseStamped::SharedPtr pose_msg_ptr)
+void Pose2Twist::callback_pose(geometry_msgs::msg::PoseStamped::SharedPtr pose_msg_ptr)
 {
   // TODO(YamatoAndo) check time stamp diff
   // TODO(YamatoAndo) check suddenly move
   // TODO(YamatoAndo) apply low pass filter
 
-  geometry_msgs::msg::PoseStamped::SharedPtr current_pose_msg = pose_msg_ptr;
+  const geometry_msgs::msg::PoseStamped::SharedPtr & current_pose_msg = pose_msg_ptr;
   static geometry_msgs::msg::PoseStamped::SharedPtr prev_pose_msg = current_pose_msg;
-  geometry_msgs::msg::TwistStamped twist_msg = calcTwist(prev_pose_msg, current_pose_msg);
+  geometry_msgs::msg::TwistStamped twist_msg = calc_twist(prev_pose_msg, current_pose_msg);
   prev_pose_msg = current_pose_msg;
   twist_msg.header.frame_id = "base_link";
   twist_pub_->publish(twist_msg);
 
   tier4_debug_msgs::msg::Float32Stamped linear_x_msg;
   linear_x_msg.stamp = this->now();
-  linear_x_msg.data = twist_msg.twist.linear.x;
+  linear_x_msg.data = static_cast<float>(twist_msg.twist.linear.x);
   linear_x_pub_->publish(linear_x_msg);
 
   tier4_debug_msgs::msg::Float32Stamped angular_z_msg;
   angular_z_msg.stamp = this->now();
-  angular_z_msg.data = twist_msg.twist.angular.z;
+  angular_z_msg.data = static_cast<float>(twist_msg.twist.angular.z);
   angular_z_pub_->publish(angular_z_msg);
 }
 
