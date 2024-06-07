@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_start_planner_module/util.hpp"
+#include "autoware_behavior_path_start_planner_module/util.hpp"
 
 #include "autoware_behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 #include "autoware_behavior_path_planner_common/utils/path_utils.hpp"

@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_START_PLANNER_MODULE__SHIFT_PULL_OUT_HPP_
-#define BEHAVIOR_PATH_START_PLANNER_MODULE__SHIFT_PULL_OUT_HPP_
+#ifndef AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__SHIFT_PULL_OUT_HPP_
+#define AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__SHIFT_PULL_OUT_HPP_
 
-#include "behavior_path_start_planner_module/pull_out_path.hpp"
-#include "behavior_path_start_planner_module/pull_out_planner_base.hpp"
+#include "autoware_behavior_path_start_planner_module/pull_out_path.hpp"
+#include "autoware_behavior_path_start_planner_module/pull_out_planner_base.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 
@@ -61,4 +61,4 @@ private:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_START_PLANNER_MODULE__SHIFT_PULL_OUT_HPP_
+#endif  // AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__SHIFT_PULL_OUT_HPP_

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_start_planner_module/debug.hpp"
+#include "autoware_behavior_path_start_planner_module/debug.hpp"
 
 namespace behavior_path_planner
 {

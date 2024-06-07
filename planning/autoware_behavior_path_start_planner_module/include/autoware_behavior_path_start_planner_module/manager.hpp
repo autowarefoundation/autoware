@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_START_PLANNER_MODULE__MANAGER_HPP_
-#define BEHAVIOR_PATH_START_PLANNER_MODULE__MANAGER_HPP_
+#ifndef AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__MANAGER_HPP_
+#define AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__MANAGER_HPP_
 
 #include "autoware_behavior_path_planner_common/interface/scene_module_manager_interface.hpp"
-#include "behavior_path_start_planner_module/start_planner_module.hpp"
+#include "autoware_behavior_path_start_planner_module/start_planner_module.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -53,4 +53,4 @@ private:
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_START_PLANNER_MODULE__MANAGER_HPP_
+#endif  // AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__MANAGER_HPP_

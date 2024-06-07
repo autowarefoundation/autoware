@@ -15,7 +15,7 @@ nav:
         - 'Goal Planner': planning/behavior_path_goal_planner_module
         - 'Lane Change': planning/behavior_path_lane_change_module
         - 'Side Shift': planning/autoware_behavior_path_side_shift_module
-        - 'Start Planner': planning/behavior_path_start_planner_module
+        - 'Start Planner': planning/autoware_behavior_path_start_planner_module
         - 'Static Obstacle Avoidance': planning/autoware_behavior_path_static_obstacle_avoidance_module
   - 'Behavior Velocity Planner':
     - 'About Behavior Velocity': planning/autoware_behavior_velocity_planner

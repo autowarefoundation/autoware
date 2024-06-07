@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_start_planner_module/freespace_pull_out.hpp"
+#include "autoware_behavior_path_start_planner_module/freespace_pull_out.hpp"
 
 #include "autoware_behavior_path_planner_common/utils/parking_departure/utils.hpp"
 #include "autoware_behavior_path_planner_common/utils/path_utils.hpp"
 #include "autoware_behavior_path_planner_common/utils/utils.hpp"
-#include "behavior_path_start_planner_module/util.hpp"
+#include "autoware_behavior_path_start_planner_module/util.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 

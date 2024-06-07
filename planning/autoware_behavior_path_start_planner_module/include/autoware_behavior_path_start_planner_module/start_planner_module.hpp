@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_START_PLANNER_MODULE__START_PLANNER_MODULE_HPP_
-#define BEHAVIOR_PATH_START_PLANNER_MODULE__START_PLANNER_MODULE_HPP_
+#ifndef AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__START_PLANNER_MODULE_HPP_
+#define AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__START_PLANNER_MODULE_HPP_
 
 #include "autoware_behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "autoware_behavior_path_planner_common/utils/parking_departure/common_module_data.hpp"
@@ -21,11 +21,11 @@
 #include "autoware_behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "autoware_behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 #include "autoware_behavior_path_planner_common/utils/utils.hpp"
-#include "behavior_path_start_planner_module/data_structs.hpp"
-#include "behavior_path_start_planner_module/freespace_pull_out.hpp"
-#include "behavior_path_start_planner_module/geometric_pull_out.hpp"
-#include "behavior_path_start_planner_module/pull_out_path.hpp"
-#include "behavior_path_start_planner_module/shift_pull_out.hpp"
+#include "autoware_behavior_path_start_planner_module/data_structs.hpp"
+#include "autoware_behavior_path_start_planner_module/freespace_pull_out.hpp"
+#include "autoware_behavior_path_start_planner_module/geometric_pull_out.hpp"
+#include "autoware_behavior_path_start_planner_module/pull_out_path.hpp"
+#include "autoware_behavior_path_start_planner_module/shift_pull_out.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 #include <vehicle_info_util/vehicle_info.hpp>
@@ -336,4 +336,4 @@ private:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_START_PLANNER_MODULE__START_PLANNER_MODULE_HPP_
+#endif  // AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__START_PLANNER_MODULE_HPP_

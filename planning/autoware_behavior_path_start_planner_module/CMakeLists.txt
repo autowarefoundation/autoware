@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(behavior_path_start_planner_module)
+project(autoware_behavior_path_start_planner_module)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
