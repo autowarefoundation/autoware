@@ -57,7 +57,7 @@ control/pid_longitudinal_controller/** mamoru.sobue@tier4.jp takamasa.horibe@tie
 control/predicted_path_checker/** berkay@leodrive.ai
 control/pure_pursuit/** takamasa.horibe@tier4.jp
 control/shift_decider/** takamasa.horibe@tier4.jp
-control/smart_mpc_trajectory_follower/** masayuki.aino@proxima-ai-tech.com
+control/autoware_smart_mpc_trajectory_follower/** masayuki.aino@proxima-ai-tech.com
 control/trajectory_follower_base/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
 control/trajectory_follower_node/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
 control/vehicle_cmd_gate/** takamasa.horibe@tier4.jp tomoya.kimura@tier4.jp

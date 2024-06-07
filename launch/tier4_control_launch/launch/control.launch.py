@@ -432,7 +432,7 @@ def launch_setup(context, *args, **kwargs):
     )
 
     smart_mpc_trajectory_follower = Node(
-        package="smart_mpc_trajectory_follower",
+        package="autoware_smart_mpc_trajectory_follower",
         executable="pympc_trajectory_follower.py",
         name="pympc_trajectory_follower",
     )

@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from autoware_smart_mpc_trajectory_follower.training_and_data_check import train_drive_NN_model
 import numpy as np
 import python_simulator
-from smart_mpc_trajectory_follower.training_and_data_check import train_drive_NN_model
 
 initial_error = np.array(
     [0.001, 0.03, 0.01, -0.001, 0, 2 * python_simulator.measurement_steer_bias]

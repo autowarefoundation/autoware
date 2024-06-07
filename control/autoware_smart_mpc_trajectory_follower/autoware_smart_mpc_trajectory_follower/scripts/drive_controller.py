@@ -21,14 +21,14 @@ from importlib import reload as ir
 import threading
 import time
 
+from autoware_smart_mpc_trajectory_follower.scripts import drive_GP
+from autoware_smart_mpc_trajectory_follower.scripts import drive_NN
+from autoware_smart_mpc_trajectory_follower.scripts import drive_functions
+from autoware_smart_mpc_trajectory_follower.scripts import drive_iLQR
+from autoware_smart_mpc_trajectory_follower.scripts import drive_mppi
 import numpy as np
 import scipy.interpolate  # type: ignore
 from sklearn.preprocessing import PolynomialFeatures
-from smart_mpc_trajectory_follower.scripts import drive_GP
-from smart_mpc_trajectory_follower.scripts import drive_NN
-from smart_mpc_trajectory_follower.scripts import drive_functions
-from smart_mpc_trajectory_follower.scripts import drive_iLQR
-from smart_mpc_trajectory_follower.scripts import drive_mppi
 import torch
 
 ctrl_index_for_polynomial_reg = np.concatenate(

@@ -31,7 +31,9 @@ package_path_json = str(Path(__file__).parent.parent) + "/package_path.json"
 with open(package_path_json, "r") as file:
     package_path = json.load(file)
 
-mpc_param_path = package_path["path"] + "/smart_mpc_trajectory_follower/param/mpc_param.yaml"
+mpc_param_path = (
+    package_path["path"] + "/autoware_smart_mpc_trajectory_follower/param/mpc_param.yaml"
+)
 with open(mpc_param_path, "r") as yml:
     mpc_param = yaml.safe_load(yml)
 
@@ -101,7 +103,7 @@ mppi_step = int(mpc_param["mpc_parameter"]["mppi"]["mppi_step"])
 cap_pred_error = np.array(mpc_param["mpc_parameter"]["preprocessing"]["cap_pred_error"])
 
 nominal_param_path = (
-    package_path["path"] + "/smart_mpc_trajectory_follower/param/nominal_param.yaml"
+    package_path["path"] + "/autoware_smart_mpc_trajectory_follower/param/nominal_param.yaml"
 )
 with open(nominal_param_path, "r") as yml:
     nominal_param = yaml.safe_load(yml)
@@ -172,7 +174,7 @@ sg_window_size_for_nominal_inputs = int(
     mpc_param["mpc_parameter"]["preprocessing"]["sg_window_size_for_nominal_inputs"]
 )
 trained_model_param_path = (
-    package_path["path"] + "/smart_mpc_trajectory_follower/param/trained_model_param.yaml"
+    package_path["path"] + "/autoware_smart_mpc_trajectory_follower/param/trained_model_param.yaml"
 )
 with open(trained_model_param_path, "r") as yml:
     trained_model_param = yaml.safe_load(yml)

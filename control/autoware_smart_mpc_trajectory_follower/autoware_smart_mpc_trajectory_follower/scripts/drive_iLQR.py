@@ -21,9 +21,9 @@ from importlib import reload as ir
 import time
 from typing import Callable
 
+from autoware_smart_mpc_trajectory_follower.scripts import drive_functions
 from numba import njit
 import numpy as np
-from smart_mpc_trajectory_follower.scripts import drive_functions
 
 index_cost = np.concatenate(
     (

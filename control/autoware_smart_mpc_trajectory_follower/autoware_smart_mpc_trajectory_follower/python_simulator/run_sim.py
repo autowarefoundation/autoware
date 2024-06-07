@@ -23,9 +23,9 @@ import time
 import traceback
 from typing import Dict
 
+from autoware_smart_mpc_trajectory_follower.training_and_data_check import train_drive_NN_model
 import numpy as np
 import python_simulator
-from smart_mpc_trajectory_follower.training_and_data_check import train_drive_NN_model
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--param_name", default=None)

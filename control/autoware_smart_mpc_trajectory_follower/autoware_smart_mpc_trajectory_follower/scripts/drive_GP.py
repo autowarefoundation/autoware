@@ -16,9 +16,9 @@
 
 from functools import partial
 
+from autoware_smart_mpc_trajectory_follower.scripts import drive_functions
 from numba import njit
 import numpy as np
-from smart_mpc_trajectory_follower.scripts import drive_functions
 
 sqrt_mpc_time_step = np.sqrt(drive_functions.mpc_time_step)
 

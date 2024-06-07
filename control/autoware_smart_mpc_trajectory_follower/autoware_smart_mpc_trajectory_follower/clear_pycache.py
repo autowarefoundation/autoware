@@ -16,10 +16,10 @@ import os
 from pathlib import Path
 import shutil
 
-import smart_mpc_trajectory_follower
+import autoware_smart_mpc_trajectory_follower
 
 if __name__ == "__main__":
-    package_dir = str(Path(smart_mpc_trajectory_follower.__file__).parent)
+    package_dir = str(Path(autoware_smart_mpc_trajectory_follower.__file__).parent)
 
     remove_dirs = [
         package_dir + "/__pycache__",
