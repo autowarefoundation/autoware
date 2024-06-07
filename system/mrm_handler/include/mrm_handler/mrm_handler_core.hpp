@@ -22,6 +22,8 @@
 #include <variant>
 
 // Autoware
+#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
+
 #include <autoware_adapi_v1_msgs/msg/mrm_state.hpp>
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
 #include <autoware_vehicle_msgs/msg/control_mode_report.hpp>
@@ -66,39 +68,28 @@ private:
   // type
   enum RequestType { CALL, CANCEL };
 
-  // Subscribers
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
-  rclcpp::Subscription<autoware_vehicle_msgs::msg::ControlModeReport>::SharedPtr sub_control_mode_;
+  // Subscribers with callback
   rclcpp::Subscription<tier4_system_msgs::msg::OperationModeAvailability>::SharedPtr
     sub_operation_mode_availability_;
-  rclcpp::Subscription<tier4_system_msgs::msg::MrmBehaviorStatus>::SharedPtr
-    sub_mrm_pull_over_status_;
-  rclcpp::Subscription<tier4_system_msgs::msg::MrmBehaviorStatus>::SharedPtr
-    sub_mrm_comfortable_stop_status_;
-  rclcpp::Subscription<tier4_system_msgs::msg::MrmBehaviorStatus>::SharedPtr
-    sub_mrm_emergency_stop_status_;
-  rclcpp::Subscription<autoware_adapi_v1_msgs::msg::OperationModeState>::SharedPtr
-    sub_operation_mode_state_;
+  // Subscribers without callback
+  tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
+    this, "~/input/odometry"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<autoware_vehicle_msgs::msg::ControlModeReport>
+    sub_control_mode_{this, "~/input/control_mode"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<tier4_system_msgs::msg::MrmBehaviorStatus>
+    sub_mrm_pull_over_status_{this, "~/input/mrm/pull_over/status"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<tier4_system_msgs::msg::MrmBehaviorStatus>
+    sub_mrm_comfortable_stop_status_{this, "~/input/mrm/comfortable_stop/status"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<tier4_system_msgs::msg::MrmBehaviorStatus>
+    sub_mrm_emergency_stop_status_{this, "~/input/mrm/emergency_stop/status"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<
+    autoware_adapi_v1_msgs::msg::OperationModeState>
+    sub_operation_mode_state_{this, "~/input/api/operation_mode/state"};
 
-  nav_msgs::msg::Odometry::ConstSharedPtr odom_;
-  autoware_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr control_mode_;
   tier4_system_msgs::msg::OperationModeAvailability::ConstSharedPtr operation_mode_availability_;
-  tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr mrm_pull_over_status_;
-  tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr mrm_comfortable_stop_status_;
-  tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr mrm_emergency_stop_status_;
-  autoware_adapi_v1_msgs::msg::OperationModeState::ConstSharedPtr operation_mode_state_;
 
-  void onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
-  void onControlMode(const autoware_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr msg);
   void onOperationModeAvailability(
     const tier4_system_msgs::msg::OperationModeAvailability::ConstSharedPtr msg);
-  void onMrmPullOverStatus(const tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr msg);
-  void onMrmComfortableStopStatus(
-    const tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr msg);
-  void onMrmEmergencyStopStatus(
-    const tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr msg);
-  void onOperationModeState(
-    const autoware_adapi_v1_msgs::msg::OperationModeState::ConstSharedPtr msg);
 
   // Publisher
 
@@ -156,6 +147,10 @@ private:
   bool isStopped();
   bool isDrivingBackwards();
   bool isEmergency() const;
+  bool isAutonomous();
+  bool isPullOverStatusAvailable();
+  bool isComfortableStopStatusAvailable();
+  bool isEmergencyStopStatusAvailable();
   bool isArrivedAtGoal();
 };
 

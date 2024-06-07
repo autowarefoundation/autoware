@@ -21,6 +21,7 @@
   <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
+  <depend>tier4_autoware_utils</depend>
   <depend>tier4_system_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>

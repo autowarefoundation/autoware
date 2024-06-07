@@ -30,24 +30,13 @@ EmergencyHandler::EmergencyHandler(const rclcpp::NodeOptions & options)
 
   using std::placeholders::_1;
 
-  // Subscriber
+  // Subscribers with callback
   sub_hazard_status_stamped_ = create_subscription<autoware_system_msgs::msg::HazardStatusStamped>(
     "~/input/hazard_status", rclcpp::QoS{1},
     std::bind(&EmergencyHandler::onHazardStatusStamped, this, _1));
   sub_prev_control_command_ = create_subscription<autoware_control_msgs::msg::Control>(
     "~/input/prev_control_command", rclcpp::QoS{1},
     std::bind(&EmergencyHandler::onPrevControlCommand, this, _1));
-  sub_odom_ = create_subscription<nav_msgs::msg::Odometry>(
-    "~/input/odometry", rclcpp::QoS{1}, std::bind(&EmergencyHandler::onOdometry, this, _1));
-  // subscribe control mode
-  sub_control_mode_ = create_subscription<autoware_vehicle_msgs::msg::ControlModeReport>(
-    "~/input/control_mode", rclcpp::QoS{1}, std::bind(&EmergencyHandler::onControlMode, this, _1));
-  sub_mrm_comfortable_stop_status_ = create_subscription<tier4_system_msgs::msg::MrmBehaviorStatus>(
-    "~/input/mrm/comfortable_stop/status", rclcpp::QoS{1},
-    std::bind(&EmergencyHandler::onMrmComfortableStopStatus, this, _1));
-  sub_mrm_emergency_stop_status_ = create_subscription<tier4_system_msgs::msg::MrmBehaviorStatus>(
-    "~/input/mrm/emergency_stop/status", rclcpp::QoS{1},
-    std::bind(&EmergencyHandler::onMrmEmergencyStopStatus, this, _1));
 
   // Publisher
   pub_control_command_ = create_publisher<autoware_control_msgs::msg::Control>(
@@ -72,13 +61,6 @@ EmergencyHandler::EmergencyHandler(const rclcpp::NodeOptions & options)
     client_mrm_emergency_stop_group_);
 
   // Initialize
-  odom_ = std::make_shared<const nav_msgs::msg::Odometry>();
-  control_mode_ = std::make_shared<const autoware_vehicle_msgs::msg::ControlModeReport>();
-  prev_control_command_ =
-    autoware_control_msgs::msg::Control::ConstSharedPtr(new autoware_control_msgs::msg::Control);
-  mrm_comfortable_stop_status_ =
-    std::make_shared<const tier4_system_msgs::msg::MrmBehaviorStatus>();
-  mrm_emergency_stop_status_ = std::make_shared<const tier4_system_msgs::msg::MrmBehaviorStatus>();
   mrm_state_.stamp = this->now();
   mrm_state_.state = autoware_adapi_v1_msgs::msg::MrmState::NORMAL;
   mrm_state_.behavior = autoware_adapi_v1_msgs::msg::MrmState::NONE;
@@ -103,29 +85,6 @@ void EmergencyHandler::onPrevControlCommand(
   auto control_command = new autoware_control_msgs::msg::Control(*msg);
   control_command->stamp = msg->stamp;
   prev_control_command_ = autoware_control_msgs::msg::Control::ConstSharedPtr(control_command);
-}
-
-void EmergencyHandler::onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
-{
-  odom_ = msg;
-}
-
-void EmergencyHandler::onControlMode(
-  const autoware_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr msg)
-{
-  control_mode_ = msg;
-}
-
-void EmergencyHandler::onMrmComfortableStopStatus(
-  const tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr msg)
-{
-  mrm_comfortable_stop_status_ = msg;
-}
-
-void EmergencyHandler::onMrmEmergencyStopStatus(
-  const tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr msg)
-{
-  mrm_emergency_stop_status_ = msg;
 }
 
 autoware_vehicle_msgs::msg::HazardLightsCommand EmergencyHandler::createHazardCmdMsg()
@@ -293,17 +252,14 @@ bool EmergencyHandler::isDataReady()
     return false;
   }
 
-  if (
-    param_.use_comfortable_stop && mrm_comfortable_stop_status_->state ==
-                                     tier4_system_msgs::msg::MrmBehaviorStatus::NOT_AVAILABLE) {
+  if (param_.use_comfortable_stop && !isComfortableStopStatusAvailable()) {
     RCLCPP_INFO_THROTTLE(
       this->get_logger(), *this->get_clock(), std::chrono::milliseconds(5000).count(),
       "waiting for mrm comfortable stop to become available...");
     return false;
   }
 
-  if (
-    mrm_emergency_stop_status_->state == tier4_system_msgs::msg::MrmBehaviorStatus::NOT_AVAILABLE) {
+  if (!isEmergencyStopStatusAvailable()) {
     RCLCPP_INFO_THROTTLE(
       this->get_logger(), *this->get_clock(), std::chrono::milliseconds(5000).count(),
       "waiting for mrm emergency stop to become available...");
@@ -381,7 +337,7 @@ void EmergencyHandler::updateMrmState()
   const bool is_emergency = isEmergency();
 
   // Get mode
-  const bool is_auto_mode = control_mode_->mode == ControlModeReport::AUTONOMOUS;
+  const bool is_auto_mode = isAutonomous();
 
   // State Machine
   if (mrm_state_.state == MrmState::NORMAL) {
@@ -447,6 +403,14 @@ autoware_adapi_v1_msgs::msg::MrmState::_behavior_type EmergencyHandler::getCurre
   return mrm_state_.behavior;
 }
 
+bool EmergencyHandler::isAutonomous()
+{
+  using autoware_vehicle_msgs::msg::ControlModeReport;
+  auto mode = sub_control_mode_.takeData();
+  if (mode == nullptr) return false;
+  return mode->mode == ControlModeReport::AUTONOMOUS;
+}
+
 bool EmergencyHandler::isEmergency()
 {
   return hazard_status_stamped_->status.emergency ||
@@ -455,14 +419,32 @@ bool EmergencyHandler::isEmergency()
 
 bool EmergencyHandler::isStopped()
 {
+  auto odom = sub_odom_.takeData();
+  if (odom == nullptr) return false;
   constexpr auto th_stopped_velocity = 0.001;
-  return (std::abs(odom_->twist.twist.linear.x) < th_stopped_velocity);
+  return (std::abs(odom->twist.twist.linear.x) < th_stopped_velocity);
+}
+
+bool EmergencyHandler::isComfortableStopStatusAvailable()
+{
+  auto status = sub_mrm_comfortable_stop_status_.takeData();
+  if (status == nullptr) return false;
+  return status->state != tier4_system_msgs::msg::MrmBehaviorStatus::NOT_AVAILABLE;
+}
+
+bool EmergencyHandler::isEmergencyStopStatusAvailable()
+{
+  auto status = sub_mrm_emergency_stop_status_.takeData();
+  if (status == nullptr) return false;
+  return status->state != tier4_system_msgs::msg::MrmBehaviorStatus::NOT_AVAILABLE;
 }
 
 bool EmergencyHandler::isDrivingBackwards()
 {
+  auto odom = sub_odom_.takeData();
+  if (odom == nullptr) return false;
   constexpr auto th_moving_backwards = -0.001;
-  return odom_->twist.twist.linear.x < th_moving_backwards;
+  return odom->twist.twist.linear.x < th_moving_backwards;
 }
 
 #include <rclcpp_components/register_node_macro.hpp>

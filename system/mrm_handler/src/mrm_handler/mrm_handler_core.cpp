@@ -36,28 +36,11 @@ MrmHandler::MrmHandler(const rclcpp::NodeOptions & options) : Node("mrm_handler"
 
   using std::placeholders::_1;
 
-  // Subscriber
-  sub_odom_ = create_subscription<nav_msgs::msg::Odometry>(
-    "~/input/odometry", rclcpp::QoS{1}, std::bind(&MrmHandler::onOdometry, this, _1));
-  // subscribe control mode
-  sub_control_mode_ = create_subscription<autoware_vehicle_msgs::msg::ControlModeReport>(
-    "~/input/control_mode", rclcpp::QoS{1}, std::bind(&MrmHandler::onControlMode, this, _1));
+  // Subscribers with callback
   sub_operation_mode_availability_ =
     create_subscription<tier4_system_msgs::msg::OperationModeAvailability>(
       "~/input/operation_mode_availability", rclcpp::QoS{1},
       std::bind(&MrmHandler::onOperationModeAvailability, this, _1));
-  sub_mrm_pull_over_status_ = create_subscription<tier4_system_msgs::msg::MrmBehaviorStatus>(
-    "~/input/mrm/pull_over/status", rclcpp::QoS{1},
-    std::bind(&MrmHandler::onMrmPullOverStatus, this, _1));
-  sub_mrm_comfortable_stop_status_ = create_subscription<tier4_system_msgs::msg::MrmBehaviorStatus>(
-    "~/input/mrm/comfortable_stop/status", rclcpp::QoS{1},
-    std::bind(&MrmHandler::onMrmComfortableStopStatus, this, _1));
-  sub_mrm_emergency_stop_status_ = create_subscription<tier4_system_msgs::msg::MrmBehaviorStatus>(
-    "~/input/mrm/emergency_stop/status", rclcpp::QoS{1},
-    std::bind(&MrmHandler::onMrmEmergencyStopStatus, this, _1));
-  sub_operation_mode_state_ = create_subscription<autoware_adapi_v1_msgs::msg::OperationModeState>(
-    "~/input/api/operation_mode/state", rclcpp::QoS{1},
-    std::bind(&MrmHandler::onOperationModeState, this, _1));
 
   // Publisher
   pub_hazard_cmd_ = create_publisher<autoware_vehicle_msgs::msg::HazardLightsCommand>(
@@ -84,13 +67,6 @@ MrmHandler::MrmHandler(const rclcpp::NodeOptions & options) : Node("mrm_handler"
     client_mrm_emergency_stop_group_);
 
   // Initialize
-  odom_ = std::make_shared<const nav_msgs::msg::Odometry>();
-  control_mode_ = std::make_shared<const autoware_vehicle_msgs::msg::ControlModeReport>();
-  mrm_pull_over_status_ = std::make_shared<const tier4_system_msgs::msg::MrmBehaviorStatus>();
-  mrm_comfortable_stop_status_ =
-    std::make_shared<const tier4_system_msgs::msg::MrmBehaviorStatus>();
-  mrm_emergency_stop_status_ = std::make_shared<const tier4_system_msgs::msg::MrmBehaviorStatus>();
-  operation_mode_state_ = std::make_shared<const autoware_adapi_v1_msgs::msg::OperationModeState>();
   mrm_state_.stamp = this->now();
   mrm_state_.state = autoware_adapi_v1_msgs::msg::MrmState::NORMAL;
   mrm_state_.behavior = autoware_adapi_v1_msgs::msg::MrmState::NONE;
@@ -100,17 +76,6 @@ MrmHandler::MrmHandler(const rclcpp::NodeOptions & options) : Node("mrm_handler"
   const auto update_period_ns = rclcpp::Rate(param_.update_rate).period();
   timer_ = rclcpp::create_timer(
     this, get_clock(), update_period_ns, std::bind(&MrmHandler::onTimer, this));
-}
-
-void MrmHandler::onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
-{
-  odom_ = msg;
-}
-
-void MrmHandler::onControlMode(
-  const autoware_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr msg)
-{
-  control_mode_ = msg;
 }
 
 void MrmHandler::onOperationModeAvailability(
@@ -139,30 +104,6 @@ void MrmHandler::onOperationModeAvailability(
     }
   }
   operation_mode_availability_ = msg;
-}
-
-void MrmHandler::onMrmPullOverStatus(
-  const tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr msg)
-{
-  mrm_pull_over_status_ = msg;
-}
-
-void MrmHandler::onMrmComfortableStopStatus(
-  const tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr msg)
-{
-  mrm_comfortable_stop_status_ = msg;
-}
-
-void MrmHandler::onMrmEmergencyStopStatus(
-  const tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr msg)
-{
-  mrm_emergency_stop_status_ = msg;
-}
-
-void MrmHandler::onOperationModeState(
-  const autoware_adapi_v1_msgs::msg::OperationModeState::ConstSharedPtr msg)
-{
-  operation_mode_state_ = msg;
 }
 
 void MrmHandler::publishHazardCmd()
@@ -352,26 +293,21 @@ bool MrmHandler::isDataReady()
     return false;
   }
 
-  if (
-    param_.use_pull_over &&
-    mrm_pull_over_status_->state == tier4_system_msgs::msg::MrmBehaviorStatus::NOT_AVAILABLE) {
+  if (param_.use_pull_over && !isPullOverStatusAvailable()) {
     RCLCPP_INFO_THROTTLE(
       this->get_logger(), *this->get_clock(), std::chrono::milliseconds(5000).count(),
       "waiting for mrm pull over to become available...");
     return false;
   }
 
-  if (
-    param_.use_comfortable_stop && mrm_comfortable_stop_status_->state ==
-                                     tier4_system_msgs::msg::MrmBehaviorStatus::NOT_AVAILABLE) {
+  if (param_.use_comfortable_stop && !isComfortableStopStatusAvailable()) {
     RCLCPP_INFO_THROTTLE(
       this->get_logger(), *this->get_clock(), std::chrono::milliseconds(5000).count(),
       "waiting for mrm comfortable stop to become available...");
     return false;
   }
 
-  if (
-    mrm_emergency_stop_status_->state == tier4_system_msgs::msg::MrmBehaviorStatus::NOT_AVAILABLE) {
+  if (!isEmergencyStopStatusAvailable()) {
     RCLCPP_INFO_THROTTLE(
       this->get_logger(), *this->get_clock(), std::chrono::milliseconds(5000).count(),
       "waiting for mrm emergency stop to become available...");
@@ -460,7 +396,7 @@ void MrmHandler::updateMrmState()
   }
 
   // Get mode
-  const bool is_auto_mode = control_mode_->mode == ControlModeReport::AUTONOMOUS;
+  const bool is_auto_mode = isAutonomous();
 
   // State Machine
   switch (mrm_state_.state) {
@@ -581,14 +517,18 @@ autoware_adapi_v1_msgs::msg::MrmState::_behavior_type MrmHandler::getCurrentMrmB
 
 bool MrmHandler::isStopped()
 {
+  auto odom = sub_odom_.takeData();
+  if (odom == nullptr) return false;
   constexpr auto th_stopped_velocity = 0.001;
-  return std::abs((odom_->twist.twist.linear.x < th_stopped_velocity) < th_stopped_velocity);
+  return (std::abs(odom->twist.twist.linear.x < th_stopped_velocity) < th_stopped_velocity);
 }
 
 bool MrmHandler::isDrivingBackwards()
 {
+  auto odom = sub_odom_.takeData();
+  if (odom == nullptr) return false;
   constexpr auto th_moving_backwards = -0.001;
-  return odom_->twist.twist.linear.x < th_moving_backwards;
+  return odom->twist.twist.linear.x < th_moving_backwards;
 }
 
 bool MrmHandler::isEmergency() const
@@ -597,11 +537,41 @@ bool MrmHandler::isEmergency() const
          is_operation_mode_availability_timeout;
 }
 
+bool MrmHandler::isAutonomous()
+{
+  using autoware_vehicle_msgs::msg::ControlModeReport;
+  auto mode = sub_control_mode_.takeData();
+  if (mode == nullptr) return false;
+  return mode->mode == ControlModeReport::AUTONOMOUS;
+}
+
+bool MrmHandler::isPullOverStatusAvailable()
+{
+  auto status = sub_mrm_pull_over_status_.takeData();
+  if (status == nullptr) return false;
+  return status->state != tier4_system_msgs::msg::MrmBehaviorStatus::NOT_AVAILABLE;
+}
+
+bool MrmHandler::isComfortableStopStatusAvailable()
+{
+  auto status = sub_mrm_comfortable_stop_status_.takeData();
+  if (status == nullptr) return false;
+  return status->state != tier4_system_msgs::msg::MrmBehaviorStatus::NOT_AVAILABLE;
+}
+
+bool MrmHandler::isEmergencyStopStatusAvailable()
+{
+  auto status = sub_mrm_emergency_stop_status_.takeData();
+  if (status == nullptr) return false;
+  return status->state != tier4_system_msgs::msg::MrmBehaviorStatus::NOT_AVAILABLE;
+}
+
 bool MrmHandler::isArrivedAtGoal()
 {
   using autoware_adapi_v1_msgs::msg::OperationModeState;
-
-  return operation_mode_state_->mode == OperationModeState::STOP;
+  auto state = sub_operation_mode_state_.takeData();
+  if (state == nullptr) return false;
+  return state->mode == OperationModeState::STOP;
 }
 
 #include <rclcpp_components/register_node_macro.hpp>
