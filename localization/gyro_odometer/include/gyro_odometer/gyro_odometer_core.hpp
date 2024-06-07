@@ -47,14 +47,13 @@ private:
 
 public:
   explicit GyroOdometerNode(const rclcpp::NodeOptions & node_options);
-  ~GyroOdometerNode();
 
 private:
-  void callbackVehicleTwist(
+  void callback_vehicle_twist(
     const geometry_msgs::msg::TwistWithCovarianceStamped::ConstSharedPtr vehicle_twist_msg_ptr);
-  void callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_msg_ptr);
-  void concatGyroAndOdometer();
-  void publishData(const geometry_msgs::msg::TwistWithCovarianceStamped & twist_with_cov_raw);
+  void callback_imu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_msg_ptr);
+  void concat_gyro_and_odometer();
+  void publish_data(const geometry_msgs::msg::TwistWithCovarianceStamped & twist_with_cov_raw);
 
   rclcpp::Subscription<geometry_msgs::msg::TwistWithCovarianceStamped>::SharedPtr
     vehicle_twist_sub_;
