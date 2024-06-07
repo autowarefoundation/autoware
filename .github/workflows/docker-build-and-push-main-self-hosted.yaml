@@ -7,13 +7,7 @@
 name: docker-build-and-push-main-self-hosted
 
 on:
-  push:
-    tags:
-      - openadkit-v*.*.*
-    branches:
-      - main
-  schedule:
-    - cron: 0 0 1,15 * *
+  pull_request:
   workflow_dispatch:
     inputs:
       artifacts-destination:
@@ -30,7 +24,7 @@ jobs:
 
   docker-build-and-push-main-self-hosted:
     needs: load-env
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: buildjet-16vcpu-ubuntu-2204-arm
     strategy:
       fail-fast: false
       matrix:
@@ -48,10 +42,18 @@ jobs:
             lib_dir: aarch64
             additional-tag-suffix: -cuda
     steps:
-      # https://github.com/actions/checkout/issues/211
-      - name: Change permission of workspace
+      - name: Check if PR author is the specific user
+        id: author-check
         run: |
-          sudo chown -R $USER:$USER ${{ github.workspace }}
+          PR_AUTHOR=$(jq -r '.pull_request.user.login' "$GITHUB_EVENT_PATH")
+          if [[ "$PR_AUTHOR" == "youtalk" ]]; then
+            echo "$PR_AUTHOR is a target user"
+            echo "author-found=true" >> $GITHUB_OUTPUT
+          else
+            echo "$PR_AUTHOR is not a target user"
+            echo "author-found=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
 
       - name: Check out repository
         uses: actions/checkout@v4
@@ -67,15 +69,13 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
-
       - name: Run vcs import
         run: |
           mkdir src
           vcs import src < autoware.repos
 
       - name: Build 'Autoware'
+        if: steps.author-check.outputs.author-found == 'true' || ${{ github.event_name == 'workflow_dispatch' }}
         uses: ./.github/actions/docker-build-and-push
         with:
           bake-target: autoware
