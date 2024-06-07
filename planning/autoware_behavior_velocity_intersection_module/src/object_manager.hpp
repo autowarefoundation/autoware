@@ -52,7 +52,7 @@ struct hash<unique_identifier_msgs::msg::UUID>
 };
 }  // namespace std
 
-namespace behavior_velocity_planner::intersection
+namespace behavior_velocity_planner
 {
 
 /**
@@ -234,8 +234,7 @@ public:
 
   void registerExistingObject(
     const unique_identifier_msgs::msg::UUID & uuid, const bool belong_attention_area,
-    const bool belong_intersection_area, const bool is_parked,
-    std::shared_ptr<intersection::ObjectInfo> object);
+    const bool belong_intersection_area, const bool is_parked, std::shared_ptr<ObjectInfo> object);
 
   void clearObjects();
 
@@ -282,12 +281,12 @@ private:
 /**
  * @brief return the CollisionInterval struct if the predicted path collides ego path geometrically
  */
-std::optional<intersection::CollisionInterval> findPassageInterval(
+std::optional<CollisionInterval> findPassageInterval(
   const autoware_perception_msgs::msg::PredictedPath & predicted_path,
   const autoware_perception_msgs::msg::Shape & shape, const lanelet::BasicPolygon2d & ego_lane_poly,
   const std::optional<lanelet::ConstLanelet> & first_attention_lane_opt,
   const std::optional<lanelet::ConstLanelet> & second_attention_lane_opt);
 
-}  // namespace behavior_velocity_planner::intersection
+}  // namespace behavior_velocity_planner
 
 #endif  // OBJECT_MANAGER_HPP_

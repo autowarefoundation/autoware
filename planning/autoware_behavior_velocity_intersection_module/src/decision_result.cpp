@@ -14,7 +14,7 @@
 
 #include "decision_result.hpp"
 
-namespace behavior_velocity_planner::intersection
+namespace behavior_velocity_planner
 {
 std::string formatDecisionResult(const DecisionResult & decision_result)
 {
@@ -65,4 +65,4 @@ std::string formatDecisionResult(const DecisionResult & decision_result)
   return "";
 }
 
-}  // namespace behavior_velocity_planner::intersection
+}  // namespace behavior_velocity_planner

@@ -64,7 +64,7 @@ tier4_autoware_utils::Polygon2d createOneStepPolygon(
 
 }  // namespace
 
-namespace behavior_velocity_planner::intersection
+namespace behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
@@ -201,7 +201,7 @@ std::shared_ptr<ObjectInfo> ObjectInfoManager::registerObject(
   const bool belong_intersection_area, const bool is_parked_vehicle)
 {
   if (objects_info_.count(uuid) == 0) {
-    auto object = std::make_shared<intersection::ObjectInfo>(uuid);
+    auto object = std::make_shared<ObjectInfo>(uuid);
     objects_info_[uuid] = object;
   }
   auto object = objects_info_[uuid];
@@ -219,7 +219,7 @@ std::shared_ptr<ObjectInfo> ObjectInfoManager::registerObject(
 void ObjectInfoManager::registerExistingObject(
   const unique_identifier_msgs::msg::UUID & uuid, const bool belong_attention_area,
   const bool belong_intersection_area, const bool is_parked_vehicle,
-  std::shared_ptr<intersection::ObjectInfo> object)
+  std::shared_ptr<ObjectInfo> object)
 {
   objects_info_[uuid] = object;
   if (belong_attention_area) {
@@ -249,7 +249,7 @@ std::vector<std::shared_ptr<ObjectInfo>> ObjectInfoManager::allObjects() const
   return all_objects;
 }
 
-std::optional<intersection::CollisionInterval> findPassageInterval(
+std::optional<CollisionInterval> findPassageInterval(
   const autoware_perception_msgs::msg::PredictedPath & predicted_path,
   const autoware_perception_msgs::msg::Shape & shape, const lanelet::BasicPolygon2d & ego_lane_poly,
   const std::optional<lanelet::ConstLanelet> & first_attention_lane_opt,
@@ -284,25 +284,25 @@ std::optional<intersection::CollisionInterval> findPassageInterval(
       if (lanelet::geometry::inside(
             first_attention_lane_opt.value(),
             lanelet::BasicPoint2d(first_itr->position.x, first_itr->position.y))) {
-        return intersection::CollisionInterval::LanePosition::FIRST;
+        return CollisionInterval::LanePosition::FIRST;
       }
     }
     if (second_attention_lane_opt) {
       if (lanelet::geometry::inside(
             second_attention_lane_opt.value(),
             lanelet::BasicPoint2d(first_itr->position.x, first_itr->position.y))) {
-        return intersection::CollisionInterval::LanePosition::SECOND;
+        return CollisionInterval::LanePosition::SECOND;
       }
     }
-    return intersection::CollisionInterval::LanePosition::ELSE;
+    return CollisionInterval::LanePosition::ELSE;
   }();
 
   std::vector<geometry_msgs::msg::Pose> path;
   for (const auto & pose : predicted_path.path) {
     path.push_back(pose);
   }
-  return intersection::CollisionInterval{
+  return CollisionInterval{
     lane_position, path, {enter_idx, exit_idx}, {object_enter_time, object_exit_time}};
 }
 
-}  // namespace behavior_velocity_planner::intersection
+}  // namespace behavior_velocity_planner

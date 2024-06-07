@@ -23,7 +23,7 @@
 #include <set>
 #include <utility>
 
-namespace behavior_velocity_planner::intersection
+namespace behavior_velocity_planner
 {
 
 /**
@@ -43,6 +43,6 @@ struct InterpolatedPathInfo
   std::optional<std::pair<size_t, size_t>> lane_id_interval{std::nullopt};
 };
 
-}  // namespace behavior_velocity_planner::intersection
+}  // namespace behavior_velocity_planner
 
 #endif  // INTERPOLATED_PATH_INFO_HPP_

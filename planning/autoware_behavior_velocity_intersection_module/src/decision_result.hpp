@@ -19,7 +19,7 @@
 #include <string>
 #include <variant>
 
-namespace behavior_velocity_planner::intersection
+namespace behavior_velocity_planner
 {
 
 /**
@@ -172,6 +172,6 @@ using DecisionResult = std::variant<
 
 std::string formatDecisionResult(const DecisionResult & decision_result);
 
-}  // namespace behavior_velocity_planner::intersection
+}  // namespace behavior_velocity_planner
 
 #endif  // DECISION_RESULT_HPP_

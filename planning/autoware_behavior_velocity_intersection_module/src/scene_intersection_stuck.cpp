@@ -118,10 +118,9 @@ namespace behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
-std::optional<intersection::StuckStop> IntersectionModule::isStuckStatus(
+std::optional<StuckStop> IntersectionModule::isStuckStatus(
   const tier4_planning_msgs::msg::PathWithLaneId & path,
-  const intersection::IntersectionStopLines & intersection_stoplines,
-  const intersection::PathLanelets & path_lanelets) const
+  const IntersectionStopLines & intersection_stoplines, const PathLanelets & path_lanelets) const
 {
   const auto closest_idx = intersection_stoplines.closest_idx;
   auto fromEgoDist = [&](const size_t index) {
@@ -162,8 +161,7 @@ std::optional<intersection::StuckStop> IntersectionModule::isStuckStatus(
         }
       }
       if (stopline_idx) {
-        return intersection::StuckStop{
-          closest_idx, stopline_idx.value(), occlusion_peeking_stopline_idx_opt};
+        return StuckStop{closest_idx, stopline_idx.value(), occlusion_peeking_stopline_idx_opt};
       }
     }
   }
@@ -230,8 +228,7 @@ bool IntersectionModule::isTargetYieldStuckVehicleType(
   return false;
 }
 
-bool IntersectionModule::checkStuckVehicleInIntersection(
-  const intersection::PathLanelets & path_lanelets) const
+bool IntersectionModule::checkStuckVehicleInIntersection(const PathLanelets & path_lanelets) const
 {
   using lanelet::utils::getArcCoordinates;
   using lanelet::utils::getLaneletLength3d;
@@ -306,10 +303,10 @@ bool IntersectionModule::checkStuckVehicleInIntersection(
   return false;
 }
 
-std::optional<intersection::YieldStuckStop> IntersectionModule::isYieldStuckStatus(
+std::optional<YieldStuckStop> IntersectionModule::isYieldStuckStatus(
   const tier4_planning_msgs::msg::PathWithLaneId & path,
-  const intersection::InterpolatedPathInfo & interpolated_path_info,
-  const intersection::IntersectionStopLines & intersection_stoplines) const
+  const InterpolatedPathInfo & interpolated_path_info,
+  const IntersectionStopLines & intersection_stoplines) const
 {
   const auto closest_idx = intersection_stoplines.closest_idx;
   auto fromEgoDist = [&](const size_t index) {
@@ -342,14 +339,14 @@ std::optional<intersection::YieldStuckStop> IntersectionModule::isYieldStuckStat
       }
     }
     if (stopline_idx) {
-      return intersection::YieldStuckStop{closest_idx, stopline_idx.value(), std::string("")};
+      return YieldStuckStop{closest_idx, stopline_idx.value(), std::string("")};
     }
   }
   return std::nullopt;
 }
 
 bool IntersectionModule::checkYieldStuckVehicleInIntersection(
-  const intersection::InterpolatedPathInfo & interpolated_path_info,
+  const InterpolatedPathInfo & interpolated_path_info,
   const lanelet::ConstLanelets & attention_lanelets) const
 {
   const bool yield_stuck_detection_direction = [&]() {

@@ -295,11 +295,9 @@ public:
       BLAME_AT_SECOND_PASS_JUDGE,
     };
     const bool collision_detected;
-    const intersection::CollisionInterval::LanePosition collision_position;
-    const std::vector<std::pair<BlameType, std::shared_ptr<intersection::ObjectInfo>>>
-      too_late_detect_objects;
-    const std::vector<std::pair<BlameType, std::shared_ptr<intersection::ObjectInfo>>>
-      misjudge_objects;
+    const CollisionInterval::LanePosition collision_position;
+    const std::vector<std::pair<BlameType, std::shared_ptr<ObjectInfo>>> too_late_detect_objects;
+    const std::vector<std::pair<BlameType, std::shared_ptr<ObjectInfo>>> misjudge_objects;
   };
 
   IntersectionModule(
@@ -377,7 +375,7 @@ private:
    */
 
   //! cache IntersectionLanelets struct
-  std::optional<intersection::IntersectionLanelets> intersection_lanelets_{std::nullopt};
+  std::optional<IntersectionLanelets> intersection_lanelets_{std::nullopt};
 
   //! cache discretized occlusion detection lanelets
   std::optional<std::vector<lanelet::ConstLineString3d>> occlusion_attention_divisions_{
@@ -400,7 +398,7 @@ private:
   bool is_permanent_go_{false};
 
   //! for checking if ego is over the pass judge lines because previously the situation was SAFE
-  intersection::DecisionResult prev_decision_result_{intersection::InternalError{""}};
+  DecisionResult prev_decision_result_{InternalError{""}};
 
   //! flag if ego passed the 1st_pass_judge_line while peeking. If this is true, 1st_pass_judge_line
   //! is treated as the same position as occlusion_peeking_stopline
@@ -427,7 +425,7 @@ private:
   StateMachine collision_state_machine_;
 
   //! container for storing safety status of objects on the attention area
-  intersection::ObjectInfoManager object_info_manager_;
+  ObjectInfoManager object_info_manager_;
   /** @} */
 
 private:
@@ -506,21 +504,20 @@ private:
   /**
    * @brief analyze traffic_light/occupancy/objects context and return DecisionResult
    */
-  intersection::DecisionResult modifyPathVelocityDetail(
-    PathWithLaneId * path, StopReason * stop_reason);
+  DecisionResult modifyPathVelocityDetail(PathWithLaneId * path, StopReason * stop_reason);
 
   /**
    * @brief set RTC value according to calculated DecisionResult
    */
   void prepareRTCStatus(
-    const intersection::DecisionResult &, const tier4_planning_msgs::msg::PathWithLaneId & path);
+    const DecisionResult &, const tier4_planning_msgs::msg::PathWithLaneId & path);
 
   /**
    * @brief act based on current RTC approval
    */
   void reactRTCApproval(
-    const intersection::DecisionResult & decision_result,
-    tier4_planning_msgs::msg::PathWithLaneId * path, StopReason * stop_reason);
+    const DecisionResult & decision_result, tier4_planning_msgs::msg::PathWithLaneId * path,
+    StopReason * stop_reason);
   /** @}*/
 
 private:
@@ -536,9 +533,9 @@ private:
    */
   struct BasicData
   {
-    intersection::InterpolatedPathInfo interpolated_path_info;
-    intersection::IntersectionStopLines intersection_stoplines;
-    intersection::PathLanelets path_lanelets;
+    InterpolatedPathInfo interpolated_path_info;
+    IntersectionStopLines intersection_stoplines;
+    PathLanelets path_lanelets;
   };
 
   /**
@@ -549,31 +546,30 @@ private:
    *
    * To simplify modifyPathVelocityDetail(), this function is used at first
    */
-  intersection::Result<BasicData, intersection::InternalError> prepareIntersectionData(
-    PathWithLaneId * path);
+  Result<BasicData, InternalError> prepareIntersectionData(PathWithLaneId * path);
 
   /**
    * @brief find the associated stopline road marking of assigned lanelet
    */
   std::optional<size_t> getStopLineIndexFromMap(
-    const intersection::InterpolatedPathInfo & interpolated_path_info,
+    const InterpolatedPathInfo & interpolated_path_info,
     lanelet::ConstLanelet assigned_lanelet) const;
 
   /**
    * @brief generate IntersectionStopLines
    */
-  std::optional<intersection::IntersectionStopLines> generateIntersectionStopLines(
+  std::optional<IntersectionStopLines> generateIntersectionStopLines(
     lanelet::ConstLanelet assigned_lanelet,
     const lanelet::CompoundPolygon3d & first_conflicting_area,
     const lanelet::ConstLanelet & first_attention_lane,
     const std::optional<lanelet::CompoundPolygon3d> & second_attention_area_opt,
-    const intersection::InterpolatedPathInfo & interpolated_path_info,
+    const InterpolatedPathInfo & interpolated_path_info,
     tier4_planning_msgs::msg::PathWithLaneId * original_path) const;
 
   /**
    * @brief generate IntersectionLanelets
    */
-  intersection::IntersectionLanelets generateObjectiveLanelets(
+  IntersectionLanelets generateObjectiveLanelets(
     lanelet::LaneletMapConstPtr lanelet_map_ptr,
     lanelet::routing::RoutingGraphPtr routing_graph_ptr,
     const lanelet::ConstLanelet assigned_lanelet) const;
@@ -581,9 +577,9 @@ private:
   /**
    * @brief generate PathLanelets
    */
-  std::optional<intersection::PathLanelets> generatePathLanelets(
+  std::optional<PathLanelets> generatePathLanelets(
     const lanelet::ConstLanelets & lanelets_on_path,
-    const intersection::InterpolatedPathInfo & interpolated_path_info,
+    const InterpolatedPathInfo & interpolated_path_info,
     const lanelet::CompoundPolygon3d & first_conflicting_area,
     const std::vector<lanelet::CompoundPolygon3d> & conflicting_areas,
     const std::optional<lanelet::CompoundPolygon3d> & first_attention_area,
@@ -637,10 +633,9 @@ private:
    * @attention this function has access to value() of intersection_lanelets_,
    * intersection_lanelets.first_conflicting_lane(). They are ensured in prepareIntersectionData()
    */
-  std::optional<intersection::StuckStop> isStuckStatus(
+  std::optional<StuckStop> isStuckStatus(
     const tier4_planning_msgs::msg::PathWithLaneId & path,
-    const intersection::IntersectionStopLines & intersection_stoplines,
-    const intersection::PathLanelets & path_lanelets) const;
+    const IntersectionStopLines & intersection_stoplines, const PathLanelets & path_lanelets) const;
 
   bool isTargetStuckVehicleType(
     const autoware_perception_msgs::msg::PredictedObject & object) const;
@@ -651,7 +646,7 @@ private:
   /**
    * @brief check stuck
    */
-  bool checkStuckVehicleInIntersection(const intersection::PathLanelets & path_lanelets) const;
+  bool checkStuckVehicleInIntersection(const PathLanelets & path_lanelets) const;
   /** @} */
 
 private:
@@ -667,16 +662,16 @@ private:
    * @attention this function has access to value() of intersection_lanelets_,
    * intersection_stoplines.default_stopline, intersection_stoplines.first_attention_stopline
    */
-  std::optional<intersection::YieldStuckStop> isYieldStuckStatus(
+  std::optional<YieldStuckStop> isYieldStuckStatus(
     const tier4_planning_msgs::msg::PathWithLaneId & path,
-    const intersection::InterpolatedPathInfo & interpolated_path_info,
-    const intersection::IntersectionStopLines & intersection_stoplines) const;
+    const InterpolatedPathInfo & interpolated_path_info,
+    const IntersectionStopLines & intersection_stoplines) const;
 
   /**
    * @brief check yield stuck
    */
   bool checkYieldStuckVehicleInIntersection(
-    const intersection::InterpolatedPathInfo & interpolated_path_info,
+    const InterpolatedPathInfo & interpolated_path_info,
     const lanelet::ConstLanelets & attention_lanelets) const;
   /** @} */
 
@@ -698,15 +693,14 @@ private:
     bool /* reconciled occlusion disapproval */>
   getOcclusionStatus(
     const TrafficPrioritizedLevel & traffic_prioritized_level,
-    const intersection::InterpolatedPathInfo & interpolated_path_info);
+    const InterpolatedPathInfo & interpolated_path_info);
 
   /**
    * @brief calculate detected occlusion status(NOT | STATICALLY | DYNAMICALLY)
    * @attention this function has access to value() of intersection_lanelets_,
    * intersection_lanelets.first_attention_area(), occlusion_attention_divisions_
    */
-  OcclusionType detectOcclusion(
-    const intersection::InterpolatedPathInfo & interpolated_path_info) const;
+  OcclusionType detectOcclusion(const InterpolatedPathInfo & interpolated_path_info) const;
   /** @} */
 
 private:
@@ -726,7 +720,7 @@ private:
    */
   PassJudgeStatus isOverPassJudgeLinesStatus(
     const tier4_planning_msgs::msg::PathWithLaneId & path, const bool is_occlusion_state,
-    const intersection::IntersectionStopLines & intersection_stoplines);
+    const IntersectionStopLines & intersection_stoplines);
   /** @} */
 
 private:
@@ -751,7 +745,7 @@ private:
    * @attention this function has access to value() of intersection_lanelets_
    */
   void updateObjectInfoManagerCollision(
-    const intersection::PathLanelets & path_lanelets, const TimeDistanceArray & time_distance_array,
+    const PathLanelets & path_lanelets, const TimeDistanceArray & time_distance_array,
     const TrafficPrioritizedLevel & traffic_prioritized_level,
     const bool passed_1st_judge_line_first_time, const bool passed_2nd_judge_line_first_time,
     tier4_debug_msgs::msg::Float64MultiArrayStamped * object_ttc_time_array);
@@ -768,20 +762,18 @@ private:
    * @attention this function has access to value() of
    * intersection_stoplines.occlusion_peeking_stopline
    */
-  std::optional<intersection::NonOccludedCollisionStop> isGreenPseudoCollisionStatus(
+  std::optional<NonOccludedCollisionStop> isGreenPseudoCollisionStatus(
     const size_t closest_idx, const size_t collision_stopline_idx,
-    const intersection::IntersectionStopLines & intersection_stoplines) const;
+    const IntersectionStopLines & intersection_stoplines) const;
 
   /**
    * @brief generate the message explaining why too_late_detect_objects/misjudge_objects exist and
    * blame past perception fault
    */
   std::string generateDetectionBlameDiagnosis(
-    const std::vector<
-      std::pair<CollisionStatus::BlameType, std::shared_ptr<intersection::ObjectInfo>>> &
+    const std::vector<std::pair<CollisionStatus::BlameType, std::shared_ptr<ObjectInfo>>> &
       too_late_detect_objects,
-    const std::vector<
-      std::pair<CollisionStatus::BlameType, std::shared_ptr<intersection::ObjectInfo>>> &
+    const std::vector<std::pair<CollisionStatus::BlameType, std::shared_ptr<ObjectInfo>>> &
       misjudge_objects) const;
 
   /**
@@ -791,11 +783,9 @@ private:
   std::string generateEgoRiskEvasiveDiagnosis(
     const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
     const TimeDistanceArray & ego_time_distance_array,
-    const std::vector<
-      std::pair<CollisionStatus::BlameType, std::shared_ptr<intersection::ObjectInfo>>> &
+    const std::vector<std::pair<CollisionStatus::BlameType, std::shared_ptr<ObjectInfo>>> &
       too_late_detect_objects,
-    const std::vector<
-      std::pair<CollisionStatus::BlameType, std::shared_ptr<intersection::ObjectInfo>>> &
+    const std::vector<std::pair<CollisionStatus::BlameType, std::shared_ptr<ObjectInfo>>> &
       misjudge_objects) const;
 
   /**
@@ -818,7 +808,7 @@ private:
    */
   TimeDistanceArray calcIntersectionPassingTime(
     const tier4_planning_msgs::msg::PathWithLaneId & path, const bool is_prioritized,
-    const intersection::IntersectionStopLines & intersection_stoplines,
+    const IntersectionStopLines & intersection_stoplines,
     tier4_debug_msgs::msg::Float64MultiArrayStamped * debug_ttc_array) const;
   /** @} */
 

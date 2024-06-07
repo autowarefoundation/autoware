@@ -17,7 +17,7 @@
 
 #include <optional>
 
-namespace behavior_velocity_planner::intersection
+namespace behavior_velocity_planner
 {
 
 /**
@@ -72,6 +72,6 @@ struct IntersectionStopLines
    */
   size_t occlusion_wo_tl_pass_judge_line{0};
 };
-}  // namespace behavior_velocity_planner::intersection
+}  // namespace behavior_velocity_planner
 
 #endif  // INTERSECTION_STOPLINES_HPP_

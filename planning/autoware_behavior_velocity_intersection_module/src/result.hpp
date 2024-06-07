@@ -18,7 +18,7 @@
 #include <utility>
 #include <variant>
 
-namespace behavior_velocity_planner::intersection
+namespace behavior_velocity_planner
 {
 
 template <typename Ok, typename Error>
@@ -48,6 +48,6 @@ Result<Ok, Error> make_err(Args &&... args)
   return Result<Ok, Error>(Error{std::forward<Args>(args)...});
 }
 
-}  // namespace behavior_velocity_planner::intersection
+}  // namespace behavior_velocity_planner
 
 #endif  // RESULT_HPP_

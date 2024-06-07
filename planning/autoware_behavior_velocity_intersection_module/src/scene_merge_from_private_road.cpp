@@ -52,7 +52,7 @@ MergeFromPrivateRoadModule::MergeFromPrivateRoadModule(
 
 static std::optional<lanelet::ConstLanelet> getFirstConflictingLanelet(
   const lanelet::ConstLanelets & conflicting_lanelets,
-  const intersection::InterpolatedPathInfo & interpolated_path_info,
+  const InterpolatedPathInfo & interpolated_path_info,
   const tier4_autoware_utils::LinearRing2d & footprint, const double vehicle_length)
 {
   const auto & path_ip = interpolated_path_info.path;

@@ -161,12 +161,8 @@ namespace behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
-using intersection::make_err;
-using intersection::make_ok;
-using intersection::Result;
-
-Result<IntersectionModule::BasicData, intersection::InternalError>
-IntersectionModule::prepareIntersectionData(PathWithLaneId * path)
+Result<IntersectionModule::BasicData, InternalError> IntersectionModule::prepareIntersectionData(
+  PathWithLaneId * path)
 {
   const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
   const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
@@ -191,13 +187,12 @@ IntersectionModule::prepareIntersectionData(PathWithLaneId * path)
   const auto interpolated_path_info_opt = util::generateInterpolatedPath(
     lane_id_, associative_ids_, *path, planner_param_.common.path_interpolation_ds, logger_);
   if (!interpolated_path_info_opt) {
-    return make_err<IntersectionModule::BasicData, intersection::InternalError>(
-      "splineInterpolate failed");
+    return make_err<IntersectionModule::BasicData, InternalError>("splineInterpolate failed");
   }
 
   const auto & interpolated_path_info = interpolated_path_info_opt.value();
   if (!interpolated_path_info.lane_id_interval) {
-    return make_err<IntersectionModule::BasicData, intersection::InternalError>(
+    return make_err<IntersectionModule::BasicData, InternalError>(
       "Path has no interval on intersection lane " + std::to_string(lane_id_));
   }
 
@@ -231,8 +226,7 @@ IntersectionModule::prepareIntersectionData(PathWithLaneId * path)
   const auto & first_conflicting_lane_opt = intersection_lanelets.first_conflicting_lane();
   if (conflicting_lanelets.empty() || !first_conflicting_area_opt || !first_conflicting_lane_opt) {
     // this is abnormal
-    return make_err<IntersectionModule::BasicData, intersection::InternalError>(
-      "conflicting area is empty");
+    return make_err<IntersectionModule::BasicData, InternalError>("conflicting area is empty");
   }
   const auto & first_conflicting_lane = first_conflicting_lane_opt.value();
   const auto & first_conflicting_area = first_conflicting_area_opt.value();
@@ -250,7 +244,7 @@ IntersectionModule::prepareIntersectionData(PathWithLaneId * path)
     assigned_lanelet, first_conflicting_area, dummy_first_attention_lane, second_attention_area_opt,
     interpolated_path_info, path);
   if (!intersection_stoplines_opt) {
-    return make_err<IntersectionModule::BasicData, intersection::InternalError>(
+    return make_err<IntersectionModule::BasicData, InternalError>(
       "failed to generate intersection_stoplines");
   }
   const auto & intersection_stoplines = intersection_stoplines_opt.value();
@@ -265,7 +259,7 @@ IntersectionModule::prepareIntersectionData(PathWithLaneId * path)
     lanelets_on_path, interpolated_path_info, first_conflicting_area, conflicting_area,
     first_attention_area_opt, intersection_lanelets.attention_area(), closest_idx);
   if (!path_lanelets_opt.has_value()) {
-    return make_err<IntersectionModule::BasicData, intersection::InternalError>(
+    return make_err<IntersectionModule::BasicData, InternalError>(
       "failed to generate PathLanelets");
   }
   const auto & path_lanelets = path_lanelets_opt.value();
@@ -294,13 +288,12 @@ IntersectionModule::prepareIntersectionData(PathWithLaneId * path)
     }
   }
 
-  return make_ok<IntersectionModule::BasicData, intersection::InternalError>(
+  return make_ok<IntersectionModule::BasicData, InternalError>(
     interpolated_path_info, intersection_stoplines, path_lanelets);
 }
 
 std::optional<size_t> IntersectionModule::getStopLineIndexFromMap(
-  const intersection::InterpolatedPathInfo & interpolated_path_info,
-  lanelet::ConstLanelet assigned_lanelet) const
+  const InterpolatedPathInfo & interpolated_path_info, lanelet::ConstLanelet assigned_lanelet) const
 {
   const auto & path = interpolated_path_info.path;
   const auto & lane_interval = interpolated_path_info.lane_id_interval.value();
@@ -350,12 +343,11 @@ std::optional<size_t> IntersectionModule::getStopLineIndexFromMap(
     planner_data_->ego_nearest_yaw_threshold);
 }
 
-std::optional<intersection::IntersectionStopLines>
-IntersectionModule::generateIntersectionStopLines(
+std::optional<IntersectionStopLines> IntersectionModule::generateIntersectionStopLines(
   lanelet::ConstLanelet assigned_lanelet, const lanelet::CompoundPolygon3d & first_conflicting_area,
   const lanelet::ConstLanelet & first_attention_lane,
   const std::optional<lanelet::CompoundPolygon3d> & second_attention_area_opt,
-  const intersection::InterpolatedPathInfo & interpolated_path_info,
+  const InterpolatedPathInfo & interpolated_path_info,
   tier4_planning_msgs::msg::PathWithLaneId * original_path) const
 {
   const bool use_stuck_stopline = planner_param_.stuck_vehicle.use_stuck_stopline;
@@ -555,7 +547,7 @@ IntersectionModule::generateIntersectionStopLines(
       intersection_stoplines_temp.default_stopline;
   }
 
-  intersection::IntersectionStopLines intersection_stoplines;
+  IntersectionStopLines intersection_stoplines;
   intersection_stoplines.closest_idx = intersection_stoplines_temp.closest_idx;
   if (stuck_stopline_valid) {
     intersection_stoplines.stuck_stopline = intersection_stoplines_temp.stuck_stopline;
@@ -585,7 +577,7 @@ IntersectionModule::generateIntersectionStopLines(
   return intersection_stoplines;
 }
 
-intersection::IntersectionLanelets IntersectionModule::generateObjectiveLanelets(
+IntersectionLanelets IntersectionModule::generateObjectiveLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
   const lanelet::ConstLanelet assigned_lanelet) const
 {
@@ -736,7 +728,7 @@ intersection::IntersectionLanelets IntersectionModule::generateObjectiveLanelets
   auto [attention_lanelets, original_attention_lanelet_sequences] =
     util::mergeLaneletsByTopologicalSort(detection_and_preceding_lanelets, routing_graph_ptr);
 
-  intersection::IntersectionLanelets result;
+  IntersectionLanelets result;
   result.attention_ = std::move(attention_lanelets);
   for (const auto & original_attention_lanelet_seq : original_attention_lanelet_sequences) {
     // NOTE: in mergeLaneletsByTopologicalSort(), sub_ids are empty checked, so it is ensured that
@@ -786,9 +778,9 @@ intersection::IntersectionLanelets IntersectionModule::generateObjectiveLanelets
   return result;
 }
 
-std::optional<intersection::PathLanelets> IntersectionModule::generatePathLanelets(
+std::optional<PathLanelets> IntersectionModule::generatePathLanelets(
   const lanelet::ConstLanelets & lanelets_on_path,
-  const intersection::InterpolatedPathInfo & interpolated_path_info,
+  const InterpolatedPathInfo & interpolated_path_info,
   const lanelet::CompoundPolygon3d & first_conflicting_area,
   const std::vector<lanelet::CompoundPolygon3d> & conflicting_areas,
   const std::optional<lanelet::CompoundPolygon3d> & first_attention_area,
@@ -804,7 +796,7 @@ std::optional<intersection::PathLanelets> IntersectionModule::generatePathLanele
   const auto assigned_lane_interval = assigned_lane_interval_opt.value();
   const auto & path = interpolated_path_info.path;
 
-  intersection::PathLanelets path_lanelets;
+  PathLanelets path_lanelets;
   // prev
   path_lanelets.prev = ::getPrevLanelets(lanelets_on_path, associative_ids_);
   path_lanelets.all = path_lanelets.prev;

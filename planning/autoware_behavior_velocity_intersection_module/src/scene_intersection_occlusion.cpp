@@ -34,7 +34,7 @@ std::tuple<
   bool /* reconciled occlusion disapproval */>
 IntersectionModule::getOcclusionStatus(
   const TrafficPrioritizedLevel & traffic_prioritized_level,
-  const intersection::InterpolatedPathInfo & interpolated_path_info)
+  const InterpolatedPathInfo & interpolated_path_info)
 {
   const auto & intersection_lanelets = intersection_lanelets_.value();
   const auto & occlusion_attention_lanelets = intersection_lanelets.occlusion_attention();
@@ -99,7 +99,7 @@ IntersectionModule::getOcclusionStatus(
 }
 
 IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
-  const intersection::InterpolatedPathInfo & interpolated_path_info) const
+  const InterpolatedPathInfo & interpolated_path_info) const
 {
   const auto & intersection_lanelets = intersection_lanelets_.value();
   const auto & adjacent_lanelets = intersection_lanelets.adjacent();

@@ -21,7 +21,7 @@
 
 #include <string>
 
-namespace behavior_velocity_planner::intersection
+namespace behavior_velocity_planner
 {
 
 void IntersectionLanelets::update(
@@ -79,4 +79,4 @@ void IntersectionLanelets::update(
     }
   }
 }
-}  // namespace behavior_velocity_planner::intersection
+}  // namespace behavior_velocity_planner
