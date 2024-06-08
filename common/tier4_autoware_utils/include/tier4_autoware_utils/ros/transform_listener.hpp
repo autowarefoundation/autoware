@@ -48,8 +48,9 @@ public:
     try {
       tf = tf_buffer_->lookupTransform(from, to, tf2::TimePointZero);
     } catch (tf2::TransformException & ex) {
-      RCLCPP_WARN(
-        logger_, "failed to get transform from %s to %s: %s", from.c_str(), to.c_str(), ex.what());
+      RCLCPP_WARN_THROTTLE(
+        logger_, *clock_, 5000, "failed to get transform from %s to %s: %s", from.c_str(),
+        to.c_str(), ex.what());
       return {};
     }
 
@@ -64,8 +65,9 @@ public:
     try {
       tf = tf_buffer_->lookupTransform(from, to, time, duration);
     } catch (tf2::TransformException & ex) {
-      RCLCPP_WARN(
-        logger_, "failed to get transform from %s to %s: %s", from.c_str(), to.c_str(), ex.what());
+      RCLCPP_WARN_THROTTLE(
+        logger_, *clock_, 5000, "failed to get transform from %s to %s: %s", from.c_str(),
+        to.c_str(), ex.what());
       return {};
     }
 
