@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "path_smoother/utils/trajectory_utils.hpp"
+#include "autoware_path_smoother/utils/trajectory_utils.hpp"
 
+#include "autoware_path_smoother/utils/geometry_utils.hpp"
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
-#include "path_smoother/utils/geometry_utils.hpp"
 
 #include "autoware_planning_msgs/msg/path_point.hpp"
 #include "autoware_planning_msgs/msg/trajectory_point.hpp"
@@ -30,7 +30,7 @@
 #include <stack>
 #include <vector>
 
-namespace path_smoother
+namespace autoware::path_smoother
 {
 namespace trajectory_utils
 {
@@ -98,4 +98,4 @@ void insertStopPoint(
   traj_points.insert(traj_points.begin() + stop_seg_idx + 1, additional_traj_point);
 }
 }  // namespace trajectory_utils
-}  // namespace path_smoother
+}  // namespace autoware::path_smoother

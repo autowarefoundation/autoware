@@ -63,7 +63,7 @@ def generate_test_description():
                 "config/behavior_velocity_planner.param.yaml",
             ),
             os.path.join(
-                get_package_share_directory("path_smoother"),
+                get_package_share_directory("autoware_path_smoother"),
                 "config/elastic_band_smoother.param.yaml",
             ),
             os.path.join(

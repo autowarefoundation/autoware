@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PATH_SMOOTHER__UTILS__GEOMETRY_UTILS_HPP_
-#define PATH_SMOOTHER__UTILS__GEOMETRY_UTILS_HPP_
+#ifndef AUTOWARE_PATH_SMOOTHER__UTILS__GEOMETRY_UTILS_HPP_
+#define AUTOWARE_PATH_SMOOTHER__UTILS__GEOMETRY_UTILS_HPP_
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
-namespace path_smoother
+namespace autoware::path_smoother
 {
 namespace geometry_utils
 {
@@ -31,5 +31,5 @@ bool isSamePoint(const T1 & t1, const T2 & t2)
   return (std::abs(p1.x - p2.x) <= epsilon && std::abs(p1.y - p2.y) <= epsilon);
 }
 }  // namespace geometry_utils
-}  // namespace path_smoother
-#endif  // PATH_SMOOTHER__UTILS__GEOMETRY_UTILS_HPP_
+}  // namespace autoware::path_smoother
+#endif  // AUTOWARE_PATH_SMOOTHER__UTILS__GEOMETRY_UTILS_HPP_

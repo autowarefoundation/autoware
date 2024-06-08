@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PATH_SMOOTHER__ELASTIC_BAND_HPP_
-#define PATH_SMOOTHER__ELASTIC_BAND_HPP_
+#ifndef AUTOWARE_PATH_SMOOTHER__ELASTIC_BAND_HPP_
+#define AUTOWARE_PATH_SMOOTHER__ELASTIC_BAND_HPP_
 
+#include "autoware_path_smoother/common_structs.hpp"
+#include "autoware_path_smoother/type_alias.hpp"
 #include "osqp_interface/osqp_interface.hpp"
-#include "path_smoother/common_structs.hpp"
-#include "path_smoother/type_alias.hpp"
 
 #include <Eigen/Core>
 
@@ -27,7 +27,7 @@
 #include <utility>
 #include <vector>
 
-namespace path_smoother
+namespace autoware::path_smoother
 {
 class EBPathSmoother
 {
@@ -128,6 +128,6 @@ private:
     const std::vector<double> & optimized_points, const std::vector<TrajectoryPoint> & traj_points,
     const int pad_start_idx) const;
 };
-}  // namespace path_smoother
+}  // namespace autoware::path_smoother
 
-#endif  // PATH_SMOOTHER__ELASTIC_BAND_HPP_
+#endif  // AUTOWARE_PATH_SMOOTHER__ELASTIC_BAND_HPP_

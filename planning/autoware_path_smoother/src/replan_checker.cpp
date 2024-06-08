@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "path_smoother/replan_checker.hpp"
+#include "autoware_path_smoother/replan_checker.hpp"
 
+#include "autoware_path_smoother/utils/trajectory_utils.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "path_smoother/utils/trajectory_utils.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
 
 #include <vector>
 
-namespace path_smoother
+namespace autoware::path_smoother
 {
 ReplanChecker::ReplanChecker(rclcpp::Node * node, const EgoNearestParam & ego_nearest_param)
 : ego_nearest_param_(ego_nearest_param), logger_(node->get_logger().get_child("replan_checker"))
@@ -208,4 +208,4 @@ bool ReplanChecker::isPathGoalChanged(
 
   return true;
 }
-}  // namespace path_smoother
+}  // namespace autoware::path_smoother

@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "path_smoother/elastic_band_smoother.hpp"
+#include "autoware_path_smoother/elastic_band_smoother.hpp"
 
+#include "autoware_path_smoother/utils/geometry_utils.hpp"
+#include "autoware_path_smoother/utils/trajectory_utils.hpp"
 #include "interpolation/spline_interpolation_points_2d.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
-#include "path_smoother/utils/geometry_utils.hpp"
-#include "path_smoother/utils/trajectory_utils.hpp"
 #include "rclcpp/time.hpp"
 
 #include <chrono>
 #include <limits>
 
-namespace path_smoother
+namespace autoware::path_smoother
 {
 namespace
 {
@@ -70,7 +70,7 @@ bool hasZeroVelocity(const TrajectoryPoint & traj_point)
 }  // namespace
 
 ElasticBandSmoother::ElasticBandSmoother(const rclcpp::NodeOptions & node_options)
-: Node("path_smoother", node_options), time_keeper_ptr_(std::make_shared<TimeKeeper>())
+: Node("autoware_path_smoother", node_options), time_keeper_ptr_(std::make_shared<TimeKeeper>())
 {
   // interface publisher
   traj_pub_ = create_publisher<Trajectory>("~/output/traj", 1);
@@ -384,7 +384,7 @@ std::vector<TrajectoryPoint> ElasticBandSmoother::extendTrajectory(
   time_keeper_ptr_->toc(__func__, "  ");
   return resampled_traj_points;
 }
-}  // namespace path_smoother
+}  // namespace autoware::path_smoother
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(path_smoother::ElasticBandSmoother)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::path_smoother::ElasticBandSmoother)

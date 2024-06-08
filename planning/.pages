@@ -53,8 +53,8 @@ nav:
     - 'Obstacle Stop Planner': planning/obstacle_stop_planner
     - 'Obstacle Velocity Limiter': planning/obstacle_velocity_limiter
     - 'Path Smoother':
-      - 'About Path Smoother': planning/path_smoother
-      - 'Elastic Band': planning/path_smoother/docs/eb
+      - 'About Path Smoother': planning/autoware_path_smoother
+      - 'Elastic Band': planning/autoware_path_smoother/docs/eb
     - 'Sampling Based Planner':
       - 'Path Sample': planning/sampling_based_planner/autoware_path_sampler
       - 'Common library': planning/sampling_based_planner/autoware_sampler_common

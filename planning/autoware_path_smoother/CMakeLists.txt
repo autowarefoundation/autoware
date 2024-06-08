@@ -1,23 +1,23 @@
 cmake_minimum_required(VERSION 3.14)
-project(path_smoother)
+project(autoware_path_smoother)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 find_package(Eigen3 REQUIRED)
 
-ament_auto_add_library(path_smoother SHARED
+ament_auto_add_library(autoware_path_smoother SHARED
   DIRECTORY src
 )
 
-target_include_directories(path_smoother
+target_include_directories(autoware_path_smoother
   SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIR}
 )
 
 # register node
-rclcpp_components_register_node(path_smoother
-  PLUGIN "path_smoother::ElasticBandSmoother"
+rclcpp_components_register_node(autoware_path_smoother
+  PLUGIN "autoware::path_smoother::ElasticBandSmoother"
   EXECUTABLE elastic_band_smoother
 )
 

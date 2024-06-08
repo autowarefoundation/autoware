@@ -18,6 +18,7 @@
   <depend>autoware_behavior_path_planner_common</depend>
   <depend>autoware_map_msgs</depend>
   <depend>autoware_path_optimizer</depend>
+  <depend>autoware_path_smoother</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>geography_utils</depend>
@@ -30,7 +31,6 @@
   <depend>mission_planner</depend>
   <depend>motion_utils</depend>
   <depend>osqp_interface</depend>
-  <depend>path_smoother</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>route_handler</depend>

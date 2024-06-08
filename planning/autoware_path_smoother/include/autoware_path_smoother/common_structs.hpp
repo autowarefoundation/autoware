@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PATH_SMOOTHER__COMMON_STRUCTS_HPP_
-#define PATH_SMOOTHER__COMMON_STRUCTS_HPP_
+#ifndef AUTOWARE_PATH_SMOOTHER__COMMON_STRUCTS_HPP_
+#define AUTOWARE_PATH_SMOOTHER__COMMON_STRUCTS_HPP_
 
-#include "path_smoother/type_alias.hpp"
+#include "autoware_path_smoother/type_alias.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-namespace path_smoother
+namespace autoware::path_smoother
 {
 struct Bounds;
 
@@ -131,6 +131,6 @@ struct EgoNearestParam
   double dist_threshold{0.0};
   double yaw_threshold{0.0};
 };
-}  // namespace path_smoother
+}  // namespace autoware::path_smoother
 
-#endif  // PATH_SMOOTHER__COMMON_STRUCTS_HPP_
+#endif  // AUTOWARE_PATH_SMOOTHER__COMMON_STRUCTS_HPP_

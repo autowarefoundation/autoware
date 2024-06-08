@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PATH_SMOOTHER__ELASTIC_BAND_SMOOTHER_HPP_
-#define PATH_SMOOTHER__ELASTIC_BAND_SMOOTHER_HPP_
+#ifndef AUTOWARE_PATH_SMOOTHER__ELASTIC_BAND_SMOOTHER_HPP_
+#define AUTOWARE_PATH_SMOOTHER__ELASTIC_BAND_SMOOTHER_HPP_
 
+#include "autoware_path_smoother/common_structs.hpp"
+#include "autoware_path_smoother/elastic_band.hpp"
+#include "autoware_path_smoother/replan_checker.hpp"
+#include "autoware_path_smoother/type_alias.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "path_smoother/common_structs.hpp"
-#include "path_smoother/elastic_band.hpp"
-#include "path_smoother/replan_checker.hpp"
-#include "path_smoother/type_alias.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 #include "tier4_autoware_utils/ros/polling_subscriber.hpp"
@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-namespace path_smoother
+namespace autoware::path_smoother
 {
 class ElasticBandSmoother : public rclcpp::Node
 {
@@ -116,6 +116,6 @@ private:
 
   std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 };
-}  // namespace path_smoother
+}  // namespace autoware::path_smoother
 
-#endif  // PATH_SMOOTHER__ELASTIC_BAND_SMOOTHER_HPP_
+#endif  // AUTOWARE_PATH_SMOOTHER__ELASTIC_BAND_SMOOTHER_HPP_

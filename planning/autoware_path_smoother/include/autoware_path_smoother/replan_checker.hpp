@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PATH_SMOOTHER__REPLAN_CHECKER_HPP_
-#define PATH_SMOOTHER__REPLAN_CHECKER_HPP_
+#ifndef AUTOWARE_PATH_SMOOTHER__REPLAN_CHECKER_HPP_
+#define AUTOWARE_PATH_SMOOTHER__REPLAN_CHECKER_HPP_
 
-#include "path_smoother/common_structs.hpp"
-#include "path_smoother/type_alias.hpp"
+#include "autoware_path_smoother/common_structs.hpp"
+#include "autoware_path_smoother/type_alias.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>
 #include <vector>
 
-namespace path_smoother
+namespace autoware::path_smoother
 {
 class ReplanChecker
 {
@@ -66,6 +66,6 @@ private:
   bool isPathGoalChanged(
     const PlannerData & planner_data, const std::vector<TrajectoryPoint> & prev_traj_points) const;
 };
-}  // namespace path_smoother
+}  // namespace autoware::path_smoother
 
-#endif  // PATH_SMOOTHER__REPLAN_CHECKER_HPP_
+#endif  // AUTOWARE_PATH_SMOOTHER__REPLAN_CHECKER_HPP_

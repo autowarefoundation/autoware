@@ -28,7 +28,7 @@
     default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/behavior_velocity_planner.param.yaml"
   />
   <arg name="path_smoother_param" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/motion_planning/path_smoother/elastic_band_smoother.param.yaml"/>
-  <arg name="path_optimizer_param" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/motion_planning/autoware_path_optimizer/path_optimizer.param.yaml"/>
+  <arg name="path_optimizer_param" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/motion_planning/path_optimizer/path_optimizer.param.yaml"/>
   <arg name="mission_planner_param" default="$(find-pkg-share autoware_launch)/config/planning/mission_planning/mission_planner/mission_planner.param.yaml"/>
 
   <!-- Global parameters (for PathFootprint in tier4_planning_rviz_plugin) -->

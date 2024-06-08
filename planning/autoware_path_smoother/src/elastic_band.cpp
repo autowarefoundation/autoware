@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "path_smoother/elastic_band.hpp"
+#include "autoware_path_smoother/elastic_band.hpp"
 
+#include "autoware_path_smoother/type_alias.hpp"
+#include "autoware_path_smoother/utils/geometry_utils.hpp"
+#include "autoware_path_smoother/utils/trajectory_utils.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "path_smoother/type_alias.hpp"
-#include "path_smoother/utils/geometry_utils.hpp"
-#include "path_smoother/utils/trajectory_utils.hpp"
 #include "tf2/utils.h"
 
 #include <Eigen/Core>
@@ -84,7 +84,7 @@ std_msgs::msg::Header createHeader(const rclcpp::Time & now)
 }
 }  // namespace
 
-namespace path_smoother
+namespace autoware::path_smoother
 {
 EBPathSmoother::EBParam::EBParam(rclcpp::Node * node)
 {
@@ -453,4 +453,4 @@ std::optional<std::vector<TrajectoryPoint>> EBPathSmoother::convertOptimizedPoin
   time_keeper_ptr_->toc(__func__, "        ");
   return eb_traj_points;
 }
-}  // namespace path_smoother
+}  // namespace autoware::path_smoother

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "path_smoother/elastic_band_smoother.hpp"
+#include "autoware_path_smoother/elastic_band_smoother.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <autoware_planning_test_manager/autoware_planning_test_manager.hpp>
@@ -32,24 +32,26 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
 
   const auto planning_test_utils_dir =
     ament_index_cpp::get_package_share_directory("planning_test_utils");
-  const auto path_smoothing_dir = ament_index_cpp::get_package_share_directory("path_smoother");
+  const auto path_smoothing_dir =
+    ament_index_cpp::get_package_share_directory("autoware_path_smoother");
 
   node_options.arguments(
     {"--ros-args", "--params-file", planning_test_utils_dir + "/config/test_common.param.yaml",
      "--params-file", planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
      "--params-file", path_smoothing_dir + "/config/elastic_band_smoother.param.yaml"});
 
-  auto test_target_node = std::make_shared<path_smoother::ElasticBandSmoother>(node_options);
+  auto test_target_node =
+    std::make_shared<autoware::path_smoother::ElasticBandSmoother>(node_options);
 
   // publish necessary topics from test_manager
-  test_manager->publishOdometry(test_target_node, "path_smoother/input/odometry");
+  test_manager->publishOdometry(test_target_node, "autoware_path_smoother/input/odometry");
 
   // set subscriber with topic name
-  test_manager->setTrajectorySubscriber("path_smoother/output/traj");
-  test_manager->setPathSubscriber("path_smoother/output/path");
+  test_manager->setTrajectorySubscriber("autoware_path_smoother/output/traj");
+  test_manager->setPathSubscriber("autoware_path_smoother/output/path");
 
   // set input topic name (this topic is changed to test node)
-  test_manager->setPathInputTopicName("path_smoother/input/path");
+  test_manager->setPathInputTopicName("autoware_path_smoother/input/path");
 
   // test with normal trajectory
   ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testWithNominalPath(test_target_node));

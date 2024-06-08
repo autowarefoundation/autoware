@@ -28,7 +28,7 @@
   <group>
     <group if="$(eval &quot;'$(var motion_path_smoother_type)' == 'elastic_band'&quot;)">
       <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
-        <composable_node pkg="path_smoother" plugin="path_smoother::ElasticBandSmoother" name="elastic_band_smoother" namespace="">
+        <composable_node pkg="autoware_path_smoother" plugin="autoware::path_smoother::ElasticBandSmoother" name="elastic_band_smoother" namespace="">
           <!-- topic remap -->
           <remap from="~/input/path" to="$(var interface_input_topic)"/>
           <remap from="~/input/odometry" to="/localization/kinematic_state"/>
