@@ -12,9 +12,9 @@
   <arg name="output_gate_mode" default="/control/gate_mode_cmd"/>
   <arg name="output_vehicle_engage" default="/vehicle/engage"/>
 
-  <arg name="config_file" default="$(find-pkg-share joy_controller)/config/joy_controller_ds4.param.yaml"/>
+  <arg name="config_file" default="$(find-pkg-share autoware_joy_controller)/config/joy_controller_ds4.param.yaml"/>
 
-  <node pkg="joy_controller" exec="joy_controller" name="joy_controller" output="screen">
+  <node pkg="autoware_joy_controller" exec="autoware_joy_controller" name="joy_controller" output="screen">
     <remap from="input/joy" to="$(var input_joy)"/>
     <remap from="input/odometry" to="$(var input_odometry)"/>
 

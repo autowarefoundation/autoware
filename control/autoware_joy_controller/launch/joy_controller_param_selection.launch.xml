@@ -1,0 +1,7 @@
+<launch>
+  <arg name="joy_type" default="ds4" description="options: ds4, g29, p65, xbox"/>
+
+  <include file="$(find-pkg-share autoware_joy_controller)/launch/joy_controller.launch.xml">
+    <arg name="config_file" value="$(find-pkg-share autoware_joy_controller)/config/joy_controller_$(var joy_type).param.yaml"/>
+  </include>
+</launch>

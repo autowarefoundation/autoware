@@ -12,37 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef JOY_CONTROLLER__JOY_CONVERTER__G29_JOY_CONVERTER_HPP_
-#define JOY_CONTROLLER__JOY_CONVERTER__G29_JOY_CONVERTER_HPP_
+#ifndef AUTOWARE_JOY_CONTROLLER__JOY_CONVERTER__DS4_JOY_CONVERTER_HPP_
+#define AUTOWARE_JOY_CONTROLLER__JOY_CONVERTER__DS4_JOY_CONVERTER_HPP_
 
-#include "joy_controller/joy_converter/joy_converter_base.hpp"
+#include "autoware_joy_controller/joy_converter/joy_converter_base.hpp"
 
-namespace joy_controller
+#include <algorithm>
+
+namespace autoware::joy_controller
 {
-class G29JoyConverter : public JoyConverterBase
+class DS4JoyConverter : public JoyConverterBase
 {
 public:
-  explicit G29JoyConverter(const sensor_msgs::msg::Joy & j) : j_(j) {}
+  explicit DS4JoyConverter(const sensor_msgs::msg::Joy & j) : j_(j) {}
 
   float accel() const
   {
-    constexpr float eps = 0.0000001;
-    if (std::fabs(AccelPedal()) < eps) {
-      return 0.0f;
-    }
-    return (AccelPedal() + 1.0f) / 2;
+    const auto button = static_cast<float>(Cross());
+    const auto stick = std::max(0.0f, RStickUpDown());
+    const auto trigger = std::max(0.0f, -RTrigger());
+    return std::max({button, stick, trigger});
   }
 
   float brake() const
   {
-    constexpr float eps = 0.0000001;
-    if (std::fabs(BrakePedal()) < eps) {
-      return 0.0f;
-    }
-    return (BrakePedal() + 1.0f) / 2;
+    const auto button = static_cast<float>(Square());
+    const auto stick = std::max(0.0f, -RStickUpDown());
+    const auto trigger = std::max(0.0f, -LTrigger());
+    return std::max({button, stick, trigger});
   }
 
-  float steer() const { return Steer(); }
+  float steer() const { return LStickLeftRight(); }
 
   bool shift_up() const { return CursorUpDown() == 1.0f; }
   bool shift_down() const { return CursorUpDown() == -1.0f; }
@@ -65,29 +65,31 @@ public:
   bool vehicle_disengage() const { return reverse() && Triangle(); }
 
 private:
-  float Steer() const { return j_.axes.at(0); }
-  float AccelPedal() const { return j_.axes.at(2); }
-  float BrakePedal() const { return j_.axes.at(3); }
-
-  float CursorLeftRight() const { return j_.axes.at(4); }
-  float CursorUpDown() const { return j_.axes.at(5); }
+  float LStickLeftRight() const { return j_.axes.at(0); }
+  float LStickUpDown() const { return j_.axes.at(1); }
+  float LTrigger() const { return j_.axes.at(2); }
+  float RStickLeftRight() const { return j_.axes.at(3); }
+  float RStickUpDown() const { return j_.axes.at(4); }
+  float RTrigger() const { return j_.axes.at(5); }
+  float CursorLeftRight() const { return j_.axes.at(6); }
+  float CursorUpDown() const { return j_.axes.at(7); }
 
   bool Cross() const { return j_.buttons.at(0); }
   bool Circle() const { return j_.buttons.at(1); }
   bool Triangle() const { return j_.buttons.at(2); }
   bool Square() const { return j_.buttons.at(3); }
-  bool L1() const { return j_.buttons.at(5); }
-  bool R1() const { return j_.buttons.at(4); }
-  bool L2() const { return j_.buttons.at(7); }
-  bool R2() const { return j_.buttons.at(6); }
+  bool L1() const { return j_.buttons.at(4); }
+  bool R1() const { return j_.buttons.at(5); }
+  bool L2() const { return j_.buttons.at(6); }
+  bool R2() const { return j_.buttons.at(7); }
   bool Share() const { return j_.buttons.at(8); }
   bool Options() const { return j_.buttons.at(9); }
-  bool PS() const { return j_.buttons.at(24); }
+  bool PS() const { return j_.buttons.at(10); }
 
   const sensor_msgs::msg::Joy j_;
 
   bool reverse() const { return Share(); }
 };
-}  // namespace joy_controller
+}  // namespace autoware::joy_controller
 
-#endif  // JOY_CONTROLLER__JOY_CONVERTER__G29_JOY_CONVERTER_HPP_
+#endif  // AUTOWARE_JOY_CONTROLLER__JOY_CONVERTER__DS4_JOY_CONVERTER_HPP_

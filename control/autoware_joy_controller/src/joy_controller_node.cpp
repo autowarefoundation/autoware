@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "joy_controller/joy_controller.hpp"
-#include "joy_controller/joy_converter/ds4_joy_converter.hpp"
-#include "joy_controller/joy_converter/g29_joy_converter.hpp"
-#include "joy_controller/joy_converter/p65_joy_converter.hpp"
-#include "joy_controller/joy_converter/xbox_joy_converter.hpp"
+#include "autoware_joy_controller/joy_controller.hpp"
+#include "autoware_joy_controller/joy_converter/ds4_joy_converter.hpp"
+#include "autoware_joy_controller/joy_converter/g29_joy_converter.hpp"
+#include "autoware_joy_controller/joy_converter/p65_joy_converter.hpp"
+#include "autoware_joy_controller/joy_converter/xbox_joy_converter.hpp"
 
 #include <tier4_api_utils/tier4_api_utils.hpp>
 
@@ -27,9 +27,9 @@
 
 namespace
 {
-using joy_controller::GateModeType;
-using joy_controller::GearShiftType;
-using joy_controller::TurnSignalType;
+using autoware::joy_controller::GateModeType;
+using autoware::joy_controller::GearShiftType;
+using autoware::joy_controller::TurnSignalType;
 using GearShift = tier4_external_api_msgs::msg::GearShift;
 using TurnSignal = tier4_external_api_msgs::msg::TurnSignal;
 using GateMode = tier4_control_msgs::msg::GateMode;
@@ -146,7 +146,7 @@ double calcMapping(const double input, const double sensitivity)
 
 }  // namespace
 
-namespace joy_controller
+namespace autoware::joy_controller
 {
 void AutowareJoyControllerNode::onJoy()
 {
@@ -459,7 +459,7 @@ void AutowareJoyControllerNode::initTimer(double period_s)
 }
 
 AutowareJoyControllerNode::AutowareJoyControllerNode(const rclcpp::NodeOptions & node_options)
-: Node("joy_controller", node_options)
+: Node("autoware_joy_controller", node_options)
 {
   // Parameter
   joy_type_ = declare_parameter<std::string>("joy_type");
@@ -521,7 +521,7 @@ AutowareJoyControllerNode::AutowareJoyControllerNode(const rclcpp::NodeOptions &
   // Timer
   initTimer(1.0 / update_rate_);
 }
-}  // namespace joy_controller
+}  // namespace autoware::joy_controller
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(joy_controller::AutowareJoyControllerNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::joy_controller::AutowareJoyControllerNode)

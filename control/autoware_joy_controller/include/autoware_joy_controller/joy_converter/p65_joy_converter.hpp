@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef JOY_CONTROLLER__JOY_CONVERTER__P65_JOY_CONVERTER_HPP_
-#define JOY_CONTROLLER__JOY_CONVERTER__P65_JOY_CONVERTER_HPP_
+#ifndef AUTOWARE_JOY_CONTROLLER__JOY_CONVERTER__P65_JOY_CONVERTER_HPP_
+#define AUTOWARE_JOY_CONTROLLER__JOY_CONVERTER__P65_JOY_CONVERTER_HPP_
 
-#include "joy_controller/joy_converter/joy_converter_base.hpp"
+#include "autoware_joy_controller/joy_converter/joy_converter_base.hpp"
 
 #include <algorithm>
 
-namespace joy_controller
+namespace autoware::joy_controller
 {
 class P65JoyConverter : public JoyConverterBase
 {
@@ -76,6 +76,6 @@ private:
 
   const sensor_msgs::msg::Joy j_;
 };
-}  // namespace joy_controller
+}  // namespace autoware::joy_controller
 
-#endif  // JOY_CONTROLLER__JOY_CONVERTER__P65_JOY_CONVERTER_HPP_
+#endif  // AUTOWARE_JOY_CONTROLLER__JOY_CONVERTER__P65_JOY_CONVERTER_HPP_

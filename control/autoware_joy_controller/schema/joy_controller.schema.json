@@ -3,7 +3,7 @@
   "title": "Parameters for Joy Controller node",
   "type": "object",
   "definitions": {
-    "joy_controller": {
+    "autoware_joy_controller": {
       "type": "object",
       "properties": {
         "joy_type": {
@@ -112,7 +112,7 @@
       "type": "object",
       "properties": {
         "ros__parameters": {
-          "$ref": "#/definitions/joy_controller"
+          "$ref": "#/definitions/autoware_joy_controller"
         }
       },
       "required": ["ros__parameters"],
