@@ -3,7 +3,7 @@
   <arg name="interface_output_topic" default="/planning/scenario_planning/lane_driving/trajectory"/>
 
   <arg name="launch_motion_out_of_lane_module" default="true"/>
-  <arg name="launch_dynamic_obstacle_stop_module" default="true"/>
+  <!-- <arg name="launch_dynamic_obstacle_stop_module" default="true"/> -->
   <arg name="launch_module_list_end" default="&quot;&quot;]"/>
 
   <!-- assemble launch config for motion velocity planner -->
@@ -13,11 +13,11 @@
     value="$(eval &quot;'$(var motion_velocity_planner_launch_modules)' + 'autoware::motion_velocity_planner::OutOfLaneModule, '&quot;)"
     if="$(var launch_motion_out_of_lane_module)"
   />
-  <let
-    name="motion_velocity_planner_launch_modules"
-    value="$(eval &quot;'$(var motion_velocity_planner_launch_modules)' + 'motion_velocity_planner::DynamicObstacleStopModule, '&quot;)"
-    if="$(var launch_dynamic_obstacle_stop_module)"
-  />
+  <!-- <let -->
+  <!--   name="motion_velocity_planner_launch_modules" -->
+  <!--   value="$(eval &quot;'$(var motion_velocity_planner_launch_modules)' + 'motion_velocity_planner::DynamicObstacleStopModule, '&quot;)" -->
+  <!--   if="$(var launch_dynamic_obstacle_stop_module)" -->
+  <!-- /> -->
   <let name="motion_velocity_planner_launch_modules" value="$(eval &quot;'$(var motion_velocity_planner_launch_modules)' + '$(var launch_module_list_end)'&quot;)"/>
 
   <node_container pkg="rclcpp_components" exec="$(var container_type)" name="motion_planning_container" namespace="" args="" output="screen">
