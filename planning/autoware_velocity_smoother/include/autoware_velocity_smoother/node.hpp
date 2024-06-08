@@ -31,6 +31,7 @@
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
+#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 #include "tier4_autoware_utils/ros/self_pose_listener.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
@@ -86,11 +87,15 @@ private:
   rclcpp::Publisher<Trajectory>::SharedPtr pub_trajectory_;
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_virtual_wall_;
   rclcpp::Publisher<StopSpeedExceeded>::SharedPtr pub_over_stop_velocity_;
-  rclcpp::Subscription<Odometry>::SharedPtr sub_current_odometry_;
-  rclcpp::Subscription<AccelWithCovarianceStamped>::SharedPtr sub_current_acceleration_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_current_trajectory_;
-  rclcpp::Subscription<VelocityLimit>::SharedPtr sub_external_velocity_limit_;
-  rclcpp::Subscription<OperationModeState>::SharedPtr sub_operation_mode_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> sub_current_odometry_{
+    this, "/localization/kinematic_state"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped>
+    sub_current_acceleration_{this, "~/input/acceleration"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<VelocityLimit> sub_external_velocity_limit_{
+    this, "~/input/external_velocity_limit_mps"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<OperationModeState> sub_operation_mode_{
+    this, "~/input/operation_mode_state"};
 
   Odometry::ConstSharedPtr current_odometry_ptr_;  // current odometry
   AccelWithCovarianceStamped::ConstSharedPtr current_acceleration_ptr_;
@@ -180,11 +185,7 @@ private:
     const std::vector<rclcpp::Parameter> & parameters);
 
   // topic callback
-  void onCurrentOdometry(const Odometry::ConstSharedPtr msg);
-
   void onCurrentTrajectory(const Trajectory::ConstSharedPtr msg);
-
-  void onExternalVelocityLimit(const VelocityLimit::ConstSharedPtr msg);
 
   void calcExternalVelocityLimit();
 
