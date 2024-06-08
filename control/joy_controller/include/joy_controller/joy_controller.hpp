@@ -18,6 +18,7 @@
 #include "joy_controller/joy_converter/joy_converter_base.hpp"
 
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 
 #include <autoware_control_msgs/msg/control.hpp>
 #include <autoware_vehicle_msgs/msg/engage.hpp>
@@ -66,19 +67,20 @@ private:
   double backward_accel_ratio_;
 
   // CallbackGroups
-  rclcpp::CallbackGroup::SharedPtr callback_group_subscribers_;
   rclcpp::CallbackGroup::SharedPtr callback_group_services_;
 
   // Subscriber
-  rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr sub_joy_;
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<sensor_msgs::msg::Joy> sub_joy_{
+    this, "input/joy"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
+    this, "input/odometry"};
 
   rclcpp::Time last_joy_received_time_;
   std::shared_ptr<const JoyConverterBase> joy_;
   geometry_msgs::msg::TwistStamped::ConstSharedPtr twist_;
 
-  void onJoy(const sensor_msgs::msg::Joy::ConstSharedPtr msg);
-  void onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
+  void onJoy();
+  void onOdometry();
 
   // Publisher
   rclcpp::Publisher<autoware_control_msgs::msg::Control>::SharedPtr pub_control_command_;

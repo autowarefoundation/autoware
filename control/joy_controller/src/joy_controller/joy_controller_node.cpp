@@ -148,8 +148,9 @@ double calcMapping(const double input, const double sensitivity)
 
 namespace joy_controller
 {
-void AutowareJoyControllerNode::onJoy(const sensor_msgs::msg::Joy::ConstSharedPtr msg)
+void AutowareJoyControllerNode::onJoy()
 {
+  const auto msg = sub_joy_.takeData();
   last_joy_received_time_ = msg->header.stamp;
   if (joy_type_ == "G29") {
     joy_ = std::make_shared<const G29JoyConverter>(*msg);
@@ -190,8 +191,13 @@ void AutowareJoyControllerNode::onJoy(const sensor_msgs::msg::Joy::ConstSharedPt
   }
 }
 
-void AutowareJoyControllerNode::onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
+void AutowareJoyControllerNode::onOdometry()
 {
+  if (raw_control_) {
+    return;
+  }
+
+  const auto msg = sub_odom_.takeData();
   auto twist = std::make_shared<geometry_msgs::msg::TwistStamped>();
   twist->header = msg->header;
   twist->twist = msg->twist.twist;
@@ -243,6 +249,9 @@ bool AutowareJoyControllerNode::isDataReady()
 
 void AutowareJoyControllerNode::onTimer()
 {
+  onOdometry();
+  onJoy();
+
   if (!isDataReady()) {
     return;
   }
@@ -470,23 +479,11 @@ AutowareJoyControllerNode::AutowareJoyControllerNode(const rclcpp::NodeOptions &
   RCLCPP_INFO(get_logger(), "Joy type: %s", joy_type_.c_str());
 
   // Callback Groups
-  callback_group_subscribers_ =
-    this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   callback_group_services_ =
     this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-  auto subscriber_option = rclcpp::SubscriptionOptions();
-  subscriber_option.callback_group = callback_group_subscribers_;
 
   // Subscriber
-  sub_joy_ = this->create_subscription<sensor_msgs::msg::Joy>(
-    "input/joy", 1, std::bind(&AutowareJoyControllerNode::onJoy, this, std::placeholders::_1),
-    subscriber_option);
-  if (!raw_control_) {
-    sub_odom_ = this->create_subscription<nav_msgs::msg::Odometry>(
-      "input/odometry", 1,
-      std::bind(&AutowareJoyControllerNode::onOdometry, this, std::placeholders::_1),
-      subscriber_option);
-  } else {
+  if (raw_control_) {
     twist_ = std::make_shared<geometry_msgs::msg::TwistStamped>();
   }
 

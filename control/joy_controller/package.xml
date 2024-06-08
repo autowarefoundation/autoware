@@ -26,6 +26,7 @@
   <depend>sensor_msgs</depend>
   <depend>std_srvs</depend>
   <depend>tier4_api_utils</depend>
+  <depend>tier4_autoware_utils</depend>
   <depend>tier4_control_msgs</depend>
   <depend>tier4_external_api_msgs</depend>
 
