@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "pid_longitudinal_controller/pid_longitudinal_controller.hpp"
+#include "autoware_pid_longitudinal_controller/pid_longitudinal_controller.hpp"
 
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
@@ -1148,7 +1148,7 @@ void PidLongitudinalController::updateDebugVelAcc(const ControlData & control_da
 
 void PidLongitudinalController::setupDiagnosticUpdater()
 {
-  diagnostic_updater_.setHardwareID("pid_longitudinal_controller");
+  diagnostic_updater_.setHardwareID("autoware_pid_longitudinal_controller");
   diagnostic_updater_.add("control_state", this, &PidLongitudinalController::checkControlState);
 }
 

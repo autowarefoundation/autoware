@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "pid_longitudinal_controller/pid.hpp"
+#include "autoware_pid_longitudinal_controller/pid.hpp"
 
 #include <algorithm>
 #include <memory>

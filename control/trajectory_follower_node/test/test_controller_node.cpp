@@ -51,7 +51,7 @@ rclcpp::NodeOptions makeNodeOptions(const bool enable_keep_stopped_until_steer_c
   // Pass default parameter file to the node
   const auto share_dir = ament_index_cpp::get_package_share_directory("trajectory_follower_node");
   const auto longitudinal_share_dir =
-    ament_index_cpp::get_package_share_directory("pid_longitudinal_controller");
+    ament_index_cpp::get_package_share_directory("autoware_pid_longitudinal_controller");
   const auto lateral_share_dir =
     ament_index_cpp::get_package_share_directory("autoware_mpc_lateral_controller");
   rclcpp::NodeOptions node_options;

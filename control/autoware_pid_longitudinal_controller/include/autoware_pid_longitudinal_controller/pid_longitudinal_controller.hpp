@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PID_LONGITUDINAL_CONTROLLER__PID_LONGITUDINAL_CONTROLLER_HPP_
-#define PID_LONGITUDINAL_CONTROLLER__PID_LONGITUDINAL_CONTROLLER_HPP_
+#ifndef AUTOWARE_PID_LONGITUDINAL_CONTROLLER__PID_LONGITUDINAL_CONTROLLER_HPP_
+#define AUTOWARE_PID_LONGITUDINAL_CONTROLLER__PID_LONGITUDINAL_CONTROLLER_HPP_
 
+#include "autoware_pid_longitudinal_controller/debug_values.hpp"
+#include "autoware_pid_longitudinal_controller/longitudinal_controller_utils.hpp"
+#include "autoware_pid_longitudinal_controller/lowpass_filter.hpp"
+#include "autoware_pid_longitudinal_controller/pid.hpp"
+#include "autoware_pid_longitudinal_controller/smooth_stop.hpp"
 #include "diagnostic_updater/diagnostic_updater.hpp"
-#include "pid_longitudinal_controller/debug_values.hpp"
-#include "pid_longitudinal_controller/longitudinal_controller_utils.hpp"
-#include "pid_longitudinal_controller/lowpass_filter.hpp"
-#include "pid_longitudinal_controller/pid.hpp"
-#include "pid_longitudinal_controller/smooth_stop.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
 #include "tf2_ros/buffer.h"
@@ -408,4 +408,4 @@ private:
 };
 }  // namespace autoware::motion::control::pid_longitudinal_controller
 
-#endif  // PID_LONGITUDINAL_CONTROLLER__PID_LONGITUDINAL_CONTROLLER_HPP_
+#endif  // AUTOWARE_PID_LONGITUDINAL_CONTROLLER__PID_LONGITUDINAL_CONTROLLER_HPP_

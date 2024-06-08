@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "autoware_pid_longitudinal_controller/smooth_stop.hpp"
 #include "gtest/gtest.h"
-#include "pid_longitudinal_controller/smooth_stop.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include <utility>
