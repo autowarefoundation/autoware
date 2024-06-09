@@ -29,7 +29,6 @@ nav:
         - 'No Drivable Lane': planning/behavior_velocity_no_drivable_lane_module
         - 'No Stopping Area': planning/behavior_velocity_no_stopping_area_module
         - 'Occlusion Spot': planning/behavior_velocity_occlusion_spot_module
-        - 'Out of Lane': planning/behavior_velocity_out_of_lane_module
         - 'Run Out': planning/autoware_behavior_velocity_run_out_module
         - 'Speed Bump': planning/behavior_velocity_speed_bump_module
         - 'Stop Line': planning/behavior_velocity_stop_line_module

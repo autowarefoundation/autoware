@@ -81,7 +81,6 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
   module_names.emplace_back("autoware::behavior_velocity_planner::OcclusionSpotModulePlugin");
   module_names.emplace_back("autoware::behavior_velocity_planner::RunOutModulePlugin");
   module_names.emplace_back("autoware::behavior_velocity_planner::SpeedBumpModulePlugin");
-  module_names.emplace_back("autoware::behavior_velocity_planner::OutOfLaneModulePlugin");
   module_names.emplace_back("autoware::behavior_velocity_planner::NoDrivableLaneModulePlugin");
 
   std::vector<rclcpp::Parameter> params;
@@ -108,7 +107,6 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
                    get_behavior_velocity_module_config_no_prefix("stop_line"),
                    get_behavior_velocity_module_config_no_prefix("traffic_light"),
                    get_behavior_velocity_module_config("virtual_traffic_light"),
-                   get_behavior_velocity_module_config_no_prefix("out_of_lane"),
                    get_behavior_velocity_module_config_no_prefix("no_drivable_lane")});
 
   // TODO(Takagi, Isamu): set launch_modules

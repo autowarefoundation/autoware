@@ -32,7 +32,6 @@
   <arg name="launch_occlusion_spot_module" default="true"/>
   <arg name="launch_run_out_module" default="true"/>
   <arg name="launch_speed_bump_module" default="true"/>
-  <arg name="launch_out_of_lane_module" default="true"/>
   <arg name="launch_no_drivable_lane_module" default="true"/>
   <arg name="launch_dynamic_obstacle_stop_module" default="true"/>
 
@@ -166,11 +165,6 @@
   />
   <let
     name="behavior_velocity_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'autoware::behavior_velocity_planner::OutOfLaneModulePlugin, '&quot;)"
-    if="$(var launch_out_of_lane_module)"
-  />
-  <let
-    name="behavior_velocity_planner_launch_modules"
     value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'autoware::behavior_velocity_planner::NoDrivableLaneModulePlugin, '&quot;)"
     if="$(var launch_no_drivable_lane_module)"
   />
@@ -261,7 +255,6 @@
       <param from="$(var behavior_velocity_planner_no_stopping_area_module_param_path)"/>
       <param from="$(var behavior_velocity_planner_run_out_module_param_path)"/>
       <param from="$(var behavior_velocity_planner_speed_bump_module_param_path)"/>
-      <param from="$(var behavior_velocity_planner_out_of_lane_module_param_path)"/>
       <param from="$(var behavior_velocity_planner_no_drivable_lane_module_param_path)"/>
       <param from="$(var behavior_velocity_planner_dynamic_obstacle_stop_module_param_path)"/>
       <!-- composable node config -->

@@ -76,7 +76,6 @@
   <test_depend>behavior_velocity_no_drivable_lane_module</test_depend>
   <test_depend>behavior_velocity_no_stopping_area_module</test_depend>
   <test_depend>behavior_velocity_occlusion_spot_module</test_depend>
-  <test_depend>behavior_velocity_out_of_lane_module</test_depend>
   <test_depend>behavior_velocity_speed_bump_module</test_depend>
   <test_depend>behavior_velocity_stop_line_module</test_depend>
   <test_depend>behavior_velocity_traffic_light_module</test_depend>
