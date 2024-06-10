@@ -154,11 +154,11 @@ VelocityPlanningResult OutOfLaneModule::plan(
   tier4_autoware_utils::StopWatch<std::chrono::microseconds> stopwatch;
   stopwatch.tic();
   out_of_lane::EgoData ego_data;
-  ego_data.pose = planner_data->current_odometry->pose;
+  ego_data.pose = planner_data->current_odometry.pose.pose;
   ego_data.trajectory_points = ego_trajectory_points;
   ego_data.first_trajectory_idx =
     motion_utils::findNearestSegmentIndex(ego_trajectory_points, ego_data.pose.position);
-  ego_data.velocity = planner_data->current_velocity->twist.linear.x;
+  ego_data.velocity = planner_data->current_odometry.twist.twist.linear.x;
   ego_data.max_decel = planner_data->velocity_smoother_->getMinDecel();
   stopwatch.tic("calculate_trajectory_footprints");
   const auto current_ego_footprint =

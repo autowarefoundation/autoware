@@ -24,9 +24,8 @@
 #include <autoware_perception_msgs/msg/traffic_light_group.hpp>
 #include <autoware_perception_msgs/msg/traffic_light_group_array.hpp>
 #include <geometry_msgs/msg/accel_with_covariance_stamped.hpp>
-#include <geometry_msgs/msg/pose_stamped.hpp>
-#include <geometry_msgs/msg/twist_stamped.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <tier4_api_msgs/msg/crosswalk_status.hpp>
@@ -60,12 +59,11 @@ struct PlannerData
   }
 
   // msgs from callbacks that are used for data-ready
-  geometry_msgs::msg::PoseStamped::ConstSharedPtr current_odometry;
-  geometry_msgs::msg::TwistStamped::ConstSharedPtr current_velocity;
-  geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr current_acceleration;
-  autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr predicted_objects;
-  pcl::PointCloud<pcl::PointXYZ>::ConstPtr no_ground_pointcloud;
-  nav_msgs::msg::OccupancyGrid::ConstSharedPtr occupancy_grid;
+  nav_msgs::msg::Odometry current_odometry{};
+  geometry_msgs::msg::AccelWithCovarianceStamped current_acceleration{};
+  autoware_perception_msgs::msg::PredictedObjects predicted_objects{};
+  pcl::PointCloud<pcl::PointXYZ> no_ground_pointcloud{};
+  nav_msgs::msg::OccupancyGrid occupancy_grid{};
   std::shared_ptr<route_handler::RouteHandler> route_handler;
 
   // nearest search
@@ -78,7 +76,7 @@ struct PlannerData
   std::map<lanelet::Id, TrafficSignalStamped> traffic_light_id_map_raw_;
   std::map<lanelet::Id, TrafficSignalStamped> traffic_light_id_map_last_observed_;
   std::optional<tier4_planning_msgs::msg::VelocityLimit> external_velocity_limit;
-  tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr virtual_traffic_light_states;
+  tier4_v2x_msgs::msg::VirtualTrafficLightStateArray virtual_traffic_light_states;
 
   // velocity smoother
   std::shared_ptr<autoware::velocity_smoother::SmootherBase> velocity_smoother_{};
