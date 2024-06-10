@@ -16,6 +16,7 @@
 #define AUTOWARE_LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_NODE_HPP_
 
 #include "autoware_lane_departure_checker/lane_departure_checker.hpp"
+#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -66,11 +67,16 @@ public:
 
 private:
   // Subscriber
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
-  rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_lanelet_map_bin_;
-  rclcpp::Subscription<LaneletRoute>::SharedPtr sub_route_;
-  rclcpp::Subscription<Trajectory>::SharedPtr sub_reference_trajectory_;
-  rclcpp::Subscription<Trajectory>::SharedPtr sub_predicted_trajectory_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
+    this, "~/input/odometry"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<LaneletMapBin> sub_lanelet_map_bin_{
+    this, "~/input/lanelet_map_bin", rclcpp::QoS{1}.transient_local()};
+  tier4_autoware_utils::InterProcessPollingSubscriber<LaneletRoute> sub_route_{
+    this, "~/input/route"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<Trajectory> sub_reference_trajectory_{
+    this, "~/input/reference_trajectory"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<Trajectory> sub_predicted_trajectory_{
+    this, "~/input/predicted_trajectory"};
 
   // Data Buffer
   nav_msgs::msg::Odometry::ConstSharedPtr current_odom_;
