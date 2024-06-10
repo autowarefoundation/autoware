@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_
-#define OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_
-#include "objects_of_interest_marker_interface/coloring.hpp"
-#include "objects_of_interest_marker_interface/marker_data.hpp"
+#ifndef AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_
+#define AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_
+#include "autoware_objects_of_interest_marker_interface/coloring.hpp"
+#include "autoware_objects_of_interest_marker_interface/marker_data.hpp"
 
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
@@ -30,7 +30,7 @@
 
 #include <string>
 
-namespace objects_of_interest_marker_interface::marker_utils
+namespace autoware::objects_of_interest_marker_interface::marker_utils
 {
 /**
  * @brief Create arrow marker from object marker data
@@ -81,6 +81,6 @@ visualization_msgs::msg::Marker createNameTextMarker(
 visualization_msgs::msg::MarkerArray createTargetMarker(
   const size_t id, const ObjectMarkerData & data, const std::string & name,
   const double height_offset, const double arrow_length = 1.0, const double line_width = 0.1);
-}  // namespace objects_of_interest_marker_interface::marker_utils
+}  // namespace autoware::objects_of_interest_marker_interface::marker_utils
 
-#endif  // OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_
+#endif  // AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_

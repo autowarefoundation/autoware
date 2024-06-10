@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp"
+#include "autoware_objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp"
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/constants.hpp>
 #include <tier4_autoware_utils/math/trigonometry.hpp>
 
-namespace objects_of_interest_marker_interface
+namespace autoware::objects_of_interest_marker_interface
 {
 using autoware_perception_msgs::msg::Shape;
 using geometry_msgs::msg::Pose;
@@ -87,4 +87,4 @@ ColorRGBA ObjectsOfInterestMarkerInterface::getColor(
   }
 }
 
-}  // namespace objects_of_interest_marker_interface
+}  // namespace autoware::objects_of_interest_marker_interface

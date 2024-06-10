@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "objects_of_interest_marker_interface/marker_utils.hpp"
+#include "autoware_objects_of_interest_marker_interface/marker_utils.hpp"
 
-namespace objects_of_interest_marker_interface::marker_utils
+namespace autoware::objects_of_interest_marker_interface::marker_utils
 {
 using geometry_msgs::msg::Point;
 
@@ -111,4 +111,4 @@ MarkerArray createTargetMarker(
 
   return marker_array;
 }
-}  // namespace objects_of_interest_marker_interface::marker_utils
+}  // namespace autoware::objects_of_interest_marker_interface::marker_utils

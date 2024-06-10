@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECTS_OF_INTEREST_MARKER_INTERFACE__OBJECTS_OF_INTEREST_MARKER_INTERFACE_HPP_
-#define OBJECTS_OF_INTEREST_MARKER_INTERFACE__OBJECTS_OF_INTEREST_MARKER_INTERFACE_HPP_
-#include "objects_of_interest_marker_interface/coloring.hpp"
-#include "objects_of_interest_marker_interface/marker_data.hpp"
-#include "objects_of_interest_marker_interface/marker_utils.hpp"
+#ifndef AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__OBJECTS_OF_INTEREST_MARKER_INTERFACE_HPP_
+#define AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__OBJECTS_OF_INTEREST_MARKER_INTERFACE_HPP_
+#include "autoware_objects_of_interest_marker_interface/coloring.hpp"
+#include "autoware_objects_of_interest_marker_interface/marker_data.hpp"
+#include "autoware_objects_of_interest_marker_interface/marker_utils.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-namespace objects_of_interest_marker_interface
+namespace autoware::objects_of_interest_marker_interface
 {
 class ObjectsOfInterestMarkerInterface
 {
@@ -98,6 +98,6 @@ private:
   std::string topic_namespace_ = "/planning/debug/objects_of_interest";
 };
 
-}  // namespace objects_of_interest_marker_interface
+}  // namespace autoware::objects_of_interest_marker_interface
 
-#endif  // OBJECTS_OF_INTEREST_MARKER_INTERFACE__OBJECTS_OF_INTEREST_MARKER_INTERFACE_HPP_
+#endif  // AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__OBJECTS_OF_INTEREST_MARKER_INTERFACE_HPP_

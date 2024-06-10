@@ -45,6 +45,7 @@
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_freespace_planning_algorithms</depend>
   <depend>autoware_lane_departure_checker</depend>
+  <depend>autoware_objects_of_interest_marker_interface</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_rtc_interface</depend>
@@ -55,7 +56,6 @@
   <depend>magic_enum</depend>
   <depend>motion_utils</depend>
   <depend>object_recognition_utils</depend>
-  <depend>objects_of_interest_marker_interface</depend>
   <depend>rclcpp</depend>
   <depend>route_handler</depend>
   <depend>tf2</depend>

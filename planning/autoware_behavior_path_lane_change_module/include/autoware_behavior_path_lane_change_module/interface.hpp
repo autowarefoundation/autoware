@@ -37,10 +37,10 @@
 
 namespace behavior_path_planner
 {
+using autoware::objects_of_interest_marker_interface::ColorName;
+using autoware::objects_of_interest_marker_interface::ObjectsOfInterestMarkerInterface;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
-using objects_of_interest_marker_interface::ColorName;
-using objects_of_interest_marker_interface::ObjectsOfInterestMarkerInterface;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
 class LaneChangeInterface : public SceneModuleInterface

@@ -21,6 +21,7 @@
 
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_map_msgs</depend>
+  <depend>autoware_objects_of_interest_marker_interface</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_rtc_interface</depend>
@@ -33,7 +34,6 @@
   <depend>lanelet2_extension</depend>
   <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
-  <depend>objects_of_interest_marker_interface</depend>
   <depend>pcl_conversions</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

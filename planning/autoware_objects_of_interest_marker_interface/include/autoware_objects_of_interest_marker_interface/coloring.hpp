@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECTS_OF_INTEREST_MARKER_INTERFACE__COLORING_HPP_
-#define OBJECTS_OF_INTEREST_MARKER_INTERFACE__COLORING_HPP_
-#include "objects_of_interest_marker_interface/marker_data.hpp"
+#ifndef AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__COLORING_HPP_
+#define AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__COLORING_HPP_
+#include "autoware_objects_of_interest_marker_interface/marker_data.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <std_msgs/msg/color_rgba.hpp>
 
-namespace objects_of_interest_marker_interface::coloring
+namespace autoware::objects_of_interest_marker_interface::coloring
 {
 std_msgs::msg::ColorRGBA getGreen(const float alpha);
 std_msgs::msg::ColorRGBA getAmber(const float alpha);
 std_msgs::msg::ColorRGBA getRed(const float alpha);
 std_msgs::msg::ColorRGBA getGray(const float alpha);
-}  // namespace objects_of_interest_marker_interface::coloring
+}  // namespace autoware::objects_of_interest_marker_interface::coloring
 
-#endif  // OBJECTS_OF_INTEREST_MARKER_INTERFACE__COLORING_HPP_
+#endif  // AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__COLORING_HPP_
