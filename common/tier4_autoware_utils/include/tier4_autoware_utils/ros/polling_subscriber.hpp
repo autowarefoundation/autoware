@@ -64,6 +64,12 @@ public:
         "serialization while updateLatestData()");
     }
   };
+  /*
+   * @brief take and return the latest data from DDS queue if such data existed, otherwise return
+   * previous taken data("stale" data)
+   * @note if you want to ignore "stale" data, you should use takeNewData()
+   * instead
+   */
   typename T::ConstSharedPtr takeData()
   {
     auto new_data = std::make_shared<T>();
@@ -75,6 +81,25 @@ public:
 
     return data_;
   };
+
+  /*
+   * @brief take and return the latest data from DDS queue if such data existed, otherwise return
+   * nullptr instead
+   * @note this API allows you to avoid redundant computation on the taken data which is unchanged
+   * since the previous cycle
+   */
+  typename T::ConstSharedPtr takeNewData()
+  {
+    auto new_data = std::make_shared<T>();
+    rclcpp::MessageInfo message_info;
+    const bool success = subscriber_->take(*new_data, message_info);
+    if (success) {
+      data_ = new_data;
+      return data_;
+    } else {
+      return nullptr;
+    }
+  }
 };
 
 template <typename T, int N>
