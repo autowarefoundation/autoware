@@ -32,8 +32,8 @@ def launch_setup(context, *args, **kwargs):
         external_cmd_selector_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     component = ComposableNode(
-        package="external_cmd_selector",
-        plugin="ExternalCmdSelector",
+        package="autoware_external_cmd_selector",
+        plugin="autoware::external_cmd_selector::ExternalCmdSelector",
         name="external_cmd_selector",
         remappings=[
             _create_mapping_tuple("service/select_external_command"),

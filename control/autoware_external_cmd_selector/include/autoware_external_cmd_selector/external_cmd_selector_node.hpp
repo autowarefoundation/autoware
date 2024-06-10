@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EXTERNAL_CMD_SELECTOR__EXTERNAL_CMD_SELECTOR_NODE_HPP_
-#define EXTERNAL_CMD_SELECTOR__EXTERNAL_CMD_SELECTOR_NODE_HPP_
+#ifndef AUTOWARE_EXTERNAL_CMD_SELECTOR__EXTERNAL_CMD_SELECTOR_NODE_HPP_
+#define AUTOWARE_EXTERNAL_CMD_SELECTOR__EXTERNAL_CMD_SELECTOR_NODE_HPP_
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <diagnostic_updater/update_functions.hpp>
@@ -30,7 +30,8 @@
 #include <tier4_external_api_msgs/msg/turn_signal_stamped.hpp>
 
 #include <memory>
-
+namespace autoware::external_cmd_selector
+{
 class ExternalCmdSelector : public rclcpp::Node
 {
 public:
@@ -101,5 +102,5 @@ private:
   // Diagnostics Updater
   diagnostic_updater::Updater updater_{this};
 };
-
-#endif  // EXTERNAL_CMD_SELECTOR__EXTERNAL_CMD_SELECTOR_NODE_HPP_
+}  // namespace autoware::external_cmd_selector
+#endif  // AUTOWARE_EXTERNAL_CMD_SELECTOR__EXTERNAL_CMD_SELECTOR_NODE_HPP_

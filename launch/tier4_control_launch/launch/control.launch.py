@@ -272,7 +272,10 @@ def launch_setup(context, *args, **kwargs):
     # external cmd selector
     external_cmd_selector_loader = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [FindPackageShare("external_cmd_selector"), "/launch/external_cmd_selector.launch.py"]
+            [
+                FindPackageShare("autoware_external_cmd_selector"),
+                "/launch/external_cmd_selector.launch.py",
+            ]
         ),
         launch_arguments=[
             ("use_intra_process", LaunchConfiguration("use_intra_process")),

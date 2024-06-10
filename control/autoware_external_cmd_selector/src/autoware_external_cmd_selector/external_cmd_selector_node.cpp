@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "external_cmd_selector/external_cmd_selector_node.hpp"
+#include "autoware_external_cmd_selector/external_cmd_selector_node.hpp"
 
 #include <tier4_auto_msgs_converter/tier4_auto_msgs_converter.hpp>
 
@@ -21,6 +21,8 @@
 #include <string>
 #include <utility>
 
+namespace autoware::external_cmd_selector
+{
 ExternalCmdSelector::ExternalCmdSelector(const rclcpp::NodeOptions & node_options)
 : Node("external_cmd_selector", node_options)
 {
@@ -202,6 +204,7 @@ ExternalCmdSelector::InternalHeartbeat ExternalCmdSelector::convert(
 {
   return command;
 }
+}  // namespace autoware::external_cmd_selector
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(ExternalCmdSelector)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::external_cmd_selector::ExternalCmdSelector)

@@ -11,11 +11,11 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <exec_depend>autoware_external_cmd_selector</exec_depend>
   <exec_depend>autoware_lane_departure_checker</exec_depend>
   <exec_depend>autoware_vehicle_cmd_gate</exec_depend>
   <exec_depend>control_evaluator</exec_depend>
   <exec_depend>external_cmd_converter</exec_depend>
-  <exec_depend>external_cmd_selector</exec_depend>
   <exec_depend>shift_decider</exec_depend>
   <exec_depend>trajectory_follower_node</exec_depend>
 

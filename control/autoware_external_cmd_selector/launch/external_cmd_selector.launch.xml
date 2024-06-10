@@ -26,7 +26,7 @@
   <arg name="output/current_selector_mode" default="~/current_selector_mode"/>
 
   <!-- node -->
-  <node pkg="external_cmd_selector" exec="external_cmd_selector" name="external_cmd_selector" output="screen">
+  <node pkg="autoware_external_cmd_selector" exec="autoware_external_cmd_selector" name="external_cmd_selector" output="screen">
     <remap from="~/service/select_external_command" to="$(var service/select_external_command)"/>
     <remap from="~/input/local/control_cmd" to="$(var input/local/control_cmd)"/>
     <remap from="~/input/local/shift_cmd" to="$(var input/local/shift_cmd)"/>
