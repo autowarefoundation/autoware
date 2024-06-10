@@ -19,9 +19,9 @@
 #include "autoware_behavior_path_planner_common/utils/parking_departure/geometric_parallel_parking.hpp"
 #include "autoware_behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 
-#include <freespace_planning_algorithms/abstract_algorithm.hpp>
-#include <freespace_planning_algorithms/astar_search.hpp>
-#include <freespace_planning_algorithms/rrtstar.hpp>
+#include <autoware_freespace_planning_algorithms/abstract_algorithm.hpp>
+#include <autoware_freespace_planning_algorithms/astar_search.hpp>
+#include <autoware_freespace_planning_algorithms/rrtstar.hpp>
 
 #include <string>
 #include <vector>
@@ -34,9 +34,9 @@ using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebugMap;
 using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
 using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 
-using freespace_planning_algorithms::AstarParam;
-using freespace_planning_algorithms::PlannerCommonParam;
-using freespace_planning_algorithms::RRTStarParam;
+using autoware::freespace_planning_algorithms::AstarParam;
+using autoware::freespace_planning_algorithms::PlannerCommonParam;
+using autoware::freespace_planning_algorithms::RRTStarParam;
 
 struct StartPlannerDebugData
 {

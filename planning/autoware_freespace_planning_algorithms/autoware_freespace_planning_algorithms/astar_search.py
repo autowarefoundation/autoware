@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import freespace_planning_algorithms.freespace_planning_algorithms_pybind as _fp
+import autoware_freespace_planning_algorithms.autoware_freespace_planning_algorithms_pybind as _fp
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Pose
 from geometry_msgs.msg import Quaternion

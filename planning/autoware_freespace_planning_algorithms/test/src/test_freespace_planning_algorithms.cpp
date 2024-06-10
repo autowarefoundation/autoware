@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "freespace_planning_algorithms/abstract_algorithm.hpp"
-#include "freespace_planning_algorithms/astar_search.hpp"
-#include "freespace_planning_algorithms/rrtstar.hpp"
+#include "autoware_freespace_planning_algorithms/abstract_algorithm.hpp"
+#include "autoware_freespace_planning_algorithms/astar_search.hpp"
+#include "autoware_freespace_planning_algorithms/rrtstar.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <rcpputils/filesystem_helper.hpp>
@@ -33,7 +33,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace fpa = freespace_planning_algorithms;
+namespace fpa = autoware::freespace_planning_algorithms;
 
 const double length_lexus = 5.5;
 const double width_lexus = 2.75;

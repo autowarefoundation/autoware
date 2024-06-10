@@ -30,7 +30,7 @@
 
 #include "freespace_planner/freespace_planner_node.hpp"
 
-#include "freespace_planning_algorithms/abstract_algorithm.hpp"
+#include "autoware_freespace_planning_algorithms/abstract_algorithm.hpp"
 
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
@@ -47,10 +47,10 @@ namespace
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<autoware_planning_msgs::msg::TrajectoryPoint>;
-using freespace_planning_algorithms::AstarSearch;
-using freespace_planning_algorithms::PlannerWaypoint;
-using freespace_planning_algorithms::PlannerWaypoints;
-using freespace_planning_algorithms::RRTStar;
+using autoware::freespace_planning_algorithms::AstarSearch;
+using autoware::freespace_planning_algorithms::PlannerWaypoint;
+using autoware::freespace_planning_algorithms::PlannerWaypoints;
+using autoware::freespace_planning_algorithms::RRTStar;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseArray;
 using geometry_msgs::msg::PoseStamped;
@@ -562,7 +562,7 @@ TransformStamped FreespacePlannerNode::getTransform(
 void FreespacePlannerNode::initializePlanningAlgorithm()
 {
   // Extend robot shape
-  freespace_planning_algorithms::VehicleShape extended_vehicle_shape = vehicle_shape_;
+  autoware::freespace_planning_algorithms::VehicleShape extended_vehicle_shape = vehicle_shape_;
   const double margin = node_param_.vehicle_shape_margin_m;
   extended_vehicle_shape.length += margin;
   extended_vehicle_shape.width += margin;

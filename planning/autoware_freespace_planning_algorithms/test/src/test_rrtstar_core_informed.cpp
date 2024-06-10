@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "freespace_planning_algorithms/rrtstar_core.hpp"
+#include "autoware_freespace_planning_algorithms/rrtstar_core.hpp"
 
 #include <gtest/gtest.h>
 
 #include <iostream>
 #include <stack>
 
+namespace autoware::freespace_planning_algorithms::rrtstar_core
+{
 bool checkAllNodeConnected(const rrtstar_core::RRTStar & tree)
 {
   const auto & nodes = tree.getNodes();
@@ -111,3 +113,4 @@ int main(int argc, char ** argv)
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
+}  // namespace autoware::freespace_planning_algorithms::rrtstar_core

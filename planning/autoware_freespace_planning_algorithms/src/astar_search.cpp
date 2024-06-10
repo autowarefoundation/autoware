@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "freespace_planning_algorithms/astar_search.hpp"
+#include "autoware_freespace_planning_algorithms/astar_search.hpp"
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
@@ -27,7 +27,7 @@
 
 #include <vector>
 
-namespace freespace_planning_algorithms
+namespace autoware::freespace_planning_algorithms
 {
 double calcReedsSheppDistance(
   const geometry_msgs::msg::Pose & p1, const geometry_msgs::msg::Pose & p2, double radius)
@@ -368,4 +368,4 @@ geometry_msgs::msg::Pose AstarSearch::node2pose(const AstarNode & node) const
   return pose_local;
 }
 
-}  // namespace freespace_planning_algorithms
+}  // namespace autoware::freespace_planning_algorithms

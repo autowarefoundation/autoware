@@ -12,21 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "freespace_planning_algorithms/rrtstar.hpp"
+#include "autoware_freespace_planning_algorithms/rrtstar.hpp"
 
-namespace
+namespace autoware::freespace_planning_algorithms
 {
-
 rrtstar_core::Pose poseMsgToPose(const geometry_msgs::msg::Pose & pose_msg)
 {
   return rrtstar_core::Pose{
     pose_msg.position.x, pose_msg.position.y, tf2::getYaw(pose_msg.orientation)};
 }
 
-}  // namespace
-
-namespace freespace_planning_algorithms
-{
 RRTStar::RRTStar(
   const PlannerCommonParam & planner_common_param, const VehicleShape & original_vehicle_shape,
   const RRTStarParam & rrtstar_param)
@@ -167,4 +162,4 @@ void RRTStar::setRRTPath(const std::vector<rrtstar_core::Pose> & waypoints)
   }
 }
 
-}  // namespace freespace_planning_algorithms
+}  // namespace autoware::freespace_planning_algorithms

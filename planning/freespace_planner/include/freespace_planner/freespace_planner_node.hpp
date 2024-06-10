@@ -33,8 +33,8 @@
 
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
-#include <freespace_planning_algorithms/astar_search.hpp>
-#include <freespace_planning_algorithms/rrtstar.hpp>
+#include <autoware_freespace_planning_algorithms/astar_search.hpp>
+#include <autoware_freespace_planning_algorithms/rrtstar.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
@@ -65,15 +65,15 @@
 
 namespace freespace_planner
 {
+using autoware::freespace_planning_algorithms::AbstractPlanningAlgorithm;
+using autoware::freespace_planning_algorithms::AstarParam;
+using autoware::freespace_planning_algorithms::AstarSearch;
+using autoware::freespace_planning_algorithms::PlannerCommonParam;
+using autoware::freespace_planning_algorithms::RRTStar;
+using autoware::freespace_planning_algorithms::RRTStarParam;
+using autoware::freespace_planning_algorithms::VehicleShape;
 using autoware_planning_msgs::msg::LaneletRoute;
 using autoware_planning_msgs::msg::Trajectory;
-using freespace_planning_algorithms::AbstractPlanningAlgorithm;
-using freespace_planning_algorithms::AstarParam;
-using freespace_planning_algorithms::AstarSearch;
-using freespace_planning_algorithms::PlannerCommonParam;
-using freespace_planning_algorithms::RRTStar;
-using freespace_planning_algorithms::RRTStarParam;
-using freespace_planning_algorithms::VehicleShape;
 using geometry_msgs::msg::PoseArray;
 using geometry_msgs::msg::PoseStamped;
 using geometry_msgs::msg::TransformStamped;

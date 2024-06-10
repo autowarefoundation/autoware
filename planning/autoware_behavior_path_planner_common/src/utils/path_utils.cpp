@@ -330,8 +330,8 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
 }
 
 PathWithLaneId convertWayPointsToPathWithLaneId(
-  const freespace_planning_algorithms::PlannerWaypoints & waypoints, const double velocity,
-  const lanelet::ConstLanelets & lanelets)
+  const autoware::freespace_planning_algorithms::PlannerWaypoints & waypoints,
+  const double velocity, const lanelet::ConstLanelets & lanelets)
 {
   PathWithLaneId path;
   path.header = waypoints.header;

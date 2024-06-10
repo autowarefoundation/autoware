@@ -78,14 +78,14 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef FREESPACE_PLANNING_ALGORITHMS__REEDS_SHEPP_HPP_
-#define FREESPACE_PLANNING_ALGORITHMS__REEDS_SHEPP_HPP_
+#ifndef AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__REEDS_SHEPP_HPP_
+#define AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__REEDS_SHEPP_HPP_
 
 #include <cassert>
 #include <functional>
 #include <limits>
 
-namespace freespace_planning_algorithms
+namespace autoware::freespace_planning_algorithms
 {
 using ReedsSheppPathSamplingCallback = std::function<int(double q[3], void * user_data)>;
 using ReedsSheppPathTypeCallback = std::function<int(int t, void * user_data)>;
@@ -137,6 +137,6 @@ public:
   /** \brief Turning radius */
   double rho_;
 };
-}  // namespace freespace_planning_algorithms
+}  // namespace autoware::freespace_planning_algorithms
 
-#endif  // FREESPACE_PLANNING_ALGORITHMS__REEDS_SHEPP_HPP_
+#endif  // AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__REEDS_SHEPP_HPP_

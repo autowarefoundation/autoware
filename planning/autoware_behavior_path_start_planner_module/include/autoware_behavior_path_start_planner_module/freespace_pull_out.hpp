@@ -17,9 +17,9 @@
 
 #include "autoware_behavior_path_start_planner_module/pull_out_planner_base.hpp"
 
-#include <freespace_planning_algorithms/abstract_algorithm.hpp>
-#include <freespace_planning_algorithms/astar_search.hpp>
-#include <freespace_planning_algorithms/rrtstar.hpp>
+#include <autoware_freespace_planning_algorithms/abstract_algorithm.hpp>
+#include <autoware_freespace_planning_algorithms/astar_search.hpp>
+#include <autoware_freespace_planning_algorithms/rrtstar.hpp>
 
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
@@ -27,9 +27,9 @@
 
 namespace behavior_path_planner
 {
-using freespace_planning_algorithms::AbstractPlanningAlgorithm;
-using freespace_planning_algorithms::AstarSearch;
-using freespace_planning_algorithms::RRTStar;
+using autoware::freespace_planning_algorithms::AbstractPlanningAlgorithm;
+using autoware::freespace_planning_algorithms::AstarSearch;
+using autoware::freespace_planning_algorithms::RRTStar;
 
 class FreespacePullOut : public PullOutPlannerBase
 {

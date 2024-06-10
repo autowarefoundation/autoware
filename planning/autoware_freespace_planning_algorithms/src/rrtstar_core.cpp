@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "freespace_planning_algorithms/rrtstar_core.hpp"
+#include "autoware_freespace_planning_algorithms/rrtstar_core.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -26,7 +26,7 @@
 
 // cspell: ignore rsspace
 // In this case, RSSpace means "Reeds Shepp state Space"
-namespace rrtstar_core
+namespace autoware::freespace_planning_algorithms::rrtstar_core
 {
 CSpace::CSpace(
   const Pose & lo, const Pose & hi, double r, std::function<bool(Pose)> is_obstacle_free)
@@ -459,4 +459,4 @@ void RRTStar::reconnect(const NodeSharedPtr & node_new, const NodeSharedPtr & no
   }
 }
 
-}  // namespace rrtstar_core
+}  // namespace autoware::freespace_planning_algorithms::rrtstar_core

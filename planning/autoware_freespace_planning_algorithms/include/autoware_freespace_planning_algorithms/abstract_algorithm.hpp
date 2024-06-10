@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
-#define FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
+#ifndef AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
+#define AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
@@ -25,7 +25,7 @@
 
 #include <vector>
 
-namespace freespace_planning_algorithms
+namespace autoware::freespace_planning_algorithms
 {
 int discretizeAngle(const double theta, const int theta_size);
 
@@ -187,6 +187,6 @@ protected:
   PlannerWaypoints waypoints_;
 };
 
-}  // namespace freespace_planning_algorithms
+}  // namespace autoware::freespace_planning_algorithms
 
-#endif  // FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
+#endif  // AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_

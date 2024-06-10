@@ -19,7 +19,7 @@
 
 #include <autoware_behavior_path_planner_common/data_manager.hpp>
 #include <autoware_behavior_path_planner_common/parameters.hpp>
-#include <freespace_planning_algorithms/abstract_algorithm.hpp>
+#include <autoware_freespace_planning_algorithms/abstract_algorithm.hpp>
 
 #include <autoware_planning_msgs/msg/path.hpp>
 #include <autoware_vehicle_msgs/msg/turn_indicators_command.hpp>
@@ -73,8 +73,8 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   const BehaviorPathPlannerParameters & common_parameter);
 
 PathWithLaneId convertWayPointsToPathWithLaneId(
-  const freespace_planning_algorithms::PlannerWaypoints & waypoints, const double velocity,
-  const lanelet::ConstLanelets & lanelets);
+  const autoware::freespace_planning_algorithms::PlannerWaypoints & waypoints,
+  const double velocity, const lanelet::ConstLanelets & lanelets);
 
 std::vector<size_t> getReversingIndices(const PathWithLaneId & path);
 

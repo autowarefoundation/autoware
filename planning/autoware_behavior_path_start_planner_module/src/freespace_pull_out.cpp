@@ -31,7 +31,7 @@ FreespacePullOut::FreespacePullOut(
   const vehicle_info_util::VehicleInfo & vehicle_info)
 : PullOutPlannerBase{node, parameters}, velocity_{parameters.freespace_planner_velocity}
 {
-  freespace_planning_algorithms::VehicleShape vehicle_shape(
+  autoware::freespace_planning_algorithms::VehicleShape vehicle_shape(
     vehicle_info, parameters.vehicle_shape_margin);
   if (parameters.freespace_planner_algorithm == "astar") {
     use_back_ = parameters.astar_parameters.use_back;

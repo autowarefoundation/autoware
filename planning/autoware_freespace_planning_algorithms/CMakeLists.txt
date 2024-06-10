@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(freespace_planning_algorithms)
+project(autoware_freespace_planning_algorithms)
 
 find_package(autoware_cmake REQUIRED)
 find_package(python_cmake_module REQUIRED)
@@ -19,23 +19,23 @@ target_link_libraries(rrtstar_core
   reeds_shepp
 )
 
-ament_auto_add_library(freespace_planning_algorithms SHARED
+ament_auto_add_library(${PROJECT_NAME} SHARED
   src/abstract_algorithm.cpp
   src/astar_search.cpp
   src/rrtstar.cpp
 )
 
-target_link_libraries(freespace_planning_algorithms
+target_link_libraries(${PROJECT_NAME}
   reeds_shepp
 )
 
 if(BUILD_TESTING)
   find_package(ament_cmake_ros REQUIRED)
-  ament_add_ros_isolated_gtest(freespace_planning_algorithms-test
+  ament_add_ros_isolated_gtest(${PROJECT_NAME}-test
     test/src/test_freespace_planning_algorithms.cpp
   )
-  target_link_libraries(freespace_planning_algorithms-test
-    freespace_planning_algorithms
+  target_link_libraries(${PROJECT_NAME}-test
+    ${PROJECT_NAME}
   )
 
   find_package(ament_cmake_ros REQUIRED)
@@ -43,7 +43,7 @@ if(BUILD_TESTING)
     test/src/test_rrtstar_core_informed.cpp
   )
   target_link_libraries(rrtstar_core_informed-test
-    freespace_planning_algorithms
+    ${PROJECT_NAME}
   )
 endif()
 

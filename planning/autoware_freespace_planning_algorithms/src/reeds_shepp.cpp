@@ -78,7 +78,7 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "freespace_planning_algorithms/reeds_shepp.hpp"
+#include "autoware_freespace_planning_algorithms/reeds_shepp.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -87,7 +87,7 @@
 namespace
 {
 // The comments, variable names, etc. use the nomenclature from the Reeds & Shepp paper.
-using freespace_planning_algorithms::ReedsSheppStateSpace;
+using autoware::freespace_planning_algorithms::ReedsSheppStateSpace;
 
 const double pi = M_PI;
 const double twopi = 2. * pi;
@@ -617,7 +617,7 @@ ReedsSheppStateSpace::ReedsSheppPath reedsShepp(double x, double y, double phi)
 }
 }  // namespace
 
-namespace freespace_planning_algorithms
+namespace autoware::freespace_planning_algorithms
 {
 const ReedsSheppStateSpace::ReedsSheppPathSegmentType
   ReedsSheppStateSpace::reedsSheppPathType[18][5] = {
@@ -716,4 +716,4 @@ ReedsSheppStateSpace::StateXYT ReedsSheppStateSpace::interpolate(
   s_out.y = s_out.y * rho_ + s0.y;
   return s_out;
 }
-}  // namespace freespace_planning_algorithms
+}  // namespace autoware::freespace_planning_algorithms

@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_HPP_
-#define FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_HPP_
+#ifndef AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_HPP_
+#define AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_HPP_
 
-#include "freespace_planning_algorithms/abstract_algorithm.hpp"
-#include "freespace_planning_algorithms/rrtstar_core.hpp"
+#include "autoware_freespace_planning_algorithms/abstract_algorithm.hpp"
+#include "autoware_freespace_planning_algorithms/rrtstar_core.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
 #include <vector>
 
-namespace freespace_planning_algorithms
+namespace autoware::freespace_planning_algorithms
 {
 struct RRTStarParam
 {
@@ -69,6 +69,6 @@ private:
   const VehicleShape original_vehicle_shape_;
 };
 
-}  // namespace freespace_planning_algorithms
+}  // namespace autoware::freespace_planning_algorithms
 
-#endif  // FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_HPP_
+#endif  // AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_HPP_

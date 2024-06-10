@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "freespace_planning_algorithms/abstract_algorithm.hpp"
+#include "autoware_freespace_planning_algorithms/abstract_algorithm.hpp"
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/normalization.hpp>
 
 #include <vector>
 
-namespace freespace_planning_algorithms
+namespace autoware::freespace_planning_algorithms
 {
 using tier4_autoware_utils::createQuaternionFromYaw;
 using tier4_autoware_utils::normalizeRadian;
@@ -250,4 +250,4 @@ bool AbstractPlanningAlgorithm::hasObstacleOnTrajectory(
   return false;
 }
 
-}  // namespace freespace_planning_algorithms
+}  // namespace autoware::freespace_planning_algorithms

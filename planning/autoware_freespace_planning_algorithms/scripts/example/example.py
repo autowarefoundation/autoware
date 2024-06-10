@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import freespace_planning_algorithms.astar_search as fp
+import autoware_freespace_planning_algorithms.astar_search as fp
 from geometry_msgs.msg import Pose
 from nav_msgs.msg import OccupancyGrid
 from pyquaternion import Quaternion

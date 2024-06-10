@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_CORE_HPP_
-#define FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_CORE_HPP_
+#ifndef AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_CORE_HPP_
+#define AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_CORE_HPP_
 
-#include "freespace_planning_algorithms/reeds_shepp.hpp"
+#include "autoware_freespace_planning_algorithms/reeds_shepp.hpp"
 
 #include <tf2/utils.h>
 
@@ -28,11 +28,11 @@
 #include <string>
 #include <vector>
 
-namespace rrtstar_core
+namespace autoware::freespace_planning_algorithms::rrtstar_core
 {
-using Path = freespace_planning_algorithms::ReedsSheppStateSpace::ReedsSheppPath;
-using Pose = freespace_planning_algorithms::ReedsSheppStateSpace::StateXYT;
-using ReedsSheppStateSpace = freespace_planning_algorithms::ReedsSheppStateSpace;
+using Path = ReedsSheppStateSpace::ReedsSheppPath;
+using Pose = ReedsSheppStateSpace::StateXYT;
+using ReedsSheppStateSpace = ReedsSheppStateSpace;
 const double inf = std::numeric_limits<double>::infinity();
 
 // cspell: ignore rsspace
@@ -156,6 +156,6 @@ private:
   CSpace cspace_;
 };
 
-}  // namespace rrtstar_core
+}  // namespace autoware::freespace_planning_algorithms::rrtstar_core
 
-#endif  // FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_CORE_HPP_
+#endif  // AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_CORE_HPP_

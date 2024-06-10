@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "freespace_planning_algorithms/abstract_algorithm.hpp"
-#include "freespace_planning_algorithms/astar_search.hpp"
+#include "autoware_freespace_planning_algorithms/abstract_algorithm.hpp"
+#include "autoware_freespace_planning_algorithms/astar_search.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/serialization.hpp>
@@ -24,6 +24,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+namespace autoware::freespace_planning_algorithms
+{
 struct PlannerWaypointsVector
 {
   std::vector<std::vector<double>> waypoints;
@@ -32,7 +34,7 @@ struct PlannerWaypointsVector
 
 class AstarSearchPython : public freespace_planning_algorithms::AstarSearch
 {
-  using freespace_planning_algorithms::AstarSearch::AstarSearch;
+  using AstarSearch::AstarSearch;
 
 public:
   void setMapByte(const std::string & costmap_byte)
@@ -97,7 +99,7 @@ public:
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(freespace_planning_algorithms_pybind, p)
+PYBIND11_MODULE(autoware_freespace_planning_algorithms_pybind, p)
 {
   auto pyPlannerWaypointsVector =
     py::class_<PlannerWaypointsVector>(p, "PlannerWaypointsVector", py::dynamic_attr())
@@ -165,3 +167,4 @@ PYBIND11_MODULE(freespace_planning_algorithms_pybind, p)
     .def("makePlan", &AstarSearchPython::makePlanByte)
     .def("getWaypoints", &AstarSearchPython::getWaypointsAsVector);
 }
+}  // namespace autoware::freespace_planning_algorithms

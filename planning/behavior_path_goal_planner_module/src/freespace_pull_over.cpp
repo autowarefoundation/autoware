@@ -32,7 +32,7 @@ FreespacePullOver::FreespacePullOver(
   velocity_{parameters.freespace_parking_velocity},
   left_side_parking_{parameters.parking_policy == ParkingPolicy::LEFT_SIDE}
 {
-  freespace_planning_algorithms::VehicleShape vehicle_shape(
+  autoware::freespace_planning_algorithms::VehicleShape vehicle_shape(
     vehicle_info, parameters.vehicle_shape_margin);
   if (parameters.freespace_parking_algorithm == "astar") {
     use_back_ = parameters.astar_parameters.use_back;

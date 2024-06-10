@@ -46,8 +46,8 @@ Some selection criteria would be:
 Building the package with ros-test and run tests:
 
 ```sh
-colcon build --packages-select freespace_planning_algorithms
-colcon test --packages-select freespace_planning_algorithms
+colcon build --packages-select autoware_freespace_planning_algorithms
+colcon test --packages-select autoware_freespace_planning_algorithms
 ```
 
 <!-- cspell: ignore fpalgos -->

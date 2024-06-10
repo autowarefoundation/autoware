@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef FREESPACE_PLANNING_ALGORITHMS__ASTAR_SEARCH_HPP_
-#define FREESPACE_PLANNING_ALGORITHMS__ASTAR_SEARCH_HPP_
+#ifndef AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__ASTAR_SEARCH_HPP_
+#define AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__ASTAR_SEARCH_HPP_
 
-#include "freespace_planning_algorithms/abstract_algorithm.hpp"
-#include "freespace_planning_algorithms/reeds_shepp.hpp"
+#include "autoware_freespace_planning_algorithms/abstract_algorithm.hpp"
+#include "autoware_freespace_planning_algorithms/reeds_shepp.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -32,7 +32,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace freespace_planning_algorithms
+namespace autoware::freespace_planning_algorithms
 {
 enum class NodeStatus : uint8_t { None, Open, Closed };
 
@@ -169,6 +169,6 @@ private:
   int x_scale_;
   int y_scale_;
 };
-}  // namespace freespace_planning_algorithms
+}  // namespace autoware::freespace_planning_algorithms
 
-#endif  // FREESPACE_PLANNING_ALGORITHMS__ASTAR_SEARCH_HPP_
+#endif  // AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__ASTAR_SEARCH_HPP_
