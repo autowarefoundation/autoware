@@ -21,10 +21,10 @@ using testing::Each;
 using testing::Ge;
 using testing::Lt;
 
-TEST(UniformRandom, UniformRandom)
+TEST(uniform_random, uniform_random)
 {
   {
-    const std::vector<size_t> random = UniformRandom(4, 0);
+    const std::vector<size_t> random = uniform_random(4, 0);
     ASSERT_EQ(random.size(), static_cast<size_t>(0));
   }
 
@@ -35,7 +35,7 @@ TEST(UniformRandom, UniformRandom)
     const size_t max_exclusive = 4;
 
     for (int i = 0; i < 50; i++) {
-      const std::vector<size_t> random = UniformRandom(4, 10);
+      const std::vector<size_t> random = uniform_random(4, 10);
       ASSERT_EQ(random.size(), 10U);
       ASSERT_THAT(random, Each(AllOf(Ge(min_inclusive), Lt(max_exclusive))));  // in range [0, 4)
     }

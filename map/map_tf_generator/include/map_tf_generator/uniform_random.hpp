@@ -18,7 +18,7 @@
 #include <random>
 #include <vector>
 
-std::vector<size_t> UniformRandom(const size_t max_exclusive, const size_t n)
+std::vector<size_t> inline uniform_random(const size_t max_exclusive, const size_t n)
 {
   std::default_random_engine generator;
   std::uniform_int_distribution<size_t> distribution(0, max_exclusive - 1);

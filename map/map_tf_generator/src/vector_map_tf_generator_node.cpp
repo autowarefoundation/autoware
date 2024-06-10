@@ -29,14 +29,13 @@ class VectorMapTFGeneratorNode : public rclcpp::Node
 {
 public:
   explicit VectorMapTFGeneratorNode(const rclcpp::NodeOptions & options)
-  : Node("vector_map_tf_generator", options)
+  : Node("vector_map_tf_generator", options),
+    map_frame_(declare_parameter<std::string>("map_frame")),
+    viewer_frame_(declare_parameter<std::string>("viewer_frame"))
   {
-    map_frame_ = declare_parameter<std::string>("map_frame");
-    viewer_frame_ = declare_parameter<std::string>("viewer_frame");
-
     sub_ = create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
       "vector_map", rclcpp::QoS{1}.transient_local(),
-      std::bind(&VectorMapTFGeneratorNode::onVectorMap, this, std::placeholders::_1));
+      std::bind(&VectorMapTFGeneratorNode::on_vector_map, this, std::placeholders::_1));
 
     static_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
   }
@@ -49,7 +48,7 @@ private:
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_broadcaster_;
   std::shared_ptr<lanelet::LaneletMap> lanelet_map_ptr_;
 
-  void onVectorMap(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg)
+  void on_vector_map(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg)
   {
     lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
     lanelet::utils::conversion::fromBinMsg(*msg, lanelet_map_ptr_);
@@ -66,27 +65,27 @@ private:
       points_z.push_back(point_z);
     }
     const double coordinate_x =
-      std::accumulate(points_x.begin(), points_x.end(), 0.0) / points_x.size();
+      std::accumulate(points_x.begin(), points_x.end(), 0.0) / static_cast<double>(points_x.size());
     const double coordinate_y =
-      std::accumulate(points_y.begin(), points_y.end(), 0.0) / points_y.size();
+      std::accumulate(points_y.begin(), points_y.end(), 0.0) / static_cast<double>(points_y.size());
     const double coordinate_z =
-      std::accumulate(points_z.begin(), points_z.end(), 0.0) / points_z.size();
+      std::accumulate(points_z.begin(), points_z.end(), 0.0) / static_cast<double>(points_z.size());
 
-    geometry_msgs::msg::TransformStamped static_transformStamped;
-    static_transformStamped.header.stamp = this->now();
-    static_transformStamped.header.frame_id = map_frame_;
-    static_transformStamped.child_frame_id = viewer_frame_;
-    static_transformStamped.transform.translation.x = coordinate_x;
-    static_transformStamped.transform.translation.y = coordinate_y;
-    static_transformStamped.transform.translation.z = coordinate_z;
+    geometry_msgs::msg::TransformStamped static_transform_stamped;
+    static_transform_stamped.header.stamp = this->now();
+    static_transform_stamped.header.frame_id = map_frame_;
+    static_transform_stamped.child_frame_id = viewer_frame_;
+    static_transform_stamped.transform.translation.x = coordinate_x;
+    static_transform_stamped.transform.translation.y = coordinate_y;
+    static_transform_stamped.transform.translation.z = coordinate_z;
     tf2::Quaternion quat;
     quat.setRPY(0, 0, 0);
-    static_transformStamped.transform.rotation.x = quat.x();
-    static_transformStamped.transform.rotation.y = quat.y();
-    static_transformStamped.transform.rotation.z = quat.z();
-    static_transformStamped.transform.rotation.w = quat.w();
+    static_transform_stamped.transform.rotation.x = quat.x();
+    static_transform_stamped.transform.rotation.y = quat.y();
+    static_transform_stamped.transform.rotation.z = quat.z();
+    static_transform_stamped.transform.rotation.w = quat.w();
 
-    static_broadcaster_->sendTransform(static_transformStamped);
+    static_broadcaster_->sendTransform(static_transform_stamped);
 
     RCLCPP_INFO_STREAM(
       get_logger(), "broadcast static tf. map_frame:"
