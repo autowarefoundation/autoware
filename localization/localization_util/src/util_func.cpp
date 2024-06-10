@@ -28,11 +28,11 @@ std_msgs::msg::ColorRGBA exchange_color_crc(double x)
     color.b = 1.0;
     color.g = static_cast<float>(std::sin(x * 2.0 * M_PI));
     color.r = 0;
-  } else if (x > 0.25 && x <= 0.5) {
+  } else if (x <= 0.5) {
     color.b = static_cast<float>(std::sin(x * 2 * M_PI));
     color.g = 1.0;
     color.r = 0;
-  } else if (x > 0.5 && x <= 0.75) {
+  } else if (x <= 0.75) {
     color.b = 0;
     color.g = 1.0;
     color.r = static_cast<float>(-std::sin(x * 2.0 * M_PI));
