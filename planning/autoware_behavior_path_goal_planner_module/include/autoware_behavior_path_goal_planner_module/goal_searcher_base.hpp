@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GOAL_SEARCHER_BASE_HPP_
-#define BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GOAL_SEARCHER_BASE_HPP_
+#ifndef AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GOAL_SEARCHER_BASE_HPP_
+#define AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GOAL_SEARCHER_BASE_HPP_
 
+#include "autoware_behavior_path_goal_planner_module/goal_planner_parameters.hpp"
 #include "autoware_behavior_path_planner_common/data_manager.hpp"
 #include "autoware_behavior_path_planner_common/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
-#include "behavior_path_goal_planner_module/goal_planner_parameters.hpp"
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
@@ -78,4 +78,4 @@ protected:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GOAL_SEARCHER_BASE_HPP_
+#endif  // AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GOAL_SEARCHER_BASE_HPP_

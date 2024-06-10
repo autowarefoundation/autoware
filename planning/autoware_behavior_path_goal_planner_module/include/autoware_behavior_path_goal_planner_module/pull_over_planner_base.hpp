@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_GOAL_PLANNER_MODULE__PULL_OVER_PLANNER_BASE_HPP_
-#define BEHAVIOR_PATH_GOAL_PLANNER_MODULE__PULL_OVER_PLANNER_BASE_HPP_
+#ifndef AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__PULL_OVER_PLANNER_BASE_HPP_
+#define AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__PULL_OVER_PLANNER_BASE_HPP_
 
+#include "autoware_behavior_path_goal_planner_module/goal_planner_parameters.hpp"
 #include "autoware_behavior_path_planner_common/data_manager.hpp"
-#include "behavior_path_goal_planner_module/goal_planner_parameters.hpp"
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
@@ -141,4 +141,4 @@ protected:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_GOAL_PLANNER_MODULE__PULL_OVER_PLANNER_BASE_HPP_
+#endif  // AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__PULL_OVER_PLANNER_BASE_HPP_

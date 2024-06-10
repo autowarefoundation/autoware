@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_goal_planner_module/manager.hpp"
+#include "autoware_behavior_path_goal_planner_module/manager.hpp"
 
-#include "behavior_path_goal_planner_module/util.hpp"
+#include "autoware_behavior_path_goal_planner_module/util.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
 
 #include <rclcpp/rclcpp.hpp>

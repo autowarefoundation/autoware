@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_GOAL_PLANNER_MODULE__SHIFT_PULL_OVER_HPP_
-#define BEHAVIOR_PATH_GOAL_PLANNER_MODULE__SHIFT_PULL_OVER_HPP_
+#ifndef AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__SHIFT_PULL_OVER_HPP_
+#define AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__SHIFT_PULL_OVER_HPP_
 
-#include "behavior_path_goal_planner_module/pull_over_planner_base.hpp"
+#include "autoware_behavior_path_goal_planner_module/pull_over_planner_base.hpp"
 
 #include <autoware_lane_departure_checker/lane_departure_checker.hpp>
 
@@ -59,4 +59,4 @@ protected:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_GOAL_PLANNER_MODULE__SHIFT_PULL_OVER_HPP_
+#endif  // AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__SHIFT_PULL_OVER_HPP_
