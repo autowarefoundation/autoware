@@ -182,7 +182,7 @@ APPROACH --> APPROACH : Approach duration is less than threshold
 ##### Limit velocity with specified jerk and acc limit
 
 The maximum slowdown velocity is calculated in order not to slowdown too much.
-See the [Occlusion Spot document](../behavior_velocity_occlusion_spot_module/#maximum-slowdown-velocity) for more details.
+See the [Occlusion Spot document](../autoware_behavior_velocity_occlusion_spot_module/#maximum-slowdown-velocity) for more details.
 You can choose whether to use this feature by parameter of `slow_down_limit.enable`.
 
 ### Module Parameters
