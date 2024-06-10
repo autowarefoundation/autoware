@@ -386,8 +386,8 @@ def launch_setup(context, *args, **kwargs):
 
     # control validator checker
     control_validator_component = ComposableNode(
-        package="control_validator",
-        plugin="control_validator::ControlValidator",
+        package="autoware_control_validator",
+        plugin="autoware::control_validator::ControlValidator",
         name="control_validator",
         remappings=[
             ("~/input/kinematics", "/localization/kinematic_state"),

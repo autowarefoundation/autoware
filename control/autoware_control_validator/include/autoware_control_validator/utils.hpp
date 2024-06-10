@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CONTROL_VALIDATOR__UTILS_HPP_
-#define CONTROL_VALIDATOR__UTILS_HPP_
+#ifndef AUTOWARE_CONTROL_VALIDATOR__UTILS_HPP_
+#define AUTOWARE_CONTROL_VALIDATOR__UTILS_HPP_
 
 #include <motion_utils/trajectory/conversion.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -24,7 +24,7 @@
 #include <utility>
 #include <vector>
 
-namespace control_validator
+namespace autoware::control_validator
 {
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
@@ -50,6 +50,6 @@ Trajectory alignTrajectoryWithReferenceTrajectory(
 
 double calcMaxLateralDistance(
   const Trajectory & trajectory, const Trajectory & predicted_trajectory);
-}  // namespace control_validator
+}  // namespace autoware::control_validator
 
-#endif  // CONTROL_VALIDATOR__UTILS_HPP_
+#endif  // AUTOWARE_CONTROL_VALIDATOR__UTILS_HPP_

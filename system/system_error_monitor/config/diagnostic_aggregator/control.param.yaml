@@ -70,7 +70,7 @@
 
                 control_validator:
                   type: diagnostic_aggregator/GenericAnalyzer
-                  path: control_validator
+                  path: autoware_control_validator
                   contains: [": control_validation_max_distance_deviation"]
                   timeout: 1.0
 

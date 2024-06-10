@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "control_validator/control_validator.hpp"
+#include "autoware_control_validator/control_validator.hpp"
 
-#include "control_validator/utils.hpp"
+#include "autoware_control_validator/utils.hpp"
 
 #include <memory>
 #include <string>
 #include <utility>
 
-namespace control_validator
+namespace autoware::control_validator
 {
 using diagnostic_msgs::msg::DiagnosticStatus;
 
@@ -61,7 +61,7 @@ void ControlValidator::setupParameters()
   }
 
   try {
-    vehicle_info_ = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
+    vehicle_info_ = autoware::vehicle_info_utils::VehicleInfoUtil(*this).getVehicleInfo();
   } catch (...) {
     RCLCPP_ERROR(get_logger(), "failed to get vehicle info. use default value.");
     vehicle_info_.front_overhang_m = 0.5;
@@ -210,7 +210,7 @@ void ControlValidator::displayStatus()
     "predicted trajectory is too far from planning trajectory!!");
 }
 
-}  // namespace control_validator
+}  // namespace autoware::control_validator
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(control_validator::ControlValidator)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::control_validator::ControlValidator)

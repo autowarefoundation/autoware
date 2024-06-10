@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "control_validator/utils.hpp"
+#include "autoware_control_validator/utils.hpp"
 
 #include <motion_utils/trajectory/interpolation.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
@@ -23,7 +23,7 @@
 #include <utility>
 #include <vector>
 
-namespace control_validator
+namespace autoware::control_validator
 {
 
 void shiftPose(Pose & pose, double longitudinal)
@@ -162,4 +162,4 @@ double calcMaxLateralDistance(
   return max_dist;
 }
 
-}  // namespace control_validator
+}  // namespace autoware::control_validator
