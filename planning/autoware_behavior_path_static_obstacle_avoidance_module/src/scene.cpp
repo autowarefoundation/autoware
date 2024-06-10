@@ -210,6 +210,9 @@ void StaticObstacleAvoidanceModule::fillFundamentalData(
     utils::static_obstacle_avoidance::isWithinLanes(data.current_lanelets, planner_data_);
   const auto red_signal_lane_itr = std::find_if(
     data.current_lanelets.begin(), data.current_lanelets.end(), [&](const auto & lanelet) {
+      if (utils::traffic_light::isTrafficSignalStop({lanelet}, planner_data_)) {
+        return true;
+      }
       const auto next_lanes = planner_data_->route_handler->getNextLanelets(lanelet);
       return utils::traffic_light::isTrafficSignalStop(next_lanes, planner_data_);
     });
@@ -229,6 +232,7 @@ void StaticObstacleAvoidanceModule::fillFundamentalData(
       } else {
         data.drivable_lanes.push_back(
           utils::static_obstacle_avoidance::generateNotExpandedDrivableLanes(lanelet));
+        data.red_signal_lane = lanelet;
       }
     });
 
