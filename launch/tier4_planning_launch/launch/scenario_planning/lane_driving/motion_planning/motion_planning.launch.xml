@@ -146,7 +146,7 @@
     <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
       <composable_node pkg="obstacle_velocity_limiter" plugin="obstacle_velocity_limiter::ObstacleVelocityLimiterNode" name="obstacle_velocity_limiter" namespace="">
         <!-- topic remap -->
-        <remap from="~/input/trajectory" to="path_optimizer/trajectory"/>
+        <remap from="~/input/trajectory" to="motion_velocity_planner/trajectory"/>
         <remap from="~/input/odometry" to="/localization/kinematic_state"/>
         <remap from="~/input/dynamic_obstacles" to="/perception/object_recognition/objects"/>
         <remap from="~/input/occupancy_grid" to="/perception/occupancy_grid_map/map"/>
