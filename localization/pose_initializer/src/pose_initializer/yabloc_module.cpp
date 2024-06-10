@@ -23,9 +23,9 @@ using ServiceException = component_interface_utils::ServiceException;
 using Initialize = localization_interface::Initialize;
 using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
 
-YabLocModule::YabLocModule(rclcpp::Node * node) : logger_(node->get_logger())
+YabLocModule::YabLocModule(rclcpp::Node * node)
+: logger_(node->get_logger()), cli_align_(node->create_client<RequestPoseAlignment>("yabloc_align"))
 {
-  cli_align_ = node->create_client<RequestPoseAlignment>("yabloc_align");
 }
 
 PoseWithCovarianceStamped YabLocModule::align_pose(const PoseWithCovarianceStamped & pose)

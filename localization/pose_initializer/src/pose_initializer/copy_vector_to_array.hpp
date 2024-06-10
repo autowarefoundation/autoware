@@ -40,7 +40,7 @@ template <class NodeT>
 std::array<double, 36> get_covariance_parameter(NodeT * node, const std::string & name)
 {
   const auto parameter = node->template declare_parameter<std::vector<double>>(name);
-  std::array<double, 36> covariance;
+  std::array<double, 36> covariance{};
   copy_vector_to_array(parameter, covariance);
   return covariance;
 }

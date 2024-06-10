@@ -35,7 +35,6 @@ class PoseInitializer : public rclcpp::Node
 {
 public:
   explicit PoseInitializer(const rclcpp::NodeOptions & options);
-  ~PoseInitializer();
 
 private:
   using ServiceException = component_interface_utils::ServiceException;
@@ -48,8 +47,8 @@ private:
   component_interface_utils::Publisher<State>::SharedPtr pub_state_;
   component_interface_utils::Service<Initialize>::SharedPtr srv_initialize_;
   State::Message state_;
-  std::array<double, 36> output_pose_covariance_;
-  std::array<double, 36> gnss_particle_covariance_;
+  std::array<double, 36> output_pose_covariance_{};
+  std::array<double, 36> gnss_particle_covariance_{};
   std::unique_ptr<GnssModule> gnss_;
   std::unique_ptr<NdtModule> ndt_;
   std::unique_ptr<YabLocModule> yabloc_;
