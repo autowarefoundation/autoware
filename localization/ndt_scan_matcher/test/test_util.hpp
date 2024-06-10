@@ -15,13 +15,8 @@
 #ifndef TEST_UTIL_HPP_
 #define TEST_UTIL_HPP_
 
-#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
-#include <sensor_msgs/msg/point_cloud2.hpp>
-
-#include <pcl/filters/voxel_grid.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl_conversions/pcl_conversions.h>
 
 inline pcl::PointCloud<pcl::PointXYZ> make_sample_half_cubic_pcd()
 {

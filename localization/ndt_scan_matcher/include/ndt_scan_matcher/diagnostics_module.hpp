@@ -27,14 +27,14 @@ class DiagnosticsModule
 public:
   DiagnosticsModule(rclcpp::Node * node, const std::string & diagnostic_name);
   void clear();
-  void add_key_value(const diagnostic_msgs::msg::KeyValue & key_value_msg);
+  void addKeyValue(const diagnostic_msgs::msg::KeyValue & key_value_msg);
   template <typename T>
-  void add_key_value(const std::string & key, const T & value);
-  void update_level_and_message(const int8_t level, const std::string & message);
+  void addKeyValue(const std::string & key, const T & value);
+  void updateLevelAndMessage(const int8_t level, const std::string & message);
   void publish(const rclcpp::Time & publish_time_stamp);
 
 private:
-  [[nodiscard]] diagnostic_msgs::msg::DiagnosticArray create_diagnostics_array(
+  diagnostic_msgs::msg::DiagnosticArray createDiagnosticsArray(
     const rclcpp::Time & publish_time_stamp) const;
 
   rclcpp::Clock::SharedPtr clock_;
@@ -44,17 +44,17 @@ private:
 };
 
 template <typename T>
-void DiagnosticsModule::add_key_value(const std::string & key, const T & value)
+void DiagnosticsModule::addKeyValue(const std::string & key, const T & value)
 {
   diagnostic_msgs::msg::KeyValue key_value;
   key_value.key = key;
   key_value.value = std::to_string(value);
-  add_key_value(key_value);
+  addKeyValue(key_value);
 }
 
 template <>
-void DiagnosticsModule::add_key_value(const std::string & key, const std::string & value);
+void DiagnosticsModule::addKeyValue(const std::string & key, const std::string & value);
 template <>
-void DiagnosticsModule::add_key_value(const std::string & key, const bool & value);
+void DiagnosticsModule::addKeyValue(const std::string & key, const bool & value);
 
 #endif  // NDT_SCAN_MATCHER__DIAGNOSTICS_MODULE_HPP_
