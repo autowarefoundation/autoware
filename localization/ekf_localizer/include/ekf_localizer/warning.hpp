@@ -29,7 +29,7 @@ public:
     RCLCPP_WARN(node_->get_logger(), "%s", message.c_str());
   }
 
-  void warnThrottle(const std::string & message, const int duration_milliseconds) const
+  void warn_throttle(const std::string & message, const int duration_milliseconds) const
   {
     RCLCPP_WARN_THROTTLE(
       node_->get_logger(), *(node_->get_clock()),

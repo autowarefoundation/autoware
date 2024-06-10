@@ -18,44 +18,44 @@
 
 constexpr double tolerance = 1e-8;
 
-TEST(SquaredMahalanobis, SmokeTest)
+TEST(squared_mahalanobis, SmokeTest)
 {
   {
     Eigen::Vector2d x(0, 1);
     Eigen::Vector2d y(3, 2);
-    Eigen::Matrix2d C;
-    C << 10, 0, 0, 10;
+    Eigen::Matrix2d c;
+    c << 10, 0, 0, 10;
 
-    EXPECT_NEAR(squaredMahalanobis(x, y, C), 1.0, tolerance);
+    EXPECT_NEAR(squared_mahalanobis(x, y, c), 1.0, tolerance);
   }
 
   {
     Eigen::Vector2d x(4, 1);
     Eigen::Vector2d y(1, 5);
-    Eigen::Matrix2d C;
-    C << 5, 0, 0, 5;
+    Eigen::Matrix2d c;
+    c << 5, 0, 0, 5;
 
-    EXPECT_NEAR(squaredMahalanobis(x, y, C), 5.0, tolerance);
+    EXPECT_NEAR(squared_mahalanobis(x, y, c), 5.0, tolerance);
   }
 }
 
-TEST(Mahalanobis, SmokeTest)
+TEST(mahalanobis, SmokeTest)
 {
   {
     Eigen::Vector2d x(0, 1);
     Eigen::Vector2d y(3, 2);
-    Eigen::Matrix2d C;
-    C << 10, 0, 0, 10;
+    Eigen::Matrix2d c;
+    c << 10, 0, 0, 10;
 
-    EXPECT_NEAR(mahalanobis(x, y, C), 1.0, tolerance);
+    EXPECT_NEAR(mahalanobis(x, y, c), 1.0, tolerance);
   }
 
   {
     Eigen::Vector2d x(4, 1);
     Eigen::Vector2d y(1, 5);
-    Eigen::Matrix2d C;
-    C << 5, 0, 0, 5;
+    Eigen::Matrix2d c;
+    c << 5, 0, 0, 5;
 
-    EXPECT_NEAR(mahalanobis(x, y, C), std::sqrt(5.0), tolerance);
+    EXPECT_NEAR(mahalanobis(x, y, c), std::sqrt(5.0), tolerance);
   }
 }

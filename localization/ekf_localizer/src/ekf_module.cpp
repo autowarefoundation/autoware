@@ -30,58 +30,56 @@
 #include <tf2/utils.h>
 
 // clang-format off
-#define DEBUG_PRINT_MAT(X) {\
-  if (params_.show_debug_info) {std::cout << #X << ": " << X << std::endl;}\
-}
+#define DEBUG_PRINT_MAT(X) {if (params_.show_debug_info) {std::cout << #X << ": " << X << std::endl;}} // NOLINT
 // clang-format on
 
-EKFModule::EKFModule(std::shared_ptr<Warning> warning, const HyperParameters params)
+EKFModule::EKFModule(std::shared_ptr<Warning> warning, const HyperParameters & params)
 : warning_(std::move(warning)),
   dim_x_(6),  // x, y, yaw, yaw_bias, vx, wz
   accumulated_delay_times_(params.extend_state_step, 1.0E15),
   params_(params)
 {
-  Eigen::MatrixXd X = Eigen::MatrixXd::Zero(dim_x_, 1);
-  Eigen::MatrixXd P = Eigen::MatrixXd::Identity(dim_x_, dim_x_) * 1.0E15;  // for x & y
-  P(IDX::YAW, IDX::YAW) = 50.0;                                            // for yaw
+  Eigen::MatrixXd x = Eigen::MatrixXd::Zero(dim_x_, 1);
+  Eigen::MatrixXd p = Eigen::MatrixXd::Identity(dim_x_, dim_x_) * 1.0E15;  // for x & y
+  p(IDX::YAW, IDX::YAW) = 50.0;                                            // for yaw
   if (params_.enable_yaw_bias_estimation) {
-    P(IDX::YAWB, IDX::YAWB) = 50.0;  // for yaw bias
+    p(IDX::YAWB, IDX::YAWB) = 50.0;  // for yaw bias
   }
-  P(IDX::VX, IDX::VX) = 1000.0;  // for vx
-  P(IDX::WZ, IDX::WZ) = 50.0;    // for wz
+  p(IDX::VX, IDX::VX) = 1000.0;  // for vx
+  p(IDX::WZ, IDX::WZ) = 50.0;    // for wz
 
-  kalman_filter_.init(X, P, params_.extend_state_step);
+  kalman_filter_.init(x, p, static_cast<int>(params_.extend_state_step));
 }
 
 void EKFModule::initialize(
   const PoseWithCovariance & initial_pose, const geometry_msgs::msg::TransformStamped & transform)
 {
-  Eigen::MatrixXd X(dim_x_, 1);
-  Eigen::MatrixXd P = Eigen::MatrixXd::Zero(dim_x_, dim_x_);
+  Eigen::MatrixXd x(dim_x_, 1);
+  Eigen::MatrixXd p = Eigen::MatrixXd::Zero(dim_x_, dim_x_);
 
-  X(IDX::X) = initial_pose.pose.pose.position.x + transform.transform.translation.x;
-  X(IDX::Y) = initial_pose.pose.pose.position.y + transform.transform.translation.y;
-  X(IDX::YAW) =
+  x(IDX::X) = initial_pose.pose.pose.position.x + transform.transform.translation.x;
+  x(IDX::Y) = initial_pose.pose.pose.position.y + transform.transform.translation.y;
+  x(IDX::YAW) =
     tf2::getYaw(initial_pose.pose.pose.orientation) + tf2::getYaw(transform.transform.rotation);
-  X(IDX::YAWB) = 0.0;
-  X(IDX::VX) = 0.0;
-  X(IDX::WZ) = 0.0;
+  x(IDX::YAWB) = 0.0;
+  x(IDX::VX) = 0.0;
+  x(IDX::WZ) = 0.0;
 
   using COV_IDX = tier4_autoware_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
-  P(IDX::X, IDX::X) = initial_pose.pose.covariance[COV_IDX::X_X];
-  P(IDX::Y, IDX::Y) = initial_pose.pose.covariance[COV_IDX::Y_Y];
-  P(IDX::YAW, IDX::YAW) = initial_pose.pose.covariance[COV_IDX::YAW_YAW];
+  p(IDX::X, IDX::X) = initial_pose.pose.covariance[COV_IDX::X_X];
+  p(IDX::Y, IDX::Y) = initial_pose.pose.covariance[COV_IDX::Y_Y];
+  p(IDX::YAW, IDX::YAW) = initial_pose.pose.covariance[COV_IDX::YAW_YAW];
 
   if (params_.enable_yaw_bias_estimation) {
-    P(IDX::YAWB, IDX::YAWB) = 0.0001;
+    p(IDX::YAWB, IDX::YAWB) = 0.0001;
   }
-  P(IDX::VX, IDX::VX) = 0.01;
-  P(IDX::WZ, IDX::WZ) = 0.01;
+  p(IDX::VX, IDX::VX) = 0.01;
+  p(IDX::WZ, IDX::WZ) = 0.01;
 
-  kalman_filter_.init(X, P, params_.extend_state_step);
+  kalman_filter_.init(x, p, static_cast<int>(params_.extend_state_step));
 }
 
-geometry_msgs::msg::PoseStamped EKFModule::getCurrentPose(
+geometry_msgs::msg::PoseStamped EKFModule::get_current_pose(
   const rclcpp::Time & current_time, const double z, const double roll, const double pitch,
   bool get_biased_yaw) const
 {
@@ -110,7 +108,8 @@ geometry_msgs::msg::PoseStamped EKFModule::getCurrentPose(
   return current_ekf_pose;
 }
 
-geometry_msgs::msg::TwistStamped EKFModule::getCurrentTwist(const rclcpp::Time & current_time) const
+geometry_msgs::msg::TwistStamped EKFModule::get_current_twist(
+  const rclcpp::Time & current_time) const
 {
   const double vx = kalman_filter_.getXelement(IDX::VX);
   const double wz = kalman_filter_.getXelement(IDX::WZ);
@@ -123,17 +122,17 @@ geometry_msgs::msg::TwistStamped EKFModule::getCurrentTwist(const rclcpp::Time &
   return current_ekf_twist;
 }
 
-std::array<double, 36> EKFModule::getCurrentPoseCovariance() const
+std::array<double, 36> EKFModule::get_current_pose_covariance() const
 {
-  return ekfCovarianceToPoseMessageCovariance(kalman_filter_.getLatestP());
+  return ekf_covariance_to_pose_message_covariance(kalman_filter_.getLatestP());
 }
 
-std::array<double, 36> EKFModule::getCurrentTwistCovariance() const
+std::array<double, 36> EKFModule::get_current_twist_covariance() const
 {
-  return ekfCovarianceToTwistMessageCovariance(kalman_filter_.getLatestP());
+  return ekf_covariance_to_twist_message_covariance(kalman_filter_.getLatestP());
 }
 
-double EKFModule::getYawBias() const
+double EKFModule::get_yaw_bias() const
 {
   return kalman_filter_.getLatestX()(IDX::YAWB);
 }
@@ -153,17 +152,17 @@ size_t EKFModule::find_closest_delay_time_index(double target_value) const
   // If else, take the closest element.
   if (lower == accumulated_delay_times_.begin()) {
     return 0;
-  } else if (lower == accumulated_delay_times_.end()) {
-    return accumulated_delay_times_.size() - 1;
-  } else {
-    // Compare the target with the lower bound and the previous element.
-    auto prev = lower - 1;
-    bool is_closer_to_prev = (target_value - *prev) < (*lower - target_value);
-
-    // Return the index of the closer element.
-    return is_closer_to_prev ? std::distance(accumulated_delay_times_.begin(), prev)
-                             : std::distance(accumulated_delay_times_.begin(), lower);
   }
+  if (lower == accumulated_delay_times_.end()) {
+    return accumulated_delay_times_.size() - 1;
+  }
+  // Compare the target with the lower bound and the previous element.
+  auto prev = lower - 1;
+  bool is_closer_to_prev = (target_value - *prev) < (*lower - target_value);
+
+  // Return the index of the closer element.
+  return is_closer_to_prev ? std::distance(accumulated_delay_times_.begin(), prev)
+                           : std::distance(accumulated_delay_times_.begin(), lower);
 }
 
 void EKFModule::accumulate_delay_time(const double dt)
@@ -180,69 +179,70 @@ void EKFModule::accumulate_delay_time(const double dt)
   }
 }
 
-void EKFModule::predictWithDelay(const double dt)
+void EKFModule::predict_with_delay(const double dt)
 {
-  const Eigen::MatrixXd X_curr = kalman_filter_.getLatestX();
-  const Eigen::MatrixXd P_curr = kalman_filter_.getLatestP();
+  const Eigen::MatrixXd x_curr = kalman_filter_.getLatestX();
+  const Eigen::MatrixXd p_curr = kalman_filter_.getLatestP();
 
   const double proc_cov_vx_d = std::pow(params_.proc_stddev_vx_c * dt, 2.0);
   const double proc_cov_wz_d = std::pow(params_.proc_stddev_wz_c * dt, 2.0);
   const double proc_cov_yaw_d = std::pow(params_.proc_stddev_yaw_c * dt, 2.0);
 
-  const Vector6d X_next = predictNextState(X_curr, dt);
-  const Matrix6d A = createStateTransitionMatrix(X_curr, dt);
-  const Matrix6d Q = processNoiseCovariance(proc_cov_yaw_d, proc_cov_vx_d, proc_cov_wz_d);
-  kalman_filter_.predictWithDelay(X_next, A, Q);
+  const Vector6d x_next = predict_next_state(x_curr, dt);
+  const Matrix6d a = create_state_transition_matrix(x_curr, dt);
+  const Matrix6d q = process_noise_covariance(proc_cov_yaw_d, proc_cov_vx_d, proc_cov_wz_d);
+  kalman_filter_.predictWithDelay(x_next, a, q);
 }
 
-bool EKFModule::measurementUpdatePose(
+bool EKFModule::measurement_update_pose(
   const PoseWithCovariance & pose, const rclcpp::Time & t_curr, EKFDiagnosticInfo & pose_diag_info)
 {
   if (pose.header.frame_id != params_.pose_frame_id) {
-    warning_->warnThrottle(
+    warning_->warn_throttle(
       fmt::format(
         "pose frame_id is %s, but pose_frame is set as %s. They must be same.",
         pose.header.frame_id.c_str(), params_.pose_frame_id.c_str()),
       2000);
   }
-  const Eigen::MatrixXd X_curr = kalman_filter_.getLatestX();
-  DEBUG_PRINT_MAT(X_curr.transpose());
+  const Eigen::MatrixXd x_curr = kalman_filter_.getLatestX();
+  DEBUG_PRINT_MAT(x_curr.transpose());
 
   constexpr int dim_y = 3;  // pos_x, pos_y, yaw, depending on Pose output
 
   /* Calculate delay step */
   double delay_time = (t_curr - pose.header.stamp).seconds() + params_.pose_additional_delay;
   if (delay_time < 0.0) {
-    warning_->warnThrottle(poseDelayTimeWarningMessage(delay_time), 1000);
+    warning_->warn_throttle(pose_delay_time_warning_message(delay_time), 1000);
   }
 
   delay_time = std::max(delay_time, 0.0);
 
-  const int delay_step = static_cast<int>(find_closest_delay_time_index(delay_time));
+  const size_t delay_step = find_closest_delay_time_index(delay_time);
 
   pose_diag_info.delay_time = std::max(delay_time, pose_diag_info.delay_time);
   pose_diag_info.delay_time_threshold = accumulated_delay_times_.back();
   if (delay_step >= params_.extend_state_step) {
     pose_diag_info.is_passed_delay_gate = false;
-    warning_->warnThrottle(
-      poseDelayStepWarningMessage(pose_diag_info.delay_time, pose_diag_info.delay_time_threshold),
+    warning_->warn_throttle(
+      pose_delay_step_warning_message(
+        pose_diag_info.delay_time, pose_diag_info.delay_time_threshold),
       2000);
     return false;
   }
 
   /* Since the kalman filter cannot handle the rotation angle directly,
-    offset the yaw angle so that the difference from the yaw angle that ekf holds internally is less
-    than 2 pi. */
+    offset the yaw angle so that the difference from the yaw angle that ekf holds internally
+    is less than 2 pi. */
   double yaw = tf2::getYaw(pose.pose.pose.orientation);
   const double ekf_yaw = kalman_filter_.getXelement(delay_step * dim_x_ + IDX::YAW);
-  const double yaw_error = normalizeYaw(yaw - ekf_yaw);  // normalize the error not to exceed 2 pi
+  const double yaw_error = normalize_yaw(yaw - ekf_yaw);  // normalize the error not to exceed 2 pi
   yaw = yaw_error + ekf_yaw;
 
   /* Set measurement matrix */
   Eigen::MatrixXd y(dim_y, 1);
   y << pose.pose.pose.position.x, pose.pose.pose.position.y, yaw;
 
-  if (hasNan(y) || hasInf(y)) {
+  if (has_nan(y) || has_inf(y)) {
     warning_->warn(
       "[EKF] pose measurement matrix includes NaN of Inf. ignore update. check pose message.");
     return false;
@@ -252,15 +252,15 @@ bool EKFModule::measurementUpdatePose(
   const Eigen::Vector3d y_ekf(
     kalman_filter_.getXelement(delay_step * dim_x_ + IDX::X),
     kalman_filter_.getXelement(delay_step * dim_x_ + IDX::Y), ekf_yaw);
-  const Eigen::MatrixXd P_curr = kalman_filter_.getLatestP();
-  const Eigen::MatrixXd P_y = P_curr.block(0, 0, dim_y, dim_y);
+  const Eigen::MatrixXd p_curr = kalman_filter_.getLatestP();
+  const Eigen::MatrixXd p_y = p_curr.block(0, 0, dim_y, dim_y);
 
-  const double distance = mahalanobis(y_ekf, y, P_y);
+  const double distance = mahalanobis(y_ekf, y, p_y);
   pose_diag_info.mahalanobis_distance = std::max(distance, pose_diag_info.mahalanobis_distance);
   if (distance > params_.pose_gate_dist) {
     pose_diag_info.is_passed_mahalanobis_gate = false;
-    warning_->warnThrottle(mahalanobisWarningMessage(distance, params_.pose_gate_dist), 2000);
-    warning_->warnThrottle("Ignore the measurement data.", 2000);
+    warning_->warn_throttle(mahalanobis_warning_message(distance, params_.pose_gate_dist), 2000);
+    warning_->warn_throttle("Ignore the measurement data.", 2000);
     return false;
   }
 
@@ -268,21 +268,21 @@ bool EKFModule::measurementUpdatePose(
   DEBUG_PRINT_MAT(y_ekf.transpose());
   DEBUG_PRINT_MAT((y - y_ekf).transpose());
 
-  const Eigen::Matrix<double, 3, 6> C = poseMeasurementMatrix();
-  const Eigen::Matrix3d R =
-    poseMeasurementCovariance(pose.pose.covariance, params_.pose_smoothing_steps);
+  const Eigen::Matrix<double, 3, 6> c = pose_measurement_matrix();
+  const Eigen::Matrix3d r =
+    pose_measurement_covariance(pose.pose.covariance, params_.pose_smoothing_steps);
 
-  kalman_filter_.updateWithDelay(y, C, R, delay_step);
+  kalman_filter_.updateWithDelay(y, c, r, static_cast<int>(delay_step));
 
   // debug
-  const Eigen::MatrixXd X_result = kalman_filter_.getLatestX();
-  DEBUG_PRINT_MAT(X_result.transpose());
-  DEBUG_PRINT_MAT((X_result - X_curr).transpose());
+  const Eigen::MatrixXd x_result = kalman_filter_.getLatestX();
+  DEBUG_PRINT_MAT(x_result.transpose());
+  DEBUG_PRINT_MAT((x_result - x_curr).transpose());
 
   return true;
 }
 
-geometry_msgs::msg::PoseWithCovarianceStamped EKFModule::compensatePoseWithZDelay(
+geometry_msgs::msg::PoseWithCovarianceStamped EKFModule::compensate_pose_with_z_delay(
   const PoseWithCovariance & pose, const double delay_time)
 {
   const auto rpy = tier4_autoware_utils::getRPY(pose.pose.pose.orientation);
@@ -293,34 +293,34 @@ geometry_msgs::msg::PoseWithCovarianceStamped EKFModule::compensatePoseWithZDela
   return pose_with_z_delay;
 }
 
-bool EKFModule::measurementUpdateTwist(
+bool EKFModule::measurement_update_twist(
   const TwistWithCovariance & twist, const rclcpp::Time & t_curr,
   EKFDiagnosticInfo & twist_diag_info)
 {
   if (twist.header.frame_id != "base_link") {
-    warning_->warnThrottle("twist frame_id must be base_link", 2000);
+    warning_->warn_throttle("twist frame_id must be base_link", 2000);
   }
 
-  const Eigen::MatrixXd X_curr = kalman_filter_.getLatestX();
-  DEBUG_PRINT_MAT(X_curr.transpose());
+  const Eigen::MatrixXd x_curr = kalman_filter_.getLatestX();
+  DEBUG_PRINT_MAT(x_curr.transpose());
 
   constexpr int dim_y = 2;  // vx, wz
 
   /* Calculate delay step */
   double delay_time = (t_curr - twist.header.stamp).seconds() + params_.twist_additional_delay;
   if (delay_time < 0.0) {
-    warning_->warnThrottle(twistDelayTimeWarningMessage(delay_time), 1000);
+    warning_->warn_throttle(twist_delay_time_warning_message(delay_time), 1000);
   }
   delay_time = std::max(delay_time, 0.0);
 
-  const int delay_step = static_cast<int>(find_closest_delay_time_index(delay_time));
+  const size_t delay_step = find_closest_delay_time_index(delay_time);
 
   twist_diag_info.delay_time = std::max(delay_time, twist_diag_info.delay_time);
   twist_diag_info.delay_time_threshold = accumulated_delay_times_.back();
   if (delay_step >= params_.extend_state_step) {
     twist_diag_info.is_passed_delay_gate = false;
-    warning_->warnThrottle(
-      twistDelayStepWarningMessage(
+    warning_->warn_throttle(
+      twist_delay_step_warning_message(
         twist_diag_info.delay_time, twist_diag_info.delay_time_threshold),
       2000);
     return false;
@@ -330,7 +330,7 @@ bool EKFModule::measurementUpdateTwist(
   Eigen::MatrixXd y(dim_y, 1);
   y << twist.twist.twist.linear.x, twist.twist.twist.angular.z;
 
-  if (hasNan(y) || hasInf(y)) {
+  if (has_nan(y) || has_inf(y)) {
     warning_->warn(
       "[EKF] twist measurement matrix includes NaN of Inf. ignore update. check twist message.");
     return false;
@@ -339,15 +339,15 @@ bool EKFModule::measurementUpdateTwist(
   const Eigen::Vector2d y_ekf(
     kalman_filter_.getXelement(delay_step * dim_x_ + IDX::VX),
     kalman_filter_.getXelement(delay_step * dim_x_ + IDX::WZ));
-  const Eigen::MatrixXd P_curr = kalman_filter_.getLatestP();
-  const Eigen::MatrixXd P_y = P_curr.block(4, 4, dim_y, dim_y);
+  const Eigen::MatrixXd p_curr = kalman_filter_.getLatestP();
+  const Eigen::MatrixXd p_y = p_curr.block(4, 4, dim_y, dim_y);
 
-  const double distance = mahalanobis(y_ekf, y, P_y);
+  const double distance = mahalanobis(y_ekf, y, p_y);
   twist_diag_info.mahalanobis_distance = std::max(distance, twist_diag_info.mahalanobis_distance);
   if (distance > params_.twist_gate_dist) {
     twist_diag_info.is_passed_mahalanobis_gate = false;
-    warning_->warnThrottle(mahalanobisWarningMessage(distance, params_.twist_gate_dist), 2000);
-    warning_->warnThrottle("Ignore the measurement data.", 2000);
+    warning_->warn_throttle(mahalanobis_warning_message(distance, params_.twist_gate_dist), 2000);
+    warning_->warn_throttle("Ignore the measurement data.", 2000);
     return false;
   }
 
@@ -355,16 +355,16 @@ bool EKFModule::measurementUpdateTwist(
   DEBUG_PRINT_MAT(y_ekf.transpose());
   DEBUG_PRINT_MAT((y - y_ekf).transpose());
 
-  const Eigen::Matrix<double, 2, 6> C = twistMeasurementMatrix();
-  const Eigen::Matrix2d R =
-    twistMeasurementCovariance(twist.twist.covariance, params_.twist_smoothing_steps);
+  const Eigen::Matrix<double, 2, 6> c = twist_measurement_matrix();
+  const Eigen::Matrix2d r =
+    twist_measurement_covariance(twist.twist.covariance, params_.twist_smoothing_steps);
 
-  kalman_filter_.updateWithDelay(y, C, R, delay_step);
+  kalman_filter_.updateWithDelay(y, c, r, static_cast<int>(delay_step));
 
   // debug
-  const Eigen::MatrixXd X_result = kalman_filter_.getLatestX();
-  DEBUG_PRINT_MAT(X_result.transpose());
-  DEBUG_PRINT_MAT((X_result - X_curr).transpose());
+  const Eigen::MatrixXd x_result = kalman_filter_.getLatestX();
+  DEBUG_PRINT_MAT(x_result.transpose());
+  DEBUG_PRINT_MAT((x_result - x_curr).transpose());
 
   return true;
 }

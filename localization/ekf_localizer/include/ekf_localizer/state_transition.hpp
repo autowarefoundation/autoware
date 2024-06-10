@@ -17,10 +17,10 @@
 
 #include "ekf_localizer/matrix_types.hpp"
 
-double normalizeYaw(const double & yaw);
-Vector6d predictNextState(const Vector6d & X_curr, const double dt);
-Matrix6d createStateTransitionMatrix(const Vector6d & X_curr, const double dt);
-Matrix6d processNoiseCovariance(
+double normalize_yaw(const double & yaw);
+Vector6d predict_next_state(const Vector6d & X_curr, const double dt);
+Matrix6d create_state_transition_matrix(const Vector6d & X_curr, const double dt);
+Matrix6d process_noise_covariance(
   const double proc_cov_yaw_d, const double proc_cov_vx_d, const double proc_cov_wz_d);
 
 #endif  // EKF_LOCALIZER__STATE_TRANSITION_HPP_

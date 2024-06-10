@@ -58,17 +58,15 @@ public:
     x_ = 0;
     dev_ = 1e9;
     proc_dev_x_c_ = 0.0;
-    return;
   };
-  void init(const double init_obs, const double obs_dev, const rclcpp::Time time)
+  void init(const double init_obs, const double obs_dev, const rclcpp::Time & time)
   {
     x_ = init_obs;
     dev_ = obs_dev;
     latest_time_ = time;
     initialized_ = true;
-    return;
   };
-  void update(const double obs, const double obs_dev, const rclcpp::Time time)
+  void update(const double obs, const double obs_dev, const rclcpp::Time & time)
   {
     if (!initialized_) {
       init(obs, obs_dev, time);
@@ -86,10 +84,9 @@ public:
     dev_ = (1 - kalman_gain) * dev_;
 
     latest_time_ = time;
-    return;
   };
   void set_proc_dev(const double proc_dev) { proc_dev_x_c_ = proc_dev; }
-  double get_x() const { return x_; }
+  [[nodiscard]] double get_x() const { return x_; }
 
 private:
   bool initialized_;
@@ -158,10 +155,9 @@ private:
   double ekf_dt_;
 
   /* process noise variance for discrete model */
-  double proc_cov_yaw_d_;       //!< @brief  discrete yaw process noise
-  double proc_cov_yaw_bias_d_;  //!< @brief  discrete yaw bias process noise
-  double proc_cov_vx_d_;        //!< @brief  discrete process noise in d_vx=0
-  double proc_cov_wz_d_;        //!< @brief  discrete process noise in d_wz=0
+  double proc_cov_yaw_d_;  //!< @brief  discrete yaw process noise
+  double proc_cov_vx_d_;   //!< @brief  discrete process noise in d_vx=0
+  double proc_cov_wz_d_;   //!< @brief  discrete process noise in d_wz=0
 
   bool is_activated_;
 
@@ -174,44 +170,45 @@ private:
   /**
    * @brief computes update & prediction of EKF for each ekf_dt_[s] time
    */
-  void timerCallback();
+  void timer_callback();
 
   /**
    * @brief publish tf for tf_rate [Hz]
    */
-  void timerTFCallback();
+  void timer_tf_callback();
 
   /**
-   * @brief set poseWithCovariance measurement
+   * @brief set pose with covariance measurement
    */
-  void callbackPoseWithCovariance(geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
+  void callback_pose_with_covariance(geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
 
   /**
-   * @brief set twistWithCovariance measurement
+   * @brief set twist with covariance measurement
    */
-  void callbackTwistWithCovariance(geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg);
+  void callback_twist_with_covariance(
+    geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg);
 
   /**
    * @brief set initial_pose to current EKF pose
    */
-  void callbackInitialPose(geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
+  void callback_initial_pose(geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
 
   /**
    * @brief update predict frequency
    */
-  void updatePredictFrequency(const rclcpp::Time & current_time);
+  void update_predict_frequency(const rclcpp::Time & current_time);
 
   /**
    * @brief get transform from frame_id
    */
-  bool getTransformFromTF(
+  bool get_transform_from_tf(
     std::string parent_frame, std::string child_frame,
     geometry_msgs::msg::TransformStamped & transform);
 
   /**
    * @brief publish current EKF estimation result
    */
-  void publishEstimateResult(
+  void publish_estimate_result(
     const geometry_msgs::msg::PoseStamped & current_ekf_pose,
     const geometry_msgs::msg::PoseStamped & current_biased_ekf_pose,
     const geometry_msgs::msg::TwistStamped & current_ekf_twist);
@@ -219,23 +216,23 @@ private:
   /**
    * @brief publish diagnostics message
    */
-  void publishDiagnostics(const rclcpp::Time & current_time);
+  void publish_diagnostics(const rclcpp::Time & current_time);
 
   /**
-   * @brief update simple1DFilter
+   * @brief update simple 1d filter
    */
-  void updateSimple1DFilters(
+  void update_simple_1d_filters(
     const geometry_msgs::msg::PoseWithCovarianceStamped & pose, const size_t smoothing_step);
 
   /**
-   * @brief initialize simple1DFilter
+   * @brief initialize simple 1d filter
    */
-  void initSimple1DFilters(const geometry_msgs::msg::PoseWithCovarianceStamped & pose);
+  void init_simple_1d_filters(const geometry_msgs::msg::PoseWithCovarianceStamped & pose);
 
   /**
    * @brief trigger node
    */
-  void serviceTriggerNode(
+  void service_trigger_node(
     const std_srvs::srv::SetBool::Request::SharedPtr req,
     std_srvs::srv::SetBool::Response::SharedPtr res);
 

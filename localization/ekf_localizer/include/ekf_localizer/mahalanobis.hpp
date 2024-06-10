@@ -18,7 +18,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-double squaredMahalanobis(
+double squared_mahalanobis(
   const Eigen::VectorXd & x, const Eigen::VectorXd & y, const Eigen::MatrixXd & C);
 
 double mahalanobis(const Eigen::VectorXd & x, const Eigen::VectorXd & y, const Eigen::MatrixXd & C);

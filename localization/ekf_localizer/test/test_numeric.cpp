@@ -18,30 +18,30 @@
 
 #include <gtest/gtest.h>
 
-TEST(Numeric, HasNan)
+TEST(Numeric, has_nan)
 {
   const Eigen::VectorXd empty(0);
   const double inf = std::numeric_limits<double>::infinity();
   const double nan = std::nan("");
 
-  EXPECT_FALSE(hasNan(empty));
-  EXPECT_FALSE(hasNan(Eigen::Vector3d(0., 0., 1.)));
-  EXPECT_FALSE(hasNan(Eigen::Vector3d(1e16, 0., 1.)));
-  EXPECT_FALSE(hasNan(Eigen::Vector3d(0., 1., inf)));
+  EXPECT_FALSE(has_nan(empty));
+  EXPECT_FALSE(has_nan(Eigen::Vector3d(0., 0., 1.)));
+  EXPECT_FALSE(has_nan(Eigen::Vector3d(1e16, 0., 1.)));
+  EXPECT_FALSE(has_nan(Eigen::Vector3d(0., 1., inf)));
 
-  EXPECT_TRUE(hasNan(Eigen::Vector3d(nan, 1., 0.)));
+  EXPECT_TRUE(has_nan(Eigen::Vector3d(nan, 1., 0.)));
 }
 
-TEST(Numeric, HasInf)
+TEST(Numeric, has_inf)
 {
   const Eigen::VectorXd empty(0);
   const double inf = std::numeric_limits<double>::infinity();
   const double nan = std::nan("");
 
-  EXPECT_FALSE(hasInf(empty));
-  EXPECT_FALSE(hasInf(Eigen::Vector3d(0., 0., 1.)));
-  EXPECT_FALSE(hasInf(Eigen::Vector3d(1e16, 0., 1.)));
-  EXPECT_FALSE(hasInf(Eigen::Vector3d(nan, 1., 0.)));
+  EXPECT_FALSE(has_inf(empty));
+  EXPECT_FALSE(has_inf(Eigen::Vector3d(0., 0., 1.)));
+  EXPECT_FALSE(has_inf(Eigen::Vector3d(1e16, 0., 1.)));
+  EXPECT_FALSE(has_inf(Eigen::Vector3d(nan, 1., 0.)));
 
-  EXPECT_TRUE(hasInf(Eigen::Vector3d(0., 1., inf)));
+  EXPECT_TRUE(has_inf(Eigen::Vector3d(0., 1., inf)));
 }

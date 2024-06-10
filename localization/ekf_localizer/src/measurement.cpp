@@ -17,40 +17,40 @@
 #include "ekf_localizer/state_index.hpp"
 #include "tier4_autoware_utils/ros/msg_covariance.hpp"
 
-Eigen::Matrix<double, 3, 6> poseMeasurementMatrix()
+Eigen::Matrix<double, 3, 6> pose_measurement_matrix()
 {
-  Eigen::Matrix<double, 3, 6> C = Eigen::Matrix<double, 3, 6>::Zero();
-  C(0, IDX::X) = 1.0;    // for pos x
-  C(1, IDX::Y) = 1.0;    // for pos y
-  C(2, IDX::YAW) = 1.0;  // for yaw
-  return C;
+  Eigen::Matrix<double, 3, 6> c = Eigen::Matrix<double, 3, 6>::Zero();
+  c(0, IDX::X) = 1.0;    // for pos x
+  c(1, IDX::Y) = 1.0;    // for pos y
+  c(2, IDX::YAW) = 1.0;  // for yaw
+  return c;
 }
 
-Eigen::Matrix<double, 2, 6> twistMeasurementMatrix()
+Eigen::Matrix<double, 2, 6> twist_measurement_matrix()
 {
-  Eigen::Matrix<double, 2, 6> C = Eigen::Matrix<double, 2, 6>::Zero();
-  C(0, IDX::VX) = 1.0;  // for vx
-  C(1, IDX::WZ) = 1.0;  // for wz
-  return C;
+  Eigen::Matrix<double, 2, 6> c = Eigen::Matrix<double, 2, 6>::Zero();
+  c(0, IDX::VX) = 1.0;  // for vx
+  c(1, IDX::WZ) = 1.0;  // for wz
+  return c;
 }
 
-Eigen::Matrix3d poseMeasurementCovariance(
+Eigen::Matrix3d pose_measurement_covariance(
   const std::array<double, 36ul> & covariance, const size_t smoothing_step)
 {
-  Eigen::Matrix3d R;
+  Eigen::Matrix3d r;
   using COV_IDX = tier4_autoware_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
-  R << covariance.at(COV_IDX::X_X), covariance.at(COV_IDX::X_Y), covariance.at(COV_IDX::X_YAW),
+  r << covariance.at(COV_IDX::X_X), covariance.at(COV_IDX::X_Y), covariance.at(COV_IDX::X_YAW),
     covariance.at(COV_IDX::Y_X), covariance.at(COV_IDX::Y_Y), covariance.at(COV_IDX::Y_YAW),
     covariance.at(COV_IDX::YAW_X), covariance.at(COV_IDX::YAW_Y), covariance.at(COV_IDX::YAW_YAW);
-  return R * static_cast<double>(smoothing_step);
+  return r * static_cast<double>(smoothing_step);
 }
 
-Eigen::Matrix2d twistMeasurementCovariance(
+Eigen::Matrix2d twist_measurement_covariance(
   const std::array<double, 36ul> & covariance, const size_t smoothing_step)
 {
-  Eigen::Matrix2d R;
+  Eigen::Matrix2d r;
   using COV_IDX = tier4_autoware_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
-  R << covariance.at(COV_IDX::X_X), covariance.at(COV_IDX::X_YAW), covariance.at(COV_IDX::YAW_X),
+  r << covariance.at(COV_IDX::X_X), covariance.at(COV_IDX::X_YAW), covariance.at(COV_IDX::YAW_X),
     covariance.at(COV_IDX::YAW_YAW);
-  return R * static_cast<double>(smoothing_step);
+  return r * static_cast<double>(smoothing_step);
 }

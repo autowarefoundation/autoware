@@ -19,12 +19,12 @@
 
 #include <cmath>
 
-inline bool hasInf(const Eigen::MatrixXd & v)
+inline bool has_inf(const Eigen::MatrixXd & v)
 {
   return v.array().isInf().any();
 }
 
-inline bool hasNan(const Eigen::MatrixXd & v)
+inline bool has_nan(const Eigen::MatrixXd & v)
 {
   return v.array().isNaN().any();
 }

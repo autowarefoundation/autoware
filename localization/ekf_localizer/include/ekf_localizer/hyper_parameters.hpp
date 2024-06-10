@@ -68,14 +68,14 @@ public:
   const double tf_rate_;
   const bool publish_tf_;
   const bool enable_yaw_bias_estimation;
-  const int extend_state_step;
+  const size_t extend_state_step;
   const std::string pose_frame_id;
   const double pose_additional_delay;
   const double pose_gate_dist;
-  const int pose_smoothing_steps;
+  const size_t pose_smoothing_steps;
   const double twist_additional_delay;
   const double twist_gate_dist;
-  const int twist_smoothing_steps;
+  const size_t twist_smoothing_steps;
   const double proc_stddev_vx_c;   //!< @brief  vx process noise
   const double proc_stddev_wz_c;   //!< @brief  wz process noise
   const double proc_stddev_yaw_c;  //!< @brief  yaw process noise

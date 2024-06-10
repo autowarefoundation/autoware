@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-diagnostic_msgs::msg::DiagnosticStatus checkProcessActivated(const bool is_activated)
+diagnostic_msgs::msg::DiagnosticStatus check_process_activated(const bool is_activated)
 {
   diagnostic_msgs::msg::DiagnosticStatus stat;
 
@@ -38,7 +38,7 @@ diagnostic_msgs::msg::DiagnosticStatus checkProcessActivated(const bool is_activ
   return stat;
 }
 
-diagnostic_msgs::msg::DiagnosticStatus checkMeasurementUpdated(
+diagnostic_msgs::msg::DiagnosticStatus check_measurement_updated(
   const std::string & measurement_type, const size_t no_update_count,
   const size_t no_update_count_threshold_warn, const size_t no_update_count_threshold_error)
 {
@@ -69,7 +69,7 @@ diagnostic_msgs::msg::DiagnosticStatus checkMeasurementUpdated(
   return stat;
 }
 
-diagnostic_msgs::msg::DiagnosticStatus checkMeasurementQueueSize(
+diagnostic_msgs::msg::DiagnosticStatus check_measurement_queue_size(
   const std::string & measurement_type, const size_t queue_size)
 {
   diagnostic_msgs::msg::DiagnosticStatus stat;
@@ -85,7 +85,7 @@ diagnostic_msgs::msg::DiagnosticStatus checkMeasurementQueueSize(
   return stat;
 }
 
-diagnostic_msgs::msg::DiagnosticStatus checkMeasurementDelayGate(
+diagnostic_msgs::msg::DiagnosticStatus check_measurement_delay_gate(
   const std::string & measurement_type, const bool is_passed_delay_gate, const double delay_time,
   const double delay_time_threshold)
 {
@@ -112,7 +112,7 @@ diagnostic_msgs::msg::DiagnosticStatus checkMeasurementDelayGate(
   return stat;
 }
 
-diagnostic_msgs::msg::DiagnosticStatus checkMeasurementMahalanobisGate(
+diagnostic_msgs::msg::DiagnosticStatus check_measurement_mahalanobis_gate(
   const std::string & measurement_type, const bool is_passed_mahalanobis_gate,
   const double mahalanobis_distance, const double mahalanobis_distance_threshold)
 {
@@ -141,7 +141,7 @@ diagnostic_msgs::msg::DiagnosticStatus checkMeasurementMahalanobisGate(
 
 // The highest level within the stat_array will be reflected in the merged_stat.
 // When all stat_array entries are 'OK,' the message of merged_stat will be "OK"
-diagnostic_msgs::msg::DiagnosticStatus mergeDiagnosticStatus(
+diagnostic_msgs::msg::DiagnosticStatus merge_diagnostic_status(
   const std::vector<diagnostic_msgs::msg::DiagnosticStatus> & stat_array)
 {
   diagnostic_msgs::msg::DiagnosticStatus merged_stat;

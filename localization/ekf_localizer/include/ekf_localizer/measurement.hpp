@@ -17,11 +17,11 @@
 
 #include <Eigen/Core>
 
-Eigen::Matrix<double, 3, 6> poseMeasurementMatrix();
-Eigen::Matrix<double, 2, 6> twistMeasurementMatrix();
-Eigen::Matrix3d poseMeasurementCovariance(
+Eigen::Matrix<double, 3, 6> pose_measurement_matrix();
+Eigen::Matrix<double, 2, 6> twist_measurement_matrix();
+Eigen::Matrix3d pose_measurement_covariance(
   const std::array<double, 36ul> & covariance, const size_t smoothing_step);
-Eigen::Matrix2d twistMeasurementCovariance(
+Eigen::Matrix2d twist_measurement_covariance(
   const std::array<double, 36ul> & covariance, const size_t smoothing_step);
 
 #endif  // EKF_LOCALIZER__MEASUREMENT_HPP_

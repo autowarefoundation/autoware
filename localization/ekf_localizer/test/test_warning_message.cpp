@@ -18,45 +18,45 @@
 
 #include <gtest/gtest.h>
 
-TEST(PoseDelayStepWarningMessage, SmokeTest)
+TEST(pose_delay_step_warning_message, SmokeTest)
 {
   EXPECT_STREQ(
-    poseDelayStepWarningMessage(6.0, 4.0).c_str(),
+    pose_delay_step_warning_message(6.0, 4.0).c_str(),
     "Pose delay exceeds the compensation limit, ignored. "
     "delay: 6.000[s], limit: 4.000[s]");
 }
 
-TEST(TwistDelayStepWarningMessage, SmokeTest)
+TEST(twist_delay_step_warning_message, SmokeTest)
 {
   EXPECT_STREQ(
-    twistDelayStepWarningMessage(10.0, 6.0).c_str(),
+    twist_delay_step_warning_message(10.0, 6.0).c_str(),
     "Twist delay exceeds the compensation limit, ignored. "
     "delay: 10.000[s], limit: 6.000[s]");
 }
 
-TEST(PoseDelayTimeWarningMessage, SmokeTest)
+TEST(pose_delay_time_warning_message, SmokeTest)
 {
   EXPECT_STREQ(
-    poseDelayTimeWarningMessage(-1.0).c_str(),
+    pose_delay_time_warning_message(-1.0).c_str(),
     "Pose time stamp is inappropriate, set delay to 0[s]. delay = -1.000");
   EXPECT_STREQ(
-    poseDelayTimeWarningMessage(-0.4).c_str(),
+    pose_delay_time_warning_message(-0.4).c_str(),
     "Pose time stamp is inappropriate, set delay to 0[s]. delay = -0.400");
 }
 
-TEST(TwistDelayTimeWarningMessage, SmokeTest)
+TEST(twist_delay_time_warning_message, SmokeTest)
 {
   EXPECT_STREQ(
-    twistDelayTimeWarningMessage(-1.0).c_str(),
+    twist_delay_time_warning_message(-1.0).c_str(),
     "Twist time stamp is inappropriate, set delay to 0[s]. delay = -1.000");
   EXPECT_STREQ(
-    twistDelayTimeWarningMessage(-0.4).c_str(),
+    twist_delay_time_warning_message(-0.4).c_str(),
     "Twist time stamp is inappropriate, set delay to 0[s]. delay = -0.400");
 }
 
-TEST(MahalanobisWarningMessage, SmokeTest)
+TEST(mahalanobis_warning_message, SmokeTest)
 {
   EXPECT_STREQ(
-    mahalanobisWarningMessage(1.0, 0.5).c_str(),
+    mahalanobis_warning_message(1.0, 0.5).c_str(),
     "The Mahalanobis distance 1.0000 is over the limit 0.5000.");
 }
