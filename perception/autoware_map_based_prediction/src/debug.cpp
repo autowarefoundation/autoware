@@ -15,7 +15,7 @@
 #include "map_based_prediction/map_based_prediction_node.hpp"
 #include "tier4_autoware_utils/ros/marker_helper.hpp"
 
-namespace map_based_prediction
+namespace autoware::map_based_prediction
 {
 visualization_msgs::msg::Marker MapBasedPredictionNode::getDebugMarker(
   const TrackedObject & object, const Maneuver & maneuver, const size_t obj_num)
@@ -46,4 +46,4 @@ visualization_msgs::msg::Marker MapBasedPredictionNode::getDebugMarker(
 
   return marker;
 }
-}  // namespace map_based_prediction
+}  // namespace autoware::map_based_prediction

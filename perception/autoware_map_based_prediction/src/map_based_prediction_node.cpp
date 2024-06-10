@@ -50,7 +50,7 @@
 #include <functional>
 #include <limits>
 
-namespace map_based_prediction
+namespace autoware::map_based_prediction
 {
 
 namespace
@@ -2495,7 +2495,7 @@ bool MapBasedPredictionNode::calcIntentionToCrossWithTrafficSignal(
   return true;
 }
 
-}  // namespace map_based_prediction
+}  // namespace autoware::map_based_prediction
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(map_based_prediction::MapBasedPredictionNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::map_based_prediction::MapBasedPredictionNode)

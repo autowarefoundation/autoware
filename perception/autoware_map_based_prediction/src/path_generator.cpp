@@ -20,7 +20,7 @@
 
 #include <algorithm>
 
-namespace map_based_prediction
+namespace autoware::map_based_prediction
 {
 PathGenerator::PathGenerator(
   const double sampling_time_interval, const double min_crosswalk_user_velocity)
@@ -487,4 +487,4 @@ FrenetPoint PathGenerator::getFrenetPoint(
 
   return frenet_point;
 }
-}  // namespace map_based_prediction
+}  // namespace autoware::map_based_prediction

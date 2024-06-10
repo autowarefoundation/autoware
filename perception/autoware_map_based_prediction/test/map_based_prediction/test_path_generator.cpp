@@ -54,8 +54,9 @@ TEST(PathGenerator, test_generatePathForNonVehicleObject)
   const double prediction_time_horizon = 10.0;
   const double prediction_sampling_time_interval = 0.5;
   const double min_crosswalk_user_velocity = 0.1;
-  const map_based_prediction::PathGenerator path_generator = map_based_prediction::PathGenerator(
-    prediction_sampling_time_interval, min_crosswalk_user_velocity);
+  const autoware::map_based_prediction::PathGenerator path_generator =
+    autoware::map_based_prediction::PathGenerator(
+      prediction_sampling_time_interval, min_crosswalk_user_velocity);
 
   // Generate pedestrian object
   TrackedObject tracked_object = generate_static_object(ObjectClassification::PEDESTRIAN);
@@ -77,8 +78,9 @@ TEST(PathGenerator, test_generatePathForLowSpeedVehicle)
   const double prediction_time_horizon = 10.0;
   const double prediction_sampling_time_interval = 0.5;
   const double min_crosswalk_user_velocity = 0.1;
-  const map_based_prediction::PathGenerator path_generator = map_based_prediction::PathGenerator(
-    prediction_sampling_time_interval, min_crosswalk_user_velocity);
+  const autoware::map_based_prediction::PathGenerator path_generator =
+    autoware::map_based_prediction::PathGenerator(
+      prediction_sampling_time_interval, min_crosswalk_user_velocity);
 
   // Generate dummy object
   TrackedObject tracked_object = generate_static_object(ObjectClassification::CAR);
@@ -100,8 +102,9 @@ TEST(PathGenerator, test_generatePathForOffLaneVehicle)
   const double prediction_time_horizon = 10.0;
   const double prediction_sampling_time_interval = 0.5;
   const double min_crosswalk_user_velocity = 0.1;
-  const map_based_prediction::PathGenerator path_generator = map_based_prediction::PathGenerator(
-    prediction_sampling_time_interval, min_crosswalk_user_velocity);
+  const autoware::map_based_prediction::PathGenerator path_generator =
+    autoware::map_based_prediction::PathGenerator(
+      prediction_sampling_time_interval, min_crosswalk_user_velocity);
 
   // Generate dummy object
   TrackedObject tracked_object = generate_static_object(ObjectClassification::CAR);
@@ -123,14 +126,15 @@ TEST(PathGenerator, test_generatePathForOnLaneVehicle)
   const double lateral_control_time_horizon = 5.0;
   const double prediction_sampling_time_interval = 0.5;
   const double min_crosswalk_user_velocity = 0.1;
-  const map_based_prediction::PathGenerator path_generator = map_based_prediction::PathGenerator(
-    prediction_sampling_time_interval, min_crosswalk_user_velocity);
+  const autoware::map_based_prediction::PathGenerator path_generator =
+    autoware::map_based_prediction::PathGenerator(
+      prediction_sampling_time_interval, min_crosswalk_user_velocity);
 
   // Generate dummy object
   TrackedObject tracked_object = generate_static_object(ObjectClassification::CAR);
 
   // Generate reference path
-  map_based_prediction::PosePath ref_paths;
+  autoware::map_based_prediction::PosePath ref_paths;
   geometry_msgs::msg::Pose pose;
   pose.position.x = 0.0;
   pose.position.y = 0.0;
@@ -154,14 +158,15 @@ TEST(PathGenerator, test_generatePathForCrosswalkUser)
   const double prediction_time_horizon = 10.0;
   const double prediction_sampling_time_interval = 0.5;
   const double min_crosswalk_user_velocity = 0.1;
-  const map_based_prediction::PathGenerator path_generator = map_based_prediction::PathGenerator(
-    prediction_sampling_time_interval, min_crosswalk_user_velocity);
+  const autoware::map_based_prediction::PathGenerator path_generator =
+    autoware::map_based_prediction::PathGenerator(
+      prediction_sampling_time_interval, min_crosswalk_user_velocity);
 
   // Generate dummy object
   TrackedObject tracked_object = generate_static_object(ObjectClassification::PEDESTRIAN);
 
   // Generate dummy crosswalk
-  map_based_prediction::CrosswalkEdgePoints reachable_crosswalk;
+  autoware::map_based_prediction::CrosswalkEdgePoints reachable_crosswalk;
   reachable_crosswalk.front_center_point << 0.0, 0.0;
   reachable_crosswalk.front_right_point << 1.0, 0.0;
   reachable_crosswalk.front_left_point << -1.0, 0.0;
@@ -185,8 +190,9 @@ TEST(PathGenerator, test_generatePathToTargetPoint)
   // Generate Path generator
   const double prediction_sampling_time_interval = 0.5;
   const double min_crosswalk_user_velocity = 0.1;
-  const map_based_prediction::PathGenerator path_generator = map_based_prediction::PathGenerator(
-    prediction_sampling_time_interval, min_crosswalk_user_velocity);
+  const autoware::map_based_prediction::PathGenerator path_generator =
+    autoware::map_based_prediction::PathGenerator(
+      prediction_sampling_time_interval, min_crosswalk_user_velocity);
 
   // Generate dummy object
   TrackedObject tracked_object = generate_static_object(ObjectClassification::CAR);

@@ -51,7 +51,7 @@
 #include <utility>
 #include <vector>
 
-namespace map_based_prediction
+namespace autoware::map_based_prediction
 {
 struct LateralKinematicsToLanelet
 {
@@ -416,6 +416,6 @@ private:
     return true;
   };
 };
-}  // namespace map_based_prediction
+}  // namespace autoware::map_based_prediction
 
 #endif  // MAP_BASED_PREDICTION__MAP_BASED_PREDICTION_NODE_HPP_

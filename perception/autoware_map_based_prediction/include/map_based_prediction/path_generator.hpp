@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-namespace map_based_prediction
+namespace autoware::map_based_prediction
 {
 using autoware_perception_msgs::msg::ObjectClassification;
 using autoware_perception_msgs::msg::PredictedObject;
@@ -145,6 +145,6 @@ private:
     const TrackedObject & object, const PosePath & ref_path, const double duration,
     const double speed_limit = 0.0) const;
 };
-}  // namespace map_based_prediction
+}  // namespace autoware::map_based_prediction
 
 #endif  // MAP_BASED_PREDICTION__PATH_GENERATOR_HPP_

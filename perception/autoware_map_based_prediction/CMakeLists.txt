@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(map_based_prediction)
+project(autoware_map_based_prediction)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -22,7 +22,7 @@ ament_auto_add_library(map_based_prediction_node SHARED
 target_link_libraries(map_based_prediction_node glog::glog)
 
 rclcpp_components_register_node(map_based_prediction_node
-  PLUGIN "map_based_prediction::MapBasedPredictionNode"
+  PLUGIN "autoware::map_based_prediction::MapBasedPredictionNode"
   EXECUTABLE map_based_prediction
 )
 
