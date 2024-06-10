@@ -12,18 +12,18 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-#ifndef RAW_VEHICLE_CMD_CONVERTER__STEER_MAP_HPP_
-#define RAW_VEHICLE_CMD_CONVERTER__STEER_MAP_HPP_
+#ifndef AUTOWARE_RAW_VEHICLE_CMD_CONVERTER__STEER_MAP_HPP_
+#define AUTOWARE_RAW_VEHICLE_CMD_CONVERTER__STEER_MAP_HPP_
 
-#include "raw_vehicle_cmd_converter/csv_loader.hpp"
-#include "raw_vehicle_cmd_converter/pid.hpp"
+#include "autoware_raw_vehicle_cmd_converter/csv_loader.hpp"
+#include "autoware_raw_vehicle_cmd_converter/pid.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
 #include <string>
 #include <vector>
 
-namespace raw_vehicle_cmd_converter
+namespace autoware::raw_vehicle_cmd_converter
 {
 class SteerMap
 {
@@ -36,8 +36,9 @@ private:
   std::vector<double> steer_index_;
   std::vector<double> output_index_;
   std::vector<std::vector<double>> steer_map_;
-  rclcpp::Logger logger_{rclcpp::get_logger("raw_vehicle_cmd_converter").get_child("steer_map")};
+  rclcpp::Logger logger_{
+    rclcpp::get_logger("autoware_raw_vehicle_cmd_converter").get_child("steer_map")};
 };
-}  // namespace raw_vehicle_cmd_converter
+}  // namespace autoware::raw_vehicle_cmd_converter
 
-#endif  // RAW_VEHICLE_CMD_CONVERTER__STEER_MAP_HPP_
+#endif  // AUTOWARE_RAW_VEHICLE_CMD_CONVERTER__STEER_MAP_HPP_

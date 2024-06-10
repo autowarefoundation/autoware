@@ -12,12 +12,12 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-#include "raw_vehicle_cmd_converter/pid.hpp"
+#include "autoware_raw_vehicle_cmd_converter/pid.hpp"
 
 #include <algorithm>
 #include <vector>
 
-namespace raw_vehicle_cmd_converter
+namespace autoware::raw_vehicle_cmd_converter
 {
 
 double PIDController::calculateFB(
@@ -100,4 +100,4 @@ void PIDController::reset()
   prev_error_ = 0;
   is_first_time_ = true;
 }
-}  // namespace raw_vehicle_cmd_converter
+}  // namespace autoware::raw_vehicle_cmd_converter

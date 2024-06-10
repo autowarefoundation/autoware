@@ -5,9 +5,9 @@
   <arg name="input_steering" default="/vehicle/status/steering_status"/>
   <arg name="output_actuation_cmd" default="/control/command/actuation_cmd"/>
   <!-- Parameter -->
-  <arg name="config_file" default="$(find-pkg-share raw_vehicle_cmd_converter)/config/raw_vehicle_cmd_converter.param.yaml"/>
+  <arg name="config_file" default="$(find-pkg-share autoware_raw_vehicle_cmd_converter)/config/raw_vehicle_cmd_converter.param.yaml"/>
 
-  <node pkg="raw_vehicle_cmd_converter" exec="raw_vehicle_cmd_converter_node" name="raw_vehicle_cmd_converter" output="screen">
+  <node pkg="autoware_raw_vehicle_cmd_converter" exec="autoware_raw_vehicle_cmd_converter_node" name="raw_vehicle_cmd_converter" output="screen">
     <param from="$(var config_file)" allow_substs="true"/>
     <remap from="~/input/control_cmd" to="$(var input_control_cmd)"/>
     <remap from="~/input/odometry" to="$(var input_odometry)"/>

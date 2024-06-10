@@ -12,14 +12,14 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-#include "raw_vehicle_cmd_converter/csv_loader.hpp"
+#include "autoware_raw_vehicle_cmd_converter/csv_loader.hpp"
 
 #include <algorithm>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-namespace raw_vehicle_cmd_converter
+namespace autoware::raw_vehicle_cmd_converter
 {
 CSVLoader::CSVLoader(const std::string & csv_path)
 {
@@ -150,4 +150,4 @@ double CSVLoader::clampValue(
   return val;
 }
 
-}  // namespace raw_vehicle_cmd_converter
+}  // namespace autoware::raw_vehicle_cmd_converter

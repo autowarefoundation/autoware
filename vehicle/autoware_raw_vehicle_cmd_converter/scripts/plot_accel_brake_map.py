@@ -23,7 +23,7 @@ import numpy as np
 
 def main(dimension, map_dir, accel_or_brake):
     if map_dir is None:
-        script_dir = get_package_share_directory("raw_vehicle_cmd_converter")
+        script_dir = get_package_share_directory("autoware_raw_vehicle_cmd_converter")
         csv_dir = script_dir + "/data/default"
     else:
         csv_dir = map_dir

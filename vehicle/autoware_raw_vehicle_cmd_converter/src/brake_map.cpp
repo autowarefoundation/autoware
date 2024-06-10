@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-#include "raw_vehicle_cmd_converter/brake_map.hpp"
+#include "autoware_raw_vehicle_cmd_converter/brake_map.hpp"
 
 #include "interpolation/linear_interpolation.hpp"
 
@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-namespace raw_vehicle_cmd_converter
+namespace autoware::raw_vehicle_cmd_converter
 {
 bool BrakeMap::readBrakeMapFromCSV(const std::string & csv_path, const bool validation)
 {
@@ -94,4 +94,4 @@ bool BrakeMap::getAcceleration(const double brake, const double vel, double & ac
 
   return true;
 }
-}  // namespace raw_vehicle_cmd_converter
+}  // namespace autoware::raw_vehicle_cmd_converter

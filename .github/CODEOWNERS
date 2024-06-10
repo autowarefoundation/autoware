@@ -247,7 +247,7 @@ tools/reaction_analyzer/** berkay@leodrive.ai
 vehicle/accel_brake_map_calibrator/** taiki.tanaka@tier4.jp takeshi.miura@tier4.jp tomoya.kimura@tier4.jp
 vehicle/autoware_steer_offset_estimator/** taiki.tanaka@tier4.jp
 vehicle/external_cmd_converter/** takamasa.horibe@tier4.jp
-vehicle/raw_vehicle_cmd_converter/** makoto.kurihara@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp
+vehicle/autoware_raw_vehicle_cmd_converter/** makoto.kurihara@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp
 vehicle/autoware_steer_offset_estimator/** taiki.tanaka@tier4.jp
 vehicle/autoware_vehicle_info_utils/** shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp tomoya.kimura@tier4.jp
 

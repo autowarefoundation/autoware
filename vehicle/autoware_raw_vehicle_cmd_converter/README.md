@@ -1,4 +1,4 @@
-# raw_vehicle_cmd_converter
+# autoware_raw_vehicle_cmd_converter
 
 ## Overview
 
@@ -40,7 +40,7 @@ For ease of calibration and adjustments to the lookup table, an auto-calibration
 
 ## Parameters
 
-{{ json_to_markdown("vehicle/raw_vehicle_cmd_converter/schema/raw_vehicle_cmd_converter.schema.json") }}
+{{ json_to_markdown("vehicle/autoware_raw_vehicle_cmd_converter/schema/raw_vehicle_cmd_converter.schema.json") }}
 
 ## Limitation
 

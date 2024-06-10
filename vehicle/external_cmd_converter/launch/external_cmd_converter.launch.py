@@ -33,7 +33,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "csv_path_accel_map",
             default_value=[
-                FindPackageShare("raw_vehicle_cmd_converter"),
+                FindPackageShare("autoware_raw_vehicle_cmd_converter"),
                 "/data/default/accel_map.csv",
             ],  # noqa: E501
             description="csv file path for accel map",
@@ -41,7 +41,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "csv_path_brake_map",
             default_value=[
-                FindPackageShare("raw_vehicle_cmd_converter"),
+                FindPackageShare("autoware_raw_vehicle_cmd_converter"),
                 "/data/default/brake_map.csv",
             ],  # noqa: E501
             description="csv file path for brake map",

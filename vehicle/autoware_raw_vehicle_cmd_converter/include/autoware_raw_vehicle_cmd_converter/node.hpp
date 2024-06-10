@@ -12,13 +12,13 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-#ifndef RAW_VEHICLE_CMD_CONVERTER__NODE_HPP_
-#define RAW_VEHICLE_CMD_CONVERTER__NODE_HPP_
+#ifndef AUTOWARE_RAW_VEHICLE_CMD_CONVERTER__NODE_HPP_
+#define AUTOWARE_RAW_VEHICLE_CMD_CONVERTER__NODE_HPP_
 
-#include "raw_vehicle_cmd_converter/accel_map.hpp"
-#include "raw_vehicle_cmd_converter/brake_map.hpp"
-#include "raw_vehicle_cmd_converter/pid.hpp"
-#include "raw_vehicle_cmd_converter/steer_map.hpp"
+#include "autoware_raw_vehicle_cmd_converter/accel_map.hpp"
+#include "autoware_raw_vehicle_cmd_converter/brake_map.hpp"
+#include "autoware_raw_vehicle_cmd_converter/pid.hpp"
+#include "autoware_raw_vehicle_cmd_converter/steer_map.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-namespace raw_vehicle_cmd_converter
+namespace autoware::raw_vehicle_cmd_converter
 {
 using Control = autoware_control_msgs::msg::Control;
 using tier4_debug_msgs::msg::Float32MultiArrayStamped;
@@ -119,6 +119,6 @@ public:
 
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
-}  // namespace raw_vehicle_cmd_converter
+}  // namespace autoware::raw_vehicle_cmd_converter
 
-#endif  // RAW_VEHICLE_CMD_CONVERTER__NODE_HPP_
+#endif  // AUTOWARE_RAW_VEHICLE_CMD_CONVERTER__NODE_HPP_

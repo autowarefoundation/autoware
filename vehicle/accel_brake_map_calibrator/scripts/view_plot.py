@@ -45,7 +45,7 @@ class ViewPlot(Node):
         max_pedal_vel_thr = args.max_pedal_vel_thr
 
         if default_map_dir is None:
-            package_path = get_package_share_directory("raw_vehicle_cmd_converter")
+            package_path = get_package_share_directory("autoware_raw_vehicle_cmd_converter")
             self.declare_parameter(
                 "/accel_brake_map_calibrator/csv_default_map_dir", package_path + "/data/default/"
             )

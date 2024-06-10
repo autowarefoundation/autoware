@@ -17,9 +17,9 @@
 
 #include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
+#include <autoware_raw_vehicle_cmd_converter/accel_map.hpp>
+#include <autoware_raw_vehicle_cmd_converter/brake_map.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
-#include <raw_vehicle_cmd_converter/accel_map.hpp>
-#include <raw_vehicle_cmd_converter/brake_map.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_control_msgs/msg/control.hpp>
@@ -37,9 +37,9 @@ namespace external_cmd_converter
 using GearCommand = autoware_vehicle_msgs::msg::GearCommand;
 using autoware_control_msgs::msg::Control;
 using ExternalControlCommand = tier4_external_api_msgs::msg::ControlCommandStamped;
+using autoware::raw_vehicle_cmd_converter::AccelMap;
+using autoware::raw_vehicle_cmd_converter::BrakeMap;
 using nav_msgs::msg::Odometry;
-using raw_vehicle_cmd_converter::AccelMap;
-using raw_vehicle_cmd_converter::BrakeMap;
 using tier4_control_msgs::msg::GateMode;
 
 class ExternalCmdConverterNode : public rclcpp::Node

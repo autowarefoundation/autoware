@@ -1,6 +1,6 @@
 # accel_brake_map_calibrator
 
-The role of this node is to automatically calibrate `accel_map.csv` / `brake_map.csv` used in the `raw_vehicle_cmd_converter` node.
+The role of this node is to automatically calibrate `accel_map.csv` / `brake_map.csv` used in the `autoware_raw_vehicle_cmd_converter` node.
 
 The base map, which is lexus's one by default, is updated iteratively with the loaded driving data.
 
@@ -134,15 +134,15 @@ You can also save accel and brake map in the default directory where Autoware re
 
 ## System Parameters
 
-| Name                     | Type   | Description                                                                                                                                                                       | Default value                                            |
-| :----------------------- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------- |
-| update_method            | string | you can select map calibration method. "update_offset_each_cell" calculates offsets for each grid cells on the map. "update_offset_total" calculates the total offset of the map. | "update_offset_each_cell"                                |
-| get_pitch_method         | string | "tf": get pitch from tf, "none": unable to perform pitch validation and pitch compensation                                                                                        | "tf"                                                     |
-| pedal_accel_graph_output | bool   | if true, it will output a log of the pedal accel graph.                                                                                                                           | true                                                     |
-| progress_file_output     | bool   | if true, it will output a log and csv file of the update process.                                                                                                                 | false                                                    |
-| default_map_dir          | str    | directory of default map                                                                                                                                                          | [directory of *raw_vehicle_cmd_converter*]/data/default/ |
-| calibrated_map_dir       | str    | directory of calibrated map                                                                                                                                                       | [directory of *accel_brake_map_calibrator*]/config/      |
-| update_hz                | double | hz for update                                                                                                                                                                     | 10.0                                                     |
+| Name                     | Type   | Description                                                                                                                                                                       | Default value                                                     |
+| :----------------------- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------- |
+| update_method            | string | you can select map calibration method. "update_offset_each_cell" calculates offsets for each grid cells on the map. "update_offset_total" calculates the total offset of the map. | "update_offset_each_cell"                                         |
+| get_pitch_method         | string | "tf": get pitch from tf, "none": unable to perform pitch validation and pitch compensation                                                                                        | "tf"                                                              |
+| pedal_accel_graph_output | bool   | if true, it will output a log of the pedal accel graph.                                                                                                                           | true                                                              |
+| progress_file_output     | bool   | if true, it will output a log and csv file of the update process.                                                                                                                 | false                                                             |
+| default_map_dir          | str    | directory of default map                                                                                                                                                          | [directory of *autoware_raw_vehicle_cmd_converter*]/data/default/ |
+| calibrated_map_dir       | str    | directory of calibrated map                                                                                                                                                       | [directory of *accel_brake_map_calibrator*]/config/               |
+| update_hz                | double | hz for update                                                                                                                                                                     | 10.0                                                              |
 
 ## Algorithm Parameters
 

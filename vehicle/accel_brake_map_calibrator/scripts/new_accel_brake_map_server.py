@@ -40,7 +40,7 @@ class DrawGraph(Node):
             CalibData, "/accel_brake_map_calibrator/get_data_service", self.get_data_callback
         )
 
-        default_map_path = get_package_share_directory("raw_vehicle_cmd_converter")
+        default_map_path = get_package_share_directory("autoware_raw_vehicle_cmd_converter")
         self.declare_parameter(
             "/accel_brake_map_calibrator/csv_default_map_dir", default_map_path + "/data/default/"
         )

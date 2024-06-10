@@ -12,14 +12,14 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-#include "raw_vehicle_cmd_converter/steer_map.hpp"
+#include "autoware_raw_vehicle_cmd_converter/steer_map.hpp"
 
 #include "interpolation/linear_interpolation.hpp"
 
 #include <string>
 #include <vector>
 
-namespace raw_vehicle_cmd_converter
+namespace autoware::raw_vehicle_cmd_converter
 {
 
 bool SteerMap::readSteerMapFromCSV(const std::string & csv_path, const bool validation)
@@ -53,4 +53,4 @@ void SteerMap::getSteer(const double steer_rate, const double steer, double & ou
     CSVLoader::clampValue(steer_rate, steer_rate_interp, "steer: steer_rate");
   output = interpolation::lerp(steer_rate_interp, output_index_, clamped_steer_rate);
 }
-}  // namespace raw_vehicle_cmd_converter
+}  // namespace autoware::raw_vehicle_cmd_converter

@@ -2,8 +2,8 @@
 <launch>
   <arg name="external_cmd_converter_param" default="$(find-pkg-share external_cmd_converter)/config/external_cmd_converter.param.yaml"/>
   <!-- map file -->
-  <arg name="csv_path_accel_map" default="$(find-pkg-share raw_vehicle_cmd_converter)/data/default/accel_map.csv"/>
-  <arg name="csv_path_brake_map" default="$(find-pkg-share raw_vehicle_cmd_converter)/data/default/brake_map.csv"/>
+  <arg name="csv_path_accel_map" default="$(find-pkg-share autoware_raw_vehicle_cmd_converter)/data/default/accel_map.csv"/>
+  <arg name="csv_path_brake_map" default="$(find-pkg-share autoware_raw_vehicle_cmd_converter)/data/default/brake_map.csv"/>
 
   <!-- settings -->
   <arg name="ref_vel_gain" default="3.0"/>

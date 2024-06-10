@@ -17,9 +17,9 @@
 #ifndef ACCEL_BRAKE_MAP_CALIBRATOR__ACCEL_BRAKE_MAP_CALIBRATOR_NODE_HPP_
 #define ACCEL_BRAKE_MAP_CALIBRATOR__ACCEL_BRAKE_MAP_CALIBRATOR_NODE_HPP_
 
+#include "autoware_raw_vehicle_cmd_converter/accel_map.hpp"
+#include "autoware_raw_vehicle_cmd_converter/brake_map.hpp"
 #include "diagnostic_updater/diagnostic_updater.hpp"
-#include "raw_vehicle_cmd_converter/accel_map.hpp"
-#include "raw_vehicle_cmd_converter/brake_map.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
@@ -56,12 +56,12 @@
 namespace accel_brake_map_calibrator
 {
 
+using autoware::raw_vehicle_cmd_converter::AccelMap;
+using autoware::raw_vehicle_cmd_converter::BrakeMap;
 using autoware_vehicle_msgs::msg::SteeringReport;
 using autoware_vehicle_msgs::msg::VelocityReport;
 using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::OccupancyGrid;
-using raw_vehicle_cmd_converter::AccelMap;
-using raw_vehicle_cmd_converter::BrakeMap;
 using std_msgs::msg::Float32MultiArray;
 using tier4_debug_msgs::msg::Float32MultiArrayStamped;
 using tier4_debug_msgs::msg::Float32Stamped;

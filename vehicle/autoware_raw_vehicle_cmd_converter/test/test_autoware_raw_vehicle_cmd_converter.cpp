@@ -13,11 +13,11 @@
 // limitations under the License.
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#include "autoware_raw_vehicle_cmd_converter/accel_map.hpp"
+#include "autoware_raw_vehicle_cmd_converter/brake_map.hpp"
+#include "autoware_raw_vehicle_cmd_converter/pid.hpp"
+#include "autoware_raw_vehicle_cmd_converter/steer_map.hpp"
 #include "gtest/gtest.h"
-#include "raw_vehicle_cmd_converter/accel_map.hpp"
-#include "raw_vehicle_cmd_converter/brake_map.hpp"
-#include "raw_vehicle_cmd_converter/pid.hpp"
-#include "raw_vehicle_cmd_converter/steer_map.hpp"
 
 #include <cmath>
 #include <stdexcept>
@@ -48,14 +48,15 @@
  *
  */
 
-using raw_vehicle_cmd_converter::AccelMap;
-using raw_vehicle_cmd_converter::BrakeMap;
-using raw_vehicle_cmd_converter::PIDController;
-using raw_vehicle_cmd_converter::SteerMap;
+using autoware::raw_vehicle_cmd_converter::AccelMap;
+using autoware::raw_vehicle_cmd_converter::BrakeMap;
+using autoware::raw_vehicle_cmd_converter::PIDController;
+using autoware::raw_vehicle_cmd_converter::SteerMap;
 double epsilon = 1e-4;
 // may throw PackageNotFoundError exception for invalid package
 const auto map_path =
-  ament_index_cpp::get_package_share_directory("raw_vehicle_cmd_converter") + "/test/map_data/";
+  ament_index_cpp::get_package_share_directory("autoware_raw_vehicle_cmd_converter") +
+  "/test/map_data/";
 
 bool loadAccelMapData(AccelMap & accel_map)
 {
@@ -93,7 +94,8 @@ TEST(ConverterTests, LoadExampleMap)
   BrakeMap brake_map;
   SteerMap steer_map;
   const auto data_path =
-    ament_index_cpp::get_package_share_directory("raw_vehicle_cmd_converter") + "/data/default/";
+    ament_index_cpp::get_package_share_directory("autoware_raw_vehicle_cmd_converter") +
+    "/data/default/";
   // for invalid path
   EXPECT_TRUE(accel_map.readAccelMapFromCSV(data_path + "accel_map.csv", true));
   EXPECT_TRUE(brake_map.readBrakeMapFromCSV(data_path + "brake_map.csv", true));

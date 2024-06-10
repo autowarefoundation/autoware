@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RAW_VEHICLE_CMD_CONVERTER__CSV_LOADER_HPP_
-#define RAW_VEHICLE_CMD_CONVERTER__CSV_LOADER_HPP_
+#ifndef AUTOWARE_RAW_VEHICLE_CMD_CONVERTER__CSV_LOADER_HPP_
+#define AUTOWARE_RAW_VEHICLE_CMD_CONVERTER__CSV_LOADER_HPP_
 
 #include <fstream>
 #include <iostream>
@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-namespace raw_vehicle_cmd_converter
+namespace autoware::raw_vehicle_cmd_converter
 {
 using Table = std::vector<std::vector<std::string>>;
 using Map = std::vector<std::vector<double>>;
@@ -42,6 +42,6 @@ public:
 private:
   std::string csv_path_;
 };
-}  // namespace raw_vehicle_cmd_converter
+}  // namespace autoware::raw_vehicle_cmd_converter
 
-#endif  // RAW_VEHICLE_CMD_CONVERTER__CSV_LOADER_HPP_
+#endif  // AUTOWARE_RAW_VEHICLE_CMD_CONVERTER__CSV_LOADER_HPP_

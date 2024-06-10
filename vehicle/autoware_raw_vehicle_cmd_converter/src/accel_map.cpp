@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-#include "raw_vehicle_cmd_converter/accel_map.hpp"
+#include "autoware_raw_vehicle_cmd_converter/accel_map.hpp"
 
 #include "interpolation/linear_interpolation.hpp"
 
@@ -23,7 +23,7 @@
 
 using namespace std::literals::chrono_literals;
 
-namespace raw_vehicle_cmd_converter
+namespace autoware::raw_vehicle_cmd_converter
 {
 bool AccelMap::readAccelMapFromCSV(const std::string & csv_path, const bool validation)
 {
@@ -83,4 +83,4 @@ bool AccelMap::getAcceleration(const double throttle, const double vel, double &
 
   return true;
 }
-}  // namespace raw_vehicle_cmd_converter
+}  // namespace autoware::raw_vehicle_cmd_converter
