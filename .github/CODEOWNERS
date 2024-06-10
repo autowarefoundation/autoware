@@ -106,7 +106,7 @@ map/util/lanelet2_map_preprocessor/** anh.nguyen.2@tier4.jp kento.yabuuchi.2@tie
 perception/bytetrack/** manato.hirabayashi@tier4.jp yoshi.ri@tier4.jp
 perception/cluster_merger/** dai.nguyen@tier4.jp shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp
 perception/compare_map_segmentation/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp yukihiro.saito@tier4.jp
-perception/crosswalk_traffic_light_estimator/** satoshi.ota@tier4.jp shunsuke.miura@tier4.jp tao.zhong@tier4.jp
+perception/autoware_crosswalk_traffic_light_estimator/** satoshi.ota@tier4.jp shunsuke.miura@tier4.jp tao.zhong@tier4.jp
 perception/detected_object_feature_remover/** tomoya.kimura@tier4.jp
 perception/detected_object_validation/** dai.nguyen@tier4.jp shintaro.tomie@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/detection_by_tracker/** taekjin.lee@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp

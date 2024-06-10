@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>crosswalk_traffic_light_estimator</name>
+  <name>autoware_crosswalk_traffic_light_estimator</name>
   <version>0.1.0</version>
-  <description>The crosswalk_traffic_light_estimator package</description>
+  <description>The autoware_crosswalk_traffic_light_estimator package</description>
 
   <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>

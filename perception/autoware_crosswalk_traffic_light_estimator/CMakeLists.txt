@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(crosswalk_traffic_light_estimator)
+project(autoware_crosswalk_traffic_light_estimator)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -10,12 +10,12 @@ autoware_package()
 
 include_directories()
 
-ament_auto_add_library(crosswalk_traffic_light_estimator SHARED
+ament_auto_add_library(autoware_crosswalk_traffic_light_estimator SHARED
   src/node.cpp
 )
 
-rclcpp_components_register_node(crosswalk_traffic_light_estimator
-  PLUGIN "traffic_light::CrosswalkTrafficLightEstimatorNode"
+rclcpp_components_register_node(autoware_crosswalk_traffic_light_estimator
+  PLUGIN "autoware::crosswalk_traffic_light_estimator::CrosswalkTrafficLightEstimatorNode"
   EXECUTABLE crosswalk_traffic_light_estimator_node
 )
 

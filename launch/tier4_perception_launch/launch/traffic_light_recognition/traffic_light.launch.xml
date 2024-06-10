@@ -17,7 +17,7 @@
   <arg name="external/traffic_signals" default="/perception/traffic_light_recognition/external/traffic_signals"/>
   <arg name="output/traffic_signals" default="/perception/traffic_light_recognition/traffic_signals"/>
   <arg name="use_crosswalk_traffic_light_estimator" default="true" description="output pedestrian's traffic light signals"/>
-  <arg name="crosswalk_traffic_light_estimator_param_file" default="$(find-pkg-share crosswalk_traffic_light_estimator)/config/crosswalk_traffic_light_estimator.param.yaml"/>
+  <arg name="crosswalk_traffic_light_estimator_param_file" default="$(find-pkg-share autoware_crosswalk_traffic_light_estimator)/config/crosswalk_traffic_light_estimator.param.yaml"/>
   <arg name="image_number" default="1" description="choose image raw number(1-2)"/>
   <arg name="namespace1" default="camera6"/>
   <arg name="namespace2" default="camera7"/>
@@ -158,7 +158,7 @@
   </group>
 
   <group if="$(var use_crosswalk_traffic_light_estimator)">
-    <node pkg="crosswalk_traffic_light_estimator" exec="crosswalk_traffic_light_estimator_node" name="crosswalk_traffic_light_estimator" output="screen">
+    <node pkg="autoware_crosswalk_traffic_light_estimator" exec="crosswalk_traffic_light_estimator_node" name="crosswalk_traffic_light_estimator" output="screen">
       <remap from="~/input/vector_map" to="/map/vector_map"/>
       <remap from="~/input/route" to="/planning/mission_planning/route"/>
       <remap from="~/input/classified/traffic_signals" to="$(var judged/traffic_signals)"/>

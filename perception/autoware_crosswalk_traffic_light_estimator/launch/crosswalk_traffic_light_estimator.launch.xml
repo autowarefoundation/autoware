@@ -11,9 +11,9 @@
   limitations under the License.
 -->
 <launch>
-  <arg name="crosswalk_traffic_light_estimator_param_file" default="$(find-pkg-share crosswalk_traffic_light_estimator)/config/crosswalk_traffic_light_estimator.param.yaml"/>
+  <arg name="crosswalk_traffic_light_estimator_param_file" default="$(find-pkg-share autoware_crosswalk_traffic_light_estimator)/config/crosswalk_traffic_light_estimator.param.yaml"/>
 
-  <node pkg="crosswalk_traffic_light_estimator" exec="crosswalk_traffic_light_estimator_node" name="crosswalk_traffic_light_estimator" output="screen">
+  <node pkg="autoware_crosswalk_traffic_light_estimator" exec="crosswalk_traffic_light_estimator_node" name="crosswalk_traffic_light_estimator" output="screen">
     <remap from="~/input/vector_map" to="/map/vector_map"/>
     <remap from="~/input/route" to="/planning/mission_planning/route"/>
     <remap from="~/input/classified/traffic_signals" to="classified/traffic_signals"/>

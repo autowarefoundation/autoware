@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CROSSWALK_TRAFFIC_LIGHT_ESTIMATOR__NODE_HPP_
-#define CROSSWALK_TRAFFIC_LIGHT_ESTIMATOR__NODE_HPP_
+#ifndef AUTOWARE_CROSSWALK_TRAFFIC_LIGHT_ESTIMATOR__NODE_HPP_
+#define AUTOWARE_CROSSWALK_TRAFFIC_LIGHT_ESTIMATOR__NODE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
@@ -36,7 +36,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-namespace traffic_light
+namespace autoware::crosswalk_traffic_light_estimator
 {
 
 using autoware_map_msgs::msg::LaneletMapBin;
@@ -117,6 +117,6 @@ private:
   std::shared_ptr<DebugPublisher> pub_processing_time_;
 };
 
-}  // namespace traffic_light
+}  // namespace autoware::crosswalk_traffic_light_estimator
 
-#endif  // CROSSWALK_TRAFFIC_LIGHT_ESTIMATOR__NODE_HPP_
+#endif  // AUTOWARE_CROSSWALK_TRAFFIC_LIGHT_ESTIMATOR__NODE_HPP_
