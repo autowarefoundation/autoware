@@ -28,8 +28,8 @@
  * limitations under the License.
  */
 
-#ifndef FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
-#define FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
+#ifndef AUTOWARE_FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
+#define AUTOWARE_FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
 
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
@@ -63,7 +63,7 @@
 #include <string>
 #include <vector>
 
-namespace freespace_planner
+namespace autoware::freespace_planner
 {
 using autoware::freespace_planning_algorithms::AbstractPlanningAlgorithm;
 using autoware::freespace_planning_algorithms::AstarParam;
@@ -165,6 +165,6 @@ private:
 
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
-}  // namespace freespace_planner
+}  // namespace autoware::freespace_planner
 
-#endif  // FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
+#endif  // AUTOWARE_FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_

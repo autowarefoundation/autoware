@@ -11,7 +11,7 @@
   <!-- vehicle info -->
   <arg name="vehicle_info_param_file" default="$(find-pkg-share autoware_vehicle_info_utils)/config/vehicle_info.param.yaml"/>
 
-  <node pkg="freespace_planner" exec="freespace_planner" name="freespace_planner" output="screen">
+  <node pkg="autoware_freespace_planner" exec="freespace_planner" name="freespace_planner" output="screen">
     <remap from="~/input/route" to="$(var input_route)"/>
     <remap from="~/input/occupancy_grid" to="$(var input_occupancy_grid)"/>
     <remap from="~/input/scenario" to="$(var input_scenario)"/>

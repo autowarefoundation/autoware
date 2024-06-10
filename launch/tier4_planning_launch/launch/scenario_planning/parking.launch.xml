@@ -18,7 +18,7 @@
         <extra_arg name="use_intra_process_comms" value="false"/>
       </composable_node>
 
-      <composable_node pkg="freespace_planner" plugin="freespace_planner::FreespacePlannerNode" name="freespace_planner" namespace="">
+      <composable_node pkg="autoware_freespace_planner" plugin="autoware::freespace_planner::FreespacePlannerNode" name="freespace_planner" namespace="">
         <!-- topic remap -->
         <remap from="~/input/route" to="/planning/mission_planning/route"/>
         <remap from="~/input/scenario" to="/planning/scenario_planning/scenario"/>

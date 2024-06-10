@@ -1,4 +1,4 @@
-# The `freespace_planner`
+# The `autoware_freespace_planner`
 
 ## freespace_planner_node
 

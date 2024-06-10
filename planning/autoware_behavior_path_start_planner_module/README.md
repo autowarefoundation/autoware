@@ -545,4 +545,4 @@ To run this feature, you need to set `parking_lot` to the map, `activate_by_scen
 | end_pose_search_end_distance   | [m]  | double | distance from ego to the end point of the search for the end point in the freespace_pull_out driving lane                                | 30.0          |
 | end_pose_search_interval       | [m]  | bool   | interval to search for the end point in the freespace_pull_out driving lane                                                              | 2.0           |
 
-See [freespace_planner](../freespace_planner/README.md) for other parameters.
+See [freespace_planner](../autoware_freespace_planner/README.md) for other parameters.

@@ -61,6 +61,7 @@
   <exec_depend>autoware_costmap_generator</exec_depend>
   <exec_depend>autoware_external_cmd_selector</exec_depend>
   <exec_depend>autoware_external_velocity_limit_selector</exec_depend>
+  <exec_depend>autoware_freespace_planner</exec_depend>
   <exec_depend>autoware_path_optimizer</exec_depend>
   <exec_depend>autoware_planning_topic_converter</exec_depend>
   <exec_depend>autoware_planning_validator</exec_depend>
@@ -69,7 +70,6 @@
   <exec_depend>autoware_surround_obstacle_checker</exec_depend>
   <exec_depend>autoware_velocity_smoother</exec_depend>
   <exec_depend>behavior_path_planner</exec_depend>
-  <exec_depend>freespace_planner</exec_depend>
   <exec_depend>glog_component</exec_depend>
   <exec_depend>mission_planner</exec_depend>
   <exec_depend>obstacle_cruise_planner</exec_depend>

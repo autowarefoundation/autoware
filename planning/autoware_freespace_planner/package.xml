@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>freespace_planner</name>
+  <name>autoware_freespace_planner</name>
   <version>0.1.0</version>
-  <description>The freespace_planner package</description>
+  <description>The autoware_freespace_planner package</description>
   <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
