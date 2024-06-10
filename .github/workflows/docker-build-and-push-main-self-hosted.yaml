@@ -56,12 +56,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Install vcstool
-        run: |
-          sudo apt-get -y update
-          sudo apt-get -y install python3-pip
-          pip install --no-cache-dir vcstool
-
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
         with:
@@ -69,11 +63,6 @@ jobs:
 
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
-
-      - name: Run vcs import
-        run: |
-          mkdir src
-          vcs import src < autoware.repos
 
       - name: Build 'Autoware'
         uses: ./.github/actions/docker-build-and-push
