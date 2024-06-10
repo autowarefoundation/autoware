@@ -15,6 +15,8 @@
 #ifndef EXTERNAL_CMD_CONVERTER__NODE_HPP_
 #define EXTERNAL_CMD_CONVERTER__NODE_HPP_
 
+#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
+
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <raw_vehicle_cmd_converter/accel_map.hpp>
 #include <raw_vehicle_cmd_converter/brake_map.hpp>
@@ -33,12 +35,12 @@
 namespace external_cmd_converter
 {
 using GearCommand = autoware_vehicle_msgs::msg::GearCommand;
-using Control = autoware_control_msgs::msg::Control;
+using autoware_control_msgs::msg::Control;
 using ExternalControlCommand = tier4_external_api_msgs::msg::ControlCommandStamped;
-using Odometry = nav_msgs::msg::Odometry;
+using nav_msgs::msg::Odometry;
 using raw_vehicle_cmd_converter::AccelMap;
 using raw_vehicle_cmd_converter::BrakeMap;
-using Odometry = nav_msgs::msg::Odometry;
+using tier4_control_msgs::msg::GateMode;
 
 class ExternalCmdConverterNode : public rclcpp::Node
 {
@@ -47,33 +49,36 @@ public:
 
 private:
   // Publisher
-  rclcpp::Publisher<Control>::SharedPtr pub_cmd_;
+  rclcpp::Publisher<Control>::SharedPtr cmd_pub_;
   rclcpp::Publisher<tier4_external_api_msgs::msg::ControlCommandStamped>::SharedPtr
-    pub_current_cmd_;
+    current_cmd_pub_;
 
   // Subscriber
-  rclcpp::Subscription<Odometry>::SharedPtr sub_velocity_;
   rclcpp::Subscription<tier4_external_api_msgs::msg::ControlCommandStamped>::SharedPtr
-    sub_control_cmd_;
-  rclcpp::Subscription<GearCommand>::SharedPtr sub_shift_cmd_;
-  rclcpp::Subscription<tier4_control_msgs::msg::GateMode>::SharedPtr sub_gate_mode_;
+    control_cmd_sub_;
   rclcpp::Subscription<tier4_external_api_msgs::msg::Heartbeat>::SharedPtr
-    sub_emergency_stop_heartbeat_;
+    emergency_stop_heartbeat_sub_;
 
-  void onVelocity(const Odometry::ConstSharedPtr msg);
-  void onExternalCmd(const ExternalControlCommand::ConstSharedPtr cmd_ptr);
-  void onGearCommand(const GearCommand::ConstSharedPtr msg);
-  void onGateMode(const tier4_control_msgs::msg::GateMode::ConstSharedPtr msg);
-  void onEmergencyStopHeartbeat(const tier4_external_api_msgs::msg::Heartbeat::ConstSharedPtr msg);
+  // Polling Subscriber
+  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> velocity_sub_{this, "in/odometry"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<GearCommand> shift_cmd_sub_{
+    this, "in/shift_cmd"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<GateMode> gate_mode_sub_{
+    this, "in/current_gate_mode"};
 
-  std::shared_ptr<double> current_velocity_ptr_;  // [m/s]
+  void on_external_cmd(const ExternalControlCommand::ConstSharedPtr cmd_ptr);
+  void on_emergency_stop_heartbeat(
+    const tier4_external_api_msgs::msg::Heartbeat::ConstSharedPtr msg);
+
+  Odometry::ConstSharedPtr current_velocity_ptr_{nullptr};  // [m/s]
+  GearCommand::ConstSharedPtr current_shift_cmd_{nullptr};
+  GateMode::ConstSharedPtr current_gate_mode_{nullptr};
+
   std::shared_ptr<rclcpp::Time> latest_emergency_stop_heartbeat_received_time_;
   std::shared_ptr<rclcpp::Time> latest_cmd_received_time_;
-  GearCommand::ConstSharedPtr current_shift_cmd_;
-  tier4_control_msgs::msg::GateMode::ConstSharedPtr current_gate_mode_;
 
   // Timer
-  void onTimer();
+  void on_timer();
   rclcpp::TimerBase::SharedPtr rate_check_timer_;
 
   // Parameter
@@ -85,18 +90,18 @@ private:
   // Diagnostics
   diagnostic_updater::Updater updater_{this};
 
-  void checkTopicStatus(diagnostic_updater::DiagnosticStatusWrapper & stat);
-  void checkEmergencyStop(diagnostic_updater::DiagnosticStatusWrapper & stat);
-  bool checkEmergencyStopTopicTimeout();
-  bool checkRemoteTopicRate();
+  void check_topic_status(diagnostic_updater::DiagnosticStatusWrapper & stat);
+  void check_emergency_stop(diagnostic_updater::DiagnosticStatusWrapper & stat);
+  bool check_emergency_stop_topic_timeout();
+  bool check_remote_topic_rate();
 
   // Algorithm
   AccelMap accel_map_;
   BrakeMap brake_map_;
   bool acc_map_initialized_;
 
-  double calculateAcc(const ExternalControlCommand & cmd, const double vel);
-  double getShiftVelocitySign(const GearCommand & cmd);
+  double calculate_acc(const ExternalControlCommand & cmd, const double vel);
+  double get_shift_velocity_sign(const GearCommand & cmd);
 };
 
 }  // namespace external_cmd_converter
