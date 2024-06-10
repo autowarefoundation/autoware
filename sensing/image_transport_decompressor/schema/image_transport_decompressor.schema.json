@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Image Transport Decompressor",
+  "type": "object",
+  "definitions": {
+    "image_transport_decompressor": {
+      "type": "object",
+      "properties": {
+        "encoding": {
+          "type": "string",
+          "description": "The image encoding to use for the decompressed image",
+          "default": "default"
+        }
+      },
+      "required": ["encoding"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/image_transport_decompressor"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

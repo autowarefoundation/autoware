@@ -69,7 +69,7 @@ namespace image_preprocessor
 {
 ImageTransportDecompressor::ImageTransportDecompressor(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("image_transport_decompressor", node_options),
-  encoding_(declare_parameter("encoding", "default"))
+  encoding_(declare_parameter<std::string>("encoding"))
 {
   compressed_image_sub_ = create_subscription<sensor_msgs::msg::CompressedImage>(
     "~/input/compressed_image", rclcpp::SensorDataQoS(),

@@ -1,9 +1,11 @@
 <launch>
   <arg name="input_topic_name" default="/input/compressed_image"/>
   <arg name="output_topic_name" default="/output/raw_image"/>
+  <arg name="param_file" default="$(find-pkg-share image_transport_decompressor)/config/image_transport_decompressor.param.yaml"/>
 
   <node pkg="image_transport_decompressor" exec="image_transport_decompressor_node" name="$(anon image_transport_decompressor_node)">
     <remap from="~/input/compressed_image" to="$(var input_topic_name)"/>
     <remap from="~/output/raw_image" to="$(var output_topic_name)"/>
+    <param from="$(var param_file)" allow_substs="true"/>
   </node>
 </launch>
