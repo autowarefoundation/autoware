@@ -21,7 +21,7 @@
 
 #include <autoware_control_msgs/msg/control.hpp>
 
-namespace vehicle_cmd_gate
+namespace autoware::vehicle_cmd_gate
 {
 
 class AdapiPauseInterface
@@ -55,6 +55,6 @@ private:
     const SetPause::Service::Response::SharedPtr res);
 };
 
-}  // namespace vehicle_cmd_gate
+}  // namespace autoware::vehicle_cmd_gate
 
 #endif  // ADAPI_PAUSE_INTERFACE_HPP_

@@ -14,7 +14,7 @@
 
 #include "adapi_pause_interface.hpp"
 
-namespace vehicle_cmd_gate
+namespace autoware::vehicle_cmd_gate
 {
 
 AdapiPauseInterface::AdapiPauseInterface(rclcpp::Node * node) : node_(node)
@@ -65,4 +65,4 @@ void AdapiPauseInterface::on_pause(
   res->status.success = true;
 }
 
-}  // namespace vehicle_cmd_gate
+}  // namespace autoware::vehicle_cmd_gate

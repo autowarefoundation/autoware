@@ -194,8 +194,8 @@ def launch_setup(context, *args, **kwargs):
 
     # vehicle cmd gate
     vehicle_cmd_gate_component = ComposableNode(
-        package="vehicle_cmd_gate",
-        plugin="vehicle_cmd_gate::VehicleCmdGate",
+        package="autoware_vehicle_cmd_gate",
+        plugin="autoware::vehicle_cmd_gate::VehicleCmdGate",
         name="vehicle_cmd_gate",
         remappings=[
             ("input/steering", "/vehicle/status/steering_status"),

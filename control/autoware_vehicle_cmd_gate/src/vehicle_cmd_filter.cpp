@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace vehicle_cmd_gate
+namespace autoware::vehicle_cmd_gate
 {
 
 VehicleCmdFilter::VehicleCmdFilter()
@@ -319,4 +319,4 @@ double VehicleCmdFilter::getSteerDiffLim() const
   return interpolateFromSpeed(param_.actual_steer_diff_lim);
 }
 
-}  // namespace vehicle_cmd_gate
+}  // namespace autoware::vehicle_cmd_gate

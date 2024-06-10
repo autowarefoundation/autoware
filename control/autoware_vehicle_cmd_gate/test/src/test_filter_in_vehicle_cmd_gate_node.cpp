@@ -54,7 +54,7 @@ const std::vector<double> lat_jerk_lim = {1.7, 1.3, 0.9, 0.6};
 const std::vector<double> actual_steer_diff_lim = {0.5, 0.4, 0.2, 0.1};
 const double wheelbase = 2.89;
 
-using vehicle_cmd_gate::VehicleCmdGate;
+using autoware::vehicle_cmd_gate::VehicleCmdGate;
 
 using autoware_adapi_v1_msgs::msg::MrmState;
 using autoware_adapi_v1_msgs::msg::OperationModeState;
@@ -369,7 +369,7 @@ std::shared_ptr<VehicleCmdGate> generateNode()
   auto node_options = rclcpp::NodeOptions{};
 
   const auto vehicle_cmd_gate_dir =
-    ament_index_cpp::get_package_share_directory("vehicle_cmd_gate");
+    ament_index_cpp::get_package_share_directory("autoware_vehicle_cmd_gate");
   const auto vehicle_info_util_dir =
     ament_index_cpp::get_package_share_directory("vehicle_info_util");
 

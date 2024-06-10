@@ -14,7 +14,7 @@
 
 #include "moderate_stop_interface.hpp"
 
-namespace vehicle_cmd_gate
+namespace autoware::vehicle_cmd_gate
 {
 
 ModerateStopInterface::ModerateStopInterface(rclcpp::Node * node) : node_(node)
@@ -66,4 +66,4 @@ void ModerateStopInterface::update_stop_state()
   }
 }
 
-}  // namespace vehicle_cmd_gate
+}  // namespace autoware::vehicle_cmd_gate

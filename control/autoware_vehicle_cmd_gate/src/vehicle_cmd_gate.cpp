@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-namespace vehicle_cmd_gate
+namespace autoware::vehicle_cmd_gate
 {
 
 namespace
@@ -906,7 +906,7 @@ void VehicleCmdGate::publishMarkers(const IsFilterActivated & filter_activated)
   filter_activated_flag_pub_->publish(filter_activated_flag);
   filter_activated_marker_raw_pub_->publish(createMarkerArray(filter_activated));
 }
-}  // namespace vehicle_cmd_gate
+}  // namespace autoware::vehicle_cmd_gate
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(vehicle_cmd_gate::VehicleCmdGate)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::vehicle_cmd_gate::VehicleCmdGate)

@@ -1,11 +1,11 @@
 <launch>
-  <arg name="config_file" default="$(find-pkg-share vehicle_cmd_gate)/config/vehicle_cmd_gate.param.yaml"/>
+  <arg name="config_file" default="$(find-pkg-share autoware_vehicle_cmd_gate)/config/vehicle_cmd_gate.param.yaml"/>
   <arg name="check_external_emergency_heartbeat" default="true"/>
 
   <!-- vehicle info -->
   <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml"/>
 
-  <node pkg="vehicle_cmd_gate" exec="vehicle_cmd_gate_exe" name="vehicle_cmd_gate" output="screen">
+  <node pkg="autoware_vehicle_cmd_gate" exec="vehicle_cmd_gate_exe" name="vehicle_cmd_gate" output="screen">
     <remap from="input/steering" to="/vehicle/status/steering_status"/>
 
     <remap from="input/auto/control_cmd" to="trajectory_follower/control_cmd"/>

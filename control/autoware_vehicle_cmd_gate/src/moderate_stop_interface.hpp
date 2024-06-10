@@ -22,7 +22,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace vehicle_cmd_gate
+namespace autoware::vehicle_cmd_gate
 {
 
 class ModerateStopInterface
@@ -53,6 +53,6 @@ private:
   void update_stop_state();
 };
 
-}  // namespace vehicle_cmd_gate
+}  // namespace autoware::vehicle_cmd_gate
 
 #endif  // MODERATE_STOP_INTERFACE_HPP_

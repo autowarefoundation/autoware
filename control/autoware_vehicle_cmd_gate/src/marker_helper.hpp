@@ -21,7 +21,7 @@
 
 #include <string>
 
-namespace vehicle_cmd_gate
+namespace autoware::vehicle_cmd_gate
 {
 inline geometry_msgs::msg::Point createMarkerPosition(double x, double y, double z)
 {
@@ -114,6 +114,6 @@ inline void appendMarkerArray(
     marker_array->markers.push_back(marker);
   }
 }
-}  // namespace vehicle_cmd_gate
+}  // namespace autoware::vehicle_cmd_gate
 
 #endif  // MARKER_HELPER_HPP_
