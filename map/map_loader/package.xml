@@ -4,7 +4,6 @@
   <name>map_loader</name>
   <version>0.1.0</version>
   <description>The map_loader package</description>
-  <maintainer email="ryohsuke.mitsudome@tier4.jp">Ryohsuke Mitsudome</maintainer>
   <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
   <maintainer email="ryu.yamamoto@tier4.jp">Ryu Yamamoto</maintainer>
   <maintainer email="koji.minoda@tier4.jp">Koji Minoda</maintainer>
@@ -15,6 +14,8 @@
   <maintainer email="shintaro.sakoda@tier4.jp">Shintaro Sakoda</maintainer>
 
   <license>Apache License 2.0</license>
+  <author email="ryohsuke.mitsudome@tier4.jp">Ryohsuke Mitsudome</author>
+  <author email="koji.minoda@tier4.jp">Koji Minoda</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
