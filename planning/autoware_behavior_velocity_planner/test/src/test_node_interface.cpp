@@ -104,7 +104,7 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
                    get_behavior_velocity_module_config_no_prefix("occlusion_spot"),
                    get_behavior_velocity_module_config("run_out"),
                    get_behavior_velocity_module_config_no_prefix("speed_bump"),
-                   get_behavior_velocity_module_config_no_prefix("stop_line"),
+                   get_behavior_velocity_module_config("stop_line"),
                    get_behavior_velocity_module_config_no_prefix("traffic_light"),
                    get_behavior_velocity_module_config("virtual_traffic_light"),
                    get_behavior_velocity_module_config_no_prefix("no_drivable_lane")});
