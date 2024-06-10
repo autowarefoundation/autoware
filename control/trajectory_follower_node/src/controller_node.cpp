@@ -62,17 +62,6 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
       throw std::domain_error("[LongitudinalController] invalid algorithm");
   }
 
-  sub_ref_path_ = create_subscription<autoware_planning_msgs::msg::Trajectory>(
-    "~/input/reference_trajectory", rclcpp::QoS{1}, std::bind(&Controller::onTrajectory, this, _1));
-  sub_steering_ = create_subscription<autoware_vehicle_msgs::msg::SteeringReport>(
-    "~/input/current_steering", rclcpp::QoS{1}, std::bind(&Controller::onSteering, this, _1));
-  sub_odometry_ = create_subscription<nav_msgs::msg::Odometry>(
-    "~/input/current_odometry", rclcpp::QoS{1}, std::bind(&Controller::onOdometry, this, _1));
-  sub_accel_ = create_subscription<geometry_msgs::msg::AccelWithCovarianceStamped>(
-    "~/input/current_accel", rclcpp::QoS{1}, std::bind(&Controller::onAccel, this, _1));
-  sub_operation_mode_ = create_subscription<OperationModeState>(
-    "~/input/current_operation_mode", rclcpp::QoS{1},
-    [this](const OperationModeState::SharedPtr msg) { current_operation_mode_ptr_ = msg; });
   control_cmd_pub_ = create_publisher<autoware_control_msgs::msg::Control>(
     "~/output/control_cmd", rclcpp::QoS{1}.transient_local());
   pub_processing_time_lat_ms_ =
@@ -112,24 +101,32 @@ Controller::LongitudinalControllerMode Controller::getLongitudinalControllerMode
   return LongitudinalControllerMode::INVALID;
 }
 
-void Controller::onTrajectory(const autoware_planning_msgs::msg::Trajectory::SharedPtr msg)
+bool Controller::processData(rclcpp::Clock & clock)
 {
-  current_trajectory_ptr_ = msg;
-}
+  bool is_ready = true;
 
-void Controller::onOdometry(const nav_msgs::msg::Odometry::SharedPtr msg)
-{
-  current_odometry_ptr_ = msg;
-}
+  const auto & logData = [&clock, this](const std::string & data_type) {
+    std::string msg = "Waiting for " + data_type + " data";
+    RCLCPP_INFO_THROTTLE(get_logger(), clock, logger_throttle_interval, msg.c_str());
+  };
 
-void Controller::onSteering(const autoware_vehicle_msgs::msg::SteeringReport::SharedPtr msg)
-{
-  current_steering_ptr_ = msg;
-}
+  const auto & getData = [&logData](auto & dest, auto & sub, const std::string & data_type = "") {
+    const auto temp = sub.takeData();
+    if (temp) {
+      dest = temp;
+      return true;
+    }
+    if (!data_type.empty()) logData(data_type);
+    return false;
+  };
 
-void Controller::onAccel(const geometry_msgs::msg::AccelWithCovarianceStamped::SharedPtr msg)
-{
-  current_accel_ptr_ = msg;
+  is_ready &= getData(current_accel_ptr_, sub_accel_, "acceleration");
+  is_ready &= getData(current_steering_ptr_, sub_steering_, "steering");
+  is_ready &= getData(current_trajectory_ptr_, sub_ref_path_, "trajectory");
+  is_ready &= getData(current_odometry_ptr_, sub_odometry_, "odometry");
+  is_ready &= getData(current_operation_mode_ptr_, sub_operation_mode_, "operation mode");
+
+  return is_ready;
 }
 
 bool Controller::isTimeOut(
@@ -152,31 +149,9 @@ bool Controller::isTimeOut(
   return false;
 }
 
-boost::optional<trajectory_follower::InputData> Controller::createInputData(
-  rclcpp::Clock & clock) const
+boost::optional<trajectory_follower::InputData> Controller::createInputData(rclcpp::Clock & clock)
 {
-  if (!current_trajectory_ptr_) {
-    RCLCPP_INFO_THROTTLE(get_logger(), clock, 5000, "Waiting for trajectory.");
-    return {};
-  }
-
-  if (!current_odometry_ptr_) {
-    RCLCPP_INFO_THROTTLE(get_logger(), clock, 5000, "Waiting for current odometry.");
-    return {};
-  }
-
-  if (!current_steering_ptr_) {
-    RCLCPP_INFO_THROTTLE(get_logger(), clock, 5000, "Waiting for current steering.");
-    return {};
-  }
-
-  if (!current_accel_ptr_) {
-    RCLCPP_INFO_THROTTLE(get_logger(), clock, 5000, "Waiting for current accel.");
-    return {};
-  }
-
-  if (!current_operation_mode_ptr_) {
-    RCLCPP_INFO_THROTTLE(get_logger(), clock, 5000, "Waiting for current operation mode.");
+  if (!processData(clock)) {
     return {};
   }
 

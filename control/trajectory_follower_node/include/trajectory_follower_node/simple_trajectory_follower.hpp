@@ -15,6 +15,8 @@
 #ifndef TRAJECTORY_FOLLOWER_NODE__SIMPLE_TRAJECTORY_FOLLOWER_HPP_
 #define TRAJECTORY_FOLLOWER_NODE__SIMPLE_TRAJECTORY_FOLLOWER_HPP_
 
+#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
+
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_control_msgs/msg/control.hpp>
@@ -42,20 +44,22 @@ public:
   ~SimpleTrajectoryFollower() = default;
 
 private:
-  rclcpp::Subscription<Odometry>::SharedPtr sub_kinematics_;
-  rclcpp::Subscription<Trajectory>::SharedPtr sub_trajectory_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
+    this, "~/input/kinematics"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<Trajectory> sub_trajectory_{
+    this, "~/input/trajectory"};
   rclcpp::Publisher<Control>::SharedPtr pub_cmd_;
   rclcpp::TimerBase::SharedPtr timer_;
 
-  Trajectory::SharedPtr trajectory_;
-  Odometry::SharedPtr odometry_;
+  Trajectory::ConstSharedPtr trajectory_;
+  Odometry::ConstSharedPtr odometry_;
   TrajectoryPoint closest_traj_point_;
   bool use_external_target_vel_;
   double external_target_vel_;
   double lateral_deviation_;
 
   void onTimer();
-  bool checkData();
+  bool processData();
   void updateClosest();
   double calcSteerCmd();
   double calcAccCmd();

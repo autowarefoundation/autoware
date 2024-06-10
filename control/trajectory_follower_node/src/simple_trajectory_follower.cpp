@@ -31,11 +31,6 @@ SimpleTrajectoryFollower::SimpleTrajectoryFollower(const rclcpp::NodeOptions & o
 {
   pub_cmd_ = create_publisher<Control>("output/control_cmd", 1);
 
-  sub_kinematics_ = create_subscription<Odometry>(
-    "input/kinematics", 1, [this](const Odometry::SharedPtr msg) { odometry_ = msg; });
-  sub_trajectory_ = create_subscription<Trajectory>(
-    "input/trajectory", 1, [this](const Trajectory::SharedPtr msg) { trajectory_ = msg; });
-
   use_external_target_vel_ = declare_parameter<bool>("use_external_target_vel");
   external_target_vel_ = declare_parameter<float>("external_target_vel");
   lateral_deviation_ = declare_parameter<float>("lateral_deviation");
@@ -47,7 +42,7 @@ SimpleTrajectoryFollower::SimpleTrajectoryFollower(const rclcpp::NodeOptions & o
 
 void SimpleTrajectoryFollower::onTimer()
 {
-  if (!checkData()) {
+  if (!processData()) {
     RCLCPP_INFO(get_logger(), "data not ready");
     return;
   }
@@ -110,9 +105,18 @@ double SimpleTrajectoryFollower::calcAccCmd()
   return acc;
 }
 
-bool SimpleTrajectoryFollower::checkData()
+bool SimpleTrajectoryFollower::processData()
 {
-  return (trajectory_ && odometry_);
+  bool is_ready = true;
+  const auto & getData = [](auto & dest, auto & sub) {
+    const auto temp = sub.takeData();
+    if (!temp) return false;
+    dest = temp;
+    return true;
+  };
+  is_ready &= getData(odometry_, sub_kinematics_);
+  is_ready &= getData(trajectory_, sub_trajectory_);
+  return is_ready;
 }
 
 }  // namespace simple_trajectory_follower
