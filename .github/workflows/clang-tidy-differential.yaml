@@ -14,6 +14,8 @@ jobs:
       label: tag:run-clang-tidy-differential
 
   clang-tidy-differential:
+    needs: prevent-no-label-execution
+    if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     container: ghcr.io/autowarefoundation/autoware:latest-prebuilt-cuda
     steps:
