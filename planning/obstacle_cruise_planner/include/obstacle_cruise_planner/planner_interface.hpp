@@ -38,8 +38,8 @@ class PlannerInterface
 public:
   PlannerInterface(
     rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
-    const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param,
-    const std::shared_ptr<DebugData> debug_data_ptr)
+    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info,
+    const EgoNearestParam & ego_nearest_param, const std::shared_ptr<DebugData> debug_data_ptr)
   : longitudinal_info_(longitudinal_info),
     vehicle_info_(vehicle_info),
     ego_nearest_param_(ego_nearest_param),
@@ -135,7 +135,7 @@ protected:
   rclcpp::Publisher<StopSpeedExceeded>::SharedPtr stop_speed_exceeded_pub_;
 
   // Vehicle Parameters
-  vehicle_info_util::VehicleInfo vehicle_info_;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 
   EgoNearestParam ego_nearest_param_;
 

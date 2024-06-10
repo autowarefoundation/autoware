@@ -38,9 +38,11 @@ PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
   // parameters timer
   m_longitudinal_ctrl_period = node.get_parameter("ctrl_period").as_double();
 
-  m_wheel_base = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo().wheel_base_m;
-  m_vehicle_width = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo().vehicle_width_m;
-  m_front_overhang = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo().front_overhang_m;
+  m_wheel_base = autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo().wheel_base_m;
+  m_vehicle_width =
+    autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo().vehicle_width_m;
+  m_front_overhang =
+    autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo().front_overhang_m;
 
   // parameters for delay compensation
   m_delay_compensation_time = node.declare_parameter<double>("delay_compensation_time");  // [s]

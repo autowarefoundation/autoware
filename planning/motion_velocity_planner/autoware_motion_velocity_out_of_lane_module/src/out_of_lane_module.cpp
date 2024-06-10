@@ -100,7 +100,7 @@ void OutOfLaneModule::init_parameters(rclcpp::Node & node)
   pp.extra_rear_offset = getOrDeclareParameter<double>(node, ns_ + ".ego.extra_rear_offset");
   pp.extra_left_offset = getOrDeclareParameter<double>(node, ns_ + ".ego.extra_left_offset");
   pp.extra_right_offset = getOrDeclareParameter<double>(node, ns_ + ".ego.extra_right_offset");
-  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
+  const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo();
   pp.front_offset = vehicle_info.max_longitudinal_offset_m;
   pp.rear_offset = vehicle_info.min_longitudinal_offset_m;
   pp.left_offset = vehicle_info.max_lateral_offset_m;

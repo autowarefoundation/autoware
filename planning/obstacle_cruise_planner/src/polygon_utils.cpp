@@ -95,7 +95,7 @@ namespace polygon_utils
 std::optional<std::pair<geometry_msgs::msg::Point, double>> getCollisionPoint(
   const std::vector<TrajectoryPoint> & traj_points, const std::vector<Polygon2d> & traj_polygons,
   const Obstacle & obstacle, const bool is_driving_forward,
-  const vehicle_info_util::VehicleInfo & vehicle_info)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info)
 {
   const auto collision_info =
     getCollisionIndex(traj_points, traj_polygons, obstacle.pose, obstacle.stamp, obstacle.shape);

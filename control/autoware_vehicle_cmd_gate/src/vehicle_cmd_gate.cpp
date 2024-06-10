@@ -170,7 +170,7 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     declare_parameter<double>("filter_activated_velocity_threshold");
 
   // Vehicle Parameter
-  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
   {
     VehicleCmdFilterParam p;
     p.wheel_base = vehicle_info.wheel_base_m;
@@ -276,7 +276,7 @@ rcl_interfaces::msg::SetParametersResult VehicleCmdGate::onParameter(
     parameters, "filter_activated_velocity_threshold", filter_activated_velocity_threshold_);
 
   // Vehicle Parameter
-  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
   {
     VehicleCmdFilterParam p = filter_.getParam();
     p.wheel_base = vehicle_info.wheel_base_m;

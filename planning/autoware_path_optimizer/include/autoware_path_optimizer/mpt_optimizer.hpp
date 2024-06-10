@@ -18,12 +18,12 @@
 #include "autoware_path_optimizer/common_structs.hpp"
 #include "autoware_path_optimizer/state_equation_generator.hpp"
 #include "autoware_path_optimizer/type_alias.hpp"
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "gtest/gtest.h"
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation_points_2d.hpp"
 #include "osqp_interface/osqp_interface.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Sparse>
@@ -105,8 +105,8 @@ class MPTOptimizer
 public:
   MPTOptimizer(
     rclcpp::Node * node, const bool enable_debug_info, const EgoNearestParam ego_nearest_param,
-    const vehicle_info_util::VehicleInfo & vehicle_info, const TrajectoryParam & traj_param,
-    const std::shared_ptr<DebugData> debug_data_ptr,
+    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info,
+    const TrajectoryParam & traj_param, const std::shared_ptr<DebugData> debug_data_ptr,
     const std::shared_ptr<TimeKeeper> time_keeper_ptr);
 
   std::vector<TrajectoryPoint> optimizeTrajectory(const PlannerData & planner_data);
@@ -142,7 +142,8 @@ private:
 
   struct MPTParam
   {
-    explicit MPTParam(rclcpp::Node * node, const vehicle_info_util::VehicleInfo & vehicle_info);
+    explicit MPTParam(
+      rclcpp::Node * node, const autoware::vehicle_info_utils::VehicleInfo & vehicle_info);
     MPTParam() = default;
     void onParam(const std::vector<rclcpp::Parameter> & parameters);
 
@@ -218,7 +219,7 @@ private:
   // argument
   bool enable_debug_info_;
   EgoNearestParam ego_nearest_param_;
-  vehicle_info_util::VehicleInfo vehicle_info_;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
   TrajectoryParam traj_param_;
   mutable std::shared_ptr<DebugData> debug_data_ptr_;
   mutable std::shared_ptr<TimeKeeper> time_keeper_ptr_;

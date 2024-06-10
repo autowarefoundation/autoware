@@ -28,7 +28,7 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
 {
   // Vehicle Parameters
   {
-    const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
+    const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo();
     auto & p = planner_param_.vehicle_param;
     p.base_to_front = vehicle_info.wheel_base_m + vehicle_info.front_overhang_m;
     p.base_to_rear = vehicle_info.rear_overhang_m;

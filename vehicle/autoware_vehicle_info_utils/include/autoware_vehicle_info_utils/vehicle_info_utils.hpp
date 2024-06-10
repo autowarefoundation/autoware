@@ -12,23 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef VEHICLE_INFO_UTIL__VEHICLE_INFO_UTIL_HPP_
-#define VEHICLE_INFO_UTIL__VEHICLE_INFO_UTIL_HPP_
+#ifndef AUTOWARE_VEHICLE_INFO_UTILS__VEHICLE_INFO_UTILS_HPP_
+#define AUTOWARE_VEHICLE_INFO_UTILS__VEHICLE_INFO_UTILS_HPP_
 
-#include "vehicle_info_util/vehicle_info.hpp"
+#include "autoware_vehicle_info_utils/vehicle_info.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
-namespace vehicle_info_util
+namespace autoware::vehicle_info_utils
 {
 /// This is a convenience class for saving you from declaring all parameters
 /// manually and calculating derived parameters.
 /// This class supposes that necessary parameters are set when the node is launched.
-class VehicleInfoUtil
+class VehicleInfoUtils
 {
 public:
   /// Constructor
-  explicit VehicleInfoUtil(rclcpp::Node & node);
+  explicit VehicleInfoUtils(rclcpp::Node & node);
 
   /// Get vehicle info
   VehicleInfo getVehicleInfo();
@@ -38,6 +38,6 @@ private:
   VehicleInfo vehicle_info_;
 };
 
-}  // namespace vehicle_info_util
+}  // namespace autoware::vehicle_info_utils
 
-#endif  // VEHICLE_INFO_UTIL__VEHICLE_INFO_UTIL_HPP_
+#endif  // AUTOWARE_VEHICLE_INFO_UTILS__VEHICLE_INFO_UTILS_HPP_

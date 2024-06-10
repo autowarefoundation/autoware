@@ -15,6 +15,8 @@
 #ifndef PREDICTED_PATH_CHECKER__PREDICTED_PATH_CHECKER_NODE_HPP_
 #define PREDICTED_PATH_CHECKER__PREDICTED_PATH_CHECKER_NODE_HPP_
 
+#include <autoware_vehicle_info_utils/vehicle_info.hpp>
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <component_interface_specs/control.hpp>
 #include <component_interface_utils/rclcpp.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
@@ -24,8 +26,6 @@
 #include <predicted_path_checker/utils.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/self_pose_listener.hpp>
-#include <vehicle_info_util/vehicle_info.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
@@ -116,7 +116,7 @@ private:
 
   // Variables
   State current_state_{State::DRIVE};
-  vehicle_info_util::VehicleInfo vehicle_info_;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
   bool is_calling_set_stop_{false};
   bool is_stopped_by_node_{false};
 

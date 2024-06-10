@@ -145,7 +145,7 @@ LaneDepartureCheckerNode::LaneDepartureCheckerNode(const rclcpp::NodeOptions & o
     declare_parameter<std::vector<std::string>>("boundary_types_to_detect");
 
   // Vehicle Info
-  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
   vehicle_length_m_ = vehicle_info.vehicle_length_m;
 
   // Core Parameter

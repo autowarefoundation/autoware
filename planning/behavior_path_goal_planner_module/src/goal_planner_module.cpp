@@ -60,7 +60,7 @@ GoalPlannerModule::GoalPlannerModule(
     objects_of_interest_marker_interface_ptr_map)
 : SceneModuleInterface{name, node, rtc_interface_ptr_map, objects_of_interest_marker_interface_ptr_map},  // NOLINT
   parameters_{parameters},
-  vehicle_info_{vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo()},
+  vehicle_info_{autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo()},
   thread_safe_data_{mutex_, clock_},
   is_lane_parking_cb_running_{false},
   is_freespace_parking_cb_running_{false},
@@ -95,7 +95,7 @@ GoalPlannerModule::GoalPlannerModule(
 
   // set selected goal searcher
   // currently there is only one goal_searcher_type
-  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
+  const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo();
   vehicle_footprint_ = vehicle_info.createFootprint();
   goal_searcher_ = std::make_shared<GoalSearcher>(*parameters, vehicle_footprint_);
 

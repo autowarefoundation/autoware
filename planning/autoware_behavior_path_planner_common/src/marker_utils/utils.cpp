@@ -42,7 +42,7 @@ using visualization_msgs::msg::Marker;
 
 void addFootprintMarker(
   visualization_msgs::msg::Marker & marker, const geometry_msgs::msg::Pose & pose,
-  const vehicle_info_util::VehicleInfo & vehicle_info)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info)
 {
   const double half_width = vehicle_info.vehicle_width_m / 2.0;
   const double base_to_front = vehicle_info.vehicle_length_m - vehicle_info.rear_overhang_m;
@@ -60,7 +60,7 @@ void addFootprintMarker(
 }
 
 MarkerArray createFootprintMarkerArray(
-  const Pose & base_link_pose, const vehicle_info_util::VehicleInfo vehicle_info,
+  const Pose & base_link_pose, const autoware::vehicle_info_utils::VehicleInfo vehicle_info,
   const std::string && ns, const int32_t & id, const float & r, const float & g, const float & b)
 {
   const auto current_time = rclcpp::Clock{RCL_ROS_TIME}.now();
@@ -388,8 +388,9 @@ MarkerArray createDrivableLanesMarkerArray(
   return msg;
 }
 MarkerArray createPredictedPathMarkerArray(
-  const PredictedPath & predicted_path, const vehicle_info_util::VehicleInfo & vehicle_info,
-  std::string && ns, const int32_t & id, const float & r, const float & g, const float & b)
+  const PredictedPath & predicted_path,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, std::string && ns,
+  const int32_t & id, const float & r, const float & g, const float & b)
 {
   if (predicted_path.path.empty()) {
     return MarkerArray{};

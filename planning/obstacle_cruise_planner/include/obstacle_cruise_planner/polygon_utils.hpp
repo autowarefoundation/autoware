@@ -15,10 +15,10 @@
 #ifndef OBSTACLE_CRUISE_PLANNER__POLYGON_UTILS_HPP_
 #define OBSTACLE_CRUISE_PLANNER__POLYGON_UTILS_HPP_
 
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "obstacle_cruise_planner/common_structs.hpp"
 #include "obstacle_cruise_planner/type_alias.hpp"
 #include "tier4_autoware_utils/geometry/boost_geometry.hpp"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <boost/geometry.hpp>
 
@@ -36,12 +36,12 @@ using tier4_autoware_utils::Polygon2d;
 Polygon2d createOneStepPolygon(
   const std::vector<geometry_msgs::msg::Pose> & last_poses,
   const std::vector<geometry_msgs::msg::Pose> & current_poses,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const double lat_margin);
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double lat_margin);
 
 std::optional<std::pair<geometry_msgs::msg::Point, double>> getCollisionPoint(
   const std::vector<TrajectoryPoint> & traj_points, const std::vector<Polygon2d> & traj_polygons,
   const Obstacle & obstacle, const bool is_driving_forward,
-  const vehicle_info_util::VehicleInfo & vehicle_info);
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info);
 
 std::vector<PointWithStamp> getCollisionPoints(
   const std::vector<TrajectoryPoint> & traj_points, const std::vector<Polygon2d> & traj_polygons,

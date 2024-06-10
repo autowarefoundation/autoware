@@ -19,10 +19,10 @@
 #include "autoware_mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_dynamics.hpp"
 #include "autoware_mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
 #include "autoware_mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.hpp"
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
 #include "tf2_ros/create_timer_ros.h"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <algorithm>
 #include <deque>
@@ -69,7 +69,7 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node)
   m_mpc_converged_threshold_rps = dp_double("mpc_converged_threshold_rps");  // [rad/s]
 
   /* mpc parameters */
-  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
+  const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo();
   const double wheelbase = vehicle_info.wheel_base_m;
   constexpr double deg2rad = static_cast<double>(M_PI) / 180.0;
   m_mpc->m_steer_lim = vehicle_info.max_steer_angle_rad;

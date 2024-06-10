@@ -138,7 +138,7 @@ double calcSignedArcLengthToFirstNearestPoint(
 }
 
 geometry_msgs::msg::Polygon createVehiclePolygon(
-  const vehicle_info_util::VehicleInfo & vehicle_info, const double offset)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double offset)
 {
   const auto & i = vehicle_info;
   const auto & front_m = i.max_longitudinal_offset_m;

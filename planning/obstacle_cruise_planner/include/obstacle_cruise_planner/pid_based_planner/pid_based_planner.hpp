@@ -49,8 +49,8 @@ public:
 
   PIDBasedPlanner(
     rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
-    const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param,
-    const std::shared_ptr<DebugData> debug_data_ptr);
+    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info,
+    const EgoNearestParam & ego_nearest_param, const std::shared_ptr<DebugData> debug_data_ptr);
 
   std::vector<TrajectoryPoint> generateCruiseTrajectory(
     const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,

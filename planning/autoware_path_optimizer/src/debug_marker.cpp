@@ -29,7 +29,7 @@ namespace
 {
 MarkerArray getFootprintsMarkerArray(
   const std::vector<TrajectoryPoint> & mpt_traj,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const size_t sampling_num)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const size_t sampling_num)
 {
   auto marker = createDefaultMarker(
     "map", rclcpp::Clock().now(), "mpt_footprints", 0, Marker::LINE_STRIP,
@@ -73,7 +73,7 @@ MarkerArray getFootprintsMarkerArray(
 
 MarkerArray getBoundsWidthMarkerArray(
   const std::vector<ReferencePoint> & ref_points,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const size_t sampling_num)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const size_t sampling_num)
 {
   const auto current_time = rclcpp::Clock().now();
   MarkerArray marker_array;
@@ -146,7 +146,7 @@ MarkerArray getBoundsWidthMarkerArray(
 
 MarkerArray getBoundsLineMarkerArray(
   const std::vector<ReferencePoint> & ref_points,
-  const vehicle_info_util::VehicleInfo & vehicle_info)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info)
 {
   MarkerArray marker_array;
 
@@ -183,7 +183,7 @@ MarkerArray getBoundsLineMarkerArray(
 MarkerArray getVehicleCircleLinesMarkerArray(
   const std::vector<ReferencePoint> & ref_points,
   const std::vector<double> & vehicle_circle_longitudinal_offsets,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const size_t sampling_num,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const size_t sampling_num,
   const std::string & ns)
 {
   const auto current_time = rclcpp::Clock().now();
@@ -339,8 +339,9 @@ visualization_msgs::msg::MarkerArray getPointsTextMarkerArray(
 }
 
 visualization_msgs::msg::MarkerArray getFootprintByDrivableAreaMarkerArray(
-  const geometry_msgs::msg::Pose & stop_pose, const vehicle_info_util::VehicleInfo & vehicle_info,
-  const std::string & ns, const double r, const double g, const double b)
+  const geometry_msgs::msg::Pose & stop_pose,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const std::string & ns,
+  const double r, const double g, const double b)
 {
   visualization_msgs::msg::MarkerArray msg;
 
@@ -373,7 +374,7 @@ visualization_msgs::msg::MarkerArray getFootprintByDrivableAreaMarkerArray(
 
 MarkerArray getDebugMarker(
   const DebugData & debug_data, const std::vector<TrajectoryPoint> & optimized_points,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const bool publish_extra_marker)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const bool publish_extra_marker)
 {
   MarkerArray marker_array;
 

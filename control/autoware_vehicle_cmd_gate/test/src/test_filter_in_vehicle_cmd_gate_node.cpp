@@ -371,7 +371,7 @@ std::shared_ptr<VehicleCmdGate> generateNode()
   const auto vehicle_cmd_gate_dir =
     ament_index_cpp::get_package_share_directory("autoware_vehicle_cmd_gate");
   const auto vehicle_info_util_dir =
-    ament_index_cpp::get_package_share_directory("vehicle_info_util");
+    ament_index_cpp::get_package_share_directory("autoware_vehicle_info_utils");
 
   node_options.arguments(
     {"--ros-args", "--params-file", vehicle_cmd_gate_dir + "/config/vehicle_cmd_gate.param.yaml",

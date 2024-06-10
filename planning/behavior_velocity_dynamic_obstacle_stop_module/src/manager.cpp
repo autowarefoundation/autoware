@@ -43,7 +43,7 @@ DynamicObstacleStopModuleManager::DynamicObstacleStopModuleManager(rclcpp::Node 
   pp.ignore_unavoidable_collisions =
     getOrDeclareParameter<bool>(node, ns + ".ignore_unavoidable_collisions");
 
-  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
+  const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo();
   pp.ego_lateral_offset =
     std::max(std::abs(vehicle_info.min_lateral_offset_m), vehicle_info.max_lateral_offset_m);
   pp.ego_longitudinal_offset = vehicle_info.max_longitudinal_offset_m;

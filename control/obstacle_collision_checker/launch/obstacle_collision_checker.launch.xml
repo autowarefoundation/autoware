@@ -6,7 +6,7 @@
   <arg name="input/odometry" default="/localization/kinematic_state"/>
   <arg name="config_file" default="$(find-pkg-share obstacle_collision_checker)/config/obstacle_collision_checker.param.yaml"/>
   <!-- vehicle info -->
-  <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml"/>
+  <arg name="vehicle_info_param_file" default="$(find-pkg-share autoware_vehicle_info_utils)/config/vehicle_info.param.yaml"/>
 
   <node pkg="obstacle_collision_checker" exec="obstacle_collision_checker_node" name="obstacle_collision_checker_node" output="screen">
     <param from="$(var config_file)"/>

@@ -30,14 +30,14 @@ def launch_setup(context, *args, **kwargs):
     set_use_sim_time = SetParameter(name="use_sim_time", value=LaunchConfiguration("use_sim_time"))
 
     vehicle_info_param_path = os.path.join(
-        get_package_share_directory("vehicle_info_util"),
+        get_package_share_directory("autoware_vehicle_info_utils"),
         "config",
         "vehicle_info.param.yaml",
     )
     # vehicle_info
     load_vehicle_info = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [FindPackageShare("vehicle_info_util"), "/launch/vehicle_info.launch.py"]
+            [FindPackageShare("autoware_vehicle_info_utils"), "/launch/vehicle_info.launch.py"]
         ),
         launch_arguments={"vehicle_info_param_file": [vehicle_info_param_path]}.items(),
     )

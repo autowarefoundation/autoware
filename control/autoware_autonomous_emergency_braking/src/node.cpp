@@ -60,7 +60,7 @@ void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point &
 
 Polygon2d createPolygon(
   const geometry_msgs::msg::Pose & base_pose, const geometry_msgs::msg::Pose & next_pose,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const double expand_width)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double expand_width)
 {
   Polygon2d polygon;
 
@@ -102,7 +102,7 @@ Polygon2d createPolygon(
 
 AEB::AEB(const rclcpp::NodeOptions & node_options)
 : Node("AEB", node_options),
-  vehicle_info_(vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo()),
+  vehicle_info_(autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo()),
   collision_data_keeper_(this->get_clock())
 {
   // Publisher

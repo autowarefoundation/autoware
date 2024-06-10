@@ -29,8 +29,8 @@
 #define AUTOWARE_LANE_DEPARTURE_CHECKER__UTIL__CREATE_VEHICLE_FOOTPRINT_HPP_
 
 #include <Eigen/Dense>
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <tf2/utils.h>
 

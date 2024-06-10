@@ -41,7 +41,8 @@ def main(yaml_path):
 
 if __name__ == "__main__":
     default_yaml_path = (
-        get_package_share_directory("vehicle_info_util") + "/config/vehicle_info.param.yaml"
+        get_package_share_directory("autoware_vehicle_info_utils")
+        + "/config/vehicle_info.param.yaml"
     )
 
     parser = argparse.ArgumentParser()

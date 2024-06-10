@@ -51,7 +51,7 @@ bool isTargetObjectOncoming(
 
 bool isTargetObjectFront(
   const geometry_msgs::msg::Pose & ego_pose, const Polygon2d & obj_polygon,
-  const vehicle_info_util::VehicleInfo & vehicle_info)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info)
 {
   const double base_to_front = vehicle_info.max_longitudinal_offset_m;
   const auto ego_offset_pose =
@@ -71,7 +71,7 @@ bool isTargetObjectFront(
 
 bool isTargetObjectFront(
   const PathWithLaneId & path, const geometry_msgs::msg::Pose & ego_pose,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const Polygon2d & obj_polygon)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const Polygon2d & obj_polygon)
 {
   const double base_to_front = vehicle_info.max_longitudinal_offset_m;
   const auto ego_point =
@@ -90,7 +90,7 @@ bool isTargetObjectFront(
 }
 
 Polygon2d createExtendedPolygon(
-  const Pose & base_link_pose, const vehicle_info_util::VehicleInfo & vehicle_info,
+  const Pose & base_link_pose, const autoware::vehicle_info_utils::VehicleInfo & vehicle_info,
   const double lon_length, const double lat_margin, const bool is_stopped_obj,
   CollisionCheckDebug & debug)
 {
@@ -189,7 +189,7 @@ Polygon2d createExtendedPolygon(
 
 Polygon2d createExtendedPolygonAlongPath(
   const PathWithLaneId & planned_path, const Pose & base_link_pose,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const double lon_length,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double lon_length,
   const double lat_margin, const bool is_stopped_obj, CollisionCheckDebug & debug)
 {
   const double & base_to_front = vehicle_info.max_longitudinal_offset_m;

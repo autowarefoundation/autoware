@@ -15,7 +15,7 @@
 #ifndef AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__PARAMETERS_HPP_
 #define AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__PARAMETERS_HPP_
 
-#include <vehicle_info_util/vehicle_info_util.hpp>
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
 struct ModuleConfigParameters
 {
@@ -66,7 +66,7 @@ struct BehaviorPathPlannerParameters
   double ego_nearest_yaw_threshold;
 
   // vehicle info
-  vehicle_info_util::VehicleInfo vehicle_info;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info;
   double wheel_base;
   double front_overhang;
   double rear_overhang;

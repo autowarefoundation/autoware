@@ -29,7 +29,7 @@ using tier4_autoware_utils::getRPY;
 // Utils Functions
 Polygon2d createOneStepPolygon(
   const geometry_msgs::msg::Pose & base_step_pose, const geometry_msgs::msg::Pose & next_step_pose,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const double expand_width)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double expand_width)
 {
   Polygon2d polygon;
 
@@ -146,7 +146,7 @@ TrajectoryPoint calcInterpolatedPoint(
 
 std::pair<size_t, TrajectoryPoint> findStopPoint(
   TrajectoryPoints & trajectory_array, const size_t collision_idx, const double stop_margin,
-  vehicle_info_util::VehicleInfo & vehicle_info)
+  autoware::vehicle_info_utils::VehicleInfo & vehicle_info)
 {
   // It returns the stop point and segment of the point on trajectory.
 

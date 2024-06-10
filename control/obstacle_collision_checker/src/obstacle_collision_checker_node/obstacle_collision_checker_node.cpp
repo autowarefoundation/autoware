@@ -14,10 +14,10 @@
 
 #include "obstacle_collision_checker/obstacle_collision_checker_node.hpp"
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <memory>
 #include <string>

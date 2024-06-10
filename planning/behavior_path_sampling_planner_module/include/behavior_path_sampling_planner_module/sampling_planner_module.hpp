@@ -28,6 +28,7 @@
 #include "autoware_sampler_common/constraints/soft_constraint.hpp"
 #include "autoware_sampler_common/structures.hpp"
 #include "autoware_sampler_common/transform/spline_transform.hpp"
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "behavior_path_sampling_planner_module/sampling_planner_parameters.hpp"
 #include "behavior_path_sampling_planner_module/util.hpp"
 #include "lanelet2_extension/utility/query.hpp"
@@ -39,7 +40,6 @@
 #include "tier4_autoware_utils/math/constants.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include "tier4_planning_msgs/msg/lateral_offset.hpp"
 #include "tier4_planning_msgs/msg/path_with_lane_id.hpp"
@@ -248,7 +248,7 @@ private:
   // member
   // std::shared_ptr<SamplingPlannerParameters> params_;
   std::shared_ptr<SamplingPlannerInternalParameters> internal_params_;
-  vehicle_info_util::VehicleInfo vehicle_info_{};
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_{};
   std::optional<autoware::frenet_planner::Path> prev_sampling_path_ = std::nullopt;
   // move to utils
 

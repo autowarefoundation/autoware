@@ -15,8 +15,8 @@
 #ifndef POSE_HISTORY_FOOTPRINT__DISPLAY_HPP_
 #define POSE_HISTORY_FOOTPRINT__DISPLAY_HPP_
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <rviz_common/message_filter_display.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
@@ -39,8 +39,8 @@ class BoolProperty;
 namespace rviz_plugins
 {
 
-using vehicle_info_util::VehicleInfo;
-using vehicle_info_util::VehicleInfoUtil;
+using autoware::vehicle_info_utils::VehicleInfo;
+using autoware::vehicle_info_utils::VehicleInfoUtils;
 
 class PoseHistoryFootprint
 : public rviz_common::MessageFilterDisplay<geometry_msgs::msg::PoseStamped>

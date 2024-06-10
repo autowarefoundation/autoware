@@ -39,7 +39,7 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
 {
   using behavior_path_planner::utils::path_safety_checker::createExtendedPolygon;
 
-  vehicle_info_util::VehicleInfo vehicle_info;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info;
   vehicle_info.max_longitudinal_offset_m = 4.0;
   vehicle_info.vehicle_width_m = 2.0;
   vehicle_info.rear_overhang_m = 1.0;

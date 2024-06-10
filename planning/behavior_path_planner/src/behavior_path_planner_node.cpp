@@ -19,8 +19,8 @@
 #include "autoware_behavior_path_planner_common/utils/path_utils.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <tier4_autoware_utils/ros/update_param.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <tier4_planning_msgs/msg/path_change_module_id.hpp>
 
@@ -44,8 +44,8 @@ rclcpp::SubscriptionOptions createSubscriptionOptions(rclcpp::Node * node_ptr)
 
 namespace behavior_path_planner
 {
+using autoware::vehicle_info_utils::VehicleInfoUtils;
 using tier4_planning_msgs::msg::PathChangeModuleId;
-using vehicle_info_util::VehicleInfoUtil;
 
 BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & node_options)
 : Node("behavior_path_planner", node_options)
@@ -212,7 +212,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.traffic_light_signal_timeout = declare_parameter<double>("traffic_light_signal_timeout");
 
   // vehicle info
-  const auto vehicle_info = VehicleInfoUtil(*this).getVehicleInfo();
+  const auto vehicle_info = VehicleInfoUtils(*this).getVehicleInfo();
   p.vehicle_info = vehicle_info;
   p.vehicle_width = vehicle_info.vehicle_width_m;
   p.vehicle_length = vehicle_info.vehicle_length_m;

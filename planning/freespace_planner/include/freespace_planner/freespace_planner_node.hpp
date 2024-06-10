@@ -35,8 +35,8 @@
 
 #include <autoware_freespace_planning_algorithms/astar_search.hpp>
 #include <autoware_freespace_planning_algorithms/rrtstar.hpp>
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>

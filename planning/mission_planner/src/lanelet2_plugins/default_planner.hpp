@@ -15,10 +15,10 @@
 #ifndef LANELET2_PLUGINS__DEFAULT_PLANNER_HPP_
 #define LANELET2_PLUGINS__DEFAULT_PLANNER_HPP_
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <mission_planner/mission_planner_plugin.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <route_handler/route_handler.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
@@ -52,7 +52,7 @@ public:
   void clearRoute() override;
   MarkerArray visualize(const LaneletRoute & route) const override;
   MarkerArray visualize_debug_footprint(tier4_autoware_utils::LinearRing2d goal_footprint_) const;
-  vehicle_info_util::VehicleInfo vehicle_info_;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 
 private:
   using RouteSections = std::vector<autoware_planning_msgs::msg::LaneletSegment>;

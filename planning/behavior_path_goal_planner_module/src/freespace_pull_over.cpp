@@ -27,7 +27,7 @@ namespace behavior_path_planner
 {
 FreespacePullOver::FreespacePullOver(
   rclcpp::Node & node, const GoalPlannerParameters & parameters,
-  const vehicle_info_util::VehicleInfo & vehicle_info)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info)
 : PullOverPlannerBase{node, parameters},
   velocity_{parameters.freespace_parking_velocity},
   left_side_parking_{parameters.parking_policy == ParkingPolicy::LEFT_SIDE}

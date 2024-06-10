@@ -34,7 +34,7 @@
 #include "pure_pursuit/util/planning_utils.hpp"
 #include "pure_pursuit/util/tf_utils.hpp"
 
-#include <vehicle_info_util/vehicle_info_util.hpp>
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -65,7 +65,7 @@ PurePursuitLateralController::PurePursuitLateralController(rclcpp::Node & node)
   pure_pursuit_ = std::make_unique<PurePursuit>();
 
   // Vehicle Parameters
-  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
+  const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo();
   param_.wheel_base = vehicle_info.wheel_base_m;
   param_.max_steering_angle = vehicle_info.max_steer_angle_rad;
 

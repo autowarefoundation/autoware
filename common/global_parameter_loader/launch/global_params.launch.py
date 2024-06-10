@@ -33,7 +33,7 @@ def launch_setup(context, *args, **kwargs):
 
     load_vehicle_info = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [FindPackageShare("vehicle_info_util"), "/launch/vehicle_info.launch.py"]
+            [FindPackageShare("autoware_vehicle_info_utils"), "/launch/vehicle_info.launch.py"]
         ),
         launch_arguments={
             "vehicle_info_param_file": [vehicle_description_pkg, "/config/vehicle_info.param.yaml"]

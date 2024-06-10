@@ -15,8 +15,8 @@
 #ifndef OBSTACLE_COLLISION_CHECKER__OBSTACLE_COLLISION_CHECKER_HPP_
 #define OBSTACLE_COLLISION_CHECKER__OBSTACLE_COLLISION_CHECKER_HPP_
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -75,7 +75,7 @@ public:
 
 private:
   Param param_;
-  vehicle_info_util::VehicleInfo vehicle_info_;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 
   //! This function assumes the input trajectory is sampled dense enough
   static autoware_planning_msgs::msg::Trajectory resampleTrajectory(
@@ -86,7 +86,7 @@ private:
 
   static std::vector<LinearRing2d> createVehicleFootprints(
     const autoware_planning_msgs::msg::Trajectory & trajectory, const Param & param,
-    const vehicle_info_util::VehicleInfo & vehicle_info);
+    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info);
 
   static std::vector<LinearRing2d> createVehiclePassingAreas(
     const std::vector<LinearRing2d> & vehicle_footprints);

@@ -56,7 +56,7 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
 : Node("obstacle_stop_planner", node_options)
 {
   // Vehicle Parameters
-  vehicle_info_ = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  vehicle_info_ = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
 
   const auto & i = vehicle_info_;
 

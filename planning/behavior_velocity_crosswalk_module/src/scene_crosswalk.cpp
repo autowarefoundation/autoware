@@ -1207,7 +1207,7 @@ geometry_msgs::msg::Polygon CrosswalkModule::createObjectPolygon(
 }
 
 geometry_msgs::msg::Polygon CrosswalkModule::createVehiclePolygon(
-  const vehicle_info_util::VehicleInfo & vehicle_info)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info)
 {
   const auto & i = vehicle_info;
   const auto & front_m = i.max_longitudinal_offset_m;

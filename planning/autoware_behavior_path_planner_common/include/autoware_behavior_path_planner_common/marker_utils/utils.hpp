@@ -18,7 +18,7 @@
 #include "autoware_behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "autoware_behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
-#include <vehicle_info_util/vehicle_info.hpp>
+#include <autoware_vehicle_info_utils/vehicle_info.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_perception_msgs/msg/predicted_path.hpp>
@@ -60,10 +60,10 @@ inline int64_t bitShift(int64_t original_id)
 
 void addFootprintMarker(
   visualization_msgs::msg::Marker & marker, const geometry_msgs::msg::Pose & pose,
-  const vehicle_info_util::VehicleInfo & vehicle_info);
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info);
 
 MarkerArray createFootprintMarkerArray(
-  const Pose & base_link_pose, const vehicle_info_util::VehicleInfo vehicle_info,
+  const Pose & base_link_pose, const autoware::vehicle_info_utils::VehicleInfo vehicle_info,
   const std::string && ns, const int32_t & id, const float & r, const float & g, const float & b);
 
 MarkerArray createPointsMarkerArray(
@@ -107,8 +107,9 @@ MarkerArray createDrivableLanesMarkerArray(
   const std::vector<DrivableLanes> & drivable_lanes, std::string && ns);
 
 MarkerArray createPredictedPathMarkerArray(
-  const PredictedPath & ego_predicted_path, const vehicle_info_util::VehicleInfo & vehicle_info,
-  std::string && ns, const int32_t & id, const float & r, const float & g, const float & b);
+  const PredictedPath & ego_predicted_path,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, std::string && ns,
+  const int32_t & id, const float & r, const float & g, const float & b);
 
 MarkerArray showPolygon(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns);
 

@@ -28,8 +28,8 @@
 #include "autoware_behavior_path_start_planner_module/shift_pull_out.hpp"
 
 #include <autoware_lane_departure_checker/lane_departure_checker.hpp>
-#include <vehicle_info_util/vehicle_info.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
+#include <autoware_vehicle_info_utils/vehicle_info.hpp>
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
@@ -255,7 +255,7 @@ private:
   mutable std::shared_ptr<EgoPredictedPathParams> ego_predicted_path_params_;
   mutable std::shared_ptr<ObjectsFilteringParams> objects_filtering_params_;
   mutable std::shared_ptr<SafetyCheckParams> safety_check_params_;
-  vehicle_info_util::VehicleInfo vehicle_info_;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 
   std::vector<std::shared_ptr<PullOutPlannerBase>> start_planners_;
   PullOutStatus status_;

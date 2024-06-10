@@ -37,7 +37,7 @@ class FreespacePullOver : public PullOverPlannerBase
 public:
   FreespacePullOver(
     rclcpp::Node & node, const GoalPlannerParameters & parameters,
-    const vehicle_info_util::VehicleInfo & vehicle_info);
+    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info);
 
   PullOverPlannerType getPlannerType() const override { return PullOverPlannerType::FREESPACE; }
 

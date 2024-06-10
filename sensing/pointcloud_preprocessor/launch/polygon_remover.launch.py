@@ -26,7 +26,7 @@ def generate_launch_description():
     pkg = "pointcloud_preprocessor"
 
     param_file = os.path.join(
-        get_package_share_directory("vehicle_info_util"), "config/polygon_remover.yaml"
+        get_package_share_directory("autoware_vehicle_info_utils"), "config/polygon_remover.yaml"
     )
 
     with open(param_file, "r") as f:

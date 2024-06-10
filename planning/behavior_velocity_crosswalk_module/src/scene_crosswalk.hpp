@@ -419,7 +419,7 @@ private:
     const double width_m, const double length_m);
 
   static geometry_msgs::msg::Polygon createVehiclePolygon(
-    const vehicle_info_util::VehicleInfo & vehicle_info);
+    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info);
 
   void recordTime(const int step_num)
   {

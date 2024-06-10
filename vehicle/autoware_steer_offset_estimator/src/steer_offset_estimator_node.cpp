@@ -14,7 +14,7 @@
 
 #include "autoware_steer_offset_estimator/steer_offset_estimator_node.hpp"
 
-#include "vehicle_info_util/vehicle_info_util.hpp"
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 
 #include <memory>
 #include <utility>
@@ -26,7 +26,7 @@ SteerOffsetEstimatorNode::SteerOffsetEstimatorNode(const rclcpp::NodeOptions & n
 {
   using std::placeholders::_1;
   // get parameter
-  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
   wheel_base_ = vehicle_info.wheel_base_m;
   covariance_ = this->declare_parameter<double>("initial_covariance");
   forgetting_factor_ = this->declare_parameter<double>("forgetting_factor");

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef VEHICLE_INFO_UTIL__VEHICLE_INFO_HPP_
-#define VEHICLE_INFO_UTIL__VEHICLE_INFO_HPP_
+#ifndef AUTOWARE_VEHICLE_INFO_UTILS__VEHICLE_INFO_HPP_
+#define AUTOWARE_VEHICLE_INFO_UTILS__VEHICLE_INFO_HPP_
 
 #include "tier4_autoware_utils/geometry/boost_geometry.hpp"
 
-namespace vehicle_info_util
+namespace autoware::vehicle_info_utils
 {
 /// Data class for vehicle info
 struct VehicleInfo
@@ -59,6 +59,6 @@ VehicleInfo createVehicleInfo(
   const double left_overhang_m, const double right_overhang_m, const double vehicle_height_m,
   const double max_steer_angle_rad);
 
-}  // namespace vehicle_info_util
+}  // namespace autoware::vehicle_info_utils
 
-#endif  // VEHICLE_INFO_UTIL__VEHICLE_INFO_HPP_
+#endif  // AUTOWARE_VEHICLE_INFO_UTILS__VEHICLE_INFO_HPP_

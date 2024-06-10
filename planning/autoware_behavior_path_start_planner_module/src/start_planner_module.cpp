@@ -60,7 +60,7 @@ StartPlannerModule::StartPlannerModule(
     objects_of_interest_marker_interface_ptr_map)
 : SceneModuleInterface{name, node, rtc_interface_ptr_map, objects_of_interest_marker_interface_ptr_map},  // NOLINT
   parameters_{parameters},
-  vehicle_info_{vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo()},
+  vehicle_info_{autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo()},
   is_freespace_planner_cb_running_{false}
 {
   lane_departure_checker_ = std::make_shared<LaneDepartureChecker>();

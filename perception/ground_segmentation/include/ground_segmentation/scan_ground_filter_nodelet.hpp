@@ -18,7 +18,7 @@
 #include "pointcloud_preprocessor/filter.hpp"
 #include "pointcloud_preprocessor/transform_info.hpp"
 
-#include <vehicle_info_util/vehicle_info.hpp>
+#include <autoware_vehicle_info_utils/vehicle_info.hpp>
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
@@ -43,7 +43,7 @@ class ScanGroundFilterTest;
 
 namespace ground_segmentation
 {
-using vehicle_info_util::VehicleInfo;
+using autoware::vehicle_info_utils::VehicleInfo;
 
 class ScanGroundFilterComponent : public pointcloud_preprocessor::Filter
 {

@@ -9,6 +9,7 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_vehicle_info_utils</depend>
   <depend>autoware_vehicle_msgs</depend>
   <depend>diagnostic_updater</depend>
   <depend>geometry_msgs</depend>
@@ -17,7 +18,6 @@
   <depend>std_msgs</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>tier4_debug_msgs</depend>
-  <depend>vehicle_info_util</depend>
   <exec_depend>global_parameter_loader</exec_depend>
   <exec_depend>pose2twist</exec_depend>
 

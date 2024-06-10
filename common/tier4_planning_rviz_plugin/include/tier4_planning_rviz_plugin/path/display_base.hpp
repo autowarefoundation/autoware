@@ -15,6 +15,7 @@
 #ifndef TIER4_PLANNING_RVIZ_PLUGIN__PATH__DISPLAY_BASE_HPP_
 #define TIER4_PLANNING_RVIZ_PLUGIN__PATH__DISPLAY_BASE_HPP_
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/display_context.hpp>
 #include <rviz_common/frame_manager_iface.hpp>
@@ -25,7 +26,6 @@
 #include <rviz_common/properties/parse_color.hpp>
 #include <rviz_common/validate_floats.hpp>
 #include <rviz_rendering/objects/movable_text.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_planning_msgs/msg/path.hpp>
 
@@ -97,8 +97,8 @@ bool validateFloats(const typename T::ConstSharedPtr & msg_ptr)
 
 namespace rviz_plugins
 {
-using vehicle_info_util::VehicleInfo;
-using vehicle_info_util::VehicleInfoUtil;
+using autoware::vehicle_info_utils::VehicleInfo;
+using autoware::vehicle_info_utils::VehicleInfoUtils;
 template <typename T>
 class AutowarePathBaseDisplay : public rviz_common::MessageFilterDisplay<T>
 {

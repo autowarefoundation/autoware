@@ -91,7 +91,7 @@ def generate_launch_description():
     add_launch_arg(
         "vehicle_info_param_file",
         [
-            FindPackageShare("vehicle_info_util"),
+            FindPackageShare("autoware_vehicle_info_utils"),
             "/config/vehicle_info.param.yaml",
         ],
         "path to the parameter file of vehicle information",

@@ -14,13 +14,13 @@
 
 #include "simple_planning_simulator/simple_planning_simulator_core.hpp"
 
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/ros/msg_covariance.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
@@ -232,7 +232,7 @@ void SimplePlanningSimulator::initialize_vehicle_model()
 
   const double debug_acc_scaling_factor = declare_parameter("debug_acc_scaling_factor", 1.0);
   const double debug_steer_scaling_factor = declare_parameter("debug_steer_scaling_factor", 1.0);
-  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
   const double wheelbase = vehicle_info.wheel_base_m;
 
   std::vector<std::string> model_module_paths = declare_parameter<std::vector<std::string>>(

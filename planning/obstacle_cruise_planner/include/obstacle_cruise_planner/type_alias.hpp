@@ -15,7 +15,7 @@
 #ifndef OBSTACLE_CRUISE_PLANNER__TYPE_ALIAS_HPP_
 #define OBSTACLE_CRUISE_PLANNER__TYPE_ALIAS_HPP_
 
-#include "vehicle_info_util/vehicle_info_util.hpp"
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 
 #include "autoware_adapi_v1_msgs/msg/planning_behavior.hpp"
 #include "autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp"
@@ -35,6 +35,7 @@
 #include "tier4_planning_msgs/msg/velocity_limit_clear_command.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 
+using autoware::vehicle_info_utils::VehicleInfo;
 using autoware_adapi_v1_msgs::msg::PlanningBehavior;
 using autoware_adapi_v1_msgs::msg::VelocityFactor;
 using autoware_adapi_v1_msgs::msg::VelocityFactorArray;
@@ -56,7 +57,6 @@ using tier4_planning_msgs::msg::StopReasonArray;
 using tier4_planning_msgs::msg::StopSpeedExceeded;
 using tier4_planning_msgs::msg::VelocityLimit;
 using tier4_planning_msgs::msg::VelocityLimitClearCommand;
-using vehicle_info_util::VehicleInfo;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 namespace bg = boost::geometry;

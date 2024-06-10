@@ -18,8 +18,8 @@
 #include "data.hpp"
 #include "operation_mode_transition_manager/msg/operation_mode_transition_manager_debug.hpp"
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_control_msgs/msg/control.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
@@ -83,7 +83,7 @@ private:
   Control trajectory_follower_control_cmd_;
   Odometry kinematics_;
   Trajectory trajectory_;
-  vehicle_info_util::VehicleInfo vehicle_info_;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 
   DebugInfo debug_info_;
   std::shared_ptr<rclcpp::Time> stable_start_time_;  // Reset every transition start.

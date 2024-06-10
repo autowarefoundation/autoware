@@ -83,7 +83,7 @@ double calcBrakingDistance(
 namespace obstacle_collision_checker
 {
 ObstacleCollisionChecker::ObstacleCollisionChecker(rclcpp::Node & node)
-: vehicle_info_(vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo())
+: vehicle_info_(autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo())
 {
 }
 
@@ -188,7 +188,7 @@ autoware_planning_msgs::msg::Trajectory ObstacleCollisionChecker::cutTrajectory(
 
 std::vector<LinearRing2d> ObstacleCollisionChecker::createVehicleFootprints(
   const autoware_planning_msgs::msg::Trajectory & trajectory, const Param & param,
-  const vehicle_info_util::VehicleInfo & vehicle_info)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info)
 {
   // Create vehicle footprint in base_link coordinate
   const auto local_vehicle_footprint = vehicle_info.createFootprint(param.footprint_margin);

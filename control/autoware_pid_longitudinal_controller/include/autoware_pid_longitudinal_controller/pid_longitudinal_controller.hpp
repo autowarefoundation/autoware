@@ -20,6 +20,7 @@
 #include "autoware_pid_longitudinal_controller/lowpass_filter.hpp"
 #include "autoware_pid_longitudinal_controller/pid.hpp"
 #include "autoware_pid_longitudinal_controller/smooth_stop.hpp"
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "diagnostic_updater/diagnostic_updater.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
@@ -27,7 +28,6 @@
 #include "tf2_ros/transform_listener.h"
 #include "tier4_autoware_utils/ros/marker_helper.hpp"
 #include "trajectory_follower_base/longitudinal_controller_base.hpp"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>

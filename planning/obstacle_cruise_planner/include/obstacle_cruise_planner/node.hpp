@@ -53,7 +53,7 @@ private:
   // main functions
   std::vector<Polygon2d> createOneStepPolygons(
     const std::vector<TrajectoryPoint> & traj_points,
-    const vehicle_info_util::VehicleInfo & vehicle_info,
+    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info,
     const geometry_msgs::msg::Pose & current_ego_pose, const double lat_margin = 0.0) const;
   std::vector<Obstacle> convertToObstacles(
     const Odometry & odometry, const PredictedObjects & objects,

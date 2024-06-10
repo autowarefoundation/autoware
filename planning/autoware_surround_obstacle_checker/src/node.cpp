@@ -196,7 +196,7 @@ SurroundObstacleCheckerNode::SurroundObstacleCheckerNode(const rclcpp::NodeOptio
     logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
   }
 
-  vehicle_info_ = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  vehicle_info_ = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
 
   // Publishers
   pub_stop_reason_ =

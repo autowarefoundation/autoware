@@ -19,11 +19,11 @@
 #include "autoware_path_optimizer/mpt_optimizer.hpp"
 #include "autoware_path_optimizer/replan_checker.hpp"
 #include "autoware_path_optimizer/type_alias.hpp"
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 #include "tier4_autoware_utils/ros/polling_subscriber.hpp"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
@@ -63,7 +63,7 @@ protected:  // for the static_centerline_generator package
   DrivingDirectionChecker driving_direction_checker_{};
 
   // argument variables
-  vehicle_info_util::VehicleInfo vehicle_info_{};
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_{};
   mutable std::shared_ptr<DebugData> debug_data_ptr_{nullptr};
   mutable std::shared_ptr<TimeKeeper> time_keeper_ptr_{nullptr};
 

@@ -21,6 +21,7 @@
   <depend>autoware_path_smoother</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
+  <depend>autoware_vehicle_info_utils</depend>
   <depend>geography_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>global_parameter_loader</depend>
@@ -36,7 +37,6 @@
   <depend>route_handler</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>tier4_map_msgs</depend>
-  <depend>vehicle_info_util</depend>
 
   <exec_depend>python3-flask-cors</exec_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>

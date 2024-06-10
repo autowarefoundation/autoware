@@ -15,10 +15,10 @@
 #ifndef AUTOWARE_LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
 #define AUTOWARE_LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <rosidl_runtime_cpp/message_initialization.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <tier4_autoware_utils/geometry/pose_deviation.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
@@ -103,17 +103,17 @@ class LaneDepartureChecker
 public:
   Output update(const Input & input);
 
-  void setParam(const Param & param, const vehicle_info_util::VehicleInfo vehicle_info)
+  void setParam(const Param & param, const autoware::vehicle_info_utils::VehicleInfo vehicle_info)
   {
     param_ = param;
-    vehicle_info_ptr_ = std::make_shared<vehicle_info_util::VehicleInfo>(vehicle_info);
+    vehicle_info_ptr_ = std::make_shared<autoware::vehicle_info_utils::VehicleInfo>(vehicle_info);
   }
 
   void setParam(const Param & param) { param_ = param; }
 
-  void setVehicleInfo(const vehicle_info_util::VehicleInfo vehicle_info)
+  void setVehicleInfo(const autoware::vehicle_info_utils::VehicleInfo vehicle_info)
   {
-    vehicle_info_ptr_ = std::make_shared<vehicle_info_util::VehicleInfo>(vehicle_info);
+    vehicle_info_ptr_ = std::make_shared<autoware::vehicle_info_utils::VehicleInfo>(vehicle_info);
   }
 
   bool checkPathWillLeaveLane(
@@ -137,7 +137,7 @@ public:
 
 private:
   Param param_;
-  std::shared_ptr<vehicle_info_util::VehicleInfo> vehicle_info_ptr_;
+  std::shared_ptr<autoware::vehicle_info_utils::VehicleInfo> vehicle_info_ptr_;
 
   static PoseDeviation calcTrajectoryDeviation(
     const Trajectory & trajectory, const geometry_msgs::msg::Pose & pose,

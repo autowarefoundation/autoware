@@ -77,8 +77,8 @@ lanelet::BasicPoint2d convert_to_lanelet_point(const geometry_msgs::msg::Point &
 }
 
 LinearRing2d create_vehicle_footprint(
-  const geometry_msgs::msg::Pose & pose, const vehicle_info_util::VehicleInfo & vehicle_info,
-  const double margin = 0.0)
+  const geometry_msgs::msg::Pose & pose,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double margin = 0.0)
 {
   const auto & i = vehicle_info;
 
@@ -105,7 +105,8 @@ LinearRing2d create_vehicle_footprint(
 }
 
 geometry_msgs::msg::Pose get_text_pose(
-  const geometry_msgs::msg::Pose & pose, const vehicle_info_util::VehicleInfo & vehicle_info)
+  const geometry_msgs::msg::Pose & pose,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info)
 {
   const auto & i = vehicle_info;
 
@@ -238,7 +239,7 @@ StaticCenterlineGeneratorNode::StaticCenterlineGeneratorNode(
     rmw_qos_profile_services_default, callback_group_);
 
   // vehicle info
-  vehicle_info_ = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  vehicle_info_ = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
 
   centerline_source_ = [&]() {
     const auto centerline_source_param = declare_parameter<std::string>("centerline_source");

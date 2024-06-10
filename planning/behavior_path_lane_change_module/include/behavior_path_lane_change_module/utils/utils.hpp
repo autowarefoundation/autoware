@@ -241,7 +241,7 @@ rclcpp::Logger getLogger(const std::string & type);
  * @return Polygon2d A polygon representing the current 2D footprint of the ego vehicle.
  */
 Polygon2d getEgoCurrentFootprint(
-  const Pose & ego_pose, const vehicle_info_util::VehicleInfo & ego_info);
+  const Pose & ego_pose, const autoware::vehicle_info_utils::VehicleInfo & ego_info);
 
 /**
  * @brief Checks if the given polygon is within an intersection area.
@@ -304,7 +304,7 @@ namespace behavior_path_planner::utils::lane_change::debug
 geometry_msgs::msg::Point32 create_point32(const geometry_msgs::msg::Pose & pose);
 
 geometry_msgs::msg::Polygon createExecutionArea(
-  const vehicle_info_util::VehicleInfo & vehicle_info, const Pose & pose,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const Pose & pose,
   double additional_lon_offset, double additional_lat_offset);
 }  // namespace behavior_path_planner::utils::lane_change::debug
 

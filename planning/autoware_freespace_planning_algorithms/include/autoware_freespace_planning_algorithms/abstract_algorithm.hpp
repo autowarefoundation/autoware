@@ -15,8 +15,8 @@
 #ifndef AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
 #define AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
@@ -69,7 +69,7 @@ struct VehicleShape
   }
 
   explicit VehicleShape(
-    const vehicle_info_util::VehicleInfo & vehicle_info, const double margin = 0.0)
+    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double margin = 0.0)
   : length(vehicle_info.vehicle_length_m + margin),
     width(vehicle_info.vehicle_width_m + margin),
     base2back(vehicle_info.rear_overhang_m + margin / 2.0)
@@ -125,7 +125,7 @@ public:
 
   AbstractPlanningAlgorithm(
     const PlannerCommonParam & planner_common_param,
-    const vehicle_info_util::VehicleInfo & vehicle_info, const double margin = 0.0)
+    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double margin = 0.0)
   : planner_common_param_(planner_common_param), collision_vehicle_shape_(vehicle_info, margin)
   {
   }

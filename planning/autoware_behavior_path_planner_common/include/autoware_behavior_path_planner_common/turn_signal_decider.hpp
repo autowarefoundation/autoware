@@ -237,7 +237,7 @@ private:
 
   inline bool straddleRoadBound(
     const ShiftedPath & path, const ShiftLine & shift_line, const lanelet::ConstLanelets & lanes,
-    const vehicle_info_util::VehicleInfo & vehicle_info) const
+    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info) const
   {
     using boost::geometry::intersects;
     using tier4_autoware_utils::pose2transform;

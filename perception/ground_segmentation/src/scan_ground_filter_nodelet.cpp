@@ -14,10 +14,10 @@
 
 #include "ground_segmentation/scan_ground_filter_nodelet.hpp"
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/normalization.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <memory>
 #include <string>
@@ -25,12 +25,12 @@
 
 namespace ground_segmentation
 {
+using autoware::vehicle_info_utils::VehicleInfoUtils;
 using pointcloud_preprocessor::get_param;
 using tier4_autoware_utils::calcDistance3d;
 using tier4_autoware_utils::deg2rad;
 using tier4_autoware_utils::normalizeDegree;
 using tier4_autoware_utils::normalizeRadian;
-using vehicle_info_util::VehicleInfoUtil;
 
 ScanGroundFilterComponent::ScanGroundFilterComponent(const rclcpp::NodeOptions & options)
 : Filter("ScanGroundFilter", options)
@@ -59,7 +59,7 @@ ScanGroundFilterComponent::ScanGroundFilterComponent(const rclcpp::NodeOptions &
     use_recheck_ground_cluster_ = declare_parameter<bool>("use_recheck_ground_cluster");
     use_lowest_point_ = declare_parameter<bool>("use_lowest_point");
     radial_dividers_num_ = std::ceil(2.0 * M_PI / radial_divider_angle_rad_);
-    vehicle_info_ = VehicleInfoUtil(*this).getVehicleInfo();
+    vehicle_info_ = VehicleInfoUtils(*this).getVehicleInfo();
 
     grid_mode_switch_grid_id_ =
       grid_mode_switch_radius_ / grid_size_m_;  // changing the mode of grid division

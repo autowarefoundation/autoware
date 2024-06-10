@@ -16,6 +16,7 @@
 
 #include "utility_functions.hpp"
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
@@ -25,7 +26,6 @@
 #include <tier4_autoware_utils/math/normalization.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/geometry/Lanelet.h>
@@ -108,7 +108,7 @@ double project_goal_to_map(
 
 geometry_msgs::msg::Pose get_closest_centerline_pose(
   const lanelet::ConstLanelets & road_lanelets, const geometry_msgs::msg::Pose & point,
-  vehicle_info_util::VehicleInfo vehicle_info)
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info)
 {
   lanelet::Lanelet closest_lanelet;
   if (!lanelet::utils::query::getClosestLaneletWithConstrains(
@@ -152,7 +152,7 @@ void DefaultPlanner::initialize_common(rclcpp::Node * node)
   pub_goal_footprint_marker_ =
     node_->create_publisher<MarkerArray>("~/debug/goal_footprint", durable_qos);
 
-  vehicle_info_ = vehicle_info_util::VehicleInfoUtil(*node_).getVehicleInfo();
+  vehicle_info_ = autoware::vehicle_info_utils::VehicleInfoUtils(*node_).getVehicleInfo();
   param_.goal_angle_threshold_deg = node_->declare_parameter<double>("goal_angle_threshold_deg");
   param_.enable_correct_goal_pose = node_->declare_parameter<bool>("enable_correct_goal_pose");
   param_.consider_no_drivable_lanes = node_->declare_parameter<bool>("consider_no_drivable_lanes");

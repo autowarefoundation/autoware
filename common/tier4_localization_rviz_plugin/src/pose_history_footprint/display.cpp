@@ -172,7 +172,7 @@ void PoseHistoryFootprint::updateFootprint()
   if (!vehicle_info_) {
     try {
       vehicle_info_ = std::make_shared<VehicleInfo>(
-        VehicleInfoUtil(*rviz_ros_node_.lock()->get_raw_node()).getVehicleInfo());
+        VehicleInfoUtils(*rviz_ros_node_.lock()->get_raw_node()).getVehicleInfo());
       updateVehicleInfo();
     } catch (const std::exception & e) {
       RCLCPP_WARN_THROTTLE(

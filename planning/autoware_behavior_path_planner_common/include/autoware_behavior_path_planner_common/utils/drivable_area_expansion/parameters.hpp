@@ -15,8 +15,8 @@
 #ifndef AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__DRIVABLE_AREA_EXPANSION__PARAMETERS_HPP_
 #define AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__DRIVABLE_AREA_EXPANSION__PARAMETERS_HPP_
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <rclcpp/node.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <string>
 #include <vector>
@@ -83,7 +83,7 @@ struct DrivableAreaExpansionParameters
   bool avoid_dynamic_objects{};
   bool print_runtime{};
   std::vector<std::string> avoid_linestring_types{};
-  vehicle_info_util::VehicleInfo vehicle_info;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info;
 
   DrivableAreaExpansionParameters() = default;
   explicit DrivableAreaExpansionParameters(rclcpp::Node & node) { init(node); }
@@ -121,7 +121,7 @@ struct DrivableAreaExpansionParameters
     avoid_linestring_dist = node.declare_parameter<double>(AVOID_LINESTRING_DIST_PARAM);
     print_runtime = node.declare_parameter<bool>(PRINT_RUNTIME_PARAM);
 
-    vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
+    vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo();
   }
 };
 

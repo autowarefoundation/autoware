@@ -22,12 +22,12 @@
 #include "obstacle_velocity_limiter/trajectory_preprocessing.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/duration.hpp>
 #include <rclcpp/logging.hpp>
 #include <rclcpp/qos.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <boost/geometry.hpp>
 
@@ -71,7 +71,7 @@ ObstacleVelocityLimiterNode::ObstacleVelocityLimiterNode(const rclcpp::NodeOptio
   pub_runtime_ =
     create_publisher<tier4_debug_msgs::msg::Float64Stamped>("~/output/runtime_microseconds", 1);
 
-  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
   vehicle_lateral_offset_ = static_cast<Float>(vehicle_info.max_lateral_offset_m);
   vehicle_front_offset_ = static_cast<Float>(vehicle_info.max_longitudinal_offset_m);
 

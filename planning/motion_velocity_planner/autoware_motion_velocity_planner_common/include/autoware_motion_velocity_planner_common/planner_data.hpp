@@ -15,9 +15,9 @@
 #ifndef AUTOWARE_MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 #define AUTOWARE_MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <autoware_velocity_smoother/smoother/smoother_base.hpp>
 #include <route_handler/route_handler.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
@@ -54,7 +54,7 @@ struct TrafficSignalStamped
 struct PlannerData
 {
   explicit PlannerData(rclcpp::Node & node)
-  : vehicle_info_(vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo())
+  : vehicle_info_(autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo())
   {
   }
 
@@ -81,7 +81,7 @@ struct PlannerData
   // velocity smoother
   std::shared_ptr<autoware::velocity_smoother::SmootherBase> velocity_smoother_{};
   // parameters
-  vehicle_info_util::VehicleInfo vehicle_info_;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 
   /**
    *@fn

@@ -59,7 +59,7 @@ using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
 
 SurroundObstacleCheckerDebugNode::SurroundObstacleCheckerDebugNode(
-  const vehicle_info_util::VehicleInfo & vehicle_info, const double base_link2front,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double base_link2front,
   const std::string & object_label, const double & surround_check_front_distance,
   const double & surround_check_side_distance, const double & surround_check_back_distance,
   const double & surround_check_hysteresis_distance, const geometry_msgs::msg::Pose & self_pose,

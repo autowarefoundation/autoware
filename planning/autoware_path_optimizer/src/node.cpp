@@ -84,7 +84,7 @@ std::vector<double> calcSegmentLengthVector(const std::vector<TrajectoryPoint> &
 
 PathOptimizer::PathOptimizer(const rclcpp::NodeOptions & node_options)
 : Node("path_optimizer", node_options),
-  vehicle_info_(vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo()),
+  vehicle_info_(autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo()),
   debug_data_ptr_(std::make_shared<DebugData>()),
   time_keeper_ptr_(std::make_shared<TimeKeeper>())
 {

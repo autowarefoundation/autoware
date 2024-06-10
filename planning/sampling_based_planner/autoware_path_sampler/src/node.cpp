@@ -60,7 +60,7 @@ bool hasZeroVelocity(const TrajectoryPoint & traj_point)
 
 PathSampler::PathSampler(const rclcpp::NodeOptions & node_options)
 : Node("path_sampler", node_options),
-  vehicle_info_(vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo()),
+  vehicle_info_(autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo()),
   time_keeper_ptr_(std::make_shared<TimeKeeper>())
 {
   // interface publisher

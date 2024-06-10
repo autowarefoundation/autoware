@@ -38,7 +38,7 @@ PredictedPathCheckerNode::PredictedPathCheckerNode(const rclcpp::NodeOptions & n
   group_cli_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   adaptor.init_cli(cli_set_stop_, group_cli_);
   adaptor.init_sub(sub_stop_state_, this, &PredictedPathCheckerNode::onIsStopped);
-  vehicle_info_ = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  vehicle_info_ = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
 
   // Node Parameter
   node_param_.update_rate = declare_parameter("update_rate", 10.0);

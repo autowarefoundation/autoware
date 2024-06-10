@@ -4,7 +4,7 @@
   <arg name="obstacle_cruise_planner_param_path" default="$(find-pkg-share obstacle_cruise_planner)/config/obstacle_cruise_planner.param.yaml"/>
 
   <!-- vehicle info param -->
-  <arg name="vehicle_info_param_path" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml"/>
+  <arg name="vehicle_info_param_path" default="$(find-pkg-share autoware_vehicle_info_utils)/config/vehicle_info.param.yaml"/>
 
   <!-- input -->
   <arg name="input_trajectory" default="/planning/scenario_planning/lane_driving/trajectory"/>

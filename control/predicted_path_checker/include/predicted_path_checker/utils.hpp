@@ -15,10 +15,10 @@
 #ifndef PREDICTED_PATH_CHECKER__UTILS_HPP_
 #define PREDICTED_PATH_CHECKER__UTILS_HPP_
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <interpolation/linear_interpolation.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
@@ -39,6 +39,7 @@
 namespace utils
 {
 
+using autoware::vehicle_info_utils::VehicleInfo;
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_planning_msgs::msg::TrajectoryPoint;
@@ -48,7 +49,6 @@ using geometry_msgs::msg::TransformStamped;
 using std_msgs::msg::Header;
 using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
-using vehicle_info_util::VehicleInfo;
 using PointArray = std::vector<geometry_msgs::msg::Point>;
 
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
@@ -57,7 +57,7 @@ void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point &
 
 Polygon2d createOneStepPolygon(
   const geometry_msgs::msg::Pose & base_step_pose, const geometry_msgs::msg::Pose & next_step_pose,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const double expand_width);
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double expand_width);
 
 TrajectoryPoint calcInterpolatedPoint(
   const TrajectoryPoints & trajectory, const geometry_msgs::msg::Point & target_point,
@@ -65,7 +65,7 @@ TrajectoryPoint calcInterpolatedPoint(
 
 std::pair<size_t, TrajectoryPoint> findStopPoint(
   TrajectoryPoints & predicted_trajectory_array, const size_t collision_idx,
-  const double stop_margin, vehicle_info_util::VehicleInfo & vehicle_info);
+  const double stop_margin, autoware::vehicle_info_utils::VehicleInfo & vehicle_info);
 
 bool isInBrakeDistance(
   const TrajectoryPoints & trajectory, const size_t stop_idx, const double relative_velocity,

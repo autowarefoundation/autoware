@@ -22,6 +22,7 @@
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_rtc_interface</depend>
+  <depend>autoware_vehicle_info_utils</depend>
   <depend>fmt</depend>
   <depend>geometry_msgs</depend>
   <depend>interpolation</depend>
@@ -36,7 +37,6 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>tier4_planning_msgs</depend>
-  <depend>vehicle_info_util</depend>
   <depend>visualization_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>

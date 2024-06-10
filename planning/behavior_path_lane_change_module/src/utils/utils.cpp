@@ -25,6 +25,7 @@
 #include "object_recognition_utils/predicted_path_utils.hpp"
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
 
+#include <autoware_vehicle_info_utils/vehicle_info.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/trajectory/interpolation.hpp>
@@ -33,7 +34,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
-#include <vehicle_info_util/vehicle_info.hpp>
 
 #include <geometry_msgs/msg/detail/pose__struct.hpp>
 
@@ -1159,7 +1159,7 @@ rclcpp::Logger getLogger(const std::string & type)
 }
 
 Polygon2d getEgoCurrentFootprint(
-  const Pose & ego_pose, const vehicle_info_util::VehicleInfo & ego_info)
+  const Pose & ego_pose, const autoware::vehicle_info_utils::VehicleInfo & ego_info)
 {
   const auto base_to_front = ego_info.max_longitudinal_offset_m;
   const auto base_to_rear = ego_info.rear_overhang_m;
@@ -1240,7 +1240,7 @@ geometry_msgs::msg::Point32 create_point32(const geometry_msgs::msg::Pose & pose
 };
 
 geometry_msgs::msg::Polygon createExecutionArea(
-  const vehicle_info_util::VehicleInfo & vehicle_info, const Pose & pose,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const Pose & pose,
   double additional_lon_offset, double additional_lat_offset)
 {
   const double & base_to_front = vehicle_info.max_longitudinal_offset_m;

@@ -15,13 +15,13 @@
 #ifndef AUTOWARE_AUTONOMOUS_EMERGENCY_BRAKING__NODE_HPP_
 #define AUTOWARE_AUTONOMOUS_EMERGENCY_BRAKING__NODE_HPP_
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/polling_subscriber.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <autoware_system_msgs/msg/autoware_state.hpp>
@@ -59,11 +59,11 @@ using nav_msgs::msg::Odometry;
 using sensor_msgs::msg::Imu;
 using sensor_msgs::msg::PointCloud2;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
+using autoware::vehicle_info_utils::VehicleInfo;
 using diagnostic_updater::DiagnosticStatusWrapper;
 using diagnostic_updater::Updater;
 using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
-using vehicle_info_util::VehicleInfo;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 using Path = std::vector<geometry_msgs::msg::Pose>;

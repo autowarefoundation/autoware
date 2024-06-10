@@ -15,11 +15,11 @@
 #ifndef OBSTACLE_CRUISE_PLANNER__OPTIMIZATION_BASED_PLANNER__OPTIMIZATION_BASED_PLANNER_HPP_
 #define OBSTACLE_CRUISE_PLANNER__OPTIMIZATION_BASED_PLANNER__OPTIMIZATION_BASED_PLANNER_HPP_
 
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "obstacle_cruise_planner/optimization_based_planner/s_boundary.hpp"
 #include "obstacle_cruise_planner/optimization_based_planner/velocity_optimizer.hpp"
 #include "obstacle_cruise_planner/planner_interface.hpp"
 #include "obstacle_cruise_planner/type_alias.hpp"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
@@ -35,8 +35,8 @@ class OptimizationBasedPlanner : public PlannerInterface
 public:
   OptimizationBasedPlanner(
     rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
-    const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param,
-    const std::shared_ptr<DebugData> debug_data_ptr);
+    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info,
+    const EgoNearestParam & ego_nearest_param, const std::shared_ptr<DebugData> debug_data_ptr);
 
   std::vector<TrajectoryPoint> generateCruiseTrajectory(
     const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,

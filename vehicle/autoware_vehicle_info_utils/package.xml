@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>vehicle_info_util</name>
+  <name>autoware_vehicle_info_utils</name>
   <version>0.1.0</version>
-  <description>The vehicle_info_util package</description>
+  <description>The autoware_vehicle_info_utils package</description>
 
   <!-- maintainer -->
   <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>

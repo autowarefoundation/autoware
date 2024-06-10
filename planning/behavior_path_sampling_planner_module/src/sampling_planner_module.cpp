@@ -35,7 +35,7 @@ SamplingPlannerModule::SamplingPlannerModule(
   std::unordered_map<std::string, std::shared_ptr<ObjectsOfInterestMarkerInterface>> &
     objects_of_interest_marker_interface_ptr_map)
 : SceneModuleInterface{name, node, rtc_interface_ptr_map, objects_of_interest_marker_interface_ptr_map},  // NOLINT
-  vehicle_info_{vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo()}
+  vehicle_info_{autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo()}
 {
   internal_params_ = std::make_shared<SamplingPlannerInternalParameters>();
   updateModuleParams(parameters);

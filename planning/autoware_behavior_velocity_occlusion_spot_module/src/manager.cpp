@@ -109,7 +109,7 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
   pp.grid.free_space_max = getOrDeclareParameter<int>(node, ns + ".grid.free_space_max");
   pp.grid.occupied_min = getOrDeclareParameter<int>(node, ns + ".grid.occupied_min");
 
-  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
+  const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo();
   pp.baselink_to_front = vehicle_info.max_longitudinal_offset_m;
   pp.wheel_tread = vehicle_info.wheel_tread_m;
   pp.right_overhang = vehicle_info.right_overhang_m;

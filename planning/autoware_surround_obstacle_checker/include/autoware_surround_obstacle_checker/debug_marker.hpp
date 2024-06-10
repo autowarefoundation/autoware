@@ -15,8 +15,8 @@
 #ifndef AUTOWARE_SURROUND_OBSTACLE_CHECKER__DEBUG_MARKER_HPP_
 #define AUTOWARE_SURROUND_OBSTACLE_CHECKER__DEBUG_MARKER_HPP_
 
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/planning_behavior.hpp>
 #include <autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp>
@@ -34,6 +34,7 @@
 namespace autoware::surround_obstacle_checker
 {
 
+using autoware::vehicle_info_utils::VehicleInfo;
 using autoware_adapi_v1_msgs::msg::PlanningBehavior;
 using autoware_adapi_v1_msgs::msg::VelocityFactor;
 using autoware_adapi_v1_msgs::msg::VelocityFactorArray;
@@ -41,7 +42,6 @@ using geometry_msgs::msg::PolygonStamped;
 using tier4_planning_msgs::msg::StopFactor;
 using tier4_planning_msgs::msg::StopReason;
 using tier4_planning_msgs::msg::StopReasonArray;
-using vehicle_info_util::VehicleInfo;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 
@@ -56,7 +56,7 @@ class SurroundObstacleCheckerDebugNode
 {
 public:
   explicit SurroundObstacleCheckerDebugNode(
-    const vehicle_info_util::VehicleInfo & vehicle_info, const double base_link2front,
+    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double base_link2front,
     const std::string & object_label, const double & surround_check_front_distance,
     const double & surround_check_side_distance, const double & surround_check_back_distance,
     const double & surround_check_hysteresis_distance, const geometry_msgs::msg::Pose & self_pose,
@@ -79,7 +79,7 @@ private:
   rclcpp::Publisher<PolygonStamped>::SharedPtr vehicle_footprint_offset_pub_;
   rclcpp::Publisher<PolygonStamped>::SharedPtr vehicle_footprint_recover_offset_pub_;
 
-  vehicle_info_util::VehicleInfo vehicle_info_;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
   double base_link2front_;
   std::string object_label_;
   double surround_check_front_distance_;

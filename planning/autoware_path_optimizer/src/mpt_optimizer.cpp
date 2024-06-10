@@ -34,7 +34,7 @@ namespace autoware::path_optimizer
 namespace
 {
 std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesByUniformCircle(
-  const vehicle_info_util::VehicleInfo & vehicle_info, const size_t circle_num,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const size_t circle_num,
   const double radius_ratio)
 {
   const double lateral_offset =
@@ -56,7 +56,7 @@ std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesByUniform
 }
 
 std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesByBicycleModel(
-  const vehicle_info_util::VehicleInfo & vehicle_info, const size_t circle_num,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const size_t circle_num,
   const double rear_radius_ratio, const double front_radius_ratio)
 {
   if (circle_num < 2) {
@@ -84,7 +84,7 @@ std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesByBicycle
 }
 
 std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesByFittingUniformCircle(
-  const vehicle_info_util::VehicleInfo & vehicle_info, const size_t circle_num)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const size_t circle_num)
 {
   if (circle_num < 2) {
     throw std::invalid_argument("circle_num is less than 2.");
@@ -169,7 +169,7 @@ double calcLateralDistToBounds(
 }  // namespace
 
 MPTOptimizer::MPTParam::MPTParam(
-  rclcpp::Node * node, const vehicle_info_util::VehicleInfo & vehicle_info)
+  rclcpp::Node * node, const autoware::vehicle_info_utils::VehicleInfo & vehicle_info)
 {
   {  // option
     steer_limit_constraint = node->declare_parameter<bool>("mpt.option.steer_limit_constraint");
@@ -393,8 +393,8 @@ void MPTOptimizer::MPTParam::onParam(const std::vector<rclcpp::Parameter> & para
 
 MPTOptimizer::MPTOptimizer(
   rclcpp::Node * node, const bool enable_debug_info, const EgoNearestParam ego_nearest_param,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const TrajectoryParam & traj_param,
-  const std::shared_ptr<DebugData> debug_data_ptr,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info,
+  const TrajectoryParam & traj_param, const std::shared_ptr<DebugData> debug_data_ptr,
   const std::shared_ptr<TimeKeeper> time_keeper_ptr)
 : enable_debug_info_(enable_debug_info),
   ego_nearest_param_(ego_nearest_param),

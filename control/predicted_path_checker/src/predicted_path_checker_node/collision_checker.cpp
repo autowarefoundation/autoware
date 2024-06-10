@@ -27,7 +27,7 @@ CollisionChecker::CollisionChecker(
   rclcpp::Node * node, std::shared_ptr<PredictedPathCheckerDebugNode> debug_ptr)
 : debug_ptr_(std::move(debug_ptr)),
   node_(node),
-  vehicle_info_(vehicle_info_util::VehicleInfoUtil(*node).getVehicleInfo())
+  vehicle_info_(autoware::vehicle_info_utils::VehicleInfoUtils(*node).getVehicleInfo())
 {
 }
 

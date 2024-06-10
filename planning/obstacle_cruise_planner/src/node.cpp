@@ -353,7 +353,7 @@ void ObstacleCruisePlannerNode::BehaviorDeterminationParam::onParam(
 
 ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions & node_options)
 : Node("obstacle_cruise_planner", node_options),
-  vehicle_info_(vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo()),
+  vehicle_info_(autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo()),
   debug_data_ptr_(std::make_shared<DebugData>())
 {
   using std::placeholders::_1;
@@ -558,7 +558,7 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
 
 std::vector<Polygon2d> ObstacleCruisePlannerNode::createOneStepPolygons(
   const std::vector<TrajectoryPoint> & traj_points,
-  const vehicle_info_util::VehicleInfo & vehicle_info,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info,
   const geometry_msgs::msg::Pose & current_ego_pose, const double lat_margin) const
 {
   const auto & p = behavior_determination_param_;

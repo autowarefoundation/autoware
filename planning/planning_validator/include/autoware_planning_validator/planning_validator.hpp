@@ -17,9 +17,9 @@
 
 #include "autoware_planning_validator/debug_marker.hpp"
 #include "autoware_planning_validator/msg/planning_validator_status.hpp"
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -124,7 +124,7 @@ private:
   PlanningValidatorStatus validation_status_;
   ValidationParams validation_params_;  // for thresholds
 
-  vehicle_info_util::VehicleInfo vehicle_info_;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 
   bool isAllValid(const PlanningValidatorStatus & status) const;
 

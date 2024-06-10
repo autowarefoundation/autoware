@@ -465,7 +465,7 @@ private:
   mutable std::shared_ptr<ObjectsFilteringParams> objects_filtering_params_;
   mutable std::shared_ptr<SafetyCheckParams> safety_check_params_;
 
-  vehicle_info_util::VehicleInfo vehicle_info_{};
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_{};
 
   // planner
   std::vector<std::shared_ptr<PullOverPlannerBase>> pull_over_planners_;

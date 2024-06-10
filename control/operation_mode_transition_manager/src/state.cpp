@@ -33,7 +33,7 @@ using tier4_autoware_utils::calcYawDeviation;
 AutonomousMode::AutonomousMode(rclcpp::Node * node)
 : logger_(node->get_logger()), clock_(node->get_clock())
 {
-  vehicle_info_ = vehicle_info_util::VehicleInfoUtil(*node).getVehicleInfo();
+  vehicle_info_ = autoware::vehicle_info_utils::VehicleInfoUtils(*node).getVehicleInfo();
 
   sub_control_cmd_ = node->create_subscription<Control>(
     "control_cmd", 1, [this](const Control::SharedPtr msg) { control_cmd_ = *msg; });

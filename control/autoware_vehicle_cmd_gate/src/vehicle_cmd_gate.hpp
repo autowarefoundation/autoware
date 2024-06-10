@@ -21,11 +21,11 @@
 #include "vehicle_cmd_filter.hpp"
 
 #include <autoware_vehicle_cmd_gate/msg/is_filter_activated.hpp>
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/mrm_state.hpp>
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>

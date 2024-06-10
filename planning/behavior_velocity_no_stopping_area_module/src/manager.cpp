@@ -39,7 +39,7 @@ NoStoppingAreaModuleManager::NoStoppingAreaModuleManager(rclcpp::Node & node)
 {
   const std::string ns(getModuleName());
   auto & pp = planner_param_;
-  const auto & vi = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
+  const auto & vi = autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo();
   pp.state_clear_time = getOrDeclareParameter<double>(node, ns + ".state_clear_time");
   pp.stuck_vehicle_vel_thr = getOrDeclareParameter<double>(node, ns + ".stuck_vehicle_vel_thr");
   pp.stop_margin = getOrDeclareParameter<double>(node, ns + ".stop_margin");

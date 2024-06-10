@@ -1,7 +1,7 @@
 <launch>
   <arg name="launch_driver" default="true" description="do launch driver"/>
   <arg name="sensor_model" default="sample_sensor_kit" description="sensor model name"/>
-  <arg name="vehicle_mirror_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_mirror.param.yaml" description="path to the file of vehicle mirror position yaml"/>
+  <arg name="vehicle_mirror_param_file" default="$(find-pkg-share autoware_vehicle_info_utils)/config/vehicle_mirror.param.yaml" description="path to the file of vehicle mirror position yaml"/>
   <arg name="pointcloud_container_name" default="pointcloud_container"/>
 
   <let name="sensor_launch_pkg" value="$(find-pkg-share $(var sensor_model)_launch)"/>

@@ -18,10 +18,10 @@
 #include "autoware_static_centerline_generator/srv/load_map.hpp"
 #include "autoware_static_centerline_generator/srv/plan_path.hpp"
 #include "autoware_static_centerline_generator/srv/plan_route.hpp"
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "centerline_source/optimization_trajectory_based_centerline.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "type_alias.hpp"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include "std_msgs/msg/bool.hpp"
 #include "std_msgs/msg/float32.hpp"
@@ -115,7 +115,7 @@ private:
   rclcpp::CallbackGroup::SharedPtr callback_group_;
 
   // vehicle info
-  vehicle_info_util::VehicleInfo vehicle_info_;
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 };
 }  // namespace autoware::static_centerline_generator
 #endif  // STATIC_CENTERLINE_GENERATOR_NODE_HPP_

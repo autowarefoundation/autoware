@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "vehicle_info_util/vehicle_info.hpp"
+#include "autoware_vehicle_info_utils/vehicle_info.hpp"
 
-namespace vehicle_info_util
+namespace autoware::vehicle_info_utils
 {
 tier4_autoware_utils::LinearRing2d VehicleInfo::createFootprint(const double margin) const
 {
@@ -85,4 +85,4 @@ VehicleInfo createVehicleInfo(
   };
 }
 
-}  // namespace vehicle_info_util
+}  // namespace autoware::vehicle_info_utils

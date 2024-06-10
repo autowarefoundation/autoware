@@ -10,7 +10,7 @@
   <arg name="output_debug_markers" default="~/output/debug_markers"/>
 
   <arg name="param_path" default="$(find-pkg-share obstacle_velocity_limiter)/config/default_obstacle_velocity_limiter.param.yaml"/>
-  <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml"/>
+  <arg name="vehicle_info_param_file" default="$(find-pkg-share autoware_vehicle_info_utils)/config/vehicle_info.param.yaml"/>
 
   <node pkg="obstacle_velocity_limiter" exec="obstacle_velocity_limiter" name="obstacle_velocity_limiter" output="screen">
     <param from="$(var param_path)"/>

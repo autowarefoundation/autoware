@@ -20,7 +20,7 @@
 #include "motion_utils/marker/marker_helper.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
 
-#include <vehicle_info_util/vehicle_info_util.hpp>
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -40,7 +40,7 @@ VelocitySmootherNode::VelocitySmootherNode(const rclcpp::NodeOptions & node_opti
   using std::placeholders::_1;
 
   // set common params
-  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  const auto vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
   wheelbase_ = vehicle_info.wheel_base_m;
   base_link2front_ = vehicle_info.max_longitudinal_offset_m;
   initCommonParam();

@@ -105,8 +105,9 @@ static double getOffsetToLanesBoundary(
 
 lanelet::ConstLanelets generateBetweenEgoAndExpandedPullOverLanes(
   const lanelet::ConstLanelets & pull_over_lanes, const bool left_side,
-  const geometry_msgs::msg::Pose ego_pose, const vehicle_info_util::VehicleInfo & vehicle_info,
-  const double outer_road_offset, const double inner_road_offset)
+  const geometry_msgs::msg::Pose ego_pose,
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double outer_road_offset,
+  const double inner_road_offset)
 {
   const double front_overhang = vehicle_info.front_overhang_m,
                wheel_base = vehicle_info.wheel_base_m, wheel_tread = vehicle_info.wheel_tread_m;

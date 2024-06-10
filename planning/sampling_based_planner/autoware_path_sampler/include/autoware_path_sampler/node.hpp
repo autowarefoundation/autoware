@@ -19,8 +19,8 @@
 #include "autoware_path_sampler/parameters.hpp"
 #include "autoware_path_sampler/type_alias.hpp"
 #include "autoware_sampler_common/transform/spline_transform.hpp"
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <autoware_sampler_common/structures.hpp>
 
@@ -39,7 +39,7 @@ public:
 
 protected:  // for the static_centerline_generator package
   // argument variables
-  vehicle_info_util::VehicleInfo vehicle_info_{};
+  autoware::vehicle_info_utils::VehicleInfo vehicle_info_{};
   mutable DebugData debug_data_{};
   mutable std::shared_ptr<TimeKeeper> time_keeper_ptr_{nullptr};
 

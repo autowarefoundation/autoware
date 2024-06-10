@@ -17,6 +17,7 @@
 
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_planning_test_manager</depend>
+  <depend>autoware_vehicle_info_utils</depend>
   <depend>diagnostic_updater</depend>
   <depend>geometry_msgs</depend>
   <depend>motion_utils</depend>
@@ -24,7 +25,6 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tier4_autoware_utils</depend>
-  <depend>vehicle_info_util</depend>
   <depend>visualization_msgs</depend>
 
   <test_depend>ament_cmake_ros</test_depend>

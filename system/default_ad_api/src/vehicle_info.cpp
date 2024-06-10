@@ -14,7 +14,7 @@
 
 #include "vehicle_info.hpp"
 
-#include <vehicle_info_util/vehicle_info_util.hpp>
+#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
 namespace
 {
@@ -41,7 +41,7 @@ VehicleInfoNode::VehicleInfoNode(const rclcpp::NodeOptions & options)
     res->dimensions = dimensions_;
   };
 
-  const auto vehicle = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  const auto vehicle = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
   dimensions_.wheel_radius = vehicle.wheel_radius_m;
   dimensions_.wheel_width = vehicle.wheel_width_m;
   dimensions_.wheel_base = vehicle.wheel_base_m;
