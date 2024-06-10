@@ -52,13 +52,12 @@ private:
   double warn_ellipse_size_lateral_direction_;
   Ellipse ellipse_;
 
-  void onOdom(nav_msgs::msg::Odometry::ConstSharedPtr input_msg);
-  visualization_msgs::msg::Marker createEllipseMarker(
+  void on_odom(nav_msgs::msg::Odometry::ConstSharedPtr input_msg);
+  visualization_msgs::msg::Marker create_ellipse_marker(
     const Ellipse & ellipse, nav_msgs::msg::Odometry::ConstSharedPtr odom);
-  double measureSizeEllipseAlongBodyFrame(const Eigen::Matrix2d & Pinv, double theta);
+  static double measure_size_ellipse_along_body_frame(const Eigen::Matrix2d & Pinv, double theta);
 
 public:
   explicit LocalizationErrorMonitor(const rclcpp::NodeOptions & options);
-  ~LocalizationErrorMonitor() = default;
 };
 #endif  // LOCALIZATION_ERROR_MONITOR__LOCALIZATION_ERROR_MONITOR_HPP_

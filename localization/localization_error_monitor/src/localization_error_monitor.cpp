@@ -45,7 +45,7 @@ LocalizationErrorMonitor::LocalizationErrorMonitor(const rclcpp::NodeOptions & o
     this->declare_parameter<double>("warn_ellipse_size_lateral_direction");
 
   odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-    "input/odom", 1, std::bind(&LocalizationErrorMonitor::onOdom, this, std::placeholders::_1));
+    "input/odom", 1, std::bind(&LocalizationErrorMonitor::on_odom, this, std::placeholders::_1));
 
   // QoS setup
   rclcpp::QoS durable_qos(1);
@@ -58,7 +58,7 @@ LocalizationErrorMonitor::LocalizationErrorMonitor(const rclcpp::NodeOptions & o
   logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
-visualization_msgs::msg::Marker LocalizationErrorMonitor::createEllipseMarker(
+visualization_msgs::msg::Marker LocalizationErrorMonitor::create_ellipse_marker(
   const Ellipse & ellipse, nav_msgs::msg::Odometry::ConstSharedPtr odom)
 {
   tf2::Quaternion quat;
@@ -85,7 +85,7 @@ visualization_msgs::msg::Marker LocalizationErrorMonitor::createEllipseMarker(
   return marker;
 }
 
-void LocalizationErrorMonitor::onOdom(nav_msgs::msg::Odometry::ConstSharedPtr input_msg)
+void LocalizationErrorMonitor::on_odom(nav_msgs::msg::Odometry::ConstSharedPtr input_msg)
 {
   // create xy covariance (2x2 matrix)
   // input geometry_msgs::PoseWithCovariance contain 6x6 matrix
@@ -110,21 +110,21 @@ void LocalizationErrorMonitor::onOdom(nav_msgs::msg::Odometry::ConstSharedPtr in
   ellipse_.P = xy_covariance;
   const double yaw_vehicle = tf2::getYaw(input_msg->pose.pose.orientation);
   ellipse_.size_lateral_direction =
-    scale_ * measureSizeEllipseAlongBodyFrame(ellipse_.P.inverse(), yaw_vehicle);
+    scale_ * measure_size_ellipse_along_body_frame(ellipse_.P.inverse(), yaw_vehicle);
 
-  const auto ellipse_marker = createEllipseMarker(ellipse_, input_msg);
+  const auto ellipse_marker = create_ellipse_marker(ellipse_, input_msg);
   ellipse_marker_pub_->publish(ellipse_marker);
 
   // diagnostics
   std::vector<diagnostic_msgs::msg::DiagnosticStatus> diag_status_array;
   diag_status_array.push_back(
-    checkLocalizationAccuracy(ellipse_.long_radius, warn_ellipse_size_, error_ellipse_size_));
-  diag_status_array.push_back(checkLocalizationAccuracyLateralDirection(
+    check_localization_accuracy(ellipse_.long_radius, warn_ellipse_size_, error_ellipse_size_));
+  diag_status_array.push_back(check_localization_accuracy_lateral_direction(
     ellipse_.size_lateral_direction, warn_ellipse_size_lateral_direction_,
     error_ellipse_size_lateral_direction_));
 
   diagnostic_msgs::msg::DiagnosticStatus diag_merged_status;
-  diag_merged_status = mergeDiagnosticStatus(diag_status_array);
+  diag_merged_status = merge_diagnostic_status(diag_status_array);
   diag_merged_status.name = "localization: " + std::string(this->get_name());
   diag_merged_status.hardware_id = this->get_name();
 
@@ -134,7 +134,7 @@ void LocalizationErrorMonitor::onOdom(nav_msgs::msg::Odometry::ConstSharedPtr in
   diag_pub_->publish(diag_msg);
 }
 
-double LocalizationErrorMonitor::measureSizeEllipseAlongBodyFrame(
+double LocalizationErrorMonitor::measure_size_ellipse_along_body_frame(
   const Eigen::Matrix2d & Pinv, const double theta)
 {
   Eigen::MatrixXd e(2, 1);

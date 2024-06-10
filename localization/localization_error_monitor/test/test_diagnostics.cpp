@@ -24,23 +24,23 @@ TEST(TestLocalizationErrorMonitorDiagnostics, CheckLocalizationAccuracy)
   const double error_ellipse_size = 1.0;
 
   double ellipse_size = 0.0;
-  stat = checkLocalizationAccuracy(ellipse_size, warn_ellipse_size, error_ellipse_size);
+  stat = check_localization_accuracy(ellipse_size, warn_ellipse_size, error_ellipse_size);
   EXPECT_EQ(stat.level, diagnostic_msgs::msg::DiagnosticStatus::OK);
 
   ellipse_size = 0.7;
-  stat = checkLocalizationAccuracy(ellipse_size, warn_ellipse_size, error_ellipse_size);
+  stat = check_localization_accuracy(ellipse_size, warn_ellipse_size, error_ellipse_size);
   EXPECT_EQ(stat.level, diagnostic_msgs::msg::DiagnosticStatus::OK);
 
   ellipse_size = 0.8;
-  stat = checkLocalizationAccuracy(ellipse_size, warn_ellipse_size, error_ellipse_size);
+  stat = check_localization_accuracy(ellipse_size, warn_ellipse_size, error_ellipse_size);
   EXPECT_EQ(stat.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
 
   ellipse_size = 0.9;
-  stat = checkLocalizationAccuracy(ellipse_size, warn_ellipse_size, error_ellipse_size);
+  stat = check_localization_accuracy(ellipse_size, warn_ellipse_size, error_ellipse_size);
   EXPECT_EQ(stat.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
 
   ellipse_size = 1.0;
-  stat = checkLocalizationAccuracy(ellipse_size, warn_ellipse_size, error_ellipse_size);
+  stat = check_localization_accuracy(ellipse_size, warn_ellipse_size, error_ellipse_size);
   EXPECT_EQ(stat.level, diagnostic_msgs::msg::DiagnosticStatus::ERROR);
 }
 
@@ -52,28 +52,28 @@ TEST(TestLocalizationErrorMonitorDiagnostics, CheckLocalizationAccuracyLateralDi
   const double error_ellipse_size = 0.3;
 
   double ellipse_size = 0.0;
-  stat =
-    checkLocalizationAccuracyLateralDirection(ellipse_size, warn_ellipse_size, error_ellipse_size);
+  stat = check_localization_accuracy_lateral_direction(
+    ellipse_size, warn_ellipse_size, error_ellipse_size);
   EXPECT_EQ(stat.level, diagnostic_msgs::msg::DiagnosticStatus::OK);
 
   ellipse_size = 0.24;
-  stat =
-    checkLocalizationAccuracyLateralDirection(ellipse_size, warn_ellipse_size, error_ellipse_size);
+  stat = check_localization_accuracy_lateral_direction(
+    ellipse_size, warn_ellipse_size, error_ellipse_size);
   EXPECT_EQ(stat.level, diagnostic_msgs::msg::DiagnosticStatus::OK);
 
   ellipse_size = 0.25;
-  stat =
-    checkLocalizationAccuracyLateralDirection(ellipse_size, warn_ellipse_size, error_ellipse_size);
+  stat = check_localization_accuracy_lateral_direction(
+    ellipse_size, warn_ellipse_size, error_ellipse_size);
   EXPECT_EQ(stat.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
 
   ellipse_size = 0.29;
-  stat =
-    checkLocalizationAccuracyLateralDirection(ellipse_size, warn_ellipse_size, error_ellipse_size);
+  stat = check_localization_accuracy_lateral_direction(
+    ellipse_size, warn_ellipse_size, error_ellipse_size);
   EXPECT_EQ(stat.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
 
   ellipse_size = 0.3;
-  stat =
-    checkLocalizationAccuracyLateralDirection(ellipse_size, warn_ellipse_size, error_ellipse_size);
+  stat = check_localization_accuracy_lateral_direction(
+    ellipse_size, warn_ellipse_size, error_ellipse_size);
   EXPECT_EQ(stat.level, diagnostic_msgs::msg::DiagnosticStatus::ERROR);
 }
 
@@ -86,7 +86,7 @@ TEST(TestLocalizationErrorMonitorDiagnostics, MergeDiagnosticStatus)
   stat_array.at(0).message = "OK";
   stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::OK;
   stat_array.at(1).message = "OK";
-  merged_stat = mergeDiagnosticStatus(stat_array);
+  merged_stat = merge_diagnostic_status(stat_array);
   EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::OK);
   EXPECT_EQ(merged_stat.message, "OK");
 
@@ -94,7 +94,7 @@ TEST(TestLocalizationErrorMonitorDiagnostics, MergeDiagnosticStatus)
   stat_array.at(0).message = "WARN0";
   stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::OK;
   stat_array.at(1).message = "OK";
-  merged_stat = mergeDiagnosticStatus(stat_array);
+  merged_stat = merge_diagnostic_status(stat_array);
   EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
   EXPECT_EQ(merged_stat.message, "WARN0");
 
@@ -102,7 +102,7 @@ TEST(TestLocalizationErrorMonitorDiagnostics, MergeDiagnosticStatus)
   stat_array.at(0).message = "OK";
   stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
   stat_array.at(1).message = "WARN1";
-  merged_stat = mergeDiagnosticStatus(stat_array);
+  merged_stat = merge_diagnostic_status(stat_array);
   EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
   EXPECT_EQ(merged_stat.message, "WARN1");
 
@@ -110,7 +110,7 @@ TEST(TestLocalizationErrorMonitorDiagnostics, MergeDiagnosticStatus)
   stat_array.at(0).message = "WARN0";
   stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
   stat_array.at(1).message = "WARN1";
-  merged_stat = mergeDiagnosticStatus(stat_array);
+  merged_stat = merge_diagnostic_status(stat_array);
   EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
   EXPECT_EQ(merged_stat.message, "WARN0; WARN1");
 
@@ -118,7 +118,7 @@ TEST(TestLocalizationErrorMonitorDiagnostics, MergeDiagnosticStatus)
   stat_array.at(0).message = "OK";
   stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
   stat_array.at(1).message = "ERROR1";
-  merged_stat = mergeDiagnosticStatus(stat_array);
+  merged_stat = merge_diagnostic_status(stat_array);
   EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::ERROR);
   EXPECT_EQ(merged_stat.message, "ERROR1");
 
@@ -126,7 +126,7 @@ TEST(TestLocalizationErrorMonitorDiagnostics, MergeDiagnosticStatus)
   stat_array.at(0).message = "WARN0";
   stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
   stat_array.at(1).message = "ERROR1";
-  merged_stat = mergeDiagnosticStatus(stat_array);
+  merged_stat = merge_diagnostic_status(stat_array);
   EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::ERROR);
   EXPECT_EQ(merged_stat.message, "WARN0; ERROR1");
 
@@ -134,7 +134,7 @@ TEST(TestLocalizationErrorMonitorDiagnostics, MergeDiagnosticStatus)
   stat_array.at(0).message = "ERROR0";
   stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
   stat_array.at(1).message = "ERROR1";
-  merged_stat = mergeDiagnosticStatus(stat_array);
+  merged_stat = merge_diagnostic_status(stat_array);
   EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::ERROR);
   EXPECT_EQ(merged_stat.message, "ERROR0; ERROR1");
 }
