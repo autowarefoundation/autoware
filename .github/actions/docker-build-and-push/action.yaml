@@ -36,6 +36,7 @@ runs:
       run: |
         mkdir src
         vcs import src < autoware.repos
+      shell: bash
 
     - name: Set Docker tags
       id: set-docker-tags
