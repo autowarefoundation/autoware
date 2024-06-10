@@ -39,11 +39,13 @@ jobs:
           - cuda
         include:
           - name: no-cuda
+            platform: arm64
             base_image_env: base_image
             lib_dir: aarch64
             setup-args: --no-nvidia
             additional-tag-suffix: ""
           - name: cuda
+            platform: arm64
             base_image_env: base_image
             lib_dir: aarch64
             additional-tag-suffix: -cuda
@@ -69,13 +71,13 @@ jobs:
         with:
           bake-target: autoware
           build-args: |
-            *.platform=linux/arm64
+            *.platform=linux/${{ matrix.platform }}
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
             *.args.LIB_DIR=${{ matrix.lib_dir }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}-arm64
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}-arm64,mode=max
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}-${{ matrix.platform }}
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}-${{ matrix.platform }},mode=max
           tag-suffix: ${{ matrix.additional-tag-suffix }}-arm64
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           allow-push: true
