@@ -70,11 +70,9 @@ ENV CCACHE_DIR="/root/.ccache"
 # cspell: ignore libcu libnv
 # Set up development environment
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers openadkit \
+  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers openadkit \
   && pip uninstall -y ansible ansible-core \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache \
-  && find / -name 'libcu*.a' -delete \
-  && find / -name 'libnv*.a' -delete
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Install rosdep dependencies
 COPY --from=src-imported /rosdep-all-depend-packages.txt /tmp/rosdep-all-depend-packages.txt
