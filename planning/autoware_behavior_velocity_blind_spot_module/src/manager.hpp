@@ -29,6 +29,7 @@
 
 namespace autoware::behavior_velocity_planner
 {
+
 class BlindSpotModuleManager : public SceneModuleManagerInterfaceWithRTC
 {
 public:

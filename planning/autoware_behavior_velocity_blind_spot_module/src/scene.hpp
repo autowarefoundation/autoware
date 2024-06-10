@@ -36,6 +36,7 @@
 
 namespace autoware::behavior_velocity_planner
 {
+
 /**
  * @brief  wrapper class of interpolated path with lane id
  */

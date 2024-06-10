@@ -21,7 +21,7 @@ nav:
     - 'About Behavior Velocity': planning/autoware_behavior_velocity_planner
     - 'Template for Custom Module': planning/autoware_behavior_velocity_template_module
     - 'Available Module':
-        - 'Blind Spot': planning/behavior_velocity_blind_spot_module
+        - 'Blind Spot': planning/autoware_behavior_velocity_blind_spot_module
         - 'Crosswalk': planning/behavior_velocity_crosswalk_module
         - 'Detection Area': planning/behavior_velocity_detection_area_module
         - 'Dynamic Obstacle Stop': planning/behavior_velocity_dynamic_obstacle_stop_module
