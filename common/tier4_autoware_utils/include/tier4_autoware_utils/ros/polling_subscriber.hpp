@@ -27,6 +27,14 @@ namespace tier4_autoware_utils
 template <typename T>
 class InterProcessPollingSubscriber
 {
+public:
+  using SharedPtr = std::shared_ptr<InterProcessPollingSubscriber<T>>;
+  static SharedPtr create_subscription(
+    rclcpp::Node * node, const std::string & topic_name, const rclcpp::QoS & qos = rclcpp::QoS{1})
+  {
+    return std::make_shared<InterProcessPollingSubscriber<T>>(node, topic_name, qos);
+  }
+
 private:
   typename rclcpp::Subscription<T>::SharedPtr subscriber_;
   typename T::SharedPtr data_;
