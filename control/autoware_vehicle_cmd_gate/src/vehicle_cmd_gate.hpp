@@ -25,6 +25,7 @@
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/mrm_state.hpp>
@@ -118,16 +119,22 @@ private:
     const std::vector<rclcpp::Parameter> & parameters);
   // Subscription
   rclcpp::Subscription<Heartbeat>::SharedPtr external_emergency_stop_heartbeat_sub_;
-  rclcpp::Subscription<GateMode>::SharedPtr gate_mode_sub_;
-  rclcpp::Subscription<OperationModeState>::SharedPtr operation_mode_sub_;
-  rclcpp::Subscription<MrmState>::SharedPtr mrm_state_sub_;
-  rclcpp::Subscription<Odometry>::SharedPtr kinematics_sub_;             // for filter
-  rclcpp::Subscription<AccelWithCovarianceStamped>::SharedPtr acc_sub_;  // for filter
-  rclcpp::Subscription<SteeringReport>::SharedPtr steer_sub_;            // for filter
+  tier4_autoware_utils::InterProcessPollingSubscriber<GateMode> gate_mode_sub_{
+    this, "input/gate_mode"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<OperationModeState> operation_mode_sub_{
+    this, "input/operation_mode", rclcpp::QoS(1).transient_local()};
+  tier4_autoware_utils::InterProcessPollingSubscriber<MrmState> mrm_state_sub_{
+    this, "input/mrm_state"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> kinematics_sub_{
+    this, "/localization/kinematic_state"};  // for filter
+  tier4_autoware_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped> acc_sub_{
+    this, "input/acceleration"};  // for filter
+  tier4_autoware_utils::InterProcessPollingSubscriber<SteeringReport> steer_sub_{
+    this, "input/steering"};  // for filter
 
-  void onGateMode(GateMode::ConstSharedPtr msg);
+  void onGateMode();
   void onExternalEmergencyStopHeartbeat(Heartbeat::ConstSharedPtr msg);
-  void onMrmState(MrmState::ConstSharedPtr msg);
+  void onMrmState();
 
   bool is_engaged_;
   bool is_system_emergency_ = false;
@@ -153,26 +160,37 @@ private:
 
   // Subscriber for auto
   Commands auto_commands_;
-  rclcpp::Subscription<Control>::SharedPtr auto_control_cmd_sub_;
-  rclcpp::Subscription<TurnIndicatorsCommand>::SharedPtr auto_turn_indicator_cmd_sub_;
-  rclcpp::Subscription<HazardLightsCommand>::SharedPtr auto_hazard_light_cmd_sub_;
-  rclcpp::Subscription<GearCommand>::SharedPtr auto_gear_cmd_sub_;
-  void onAutoCtrlCmd(Control::ConstSharedPtr msg);
+  tier4_autoware_utils::InterProcessPollingSubscriber<Control> auto_control_cmd_sub_{
+    this, "input/auto/control_cmd"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<TurnIndicatorsCommand>
+    auto_turn_indicator_cmd_sub_{this, "input/auto/turn_indicators_cmd"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<HazardLightsCommand>
+    auto_hazard_light_cmd_sub_{this, "input/auto/hazard_lights_cmd"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<GearCommand> auto_gear_cmd_sub_{
+    this, "input/auto/gear_cmd"};
+  void onAutoCtrlCmd();
 
   // Subscription for external
   Commands remote_commands_;
-  rclcpp::Subscription<Control>::SharedPtr remote_control_cmd_sub_;
-  rclcpp::Subscription<TurnIndicatorsCommand>::SharedPtr remote_turn_indicator_cmd_sub_;
-  rclcpp::Subscription<HazardLightsCommand>::SharedPtr remote_hazard_light_cmd_sub_;
-  rclcpp::Subscription<GearCommand>::SharedPtr remote_gear_cmd_sub_;
-  void onRemoteCtrlCmd(Control::ConstSharedPtr msg);
+  tier4_autoware_utils::InterProcessPollingSubscriber<Control> remote_control_cmd_sub_{
+    this, "input/external/control_cmd"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<TurnIndicatorsCommand>
+    remote_turn_indicator_cmd_sub_{this, "input/external/turn_indicators_cmd"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<HazardLightsCommand>
+    remote_hazard_light_cmd_sub_{this, "input/external/hazard_lights_cmd"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<GearCommand> remote_gear_cmd_sub_{
+    this, "input/external/gear_cmd"};
+  void onRemoteCtrlCmd();
 
   // Subscription for emergency
   Commands emergency_commands_;
-  rclcpp::Subscription<Control>::SharedPtr emergency_control_cmd_sub_;
-  rclcpp::Subscription<HazardLightsCommand>::SharedPtr emergency_hazard_light_cmd_sub_;
-  rclcpp::Subscription<GearCommand>::SharedPtr emergency_gear_cmd_sub_;
-  void onEmergencyCtrlCmd(Control::ConstSharedPtr msg);
+  tier4_autoware_utils::InterProcessPollingSubscriber<Control> emergency_control_cmd_sub_{
+    this, "input/emergency/control_cmd"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<HazardLightsCommand>
+    emergency_hazard_light_cmd_sub_{this, "input/emergency/hazard_lights_cmd"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<GearCommand> emergency_gear_cmd_sub_{
+    this, "input/emergency/gear_cmd"};
+  void onEmergencyCtrlCmd();
 
   // Parameter
   bool use_emergency_handling_;
@@ -198,10 +216,10 @@ private:
     const SetEmergency::Response::SharedPtr response);
 
   // TODO(Takagi, Isamu): deprecated
-  rclcpp::Subscription<EngageMsg>::SharedPtr engage_sub_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<EngageMsg> engage_sub_{this, "input/engage"};
   rclcpp::Service<Trigger>::SharedPtr srv_external_emergency_stop_;
   rclcpp::Service<Trigger>::SharedPtr srv_clear_external_emergency_stop_;
-  void onEngage(EngageMsg::ConstSharedPtr msg);
+  void onEngage();
   bool onSetExternalEmergencyStopService(
     const std::shared_ptr<rmw_request_id_t> req_header, const Trigger::Request::SharedPtr req,
     const Trigger::Response::SharedPtr res);
