@@ -66,8 +66,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG SETUP_ARGS
 ENV CCACHE_DIR="/var/tmp/ccache"
-ENV CC="/usr/lib/ccache/gcc"
-ENV CXX="/usr/lib/ccache/g++"
 
 # cspell: ignore libcu libnv
 # Set up development environment
@@ -91,10 +89,9 @@ COPY --from=src-imported /autoware/src /autoware/src
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && colcon build --cmake-args \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     " -Wno-dev" \
     " --no-warn-unused-cli" \
+    --mixin release compile-commands ccache \
   && find /autoware/install -type d -exec chmod 777 {} \; \
   && chmod -R 777 /var/tmp/ccache \
   && rm -rf /autoware/build /autoware/src
