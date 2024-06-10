@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(mission_planner)
+project(autoware_mission_planner)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -9,7 +9,7 @@ ament_auto_add_library(goal_pose_visualizer_component SHARED
 )
 
 rclcpp_components_register_node(goal_pose_visualizer_component
-  PLUGIN "mission_planner::GoalPoseVisualizer"
+  PLUGIN "autoware::mission_planner::GoalPoseVisualizer"
   EXECUTABLE goal_pose_visualizer
 )
 
@@ -21,12 +21,12 @@ ament_auto_add_library(${PROJECT_NAME}_component SHARED
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}_component
-  PLUGIN "mission_planner::MissionPlanner"
+  PLUGIN "autoware::mission_planner::MissionPlanner"
   EXECUTABLE mission_planner
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}_component
-  PLUGIN "mission_planner::RouteSelector"
+  PLUGIN "autoware::mission_planner::RouteSelector"
   EXECUTABLE route_selector
 )
 
@@ -34,7 +34,7 @@ ament_auto_add_library(${PROJECT_NAME}_lanelet2_plugins SHARED
   src/lanelet2_plugins/default_planner.cpp
   src/lanelet2_plugins/utility_functions.cpp
 )
-pluginlib_export_plugin_description_file(mission_planner plugins/plugin_description.xml)
+pluginlib_export_plugin_description_file(autoware_mission_planner plugins/plugin_description.xml)
 
 ament_auto_package(
   INSTALL_TO_SHARE

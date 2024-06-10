@@ -20,7 +20,7 @@
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
-namespace mission_planner
+namespace autoware::mission_planner
 {
 class GoalPoseVisualizer : public rclcpp::Node
 {
@@ -35,5 +35,5 @@ private:
     const autoware_planning_msgs::msg::LaneletRoute::ConstSharedPtr msg);
 };
 
-}  // namespace mission_planner
+}  // namespace autoware::mission_planner
 #endif  // GOAL_POSE_VISUALIZER__GOAL_POSE_VISUALIZER_HPP_

@@ -24,7 +24,7 @@
 
 #include <vector>
 
-namespace mission_planner
+namespace autoware::mission_planner
 {
 
 class PlannerPlugin
@@ -45,6 +45,6 @@ public:
   virtual void clearRoute() = 0;
 };
 
-}  // namespace mission_planner
+}  // namespace autoware::mission_planner
 
 #endif  // MISSION_PLANNER__MISSION_PLANNER_PLUGIN_HPP_

@@ -140,7 +140,7 @@ geometry_msgs::msg::Pose get_closest_centerline_pose(
 
 }  // anonymous namespace
 
-namespace mission_planner::lanelet2
+namespace autoware::mission_planner::lanelet2
 {
 
 void DefaultPlanner::initialize_common(rclcpp::Node * node)
@@ -482,7 +482,8 @@ void DefaultPlanner::clearRoute()
   route_handler_.clearRoute();
 }
 
-}  // namespace mission_planner::lanelet2
+}  // namespace autoware::mission_planner::lanelet2
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS(mission_planner::lanelet2::DefaultPlanner, mission_planner::PlannerPlugin)
+PLUGINLIB_EXPORT_CLASS(
+  autoware::mission_planner::lanelet2::DefaultPlanner, autoware::mission_planner::PlannerPlugin)

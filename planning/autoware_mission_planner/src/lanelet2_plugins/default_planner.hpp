@@ -30,7 +30,7 @@
 #include <memory>
 #include <vector>
 
-namespace mission_planner::lanelet2
+namespace autoware::mission_planner::lanelet2
 {
 
 struct DefaultPlannerParameters
@@ -101,6 +101,6 @@ private:
   Pose refine_goal_height(const Pose & goal, const RouteSections & route_sections);
 };
 
-}  // namespace mission_planner::lanelet2
+}  // namespace autoware::mission_planner::lanelet2
 
 #endif  // LANELET2_PLUGINS__DEFAULT_PLANNER_HPP_

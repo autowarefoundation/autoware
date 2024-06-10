@@ -29,13 +29,13 @@
 #include <algorithm>
 #include <utility>
 
-namespace mission_planner
+namespace autoware::mission_planner
 {
 
 MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
 : Node("mission_planner", options),
   arrival_checker_(this),
-  plugin_loader_("mission_planner", "mission_planner::PlannerPlugin"),
+  plugin_loader_("autoware_mission_planner", "autoware::mission_planner::PlannerPlugin"),
   tf_buffer_(get_clock()),
   tf_listener_(tf_buffer_),
   odometry_(nullptr),
@@ -48,7 +48,8 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
   reroute_time_threshold_ = declare_parameter<double>("reroute_time_threshold");
   minimum_reroute_length_ = declare_parameter<double>("minimum_reroute_length");
 
-  planner_ = plugin_loader_.createSharedInstance("mission_planner::lanelet2::DefaultPlanner");
+  planner_ =
+    plugin_loader_.createSharedInstance("autoware::mission_planner::lanelet2::DefaultPlanner");
   planner_->initialize(this);
 
   const auto reroute_availability = std::make_shared<RerouteAvailability>();
@@ -614,7 +615,7 @@ bool MissionPlanner::check_reroute_safety(
     accumulated_length, safety_length);
   return false;
 }
-}  // namespace mission_planner
+}  // namespace autoware::mission_planner
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(mission_planner::MissionPlanner)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::mission_planner::MissionPlanner)

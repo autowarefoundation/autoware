@@ -20,7 +20,7 @@
 
 #include <tf2/utils.h>
 
-namespace mission_planner
+namespace autoware::mission_planner
 {
 
 ArrivalChecker::ArrivalChecker(rclcpp::Node * node) : vehicle_stop_checker_(node)
@@ -83,4 +83,4 @@ bool ArrivalChecker::is_arrived(const PoseStamped & pose) const
   return vehicle_stop_checker_.isVehicleStopped(duration_);
 }
 
-}  // namespace mission_planner
+}  // namespace autoware::mission_planner

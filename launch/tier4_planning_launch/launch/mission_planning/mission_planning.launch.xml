@@ -1,11 +1,11 @@
 <launch>
-  <arg name="mission_planner_param_path" default="$(find-pkg-share mission_planner)/config/mission_planner.param.yaml"/>
+  <arg name="mission_planner_param_path" default="$(find-pkg-share autoware_mission_planner)/config/mission_planner.param.yaml"/>
   <group>
-    <include file="$(find-pkg-share mission_planner)/launch/mission_planner.launch.xml">
+    <include file="$(find-pkg-share autoware_mission_planner)/launch/mission_planner.launch.xml">
       <arg name="mission_planner_param_path" value="$(var mission_planner_param_path)"/>
     </include>
   </group>
   <group>
-    <include file="$(find-pkg-share mission_planner)/launch/goal_pose_visualizer.launch.xml"/>
+    <include file="$(find-pkg-share autoware_mission_planner)/launch/goal_pose_visualizer.launch.xml"/>
   </group>
 </launch>

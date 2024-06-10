@@ -41,7 +41,7 @@
 #include <string>
 #include <vector>
 
-namespace mission_planner
+namespace autoware::mission_planner
 {
 
 using autoware_map_msgs::msg::LaneletMapBin;
@@ -134,6 +134,6 @@ private:
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 
-}  // namespace mission_planner
+}  // namespace autoware::mission_planner
 
 #endif  // MISSION_PLANNER__MISSION_PLANNER_HPP_

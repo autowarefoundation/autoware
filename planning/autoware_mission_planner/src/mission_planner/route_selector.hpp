@@ -26,7 +26,7 @@
 #include <optional>
 #include <variant>
 
-namespace mission_planner
+namespace autoware::mission_planner
 {
 
 using autoware_common_msgs::msg::ResponseStatus;
@@ -101,6 +101,6 @@ private:
   ResponseStatus resume_main_route(ClearRoute::Request::SharedPtr req);
 };
 
-}  // namespace mission_planner
+}  // namespace autoware::mission_planner
 
 #endif  // MISSION_PLANNER__ROUTE_SELECTOR_HPP_

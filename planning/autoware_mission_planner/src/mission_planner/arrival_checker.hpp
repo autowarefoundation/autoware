@@ -22,7 +22,7 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
-namespace mission_planner
+namespace autoware::mission_planner
 {
 
 class ArrivalChecker
@@ -45,6 +45,6 @@ private:
   motion_utils::VehicleStopChecker vehicle_stop_checker_;
 };
 
-}  // namespace mission_planner
+}  // namespace autoware::mission_planner
 
 #endif  // MISSION_PLANNER__ARRIVAL_CHECKER_HPP_

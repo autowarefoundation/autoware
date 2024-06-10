@@ -20,7 +20,7 @@
 #include <memory>
 #include <random>
 
-namespace mission_planner::uuid
+namespace autoware::mission_planner::uuid
 {
 
 std::array<uint8_t, 16> generate_random_id()
@@ -40,9 +40,9 @@ UUID generate_if_empty(const UUID & uuid)
   return result;
 }
 
-}  // namespace mission_planner::uuid
+}  // namespace autoware::mission_planner::uuid
 
-namespace mission_planner
+namespace autoware::mission_planner
 {
 
 RouteInterface::RouteInterface(rclcpp::Clock::SharedPtr clock)
@@ -296,7 +296,7 @@ ResponseStatus RouteSelector::resume_main_route(ClearRoute::Request::SharedPtr r
   throw std::logic_error("route_selector: unknown main route request");
 }
 
-}  // namespace mission_planner
+}  // namespace autoware::mission_planner
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(mission_planner::RouteSelector)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::mission_planner::RouteSelector)

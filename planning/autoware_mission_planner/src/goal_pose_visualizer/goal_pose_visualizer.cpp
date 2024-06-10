@@ -14,7 +14,7 @@
 
 #include "goal_pose_visualizer.hpp"
 
-namespace mission_planner
+namespace autoware::mission_planner
 {
 GoalPoseVisualizer::GoalPoseVisualizer(const rclcpp::NodeOptions & node_options)
 : Node("goal_pose_visualizer", node_options)
@@ -34,7 +34,7 @@ void GoalPoseVisualizer::echo_back_route_callback(
   goal_pose.pose = msg->goal_pose;
   pub_goal_pose_->publish(goal_pose);
 }
-}  // namespace mission_planner
+}  // namespace autoware::mission_planner
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(mission_planner::GoalPoseVisualizer)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::mission_planner::GoalPoseVisualizer)
