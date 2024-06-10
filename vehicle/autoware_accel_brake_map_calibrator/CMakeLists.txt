@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(accel_brake_map_calibrator)
+project(autoware_accel_brake_map_calibrator)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()

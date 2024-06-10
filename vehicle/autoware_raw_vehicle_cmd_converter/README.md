@@ -22,7 +22,7 @@ Once the acceleration map is crafted, it should be loaded when the RawVehicleCmd
 
 ### Auto-Calibration Tool
 
-For ease of calibration and adjustments to the lookup table, an auto-calibration tool is available. More information and instructions for this tool can be found [here](https://github.com/autowarefoundation/autoware.universe/blob/main/vehicle/accel_brake_map_calibrator/accel_brake_map_calibrator/README.md).
+For ease of calibration and adjustments to the lookup table, an auto-calibration tool is available. More information and instructions for this tool can be found [here](https://github.com/autowarefoundation/autoware.universe/blob/main/vehicle/autoware_accel_brake_map_calibrator/README.md).
 
 ## Input topics
 

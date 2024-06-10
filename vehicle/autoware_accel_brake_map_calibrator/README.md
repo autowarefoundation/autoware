@@ -8,20 +8,20 @@ The base map, which is lexus's one by default, is updated iteratively with the l
 
 ### Launch Calibrator
 
-After launching Autoware, run the `accel_brake_map_calibrator` by the following command and then perform autonomous driving. Note: You can collect data with manual driving if it is possible to use the same vehicle interface as during autonomous driving (e.g. using a joystick).
+After launching Autoware, run the `autoware_accel_brake_map_calibrator` by the following command and then perform autonomous driving. Note: You can collect data with manual driving if it is possible to use the same vehicle interface as during autonomous driving (e.g. using a joystick).
 
 ```sh
-ros2 launch accel_brake_map_calibrator accel_brake_map_calibrator.launch.xml rviz:=true
+ros2 launch autoware_accel_brake_map_calibrator accel_brake_map_calibrator.launch.xml rviz:=true
 ```
 
 Or if you want to use rosbag files, run the following commands.
 
 ```sh
-ros2 launch accel_brake_map_calibrator accel_brake_map_calibrator.launch.xml rviz:=true use_sim_time:=true
+ros2 launch autoware_accel_brake_map_calibrator accel_brake_map_calibrator.launch.xml rviz:=true use_sim_time:=true
 ros2 bag play <rosbag_file> --clock
 ```
 
-During the calibration with setting the parameter `progress_file_output` to true, the log file is output in [directory of *accel_brake_map_calibrator*]/config/ . You can also see accel and brake maps in [directory of *accel_brake_map_calibrator*]/config/accel_map.csv and [directory of *accel_brake_map_calibrator*]/config/brake_map.csv after calibration.
+During the calibration with setting the parameter `progress_file_output` to true, the log file is output in [directory of *autoware_accel_brake_map_calibrator*]/config/ . You can also see accel and brake maps in [directory of *autoware_accel_brake_map_calibrator*]/config/accel_map.csv and [directory of *autoware_accel_brake_map_calibrator*]/config/brake_map.csv after calibration.
 
 ### Calibration plugin
 
@@ -86,7 +86,7 @@ The process of calibration can be visualized as below. Since these scripts need 
 The following command shows the plot of used data in the calibration. In each plot of velocity ranges, you can see the distribution of the relationship between pedal and acceleration, and raw data points with colors according to their pitch angles.
 
 ```sh
-ros2 run accel_brake_map_calibrator view_plot.py
+ros2 run autoware_accel_brake_map_calibrator view_plot.py
 ```
 
 ![sample pic](media/log_sample.png)
@@ -102,7 +102,7 @@ The following command shows the statistics of the calibration:
 of all data in each map cell.
 
 ```sh
-ros2 run accel_brake_map_calibrator view_statistics.py
+ros2 run autoware_accel_brake_map_calibrator view_statistics.py
 ```
 
 ![sample pic2](media/statistics_sample.png)
@@ -141,7 +141,7 @@ You can also save accel and brake map in the default directory where Autoware re
 | pedal_accel_graph_output | bool   | if true, it will output a log of the pedal accel graph.                                                                                                                           | true                                                              |
 | progress_file_output     | bool   | if true, it will output a log and csv file of the update process.                                                                                                                 | false                                                             |
 | default_map_dir          | str    | directory of default map                                                                                                                                                          | [directory of *autoware_raw_vehicle_cmd_converter*]/data/default/ |
-| calibrated_map_dir       | str    | directory of calibrated map                                                                                                                                                       | [directory of *accel_brake_map_calibrator*]/config/               |
+| calibrated_map_dir       | str    | directory of calibrated map                                                                                                                                                       | [directory of *autoware_accel_brake_map_calibrator*]/config/      |
 | update_hz                | double | hz for update                                                                                                                                                                     | 10.0                                                              |
 
 ## Algorithm Parameters
@@ -176,9 +176,9 @@ These scripts are useful to test for accel brake map calibration. These generate
 The `accel/brake_tester.py` receives a target accel/brake command from CLI. It sends a target value to `actuation_cmd_publisher.py` which generates the `ActuationCmd`. You can run these scripts by the following commands in the different terminals, and it will be as in the screenshot below.
 
 ```bash
-ros2 run accel_brake_map_calibrator accel_tester.py
-ros2 run accel_brake_map_calibrator brake_tester.py
-ros2 run accel_brake_map_calibrator actuation_cmd_publisher.py
+ros2 run autoware_accel_brake_map_calibrator accel_tester.py
+ros2 run autoware_accel_brake_map_calibrator brake_tester.py
+ros2 run autoware_accel_brake_map_calibrator actuation_cmd_publisher.py
 ```
 
 ![actuation_cmd_publisher_util](./media/actuation_cmd_publisher_util.png)

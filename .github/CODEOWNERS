@@ -244,8 +244,8 @@ system/system_monitor/** fumihito.ito@tier4.jp tetsuhiro.kawaguchi@tier4.jp
 system/topic_state_monitor/** ryohsuke.mitsudome@tier4.jp
 system/velodyne_monitor/** fumihito.ito@tier4.jp
 tools/reaction_analyzer/** berkay@leodrive.ai
-vehicle/accel_brake_map_calibrator/** taiki.tanaka@tier4.jp takeshi.miura@tier4.jp tomoya.kimura@tier4.jp
 vehicle/autoware_steer_offset_estimator/** taiki.tanaka@tier4.jp
+vehicle/autoware_accel_brake_map_calibrator/** taiki.tanaka@tier4.jp takeshi.miura@tier4.jp tomoya.kimura@tier4.jp
 vehicle/external_cmd_converter/** takamasa.horibe@tier4.jp
 vehicle/autoware_raw_vehicle_cmd_converter/** makoto.kurihara@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp
 vehicle/autoware_steer_offset_estimator/** taiki.tanaka@tier4.jp

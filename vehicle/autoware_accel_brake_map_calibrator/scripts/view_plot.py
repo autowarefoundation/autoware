@@ -56,7 +56,7 @@ class ViewPlot(Node):
             )
 
         if calibrated_map_dir is None:
-            package_path = get_package_share_directory("accel_brake_map_calibrator")
+            package_path = get_package_share_directory("autoware_accel_brake_map_calibrator")
             self.declare_parameter(
                 "/accel_brake_map_calibrator/csv_calibrated_map_dir", package_path + "/config/"
             )
@@ -269,7 +269,7 @@ def main(args=None):
 
 
 if __name__ == "__main__":
-    package_path = get_package_share_directory("accel_brake_map_calibrator")
+    package_path = get_package_share_directory("autoware_accel_brake_map_calibrator")
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-d", "--default-map-dir", default=None, type=str, help="directory of default map"

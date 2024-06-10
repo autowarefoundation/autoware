@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "autoware_crosswalk_traffic_light_estimator/node.hpp"
+#include "crosswalk_traffic_light_estimator/node.hpp"
 
 #include <lanelet2_extension/regulatory_elements/Forward.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>

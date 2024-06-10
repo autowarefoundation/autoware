@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-#ifndef ACCEL_BRAKE_MAP_CALIBRATOR__ACCEL_BRAKE_MAP_CALIBRATOR_NODE_HPP_
-#define ACCEL_BRAKE_MAP_CALIBRATOR__ACCEL_BRAKE_MAP_CALIBRATOR_NODE_HPP_
+#ifndef AUTOWARE_ACCEL_BRAKE_MAP_CALIBRATOR__ACCEL_BRAKE_MAP_CALIBRATOR_NODE_HPP_
+#define AUTOWARE_ACCEL_BRAKE_MAP_CALIBRATOR__ACCEL_BRAKE_MAP_CALIBRATOR_NODE_HPP_
 
 #include "autoware_raw_vehicle_cmd_converter/accel_map.hpp"
 #include "autoware_raw_vehicle_cmd_converter/brake_map.hpp"
@@ -53,7 +53,7 @@
 #include <string>
 #include <vector>
 
-namespace accel_brake_map_calibrator
+namespace autoware::accel_brake_map_calibrator
 {
 
 using autoware::raw_vehicle_cmd_converter::AccelMap;
@@ -376,6 +376,6 @@ public:
   explicit AccelBrakeMapCalibrator(const rclcpp::NodeOptions & node_options);
 };
 
-}  // namespace accel_brake_map_calibrator
+}  // namespace autoware::accel_brake_map_calibrator
 
-#endif  // ACCEL_BRAKE_MAP_CALIBRATOR__ACCEL_BRAKE_MAP_CALIBRATOR_NODE_HPP_
+#endif  // AUTOWARE_ACCEL_BRAKE_MAP_CALIBRATOR__ACCEL_BRAKE_MAP_CALIBRATOR_NODE_HPP_

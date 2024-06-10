@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-#include "accel_brake_map_calibrator/accel_brake_map_calibrator_node.hpp"
+#include "autoware_accel_brake_map_calibrator/accel_brake_map_calibrator_node.hpp"
 
 #include <memory>
 
@@ -22,7 +22,8 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
   rclcpp::NodeOptions node_options;
-  rclcpp::spin(std::make_shared<accel_brake_map_calibrator::AccelBrakeMapCalibrator>(node_options));
+  rclcpp::spin(
+    std::make_shared<autoware::accel_brake_map_calibrator::AccelBrakeMapCalibrator>(node_options));
   rclcpp::shutdown();
   return 0;
 }

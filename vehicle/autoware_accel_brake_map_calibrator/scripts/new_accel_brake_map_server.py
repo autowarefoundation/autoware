@@ -50,7 +50,7 @@ class DrawGraph(Node):
             .string_value
         )
 
-        package_path = get_package_share_directory("accel_brake_map_calibrator")
+        package_path = get_package_share_directory("autoware_accel_brake_map_calibrator")
         self.declare_parameter(
             "/accel_brake_map_calibrator/csv_calibrated_map_dir", package_path + "/config/"
         )

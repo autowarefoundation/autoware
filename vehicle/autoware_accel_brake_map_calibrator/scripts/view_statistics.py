@@ -19,17 +19,16 @@ from ament_index_python.packages import get_package_share_directory
 from calc_utils import CalcUtils
 import config as CF
 from csv_reader import CSVReader
-import numpy as np
 from plotter import Plotter
 import rclpy
 from rclpy.node import Node
 
 
-class DelayEstimator(Node):
+class ViewPlot(Node):
     def __init__(self):
+        super().__init__("statistics_viewer")
         # get parameter
-        super().__init__("delay_estimator")
-        package_path = get_package_share_directory("accel_brake_map_calibrator")
+        package_path = get_package_share_directory("autoware_accel_brake_map_calibrator")
         self.declare_parameter("log_file", package_path + "/config/log.csv")
         log_file = self.get_parameter("log_file").get_parameter_value().string_value
         self.declare_parameter("velocity_min_threshold", 0.1)
@@ -54,10 +53,6 @@ class DelayEstimator(Node):
         max_pedal_vel_thr = (
             self.get_parameter("pedal_velocity_thresh").get_parameter_value().double_value
         )
-        self.declare_parameter("update_hz", 10.0)
-        update_hz = self.get_parameter("update_hz").get_parameter_value().double_value
-
-        self.data_span = 1.0 / update_hz
 
         # read csv
         self.cr = CSVReader(log_file, csv_type="file")
@@ -85,56 +80,52 @@ class DelayEstimator(Node):
             pedal_diff_thr,
         )
 
-        # plot all data
-        # value to use for statistics
-        PEDAL_VALUE = 0.1
-        VEL_VALUE_LIST = np.array([10, 15, 20]) / 3.6
-        plotter = Plotter(3, 2)
-        max_delay_step = 5
-        for delay_step in range(max_delay_step + 1):
-            print("data processing... " + str(delay_step) + " / " + str(max_delay_step))
-            csv_data = self.cr.extractPedalRangeWithDelay(delay_step, PEDAL_VALUE, pedal_diff_thr)
+        count_map, average_map, stddev_map = CalcUtils.create_stat_map(data)
 
-            # get correlation coefficient
-            # extract data of velocity is VEL_VALUE
-            coef_list = []
-            for vel_value in VEL_VALUE_LIST:
-                ex_csv_data = csv_data[csv_data[CF.VEL] < vel_value + vel_diff_thr]
-                ex_csv_data = csv_data[csv_data[CF.VEL] > vel_value - vel_diff_thr]
-                pedal_speed = ex_csv_data[CF.A_PED_SPD] - ex_csv_data[CF.B_PED_SPD]
-                accel = ex_csv_data[CF.ACC]
-                coef = self.getCorCoef(pedal_speed, accel)
-                coef_list.append(coef)
-
-            print("delay_step: ", delay_step)
-            print("coef: ", coef_list)
-
-            ave_coef = np.average(coef_list)
-            self.plotPedalSpeedAndAccel(csv_data, plotter, delay_step + 1, delay_step, ave_coef)
-        plotter.show()
-
-    def getCorCoef(self, a, b):
-        coef = np.corrcoef(np.array(a), np.array(b))
-        return coef[0, 1]
-
-    def plotPedalSpeedAndAccel(self, csv_data, plotter, subplot_num, delay_step, coef):
-        pedal_speed = csv_data[CF.A_PED_SPD] - csv_data[CF.B_PED_SPD]
-        accel = csv_data[CF.ACC]
-        velocity = csv_data[CF.VEL] * 3.6
-        fig = plotter.subplot(subplot_num)
-        plotter.scatter_color(pedal_speed, accel, velocity, "hsv", label=None)
-        delay_time_ms = delay_step * self.data_span * 1000
-        plotter.add_label(
-            "pedal-spd-acc (delay = " + str(delay_time_ms) + " ms), R = " + str(coef),
-            "pedal-speed",
-            "accel",
+        # visualization
+        plotter = Plotter(1, 3)
+        plotter.subplot(1)
+        plotter.imshow(
+            average_map,
+            CF.VEL_MIN,
+            CF.VEL_MAX,
+            CF.VEL_SPAN,
+            CF.PEDAL_MIN,
+            CF.PEDAL_MAX,
+            CF.PEDAL_SPAN,
         )
-        plotter.set_lim(fig, [-0.4, 0.4], [-1.0, 1.0])
+        plotter.add_label("average of accel", "velocity(kmh)", "throttle")
+
+        plotter.subplot(2)
+        plotter.imshow(
+            stddev_map,
+            CF.VEL_MIN,
+            CF.VEL_MAX,
+            CF.VEL_SPAN,
+            CF.PEDAL_MIN,
+            CF.PEDAL_MAX,
+            CF.PEDAL_SPAN,
+        )
+        plotter.add_label("std. dev. of accel", "velocity(kmh)", "throttle")
+
+        plotter.subplot(3)
+        plotter.imshow(
+            count_map,
+            CF.VEL_MIN,
+            CF.VEL_MAX,
+            CF.VEL_SPAN,
+            CF.PEDAL_MIN,
+            CF.PEDAL_MAX,
+            CF.PEDAL_SPAN,
+            num_data_type="int",
+        )
+        plotter.add_label("number of accel data", "velocity(kmh)", "throttle")
+        plotter.show()
 
 
 def main(args=None):
     rclpy.init(args=args)
-    node = DelayEstimator()
+    node = ViewPlot()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-#include "accel_brake_map_calibrator/accel_brake_map_calibrator_node.hpp"
+#include "autoware_accel_brake_map_calibrator/accel_brake_map_calibrator_node.hpp"
 
 #include "rclcpp/logging.hpp"
 
@@ -26,7 +26,7 @@
 #include <utility>
 #include <vector>
 
-namespace accel_brake_map_calibrator
+namespace autoware::accel_brake_map_calibrator
 {
 
 AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & node_options)
@@ -305,6 +305,7 @@ void AccelBrakeMapCalibrator::timerCallback()
     // lack of data
     RCLCPP_WARN_STREAM_THROTTLE(
       get_logger(), *get_clock(), 5000, "lack of topics (twist, steer, accel, brake)");
+
     lack_of_data_count_++;
     return;
   }
@@ -1691,4 +1692,4 @@ void AccelBrakeMapCalibrator::addLogToCSV(
             << ", " << new_accel_mse << "," << rmse_rate << std::endl;
 }
 
-}  // namespace accel_brake_map_calibrator
+}  // namespace autoware::accel_brake_map_calibrator
