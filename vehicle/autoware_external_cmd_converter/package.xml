@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>external_cmd_converter</name>
+  <name>autoware_external_cmd_converter</name>
   <version>0.1.0</version>
-  <description>The external_cmd_converter package</description>
+  <description>The autoware_external_cmd_converter package</description>
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
   <maintainer email="eiki.nagata.2@tier4.jp">Eiki Nagata</maintainer>
   <license>Apache License 2.0</license>

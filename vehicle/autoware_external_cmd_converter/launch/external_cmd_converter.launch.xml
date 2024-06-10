@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="external_cmd_converter_param" default="$(find-pkg-share external_cmd_converter)/config/external_cmd_converter.param.yaml"/>
+  <arg name="external_cmd_converter_param" default="$(find-pkg-share autoware_external_cmd_converter)/config/external_cmd_converter.param.yaml"/>
   <!-- map file -->
   <arg name="csv_path_accel_map" default="$(find-pkg-share autoware_raw_vehicle_cmd_converter)/data/default/accel_map.csv"/>
   <arg name="csv_path_brake_map" default="$(find-pkg-share autoware_raw_vehicle_cmd_converter)/data/default/brake_map.csv"/>
@@ -24,7 +24,7 @@
   <arg name="out/latest_external_control_cmd" default="/api/external/get/command/selected/control"/>
 
   <!-- node -->
-  <node pkg="external_cmd_converter" exec="external_cmd_converter_node" name="external_cmd_converter" output="screen">
+  <node pkg="autoware_external_cmd_converter" exec="external_cmd_converter_node" name="external_cmd_converter" output="screen">
     <param from="$(var external_cmd_converter_param)" allow_substs="true"/>
     <remap from="in/external_control_cmd" to="$(var in/external_control_cmd)"/>
     <remap from="in/shift_cmd" to="$(var in/shift_cmd)"/>

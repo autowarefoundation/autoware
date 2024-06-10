@@ -290,7 +290,10 @@ def launch_setup(context, *args, **kwargs):
     # external cmd converter
     external_cmd_converter_loader = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [FindPackageShare("external_cmd_converter"), "/launch/external_cmd_converter.launch.py"]
+            [
+                FindPackageShare("autoware_external_cmd_converter"),
+                "/launch/external_cmd_converter.launch.py",
+            ]
         ),
         launch_arguments=[
             ("use_intra_process", LaunchConfiguration("use_intra_process")),
