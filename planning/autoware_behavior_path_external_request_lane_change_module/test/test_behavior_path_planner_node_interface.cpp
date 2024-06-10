@@ -48,7 +48,7 @@ std::shared_ptr<BehaviorPathPlannerNode> generateNode()
   const auto behavior_path_planner_dir =
     ament_index_cpp::get_package_share_directory("behavior_path_planner");
   const auto behavior_path_lane_change_module_dir =
-    ament_index_cpp::get_package_share_directory("behavior_path_lane_change_module");
+    ament_index_cpp::get_package_share_directory("autoware_behavior_path_lane_change_module");
 
   std::vector<std::string> module_names;
   module_names.emplace_back(

@@ -15,7 +15,7 @@
 #ifndef INTERFACE_HPP_
 #define INTERFACE_HPP_
 
-#include "behavior_path_lane_change_module/interface.hpp"
+#include "autoware_behavior_path_lane_change_module/interface.hpp"
 #include "data_structs.hpp"
 #include "scene.hpp"
 

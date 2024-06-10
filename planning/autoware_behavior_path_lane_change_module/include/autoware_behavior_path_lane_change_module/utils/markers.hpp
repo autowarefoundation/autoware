@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__MARKERS_HPP_
-#define BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__MARKERS_HPP_
+#ifndef AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__MARKERS_HPP_
+#define AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__MARKERS_HPP_
 
+#include "autoware_behavior_path_lane_change_module/utils/debug_structs.hpp"
+#include "autoware_behavior_path_lane_change_module/utils/path.hpp"
 #include "autoware_behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
-#include "behavior_path_lane_change_module/utils/debug_structs.hpp"
-#include "behavior_path_lane_change_module/utils/path.hpp"
 
 #include <geometry_msgs/msg/detail/polygon__struct.hpp>
 #include <geometry_msgs/msg/detail/pose__struct.hpp>
@@ -48,4 +48,4 @@ MarkerArray createDebugMarkerArray(
   const Debug & debug_data, const geometry_msgs::msg::Pose & ego_pose);
 
 }  // namespace marker_utils::lane_change_markers
-#endif  // BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__MARKERS_HPP_
+#endif  // AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__MARKERS_HPP_

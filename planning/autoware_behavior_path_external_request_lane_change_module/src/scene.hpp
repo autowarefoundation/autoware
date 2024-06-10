@@ -15,7 +15,7 @@
 #ifndef SCENE_HPP_
 #define SCENE_HPP_
 
-#include "behavior_path_lane_change_module/scene.hpp"
+#include "autoware_behavior_path_lane_change_module/scene.hpp"
 
 #include <memory>
 

@@ -11,16 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__BASE_CLASS_HPP_
-#define BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__BASE_CLASS_HPP_
+#ifndef AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__BASE_CLASS_HPP_
+#define AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__BASE_CLASS_HPP_
 
+#include "autoware_behavior_path_lane_change_module/utils/data_structs.hpp"
+#include "autoware_behavior_path_lane_change_module/utils/debug_structs.hpp"
+#include "autoware_behavior_path_lane_change_module/utils/path.hpp"
+#include "autoware_behavior_path_lane_change_module/utils/utils.hpp"
 #include "autoware_behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "autoware_behavior_path_planner_common/turn_signal_decider.hpp"
 #include "autoware_behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
-#include "behavior_path_lane_change_module/utils/data_structs.hpp"
-#include "behavior_path_lane_change_module/utils/debug_structs.hpp"
-#include "behavior_path_lane_change_module/utils/path.hpp"
-#include "behavior_path_lane_change_module/utils/utils.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include <magic_enum.hpp>
@@ -239,4 +239,4 @@ protected:
   mutable rclcpp::Clock clock_{RCL_ROS_TIME};
 };
 }  // namespace behavior_path_planner
-#endif  // BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__BASE_CLASS_HPP_
+#endif  // AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__BASE_CLASS_HPP_

@@ -16,7 +16,7 @@
 #include "autoware_behavior_path_planner_common/marker_utils/utils.hpp"
 #include "autoware_behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
-#include <behavior_path_lane_change_module/utils/markers.hpp>
+#include <autoware_behavior_path_lane_change_module/utils/markers.hpp>
 #include <lanelet2_extension/visualization/visualization.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 

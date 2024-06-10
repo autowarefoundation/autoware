@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_lane_change_module/interface.hpp"
+#include "autoware_behavior_path_lane_change_module/interface.hpp"
 
+#include "autoware_behavior_path_lane_change_module/utils/markers.hpp"
+#include "autoware_behavior_path_lane_change_module/utils/utils.hpp"
 #include "autoware_behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "autoware_behavior_path_planner_common/interface/scene_module_visitor.hpp"
 #include "autoware_behavior_path_planner_common/marker_utils/utils.hpp"
-#include "behavior_path_lane_change_module/utils/markers.hpp"
-#include "behavior_path_lane_change_module/utils/utils.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 

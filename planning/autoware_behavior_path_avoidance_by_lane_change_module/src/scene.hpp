@@ -15,8 +15,8 @@
 #ifndef SCENE_HPP_
 #define SCENE_HPP_
 
+#include "autoware_behavior_path_lane_change_module/scene.hpp"
 #include "autoware_behavior_path_static_obstacle_avoidance_module/helper.hpp"
-#include "behavior_path_lane_change_module/scene.hpp"
 #include "data_structs.hpp"
 
 #include <memory>

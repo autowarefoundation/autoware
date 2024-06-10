@@ -15,7 +15,7 @@
 #ifndef MANAGER_HPP_
 #define MANAGER_HPP_
 
-#include "behavior_path_lane_change_module/manager.hpp"
+#include "autoware_behavior_path_lane_change_module/manager.hpp"
 #include "data_structs.hpp"
 #include "interface.hpp"
 

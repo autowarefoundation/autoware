@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__UTILS_HPP_
-#define BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__UTILS_HPP_
+#ifndef AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__UTILS_HPP_
+#define AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__UTILS_HPP_
 
+#include "autoware_behavior_path_lane_change_module/utils/data_structs.hpp"
+#include "autoware_behavior_path_lane_change_module/utils/path.hpp"
 #include "autoware_behavior_path_planner_common/parameters.hpp"
 #include "autoware_behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "autoware_behavior_path_planner_common/utils/utils.hpp"
-#include "behavior_path_lane_change_module/utils/data_structs.hpp"
-#include "behavior_path_lane_change_module/utils/path.hpp"
 #include "rclcpp/logger.hpp"
 
 #include <route_handler/route_handler.hpp>
@@ -308,4 +308,4 @@ geometry_msgs::msg::Polygon createExecutionArea(
   double additional_lon_offset, double additional_lat_offset);
 }  // namespace behavior_path_planner::utils::lane_change::debug
 
-#endif  // BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__UTILS_HPP_
+#endif  // AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__UTILS_HPP_
