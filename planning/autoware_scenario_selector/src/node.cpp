@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "scenario_selector/scenario_selector_node.hpp"
+#include "autoware_scenario_selector/node.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
@@ -28,7 +28,8 @@
 #include <string>
 #include <utility>
 #include <vector>
-
+namespace autoware::scenario_selector
+{
 namespace
 {
 template <class T>
@@ -373,6 +374,7 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
     this, get_clock(), period_ns, std::bind(&ScenarioSelectorNode::onTimer, this));
   published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
 }
+}  // namespace autoware::scenario_selector
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(ScenarioSelectorNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::scenario_selector::ScenarioSelectorNode)

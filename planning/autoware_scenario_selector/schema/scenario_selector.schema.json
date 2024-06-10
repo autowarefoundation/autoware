@@ -3,7 +3,7 @@
   "title": "Parameters for Scenario Selector Node",
   "type": "object",
   "definitions": {
-    "scenario_selector": {
+    "autoware_scenario_selector": {
       "type": "object",
       "properties": {
         "update_rate": {
@@ -51,7 +51,7 @@
       "type": "object",
       "properties": {
         "ros__parameters": {
-          "$ref": "#/definitions/scenario_selector"
+          "$ref": "#/definitions/autoware_scenario_selector"
         }
       },
       "required": ["ros__parameters"]

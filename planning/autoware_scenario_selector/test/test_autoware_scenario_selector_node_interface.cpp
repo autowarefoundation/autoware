@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "scenario_selector/scenario_selector_node.hpp"
+#include "autoware_scenario_selector/node.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <autoware_planning_test_manager/autoware_planning_test_manager.hpp>
@@ -22,7 +22,8 @@
 
 #include <cmath>
 #include <vector>
-
+namespace autoware::scenario_selector
+{
 using planning_test_utils::PlanningInterfaceTestManager;
 
 std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
@@ -121,3 +122,4 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithOffTrackEgoPose)
   ASSERT_NO_THROW(test_manager->testTrajectoryWithInvalidEgoPose(test_target_node));
   rclcpp::shutdown();
 }
+}  // namespace autoware::scenario_selector

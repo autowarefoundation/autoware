@@ -1,4 +1,4 @@
-# scenario_selector
+# autoware_scenario_selector
 
 ## scenario_selector_node
 
@@ -29,12 +29,12 @@ None
 ### How to launch
 
 1. Write your remapping info in `scenario_selector.launch` or add args when executing `roslaunch`
-2. `roslaunch scenario_selector scenario_selector.launch`
-   - If you would like to use only a single scenario, `roslaunch scenario_selector dummy_scenario_selector_{scenario_name}.launch`
+2. `roslaunch autoware_scenario_selector scenario_selector.launch`
+   - If you would like to use only a single scenario, `roslaunch autoware_scenario_selector dummy_scenario_selector_{scenario_name}.launch`
 
 ### Parameters
 
-{{ json_to_markdown("planning/scenario_selector/schema/scenario_selector.schema.json") }}
+{{ json_to_markdown("planning/autoware_scenario_selector/schema/scenario_selector.schema.json") }}
 
 ### Flowchart
 

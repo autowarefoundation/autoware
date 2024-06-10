@@ -3,7 +3,7 @@
   <arg name="is_simulation"/>
   <!-- scenario selector -->
   <group>
-    <include file="$(find-pkg-share scenario_selector)/launch/scenario_selector.launch.xml">
+    <include file="$(find-pkg-share autoware_scenario_selector)/launch/scenario_selector.launch.xml">
       <arg name="input_lane_driving_trajectory" value="/planning/scenario_planning/lane_driving/trajectory"/>
       <arg name="input_parking_trajectory" value="/planning/scenario_planning/parking/trajectory"/>
       <arg name="input_lanelet_map" value="/map/vector_map"/>

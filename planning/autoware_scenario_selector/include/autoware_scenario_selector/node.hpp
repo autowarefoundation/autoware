@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SCENARIO_SELECTOR__SCENARIO_SELECTOR_NODE_HPP_
-#define SCENARIO_SELECTOR__SCENARIO_SELECTOR_NODE_HPP_
+#ifndef AUTOWARE_SCENARIO_SELECTOR__NODE_HPP_
+#define AUTOWARE_SCENARIO_SELECTOR__NODE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
@@ -43,6 +43,8 @@
 #include <memory>
 #include <string>
 
+namespace autoware::scenario_selector
+{
 class ScenarioSelectorNode : public rclcpp::Node
 {
 public:
@@ -100,5 +102,5 @@ private:
   double th_stopped_velocity_mps_;
   bool is_parking_completed_;
 };
-
-#endif  // SCENARIO_SELECTOR__SCENARIO_SELECTOR_NODE_HPP_
+}  // namespace autoware::scenario_selector
+#endif  // AUTOWARE_SCENARIO_SELECTOR__NODE_HPP_

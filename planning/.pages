@@ -69,7 +69,7 @@ nav:
     - 'Velocity Smoother':
       - 'About Velocity Smoother': planning/autoware_velocity_smoother
       - 'About Velocity Smoother (Japanese)': planning/autoware_velocity_smoother/README.ja
-  - 'Scenario Selector': planning/scenario_selector
+  - 'Scenario Selector': planning/autoware_scenario_selector
   - 'Static Centerline Generator': planning/autoware_static_centerline_generator
   - 'API and Library':
     - 'Costmap Generator': planning/costmap_generator
