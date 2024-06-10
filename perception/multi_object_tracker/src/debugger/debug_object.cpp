@@ -134,6 +134,9 @@ void TrackerObjectDebugger::process()
 {
   if (!is_initialized_) return;
 
+  // Check if object_data_list_ is empty
+  if (object_data_list_.empty()) return;
+
   // update uuid_int
   for (auto & object_data : object_data_list_) {
     current_ids_.insert(object_data.uuid_int);
