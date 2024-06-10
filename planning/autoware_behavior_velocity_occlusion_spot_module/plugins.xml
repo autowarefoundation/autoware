@@ -1,0 +1,3 @@
+<library path="autoware_behavior_velocity_occlusion_spot_module">
+  <class type="autoware::behavior_velocity_planner::OcclusionSpotModulePlugin" base_class_type="autoware::behavior_velocity_planner::PluginInterface"/>
+</library>

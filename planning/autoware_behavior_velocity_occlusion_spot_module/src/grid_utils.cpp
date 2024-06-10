@@ -39,7 +39,7 @@ Polygon2d pointsToPoly(const Point2d p0, const Point2d p1, const double radius)
   // std::cout << boost::geometry::wkt(line_poly) << std::endl;
   // std::cout << boost::geometry::wkt(line) << std::endl;
 
-  bg::correct(line_poly);
+  boost::geometry::correct(line_poly);
   return line_poly;
 }
 
@@ -142,7 +142,7 @@ Polygon2d generateOccupancyPolygon(const nav_msgs::msg::MapMetaData & info, cons
   poly.outer().emplace_back(to_bg2d(calcOffsetPose(info.origin, r, r, 0).position));
   poly.outer().emplace_back(to_bg2d(calcOffsetPose(info.origin, 0, r, 0).position));
 
-  bg::correct(poly);
+  boost::geometry::correct(poly);
   return poly;
 }
 

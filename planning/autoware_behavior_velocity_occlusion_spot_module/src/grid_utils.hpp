@@ -61,6 +61,10 @@ using geometry_msgs::msg::Point;
 using geometry_msgs::msg::TransformStamped;
 using nav_msgs::msg::MapMetaData;
 using nav_msgs::msg::OccupancyGrid;
+using tier4_autoware_utils::LineString2d;
+using tier4_autoware_utils::Point2d;
+using tier4_autoware_utils::Polygon2d;
+
 namespace occlusion_cost_value
 {
 static constexpr unsigned char FREE_SPACE = 0;
