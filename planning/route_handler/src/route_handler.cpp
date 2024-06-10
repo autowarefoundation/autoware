@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Tier IV, Inc.
+// Copyright 2021-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,9 +38,12 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
+namespace route_handler
+{
 namespace
 {
 using autoware_planning_msgs::msg::LaneletPrimitive;
@@ -129,10 +132,49 @@ std::string toString(const geometry_msgs::msg::Pose & pose)
   return ss.str();
 }
 
+bool isClose(
+  const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2, const double epsilon)
+{
+  return std::abs(p1.x - p2.x) < epsilon && std::abs(p1.y - p2.y) < epsilon;
+}
+
+PiecewiseReferencePoints convertWaypointsToReferencePoints(
+  const std::vector<geometry_msgs::msg::Point> & piecewise_waypoints)
+{
+  PiecewiseReferencePoints piecewise_ref_points;
+  for (const auto & piecewise_waypoint : piecewise_waypoints) {
+    piecewise_ref_points.push_back(ReferencePoint{true, piecewise_waypoint});
+  }
+  return piecewise_ref_points;
+}
+
+template <typename T>
+bool isIndexWithinVector(const std::vector<T> & vec, const int index)
+{
+  return 0 <= index && index < static_cast<int>(vec.size());
+}
+
+template <typename T>
+void removeIndicesFromVector(std::vector<T> & vec, std::vector<size_t> indices)
+{
+  // sort indices in a descending order
+  std::sort(indices.begin(), indices.end(), std::greater<int>());
+
+  // remove indices from vector
+  for (const size_t index : indices) {
+    vec.erase(vec.begin() + index);
+  }
+}
+
+lanelet::ArcCoordinates calcArcCoordinates(
+  const lanelet::ConstLanelet & lanelet, const geometry_msgs::msg::Point & point)
+{
+  return lanelet::geometry::toArcCoordinates(
+    to2D(lanelet.centerline()),
+    to2D(lanelet::utils::conversion::toLaneletPoint(point)).basicPoint());
+}
 }  // namespace
 
-namespace route_handler
-{
 RouteHandler::RouteHandler(const LaneletMapBin & map_msg)
 {
   setMap(map_msg);
@@ -1494,21 +1536,21 @@ PathWithLaneId RouteHandler::getCenterLinePath(
   const lanelet::ConstLanelets & lanelet_sequence, const double s_start, const double s_end,
   bool use_exact) const
 {
-  PathWithLaneId reference_path{};
+  using lanelet::utils::to2D;
+  using lanelet::utils::conversion::toLaneletPoint;
+
+  // 1. calculate reference points by lanelets' centerline
+  // NOTE: This vector aligns the vector lanelet_sequence.
+  std::vector<PiecewiseReferencePoints> piecewise_ref_points_vec;
+  const auto add_ref_point = [&](const auto & pt) {
+    piecewise_ref_points_vec.back().push_back(
+      ReferencePoint{false, lanelet::utils::conversion::toGeomMsgPt(pt)});
+  };
   double s = 0;
-
   for (const auto & llt : lanelet_sequence) {
-    const lanelet::traffic_rules::SpeedLimitInformation limit = traffic_rules_ptr_->speedLimit(llt);
+    piecewise_ref_points_vec.push_back(std::vector<ReferencePoint>{});
+
     const lanelet::ConstLineString3d centerline = llt.centerline();
-
-    const auto add_path_point = [&reference_path, &limit, &llt](const auto & pt) {
-      PathPointWithLaneId p{};
-      p.point.pose.position = lanelet::utils::conversion::toGeomMsgPt(pt);
-      p.lane_ids.push_back(llt.id());
-      p.point.longitudinal_velocity_mps = static_cast<float>(limit.speedLimit.value());
-      reference_path.points.push_back(p);
-    };
-
     for (size_t i = 0; i < centerline.size(); i++) {
       const auto & pt = centerline[i];
       const lanelet::ConstPoint3d next_pt =
@@ -1517,19 +1559,102 @@ PathWithLaneId RouteHandler::getCenterLinePath(
 
       if (s < s_start && s + distance > s_start) {
         const auto p = use_exact ? get3DPointFrom2DArcLength(lanelet_sequence, s_start) : pt;
-        add_path_point(p);
+        add_ref_point(p);
       }
       if (s >= s_start && s <= s_end) {
-        add_path_point(pt);
+        add_ref_point(pt);
       }
       if (s < s_end && s + distance > s_end) {
         const auto p = use_exact ? get3DPointFrom2DArcLength(lanelet_sequence, s_end) : next_pt;
-        add_path_point(p);
+        add_ref_point(p);
       }
       s += distance;
     }
   }
 
+  // 2. calculate waypoints
+  const auto waypoints_vec = calcWaypointsVector(lanelet_sequence);
+
+  // 3. remove points in the margin of the waypoint
+  for (const auto & waypoints : waypoints_vec) {
+    for (auto piecewise_waypoints_itr = waypoints.begin();
+         piecewise_waypoints_itr != waypoints.end(); ++piecewise_waypoints_itr) {
+      const auto & piecewise_waypoints = piecewise_waypoints_itr->piecewise_waypoints;
+      const auto lanelet_id = piecewise_waypoints_itr->lanelet_id;
+
+      // calculate index of lanelet_sequence which corresponds to piecewise_waypoints.
+      const auto lanelet_sequence_itr = std::find_if(
+        lanelet_sequence.begin(), lanelet_sequence.end(),
+        [&](const auto & lanelet) { return lanelet.id() == lanelet_id; });
+      if (lanelet_sequence_itr == lanelet_sequence.end()) {
+        continue;
+      }
+      const size_t piecewise_waypoints_lanelet_sequence_index =
+        std::distance(lanelet_sequence.begin(), lanelet_sequence_itr);
+
+      // calculate reference points by waypoints
+      const auto ref_points_by_waypoints = convertWaypointsToReferencePoints(piecewise_waypoints);
+
+      // update reference points by waypoints
+      const bool is_first_waypoint_contained = piecewise_waypoints_itr == waypoints.begin();
+      const bool is_last_waypoint_contained = piecewise_waypoints_itr == waypoints.end() - 1;
+      if (is_first_waypoint_contained || is_last_waypoint_contained) {
+        // If piecewise_waypoints_itr is the end (first or last) of piecewise_waypoints
+
+        const auto original_piecewise_ref_points =
+          piecewise_ref_points_vec.at(piecewise_waypoints_lanelet_sequence_index);
+
+        // define current_piecewise_ref_points, and initialize it with waypoints
+        auto & current_piecewise_ref_points =
+          piecewise_ref_points_vec.at(piecewise_waypoints_lanelet_sequence_index);
+        current_piecewise_ref_points = ref_points_by_waypoints;
+        if (is_first_waypoint_contained) {
+          // add original reference points to current reference points, and remove reference points
+          // overlapped with waypoints
+          current_piecewise_ref_points.insert(
+            current_piecewise_ref_points.begin(), original_piecewise_ref_points.begin(),
+            original_piecewise_ref_points.end());
+          const bool is_removing_direction_forward = false;
+          removeOverlappedCenterlineWithWaypoints(
+            piecewise_ref_points_vec, piecewise_waypoints, lanelet_sequence,
+            piecewise_waypoints_lanelet_sequence_index, is_removing_direction_forward);
+        }
+        if (is_last_waypoint_contained) {
+          // add original reference points to current reference points, and remove reference points
+          // overlapped with waypoints
+          current_piecewise_ref_points.insert(
+            current_piecewise_ref_points.end(), original_piecewise_ref_points.begin(),
+            original_piecewise_ref_points.end());
+          const bool is_removing_direction_forward = true;
+          removeOverlappedCenterlineWithWaypoints(
+            piecewise_ref_points_vec, piecewise_waypoints, lanelet_sequence,
+            piecewise_waypoints_lanelet_sequence_index, is_removing_direction_forward);
+        }
+      } else {
+        // If piecewise_waypoints_itr is not the end (first or last) of piecewise_waypoints,
+        // remove all the reference points and add waypoints.
+        piecewise_ref_points_vec.at(piecewise_waypoints_lanelet_sequence_index) =
+          ref_points_by_waypoints;
+      }
+    }
+  }
+
+  // 4. convert to PathPointsWithLaneIds
+  PathWithLaneId reference_path{};
+  for (size_t lanelet_idx = 0; lanelet_idx < lanelet_sequence.size(); ++lanelet_idx) {
+    const auto & lanelet = lanelet_sequence.at(lanelet_idx);
+    const float speed_limit =
+      static_cast<float>(traffic_rules_ptr_->speedLimit(lanelet).speedLimit.value());
+
+    const auto & piecewise_ref_points = piecewise_ref_points_vec.at(lanelet_idx);
+    for (const auto & ref_point : piecewise_ref_points) {
+      PathPointWithLaneId p{};
+      p.point.pose.position = ref_point.point;
+      p.lane_ids.push_back(lanelet.id());
+      p.point.longitudinal_velocity_mps = speed_limit;
+      reference_path.points.push_back(p);
+    }
+  }
   reference_path = removeOverlappingPoints(reference_path);
 
   // append a point only when having one point so that yaw calculation would work
@@ -1563,6 +1688,133 @@ PathWithLaneId RouteHandler::getCenterLinePath(
   }
 
   return reference_path;
+}
+
+std::vector<Waypoints> RouteHandler::calcWaypointsVector(
+  const lanelet::ConstLanelets & lanelet_sequence) const
+{
+  std::vector<Waypoints> waypoints_vec;
+  for (size_t lanelet_idx = 0; lanelet_idx < lanelet_sequence.size(); ++lanelet_idx) {
+    const auto & lanelet = lanelet_sequence.at(lanelet_idx);
+    if (!lanelet.hasAttribute("waypoints")) {
+      continue;
+    }
+
+    // generate piecewise waypoints
+    PiecewiseWaypoints piecewise_waypoints{lanelet.id(), {}};
+    const auto waypoints_id = lanelet.attribute("waypoints").asId().value();
+    for (const auto & waypoint : lanelet_map_ptr_->lineStringLayer.get(waypoints_id)) {
+      piecewise_waypoints.piecewise_waypoints.push_back(
+        lanelet::utils::conversion::toGeomMsgPt(waypoint));
+    }
+    if (piecewise_waypoints.piecewise_waypoints.empty()) {
+      continue;
+    }
+
+    // check if the piecewise waypoints are connected to the previous piecewise waypoints
+    if (
+      !waypoints_vec.empty() && isClose(
+                                  waypoints_vec.back().back().piecewise_waypoints.back(),
+                                  piecewise_waypoints.piecewise_waypoints.front(), 1.0)) {
+      waypoints_vec.back().push_back(piecewise_waypoints);
+    } else {
+      // add new waypoints
+      Waypoints new_waypoints;
+      new_waypoints.push_back(piecewise_waypoints);
+      waypoints_vec.push_back(new_waypoints);
+    }
+  }
+
+  return waypoints_vec;
+}
+
+void RouteHandler::removeOverlappedCenterlineWithWaypoints(
+  std::vector<PiecewiseReferencePoints> & piecewise_ref_points_vec,
+  const std::vector<geometry_msgs::msg::Point> & piecewise_waypoints,
+  const lanelet::ConstLanelets & lanelet_sequence,
+  const size_t piecewise_waypoints_lanelet_sequence_index,
+  const bool is_removing_direction_forward) const
+{
+  const double waypoints_interpolation_arc_margin_ratio = 10.0;
+
+  // calculate arc length threshold
+  const double front_arc_length_threshold = [&]() {
+    const auto front_waypoint_arc_coordinates = calcArcCoordinates(
+      lanelet_sequence.at(piecewise_waypoints_lanelet_sequence_index), piecewise_waypoints.front());
+    const double lanelet_arc_length = boost::geometry::length(
+      lanelet::utils::to2D(lanelet_sequence.at(piecewise_waypoints_lanelet_sequence_index)
+                             .centerline()
+                             .basicLineString()));
+    return -lanelet_arc_length + front_waypoint_arc_coordinates.length -
+           std::abs(front_waypoint_arc_coordinates.distance) *
+             waypoints_interpolation_arc_margin_ratio;
+  }();
+  const double back_arc_length_threshold = [&]() {
+    const auto back_waypoint_arc_coordinates = calcArcCoordinates(
+      lanelet_sequence.at(piecewise_waypoints_lanelet_sequence_index), piecewise_waypoints.back());
+    return back_waypoint_arc_coordinates.length + std::abs(back_waypoint_arc_coordinates.distance) *
+                                                    waypoints_interpolation_arc_margin_ratio;
+  }();
+
+  double offset_arc_length = 0.0;
+  int target_lanelet_sequence_index = static_cast<int>(piecewise_waypoints_lanelet_sequence_index);
+  while (isIndexWithinVector(lanelet_sequence, target_lanelet_sequence_index)) {
+    auto & target_piecewise_ref_points = piecewise_ref_points_vec.at(target_lanelet_sequence_index);
+    const double target_lanelet_arc_length = boost::geometry::length(lanelet::utils::to2D(
+      lanelet_sequence.at(target_lanelet_sequence_index).centerline().basicLineString()));
+
+    // search overlapped ref points in the target lanelet
+    std::vector<size_t> overlapped_ref_points_indices{};
+    const bool is_search_finished = [&]() {
+      for (size_t ref_point_unsigned_index = 0;
+           ref_point_unsigned_index < target_piecewise_ref_points.size();
+           ++ref_point_unsigned_index) {
+        const size_t ref_point_index =
+          is_removing_direction_forward
+            ? ref_point_unsigned_index
+            : target_piecewise_ref_points.size() - 1 - ref_point_unsigned_index;
+        const auto & ref_point = target_piecewise_ref_points.at(ref_point_index);
+
+        // skip waypoints
+        if (ref_point.is_waypoint) {
+          if (
+            target_lanelet_sequence_index ==
+            static_cast<int>(piecewise_waypoints_lanelet_sequence_index)) {
+            overlapped_ref_points_indices.clear();
+          }
+          continue;
+        }
+
+        const double ref_point_arc_length =
+          (is_removing_direction_forward ? 0 : -target_lanelet_arc_length) +
+          calcArcCoordinates(lanelet_sequence.at(target_lanelet_sequence_index), ref_point.point)
+            .length;
+        if (is_removing_direction_forward) {
+          if (back_arc_length_threshold < offset_arc_length + ref_point_arc_length) {
+            return true;
+          }
+        } else {
+          if (offset_arc_length + ref_point_arc_length < front_arc_length_threshold) {
+            return true;
+          }
+        }
+
+        overlapped_ref_points_indices.push_back(ref_point_index);
+      }
+      return false;
+    }();
+
+    // remove overlapped indices from ref_points
+    removeIndicesFromVector(target_piecewise_ref_points, overlapped_ref_points_indices);
+
+    // break if searching overlapped centerline is finished.
+    if (is_search_finished) {
+      break;
+    }
+
+    target_lanelet_sequence_index += is_removing_direction_forward ? 1 : -1;
+    offset_arc_length = (is_removing_direction_forward ? 1 : -1) * target_lanelet_arc_length;
+  }
 }
 
 bool RouteHandler::isMapMsgReady() const

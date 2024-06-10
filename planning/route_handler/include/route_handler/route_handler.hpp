@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Tier IV, Inc.
+// Copyright 2021-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -50,6 +50,20 @@ using RouteSections = std::vector<autoware_planning_msgs::msg::LaneletSegment>;
 enum class Direction { NONE, LEFT, RIGHT };
 enum class PullOverDirection { NONE, LEFT, RIGHT };
 enum class PullOutDirection { NONE, LEFT, RIGHT };
+
+struct ReferencePoint
+{
+  bool is_waypoint{false};
+  geometry_msgs::msg::Point point;
+};
+using PiecewiseReferencePoints = std::vector<ReferencePoint>;
+
+struct PiecewiseWaypoints
+{
+  lanelet::Id lanelet_id;
+  std::vector<geometry_msgs::msg::Point> piecewise_waypoints;
+};
+using Waypoints = std::vector<PiecewiseWaypoints>;
 
 class RouteHandler
 {
@@ -270,6 +284,13 @@ public:
   PathWithLaneId getCenterLinePath(
     const lanelet::ConstLanelets & lanelet_sequence, const double s_start, const double s_end,
     bool use_exact = true) const;
+  std::vector<Waypoints> calcWaypointsVector(const lanelet::ConstLanelets & lanelet_sequence) const;
+  void removeOverlappedCenterlineWithWaypoints(
+    std::vector<PiecewiseReferencePoints> & piecewise_ref_points_vec,
+    const std::vector<geometry_msgs::msg::Point> & piecewise_waypoints,
+    const lanelet::ConstLanelets & lanelet_sequence,
+    const size_t piecewise_waypoints_lanelet_sequence_index,
+    const bool is_removing_direction_forward) const;
   std::optional<lanelet::ConstLanelet> getLaneChangeTarget(
     const lanelet::ConstLanelets & lanelets, const Direction direction = Direction::NONE) const;
   std::optional<lanelet::ConstLanelet> getLaneChangeTargetExceptPreferredLane(
