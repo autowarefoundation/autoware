@@ -17,7 +17,7 @@
 
 #include "types.hpp"
 
-#include <route_handler/route_handler.hpp>
+#include <autoware_route_handler/route_handler.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 

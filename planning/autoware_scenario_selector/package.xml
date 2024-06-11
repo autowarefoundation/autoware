@@ -19,11 +19,11 @@
   <depend>autoware_map_msgs</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_planning_test_manager</depend>
+  <depend>autoware_route_handler</depend>
   <depend>lanelet2_extension</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>route_handler</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>

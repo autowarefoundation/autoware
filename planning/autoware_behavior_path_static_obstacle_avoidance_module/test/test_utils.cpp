@@ -18,6 +18,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+using autoware::route_handler::Direction;
 using behavior_path_planner::ObjectData;
 using behavior_path_planner::utils::static_obstacle_avoidance::isOnRight;
 using behavior_path_planner::utils::static_obstacle_avoidance::isSameDirectionShift;
@@ -26,7 +27,7 @@ using behavior_path_planner::utils::static_obstacle_avoidance::isShiftNecessary;
 TEST(BehaviorPathPlanningAvoidanceUtilsTest, shiftLengthDirectionTest)
 {
   ObjectData right_obj;
-  right_obj.direction = route_handler::Direction::RIGHT;
+  right_obj.direction = Direction::RIGHT;
   const double negative_shift_length = -1.0;
   const double positive_shift_length = 1.0;
 
@@ -34,7 +35,7 @@ TEST(BehaviorPathPlanningAvoidanceUtilsTest, shiftLengthDirectionTest)
   ASSERT_FALSE(isSameDirectionShift(isOnRight(right_obj), positive_shift_length));
 
   ObjectData left_obj;
-  left_obj.direction = route_handler::Direction::LEFT;
+  left_obj.direction = Direction::LEFT;
   ASSERT_TRUE(isSameDirectionShift(isOnRight(left_obj), positive_shift_length));
   ASSERT_FALSE(isSameDirectionShift(isOnRight(left_obj), negative_shift_length));
 }
@@ -42,7 +43,7 @@ TEST(BehaviorPathPlanningAvoidanceUtilsTest, shiftLengthDirectionTest)
 TEST(BehaviorPathPlanningAvoidanceUtilsTest, shiftNecessaryTest)
 {
   ObjectData right_obj;
-  right_obj.direction = route_handler::Direction::RIGHT;
+  right_obj.direction = Direction::RIGHT;
   const double negative_shift_length = -1.0;
   const double positive_shift_length = 1.0;
 
@@ -50,7 +51,7 @@ TEST(BehaviorPathPlanningAvoidanceUtilsTest, shiftNecessaryTest)
   ASSERT_FALSE(isShiftNecessary(isOnRight(right_obj), negative_shift_length));
 
   ObjectData left_obj;
-  left_obj.direction = route_handler::Direction::LEFT;
+  left_obj.direction = Direction::LEFT;
   ASSERT_TRUE(isShiftNecessary(isOnRight(left_obj), negative_shift_length));
   ASSERT_FALSE(isShiftNecessary(isOnRight(left_obj), positive_shift_length));
 }

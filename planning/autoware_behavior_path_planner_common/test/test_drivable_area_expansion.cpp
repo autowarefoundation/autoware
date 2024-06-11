@@ -179,7 +179,7 @@ TEST(DrivableAreaExpansionProjection, expand_drivable_area)
   autoware_map_msgs::msg::LaneletMapBin map;
   lanelet::LaneletMapPtr empty_lanelet_map_ptr = std::make_shared<lanelet::LaneletMap>();
   lanelet::utils::conversion::toBinMsg(empty_lanelet_map_ptr, &map);
-  route_handler::RouteHandler route_handler(map);
+  autoware::route_handler::RouteHandler route_handler(map);
   lanelet::ConstLanelets path_lanes = {};
   drivable_area_expansion::PathWithLaneId path;
   {  // Simple path with Y=0 and X = 0, 1, 2
@@ -228,7 +228,8 @@ TEST(DrivableAreaExpansionProjection, expand_drivable_area)
   planner_data.dynamic_object =
     std::make_shared<drivable_area_expansion::PredictedObjects>(dynamic_objects);
   planner_data.self_odometry = std::make_shared<nav_msgs::msg::Odometry>();
-  planner_data.route_handler = std::make_shared<route_handler::RouteHandler>(route_handler);
+  planner_data.route_handler =
+    std::make_shared<autoware::route_handler::RouteHandler>(route_handler);
   drivable_area_expansion::expand_drivable_area(
     path, std::make_shared<behavior_path_planner::PlannerData>(planner_data));
   // unchanged path points

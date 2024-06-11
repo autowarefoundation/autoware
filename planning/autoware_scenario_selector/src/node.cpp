@@ -191,7 +191,7 @@ void ScenarioSelectorNode::onMap(const autoware_map_msgs::msg::LaneletMapBin::Co
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
   lanelet::utils::conversion::fromBinMsg(
     *msg, lanelet_map_ptr_, &traffic_rules_ptr_, &routing_graph_ptr_);
-  route_handler_ = std::make_shared<route_handler::RouteHandler>(*msg);
+  route_handler_ = std::make_shared<autoware::route_handler::RouteHandler>(*msg);
 }
 
 void ScenarioSelectorNode::onRoute(

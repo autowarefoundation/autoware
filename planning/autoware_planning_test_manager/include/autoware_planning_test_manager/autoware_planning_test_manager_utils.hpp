@@ -14,8 +14,8 @@
 
 #ifndef AUTOWARE_PLANNING_TEST_MANAGER__AUTOWARE_PLANNING_TEST_MANAGER_UTILS_HPP_
 #define AUTOWARE_PLANNING_TEST_MANAGER__AUTOWARE_PLANNING_TEST_MANAGER_UTILS_HPP_
+#include <autoware_route_handler/route_handler.hpp>
 #include <planning_test_utils/planning_test_utils.hpp>
-#include <route_handler/route_handler.hpp>
 
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -26,10 +26,10 @@
 
 namespace autoware_planning_test_manager::utils
 {
+using autoware::route_handler::RouteHandler;
 using autoware_planning_msgs::msg::LaneletRoute;
 using geometry_msgs::msg::Pose;
 using nav_msgs::msg::Odometry;
-using route_handler::RouteHandler;
 using RouteSections = std::vector<autoware_planning_msgs::msg::LaneletSegment>;
 
 Pose createPoseFromLaneID(const lanelet::Id & lane_id)

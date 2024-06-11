@@ -1607,7 +1607,7 @@ bool checkPathRelativeAngle(const PathWithLaneId & path, const double angle_thre
 }
 
 lanelet::ConstLanelets getLaneletsFromPath(
-  const PathWithLaneId & path, const std::shared_ptr<route_handler::RouteHandler> & route_handler)
+  const PathWithLaneId & path, const std::shared_ptr<RouteHandler> & route_handler)
 {
   std::vector<int64_t> unique_lanelet_ids;
   for (const auto & p : path.points) {

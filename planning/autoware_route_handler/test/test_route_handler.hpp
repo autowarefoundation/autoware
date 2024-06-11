@@ -20,13 +20,13 @@
 #include "planning_test_utils/mock_data_parser.hpp"
 #include "planning_test_utils/planning_test_utils.hpp"
 
+#include <autoware_route_handler/route_handler.hpp>
 #include <lanelet2_extension/io/autoware_osm_parser.hpp>
 #include <lanelet2_extension/projection/mgrs_projector.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/logging.hpp>
-#include <route_handler/route_handler.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 
@@ -34,7 +34,7 @@
 
 #include <memory>
 #include <string>
-namespace route_handler::test
+namespace autoware::route_handler::test
 {
 
 using autoware_map_msgs::msg::LaneletMapBin;
@@ -68,6 +68,6 @@ public:
 
   std::shared_ptr<RouteHandler> route_handler_;
 };
-}  // namespace route_handler::test
+}  // namespace autoware::route_handler::test
 
 #endif  // TEST_ROUTE_HANDLER_HPP_

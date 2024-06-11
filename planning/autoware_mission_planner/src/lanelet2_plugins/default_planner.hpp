@@ -15,10 +15,10 @@
 #ifndef LANELET2_PLUGINS__DEFAULT_PLANNER_HPP_
 #define LANELET2_PLUGINS__DEFAULT_PLANNER_HPP_
 
+#include <autoware_route_handler/route_handler.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <mission_planner/mission_planner_plugin.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <route_handler/route_handler.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
@@ -58,7 +58,7 @@ private:
   using RouteSections = std::vector<autoware_planning_msgs::msg::LaneletSegment>;
   using Pose = geometry_msgs::msg::Pose;
   bool is_graph_ready_;
-  route_handler::RouteHandler route_handler_;
+  autoware::route_handler::RouteHandler route_handler_;
 
   DefaultPlannerParameters param_;
 

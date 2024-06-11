@@ -23,6 +23,7 @@
 
 namespace behavior_path_planner
 {
+using autoware::route_handler::Direction;
 using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebugMap;
 using behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject;
@@ -33,7 +34,6 @@ using data::lane_change::LanesPolygon;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
-using route_handler::Direction;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using utils::path_safety_checker::ExtendedPredictedObjects;
 

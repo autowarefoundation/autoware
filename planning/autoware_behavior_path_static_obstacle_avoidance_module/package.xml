@@ -24,6 +24,7 @@
   <depend>autoware_behavior_path_planner_common</depend>
   <depend>autoware_objects_of_interest_marker_interface</depend>
   <depend>autoware_perception_msgs</depend>
+  <depend>autoware_route_handler</depend>
   <depend>autoware_rtc_interface</depend>
   <depend>autoware_vehicle_info_utils</depend>
   <depend>behavior_path_planner</depend>
@@ -33,7 +34,6 @@
   <depend>motion_utils</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
-  <depend>route_handler</depend>
   <depend>sensor_msgs</depend>
   <depend>signal_processing</depend>
   <depend>tf2</depend>

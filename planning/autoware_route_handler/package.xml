@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>route_handler</name>
+  <name>autoware_route_handler</name>
   <version>0.1.0</version>
   <description>The route_handling package</description>
   <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>

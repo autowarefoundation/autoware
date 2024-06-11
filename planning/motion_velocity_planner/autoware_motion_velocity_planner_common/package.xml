@@ -18,6 +18,7 @@
   <depend>autoware_behavior_velocity_planner_common</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
+  <depend>autoware_route_handler</depend>
   <depend>autoware_velocity_smoother</depend>
   <depend>eigen</depend>
   <depend>geometry_msgs</depend>
@@ -25,7 +26,6 @@
   <depend>libboost-dev</depend>
   <depend>motion_utils</depend>
   <depend>rclcpp</depend>
-  <depend>route_handler</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>tier4_planning_msgs</depend>
   <depend>visualization_msgs</depend>

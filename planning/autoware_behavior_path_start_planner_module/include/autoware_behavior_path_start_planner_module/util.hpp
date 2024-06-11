@@ -21,7 +21,7 @@
 #include "autoware_behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
 #include "autoware_behavior_path_start_planner_module/pull_out_path.hpp"
 
-#include <route_handler/route_handler.hpp>
+#include <autoware_route_handler/route_handler.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_perception_msgs/msg/predicted_path.hpp>
@@ -36,12 +36,12 @@
 
 namespace behavior_path_planner::start_planner_utils
 {
+using autoware::route_handler::RouteHandler;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_perception_msgs::msg::PredictedPath;
 using behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
-using route_handler::RouteHandler;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
 PathWithLaneId getBackwardPath(

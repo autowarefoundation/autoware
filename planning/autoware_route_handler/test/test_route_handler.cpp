@@ -18,7 +18,7 @@
 
 #include <gtest/gtest.h>
 
-namespace route_handler::test
+namespace autoware::route_handler::test
 {
 TEST_F(TestRouteHandler, isRouteHandlerReadyTest)
 {
@@ -107,4 +107,4 @@ TEST_F(TestRouteHandler, getGoalLaneId)
 //   ASSERT_TRUE(closest_lane_obtained5);
 //   ASSERT_EQ(closest_lane.id(), 4424);
 // }
-}  // namespace route_handler::test
+}  // namespace autoware::route_handler::test

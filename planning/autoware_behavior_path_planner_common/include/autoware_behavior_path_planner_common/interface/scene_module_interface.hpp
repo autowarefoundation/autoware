@@ -23,13 +23,13 @@
 #include <autoware_behavior_path_planner_common/interface/steering_factor_interface.hpp>
 #include <autoware_behavior_path_planner_common/turn_signal_decider.hpp>
 #include <autoware_objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp>
+#include <autoware_route_handler/route_handler.hpp>
 #include <autoware_rtc_interface/rtc_interface.hpp>
 #include <magic_enum.hpp>
 #include <motion_utils/marker/marker_helper.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <route_handler/route_handler.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>

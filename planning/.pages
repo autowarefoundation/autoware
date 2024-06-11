@@ -75,7 +75,7 @@ nav:
     - 'Costmap Generator': planning/costmap_generator
     - 'External Velocity Limit Selector': planning/autoware_external_velocity_limit_selector
     - 'Objects of Interest Marker Interface': planning/autoware_objects_of_interest_marker_interface
-    - 'Route Handler': planning/route_handler
+    - 'Route Handler': planning/autoware_route_handler
     - 'RTC Interface': planning/autoware_rtc_interface
   - 'Additional Tools':
     - 'Remaining Distance Time Calculator': planning/autoware_remaining_distance_time_calculator

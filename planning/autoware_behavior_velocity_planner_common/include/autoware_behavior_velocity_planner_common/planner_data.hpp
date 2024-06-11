@@ -15,7 +15,7 @@
 #ifndef AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 #define AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 
-#include "route_handler/route_handler.hpp"
+#include "autoware_route_handler/route_handler.hpp"
 
 #include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
@@ -90,7 +90,7 @@ struct PlannerData
   // velocity smoother
   std::shared_ptr<autoware::velocity_smoother::SmootherBase> velocity_smoother_;
   // route handler
-  std::shared_ptr<route_handler::RouteHandler> route_handler_;
+  std::shared_ptr<autoware::route_handler::RouteHandler> route_handler_;
   // parameters
   autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 

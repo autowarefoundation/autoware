@@ -42,7 +42,8 @@ void insert_marker_array(
 }
 
 lanelet::ConstLanelet combine_lanelets_with_shoulder(
-  const lanelet::ConstLanelets & lanelets, const route_handler::RouteHandler & route_handler)
+  const lanelet::ConstLanelets & lanelets,
+  const autoware::route_handler::RouteHandler & route_handler)
 {
   lanelet::Points3d lefts;
   lanelet::Points3d rights;

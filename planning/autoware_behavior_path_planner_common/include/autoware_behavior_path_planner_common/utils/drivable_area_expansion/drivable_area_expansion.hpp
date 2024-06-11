@@ -19,7 +19,7 @@
 #include "autoware_behavior_path_planner_common/utils/drivable_area_expansion/parameters.hpp"
 #include "autoware_behavior_path_planner_common/utils/drivable_area_expansion/types.hpp"
 
-#include <route_handler/route_handler.hpp>
+#include <autoware_route_handler/route_handler.hpp>
 
 #include <lanelet2_core/Forward.h>
 

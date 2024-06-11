@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROUTE_HANDLER__ROUTE_HANDLER_HPP_
-#define ROUTE_HANDLER__ROUTE_HANDLER_HPP_
+#ifndef AUTOWARE_ROUTE_HANDLER__ROUTE_HANDLER_HPP_
+#define AUTOWARE_ROUTE_HANDLER__ROUTE_HANDLER_HPP_
 
 #include <rclcpp/logger.hpp>
 
@@ -35,7 +35,7 @@
 #include <optional>
 #include <vector>
 
-namespace route_handler
+namespace autoware::route_handler
 {
 using autoware_map_msgs::msg::LaneletMapBin;
 using autoware_planning_msgs::msg::LaneletRoute;
@@ -418,5 +418,5 @@ public:
     return lanelet::routing::RoutingCostDistance::getCostLaneChange(trafficRules, from, to);
   }
 };  // class RoutingCostDrivable
-}  // namespace route_handler
-#endif  // ROUTE_HANDLER__ROUTE_HANDLER_HPP_
+}  // namespace autoware::route_handler
+#endif  // AUTOWARE_ROUTE_HANDLER__ROUTE_HANDLER_HPP_

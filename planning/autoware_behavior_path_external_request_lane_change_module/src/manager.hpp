@@ -16,7 +16,7 @@
 #define MANAGER_HPP_
 
 #include "autoware_behavior_path_lane_change_module/manager.hpp"
-#include "route_handler/route_handler.hpp"
+#include "autoware_route_handler/route_handler.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

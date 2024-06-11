@@ -20,11 +20,11 @@
 #include "autoware_behavior_path_planner_common/utils/drivable_area_expansion/parameters.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
+#include <autoware_route_handler/route_handler.hpp>
 #include <lanelet2_extension/regulatory_elements/Forward.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp/clock.hpp>
 #include <rclcpp/rclcpp/time.hpp>
-#include <route_handler/route_handler.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
@@ -50,6 +50,7 @@
 
 namespace behavior_path_planner
 {
+using autoware::route_handler::RouteHandler;
 using autoware_adapi_v1_msgs::msg::OperationModeState;
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedObjects;
@@ -61,7 +62,6 @@ using geometry_msgs::msg::AccelWithCovarianceStamped;
 using geometry_msgs::msg::PoseStamped;
 using nav_msgs::msg::OccupancyGrid;
 using nav_msgs::msg::Odometry;
-using route_handler::RouteHandler;
 using tier4_planning_msgs::msg::LateralOffset;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using PlanResult = PathWithLaneId::SharedPtr;

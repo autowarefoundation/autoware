@@ -19,12 +19,12 @@
   <depend>autoware_behavior_velocity_planner_common</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
+  <depend>autoware_route_handler</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
   <depend>motion_utils</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
-  <depend>route_handler</depend>
   <depend>tf2</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>tier4_planning_msgs</depend>
