@@ -35,6 +35,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 #include <autoware_route_handler/route_handler.hpp>
+#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
@@ -50,13 +51,12 @@ class ScenarioSelectorNode : public rclcpp::Node
 public:
   explicit ScenarioSelectorNode(const rclcpp::NodeOptions & node_options);
 
-  void onMap(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg);
-  void onRoute(const autoware_planning_msgs::msg::LaneletRoute::ConstSharedPtr msg);
   void onOdom(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
-  void onParkingState(const std_msgs::msg::Bool::ConstSharedPtr msg);
 
   bool isDataReady();
   void onTimer();
+  void onMap(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg);
+  void onRoute(const autoware_planning_msgs::msg::LaneletRoute::ConstSharedPtr msg);
   void onLaneDrivingTrajectory(const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr msg);
   void onParkingTrajectory(const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr msg);
   void publishTrajectory(const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr msg);
@@ -66,16 +66,20 @@ public:
   autoware_planning_msgs::msg::Trajectory::ConstSharedPtr getScenarioTrajectory(
     const std::string & scenario);
 
+  void updateData();
+
 private:
   rclcpp::TimerBase::SharedPtr timer_;
 
   rclcpp::Subscription<autoware_map_msgs::msg::LaneletMapBin>::SharedPtr sub_lanelet_map_;
   rclcpp::Subscription<autoware_planning_msgs::msg::LaneletRoute>::SharedPtr sub_route_;
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry, 100>::SharedPtr
+    sub_odom_;
   rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr
     sub_lane_driving_trajectory_;
   rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr sub_parking_trajectory_;
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_parking_state_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<std_msgs::msg::Bool>::SharedPtr
+    sub_parking_state_;
   rclcpp::Publisher<autoware_planning_msgs::msg::Trajectory>::SharedPtr pub_trajectory_;
   rclcpp::Publisher<tier4_planning_msgs::msg::Scenario>::SharedPtr pub_scenario_;
 
@@ -88,9 +92,6 @@ private:
   std::string current_scenario_;
   std::deque<geometry_msgs::msg::TwistStamped::ConstSharedPtr> twist_buffer_;
 
-  std::shared_ptr<lanelet::LaneletMap> lanelet_map_ptr_;
-  std::shared_ptr<lanelet::routing::RoutingGraph> routing_graph_ptr_;
-  std::shared_ptr<lanelet::traffic_rules::TrafficRules> traffic_rules_ptr_;
   std::shared_ptr<autoware::route_handler::RouteHandler> route_handler_;
   std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
 
