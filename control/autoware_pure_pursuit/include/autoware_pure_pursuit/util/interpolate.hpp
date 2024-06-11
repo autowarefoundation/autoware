@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PURE_PURSUIT__UTIL__INTERPOLATE_HPP_
-#define PURE_PURSUIT__UTIL__INTERPOLATE_HPP_
+#ifndef AUTOWARE_PURE_PURSUIT__UTIL__INTERPOLATE_HPP_
+#define AUTOWARE_PURE_PURSUIT__UTIL__INTERPOLATE_HPP_
 
 #include <cmath>
 #include <iostream>
 #include <vector>
 
-namespace pure_pursuit
+namespace autoware::pure_pursuit
 {
 class LinearInterpolate
 {
@@ -50,6 +50,6 @@ public:
     const std::vector<double> & return_index, std::vector<double> & return_value);
   void getValueVector(const std::vector<double> & s_v, std::vector<double> & value_v);
 };
-}  // namespace pure_pursuit
+}  // namespace autoware::pure_pursuit
 
-#endif  // PURE_PURSUIT__UTIL__INTERPOLATE_HPP_
+#endif  // AUTOWARE_PURE_PURSUIT__UTIL__INTERPOLATE_HPP_

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "pure_pursuit/util/interpolate.hpp"
+#include "autoware_pure_pursuit/util/interpolate.hpp"
 
 #include <algorithm>
 #include <vector>
 
-namespace pure_pursuit
+namespace autoware::pure_pursuit
 {
 bool LinearInterpolate::interpolate(
   const std::vector<double> & base_index, const std::vector<double> & base_value,
@@ -234,4 +234,4 @@ bool SplineInterpolate::interpolate(
   }
   return true;
 }
-}  // namespace pure_pursuit
+}  // namespace autoware::pure_pursuit

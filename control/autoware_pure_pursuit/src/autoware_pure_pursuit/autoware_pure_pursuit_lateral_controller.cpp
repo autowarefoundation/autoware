@@ -28,11 +28,11 @@
  * limitations under the License.
  */
 
-#include "pure_pursuit/pure_pursuit_lateral_controller.hpp"
+#include "autoware_pure_pursuit/autoware_pure_pursuit_lateral_controller.hpp"
 
-#include "pure_pursuit/pure_pursuit_viz.hpp"
-#include "pure_pursuit/util/planning_utils.hpp"
-#include "pure_pursuit/util/tf_utils.hpp"
+#include "autoware_pure_pursuit/autoware_pure_pursuit_viz.hpp"
+#include "autoware_pure_pursuit/util/planning_utils.hpp"
+#include "autoware_pure_pursuit/util/tf_utils.hpp"
 
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
@@ -54,7 +54,7 @@ enum TYPE {
 };
 }  // namespace
 
-namespace pure_pursuit
+namespace autoware::pure_pursuit
 {
 PurePursuitLateralController::PurePursuitLateralController(rclcpp::Node & node)
 : clock_(node.get_clock()),
@@ -261,7 +261,7 @@ void PurePursuitLateralController::averageFilterTrajectory(
     p.heading_rate_rps = tmp.heading_rate_rps / count;
     p.lateral_velocity_mps = tmp.lateral_velocity_mps / count;
     p.rear_wheel_angle_rad = tmp.rear_wheel_angle_rad / count;
-    p.pose.orientation = pure_pursuit::planning_utils::getQuaternionFromYaw(yaw / count);
+    p.pose.orientation = autoware::pure_pursuit::planning_utils::getQuaternionFromYaw(yaw / count);
   }
   trajectory_resampled_ = std::make_shared<Trajectory>(filtered_trajectory);
 }
@@ -487,4 +487,4 @@ boost::optional<PpOutput> PurePursuitLateralController::calcTargetCurvature(
 
   return output;
 }
-}  // namespace pure_pursuit
+}  // namespace autoware::pure_pursuit

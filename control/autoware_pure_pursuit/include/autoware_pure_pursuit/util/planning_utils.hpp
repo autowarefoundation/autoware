@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PURE_PURSUIT__UTIL__PLANNING_UTILS_HPP_
-#define PURE_PURSUIT__UTIL__PLANNING_UTILS_HPP_
+#ifndef AUTOWARE_PURE_PURSUIT__UTIL__PLANNING_UTILS_HPP_
+#define AUTOWARE_PURE_PURSUIT__UTIL__PLANNING_UTILS_HPP_
 
 #define EIGEN_MPL2_ONLY
 
@@ -45,7 +45,7 @@
 
 #define PLANNING_UTILS_LOGGER "planning_utils"
 
-namespace pure_pursuit
+namespace autoware::pure_pursuit
 {
 namespace planning_utils
 {
@@ -139,6 +139,6 @@ geometry_msgs::msg::Point transformToRelativeCoordinate2D(
 geometry_msgs::msg::Quaternion getQuaternionFromYaw(const double _yaw);
 
 }  // namespace planning_utils
-}  // namespace pure_pursuit
+}  // namespace autoware::pure_pursuit
 
-#endif  // PURE_PURSUIT__UTIL__PLANNING_UTILS_HPP_
+#endif  // AUTOWARE_PURE_PURSUIT__UTIL__PLANNING_UTILS_HPP_

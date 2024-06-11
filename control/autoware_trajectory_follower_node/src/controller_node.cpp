@@ -16,7 +16,7 @@
 
 #include "autoware_mpc_lateral_controller/mpc_lateral_controller.hpp"
 #include "autoware_pid_longitudinal_controller/pid_longitudinal_controller.hpp"
-#include "pure_pursuit/pure_pursuit_lateral_controller.hpp"
+#include "autoware_pure_pursuit/autoware_pure_pursuit_lateral_controller.hpp"
 #include "tier4_autoware_utils/ros/marker_helper.hpp"
 
 #include <algorithm>
@@ -43,7 +43,8 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
       break;
     }
     case LateralControllerMode::PURE_PURSUIT: {
-      lateral_controller_ = std::make_shared<pure_pursuit::PurePursuitLateralController>(*this);
+      lateral_controller_ =
+        std::make_shared<autoware::pure_pursuit::PurePursuitLateralController>(*this);
       break;
     }
     default:

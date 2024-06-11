@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "pure_pursuit/util/planning_utils.hpp"
+#include "autoware_pure_pursuit/util/planning_utils.hpp"
 
 #include <limits>
 #include <utility>
 #include <vector>
 
-namespace pure_pursuit
+namespace autoware::pure_pursuit
 {
 namespace planning_utils
 {
@@ -266,4 +266,4 @@ geometry_msgs::msg::Quaternion getQuaternionFromYaw(const double _yaw)
 }
 
 }  // namespace planning_utils
-}  // namespace pure_pursuit
+}  // namespace autoware::pure_pursuit

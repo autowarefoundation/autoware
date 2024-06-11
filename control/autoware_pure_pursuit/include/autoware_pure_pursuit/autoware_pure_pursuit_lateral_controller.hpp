@@ -27,12 +27,12 @@
  * limitations under the License.
  */
 
-#ifndef PURE_PURSUIT__PURE_PURSUIT_LATERAL_CONTROLLER_HPP_
-#define PURE_PURSUIT__PURE_PURSUIT_LATERAL_CONTROLLER_HPP_
+#ifndef AUTOWARE_PURE_PURSUIT__AUTOWARE_PURE_PURSUIT_LATERAL_CONTROLLER_HPP_
+#define AUTOWARE_PURE_PURSUIT__AUTOWARE_PURE_PURSUIT_LATERAL_CONTROLLER_HPP_
 
+#include "autoware_pure_pursuit/autoware_pure_pursuit.hpp"
+#include "autoware_pure_pursuit/autoware_pure_pursuit_viz.hpp"
 #include "autoware_trajectory_follower_base/lateral_controller_base.hpp"
-#include "pure_pursuit/pure_pursuit.hpp"
-#include "pure_pursuit/pure_pursuit_viz.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
@@ -60,7 +60,7 @@ using autoware_control_msgs::msg::Lateral;
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
 
-namespace pure_pursuit
+namespace autoware::pure_pursuit
 {
 
 struct PpOutput
@@ -174,6 +174,6 @@ private:
   mutable DebugData debug_data_;
 };
 
-}  // namespace pure_pursuit
+}  // namespace autoware::pure_pursuit
 
-#endif  // PURE_PURSUIT__PURE_PURSUIT_LATERAL_CONTROLLER_HPP_
+#endif  // AUTOWARE_PURE_PURSUIT__AUTOWARE_PURE_PURSUIT_LATERAL_CONTROLLER_HPP_

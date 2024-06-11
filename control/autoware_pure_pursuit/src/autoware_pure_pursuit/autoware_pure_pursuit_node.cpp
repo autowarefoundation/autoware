@@ -28,11 +28,11 @@
  * limitations under the License.
  */
 
-#include "pure_pursuit/pure_pursuit_node.hpp"
+#include "autoware_pure_pursuit/autoware_pure_pursuit_node.hpp"
 
-#include "pure_pursuit/pure_pursuit_viz.hpp"
-#include "pure_pursuit/util/planning_utils.hpp"
-#include "pure_pursuit/util/tf_utils.hpp"
+#include "autoware_pure_pursuit/pure_pursuit_viz.hpp"
+#include "autoware_pure_pursuit/util/planning_utils.hpp"
+#include "autoware_pure_pursuit/util/tf_utils.hpp"
 
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
@@ -51,7 +51,7 @@ double calcLookaheadDistance(
 
 }  // namespace
 
-namespace pure_pursuit
+namespace autoware::pure_pursuit
 {
 PurePursuitNode::PurePursuitNode(const rclcpp::NodeOptions & node_options)
 : Node("pure_pursuit", node_options), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_)
@@ -208,7 +208,7 @@ boost::optional<autoware_planning_msgs::msg::TrajectoryPoint> PurePursuitNode::c
 
   return trajectory_->points.at(closest_idx_result.second);
 }
-}  // namespace pure_pursuit
+}  // namespace autoware::pure_pursuit
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(pure_pursuit::PurePursuitNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::pure_pursuit::PurePursuitNode)

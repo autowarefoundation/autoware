@@ -27,11 +27,11 @@
  * limitations under the License.
  */
 
-#ifndef PURE_PURSUIT__PURE_PURSUIT_NODE_HPP_
-#define PURE_PURSUIT__PURE_PURSUIT_NODE_HPP_
+#ifndef AUTOWARE_PURE_PURSUIT__AUTOWARE_PURE_PURSUIT_NODE_HPP_
+#define AUTOWARE_PURE_PURSUIT__AUTOWARE_PURE_PURSUIT_NODE_HPP_
 
-#include "pure_pursuit/pure_pursuit.hpp"
-#include "pure_pursuit/pure_pursuit_viz.hpp"
+#include "autoware_pure_pursuit/autoware_pure_pursuit.hpp"
+#include "autoware_pure_pursuit/autoware_pure_pursuit_viz.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/polling_subscriber.hpp>
@@ -50,7 +50,7 @@
 
 #include <memory>
 
-namespace pure_pursuit
+namespace autoware::pure_pursuit
 {
 struct Param
 {
@@ -124,6 +124,6 @@ private:
   mutable DebugData debug_data_;
 };
 
-}  // namespace pure_pursuit
+}  // namespace autoware::pure_pursuit
 
-#endif  // PURE_PURSUIT__PURE_PURSUIT_NODE_HPP_
+#endif  // AUTOWARE_PURE_PURSUIT__AUTOWARE_PURE_PURSUIT_NODE_HPP_

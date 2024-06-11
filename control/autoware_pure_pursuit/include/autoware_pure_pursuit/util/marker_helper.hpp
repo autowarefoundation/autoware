@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PURE_PURSUIT__UTIL__MARKER_HELPER_HPP_
-#define PURE_PURSUIT__UTIL__MARKER_HELPER_HPP_
+#ifndef AUTOWARE_PURE_PURSUIT__UTIL__MARKER_HELPER_HPP_
+#define AUTOWARE_PURE_PURSUIT__UTIL__MARKER_HELPER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -21,7 +21,7 @@
 
 #include <string>
 
-namespace pure_pursuit
+namespace autoware::pure_pursuit
 {
 inline geometry_msgs::msg::Point createMarkerPosition(double x, double y, double z)
 {
@@ -102,6 +102,6 @@ inline void appendMarkerArray(
     marker_array->markers.push_back(marker);
   }
 }
-}  // namespace pure_pursuit
+}  // namespace autoware::pure_pursuit
 
-#endif  // PURE_PURSUIT__UTIL__MARKER_HELPER_HPP_
+#endif  // AUTOWARE_PURE_PURSUIT__UTIL__MARKER_HELPER_HPP_

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PURE_PURSUIT__UTIL__TF_UTILS_HPP_
-#define PURE_PURSUIT__UTIL__TF_UTILS_HPP_
+#ifndef AUTOWARE_PURE_PURSUIT__UTIL__TF_UTILS_HPP_
+#define AUTOWARE_PURE_PURSUIT__UTIL__TF_UTILS_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -31,7 +31,7 @@
 
 #define TF_UTILS_LOGGER "tf_utils"
 
-namespace pure_pursuit
+namespace autoware::pure_pursuit
 {
 namespace tf_utils
 {
@@ -92,6 +92,6 @@ inline boost::optional<geometry_msgs::msg::PoseStamped> getCurrentPose(
 }
 
 }  // namespace tf_utils
-}  // namespace pure_pursuit
+}  // namespace autoware::pure_pursuit
 
-#endif  // PURE_PURSUIT__UTIL__TF_UTILS_HPP_
+#endif  // AUTOWARE_PURE_PURSUIT__UTIL__TF_UTILS_HPP_

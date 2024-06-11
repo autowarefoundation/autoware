@@ -27,16 +27,16 @@
  * limitations under the License.
  */
 
-#include "pure_pursuit/pure_pursuit.hpp"
+#include "autoware_pure_pursuit/autoware_pure_pursuit.hpp"
 
-#include "pure_pursuit/util/planning_utils.hpp"
+#include "autoware_pure_pursuit/util/planning_utils.hpp"
 
 #include <limits>
 #include <memory>
 #include <utility>
 #include <vector>
 
-namespace pure_pursuit
+namespace autoware::pure_pursuit
 {
 bool PurePursuit::isDataReady()
 {
@@ -209,4 +209,4 @@ void PurePursuit::setWaypoints(const std::vector<geometry_msgs::msg::Pose> & msg
   *curr_wps_ptr_ = msg;
 }
 
-}  // namespace pure_pursuit
+}  // namespace autoware::pure_pursuit

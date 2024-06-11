@@ -28,10 +28,10 @@
  * limitations under the License.
  */
 
-#include "pure_pursuit/pure_pursuit_viz.hpp"
+#include "autoware_pure_pursuit/autoware_pure_pursuit_viz.hpp"
 
-#include "pure_pursuit/util/marker_helper.hpp"
-#include "pure_pursuit/util/planning_utils.hpp"
+#include "autoware_pure_pursuit/util/marker_helper.hpp"
+#include "autoware_pure_pursuit/util/planning_utils.hpp"
 
 #include <vector>
 
@@ -43,7 +43,7 @@ std::vector<geometry_msgs::msg::Point> generateTrajectoryCircle(
   constexpr double theta_range = M_PI / 10;
   constexpr double step_rad = 0.005;
 
-  const double radius = pure_pursuit::planning_utils::calcRadius(target, current_pose);
+  const double radius = autoware::pure_pursuit::planning_utils::calcRadius(target, current_pose);
 
   std::vector<geometry_msgs::msg::Point> trajectory_circle;
   for (double theta = -theta_range; theta <= theta_range; theta += step_rad) {
@@ -53,7 +53,7 @@ std::vector<geometry_msgs::msg::Point> generateTrajectoryCircle(
     p.z = target.z;
 
     trajectory_circle.push_back(
-      pure_pursuit::planning_utils::transformToAbsoluteCoordinate2D(p, current_pose));
+      autoware::pure_pursuit::planning_utils::transformToAbsoluteCoordinate2D(p, current_pose));
   }
 
   return trajectory_circle;
@@ -61,7 +61,7 @@ std::vector<geometry_msgs::msg::Point> generateTrajectoryCircle(
 
 }  // namespace
 
-namespace pure_pursuit
+namespace autoware::pure_pursuit
 {
 visualization_msgs::msg::Marker createNextTargetMarker(
   const geometry_msgs::msg::Point & next_target)
@@ -90,4 +90,4 @@ visualization_msgs::msg::Marker createTrajectoryCircleMarker(
 
   return marker;
 }
-}  // namespace pure_pursuit
+}  // namespace autoware::pure_pursuit

@@ -27,8 +27,8 @@
  * limitations under the License.
  */
 
-#ifndef PURE_PURSUIT__PURE_PURSUIT_HPP_
-#define PURE_PURSUIT__PURE_PURSUIT_HPP_
+#ifndef AUTOWARE_PURE_PURSUIT__AUTOWARE_PURE_PURSUIT_HPP_
+#define AUTOWARE_PURE_PURSUIT__AUTOWARE_PURE_PURSUIT_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -42,7 +42,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-namespace pure_pursuit
+namespace autoware::pure_pursuit
 {
 class PurePursuit
 {
@@ -83,6 +83,6 @@ private:
   std::pair<bool, geometry_msgs::msg::Point> lerpNextTarget(int32_t next_wp_idx);
 };
 
-}  // namespace pure_pursuit
+}  // namespace autoware::pure_pursuit
 
-#endif  // PURE_PURSUIT__PURE_PURSUIT_HPP_
+#endif  // AUTOWARE_PURE_PURSUIT__AUTOWARE_PURE_PURSUIT_HPP_
