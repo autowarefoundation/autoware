@@ -14,7 +14,7 @@
 
 #include "occluded_crosswalk.hpp"
 
-#include "behavior_velocity_crosswalk_module/util.hpp"
+#include "autoware_behavior_velocity_crosswalk_module/util.hpp"
 
 #include <grid_map_ros/GridMapRosConverter.hpp>
 #include <grid_map_utils/polygon_iterator.hpp>

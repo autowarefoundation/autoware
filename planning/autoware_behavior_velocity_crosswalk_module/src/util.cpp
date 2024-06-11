@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_velocity_crosswalk_module/util.hpp"
+#include "autoware_behavior_velocity_crosswalk_module/util.hpp"
 
 #include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
 #include <lanelet2_extension/utility/query.hpp>

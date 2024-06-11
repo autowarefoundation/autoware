@@ -1,3 +1,3 @@
-<library path="behavior_velocity_crosswalk_module">
+<library path="autoware_behavior_velocity_crosswalk_module">
   <class type="autoware::behavior_velocity_planner::CrosswalkModulePlugin" base_class_type="autoware::behavior_velocity_planner::PluginInterface"/>
 </library>

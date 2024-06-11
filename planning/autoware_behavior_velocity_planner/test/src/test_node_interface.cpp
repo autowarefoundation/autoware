@@ -96,7 +96,7 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
                    velocity_smoother_dir + "/config/Analytical.param.yaml",
                    behavior_velocity_planner_dir + "/config/behavior_velocity_planner.param.yaml",
                    get_behavior_velocity_module_config("blind_spot"),
-                   get_behavior_velocity_module_config_no_prefix("crosswalk"),
+                   get_behavior_velocity_module_config("crosswalk"),
                    get_behavior_velocity_module_config("walkway"),
                    get_behavior_velocity_module_config_no_prefix("detection_area"),
                    get_behavior_velocity_module_config("intersection"),

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_VELOCITY_CROSSWALK_MODULE__UTIL_HPP_
-#define BEHAVIOR_VELOCITY_CROSSWALK_MODULE__UTIL_HPP_
+#ifndef AUTOWARE_BEHAVIOR_VELOCITY_CROSSWALK_MODULE__UTIL_HPP_
+#define AUTOWARE_BEHAVIOR_VELOCITY_CROSSWALK_MODULE__UTIL_HPP_
 
 #include <boost/assert.hpp>
 #include <boost/assign/list_of.hpp>
@@ -110,4 +110,4 @@ std::optional<lanelet::ConstLineString3d> getStopLineFromMap(
   const std::string & attribute_name);
 }  // namespace autoware::behavior_velocity_planner
 
-#endif  // BEHAVIOR_VELOCITY_CROSSWALK_MODULE__UTIL_HPP_
+#endif  // AUTOWARE_BEHAVIOR_VELOCITY_CROSSWALK_MODULE__UTIL_HPP_

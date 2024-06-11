@@ -14,7 +14,7 @@
 
 #include "scene.hpp"
 
-#include "behavior_velocity_crosswalk_module/util.hpp"
+#include "autoware_behavior_velocity_crosswalk_module/util.hpp"
 #include "path_utils.hpp"
 
 #include <autoware_behavior_velocity_planner_common/utilization/trajectory_utils.hpp>

@@ -15,7 +15,7 @@
 #ifndef SCENE_CROSSWALK_HPP_
 #define SCENE_CROSSWALK_HPP_
 
-#include "behavior_velocity_crosswalk_module/util.hpp"
+#include "autoware_behavior_velocity_crosswalk_module/util.hpp"
 
 #include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <lanelet2_extension/regulatory_elements/crosswalk.hpp>
