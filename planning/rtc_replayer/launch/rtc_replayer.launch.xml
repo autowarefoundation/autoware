@@ -1,3 +1,0 @@
-<launch>
-  <node pkg="rtc_replayer" exec="rtc_replayer_node" name="rtc_replayer" output="screen"/>
-</launch>
