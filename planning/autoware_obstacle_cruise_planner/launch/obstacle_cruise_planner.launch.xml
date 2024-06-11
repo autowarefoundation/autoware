@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- obstacle velocity planner param -->
+  <arg name="obstacle_cruise_planner_param_path" default="$(find-pkg-share autoware_obstacle_cruise_planner)/config/obstacle_cruise_planner.param.yaml"/>
+
+  <!-- vehicle info param -->
+  <arg name="vehicle_info_param_path" default="$(find-pkg-share autoware_vehicle_info_utils)/config/vehicle_info.param.yaml"/>
+
+  <!-- input -->
+  <arg name="input_trajectory" default="/planning/scenario_planning/lane_driving/trajectory"/>
+  <arg name="input_odometry" default="/localization/kinematic_state"/>
+  <arg name="input_map" default="/map/vector_map"/>
+  <arg name="input_objects" default="/perception/object_recognition/objects"/>
+
+  <!-- output -->
+  <arg name="output_trajectory" default="/planning/scenario_planning/lane_driving/trajectory"/>
+  <arg name="output_velocity_limit" default="/planning/scenario_planning/max_velocity_candidates"/>
+  <arg name="output_clear_velocity_limit" default="/planning/scenario_planning/clear_velocity_limit"/>
+
+  <node pkg="autoware_obstacle_cruise_planner" exec="autoware_obstacle_cruise_planner" name="obstacle_cruise_planner" output="screen">
+    <!-- param -->
+    <param from="$(var obstacle_cruise_planner_param_path)"/>
+    <param from="$(var vehicle_info_param_path)"/>
+
+    <!-- input -->
+    <remap from="~/input/trajectory" to="$(var input_trajectory)"/>
+    <remap from="~/input/odometry" to="$(var input_odometry)"/>
+    <remap from="~/input/objects" to="$(var input_objects)"/>
+
+    <!-- output -->
+    <remap from="~/output/trajectory" to="$(var output_trajectory)"/>
+    <remap from="~/output/velocity_limit" to="$(var output_velocity_limit)"/>
+    <remap from="~/output/clear_velocity_limit" to="$(var output_clear_velocity_limit)"/>
+    <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons"/>
+  </node>
+</launch>

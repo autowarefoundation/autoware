@@ -411,5 +411,5 @@ If the target velocity exceeds the value of `thresh_vel_to_stop`, the target vel
   dangerously.
 
 - It does not work for backward driving, but publishes the path of the input as it is. Please
-  use [obstacle_cruise_planner](../obstacle_cruise_planner/README.md) if you want to stop against an obstacle when
+  use [obstacle_cruise_planner](../autoware_obstacle_cruise_planner/README.md) if you want to stop against an obstacle when
   backward driving.

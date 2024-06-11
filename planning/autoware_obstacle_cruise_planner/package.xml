@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>autoware_obstacle_cruise_planner</name>
+  <version>0.1.0</version>
+  <description>The autoware_obstacle_cruise_planner package</description>
+
+  <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
+  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
+  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
+  <maintainer email="yuki.takagi@tier4.jp">Yuki Takagi</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <author email="takayuki.murooka@tier4.jp">Takayuki Murooka</author>
+  <author email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</author>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+
+  <depend>autoware_adapi_v1_msgs</depend>
+  <depend>autoware_perception_msgs</depend>
+  <depend>autoware_planning_msgs</depend>
+  <depend>autoware_planning_test_manager</depend>
+  <depend>autoware_vehicle_info_utils</depend>
+  <depend>geometry_msgs</depend>
+  <depend>interpolation</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>motion_utils</depend>
+  <depend>nav_msgs</depend>
+  <depend>object_recognition_utils</depend>
+  <depend>osqp_interface</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>signal_processing</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>tier4_debug_msgs</depend>
+  <depend>tier4_planning_msgs</depend>
+  <depend>visualization_msgs</depend>
+
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

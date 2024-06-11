@@ -47,8 +47,8 @@ nav:
       - 'Model Predictive Trajectory (MPT)': planning/autoware_path_optimizer/docs/mpt
       - 'How to Debug': planning/autoware_path_optimizer/docs/debug
     - 'Obstacle Cruise Planner':
-      - 'About Obstacle Cruise': planning/obstacle_cruise_planner
-      - 'How to Debug': planning/obstacle_cruise_planner/docs/debug
+      - 'About Obstacle Cruise': planning/autoware_obstacle_cruise_planner
+      - 'How to Debug': planning/autoware_obstacle_cruise_planner/docs/debug
     - 'Obstacle Stop Planner': planning/obstacle_stop_planner
     - 'Obstacle Velocity Limiter': planning/obstacle_velocity_limiter
     - 'Path Smoother':
