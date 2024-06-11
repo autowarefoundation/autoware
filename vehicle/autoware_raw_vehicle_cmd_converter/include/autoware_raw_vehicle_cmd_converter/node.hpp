@@ -20,6 +20,7 @@
 #include "autoware_raw_vehicle_cmd_converter/pid.hpp"
 #include "autoware_raw_vehicle_cmd_converter/steer_map.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
+#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -74,12 +75,13 @@ public:
 
   //!< @brief topic publisher for low level vehicle command
   rclcpp::Publisher<ActuationCommandStamped>::SharedPtr pub_actuation_cmd_;
-  //!< @brief subscriber for current velocity
-  rclcpp::Subscription<Odometry>::SharedPtr sub_velocity_;
   //!< @brief subscriber for vehicle command
   rclcpp::Subscription<Control>::SharedPtr sub_control_cmd_;
-  //!< @brief subscriber for steering
-  rclcpp::Subscription<Steering>::SharedPtr sub_steering_;
+  // polling subscribers
+  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> sub_odometry_{
+    this, "~/input/odometry"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<Steering> sub_steering_{
+    this, "~/input/steering"};
 
   rclcpp::TimerBase::SharedPtr timer_;
 
@@ -109,9 +111,7 @@ public:
     const double current_velocity, const double desired_acc, bool & accel_cmd_is_zero);
   double calculateBrakeMap(const double current_velocity, const double desired_acc);
   double calculateSteer(const double vel, const double steering, const double steer_rate);
-  void onSteering(const Steering::ConstSharedPtr msg);
   void onControlCmd(const Control::ConstSharedPtr msg);
-  void onVelocity(const Odometry::ConstSharedPtr msg);
   void publishActuationCmd();
   // for debugging
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_pub_steer_pid_;
