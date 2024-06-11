@@ -13,11 +13,11 @@
 // limitations under the License.
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#include "autoware_trajectory_follower_node/controller_node.hpp"
 #include "fake_test_node/fake_test_node.hpp"
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/time.hpp"
-#include "trajectory_follower_node/controller_node.hpp"
 #include "trajectory_follower_test_utils.hpp"
 
 #include "autoware_adapi_v1_msgs/msg/operation_mode_state.hpp"
@@ -49,7 +49,8 @@ const rclcpp::Duration one_second(1, 0);
 rclcpp::NodeOptions makeNodeOptions(const bool enable_keep_stopped_until_steer_convergence = false)
 {
   // Pass default parameter file to the node
-  const auto share_dir = ament_index_cpp::get_package_share_directory("trajectory_follower_node");
+  const auto share_dir =
+    ament_index_cpp::get_package_share_directory("autoware_trajectory_follower_node");
   const auto longitudinal_share_dir =
     ament_index_cpp::get_package_share_directory("autoware_pid_longitudinal_controller");
   const auto lateral_share_dir =

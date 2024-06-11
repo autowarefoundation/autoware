@@ -1,10 +1,10 @@
 # Pure Pursuit Controller
 
-The Pure Pursuit Controller module calculates the steering angle for tracking a desired trajectory using the pure pursuit algorithm. This is used as a lateral controller plugin in the `trajectory_follower_node`.
+The Pure Pursuit Controller module calculates the steering angle for tracking a desired trajectory using the pure pursuit algorithm. This is used as a lateral controller plugin in the `autoware_trajectory_follower_node`.
 
 ## Inputs
 
-Set the following from the [controller_node](../trajectory_follower_node/README.md)
+Set the following from the [controller_node](../autoware_trajectory_follower_node/README.md)
 
 - `autoware_planning_msgs/Trajectory` : reference trajectory to follow.
 - `nav_msgs/Odometry`: current ego pose and velocity information

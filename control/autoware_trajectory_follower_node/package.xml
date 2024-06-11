@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>trajectory_follower_node</name>
+  <name>autoware_trajectory_follower_node</name>
   <version>1.0.0</version>
   <description>Nodes to follow a trajectory by generating control commands separated into lateral and longitudinal commands</description>
 

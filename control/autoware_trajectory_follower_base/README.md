@@ -8,7 +8,7 @@ This is the design document for the `trajectory_follower` package.
 <!-- Things to consider:
     - Why did we implement this feature? -->
 
-This package provides the interface of longitudinal and lateral controllers used by the node of the `trajectory_follower_node` package.
+This package provides the interface of longitudinal and lateral controllers used by the node of the `autoware_trajectory_follower_node` package.
 We can implement a detailed controller by deriving the longitudinal and lateral base interfaces.
 
 ## Design
@@ -17,13 +17,13 @@ There are lateral and longitudinal base interface classes and each algorithm inh
 The interface class has the following base functions.
 
 - `isReady()`: Check if the control is ready to compute.
-- `run()`: Compute control commands and return to [Trajectory Follower Nodes](../trajectory_follower_node/README.md). This must be implemented by inherited algorithms.
+- `run()`: Compute control commands and return to [Trajectory Follower Nodes](../autoware_trajectory_follower_node/README.md). This must be implemented by inherited algorithms.
 - `sync()`: Input the result of running the other controller.
   - steer angle convergence
     - allow keeping stopped until steer is converged.
   - velocity convergence(currently not used)
 
-See [the Design of Trajectory Follower Nodes](../trajectory_follower_node/README.md#Design) for how these functions work in the node.
+See [the Design of Trajectory Follower Nodes](../autoware_trajectory_follower_node/README.md#Design) for how these functions work in the node.
 
 ## Separated lateral (steering) and longitudinal (velocity) controls
 

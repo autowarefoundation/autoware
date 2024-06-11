@@ -64,7 +64,7 @@ run(InputData) override
 }
 }
 
-package trajectory_follower_node {
+package autoware_trajectory_follower_node {
 class Controller {
 longitudinal_controller_
 lateral_controller_

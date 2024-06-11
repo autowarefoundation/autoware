@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-#include "trajectory_follower_node/simple_trajectory_follower.hpp"
+#include "autoware_trajectory_follower_node/simple_trajectory_follower.hpp"
 
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/pose_deviation.hpp>

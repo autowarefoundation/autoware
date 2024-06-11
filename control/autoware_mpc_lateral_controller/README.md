@@ -1,7 +1,7 @@
 # MPC Lateral Controller
 
 This is the design document for the lateral controller node
-in the `trajectory_follower_node` package.
+in the `autoware_trajectory_follower_node` package.
 
 ## Purpose / Use cases
 
@@ -61,7 +61,7 @@ The tracking is not accurate if the first point of the reference trajectory is a
 
 ### Inputs
 
-Set the following from the [controller_node](../trajectory_follower_node/README.md)
+Set the following from the [controller_node](../autoware_trajectory_follower_node/README.md)
 
 - `autoware_planning_msgs/Trajectory` : reference trajectory to follow.
 - `nav_msgs/Odometry`: current odometry

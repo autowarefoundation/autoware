@@ -141,7 +141,7 @@ There are two sources of the slope information, which can be switched by a param
 
 ### Input
 
-Set the following from the [controller_node](../trajectory_follower_node/README.md)
+Set the following from the [controller_node](../autoware_trajectory_follower_node/README.md)
 
 - `autoware_planning_msgs/Trajectory` : reference trajectory to follow.
 - `nav_msgs/Odometry`: current odometry

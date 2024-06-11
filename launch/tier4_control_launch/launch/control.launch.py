@@ -69,7 +69,7 @@ def launch_setup(context, *args, **kwargs):
     trajectory_follower_mode = LaunchConfiguration("trajectory_follower_mode").perform(context)
 
     controller_component = ComposableNode(
-        package="trajectory_follower_node",
+        package="autoware_trajectory_follower_node",
         plugin="autoware::motion::control::trajectory_follower_node::Controller",
         name="controller_node_exe",
         namespace="trajectory_follower",

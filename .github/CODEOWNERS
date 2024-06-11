@@ -59,7 +59,7 @@ control/pure_pursuit/** takamasa.horibe@tier4.jp
 control/shift_decider/** takamasa.horibe@tier4.jp
 control/autoware_smart_mpc_trajectory_follower/** masayuki.aino@proxima-ai-tech.com
 control/autoware_trajectory_follower_base/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
-control/trajectory_follower_node/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
+control/autoware_trajectory_follower_node/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
 control/autoware_vehicle_cmd_gate/** takamasa.horibe@tier4.jp tomoya.kimura@tier4.jp
 evaluator/control_evaluator/** daniel.sanchez@tier4.jp takayuki.murooka@tier4.jp
 evaluator/diagnostic_converter/** kyoichi.sugahara@tier4.jp maxime.clement@tier4.jp takamasa.horibe@tier4.jp
