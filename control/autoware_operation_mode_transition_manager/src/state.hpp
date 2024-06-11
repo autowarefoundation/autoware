@@ -15,8 +15,8 @@
 #ifndef STATE_HPP_
 #define STATE_HPP_
 
+#include "autoware_operation_mode_transition_manager/msg/operation_mode_transition_manager_debug.hpp"
 #include "data.hpp"
-#include "operation_mode_transition_manager/msg/operation_mode_transition_manager_debug.hpp"
 
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -28,7 +28,7 @@
 #include <memory>
 #include <utility>
 
-namespace operation_mode_transition_manager
+namespace autoware::operation_mode_transition_manager
 {
 
 class ModeChangeBase
@@ -39,7 +39,8 @@ public:
   virtual bool isModeChangeCompleted() = 0;
   virtual bool isModeChangeAvailable() = 0;
 
-  using DebugInfo = operation_mode_transition_manager::msg::OperationModeTransitionManagerDebug;
+  using DebugInfo =
+    autoware_operation_mode_transition_manager::msg::OperationModeTransitionManagerDebug;
   virtual DebugInfo getDebugInfo() { return DebugInfo{}; }
 };
 
@@ -105,6 +106,6 @@ public:
   bool isModeChangeAvailable() override { return true; }
 };
 
-}  // namespace operation_mode_transition_manager
+}  // namespace autoware::operation_mode_transition_manager
 
 #endif  // STATE_HPP_

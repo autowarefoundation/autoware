@@ -1,9 +1,9 @@
 <launch>
-  <arg name="operation_mode_transition_manager_param" default="$(find-pkg-share operation_mode_transition_manager)/config/operation_mode_transition_manager.param.yaml"/>
+  <arg name="operation_mode_transition_manager_param" default="$(find-pkg-share autoware_operation_mode_transition_manager)/config/operation_mode_transition_manager.param.yaml"/>
   <arg name="vehicle_info_param_file" default="$(find-pkg-share autoware_vehicle_info_utils)/config/vehicle_info.param.yaml"/>
 
-  <!-- operation_mode_transition_manager -->
-  <node pkg="operation_mode_transition_manager" exec="operation_mode_transition_manager_exe" name="operation_mode_transition_manager" output="screen">
+  <!-- autoware_operation_mode_transition_manager -->
+  <node pkg="autoware_operation_mode_transition_manager" exec="autoware_operation_mode_transition_manager_exe" name="autoware_operation_mode_transition_manager" output="screen">
     <!-- args -->
     <param from="$(var vehicle_info_param_file)"/>
     <param from="$(var operation_mode_transition_manager_param)"/>

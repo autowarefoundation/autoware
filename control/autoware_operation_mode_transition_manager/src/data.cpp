@@ -14,7 +14,7 @@
 
 #include "data.hpp"
 
-namespace operation_mode_transition_manager
+namespace autoware::operation_mode_transition_manager
 {
 
 std::string toString(const std::optional<OperationMode> mode)
@@ -67,4 +67,4 @@ OperationModeValue toMsg(const OperationMode mode)
   return OperationModeState::UNKNOWN;
 }
 
-}  // namespace operation_mode_transition_manager
+}  // namespace autoware::operation_mode_transition_manager

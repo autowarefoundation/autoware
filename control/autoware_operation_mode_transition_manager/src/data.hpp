@@ -27,7 +27,7 @@
 #include <optional>
 #include <string>
 
-namespace operation_mode_transition_manager
+namespace autoware::operation_mode_transition_manager
 {
 
 using ServiceResponse = autoware_adapi_v1_msgs::srv::ChangeOperationMode::Response;
@@ -81,6 +81,6 @@ std::string toString(const std::optional<OperationMode> mode);
 std::optional<OperationMode> toEnum(const ChangeOperationMode::Request & request);
 OperationModeValue toMsg(const OperationMode mode);
 
-}  // namespace operation_mode_transition_manager
+}  // namespace autoware::operation_mode_transition_manager
 
 #endif  // DATA_HPP_

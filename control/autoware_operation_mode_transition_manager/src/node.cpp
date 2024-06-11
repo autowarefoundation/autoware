@@ -16,11 +16,11 @@
 
 #include <component_interface_utils/rclcpp/exceptions.hpp>
 
-namespace operation_mode_transition_manager
+namespace autoware::operation_mode_transition_manager
 {
 
 OperationModeTransitionManager::OperationModeTransitionManager(const rclcpp::NodeOptions & options)
-: Node("operation_mode_transition_manager", options), compatibility_(this)
+: Node("autoware_operation_mode_transition_manager", options), compatibility_(this)
 {
   cli_control_mode_ = create_client<ControlModeCommand>("control_mode_request");
   pub_debug_info_ = create_publisher<ModeChangeBase::DebugInfo>("~/debug_info", 1);
@@ -281,7 +281,8 @@ void OperationModeTransitionManager::publishData()
   pub_debug_info_->publish(debug_info);
 }
 
-}  // namespace operation_mode_transition_manager
+}  // namespace autoware::operation_mode_transition_manager
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(operation_mode_transition_manager::OperationModeTransitionManager)
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::operation_mode_transition_manager::OperationModeTransitionManager)

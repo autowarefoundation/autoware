@@ -1,7 +1,7 @@
 <package format="3">
-  <name>operation_mode_transition_manager</name>
+  <name>autoware_operation_mode_transition_manager</name>
   <version>0.1.0</version>
-  <description>The vehicle_cmd_gate package</description>
+  <description>The operation_mode_transition_manager package</description>
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
   <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>

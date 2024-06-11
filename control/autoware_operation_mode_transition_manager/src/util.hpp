@@ -15,9 +15,10 @@
 #ifndef UTIL_HPP_
 #define UTIL_HPP_
 
-#include "operation_mode_transition_manager/msg/operation_mode_transition_manager_debug.hpp"
+#include "autoware_operation_mode_transition_manager/msg/operation_mode_transition_manager_debug.hpp"
 
-using DebugInfo = operation_mode_transition_manager::msg::OperationModeTransitionManagerDebug;
+using DebugInfo =
+  autoware_operation_mode_transition_manager::msg::OperationModeTransitionManagerDebug;
 
 void setAllOk(DebugInfo & debug_info)
 {

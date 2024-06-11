@@ -53,7 +53,8 @@ def launch_setup(context, *args, **kwargs):
     with open(LaunchConfiguration("control_validator_param_path").perform(context), "r") as f:
         control_validator_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(
-        LaunchConfiguration("operation_mode_transition_manager_param_path").perform(context), "r"
+        LaunchConfiguration("operation_mode_transition_manager_param_path").perform(context),
+        "r",
     ) as f:
         operation_mode_transition_manager_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(LaunchConfiguration("shift_decider_param_path").perform(context), "r") as f:
@@ -245,10 +246,10 @@ def launch_setup(context, *args, **kwargs):
     )
 
     # operation mode transition manager
-    operation_mode_transition_manager_component = ComposableNode(
-        package="operation_mode_transition_manager",
-        plugin="operation_mode_transition_manager::OperationModeTransitionManager",
-        name="operation_mode_transition_manager",
+    autoware_operation_mode_transition_manager_component = ComposableNode(
+        package="autoware_operation_mode_transition_manager",
+        plugin="autoware::operation_mode_transition_manager::OperationModeTransitionManager",
+        name="autoware_operation_mode_transition_manager",
         remappings=[
             # input
             ("kinematics", "/localization/kinematic_state"),
@@ -347,7 +348,7 @@ def launch_setup(context, *args, **kwargs):
                 lane_departure_component,
                 shift_decider_component,
                 vehicle_cmd_gate_component,
-                operation_mode_transition_manager_component,
+                autoware_operation_mode_transition_manager_component,
                 glog_component,
             ],
         )
@@ -362,7 +363,7 @@ def launch_setup(context, *args, **kwargs):
                 lane_departure_component,
                 shift_decider_component,
                 vehicle_cmd_gate_component,
-                operation_mode_transition_manager_component,
+                autoware_operation_mode_transition_manager_component,
                 glog_component,
             ],
         )

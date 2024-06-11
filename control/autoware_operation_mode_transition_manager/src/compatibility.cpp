@@ -16,7 +16,7 @@
 
 #include <memory>
 
-namespace operation_mode_transition_manager
+namespace autoware::operation_mode_transition_manager
 {
 
 Compatibility::Compatibility(rclcpp::Node * node) : node_(node)
@@ -140,4 +140,4 @@ void Compatibility::set_mode(const OperationMode mode)
   }
 }
 
-}  // namespace operation_mode_transition_manager
+}  // namespace autoware::operation_mode_transition_manager

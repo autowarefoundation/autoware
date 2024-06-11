@@ -26,7 +26,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace operation_mode_transition_manager
+namespace autoware::operation_mode_transition_manager
 {
 
 class OperationModeTransitionManager : public rclcpp::Node
@@ -78,6 +78,6 @@ private:
   std::optional<rclcpp::Time> compatibility_transition_;
 };
 
-}  // namespace operation_mode_transition_manager
+}  // namespace autoware::operation_mode_transition_manager
 
 #endif  // NODE_HPP_

@@ -23,7 +23,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace operation_mode_transition_manager
+namespace autoware::operation_mode_transition_manager
 {
 
 using motion_utils::findNearestIndex;
@@ -316,4 +316,4 @@ bool AutonomousMode::isModeChangeAvailable()
   return is_all_ok;
 }
 
-}  // namespace operation_mode_transition_manager
+}  // namespace autoware::operation_mode_transition_manager

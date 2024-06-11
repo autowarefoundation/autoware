@@ -22,7 +22,7 @@
 #include <tier4_control_msgs/msg/gate_mode.hpp>
 #include <tier4_control_msgs/srv/external_command_select.hpp>
 
-namespace operation_mode_transition_manager
+namespace autoware::operation_mode_transition_manager
 {
 
 class Compatibility
@@ -54,6 +54,6 @@ private:
   SelectorModeMsg::ConstSharedPtr selector_mode_;
 };
 
-}  // namespace operation_mode_transition_manager
+}  // namespace autoware::operation_mode_transition_manager
 
 #endif  // COMPATIBILITY_HPP_

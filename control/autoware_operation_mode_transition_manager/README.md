@@ -1,4 +1,4 @@
-# operation_mode_transition_manager
+# autoware_operation_mode_transition_manager
 
 ## Purpose / Use cases
 
@@ -25,7 +25,7 @@ There is also an `In Transition` state that occurs during each mode transitions.
 
 ## Design
 
-A rough design of the relationship between `operation_mode_transition_manager`` and the other nodes is shown below.
+A rough design of the relationship between `autoware_operation_mode_transition_manager`` and the other nodes is shown below.
 
 ![transition_rough_structure](image/transition_rough_structure.drawio.svg)
 
@@ -33,7 +33,7 @@ A more detailed structure is below.
 
 ![transition_detailed_structure](image/transition_detailed_structure.drawio.svg)
 
-Here we see that `operation_mode_transition_manager` has multiple state transitions as follows
+Here we see that `autoware_operation_mode_transition_manager` has multiple state transitions as follows
 
 - **AUTOWARE ENABLED <---> DISABLED**
   - **ENABLED**: the vehicle is controlled by Autoware.
@@ -73,7 +73,7 @@ For the backward compatibility (to be removed):
 ### Outputs
 
 - /system/operation_mode/state [`autoware_adapi_v1_msgs/msg/OperationModeState`]: to inform the current operation mode
-- /control/operation_mode_transition_manager/debug_info [`operation_mode_transition_manager/msg/OperationModeTransitionManagerDebug`]: detailed information about the operation mode transition
+- /control/autoware_operation_mode_transition_manager/debug_info [`autoware_operation_mode_transition_manager/msg/OperationModeTransitionManagerDebug`]: detailed information about the operation mode transition
 
 - /control/gate_mode_cmd [`tier4_control_msgs/msg/GateMode`]: to change the `vehicle_cmd_gate` state to use its features (to be removed)
 - /autoware/engage [`autoware_vehicle_msgs/msg/Engage`]:
@@ -83,7 +83,7 @@ For the backward compatibility (to be removed):
 
 ## Parameters
 
-{{ json_to_markdown("control/operation_mode_transition_manager/schema/operation_mode_transition_manager.schema.json") }}
+{{ json_to_markdown("control/autoware_operation_mode_transition_manager/schema/operation_mode_transition_manager.schema.json") }}
 
 | Name                               | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                   | Default value |
 | :--------------------------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
