@@ -18,8 +18,6 @@
 
 #include <cstddef>
 #include <functional>
-#include <memory>
-#include <utility>
 
 namespace autoware::shift_decider
 {
@@ -37,33 +35,15 @@ ShiftDecider::ShiftDecider(const rclcpp::NodeOptions & node_options)
 
   pub_shift_cmd_ =
     create_publisher<autoware_vehicle_msgs::msg::GearCommand>("output/gear_cmd", durable_qos);
-  sub_control_cmd_ = create_subscription<autoware_control_msgs::msg::Control>(
-    "input/control_cmd", queue_size, std::bind(&ShiftDecider::onControlCmd, this, _1));
-  sub_autoware_state_ = create_subscription<autoware_system_msgs::msg::AutowareState>(
-    "input/state", queue_size, std::bind(&ShiftDecider::onAutowareState, this, _1));
-  sub_current_gear_ = create_subscription<autoware_vehicle_msgs::msg::GearReport>(
-    "input/current_gear", queue_size, std::bind(&ShiftDecider::onCurrentGear, this, _1));
 
   initTimer(0.1);
 }
 
-void ShiftDecider::onControlCmd(autoware_control_msgs::msg::Control::SharedPtr msg)
-{
-  control_cmd_ = msg;
-}
-
-void ShiftDecider::onAutowareState(autoware_system_msgs::msg::AutowareState::SharedPtr msg)
-{
-  autoware_state_ = msg;
-}
-
-void ShiftDecider::onCurrentGear(autoware_vehicle_msgs::msg::GearReport::SharedPtr msg)
-{
-  current_gear_ptr_ = msg;
-}
-
 void ShiftDecider::onTimer()
 {
+  control_cmd_ = sub_control_cmd_.takeData();
+  autoware_state_ = sub_autoware_state_.takeData();
+  current_gear_ptr_ = sub_current_gear_.takeData();
   if (!autoware_state_ || !control_cmd_ || !current_gear_ptr_) {
     return;
   }

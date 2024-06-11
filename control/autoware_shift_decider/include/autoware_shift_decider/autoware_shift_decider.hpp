@@ -15,6 +15,8 @@
 #ifndef AUTOWARE_SHIFT_DECIDER__AUTOWARE_SHIFT_DECIDER_HPP_
 #define AUTOWARE_SHIFT_DECIDER__AUTOWARE_SHIFT_DECIDER_HPP_
 
+#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
+
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_control_msgs/msg/control.hpp>
@@ -41,16 +43,19 @@ private:
   void initTimer(double period_s);
 
   rclcpp::Publisher<autoware_vehicle_msgs::msg::GearCommand>::SharedPtr pub_shift_cmd_;
-  rclcpp::Subscription<autoware_control_msgs::msg::Control>::SharedPtr sub_control_cmd_;
-  rclcpp::Subscription<autoware_system_msgs::msg::AutowareState>::SharedPtr sub_autoware_state_;
-  rclcpp::Subscription<autoware_vehicle_msgs::msg::GearReport>::SharedPtr sub_current_gear_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<autoware_control_msgs::msg::Control>
+    sub_control_cmd_{this, "input/control_cmd"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<autoware_system_msgs::msg::AutowareState>
+    sub_autoware_state_{this, "input/state"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<autoware_vehicle_msgs::msg::GearReport>
+    sub_current_gear_{this, "input/current_gear"};
 
   rclcpp::TimerBase::SharedPtr timer_;
 
-  autoware_control_msgs::msg::Control::SharedPtr control_cmd_;
-  autoware_system_msgs::msg::AutowareState::SharedPtr autoware_state_;
+  autoware_control_msgs::msg::Control::ConstSharedPtr control_cmd_;
+  autoware_system_msgs::msg::AutowareState::ConstSharedPtr autoware_state_;
   autoware_vehicle_msgs::msg::GearCommand shift_cmd_;
-  autoware_vehicle_msgs::msg::GearReport::SharedPtr current_gear_ptr_;
+  autoware_vehicle_msgs::msg::GearReport::ConstSharedPtr current_gear_ptr_;
   uint8_t prev_shift_command = autoware_vehicle_msgs::msg::GearCommand::PARK;
 
   bool park_on_goal_;
