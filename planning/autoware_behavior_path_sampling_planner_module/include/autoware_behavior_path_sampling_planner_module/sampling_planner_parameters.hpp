@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_PARAMETERS_HPP_
-#define BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_PARAMETERS_HPP_
+#ifndef AUTOWARE_BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_PARAMETERS_HPP_
+#define AUTOWARE_BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_PARAMETERS_HPP_
 
 #include "autoware_bezier_sampler/bezier_sampling.hpp"
 #include "autoware_sampler_common/structures.hpp"
 
 #include <vector>
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using tier4_autoware_utils::LinearRing2d;
 using tier4_autoware_utils::MultiPoint2d;
@@ -87,5 +87,5 @@ struct SamplingPlannerInternalParameters
   Sampling sampling;
   Preprocessing preprocessing{};
 };
-}  // namespace behavior_path_planner
-#endif  // BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_PARAMETERS_HPP_
+}  // namespace autoware::behavior_path_planner
+#endif  // AUTOWARE_BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_PARAMETERS_HPP_

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_sampling_planner_module/sampling_planner_module.hpp"
+#include "autoware_behavior_path_sampling_planner_module/sampling_planner_module.hpp"
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using geometry_msgs::msg::Point;
 using motion_utils::calcSignedArcLength;
@@ -267,7 +267,7 @@ bool SamplingPlannerModule::isReferencePathSafe() const
   const auto footprint = autoware::sampler_common::constraints::buildFootprintPoints(
     reference_path, internal_params_->constraints);
 
-  behavior_path_planner::HardConstraintsFunctionVector hard_constraints_reference_path;
+  HardConstraintsFunctionVector hard_constraints_reference_path;
   hard_constraints_reference_path.emplace_back(
     [](
       autoware::sampler_common::Path & path,
@@ -415,8 +415,7 @@ BehaviorModuleOutput SamplingPlannerModule::plan()
   autoware::frenet_planner::SamplingParameters sampling_parameters;
 
   const auto & pose = planner_data_->self_odometry->pose.pose;
-  autoware::sampler_common::State initial_state =
-    behavior_path_planner::getInitialState(pose, reference_spline);
+  autoware::sampler_common::State initial_state = getInitialState(pose, reference_spline);
   sampling_parameters =
     prepareSamplingParameters(initial_state, reference_spline, *internal_params_);
 
@@ -546,8 +545,7 @@ BehaviorModuleOutput SamplingPlannerModule::plan()
       const auto reused_path = get_subset(prev_path_frenet, reuse_idx);
 
       geometry_msgs::msg::Pose future_pose = reused_path.poses.back();
-      autoware::sampler_common::State future_state =
-        behavior_path_planner::getInitialState(future_pose, reference_spline);
+      autoware::sampler_common::State future_state = getInitialState(future_pose, reference_spline);
       autoware::frenet_planner::FrenetState frenet_reuse_state;
 
       set_frenet_state(future_state, reference_spline, frenet_reuse_state);
@@ -984,4 +982,4 @@ autoware::frenet_planner::SamplingParameters SamplingPlannerModule::prepareSampl
   return sampling_parameters;
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_MODULE_HPP_
-#define BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_MODULE_HPP_
+#ifndef AUTOWARE_BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_MODULE_HPP_
+#define AUTOWARE_BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_MODULE_HPP_
 
 #include "autoware_behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "autoware_behavior_path_planner_common/marker_utils/utils.hpp"
@@ -21,6 +21,8 @@
 #include "autoware_behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "autoware_behavior_path_planner_common/utils/path_utils.hpp"
 #include "autoware_behavior_path_planner_common/utils/utils.hpp"
+#include "autoware_behavior_path_sampling_planner_module/sampling_planner_parameters.hpp"
+#include "autoware_behavior_path_sampling_planner_module/util.hpp"
 #include "autoware_bezier_sampler/bezier_sampling.hpp"
 #include "autoware_frenet_planner/frenet_planner.hpp"
 #include "autoware_sampler_common/constraints/footprint.hpp"
@@ -29,8 +31,6 @@
 #include "autoware_sampler_common/structures.hpp"
 #include "autoware_sampler_common/transform/spline_transform.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
-#include "behavior_path_sampling_planner_module/sampling_planner_parameters.hpp"
-#include "behavior_path_sampling_planner_module/util.hpp"
 #include "lanelet2_extension/utility/query.hpp"
 #include "lanelet2_extension/utility/utilities.hpp"
 #include "motion_utils/trajectory/path_with_lane_id.hpp"
@@ -56,8 +56,11 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
+// NOLINT
+using namespace ::behavior_path_planner;  // NOLINT TODO(Maxime): remove once moved to autoware
+                                          // namespace
 using autoware_planning_msgs::msg::TrajectoryPoint;
 struct SamplingPlannerData
 {
@@ -142,8 +145,8 @@ public:
   }
 
   SamplingPlannerDebugData debug_data_;
-  behavior_path_planner::HardConstraintsFunctionVector hard_constraints_;
-  behavior_path_planner::SoftConstraintsFunctionVector soft_constraints_;
+  HardConstraintsFunctionVector hard_constraints_;
+  SoftConstraintsFunctionVector soft_constraints_;
 
 private:
   SamplingPlannerData createPlannerData(
@@ -261,6 +264,6 @@ private:
     const std::shared_ptr<const PlannerData> & planner_data) const;
 };
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_MODULE_HPP_
+#endif  // AUTOWARE_BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__SAMPLING_PLANNER_MODULE_HPP_

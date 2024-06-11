@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__UTIL_HPP_
-#define BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__UTIL_HPP_
+#ifndef AUTOWARE_BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__UTIL_HPP_
+#define AUTOWARE_BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__UTIL_HPP_
 #include "autoware_sampler_common/structures.hpp"
 #include "autoware_sampler_common/transform/spline_transform.hpp"
 
@@ -26,9 +26,10 @@
 #include <numeric>
 #include <optional>
 #include <vector>
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
-
+using namespace ::behavior_path_planner;  // NOLINT TODO(Maxime): remove once moved to autoware
+                                          // namespace
 using geometry_msgs::msg::Pose;
 
 struct SoftConstraintsInputs
@@ -38,8 +39,8 @@ struct SoftConstraintsInputs
   lanelet::ArcCoordinates ego_arc;
   lanelet::ArcCoordinates goal_arc;
   lanelet::ConstLanelets closest_lanelets_to_goal;
-  behavior_path_planner::PlanResult reference_path;
-  behavior_path_planner::PlanResult prev_module_path;
+  PlanResult reference_path;
+  PlanResult prev_module_path;
   std::optional<autoware::sampler_common::Path> prev_path;
   lanelet::ConstLanelets current_lanes;
 };
@@ -101,6 +102,6 @@ inline autoware::sampler_common::State getInitialState(
   return initial_state;
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__UTIL_HPP_
+#endif  // AUTOWARE_BEHAVIOR_PATH_SAMPLING_PLANNER_MODULE__UTIL_HPP_

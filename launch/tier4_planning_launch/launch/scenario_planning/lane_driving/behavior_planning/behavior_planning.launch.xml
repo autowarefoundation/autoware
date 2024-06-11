@@ -61,7 +61,7 @@
   />
   <let
     name="behavior_path_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::SamplingPlannerModuleManager, '&quot;)"
+    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'autoware::behavior_path_planner::SamplingPlannerModuleManager, '&quot;)"
     if="$(var launch_sampling_planner_module)"
   />
   <let

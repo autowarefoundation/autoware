@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_sampling_planner_module/manager.hpp"
+#include "autoware_behavior_path_sampling_planner_module/manager.hpp"
 
 #include "tier4_autoware_utils/ros/update_param.hpp"
 
@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 void SamplingPlannerModuleManager::init(rclcpp::Node * node)
@@ -134,9 +134,9 @@ void SamplingPlannerModuleManager::updateModuleParams(
   });
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_path_planner::SamplingPlannerModuleManager,
-  behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::SamplingPlannerModuleManager,
+  ::behavior_path_planner::SceneModuleManagerInterface)
