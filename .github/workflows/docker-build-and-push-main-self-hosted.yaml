@@ -69,6 +69,25 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
+      - name: Cache
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: |
+            root-ccache
+          key: cache-${{ matrix.platform }}-${{ matrix.name }}-${{ hashFiles('docker/Dockerfile') }}
+          restore-keys: |
+            cache-${{ matrix.platform }}-${{ matrix.name }}-
+            cache-${{ matrix.platform }}-
+      - name: inject cache into docker
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.0
+        with:
+          cache-map: |
+            {
+              "root-ccache": "/root/.ccache"
+            }
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+
       - name: Build 'Autoware'
         uses: ./.github/actions/docker-build-and-push
         with:
