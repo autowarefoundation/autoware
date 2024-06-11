@@ -60,6 +60,7 @@ std::shared_ptr<MotionVelocityPlannerNode> generateNode()
 
   std::vector<std::string> module_names;
   module_names.emplace_back("autoware::motion_velocity_planner::OutOfLaneModule");
+  module_names.emplace_back("autoware::motion_velocity_planner::ObstacleVelocityLimiterModule");
 
   std::vector<rclcpp::Parameter> params;
   params.emplace_back("launch_modules", module_names);
@@ -73,7 +74,8 @@ std::shared_ptr<MotionVelocityPlannerNode> generateNode()
                    velocity_smoother_dir + "/config/default_velocity_smoother.param.yaml",
                    velocity_smoother_dir + "/config/Analytical.param.yaml",
                    motion_velocity_planner_dir + "/config/motion_velocity_planner.param.yaml",
-                   get_motion_velocity_module_config("out_of_lane")});
+                   get_motion_velocity_module_config("out_of_lane"),
+                   get_motion_velocity_module_config("obstacle_velocity_limiter")});
 
   return std::make_shared<MotionVelocityPlannerNode>(node_options);
 }

@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>autoware_motion_velocity_obstacle_velocity_limiter_module</name>
+  <version>0.1.0</version>
+  <description>Package to adjust velocities of a trajectory in order for the ride to feel safe</description>
+
+  <maintainer email="maxime.clement@tier4.jp">Maxime CLEMENT</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+  <buildtool_depend>eigen3_cmake_module</buildtool_depend>
+
+  <depend>autoware_motion_velocity_planner_common</depend>
+  <depend>autoware_perception_msgs</depend>
+  <depend>autoware_planning_msgs</depend>
+  <depend>autoware_planning_test_manager</depend>
+  <depend>autoware_vehicle_info_utils</depend>
+  <depend>eigen</depend>
+  <depend>grid_map_msgs</depend>
+  <depend>grid_map_ros</depend>
+  <depend>grid_map_utils</depend>
+  <depend>lanelet2_core</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>libboost-dev</depend>
+  <depend>motion_utils</depend>
+  <depend>nav_msgs</depend>
+  <depend>pcl_ros</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>tier4_planning_msgs</depend>
+  <depend>visualization_msgs</depend>
+
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

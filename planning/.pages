@@ -50,7 +50,6 @@ nav:
       - 'About Obstacle Cruise': planning/autoware_obstacle_cruise_planner
       - 'How to Debug': planning/autoware_obstacle_cruise_planner/docs/debug
     - 'Obstacle Stop Planner': planning/obstacle_stop_planner
-    - 'Obstacle Velocity Limiter': planning/obstacle_velocity_limiter
     - 'Path Smoother':
       - 'About Path Smoother': planning/autoware_path_smoother
       - 'Elastic Band': planning/autoware_path_smoother/docs/eb
@@ -63,9 +62,10 @@ nav:
       - 'About Surround Obstacle Checker': planning/autoware_surround_obstacle_checker
       - 'About Surround Obstacle Checker (Japanese)': planning/autoware_surround_obstacle_checker/surround_obstacle_checker-design.ja
     - 'Motion Velocity Planner':
-      - 'About Motion Velocity Planner': planning/autoware_motion_velocity_planner_node/
+      - 'About Motion Velocity Planner': planning/motion_velocity_planner/autoware_motion_velocity_planner_node/
       - 'Available Modules':
-        - 'Out of Lane': planning/autoware_motion_velocity_planner_out_of_lane_module/
+        - 'Out of Lane': planning/motion_velocity_planner/autoware_motion_velocity_planner_out_of_lane_module/
+        - 'Obstacle Velocity Limiter': planning/motion_velocity_planner/autoware_motion_velocity_obstacle_velocity_limiter_module/
     - 'Velocity Smoother':
       - 'About Velocity Smoother': planning/autoware_velocity_smoother
       - 'About Velocity Smoother (Japanese)': planning/autoware_velocity_smoother/README.ja

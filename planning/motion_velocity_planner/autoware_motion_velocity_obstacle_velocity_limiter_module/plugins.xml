@@ -1,0 +1,3 @@
+<library path="autoware_motion_velocity_obstacle_velocity_limiter_module">
+  <class type="autoware::motion_velocity_planner::ObstacleVelocityLimiterModule" base_class_type="autoware::motion_velocity_planner::PluginModuleInterface"/>
+</library>

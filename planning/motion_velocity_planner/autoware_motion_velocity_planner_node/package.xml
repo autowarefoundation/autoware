@@ -46,6 +46,7 @@
   <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
+  <test_depend>autoware_motion_velocity_obstacle_velocity_limiter_module</test_depend>
   <test_depend>autoware_motion_velocity_out_of_lane_module</test_depend>
   <test_depend>autoware_planning_test_manager</test_depend>
 
