@@ -58,7 +58,7 @@ jobs:
         with:
           path: |
             root-ccache
-          key: cache-${{ matrix.platform }}-${{ matrix.name }}-${{ hashFiles('docker/Dockerfile') }}
+          key: cache-${{ matrix.platform }}-${{ matrix.name }}-${{ hashFiles('autoware.repos') }}
           restore-keys: |
             cache-${{ matrix.platform }}-${{ matrix.name }}-
             cache-${{ matrix.platform }}-
