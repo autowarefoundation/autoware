@@ -206,8 +206,16 @@ void OperationModeTransitionManager::processTransition()
 
 void OperationModeTransitionManager::onTimer()
 {
-  control_mode_report_ = *sub_control_mode_report_.takeData();
-  gate_operation_mode_ = *sub_gate_operation_mode_.takeData();
+  const auto control_mode_report_ptr = sub_control_mode_report_.takeData();
+  if (!control_mode_report_ptr) {
+    return;
+  }
+  const auto gate_operation_mode_ptr = sub_gate_operation_mode_.takeData();
+  if (!gate_operation_mode_ptr) {
+    return;
+  }
+  control_mode_report_ = *control_mode_report_ptr;
+  gate_operation_mode_ = *gate_operation_mode_ptr;
 
   for (const auto & [type, mode] : modes_) {
     mode->update(current_mode_ == type && transition_);
