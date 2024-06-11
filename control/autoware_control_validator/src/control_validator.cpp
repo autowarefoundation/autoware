@@ -28,13 +28,6 @@ ControlValidator::ControlValidator(const rclcpp::NodeOptions & options)
 : Node("control_validator", options)
 {
   using std::placeholders::_1;
-
-  sub_kinematics_ = create_subscription<Odometry>(
-    "~/input/kinematics", 1,
-    [this](const Odometry::ConstSharedPtr msg) { current_kinematics_ = msg; });
-  sub_reference_traj_ = create_subscription<Trajectory>(
-    "~/input/reference_trajectory", 1,
-    std::bind(&ControlValidator::onReferenceTrajectory, this, _1));
   sub_predicted_traj_ = create_subscription<Trajectory>(
     "~/input/predicted_trajectory", 1,
     std::bind(&ControlValidator::onPredictedTrajectory, this, _1));
@@ -116,21 +109,11 @@ bool ControlValidator::isDataReady()
   return true;
 }
 
-void ControlValidator::onReferenceTrajectory(const Trajectory::ConstSharedPtr msg)
-{
-  if (msg->points.size() < 2) {
-    RCLCPP_ERROR(get_logger(), "planning trajectory size is invalid (%lu)", msg->points.size());
-    return;
-  }
-
-  current_reference_trajectory_ = msg;
-
-  return;
-}
-
 void ControlValidator::onPredictedTrajectory(const Trajectory::ConstSharedPtr msg)
 {
   current_predicted_trajectory_ = msg;
+  current_reference_trajectory_ = sub_reference_traj_.takeData();
+  current_kinematics_ = sub_kinematics_.takeData();
 
   if (!isDataReady()) return;
 

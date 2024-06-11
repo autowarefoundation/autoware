@@ -18,6 +18,7 @@
 #include "autoware_control_validator/debug_marker.hpp"
 #include "autoware_control_validator/msg/control_validator_status.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
+#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -48,7 +49,6 @@ class ControlValidator : public rclcpp::Node
 public:
   explicit ControlValidator(const rclcpp::NodeOptions & options);
 
-  void onReferenceTrajectory(const Trajectory::ConstSharedPtr msg);
   void onPredictedTrajectory(const Trajectory::ConstSharedPtr msg);
 
   bool checkValidMaxDistanceDeviation(const Trajectory & predicted_trajectory);
@@ -68,9 +68,11 @@ private:
 
   void setStatus(DiagnosticStatusWrapper & stat, const bool & is_ok, const std::string & msg);
 
-  rclcpp::Subscription<Odometry>::SharedPtr sub_kinematics_;
-  rclcpp::Subscription<Trajectory>::SharedPtr sub_reference_traj_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_predicted_traj_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
+    this, "~/input/kinematics"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<Trajectory> sub_reference_traj_{
+    this, "~/input/reference_trajectory"};
   rclcpp::Publisher<ControlValidatorStatus>::SharedPtr pub_status_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_markers_;
 
