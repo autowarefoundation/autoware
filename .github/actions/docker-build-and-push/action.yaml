@@ -25,6 +25,19 @@ runs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v2
 
+    - name: Install jq and vcstool
+      run: |
+        sudo apt-get -y update
+        sudo apt-get -y install jq python3-pip
+        pip install --no-cache-dir vcstool
+      shell: bash
+
+    - name: Run vcs import
+      run: |
+        mkdir src
+        vcs import src < autoware.repos
+      shell: bash
+
     - name: Set Docker tags
       id: set-docker-tags
       run: |

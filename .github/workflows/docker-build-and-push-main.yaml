@@ -33,11 +33,13 @@ jobs:
           - cuda
         include:
           - name: no-cuda
+            platform: amd64
             base_image_env: base_image
             lib_dir: x86_64
             setup-args: --no-nvidia
             additional-tag-suffix: ""
           - name: cuda
+            platform: amd64
             base_image_env: base_image
             lib_dir: x86_64
             additional-tag-suffix: -cuda
@@ -58,21 +60,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Install vcstool
-        run: |
-          sudo apt-get -y update
-          sudo apt-get -y install python3-pip
-          pip install --no-cache-dir vcstool
-
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run vcs import
-        run: |
-          mkdir src
-          vcs import src < autoware.repos
 
       - name: Build 'Autoware'
         if: steps.author-check.outputs.author-found == 'true' || ${{ github.event_name == 'workflow_dispatch' }}
@@ -80,13 +71,13 @@ jobs:
         with:
           bake-target: autoware
           build-args: |
-            *.platform=linux/amd64
+            *.platform=linux/${{ matrix.platform }}
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
             *.args.LIB_DIR=${{ matrix.lib_dir }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}-amd64
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}-amd64,mode=max
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}-${{ matrix.platform }}
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}-${{ matrix.platform }},mode=max
           tag-suffix: ${{ matrix.additional-tag-suffix }}-amd64
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           allow-push: true
