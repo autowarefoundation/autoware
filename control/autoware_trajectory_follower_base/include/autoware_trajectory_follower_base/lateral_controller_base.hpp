@@ -12,38 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAJECTORY_FOLLOWER_BASE__LONGITUDINAL_CONTROLLER_BASE_HPP_
-#define TRAJECTORY_FOLLOWER_BASE__LONGITUDINAL_CONTROLLER_BASE_HPP_
+#ifndef AUTOWARE_TRAJECTORY_FOLLOWER_BASE__LATERAL_CONTROLLER_BASE_HPP_
+#define AUTOWARE_TRAJECTORY_FOLLOWER_BASE__LATERAL_CONTROLLER_BASE_HPP_
 
+#include "autoware_trajectory_follower_base/input_data.hpp"
+#include "autoware_trajectory_follower_base/sync_data.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "trajectory_follower_base/input_data.hpp"
-#include "trajectory_follower_base/sync_data.hpp"
 
-#include "autoware_control_msgs/msg/longitudinal.hpp"
+#include "autoware_control_msgs/msg/lateral.hpp"
 
 #include <boost/optional.hpp>
 
 namespace autoware::motion::control::trajectory_follower
 {
-struct LongitudinalOutput
+struct LateralOutput
 {
-  autoware_control_msgs::msg::Longitudinal control_cmd;
-  LongitudinalSyncData sync_data;
+  autoware_control_msgs::msg::Lateral control_cmd;
+  LateralSyncData sync_data;
 };
-class LongitudinalControllerBase
+
+class LateralControllerBase
 {
 public:
   virtual bool isReady(const InputData & input_data) = 0;
-  virtual LongitudinalOutput run(InputData const & input_data) = 0;
-  void sync(LateralSyncData const & lateral_sync_data);
-  // NOTE: This reset function should be called when the trajectory is replanned by changing ego
-  // pose or goal pose.
-  void reset();
+  virtual LateralOutput run(InputData const & input_data) = 0;
+  void sync(LongitudinalSyncData const & longitudinal_sync_data);
 
 protected:
-  LateralSyncData lateral_sync_data_;
+  LongitudinalSyncData longitudinal_sync_data_;
 };
 
 }  // namespace autoware::motion::control::trajectory_follower
 
-#endif  // TRAJECTORY_FOLLOWER_BASE__LONGITUDINAL_CONTROLLER_BASE_HPP_
+#endif  // AUTOWARE_TRAJECTORY_FOLLOWER_BASE__LATERAL_CONTROLLER_BASE_HPP_

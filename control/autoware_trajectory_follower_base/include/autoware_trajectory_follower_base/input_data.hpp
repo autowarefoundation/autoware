@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAJECTORY_FOLLOWER_BASE__INPUT_DATA_HPP_
-#define TRAJECTORY_FOLLOWER_BASE__INPUT_DATA_HPP_
+#ifndef AUTOWARE_TRAJECTORY_FOLLOWER_BASE__INPUT_DATA_HPP_
+#define AUTOWARE_TRAJECTORY_FOLLOWER_BASE__INPUT_DATA_HPP_
 
 #include "autoware_adapi_v1_msgs/msg/operation_mode_state.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
@@ -33,4 +33,4 @@ struct InputData
 };
 }  // namespace autoware::motion::control::trajectory_follower
 
-#endif  // TRAJECTORY_FOLLOWER_BASE__INPUT_DATA_HPP_
+#endif  // AUTOWARE_TRAJECTORY_FOLLOWER_BASE__INPUT_DATA_HPP_

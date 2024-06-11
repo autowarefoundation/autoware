@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAJECTORY_FOLLOWER_BASE__SYNC_DATA_HPP_
-#define TRAJECTORY_FOLLOWER_BASE__SYNC_DATA_HPP_
+#ifndef AUTOWARE_TRAJECTORY_FOLLOWER_BASE__SYNC_DATA_HPP_
+#define AUTOWARE_TRAJECTORY_FOLLOWER_BASE__SYNC_DATA_HPP_
 
 namespace autoware::motion::control::trajectory_follower
 {
@@ -30,4 +30,4 @@ struct LongitudinalSyncData
 
 }  // namespace autoware::motion::control::trajectory_follower
 
-#endif  // TRAJECTORY_FOLLOWER_BASE__SYNC_DATA_HPP_
+#endif  // AUTOWARE_TRAJECTORY_FOLLOWER_BASE__SYNC_DATA_HPP_
