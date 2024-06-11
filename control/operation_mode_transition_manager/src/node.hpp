@@ -21,10 +21,10 @@
 #include <component_interface_specs/system.hpp>
 #include <component_interface_utils/rclcpp.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 
 #include <memory>
 #include <unordered_map>
-#include <utility>
 
 namespace operation_mode_transition_manager
 {
@@ -49,8 +49,10 @@ private:
     const ChangeOperationModeAPI::Service::Response::SharedPtr response);
 
   using ControlModeCommandType = ControlModeCommand::Request::_mode_type;
-  rclcpp::Subscription<ControlModeReport>::SharedPtr sub_control_mode_report_;
-  rclcpp::Subscription<OperationModeState>::SharedPtr sub_gate_operation_mode_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<ControlModeReport> sub_control_mode_report_{
+    this, "control_mode_report"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<OperationModeState> sub_gate_operation_mode_{
+    this, "gate_operation_mode"};
   rclcpp::Client<ControlModeCommand>::SharedPtr cli_control_mode_;
   rclcpp::Publisher<ModeChangeBase::DebugInfo>::SharedPtr pub_debug_info_;
   rclcpp::TimerBase::SharedPtr timer_;

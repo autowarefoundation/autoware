@@ -22,14 +22,6 @@ namespace operation_mode_transition_manager
 OperationModeTransitionManager::OperationModeTransitionManager(const rclcpp::NodeOptions & options)
 : Node("operation_mode_transition_manager", options), compatibility_(this)
 {
-  sub_control_mode_report_ = create_subscription<ControlModeReport>(
-    "control_mode_report", 1,
-    [this](const ControlModeReport::SharedPtr msg) { control_mode_report_ = *msg; });
-
-  sub_gate_operation_mode_ = create_subscription<OperationModeState>(
-    "gate_operation_mode", 1,
-    [this](const OperationModeState::SharedPtr msg) { gate_operation_mode_ = *msg; });
-
   cli_control_mode_ = create_client<ControlModeCommand>("control_mode_request");
   pub_debug_info_ = create_publisher<ModeChangeBase::DebugInfo>("~/debug_info", 1);
 
@@ -214,6 +206,9 @@ void OperationModeTransitionManager::processTransition()
 
 void OperationModeTransitionManager::onTimer()
 {
+  control_mode_report_ = *sub_control_mode_report_.takeData();
+  gate_operation_mode_ = *sub_gate_operation_mode_.takeData();
+
   for (const auto & [type, mode] : modes_) {
     mode->update(current_mode_ == type && transition_);
   }
