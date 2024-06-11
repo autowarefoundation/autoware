@@ -3,7 +3,7 @@ project(autoware_behavior_path_goal_planner_module)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
-pluginlib_export_plugin_description_file(behavior_path_planner plugins.xml)
+pluginlib_export_plugin_description_file(autoware_behavior_path_planner plugins.xml)
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/default_fixed_goal_planner.cpp

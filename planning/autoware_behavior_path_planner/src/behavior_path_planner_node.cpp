@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/behavior_path_planner_node.hpp"
+#include "autoware_behavior_path_planner/behavior_path_planner_node.hpp"
 
 #include "autoware_behavior_path_planner_common/marker_utils/utils.hpp"
 #include "autoware_behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"

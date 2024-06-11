@@ -19,10 +19,10 @@
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
   <depend>autoware_behavior_path_lane_change_module</depend>
+  <depend>autoware_behavior_path_planner</depend>
   <depend>autoware_behavior_path_planner_common</depend>
   <depend>autoware_behavior_path_static_obstacle_avoidance_module</depend>
   <depend>autoware_rtc_interface</depend>
-  <depend>behavior_path_planner</depend>
   <depend>lanelet2_extension</depend>
   <depend>motion_utils</depend>
   <depend>pluginlib</depend>

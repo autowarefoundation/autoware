@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/planner_manager.hpp"
+#include "autoware_behavior_path_planner/planner_manager.hpp"
 
 #include "autoware_behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "autoware_behavior_path_planner_common/utils/path_utils.hpp"
@@ -31,7 +31,8 @@
 namespace behavior_path_planner
 {
 PlannerManager::PlannerManager(rclcpp::Node & node, const size_t max_iteration_num)
-: plugin_loader_("behavior_path_planner", "behavior_path_planner::SceneModuleManagerInterface"),
+: plugin_loader_(
+    "autoware_behavior_path_planner", "behavior_path_planner::SceneModuleManagerInterface"),
   logger_(node.get_logger().get_child("planner_manager")),
   clock_(*node.get_clock()),
   max_iteration_num_{max_iteration_num}

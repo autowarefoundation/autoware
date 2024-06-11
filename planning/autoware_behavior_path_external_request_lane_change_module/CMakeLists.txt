@@ -3,7 +3,7 @@ project(autoware_behavior_path_external_request_lane_change_module)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
-pluginlib_export_plugin_description_file(behavior_path_planner plugins.xml)
+pluginlib_export_plugin_description_file(autoware_behavior_path_planner plugins.xml)
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/manager.cpp
