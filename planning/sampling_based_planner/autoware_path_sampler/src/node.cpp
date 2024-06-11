@@ -70,10 +70,6 @@ PathSampler::PathSampler(const rclcpp::NodeOptions & node_options)
   // interface subscriber
   path_sub_ = create_subscription<Path>(
     "~/input/path", 1, std::bind(&PathSampler::onPath, this, std::placeholders::_1));
-  odom_sub_ = create_subscription<Odometry>(
-    "~/input/odometry", 1, [this](const Odometry::SharedPtr msg) { ego_state_ptr_ = msg; });
-  objects_sub_ = create_subscription<PredictedObjects>(
-    "~/input/objects", 1, std::bind(&PathSampler::objectsCallback, this, std::placeholders::_1));
 
   // debug publisher
   debug_markers_pub_ = create_publisher<MarkerArray>("~/debug/marker", 1);
@@ -215,11 +211,6 @@ void PathSampler::resetPreviousData()
   prev_path_.reset();
 }
 
-void PathSampler::objectsCallback(const PredictedObjects::SharedPtr msg)
-{
-  in_objects_ptr_ = msg;
-}
-
 autoware::sampler_common::State PathSampler::getPlanningState(
   autoware::sampler_common::State & state,
   const autoware::sampler_common::transform::Spline2D & path_spline) const
@@ -241,7 +232,8 @@ void PathSampler::onPath(const Path::SharedPtr path_ptr)
   time_keeper_ptr_->tic(__func__);
 
   // check if data is ready and valid
-  if (!isDataReady(*path_ptr, *get_clock())) {
+  const auto ego_state_ptr = odom_sub_.takeData();
+  if (!isDataReady(*path_ptr, ego_state_ptr, *get_clock())) {
     return;
   }
 
@@ -253,7 +245,7 @@ void PathSampler::onPath(const Path::SharedPtr path_ptr)
       "Backward path is NOT supported. Just converting path to trajectory");
   }
   // 1. create planner data
-  const auto planner_data = createPlannerData(*path_ptr);
+  const auto planner_data = createPlannerData(*path_ptr, *ego_state_ptr);
   // 2. generate trajectory
   const auto generated_traj_points = generateTrajectory(planner_data);
   // 3. extend trajectory to connect the optimized trajectory and the following path smoothly
@@ -278,9 +270,10 @@ void PathSampler::onPath(const Path::SharedPtr path_ptr)
   debug_calculation_time_pub_->publish(calculation_time_msg);
 }
 
-bool PathSampler::isDataReady(const Path & path, rclcpp::Clock clock) const
+bool PathSampler::isDataReady(
+  const Path & path, const Odometry::ConstSharedPtr ego_state_ptr, rclcpp::Clock clock)
 {
-  if (!ego_state_ptr_) {
+  if (!ego_state_ptr) {
     RCLCPP_INFO_SKIPFIRST_THROTTLE(get_logger(), clock, 5000, "Waiting for ego pose and twist.");
     return false;
   }
@@ -296,10 +289,15 @@ bool PathSampler::isDataReady(const Path & path, rclcpp::Clock clock) const
     return false;
   }
 
+  if (!objects_sub_.takeData()) {
+    RCLCPP_INFO_SKIPFIRST_THROTTLE(get_logger(), clock, 5000, "Waiting for detected objects.");
+    return false;
+  }
+
   return true;
 }
 
-PlannerData PathSampler::createPlannerData(const Path & path) const
+PlannerData PathSampler::createPlannerData(const Path & path, const Odometry & ego_state) const
 {
   // create planner data
   PlannerData planner_data;
@@ -307,8 +305,8 @@ PlannerData PathSampler::createPlannerData(const Path & path) const
   planner_data.traj_points = trajectory_utils::convertToTrajectoryPoints(path.points);
   planner_data.left_bound = path.left_bound;
   planner_data.right_bound = path.right_bound;
-  planner_data.ego_pose = ego_state_ptr_->pose.pose;
-  planner_data.ego_vel = ego_state_ptr_->twist.twist.linear.x;
+  planner_data.ego_pose = ego_state.pose.pose;
+  planner_data.ego_vel = ego_state.twist.twist.linear.x;
   return planner_data;
 }
 
@@ -467,8 +465,9 @@ autoware::sampler_common::Path PathSampler::generatePath(const PlannerData & pla
   current_state.heading = tf2::getYaw(planner_data.ego_pose.orientation);
 
   const auto planning_state = getPlanningState(current_state, path_spline);
+  const auto objects = objects_sub_.takeData();
   prepareConstraints(
-    params_.constraints, *in_objects_ptr_, planner_data.left_bound, planner_data.right_bound);
+    params_.constraints, *objects, planner_data.left_bound, planner_data.right_bound);
 
   auto candidate_paths = generateCandidatePaths(planning_state, path_spline, 0.0, params_);
   const auto candidates_from_prev_path =
