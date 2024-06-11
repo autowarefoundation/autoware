@@ -76,8 +76,8 @@ jobs:
             *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
             *.args.LIB_DIR=${{ matrix.lib_dir }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}-${{ matrix.platform }}
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}-${{ matrix.platform }},mode=max
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}/buildcache:${{ matrix.name }}-${{ matrix.platform }}
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}/buildcache:${{ matrix.name }}-${{ matrix.platform }},mode=max
           tag-suffix: ${{ matrix.additional-tag-suffix }}-arm64
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           allow-push: true
