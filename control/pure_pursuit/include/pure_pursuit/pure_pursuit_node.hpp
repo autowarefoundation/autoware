@@ -34,6 +34,7 @@
 #include "pure_pursuit/pure_pursuit_viz.hpp"
 
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 #include <tier4_autoware_utils/ros/self_pose_listener.hpp>
 
 #include <autoware_control_msgs/msg/lateral.hpp>
@@ -48,7 +49,6 @@
 #include <tf2_ros/transform_listener.h>
 
 #include <memory>
-#include <vector>
 
 namespace pure_pursuit
 {
@@ -79,8 +79,10 @@ public:
 private:
   // Subscriber
   tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};
-  rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr sub_trajectory_;
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_current_odometry_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<autoware_planning_msgs::msg::Trajectory>
+    sub_trajectory_{this, "input/reference_trajectory"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry>
+    sub_current_odometry_{this, "input/current_odometry"};
 
   autoware_planning_msgs::msg::Trajectory::ConstSharedPtr trajectory_;
   nav_msgs::msg::Odometry::ConstSharedPtr current_odometry_;

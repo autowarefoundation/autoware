@@ -71,13 +71,6 @@ PurePursuitNode::PurePursuitNode(const rclcpp::NodeOptions & node_options)
   param_.reverse_min_lookahead_distance =
     this->declare_parameter<double>("reverse_min_lookahead_distance");
 
-  // Subscribers
-  using std::placeholders::_1;
-  sub_trajectory_ = this->create_subscription<autoware_planning_msgs::msg::Trajectory>(
-    "input/reference_trajectory", 1, std::bind(&PurePursuitNode::onTrajectory, this, _1));
-  sub_current_odometry_ = this->create_subscription<nav_msgs::msg::Odometry>(
-    "input/current_odometry", 1, std::bind(&PurePursuitNode::onCurrentOdometry, this, _1));
-
   // Publishers
   pub_ctrl_cmd_ =
     this->create_publisher<autoware_control_msgs::msg::Lateral>("output/control_raw", 1);
@@ -118,21 +111,12 @@ bool PurePursuitNode::isDataReady()
   return true;
 }
 
-void PurePursuitNode::onCurrentOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
-{
-  current_odometry_ = msg;
-}
-
-void PurePursuitNode::onTrajectory(
-  const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr msg)
-{
-  trajectory_ = msg;
-}
-
 void PurePursuitNode::onTimer()
 {
   current_pose_ = self_pose_listener_.getCurrentPose();
 
+  current_odometry_ = sub_current_odometry_.takeData();
+  trajectory_ = sub_trajectory_.takeData();
   if (!isDataReady()) {
     return;
   }
