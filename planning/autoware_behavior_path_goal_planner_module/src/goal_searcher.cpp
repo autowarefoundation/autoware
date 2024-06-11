@@ -30,7 +30,7 @@
 #include <memory>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using autoware::lane_departure_checker::LaneDepartureChecker;
 using lanelet::autoware::NoParkingArea;
@@ -545,4 +545,4 @@ GoalCandidate GoalSearcher::getClosetGoalCandidateAlongLanes(
   return *closest_goal_candidate;
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

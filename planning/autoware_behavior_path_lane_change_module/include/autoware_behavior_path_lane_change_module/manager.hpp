@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using autoware::route_handler::Direction;
 
@@ -71,6 +71,6 @@ public:
   {
   }
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__MANAGER_HPP_

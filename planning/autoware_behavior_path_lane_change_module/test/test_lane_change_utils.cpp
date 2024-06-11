@@ -41,7 +41,7 @@ TEST(BehaviorPathPlanningLaneChangeUtilsTest, projectCurrentPoseToTarget)
 
 TEST(BehaviorPathPlanningLaneChangeUtilsTest, TESTLateralAccelerationMap)
 {
-  behavior_path_planner::LateralAccelerationMap lat_acc_map;
+  autoware::behavior_path_planner::LateralAccelerationMap lat_acc_map;
   lat_acc_map.add(0.0, 0.2, 0.315);
   lat_acc_map.add(3.0, 0.2, 0.315);
   lat_acc_map.add(5.0, 0.2, 0.315);

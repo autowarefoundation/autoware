@@ -27,8 +27,8 @@
 
 namespace autoware::behavior_path_planner
 {
-using ::behavior_path_planner::getParameter;
-using ::behavior_path_planner::ObjectParameter;
+using autoware::behavior_path_planner::getParameter;
+using autoware::behavior_path_planner::ObjectParameter;
 
 void AvoidanceByLaneChangeModuleManager::init(rclcpp::Node * node)
 {
@@ -198,4 +198,4 @@ AvoidanceByLaneChangeModuleManager::createNewSceneModuleInstance()
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
   autoware::behavior_path_planner::AvoidanceByLaneChangeModuleManager,
-  ::behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::SceneModuleManagerInterface)

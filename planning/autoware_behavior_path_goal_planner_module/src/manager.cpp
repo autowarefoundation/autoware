@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 void GoalPlannerModuleManager::init(rclcpp::Node * node)
 {
@@ -878,9 +878,9 @@ bool GoalPlannerModuleManager::isSimultaneousExecutableAsCandidateModule() const
   return config_.enable_simultaneous_execution_as_candidate_module;
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_path_planner::GoalPlannerModuleManager,
-  behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::GoalPlannerModuleManager,
+  autoware::behavior_path_planner::SceneModuleManagerInterface)

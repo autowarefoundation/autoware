@@ -13,7 +13,7 @@
 // limitations under the License.
 #include "input.hpp"
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using autoware_planning_msgs::msg::PathPoint;
 using geometry_msgs::msg::Twist;
@@ -87,4 +87,4 @@ Pose generateEgoSamplePose(float && p_x, float && p_y, float && p_z)
   pose.position.z = p_z;
   return pose;
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

@@ -39,7 +39,7 @@
 #include <utility>
 #include <vector>
 
-using behavior_path_planner::utils::parking_departure::calcFeasibleDecelDistance;
+using autoware::behavior_path_planner::utils::parking_departure::calcFeasibleDecelDistance;
 using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
@@ -50,7 +50,7 @@ using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::inverseTransformPose;
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 GoalPlannerModule::GoalPlannerModule(
   const std::string & name, rclcpp::Node & node,
@@ -2152,8 +2152,8 @@ void GoalPlannerModule::updateSafetyCheckTargetObjectsData(
 static std::vector<utils::path_safety_checker::ExtendedPredictedObject> filterObjectsByWithinPolicy(
   const std::shared_ptr<const PredictedObjects> & objects,
   const lanelet::ConstLanelets & target_lanes,
-  const std::shared_ptr<behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams> &
-    params)
+  const std::shared_ptr<
+    autoware::behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams> & params)
 {
   // implanted part of behavior_path_planner::utils::path_safety_checker::filterObjects() and
   // createTargetObjectsOnLane()
@@ -2229,7 +2229,7 @@ std::pair<bool, bool> GoalPlannerModule::isSafePath(
   const bool is_object_front = true;
   const bool limit_to_max_velocity = true;
   const auto ego_predicted_path =
-    behavior_path_planner::utils::path_safety_checker::createPredictedPath(
+    autoware::behavior_path_planner::utils::path_safety_checker::createPredictedPath(
       ego_predicted_path_params, pull_over_path.points, current_pose, current_velocity, ego_seg_idx,
       is_object_front, limit_to_max_velocity);
 
@@ -2289,7 +2289,7 @@ std::pair<bool, bool> GoalPlannerModule::isSafePath(
   CollisionCheckDebugMap collision_check{};
   const bool current_is_safe = std::invoke([&]() {
     if (parameters.safety_check_params.method == "RSS") {
-      return behavior_path_planner::utils::path_safety_checker::checkSafetyWithRSS(
+      return autoware::behavior_path_planner::utils::path_safety_checker::checkSafetyWithRSS(
         pull_over_path, ego_predicted_path, filtered_objects, collision_check,
         planner_data->parameters, safety_check_params->rss_params,
         objects_filtering_params->use_all_predicted_path, hysteresis_factor);
@@ -2627,4 +2627,4 @@ void GoalPlannerModule::GoalPlannerData::update(
   goal_searcher->setReferenceGoal(goal_searcher_->getReferenceGoal());
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

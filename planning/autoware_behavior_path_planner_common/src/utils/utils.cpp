@@ -69,7 +69,7 @@ double calcInterpolatedVelocity(
 }
 }  // namespace
 
-namespace behavior_path_planner::utils
+namespace autoware::behavior_path_planner::utils
 {
 using autoware_perception_msgs::msg::ObjectClassification;
 using autoware_perception_msgs::msg::Shape;
@@ -1653,4 +1653,4 @@ bool checkOriginalGoalIsInShoulder(const std::shared_ptr<RouteHandler> & route_h
   const Pose & goal_pose = route_handler->getOriginalGoalPose();
   return !route_handler->getShoulderLaneletsAtPose(goal_pose).empty();
 }
-}  // namespace behavior_path_planner::utils
+}  // namespace autoware::behavior_path_planner::utils

@@ -20,7 +20,7 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
@@ -39,6 +39,6 @@ Point transformToGrid(
   const Point & pt, const double longitudinal_offset, const double lateral_offset, const double yaw,
   const TransformStamped & geom_tf);
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_SIDE_SHIFT_MODULE__UTILS_HPP_

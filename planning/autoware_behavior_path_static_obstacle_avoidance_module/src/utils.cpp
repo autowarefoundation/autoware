@@ -37,12 +37,12 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner::utils::static_obstacle_avoidance
+namespace autoware::behavior_path_planner::utils::static_obstacle_avoidance
 {
 
+using autoware::behavior_path_planner::utils::traffic_light::calcDistanceToRedTrafficLight;
+using autoware::behavior_path_planner::utils::traffic_light::getDistanceToNextTrafficLight;
 using autoware_perception_msgs::msg::TrafficLightElement;
-using behavior_path_planner::utils::traffic_light::calcDistanceToRedTrafficLight;
-using behavior_path_planner::utils::traffic_light::getDistanceToNextTrafficLight;
 
 namespace
 {
@@ -2369,4 +2369,4 @@ double calcDistanceToReturnDeadLine(
 
   return distance_to_return_dead_line;
 }
-}  // namespace behavior_path_planner::utils::static_obstacle_avoidance
+}  // namespace autoware::behavior_path_planner::utils::static_obstacle_avoidance

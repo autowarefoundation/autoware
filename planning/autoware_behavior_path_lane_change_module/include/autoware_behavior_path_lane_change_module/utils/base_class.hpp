@@ -34,7 +34,7 @@
 #include <string>
 #include <utility>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using autoware::route_handler::Direction;
 using data::lane_change::PathSafetyStatus;
@@ -238,5 +238,5 @@ protected:
   rclcpp::Logger logger_ = utils::lane_change::getLogger(getModuleTypeStr());
   mutable rclcpp::Clock clock_{RCL_ROS_TIME};
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 #endif  // AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__BASE_CLASS_HPP_

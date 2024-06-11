@@ -23,7 +23,7 @@
 #include <memory>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 GeometricPullOver::GeometricPullOver(
   rclcpp::Node & node, const GoalPlannerParameters & parameters,
@@ -79,4 +79,4 @@ std::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
 
   return pull_over_path;
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

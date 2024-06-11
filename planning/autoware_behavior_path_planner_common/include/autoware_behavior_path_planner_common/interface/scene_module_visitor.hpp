@@ -18,7 +18,7 @@
 #include "tier4_planning_msgs/msg/detail/avoidance_debug_msg_array__struct.hpp"
 
 #include <memory>
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 // Forward Declaration
 class StaticObstacleAvoidanceModule;
@@ -42,6 +42,6 @@ public:
 protected:
   mutable std::shared_ptr<AvoidanceDebugMsgArray> avoidance_visitor_;
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__SCENE_MODULE_VISITOR_HPP_

@@ -25,7 +25,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 class SideShiftModuleManager : public SceneModuleManagerInterface
@@ -48,6 +48,6 @@ private:
   std::shared_ptr<SideShiftParameters> parameters_;
 };
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_SIDE_SHIFT_MODULE__MANAGER_HPP_

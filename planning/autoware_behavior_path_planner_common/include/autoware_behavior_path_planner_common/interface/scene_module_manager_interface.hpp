@@ -33,7 +33,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 using motion_utils::createDeadLineVirtualWallMarker;
@@ -346,6 +346,6 @@ protected:
   ModuleConfigParameters config_;
 };
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__SCENE_MODULE_MANAGER_INTERFACE_HPP_

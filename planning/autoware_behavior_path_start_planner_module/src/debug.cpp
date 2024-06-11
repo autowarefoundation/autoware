@@ -14,7 +14,7 @@
 
 #include "autoware_behavior_path_start_planner_module/debug.hpp"
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 void updateSafetyCheckDebugData(
@@ -27,4 +27,4 @@ void updateSafetyCheckDebugData(
   data.ego_predicted_path = ego_predicted_path;
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

@@ -19,7 +19,7 @@
 
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using tier4_autoware_utils::createQuaternionFromYaw;
 using tier4_autoware_utils::normalizeRadian;
@@ -214,4 +214,4 @@ bool OccupancyGridBasedCollisionDetector::hasObstacleOnPath(
   return false;
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

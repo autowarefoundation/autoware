@@ -33,7 +33,7 @@ namespace drivable_area_expansion
 /// @param[inout] planner_data planning data (params, dynamic objects, vehicle info, ...)
 void expand_drivable_area(
   PathWithLaneId & path,
-  const std::shared_ptr<const behavior_path_planner::PlannerData> planner_data);
+  const std::shared_ptr<const autoware::behavior_path_planner::PlannerData> planner_data);
 
 /// @brief try to reuse the previous path poses and their previously calculated curvatures
 /// @details poses are reused if they do not deviate too much from the current path

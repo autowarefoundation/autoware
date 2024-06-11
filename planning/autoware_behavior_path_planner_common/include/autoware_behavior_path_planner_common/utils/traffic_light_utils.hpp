@@ -30,7 +30,7 @@
 #include <limits>
 #include <memory>
 
-namespace behavior_path_planner::utils::traffic_light
+namespace autoware::behavior_path_planner::utils::traffic_light
 {
 
 using autoware_perception_msgs::msg::TrafficLightElement;
@@ -107,6 +107,6 @@ bool isStoppedAtRedTrafficLightWithinDistance(
  */
 bool isTrafficSignalStop(
   const lanelet::ConstLanelets & lanelets, const std::shared_ptr<const PlannerData> & planner_data);
-}  // namespace behavior_path_planner::utils::traffic_light
+}  // namespace autoware::behavior_path_planner::utils::traffic_light
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__TRAFFIC_LIGHT_UTILS_HPP_

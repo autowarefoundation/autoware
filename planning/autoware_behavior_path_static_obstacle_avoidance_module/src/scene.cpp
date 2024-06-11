@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 namespace
 {
@@ -1801,4 +1801,4 @@ void SceneModuleVisitor::visitAvoidanceModule(const StaticObstacleAvoidanceModul
 {
   avoidance_visitor_ = module->get_debug_msg_array();
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

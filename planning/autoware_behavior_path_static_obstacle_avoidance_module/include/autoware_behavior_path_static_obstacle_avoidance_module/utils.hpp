@@ -23,14 +23,15 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner::utils::static_obstacle_avoidance
+namespace autoware::behavior_path_planner::utils::static_obstacle_avoidance
 {
 
-using behavior_path_planner::PlannerData;
-using behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject;
-using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityAndPolygonStamped;
-using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
-using behavior_path_planner::utils::path_safety_checker::PredictedPathWithPolygon;
+using autoware::behavior_path_planner::PlannerData;
+using autoware::behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject;
+using autoware::behavior_path_planner::utils::path_safety_checker::
+  PoseWithVelocityAndPolygonStamped;
+using autoware::behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
+using autoware::behavior_path_planner::utils::path_safety_checker::PredictedPathWithPolygon;
 
 static constexpr const char * logger_namespace =
   "planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner.avoidance.utils";
@@ -174,6 +175,6 @@ double calcDistanceToAvoidStartLine(
   const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters);
 
-}  // namespace behavior_path_planner::utils::static_obstacle_avoidance
+}  // namespace autoware::behavior_path_planner::utils::static_obstacle_avoidance
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__UTILS_HPP_

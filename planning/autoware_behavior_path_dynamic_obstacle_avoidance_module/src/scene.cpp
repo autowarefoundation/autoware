@@ -37,7 +37,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 namespace
 {
@@ -1861,4 +1861,4 @@ DynamicObstacleAvoidanceModule::calcEgoPathReservePoly(const PathWithLaneId & eg
   return {left_avoid_poly, right_avoid_poly};
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

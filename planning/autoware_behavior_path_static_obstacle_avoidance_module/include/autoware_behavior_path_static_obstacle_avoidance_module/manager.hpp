@@ -25,7 +25,7 @@
 #include <memory>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 class StaticObstacleAvoidanceModuleManager : public SceneModuleManagerInterface
@@ -50,6 +50,6 @@ private:
   std::shared_ptr<AvoidanceParameters> parameters_;
 };
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__MANAGER_HPP_

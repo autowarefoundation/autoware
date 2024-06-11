@@ -33,7 +33,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 using helper::static_obstacle_avoidance::AvoidanceHelper;
@@ -456,6 +456,6 @@ private:
   mutable rclcpp::Time debug_avoidance_initializer_for_shift_line_time_;
 };
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__SCENE_HPP_

@@ -27,7 +27,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
@@ -246,6 +246,6 @@ private:
   }
 };
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__PATH_SHIFTER__PATH_SHIFTER_HPP_

@@ -30,7 +30,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using geometry_msgs::msg::Pose;
 using nav_msgs::msg::OccupancyGrid;
@@ -129,6 +129,6 @@ private:
   void setDebugMarkersVisualization() const;
 };
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_SIDE_SHIFT_MODULE__SCENE_HPP_

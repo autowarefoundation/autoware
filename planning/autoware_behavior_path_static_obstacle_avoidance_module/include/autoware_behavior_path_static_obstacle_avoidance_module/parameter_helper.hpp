@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using autoware_perception_msgs::msg::ObjectClassification;
 using tier4_autoware_utils::getOrDeclareParameter;
@@ -401,6 +401,6 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
 
   return p;
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__PARAMETER_HELPER_HPP_

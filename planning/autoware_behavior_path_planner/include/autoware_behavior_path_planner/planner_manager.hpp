@@ -36,7 +36,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 using tier4_autoware_utils::StopWatch;
@@ -469,6 +469,6 @@ private:
 
   size_t max_iteration_num_{100};
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER__PLANNER_MANAGER_HPP_

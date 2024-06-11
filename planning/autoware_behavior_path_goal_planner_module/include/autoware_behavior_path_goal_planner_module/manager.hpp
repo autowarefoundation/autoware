@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 class GoalPlannerModuleManager : public SceneModuleManagerInterface
@@ -53,6 +53,6 @@ private:
   std::shared_ptr<GoalPlannerParameters> parameters_;
 };
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__MANAGER_HPP_

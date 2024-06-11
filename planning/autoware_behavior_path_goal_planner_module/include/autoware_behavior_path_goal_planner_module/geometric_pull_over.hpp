@@ -25,7 +25,7 @@
 #include <memory>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using autoware::lane_departure_checker::LaneDepartureChecker;
 class GeometricPullOver : public PullOverPlannerBase
@@ -63,6 +63,6 @@ protected:
 
   GeometricParallelParking planner_;
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GEOMETRIC_PULL_OVER_HPP_

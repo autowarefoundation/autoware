@@ -35,7 +35,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using motion_utils::calcSignedArcLength;
 using utils::lane_change::calcMinimumLaneChangeLength;
@@ -1953,8 +1953,9 @@ bool NormalLaneChange::calcAbortPath()
   PathShifter path_shifter;
   path_shifter.setPath(lane_changing_path);
   path_shifter.addShiftLine(shift_line);
-  const auto lateral_jerk = behavior_path_planner::PathShifter::calcJerkFromLatLonDistance(
-    shift_line.end_shift_length, abort_start_dist, current_velocity);
+  const auto lateral_jerk =
+    autoware::behavior_path_planner::PathShifter::calcJerkFromLatLonDistance(
+      shift_line.end_shift_length, abort_start_dist, current_velocity);
   path_shifter.setVelocity(current_velocity);
   const auto lateral_acc_range =
     lane_change_parameters_->lane_change_lat_acc_map.find(current_velocity);
@@ -2248,4 +2249,4 @@ bool NormalLaneChange::check_prepare_phase() const
 
   return check_in_intersection || check_in_turns || check_in_general_lanes;
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

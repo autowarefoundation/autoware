@@ -28,11 +28,12 @@
 #include <memory>
 #include <string>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 PlannerManager::PlannerManager(rclcpp::Node & node, const size_t max_iteration_num)
 : plugin_loader_(
-    "autoware_behavior_path_planner", "behavior_path_planner::SceneModuleManagerInterface"),
+    "autoware_behavior_path_planner",
+    "autoware::behavior_path_planner::SceneModuleManagerInterface"),
   logger_(node.get_logger().get_child("planner_manager")),
   clock_(*node.get_clock()),
   max_iteration_num_{max_iteration_num}
@@ -980,4 +981,4 @@ std::string PlannerManager::getNames(const std::vector<SceneModulePtr> & modules
   return ss.str();
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

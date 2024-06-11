@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner::utils::static_obstacle_avoidance
+namespace autoware::behavior_path_planner::utils::static_obstacle_avoidance
 {
 namespace
 {
@@ -49,7 +49,7 @@ MarkerArray createObjectsCubeMarkerArray(
   MarkerArray msg;
 
   const auto is_small_object = [](const auto & o) {
-    const auto t = behavior_path_planner::utils::getHighestProbLabel(o.classification);
+    const auto t = autoware::behavior_path_planner::utils::getHighestProbLabel(o.classification);
     return t == ObjectClassification::PEDESTRIAN || t == ObjectClassification::BICYCLE ||
            t == ObjectClassification::MOTORCYCLE || t == ObjectClassification::UNKNOWN;
   };
@@ -507,7 +507,7 @@ MarkerArray createDebugMarkerArray(
   const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug,
   const std::shared_ptr<AvoidanceParameters> & parameters)
 {
-  using behavior_path_planner::utils::transformToLanelets;
+  using autoware::behavior_path_planner::utils::transformToLanelets;
   using lanelet::visualization::laneletsAsTriangleMarkerArray;
   using marker_utils::createLaneletsAreaMarkerArray;
   using marker_utils::createObjectsMarkerArray;
@@ -653,9 +653,9 @@ MarkerArray createDebugMarkerArray(
 
   return msg;
 }
-}  // namespace behavior_path_planner::utils::static_obstacle_avoidance
+}  // namespace autoware::behavior_path_planner::utils::static_obstacle_avoidance
 
-std::string toStrInfo(const behavior_path_planner::ShiftLineArray & sl_arr)
+std::string toStrInfo(const autoware::behavior_path_planner::ShiftLineArray & sl_arr)
 {
   if (sl_arr.empty()) {
     return "point is empty";
@@ -667,7 +667,7 @@ std::string toStrInfo(const behavior_path_planner::ShiftLineArray & sl_arr)
   return ss.str();
 }
 
-std::string toStrInfo(const behavior_path_planner::ShiftLine & sl)
+std::string toStrInfo(const autoware::behavior_path_planner::ShiftLine & sl)
 {
   const auto & ps = sl.start.position;
   const auto & pe = sl.end.position;
@@ -678,7 +678,7 @@ std::string toStrInfo(const behavior_path_planner::ShiftLine & sl)
   return ss.str();
 }
 
-std::string toStrInfo(const behavior_path_planner::AvoidLineArray & ap_arr)
+std::string toStrInfo(const autoware::behavior_path_planner::AvoidLineArray & ap_arr)
 {
   if (ap_arr.empty()) {
     return "point is empty";
@@ -689,7 +689,7 @@ std::string toStrInfo(const behavior_path_planner::AvoidLineArray & ap_arr)
   }
   return ss.str();
 }
-std::string toStrInfo(const behavior_path_planner::AvoidLine & ap)
+std::string toStrInfo(const autoware::behavior_path_planner::AvoidLine & ap)
 {
   using tier4_autoware_utils::toHexString;
 

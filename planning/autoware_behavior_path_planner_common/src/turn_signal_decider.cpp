@@ -31,7 +31,7 @@
 #include <string>
 #include <utility>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using motion_utils::calcSignedArcLength;
 
@@ -790,4 +790,4 @@ std::pair<TurnSignalInfo, bool> TurnSignalDecider::getBehaviorTurnSignalInfo(
   return std::make_pair(turn_signal_info, false);
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

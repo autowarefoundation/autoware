@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner::goal_planner_utils
+namespace autoware::behavior_path_planner::goal_planner_utils
 {
 
 using tier4_autoware_utils::calcOffsetPose;
@@ -447,4 +447,4 @@ std::vector<Polygon2d> createPathFootPrints(
   return footprints;
 }
 
-}  // namespace behavior_path_planner::goal_planner_utils
+}  // namespace autoware::behavior_path_planner::goal_planner_utils

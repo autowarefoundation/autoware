@@ -40,7 +40,7 @@
 #include <string>
 #include <utility>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using autoware::route_handler::RouteHandler;
 using autoware_vehicle_msgs::msg::HazardLightsCommand;
@@ -296,6 +296,6 @@ private:
   mutable double intersection_distance_ = std::numeric_limits<double>::max();
   mutable Pose intersection_pose_point_ = Pose();
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__TURN_SIGNAL_DECIDER_HPP_

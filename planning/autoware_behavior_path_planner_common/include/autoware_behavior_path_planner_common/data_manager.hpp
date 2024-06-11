@@ -48,7 +48,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using autoware::route_handler::RouteHandler;
 using autoware_adapi_v1_msgs::msg::OperationModeState;
@@ -267,6 +267,6 @@ struct PlannerData
   }
 };
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__DATA_MANAGER_HPP_

@@ -23,9 +23,9 @@
 
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
-using behavior_path_planner::TurnSignalInfo;
+using autoware::behavior_path_planner::TurnSignalInfo;
 using tier4_planning_msgs::msg::PathWithLaneId;
 struct LaneChangePath
 {
@@ -49,5 +49,5 @@ struct LaneChangeStatus
   double start_distance{0.0};
 };
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 #endif  // AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__PATH_HPP_

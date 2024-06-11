@@ -39,7 +39,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner::utils
+namespace autoware::behavior_path_planner::utils
 {
 using autoware_perception_msgs::msg::ObjectClassification;
 using autoware_perception_msgs::msg::PredictedObject;
@@ -348,6 +348,6 @@ size_t findNearestSegmentIndex(
 
   return motion_utils::findNearestSegmentIndex(points, pose.position);
 }
-}  // namespace behavior_path_planner::utils
+}  // namespace autoware::behavior_path_planner::utils
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__UTILS_HPP_

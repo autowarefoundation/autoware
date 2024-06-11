@@ -25,7 +25,7 @@
 
 #include <memory>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 class GeometricPullOut : public PullOutPlannerBase
 {
@@ -42,6 +42,6 @@ public:
   ParallelParkingParameters parallel_parking_parameters_;
   std::shared_ptr<autoware::lane_departure_checker::LaneDepartureChecker> lane_departure_checker_;
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__GEOMETRIC_PULL_OUT_HPP_

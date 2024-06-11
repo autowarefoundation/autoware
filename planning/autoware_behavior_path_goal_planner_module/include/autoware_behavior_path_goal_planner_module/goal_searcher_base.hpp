@@ -24,7 +24,7 @@
 #include <memory>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using geometry_msgs::msg::Pose;
 using tier4_autoware_utils::MultiPolygon2d;
@@ -76,6 +76,6 @@ protected:
   Pose reference_goal_pose_{};
   MultiPolygon2d area_polygons_{};
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GOAL_SEARCHER_BASE_HPP_

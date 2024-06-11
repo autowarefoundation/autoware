@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using tier4_planning_msgs::msg::LateralOffset;
 
@@ -50,5 +50,5 @@ struct SideShiftDebugData
   double current_request{0.0};
 };
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 #endif  // AUTOWARE_BEHAVIOR_PATH_SIDE_SHIFT_MODULE__DATA_STRUCTS_HPP_

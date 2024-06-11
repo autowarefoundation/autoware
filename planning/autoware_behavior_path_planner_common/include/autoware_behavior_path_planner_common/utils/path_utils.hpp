@@ -33,7 +33,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner::utils
+namespace autoware::behavior_path_planner::utils
 {
 using autoware_planning_msgs::msg::Path;
 using autoware_vehicle_msgs::msg::TurnIndicatorsCommand;
@@ -111,6 +111,6 @@ BehaviorModuleOutput getReferencePath(
 
 BehaviorModuleOutput createGoalAroundPath(const std::shared_ptr<const PlannerData> & planner_data);
 
-}  // namespace behavior_path_planner::utils
+}  // namespace autoware::behavior_path_planner::utils
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__PATH_UTILS_HPP_

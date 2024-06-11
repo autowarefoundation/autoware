@@ -23,7 +23,7 @@
 
 #include <memory>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using Point2d = tier4_autoware_utils::Point2d;
 using tier4_planning_msgs::msg::PathWithLaneId;
@@ -105,4 +105,4 @@ PathWithLaneId DefaultFixedGoalPlanner::modifyPathForSmoothGoalConnection(
   return refined_path;
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

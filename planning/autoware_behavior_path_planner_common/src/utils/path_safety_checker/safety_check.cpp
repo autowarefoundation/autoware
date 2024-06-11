@@ -28,7 +28,7 @@
 
 #include <limits>
 
-namespace behavior_path_planner::utils::path_safety_checker
+namespace autoware::behavior_path_planner::utils::path_safety_checker
 {
 
 namespace bg = boost::geometry;
@@ -710,4 +710,4 @@ void updateCollisionCheckDebugMap(
   debug_map.insert(object_debug);
 }
 
-}  // namespace behavior_path_planner::utils::path_safety_checker
+}  // namespace autoware::behavior_path_planner::utils::path_safety_checker

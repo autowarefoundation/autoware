@@ -21,7 +21,7 @@
 
 #include <memory>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 class DefaultFixedGoalPlanner : public FixedGoalPlannerBase
@@ -40,6 +40,6 @@ protected:
     const PathWithLaneId & refined_path,
     const std::shared_ptr<const PlannerData> & planner_data) const;
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__DEFAULT_FIXED_GOAL_PLANNER_HPP_

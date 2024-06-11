@@ -139,4 +139,4 @@ void SamplingPlannerModuleManager::updateModuleParams(
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
   autoware::behavior_path_planner::SamplingPlannerModuleManager,
-  ::behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::SceneModuleManagerInterface)

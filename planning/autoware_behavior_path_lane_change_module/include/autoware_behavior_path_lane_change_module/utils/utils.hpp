@@ -36,16 +36,17 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner::utils::lane_change
+namespace autoware::behavior_path_planner::utils::lane_change
 {
+using autoware::behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject;
+using autoware::behavior_path_planner::utils::path_safety_checker::
+  PoseWithVelocityAndPolygonStamped;
+using autoware::behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
+using autoware::behavior_path_planner::utils::path_safety_checker::PredictedPathWithPolygon;
 using autoware::route_handler::Direction;
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_perception_msgs::msg::PredictedPath;
-using behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject;
-using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityAndPolygonStamped;
-using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
-using behavior_path_planner::utils::path_safety_checker::PredictedPathWithPolygon;
 using data::lane_change::LanesPolygon;
 using data::lane_change::PathSafetyStatus;
 using geometry_msgs::msg::Point;
@@ -297,15 +298,15 @@ double calcPhaseLength(
 LanesPolygon createLanesPolygon(
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes,
   const std::vector<lanelet::ConstLanelets> & target_backward_lanes);
-}  // namespace behavior_path_planner::utils::lane_change
+}  // namespace autoware::behavior_path_planner::utils::lane_change
 
-namespace behavior_path_planner::utils::lane_change::debug
+namespace autoware::behavior_path_planner::utils::lane_change::debug
 {
 geometry_msgs::msg::Point32 create_point32(const geometry_msgs::msg::Pose & pose);
 
 geometry_msgs::msg::Polygon createExecutionArea(
   const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const Pose & pose,
   double additional_lon_offset, double additional_lat_offset);
-}  // namespace behavior_path_planner::utils::lane_change::debug
+}  // namespace autoware::behavior_path_planner::utils::lane_change::debug
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__UTILS_HPP_

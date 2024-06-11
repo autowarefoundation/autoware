@@ -25,7 +25,7 @@
 
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using autoware_planning_msgs::msg::PathPoint;
 using geometry_msgs::msg::Pose;
@@ -41,4 +41,4 @@ PathWithLaneId generateDiagonalSamplePathWithLaneId(
 Twist generateSampleEgoTwist(float && l_x, float && l_y, float && l_z);
 
 Pose generateEgoSamplePose(float && p_x, float && p_y, float && p_z);
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

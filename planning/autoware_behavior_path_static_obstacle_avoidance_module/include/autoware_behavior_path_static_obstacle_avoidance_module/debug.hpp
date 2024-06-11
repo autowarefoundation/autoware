@@ -21,17 +21,17 @@
 #include <memory>
 #include <string>
 
-namespace behavior_path_planner::utils::static_obstacle_avoidance
+namespace autoware::behavior_path_planner::utils::static_obstacle_avoidance
 {
 
-using behavior_path_planner::AvoidanceParameters;
-using behavior_path_planner::AvoidancePlanningData;
-using behavior_path_planner::AvoidLineArray;
-using behavior_path_planner::DebugData;
-using behavior_path_planner::ObjectDataArray;
-using behavior_path_planner::ObjectInfo;
-using behavior_path_planner::PathShifter;
-using behavior_path_planner::ShiftLineArray;
+using autoware::behavior_path_planner::AvoidanceParameters;
+using autoware::behavior_path_planner::AvoidancePlanningData;
+using autoware::behavior_path_planner::AvoidLineArray;
+using autoware::behavior_path_planner::DebugData;
+using autoware::behavior_path_planner::ObjectDataArray;
+using autoware::behavior_path_planner::ObjectInfo;
+using autoware::behavior_path_planner::PathShifter;
+using autoware::behavior_path_planner::ShiftLineArray;
 
 MarkerArray createEgoStatusMarkerArray(
   const AvoidancePlanningData & data, const Pose & p_ego, std::string && ns);
@@ -50,14 +50,14 @@ MarkerArray createOtherObjectsMarkerArray(
 MarkerArray createDebugMarkerArray(
   const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug,
   const std::shared_ptr<AvoidanceParameters> & parameters);
-}  // namespace behavior_path_planner::utils::static_obstacle_avoidance
+}  // namespace autoware::behavior_path_planner::utils::static_obstacle_avoidance
 
-std::string toStrInfo(const behavior_path_planner::ShiftLineArray & sl_arr);
+std::string toStrInfo(const autoware::behavior_path_planner::ShiftLineArray & sl_arr);
 
-std::string toStrInfo(const behavior_path_planner::AvoidLineArray & ap_arr);
+std::string toStrInfo(const autoware::behavior_path_planner::AvoidLineArray & ap_arr);
 
-std::string toStrInfo(const behavior_path_planner::ShiftLine & sl);
+std::string toStrInfo(const autoware::behavior_path_planner::ShiftLine & sl);
 
-std::string toStrInfo(const behavior_path_planner::AvoidLine & ap);
+std::string toStrInfo(const autoware::behavior_path_planner::AvoidLine & ap);
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__DEBUG_HPP_

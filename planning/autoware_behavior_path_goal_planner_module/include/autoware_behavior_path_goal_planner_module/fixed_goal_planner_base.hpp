@@ -26,7 +26,7 @@ using geometry_msgs::msg::Pose;
 using tier4_autoware_utils::LinearRing2d;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 class FixedGoalPlannerBase
@@ -48,6 +48,6 @@ public:
 protected:
   BehaviorModuleOutput previous_module_output_;
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__FIXED_GOAL_PLANNER_BASE_HPP_

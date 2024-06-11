@@ -20,7 +20,7 @@
 
 namespace autoware::behavior_path_planner
 {
-using ::behavior_path_planner::LaneChangeModuleType;
+using autoware::behavior_path_planner::LaneChangeModuleType;
 
 ExternalRequestLaneChange::ExternalRequestLaneChange(
   const std::shared_ptr<LaneChangeParameters> & parameters, Direction direction)

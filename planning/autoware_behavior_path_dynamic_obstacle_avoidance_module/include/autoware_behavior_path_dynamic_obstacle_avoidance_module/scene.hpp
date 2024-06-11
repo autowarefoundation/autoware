@@ -55,7 +55,7 @@ std::vector<T> getAllKeys(const std::unordered_map<T, S> & map)
 }
 }  // namespace
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using autoware_perception_msgs::msg::PredictedPath;
 using tier4_autoware_utils::Polygon2d;
@@ -459,6 +459,6 @@ private:
     std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
     stop_watch_;
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_DYNAMIC_OBSTACLE_AVOIDANCE_MODULE__SCENE_HPP_

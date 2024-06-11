@@ -18,7 +18,7 @@
 
 namespace autoware::behavior_path_planner
 {
-using ::behavior_path_planner::AvoidanceParameters;
+using autoware::behavior_path_planner::AvoidanceParameters;
 
 struct AvoidanceByLCParameters : public AvoidanceParameters
 {

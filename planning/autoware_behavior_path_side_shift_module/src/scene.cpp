@@ -26,7 +26,7 @@
 #include <memory>
 #include <string>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using geometry_msgs::msg::Point;
 using motion_utils::calcSignedArcLength;
@@ -160,10 +160,11 @@ bool SideShiftModule::canTransitSuccessState()
   const auto & inserted_shift_line_start_pose = inserted_shift_line_.start;
   const auto & inserted_shift_line_end_pose = inserted_shift_line_.end;
   const double self_to_shift_line_start_arc_length =
-    behavior_path_planner::utils::getSignedDistance(
+    autoware::behavior_path_planner::utils::getSignedDistance(
       current_pose, inserted_shift_line_start_pose, current_lanes);
-  const double self_to_shift_line_end_arc_length = behavior_path_planner::utils::getSignedDistance(
-    current_pose, inserted_shift_line_end_pose, current_lanes);
+  const double self_to_shift_line_end_arc_length =
+    autoware::behavior_path_planner::utils::getSignedDistance(
+      current_pose, inserted_shift_line_end_pose, current_lanes);
   if (self_to_shift_line_start_arc_length >= 0) {
     shift_status_ = SideShiftStatus::BEFORE_SHIFT;
   } else if (self_to_shift_line_start_arc_length < 0 && self_to_shift_line_end_arc_length > 0) {
@@ -480,4 +481,4 @@ void SideShiftModule::setDebugMarkersVisualization() const
     add_shift_line_marker("side_shift_shift_points", 0.7, 0.7, 0.7, 0.4);
   }
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

@@ -35,7 +35,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using autoware::objects_of_interest_marker_interface::ColorName;
 using autoware::objects_of_interest_marker_interface::ObjectsOfInterestMarkerInterface;
@@ -154,6 +154,6 @@ protected:
 
   bool is_abort_approval_requested_{false};
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__INTERFACE_HPP_

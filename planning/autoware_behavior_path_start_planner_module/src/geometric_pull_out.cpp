@@ -26,7 +26,7 @@ using lanelet::utils::getArcCoordinates;
 using motion_utils::findNearestIndex;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcOffsetPose;
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using start_planner_utils::getPullOutLanes;
 
@@ -121,4 +121,4 @@ std::optional<PullOutPath> GeometricPullOut::plan(const Pose & start_pose, const
 
   return output;
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

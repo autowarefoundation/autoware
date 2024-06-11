@@ -26,11 +26,11 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner::helper::static_obstacle_avoidance
+namespace autoware::behavior_path_planner::helper::static_obstacle_avoidance
 {
 
-using behavior_path_planner::PathShifter;
-using behavior_path_planner::PlannerData;
+using autoware::behavior_path_planner::PathShifter;
+using autoware::behavior_path_planner::PlannerData;
 
 class AvoidanceHelper
 {
@@ -518,6 +518,6 @@ private:
 
   std::optional<std::pair<Pose, double>> max_v_point_;
 };
-}  // namespace behavior_path_planner::helper::static_obstacle_avoidance
+}  // namespace autoware::behavior_path_planner::helper::static_obstacle_avoidance
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__HELPER_HPP_

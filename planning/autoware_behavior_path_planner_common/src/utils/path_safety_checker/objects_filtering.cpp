@@ -24,7 +24,7 @@
 
 #include <algorithm>
 
-namespace behavior_path_planner::utils::path_safety_checker::filter
+namespace autoware::behavior_path_planner::utils::path_safety_checker::filter
 {
 bool velocity_filter(const PredictedObject & object, double velocity_threshold, double max_velocity)
 {
@@ -53,9 +53,9 @@ bool is_within_circle(
     std::hypot(reference_point.x - object_pos.x, reference_point.y - object_pos.y);
   return dist < search_radius;
 }
-}  // namespace behavior_path_planner::utils::path_safety_checker::filter
+}  // namespace autoware::behavior_path_planner::utils::path_safety_checker::filter
 
-namespace behavior_path_planner::utils::path_safety_checker
+namespace autoware::behavior_path_planner::utils::path_safety_checker
 {
 bool isCentroidWithinLanelet(const PredictedObject & object, const lanelet::ConstLanelet & lanelet)
 {
@@ -410,4 +410,4 @@ bool isTargetObjectType(
     (t == ObjectClassification::MOTORCYCLE && target_object_types.check_motorcycle) ||
     (t == ObjectClassification::PEDESTRIAN && target_object_types.check_pedestrian));
 }
-}  // namespace behavior_path_planner::utils::path_safety_checker
+}  // namespace autoware::behavior_path_planner::utils::path_safety_checker

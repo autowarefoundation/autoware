@@ -28,14 +28,14 @@
 
 #include <vector>
 
-namespace behavior_path_planner::utils::path_safety_checker
+namespace autoware::behavior_path_planner::utils::path_safety_checker
 {
 
+using autoware::behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 using autoware::vehicle_info_utils::VehicleInfo;
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedPath;
 using autoware_perception_msgs::msg::Shape;
-using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using tier4_autoware_utils::calcYawDeviation;
@@ -155,6 +155,6 @@ bool checkSafetyWithIntegralPredictedPolygon(
 CollisionCheckDebugPair createObjectDebug(const ExtendedPredictedObject & obj);
 void updateCollisionCheckDebugMap(
   CollisionCheckDebugMap & debug_map, CollisionCheckDebugPair & object_debug, bool is_safe);
-}  // namespace behavior_path_planner::utils::path_safety_checker
+}  // namespace autoware::behavior_path_planner::utils::path_safety_checker
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__PATH_SAFETY_CHECKER__SAFETY_CHECK_HPP_

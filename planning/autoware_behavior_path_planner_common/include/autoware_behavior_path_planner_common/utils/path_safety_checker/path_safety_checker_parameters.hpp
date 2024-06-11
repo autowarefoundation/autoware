@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner::utils::path_safety_checker
+namespace autoware::behavior_path_planner::utils::path_safety_checker
 {
 
 using autoware_perception_msgs::msg::PredictedObject;
@@ -236,7 +236,7 @@ using CollisionCheckDebugPair = std::pair<boost::uuids::uuid, CollisionCheckDebu
 using CollisionCheckDebugMap =
   std::unordered_map<CollisionCheckDebugPair::first_type, CollisionCheckDebugPair::second_type>;
 
-}  // namespace behavior_path_planner::utils::path_safety_checker
+}  // namespace autoware::behavior_path_planner::utils::path_safety_checker
 
 // clang-format off
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__PATH_SAFETY_CHECKER__PATH_SAFETY_CHECKER_PARAMETERS_HPP_  // NOLINT

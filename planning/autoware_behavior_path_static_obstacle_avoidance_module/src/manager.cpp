@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 void StaticObstacleAvoidanceModuleManager::init(rclcpp::Node * node)
 {
@@ -279,9 +279,9 @@ void StaticObstacleAvoidanceModuleManager::updateModuleParams(
     if (!observer.expired()) observer.lock()->updateModuleParams(p);
   });
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_path_planner::StaticObstacleAvoidanceModuleManager,
-  behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::StaticObstacleAvoidanceModuleManager,
+  autoware::behavior_path_planner::SceneModuleManagerInterface)

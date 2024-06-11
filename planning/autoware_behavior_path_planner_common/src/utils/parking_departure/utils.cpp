@@ -19,7 +19,7 @@
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/distance/distance.hpp>
 
-namespace behavior_path_planner::utils::parking_departure
+namespace autoware::behavior_path_planner::utils::parking_departure
 {
 
 using motion_utils::calcDecelDistWithJerkAndAccConstraints;
@@ -136,7 +136,7 @@ std::optional<PathWithLaneId> generateFeasibleStopPath(
   // try to insert stop point in current_path after approval
   // but if can't stop with constraints(maximum deceleration, maximum jerk), don't insert stop point
   const auto min_stop_distance =
-    behavior_path_planner::utils::parking_departure::calcFeasibleDecelDistance(
+    autoware::behavior_path_planner::utils::parking_departure::calcFeasibleDecelDistance(
       planner_data, maximum_deceleration, maximum_jerk, 0.0);
 
   if (!min_stop_distance) {
@@ -177,4 +177,4 @@ std::pair<double, bool> calcEndArcLength(
   return {s_goal, true};
 }
 
-}  // namespace behavior_path_planner::utils::parking_departure
+}  // namespace autoware::behavior_path_planner::utils::parking_departure

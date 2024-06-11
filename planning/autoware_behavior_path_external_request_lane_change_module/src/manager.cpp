@@ -19,7 +19,7 @@
 
 namespace autoware::behavior_path_planner
 {
-using ::behavior_path_planner::LaneChangeInterface;
+using autoware::behavior_path_planner::LaneChangeInterface;
 
 std::unique_ptr<SceneModuleInterface>
 ExternalRequestLaneChangeRightModuleManager::createNewSceneModuleInstance()
@@ -44,7 +44,7 @@ ExternalRequestLaneChangeLeftModuleManager::createNewSceneModuleInstance()
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
   autoware::behavior_path_planner::ExternalRequestLaneChangeRightModuleManager,
-  ::behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::SceneModuleManagerInterface)
 PLUGINLIB_EXPORT_CLASS(
   autoware::behavior_path_planner::ExternalRequestLaneChangeLeftModuleManager,
-  ::behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::SceneModuleManagerInterface)

@@ -44,14 +44,14 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
+using autoware::behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
+using autoware::behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
+using autoware::behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
+using autoware::behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
+using autoware::behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 using autoware::lane_departure_checker::LaneDepartureChecker;
-using behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
-using behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
-using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
-using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
-using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 using geometry_msgs::msg::PoseArray;
 using PriorityOrder = std::vector<std::pair<size_t, std::shared_ptr<PullOutPlannerBase>>>;
 
@@ -201,7 +201,7 @@ private:
   bool requiresDynamicObjectsCollisionDetection() const;
 
   uint16_t getSteeringFactorDirection(
-    const behavior_path_planner::BehaviorModuleOutput & output) const
+    const autoware::behavior_path_planner::BehaviorModuleOutput & output) const
   {
     switch (output.turn_signal_info.turn_signal.command) {
       case TurnIndicatorsCommand::ENABLE_LEFT:
@@ -242,13 +242,13 @@ private:
     const Pose & refined_start_pose, const Pose & goal_pose, const double collision_check_margin);
 
   PathWithLaneId extractCollisionCheckSection(
-    const PullOutPath & path, const behavior_path_planner::PlannerType & planner_type);
+    const PullOutPath & path, const autoware::behavior_path_planner::PlannerType & planner_type);
   void updateStatusWithCurrentPath(
-    const behavior_path_planner::PullOutPath & path, const Pose & start_pose,
-    const behavior_path_planner::PlannerType & planner_type);
+    const autoware::behavior_path_planner::PullOutPath & path, const Pose & start_pose,
+    const autoware::behavior_path_planner::PlannerType & planner_type);
   void updateStatusWithNextPath(
-    const behavior_path_planner::PullOutPath & path, const Pose & start_pose,
-    const behavior_path_planner::PlannerType & planner_type);
+    const autoware::behavior_path_planner::PullOutPath & path, const Pose & start_pose,
+    const autoware::behavior_path_planner::PlannerType & planner_type);
   void updateStatusIfNoSafePathFound();
 
   std::shared_ptr<StartPlannerParameters> parameters_;
@@ -334,6 +334,6 @@ private:
   void setDebugData();
   void logPullOutStatus(rclcpp::Logger::Level log_level = rclcpp::Logger::Level::Info) const;
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__START_PLANNER_MODULE_HPP_

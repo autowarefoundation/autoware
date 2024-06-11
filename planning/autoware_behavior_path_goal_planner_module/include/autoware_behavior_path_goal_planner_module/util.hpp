@@ -33,7 +33,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner::goal_planner_utils
+namespace autoware::behavior_path_planner::goal_planner_utils
 {
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_perception_msgs::msg::PredictedPath;
@@ -108,6 +108,6 @@ MarkerArray createLaneletPolygonMarkerArray(
 MarkerArray createNumObjectsToAvoidTextsMarkerArray(
   const GoalCandidates & goal_candidates, std::string && ns,
   const std_msgs::msg::ColorRGBA & color);
-}  // namespace behavior_path_planner::goal_planner_utils
+}  // namespace autoware::behavior_path_planner::goal_planner_utils
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__UTIL_HPP_

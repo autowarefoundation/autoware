@@ -31,7 +31,7 @@ std::string toStr(const geometry_msgs::msg::Point & p)
 {
   return "(" + std::to_string(p.x) + ", " + std::to_string(p.y) + ", " + std::to_string(p.z) + ")";
 }
-std::string toStr(const behavior_path_planner::ShiftLine & p)
+std::string toStr(const autoware::behavior_path_planner::ShiftLine & p)
 {
   return "start point = " + toStr(p.start.position) + ", end point = " + toStr(p.end.position) +
          ", start idx = " + std::to_string(p.start_idx) +
@@ -48,7 +48,7 @@ std::string toStr(const std::vector<double> & v)
 }
 }  // namespace
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 using motion_utils::findNearestIndex;
@@ -648,4 +648,4 @@ std::optional<ShiftLine> PathShifter::getLastShiftLine() const
   return *furthest;
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

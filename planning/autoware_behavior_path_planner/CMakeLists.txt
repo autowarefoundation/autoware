@@ -21,7 +21,7 @@ target_link_libraries(${PROJECT_NAME}_lib
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}_lib
-  PLUGIN "behavior_path_planner::BehaviorPathPlannerNode"
+  PLUGIN "autoware::behavior_path_planner::BehaviorPathPlannerNode"
   EXECUTABLE ${PROJECT_NAME}_node
 )
 

@@ -27,7 +27,7 @@
 #include <string>
 #include <utility>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using tier4_autoware_utils::appendMarkerArray;
 using utils::lane_change::assignToCandidate;
@@ -380,4 +380,4 @@ void LaneChangeInterface::updateSteeringFactorPtr(
     {output.start_distance_to_path_change, output.finish_distance_to_path_change},
     PlanningBehavior::LANE_CHANGE, steering_factor_direction, SteeringFactor::APPROACHING, "");
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

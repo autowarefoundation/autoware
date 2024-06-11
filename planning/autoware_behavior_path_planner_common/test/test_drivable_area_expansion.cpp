@@ -223,7 +223,7 @@ TEST(DrivableAreaExpansionProjection, expand_drivable_area)
     params.vehicle_info.wheel_base_m = 2.0;
     params.vehicle_info.vehicle_width_m = 2.0;
   }
-  behavior_path_planner::PlannerData planner_data;
+  autoware::behavior_path_planner::PlannerData planner_data;
   planner_data.drivable_area_expansion_parameters = params;
   planner_data.dynamic_object =
     std::make_shared<drivable_area_expansion::PredictedObjects>(dynamic_objects);
@@ -231,7 +231,7 @@ TEST(DrivableAreaExpansionProjection, expand_drivable_area)
   planner_data.route_handler =
     std::make_shared<autoware::route_handler::RouteHandler>(route_handler);
   drivable_area_expansion::expand_drivable_area(
-    path, std::make_shared<behavior_path_planner::PlannerData>(planner_data));
+    path, std::make_shared<autoware::behavior_path_planner::PlannerData>(planner_data));
   // unchanged path points
   ASSERT_EQ(path.points.size(), 3ul);
   for (auto i = 0.0; i < path.points.size(); ++i) {
@@ -260,7 +260,7 @@ TEST(DrivableAreaExpansionProjection, expand_drivable_area)
   path.points[1].point.pose.position.y = 0.5;
 
   drivable_area_expansion::expand_drivable_area(
-    path, std::make_shared<behavior_path_planner::PlannerData>(planner_data));
+    path, std::make_shared<autoware::behavior_path_planner::PlannerData>(planner_data));
   // expanded left bound
   ASSERT_EQ(path.left_bound.size(), 3ul);
   EXPECT_GT(path.left_bound[0].y, 1.0);

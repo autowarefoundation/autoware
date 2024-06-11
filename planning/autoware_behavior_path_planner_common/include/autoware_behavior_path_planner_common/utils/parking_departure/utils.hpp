@@ -23,13 +23,13 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner::utils::parking_departure
+namespace autoware::behavior_path_planner::utils::parking_departure
 {
 
-using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebugMap;
-using behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
-using behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
-using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
+using autoware::behavior_path_planner::utils::path_safety_checker::CollisionCheckDebugMap;
+using autoware::behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
+using autoware::behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
+using autoware::behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
 
 std::optional<double> calcFeasibleDecelDistance(
   std::shared_ptr<const PlannerData> planner_data, const double acc_lim, const double jerk_lim,
@@ -81,6 +81,6 @@ std::pair<double, bool> calcEndArcLength(
   const double s_start, const double forward_path_length, const lanelet::ConstLanelets & road_lanes,
   const Pose & goal_pose);
 
-}  // namespace behavior_path_planner::utils::parking_departure
+}  // namespace autoware::behavior_path_planner::utils::parking_departure
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__PARKING_DEPARTURE__UTILS_HPP_

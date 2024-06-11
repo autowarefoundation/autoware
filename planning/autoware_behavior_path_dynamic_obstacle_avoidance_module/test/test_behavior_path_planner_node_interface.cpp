@@ -20,7 +20,7 @@
 
 #include <vector>
 
-using behavior_path_planner::BehaviorPathPlannerNode;
+using autoware::behavior_path_planner::BehaviorPathPlannerNode;
 using planning_test_utils::PlanningInterfaceTestManager;
 
 std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
@@ -47,7 +47,7 @@ std::shared_ptr<BehaviorPathPlannerNode> generateNode()
     ament_index_cpp::get_package_share_directory("behavior_path_planner");
 
   std::vector<std::string> module_names;
-  module_names.emplace_back("behavior_path_planner::DynamicAvoidanceModuleManager");
+  module_names.emplace_back("autoware::behavior_path_planner::DynamicAvoidanceModuleManager");
 
   std::vector<rclcpp::Parameter> params;
   params.emplace_back("launch_modules", module_names);

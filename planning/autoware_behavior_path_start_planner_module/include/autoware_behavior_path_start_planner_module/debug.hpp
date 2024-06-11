@@ -20,9 +20,9 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
-using behavior_path_planner::StartPlannerDebugData;
+using autoware::behavior_path_planner::StartPlannerDebugData;
 
 void updateSafetyCheckDebugData(
   StartPlannerDebugData & data, const PredictedObjects & filtered_objects,
@@ -34,6 +34,6 @@ void updateSafetyCheckDebugData(
   data.ego_predicted_path = ego_predicted_path;
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__DEBUG_HPP_

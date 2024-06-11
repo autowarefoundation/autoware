@@ -31,7 +31,7 @@ using lanelet::utils::getArcCoordinates;
 using motion_utils::findNearestIndex;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcOffsetPose;
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using start_planner_utils::getPullOutLanes;
 
@@ -225,8 +225,9 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
   // generate road lane reference path
   const auto arc_position_start = getArcCoordinates(road_lanes, start_pose);
   const double s_start = std::max(arc_position_start.length - backward_path_length, 0.0);
-  const auto path_end_info = behavior_path_planner::utils::parking_departure::calcEndArcLength(
-    s_start, forward_path_length, road_lanes, goal_pose);
+  const auto path_end_info =
+    autoware::behavior_path_planner::utils::parking_departure::calcEndArcLength(
+      s_start, forward_path_length, road_lanes, goal_pose);
   const double s_end = path_end_info.first;
   const bool path_terminal_is_goal = path_end_info.second;
 
@@ -416,4 +417,4 @@ double ShiftPullOut::calcBeforeShiftedArcLength(
   return before_arc_length;
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

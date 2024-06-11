@@ -18,11 +18,11 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+using autoware::behavior_path_planner::ObjectData;
+using autoware::behavior_path_planner::utils::static_obstacle_avoidance::isOnRight;
+using autoware::behavior_path_planner::utils::static_obstacle_avoidance::isSameDirectionShift;
+using autoware::behavior_path_planner::utils::static_obstacle_avoidance::isShiftNecessary;
 using autoware::route_handler::Direction;
-using behavior_path_planner::ObjectData;
-using behavior_path_planner::utils::static_obstacle_avoidance::isOnRight;
-using behavior_path_planner::utils::static_obstacle_avoidance::isSameDirectionShift;
-using behavior_path_planner::utils::static_obstacle_avoidance::isShiftNecessary;
 
 TEST(BehaviorPathPlanningAvoidanceUtilsTest, shiftLengthDirectionTest)
 {

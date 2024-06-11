@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 using autoware::freespace_planning_algorithms::AstarParam;
@@ -126,6 +126,6 @@ struct GoalPlannerParameters
   // debug
   bool print_debug_info{false};
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GOAL_PLANNER_PARAMETERS_HPP_

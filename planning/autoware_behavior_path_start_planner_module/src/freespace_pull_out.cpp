@@ -24,7 +24,7 @@
 #include <memory>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 FreespacePullOut::FreespacePullOut(
   rclcpp::Node & node, const StartPlannerParameters & parameters,
@@ -91,8 +91,9 @@ std::optional<PullOutPath> FreespacePullOut::plan(const Pose & start_pose, const
   constexpr double offset_from_end_pose = 1.0;
   const auto arc_position_end = lanelet::utils::getArcCoordinates(road_lanes, end_pose);
   const double s_start = std::max(arc_position_end.length + offset_from_end_pose, 0.0);
-  const auto path_end_info = behavior_path_planner::utils::parking_departure::calcEndArcLength(
-    s_start, forward_path_length, road_lanes, goal_pose);
+  const auto path_end_info =
+    autoware::behavior_path_planner::utils::parking_departure::calcEndArcLength(
+      s_start, forward_path_length, road_lanes, goal_pose);
   const double s_end = path_end_info.first;
   const bool path_terminal_is_goal = path_end_info.second;
 
@@ -114,4 +115,4 @@ std::optional<PullOutPath> FreespacePullOut::plan(const Pose & start_pose, const
 
   return pull_out_path;
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

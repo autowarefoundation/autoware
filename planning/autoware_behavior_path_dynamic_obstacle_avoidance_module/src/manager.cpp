@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 namespace
 {
@@ -291,9 +291,9 @@ bool DynamicObstacleAvoidanceModuleManager::isAlwaysExecutableModule() const
 {
   return true;
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_path_planner::DynamicObstacleAvoidanceModuleManager,
-  behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::DynamicObstacleAvoidanceModuleManager,
+  autoware::behavior_path_planner::SceneModuleManagerInterface)

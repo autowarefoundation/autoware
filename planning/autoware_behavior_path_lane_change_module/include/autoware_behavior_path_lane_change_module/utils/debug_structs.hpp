@@ -26,7 +26,7 @@
 #include <limits>
 #include <string>
 
-namespace behavior_path_planner::data::lane_change
+namespace autoware::behavior_path_planner::data::lane_change
 {
 using utils::path_safety_checker::CollisionCheckDebugMap;
 struct Debug
@@ -71,6 +71,6 @@ struct Debug
     is_abort = false;
   }
 };
-}  // namespace behavior_path_planner::data::lane_change
+}  // namespace autoware::behavior_path_planner::data::lane_change
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__DEBUG_STRUCTS_HPP_

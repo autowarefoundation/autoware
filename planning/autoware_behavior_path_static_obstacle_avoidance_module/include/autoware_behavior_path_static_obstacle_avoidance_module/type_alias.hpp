@@ -31,7 +31,7 @@
 #include <tier4_rtc_msgs/msg/state.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 // auto msgs
 using autoware_perception_msgs::msg::PredictedObject;
@@ -69,6 +69,6 @@ using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
 using tier4_autoware_utils::pose2transform;
 using tier4_autoware_utils::toHexString;
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__TYPE_ALIAS_HPP_

@@ -48,7 +48,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using autoware::lane_departure_checker::LaneDepartureChecker;
 using autoware_vehicle_msgs::msg::HazardLightsCommand;
@@ -64,11 +64,11 @@ using autoware::freespace_planning_algorithms::PlannerCommonParam;
 using autoware::freespace_planning_algorithms::RRTStar;
 using autoware::freespace_planning_algorithms::RRTStarParam;
 
-using behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
-using behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
-using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
-using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
-using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
+using autoware::behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
+using autoware::behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
+using autoware::behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
+using autoware::behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
+using autoware::behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 using tier4_autoware_utils::Polygon2d;
 
 #define DEFINE_SETTER_WITH_MUTEX(TYPE, NAME)                  \
@@ -666,6 +666,6 @@ private:
   void setDebugData();
   void printParkingPositionError() const;
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GOAL_PLANNER_MODULE_HPP_

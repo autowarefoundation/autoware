@@ -26,7 +26,7 @@
 
 #include <memory>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using geometry_msgs::msg::Pose;
 using tier4_autoware_utils::LinearRing2d;
@@ -65,7 +65,7 @@ public:
 
 protected:
   bool isPullOutPathCollided(
-    behavior_path_planner::PullOutPath & pull_out_path,
+    autoware::behavior_path_planner::PullOutPath & pull_out_path,
     double collision_check_distance_from_end) const
   {
     // check for collisions
@@ -86,7 +86,7 @@ protected:
       pull_out_lane_stop_objects, parameters_.object_types_to_check_for_path_generation);
 
     const auto collision_check_section_path =
-      behavior_path_planner::start_planner_utils::extractCollisionCheckSection(
+      autoware::behavior_path_planner::start_planner_utils::extractCollisionCheckSection(
         pull_out_path, collision_check_distance_from_end);
     if (!collision_check_section_path) return true;
 
@@ -100,6 +100,6 @@ protected:
   StartPlannerParameters parameters_;
   double collision_check_margin_;
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__PULL_OUT_PLANNER_BASE_HPP_

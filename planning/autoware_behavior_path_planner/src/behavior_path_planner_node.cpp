@@ -42,7 +42,7 @@ rclcpp::SubscriptionOptions createSubscriptionOptions(rclcpp::Node * node_ptr)
 }
 }  // namespace
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 using autoware::vehicle_info_utils::VehicleInfoUtils;
 using tier4_planning_msgs::msg::PathChangeModuleId;
@@ -949,7 +949,7 @@ SetParametersResult BehaviorPathPlannerNode::onSetParam(
 
   return result;
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(behavior_path_planner::BehaviorPathPlannerNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::behavior_path_planner::BehaviorPathPlannerNode)

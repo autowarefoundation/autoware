@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 void LaneChangeModuleManager::init(rclcpp::Node * node)
@@ -390,12 +390,12 @@ void LaneChangeModuleManager::updateModuleParams(const std::vector<rclcpp::Param
   });
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_path_planner::LaneChangeRightModuleManager,
-  behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::LaneChangeRightModuleManager,
+  autoware::behavior_path_planner::SceneModuleManagerInterface)
 PLUGINLIB_EXPORT_CLASS(
-  behavior_path_planner::LaneChangeLeftModuleManager,
-  behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::LaneChangeLeftModuleManager,
+  autoware::behavior_path_planner::SceneModuleManagerInterface)

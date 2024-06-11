@@ -41,7 +41,7 @@ using tier4_autoware_utils::normalizeRadian;
 using tier4_autoware_utils::transformPose;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 void GeometricParallelParking::incrementPathIndex()
 {
@@ -612,4 +612,4 @@ void GeometricParallelParking::setTurningRadius(
     common_params.wheel_base + common_params.front_overhang);
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

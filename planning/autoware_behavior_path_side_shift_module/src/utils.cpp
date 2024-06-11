@@ -22,7 +22,7 @@
 
 #include <cmath>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 void setOrientation(PathWithLaneId * path)
 {
@@ -98,4 +98,4 @@ Point transformToGrid(
   return grid_pt;
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

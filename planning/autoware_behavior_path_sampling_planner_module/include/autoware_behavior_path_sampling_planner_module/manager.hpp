@@ -28,8 +28,6 @@
 
 namespace autoware::behavior_path_planner
 {
-using namespace ::behavior_path_planner;  // NOLINT TODO(Maxime): remove once moved to autoware
-                                          // namespace
 class SamplingPlannerModuleManager : public SceneModuleManagerInterface
 {
 public:

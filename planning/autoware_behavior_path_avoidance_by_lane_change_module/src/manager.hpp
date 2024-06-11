@@ -28,9 +28,9 @@
 
 namespace autoware::behavior_path_planner
 {
-using ::behavior_path_planner::LaneChangeModuleManager;
-using ::behavior_path_planner::LaneChangeModuleType;
-using ::behavior_path_planner::SceneModuleInterface;
+using autoware::behavior_path_planner::LaneChangeModuleManager;
+using autoware::behavior_path_planner::LaneChangeModuleType;
+using autoware::behavior_path_planner::SceneModuleInterface;
 
 class AvoidanceByLaneChangeModuleManager : public LaneChangeModuleManager
 {

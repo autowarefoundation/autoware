@@ -26,13 +26,13 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
+using autoware::behavior_path_planner::utils::path_safety_checker::CollisionCheckDebugMap;
+using autoware::behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
+using autoware::behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 using autoware_perception_msgs::msg::PredictedObjects;
-using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebugMap;
-using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
-using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 
 using autoware::freespace_planning_algorithms::AstarParam;
 using autoware::freespace_planning_algorithms::PlannerCommonParam;
@@ -68,7 +68,7 @@ struct StartPlannerParameters
   std::vector<double> collision_check_margins{};
   double collision_check_margin_from_front_object{0.0};
   double th_moving_object_velocity{0.0};
-  behavior_path_planner::utils::path_safety_checker::ObjectTypesToCheck
+  autoware::behavior_path_planner::utils::path_safety_checker::ObjectTypesToCheck
     object_types_to_check_for_path_generation{};
   double center_line_path_interval{0.0};
   double lane_departure_check_expansion_margin{0.0};
@@ -126,12 +126,12 @@ struct StartPlannerParameters
   // surround moving obstacle check
   double search_radius{0.0};
   double th_moving_obstacle_velocity{0.0};
-  behavior_path_planner::utils::path_safety_checker::ObjectTypesToCheck
+  autoware::behavior_path_planner::utils::path_safety_checker::ObjectTypesToCheck
     surround_moving_obstacles_type_to_check{};
 
   bool print_debug_info{false};
 };
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_START_PLANNER_MODULE__DATA_STRUCTS_HPP_

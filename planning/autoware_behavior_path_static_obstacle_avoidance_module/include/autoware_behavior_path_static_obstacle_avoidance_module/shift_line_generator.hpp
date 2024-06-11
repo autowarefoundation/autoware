@@ -22,11 +22,11 @@
 
 #include <memory>
 
-namespace behavior_path_planner::utils::static_obstacle_avoidance
+namespace autoware::behavior_path_planner::utils::static_obstacle_avoidance
 {
 
-using behavior_path_planner::PathShifter;
-using behavior_path_planner::helper::static_obstacle_avoidance::AvoidanceHelper;
+using autoware::behavior_path_planner::PathShifter;
+using autoware::behavior_path_planner::helper::static_obstacle_avoidance::AvoidanceHelper;
 
 class ShiftLineGenerator
 {
@@ -242,6 +242,6 @@ private:
   double base_offset_{0.0};
 };
 
-}  // namespace behavior_path_planner::utils::static_obstacle_avoidance
+}  // namespace autoware::behavior_path_planner::utils::static_obstacle_avoidance
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__SHIFT_LINE_GENERATOR_HPP_

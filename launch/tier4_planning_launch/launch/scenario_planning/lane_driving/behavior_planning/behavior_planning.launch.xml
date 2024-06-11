@@ -41,22 +41,22 @@
   <arg name="behavior_path_planner_launch_modules" default="["/>
   <let
     name="behavior_path_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::StaticObstacleAvoidanceModuleManager, '&quot;)"
+    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'autoware::behavior_path_planner::StaticObstacleAvoidanceModuleManager, '&quot;)"
     if="$(var launch_static_obstacle_avoidance)"
   />
   <let
     name="behavior_path_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::DynamicObstacleAvoidanceModuleManager, '&quot;)"
+    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'autoware::behavior_path_planner::DynamicObstacleAvoidanceModuleManager, '&quot;)"
     if="$(var launch_dynamic_obstacle_avoidance)"
   />
   <let
     name="behavior_path_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::SideShiftModuleManager, '&quot;)"
+    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'autoware::behavior_path_planner::SideShiftModuleManager, '&quot;)"
     if="$(var launch_side_shift_module)"
   />
   <let
     name="behavior_path_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::StartPlannerModuleManager, '&quot;)"
+    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'autoware::behavior_path_planner::StartPlannerModuleManager, '&quot;)"
     if="$(var launch_start_planner_module)"
   />
   <let
@@ -66,17 +66,17 @@
   />
   <let
     name="behavior_path_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::GoalPlannerModuleManager, '&quot;)"
+    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'autoware::behavior_path_planner::GoalPlannerModuleManager, '&quot;)"
     if="$(var launch_goal_planner_module)"
   />
   <let
     name="behavior_path_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::LaneChangeRightModuleManager, '&quot;)"
+    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'autoware::behavior_path_planner::LaneChangeRightModuleManager, '&quot;)"
     if="$(var launch_lane_change_right_module)"
   />
   <let
     name="behavior_path_planner_launch_modules"
-    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'behavior_path_planner::LaneChangeLeftModuleManager, '&quot;)"
+    value="$(eval &quot;'$(var behavior_path_planner_launch_modules)' + 'autoware::behavior_path_planner::LaneChangeLeftModuleManager, '&quot;)"
     if="$(var launch_lane_change_left_module)"
   />
   <let
@@ -176,7 +176,7 @@
   <let name="behavior_velocity_planner_launch_modules" value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + '$(var launch_module_list_end)'&quot;)"/>
 
   <node_container pkg="rclcpp_components" exec="$(var container_type)" name="behavior_planning_container" namespace="" args="" output="both">
-    <composable_node pkg="autoware_behavior_path_planner" plugin="behavior_path_planner::BehaviorPathPlannerNode" name="behavior_path_planner" namespace="">
+    <composable_node pkg="autoware_behavior_path_planner" plugin="autoware::behavior_path_planner::BehaviorPathPlannerNode" name="behavior_path_planner" namespace="">
       <!-- topic remap -->
       <remap from="~/input/route" to="$(var input_route_topic_name)"/>
       <remap from="~/input/vector_map" to="$(var input_vector_map_topic_name)"/>

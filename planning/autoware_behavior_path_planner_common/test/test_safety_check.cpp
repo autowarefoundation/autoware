@@ -27,8 +27,8 @@
 
 constexpr double epsilon = 1e-6;
 
+using autoware::behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 using autoware_perception_msgs::msg::Shape;
-using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
@@ -37,7 +37,7 @@ using tier4_autoware_utils::Polygon2d;
 
 TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
 {
-  using behavior_path_planner::utils::path_safety_checker::createExtendedPolygon;
+  using autoware::behavior_path_planner::utils::path_safety_checker::createExtendedPolygon;
 
   autoware::vehicle_info_utils::VehicleInfo vehicle_info;
   vehicle_info.max_longitudinal_offset_m = 4.0;
@@ -133,7 +133,7 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
 
 TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedObjPolygon)
 {
-  using behavior_path_planner::utils::path_safety_checker::createExtendedPolygon;
+  using autoware::behavior_path_planner::utils::path_safety_checker::createExtendedPolygon;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::createQuaternionFromYaw;
 
@@ -183,8 +183,8 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedObjPolygon)
 
 TEST(BehaviorPathPlanningSafetyUtilsTest, calcRssDistance)
 {
-  using behavior_path_planner::utils::path_safety_checker::calcRssDistance;
-  using behavior_path_planner::utils::path_safety_checker::RSSparams;
+  using autoware::behavior_path_planner::utils::path_safety_checker::calcRssDistance;
+  using autoware::behavior_path_planner::utils::path_safety_checker::RSSparams;
 
   {
     const double front_vel = 5.0;

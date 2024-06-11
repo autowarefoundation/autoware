@@ -25,7 +25,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 struct LateralAccelerationMap
 {
@@ -208,9 +208,9 @@ enum class LaneChangeModuleType {
   EXTERNAL_REQUEST,
   AVOIDANCE_BY_LANE_CHANGE,
 };
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
-namespace behavior_path_planner::data::lane_change
+namespace autoware::behavior_path_planner::data::lane_change
 {
 struct PathSafetyStatus
 {
@@ -224,6 +224,6 @@ struct LanesPolygon
   std::optional<lanelet::BasicPolygon2d> target;
   std::vector<lanelet::BasicPolygon2d> target_backward;
 };
-}  // namespace behavior_path_planner::data::lane_change
+}  // namespace autoware::behavior_path_planner::data::lane_change
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__DATA_STRUCTS_HPP_

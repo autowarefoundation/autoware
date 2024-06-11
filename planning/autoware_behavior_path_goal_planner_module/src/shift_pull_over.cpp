@@ -24,7 +24,7 @@
 #include <memory>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 ShiftPullOver::ShiftPullOver(
   rclcpp::Node & node, const GoalPlannerParameters & parameters,
@@ -324,4 +324,4 @@ double ShiftPullOver::calcBeforeShiftedArcLength(
 
   return before_arc_length;
 }
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner

@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner::utils::path_safety_checker::filter
+namespace autoware::behavior_path_planner::utils::path_safety_checker::filter
 {
 
 using autoware_perception_msgs::msg::PredictedObject;
@@ -42,9 +42,9 @@ bool position_filter(
   const geometry_msgs::msg::Point & current_pose, const double forward_distance,
   const double backward_distance);
 
-}  // namespace behavior_path_planner::utils::path_safety_checker::filter
+}  // namespace autoware::behavior_path_planner::utils::path_safety_checker::filter
 
-namespace behavior_path_planner::utils::path_safety_checker
+namespace autoware::behavior_path_planner::utils::path_safety_checker
 {
 
 using autoware_perception_msgs::msg::PredictedObject;
@@ -318,6 +318,6 @@ void filterObjects(std::vector<PredictedObject> & objects, Func filter)
   [[maybe_unused]] std::vector<PredictedObject> removed_objects{};
   filterObjects(objects, removed_objects, filter);
 }
-}  // namespace behavior_path_planner::utils::path_safety_checker
+}  // namespace autoware::behavior_path_planner::utils::path_safety_checker
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__PATH_SAFETY_CHECKER__OBJECTS_FILTERING_HPP_

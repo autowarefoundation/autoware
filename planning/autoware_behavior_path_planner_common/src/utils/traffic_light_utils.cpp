@@ -16,7 +16,7 @@
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <traffic_light_utils/traffic_light_utils.hpp>
 
-namespace behavior_path_planner::utils::traffic_light
+namespace autoware::behavior_path_planner::utils::traffic_light
 {
 using motion_utils::calcSignedArcLength;
 
@@ -147,4 +147,4 @@ bool isTrafficSignalStop(
   return false;
 }
 
-}  // namespace behavior_path_planner::utils::traffic_light
+}  // namespace autoware::behavior_path_planner::utils::traffic_light

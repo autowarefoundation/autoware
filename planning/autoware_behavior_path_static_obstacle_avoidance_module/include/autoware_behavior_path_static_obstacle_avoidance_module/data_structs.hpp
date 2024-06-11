@@ -32,11 +32,11 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
+using autoware::behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 using autoware::route_handler::Direction;
-using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 
 enum class ObjectInfo {
   NONE = 0,
@@ -671,6 +671,6 @@ struct DebugData
   AvoidanceDebugMsgArray avoidance_debug_msg_array;
 };
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__DATA_STRUCTS_HPP_

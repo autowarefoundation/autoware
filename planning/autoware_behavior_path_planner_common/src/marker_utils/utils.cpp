@@ -30,7 +30,7 @@
 
 namespace marker_utils
 {
-using behavior_path_planner::utils::calcPathArcLengthArray;
+using autoware::behavior_path_planner::utils::calcPathArcLengthArray;
 using std_msgs::msg::ColorRGBA;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::createDefaultMarker;
@@ -582,7 +582,7 @@ MarkerArray showFilteredObjects(
   const ExtendedPredictedObjects & predicted_objects, const std::string & ns,
   const ColorRGBA & color, int32_t id)
 {
-  using behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject;
+  using autoware::behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject;
   if (predicted_objects.empty()) {
     return MarkerArray{};
   }

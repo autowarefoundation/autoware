@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace autoware::behavior_path_planner
 {
 
 void SideShiftModuleManager::init(rclcpp::Node * node)
@@ -60,8 +60,9 @@ void SideShiftModuleManager::updateModuleParams(
   });
 }
 
-}  // namespace behavior_path_planner
+}  // namespace autoware::behavior_path_planner
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  behavior_path_planner::SideShiftModuleManager, behavior_path_planner::SceneModuleManagerInterface)
+  autoware::behavior_path_planner::SideShiftModuleManager,
+  autoware::behavior_path_planner::SceneModuleManagerInterface)
