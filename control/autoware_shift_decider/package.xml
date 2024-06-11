@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>shift_decider</name>
+  <name>autoware_shift_decider</name>
   <version>0.1.0</version>
-  <description>The shift_decider package</description>
+  <description>The autoware_shift_decider package</description>
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
   <license>Apache License 2.0</license>

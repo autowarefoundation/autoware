@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SHIFT_DECIDER__SHIFT_DECIDER_HPP_
-#define SHIFT_DECIDER__SHIFT_DECIDER_HPP_
+#ifndef AUTOWARE_SHIFT_DECIDER__AUTOWARE_SHIFT_DECIDER_HPP_
+#define AUTOWARE_SHIFT_DECIDER__AUTOWARE_SHIFT_DECIDER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -23,6 +23,9 @@
 #include <autoware_vehicle_msgs/msg/gear_report.hpp>
 
 #include <memory>
+
+namespace autoware::shift_decider
+{
 
 class ShiftDecider : public rclcpp::Node
 {
@@ -52,5 +55,6 @@ private:
 
   bool park_on_goal_;
 };
+}  // namespace autoware::shift_decider
 
-#endif  // SHIFT_DECIDER__SHIFT_DECIDER_HPP_
+#endif  // AUTOWARE_SHIFT_DECIDER__AUTOWARE_SHIFT_DECIDER_HPP_

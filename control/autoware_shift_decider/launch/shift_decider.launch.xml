@@ -1,7 +1,7 @@
 <launch>
-  <arg name="config_file" default="$(find-pkg-share shift_decider)/config/shift_decider.param.yaml"/>
+  <arg name="config_file" default="$(find-pkg-share autoware_shift_decider)/config/shift_decider.param.yaml"/>
 
-  <node pkg="shift_decider" exec="shift_decider" name="shift_decider" output="screen">
+  <node pkg="autoware_shift_decider" exec="autoware_shift_decider" name="autoware_shift_decider" output="screen">
     <remap from="input/control_cmd" to="/control/trajectory_follower/control_cmd"/>
     <remap from="input/state" to="/autoware/state"/>
     <remap from="output/gear_cmd" to="/control/shift_decider/gear_cmd"/>

@@ -122,9 +122,9 @@ def launch_setup(context, *args, **kwargs):
 
     # shift decider
     shift_decider_component = ComposableNode(
-        package="shift_decider",
-        plugin="ShiftDecider",
-        name="shift_decider",
+        package="autoware_shift_decider",
+        plugin="autoware::shift_decider::ShiftDecider",
+        name="autoware_shift_decider",
         remappings=[
             ("input/control_cmd", "/control/trajectory_follower/control_cmd"),
             ("input/state", "/autoware/state"),

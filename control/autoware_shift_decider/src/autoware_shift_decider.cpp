@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shift_decider/shift_decider.hpp"
+#include "autoware_shift_decider/autoware_shift_decider.hpp"
 
 #include <rclcpp/timer.hpp>
 
@@ -20,6 +20,9 @@
 #include <functional>
 #include <memory>
 #include <utility>
+
+namespace autoware::shift_decider
+{
 
 ShiftDecider::ShiftDecider(const rclcpp::NodeOptions & node_options)
 : Node("shift_decider", node_options)
@@ -104,6 +107,7 @@ void ShiftDecider::initTimer(double period_s)
   timer_ =
     rclcpp::create_timer(this, get_clock(), period_ns, std::bind(&ShiftDecider::onTimer, this));
 }
+}  // namespace autoware::shift_decider
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(ShiftDecider)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::shift_decider::ShiftDecider)
