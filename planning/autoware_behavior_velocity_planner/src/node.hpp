@@ -17,6 +17,7 @@
 
 #include "planner_manager.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
+#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
 #include <autoware_behavior_velocity_planner/srv/load_plugin.hpp>
 #include <autoware_behavior_velocity_planner/srv/unload_plugin.hpp>
@@ -64,33 +65,46 @@ private:
   // subscriber
   rclcpp::Subscription<tier4_planning_msgs::msg::PathWithLaneId>::SharedPtr
     trigger_sub_path_with_lane_id_;
-  rclcpp::Subscription<autoware_perception_msgs::msg::PredictedObjects>::SharedPtr
-    sub_predicted_objects_;
-  rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_no_ground_pointcloud_;
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_vehicle_odometry_;
-  rclcpp::Subscription<geometry_msgs::msg::AccelWithCovarianceStamped>::SharedPtr sub_acceleration_;
   rclcpp::Subscription<autoware_map_msgs::msg::LaneletMapBin>::SharedPtr sub_lanelet_map_;
-  rclcpp::Subscription<autoware_perception_msgs::msg::TrafficLightGroupArray>::SharedPtr
-    sub_traffic_signals_;
-  rclcpp::Subscription<tier4_v2x_msgs::msg::VirtualTrafficLightStateArray>::SharedPtr
-    sub_virtual_traffic_light_states_;
-  rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr sub_occupancy_grid_;
   rclcpp::Subscription<VelocityLimit>::SharedPtr sub_external_velocity_limit_;
 
+  // polling subscribers
+  tier4_autoware_utils::InterProcessPollingSubscriber<
+    autoware_perception_msgs::msg::PredictedObjects>
+    sub_predicted_objects_{this, "~/input/dynamic_objects"};
+
+  tier4_autoware_utils::InterProcessPollingSubscriber<sensor_msgs::msg::PointCloud2>
+    sub_no_ground_pointcloud_{this, "~/input/no_ground_pointcloud"};
+
+  tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry>
+    sub_vehicle_odometry_{this, "~/input/vehicle_odometry"};
+
+  tier4_autoware_utils::InterProcessPollingSubscriber<
+    geometry_msgs::msg::AccelWithCovarianceStamped>
+    sub_acceleration_{this, "~/input/accel"};
+
+  tier4_autoware_utils::InterProcessPollingSubscriber<
+    autoware_perception_msgs::msg::TrafficLightGroupArray>
+    sub_traffic_signals_{this, "~/input/traffic_signals"};
+
+  tier4_autoware_utils::InterProcessPollingSubscriber<
+    tier4_v2x_msgs::msg::VirtualTrafficLightStateArray>
+    sub_virtual_traffic_light_states_{this, "~/input/virtual_traffic_light_states"};
+
+  tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::OccupancyGrid>
+    sub_occupancy_grid_{this, "~/input/occupancy_grid"};
+
   void onTrigger(const tier4_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg);
-  void onPredictedObjects(
-    const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr msg);
-  void onNoGroundPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
-  void onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
-  void onAcceleration(const geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr msg);
-  void onLaneletMap(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg);
-  void onTrafficSignals(
-    const autoware_perception_msgs::msg::TrafficLightGroupArray::ConstSharedPtr msg);
-  void onVirtualTrafficLightStates(
-    const tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr msg);
-  void onOccupancyGrid(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg);
-  void onExternalVelocityLimit(const VelocityLimit::ConstSharedPtr msg);
+
   void onParam();
+  void onLaneletMap(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg);
+  void onExternalVelocityLimit(const VelocityLimit::ConstSharedPtr msg);
+
+  void processNoGroundPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
+  void processOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
+  void processTrafficSignals(
+    const autoware_perception_msgs::msg::TrafficLightGroupArray::ConstSharedPtr msg);
+  bool processData(rclcpp::Clock clock);
 
   // publisher
   rclcpp::Publisher<autoware_planning_msgs::msg::Path>::SharedPtr path_pub_;
@@ -123,8 +137,7 @@ private:
   std::mutex mutex_;
 
   // function
-  geometry_msgs::msg::PoseStamped getCurrentPose();
-  bool isDataReady(const PlannerData planner_data, rclcpp::Clock clock) const;
+  bool isDataReady(rclcpp::Clock clock);
   autoware_planning_msgs::msg::Path generatePath(
     const tier4_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg,
     const PlannerData & planner_data);
@@ -132,6 +145,8 @@ private:
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 
   std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+
+  static constexpr int logger_throttle_interval = 3000;
 };
 }  // namespace autoware::behavior_velocity_planner
 

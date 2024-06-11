@@ -84,41 +84,13 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
       createSubscriptionOptions(this));
 
   // Subscribers
-  sub_predicted_objects_ =
-    this->create_subscription<autoware_perception_msgs::msg::PredictedObjects>(
-      "~/input/dynamic_objects", 1,
-      std::bind(&BehaviorVelocityPlannerNode::onPredictedObjects, this, _1),
-      createSubscriptionOptions(this));
-  sub_no_ground_pointcloud_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-    "~/input/no_ground_pointcloud", rclcpp::SensorDataQoS(),
-    std::bind(&BehaviorVelocityPlannerNode::onNoGroundPointCloud, this, _1),
-    createSubscriptionOptions(this));
-  sub_vehicle_odometry_ = this->create_subscription<nav_msgs::msg::Odometry>(
-    "~/input/vehicle_odometry", 1, std::bind(&BehaviorVelocityPlannerNode::onOdometry, this, _1),
-    createSubscriptionOptions(this));
-  sub_acceleration_ = this->create_subscription<geometry_msgs::msg::AccelWithCovarianceStamped>(
-    "~/input/accel", 1, std::bind(&BehaviorVelocityPlannerNode::onAcceleration, this, _1),
-    createSubscriptionOptions(this));
   sub_lanelet_map_ = this->create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
     "~/input/vector_map", rclcpp::QoS(10).transient_local(),
     std::bind(&BehaviorVelocityPlannerNode::onLaneletMap, this, _1),
     createSubscriptionOptions(this));
-  sub_traffic_signals_ =
-    this->create_subscription<autoware_perception_msgs::msg::TrafficLightGroupArray>(
-      "~/input/traffic_signals", 1,
-      std::bind(&BehaviorVelocityPlannerNode::onTrafficSignals, this, _1),
-      createSubscriptionOptions(this));
   sub_external_velocity_limit_ = this->create_subscription<VelocityLimit>(
     "~/input/external_velocity_limit_mps", rclcpp::QoS{1}.transient_local(),
     std::bind(&BehaviorVelocityPlannerNode::onExternalVelocityLimit, this, _1));
-  sub_virtual_traffic_light_states_ =
-    this->create_subscription<tier4_v2x_msgs::msg::VirtualTrafficLightStateArray>(
-      "~/input/virtual_traffic_light_states", 1,
-      std::bind(&BehaviorVelocityPlannerNode::onVirtualTrafficLightStates, this, _1),
-      createSubscriptionOptions(this));
-  sub_occupancy_grid_ = this->create_subscription<nav_msgs::msg::OccupancyGrid>(
-    "~/input/occupancy_grid", 1, std::bind(&BehaviorVelocityPlannerNode::onOccupancyGrid, this, _1),
-    createSubscriptionOptions(this));
 
   srv_load_plugin_ = create_service<LoadPlugin>(
     "~/service/load_plugin", std::bind(&BehaviorVelocityPlannerNode::onLoadPlugin, this, _1, _2));
@@ -178,66 +150,32 @@ void BehaviorVelocityPlannerNode::onUnloadPlugin(
   planner_manager_.removeScenePlugin(*this, request->plugin_name);
 }
 
-// NOTE: argument planner_data must not be referenced for multithreading
-bool BehaviorVelocityPlannerNode::isDataReady(
-  const PlannerData planner_data, rclcpp::Clock clock) const
+void BehaviorVelocityPlannerNode::onParam()
 {
-  const auto & d = planner_data;
-
-  // from callbacks
-  if (!d.current_odometry) {
-    RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Waiting for current odometry");
-    return false;
-  }
-
-  if (!d.current_velocity) {
-    RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Waiting for current velocity");
-    return false;
-  }
-  if (!d.current_acceleration) {
-    RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Waiting for current acceleration");
-    return false;
-  }
-  if (!d.predicted_objects) {
-    RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Waiting for predicted_objects");
-    return false;
-  }
-  if (!d.no_ground_pointcloud) {
-    RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Waiting for pointcloud");
-    return false;
-  }
-  if (!map_ptr_) {
-    RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Waiting for the initialization of map");
-    return false;
-  }
-  if (!d.velocity_smoother_) {
-    RCLCPP_INFO_THROTTLE(
-      get_logger(), clock, 3000, "Waiting for the initialization of velocity smoother");
-    return false;
-  }
-  if (!d.occupancy_grid) {
-    RCLCPP_INFO_THROTTLE(
-      get_logger(), clock, 3000, "Waiting for the initialization of occupancy grid map");
-    return false;
-  }
-  return true;
+  // Note(VRichardJP): mutex lock is not necessary as onParam is only called once in the
+  // constructed. It would be required if it was a callback. std::lock_guard<std::mutex>
+  // lock(mutex_);
+  planner_data_.velocity_smoother_ =
+    std::make_unique<autoware::velocity_smoother::AnalyticalJerkConstrainedSmoother>(*this);
+  planner_data_.velocity_smoother_->setWheelBase(planner_data_.vehicle_info_.wheel_base_m);
 }
 
-void BehaviorVelocityPlannerNode::onOccupancyGrid(
-  const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg)
+void BehaviorVelocityPlannerNode::onLaneletMap(
+  const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg)
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  planner_data_.occupancy_grid = msg;
+
+  map_ptr_ = msg;
+  has_received_map_ = true;
 }
 
-void BehaviorVelocityPlannerNode::onPredictedObjects(
-  const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr msg)
+void BehaviorVelocityPlannerNode::onExternalVelocityLimit(const VelocityLimit::ConstSharedPtr msg)
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  planner_data_.predicted_objects = msg;
+  planner_data_.external_velocity_limit = *msg;
 }
 
-void BehaviorVelocityPlannerNode::onNoGroundPointCloud(
+void BehaviorVelocityPlannerNode::processNoGroundPointCloud(
   const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
 {
   geometry_msgs::msg::TransformStamped transform;
@@ -258,16 +196,11 @@ void BehaviorVelocityPlannerNode::onNoGroundPointCloud(
     tier4_autoware_utils::transformPointCloud(pc, *pc_transformed, affine);
   }
 
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
-    planner_data_.no_ground_pointcloud = pc_transformed;
-  }
+  planner_data_.no_ground_pointcloud = pc_transformed;
 }
 
-void BehaviorVelocityPlannerNode::onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
+void BehaviorVelocityPlannerNode::processOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
 {
-  std::lock_guard<std::mutex> lock(mutex_);
-
   auto current_odometry = std::make_shared<geometry_msgs::msg::PoseStamped>();
   current_odometry->header = msg->header;
   current_odometry->pose = msg->pose.pose;
@@ -297,37 +230,9 @@ void BehaviorVelocityPlannerNode::onOdometry(const nav_msgs::msg::Odometry::Cons
   }
 }
 
-void BehaviorVelocityPlannerNode::onAcceleration(
-  const geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr msg)
-{
-  std::lock_guard<std::mutex> lock(mutex_);
-  planner_data_.current_acceleration = msg;
-}
-
-void BehaviorVelocityPlannerNode::onParam()
-{
-  // Note(VRichardJP): mutex lock is not necessary as onParam is only called once in the
-  // constructed. It would be required if it was a callback. std::lock_guard<std::mutex>
-  // lock(mutex_);
-  planner_data_.velocity_smoother_ =
-    std::make_unique<autoware::velocity_smoother::AnalyticalJerkConstrainedSmoother>(*this);
-  planner_data_.velocity_smoother_->setWheelBase(planner_data_.vehicle_info_.wheel_base_m);
-}
-
-void BehaviorVelocityPlannerNode::onLaneletMap(
-  const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg)
-{
-  std::lock_guard<std::mutex> lock(mutex_);
-
-  map_ptr_ = msg;
-  has_received_map_ = true;
-}
-
-void BehaviorVelocityPlannerNode::onTrafficSignals(
+void BehaviorVelocityPlannerNode::processTrafficSignals(
   const autoware_perception_msgs::msg::TrafficLightGroupArray::ConstSharedPtr msg)
 {
-  std::lock_guard<std::mutex> lock(mutex_);
-
   // clear previous observation
   planner_data_.traffic_light_id_map_raw_.clear();
   const auto traffic_light_id_map_last_observed_old =
@@ -361,17 +266,70 @@ void BehaviorVelocityPlannerNode::onTrafficSignals(
   }
 }
 
-void BehaviorVelocityPlannerNode::onExternalVelocityLimit(const VelocityLimit::ConstSharedPtr msg)
+bool BehaviorVelocityPlannerNode::processData(rclcpp::Clock clock)
 {
-  std::lock_guard<std::mutex> lock(mutex_);
-  planner_data_.external_velocity_limit = *msg;
+  bool is_ready = true;
+  const auto & logData = [&clock, this](const std::string & data_type) {
+    std::string msg = "Waiting for " + data_type + " data";
+    RCLCPP_INFO_THROTTLE(get_logger(), clock, logger_throttle_interval, msg.c_str());
+  };
+
+  const auto & getData = [&logData](auto & dest, auto & sub, const std::string & data_type = "") {
+    const auto temp = sub.takeData();
+    if (temp) {
+      dest = temp;
+      return true;
+    }
+    if (!data_type.empty()) logData(data_type);
+    return false;
+  };
+
+  is_ready &= getData(planner_data_.current_acceleration, sub_acceleration_, "acceleration");
+  is_ready &= getData(planner_data_.predicted_objects, sub_predicted_objects_, "predicted_objects");
+  is_ready &= getData(planner_data_.occupancy_grid, sub_occupancy_grid_, "occupancy_grid");
+
+  const auto odometry = sub_vehicle_odometry_.takeData();
+  if (odometry) {
+    processOdometry(odometry);
+  } else {
+    logData("odometry");
+    is_ready = false;
+  }
+
+  const auto no_ground_pointcloud = sub_no_ground_pointcloud_.takeData();
+  if (no_ground_pointcloud) {
+    processNoGroundPointCloud(no_ground_pointcloud);
+  } else {
+    logData("pointcloud");
+    is_ready = false;
+  }
+
+  // optional data
+  getData(planner_data_.virtual_traffic_light_states, sub_virtual_traffic_light_states_);
+
+  const auto traffic_signals = sub_traffic_signals_.takeData();
+  if (traffic_signals) processTrafficSignals(traffic_signals);
+
+  return is_ready;
 }
 
-void BehaviorVelocityPlannerNode::onVirtualTrafficLightStates(
-  const tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr msg)
+// NOTE: argument planner_data must not be referenced for multithreading
+bool BehaviorVelocityPlannerNode::isDataReady(rclcpp::Clock clock)
 {
-  std::lock_guard<std::mutex> lock(mutex_);
-  planner_data_.virtual_traffic_light_states = msg;
+  if (!planner_data_.velocity_smoother_) {
+    RCLCPP_INFO_THROTTLE(
+      get_logger(), clock, logger_throttle_interval,
+      "Waiting for the initialization of velocity smoother");
+    return false;
+  }
+
+  if (!map_ptr_) {
+    RCLCPP_INFO_THROTTLE(
+      get_logger(), clock, logger_throttle_interval, "Waiting for lanelet_map data");
+    return false;
+  }
+
+  return processData(clock);
 }
 
 void BehaviorVelocityPlannerNode::onTrigger(
@@ -379,7 +337,7 @@ void BehaviorVelocityPlannerNode::onTrigger(
 {
   std::unique_lock<std::mutex> lk(mutex_);
 
-  if (!isDataReady(planner_data_, *get_clock())) {
+  if (!isDataReady(*get_clock())) {
     return;
   }
 
@@ -390,7 +348,8 @@ void BehaviorVelocityPlannerNode::onTrigger(
   }
   if (!planner_data_.route_handler_) {
     RCLCPP_INFO_THROTTLE(
-      get_logger(), *get_clock(), 3000, "Waiting for the initialization of route_handler");
+      get_logger(), *get_clock(), logger_throttle_interval,
+      "Waiting for the initialization of route_handler");
     return;
   }
 
@@ -423,7 +382,7 @@ autoware_planning_msgs::msg::Path BehaviorVelocityPlannerNode::generatePath(
   is_driving_forward_ = is_driving_forward ? is_driving_forward.value() : is_driving_forward_;
   if (!is_driving_forward_) {
     RCLCPP_WARN_THROTTLE(
-      get_logger(), *get_clock(), 3000,
+      get_logger(), *get_clock(), logger_throttle_interval,
       "Backward path is NOT supported. just converting path_with_lane_id to path");
     output_path_msg = to_path(*input_path_msg);
     output_path_msg.header.frame_id = "map";
