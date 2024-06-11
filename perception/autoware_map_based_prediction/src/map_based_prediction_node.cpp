@@ -854,9 +854,6 @@ MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_
   sub_map_ = this->create_subscription<LaneletMapBin>(
     "/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&MapBasedPredictionNode::mapCallback, this, std::placeholders::_1));
-  sub_traffic_signals_ = this->create_subscription<TrafficLightGroupArray>(
-    "/traffic_signals", 1,
-    std::bind(&MapBasedPredictionNode::trafficSignalsCallback, this, std::placeholders::_1));
 
   pub_objects_ = this->create_publisher<PredictedObjects>("~/output/objects", rclcpp::QoS{1});
   pub_debug_markers_ =
@@ -948,6 +945,15 @@ void MapBasedPredictionNode::trafficSignalsCallback(
 void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPtr in_objects)
 {
   stop_watch_ptr_->toc("processing_time", true);
+
+  // take traffic_signal
+  {
+    const auto msg = sub_traffic_signals_.takeData();
+    if (msg) {
+      trafficSignalsCallback(msg);
+    }
+  }
+
   // Guard for map pointer and frame transformation
   if (!lanelet_map_ptr_) {
     return;
