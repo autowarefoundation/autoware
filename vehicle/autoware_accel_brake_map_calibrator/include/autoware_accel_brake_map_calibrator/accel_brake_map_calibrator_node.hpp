@@ -23,6 +23,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
+#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 #include "tier4_autoware_utils/ros/transform_listener.hpp"
 
 #include <Eigen/Dense>
@@ -55,13 +56,12 @@
 
 namespace autoware::accel_brake_map_calibrator
 {
-
-using autoware::raw_vehicle_cmd_converter::AccelMap;
-using autoware::raw_vehicle_cmd_converter::BrakeMap;
 using autoware_vehicle_msgs::msg::SteeringReport;
 using autoware_vehicle_msgs::msg::VelocityReport;
 using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::OccupancyGrid;
+using raw_vehicle_cmd_converter::AccelMap;
+using raw_vehicle_cmd_converter::BrakeMap;
 using std_msgs::msg::Float32MultiArray;
 using tier4_debug_msgs::msg::Float32MultiArrayStamped;
 using tier4_debug_msgs::msg::Float32Stamped;
@@ -107,18 +107,22 @@ private:
   rclcpp::Publisher<Float32Stamped>::SharedPtr map_error_ratio_pub_;
   rclcpp::Publisher<CalibrationStatus>::SharedPtr calibration_status_pub_;
 
-  rclcpp::Subscription<VelocityReport>::SharedPtr velocity_sub_;
-  rclcpp::Subscription<SteeringReport>::SharedPtr steer_sub_;
-  rclcpp::Subscription<ActuationStatusStamped>::SharedPtr actuation_status_sub_;
-  rclcpp::Subscription<ActuationCommandStamped>::SharedPtr actuation_cmd_sub_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<SteeringReport> steer_sub_{
+    this, "~/input/steer"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<ActuationStatusStamped> actuation_status_sub_{
+    this, "~/input/actuation_status"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<ActuationCommandStamped> actuation_cmd_sub_{
+    this, "~/input/actuation_cmd"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<VelocityReport> velocity_sub_{
+    this, "~/input/velocity"};
 
   // Service
   rclcpp::Service<UpdateAccelBrakeMap>::SharedPtr update_map_dir_server_;
 
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::TimerBase::SharedPtr timer_output_csv_;
-  void initTimer(double period_s);
-  void initOutputCSVTimer(double period_s);
+  void init_timer(double period_s);
+  void init_output_csv_timer(double period_s);
 
   TwistStamped::ConstSharedPtr twist_ptr_;
   std::vector<std::shared_ptr<TwistStamped>> twist_vec_;
@@ -229,79 +233,79 @@ private:
 
   // output log
   std::ofstream output_log_;
-
-  bool getCurrentPitchFromTF(double * pitch);
-  void timerCallback();
-  void timerCallbackOutputCSV();
-  void executeUpdate(
+  void fetch_data();
+  bool get_current_pitch_from_tf(double * pitch);
+  bool take_data();
+  void timer_callback_output_csv();
+  void execute_update(
     const bool accel_mode, const int accel_pedal_index, const int accel_vel_index,
     const int brake_pedal_index, const int brake_vel_index);
-  bool updateFourCellAroundOffset(
+  bool update_four_cell_around_offset(
     const bool accel_mode, const int accel_pedal_index, const int accel_vel_index,
     const int brake_pedal_index, const int brake_vel_index, const double measured_acc);
-  bool updateEachValOffset(
+  bool update_each_val_offset(
     const bool accel_mode, const int accel_pedal_index, const int accel_vel_index,
     const int brake_pedal_index, const int brake_vel_index, const double measured_acc,
     const double map_acc);
-  void updateTotalMapOffset(const double measured_acc, const double map_acc);
-  void callbackActuation(
-    const std_msgs::msg::Header header, const double accel, const double brake);
-  void callbackActuationCommand(const ActuationCommandStamped::ConstSharedPtr msg);
-  void callbackActuationStatus(const ActuationStatusStamped::ConstSharedPtr msg);
-  void callbackVelocity(const VelocityReport::ConstSharedPtr msg);
-  void callbackSteer(const SteeringReport::ConstSharedPtr msg);
-  bool callbackUpdateMapService(
+  void update_total_map_offset(const double measured_acc, const double map_acc);
+
+  void take_actuation(const std_msgs::msg::Header & header, const double accel, const double brake);
+  void take_actuation_command(const ActuationCommandStamped::ConstSharedPtr msg);
+  void take_actuation_status(const ActuationStatusStamped::ConstSharedPtr msg);
+  void take_velocity(const VelocityReport::ConstSharedPtr msg);
+
+  bool callback_update_map_service(
     const std::shared_ptr<rmw_request_id_t> request_header,
     UpdateAccelBrakeMap::Request::SharedPtr req, UpdateAccelBrakeMap::Response::SharedPtr res);
-  bool getAccFromMap(const double velocity, const double pedal);
-  double lowpass(const double original, const double current, const double gain = 0.8);
-  double getPedalSpeed(
+  bool get_acc_from_map(const double velocity, const double pedal);
+  static double lowpass(const double original, const double current, const double gain = 0.8);
+  static double get_pedal_speed(
     const DataStampedPtr & prev_pedal, const DataStampedPtr & current_pedal,
     const double prev_pedal_speed);
-  double getAccel(
+  double get_accel(
     const TwistStamped::ConstSharedPtr & prev_twist,
-    const TwistStamped::ConstSharedPtr & current_twist);
-  double getJerk();
-  bool indexValueSearch(
-    const std::vector<double> value_index, const double value, const double value_thresh,
-    int * searched_index);
-  int nearestValueSearch(const std::vector<double> value_index, const double value);
-  int nearestPedalSearch();
-  int nearestVelSearch();
-  void takeConsistencyOfAccelMap();
-  void takeConsistencyOfBrakeMap();
-  bool updateAccelBrakeMap();
-  void publishFloat32(const std::string publish_type, const double val);
-  void publishUpdateSuggestFlag();
-  double getPitchCompensatedAcceleration();
-  void executeEvaluation();
-  double calculateEstimatedAcc(
+    const TwistStamped::ConstSharedPtr & current_twist) const;
+  double get_jerk();
+  bool index_value_search(
+    const std::vector<double> & value_index, const double value, const double value_thresh,
+    int * searched_index) const;
+  static int nearest_value_search(const std::vector<double> & value_index, const double value);
+  int nearest_pedal_search();
+  int nearest_vel_search();
+  void take_consistency_of_accel_map();
+  void take_consistency_of_brake_map();
+  bool update_accel_brake_map();
+  void publish_float32(const std::string & publish_type, const double val);
+  void publish_update_suggest_flag();
+  double get_pitch_compensated_acceleration() const;
+  void execute_evaluation();
+  static double calculate_estimated_acc(
     const double throttle, const double brake, const double vel, AccelMap & accel_map,
     BrakeMap & brake_map);
-  double calculateAccelSquaredError(
+  double calculate_accel_squared_error(
     const double throttle, const double brake, const double vel, AccelMap & accel_map,
     BrakeMap & brake_map);
-  double calculateAccelErrorL1Norm(
+  double calculate_accel_error_l1_norm(
     const double throttle, const double brake, const double vel, AccelMap & accel_map,
     BrakeMap & brake_map);
-  std::vector<double> getMapColumnFromUnifiedIndex(
+  static std::vector<double> get_map_column_from_unified_index(
     const Map & accel_map_value, const Map & brake_map_value, const std::size_t index);
-  double getPedalValueFromUnifiedIndex(const std::size_t index);
-  int getUnifiedIndexFromAccelBrakeIndex(const bool accel_map, const std::size_t index);
-  void pushDataToQue(
+  double get_pedal_value_from_unified_index(const std::size_t index);
+  int get_unified_index_from_accel_brake_index(const bool accel_map, const std::size_t index);
+  static void push_data_to_que(
     const TwistStamped::ConstSharedPtr & data, const std::size_t max_size,
     std::queue<TwistStamped::ConstSharedPtr> * que);
   template <class T>
-  void pushDataToVec(const T data, const std::size_t max_size, std::vector<T> * vec);
+  void push_data_to_vec(const T data, const std::size_t max_size, std::vector<T> * vec);
   template <class T>
-  T getNearestTimeDataFromVec(
+  static T get_nearest_time_data_from_vec(
     const T base_data, const double back_time, const std::vector<T> & vec);
-  DataStampedPtr getNearestTimeDataFromVec(
+  DataStampedPtr get_nearest_time_data_from_vec(
     DataStampedPtr base_data, const double back_time, const std::vector<DataStampedPtr> & vec);
-  double getAverage(const std::vector<double> & vec);
-  double getStandardDeviation(const std::vector<double> & vec);
-  bool isTimeout(const builtin_interfaces::msg::Time & stamp, const double timeout_sec);
-  bool isTimeout(const DataStampedPtr & data_stamped, const double timeout_sec);
+  static double get_average(const std::vector<double> & vec);
+  double get_standard_deviation(const std::vector<double> & vec);
+  bool is_timeout(const builtin_interfaces::msg::Time & stamp, const double timeout_sec);
+  bool is_timeout(const DataStampedPtr & data_stamped, const double timeout_sec);
 
   /* for covariance calculation */
   // mean value on each cell (counting method depends on the update algorithm)
@@ -314,24 +318,24 @@ private:
   Eigen::MatrixXd accel_data_num_;
   Eigen::MatrixXd brake_data_num_;
 
-  OccupancyGrid getOccMsg(
-    const std::string frame_id, const double height, const double width, const double resolution,
+  OccupancyGrid get_occ_msg(
+    const std::string & frame_id, const double height, const double width, const double resolution,
     const std::vector<int8_t> & map_value);
 
   /* Diag*/
-  void checkUpdateSuggest(diagnostic_updater::DiagnosticStatusWrapper & stat);
+  void check_update_suggest(diagnostic_updater::DiagnosticStatusWrapper & stat);
 
   /* Debug */
-  void publishMap(
-    const Map accel_map_value, const Map brake_map_value, const std::string publish_type);
-  void publishOffsetCovMap(const Map accel_map_value, const Map brake_map_value);
-  void publishCountMap();
-  void publishIndex();
-  bool writeMapToCSV(
+  void publish_map(
+    const Map & accel_map_value, const Map & brake_map_value, const std::string & publish_type);
+  void publish_offset_cov_map(const Map accel_map_value, const Map brake_map_value);
+  void publish_count_map();
+  void publish_index();
+  bool write_map_to_csv(
     std::vector<double> vel_index, std::vector<double> pedal_index, Map value_map,
     std::string filename);
-  void addIndexToCSV(std::ofstream * csv_file);
-  void addLogToCSV(
+  static void add_index_to_csv(std::ofstream * csv_file);
+  static void add_log_to_csv(
     std::ofstream * csv_file, const double & timestamp, const double velocity, const double accel,
     const double pitched_accel, const double accel_pedal, const double brake_pedal,
     const double accel_pedal_speed, const double brake_pedal_speed, const double pitch,
