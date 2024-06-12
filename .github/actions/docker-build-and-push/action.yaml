@@ -22,9 +22,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Setup Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
     - name: Install jq and vcstool
       run: |
         sudo apt-get -y update
@@ -59,7 +56,7 @@ runs:
 
     - name: Docker meta for prebuilt
       id: meta-prebuilt
-      uses: docker/metadata-action@v4
+      uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.actor }}/${{ inputs.bake-target }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
@@ -70,7 +67,7 @@ runs:
 
     - name: Docker meta for devel
       id: meta-devel
-      uses: docker/metadata-action@v4
+      uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.actor }}/${{ inputs.bake-target }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
@@ -82,7 +79,7 @@ runs:
     - name: Docker meta for runtime
       if: ${{ github.event_name == 'workflow_dispatch' }} || ${{ (github.event_name == 'push' && github.ref_type == 'tag') }}
       id: meta-runtime
-      uses: docker/metadata-action@v4
+      uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.actor }}/${{ inputs.bake-target }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
@@ -100,7 +97,7 @@ runs:
 
     - name: Build and Push to GitHub Container Registry
       if: ${{ github.event_name == 'push' || github.event_name == 'schedule' || ( github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
-      uses: docker/bake-action@v3
+      uses: docker/bake-action@v4
       with:
         push: ${{ inputs.allow-push == 'true' }}
         files: |
@@ -113,7 +110,7 @@ runs:
           ${{ inputs.build-args }}
 
     - name: Build only
-      uses: docker/bake-action@v3
+      uses: docker/bake-action@v4
       with:
         push: false
         files: |
