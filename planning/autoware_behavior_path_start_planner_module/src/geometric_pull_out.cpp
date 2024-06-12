@@ -41,7 +41,8 @@ GeometricPullOut::GeometricPullOut(
   planner_.setParameters(parallel_parking_parameters_);
 }
 
-std::optional<PullOutPath> GeometricPullOut::plan(const Pose & start_pose, const Pose & goal_pose)
+std::optional<PullOutPath> GeometricPullOut::plan(
+  const Pose & start_pose, const Pose & goal_pose, PlannerDebugData & planner_debug_data)
 {
   PullOutPath output;
 
@@ -62,6 +63,7 @@ std::optional<PullOutPath> GeometricPullOut::plan(const Pose & start_pose, const
   const bool found_valid_path = planner_.planPullOut(
     start_pose, goal_pose, road_lanes, pull_out_lanes, left_side_start, lane_departure_checker_);
   if (!found_valid_path) {
+    planner_debug_data.conditions_evaluation.emplace_back("no path found");
     return {};
   }
 
@@ -116,9 +118,11 @@ std::optional<PullOutPath> GeometricPullOut::plan(const Pose & start_pose, const
   output.end_pose = planner_.getArcPaths().at(1).points.back().point.pose;
 
   if (isPullOutPathCollided(output, parameters_.geometric_collision_check_distance_from_end)) {
+    planner_debug_data.conditions_evaluation.emplace_back("collision");
     return {};
   }
 
+  planner_debug_data.conditions_evaluation.emplace_back("success");
   return output;
 }
 }  // namespace autoware::behavior_path_planner

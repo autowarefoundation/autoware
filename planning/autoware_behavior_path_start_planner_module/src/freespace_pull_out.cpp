@@ -45,7 +45,8 @@ FreespacePullOut::FreespacePullOut(
   }
 }
 
-std::optional<PullOutPath> FreespacePullOut::plan(const Pose & start_pose, const Pose & end_pose)
+std::optional<PullOutPath> FreespacePullOut::plan(
+  const Pose & start_pose, const Pose & end_pose, PlannerDebugData & planner_debug_data)
 {
   const auto & route_handler = planner_data_->route_handler;
   const double backward_path_length = planner_data_->parameters.backward_path_length;
@@ -55,6 +56,7 @@ std::optional<PullOutPath> FreespacePullOut::plan(const Pose & start_pose, const
 
   const bool found_path = planner_->makePlan(start_pose, end_pose);
   if (!found_path) {
+    planner_debug_data.conditions_evaluation.emplace_back("no path found");
     return {};
   }
 
@@ -113,6 +115,7 @@ std::optional<PullOutPath> FreespacePullOut::plan(const Pose & start_pose, const
   pull_out_path.start_pose = start_pose;
   pull_out_path.end_pose = end_pose;
 
+  planner_debug_data.conditions_evaluation.emplace_back("success");
   return pull_out_path;
 }
 }  // namespace autoware::behavior_path_planner

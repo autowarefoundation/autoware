@@ -22,6 +22,7 @@
 #include <autoware_freespace_planning_algorithms/abstract_algorithm.hpp>
 #include <autoware_freespace_planning_algorithms/astar_search.hpp>
 #include <autoware_freespace_planning_algorithms/rrtstar.hpp>
+#include <magic_enum.hpp>
 
 #include <string>
 #include <vector>
@@ -38,6 +39,43 @@ using autoware::freespace_planning_algorithms::AstarParam;
 using autoware::freespace_planning_algorithms::PlannerCommonParam;
 using autoware::freespace_planning_algorithms::RRTStarParam;
 
+enum class PlannerType {
+  NONE = 0,
+  SHIFT = 1,
+  GEOMETRIC = 2,
+  STOP = 3,
+  FREESPACE = 4,
+};
+
+struct PlannerDebugData
+{
+public:
+  PlannerType planner_type;
+  std::vector<std::string> conditions_evaluation;
+  double required_margin{0.0};
+  double backward_distance{0.0};
+
+  auto header_str() const
+  {
+    std::stringstream ss;
+    ss << std::left << std::setw(20) << "| Planner type " << std::setw(20) << "| Required margin "
+       << std::setw(20) << "| Backward distance " << std::setw(25) << "| Condition evaluation |"
+       << "\n";
+    return ss.str();
+  }
+
+  auto str() const
+  {
+    std::stringstream ss;
+    for (const auto & result : conditions_evaluation) {
+      ss << std::left << std::setw(23) << magic_enum::enum_name(planner_type) << std::setw(23)
+         << (std::to_string(required_margin) + "[m]") << std::setw(23)
+         << (std::to_string(backward_distance) + "[m]") << std::setw(25) << result << "\n";
+    }
+    ss << std::setw(40);
+    return ss.str();
+  }
+};
 struct StartPlannerDebugData
 {
   // filtered objects

@@ -37,7 +37,9 @@ public:
     std::shared_ptr<LaneDepartureChecker> & lane_departure_checker);
 
   PlannerType getPlannerType() const override { return PlannerType::SHIFT; };
-  std::optional<PullOutPath> plan(const Pose & start_pose, const Pose & goal_pose) override;
+  std::optional<PullOutPath> plan(
+    const Pose & start_pose, const Pose & goal_pose,
+    PlannerDebugData & planner_debug_data) override;
 
   std::vector<PullOutPath> calcPullOutPaths(
     const RouteHandler & route_handler, const lanelet::ConstLanelets & road_lanes,
