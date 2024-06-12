@@ -198,8 +198,12 @@ public:
 
       const auto nearest_idx = motion_utils::findNearestIndex(path, nearest_collision_point);
       const auto & nearest_path_pose = path.at(nearest_idx);
-      const auto & traj_yaw = tf2::getYaw(nearest_path_pose.orientation);
-      const auto estimated_velocity = p_vel * std::cos(p_yaw - traj_yaw) + current_ego_speed;
+      // When the ego moves backwards, the direction of movement axis is reversed
+      const auto & traj_yaw = (current_ego_speed > 0.0)
+                                ? tf2::getYaw(nearest_path_pose.orientation)
+                                : tf2::getYaw(nearest_path_pose.orientation) + M_PI;
+      const auto estimated_velocity =
+        p_vel * std::cos(p_yaw - traj_yaw) + std::abs(current_ego_speed);
 
       // Current RSS distance calculation does not account for negative velocities
       return (estimated_velocity > 0.0) ? estimated_velocity : 0.0;

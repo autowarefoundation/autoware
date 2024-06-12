@@ -364,8 +364,9 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
   }
 
   // step2. create velocity data check if the vehicle stops or not
+  constexpr double min_moving_velocity_th{0.1};
   const double current_v = current_velocity_ptr_->longitudinal_velocity;
-  if (current_v < 0.1) {
+  if (std::abs(current_v) < min_moving_velocity_th) {
     return false;
   }
 
@@ -463,7 +464,8 @@ bool AEB::hasCollision(const double current_v, const ObjectData & closest_object
 {
   const double & obj_v = closest_object.velocity;
   const double & t = t_response_;
-  const double rss_dist = current_v * t + (current_v * current_v) / (2 * std::fabs(a_ego_min_)) -
+  const double rss_dist = std::abs(current_v) * t +
+                          (current_v * current_v) / (2 * std::fabs(a_ego_min_)) -
                           obj_v * obj_v / (2 * std::fabs(a_obj_min_)) + longitudinal_offset_;
   if (closest_object.distance_to_object < rss_dist) {
     // collision happens
@@ -487,7 +489,7 @@ Path AEB::generateEgoPath(const double curr_v, const double curr_w)
   ini_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(curr_yaw);
   path.push_back(ini_pose);
 
-  if (curr_v < 0.1) {
+  if (std::abs(curr_v) < 0.1) {
     // if current velocity is too small, assume it stops at the same point
     return path;
   }
@@ -610,22 +612,30 @@ void AEB::createObjectDataUsingPointCloudClusters(
   }
 
   // select points inside the ego footprint path
-  const auto current_p = tier4_autoware_utils::createPoint(
-    ego_path[0].position.x, ego_path[0].position.y, ego_path[0].position.z);
+  const auto current_p = [&]() {
+    const auto & first_point_of_path = ego_path.front();
+    const auto & p = first_point_of_path.position;
+    return tier4_autoware_utils::createPoint(p.x, p.y, p.z);
+  }();
 
   for (const auto & p : *points_belonging_to_cluster_hulls) {
     const auto obj_position = tier4_autoware_utils::createPoint(p.x, p.y, p.z);
-    const double dist_ego_to_object =
-      motion_utils::calcSignedArcLength(ego_path, current_p, obj_position) -
-      vehicle_info_.max_longitudinal_offset_m;
-    // objects behind ego are ignored
-    if (dist_ego_to_object < 0.0) continue;
+    const double obj_arc_length =
+      motion_utils::calcSignedArcLength(ego_path, current_p, obj_position);
+    if (std::isnan(obj_arc_length)) continue;
+
+    // If the object is behind the ego, we need to use the backward long offset. The distance should
+    // be a positive number in any case
+    const bool is_object_in_front_of_ego = obj_arc_length > 0.0;
+    const double dist_ego_to_object = (is_object_in_front_of_ego)
+                                        ? obj_arc_length - vehicle_info_.max_longitudinal_offset_m
+                                        : obj_arc_length + vehicle_info_.min_longitudinal_offset_m;
 
     ObjectData obj;
     obj.stamp = stamp;
     obj.position = obj_position;
     obj.velocity = 0.0;
-    obj.distance_to_object = dist_ego_to_object;
+    obj.distance_to_object = std::abs(dist_ego_to_object);
 
     const Point2d obj_point(p.x, p.y);
     for (const auto & ego_poly : ego_polys) {
@@ -721,7 +731,8 @@ void AEB::addMarker(
     closest_object_velocity_marker_array.text =
       "Object velocity: " + std::to_string(obj.velocity) + " [m/s]\n";
     closest_object_velocity_marker_array.text +=
-      "Object relative velocity to ego: " + std::to_string(obj.velocity - ego_velocity) + " [m/s]";
+      "Object relative velocity to ego: " + std::to_string(obj.velocity - std::abs(ego_velocity)) +
+      " [m/s]";
     debug_markers.markers.push_back(closest_object_velocity_marker_array);
   }
 }
