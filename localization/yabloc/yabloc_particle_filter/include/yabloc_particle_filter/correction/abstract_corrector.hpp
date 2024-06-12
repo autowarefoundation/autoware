@@ -36,7 +36,7 @@ public:
   using Particle = yabloc_particle_filter::msg::Particle;
   using ParticleArray = yabloc_particle_filter::msg::ParticleArray;
 
-  explicit AbstractCorrector(const std::string & node_name);
+  explicit AbstractCorrector(const std::string & node_name, const rclcpp::NodeOptions & options);
 
 protected:
   const float acceptable_max_delay_;  // [sec]

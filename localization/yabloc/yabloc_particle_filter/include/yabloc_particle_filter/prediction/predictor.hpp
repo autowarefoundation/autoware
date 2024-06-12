@@ -49,7 +49,7 @@ public:
   using Marker = visualization_msgs::msg::Marker;
   using SetBool = std_srvs::srv::SetBool;
 
-  Predictor();
+  explicit Predictor(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
   // The number of particles of particle filter

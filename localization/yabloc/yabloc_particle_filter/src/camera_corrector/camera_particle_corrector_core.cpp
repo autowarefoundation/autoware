@@ -28,8 +28,8 @@
 namespace yabloc::modularized_particle_filter
 {
 
-CameraParticleCorrector::CameraParticleCorrector()
-: AbstractCorrector("camera_particle_corrector"),
+CameraParticleCorrector::CameraParticleCorrector(const rclcpp::NodeOptions & options)
+: AbstractCorrector("camera_particle_corrector", options),
   min_prob_(declare_parameter<float>("min_prob")),
   far_weight_gain_(declare_parameter<float>("far_weight_gain")),
   cost_map_(this)
@@ -321,3 +321,6 @@ pcl::PointCloud<pcl::PointXYZI> CameraParticleCorrector::evaluate_cloud(
   return cloud;
 }
 }  // namespace yabloc::modularized_particle_filter
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(yabloc::modularized_particle_filter::CameraParticleCorrector)

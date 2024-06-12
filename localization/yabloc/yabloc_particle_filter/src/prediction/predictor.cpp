@@ -31,8 +31,8 @@
 namespace yabloc::modularized_particle_filter
 {
 
-Predictor::Predictor()
-: Node("predictor"),
+Predictor::Predictor(const rclcpp::NodeOptions & options)
+: Node("predictor", options),
   number_of_particles_(declare_parameter<int>("num_of_particles")),
   resampling_interval_seconds_(declare_parameter<float>("resampling_interval_seconds")),
   static_linear_covariance_(declare_parameter<float>("static_linear_covariance")),
@@ -411,3 +411,6 @@ Predictor::PoseCovStamped Predictor::rectify_initial_pose(
 }
 
 }  // namespace yabloc::modularized_particle_filter
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(yabloc::modularized_particle_filter::Predictor)

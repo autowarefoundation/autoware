@@ -4,7 +4,7 @@
   <arg name="twist_cov_for_prediction" default="/localization/twist_estimator/twist_with_covariance"/>
   <let name="output_weighted_particles" value="weighted_particles"/>
   <let name="output_particles_marker_array" value="predicted_particles_marker"/>
-  <node pkg="yabloc_particle_filter" exec="predictor_node" name="particle_predictor" output="screen" args="--ros-args --log-level info">
+  <node pkg="yabloc_particle_filter" exec="yabloc_predictor_node" output="both">
     <param from="$(var predictor_param_path)"/>
 
     <remap from="~/input/initialpose" to="$(var input_initialpose)"/>
@@ -25,7 +25,7 @@
   <arg name="input_projected_line_segments_cloud" default="/localization/pose_estimator/yabloc/image_processing/projected_line_segments_cloud"/>
   <arg name="input_ll2_road_marking" default="/localization/pose_estimator/yabloc/map/ll2_road_marking"/>
   <arg name="input_ll2_bounding_box" default="/localization/pose_estimator/yabloc/map/ll2_bounding_box"/>
-  <node pkg="yabloc_particle_filter" exec="camera_particle_corrector_node" name="camera_corrector" output="screen" args="--ros-args --log-level warn">
+  <node pkg="yabloc_particle_filter" exec="yabloc_camera_particle_corrector_node" output="both">
     <param from="$(var camera_particle_corrector_param_path)"/>
 
     <remap from="~/input/predicted_particles" to="predicted_particles"/>
@@ -46,7 +46,7 @@
   </node>
 
   <!-- gnss correction -->
-  <node pkg="yabloc_particle_filter" exec="gnss_particle_corrector_node" name="gnss_corrector" output="screen" args="--ros-args --log-level warn">
+  <node pkg="yabloc_particle_filter" exec="yabloc_gnss_particle_corrector_node" output="both">
     <param from="$(var gnss_particle_corrector_param_path)"/>
 
     <remap from="~/input/predicted_particles" to="predicted_particles"/>

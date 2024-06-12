@@ -11,9 +11,6 @@ find_package(PCL REQUIRED)
 # Sophus
 find_package(Sophus REQUIRED)
 
-# glog
-find_package(glog REQUIRED)
-
 # GeographicLib
 find_package(PkgConfig)
 find_path(GeographicLib_INCLUDE_DIR GeographicLib/Config.h
@@ -38,8 +35,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 )
 
 # ===================================================
-# Libraries
-# correction library
+# Correction library
 ament_auto_add_library(
   abstract_corrector
   SHARED
@@ -60,6 +56,7 @@ ament_auto_add_library(predictor
 target_include_directories(predictor SYSTEM PRIVATE ${PCL_INCLUDE_DIRS})
 target_link_libraries(predictor Sophus::Sophus ${PCL_LIBRARIES})
 
+# ===================================================
 # ros2idl typesupport
 if(${rosidl_cmake_VERSION} VERSION_LESS 2.5.0)
   rosidl_target_interfaces(abstract_corrector ${PROJECT_NAME} "rosidl_typesupport_cpp")
@@ -70,48 +67,45 @@ else()
   target_link_libraries(predictor "${cpp_typesupport_target}")
 endif()
 
-# Cost map Library
-ament_auto_add_library(ll2_cost_map
-  SHARED
-  src/ll2_cost_map/hierarchical_cost_map.cpp
-  src/ll2_cost_map/direct_cost_map.cpp
-)
-target_include_directories(ll2_cost_map PUBLIC include)
-target_include_directories(ll2_cost_map SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
-target_link_libraries(ll2_cost_map ${PCL_LIBRARIES})
-
 # ===================================================
 # Executables
 # Predictor
-ament_auto_add_executable(predictor_node
-  src/prediction/predictor_node.cpp
-)
-target_link_libraries(predictor_node predictor)
-
-# Visualizer
-ament_auto_add_executable(particle_visualize
-  src/common/particle_visualize_node.cpp
+rclcpp_components_register_node(predictor
+  PLUGIN "yabloc::modularized_particle_filter::Predictor"
+  EXECUTABLE yabloc_predictor_node
+  EXECUTOR SingleThreadedExecutor
 )
 
 # GNSS corrector
-set(TARGET gnss_particle_corrector_node)
-ament_auto_add_executable(${TARGET}
-  src/gnss_corrector/gnss_corrector_node.cpp
-  src/gnss_corrector/gnss_corrector_core.cpp)
+set(TARGET gnss_particle_corrector)
+ament_auto_add_library(${TARGET}
+  src/gnss_corrector/gnss_corrector_core.cpp
+)
 target_include_directories(${TARGET} PUBLIC include)
 target_include_directories(${TARGET} PUBLIC SYSTEM ${GeographicLib_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
-target_link_libraries(${TARGET} Sophus::Sophus)
+target_link_libraries(${TARGET} abstract_corrector Sophus::Sophus)
+rclcpp_components_register_node(${TARGET}
+  PLUGIN "yabloc::modularized_particle_filter::GnssParticleCorrector"
+  EXECUTABLE yabloc_gnss_particle_corrector_node
+  EXECUTOR SingleThreadedExecutor
+)
 
 # Camera corrector
-set(TARGET camera_particle_corrector_node)
-ament_auto_add_executable(${TARGET}
-  src/camera_corrector/camera_particle_corrector_node.cpp
+set(TARGET camera_particle_corrector)
+ament_auto_add_library(${TARGET}
+  src/ll2_cost_map/hierarchical_cost_map.cpp
+  src/ll2_cost_map/direct_cost_map.cpp
   src/camera_corrector/filter_line_segments.cpp
   src/camera_corrector/logit.cpp
   src/camera_corrector/camera_particle_corrector_core.cpp)
 target_include_directories(${TARGET} PUBLIC include)
 target_include_directories(${TARGET} SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
-target_link_libraries(${TARGET} Sophus::Sophus ${PCL_LIBRARIES} glog::glog)
+target_link_libraries(${TARGET} abstract_corrector Sophus::Sophus ${PCL_LIBRARIES})
+rclcpp_components_register_node(${TARGET}
+  PLUGIN "yabloc::modularized_particle_filter::CameraParticleCorrector"
+  EXECUTABLE yabloc_camera_particle_corrector_node
+  EXECUTOR SingleThreadedExecutor
+)
 
 # ===================================================
 # TEST

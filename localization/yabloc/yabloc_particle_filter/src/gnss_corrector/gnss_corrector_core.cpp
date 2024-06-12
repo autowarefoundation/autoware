@@ -19,8 +19,8 @@
 
 namespace yabloc::modularized_particle_filter
 {
-GnssParticleCorrector::GnssParticleCorrector()
-: AbstractCorrector("gnss_particle_corrector"),
+GnssParticleCorrector::GnssParticleCorrector(const rclcpp::NodeOptions & options)
+: AbstractCorrector("gnss_particle_corrector", options),
   mahalanobis_distance_threshold_(declare_parameter<float>("mahalanobis_distance_threshold")),
   weight_manager_(this)
 {
@@ -160,3 +160,6 @@ GnssParticleCorrector::ParticleArray GnssParticleCorrector::weight_particles(
 }
 
 }  // namespace yabloc::modularized_particle_filter
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(yabloc::modularized_particle_filter::GnssParticleCorrector)

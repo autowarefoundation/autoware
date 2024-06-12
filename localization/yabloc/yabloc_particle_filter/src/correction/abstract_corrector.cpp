@@ -16,8 +16,9 @@
 
 namespace yabloc::modularized_particle_filter
 {
-AbstractCorrector::AbstractCorrector(const std::string & node_name)
-: Node(node_name),
+AbstractCorrector::AbstractCorrector(
+  const std::string & node_name, const rclcpp::NodeOptions & options)
+: Node(node_name, options),
   acceptable_max_delay_(declare_parameter<float>("acceptable_max_delay")),
   visualize_(declare_parameter<bool>("visualize")),
   logger_(rclcpp::get_logger("abstract_corrector"))

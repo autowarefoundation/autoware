@@ -49,7 +49,7 @@ public:
   using Bool = std_msgs::msg::Bool;
   using String = std_msgs::msg::String;
   using SetBool = std_srvs::srv::SetBool;
-  CameraParticleCorrector();
+  explicit CameraParticleCorrector(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
   const float min_prob_;
