@@ -325,7 +325,14 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
     shift_line.end = *shift_end_pose_ptr;
     shift_line.end_shift_length = shift_length;
     path_shifter.addShiftLine(shift_line);
-    path_shifter.setVelocity(0.0);  // initial velocity is 0
+    // In the current path generation logic:
+    // - Considering the maximum curvature of the path results in a smaller shift distance.
+    // - Setting the allowable maximum lateral acceleration to a value smaller than the one
+    // calculated by the constant lateral jerk trajectory generation.
+    // - Setting the initial velocity to a very small value, such as 0.0.
+    // These conditions cause the curvature around the shift start pose to become larger than
+    // expected. To address this issue, an initial velocity 1.0 is provided.
+    path_shifter.setVelocity(1.0);
     path_shifter.setLongitudinalAcceleration(longitudinal_acc);
     path_shifter.setLateralAccelerationLimit(lateral_acc);
 
