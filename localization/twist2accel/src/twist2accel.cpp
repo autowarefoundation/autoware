@@ -28,9 +28,9 @@ Twist2Accel::Twist2Accel(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("twist2accel", node_options)
 {
   sub_odom_ = create_subscription<nav_msgs::msg::Odometry>(
-    "input/odom", 1, std::bind(&Twist2Accel::callbackOdometry, this, _1));
+    "input/odom", 1, std::bind(&Twist2Accel::callback_odometry, this, _1));
   sub_twist_ = create_subscription<geometry_msgs::msg::TwistWithCovarianceStamped>(
-    "input/twist", 1, std::bind(&Twist2Accel::callbackTwistWithCovariance, this, _1));
+    "input/twist", 1, std::bind(&Twist2Accel::callback_twist_with_covariance, this, _1));
 
   pub_accel_ = create_publisher<geometry_msgs::msg::AccelWithCovarianceStamped>("output/accel", 1);
 
@@ -46,17 +46,17 @@ Twist2Accel::Twist2Accel(const rclcpp::NodeOptions & node_options)
   lpf_aaz_ptr_ = std::make_shared<LowpassFilter1d>(accel_lowpass_gain_);
 }
 
-void Twist2Accel::callbackOdometry(const nav_msgs::msg::Odometry::SharedPtr msg)
+void Twist2Accel::callback_odometry(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
   if (!use_odom_) return;
 
   geometry_msgs::msg::TwistStamped twist;
   twist.header = msg->header;
   twist.twist = msg->twist.twist;
-  estimateAccel(std::make_shared<geometry_msgs::msg::TwistStamped>(twist));
+  estimate_accel(std::make_shared<geometry_msgs::msg::TwistStamped>(twist));
 }
 
-void Twist2Accel::callbackTwistWithCovariance(
+void Twist2Accel::callback_twist_with_covariance(
   const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg)
 {
   if (use_odom_) return;
@@ -64,10 +64,10 @@ void Twist2Accel::callbackTwistWithCovariance(
   geometry_msgs::msg::TwistStamped twist;
   twist.header = msg->header;
   twist.twist = msg->twist.twist;
-  estimateAccel(std::make_shared<geometry_msgs::msg::TwistStamped>(twist));
+  estimate_accel(std::make_shared<geometry_msgs::msg::TwistStamped>(twist));
 }
 
-void Twist2Accel::estimateAccel(const geometry_msgs::msg::TwistStamped::SharedPtr msg)
+void Twist2Accel::estimate_accel(const geometry_msgs::msg::TwistStamped::SharedPtr msg)
 {
   geometry_msgs::msg::AccelWithCovarianceStamped accel_msg;
   accel_msg.header = msg->header;
