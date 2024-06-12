@@ -21,6 +21,7 @@
 #include "autoware_behavior_path_planner_common/interface/steering_factor_interface.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
+#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
@@ -86,17 +87,34 @@ public:
   std::vector<std::string> getRunningModules();
 
 private:
-  rclcpp::Subscription<LaneletRoute>::SharedPtr route_subscriber_;
-  rclcpp::Subscription<LaneletMapBin>::SharedPtr vector_map_subscriber_;
-  rclcpp::Subscription<Odometry>::SharedPtr velocity_subscriber_;
-  rclcpp::Subscription<AccelWithCovarianceStamped>::SharedPtr acceleration_subscriber_;
-  rclcpp::Subscription<Scenario>::SharedPtr scenario_subscriber_;
-  rclcpp::Subscription<PredictedObjects>::SharedPtr perception_subscriber_;
-  rclcpp::Subscription<OccupancyGrid>::SharedPtr occupancy_grid_subscriber_;
-  rclcpp::Subscription<OccupancyGrid>::SharedPtr costmap_subscriber_;
-  rclcpp::Subscription<TrafficLightGroupArray>::SharedPtr traffic_signals_subscriber_;
-  rclcpp::Subscription<LateralOffset>::SharedPtr lateral_offset_subscriber_;
-  rclcpp::Subscription<OperationModeState>::SharedPtr operation_mode_subscriber_;
+  // subscriber
+  tier4_autoware_utils::InterProcessPollingSubscriber<LaneletRoute> route_subscriber_{
+    this, "~/input/route", rclcpp::QoS{1}.transient_local()};
+  tier4_autoware_utils::InterProcessPollingSubscriber<LaneletMapBin> vector_map_subscriber_{
+    this, "~/input/vector_map", rclcpp::QoS{1}.transient_local()};
+  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> velocity_subscriber_{
+    this, "~/input/odometry"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped>
+    acceleration_subscriber_{this, "~/input/accel"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<Scenario> scenario_subscriber_{
+    this, "~/input/scenario"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<PredictedObjects> perception_subscriber_{
+    this, "~/input/perception"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<OccupancyGrid> occupancy_grid_subscriber_{
+    this, "~/input/occupancy_grid_map"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<OccupancyGrid> costmap_subscriber_{
+    this, "~/input/costmap"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<TrafficLightGroupArray>
+    traffic_signals_subscriber_{this, "~/input/traffic_signals"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<LateralOffset> lateral_offset_subscriber_{
+    this, "~/input/lateral_offset"};
+  tier4_autoware_utils::InterProcessPollingSubscriber<OperationModeState>
+    operation_mode_subscriber_{
+      this, "/system/operation_mode/state", rclcpp::QoS{1}.transient_local()};
+  tier4_autoware_utils::InterProcessPollingSubscriber<tier4_planning_msgs::msg::VelocityLimit>
+    external_limit_max_velocity_subscriber_{this, "/planning/scenario_planning/max_velocity"};
+
+  // publisher
   rclcpp::Publisher<PathWithLaneId>::SharedPtr path_publisher_;
   rclcpp::Publisher<TurnIndicatorsCommand>::SharedPtr turn_signal_publisher_;
   rclcpp::Publisher<HazardLightsCommand>::SharedPtr hazard_signal_publisher_;
@@ -104,31 +122,27 @@ private:
   rclcpp::Publisher<PoseWithUuidStamped>::SharedPtr modified_goal_publisher_;
   rclcpp::Publisher<StopReasonArray>::SharedPtr stop_reason_publisher_;
   rclcpp::Publisher<RerouteAvailability>::SharedPtr reroute_availability_publisher_;
-  rclcpp::Subscription<tier4_planning_msgs::msg::VelocityLimit>::SharedPtr
-    external_limit_max_velocity_subscriber_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   std::map<std::string, rclcpp::Publisher<Path>::SharedPtr> path_candidate_publishers_;
   std::map<std::string, rclcpp::Publisher<Path>::SharedPtr> path_reference_publishers_;
 
   std::shared_ptr<PlannerData> planner_data_;
-
-  std::shared_ptr<PlannerManager> planner_manager_;
-
-  std::unique_ptr<SteeringFactorInterface> steering_factor_interface_ptr_;
-  Scenario::SharedPtr current_scenario_{nullptr};
-
+  Scenario::ConstSharedPtr current_scenario_{nullptr};
   LaneletMapBin::ConstSharedPtr map_ptr_{nullptr};
   LaneletRoute::ConstSharedPtr route_ptr_{nullptr};
   bool has_received_map_{false};
   bool has_received_route_{false};
 
+  std::shared_ptr<PlannerManager> planner_manager_;
+
+  std::unique_ptr<SteeringFactorInterface> steering_factor_interface_ptr_;
+
   std::mutex mutex_pd_;       // mutex for planner_data_
   std::mutex mutex_manager_;  // mutex for bt_manager_ or planner_manager_
-  std::mutex mutex_map_;      // mutex for has_received_map_ and map_ptr_
-  std::mutex mutex_route_;    // mutex for has_received_route_ and route_ptr_
 
   // setup
+  void takeData();
   bool isDataReady();
 
   // parameters
