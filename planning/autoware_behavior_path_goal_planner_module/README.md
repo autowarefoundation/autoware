@@ -303,7 +303,7 @@ Simultaneous execution with `avoidance_module` in the flowchart is under develop
 | :----------------------- | :--- | :--- | :------------------------------------------------------------------------------------------------------------------- | :------------ |
 | enable_freespace_parking | [-]  | bool | This flag enables freespace parking, which runs when the vehicle is stuck due to e.g. obstacles in the parking area. | true          |
 
-See [freespace_planner](../freespace_planner/README.md) for other parameters.
+See [freespace_planner](../autoware_freespace_planner/README.md) for other parameters.
 
 ## **collision check for path generation**
 

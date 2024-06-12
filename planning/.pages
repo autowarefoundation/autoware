@@ -27,7 +27,7 @@ nav:
         - 'Dynamic Obstacle Stop': planning/behavior_velocity_dynamic_obstacle_stop_module
         - 'Intersection': planning/autoware_behavior_velocity_intersection_module
         - 'No Drivable Lane': planning/behavior_velocity_no_drivable_lane_module
-        - 'No Stopping Area': planning/behavior_velocity_no_stopping_area_module
+        - 'No Stopping Area': planning/autoware_behavior_velocity_no_stopping_area_module
         - 'Occlusion Spot': planning/autoware_behavior_velocity_occlusion_spot_module
         - 'Run Out': planning/autoware_behavior_velocity_run_out_module
         - 'Speed Bump': planning/behavior_velocity_speed_bump_module
@@ -37,10 +37,10 @@ nav:
         - 'Walkway': planning/autoware_behavior_velocity_walkway_module
   - 'Parking':
     - 'Freespace Planner':
-      - 'About Freespace Planner': planning/freespace_planner
-      - 'Algorithm': planning/freespace_planning_algorithms
-      - 'RRT*': planning/freespace_planning_algorithms/rrtstar
-  - 'Mission Planner': planning/mission_planner
+      - 'About Freespace Planner': planning/autoware_freespace_planner
+      - 'Algorithm': planning/autoware_freespace_planning_algorithms
+      - 'RRT*': planning/autoware_freespace_planning_algorithms/rrtstar
+  - 'Mission Planner': planning/autoware_mission_planner
   - 'Motion Planning':
     - 'Path Optimizer':
       - 'About Path Optimizer': planning/autoware_path_optimizer
