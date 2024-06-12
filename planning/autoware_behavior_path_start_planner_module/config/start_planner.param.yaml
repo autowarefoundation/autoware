@@ -26,7 +26,6 @@
       allow_check_shift_path_lane_departure_override: false
       shift_collision_check_distance_from_end: -10.0
       minimum_shift_pull_out_distance: 0.0
-      deceleration_interval: 15.0
       maximum_longitudinal_deviation: 1.0 # Note, should be the same or less than planning validator's "longitudinal_distance_deviation"
       lateral_jerk: 0.5
       lateral_acceleration_sampling_num: 3
@@ -38,7 +37,6 @@
       geometric_collision_check_distance_from_end: 0.0
       divide_pull_out_path: true
       geometric_pull_out_velocity: 1.0
-      arc_path_interval: 1.0
       lane_departure_margin: 0.2
       lane_departure_check_expansion_margin: 0.0
       backward_velocity: -1.0
@@ -52,9 +50,6 @@
       ignore_distance_from_lane_end: 15.0
       # turns signal
       prepare_time_before_start: 0.0
-      th_turn_signal_on_lateral_offset: 1.0
-      intersection_search_length: 30.0
-      length_ratio_for_turn_signal_deactivation_near_intersection: 0.5
       # freespace planner
       freespace_planner:
         enable_freespace_planner: true

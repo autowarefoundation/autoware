@@ -37,13 +37,8 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
   p.th_stopped_velocity = node->declare_parameter<double>(ns + "th_stopped_velocity");
   p.th_stopped_time = node->declare_parameter<double>(ns + "th_stopped_time");
   p.prepare_time_before_start = node->declare_parameter<double>(ns + "prepare_time_before_start");
-  p.th_turn_signal_on_lateral_offset =
-    node->declare_parameter<double>(ns + "th_turn_signal_on_lateral_offset");
   p.th_distance_to_middle_of_the_road =
     node->declare_parameter<double>(ns + "th_distance_to_middle_of_the_road");
-  p.intersection_search_length = node->declare_parameter<double>(ns + "intersection_search_length");
-  p.length_ratio_for_turn_signal_deactivation_near_intersection = node->declare_parameter<double>(
-    ns + "length_ratio_for_turn_signal_deactivation_near_intersection");
   p.extra_width_margin_for_rear_obstacle =
     node->declare_parameter<double>(ns + "extra_width_margin_for_rear_obstacle");
   p.collision_check_margins =
@@ -87,7 +82,6 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
   p.maximum_lateral_acc = node->declare_parameter<double>(ns + "maximum_lateral_acc");
   p.minimum_lateral_acc = node->declare_parameter<double>(ns + "minimum_lateral_acc");
   p.maximum_curvature = node->declare_parameter<double>(ns + "maximum_curvature");
-  p.deceleration_interval = node->declare_parameter<double>(ns + "deceleration_interval");
   p.maximum_longitudinal_deviation =
     node->declare_parameter<double>(ns + "maximum_longitudinal_deviation");
   // geometric pull out
@@ -97,8 +91,6 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
   p.divide_pull_out_path = node->declare_parameter<bool>(ns + "divide_pull_out_path");
   p.parallel_parking_parameters.pull_out_velocity =
     node->declare_parameter<double>(ns + "geometric_pull_out_velocity");
-  p.parallel_parking_parameters.pull_out_path_interval =
-    node->declare_parameter<double>(ns + "arc_path_interval");
   p.parallel_parking_parameters.pull_out_lane_departure_margin =
     node->declare_parameter<double>(ns + "lane_departure_margin");
   p.lane_departure_check_expansion_margin =
@@ -369,14 +361,7 @@ void StartPlannerModuleManager::updateModuleParams(
     updateParam<double>(parameters, ns + "th_stopped_time", p->th_stopped_time);
     updateParam<double>(parameters, ns + "prepare_time_before_start", p->prepare_time_before_start);
     updateParam<double>(
-      parameters, ns + "th_turn_signal_on_lateral_offset", p->th_turn_signal_on_lateral_offset);
-    updateParam<double>(
       parameters, ns + "th_distance_to_middle_of_the_road", p->th_distance_to_middle_of_the_road);
-    updateParam<double>(
-      parameters, ns + "intersection_search_length", p->intersection_search_length);
-    updateParam<double>(
-      parameters, ns + "length_ratio_for_turn_signal_deactivation_near_intersection",
-      p->length_ratio_for_turn_signal_deactivation_near_intersection);
     updateParam<double>(
       parameters, ns + "extra_width_margin_for_rear_obstacle",
       p->extra_width_margin_for_rear_obstacle);
@@ -427,13 +412,10 @@ void StartPlannerModuleManager::updateModuleParams(
     updateParam<double>(parameters, ns + "maximum_lateral_acc", p->maximum_lateral_acc);
     updateParam<double>(parameters, ns + "minimum_lateral_acc", p->minimum_lateral_acc);
     updateParam<double>(parameters, ns + "maximum_curvature", p->maximum_curvature);
-    updateParam<double>(parameters, ns + "deceleration_interval", p->deceleration_interval);
     updateParam<double>(
       parameters, ns + "maximum_longitudinal_deviation", p->maximum_longitudinal_deviation);
     updateParam<bool>(parameters, ns + "enable_geometric_pull_out", p->enable_geometric_pull_out);
     updateParam<bool>(parameters, ns + "divide_pull_out_path", p->divide_pull_out_path);
-    updateParam<double>(
-      parameters, ns + "arc_path_interval", p->parallel_parking_parameters.pull_out_path_interval);
     updateParam<double>(
       parameters, ns + "lane_departure_margin",
       p->parallel_parking_parameters.pull_out_lane_departure_margin);

@@ -60,10 +60,7 @@ struct StartPlannerParameters
   double th_stopped_velocity{0.0};
   double th_stopped_time{0.0};
   double prepare_time_before_start{0.0};
-  double th_turn_signal_on_lateral_offset{0.0};
   double th_distance_to_middle_of_the_road{0.0};
-  double intersection_search_length{0.0};
-  double length_ratio_for_turn_signal_deactivation_near_intersection{0.0};
   double extra_width_margin_for_rear_obstacle{0.0};
   std::vector<double> collision_check_margins{};
   double collision_check_margin_from_front_object{0.0};
@@ -84,11 +81,10 @@ struct StartPlannerParameters
   double maximum_lateral_acc{0.0};
   double minimum_lateral_acc{0.0};
   double maximum_curvature{0.0};  // maximum curvature considered in the path generation
-  double deceleration_interval{0.0};
   double maximum_longitudinal_deviation{0.0};
   // geometric pull out
   bool enable_geometric_pull_out{false};
-  double geometric_collision_check_distance_from_end;
+  double geometric_collision_check_distance_from_end{0.0};
   bool divide_pull_out_path{false};
   ParallelParkingParameters parallel_parking_parameters{};
   // search start pose backward
