@@ -6,7 +6,7 @@
 
   <!-- Pointcloud filter -->
   <group>
-    <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/pointcloud_map_filter.launch.py">
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/filter/pointcloud_map_filter.launch.py">
       <arg name="input_topic" value="$(var input/obstacle_segmentation/pointcloud)"/>
       <arg name="output_topic" value="pointcloud_map_filtered/pointcloud"/>
       <arg name="use_intra_process" value="true"/>
@@ -44,13 +44,5 @@
         <arg name="output" value="objects"/>
       </include>
     </group>
-  </group>
-
-  <!-- DetectionByTracker -->
-  <group if="$(var use_detection_by_tracker)">
-    <push-ros-namespace namespace="detection_by_tracker"/>
-    <include file="$(find-pkg-share detection_by_tracker)/launch/detection_by_tracker.launch.xml">
-      <arg name="detection_by_tracker_param_path" value="$(var object_recognition_detection_detection_by_tracker_param)"/>
-    </include>
   </group>
 </launch>

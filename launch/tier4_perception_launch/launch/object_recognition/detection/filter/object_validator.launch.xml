@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Pipeline junctions -->
+  <arg name="objects_validation_method" default="obstacle_pointcloud" description="obstacle_pointcloud or occupancy_grid"/>
+
+  <!-- external interfaces -->
+  <arg name="input/obstacle_pointcloud" default="pointcloud_map_filtered/pointcloud" description="Only required when 'obstacle_pointcloud'"/>
+  <arg name="input/objects" default="centerpoint/objects"/>
+  <arg name="output/objects" default="centerpoint/validation/objects"/>
+
+  <!-- Validator -->
+  <group if="$(eval &quot;'$(var objects_validation_method)'=='obstacle_pointcloud'&quot;)">
+    <include file="$(find-pkg-share detected_object_validation)/launch/obstacle_pointcloud_based_validator.launch.xml">
+      <arg name="input/detected_objects" value="$(var input/objects)"/>
+      <arg name="input/obstacle_pointcloud" value="$(var input/obstacle_pointcloud)"/>
+      <arg name="output/objects" value="$(var output/objects)"/>
+      <arg name="obstacle_pointcloud_based_validator_param_path" value="$(var object_recognition_detection_obstacle_pointcloud_based_validator_param_path)"/>
+    </include>
+  </group>
+  <group if="$(eval &quot;'$(var objects_validation_method)'=='occupancy_grid'&quot;)">
+    <include file="$(find-pkg-share detected_object_validation)/launch/occupancy_grid_based_validator.launch.xml">
+      <arg name="input/detected_objects" value="$(var input/objects)"/>
+      <arg name="output/objects" value="$(var output/objects)"/>
+    </include>
+  </group>
+</launch>
