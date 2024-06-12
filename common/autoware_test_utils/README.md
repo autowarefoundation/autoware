@@ -15,7 +15,7 @@ The objective of the `test_utils` is to develop a unit testing library for the A
 
 ## Available Maps
 
-The following maps are available [here](https://github.com/autowarefoundation/autoware.universe/tree/main/planning/planning_test_utils/test_map)
+The following maps are available [here](https://github.com/autowarefoundation/autoware.universe/tree/main/planning/autoware_test_utils/test_map)
 
 ### Common
 

@@ -23,7 +23,7 @@
 #include <vector>
 
 using autoware::motion_velocity_planner::MotionVelocityPlannerNode;
-using planning_test_utils::PlanningInterfaceTestManager;
+using autoware::planning_test_manager::PlanningInterfaceTestManager;
 
 std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
 {
@@ -45,8 +45,8 @@ std::shared_ptr<MotionVelocityPlannerNode> generateNode()
 {
   auto node_options = rclcpp::NodeOptions{};
 
-  const auto planning_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("planning_test_utils");
+  const auto autoware_test_utils_dir =
+    ament_index_cpp::get_package_share_directory("autoware_test_utils");
   const auto motion_velocity_planner_dir =
     ament_index_cpp::get_package_share_directory("autoware_motion_velocity_planner_node");
   const auto velocity_smoother_dir =
@@ -67,10 +67,10 @@ std::shared_ptr<MotionVelocityPlannerNode> generateNode()
   params.emplace_back("is_simulation", false);
   node_options.parameter_overrides(params);
 
-  test_utils::updateNodeOptions(
-    node_options, {planning_test_utils_dir + "/config/test_common.param.yaml",
-                   planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
-                   planning_test_utils_dir + "/config/test_vehicle_info.param.yaml",
+  autoware::test_utils::updateNodeOptions(
+    node_options, {autoware_test_utils_dir + "/config/test_common.param.yaml",
+                   autoware_test_utils_dir + "/config/test_nearest_search.param.yaml",
+                   autoware_test_utils_dir + "/config/test_vehicle_info.param.yaml",
                    velocity_smoother_dir + "/config/default_velocity_smoother.param.yaml",
                    velocity_smoother_dir + "/config/Analytical.param.yaml",
                    motion_velocity_planner_dir + "/config/motion_velocity_planner.param.yaml",

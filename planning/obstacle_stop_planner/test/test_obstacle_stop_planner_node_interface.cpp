@@ -16,14 +16,14 @@
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <autoware_planning_test_manager/autoware_planning_test_manager.hpp>
-#include <planning_test_utils/planning_test_utils.hpp>
+#include <autoware_test_utils/autoware_test_utils.hpp>
 
 #include <gtest/gtest.h>
 
 #include <vector>
 
+using autoware::planning_test_manager::PlanningInterfaceTestManager;
 using motion_planning::ObstacleStopPlannerNode;
-using planning_test_utils::PlanningInterfaceTestManager;
 
 std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
 {
@@ -38,17 +38,17 @@ std::shared_ptr<ObstacleStopPlannerNode> generateNode()
 {
   auto node_options = rclcpp::NodeOptions{};
 
-  const auto planning_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("planning_test_utils");
+  const auto autoware_test_utils_dir =
+    ament_index_cpp::get_package_share_directory("autoware_test_utils");
   const auto obstacle_stop_planner_dir =
     ament_index_cpp::get_package_share_directory("obstacle_stop_planner");
 
   node_options.append_parameter_override("enable_slow_down", false);
 
   node_options.arguments(
-    {"--ros-args", "--params-file", planning_test_utils_dir + "/config/test_common.param.yaml",
-     "--params-file", planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
-     "--params-file", planning_test_utils_dir + "/config/test_vehicle_info.param.yaml",
+    {"--ros-args", "--params-file", autoware_test_utils_dir + "/config/test_common.param.yaml",
+     "--params-file", autoware_test_utils_dir + "/config/test_nearest_search.param.yaml",
+     "--params-file", autoware_test_utils_dir + "/config/test_vehicle_info.param.yaml",
      "--params-file", obstacle_stop_planner_dir + "/config/common.param.yaml", "--params-file",
      obstacle_stop_planner_dir + "/config/adaptive_cruise_control.param.yaml", "--params-file",
      obstacle_stop_planner_dir + "/config/obstacle_stop_planner.param.yaml"});

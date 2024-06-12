@@ -24,9 +24,9 @@
 
   <depend>autoware_map_msgs</depend>
   <depend>autoware_planning_msgs</depend>
+  <depend>autoware_test_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
-  <depend>planning_test_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tf2_ros</depend>

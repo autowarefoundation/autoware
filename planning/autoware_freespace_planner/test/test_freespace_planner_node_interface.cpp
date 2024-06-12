@@ -16,14 +16,14 @@
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <autoware_planning_test_manager/autoware_planning_test_manager.hpp>
-#include <planning_test_utils/planning_test_utils.hpp>
+#include <autoware_test_utils/autoware_test_utils.hpp>
 
 #include <gtest/gtest.h>
 
 #include <vector>
 
 using autoware::freespace_planner::FreespacePlannerNode;
-using planning_test_utils::PlanningInterfaceTestManager;
+using autoware::planning_test_manager::PlanningInterfaceTestManager;
 
 std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
 {
@@ -38,13 +38,13 @@ std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
 std::shared_ptr<FreespacePlannerNode> generateNode()
 {
   auto node_options = rclcpp::NodeOptions{};
-  const auto planning_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("planning_test_utils");
+  const auto autoware_test_utils_dir =
+    ament_index_cpp::get_package_share_directory("autoware_test_utils");
   const auto freespace_planner_dir =
     ament_index_cpp::get_package_share_directory("autoware_freespace_planner");
   node_options.arguments(
     {"--ros-args", "--params-file",
-     planning_test_utils_dir + "/config/test_vehicle_info.param.yaml", "--params-file",
+     autoware_test_utils_dir + "/config/test_vehicle_info.param.yaml", "--params-file",
      freespace_planner_dir + "/config/freespace_planner.param.yaml"});
   return std::make_shared<FreespacePlannerNode>(node_options);
 }

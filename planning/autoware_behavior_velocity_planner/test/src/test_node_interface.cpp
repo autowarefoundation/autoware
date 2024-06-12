@@ -16,7 +16,7 @@
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <autoware_planning_test_manager/autoware_planning_test_manager.hpp>
-#include <planning_test_utils/planning_test_utils.hpp>
+#include <autoware_test_utils/autoware_test_utils.hpp>
 
 #include <gtest/gtest.h>
 
@@ -24,7 +24,7 @@
 #include <vector>
 
 using autoware::behavior_velocity_planner::BehaviorVelocityPlannerNode;
-using planning_test_utils::PlanningInterfaceTestManager;
+using autoware::planning_test_manager::PlanningInterfaceTestManager;
 
 std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
 {
@@ -47,8 +47,8 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
 {
   auto node_options = rclcpp::NodeOptions{};
 
-  const auto planning_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("planning_test_utils");
+  const auto autoware_test_utils_dir =
+    ament_index_cpp::get_package_share_directory("autoware_test_utils");
   const auto behavior_velocity_planner_dir =
     ament_index_cpp::get_package_share_directory("autoware_behavior_velocity_planner");
   const auto velocity_smoother_dir =
@@ -88,10 +88,10 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
   params.emplace_back("is_simulation", false);
   node_options.parameter_overrides(params);
 
-  test_utils::updateNodeOptions(
-    node_options, {planning_test_utils_dir + "/config/test_common.param.yaml",
-                   planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
-                   planning_test_utils_dir + "/config/test_vehicle_info.param.yaml",
+  autoware::test_utils::updateNodeOptions(
+    node_options, {autoware_test_utils_dir + "/config/test_common.param.yaml",
+                   autoware_test_utils_dir + "/config/test_nearest_search.param.yaml",
+                   autoware_test_utils_dir + "/config/test_vehicle_info.param.yaml",
                    velocity_smoother_dir + "/config/default_velocity_smoother.param.yaml",
                    velocity_smoother_dir + "/config/Analytical.param.yaml",
                    behavior_velocity_planner_dir + "/config/behavior_velocity_planner.param.yaml",

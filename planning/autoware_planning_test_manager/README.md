@@ -29,18 +29,18 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
   rclcpp::init(0, nullptr);
 
   // instantiate test_manager with PlanningInterfaceTestManager type
-  auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
+  auto test_manager = std::make_shared<autoware::planning_test_manager::PlanningInterfaceTestManager>();
 
   // get package directories for necessary configuration files
-  const auto planning_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("planning_test_utils");
+  const auto autoware_test_utils_dir =
+    ament_index_cpp::get_package_share_directory("autoware_test_utils");
   const auto target_node_dir =
     ament_index_cpp::get_package_share_directory("target_node");
 
   // set arguments to get the config file
   node_options.arguments(
     {"--ros-args", "--params-file",
-     planning_test_utils_dir + "/config/test_vehicle_info.param.yaml", "--params-file",
+     autoware_test_utils_dir + "/config/test_vehicle_info.param.yaml", "--params-file",
      autoware_planning_validator_dir + "/config/planning_validator.param.yaml"});
 
   // instantiate the TargetNode with node_options

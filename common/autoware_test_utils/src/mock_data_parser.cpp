@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "planning_test_utils/mock_data_parser.hpp"
+#include "autoware_test_utils/mock_data_parser.hpp"
 
 #include <rclcpp/logging.hpp>
 
@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-namespace test_utils
+namespace autoware::test_utils
 {
 Pose parse_pose(const YAML::Node & node)
 {
@@ -85,8 +85,8 @@ LaneletRoute parse_lanelet_route_file(const std::string & filename)
     lanelet_route.goal_pose = (config["goal_pose"]) ? parse_pose(config["goal_pose"]) : Pose();
     lanelet_route.segments = parse_segments(config["segments"]);
   } catch (const std::exception & e) {
-    RCLCPP_DEBUG(rclcpp::get_logger("planning_test_utils"), "Exception caught: %s", e.what());
+    RCLCPP_DEBUG(rclcpp::get_logger("autoware_test_utils"), "Exception caught: %s", e.what());
   }
   return lanelet_route;
 }
-}  // namespace test_utils
+}  // namespace autoware::test_utils

@@ -16,14 +16,14 @@
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <autoware_planning_test_manager/autoware_planning_test_manager.hpp>
-#include <planning_test_utils/planning_test_utils.hpp>
+#include <autoware_test_utils/autoware_test_utils.hpp>
 
 #include <gtest/gtest.h>
 
 #include <vector>
 
+using autoware::planning_test_manager::PlanningInterfaceTestManager;
 using autoware::velocity_smoother::VelocitySmootherNode;
-using planning_test_utils::PlanningInterfaceTestManager;
 
 std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
 {
@@ -39,14 +39,14 @@ std::shared_ptr<VelocitySmootherNode> generateNode()
   auto node_options = rclcpp::NodeOptions{};
   node_options.append_parameter_override("algorithm_type", "JerkFiltered");
   node_options.append_parameter_override("publish_debug_trajs", false);
-  const auto planning_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("planning_test_utils");
+  const auto autoware_test_utils_dir =
+    ament_index_cpp::get_package_share_directory("autoware_test_utils");
   const auto velocity_smoother_dir =
     ament_index_cpp::get_package_share_directory("autoware_velocity_smoother");
   node_options.arguments(
-    {"--ros-args", "--params-file", planning_test_utils_dir + "/config/test_common.param.yaml",
-     "--params-file", planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
-     "--params-file", planning_test_utils_dir + "/config/test_vehicle_info.param.yaml",
+    {"--ros-args", "--params-file", autoware_test_utils_dir + "/config/test_common.param.yaml",
+     "--params-file", autoware_test_utils_dir + "/config/test_nearest_search.param.yaml",
+     "--params-file", autoware_test_utils_dir + "/config/test_vehicle_info.param.yaml",
      "--params-file", velocity_smoother_dir + "/config/default_velocity_smoother.param.yaml",
      "--params-file", velocity_smoother_dir + "/config/default_common.param.yaml", "--params-file",
      velocity_smoother_dir + "/config/JerkFiltered.param.yaml"});

@@ -18,6 +18,7 @@
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_route_handler</depend>
+  <depend>autoware_test_utils</depend>
   <depend>autoware_vehicle_msgs</depend>
   <depend>component_interface_specs</depend>
   <depend>component_interface_utils</depend>
@@ -25,7 +26,6 @@
   <depend>lanelet2_io</depend>
   <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
-  <depend>planning_test_utils</depend>
   <depend>rclcpp</depend>
   <depend>tf2_msgs</depend>
   <depend>tf2_ros</depend>

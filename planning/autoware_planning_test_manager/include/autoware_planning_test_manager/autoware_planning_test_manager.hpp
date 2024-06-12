@@ -69,7 +69,7 @@
 #include <memory>
 #include <string>
 
-namespace planning_test_utils
+namespace autoware::planning_test_manager
 {
 using autoware_adapi_v1_msgs::msg::OperationModeState;
 using autoware_map_msgs::msg::LaneletMapBin;
@@ -264,6 +264,6 @@ private:
   void publishAbnormalPath(rclcpp::Node::SharedPtr target_node, std::string topic_name);
 };  // class PlanningInterfaceTestManager
 
-}  // namespace planning_test_utils
+}  // namespace autoware::planning_test_manager
 
 #endif  // AUTOWARE_PLANNING_TEST_MANAGER__AUTOWARE_PLANNING_TEST_MANAGER_HPP_

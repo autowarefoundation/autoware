@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "planning_test_utils/planning_test_utils.hpp"
-namespace test_utils
+#include "autoware_test_utils/autoware_test_utils.hpp"
+namespace autoware::test_utils
 {
 
 geometry_msgs::msg::Pose createPose(
@@ -122,9 +122,9 @@ LaneletMapBin make_map_bin_msg(
 
 LaneletMapBin makeMapBinMsg()
 {
-  const auto planning_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("planning_test_utils");
-  const auto lanelet2_path = planning_test_utils_dir + "/test_map/lanelet2_map.osm";
+  const auto autoware_test_utils_dir =
+    ament_index_cpp::get_package_share_directory("autoware_test_utils");
+  const auto lanelet2_path = autoware_test_utils_dir + "/test_map/lanelet2_map.osm";
   double center_line_resolution = 5.0;
 
   return make_map_bin_msg(lanelet2_path, center_line_resolution);
@@ -147,7 +147,7 @@ Odometry makeInitialPose(const double shift)
   const auto shift_y = shift * std::cos(yaw);
   const std::array<double, 4> start_pose{
     3722.16015625 + shift_x, 73723.515625 + shift_y, 0.233112560494183, yaw};
-  current_odometry.pose.pose = test_utils::createPose(start_pose);
+  current_odometry.pose.pose = autoware::test_utils::createPose(start_pose);
   current_odometry.header.frame_id = "map";
   return current_odometry;
 }
@@ -251,9 +251,9 @@ void updateNodeOptions(
 
 PathWithLaneId loadPathWithLaneIdInYaml()
 {
-  const auto planning_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("planning_test_utils");
-  const auto yaml_path = planning_test_utils_dir + "/config/path_with_lane_id_data.yaml";
+  const auto autoware_test_utils_dir =
+    ament_index_cpp::get_package_share_directory("autoware_test_utils");
+  const auto yaml_path = autoware_test_utils_dir + "/config/path_with_lane_id_data.yaml";
   YAML::Node yaml_node = YAML::LoadFile(yaml_path);
   PathWithLaneId path_msg;
 
@@ -311,4 +311,4 @@ PathWithLaneId loadPathWithLaneIdInYaml()
   return path_msg;
 }
 
-}  // namespace test_utils
+}  // namespace autoware::test_utils
