@@ -23,7 +23,7 @@
 
 #include <tf2/utils.h>
 
-namespace drivable_area_expansion
+namespace autoware::behavior_path_planner::drivable_area_expansion
 {
 Polygon2d translate_polygon(const Polygon2d & polygon, const double x, const double y)
 {
@@ -62,4 +62,4 @@ MultiPolygon2d create_object_footprints(
   }
   return footprints;
 }
-}  // namespace drivable_area_expansion
+}  // namespace autoware::behavior_path_planner::drivable_area_expansion

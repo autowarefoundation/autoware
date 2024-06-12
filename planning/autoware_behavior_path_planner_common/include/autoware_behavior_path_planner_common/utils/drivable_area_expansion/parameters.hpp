@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-namespace drivable_area_expansion
+namespace autoware::behavior_path_planner::drivable_area_expansion
 {
 
 struct DrivableAreaExpansionParameters
@@ -125,5 +125,5 @@ struct DrivableAreaExpansionParameters
   }
 };
 
-}  // namespace drivable_area_expansion
+}  // namespace autoware::behavior_path_planner::drivable_area_expansion
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__DRIVABLE_AREA_EXPANSION__PARAMETERS_HPP_

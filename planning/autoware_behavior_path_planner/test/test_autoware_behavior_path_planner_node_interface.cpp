@@ -47,7 +47,7 @@ std::shared_ptr<BehaviorPathPlannerNode> generateNode()
   const auto planning_test_utils_dir =
     ament_index_cpp::get_package_share_directory("planning_test_utils");
   const auto behavior_path_planner_dir =
-    ament_index_cpp::get_package_share_directory("behavior_path_planner");
+    ament_index_cpp::get_package_share_directory("autoware_behavior_path_planner");
 
   std::vector<std::string> module_names;
 

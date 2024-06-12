@@ -26,7 +26,7 @@
 #include <memory>
 #include <vector>
 
-namespace drivable_area_expansion
+namespace autoware::behavior_path_planner::drivable_area_expansion
 {
 /// @brief Expand the drivable area based on the path curvature and the vehicle dimensions
 /// @param[inout] path path whose drivable area will be expanded
@@ -131,7 +131,7 @@ void calculate_expansion_distances(
 std::vector<double> calculate_smoothed_curvatures(
   const std::vector<Pose> & poses, const size_t smoothing_window_size);
 
-}  // namespace drivable_area_expansion
+}  // namespace autoware::behavior_path_planner::drivable_area_expansion
 
 // clang-format off
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__DRIVABLE_AREA_EXPANSION__DRIVABLE_AREA_EXPANSION_HPP_  // NOLINT

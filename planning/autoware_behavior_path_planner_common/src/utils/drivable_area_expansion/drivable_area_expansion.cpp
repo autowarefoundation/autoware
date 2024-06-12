@@ -30,7 +30,7 @@
 
 #include <limits>
 
-namespace drivable_area_expansion
+namespace autoware::behavior_path_planner::drivable_area_expansion
 {
 
 namespace
@@ -435,4 +435,4 @@ void expand_drivable_area(
   planner_data->drivable_area_expansion_prev_path_poses = path_poses;
   planner_data->drivable_area_expansion_prev_curvatures = curvatures;
 }
-}  // namespace drivable_area_expansion
+}  // namespace autoware::behavior_path_planner::drivable_area_expansion

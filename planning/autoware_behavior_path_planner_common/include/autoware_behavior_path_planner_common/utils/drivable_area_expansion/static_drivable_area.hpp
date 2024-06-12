@@ -23,7 +23,7 @@
 #include <vector>
 namespace autoware::behavior_path_planner::utils
 {
-using drivable_area_expansion::DrivableAreaExpansionParameters;
+using autoware::behavior_path_planner::drivable_area_expansion::DrivableAreaExpansionParameters;
 
 std::optional<size_t> getOverlappedLaneletId(const std::vector<DrivableLanes> & lanes);
 

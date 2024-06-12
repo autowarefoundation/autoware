@@ -23,7 +23,7 @@
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
-namespace drivable_area_expansion
+namespace autoware::behavior_path_planner::drivable_area_expansion
 {
 /// @brief translate a polygon by some (x,y) vector
 /// @param[in] polygon input polygon
@@ -45,5 +45,5 @@ Polygon2d create_footprint(const geometry_msgs::msg::Pose & pose, const Polygon2
 MultiPolygon2d create_object_footprints(
   const autoware_perception_msgs::msg::PredictedObjects & objects,
   const DrivableAreaExpansionParameters & params);
-}  // namespace drivable_area_expansion
+}  // namespace autoware::behavior_path_planner::drivable_area_expansion
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__DRIVABLE_AREA_EXPANSION__FOOTPRINTS_HPP_

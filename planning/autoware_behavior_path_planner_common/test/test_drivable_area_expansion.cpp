@@ -21,14 +21,14 @@
 #include <gtest/gtest.h>
 #include <lanelet2_core/LaneletMap.h>
 
-using drivable_area_expansion::LineString2d;
-using drivable_area_expansion::Point2d;
-using drivable_area_expansion::Segment2d;
+using autoware::behavior_path_planner::drivable_area_expansion::LineString2d;
+using autoware::behavior_path_planner::drivable_area_expansion::Point2d;
+using autoware::behavior_path_planner::drivable_area_expansion::Segment2d;
 constexpr auto eps = 1e-9;
 
 TEST(DrivableAreaExpansionProjection, PointToSegment)
 {
-  using drivable_area_expansion::point_to_segment_projection;
+  using autoware::behavior_path_planner::drivable_area_expansion::point_to_segment_projection;
 
   {
     Point2d query(1.0, 1.0);
@@ -90,7 +90,7 @@ TEST(DrivableAreaExpansionProjection, PointToSegment)
 
 TEST(DrivableAreaExpansionProjection, PointToLinestring)
 {
-  using drivable_area_expansion::point_to_linestring_projection;
+  using autoware::behavior_path_planner::drivable_area_expansion::point_to_linestring_projection;
 
   LineString2d ls = {
     Point2d(0.0, 0.0), Point2d(10.0, 0.0), Point2d(10.0, 10.0), Point2d(0.0, 10.0),
@@ -123,7 +123,7 @@ TEST(DrivableAreaExpansionProjection, PointToLinestring)
 
 TEST(DrivableAreaExpansionProjection, LinestringToPoint)
 {
-  using drivable_area_expansion::linestring_to_point_projection;
+  using autoware::behavior_path_planner::drivable_area_expansion::linestring_to_point_projection;
 
   LineString2d ls = {
     Point2d(0.0, 0.0), Point2d(10.0, 0.0), Point2d(10.0, 10.0), Point2d(0.0, 10.0),
@@ -153,8 +153,8 @@ TEST(DrivableAreaExpansionProjection, LinestringToPoint)
 
 TEST(DrivableAreaExpansionProjection, InverseProjection)
 {
-  using drivable_area_expansion::linestring_to_point_projection;
-  using drivable_area_expansion::point_to_linestring_projection;
+  using autoware::behavior_path_planner::drivable_area_expansion::linestring_to_point_projection;
+  using autoware::behavior_path_planner::drivable_area_expansion::point_to_linestring_projection;
 
   LineString2d ls = {
     Point2d(0.0, 0.0), Point2d(10.0, 0.0), Point2d(10.0, 10.0), Point2d(0.0, 10.0),
@@ -174,16 +174,17 @@ TEST(DrivableAreaExpansionProjection, InverseProjection)
 
 TEST(DrivableAreaExpansionProjection, expand_drivable_area)
 {
-  drivable_area_expansion::DrivableAreaExpansionParameters params;
-  drivable_area_expansion::PredictedObjects dynamic_objects;
+  autoware::behavior_path_planner::drivable_area_expansion::DrivableAreaExpansionParameters params;
+  autoware::behavior_path_planner::drivable_area_expansion::PredictedObjects dynamic_objects;
   autoware_map_msgs::msg::LaneletMapBin map;
   lanelet::LaneletMapPtr empty_lanelet_map_ptr = std::make_shared<lanelet::LaneletMap>();
   lanelet::utils::conversion::toBinMsg(empty_lanelet_map_ptr, &map);
   autoware::route_handler::RouteHandler route_handler(map);
   lanelet::ConstLanelets path_lanes = {};
-  drivable_area_expansion::PathWithLaneId path;
+  autoware::behavior_path_planner::drivable_area_expansion::PathWithLaneId path;
   {  // Simple path with Y=0 and X = 0, 1, 2
-    drivable_area_expansion::PathWithLaneId::_points_type::value_type p;
+    autoware::behavior_path_planner::drivable_area_expansion::PathWithLaneId::_points_type::
+      value_type p;
     p.point.pose.position.x = 0.0;
     p.point.pose.position.y = 0.0;
     path.points.push_back(p);
@@ -193,8 +194,8 @@ TEST(DrivableAreaExpansionProjection, expand_drivable_area)
     path.points.push_back(p);
   }
   {  // Left bound at Y = 1, Right bound at Y = -1
-    drivable_area_expansion::Point pl;
-    drivable_area_expansion::Point pr;
+    autoware::behavior_path_planner::drivable_area_expansion::Point pl;
+    autoware::behavior_path_planner::drivable_area_expansion::Point pr;
     pl.y = 1.0;
     pr.y = -1.0;
     pl.x = 0.0;
@@ -226,11 +227,12 @@ TEST(DrivableAreaExpansionProjection, expand_drivable_area)
   autoware::behavior_path_planner::PlannerData planner_data;
   planner_data.drivable_area_expansion_parameters = params;
   planner_data.dynamic_object =
-    std::make_shared<drivable_area_expansion::PredictedObjects>(dynamic_objects);
+    std::make_shared<autoware::behavior_path_planner::drivable_area_expansion::PredictedObjects>(
+      dynamic_objects);
   planner_data.self_odometry = std::make_shared<nav_msgs::msg::Odometry>();
   planner_data.route_handler =
     std::make_shared<autoware::route_handler::RouteHandler>(route_handler);
-  drivable_area_expansion::expand_drivable_area(
+  autoware::behavior_path_planner::drivable_area_expansion::expand_drivable_area(
     path, std::make_shared<autoware::behavior_path_planner::PlannerData>(planner_data));
   // unchanged path points
   ASSERT_EQ(path.points.size(), 3ul);
@@ -259,7 +261,7 @@ TEST(DrivableAreaExpansionProjection, expand_drivable_area)
   // add some curvature
   path.points[1].point.pose.position.y = 0.5;
 
-  drivable_area_expansion::expand_drivable_area(
+  autoware::behavior_path_planner::drivable_area_expansion::expand_drivable_area(
     path, std::make_shared<autoware::behavior_path_planner::PlannerData>(planner_data));
   // expanded left bound
   ASSERT_EQ(path.left_bound.size(), 3ul);

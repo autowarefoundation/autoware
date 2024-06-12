@@ -21,7 +21,7 @@
 
 #include <algorithm>
 
-namespace drivable_area_expansion
+namespace autoware::behavior_path_planner::drivable_area_expansion
 {
 SegmentRtree extract_uncrossable_segments(
   const lanelet::LaneletMap & lanelet_map, const Point & ego_point,
@@ -51,4 +51,4 @@ bool has_types(const lanelet::ConstLineString3d & ls, const std::vector<std::str
   const auto type = ls.attributeOr(lanelet::AttributeName::Type, no_type);
   return (type != no_type && std::find(types.begin(), types.end(), type) != types.end());
 }
-}  // namespace drivable_area_expansion
+}  // namespace autoware::behavior_path_planner::drivable_area_expansion

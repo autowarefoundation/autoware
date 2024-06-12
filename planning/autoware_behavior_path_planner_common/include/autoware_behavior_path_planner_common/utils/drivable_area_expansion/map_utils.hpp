@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace drivable_area_expansion
+namespace autoware::behavior_path_planner::drivable_area_expansion
 {
 /// @brief Extract uncrossable segments from the lanelet map that are in range of ego
 /// @param[in] lanelet_map lanelet map
@@ -39,6 +39,6 @@ SegmentRtree extract_uncrossable_segments(
 /// @param[in] types type strings to check
 /// @return true if the linestring has one of the given types
 bool has_types(const lanelet::ConstLineString3d & ls, const std::vector<std::string> & types);
-}  // namespace drivable_area_expansion
+}  // namespace autoware::behavior_path_planner::drivable_area_expansion
 
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__DRIVABLE_AREA_EXPANSION__MAP_UTILS_HPP_

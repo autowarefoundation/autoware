@@ -23,7 +23,7 @@
 
 #include <limits>
 
-namespace drivable_area_expansion
+namespace autoware::behavior_path_planner::drivable_area_expansion
 {
 /// @brief project a point to a segment
 /// @param p point to project on the segment
@@ -178,7 +178,7 @@ inline LineString2d sub_linestring(
   sub_ls.push_back(to_point);
   return sub_ls;
 }
-}  // namespace drivable_area_expansion
+}  // namespace autoware::behavior_path_planner::drivable_area_expansion
 
 // clang-format off
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__DRIVABLE_AREA_EXPANSION__PATH_PROJECTION_HPP_  // NOLINT

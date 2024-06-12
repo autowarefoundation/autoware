@@ -162,7 +162,8 @@ struct PlannerData
   std::shared_ptr<RouteHandler> route_handler{std::make_shared<RouteHandler>()};
   std::map<int64_t, TrafficSignalStamped> traffic_light_id_map;
   BehaviorPathPlannerParameters parameters{};
-  drivable_area_expansion::DrivableAreaExpansionParameters drivable_area_expansion_parameters{};
+  autoware::behavior_path_planner::drivable_area_expansion::DrivableAreaExpansionParameters
+    drivable_area_expansion_parameters{};
   VelocityLimit::ConstSharedPtr external_limit_max_velocity{};
 
   mutable std::vector<geometry_msgs::msg::Pose> drivable_area_expansion_prev_path_poses{};

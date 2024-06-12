@@ -843,7 +843,8 @@ void generateDrivableArea(
 
   const auto & expansion_params = planner_data->drivable_area_expansion_parameters;
   if (expansion_params.enabled) {
-    drivable_area_expansion::expand_drivable_area(path, planner_data);
+    autoware::behavior_path_planner::drivable_area_expansion::expand_drivable_area(
+      path, planner_data);
   }
 }
 

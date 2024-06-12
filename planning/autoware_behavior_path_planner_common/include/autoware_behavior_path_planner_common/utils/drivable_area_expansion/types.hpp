@@ -27,7 +27,7 @@
 #include <optional>
 #include <vector>
 
-namespace drivable_area_expansion
+namespace autoware::behavior_path_planner::drivable_area_expansion
 {
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_planning_msgs::msg::PathPoint;
@@ -70,5 +70,5 @@ struct Expansion
   std::vector<PointDistance> right_projections;
   std::vector<double> min_lane_widths;
 };
-}  // namespace drivable_area_expansion
+}  // namespace autoware::behavior_path_planner::drivable_area_expansion
 #endif  // AUTOWARE_BEHAVIOR_PATH_PLANNER_COMMON__UTILS__DRIVABLE_AREA_EXPANSION__TYPES_HPP_
