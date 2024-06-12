@@ -31,10 +31,14 @@ jobs:
             container: ghcr.io/autowarefoundation/autoware:latest-prebuilt
             build-depends-repos: build_depends.repos
     steps:
-      - name: Check out repository
+      - name: Set PR fetch depth
+        run: echo "PR_FETCH_DEPTH=$(( ${{ github.event.pull_request.commits }} + 1 ))" >> "${GITHUB_ENV}"
+
+      - name: Checkout PR branch and all PR commits
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: ${{ env.PR_FETCH_DEPTH }}
 
       - name: Show disk space before the tasks
         run: df -h
