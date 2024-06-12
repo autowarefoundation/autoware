@@ -49,9 +49,7 @@ private:
     double height;
   };
   BoundingBox bounding_box_;
-  BoundingBox last_input_bounding_box_;
   Eigen::Vector2d tracking_offset_;
-  int last_nearest_corner_index_;
 
 private:
   BicycleMotionModel motion_model_;
@@ -77,16 +75,6 @@ public:
     const rclcpp::Time & time,
     autoware_perception_msgs::msg::TrackedObject & object) const override;
   virtual ~BigVehicleTracker() {}
-
-private:
-  void setNearestCornerOrSurfaceIndex(const geometry_msgs::msg::Transform & self_transform)
-  {
-    Eigen::MatrixXd X_t(DIM, 1);
-    motion_model_.getStateVector(X_t);
-    last_nearest_corner_index_ = utils::getNearestCornerOrSurface(
-      X_t(IDX::X), X_t(IDX::Y), X_t(IDX::YAW), bounding_box_.width, bounding_box_.length,
-      self_transform);
-  }
 };
 
 #endif  // MULTI_OBJECT_TRACKER__TRACKER__MODEL__BIG_VEHICLE_TRACKER_HPP_

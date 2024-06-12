@@ -280,7 +280,7 @@ inline void calcAnchorPointOffset(
 
   // update offset
   const Eigen::Vector2d offset = calcOffsetVectorFromShapeChange(w_n - w, l_n - l, indx);
-  tracking_offset += offset;
+  tracking_offset = offset;
 
   // offset input object
   const Eigen::Matrix2d R = Eigen::Rotation2Dd(yaw).toRotationMatrix();
