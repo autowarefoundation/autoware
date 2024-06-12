@@ -10,7 +10,7 @@ It loads modules as plugins. Please refer to the links listed below for detail o
 - [Blind Spot](../autoware_behavior_velocity_blind_spot_module/README.md)
 - [Crosswalk](../autoware_behavior_velocity_crosswalk_module/README.md)
 - [Walkway](../autoware_behavior_velocity_walkway_module/README.md)
-- [Detection Area](../behavior_velocity_detection_area_module/README.md)
+- [Detection Area](../autoware_behavior_velocity_detection_area_module/README.md)
 - [Intersection](../autoware_behavior_velocity_intersection_module/README.md)
 - [MergeFromPrivate](../behavior_velocity_intersection_module/README.md#merge-from-private)
 - [Stop Line](../autoware_behavior_velocity_stop_line_module/README.md)

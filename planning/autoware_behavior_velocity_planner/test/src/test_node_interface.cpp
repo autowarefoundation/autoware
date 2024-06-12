@@ -98,7 +98,7 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
                    get_behavior_velocity_module_config("blind_spot"),
                    get_behavior_velocity_module_config("crosswalk"),
                    get_behavior_velocity_module_config("walkway"),
-                   get_behavior_velocity_module_config_no_prefix("detection_area"),
+                   get_behavior_velocity_module_config("detection_area"),
                    get_behavior_velocity_module_config("intersection"),
                    get_behavior_velocity_module_config("no_stopping_area"),
                    get_behavior_velocity_module_config("occlusion_spot"),
