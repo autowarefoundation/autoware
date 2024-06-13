@@ -300,12 +300,11 @@ void NDTScanMatcher::callback_sensor_points(
     callback_sensor_points_main(sensor_points_msg_in_sensor_frame);
 
   // check skipping_publish_num
-  static size_t skipping_publish_num = 0;
-  const size_t error_skipping_publish_num = 5;
+  static int64_t skipping_publish_num = 0;
   skipping_publish_num =
     ((is_succeed_scan_matching || !is_activated_) ? 0 : (skipping_publish_num + 1));
   diagnostics_scan_points_->add_key_value("skipping_publish_num", skipping_publish_num);
-  if (skipping_publish_num >= error_skipping_publish_num) {
+  if (skipping_publish_num >= param_.validation.skipping_publish_num) {
     std::stringstream message;
     message << "skipping_publish_num exceed limit (" << skipping_publish_num << " times).";
     diagnostics_scan_points_->update_level_and_message(
@@ -340,11 +339,11 @@ bool NDTScanMatcher::callback_sensor_points_main(
     (this->now() - sensor_points_msg_in_sensor_frame->header.stamp).seconds();
   diagnostics_scan_points_->add_key_value(
     "sensor_points_delay_time_sec", sensor_points_delay_time_sec);
-  if (sensor_points_delay_time_sec > param_.validation.lidar_topic_timeout_sec) {
+  if (sensor_points_delay_time_sec > param_.sensor_points.timeout_sec) {
     std::stringstream message;
     message << "sensor points is experiencing latency."
             << "The delay time is " << sensor_points_delay_time_sec << "[sec] "
-            << "(the tolerance is " << param_.validation.lidar_topic_timeout_sec << "[sec]).";
+            << "(the tolerance is " << param_.sensor_points.timeout_sec << "[sec]).";
     diagnostics_scan_points_->update_level_and_message(
       diagnostic_msgs::msg::DiagnosticStatus::WARN, message.str());
 
@@ -578,8 +577,7 @@ bool NDTScanMatcher::callback_sensor_points_main(
   const auto distance_initial_to_result = static_cast<double>(
     norm(interpolation_result.interpolated_pose.pose.pose.position, result_pose_msg.position));
   diagnostics_scan_points_->add_key_value("distance_initial_to_result", distance_initial_to_result);
-  const double warn_distance_initial_to_result = 3.0;
-  if (distance_initial_to_result > warn_distance_initial_to_result) {
+  if (distance_initial_to_result > param_.validation.initial_to_result_distance_tolerance_m) {
     std::stringstream message;
     message << "distance_initial_to_result is too large (" << distance_initial_to_result
             << " [m]).";

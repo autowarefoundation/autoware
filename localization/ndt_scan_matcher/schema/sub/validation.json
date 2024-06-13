@@ -5,12 +5,6 @@
     "validation": {
       "type": "object",
       "properties": {
-        "lidar_topic_timeout_sec": {
-          "type": "number",
-          "description": "Tolerance of timestamp difference between current time and sensor pointcloud. [sec]",
-          "default": 1.0,
-          "minimum": 0.0
-        },
         "initial_pose_timeout_sec": {
           "type": "number",
           "description": "Tolerance of timestamp difference between initial_pose and sensor pointcloud. [sec]",
@@ -23,18 +17,31 @@
           "default": 10.0,
           "minimum": 0.0
         },
+        "initial_to_result_distance_tolerance_m": {
+          "type": "number",
+          "description": "Tolerance of distance difference from initial pose to result pose. [m]",
+          "default": 3.0,
+          "minimum": 0.0
+        },
         "critical_upper_bound_exe_time_ms": {
           "type": "number",
           "description": "The execution time which means probably NDT cannot matches scans properly. [ms]",
           "default": 100.0,
           "minimum": 0.0
+        },
+        "skipping_publish_num": {
+          "type": "number",
+          "description": "Tolerance for the number for times rejected estimation results consecutively.",
+          "default": 5,
+          "minimum": 1
         }
       },
       "required": [
-        "lidar_topic_timeout_sec",
         "initial_pose_timeout_sec",
         "initial_pose_distance_tolerance_m",
-        "critical_upper_bound_exe_time_ms"
+        "initial_to_result_distance_tolerance_m",
+        "critical_upper_bound_exe_time_ms",
+        "skipping_publish_num"
       ],
       "additionalProperties": false
     }

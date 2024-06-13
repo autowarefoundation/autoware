@@ -5,13 +5,19 @@
     "sensor_points": {
       "type": "object",
       "properties": {
+        "timeout_sec": {
+          "type": "number",
+          "description": "Tolerance of timestamp difference between current time and sensor pointcloud. [sec]",
+          "default": 1.0,
+          "minimum": 0.0
+        },
         "required_distance": {
           "type": "number",
           "description": "Required distance of input sensor points [m]. If the max distance of input sensor points is lower than this value, the scan matching will not be performed.",
           "default": "10.0"
         }
       },
-      "required": ["required_distance"],
+      "required": ["timeout_sec", "required_distance"],
       "additionalProperties": false
     }
   }
