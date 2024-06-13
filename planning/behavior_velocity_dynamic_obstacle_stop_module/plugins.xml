@@ -1,3 +1,0 @@
-<library path="behavior_velocity_dynamic_obstacle_stop_module">
-  <class type="autoware::behavior_velocity_planner::DynamicObstacleStopModulePlugin" base_class_type="autoware::behavior_velocity_planner::PluginInterface"/>
-</library>

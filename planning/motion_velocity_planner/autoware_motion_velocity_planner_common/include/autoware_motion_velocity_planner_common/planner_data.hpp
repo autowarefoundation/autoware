@@ -67,8 +67,8 @@ struct PlannerData
   std::shared_ptr<route_handler::RouteHandler> route_handler;
 
   // nearest search
-  double ego_nearest_dist_threshold;
-  double ego_nearest_yaw_threshold;
+  double ego_nearest_dist_threshold{};
+  double ego_nearest_yaw_threshold{};
 
   // other internal data
   // traffic_light_id_map_raw is the raw observation, while traffic_light_id_map_keep_last keeps the

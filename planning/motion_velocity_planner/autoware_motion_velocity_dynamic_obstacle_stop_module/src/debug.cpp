@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop::debug
+namespace autoware::motion_velocity_planner::dynamic_obstacle_stop::debug
 {
 
 std::vector<visualization_msgs::msg::Marker> make_delete_markers(
@@ -110,4 +110,4 @@ std::vector<visualization_msgs::msg::Marker> make_polygon_markers(
   }
   return markers;
 }
-}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop::debug
+}  // namespace autoware::motion_velocity_planner::dynamic_obstacle_stop::debug

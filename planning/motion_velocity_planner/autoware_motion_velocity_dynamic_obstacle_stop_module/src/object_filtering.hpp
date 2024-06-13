@@ -21,12 +21,12 @@
 
 #include <vector>
 
-namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
+namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
 {
 
 /// @brief filter the given predicted objects
 /// @param objects predicted objects
-/// @param ego_data ego data, including its path and pose
+/// @param ego_data ego data, including its trajectory and pose
 /// @param params parameters
 /// @param hysteresis [m] extra distance threshold used for filtering
 /// @return filtered predicted objects
@@ -34,6 +34,6 @@ std::vector<autoware_perception_msgs::msg::PredictedObject> filter_predicted_obj
   const autoware_perception_msgs::msg::PredictedObjects & objects, const EgoData & ego_data,
   const PlannerParam & params, const double hysteresis);
 
-}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
+}  // namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
 
 #endif  // OBJECT_FILTERING_HPP_

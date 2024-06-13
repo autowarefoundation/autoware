@@ -18,13 +18,11 @@
 
 #include <limits>
 
-namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
+namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
 {
 void update_object_map(
   ObjectStopDecisionMap & object_map, const std::vector<Collision> & collisions,
-  const rclcpp::Time & now,
-  const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & path_points,
-  const PlannerParam & params)
+  const rclcpp::Time & now, const TrajectoryPoints & trajectory, const PlannerParam & params)
 {
   for (auto & [object, decision] : object_map) decision.collision_detected = false;
   for (const auto & collision : collisions) {
@@ -32,7 +30,7 @@ void update_object_map(
       search->second.collision_detected = true;
       const auto is_closer_collision_point =
         motion_utils::calcSignedArcLength(
-          path_points, search->second.collision_point, collision.point) < 0.0;
+          trajectory, search->second.collision_point, collision.point) < 0.0;
       if (is_closer_collision_point) search->second.collision_point = collision.point;
     } else {
       object_map[collision.object_uuid].collision_point = collision.point;
@@ -56,7 +54,7 @@ std::optional<geometry_msgs::msg::Point> find_earliest_collision(
   for (auto & [object_uuid, decision] : object_map) {
     if (decision.should_be_avoided()) {
       const auto arc_length = motion_utils::calcSignedArcLength(
-        ego_data.path.points, ego_data.pose.position, decision.collision_point);
+        ego_data.trajectory, ego_data.pose.position, decision.collision_point);
       if (arc_length < earliest_collision_arc_length) {
         earliest_collision_arc_length = arc_length;
         earliest_collision = decision.collision_point;
@@ -66,4 +64,4 @@ std::optional<geometry_msgs::msg::Point> find_earliest_collision(
   return earliest_collision;
 }
 
-}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
+}  // namespace autoware::motion_velocity_planner::dynamic_obstacle_stop

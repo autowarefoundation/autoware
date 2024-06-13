@@ -24,7 +24,7 @@
 #include <optional>
 #include <vector>
 
-namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
+namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
 {
 
 std::optional<geometry_msgs::msg::Point> find_closest_collision_point(
@@ -37,9 +37,9 @@ std::optional<geometry_msgs::msg::Point> find_closest_collision_point(
   ego_data.rtree.query(
     boost::geometry::index::intersects(object_footprint), std::back_inserter(rough_collisions));
   for (const auto & rough_collision : rough_collisions) {
-    const auto path_idx = rough_collision.second;
-    const auto & ego_footprint = ego_data.path_footprints[path_idx];
-    const auto & ego_pose = ego_data.path.points[path_idx].point.pose;
+    const auto traj_idx = rough_collision.second;
+    const auto & ego_footprint = ego_data.trajectory_footprints[traj_idx];
+    const auto & ego_pose = ego_data.trajectory[traj_idx].pose;
     const auto angle_diff = tier4_autoware_utils::normalizeRadian(
       tf2::getYaw(ego_pose.orientation) - tf2::getYaw(object_pose.orientation));
     if (std::abs(angle_diff) > (M_PI_2 + M_PI_4)) {  // TODO(Maxime): make this angle a parameter
@@ -49,7 +49,7 @@ std::optional<geometry_msgs::msg::Point> find_closest_collision_point(
       for (const auto & coll_p : collision_points) {
         auto p = geometry_msgs::msg::Point().set__x(coll_p.x()).set__y(coll_p.y());
         const auto dist_to_ego =
-          motion_utils::calcSignedArcLength(ego_data.path.points, ego_data.pose.position, p);
+          motion_utils::calcSignedArcLength(ego_data.trajectory, ego_data.pose.position, p);
         if (dist_to_ego < closest_dist) {
           closest_dist = dist_to_ego;
           closest_collision_point = p;
@@ -80,4 +80,4 @@ std::vector<Collision> find_collisions(
   return collisions;
 }
 
-}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
+}  // namespace autoware::motion_velocity_planner::dynamic_obstacle_stop

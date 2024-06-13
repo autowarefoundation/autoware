@@ -26,7 +26,7 @@
 #include <utility>
 #include <vector>
 
-namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
+namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
 {
 tier4_autoware_utils::MultiPolygon2d make_forward_footprints(
   const std::vector<autoware_perception_msgs::msg::PredictedObject> & obstacles,
@@ -71,14 +71,14 @@ tier4_autoware_utils::Polygon2d project_to_pose(
 
 void make_ego_footprint_rtree(EgoData & ego_data, const PlannerParam & params)
 {
-  for (const auto & p : ego_data.path.points)
-    ego_data.path_footprints.push_back(tier4_autoware_utils::toFootprint(
-      p.point.pose, params.ego_longitudinal_offset, 0.0, params.ego_lateral_offset * 2.0));
-  for (auto i = 0UL; i < ego_data.path_footprints.size(); ++i) {
-    const auto box =
-      boost::geometry::return_envelope<tier4_autoware_utils::Box2d>(ego_data.path_footprints[i]);
+  for (const auto & p : ego_data.trajectory)
+    ego_data.trajectory_footprints.push_back(tier4_autoware_utils::toFootprint(
+      p.pose, params.ego_longitudinal_offset, 0.0, params.ego_lateral_offset * 2.0));
+  for (auto i = 0UL; i < ego_data.trajectory_footprints.size(); ++i) {
+    const auto box = boost::geometry::return_envelope<tier4_autoware_utils::Box2d>(
+      ego_data.trajectory_footprints[i]);
     ego_data.rtree.insert(std::make_pair(box, i));
   }
 }
 
-}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
+}  // namespace autoware::motion_velocity_planner::dynamic_obstacle_stop

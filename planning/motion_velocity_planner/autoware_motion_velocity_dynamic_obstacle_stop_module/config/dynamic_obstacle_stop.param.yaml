@@ -8,5 +8,5 @@
       hysteresis: 1.0  # [m] once a collision has been detected, this hysteresis is used on the collision detection
       add_stop_duration_buffer : 0.5  # [s] duration where a collision must be continuously detected before a stop decision is added
       remove_stop_duration_buffer : 1.0  # [s] duration between no collision being detected and the stop decision being remove
-      minimum_object_distance_from_ego_path: 1.0  # [m] minimum distance between the footprints of ego and an object to consider for collision
+      minimum_object_distance_from_ego_trajectory: 1.0  # [m] minimum distance between the footprints of ego and an object to consider for collision
       ignore_unavoidable_collisions : true  # if true, ignore collisions that cannot be avoided by stopping (assuming the obstacle continues going straight)

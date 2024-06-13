@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>behavior_velocity_dynamic_obstacle_stop_module</name>
+  <name>autoware_motion_velocity_dynamic_obstacle_stop_module</name>
   <version>0.1.0</version>
   <description>dynamic_obstacle_stop module to stop ego when in the immediate path of a dynamic object</description>
 
@@ -12,7 +12,7 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
-  <depend>autoware_behavior_velocity_planner_common</depend>
+  <depend>autoware_motion_velocity_planner_common</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_route_handler</depend>

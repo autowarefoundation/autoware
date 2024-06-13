@@ -2,9 +2,9 @@
   <arg name="interface_input_topic" default="/planning/scenario_planning/lane_driving/behavior_planning/path"/>
   <arg name="interface_output_topic" default="/planning/scenario_planning/lane_driving/trajectory"/>
 
+  <arg name="launch_dynamic_obstacle_stop_module" default="true"/>
   <arg name="launch_out_of_lane_module" default="true"/>
   <arg name="launch_obstacle_velocity_limiter_module" default="true"/>
-  <!-- <arg name="launch_dynamic_obstacle_stop_module" default="true"/> -->
   <arg name="launch_module_list_end" default="&quot;&quot;]"/>
 
   <!-- assemble launch config for motion velocity planner -->
@@ -19,11 +19,11 @@
     value="$(eval &quot;'$(var motion_velocity_planner_launch_modules)' + 'autoware::motion_velocity_planner::ObstacleVelocityLimiterModule, '&quot;)"
     if="$(var launch_obstacle_velocity_limiter_module)"
   />
-  <!-- <let -->
-  <!--   name="motion_velocity_planner_launch_modules" -->
-  <!--   value="$(eval &quot;'$(var motion_velocity_planner_launch_modules)' + 'motion_velocity_planner::DynamicObstacleStopModule, '&quot;)" -->
-  <!--   if="$(var launch_dynamic_obstacle_stop_module)" -->
-  <!-- /> -->
+  <let
+    name="motion_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var motion_velocity_planner_launch_modules)' + 'autoware::motion_velocity_planner::DynamicObstacleStopModule, '&quot;)"
+    if="$(var launch_dynamic_obstacle_stop_module)"
+  />
   <let name="motion_velocity_planner_launch_modules" value="$(eval &quot;'$(var motion_velocity_planner_launch_modules)' + '$(var launch_module_list_end)'&quot;)"/>
 
   <node_container pkg="rclcpp_components" exec="$(var container_type)" name="motion_planning_container" namespace="" args="" output="screen">
@@ -140,6 +140,7 @@
         <param from="$(var velocity_smoother_param_path)"/>
         <param from="$(var motion_velocity_planner_velocity_smoother_type_param_path)"/>
         <param from="$(var motion_velocity_planner_param_path)"/>
+        <param from="$(var motion_velocity_planner_dynamic_obstacle_stop_module_param_path)"/>
         <param from="$(var motion_velocity_planner_out_of_lane_module_param_path)"/>
         <param from="$(var motion_velocity_planner_obstacle_velocity_limiter_param_path)"/>
         <!-- <param from="$(var motion_velocity_planner_template_param_path)"/> -->

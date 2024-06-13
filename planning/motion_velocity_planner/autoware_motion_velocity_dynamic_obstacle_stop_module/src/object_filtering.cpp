@@ -21,12 +21,12 @@
 #include <algorithm>
 #include <vector>
 
-namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
+namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
 {
 
 /// @brief filter the given predicted objects
 /// @param objects predicted objects
-/// @param ego_data ego data, including its path and pose
+/// @param ego_data ego data, including its trajectory and pose
 /// @param params parameters
 /// @param hysteresis [m] extra distance threshold used for filtering
 /// @return filtered predicted objects
@@ -47,15 +47,15 @@ std::vector<autoware_perception_msgs::msg::PredictedObject> filter_predicted_obj
   };
   const auto is_in_range = [&](const auto & o) {
     const auto distance = std::abs(motion_utils::calcLateralOffset(
-      ego_data.path.points, o.kinematics.initial_pose_with_covariance.pose.position));
-    return distance <= params.minimum_object_distance_from_ego_path + params.ego_lateral_offset +
-                         o.shape.dimensions.y / 2.0 + hysteresis;
+      ego_data.trajectory, o.kinematics.initial_pose_with_covariance.pose.position));
+    return distance <= params.minimum_object_distance_from_ego_trajectory +
+                         params.ego_lateral_offset + o.shape.dimensions.y / 2.0 + hysteresis;
   };
   const auto is_not_too_close = [&](const auto & o) {
     const auto obj_arc_length = motion_utils::calcSignedArcLength(
-      ego_data.path.points, ego_data.pose.position,
+      ego_data.trajectory, ego_data.pose.position,
       o.kinematics.initial_pose_with_covariance.pose.position);
-    return obj_arc_length > ego_data.longitudinal_offset_to_first_path_idx +
+    return obj_arc_length > ego_data.longitudinal_offset_to_first_trajectory_idx +
                               params.ego_longitudinal_offset + o.shape.dimensions.x / 2.0;
   };
   const auto is_unavoidable = [&](const auto & o) {
@@ -91,4 +91,4 @@ std::vector<autoware_perception_msgs::msg::PredictedObject> filter_predicted_obj
   }
   return filtered_objects;
 }
-}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
+}  // namespace autoware::motion_velocity_planner::dynamic_obstacle_stop

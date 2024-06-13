@@ -19,8 +19,8 @@
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_planning_msgs/msg/trajectory_point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
-#include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <boost/geometry/index/rtree.hpp>
 
@@ -29,8 +29,9 @@
 #include <utility>
 #include <vector>
 
-namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
+namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
 {
+using TrajectoryPoints = std::vector<autoware_planning_msgs::msg::TrajectoryPoint>;
 using BoxIndexPair = std::pair<tier4_autoware_utils::Box2d, size_t>;
 using Rtree = boost::geometry::index::rtree<BoxIndexPair, boost::geometry::index::rstar<16, 4>>;
 
@@ -46,17 +47,17 @@ struct PlannerParam
   double remove_duration_buffer;
   double ego_longitudinal_offset;
   double ego_lateral_offset;
-  double minimum_object_distance_from_ego_path;
+  double minimum_object_distance_from_ego_trajectory;
   bool ignore_unavoidable_collisions;
 };
 
 struct EgoData
 {
-  tier4_planning_msgs::msg::PathWithLaneId path{};
-  size_t first_path_idx{};
-  double longitudinal_offset_to_first_path_idx;  // [m]
+  TrajectoryPoints trajectory{};
+  size_t first_trajectory_idx{};
+  double longitudinal_offset_to_first_trajectory_idx;  // [m]
   geometry_msgs::msg::Pose pose;
-  tier4_autoware_utils::MultiPolygon2d path_footprints;
+  tier4_autoware_utils::MultiPolygon2d trajectory_footprints;
   Rtree rtree;
   std::optional<geometry_msgs::msg::Pose> earliest_stop_pose;
 };
@@ -84,6 +85,6 @@ struct Collision
   geometry_msgs::msg::Point point;
   std::string object_uuid;
 };
-}  // namespace autoware::behavior_velocity_planner::dynamic_obstacle_stop
+}  // namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
 
 #endif  // TYPES_HPP_
