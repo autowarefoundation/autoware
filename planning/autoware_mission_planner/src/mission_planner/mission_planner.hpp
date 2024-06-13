@@ -16,6 +16,7 @@
 #define MISSION_PLANNER__MISSION_PLANNER_HPP_
 
 #include "arrival_checker.hpp"
+#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
 #include <autoware_route_handler/route_handler.hpp>
 #include <mission_planner/mission_planner_plugin.hpp>
@@ -84,13 +85,13 @@ private:
 
   rclcpp::Subscription<PoseWithUuidStamped>::SharedPtr sub_modified_goal_;
   rclcpp::Subscription<Odometry>::SharedPtr sub_odometry_;
-  rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_vector_map_;
-  rclcpp::Subscription<RerouteAvailability>::SharedPtr sub_reroute_availability_;
-  rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_;
+  tier4_autoware_utils::InterProcessPollingSubscriber<RerouteAvailability>
+    sub_reroute_availability_{this, "~/input/reroute_availability"};
 
+  rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_vector_map_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_;
   Odometry::ConstSharedPtr odometry_;
   LaneletMapBin::ConstSharedPtr map_ptr_;
-  RerouteAvailability::ConstSharedPtr reroute_availability_;
   RouteState state_;
   LaneletRoute::ConstSharedPtr current_route_;
   lanelet::LaneletMapPtr lanelet_map_ptr_{nullptr};

@@ -52,18 +52,11 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
     plugin_loader_.createSharedInstance("autoware::mission_planner::lanelet2::DefaultPlanner");
   planner_->initialize(this);
 
-  const auto reroute_availability = std::make_shared<RerouteAvailability>();
-  reroute_availability->availability = false;
-  reroute_availability_ = reroute_availability;
-
   const auto durable_qos = rclcpp::QoS(1).transient_local();
   sub_odometry_ = create_subscription<Odometry>(
     "~/input/odometry", rclcpp::QoS(1), std::bind(&MissionPlanner::on_odometry, this, _1));
   sub_vector_map_ = create_subscription<LaneletMapBin>(
     "~/input/vector_map", durable_qos, std::bind(&MissionPlanner::on_map, this, _1));
-  sub_reroute_availability_ = create_subscription<RerouteAvailability>(
-    "~/input/reroute_availability", rclcpp::QoS(1),
-    std::bind(&MissionPlanner::on_reroute_availability, this, _1));
   pub_marker_ = create_publisher<MarkerArray>("~/debug/route_marker", durable_qos);
 
   // NOTE: The route interface should be mutually exclusive by callback group.
@@ -135,11 +128,6 @@ void MissionPlanner::on_odometry(const Odometry::ConstSharedPtr msg)
       change_state(RouteState::ARRIVED);
     }
   }
-}
-
-void MissionPlanner::on_reroute_availability(const RerouteAvailability::ConstSharedPtr msg)
-{
-  reroute_availability_ = msg;
 }
 
 void MissionPlanner::on_map(const LaneletMapBin::ConstSharedPtr msg)
@@ -234,7 +222,8 @@ void MissionPlanner::on_set_lanelet_route(
     throw service_utils::ServiceException(
       ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
   }
-  if (is_reroute && !reroute_availability_->availability) {
+  const auto reroute_availability = sub_reroute_availability_.takeData();
+  if (is_reroute && (!reroute_availability || !reroute_availability->availability)) {
     throw service_utils::ServiceException(
       ResponseCode::ERROR_INVALID_STATE, "Cannot reroute as the planner is not in lane following.");
   }
@@ -282,7 +271,8 @@ void MissionPlanner::on_set_waypoint_route(
     throw service_utils::ServiceException(
       ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
   }
-  if (is_reroute && !reroute_availability_->availability) {
+  const auto reroute_availability = sub_reroute_availability_.takeData();
+  if (is_reroute && (!reroute_availability || !reroute_availability->availability)) {
     throw service_utils::ServiceException(
       ResponseCode::ERROR_INVALID_STATE, "Cannot reroute as the planner is not in lane following.");
   }
