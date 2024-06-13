@@ -24,7 +24,3 @@
       when: prompt_install_nvidia == 'y'
     - role: autoware.dev_env.docker_engine
     - role: autoware.dev_env.nvidia_container_toolkit
-
-    # ONNX files and other artifacts
-    - role: autoware.dev_env.artifacts
-      when: prompt_download_artifacts == 'y'
