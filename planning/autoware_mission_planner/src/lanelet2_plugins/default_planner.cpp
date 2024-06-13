@@ -39,20 +39,6 @@
 namespace
 {
 using RouteSections = std::vector<autoware_planning_msgs::msg::LaneletSegment>;
-RouteSections combine_consecutive_route_sections(
-  const RouteSections & route_sections1, const RouteSections & route_sections2)
-{
-  RouteSections route_sections;
-  route_sections.reserve(route_sections1.size() + route_sections2.size());
-  if (!route_sections1.empty()) {
-    // remove end route section because it is overlapping with first one in next route_section
-    route_sections.insert(route_sections.end(), route_sections1.begin(), route_sections1.end() - 1);
-  }
-  if (!route_sections2.empty()) {
-    route_sections.insert(route_sections.end(), route_sections2.begin(), route_sections2.end());
-  }
-  return route_sections;
-}
 
 bool is_in_lane(const lanelet::ConstLanelet & lanelet, const lanelet::ConstPoint3d & point)
 {
@@ -422,15 +408,14 @@ PlannerPlugin::LaneletRoute DefaultPlanner::plan(const RoutePoints & points)
       RCLCPP_WARN(logger, "Failed to plan route.");
       return route_msg;
     }
+
     for (const auto & lane : path_lanelets) {
+      if (!all_route_lanelets.empty() && lane.id() == all_route_lanelets.back().id()) continue;
       all_route_lanelets.push_back(lane);
     }
-    // create local route sections
-    route_handler_.setRouteLanelets(path_lanelets);
-    const auto local_route_sections = route_handler_.createMapSegments(path_lanelets);
-    route_sections = combine_consecutive_route_sections(route_sections, local_route_sections);
   }
   route_handler_.setRouteLanelets(all_route_lanelets);
+  route_sections = route_handler_.createMapSegments(all_route_lanelets);
 
   auto goal_pose = points.back();
   if (param_.enable_correct_goal_pose) {

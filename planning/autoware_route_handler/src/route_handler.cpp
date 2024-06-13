@@ -616,28 +616,41 @@ lanelet::ConstLanelets RouteHandler::getLaneletSequenceUpTo(
   lanelet::ConstLanelet current_lanelet = lanelet;
   double length = 0;
   lanelet::ConstLanelets previous_lanelets;
+
+  auto checkForLoop =
+    [&lanelet](const lanelet::ConstLanelets & lanelets_to_check, const bool is_route_lanelets) {
+      if (is_route_lanelets) {
+        return std::none_of(
+          lanelets_to_check.begin(), lanelets_to_check.end(),
+          [lanelet](auto & prev_llt) { return lanelet.id() != prev_llt.id(); });
+      }
+      return std::any_of(
+        lanelets_to_check.begin(), lanelets_to_check.end(),
+        [lanelet](auto & prev_llt) { return lanelet.id() == prev_llt.id(); });
+    };
+
+  auto isNewLanelet = [&lanelet,
+                       &lanelet_sequence_backward](const lanelet::ConstLanelet & lanelet_to_check) {
+    if (lanelet.id() == lanelet_to_check.id()) return false;
+    return std::none_of(
+      lanelet_sequence_backward.begin(), lanelet_sequence_backward.end(),
+      [&lanelet_to_check](auto & backward) { return (backward.id() == lanelet_to_check.id()); });
+  };
+
   while (rclcpp::ok() && length < min_length) {
     previous_lanelets.clear();
+    bool is_route_lanelets = true;
     if (!getPreviousLaneletsWithinRoute(current_lanelet, &previous_lanelets)) {
       if (only_route_lanes) break;
-      const auto previous_lanelets = getPreviousLanelets(current_lanelet);
+      previous_lanelets = getPreviousLanelets(current_lanelet);
       if (previous_lanelets.empty()) break;
-    }
-    // loop check
-    if (std::any_of(previous_lanelets.begin(), previous_lanelets.end(), [lanelet](auto & prev_llt) {
-          return lanelet.id() == prev_llt.id();
-        })) {
-      break;
+      is_route_lanelets = false;
     }
 
+    if (checkForLoop(previous_lanelets, is_route_lanelets)) break;
+
     for (const auto & prev_lanelet : previous_lanelets) {
-      if (std::any_of(
-            lanelet_sequence_backward.begin(), lanelet_sequence_backward.end(),
-            [prev_lanelet, lanelet](auto & backward) {
-              return (backward.id() == prev_lanelet.id());
-            })) {
-        continue;
-      }
+      if (!isNewLanelet(prev_lanelet) || exists(goal_lanelets_, prev_lanelet)) continue;
       lanelet_sequence_backward.push_back(prev_lanelet);
       length +=
         static_cast<double>(boost::geometry::length(prev_lanelet.centerline().basicLineString()));
@@ -922,8 +935,32 @@ bool RouteHandler::getClosestLaneletWithConstrainsWithinRoute(
     route_lanelets_, search_pose, closest_lanelet, dist_threshold, yaw_threshold);
 }
 
-bool RouteHandler::getNextLaneletWithinRoute(
-  const lanelet::ConstLanelet & lanelet, lanelet::ConstLanelet * next_lanelet) const
+bool RouteHandler::getClosestRouteLaneletFromLanelet(
+  const Pose & search_pose, const lanelet::ConstLanelet & reference_lanelet,
+  lanelet::ConstLanelet * closest_lanelet, const double dist_threshold,
+  const double yaw_threshold) const
+{
+  lanelet::ConstLanelets previous_lanelets, next_lanelets, lanelet_sequence;
+  if (getPreviousLaneletsWithinRoute(reference_lanelet, &previous_lanelets)) {
+    lanelet_sequence = previous_lanelets;
+  }
+
+  lanelet_sequence.push_back(reference_lanelet);
+
+  if (getNextLaneletsWithinRoute(reference_lanelet, &next_lanelets)) {
+    lanelet_sequence.insert(lanelet_sequence.end(), next_lanelets.begin(), next_lanelets.end());
+  }
+
+  if (lanelet::utils::query::getClosestLaneletWithConstrains(
+        lanelet_sequence, search_pose, closest_lanelet, dist_threshold, yaw_threshold)) {
+    return true;
+  }
+
+  return false;
+}
+
+bool RouteHandler::getNextLaneletsWithinRoute(
+  const lanelet::ConstLanelet & lanelet, lanelet::ConstLanelets * next_lanelets) const
 {
   if (exists(goal_lanelets_, lanelet)) {
     return false;
@@ -932,11 +969,22 @@ bool RouteHandler::getNextLaneletWithinRoute(
   const auto start_lane_id = route_ptr_->segments.front().preferred_primitive.id;
 
   const auto following_lanelets = routing_graph_ptr_->following(lanelet);
+  next_lanelets->clear();
   for (const auto & llt : following_lanelets) {
     if (start_lane_id != llt.id() && exists(route_lanelets_, llt)) {
-      *next_lanelet = llt;
-      return true;
+      next_lanelets->push_back(llt);
     }
+  }
+  return !(next_lanelets->empty());
+}
+
+bool RouteHandler::getNextLaneletWithinRoute(
+  const lanelet::ConstLanelet & lanelet, lanelet::ConstLanelet * next_lanelet) const
+{
+  lanelet::ConstLanelets next_lanelets{};
+  if (getNextLaneletsWithinRoute(lanelet, &next_lanelets)) {
+    *next_lanelet = next_lanelets.front();
+    return true;
   }
   return false;
 }
@@ -2142,6 +2190,9 @@ lanelet::ConstLanelets RouteHandler::getMainLanelets(
   const lanelet::ConstLanelets & path_lanelets) const
 {
   auto lanelet_sequence = getLaneletSequence(path_lanelets.back());
+
+  RCLCPP_INFO_STREAM(logger_, "getMainLanelets: lanelet_sequence = " << lanelet_sequence);
+
   lanelet::ConstLanelets main_lanelets;
   while (!lanelet_sequence.empty()) {
     main_lanelets.insert(main_lanelets.begin(), lanelet_sequence.begin(), lanelet_sequence.end());

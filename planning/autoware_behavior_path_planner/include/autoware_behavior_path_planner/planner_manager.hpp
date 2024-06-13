@@ -299,6 +299,12 @@ private:
     return result;
   }
 
+  /**
+   * @brief find and set the closest lanelet within the route to current route lanelet
+   * @param planner data.
+   */
+  void updateCurrentRouteLanelet(const std::shared_ptr<PlannerData> & data);
+
   void generateCombinedDrivableArea(
     BehaviorModuleOutput & output, const std::shared_ptr<PlannerData> & data) const;
 
@@ -307,12 +313,12 @@ private:
    * @param planner data.
    * @return reference path.
    */
-  BehaviorModuleOutput getReferencePath(const std::shared_ptr<PlannerData> & data);
+  BehaviorModuleOutput getReferencePath(const std::shared_ptr<PlannerData> & data) const;
 
   /**
    * @brief publish the root reference path and current route lanelet
    */
-  void publishDebugRootReferencePath(const BehaviorModuleOutput & reference_path);
+  void publishDebugRootReferencePath(const BehaviorModuleOutput & reference_path) const;
 
   /**
    * @brief stop and unregister the module from manager.

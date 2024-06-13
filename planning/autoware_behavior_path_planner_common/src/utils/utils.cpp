@@ -489,7 +489,8 @@ bool isInLaneletWithYawThreshold(
 }
 
 bool isEgoOutOfRoute(
-  const Pose & self_pose, const std::optional<PoseWithUuidStamped> & modified_goal,
+  const Pose & self_pose, const lanelet::ConstLanelet & closest_road_lane,
+  const std::optional<PoseWithUuidStamped> & modified_goal,
   const std::shared_ptr<RouteHandler> & route_handler)
 {
   const Pose & goal_pose = (modified_goal && modified_goal->uuid == route_handler->getRouteUuid())
@@ -509,12 +510,16 @@ bool isEgoOutOfRoute(
 
   // If ego vehicle is over goal on goal lane, return true
   const double yaw_threshold = tier4_autoware_utils::deg2rad(90);
-  if (isInLaneletWithYawThreshold(self_pose, goal_lane, yaw_threshold)) {
+  if (
+    closest_road_lane.id() == goal_lane.id() &&
+    isInLaneletWithYawThreshold(self_pose, goal_lane, yaw_threshold)) {
     constexpr double buffer = 1.0;
     const auto ego_arc_coord = lanelet::utils::getArcCoordinates({goal_lane}, self_pose);
     const auto goal_arc_coord =
       lanelet::utils::getArcCoordinates({goal_lane}, route_handler->getGoalPose());
     if (ego_arc_coord.length > goal_arc_coord.length + buffer) {
+      RCLCPP_WARN_STREAM(
+        rclcpp::get_logger("behavior_path_planner").get_child("util"), "ego pose is beyond goal");
       return true;
     } else {
       return false;
@@ -526,14 +531,6 @@ bool isEgoOutOfRoute(
   const bool is_in_shoulder_lane = !route_handler->getShoulderLaneletsAtPose(self_pose).empty();
   // Check if ego vehicle is in road lane
   const bool is_in_road_lane = std::invoke([&]() {
-    lanelet::ConstLanelet closest_road_lane;
-    if (!route_handler->getClosestLaneletWithinRoute(self_pose, &closest_road_lane)) {
-      RCLCPP_WARN_STREAM(
-        rclcpp::get_logger("behavior_path_planner").get_child("util"),
-        "cannot find closest road lanelet");
-      return false;
-    }
-
     if (lanelet::utils::isInLanelet(self_pose, closest_road_lane)) {
       return true;
     }
@@ -548,6 +545,7 @@ bool isEgoOutOfRoute(
 
     return false;
   });
+
   if (!is_in_shoulder_lane && !is_in_road_lane) {
     return true;
   }
@@ -1308,26 +1306,26 @@ lanelet::ConstLanelets extendNextLane(
 {
   if (lanes.empty()) return lanes;
 
-  auto extended_lanes = lanes;
+  const auto next_lanes = route_handler->getNextLanelets(lanes.back());
+  if (next_lanes.empty()) return lanes;
 
   // Add next lane
-  const auto next_lanes = route_handler->getNextLanelets(extended_lanes.back());
-  if (!next_lanes.empty()) {
-    std::optional<lanelet::ConstLanelet> target_next_lane;
-    if (!only_in_route) {
-      target_next_lane = next_lanes.front();
-    }
-    // use the next lane in route if it exists
-    for (const auto & next_lane : next_lanes) {
-      if (route_handler->isRouteLanelet(next_lane)) {
-        target_next_lane = next_lane;
-      }
-    }
-    if (target_next_lane) {
-      extended_lanes.push_back(*target_next_lane);
-    }
-  }
+  auto extended_lanes = lanes;
+  std::optional<lanelet::ConstLanelet> target_next_lane;
+  for (const auto & next_lane : next_lanes) {
+    // skip overlapping lanes
+    if (next_lane.id() == lanes.front().id()) continue;
 
+    // if route lane, set target and break
+    if (route_handler->isRouteLanelet(next_lane)) {
+      target_next_lane = next_lane;
+      break;
+    }
+    if (!only_in_route && !target_next_lane) target_next_lane = next_lane;
+  }
+  if (target_next_lane) {
+    extended_lanes.push_back(*target_next_lane);
+  }
   return extended_lanes;
 }
 
@@ -1337,24 +1335,25 @@ lanelet::ConstLanelets extendPrevLane(
 {
   if (lanes.empty()) return lanes;
 
-  auto extended_lanes = lanes;
+  const auto prev_lanes = route_handler->getPreviousLanelets(lanes.front());
+  if (prev_lanes.empty()) return lanes;
 
   // Add previous lane
-  const auto prev_lanes = route_handler->getPreviousLanelets(extended_lanes.front());
-  if (!prev_lanes.empty()) {
-    std::optional<lanelet::ConstLanelet> target_prev_lane;
-    if (!only_in_route) {
-      target_prev_lane = prev_lanes.front();
+  auto extended_lanes = lanes;
+  std::optional<lanelet::ConstLanelet> target_prev_lane;
+  for (const auto & prev_lane : prev_lanes) {
+    // skip overlapping lanes
+    if (prev_lane.id() == lanes.back().id()) continue;
+
+    // if route lane, set target and break
+    if (route_handler->isRouteLanelet(prev_lane)) {
+      target_prev_lane = prev_lane;
+      break;
     }
-    // use the previous lane in route if it exists
-    for (const auto & prev_lane : prev_lanes) {
-      if (route_handler->isRouteLanelet(prev_lane)) {
-        target_prev_lane = prev_lane;
-      }
-    }
-    if (target_prev_lane) {
-      extended_lanes.insert(extended_lanes.begin(), *target_prev_lane);
-    }
+    if (!only_in_route && !target_prev_lane) target_prev_lane = prev_lane;
+  }
+  if (target_prev_lane) {
+    extended_lanes.insert(extended_lanes.begin(), *target_prev_lane);
   }
   return extended_lanes;
 }

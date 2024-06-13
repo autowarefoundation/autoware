@@ -231,7 +231,8 @@ bool isInLaneletWithYawThreshold(
   const double radius = 0.0);
 
 bool isEgoOutOfRoute(
-  const Pose & self_pose, const std::optional<PoseWithUuidStamped> & modified_goal,
+  const Pose & self_pose, const lanelet::ConstLanelet & closest_road_lane,
+  const std::optional<PoseWithUuidStamped> & modified_goal,
   const std::shared_ptr<RouteHandler> & route_handler);
 
 bool isEgoWithinOriginalLane(

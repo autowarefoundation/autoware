@@ -116,6 +116,8 @@ public:
   // for lanelet
   bool getPreviousLaneletsWithinRoute(
     const lanelet::ConstLanelet & lanelet, lanelet::ConstLanelets * prev_lanelets) const;
+  bool getNextLaneletsWithinRoute(
+    const lanelet::ConstLanelet & lanelet, lanelet::ConstLanelets * next_lanelets) const;
   bool getNextLaneletWithinRoute(
     const lanelet::ConstLanelet & lanelet, lanelet::ConstLanelet * next_lanelet) const;
   bool isDeadEndLanelet(const lanelet::ConstLanelet & lanelet) const;
@@ -260,6 +262,22 @@ public:
   bool getClosestLaneletWithConstrainsWithinRoute(
     const Pose & search_pose, lanelet::ConstLanelet * closest_lanelet, const double dist_threshold,
     const double yaw_threshold) const;
+
+  /**
+   * Finds the closest route lanelet to the search pose satisfying the distance and yaw constraints
+   * with respect to a reference lanelet, the search set will include previous route lanelets,
+   * next route lanelets, and neighbors of reference lanelet. Returns false if failed to find
+   * lanelet.
+   * @param search_pose pose to find closest lanelet to
+   * @param reference_lanelet reference lanelet to decide the search set
+   * @param dist_threshold distance constraint closest lanelet must be within
+   * @param yaw_threshold yaw constraint closest lanelet direction must be within
+   */
+  bool getClosestRouteLaneletFromLanelet(
+    const Pose & search_pose, const lanelet::ConstLanelet & reference_lanelet,
+    lanelet::ConstLanelet * closest_lanelet, const double dist_threshold,
+    const double yaw_threshold) const;
+
   lanelet::ConstLanelet getLaneletsFromId(const lanelet::Id id) const;
   lanelet::ConstLanelets getLaneletsFromIds(const lanelet::Ids & ids) const;
   lanelet::ConstLanelets getLaneletSequence(

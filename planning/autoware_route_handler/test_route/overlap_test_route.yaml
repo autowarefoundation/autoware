@@ -1,0 +1,117 @@
+header:
+  stamp:
+    sec: 1715936953
+    nanosec: 67206425
+  frame_id: map
+start_pose:
+  position:
+    x: 3728.8
+    y: 73739.2
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: -0.513117
+    w: 0.858319
+goal_pose:
+  position:
+    x: 3729.961182
+    y: 73727.328125
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.234831
+    w: 0.972036
+segments:
+  - preferred_primitive:
+      id: 168
+      primitive_type: ""
+    primitives:
+      - id: 168
+        primitive_type: lane
+  - preferred_primitive:
+      id: 277
+      primitive_type: ""
+    primitives:
+      - id: 277
+        primitive_type: lane
+  - preferred_primitive:
+      id: 282
+      primitive_type: ""
+    primitives:
+      - id: 282
+        primitive_type: lane
+  - preferred_primitive:
+      id: 287
+      primitive_type: ""
+    primitives:
+      - id: 287
+        primitive_type: lane
+  - preferred_primitive:
+      id: 292
+      primitive_type: ""
+    primitives:
+      - id: 292
+        primitive_type: lane
+  - preferred_primitive:
+      id: 297
+      primitive_type: ""
+    primitives:
+      - id: 297
+        primitive_type: lane
+  - preferred_primitive:
+      id: 302
+      primitive_type: ""
+    primitives:
+      - id: 302
+        primitive_type: lane
+  - preferred_primitive:
+      id: 307
+      primitive_type: ""
+    primitives:
+      - id: 307
+        primitive_type: lane
+  - preferred_primitive:
+      id: 312
+      primitive_type: ""
+    primitives:
+      - id: 312
+        primitive_type: lane
+  - preferred_primitive:
+      id: 317
+      primitive_type: ""
+    primitives:
+      - id: 317
+        primitive_type: lane
+  - preferred_primitive:
+      id: 322
+      primitive_type: ""
+    primitives:
+      - id: 322
+        primitive_type: lane
+  - preferred_primitive:
+      id: 345
+      primitive_type: ""
+    primitives:
+      - id: 345
+        primitive_type: lane
+uuid:
+  uuid:
+    - 231
+    - 254
+    - 143
+    - 227
+    - 194
+    - 8
+    - 220
+    - 88
+    - 30
+    - 194
+    - 172
+    - 147
+    - 127
+    - 143
+    - 176
+    - 133
+allow_modification: false
