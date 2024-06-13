@@ -167,7 +167,7 @@ void VehicleNode::publish_status()
 {
   if (
     !steering_status_msgs_ || !gear_status_msgs_ || !turn_indicator_status_msgs_ ||
-    !hazard_light_status_msgs_ || !energy_status_msgs_)
+    !hazard_light_status_msgs_)
     return;
 
   autoware_ad_api::vehicle::VehicleStatus::Message vehicle_status;
@@ -178,7 +178,6 @@ void VehicleNode::publish_status()
     mapping(turn_indicator_type_, turn_indicator_status_msgs_->report, ApiTurnIndicator::UNKNOWN);
   vehicle_status.hazard_lights.status =
     mapping(hazard_light_type_, hazard_light_status_msgs_->report, ApiHazardLight::UNKNOWN);
-  vehicle_status.energy_percentage = energy_status_msgs_->energy_level;
   pub_status_->publish(vehicle_status);
 }
 
