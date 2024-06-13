@@ -50,8 +50,8 @@ public:
   };
 
   explicit PoseInstabilityDetector(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
-  ThresholdValues calculate_threshold(double interval_sec);
-  void dead_reckon(
+  ThresholdValues calculate_threshold(double interval_sec) const;
+  static void dead_reckon(
     PoseStamped::SharedPtr & initial_pose, const rclcpp::Time & end_time,
     const std::deque<TwistWithCovarianceStamped> & twist_deque, Pose::SharedPtr & estimated_pose);
 
@@ -60,7 +60,7 @@ private:
   void callback_twist(TwistWithCovarianceStamped::ConstSharedPtr twist_msg_ptr);
   void callback_timer();
 
-  std::deque<TwistWithCovarianceStamped> clip_out_necessary_twist(
+  static std::deque<TwistWithCovarianceStamped> clip_out_necessary_twist(
     const std::deque<TwistWithCovarianceStamped> & twist_buffer, const rclcpp::Time & start_time,
     const rclcpp::Time & end_time);
 
@@ -75,8 +75,6 @@ private:
 
   // parameters
   const double timer_period_;  // [sec]
-
-  ThresholdValues threshold_values_;
 
   const double heading_velocity_maximum_;                 // [m/s]
   const double heading_velocity_scale_factor_tolerance_;  // [%]

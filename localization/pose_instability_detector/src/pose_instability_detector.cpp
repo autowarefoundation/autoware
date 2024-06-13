@@ -118,21 +118,21 @@ void PoseInstabilityDetector::callback_timer()
   prev_pose->header = prev_odometry_->header;
   prev_pose->pose = prev_odometry_->pose.pose;
 
-  Pose::SharedPtr DR_pose = std::make_shared<Pose>();
-  dead_reckon(prev_pose, latest_odometry_time, twist_buffer_, DR_pose);
+  Pose::SharedPtr dr_pose = std::make_shared<Pose>();
+  dead_reckon(prev_pose, latest_odometry_time, twist_buffer_, dr_pose);
 
   // compare dead reckoning pose and latest_odometry_
   const Pose latest_ekf_pose = latest_odometry_->pose.pose;
-  const Pose ekf_to_DR = tier4_autoware_utils::inverseTransformPose(*DR_pose, latest_ekf_pose);
-  const geometry_msgs::msg::Point pos = ekf_to_DR.position;
-  const auto [ang_x, ang_y, ang_z] = quat_to_rpy(ekf_to_DR.orientation);
+  const Pose ekf_to_dr = tier4_autoware_utils::inverseTransformPose(*dr_pose, latest_ekf_pose);
+  const geometry_msgs::msg::Point pos = ekf_to_dr.position;
+  const auto [ang_x, ang_y, ang_z] = quat_to_rpy(ekf_to_dr.orientation);
   const std::vector<double> values = {pos.x, pos.y, pos.z, ang_x, ang_y, ang_z};
 
   // publish diff_pose for debug
   PoseStamped diff_pose;
   diff_pose.header.stamp = latest_odometry_time;
   diff_pose.header.frame_id = "base_link";
-  diff_pose.pose = ekf_to_DR;
+  diff_pose.pose = ekf_to_dr;
   diff_pose_pub_->publish(diff_pose);
 
   // publish diagnostics
@@ -178,7 +178,7 @@ void PoseInstabilityDetector::callback_timer()
 }
 
 PoseInstabilityDetector::ThresholdValues PoseInstabilityDetector::calculate_threshold(
-  double interval_sec)
+  double interval_sec) const
 {
   // Calculate maximum longitudinal difference
   const double longitudinal_difference =
@@ -229,7 +229,7 @@ PoseInstabilityDetector::ThresholdValues PoseInstabilityDetector::calculate_thre
   const double yaw_difference = roll_difference;
 
   // Set thresholds
-  ThresholdValues result_values;
+  ThresholdValues result_values{};
   result_values.position_x = longitudinal_difference + pose_estimator_longitudinal_tolerance_;
   result_values.position_y = lateral_difference + pose_estimator_lateral_tolerance_;
   result_values.position_z = vertical_difference + pose_estimator_vertical_tolerance_;
