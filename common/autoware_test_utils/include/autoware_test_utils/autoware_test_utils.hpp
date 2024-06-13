@@ -15,9 +15,6 @@
 #ifndef AUTOWARE_TEST_UTILS__AUTOWARE_TEST_UTILS_HPP_
 #define AUTOWARE_TEST_UTILS__AUTOWARE_TEST_UTILS_HPP_
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
-#include "rclcpp/rclcpp.hpp"
-
 #include <component_interface_specs/planning.hpp>
 #include <lanelet2_extension/io/autoware_osm_parser.hpp>
 #include <lanelet2_extension/projection/mgrs_projector.hpp>
@@ -51,7 +48,6 @@
 #include <limits>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace autoware::test_utils
@@ -173,6 +169,45 @@ LaneletRoute makeNormalRoute();
  * @return An OccupancyGrid message with the specified dimensions and resolution.
  */
 OccupancyGrid makeCostMapMsg(size_t width = 150, size_t height = 150, double resolution = 0.2);
+
+/**
+ * @brief Get the absolute path to the lanelet map file.
+ *
+ * This function retrieves the absolute path to a lanelet map file located in the
+ * package's share directory under the "test_map" folder.
+ *
+ * @param package_name The name of the package containing the map file.
+ * @param map_filename The name of the map file.
+ * @return A string representing the absolute path to the lanelet map file.
+ */
+std::string get_absolute_path_to_lanelet_map(
+  const std::string & package_name, const std::string & map_filename);
+
+/**
+ * @brief Get the absolute path to the route file.
+ *
+ * This function retrieves the absolute path to a route file located in the
+ * package's share directory under the "test_route" folder.
+ *
+ * @param package_name The name of the package containing the route file.
+ * @param route_filename The name of the route file.
+ * @return A string representing the absolute path to the route file.
+ */
+std::string get_absolute_path_to_route(
+  const std::string & package_name, const std::string & route_filename);
+
+/**
+ * @brief Get the absolute path to the config file.
+ *
+ * This function retrieves the absolute path to a route file located in the
+ * package's share directory under the "config" folder.
+ *
+ * @param package_name The name of the package containing the route file.
+ * @param route_filename The name of the config file.
+ * @return A string representing the absolute path to the config file.
+ */
+std::string get_absolute_path_to_config(
+  const std::string & package_name, const std::string & config_filename);
 
 /**
  * @brief Creates a LaneletMapBin message from a Lanelet map file.

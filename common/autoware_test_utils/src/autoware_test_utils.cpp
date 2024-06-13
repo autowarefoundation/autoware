@@ -12,7 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_test_utils/autoware_test_utils.hpp"
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <autoware_test_utils/autoware_test_utils.hpp>
+#include <rclcpp/clock.hpp>
+#include <rclcpp/executors/single_threaded_executor.hpp>
+#include <rclcpp/logging.hpp>
+#include <rclcpp/node.hpp>
+
+#include <utility>
+
 namespace autoware::test_utils
 {
 
@@ -103,6 +111,27 @@ OccupancyGrid makeCostMapMsg(size_t width, size_t height, double resolution)
   return costmap_msg;
 }
 
+std::string get_absolute_path_to_lanelet_map(
+  const std::string & package_name, const std::string & map_filename)
+{
+  const auto dir = ament_index_cpp::get_package_share_directory(package_name);
+  return dir + "/test_map/" + map_filename;
+}
+
+std::string get_absolute_path_to_route(
+  const std::string & package_name, const std::string & route_filename)
+{
+  const auto dir = ament_index_cpp::get_package_share_directory(package_name);
+  return dir + "/test_route/" + route_filename;
+}
+
+std::string get_absolute_path_to_config(
+  const std::string & package_name, const std::string & config_filename)
+{
+  const auto dir = ament_index_cpp::get_package_share_directory(package_name);
+  return dir + "/config/" + config_filename;
+}
+
 LaneletMapBin make_map_bin_msg(
   const std::string & absolute_path, const double center_line_resolution)
 {
@@ -122,12 +151,8 @@ LaneletMapBin make_map_bin_msg(
 
 LaneletMapBin makeMapBinMsg()
 {
-  const auto autoware_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("autoware_test_utils");
-  const auto lanelet2_path = autoware_test_utils_dir + "/test_map/lanelet2_map.osm";
-  double center_line_resolution = 5.0;
-
-  return make_map_bin_msg(lanelet2_path, center_line_resolution);
+  return make_map_bin_msg(
+    get_absolute_path_to_lanelet_map("autoware_test_utils", "lanelet2_map.osm"));
 }
 
 Odometry makeOdometry(const double shift)
@@ -251,9 +276,8 @@ void updateNodeOptions(
 
 PathWithLaneId loadPathWithLaneIdInYaml()
 {
-  const auto autoware_test_utils_dir =
-    ament_index_cpp::get_package_share_directory("autoware_test_utils");
-  const auto yaml_path = autoware_test_utils_dir + "/config/path_with_lane_id_data.yaml";
+  const auto yaml_path =
+    get_absolute_path_to_config("autoware_test_utils", "path_with_lane_id_data.yaml");
   YAML::Node yaml_node = YAML::LoadFile(yaml_path);
   PathWithLaneId path_msg;
 
