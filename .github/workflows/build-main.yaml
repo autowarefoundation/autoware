@@ -48,6 +48,7 @@ jobs:
         with:
           name: ${{ matrix.name }}
           platform: ${{ matrix.platform }}
+          cache-tag-suffix: main
           build-args: |
             ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
