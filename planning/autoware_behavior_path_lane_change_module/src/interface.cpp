@@ -47,11 +47,6 @@ LaneChangeInterface::LaneChangeInterface(
   logger_ = utils::lane_change::getLogger(module_type_->getModuleTypeStr());
 }
 
-void LaneChangeInterface::processOnEntry()
-{
-  waitApproval();
-}
-
 void LaneChangeInterface::processOnExit()
 {
   module_type_->resetParameters();
@@ -79,7 +74,7 @@ void LaneChangeInterface::updateData()
   module_type_->setPreviousModuleOutput(getPreviousModuleOutput());
   module_type_->updateSpecialData();
 
-  if (isWaitingApproval()) {
+  if (isWaitingApproval() || module_type_->isAbortState()) {
     module_type_->updateLaneChangeStatus();
   }
 
@@ -116,14 +111,12 @@ BehaviorModuleOutput LaneChangeInterface::plan()
 
   updateSteeringFactorPtr(output);
   if (module_type_->isAbortState()) {
-    waitApproval();
     const auto candidate = planCandidate();
     path_candidate_ = std::make_shared<PathWithLaneId>(candidate.path_candidate);
     updateRTCStatus(
       std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest(), true,
       State::ABORTING);
   } else {
-    clearWaitingApproval();
     const auto path =
       assignToCandidate(module_type_->getLaneChangePath(), module_type_->getEgoPosition());
     updateRTCStatus(
@@ -153,7 +146,7 @@ BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
 
   if (!module_type_->isValidPath()) {
     updateRTCStatus(
-      std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest(), true,
+      std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest(), false,
       State::FAILED);
     path_candidate_ = std::make_shared<PathWithLaneId>();
     return out;
@@ -209,11 +202,6 @@ bool LaneChangeInterface::canTransitSuccessState()
     }
   }
 
-  if (module_type_->isAbortState() && module_type_->hasFinishedAbort()) {
-    log_debug_throttled("Abort process has completed.");
-    return true;
-  }
-
   if (module_type_->hasFinishedLaneChange()) {
     module_type_->resetParameters();
     log_debug_throttled("Lane change process has completed.");
@@ -241,6 +229,16 @@ bool LaneChangeInterface::canTransitFailureState()
   if (isWaitingApproval()) {
     log_debug_throttled("Can't transit to failure state. Module is WAITING_FOR_APPROVAL");
     return false;
+  }
+
+  if (!module_type_->isValidPath()) {
+    log_debug_throttled("Transit to failure state due not to find valid path");
+    return true;
+  }
+
+  if (module_type_->isAbortState() && module_type_->hasFinishedAbort()) {
+    log_debug_throttled("Abort process has completed.");
+    return true;
   }
 
   if (module_type_->isCancelEnabled() && module_type_->isEgoOnPreparePhase()) {
