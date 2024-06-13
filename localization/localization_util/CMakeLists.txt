@@ -7,6 +7,7 @@ autoware_package()
 ament_auto_add_library(localization_util SHARED
   src/util_func.cpp
   src/smart_pose_buffer.cpp
+  src/tree_structured_parzen_estimator.cpp
 )
 
 if(BUILD_TESTING)
@@ -14,6 +15,11 @@ if(BUILD_TESTING)
   ament_auto_add_gtest(test_smart_pose_buffer
     test/test_smart_pose_buffer.cpp
     src/smart_pose_buffer.cpp
+  )
+
+  ament_auto_add_gtest(test_tpe
+    test/test_tpe.cpp
+    src/tree_structured_parzen_estimator.cpp
   )
 endif()
 

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TREE_STRUCTURED_PARZEN_ESTIMATOR__TREE_STRUCTURED_PARZEN_ESTIMATOR_HPP_
-#define TREE_STRUCTURED_PARZEN_ESTIMATOR__TREE_STRUCTURED_PARZEN_ESTIMATOR_HPP_
+#ifndef LOCALIZATION_UTIL__TREE_STRUCTURED_PARZEN_ESTIMATOR_HPP_
+#define LOCALIZATION_UTIL__TREE_STRUCTURED_PARZEN_ESTIMATOR_HPP_
 
 /*
 A implementation of tree-structured parzen estimator (TPE)
@@ -81,4 +81,4 @@ private:
   Input base_stddev_;
 };
 
-#endif  // TREE_STRUCTURED_PARZEN_ESTIMATOR__TREE_STRUCTURED_PARZEN_ESTIMATOR_HPP_
+#endif  // LOCALIZATION_UTIL__TREE_STRUCTURED_PARZEN_ESTIMATOR_HPP_

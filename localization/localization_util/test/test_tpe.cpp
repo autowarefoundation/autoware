@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tree_structured_parzen_estimator/tree_structured_parzen_estimator.hpp"
+#include "localization_util/tree_structured_parzen_estimator.hpp"
 
 #include <gtest/gtest.h>
 
