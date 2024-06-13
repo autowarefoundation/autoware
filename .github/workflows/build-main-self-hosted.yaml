@@ -4,13 +4,6 @@ on:
   schedule:
     - cron: 0 12 * * *
   workflow_dispatch:
-    inputs:
-      artifacts-destination:
-        type: choice
-        description: Built images will be saved as tarball
-        options:
-          - tarball
-        default: tarball
 
 jobs:
   load-env:
@@ -46,9 +39,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
         with:
@@ -57,40 +47,16 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      - name: Cache
-        uses: actions/cache@v3
-        id: cache
-        with:
-          path: |
-            root-ccache
-          key: cache-${{ matrix.platform }}-${{ matrix.name }}-${{ hashFiles('autoware.repos') }}
-          restore-keys: |
-            cache-${{ matrix.platform }}-${{ matrix.name }}-
-            cache-${{ matrix.platform }}-
-      - name: inject cache into docker
-        uses: reproducible-containers/buildkit-cache-dance@v3.1.0
-        with:
-          cache-map: |
-            {
-              "root-ccache": "/root/.ccache"
-            }
-          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
-
       - name: Build 'Autoware'
-        uses: ./.github/actions/docker-build-and-push
+        uses: ./.github/actions/docker-build
         with:
-          bake-target: autoware
+          name: ${{ matrix.name }}
+          platform: ${{ matrix.platform }}
           build-args: |
-            *.platform=linux/${{ matrix.platform }}
-            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
-            *.args.SETUP_ARGS=${{ matrix.setup-args }}
-            *.args.LIB_DIR=${{ matrix.lib_dir }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-main,mode=max
-          tag-suffix: ${{ matrix.additional-tag-suffix }}-${{ matrix.platform }}
-          tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
-          allow-push: false
+            ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
+            SETUP_ARGS=${{ matrix.setup-args }}
+            LIB_DIR=${{ matrix.lib_dir }}
 
       - name: Show disk space
         run: |
