@@ -29,7 +29,7 @@ class StopperYabLoc : public BaseStopper
   using SetBool = std_srvs::srv::SetBool;
 
 public:
-  explicit StopperYabLoc(rclcpp::Node * node, const std::shared_ptr<const SharedData> shared_data)
+  explicit StopperYabLoc(rclcpp::Node * node, const std::shared_ptr<const SharedData> & shared_data)
   : BaseStopper(node, shared_data)
   {
     yabloc_is_enabled_ = true;

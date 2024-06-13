@@ -18,6 +18,6 @@
 namespace pose_estimator_arbiter
 {
 enum class PoseEstimatorType : int { ndt = 1, yabloc = 2, eagleye = 4, artag = 8 };
-}
+}  // namespace pose_estimator_arbiter
 
 #endif  // POSE_ESTIMATOR_ARBITER__POSE_ESTIMATOR_TYPE_HPP_

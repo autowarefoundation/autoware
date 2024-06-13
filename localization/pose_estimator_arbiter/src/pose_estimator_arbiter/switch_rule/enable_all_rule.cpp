@@ -19,14 +19,15 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace pose_estimator_arbiter::switch_rule
 {
 EnableAllRule::EnableAllRule(
-  rclcpp::Node & node, const std::unordered_set<PoseEstimatorType> & running_estimator_list,
-  const std::shared_ptr<const SharedData>)
-: BaseSwitchRule(node), running_estimator_list_(running_estimator_list)
+  rclcpp::Node & node, std::unordered_set<PoseEstimatorType> running_estimator_list,
+  const std::shared_ptr<const SharedData> &)
+: BaseSwitchRule(node), running_estimator_list_(std::move(running_estimator_list))
 {
 }
 

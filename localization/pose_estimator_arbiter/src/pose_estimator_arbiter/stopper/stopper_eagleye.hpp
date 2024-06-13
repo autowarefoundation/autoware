@@ -27,7 +27,8 @@ class StopperEagleye : public BaseStopper
   using PoseCovStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
 
 public:
-  explicit StopperEagleye(rclcpp::Node * node, const std::shared_ptr<const SharedData> shared_data)
+  explicit StopperEagleye(
+    rclcpp::Node * node, const std::shared_ptr<const SharedData> & shared_data)
   : BaseStopper(node, shared_data)
   {
     eagleye_is_enabled_ = true;

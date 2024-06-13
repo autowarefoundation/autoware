@@ -24,10 +24,10 @@
 
 #include <unordered_set>
 
-class MockNode : public ::testing::Test
+class VectorMapBasedRuleMockNode : public ::testing::Test
 {
 protected:
-  virtual void SetUp()
+  void SetUp() override
   {
     rclcpp::init(0, nullptr);
     node = std::make_shared<rclcpp::Node>("test_node");
@@ -49,10 +49,10 @@ protected:
   std::shared_ptr<pose_estimator_arbiter::SharedData> shared_data_;
   std::shared_ptr<pose_estimator_arbiter::switch_rule::VectorMapBasedRule> rule_;
 
-  virtual void TearDown() { rclcpp::shutdown(); }
+  void TearDown() override { rclcpp::shutdown(); }
 };
 
-TEST_F(MockNode, vectorMapBasedRule)
+TEST_F(VectorMapBasedRuleMockNode, vectorMapBasedRule)
 {
   // Create dummy lanelet2 and set
   {

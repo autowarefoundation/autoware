@@ -24,6 +24,8 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
+#include <string>
+
 namespace pose_estimator_arbiter::rule_helper
 {
 class PcdOccupancy
@@ -34,7 +36,7 @@ class PcdOccupancy
 public:
   explicit PcdOccupancy(int pcd_density_upper_threshold, int pcd_density_lower_threshold);
 
-  MarkerArray debug_marker_array() const;
+  [[nodiscard]] MarkerArray debug_marker_array() const;
   void init(PointCloud2::ConstSharedPtr msg);
   bool ndt_can_operate(
     const geometry_msgs::msg::Point & position, std::string * optional_message = nullptr) const;

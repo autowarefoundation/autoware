@@ -27,7 +27,7 @@ class StopperNdt : public BaseStopper
   using PointCloud2 = sensor_msgs::msg::PointCloud2;
 
 public:
-  explicit StopperNdt(rclcpp::Node * node, const std::shared_ptr<const SharedData> shared_data)
+  explicit StopperNdt(rclcpp::Node * node, const std::shared_ptr<const SharedData> & shared_data)
   : BaseStopper(node, shared_data)
   {
     ndt_is_enabled_ = true;

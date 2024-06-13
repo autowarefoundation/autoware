@@ -30,29 +30,29 @@ namespace pose_estimator_arbiter
 template <typename T>
 struct CallbackInvokingVariable
 {
-  CallbackInvokingVariable() {}
+  CallbackInvokingVariable() = default;
 
-  explicit CallbackInvokingVariable(T initial_data) : value(initial_data) {}
+  explicit CallbackInvokingVariable(T initial_data) : value_(initial_data) {}
 
   // Set data and invoke all callbacks
   void set_and_invoke(T new_value)
   {
-    value = new_value;
+    value_ = new_value;
 
     // Call all callbacks with the new value
-    for (const auto & callback : callbacks) {
-      callback(value.value());
+    for (const auto & callback : callbacks_) {
+      callback(value_.value());
     }
   }
 
   // Same as std::optional::has_value()
-  bool has_value() const { return value.has_value(); }
+  bool has_value() const { return value_.has_value(); }
 
   // Same as std::optional::value()
-  const T operator()() const { return value.value(); }
+  T operator()() const { return value_.value(); }
 
   // Register callback function which is invoked when set_and_invoke() is called
-  void register_callback(std::function<void(T)> callback) const { callbacks.push_back(callback); }
+  void register_callback(std::function<void(T)> callback) const { callbacks_.push_back(callback); }
 
   // Create subscription callback function which is used as below:
   //   auto subscriber = create_subscription<T>("topic_name", 10,
@@ -64,10 +64,10 @@ struct CallbackInvokingVariable
 
 private:
   // The latest data
-  std::optional<T> value{std::nullopt};
+  std::optional<T> value_{std::nullopt};
 
   // These functions are expected not to change the value variable
-  mutable std::vector<std::function<void(T)>> callbacks;
+  mutable std::vector<std::function<void(T)>> callbacks_;
 };
 
 // This structure is handed to several modules as shared_ptr so that all modules can access data.
@@ -80,7 +80,7 @@ public:
   using HADMapBin = autoware_map_msgs::msg::LaneletMapBin;
   using InitializationState = autoware_adapi_v1_msgs::msg::LocalizationInitializationState;
 
-  SharedData() {}
+  SharedData() = default;
 
   // Used for stoppers
   CallbackInvokingVariable<PoseCovStamped::ConstSharedPtr> eagleye_output_pose_cov;

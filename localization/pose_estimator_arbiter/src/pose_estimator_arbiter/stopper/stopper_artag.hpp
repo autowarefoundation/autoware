@@ -29,7 +29,7 @@ class StopperArTag : public BaseStopper
   using SetBool = std_srvs::srv::SetBool;
 
 public:
-  explicit StopperArTag(rclcpp::Node * node, const std::shared_ptr<const SharedData> shared_data)
+  explicit StopperArTag(rclcpp::Node * node, const std::shared_ptr<const SharedData> & shared_data)
   : BaseStopper(node, shared_data)
   {
     ar_tag_is_enabled_ = true;

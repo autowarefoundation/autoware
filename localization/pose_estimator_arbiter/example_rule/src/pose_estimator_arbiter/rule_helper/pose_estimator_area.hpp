@@ -40,10 +40,10 @@ public:
   // This is assumed to be called only once in the vector map callback.
   void init(const HADMapBin::ConstSharedPtr msg);
 
-  bool within(
+  [[nodiscard]] bool within(
     const geometry_msgs::msg::Point & point, const std::string & pose_estimator_name) const;
 
-  MarkerArray debug_marker_array() const;
+  [[nodiscard]] MarkerArray debug_marker_array() const;
 
 private:
   struct Impl;

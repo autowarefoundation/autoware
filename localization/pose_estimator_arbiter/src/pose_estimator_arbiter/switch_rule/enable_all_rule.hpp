@@ -29,10 +29,8 @@ class EnableAllRule : public BaseSwitchRule
 {
 public:
   EnableAllRule(
-    rclcpp::Node & node, const std::unordered_set<PoseEstimatorType> & running_estimator_list,
-    const std::shared_ptr<const SharedData> shared_data);
-
-  virtual ~EnableAllRule() = default;
+    rclcpp::Node & node, std::unordered_set<PoseEstimatorType> running_estimator_list,
+    const std::shared_ptr<const SharedData> & shared_data);
 
   std::unordered_map<PoseEstimatorType, bool> update() override;
 

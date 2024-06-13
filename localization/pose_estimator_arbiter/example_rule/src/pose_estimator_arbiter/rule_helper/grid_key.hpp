@@ -30,7 +30,7 @@ struct GridKey
   GridKey() : x(0), y(0) {}
   GridKey(float x, float y) : x(std::floor(x / unit_length)), y(std::floor(y / unit_length)) {}
 
-  pcl::PointXYZ get_center_point() const
+  [[nodiscard]] pcl::PointXYZ get_center_point() const
   {
     pcl::PointXYZ xyz;
     xyz.x = unit_length * (static_cast<float>(x) + 0.5f);

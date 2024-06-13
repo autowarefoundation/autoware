@@ -28,10 +28,10 @@
 
 #include <unordered_set>
 
-class MockNode : public ::testing::Test
+class RuleHelperMockNode : public ::testing::Test
 {
 protected:
-  virtual void SetUp()
+  void SetUp() override
   {
     rclcpp::init(0, nullptr);
     node = std::make_shared<rclcpp::Node>("test_node");
@@ -39,10 +39,10 @@ protected:
 
   std::shared_ptr<rclcpp::Node> node{nullptr};
 
-  virtual void TearDown() { rclcpp::shutdown(); }
+  void TearDown() override { rclcpp::shutdown(); }
 };
 
-TEST_F(MockNode, poseEstimatorArea)
+TEST_F(RuleHelperMockNode, poseEstimatorArea)
 {
   auto create_polygon3d = []() -> lanelet::Polygon3d {
     lanelet::Polygon3d polygon;
@@ -73,7 +73,7 @@ TEST_F(MockNode, poseEstimatorArea)
   EXPECT_FALSE(pose_estimator_area.within(Point().set__x(-5).set__y(-5).set__z(0), "yabloc"));
 }
 
-TEST_F(MockNode, pcdOccupancy)
+TEST_F(RuleHelperMockNode, pcdOccupancy)
 {
   using pose_estimator_arbiter::rule_helper::PcdOccupancy;
   const int pcd_density_upper_threshold = 20;
@@ -89,7 +89,7 @@ TEST_F(MockNode, pcdOccupancy)
   EXPECT_FALSE(pcd_occupancy.ndt_can_operate(point, &message));
 }
 
-TEST_F(MockNode, gridKey)
+TEST_F(RuleHelperMockNode, gridKey)
 {
   using pose_estimator_arbiter::rule_helper::GridKey;
   EXPECT_TRUE(GridKey(10., -5.) == GridKey(10., -10.));

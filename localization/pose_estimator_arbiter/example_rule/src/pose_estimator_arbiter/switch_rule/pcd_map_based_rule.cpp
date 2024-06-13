@@ -16,12 +16,16 @@
 
 #include <tier4_autoware_utils/ros/parameter.hpp>
 
+#include <utility>
+
 namespace pose_estimator_arbiter::switch_rule
 {
 PcdMapBasedRule::PcdMapBasedRule(
-  rclcpp::Node & node, const std::unordered_set<PoseEstimatorType> & running_estimator_list,
-  const std::shared_ptr<const SharedData> shared_data)
-: BaseSwitchRule(node), running_estimator_list_(running_estimator_list), shared_data_(shared_data)
+  rclcpp::Node & node, std::unordered_set<PoseEstimatorType> running_estimator_list,
+  std::shared_ptr<const SharedData> shared_data)
+: BaseSwitchRule(node),
+  running_estimator_list_(std::move(running_estimator_list)),
+  shared_data_(std::move(shared_data))
 {
   const int pcd_density_upper_threshold =
     tier4_autoware_utils::getOrDeclareParameter<int>(node, "pcd_density_upper_threshold");
@@ -63,14 +67,14 @@ std::unordered_map<PoseEstimatorType, bool> PcdMapBasedRule::update()
       {PoseEstimatorType::eagleye, false},
       {PoseEstimatorType::artag, false},
     };
-  } else {
-    debug_string_ = "Enable yabloc: ";
-    return {
-      {PoseEstimatorType::ndt, false},
-      {PoseEstimatorType::yabloc, true},
-      {PoseEstimatorType::eagleye, false},
-      {PoseEstimatorType::artag, false}};
   }
+
+  debug_string_ = "Enable yabloc: ";
+  return {
+    {PoseEstimatorType::ndt, false},
+    {PoseEstimatorType::yabloc, true},
+    {PoseEstimatorType::eagleye, false},
+    {PoseEstimatorType::artag, false}};
 }
 
 }  // namespace pose_estimator_arbiter::switch_rule
