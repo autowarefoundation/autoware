@@ -60,10 +60,32 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: |
+            root-ccache
+          key: cache-${{ matrix.platform }}-${{ matrix.name }}-${{ hashFiles('autoware.repos') }}
+          restore-keys: |
+            cache-${{ matrix.platform }}-${{ matrix.name }}-
+            cache-${{ matrix.platform }}-
+      - name: inject cache into docker
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.0
+        with:
+          cache-map: |
+            {
+              "root-ccache": "/root/.ccache"
+            }
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
       - name: Build 'Autoware'
         if: steps.author-check.outputs.author-found == 'true' || ${{ github.event_name == 'workflow_dispatch' }}
@@ -76,9 +98,10 @@ jobs:
             *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
             *.args.LIB_DIR=${{ matrix.lib_dir }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}-${{ matrix.platform }}
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache-${{ matrix.name }}-${{ matrix.platform }},mode=max
-          tag-suffix: ${{ matrix.additional-tag-suffix }}-arm64
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.head_ref }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.head_ref }},mode=max
+          tag-suffix: ${{ matrix.additional-tag-suffix }}-${{ matrix.platform }}
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           allow-push: true
 
