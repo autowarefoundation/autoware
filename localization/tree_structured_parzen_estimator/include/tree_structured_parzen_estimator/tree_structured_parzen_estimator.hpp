@@ -56,19 +56,20 @@ public:
 
   TreeStructuredParzenEstimator() = delete;
   TreeStructuredParzenEstimator(
-    const Direction direction, const int64_t n_startup_trials,
-    const std::vector<double> & sample_mean, const std::vector<double> & sample_stddev);
+    const Direction direction, const int64_t n_startup_trials, std::vector<double> sample_mean,
+    std::vector<double> sample_stddev);
   void add_trial(const Trial & trial);
-  Input get_next_input() const;
+  [[nodiscard]] Input get_next_input() const;
 
 private:
-  static constexpr double MAX_GOOD_RATE = 0.10;
-  static constexpr int64_t N_EI_CANDIDATES = 100;
+  static constexpr double max_good_rate = 0.10;
+  static constexpr int64_t n_ei_candidates = 100;
 
   static std::mt19937_64 engine;
 
-  double compute_log_likelihood_ratio(const Input & input) const;
-  double log_gaussian_pdf(const Input & input, const Input & mu, const Input & sigma) const;
+  [[nodiscard]] double compute_log_likelihood_ratio(const Input & input) const;
+  [[nodiscard]] static double log_gaussian_pdf(
+    const Input & input, const Input & mu, const Input & sigma);
 
   std::vector<Trial> trials_;
   int64_t above_num_;

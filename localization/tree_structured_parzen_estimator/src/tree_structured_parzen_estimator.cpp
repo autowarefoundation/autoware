@@ -23,14 +23,14 @@
 std::mt19937_64 TreeStructuredParzenEstimator::engine(std::random_device{}());
 
 TreeStructuredParzenEstimator::TreeStructuredParzenEstimator(
-  const Direction direction, const int64_t n_startup_trials,
-  const std::vector<double> & sample_mean, const std::vector<double> & sample_stddev)
+  const Direction direction, const int64_t n_startup_trials, std::vector<double> sample_mean,
+  std::vector<double> sample_stddev)
 : above_num_(0),
   direction_(direction),
   n_startup_trials_(n_startup_trials),
   input_dimension_(INDEX_NUM),
-  sample_mean_(sample_mean),
-  sample_stddev_(sample_stddev)
+  sample_mean_(std::move(sample_mean)),
+  sample_stddev_(std::move(sample_stddev))
 {
   if (sample_mean_.size() != ANGLE_Z) {
     std::cerr << "sample_mean size is invalid" << std::endl;
@@ -56,8 +56,9 @@ void TreeStructuredParzenEstimator::add_trial(const Trial & trial)
   std::sort(trials_.begin(), trials_.end(), [this](const Trial & lhs, const Trial & rhs) {
     return (direction_ == Direction::MAXIMIZE ? lhs.score > rhs.score : lhs.score < rhs.score);
   });
-  above_num_ =
-    std::min({static_cast<int64_t>(10), static_cast<int64_t>(trials_.size() * MAX_GOOD_RATE)});
+  above_num_ = std::min(
+    {static_cast<int64_t>(10),
+     static_cast<int64_t>(static_cast<double>(trials_.size()) * max_good_rate)});
 }
 
 TreeStructuredParzenEstimator::Input TreeStructuredParzenEstimator::get_next_input() const
@@ -88,7 +89,7 @@ TreeStructuredParzenEstimator::Input TreeStructuredParzenEstimator::get_next_inp
 
   Input best_input;
   double best_log_likelihood_ratio = std::numeric_limits<double>::lowest();
-  for (int64_t i = 0; i < N_EI_CANDIDATES; i++) {
+  for (int64_t i = 0; i < n_ei_candidates; i++) {
     Input input(input_dimension_);
     input[TRANS_X] = dist_normal_trans_x(engine);
     input[TRANS_Y] = dist_normal_trans_y(engine);
@@ -107,7 +108,7 @@ TreeStructuredParzenEstimator::Input TreeStructuredParzenEstimator::get_next_inp
 
 double TreeStructuredParzenEstimator::compute_log_likelihood_ratio(const Input & input) const
 {
-  const int64_t n = trials_.size();
+  const auto n = static_cast<int64_t>(trials_.size());
 
   // The above KDE and the below KDE are calculated respectively, and the ratio is the criteria to
   // select best sample.
@@ -117,11 +118,11 @@ double TreeStructuredParzenEstimator::compute_log_likelihood_ratio(const Input &
   for (int64_t i = 0; i < n; i++) {
     const double log_p = log_gaussian_pdf(input, trials_[i].input, base_stddev_);
     if (i < above_num_) {
-      const double w = 1.0 / above_num_;
+      const double w = 1.0 / static_cast<double>(above_num_);
       const double log_w = std::log(w);
       above_logs.push_back(log_p + log_w);
     } else {
-      const double w = 1.0 / (n - above_num_);
+      const double w = 1.0 / static_cast<double>(n - above_num_);
       const double log_w = std::log(w);
       below_logs.push_back(log_p + log_w);
     }
@@ -129,10 +130,9 @@ double TreeStructuredParzenEstimator::compute_log_likelihood_ratio(const Input &
 
   auto log_sum_exp = [](const std::vector<double> & log_vec) {
     const double max = *std::max_element(log_vec.begin(), log_vec.end());
-    double sum = 0.0;
-    for (const double log_v : log_vec) {
-      sum += std::exp(log_v - max);
-    }
+    double sum = std::accumulate(
+      log_vec.begin(), log_vec.end(), 0.0,
+      [max](double total, double log_v) { return total + std::exp(log_v - max); });
     return max + std::log(sum);
   };
 
@@ -147,14 +147,14 @@ double TreeStructuredParzenEstimator::compute_log_likelihood_ratio(const Input &
 }
 
 double TreeStructuredParzenEstimator::log_gaussian_pdf(
-  const Input & input, const Input & mu, const Input & sigma) const
+  const Input & input, const Input & mu, const Input & sigma)
 {
   const double log_2pi = std::log(2.0 * M_PI);
   auto log_gaussian_pdf_1d = [&](const double diff, const double sigma) {
     return -0.5 * log_2pi - std::log(sigma) - (diff * diff) / (2.0 * sigma * sigma);
   };
 
-  const int64_t n = input.size();
+  const auto n = static_cast<int64_t>(input.size());
 
   double result = 0.0;
   for (int64_t i = 0; i < n; i++) {
