@@ -16,6 +16,7 @@
   <depend>fmt</depend>
   <depend>libcpprest-dev</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>
