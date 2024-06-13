@@ -244,7 +244,7 @@ bool GeometricParallelParking::planPullOut(
     auto arc_paths = planOneTrial(
       *end_pose, start_pose, R_E_min_, road_lanes, shoulder_lanes, is_forward, left_side_start,
       start_pose_offset, parameters_.pull_out_lane_departure_margin,
-      parameters_.pull_out_path_interval, lane_departure_checker);
+      parameters_.pull_out_arc_path_interval, lane_departure_checker);
     if (arc_paths.empty()) {
       // not found path
       continue;

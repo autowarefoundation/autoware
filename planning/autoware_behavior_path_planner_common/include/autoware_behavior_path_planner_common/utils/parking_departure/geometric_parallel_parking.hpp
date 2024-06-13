@@ -60,7 +60,7 @@ struct ParallelParkingParameters
   // pull_out
   double pull_out_velocity{0.0};
   double pull_out_lane_departure_margin{0.0};
-  double pull_out_path_interval{0.0};
+  double pull_out_arc_path_interval{0.0};
   double pull_out_max_steer_angle{0.0};
 };
 

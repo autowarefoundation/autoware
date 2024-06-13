@@ -35,6 +35,7 @@
       # geometric pull out
       enable_geometric_pull_out: true
       geometric_collision_check_distance_from_end: 0.0
+      arc_path_interval: 1.0
       divide_pull_out_path: true
       geometric_pull_out_velocity: 1.0
       lane_departure_margin: 0.2
