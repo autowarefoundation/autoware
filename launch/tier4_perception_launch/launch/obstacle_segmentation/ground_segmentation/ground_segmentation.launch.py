@@ -501,9 +501,11 @@ def launch_setup(context, *args, **kwargs):
     components.extend(
         pipeline.create_single_frame_obstacle_segmentation_components(
             input_topic=LaunchConfiguration("input/pointcloud"),
-            output_topic=pipeline.single_frame_obstacle_seg_output
-            if pipeline.use_single_frame_filter or pipeline.use_time_series_filter
-            else pipeline.output_topic,
+            output_topic=(
+                pipeline.single_frame_obstacle_seg_output
+                if pipeline.use_single_frame_filter or pipeline.use_time_series_filter
+                else pipeline.output_topic
+            ),
         )
     )
 
@@ -512,18 +514,20 @@ def launch_setup(context, *args, **kwargs):
         components.extend(
             pipeline.create_single_frame_outlier_filter_components(
                 input_topic=pipeline.single_frame_obstacle_seg_output,
-                output_topic=relay_topic
-                if pipeline.use_time_series_filter
-                else pipeline.output_topic,
+                output_topic=(
+                    relay_topic if pipeline.use_time_series_filter else pipeline.output_topic
+                ),
                 context=context,
             )
         )
     if pipeline.use_time_series_filter:
         components.extend(
             pipeline.create_time_series_outlier_filter_components(
-                input_topic=relay_topic
-                if pipeline.use_single_frame_filter
-                else pipeline.single_frame_obstacle_seg_output,
+                input_topic=(
+                    relay_topic
+                    if pipeline.use_single_frame_filter
+                    else pipeline.single_frame_obstacle_seg_output
+                ),
                 output_topic=pipeline.output_topic,
             )
         )

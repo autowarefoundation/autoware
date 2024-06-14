@@ -242,7 +242,7 @@ void pcl::PassThroughUInt16<pcl::PCLPointCloud2>::applyFilter(PCLPointCloud2 & o
         nr_p++;
       }
       output.width = nr_p;
-    }       // !keep_organized_
+    }  // !keep_organized_
   } else {  // No distance filtering, process all data.
             // No need to check for is_organized here as we did it above
     for (int cp = 0; cp < nr_points; ++cp, xyz_offset += input_->point_step) {

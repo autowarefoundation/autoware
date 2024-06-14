@@ -349,4 +349,4 @@ Special thanks to [Deepen AI](https://www.deepen.ai/) for providing their 3D Ann
 _The nuScenes dataset is released publicly for non-commercial use under the Creative
 Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License.
 Additional Terms of Use can be found at <https://www.nuscenes.org/terms-of-use>.
-To inquire about a commercial license please contact nuscenes@motional.com._
+To inquire about a commercial license please contact <nuscenes@motional.com>._

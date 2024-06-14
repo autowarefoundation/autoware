@@ -560,12 +560,12 @@ class drive_controller:
                     np.array(time_stamp), np.array(steer_history)
                 )
 
-                self.acc_input_queue[
-                    drive_functions.acc_ctrl_queue_size - acc_num :
-                ] = acc_interpolate(time_stamp_acc)
-                self.steer_input_queue[
-                    drive_functions.steer_ctrl_queue_size - steer_num :
-                ] = steer_interpolate(time_stamp_steer)
+                self.acc_input_queue[drive_functions.acc_ctrl_queue_size - acc_num :] = (
+                    acc_interpolate(time_stamp_acc)
+                )
+                self.steer_input_queue[drive_functions.steer_ctrl_queue_size - steer_num :] = (
+                    steer_interpolate(time_stamp_steer)
+                )
 
                 if (
                     acc_num == drive_functions.acc_ctrl_queue_size

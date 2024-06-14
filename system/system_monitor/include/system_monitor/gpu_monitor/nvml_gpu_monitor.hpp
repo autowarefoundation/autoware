@@ -29,17 +29,17 @@
 #include <string>
 #include <vector>
 
-#define reasonToString(X)                                                                  \
-  (((X)&nvmlClocksThrottleReasonGpuIdle)                     ? "GpuIdle"                   \
-   : ((X)&nvmlClocksThrottleReasonApplicationsClocksSetting) ? "ApplicationsClocksSetting" \
-   : ((X)&nvmlClocksThrottleReasonSwPowerCap)                ? "SwPowerCap"                \
-   : ((X)&nvmlClocksThrottleReasonHwSlowdown)                ? "HwSlowdown"                \
-   : ((X)&nvmlClocksThrottleReasonSyncBoost)                 ? "SyncBoost"                 \
-   : ((X)&nvmlClocksThrottleReasonSwThermalSlowdown)         ? "SwThermalSlowdown"         \
-   : ((X)&nvmlClocksThrottleReasonHwThermalSlowdown)         ? "HwThermalSlowdown"         \
-   : ((X)&nvmlClocksThrottleReasonHwPowerBrakeSlowdown)      ? "HwPowerBrakeSlowdown"      \
-   : ((X)&nvmlClocksThrottleReasonDisplayClockSetting)       ? "DisplayClockSetting"       \
-                                                             : "UNKNOWN")
+#define reasonToString(X)                                                                    \
+  (((X) & nvmlClocksThrottleReasonGpuIdle)                     ? "GpuIdle"                   \
+   : ((X) & nvmlClocksThrottleReasonApplicationsClocksSetting) ? "ApplicationsClocksSetting" \
+   : ((X) & nvmlClocksThrottleReasonSwPowerCap)                ? "SwPowerCap"                \
+   : ((X) & nvmlClocksThrottleReasonHwSlowdown)                ? "HwSlowdown"                \
+   : ((X) & nvmlClocksThrottleReasonSyncBoost)                 ? "SyncBoost"                 \
+   : ((X) & nvmlClocksThrottleReasonSwThermalSlowdown)         ? "SwThermalSlowdown"         \
+   : ((X) & nvmlClocksThrottleReasonHwThermalSlowdown)         ? "HwThermalSlowdown"         \
+   : ((X) & nvmlClocksThrottleReasonHwPowerBrakeSlowdown)      ? "HwPowerBrakeSlowdown"      \
+   : ((X) & nvmlClocksThrottleReasonDisplayClockSetting)       ? "DisplayClockSetting"       \
+                                                               : "UNKNOWN")
 
 /**
  * @brief GPU information

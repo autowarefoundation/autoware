@@ -94,8 +94,7 @@ public:
     C & cli, S & srv, CallbackGroup group, std::optional<double> timeout = std::nullopt) const
   {
     init_cli(cli);
-    init_srv(
-      srv, [cli, timeout](auto req, auto res) { *res = *cli->call(req, timeout); }, group);
+    init_srv(srv, [cli, timeout](auto req, auto res) { *res = *cli->call(req, timeout); }, group);
   }
 
   /// Create a subscription wrapper.

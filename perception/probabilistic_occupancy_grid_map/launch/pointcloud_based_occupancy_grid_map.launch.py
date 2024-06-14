@@ -101,15 +101,19 @@ def launch_setup(context, *args, **kwargs):
             remappings=[
                 (
                     "~/input/obstacle_pointcloud",
-                    LaunchConfiguration("input/obstacle_pointcloud")
-                    if not downsample_input_pointcloud
-                    else "obstacle/downsample/pointcloud",
+                    (
+                        LaunchConfiguration("input/obstacle_pointcloud")
+                        if not downsample_input_pointcloud
+                        else "obstacle/downsample/pointcloud"
+                    ),
                 ),
                 (
                     "~/input/raw_pointcloud",
-                    LaunchConfiguration("input/raw_pointcloud")
-                    if not downsample_input_pointcloud
-                    else "raw/downsample/pointcloud",
+                    (
+                        LaunchConfiguration("input/raw_pointcloud")
+                        if not downsample_input_pointcloud
+                        else "raw/downsample/pointcloud"
+                    ),
                 ),
                 ("~/output/occupancy_grid_map", LaunchConfiguration("output")),
             ],

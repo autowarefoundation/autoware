@@ -221,7 +221,7 @@ void pcl::VoxelGridNearestCentroid<PointT>::applyFilter(PointCloud & output)
             &rgb, reinterpret_cast<const char *>(&input_->points[cp]) + rgba_index, sizeof(int));
           centroid[centroid_size - 3] = static_cast<float>((rgb >> 16) & 0x0000ff);
           centroid[centroid_size - 2] = static_cast<float>((rgb >> 8) & 0x0000ff);
-          centroid[centroid_size - 1] = static_cast<float>((rgb)&0x0000ff);
+          centroid[centroid_size - 1] = static_cast<float>((rgb) & 0x0000ff);
         }
         pcl::for_each_type<FieldList>(
           NdCopyPointEigenFunctor<PointT>(input_->points[cp], centroid));
@@ -272,7 +272,7 @@ void pcl::VoxelGridNearestCentroid<PointT>::applyFilter(PointCloud & output)
             &rgb, reinterpret_cast<const char *>(&input_->points[cp]) + rgba_index, sizeof(int));
           centroid[centroid_size - 3] = static_cast<float>((rgb >> 16) & 0x0000ff);
           centroid[centroid_size - 2] = static_cast<float>((rgb >> 8) & 0x0000ff);
-          centroid[centroid_size - 1] = static_cast<float>((rgb)&0x0000ff);
+          centroid[centroid_size - 1] = static_cast<float>((rgb) & 0x0000ff);
         }
         pcl::for_each_type<FieldList>(
           NdCopyPointEigenFunctor<PointT>(input_->points[cp], centroid));
