@@ -28,7 +28,6 @@ controlEvaluatorNode::controlEvaluatorNode(const rclcpp::NodeOptions & node_opti
 : Node("control_evaluator", node_options)
 {
   using std::placeholders::_1;
-
   control_diag_sub_ = create_subscription<DiagnosticArray>(
     "~/input/diagnostics", 1, std::bind(&controlEvaluatorNode::onDiagnostics, this, _1));
 
@@ -41,45 +40,140 @@ controlEvaluatorNode::controlEvaluatorNode(const rclcpp::NodeOptions & node_opti
     rclcpp::create_timer(this, get_clock(), 100ms, std::bind(&controlEvaluatorNode::onTimer, this));
 }
 
-DiagnosticStatus controlEvaluatorNode::generateDiagnosticStatus(const bool is_emergency_brake) const
+void controlEvaluatorNode::removeOldDiagnostics(const rclcpp::Time & stamp)
+{
+  constexpr double KEEP_TIME = 1.0;
+  diag_queue_.erase(
+    std::remove_if(
+      diag_queue_.begin(), diag_queue_.end(),
+      [stamp](const std::pair<diagnostic_msgs::msg::DiagnosticStatus, rclcpp::Time> & p) {
+        return (stamp - p.second).seconds() > KEEP_TIME;
+      }),
+    diag_queue_.end());
+}
+
+void controlEvaluatorNode::removeDiagnosticsByName(const std::string & name)
+{
+  diag_queue_.erase(
+    std::remove_if(
+      diag_queue_.begin(), diag_queue_.end(),
+      [&name](const std::pair<diagnostic_msgs::msg::DiagnosticStatus, rclcpp::Time> & p) {
+        return p.first.name.find(name) != std::string::npos;
+      }),
+    diag_queue_.end());
+}
+
+void controlEvaluatorNode::addDiagnostic(
+  const diagnostic_msgs::msg::DiagnosticStatus & diag, const rclcpp::Time & stamp)
+{
+  diag_queue_.push_back(std::make_pair(diag, stamp));
+}
+
+void controlEvaluatorNode::updateDiagnosticQueue(
+  const DiagnosticArray & input_diagnostics, const std::string & function,
+  const rclcpp::Time & stamp)
+{
+  const auto it = std::find_if(
+    input_diagnostics.status.begin(), input_diagnostics.status.end(),
+    [&function](const diagnostic_msgs::msg::DiagnosticStatus & diag) {
+      return diag.name.find(function) != std::string::npos;
+    });
+  if (it != input_diagnostics.status.end()) {
+    removeDiagnosticsByName(it->name);
+    addDiagnostic(*it, input_diagnostics.header.stamp);
+  }
+
+  removeOldDiagnostics(stamp);
+}
+
+void controlEvaluatorNode::onDiagnostics(const DiagnosticArray::ConstSharedPtr diag_msg)
+{
+  // add target diagnostics to the queue and remove old ones
+  for (const auto & function : target_functions_) {
+    updateDiagnosticQueue(*diag_msg, function, now());
+  }
+}
+
+DiagnosticStatus controlEvaluatorNode::generateAEBDiagnosticStatus(const DiagnosticStatus & diag)
 {
   DiagnosticStatus status;
   status.level = status.OK;
-  status.name = "autonomous_emergency_braking";
+  status.name = diag.name;
   diagnostic_msgs::msg::KeyValue key_value;
   key_value.key = "decision";
+  const bool is_emergency_brake = (diag.level == DiagnosticStatus::ERROR);
   key_value.value = (is_emergency_brake) ? "stop" : "none";
   status.values.push_back(key_value);
+
+  return status;
+}
+
+DiagnosticStatus controlEvaluatorNode::generateLateralDeviationDiagnosticStatus(
+  const Trajectory & traj, const Point & ego_point)
+{
+  const double lateral_deviation = metrics::calcLateralDeviation(traj, ego_point);
+
+  DiagnosticStatus status;
+  status.level = status.OK;
+  status.name = "lateral_deviation";
+  diagnostic_msgs::msg::KeyValue key_value;
+  key_value.key = "metric_value";
+  key_value.value = std::to_string(lateral_deviation);
+  status.values.push_back(key_value);
+
+  return status;
+}
+
+DiagnosticStatus controlEvaluatorNode::generateYawDeviationDiagnosticStatus(
+  const Trajectory & traj, const Pose & ego_pose)
+{
+  const double yaw_deviation = metrics::calcYawDeviation(traj, ego_pose);
+
+  DiagnosticStatus status;
+  status.level = status.OK;
+  status.name = "yaw_deviation";
+  diagnostic_msgs::msg::KeyValue key_value;
+  key_value.key = "metric_value";
+  key_value.value = std::to_string(yaw_deviation);
+  status.values.push_back(key_value);
+
   return status;
 }
 
 void controlEvaluatorNode::onTimer()
 {
-  if (!metrics_msg_.status.empty()) {
-    metrics_pub_->publish(metrics_msg_);
-    metrics_msg_.status.clear();
+  DiagnosticArray metrics_msg;
+  const auto traj = traj_sub_.takeData();
+  const auto odom = odometry_sub_.takeData();
+
+  // generate decision diagnostics from input diagnostics
+  for (const auto & function : target_functions_) {
+    const auto it = std::find_if(
+      diag_queue_.begin(), diag_queue_.end(),
+      [&function](const std::pair<diagnostic_msgs::msg::DiagnosticStatus, rclcpp::Time> & p) {
+        return p.first.name.find(function) != std::string::npos;
+      });
+    if (it == diag_queue_.end()) {
+      continue;
+    }
+    // generate each decision diagnostics
+    // - AEB decision
+    if (it->first.name.find("autonomous_emergency_braking") != std::string::npos) {
+      metrics_msg.status.push_back(generateAEBDiagnosticStatus(it->first));
+    }
   }
+
+  // calculate deviation metrics
+  if (odom && traj && !traj->points.empty()) {
+    const Pose ego_pose = odom->pose.pose;
+    metrics_msg.status.push_back(
+      generateLateralDeviationDiagnosticStatus(*traj, ego_pose.position));
+    metrics_msg.status.push_back(generateYawDeviationDiagnosticStatus(*traj, ego_pose));
+  }
+
+  metrics_msg.header.stamp = now();
+  metrics_pub_->publish(metrics_msg);
 }
-
-void controlEvaluatorNode::onDiagnostics(const DiagnosticArray::ConstSharedPtr diag_msg)
-{
-  const auto start = now();
-  const auto aeb_status =
-    std::find_if(diag_msg->status.begin(), diag_msg->status.end(), [](const auto & status) {
-      const bool aeb_found = status.name.find("autonomous_emergency_braking") != std::string::npos;
-      return aeb_found;
-    });
-
-  if (aeb_status == diag_msg->status.end()) return;
-
-  const bool is_emergency_brake = (aeb_status->level == DiagnosticStatus::ERROR);
-  metrics_msg_.header.stamp = now();
-  metrics_msg_.status.emplace_back(generateDiagnosticStatus(is_emergency_brake));
-
-  const auto runtime = (now() - start).seconds();
-  RCLCPP_DEBUG(get_logger(), "control evaluation calculation time: %2.2f ms", runtime * 1e3);
-}
-
 }  // namespace control_diagnostics
 
 #include "rclcpp_components/register_node_macro.hpp"
