@@ -80,7 +80,7 @@ jobs:
             cache-${{ matrix.platform }}-
 
       - name: Inject cache into docker
-        uses: reproducible-containers/buildkit-cache-dance@v3.1.0
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.1
         with:
           cache-map: |
             {
