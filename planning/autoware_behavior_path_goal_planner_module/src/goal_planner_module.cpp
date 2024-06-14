@@ -133,12 +133,35 @@ bool GoalPlannerModule::hasPreviousModulePathShapeChanged(
     return true;
   }
 
-  const auto current_path = previous_module_output.path;
-
-  // the terminal distance is far
-  return calcDistance2d(
-           last_previous_module_output->path.points.back().point,
-           current_path.points.back().point) > 0.3;
+  // Calculate the lateral distance between each point of the current path and the nearest point of
+  // the last path
+  constexpr double LATERAL_DEVIATION_THRESH = 0.3;
+  for (const auto & p : previous_module_output.path.points) {
+    const size_t nearest_seg_idx = motion_utils::findNearestSegmentIndex(
+      last_previous_module_output->path.points, p.point.pose.position);
+    const auto seg_front = last_previous_module_output->path.points.at(nearest_seg_idx);
+    const auto seg_back = last_previous_module_output->path.points.at(nearest_seg_idx + 1);
+    // Check if the target point is within the segment
+    const Eigen::Vector3d segment_vec{
+      seg_back.point.pose.position.x - seg_front.point.pose.position.x,
+      seg_back.point.pose.position.y - seg_front.point.pose.position.y, 0.0};
+    const Eigen::Vector3d target_vec{
+      p.point.pose.position.x - seg_front.point.pose.position.x,
+      p.point.pose.position.y - seg_front.point.pose.position.y, 0.0};
+    const double dot_product = segment_vec.x() * target_vec.x() + segment_vec.y() * target_vec.y();
+    const double segment_length_squared =
+      segment_vec.x() * segment_vec.x() + segment_vec.y() * segment_vec.y();
+    if (dot_product < 0 || dot_product > segment_length_squared) {
+      // p.point.pose.position is not within the segment, skip lateral distance check
+      continue;
+    }
+    const double lateral_distance = std::abs(motion_utils::calcLateralOffset(
+      last_previous_module_output->path.points, p.point.pose.position, nearest_seg_idx));
+    if (lateral_distance > LATERAL_DEVIATION_THRESH) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool GoalPlannerModule::hasDeviatedFromLastPreviousModulePath(
@@ -157,9 +180,10 @@ bool GoalPlannerModule::hasDeviatedFromCurrentPreviousModulePath(
   const std::shared_ptr<const PlannerData> planner_data,
   const BehaviorModuleOutput & previous_module_output) const
 {
+  constexpr double LATERAL_DEVIATION_THRESH = 0.3;
   return std::abs(motion_utils::calcLateralOffset(
            previous_module_output.path.points, planner_data->self_odometry->pose.pose.position)) >
-         0.3;
+         LATERAL_DEVIATION_THRESH;
 }
 
 // generate pull over candidate paths
