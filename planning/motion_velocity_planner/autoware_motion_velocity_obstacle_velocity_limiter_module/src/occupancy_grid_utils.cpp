@@ -14,11 +14,11 @@
 
 #include "occupancy_grid_utils.hpp"
 
+#include <autoware_grid_map_utils/polygon_iterator.hpp>
 #include <grid_map_core/Polygon.hpp>
 #include <grid_map_core/iterators/GridMapIterator.hpp>
 #include <grid_map_cv/GridMapCvConverter.hpp>
 #include <grid_map_ros/GridMapRosConverter.hpp>
-#include <grid_map_utils/polygon_iterator.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -38,13 +38,14 @@ void maskPolygons(grid_map::GridMap & grid_map, const ObstacleMasks & obstacle_m
     const auto layer_copy = grid_map["layer"];
     layer.setConstant(0.0);
     grid_map::Position position;
-    for (grid_map_utils::PolygonIterator iterator(grid_map, convert(obstacle_masks.positive_mask));
+    for (autoware::grid_map_utils::PolygonIterator iterator(
+           grid_map, convert(obstacle_masks.positive_mask));
          !iterator.isPastEnd(); ++iterator)
       layer((*iterator)(0), (*iterator)(1)) = layer_copy((*iterator)(0), (*iterator)(1));
   }
 
   for (const auto & negative_mask : obstacle_masks.negative_masks)
-    for (grid_map_utils::PolygonIterator iterator(grid_map, convert(negative_mask));
+    for (autoware::grid_map_utils::PolygonIterator iterator(grid_map, convert(negative_mask));
          !iterator.isPastEnd(); ++iterator)
       layer((*iterator)(0), (*iterator)(1)) = 0.0;
 }

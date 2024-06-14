@@ -22,6 +22,7 @@
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
   <depend>autoware_behavior_velocity_planner_common</depend>
+  <depend>autoware_grid_map_utils</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_route_handler</depend>
@@ -30,7 +31,6 @@
   <depend>geometry_msgs</depend>
   <depend>grid_map_core</depend>
   <depend>grid_map_ros</depend>
-  <depend>grid_map_utils</depend>
   <depend>interpolation</depend>
   <depend>lanelet2_extension</depend>
   <depend>libboost-dev</depend>

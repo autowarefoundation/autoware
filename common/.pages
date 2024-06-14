@@ -7,12 +7,12 @@ nav:
   - 'Common Libraries':
     - 'autoware_auto_common':
       - 'comparisons': common/autoware_auto_common/design/comparisons
+    - 'autoware_grid_map_utils': common/autoware_grid_map_utils
     - 'autoware_point_types': common/autoware_point_types
     - 'Cuda Utils': common/cuda_utils
     - 'Geography Utils': common/geography_utils
     - 'Global Parameter Loader': common/global_parameter_loader/Readme
     - 'Glog Component': common/glog_component
-    - 'grid_map_utils': common/grid_map_utils
     - 'interpolation': common/interpolation
     - 'Kalman Filter': common/kalman_filter
     - 'Motion Utils': common/motion_utils

@@ -17,10 +17,10 @@
 
 #include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware_grid_map_utils/polygon_iterator.hpp>
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_core/iterators/LineIterator.hpp>
 #include <grid_map_ros/GridMapRosConverter.hpp>
-#include <grid_map_utils/polygon_iterator.hpp>
 #include <opencv2/opencv.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/normalization.hpp>

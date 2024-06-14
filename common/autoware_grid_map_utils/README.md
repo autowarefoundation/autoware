@@ -19,18 +19,18 @@ More details on the scan line algorithm can be found in the References.
 
 ## API
 
-The `grid_map_utils::PolygonIterator` follows the same API as the original [`grid_map::PolygonIterator`](https://docs.ros.org/en/kinetic/api/grid_map_core/html/classgrid__map_1_1PolygonIterator.html).
+The `autoware::grid_map_utils::PolygonIterator` follows the same API as the original [`grid_map::PolygonIterator`](https://docs.ros.org/en/kinetic/api/grid_map_core/html/classgrid__map_1_1PolygonIterator.html).
 
 ## Assumptions
 
-The behavior of the `grid_map_utils::PolygonIterator` is only guaranteed to match the `grid_map::PolygonIterator` if edges of the polygon do not _exactly_ cross any cell center.
+The behavior of the `autoware::grid_map_utils::PolygonIterator` is only guaranteed to match the `grid_map::PolygonIterator` if edges of the polygon do not _exactly_ cross any cell center.
 In such a case, whether the crossed cell is considered inside or outside of the polygon can vary due to floating precision error.
 
 ## Performances
 
-Benchmarking code is implemented in `test/benchmarking.cpp` and is also used to validate that the `grid_map_utils::PolygonIterator` behaves exactly like the `grid_map::PolygonIterator`.
+Benchmarking code is implemented in `test/benchmarking.cpp` and is also used to validate that the `autoware::grid_map_utils::PolygonIterator` behaves exactly like the `grid_map::PolygonIterator`.
 
-The following figure shows a comparison of the runtime between the implementation of this package (`grid_map_utils`) and the original implementation (`grid_map`).
+The following figure shows a comparison of the runtime between the implementation of this package (`autoware_grid_map_utils`) and the original implementation (`grid_map`).
 The time measured includes the construction of the iterator and the iteration over all indexes and is shown using a logarithmic scale.
 Results were obtained varying the side size of a square grid map with `100 <= n <= 1000` (size=`n` means a grid of `n x n` cells),
 random polygons with a number of vertices `3 <= m <= 100` and with each parameter `(n,m)` repeated 10 times.

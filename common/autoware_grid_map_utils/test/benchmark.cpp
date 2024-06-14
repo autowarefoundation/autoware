@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "autoware_grid_map_utils/polygon_iterator.hpp"
 #include "grid_map_core/TypeDefs.hpp"
 #include "grid_map_cv/GridMapCvConverter.hpp"
 #include "grid_map_cv/GridMapCvProcessing.hpp"
-#include "grid_map_utils/polygon_iterator.hpp"
 
 #include <grid_map_core/iterators/PolygonIterator.hpp>
 #include <grid_map_cv/grid_map_cv.hpp>
@@ -116,7 +116,7 @@ int main(int argc, char * argv[])
           polygon.addVertex(base_polygon.getVertex(idx) + offset);
         }
         stopwatch.tic("gmu_ctor");
-        grid_map_utils::PolygonIterator grid_map_utils_iterator(map, polygon);
+        autoware::grid_map_utils::PolygonIterator grid_map_utils_iterator(map, polygon);
         grid_map_utils_constructor_duration += stopwatch.toc("gmu_ctor");
         stopwatch.tic("gm_ctor");
         grid_map::PolygonIterator grid_map_iterator(map, polygon);
@@ -143,8 +143,8 @@ int main(int argc, char * argv[])
         if (diff || visualize) {
           // Prepare images of the cells selected by the two PolygonIterators
           auto gridmap = map;
-          for (grid_map_utils::PolygonIterator iterator(map, polygon); !iterator.isPastEnd();
-               ++iterator)
+          for (autoware::grid_map_utils::PolygonIterator iterator(map, polygon);
+               !iterator.isPastEnd(); ++iterator)
             map.at("layer", *iterator) = 100;
           for (grid_map::PolygonIterator iterator(gridmap, polygon); !iterator.isPastEnd();
                ++iterator)

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "grid_map_utils/polygon_iterator.hpp"
+#include "autoware_grid_map_utils/polygon_iterator.hpp"
 
 #include "grid_map_core/GridMap.hpp"
 #include "grid_map_core/Polygon.hpp"
@@ -22,7 +22,7 @@
 #include <functional>
 #include <utility>
 
-namespace grid_map_utils
+namespace autoware::grid_map_utils
 {
 
 std::vector<Edge> PolygonIterator::calculateSortedEdges(const grid_map::Polygon & polygon)
@@ -214,4 +214,4 @@ PolygonIterator & PolygonIterator::operator++()
 {
   return current_line_ >= intersections_per_line_.size();
 }
-}  // namespace grid_map_utils
+}  // namespace autoware::grid_map_utils

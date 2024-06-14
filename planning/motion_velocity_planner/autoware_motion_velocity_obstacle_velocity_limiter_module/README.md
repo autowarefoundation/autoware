@@ -111,7 +111,7 @@ Obstacles from the lanelet map are not impacted by the masks.
 
 #### Occupancy Grid
 
-Masking is performed by iterating through the cells inside each polygon mask using the [`grid_map_utils::PolygonIterator`](https://github.com/autowarefoundation/autoware.universe/tree/main/common/grid_map_utils) function.
+Masking is performed by iterating through the cells inside each polygon mask using the [`autoware::grid_map_utils::PolygonIterator`](https://github.com/autowarefoundation/autoware.universe/tree/main/common/autoware_grid_map_utils) function.
 A threshold is then applied to only keep cells with an occupancy value above parameter `obstacles.occupancy_grid_threshold`.
 Finally, the image is converted to an image and obstacle linestrings are extracted using the opencv function
 [`findContour`](https://docs.opencv.org/3.4/d3/dc0/group__imgproc__shape.html#ga17ed9f5d79ae97bd4c7cf18403e1689a).

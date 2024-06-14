@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef GRID_MAP_UTILS__POLYGON_ITERATOR_HPP_
-#define GRID_MAP_UTILS__POLYGON_ITERATOR_HPP_
+#ifndef AUTOWARE_GRID_MAP_UTILS__POLYGON_ITERATOR_HPP_
+#define AUTOWARE_GRID_MAP_UTILS__POLYGON_ITERATOR_HPP_
 
 #include "grid_map_core/TypeDefs.hpp"
 
@@ -24,7 +24,7 @@
 #include <utility>
 #include <vector>
 
-namespace grid_map_utils
+namespace autoware::grid_map_utils
 {
 
 /// @brief Representation of a polygon edge made of 2 vertices
@@ -124,6 +124,6 @@ private:
   int current_col_;
   int current_to_col_;
 };
-}  // namespace grid_map_utils
+}  // namespace autoware::grid_map_utils
 
-#endif  // GRID_MAP_UTILS__POLYGON_ITERATOR_HPP_
+#endif  // AUTOWARE_GRID_MAP_UTILS__POLYGON_ITERATOR_HPP_

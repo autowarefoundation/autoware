@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(grid_map_utils)
+project(autoware_grid_map_utils)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)

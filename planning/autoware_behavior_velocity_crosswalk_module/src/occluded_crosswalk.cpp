@@ -16,8 +16,8 @@
 
 #include "autoware_behavior_velocity_crosswalk_module/util.hpp"
 
+#include <autoware_grid_map_utils/polygon_iterator.hpp>
 #include <grid_map_ros/GridMapRosConverter.hpp>
-#include <grid_map_utils/polygon_iterator.hpp>
 
 #include <algorithm>
 #include <vector>
@@ -129,7 +129,8 @@ void clear_occlusions_behind_objects(
       polygon_to_clear.addVertex(
         interpolate_point({grid_map_position, edge_points.back()}, 10.0 * range));
       polygon_to_clear.addVertex(edge_points.back());
-      for (grid_map_utils::PolygonIterator it(grid_map, polygon_to_clear); !it.isPastEnd(); ++it)
+      for (autoware::grid_map_utils::PolygonIterator it(grid_map, polygon_to_clear);
+           !it.isPastEnd(); ++it)
         grid_map.at("layer", *it) = 0;
     }
   }
@@ -156,7 +157,7 @@ bool is_crosswalk_occluded(
          crosswalk_lanelet, {path_intersection.x, path_intersection.y}, detection_range)) {
     grid_map::Polygon poly;
     for (const auto & p : detection_area) poly.addVertex(grid_map::Position(p.x(), p.y()));
-    for (grid_map_utils::PolygonIterator iter(grid_map, poly); !iter.isPastEnd(); ++iter)
+    for (autoware::grid_map_utils::PolygonIterator iter(grid_map, poly); !iter.isPastEnd(); ++iter)
       if (is_occluded(grid_map, min_nb_of_cells, *iter, params)) return true;
   }
   return false;

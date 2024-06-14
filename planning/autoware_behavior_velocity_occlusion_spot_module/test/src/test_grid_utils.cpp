@@ -102,8 +102,8 @@ TEST(compareTime, polygon_vs_line_iterator)
         for (const auto & point : polygon.outer()) {
           grid_polygon.addVertex({point.x(), point.y()});
         }
-        for (grid_map_utils::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd();
-             ++iterator) {
+        for (autoware::grid_map_utils::PolygonIterator iterator(grid, grid_polygon);
+             !iterator.isPastEnd(); ++iterator) {
           const grid_map::Index & index = *iterator;
           if (grid_data(index.x(), index.y()) == OCCUPIED) {
             std::cout << "occupied" << std::endl;

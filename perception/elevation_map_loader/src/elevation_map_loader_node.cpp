@@ -14,12 +14,12 @@
 
 #include "elevation_map_loader/elevation_map_loader_node.hpp"
 
+#include <autoware_grid_map_utils/polygon_iterator.hpp>
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_cv/InpaintFilter.hpp>
 #include <grid_map_pcl/GridMapPclLoader.hpp>
 #include <grid_map_pcl/helpers.hpp>
 #include <grid_map_ros/GridMapRosConverter.hpp>
-#include <grid_map_utils/polygon_iterator.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <rclcpp/logger.hpp>
@@ -382,8 +382,8 @@ void ElevationMapLoaderNode::inpaintElevationMap(const float radius)
       for (const auto & p : lane_polygon) {
         polygon.addVertex(grid_map::Position(p[0], p[1]));
       }
-      for (grid_map_utils::PolygonIterator iterator(elevation_map_, polygon); !iterator.isPastEnd();
-           ++iterator) {
+      for (autoware::grid_map_utils::PolygonIterator iterator(elevation_map_, polygon);
+           !iterator.isPastEnd(); ++iterator) {
         if (!elevation_map_.isValid(*iterator, layer_name_)) {
           elevation_map_.at("inpaint_mask", *iterator) = 1.0;
         }

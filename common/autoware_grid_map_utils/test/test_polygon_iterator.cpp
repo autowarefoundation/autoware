@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "grid_map_utils/polygon_iterator.hpp"
+#include "autoware_grid_map_utils/polygon_iterator.hpp"
 
 #include <grid_map_core/iterators/PolygonIterator.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
@@ -45,7 +45,7 @@ TEST(PolygonIterator, FullCover)
   polygon.addVertex(Position(100.0, -100.0));
   polygon.addVertex(Position(-100.0, -100.0));
 
-  grid_map_utils::PolygonIterator iterator(map, polygon);
+  autoware::grid_map_utils::PolygonIterator iterator(map, polygon);
 
   EXPECT_FALSE(iterator.isPastEnd());
   EXPECT_EQ(0, (*iterator)(0));
@@ -83,7 +83,7 @@ TEST(PolygonIterator, Outside)
   polygon.addVertex(Position(101.0, 99.0));
   polygon.addVertex(Position(99.0, 99.0));
 
-  grid_map_utils::PolygonIterator iterator(map, polygon);
+  autoware::grid_map_utils::PolygonIterator iterator(map, polygon);
 
   EXPECT_TRUE(iterator.isPastEnd());
 }
@@ -100,7 +100,7 @@ TEST(PolygonIterator, Square)
   polygon.addVertex(Position(1.0, -1.5));
   polygon.addVertex(Position(-1.0, -1.5));
 
-  grid_map_utils::PolygonIterator iterator(map, polygon);
+  autoware::grid_map_utils::PolygonIterator iterator(map, polygon);
 
   EXPECT_FALSE(iterator.isPastEnd());
   EXPECT_EQ(3, (*iterator)(0));
@@ -146,7 +146,7 @@ TEST(PolygonIterator, TopLeftTriangle)
   polygon.addVertex(Position(40.1, 20.4));
   polygon.addVertex(Position(-40.1, -20.6));
 
-  grid_map_utils::PolygonIterator iterator(map, polygon);
+  autoware::grid_map_utils::PolygonIterator iterator(map, polygon);
 
   EXPECT_FALSE(iterator.isPastEnd());
   EXPECT_EQ(0, (*iterator)(0));
@@ -170,7 +170,7 @@ TEST(PolygonIterator, MoveMap)
   polygon.addVertex(Position(0.9, 1.6));
   polygon.addVertex(Position(0.9, -1.6));
   polygon.addVertex(Position(6.1, -1.6));
-  grid_map_utils::PolygonIterator iterator(map, polygon);
+  autoware::grid_map_utils::PolygonIterator iterator(map, polygon);
 
   EXPECT_FALSE(iterator.isPastEnd());
   EXPECT_EQ(6, (*iterator)(0));
@@ -213,7 +213,7 @@ TEST(PolygonIterator, Difference)
   polygon.addVertex(Position(2.5, 2.5));
   polygon.addVertex(Position(-2.5, 2.5));
   polygon.addVertex(Position(-2.5, -2.5));
-  grid_map_utils::PolygonIterator iterator(map, polygon);
+  autoware::grid_map_utils::PolygonIterator iterator(map, polygon);
   grid_map::PolygonIterator gm_iterator(map, polygon);
   bool diff = false;
   while (!iterator.isPastEnd() && !gm_iterator.isPastEnd()) {
@@ -231,7 +231,7 @@ TEST(PolygonIterator, Difference)
   polygon.addVertex(Position(2.5, 2.1));
   polygon.addVertex(Position(-2.5, 2.5));
   polygon.addVertex(Position(-2.5, -2.9));
-  iterator = grid_map_utils::PolygonIterator(map, polygon);
+  iterator = autoware::grid_map_utils::PolygonIterator(map, polygon);
   gm_iterator = grid_map::PolygonIterator(map, polygon);
   diff = false;
   while (!iterator.isPastEnd() && !gm_iterator.isPastEnd()) {
@@ -256,7 +256,7 @@ TEST(PolygonIterator, SelfCrossingPolygon)
   polygon.addVertex(Position(2.5, -2.9));
   polygon.addVertex(Position(-2.5, 2.5));
   polygon.addVertex(Position(-2.5, -2.5));
-  grid_map_utils::PolygonIterator iterator(map, polygon);
+  autoware::grid_map_utils::PolygonIterator iterator(map, polygon);
   grid_map::PolygonIterator gm_iterator(map, polygon);
 
   const std::vector<Index> expected_indexes = {
