@@ -68,9 +68,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache
-        uses: actions/cache@v3
-        id: cache
+      - name: Restore cache
+        uses: actions/cache/restore@v4
         with:
           path: |
             root-ccache
@@ -78,14 +77,15 @@ jobs:
           restore-keys: |
             cache-${{ matrix.platform }}-${{ matrix.name }}-
             cache-${{ matrix.platform }}-
-      - name: inject cache into docker
-        uses: reproducible-containers/buildkit-cache-dance@v3.1.0
+
+      - name: Inject cache into docker
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.1
         with:
           cache-map: |
             {
               "root-ccache": "/root/.ccache"
             }
-          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+          skip-extraction: true
 
       - name: Build 'Autoware'
         if: steps.author-check.outputs.author-found == 'true' || ${{ github.event_name == 'workflow_dispatch' }}
