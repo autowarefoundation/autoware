@@ -381,7 +381,7 @@ def launch_setup(context, *args, **kwargs):
             ("~/input/diagnostics", "/diagnostics"),
             ("~/input/odometry", "/localization/kinematic_state"),
             ("~/input/trajectory", "/planning/scenario_planning/trajectory"),
-            ("~/output/metrics", "~/metrics"),
+            ("~/metrics", "/diagnostic/control_evaluator/metrics"),
         ],
     )
 
