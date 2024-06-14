@@ -26,6 +26,13 @@
 namespace tier4_autoware_utils
 {
 
+inline rclcpp::SensorDataQoS SingleDepthSensorQoS()
+{
+  rclcpp::SensorDataQoS qos;
+  qos.get_rmw_qos_profile().depth = 1;
+  return qos;
+}
+
 template <typename T, int N = 1, typename Enable = void>
 class InterProcessPollingSubscriber;
 

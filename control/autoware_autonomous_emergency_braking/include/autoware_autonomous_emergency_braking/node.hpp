@@ -229,13 +229,6 @@ private:
   rclcpp::Clock::SharedPtr clock_;
 };
 
-static rclcpp::SensorDataQoS SingleDepthSensorQoS()
-{
-  rclcpp::SensorDataQoS qos;
-  qos.get_rmw_qos_profile().depth = 1;
-  return qos;
-}
-
 class AEB : public rclcpp::Node
 {
 public:
@@ -243,7 +236,7 @@ public:
 
   // subscriber
   tier4_autoware_utils::InterProcessPollingSubscriber<PointCloud2> sub_point_cloud_{
-    this, "~/input/pointcloud", SingleDepthSensorQoS()};
+    this, "~/input/pointcloud", tier4_autoware_utils::SingleDepthSensorQoS()};
   tier4_autoware_utils::InterProcessPollingSubscriber<VelocityReport> sub_velocity_{
     this, "~/input/velocity"};
   tier4_autoware_utils::InterProcessPollingSubscriber<Imu> sub_imu_{this, "~/input/imu"};

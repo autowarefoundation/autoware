@@ -114,7 +114,7 @@ private:
   tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odometry_{
     this, "~/input/odometry"};
   tier4_autoware_utils::InterProcessPollingSubscriber<sensor_msgs::msg::PointCloud2>
-    sub_pointcloud_{this, "~/input/pointcloud"};
+    sub_pointcloud_{this, "~/input/pointcloud", tier4_autoware_utils::SingleDepthSensorQoS()};
   tier4_autoware_utils::InterProcessPollingSubscriber<PredictedObjects> sub_dynamic_objects_{
     this, "~/input/objects"};
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticStatus>::SharedPtr pub_stop_reason_;
