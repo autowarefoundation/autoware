@@ -100,8 +100,14 @@ load_env() {
 # Clone repositories
 clone_repositories() {
     cd "$WORKSPACE_ROOT"
-    mkdir -p docker/src
-    vcs import docker/src <autoware.repos
+    if [ ! -d "docker/src" ]; then
+        mkdir -p docker/src
+        vcs import docker/src < autoware.repos
+    else
+        echo "Source directory already exists. Updating repositories..."
+        vcs import docker/src < autoware.repos
+        vcs pull docker/src
+    fi
 }
 
 # Build images
