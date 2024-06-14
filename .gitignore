@@ -1,6 +1,7 @@
 # Vim
 *.swp
 *.swo
+*.log
 
 # Visual Studio Code
 .vscode/
@@ -23,3 +24,4 @@ capture/
 
 # CodeChecker
 .codechecker/
+
