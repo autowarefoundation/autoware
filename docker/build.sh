@@ -100,8 +100,8 @@ load_env() {
 # Clone repositories
 clone_repositories() {
     cd "$WORKSPACE_ROOT"
-    mkdir -p docker/src
-    vcs import docker/src < autoware.repos
+    mkdir src
+    vcs import src <autoware.repos
 }
 
 # Build images
@@ -134,16 +134,6 @@ build_images() {
     set +x
 }
 
-# Remove temporary source directory
-remove_tmp_src() {
-    rm -rf "$WORKSPACE_ROOT/docker/src"
-}
-
-# Remove dangling images
-remove_dangling_images() {
-    docker image prune -f
-}
-
 # Main script execution
 parse_arguments "$@"
 set_cuda_options
@@ -153,5 +143,3 @@ set_arch_lib_dir
 load_env
 clone_repositories
 build_images
-remove_tmp_src
-remove_dangling_images
