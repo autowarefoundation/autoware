@@ -97,6 +97,19 @@ load_env() {
     fi
 }
 
+# Clone repositories
+clone_repositories() {
+    cd "$WORKSPACE_ROOT"
+    if [ ! -d "docker/src" ]; then
+        mkdir -p docker/src
+        vcs import docker/src <autoware.repos
+    else
+        echo "Source directory already exists. Updating repositories..."
+        vcs import docker/src <autoware.repos
+        vcs pull docker/src
+    fi
+}
+
 # Build images
 build_images() {
     # https://github.com/docker/buildx/issues/484
@@ -119,11 +132,22 @@ build_images() {
         --set "*.args.BASE_IMAGE=$base_image" \
         --set "*.args.SETUP_ARGS=$setup_args" \
         --set "*.args.LIB_DIR=$lib_dir" \
+        --set "base.tags=ghcr.io/autowarefoundation/autoware:latest-base" \
         --set "devel.tags=ghcr.io/autowarefoundation/autoware:latest-devel$image_name_suffix" \
         --set "prebuilt.tags=ghcr.io/autowarefoundation/autoware:latest-prebuilt$image_name_suffix" \
         --set "runtime.tags=ghcr.io/autowarefoundation/autoware:latest-runtime$image_name_suffix" \
         "${targets[@]}"
     set +x
+}
+
+# Remove temporary source directory
+remove_tmp_src() {
+    rm -rf "$WORKSPACE_ROOT/docker/src"
+}
+
+# Remove dangling images
+remove_dangling_images() {
+    docker image prune -f
 }
 
 # Main script execution
@@ -133,4 +157,7 @@ set_build_options
 set_platform
 set_arch_lib_dir
 load_env
+clone_repositories
 build_images
+remove_tmp_src
+remove_dangling_images
