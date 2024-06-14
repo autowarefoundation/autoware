@@ -65,7 +65,7 @@ FROM base as prebuilt
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG SETUP_ARGS
-ENV CCACHE_DIR="/var/tmp/ccache"
+ENV CCACHE_DIR="/root/.ccache"
 
 # cspell: ignore libcu libnv
 # Set up development environment
