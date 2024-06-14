@@ -35,26 +35,26 @@ std::optional<Sophus::SE3f> StaticTfSubscriber::se3f(
 std::optional<Eigen::Affine3f> StaticTfSubscriber::operator()(
   const std::string & frame_id, const std::string & parent_frame_id)
 {
-  std::optional<Eigen::Affine3f> extrinsic_{std::nullopt};
+  std::optional<Eigen::Affine3f> extrinsic{std::nullopt};
   try {
     geometry_msgs::msg::TransformStamped ts =
       tf_buffer_->lookupTransform(parent_frame_id, frame_id, tf2::TimePointZero);
     Eigen::Vector3f p;
-    p.x() = ts.transform.translation.x;
-    p.y() = ts.transform.translation.y;
-    p.z() = ts.transform.translation.z;
+    p.x() = static_cast<float>(ts.transform.translation.x);
+    p.y() = static_cast<float>(ts.transform.translation.y);
+    p.z() = static_cast<float>(ts.transform.translation.z);
 
     Eigen::Quaternionf q;
-    q.w() = ts.transform.rotation.w;
-    q.x() = ts.transform.rotation.x;
-    q.y() = ts.transform.rotation.y;
-    q.z() = ts.transform.rotation.z;
-    extrinsic_ = Eigen::Affine3f::Identity();
-    extrinsic_->translation() = p;
-    extrinsic_->matrix().topLeftCorner(3, 3) = q.toRotationMatrix();
-  } catch (tf2::TransformException & ex) {
+    q.w() = static_cast<float>(ts.transform.rotation.w);
+    q.x() = static_cast<float>(ts.transform.rotation.x);
+    q.y() = static_cast<float>(ts.transform.rotation.y);
+    q.z() = static_cast<float>(ts.transform.rotation.z);
+    extrinsic = Eigen::Affine3f::Identity();
+    extrinsic->translation() = p;
+    extrinsic->matrix().topLeftCorner(3, 3) = q.toRotationMatrix();
+  } catch (const tf2::TransformException & ex) {
   }
-  return extrinsic_;
+  return extrinsic;
 }
 
 }  // namespace yabloc::common

@@ -61,8 +61,8 @@ public:
 
 private:
   const bool force_zero_tilt_;
-  const float R;
-  const int K;
+  const float R_;
+  const int K_;
 
   // Subscriber
   rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_map_;

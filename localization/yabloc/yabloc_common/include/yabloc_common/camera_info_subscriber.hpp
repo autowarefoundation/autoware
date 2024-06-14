@@ -31,17 +31,17 @@ public:
 
   explicit CameraInfoSubscriber(rclcpp::Node * node);
 
-  bool is_camera_info_ready() const;
+  [[nodiscard]] bool is_camera_info_ready() const;
 
-  bool is_camera_info_nullopt() const;
+  [[nodiscard]] bool is_camera_info_nullopt() const;
 
-  Eigen::Vector2i size() const;
+  [[nodiscard]] Eigen::Vector2i size() const;
 
-  Eigen::Matrix3f intrinsic() const;
+  [[nodiscard]] Eigen::Matrix3f intrinsic() const;
 
   // This member function DOES NOT check isCameraInfoReady()
   // If it it not ready, throw bad optional access
-  std::string get_frame_id() const;
+  [[nodiscard]] std::string get_frame_id() const;
 
 private:
   rclcpp::Subscription<CameraInfo>::SharedPtr sub_info_;

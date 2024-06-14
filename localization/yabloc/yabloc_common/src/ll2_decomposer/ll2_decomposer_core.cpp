@@ -44,7 +44,7 @@ Ll2Decomposer::Ll2Decomposer(const rclcpp::NodeOptions & options) : Node("ll2_to
     [this](const std::string & param_name, std::set<std::string> & labels) -> void {
     this->template declare_parameter<std::vector<std::string>>(param_name);
     auto label_array = get_parameter(param_name).as_string_array();
-    for (auto l : label_array) labels.insert(l);
+    for (const auto & l : label_array) labels.insert(l);
   };
 
   load_lanelet2_labels("road_marking_labels", road_marking_labels_);
@@ -86,14 +86,14 @@ pcl::PointCloud<pcl::PointXYZL> Ll2Decomposer::load_bounding_boxes(
 
   for (const lanelet::ConstPolygon3d & polygon : polygons) {
     if (!polygon.hasAttribute(lanelet::AttributeName::Type)) continue;
-    lanelet::Attribute attr = polygon.attribute(lanelet::AttributeName::Type);
+    const lanelet::Attribute & attr = polygon.attribute(lanelet::AttributeName::Type);
     if (bounding_box_labels_.count(attr.value()) == 0) continue;
 
     for (const lanelet::ConstPoint3d & p : polygon) {
       pcl::PointXYZL xyzl;
-      xyzl.x = p.x();
-      xyzl.y = p.y();
-      xyzl.z = p.z();
+      xyzl.x = static_cast<float>(p.x());
+      xyzl.y = static_cast<float>(p.y());
+      xyzl.z = static_cast<float>(p.z());
       xyzl.label = index;
       cloud.push_back(xyzl);
     }
@@ -151,7 +151,7 @@ lanelet::ConstLineStrings3d Ll2Decomposer::extract_specified_line_string(
   lanelet::ConstLineStrings3d line_strings;
   for (const lanelet::ConstLineString3d & line : line_string_layer) {
     if (!line.hasAttribute(lanelet::AttributeName::Type)) continue;
-    lanelet::Attribute attr = line.attribute(lanelet::AttributeName::Type);
+    const lanelet::Attribute & attr = line.attribute(lanelet::AttributeName::Type);
     if (visible_labels.count(attr.value()) == 0) continue;
     line_strings.push_back(line);
   }
@@ -164,7 +164,7 @@ lanelet::ConstPolygons3d Ll2Decomposer::extract_specified_polygon(
   lanelet::ConstPolygons3d polygons;
   for (const lanelet::ConstPolygon3d & polygon : polygon_layer) {
     if (!polygon.hasAttribute(lanelet::AttributeName::Type)) continue;
-    lanelet::Attribute attr = polygon.attribute(lanelet::AttributeName::Type);
+    const lanelet::Attribute & attr = polygon.attribute(lanelet::AttributeName::Type);
     if (visible_labels.count(attr.value()) == 0) continue;
     polygons.push_back(polygon);
   }
@@ -172,15 +172,15 @@ lanelet::ConstPolygons3d Ll2Decomposer::extract_specified_polygon(
 }
 
 pcl::PointNormal Ll2Decomposer::to_point_normal(
-  const lanelet::ConstPoint3d & from, const lanelet::ConstPoint3d & to) const
+  const lanelet::ConstPoint3d & from, const lanelet::ConstPoint3d & to)
 {
   pcl::PointNormal pn;
-  pn.x = from.x();
-  pn.y = from.y();
-  pn.z = from.z();
-  pn.normal_x = to.x();
-  pn.normal_y = to.y();
-  pn.normal_z = to.z();
+  pn.x = static_cast<float>(from.x());
+  pn.y = static_cast<float>(from.y());
+  pn.z = static_cast<float>(from.z());
+  pn.normal_x = static_cast<float>(to.x());
+  pn.normal_y = static_cast<float>(to.y());
+  pn.normal_z = static_cast<float>(to.z());
   return pn;
 }
 

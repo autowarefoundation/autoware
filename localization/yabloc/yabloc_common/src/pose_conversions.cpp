@@ -37,8 +37,11 @@ Eigen::Affine3f pose_to_affine(const geometry_msgs::msg::Pose & pose)
 {
   const auto pos = pose.position;
   const auto ori = pose.orientation;
-  Eigen::Translation3f t(pos.x, pos.y, pos.z);
-  Eigen::Quaternionf q(ori.w, ori.x, ori.y, ori.z);
+  Eigen::Translation3f t(
+    static_cast<float>(pos.x), static_cast<float>(pos.y), static_cast<float>(pos.z));
+  Eigen::Quaternionf q(
+    static_cast<float>(ori.w), static_cast<float>(ori.x), static_cast<float>(ori.y),
+    static_cast<float>(ori.z));
   return t * q;
 }
 
@@ -46,8 +49,11 @@ Sophus::SE3f pose_to_se3(const geometry_msgs::msg::Pose & pose)
 {
   auto ori = pose.orientation;
   auto pos = pose.position;
-  Eigen::Quaternionf q(ori.w, ori.x, ori.y, ori.z);
-  Eigen::Vector3f t(pos.x, pos.y, pos.z);
+  Eigen::Quaternionf q(
+    static_cast<float>(ori.w), static_cast<float>(ori.x), static_cast<float>(ori.y),
+    static_cast<float>(ori.z));
+  Eigen::Vector3f t(
+    static_cast<float>(pos.x), static_cast<float>(pos.y), static_cast<float>(pos.z));
   return {q, t};
 }
 

@@ -31,9 +31,9 @@ pcl::PointCloud<pcl::PointXYZ> sample_from_polygons(const lanelet::PolygonLayer 
   for (const lanelet::ConstPolygon3d & polygon : polygons) {
     for (const lanelet::ConstPoint3d & p : polygon) {
       pcl::PointXYZ xyz;
-      xyz.x = p.x();
-      xyz.y = p.y();
-      xyz.z = p.z();
+      xyz.x = static_cast<float>(p.x());
+      xyz.y = static_cast<float>(p.y());
+      xyz.z = static_cast<float>(p.z());
       raw_cloud.push_back(xyz);
     }
   }
@@ -45,9 +45,9 @@ void push_back_line(
 {
   Eigen::Vector3f f = from.getVector3fMap();
   Eigen::Vector3f t = to.getVector3fMap();
-  const float L = (f - t).norm();
+  const float vec_len = (f - t).norm();
 
-  for (float l = 0.f; l < L; l += 0.25f) {
+  for (float l = 0.f; l < vec_len; l += 0.25f) {
     Eigen::Vector3f xyz = f + (t - f) * l;
     dst_cloud.emplace_back(xyz.x(), xyz.y(), xyz.z());
   }
@@ -56,19 +56,20 @@ void push_back_line(
 void push_back_contour(
   pcl::PointCloud<pcl::PointXYZ> & dst_cloud, const pcl::PointCloud<pcl::PointXYZ> & vertices)
 {
-  const int N = vertices.size();
-  for (int i = 0; i < N - 1; ++i) {
+  const int n = static_cast<int>(vertices.size());
+  for (int i = 0; i < n - 1; ++i) {
     push_back_line(dst_cloud, vertices.at(i), vertices.at(i + 1));
   }
-  push_back_line(dst_cloud, vertices.at(0), vertices.at(N - 1));
+  push_back_line(dst_cloud, vertices.at(0), vertices.at(n - 1));
 }
 
 pcl::PointCloud<pcl::PointXYZ> shrink_vertices(
   const pcl::PointCloud<pcl::PointXYZ> & vertices, float rate)
 {
-  Eigen::Vector3f center = Eigen::Vector3f::Zero();
-  for (const pcl::PointXYZ p : vertices) center += p.getVector3fMap();
-  center /= vertices.size();
+  Eigen::Vector3f center = std::accumulate(
+    vertices.begin(), vertices.end(), Eigen::Vector3f::Zero().eval(),
+    [](const Eigen::Vector3f & acc, const pcl::PointXYZ & p) { return acc + p.getVector3fMap(); });
+  center /= static_cast<float>(vertices.size());
 
   pcl::PointCloud<pcl::PointXYZ> dst_cloud;
   for (const pcl::PointXYZ p : vertices) {

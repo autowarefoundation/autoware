@@ -54,17 +54,18 @@ private:
 
   void on_map(const LaneletMapBin & msg);
 
-  pcl::PointNormal to_point_normal(
-    const lanelet::ConstPoint3d & from, const lanelet::ConstPoint3d & to) const;
+  static pcl::PointNormal to_point_normal(
+    const lanelet::ConstPoint3d & from, const lanelet::ConstPoint3d & to);
 
-  pcl::PointCloud<pcl::PointNormal> split_line_strings(
+  static pcl::PointCloud<pcl::PointNormal> split_line_strings(
     const lanelet::ConstLineStrings3d & line_strings);
 
   pcl::PointCloud<pcl::PointXYZL> load_bounding_boxes(const lanelet::PolygonLayer & polygons) const;
 
-  lanelet::ConstLineStrings3d extract_specified_line_string(
-    const lanelet::LineStringLayer & line_strings, const std::set<std::string> & visible_labels);
-  lanelet::ConstPolygons3d extract_specified_polygon(
+  static lanelet::ConstLineStrings3d extract_specified_line_string(
+    const lanelet::LineStringLayer & line_string_layer,
+    const std::set<std::string> & visible_labels);
+  static lanelet::ConstPolygons3d extract_specified_polygon(
     const lanelet::PolygonLayer & polygon_layer, const std::set<std::string> & visible_labels);
 
   MarkerArray make_sign_marker_msg(

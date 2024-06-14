@@ -31,25 +31,28 @@ struct Color
   }
 
   explicit Color(const cv::Scalar & rgb, float a = 1.0f)
-  : r(rgb[2] / 255.f), g(rgb[1] / 255.f), b(rgb[0] / 255.f), a(a)
+  : r(static_cast<float>(rgb[2]) / 255.f),
+    g(static_cast<float>(rgb[1]) / 255.f),
+    b(static_cast<float>(rgb[0]) / 255.f),
+    a(a)
   {
   }
 
-  operator uint32_t() const
+  explicit operator uint32_t() const
   {
     union uchar4_uint32 {
       uint8_t rgba[4];
       uint32_t u32;
     };
-    uchar4_uint32 tmp;
+    uchar4_uint32 tmp{};
     tmp.rgba[0] = static_cast<uint8_t>(r * 255);
     tmp.rgba[1] = static_cast<uint8_t>(g * 255);
     tmp.rgba[2] = static_cast<uint8_t>(b * 255);
     tmp.rgba[3] = static_cast<uint8_t>(a * 255);
     return tmp.u32;
   }
-  operator const cv::Scalar() const { return cv::Scalar(255 * b, 255 * g, 255 * r); }
-  operator const std_msgs::msg::ColorRGBA() const
+  explicit operator cv::Scalar() const { return {255 * b, 255 * g, 255 * r}; }
+  explicit operator std_msgs::msg::ColorRGBA() const
   {
     std_msgs::msg::ColorRGBA rgba;
     rgba.a = a;

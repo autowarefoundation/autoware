@@ -32,7 +32,7 @@ public:
 
     Eigen::Vector3f mean = Eigen::Vector3f::Zero();
     for (const Eigen::Vector3f & v : buffer_) mean += v;
-    mean /= buffer_.size();
+    mean /= static_cast<float>(buffer_.size());
 
     return mean.normalized();
   }

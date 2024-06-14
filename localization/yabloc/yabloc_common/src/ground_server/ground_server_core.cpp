@@ -28,13 +28,15 @@
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
 
+#include <cmath>
+
 namespace yabloc::ground_server
 {
 GroundServer::GroundServer(const rclcpp::NodeOptions & options)
 : Node("ground_server", options),
   force_zero_tilt_(declare_parameter<bool>("force_zero_tilt")),
-  R(declare_parameter<int>("R")),
-  K(declare_parameter<int>("K"))
+  R_(static_cast<float>(declare_parameter<int>("R"))),
+  K_(static_cast<int>(declare_parameter<int>("K")))
 {
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -147,8 +149,8 @@ float GroundServer::estimate_height_simply(const geometry_msgs::msg::Point & poi
 {
   // NOTE: Sometimes it might give not-accurate height
   constexpr float sq_radius = 3.0 * 3.0;
-  const float x = point.x;
-  const float y = point.y;
+  const auto x = static_cast<float>(point.x);
+  const auto y = static_cast<float>(point.y);
 
   float height = std::numeric_limits<float>::infinity();
   for (const auto & p : cloud_->points) {
@@ -186,12 +188,12 @@ std::vector<int> GroundServer::estimate_inliers_by_ransac(const std::vector<int>
 GroundServer::GroundPlane GroundServer::estimate_ground(const Point & point)
 {
   // Because height_filter_ is always initialized, getValue does not return nullopt
-  const float predicted_z = height_filter_.getValue().value();
-  const pcl::PointXYZ xyz(point.x, point.y, predicted_z);
+  const float predicted_z = static_cast<float>(height_filter_.getValue().value());
+  const pcl::PointXYZ xyz(static_cast<float>(point.x), static_cast<float>(point.y), predicted_z);
 
   std::vector<int> raw_indices;
   std::vector<float> distances;
-  kdtree_->nearestKSearch(xyz, K, raw_indices, distances);
+  kdtree_->nearestKSearch(xyz, K_, raw_indices, distances);
 
   std::vector<int> indices = estimate_inliers_by_ransac(raw_indices);
 
@@ -206,7 +208,7 @@ GroundServer::GroundPlane GroundServer::estimate_ground(const Point & point)
 
   // NOTE: I forgot why I don't use coefficients computed by SACSegmentation
   Eigen::Vector4f plane_parameter;
-  float curvature;
+  float curvature = NAN;
   pcl::solvePlaneParameters(covariance, centroid, plane_parameter, curvature);
   Eigen::Vector3f normal = plane_parameter.topRows(3).normalized();
 
@@ -229,15 +231,16 @@ GroundServer::GroundPlane GroundServer::estimate_ground(const Point & point)
   const Eigen::Vector3f filt_normal = normal_filter_.update(normal);
 
   GroundPlane plane;
-  plane.xyz = Eigen::Vector3f(point.x, point.y, predicted_z);
+  plane.xyz =
+    Eigen::Vector3f(static_cast<float>(point.x), static_cast<float>(point.y), predicted_z);
   plane.normal = filt_normal;
 
   // Compute z value by intersection of estimated plane and orthogonal line
   {
     Eigen::Vector3f center = centroid.topRows(3);
     float inner = center.dot(plane.normal);
-    float px_nx = point.x * plane.normal.x();
-    float py_ny = point.y * plane.normal.y();
+    float px_nx = static_cast<float>(point.x) * plane.normal.x();
+    float py_ny = static_cast<float>(point.y) * plane.normal.y();
     plane.xyz.z() = (inner - px_nx - py_ny) / plane.normal.z();
   }
 

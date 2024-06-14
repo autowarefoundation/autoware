@@ -20,8 +20,8 @@ pcl::PointCloud<pcl::PointNormal> extract_near_line_segments(
   const pcl::PointCloud<pcl::PointNormal> & line_segments, const Sophus::SE3f & transform,
   const float max_range)
 {
-  constexpr double sqrt_two = 1.41421356237309504880;
-  const Eigen::Vector3f pose_vector = transform.translation();
+  const double sqrt_two = 1.41421356237309504880;
+  const Eigen::Vector3f & pose_vector = transform.translation();
 
   // All line segments contained in a square with max_range on one side must be taken out,
   // so pick up those that are closer than the **diagonals** of the square.
@@ -42,11 +42,9 @@ pcl::PointCloud<pcl::PointNormal> extract_near_line_segments(
   };
 
   pcl::PointCloud<pcl::PointNormal> dst;
-  for (const pcl::PointNormal & pn : line_segments) {
-    if (check_intersection(pn)) {
-      dst.push_back(pn);
-    }
-  }
+  std::copy_if(
+    line_segments.begin(), line_segments.end(), std::back_inserter(dst),
+    [check_intersection](const auto & pn) { return check_intersection(pn); });
   return dst;
 }
 

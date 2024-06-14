@@ -27,7 +27,8 @@ public:
   {
     lut_ = cv::Mat(1, 256, CV_8UC1);
     for (int i = 0; i < 256; i++) {
-      lut_.at<uchar>(0, i) = 256 * std::pow(i / 256.f, gamma);
+      lut_.at<uchar>(0, i) =
+        static_cast<unsigned char>(256 * std::pow(static_cast<float>(i) / 256.f, gamma));
     }
   }
 

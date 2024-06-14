@@ -206,13 +206,13 @@ void CameraParticleCorrector::on_line_segments(const PointCloud2 & line_segments
     for (const auto p : cloud) {
       pcl::PointXYZRGB rgb;
       rgb.getVector3fMap() = p.getVector3fMap();
-      rgb.rgba = common::color_scale::blue_red(p.intensity / max_score);
+      rgb.rgba = static_cast<uint32_t>(common::color_scale::blue_red(p.intensity / max_score));
       rgb_cloud.push_back(rgb);
     }
     for (const auto p : iffy_cloud) {
       pcl::PointXYZRGB rgb;
       rgb.getVector3fMap() = p.getVector3fMap();
-      rgb.rgba = common::color_scale::blue_red(p.intensity / max_score);
+      rgb.rgba = static_cast<uint32_t>(common::color_scale::blue_red(p.intensity / max_score));
       rgb_iffy_cloud.push_back(rgb);
     }
 

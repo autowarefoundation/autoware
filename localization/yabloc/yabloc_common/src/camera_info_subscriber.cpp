@@ -51,8 +51,8 @@ Eigen::Matrix3f CameraInfoSubscriber::intrinsic() const
   if (!opt_info_.has_value()) {
     throw std::runtime_error("camera_info is not ready but it's accessed");
   }
-  const Eigen::Matrix3d Kd_t = Eigen::Map<const Eigen::Matrix<double, 3, 3>>(opt_info_->k.data());
-  return Kd_t.cast<float>().transpose();
+  const Eigen::Matrix3d kd_t = Eigen::Map<const Eigen::Matrix<double, 3, 3>>(opt_info_->k.data());
+  return kd_t.cast<float>().transpose();
 }
 
 }  // namespace yabloc::common
