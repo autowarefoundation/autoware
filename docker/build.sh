@@ -101,7 +101,7 @@ load_env() {
 clone_repositories() {
     cd "$WORKSPACE_ROOT"
     mkdir -p docker/src
-    vcs import docker/src < autoware.repos
+    vcs import docker/src <autoware.repos
 }
 
 # Build images
