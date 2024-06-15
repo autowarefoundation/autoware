@@ -711,6 +711,7 @@ void VehicleCmdGate::onGateMode()
   if (!msg) return;
 
   const auto prev_gate_mode = current_gate_mode_;
+  current_gate_mode_ = *msg;
 
   if (current_gate_mode_.data != prev_gate_mode.data) {
     RCLCPP_INFO(
