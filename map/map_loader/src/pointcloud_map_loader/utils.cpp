@@ -50,16 +50,28 @@ std::map<std::string, PCDFileMetadata> loadPCDMetadata(const std::string & pcd_m
 
 std::map<std::string, PCDFileMetadata> replaceWithAbsolutePath(
   const std::map<std::string, PCDFileMetadata> & pcd_metadata_path,
-  const std::vector<std::string> & pcd_paths)
+  const std::vector<std::string> & pcd_paths, std::set<std::string> & missing_pcd_names)
 {
+  // Initially, assume all segments are missing
+  for (auto & it : pcd_metadata_path) {
+    missing_pcd_names.insert(it.first);
+  }
+
   std::map<std::string, PCDFileMetadata> absolute_path_map;
   for (const auto & path : pcd_paths) {
     std::string filename = path.substr(path.find_last_of("/\\") + 1);
     auto it = pcd_metadata_path.find(filename);
     if (it != pcd_metadata_path.end()) {
       absolute_path_map[path] = it->second;
+
+      // If a segment was found from the pcd paths, remove
+      // it from the missing segments
+      missing_pcd_names.erase(filename);
     }
   }
+
+  // The remaining segments in the @missing_pcd are were not
+  // found from the pcd paths, which means they are missing
   return absolute_path_map;
 }
 
