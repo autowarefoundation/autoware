@@ -39,8 +39,8 @@ public:
 
   explicit UndistortNode(const rclcpp::NodeOptions & options)
   : Node("undistort", options),
-    OUTPUT_WIDTH(declare_parameter<int>("width")),
-    OVERRIDE_FRAME_ID(declare_parameter<std::string>("override_frame_id"))
+    OUTPUT_WIDTH_(static_cast<int>(declare_parameter<int>("width"))),
+    OVERRIDE_FRAME_ID_(declare_parameter<std::string>("override_frame_id"))
   {
     using std::placeholders::_1;
 
@@ -63,8 +63,8 @@ public:
   }
 
 private:
-  const int OUTPUT_WIDTH;
-  const std::string OVERRIDE_FRAME_ID;
+  const int OUTPUT_WIDTH_;
+  const std::string OVERRIDE_FRAME_ID_;
 
   rclcpp::Subscription<Image>::SharedPtr sub_image_;
   rclcpp::Subscription<CompressedImage>::SharedPtr sub_compressed_image_;
@@ -74,29 +74,33 @@ private:
   std::optional<CameraInfo> info_{std::nullopt};
   std::optional<CameraInfo> scaled_info_{std::nullopt};
 
-  cv::Mat undistort_map_x, undistort_map_y;
+  cv::Mat undistort_map_x_, undistort_map_y_;
 
   void make_remap_lut()
   {
     if (!info_.has_value()) return;
-    cv::Mat K = cv::Mat(cv::Size(3, 3), CV_64FC1, reinterpret_cast<void *>(info_->k.data()));
-    cv::Mat D = cv::Mat(cv::Size(5, 1), CV_64FC1, reinterpret_cast<void *>(info_->d.data()));
-    cv::Size size(info_->width, info_->height);
+    cv::Mat k = cv::Mat(cv::Size(3, 3), CV_64FC1, info_->k.data());
+    cv::Mat d = cv::Mat(cv::Size(5, 1), CV_64FC1, info_->d.data());
+    cv::Size size(static_cast<int>(info_->width), static_cast<int>(info_->height));
 
     cv::Size new_size = size;
-    if (OUTPUT_WIDTH > 0)
-      new_size = cv::Size(OUTPUT_WIDTH, 1.0f * OUTPUT_WIDTH / size.width * size.height);
+    if (OUTPUT_WIDTH_ > 0)
+      // set new_size along with aspect ratio
+      new_size = cv::Size(
+        OUTPUT_WIDTH_, static_cast<int>(
+                         static_cast<float>(OUTPUT_WIDTH_) *
+                         (static_cast<float>(size.height) / static_cast<float>(size.width))));
 
-    cv::Mat new_K = cv::getOptimalNewCameraMatrix(K, D, size, 0, new_size);
+    cv::Mat new_k = cv::getOptimalNewCameraMatrix(k, d, size, 0, new_size);
 
     cv::initUndistortRectifyMap(
-      K, D, cv::Mat(), new_K, new_size, CV_32FC1, undistort_map_x, undistort_map_y);
+      k, d, cv::Mat(), new_k, new_size, CV_32FC1, undistort_map_x_, undistort_map_y_);
 
     scaled_info_ = sensor_msgs::msg::CameraInfo{};
-    scaled_info_->k.at(0) = new_K.at<double>(0, 0);
-    scaled_info_->k.at(2) = new_K.at<double>(0, 2);
-    scaled_info_->k.at(4) = new_K.at<double>(1, 1);
-    scaled_info_->k.at(5) = new_K.at<double>(1, 2);
+    scaled_info_->k.at(0) = new_k.at<double>(0, 0);
+    scaled_info_->k.at(2) = new_k.at<double>(0, 2);
+    scaled_info_->k.at(4) = new_k.at<double>(1, 1);
+    scaled_info_->k.at(5) = new_k.at<double>(1, 2);
     scaled_info_->k.at(8) = 1;
     scaled_info_->d.resize(5);
     scaled_info_->width = new_size.width;
@@ -106,12 +110,12 @@ private:
   void remap_and_publish(const cv::Mat & image, const std_msgs::msg::Header & header)
   {
     cv::Mat undistorted_image;
-    cv::remap(image, undistorted_image, undistort_map_x, undistort_map_y, cv::INTER_LINEAR);
+    cv::remap(image, undistorted_image, undistort_map_x_, undistort_map_y_, cv::INTER_LINEAR);
 
     // Publish CameraInfo
     {
       scaled_info_->header = info_->header;
-      if (OVERRIDE_FRAME_ID != "") scaled_info_->header.frame_id = OVERRIDE_FRAME_ID;
+      if (!OVERRIDE_FRAME_ID_.empty()) scaled_info_->header.frame_id = OVERRIDE_FRAME_ID_;
       pub_info_->publish(scaled_info_.value());
     }
 
@@ -119,8 +123,8 @@ private:
     {
       cv_bridge::CvImage bridge;
       bridge.header.stamp = header.stamp;
-      if (OVERRIDE_FRAME_ID != "")
-        bridge.header.frame_id = OVERRIDE_FRAME_ID;
+      if (!OVERRIDE_FRAME_ID_.empty())
+        bridge.header.frame_id = OVERRIDE_FRAME_ID_;
       else
         bridge.header.frame_id = header.frame_id;
       bridge.encoding = "bgr8";
@@ -134,7 +138,7 @@ private:
     if (!info_.has_value()) {
       return;
     }
-    if (undistort_map_x.empty()) {
+    if (undistort_map_x_.empty()) {
       make_remap_lut();
     }
 
@@ -153,7 +157,7 @@ private:
     if (!info_.has_value()) {
       return;
     }
-    if (undistort_map_x.empty()) {
+    if (undistort_map_x_.empty()) {
       make_remap_lut();
     }
 

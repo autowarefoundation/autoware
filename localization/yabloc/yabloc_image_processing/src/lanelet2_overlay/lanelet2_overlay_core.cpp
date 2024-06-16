@@ -72,11 +72,11 @@ void Lanelet2Overlay::on_image(const sensor_msgs::msg::Image & msg)
   // Search synchronized pose
   float min_abs_dt = std::numeric_limits<float>::max();
   std::optional<Pose> synched_pose{std::nullopt};
-  for (auto pose : pose_buffer_) {
+  for (const auto & pose : pose_buffer_) {
     auto dt = (rclcpp::Time(pose.header.stamp) - stamp);
     auto abs_dt = std::abs(dt.seconds());
     if (abs_dt < min_abs_dt) {
-      min_abs_dt = abs_dt;
+      min_abs_dt = static_cast<float>(abs_dt);
       synched_pose = pose.pose;
     }
   }
@@ -93,18 +93,16 @@ void Lanelet2Overlay::on_line_segments(const PointCloud2 & msg)
   // Search synchronized pose
   float min_dt = std::numeric_limits<float>::max();
   geometry_msgs::msg::PoseStamped synched_pose;
-  for (auto pose : pose_buffer_) {
+  for (const auto & pose : pose_buffer_) {
     auto dt = (rclcpp::Time(pose.header.stamp) - stamp);
     auto abs_dt = std::abs(dt.seconds());
     if (abs_dt < min_dt) {
-      min_dt = abs_dt;
+      min_dt = static_cast<float>(abs_dt);
       synched_pose = pose;
     }
   }
   if (min_dt > 0.1) return;
   auto latest_pose_stamp = rclcpp::Time(pose_buffer_.back().header.stamp);
-
-  std::vector<int> a;
 
   LineSegments line_segments_cloud;
   pcl::fromROSMsg(msg, line_segments_cloud);
@@ -139,32 +137,35 @@ void Lanelet2Overlay::draw_overlay_line_segments(
   if (!camera_extrinsic_.has_value()) return;
   if (!info_.has_value()) return;
 
-  Eigen::Matrix3f K =
+  Eigen::Matrix3f k =
     Eigen::Map<Eigen::Matrix<double, 3, 3> >(info_->k.data()).cast<float>().transpose();
-  Eigen::Affine3f T = camera_extrinsic_.value();
+  Eigen::Affine3f t = camera_extrinsic_.value();
 
   Eigen::Affine3f transform = ground_plane_.align_with_slope(common::pose_to_affine(pose));
 
-  auto projectLineSegment =
-    [K, T, transform](
+  auto project_line_segment =
+    [k, t, transform](
       const Eigen::Vector3f & p1,
       const Eigen::Vector3f & p2) -> std::tuple<bool, cv::Point2i, cv::Point2i> {
-    Eigen::Vector3f from_camera1 = K * T.inverse() * transform.inverse() * p1;
-    Eigen::Vector3f from_camera2 = K * T.inverse() * transform.inverse() * p2;
-    constexpr float EPSILON = 0.1f;
-    bool p1_is_visible = from_camera1.z() > EPSILON;
-    bool p2_is_visible = from_camera2.z() > EPSILON;
+    Eigen::Vector3f from_camera1 = k * t.inverse() * transform.inverse() * p1;
+    Eigen::Vector3f from_camera2 = k * t.inverse() * transform.inverse() * p2;
+    constexpr float epsilon = 0.1f;
+    bool p1_is_visible = from_camera1.z() > epsilon;
+    bool p2_is_visible = from_camera2.z() > epsilon;
     if ((!p1_is_visible) && (!p2_is_visible)) return {false, cv::Point2i{}, cv::Point2i{}};
 
-    Eigen::Vector3f uv1, uv2;
+    Eigen::Vector3f uv1;
+    Eigen::Vector3f uv2;
     if (p1_is_visible) uv1 = from_camera1 / from_camera1.z();
     if (p2_is_visible) uv2 = from_camera2 / from_camera2.z();
 
     if ((p1_is_visible) && (p2_is_visible))
-      return {true, cv::Point2i(uv1.x(), uv1.y()), cv::Point2i(uv2.x(), uv2.y())};
+      return {
+        true, cv::Point2i(static_cast<int>(uv1.x()), static_cast<int>(uv1.y())),
+        cv::Point2i(static_cast<int>(uv2.x()), static_cast<int>(uv2.y()))};
 
     Eigen::Vector3f tangent = from_camera2 - from_camera1;
-    float mu = (EPSILON - from_camera1.z()) / (tangent.z());
+    float mu = (epsilon - from_camera1.z()) / (tangent.z());
     if (!p1_is_visible) {
       from_camera1 = from_camera1 + mu * tangent;
       uv1 = from_camera1 / from_camera1.z();
@@ -173,11 +174,13 @@ void Lanelet2Overlay::draw_overlay_line_segments(
       from_camera2 = from_camera1 + mu * tangent;
       uv2 = from_camera2 / from_camera2.z();
     }
-    return {true, cv::Point2i(uv1.x(), uv1.y()), cv::Point2i(uv2.x(), uv2.y())};
+    return {
+      true, cv::Point2i(static_cast<int>(uv1.x()), static_cast<int>(uv1.y())),
+      cv::Point2i(static_cast<int>(uv2.x()), static_cast<int>(uv2.y()))};
   };
 
   for (const pcl::PointNormal & pn : near_segments) {
-    auto [success, u1, u2] = projectLineSegment(pn.getVector3fMap(), pn.getNormalVector3fMap());
+    auto [success, u1, u2] = project_line_segment(pn.getVector3fMap(), pn.getNormalVector3fMap());
     if (success) cv::line(image, u1, u2, cv::Scalar(0, 255, 255), 2);
   }
 }
@@ -197,7 +200,8 @@ void Lanelet2Overlay::make_vis_marker(
   marker.color.a = 0.7f;
 
   for (const auto pn : ls) {
-    geometry_msgs::msg::Point p1, p2;
+    geometry_msgs::msg::Point p1;
+    geometry_msgs::msg::Point p2;
     p1.x = pn.x;
     p1.y = pn.y;
     p1.z = pn.z;

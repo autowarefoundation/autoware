@@ -27,7 +27,7 @@ struct Histogram
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   explicit Histogram(int bin = 10) : bin(bin) { data = Eigen::MatrixXf::Zero(3, bin); }
 
-  Eigen::MatrixXf eval() const
+  [[nodiscard]] Eigen::MatrixXf eval() const
   {
     float sum = data.sum();
     if (sum < 1e-6f) throw std::runtime_error("invalid division");
@@ -37,7 +37,9 @@ struct Histogram
   void add(const cv::Vec3b & rgb)
   {
     for (int ch = 0; ch < 3; ++ch) {
-      int index = std::clamp(static_cast<int>(rgb[ch] * bin / 255.f), 0, bin - 1);
+      int index = std::clamp(
+        static_cast<int>(static_cast<float>(rgb[ch]) * static_cast<float>(bin) / 255.f), 0,
+        bin - 1);
       data(ch, index) += 1.0f;
     }
   }

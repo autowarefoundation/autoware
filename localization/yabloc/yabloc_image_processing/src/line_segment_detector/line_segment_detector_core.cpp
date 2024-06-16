@@ -67,7 +67,8 @@ void LineSegmentDetector::execute(const cv::Mat & image, const rclcpp::Time & st
   std::vector<cv::Mat> filtered_lines = remove_too_outer_elements(lines, image.size());
 
   for (const cv::Mat & xy_xy : filtered_lines) {
-    Eigen::Vector3f xy1, xy2;
+    Eigen::Vector3f xy1;
+    Eigen::Vector3f xy2;
     xy1 << xy_xy.at<float>(0), xy_xy.at<float>(1), 0;
     xy2 << xy_xy.at<float>(2), xy_xy.at<float>(3), 0;
     pcl::PointNormal pn;
@@ -79,7 +80,7 @@ void LineSegmentDetector::execute(const cv::Mat & image, const rclcpp::Time & st
 }
 
 std::vector<cv::Mat> LineSegmentDetector::remove_too_outer_elements(
-  const cv::Mat & lines, const cv::Size & size) const
+  const cv::Mat & lines, const cv::Size & size)
 {
   std::vector<cv::Rect2i> rect_vector;
   rect_vector.emplace_back(0, 0, size.width, 3);

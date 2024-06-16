@@ -25,11 +25,11 @@ namespace yabloc::segment_filter
 {
 SegmentFilter::SegmentFilter(const rclcpp::NodeOptions & options)
 : Node("segment_filter", options),
-  image_size_(declare_parameter<int>("image_size")),
-  max_range_(declare_parameter<float>("max_range")),
-  min_segment_length_(declare_parameter<float>("min_segment_length")),
-  max_segment_distance_(declare_parameter<float>("max_segment_distance")),
-  max_lateral_distance_(declare_parameter<float>("max_lateral_distance")),
+  image_size_(static_cast<int>(declare_parameter<int>("image_size"))),
+  max_range_(static_cast<float>(declare_parameter<float>("max_range"))),
+  min_segment_length_(static_cast<float>(declare_parameter<float>("min_segment_length"))),
+  max_segment_distance_(static_cast<float>(declare_parameter<float>("max_segment_distance"))),
+  max_lateral_distance_(static_cast<float>(declare_parameter<float>("max_lateral_distance"))),
   info_(this),
   synchro_subscriber_(this, "~/input/line_segments_cloud", "~/input/graph_segmented"),
   tf_subscriber_(this->get_clock())
@@ -47,9 +47,12 @@ SegmentFilter::SegmentFilter(const rclcpp::NodeOptions & options)
 
 cv::Point2i SegmentFilter::to_cv_point(const Eigen::Vector3f & v) const
 {
-  cv::Point pt;
-  pt.x = -v.y() / max_range_ * image_size_ * 0.5f + image_size_ / 2;
-  pt.y = -v.x() / max_range_ * image_size_ * 0.5f + image_size_;
+  cv::Point2i pt;
+  pt.x = static_cast<int>(
+    -v.y() / max_range_ * static_cast<float>(image_size_) * 0.5f +
+    static_cast<float>(image_size_) / 2.0);
+  pt.y = static_cast<int>(
+    -v.x() / max_range_ * static_cast<float>(image_size_) * 0.5f + static_cast<float>(image_size_));
   return pt;
 }
 
@@ -149,7 +152,7 @@ void SegmentFilter::execute(const PointCloud2 & line_segments_msg, const Image &
       pcl::PointXYZLNormal pln;
       pln.getVector3fMap() = pn.getVector3fMap();
       pln.getNormalVector3fMap() = pn.getNormalVector3fMap();
-      if (indices.count(index) > 0)
+      if (indices.count(static_cast<int>(index)) > 0)
         pln.label = 255;
       else
         pln.label = 0;
@@ -194,7 +197,7 @@ std::set<ushort> get_unique_pixel_value(cv::Mat & image)
   auto last = std::unique(begin, image.end<ushort>());
   std::sort(begin, last);
   last = std::unique(begin, last);
-  return std::set<ushort>(begin, last);
+  return {begin, last};
 }
 
 pcl::PointCloud<pcl::PointNormal> SegmentFilter::project_lines(
@@ -204,9 +207,9 @@ pcl::PointCloud<pcl::PointNormal> SegmentFilter::project_lines(
   pcl::PointCloud<pcl::PointNormal> projected_points;
   for (size_t index = 0; index < points.size(); ++index) {
     if (negative) {
-      if (indices.count(index) > 0) continue;
+      if (indices.count(static_cast<int>(index)) > 0) continue;
     } else {
-      if (indices.count(index) == 0) continue;
+      if (indices.count(static_cast<int>(index)) == 0) continue;
     }
 
     pcl::PointNormal truncated_pn = points.at(index);
@@ -254,9 +257,10 @@ std::set<int> SegmentFilter::filter_by_mask(
     auto & pn = edges.at(i);
     Eigen::Vector3f p1 = pn.getVector3fMap();
     Eigen::Vector3f p2 = pn.getNormalVector3fMap();
-    cv::Scalar color = cv::Scalar::all(i + 1);
+    cv::Scalar color = cv::Scalar::all(static_cast<double>(i + 1));
     cv::line(
-      line_image, cv::Point2i(p1.x(), p1.y()), cv::Point2i(p2.x(), p2.y()), color, 1,
+      line_image, cv::Point2i(static_cast<int>(p1.x()), static_cast<int>(p1.y())),
+      cv::Point2i(static_cast<int>(p2.x()), static_cast<int>(p2.y())), color, 1,
       cv::LineTypes::LINE_4);
   }
 
@@ -275,7 +279,7 @@ std::set<int> SegmentFilter::filter_by_mask(
   // Extract edges within masks
   std::set<int> reliable_indices;
   for (size_t i = 0; i < edges.size(); i++) {
-    if (pixel_values.count(i + 1) != 0) reliable_indices.insert(i);
+    if (pixel_values.count(i + 1) != 0) reliable_indices.insert(static_cast<int>(i));
   }
 
   return reliable_indices;

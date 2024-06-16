@@ -51,8 +51,8 @@ private:
 
   cv::Ptr<cv::LineSegmentDetector> line_segment_detector_;
 
-  std::vector<cv::Mat> remove_too_outer_elements(
-    const cv::Mat & lines, const cv::Size & size) const;
+  static std::vector<cv::Mat> remove_too_outer_elements(
+    const cv::Mat & lines, const cv::Size & size);
   void on_image(const sensor_msgs::msg::Image & msg);
   void execute(const cv::Mat & image, const rclcpp::Time & stamp);
 };

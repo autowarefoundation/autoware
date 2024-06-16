@@ -76,7 +76,7 @@ private:
   void draw_overlay(
     const cv::Mat & image, const std::optional<Pose> & pose, const rclcpp::Time & stamp);
   void draw_overlay_line_segments(
-    cv::Mat & image, const Pose & pose, const LineSegments & line_segments);
+    cv::Mat & image, const Pose & pose, const LineSegments & near_segments);
 
   void make_vis_marker(const LineSegments & ls, const Pose & pose, const rclcpp::Time & stamp);
 };
