@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Download analysis results
         run: |
@@ -37,7 +37,7 @@ jobs:
 
       - name: Check out PR head
         if: ${{ steps.check-fixes-yaml-existence.outputs.exists == 'true' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         with:
           repository: ${{ steps.set-variables.outputs.pr-head-repo }}
           ref: ${{ steps.set-variables.outputs.pr-head-ref }}
