@@ -17,7 +17,7 @@
 
 #include <autoware/behavior_velocity_planner_common/planner_data.hpp>
 #include <autoware/objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp>
-#include <autoware_rtc_interface/rtc_interface.hpp>
+#include <autoware/rtc_interface/rtc_interface.hpp>
 #include <builtin_interfaces/msg/time.hpp>
 #include <motion_utils/factor/velocity_factor_interface.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_RTC_INTERFACE__RTC_INTERFACE_HPP_
-#define AUTOWARE_RTC_INTERFACE__RTC_INTERFACE_HPP_
+#ifndef AUTOWARE__RTC_INTERFACE__RTC_INTERFACE_HPP_
+#define AUTOWARE__RTC_INTERFACE__RTC_INTERFACE_HPP_
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -103,4 +103,4 @@ private:
 
 }  // namespace autoware::rtc_interface
 
-#endif  // AUTOWARE_RTC_INTERFACE__RTC_INTERFACE_HPP_
+#endif  // AUTOWARE__RTC_INTERFACE__RTC_INTERFACE_HPP_
