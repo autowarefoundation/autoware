@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__PLUGIN_INTERFACE_HPP_
-#define AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__PLUGIN_INTERFACE_HPP_
+#ifndef AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__PLUGIN_INTERFACE_HPP_
+#define AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__PLUGIN_INTERFACE_HPP_
 
-#include <autoware_behavior_velocity_planner_common/planner_data.hpp>
+#include <autoware/behavior_velocity_planner_common/planner_data.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
@@ -40,4 +40,4 @@ public:
 
 }  // namespace autoware::behavior_velocity_planner
 
-#endif  // AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__PLUGIN_INTERFACE_HPP_
+#endif  // AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__PLUGIN_INTERFACE_HPP_

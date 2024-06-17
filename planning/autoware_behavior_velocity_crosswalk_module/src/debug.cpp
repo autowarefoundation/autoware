@@ -14,7 +14,7 @@
 
 #include "scene_crosswalk.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/marker/marker_helper.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>

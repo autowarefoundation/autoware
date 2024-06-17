@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_BEHAVIOR_VELOCITY_CROSSWALK_MODULE__UTIL_HPP_
-#define AUTOWARE_BEHAVIOR_VELOCITY_CROSSWALK_MODULE__UTIL_HPP_
+#ifndef AUTOWARE__BEHAVIOR_VELOCITY_CROSSWALK_MODULE__UTIL_HPP_
+#define AUTOWARE__BEHAVIOR_VELOCITY_CROSSWALK_MODULE__UTIL_HPP_
 
 #include <boost/assert.hpp>
 #include <boost/assign/list_of.hpp>
@@ -33,7 +33,7 @@
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <autoware_behavior_velocity_planner_common/planner_data.hpp>
+#include <autoware/behavior_velocity_planner_common/planner_data.hpp>
 
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 #include <tier4_planning_msgs/msg/stop_factor.hpp>
@@ -110,4 +110,4 @@ std::optional<lanelet::ConstLineString3d> getStopLineFromMap(
   const std::string & attribute_name);
 }  // namespace autoware::behavior_velocity_planner
 
-#endif  // AUTOWARE_BEHAVIOR_VELOCITY_CROSSWALK_MODULE__UTIL_HPP_
+#endif  // AUTOWARE__BEHAVIOR_VELOCITY_CROSSWALK_MODULE__UTIL_HPP_

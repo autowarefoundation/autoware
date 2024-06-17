@@ -15,8 +15,8 @@
 #include "occlusion_spot_utils.hpp"
 #include "scene_occlusion_spot.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/debug.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/debug.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 

@@ -15,8 +15,8 @@
 #ifndef SCENE_MERGE_FROM_PRIVATE_ROAD_HPP_
 #define SCENE_MERGE_FROM_PRIVATE_ROAD_HPP_
 
-#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/state_machine.hpp>
+#include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/state_machine.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>

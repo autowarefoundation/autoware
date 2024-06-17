@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// #include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+// #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include "motion_utils/trajectory/conversion.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/trajectory_utils.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/trajectory_utils.hpp>
 #include <autoware_velocity_smoother/trajectory_utils.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/rclcpp.hpp>

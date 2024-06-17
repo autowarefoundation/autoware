@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_
-#define AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_
+#ifndef AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_
+#define AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_
 
-#include <autoware_behavior_velocity_planner_common/planner_data.hpp>
+#include <autoware/behavior_velocity_planner_common/planner_data.hpp>
 #include <autoware_objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp>
 #include <autoware_rtc_interface/rtc_interface.hpp>
 #include <builtin_interfaces/msg/time.hpp>
@@ -278,4 +278,4 @@ protected:
 
 }  // namespace autoware::behavior_velocity_planner
 
-#endif  // AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_
+#endif  // AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_

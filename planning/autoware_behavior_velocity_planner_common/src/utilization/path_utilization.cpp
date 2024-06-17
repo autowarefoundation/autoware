@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <motion_utils/resample/resample.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/rclcpp.hpp>

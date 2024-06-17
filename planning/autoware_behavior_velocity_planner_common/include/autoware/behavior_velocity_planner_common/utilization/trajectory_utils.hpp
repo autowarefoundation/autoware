@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__TRAJECTORY_UTILS_HPP_
-#define AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__TRAJECTORY_UTILS_HPP_
+#ifndef AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__TRAJECTORY_UTILS_HPP_
+#define AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__TRAJECTORY_UTILS_HPP_
 
-#include <autoware_behavior_velocity_planner_common/planner_data.hpp>
+#include <autoware/behavior_velocity_planner_common/planner_data.hpp>
 
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <autoware_planning_msgs/msg/trajectory_point.hpp>
@@ -42,4 +42,4 @@ bool smoothPath(
 
 }  // namespace autoware::behavior_velocity_planner
 
-#endif  // AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__TRAJECTORY_UTILS_HPP_
+#endif  // AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__TRAJECTORY_UTILS_HPP_

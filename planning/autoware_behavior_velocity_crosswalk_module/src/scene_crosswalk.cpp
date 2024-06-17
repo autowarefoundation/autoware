@@ -16,8 +16,8 @@
 
 #include "occluded_crosswalk.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/distance/distance.hpp>
 #include <motion_utils/resample/resample.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>

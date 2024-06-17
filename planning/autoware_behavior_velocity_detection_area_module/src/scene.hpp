@@ -23,8 +23,8 @@
 
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
-#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <lanelet2_extension/regulatory_elements/detection_area.hpp>
 #include <rclcpp/rclcpp.hpp>
 

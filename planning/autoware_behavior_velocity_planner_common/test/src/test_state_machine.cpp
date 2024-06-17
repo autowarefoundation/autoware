@@ -14,7 +14,7 @@
 
 #include "utils.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/state_machine.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/state_machine.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <gtest/gtest.h>

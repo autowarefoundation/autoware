@@ -15,7 +15,7 @@
 #ifndef SCENE_HPP_
 #define SCENE_HPP_
 
-#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info.hpp>
 #include <lanelet2_extension/regulatory_elements/virtual_traffic_light.hpp>
 #include <lanelet2_extension/utility/query.hpp>

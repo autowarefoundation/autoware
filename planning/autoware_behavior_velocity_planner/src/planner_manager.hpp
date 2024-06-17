@@ -15,8 +15,8 @@
 #ifndef PLANNER_MANAGER_HPP_
 #define PLANNER_MANAGER_HPP_
 
-#include <autoware_behavior_velocity_planner_common/plugin_interface.hpp>
-#include <autoware_behavior_velocity_planner_common/plugin_wrapper.hpp>
+#include <autoware/behavior_velocity_planner_common/plugin_interface.hpp>
+#include <autoware/behavior_velocity_planner_common/plugin_wrapper.hpp>
 #include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
 

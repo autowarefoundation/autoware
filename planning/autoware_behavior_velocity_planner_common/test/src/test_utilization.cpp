@@ -15,9 +15,9 @@
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "utils.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 
 #include <gtest/gtest.h>
 

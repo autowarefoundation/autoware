@@ -14,7 +14,7 @@
 
 #include "manager.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <tier4_autoware_utils/ros/parameter.hpp>
 

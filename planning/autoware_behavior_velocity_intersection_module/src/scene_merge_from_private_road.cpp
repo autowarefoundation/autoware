@@ -16,8 +16,8 @@
 
 #include "util.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <lanelet2_extension/regulatory_elements/road_marking.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>

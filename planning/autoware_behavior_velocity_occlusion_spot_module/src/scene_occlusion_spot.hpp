@@ -17,8 +17,8 @@
 
 #include "occlusion_spot_utils.hpp"
 
-#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 

@@ -19,9 +19,9 @@
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 #include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
+#include <autoware/behavior_velocity_planner_common/planner_data.hpp>
 #include <autoware_behavior_velocity_planner/srv/load_plugin.hpp>
 #include <autoware_behavior_velocity_planner/srv/unload_plugin.hpp>
-#include <autoware_behavior_velocity_planner_common/planner_data.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 

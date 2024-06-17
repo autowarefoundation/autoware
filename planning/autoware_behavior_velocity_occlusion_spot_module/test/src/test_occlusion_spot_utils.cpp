@@ -16,8 +16,8 @@
 #include "occlusion_spot_utils.hpp"
 #include "utils.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 
 #include "geometry_msgs/msg/point.hpp"
 #include "geometry_msgs/msg/vector3.hpp"

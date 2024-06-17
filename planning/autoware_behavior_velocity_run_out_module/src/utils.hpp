@@ -17,8 +17,8 @@
 
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
-#include <autoware_behavior_velocity_planner_common/planner_data.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/planner_data.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>

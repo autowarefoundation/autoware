@@ -17,7 +17,7 @@
 
 #include "util.hpp"
 
-#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>

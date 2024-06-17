@@ -17,7 +17,7 @@
 #include "motion_utils/trajectory/path_with_lane_id.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 
 #include <lanelet2_core/geometry/Polygon.h>

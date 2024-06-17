@@ -21,7 +21,7 @@
 #include "state_machine.hpp"
 #include "utils.hpp"
 
-#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
 
 #include <memory>
 #include <optional>

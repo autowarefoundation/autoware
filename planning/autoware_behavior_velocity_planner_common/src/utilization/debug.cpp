@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <autoware_behavior_velocity_planner_common/utilization/debug.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/debug.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 namespace autoware::behavior_velocity_planner
 {

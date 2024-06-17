@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <autoware_behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>

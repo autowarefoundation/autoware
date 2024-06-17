@@ -15,7 +15,7 @@
 #ifndef SCENE_HPP_
 #define SCENE_HPP_
 
-#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <utility>

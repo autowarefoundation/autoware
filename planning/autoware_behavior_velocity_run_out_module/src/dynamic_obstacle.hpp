@@ -18,9 +18,9 @@
 #include "debug.hpp"
 #include "utils.hpp"
 
-#include <autoware_behavior_velocity_planner_common/planner_data.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/path_utilization.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/planner_data.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>

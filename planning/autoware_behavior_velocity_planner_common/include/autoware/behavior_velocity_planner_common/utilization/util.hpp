@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__UTIL_HPP_
-#define AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__UTIL_HPP_
+#ifndef AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__UTIL_HPP_
+#define AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__UTIL_HPP_
 
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
@@ -243,4 +243,4 @@ lanelet::ConstLanelets getConstLaneletsFromIds(
 }  // namespace planning_utils
 }  // namespace autoware::behavior_velocity_planner
 
-#endif  // AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__UTIL_HPP_
+#endif  // AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__UTIL_HPP_

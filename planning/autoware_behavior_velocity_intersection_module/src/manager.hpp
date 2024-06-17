@@ -18,9 +18,9 @@
 #include "scene_intersection.hpp"
 #include "scene_merge_from_private_road.hpp"
 
-#include <autoware_behavior_velocity_planner_common/plugin_interface.hpp>
-#include <autoware_behavior_velocity_planner_common/plugin_wrapper.hpp>
-#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware/behavior_velocity_planner_common/plugin_interface.hpp>
+#include <autoware/behavior_velocity_planner_common/plugin_wrapper.hpp>
+#include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <std_msgs/msg/string.hpp>

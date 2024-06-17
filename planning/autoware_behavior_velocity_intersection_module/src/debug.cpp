@@ -15,8 +15,8 @@
 #include "scene_intersection.hpp"
 #include "scene_merge_from_private_road.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/debug.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/debug.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 

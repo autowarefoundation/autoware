@@ -15,8 +15,8 @@
 #include "scene_intersection.hpp"
 #include "util.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for to_bg2d
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>  // for planning_utils::
+#include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for to_bg2d
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>  // for planning_utils::
 #include <interpolation/spline_interpolation_points_2d.hpp>
 #include <lanelet2_extension/regulatory_elements/road_marking.hpp>  // for lanelet::autoware::RoadMarking
 #include <lanelet2_extension/utility/query.hpp>

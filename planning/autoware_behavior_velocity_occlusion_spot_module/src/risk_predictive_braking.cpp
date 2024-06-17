@@ -16,7 +16,7 @@
 
 #include "occlusion_spot_utils.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 
 #include <algorithm>
 #include <vector>

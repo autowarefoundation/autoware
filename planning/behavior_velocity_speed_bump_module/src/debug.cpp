@@ -14,7 +14,7 @@
 
 #include "scene.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <lanelet2_extension/regulatory_elements/speed_bump.hpp>
 #include <motion_utils/marker/marker_helper.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>

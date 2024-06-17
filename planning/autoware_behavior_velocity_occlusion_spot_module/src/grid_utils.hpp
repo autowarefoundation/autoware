@@ -15,8 +15,8 @@
 #ifndef GRID_UTILS_HPP_
 #define GRID_UTILS_HPP_
 
-#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <autoware_grid_map_utils/polygon_iterator.hpp>
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_core/iterators/LineIterator.hpp>

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
-#define AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
+#ifndef AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
+#define AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 
 #include "autoware_route_handler/route_handler.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <autoware_velocity_smoother/smoother/smoother_base.hpp>
 
@@ -150,4 +150,4 @@ struct PlannerData
 };
 }  // namespace autoware::behavior_velocity_planner
 
-#endif  // AUTOWARE_BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
+#endif  // AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_

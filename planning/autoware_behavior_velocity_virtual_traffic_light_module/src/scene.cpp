@@ -14,8 +14,8 @@
 
 #include "scene.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 
 #include <tier4_v2x_msgs/msg/key_value.hpp>

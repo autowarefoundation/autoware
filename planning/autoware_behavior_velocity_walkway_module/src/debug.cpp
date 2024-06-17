@@ -14,7 +14,7 @@
 
 #include "scene_walkway.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/marker/marker_helper.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>

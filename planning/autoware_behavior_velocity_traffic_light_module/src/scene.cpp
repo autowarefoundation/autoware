@@ -14,7 +14,7 @@
 
 #include "scene.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <traffic_light_utils/traffic_light_utils.hpp>
 

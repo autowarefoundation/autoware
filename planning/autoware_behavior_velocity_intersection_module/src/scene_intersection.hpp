@@ -22,8 +22,8 @@
 #include "object_manager.hpp"
 #include "result.hpp"
 
-#include <autoware_behavior_velocity_planner_common/scene_module_interface.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/state_machine.hpp>
+#include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/state_machine.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <rclcpp/rclcpp.hpp>
 

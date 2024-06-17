@@ -18,7 +18,7 @@
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "util.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 namespace autoware::behavior_velocity_planner

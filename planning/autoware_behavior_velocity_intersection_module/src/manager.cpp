@@ -14,8 +14,8 @@
 
 #include "manager.hpp"
 
-#include <autoware_behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
-#include <autoware_behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <tier4_autoware_utils/ros/parameter.hpp>
 
