@@ -1,4 +1,4 @@
-name: build-and-test-arm64
+name: build-and-test-daily
 
 on:
   schedule:
@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test-arm64:
-    runs-on: [self-hosted, linux, ARM64]
+  build-and-test-daily:
+    runs-on: [self-hosted, linux, X64]
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
       fail-fast: false
@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Show disk space before the tasks
         run: df -h
@@ -45,11 +47,21 @@ jobs:
 
       - name: Test
         if: ${{ steps.get-self-packages.outputs.self-packages != '' }}
+        id: test
         uses: autowarefoundation/autoware-github-actions/colcon-test@v1
         with:
           rosdistro: ${{ matrix.rosdistro }}
           target-packages: ${{ steps.get-self-packages.outputs.self-packages }}
           build-depends-repos: ${{ matrix.build-depends-repos }}
+
+      - name: Upload coverage to CodeCov
+        if: ${{ steps.test.outputs.coverage-report-files != '' }}
+        uses: codecov/codecov-action@v4
+        with:
+          files: ${{ steps.test.outputs.coverage-report-files }}
+          fail_ci_if_error: false
+          verbose: true
+          flags: total
 
       - name: Show disk space after the tasks
         run: df -h

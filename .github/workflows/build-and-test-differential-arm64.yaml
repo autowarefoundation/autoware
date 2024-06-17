@@ -5,18 +5,18 @@ on:
     types:
       - opened
       - synchronize
+      - reopened
       - labeled
-  workflow_dispatch:
 
 jobs:
-  prevent-no-label-execution:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/prevent-no-label-execution.yaml@v1
+  make-sure-label-is-present:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
     with:
       label: type:arm64
 
   build-and-test-differential-arm64:
-    needs: prevent-no-label-execution
-    if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
+    needs: make-sure-label-is-present
+    if: ${{ needs.make-sure-label-is-present.outputs.result == 'true' }}
     runs-on: [self-hosted, linux, ARM64]
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
@@ -60,12 +60,22 @@ jobs:
           build-depends-repos: ${{ matrix.build-depends-repos }}
 
       - name: Test
+        id: test
         if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
         uses: autowarefoundation/autoware-github-actions/colcon-test@v1
         with:
           rosdistro: ${{ matrix.rosdistro }}
           target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
           build-depends-repos: ${{ matrix.build-depends-repos }}
+
+      - name: Upload coverage to CodeCov
+        if: ${{ steps.test.outputs.coverage-report-files != '' }}
+        uses: codecov/codecov-action@v4
+        with:
+          files: ${{ steps.test.outputs.coverage-report-files }}
+          fail_ci_if_error: false
+          verbose: true
+          flags: differential-arm64
 
       - name: Show disk space after the tasks
         run: df -h

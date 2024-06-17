@@ -18,6 +18,14 @@
     - source: .github/workflows/pre-commit-optional.yaml
     - source: .github/workflows/semantic-pull-request.yaml
     - source: .github/workflows/spell-check-differential.yaml
+      pre-commands: |
+        sd "        with:\n" "        with:\n          local-cspell-json: .cspell.json\n" {source}
+    - source: .github/workflows/spell-check-differential.yaml
+      dest: .github/workflows/spell-check-daily.yaml
+      pre-commands: |
+        sd "spell-check-differential" "spell-check-daily" {source}
+        sd "        with:\n" "        with:\n          local-cspell-json: .cspell.json\n          incremental-files-only: false\n" {source}
+        sd "on:\n  pull_request:\n" "on:\n  schedule:\n    - cron: 0 0 * * *\n  workflow_dispatch:\n" {source}
     - source: .github/workflows/sync-files.yaml
     - source: .clang-format
     - source: .markdown-link-check.json
@@ -31,39 +39,9 @@
 
 - repository: autowarefoundation/autoware_common
   files:
-    - source: .github/workflows/build-and-test.yaml
+    - source: .github/workflows/clang-tidy-differential.yaml
       pre-commands: |
-        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest" {source}
-
-        sd -s 'container: ${{ matrix.container }}' 'container: ${{ matrix.container }}${{ matrix.container-suffix }}' {source}
-        sd -- \
-        "       include:" \
-        "       container-suffix:
-                  - \"\"
-                  - -cuda
-                include:" {source}
-    - source: .github/workflows/build-and-test-differential-self-hosted.yaml
-      pre-commands: |
-        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest" {source}
-
-        sd -s 'container: ${{ matrix.container }}' 'container: ${{ matrix.container }}${{ matrix.container-suffix }}' {source}
-        sd -- \
-        "       include:" \
-        "       container-suffix:
-                  - \"\"
-                  - -cuda
-                include:" {source}
-    - source: .github/workflows/build-and-test-self-hosted.yaml
-      pre-commands: |
-        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest" {source}
-
-        sd -s 'container: ${{ matrix.container }}' 'container: ${{ matrix.container }}${{ matrix.container-suffix }}' {source}
-        sd -- \
-        "       include:" \
-        "       container-suffix:
-                  - \"\"
-                  - -cuda
-                include:" {source}
+        sd 'container: ros:(\w+)' 'container: ghcr.io/autowarefoundation/autoware:latest-prebuilt-cuda' {source}
     - source: .github/workflows/check-build-depends.yaml
     - source: .github/workflows/clang-tidy-pr-comments.yaml
     - source: .github/workflows/clang-tidy-pr-comments-manually.yaml
