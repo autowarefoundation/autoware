@@ -150,6 +150,9 @@ Please see [tier4_autoware_msgs/msg/MapProjectorInfo.msg](https://github.com/tie
 
 {{ json_to_markdown("map/map_loader/schema/lanelet2_map_loader.schema.json") }}
 
+`use_waypoints` decides how to handle a centerline.
+This flag enables to use the `overwriteLaneletsCenterlineWithWaypoints` function instead of `overwriteLaneletsCenterline`. Please see [the document of the lanelet2_extension package](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md#centerline) in detail.
+
 ---
 
 ## lanelet2_map_visualization

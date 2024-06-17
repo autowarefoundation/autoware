@@ -34,7 +34,13 @@ def generate_test_description():
     lanelet2_map_loader = Node(
         package="map_loader",
         executable="lanelet2_map_loader",
-        parameters=[{"lanelet2_map_path": lanelet2_map_path, "center_line_resolution": 5.0}],
+        parameters=[
+            {
+                "lanelet2_map_path": lanelet2_map_path,
+                "center_line_resolution": 5.0,
+                "use_waypoints": True,
+            }
+        ],
     )
 
     context = {}

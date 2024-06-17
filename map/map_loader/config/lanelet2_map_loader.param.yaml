@@ -1,4 +1,5 @@
 /**:
   ros__parameters:
-    center_line_resolution: 5.0         # [m]
+    center_line_resolution: 5.0                 # [m]
+    use_waypoints: true                         # "centerline" in the Lanelet2 map will be used as a "waypoints" tag.
     lanelet2_map_path: $(var lanelet2_map_path) # The lanelet2 map path

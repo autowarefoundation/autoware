@@ -11,13 +11,18 @@
           "description": "Resolution of the Lanelet center line [m]",
           "default": "5.0"
         },
+        "use_waypoints": {
+          "type": "boolean",
+          "description": "If true, `centerline` in the Lanelet2 map will be used as a `waypoints` tag.",
+          "default": true
+        },
         "lanelet2_map_path": {
           "type": "string",
           "description": "The lanelet2 map path pointing to the .osm file",
           "default": ""
         }
       },
-      "required": ["center_line_resolution", "lanelet2_map_path"],
+      "required": ["center_line_resolution", "use_waypoints", "lanelet2_map_path"],
       "additionalProperties": false
     }
   },
