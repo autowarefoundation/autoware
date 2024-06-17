@@ -15,8 +15,8 @@
 #ifndef PLANNER_MANAGER_HPP_
 #define PLANNER_MANAGER_HPP_
 
-#include <autoware_motion_velocity_planner_common/plugin_module_interface.hpp>
-#include <autoware_motion_velocity_planner_common/velocity_planning_result.hpp>
+#include <autoware/motion_velocity_planner_common/plugin_module_interface.hpp>
+#include <autoware/motion_velocity_planner_common/velocity_planning_result.hpp>
 #include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
 

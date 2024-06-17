@@ -17,7 +17,7 @@
 
 #include "types.hpp"
 
-#include <autoware_motion_velocity_planner_common/planner_data.hpp>
+#include <autoware/motion_velocity_planner_common/planner_data.hpp>
 
 #include <memory>
 #include <optional>

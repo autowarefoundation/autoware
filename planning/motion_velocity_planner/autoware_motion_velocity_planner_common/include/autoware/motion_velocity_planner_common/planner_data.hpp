@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
-#define AUTOWARE_MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
+#ifndef AUTOWARE__MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
+#define AUTOWARE__MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 
 #include <autoware_route_handler/route_handler.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
@@ -101,4 +101,4 @@ struct PlannerData
 };
 }  // namespace autoware::motion_velocity_planner
 
-#endif  // AUTOWARE_MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
+#endif  // AUTOWARE__MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_

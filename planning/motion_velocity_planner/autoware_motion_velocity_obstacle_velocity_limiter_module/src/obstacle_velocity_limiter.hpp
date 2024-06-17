@@ -19,7 +19,7 @@
 #include "parameters.hpp"
 #include "types.hpp"
 
-#include <autoware_motion_velocity_planner_common/velocity_planning_result.hpp>
+#include <autoware/motion_velocity_planner_common/velocity_planning_result.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>

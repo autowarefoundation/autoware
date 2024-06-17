@@ -19,8 +19,8 @@
 #include "parameters.hpp"
 #include "types.hpp"
 
-#include <autoware_motion_velocity_planner_common/plugin_module_interface.hpp>
-#include <autoware_motion_velocity_planner_common/velocity_planning_result.hpp>
+#include <autoware/motion_velocity_planner_common/plugin_module_interface.hpp>
+#include <autoware/motion_velocity_planner_common/velocity_planning_result.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 #include <tier4_autoware_utils/ros/self_pose_listener.hpp>
