@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_velocity_smoother/trajectory_utils.hpp"
+#include "autoware/velocity_smoother/trajectory_utils.hpp"
 
 #include <gtest/gtest.h>
 

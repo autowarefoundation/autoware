@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_VELOCITY_SMOOTHER__NODE_HPP_
-#define AUTOWARE_VELOCITY_SMOOTHER__NODE_HPP_
+#ifndef AUTOWARE__VELOCITY_SMOOTHER__NODE_HPP_
+#define AUTOWARE__VELOCITY_SMOOTHER__NODE_HPP_
 
-#include "autoware_velocity_smoother/resample.hpp"
-#include "autoware_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp"
-#include "autoware_velocity_smoother/smoother/jerk_filtered_smoother.hpp"
-#include "autoware_velocity_smoother/smoother/l2_pseudo_jerk_smoother.hpp"
-#include "autoware_velocity_smoother/smoother/linf_pseudo_jerk_smoother.hpp"
-#include "autoware_velocity_smoother/smoother/smoother_base.hpp"
-#include "autoware_velocity_smoother/trajectory_utils.hpp"
+#include "autoware/velocity_smoother/resample.hpp"
+#include "autoware/velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp"
+#include "autoware/velocity_smoother/smoother/jerk_filtered_smoother.hpp"
+#include "autoware/velocity_smoother/smoother/l2_pseudo_jerk_smoother.hpp"
+#include "autoware/velocity_smoother/smoother/linf_pseudo_jerk_smoother.hpp"
+#include "autoware/velocity_smoother/smoother/smoother_base.hpp"
+#include "autoware/velocity_smoother/trajectory_utils.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "osqp_interface/osqp_interface.hpp"
@@ -278,4 +278,4 @@ private:
 };
 }  // namespace autoware::velocity_smoother
 
-#endif  // AUTOWARE_VELOCITY_SMOOTHER__NODE_HPP_
+#endif  // AUTOWARE__VELOCITY_SMOOTHER__NODE_HPP_

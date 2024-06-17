@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_velocity_smoother/node.hpp"
+#include "autoware/velocity_smoother/node.hpp"
 
-#include "autoware_velocity_smoother/smoother/jerk_filtered_smoother.hpp"
-#include "autoware_velocity_smoother/smoother/l2_pseudo_jerk_smoother.hpp"
-#include "autoware_velocity_smoother/smoother/linf_pseudo_jerk_smoother.hpp"
+#include "autoware/velocity_smoother/smoother/jerk_filtered_smoother.hpp"
+#include "autoware/velocity_smoother/smoother/l2_pseudo_jerk_smoother.hpp"
+#include "autoware/velocity_smoother/smoother/linf_pseudo_jerk_smoother.hpp"
 #include "motion_utils/marker/marker_helper.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
 

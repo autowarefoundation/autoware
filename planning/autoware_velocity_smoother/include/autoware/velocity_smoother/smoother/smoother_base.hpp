@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_VELOCITY_SMOOTHER__SMOOTHER__SMOOTHER_BASE_HPP_
-#define AUTOWARE_VELOCITY_SMOOTHER__SMOOTHER__SMOOTHER_BASE_HPP_
+#ifndef AUTOWARE__VELOCITY_SMOOTHER__SMOOTHER__SMOOTHER_BASE_HPP_
+#define AUTOWARE__VELOCITY_SMOOTHER__SMOOTHER__SMOOTHER_BASE_HPP_
 
-#include "autoware_velocity_smoother/resample.hpp"
+#include "autoware/velocity_smoother/resample.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include "autoware_planning_msgs/msg/trajectory_point.hpp"
@@ -88,4 +88,4 @@ protected:
 };
 }  // namespace autoware::velocity_smoother
 
-#endif  // AUTOWARE_VELOCITY_SMOOTHER__SMOOTHER__SMOOTHER_BASE_HPP_
+#endif  // AUTOWARE__VELOCITY_SMOOTHER__SMOOTHER__SMOOTHER_BASE_HPP_

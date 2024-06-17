@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_VELOCITY_SMOOTHER__SMOOTHER__JERK_FILTERED_SMOOTHER_HPP_
-#define AUTOWARE_VELOCITY_SMOOTHER__SMOOTHER__JERK_FILTERED_SMOOTHER_HPP_
+#ifndef AUTOWARE__VELOCITY_SMOOTHER__SMOOTHER__JERK_FILTERED_SMOOTHER_HPP_
+#define AUTOWARE__VELOCITY_SMOOTHER__SMOOTHER__JERK_FILTERED_SMOOTHER_HPP_
 
-#include "autoware_velocity_smoother/smoother/smoother_base.hpp"
+#include "autoware/velocity_smoother/smoother/smoother_base.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "osqp_interface/osqp_interface.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
@@ -71,4 +71,4 @@ private:
 };
 }  // namespace autoware::velocity_smoother
 
-#endif  // AUTOWARE_VELOCITY_SMOOTHER__SMOOTHER__JERK_FILTERED_SMOOTHER_HPP_
+#endif  // AUTOWARE__VELOCITY_SMOOTHER__SMOOTHER__JERK_FILTERED_SMOOTHER_HPP_

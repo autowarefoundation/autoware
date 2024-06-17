@@ -15,7 +15,7 @@
 #include "node.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
-#include <autoware_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp>
+#include <autoware/velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>

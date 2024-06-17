@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_VELOCITY_SMOOTHER__RESAMPLE_HPP_
-#define AUTOWARE_VELOCITY_SMOOTHER__RESAMPLE_HPP_
+#ifndef AUTOWARE__VELOCITY_SMOOTHER__RESAMPLE_HPP_
+#define AUTOWARE__VELOCITY_SMOOTHER__RESAMPLE_HPP_
 
 #include "autoware_planning_msgs/msg/trajectory_point.hpp"
 #include <geometry_msgs/msg/pose.hpp>
@@ -50,4 +50,4 @@ TrajectoryPoints resampleTrajectory(
 }  // namespace resampling
 }  // namespace autoware::velocity_smoother
 
-#endif  // AUTOWARE_VELOCITY_SMOOTHER__RESAMPLE_HPP_
+#endif  // AUTOWARE__VELOCITY_SMOOTHER__RESAMPLE_HPP_

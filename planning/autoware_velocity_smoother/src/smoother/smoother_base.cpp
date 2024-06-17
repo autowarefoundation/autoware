@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_velocity_smoother/smoother/smoother_base.hpp"
+#include "autoware/velocity_smoother/smoother/smoother_base.hpp"
 
-#include "autoware_velocity_smoother/resample.hpp"
-#include "autoware_velocity_smoother/trajectory_utils.hpp"
+#include "autoware/velocity_smoother/resample.hpp"
+#include "autoware/velocity_smoother/trajectory_utils.hpp"
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"

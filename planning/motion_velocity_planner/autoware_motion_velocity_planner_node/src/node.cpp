@@ -14,8 +14,8 @@
 
 #include "node.hpp"
 
-#include <autoware_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp>
-#include <autoware_velocity_smoother/trajectory_utils.hpp>
+#include <autoware/velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp>
+#include <autoware/velocity_smoother/trajectory_utils.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>

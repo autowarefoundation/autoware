@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_velocity_smoother/smoother/analytical_jerk_constrained_smoother/velocity_planning_utils.hpp"
+#include "autoware/velocity_smoother/smoother/analytical_jerk_constrained_smoother/velocity_planning_utils.hpp"
 
 #include "interpolation/linear_interpolation.hpp"
 

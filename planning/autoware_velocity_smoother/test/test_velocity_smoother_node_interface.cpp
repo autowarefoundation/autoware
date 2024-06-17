@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_velocity_smoother/node.hpp"
+#include "autoware/velocity_smoother/node.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <autoware_planning_test_manager/autoware_planning_test_manager.hpp>

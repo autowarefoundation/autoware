@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_
-#define AUTOWARE_VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_
+#ifndef AUTOWARE__VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_
+#define AUTOWARE__VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_
 
 #include "autoware_planning_msgs/msg/trajectory_point.hpp"
 #include "geometry_msgs/msg/pose.hpp"
@@ -79,4 +79,4 @@ double calcStopDistance(const TrajectoryPoints & trajectory, const size_t closes
 
 }  // namespace autoware::velocity_smoother::trajectory_utils
 
-#endif  // AUTOWARE_VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_
+#endif  // AUTOWARE__VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_

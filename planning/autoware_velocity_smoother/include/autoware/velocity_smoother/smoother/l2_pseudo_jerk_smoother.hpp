@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_VELOCITY_SMOOTHER__SMOOTHER__LINF_PSEUDO_JERK_SMOOTHER_HPP_
-#define AUTOWARE_VELOCITY_SMOOTHER__SMOOTHER__LINF_PSEUDO_JERK_SMOOTHER_HPP_
+#ifndef AUTOWARE__VELOCITY_SMOOTHER__SMOOTHER__L2_PSEUDO_JERK_SMOOTHER_HPP_
+#define AUTOWARE__VELOCITY_SMOOTHER__SMOOTHER__L2_PSEUDO_JERK_SMOOTHER_HPP_
 
-#include "autoware_velocity_smoother/smoother/smoother_base.hpp"
+#include "autoware/velocity_smoother/smoother/smoother_base.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "osqp_interface/osqp_interface.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
@@ -28,7 +28,7 @@
 
 namespace autoware::velocity_smoother
 {
-class LinfPseudoJerkSmoother : public SmootherBase
+class L2PseudoJerkSmoother : public SmootherBase
 {
 public:
   struct Param
@@ -38,7 +38,7 @@ public:
     double over_a_weight;
   };
 
-  explicit LinfPseudoJerkSmoother(rclcpp::Node & node);
+  explicit L2PseudoJerkSmoother(rclcpp::Node & node);
 
   bool apply(
     const double initial_vel, const double initial_acc, const TrajectoryPoints & input,
@@ -54,8 +54,8 @@ public:
 private:
   Param smoother_param_;
   autoware::common::osqp::OSQPInterface qp_solver_;
-  rclcpp::Logger logger_{rclcpp::get_logger("smoother").get_child("linf_pseudo_jerk_smoother")};
+  rclcpp::Logger logger_{rclcpp::get_logger("smoother").get_child("l2_pseudo_jerk_smoother")};
 };
 }  // namespace autoware::velocity_smoother
 
-#endif  // AUTOWARE_VELOCITY_SMOOTHER__SMOOTHER__LINF_PSEUDO_JERK_SMOOTHER_HPP_
+#endif  // AUTOWARE__VELOCITY_SMOOTHER__SMOOTHER__L2_PSEUDO_JERK_SMOOTHER_HPP_
