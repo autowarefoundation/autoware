@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
-#define AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
+#ifndef AUTOWARE__FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
+#define AUTOWARE__FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
 
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
@@ -189,4 +189,4 @@ protected:
 
 }  // namespace autoware::freespace_planning_algorithms
 
-#endif  // AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
+#endif  // AUTOWARE__FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_

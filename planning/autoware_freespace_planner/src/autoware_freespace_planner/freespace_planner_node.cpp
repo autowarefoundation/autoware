@@ -28,9 +28,9 @@
  * limitations under the License.
  */
 
-#include "autoware_freespace_planner/freespace_planner_node.hpp"
+#include "autoware/freespace_planner/freespace_planner_node.hpp"
 
-#include "autoware_freespace_planning_algorithms/abstract_algorithm.hpp"
+#include "autoware/freespace_planning_algorithms/abstract_algorithm.hpp"
 
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>

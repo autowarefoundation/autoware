@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_freespace_planner/freespace_planner_node.hpp"
+#include "autoware/freespace_planner/freespace_planner_node.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <autoware_planning_test_manager/autoware_planning_test_manager.hpp>

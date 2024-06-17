@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_freespace_planning_algorithms/abstract_algorithm.hpp"
-#include "autoware_freespace_planning_algorithms/astar_search.hpp"
+#include "autoware/freespace_planning_algorithms/abstract_algorithm.hpp"
+#include "autoware/freespace_planning_algorithms/astar_search.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/serialization.hpp>

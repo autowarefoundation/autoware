@@ -19,9 +19,9 @@
 #include "autoware/behavior_path_planner_common/utils/parking_departure/geometric_parallel_parking.hpp"
 #include "autoware/behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 
-#include <autoware_freespace_planning_algorithms/abstract_algorithm.hpp>
-#include <autoware_freespace_planning_algorithms/astar_search.hpp>
-#include <autoware_freespace_planning_algorithms/rrtstar.hpp>
+#include <autoware/freespace_planning_algorithms/abstract_algorithm.hpp>
+#include <autoware/freespace_planning_algorithms/astar_search.hpp>
+#include <autoware/freespace_planning_algorithms/rrtstar.hpp>
 
 #include <string>
 #include <vector>

@@ -19,7 +19,7 @@
 
 #include <autoware/behavior_path_planner_common/data_manager.hpp>
 #include <autoware/behavior_path_planner_common/parameters.hpp>
-#include <autoware_freespace_planning_algorithms/abstract_algorithm.hpp>
+#include <autoware/freespace_planning_algorithms/abstract_algorithm.hpp>
 
 #include <autoware_planning_msgs/msg/path.hpp>
 #include <autoware_vehicle_msgs/msg/turn_indicators_command.hpp>

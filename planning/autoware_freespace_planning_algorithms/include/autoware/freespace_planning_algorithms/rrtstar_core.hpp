@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_CORE_HPP_
-#define AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_CORE_HPP_
+#ifndef AUTOWARE__FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_CORE_HPP_
+#define AUTOWARE__FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_CORE_HPP_
 
-#include "autoware_freespace_planning_algorithms/reeds_shepp.hpp"
+#include "autoware/freespace_planning_algorithms/reeds_shepp.hpp"
 
 #include <tf2/utils.h>
 
@@ -158,4 +158,4 @@ private:
 
 }  // namespace autoware::freespace_planning_algorithms::rrtstar_core
 
-#endif  // AUTOWARE_FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_CORE_HPP_
+#endif  // AUTOWARE__FREESPACE_PLANNING_ALGORITHMS__RRTSTAR_CORE_HPP_

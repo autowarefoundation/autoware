@@ -78,7 +78,7 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "autoware_freespace_planning_algorithms/reeds_shepp.hpp"
+#include "autoware/freespace_planning_algorithms/reeds_shepp.hpp"
 
 #include <algorithm>
 #include <cmath>

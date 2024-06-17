@@ -17,9 +17,9 @@
 
 #include "autoware/behavior_path_goal_planner_module/pull_over_planner_base.hpp"
 
-#include <autoware_freespace_planning_algorithms/abstract_algorithm.hpp>
-#include <autoware_freespace_planning_algorithms/astar_search.hpp>
-#include <autoware_freespace_planning_algorithms/rrtstar.hpp>
+#include <autoware/freespace_planning_algorithms/abstract_algorithm.hpp>
+#include <autoware/freespace_planning_algorithms/astar_search.hpp>
+#include <autoware/freespace_planning_algorithms/rrtstar.hpp>
 
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 

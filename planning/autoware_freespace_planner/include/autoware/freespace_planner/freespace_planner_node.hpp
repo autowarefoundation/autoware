@@ -28,13 +28,13 @@
  * limitations under the License.
  */
 
-#ifndef AUTOWARE_FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
-#define AUTOWARE_FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
+#ifndef AUTOWARE__FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
+#define AUTOWARE__FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
 
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
-#include <autoware_freespace_planning_algorithms/astar_search.hpp>
-#include <autoware_freespace_planning_algorithms/rrtstar.hpp>
+#include <autoware/freespace_planning_algorithms/astar_search.hpp>
+#include <autoware/freespace_planning_algorithms/rrtstar.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -167,4 +167,4 @@ private:
 };
 }  // namespace autoware::freespace_planner
 
-#endif  // AUTOWARE_FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
+#endif  // AUTOWARE__FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
