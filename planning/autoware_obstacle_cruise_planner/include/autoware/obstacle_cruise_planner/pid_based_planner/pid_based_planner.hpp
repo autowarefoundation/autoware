@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_OBSTACLE_CRUISE_PLANNER__PID_BASED_PLANNER__PID_BASED_PLANNER_HPP_
-#define AUTOWARE_OBSTACLE_CRUISE_PLANNER__PID_BASED_PLANNER__PID_BASED_PLANNER_HPP_
+#ifndef AUTOWARE__OBSTACLE_CRUISE_PLANNER__PID_BASED_PLANNER__PID_BASED_PLANNER_HPP_
+#define AUTOWARE__OBSTACLE_CRUISE_PLANNER__PID_BASED_PLANNER__PID_BASED_PLANNER_HPP_
 
-#include "autoware_obstacle_cruise_planner/pid_based_planner/cruise_planning_debug_info.hpp"
-#include "autoware_obstacle_cruise_planner/pid_based_planner/pid_controller.hpp"
-#include "autoware_obstacle_cruise_planner/planner_interface.hpp"
+#include "autoware/obstacle_cruise_planner/pid_based_planner/cruise_planning_debug_info.hpp"
+#include "autoware/obstacle_cruise_planner/pid_based_planner/pid_controller.hpp"
+#include "autoware/obstacle_cruise_planner/planner_interface.hpp"
 #include "signal_processing/lowpass_filter_1d.hpp"
 
 #include "visualization_msgs/msg/marker_array.hpp"
@@ -137,4 +137,4 @@ private:
   std::function<double(double)> error_func_;
 };
 
-#endif  // AUTOWARE_OBSTACLE_CRUISE_PLANNER__PID_BASED_PLANNER__PID_BASED_PLANNER_HPP_
+#endif  // AUTOWARE__OBSTACLE_CRUISE_PLANNER__PID_BASED_PLANNER__PID_BASED_PLANNER_HPP_

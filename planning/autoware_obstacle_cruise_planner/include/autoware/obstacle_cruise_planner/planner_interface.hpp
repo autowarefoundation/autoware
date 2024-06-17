@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_OBSTACLE_CRUISE_PLANNER__PLANNER_INTERFACE_HPP_
-#define AUTOWARE_OBSTACLE_CRUISE_PLANNER__PLANNER_INTERFACE_HPP_
+#ifndef AUTOWARE__OBSTACLE_CRUISE_PLANNER__PLANNER_INTERFACE_HPP_
+#define AUTOWARE__OBSTACLE_CRUISE_PLANNER__PLANNER_INTERFACE_HPP_
 
-#include "autoware_obstacle_cruise_planner/common_structs.hpp"
-#include "autoware_obstacle_cruise_planner/stop_planning_debug_info.hpp"
-#include "autoware_obstacle_cruise_planner/type_alias.hpp"
-#include "autoware_obstacle_cruise_planner/utils.hpp"
+#include "autoware/obstacle_cruise_planner/common_structs.hpp"
+#include "autoware/obstacle_cruise_planner/stop_planning_debug_info.hpp"
+#include "autoware/obstacle_cruise_planner/type_alias.hpp"
+#include "autoware/obstacle_cruise_planner/utils.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
@@ -425,4 +425,4 @@ private:
     std::nullopt};
 };
 
-#endif  // AUTOWARE_OBSTACLE_CRUISE_PLANNER__PLANNER_INTERFACE_HPP_
+#endif  // AUTOWARE__OBSTACLE_CRUISE_PLANNER__PLANNER_INTERFACE_HPP_

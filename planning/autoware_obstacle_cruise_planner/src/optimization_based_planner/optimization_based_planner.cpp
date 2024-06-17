@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_obstacle_cruise_planner/optimization_based_planner/optimization_based_planner.hpp"
+#include "autoware/obstacle_cruise_planner/optimization_based_planner/optimization_based_planner.hpp"
 
-#include "autoware_obstacle_cruise_planner/utils.hpp"
+#include "autoware/obstacle_cruise_planner/utils.hpp"
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
 #include "interpolation/zero_order_hold.hpp"

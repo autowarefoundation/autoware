@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_OBSTACLE_CRUISE_PLANNER__OPTIMIZATION_BASED_PLANNER__OPTIMIZATION_BASED_PLANNER_HPP_  // NOLINT
-#define AUTOWARE_OBSTACLE_CRUISE_PLANNER__OPTIMIZATION_BASED_PLANNER__OPTIMIZATION_BASED_PLANNER_HPP_  // NOLINT
+#ifndef AUTOWARE__OBSTACLE_CRUISE_PLANNER__OPTIMIZATION_BASED_PLANNER__OPTIMIZATION_BASED_PLANNER_HPP_  // NOLINT
+#define AUTOWARE__OBSTACLE_CRUISE_PLANNER__OPTIMIZATION_BASED_PLANNER__OPTIMIZATION_BASED_PLANNER_HPP_  // NOLINT
 
-#include "autoware_obstacle_cruise_planner/optimization_based_planner/s_boundary.hpp"
-#include "autoware_obstacle_cruise_planner/optimization_based_planner/velocity_optimizer.hpp"
-#include "autoware_obstacle_cruise_planner/planner_interface.hpp"
-#include "autoware_obstacle_cruise_planner/type_alias.hpp"
+#include "autoware/obstacle_cruise_planner/optimization_based_planner/s_boundary.hpp"
+#include "autoware/obstacle_cruise_planner/optimization_based_planner/velocity_optimizer.hpp"
+#include "autoware/obstacle_cruise_planner/planner_interface.hpp"
+#include "autoware/obstacle_cruise_planner/type_alias.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
@@ -118,5 +118,5 @@ private:
   double stop_dist_to_prohibit_engage_;
 };
 // clang-format off
-#endif  // AUTOWARE_OBSTACLE_CRUISE_PLANNER__OPTIMIZATION_BASED_PLANNER__OPTIMIZATION_BASED_PLANNER_HPP_  // NOLINT
+#endif  // AUTOWARE__OBSTACLE_CRUISE_PLANNER__OPTIMIZATION_BASED_PLANNER__OPTIMIZATION_BASED_PLANNER_HPP_  // NOLINT
 // clang-format on

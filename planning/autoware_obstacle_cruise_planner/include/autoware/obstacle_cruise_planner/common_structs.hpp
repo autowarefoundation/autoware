@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_OBSTACLE_CRUISE_PLANNER__COMMON_STRUCTS_HPP_
-#define AUTOWARE_OBSTACLE_CRUISE_PLANNER__COMMON_STRUCTS_HPP_
+#ifndef AUTOWARE__OBSTACLE_CRUISE_PLANNER__COMMON_STRUCTS_HPP_
+#define AUTOWARE__OBSTACLE_CRUISE_PLANNER__COMMON_STRUCTS_HPP_
 
-#include "autoware_obstacle_cruise_planner/type_alias.hpp"
+#include "autoware/obstacle_cruise_planner/type_alias.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "motion_utils/trajectory/interpolation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
@@ -302,4 +302,4 @@ struct EgoNearestParam
   double yaw_threshold;
 };
 
-#endif  // AUTOWARE_OBSTACLE_CRUISE_PLANNER__COMMON_STRUCTS_HPP_
+#endif  // AUTOWARE__OBSTACLE_CRUISE_PLANNER__COMMON_STRUCTS_HPP_

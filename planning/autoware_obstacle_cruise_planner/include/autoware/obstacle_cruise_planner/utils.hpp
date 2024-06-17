@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_OBSTACLE_CRUISE_PLANNER__UTILS_HPP_
-#define AUTOWARE_OBSTACLE_CRUISE_PLANNER__UTILS_HPP_
+#ifndef AUTOWARE__OBSTACLE_CRUISE_PLANNER__UTILS_HPP_
+#define AUTOWARE__OBSTACLE_CRUISE_PLANNER__UTILS_HPP_
 
-#include "autoware_obstacle_cruise_planner/type_alias.hpp"
+#include "autoware/obstacle_cruise_planner/type_alias.hpp"
 #include "common_structs.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
@@ -95,4 +95,4 @@ size_t getIndexWithLongitudinalOffset(
 }
 }  // namespace obstacle_cruise_utils
 
-#endif  // AUTOWARE_OBSTACLE_CRUISE_PLANNER__UTILS_HPP_
+#endif  // AUTOWARE__OBSTACLE_CRUISE_PLANNER__UTILS_HPP_

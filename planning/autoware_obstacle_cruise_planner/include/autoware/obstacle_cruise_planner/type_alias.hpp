@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_OBSTACLE_CRUISE_PLANNER__TYPE_ALIAS_HPP_
-#define AUTOWARE_OBSTACLE_CRUISE_PLANNER__TYPE_ALIAS_HPP_
+#ifndef AUTOWARE__OBSTACLE_CRUISE_PLANNER__TYPE_ALIAS_HPP_
+#define AUTOWARE__OBSTACLE_CRUISE_PLANNER__TYPE_ALIAS_HPP_
 
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 
@@ -63,4 +63,4 @@ namespace bg = boost::geometry;
 using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
 
-#endif  // AUTOWARE_OBSTACLE_CRUISE_PLANNER__TYPE_ALIAS_HPP_
+#endif  // AUTOWARE__OBSTACLE_CRUISE_PLANNER__TYPE_ALIAS_HPP_

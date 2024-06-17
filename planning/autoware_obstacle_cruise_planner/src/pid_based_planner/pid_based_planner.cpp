@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_obstacle_cruise_planner/pid_based_planner/pid_based_planner.hpp"
+#include "autoware/obstacle_cruise_planner/pid_based_planner/pid_based_planner.hpp"
 
-#include "autoware_obstacle_cruise_planner/utils.hpp"
+#include "autoware/obstacle_cruise_planner/utils.hpp"
 #include "interpolation/spline_interpolation.hpp"
 #include "motion_utils/marker/marker_helper.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"

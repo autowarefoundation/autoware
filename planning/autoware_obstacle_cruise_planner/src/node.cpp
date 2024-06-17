@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_obstacle_cruise_planner/node.hpp"
+#include "autoware/obstacle_cruise_planner/node.hpp"
 
-#include "autoware_obstacle_cruise_planner/polygon_utils.hpp"
-#include "autoware_obstacle_cruise_planner/utils.hpp"
+#include "autoware/obstacle_cruise_planner/polygon_utils.hpp"
+#include "autoware/obstacle_cruise_planner/utils.hpp"
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "object_recognition_utils/predicted_path_utils.hpp"

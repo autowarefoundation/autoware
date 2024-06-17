@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_OBSTACLE_CRUISE_PLANNER__NODE_HPP_
-#define AUTOWARE_OBSTACLE_CRUISE_PLANNER__NODE_HPP_
+#ifndef AUTOWARE__OBSTACLE_CRUISE_PLANNER__NODE_HPP_
+#define AUTOWARE__OBSTACLE_CRUISE_PLANNER__NODE_HPP_
 
-#include "autoware_obstacle_cruise_planner/common_structs.hpp"
-#include "autoware_obstacle_cruise_planner/optimization_based_planner/optimization_based_planner.hpp"
-#include "autoware_obstacle_cruise_planner/pid_based_planner/pid_based_planner.hpp"
-#include "autoware_obstacle_cruise_planner/type_alias.hpp"
+#include "autoware/obstacle_cruise_planner/common_structs.hpp"
+#include "autoware/obstacle_cruise_planner/optimization_based_planner/optimization_based_planner.hpp"
+#include "autoware/obstacle_cruise_planner/pid_based_planner/pid_based_planner.hpp"
+#include "autoware/obstacle_cruise_planner/type_alias.hpp"
 #include "signal_processing/lowpass_filter_1d.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 #include "tier4_autoware_utils/ros/polling_subscriber.hpp"
@@ -280,4 +280,4 @@ private:
 };
 }  // namespace autoware::motion_planning
 
-#endif  // AUTOWARE_OBSTACLE_CRUISE_PLANNER__NODE_HPP_
+#endif  // AUTOWARE__OBSTACLE_CRUISE_PLANNER__NODE_HPP_

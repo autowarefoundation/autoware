@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_obstacle_cruise_planner/utils.hpp"
+#include "autoware/obstacle_cruise_planner/utils.hpp"
 
 #include "object_recognition_utils/predicted_path_utils.hpp"
 #include "tier4_autoware_utils/ros/marker_helper.hpp"
