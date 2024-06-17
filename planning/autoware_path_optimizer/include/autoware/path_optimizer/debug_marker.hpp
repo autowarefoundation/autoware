@@ -11,11 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef AUTOWARE_PATH_OPTIMIZER__DEBUG_MARKER_HPP_
-#define AUTOWARE_PATH_OPTIMIZER__DEBUG_MARKER_HPP_
+#ifndef AUTOWARE__PATH_OPTIMIZER__DEBUG_MARKER_HPP_
+#define AUTOWARE__PATH_OPTIMIZER__DEBUG_MARKER_HPP_
 
-#include "autoware_path_optimizer/common_structs.hpp"
-#include "autoware_path_optimizer/type_alias.hpp"
+#include "autoware/path_optimizer/common_structs.hpp"
+#include "autoware/path_optimizer/type_alias.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "rclcpp/clock.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
@@ -32,4 +32,4 @@ MarkerArray getDebugMarker(
   const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & optimized_points,
   const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const bool publish_extra_marker);
 }  // namespace autoware::path_optimizer
-#endif  // AUTOWARE_PATH_OPTIMIZER__DEBUG_MARKER_HPP_
+#endif  // AUTOWARE__PATH_OPTIMIZER__DEBUG_MARKER_HPP_

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_path_optimizer/utils/geometry_utils.hpp"
+#include "autoware/path_optimizer/utils/geometry_utils.hpp"
 
-#include "autoware_path_optimizer/mpt_optimizer.hpp"
+#include "autoware/path_optimizer/mpt_optimizer.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
 

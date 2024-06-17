@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_PATH_OPTIMIZER__STATE_EQUATION_GENERATOR_HPP_
-#define AUTOWARE_PATH_OPTIMIZER__STATE_EQUATION_GENERATOR_HPP_
+#ifndef AUTOWARE__PATH_OPTIMIZER__STATE_EQUATION_GENERATOR_HPP_
+#define AUTOWARE__PATH_OPTIMIZER__STATE_EQUATION_GENERATOR_HPP_
 
-#include "autoware_path_optimizer/common_structs.hpp"
-#include "autoware_path_optimizer/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
-#include "autoware_path_optimizer/vehicle_model/vehicle_model_interface.hpp"
+#include "autoware/path_optimizer/common_structs.hpp"
+#include "autoware/path_optimizer/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
+#include "autoware/path_optimizer/vehicle_model/vehicle_model_interface.hpp"
 
 #include <memory>
 #include <vector>
@@ -59,4 +59,4 @@ private:
   mutable std::shared_ptr<TimeKeeper> time_keeper_ptr_;
 };
 }  // namespace autoware::path_optimizer
-#endif  // AUTOWARE_PATH_OPTIMIZER__STATE_EQUATION_GENERATOR_HPP_
+#endif  // AUTOWARE__PATH_OPTIMIZER__STATE_EQUATION_GENERATOR_HPP_

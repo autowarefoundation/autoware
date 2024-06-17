@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_PATH_OPTIMIZER__UTILS__GEOMETRY_UTILS_HPP_
-#define AUTOWARE_PATH_OPTIMIZER__UTILS__GEOMETRY_UTILS_HPP_
+#ifndef AUTOWARE__PATH_OPTIMIZER__UTILS__GEOMETRY_UTILS_HPP_
+#define AUTOWARE__PATH_OPTIMIZER__UTILS__GEOMETRY_UTILS_HPP_
 
-#include "autoware_path_optimizer/common_structs.hpp"
-#include "autoware_path_optimizer/type_alias.hpp"
+#include "autoware/path_optimizer/common_structs.hpp"
+#include "autoware/path_optimizer/type_alias.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
@@ -69,4 +69,4 @@ bool isOutsideDrivableAreaFromRectangleFootprint(
   const bool use_footprint_polygon_for_outside_drivable_area_check);
 }  // namespace geometry_utils
 }  // namespace autoware::path_optimizer
-#endif  // AUTOWARE_PATH_OPTIMIZER__UTILS__GEOMETRY_UTILS_HPP_
+#endif  // AUTOWARE__PATH_OPTIMIZER__UTILS__GEOMETRY_UTILS_HPP_

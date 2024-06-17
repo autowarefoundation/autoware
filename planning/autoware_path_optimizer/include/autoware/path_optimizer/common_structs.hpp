@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_PATH_OPTIMIZER__COMMON_STRUCTS_HPP_
-#define AUTOWARE_PATH_OPTIMIZER__COMMON_STRUCTS_HPP_
+#ifndef AUTOWARE__PATH_OPTIMIZER__COMMON_STRUCTS_HPP_
+#define AUTOWARE__PATH_OPTIMIZER__COMMON_STRUCTS_HPP_
 
-#include "autoware_path_optimizer/type_alias.hpp"
+#include "autoware/path_optimizer/type_alias.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
@@ -155,4 +155,4 @@ struct EgoNearestParam
 };
 }  // namespace autoware::path_optimizer
 
-#endif  // AUTOWARE_PATH_OPTIMIZER__COMMON_STRUCTS_HPP_
+#endif  // AUTOWARE__PATH_OPTIMIZER__COMMON_STRUCTS_HPP_

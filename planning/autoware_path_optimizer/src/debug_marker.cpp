@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_path_optimizer/debug_marker.hpp"
+#include "autoware/path_optimizer/debug_marker.hpp"
 
-#include "autoware_path_optimizer/mpt_optimizer.hpp"
+#include "autoware/path_optimizer/mpt_optimizer.hpp"
 
 #include "visualization_msgs/msg/marker_array.hpp"
 

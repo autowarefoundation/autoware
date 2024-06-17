@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_path_optimizer/node.hpp"
+#include "autoware/path_optimizer/node.hpp"
 
-#include "autoware_path_optimizer/debug_marker.hpp"
-#include "autoware_path_optimizer/utils/geometry_utils.hpp"
-#include "autoware_path_optimizer/utils/trajectory_utils.hpp"
+#include "autoware/path_optimizer/debug_marker.hpp"
+#include "autoware/path_optimizer/utils/geometry_utils.hpp"
+#include "autoware/path_optimizer/utils/trajectory_utils.hpp"
 #include "interpolation/spline_interpolation_points_2d.hpp"
 #include "motion_utils/marker/marker_helper.hpp"
 #include "motion_utils/trajectory/conversion.hpp"

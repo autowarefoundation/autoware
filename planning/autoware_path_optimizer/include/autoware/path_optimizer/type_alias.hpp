@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_PATH_OPTIMIZER__TYPE_ALIAS_HPP_
-#define AUTOWARE_PATH_OPTIMIZER__TYPE_ALIAS_HPP_
+#ifndef AUTOWARE__PATH_OPTIMIZER__TYPE_ALIAS_HPP_
+#define AUTOWARE__PATH_OPTIMIZER__TYPE_ALIAS_HPP_
 
 #include "autoware_planning_msgs/msg/path.hpp"
 #include "autoware_planning_msgs/msg/path_point.hpp"
@@ -47,4 +47,4 @@ using tier4_debug_msgs::msg::Float64Stamped;
 using tier4_debug_msgs::msg::StringStamped;
 }  // namespace autoware::path_optimizer
 
-#endif  // AUTOWARE_PATH_OPTIMIZER__TYPE_ALIAS_HPP_
+#endif  // AUTOWARE__PATH_OPTIMIZER__TYPE_ALIAS_HPP_

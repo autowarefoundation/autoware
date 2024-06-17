@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_path_optimizer/vehicle_model/vehicle_model_interface.hpp"
+#include "autoware/path_optimizer/vehicle_model/vehicle_model_interface.hpp"
 
 VehicleModelInterface::VehicleModelInterface(
   const int dim_x, const int dim_u, const int dim_y, const double wheelbase,

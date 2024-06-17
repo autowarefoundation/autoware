@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_PATH_OPTIMIZER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_HPP_
-#define AUTOWARE_PATH_OPTIMIZER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_HPP_
+#ifndef AUTOWARE__PATH_OPTIMIZER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_HPP_
+#define AUTOWARE__PATH_OPTIMIZER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_HPP_
 
-#include "autoware_path_optimizer/vehicle_model/vehicle_model_interface.hpp"
+#include "autoware/path_optimizer/vehicle_model/vehicle_model_interface.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/LU>
@@ -32,4 +32,4 @@ public:
     Eigen::MatrixXd & Ad, Eigen::MatrixXd & Bd, Eigen::MatrixXd & Wd, const double curvature,
     const double ds) const override;
 };
-#endif  // AUTOWARE_PATH_OPTIMIZER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_HPP_
+#endif  // AUTOWARE__PATH_OPTIMIZER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_HPP_
