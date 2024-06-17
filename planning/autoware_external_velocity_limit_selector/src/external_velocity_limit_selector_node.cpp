@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_external_velocity_limit_selector/external_velocity_limit_selector_node.hpp"
+#include "autoware/external_velocity_limit_selector/external_velocity_limit_selector_node.hpp"
 
 #include <deque>
 #include <memory>
