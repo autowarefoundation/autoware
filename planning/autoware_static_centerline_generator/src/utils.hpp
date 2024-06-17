@@ -15,7 +15,7 @@
 #ifndef UTILS_HPP_
 #define UTILS_HPP_
 
-#include "autoware_route_handler/route_handler.hpp"
+#include "autoware/route_handler/route_handler.hpp"
 #include "type_alias.hpp"
 
 #include <rclcpp/time.hpp>

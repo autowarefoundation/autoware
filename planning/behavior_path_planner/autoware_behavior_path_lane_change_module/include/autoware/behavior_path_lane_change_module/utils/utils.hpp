@@ -22,7 +22,7 @@
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 #include "rclcpp/logger.hpp"
 
-#include <autoware_route_handler/route_handler.hpp>
+#include <autoware/route_handler/route_handler.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>

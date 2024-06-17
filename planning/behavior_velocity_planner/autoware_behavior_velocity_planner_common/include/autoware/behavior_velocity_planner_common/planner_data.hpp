@@ -15,7 +15,7 @@
 #ifndef AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 #define AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 
-#include "autoware_route_handler/route_handler.hpp"
+#include "autoware/route_handler/route_handler.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <autoware/velocity_smoother/smoother/smoother_base.hpp>

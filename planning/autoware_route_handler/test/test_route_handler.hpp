@@ -20,7 +20,7 @@
 #include "autoware_test_utils/mock_data_parser.hpp"
 #include "gtest/gtest.h"
 
-#include <autoware_route_handler/route_handler.hpp>
+#include <autoware/route_handler/route_handler.hpp>
 #include <lanelet2_extension/io/autoware_osm_parser.hpp>
 #include <lanelet2_extension/projection/mgrs_projector.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>

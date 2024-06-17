@@ -15,8 +15,8 @@
 #ifndef AUTOWARE__MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 #define AUTOWARE__MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 
+#include <autoware/route_handler/route_handler.hpp>
 #include <autoware/velocity_smoother/smoother/smoother_base.hpp>
-#include <autoware_route_handler/route_handler.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>

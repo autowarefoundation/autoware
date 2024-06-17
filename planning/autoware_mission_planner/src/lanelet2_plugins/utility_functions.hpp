@@ -15,7 +15,7 @@
 #ifndef LANELET2_PLUGINS__UTILITY_FUNCTIONS_HPP_
 #define LANELET2_PLUGINS__UTILITY_FUNCTIONS_HPP_
 
-#include <autoware_route_handler/route_handler.hpp>
+#include <autoware/route_handler/route_handler.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>

@@ -18,7 +18,7 @@
 #include "autoware/behavior_path_planner_common/data_manager.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
-#include <autoware_route_handler/route_handler.hpp>
+#include <autoware/route_handler/route_handler.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_perception_msgs/msg/object_classification.hpp>

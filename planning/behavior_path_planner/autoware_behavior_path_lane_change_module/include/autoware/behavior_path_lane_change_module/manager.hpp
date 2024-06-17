@@ -17,7 +17,7 @@
 
 #include "autoware/behavior_path_lane_change_module/utils/data_structs.hpp"
 #include "autoware/behavior_path_planner_common/interface/scene_module_manager_interface.hpp"
-#include "autoware_route_handler/route_handler.hpp"
+#include "autoware/route_handler/route_handler.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

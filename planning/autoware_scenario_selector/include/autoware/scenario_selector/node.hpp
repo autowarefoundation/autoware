@@ -34,7 +34,7 @@
 #else
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
-#include <autoware_route_handler/route_handler.hpp>
+#include <autoware/route_handler/route_handler.hpp>
 #include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 
 #include <tf2_ros/buffer.h>
