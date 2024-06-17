@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_external_cmd_selector/external_cmd_selector_node.hpp"
+#include "autoware/external_cmd_selector/external_cmd_selector_node.hpp"
 
 #include <tier4_auto_msgs_converter/tier4_auto_msgs_converter.hpp>
 

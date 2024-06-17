@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_JOY_CONTROLLER__JOY_CONVERTER__DS4_JOY_CONVERTER_HPP_
-#define AUTOWARE_JOY_CONTROLLER__JOY_CONVERTER__DS4_JOY_CONVERTER_HPP_
+#ifndef AUTOWARE__JOY_CONTROLLER__JOY_CONVERTER__DS4_JOY_CONVERTER_HPP_
+#define AUTOWARE__JOY_CONTROLLER__JOY_CONVERTER__DS4_JOY_CONVERTER_HPP_
 
-#include "autoware_joy_controller/joy_converter/joy_converter_base.hpp"
+#include "autoware/joy_controller/joy_converter/joy_converter_base.hpp"
 
 #include <algorithm>
 
@@ -92,4 +92,4 @@ private:
 };
 }  // namespace autoware::joy_controller
 
-#endif  // AUTOWARE_JOY_CONTROLLER__JOY_CONVERTER__DS4_JOY_CONVERTER_HPP_
+#endif  // AUTOWARE__JOY_CONTROLLER__JOY_CONVERTER__DS4_JOY_CONVERTER_HPP_

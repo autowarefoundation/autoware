@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_JOY_CONTROLLER__JOY_CONVERTER__JOY_CONVERTER_BASE_HPP_
-#define AUTOWARE_JOY_CONTROLLER__JOY_CONVERTER__JOY_CONVERTER_BASE_HPP_
+#ifndef AUTOWARE__JOY_CONTROLLER__JOY_CONVERTER__JOY_CONVERTER_BASE_HPP_
+#define AUTOWARE__JOY_CONTROLLER__JOY_CONVERTER__JOY_CONVERTER_BASE_HPP_
 
 #include <sensor_msgs/msg/joy.hpp>
 
@@ -52,4 +52,4 @@ public:
 };
 }  // namespace autoware::joy_controller
 
-#endif  // AUTOWARE_JOY_CONTROLLER__JOY_CONVERTER__JOY_CONVERTER_BASE_HPP_
+#endif  // AUTOWARE__JOY_CONTROLLER__JOY_CONVERTER__JOY_CONVERTER_BASE_HPP_
