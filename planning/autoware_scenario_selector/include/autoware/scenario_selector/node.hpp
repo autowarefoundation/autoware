@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_SCENARIO_SELECTOR__NODE_HPP_
-#define AUTOWARE_SCENARIO_SELECTOR__NODE_HPP_
+#ifndef AUTOWARE__SCENARIO_SELECTOR__NODE_HPP_
+#define AUTOWARE__SCENARIO_SELECTOR__NODE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/published_time_publisher.hpp>
@@ -104,4 +104,4 @@ private:
   bool is_parking_completed_;
 };
 }  // namespace autoware::scenario_selector
-#endif  // AUTOWARE_SCENARIO_SELECTOR__NODE_HPP_
+#endif  // AUTOWARE__SCENARIO_SELECTOR__NODE_HPP_
