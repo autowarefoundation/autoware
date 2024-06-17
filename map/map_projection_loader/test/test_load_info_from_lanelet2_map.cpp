@@ -41,7 +41,7 @@ void save_dummy_mgrs_lanelet2_map(const std::string & mgrs_coord, const std::str
 
   file << "<?xml version=\"1.0\"?>\n";
   file << "<osm version=\"0.6\" generator=\"lanelet2\">\n";
-  file << "  <node id=\"1\" lat=\"" << lat << "\" lon=\"" << lon << "\"/>\n";
+  file << R"(  <node id="1" lat=")" << lat << "\" lon=\"" << lon << "\"/>\n";
   file << "</osm>";
 
   file.close();
