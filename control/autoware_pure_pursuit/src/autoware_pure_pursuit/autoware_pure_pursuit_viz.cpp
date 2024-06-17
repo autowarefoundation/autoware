@@ -28,10 +28,10 @@
  * limitations under the License.
  */
 
-#include "autoware_pure_pursuit/autoware_pure_pursuit_viz.hpp"
+#include "autoware/pure_pursuit/autoware_pure_pursuit_viz.hpp"
 
-#include "autoware_pure_pursuit/util/marker_helper.hpp"
-#include "autoware_pure_pursuit/util/planning_utils.hpp"
+#include "autoware/pure_pursuit/util/marker_helper.hpp"
+#include "autoware/pure_pursuit/util/planning_utils.hpp"
 
 #include <vector>
 

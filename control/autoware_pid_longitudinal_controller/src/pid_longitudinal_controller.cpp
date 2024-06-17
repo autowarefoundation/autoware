@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_pid_longitudinal_controller/pid_longitudinal_controller.hpp"
+#include "autoware/pid_longitudinal_controller/pid_longitudinal_controller.hpp"
 
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"

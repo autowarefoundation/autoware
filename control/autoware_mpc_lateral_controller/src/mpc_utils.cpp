@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_mpc_lateral_controller/mpc_utils.hpp"
+#include "autoware/mpc_lateral_controller/mpc_utils.hpp"
 
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"

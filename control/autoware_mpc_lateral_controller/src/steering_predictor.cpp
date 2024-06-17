@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_mpc_lateral_controller/steering_predictor.hpp"
+#include "autoware/mpc_lateral_controller/steering_predictor.hpp"
 
 namespace autoware::motion::control::mpc_lateral_controller
 {

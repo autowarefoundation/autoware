@@ -27,9 +27,9 @@
  * limitations under the License.
  */
 
-#include "autoware_pure_pursuit/autoware_pure_pursuit.hpp"
+#include "autoware/pure_pursuit/autoware_pure_pursuit.hpp"
 
-#include "autoware_pure_pursuit/util/planning_utils.hpp"
+#include "autoware/pure_pursuit/util/planning_utils.hpp"
 
 #include <limits>
 #include <memory>

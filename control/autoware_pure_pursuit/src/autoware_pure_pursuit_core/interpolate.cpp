@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_pure_pursuit/util/interpolate.hpp"
+#include "autoware/pure_pursuit/util/interpolate.hpp"
 
 #include <algorithm>
 #include <vector>

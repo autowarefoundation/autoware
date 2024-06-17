@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_mpc_lateral_controller/mpc_lateral_controller.hpp"
+#include "autoware/mpc_lateral_controller/mpc_lateral_controller.hpp"
 
-#include "autoware_mpc_lateral_controller/qp_solver/qp_solver_osqp.hpp"
-#include "autoware_mpc_lateral_controller/qp_solver/qp_solver_unconstraint_fast.hpp"
-#include "autoware_mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_dynamics.hpp"
-#include "autoware_mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
-#include "autoware_mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.hpp"
+#include "autoware/mpc_lateral_controller/qp_solver/qp_solver_osqp.hpp"
+#include "autoware/mpc_lateral_controller/qp_solver/qp_solver_unconstraint_fast.hpp"
+#include "autoware/mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_dynamics.hpp"
+#include "autoware/mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
+#include "autoware/mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"

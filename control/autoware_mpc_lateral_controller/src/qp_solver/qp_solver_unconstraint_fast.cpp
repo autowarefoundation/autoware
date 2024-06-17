@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_mpc_lateral_controller/qp_solver/qp_solver_unconstraint_fast.hpp"
+#include "autoware/mpc_lateral_controller/qp_solver/qp_solver_unconstraint_fast.hpp"
 
 #include <Eigen/Dense>
 

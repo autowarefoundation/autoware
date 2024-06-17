@@ -6,7 +6,7 @@ autoware_package()
 
 set(CONTROLLER_NODE controller_node)
 ament_auto_add_library(${CONTROLLER_NODE} SHARED
-  include/autoware_trajectory_follower_node/controller_node.hpp
+  include/autoware/trajectory_follower_node/controller_node.hpp
   src/controller_node.cpp
 )
 
@@ -18,7 +18,7 @@ rclcpp_components_register_node(${CONTROLLER_NODE}
 # simple trajectory follower
 set(SIMPLE_TRAJECTORY_FOLLOWER_NODE simple_trajectory_follower)
 ament_auto_add_library(${SIMPLE_TRAJECTORY_FOLLOWER_NODE} SHARED
-  include/autoware_trajectory_follower_node/simple_trajectory_follower.hpp
+  include/autoware/trajectory_follower_node/simple_trajectory_follower.hpp
   src/simple_trajectory_follower.cpp
 )
 

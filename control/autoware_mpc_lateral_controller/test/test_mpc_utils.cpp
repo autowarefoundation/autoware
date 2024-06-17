@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_mpc_lateral_controller/mpc_trajectory.hpp"
-#include "autoware_mpc_lateral_controller/mpc_utils.hpp"
+#include "autoware/mpc_lateral_controller/mpc_trajectory.hpp"
+#include "autoware/mpc_lateral_controller/mpc_utils.hpp"
 #include "gtest/gtest.h"
 
 #include "autoware_planning_msgs/msg/trajectory.hpp"

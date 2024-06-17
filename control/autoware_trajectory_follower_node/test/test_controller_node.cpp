@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-#include "autoware_trajectory_follower_node/controller_node.hpp"
+#include "autoware/trajectory_follower_node/controller_node.hpp"
 #include "fake_test_node/fake_test_node.hpp"
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"

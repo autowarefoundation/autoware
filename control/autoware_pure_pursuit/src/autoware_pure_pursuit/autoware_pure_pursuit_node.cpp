@@ -28,11 +28,11 @@
  * limitations under the License.
  */
 
-#include "autoware_pure_pursuit/autoware_pure_pursuit_node.hpp"
+#include "autoware/pure_pursuit/autoware_pure_pursuit_node.hpp"
 
-#include "autoware_pure_pursuit/pure_pursuit_viz.hpp"
-#include "autoware_pure_pursuit/util/planning_utils.hpp"
-#include "autoware_pure_pursuit/util/tf_utils.hpp"
+#include "autoware/pure_pursuit/pure_pursuit_viz.hpp"
+#include "autoware/pure_pursuit/util/planning_utils.hpp"
+#include "autoware/pure_pursuit/util/tf_utils.hpp"
 
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
