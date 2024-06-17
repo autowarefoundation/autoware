@@ -12,15 +12,14 @@ It loads modules as plugins. Please refer to the links listed below for detail o
 - [Walkway](../autoware_behavior_velocity_walkway_module/README.md)
 - [Detection Area](../autoware_behavior_velocity_detection_area_module/README.md)
 - [Intersection](../autoware_behavior_velocity_intersection_module/README.md)
-- [MergeFromPrivate](../behavior_velocity_intersection_module/README.md#merge-from-private)
+- [MergeFromPrivate](../autoware_behavior_velocity_intersection_module/README.md#merge-from-private)
 - [Stop Line](../autoware_behavior_velocity_stop_line_module/README.md)
 - [Virtual Traffic Light](../autoware_behavior_velocity_virtual_traffic_light_module/README.md)
 - [Traffic Light](../autoware_behavior_velocity_traffic_light_module/README.md)
 - [Occlusion Spot](../autoware_behavior_velocity_occlusion_spot_module/README.md)
-- [No Stopping Area](../behavior_velocity_no_stopping_area_module/README.md)
+- [No Stopping Area](../autoware_behavior_velocity_no_stopping_area_module/README.md)
 - [Run Out](../autoware_behavior_velocity_run_out_module/README.md)
 - [Speed Bump](../behavior_velocity_speed_bump_module/README.md)
-- [Out of Lane](../behavior_velocity_out_of_lane_module/README.md)
 
 When each module plans velocity, it considers based on `base_link`(center of rear-wheel axis) pose.
 So for example, in order to stop at a stop line with the vehicles' front on the stop line, it calculates `base_link` position from the distance between `base_link` to front and modifies path velocity from the `base_link` position.

@@ -48,7 +48,7 @@ stop
 ##### Calculate the expected target velocity for ego vehicle
 
 Calculate the expected target velocity for the ego vehicle path to calculate time to collision with obstacles more precisely.
-The expected target velocity is calculated with [motion velocity smoother module](https://github.com/autowarefoundation/autoware.universe/tree/main/planning/motion_velocity_smoother) by using current velocity, current acceleration and velocity limits directed by the map and external API.
+The expected target velocity is calculated with [autoware velocity smoother module](https://github.com/autowarefoundation/autoware.universe/tree/main/planning/autoware_velocity_smoother) by using current velocity, current acceleration and velocity limits directed by the map and external API.
 
 ![brief](./docs/calculate_expected_target_velocity.svg)
 
