@@ -312,6 +312,7 @@ public:
   bool publish_debug_pointcloud_;
   bool use_predicted_trajectory_;
   bool use_imu_path_;
+  bool use_object_velocity_calculation_;
   double path_footprint_extra_margin_;
   double detection_range_min_height_;
   double detection_range_max_height_margin_;

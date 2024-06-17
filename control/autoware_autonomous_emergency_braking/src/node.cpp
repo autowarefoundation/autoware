@@ -120,6 +120,7 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
   publish_debug_pointcloud_ = declare_parameter<bool>("publish_debug_pointcloud");
   use_predicted_trajectory_ = declare_parameter<bool>("use_predicted_trajectory");
   use_imu_path_ = declare_parameter<bool>("use_imu_path");
+  use_object_velocity_calculation_ = declare_parameter<bool>("use_object_velocity_calculation");
   path_footprint_extra_margin_ = declare_parameter<double>("path_footprint_extra_margin");
   detection_range_min_height_ = declare_parameter<double>("detection_range_min_height");
   detection_range_max_height_margin_ =
@@ -167,6 +168,8 @@ rcl_interfaces::msg::SetParametersResult AEB::onParameter(
   updateParam<bool>(parameters, "publish_debug_pointcloud", publish_debug_pointcloud_);
   updateParam<bool>(parameters, "use_predicted_trajectory", use_predicted_trajectory_);
   updateParam<bool>(parameters, "use_imu_path", use_imu_path_);
+  updateParam<bool>(
+    parameters, "use_object_velocity_calculation", use_object_velocity_calculation_);
   updateParam<double>(parameters, "path_footprint_extra_margin", path_footprint_extra_margin_);
   updateParam<double>(parameters, "detection_range_min_height", detection_range_min_height_);
   updateParam<double>(
@@ -397,8 +400,10 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
       if (closest_object_point_itr == objects_from_point_clusters.end()) {
         return std::nullopt;
       }
-      const auto closest_object_speed = collision_data_keeper_.calcObjectSpeedFromHistory(
-        *closest_object_point_itr, path, current_v);
+      const auto closest_object_speed = (use_object_velocity_calculation_)
+                                          ? collision_data_keeper_.calcObjectSpeedFromHistory(
+                                              *closest_object_point_itr, path, current_v)
+                                          : std::make_optional<double>(0.0);
       if (!closest_object_speed.has_value()) {
         return std::nullopt;
       }
