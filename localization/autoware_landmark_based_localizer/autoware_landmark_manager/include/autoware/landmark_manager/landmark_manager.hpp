@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LANDMARK_MANAGER__LANDMARK_MANAGER_HPP_
-#define LANDMARK_MANAGER__LANDMARK_MANAGER_HPP_
+#ifndef AUTOWARE__LANDMARK_MANAGER__LANDMARK_MANAGER_HPP_
+#define AUTOWARE__LANDMARK_MANAGER__LANDMARK_MANAGER_HPP_
 
 #include "lanelet2_extension/localization/landmark.hpp"
 
@@ -61,4 +61,4 @@ private:
 
 }  // namespace landmark_manager
 
-#endif  // LANDMARK_MANAGER__LANDMARK_MANAGER_HPP_
+#endif  // AUTOWARE__LANDMARK_MANAGER__LANDMARK_MANAGER_HPP_

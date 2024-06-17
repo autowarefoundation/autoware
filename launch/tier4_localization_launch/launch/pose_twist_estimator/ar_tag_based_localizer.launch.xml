@@ -3,7 +3,7 @@
   <group>
     <arg name="input_image"/>
 
-    <include file="$(find-pkg-share ar_tag_based_localizer)/launch/ar_tag_based_localizer.launch.xml">
+    <include file="$(find-pkg-share autoware_ar_tag_based_localizer)/launch/ar_tag_based_localizer.launch.xml">
       <arg name="input_lanelet2_map" value="/map/vector_map"/>
       <arg name="input_image" value="$(var input_image)"/>
       <arg name="input_camera_info" value="/sensing/camera/traffic_light/camera_info"/>

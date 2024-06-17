@@ -30,7 +30,7 @@ protected:
   void SetUp() override
   {
     const std::string yaml_path =
-      ament_index_cpp::get_package_share_directory("ar_tag_based_localizer") +
+      ament_index_cpp::get_package_share_directory("autoware_ar_tag_based_localizer") +
       "/config/ar_tag_based_localizer.param.yaml";
 
     rcl_params_t * params_st = rcl_yaml_node_struct_init(rcl_get_default_allocator());

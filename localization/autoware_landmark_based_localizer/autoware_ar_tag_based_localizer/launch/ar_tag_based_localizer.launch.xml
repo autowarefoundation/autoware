@@ -1,5 +1,5 @@
 <launch>
-  <arg name="param_file" default="$(find-pkg-share ar_tag_based_localizer)/config/ar_tag_based_localizer.param.yaml"/>
+  <arg name="param_file" default="$(find-pkg-share autoware_ar_tag_based_localizer)/config/ar_tag_based_localizer.param.yaml"/>
   <arg name="node_name" default="ar_tag_based_localizer"/>
 
   <!-- Topic names -->
@@ -14,7 +14,7 @@
   <arg name="debug_mapped_tag" default="~/debug/mapped_tag"/>
   <arg name="debug_detected_tag" default="~/debug/detected_tag"/>
 
-  <node pkg="ar_tag_based_localizer" exec="ar_tag_based_localizer_node" name="$(var node_name)" output="both">
+  <node pkg="autoware_ar_tag_based_localizer" exec="autoware_ar_tag_based_localizer_node" name="$(var node_name)" output="both">
     <remap from="~/input/lanelet2_map" to="$(var input_lanelet2_map)"/>
     <remap from="~/input/image" to="$(var input_image)"/>
     <remap from="~/input/camera_info" to="$(var input_camera_info)"/>

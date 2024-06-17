@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(landmark_manager)
+project(autoware_landmark_manager)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()

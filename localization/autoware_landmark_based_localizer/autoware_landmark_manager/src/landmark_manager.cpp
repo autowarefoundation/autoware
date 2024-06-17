@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "landmark_manager/landmark_manager.hpp"
+#include "autoware/landmark_manager/landmark_manager.hpp"
 
 #include "lanelet2_extension/utility/message_conversion.hpp"
 #include "localization_util/util_func.hpp"

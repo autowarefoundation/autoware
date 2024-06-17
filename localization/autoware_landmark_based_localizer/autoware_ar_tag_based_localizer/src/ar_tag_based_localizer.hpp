@@ -45,7 +45,7 @@
 #ifndef AR_TAG_BASED_LOCALIZER_HPP_
 #define AR_TAG_BASED_LOCALIZER_HPP_
 
-#include "landmark_manager/landmark_manager.hpp"
+#include "autoware/landmark_manager/landmark_manager.hpp"
 #include "localization_util/smart_pose_buffer.hpp"
 
 #include <rclcpp/rclcpp.hpp>

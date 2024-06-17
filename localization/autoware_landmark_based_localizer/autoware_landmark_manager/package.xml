@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>landmark_manager</name>
+  <name>autoware_landmark_manager</name>
   <version>0.0.0</version>
-  <description>The landmark_manager package</description>
+  <description>The autoware_landmark_manager package</description>
   <maintainer email="shintaro.sakoda@tier4.jp">Shintaro Sakoda</maintainer>
   <maintainer email="masahiro.sakamoto@tier4.jp">Masahiro Sakamoto</maintainer>
   <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>

@@ -18,8 +18,8 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
-  <exec_depend>ar_tag_based_localizer</exec_depend>
   <exec_depend>automatic_pose_initializer</exec_depend>
+  <exec_depend>autoware_ar_tag_based_localizer</exec_depend>
   <exec_depend>eagleye_geo_pose_fusion</exec_depend>
   <exec_depend>eagleye_gnss_converter</exec_depend>
   <exec_depend>eagleye_rt</exec_depend>

@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>ar_tag_based_localizer</name>
+  <name>autoware_ar_tag_based_localizer</name>
   <version>0.0.0</version>
-  <description>The ar_tag_based_localizer package</description>
+  <description>The autoware_ar_tag_based_localizer package</description>
   <maintainer email="shintaro.sakoda@tier4.jp">Shintaro Sakoda</maintainer>
   <maintainer email="masahiro.sakamoto@tier4.jp">Masahiro Sakamoto</maintainer>
   <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
@@ -18,9 +18,9 @@
 
   <depend>ament_index_cpp</depend>
   <depend>aruco</depend>
+  <depend>autoware_landmark_manager</depend>
   <depend>cv_bridge</depend>
   <depend>diagnostic_msgs</depend>
-  <depend>landmark_manager</depend>
   <depend>lanelet2_extension</depend>
   <depend>localization_util</depend>
   <depend>rclcpp</depend>
