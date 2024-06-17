@@ -14,8 +14,8 @@
 
 #include "centerline_source/optimization_trajectory_based_centerline.hpp"
 
+#include "autoware/path_smoother/elastic_band_smoother.hpp"
 #include "autoware_path_optimizer/node.hpp"
-#include "autoware_path_smoother/elastic_band_smoother.hpp"
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "static_centerline_generator_node.hpp"

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_path_smoother/utils/trajectory_utils.hpp"
+#include "autoware/path_smoother/utils/trajectory_utils.hpp"
 
-#include "autoware_path_smoother/utils/geometry_utils.hpp"
+#include "autoware/path_smoother/utils/geometry_utils.hpp"
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 

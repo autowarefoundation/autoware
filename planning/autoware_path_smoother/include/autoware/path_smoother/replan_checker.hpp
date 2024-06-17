@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_PATH_SMOOTHER__REPLAN_CHECKER_HPP_
-#define AUTOWARE_PATH_SMOOTHER__REPLAN_CHECKER_HPP_
+#ifndef AUTOWARE__PATH_SMOOTHER__REPLAN_CHECKER_HPP_
+#define AUTOWARE__PATH_SMOOTHER__REPLAN_CHECKER_HPP_
 
-#include "autoware_path_smoother/common_structs.hpp"
-#include "autoware_path_smoother/type_alias.hpp"
+#include "autoware/path_smoother/common_structs.hpp"
+#include "autoware/path_smoother/type_alias.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -68,4 +68,4 @@ private:
 };
 }  // namespace autoware::path_smoother
 
-#endif  // AUTOWARE_PATH_SMOOTHER__REPLAN_CHECKER_HPP_
+#endif  // AUTOWARE__PATH_SMOOTHER__REPLAN_CHECKER_HPP_

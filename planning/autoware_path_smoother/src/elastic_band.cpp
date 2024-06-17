@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_path_smoother/elastic_band.hpp"
+#include "autoware/path_smoother/elastic_band.hpp"
 
-#include "autoware_path_smoother/type_alias.hpp"
-#include "autoware_path_smoother/utils/geometry_utils.hpp"
-#include "autoware_path_smoother/utils/trajectory_utils.hpp"
+#include "autoware/path_smoother/type_alias.hpp"
+#include "autoware/path_smoother/utils/geometry_utils.hpp"
+#include "autoware/path_smoother/utils/trajectory_utils.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
