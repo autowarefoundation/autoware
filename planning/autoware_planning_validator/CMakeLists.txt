@@ -11,7 +11,7 @@ ament_auto_add_library(autoware_planning_validator_helpers SHARED
 
 # planning validator
 ament_auto_add_library(autoware_planning_validator_component SHARED
-  include/autoware_planning_validator/planning_validator.hpp
+  include/autoware/planning_validator/planning_validator.hpp
   src/planning_validator.cpp
 )
 target_link_libraries(autoware_planning_validator_component autoware_planning_validator_helpers)

@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_PLANNING_VALIDATOR__PLANNING_VALIDATOR_HPP_
-#define AUTOWARE_PLANNING_VALIDATOR__PLANNING_VALIDATOR_HPP_
+#ifndef AUTOWARE__PLANNING_VALIDATOR__PLANNING_VALIDATOR_HPP_
+#define AUTOWARE__PLANNING_VALIDATOR__PLANNING_VALIDATOR_HPP_
 
-#include "autoware_planning_validator/debug_marker.hpp"
+#include "autoware/planning_validator/debug_marker.hpp"
 #include "autoware_planning_validator/msg/planning_validator_status.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
@@ -145,4 +145,4 @@ private:
 };
 }  // namespace autoware::planning_validator
 
-#endif  // AUTOWARE_PLANNING_VALIDATOR__PLANNING_VALIDATOR_HPP_
+#endif  // AUTOWARE__PLANNING_VALIDATOR__PLANNING_VALIDATOR_HPP_

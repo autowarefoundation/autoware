@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_PLANNING_VALIDATOR__UTILS_HPP_
-#define AUTOWARE_PLANNING_VALIDATOR__UTILS_HPP_
+#ifndef AUTOWARE__PLANNING_VALIDATOR__UTILS_HPP_
+#define AUTOWARE__PLANNING_VALIDATOR__UTILS_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -67,4 +67,4 @@ void shiftPose(geometry_msgs::msg::Pose & pose, double longitudinal);
 
 }  // namespace autoware::planning_validator
 
-#endif  // AUTOWARE_PLANNING_VALIDATOR__UTILS_HPP_
+#endif  // AUTOWARE__PLANNING_VALIDATOR__UTILS_HPP_

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_planning_validator/planning_validator.hpp"
+#include "autoware/planning_validator/planning_validator.hpp"
 #include "test_parameter.hpp"
 #include "test_planning_validator_helper.hpp"
 

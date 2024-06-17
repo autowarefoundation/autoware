@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_PLANNING_VALIDATOR__DEBUG_MARKER_HPP_
-#define AUTOWARE_PLANNING_VALIDATOR__DEBUG_MARKER_HPP_
+#ifndef AUTOWARE__PLANNING_VALIDATOR__DEBUG_MARKER_HPP_
+#define AUTOWARE__PLANNING_VALIDATOR__DEBUG_MARKER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -57,4 +57,4 @@ private:
   }
 };
 
-#endif  // AUTOWARE_PLANNING_VALIDATOR__DEBUG_MARKER_HPP_
+#endif  // AUTOWARE__PLANNING_VALIDATOR__DEBUG_MARKER_HPP_
