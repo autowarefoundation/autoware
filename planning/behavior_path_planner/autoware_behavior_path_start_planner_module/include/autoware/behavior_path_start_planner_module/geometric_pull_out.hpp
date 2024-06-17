@@ -19,7 +19,7 @@
 #include "autoware/behavior_path_start_planner_module/pull_out_path.hpp"
 #include "autoware/behavior_path_start_planner_module/pull_out_planner_base.hpp"
 
-#include <autoware_lane_departure_checker/lane_departure_checker.hpp>
+#include <autoware/lane_departure_checker/lane_departure_checker.hpp>
 
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 

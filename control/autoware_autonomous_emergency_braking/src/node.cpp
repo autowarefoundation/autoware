@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_autonomous_emergency_braking/node.hpp"
+#include "autoware/autonomous_emergency_braking/node.hpp"
 
 #include <pcl_ros/transforms.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>

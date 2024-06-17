@@ -11,7 +11,7 @@ ament_auto_add_library(autoware_control_validator_helpers SHARED
 
 # control validator
 ament_auto_add_library(autoware_control_validator_component SHARED
-  include/autoware_control_validator/control_validator.hpp
+  include/autoware/control_validator/control_validator.hpp
   src/control_validator.cpp
 )
 target_link_libraries(autoware_control_validator_component autoware_control_validator_helpers)

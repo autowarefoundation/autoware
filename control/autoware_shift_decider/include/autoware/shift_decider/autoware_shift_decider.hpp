@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_SHIFT_DECIDER__AUTOWARE_SHIFT_DECIDER_HPP_
-#define AUTOWARE_SHIFT_DECIDER__AUTOWARE_SHIFT_DECIDER_HPP_
+#ifndef AUTOWARE__SHIFT_DECIDER__AUTOWARE_SHIFT_DECIDER_HPP_
+#define AUTOWARE__SHIFT_DECIDER__AUTOWARE_SHIFT_DECIDER_HPP_
 
 #include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
@@ -62,4 +62,4 @@ private:
 };
 }  // namespace autoware::shift_decider
 
-#endif  // AUTOWARE_SHIFT_DECIDER__AUTOWARE_SHIFT_DECIDER_HPP_
+#endif  // AUTOWARE__SHIFT_DECIDER__AUTOWARE_SHIFT_DECIDER_HPP_

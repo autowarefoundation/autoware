@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_NODE_HPP_
-#define AUTOWARE_LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_NODE_HPP_
+#ifndef AUTOWARE__LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_NODE_HPP_
+#define AUTOWARE__LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_NODE_HPP_
 
-#include "autoware_lane_departure_checker/lane_departure_checker.hpp"
+#include "autoware/lane_departure_checker/lane_departure_checker.hpp"
 #include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
@@ -157,4 +157,4 @@ private:
 };
 }  // namespace autoware::lane_departure_checker
 
-#endif  // AUTOWARE_LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_NODE_HPP_
+#endif  // AUTOWARE__LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_NODE_HPP_

@@ -18,7 +18,7 @@
 #include "autoware/behavior_path_planner_common/data_manager.hpp"
 #include "autoware/behavior_path_planner_common/parameters.hpp"
 
-#include <autoware_lane_departure_checker/lane_departure_checker.hpp>
+#include <autoware/lane_departure_checker/lane_departure_checker.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <geometry_msgs/msg/point.hpp>

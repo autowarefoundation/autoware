@@ -28,9 +28,9 @@
 #include "autoware/behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 
+#include <autoware/lane_departure_checker/lane_departure_checker.hpp>
 #include <autoware_freespace_planning_algorithms/astar_search.hpp>
 #include <autoware_freespace_planning_algorithms/rrtstar.hpp>
-#include <autoware_lane_departure_checker/lane_departure_checker.hpp>
 #include <motion_utils/distance/distance.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 

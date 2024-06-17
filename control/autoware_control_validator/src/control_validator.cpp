@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_control_validator/control_validator.hpp"
+#include "autoware/control_validator/control_validator.hpp"
 
-#include "autoware_control_validator/utils.hpp"
+#include "autoware/control_validator/utils.hpp"
 
 #include <memory>
 #include <string>

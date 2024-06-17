@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
-#define AUTOWARE_LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
+#ifndef AUTOWARE__LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
+#define AUTOWARE__LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
 
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <rosidl_runtime_cpp/message_initialization.hpp>
@@ -172,4 +172,4 @@ private:
 };
 }  // namespace autoware::lane_departure_checker
 
-#endif  // AUTOWARE_LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
+#endif  // AUTOWARE__LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_

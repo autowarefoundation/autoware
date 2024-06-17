@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_lane_departure_checker/lane_departure_checker.hpp"
+#include "autoware/lane_departure_checker/lane_departure_checker.hpp"
 
-#include "autoware_lane_departure_checker/util/create_vehicle_footprint.hpp"
+#include "autoware/lane_departure_checker/util/create_vehicle_footprint.hpp"
 
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>

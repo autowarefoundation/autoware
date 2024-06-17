@@ -27,7 +27,7 @@
 #include "autoware/behavior_path_start_planner_module/pull_out_path.hpp"
 #include "autoware/behavior_path_start_planner_module/shift_pull_out.hpp"
 
-#include <autoware_lane_departure_checker/lane_departure_checker.hpp>
+#include <autoware/lane_departure_checker/lane_departure_checker.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 

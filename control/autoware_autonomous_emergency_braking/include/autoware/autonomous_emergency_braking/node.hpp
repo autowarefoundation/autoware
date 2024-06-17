@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_AUTONOMOUS_EMERGENCY_BRAKING__NODE_HPP_
-#define AUTOWARE_AUTONOMOUS_EMERGENCY_BRAKING__NODE_HPP_
+#ifndef AUTOWARE__AUTONOMOUS_EMERGENCY_BRAKING__NODE_HPP_
+#define AUTOWARE__AUTONOMOUS_EMERGENCY_BRAKING__NODE_HPP_
 
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
@@ -338,4 +338,4 @@ public:
 };
 }  // namespace autoware::motion::control::autonomous_emergency_braking
 
-#endif  // AUTOWARE_AUTONOMOUS_EMERGENCY_BRAKING__NODE_HPP_
+#endif  // AUTOWARE__AUTONOMOUS_EMERGENCY_BRAKING__NODE_HPP_

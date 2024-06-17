@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_CONTROL_VALIDATOR__UTILS_HPP_
-#define AUTOWARE_CONTROL_VALIDATOR__UTILS_HPP_
+#ifndef AUTOWARE__CONTROL_VALIDATOR__UTILS_HPP_
+#define AUTOWARE__CONTROL_VALIDATOR__UTILS_HPP_
 
 #include <motion_utils/trajectory/conversion.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -52,4 +52,4 @@ double calcMaxLateralDistance(
   const Trajectory & trajectory, const Trajectory & predicted_trajectory);
 }  // namespace autoware::control_validator
 
-#endif  // AUTOWARE_CONTROL_VALIDATOR__UTILS_HPP_
+#endif  // AUTOWARE__CONTROL_VALIDATOR__UTILS_HPP_
