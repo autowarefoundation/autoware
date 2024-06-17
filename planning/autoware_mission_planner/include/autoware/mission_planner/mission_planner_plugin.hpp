@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MISSION_PLANNER__MISSION_PLANNER_PLUGIN_HPP_
-#define MISSION_PLANNER__MISSION_PLANNER_PLUGIN_HPP_
+#ifndef AUTOWARE__MISSION_PLANNER__MISSION_PLANNER_PLUGIN_HPP_
+#define AUTOWARE__MISSION_PLANNER__MISSION_PLANNER_PLUGIN_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -47,4 +47,4 @@ public:
 
 }  // namespace autoware::mission_planner
 
-#endif  // MISSION_PLANNER__MISSION_PLANNER_PLUGIN_HPP_
+#endif  // AUTOWARE__MISSION_PLANNER__MISSION_PLANNER_PLUGIN_HPP_
