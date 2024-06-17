@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "control_evaluator/metrics/deviation_metrics.hpp"
+#include "autoware/control_evaluator/metrics/deviation_metrics.hpp"
 
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"

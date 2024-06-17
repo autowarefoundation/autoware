@@ -4,8 +4,8 @@
   <arg name="input/trajectory" default="/planning/scenario_planning/trajectory"/>
   <!-- control evaluator -->
   <group>
-    <node name="control_evaluator" exec="control_evaluator" pkg="control_evaluator">
-      <param from="$(find-pkg-share control_evaluator)/param/control_evaluator.defaults.yaml"/>
+    <node name="control_evaluator" exec="control_evaluator" pkg="autoware_control_evaluator">
+      <param from="$(find-pkg-share autoware_control_evaluator)/param/control_evaluator.defaults.yaml"/>
       <remap from="~/input/diagnostics" to="$(var input/diagnostics)"/>
       <remap from="~/input/odometry" to="$(var input/odometry)"/>
       <remap from="~/input/trajectory" to="$(var input/trajectory)"/>

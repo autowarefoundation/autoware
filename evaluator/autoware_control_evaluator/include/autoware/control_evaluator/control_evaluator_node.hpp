@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CONTROL_EVALUATOR__CONTROL_EVALUATOR_NODE_HPP_
-#define CONTROL_EVALUATOR__CONTROL_EVALUATOR_NODE_HPP_
+#ifndef AUTOWARE__CONTROL_EVALUATOR__CONTROL_EVALUATOR_NODE_HPP_
+#define AUTOWARE__CONTROL_EVALUATOR__CONTROL_EVALUATOR_NODE_HPP_
 
-#include "control_evaluator/metrics/deviation_metrics.hpp"
+#include "autoware/control_evaluator/metrics/deviation_metrics.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/polling_subscriber.hpp>
@@ -91,4 +91,4 @@ private:
 };
 }  // namespace control_diagnostics
 
-#endif  // CONTROL_EVALUATOR__CONTROL_EVALUATOR_NODE_HPP_
+#endif  // AUTOWARE__CONTROL_EVALUATOR__CONTROL_EVALUATOR_NODE_HPP_

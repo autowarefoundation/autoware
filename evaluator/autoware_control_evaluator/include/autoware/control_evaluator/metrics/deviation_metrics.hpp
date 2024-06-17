@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CONTROL_EVALUATOR__METRICS__DEVIATION_METRICS_HPP_
-#define CONTROL_EVALUATOR__METRICS__DEVIATION_METRICS_HPP_
+#ifndef AUTOWARE__CONTROL_EVALUATOR__METRICS__DEVIATION_METRICS_HPP_
+#define AUTOWARE__CONTROL_EVALUATOR__METRICS__DEVIATION_METRICS_HPP_
 
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <autoware_planning_msgs/msg/trajectory_point.hpp>
@@ -45,4 +45,4 @@ double calcYawDeviation(const Trajectory & traj, const Pose & pose);
 }  // namespace metrics
 }  // namespace control_diagnostics
 
-#endif  // CONTROL_EVALUATOR__METRICS__DEVIATION_METRICS_HPP_
+#endif  // AUTOWARE__CONTROL_EVALUATOR__METRICS__DEVIATION_METRICS_HPP_
