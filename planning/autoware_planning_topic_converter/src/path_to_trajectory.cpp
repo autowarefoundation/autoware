@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_planning_topic_converter/path_to_trajectory.hpp"
+#include "autoware/planning_topic_converter/path_to_trajectory.hpp"
 
 #include <motion_utils/trajectory/conversion.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
