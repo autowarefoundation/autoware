@@ -8,6 +8,10 @@
     <description>RoutePanel</description>
   </class>
 
+  <class type="tier4_adapi_rviz_plugins::StatePanel" base_class_type="rviz_common::Panel">
+    <description>StatePanel</description>
+  </class>
+
   <class type="tier4_adapi_rviz_plugins::DoorPanel" base_class_type="rviz_common::Panel">
     <description>DoorPanel</description>
   </class>
