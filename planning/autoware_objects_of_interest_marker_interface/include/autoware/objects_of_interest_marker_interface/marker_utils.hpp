@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_
-#define AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_
-#include "autoware_objects_of_interest_marker_interface/coloring.hpp"
-#include "autoware_objects_of_interest_marker_interface/marker_data.hpp"
+#ifndef AUTOWARE__OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_
+#define AUTOWARE__OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_
+#include "autoware/objects_of_interest_marker_interface/coloring.hpp"
+#include "autoware/objects_of_interest_marker_interface/marker_data.hpp"
 
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
@@ -83,4 +83,4 @@ visualization_msgs::msg::MarkerArray createTargetMarker(
   const double height_offset, const double arrow_length = 1.0, const double line_width = 0.1);
 }  // namespace autoware::objects_of_interest_marker_interface::marker_utils
 
-#endif  // AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_
+#endif  // AUTOWARE__OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_

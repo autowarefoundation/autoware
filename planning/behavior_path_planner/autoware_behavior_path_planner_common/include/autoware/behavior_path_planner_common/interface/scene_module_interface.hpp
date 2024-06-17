@@ -22,7 +22,7 @@
 
 #include <autoware/behavior_path_planner_common/interface/steering_factor_interface.hpp>
 #include <autoware/behavior_path_planner_common/turn_signal_decider.hpp>
-#include <autoware_objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp>
+#include <autoware/objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp>
 #include <autoware_route_handler/route_handler.hpp>
 #include <autoware_rtc_interface/rtc_interface.hpp>
 #include <magic_enum.hpp>

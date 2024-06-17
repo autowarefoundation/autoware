@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp"
+#include "autoware/objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp"
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/constants.hpp>

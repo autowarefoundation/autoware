@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_DATA_HPP_
-#define AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_DATA_HPP_
+#ifndef AUTOWARE__OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_DATA_HPP_
+#define AUTOWARE__OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_DATA_HPP_
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -31,4 +31,4 @@ struct ObjectMarkerData
 enum class ColorName { GRAY, GREEN, AMBER, RED };
 }  // namespace autoware::objects_of_interest_marker_interface
 
-#endif  // AUTOWARE_OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_DATA_HPP_
+#endif  // AUTOWARE__OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_DATA_HPP_

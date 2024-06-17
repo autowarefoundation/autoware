@@ -16,7 +16,7 @@
 #define AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__SCENE_MODULE_INTERFACE_HPP_
 
 #include <autoware/behavior_velocity_planner_common/planner_data.hpp>
-#include <autoware_objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp>
+#include <autoware/objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp>
 #include <autoware_rtc_interface/rtc_interface.hpp>
 #include <builtin_interfaces/msg/time.hpp>
 #include <motion_utils/factor/velocity_factor_interface.hpp>
