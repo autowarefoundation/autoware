@@ -355,7 +355,6 @@ TEST(BehaviorPathPlanningTurnSignal, Condition3)
 
   TurnSignalInfo behavior_signal_info;
   behavior_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
-  behavior_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
   behavior_signal_info.desired_start_point.position = createPoint(5.0, 0.0, 0.0);
   behavior_signal_info.desired_start_point.orientation = createQuaternionFromYaw(0.0);
   behavior_signal_info.desired_end_point.position = createPoint(70.0, 0.0, 0.0);
