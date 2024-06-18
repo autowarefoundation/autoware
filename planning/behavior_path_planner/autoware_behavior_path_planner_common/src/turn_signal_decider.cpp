@@ -249,9 +249,7 @@ std::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo(
 
     if (dist_to_back_point < 0.0) {
       // Vehicle is already passed this lane
-      if (desired_start_point_map_.find(lane_id) != desired_start_point_map_.end()) {
-        desired_start_point_map_.erase(lane_id);
-      }
+      desired_start_point_map_.erase(lane_id);
       continue;
     } else if (search_distance <= dist_to_front_point) {
       continue;
