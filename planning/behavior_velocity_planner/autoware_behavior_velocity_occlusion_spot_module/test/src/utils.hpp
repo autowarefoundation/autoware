@@ -86,7 +86,7 @@ inline void generatePossibleCollisions(
     // intersection
     geometry_msgs::msg::Pose intersection_pose{};
     intersection_pose.position.x = x0 + x_step * i + lon;
-    intersection_pose.position.x = y0 + y_step * i;
+    intersection_pose.position.y = y0 + y_step * i;
 
     // collision path point
     autoware_planning_msgs::msg::PathPoint collision_with_margin{};
