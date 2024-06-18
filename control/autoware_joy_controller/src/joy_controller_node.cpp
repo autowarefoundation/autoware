@@ -151,6 +151,10 @@ namespace autoware::joy_controller
 void AutowareJoyControllerNode::onJoy()
 {
   const auto msg = sub_joy_.takeData();
+  if (!msg) {
+    return;
+  }
+
   last_joy_received_time_ = msg->header.stamp;
   if (joy_type_ == "G29") {
     joy_ = std::make_shared<const G29JoyConverter>(*msg);
@@ -198,6 +202,10 @@ void AutowareJoyControllerNode::onOdometry()
   }
 
   const auto msg = sub_odom_.takeData();
+  if (!msg) {
+    return;
+  }
+
   auto twist = std::make_shared<geometry_msgs::msg::TwistStamped>();
   twist->header = msg->header;
   twist->twist = msg->twist.twist;
