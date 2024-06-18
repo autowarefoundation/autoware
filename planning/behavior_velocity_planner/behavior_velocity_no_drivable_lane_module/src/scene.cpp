@@ -14,8 +14,8 @@
 
 #include "scene.hpp"
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "util.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
@@ -23,7 +23,7 @@
 
 namespace autoware::behavior_velocity_planner
 {
-using tier4_autoware_utils::createPoint;
+using autoware_universe_utils::createPoint;
 
 NoDrivableLaneModule::NoDrivableLaneModule(
   const int64_t module_id, const int64_t lane_id, const PlannerParam & planner_param,
@@ -154,7 +154,7 @@ void NoDrivableLaneModule::handle_approaching_state(PathWithLaneId * path, StopR
   }
 
   geometry_msgs::msg::Point stop_point =
-    tier4_autoware_utils::getPoint(path->points.at(target_point_idx).point);
+    autoware_universe_utils::getPoint(path->points.at(target_point_idx).point);
 
   const auto & op_stop_pose =
     planning_utils::insertStopPoint(stop_point, target_segment_idx, *path);
@@ -215,7 +215,7 @@ void NoDrivableLaneModule::handle_inside_no_drivable_lane_state(
   // Get stop point and stop factor
   {
     tier4_planning_msgs::msg::StopFactor stop_factor;
-    const auto & stop_pose = tier4_autoware_utils::getPose(path->points.at(0));
+    const auto & stop_pose = autoware_universe_utils::getPose(path->points.at(0));
     stop_factor.stop_pose = stop_pose;
     stop_factor.stop_factor_points.push_back(current_point);
     planning_utils::appendStopReason(stop_factor, stop_reason);

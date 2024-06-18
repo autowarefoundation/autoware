@@ -75,7 +75,7 @@ std::vector<double> calcSegmentLengthVector(const std::vector<TrajectoryPoint> &
   std::vector<double> segment_length_vector;
   for (size_t i = 0; i < points.size() - 1; ++i) {
     const double segment_length =
-      tier4_autoware_utils::calcDistance2d(points.at(i), points.at(i + 1));
+      autoware_universe_utils::calcDistance2d(points.at(i), points.at(i + 1));
     segment_length_vector.push_back(segment_length);
   }
   return segment_length_vector;
@@ -150,14 +150,15 @@ PathOptimizer::PathOptimizer(const rclcpp::NodeOptions & node_options)
   set_param_res_ = this->add_on_set_parameters_callback(
     std::bind(&PathOptimizer::onParam, this, std::placeholders::_1));
 
-  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
-  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
+  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  published_time_publisher_ =
+    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
 }
 
 rcl_interfaces::msg::SetParametersResult PathOptimizer::onParam(
   const std::vector<rclcpp::Parameter> & parameters)
 {
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
 
   // parameters for option
   updateParam<bool>(
@@ -562,7 +563,7 @@ void PathOptimizer::publishVirtualWall(const geometry_msgs::msg::Pose & stop_pos
     stop_pose, "outside drivable area", now(), 0, vehicle_info_.max_longitudinal_offset_m);
   if (!enable_outside_drivable_area_stop_) {
     virtual_wall_marker.markers.front().color =
-      tier4_autoware_utils::createMarkerColor(0.0, 1.0, 0.0, 0.5);
+      autoware_universe_utils::createMarkerColor(0.0, 1.0, 0.0, 0.5);
   }
 
   virtual_wall_pub_->publish(virtual_wall_marker);

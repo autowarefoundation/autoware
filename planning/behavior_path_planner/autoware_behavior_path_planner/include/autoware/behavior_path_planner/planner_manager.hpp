@@ -18,8 +18,8 @@
 #include "autoware/behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "autoware/behavior_path_planner_common/interface/scene_module_manager_interface.hpp"
 #include "autoware/behavior_path_planner_common/interface/scene_module_visitor.hpp"
-#include "tier4_autoware_utils/ros/debug_publisher.hpp"
-#include "tier4_autoware_utils/system/stop_watch.hpp"
+#include "autoware/universe_utils/ros/debug_publisher.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
 
 #include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -39,12 +39,12 @@
 namespace autoware::behavior_path_planner
 {
 
-using tier4_autoware_utils::StopWatch;
+using autoware_universe_utils::StopWatch;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using tier4_planning_msgs::msg::StopReasonArray;
 using SceneModulePtr = std::shared_ptr<SceneModuleInterface>;
 using SceneModuleManagerPtr = std::shared_ptr<SceneModuleManagerInterface>;
-using DebugPublisher = tier4_autoware_utils::DebugPublisher;
+using DebugPublisher = autoware_universe_utils::DebugPublisher;
 using DebugDoubleMsg = tier4_debug_msgs::msg::Float64Stamped;
 using DebugStringMsg = tier4_debug_msgs::msg::StringStamped;
 

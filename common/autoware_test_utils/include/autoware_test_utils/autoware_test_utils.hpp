@@ -15,12 +15,12 @@
 #ifndef AUTOWARE_TEST_UTILS__AUTOWARE_TEST_UTILS_HPP_
 #define AUTOWARE_TEST_UTILS__AUTOWARE_TEST_UTILS_HPP_
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
 #include <component_interface_specs/planning.hpp>
 #include <lanelet2_extension/io/autoware_osm_parser.hpp>
 #include <lanelet2_extension/projection/mgrs_projector.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
@@ -62,6 +62,8 @@ using autoware_planning_msgs::msg::Trajectory;
 using tier4_planning_msgs::msg::PathPointWithLaneId;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using RouteSections = std::vector<autoware_planning_msgs::msg::LaneletSegment>;
+using autoware_universe_utils::createPoint;
+using autoware_universe_utils::createQuaternionFromRPY;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseStamped;
@@ -70,8 +72,6 @@ using nav_msgs::msg::OccupancyGrid;
 using nav_msgs::msg::Odometry;
 using sensor_msgs::msg::PointCloud2;
 using tf2_msgs::msg::TFMessage;
-using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::createQuaternionFromRPY;
 using tier4_planning_msgs::msg::Scenario;
 using unique_identifier_msgs::msg::UUID;
 

@@ -19,6 +19,7 @@
 
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_map_msgs</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>diagnostic_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
@@ -30,7 +31,6 @@
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>ublox_msgs</depend>
   <depend>visualization_msgs</depend>
   <depend>yabloc_particle_filter</depend>

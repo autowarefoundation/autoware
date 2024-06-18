@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <opencv4/opencv2/calib3d.hpp>
 #include <opencv4/opencv2/core.hpp>
 #include <opencv4/opencv2/imgproc.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 #include <yabloc_common/cv_decompress.hpp>
 #include <yabloc_common/pub_sub.hpp>
 
@@ -147,7 +147,7 @@ private:
       sub_compressed_image_.reset();
     }
 
-    tier4_autoware_utils::StopWatch stop_watch;
+    autoware_universe_utils::StopWatch stop_watch;
     remap_and_publish(common::decompress_to_cv_mat(msg), msg.header);
     RCLCPP_INFO_STREAM(get_logger(), "image undistort: " << stop_watch.toc() << "[ms]");
   }
@@ -161,7 +161,7 @@ private:
       make_remap_lut();
     }
 
-    tier4_autoware_utils::StopWatch stop_watch;
+    autoware_universe_utils::StopWatch stop_watch;
     remap_and_publish(common::decompress_to_cv_mat(msg), msg.header);
     RCLCPP_INFO_STREAM(get_logger(), "image undistort: " << stop_watch.toc() << "[ms]");
   }

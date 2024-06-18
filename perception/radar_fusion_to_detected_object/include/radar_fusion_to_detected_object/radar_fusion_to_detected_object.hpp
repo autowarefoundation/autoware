@@ -15,8 +15,8 @@
 #ifndef RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_HPP_
 #define RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_HPP_
 
+#include "autoware/universe_utils/geometry/boost_geometry.hpp"
 #include "rclcpp/logger.hpp"
-#include "tier4_autoware_utils/geometry/boost_geometry.hpp"
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -34,12 +34,12 @@ namespace radar_fusion_to_detected_object
 {
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjects;
+using autoware_universe_utils::LinearRing2d;
+using autoware_universe_utils::Point2d;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::PoseWithCovariance;
 using geometry_msgs::msg::Twist;
 using geometry_msgs::msg::TwistWithCovariance;
-using tier4_autoware_utils::LinearRing2d;
-using tier4_autoware_utils::Point2d;
 
 class RadarFusionToDetectedObject
 {

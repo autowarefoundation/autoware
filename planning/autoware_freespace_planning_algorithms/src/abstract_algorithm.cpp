@@ -14,15 +14,15 @@
 
 #include "autoware/freespace_planning_algorithms/abstract_algorithm.hpp"
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/normalization.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/math/normalization.hpp>
 
 #include <vector>
 
 namespace autoware::freespace_planning_algorithms
 {
-using tier4_autoware_utils::createQuaternionFromYaw;
-using tier4_autoware_utils::normalizeRadian;
+using autoware_universe_utils::createQuaternionFromYaw;
+using autoware_universe_utils::normalizeRadian;
 
 geometry_msgs::msg::Pose transformPose(
   const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::TransformStamped & transform)
@@ -97,7 +97,7 @@ double PlannerWaypoints::compute_length() const
   for (size_t i = 0; i < waypoints.size() - 1; ++i) {
     const auto pose_a = waypoints.at(i);
     const auto pose_b = waypoints.at(i + 1);
-    total_cost += tier4_autoware_utils::calcDistance2d(pose_a.pose, pose_b.pose);
+    total_cost += autoware_universe_utils::calcDistance2d(pose_a.pose, pose_b.pose);
   }
   return total_cost;
 }

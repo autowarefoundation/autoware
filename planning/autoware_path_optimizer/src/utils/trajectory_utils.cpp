@@ -33,7 +33,7 @@
 #include <stack>
 #include <vector>
 
-namespace tier4_autoware_utils
+namespace autoware_universe_utils
 {
 template <>
 geometry_msgs::msg::Point getPoint(const autoware::path_optimizer::ReferencePoint & p)
@@ -52,7 +52,7 @@ double getLongitudinalVelocity(const autoware::path_optimizer::ReferencePoint & 
 {
   return p.longitudinal_velocity_mps;
 }
-}  // namespace tier4_autoware_utils
+}  // namespace autoware_universe_utils
 
 namespace autoware::path_optimizer
 {
@@ -109,11 +109,11 @@ void compensateLastPose(
   const geometry_msgs::msg::Pose last_traj_pose = traj_points.back().pose;
 
   const double dist =
-    tier4_autoware_utils::calcDistance2d(last_path_point.pose.position, last_traj_pose.position);
+    autoware_universe_utils::calcDistance2d(last_path_point.pose.position, last_traj_pose.position);
   const double norm_diff_yaw = [&]() {
     const double diff_yaw =
       tf2::getYaw(last_path_point.pose.orientation) - tf2::getYaw(last_traj_pose.orientation);
-    return tier4_autoware_utils::normalizeRadian(diff_yaw);
+    return autoware_universe_utils::normalizeRadian(diff_yaw);
   }();
   if (dist > delta_dist_threshold || std::fabs(norm_diff_yaw) > delta_yaw_threshold) {
     traj_points.push_back(convertToTrajectoryPoint(last_path_point));
@@ -175,7 +175,7 @@ std::vector<ReferencePoint> resampleReferencePoints(
       base_keys.push_back(0.0);
     } else {
       const double delta_arc_length =
-        tier4_autoware_utils::calcDistance2d(ref_points.at(i), ref_points.at(i - 1));
+        autoware_universe_utils::calcDistance2d(ref_points.at(i), ref_points.at(i - 1));
       base_keys.push_back(base_keys.back() + delta_arc_length);
     }
 
@@ -187,7 +187,7 @@ std::vector<ReferencePoint> resampleReferencePoints(
     if (i == 0) {
       query_keys.push_back(0.0);
     } else {
-      const double delta_arc_length = tier4_autoware_utils::calcDistance2d(
+      const double delta_arc_length = autoware_universe_utils::calcDistance2d(
         resampled_ref_points.at(i), resampled_ref_points.at(i - 1));
       const double key = query_keys.back() + delta_arc_length;
       if (base_keys.back() < key) {

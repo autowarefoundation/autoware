@@ -356,7 +356,7 @@ void ElevationMapLoaderNode::inpaintElevationMap(const float radius)
   // Convert elevation layer to OpenCV image to fill in holes.
   // Get the inpaint mask (nonzero pixels indicate where values need to be filled in).
   namespace bg = boost::geometry;
-  using tier4_autoware_utils::Point2d;
+  using autoware_universe_utils::Point2d;
 
   elevation_map_.add("inpaint_mask", 0.0);
 

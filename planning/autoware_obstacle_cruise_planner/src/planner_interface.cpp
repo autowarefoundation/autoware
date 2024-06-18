@@ -14,13 +14,13 @@
 
 #include "autoware/obstacle_cruise_planner/planner_interface.hpp"
 
+#include "autoware/universe_utils/ros/marker_helper.hpp"
 #include "motion_utils/distance/distance.hpp"
 #include "motion_utils/marker/marker_helper.hpp"
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "signal_processing/lowpass_filter_1d.hpp"
-#include "tier4_autoware_utils/ros/marker_helper.hpp"
 
 #include <boost/geometry/algorithms/distance.hpp>
 #include <boost/geometry/strategies/strategies.hpp>
@@ -223,9 +223,9 @@ std::vector<TrajectoryPoint> resampleTrajectoryPoints(
   return motion_utils::convertToTrajectoryPointArray(resampled_traj);
 }
 
-tier4_autoware_utils::Point2d convertPoint(const geometry_msgs::msg::Point & p)
+autoware_universe_utils::Point2d convertPoint(const geometry_msgs::msg::Point & p)
 {
-  return tier4_autoware_utils::Point2d{p.x, p.y};
+  return autoware_universe_utils::Point2d{p.x, p.y};
 }
 }  // namespace
 
@@ -249,7 +249,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
     // delete marker
     const auto markers =
       motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
-    tier4_autoware_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
+    autoware_universe_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
 
     prev_stop_distance_info_ = std::nullopt;
     return planner_data.traj_points;
@@ -356,7 +356,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
     // delete marker
     const auto markers =
       motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
-    tier4_autoware_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
+    autoware_universe_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
 
     prev_stop_distance_info_ = std::nullopt;
     return planner_data.traj_points;
@@ -392,7 +392,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
     const auto markers = motion_utils::createStopVirtualWallMarker(
       output_traj_points.at(*zero_vel_idx).pose, "obstacle stop", planner_data.current_time, 0,
       abs_ego_offset, "", planner_data.is_driving_forward);
-    tier4_autoware_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
+    autoware_universe_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
     debug_data_ptr_->obstacles_to_stop.push_back(*determined_stop_obstacle);
 
     // Publish Stop Reason
@@ -459,7 +459,7 @@ double PlannerInterface::calculateMarginFromObstacleOnCurve(
       longitudinal_info_.safe_distance_margin + abs_ego_offset < sum_short_traj_length) {
       break;
     }
-    sum_short_traj_length += tier4_autoware_utils::calcDistance2d(
+    sum_short_traj_length += autoware_universe_utils::calcDistance2d(
       planner_data.traj_points.at(i), planner_data.traj_points.at(i + 1));
   }
   std::reverse(short_traj_points.begin(), short_traj_points.end());
@@ -470,15 +470,15 @@ double PlannerInterface::calculateMarginFromObstacleOnCurve(
   // calculate collision index between straight line from ego pose and object
   const auto calculate_distance_from_straight_ego_path =
     [&](const auto & ego_pose, const auto & object_polygon) {
-      const auto forward_ego_pose = tier4_autoware_utils::calcOffsetPose(
+      const auto forward_ego_pose = autoware_universe_utils::calcOffsetPose(
         ego_pose, longitudinal_info_.safe_distance_margin + 3.0, 0.0, 0.0);
-      const auto ego_straight_segment = tier4_autoware_utils::Segment2d{
+      const auto ego_straight_segment = autoware_universe_utils::Segment2d{
         convertPoint(ego_pose.position), convertPoint(forward_ego_pose.position)};
       return boost::geometry::distance(ego_straight_segment, object_polygon);
     };
   const auto resampled_short_traj_points = resampleTrajectoryPoints(short_traj_points, 0.5);
   const auto object_polygon =
-    tier4_autoware_utils::toPolygon2d(stop_obstacle.pose, stop_obstacle.shape);
+    autoware_universe_utils::toPolygon2d(stop_obstacle.pose, stop_obstacle.shape);
   const auto collision_idx = [&]() -> std::optional<size_t> {
     for (size_t i = 0; i < resampled_short_traj_points.size(); ++i) {
       const double dist_to_obj = calculate_distance_from_straight_ego_path(
@@ -498,7 +498,7 @@ double PlannerInterface::calculateMarginFromObstacleOnCurve(
 
   // calculate margin from obstacle
   const double partial_segment_length = [&]() {
-    const double collision_segment_length = tier4_autoware_utils::calcDistance2d(
+    const double collision_segment_length = autoware_universe_utils::calcDistance2d(
       resampled_short_traj_points.at(*collision_idx - 1),
       resampled_short_traj_points.at(*collision_idx));
     const double prev_dist = calculate_distance_from_straight_ego_path(
@@ -649,7 +649,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
       const auto markers = motion_utils::createSlowDownVirtualWallMarker(
         slow_down_traj_points.at(slow_down_wall_idx).pose, "obstacle slow down",
         planner_data.current_time, i, abs_ego_offset, "", planner_data.is_driving_forward);
-      tier4_autoware_utils::appendMarkerArray(markers, &debug_data_ptr_->slow_down_wall_marker);
+      autoware_universe_utils::appendMarkerArray(markers, &debug_data_ptr_->slow_down_wall_marker);
     }
 
     // add debug virtual wall
@@ -657,14 +657,14 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
       const auto markers = motion_utils::createSlowDownVirtualWallMarker(
         slow_down_traj_points.at(*slow_down_start_idx).pose, "obstacle slow down start",
         planner_data.current_time, i * 2, abs_ego_offset, "", planner_data.is_driving_forward);
-      tier4_autoware_utils::appendMarkerArray(
+      autoware_universe_utils::appendMarkerArray(
         markers, &debug_data_ptr_->slow_down_debug_wall_marker);
     }
     if (slow_down_end_idx) {
       const auto markers = motion_utils::createSlowDownVirtualWallMarker(
         slow_down_traj_points.at(*slow_down_end_idx).pose, "obstacle slow down end",
         planner_data.current_time, i * 2 + 1, abs_ego_offset, "", planner_data.is_driving_forward);
-      tier4_autoware_utils::appendMarkerArray(
+      autoware_universe_utils::appendMarkerArray(
         markers, &debug_data_ptr_->slow_down_debug_wall_marker);
     }
 

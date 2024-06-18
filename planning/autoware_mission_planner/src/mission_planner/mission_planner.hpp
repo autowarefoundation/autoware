@@ -16,13 +16,13 @@
 #define MISSION_PLANNER__MISSION_PLANNER_HPP_
 
 #include "arrival_checker.hpp"
-#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
+#include "autoware/universe_utils/ros/polling_subscriber.hpp"
 
 #include <autoware/mission_planner/mission_planner_plugin.hpp>
 #include <autoware/route_handler/route_handler.hpp>
+#include <autoware/universe_utils/ros/logger_level_configure.hpp>
 #include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/logger_level_configure.hpp>
 
 #include <autoware_adapi_v1_msgs/srv/set_route.hpp>
 #include <autoware_adapi_v1_msgs/srv/set_route_points.hpp>
@@ -85,7 +85,7 @@ private:
 
   rclcpp::Subscription<PoseWithUuidStamped>::SharedPtr sub_modified_goal_;
   rclcpp::Subscription<Odometry>::SharedPtr sub_odometry_;
-  tier4_autoware_utils::InterProcessPollingSubscriber<RerouteAvailability>
+  autoware_universe_utils::InterProcessPollingSubscriber<RerouteAvailability>
     sub_reroute_availability_{this, "~/input/reroute_availability"};
 
   rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_vector_map_;
@@ -132,7 +132,7 @@ private:
   double minimum_reroute_length_;
   bool check_reroute_safety(const LaneletRoute & original_route, const LaneletRoute & target_route);
 
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
 };
 
 }  // namespace autoware::mission_planner

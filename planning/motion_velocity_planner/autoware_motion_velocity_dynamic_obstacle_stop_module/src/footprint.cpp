@@ -14,7 +14,7 @@
 
 #include "footprint.hpp"
 
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
 
 #include <geometry_msgs/msg/pose.hpp>
 
@@ -28,11 +28,11 @@
 
 namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
 {
-tier4_autoware_utils::MultiPolygon2d make_forward_footprints(
+autoware_universe_utils::MultiPolygon2d make_forward_footprints(
   const std::vector<autoware_perception_msgs::msg::PredictedObject> & obstacles,
   const PlannerParam & params, const double hysteresis)
 {
-  tier4_autoware_utils::MultiPolygon2d forward_footprints;
+  autoware_universe_utils::MultiPolygon2d forward_footprints;
   for (const auto & obstacle : obstacles)
     forward_footprints.push_back(project_to_pose(
       make_forward_footprint(obstacle, params, hysteresis),
@@ -40,7 +40,7 @@ tier4_autoware_utils::MultiPolygon2d make_forward_footprints(
   return forward_footprints;
 }
 
-tier4_autoware_utils::Polygon2d make_forward_footprint(
+autoware_universe_utils::Polygon2d make_forward_footprint(
   const autoware_perception_msgs::msg::PredictedObject & obstacle, const PlannerParam & params,
   const double hysteresis)
 {
@@ -49,7 +49,7 @@ tier4_autoware_utils::Polygon2d make_forward_footprint(
     shape.x / 2.0 +
     obstacle.kinematics.initial_twist_with_covariance.twist.linear.x * params.time_horizon;
   const auto lateral_offset = (shape.y + params.extra_object_width) / 2.0 + hysteresis;
-  return tier4_autoware_utils::Polygon2d{
+  return autoware_universe_utils::Polygon2d{
     {{longitudinal_offset, -lateral_offset},
      {longitudinal_offset, lateral_offset},
      {shape.x / 2.0, lateral_offset},
@@ -58,12 +58,12 @@ tier4_autoware_utils::Polygon2d make_forward_footprint(
     {}};
 }
 
-tier4_autoware_utils::Polygon2d project_to_pose(
-  const tier4_autoware_utils::Polygon2d & base_footprint, const geometry_msgs::msg::Pose & pose)
+autoware_universe_utils::Polygon2d project_to_pose(
+  const autoware_universe_utils::Polygon2d & base_footprint, const geometry_msgs::msg::Pose & pose)
 {
   const auto angle = tf2::getYaw(pose.orientation);
-  const auto rotated_footprint = tier4_autoware_utils::rotatePolygon(base_footprint, angle);
-  tier4_autoware_utils::Polygon2d footprint;
+  const auto rotated_footprint = autoware_universe_utils::rotatePolygon(base_footprint, angle);
+  autoware_universe_utils::Polygon2d footprint;
   for (const auto & p : rotated_footprint.outer())
     footprint.outer().emplace_back(p.x() + pose.position.x, p.y() + pose.position.y);
   return footprint;
@@ -72,10 +72,10 @@ tier4_autoware_utils::Polygon2d project_to_pose(
 void make_ego_footprint_rtree(EgoData & ego_data, const PlannerParam & params)
 {
   for (const auto & p : ego_data.trajectory)
-    ego_data.trajectory_footprints.push_back(tier4_autoware_utils::toFootprint(
+    ego_data.trajectory_footprints.push_back(autoware_universe_utils::toFootprint(
       p.pose, params.ego_longitudinal_offset, 0.0, params.ego_lateral_offset * 2.0));
   for (auto i = 0UL; i < ego_data.trajectory_footprints.size(); ++i) {
-    const auto box = boost::geometry::return_envelope<tier4_autoware_utils::Box2d>(
+    const auto box = boost::geometry::return_envelope<autoware_universe_utils::Box2d>(
       ego_data.trajectory_footprints[i]);
     ego_data.rtree.insert(std::make_pair(box, i));
   }

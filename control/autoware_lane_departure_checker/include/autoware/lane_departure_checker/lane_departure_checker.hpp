@@ -15,10 +15,10 @@
 #ifndef AUTOWARE__LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
 #define AUTOWARE__LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
 
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
+#include <autoware/universe_utils/geometry/pose_deviation.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <rosidl_runtime_cpp/message_initialization.hpp>
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
-#include <tier4_autoware_utils/geometry/pose_deviation.hpp>
 
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
@@ -50,9 +50,9 @@ namespace autoware::lane_departure_checker
 using autoware_planning_msgs::msg::LaneletRoute;
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
-using tier4_autoware_utils::LinearRing2d;
-using tier4_autoware_utils::PoseDeviation;
-using tier4_autoware_utils::Segment2d;
+using autoware_universe_utils::LinearRing2d;
+using autoware_universe_utils::PoseDeviation;
+using autoware_universe_utils::Segment2d;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
 typedef boost::geometry::index::rtree<Segment2d, boost::geometry::index::rstar<16>> SegmentRtree;
@@ -122,7 +122,7 @@ public:
   std::vector<std::pair<double, lanelet::Lanelet>> getLaneletsFromPath(
     const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path) const;
 
-  std::optional<tier4_autoware_utils::Polygon2d> getFusedLaneletPolygonForPath(
+  std::optional<autoware_universe_utils::Polygon2d> getFusedLaneletPolygonForPath(
     const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path) const;
 
   bool checkPathWillLeaveLane(

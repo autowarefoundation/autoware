@@ -17,11 +17,11 @@
 
 #include "multi_object_tracker/debugger/debug_object.hpp"
 
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <diagnostic_updater/publisher.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_perception_msgs/msg/detected_objects.hpp>
 #include <autoware_perception_msgs/msg/tracked_objects.hpp>
@@ -56,7 +56,7 @@ private:
   rclcpp::Node & node_;
   rclcpp::Publisher<autoware_perception_msgs::msg::TrackedObjects>::SharedPtr
     debug_tentative_objects_pub_;
-  std::unique_ptr<tier4_autoware_utils::DebugPublisher> processing_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::DebugPublisher> processing_time_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_objects_markers_pub_;
 
   diagnostic_updater::Updater diagnostic_updater_;

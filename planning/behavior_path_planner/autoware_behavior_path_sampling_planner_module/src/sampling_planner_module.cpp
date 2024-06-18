@@ -16,14 +16,14 @@
 
 namespace autoware::behavior_path_planner
 {
+using autoware_universe_utils::calcDistance2d;
+using autoware_universe_utils::calcOffsetPose;
+using autoware_universe_utils::getPoint;
+using autoware_universe_utils::Point2d;
 using geometry_msgs::msg::Point;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestIndex;
 using motion_utils::findNearestSegmentIndex;
-using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::calcOffsetPose;
-using tier4_autoware_utils::getPoint;
-using tier4_autoware_utils::Point2d;
 
 namespace bg = boost::geometry;
 namespace bgi = boost::geometry::index;
@@ -103,7 +103,7 @@ SamplingPlannerModule::SamplingPlannerModule(
   //     [[maybe_unused]] const SoftConstraintsInputs & input_data) -> double {
   //     if (path.points.empty()) return 0.0;
   //     const auto & goal_pose_yaw =
-  //     tier4_autoware_utils::getRPY(input_data.goal_pose.orientation).z; const auto &
+  //     autoware_universe_utils::getRPY(input_data.goal_pose.orientation).z; const auto &
   //     last_point_yaw = path.yaws.back(); const double angle_difference = std::abs(last_point_yaw
   //     - goal_pose_yaw); return angle_difference / (3.141519 / 4.0);
   //   });
@@ -365,9 +365,9 @@ void SamplingPlannerModule::prepareConstraints(
   size_t i = 0;
   for (const auto & o : predicted_objects->objects) {
     if (o.kinematics.initial_twist_with_covariance.twist.linear.x < 0.5) {
-      const auto polygon = tier4_autoware_utils::toPolygon2d(o);
+      const auto polygon = autoware_universe_utils::toPolygon2d(o);
       constraints.obstacle_polygons.push_back(polygon);
-      const auto box = boost::geometry::return_envelope<tier4_autoware_utils::Box2d>(polygon);
+      const auto box = boost::geometry::return_envelope<autoware_universe_utils::Box2d>(polygon);
       constraints.rtree.insert(std::make_pair(box, i));
     }
     i++;

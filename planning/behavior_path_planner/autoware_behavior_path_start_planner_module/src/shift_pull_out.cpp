@@ -19,18 +19,18 @@
 #include "autoware/behavior_path_planner_common/utils/path_utils.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 #include "autoware/behavior_path_start_planner_module/util.hpp"
+#include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
 #include "motion_utils/trajectory/path_with_lane_id.hpp"
-#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 
 #include <memory>
 #include <vector>
 
+using autoware_universe_utils::calcDistance2d;
+using autoware_universe_utils::calcOffsetPose;
 using lanelet::utils::getArcCoordinates;
 using motion_utils::findNearestIndex;
-using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::calcOffsetPose;
 namespace autoware::behavior_path_planner
 {
 using start_planner_utils::getPullOutLanes;

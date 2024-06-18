@@ -23,6 +23,7 @@
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_route_handler</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>eigen</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
@@ -32,7 +33,6 @@
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>tier4_planning_msgs</depend>
   <depend>traffic_light_utils</depend>
   <depend>visualization_msgs</depend>

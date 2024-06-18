@@ -21,6 +21,7 @@
   <build_depend>rosidl_default_generators</build_depend>
 
   <depend>autoware_planning_msgs</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>autoware_vehicle_info_utils</depend>
   <depend>diagnostic_updater</depend>
   <depend>geometry_msgs</depend>
@@ -28,7 +29,6 @@
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>visualization_msgs</depend>
 
   <test_depend>ament_cmake_ros</test_depend>

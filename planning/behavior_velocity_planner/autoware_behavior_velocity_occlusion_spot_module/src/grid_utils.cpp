@@ -95,7 +95,7 @@ std::optional<Polygon2d> generateOcclusionPolygon(
   const Polygon2d & occupancy_poly, const Point2d & origin, const Point2d & min_theta_pos,
   const Point2d & max_theta_pos, const double ray_max_length = 100.0)
 {
-  using tier4_autoware_utils::normalizeRadian;
+  using autoware_universe_utils::normalizeRadian;
   const double origin_x = origin.x();
   const double origin_y = origin.y();
   const double min_theta =
@@ -134,7 +134,7 @@ std::optional<Polygon2d> generateOcclusionPolygon(
 
 Polygon2d generateOccupancyPolygon(const nav_msgs::msg::MapMetaData & info, const double r = 100)
 {
-  using tier4_autoware_utils::calcOffsetPose;
+  using autoware_universe_utils::calcOffsetPose;
   // generate occupancy polygon from grid origin
   Polygon2d poly;  // create counter clockwise poly
   poly.outer().emplace_back(to_bg2d(calcOffsetPose(info.origin, 0, 0, 0).position));
@@ -155,7 +155,7 @@ std::pair<size_t, size_t> calcEdgePoint(const Polygon2d & foot_print, const Poin
   for (size_t i = 0; i < foot_print.outer().size(); i++) {
     const auto & f = foot_print.outer().at(i);
     PolarCoordinates polar = toPolarCoordinates(origin, f);
-    const double theta_norm = tier4_autoware_utils::normalizeRadian(polar.theta, 0.0);
+    const double theta_norm = autoware_universe_utils::normalizeRadian(polar.theta, 0.0);
     if (theta_norm < min_theta) {
       min_theta = theta_norm;
       min_idx = i;
@@ -183,7 +183,7 @@ std::optional<Polygon2d> generateOccupiedPolygon(
 
 Point transformFromMap2Grid(const TransformStamped & geom_tf_map2grid, const Point2d & p)
 {
-  Point geom_pt = tier4_autoware_utils::createPoint(p.x(), p.y(), 0);
+  Point geom_pt = autoware_universe_utils::createPoint(p.x(), p.y(), 0);
   Point transformed_geom_pt;
   // from map coordinate to occupancy grid coordinate
   tf2::doTransform(geom_pt, transformed_geom_pt, geom_tf_map2grid);

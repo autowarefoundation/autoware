@@ -14,7 +14,7 @@
 
 #include "manager.hpp"
 
-#include "tier4_autoware_utils/ros/parameter.hpp"
+#include "autoware/universe_utils/ros/parameter.hpp"
 
 #include <memory>
 #include <set>
@@ -23,8 +23,8 @@
 
 namespace autoware::behavior_velocity_planner
 {
+using autoware_universe_utils::getOrDeclareParameter;
 using lanelet::TrafficSign;
-using tier4_autoware_utils::getOrDeclareParameter;
 
 StopLineModuleManager::StopLineModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())

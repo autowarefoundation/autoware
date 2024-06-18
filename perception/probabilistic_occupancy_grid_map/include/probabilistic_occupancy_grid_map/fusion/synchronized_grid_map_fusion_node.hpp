@@ -20,10 +20,10 @@
 #include "probabilistic_occupancy_grid_map/updater/occupancy_grid_map_log_odds_bayes_filter_updater.hpp"
 #include "probabilistic_occupancy_grid_map/updater/occupancy_grid_map_updater_interface.hpp"
 
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <builtin_interfaces/msg/time.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
@@ -85,8 +85,8 @@ private:
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr fused_map_pub_;
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr single_frame_pub_;
   std::vector<rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr> grid_map_subs_;
-  std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{};
-  std::unique_ptr<tier4_autoware_utils::DebugPublisher> debug_publisher_ptr_{};
+  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{};
+  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_ptr_{};
 
   // Topics manager
   std::size_t num_input_topics_{1};

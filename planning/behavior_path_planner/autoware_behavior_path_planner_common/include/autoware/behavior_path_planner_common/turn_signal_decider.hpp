@@ -15,14 +15,14 @@
 #ifndef AUTOWARE__BEHAVIOR_PATH_PLANNER_COMMON__TURN_SIGNAL_DECIDER_HPP_
 #define AUTOWARE__BEHAVIOR_PATH_PLANNER_COMMON__TURN_SIGNAL_DECIDER_HPP_
 
-#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
+#include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
 
 #include <autoware/behavior_path_planner_common/parameters.hpp>
 #include <autoware/behavior_path_planner_common/utils/path_shifter/path_shifter.hpp>
 #include <autoware/route_handler/route_handler.hpp>
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <autoware_vehicle_msgs/msg/hazard_lights_command.hpp>
 #include <autoware_vehicle_msgs/msg/turn_indicators_command.hpp>
@@ -239,9 +239,9 @@ private:
     const ShiftedPath & path, const ShiftLine & shift_line, const lanelet::ConstLanelets & lanes,
     const autoware::vehicle_info_utils::VehicleInfo & vehicle_info) const
   {
+    using autoware_universe_utils::pose2transform;
+    using autoware_universe_utils::transformVector;
     using boost::geometry::intersects;
-    using tier4_autoware_utils::pose2transform;
-    using tier4_autoware_utils::transformVector;
 
     const auto footprint = vehicle_info.createFootprint();
     const auto start_itr = std::next(path.path.points.begin(), shift_line.start_idx);

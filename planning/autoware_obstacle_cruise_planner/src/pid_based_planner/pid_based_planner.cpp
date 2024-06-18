@@ -15,11 +15,11 @@
 #include "autoware/obstacle_cruise_planner/pid_based_planner/pid_based_planner.hpp"
 
 #include "autoware/obstacle_cruise_planner/utils.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/ros/marker_helper.hpp"
+#include "autoware/universe_utils/ros/update_param.hpp"
 #include "interpolation/spline_interpolation.hpp"
 #include "motion_utils/marker/marker_helper.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/ros/marker_helper.hpp"
-#include "tier4_autoware_utils/ros/update_param.hpp"
 
 #include "tier4_planning_msgs/msg/velocity_limit.hpp"
 
@@ -317,8 +317,9 @@ std::vector<TrajectoryPoint> PIDBasedPlanner::planCruise(
         stop_traj_points.at(wall_idx).pose, "obstacle cruise", planner_data.current_time, 0);
       // NOTE: use a different color from slow down one to visualize cruise and slow down
       // separately.
-      markers.markers.front().color = tier4_autoware_utils::createMarkerColor(1.0, 0.6, 0.1, 0.5);
-      tier4_autoware_utils::appendMarkerArray(markers, &debug_data_ptr_->cruise_wall_marker);
+      markers.markers.front().color =
+        autoware_universe_utils::createMarkerColor(1.0, 0.6, 0.1, 0.5);
+      autoware_universe_utils::appendMarkerArray(markers, &debug_data_ptr_->cruise_wall_marker);
 
       // cruise obstacle
       debug_data_ptr_->obstacles_to_cruise.push_back(cruise_obstacle_info->obstacle);
@@ -345,7 +346,7 @@ std::vector<TrajectoryPoint> PIDBasedPlanner::planCruise(
   // delete marker
   const auto markers =
     motion_utils::createDeletedSlowDownVirtualWallMarker(planner_data.current_time, 0);
-  tier4_autoware_utils::appendMarkerArray(markers, &debug_data_ptr_->cruise_wall_marker);
+  autoware_universe_utils::appendMarkerArray(markers, &debug_data_ptr_->cruise_wall_marker);
 
   return stop_traj_points;
 }
@@ -598,7 +599,7 @@ std::vector<TrajectoryPoint> PIDBasedPlanner::getAccelerationLimitedTrajectory(
   double sum_dist = 0.0;
   for (size_t i = ego_seg_idx; i < acc_limited_traj_points.size(); ++i) {
     if (i != ego_seg_idx) {
-      sum_dist += tier4_autoware_utils::calcDistance2d(
+      sum_dist += autoware_universe_utils::calcDistance2d(
         acc_limited_traj_points.at(i - 1), acc_limited_traj_points.at(i));
     }
 
@@ -621,7 +622,7 @@ std::vector<TrajectoryPoint> PIDBasedPlanner::getAccelerationLimitedTrajectory(
 
 void PIDBasedPlanner::updateCruiseParam(const std::vector<rclcpp::Parameter> & parameters)
 {
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "cruise.pid_based_planner.min_accel_during_cruise", min_accel_during_cruise_);
 
   {  // velocity limit based planner
@@ -631,26 +632,26 @@ void PIDBasedPlanner::updateCruiseParam(const std::vector<rclcpp::Parameter> & p
     double ki = p.pid_vel_controller->getKi();
     double kd = p.pid_vel_controller->getKd();
 
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "cruise.pid_based_planner.velocity_limit_based_planner.kp", kp);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "cruise.pid_based_planner.velocity_limit_based_planner.ki", ki);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "cruise.pid_based_planner.velocity_limit_based_planner.kd", kd);
     p.pid_vel_controller->updateParam(kp, ki, kd);
 
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "cruise.pid_based_planner.velocity_limit_based_planner.output_ratio_during_accel",
       p.output_ratio_during_accel);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "cruise.pid_based_planner.vel_to_acc_weight", p.vel_to_acc_weight);
 
-    tier4_autoware_utils::updateParam<bool>(
+    autoware_universe_utils::updateParam<bool>(
       parameters,
       "cruise.pid_based_planner.velocity_limit_based_planner.enable_jerk_limit_to_output_acc",
       p.enable_jerk_limit_to_output_acc);
 
-    tier4_autoware_utils::updateParam<bool>(
+    autoware_universe_utils::updateParam<bool>(
       parameters,
       "cruise.pid_based_planner.velocity_limit_based_planner.disable_target_acceleration",
       p.disable_target_acceleration);
@@ -664,11 +665,11 @@ void PIDBasedPlanner::updateCruiseParam(const std::vector<rclcpp::Parameter> & p
     double ki_acc = p.pid_acc_controller->getKi();
     double kd_acc = p.pid_acc_controller->getKd();
 
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "cruise.pid_based_planner.velocity_insertion_based_planner.kp_acc", kp_acc);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "cruise.pid_based_planner.velocity_insertion_based_planner.ki_acc", ki_acc);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "cruise.pid_based_planner.velocity_insertion_based_planner.kd_acc", kd_acc);
     p.pid_acc_controller->updateParam(kp_acc, ki_acc, kd_acc);
 
@@ -677,32 +678,32 @@ void PIDBasedPlanner::updateCruiseParam(const std::vector<rclcpp::Parameter> & p
     double ki_jerk = p.pid_jerk_controller->getKi();
     double kd_jerk = p.pid_jerk_controller->getKd();
 
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "cruise.pid_based_planner.velocity_insertion_based_planner.kp_jerk", kp_jerk);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "cruise.pid_based_planner.velocity_insertion_based_planner.ki_jerk", ki_jerk);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "cruise.pid_based_planner.velocity_insertion_based_planner.kd_jerk", kd_jerk);
     p.pid_jerk_controller->updateParam(kp_jerk, ki_jerk, kd_jerk);
 
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters,
       "cruise.pid_based_planner.velocity_insertion_based_planner.output_acc_ratio_during_accel",
       p.output_acc_ratio_during_accel);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters,
       "cruise.pid_based_planner.velocity_insertion_based_planner.output_jerk_ratio_during_accel",
       p.output_jerk_ratio_during_accel);
 
-    tier4_autoware_utils::updateParam<bool>(
+    autoware_universe_utils::updateParam<bool>(
       parameters,
       "cruise.pid_based_planner.velocity_insertion_based_planner.enable_jerk_limit_to_output_acc",
       p.enable_jerk_limit_to_output_acc);
   }
 
   // min_cruise_target_vel
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "cruise.pid_based_planner.min_cruise_target_vel", min_cruise_target_vel_);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "cruise.pid_based_planner.time_to_evaluate_rss", time_to_evaluate_rss_);
 }

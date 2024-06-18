@@ -17,9 +17,9 @@
 
 #include "detected_object_validation/utils/utils.hpp"
 
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 
@@ -68,9 +68,9 @@ private:
   utils::FilterTargetLabel filter_target_;
 
   // debugger
-  std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{
+  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{
     nullptr};
-  std::unique_ptr<tier4_autoware_utils::DebugPublisher> debug_publisher_ptr_{nullptr};
+  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_ptr_{nullptr};
 };
 
 }  // namespace low_intensity_cluster_filter

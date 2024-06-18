@@ -17,8 +17,8 @@
 #include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "autoware/behavior_path_planner_common/utils/path_utils.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
-#include "tier4_autoware_utils/ros/debug_publisher.hpp"
-#include "tier4_autoware_utils/system/stop_watch.hpp"
+#include "autoware/universe_utils/ros/debug_publisher.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
 
 #include <lanelet2_extension/utility/query.hpp>
 #include <magic_enum.hpp>
@@ -466,10 +466,10 @@ void PlannerManager::publishDebugRootReferencePath(
 {
   using visualization_msgs::msg::Marker;
   MarkerArray array;
-  Marker m = tier4_autoware_utils::createDefaultMarker(
+  Marker m = autoware_universe_utils::createDefaultMarker(
     "map", clock_.now(), "root_reference_path", 0UL, Marker::LINE_STRIP,
-    tier4_autoware_utils::createMarkerScale(1.0, 1.0, 1.0),
-    tier4_autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 1.0));
+    autoware_universe_utils::createMarkerScale(1.0, 1.0, 1.0),
+    autoware_universe_utils::createMarkerColor(1.0, 0.0, 0.0, 1.0));
   for (const auto & p : reference_path.path.points) m.points.push_back(p.point.pose.position);
   array.markers.push_back(m);
   m.points.clear();

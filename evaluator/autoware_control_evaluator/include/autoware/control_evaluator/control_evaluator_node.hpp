@@ -17,8 +17,8 @@
 
 #include "autoware/control_evaluator/metrics/deviation_metrics.hpp"
 
+#include <autoware/universe_utils/ros/polling_subscriber.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -72,9 +72,9 @@ private:
   // onDiagnostics().
   rclcpp::Subscription<DiagnosticArray>::SharedPtr control_diag_sub_;
 
-  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> odometry_sub_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> odometry_sub_{
     this, "~/input/odometry"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<Trajectory> traj_sub_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Trajectory> traj_sub_{
     this, "~/input/trajectory"};
 
   rclcpp::Publisher<DiagnosticArray>::SharedPtr metrics_pub_;

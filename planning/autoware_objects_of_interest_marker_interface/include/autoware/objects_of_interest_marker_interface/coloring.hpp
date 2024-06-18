@@ -16,7 +16,7 @@
 #define AUTOWARE__OBJECTS_OF_INTEREST_MARKER_INTERFACE__COLORING_HPP_
 #include "autoware/objects_of_interest_marker_interface/marker_data.hpp"
 
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
+#include <autoware/universe_utils/ros/marker_helper.hpp>
 
 #include <std_msgs/msg/color_rgba.hpp>
 

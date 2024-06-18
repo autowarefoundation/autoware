@@ -16,7 +16,7 @@
 #define AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__UTIL_HPP_
 
 #include "autoware/behavior_path_goal_planner_module/goal_searcher_base.hpp"
-#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
+#include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
 
 #include <autoware/lane_departure_checker/lane_departure_checker.hpp>
 
@@ -42,7 +42,7 @@ using geometry_msgs::msg::Twist;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
-using Polygon2d = tier4_autoware_utils::Polygon2d;
+using Polygon2d = autoware_universe_utils::Polygon2d;
 
 lanelet::ConstLanelets getPullOverLanes(
   const RouteHandler & route_handler, const bool left_side, const double backward_distance,
@@ -94,7 +94,7 @@ std::vector<Polygon2d> createPathFootPrints(
 
 // debug
 MarkerArray createPullOverAreaMarkerArray(
-  const tier4_autoware_utils::MultiPolygon2d area_polygons, const std_msgs::msg::Header & header,
+  const autoware_universe_utils::MultiPolygon2d area_polygons, const std_msgs::msg::Header & header,
   const std_msgs::msg::ColorRGBA & color, const double z);
 MarkerArray createPosesMarkerArray(
   const std::vector<Pose> & poses, std::string && ns, const std_msgs::msg::ColorRGBA & color);

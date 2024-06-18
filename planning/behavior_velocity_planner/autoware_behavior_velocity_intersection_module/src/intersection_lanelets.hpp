@@ -17,7 +17,7 @@
 
 #include "interpolated_path_info.hpp"
 
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
 
 #include <lanelet2_core/primitives/CompoundPolygon.h>
 #include <lanelet2_core/primitives/Lanelet.h>
@@ -41,7 +41,7 @@ public:
    */
   void update(
     const bool is_prioritized, const InterpolatedPathInfo & interpolated_path_info,
-    const tier4_autoware_utils::LinearRing2d & footprint, const double vehicle_length,
+    const autoware_universe_utils::LinearRing2d & footprint, const double vehicle_length,
     lanelet::routing::RoutingGraphPtr routing_graph_ptr);
 
   const lanelet::ConstLanelets & attention() const

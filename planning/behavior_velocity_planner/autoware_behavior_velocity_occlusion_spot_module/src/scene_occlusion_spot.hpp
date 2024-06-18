@@ -19,8 +19,8 @@
 
 #include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
@@ -61,7 +61,7 @@ public:
 private:
   // Parameter
   PlannerParam param_;
-  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
+  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
   std::vector<lanelet::BasicPolygon2d> partition_lanelets_;
 
 protected:

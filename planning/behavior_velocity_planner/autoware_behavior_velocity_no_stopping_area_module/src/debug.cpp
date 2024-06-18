@@ -16,9 +16,9 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/debug.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/marker_helper.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #else
@@ -34,10 +34,10 @@ namespace
 {
 const double marker_lifetime = 0.2;
 using DebugData = NoStoppingAreaModule::DebugData;
-using tier4_autoware_utils::appendMarkerArray;
-using tier4_autoware_utils::createDefaultMarker;
-using tier4_autoware_utils::createMarkerColor;
-using tier4_autoware_utils::createMarkerScale;
+using autoware_universe_utils::appendMarkerArray;
+using autoware_universe_utils::createDefaultMarker;
+using autoware_universe_utils::createMarkerColor;
+using autoware_universe_utils::createMarkerScale;
 
 lanelet::BasicPoint3d getCentroidPoint(const lanelet::BasicPolygon3d & poly)
 {
@@ -170,7 +170,7 @@ motion_utils::VirtualWalls NoStoppingAreaModule::createVirtualWalls()
   wall.text = "no_stopping_area";
   wall.style = motion_utils::VirtualWallType::stop;
   for (const auto & p : debug_data_.stop_poses) {
-    wall.pose = tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
+    wall.pose = autoware_universe_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
     virtual_walls.push_back(wall);
   }
   return virtual_walls;

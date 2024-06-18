@@ -16,8 +16,8 @@
 
 #include "lidar_apollo_instance_segmentation/detector.hpp"
 
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 
 namespace lidar_apollo_instance_segmentation
 {
@@ -28,8 +28,8 @@ LidarInstanceSegmentationNode::LidarInstanceSegmentationNode(
   using std::placeholders::_1;
   // initialize debug tool
   {
-    using tier4_autoware_utils::DebugPublisher;
-    using tier4_autoware_utils::StopWatch;
+    using autoware_universe_utils::DebugPublisher;
+    using autoware_universe_utils::StopWatch;
     stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
     debug_publisher_ = std::make_unique<DebugPublisher>(this, "lidar_apollo_instance_segmentation");
     stop_watch_ptr_->tic("cyclic_time");

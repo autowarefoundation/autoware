@@ -14,9 +14,9 @@
 
 #include "radar_object_clustering/radar_object_clustering_node.hpp"
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/math/unit_conversion.hpp"
 #include "object_recognition_utils/object_recognition_utils.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/math/unit_conversion.hpp"
 
 #include <tf2/utils.h>
 
@@ -179,13 +179,13 @@ void RadarObjectClusteringNode::onObjects(const DetectedObjects::ConstSharedPtr 
 bool RadarObjectClusteringNode::isSameObject(
   const DetectedObject & object_1, const DetectedObject & object_2)
 {
-  const double angle_diff = std::abs(tier4_autoware_utils::normalizeRadian(
+  const double angle_diff = std::abs(autoware_universe_utils::normalizeRadian(
     tf2::getYaw(object_1.kinematics.pose_with_covariance.pose.orientation) -
     tf2::getYaw(object_2.kinematics.pose_with_covariance.pose.orientation)));
   const double velocity_diff = std::abs(
     object_1.kinematics.twist_with_covariance.twist.linear.x -
     object_2.kinematics.twist_with_covariance.twist.linear.x);
-  const double distance = tier4_autoware_utils::calcDistance2d(
+  const double distance = autoware_universe_utils::calcDistance2d(
     object_1.kinematics.pose_with_covariance.pose.position,
     object_2.kinematics.pose_with_covariance.pose.position);
 

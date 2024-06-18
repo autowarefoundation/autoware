@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "object_recognition_utils/matching.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <autoware_perception_msgs/msg/detected_object.hpp>
 
 #include <gtest/gtest.h>
 
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Point3d;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Point3d;
 
 constexpr double epsilon = 1e-06;
 
@@ -30,7 +30,7 @@ geometry_msgs::msg::Pose createPose(const double x, const double y, const double
 {
   geometry_msgs::msg::Pose p;
   p.position = geometry_msgs::build<geometry_msgs::msg::Point>().x(x).y(y).z(0.0);
-  p.orientation = tier4_autoware_utils::createQuaternionFromYaw(yaw);
+  p.orientation = autoware_universe_utils::createQuaternionFromYaw(yaw);
   return p;
 }
 }  // namespace

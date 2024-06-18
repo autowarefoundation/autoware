@@ -15,7 +15,7 @@
 #ifndef AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__BOOST_GEOMETRY_HELPER_HPP_
 #define AUTOWARE__BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__BOOST_GEOMETRY_HELPER_HPP_
 
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_planning_msgs/msg/path_point.hpp>
 #include <autoware_planning_msgs/msg/trajectory_point.hpp>
@@ -50,9 +50,9 @@ namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
-using Point2d = tier4_autoware_utils::Point2d;
-using LineString2d = tier4_autoware_utils::LineString2d;
-using Polygon2d = tier4_autoware_utils::Polygon2d;
+using Point2d = autoware_universe_utils::Point2d;
+using LineString2d = autoware_universe_utils::LineString2d;
+using Polygon2d = autoware_universe_utils::Polygon2d;
 
 template <class T>
 Point2d to_bg2d(const T & p)

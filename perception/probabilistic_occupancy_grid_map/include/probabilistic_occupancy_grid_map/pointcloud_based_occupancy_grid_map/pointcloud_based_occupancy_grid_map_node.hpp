@@ -19,11 +19,11 @@
 #include "probabilistic_occupancy_grid_map/updater/occupancy_grid_map_binary_bayes_filter_updater.hpp"
 #include "probabilistic_occupancy_grid_map/updater/occupancy_grid_map_updater_interface.hpp"
 
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <builtin_interfaces/msg/time.hpp>
 #include <laser_geometry/laser_geometry.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
@@ -68,8 +68,8 @@ private:
   rclcpp::Publisher<OccupancyGrid>::SharedPtr occupancy_grid_map_pub_;
   message_filters::Subscriber<PointCloud2> obstacle_pointcloud_sub_;
   message_filters::Subscriber<PointCloud2> raw_pointcloud_sub_;
-  std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{};
-  std::unique_ptr<tier4_autoware_utils::DebugPublisher> debug_publisher_ptr_{};
+  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{};
+  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_ptr_{};
 
   std::shared_ptr<Buffer> tf2_{std::make_shared<Buffer>(get_clock())};
   std::shared_ptr<TransformListener> tf2_listener_{std::make_shared<TransformListener>(*tf2_)};

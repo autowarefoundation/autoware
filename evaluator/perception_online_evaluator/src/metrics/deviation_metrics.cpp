@@ -14,8 +14,8 @@
 
 #include "perception_online_evaluator/metrics/deviation_metrics.hpp"
 
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/geometry/pose_deviation.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/geometry/pose_deviation.hpp"
 
 #include <motion_utils/trajectory/trajectory.hpp>
 
@@ -32,7 +32,7 @@ double calcLateralDeviation(const std::vector<Pose> & ref_path, const Pose & tar
 
   const size_t nearest_index = motion_utils::findNearestIndex(ref_path, target_pose.position);
   return std::abs(
-    tier4_autoware_utils::calcLateralDeviation(ref_path[nearest_index], target_pose.position));
+    autoware_universe_utils::calcLateralDeviation(ref_path[nearest_index], target_pose.position));
 }
 
 double calcYawDeviation(const std::vector<Pose> & ref_path, const Pose & target_pose)
@@ -42,7 +42,7 @@ double calcYawDeviation(const std::vector<Pose> & ref_path, const Pose & target_
   }
 
   const size_t nearest_index = motion_utils::findNearestIndex(ref_path, target_pose.position);
-  return std::abs(tier4_autoware_utils::calcYawDeviation(ref_path[nearest_index], target_pose));
+  return std::abs(autoware_universe_utils::calcYawDeviation(ref_path[nearest_index], target_pose));
 }
 
 std::vector<double> calcPredictedPathDeviation(
@@ -56,7 +56,7 @@ std::vector<double> calcPredictedPathDeviation(
   for (const Pose & p : pred_path.path) {
     const size_t nearest_index = motion_utils::findNearestIndex(ref_path, p.position);
     deviations.push_back(
-      tier4_autoware_utils::calcDistance2d(ref_path[nearest_index].position, p.position));
+      autoware_universe_utils::calcDistance2d(ref_path[nearest_index].position, p.position));
   }
 
   return deviations;

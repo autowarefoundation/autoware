@@ -116,15 +116,15 @@ tier4_planning_msgs::msg::PathWithLaneId convertToRearWheelCenter(
 
     // apply beta to CoG pose
     geometry_msgs::msg::Pose cog_pose_with_beta;
-    cog_pose_with_beta.position = tier4_autoware_utils::getPoint(path.points.at(i));
+    cog_pose_with_beta.position = autoware_universe_utils::getPoint(path.points.at(i));
     cog_pose_with_beta.orientation =
-      tier4_autoware_utils::createQuaternionFromYaw(yaw_vec.at(i) - beta);
+      autoware_universe_utils::createQuaternionFromYaw(yaw_vec.at(i) - beta);
 
     const auto rear_pose =
-      tier4_autoware_utils::calcOffsetPose(cog_pose_with_beta, -rear_to_cog, 0.0, 0.0);
+      autoware_universe_utils::calcOffsetPose(cog_pose_with_beta, -rear_to_cog, 0.0, 0.0);
 
     // update pose
-    tier4_autoware_utils::setPose(rear_pose, cog_path.points.at(i));
+    autoware_universe_utils::setPose(rear_pose, cog_path.points.at(i));
   }
 
   // compensate for the last pose

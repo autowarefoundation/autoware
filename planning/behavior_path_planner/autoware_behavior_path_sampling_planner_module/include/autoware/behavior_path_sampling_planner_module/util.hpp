@@ -17,8 +17,8 @@
 #include "autoware_sampler_common/structures.hpp"
 #include "autoware_sampler_common/transform/spline_transform.hpp"
 
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
 
@@ -101,7 +101,7 @@ inline autoware::sampler_common::State getInitialState(
 {
   autoware::sampler_common::State initial_state;
   Point2d initial_state_pose{pose.position.x, pose.position.y};
-  const auto rpy = tier4_autoware_utils::getRPY(pose.orientation);
+  const auto rpy = autoware_universe_utils::getRPY(pose.orientation);
   initial_state.pose = initial_state_pose;
   initial_state.frenet = reference_spline.frenet({pose.position.x, pose.position.y});
   initial_state.heading = rpy.z;

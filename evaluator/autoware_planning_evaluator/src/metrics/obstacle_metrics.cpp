@@ -14,7 +14,7 @@
 
 #include "autoware/planning_evaluator/metrics/obstacle_metrics.hpp"
 
-#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
 
 #include <Eigen/Core>
 
@@ -28,7 +28,7 @@ namespace planning_diagnostics
 namespace metrics
 {
 using autoware_planning_msgs::msg::TrajectoryPoint;
-using tier4_autoware_utils::calcDistance2d;
+using autoware_universe_utils::calcDistance2d;
 
 Stat<double> calcDistanceToObstacle(const PredictedObjects & obstacles, const Trajectory & traj)
 {

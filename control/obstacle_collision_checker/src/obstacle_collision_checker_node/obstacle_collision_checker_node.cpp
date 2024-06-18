@@ -14,10 +14,10 @@
 
 #include "obstacle_collision_checker/obstacle_collision_checker_node.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
+#include <autoware/universe_utils/ros/marker_helper.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <memory>
 #include <string>
@@ -70,8 +70,8 @@ ObstacleCollisionCheckerNode::ObstacleCollisionCheckerNode(const rclcpp::NodeOpt
   obstacle_collision_checker_->setParam(param_);
 
   // Subscriber
-  self_pose_listener_ = std::make_shared<tier4_autoware_utils::SelfPoseListener>(this);
-  transform_listener_ = std::make_shared<tier4_autoware_utils::TransformListener>(this);
+  self_pose_listener_ = std::make_shared<autoware_universe_utils::SelfPoseListener>(this);
+  transform_listener_ = std::make_shared<autoware_universe_utils::TransformListener>(this);
 
   sub_obstacle_pointcloud_ = create_subscription<sensor_msgs::msg::PointCloud2>(
     "input/obstacle_pointcloud", rclcpp::SensorDataQoS(),
@@ -86,8 +86,9 @@ ObstacleCollisionCheckerNode::ObstacleCollisionCheckerNode(const rclcpp::NodeOpt
     "input/odometry", 1, std::bind(&ObstacleCollisionCheckerNode::onOdom, this, _1));
 
   // Publisher
-  debug_publisher_ = std::make_shared<tier4_autoware_utils::DebugPublisher>(this, "debug/marker");
-  time_publisher_ = std::make_shared<tier4_autoware_utils::ProcessingTimePublisher>(this);
+  debug_publisher_ =
+    std::make_shared<autoware_universe_utils::DebugPublisher>(this, "debug/marker");
+  time_publisher_ = std::make_shared<autoware_universe_utils::ProcessingTimePublisher>(this);
 
   // Diagnostic Updater
   updater_.setHardwareID("obstacle_collision_checker");
@@ -282,9 +283,9 @@ void ObstacleCollisionCheckerNode::checkLaneDeparture(
 
 visualization_msgs::msg::MarkerArray ObstacleCollisionCheckerNode::createMarkerArray() const
 {
-  using tier4_autoware_utils::createDefaultMarker;
-  using tier4_autoware_utils::createMarkerColor;
-  using tier4_autoware_utils::createMarkerScale;
+  using autoware_universe_utils::createDefaultMarker;
+  using autoware_universe_utils::createMarkerColor;
+  using autoware_universe_utils::createMarkerScale;
 
   visualization_msgs::msg::MarkerArray marker_array;
 

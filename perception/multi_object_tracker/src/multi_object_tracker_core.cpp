@@ -199,7 +199,8 @@ MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
   // Debugger
   debugger_ = std::make_unique<TrackerDebugger>(*this, world_frame_id_);
   debugger_->setObjectChannels(input_names_short);
-  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
+  published_time_publisher_ =
+    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
 }
 
 void MultiObjectTracker::onTrigger()

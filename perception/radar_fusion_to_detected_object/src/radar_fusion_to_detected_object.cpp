@@ -15,8 +15,8 @@
 
 #include "radar_fusion_to_detected_object/radar_fusion_to_detected_object.hpp"
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/normalization.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/math/normalization.hpp>
 
 #include <boost/geometry.hpp>
 
@@ -31,12 +31,12 @@ namespace radar_fusion_to_detected_object
 {
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjects;
+using autoware_universe_utils::LinearRing2d;
+using autoware_universe_utils::Point2d;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::PoseWithCovariance;
 using geometry_msgs::msg::Twist;
 using geometry_msgs::msg::TwistWithCovariance;
-using tier4_autoware_utils::LinearRing2d;
-using tier4_autoware_utils::Point2d;
 
 void RadarFusionToDetectedObject::setParam(const Param & param)
 {
@@ -136,7 +136,7 @@ RadarFusionToDetectedObject::Output RadarFusionToDetectedObject::update(
 bool RadarFusionToDetectedObject::hasTwistCovariance(
   const TwistWithCovariance & twist_with_covariance)
 {
-  using IDX = tier4_autoware_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  using IDX = autoware_universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
   auto covariance = twist_with_covariance.covariance;
   if (covariance[IDX::X_X] == 0.0 && covariance[IDX::Y_Y] == 0.0 && covariance[IDX::Z_Z] == 0.0) {
     return false;
@@ -151,11 +151,11 @@ bool RadarFusionToDetectedObject::isYawCorrect(
   const DetectedObject & object, const TwistWithCovariance & twist_with_covariance,
   const double & yaw_threshold)
 {
-  const double twist_yaw = tier4_autoware_utils::normalizeRadian(
+  const double twist_yaw = autoware_universe_utils::normalizeRadian(
     std::atan2(twist_with_covariance.twist.linear.y, twist_with_covariance.twist.linear.x));
-  const double object_yaw = tier4_autoware_utils::normalizeRadian(
+  const double object_yaw = autoware_universe_utils::normalizeRadian(
     tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation));
-  const double diff_yaw = tier4_autoware_utils::normalizeRadian(twist_yaw - object_yaw);
+  const double diff_yaw = autoware_universe_utils::normalizeRadian(twist_yaw - object_yaw);
   if (std::abs(diff_yaw) < yaw_threshold) {
     return true;
   } else if (M_PI - yaw_threshold < std::abs(diff_yaw)) {
@@ -174,10 +174,12 @@ RadarFusionToDetectedObject::filterRadarWithinObject(
 {
   std::vector<RadarInput> outputs{};
 
-  tier4_autoware_utils::Point2d object_size{object.shape.dimensions.x, object.shape.dimensions.y};
+  autoware_universe_utils::Point2d object_size{
+    object.shape.dimensions.x, object.shape.dimensions.y};
   LinearRing2d object_box = createObject2dWithMargin(object_size, param_.bounding_box_margin);
-  object_box = tier4_autoware_utils::transformVector(
-    object_box, tier4_autoware_utils::pose2transform(object.kinematics.pose_with_covariance.pose));
+  object_box = autoware_universe_utils::transformVector(
+    object_box,
+    autoware_universe_utils::pose2transform(object.kinematics.pose_with_covariance.pose));
 
   for (const auto & radar : (*radars)) {
     Point2d radar_point{
@@ -212,10 +214,10 @@ TwistWithCovariance RadarFusionToDetectedObject::estimateTwist(
   Eigen::Vector2d vec_min_distance(0.0, 0.0);
   if (param_.velocity_weight_min_distance > 0.0) {
     auto comp_func = [&](const RadarInput & a, const RadarInput & b) {
-      return tier4_autoware_utils::calcSquaredDistance2d(
+      return autoware_universe_utils::calcSquaredDistance2d(
                a.pose_with_covariance.pose.position,
                object.kinematics.pose_with_covariance.pose.position) <
-             tier4_autoware_utils::calcSquaredDistance2d(
+             autoware_universe_utils::calcSquaredDistance2d(
                b.pose_with_covariance.pose.position,
                object.kinematics.pose_with_covariance.pose.position);
     };

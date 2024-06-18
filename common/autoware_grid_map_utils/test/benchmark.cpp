@@ -17,13 +17,13 @@
 #include "grid_map_cv/GridMapCvConverter.hpp"
 #include "grid_map_cv/GridMapCvProcessing.hpp"
 
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <grid_map_core/iterators/PolygonIterator.hpp>
 #include <grid_map_cv/grid_map_cv.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <algorithm>
 #include <fstream>
@@ -46,7 +46,7 @@ int main(int argc, char * argv[])
   result_file
     << "#Size PolygonVertices PolygonIndexes grid_map_utils_constructor grid_map_utils_iteration "
        "grid_map_constructor grid_map_iteration\n";
-  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stopwatch;
+  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stopwatch;
 
   constexpr auto nb_iterations = 10;
   constexpr auto polygon_side_vertices =

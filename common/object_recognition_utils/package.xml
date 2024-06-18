@@ -14,6 +14,7 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_perception_msgs</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>interpolation</depend>
   <depend>libboost-dev</depend>
@@ -24,7 +25,6 @@
   <depend>std_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>
-  <depend>tier4_autoware_utils</depend>
 
   <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_lint_auto</test_depend>

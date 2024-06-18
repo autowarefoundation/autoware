@@ -14,7 +14,7 @@
 
 #include "pointcloud_preprocessor/distortion_corrector/distortion_corrector.hpp"
 
-#include "tier4_autoware_utils/math/trigonometry.hpp"
+#include "autoware/universe_utils/math/trigonometry.hpp"
 
 #include <deque>
 #include <string>
@@ -28,8 +28,8 @@ DistortionCorrectorComponent::DistortionCorrectorComponent(const rclcpp::NodeOpt
 {
   // initialize debug tool
   {
-    using tier4_autoware_utils::DebugPublisher;
-    using tier4_autoware_utils::StopWatch;
+    using autoware_universe_utils::DebugPublisher;
+    using autoware_universe_utils::StopWatch;
     stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
     debug_publisher_ = std::make_unique<DebugPublisher>(this, "distortion_corrector");
     stop_watch_ptr_->tic("cyclic_time");
@@ -290,11 +290,11 @@ bool DistortionCorrectorComponent::undistortPointCloud(
 
     theta += w * time_offset;
     baselink_quat.setValue(
-      0, 0, tier4_autoware_utils::sin(theta * 0.5f),
-      tier4_autoware_utils::cos(theta * 0.5f));  // baselink_quat.setRPY(0.0, 0.0, theta);
+      0, 0, autoware_universe_utils::sin(theta * 0.5f),
+      autoware_universe_utils::cos(theta * 0.5f));  // baselink_quat.setRPY(0.0, 0.0, theta);
     const float dis = v * time_offset;
-    x += dis * tier4_autoware_utils::cos(theta);
-    y += dis * tier4_autoware_utils::sin(theta);
+    x += dis * autoware_universe_utils::cos(theta);
+    y += dis * autoware_universe_utils::sin(theta);
 
     baselink_tf_odom.setOrigin(tf2::Vector3(x, y, 0.0));
     baselink_tf_odom.setRotation(baselink_quat);

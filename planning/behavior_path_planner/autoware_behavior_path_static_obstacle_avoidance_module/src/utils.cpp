@@ -55,7 +55,8 @@ geometry_msgs::msg::Point32 createPoint32(const double x, const double y, const 
   return p;
 }
 
-geometry_msgs::msg::Polygon toMsg(const tier4_autoware_utils::Polygon2d & polygon, const double z)
+geometry_msgs::msg::Polygon toMsg(
+  const autoware_universe_utils::Polygon2d & polygon, const double z)
 {
   geometry_msgs::msg::Polygon ret;
   for (const auto & p : polygon.outer()) {
@@ -74,7 +75,7 @@ size_t findFirstNearestIndex(const T & points, const geometry_msgs::msg::Point &
   bool decreasing = false;
 
   for (size_t i = 0; i < points.size(); ++i) {
-    const auto dist = tier4_autoware_utils::calcSquaredDistance2d(points.at(i), point);
+    const auto dist = autoware_universe_utils::calcSquaredDistance2d(points.at(i), point);
     if (dist < min_dist) {
       decreasing = true;
       min_dist = dist;
@@ -328,7 +329,7 @@ bool isWithinIntersection(
     return false;
   }
 
-  const auto object_polygon = tier4_autoware_utils::toPolygon2d(object.object);
+  const auto object_polygon = autoware_universe_utils::toPolygon2d(object.object);
 
   const auto polygon =
     route_handler->getLaneletMapPtr()->polygonLayer.get(std::atoi(area_id.c_str()));
@@ -645,7 +646,7 @@ bool isNeverAvoidanceTarget(
         return true;
       }
 
-      const auto object_polygon = tier4_autoware_utils::toPolygon2d(object.object);
+      const auto object_polygon = autoware_universe_utils::toPolygon2d(object.object);
       const auto is_disjoint_right_lane =
         boost::geometry::disjoint(object_polygon, right_lane.value().polygon2d().basicPolygon());
       if (is_disjoint_right_lane) {
@@ -668,7 +669,7 @@ bool isNeverAvoidanceTarget(
         return true;
       }
 
-      const auto object_polygon = tier4_autoware_utils::toPolygon2d(object.object);
+      const auto object_polygon = autoware_universe_utils::toPolygon2d(object.object);
       const auto is_disjoint_left_lane =
         boost::geometry::disjoint(object_polygon, left_lane.value().polygon2d().basicPolygon());
       if (is_disjoint_left_lane) {
@@ -940,8 +941,8 @@ double getRoadShoulderDistance(
   ObjectData & object, const AvoidancePlanningData & data,
   const std::shared_ptr<const PlannerData> & planner_data)
 {
+  using autoware_universe_utils::Point2d;
   using lanelet::utils::to2D;
-  using tier4_autoware_utils::Point2d;
 
   const auto & object_pose = object.object.kinematics.initial_pose_with_covariance.pose;
   const auto object_closest_index =
@@ -968,7 +969,7 @@ double getRoadShoulderDistance(
         const auto p2 =
           calcOffsetPose(p_tmp, 0.0, (isOnRight(object) ? 100.0 : -100.0), 0.0).position;
         const auto opt_intersect =
-          tier4_autoware_utils::intersect(p1.second, p2, bound.at(i - 1), bound.at(i));
+          autoware_universe_utils::intersect(p1.second, p2, bound.at(i - 1), bound.at(i));
 
         if (opt_intersect.has_value()) {
           intersects.emplace_back(
@@ -986,7 +987,7 @@ double getRoadShoulderDistance(
           calcOffsetPose(p_tmp, 0.0, (isOnRight(object) ? -0.5 : 0.5) * envelope_polygon_width, 0.0)
             .position;
         const auto opt_intersect =
-          tier4_autoware_utils::intersect(p1.second, p2, bound.at(i - 1), bound.at(i));
+          autoware_universe_utils::intersect(p1.second, p2, bound.at(i - 1), bound.at(i));
 
         if (opt_intersect.has_value()) {
           intersects.emplace_back(
@@ -1035,8 +1036,8 @@ bool isWithinLanes(
 {
   const auto & rh = planner_data->route_handler;
   const auto & ego_pose = planner_data->self_odometry->pose.pose;
-  const auto transform = tier4_autoware_utils::pose2transform(ego_pose);
-  const auto footprint = tier4_autoware_utils::transformVector(
+  const auto transform = autoware_universe_utils::pose2transform(ego_pose);
+  const auto footprint = autoware_universe_utils::transformVector(
     planner_data->parameters.vehicle_info.createFootprint(), transform);
 
   lanelet::ConstLanelet closest_lanelet{};
@@ -1192,7 +1193,7 @@ void fillLongitudinalAndLengthByClosestEnvelopeFootprint(
   double min_distance = std::numeric_limits<double>::max();
   double max_distance = std::numeric_limits<double>::lowest();
   for (const auto & p : obj.envelope_poly.outer()) {
-    const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
+    const auto point = autoware_universe_utils::createPoint(p.x(), p.y(), 0.0);
     // TODO(someone): search around first position where the ego should avoid the object.
     const double arc_length = motion_utils::calcSignedArcLength(path.points, ego_pos, point);
     min_distance = std::min(min_distance, arc_length);
@@ -1209,7 +1210,7 @@ std::vector<std::pair<double, Point>> calcEnvelopeOverhangDistance(
   std::vector<std::pair<double, Point>> overhang_points{};
 
   for (const auto & p : object_data.envelope_poly.outer()) {
-    const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
+    const auto point = autoware_universe_utils::createPoint(p.x(), p.y(), 0.0);
     // TODO(someone): search around first position where the ego should avoid the object.
     const auto idx = motion_utils::findNearestIndex(path.points, point);
     const auto lateral = calcLateralDeviation(getPose(path.points.at(idx)), point);
@@ -1245,9 +1246,9 @@ Polygon2d createEnvelopePolygon(
   const Polygon2d & object_polygon, const Pose & closest_pose, const double envelope_buffer)
 {
   namespace bg = boost::geometry;
-  using tier4_autoware_utils::expandPolygon;
-  using tier4_autoware_utils::Point2d;
-  using tier4_autoware_utils::Polygon2d;
+  using autoware_universe_utils::expandPolygon;
+  using autoware_universe_utils::Point2d;
+  using autoware_universe_utils::Polygon2d;
   using Box = bg::model::box<Point2d>;
 
   const auto toPolygon2d = [](const geometry_msgs::msg::Polygon & polygon) {
@@ -1291,7 +1292,7 @@ Polygon2d createEnvelopePolygon(
 Polygon2d createEnvelopePolygon(
   const ObjectData & object_data, const Pose & closest_pose, const double envelope_buffer)
 {
-  const auto object_polygon = tier4_autoware_utils::toPolygon2d(object_data.object);
+  const auto object_polygon = autoware_universe_utils::toPolygon2d(object_data.object);
   return createEnvelopePolygon(object_polygon, closest_pose, envelope_buffer);
 }
 
@@ -1323,7 +1324,7 @@ std::vector<DrivableAreaInfo::Obstacle> generateObstaclePolygonsForDrivableArea(
     const double diff_poly_buffer =
       object.avoid_margin.value() - object_parameter.envelope_buffer_margin - vehicle_width / 2.0;
     const auto obj_poly =
-      tier4_autoware_utils::expandPolygon(object.envelope_poly, diff_poly_buffer);
+      autoware_universe_utils::expandPolygon(object.envelope_poly, diff_poly_buffer);
     obstacles_for_drivable_area.push_back(
       {object.object.kinematics.initial_pose_with_covariance.pose, obj_poly, !isOnRight(object)});
   }
@@ -1453,7 +1454,7 @@ void fillObjectEnvelopePolygon(
 
   const auto multi_step_envelope_poly = createEnvelopePolygon(unions.front(), closest_pose, 0.0);
 
-  const auto object_polygon = tier4_autoware_utils::toPolygon2d(object_data.object);
+  const auto object_polygon = autoware_universe_utils::toPolygon2d(object_data.object);
   const auto object_polygon_area = boost::geometry::area(object_polygon);
   const auto envelope_polygon_area = boost::geometry::area(multi_step_envelope_poly);
 
@@ -1864,7 +1865,7 @@ AvoidLineArray combineRawShiftLinesWithUniqueCheck(
 {
   // TODO(Horibe) parametrize
   const auto isSimilar = [](const AvoidLine & a, const AvoidLine & b) {
-    using tier4_autoware_utils::calcDistance2d;
+    using autoware_universe_utils::calcDistance2d;
     if (calcDistance2d(a.start, b.start) > 1.0) {
       return false;
     }
@@ -2151,7 +2152,7 @@ std::pair<PredictedObjects, PredictedObjects> separateObjectsByPath(
 
   const auto objects = planner_data->dynamic_object->objects;
   std::for_each(objects.begin(), objects.end(), [&](const auto & object) {
-    const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object);
+    const auto obj_polygon = autoware_universe_utils::toPolygon2d(object);
     if (!within_detection_area(obj_polygon)) {
       other_objects.objects.push_back(object);
     } else {

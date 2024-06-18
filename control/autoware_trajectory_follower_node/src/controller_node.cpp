@@ -17,7 +17,7 @@
 #include "autoware/mpc_lateral_controller/mpc_lateral_controller.hpp"
 #include "autoware/pid_longitudinal_controller/pid_longitudinal_controller.hpp"
 #include "autoware/pure_pursuit/autoware_pure_pursuit_lateral_controller.hpp"
-#include "tier4_autoware_utils/ros/marker_helper.hpp"
+#include "autoware/universe_utils/ros/marker_helper.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -80,9 +80,10 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
       this, get_clock(), period_ns, std::bind(&Controller::callbackTimerControl, this));
   }
 
-  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
+  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
 
-  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
+  published_time_publisher_ =
+    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
 }
 
 Controller::LateralControllerMode Controller::getLateralControllerMode(
@@ -222,10 +223,10 @@ void Controller::publishDebugMarker(
 
   // steer converged marker
   {
-    auto marker = tier4_autoware_utils::createDefaultMarker(
+    auto marker = autoware_universe_utils::createDefaultMarker(
       "map", this->now(), "steer_converged", 0, visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
-      tier4_autoware_utils::createMarkerScale(0.0, 0.0, 1.0),
-      tier4_autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.99));
+      autoware_universe_utils::createMarkerScale(0.0, 0.0, 1.0),
+      autoware_universe_utils::createMarkerColor(1.0, 1.0, 1.0, 0.99));
     marker.pose = input_data.current_odometry.pose.pose;
 
     std::stringstream ss;

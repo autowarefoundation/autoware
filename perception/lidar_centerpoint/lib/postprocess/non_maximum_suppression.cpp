@@ -14,9 +14,9 @@
 
 #include "lidar_centerpoint/postprocess/non_maximum_suppression.hpp"
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "object_recognition_utils/geometry.hpp"
 #include "object_recognition_utils/object_recognition_utils.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
 namespace centerpoint
 {
 
@@ -48,7 +48,7 @@ bool NonMaximumSuppression::isTargetPairObject(
   }
 
   const auto search_sqr_dist_2d = params_.search_distance_2d_ * params_.search_distance_2d_;
-  const auto sqr_dist_2d = tier4_autoware_utils::calcSquaredDistance2d(
+  const auto sqr_dist_2d = autoware_universe_utils::calcSquaredDistance2d(
     object_recognition_utils::getPose(object1), object_recognition_utils::getPose(object2));
   return sqr_dist_2d <= search_sqr_dist_2d;
 }

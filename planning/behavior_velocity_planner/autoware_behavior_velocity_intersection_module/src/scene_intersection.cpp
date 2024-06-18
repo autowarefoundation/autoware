@@ -18,13 +18,13 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for toGeomPoly
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>  // for toPolygon2d
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/uuid_helper.hpp>
 #include <lanelet2_extension/regulatory_elements/autoware_traffic_light.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/factor/velocity_factor_interface.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>  // for toPolygon2d
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
 #include <boost/geometry/algorithms/within.hpp>
 
@@ -56,7 +56,7 @@ IntersectionModule::IntersectionModule(
   associative_ids_(associative_ids),
   turn_direction_(turn_direction),
   has_traffic_light_(has_traffic_light),
-  occlusion_uuid_(tier4_autoware_utils::generateUUID())
+  occlusion_uuid_(autoware_universe_utils::generateUUID())
 {
   velocity_factor_.init(PlanningBehavior::INTERSECTION);
 

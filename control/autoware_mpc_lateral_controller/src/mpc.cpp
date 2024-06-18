@@ -15,19 +15,19 @@
 #include "autoware/mpc_lateral_controller/mpc.hpp"
 
 #include "autoware/mpc_lateral_controller/mpc_utils.hpp"
+#include "autoware/universe_utils/math/unit_conversion.hpp"
 #include "interpolation/linear_interpolation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tier4_autoware_utils/math/unit_conversion.hpp"
 
 #include <algorithm>
 #include <limits>
 
 namespace autoware::motion::control::mpc_lateral_controller
 {
-using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::normalizeRadian;
-using tier4_autoware_utils::rad2deg;
+using autoware_universe_utils::calcDistance2d;
+using autoware_universe_utils::normalizeRadian;
+using autoware_universe_utils::rad2deg;
 
 MPC::MPC(rclcpp::Node & node)
 {
@@ -499,7 +499,7 @@ MPCMatrix MPC::generateMPCMatrix(
     // get reference input (feed-forward)
     m_vehicle_model_ptr->setCurvature(ref_smooth_k);
     m_vehicle_model_ptr->calculateReferenceInput(Uref);
-    if (std::fabs(Uref(0, 0)) < tier4_autoware_utils::deg2rad(m_param.zero_ff_steer_deg)) {
+    if (std::fabs(Uref(0, 0)) < autoware_universe_utils::deg2rad(m_param.zero_ff_steer_deg)) {
       Uref(0, 0) = 0.0;  // ignore curvature noise
     }
     m.Uref_ex.block(i * DIM_U, 0, DIM_U, 1) = Uref;

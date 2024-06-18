@@ -16,12 +16,12 @@
 #define AUTOWARE__LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_NODE_HPP_
 
 #include "autoware/lane_departure_checker/lane_departure_checker.hpp"
-#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
+#include "autoware/universe_utils/ros/polling_subscriber.hpp"
 
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/ros/processing_time_publisher.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/ros/processing_time_publisher.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
@@ -67,15 +67,15 @@ public:
 
 private:
   // Subscriber
-  tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
+  autoware_universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
     this, "~/input/odometry"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<LaneletMapBin> sub_lanelet_map_bin_{
+  autoware_universe_utils::InterProcessPollingSubscriber<LaneletMapBin> sub_lanelet_map_bin_{
     this, "~/input/lanelet_map_bin", rclcpp::QoS{1}.transient_local()};
-  tier4_autoware_utils::InterProcessPollingSubscriber<LaneletRoute> sub_route_{
+  autoware_universe_utils::InterProcessPollingSubscriber<LaneletRoute> sub_route_{
     this, "~/input/route"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<Trajectory> sub_reference_trajectory_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Trajectory> sub_reference_trajectory_{
     this, "~/input/reference_trajectory"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<Trajectory> sub_predicted_trajectory_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Trajectory> sub_predicted_trajectory_{
     this, "~/input/predicted_trajectory"};
 
   // Data Buffer
@@ -99,8 +99,8 @@ private:
   void onPredictedTrajectory(const Trajectory::ConstSharedPtr msg);
 
   // Publisher
-  tier4_autoware_utils::DebugPublisher debug_publisher_{this, "~/debug"};
-  tier4_autoware_utils::ProcessingTimePublisher processing_time_publisher_{this};
+  autoware_universe_utils::DebugPublisher debug_publisher_{this, "~/debug"};
+  autoware_universe_utils::ProcessingTimePublisher processing_time_publisher_{this};
 
   // Timer
   rclcpp::TimerBase::SharedPtr timer_;

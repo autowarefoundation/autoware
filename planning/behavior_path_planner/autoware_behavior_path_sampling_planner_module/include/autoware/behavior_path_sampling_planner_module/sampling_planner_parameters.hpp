@@ -21,11 +21,11 @@
 #include <vector>
 namespace autoware::behavior_path_planner
 {
-using tier4_autoware_utils::LinearRing2d;
-using tier4_autoware_utils::MultiPoint2d;
-using tier4_autoware_utils::MultiPolygon2d;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
+using autoware_universe_utils::LinearRing2d;
+using autoware_universe_utils::MultiPoint2d;
+using autoware_universe_utils::MultiPolygon2d;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
 
 struct SamplingPlannerParameters
 {  // constraints.hard

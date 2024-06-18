@@ -15,10 +15,10 @@
 #ifndef PREDICTED_PATH_CHECKER__UTILS_HPP_
 #define PREDICTED_PATH_CHECKER__UTILS_HPP_
 
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <interpolation/linear_interpolation.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
@@ -43,12 +43,12 @@ using autoware::vehicle_info_utils::VehicleInfo;
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_planning_msgs::msg::TrajectoryPoint;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::TransformStamped;
 using std_msgs::msg::Header;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
 using PointArray = std::vector<geometry_msgs::msg::Point>;
 
 using TrajectoryPoints = std::vector<TrajectoryPoint>;

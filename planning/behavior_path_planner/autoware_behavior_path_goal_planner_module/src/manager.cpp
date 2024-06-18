@@ -15,7 +15,7 @@
 #include "autoware/behavior_path_goal_planner_module/manager.hpp"
 
 #include "autoware/behavior_path_goal_planner_module/util.hpp"
-#include "tier4_autoware_utils/ros/update_param.hpp"
+#include "autoware/universe_utils/ros/update_param.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -428,7 +428,7 @@ void GoalPlannerModuleManager::updateModuleParams(
   // object_recognition_collision_check_hard_margins, maximum_deceleration, shift_sampling_num or
   // parking_policy, there seems to be a problem when we use a temp value to check these values.
 
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
 
   auto & p = parameters_;
 

@@ -15,7 +15,7 @@
 #ifndef AUTOWARE__MPC_LATERAL_CONTROLLER__MPC_TRAJECTORY_HPP_
 #define AUTOWARE__MPC_LATERAL_CONTROLLER__MPC_TRAJECTORY_HPP_
 
-#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
 
 #include "geometry_msgs/msg/point.hpp"
 
@@ -117,7 +117,7 @@ public:
       point.pose.position.x = x.at(i);
       point.pose.position.y = y.at(i);
       point.pose.position.z = z.at(i);
-      point.pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(yaw.at(i));
+      point.pose.orientation = autoware_universe_utils::createQuaternionFromYaw(yaw.at(i));
       point.longitudinal_velocity_mps = vx.at(i);
       points.push_back(point);
     }

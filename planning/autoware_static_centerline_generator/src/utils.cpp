@@ -16,8 +16,8 @@
 
 #include "autoware/behavior_path_planner_common/data_manager.hpp"
 #include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/ros/marker_helper.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/ros/marker_helper.hpp"
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/geometry/Lanelet.h>
@@ -94,8 +94,8 @@ geometry_msgs::msg::Pose get_center_pose(
   // calculate middle pose
   geometry_msgs::msg::Pose middle_pose;
   middle_pose.position = middle_pos;
-  const double yaw = tier4_autoware_utils::calcAzimuthAngle(middle_pos, next_middle_pos);
-  middle_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(yaw);
+  const double yaw = autoware_universe_utils::calcAzimuthAngle(middle_pos, next_middle_pos);
+  middle_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(yaw);
 
   return middle_pose;
 }
@@ -189,11 +189,11 @@ MarkerArray create_footprint_marker(
   const double g = marker_color.at(1);
   const double b = marker_color.at(2);
 
-  auto marker = tier4_autoware_utils::createDefaultMarker(
+  auto marker = autoware_universe_utils::createDefaultMarker(
     "map", rclcpp::Clock().now(), "unsafe_footprints", idx,
     visualization_msgs::msg::Marker::LINE_STRIP,
-    tier4_autoware_utils::createMarkerScale(0.1, 0.0, 0.0),
-    tier4_autoware_utils::createMarkerColor(r, g, b, 0.999));
+    autoware_universe_utils::createMarkerScale(0.1, 0.0, 0.0),
+    autoware_universe_utils::createMarkerColor(r, g, b, 0.999));
   marker.header.stamp = now;
   marker.lifetime = rclcpp::Duration(0, 0);
 
@@ -221,11 +221,11 @@ MarkerArray create_distance_text_marker(
   const double g = marker_color.at(1);
   const double b = marker_color.at(2);
 
-  auto marker = tier4_autoware_utils::createDefaultMarker(
+  auto marker = autoware_universe_utils::createDefaultMarker(
     "map", rclcpp::Clock().now(), "unsafe_footprints_distance", idx,
     visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
-    tier4_autoware_utils::createMarkerScale(0.5, 0.5, 0.5),
-    tier4_autoware_utils::createMarkerColor(r, g, b, 0.999));
+    autoware_universe_utils::createMarkerScale(0.5, 0.5, 0.5),
+    autoware_universe_utils::createMarkerColor(r, g, b, 0.999));
   marker.pose = pose;
   marker.header.stamp = now;
   marker.lifetime = rclcpp::Duration(0, 0);

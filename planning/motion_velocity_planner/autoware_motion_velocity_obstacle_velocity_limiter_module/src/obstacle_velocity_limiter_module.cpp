@@ -21,14 +21,14 @@
 #include "parameters.hpp"
 #include "trajectory_preprocessing.hpp"
 
+#include <autoware/universe_utils/ros/update_param.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/duration.hpp>
 #include <rclcpp/logging.hpp>
-#include <tier4_autoware_utils/ros/update_param.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <boost/geometry.hpp>
 
@@ -132,7 +132,7 @@ VelocityPlanningResult ObstacleVelocityLimiterModule::plan(
   const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & ego_trajectory_points,
   const std::shared_ptr<const PlannerData> planner_data)
 {
-  tier4_autoware_utils::StopWatch<std::chrono::microseconds> stopwatch;
+  autoware_universe_utils::StopWatch<std::chrono::microseconds> stopwatch;
   stopwatch.tic();
   VelocityPlanningResult result;
   stopwatch.tic("preprocessing");

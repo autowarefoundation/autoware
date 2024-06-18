@@ -39,7 +39,7 @@ bool can_decelerate(
 
 std::optional<TrajectoryPoint> calculate_last_in_lane_pose(
   const EgoData & ego_data, const Slowdown & decision,
-  const tier4_autoware_utils::Polygon2d & footprint,
+  const autoware_universe_utils::Polygon2d & footprint,
   const std::optional<SlowdownToInsert> & prev_slowdown_point, const PlannerParam & params)
 {
   const auto from_arc_length =

@@ -15,10 +15,10 @@
 
   <depend>autoware_control_msgs</depend>
   <depend>autoware_system_msgs</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>autoware_vehicle_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>tier4_autoware_utils</depend>
 
   <test_depend>ament_cmake_cppcheck</test_depend>
   <test_depend>ament_cmake_cpplint</test_depend>

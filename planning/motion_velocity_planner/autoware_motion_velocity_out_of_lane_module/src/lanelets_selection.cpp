@@ -14,7 +14,7 @@
 
 #include "lanelets_selection.hpp"
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 
 #include <lanelet2_core/geometry/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
@@ -91,7 +91,7 @@ lanelet::ConstLanelets calculate_ignored_lanelets(
   lanelet::ConstLanelets ignored_lanelets;
   // ignore lanelets directly behind ego
   const auto behind =
-    tier4_autoware_utils::calcOffsetPose(ego_data.pose, params.rear_offset, 0.0, 0.0);
+    autoware_universe_utils::calcOffsetPose(ego_data.pose, params.rear_offset, 0.0, 0.0);
   const lanelet::BasicPoint2d behind_point(behind.position.x, behind.position.y);
   const auto behind_lanelets = lanelet::geometry::findWithin2d(
     route_handler->getLaneletMapPtr()->laneletLayer, behind_point, 0.0);

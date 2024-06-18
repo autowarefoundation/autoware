@@ -15,13 +15,13 @@
 #include "autoware/planning_evaluator/metrics/trajectory_metrics.hpp"
 
 #include "autoware/planning_evaluator/metrics/metrics_utils.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
 namespace planning_diagnostics
 {
 namespace metrics
 {
-using tier4_autoware_utils::calcCurvature;
-using tier4_autoware_utils::calcDistance2d;
+using autoware_universe_utils::calcCurvature;
+using autoware_universe_utils::calcDistance2d;
 
 Stat<double> calcTrajectoryInterval(const Trajectory & traj)
 {

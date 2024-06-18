@@ -15,9 +15,9 @@
 #ifndef NODE_HPP_
 #define NODE_HPP_
 
+#include "autoware/universe_utils/ros/logger_level_configure.hpp"
+#include "autoware/universe_utils/ros/polling_subscriber.hpp"
 #include "debug_marker.hpp"
-#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
-#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <motion_utils/vehicle/vehicle_state_checker.hpp>
@@ -111,11 +111,11 @@ private:
   rclcpp::TimerBase::SharedPtr timer_;
 
   // publisher and subscriber
-  tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odometry_{
+  autoware_universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odometry_{
     this, "~/input/odometry"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<sensor_msgs::msg::PointCloud2>
-    sub_pointcloud_{this, "~/input/pointcloud", tier4_autoware_utils::SingleDepthSensorQoS()};
-  tier4_autoware_utils::InterProcessPollingSubscriber<PredictedObjects> sub_dynamic_objects_{
+  autoware_universe_utils::InterProcessPollingSubscriber<sensor_msgs::msg::PointCloud2>
+    sub_pointcloud_{this, "~/input/pointcloud", autoware_universe_utils::SingleDepthSensorQoS()};
+  autoware_universe_utils::InterProcessPollingSubscriber<PredictedObjects> sub_dynamic_objects_{
     this, "~/input/objects"};
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticStatus>::SharedPtr pub_stop_reason_;
   rclcpp::Publisher<VelocityLimitClearCommand>::SharedPtr pub_clear_velocity_limit_;
@@ -143,7 +143,7 @@ private:
   State state_ = State::PASS;
   std::shared_ptr<const rclcpp::Time> last_obstacle_found_time_;
 
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
 
   bool use_dynamic_object_;
 

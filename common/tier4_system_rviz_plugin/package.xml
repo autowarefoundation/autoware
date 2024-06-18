@@ -11,6 +11,7 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_system_msgs</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>diagnostic_msgs</depend>
   <depend>libqt5-core</depend>
   <depend>libqt5-gui</depend>
@@ -19,7 +20,6 @@
   <depend>rviz_common</depend>
   <depend>rviz_default_plugins</depend>
   <depend>rviz_ogre_vendor</depend>
-  <depend>tier4_autoware_utils</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

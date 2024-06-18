@@ -16,13 +16,13 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_universe_utils</depend>
   <depend>cv_bridge</depend>
   <depend>pcl_conversions</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>visualization_msgs</depend>
   <depend>yabloc_common</depend>
 

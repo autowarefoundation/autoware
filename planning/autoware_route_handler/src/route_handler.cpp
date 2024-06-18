@@ -14,13 +14,13 @@
 
 #include "autoware/route_handler/route_handler.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware_utils/math/normalization.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/route_checker.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <autoware_planning_msgs/msg/lanelet_primitive.hpp>
 #include <autoware_planning_msgs/msg/path.hpp>
@@ -110,7 +110,7 @@ PathWithLaneId removeOverlappingPoints(const PathWithLaneId & input_path)
 
     constexpr double min_dist = 0.001;
     if (
-      tier4_autoware_utils::calcDistance3d(filtered_path.points.back().point, pt.point) <
+      autoware_universe_utils::calcDistance3d(filtered_path.points.back().point, pt.point) <
       min_dist) {
       filtered_path.points.back().lane_ids.push_back(pt.lane_ids.front());
       filtered_path.points.back().point.longitudinal_velocity_mps = std::min(
@@ -1725,14 +1725,14 @@ PathWithLaneId RouteHandler::getCenterLinePath(
     double angle{0.0};
     const auto & pts = reference_path.points;
     if (i + 1 < reference_path.points.size()) {
-      angle = tier4_autoware_utils::calcAzimuthAngle(
+      angle = autoware_universe_utils::calcAzimuthAngle(
         pts.at(i).point.pose.position, pts.at(i + 1).point.pose.position);
     } else if (i != 0) {
-      angle = tier4_autoware_utils::calcAzimuthAngle(
+      angle = autoware_universe_utils::calcAzimuthAngle(
         pts.at(i - 1).point.pose.position, pts.at(i).point.pose.position);
     }
     reference_path.points.at(i).point.pose.orientation =
-      tier4_autoware_utils::createQuaternionFromYaw(angle);
+      autoware_universe_utils::createQuaternionFromYaw(angle);
   }
 
   return reference_path;

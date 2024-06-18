@@ -17,8 +17,8 @@
 #include "autoware/behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
 #include <autoware/behavior_path_lane_change_module/utils/markers.hpp>
+#include <autoware/universe_utils/ros/marker_helper.hpp>
 #include <lanelet2_extension/visualization/visualization.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <geometry_msgs/msg/detail/pose__struct.hpp>
@@ -34,9 +34,9 @@
 
 namespace marker_utils::lane_change_markers
 {
+using autoware_universe_utils::createDefaultMarker;
+using autoware_universe_utils::createMarkerScale;
 using geometry_msgs::msg::Point;
-using tier4_autoware_utils::createDefaultMarker;
-using tier4_autoware_utils::createMarkerScale;
 
 MarkerArray showAllValidLaneChangePath(const std::vector<LaneChangePath> & lanes, std::string && ns)
 {
@@ -172,7 +172,7 @@ MarkerArray createDebugMarkerArray(
 
   MarkerArray debug_marker;
   const auto add = [&debug_marker](const MarkerArray & added) {
-    tier4_autoware_utils::appendMarkerArray(added, &debug_marker);
+    autoware_universe_utils::appendMarkerArray(added, &debug_marker);
   };
 
   if (!debug_data.execution_area.points.empty()) {

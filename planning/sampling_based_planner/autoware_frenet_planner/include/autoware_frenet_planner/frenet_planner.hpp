@@ -15,10 +15,10 @@
 #ifndef AUTOWARE_FRENET_PLANNER__FRENET_PLANNER_HPP_
 #define AUTOWARE_FRENET_PLANNER__FRENET_PLANNER_HPP_
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware_frenet_planner/structures.hpp"
 #include "autoware_sampler_common/structures.hpp"
 #include "autoware_sampler_common/transform/spline_transform.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <optional>
 #include <vector>

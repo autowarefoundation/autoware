@@ -17,9 +17,9 @@
 
 #include "goal_distance_calculator/goal_distance_calculator.hpp"
 
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/ros/self_pose_listener.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/ros/self_pose_listener.hpp>
 
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -45,7 +45,7 @@ public:
 private:
   // Subscriber
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr sub_initial_pose_;
-  tier4_autoware_utils::SelfPoseListener self_pose_listener_;
+  autoware_universe_utils::SelfPoseListener self_pose_listener_;
   rclcpp::Subscription<autoware_planning_msgs::msg::LaneletRoute>::SharedPtr sub_route_;
 
   // Data Buffer
@@ -56,7 +56,7 @@ private:
   void onRoute(const autoware_planning_msgs::msg::LaneletRoute::ConstSharedPtr & msg);
 
   // Publisher
-  tier4_autoware_utils::DebugPublisher debug_publisher_;
+  autoware_universe_utils::DebugPublisher debug_publisher_;
 
   // Timer
   rclcpp::TimerBase::SharedPtr timer_;

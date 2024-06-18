@@ -19,6 +19,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_universe_utils</depend>
   <depend>component_interface_specs</depend>
   <depend>component_interface_utils</depend>
   <depend>geometry_msgs</depend>
@@ -27,7 +28,6 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>std_srvs</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>tier4_localization_msgs</depend>
 
   <test_depend>ament_cmake_cppcheck</test_depend>

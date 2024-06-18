@@ -14,9 +14,9 @@
 
 #include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/universe_utils/ros/uuid_helper.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -24,7 +24,7 @@
 namespace autoware::behavior_velocity_planner
 {
 
-using tier4_autoware_utils::StopWatch;
+using autoware_universe_utils::StopWatch;
 
 SceneModuleInterface::SceneModuleInterface(
   const int64_t module_id, rclcpp::Logger logger, rclcpp::Clock::SharedPtr clock)
@@ -236,7 +236,7 @@ UUID SceneModuleManagerInterfaceWithRTC::getUUID(const int64_t & module_id) cons
 
 void SceneModuleManagerInterfaceWithRTC::generateUUID(const int64_t & module_id)
 {
-  map_uuid_.insert({module_id, tier4_autoware_utils::generateUUID()});
+  map_uuid_.insert({module_id, autoware_universe_utils::generateUUID()});
 }
 
 void SceneModuleManagerInterfaceWithRTC::removeUUID(const int64_t & module_id)

@@ -14,9 +14,9 @@
 
 #include "autoware/pid_longitudinal_controller/pid_longitudinal_controller.hpp"
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/math/normalization.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/math/normalization.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -465,10 +465,10 @@ PidLongitudinalController::ControlData PidLongitudinalController::getControlData
 
   // check if the deviation is worth emergency
   m_diagnostic_data.trans_deviation =
-    tier4_autoware_utils::calcDistance2d(current_interpolated_pose.first, current_pose);
+    autoware_universe_utils::calcDistance2d(current_interpolated_pose.first, current_pose);
   const bool is_dist_deviation_large =
     m_state_transition_params.emergency_state_traj_trans_dev < m_diagnostic_data.trans_deviation;
-  m_diagnostic_data.rot_deviation = std::abs(tier4_autoware_utils::normalizeRadian(
+  m_diagnostic_data.rot_deviation = std::abs(autoware_universe_utils::normalizeRadian(
     tf2::getYaw(current_interpolated_pose.first.pose.orientation) -
     tf2::getYaw(current_pose.orientation)));
   const bool is_yaw_deviation_large =
@@ -605,7 +605,7 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     auto marker = createDefaultMarker(
       "map", clock_->now(), "stop_reason", 0, Marker::TEXT_VIEW_FACING,
       createMarkerScale(0.0, 0.0, 1.0), createMarkerColor(1.0, 1.0, 1.0, 0.999));
-    marker.pose = tier4_autoware_utils::calcOffsetPose(
+    marker.pose = autoware_universe_utils::calcOffsetPose(
       m_current_kinematic_state.pose.pose, m_wheel_base + m_front_overhang,
       m_vehicle_width / 2 + 2.0, 1.5);
     marker.text = "steering not\nconverged";

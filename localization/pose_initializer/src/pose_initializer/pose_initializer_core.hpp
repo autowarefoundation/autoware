@@ -15,10 +15,10 @@
 #ifndef POSE_INITIALIZER__POSE_INITIALIZER_CORE_HPP_
 #define POSE_INITIALIZER__POSE_INITIALIZER_CORE_HPP_
 
+#include <autoware/universe_utils/ros/logger_level_configure.hpp>
 #include <component_interface_specs/localization.hpp>
 #include <component_interface_utils/rclcpp.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/logger_level_configure.hpp>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
@@ -55,7 +55,7 @@ private:
   std::unique_ptr<StopCheckModule> stop_check_;
   std::unique_ptr<EkfLocalizationTriggerModule> ekf_localization_trigger_;
   std::unique_ptr<NdtLocalizationTriggerModule> ndt_localization_trigger_;
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
   double stop_check_duration_;
 
   void change_node_trigger(bool flag, bool need_spin = false);

@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "autoware/universe_utils/geometry/boost_geometry.hpp"
+#include "autoware/universe_utils/math/unit_conversion.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/geometry/boost_geometry.hpp"
-#include "tier4_autoware_utils/math/unit_conversion.hpp"
 
 #include <gtest/gtest.h>
 #include <gtest/internal/gtest-port.h>
@@ -28,9 +28,9 @@ namespace
 {
 using autoware_planning_msgs::msg::Trajectory;
 using TrajectoryPointArray = std::vector<autoware_planning_msgs::msg::TrajectoryPoint>;
-using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::createQuaternionFromRPY;
-using tier4_autoware_utils::transformPoint;
+using autoware_universe_utils::createPoint;
+using autoware_universe_utils::createQuaternionFromRPY;
+using autoware_universe_utils::transformPoint;
 
 constexpr double epsilon = 1e-6;
 
@@ -136,8 +136,8 @@ TEST(trajectory, validateNonSharpAngle_DefaultThreshold)
 TEST(trajectory, validateNonSharpAngle_SetThreshold)
 {
   using autoware_planning_msgs::msg::TrajectoryPoint;
+  using autoware_universe_utils::pi;
   using motion_utils::validateNonSharpAngle;
-  using tier4_autoware_utils::pi;
 
   TrajectoryPoint p1;
   p1.pose = createPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
@@ -1009,8 +1009,8 @@ TEST(trajectory, calcDistanceToForwardStopPoint_DistThreshold)
 
 TEST(trajectory, calcDistanceToForwardStopPoint_YawThreshold)
 {
+  using autoware_universe_utils::deg2rad;
   using motion_utils::calcDistanceToForwardStopPoint;
-  using tier4_autoware_utils::deg2rad;
 
   const auto max_d = std::numeric_limits<double>::max();
   auto traj_input = generateTestTrajectory<Trajectory>(100, 1.0, 3.0);
@@ -1061,10 +1061,10 @@ TEST(trajectory, calcDistanceToForwardStopPoint_YawThreshold)
 
 TEST(trajectory, calcLongitudinalOffsetPointFromIndex)
 {
+  using autoware_universe_utils::getPoint;
   using motion_utils::calcArcLength;
   using motion_utils::calcLongitudinalOffsetPoint;
   using motion_utils::calcSignedArcLength;
-  using tier4_autoware_utils::getPoint;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const auto total_length = calcArcLength(traj.points);
@@ -1137,11 +1137,11 @@ TEST(trajectory, calcLongitudinalOffsetPointFromIndex)
 
 TEST(trajectory, calcLongitudinalOffsetPointFromPoint)
 {
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::getPoint;
   using motion_utils::calcArcLength;
   using motion_utils::calcLongitudinalOffsetPoint;
   using motion_utils::calcSignedArcLength;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::getPoint;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const auto total_length = calcArcLength(traj.points);
@@ -1215,10 +1215,10 @@ TEST(trajectory, calcLongitudinalOffsetPointFromPoint)
 
 TEST(trajectory, calcLongitudinalOffsetPoseFromIndex)
 {
+  using autoware_universe_utils::getPoint;
   using motion_utils::calcArcLength;
   using motion_utils::calcLongitudinalOffsetPose;
   using motion_utils::calcSignedArcLength;
-  using tier4_autoware_utils::getPoint;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const auto total_length = calcArcLength(traj.points);
@@ -1300,9 +1300,9 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromIndex)
 TEST(trajectory, calcLongitudinalOffsetPoseFromIndex_quatInterpolation)
 {
   using autoware_planning_msgs::msg::TrajectoryPoint;
+  using autoware_universe_utils::deg2rad;
   using motion_utils::calcArcLength;
   using motion_utils::calcLongitudinalOffsetPose;
-  using tier4_autoware_utils::deg2rad;
 
   Trajectory traj{};
 
@@ -1386,9 +1386,9 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromIndex_quatInterpolation)
 TEST(trajectory, calcLongitudinalOffsetPoseFromIndex_quatSphericalInterpolation)
 {
   using autoware_planning_msgs::msg::TrajectoryPoint;
+  using autoware_universe_utils::deg2rad;
   using motion_utils::calcArcLength;
   using motion_utils::calcLongitudinalOffsetPose;
-  using tier4_autoware_utils::deg2rad;
 
   Trajectory traj{};
 
@@ -1477,11 +1477,11 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromIndex_quatSphericalInterpolation)
 
 TEST(trajectory, calcLongitudinalOffsetPoseFromPoint)
 {
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::getPoint;
   using motion_utils::calcArcLength;
   using motion_utils::calcLongitudinalOffsetPose;
   using motion_utils::calcSignedArcLength;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::getPoint;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const auto total_length = calcArcLength(traj.points);
@@ -1564,11 +1564,11 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromPoint)
 TEST(trajectory, calcLongitudinalOffsetPoseFromPoint_quatInterpolation)
 {
   using autoware_planning_msgs::msg::TrajectoryPoint;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::deg2rad;
   using motion_utils::calcArcLength;
   using motion_utils::calcLongitudinalOffsetPose;
   using motion_utils::calcLongitudinalOffsetToSegment;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::deg2rad;
 
   Trajectory traj{};
 
@@ -1638,11 +1638,11 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromPoint_quatInterpolation)
 TEST(trajectory, calcLongitudinalOffsetPoseFromPoint_quatSphericalInterpolation)
 {
   using autoware_planning_msgs::msg::TrajectoryPoint;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::deg2rad;
   using motion_utils::calcArcLength;
   using motion_utils::calcLongitudinalOffsetPose;
   using motion_utils::calcLongitudinalOffsetToSegment;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::deg2rad;
 
   Trajectory traj{};
 
@@ -1715,13 +1715,13 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromPoint_quatSphericalInterpolation)
 
 TEST(trajectory, insertTargetPoint)
 {
+  using autoware_universe_utils::calcDistance2d;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::deg2rad;
+  using autoware_universe_utils::getPose;
   using motion_utils::calcArcLength;
   using motion_utils::findNearestSegmentIndex;
   using motion_utils::insertTargetPoint;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::getPose;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const auto total_length = calcArcLength(traj.points);
@@ -1928,19 +1928,19 @@ TEST(trajectory, insertTargetPoint)
 
 TEST(trajectory, insertTargetPoint_Reverse)
 {
+  using autoware_universe_utils::calcDistance2d;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::createQuaternionFromYaw;
+  using autoware_universe_utils::deg2rad;
+  using autoware_universe_utils::getPose;
   using motion_utils::calcArcLength;
   using motion_utils::findNearestSegmentIndex;
   using motion_utils::insertTargetPoint;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::createQuaternionFromYaw;
-  using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::getPose;
 
   constexpr double overlap_threshold = 1e-4;
   auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   for (size_t i = 0; i < traj.points.size(); ++i) {
-    traj.points.at(i).pose.orientation = createQuaternionFromYaw(tier4_autoware_utils::pi);
+    traj.points.at(i).pose.orientation = createQuaternionFromYaw(autoware_universe_utils::pi);
   }
   const auto total_length = calcArcLength(traj.points);
 
@@ -1986,13 +1986,13 @@ TEST(trajectory, insertTargetPoint_Reverse)
 
 TEST(trajectory, insertTargetPoint_OverlapThreshold)
 {
+  using autoware_universe_utils::calcDistance2d;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::deg2rad;
+  using autoware_universe_utils::getPose;
   using motion_utils::calcArcLength;
   using motion_utils::findNearestSegmentIndex;
   using motion_utils::insertTargetPoint;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::getPose;
 
   constexpr double overlap_threshold = 1e-4;
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
@@ -2079,13 +2079,13 @@ TEST(trajectory, insertTargetPoint_OverlapThreshold)
 
 TEST(trajectory, insertTargetPoint_Length)
 {
+  using autoware_universe_utils::calcDistance2d;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::deg2rad;
+  using autoware_universe_utils::getPose;
   using motion_utils::calcArcLength;
   using motion_utils::findNearestSegmentIndex;
   using motion_utils::insertTargetPoint;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::getPose;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const auto total_length = calcArcLength(traj.points);
@@ -2317,13 +2317,13 @@ TEST(trajectory, insertTargetPoint_Length)
 
 TEST(trajectory, insertTargetPoint_Length_Without_Target_Point)
 {
+  using autoware_universe_utils::calcDistance2d;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::deg2rad;
+  using autoware_universe_utils::getPose;
   using motion_utils::calcArcLength;
   using motion_utils::findNearestSegmentIndex;
   using motion_utils::insertTargetPoint;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::getPose;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const auto total_length = calcArcLength(traj.points);
@@ -2503,13 +2503,13 @@ TEST(trajectory, insertTargetPoint_Length_Without_Target_Point)
 
 TEST(trajectory, insertTargetPoint_Length_Without_Target_Point_Non_Zero_Start_Idx)
 {
+  using autoware_universe_utils::calcDistance2d;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::deg2rad;
+  using autoware_universe_utils::getPose;
   using motion_utils::calcArcLength;
   using motion_utils::findNearestSegmentIndex;
   using motion_utils::insertTargetPoint;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::getPose;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -2733,13 +2733,13 @@ TEST(trajectory, insertTargetPoint_Length_Without_Target_Point_Non_Zero_Start_Id
 
 TEST(trajectory, insertTargetPoint_Negative_Length_Without_Target_Point_Non_Zero_Start_Idx)
 {
+  using autoware_universe_utils::calcDistance2d;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::deg2rad;
+  using autoware_universe_utils::getPose;
   using motion_utils::calcArcLength;
   using motion_utils::findNearestSegmentIndex;
   using motion_utils::insertTargetPoint;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::getPose;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -2920,13 +2920,13 @@ TEST(trajectory, insertTargetPoint_Negative_Length_Without_Target_Point_Non_Zero
 
 TEST(trajectory, insertTargetPoint_Length_from_a_pose)
 {
+  using autoware_universe_utils::calcDistance2d;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::deg2rad;
+  using autoware_universe_utils::getPose;
   using motion_utils::calcArcLength;
   using motion_utils::findNearestSegmentIndex;
   using motion_utils::insertTargetPoint;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::getPose;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const auto total_length = calcArcLength(traj.points);
@@ -3272,13 +3272,13 @@ TEST(trajectory, insertTargetPoint_Length_from_a_pose)
 
 TEST(trajectory, insertStopPoint_from_a_source_index)
 {
+  using autoware_universe_utils::calcDistance2d;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::deg2rad;
+  using autoware_universe_utils::getPose;
   using motion_utils::calcArcLength;
   using motion_utils::findNearestSegmentIndex;
   using motion_utils::insertStopPoint;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::getPose;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 10.0);
 
@@ -3527,13 +3527,13 @@ TEST(trajectory, insertStopPoint_from_a_source_index)
 
 TEST(trajectory, insertStopPoint_from_front_point)
 {
+  using autoware_universe_utils::calcDistance2d;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::deg2rad;
+  using autoware_universe_utils::getPose;
   using motion_utils::calcArcLength;
   using motion_utils::findNearestSegmentIndex;
   using motion_utils::insertStopPoint;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::getPose;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 10.0);
 
@@ -3724,13 +3724,13 @@ TEST(trajectory, insertStopPoint_from_front_point)
 
 TEST(trajectory, insertStopPoint_from_a_pose)
 {
+  using autoware_universe_utils::calcDistance2d;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::deg2rad;
+  using autoware_universe_utils::getPose;
   using motion_utils::calcArcLength;
   using motion_utils::findNearestSegmentIndex;
   using motion_utils::insertStopPoint;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::getPose;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 10.0);
   const auto total_length = calcArcLength(traj.points);
@@ -4110,13 +4110,13 @@ TEST(trajectory, insertStopPoint_from_a_pose)
 
 TEST(trajectory, insertStopPoint_with_pose_and_segment_index)
 {
+  using autoware_universe_utils::calcDistance2d;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::deg2rad;
+  using autoware_universe_utils::getPose;
   using motion_utils::calcArcLength;
   using motion_utils::findNearestSegmentIndex;
   using motion_utils::insertStopPoint;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::getPose;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 3.0);
   const auto total_length = calcArcLength(traj.points);
@@ -4354,12 +4354,12 @@ TEST(trajectory, insertStopPoint_with_pose_and_segment_index)
 
 TEST(trajectory, insertDecelPoint_from_a_point)
 {
+  using autoware_universe_utils::calcDistance2d;
+  using autoware_universe_utils::createPoint;
+  using autoware_universe_utils::getLongitudinalVelocity;
   using motion_utils::calcArcLength;
   using motion_utils::findNearestSegmentIndex;
   using motion_utils::insertDecelPoint;
-  using tier4_autoware_utils::calcDistance2d;
-  using tier4_autoware_utils::createPoint;
-  using tier4_autoware_utils::getLongitudinalVelocity;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 10.0);
   const auto total_length = calcArcLength(traj.points);
@@ -4444,9 +4444,9 @@ TEST(trajectory, insertDecelPoint_from_a_point)
 
 TEST(trajectory, findFirstNearestIndexWithSoftConstraints)
 {
+  using autoware_universe_utils::pi;
   using motion_utils::findFirstNearestIndexWithSoftConstraints;
   using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
-  using tier4_autoware_utils::pi;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -5252,25 +5252,25 @@ TEST(trajectory, cropForwardPoints)
 
   {  // Normal case
     const auto cropped_traj_points =
-      cropForwardPoints(traj.points, tier4_autoware_utils::createPoint(1.5, 1.5, 0.0), 1, 4.8);
+      cropForwardPoints(traj.points, autoware_universe_utils::createPoint(1.5, 1.5, 0.0), 1, 4.8);
     EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(7));
   }
 
   {  // Forward length is longer than points arc length.
     const auto cropped_traj_points =
-      cropForwardPoints(traj.points, tier4_autoware_utils::createPoint(1.5, 1.5, 0.0), 1, 10.0);
+      cropForwardPoints(traj.points, autoware_universe_utils::createPoint(1.5, 1.5, 0.0), 1, 10.0);
     EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(10));
   }
 
   {  // Point is on the previous segment
     const auto cropped_traj_points =
-      cropForwardPoints(traj.points, tier4_autoware_utils::createPoint(1.0, 1.0, 0.0), 0, 2.5);
+      cropForwardPoints(traj.points, autoware_universe_utils::createPoint(1.0, 1.0, 0.0), 0, 2.5);
     EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(4));
   }
 
   {  // Point is on the next segment
     const auto cropped_traj_points =
-      cropForwardPoints(traj.points, tier4_autoware_utils::createPoint(1.0, 1.0, 0.0), 1, 2.5);
+      cropForwardPoints(traj.points, autoware_universe_utils::createPoint(1.0, 1.0, 0.0), 1, 2.5);
     EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(4));
   }
 }
@@ -5283,25 +5283,25 @@ TEST(trajectory, cropBackwardPoints)
 
   {  // Normal case
     const auto cropped_traj_points =
-      cropBackwardPoints(traj.points, tier4_autoware_utils::createPoint(8.5, 8.5, 0.0), 8, 4.8);
+      cropBackwardPoints(traj.points, autoware_universe_utils::createPoint(8.5, 8.5, 0.0), 8, 4.8);
     EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(6));
   }
 
   {  // Backward length is longer than points arc length.
     const auto cropped_traj_points =
-      cropBackwardPoints(traj.points, tier4_autoware_utils::createPoint(8.5, 8.5, 0.0), 8, 10.0);
+      cropBackwardPoints(traj.points, autoware_universe_utils::createPoint(8.5, 8.5, 0.0), 8, 10.0);
     EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(10));
   }
 
   {  // Point is on the previous segment
     const auto cropped_traj_points =
-      cropBackwardPoints(traj.points, tier4_autoware_utils::createPoint(8.0, 8.0, 0.0), 7, 2.5);
+      cropBackwardPoints(traj.points, autoware_universe_utils::createPoint(8.0, 8.0, 0.0), 7, 2.5);
     EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(4));
   }
 
   {  // Point is on the next segment
     const auto cropped_traj_points =
-      cropBackwardPoints(traj.points, tier4_autoware_utils::createPoint(8.0, 8.0, 0.0), 8, 2.5);
+      cropBackwardPoints(traj.points, autoware_universe_utils::createPoint(8.0, 8.0, 0.0), 8, 2.5);
     EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(4));
   }
 }
@@ -5314,25 +5314,25 @@ TEST(trajectory, cropPoints)
 
   {  // Normal case
     const auto cropped_traj_points =
-      cropPoints(traj.points, tier4_autoware_utils::createPoint(3.5, 3.5, 0.0), 3, 2.3, 1.2);
+      cropPoints(traj.points, autoware_universe_utils::createPoint(3.5, 3.5, 0.0), 3, 2.3, 1.2);
     EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(3));
   }
 
   {  // Length is longer than points arc length.
     const auto cropped_traj_points =
-      cropPoints(traj.points, tier4_autoware_utils::createPoint(3.5, 3.5, 0.0), 3, 10.0, 10.0);
+      cropPoints(traj.points, autoware_universe_utils::createPoint(3.5, 3.5, 0.0), 3, 10.0, 10.0);
     EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(10));
   }
 
   {  // Point is on the previous segment
     const auto cropped_traj_points =
-      cropPoints(traj.points, tier4_autoware_utils::createPoint(3.0, 3.0, 0.0), 2, 2.2, 1.9);
+      cropPoints(traj.points, autoware_universe_utils::createPoint(3.0, 3.0, 0.0), 2, 2.2, 1.9);
     EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(4));
   }
 
   {  // Point is on the next segment
     const auto cropped_traj_points =
-      cropPoints(traj.points, tier4_autoware_utils::createPoint(3.0, 3.0, 0.0), 3, 2.2, 1.9);
+      cropPoints(traj.points, autoware_universe_utils::createPoint(3.0, 3.0, 0.0), 3, 2.2, 1.9);
     EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(4));
   }
 }
@@ -5357,7 +5357,7 @@ TEST(Trajectory, removeFirstInvalidOrientationPoints)
       EXPECT_EQ(traj.points.at(i), modified_traj.points.at(i));
       const double yaw1 = tf2::getYaw(modified_traj.points.at(i).pose.orientation);
       const double yaw2 = tf2::getYaw(modified_traj.points.at(i + 1).pose.orientation);
-      const double yaw_diff = std::abs(tier4_autoware_utils::normalizeRadian(yaw1 - yaw2));
+      const double yaw_diff = std::abs(autoware_universe_utils::normalizeRadian(yaw1 - yaw2));
       EXPECT_LE(yaw_diff, max_yaw_diff);
     }
   };
@@ -5420,8 +5420,8 @@ TEST(trajectory, calcYawDeviation)
 TEST(trajectory, isTargetPointFront)
 {
   using autoware_planning_msgs::msg::TrajectoryPoint;
+  using autoware_universe_utils::createPoint;
   using motion_utils::isTargetPointFront;
-  using tier4_autoware_utils::createPoint;
 
   // Generate test trajectory
   const auto trajectory = generateTestTrajectory<Trajectory>(10, 1.0);

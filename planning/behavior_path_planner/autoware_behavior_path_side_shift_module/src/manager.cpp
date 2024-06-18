@@ -14,7 +14,7 @@
 
 #include "autoware/behavior_path_side_shift_module/manager.hpp"
 
-#include "tier4_autoware_utils/ros/update_param.hpp"
+#include "autoware/universe_utils/ros/update_param.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -48,7 +48,7 @@ void SideShiftModuleManager::init(rclcpp::Node * node)
 void SideShiftModuleManager::updateModuleParams(
   [[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters)
 {
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
 
   [[maybe_unused]] auto p = parameters_;
 

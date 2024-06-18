@@ -19,9 +19,9 @@
 #include "probabilistic_occupancy_grid_map/pointcloud_based_occupancy_grid_map/occupancy_grid_map_projective.hpp"
 #include "probabilistic_occupancy_grid_map/utils/utils.hpp"
 
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <pcl_ros/transforms.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <nav_msgs/msg/occupancy_grid.hpp>
 
@@ -119,8 +119,8 @@ PointcloudBasedOccupancyGridMapNode::PointcloudBasedOccupancyGridMapNode(
 
   // initialize debug tool
   {
-    using tier4_autoware_utils::DebugPublisher;
-    using tier4_autoware_utils::StopWatch;
+    using autoware_universe_utils::DebugPublisher;
+    using autoware_universe_utils::StopWatch;
     stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
     debug_publisher_ptr_ =
       std::make_unique<DebugPublisher>(this, "pointcloud_based_occupancy_grid_map");

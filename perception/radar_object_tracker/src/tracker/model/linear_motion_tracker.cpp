@@ -20,8 +20,8 @@
 
 #include "radar_object_tracker/utils/utils.hpp"
 
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
 
 #include <bits/stdc++.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -237,8 +237,8 @@ void LinearMotionTracker::loadDefaultModelParameters(const std::string & path)
   // limitation
   // (TODO): this may be written in another yaml file based on classify result
   const float max_speed_kmph = config["default"]["limit"]["max_speed"].as<float>();  // [km/h]
-  max_vx_ = tier4_autoware_utils::kmph2mps(max_speed_kmph);                          // [m/s]
-  max_vy_ = tier4_autoware_utils::kmph2mps(max_speed_kmph);                          // [rad/s]
+  max_vx_ = autoware_universe_utils::kmph2mps(max_speed_kmph);                       // [m/s]
+  max_vy_ = autoware_universe_utils::kmph2mps(max_speed_kmph);                       // [rad/s]
 }
 
 bool LinearMotionTracker::predict(const rclcpp::Time & time)
@@ -682,7 +682,7 @@ bool LinearMotionTracker::getTrackedObject(
     const auto origin_yaw = tf2::getYaw(object_.kinematics.pose_with_covariance.pose.orientation);
     const auto ekf_pose_yaw = tf2::getYaw(pose_with_cov.pose.orientation);
     object.shape.footprint =
-      tier4_autoware_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
+      autoware_universe_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
   }
 
   return true;

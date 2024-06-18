@@ -36,7 +36,7 @@ bool isVehicleStopped(const double stop_duration)
 Necessary includes:
 
 ```c++
-#include <tier4_autoware_utils/vehicle/vehicle_state_checker.hpp>
+#include <autoware/universe_utils/vehicle/vehicle_state_checker.hpp>
 ```
 
 1.Create a checker instance.
@@ -116,7 +116,7 @@ bool isVehicleStoppedAtStopPoint(const double stop_duration)
 Necessary includes:
 
 ```c++
-#include <tier4_autoware_utils/vehicle/vehicle_state_checker.hpp>
+#include <autoware/universe_utils/vehicle/vehicle_state_checker.hpp>
 ```
 
 1.Create a checker instance.

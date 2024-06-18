@@ -14,14 +14,14 @@
 
 #include "test_planning_validator_helper.hpp"
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "test_parameter.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <math.h>
 
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
-using tier4_autoware_utils::createQuaternionFromYaw;
+using autoware_universe_utils::createQuaternionFromYaw;
 
 Trajectory generateTrajectoryWithConstantAcceleration(
   const double interval_distance, const double speed, const double yaw, const size_t size,

@@ -15,9 +15,9 @@
 #ifndef AUTOWARE_CROSSWALK_TRAFFIC_LIGHT_ESTIMATOR__NODE_HPP_
 #define AUTOWARE_CROSSWALK_TRAFFIC_LIGHT_ESTIMATOR__NODE_HPP_
 
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_perception_msgs/msg/traffic_light_group_array.hpp>
@@ -41,8 +41,8 @@ namespace autoware::crosswalk_traffic_light_estimator
 
 using autoware_map_msgs::msg::LaneletMapBin;
 using autoware_planning_msgs::msg::LaneletRoute;
-using tier4_autoware_utils::DebugPublisher;
-using tier4_autoware_utils::StopWatch;
+using autoware_universe_utils::DebugPublisher;
+using autoware_universe_utils::StopWatch;
 using tier4_debug_msgs::msg::Float64Stamped;
 using TrafficSignal = autoware_perception_msgs::msg::TrafficLightGroup;
 using TrafficSignalArray = autoware_perception_msgs::msg::TrafficLightGroupArray;

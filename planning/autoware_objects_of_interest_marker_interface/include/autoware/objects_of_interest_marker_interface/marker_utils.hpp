@@ -17,11 +17,11 @@
 #include "autoware/objects_of_interest_marker_interface/coloring.hpp"
 #include "autoware/objects_of_interest_marker_interface/marker_data.hpp"
 
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/constants.hpp>
-#include <tier4_autoware_utils/math/trigonometry.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/math/constants.hpp>
+#include <autoware/universe_utils/math/trigonometry.hpp>
+#include <autoware/universe_utils/ros/marker_helper.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <geometry_msgs/msg/pose.hpp>

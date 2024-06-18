@@ -18,13 +18,13 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/uuid_helper.hpp>
 #include <motion_utils/distance/distance.hpp>
 #include <motion_utils/resample/resample.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
 #include <lanelet2_core/geometry/LineString.h>
 #include <lanelet2_routing/RoutingGraph.h>
@@ -41,6 +41,12 @@
 namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
+using autoware_universe_utils::createPoint;
+using autoware_universe_utils::getPose;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
+using autoware_universe_utils::pose2transform;
+using autoware_universe_utils::toHexString;
 using motion_utils::calcArcLength;
 using motion_utils::calcDecelDistWithJerkAndAccConstraints;
 using motion_utils::calcLateralOffset;
@@ -51,12 +57,6 @@ using motion_utils::calcSignedArcLengthPartialSum;
 using motion_utils::findNearestSegmentIndex;
 using motion_utils::insertTargetPoint;
 using motion_utils::resamplePath;
-using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::getPose;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
-using tier4_autoware_utils::pose2transform;
-using tier4_autoware_utils::toHexString;
 
 namespace
 {
@@ -85,7 +85,7 @@ void offsetPolygon2d(
 {
   for (const auto & polygon_point : polygon.points) {
     const auto offset_pos =
-      tier4_autoware_utils::calcOffsetPose(origin_point, polygon_point.x, polygon_point.y, 0.0)
+      autoware_universe_utils::calcOffsetPose(origin_point, polygon_point.x, polygon_point.y, 0.0)
         .position;
     offset_polygon.outer().push_back(Point2d(offset_pos.x, offset_pos.y));
   }
@@ -99,7 +99,7 @@ Polygon2d createMultiStepPolygon(
   Polygon2d multi_step_polygon{};
   for (size_t i = start_idx; i <= end_idx; ++i) {
     offsetPolygon2d(
-      tier4_autoware_utils::getPose(obj_path_points.at(i)), polygon, multi_step_polygon);
+      autoware_universe_utils::getPose(obj_path_points.at(i)), polygon, multi_step_polygon);
   }
 
   Polygon2d hull_multi_step_polygon{};
@@ -414,7 +414,7 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
       if (
         isVehicleType(object.classification) && ego_crosswalk_passage_direction &&
         collision_point.crosswalk_passage_direction) {
-        const double direction_diff = tier4_autoware_utils::normalizeRadian(
+        const double direction_diff = autoware_universe_utils::normalizeRadian(
           collision_point.crosswalk_passage_direction.value() -
           ego_crosswalk_passage_direction.value());
         if (std::fabs(direction_diff) < planner_param_.vehicle_object_cross_angle_threshold) {
@@ -648,13 +648,14 @@ std::optional<double> CrosswalkModule::findEgoPassageDirectionAlongPath(
   auto findIntersectPoint = [&](const lanelet::ConstLineString3d line)
     -> std::optional<std::pair<size_t, geometry_msgs::msg::Point>> {
     const auto line_start =
-      tier4_autoware_utils::createPoint(line.front().x(), line.front().y(), line.front().z());
+      autoware_universe_utils::createPoint(line.front().x(), line.front().y(), line.front().z());
     const auto line_end =
-      tier4_autoware_utils::createPoint(line.back().x(), line.back().y(), line.back().z());
+      autoware_universe_utils::createPoint(line.back().x(), line.back().y(), line.back().z());
     for (unsigned i = 0; i < path.points.size() - 1; ++i) {
       const auto & start = path.points.at(i).point.pose.position;
       const auto & end = path.points.at(i + 1).point.pose.position;
-      if (const auto intersect = tier4_autoware_utils::intersect(line_start, line_end, start, end);
+      if (const auto intersect =
+            autoware_universe_utils::intersect(line_start, line_end, start, end);
           intersect.has_value()) {
         return std::make_optional(std::make_pair(i, intersect.value()));
       }
@@ -676,18 +677,19 @@ std::optional<double> CrosswalkModule::findEgoPassageDirectionAlongPath(
 std::optional<double> CrosswalkModule::findObjectPassageDirectionAlongVehicleLane(
   const autoware_perception_msgs::msg::PredictedPath & path) const
 {
-  using tier4_autoware_utils::Segment2d;
+  using autoware_universe_utils::Segment2d;
 
   auto findIntersectPoint = [&](const lanelet::ConstLineString3d line)
     -> std::optional<std::pair<size_t, geometry_msgs::msg::Point>> {
     const auto line_start =
-      tier4_autoware_utils::createPoint(line.front().x(), line.front().y(), line.front().z());
+      autoware_universe_utils::createPoint(line.front().x(), line.front().y(), line.front().z());
     const auto line_end =
-      tier4_autoware_utils::createPoint(line.back().x(), line.back().y(), line.back().z());
+      autoware_universe_utils::createPoint(line.back().x(), line.back().y(), line.back().z());
     for (unsigned i = 0; i < path.path.size() - 1; ++i) {
       const auto & start = path.path.at(i).position;
       const auto & end = path.path.at(i + 1).position;
-      if (const auto intersect = tier4_autoware_utils::intersect(line_start, line_end, start, end);
+      if (const auto intersect =
+            autoware_universe_utils::intersect(line_start, line_end, start, end);
           intersect.has_value()) {
         return std::make_optional(std::make_pair(i, intersect.value()));
       }

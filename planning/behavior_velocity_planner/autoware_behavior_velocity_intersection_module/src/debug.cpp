@@ -17,8 +17,8 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/debug.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/universe_utils/ros/marker_helper.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <tf2/utils.h>
 
@@ -33,10 +33,10 @@
 
 namespace
 {
-using tier4_autoware_utils::appendMarkerArray;
-using tier4_autoware_utils::createMarkerColor;
-using tier4_autoware_utils::createMarkerOrientation;
-using tier4_autoware_utils::createMarkerScale;
+using autoware_universe_utils::appendMarkerArray;
+using autoware_universe_utils::createMarkerColor;
+using autoware_universe_utils::createMarkerOrientation;
+using autoware_universe_utils::createMarkerScale;
 
 visualization_msgs::msg::MarkerArray createLaneletPolygonsMarkerArray(
   const std::vector<lanelet::CompoundPolygon3d> & polygons, const std::string & ns,
@@ -226,10 +226,10 @@ constexpr std::tuple<float, float, float> light_blue()
 
 namespace autoware::behavior_velocity_planner
 {
-using tier4_autoware_utils::appendMarkerArray;
-using tier4_autoware_utils::createMarkerColor;
-using tier4_autoware_utils::createMarkerOrientation;
-using tier4_autoware_utils::createMarkerScale;
+using autoware_universe_utils::appendMarkerArray;
+using autoware_universe_utils::createMarkerColor;
+using autoware_universe_utils::createMarkerOrientation;
+using autoware_universe_utils::createMarkerScale;
 
 visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray()
 {

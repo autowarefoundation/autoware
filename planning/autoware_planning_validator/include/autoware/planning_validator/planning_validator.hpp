@@ -16,15 +16,15 @@
 #define AUTOWARE__PLANNING_VALIDATOR__PLANNING_VALIDATOR_HPP_
 
 #include "autoware/planning_validator/debug_marker.hpp"
+#include "autoware/universe_utils/ros/logger_level_configure.hpp"
+#include "autoware/universe_utils/ros/polling_subscriber.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
 #include "autoware_planning_validator/msg/planning_validator_status.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
-#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
-#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
-#include "tier4_autoware_utils/system/stop_watch.hpp"
 
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
@@ -39,10 +39,10 @@ namespace autoware::planning_validator
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
 using autoware_planning_validator::msg::PlanningValidatorStatus;
+using autoware_universe_utils::StopWatch;
 using diagnostic_updater::DiagnosticStatusWrapper;
 using diagnostic_updater::Updater;
 using nav_msgs::msg::Odometry;
-using tier4_autoware_utils::StopWatch;
 using tier4_debug_msgs::msg::Float64Stamped;
 
 struct ValidationParams
@@ -103,7 +103,7 @@ private:
 
   void setStatus(DiagnosticStatusWrapper & stat, const bool & is_ok, const std::string & msg);
 
-  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
     this, "~/input/kinematics"};
   rclcpp::Subscription<Trajectory>::SharedPtr sub_traj_;
   rclcpp::Publisher<Trajectory>::SharedPtr pub_traj_;
@@ -137,9 +137,9 @@ private:
 
   std::shared_ptr<PlanningValidatorDebugMarkerPublisher> debug_pose_publisher_;
 
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
 
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 
   StopWatch<std::chrono::milliseconds> stop_watch_;
 };

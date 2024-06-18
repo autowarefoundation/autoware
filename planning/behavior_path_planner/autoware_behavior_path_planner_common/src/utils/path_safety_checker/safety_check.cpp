@@ -15,10 +15,10 @@
 #include "autoware/behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
 
 #include "autoware/behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
+#include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
+#include "autoware/universe_utils/ros/uuid_helper.hpp"
 #include "interpolation/linear_interpolation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
-#include "tier4_autoware_utils/ros/uuid_helper.hpp"
 
 #include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/algorithms/intersects.hpp>
@@ -55,13 +55,13 @@ bool isTargetObjectFront(
 {
   const double base_to_front = vehicle_info.max_longitudinal_offset_m;
   const auto ego_offset_pose =
-    tier4_autoware_utils::calcOffsetPose(ego_pose, base_to_front, 0.0, 0.0);
+    autoware_universe_utils::calcOffsetPose(ego_pose, base_to_front, 0.0, 0.0);
 
   // check all edges in the polygon
   const auto obj_polygon_outer = obj_polygon.outer();
   for (const auto & obj_edge : obj_polygon_outer) {
-    const auto obj_point = tier4_autoware_utils::createPoint(obj_edge.x(), obj_edge.y(), 0.0);
-    if (tier4_autoware_utils::calcLongitudinalDeviation(ego_offset_pose, obj_point) > 0.0) {
+    const auto obj_point = autoware_universe_utils::createPoint(obj_edge.x(), obj_edge.y(), 0.0);
+    if (autoware_universe_utils::calcLongitudinalDeviation(ego_offset_pose, obj_point) > 0.0) {
       return true;
     }
   }
@@ -75,12 +75,12 @@ bool isTargetObjectFront(
 {
   const double base_to_front = vehicle_info.max_longitudinal_offset_m;
   const auto ego_point =
-    tier4_autoware_utils::calcOffsetPose(ego_pose, base_to_front, 0.0, 0.0).position;
+    autoware_universe_utils::calcOffsetPose(ego_pose, base_to_front, 0.0, 0.0).position;
 
   // check all edges in the polygon
   const auto obj_polygon_outer = obj_polygon.outer();
   for (const auto & obj_edge : obj_polygon_outer) {
-    const auto obj_point = tier4_autoware_utils::createPoint(obj_edge.x(), obj_edge.y(), 0.0);
+    const auto obj_point = autoware_universe_utils::createPoint(obj_edge.x(), obj_edge.y(), 0.0);
     if (motion_utils::isTargetPointFront(path.points, ego_point, obj_point)) {
       return true;
     }
@@ -111,13 +111,13 @@ Polygon2d createExtendedPolygon(
   }
 
   const auto p1 =
-    tier4_autoware_utils::calcOffsetPose(base_link_pose, forward_lon_offset, lat_offset, 0.0);
+    autoware_universe_utils::calcOffsetPose(base_link_pose, forward_lon_offset, lat_offset, 0.0);
   const auto p2 =
-    tier4_autoware_utils::calcOffsetPose(base_link_pose, forward_lon_offset, -lat_offset, 0.0);
+    autoware_universe_utils::calcOffsetPose(base_link_pose, forward_lon_offset, -lat_offset, 0.0);
   const auto p3 =
-    tier4_autoware_utils::calcOffsetPose(base_link_pose, backward_lon_offset, -lat_offset, 0.0);
+    autoware_universe_utils::calcOffsetPose(base_link_pose, backward_lon_offset, -lat_offset, 0.0);
   const auto p4 =
-    tier4_autoware_utils::calcOffsetPose(base_link_pose, backward_lon_offset, lat_offset, 0.0);
+    autoware_universe_utils::calcOffsetPose(base_link_pose, backward_lon_offset, lat_offset, 0.0);
 
   Polygon2d polygon;
   appendPointToPolygon(polygon, p1.position);
@@ -125,16 +125,16 @@ Polygon2d createExtendedPolygon(
   appendPointToPolygon(polygon, p3.position);
   appendPointToPolygon(polygon, p4.position);
   appendPointToPolygon(polygon, p1.position);
-  return tier4_autoware_utils::isClockwise(polygon)
+  return autoware_universe_utils::isClockwise(polygon)
            ? polygon
-           : tier4_autoware_utils::inverseClockwise(polygon);
+           : autoware_universe_utils::inverseClockwise(polygon);
 }
 
 Polygon2d createExtendedPolygon(
   const Pose & obj_pose, const Shape & shape, const double lon_length, const double lat_margin,
   const bool is_stopped_obj, CollisionCheckDebug & debug)
 {
-  const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose, shape);
+  const auto obj_polygon = autoware_universe_utils::toPolygon2d(obj_pose, shape);
   if (obj_polygon.outer().empty()) {
     return obj_polygon;
   }
@@ -145,8 +145,8 @@ Polygon2d createExtendedPolygon(
   double min_y = std::numeric_limits<double>::max();
   const auto obj_polygon_outer = obj_polygon.outer();
   for (const auto & polygon_p : obj_polygon_outer) {
-    const auto obj_p = tier4_autoware_utils::createPoint(polygon_p.x(), polygon_p.y(), 0.0);
-    const auto transformed_p = tier4_autoware_utils::inverseTransformPoint(obj_p, obj_pose);
+    const auto obj_p = autoware_universe_utils::createPoint(polygon_p.x(), polygon_p.y(), 0.0);
+    const auto transformed_p = autoware_universe_utils::inverseTransformPoint(obj_p, obj_pose);
 
     max_x = std::max(transformed_p.x, max_x);
     min_x = std::min(transformed_p.x, min_x);
@@ -168,13 +168,13 @@ Polygon2d createExtendedPolygon(
   }
 
   const auto p1 =
-    tier4_autoware_utils::calcOffsetPose(obj_pose, forward_lon_offset, left_lat_offset, 0.0);
+    autoware_universe_utils::calcOffsetPose(obj_pose, forward_lon_offset, left_lat_offset, 0.0);
   const auto p2 =
-    tier4_autoware_utils::calcOffsetPose(obj_pose, forward_lon_offset, right_lat_offset, 0.0);
+    autoware_universe_utils::calcOffsetPose(obj_pose, forward_lon_offset, right_lat_offset, 0.0);
   const auto p3 =
-    tier4_autoware_utils::calcOffsetPose(obj_pose, backward_lon_offset, right_lat_offset, 0.0);
+    autoware_universe_utils::calcOffsetPose(obj_pose, backward_lon_offset, right_lat_offset, 0.0);
   const auto p4 =
-    tier4_autoware_utils::calcOffsetPose(obj_pose, backward_lon_offset, left_lat_offset, 0.0);
+    autoware_universe_utils::calcOffsetPose(obj_pose, backward_lon_offset, left_lat_offset, 0.0);
 
   Polygon2d polygon;
   appendPointToPolygon(polygon, p1.position);
@@ -182,9 +182,9 @@ Polygon2d createExtendedPolygon(
   appendPointToPolygon(polygon, p3.position);
   appendPointToPolygon(polygon, p4.position);
   appendPointToPolygon(polygon, p1.position);
-  return tier4_autoware_utils::isClockwise(polygon)
+  return autoware_universe_utils::isClockwise(polygon)
            ? polygon
-           : tier4_autoware_utils::inverseClockwise(polygon);
+           : autoware_universe_utils::inverseClockwise(polygon);
 }
 
 Polygon2d createExtendedPolygonAlongPath(
@@ -224,49 +224,49 @@ Polygon2d createExtendedPolygonAlongPath(
 
   {
     const auto p_offset =
-      tier4_autoware_utils::calcOffsetPose(base_link_pose, backward_lon_offset, lat_offset, 0.0);
+      autoware_universe_utils::calcOffsetPose(base_link_pose, backward_lon_offset, lat_offset, 0.0);
     appendPointToPolygon(polygon, p_offset.position);
   }
 
   for (size_t i = start_idx + 1; i < end_idx + 1; ++i) {
-    const auto p = tier4_autoware_utils::getPose(planned_path.points.at(i));
-    const auto p_offset = tier4_autoware_utils::calcOffsetPose(p, 0.0, lat_offset, 0.0);
+    const auto p = autoware_universe_utils::getPose(planned_path.points.at(i));
+    const auto p_offset = autoware_universe_utils::calcOffsetPose(p, 0.0, lat_offset, 0.0);
     appendPointToPolygon(polygon, p_offset.position);
   }
 
   {
-    const auto p_offset =
-      tier4_autoware_utils::calcOffsetPose(lon_offset_pose.value(), base_to_front, lat_offset, 0.0);
+    const auto p_offset = autoware_universe_utils::calcOffsetPose(
+      lon_offset_pose.value(), base_to_front, lat_offset, 0.0);
     appendPointToPolygon(polygon, p_offset.position);
   }
 
   {
-    const auto p_offset = tier4_autoware_utils::calcOffsetPose(
+    const auto p_offset = autoware_universe_utils::calcOffsetPose(
       lon_offset_pose.value(), base_to_front, -lat_offset, 0.0);
     appendPointToPolygon(polygon, p_offset.position);
   }
 
   for (size_t i = end_idx; i > start_idx; --i) {
-    const auto p = tier4_autoware_utils::getPose(planned_path.points.at(i));
-    const auto p_offset = tier4_autoware_utils::calcOffsetPose(p, 0.0, -lat_offset, 0.0);
+    const auto p = autoware_universe_utils::getPose(planned_path.points.at(i));
+    const auto p_offset = autoware_universe_utils::calcOffsetPose(p, 0.0, -lat_offset, 0.0);
+    appendPointToPolygon(polygon, p_offset.position);
+  }
+
+  {
+    const auto p_offset = autoware_universe_utils::calcOffsetPose(
+      base_link_pose, backward_lon_offset, -lat_offset, 0.0);
     appendPointToPolygon(polygon, p_offset.position);
   }
 
   {
     const auto p_offset =
-      tier4_autoware_utils::calcOffsetPose(base_link_pose, backward_lon_offset, -lat_offset, 0.0);
+      autoware_universe_utils::calcOffsetPose(base_link_pose, backward_lon_offset, lat_offset, 0.0);
     appendPointToPolygon(polygon, p_offset.position);
   }
 
-  {
-    const auto p_offset =
-      tier4_autoware_utils::calcOffsetPose(base_link_pose, backward_lon_offset, lat_offset, 0.0);
-    appendPointToPolygon(polygon, p_offset.position);
-  }
-
-  return tier4_autoware_utils::isClockwise(polygon)
+  return autoware_universe_utils::isClockwise(polygon)
            ? polygon
-           : tier4_autoware_utils::inverseClockwise(polygon);
+           : autoware_universe_utils::inverseClockwise(polygon);
 }
 
 std::vector<Polygon2d> createExtendedPolygonsFromPoseWithVelocityStamped(
@@ -283,7 +283,7 @@ std::vector<Polygon2d> createExtendedPolygonsFromPoseWithVelocityStamped(
     const double width = vehicle_info.vehicle_width_m + lat_margin * 2;
 
     const auto polygon =
-      tier4_autoware_utils::toFootprint(pose, base_to_front, base_to_rear, width);
+      autoware_universe_utils::toFootprint(pose, base_to_front, base_to_rear, width);
     polygons.push_back(polygon);
   }
 
@@ -350,7 +350,7 @@ std::optional<PoseWithVelocityStamped> calcInterpolatedPoseWithVelocity(
       const double time_step = pt.time - prev_pt.time;
       const double ratio = std::clamp(offset / time_step, 0.0, 1.0);
       const auto interpolated_pose =
-        tier4_autoware_utils::calcInterpolatedPose(prev_pt.pose, pt.pose, ratio, false);
+        autoware_universe_utils::calcInterpolatedPose(prev_pt.pose, pt.pose, ratio, false);
       const double interpolated_velocity =
         interpolation::lerp(prev_pt.velocity, pt.velocity, ratio);
       return PoseWithVelocityStamped{relative_time, interpolated_pose, interpolated_velocity};
@@ -378,7 +378,7 @@ std::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocity
   const auto & velocity = interpolation_result->velocity;
 
   const auto ego_polygon =
-    tier4_autoware_utils::toFootprint(pose, base_to_front, base_to_rear, width);
+    autoware_universe_utils::toFootprint(pose, base_to_front, base_to_rear, width);
 
   return PoseWithVelocityAndPolygonStamped{current_time, pose, velocity, ego_polygon};
 }
@@ -406,7 +406,7 @@ std::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocity
   const auto & pose = interpolation_result->pose;
   const auto & velocity = interpolation_result->velocity;
 
-  const auto obj_polygon = tier4_autoware_utils::toPolygon2d(pose, shape);
+  const auto obj_polygon = autoware_universe_utils::toPolygon2d(pose, shape);
 
   return PoseWithVelocityAndPolygonStamped{current_time, pose, velocity, obj_polygon};
 }
@@ -691,10 +691,11 @@ CollisionCheckDebugPair createObjectDebug(const ExtendedPredictedObject & obj)
 {
   CollisionCheckDebug debug;
   debug.current_obj_pose = obj.initial_pose.pose;
-  debug.extended_obj_polygon = tier4_autoware_utils::toPolygon2d(obj.initial_pose.pose, obj.shape);
+  debug.extended_obj_polygon =
+    autoware_universe_utils::toPolygon2d(obj.initial_pose.pose, obj.shape);
   debug.obj_shape = obj.shape;
   debug.current_twist = obj.initial_twist.twist;
-  return {tier4_autoware_utils::toBoostUUID(obj.uuid), debug};
+  return {autoware_universe_utils::toBoostUUID(obj.uuid), debug};
 }
 
 void updateCollisionCheckDebugMap(

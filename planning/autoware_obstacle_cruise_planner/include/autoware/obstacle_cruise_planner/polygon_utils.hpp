@@ -17,8 +17,8 @@
 
 #include "autoware/obstacle_cruise_planner/common_structs.hpp"
 #include "autoware/obstacle_cruise_planner/type_alias.hpp"
+#include "autoware/universe_utils/geometry/boost_geometry.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
-#include "tier4_autoware_utils/geometry/boost_geometry.hpp"
 
 #include <boost/geometry.hpp>
 
@@ -30,8 +30,8 @@
 namespace polygon_utils
 {
 namespace bg = boost::geometry;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
 
 Polygon2d createOneStepPolygon(
   const std::vector<geometry_msgs::msg::Pose> & last_poses,

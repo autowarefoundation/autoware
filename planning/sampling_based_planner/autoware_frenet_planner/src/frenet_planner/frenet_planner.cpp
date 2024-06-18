@@ -176,7 +176,7 @@ void calculateCartesian(
       pose.position.x = it->x();
       pose.position.y = it->y();
       pose.position.z = 0.0;
-      pose.orientation = tier4_autoware_utils::createQuaternionFromRPY(0.0, 0.0, yaw);
+      pose.orientation = autoware_universe_utils::createQuaternionFromRPY(0.0, 0.0, yaw);
       path.poses.push_back(pose);
     }
     path.yaws.push_back(path.yaws.back());

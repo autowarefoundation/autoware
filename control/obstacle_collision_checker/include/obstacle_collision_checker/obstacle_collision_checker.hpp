@@ -15,8 +15,8 @@
 #ifndef OBSTACLE_COLLISION_CHECKER__OBSTACLE_COLLISION_CHECKER_HPP_
 #define OBSTACLE_COLLISION_CHECKER__OBSTACLE_COLLISION_CHECKER_HPP_
 
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -35,7 +35,7 @@
 
 namespace obstacle_collision_checker
 {
-using tier4_autoware_utils::LinearRing2d;
+using autoware_universe_utils::LinearRing2d;
 
 struct Param
 {

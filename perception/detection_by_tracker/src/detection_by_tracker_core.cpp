@@ -16,8 +16,8 @@
 
 #include "object_recognition_utils/object_recognition_utils.hpp"
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
 
 #include <chrono>
 #include <memory>
@@ -61,7 +61,7 @@ boost::optional<ReferenceYawInfo> getReferenceYawInfo(const uint8_t label, const
   const bool is_vehicle =
     Label::CAR == label || Label::TRUCK == label || Label::BUS == label || Label::TRAILER == label;
   if (is_vehicle) {
-    return ReferenceYawInfo{yaw, tier4_autoware_utils::deg2rad(30)};
+    return ReferenceYawInfo{yaw, autoware_universe_utils::deg2rad(30)};
   } else {
     return boost::none;
   }
@@ -136,9 +136,9 @@ bool TrackerHandler::estimateTrackedObjects(
     estimated_object.kinematics.pose_with_covariance.pose.position.y =
       y + vx * std::sin(yaw) * dt.seconds();
     estimated_object.kinematics.pose_with_covariance.pose.position.z = z;
-    const float yaw_hat = tier4_autoware_utils::normalizeRadian(yaw + wz * dt.seconds());
+    const float yaw_hat = autoware_universe_utils::normalizeRadian(yaw + wz * dt.seconds());
     estimated_object.kinematics.pose_with_covariance.pose.orientation =
-      tier4_autoware_utils::createQuaternionFromYaw(yaw_hat);
+      autoware_universe_utils::createQuaternionFromYaw(yaw_hat);
     output.objects.push_back(estimated_object);
   }
   return true;
@@ -177,7 +177,8 @@ DetectionByTracker::DetectionByTracker(const rclcpp::NodeOptions & node_options)
   cluster_ = std::make_shared<euclidean_cluster::VoxelGridBasedEuclideanCluster>(
     false, 10, 10000, 0.7, 0.3, 0);
   debugger_ = std::make_shared<Debugger>(this);
-  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
+  published_time_publisher_ =
+    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
 }
 
 void DetectionByTracker::setMaxSearchRange()
@@ -283,7 +284,7 @@ void DetectionByTracker::divideUnderSegmentedObjects(
 
     for (const auto & initial_object : in_cluster_objects.feature_objects) {
       // search near object
-      const float distance = tier4_autoware_utils::calcDistance2d(
+      const float distance = autoware_universe_utils::calcDistance2d(
         tracked_object.kinematics.pose_with_covariance.pose,
         initial_object.object.kinematics.pose_with_covariance.pose);
       if (max_search_range < distance) {
@@ -419,7 +420,7 @@ void DetectionByTracker::mergeOverSegmentedObjects(
 
     pcl::PointCloud<pcl::PointXYZ> pcl_merged_cluster;
     for (const auto & initial_object : in_cluster_objects.feature_objects) {
-      const float distance = tier4_autoware_utils::calcDistance2d(
+      const float distance = autoware_universe_utils::calcDistance2d(
         tracked_object.kinematics.pose_with_covariance.pose,
         initial_object.object.kinematics.pose_with_covariance.pose);
 

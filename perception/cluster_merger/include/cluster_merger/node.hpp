@@ -15,11 +15,11 @@
 #ifndef CLUSTER_MERGER__NODE_HPP_
 #define CLUSTER_MERGER__NODE_HPP_
 
+#include "autoware/universe_utils/ros/transform_listener.hpp"
 #include "message_filters/subscriber.h"
 #include "message_filters/sync_policies/approximate_time.h"
 #include "message_filters/synchronizer.h"
 #include "rclcpp/rclcpp.hpp"
-#include "tier4_autoware_utils/ros/transform_listener.hpp"
 
 #include "tier4_perception_msgs/msg/detected_objects_with_feature.hpp"
 
@@ -59,7 +59,7 @@ private:
   std::string output_frame_id_;
 
   std::vector<rclcpp::Subscription<DetectedObjectsWithFeature>::SharedPtr> sub_objects_array{};
-  std::shared_ptr<tier4_autoware_utils::TransformListener> transform_listener_;
+  std::shared_ptr<autoware_universe_utils::TransformListener> transform_listener_;
 
   void objectsCallback(
     const DetectedObjectsWithFeature::ConstSharedPtr & input_objects0_msg,

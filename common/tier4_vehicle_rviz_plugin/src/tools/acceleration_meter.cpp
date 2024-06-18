@@ -231,14 +231,14 @@ void AccelerationMeterDisplay::updateVisualization()
   inner_arc_.y0 = line_width_ / 2.0;
   inner_arc_.x1 = w;
   inner_arc_.y1 = h;
-  inner_arc_.start_angle = tier4_autoware_utils::rad2deg(min_range_theta - M_PI);
-  inner_arc_.end_angle = tier4_autoware_utils::rad2deg(max_range_theta - min_range_theta);
+  inner_arc_.start_angle = autoware_universe_utils::rad2deg(min_range_theta - M_PI);
+  inner_arc_.end_angle = autoware_universe_utils::rad2deg(max_range_theta - min_range_theta);
   outer_arc_.x0 = w * 3 / 8;
   outer_arc_.y0 = h * 3 / 8;
   outer_arc_.x1 = w / 4;
   outer_arc_.y1 = h / 4;
-  outer_arc_.start_angle = tier4_autoware_utils::rad2deg(min_range_theta - M_PI);
-  outer_arc_.end_angle = tier4_autoware_utils::rad2deg(max_range_theta - min_range_theta);
+  outer_arc_.start_angle = autoware_universe_utils::rad2deg(min_range_theta - M_PI);
+  outer_arc_.end_angle = autoware_universe_utils::rad2deg(max_range_theta - min_range_theta);
 }
 
 }  // namespace rviz_plugins

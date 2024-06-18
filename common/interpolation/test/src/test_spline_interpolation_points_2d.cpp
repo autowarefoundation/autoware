@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "interpolation/spline_interpolation.hpp"
 #include "interpolation/spline_interpolation_points_2d.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <gtest/gtest.h>
 
@@ -25,7 +25,7 @@ constexpr double epsilon = 1e-6;
 
 TEST(spline_interpolation, splineYawFromPoints)
 {
-  using tier4_autoware_utils::createPoint;
+  using autoware_universe_utils::createPoint;
 
   {  // straight
     std::vector<geometry_msgs::msg::Point> points;
@@ -96,7 +96,7 @@ TEST(spline_interpolation, splineYawFromPoints)
 
 TEST(spline_interpolation, SplineInterpolationPoints2d)
 {
-  using tier4_autoware_utils::createPoint;
+  using autoware_universe_utils::createPoint;
 
   // curve
   std::vector<geometry_msgs::msg::Point> points;
@@ -200,7 +200,7 @@ TEST(spline_interpolation, SplineInterpolationPoints2d)
 TEST(spline_interpolation, SplineInterpolationPoints2dPolymorphism)
 {
   using autoware_planning_msgs::msg::TrajectoryPoint;
-  using tier4_autoware_utils::createPoint;
+  using autoware_universe_utils::createPoint;
 
   std::vector<geometry_msgs::msg::Point> points;
   points.push_back(createPoint(-2.0, -10.0, 0.0));

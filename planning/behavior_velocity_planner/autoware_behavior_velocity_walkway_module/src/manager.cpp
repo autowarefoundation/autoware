@@ -15,7 +15,7 @@
 #include "manager.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
-#include <tier4_autoware_utils/ros/parameter.hpp>
+#include <autoware/universe_utils/ros/parameter.hpp>
 
 #include <limits>
 #include <memory>
@@ -26,8 +26,8 @@
 namespace autoware::behavior_velocity_planner
 {
 
+using autoware_universe_utils::getOrDeclareParameter;
 using lanelet::autoware::Crosswalk;
-using tier4_autoware_utils::getOrDeclareParameter;
 
 WalkwayModuleManager::WalkwayModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())

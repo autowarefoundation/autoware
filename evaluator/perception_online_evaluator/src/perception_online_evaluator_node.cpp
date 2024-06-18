@@ -14,12 +14,12 @@
 
 #include "perception_online_evaluator/perception_online_evaluator_node.hpp"
 
+#include "autoware/universe_utils/ros/marker_helper.hpp"
+#include "autoware/universe_utils/ros/parameter.hpp"
+#include "autoware/universe_utils/ros/update_param.hpp"
 #include "perception_online_evaluator/utils/marker_utils.hpp"
-#include "tier4_autoware_utils/ros/marker_helper.hpp"
-#include "tier4_autoware_utils/ros/parameter.hpp"
-#include "tier4_autoware_utils/ros/update_param.hpp"
 
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
+#include <autoware/universe_utils/ros/uuid_helper.hpp>
 
 #include "boost/lexical_cast.hpp"
 
@@ -156,7 +156,7 @@ void PerceptionOnlineEvaluatorNode::publishDebugMarker()
     for (auto & marker : added.markers) {
       marker.lifetime = rclcpp::Duration::from_seconds(1.5);
     }
-    tier4_autoware_utils::appendMarkerArray(added, &marker);
+    autoware_universe_utils::appendMarkerArray(added, &marker);
   };
 
   const auto & p = parameters_->debug_marker_parameters;
@@ -236,7 +236,7 @@ void PerceptionOnlineEvaluatorNode::publishDebugMarker()
 rcl_interfaces::msg::SetParametersResult PerceptionOnlineEvaluatorNode::onParameter(
   const std::vector<rclcpp::Parameter> & parameters)
 {
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
 
   auto & p = parameters_;
 
@@ -305,8 +305,8 @@ rcl_interfaces::msg::SetParametersResult PerceptionOnlineEvaluatorNode::onParame
 
 void PerceptionOnlineEvaluatorNode::initParameter()
 {
-  using tier4_autoware_utils::getOrDeclareParameter;
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::getOrDeclareParameter;
+  using autoware_universe_utils::updateParam;
 
   auto & p = parameters_;
 

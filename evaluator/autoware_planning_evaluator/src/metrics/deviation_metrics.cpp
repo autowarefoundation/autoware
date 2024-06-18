@@ -14,9 +14,9 @@
 
 #include "autoware/planning_evaluator/metrics/deviation_metrics.hpp"
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/geometry/pose_deviation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/geometry/pose_deviation.hpp"
 
 namespace planning_diagnostics
 {
@@ -38,8 +38,8 @@ Stat<double> calcLateralDeviation(const Trajectory & ref, const Trajectory & tra
    */
   for (TrajectoryPoint p : traj.points) {
     const size_t nearest_index = motion_utils::findNearestIndex(ref.points, p.pose.position);
-    stat.add(
-      tier4_autoware_utils::calcLateralDeviation(ref.points[nearest_index].pose, p.pose.position));
+    stat.add(autoware_universe_utils::calcLateralDeviation(
+      ref.points[nearest_index].pose, p.pose.position));
   }
   return stat;
 }
@@ -57,7 +57,7 @@ Stat<double> calcYawDeviation(const Trajectory & ref, const Trajectory & traj)
    */
   for (TrajectoryPoint p : traj.points) {
     const size_t nearest_index = motion_utils::findNearestIndex(ref.points, p.pose.position);
-    stat.add(tier4_autoware_utils::calcYawDeviation(ref.points[nearest_index].pose, p.pose));
+    stat.add(autoware_universe_utils::calcYawDeviation(ref.points[nearest_index].pose, p.pose));
   }
   return stat;
 }
@@ -81,21 +81,21 @@ Stat<double> calcVelocityDeviation(const Trajectory & ref, const Trajectory & tr
 Stat<double> calcLongitudinalDeviation(const Pose & base_pose, const Point & target_point)
 {
   Stat<double> stat;
-  stat.add(std::abs(tier4_autoware_utils::calcLongitudinalDeviation(base_pose, target_point)));
+  stat.add(std::abs(autoware_universe_utils::calcLongitudinalDeviation(base_pose, target_point)));
   return stat;
 }
 
 Stat<double> calcLateralDeviation(const Pose & base_pose, const Point & target_point)
 {
   Stat<double> stat;
-  stat.add(std::abs(tier4_autoware_utils::calcLateralDeviation(base_pose, target_point)));
+  stat.add(std::abs(autoware_universe_utils::calcLateralDeviation(base_pose, target_point)));
   return stat;
 }
 
 Stat<double> calcYawDeviation(const Pose & base_pose, const Pose & target_pose)
 {
   Stat<double> stat;
-  stat.add(std::abs(tier4_autoware_utils::calcYawDeviation(base_pose, target_pose)));
+  stat.add(std::abs(autoware_universe_utils::calcYawDeviation(base_pose, target_pose)));
   return stat;
 }
 }  // namespace metrics

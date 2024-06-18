@@ -288,7 +288,7 @@ std::vector<geometry_msgs::msg::Point> DetectionAreaModule::getObstaclePoints() 
                                   (circle.first.y() - p.y) * (circle.first.y() - p.y);
       if (squared_dist <= circle.second) {
         if (bg::within(Point2d{p.x, p.y}, poly.basicPolygon())) {
-          obstacle_points.push_back(tier4_autoware_utils::createPoint(p.x, p.y, p.z));
+          obstacle_points.push_back(autoware_universe_utils::createPoint(p.x, p.y, p.z));
           // get all obstacle point becomes high computation cost so skip if any point is found
           break;
         }

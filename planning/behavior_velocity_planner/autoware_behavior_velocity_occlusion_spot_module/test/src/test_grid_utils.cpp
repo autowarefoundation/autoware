@@ -16,7 +16,7 @@
 #include "utils.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 
 #include <gtest/gtest.h>
 
@@ -85,7 +85,7 @@ TEST(compareTime, polygon_vs_line_iterator)
     }
   }
   const grid_map::Matrix & grid_data = grid["layer"];
-  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch;
+  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stop_watch;
   stop_watch.tic("processing_time");
   size_t count = 0;
   [[maybe_unused]] double time = 0;

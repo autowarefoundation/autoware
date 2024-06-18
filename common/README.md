@@ -12,5 +12,5 @@ The Autoware.Universe Common folder consists of common and testing libraries tha
 
 Some of the commonly used libraries are:
 
-1. `tier4_autoware_utils`
+1. `autoware_universe_utils`
 2. `motion_utils`

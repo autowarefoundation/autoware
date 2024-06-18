@@ -14,8 +14,8 @@
 
 #include "overlapping_range.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <geometry_msgs/msg/pose.hpp>
 

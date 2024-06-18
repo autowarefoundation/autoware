@@ -15,10 +15,10 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>autoware_planning_msgs</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>motion_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>tier4_autoware_utils</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

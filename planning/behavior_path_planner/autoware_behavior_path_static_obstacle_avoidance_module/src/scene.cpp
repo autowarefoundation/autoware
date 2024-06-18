@@ -755,7 +755,7 @@ bool StaticObstacleAvoidanceModule::isSafePath(
     auto current_debug_data = utils::path_safety_checker::createObjectDebug(object);
 
     const auto obj_polygon =
-      tier4_autoware_utils::toPolygon2d(object.initial_pose.pose, object.shape);
+      autoware_universe_utils::toPolygon2d(object.initial_pose.pose, object.shape);
 
     const auto is_object_front =
       utils::path_safety_checker::isTargetObjectFront(getEgoPose(), obj_polygon, p.vehicle_info);

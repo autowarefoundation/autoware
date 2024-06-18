@@ -36,14 +36,14 @@
 #include <string>
 #include <vector>
 
-namespace tier4_autoware_utils
+namespace autoware_universe_utils
 {
 template <>
 geometry_msgs::msg::Point getPoint(const autoware::path_optimizer::ReferencePoint & p);
 
 template <>
 geometry_msgs::msg::Pose getPose(const autoware::path_optimizer::ReferencePoint & p);
-}  // namespace tier4_autoware_utils
+}  // namespace autoware_universe_utils
 
 namespace autoware::path_optimizer
 {
@@ -52,8 +52,8 @@ namespace geometry_utils
 template <typename T1, typename T2>
 bool isSamePoint(const T1 & t1, const T2 & t2)
 {
-  const auto p1 = tier4_autoware_utils::getPoint(t1);
-  const auto p2 = tier4_autoware_utils::getPoint(t2);
+  const auto p1 = autoware_universe_utils::getPoint(t1);
+  const auto p2 = autoware_universe_utils::getPoint(t2);
 
   constexpr double epsilon = 1e-6;
   if (epsilon < std::abs(p1.x - p2.x) || epsilon < std::abs(p1.y - p2.y)) {

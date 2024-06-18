@@ -16,6 +16,8 @@
 
 #include "autoware_point_types/types.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/math/constants.hpp>
 #include <image_projection_based_fusion/utils/geometry.hpp>
 #include <image_projection_based_fusion/utils/utils.hpp>
 #include <lidar_centerpoint/centerpoint_config.hpp>
@@ -23,8 +25,6 @@
 #include <lidar_centerpoint/ros_utils.hpp>
 #include <lidar_centerpoint/utils.hpp>
 #include <pcl_ros/transforms.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/constants.hpp>
 
 #include <omp.h>
 

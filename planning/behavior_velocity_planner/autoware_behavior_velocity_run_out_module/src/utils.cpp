@@ -31,8 +31,8 @@
 #else
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
+#include <autoware/universe_utils/geometry/geometry.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
 namespace autoware::behavior_velocity_planner
 {
 namespace run_out_utils
@@ -101,13 +101,15 @@ std::vector<geometry_msgs::msg::Point> findLateralSameSidePoints(
   const std::vector<geometry_msgs::msg::Point> & points, const geometry_msgs::msg::Pose & base_pose,
   const geometry_msgs::msg::Point & target_point)
 {
-  const auto signed_deviation = tier4_autoware_utils::calcLateralDeviation(base_pose, target_point);
+  const auto signed_deviation =
+    autoware_universe_utils::calcLateralDeviation(base_pose, target_point);
   RCLCPP_DEBUG_STREAM(
     rclcpp::get_logger("findLateralSameSidePoints"), "signed dev of target: " << signed_deviation);
 
   std::vector<geometry_msgs::msg::Point> same_side_points;
   for (const auto & p : points) {
-    const auto signed_deviation_of_point = tier4_autoware_utils::calcLateralDeviation(base_pose, p);
+    const auto signed_deviation_of_point =
+      autoware_universe_utils::calcLateralDeviation(base_pose, p);
     RCLCPP_DEBUG_STREAM(
       rclcpp::get_logger("findLateralSameSidePoints"),
       "signed dev of point: " << signed_deviation_of_point);
@@ -125,7 +127,7 @@ std::vector<geometry_msgs::msg::Point> findLateralSameSidePoints(
 
 bool isSamePoint(const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2)
 {
-  if (tier4_autoware_utils::calcDistance2d(p1, p2) < std::numeric_limits<float>::epsilon()) {
+  if (autoware_universe_utils::calcDistance2d(p1, p2) < std::numeric_limits<float>::epsilon()) {
     return true;
   }
 
@@ -182,15 +184,15 @@ bool pathIntersectsEgoCutLine(
 {
   if (path.size() < 2) return false;
   const auto p1 =
-    tier4_autoware_utils::calcOffsetPose(ego_pose, 0.0, half_line_length, 0.0).position;
+    autoware_universe_utils::calcOffsetPose(ego_pose, 0.0, half_line_length, 0.0).position;
   const auto p2 =
-    tier4_autoware_utils::calcOffsetPose(ego_pose, 0.0, -half_line_length, 0.0).position;
+    autoware_universe_utils::calcOffsetPose(ego_pose, 0.0, -half_line_length, 0.0).position;
   ego_cut_line = {p1, p2};
 
   for (size_t i = 1; i < path.size(); ++i) {
     const auto & p3 = path.at(i).position;
     const auto & p4 = path.at(i - 1).position;
-    const auto intersection = tier4_autoware_utils::intersect(p1, p2, p3, p4);
+    const auto intersection = autoware_universe_utils::intersect(p1, p2, p3, p4);
     if (intersection.has_value()) {
       return true;
     }
@@ -253,7 +255,7 @@ PathPointsWithLaneId decimatePathPoints(
   for (size_t i = 1; i < input_path_points.size(); i++) {
     const auto p1 = input_path_points.at(i - 1);
     const auto p2 = input_path_points.at(i);
-    const auto dist = tier4_autoware_utils::calcDistance2d(p1, p2);
+    const auto dist = autoware_universe_utils::calcDistance2d(p1, p2);
     dist_sum += dist;
 
     if (dist_sum > step) {
@@ -281,7 +283,8 @@ PathWithLaneId trimPathFromSelfPose(
     output.points.push_back(input.points.at(i));
 
     if (i != nearest_idx) {
-      dist_sum += tier4_autoware_utils::calcDistance2d(input.points.at(i - 1), input.points.at(i));
+      dist_sum +=
+        autoware_universe_utils::calcDistance2d(input.points.at(i - 1), input.points.at(i));
     }
 
     if (dist_sum > trim_distance) {
@@ -325,7 +328,7 @@ PathPointWithLaneId createExtendPathPoint(
 {
   PathPointWithLaneId extend_path_point = goal_point;
   extend_path_point.point.pose =
-    tier4_autoware_utils::calcOffsetPose(goal_point.point.pose, extend_distance, 0.0, 0.0);
+    autoware_universe_utils::calcOffsetPose(goal_point.point.pose, extend_distance, 0.0, 0.0);
   return extend_path_point;
 }
 

@@ -20,10 +20,10 @@
 #include "ekf_localizer/hyper_parameters.hpp"
 #include "ekf_localizer/warning.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/logger_level_configure.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/logger_level_configure.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
@@ -142,7 +142,7 @@ private:
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_br_;
 
   //!< @brief logger configure module
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
 
   //!< @brief  extended kalman filter instance.
   std::unique_ptr<EKFModule> ekf_module_;
@@ -236,7 +236,7 @@ private:
     const std_srvs::srv::SetBool::Request::SharedPtr req,
     std_srvs::srv::SetBool::Response::SharedPtr res);
 
-  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
+  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
 
   friend class EKFLocalizerTestSuite;  // for test code
 };

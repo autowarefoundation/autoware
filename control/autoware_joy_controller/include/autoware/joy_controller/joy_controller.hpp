@@ -17,8 +17,8 @@
 
 #include "autoware/joy_controller/joy_converter/joy_converter_base.hpp"
 
+#include <autoware/universe_utils/ros/polling_subscriber.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 
 #include <autoware_control_msgs/msg/control.hpp>
 #include <autoware_vehicle_msgs/msg/engage.hpp>
@@ -70,9 +70,9 @@ private:
   rclcpp::CallbackGroup::SharedPtr callback_group_services_;
 
   // Subscriber
-  tier4_autoware_utils::InterProcessPollingSubscriber<sensor_msgs::msg::Joy> sub_joy_{
+  autoware_universe_utils::InterProcessPollingSubscriber<sensor_msgs::msg::Joy> sub_joy_{
     this, "input/joy"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
+  autoware_universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
     this, "input/odometry"};
 
   rclcpp::Time last_joy_received_time_;

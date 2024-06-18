@@ -17,7 +17,7 @@
 
 #include "types.hpp"
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 
 #include <vector>
 
@@ -30,14 +30,14 @@ namespace out_of_lane
 /// @param [in] ignore_offset optional parameter, if true, ignore the "extra offsets" to build the
 /// footprint
 /// @return base ego footprint
-tier4_autoware_utils::Polygon2d make_base_footprint(
+autoware_universe_utils::Polygon2d make_base_footprint(
   const PlannerParam & p, const bool ignore_offset = false);
 /// @brief project a footprint to the given pose
 /// @param [in] base_footprint footprint to project
 /// @param [in] pose projection pose
 /// @return footprint projected to the given pose
 lanelet::BasicPolygon2d project_to_pose(
-  const tier4_autoware_utils::Polygon2d & base_footprint, const geometry_msgs::msg::Pose & pose);
+  const autoware_universe_utils::Polygon2d & base_footprint, const geometry_msgs::msg::Pose & pose);
 /// @brief calculate the trajectory footprints
 /// @details the resulting polygon follows the format used by the lanelet library: clockwise order
 /// and implicit closing edge

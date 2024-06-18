@@ -17,6 +17,7 @@
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <depend>autoware_map_msgs</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>cv_bridge</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_core</depend>
@@ -29,7 +30,6 @@
   <depend>sophus</depend>
   <depend>std_msgs</depend>
   <depend>tf2_ros</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>visualization_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>

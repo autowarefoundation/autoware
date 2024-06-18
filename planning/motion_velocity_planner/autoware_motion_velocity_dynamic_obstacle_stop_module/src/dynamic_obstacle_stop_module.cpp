@@ -21,12 +21,12 @@
 #include "object_stop_decision.hpp"
 #include "types.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/parameter.hpp>
+#include <autoware/universe_utils/ros/update_param.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <motion_utils/distance/distance.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/parameter.hpp>
-#include <tier4_autoware_utils/ros/update_param.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -49,7 +49,7 @@ void DynamicObstacleStopModule::init(rclcpp::Node & node, const std::string & mo
   virtual_wall_publisher_ =
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/" + ns_ + "/virtual_walls", 1);
 
-  using tier4_autoware_utils::getOrDeclareParameter;
+  using autoware_universe_utils::getOrDeclareParameter;
   auto & p = params_;
   p.extra_object_width = getOrDeclareParameter<double>(node, ns_ + ".extra_object_width");
   p.minimum_object_velocity = getOrDeclareParameter<double>(node, ns_ + ".minimum_object_velocity");
@@ -72,7 +72,7 @@ void DynamicObstacleStopModule::init(rclcpp::Node & node, const std::string & mo
 
 void DynamicObstacleStopModule::update_parameters(const std::vector<rclcpp::Parameter> & parameters)
 {
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
   auto & p = params_;
   updateParam(parameters, ns_ + ".extra_object_width", p.extra_object_width);
   updateParam(parameters, ns_ + ".minimum_object_velocity", p.minimum_object_velocity);
@@ -95,7 +95,7 @@ VelocityPlanningResult DynamicObstacleStopModule::plan(
   debug_data_.reset_data();
   if (ego_trajectory_points.size() < 2) return result;
 
-  tier4_autoware_utils::StopWatch<std::chrono::microseconds> stopwatch;
+  autoware_universe_utils::StopWatch<std::chrono::microseconds> stopwatch;
   stopwatch.tic();
   stopwatch.tic("preprocessing");
   dynamic_obstacle_stop::EgoData ego_data;
@@ -156,7 +156,7 @@ VelocityPlanningResult DynamicObstacleStopModule::plan(
       result.stop_points.push_back(stop_pose->position);
       const auto stop_pose_reached =
         planner_data->current_odometry.twist.twist.linear.x < 1e-3 &&
-        tier4_autoware_utils::calcDistance2d(ego_data.pose, *stop_pose) < 1e-3;
+        autoware_universe_utils::calcDistance2d(ego_data.pose, *stop_pose) < 1e-3;
       velocity_factor_interface_.set(
         ego_trajectory_points, ego_data.pose, *stop_pose,
         stop_pose_reached ? motion_utils::VelocityFactor::STOPPED

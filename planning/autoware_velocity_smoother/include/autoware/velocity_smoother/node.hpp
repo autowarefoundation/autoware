@@ -15,6 +15,12 @@
 #ifndef AUTOWARE__VELOCITY_SMOOTHER__NODE_HPP_
 #define AUTOWARE__VELOCITY_SMOOTHER__NODE_HPP_
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/math/unit_conversion.hpp"
+#include "autoware/universe_utils/ros/logger_level_configure.hpp"
+#include "autoware/universe_utils/ros/polling_subscriber.hpp"
+#include "autoware/universe_utils/ros/self_pose_listener.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
 #include "autoware/velocity_smoother/resample.hpp"
 #include "autoware/velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp"
 #include "autoware/velocity_smoother/smoother/jerk_filtered_smoother.hpp"
@@ -28,14 +34,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
 #include "tf2_ros/transform_listener.h"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/math/unit_conversion.hpp"
-#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
-#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
-#include "tier4_autoware_utils/ros/self_pose_listener.hpp"
-#include "tier4_autoware_utils/system/stop_watch.hpp"
 
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 
 #include "autoware_adapi_v1_msgs/msg/operation_mode_state.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
@@ -88,13 +88,13 @@ private:
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_virtual_wall_;
   rclcpp::Publisher<StopSpeedExceeded>::SharedPtr pub_over_stop_velocity_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_current_trajectory_;
-  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> sub_current_odometry_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> sub_current_odometry_{
     this, "/localization/kinematic_state"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped>
+  autoware_universe_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped>
     sub_current_acceleration_{this, "~/input/acceleration"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<VelocityLimit> sub_external_velocity_limit_{
-    this, "~/input/external_velocity_limit_mps"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<OperationModeState> sub_operation_mode_{
+  autoware_universe_utils::InterProcessPollingSubscriber<VelocityLimit>
+    sub_external_velocity_limit_{this, "~/input/external_velocity_limit_mps"};
+  autoware_universe_utils::InterProcessPollingSubscriber<OperationModeState> sub_operation_mode_{
     this, "~/input/operation_mode_state"};
 
   Odometry::ConstSharedPtr current_odometry_ptr_;  // current odometry
@@ -245,7 +245,7 @@ private:
   void initCommonParam();
 
   // debug
-  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
+  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
   std::shared_ptr<rclcpp::Time> prev_time_;
   double prev_acc_;
   rclcpp::Publisher<Float32Stamped>::SharedPtr pub_dist_to_stopline_;
@@ -273,8 +273,8 @@ private:
   void flipVelocity(TrajectoryPoints & points) const;
   void publishStopWatchTime();
 
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 }  // namespace autoware::velocity_smoother
 

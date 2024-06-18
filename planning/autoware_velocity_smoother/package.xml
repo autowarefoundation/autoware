@@ -22,6 +22,7 @@
 
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_planning_test_manager</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>autoware_vehicle_info_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>interpolation</depend>
@@ -31,7 +32,6 @@
   <depend>rclcpp</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>tier4_debug_msgs</depend>
   <depend>tier4_planning_msgs</depend>
 

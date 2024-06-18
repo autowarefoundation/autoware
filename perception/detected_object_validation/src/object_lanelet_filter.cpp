@@ -14,10 +14,10 @@
 
 #include "detected_object_validation/detected_object_filter/object_lanelet_filter.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <object_recognition_utils/object_recognition_utils.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <boost/geometry/algorithms/convex_hull.hpp>
 #include <boost/geometry/algorithms/disjoint.hpp>
@@ -63,8 +63,9 @@ ObjectLaneletFilterNode::ObjectLaneletFilterNode(const rclcpp::NodeOptions & nod
     "output/object", rclcpp::QoS{1});
 
   debug_publisher_ =
-    std::make_unique<tier4_autoware_utils::DebugPublisher>(this, "object_lanelet_filter");
-  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
+    std::make_unique<autoware_universe_utils::DebugPublisher>(this, "object_lanelet_filter");
+  published_time_publisher_ =
+    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
 }
 
 void ObjectLaneletFilterNode::mapCallback(
@@ -236,7 +237,7 @@ bool ObjectLaneletFilterNode::isObjectOverlapLanelets(
     const auto footprint = setFootprint(object);
     for (const auto & point : footprint.points) {
       const geometry_msgs::msg::Point32 point_transformed =
-        tier4_autoware_utils::transformPoint(point, object.kinematics.pose_with_covariance.pose);
+        autoware_universe_utils::transformPoint(point, object.kinematics.pose_with_covariance.pose);
       polygon.outer().emplace_back(point_transformed.x, point_transformed.y);
     }
     polygon.outer().push_back(polygon.outer().front());
@@ -245,7 +246,7 @@ bool ObjectLaneletFilterNode::isObjectOverlapLanelets(
     // if object do not have bounding box, check each footprint is inside polygon
     for (const auto & point : object.shape.footprint.points) {
       const geometry_msgs::msg::Point32 point_transformed =
-        tier4_autoware_utils::transformPoint(point, object.kinematics.pose_with_covariance.pose);
+        autoware_universe_utils::transformPoint(point, object.kinematics.pose_with_covariance.pose);
       geometry_msgs::msg::Pose point2d;
       point2d.position.x = point_transformed.x;
       point2d.position.y = point_transformed.y;
@@ -295,7 +296,7 @@ bool ObjectLaneletFilterNode::isSameDirectionWithLanelets(
     const double lane_yaw = lanelet::utils::getLaneletAngle(
       lanelet, object.kinematics.pose_with_covariance.pose.position);
     const double delta_yaw = object_velocity_yaw - lane_yaw;
-    const double normalized_delta_yaw = tier4_autoware_utils::normalizeRadian(delta_yaw);
+    const double normalized_delta_yaw = autoware_universe_utils::normalizeRadian(delta_yaw);
     const double abs_norm_delta_yaw = std::fabs(normalized_delta_yaw);
 
     if (abs_norm_delta_yaw < filter_settings_.lanelet_direction_filter_velocity_yaw_threshold) {

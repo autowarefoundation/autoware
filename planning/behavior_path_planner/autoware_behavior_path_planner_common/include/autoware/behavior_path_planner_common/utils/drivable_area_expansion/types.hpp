@@ -15,7 +15,7 @@
 #ifndef AUTOWARE__BEHAVIOR_PATH_PLANNER_COMMON__UTILS__DRIVABLE_AREA_EXPANSION__TYPES_HPP_
 #define AUTOWARE__BEHAVIOR_PATH_PLANNER_COMMON__UTILS__DRIVABLE_AREA_EXPANSION__TYPES_HPP_
 
-#include "tier4_autoware_utils/geometry/boost_geometry.hpp"
+#include "autoware/universe_utils/geometry/boost_geometry.hpp"
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_planning_msgs/msg/path_point.hpp>
@@ -36,13 +36,13 @@ using geometry_msgs::msg::Pose;
 using tier4_planning_msgs::msg::PathPointWithLaneId;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
-using tier4_autoware_utils::LineString2d;
-using tier4_autoware_utils::MultiLineString2d;
-using tier4_autoware_utils::MultiPoint2d;
-using tier4_autoware_utils::MultiPolygon2d;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
-using tier4_autoware_utils::Segment2d;
+using autoware_universe_utils::LineString2d;
+using autoware_universe_utils::MultiLineString2d;
+using autoware_universe_utils::MultiPoint2d;
+using autoware_universe_utils::MultiPolygon2d;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
+using autoware_universe_utils::Segment2d;
 
 using SegmentRtree = boost::geometry::index::rtree<Segment2d, boost::geometry::index::rstar<16>>;
 

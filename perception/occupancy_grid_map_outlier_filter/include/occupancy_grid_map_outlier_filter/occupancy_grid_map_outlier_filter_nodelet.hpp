@@ -17,9 +17,9 @@
 
 #include "pointcloud_preprocessor/filter.hpp"
 
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <pcl/common/impl/common.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <geometry_msgs/msg/pose.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
@@ -120,9 +120,9 @@ private:
 
   // Debugger
   std::shared_ptr<Debugger> debugger_ptr_;
-  std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
-  std::unique_ptr<tier4_autoware_utils::DebugPublisher> debug_publisher_;
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 
   // ROS Parameters
   std::string map_frame_;

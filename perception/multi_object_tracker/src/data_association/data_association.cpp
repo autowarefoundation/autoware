@@ -52,8 +52,8 @@ double getFormedYawAngle(
   const geometry_msgs::msg::Quaternion & tracker_quat, const bool distinguish_front_or_back = true)
 {
   const double measurement_yaw =
-    tier4_autoware_utils::normalizeRadian(tf2::getYaw(measurement_quat));
-  const double tracker_yaw = tier4_autoware_utils::normalizeRadian(tf2::getYaw(tracker_quat));
+    autoware_universe_utils::normalizeRadian(tf2::getYaw(measurement_quat));
+  const double tracker_yaw = autoware_universe_utils::normalizeRadian(tf2::getYaw(tracker_quat));
   const double angle_range = distinguish_front_or_back ? M_PI : M_PI_2;
   const double angle_step = distinguish_front_or_back ? 2.0 * M_PI : M_PI;
   // Fixed measurement_yaw to be in the range of +-90 or 180 degrees of X_t(IDX::YAW)
@@ -170,7 +170,7 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
         (*tracker_itr)->getTrackedObject(measurements.header.stamp, tracked_object);
 
         const double max_dist = max_dist_matrix_(tracker_label, measurement_label);
-        const double dist = tier4_autoware_utils::calcDistance2d(
+        const double dist = autoware_universe_utils::calcDistance2d(
           measurement_object.kinematics.pose_with_covariance.pose.position,
           tracked_object.kinematics.pose_with_covariance.pose.position);
 
@@ -183,7 +183,7 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
         if (passed_gate) {
           const double max_area = max_area_matrix_(tracker_label, measurement_label);
           const double min_area = min_area_matrix_(tracker_label, measurement_label);
-          const double area = tier4_autoware_utils::getArea(measurement_object.shape);
+          const double area = autoware_universe_utils::getArea(measurement_object.shape);
           if (area < min_area || max_area < area) passed_gate = false;
         }
         // angle gate

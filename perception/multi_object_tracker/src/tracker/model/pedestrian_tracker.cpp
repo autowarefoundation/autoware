@@ -20,9 +20,9 @@
 
 #include "multi_object_tracker/utils/utils.hpp"
 
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
-#include <tier4_autoware_utils/math/normalization.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
+#include <autoware/universe_utils/math/normalization.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
 
 #include <bits/stdc++.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -57,9 +57,9 @@ PedestrianTracker::PedestrianTracker(
 
   // Initialize parameters
   // measurement noise covariance
-  float r_stddev_x = 0.4;                                  // [m]
-  float r_stddev_y = 0.4;                                  // [m]
-  float r_stddev_yaw = tier4_autoware_utils::deg2rad(30);  // [rad]
+  float r_stddev_x = 0.4;                                     // [m]
+  float r_stddev_y = 0.4;                                     // [m]
+  float r_stddev_yaw = autoware_universe_utils::deg2rad(30);  // [rad]
   ekf_params_.r_cov_x = std::pow(r_stddev_x, 2.0);
   ekf_params_.r_cov_y = std::pow(r_stddev_y, 2.0);
   ekf_params_.r_cov_yaw = std::pow(r_stddev_yaw, 2.0);
@@ -86,18 +86,18 @@ PedestrianTracker::PedestrianTracker(
 
   // Set motion model parameters
   {
-    constexpr double q_stddev_x = 0.5;                                  // [m/s]
-    constexpr double q_stddev_y = 0.5;                                  // [m/s]
-    constexpr double q_stddev_yaw = tier4_autoware_utils::deg2rad(20);  // [rad/s]
-    constexpr double q_stddev_vx = 9.8 * 0.3;                           // [m/(s*s)]
-    constexpr double q_stddev_wz = tier4_autoware_utils::deg2rad(30);   // [rad/(s*s)]
+    constexpr double q_stddev_x = 0.5;                                     // [m/s]
+    constexpr double q_stddev_y = 0.5;                                     // [m/s]
+    constexpr double q_stddev_yaw = autoware_universe_utils::deg2rad(20);  // [rad/s]
+    constexpr double q_stddev_vx = 9.8 * 0.3;                              // [m/(s*s)]
+    constexpr double q_stddev_wz = autoware_universe_utils::deg2rad(30);   // [rad/(s*s)]
     motion_model_.setMotionParams(q_stddev_x, q_stddev_y, q_stddev_yaw, q_stddev_vx, q_stddev_wz);
   }
 
   // Set motion limits
   motion_model_.setMotionLimits(
-    tier4_autoware_utils::kmph2mps(100), /* [m/s] maximum velocity */
-    30.0                                 /* [deg/s] maximum turn rate */
+    autoware_universe_utils::kmph2mps(100), /* [m/s] maximum velocity */
+    30.0                                    /* [deg/s] maximum turn rate */
   );
 
   // Set initial state
@@ -121,7 +121,7 @@ PedestrianTracker::PedestrianTracker(
       constexpr double p0_stddev_x = 2.0;  // in object coordinate [m]
       constexpr double p0_stddev_y = 2.0;  // in object coordinate [m]
       constexpr double p0_stddev_yaw =
-        tier4_autoware_utils::deg2rad(1000);  // in map coordinate [rad]
+        autoware_universe_utils::deg2rad(1000);  // in map coordinate [rad]
       constexpr double p0_cov_x = p0_stddev_x * p0_stddev_x;
       constexpr double p0_cov_y = p0_stddev_y * p0_stddev_y;
       constexpr double p0_cov_yaw = p0_stddev_yaw * p0_stddev_yaw;
@@ -140,9 +140,9 @@ PedestrianTracker::PedestrianTracker(
 
     if (!object.kinematics.has_twist_covariance) {
       constexpr double p0_stddev_vel =
-        tier4_autoware_utils::kmph2mps(120);  // in object coordinate [m/s]
+        autoware_universe_utils::kmph2mps(120);  // in object coordinate [m/s]
       constexpr double p0_stddev_wz =
-        tier4_autoware_utils::deg2rad(360);  // in object coordinate [rad/s]
+        autoware_universe_utils::deg2rad(360);  // in object coordinate [rad/s]
       vel_cov = std::pow(p0_stddev_vel, 2.0);
       wz_cov = std::pow(p0_stddev_wz, 2.0);
     } else {
@@ -323,7 +323,7 @@ bool PedestrianTracker::getTrackedObject(
     const auto origin_yaw = tf2::getYaw(object_.kinematics.pose_with_covariance.pose.orientation);
     const auto ekf_pose_yaw = tf2::getYaw(pose_with_cov.pose.orientation);
     object.shape.footprint =
-      tier4_autoware_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
+      autoware_universe_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
   }
 
   return true;

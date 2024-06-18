@@ -15,9 +15,9 @@
 #include "yabloc_image_processing/graph_segment/graph_segment.hpp"
 #include "yabloc_image_processing/graph_segment/histogram.hpp"
 
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <opencv4/opencv2/highgui.hpp>
 #include <opencv4/opencv2/imgproc.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 #include <yabloc_common/cv_decompress.hpp>
 #include <yabloc_common/pub_sub.hpp>
 
@@ -98,7 +98,7 @@ void GraphSegment::on_image(const Image & msg)
   cv::resize(image, resized, cv::Size(), 0.5, 0.5);
 
   // Execute graph-based segmentation
-  tier4_autoware_utils::StopWatch stop_watch;
+  autoware_universe_utils::StopWatch stop_watch;
   cv::Mat segmented;
   segmentation_->processImage(resized, segmented);
   RCLCPP_INFO_STREAM(get_logger(), "segmentation time: " << stop_watch.toc() * 1000 << "[ms]");

@@ -16,8 +16,8 @@
 
 #include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/parameters.hpp"
 
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 
 #include <boost/geometry/strategies/transform/matrix_transformers.hpp>
 
@@ -37,7 +37,8 @@ Polygon2d create_footprint(const geometry_msgs::msg::Pose & pose, const Polygon2
 {
   const auto angle = tf2::getYaw(pose.orientation);
   return translate_polygon(
-    tier4_autoware_utils::rotatePolygon(base_footprint, angle), pose.position.x, pose.position.y);
+    autoware_universe_utils::rotatePolygon(base_footprint, angle), pose.position.x,
+    pose.position.y);
 }
 
 MultiPolygon2d create_object_footprints(

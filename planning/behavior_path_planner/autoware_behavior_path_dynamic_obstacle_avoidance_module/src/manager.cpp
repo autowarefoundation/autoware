@@ -14,7 +14,7 @@
 
 #include "autoware/behavior_path_dynamic_obstacle_avoidance_module/manager.hpp"
 
-#include "tier4_autoware_utils/ros/update_param.hpp"
+#include "autoware/universe_utils/ros/update_param.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -152,7 +152,7 @@ void DynamicObstacleAvoidanceModuleManager::init(rclcpp::Node * node)
 void DynamicObstacleAvoidanceModuleManager::updateModuleParams(
   [[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters)
 {
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
   auto & p = parameters_;
 
   {  // common

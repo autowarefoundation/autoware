@@ -14,9 +14,9 @@
 
 #include "lidar_transfusion/ros_utils.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/math/constants.hpp>
 #include <object_recognition_utils/object_recognition_utils.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/constants.hpp>
 
 namespace lidar_transfusion
 {
@@ -49,14 +49,14 @@ void box3DToDetectedObject(
 
   // pose and shape
   // mmdet3d yaw format to ros yaw format
-  float yaw = box3d.yaw + tier4_autoware_utils::pi / 2;
+  float yaw = box3d.yaw + autoware_universe_utils::pi / 2;
   obj.kinematics.pose_with_covariance.pose.position =
-    tier4_autoware_utils::createPoint(box3d.x, box3d.y, box3d.z);
+    autoware_universe_utils::createPoint(box3d.x, box3d.y, box3d.z);
   obj.kinematics.pose_with_covariance.pose.orientation =
-    tier4_autoware_utils::createQuaternionFromYaw(yaw);
+    autoware_universe_utils::createQuaternionFromYaw(yaw);
   obj.shape.type = autoware_perception_msgs::msg::Shape::BOUNDING_BOX;
   obj.shape.dimensions =
-    tier4_autoware_utils::createTranslation(box3d.length, box3d.width, box3d.height);
+    autoware_universe_utils::createTranslation(box3d.length, box3d.width, box3d.height);
 }
 
 uint8_t getSemanticType(const std::string & class_name)

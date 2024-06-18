@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "autoware/universe_utils/ros/marker_helper.hpp"
 #include "map_based_prediction/map_based_prediction_node.hpp"
-#include "tier4_autoware_utils/ros/marker_helper.hpp"
 
 namespace autoware::map_based_prediction
 {
@@ -29,7 +29,7 @@ visualization_msgs::msg::Marker MapBasedPredictionNode::getDebugMarker(
   marker.type = visualization_msgs::msg::Marker::CUBE;
   marker.action = visualization_msgs::msg::Marker::ADD;
   marker.pose = object.kinematics.pose_with_covariance.pose;
-  marker.scale = tier4_autoware_utils::createMarkerScale(3.0, 1.0, 1.0);
+  marker.scale = autoware_universe_utils::createMarkerScale(3.0, 1.0, 1.0);
 
   // Color by maneuver
   double r = 0.0;
@@ -42,7 +42,7 @@ visualization_msgs::msg::Marker MapBasedPredictionNode::getDebugMarker(
   } else {
     b = 1.0;
   }
-  marker.color = tier4_autoware_utils::createMarkerColor(r, g, b, 0.8);
+  marker.color = autoware_universe_utils::createMarkerColor(r, g, b, 0.8);
 
   return marker;
 }

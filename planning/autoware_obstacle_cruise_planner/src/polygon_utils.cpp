@@ -14,9 +14,9 @@
 
 #include "autoware/obstacle_cruise_planner/polygon_utils.hpp"
 
+#include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 namespace
 {
@@ -51,10 +51,10 @@ std::optional<std::pair<size_t, std::vector<PointWithStamp>>> getCollisionIndex(
   const geometry_msgs::msg::Pose & object_pose, const rclcpp::Time & object_time,
   const Shape & object_shape, const double max_dist = std::numeric_limits<double>::max())
 {
-  const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object_pose, object_shape);
+  const auto obj_polygon = autoware_universe_utils::toPolygon2d(object_pose, object_shape);
   for (size_t i = 0; i < traj_polygons.size(); ++i) {
     const double approximated_dist =
-      tier4_autoware_utils::calcDistance2d(traj_points.at(i).pose, object_pose);
+      autoware_universe_utils::calcDistance2d(traj_points.at(i).pose, object_pose);
     if (approximated_dist > max_dist) {
       continue;
     }
@@ -105,14 +105,14 @@ std::optional<std::pair<geometry_msgs::msg::Point, double>> getCollisionPoint(
 
   const double x_diff_to_bumper = is_driving_forward ? vehicle_info.max_longitudinal_offset_m
                                                      : vehicle_info.min_longitudinal_offset_m;
-  const auto bumper_pose = tier4_autoware_utils::calcOffsetPose(
+  const auto bumper_pose = autoware_universe_utils::calcOffsetPose(
     traj_points.at(collision_info->first).pose, x_diff_to_bumper, 0.0, 0.0);
 
   std::optional<double> max_collision_length = std::nullopt;
   std::optional<geometry_msgs::msg::Point> max_collision_point = std::nullopt;
   for (const auto & poly_vertex : collision_info->second) {
     const double dist_from_bumper =
-      std::abs(tier4_autoware_utils::inverseTransformPoint(poly_vertex.point, bumper_pose).x);
+      std::abs(autoware_universe_utils::inverseTransformPoint(poly_vertex.point, bumper_pose).x);
 
     if (!max_collision_length.has_value() || dist_from_bumper > *max_collision_length) {
       max_collision_length = dist_from_bumper;

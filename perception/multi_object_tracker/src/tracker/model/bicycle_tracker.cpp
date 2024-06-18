@@ -20,9 +20,9 @@
 
 #include "multi_object_tracker/utils/utils.hpp"
 
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
-#include <tier4_autoware_utils/math/normalization.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
+#include <autoware/universe_utils/math/normalization.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
 
 #include <bits/stdc++.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -57,9 +57,9 @@ BicycleTracker::BicycleTracker(
 
   // Initialize parameters
   // measurement noise covariance: detector uncertainty + ego vehicle motion uncertainty
-  double r_stddev_x = 0.5;                                  // in vehicle coordinate [m]
-  double r_stddev_y = 0.4;                                  // in vehicle coordinate [m]
-  double r_stddev_yaw = tier4_autoware_utils::deg2rad(30);  // in map coordinate [rad]
+  double r_stddev_x = 0.5;                                     // in vehicle coordinate [m]
+  double r_stddev_y = 0.4;                                     // in vehicle coordinate [m]
+  double r_stddev_yaw = autoware_universe_utils::deg2rad(30);  // in map coordinate [rad]
   ekf_params_.r_cov_x = std::pow(r_stddev_x, 2.0);
   ekf_params_.r_cov_y = std::pow(r_stddev_y, 2.0);
   ekf_params_.r_cov_yaw = std::pow(r_stddev_yaw, 2.0);
@@ -102,8 +102,8 @@ BicycleTracker::BicycleTracker(
 
   // Set motion limits
   {
-    constexpr double max_vel = tier4_autoware_utils::kmph2mps(80);  // [m/s] maximum velocity
-    constexpr double max_slip = 30;                                 // [deg] maximum slip angle
+    constexpr double max_vel = autoware_universe_utils::kmph2mps(80);  // [m/s] maximum velocity
+    constexpr double max_slip = 30;                                    // [deg] maximum slip angle
     motion_model_.setMotionLimits(max_vel, max_slip);  // maximum velocity and slip angle
   }
 
@@ -126,7 +126,7 @@ BicycleTracker::BicycleTracker(
       constexpr double p0_stddev_x = 0.8;  // in object coordinate [m]
       constexpr double p0_stddev_y = 0.5;  // in object coordinate [m]
       constexpr double p0_stddev_yaw =
-        tier4_autoware_utils::deg2rad(25);  // in map coordinate [rad]
+        autoware_universe_utils::deg2rad(25);  // in map coordinate [rad]
       constexpr double p0_cov_x = p0_stddev_x * p0_stddev_x;
       constexpr double p0_cov_y = p0_stddev_y * p0_stddev_y;
       constexpr double p0_cov_yaw = p0_stddev_yaw * p0_stddev_yaw;
@@ -145,14 +145,15 @@ BicycleTracker::BicycleTracker(
 
     if (!object.kinematics.has_twist_covariance) {
       constexpr double p0_stddev_vel =
-        tier4_autoware_utils::kmph2mps(1000);  // in object coordinate [m/s]
+        autoware_universe_utils::kmph2mps(1000);  // in object coordinate [m/s]
       vel_cov = std::pow(p0_stddev_vel, 2.0);
     } else {
       vel_cov = object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::X_X];
     }
 
     const double slip = 0.0;
-    const double p0_stddev_slip = tier4_autoware_utils::deg2rad(5);  // in object coordinate [rad/s]
+    const double p0_stddev_slip =
+      autoware_universe_utils::deg2rad(5);  // in object coordinate [rad/s]
     const double slip_cov = std::pow(p0_stddev_slip, 2.0);
 
     // initialize motion model
@@ -327,7 +328,7 @@ bool BicycleTracker::getTrackedObject(
   const auto origin_yaw = tf2::getYaw(object_.kinematics.pose_with_covariance.pose.orientation);
   const auto ekf_pose_yaw = tf2::getYaw(pose_with_cov.pose.orientation);
   object.shape.footprint =
-    tier4_autoware_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
+    autoware_universe_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
 
   return true;
 }

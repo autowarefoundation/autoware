@@ -32,8 +32,8 @@ using Point = bg::model::d2::point_xy<double>;
 using Polygon = bg::model::polygon<Point>;
 using Line = bg::model::linestring<Point>;
 
+using autoware_universe_utils::createPoint;
 using motion_utils::calcSignedArcLength;
-using tier4_autoware_utils::createPoint;
 
 PathWithNoDrivableLanePolygonIntersection getPathIntersectionWithNoDrivableLanePolygon(
   const PathWithLaneId & ego_path, const lanelet::BasicPolygon2d & polygon,

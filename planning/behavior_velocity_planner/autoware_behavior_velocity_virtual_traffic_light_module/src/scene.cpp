@@ -27,7 +27,7 @@ namespace autoware::behavior_velocity_planner
 {
 namespace
 {
-using tier4_autoware_utils::calcDistance2d;
+using autoware_universe_utils::calcDistance2d;
 
 struct SegmentIndexWithPoint
 {
@@ -46,16 +46,17 @@ tier4_v2x_msgs::msg::KeyValue createKeyValue(const std::string & key, const std:
   return tier4_v2x_msgs::build<tier4_v2x_msgs::msg::KeyValue>().key(key).value(value);
 }
 
-tier4_autoware_utils::LineString3d toAutowarePoints(const lanelet::ConstLineString3d & line_string)
+autoware_universe_utils::LineString3d toAutowarePoints(
+  const lanelet::ConstLineString3d & line_string)
 {
-  tier4_autoware_utils::LineString3d output;
+  autoware_universe_utils::LineString3d output;
   for (const auto & p : line_string) {
     output.emplace_back(p.x(), p.y(), p.z());
   }
   return output;
 }
 
-std::optional<tier4_autoware_utils::LineString3d> toAutowarePoints(
+std::optional<autoware_universe_utils::LineString3d> toAutowarePoints(
   const lanelet::Optional<lanelet::ConstLineString3d> & line_string)
 {
   if (!line_string) {
@@ -64,27 +65,28 @@ std::optional<tier4_autoware_utils::LineString3d> toAutowarePoints(
   return toAutowarePoints(*line_string);
 }
 
-std::vector<tier4_autoware_utils::LineString3d> toAutowarePoints(
+std::vector<autoware_universe_utils::LineString3d> toAutowarePoints(
   const lanelet::ConstLineStrings3d & line_strings)
 {
-  std::vector<tier4_autoware_utils::LineString3d> output;
+  std::vector<autoware_universe_utils::LineString3d> output;
   for (const auto & line_string : line_strings) {
     output.emplace_back(toAutowarePoints(line_string));
   }
   return output;
 }
 
-[[maybe_unused]] tier4_autoware_utils::LineString2d to_2d(
-  const tier4_autoware_utils::LineString3d & line_string)
+[[maybe_unused]] autoware_universe_utils::LineString2d to_2d(
+  const autoware_universe_utils::LineString3d & line_string)
 {
-  tier4_autoware_utils::LineString2d output;
+  autoware_universe_utils::LineString2d output;
   for (const auto & p : line_string) {
     output.emplace_back(p.x(), p.y());
   }
   return output;
 }
 
-tier4_autoware_utils::Point3d calcCenter(const tier4_autoware_utils::LineString3d & line_string)
+autoware_universe_utils::Point3d calcCenter(
+  const autoware_universe_utils::LineString3d & line_string)
 {
   const auto p1 = line_string.front();
   const auto p2 = line_string.back();
@@ -95,10 +97,10 @@ tier4_autoware_utils::Point3d calcCenter(const tier4_autoware_utils::LineString3
 geometry_msgs::msg::Pose calcHeadPose(
   const geometry_msgs::msg::Pose & base_link_pose, const double base_link_to_front)
 {
-  return tier4_autoware_utils::calcOffsetPose(base_link_pose, base_link_to_front, 0.0, 0.0);
+  return autoware_universe_utils::calcOffsetPose(base_link_pose, base_link_to_front, 0.0, 0.0);
 }
 
-geometry_msgs::msg::Point convertToGeomPoint(const tier4_autoware_utils::Point3d & p)
+geometry_msgs::msg::Point convertToGeomPoint(const autoware_universe_utils::Point3d & p)
 {
   geometry_msgs::msg::Point geom_p;
   geom_p.x = p.x();
@@ -109,7 +111,7 @@ geometry_msgs::msg::Point convertToGeomPoint(const tier4_autoware_utils::Point3d
 
 template <class T>
 std::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
-  const T & points, const tier4_autoware_utils::LineString3d & target_line,
+  const T & points, const autoware_universe_utils::LineString3d & target_line,
   const size_t end_line_idx)
 {
   const auto target_line_p1 = convertToGeomPoint(target_line.at(0));
@@ -117,8 +119,8 @@ std::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
 
   for (size_t i = end_line_idx; 0 < i;
        --i) {  // NOTE: size_t can be used since it will not be negative.
-    const auto & p1 = tier4_autoware_utils::getPoint(points.at(i));
-    const auto & p2 = tier4_autoware_utils::getPoint(points.at(i - 1));
+    const auto & p1 = autoware_universe_utils::getPoint(points.at(i));
+    const auto & p2 = autoware_universe_utils::getPoint(points.at(i - 1));
     const auto collision_point =
       arc_lane_utils::checkCollision(p1, p2, target_line_p1, target_line_p2);
 
@@ -132,7 +134,7 @@ std::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
 
 template <class T>
 std::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
-  const T & points, const std::vector<tier4_autoware_utils::LineString3d> & lines,
+  const T & points, const std::vector<autoware_universe_utils::LineString3d> & lines,
   const size_t end_line_idx)
 {
   for (const auto & line : lines) {

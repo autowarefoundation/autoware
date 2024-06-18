@@ -15,18 +15,18 @@
 #ifndef MAP_BASED_PREDICTION__MAP_BASED_PREDICTION_NODE_HPP_
 #define MAP_BASED_PREDICTION__MAP_BASED_PREDICTION_NODE_HPP_
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/ros/update_param.hpp"
 #include "map_based_prediction/path_generator.hpp"
 #include "tf2/LinearMath/Quaternion.h"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/ros/update_param.hpp"
 
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/ros/polling_subscriber.hpp>
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
+#include <autoware/universe_utils/ros/transform_listener.hpp>
+#include <autoware/universe_utils/ros/uuid_helper.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
-#include <tier4_autoware_utils/ros/transform_listener.hpp>
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
@@ -129,7 +129,7 @@ using autoware_perception_msgs::msg::TrafficLightElement;
 using autoware_perception_msgs::msg::TrafficLightGroup;
 using autoware_perception_msgs::msg::TrafficLightGroupArray;
 using autoware_planning_msgs::msg::TrajectoryPoint;
-using tier4_autoware_utils::StopWatch;
+using autoware_universe_utils::StopWatch;
 using tier4_debug_msgs::msg::StringStamped;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
 class MapBasedPredictionNode : public rclcpp::Node
@@ -143,12 +143,12 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_debug_markers_;
   rclcpp::Subscription<TrackedObjects>::SharedPtr sub_objects_;
   rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_map_;
-  tier4_autoware_utils::InterProcessPollingSubscriber<TrafficLightGroupArray> sub_traffic_signals_{
-    this, "/traffic_signals"};
+  autoware_universe_utils::InterProcessPollingSubscriber<TrafficLightGroupArray>
+    sub_traffic_signals_{this, "/traffic_signals"};
 
   // debug publisher
-  std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
-  std::unique_ptr<tier4_autoware_utils::DebugPublisher> processing_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<autoware_universe_utils::DebugPublisher> processing_time_publisher_;
 
   // Object History
   std::unordered_map<std::string, std::deque<ObjectData>> road_users_history;
@@ -169,7 +169,7 @@ private:
     const std::vector<rclcpp::Parameter> & parameters);
 
   // Pose Transform Listener
-  tier4_autoware_utils::TransformListener transform_listener_{this};
+  autoware_universe_utils::TransformListener transform_listener_{this};
 
   // Path Generator
   std::shared_ptr<PathGenerator> path_generator_;
@@ -221,7 +221,7 @@ private:
   bool match_lost_and_appeared_crosswalk_users_;
   bool remember_lost_crosswalk_users_;
 
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 
   // Member Functions
   void mapCallback(const LaneletMapBin::ConstSharedPtr msg);
@@ -314,8 +314,8 @@ private:
   inline std::vector<double> calcTrajectoryCurvatureFrom3Points(
     const TrajectoryPoints & trajectory, size_t idx_dist)
   {
-    using tier4_autoware_utils::calcCurvature;
-    using tier4_autoware_utils::getPoint;
+    using autoware_universe_utils::calcCurvature;
+    using autoware_universe_utils::getPoint;
 
     if (trajectory.size() < 3) {
       const std::vector<double> k_arr(trajectory.size(), 0.0);

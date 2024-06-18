@@ -15,12 +15,12 @@
 #include "node.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware/universe_utils/ros/wait_for_param.hpp>
+#include <autoware/universe_utils/transform/transforms.hpp>
 #include <autoware/velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/ros/wait_for_param.hpp>
-#include <tier4_autoware_utils/transform/transforms.hpp>
 
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -130,8 +130,9 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
     planner_manager_.launchScenePlugin(*this, name);
   }
 
-  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
-  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
+  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  published_time_publisher_ =
+    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
 }
 
 void BehaviorVelocityPlannerNode::onLoadPlugin(
@@ -193,7 +194,7 @@ void BehaviorVelocityPlannerNode::processNoGroundPointCloud(
   Eigen::Affine3f affine = tf2::transformToEigen(transform.transform).cast<float>();
   pcl::PointCloud<pcl::PointXYZ>::Ptr pc_transformed(new pcl::PointCloud<pcl::PointXYZ>);
   if (!pc.empty()) {
-    tier4_autoware_utils::transformPointCloud(pc, *pc_transformed, affine);
+    autoware_universe_utils::transformPointCloud(pc, *pc_transformed, affine);
   }
 
   planner_data_.no_ground_pointcloud = pc_transformed;

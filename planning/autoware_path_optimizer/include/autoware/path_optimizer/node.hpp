@@ -19,13 +19,13 @@
 #include "autoware/path_optimizer/mpt_optimizer.hpp"
 #include "autoware/path_optimizer/replan_checker.hpp"
 #include "autoware/path_optimizer/type_alias.hpp"
+#include "autoware/universe_utils/ros/logger_level_configure.hpp"
+#include "autoware/universe_utils/ros/polling_subscriber.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
-#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -90,7 +90,7 @@ protected:  // for the static_centerline_generator package
 
   // interface subscriber
   rclcpp::Subscription<Path>::SharedPtr path_sub_;
-  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> ego_odom_sub_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> ego_odom_sub_{
     this, "~/input/odometry"};
 
   // debug publisher
@@ -137,9 +137,9 @@ protected:  // for the static_centerline_generator package
 private:
   double vehicle_stop_margin_outside_drivable_area_;
 
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
 
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 }  // namespace autoware::path_optimizer
 

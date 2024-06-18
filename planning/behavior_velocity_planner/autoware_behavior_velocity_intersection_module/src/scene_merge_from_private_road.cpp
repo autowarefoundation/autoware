@@ -53,7 +53,7 @@ MergeFromPrivateRoadModule::MergeFromPrivateRoadModule(
 static std::optional<lanelet::ConstLanelet> getFirstConflictingLanelet(
   const lanelet::ConstLanelets & conflicting_lanelets,
   const InterpolatedPathInfo & interpolated_path_info,
-  const tier4_autoware_utils::LinearRing2d & footprint, const double vehicle_length)
+  const autoware_universe_utils::LinearRing2d & footprint, const double vehicle_length)
 {
   const auto & path_ip = interpolated_path_info.path;
   const auto [lane_start, end] = interpolated_path_info.lane_id_interval.value();
@@ -63,8 +63,8 @@ static std::optional<lanelet::ConstLanelet> getFirstConflictingLanelet(
 
   for (size_t i = start; i <= end; ++i) {
     const auto & pose = path_ip.points.at(i).point.pose;
-    const auto path_footprint =
-      tier4_autoware_utils::transformVector(footprint, tier4_autoware_utils::pose2transform(pose));
+    const auto path_footprint = autoware_universe_utils::transformVector(
+      footprint, autoware_universe_utils::pose2transform(pose));
     for (const auto & conflicting_lanelet : conflicting_lanelets) {
       const auto polygon_2d = conflicting_lanelet.polygon2d().basicPolygon();
       const bool intersects = bg::intersects(polygon_2d, path_footprint);

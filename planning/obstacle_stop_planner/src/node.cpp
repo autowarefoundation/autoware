@@ -41,16 +41,16 @@
 namespace motion_planning
 {
 using autoware_perception_msgs::msg::PredictedObject;
+using autoware_universe_utils::calcDistance2d;
+using autoware_universe_utils::createPoint;
+using autoware_universe_utils::getPoint;
+using autoware_universe_utils::getPose;
+using autoware_universe_utils::getRPY;
 using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcLongitudinalOffsetToSegment;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findFirstNearestIndexWithSoftConstraints;
 using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
-using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::getPoint;
-using tier4_autoware_utils::getPose;
-using tier4_autoware_utils::getRPY;
 
 ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & node_options)
 : Node("obstacle_stop_planner", node_options)
@@ -245,8 +245,9 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
     std::bind(&ObstacleStopPlannerNode::onExpandStopRange, this, std::placeholders::_1),
     createSubscriptionOptions(this));
 
-  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
-  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
+  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  published_time_publisher_ =
+    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
 }
 
 void ObstacleStopPlannerNode::onPointCloud(const PointCloud2::ConstSharedPtr input_msg)
@@ -1557,8 +1558,8 @@ void ObstacleStopPlannerNode::filterObstacles(
     const double max_length = calcObstacleMaxLength(object.shape);
     const size_t seg_idx = motion_utils::findNearestSegmentIndex(
       traj, object.kinematics.initial_pose_with_covariance.pose.position);
-    const auto p_front = tier4_autoware_utils::getPoint(traj.at(seg_idx));
-    const auto p_back = tier4_autoware_utils::getPoint(traj.at(seg_idx + 1));
+    const auto p_front = autoware_universe_utils::getPoint(traj.at(seg_idx));
+    const auto p_back = autoware_universe_utils::getPoint(traj.at(seg_idx + 1));
     const auto & p_target = object.kinematics.initial_pose_with_covariance.pose.position;
     const Eigen::Vector3d segment_vec{p_back.x - p_front.x, p_back.y - p_front.y, 0.0};
     const Eigen::Vector3d target_vec{p_target.x - p_front.x, p_target.y - p_front.y, 0.0};

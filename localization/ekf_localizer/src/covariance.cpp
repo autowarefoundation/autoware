@@ -14,10 +14,10 @@
 
 #include "ekf_localizer/covariance.hpp"
 
+#include "autoware/universe_utils/ros/msg_covariance.hpp"
 #include "ekf_localizer/state_index.hpp"
-#include "tier4_autoware_utils/ros/msg_covariance.hpp"
 
-using COV_IDX = tier4_autoware_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+using COV_IDX = autoware_universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
 
 std::array<double, 36> ekf_covariance_to_pose_message_covariance(const Matrix6d & P)
 {

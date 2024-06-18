@@ -15,19 +15,19 @@
 #ifndef OBSTACLE_STOP_PLANNER__NODE_HPP_
 #define OBSTACLE_STOP_PLANNER__NODE_HPP_
 
+#include "autoware/universe_utils/ros/logger_level_configure.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 #include "obstacle_stop_planner/debug_marker.hpp"
 #include "obstacle_stop_planner/planner_data.hpp"
-#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
-#include "tier4_autoware_utils/system/stop_watch.hpp"
 
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <motion_utils/trajectory/conversion.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
@@ -81,9 +81,9 @@ using autoware::vehicle_info_utils::VehicleInfo;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
-using tier4_autoware_utils::StopWatch;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
+using autoware_universe_utils::StopWatch;
 using tier4_debug_msgs::msg::BoolStamped;
 using tier4_debug_msgs::msg::Float32MultiArrayStamped;
 using tier4_debug_msgs::msg::Float32Stamped;
@@ -315,9 +315,9 @@ private:
     return ret;
   }
 
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
 
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 }  // namespace motion_planning
 

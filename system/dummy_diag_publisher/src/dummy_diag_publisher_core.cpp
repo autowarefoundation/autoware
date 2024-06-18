@@ -17,10 +17,10 @@
 #include <rcl_interfaces/msg/detail/set_parameters_result__struct.hpp>
 
 #define FMT_HEADER_ONLY
+#include <autoware/universe_utils/ros/update_param.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rcl_interfaces/msg/set_parameters_result.hpp>
 #include <rclcpp/create_timer.hpp>
-#include <tier4_autoware_utils/ros/update_param.hpp>
 
 #include <fmt/format.h>
 
@@ -66,8 +66,8 @@ rcl_interfaces::msg::SetParametersResult DummyDiagPublisher::paramCallback(
       auto prev_status_str = status_str;
       auto is_active = true;
       try {
-        tier4_autoware_utils::updateParam(parameters, status_prefix_str, status_str);
-        tier4_autoware_utils::updateParam(parameters, is_active_prefix_str, is_active);
+        autoware_universe_utils::updateParam(parameters, status_prefix_str, status_str);
+        autoware_universe_utils::updateParam(parameters, is_active_prefix_str, is_active);
       } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
         result.successful = false;
         result.reason = e.what();

@@ -20,7 +20,7 @@
 #include <string>
 
 // Autoware
-#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
+#include <autoware/universe_utils/ros/polling_subscriber.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/mrm_state.hpp>
 #include <autoware_control_msgs/msg/control.hpp>
@@ -63,13 +63,14 @@ private:
     sub_hazard_status_stamped_;
   rclcpp::Subscription<autoware_control_msgs::msg::Control>::SharedPtr sub_prev_control_command_;
   // Subscribers without callback
-  tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
+  autoware_universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
     this, "~/input/odometry"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<autoware_vehicle_msgs::msg::ControlModeReport>
+  autoware_universe_utils::InterProcessPollingSubscriber<
+    autoware_vehicle_msgs::msg::ControlModeReport>
     sub_control_mode_{this, "~/input/control_mode"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<tier4_system_msgs::msg::MrmBehaviorStatus>
+  autoware_universe_utils::InterProcessPollingSubscriber<tier4_system_msgs::msg::MrmBehaviorStatus>
     sub_mrm_comfortable_stop_status_{this, "~/input/mrm/comfortable_stop/status"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<tier4_system_msgs::msg::MrmBehaviorStatus>
+  autoware_universe_utils::InterProcessPollingSubscriber<tier4_system_msgs::msg::MrmBehaviorStatus>
     sub_mrm_emergency_stop_status_{this, "~/input/mrm/emergency_stop/status"};
 
   autoware_system_msgs::msg::HazardStatusStamped::ConstSharedPtr hazard_status_stamped_;

@@ -16,11 +16,11 @@
 
 #include "autoware/lane_departure_checker/util/create_vehicle_footprint.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/math/normalization.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/normalization.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <boost/geometry.hpp>
 
@@ -30,12 +30,12 @@
 #include <algorithm>
 #include <vector>
 
+using autoware_universe_utils::LinearRing2d;
+using autoware_universe_utils::LineString2d;
+using autoware_universe_utils::MultiPoint2d;
+using autoware_universe_utils::MultiPolygon2d;
+using autoware_universe_utils::Point2d;
 using motion_utils::calcArcLength;
-using tier4_autoware_utils::LinearRing2d;
-using tier4_autoware_utils::LineString2d;
-using tier4_autoware_utils::MultiPoint2d;
-using tier4_autoware_utils::MultiPolygon2d;
-using tier4_autoware_utils::Point2d;
 
 namespace
 {
@@ -102,7 +102,7 @@ Output LaneDepartureChecker::update(const Input & input)
 {
   Output output{};
 
-  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch;
+  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stop_watch;
 
   output.trajectory_deviation = calcTrajectoryDeviation(
     *input.reference_trajectory, input.current_odom->pose.pose, param_.ego_nearest_dist_threshold,
@@ -171,7 +171,7 @@ PoseDeviation LaneDepartureChecker::calcTrajectoryDeviation(
 {
   const auto nearest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
     trajectory.points, pose, dist_threshold, yaw_threshold);
-  return tier4_autoware_utils::calcPoseDeviation(trajectory.points.at(nearest_idx).pose, pose);
+  return autoware_universe_utils::calcPoseDeviation(trajectory.points.at(nearest_idx).pose, pose);
 }
 
 TrajectoryPoints LaneDepartureChecker::resampleTrajectory(
@@ -183,8 +183,8 @@ TrajectoryPoints LaneDepartureChecker::resampleTrajectory(
   for (size_t i = 1; i < trajectory.points.size() - 1; ++i) {
     const auto & point = trajectory.points.at(i);
 
-    const auto p1 = tier4_autoware_utils::fromMsg(resampled.back().pose.position);
-    const auto p2 = tier4_autoware_utils::fromMsg(point.pose.position);
+    const auto p1 = autoware_universe_utils::fromMsg(resampled.back().pose.position);
+    const auto p2 = autoware_universe_utils::fromMsg(point.pose.position);
 
     if (boost::geometry::distance(p1.to_2d(), p2.to_2d()) > interval) {
       resampled.push_back(point);
@@ -205,8 +205,8 @@ TrajectoryPoints LaneDepartureChecker::cutTrajectory(
   for (size_t i = 1; i < trajectory.size(); ++i) {
     const auto & point = trajectory.at(i);
 
-    const auto p1 = tier4_autoware_utils::fromMsg(cut.back().pose.position);
-    const auto p2 = tier4_autoware_utils::fromMsg(point.pose.position);
+    const auto p1 = autoware_universe_utils::fromMsg(cut.back().pose.position);
+    const auto p2 = autoware_universe_utils::fromMsg(point.pose.position);
     const auto points_distance = boost::geometry::distance(p1.to_2d(), p2.to_2d());
 
     const auto remain_distance = length - total_length;
@@ -251,7 +251,7 @@ std::vector<LinearRing2d> LaneDepartureChecker::createVehicleFootprints(
   std::vector<LinearRing2d> vehicle_footprints;
   for (const auto & p : trajectory) {
     vehicle_footprints.push_back(
-      transformVector(local_vehicle_footprint, tier4_autoware_utils::pose2transform(p.pose)));
+      transformVector(local_vehicle_footprint, autoware_universe_utils::pose2transform(p.pose)));
   }
 
   return vehicle_footprints;
@@ -267,8 +267,8 @@ std::vector<LinearRing2d> LaneDepartureChecker::createVehicleFootprints(
   // Create vehicle footprint on each Path point
   std::vector<LinearRing2d> vehicle_footprints;
   for (const auto & p : path.points) {
-    vehicle_footprints.push_back(
-      transformVector(local_vehicle_footprint, tier4_autoware_utils::pose2transform(p.point.pose)));
+    vehicle_footprints.push_back(transformVector(
+      local_vehicle_footprint, autoware_universe_utils::pose2transform(p.point.pose)));
   }
 
   return vehicle_footprints;
@@ -322,16 +322,18 @@ std::vector<std::pair<double, lanelet::Lanelet>> LaneDepartureChecker::getLanele
     lanelet_map_ptr->laneletLayer, footprint_hull_basic_polygon, 0.0);
 }
 
-std::optional<tier4_autoware_utils::Polygon2d> LaneDepartureChecker::getFusedLaneletPolygonForPath(
+std::optional<autoware_universe_utils::Polygon2d>
+LaneDepartureChecker::getFusedLaneletPolygonForPath(
   const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path) const
 {
   const auto lanelets_distance_pair = getLaneletsFromPath(lanelet_map_ptr, path);
-  auto to_polygon2d = [](const lanelet::BasicPolygon2d & poly) -> tier4_autoware_utils::Polygon2d {
-    tier4_autoware_utils::Polygon2d p;
+  auto to_polygon2d =
+    [](const lanelet::BasicPolygon2d & poly) -> autoware_universe_utils::Polygon2d {
+    autoware_universe_utils::Polygon2d p;
     auto & outer = p.outer();
 
     for (const auto & p : poly) {
-      tier4_autoware_utils::Point2d p2d(p.x(), p.y());
+      autoware_universe_utils::Point2d p2d(p.x(), p.y());
       outer.push_back(p2d);
     }
     boost::geometry::correct(p);
@@ -339,15 +341,15 @@ std::optional<tier4_autoware_utils::Polygon2d> LaneDepartureChecker::getFusedLan
   };
 
   // Fuse lanelets into a single BasicPolygon2d
-  auto fused_lanelets = [&]() -> std::optional<tier4_autoware_utils::Polygon2d> {
+  auto fused_lanelets = [&]() -> std::optional<autoware_universe_utils::Polygon2d> {
     if (lanelets_distance_pair.empty()) return std::nullopt;
-    tier4_autoware_utils::MultiPolygon2d lanelet_unions;
-    tier4_autoware_utils::MultiPolygon2d result;
+    autoware_universe_utils::MultiPolygon2d lanelet_unions;
+    autoware_universe_utils::MultiPolygon2d result;
 
     for (size_t i = 0; i < lanelets_distance_pair.size(); ++i) {
       const auto & route_lanelet = lanelets_distance_pair.at(i).second;
       const auto & p = route_lanelet.polygon2d().basicPolygon();
-      tier4_autoware_utils::Polygon2d poly = to_polygon2d(p);
+      autoware_universe_utils::Polygon2d poly = to_polygon2d(p);
       boost::geometry::union_(lanelet_unions, poly, result);
       lanelet_unions = result;
       result.clear();

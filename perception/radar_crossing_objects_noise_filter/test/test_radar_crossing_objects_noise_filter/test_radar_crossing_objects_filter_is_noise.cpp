@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/math/unit_conversion.hpp"
 #include "radar_crossing_objects_noise_filter/radar_crossing_objects_noise_filter_node.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/math/unit_conversion.hpp"
 
 #include <geometry_msgs/msg/point32.hpp>
 
@@ -48,9 +48,9 @@ TEST(RadarCrossingObjectsFilter, IsNoise)
 {
   rclcpp::init(0, nullptr);
   {
-    auto velocity = tier4_autoware_utils::createVector3(40.0, 30.0, 0.0);
-    auto position = tier4_autoware_utils::createPoint(1.0, 0.0, 0.0);
-    auto orientation = tier4_autoware_utils::createQuaternion(1.0, 1.0, 1.0, 0.0);
+    auto velocity = autoware_universe_utils::createVector3(40.0, 30.0, 0.0);
+    auto position = autoware_universe_utils::createPoint(1.0, 0.0, 0.0);
+    auto orientation = autoware_universe_utils::createQuaternion(1.0, 1.0, 1.0, 0.0);
     auto object = get_object(velocity, position, orientation);
     {
       double velocity_threshold = 40.0;
@@ -81,9 +81,9 @@ TEST(RadarCrossingObjectsFilter, IsNoise)
   }
 
   {
-    auto velocity = tier4_autoware_utils::createVector3(40.0, 30.0, 0.0);
-    auto position = tier4_autoware_utils::createPoint(1.0, 2.0, 0.0);
-    auto orientation = tier4_autoware_utils::createQuaternion(1.0, 1.0, 1.0, 0.0);
+    auto velocity = autoware_universe_utils::createVector3(40.0, 30.0, 0.0);
+    auto position = autoware_universe_utils::createPoint(1.0, 2.0, 0.0);
+    auto orientation = autoware_universe_utils::createQuaternion(1.0, 1.0, 1.0, 0.0);
     auto object = get_object(velocity, position, orientation);
     {
       double velocity_threshold = 40.0;
@@ -112,9 +112,9 @@ TEST(RadarCrossingObjectsFilter, IsNoise)
   }
 
   {
-    auto velocity = tier4_autoware_utils::createVector3(24.0, 18.0, 0.0);
-    auto position = tier4_autoware_utils::createPoint(1.0, 0.0, 0.0);
-    auto orientation = tier4_autoware_utils::createQuaternion(1.0, 1.0, 1.0, 0.0);
+    auto velocity = autoware_universe_utils::createVector3(24.0, 18.0, 0.0);
+    auto position = autoware_universe_utils::createPoint(1.0, 0.0, 0.0);
+    auto orientation = autoware_universe_utils::createQuaternion(1.0, 1.0, 1.0, 0.0);
     auto object = get_object(velocity, position, orientation);
     {
       double velocity_threshold = 40.0;
@@ -143,9 +143,9 @@ TEST(RadarCrossingObjectsFilter, IsNoise)
   }
 
   {
-    auto velocity = tier4_autoware_utils::createVector3(24.0, 18.0, 0.0);
-    auto position = tier4_autoware_utils::createPoint(1.0, 2.0, 0.0);
-    auto orientation = tier4_autoware_utils::createQuaternion(1.0, 1.0, 1.0, 0.0);
+    auto velocity = autoware_universe_utils::createVector3(24.0, 18.0, 0.0);
+    auto position = autoware_universe_utils::createPoint(1.0, 2.0, 0.0);
+    auto orientation = autoware_universe_utils::createQuaternion(1.0, 1.0, 1.0, 0.0);
     auto object = get_object(velocity, position, orientation);
     {
       double velocity_threshold = 40.0;

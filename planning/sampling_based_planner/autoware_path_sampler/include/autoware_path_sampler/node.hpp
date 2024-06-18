@@ -22,8 +22,8 @@
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+#include <autoware/universe_utils/ros/polling_subscriber.hpp>
 #include <autoware_sampler_common/structures.hpp>
-#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -62,8 +62,9 @@ protected:  // for the static_centerline_generator package
 
   // interface subscriber
   rclcpp::Subscription<Path>::SharedPtr path_sub_;
-  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> odom_sub_{this, "~/input/odometry"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<PredictedObjects> objects_sub_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> odom_sub_{
+    this, "~/input/odometry"};
+  autoware_universe_utils::InterProcessPollingSubscriber<PredictedObjects> objects_sub_{
     this, "~/input/objects"};
 
   // debug publisher

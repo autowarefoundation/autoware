@@ -105,14 +105,15 @@ ElasticBandSmoother::ElasticBandSmoother(const rclcpp::NodeOptions & node_option
   set_param_res_ = this->add_on_set_parameters_callback(
     std::bind(&ElasticBandSmoother::onParam, this, std::placeholders::_1));
 
-  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
-  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
+  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  published_time_publisher_ =
+    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
 }
 
 rcl_interfaces::msg::SetParametersResult ElasticBandSmoother::onParam(
   const std::vector<rclcpp::Parameter> & parameters)
 {
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
 
   // parameters for ego nearest search
   ego_nearest_param_.onParam(parameters);

@@ -42,13 +42,13 @@ using autoware::behavior_path_planner::utils::path_safety_checker::ExtendedPredi
 using autoware::behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObjects;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_perception_msgs::msg::PredictedPath;
+using autoware_universe_utils::Polygon2d;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Polygon;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using geometry_msgs::msg::Vector3;
 using std_msgs::msg::ColorRGBA;
-using tier4_autoware_utils::Polygon2d;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;

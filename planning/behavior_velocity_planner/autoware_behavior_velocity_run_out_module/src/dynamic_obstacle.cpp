@@ -14,12 +14,12 @@
 
 #include "dynamic_obstacle.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/geometry/pose_deviation.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
+#include <autoware/universe_utils/ros/uuid_helper.hpp>
+#include <autoware/universe_utils/transform/transforms.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/geometry/pose_deviation.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
-#include <tier4_autoware_utils/transform/transforms.hpp>
 
 #include <boost/geometry/algorithms/covered_by.hpp>
 #include <boost/geometry/algorithms/envelope.hpp>
@@ -42,12 +42,12 @@ geometry_msgs::msg::Quaternion createQuaternionFacingToTrajectory(
   const auto & nearest_pose = path_points.at(nearest_idx).point.pose;
 
   const auto longitudinal_offset =
-    tier4_autoware_utils::calcLongitudinalDeviation(nearest_pose, point);
+    autoware_universe_utils::calcLongitudinalDeviation(nearest_pose, point);
   const auto vertical_point =
-    tier4_autoware_utils::calcOffsetPose(nearest_pose, longitudinal_offset, 0, 0).position;
-  const auto azimuth_angle = tier4_autoware_utils::calcAzimuthAngle(point, vertical_point);
+    autoware_universe_utils::calcOffsetPose(nearest_pose, longitudinal_offset, 0, 0).position;
+  const auto azimuth_angle = autoware_universe_utils::calcAzimuthAngle(point, vertical_point);
 
-  return tier4_autoware_utils::createQuaternionFromYaw(azimuth_angle);
+  return autoware_universe_utils::createQuaternionFromYaw(azimuth_angle);
 }
 
 // create predicted path assuming that obstacles move with constant velocity
@@ -60,7 +60,7 @@ std::vector<geometry_msgs::msg::Pose> createPredictedPath(
   for (size_t i = 0; i < path_size; i++) {
     const float travel_dist = max_velocity_mps * time_step * i;
     const auto predicted_pose =
-      tier4_autoware_utils::calcOffsetPose(initial_pose, travel_dist, 0, 0);
+      autoware_universe_utils::calcOffsetPose(initial_pose, travel_dist, 0, 0);
     path_points.emplace_back(predicted_pose);
   }
 
@@ -115,7 +115,7 @@ bool isAheadOf(
   const geometry_msgs::msg::Point & target_point, const geometry_msgs::msg::Pose & base_pose)
 {
   const auto longitudinal_deviation =
-    tier4_autoware_utils::calcLongitudinalDeviation(base_pose, target_point);
+    autoware_universe_utils::calcLongitudinalDeviation(base_pose, target_point);
   const bool is_ahead = longitudinal_deviation > 0;
   return is_ahead;
 }
@@ -136,7 +136,7 @@ pcl::PointCloud<pcl::PointXYZ> extractObstaclePointsWithinPolygon(
   pcl::PointCloud<pcl::PointXYZ> output_points;
   output_points.header = input_points.header;
   for (const auto & poly : polys) {
-    const auto bounding_box = bg::return_envelope<tier4_autoware_utils::Box2d>(poly);
+    const auto bounding_box = bg::return_envelope<autoware_universe_utils::Box2d>(poly);
     for (const auto & p : input_points) {
       Point2d point(p.x, p.y);
 
@@ -165,7 +165,7 @@ std::vector<pcl::PointCloud<pcl::PointXYZ>> groupPointsWithNearestSegmentIndex(
   points_with_index.resize(path_points.size());
 
   for (const auto & p : input_points.points) {
-    const auto ros_point = tier4_autoware_utils::createPoint(p.x, p.y, p.z);
+    const auto ros_point = autoware_universe_utils::createPoint(p.x, p.y, p.z);
     const size_t nearest_seg_idx = motion_utils::findNearestSegmentIndex(path_points, ros_point);
 
     // if the point is ahead of end of the path, index should be path.size() - 1
@@ -188,10 +188,10 @@ pcl::PointXYZ calculateLateralNearestPoint(
 {
   const auto lateral_nearest_point = std::min_element(
     input_points.points.begin(), input_points.points.end(), [&](const auto & p1, const auto & p2) {
-      const auto lateral_deviation_p1 = std::abs(tier4_autoware_utils::calcLateralDeviation(
-        base_pose, tier4_autoware_utils::createPoint(p1.x, p1.y, 0)));
-      const auto lateral_deviation_p2 = std::abs(tier4_autoware_utils::calcLateralDeviation(
-        base_pose, tier4_autoware_utils::createPoint(p2.x, p2.y, 0)));
+      const auto lateral_deviation_p1 = std::abs(autoware_universe_utils::calcLateralDeviation(
+        base_pose, autoware_universe_utils::createPoint(p1.x, p1.y, 0)));
+      const auto lateral_deviation_p2 = std::abs(autoware_universe_utils::calcLateralDeviation(
+        base_pose, autoware_universe_utils::createPoint(p2.x, p2.y, 0)));
 
       return lateral_deviation_p1 < lateral_deviation_p2;
     });
@@ -266,7 +266,7 @@ pcl::PointCloud<pcl::PointXYZ> transformPointCloud(
   pcl::PointCloud<pcl::PointXYZ> pointcloud_pcl;
   pcl::fromROSMsg(input_pointcloud, pointcloud_pcl);
   pcl::PointCloud<pcl::PointXYZ> pointcloud_pcl_transformed;
-  tier4_autoware_utils::transformPointCloud(
+  autoware_universe_utils::transformPointCloud(
     pointcloud_pcl, pointcloud_pcl_transformed, transform_matrix);
 
   return pointcloud_pcl_transformed;
@@ -365,8 +365,8 @@ std::vector<DynamicObstacle> DynamicObstacleCreatorForObject::createDynamicObsta
     dynamic_obstacle.pose = predicted_object.kinematics.initial_pose_with_covariance.pose;
 
     if (param_.assume_fixed_velocity) {
-      dynamic_obstacle.min_velocity_mps = tier4_autoware_utils::kmph2mps(param_.min_vel_kmph);
-      dynamic_obstacle.max_velocity_mps = tier4_autoware_utils::kmph2mps(param_.max_vel_kmph);
+      dynamic_obstacle.min_velocity_mps = autoware_universe_utils::kmph2mps(param_.min_vel_kmph);
+      dynamic_obstacle.max_velocity_mps = autoware_universe_utils::kmph2mps(param_.max_vel_kmph);
     } else {
       calculateMinAndMaxVelFromCovariance(
         predicted_object.kinematics.initial_twist_with_covariance, param_.std_dev_multiplier,
@@ -408,8 +408,8 @@ std::vector<DynamicObstacle> DynamicObstacleCreatorForObjectWithoutPath::createD
     dynamic_obstacle.pose.orientation = createQuaternionFacingToTrajectory(
       dynamic_obstacle_data_.path.points, dynamic_obstacle.pose.position);
 
-    dynamic_obstacle.min_velocity_mps = tier4_autoware_utils::kmph2mps(param_.min_vel_kmph);
-    dynamic_obstacle.max_velocity_mps = tier4_autoware_utils::kmph2mps(param_.max_vel_kmph);
+    dynamic_obstacle.min_velocity_mps = autoware_universe_utils::kmph2mps(param_.min_vel_kmph);
+    dynamic_obstacle.max_velocity_mps = autoware_universe_utils::kmph2mps(param_.max_vel_kmph);
     dynamic_obstacle.classifications = predicted_object.classification;
     dynamic_obstacle.shape = predicted_object.shape;
 
@@ -467,12 +467,13 @@ std::vector<DynamicObstacle> DynamicObstacleCreatorForPoints::createDynamicObsta
     DynamicObstacle dynamic_obstacle;
 
     // create pose facing the direction of the lane
-    dynamic_obstacle.pose.position = tier4_autoware_utils::createPoint(point.x, point.y, point.z);
+    dynamic_obstacle.pose.position =
+      autoware_universe_utils::createPoint(point.x, point.y, point.z);
     dynamic_obstacle.pose.orientation = createQuaternionFacingToTrajectory(
       dynamic_obstacle_data_.path.points, dynamic_obstacle.pose.position);
 
-    dynamic_obstacle.min_velocity_mps = tier4_autoware_utils::kmph2mps(param_.min_vel_kmph);
-    dynamic_obstacle.max_velocity_mps = tier4_autoware_utils::kmph2mps(param_.max_vel_kmph);
+    dynamic_obstacle.min_velocity_mps = autoware_universe_utils::kmph2mps(param_.min_vel_kmph);
+    dynamic_obstacle.max_velocity_mps = autoware_universe_utils::kmph2mps(param_.max_vel_kmph);
 
     // create classification of points as pedestrian
     ObjectClassification classification;
@@ -493,7 +494,7 @@ std::vector<DynamicObstacle> DynamicObstacleCreatorForPoints::createDynamicObsta
       param_.max_prediction_time);
     predicted_path.confidence = 1.0;
     dynamic_obstacle.predicted_paths.emplace_back(predicted_path);
-    dynamic_obstacle.uuid = tier4_autoware_utils::generateUUID();
+    dynamic_obstacle.uuid = autoware_universe_utils::generateUUID();
     dynamic_obstacles.emplace_back(dynamic_obstacle);
   }
 

@@ -14,7 +14,7 @@
 #include "autoware/behavior_path_planner_common/turn_signal_decider.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 
 #include "autoware_planning_msgs/msg/path_point.hpp"
 #include <geometry_msgs/msg/twist.hpp>
@@ -27,12 +27,12 @@ using autoware::behavior_path_planner::Pose;
 using autoware::behavior_path_planner::TurnSignalDecider;
 using autoware::behavior_path_planner::TurnSignalInfo;
 using autoware_planning_msgs::msg::PathPoint;
+using autoware_universe_utils::createPoint;
+using autoware_universe_utils::createQuaternionFromYaw;
 using autoware_vehicle_msgs::msg::HazardLightsCommand;
 using autoware_vehicle_msgs::msg::TurnIndicatorsCommand;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Twist;
-using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::createQuaternionFromYaw;
 using tier4_planning_msgs::msg::PathPointWithLaneId;
 
 constexpr double nearest_dist_threshold = 5.0;

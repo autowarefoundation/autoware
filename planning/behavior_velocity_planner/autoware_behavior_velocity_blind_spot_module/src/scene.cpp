@@ -256,7 +256,7 @@ std::optional<lanelet::ConstLanelet> BlindSpotModule::getSiblingStraightLanelet(
 
 static std::optional<size_t> getFirstPointIntersectsLineByFootprint(
   const lanelet::ConstLineString2d & line, const InterpolatedPathInfo & interpolated_path_info,
-  const tier4_autoware_utils::LinearRing2d & footprint, const double vehicle_length)
+  const autoware_universe_utils::LinearRing2d & footprint, const double vehicle_length)
 {
   const auto & path_ip = interpolated_path_info.path;
   const auto [lane_start, lane_end] = interpolated_path_info.lane_id_interval.value();
@@ -266,8 +266,8 @@ static std::optional<size_t> getFirstPointIntersectsLineByFootprint(
   const auto line2d = line.basicLineString();
   for (auto i = start; i <= lane_end; ++i) {
     const auto & base_pose = path_ip.points.at(i).point.pose;
-    const auto path_footprint = tier4_autoware_utils::transformVector(
-      footprint, tier4_autoware_utils::pose2transform(base_pose));
+    const auto path_footprint = autoware_universe_utils::transformVector(
+      footprint, autoware_universe_utils::pose2transform(base_pose));
     if (bg::intersects(path_footprint, line2d)) {
       return std::make_optional<size_t>(i);
     }
@@ -282,7 +282,7 @@ static std::optional<size_t> getDuplicatedPointIdx(
     const auto & p = path.points.at(i).point.pose.position;
 
     constexpr double min_dist = 0.001;
-    if (tier4_autoware_utils::calcDistance2d(p, point) < min_dist) {
+    if (autoware_universe_utils::calcDistance2d(p, point) < min_dist) {
       return i;
     }
   }

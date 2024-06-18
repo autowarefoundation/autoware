@@ -18,7 +18,7 @@
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
 
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
 
 #include "autoware_planning_msgs/msg/path_point.hpp"
 #include "autoware_planning_msgs/msg/trajectory_point.hpp"
@@ -39,10 +39,10 @@
 namespace autoware::path_optimizer
 {
 namespace bg = boost::geometry;
-using tier4_autoware_utils::LinearRing2d;
-using tier4_autoware_utils::LineString2d;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
+using autoware_universe_utils::LinearRing2d;
+using autoware_universe_utils::LineString2d;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
 
 namespace
 {
@@ -134,13 +134,13 @@ bool isOutsideDrivableAreaFromRectangleFootprint(
 
   // calculate footprint corner points
   const auto top_left_pos =
-    tier4_autoware_utils::calcOffsetPose(pose, base_to_front, base_to_left, 0.0).position;
+    autoware_universe_utils::calcOffsetPose(pose, base_to_front, base_to_left, 0.0).position;
   const auto top_right_pos =
-    tier4_autoware_utils::calcOffsetPose(pose, base_to_front, -base_to_right, 0.0).position;
+    autoware_universe_utils::calcOffsetPose(pose, base_to_front, -base_to_right, 0.0).position;
   const auto bottom_right_pos =
-    tier4_autoware_utils::calcOffsetPose(pose, -base_to_rear, -base_to_right, 0.0).position;
+    autoware_universe_utils::calcOffsetPose(pose, -base_to_rear, -base_to_right, 0.0).position;
   const auto bottom_left_pos =
-    tier4_autoware_utils::calcOffsetPose(pose, -base_to_rear, base_to_left, 0.0).position;
+    autoware_universe_utils::calcOffsetPose(pose, -base_to_rear, base_to_left, 0.0).position;
 
   if (use_footprint_polygon_for_outside_drivable_area_check) {
     // calculate footprint polygon

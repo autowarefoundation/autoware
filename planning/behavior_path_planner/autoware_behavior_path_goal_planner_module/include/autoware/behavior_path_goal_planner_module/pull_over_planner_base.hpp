@@ -25,8 +25,8 @@
 #include <utility>
 #include <vector>
 
+using autoware_universe_utils::LinearRing2d;
 using geometry_msgs::msg::Pose;
-using tier4_autoware_utils::LinearRing2d;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
 namespace autoware::behavior_path_planner

@@ -16,8 +16,8 @@
 #define LOCALIZATION_ERROR_MONITOR__LOCALIZATION_ERROR_MONITOR_HPP_
 
 #include <Eigen/Dense>
+#include <autoware/universe_utils/ros/logger_level_configure.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/logger_level_configure.hpp>
 
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -43,7 +43,7 @@ private:
 
   rclcpp::TimerBase::SharedPtr timer_;
 
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
 
   double scale_;
   double error_ellipse_size_;

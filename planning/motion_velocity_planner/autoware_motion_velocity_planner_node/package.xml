@@ -21,6 +21,7 @@
   <depend>autoware_motion_velocity_planner_common</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>autoware_velocity_smoother</depend>
   <depend>diagnostic_msgs</depend>
   <depend>eigen</depend>
@@ -37,7 +38,6 @@
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>tier4_planning_msgs</depend>
   <depend>visualization_msgs</depend>
 

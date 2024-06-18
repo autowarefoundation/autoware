@@ -15,8 +15,8 @@
 #ifndef TYPES_HPP_
 #define TYPES_HPP_
 
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <rclcpp/time.hpp>
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <autoware_planning_msgs/msg/trajectory_point.hpp>
@@ -32,7 +32,7 @@
 namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
 {
 using TrajectoryPoints = std::vector<autoware_planning_msgs::msg::TrajectoryPoint>;
-using BoxIndexPair = std::pair<tier4_autoware_utils::Box2d, size_t>;
+using BoxIndexPair = std::pair<autoware_universe_utils::Box2d, size_t>;
 using Rtree = boost::geometry::index::rtree<BoxIndexPair, boost::geometry::index::rstar<16, 4>>;
 
 /// @brief parameters for the "out of lane" module
@@ -57,7 +57,7 @@ struct EgoData
   size_t first_trajectory_idx{};
   double longitudinal_offset_to_first_trajectory_idx;  // [m]
   geometry_msgs::msg::Pose pose;
-  tier4_autoware_utils::MultiPolygon2d trajectory_footprints;
+  autoware_universe_utils::MultiPolygon2d trajectory_footprints;
   Rtree rtree;
   std::optional<geometry_msgs::msg::Pose> earliest_stop_pose;
 };
@@ -65,9 +65,9 @@ struct EgoData
 /// @brief debug data
 struct DebugData
 {
-  tier4_autoware_utils::MultiPolygon2d obstacle_footprints{};
+  autoware_universe_utils::MultiPolygon2d obstacle_footprints{};
   size_t prev_dynamic_obstacles_nb{};
-  tier4_autoware_utils::MultiPolygon2d ego_footprints{};
+  autoware_universe_utils::MultiPolygon2d ego_footprints{};
   size_t prev_ego_footprints_nb{};
   std::optional<geometry_msgs::msg::Pose> stop_pose{};
   size_t prev_collisions_nb{};

@@ -10,13 +10,13 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_universe_utils</depend>
   <depend>diagnostic_aggregator</depend>
   <depend>diagnostic_msgs</depend>
   <depend>diagnostic_updater</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>tier4_simulation_msgs</depend>
 
   <test_depend>ament_cmake_ros</test_depend>

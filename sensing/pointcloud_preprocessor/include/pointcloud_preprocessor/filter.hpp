@@ -80,9 +80,9 @@
 #include <tf2_ros/transform_listener.h>
 
 // Include tier4 autoware utils
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 
 namespace pointcloud_preprocessor
 {
@@ -177,9 +177,9 @@ protected:
   std::mutex mutex_;
 
   /** \brief processing time publisher. **/
-  std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
-  std::unique_ptr<tier4_autoware_utils::DebugPublisher> debug_publisher_;
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 
   /** \brief Virtual abstract filter method. To be implemented by every child.
    * \param input the input point cloud dataset.

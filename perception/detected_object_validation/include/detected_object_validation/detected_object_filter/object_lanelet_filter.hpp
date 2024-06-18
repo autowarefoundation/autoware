@@ -17,11 +17,11 @@
 
 #include "detected_object_validation/utils/utils.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_perception_msgs/msg/detected_objects.hpp>
@@ -35,10 +35,10 @@
 
 namespace object_lanelet_filter
 {
-using tier4_autoware_utils::LinearRing2d;
-using tier4_autoware_utils::MultiPoint2d;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
+using autoware_universe_utils::LinearRing2d;
+using autoware_universe_utils::MultiPoint2d;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
 
 class ObjectLaneletFilterNode : public rclcpp::Node
 {
@@ -52,7 +52,7 @@ private:
   rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr object_pub_;
   rclcpp::Subscription<autoware_map_msgs::msg::LaneletMapBin>::SharedPtr map_sub_;
   rclcpp::Subscription<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr object_sub_;
-  std::unique_ptr<tier4_autoware_utils::DebugPublisher> debug_publisher_{nullptr};
+  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_{nullptr};
 
   lanelet::LaneletMapPtr lanelet_map_ptr_;
   lanelet::ConstLanelets road_lanelets_;
@@ -89,7 +89,7 @@ private:
     const autoware_perception_msgs::msg::DetectedObject & object);
   geometry_msgs::msg::Polygon setFootprint(const autoware_perception_msgs::msg::DetectedObject &);
 
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 
 }  // namespace object_lanelet_filter

@@ -15,7 +15,7 @@
 #ifndef TYPES_HPP_
 #define TYPES_HPP_
 
-#include "tier4_autoware_utils/geometry/boost_geometry.hpp"
+#include "autoware/universe_utils/geometry/boost_geometry.hpp"
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
@@ -35,13 +35,13 @@ using nav_msgs::msg::OccupancyGrid;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
-using point_t = tier4_autoware_utils::Point2d;
-using multipoint_t = tier4_autoware_utils::MultiPoint2d;
-using polygon_t = tier4_autoware_utils::Polygon2d;
-using multi_polygon_t = tier4_autoware_utils::MultiPolygon2d;
-using segment_t = tier4_autoware_utils::Segment2d;
-using linestring_t = tier4_autoware_utils::LineString2d;
-using multi_linestring_t = tier4_autoware_utils::MultiLineString2d;
+using point_t = autoware_universe_utils::Point2d;
+using multipoint_t = autoware_universe_utils::MultiPoint2d;
+using polygon_t = autoware_universe_utils::Polygon2d;
+using multi_polygon_t = autoware_universe_utils::MultiPolygon2d;
+using segment_t = autoware_universe_utils::Segment2d;
+using linestring_t = autoware_universe_utils::LineString2d;
+using multi_linestring_t = autoware_universe_utils::MultiLineString2d;
 
 struct ObstacleMasks
 {

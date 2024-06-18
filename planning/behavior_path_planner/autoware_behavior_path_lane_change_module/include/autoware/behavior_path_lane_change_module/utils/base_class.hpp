@@ -21,7 +21,7 @@
 #include "autoware/behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "autoware/behavior_path_planner_common/turn_signal_decider.hpp"
 #include "autoware/behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
-#include "tier4_autoware_utils/system/stop_watch.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
 
 #include <magic_enum.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -37,11 +37,11 @@
 namespace autoware::behavior_path_planner
 {
 using autoware::route_handler::Direction;
+using autoware_universe_utils::StopWatch;
 using data::lane_change::PathSafetyStatus;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
-using tier4_autoware_utils::StopWatch;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
 class LaneChangeBase

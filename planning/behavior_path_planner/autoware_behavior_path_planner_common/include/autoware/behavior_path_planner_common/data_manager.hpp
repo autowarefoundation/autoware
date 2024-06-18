@@ -102,7 +102,7 @@ struct DrivableAreaInfo
   struct Obstacle
   {
     geometry_msgs::msg::Pose pose;
-    tier4_autoware_utils::Polygon2d poly;
+    autoware_universe_utils::Polygon2d poly;
     bool is_left{true};
   };
   std::vector<DrivableLanes> drivable_lanes{};

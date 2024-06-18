@@ -14,7 +14,7 @@
 
 #include "pose_estimator_arbiter/switch_rule/pcd_map_based_rule.hpp"
 
-#include <tier4_autoware_utils/ros/parameter.hpp>
+#include <autoware/universe_utils/ros/parameter.hpp>
 
 #include <utility>
 
@@ -28,9 +28,9 @@ PcdMapBasedRule::PcdMapBasedRule(
   shared_data_(std::move(shared_data))
 {
   const int pcd_density_upper_threshold =
-    tier4_autoware_utils::getOrDeclareParameter<int>(node, "pcd_density_upper_threshold");
+    autoware_universe_utils::getOrDeclareParameter<int>(node, "pcd_density_upper_threshold");
   const int pcd_density_lower_threshold =
-    tier4_autoware_utils::getOrDeclareParameter<int>(node, "pcd_density_lower_threshold");
+    autoware_universe_utils::getOrDeclareParameter<int>(node, "pcd_density_lower_threshold");
 
   pcd_occupancy_ = std::make_unique<rule_helper::PcdOccupancy>(
     pcd_density_upper_threshold, pcd_density_lower_threshold);

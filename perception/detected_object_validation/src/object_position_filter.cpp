@@ -42,7 +42,8 @@ ObjectPositionFilterNode::ObjectPositionFilterNode(const rclcpp::NodeOptions & n
     "input/object", rclcpp::QoS{1}, std::bind(&ObjectPositionFilterNode::objectCallback, this, _1));
   object_pub_ = this->create_publisher<autoware_perception_msgs::msg::DetectedObjects>(
     "output/object", rclcpp::QoS{1});
-  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
+  published_time_publisher_ =
+    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
 }
 
 void ObjectPositionFilterNode::objectCallback(

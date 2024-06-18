@@ -30,7 +30,7 @@ common/signal_processing/** ali.boyali@tier4.jp fumiya.watanabe@tier4.jp kyoichi
 common/tensorrt_common/** dan.umeda@tier4.jp manato.hirabayashi@tier4.jp
 common/tier4_adapi_rviz_plugin/** hiroki.ota@tier4.jp isamu.takagi@tier4.jp kosuke.takeuchi@tier4.jp
 common/tier4_api_utils/** isamu.takagi@tier4.jp
-common/tier4_autoware_utils/** mamoru.sobue@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
+common/autoware_universe_utils/** mamoru.sobue@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
 common/tier4_camera_view_rviz_plugin/** makoto.ybauta@tier4.jp uken.ryu@tier4.jp
 common/tier4_datetime_rviz_plugin/** isamu.takagi@tier4.jp
 common/tier4_localization_rviz_plugin/** isamu.takagi@tier4.jp takamasa.horibe@tier4.jp

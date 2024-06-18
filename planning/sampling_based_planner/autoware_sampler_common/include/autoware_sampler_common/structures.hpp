@@ -15,7 +15,7 @@
 #ifndef AUTOWARE_SAMPLER_COMMON__STRUCTURES_HPP_
 #define AUTOWARE_SAMPLER_COMMON__STRUCTURES_HPP_
 
-#include "tier4_autoware_utils/geometry/boost_geometry.hpp"
+#include "autoware/universe_utils/geometry/boost_geometry.hpp"
 
 #include <eigen3/Eigen/Core>
 #include <interpolation/linear_interpolation.hpp>
@@ -38,13 +38,13 @@
 
 namespace autoware::sampler_common
 {
-using tier4_autoware_utils::LinearRing2d;
-using tier4_autoware_utils::MultiPoint2d;
-using tier4_autoware_utils::MultiPolygon2d;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
+using autoware_universe_utils::LinearRing2d;
+using autoware_universe_utils::MultiPoint2d;
+using autoware_universe_utils::MultiPolygon2d;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
 
-typedef std::pair<tier4_autoware_utils::Box2d, size_t> BoxIndexPair;
+typedef std::pair<autoware_universe_utils::Box2d, size_t> BoxIndexPair;
 typedef boost::geometry::index::rtree<BoxIndexPair, boost::geometry::index::rstar<16, 4>> Rtree;
 
 /// @brief data about constraint check results of a given path

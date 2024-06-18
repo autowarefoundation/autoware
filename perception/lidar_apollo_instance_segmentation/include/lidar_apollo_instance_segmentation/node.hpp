@@ -17,9 +17,9 @@
 
 #include "lidar_apollo_instance_segmentation/debugger.hpp"
 
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
@@ -47,8 +47,8 @@ private:
   std::shared_ptr<LidarInstanceSegmentationInterface> detector_ptr_;
   std::shared_ptr<Debugger> debugger_ptr_;
   void pointCloudCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
-  std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
-  std::unique_ptr<tier4_autoware_utils::DebugPublisher> debug_publisher_;
+  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_;
 
 public:
   explicit LidarInstanceSegmentationNode(const rclcpp::NodeOptions & node_options);

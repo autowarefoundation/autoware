@@ -15,7 +15,7 @@
 #ifndef AUTOWARE__PATH_SMOOTHER__UTILS__GEOMETRY_UTILS_HPP_
 #define AUTOWARE__PATH_SMOOTHER__UTILS__GEOMETRY_UTILS_HPP_
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 
 namespace autoware::path_smoother
 {
@@ -24,8 +24,8 @@ namespace geometry_utils
 template <typename T1, typename T2>
 bool isSamePoint(const T1 & t1, const T2 & t2)
 {
-  const auto p1 = tier4_autoware_utils::getPoint(t1);
-  const auto p2 = tier4_autoware_utils::getPoint(t2);
+  const auto p1 = autoware_universe_utils::getPoint(t1);
+  const auto p2 = autoware_universe_utils::getPoint(t2);
 
   constexpr double epsilon = 1e-6;
   return (std::abs(p1.x - p2.x) <= epsilon && std::abs(p1.y - p2.y) <= epsilon);

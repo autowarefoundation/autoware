@@ -17,7 +17,7 @@
 #define AUTOWARE__BEHAVIOR_PATH_PLANNER_COMMON__INTERFACE__SCENE_MODULE_MANAGER_INTERFACE_HPP_
 
 #include "autoware/behavior_path_planner_common/interface/scene_module_interface.hpp"
-#include "tier4_autoware_utils/ros/parameter.hpp"
+#include "autoware/universe_utils/ros/parameter.hpp"
 
 #include <rclcpp/node.hpp>
 #include <rclcpp/parameter.hpp>
@@ -36,10 +36,10 @@
 namespace autoware::behavior_path_planner
 {
 
+using autoware_universe_utils::toHexString;
 using motion_utils::createDeadLineVirtualWallMarker;
 using motion_utils::createSlowDownVirtualWallMarker;
 using motion_utils::createStopVirtualWallMarker;
-using tier4_autoware_utils::toHexString;
 using unique_identifier_msgs::msg::UUID;
 using SceneModulePtr = std::shared_ptr<SceneModuleInterface>;
 using SceneModuleObserver = std::weak_ptr<SceneModuleInterface>;
@@ -111,7 +111,7 @@ public:
 
   void publishVirtualWall() const
   {
-    using tier4_autoware_utils::appendMarkerArray;
+    using autoware_universe_utils::appendMarkerArray;
 
     MarkerArray markers{};
 
@@ -155,7 +155,7 @@ public:
 
   void publishMarker() const
   {
-    using tier4_autoware_utils::appendMarkerArray;
+    using autoware_universe_utils::appendMarkerArray;
 
     MarkerArray info_markers{};
     MarkerArray debug_markers{};
@@ -271,7 +271,7 @@ public:
 protected:
   void initInterface(rclcpp::Node * node, const std::vector<std::string> & rtc_types)
   {
-    using tier4_autoware_utils::getOrDeclareParameter;
+    using autoware_universe_utils::getOrDeclareParameter;
 
     // init manager configuration
     {

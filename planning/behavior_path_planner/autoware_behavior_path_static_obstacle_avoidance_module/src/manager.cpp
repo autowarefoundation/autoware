@@ -15,8 +15,8 @@
 #include "autoware/behavior_path_static_obstacle_avoidance_module/manager.hpp"
 
 #include "autoware/behavior_path_static_obstacle_avoidance_module/parameter_helper.hpp"
-#include "tier4_autoware_utils/ros/parameter.hpp"
-#include "tier4_autoware_utils/ros/update_param.hpp"
+#include "autoware/universe_utils/ros/parameter.hpp"
+#include "autoware/universe_utils/ros/update_param.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -29,7 +29,7 @@ namespace autoware::behavior_path_planner
 void StaticObstacleAvoidanceModuleManager::init(rclcpp::Node * node)
 {
   using autoware_perception_msgs::msg::ObjectClassification;
-  using tier4_autoware_utils::getOrDeclareParameter;
+  using autoware_universe_utils::getOrDeclareParameter;
 
   // init manager interface
   initInterface(node, {"left", "right"});
@@ -43,7 +43,7 @@ void StaticObstacleAvoidanceModuleManager::updateModuleParams(
   const std::vector<rclcpp::Parameter> & parameters)
 {
   using autoware_perception_msgs::msg::ObjectClassification;
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
 
   auto p = parameters_;
 

@@ -290,7 +290,7 @@ bool IntersectionModule::checkStuckVehicleInIntersection(const PathLanelets & pa
     }
 
     // check if the footprint is in the stuck detect area
-    const auto obj_footprint = tier4_autoware_utils::toPolygon2d(object);
+    const auto obj_footprint = autoware_universe_utils::toPolygon2d(object);
     // NOTE: in order not to stop too much
     const bool is_in_stuck_area = bg::within(
       to_bg2d(object.kinematics.initial_pose_with_covariance.pose.position),

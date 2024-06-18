@@ -14,11 +14,11 @@
 
 #include "perception_online_evaluator/utils/marker_utils.hpp"
 
-#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
 
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
+#include <autoware/universe_utils/ros/marker_helper.hpp>
+#include <autoware/universe_utils/ros/uuid_helper.hpp>
 
 #include <lanelet2_core/primitives/CompoundPolygon.h>
 #include <lanelet2_core/primitives/Lanelet.h>
@@ -28,13 +28,13 @@
 
 namespace marker_utils
 {
+using autoware_universe_utils::calcOffsetPose;
+using autoware_universe_utils::createDefaultMarker;
+using autoware_universe_utils::createMarkerColor;
+using autoware_universe_utils::createMarkerOrientation;
+using autoware_universe_utils::createMarkerScale;
+using autoware_universe_utils::createPoint;
 using std_msgs::msg::ColorRGBA;
-using tier4_autoware_utils::calcOffsetPose;
-using tier4_autoware_utils::createDefaultMarker;
-using tier4_autoware_utils::createMarkerColor;
-using tier4_autoware_utils::createMarkerOrientation;
-using tier4_autoware_utils::createMarkerScale;
-using tier4_autoware_utils::createPoint;
 using visualization_msgs::msg::Marker;
 
 void addFootprintMarker(
@@ -46,13 +46,13 @@ void addFootprintMarker(
   const double base_to_rear = vehicle_info.rear_overhang_m;
 
   marker.points.push_back(
-    tier4_autoware_utils::calcOffsetPose(pose, base_to_front, -half_width, 0.0).position);
+    autoware_universe_utils::calcOffsetPose(pose, base_to_front, -half_width, 0.0).position);
   marker.points.push_back(
-    tier4_autoware_utils::calcOffsetPose(pose, base_to_front, half_width, 0.0).position);
+    autoware_universe_utils::calcOffsetPose(pose, base_to_front, half_width, 0.0).position);
   marker.points.push_back(
-    tier4_autoware_utils::calcOffsetPose(pose, -base_to_rear, half_width, 0.0).position);
+    autoware_universe_utils::calcOffsetPose(pose, -base_to_rear, half_width, 0.0).position);
   marker.points.push_back(
-    tier4_autoware_utils::calcOffsetPose(pose, -base_to_rear, -half_width, 0.0).position);
+    autoware_universe_utils::calcOffsetPose(pose, -base_to_rear, -half_width, 0.0).position);
   marker.points.push_back(marker.points.front());
 }
 
@@ -167,7 +167,7 @@ std_msgs::msg::ColorRGBA createColorFromString(const std::string & str)
   const auto r = (hash & 0xFF) / 255.0;
   const auto g = ((hash >> 8) & 0xFF) / 255.0;
   const auto b = ((hash >> 16) & 0xFF) / 255.0;
-  return tier4_autoware_utils::createMarkerColor(r, g, b, 0.5);
+  return autoware_universe_utils::createMarkerColor(r, g, b, 0.5);
 }
 
 MarkerArray createObjectPolygonMarkerArray(
@@ -182,7 +182,7 @@ MarkerArray createObjectPolygonMarkerArray(
 
   const double z = object.kinematics.initial_pose_with_covariance.pose.position.z;
   const double height = object.shape.dimensions.z;
-  const auto polygon = tier4_autoware_utils::toPolygon2d(
+  const auto polygon = autoware_universe_utils::toPolygon2d(
     object.kinematics.initial_pose_with_covariance.pose, object.shape);
   for (const auto & p : polygon.outer()) {
     marker.points.push_back(createPoint(p.x(), p.y(), z - height / 2));

@@ -13,6 +13,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>autoware_perception_msgs</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>cuda_utils</depend>
   <depend>libpcl-all-dev</depend>
   <depend>pcl_conversions</depend>
@@ -20,7 +21,6 @@
   <depend>rclcpp_components</depend>
   <depend>tensorrt_common</depend>
   <depend>tf2_eigen</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>tier4_debug_msgs</depend>
   <depend>tier4_perception_msgs</depend>
 

@@ -16,15 +16,15 @@
 
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/math/normalization.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/constants.hpp>
 #include <motion_utils/resample/resample.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/normalization.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
 
 #include <limits>
 #include <queue>
@@ -577,8 +577,8 @@ geometry_msgs::msg::Pose TurnSignalDecider::get_required_end_point(
   const double terminal_yaw = tf2::getYaw(resampled_centerline.back().orientation);
   for (size_t i = 0; i < resampled_centerline.size(); ++i) {
     const double yaw = tf2::getYaw(resampled_centerline.at(i).orientation);
-    const double yaw_diff = tier4_autoware_utils::normalizeRadian(yaw - terminal_yaw);
-    if (std::fabs(yaw_diff) < tier4_autoware_utils::deg2rad(intersection_angle_threshold_deg_)) {
+    const double yaw_diff = autoware_universe_utils::normalizeRadian(yaw - terminal_yaw);
+    if (std::fabs(yaw_diff) < autoware_universe_utils::deg2rad(intersection_angle_threshold_deg_)) {
       return resampled_centerline.at(i);
     }
   }
@@ -634,9 +634,9 @@ void TurnSignalDecider::initialize_intersection_info()
 geometry_msgs::msg::Quaternion TurnSignalDecider::calc_orientation(
   const Point & src_point, const Point & dst_point)
 {
-  const double pitch = tier4_autoware_utils::calcElevationAngle(src_point, dst_point);
-  const double yaw = tier4_autoware_utils::calcAzimuthAngle(src_point, dst_point);
-  return tier4_autoware_utils::createQuaternionFromRPY(0.0, pitch, yaw);
+  const double pitch = autoware_universe_utils::calcElevationAngle(src_point, dst_point);
+  const double yaw = autoware_universe_utils::calcAzimuthAngle(src_point, dst_point);
+  return autoware_universe_utils::createQuaternionFromRPY(0.0, pitch, yaw);
 }
 
 std::pair<TurnSignalInfo, bool> TurnSignalDecider::getBehaviorTurnSignalInfo(
@@ -647,7 +647,7 @@ std::pair<TurnSignalInfo, bool> TurnSignalDecider::getBehaviorTurnSignalInfo(
   const double current_shift_length, const bool is_driving_forward, const bool egos_lane_is_shifted,
   const bool override_ego_stopped_check, const bool is_pull_out) const
 {
-  using tier4_autoware_utils::getPose;
+  using autoware_universe_utils::getPose;
 
   const auto & p = parameters;
   const auto & rh = route_handler;

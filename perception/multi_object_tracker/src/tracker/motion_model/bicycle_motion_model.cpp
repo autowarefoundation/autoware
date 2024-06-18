@@ -21,8 +21,8 @@
 #include "multi_object_tracker/tracker/motion_model/motion_model_base.hpp"
 #include "multi_object_tracker/utils/utils.hpp"
 
-#include <tier4_autoware_utils/math/normalization.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
+#include <autoware/universe_utils/math/normalization.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
 
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
@@ -60,8 +60,8 @@ void BicycleMotionModel::setDefaultParams()
     lr_min);
 
   // set motion limitations
-  constexpr double max_vel = tier4_autoware_utils::kmph2mps(100);  // [m/s] maximum velocity
-  constexpr double max_slip = 30.0;                                // [deg] maximum slip angle
+  constexpr double max_vel = autoware_universe_utils::kmph2mps(100);  // [m/s] maximum velocity
+  constexpr double max_slip = 30.0;                                   // [deg] maximum slip angle
   setMotionLimits(max_vel, max_slip);
 
   // set prediction parameters
@@ -79,13 +79,13 @@ void BicycleMotionModel::setMotionParams(
   // set process noise covariance parameters
   motion_params_.q_stddev_acc_long = q_stddev_acc_long;
   motion_params_.q_stddev_acc_lat = q_stddev_acc_lat;
-  motion_params_.q_stddev_yaw_rate_min = tier4_autoware_utils::deg2rad(q_stddev_yaw_rate_min);
-  motion_params_.q_stddev_yaw_rate_max = tier4_autoware_utils::deg2rad(q_stddev_yaw_rate_max);
+  motion_params_.q_stddev_yaw_rate_min = autoware_universe_utils::deg2rad(q_stddev_yaw_rate_min);
+  motion_params_.q_stddev_yaw_rate_max = autoware_universe_utils::deg2rad(q_stddev_yaw_rate_max);
   motion_params_.q_cov_slip_rate_min =
-    std::pow(tier4_autoware_utils::deg2rad(q_stddev_slip_rate_min), 2.0);
+    std::pow(autoware_universe_utils::deg2rad(q_stddev_slip_rate_min), 2.0);
   motion_params_.q_cov_slip_rate_max =
-    std::pow(tier4_autoware_utils::deg2rad(q_stddev_slip_rate_max), 2.0);
-  motion_params_.q_max_slip_angle = tier4_autoware_utils::deg2rad(q_max_slip_angle);
+    std::pow(autoware_universe_utils::deg2rad(q_stddev_slip_rate_max), 2.0);
+  motion_params_.q_max_slip_angle = autoware_universe_utils::deg2rad(q_max_slip_angle);
 
   constexpr double minimum_wheel_pos = 0.01;  // minimum of 0.01m
   if (lf_min < minimum_wheel_pos || lr_min < minimum_wheel_pos) {
@@ -103,7 +103,7 @@ void BicycleMotionModel::setMotionLimits(const double & max_vel, const double & 
 {
   // set motion limitations
   motion_params_.max_vel = max_vel;
-  motion_params_.max_slip = tier4_autoware_utils::deg2rad(max_slip);
+  motion_params_.max_slip = autoware_universe_utils::deg2rad(max_slip);
 }
 
 bool BicycleMotionModel::initialize(
@@ -252,7 +252,7 @@ bool BicycleMotionModel::limitStates()
   Eigen::MatrixXd P_t(DIM, DIM);
   ekf_.getX(X_t);
   ekf_.getP(P_t);
-  X_t(IDX::YAW) = tier4_autoware_utils::normalizeRadian(X_t(IDX::YAW));
+  X_t(IDX::YAW) = autoware_universe_utils::normalizeRadian(X_t(IDX::YAW));
   if (!(-motion_params_.max_vel <= X_t(IDX::VEL) && X_t(IDX::VEL) <= motion_params_.max_vel)) {
     X_t(IDX::VEL) = X_t(IDX::VEL) < 0 ? -motion_params_.max_vel : motion_params_.max_vel;
   }

@@ -15,7 +15,7 @@
 #ifndef SYSTEM_ERROR_MONITOR__SYSTEM_ERROR_MONITOR_CORE_HPP_
 #define SYSTEM_ERROR_MONITOR__SYSTEM_ERROR_MONITOR_CORE_HPP_
 
-#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
+#include "autoware/universe_utils/ros/logger_level_configure.hpp"
 
 #include <rclcpp/create_timer.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -147,7 +147,7 @@ private:
 
   void loggingErrors(const autoware_system_msgs::msg::HazardStatus & diag_array);
 
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
 };
 
 #endif  // SYSTEM_ERROR_MONITOR__SYSTEM_ERROR_MONITOR_CORE_HPP_

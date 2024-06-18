@@ -22,8 +22,8 @@
 #include "ekf_localizer/state_transition.hpp"
 #include "ekf_localizer/warning_message.hpp"
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/msg_covariance.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/msg_covariance.hpp>
 
 #include <fmt/core.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -65,7 +65,7 @@ void EKFModule::initialize(
   x(IDX::VX) = 0.0;
   x(IDX::WZ) = 0.0;
 
-  using COV_IDX = tier4_autoware_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  using COV_IDX = autoware_universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
   p(IDX::X, IDX::X) = initial_pose.pose.covariance[COV_IDX::X_X];
   p(IDX::Y, IDX::Y) = initial_pose.pose.covariance[COV_IDX::Y_Y];
   p(IDX::YAW, IDX::YAW) = initial_pose.pose.covariance[COV_IDX::YAW_YAW];
@@ -97,13 +97,13 @@ geometry_msgs::msg::PoseStamped EKFModule::get_current_pose(
   Pose current_ekf_pose;
   current_ekf_pose.header.frame_id = params_.pose_frame_id;
   current_ekf_pose.header.stamp = current_time;
-  current_ekf_pose.pose.position = tier4_autoware_utils::createPoint(x, y, z);
+  current_ekf_pose.pose.position = autoware_universe_utils::createPoint(x, y, z);
   if (get_biased_yaw) {
     current_ekf_pose.pose.orientation =
-      tier4_autoware_utils::createQuaternionFromRPY(roll, pitch, biased_yaw);
+      autoware_universe_utils::createQuaternionFromRPY(roll, pitch, biased_yaw);
   } else {
     current_ekf_pose.pose.orientation =
-      tier4_autoware_utils::createQuaternionFromRPY(roll, pitch, yaw);
+      autoware_universe_utils::createQuaternionFromRPY(roll, pitch, yaw);
   }
   return current_ekf_pose;
 }
@@ -285,7 +285,7 @@ bool EKFModule::measurement_update_pose(
 geometry_msgs::msg::PoseWithCovarianceStamped EKFModule::compensate_pose_with_z_delay(
   const PoseWithCovariance & pose, const double delay_time)
 {
-  const auto rpy = tier4_autoware_utils::getRPY(pose.pose.pose.orientation);
+  const auto rpy = autoware_universe_utils::getRPY(pose.pose.pose.orientation);
   const double dz_delay = kalman_filter_.getXelement(IDX::VX) * delay_time * std::sin(-rpy.y);
   PoseWithCovariance pose_with_z_delay;
   pose_with_z_delay = pose;

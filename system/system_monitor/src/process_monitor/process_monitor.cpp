@@ -21,7 +21,7 @@
 
 #include "system_monitor/system_monitor_utility.hpp"
 
-#include <tier4_autoware_utils/system/stop_watch.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 
 #include <fmt/format.h>
 
@@ -517,7 +517,7 @@ void ProcessMonitor::onTimer()
   bool is_top_error = false;
 
   // Start to measure elapsed time
-  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch;
+  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stop_watch;
   stop_watch.tic("execution_time");
 
   int out_fd[2];

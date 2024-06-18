@@ -14,10 +14,10 @@
 
 #include "occupancy_grid_map_outlier_filter/occupancy_grid_map_outlier_filter_nodelet.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <pcl_ros/transforms.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <boost/optional.hpp>
 
@@ -73,7 +73,7 @@ geometry_msgs::msg::PoseStamped getPoseStamped(
     RCLCPP_WARN_THROTTLE(
       rclcpp::get_logger("occupancy_grid_map_outlier_filter"), clock, 5000, "%s", ex.what());
   }
-  return tier4_autoware_utils::transform2pose(tf_stamped);
+  return autoware_universe_utils::transform2pose(tf_stamped);
 }
 
 boost::optional<char> getCost(
@@ -225,8 +225,8 @@ OccupancyGridMapOutlierFilterComponent::OccupancyGridMapOutlierFilterComponent(
 {
   // initialize debug tool
   {
-    using tier4_autoware_utils::DebugPublisher;
-    using tier4_autoware_utils::StopWatch;
+    using autoware_universe_utils::DebugPublisher;
+    using autoware_universe_utils::StopWatch;
     stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
     debug_publisher_ = std::make_unique<DebugPublisher>(this, "occupancy_grid_map_outlier_filter");
     stop_watch_ptr_->tic("cyclic_time");

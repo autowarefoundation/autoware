@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "motion_utils/vehicle/vehicle_state_checker.hpp"
 #include "test_vehicle_state_checker_helper.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -32,12 +32,12 @@ constexpr double STOP_DURATION_THRESHOLD_600_MS = 0.6;
 constexpr double STOP_DURATION_THRESHOLD_800_MS = 0.8;
 constexpr double STOP_DURATION_THRESHOLD_1000_MS = 1.0;
 
+using autoware_universe_utils::createPoint;
+using autoware_universe_utils::createQuaternion;
+using autoware_universe_utils::createTranslation;
 using motion_utils::VehicleArrivalChecker;
 using motion_utils::VehicleStopChecker;
 using nav_msgs::msg::Odometry;
-using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::createQuaternion;
-using tier4_autoware_utils::createTranslation;
 
 class CheckerNode : public rclcpp::Node
 {

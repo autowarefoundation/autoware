@@ -14,12 +14,12 @@
 
 #include "autoware/autonomous_emergency_braking/node.hpp"
 
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/marker_helper.hpp>
+#include <autoware/universe_utils/ros/update_param.hpp>
 #include <pcl_ros/transforms.hpp>
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
-#include <tier4_autoware_utils/ros/update_param.hpp>
 
 #include <boost/geometry/algorithms/convex_hull.hpp>
 #include <boost/geometry/algorithms/within.hpp>
@@ -70,29 +70,33 @@ Polygon2d createPolygon(
 
   appendPointToPolygon(
     polygon,
-    tier4_autoware_utils::calcOffsetPose(base_pose, longitudinal_offset, width, 0.0).position);
+    autoware_universe_utils::calcOffsetPose(base_pose, longitudinal_offset, width, 0.0).position);
   appendPointToPolygon(
     polygon,
-    tier4_autoware_utils::calcOffsetPose(base_pose, longitudinal_offset, -width, 0.0).position);
+    autoware_universe_utils::calcOffsetPose(base_pose, longitudinal_offset, -width, 0.0).position);
   appendPointToPolygon(
-    polygon, tier4_autoware_utils::calcOffsetPose(base_pose, -rear_overhang, -width, 0.0).position);
+    polygon,
+    autoware_universe_utils::calcOffsetPose(base_pose, -rear_overhang, -width, 0.0).position);
   appendPointToPolygon(
-    polygon, tier4_autoware_utils::calcOffsetPose(base_pose, -rear_overhang, width, 0.0).position);
+    polygon,
+    autoware_universe_utils::calcOffsetPose(base_pose, -rear_overhang, width, 0.0).position);
 
   appendPointToPolygon(
     polygon,
-    tier4_autoware_utils::calcOffsetPose(next_pose, longitudinal_offset, width, 0.0).position);
+    autoware_universe_utils::calcOffsetPose(next_pose, longitudinal_offset, width, 0.0).position);
   appendPointToPolygon(
     polygon,
-    tier4_autoware_utils::calcOffsetPose(next_pose, longitudinal_offset, -width, 0.0).position);
+    autoware_universe_utils::calcOffsetPose(next_pose, longitudinal_offset, -width, 0.0).position);
   appendPointToPolygon(
-    polygon, tier4_autoware_utils::calcOffsetPose(next_pose, -rear_overhang, -width, 0.0).position);
+    polygon,
+    autoware_universe_utils::calcOffsetPose(next_pose, -rear_overhang, -width, 0.0).position);
   appendPointToPolygon(
-    polygon, tier4_autoware_utils::calcOffsetPose(next_pose, -rear_overhang, width, 0.0).position);
+    polygon,
+    autoware_universe_utils::calcOffsetPose(next_pose, -rear_overhang, width, 0.0).position);
 
-  polygon = tier4_autoware_utils::isClockwise(polygon)
+  polygon = autoware_universe_utils::isClockwise(polygon)
               ? polygon
-              : tier4_autoware_utils::inverseClockwise(polygon);
+              : autoware_universe_utils::inverseClockwise(polygon);
 
   Polygon2d hull_polygon;
   bg::convex_hull(polygon, hull_polygon);
@@ -164,7 +168,7 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
 rcl_interfaces::msg::SetParametersResult AEB::onParameter(
   const std::vector<rclcpp::Parameter> & parameters)
 {
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
   updateParam<bool>(parameters, "publish_debug_pointcloud", publish_debug_pointcloud_);
   updateParam<bool>(parameters, "use_predicted_trajectory", use_predicted_trajectory_);
   updateParam<bool>(parameters, "use_imu_path", use_imu_path_);
@@ -490,8 +494,8 @@ Path AEB::generateEgoPath(const double curr_v, const double curr_w)
   double curr_y = 0.0;
   double curr_yaw = 0.0;
   geometry_msgs::msg::Pose ini_pose;
-  ini_pose.position = tier4_autoware_utils::createPoint(curr_x, curr_y, 0.0);
-  ini_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(curr_yaw);
+  ini_pose.position = autoware_universe_utils::createPoint(curr_x, curr_y, 0.0);
+  ini_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(curr_yaw);
   path.push_back(ini_pose);
 
   if (std::abs(curr_v) < 0.1) {
@@ -507,9 +511,9 @@ Path AEB::generateEgoPath(const double curr_v, const double curr_w)
     curr_y = curr_y + curr_v * std::sin(curr_yaw) * dt;
     curr_yaw = curr_yaw + curr_w * dt;
     geometry_msgs::msg::Pose current_pose;
-    current_pose.position = tier4_autoware_utils::createPoint(curr_x, curr_y, 0.0);
-    current_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(curr_yaw);
-    if (tier4_autoware_utils::calcDistance2d(path.back(), current_pose) < 1e-3) {
+    current_pose.position = autoware_universe_utils::createPoint(curr_x, curr_y, 0.0);
+    current_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(curr_yaw);
+    if (autoware_universe_utils::calcDistance2d(path.back(), current_pose) < 1e-3) {
       continue;
     }
     path.push_back(current_pose);
@@ -521,9 +525,9 @@ Path AEB::generateEgoPath(const double curr_v, const double curr_w)
     curr_y = curr_y + curr_v * std::sin(curr_yaw) * dt;
     curr_yaw = curr_yaw + curr_w * dt;
     geometry_msgs::msg::Pose current_pose;
-    current_pose.position = tier4_autoware_utils::createPoint(curr_x, curr_y, 0.0);
-    current_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(curr_yaw);
-    if (tier4_autoware_utils::calcDistance2d(path.back(), current_pose) < 1e-3) {
+    current_pose.position = autoware_universe_utils::createPoint(curr_x, curr_y, 0.0);
+    current_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(curr_yaw);
+    if (autoware_universe_utils::calcDistance2d(path.back(), current_pose) < 1e-3) {
       continue;
     }
     path.push_back(current_pose);
@@ -620,11 +624,11 @@ void AEB::createObjectDataUsingPointCloudClusters(
   const auto current_p = [&]() {
     const auto & first_point_of_path = ego_path.front();
     const auto & p = first_point_of_path.position;
-    return tier4_autoware_utils::createPoint(p.x, p.y, p.z);
+    return autoware_universe_utils::createPoint(p.x, p.y, p.z);
   }();
 
   for (const auto & p : *points_belonging_to_cluster_hulls) {
-    const auto obj_position = tier4_autoware_utils::createPoint(p.x, p.y, p.z);
+    const auto obj_position = autoware_universe_utils::createPoint(p.x, p.y, p.z);
     const double obj_arc_length =
       motion_utils::calcSignedArcLength(ego_path, current_p, obj_position);
     if (std::isnan(obj_arc_length)) continue;
@@ -688,36 +692,36 @@ void AEB::addMarker(
   const double color_r, const double color_g, const double color_b, const double color_a,
   const std::string & ns, MarkerArray & debug_markers)
 {
-  auto path_marker = tier4_autoware_utils::createDefaultMarker(
+  auto path_marker = autoware_universe_utils::createDefaultMarker(
     "base_link", current_time, ns + "_path", 0L, Marker::LINE_STRIP,
-    tier4_autoware_utils::createMarkerScale(0.2, 0.2, 0.2),
-    tier4_autoware_utils::createMarkerColor(color_r, color_g, color_b, color_a));
+    autoware_universe_utils::createMarkerScale(0.2, 0.2, 0.2),
+    autoware_universe_utils::createMarkerColor(color_r, color_g, color_b, color_a));
   path_marker.points.resize(path.size());
   for (size_t i = 0; i < path.size(); ++i) {
     path_marker.points.at(i) = path.at(i).position;
   }
   debug_markers.markers.push_back(path_marker);
 
-  auto polygon_marker = tier4_autoware_utils::createDefaultMarker(
+  auto polygon_marker = autoware_universe_utils::createDefaultMarker(
     "base_link", current_time, ns + "_polygon", 0, Marker::LINE_LIST,
-    tier4_autoware_utils::createMarkerScale(0.03, 0.0, 0.0),
-    tier4_autoware_utils::createMarkerColor(color_r, color_g, color_b, color_a));
+    autoware_universe_utils::createMarkerScale(0.03, 0.0, 0.0),
+    autoware_universe_utils::createMarkerColor(color_r, color_g, color_b, color_a));
   for (const auto & poly : polygons) {
     for (size_t dp_idx = 0; dp_idx < poly.outer().size(); ++dp_idx) {
       const auto & boost_cp = poly.outer().at(dp_idx);
       const auto & boost_np = poly.outer().at((dp_idx + 1) % poly.outer().size());
-      const auto curr_point = tier4_autoware_utils::createPoint(boost_cp.x(), boost_cp.y(), 0.0);
-      const auto next_point = tier4_autoware_utils::createPoint(boost_np.x(), boost_np.y(), 0.0);
+      const auto curr_point = autoware_universe_utils::createPoint(boost_cp.x(), boost_cp.y(), 0.0);
+      const auto next_point = autoware_universe_utils::createPoint(boost_np.x(), boost_np.y(), 0.0);
       polygon_marker.points.push_back(curr_point);
       polygon_marker.points.push_back(next_point);
     }
   }
   debug_markers.markers.push_back(polygon_marker);
 
-  auto object_data_marker = tier4_autoware_utils::createDefaultMarker(
+  auto object_data_marker = autoware_universe_utils::createDefaultMarker(
     "base_link", current_time, ns + "_objects", 0, Marker::SPHERE_LIST,
-    tier4_autoware_utils::createMarkerScale(0.5, 0.5, 0.5),
-    tier4_autoware_utils::createMarkerColor(color_r, color_g, color_b, color_a));
+    autoware_universe_utils::createMarkerScale(0.5, 0.5, 0.5),
+    autoware_universe_utils::createMarkerColor(color_r, color_g, color_b, color_a));
   for (const auto & e : objects) {
     object_data_marker.points.push_back(e.position);
   }
@@ -726,11 +730,11 @@ void AEB::addMarker(
   // Visualize planner type text
   if (closest_object.has_value()) {
     const auto & obj = closest_object.value();
-    const auto color = tier4_autoware_utils::createMarkerColor(0.95, 0.95, 0.95, 0.999);
-    auto closest_object_velocity_marker_array = tier4_autoware_utils::createDefaultMarker(
+    const auto color = autoware_universe_utils::createMarkerColor(0.95, 0.95, 0.95, 0.999);
+    auto closest_object_velocity_marker_array = autoware_universe_utils::createDefaultMarker(
       "base_link", obj.stamp, ns + "_closest_object_velocity", 0,
       visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
-      tier4_autoware_utils::createMarkerScale(0.0, 0.0, 0.7), color);
+      autoware_universe_utils::createMarkerScale(0.0, 0.0, 0.7), color);
     closest_object_velocity_marker_array.pose.position = obj.position;
     const auto ego_velocity = current_velocity_ptr_->longitudinal_velocity;
     closest_object_velocity_marker_array.text =
@@ -744,10 +748,10 @@ void AEB::addMarker(
 
 void AEB::addCollisionMarker(const ObjectData & data, MarkerArray & debug_markers)
 {
-  auto point_marker = tier4_autoware_utils::createDefaultMarker(
+  auto point_marker = autoware_universe_utils::createDefaultMarker(
     "base_link", data.stamp, "collision_point", 0, Marker::SPHERE,
-    tier4_autoware_utils::createMarkerScale(0.3, 0.3, 0.3),
-    tier4_autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.3));
+    autoware_universe_utils::createMarkerScale(0.3, 0.3, 0.3),
+    autoware_universe_utils::createMarkerColor(1.0, 0.0, 0.0, 0.3));
   point_marker.pose.position = data.position;
   debug_markers.markers.push_back(point_marker);
 }

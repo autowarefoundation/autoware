@@ -14,10 +14,10 @@
 
 #include "decisions.hpp"
 
+#include <autoware/universe_utils/ros/marker_helper.hpp>
+#include <autoware/universe_utils/ros/uuid_helper.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
 #include <boost/geometry/algorithms/within.hpp>
 
@@ -91,7 +91,7 @@ std::optional<std::pair<double, double>> object_time_to_range(
       unique_path_points, enter_segment_idx, enter_point);
     const auto enter_lat_dist =
       std::abs(motion_utils::calcLateralOffset(unique_path_points, enter_point, enter_segment_idx));
-    const auto enter_segment_length = tier4_autoware_utils::calcDistance2d(
+    const auto enter_segment_length = autoware_universe_utils::calcDistance2d(
       unique_path_points[enter_segment_idx], unique_path_points[enter_segment_idx + 1]);
     const auto enter_offset_ratio = enter_offset / enter_segment_length;
     const auto enter_time =
@@ -105,7 +105,7 @@ std::optional<std::pair<double, double>> object_time_to_range(
       unique_path_points, exit_segment_idx, exit_point);
     const auto exit_lat_dist =
       std::abs(motion_utils::calcLateralOffset(unique_path_points, exit_point, exit_segment_idx));
-    const auto exit_segment_length = tier4_autoware_utils::calcDistance2d(
+    const auto exit_segment_length = autoware_universe_utils::calcDistance2d(
       unique_path_points[exit_segment_idx], unique_path_points[exit_segment_idx + 1]);
     const auto exit_offset_ratio = exit_offset / static_cast<double>(exit_segment_length);
     const auto exit_time =
@@ -314,7 +314,7 @@ bool should_not_enter(
   for (const auto & object : inputs.objects.objects) {
     RCLCPP_DEBUG(
       logger, "\t\t[%s] going at %2.2fm/s",
-      tier4_autoware_utils::toHexString(object.object_id).c_str(),
+      autoware_universe_utils::toHexString(object.object_id).c_str(),
       object.kinematics.initial_twist_with_covariance.twist.linear.x);
     if (object.kinematics.initial_twist_with_covariance.twist.linear.x < params.objects_min_vel) {
       RCLCPP_DEBUG(logger, " SKIP (velocity bellow threshold %2.2fm/s)\n", params.objects_min_vel);

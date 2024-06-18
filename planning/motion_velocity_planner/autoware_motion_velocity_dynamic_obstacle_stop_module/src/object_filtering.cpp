@@ -62,7 +62,7 @@ std::vector<autoware_perception_msgs::msg::PredictedObject> filter_predicted_obj
     const auto & o_pose = o.kinematics.initial_pose_with_covariance.pose;
     const auto o_yaw = tf2::getYaw(o_pose.orientation);
     const auto ego_yaw = tf2::getYaw(ego_data.pose.orientation);
-    const auto yaw_diff = std::abs(tier4_autoware_utils::normalizeRadian(o_yaw - ego_yaw));
+    const auto yaw_diff = std::abs(autoware_universe_utils::normalizeRadian(o_yaw - ego_yaw));
     const auto opposite_heading = yaw_diff > M_PI_2 + M_PI_4;
     const auto collision_distance_threshold =
       params.ego_lateral_offset + o.shape.dimensions.y / 2.0 + params.hysteresis;

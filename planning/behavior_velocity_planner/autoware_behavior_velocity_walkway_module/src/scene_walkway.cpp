@@ -22,11 +22,11 @@
 namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
+using autoware_universe_utils::createPoint;
+using autoware_universe_utils::getPose;
 using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestSegmentIndex;
-using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::getPose;
 
 WalkwayModule::WalkwayModule(
   const int64_t module_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,

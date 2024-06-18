@@ -14,17 +14,17 @@
 
 #include "autoware/trajectory_follower_node/simple_trajectory_follower.hpp"
 
+#include <autoware/universe_utils/geometry/pose_deviation.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/pose_deviation.hpp>
 
 #include <algorithm>
 
 namespace simple_trajectory_follower
 {
 
+using autoware_universe_utils::calcLateralDeviation;
+using autoware_universe_utils::calcYawDeviation;
 using motion_utils::findNearestIndex;
-using tier4_autoware_utils::calcLateralDeviation;
-using tier4_autoware_utils::calcYawDeviation;
 
 SimpleTrajectoryFollower::SimpleTrajectoryFollower(const rclcpp::NodeOptions & options)
 : Node("simple_trajectory_follower", options)

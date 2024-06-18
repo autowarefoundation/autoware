@@ -16,9 +16,9 @@
 #define AUTOWARE__PATH_SMOOTHER__COMMON_STRUCTS_HPP_
 
 #include "autoware/path_smoother/type_alias.hpp"
+#include "autoware/universe_utils/ros/update_param.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tier4_autoware_utils/ros/update_param.hpp"
-#include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include <memory>
 #include <optional>
@@ -83,7 +83,7 @@ struct TimeKeeper
 
   double accumulated_time{0.0};
 
-  tier4_autoware_utils::StopWatch<
+  autoware_universe_utils::StopWatch<
     std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
     stop_watch_;
 };
@@ -100,7 +100,7 @@ struct CommonParam
 
   void onParam(const std::vector<rclcpp::Parameter> & parameters)
   {
-    using tier4_autoware_utils::updateParam;
+    using autoware_universe_utils::updateParam;
 
     // common
     updateParam<double>(
@@ -123,7 +123,7 @@ struct EgoNearestParam
 
   void onParam(const std::vector<rclcpp::Parameter> & parameters)
   {
-    using tier4_autoware_utils::updateParam;
+    using autoware_universe_utils::updateParam;
     updateParam<double>(parameters, "ego_nearest_dist_threshold", dist_threshold);
     updateParam<double>(parameters, "ego_nearest_yaw_threshold", yaw_threshold);
   }

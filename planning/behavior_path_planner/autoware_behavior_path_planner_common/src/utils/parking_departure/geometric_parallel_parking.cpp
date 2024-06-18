@@ -17,8 +17,8 @@
 #include "autoware/behavior_path_planner_common/utils/parking_departure/utils.hpp"
 #include "autoware/behavior_path_planner_common/utils/path_utils.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/math/unit_conversion.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/math/unit_conversion.hpp"
 
 #include <interpolation/spline_interpolation.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
@@ -31,14 +31,14 @@
 #include <utility>
 #include <vector>
 
+using autoware_universe_utils::calcDistance2d;
+using autoware_universe_utils::calcOffsetPose;
+using autoware_universe_utils::inverseTransformPoint;
+using autoware_universe_utils::normalizeRadian;
+using autoware_universe_utils::transformPose;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using lanelet::utils::getArcCoordinates;
-using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::calcOffsetPose;
-using tier4_autoware_utils::inverseTransformPoint;
-using tier4_autoware_utils::normalizeRadian;
-using tier4_autoware_utils::transformPose;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
 namespace autoware::behavior_path_planner
@@ -132,10 +132,10 @@ std::vector<PathWithLaneId> GeometricParallelParking::generatePullOverPaths(
   // check the continuity of straight path and arc path
   const Pose & road_path_last_pose = straight_path.points.back().point.pose;
   const Pose & arc_path_first_pose = arc_paths.front().points.front().point.pose;
-  const double yaw_diff = std::abs(tier4_autoware_utils::normalizeRadian(
+  const double yaw_diff = std::abs(autoware_universe_utils::normalizeRadian(
     tf2::getYaw(road_path_last_pose.orientation) - tf2::getYaw(arc_path_first_pose.orientation)));
   const double distance = calcDistance2d(road_path_last_pose, arc_path_first_pose);
-  if (yaw_diff > tier4_autoware_utils::deg2rad(5.0) || distance > 0.1) {
+  if (yaw_diff > autoware_universe_utils::deg2rad(5.0) || distance > 0.1) {
     return std::vector<PathWithLaneId>{};
   }
 
@@ -282,10 +282,10 @@ bool GeometricParallelParking::planPullOut(
     // check the continuity of straight path and arc path
     const Pose & road_path_first_pose = road_center_line_path.points.front().point.pose;
     const Pose & arc_path_last_pose = arc_paths.back().points.back().point.pose;
-    const double yaw_diff = std::abs(tier4_autoware_utils::normalizeRadian(
+    const double yaw_diff = std::abs(autoware_universe_utils::normalizeRadian(
       tf2::getYaw(road_path_first_pose.orientation) - tf2::getYaw(arc_path_last_pose.orientation)));
     const double distance = calcDistance2d(road_path_first_pose, arc_path_last_pose);
-    if (yaw_diff > tier4_autoware_utils::deg2rad(5.0) || distance > 0.1) {
+    if (yaw_diff > autoware_universe_utils::deg2rad(5.0) || distance > 0.1) {
       continue;
     }
 
@@ -399,7 +399,7 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
   // combine road and shoulder lanes
   // cut the road lanes up to start_pose to prevent unintended processing for overlapped lane
   lanelet::ConstLanelets lanes{};
-  tier4_autoware_utils::Point2d start_point2d(start_pose.position.x, start_pose.position.y);
+  autoware_universe_utils::Point2d start_point2d(start_pose.position.x, start_pose.position.y);
   for (const auto & lane : road_lanes) {
     if (boost::geometry::within(start_point2d, lane.polygon2d().basicPolygon())) {
       lanes.push_back(lane);

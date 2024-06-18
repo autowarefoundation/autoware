@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "interpolation/spline_interpolation.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <gtest/gtest.h>
 

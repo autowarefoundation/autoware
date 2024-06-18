@@ -252,7 +252,7 @@ TrajectoryPoints AnalyticalJerkConstrainedSmoother::resampleTrajectory(
     const auto tp1 = input.at(i + 1);
 
     const double dist_thr = 0.001;  // 1mm
-    const double dist_tp0_tp1 = tier4_autoware_utils::calcDistance2d(tp0, tp1);
+    const double dist_tp0_tp1 = autoware_universe_utils::calcDistance2d(tp0, tp1);
     if (std::fabs(dist_tp0_tp1) < dist_thr) {
       output.push_back(input.at(i));
       continue;
@@ -355,7 +355,7 @@ TrajectoryPoints AnalyticalJerkConstrainedSmoother::applyLateralAccelerationFilt
     }
 
     if (
-      tier4_autoware_utils::calcDistance2d(output.at(end_index), output.at(index)) <
+      autoware_universe_utils::calcDistance2d(output.at(end_index), output.at(index)) <
       dist_threshold) {
       end_index = index;
       min_latacc_velocity = std::min(
@@ -441,7 +441,7 @@ bool AnalyticalJerkConstrainedSmoother::applyForwardJerkFilter(
   for (size_t i = start_index + 1; i < base_trajectory.size(); ++i) {
     const double prev_vel = output_trajectory.at(i - 1).longitudinal_velocity_mps;
     const double ds =
-      tier4_autoware_utils::calcDistance2d(base_trajectory.at(i - 1), base_trajectory.at(i));
+      autoware_universe_utils::calcDistance2d(base_trajectory.at(i - 1), base_trajectory.at(i));
     const double dt = ds / std::max(prev_vel, 1.0);
 
     const double prev_acc = output_trajectory.at(i - 1).acceleration_mps2;
@@ -487,8 +487,8 @@ bool AnalyticalJerkConstrainedSmoother::applyBackwardDecelFilter(
       }
     }
     for (size_t i = decel_target_index; i > start_index; --i) {
-      dist +=
-        tier4_autoware_utils::calcDistance2d(output_trajectory.at(i - 1), output_trajectory.at(i));
+      dist += autoware_universe_utils::calcDistance2d(
+        output_trajectory.at(i - 1), output_trajectory.at(i));
       dist_to_target.at(i - 1) = dist;
     }
 

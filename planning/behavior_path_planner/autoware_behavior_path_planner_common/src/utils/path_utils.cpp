@@ -17,12 +17,12 @@
 #include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
 #include <interpolation/spline_interpolation.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/resample/resample.hpp>
 #include <motion_utils/trajectory/interpolation.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <tf2/utils.h>
 
@@ -50,7 +50,7 @@ std::vector<double> calcPathArcLengthArray(
 
   for (size_t i = bounded_start + 1; i < bounded_end; ++i) {
     sum +=
-      tier4_autoware_utils::calcDistance2d(path.points.at(i).point, path.points.at(i - 1).point);
+      autoware_universe_utils::calcDistance2d(path.points.at(i).point, path.points.at(i - 1).point);
     out.push_back(sum);
   }
   return out;
@@ -162,7 +162,7 @@ size_t getIdxByArclength(
     throw std::runtime_error("[getIdxByArclength] path points must be > 0");
   }
 
-  using tier4_autoware_utils::calcDistance2d;
+  using autoware_universe_utils::calcDistance2d;
   double sum_length = 0.0;
   if (signed_arc >= 0.0) {
     for (size_t i = target_idx; i < path.points.size() - 1; ++i) {
@@ -471,7 +471,7 @@ std::vector<Pose> interpolatePose(
   std::vector<Pose> interpolated_poses{};  // output
 
   const std::vector<double> base_s{
-    0, tier4_autoware_utils::calcDistance2d(start_pose.position, end_pose.position)};
+    0, autoware_universe_utils::calcDistance2d(start_pose.position, end_pose.position)};
   const std::vector<double> base_x{start_pose.position.x, end_pose.position.x};
   const std::vector<double> base_y{start_pose.position.y, end_pose.position.y};
   std::vector<double> new_s;
@@ -489,7 +489,7 @@ std::vector<Pose> interpolatePose(
     std::sin(tf2::getYaw(end_pose.orientation)), new_s);
   for (size_t i = 0; i < interpolated_x.size(); ++i) {
     Pose pose{};
-    pose = tier4_autoware_utils::calcInterpolatedPose(
+    pose = autoware_universe_utils::calcInterpolatedPose(
       end_pose, start_pose, (base_s.back() - new_s.at(i)) / base_s.back());
     pose.position.x = interpolated_x.at(i);
     pose.position.y = interpolated_y.at(i);
@@ -513,7 +513,7 @@ Pose getUnshiftedEgoPose(const Pose & ego_pose, const ShiftedPath & prev_path)
   // ego_pose.
   auto unshifted_pose = motion_utils::calcInterpolatedPoint(prev_path.path, ego_pose).point.pose;
 
-  unshifted_pose = tier4_autoware_utils::calcOffsetPose(
+  unshifted_pose = autoware_universe_utils::calcOffsetPose(
     unshifted_pose, 0.0, -prev_path.shift_length.at(closest_idx), 0.0);
   unshifted_pose.orientation = ego_pose.orientation;
 

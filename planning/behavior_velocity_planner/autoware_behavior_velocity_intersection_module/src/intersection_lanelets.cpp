@@ -26,7 +26,7 @@ namespace autoware::behavior_velocity_planner
 
 void IntersectionLanelets::update(
   const bool is_prioritized, const InterpolatedPathInfo & interpolated_path_info,
-  const tier4_autoware_utils::LinearRing2d & footprint, const double vehicle_length,
+  const autoware_universe_utils::LinearRing2d & footprint, const double vehicle_length,
   lanelet::routing::RoutingGraphPtr routing_graph_ptr)
 {
   is_prioritized_ = is_prioritized;

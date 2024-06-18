@@ -17,7 +17,7 @@
 #include "lidar_transfusion/preprocess/preprocess_kernel.hpp"
 #include "lidar_transfusion/transfusion_config.hpp"
 
-#include <tier4_autoware_utils/math/constants.hpp>
+#include <autoware/universe_utils/math/constants.hpp>
 
 #include <iostream>
 #include <memory>
@@ -37,7 +37,8 @@ TransfusionTRT::TransfusionTRT(
   network_trt_ptr_->init(
     network_param.onnx_path(), network_param.engine_path(), network_param.trt_precision());
   vg_ptr_ = std::make_unique<VoxelGenerator>(densification_param, config_, stream_);
-  stop_watch_ptr_ = std::make_unique<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>>();
+  stop_watch_ptr_ =
+    std::make_unique<autoware_universe_utils::StopWatch<std::chrono::milliseconds>>();
   stop_watch_ptr_->tic("processing/inner");
   initPtr();
 

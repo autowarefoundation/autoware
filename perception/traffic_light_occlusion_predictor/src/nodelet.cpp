@@ -14,11 +14,11 @@
 
 #include "traffic_light_occlusion_predictor/nodelet.hpp"
 
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <lanelet2_extension/visualization/visualization.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <lanelet2_core/Exceptions.h>
 #include <lanelet2_core/geometry/Point.h>

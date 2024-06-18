@@ -15,6 +15,8 @@
 #include "autoware/obstacle_cruise_planner/optimization_based_planner/optimization_based_planner.hpp"
 
 #include "autoware/obstacle_cruise_planner/utils.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/ros/marker_helper.hpp"
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
 #include "interpolation/zero_order_hold.hpp"
@@ -22,8 +24,6 @@
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/interpolation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/ros/marker_helper.hpp"
 
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -450,7 +450,7 @@ std::optional<SBoundaries> OptimizationBasedPlanner::getSBoundaries(
 
       const auto markers = motion_utils::createSlowDownVirtualWallMarker(
         marker_pose.value(), "obstacle to follow", current_time, 0);
-      tier4_autoware_utils::appendMarkerArray(markers, &wall_msg);
+      autoware_universe_utils::appendMarkerArray(markers, &wall_msg);
 
       // publish rviz marker
       debug_wall_marker_pub_->publish(wall_msg);
@@ -627,7 +627,7 @@ geometry_msgs::msg::Pose OptimizationBasedPlanner::transformBaseLink2Center(
 
   geometry_msgs::msg::Pose center_pose;
   center_pose.position =
-    tier4_autoware_utils::createPoint(map2center.x(), map2center.y(), map2center.z());
+    autoware_universe_utils::createPoint(map2center.x(), map2center.y(), map2center.z());
   center_pose.orientation = pose_base_link.orientation;
 
   return center_pose;

@@ -13,8 +13,8 @@
 // limitations under the License.
 #include "autoware/behavior_path_lane_change_module/utils/data_structs.hpp"
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -24,16 +24,16 @@ constexpr double epsilon = 1e-6;
 TEST(BehaviorPathPlanningLaneChangeUtilsTest, projectCurrentPoseToTarget)
 {
   geometry_msgs::msg::Pose ego_pose;
-  const auto ego_yaw = tier4_autoware_utils::deg2rad(0.0);
-  ego_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(ego_yaw);
-  ego_pose.position = tier4_autoware_utils::createPoint(0, 0, 0);
+  const auto ego_yaw = autoware_universe_utils::deg2rad(0.0);
+  ego_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(ego_yaw);
+  ego_pose.position = autoware_universe_utils::createPoint(0, 0, 0);
 
   geometry_msgs::msg::Pose obj_pose;
-  const auto obj_yaw = tier4_autoware_utils::deg2rad(0.0);
-  obj_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(obj_yaw);
-  obj_pose.position = tier4_autoware_utils::createPoint(-4, 3, 0);
+  const auto obj_yaw = autoware_universe_utils::deg2rad(0.0);
+  obj_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(obj_yaw);
+  obj_pose.position = autoware_universe_utils::createPoint(-4, 3, 0);
 
-  const auto result = tier4_autoware_utils::inverseTransformPose(obj_pose, ego_pose);
+  const auto result = autoware_universe_utils::inverseTransformPose(obj_pose, ego_pose);
 
   EXPECT_NEAR(result.position.x, -4, epsilon);
   EXPECT_NEAR(result.position.y, 3, epsilon);

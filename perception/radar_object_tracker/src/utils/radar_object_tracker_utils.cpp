@@ -81,10 +81,10 @@ bool checkCloseLaneletCondition(
   double object_motion_yaw = object_yaw;
   bool velocity_is_reverted = object.kinematics.twist_with_covariance.twist.linear.x < 0.0;
   if (velocity_is_reverted) {
-    object_motion_yaw = tier4_autoware_utils::normalizeRadian(object_yaw + M_PI);
+    object_motion_yaw = autoware_universe_utils::normalizeRadian(object_yaw + M_PI);
   }
   const double delta_yaw = object_motion_yaw - lane_yaw;
-  const double normalized_delta_yaw = tier4_autoware_utils::normalizeRadian(delta_yaw);
+  const double normalized_delta_yaw = autoware_universe_utils::normalizeRadian(delta_yaw);
   const double abs_norm_delta_yaw = std::fabs(normalized_delta_yaw);
 
   if (abs_norm_delta_yaw > max_angle_diff_from_lane) {
@@ -134,14 +134,14 @@ bool hasValidVelocityDirectionToLanelet(
   const double object_vel_y = object.kinematics.twist_with_covariance.twist.linear.y;
   const double object_vel_yaw = std::atan2(object_vel_y, object_vel_x);
   const double object_vel_yaw_global =
-    tier4_autoware_utils::normalizeRadian(object_yaw + object_vel_yaw);
+    autoware_universe_utils::normalizeRadian(object_yaw + object_vel_yaw);
   const double object_vel = std::hypot(object_vel_x, object_vel_y);
 
   for (const auto & lanelet : lanelets) {
     const double lane_yaw = lanelet::utils::getLaneletAngle(
       lanelet, object.kinematics.pose_with_covariance.pose.position);
     const double delta_yaw = object_vel_yaw_global - lane_yaw;
-    const double normalized_delta_yaw = tier4_autoware_utils::normalizeRadian(delta_yaw);
+    const double normalized_delta_yaw = autoware_universe_utils::normalizeRadian(delta_yaw);
 
     const double lane_vel = object_vel * std::sin(normalized_delta_yaw);
     if (std::fabs(lane_vel) < max_lateral_velocity) {

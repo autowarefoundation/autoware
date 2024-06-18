@@ -15,8 +15,8 @@
 #ifndef AUTOWARE__SCENARIO_SELECTOR__NODE_HPP_
 #define AUTOWARE__SCENARIO_SELECTOR__NODE_HPP_
 
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
@@ -35,7 +35,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 #include <autoware/route_handler/route_handler.hpp>
-#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
+#include <autoware/universe_utils/ros/polling_subscriber.hpp>
 
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
@@ -73,12 +73,12 @@ private:
 
   rclcpp::Subscription<autoware_map_msgs::msg::LaneletMapBin>::SharedPtr sub_lanelet_map_;
   rclcpp::Subscription<autoware_planning_msgs::msg::LaneletRoute>::SharedPtr sub_route_;
-  tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry, 100>::SharedPtr
+  autoware_universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry, 100>::SharedPtr
     sub_odom_;
   rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr
     sub_lane_driving_trajectory_;
   rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr sub_parking_trajectory_;
-  tier4_autoware_utils::InterProcessPollingSubscriber<std_msgs::msg::Bool>::SharedPtr
+  autoware_universe_utils::InterProcessPollingSubscriber<std_msgs::msg::Bool>::SharedPtr
     sub_parking_state_;
   rclcpp::Publisher<autoware_planning_msgs::msg::Trajectory>::SharedPtr pub_trajectory_;
   rclcpp::Publisher<tier4_planning_msgs::msg::Scenario>::SharedPtr pub_scenario_;
@@ -93,7 +93,7 @@ private:
   std::deque<geometry_msgs::msg::TwistStamped::ConstSharedPtr> twist_buffer_;
 
   std::shared_ptr<autoware::route_handler::RouteHandler> route_handler_;
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 
   // Parameters
   double update_rate_;

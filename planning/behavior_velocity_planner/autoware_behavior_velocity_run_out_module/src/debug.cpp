@@ -16,17 +16,17 @@
 
 #include "scene.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/marker_helper.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
-using tier4_autoware_utils::appendMarkerArray;
-using tier4_autoware_utils::calcOffsetPose;
-using tier4_autoware_utils::createDefaultMarker;
-using tier4_autoware_utils::createMarkerColor;
-using tier4_autoware_utils::createMarkerOrientation;
-using tier4_autoware_utils::createMarkerScale;
-using tier4_autoware_utils::createPoint;
+using autoware_universe_utils::appendMarkerArray;
+using autoware_universe_utils::calcOffsetPose;
+using autoware_universe_utils::createDefaultMarker;
+using autoware_universe_utils::createMarkerColor;
+using autoware_universe_utils::createMarkerOrientation;
+using autoware_universe_utils::createMarkerScale;
+using autoware_universe_utils::createPoint;
 
 namespace autoware::behavior_velocity_planner
 {
@@ -35,7 +35,7 @@ namespace
 RunOutDebug::TextWithPosition createDebugText(
   const std::string text, const geometry_msgs::msg::Pose pose, const float lateral_offset)
 {
-  const auto offset_pose = tier4_autoware_utils::calcOffsetPose(pose, 0, lateral_offset, 0);
+  const auto offset_pose = autoware_universe_utils::calcOffsetPose(pose, 0, lateral_offset, 0);
 
   RunOutDebug::TextWithPosition text_with_position;
   text_with_position.text = text;
@@ -136,7 +136,7 @@ void RunOutDebug::pushDetectionAreaPolygons(const Polygon2d & debug_polygon)
 {
   std::vector<geometry_msgs::msg::Point> ros_points;
   for (const auto & p : debug_polygon.outer()) {
-    ros_points.push_back(tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0));
+    ros_points.push_back(autoware_universe_utils::createPoint(p.x(), p.y(), 0.0));
   }
 
   detection_area_polygons_.push_back(ros_points);
@@ -146,7 +146,7 @@ void RunOutDebug::pushMandatoryDetectionAreaPolygons(const Polygon2d & debug_pol
 {
   std::vector<geometry_msgs::msg::Point> ros_points;
   for (const auto & p : debug_polygon.outer()) {
-    ros_points.push_back(tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0));
+    ros_points.push_back(autoware_universe_utils::createPoint(p.x(), p.y(), 0.0));
   }
 
   mandatory_detection_area_polygons_.push_back(ros_points);

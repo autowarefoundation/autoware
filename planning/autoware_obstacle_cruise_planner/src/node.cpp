@@ -16,12 +16,12 @@
 
 #include "autoware/obstacle_cruise_planner/polygon_utils.hpp"
 #include "autoware/obstacle_cruise_planner/utils.hpp"
+#include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
+#include "autoware/universe_utils/ros/marker_helper.hpp"
+#include "autoware/universe_utils/ros/update_param.hpp"
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "object_recognition_utils/predicted_path_utils.hpp"
-#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
-#include "tier4_autoware_utils/ros/marker_helper.hpp"
-#include "tier4_autoware_utils/ros/update_param.hpp"
 
 #include <boost/format.hpp>
 
@@ -87,7 +87,7 @@ double calcDiffAngleAgainstTrajectory(
 
   const double target_yaw = tf2::getYaw(target_pose.orientation);
 
-  const double diff_yaw = tier4_autoware_utils::normalizeRadian(target_yaw - traj_yaw);
+  const double diff_yaw = autoware_universe_utils::normalizeRadian(target_yaw - traj_yaw);
   return diff_yaw;
 }
 
@@ -130,7 +130,7 @@ TrajectoryPoint getExtendTrajectoryPoint(
   const double extend_distance, const TrajectoryPoint & goal_point, const bool is_driving_forward)
 {
   TrajectoryPoint extend_trajectory_point;
-  extend_trajectory_point.pose = tier4_autoware_utils::calcOffsetPose(
+  extend_trajectory_point.pose = autoware_universe_utils::calcOffsetPose(
     goal_point.pose, extend_distance * (is_driving_forward ? 1.0 : -1.0), 0.0, 0.0);
   extend_trajectory_point.longitudinal_velocity_mps = goal_point.longitudinal_velocity_mps;
   extend_trajectory_point.lateral_velocity_mps = goal_point.lateral_velocity_mps;
@@ -191,7 +191,7 @@ std::vector<TrajectoryPoint> resampleTrajectoryPoints(
   return motion_utils::convertToTrajectoryPointArray(resampled_traj);
 }
 
-geometry_msgs::msg::Point toGeomPoint(const tier4_autoware_utils::Point2d & point)
+geometry_msgs::msg::Point toGeomPoint(const autoware_universe_utils::Point2d & point)
 {
   geometry_msgs::msg::Point geom_point;
   geom_point.x = point.x();
@@ -278,75 +278,75 @@ void ObstacleCruisePlannerNode::BehaviorDeterminationParam::onParam(
   const std::vector<rclcpp::Parameter> & parameters)
 {
   // behavior determination
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.decimate_trajectory_step_length",
     decimate_trajectory_step_length);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.crossing_obstacle.obstacle_velocity_threshold",
     crossing_obstacle_velocity_threshold);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.crossing_obstacle.obstacle_traj_angle_threshold",
     crossing_obstacle_traj_angle_threshold);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.stop.crossing_obstacle.collision_time_margin",
     collision_time_margin);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.cruise.outside_obstacle.obstacle_velocity_threshold",
     outside_obstacle_min_velocity_threshold);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters,
     "behavior_determination.cruise.outside_obstacle.ego_obstacle_overlap_time_threshold",
     ego_obstacle_overlap_time_threshold);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters,
     "behavior_determination.cruise.outside_obstacle.max_prediction_time_for_collision_check",
     max_prediction_time_for_collision_check);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.stop_obstacle_hold_time_threshold",
     stop_obstacle_hold_time_threshold);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.prediction_resampling_time_interval",
     prediction_resampling_time_interval);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.prediction_resampling_time_horizon",
     prediction_resampling_time_horizon);
 
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.stop.max_lat_margin", max_lat_margin_for_stop);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.stop.max_lat_margin_against_unknown",
     max_lat_margin_for_stop_against_unknown);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.cruise.max_lat_margin", max_lat_margin_for_cruise);
-  tier4_autoware_utils::updateParam<bool>(
+  autoware_universe_utils::updateParam<bool>(
     parameters, "behavior_determination.cruise.yield.enable_yield", enable_yield);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.cruise.yield.lat_distance_threshold",
     yield_lat_distance_threshold);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.cruise.yield.max_lat_dist_between_obstacles",
     max_lat_dist_between_obstacles);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.cruise.yield.stopped_obstacle_velocity_threshold",
     stopped_obstacle_velocity_threshold);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.cruise.yield.max_obstacles_collision_time",
     max_obstacles_collision_time);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.slow_down.max_lat_margin", max_lat_margin_for_slow_down);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.slow_down.lat_hysteresis_margin",
     lat_hysteresis_margin_for_slow_down);
-  tier4_autoware_utils::updateParam<int>(
+  autoware_universe_utils::updateParam<int>(
     parameters, "behavior_determination.slow_down.successive_num_to_entry_slow_down_condition",
     successive_num_to_entry_slow_down_condition);
-  tier4_autoware_utils::updateParam<int>(
+  autoware_universe_utils::updateParam<int>(
     parameters, "behavior_determination.slow_down.successive_num_to_exit_slow_down_condition",
     successive_num_to_exit_slow_down_condition);
-  tier4_autoware_utils::updateParam<bool>(
+  autoware_universe_utils::updateParam<bool>(
     parameters, "behavior_determination.consider_current_pose.enable_to_consider_current_pose",
     enable_to_consider_current_pose);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "behavior_determination.consider_current_pose.time_to_convergence",
     time_to_convergence);
 }
@@ -437,8 +437,9 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
   set_param_res_ = this->add_on_set_parameters_callback(
     std::bind(&ObstacleCruisePlannerNode::onParam, this, std::placeholders::_1));
 
-  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
-  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
+  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  published_time_publisher_ =
+    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
 }
 
 ObstacleCruisePlannerNode::PlanningAlgorithm ObstacleCruisePlannerNode::getPlanningAlgorithmType(
@@ -457,17 +458,17 @@ rcl_interfaces::msg::SetParametersResult ObstacleCruisePlannerNode::onParam(
 {
   planner_ptr_->onParam(parameters);
 
-  tier4_autoware_utils::updateParam<bool>(
+  autoware_universe_utils::updateParam<bool>(
     parameters, "common.enable_debug_info", enable_debug_info_);
-  tier4_autoware_utils::updateParam<bool>(
+  autoware_universe_utils::updateParam<bool>(
     parameters, "common.enable_calculation_time_info", enable_calculation_time_info_);
 
-  tier4_autoware_utils::updateParam<bool>(
+  autoware_universe_utils::updateParam<bool>(
     parameters, "common.stop_on_curve.enable_approaching", enable_approaching_on_curve_);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "common.stop_on_curve.additional_safe_distance_margin",
     additional_safe_distance_margin_on_curve_);
-  tier4_autoware_utils::updateParam<double>(
+  autoware_universe_utils::updateParam<double>(
     parameters, "common.stop_on_curve.min_safe_distance_margin",
     min_safe_distance_margin_on_curve_);
 
@@ -476,7 +477,7 @@ rcl_interfaces::msg::SetParametersResult ObstacleCruisePlannerNode::onParam(
     enable_approaching_on_curve_, additional_safe_distance_margin_on_curve_,
     min_safe_distance_margin_on_curve_, suppress_sudden_obstacle_stop_);
 
-  tier4_autoware_utils::updateParam<bool>(
+  autoware_universe_utils::updateParam<bool>(
     parameters, "common.enable_slow_down_planning", enable_slow_down_planning_);
 
   behavior_determination_param_.onParam(parameters);
@@ -571,7 +572,7 @@ std::vector<Polygon2d> ObstacleCruisePlannerNode::createOneStepPolygons(
     motion_utils::findNearestSegmentIndex(traj_points, current_ego_pose.position);
   const auto nearest_pose = traj_points.at(nearest_idx).pose;
   const auto current_ego_pose_error =
-    tier4_autoware_utils::inverseTransformPose(current_ego_pose, nearest_pose);
+    autoware_universe_utils::inverseTransformPose(current_ego_pose, nearest_pose);
   const double current_ego_lat_error = current_ego_pose_error.position.y;
   const double current_ego_yaw_error = tf2::getYaw(current_ego_pose_error.orientation);
   double time_elapsed{0.0};
@@ -587,11 +588,11 @@ std::vector<Polygon2d> ObstacleCruisePlannerNode::createOneStepPolygons(
       const double rem_ratio = (p.time_to_convergence - time_elapsed) / p.time_to_convergence;
       geometry_msgs::msg::Pose indexed_pose_err;
       indexed_pose_err.set__orientation(
-        tier4_autoware_utils::createQuaternionFromYaw(current_ego_yaw_error * rem_ratio));
+        autoware_universe_utils::createQuaternionFromYaw(current_ego_yaw_error * rem_ratio));
       indexed_pose_err.set__position(
-        tier4_autoware_utils::createPoint(0.0, current_ego_lat_error * rem_ratio, 0.0));
+        autoware_universe_utils::createPoint(0.0, current_ego_lat_error * rem_ratio, 0.0));
       current_poses.push_back(
-        tier4_autoware_utils::transformPose(indexed_pose_err, traj_points.at(i).pose));
+        autoware_universe_utils::transformPose(indexed_pose_err, traj_points.at(i).pose));
       if (traj_points.at(i).longitudinal_velocity_mps != 0.0) {
         time_elapsed +=
           p.decimate_trajectory_step_length / std::abs(traj_points.at(i).longitudinal_velocity_mps);
@@ -605,23 +606,23 @@ std::vector<Polygon2d> ObstacleCruisePlannerNode::createOneStepPolygons(
       if (i == 0 && traj_points.at(i).longitudinal_velocity_mps > 1e-3) {
         boost::geometry::append(
           idx_poly,
-          tier4_autoware_utils::toFootprint(pose, front_length, rear_length, vehicle_width)
+          autoware_universe_utils::toFootprint(pose, front_length, rear_length, vehicle_width)
             .outer());
         boost::geometry::append(
-          idx_poly,
-          tier4_autoware_utils::fromMsg(tier4_autoware_utils::calcOffsetPose(
-                                          pose, front_length, vehicle_width * 0.5 + lat_margin, 0.0)
-                                          .position)
-            .to_2d());
+          idx_poly, autoware_universe_utils::fromMsg(
+                      autoware_universe_utils::calcOffsetPose(
+                        pose, front_length, vehicle_width * 0.5 + lat_margin, 0.0)
+                        .position)
+                      .to_2d());
         boost::geometry::append(
-          idx_poly, tier4_autoware_utils::fromMsg(
-                      tier4_autoware_utils::calcOffsetPose(
+          idx_poly, autoware_universe_utils::fromMsg(
+                      autoware_universe_utils::calcOffsetPose(
                         pose, front_length, -vehicle_width * 0.5 - lat_margin, 0.0)
                         .position)
                       .to_2d());
       } else {
         boost::geometry::append(
-          idx_poly, tier4_autoware_utils::toFootprint(
+          idx_poly, autoware_universe_utils::toFootprint(
                       pose, front_length, rear_length, vehicle_width + lat_margin * 2.0)
                       .outer());
       }
@@ -650,7 +651,7 @@ std::vector<Obstacle> ObstacleCruisePlannerNode::convertToObstacles(
   std::vector<Obstacle> target_obstacles;
   for (const auto & predicted_object : objects.objects) {
     const auto & object_id =
-      tier4_autoware_utils::toHexString(predicted_object.object_id).substr(0, 4);
+      autoware_universe_utils::toHexString(predicted_object.object_id).substr(0, 4);
     const auto & current_obstacle_pose =
       obstacle_cruise_utils::getCurrentObjectPose(predicted_object, obj_stamp, now(), true);
 
@@ -1390,7 +1391,8 @@ void ObstacleCruisePlannerNode::checkConsistency(
     const auto predicted_object_itr = std::find_if(
       predicted_objects.objects.begin(), predicted_objects.objects.end(),
       [&prev_closest_stop_obstacle](const PredictedObject & po) {
-        return tier4_autoware_utils::toHexString(po.object_id) == prev_closest_stop_obstacle.uuid;
+        return autoware_universe_utils::toHexString(po.object_id) ==
+               prev_closest_stop_obstacle.uuid;
       });
     // If previous closest obstacle disappear from the perception result, do nothing anymore.
     if (predicted_object_itr == predicted_objects.objects.end()) {
@@ -1524,10 +1526,10 @@ void ObstacleCruisePlannerNode::publishDebugMarker() const
     }
   }
   for (size_t i = 0; i < stop_collision_points.size(); ++i) {
-    auto collision_point_marker = tier4_autoware_utils::createDefaultMarker(
+    auto collision_point_marker = autoware_universe_utils::createDefaultMarker(
       "map", now(), "cruise_collision_points", i, Marker::SPHERE,
-      tier4_autoware_utils::createMarkerScale(0.25, 0.25, 0.25),
-      tier4_autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
+      autoware_universe_utils::createMarkerScale(0.25, 0.25, 0.25),
+      autoware_universe_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
     collision_point_marker.pose.position = stop_collision_points.at(i);
     debug_marker.markers.push_back(collision_point_marker);
   }
@@ -1540,10 +1542,10 @@ void ObstacleCruisePlannerNode::publishDebugMarker() const
     debug_marker.markers.push_back(obstacle_marker);
 
     // collision point
-    auto collision_point_marker = tier4_autoware_utils::createDefaultMarker(
+    auto collision_point_marker = autoware_universe_utils::createDefaultMarker(
       "map", now(), "stop_collision_points", 0, Marker::SPHERE,
-      tier4_autoware_utils::createMarkerScale(0.25, 0.25, 0.25),
-      tier4_autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
+      autoware_universe_utils::createMarkerScale(0.25, 0.25, 0.25),
+      autoware_universe_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
     collision_point_marker.pose.position = debug_data_ptr_->obstacles_to_stop.at(i).collision_point;
     debug_marker.markers.push_back(collision_point_marker);
   }
@@ -1557,16 +1559,16 @@ void ObstacleCruisePlannerNode::publishDebugMarker() const
     debug_marker.markers.push_back(obstacle_marker);
 
     // collision points
-    auto front_collision_point_marker = tier4_autoware_utils::createDefaultMarker(
+    auto front_collision_point_marker = autoware_universe_utils::createDefaultMarker(
       "map", now(), "slow_down_collision_points", i * 2 + 0, Marker::SPHERE,
-      tier4_autoware_utils::createMarkerScale(0.25, 0.25, 0.25),
-      tier4_autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
+      autoware_universe_utils::createMarkerScale(0.25, 0.25, 0.25),
+      autoware_universe_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
     front_collision_point_marker.pose.position =
       debug_data_ptr_->obstacles_to_slow_down.at(i).front_collision_point;
-    auto back_collision_point_marker = tier4_autoware_utils::createDefaultMarker(
+    auto back_collision_point_marker = autoware_universe_utils::createDefaultMarker(
       "map", now(), "slow_down_collision_points", i * 2 + 1, Marker::SPHERE,
-      tier4_autoware_utils::createMarkerScale(0.25, 0.25, 0.25),
-      tier4_autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
+      autoware_universe_utils::createMarkerScale(0.25, 0.25, 0.25),
+      autoware_universe_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
     back_collision_point_marker.pose.position =
       debug_data_ptr_->obstacles_to_slow_down.at(i).back_collision_point;
 
@@ -1583,10 +1585,10 @@ void ObstacleCruisePlannerNode::publishDebugMarker() const
   }
 
   {  // footprint polygons
-    auto marker = tier4_autoware_utils::createDefaultMarker(
+    auto marker = autoware_universe_utils::createDefaultMarker(
       "map", now(), "detection_polygons", 0, Marker::LINE_LIST,
-      tier4_autoware_utils::createMarkerScale(0.01, 0.0, 0.0),
-      tier4_autoware_utils::createMarkerColor(0.0, 1.0, 0.0, 0.999));
+      autoware_universe_utils::createMarkerScale(0.01, 0.0, 0.0),
+      autoware_universe_utils::createMarkerColor(0.0, 1.0, 0.0, 0.999));
 
     for (const auto & detection_polygon : debug_data_ptr_->detection_polygons) {
       for (size_t dp_idx = 0; dp_idx < detection_polygon.outer().size(); ++dp_idx) {
@@ -1595,16 +1597,16 @@ void ObstacleCruisePlannerNode::publishDebugMarker() const
           detection_polygon.outer().at((dp_idx + 1) % detection_polygon.outer().size());
 
         marker.points.push_back(
-          tier4_autoware_utils::createPoint(current_point.x(), current_point.y(), 0.0));
+          autoware_universe_utils::createPoint(current_point.x(), current_point.y(), 0.0));
         marker.points.push_back(
-          tier4_autoware_utils::createPoint(next_point.x(), next_point.y(), 0.0));
+          autoware_universe_utils::createPoint(next_point.x(), next_point.y(), 0.0));
       }
     }
     debug_marker.markers.push_back(marker);
   }
 
   // slow down debug wall marker
-  tier4_autoware_utils::appendMarkerArray(
+  autoware_universe_utils::appendMarkerArray(
     debug_data_ptr_->slow_down_debug_wall_marker, &debug_marker);
 
   debug_marker_pub_->publish(debug_marker);

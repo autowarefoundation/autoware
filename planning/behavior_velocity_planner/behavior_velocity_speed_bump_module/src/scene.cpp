@@ -14,16 +14,16 @@
 
 #include "scene.hpp"
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "util.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
 namespace autoware::behavior_velocity_planner
 {
+using autoware_universe_utils::createPoint;
 using motion_utils::calcSignedArcLength;
-using tier4_autoware_utils::createPoint;
 
 using geometry_msgs::msg::Point32;
 

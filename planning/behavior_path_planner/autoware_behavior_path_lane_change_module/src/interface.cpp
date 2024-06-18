@@ -20,7 +20,7 @@
 #include "autoware/behavior_path_planner_common/interface/scene_module_visitor.hpp"
 #include "autoware/behavior_path_planner_common/marker_utils/utils.hpp"
 
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
+#include <autoware/universe_utils/ros/marker_helper.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -29,7 +29,7 @@
 
 namespace autoware::behavior_path_planner
 {
-using tier4_autoware_utils::appendMarkerArray;
+using autoware_universe_utils::appendMarkerArray;
 using utils::lane_change::assignToCandidate;
 
 LaneChangeInterface::LaneChangeInterface(

@@ -125,7 +125,7 @@ EBPathSmoother::EBParam::EBParam(rclcpp::Node * node)
 
 void EBPathSmoother::EBParam::onParam(const std::vector<rclcpp::Parameter> & parameters)
 {
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
 
   {  // option
     updateParam<bool>(parameters, "elastic_band.option.enable_warm_start", enable_warm_start);
@@ -443,7 +443,7 @@ std::optional<std::vector<TrajectoryPoint>> EBPathSmoother::convertOptimizedPoin
 
     auto eb_traj_point = traj_points.at(i);
     eb_traj_point.pose =
-      tier4_autoware_utils::calcOffsetPose(eb_traj_point.pose, 0.0, lat_offset, 0.0);
+      autoware_universe_utils::calcOffsetPose(eb_traj_point.pose, 0.0, lat_offset, 0.0);
     eb_traj_points.push_back(eb_traj_point);
   }
 

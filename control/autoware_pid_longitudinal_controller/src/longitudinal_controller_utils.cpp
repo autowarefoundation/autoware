@@ -93,7 +93,7 @@ double getPitchByTraj(
 
   const auto [prev_idx, next_idx] = [&]() {
     for (size_t i = start_idx + 1; i < trajectory.points.size(); ++i) {
-      const double dist = tier4_autoware_utils::calcDistance3d(
+      const double dist = autoware_universe_utils::calcDistance3d(
         trajectory.points.at(start_idx), trajectory.points.at(i));
       if (dist > wheel_base) {
         // calculate pitch from trajectory between rear wheel (nearest) and front center (i)
@@ -105,7 +105,7 @@ double getPitchByTraj(
       std::min(start_idx, trajectory.points.size() - 2), trajectory.points.size() - 1);
   }();
 
-  return tier4_autoware_utils::calcElevationAngle(
+  return autoware_universe_utils::calcElevationAngle(
     trajectory.points.at(prev_idx).pose.position, trajectory.points.at(next_idx).pose.position);
 }
 
@@ -166,7 +166,7 @@ geometry_msgs::msg::Pose findTrajectoryPoseAfterDistance(
   double remain_dist = distance;
   geometry_msgs::msg::Pose p = trajectory.points.back().pose;
   for (size_t i = src_idx; i < trajectory.points.size() - 1; ++i) {
-    const double dist = tier4_autoware_utils::calcDistance3d(
+    const double dist = autoware_universe_utils::calcDistance3d(
       trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose);
     if (remain_dist < dist) {
       if (remain_dist <= 0.0) {

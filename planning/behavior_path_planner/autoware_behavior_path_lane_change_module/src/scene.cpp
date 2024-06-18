@@ -22,9 +22,9 @@
 #include "autoware/behavior_path_planner_common/utils/traffic_light_utils.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 
 #include <lanelet2_core/geometry/Point.h>
 #include <lanelet2_core/geometry/Polygon.h>
@@ -389,9 +389,9 @@ void NormalLaneChange::insertStopPoint(
 
       // calculate distance from path front to the stationary object polygon on the ego lane.
       const auto polygon =
-        tier4_autoware_utils::toPolygon2d(object.initial_pose.pose, object.shape).outer();
+        autoware_universe_utils::toPolygon2d(object.initial_pose.pose, object.shape).outer();
       for (const auto & polygon_p : polygon) {
-        const auto p_fp = tier4_autoware_utils::toMsg(polygon_p.to_3d());
+        const auto p_fp = autoware_universe_utils::toMsg(polygon_p.to_3d());
         const auto lateral_fp = motion_utils::calcLateralOffset(path.points, p_fp);
 
         // ignore if the point is around the ego path
@@ -442,7 +442,7 @@ void NormalLaneChange::insertStopPoint(
 
         // target_objects includes objects out of target lanes, so filter them out
         if (!boost::geometry::intersects(
-              tier4_autoware_utils::toPolygon2d(o.initial_pose.pose, o.shape).outer(),
+              autoware_universe_utils::toPolygon2d(o.initial_pose.pose, o.shape).outer(),
               lanelet::utils::combineLaneletsShape(status_.target_lanes)
                 .polygon2d()
                 .basicPolygon())) {
@@ -991,11 +991,11 @@ LaneChangeLanesFilteredObjects NormalLaneChange::filterObjects(
   }
 
   const auto is_ahead_of_ego = [&path, &current_pose](const auto & object) {
-    const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object).outer();
+    const auto obj_polygon = autoware_universe_utils::toPolygon2d(object).outer();
 
     double max_dist_ego_to_obj = std::numeric_limits<double>::lowest();
     for (const auto & polygon_p : obj_polygon) {
-      const auto obj_p = tier4_autoware_utils::createPoint(polygon_p.x(), polygon_p.y(), 0.0);
+      const auto obj_p = autoware_universe_utils::createPoint(polygon_p.x(), polygon_p.y(), 0.0);
       const auto dist_ego_to_obj = calcSignedArcLength(path.points, current_pose.position, obj_p);
       max_dist_ego_to_obj = std::max(dist_ego_to_obj, max_dist_ego_to_obj);
     }
@@ -1083,11 +1083,11 @@ void NormalLaneChange::filterAheadTerminalObjects(
 
   // ignore object that are ahead of terminal lane change start
   utils::path_safety_checker::filterObjects(objects, [&](const PredictedObject & object) {
-    const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object).outer();
+    const auto obj_polygon = autoware_universe_utils::toPolygon2d(object).outer();
     // ignore object that are ahead of terminal lane change start
     auto distance_to_terminal_from_object = std::numeric_limits<double>::max();
     for (const auto & polygon_p : obj_polygon) {
-      const auto obj_p = tier4_autoware_utils::createPoint(polygon_p.x(), polygon_p.y(), 0.0);
+      const auto obj_p = autoware_universe_utils::createPoint(polygon_p.x(), polygon_p.y(), 0.0);
       Pose polygon_pose;
       polygon_pose.position = obj_p;
       polygon_pose.orientation = object.kinematics.initial_pose_with_covariance.pose.orientation;
@@ -2079,7 +2079,7 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
       utils::path_safety_checker::updateCollisionCheckDebugMap(
         debug_data, current_debug_data, is_safe);
       const auto & obj_pose = obj.initial_pose.pose;
-      const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose, obj.shape);
+      const auto obj_polygon = autoware_universe_utils::toPolygon2d(obj_pose, obj.shape);
       path_safety_status.is_object_coming_from_rear |=
         !utils::path_safety_checker::isTargetObjectFront(
           path, current_pose, common_parameters.vehicle_info, obj_polygon);

@@ -14,29 +14,29 @@
 
 #include "predicted_path_checker/debug_marker.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/marker_helper.hpp>
 #include <motion_utils/marker/marker_helper.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #else
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
 
 #include <memory>
 #include <vector>
 
+using autoware_universe_utils::appendMarkerArray;
+using autoware_universe_utils::calcOffsetPose;
+using autoware_universe_utils::createDefaultMarker;
+using autoware_universe_utils::createMarkerColor;
+using autoware_universe_utils::createMarkerOrientation;
+using autoware_universe_utils::createMarkerScale;
+using autoware_universe_utils::createPoint;
 using motion_utils::createDeletedStopVirtualWallMarker;
 using motion_utils::createStopVirtualWallMarker;
-using tier4_autoware_utils::appendMarkerArray;
-using tier4_autoware_utils::calcOffsetPose;
-using tier4_autoware_utils::createDefaultMarker;
-using tier4_autoware_utils::createMarkerColor;
-using tier4_autoware_utils::createMarkerOrientation;
-using tier4_autoware_utils::createMarkerScale;
-using tier4_autoware_utils::createPoint;
 
 namespace autoware::motion::control::predicted_path_checker
 {
@@ -51,7 +51,7 @@ PredictedPathCheckerDebugNode::PredictedPathCheckerDebugNode(
 }
 
 bool PredictedPathCheckerDebugNode::pushPolygon(
-  const tier4_autoware_utils::Polygon2d & polygon, const double z, const PolygonType & type)
+  const autoware_universe_utils::Polygon2d & polygon, const double z, const PolygonType & type)
 {
   std::vector<Eigen::Vector3d> eigen_polygon;
   for (const auto & point : polygon.outer()) {
@@ -82,7 +82,7 @@ bool PredictedPathCheckerDebugNode::pushPolygon(
 }
 
 bool PredictedPathCheckerDebugNode::pushPolyhedron(
-  const tier4_autoware_utils::Polygon2d & polyhedron, const double z_min, const double z_max,
+  const autoware_universe_utils::Polygon2d & polyhedron, const double z_min, const double z_max,
   const PolygonType & type)
 {
   std::vector<Eigen::Vector3d> eigen_polyhedron;

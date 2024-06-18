@@ -14,11 +14,11 @@
 
 #include "autoware/velocity_smoother/node.hpp"
 
+#include "autoware/universe_utils/ros/update_param.hpp"
 #include "autoware/velocity_smoother/smoother/jerk_filtered_smoother.hpp"
 #include "autoware/velocity_smoother/smoother/l2_pseudo_jerk_smoother.hpp"
 #include "autoware/velocity_smoother/smoother/linf_pseudo_jerk_smoother.hpp"
 #include "motion_utils/marker/marker_helper.hpp"
-#include "tier4_autoware_utils/ros/update_param.hpp"
 
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
@@ -90,8 +90,9 @@ VelocitySmootherNode::VelocitySmootherNode(const rclcpp::NodeOptions & node_opti
 
   clock_ = get_clock();
 
-  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
-  published_time_publisher_ = std::make_unique<tier4_autoware_utils::PublishedTimePublisher>(this);
+  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  published_time_publisher_ =
+    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
 }
 
 void VelocitySmootherNode::setupSmoother(const double wheelbase)
@@ -908,7 +909,7 @@ void VelocitySmootherNode::applyStopApproachingVelocity(TrajectoryPoints & traj)
   }
   double distance_sum = 0.0;
   for (size_t i = *stop_idx - 1; i < traj.size(); --i) {  // search backward
-    distance_sum += tier4_autoware_utils::calcDistance2d(traj.at(i), traj.at(i + 1));
+    distance_sum += autoware_universe_utils::calcDistance2d(traj.at(i), traj.at(i + 1));
     if (distance_sum > node_param_.stopping_distance) {
       break;
     }
@@ -1019,7 +1020,7 @@ double VelocitySmootherNode::calcTravelDistance() const
 
   if (prev_closest_point_) {
     const double travel_dist =
-      tier4_autoware_utils::calcDistance2d(*prev_closest_point_, closest_point);
+      autoware_universe_utils::calcDistance2d(*prev_closest_point_, closest_point);
     return travel_dist;
   }
 

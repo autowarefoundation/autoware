@@ -73,7 +73,7 @@ private:
 
   // debugger
   std::unique_ptr<TrackerDebugger> debugger_;
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 
   // publish timer
   rclcpp::TimerBase::SharedPtr publish_timer_;

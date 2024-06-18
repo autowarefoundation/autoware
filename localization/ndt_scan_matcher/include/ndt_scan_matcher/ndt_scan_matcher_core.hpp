@@ -22,8 +22,8 @@
 #include "ndt_scan_matcher/hyper_parameters.hpp"
 #include "ndt_scan_matcher/map_update_module.hpp"
 
+#include <autoware/universe_utils/ros/logger_level_configure.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/logger_level_configure.hpp>
 
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
@@ -203,7 +203,7 @@ private:
   std::unique_ptr<DiagnosticsModule> diagnostics_ndt_align_;
   std::unique_ptr<DiagnosticsModule> diagnostics_trigger_node_;
   std::unique_ptr<MapUpdateModule> map_update_module_;
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
 
   HyperParameters param_;
 };

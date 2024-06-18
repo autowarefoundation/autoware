@@ -16,12 +16,12 @@
 #define AUTOWARE__OBSTACLE_CRUISE_PLANNER__COMMON_STRUCTS_HPP_
 
 #include "autoware/obstacle_cruise_planner/type_alias.hpp"
+#include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
+#include "autoware/universe_utils/ros/update_param.hpp"
+#include "autoware/universe_utils/ros/uuid_helper.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "motion_utils/trajectory/interpolation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
-#include "tier4_autoware_utils/ros/update_param.hpp"
-#include "tier4_autoware_utils/ros/uuid_helper.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -63,7 +63,7 @@ struct Obstacle
     twist(object.kinematics.initial_twist_with_covariance.twist),
     twist_reliable(true),
     classification(object.classification.at(0)),
-    uuid(tier4_autoware_utils::toHexString(object.object_id)),
+    uuid(autoware_universe_utils::toHexString(object.object_id)),
     shape(object.shape),
     ego_to_obstacle_distance(ego_to_obstacle_distance),
     lat_dist_from_obstacle_to_traj(lat_dist_from_obstacle_to_traj)
@@ -74,7 +74,7 @@ struct Obstacle
     }
   }
 
-  Polygon2d toPolygon() const { return tier4_autoware_utils::toPolygon2d(pose, shape); }
+  Polygon2d toPolygon() const { return autoware_universe_utils::toPolygon2d(pose, shape); }
 
   rclcpp::Time stamp;  // This is not the current stamp, but when the object was observed.
   geometry_msgs::msg::Pose pose;  // interpolated with the current stamp
@@ -198,33 +198,33 @@ struct LongitudinalInfo
 
   void onParam(const std::vector<rclcpp::Parameter> & parameters)
   {
-    tier4_autoware_utils::updateParam<double>(parameters, "normal.max_accel", max_accel);
-    tier4_autoware_utils::updateParam<double>(parameters, "normal.min_accel", min_accel);
-    tier4_autoware_utils::updateParam<double>(parameters, "normal.max_jerk", max_jerk);
-    tier4_autoware_utils::updateParam<double>(parameters, "normal.min_jerk", min_jerk);
-    tier4_autoware_utils::updateParam<double>(parameters, "limit.max_accel", limit_max_accel);
-    tier4_autoware_utils::updateParam<double>(parameters, "limit.min_accel", limit_min_accel);
-    tier4_autoware_utils::updateParam<double>(parameters, "limit.max_jerk", limit_max_jerk);
-    tier4_autoware_utils::updateParam<double>(parameters, "limit.min_jerk", limit_min_jerk);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(parameters, "normal.max_accel", max_accel);
+    autoware_universe_utils::updateParam<double>(parameters, "normal.min_accel", min_accel);
+    autoware_universe_utils::updateParam<double>(parameters, "normal.max_jerk", max_jerk);
+    autoware_universe_utils::updateParam<double>(parameters, "normal.min_jerk", min_jerk);
+    autoware_universe_utils::updateParam<double>(parameters, "limit.max_accel", limit_max_accel);
+    autoware_universe_utils::updateParam<double>(parameters, "limit.min_accel", limit_min_accel);
+    autoware_universe_utils::updateParam<double>(parameters, "limit.max_jerk", limit_max_jerk);
+    autoware_universe_utils::updateParam<double>(parameters, "limit.min_jerk", limit_min_jerk);
+    autoware_universe_utils::updateParam<double>(
       parameters, "common.slow_down_min_accel", slow_down_min_accel);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "common.slow_down_min_jerk", slow_down_min_jerk);
 
-    tier4_autoware_utils::updateParam<double>(parameters, "common.idling_time", idling_time);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(parameters, "common.idling_time", idling_time);
+    autoware_universe_utils::updateParam<double>(
       parameters, "common.min_ego_accel_for_rss", min_ego_accel_for_rss);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "common.min_object_accel_for_rss", min_object_accel_for_rss);
 
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "common.safe_distance_margin", safe_distance_margin);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "common.terminal_safe_distance_margin", terminal_safe_distance_margin);
 
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "common.hold_stop_velocity_threshold", hold_stop_velocity_threshold);
-    tier4_autoware_utils::updateParam<double>(
+    autoware_universe_utils::updateParam<double>(
       parameters, "common.hold_stop_distance_threshold", hold_stop_distance_threshold);
   }
 
@@ -265,7 +265,7 @@ struct DebugData
   MarkerArray stop_wall_marker;
   MarkerArray cruise_wall_marker;
   MarkerArray slow_down_wall_marker;
-  std::vector<tier4_autoware_utils::Polygon2d> detection_polygons;
+  std::vector<autoware_universe_utils::Polygon2d> detection_polygons;
 };
 
 struct EgoNearestParam

@@ -14,7 +14,7 @@
 
 #include "probabilistic_occupancy_grid_map/utils/utils.hpp"
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 
 #include <string>
 
@@ -50,7 +50,7 @@ void transformPointcloud(
   const sensor_msgs::msg::PointCloud2 & input, const geometry_msgs::msg::Pose & pose,
   sensor_msgs::msg::PointCloud2 & output)
 {
-  const auto transform = tier4_autoware_utils::pose2transform(pose);
+  const auto transform = autoware_universe_utils::pose2transform(pose);
   Eigen::Matrix4f tf_matrix = tf2::transformToEigen(transform).matrix().cast<float>();
 
   pcl_ros::transformPointCloud(tf_matrix, input, output);
@@ -96,7 +96,7 @@ geometry_msgs::msg::Pose getPose(
   geometry_msgs::msg::TransformStamped tf_stamped;
   tf_stamped = tf2.lookupTransform(
     target_frame, source_header.frame_id, source_header.stamp, rclcpp::Duration::from_seconds(0.5));
-  pose = tier4_autoware_utils::transform2pose(tf_stamped.transform);
+  pose = autoware_universe_utils::transform2pose(tf_stamped.transform);
   return pose;
 }
 
@@ -108,7 +108,7 @@ geometry_msgs::msg::Pose getPose(
   geometry_msgs::msg::TransformStamped tf_stamped;
   tf_stamped =
     tf2.lookupTransform(target_frame, source_frame, stamp, rclcpp::Duration::from_seconds(0.5));
-  pose = tier4_autoware_utils::transform2pose(tf_stamped.transform);
+  pose = autoware_universe_utils::transform2pose(tf_stamped.transform);
   return pose;
 }
 

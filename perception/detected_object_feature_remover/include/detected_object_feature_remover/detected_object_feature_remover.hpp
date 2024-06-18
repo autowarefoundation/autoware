@@ -15,8 +15,8 @@
 #ifndef DETECTED_OBJECT_FEATURE_REMOVER__DETECTED_OBJECT_FEATURE_REMOVER_HPP_
 #define DETECTED_OBJECT_FEATURE_REMOVER__DETECTED_OBJECT_FEATURE_REMOVER_HPP_
 
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_perception_msgs/msg/detected_objects.hpp>
 #include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
@@ -36,7 +36,7 @@ public:
 private:
   rclcpp::Subscription<DetectedObjectsWithFeature>::SharedPtr sub_;
   rclcpp::Publisher<DetectedObjects>::SharedPtr pub_;
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
   void objectCallback(const DetectedObjectsWithFeature::ConstSharedPtr input);
   void convert(const DetectedObjectsWithFeature & objs_with_feature, DetectedObjects & objs);
 };

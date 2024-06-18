@@ -16,9 +16,9 @@
 
 #include "yabloc_particle_filter/ll2_cost_map/direct_cost_map.hpp"
 
+#include <autoware/universe_utils/ros/marker_helper.hpp>
 #include <opencv4/opencv2/highgui.hpp>
 #include <opencv4/opencv2/imgproc.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <boost/geometry/geometry.hpp>
 
@@ -169,7 +169,7 @@ HierarchicalCostMap::MarkerArray HierarchicalCostMap::show_map_range() const
     marker.header.frame_id = "map";
     marker.id = id++;
     marker.type = Marker::LINE_STRIP;
-    marker.color = tier4_autoware_utils::createMarkerColor(0, 0, 1.0f, 1.0f);
+    marker.color = autoware_universe_utils::createMarkerColor(0, 0, 1.0f, 1.0f);
     marker.scale.x = 0.1;
     Eigen::Vector2f xy = area.real_scale();
     marker.points.push_back(point_msg(xy.x(), xy.y()));

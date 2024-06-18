@@ -32,8 +32,8 @@
 
 #include "autoware/freespace_planning_algorithms/abstract_algorithm.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <algorithm>
 #include <deque>
@@ -143,7 +143,7 @@ Trajectory getPartialTrajectory(
 double calcDistance2d(const Trajectory & trajectory, const Pose & pose)
 {
   const auto idx = motion_utils::findNearestIndex(trajectory.points, pose.position);
-  return tier4_autoware_utils::calcDistance2d(trajectory.points.at(idx), pose);
+  return autoware_universe_utils::calcDistance2d(trajectory.points.at(idx), pose);
 }
 
 Pose transformPose(const Pose & pose, const TransformStamped & transform)
@@ -287,7 +287,7 @@ FreespacePlannerNode::FreespacePlannerNode(const rclcpp::NodeOptions & node_opti
       this, get_clock(), period_ns, std::bind(&FreespacePlannerNode::onTimer, this));
   }
 
-  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
+  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
 }
 
 PlannerCommonParam FreespacePlannerNode::getPlannerCommonParam()
@@ -395,7 +395,7 @@ bool FreespacePlannerNode::isPlanRequired()
 void FreespacePlannerNode::updateTargetIndex()
 {
   const auto is_near_target =
-    tier4_autoware_utils::calcDistance2d(trajectory_.points.at(target_index_), current_pose_) <
+    autoware_universe_utils::calcDistance2d(trajectory_.points.at(target_index_), current_pose_) <
     node_param_.th_arrived_distance_m;
 
   const auto is_stopped = isStopped(odom_buffer_, node_param_.th_stopped_velocity_mps);

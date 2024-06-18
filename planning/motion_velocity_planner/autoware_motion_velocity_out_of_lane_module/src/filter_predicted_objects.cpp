@@ -50,7 +50,7 @@ void cut_predicted_path_beyond_line(
     auto cut_idx = stop_line_idx;
     double arc_length = 0;
     while (cut_idx > 0 && arc_length < object_front_overhang) {
-      arc_length += tier4_autoware_utils::calcDistance2d(
+      arc_length += autoware_universe_utils::calcDistance2d(
         predicted_path.path[cut_idx], predicted_path.path[cut_idx - 1]);
       --cut_idx;
     }

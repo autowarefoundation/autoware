@@ -16,8 +16,8 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/universe_utils/ros/parameter.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <tier4_autoware_utils/ros/parameter.hpp>
 
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 
@@ -30,7 +30,7 @@
 
 namespace autoware::behavior_velocity_planner
 {
-using tier4_autoware_utils::getOrDeclareParameter;
+using autoware_universe_utils::getOrDeclareParameter;
 
 IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterfaceWithRTC(

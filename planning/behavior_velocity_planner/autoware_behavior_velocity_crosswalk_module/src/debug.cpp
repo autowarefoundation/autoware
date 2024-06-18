@@ -15,23 +15,23 @@
 #include "scene_crosswalk.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/marker_helper.hpp>
 #include <motion_utils/marker/marker_helper.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <vector>
 
 namespace autoware::behavior_velocity_planner
 {
 
+using autoware_universe_utils::appendMarkerArray;
+using autoware_universe_utils::calcOffsetPose;
+using autoware_universe_utils::createDefaultMarker;
+using autoware_universe_utils::createMarkerColor;
+using autoware_universe_utils::createMarkerScale;
+using autoware_universe_utils::createPoint;
 using motion_utils::createSlowDownVirtualWallMarker;
 using motion_utils::createStopVirtualWallMarker;
-using tier4_autoware_utils::appendMarkerArray;
-using tier4_autoware_utils::calcOffsetPose;
-using tier4_autoware_utils::createDefaultMarker;
-using tier4_autoware_utils::createMarkerColor;
-using tier4_autoware_utils::createMarkerScale;
-using tier4_autoware_utils::createPoint;
 using visualization_msgs::msg::Marker;
 
 namespace

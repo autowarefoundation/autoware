@@ -16,9 +16,9 @@
 
 #include "multi_object_tracker/utils/utils.hpp"
 
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
-#include <tier4_autoware_utils/math/normalization.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
+#include <autoware/universe_utils/math/normalization.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
 
 #include <bits/stdc++.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -67,8 +67,8 @@ UnknownTracker::UnknownTracker(
 
   // Set motion limits
   motion_model_.setMotionLimits(
-    tier4_autoware_utils::kmph2mps(60), /* [m/s] maximum velocity, x */
-    tier4_autoware_utils::kmph2mps(60)  /* [m/s] maximum velocity, y */
+    autoware_universe_utils::kmph2mps(60), /* [m/s] maximum velocity, x */
+    autoware_universe_utils::kmph2mps(60)  /* [m/s] maximum velocity, y */
   );
 
   // Set initial state
@@ -107,8 +107,8 @@ UnknownTracker::UnknownTracker(
     }
 
     if (!object.kinematics.has_twist_covariance) {
-      constexpr double p0_stddev_vx = tier4_autoware_utils::kmph2mps(10);  // [m/s]
-      constexpr double p0_stddev_vy = tier4_autoware_utils::kmph2mps(10);  // [m/s]
+      constexpr double p0_stddev_vx = autoware_universe_utils::kmph2mps(10);  // [m/s]
+      constexpr double p0_stddev_vy = autoware_universe_utils::kmph2mps(10);  // [m/s]
       const double p0_cov_vx = std::pow(p0_stddev_vx, 2.0);
       const double p0_cov_vy = std::pow(p0_stddev_vy, 2.0);
       twist_cov[utils::MSG_COV_IDX::X_X] = p0_cov_vx;

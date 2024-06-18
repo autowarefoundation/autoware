@@ -14,13 +14,13 @@
 
 #include "autoware/velocity_smoother/smoother/smoother_base.hpp"
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/math/unit_conversion.hpp"
 #include "autoware/velocity_smoother/resample.hpp"
 #include "autoware/velocity_smoother/trajectory_utils.hpp"
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/math/unit_conversion.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -249,14 +249,15 @@ TrajectoryPoints SmootherBase::applySteeringRateLimit(
     }
 
     const auto steer_rate = steer_rate_arr.at(i);
-    if (steer_rate < tier4_autoware_utils::deg2rad(base_param_.max_steering_angle_rate)) {
+    if (steer_rate < autoware_universe_utils::deg2rad(base_param_.max_steering_angle_rate)) {
       continue;
     }
 
     const auto mean_vel =
       (output.at(i).longitudinal_velocity_mps + output.at(i + 1).longitudinal_velocity_mps) / 2.0;
     const auto target_mean_vel =
-      mean_vel * (tier4_autoware_utils::deg2rad(base_param_.max_steering_angle_rate) / steer_rate);
+      mean_vel *
+      (autoware_universe_utils::deg2rad(base_param_.max_steering_angle_rate) / steer_rate);
 
     for (size_t k = 0; k < 2; k++) {
       auto & velocity = output.at(i + k).longitudinal_velocity_mps;

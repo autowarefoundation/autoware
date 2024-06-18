@@ -17,7 +17,7 @@
 #include "scene_occlusion_spot.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
-#include <tier4_autoware_utils/ros/parameter.hpp>
+#include <autoware/universe_utils/ros/parameter.hpp>
 
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 
@@ -27,9 +27,9 @@
 
 namespace autoware::behavior_velocity_planner
 {
+using autoware_universe_utils::getOrDeclareParameter;
 using occlusion_spot_utils::DETECTION_METHOD;
 using occlusion_spot_utils::PASS_JUDGE;
-using tier4_autoware_utils::getOrDeclareParameter;
 
 OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())

@@ -12,12 +12,12 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <depend>autoware_universe_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>message_filters</depend>
   <depend>object_recognition_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>tier4_perception_msgs</depend>
   <build_depend>autoware_cmake</build_depend>
   <test_depend>ament_lint_auto</test_depend>

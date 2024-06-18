@@ -25,6 +25,7 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_point_types</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>cgal</depend>
   <depend>cv_bridge</depend>
   <depend>diagnostic_updater</depend>
@@ -46,7 +47,6 @@
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>tier4_debug_msgs</depend>
   <depend>tier4_pcl_extensions</depend>
 

@@ -14,8 +14,8 @@
 
 #include "control_performance_analysis/control_performance_analysis_core.hpp"
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "motion_utils/trajectory/interpolation.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -158,7 +158,7 @@ bool ControlPerformanceAnalysisCore::calculateErrorVars()
 
   // Compute the yaw angle error.
   const double heading_yaw_error =
-    tier4_autoware_utils::calcYawDeviation(pose_interp_wp, *current_vec_pose_ptr_);
+    autoware_universe_utils::calcYawDeviation(pose_interp_wp, *current_vec_pose_ptr_);
 
   // Set the values of ErrorMsgVars.
 
@@ -174,7 +174,7 @@ bool ControlPerformanceAnalysisCore::calculateErrorVars()
   const double Vx = odom_history_ptr_->at(odom_size - 2).twist.twist.linear.x;
 
   // Current acceleration calculation
-  const auto ds = tier4_autoware_utils::calcDistance2d(
+  const auto ds = autoware_universe_utils::calcDistance2d(
     odom_history_ptr_->at(odom_size - 1).pose.pose, odom_history_ptr_->at(odom_size - 2).pose.pose);
 
   const double vel_mean = (odom_history_ptr_->at(odom_size - 1).twist.twist.linear.x +
@@ -371,7 +371,8 @@ std::optional<int32_t> ControlPerformanceAnalysisCore::findCurveRefIdx()
   }
 
   auto fun_distance_cond = [this](auto point_t) {
-    const double dist = tier4_autoware_utils::calcDistance2d(point_t.pose, *interpolated_pose_ptr_);
+    const double dist =
+      autoware_universe_utils::calcDistance2d(point_t.pose, *interpolated_pose_ptr_);
     return dist > p_.wheelbase_;
   };
 
@@ -442,7 +443,7 @@ double ControlPerformanceAnalysisCore::estimateCurvature()
 
   // Compute arc-length ds between 2 points.
   const double ds_arc_length =
-    tier4_autoware_utils::calcDistance2d(front_axleWP_pose_prev, front_axleWP_pose);
+    autoware_universe_utils::calcDistance2d(front_axleWP_pose_prev, front_axleWP_pose);
 
   // Define waypoints 10 meters behind the rear axle if exist.
   // If not exist, we will take the first point of the
@@ -461,7 +462,7 @@ double ControlPerformanceAnalysisCore::estimateCurvature()
   // We compute a curvature estimate from these points.
   double estimated_curvature = 0.0;
   try {
-    estimated_curvature = tier4_autoware_utils::calcCurvature(
+    estimated_curvature = autoware_universe_utils::calcCurvature(
       points.at(loc_of_back_idx).pose.position, points.at(idx_curve_ref_wp).pose.position,
       points.at(loc_of_forward_idx).pose.position);
   } catch (...) {
@@ -486,7 +487,7 @@ double ControlPerformanceAnalysisCore::estimatePurePursuitCurvature()
   const double look_ahead_distance_pp = std::max(p_.wheelbase_, 2 * Vx);
 
   auto fun_distance_cond = [this, &look_ahead_distance_pp](auto point_t) {
-    const double dist = tier4_autoware_utils::calcDistance2d(point_t, *interpolated_pose_ptr_);
+    const double dist = autoware_universe_utils::calcDistance2d(point_t, *interpolated_pose_ptr_);
     return dist > look_ahead_distance_pp;
   };
 

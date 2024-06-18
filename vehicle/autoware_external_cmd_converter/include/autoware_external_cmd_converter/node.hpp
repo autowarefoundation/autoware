@@ -15,7 +15,7 @@
 #ifndef AUTOWARE_EXTERNAL_CMD_CONVERTER__NODE_HPP_
 #define AUTOWARE_EXTERNAL_CMD_CONVERTER__NODE_HPP_
 
-#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
+#include "autoware/universe_utils/ros/polling_subscriber.hpp"
 
 #include <autoware_raw_vehicle_cmd_converter/accel_map.hpp>
 #include <autoware_raw_vehicle_cmd_converter/brake_map.hpp>
@@ -60,10 +60,11 @@ private:
     emergency_stop_heartbeat_sub_;
 
   // Polling Subscriber
-  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> velocity_sub_{this, "in/odometry"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<GearCommand> shift_cmd_sub_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> velocity_sub_{
+    this, "in/odometry"};
+  autoware_universe_utils::InterProcessPollingSubscriber<GearCommand> shift_cmd_sub_{
     this, "in/shift_cmd"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<GateMode> gate_mode_sub_{
+  autoware_universe_utils::InterProcessPollingSubscriber<GateMode> gate_mode_sub_{
     this, "in/current_gate_mode"};
 
   void on_external_cmd(const ExternalControlCommand::ConstSharedPtr cmd_ptr);

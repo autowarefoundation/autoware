@@ -19,13 +19,13 @@
 #include "autoware/obstacle_cruise_planner/optimization_based_planner/optimization_based_planner.hpp"
 #include "autoware/obstacle_cruise_planner/pid_based_planner/pid_based_planner.hpp"
 #include "autoware/obstacle_cruise_planner/type_alias.hpp"
+#include "autoware/universe_utils/ros/logger_level_configure.hpp"
+#include "autoware/universe_utils/ros/polling_subscriber.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
 #include "signal_processing/lowpass_filter_1d.hpp"
-#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
-#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
-#include "tier4_autoware_utils/system/stop_watch.hpp"
 
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -145,11 +145,11 @@ private:
 
   // subscriber
   rclcpp::Subscription<Trajectory>::SharedPtr traj_sub_;
-  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> ego_odom_sub_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> ego_odom_sub_{
     this, "~/input/odometry"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<PredictedObjects> objects_sub_{
+  autoware_universe_utils::InterProcessPollingSubscriber<PredictedObjects> objects_sub_{
     this, "~/input/objects"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped> acc_sub_{
+  autoware_universe_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped> acc_sub_{
     this, "~/input/acceleration"};
 
   // Vehicle Parameters
@@ -161,7 +161,7 @@ private:
   PlanningAlgorithm planning_algorithm_;
 
   // stop watch
-  mutable tier4_autoware_utils::StopWatch<
+  mutable autoware_universe_utils::StopWatch<
     std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
     stop_watch_;
   mutable std::shared_ptr<DebugData> debug_data_ptr_{nullptr};
@@ -274,9 +274,9 @@ private:
 
   std::vector<StopObstacle> prev_closest_stop_obstacles_{};
 
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
 
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 }  // namespace autoware::motion_planning
 

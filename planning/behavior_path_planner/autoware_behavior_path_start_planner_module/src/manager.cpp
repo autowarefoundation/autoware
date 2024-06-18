@@ -14,7 +14,7 @@
 
 #include "autoware/behavior_path_start_planner_module/manager.hpp"
 
-#include "tier4_autoware_utils/ros/update_param.hpp"
+#include "autoware/universe_utils/ros/update_param.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -351,7 +351,7 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
 void StartPlannerModuleManager::updateModuleParams(
   [[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters)
 {
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
 
   auto & p = parameters_;
 

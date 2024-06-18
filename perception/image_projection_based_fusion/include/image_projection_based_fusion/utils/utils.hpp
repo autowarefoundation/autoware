@@ -34,10 +34,10 @@
 
 #include "image_projection_based_fusion/fusion_node.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include "autoware_perception_msgs/msg/shape.hpp"
 #include "tier4_perception_msgs/msg/detected_object_with_feature.hpp"

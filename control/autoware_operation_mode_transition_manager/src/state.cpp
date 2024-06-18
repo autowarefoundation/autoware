@@ -16,9 +16,9 @@
 
 #include "util.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/geometry/pose_deviation.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/geometry/pose_deviation.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -26,9 +26,9 @@
 namespace autoware::operation_mode_transition_manager
 {
 
+using autoware_universe_utils::calcDistance2d;
+using autoware_universe_utils::calcYawDeviation;
 using motion_utils::findNearestIndex;
-using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::calcYawDeviation;
 
 AutonomousMode::AutonomousMode(rclcpp::Node * node)
 : logger_(node->get_logger()), clock_(node->get_clock())

@@ -14,9 +14,9 @@
 
 #include "autoware/control_validator/utils.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
 #include <motion_utils/trajectory/interpolation.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <memory>
 #include <string>
@@ -149,7 +149,7 @@ double calcMaxLateralDistance(
     alignTrajectoryWithReferenceTrajectory(reference_trajectory, predicted_trajectory);
   double max_dist = 0;
   for (const auto & point : alined_predicted_trajectory.points) {
-    const auto p0 = tier4_autoware_utils::getPoint(point);
+    const auto p0 = autoware_universe_utils::getPoint(point);
     // find nearest segment
     const size_t nearest_segment_idx =
       motion_utils::findNearestSegmentIndex(reference_trajectory.points, p0);

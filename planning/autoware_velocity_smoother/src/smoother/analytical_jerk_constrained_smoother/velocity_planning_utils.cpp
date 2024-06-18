@@ -226,7 +226,7 @@ bool calcStopVelocityWithConstantJerkAccLimit(
   distances.push_back(distance);
   for (size_t i = start_index; i < output_trajectory.size() - 1; ++i) {
     distance +=
-      tier4_autoware_utils::calcDistance2d(output_trajectory.at(i), output_trajectory.at(i + 1));
+      autoware_universe_utils::calcDistance2d(output_trajectory.at(i), output_trajectory.at(i + 1));
     if (distance > xs.back()) {
       break;
     }

@@ -15,7 +15,7 @@
 #ifndef AUTOWARE_VEHICLE_INFO_UTILS__VEHICLE_INFO_HPP_
 #define AUTOWARE_VEHICLE_INFO_UTILS__VEHICLE_INFO_HPP_
 
-#include "tier4_autoware_utils/geometry/boost_geometry.hpp"
+#include "autoware/universe_utils/geometry/boost_geometry.hpp"
 
 namespace autoware::vehicle_info_utils
 {
@@ -47,8 +47,8 @@ struct VehicleInfo
   double min_height_offset_m;
   double max_height_offset_m;
 
-  tier4_autoware_utils::LinearRing2d createFootprint(const double margin = 0.0) const;
-  tier4_autoware_utils::LinearRing2d createFootprint(
+  autoware_universe_utils::LinearRing2d createFootprint(const double margin = 0.0) const;
+  autoware_universe_utils::LinearRing2d createFootprint(
     const double lat_margin, const double lon_margin) const;
 };
 

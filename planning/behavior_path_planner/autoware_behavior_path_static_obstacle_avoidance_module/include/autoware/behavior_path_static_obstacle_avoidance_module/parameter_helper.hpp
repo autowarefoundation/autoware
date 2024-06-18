@@ -14,7 +14,7 @@
 #ifndef AUTOWARE__BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__PARAMETER_HELPER_HPP_
 #define AUTOWARE__BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__PARAMETER_HELPER_HPP_
 
-#include "tier4_autoware_utils/ros/parameter.hpp"
+#include "autoware/universe_utils/ros/parameter.hpp"
 
 #include <autoware/behavior_path_static_obstacle_avoidance_module/data_structs.hpp>
 #include <rclcpp/node.hpp>
@@ -27,7 +27,7 @@
 namespace autoware::behavior_path_planner
 {
 using autoware_perception_msgs::msg::ObjectClassification;
-using tier4_autoware_utils::getOrDeclareParameter;
+using autoware_universe_utils::getOrDeclareParameter;
 
 AvoidanceParameters getParameter(rclcpp::Node * node)
 {

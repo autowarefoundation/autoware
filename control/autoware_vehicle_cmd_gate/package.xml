@@ -17,6 +17,7 @@
 
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_control_msgs</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>autoware_vehicle_info_utils</depend>
   <depend>autoware_vehicle_msgs</depend>
   <depend>component_interface_specs</depend>
@@ -28,7 +29,6 @@
   <depend>rclcpp_components</depend>
   <depend>std_srvs</depend>
   <depend>tier4_api_utils</depend>
-  <depend>tier4_autoware_utils</depend>
   <depend>tier4_control_msgs</depend>
   <depend>tier4_debug_msgs</depend>
   <depend>tier4_external_api_msgs</depend>

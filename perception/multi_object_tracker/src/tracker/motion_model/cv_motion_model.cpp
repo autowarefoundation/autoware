@@ -21,8 +21,8 @@
 #include "multi_object_tracker/tracker/motion_model/motion_model_base.hpp"
 #include "multi_object_tracker/utils/utils.hpp"
 
-#include <tier4_autoware_utils/math/normalization.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
+#include <autoware/universe_utils/math/normalization.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
 
 #include <tf2/utils.h>
 
@@ -49,8 +49,8 @@ void CVMotionModel::setDefaultParams()
   setMotionParams(q_stddev_x, q_stddev_y, q_stddev_vx, q_stddev_vy);
 
   // set motion limitations
-  constexpr double max_vx = tier4_autoware_utils::kmph2mps(60);  // [m/s] maximum x velocity
-  constexpr double max_vy = tier4_autoware_utils::kmph2mps(60);  // [m/s] maximum y velocity
+  constexpr double max_vx = autoware_universe_utils::kmph2mps(60);  // [m/s] maximum x velocity
+  constexpr double max_vy = autoware_universe_utils::kmph2mps(60);  // [m/s] maximum y velocity
   setMotionLimits(max_vx, max_vy);
 
   // set prediction parameters

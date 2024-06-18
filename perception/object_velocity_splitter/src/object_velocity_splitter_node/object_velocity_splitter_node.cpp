@@ -14,7 +14,7 @@
 
 #include "object_velocity_splitter/object_velocity_splitter_node.hpp"
 
-#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
 
 #include <memory>
 #include <string>
@@ -74,7 +74,7 @@ void ObjectVelocitySplitterNode::onObjects(const DetectedObjects::ConstSharedPtr
 
   for (const auto & object : objects_data_->objects) {
     if (
-      std::abs(tier4_autoware_utils::calcNorm(
+      std::abs(autoware_universe_utils::calcNorm(
         object.kinematics.twist_with_covariance.twist.linear)) < node_param_.velocity_threshold) {
       low_speed_objects.objects.emplace_back(object);
     } else {

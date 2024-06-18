@@ -15,7 +15,7 @@
 #ifndef UTILS_HPP_
 #define UTILS_HPP_
 
-#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
 
 #include <autoware/behavior_velocity_planner_common/planner_data.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
@@ -39,10 +39,10 @@ using autoware_perception_msgs::msg::ObjectClassification;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_perception_msgs::msg::Shape;
 using autoware_planning_msgs::msg::PathPoint;
-using tier4_autoware_utils::Box2d;
-using tier4_autoware_utils::LineString2d;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
+using autoware_universe_utils::Box2d;
+using autoware_universe_utils::LineString2d;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
 using tier4_debug_msgs::msg::Float32Stamped;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using PathPointsWithLaneId = std::vector<tier4_planning_msgs::msg::PathPointWithLaneId>;

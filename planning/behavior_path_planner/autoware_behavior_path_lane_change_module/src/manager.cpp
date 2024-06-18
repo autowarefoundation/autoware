@@ -15,8 +15,8 @@
 #include "autoware/behavior_path_lane_change_module/manager.hpp"
 
 #include "autoware/behavior_path_lane_change_module/interface.hpp"
-#include "tier4_autoware_utils/ros/parameter.hpp"
-#include "tier4_autoware_utils/ros/update_param.hpp"
+#include "autoware/universe_utils/ros/parameter.hpp"
+#include "autoware/universe_utils/ros/update_param.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -36,7 +36,7 @@ void LaneChangeModuleManager::init(rclcpp::Node * node)
 
 void LaneChangeModuleManager::initParams(rclcpp::Node * node)
 {
-  using tier4_autoware_utils::getOrDeclareParameter;
+  using autoware_universe_utils::getOrDeclareParameter;
 
   LaneChangeParameters p{};
 
@@ -281,7 +281,7 @@ std::unique_ptr<SceneModuleInterface> LaneChangeModuleManager::createNewSceneMod
 
 void LaneChangeModuleManager::updateModuleParams(const std::vector<rclcpp::Parameter> & parameters)
 {
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
 
   auto p = parameters_;
 

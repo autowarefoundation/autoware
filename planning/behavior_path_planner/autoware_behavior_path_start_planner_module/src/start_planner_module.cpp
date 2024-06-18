@@ -41,9 +41,9 @@
 
 using autoware::behavior_path_planner::utils::parking_departure::initializeCollisionCheckDebugMap;
 using autoware::behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject;
+using autoware_universe_utils::calcOffsetPose;
 using motion_utils::calcLateralOffset;
 using motion_utils::calcLongitudinalOffsetPose;
-using tier4_autoware_utils::calcOffsetPose;
 
 // set as macro so that calling function name will be printed.
 // debug print is heavy. turn on only when debugging.
@@ -274,7 +274,7 @@ bool StartPlannerModule::hasFinishedBackwardDriving() const
   // check ego car is close enough to pull out start pose and stopped
   const auto current_pose = planner_data_->self_odometry->pose.pose;
   const auto distance =
-    tier4_autoware_utils::calcDistance2d(current_pose, status_.pull_out_start_pose);
+    autoware_universe_utils::calcDistance2d(current_pose, status_.pull_out_start_pose);
 
   const bool is_near = distance < parameters_->th_arrived_distance;
   const double ego_vel = utils::l2Norm(planner_data_->self_odometry->twist.twist.linear);
@@ -383,7 +383,7 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
       boundary_line.begin(), boundary_line.end(), [&boundary_path](const auto & boundary_point) {
         const double x = boundary_point.x();
         const double y = boundary_point.y();
-        boundary_path.push_back(tier4_autoware_utils::createPoint(x, y, 0.0));
+        boundary_path.push_back(autoware_universe_utils::createPoint(x, y, 0.0));
       });
 
     return std::fabs(calcLateralOffset(boundary_path, search_pose.position));
@@ -396,7 +396,7 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
     motion_utils::findNearestSegmentIndex(centerline_path.points, start_pose);
   if (!start_pose_nearest_segment_index) return false;
 
-  const auto start_pose_point_msg = tier4_autoware_utils::createPoint(
+  const auto start_pose_point_msg = autoware_universe_utils::createPoint(
     start_pose.position.x, start_pose.position.y, start_pose.position.z);
   const auto starting_pose_lateral_offset = motion_utils::calcLateralOffset(
     centerline_path.points, start_pose_point_msg, start_pose_nearest_segment_index.value());
@@ -412,8 +412,8 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
       geometry_msgs::msg::Pose & ego_overhang_point_as_pose,
       const bool ego_is_merging_from_the_left) -> std::optional<std::pair<double, double>> {
     const auto local_vehicle_footprint = vehicle_info_.createFootprint();
-    const auto vehicle_footprint =
-      transformVector(local_vehicle_footprint, tier4_autoware_utils::pose2transform(current_pose));
+    const auto vehicle_footprint = transformVector(
+      local_vehicle_footprint, autoware_universe_utils::pose2transform(current_pose));
     double smallest_lateral_gap_between_ego_and_border = std::numeric_limits<double>::max();
     double corresponding_lateral_gap_with_other_lane_bound = std::numeric_limits<double>::max();
 
@@ -524,7 +524,7 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
 bool StartPlannerModule::isCloseToOriginalStartPose() const
 {
   const Pose start_pose = planner_data_->route_handler->getOriginalStartPose();
-  return tier4_autoware_utils::calcDistance2d(
+  return autoware_universe_utils::calcDistance2d(
            start_pose.position, planner_data_->self_odometry->pose.pose.position) >
          parameters_->th_arrived_distance;
 }
@@ -532,7 +532,7 @@ bool StartPlannerModule::isCloseToOriginalStartPose() const
 bool StartPlannerModule::hasArrivedAtGoal() const
 {
   const Pose goal_pose = planner_data_->route_handler->getGoalPose();
-  return tier4_autoware_utils::calcDistance2d(
+  return autoware_universe_utils::calcDistance2d(
            goal_pose.position, planner_data_->self_odometry->pose.pose.position) <
          parameters_->th_arrived_distance;
 }
@@ -913,7 +913,7 @@ bool StartPlannerModule::findPullOutPath(
   // if start_pose_candidate is far from refined_start_pose, backward driving is necessary
   constexpr double epsilon = 0.01;
   const double backwards_distance =
-    tier4_autoware_utils::calcDistance2d(start_pose_candidate, refined_start_pose);
+    autoware_universe_utils::calcDistance2d(start_pose_candidate, refined_start_pose);
   const bool backward_is_unnecessary = backwards_distance < epsilon;
 
   planner->setCollisionCheckMargin(collision_check_margin);
@@ -1240,7 +1240,7 @@ PredictedObjects StartPlannerModule::filterStopObjectsInPullOutLanes(
 bool StartPlannerModule::hasReachedFreespaceEnd() const
 {
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
-  return tier4_autoware_utils::calcDistance2d(current_pose, status_.pull_out_path.end_pose) <
+  return autoware_universe_utils::calcDistance2d(current_pose, status_.pull_out_path.end_pose) <
          parameters_->th_arrived_distance;
 }
 
@@ -1282,7 +1282,7 @@ bool StartPlannerModule::hasFinishedCurrentPath()
   const auto current_path = getCurrentPath();
   const auto current_path_end = current_path.points.back();
   const auto self_pose = planner_data_->self_odometry->pose.pose;
-  const bool is_near_target = tier4_autoware_utils::calcDistance2d(current_path_end, self_pose) <
+  const bool is_near_target = autoware_universe_utils::calcDistance2d(current_path_end, self_pose) <
                               parameters_->th_arrived_distance;
 
   return is_near_target && isStopped();
@@ -1562,6 +1562,9 @@ void StartPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) cons
 
 void StartPlannerModule::setDebugData()
 {
+  using autoware_universe_utils::createDefaultMarker;
+  using autoware_universe_utils::createMarkerColor;
+  using autoware_universe_utils::createMarkerScale;
   using lanelet::visualization::laneletsAsTriangleMarkerArray;
   using marker_utils::addFootprintMarker;
   using marker_utils::createFootprintMarkerArray;
@@ -1572,9 +1575,6 @@ void StartPlannerModule::setDebugData()
   using marker_utils::showPolygon;
   using marker_utils::showPredictedPath;
   using marker_utils::showSafetyCheckInfo;
-  using tier4_autoware_utils::createDefaultMarker;
-  using tier4_autoware_utils::createMarkerColor;
-  using tier4_autoware_utils::createMarkerScale;
   using visualization_msgs::msg::Marker;
 
   const auto red_color = createMarkerColor(1.0, 0.0, 0.0, 0.999);
@@ -1588,7 +1588,7 @@ void StartPlannerModule::setDebugData()
     for (auto & marker : added.markers) {
       marker.lifetime = life_time;
     }
-    tier4_autoware_utils::appendMarkerArray(added, &target_marker_array);
+    autoware_universe_utils::appendMarkerArray(added, &target_marker_array);
   };
 
   debug_marker_.markers.clear();

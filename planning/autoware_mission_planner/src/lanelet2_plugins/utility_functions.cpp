@@ -21,10 +21,10 @@
 #include <unordered_set>
 #include <utility>
 
-tier4_autoware_utils::Polygon2d convert_linear_ring_to_polygon(
-  tier4_autoware_utils::LinearRing2d footprint)
+autoware_universe_utils::Polygon2d convert_linear_ring_to_polygon(
+  autoware_universe_utils::LinearRing2d footprint)
 {
-  tier4_autoware_utils::Polygon2d footprint_polygon;
+  autoware_universe_utils::Polygon2d footprint_polygon;
   boost::geometry::append(footprint_polygon.outer(), footprint[0]);
   boost::geometry::append(footprint_polygon.outer(), footprint[1]);
   boost::geometry::append(footprint_polygon.outer(), footprint[2]);
@@ -120,7 +120,7 @@ geometry_msgs::msg::Pose convertBasicPoint3dToPose(
   pose.position.y = point.y();
   pose.position.z = point.z();
 
-  pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(lane_yaw);
+  pose.orientation = autoware_universe_utils::createQuaternionFromYaw(lane_yaw);
 
   return pose;
 }

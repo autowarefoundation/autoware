@@ -15,7 +15,7 @@
 #ifndef AUTOWARE__BEHAVIOR_PATH_PLANNER_COMMON__UTILS__PATH_SAFETY_CHECKER__PATH_SAFETY_CHECKER_PARAMETERS_HPP_  // NOLINT
 #define AUTOWARE__BEHAVIOR_PATH_PLANNER_COMMON__UTILS__PATH_SAFETY_CHECKER__PATH_SAFETY_CHECKER_PARAMETERS_HPP_  // NOLINT
 
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -32,9 +32,9 @@ namespace autoware::behavior_path_planner::utils::path_safety_checker
 {
 
 using autoware_perception_msgs::msg::PredictedObject;
+using autoware_universe_utils::Polygon2d;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
-using tier4_autoware_utils::Polygon2d;
 
 struct PoseWithVelocity
 {

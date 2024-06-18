@@ -46,7 +46,7 @@ PoseEstimatorArbiter::PoseEstimatorArbiter(const rclcpp::NodeOptions & options)
 : rclcpp::Node("pose_estimator_arbiter", options),
   running_estimator_list_(parse_estimator_name_args(
     declare_parameter<std::vector<std::string>>("pose_sources"), get_logger())),
-  logger_configure_(std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this))
+  logger_configure_(std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this))
 {
   // Shared data
   shared_data_ = std::make_shared<SharedData>();

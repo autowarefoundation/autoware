@@ -17,9 +17,9 @@
 
 #include "detected_object_validation/utils/utils.hpp"
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_perception_msgs/msg/detected_objects.hpp>
@@ -54,7 +54,7 @@ private:
   utils::FilterTargetLabel filter_target_;
   bool isObjectInBounds(const autoware_perception_msgs::msg::DetectedObject & object) const;
 
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 
 }  // namespace object_position_filter

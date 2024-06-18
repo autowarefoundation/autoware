@@ -15,13 +15,13 @@
 #ifndef AUTOWARE__BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__TYPE_ALIAS_HPP_
 #define AUTOWARE__BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__TYPE_ALIAS_HPP_
 
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/marker_helper.hpp>
+#include <autoware/universe_utils/ros/uuid_helper.hpp>
 #include <motion_utils/distance/distance.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <autoware_vehicle_msgs/msg/turn_indicators_command.hpp>
@@ -53,22 +53,22 @@ using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using tier4_rtc_msgs::msg::State;
 
 // tier4 utils functions
-using tier4_autoware_utils::appendMarkerArray;
-using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::calcLateralDeviation;
-using tier4_autoware_utils::calcOffsetPose;
-using tier4_autoware_utils::calcYawDeviation;
-using tier4_autoware_utils::createDefaultMarker;
-using tier4_autoware_utils::createMarkerColor;
-using tier4_autoware_utils::createMarkerScale;
-using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::createQuaternionFromRPY;
-using tier4_autoware_utils::getPoint;
-using tier4_autoware_utils::getPose;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
-using tier4_autoware_utils::pose2transform;
-using tier4_autoware_utils::toHexString;
+using autoware_universe_utils::appendMarkerArray;
+using autoware_universe_utils::calcDistance2d;
+using autoware_universe_utils::calcLateralDeviation;
+using autoware_universe_utils::calcOffsetPose;
+using autoware_universe_utils::calcYawDeviation;
+using autoware_universe_utils::createDefaultMarker;
+using autoware_universe_utils::createMarkerColor;
+using autoware_universe_utils::createMarkerScale;
+using autoware_universe_utils::createPoint;
+using autoware_universe_utils::createQuaternionFromRPY;
+using autoware_universe_utils::getPoint;
+using autoware_universe_utils::getPose;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
+using autoware_universe_utils::pose2transform;
+using autoware_universe_utils::toHexString;
 }  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE__BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__TYPE_ALIAS_HPP_

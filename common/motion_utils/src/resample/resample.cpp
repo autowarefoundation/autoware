@@ -14,12 +14,12 @@
 
 #include "motion_utils/resample/resample.hpp"
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
 #include "interpolation/zero_order_hold.hpp"
 #include "motion_utils/resample/resample_utils.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 namespace motion_utils
 {
@@ -50,7 +50,7 @@ std::vector<geometry_msgs::msg::Point> resamplePointVector(
   for (size_t i = 1; i < points.size(); ++i) {
     const auto & prev_pt = points.at(i - 1);
     const auto & curr_pt = points.at(i);
-    const double ds = tier4_autoware_utils::calcDistance2d(prev_pt, curr_pt);
+    const double ds = autoware_universe_utils::calcDistance2d(prev_pt, curr_pt);
     input_arclength.push_back(ds + input_arclength.back());
     x.push_back(curr_pt.x);
     y.push_back(curr_pt.y);
@@ -144,7 +144,7 @@ std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
   }
 
   const bool is_driving_forward =
-    tier4_autoware_utils::isDrivingForward(points.at(0), points.at(1));
+    autoware_universe_utils::isDrivingForward(points.at(0), points.at(1));
   motion_utils::insertOrientation(resampled_points, is_driving_forward);
 
   // Initial orientation is depend on the initial value of the resampled_arclength
@@ -260,7 +260,7 @@ tier4_planning_msgs::msg::PathWithLaneId resamplePath(
     const auto & prev_pt = input_path.points.at(i - 1).point;
     const auto & curr_pt = input_path.points.at(i).point;
     const double ds =
-      tier4_autoware_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
+      autoware_universe_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
     input_arclength.push_back(ds + input_arclength.back());
     input_pose.push_back(curr_pt.pose);
     v_lon.push_back(curr_pt.longitudinal_velocity_mps);
@@ -449,7 +449,7 @@ autoware_planning_msgs::msg::Path resamplePath(
     const auto & prev_pt = input_path.points.at(i - 1);
     const auto & curr_pt = input_path.points.at(i);
     const double ds =
-      tier4_autoware_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
+      autoware_universe_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
     input_arclength.push_back(ds + input_arclength.back());
     input_pose.push_back(curr_pt.pose);
     v_lon.push_back(curr_pt.longitudinal_velocity_mps);
@@ -603,7 +603,7 @@ autoware_planning_msgs::msg::Trajectory resampleTrajectory(
     const auto & prev_pt = input_trajectory.points.at(i - 1);
     const auto & curr_pt = input_trajectory.points.at(i);
     const double ds =
-      tier4_autoware_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
+      autoware_universe_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
     input_arclength.push_back(ds + input_arclength.back());
     input_pose.push_back(curr_pt.pose);
     v_lon.push_back(curr_pt.longitudinal_velocity_mps);

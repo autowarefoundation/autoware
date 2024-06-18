@@ -18,11 +18,11 @@
 #include <autoware/behavior_velocity_planner_common/planner_data.hpp>
 #include <autoware/objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp>
 #include <autoware/rtc_interface/rtc_interface.hpp>
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/ros/parameter.hpp>
 #include <builtin_interfaces/msg/time.hpp>
 #include <motion_utils/factor/velocity_factor_interface.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/ros/parameter.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/velocity_factor.hpp>
 #include <autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp>
@@ -51,11 +51,11 @@ namespace autoware::behavior_velocity_planner
 using autoware::objects_of_interest_marker_interface::ColorName;
 using autoware::objects_of_interest_marker_interface::ObjectsOfInterestMarkerInterface;
 using autoware::rtc_interface::RTCInterface;
+using autoware_universe_utils::DebugPublisher;
+using autoware_universe_utils::getOrDeclareParameter;
 using builtin_interfaces::msg::Time;
 using motion_utils::PlanningBehavior;
 using motion_utils::VelocityFactor;
-using tier4_autoware_utils::DebugPublisher;
-using tier4_autoware_utils::getOrDeclareParameter;
 using tier4_debug_msgs::msg::Float64Stamped;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using tier4_planning_msgs::msg::StopFactor;

@@ -61,22 +61,22 @@ void visualizeBound(
     const auto [normal_vector_angle, adaptive_width] = [&]() -> std::pair<float, float> {
       if (i == 0) {
         return std::make_pair(
-          tier4_autoware_utils::calcAzimuthAngle(bound.at(i), bound.at(i + 1)) + M_PI_2, width);
+          autoware_universe_utils::calcAzimuthAngle(bound.at(i), bound.at(i + 1)) + M_PI_2, width);
       }
       if (i == bound.size() - 1) {
         return std::make_pair(
-          tier4_autoware_utils::calcAzimuthAngle(bound.at(i - 1), bound.at(i)) + M_PI_2, width);
+          autoware_universe_utils::calcAzimuthAngle(bound.at(i - 1), bound.at(i)) + M_PI_2, width);
       }
       const auto & prev_p = bound.at(i - 1);
       const auto & curr_p = bound.at(i);
       const auto & next_p = bound.at(i + 1);
 
-      const float curr_to_prev_angle = tier4_autoware_utils::calcAzimuthAngle(curr_p, prev_p);
-      const float curr_to_next_angle = tier4_autoware_utils::calcAzimuthAngle(curr_p, next_p);
+      const float curr_to_prev_angle = autoware_universe_utils::calcAzimuthAngle(curr_p, prev_p);
+      const float curr_to_next_angle = autoware_universe_utils::calcAzimuthAngle(curr_p, next_p);
       const float normal_vector_angle = (curr_to_prev_angle + curr_to_next_angle) / 2.0;
 
       const float diff_angle =
-        tier4_autoware_utils::normalizeRadian(normal_vector_angle - curr_to_next_angle);
+        autoware_universe_utils::normalizeRadian(normal_vector_angle - curr_to_next_angle);
       if (diff_angle == 0.0) {
         return std::make_pair(normal_vector_angle, width);
       }

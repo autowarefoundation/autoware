@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "autoware/universe_utils/geometry/geometry.hpp"
 #include "motion_utils/trajectory/path_with_lane_id.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <gtest/gtest.h>
 
@@ -22,7 +22,7 @@
 
 namespace
 {
-using tier4_autoware_utils::createPoint;
+using autoware_universe_utils::createPoint;
 using tier4_planning_msgs::msg::PathPointWithLaneId;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
@@ -31,7 +31,7 @@ geometry_msgs::msg::Pose createPose(
 {
   geometry_msgs::msg::Pose p;
   p.position = createPoint(x, y, z);
-  p.orientation = tier4_autoware_utils::createQuaternionFromRPY(roll, pitch, yaw);
+  p.orientation = autoware_universe_utils::createQuaternionFromRPY(roll, pitch, yaw);
   return p;
 }
 

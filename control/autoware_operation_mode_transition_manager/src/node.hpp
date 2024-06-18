@@ -18,10 +18,10 @@
 #include "compatibility.hpp"
 #include "state.hpp"
 
+#include <autoware/universe_utils/ros/polling_subscriber.hpp>
 #include <component_interface_specs/system.hpp>
 #include <component_interface_utils/rclcpp.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 
 #include <memory>
 #include <unordered_map>
@@ -49,10 +49,10 @@ private:
     const ChangeOperationModeAPI::Service::Response::SharedPtr response);
 
   using ControlModeCommandType = ControlModeCommand::Request::_mode_type;
-  tier4_autoware_utils::InterProcessPollingSubscriber<ControlModeReport> sub_control_mode_report_{
-    this, "control_mode_report"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<OperationModeState> sub_gate_operation_mode_{
-    this, "gate_operation_mode"};
+  autoware_universe_utils::InterProcessPollingSubscriber<ControlModeReport>
+    sub_control_mode_report_{this, "control_mode_report"};
+  autoware_universe_utils::InterProcessPollingSubscriber<OperationModeState>
+    sub_gate_operation_mode_{this, "gate_operation_mode"};
   rclcpp::Client<ControlModeCommand>::SharedPtr cli_control_mode_;
   rclcpp::Publisher<ModeChangeBase::DebugInfo>::SharedPtr pub_debug_info_;
   rclcpp::TimerBase::SharedPtr timer_;

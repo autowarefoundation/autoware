@@ -17,13 +17,13 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/math/normalization.hpp>
 #include <autoware_grid_map_utils/polygon_iterator.hpp>
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_core/iterators/LineIterator.hpp>
 #include <grid_map_ros/GridMapRosConverter.hpp>
 #include <opencv2/opencv.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/normalization.hpp>
 
 #include <autoware_perception_msgs/msg/object_classification.hpp>
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
@@ -57,13 +57,13 @@ namespace grid_utils
 {
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_universe_utils::LineString2d;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::TransformStamped;
 using nav_msgs::msg::MapMetaData;
 using nav_msgs::msg::OccupancyGrid;
-using tier4_autoware_utils::LineString2d;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
 
 namespace occlusion_cost_value
 {

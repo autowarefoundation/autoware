@@ -18,11 +18,11 @@
 #include "autoware/behavior_path_planner_common/data_manager.hpp"
 #include "autoware/behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "autoware/behavior_path_planner_common/interface/steering_factor_interface.hpp"
+#include "autoware/universe_utils/ros/logger_level_configure.hpp"
 #include "planner_manager.hpp"
-#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
-#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
+#include <autoware/universe_utils/ros/polling_subscriber.hpp>
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
@@ -88,30 +88,30 @@ public:
 
 private:
   // subscriber
-  tier4_autoware_utils::InterProcessPollingSubscriber<LaneletRoute> route_subscriber_{
+  autoware_universe_utils::InterProcessPollingSubscriber<LaneletRoute> route_subscriber_{
     this, "~/input/route", rclcpp::QoS{1}.transient_local()};
-  tier4_autoware_utils::InterProcessPollingSubscriber<LaneletMapBin> vector_map_subscriber_{
+  autoware_universe_utils::InterProcessPollingSubscriber<LaneletMapBin> vector_map_subscriber_{
     this, "~/input/vector_map", rclcpp::QoS{1}.transient_local()};
-  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> velocity_subscriber_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> velocity_subscriber_{
     this, "~/input/odometry"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped>
+  autoware_universe_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped>
     acceleration_subscriber_{this, "~/input/accel"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<Scenario> scenario_subscriber_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Scenario> scenario_subscriber_{
     this, "~/input/scenario"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<PredictedObjects> perception_subscriber_{
+  autoware_universe_utils::InterProcessPollingSubscriber<PredictedObjects> perception_subscriber_{
     this, "~/input/perception"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<OccupancyGrid> occupancy_grid_subscriber_{
+  autoware_universe_utils::InterProcessPollingSubscriber<OccupancyGrid> occupancy_grid_subscriber_{
     this, "~/input/occupancy_grid_map"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<OccupancyGrid> costmap_subscriber_{
+  autoware_universe_utils::InterProcessPollingSubscriber<OccupancyGrid> costmap_subscriber_{
     this, "~/input/costmap"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<TrafficLightGroupArray>
+  autoware_universe_utils::InterProcessPollingSubscriber<TrafficLightGroupArray>
     traffic_signals_subscriber_{this, "~/input/traffic_signals"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<LateralOffset> lateral_offset_subscriber_{
+  autoware_universe_utils::InterProcessPollingSubscriber<LateralOffset> lateral_offset_subscriber_{
     this, "~/input/lateral_offset"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<OperationModeState>
+  autoware_universe_utils::InterProcessPollingSubscriber<OperationModeState>
     operation_mode_subscriber_{
       this, "/system/operation_mode/state", rclcpp::QoS{1}.transient_local()};
-  tier4_autoware_utils::InterProcessPollingSubscriber<tier4_planning_msgs::msg::VelocityLimit>
+  autoware_universe_utils::InterProcessPollingSubscriber<tier4_planning_msgs::msg::VelocityLimit>
     external_limit_max_velocity_subscriber_{this, "/planning/scenario_planning/max_velocity"};
 
   // publisher
@@ -236,9 +236,9 @@ private:
     const std::shared_ptr<PathWithLaneId> & path_candidate_ptr, const bool is_ready,
     const std::shared_ptr<PlannerData> & planner_data);
 
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
 
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 }  // namespace autoware::behavior_path_planner
 

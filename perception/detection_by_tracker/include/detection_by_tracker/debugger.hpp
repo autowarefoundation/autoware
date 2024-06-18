@@ -15,13 +15,13 @@
 #ifndef DETECTION_BY_TRACKER__DEBUGGER_HPP_
 #define DETECTION_BY_TRACKER__DEBUGGER_HPP_
 
+#include <autoware/universe_utils/ros/debug_publisher.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <euclidean_cluster/euclidean_cluster.hpp>
 #include <euclidean_cluster/utils.hpp>
 #include <euclidean_cluster/voxel_grid_based_euclidean_cluster.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <shape_estimation/shape_estimator.hpp>
-#include <tier4_autoware_utils/ros/debug_publisher.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <autoware_perception_msgs/msg/detected_objects.hpp>
 #include <autoware_perception_msgs/msg/tracked_objects.hpp>
@@ -60,9 +60,9 @@ public:
     divided_objects_pub_ = node->create_publisher<autoware_perception_msgs::msg::DetectedObjects>(
       "debug/divided_objects", 1);
     processing_time_publisher_ =
-      std::make_unique<tier4_autoware_utils::DebugPublisher>(node, "detection_by_tracker");
+      std::make_unique<autoware_universe_utils::DebugPublisher>(node, "detection_by_tracker");
     stop_watch_ptr_ =
-      std::make_unique<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>>();
+      std::make_unique<autoware_universe_utils::StopWatch<std::chrono::milliseconds>>();
     this->startStopWatch();
   }
 
@@ -103,8 +103,8 @@ private:
   rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr merged_objects_pub_;
   rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr divided_objects_pub_;
   // debug publisher
-  std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
-  std::unique_ptr<tier4_autoware_utils::DebugPublisher> processing_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<autoware_universe_utils::DebugPublisher> processing_time_publisher_;
 
   autoware_perception_msgs::msg::DetectedObjects removeFeature(
     const tier4_perception_msgs::msg::DetectedObjectsWithFeature & input)

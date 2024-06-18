@@ -16,8 +16,8 @@
 #include "rclcpp/time.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <autoware/universe_utils/ros/uuid_helper.hpp>
 #include <perception_online_evaluator/perception_online_evaluator_node.hpp>
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
 #include <autoware_perception_msgs/msg/object_classification.hpp>
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
@@ -43,7 +43,7 @@ using ObjectClassification = autoware_perception_msgs::msg::ObjectClassification
 using nav_msgs::msg::Odometry;
 using TFMessage = tf2_msgs::msg::TFMessage;
 
-using tier4_autoware_utils::generateUUID;
+using autoware_universe_utils::generateUUID;
 
 constexpr double epsilon = 1e-6;
 

@@ -22,8 +22,8 @@
 #include "autoware/behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 #include "autoware/behavior_path_planner_common/utils/path_utils.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
-#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
-#include "tier4_autoware_utils/math/unit_conversion.hpp"
+#include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
+#include "autoware/universe_utils/math/unit_conversion.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
@@ -40,15 +40,15 @@
 #include <vector>
 
 using autoware::behavior_path_planner::utils::parking_departure::calcFeasibleDecelDistance;
+using autoware_universe_utils::calcDistance2d;
+using autoware_universe_utils::calcOffsetPose;
+using autoware_universe_utils::createMarkerColor;
+using autoware_universe_utils::inverseTransformPose;
 using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
 using motion_utils::insertDecelPoint;
 using nav_msgs::msg::OccupancyGrid;
-using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::calcOffsetPose;
-using tier4_autoware_utils::createMarkerColor;
-using tier4_autoware_utils::inverseTransformPose;
 
 namespace autoware::behavior_path_planner
 {
@@ -1764,7 +1764,7 @@ bool GoalPlannerModule::hasFinishedCurrentPath()
   const auto current_path_end =
     thread_safe_data_.get_pull_over_path()->getCurrentPath().points.back();
   const auto & self_pose = planner_data_->self_odometry->pose.pose;
-  return tier4_autoware_utils::calcDistance2d(current_path_end, self_pose) <
+  return autoware_universe_utils::calcDistance2d(current_path_end, self_pose) <
          parameters_->th_arrived_distance;
 }
 
@@ -1877,7 +1877,7 @@ bool GoalPlannerModule::checkObjectsCollision(
 
   std::vector<Polygon2d> obj_polygons;
   for (const auto & object : target_objects.objects) {
-    obj_polygons.push_back(tier4_autoware_utils::toPolygon2d(object));
+    obj_polygons.push_back(autoware_universe_utils::toPolygon2d(object));
   }
 
   /* Expand ego collision check polygon
@@ -1901,7 +1901,7 @@ bool GoalPlannerModule::checkObjectsCollision(
       extra_stopping_margin,
       std::abs(curvatures.at(i) * std::pow(p.point.longitudinal_velocity_mps, 2)));
 
-    const auto ego_polygon = tier4_autoware_utils::toFootprint(
+    const auto ego_polygon = autoware_universe_utils::toFootprint(
       p.point.pose,
       planner_data->parameters.base_link2front + collision_check_margin + extra_stopping_margin,
       planner_data->parameters.base_link2rear + collision_check_margin,
@@ -2199,7 +2199,7 @@ static std::vector<utils::path_safety_checker::ExtendedPredictedObject> filterOb
   for (const auto & target_lane : target_lanes) {
     const auto lane_poly = target_lane.polygon2d().basicPolygon();
     for (const auto & filtered_object : filtered_objects.objects) {
-      const auto object_bbox = tier4_autoware_utils::toPolygon2d(filtered_object);
+      const auto object_bbox = autoware_universe_utils::toPolygon2d(filtered_object);
       if (boost::geometry::within(object_bbox, lane_poly)) {
         within_filtered_objects.push_back(filtered_object);
       }
@@ -2282,7 +2282,7 @@ std::pair<bool, bool> GoalPlannerModule::isSafePath(
       lanelet::utils::conversion::toGeomMsgPt(fist_road_lane.centerline().front());
     const double lane_yaw = lanelet::utils::getLaneletAngle(fist_road_lane, first_road_point);
     first_road_pose.position = first_road_point;
-    first_road_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(lane_yaw);
+    first_road_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(lane_yaw);
     // if current ego pose is before pull over lanes segment, use first road lanelet center pose
     if (
       calcSignedArcLength(pull_over_path.points, first_road_pose.position, current_pose.position) <
@@ -2359,6 +2359,9 @@ void GoalPlannerModule::setDebugData()
 {
   debug_marker_.markers.clear();
 
+  using autoware_universe_utils::createDefaultMarker;
+  using autoware_universe_utils::createMarkerColor;
+  using autoware_universe_utils::createMarkerScale;
   using marker_utils::createObjectsMarkerArray;
   using marker_utils::createPathMarkerArray;
   using marker_utils::createPoseMarkerArray;
@@ -2367,9 +2370,6 @@ void GoalPlannerModule::setDebugData()
   using marker_utils::showPredictedPath;
   using marker_utils::showSafetyCheckInfo;
   using motion_utils::createStopVirtualWallMarker;
-  using tier4_autoware_utils::createDefaultMarker;
-  using tier4_autoware_utils::createMarkerColor;
-  using tier4_autoware_utils::createMarkerScale;
 
   const auto header = planner_data_->route_handler->getRouteHeader();
 
@@ -2377,7 +2377,7 @@ void GoalPlannerModule::setDebugData()
     for (auto & marker : added.markers) {
       marker.lifetime = rclcpp::Duration::from_seconds(1.5);
     }
-    tier4_autoware_utils::appendMarkerArray(added, &debug_marker_);
+    autoware_universe_utils::appendMarkerArray(added, &debug_marker_);
   };
   if (utils::isAllowedGoalModification(planner_data_->route_handler)) {
     // Visualize pull over areas
@@ -2425,10 +2425,10 @@ void GoalPlannerModule::setDebugData()
         createPathMarkerArray(partial_path, "partial_path_" + std::to_string(i), 0, 0.9, 0.5, 0.9));
     }
 
-    auto marker = tier4_autoware_utils::createDefaultMarker(
+    auto marker = autoware_universe_utils::createDefaultMarker(
       "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "detection_polygons", 0, Marker::LINE_LIST,
-      tier4_autoware_utils::createMarkerScale(0.01, 0.0, 0.0),
-      tier4_autoware_utils::createMarkerColor(0.0, 0.0, 1.0, 0.999));
+      autoware_universe_utils::createMarkerScale(0.01, 0.0, 0.0),
+      autoware_universe_utils::createMarkerColor(0.0, 0.0, 1.0, 0.999));
     const double ego_z = planner_data_->self_odometry->pose.pose.position.z;
     for (const auto & ego_polygon : debug_data_.ego_polygons_expanded) {
       for (size_t ep_idx = 0; ep_idx < ego_polygon.outer().size(); ++ep_idx) {
@@ -2436,19 +2436,19 @@ void GoalPlannerModule::setDebugData()
         const auto & next_point = ego_polygon.outer().at((ep_idx + 1) % ego_polygon.outer().size());
 
         marker.points.push_back(
-          tier4_autoware_utils::createPoint(current_point.x(), current_point.y(), ego_z));
+          autoware_universe_utils::createPoint(current_point.x(), current_point.y(), ego_z));
         marker.points.push_back(
-          tier4_autoware_utils::createPoint(next_point.x(), next_point.y(), ego_z));
+          autoware_universe_utils::createPoint(next_point.x(), next_point.y(), ego_z));
       }
     }
     debug_marker_.markers.push_back(marker);
 
     if (parameters_->safety_check_params.enable_safety_check) {
-      tier4_autoware_utils::appendMarkerArray(
+      autoware_universe_utils::appendMarkerArray(
         goal_planner_utils::createLaneletPolygonMarkerArray(
           debug_data_.expanded_pull_over_lane_between_ego.polygon3d(), header,
           "expanded_pull_over_lane_between_ego",
-          tier4_autoware_utils::createMarkerColor(1.0, 0.7, 0.0, 0.999)),
+          autoware_universe_utils::createMarkerColor(1.0, 0.7, 0.0, 0.999)),
         &debug_marker_);
     }
 
@@ -2575,7 +2575,7 @@ void GoalPlannerModule::printParkingPositionError() const
     real_shoulder_to_map_shoulder + parameters_->margin_from_boundary - dy;
   RCLCPP_INFO(
     getLogger(), "current pose to goal, dx:%f dy:%f dyaw:%f from_real_shoulder:%f", dx, dy,
-    tier4_autoware_utils::rad2deg(
+    autoware_universe_utils::rad2deg(
       tf2::getYaw(current_pose.orientation) -
       tf2::getYaw(thread_safe_data_.get_modified_goal_pose()->goal_pose.orientation)),
     distance_from_real_shoulder);
@@ -2631,7 +2631,7 @@ void GoalPlannerModule::GoalPlannerData::update(
   const PlannerData & planner_data_, const ModuleStatus & current_status_,
   const BehaviorModuleOutput & previous_module_output_,
   const std::shared_ptr<GoalSearcherBase> goal_searcher_,
-  const tier4_autoware_utils::LinearRing2d & vehicle_footprint_)
+  const autoware_universe_utils::LinearRing2d & vehicle_footprint_)
 {
   parameters = parameters_;
   ego_predicted_path_params = ego_predicted_path_params_;

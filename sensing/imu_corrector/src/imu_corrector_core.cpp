@@ -25,7 +25,7 @@
 
 std::array<double, 9> transformCovariance(const std::array<double, 9> & cov)
 {
-  using COV_IDX = tier4_autoware_utils::xyz_covariance_index::XYZ_COV_IDX;
+  using COV_IDX = autoware_universe_utils::xyz_covariance_index::XYZ_COV_IDX;
 
   double max_cov = 0.0;
   max_cov = std::max(max_cov, cov[COV_IDX::X_X]);
@@ -57,7 +57,7 @@ ImuCorrector::ImuCorrector(const rclcpp::NodeOptions & options)
 : rclcpp::Node("imu_corrector", options),
   output_frame_(declare_parameter<std::string>("base_link", "base_link"))
 {
-  transform_listener_ = std::make_shared<tier4_autoware_utils::TransformListener>(this);
+  transform_listener_ = std::make_shared<autoware_universe_utils::TransformListener>(this);
 
   angular_velocity_offset_x_imu_link_ = declare_parameter<double>("angular_velocity_offset_x", 0.0);
   angular_velocity_offset_y_imu_link_ = declare_parameter<double>("angular_velocity_offset_y", 0.0);

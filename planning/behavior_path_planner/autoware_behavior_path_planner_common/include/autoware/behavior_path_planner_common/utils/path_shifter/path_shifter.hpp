@@ -15,9 +15,9 @@
 #ifndef AUTOWARE__BEHAVIOR_PATH_PLANNER_COMMON__UTILS__PATH_SHIFTER__PATH_SHIFTER_HPP_
 #define AUTOWARE__BEHAVIOR_PATH_PLANNER_COMMON__UTILS__PATH_SHIFTER__PATH_SHIFTER_HPP_
 
+#include <autoware/universe_utils/ros/uuid_helper.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/logging.hpp>
-#include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
 #include <geometry_msgs/msg/point.hpp>
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>
@@ -29,9 +29,9 @@
 #include <vector>
 namespace autoware::behavior_path_planner
 {
+using autoware_universe_utils::generateUUID;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
-using tier4_autoware_utils::generateUUID;
 using tier4_planning_msgs::msg::PathPointWithLaneId;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using unique_identifier_msgs::msg::UUID;

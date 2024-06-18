@@ -98,7 +98,8 @@ std::optional<double> calcDistanceToRedTrafficLight(
       const auto y = 0.5 * (stop_line.front().y() + stop_line.back().y());
       const auto z = 0.5 * (stop_line.front().z() + stop_line.back().z());
 
-      return calcSignedArcLength(path.points, ego_pos, tier4_autoware_utils::createPoint(x, y, z));
+      return calcSignedArcLength(
+        path.points, ego_pos, autoware_universe_utils::createPoint(x, y, z));
     }
   }
 

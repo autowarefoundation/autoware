@@ -15,13 +15,13 @@
 #ifndef AUTOWARE__AUTONOMOUS_EMERGENCY_BRAKING__NODE_HPP_
 #define AUTOWARE__AUTONOMOUS_EMERGENCY_BRAKING__NODE_HPP_
 
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/ros/polling_subscriber.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/polling_subscriber.hpp>
 
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <autoware_system_msgs/msg/autoware_state.hpp>
@@ -60,10 +60,10 @@ using sensor_msgs::msg::Imu;
 using sensor_msgs::msg::PointCloud2;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 using autoware::vehicle_info_utils::VehicleInfo;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
 using diagnostic_updater::DiagnosticStatusWrapper;
 using diagnostic_updater::Updater;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 using Path = std::vector<geometry_msgs::msg::Pose>;
@@ -235,14 +235,14 @@ public:
   explicit AEB(const rclcpp::NodeOptions & node_options);
 
   // subscriber
-  tier4_autoware_utils::InterProcessPollingSubscriber<PointCloud2> sub_point_cloud_{
-    this, "~/input/pointcloud", tier4_autoware_utils::SingleDepthSensorQoS()};
-  tier4_autoware_utils::InterProcessPollingSubscriber<VelocityReport> sub_velocity_{
+  autoware_universe_utils::InterProcessPollingSubscriber<PointCloud2> sub_point_cloud_{
+    this, "~/input/pointcloud", autoware_universe_utils::SingleDepthSensorQoS()};
+  autoware_universe_utils::InterProcessPollingSubscriber<VelocityReport> sub_velocity_{
     this, "~/input/velocity"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<Imu> sub_imu_{this, "~/input/imu"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<Trajectory> sub_predicted_traj_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Imu> sub_imu_{this, "~/input/imu"};
+  autoware_universe_utils::InterProcessPollingSubscriber<Trajectory> sub_predicted_traj_{
     this, "~/input/predicted_trajectory"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<AutowareState> sub_autoware_state_{
+  autoware_universe_utils::InterProcessPollingSubscriber<AutowareState> sub_autoware_state_{
     this, "/autoware/state"};
   // publisher
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_obstacle_pointcloud_;

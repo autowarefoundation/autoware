@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "autoware/universe_utils/geometry/boost_geometry.hpp"
+#include "autoware/universe_utils/math/unit_conversion.hpp"
 #include "motion_utils/trajectory/conversion.hpp"
 #include "motion_utils/trajectory/interpolation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/geometry/boost_geometry.hpp"
-#include "tier4_autoware_utils/math/unit_conversion.hpp"
 
 #include <gtest/gtest.h>
 #include <gtest/internal/gtest-port.h>
@@ -29,9 +29,9 @@ namespace
 {
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
-using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::createQuaternionFromRPY;
-using tier4_autoware_utils::transformPoint;
+using autoware_universe_utils::createPoint;
+using autoware_universe_utils::createQuaternionFromRPY;
+using autoware_universe_utils::transformPoint;
 using tier4_planning_msgs::msg::PathPointWithLaneId;
 using tier4_planning_msgs::msg::PathWithLaneId;
 

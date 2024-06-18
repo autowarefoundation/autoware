@@ -17,10 +17,10 @@
 #include <autoware/behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 #include <interpolation/spline_interpolation.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
-#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <lanelet2_core/geometry/Polygon.h>
 #include <lanelet2_core/utility/Optional.h>
@@ -87,7 +87,7 @@ boost::optional<LineString2d> NoStoppingAreaModule::getStopLineGeometry2d(
         std::vector<Point2d> collision_points;
         bg::intersection(area_poly, line, collision_points);
         if (!collision_points.empty()) {
-          const double yaw = tier4_autoware_utils::calcAzimuthAngle(p0, p1);
+          const double yaw = autoware_universe_utils::calcAzimuthAngle(p0, p1);
           const double w = planner_data_->vehicle_info_.vehicle_width_m;
           const double l = stop_line_margin;
           stop_line.emplace_back(
@@ -229,7 +229,7 @@ bool NoStoppingAreaModule::checkStuckVehiclesInNoStoppingArea(
       continue;  // not stop vehicle
     }
     // check if the footprint is in the stuck detect area
-    const Polygon2d obj_footprint = tier4_autoware_utils::toPolygon2d(object);
+    const Polygon2d obj_footprint = autoware_universe_utils::toPolygon2d(object);
     const bool is_in_stuck_area = !bg::disjoint(obj_footprint, poly);
     if (is_in_stuck_area) {
       RCLCPP_DEBUG(logger_, "stuck vehicle found.");
@@ -318,7 +318,7 @@ Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
   }
   const auto no_stopping_area = no_stopping_area_reg_elem_.noStoppingAreas().front();
   for (size_t i = closest_idx + num_ignore_nearest; i < pp.size() - 1; ++i) {
-    dist_from_start_sum += tier4_autoware_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
+    dist_from_start_sum += autoware_universe_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
     const auto & p = pp.at(i).point.pose.position;
     if (bg::within(Point2d{p.x, p.y}, lanelet::utils::to2D(no_stopping_area).basicPolygon())) {
       is_in_area = true;
@@ -339,10 +339,10 @@ Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
   // decide end idx with extract distance
   size_t ego_area_end_idx = ego_area_start_idx;
   for (size_t i = ego_area_start_idx; i < pp.size() - 1; ++i) {
-    dist_from_start_sum += tier4_autoware_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
+    dist_from_start_sum += autoware_universe_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
     const auto & p = pp.at(i).point.pose.position;
     if (!bg::within(Point2d{p.x, p.y}, lanelet::utils::to2D(no_stopping_area).basicPolygon())) {
-      dist_from_area_sum += tier4_autoware_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
+      dist_from_area_sum += autoware_universe_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
     }
     if (dist_from_start_sum > extra_dist || dist_from_area_sum > margin) {
       break;

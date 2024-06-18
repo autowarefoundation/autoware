@@ -18,8 +18,8 @@
 
 #include "obstacle_stop_planner/planner_data.hpp"
 
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
@@ -47,8 +47,8 @@ using std_msgs::msg::Header;
 
 using autoware::vehicle_info_utils::VehicleInfo;
 using autoware_planning_msgs::msg::TrajectoryPoint;
-using tier4_autoware_utils::Point2d;
-using tier4_autoware_utils::Polygon2d;
+using autoware_universe_utils::Point2d;
+using autoware_universe_utils::Polygon2d;
 
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;

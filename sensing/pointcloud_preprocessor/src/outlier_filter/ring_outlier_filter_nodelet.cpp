@@ -29,8 +29,8 @@ RingOutlierFilterComponent::RingOutlierFilterComponent(const rclcpp::NodeOptions
 {
   // initialize debug tool
   {
-    using tier4_autoware_utils::DebugPublisher;
-    using tier4_autoware_utils::StopWatch;
+    using autoware_universe_utils::DebugPublisher;
+    using autoware_universe_utils::StopWatch;
     stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
     debug_publisher_ = std::make_unique<DebugPublisher>(this, "ring_outlier_filter");
     outlier_pointcloud_publisher_ =

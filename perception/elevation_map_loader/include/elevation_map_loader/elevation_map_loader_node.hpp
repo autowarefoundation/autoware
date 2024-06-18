@@ -15,12 +15,12 @@
 #ifndef ELEVATION_MAP_LOADER__ELEVATION_MAP_LOADER_NODE_HPP_
 #define ELEVATION_MAP_LOADER__ELEVATION_MAP_LOADER_NODE_HPP_
 
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <filters/filter_chain.hpp>
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_pcl/GridMapPclLoader.hpp>
 #include <grid_map_ros/GridMapRosConverter.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include "tier4_external_api_msgs/msg/map_hash.hpp"
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>

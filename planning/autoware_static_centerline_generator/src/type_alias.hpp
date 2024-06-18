@@ -15,7 +15,7 @@
 #define TYPE_ALIAS_HPP_
 
 #include "autoware/route_handler/route_handler.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
 
 #include "autoware_map_msgs/msg/lanelet_map_bin.hpp"
 #include "autoware_perception_msgs/msg/predicted_objects.hpp"
@@ -36,9 +36,9 @@ using autoware_planning_msgs::msg::Path;
 using autoware_planning_msgs::msg::PathPoint;
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
-using tier4_autoware_utils::LinearRing2d;
-using tier4_autoware_utils::LineString2d;
-using tier4_autoware_utils::Point2d;
+using autoware_universe_utils::LinearRing2d;
+using autoware_universe_utils::LineString2d;
+using autoware_universe_utils::Point2d;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using visualization_msgs::msg::MarkerArray;
 }  // namespace autoware::static_centerline_generator

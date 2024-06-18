@@ -15,9 +15,9 @@
 #include "autoware/path_smoother/replan_checker.hpp"
 
 #include "autoware/path_smoother/utils/trajectory_utils.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/ros/update_param.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/geometry/geometry.hpp"
-#include "tier4_autoware_utils/ros/update_param.hpp"
 
 #include <vector>
 
@@ -40,7 +40,7 @@ ReplanChecker::ReplanChecker(rclcpp::Node * node, const EgoNearestParam & ego_ne
 
 void ReplanChecker::onParam(const std::vector<rclcpp::Parameter> & parameters)
 {
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
 
   updateParam<bool>(parameters, "replan.enable", enable_);
   updateParam<double>(
@@ -80,7 +80,7 @@ bool ReplanChecker::isResetRequired(const PlannerData & planner_data) const
 
     // ego pose is lost or new ego pose is designated in simulation
     const double delta_dist =
-      tier4_autoware_utils::calcDistance2d(p.ego_pose, prev_ego_pose_ptr_->position);
+      autoware_universe_utils::calcDistance2d(p.ego_pose, prev_ego_pose_ptr_->position);
     if (max_ego_moving_dist_ < delta_dist) {
       RCLCPP_DEBUG(
         logger_,
@@ -201,7 +201,7 @@ bool ReplanChecker::isPathGoalChanged(
   }
 
   const double goal_moving_dist =
-    tier4_autoware_utils::calcDistance2d(p.traj_points.back(), prev_traj_points.back());
+    autoware_universe_utils::calcDistance2d(p.traj_points.back(), prev_traj_points.back());
   if (goal_moving_dist < max_goal_moving_dist_) {
     return false;
   }

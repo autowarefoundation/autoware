@@ -114,7 +114,7 @@ std::optional<PathWithLaneId> ShiftPullOver::cropPrevModulePath(
   const double offset = motion_utils::calcSignedArcLength(
     prev_module_path.points, shift_end_idx, shift_end_pose.position);
   projected_point.point.pose =
-    tier4_autoware_utils::calcOffsetPose(clipped_points.back().point.pose, offset, 0, 0);
+    autoware_universe_utils::calcOffsetPose(clipped_points.back().point.pose, offset, 0, 0);
   clipped_points.push_back(projected_point);
   auto clipped_prev_module_path = prev_module_path;
   clipped_prev_module_path.points = clipped_points;
@@ -131,7 +131,7 @@ std::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
 
   // shift end pose is longitudinal offset from goal pose to improve parking angle accuracy
   const Pose shift_end_pose =
-    tier4_autoware_utils::calcOffsetPose(goal_pose, -after_shift_straight_distance, 0, 0);
+    autoware_universe_utils::calcOffsetPose(goal_pose, -after_shift_straight_distance, 0, 0);
 
   // calculate lateral shift of previous module path terminal pose from road lane reference path
   const auto road_lane_reference_path_to_shift_end = utils::resamplePathWithSpline(
@@ -162,7 +162,7 @@ std::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
   const Pose & shift_end_pose_prev_module_path =
     processed_prev_module_path->points.back().point.pose;
   const double shift_end_road_to_target_distance =
-    tier4_autoware_utils::inverseTransformPoint(
+    autoware_universe_utils::inverseTransformPoint(
       shift_end_pose.position, shift_end_pose_prev_module_path)
       .y;
 

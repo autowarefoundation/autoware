@@ -16,10 +16,10 @@
 #define AUTOWARE__BEHAVIOR_PATH_DYNAMIC_OBSTACLE_AVOIDANCE_MODULE__SCENE_HPP_
 
 #include "autoware/behavior_path_planner_common/interface/scene_module_interface.hpp"
-#include "tier4_autoware_utils/system/stop_watch.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
 
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <autoware_perception_msgs/msg/predicted_path.hpp>
@@ -58,7 +58,7 @@ std::vector<T> getAllKeys(const std::unordered_map<T, S> & map)
 namespace autoware::behavior_path_planner
 {
 using autoware_perception_msgs::msg::PredictedPath;
-using tier4_autoware_utils::Polygon2d;
+using autoware_universe_utils::Polygon2d;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
 struct MinMaxValue
@@ -176,7 +176,7 @@ public:
       const PredictedObject & predicted_object, const double arg_vel, const double arg_lat_vel,
       const bool arg_is_object_on_ego_path,
       const std::optional<rclcpp::Time> & arg_latest_time_inside_ego_path)
-    : uuid(tier4_autoware_utils::toHexString(predicted_object.object_id)),
+    : uuid(autoware_universe_utils::toHexString(predicted_object.object_id)),
       label(predicted_object.classification.front().label),
       pose(predicted_object.kinematics.initial_pose_with_covariance.pose),
       shape(predicted_object.shape),
@@ -374,8 +374,8 @@ private:
   };
   struct EgoPathReservePoly
   {
-    const tier4_autoware_utils::Polygon2d left_avoid;
-    const tier4_autoware_utils::Polygon2d right_avoid;
+    const autoware_universe_utils::Polygon2d left_avoid;
+    const autoware_universe_utils::Polygon2d right_avoid;
   };
 
   bool canTransitSuccessState() override;
@@ -431,11 +431,11 @@ private:
     const DynamicAvoidanceObject & object) const;
   std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> getAdjacentLanes(
     const double forward_distance, const double backward_distance) const;
-  std::optional<tier4_autoware_utils::Polygon2d> calcEgoPathBasedDynamicObstaclePolygon(
+  std::optional<autoware_universe_utils::Polygon2d> calcEgoPathBasedDynamicObstaclePolygon(
     const DynamicAvoidanceObject & object) const;
-  std::optional<tier4_autoware_utils::Polygon2d> calcObjectPathBasedDynamicObstaclePolygon(
+  std::optional<autoware_universe_utils::Polygon2d> calcObjectPathBasedDynamicObstaclePolygon(
     const DynamicAvoidanceObject & object) const;
-  std::optional<tier4_autoware_utils::Polygon2d> calcPredictedPathBasedDynamicObstaclePolygon(
+  std::optional<autoware_universe_utils::Polygon2d> calcPredictedPathBasedDynamicObstaclePolygon(
     const DynamicAvoidanceObject & object, const EgoPathReservePoly & ego_path_poly) const;
   EgoPathReservePoly calcEgoPathReservePoly(const PathWithLaneId & ego_path) const;
 
@@ -455,7 +455,7 @@ private:
 
   TargetObjectsManager target_objects_manager_;
 
-  mutable tier4_autoware_utils::StopWatch<
+  mutable autoware_universe_utils::StopWatch<
     std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
     stop_watch_;
 };

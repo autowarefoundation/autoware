@@ -15,13 +15,13 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>autoware_perception_msgs</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>object_recognition_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
-  <depend>tier4_autoware_utils</depend>
 
   <build_depend>autoware_cmake</build_depend>
   <test_depend>ament_lint_auto</test_depend>

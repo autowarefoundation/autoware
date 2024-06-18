@@ -14,10 +14,10 @@
 
 #include "obstacle_stop_planner/planner_utils.hpp"
 
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
 #include <motion_utils/distance/distance.hpp>
 #include <motion_utils/trajectory/conversion.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 
 #include <diagnostic_msgs/msg/key_value.hpp>
 
@@ -34,11 +34,11 @@ namespace motion_planning
 
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedObjects;
+using autoware_universe_utils::calcDistance2d;
+using autoware_universe_utils::getRPY;
 using motion_utils::calcDecelDistWithJerkAndAccConstraints;
 using motion_utils::findFirstNearestIndexWithSoftConstraints;
 using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
-using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::getRPY;
 
 std::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
   const SlowDownParam & slow_down_param, const double dist_baselink_to_obstacle,
@@ -326,39 +326,41 @@ void createOneStepPolygon(
 
   {  // base step
     appendPointToPolygon(
-      polygon, tier4_autoware_utils::calcOffsetPose(base_step_pose, longitudinal_offset, width, 0.0)
-                 .position);
-    appendPointToPolygon(
       polygon,
-      tier4_autoware_utils::calcOffsetPose(base_step_pose, longitudinal_offset, -width, 0.0)
+      autoware_universe_utils::calcOffsetPose(base_step_pose, longitudinal_offset, width, 0.0)
         .position);
     appendPointToPolygon(
       polygon,
-      tier4_autoware_utils::calcOffsetPose(base_step_pose, -rear_overhang, -width, 0.0).position);
+      autoware_universe_utils::calcOffsetPose(base_step_pose, longitudinal_offset, -width, 0.0)
+        .position);
+    appendPointToPolygon(
+      polygon, autoware_universe_utils::calcOffsetPose(base_step_pose, -rear_overhang, -width, 0.0)
+                 .position);
     appendPointToPolygon(
       polygon,
-      tier4_autoware_utils::calcOffsetPose(base_step_pose, -rear_overhang, width, 0.0).position);
+      autoware_universe_utils::calcOffsetPose(base_step_pose, -rear_overhang, width, 0.0).position);
   }
 
   {  // next step
     appendPointToPolygon(
-      polygon, tier4_autoware_utils::calcOffsetPose(next_step_pose, longitudinal_offset, width, 0.0)
-                 .position);
-    appendPointToPolygon(
       polygon,
-      tier4_autoware_utils::calcOffsetPose(next_step_pose, longitudinal_offset, -width, 0.0)
+      autoware_universe_utils::calcOffsetPose(next_step_pose, longitudinal_offset, width, 0.0)
         .position);
     appendPointToPolygon(
       polygon,
-      tier4_autoware_utils::calcOffsetPose(next_step_pose, -rear_overhang, -width, 0.0).position);
+      autoware_universe_utils::calcOffsetPose(next_step_pose, longitudinal_offset, -width, 0.0)
+        .position);
+    appendPointToPolygon(
+      polygon, autoware_universe_utils::calcOffsetPose(next_step_pose, -rear_overhang, -width, 0.0)
+                 .position);
     appendPointToPolygon(
       polygon,
-      tier4_autoware_utils::calcOffsetPose(next_step_pose, -rear_overhang, width, 0.0).position);
+      autoware_universe_utils::calcOffsetPose(next_step_pose, -rear_overhang, width, 0.0).position);
   }
 
-  polygon = tier4_autoware_utils::isClockwise(polygon)
+  polygon = autoware_universe_utils::isClockwise(polygon)
               ? polygon
-              : tier4_autoware_utils::inverseClockwise(polygon);
+              : autoware_universe_utils::inverseClockwise(polygon);
 
   boost::geometry::convex_hull(polygon, hull_polygon);
 }
@@ -550,7 +552,7 @@ double getNearestPointAndDistanceForPredictedObject(
   bool is_init = false;
 
   for (const auto & p : points.poses) {
-    double norm = tier4_autoware_utils::calcDistance2d(p, base_pose);
+    double norm = autoware_universe_utils::calcDistance2d(p, base_pose);
     if (norm < min_norm || !is_init) {
       min_norm = norm;
       *nearest_collision_point = p.position;
@@ -625,9 +627,9 @@ Polygon2d convertBoundingBoxObjectToGeometryPolygon(
   object_polygon.outer().emplace_back(p4_obj.x(), p4_obj.y());
 
   object_polygon.outer().push_back(object_polygon.outer().front());
-  object_polygon = tier4_autoware_utils::isClockwise(object_polygon)
+  object_polygon = autoware_universe_utils::isClockwise(object_polygon)
                      ? object_polygon
-                     : tier4_autoware_utils::inverseClockwise(object_polygon);
+                     : autoware_universe_utils::inverseClockwise(object_polygon);
   return object_polygon;
 }
 
@@ -648,9 +650,9 @@ Polygon2d convertCylindricalObjectToGeometryPolygon(
   }
 
   object_polygon.outer().push_back(object_polygon.outer().front());
-  object_polygon = tier4_autoware_utils::isClockwise(object_polygon)
+  object_polygon = autoware_universe_utils::isClockwise(object_polygon)
                      ? object_polygon
-                     : tier4_autoware_utils::inverseClockwise(object_polygon);
+                     : autoware_universe_utils::inverseClockwise(object_polygon);
   return object_polygon;
 }
 
@@ -668,9 +670,9 @@ Polygon2d convertPolygonObjectToGeometryPolygon(
     object_polygon.outer().emplace_back(tf_obj.x(), tf_obj.y());
   }
   object_polygon.outer().push_back(object_polygon.outer().front());
-  object_polygon = tier4_autoware_utils::isClockwise(object_polygon)
+  object_polygon = autoware_universe_utils::isClockwise(object_polygon)
                      ? object_polygon
-                     : tier4_autoware_utils::inverseClockwise(object_polygon);
+                     : autoware_universe_utils::inverseClockwise(object_polygon);
   return object_polygon;
 }
 
@@ -690,7 +692,7 @@ std::optional<PredictedObject> getObstacleFromUuid(
 
 bool isFrontObstacle(const Pose & ego_pose, const geometry_msgs::msg::Point & obstacle_pos)
 {
-  const auto yaw = tier4_autoware_utils::getRPY(ego_pose).z;
+  const auto yaw = autoware_universe_utils::getRPY(ego_pose).z;
   const Eigen::Vector2d base_pose_vec(std::cos(yaw), std::sin(yaw));
   const Eigen::Vector2d obstacle_vec(
     obstacle_pos.x - ego_pose.position.x, obstacle_pos.y - ego_pose.position.y);

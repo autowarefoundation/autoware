@@ -23,11 +23,11 @@
 #include "overlapping_range.hpp"
 #include "types.hpp"
 
+#include <autoware/universe_utils/ros/parameter.hpp>
+#include <autoware/universe_utils/ros/update_param.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <motion_utils/trajectory/interpolation.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/ros/parameter.hpp>
-#include <tier4_autoware_utils/ros/update_param.hpp>
-#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <boost/geometry/algorithms/intersects.hpp>
 
@@ -59,7 +59,7 @@ void OutOfLaneModule::init(rclcpp::Node & node, const std::string & module_name)
 }
 void OutOfLaneModule::init_parameters(rclcpp::Node & node)
 {
-  using tier4_autoware_utils::getOrDeclareParameter;
+  using autoware_universe_utils::getOrDeclareParameter;
   auto & pp = params_;
 
   pp.mode = getOrDeclareParameter<std::string>(node, ns_ + ".mode");
@@ -109,7 +109,7 @@ void OutOfLaneModule::init_parameters(rclcpp::Node & node)
 
 void OutOfLaneModule::update_parameters(const std::vector<rclcpp::Parameter> & parameters)
 {
-  using tier4_autoware_utils::updateParam;
+  using autoware_universe_utils::updateParam;
   auto & pp = params_;
   updateParam(parameters, ns_ + ".mode", pp.mode);
   updateParam(parameters, ns_ + ".skip_if_already_overlapping", pp.skip_if_already_overlapping);
@@ -151,7 +151,7 @@ VelocityPlanningResult OutOfLaneModule::plan(
   const std::shared_ptr<const PlannerData> planner_data)
 {
   VelocityPlanningResult result;
-  tier4_autoware_utils::StopWatch<std::chrono::microseconds> stopwatch;
+  autoware_universe_utils::StopWatch<std::chrono::microseconds> stopwatch;
   stopwatch.tic();
   out_of_lane::EgoData ego_data;
   ego_data.pose = planner_data->current_odometry.pose.pose;

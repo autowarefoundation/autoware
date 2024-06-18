@@ -14,11 +14,11 @@
 
 #include "autoware_path_sampler/prepare_inputs.hpp"
 
+#include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
 #include "autoware_frenet_planner/structures.hpp"
 #include "autoware_path_sampler/utils/geometry_utils.hpp"
 #include "autoware_sampler_common/structures.hpp"
 #include "autoware_sampler_common/transform/spline_transform.hpp"
-#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
 #include <eigen3/unsupported/Eigen/Splines>
 
@@ -40,7 +40,7 @@ void prepareConstraints(
   constraints.obstacle_polygons = autoware::sampler_common::MultiPolygon2d();
   for (const auto & o : predicted_objects.objects)
     if (o.kinematics.initial_twist_with_covariance.twist.linear.x < 0.5)  // TODO(Maxime): param
-      constraints.obstacle_polygons.push_back(tier4_autoware_utils::toPolygon2d(o));
+      constraints.obstacle_polygons.push_back(autoware_universe_utils::toPolygon2d(o));
   constraints.dynamic_obstacles = {};  // TODO(Maxime): not implemented
 
   // TODO(Maxime): directly use lines instead of polygon

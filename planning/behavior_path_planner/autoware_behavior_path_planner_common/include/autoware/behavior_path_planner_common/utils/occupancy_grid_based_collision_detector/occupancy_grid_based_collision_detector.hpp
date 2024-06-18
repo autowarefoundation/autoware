@@ -15,7 +15,7 @@
 #ifndef AUTOWARE__BEHAVIOR_PATH_PLANNER_COMMON__UTILS__OCCUPANCY_GRID_BASED_COLLISION_DETECTOR__OCCUPANCY_GRID_BASED_COLLISION_DETECTOR_HPP_
 #define AUTOWARE__BEHAVIOR_PATH_PLANNER_COMMON__UTILS__OCCUPANCY_GRID_BASED_COLLISION_DETECTOR__OCCUPANCY_GRID_BASED_COLLISION_DETECTOR_HPP_
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>

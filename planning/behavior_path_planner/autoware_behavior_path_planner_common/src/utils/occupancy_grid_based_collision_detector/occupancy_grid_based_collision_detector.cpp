@@ -14,16 +14,16 @@
 
 #include "autoware/behavior_path_planner_common/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/normalization.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/math/normalization.hpp>
 
 #include <vector>
 
 namespace autoware::behavior_path_planner
 {
-using tier4_autoware_utils::createQuaternionFromYaw;
-using tier4_autoware_utils::normalizeRadian;
-using tier4_autoware_utils::transformPose;
+using autoware_universe_utils::createQuaternionFromYaw;
+using autoware_universe_utils::normalizeRadian;
+using autoware_universe_utils::transformPose;
 
 int discretizeAngle(const double theta, const int theta_size)
 {

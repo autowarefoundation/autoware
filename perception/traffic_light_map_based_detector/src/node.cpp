@@ -14,11 +14,11 @@
 
 #include "traffic_light_map_based_detector/node.hpp"
 
+#include <autoware/universe_utils/math/normalization.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <lanelet2_extension/visualization/visualization.hpp>
-#include <tier4_autoware_utils/math/normalization.hpp>
-#include <tier4_autoware_utils/math/unit_conversion.hpp>
 
 #include <lanelet2_core/Exceptions.h>
 #include <lanelet2_core/geometry/Point.h>
@@ -512,9 +512,9 @@ void MapBasedDetector::getVisibleTrafficLights(
     double max_angle_range;
     if (pedestrian_tl_id_.find(traffic_light.id()) != pedestrian_tl_id_.end()) {
       max_angle_range =
-        tier4_autoware_utils::deg2rad(config_.pedestrian_traffic_light_max_angle_range);
+        autoware_universe_utils::deg2rad(config_.pedestrian_traffic_light_max_angle_range);
     } else {
-      max_angle_range = tier4_autoware_utils::deg2rad(config_.car_traffic_light_max_angle_range);
+      max_angle_range = autoware_universe_utils::deg2rad(config_.car_traffic_light_max_angle_range);
     }
     // traffic light bottom left
     const auto & tl_bl = traffic_light.front();
@@ -530,7 +530,7 @@ void MapBasedDetector::getVisibleTrafficLights(
       }
 
       // check angle range
-      const double tl_yaw = tier4_autoware_utils::normalizeRadian(
+      const double tl_yaw = autoware_universe_utils::normalizeRadian(
         std::atan2(tl_br.y() - tl_bl.y(), tl_br.x() - tl_bl.x()) + M_PI_2);
 
       // get direction of z axis
@@ -538,7 +538,7 @@ void MapBasedDetector::getVisibleTrafficLights(
       tf2::Matrix3x3 camera_rotation_matrix(tf_map2camera.getRotation());
       camera_z_dir = camera_rotation_matrix * camera_z_dir;
       double camera_yaw = std::atan2(camera_z_dir.y(), camera_z_dir.x());
-      camera_yaw = tier4_autoware_utils::normalizeRadian(camera_yaw);
+      camera_yaw = autoware_universe_utils::normalizeRadian(camera_yaw);
       if (!isInAngleRange(tl_yaw, camera_yaw, max_angle_range)) {
         continue;
       }

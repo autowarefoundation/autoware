@@ -18,18 +18,18 @@
 #include "autoware/trajectory_follower_base/lateral_controller_base.hpp"
 #include "autoware/trajectory_follower_base/longitudinal_controller_base.hpp"
 #include "autoware/trajectory_follower_node/visibility_control.hpp"
+#include "autoware/universe_utils/ros/logger_level_configure.hpp"
+#include "autoware/universe_utils/ros/polling_subscriber.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
-#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
-#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
-#include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <tier4_autoware_utils/ros/published_time_publisher.hpp>
+#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 
 #include "autoware_control_msgs/msg/control.hpp"
 #include "autoware_control_msgs/msg/longitudinal.hpp"
@@ -55,7 +55,7 @@ namespace trajectory_follower_node
 {
 
 using autoware_adapi_v1_msgs::msg::OperationModeState;
-using tier4_autoware_utils::StopWatch;
+using autoware_universe_utils::StopWatch;
 using tier4_debug_msgs::msg::Float64Stamped;
 
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
@@ -77,20 +77,20 @@ private:
   std::shared_ptr<trajectory_follower::LateralControllerBase> lateral_controller_;
 
   // Subscribers
-  tier4_autoware_utils::InterProcessPollingSubscriber<autoware_planning_msgs::msg::Trajectory>
+  autoware_universe_utils::InterProcessPollingSubscriber<autoware_planning_msgs::msg::Trajectory>
     sub_ref_path_{this, "~/input/reference_trajectory"};
 
-  tier4_autoware_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odometry_{
+  autoware_universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odometry_{
     this, "~/input/current_odometry"};
 
-  tier4_autoware_utils::InterProcessPollingSubscriber<autoware_vehicle_msgs::msg::SteeringReport>
+  autoware_universe_utils::InterProcessPollingSubscriber<autoware_vehicle_msgs::msg::SteeringReport>
     sub_steering_{this, "~/input/current_steering"};
 
-  tier4_autoware_utils::InterProcessPollingSubscriber<
+  autoware_universe_utils::InterProcessPollingSubscriber<
     geometry_msgs::msg::AccelWithCovarianceStamped>
     sub_accel_{this, "~/input/current_accel"};
 
-  tier4_autoware_utils::InterProcessPollingSubscriber<OperationModeState> sub_operation_mode_{
+  autoware_universe_utils::InterProcessPollingSubscriber<OperationModeState> sub_operation_mode_{
     this, "~/input/current_operation_mode"};
 
   // Publishers
@@ -129,9 +129,9 @@ private:
     const trajectory_follower::InputData & input_data,
     const trajectory_follower::LateralOutput & lat_out) const;
 
-  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
 
-  std::unique_ptr<tier4_autoware_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
 
   void publishProcessingTime(
     const double t_ms, const rclcpp::Publisher<Float64Stamped>::SharedPtr pub);

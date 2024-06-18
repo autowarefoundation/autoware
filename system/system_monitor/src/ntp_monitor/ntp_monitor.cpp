@@ -19,7 +19,7 @@
 
 #include "system_monitor/ntp_monitor/ntp_monitor.hpp"
 
-#include <tier4_autoware_utils/system/stop_watch.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/process.hpp>
@@ -126,7 +126,7 @@ void NTPMonitor::checkOffset(diagnostic_updater::DiagnosticStatusWrapper & stat)
 void NTPMonitor::onTimer()
 {
   // Start to measure elapsed time
-  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch;
+  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stop_watch;
   stop_watch.tic("execution_time");
 
   std::string error_str;

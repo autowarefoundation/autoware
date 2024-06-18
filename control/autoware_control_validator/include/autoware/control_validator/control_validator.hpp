@@ -16,9 +16,9 @@
 #define AUTOWARE__CONTROL_VALIDATOR__CONTROL_VALIDATOR_HPP_
 
 #include "autoware/control_validator/debug_marker.hpp"
+#include "autoware/universe_utils/ros/polling_subscriber.hpp"
 #include "autoware_control_validator/msg/control_validator_status.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
-#include "tier4_autoware_utils/ros/polling_subscriber.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -69,9 +69,9 @@ private:
   void setStatus(DiagnosticStatusWrapper & stat, const bool & is_ok, const std::string & msg);
 
   rclcpp::Subscription<Trajectory>::SharedPtr sub_predicted_traj_;
-  tier4_autoware_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
     this, "~/input/kinematics"};
-  tier4_autoware_utils::InterProcessPollingSubscriber<Trajectory> sub_reference_traj_{
+  autoware_universe_utils::InterProcessPollingSubscriber<Trajectory> sub_reference_traj_{
     this, "~/input/reference_trajectory"};
   rclcpp::Publisher<ControlValidatorStatus>::SharedPtr pub_status_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_markers_;

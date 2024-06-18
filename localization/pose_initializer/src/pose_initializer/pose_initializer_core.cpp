@@ -56,7 +56,7 @@ PoseInitializer::PoseInitializer(const rclcpp::NodeOptions & options)
     stop_check_duration_ = declare_parameter<double>("stop_check_duration");
     stop_check_ = std::make_unique<StopCheckModule>(this, stop_check_duration_ + 1.0);
   }
-  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
+  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
 
   change_state(State::Message::UNINITIALIZED);
 

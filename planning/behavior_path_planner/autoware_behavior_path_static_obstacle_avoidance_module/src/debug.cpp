@@ -691,7 +691,7 @@ std::string toStrInfo(const autoware::behavior_path_planner::AvoidLineArray & ap
 }
 std::string toStrInfo(const autoware::behavior_path_planner::AvoidLine & ap)
 {
-  using tier4_autoware_utils::toHexString;
+  using autoware_universe_utils::toHexString;
 
   std::stringstream pids;
   for (const auto pid : ap.parent_ids) {

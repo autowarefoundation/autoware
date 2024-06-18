@@ -17,7 +17,7 @@
 
 #include "types.hpp"
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 
 #include <optional>
 #include <vector>
@@ -42,7 +42,7 @@ bool can_decelerate(
 /// @return the last pose that is not out of lane (if found)
 std::optional<TrajectoryPoint> calculate_last_in_lane_pose(
   const EgoData & ego_data, const Slowdown & decision,
-  const tier4_autoware_utils::Polygon2d & footprint,
+  const autoware_universe_utils::Polygon2d & footprint,
   const std::optional<SlowdownToInsert> & prev_slowdown_point, const PlannerParam & params);
 
 /// @brief calculate the slowdown point to insert in the trajectory
