@@ -56,6 +56,12 @@ jobs:
           restore-keys: |
             ccache-main-${{ runner.arch }}-${{ matrix.rosdistro }}-
 
+      - name: Limit ccache size
+        run: |
+          rm -f "${CCACHE_DIR}/ccache.conf"
+          echo -e "# Set maximum cache size\nmax_size = 600MB" >> "${CCACHE_DIR}/ccache.conf"
+        shell: bash
+
       - name: Show ccache stats before build
         run: du -sh ${CCACHE_DIR} && ccache -s
         shell: bash
