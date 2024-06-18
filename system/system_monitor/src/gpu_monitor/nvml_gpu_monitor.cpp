@@ -219,7 +219,7 @@ void GPUMonitor::addProcessUsage(
     return;
   }
   // Check util_count
-  if (util_count <= 0) {
+  if (util_count == 0) {
     RCLCPP_WARN(this->get_logger(), "Illegal util_count: %d", util_count);
     return;
   }
