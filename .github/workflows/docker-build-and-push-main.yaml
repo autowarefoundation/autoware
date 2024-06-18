@@ -10,8 +10,6 @@ on:
   push:
     tags:
       - openadkit-v*.*.*
-    branches:
-      - main
   schedule:
     - cron: 0 0 1,15 * *
   workflow_dispatch:
