@@ -14,6 +14,8 @@
 
 #include "map_based_prediction/map_based_prediction_node.hpp"
 
+#include <autoware/motion_utils/resample/resample.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/math/constants.hpp>
 #include <autoware/universe_utils/math/normalization.hpp>
@@ -22,8 +24,6 @@
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <motion_utils/resample/resample.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <autoware_perception_msgs/msg/detected_objects.hpp>
 
@@ -95,7 +95,7 @@ double calcAbsLateralOffset(
     boundary_path[i] = autoware_universe_utils::createPoint(x, y, 0.0);
   }
 
-  return std::fabs(motion_utils::calcLateralOffset(boundary_path, search_pose.position));
+  return std::fabs(autoware_motion_utils::calcLateralOffset(boundary_path, search_pose.position));
 }
 
 /**
@@ -1700,7 +1700,7 @@ float MapBasedPredictionNode::calculateLocalLikelihood(
     converted_centerline.push_back(converted_p);
   }
   const double lat_dist =
-    std::fabs(motion_utils::calcLateralOffset(converted_centerline, obj_point));
+    std::fabs(autoware_motion_utils::calcLateralOffset(converted_centerline, obj_point));
 
   // Compute Chi-squared distributed (Equation (8) in the paper)
   const double sigma_d = sigma_lateral_offset_;  // Standard Deviation for lateral position
@@ -2192,7 +2192,7 @@ double MapBasedPredictionNode::calcRightLateralOffset(
     boundary_path[i] = autoware_universe_utils::createPoint(x, y, 0.0);
   }
 
-  return std::fabs(motion_utils::calcLateralOffset(boundary_path, search_pose.position));
+  return std::fabs(autoware_motion_utils::calcLateralOffset(boundary_path, search_pose.position));
 }
 
 double MapBasedPredictionNode::calcLeftLateralOffset(
@@ -2370,7 +2370,7 @@ std::vector<PosePath> MapBasedPredictionNode::convertPathType(
 
     // Resample Path
     const auto resampled_converted_path =
-      motion_utils::resamplePoseVector(converted_path, reference_path_resolution_);
+      autoware_motion_utils::resamplePoseVector(converted_path, reference_path_resolution_);
     converted_paths.push_back(resampled_converted_path);
   }
 

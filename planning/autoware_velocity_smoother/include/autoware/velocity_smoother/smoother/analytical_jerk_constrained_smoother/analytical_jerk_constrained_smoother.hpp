@@ -15,9 +15,9 @@
 #ifndef AUTOWARE__VELOCITY_SMOOTHER__SMOOTHER__ANALYTICAL_JERK_CONSTRAINED_SMOOTHER__ANALYTICAL_JERK_CONSTRAINED_SMOOTHER_HPP_  // NOLINT
 #define AUTOWARE__VELOCITY_SMOOTHER__SMOOTHER__ANALYTICAL_JERK_CONSTRAINED_SMOOTHER__ANALYTICAL_JERK_CONSTRAINED_SMOOTHER_HPP_  // NOLINT
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/velocity_smoother/smoother/analytical_jerk_constrained_smoother/velocity_planning_utils.hpp"
 #include "autoware/velocity_smoother/smoother/smoother_base.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
 

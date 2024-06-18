@@ -20,13 +20,13 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
+  <depend>autoware_motion_utils</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_planning_test_manager</depend>
   <depend>autoware_universe_utils</depend>
   <depend>autoware_vehicle_info_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>interpolation</depend>
-  <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
   <depend>osqp_interface</depend>
   <depend>rclcpp</depend>

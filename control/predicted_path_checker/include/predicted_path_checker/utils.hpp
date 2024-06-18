@@ -15,10 +15,10 @@
 #ifndef PREDICTED_PATH_CHECKER__UTILS_HPP_
 #define PREDICTED_PATH_CHECKER__UTILS_HPP_
 
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <interpolation/linear_interpolation.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>

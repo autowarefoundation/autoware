@@ -17,7 +17,7 @@
 #include "autoware/behavior_path_planner_common/marker_utils/utils.hpp"
 #include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "autoware/behavior_path_planner_common/utils/path_utils.hpp"
-#include "motion_utils/trajectory/conversion.hpp"
+#include "autoware/motion_utils/trajectory/conversion.hpp"
 
 #include <autoware/universe_utils/ros/update_param.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
@@ -445,7 +445,7 @@ void BehaviorPathPlannerNode::run()
   const auto current_pose = planner_data_->self_odometry->pose.pose;
   if (!path->points.empty()) {
     const size_t current_seg_idx = planner_data_->findEgoSegmentIndex(path->points);
-    path->points = motion_utils::cropPoints(
+    path->points = autoware_motion_utils::cropPoints(
       path->points, current_pose.position, current_seg_idx,
       planner_data_->parameters.forward_path_length,
       planner_data_->parameters.backward_path_length +
@@ -744,8 +744,8 @@ Path BehaviorPathPlannerNode::convertToPath(
     return output;
   }
 
-  output =
-    motion_utils::convertToPath<tier4_planning_msgs::msg::PathWithLaneId>(*path_candidate_ptr);
+  output = autoware_motion_utils::convertToPath<tier4_planning_msgs::msg::PathWithLaneId>(
+    *path_candidate_ptr);
   // header is replaced by the input one, so it is substituted again
   output.header = planner_data->route_handler->getRouteHeader();
   output.header.stamp = this->now();

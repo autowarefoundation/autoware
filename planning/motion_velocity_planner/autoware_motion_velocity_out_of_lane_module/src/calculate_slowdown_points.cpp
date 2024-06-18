@@ -16,8 +16,8 @@
 
 #include "footprint.hpp"
 
-#include <motion_utils/trajectory/interpolation.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
+#include <autoware/motion_utils/trajectory/interpolation.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 
 #include <boost/geometry/algorithms/overlaps.hpp>
 
@@ -30,7 +30,7 @@ bool can_decelerate(
   const EgoData & ego_data, const TrajectoryPoint & point, const double target_vel)
 {
   // TODO(Maxime): use the library function
-  const auto dist_ahead_of_ego = motion_utils::calcSignedArcLength(
+  const auto dist_ahead_of_ego = autoware_motion_utils::calcSignedArcLength(
     ego_data.trajectory_points, ego_data.pose.position, point.pose.position);
   const auto acc_to_target_vel =
     (ego_data.velocity * ego_data.velocity - target_vel * target_vel) / (2 * dist_ahead_of_ego);
@@ -42,14 +42,15 @@ std::optional<TrajectoryPoint> calculate_last_in_lane_pose(
   const autoware_universe_utils::Polygon2d & footprint,
   const std::optional<SlowdownToInsert> & prev_slowdown_point, const PlannerParam & params)
 {
-  const auto from_arc_length =
-    motion_utils::calcSignedArcLength(ego_data.trajectory_points, 0, ego_data.first_trajectory_idx);
-  const auto to_arc_length = motion_utils::calcSignedArcLength(
+  const auto from_arc_length = autoware_motion_utils::calcSignedArcLength(
+    ego_data.trajectory_points, 0, ego_data.first_trajectory_idx);
+  const auto to_arc_length = autoware_motion_utils::calcSignedArcLength(
     ego_data.trajectory_points, 0, decision.target_trajectory_idx);
   TrajectoryPoint interpolated_point;
   for (auto l = to_arc_length - params.precision; l > from_arc_length; l -= params.precision) {
     // TODO(Maxime): binary search
-    interpolated_point.pose = motion_utils::calcInterpolatedPose(ego_data.trajectory_points, l);
+    interpolated_point.pose =
+      autoware_motion_utils::calcInterpolatedPose(ego_data.trajectory_points, l);
     const auto respect_decel_limit =
       !params.skip_if_over_max_decel || prev_slowdown_point ||
       can_decelerate(ego_data, interpolated_point, decision.velocity);

@@ -14,9 +14,9 @@
 
 #include "autoware/planning_evaluator/metrics/deviation_metrics.hpp"
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware/universe_utils/geometry/pose_deviation.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 namespace planning_diagnostics
 {
@@ -37,7 +37,8 @@ Stat<double> calcLateralDeviation(const Trajectory & ref, const Trajectory & tra
    * need more precise calculation, e.g., lateral distance from spline of the reference traj
    */
   for (TrajectoryPoint p : traj.points) {
-    const size_t nearest_index = motion_utils::findNearestIndex(ref.points, p.pose.position);
+    const size_t nearest_index =
+      autoware_motion_utils::findNearestIndex(ref.points, p.pose.position);
     stat.add(autoware_universe_utils::calcLateralDeviation(
       ref.points[nearest_index].pose, p.pose.position));
   }
@@ -56,7 +57,8 @@ Stat<double> calcYawDeviation(const Trajectory & ref, const Trajectory & traj)
    * need more precise calculation, e.g., yaw distance from spline of the reference traj
    */
   for (TrajectoryPoint p : traj.points) {
-    const size_t nearest_index = motion_utils::findNearestIndex(ref.points, p.pose.position);
+    const size_t nearest_index =
+      autoware_motion_utils::findNearestIndex(ref.points, p.pose.position);
     stat.add(autoware_universe_utils::calcYawDeviation(ref.points[nearest_index].pose, p.pose));
   }
   return stat;
@@ -72,7 +74,8 @@ Stat<double> calcVelocityDeviation(const Trajectory & ref, const Trajectory & tr
 
   // TODO(Maxime CLEMENT) need more precise calculation
   for (TrajectoryPoint p : traj.points) {
-    const size_t nearest_index = motion_utils::findNearestIndex(ref.points, p.pose.position);
+    const size_t nearest_index =
+      autoware_motion_utils::findNearestIndex(ref.points, p.pose.position);
     stat.add(p.longitudinal_velocity_mps - ref.points[nearest_index].longitudinal_velocity_mps);
   }
   return stat;

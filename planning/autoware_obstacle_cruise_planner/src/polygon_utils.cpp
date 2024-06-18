@@ -14,9 +14,9 @@
 
 #include "autoware/obstacle_cruise_planner/polygon_utils.hpp"
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 namespace
 {
@@ -35,8 +35,8 @@ PointWithStamp calcNearestCollisionPoint(
 
   std::vector<double> dist_vec;
   for (const auto & collision_point : collision_points) {
-    const double dist =
-      motion_utils::calcLongitudinalOffsetToSegment(segment_points, 0, collision_point.point);
+    const double dist = autoware_motion_utils::calcLongitudinalOffsetToSegment(
+      segment_points, 0, collision_point.point);
     dist_vec.push_back(dist);
   }
 
@@ -120,8 +120,9 @@ std::optional<std::pair<geometry_msgs::msg::Point, double>> getCollisionPoint(
     }
   }
   return std::make_pair(
-    *max_collision_point, motion_utils::calcSignedArcLength(traj_points, 0, collision_info->first) -
-                            *max_collision_length);
+    *max_collision_point,
+    autoware_motion_utils::calcSignedArcLength(traj_points, 0, collision_info->first) -
+      *max_collision_length);
 }
 
 // NOTE: max_lat_dist is used for efficient calculation to suppress boost::geometry's polygon

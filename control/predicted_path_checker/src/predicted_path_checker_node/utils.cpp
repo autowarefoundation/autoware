@@ -21,10 +21,10 @@
 namespace utils
 {
 
+using autoware_motion_utils::findFirstNearestIndexWithSoftConstraints;
+using autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
 using autoware_universe_utils::calcDistance2d;
 using autoware_universe_utils::getRPY;
-using motion_utils::findFirstNearestIndexWithSoftConstraints;
-using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
 
 // Utils Functions
 Polygon2d createOneStepPolygon(
@@ -160,7 +160,7 @@ std::pair<size_t, TrajectoryPoint> findStopPoint(
 
   for (size_t i = collision_idx; i > 0; i--) {
     distance_point_to_collision =
-      motion_utils::calcSignedArcLength(trajectory_array, i - 1, collision_idx);
+      autoware_motion_utils::calcSignedArcLength(trajectory_array, i - 1, collision_idx);
     if (distance_point_to_collision >= desired_distance_base_link_to_collision) {
       stop_segment_idx = i - 1;
       found_stop_point = true;
@@ -196,7 +196,7 @@ bool isInBrakeDistance(
     return false;
   }
 
-  const auto distance_to_obstacle = motion_utils::calcSignedArcLength(
+  const auto distance_to_obstacle = autoware_motion_utils::calcSignedArcLength(
     trajectory, trajectory.front().pose.position, trajectory.at(stop_idx).pose.position);
 
   const double distance_in_delay = relative_velocity * delay_time_sec +

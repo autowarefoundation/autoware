@@ -14,7 +14,7 @@
 
 #include "path_distance_calculator.hpp"
 
-#include <motion_utils/trajectory/trajectory.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -48,8 +48,8 @@ PathDistanceCalculator::PathDistanceCalculator(const rclcpp::NodeOptions & optio
       return;
     }
 
-    const double distance =
-      motion_utils::calcSignedArcLength(path->points, pose->pose.position, path->points.size() - 1);
+    const double distance = autoware_motion_utils::calcSignedArcLength(
+      path->points, pose->pose.position, path->points.size() - 1);
 
     tier4_debug_msgs::msg::Float64Stamped msg;
     msg.stamp = pose->header.stamp;

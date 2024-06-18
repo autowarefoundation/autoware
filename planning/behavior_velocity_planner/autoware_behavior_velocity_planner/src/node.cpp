@@ -15,12 +15,12 @@
 #include "node.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
+#include <autoware/motion_utils/trajectory/path_with_lane_id.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/ros/wait_for_param.hpp>
 #include <autoware/universe_utils/transform/transforms.hpp>
 #include <autoware/velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
-#include <motion_utils/trajectory/path_with_lane_id.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -379,7 +379,7 @@ autoware_planning_msgs::msg::Path BehaviorVelocityPlannerNode::generatePath(
   autoware_planning_msgs::msg::Path output_path_msg;
 
   // TODO(someone): support backward path
-  const auto is_driving_forward = motion_utils::isDrivingForward(input_path_msg->points);
+  const auto is_driving_forward = autoware_motion_utils::isDrivingForward(input_path_msg->points);
   is_driving_forward_ = is_driving_forward ? is_driving_forward.value() : is_driving_forward_;
   if (!is_driving_forward_) {
     RCLCPP_WARN_THROTTLE(

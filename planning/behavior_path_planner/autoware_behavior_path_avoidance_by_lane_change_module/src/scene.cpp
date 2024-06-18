@@ -195,10 +195,10 @@ void AvoidanceByLaneChange::fillAvoidanceTargetObjects(
 std::optional<ObjectData> AvoidanceByLaneChange::createObjectData(
   const AvoidancePlanningData & data, const PredictedObject & object) const
 {
+  using autoware_motion_utils::findNearestIndex;
   using autoware_universe_utils::calcDistance2d;
   using autoware_universe_utils::calcLateralDeviation;
   using boost::geometry::return_centroid;
-  using motion_utils::findNearestIndex;
 
   const auto p = std::dynamic_pointer_cast<AvoidanceParameters>(avoidance_parameters_);
 

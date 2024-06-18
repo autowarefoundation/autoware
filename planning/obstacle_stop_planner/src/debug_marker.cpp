@@ -14,9 +14,9 @@
 
 #include "obstacle_stop_planner/debug_marker.hpp"
 
+#include <autoware/motion_utils/marker/marker_helper.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
-#include <motion_utils/marker/marker_helper.hpp>
 
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -27,16 +27,16 @@
 #include <memory>
 #include <vector>
 
+using autoware_motion_utils::createDeletedSlowDownVirtualWallMarker;
+using autoware_motion_utils::createDeletedStopVirtualWallMarker;
+using autoware_motion_utils::createSlowDownVirtualWallMarker;
+using autoware_motion_utils::createStopVirtualWallMarker;
 using autoware_universe_utils::appendMarkerArray;
 using autoware_universe_utils::calcOffsetPose;
 using autoware_universe_utils::createDefaultMarker;
 using autoware_universe_utils::createMarkerColor;
 using autoware_universe_utils::createMarkerScale;
 using autoware_universe_utils::createPoint;
-using motion_utils::createDeletedSlowDownVirtualWallMarker;
-using motion_utils::createDeletedStopVirtualWallMarker;
-using motion_utils::createSlowDownVirtualWallMarker;
-using motion_utils::createStopVirtualWallMarker;
 
 namespace motion_planning
 {

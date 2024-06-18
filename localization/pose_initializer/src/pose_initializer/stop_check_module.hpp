@@ -15,13 +15,13 @@
 #ifndef POSE_INITIALIZER__STOP_CHECK_MODULE_HPP_
 #define POSE_INITIALIZER__STOP_CHECK_MODULE_HPP_
 
-#include <motion_utils/vehicle/vehicle_state_checker.hpp>
+#include <autoware/motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 
-class StopCheckModule : public motion_utils::VehicleStopCheckerBase
+class StopCheckModule : public autoware_motion_utils::VehicleStopCheckerBase
 {
 public:
   StopCheckModule(rclcpp::Node * node, double buffer_duration);

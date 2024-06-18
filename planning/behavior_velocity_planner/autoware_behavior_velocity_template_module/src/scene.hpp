@@ -57,11 +57,11 @@ public:
    * @brief Create virtual walls for the scene.
    *
    * This method is responsible for generating virtual walls for the scene and returning them as a
-   * `motion_utils::VirtualWalls` object.
+   * `autoware_motion_utils::VirtualWalls` object.
    *
-   * @return A `motion_utils::VirtualWalls` object representing virtual walls in the scene.
+   * @return A `autoware_motion_utils::VirtualWalls` object representing virtual walls in the scene.
    */
-  motion_utils::VirtualWalls createVirtualWalls() override;
+  autoware_motion_utils::VirtualWalls createVirtualWalls() override;
 };
 
 }  // namespace autoware::behavior_velocity_planner

@@ -15,11 +15,11 @@
 #ifndef AUTOWARE__AUTONOMOUS_EMERGENCY_BRAKING__NODE_HPP_
 #define AUTOWARE__AUTONOMOUS_EMERGENCY_BRAKING__NODE_HPP_
 
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/polling_subscriber.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -196,7 +196,8 @@ public:
       const double p_yaw = std::atan2(p_dy, p_dx);
       const double p_vel = p_dist / p_dt;
 
-      const auto nearest_idx = motion_utils::findNearestIndex(path, nearest_collision_point);
+      const auto nearest_idx =
+        autoware_motion_utils::findNearestIndex(path, nearest_collision_point);
       const auto & nearest_path_pose = path.at(nearest_idx);
       // When the ego moves backwards, the direction of movement axis is reversed
       const auto & traj_yaw = (current_ego_speed > 0.0)

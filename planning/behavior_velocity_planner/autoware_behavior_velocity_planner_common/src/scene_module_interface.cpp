@@ -14,9 +14,9 @@
 
 #include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/ros/uuid_helper.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -41,7 +41,7 @@ size_t SceneModuleInterface::findEgoSegmentIndex(
   const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & points) const
 {
   const auto & p = planner_data_;
-  return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+  return autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     points, p->current_odometry->pose, p->ego_nearest_dist_threshold);
 }
 
@@ -77,7 +77,7 @@ size_t SceneModuleManagerInterface::findEgoSegmentIndex(
   const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & points) const
 {
   const auto & p = planner_data_;
-  return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+  return autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     points, p->current_odometry->pose, p->ego_nearest_dist_threshold, p->ego_nearest_yaw_threshold);
 }
 

@@ -14,7 +14,7 @@
 
 #ifndef SUBSCRIBER_HPP_
 #define SUBSCRIBER_HPP_
-#include <motion_utils/trajectory/trajectory.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_eigen/tf2_eigen/tf2_eigen.hpp>
 #include <utils.hpp>

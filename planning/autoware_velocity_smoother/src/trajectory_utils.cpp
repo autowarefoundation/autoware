@@ -14,9 +14,9 @@
 
 #include "autoware/velocity_smoother/trajectory_utils.hpp"
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "interpolation/linear_interpolation.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -596,7 +596,7 @@ std::vector<double> calcVelocityProfileWithConstantJerkAndAccelerationLimit(
 
 double calcStopDistance(const TrajectoryPoints & trajectory, const size_t closest)
 {
-  const auto idx = motion_utils::searchZeroVelocityIndex(trajectory);
+  const auto idx = autoware_motion_utils::searchZeroVelocityIndex(trajectory);
 
   if (!idx) {
     return std::numeric_limits<double>::max();  // stop point is located far away

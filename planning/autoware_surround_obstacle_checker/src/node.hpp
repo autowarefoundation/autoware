@@ -19,8 +19,8 @@
 #include "autoware/universe_utils/ros/polling_subscriber.hpp"
 #include "debug_marker.hpp"
 
+#include <autoware/motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
-#include <motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
@@ -47,9 +47,9 @@ namespace autoware::surround_obstacle_checker
 {
 
 using autoware::vehicle_info_utils::VehicleInfo;
+using autoware_motion_utils::VehicleStopChecker;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_perception_msgs::msg::Shape;
-using motion_utils::VehicleStopChecker;
 using tier4_planning_msgs::msg::VelocityLimit;
 using tier4_planning_msgs::msg::VelocityLimitClearCommand;
 

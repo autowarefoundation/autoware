@@ -14,7 +14,7 @@
 
 #include "path_utils.hpp"
 
-#include <motion_utils/trajectory/trajectory.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 namespace autoware::behavior_velocity_planner::run_out_utils
 {
 geometry_msgs::msg::Point findLongitudinalNearestPoint(
@@ -26,7 +26,7 @@ geometry_msgs::msg::Point findLongitudinalNearestPoint(
   geometry_msgs::msg::Point min_dist_point{};
 
   for (const auto & p : target_points) {
-    const float dist = motion_utils::calcSignedArcLength(points, src_point, p);
+    const float dist = autoware_motion_utils::calcSignedArcLength(points, src_point, p);
     if (dist < min_dist) {
       min_dist = dist;
       min_dist_point = p;

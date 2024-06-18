@@ -13,12 +13,12 @@
 // limitations under the License.
 
 #include <autoware/behavior_path_planner_common/utils/traffic_light_utils.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <traffic_light_utils/traffic_light_utils.hpp>
 
 namespace autoware::behavior_path_planner::utils::traffic_light
 {
-using motion_utils::calcSignedArcLength;
+using autoware_motion_utils::calcSignedArcLength;
 
 double getDistanceToNextTrafficLight(
   const Pose & current_pose, const lanelet::ConstLanelets & lanelets)

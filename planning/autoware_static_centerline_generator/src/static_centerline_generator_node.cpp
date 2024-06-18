@@ -14,6 +14,8 @@
 
 #include "static_centerline_generator_node.hpp"
 
+#include "autoware/motion_utils/resample/resample.hpp"
+#include "autoware/motion_utils/trajectory/conversion.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware/universe_utils/ros/parameter.hpp"
 #include "autoware_static_centerline_generator/msg/points_with_lane_id.hpp"
@@ -24,8 +26,6 @@
 #include "map_loader/lanelet2_map_loader_node.hpp"
 #include "map_projection_loader/load_info_from_lanelet2_map.hpp"
 #include "map_projection_loader/map_projection_loader.hpp"
-#include "motion_utils/resample/resample.hpp"
-#include "motion_utils/trajectory/conversion.hpp"
 #include "type_alias.hpp"
 #include "utils.hpp"
 
@@ -166,9 +166,10 @@ std::vector<TrajectoryPoint> resample_trajectory_points(
   const std::vector<TrajectoryPoint> & input_traj_points, const double resample_interval)
 {
   // resample and calculate trajectory points' orientation
-  const auto input_traj = motion_utils::convertToTrajectory(input_traj_points);
-  auto resampled_input_traj = motion_utils::resampleTrajectory(input_traj, resample_interval);
-  return motion_utils::convertToTrajectoryPointArray(resampled_input_traj);
+  const auto input_traj = autoware_motion_utils::convertToTrajectory(input_traj_points);
+  auto resampled_input_traj =
+    autoware_motion_utils::resampleTrajectory(input_traj, resample_interval);
+  return autoware_motion_utils::convertToTrajectoryPointArray(resampled_input_traj);
 }
 }  // namespace
 
@@ -273,7 +274,7 @@ void StaticCenterlineGeneratorNode::update_centerline_range(
     centerline.begin() + traj_range_indices_.second + 1);
 
   pub_centerline_->publish(
-    motion_utils::convertToTrajectory(selected_centerline, create_header(this->now())));
+    autoware_motion_utils::convertToTrajectory(selected_centerline, create_header(this->now())));
 }
 
 void StaticCenterlineGeneratorNode::run()
@@ -325,10 +326,10 @@ CenterlineWithRoute StaticCenterlineGeneratorNode::generate_centerline_with_rout
   centerline_with_route.centerline =
     resample_trajectory_points(centerline_with_route.centerline, output_trajectory_interval);
 
-  pub_whole_centerline_->publish(motion_utils::convertToTrajectory(
+  pub_whole_centerline_->publish(autoware_motion_utils::convertToTrajectory(
     centerline_with_route.centerline, create_header(this->now())));
 
-  pub_centerline_->publish(motion_utils::convertToTrajectory(
+  pub_centerline_->publish(autoware_motion_utils::convertToTrajectory(
     centerline_with_route.centerline, create_header(this->now())));
 
   return centerline_with_route;

@@ -14,10 +14,10 @@
 
 #include "autoware/path_optimizer/replan_checker.hpp"
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/path_optimizer/utils/trajectory_utils.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware/universe_utils/ros/update_param.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 #include <vector>
 
@@ -144,14 +144,14 @@ bool ReplanChecker::isPathAroundEgoChanged(
   // calculate ego's lateral offset to previous trajectory points
   const auto prev_ego_seg_idx =
     trajectory_utils::findEgoSegmentIndex(prev_traj_points, p.ego_pose, ego_nearest_param_);
-  const double prev_ego_lat_offset =
-    motion_utils::calcLateralOffset(prev_traj_points, p.ego_pose.position, prev_ego_seg_idx);
+  const double prev_ego_lat_offset = autoware_motion_utils::calcLateralOffset(
+    prev_traj_points, p.ego_pose.position, prev_ego_seg_idx);
 
   // calculate ego's lateral offset to current trajectory points
   const auto ego_seg_idx =
     trajectory_utils::findEgoSegmentIndex(p.traj_points, p.ego_pose, ego_nearest_param_);
   const double ego_lat_offset =
-    motion_utils::calcLateralOffset(p.traj_points, p.ego_pose.position, ego_seg_idx);
+    autoware_motion_utils::calcLateralOffset(p.traj_points, p.ego_pose.position, ego_seg_idx);
 
   const double diff_ego_lat_offset = prev_ego_lat_offset - ego_lat_offset;
   if (std::abs(diff_ego_lat_offset) < max_path_shape_around_ego_lat_dist_) {
@@ -174,17 +174,17 @@ bool ReplanChecker::isPathForwardChanged(
   constexpr double lon_dist_interval = 10.0;
   for (double lon_dist = lon_dist_interval; lon_dist <= max_path_shape_forward_lon_dist_;
        lon_dist += lon_dist_interval) {
-    const auto prev_forward_point =
-      motion_utils::calcLongitudinalOffsetPoint(prev_traj_points, prev_ego_seg_idx, lon_dist);
+    const auto prev_forward_point = autoware_motion_utils::calcLongitudinalOffsetPoint(
+      prev_traj_points, prev_ego_seg_idx, lon_dist);
     if (!prev_forward_point) {
       continue;
     }
 
     // calculate lateral offset of current trajectory points to prev forward point
     const auto forward_seg_idx =
-      motion_utils::findNearestSegmentIndex(p.traj_points, *prev_forward_point);
+      autoware_motion_utils::findNearestSegmentIndex(p.traj_points, *prev_forward_point);
     const double forward_lat_offset =
-      motion_utils::calcLateralOffset(p.traj_points, *prev_forward_point, forward_seg_idx);
+      autoware_motion_utils::calcLateralOffset(p.traj_points, *prev_forward_point, forward_seg_idx);
     if (max_path_shape_forward_lat_dist_ < std::abs(forward_lat_offset)) {
       return true;
     }

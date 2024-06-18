@@ -25,14 +25,14 @@
 #include "autoware/universe_utils/math/unit_conversion.hpp"
 #include "object_recognition_utils/predicted_path_utils.hpp"
 
+#include <autoware/motion_utils/trajectory/interpolation.hpp>
+#include <autoware/motion_utils/trajectory/path_with_lane_id.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <motion_utils/trajectory/interpolation.hpp>
-#include <motion_utils/trajectory/path_with_lane_id.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/detail/pose__struct.hpp>
@@ -368,8 +368,8 @@ std::optional<LaneChangePath> constructCandidatePath(
   LaneChangePath candidate_path;
   candidate_path.info = lane_change_info;
 
-  const auto lane_change_end_idx =
-    motion_utils::findNearestIndex(shifted_path.path.points, candidate_path.info.lane_changing_end);
+  const auto lane_change_end_idx = autoware_motion_utils::findNearestIndex(
+    shifted_path.path.points, candidate_path.info.lane_changing_end);
 
   if (!lane_change_end_idx) {
     RCLCPP_DEBUG(get_logger(), "Lane change end idx not found on target path.");
@@ -385,7 +385,7 @@ std::optional<LaneChangePath> constructCandidatePath(
       continue;
     }
     const auto nearest_idx =
-      motion_utils::findNearestIndex(target_segment.points, point.point.pose);
+      autoware_motion_utils::findNearestIndex(target_segment.points, point.point.pose);
     point.lane_ids = target_segment.points.at(*nearest_idx).lane_ids;
   }
 
@@ -473,10 +473,10 @@ ShiftLine getLaneChangingShiftLine(
   shift_line.end_shift_length = shift_length;
   shift_line.start = lane_changing_start_pose;
   shift_line.end = lane_changing_end_pose;
-  shift_line.start_idx =
-    motion_utils::findNearestIndex(reference_path.points, lane_changing_start_pose.position);
+  shift_line.start_idx = autoware_motion_utils::findNearestIndex(
+    reference_path.points, lane_changing_start_pose.position);
   shift_line.end_idx =
-    motion_utils::findNearestIndex(reference_path.points, lane_changing_end_pose.position);
+    autoware_motion_utils::findNearestIndex(reference_path.points, lane_changing_end_pose.position);
 
   return shift_line;
 }
@@ -768,9 +768,9 @@ CandidateOutput assignToCandidate(
   CandidateOutput candidate_output;
   candidate_output.path_candidate = lane_change_path.path;
   candidate_output.lateral_shift = utils::lane_change::getLateralShift(lane_change_path);
-  candidate_output.start_distance_to_path_change = motion_utils::calcSignedArcLength(
+  candidate_output.start_distance_to_path_change = autoware_motion_utils::calcSignedArcLength(
     lane_change_path.path.points, ego_position, lane_change_path.info.shift_line.start.position);
-  candidate_output.finish_distance_to_path_change = motion_utils::calcSignedArcLength(
+  candidate_output.finish_distance_to_path_change = autoware_motion_utils::calcSignedArcLength(
     lane_change_path.path.points, ego_position, lane_change_path.info.shift_line.end.position);
 
   return candidate_output;
@@ -806,9 +806,10 @@ std::vector<PoseWithVelocityStamped> convertToPredictedPath(
   const auto & minimum_lane_changing_velocity =
     lane_change_parameters.minimum_lane_changing_velocity;
 
-  const auto nearest_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    path.points, vehicle_pose, common_parameters.ego_nearest_dist_threshold,
-    common_parameters.ego_nearest_yaw_threshold);
+  const auto nearest_seg_idx =
+    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      path.points, vehicle_pose, common_parameters.ego_nearest_dist_threshold,
+      common_parameters.ego_nearest_yaw_threshold);
 
   std::vector<PoseWithVelocityStamped> predicted_path;
   const auto vehicle_pose_frenet =
@@ -821,7 +822,7 @@ std::vector<PoseWithVelocityStamped> convertToPredictedPath(
       std::max(initial_velocity + prepare_acc * t, minimum_lane_changing_velocity);
     const double length = initial_velocity * t + 0.5 * prepare_acc * t * t;
     const auto pose =
-      motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length);
+      autoware_motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length);
     predicted_path.emplace_back(t, pose, velocity);
   }
 
@@ -836,7 +837,7 @@ std::vector<PoseWithVelocityStamped> convertToPredictedPath(
     const double length =
       lane_changing_velocity * delta_t + 0.5 * lane_changing_acc * delta_t * delta_t + offset;
     const auto pose =
-      motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length);
+      autoware_motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length);
     predicted_path.emplace_back(t, pose, velocity);
   }
 
@@ -869,7 +870,7 @@ bool isParkedObject(
 
   const auto & object_pose = object.initial_pose.pose;
   const auto object_closest_index =
-    motion_utils::findNearestIndex(path.points, object_pose.position);
+    autoware_motion_utils::findNearestIndex(path.points, object_pose.position);
   const auto object_closest_pose = path.points.at(object_closest_index).point.pose;
 
   lanelet::ConstLanelet closest_lanelet;
@@ -877,7 +878,8 @@ bool isParkedObject(
     return false;
   }
 
-  const double lat_dist = motion_utils::calcLateralOffset(path.points, object_pose.position);
+  const double lat_dist =
+    autoware_motion_utils::calcLateralOffset(path.points, object_pose.position);
   lanelet::BasicLineString2d bound;
   double center_to_bound_buffer = 0.0;
   if (lat_dist > 0.0) {
@@ -1004,12 +1006,12 @@ bool passParkedObject(
   for (const auto & point : leading_obj_poly.outer()) {
     const auto obj_p = autoware_universe_utils::createPoint(point.x(), point.y(), 0.0);
     const double dist =
-      motion_utils::calcSignedArcLength(current_lane_path.points, obj_p, current_path_end);
+      autoware_motion_utils::calcSignedArcLength(current_lane_path.points, obj_p, current_path_end);
     min_dist_to_end_of_current_lane = std::min(dist, min_dist_to_end_of_current_lane);
     if (is_goal_in_route) {
       const auto goal_pose = route_handler.getGoalPose();
-      const double dist_to_goal =
-        motion_utils::calcSignedArcLength(current_lane_path.points, obj_p, goal_pose.position);
+      const double dist_to_goal = autoware_motion_utils::calcSignedArcLength(
+        current_lane_path.points, obj_p, goal_pose.position);
       min_dist_to_end_of_current_lane = std::min(min_dist_to_end_of_current_lane, dist_to_goal);
     }
   }
@@ -1059,15 +1061,15 @@ std::optional<size_t> getLeadingStaticObjectIdx(
       continue;
     }
 
-    const double dist_back_to_obj = motion_utils::calcSignedArcLength(
+    const double dist_back_to_obj = autoware_motion_utils::calcSignedArcLength(
       path.points, path_end.point.pose.position, obj_pose.position);
     if (dist_back_to_obj > 0.0) {
       // object is not on the lane change path
       continue;
     }
 
-    const double dist_lc_start_to_obj =
-      motion_utils::calcSignedArcLength(path.points, lane_change_start.position, obj_pose.position);
+    const double dist_lc_start_to_obj = autoware_motion_utils::calcSignedArcLength(
+      path.points, lane_change_start.position, obj_pose.position);
     if (dist_lc_start_to_obj < 0.0) {
       // object is on the lane changing path or behind it. It will be detected in safety check
       continue;

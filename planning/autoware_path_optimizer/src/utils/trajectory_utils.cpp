@@ -14,11 +14,11 @@
 
 #include "autoware/path_optimizer/utils/trajectory_utils.hpp"
 
+#include "autoware/motion_utils/resample/resample.hpp"
+#include "autoware/motion_utils/trajectory/conversion.hpp"
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/path_optimizer/mpt_optimizer.hpp"
 #include "autoware/path_optimizer/utils/geometry_utils.hpp"
-#include "motion_utils/resample/resample.hpp"
-#include "motion_utils/trajectory/conversion.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
 
 #include "autoware_planning_msgs/msg/path_point.hpp"
@@ -140,10 +140,10 @@ std::vector<TrajectoryPoint> resampleTrajectoryPoints(
 {
   constexpr bool enable_resampling_stop_point = true;
 
-  const auto traj = motion_utils::convertToTrajectory(traj_points);
-  const auto resampled_traj = motion_utils::resampleTrajectory(
+  const auto traj = autoware_motion_utils::convertToTrajectory(traj_points);
+  const auto resampled_traj = autoware_motion_utils::resampleTrajectory(
     traj, interval, false, true, true, enable_resampling_stop_point);
-  return motion_utils::convertToTrajectoryPointArray(resampled_traj);
+  return autoware_motion_utils::convertToTrajectoryPointArray(resampled_traj);
 }
 
 // NOTE: stop point will not be resampled
@@ -152,10 +152,10 @@ std::vector<TrajectoryPoint> resampleTrajectoryPointsWithoutStopPoint(
 {
   constexpr bool enable_resampling_stop_point = false;
 
-  const auto traj = motion_utils::convertToTrajectory(traj_points);
-  const auto resampled_traj = motion_utils::resampleTrajectory(
+  const auto traj = autoware_motion_utils::convertToTrajectory(traj_points);
+  const auto resampled_traj = autoware_motion_utils::resampleTrajectory(
     traj, interval, false, true, true, enable_resampling_stop_point);
-  return motion_utils::convertToTrajectoryPointArray(resampled_traj);
+  return autoware_motion_utils::convertToTrajectoryPointArray(resampled_traj);
 }
 
 std::vector<ReferencePoint> resampleReferencePoints(
@@ -220,7 +220,7 @@ void insertStopPoint(
   std::vector<TrajectoryPoint> & traj_points, const geometry_msgs::msg::Pose & input_stop_pose,
   const size_t stop_seg_idx)
 {
-  const double offset_to_segment = motion_utils::calcLongitudinalOffsetToSegment(
+  const double offset_to_segment = autoware_motion_utils::calcLongitudinalOffsetToSegment(
     traj_points, stop_seg_idx, input_stop_pose.position);
 
   const auto traj_spline = SplineInterpolationPoints2d(traj_points);

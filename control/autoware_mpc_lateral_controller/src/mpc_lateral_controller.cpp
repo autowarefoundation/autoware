@@ -14,13 +14,13 @@
 
 #include "autoware/mpc_lateral_controller/mpc_lateral_controller.hpp"
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/mpc_lateral_controller/qp_solver/qp_solver_osqp.hpp"
 #include "autoware/mpc_lateral_controller/qp_solver/qp_solver_unconstraint_fast.hpp"
 #include "autoware/mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_dynamics.hpp"
 #include "autoware/mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
 #include "autoware/mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
 #include "tf2_ros/create_timer_ros.h"
 
@@ -408,7 +408,7 @@ bool MpcLateralController::isStoppedState() const
   // for the stop state judgement. However, it has been removed since the steering
   // control was turned off when approaching/exceeding the stop line on a curve or
   // emergency stop situation and it caused large tracking error.
-  const size_t nearest = motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const size_t nearest = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
     m_current_trajectory.points, m_current_kinematic_state.pose.pose, m_ego_nearest_dist_threshold,
     m_ego_nearest_yaw_threshold);
 

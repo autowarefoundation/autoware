@@ -15,6 +15,7 @@
 #ifndef AUTOWARE__PATH_OPTIMIZER__NODE_HPP_
 #define AUTOWARE__PATH_OPTIMIZER__NODE_HPP_
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/path_optimizer/common_structs.hpp"
 #include "autoware/path_optimizer/mpt_optimizer.hpp"
 #include "autoware/path_optimizer/replan_checker.hpp"
@@ -22,7 +23,6 @@
 #include "autoware/universe_utils/ros/logger_level_configure.hpp"
 #include "autoware/universe_utils/ros/polling_subscriber.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include <autoware/universe_utils/ros/published_time_publisher.hpp>
@@ -52,7 +52,7 @@ protected:  // for the static_centerline_generator package
   public:
     bool isDrivingForward(const std::vector<PathPoint> & path_points)
     {
-      const auto is_driving_forward = motion_utils::isDrivingForward(path_points);
+      const auto is_driving_forward = autoware_motion_utils::isDrivingForward(path_points);
       is_driving_forward_ = is_driving_forward ? is_driving_forward.value() : is_driving_forward_;
       return is_driving_forward_;
     }

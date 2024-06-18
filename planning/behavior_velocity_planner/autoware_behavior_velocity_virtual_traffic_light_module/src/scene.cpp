@@ -16,7 +16,7 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 
 #include <tier4_v2x_msgs/msg/key_value.hpp>
 
@@ -158,8 +158,8 @@ std::optional<size_t> insertStopVelocityAtCollision(
   const SegmentIndexWithPoint & collision, const double offset,
   tier4_planning_msgs::msg::PathWithLaneId * path)
 {
-  const auto collision_offset =
-    motion_utils::calcLongitudinalOffsetToSegment(path->points, collision.index, collision.point);
+  const auto collision_offset = autoware_motion_utils::calcLongitudinalOffsetToSegment(
+    path->points, collision.index, collision.point);
 
   const auto offset_segment =
     arc_lane_utils::findOffsetSegment(*path, collision.index, offset + collision_offset);
@@ -410,7 +410,7 @@ bool VirtualTrafficLightModule::isBeforeStartLine(const size_t end_line_idx)
 
   const auto & ego_pose = planner_data_->current_odometry->pose;
   const size_t ego_seg_idx = findEgoSegmentIndex(module_data_.path.points);
-  const auto signed_arc_length = motion_utils::calcSignedArcLength(
+  const auto signed_arc_length = autoware_motion_utils::calcSignedArcLength(
                                    module_data_.path.points, ego_pose.position, ego_seg_idx,
                                    collision->point, collision_seg_idx) -
                                  planner_data_->vehicle_info_.max_longitudinal_offset_m;
@@ -433,7 +433,7 @@ bool VirtualTrafficLightModule::isBeforeStopLine(const size_t end_line_idx)
 
   const auto & ego_pose = planner_data_->current_odometry->pose;
   const size_t ego_seg_idx = findEgoSegmentIndex(module_data_.path.points);
-  const auto signed_arc_length = motion_utils::calcSignedArcLength(
+  const auto signed_arc_length = autoware_motion_utils::calcSignedArcLength(
                                    module_data_.path.points, ego_pose.position, ego_seg_idx,
                                    collision->point, collision_seg_idx) -
                                  planner_data_->vehicle_info_.max_longitudinal_offset_m;
@@ -461,7 +461,7 @@ bool VirtualTrafficLightModule::isAfterAnyEndLine(const size_t end_line_idx)
 
   const auto & ego_pose = planner_data_->current_odometry->pose;
   const size_t ego_seg_idx = findEgoSegmentIndex(module_data_.path.points);
-  const auto signed_arc_length = motion_utils::calcSignedArcLength(
+  const auto signed_arc_length = autoware_motion_utils::calcSignedArcLength(
                                    module_data_.path.points, ego_pose.position, ego_seg_idx,
                                    collision->point, collision_seg_idx) -
                                  planner_data_->vehicle_info_.max_longitudinal_offset_m;
@@ -482,7 +482,7 @@ bool VirtualTrafficLightModule::isNearAnyEndLine(const size_t end_line_idx)
 
   const auto & ego_pose = planner_data_->current_odometry->pose;
   const size_t ego_seg_idx = findEgoSegmentIndex(module_data_.path.points);
-  const auto signed_arc_length = motion_utils::calcSignedArcLength(
+  const auto signed_arc_length = autoware_motion_utils::calcSignedArcLength(
                                    module_data_.path.points, ego_pose.position, ego_seg_idx,
                                    collision->point, collision_seg_idx) -
                                  planner_data_->vehicle_info_.max_longitudinal_offset_m;
@@ -544,7 +544,7 @@ void VirtualTrafficLightModule::insertStopVelocityAtStopLine(
       path->points, collision->point, collision->index);
 
     const auto stop_distance =
-      motion_utils::calcSignedArcLength(
+      autoware_motion_utils::calcSignedArcLength(
         path->points, ego_pose.position, ego_seg_idx, collision.value().point, collision_seg_idx) +
       offset;
     const auto is_stopped = planner_data_->isVehicleStopped();
@@ -552,7 +552,7 @@ void VirtualTrafficLightModule::insertStopVelocityAtStopLine(
     if (stop_distance < planner_param_.hold_stop_margin_distance && is_stopped) {
       SegmentIndexWithPoint new_collision;
       const auto ego_pos_on_path =
-        motion_utils::calcLongitudinalOffsetPoint(path->points, ego_pose.position, 0.0);
+        autoware_motion_utils::calcLongitudinalOffsetPoint(path->points, ego_pose.position, 0.0);
 
       if (ego_pos_on_path) {
         new_collision.point = ego_pos_on_path.value();

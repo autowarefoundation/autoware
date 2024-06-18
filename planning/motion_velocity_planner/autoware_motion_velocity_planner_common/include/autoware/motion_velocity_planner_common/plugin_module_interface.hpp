@@ -18,7 +18,7 @@
 #include "planner_data.hpp"
 #include "velocity_planning_result.hpp"
 
-#include <motion_utils/factor/velocity_factor_interface.hpp>
+#include <autoware/motion_utils/factor/velocity_factor_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_planning_msgs/msg/trajectory_point.hpp>
@@ -40,11 +40,11 @@ public:
     const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & ego_trajectory_points,
     const std::shared_ptr<const PlannerData> planner_data) = 0;
   virtual std::string get_module_name() const = 0;
-  motion_utils::VelocityFactorInterface velocity_factor_interface_;
+  autoware_motion_utils::VelocityFactorInterface velocity_factor_interface_;
   rclcpp::Logger logger_ = rclcpp::get_logger("");
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr virtual_wall_publisher_;
-  motion_utils::VirtualWallMarkerCreator virtual_wall_marker_creator{};
+  autoware_motion_utils::VirtualWallMarkerCreator virtual_wall_marker_creator{};
 };
 
 }  // namespace autoware::motion_velocity_planner

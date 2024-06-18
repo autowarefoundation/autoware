@@ -23,6 +23,7 @@
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 #include "autoware/behavior_path_sampling_planner_module/sampling_planner_parameters.hpp"
 #include "autoware/behavior_path_sampling_planner_module/util.hpp"
+#include "autoware/motion_utils/trajectory/path_with_lane_id.hpp"
 #include "autoware/universe_utils/geometry/boost_geometry.hpp"
 #include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
 #include "autoware/universe_utils/math/constants.hpp"
@@ -38,7 +39,6 @@
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "lanelet2_extension/utility/query.hpp"
 #include "lanelet2_extension/utility/utilities.hpp"
-#include "motion_utils/trajectory/path_with_lane_id.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include "tier4_planning_msgs/msg/lateral_offset.hpp"
@@ -204,7 +204,7 @@ private:
     if (length_to_goal < epsilon) return isReferencePathSafe();
 
     const auto nearest_index =
-      motion_utils::findNearestIndex(prev_module_reference_path->points, ego_pose);
+      autoware_motion_utils::findNearestIndex(prev_module_reference_path->points, ego_pose);
     if (!nearest_index) return false;
     auto toYaw = [](const geometry_msgs::msg::Quaternion & quat) -> double {
       const auto rpy = autoware_universe_utils::getRPY(quat);

@@ -14,6 +14,7 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_map_msgs</depend>
+  <depend>autoware_motion_utils</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_universe_utils</depend>
   <depend>autoware_vehicle_info_utils</depend>
@@ -22,7 +23,6 @@
   <depend>eigen</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
-  <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

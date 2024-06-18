@@ -260,13 +260,13 @@ void SubscriberBase::on_trajectory(
     return;
   }
 
-  const auto nearest_seg_idx = motion_utils::findNearestSegmentIndex(
+  const auto nearest_seg_idx = autoware_motion_utils::findNearestSegmentIndex(
     msg_ptr->points, current_odometry_ptr->pose.pose.position);
 
   const auto nearest_objects_seg_idx =
-    motion_utils::findNearestIndex(msg_ptr->points, entity_pose_.position);
+    autoware_motion_utils::findNearestIndex(msg_ptr->points, entity_pose_.position);
 
-  const auto zero_vel_idx = motion_utils::searchZeroVelocityIndex(
+  const auto zero_vel_idx = autoware_motion_utils::searchZeroVelocityIndex(
     msg_ptr->points, nearest_seg_idx, nearest_objects_seg_idx);
 
   if (zero_vel_idx) {
@@ -299,7 +299,7 @@ void SubscriberBase::on_trajectory(
     return;
   }
 
-  const auto nearest_seg_idx = motion_utils::findNearestSegmentIndex(
+  const auto nearest_seg_idx = autoware_motion_utils::findNearestSegmentIndex(
     msg_ptr->points, current_odometry_ptr->pose.pose.position);
 
   // find the target index which we will search for zero velocity
@@ -310,7 +310,7 @@ void SubscriberBase::on_trajectory(
   }
   const auto target_idx = tmp_target_idx;
   const auto zero_vel_idx =
-    motion_utils::searchZeroVelocityIndex(msg_ptr->points, nearest_seg_idx, target_idx);
+    autoware_motion_utils::searchZeroVelocityIndex(msg_ptr->points, nearest_seg_idx, target_idx);
 
   if (zero_vel_idx) {
     RCLCPP_INFO(node_->get_logger(), "%s reacted with published time", node_name.c_str());

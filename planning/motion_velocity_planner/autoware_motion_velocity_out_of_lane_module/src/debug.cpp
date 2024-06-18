@@ -226,14 +226,14 @@ visualization_msgs::msg::MarkerArray create_debug_marker_array(const DebugData &
   return debug_marker_array;
 }
 
-motion_utils::VirtualWalls create_virtual_walls(
+autoware_motion_utils::VirtualWalls create_virtual_walls(
   const DebugData & debug_data, const PlannerParam & params)
 {
-  motion_utils::VirtualWalls virtual_walls;
-  motion_utils::VirtualWall wall;
+  autoware_motion_utils::VirtualWalls virtual_walls;
+  autoware_motion_utils::VirtualWall wall;
   wall.text = "out_of_lane";
   wall.longitudinal_offset = params.front_offset;
-  wall.style = motion_utils::VirtualWallType::slowdown;
+  wall.style = autoware_motion_utils::VirtualWallType::slowdown;
   for (const auto & slowdown : debug_data.slowdowns) {
     wall.pose = slowdown.point.pose;
     virtual_walls.push_back(wall);

@@ -14,12 +14,12 @@
 
 #include "autoware/planning_evaluator/metrics_calculator.hpp"
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/planning_evaluator/metrics/deviation_metrics.hpp"
 #include "autoware/planning_evaluator/metrics/obstacle_metrics.hpp"
 #include "autoware/planning_evaluator/metrics/stability_metrics.hpp"
 #include "autoware/planning_evaluator/metrics/trajectory_metrics.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 namespace planning_diagnostics
 {
 std::optional<Stat<double>> MetricsCalculator::calculate(
@@ -122,7 +122,8 @@ Trajectory MetricsCalculator::getLookaheadTrajectory(
     return traj;
   }
 
-  const auto ego_index = motion_utils::findNearestSegmentIndex(traj.points, ego_pose_.position);
+  const auto ego_index =
+    autoware_motion_utils::findNearestSegmentIndex(traj.points, ego_pose_.position);
   Trajectory lookahead_traj;
   lookahead_traj.header = traj.header;
   double dist = 0.0;

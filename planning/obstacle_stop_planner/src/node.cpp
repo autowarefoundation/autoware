@@ -40,17 +40,17 @@
 
 namespace motion_planning
 {
+using autoware_motion_utils::calcLongitudinalOffsetPose;
+using autoware_motion_utils::calcLongitudinalOffsetToSegment;
+using autoware_motion_utils::calcSignedArcLength;
+using autoware_motion_utils::findFirstNearestIndexWithSoftConstraints;
+using autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_universe_utils::calcDistance2d;
 using autoware_universe_utils::createPoint;
 using autoware_universe_utils::getPoint;
 using autoware_universe_utils::getPose;
 using autoware_universe_utils::getRPY;
-using motion_utils::calcLongitudinalOffsetPose;
-using motion_utils::calcLongitudinalOffsetToSegment;
-using motion_utils::calcSignedArcLength;
-using motion_utils::findFirstNearestIndexWithSoftConstraints;
-using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
 
 ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & node_options)
 : Node("obstacle_stop_planner", node_options)
@@ -326,7 +326,8 @@ void ObstacleStopPlannerNode::onTrigger(const Trajectory::ConstSharedPtr input_m
   const auto current_acc = current_acceleration_ptr->accel.accel.linear.x;
 
   // TODO(someone): support backward path
-  const auto is_driving_forward = motion_utils::isDrivingForwardWithTwist(input_msg->points);
+  const auto is_driving_forward =
+    autoware_motion_utils::isDrivingForwardWithTwist(input_msg->points);
   is_driving_forward_ = is_driving_forward ? is_driving_forward.value() : is_driving_forward_;
   if (!is_driving_forward_) {
     RCLCPP_WARN_THROTTLE(
@@ -342,11 +343,11 @@ void ObstacleStopPlannerNode::onTrigger(const Trajectory::ConstSharedPtr input_m
 
   Trajectory output_trajectory = *input_msg;
   TrajectoryPoints output_trajectory_points =
-    motion_utils::convertToTrajectoryPointArray(*input_msg);
+    autoware_motion_utils::convertToTrajectoryPointArray(*input_msg);
 
   // trim trajectory from self pose
   TrajectoryPoints base_trajectory = trimTrajectoryWithIndexFromSelfPose(
-    motion_utils::convertToTrajectoryPointArray(*input_msg), planner_data.current_pose,
+    autoware_motion_utils::convertToTrajectoryPointArray(*input_msg), planner_data.current_pose,
     planner_data.trajectory_trim_index);
 
   // extend trajectory to consider obstacles after the goal
@@ -378,7 +379,7 @@ void ObstacleStopPlannerNode::onTrigger(const Trajectory::ConstSharedPtr input_m
     resetExternalVelocityLimit(current_acc, current_vel);
   }
 
-  auto trajectory = motion_utils::convertToTrajectory(output_trajectory_points);
+  auto trajectory = autoware_motion_utils::convertToTrajectory(output_trajectory_points);
   publishDebugData(planner_data, current_acc, current_vel);
 
   trajectory.header = input_msg->header;
@@ -1556,7 +1557,7 @@ void ObstacleStopPlannerNode::filterObstacles(
 
     // Check is it near to trajectory
     const double max_length = calcObstacleMaxLength(object.shape);
-    const size_t seg_idx = motion_utils::findNearestSegmentIndex(
+    const size_t seg_idx = autoware_motion_utils::findNearestSegmentIndex(
       traj, object.kinematics.initial_pose_with_covariance.pose.position);
     const auto p_front = autoware_universe_utils::getPoint(traj.at(seg_idx));
     const auto p_back = autoware_universe_utils::getPoint(traj.at(seg_idx + 1));

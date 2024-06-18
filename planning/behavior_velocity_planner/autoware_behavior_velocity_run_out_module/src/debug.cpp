@@ -16,9 +16,9 @@
 
 #include "scene.hpp"
 
+#include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
-#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 
 using autoware_universe_utils::appendMarkerArray;
 using autoware_universe_utils::calcOffsetPose;
@@ -186,12 +186,12 @@ visualization_msgs::msg::MarkerArray RunOutDebug::createVisualizationMarkerArray
   return visualization_marker_array;
 }
 
-motion_utils::VirtualWalls RunOutDebug::createVirtualWalls()
+autoware_motion_utils::VirtualWalls RunOutDebug::createVirtualWalls()
 {
-  motion_utils::VirtualWalls virtual_walls;
-  motion_utils::VirtualWall wall;
+  autoware_motion_utils::VirtualWalls virtual_walls;
+  autoware_motion_utils::VirtualWall wall;
   wall.text = "run_out";
-  wall.style = motion_utils::VirtualWallType::stop;
+  wall.style = autoware_motion_utils::VirtualWallType::stop;
   for (const auto & p : stop_pose_) {
     wall.pose = p;
     virtual_walls.push_back(wall);
@@ -363,7 +363,7 @@ visualization_msgs::msg::MarkerArray RunOutModule::createDebugMarkerArray()
   return debug_ptr_->createVisualizationMarkerArray();
 }
 
-motion_utils::VirtualWalls RunOutModule::createVirtualWalls()
+autoware_motion_utils::VirtualWalls RunOutModule::createVirtualWalls()
 {
   return debug_ptr_->createVirtualWalls();
 }

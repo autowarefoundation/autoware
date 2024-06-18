@@ -352,9 +352,9 @@ void LaneChangeInterface::updateSteeringFactorPtr(const BehaviorModuleOutput & o
 
   const auto current_position = module_type_->getEgoPosition();
   const auto status = module_type_->getLaneChangeStatus();
-  const auto start_distance = motion_utils::calcSignedArcLength(
+  const auto start_distance = autoware_motion_utils::calcSignedArcLength(
     output.path.points, current_position, status.lane_change_path.info.shift_line.start.position);
-  const auto finish_distance = motion_utils::calcSignedArcLength(
+  const auto finish_distance = autoware_motion_utils::calcSignedArcLength(
     output.path.points, current_position, status.lane_change_path.info.shift_line.end.position);
 
   steering_factor_interface_ptr_->updateSteeringFactor(

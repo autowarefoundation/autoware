@@ -31,8 +31,8 @@
 #include <autoware/freespace_planning_algorithms/astar_search.hpp>
 #include <autoware/freespace_planning_algorithms/rrtstar.hpp>
 #include <autoware/lane_departure_checker/lane_departure_checker.hpp>
+#include <autoware/motion_utils/distance/distance.hpp>
 #include <autoware/universe_utils/geometry/boost_geometry.hpp>
-#include <motion_utils/distance/distance.hpp>
 
 #include <autoware_vehicle_msgs/msg/hazard_lights_command.hpp>
 #include <tier4_planning_msgs/msg/path_with_lane_id.hpp>

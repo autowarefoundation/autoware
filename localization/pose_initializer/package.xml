@@ -19,12 +19,12 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_motion_utils</depend>
   <depend>autoware_universe_utils</depend>
   <depend>component_interface_specs</depend>
   <depend>component_interface_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>map_height_fitter</depend>
-  <depend>motion_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>std_srvs</depend>

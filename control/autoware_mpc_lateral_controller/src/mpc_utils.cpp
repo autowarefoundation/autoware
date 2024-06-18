@@ -14,11 +14,11 @@
 
 #include "autoware/mpc_lateral_controller/mpc_utils.hpp"
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware/universe_utils/math/normalization.hpp"
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -346,7 +346,7 @@ bool calcNearestPoseInterp(
     return false;
   }
 
-  *nearest_index = motion_utils::findFirstNearestIndexWithSoftConstraints(
+  *nearest_index = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
     autoware_traj.points, self_pose, max_dist, max_yaw);
   const size_t traj_size = traj.size();
 

@@ -117,7 +117,7 @@ public:
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
-  std::vector<motion_utils::VirtualWall> createVirtualWalls() override;
+  std::vector<autoware_motion_utils::VirtualWall> createVirtualWalls() override;
 
 private:
   // (semi) const variables

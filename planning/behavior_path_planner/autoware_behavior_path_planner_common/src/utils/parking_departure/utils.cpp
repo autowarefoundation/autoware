@@ -16,13 +16,13 @@
 
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 
+#include <autoware/motion_utils/distance/distance.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <motion_utils/distance/distance.hpp>
 
 namespace autoware::behavior_path_planner::utils::parking_departure
 {
 
-using motion_utils::calcDecelDistWithJerkAndAccConstraints;
+using autoware_motion_utils::calcDecelDistWithJerkAndAccConstraints;
 
 std::optional<double> calcFeasibleDecelDistance(
   std::shared_ptr<const PlannerData> planner_data, const double acc_lim, const double jerk_lim,
@@ -58,7 +58,7 @@ void modifyVelocityByDirection(
   auto pair_itr = std::begin(terminal_vel_acc_pairs);
 
   for (; path_itr != std::end(paths); ++path_itr, ++pair_itr) {
-    const auto is_driving_forward = motion_utils::isDrivingForward(path_itr->points);
+    const auto is_driving_forward = autoware_motion_utils::isDrivingForward(path_itr->points);
 
     // If the number of points in the path is less than 2, don't insert stop velocity and
     // set pairs_terminal_velocity_and_accel to 0
@@ -144,7 +144,7 @@ std::optional<PathWithLaneId> generateFeasibleStopPath(
   }
 
   // set stop point
-  const auto stop_idx = motion_utils::insertStopPoint(
+  const auto stop_idx = autoware_motion_utils::insertStopPoint(
     planner_data->self_odometry->pose.pose, *min_stop_distance, current_path.points);
 
   if (!stop_idx) {

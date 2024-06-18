@@ -131,7 +131,7 @@ bool JerkFilteredSmoother::apply(
 
   // to avoid getting 0 as a stop point, search zero velocity index from 1.
   // the size of the resampled trajectory must not be less than 2.
-  const auto zero_vel_id = motion_utils::searchZeroVelocityIndex(
+  const auto zero_vel_id = autoware_motion_utils::searchZeroVelocityIndex(
     opt_resampled_trajectory, 1, opt_resampled_trajectory.size());
 
   if (!zero_vel_id) {

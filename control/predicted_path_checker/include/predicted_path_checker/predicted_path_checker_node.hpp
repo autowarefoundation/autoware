@@ -15,6 +15,8 @@
 #ifndef PREDICTED_PATH_CHECKER__PREDICTED_PATH_CHECKER_NODE_HPP_
 #define PREDICTED_PATH_CHECKER__PREDICTED_PATH_CHECKER_NODE_HPP_
 
+#include <autoware/motion_utils/trajectory/conversion.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/self_pose_listener.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info.hpp>
@@ -22,8 +24,6 @@
 #include <component_interface_specs/control.hpp>
 #include <component_interface_utils/rclcpp.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
-#include <motion_utils/trajectory/conversion.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 #include <predicted_path_checker/collision_checker.hpp>
 #include <predicted_path_checker/utils.hpp>
 

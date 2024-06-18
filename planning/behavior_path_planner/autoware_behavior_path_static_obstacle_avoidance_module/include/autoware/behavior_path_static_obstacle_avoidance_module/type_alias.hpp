@@ -15,13 +15,13 @@
 #ifndef AUTOWARE__BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__TYPE_ALIAS_HPP_
 #define AUTOWARE__BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__TYPE_ALIAS_HPP_
 
+#include <autoware/motion_utils/distance/distance.hpp>
+#include <autoware/motion_utils/trajectory/path_with_lane_id.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
 #include <autoware/universe_utils/ros/uuid_helper.hpp>
-#include <motion_utils/distance/distance.hpp>
-#include <motion_utils/trajectory/path_with_lane_id.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_object.hpp>
 #include <autoware_vehicle_msgs/msg/turn_indicators_command.hpp>

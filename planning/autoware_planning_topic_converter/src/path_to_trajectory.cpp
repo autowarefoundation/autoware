@@ -14,8 +14,8 @@
 
 #include "autoware/planning_topic_converter/path_to_trajectory.hpp"
 
+#include <autoware/motion_utils/trajectory/conversion.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
-#include <motion_utils/trajectory/conversion.hpp>
 
 namespace autoware::planning_topic_converter
 {
@@ -50,7 +50,7 @@ PathToTrajectory::PathToTrajectory(const rclcpp::NodeOptions & options)
 void PathToTrajectory::process(const Path::ConstSharedPtr msg)
 {
   const auto trajectory_points = convertToTrajectoryPoints(msg->points);
-  const auto output = motion_utils::convertToTrajectory(trajectory_points, msg->header);
+  const auto output = autoware_motion_utils::convertToTrajectory(trajectory_points, msg->header);
   pub_->publish(output);
 }
 

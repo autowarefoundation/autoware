@@ -15,11 +15,11 @@
 #ifndef MOTION_HPP_
 #define MOTION_HPP_
 
+#include <autoware/motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <autoware_ad_api_specs/motion.hpp>
 #include <component_interface_specs/control.hpp>
 #include <component_interface_utils/rclcpp.hpp>
 #include <component_interface_utils/status.hpp>
-#include <motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 // This file should be included after messages.
@@ -34,7 +34,7 @@ public:
   explicit MotionNode(const rclcpp::NodeOptions & options);
 
 private:
-  motion_utils::VehicleStopChecker vehicle_stop_checker_;
+  autoware_motion_utils::VehicleStopChecker vehicle_stop_checker_;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::CallbackGroup::SharedPtr group_cli_;
   Srv<autoware_ad_api::motion::AcceptStart> srv_accept_;

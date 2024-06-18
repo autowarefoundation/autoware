@@ -14,7 +14,7 @@
 
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 
-#include "motion_utils/trajectory/trajectory.hpp"
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 
 #include <boost/algorithm/clamp.hpp>
 #include <boost/assert.hpp>
@@ -366,7 +366,8 @@ void AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   /* get total distance to collision point */
   double dist_to_point = 0;
   // get distance from self to next nearest point
-  dist_to_point += motion_utils::calcSignedArcLength(trajectory, self_pose.position, size_t(1));
+  dist_to_point +=
+    autoware_motion_utils::calcSignedArcLength(trajectory, self_pose.position, size_t(1));
 
   // add distance from next self-nearest-point(=idx:0) to prev point of nearest_point_idx
   for (int i = 1; i < nearest_point_idx - 1; i++) {
@@ -685,7 +686,7 @@ void AdaptiveCruiseController::insertMaxVelocityToPath(
 
   if (output_trajectory->size() > 1) {
     dist_to_first_point =
-      motion_utils::calcSignedArcLength(*output_trajectory, self_pose.position, size_t(1));
+      autoware_motion_utils::calcSignedArcLength(*output_trajectory, self_pose.position, size_t(1));
   }
 
   double margin_to_insert = dist_to_collision_point * param_.margin_rate_to_change_vel;

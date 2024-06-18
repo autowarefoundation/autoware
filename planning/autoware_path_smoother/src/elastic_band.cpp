@@ -14,11 +14,11 @@
 
 #include "autoware/path_smoother/elastic_band.hpp"
 
+#include "autoware/motion_utils/trajectory/conversion.hpp"
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/path_smoother/type_alias.hpp"
 #include "autoware/path_smoother/utils/geometry_utils.hpp"
 #include "autoware/path_smoother/utils/trajectory_utils.hpp"
-#include "motion_utils/trajectory/conversion.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
 
 #include <Eigen/Core>
@@ -212,7 +212,7 @@ std::vector<TrajectoryPoint> EBPathSmoother::smoothTrajectory(
 
   const size_t ego_seg_idx =
     trajectory_utils::findEgoSegmentIndex(traj_points, ego_pose, ego_nearest_param_);
-  const auto cropped_traj_points = motion_utils::cropPoints(
+  const auto cropped_traj_points = autoware_motion_utils::cropPoints(
     traj_points, ego_pose.position, ego_seg_idx, forward_traj_length, backward_traj_length);
 
   // check if goal is contained in cropped_traj_points
@@ -263,7 +263,7 @@ std::vector<TrajectoryPoint> EBPathSmoother::smoothTrajectory(
 
   // 8. publish eb trajectory
   const auto eb_traj =
-    motion_utils::convertToTrajectory(*eb_traj_points, createHeader(clock_.now()));
+    autoware_motion_utils::convertToTrajectory(*eb_traj_points, createHeader(clock_.now()));
   debug_eb_traj_pub_->publish(eb_traj);
 
   time_keeper_ptr_->toc(__func__, "      ");
@@ -390,7 +390,7 @@ void EBPathSmoother::updateConstraint(
 
   // publish fixed trajectory
   const auto eb_fixed_traj =
-    motion_utils::convertToTrajectory(debug_fixed_traj_points, createHeader(clock_.now()));
+    autoware_motion_utils::convertToTrajectory(debug_fixed_traj_points, createHeader(clock_.now()));
   debug_eb_fixed_traj_pub_->publish(eb_fixed_traj);
 
   time_keeper_ptr_->toc(__func__, "        ");
@@ -448,7 +448,7 @@ std::optional<std::vector<TrajectoryPoint>> EBPathSmoother::convertOptimizedPoin
   }
 
   // update orientation
-  motion_utils::insertOrientation(eb_traj_points, true);
+  autoware_motion_utils::insertOrientation(eb_traj_points, true);
 
   time_keeper_ptr_->toc(__func__, "        ");
   return eb_traj_points;

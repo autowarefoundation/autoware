@@ -14,10 +14,10 @@
 
 #include "obstacle_stop_planner/planner_utils.hpp"
 
+#include <autoware/motion_utils/distance/distance.hpp>
+#include <autoware/motion_utils/trajectory/conversion.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
-#include <motion_utils/distance/distance.hpp>
-#include <motion_utils/trajectory/conversion.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <diagnostic_msgs/msg/key_value.hpp>
 
@@ -32,13 +32,13 @@
 namespace motion_planning
 {
 
+using autoware_motion_utils::calcDecelDistWithJerkAndAccConstraints;
+using autoware_motion_utils::findFirstNearestIndexWithSoftConstraints;
+using autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_universe_utils::calcDistance2d;
 using autoware_universe_utils::getRPY;
-using motion_utils::calcDecelDistWithJerkAndAccConstraints;
-using motion_utils::findFirstNearestIndexWithSoftConstraints;
-using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
 
 std::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
   const SlowDownParam & slow_down_param, const double dist_baselink_to_obstacle,

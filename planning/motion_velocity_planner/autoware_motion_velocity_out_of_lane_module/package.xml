@@ -14,6 +14,7 @@
 
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_motion_utils</depend>
   <depend>autoware_motion_velocity_planner_common</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
@@ -23,7 +24,6 @@
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
   <depend>libboost-dev</depend>
-  <depend>motion_utils</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>tf2</depend>

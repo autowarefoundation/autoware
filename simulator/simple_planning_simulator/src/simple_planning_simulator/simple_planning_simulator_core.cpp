@@ -14,11 +14,11 @@
 
 #include "simple_planning_simulator/simple_planning_simulator_core.hpp"
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware/universe_utils/ros/msg_covariance.hpp"
 #include "autoware/universe_utils/ros/update_param.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model.hpp"
 
@@ -333,7 +333,7 @@ double SimplePlanningSimulator::calculate_ego_pitch() const
   }
   const auto centerline_points = convert_centerline_to_points(ego_lanelet);
   const size_t ego_seg_idx =
-    motion_utils::findNearestSegmentIndex(centerline_points, ego_pose.position);
+    autoware_motion_utils::findNearestSegmentIndex(centerline_points, ego_pose.position);
 
   const auto & prev_point = centerline_points.at(ego_seg_idx);
   const auto & next_point = centerline_points.at(ego_seg_idx + 1);

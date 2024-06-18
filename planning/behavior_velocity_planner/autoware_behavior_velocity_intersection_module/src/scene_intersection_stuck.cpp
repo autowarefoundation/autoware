@@ -16,8 +16,8 @@
 #include "util.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for toGeomPoly
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/algorithms/intersection.hpp>
@@ -124,7 +124,7 @@ std::optional<StuckStop> IntersectionModule::isStuckStatus(
 {
   const auto closest_idx = intersection_stoplines.closest_idx;
   auto fromEgoDist = [&](const size_t index) {
-    return motion_utils::calcSignedArcLength(path.points, closest_idx, index);
+    return autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, index);
   };
 
   const auto & intersection_lanelets = intersection_lanelets_.value();  // this is OK
@@ -310,7 +310,7 @@ std::optional<YieldStuckStop> IntersectionModule::isYieldStuckStatus(
 {
   const auto closest_idx = intersection_stoplines.closest_idx;
   auto fromEgoDist = [&](const size_t index) {
-    return motion_utils::calcSignedArcLength(path.points, closest_idx, index);
+    return autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, index);
   };
   const auto & intersection_lanelets = intersection_lanelets_.value();
   const auto default_stopline_idx = intersection_stoplines.default_stopline.value();

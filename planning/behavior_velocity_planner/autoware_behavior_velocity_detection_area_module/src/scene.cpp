@@ -16,7 +16,7 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
 #else
@@ -33,8 +33,8 @@
 namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
-using motion_utils::calcLongitudinalOffsetPose;
-using motion_utils::calcSignedArcLength;
+using autoware_motion_utils::calcLongitudinalOffsetPose;
+using autoware_motion_utils::calcSignedArcLength;
 
 DetectionAreaModule::DetectionAreaModule(
   const int64_t module_id, const int64_t lane_id,

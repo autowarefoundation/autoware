@@ -32,8 +32,8 @@
 
 #include "autoware/freespace_planning_algorithms/abstract_algorithm.hpp"
 
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <algorithm>
 #include <deque>
@@ -142,7 +142,7 @@ Trajectory getPartialTrajectory(
 
 double calcDistance2d(const Trajectory & trajectory, const Pose & pose)
 {
-  const auto idx = motion_utils::findNearestIndex(trajectory.points, pose.position);
+  const auto idx = autoware_motion_utils::findNearestIndex(trajectory.points, pose.position);
   return autoware_universe_utils::calcDistance2d(trajectory.points.at(idx), pose);
 }
 
@@ -365,8 +365,8 @@ bool FreespacePlannerNode::isPlanRequired()
   if (node_param_.replan_when_obstacle_found) {
     algo_->setMap(*occupancy_grid_);
 
-    const size_t nearest_index_partial =
-      motion_utils::findNearestIndex(partial_trajectory_.points, current_pose_.pose.position);
+    const size_t nearest_index_partial = autoware_motion_utils::findNearestIndex(
+      partial_trajectory_.points, current_pose_.pose.position);
     const size_t end_index_partial = partial_trajectory_.points.size() - 1;
 
     const auto forward_trajectory =

@@ -13,12 +13,12 @@
 // limitations under the License.
 #include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
+#include "autoware/motion_utils/trajectory/path_with_lane_id.hpp"
 #include "input.hpp"
 #include "lanelet2_core/Attribute.h"
 #include "lanelet2_core/geometry/LineString.h"
 #include "lanelet2_core/geometry/Point.h"
 #include "lanelet2_core/primitives/Lanelet.h"
-#include "motion_utils/trajectory/path_with_lane_id.hpp"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -34,8 +34,9 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetOnStraightLin
     autoware::behavior_path_planner::generateStraightSamplePathWithLaneId(0.0f, 1.0f, 10u);
   Pose vehicle_pose = autoware::behavior_path_planner::generateEgoSamplePose(10.7f, -1.7f, 0.0);
 
-  const size_t vehicle_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    path.points, vehicle_pose, 3.0, 1.0);
+  const size_t vehicle_seg_idx =
+    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      path.points, vehicle_pose, 3.0, 1.0);
   const auto vehicle_pose_frenet = autoware::behavior_path_planner::utils::convertToFrenetPoint(
     path.points, vehicle_pose.position, vehicle_seg_idx);
 
@@ -49,8 +50,9 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetOnDiagonalLin
     autoware::behavior_path_planner::generateDiagonalSamplePathWithLaneId(0.0f, 1.0f, 10u);
   Pose vehicle_pose = autoware::behavior_path_planner::generateEgoSamplePose(0.1f, 0.1f, 0.0);
 
-  const size_t vehicle_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    path.points, vehicle_pose, 3.0, 1.0);
+  const size_t vehicle_seg_idx =
+    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      path.points, vehicle_pose, 3.0, 1.0);
   const auto vehicle_pose_frenet = autoware::behavior_path_planner::utils::convertToFrenetPoint(
     path.points, vehicle_pose.position, vehicle_seg_idx);
 

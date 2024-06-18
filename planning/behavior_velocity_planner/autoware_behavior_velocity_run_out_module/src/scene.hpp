@@ -52,7 +52,7 @@ public:
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
-  motion_utils::VirtualWalls createVirtualWalls() override;
+  autoware_motion_utils::VirtualWalls createVirtualWalls() override;
 
   void setPlannerParam(const PlannerParam & planner_param);
 

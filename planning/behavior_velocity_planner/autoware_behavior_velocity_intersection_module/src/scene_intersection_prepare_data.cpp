@@ -17,11 +17,11 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for to_bg2d
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>  // for planning_utils::
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <interpolation/spline_interpolation_points_2d.hpp>
 #include <lanelet2_extension/regulatory_elements/road_marking.hpp>  // for lanelet::autoware::RoadMarking
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <boost/geometry/algorithms/intersection.hpp>
 #include <boost/geometry/algorithms/within.hpp>
@@ -198,7 +198,7 @@ Result<IntersectionModule::BasicData, InternalError> IntersectionModule::prepare
 
   const auto & path_ip = interpolated_path_info.path;
   const auto & path_ip_intersection_end = interpolated_path_info.lane_id_interval.value().second;
-  internal_debug_data_.distance = motion_utils::calcSignedArcLength(
+  internal_debug_data_.distance = autoware_motion_utils::calcSignedArcLength(
     path->points, current_pose.position,
     path_ip.points.at(path_ip_intersection_end).point.pose.position);
 
@@ -275,7 +275,7 @@ Result<IntersectionModule::BasicData, InternalError> IntersectionModule::prepare
     if (is_green_solid_on && !initial_green_light_observed_time_) {
       const auto assigned_lane_begin_point = assigned_lanelet.centerline().front();
       const bool approached_assigned_lane =
-        motion_utils::calcSignedArcLength(
+        autoware_motion_utils::calcSignedArcLength(
           path->points, closest_idx,
           autoware_universe_utils::createPoint(
             assigned_lane_begin_point.x(), assigned_lane_begin_point.y(),
@@ -338,7 +338,7 @@ std::optional<size_t> IntersectionModule::getStopLineIndexFromMap(
   stop_point_from_map.position.y = 0.5 * (p_start.y() + p_end.y());
   stop_point_from_map.position.z = 0.5 * (p_start.z() + p_end.z());
 
-  return motion_utils::findFirstNearestIndexWithSoftConstraints(
+  return autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
     path.points, stop_point_from_map, planner_data_->ego_nearest_dist_threshold,
     planner_data_->ego_nearest_yaw_threshold);
 }
@@ -413,7 +413,7 @@ std::optional<IntersectionStopLines> IntersectionModule::generateIntersectionSto
 
   // (2) ego front stop line position on interpolated path
   const geometry_msgs::msg::Pose & current_pose = planner_data_->current_odometry->pose;
-  const auto closest_idx_ip = motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const auto closest_idx_ip = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
     path_ip.points, current_pose, planner_data_->ego_nearest_dist_threshold,
     planner_data_->ego_nearest_yaw_threshold);
 

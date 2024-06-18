@@ -18,13 +18,13 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for toGeomPoly
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/motion_utils/factor/velocity_factor_interface.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>  // for toPolygon2d
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/uuid_helper.hpp>
 #include <lanelet2_extension/regulatory_elements/autoware_traffic_light.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <motion_utils/factor/velocity_factor_interface.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <boost/geometry/algorithms/within.hpp>
 
@@ -42,7 +42,7 @@ namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
-using motion_utils::VelocityFactorInterface;
+using autoware_motion_utils::VelocityFactorInterface;
 
 IntersectionModule::IntersectionModule(
   const int64_t module_id, const int64_t lane_id,
@@ -342,7 +342,7 @@ DecisionResult IntersectionModule::modifyPathVelocityDetail(
   // Occluded
   // utility functions
   auto fromEgoDist = [&](const size_t index) {
-    return motion_utils::calcSignedArcLength(path->points, closest_idx, index);
+    return autoware_motion_utils::calcSignedArcLength(path->points, closest_idx, index);
   };
   auto stoppedForDuration =
     [&](const size_t pos, const double duration, StateMachine & state_machine) {
@@ -527,12 +527,13 @@ void prepareRTCByDecisionResult(
   const auto closest_idx = result.closest_idx;
   const auto stopline_idx = result.stuck_stopline_idx;
   *default_safety = false;
-  *default_distance = motion_utils::calcSignedArcLength(path.points, closest_idx, stopline_idx);
+  *default_distance =
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, stopline_idx);
   *occlusion_safety = true;
   if (result.occlusion_stopline_idx) {
     const auto occlusion_stopline_idx = result.occlusion_stopline_idx.value();
     *occlusion_distance =
-      motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline_idx);
+      autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline_idx);
   }
   return;
 }
@@ -547,7 +548,8 @@ void prepareRTCByDecisionResult(
   const auto closest_idx = result.closest_idx;
   const auto stopline_idx = result.stuck_stopline_idx;
   *default_safety = false;
-  *default_distance = motion_utils::calcSignedArcLength(path.points, closest_idx, stopline_idx);
+  *default_distance =
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, stopline_idx);
   *occlusion_safety = true;
   return;
 }
@@ -563,11 +565,11 @@ void prepareRTCByDecisionResult(
   const auto collision_stopline_idx = result.collision_stopline_idx;
   *default_safety = false;
   *default_distance =
-    motion_utils::calcSignedArcLength(path.points, closest_idx, collision_stopline_idx);
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, collision_stopline_idx);
   const auto occlusion_stopline = result.occlusion_stopline_idx;
   *occlusion_safety = true;
   *occlusion_distance =
-    motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline);
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline);
   return;
 }
 
@@ -583,10 +585,10 @@ void prepareRTCByDecisionResult(
   const auto occlusion_stopline_idx = result.occlusion_stopline_idx;
   *default_safety = false;
   *default_distance =
-    motion_utils::calcSignedArcLength(path.points, closest_idx, first_stopline_idx);
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, first_stopline_idx);
   *occlusion_safety = result.is_actually_occlusion_cleared;
   *occlusion_distance =
-    motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline_idx);
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline_idx);
   return;
 }
 
@@ -602,10 +604,10 @@ void prepareRTCByDecisionResult(
   const auto occlusion_stopline_idx = result.occlusion_stopline_idx;
   *default_safety = true;
   *default_distance =
-    motion_utils::calcSignedArcLength(path.points, closest_idx, collision_stopline_idx);
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, collision_stopline_idx);
   *occlusion_safety = result.is_actually_occlusion_cleared;
   *occlusion_distance =
-    motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline_idx);
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline_idx);
   return;
 }
 
@@ -620,7 +622,7 @@ void prepareRTCByDecisionResult(
   const auto collision_stopline_idx = result.closest_idx;
   *default_safety = !result.collision_detected;
   *default_distance =
-    motion_utils::calcSignedArcLength(path.points, closest_idx, collision_stopline_idx);
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, collision_stopline_idx);
   *occlusion_safety = result.is_actually_occlusion_cleared;
   *occlusion_distance = 0;
   return;
@@ -638,10 +640,10 @@ void prepareRTCByDecisionResult(
   const auto occlusion_stopline_idx = result.occlusion_stopline_idx;
   *default_safety = false;
   *default_distance =
-    motion_utils::calcSignedArcLength(path.points, closest_idx, collision_stopline_idx);
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, collision_stopline_idx);
   *occlusion_safety = result.is_actually_occlusion_cleared;
   *occlusion_distance =
-    motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline_idx);
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline_idx);
   return;
 }
 
@@ -656,10 +658,10 @@ void prepareRTCByDecisionResult(
   const auto occlusion_stopline_idx = result.occlusion_stopline_idx;
   *default_safety = true;
   *default_distance =
-    motion_utils::calcSignedArcLength(path.points, closest_idx, collision_stopline_idx);
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, collision_stopline_idx);
   *occlusion_safety = true;
   *occlusion_distance =
-    motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline_idx);
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline_idx);
   return;
 }
 
@@ -675,10 +677,10 @@ void prepareRTCByDecisionResult(
   const auto occlusion_stopline_idx = result.occlusion_stopline_idx;
   *default_safety = !result.collision_detected;
   *default_distance =
-    motion_utils::calcSignedArcLength(path.points, closest_idx, collision_stopline_idx);
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, collision_stopline_idx);
   *occlusion_safety = true;
   *occlusion_distance =
-    motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline_idx);
+    autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, occlusion_stopline_idx);
   return;
 }
 

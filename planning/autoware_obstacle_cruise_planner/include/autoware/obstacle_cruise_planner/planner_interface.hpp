@@ -15,13 +15,13 @@
 #ifndef AUTOWARE__OBSTACLE_CRUISE_PLANNER__PLANNER_INTERFACE_HPP_
 #define AUTOWARE__OBSTACLE_CRUISE_PLANNER__PLANNER_INTERFACE_HPP_
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/obstacle_cruise_planner/common_structs.hpp"
 #include "autoware/obstacle_cruise_planner/stop_planning_debug_info.hpp"
 #include "autoware/obstacle_cruise_planner/type_alias.hpp"
 #include "autoware/obstacle_cruise_planner/utils.hpp"
 #include "autoware/universe_utils/ros/update_param.hpp"
 #include "autoware/universe_utils/system/stop_watch.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -172,7 +172,7 @@ protected:
     const geometry_msgs::msg::Pose & ego_pose) const
   {
     const auto & p = ego_nearest_param_;
-    return motion_utils::findFirstNearestIndexWithSoftConstraints(
+    return autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
       traj_points, ego_pose, p.dist_threshold, p.yaw_threshold);
   }
 
@@ -181,7 +181,7 @@ protected:
     const geometry_msgs::msg::Pose & ego_pose) const
   {
     const auto & p = ego_nearest_param_;
-    return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    return autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       traj_points, ego_pose, p.dist_threshold, p.yaw_threshold);
   }
 

@@ -28,12 +28,12 @@
 
 namespace autoware::behavior_path_planner
 {
+using autoware_motion_utils::calcSignedArcLength;
+using autoware_motion_utils::findNearestIndex;
+using autoware_motion_utils::findNearestSegmentIndex;
 using autoware_universe_utils::calcDistance2d;
 using autoware_universe_utils::getPoint;
 using geometry_msgs::msg::Point;
-using motion_utils::calcSignedArcLength;
-using motion_utils::findNearestIndex;
-using motion_utils::findNearestSegmentIndex;
 
 SideShiftModule::SideShiftModule(
   const std::string & name, rclcpp::Node & node,
@@ -373,7 +373,7 @@ double SideShiftModule::getClosestShiftLength() const
   }
 
   const auto ego_point = planner_data_->self_odometry->pose.pose.position;
-  const auto closest = motion_utils::findNearestIndex(prev_output_.path.points, ego_point);
+  const auto closest = autoware_motion_utils::findNearestIndex(prev_output_.path.points, ego_point);
   return prev_output_.shift_length.at(closest);
 }
 
@@ -396,7 +396,7 @@ BehaviorModuleOutput SideShiftModule::adjustDrivableArea(const ShiftedPath & pat
   auto output_path = path.path;
   const size_t current_seg_idx = planner_data_->findEgoSegmentIndex(output_path.points);
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
-  output_path.points = motion_utils::cropPoints(
+  output_path.points = autoware_motion_utils::cropPoints(
     output_path.points, current_pose.position, current_seg_idx, p.forward_path_length,
     p.backward_path_length + p.input_path_interval);
 

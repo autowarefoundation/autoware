@@ -14,13 +14,13 @@
 
 #include "autoware/path_optimizer/mpt_optimizer.hpp"
 
+#include "autoware/motion_utils/trajectory/conversion.hpp"
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/path_optimizer/utils/geometry_utils.hpp"
 #include "autoware/path_optimizer/utils/trajectory_utils.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware/universe_utils/math/normalization.hpp"
 #include "interpolation/spline_interpolation_points_2d.hpp"
-#include "motion_utils/trajectory/conversion.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
 
 #include <algorithm>
@@ -564,7 +564,7 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
   constexpr double tmp_margin = 10.0;
   size_t ego_seg_idx =
     trajectory_utils::findEgoSegmentIndex(ref_points, p.ego_pose, ego_nearest_param_);
-  ref_points = motion_utils::cropPoints(
+  ref_points = autoware_motion_utils::cropPoints(
     ref_points, p.ego_pose.position, ego_seg_idx, forward_traj_length + tmp_margin,
     backward_traj_length + tmp_margin);
 
@@ -579,7 +579,7 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
 
   // 4. crop backward
   // NOTE: Start point may change. Spline calculation is required.
-  ref_points = motion_utils::cropPoints(
+  ref_points = autoware_motion_utils::cropPoints(
     ref_points, p.ego_pose.position, ego_seg_idx, forward_traj_length + tmp_margin,
     backward_traj_length);
   ref_points_spline = SplineInterpolationPoints2d(ref_points);
@@ -605,7 +605,7 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
   updateExtraPoints(ref_points);
 
   // 9. crop forward
-  // ref_points = motion_utils::cropForwardPoints(
+  // ref_points = autoware_motion_utils::cropForwardPoints(
   //   ref_points, p.ego_pose.position, ego_seg_idx, forward_traj_length);
   if (static_cast<size_t>(mpt_param_.num_points) < ref_points.size()) {
     ref_points.resize(mpt_param_.num_points);
@@ -1587,7 +1587,7 @@ Eigen::VectorXd MPTOptimizer::calcInitialSolutionForManualWarmStart(
 
   Eigen::VectorXd u0 = Eigen::VectorXd::Zero(D_un);
 
-  const size_t nearest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const size_t nearest_idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
     prev_ref_points, ref_points.front().pose, ego_nearest_param_.dist_threshold,
     ego_nearest_param_.yaw_threshold);
 
@@ -1713,17 +1713,17 @@ void MPTOptimizer::publishDebugTrajectories(
   time_keeper_ptr_->tic(__func__);
 
   // reference points
-  const auto ref_traj = motion_utils::convertToTrajectory(
+  const auto ref_traj = autoware_motion_utils::convertToTrajectory(
     trajectory_utils::convertToTrajectoryPoints(ref_points), header);
   debug_ref_traj_pub_->publish(ref_traj);
 
   // fixed reference points
   const auto fixed_traj_points = extractFixedPoints(ref_points);
-  const auto fixed_traj = motion_utils::convertToTrajectory(fixed_traj_points, header);
+  const auto fixed_traj = autoware_motion_utils::convertToTrajectory(fixed_traj_points, header);
   debug_fixed_traj_pub_->publish(fixed_traj);
 
   // mpt points
-  const auto mpt_traj = motion_utils::convertToTrajectory(mpt_traj_points, header);
+  const auto mpt_traj = autoware_motion_utils::convertToTrajectory(mpt_traj_points, header);
   debug_mpt_traj_pub_->publish(mpt_traj);
 
   time_keeper_ptr_->toc(__func__, "        ");

@@ -15,7 +15,7 @@
 #ifndef AUTOWARE__MOTION_VELOCITY_PLANNER_COMMON__VELOCITY_PLANNING_RESULT_HPP_
 #define AUTOWARE__MOTION_VELOCITY_PLANNER_COMMON__VELOCITY_PLANNING_RESULT_HPP_
 
-#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
+#include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/velocity_factor.hpp>
 #include <geometry_msgs/msg/point.hpp>

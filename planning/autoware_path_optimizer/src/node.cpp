@@ -14,12 +14,12 @@
 
 #include "autoware/path_optimizer/node.hpp"
 
+#include "autoware/motion_utils/marker/marker_helper.hpp"
+#include "autoware/motion_utils/trajectory/conversion.hpp"
 #include "autoware/path_optimizer/debug_marker.hpp"
 #include "autoware/path_optimizer/utils/geometry_utils.hpp"
 #include "autoware/path_optimizer/utils/trajectory_utils.hpp"
 #include "interpolation/spline_interpolation_points_2d.hpp"
-#include "motion_utils/marker/marker_helper.hpp"
-#include "motion_utils/trajectory/conversion.hpp"
 #include "rclcpp/time.hpp"
 
 #include <chrono>
@@ -56,7 +56,7 @@ Float64Stamped createFloat64Stamped(const rclcpp::Time & now, const float & data
 
 void setZeroVelocityAfterStopPoint(std::vector<TrajectoryPoint> & traj_points)
 {
-  const auto opt_zero_vel_idx = motion_utils::searchZeroVelocityIndex(traj_points);
+  const auto opt_zero_vel_idx = autoware_motion_utils::searchZeroVelocityIndex(traj_points);
   if (opt_zero_vel_idx) {
     for (size_t i = opt_zero_vel_idx.value(); i < traj_points.size(); ++i) {
       traj_points.at(i).longitudinal_velocity_mps = 0.0;
@@ -245,7 +245,8 @@ void PathOptimizer::onPath(const Path::ConstSharedPtr path_ptr)
       "Backward path is NOT supported. Just converting path to trajectory");
 
     const auto traj_points = trajectory_utils::convertToTrajectoryPoints(path_ptr->points);
-    const auto output_traj_msg = motion_utils::convertToTrajectory(traj_points, path_ptr->header);
+    const auto output_traj_msg =
+      autoware_motion_utils::convertToTrajectory(traj_points, path_ptr->header);
     traj_pub_->publish(output_traj_msg);
     published_time_publisher_->publish_if_subscribed(traj_pub_, output_traj_msg.header.stamp);
     return;
@@ -278,7 +279,7 @@ void PathOptimizer::onPath(const Path::ConstSharedPtr path_ptr)
     createFloat64Stamped(now(), time_keeper_ptr_->getAccumulatedTime()));
 
   const auto output_traj_msg =
-    motion_utils::convertToTrajectory(full_traj_points, path_ptr->header);
+    autoware_motion_utils::convertToTrajectory(full_traj_points, path_ptr->header);
   traj_pub_->publish(output_traj_msg);
   published_time_publisher_->publish_if_subscribed(traj_pub_, output_traj_msg.header.stamp);
 }
@@ -399,7 +400,7 @@ void PathOptimizer::applyInputVelocity(
 
     const size_t ego_seg_idx =
       trajectory_utils::findEgoSegmentIndex(input_traj_points, ego_pose, ego_nearest_param_);
-    const auto cropped_points = motion_utils::cropForwardPoints(
+    const auto cropped_points = autoware_motion_utils::cropForwardPoints(
       input_traj_points, ego_pose.position, ego_seg_idx,
       optimized_traj_length + margin_traj_length);
 
@@ -451,14 +452,15 @@ void PathOptimizer::applyInputVelocity(
   }
 
   // insert stop point explicitly
-  const auto stop_idx = motion_utils::searchZeroVelocityIndex(forward_cropped_input_traj_points);
+  const auto stop_idx =
+    autoware_motion_utils::searchZeroVelocityIndex(forward_cropped_input_traj_points);
   if (stop_idx) {
     const auto & input_stop_pose = forward_cropped_input_traj_points.at(stop_idx.value()).pose;
-    // NOTE: motion_utils::findNearestSegmentIndex is used instead of
+    // NOTE: autoware_motion_utils::findNearestSegmentIndex is used instead of
     // trajectory_utils::findEgoSegmentIndex
     //       for the case where input_traj_points is much longer than output_traj_points, and the
     //       former has a stop point but the latter will not have.
-    const auto stop_seg_idx = motion_utils::findNearestSegmentIndex(
+    const auto stop_seg_idx = autoware_motion_utils::findNearestSegmentIndex(
       output_traj_points, input_stop_pose, ego_nearest_param_.dist_threshold,
       ego_nearest_param_.yaw_threshold);
 
@@ -469,10 +471,10 @@ void PathOptimizer::applyInputVelocity(
       }
       if (*stop_seg_idx == output_traj_points.size() - 2) {
         const double signed_projected_length_to_segment =
-          motion_utils::calcLongitudinalOffsetToSegment(
+          autoware_motion_utils::calcLongitudinalOffsetToSegment(
             output_traj_points, *stop_seg_idx, input_stop_pose.position);
-        const double segment_length =
-          motion_utils::calcSignedArcLength(output_traj_points, *stop_seg_idx, *stop_seg_idx + 1);
+        const double segment_length = autoware_motion_utils::calcSignedArcLength(
+          output_traj_points, *stop_seg_idx, *stop_seg_idx + 1);
         if (segment_length < signed_projected_length_to_segment) {
           // NOTE: input_stop_pose is outside output_traj_points.
           return false;
@@ -531,10 +533,10 @@ void PathOptimizer::insertZeroVelocityOutsideDrivableArea(
     debug_data_ptr_->stop_pose_by_drivable_area = optimized_traj_points.at(*first_outside_idx).pose;
     const auto stop_idx = [&]() {
       const auto dist =
-        motion_utils::calcSignedArcLength(optimized_traj_points, 0, *first_outside_idx);
+        autoware_motion_utils::calcSignedArcLength(optimized_traj_points, 0, *first_outside_idx);
       const auto dist_with_margin = dist - vehicle_stop_margin_outside_drivable_area_;
       const auto first_outside_idx_with_margin =
-        motion_utils::insertTargetPoint(0, dist_with_margin, optimized_traj_points);
+        autoware_motion_utils::insertTargetPoint(0, dist_with_margin, optimized_traj_points);
       if (first_outside_idx_with_margin) {
         return *first_outside_idx_with_margin;
       }
@@ -559,7 +561,7 @@ void PathOptimizer::publishVirtualWall(const geometry_msgs::msg::Pose & stop_pos
 {
   time_keeper_ptr_->tic(__func__);
 
-  auto virtual_wall_marker = motion_utils::createStopVirtualWallMarker(
+  auto virtual_wall_marker = autoware_motion_utils::createStopVirtualWallMarker(
     stop_pose, "outside drivable area", now(), 0, vehicle_info_.max_longitudinal_offset_m);
   if (!enable_outside_drivable_area_stop_) {
     virtual_wall_marker.markers.front().color =
@@ -662,7 +664,7 @@ void PathOptimizer::publishDebugData(const Header & header) const
 
   // publish trajectories
   const auto debug_extended_traj =
-    motion_utils::convertToTrajectory(debug_data_ptr_->extended_traj_points, header);
+    autoware_motion_utils::convertToTrajectory(debug_data_ptr_->extended_traj_points, header);
   debug_extended_traj_pub_->publish(debug_extended_traj);
 
   time_keeper_ptr_->toc(__func__, "  ");

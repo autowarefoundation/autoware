@@ -19,8 +19,8 @@
 #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/algorithms/intersects.hpp>
@@ -68,7 +68,7 @@ std::optional<size_t> insertPointIndex(
     return duplicate_idx_opt.value();
   }
 
-  const size_t closest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const size_t closest_idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
     inout_path->points, in_pose, ego_nearest_dist_threshold, ego_nearest_yaw_threshold);
   // vector.insert(i) inserts element on the left side of v[i]
   // the velocity need to be zero order hold(from prior point)

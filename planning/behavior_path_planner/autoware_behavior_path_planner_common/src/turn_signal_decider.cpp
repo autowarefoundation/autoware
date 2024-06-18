@@ -16,15 +16,15 @@
 
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 
+#include <autoware/motion_utils/constants.hpp>
+#include <autoware/motion_utils/resample/resample.hpp>
+#include <autoware/motion_utils/trajectory/path_with_lane_id.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/math/normalization.hpp>
 #include <autoware/universe_utils/math/unit_conversion.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <motion_utils/constants.hpp>
-#include <motion_utils/resample/resample.hpp>
-#include <motion_utils/trajectory/path_with_lane_id.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <limits>
 #include <queue>
@@ -33,15 +33,16 @@
 
 namespace autoware::behavior_path_planner
 {
-using motion_utils::calcSignedArcLength;
+using autoware_motion_utils::calcSignedArcLength;
 
 double calc_distance(
   const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
   const Pose & input_point, const double nearest_dist_threshold, const double nearest_yaw_threshold)
 {
-  const size_t nearest_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
-  return motion_utils::calcSignedArcLength(
+  const size_t nearest_seg_idx =
+    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
+  return autoware_motion_utils::calcSignedArcLength(
     path.points, current_pose.position, current_seg_idx, input_point.position, nearest_seg_idx);
 }
 
@@ -82,7 +83,7 @@ TurnIndicatorsCommand TurnSignalDecider::getTurnSignal(
   }
 
   // Closest ego segment
-  const size_t ego_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+  const size_t ego_seg_idx = autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     extended_path.points, current_pose, nearest_dist_threshold, nearest_yaw_threshold);
 
   // Get closest intersection turn signal if exists
@@ -230,20 +231,20 @@ std::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo(
     }
 
     const size_t front_nearest_seg_idx =
-      motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
         path.points, lane_front_pose, nearest_dist_threshold, nearest_yaw_threshold);
     const size_t back_nearest_seg_idx =
-      motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
         path.points, lane_back_pose, nearest_dist_threshold, nearest_yaw_threshold);
 
     // Distance from ego vehicle front pose to front point of the lane
-    const double dist_to_front_point = motion_utils::calcSignedArcLength(
+    const double dist_to_front_point = autoware_motion_utils::calcSignedArcLength(
                                          path.points, current_pose.position, current_seg_idx,
                                          lane_front_pose.position, front_nearest_seg_idx) -
                                        base_link2front_;
 
     // Distance from ego vehicle base link to the terminal point of the lane
-    const double dist_to_back_point = motion_utils::calcSignedArcLength(
+    const double dist_to_back_point = autoware_motion_utils::calcSignedArcLength(
       path.points, current_pose.position, current_seg_idx, lane_back_pose.position,
       back_nearest_seg_idx);
 
@@ -278,9 +279,10 @@ std::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo(
 
     const auto & turn_signal_info = signal_queue.front();
     const auto & required_end_point = turn_signal_info.required_end_point;
-    const size_t nearest_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-      path.points, required_end_point, nearest_dist_threshold, nearest_yaw_threshold);
-    const double dist_to_end_point = motion_utils::calcSignedArcLength(
+    const size_t nearest_seg_idx =
+      autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+        path.points, required_end_point, nearest_dist_threshold, nearest_yaw_threshold);
+    const double dist_to_end_point = autoware_motion_utils::calcSignedArcLength(
       path.points, current_pose.position, current_seg_idx, required_end_point.position,
       nearest_seg_idx);
 
@@ -404,9 +406,10 @@ TurnSignalInfo TurnSignalDecider::overwrite_turn_signal(
   }
 
   const auto get_distance = [&](const Pose & input_point) {
-    const size_t nearest_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-      path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
-    return motion_utils::calcSignedArcLength(
+    const size_t nearest_seg_idx =
+      autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+        path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
+    return autoware_motion_utils::calcSignedArcLength(
              path.points, current_pose.position, current_seg_idx, input_point.position,
              nearest_seg_idx) -
            base_link2front_;
@@ -430,9 +433,10 @@ TurnSignalInfo TurnSignalDecider::use_prior_turn_signal(
   const double nearest_dist_threshold, const double nearest_yaw_threshold)
 {
   const auto get_distance = [&](const Pose & input_point) {
-    const size_t nearest_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-      path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
-    return motion_utils::calcSignedArcLength(
+    const size_t nearest_seg_idx =
+      autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+        path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
+    return autoware_motion_utils::calcSignedArcLength(
       path.points, current_pose.position, current_seg_idx, input_point.position, nearest_seg_idx);
   };
 
@@ -553,9 +557,9 @@ geometry_msgs::msg::Pose TurnSignalDecider::get_required_end_point(
   for (size_t i = 0; i < centerline.size(); ++i) {
     converted_centerline.at(i).position = lanelet::utils::conversion::toGeomMsgPt(centerline[i]);
   }
-  motion_utils::insertOrientation(converted_centerline, true);
+  autoware_motion_utils::insertOrientation(converted_centerline, true);
 
-  const double length = motion_utils::calcArcLength(converted_centerline);
+  const double length = autoware_motion_utils::calcArcLength(converted_centerline);
 
   // Create resampling intervals
   const double resampling_interval = 1.0;
@@ -565,14 +569,14 @@ geometry_msgs::msg::Pose TurnSignalDecider::get_required_end_point(
   }
 
   // Insert terminal point
-  if (length - resampling_arclength.back() < motion_utils::overlap_threshold) {
+  if (length - resampling_arclength.back() < autoware_motion_utils::overlap_threshold) {
     resampling_arclength.back() = length;
   } else {
     resampling_arclength.push_back(length);
   }
 
   const auto resampled_centerline =
-    motion_utils::resamplePoseVector(converted_centerline, resampling_arclength);
+    autoware_motion_utils::resamplePoseVector(converted_centerline, resampling_arclength);
 
   const double terminal_yaw = tf2::getYaw(resampled_centerline.back().orientation);
   for (size_t i = 0; i < resampled_centerline.size(); ++i) {
@@ -592,9 +596,10 @@ void TurnSignalDecider::set_intersection_info(
   const double nearest_yaw_threshold)
 {
   const auto get_distance = [&](const Pose & input_point) {
-    const size_t nearest_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-      path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
-    return motion_utils::calcSignedArcLength(
+    const size_t nearest_seg_idx =
+      autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+        path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
+    return autoware_motion_utils::calcSignedArcLength(
       path.points, current_pose.position, current_seg_idx, input_point.position, nearest_seg_idx);
   };
 

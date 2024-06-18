@@ -14,8 +14,8 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <lanelet2_extension/utility/query.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <autoware_planning_msgs/msg/path_point.hpp>
 
@@ -95,6 +95,9 @@ namespace autoware::behavior_velocity_planner
 {
 namespace planning_utils
 {
+using autoware_motion_utils::calcLongitudinalOffsetToSegment;
+using autoware_motion_utils::calcSignedArcLength;
+using autoware_motion_utils::validateNonEmpty;
 using autoware_planning_msgs::msg::PathPoint;
 using autoware_universe_utils::calcAzimuthAngle;
 using autoware_universe_utils::calcDistance2d;
@@ -102,9 +105,6 @@ using autoware_universe_utils::calcOffsetPose;
 using autoware_universe_utils::calcSquaredDistance2d;
 using autoware_universe_utils::createQuaternionFromYaw;
 using autoware_universe_utils::getPoint;
-using motion_utils::calcLongitudinalOffsetToSegment;
-using motion_utils::calcSignedArcLength;
-using motion_utils::validateNonEmpty;
 
 size_t calcSegmentIndexFromPointIndex(
   const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & points,
@@ -120,7 +120,8 @@ size_t calcSegmentIndexFromPointIndex(
     return 0;
   }
 
-  const double offset_to_seg = motion_utils::calcLongitudinalOffsetToSegment(points, idx, point);
+  const double offset_to_seg =
+    autoware_motion_utils::calcLongitudinalOffsetToSegment(points, idx, point);
   if (0 < offset_to_seg) {
     return idx;
   }
@@ -612,7 +613,8 @@ bool isOverLine(
   const tier4_planning_msgs::msg::PathWithLaneId & path, const geometry_msgs::msg::Pose & self_pose,
   const geometry_msgs::msg::Pose & line_pose, const double offset)
 {
-  return motion_utils::calcSignedArcLength(path.points, self_pose.position, line_pose.position) +
+  return autoware_motion_utils::calcSignedArcLength(
+           path.points, self_pose.position, line_pose.position) +
            offset <
          0.0;
 }
@@ -624,9 +626,9 @@ std::optional<geometry_msgs::msg::Pose> insertDecelPoint(
   // TODO(tanaka): consider proper overlap threshold for inserting decel point
   const double overlap_threshold = 5e-2;
   // TODO(murooka): remove this function for u-turn and crossing-path
-  const size_t base_idx = motion_utils::findNearestSegmentIndex(output.points, stop_point);
-  const auto insert_idx =
-    motion_utils::insertTargetPoint(base_idx, stop_point, output.points, overlap_threshold);
+  const size_t base_idx = autoware_motion_utils::findNearestSegmentIndex(output.points, stop_point);
+  const auto insert_idx = autoware_motion_utils::insertTargetPoint(
+    base_idx, stop_point, output.points, overlap_threshold);
 
   if (!insert_idx) {
     return {};
@@ -644,8 +646,9 @@ std::optional<geometry_msgs::msg::Pose> insertDecelPoint(
 std::optional<geometry_msgs::msg::Pose> insertStopPoint(
   const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output)
 {
-  const size_t base_idx = motion_utils::findNearestSegmentIndex(output.points, stop_point);
-  const auto insert_idx = motion_utils::insertStopPoint(base_idx, stop_point, output.points);
+  const size_t base_idx = autoware_motion_utils::findNearestSegmentIndex(output.points, stop_point);
+  const auto insert_idx =
+    autoware_motion_utils::insertStopPoint(base_idx, stop_point, output.points);
 
   if (!insert_idx) {
     return {};
@@ -657,7 +660,8 @@ std::optional<geometry_msgs::msg::Pose> insertStopPoint(
 std::optional<geometry_msgs::msg::Pose> insertStopPoint(
   const geometry_msgs::msg::Point & stop_point, const size_t stop_seg_idx, PathWithLaneId & output)
 {
-  const auto insert_idx = motion_utils::insertStopPoint(stop_seg_idx, stop_point, output.points);
+  const auto insert_idx =
+    autoware_motion_utils::insertStopPoint(stop_seg_idx, stop_point, output.points);
 
   if (!insert_idx) {
     return {};

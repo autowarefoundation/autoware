@@ -24,7 +24,7 @@
 
 #include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/state_machine.hpp>
-#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
+#include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <tier4_debug_msgs/msg/float64_multi_array_stamped.hpp>
@@ -325,7 +325,7 @@ public:
   /** @}*/
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
-  motion_utils::VirtualWalls createVirtualWalls() override;
+  autoware_motion_utils::VirtualWalls createVirtualWalls() override;
 
   const std::set<lanelet::Id> & getAssociativeIds() const { return associative_ids_; }
 

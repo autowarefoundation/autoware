@@ -14,11 +14,11 @@
 
 #include "centerline_source/optimization_trajectory_based_centerline.hpp"
 
+#include "autoware/motion_utils/resample/resample.hpp"
+#include "autoware/motion_utils/trajectory/conversion.hpp"
 #include "autoware/path_optimizer/node.hpp"
 #include "autoware/path_smoother/elastic_band_smoother.hpp"
 #include "autoware/universe_utils/ros/parameter.hpp"
-#include "motion_utils/resample/resample.hpp"
-#include "motion_utils/trajectory/conversion.hpp"
 #include "static_centerline_generator_node.hpp"
 #include "utils.hpp"
 
@@ -95,7 +95,8 @@ OptimizationTrajectoryBasedCenterline::generate_centerline_with_optimization(
     const auto non_resampled_path_with_lane_id = utils::get_path_with_lane_id(
       route_handler, route_lanelets, start_center_pose, ego_nearest_dist_threshold,
       ego_nearest_yaw_threshold);
-    return motion_utils::resamplePath(non_resampled_path_with_lane_id, behavior_path_interval);
+    return autoware_motion_utils::resamplePath(
+      non_resampled_path_with_lane_id, behavior_path_interval);
   }();
   pub_raw_path_with_lane_id_->publish(raw_path_with_lane_id);
   RCLCPP_INFO(node.get_logger(), "Calculated raw path with lane id and published.");
@@ -103,7 +104,7 @@ OptimizationTrajectoryBasedCenterline::generate_centerline_with_optimization(
   // convert path with lane id to path
   const auto raw_path = [&]() {
     const auto non_resampled_path = convert_to_path(raw_path_with_lane_id);
-    return motion_utils::resamplePath(non_resampled_path, behavior_vel_interval);
+    return autoware_motion_utils::resamplePath(non_resampled_path, behavior_vel_interval);
   }();
   pub_raw_path_->publish(raw_path);
   RCLCPP_INFO(node.get_logger(), "Converted to path and published.");
@@ -123,7 +124,7 @@ std::vector<TrajectoryPoint> OptimizationTrajectoryBasedCenterline::optimize_tra
   // convert to trajectory points
   const auto raw_traj_points = [&]() {
     const auto raw_traj = convert_to_trajectory(raw_path);
-    return motion_utils::convertToTrajectoryPointArray(raw_traj);
+    return autoware_motion_utils::convertToTrajectoryPointArray(raw_traj);
   }();
 
   // create an instance of elastic band and model predictive trajectory.

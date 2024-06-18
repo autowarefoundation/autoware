@@ -219,7 +219,7 @@ void PlannerManager::generateCombinedDrivableArea(
   const auto & di = output.drivable_area_info;
   constexpr double epsilon = 1e-3;
 
-  const auto is_driving_forward_opt = motion_utils::isDrivingForward(output.path.points);
+  const auto is_driving_forward_opt = autoware_motion_utils::isDrivingForward(output.path.points);
   const bool is_driving_forward = is_driving_forward_opt ? *is_driving_forward_opt : true;
 
   if (epsilon < std::abs(di.drivable_margin)) {

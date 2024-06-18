@@ -15,9 +15,9 @@
 #include "scene.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
-#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #else
@@ -32,20 +32,20 @@ visualization_msgs::msg::MarkerArray TrafficLightModule::createDebugMarkerArray(
   return debug_marker_array;
 }
 
-motion_utils::VirtualWalls TrafficLightModule::createVirtualWalls()
+autoware_motion_utils::VirtualWalls TrafficLightModule::createVirtualWalls()
 {
-  motion_utils::VirtualWalls virtual_walls;
-  motion_utils::VirtualWall wall;
+  autoware_motion_utils::VirtualWalls virtual_walls;
+  autoware_motion_utils::VirtualWall wall;
   wall.text = "traffic_light";
   wall.ns = std::to_string(module_id_) + "_";
 
-  wall.style = motion_utils::VirtualWallType::deadline;
+  wall.style = autoware_motion_utils::VirtualWallType::deadline;
   for (const auto & p : debug_data_.dead_line_poses) {
     wall.pose = autoware_universe_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
     virtual_walls.push_back(wall);
   }
 
-  wall.style = motion_utils::VirtualWallType::stop;
+  wall.style = autoware_motion_utils::VirtualWallType::stop;
   for (const auto & p : debug_data_.stop_poses) {
     wall.pose = autoware_universe_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
     virtual_walls.push_back(wall);

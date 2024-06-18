@@ -23,6 +23,7 @@
 
   <depend>autoware_behavior_velocity_planner_common</depend>
   <depend>autoware_grid_map_utils</depend>
+  <depend>autoware_motion_utils</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_route_handler</depend>
@@ -35,7 +36,6 @@
   <depend>interpolation</depend>
   <depend>lanelet2_extension</depend>
   <depend>libboost-dev</depend>
-  <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
   <depend>pcl_conversions</depend>
   <depend>pluginlib</depend>

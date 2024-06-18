@@ -15,12 +15,12 @@
 #ifndef AUTOWARE__PATH_SMOOTHER__UTILS__TRAJECTORY_UTILS_HPP_
 #define AUTOWARE__PATH_SMOOTHER__UTILS__TRAJECTORY_UTILS_HPP_
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/path_smoother/common_structs.hpp"
 #include "autoware/path_smoother/type_alias.hpp"
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
 #include "interpolation/spline_interpolation_points_2d.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 #include <Eigen/Core>
 
@@ -49,7 +49,7 @@ std::optional<size_t> getPointIndexAfter(
   }
 
   double sum_length =
-    -motion_utils::calcLongitudinalOffsetToSegment(points, target_seg_idx, target_pos);
+    -autoware_motion_utils::calcLongitudinalOffsetToSegment(points, target_seg_idx, target_pos);
 
   std::optional<size_t> output_idx{std::nullopt};
 
@@ -109,7 +109,7 @@ size_t findEgoSegmentIndex(
   const std::vector<T> & points, const geometry_msgs::msg::Pose & ego_pose,
   const EgoNearestParam & ego_nearest_param)
 {
-  return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+  return autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     points, ego_pose, ego_nearest_param.dist_threshold, ego_nearest_param.yaw_threshold);
 }
 
@@ -134,7 +134,7 @@ std::optional<size_t> updateFrontPointForFix(
 
   // check if the points_for_fix is longer in front than points
   const double lon_offset_to_prev_front =
-    motion_utils::calcSignedArcLength(points, 0, front_fix_point.pose.position);
+    autoware_motion_utils::calcSignedArcLength(points, 0, front_fix_point.pose.position);
   if (0 < lon_offset_to_prev_front) {
     RCLCPP_DEBUG(
       rclcpp::get_logger("autoware_path_smoother.trajectory_utils"),

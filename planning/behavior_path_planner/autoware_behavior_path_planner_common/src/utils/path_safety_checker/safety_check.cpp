@@ -15,10 +15,10 @@
 #include "autoware/behavior_path_planner_common/utils/path_safety_checker/safety_check.hpp"
 
 #include "autoware/behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
 #include "autoware/universe_utils/ros/uuid_helper.hpp"
 #include "interpolation/linear_interpolation.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 #include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/algorithms/intersects.hpp>
@@ -81,7 +81,7 @@ bool isTargetObjectFront(
   const auto obj_polygon_outer = obj_polygon.outer();
   for (const auto & obj_edge : obj_polygon_outer) {
     const auto obj_point = autoware_universe_utils::createPoint(obj_edge.x(), obj_edge.y(), 0.0);
-    if (motion_utils::isTargetPointFront(path.points, ego_point, obj_point)) {
+    if (autoware_motion_utils::isTargetPointFront(path.points, ego_point, obj_point)) {
       return true;
     }
   }
@@ -208,7 +208,7 @@ Polygon2d createExtendedPolygonAlongPath(
     debug.lat_offset = lat_offset;
   }
 
-  const auto lon_offset_pose = motion_utils::calcLongitudinalOffsetPose(
+  const auto lon_offset_pose = autoware_motion_utils::calcLongitudinalOffsetPose(
     planned_path.points, base_link_pose.position, lon_length);
   if (!lon_offset_pose.has_value()) {
     return createExtendedPolygon(
@@ -216,9 +216,9 @@ Polygon2d createExtendedPolygonAlongPath(
   }
 
   const size_t start_idx =
-    motion_utils::findNearestSegmentIndex(planned_path.points, base_link_pose.position);
-  const size_t end_idx =
-    motion_utils::findNearestSegmentIndex(planned_path.points, lon_offset_pose.value().position);
+    autoware_motion_utils::findNearestSegmentIndex(planned_path.points, base_link_pose.position);
+  const size_t end_idx = autoware_motion_utils::findNearestSegmentIndex(
+    planned_path.points, lon_offset_pose.value().position);
 
   Polygon2d polygon;
 

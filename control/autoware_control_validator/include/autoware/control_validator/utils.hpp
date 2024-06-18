@@ -15,7 +15,7 @@
 #ifndef AUTOWARE__CONTROL_VALIDATOR__UTILS_HPP_
 #define AUTOWARE__CONTROL_VALIDATOR__UTILS_HPP_
 
-#include <motion_utils/trajectory/conversion.hpp>
+#include <autoware/motion_utils/trajectory/conversion.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_planning_msgs/msg/trajectory.hpp>
@@ -26,11 +26,11 @@
 
 namespace autoware::control_validator
 {
+using autoware_motion_utils::convertToTrajectory;
+using autoware_motion_utils::convertToTrajectoryPointArray;
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
 using geometry_msgs::msg::Pose;
-using motion_utils::convertToTrajectory;
-using motion_utils::convertToTrajectoryPointArray;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
 
 void shiftPose(Pose & pose, double longitudinal);

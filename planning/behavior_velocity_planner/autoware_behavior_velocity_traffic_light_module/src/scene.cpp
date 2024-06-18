@@ -15,7 +15,7 @@
 #include "scene.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <traffic_light_utils/traffic_light_utils.hpp>
 
 #include <boost/geometry/algorithms/distance.hpp>
@@ -210,7 +210,7 @@ bool TrafficLightModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   geometry_msgs::msg::Point stop_line_point_msg;
   stop_line_point_msg.x = stop_line_point.x();
   stop_line_point_msg.y = stop_line_point.y();
-  const double signed_arc_length_to_stop_point = motion_utils::calcSignedArcLength(
+  const double signed_arc_length_to_stop_point = autoware_motion_utils::calcSignedArcLength(
     input_path.points, self_pose->pose.position, stop_line_point_msg);
   setDistance(signed_arc_length_to_stop_point);
 

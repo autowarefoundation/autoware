@@ -14,10 +14,10 @@
 
 #include "autoware/velocity_smoother/resample.hpp"
 
+#include "autoware/motion_utils/resample/resample.hpp"
+#include "autoware/motion_utils/trajectory/conversion.hpp"
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/velocity_smoother/trajectory_utils.hpp"
-#include "motion_utils/resample/resample.hpp"
-#include "motion_utils/trajectory/conversion.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -32,17 +32,18 @@ TrajectoryPoints resampleTrajectory(
   const double nearest_yaw_threshold, const ResampleParam & param, const bool use_zoh_for_v)
 {
   // Arc length from the initial point to the closest point
-  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    input, current_pose, nearest_dist_threshold, nearest_yaw_threshold);
-  const double negative_front_arclength_value = motion_utils::calcSignedArcLength(
+  const size_t current_seg_idx =
+    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      input, current_pose, nearest_dist_threshold, nearest_yaw_threshold);
+  const double negative_front_arclength_value = autoware_motion_utils::calcSignedArcLength(
     input, current_pose.position, current_seg_idx, input.at(0).pose.position, 0);
   const auto front_arclength_value = std::fabs(negative_front_arclength_value);
 
   const auto dist_to_closest_stop_point =
-    motion_utils::calcDistanceToForwardStopPoint(input, current_pose);
+    autoware_motion_utils::calcDistanceToForwardStopPoint(input, current_pose);
 
   // Get the resample size from the closest point
-  const double trajectory_length = motion_utils::calcArcLength(input);
+  const double trajectory_length = autoware_motion_utils::calcArcLength(input);
   const double Nt = param.resample_time / std::max(param.dense_resample_dt, 0.001);
   const double ds_nominal =
     std::max(v_current * param.dense_resample_dt, param.dense_min_interval_distance);
@@ -127,9 +128,9 @@ TrajectoryPoints resampleTrajectory(
     return input;
   }
 
-  const auto output_traj = motion_utils::resampleTrajectory(
-    motion_utils::convertToTrajectory(input), out_arclength, false, true, use_zoh_for_v);
-  auto output = motion_utils::convertToTrajectoryPointArray(output_traj);
+  const auto output_traj = autoware_motion_utils::resampleTrajectory(
+    autoware_motion_utils::convertToTrajectory(input), out_arclength, false, true, use_zoh_for_v);
+  auto output = autoware_motion_utils::convertToTrajectoryPointArray(output_traj);
 
   // add end point directly to consider the endpoint velocity.
   if (is_endpoint_included) {
@@ -150,9 +151,9 @@ TrajectoryPoints resampleTrajectory(
   const ResampleParam & param, const double nominal_ds, const bool use_zoh_for_v)
 {
   // input arclength
-  const double trajectory_length = motion_utils::calcArcLength(input);
+  const double trajectory_length = autoware_motion_utils::calcArcLength(input);
   const auto dist_to_closest_stop_point =
-    motion_utils::calcDistanceToForwardStopPoint(input, current_pose);
+    autoware_motion_utils::calcDistanceToForwardStopPoint(input, current_pose);
 
   // distance to stop point
   double stop_arclength_value = param.max_trajectory_length;
@@ -170,9 +171,10 @@ TrajectoryPoints resampleTrajectory(
 
   // Step1. Resample front trajectory
   // Arc length from the initial point to the closest point
-  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    input, current_pose, nearest_dist_threshold, nearest_yaw_threshold);
-  const double negative_front_arclength_value = motion_utils::calcSignedArcLength(
+  const size_t current_seg_idx =
+    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      input, current_pose, nearest_dist_threshold, nearest_yaw_threshold);
+  const double negative_front_arclength_value = autoware_motion_utils::calcSignedArcLength(
     input, current_pose.position, current_seg_idx, input.at(0).pose.position,
     static_cast<size_t>(0));
   const auto front_arclength_value = std::fabs(negative_front_arclength_value);
@@ -246,9 +248,9 @@ TrajectoryPoints resampleTrajectory(
     return input;
   }
 
-  const auto output_traj = motion_utils::resampleTrajectory(
-    motion_utils::convertToTrajectory(input), out_arclength, false, true, use_zoh_for_v);
-  auto output = motion_utils::convertToTrajectoryPointArray(output_traj);
+  const auto output_traj = autoware_motion_utils::resampleTrajectory(
+    autoware_motion_utils::convertToTrajectory(input), out_arclength, false, true, use_zoh_for_v);
+  auto output = autoware_motion_utils::convertToTrajectoryPointArray(output_traj);
 
   // add end point directly to consider the endpoint velocity.
   if (is_endpoint_included) {

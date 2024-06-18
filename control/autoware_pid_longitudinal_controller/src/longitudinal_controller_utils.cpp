@@ -58,12 +58,12 @@ bool isValidTrajectory(const Trajectory & traj)
 double calcStopDistance(
   const Pose & current_pose, const Trajectory & traj, const double max_dist, const double max_yaw)
 {
-  const auto stop_idx_opt = motion_utils::searchZeroVelocityIndex(traj.points);
+  const auto stop_idx_opt = autoware_motion_utils::searchZeroVelocityIndex(traj.points);
 
   const size_t end_idx = stop_idx_opt ? *stop_idx_opt : traj.points.size() - 1;
-  const size_t seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+  const size_t seg_idx = autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     traj.points, current_pose, max_dist, max_yaw);
-  const double signed_length_on_traj = motion_utils::calcSignedArcLength(
+  const double signed_length_on_traj = autoware_motion_utils::calcSignedArcLength(
     traj.points, current_pose.position, seg_idx, traj.points.at(end_idx).pose.position,
     std::min(end_idx, traj.points.size() - 2));
 

@@ -15,9 +15,9 @@
 #include "scene.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
-#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 
 #include <vector>
 
@@ -71,18 +71,18 @@ visualization_msgs::msg::MarkerArray createNoDrivableLaneMarkers(
 }
 }  // namespace
 
-motion_utils::VirtualWalls NoDrivableLaneModule::createVirtualWalls()
+autoware_motion_utils::VirtualWalls NoDrivableLaneModule::createVirtualWalls()
 {
-  motion_utils::VirtualWalls virtual_walls;
+  autoware_motion_utils::VirtualWalls virtual_walls;
 
   const auto now = this->clock_->now();
 
   if (
     (state_ == State::APPROACHING) || (state_ == State::INSIDE_NO_DRIVABLE_LANE) ||
     (state_ == State::STOPPED)) {
-    motion_utils::VirtualWall wall;
+    autoware_motion_utils::VirtualWall wall;
     wall.text = "no_drivable_lane";
-    wall.style = motion_utils::VirtualWallType::stop;
+    wall.style = autoware_motion_utils::VirtualWallType::stop;
     wall.ns = std::to_string(module_id_) + "_";
     wall.pose = debug_data_.stop_pose;
     virtual_walls.push_back(wall);

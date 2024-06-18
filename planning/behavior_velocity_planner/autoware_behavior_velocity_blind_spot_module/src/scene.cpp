@@ -17,10 +17,10 @@
 #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <lanelet2_extension/regulatory_elements/road_marking.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <boost/geometry/algorithms/area.hpp>
 #include <boost/geometry/algorithms/distance.hpp>
@@ -91,7 +91,7 @@ BlindSpotDecision BlindSpotModule::modifyPathVelocityDetail(
 
   /* calc closest index */
   const auto & current_pose = planner_data_->current_odometry->pose;
-  const auto closest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const auto closest_idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
     input_path.points, current_pose, planner_data_->ego_nearest_dist_threshold,
     planner_data_->ego_nearest_yaw_threshold);
   const auto stop_line_idx =
@@ -299,7 +299,7 @@ static std::optional<size_t> insertPointIndex(
     return duplicate_idx_opt.value();
   }
 
-  const size_t closest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const size_t closest_idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
     inout_path->points, in_pose, ego_nearest_dist_threshold, ego_nearest_yaw_threshold);
   // vector.insert(i) inserts element on the left side of v[i]
   // the velocity need to be zero order hold(from prior point)
@@ -361,12 +361,12 @@ std::optional<std::pair<size_t, size_t>> BlindSpotModule::generateStopLine(
     const geometry_msgs::msg::Point mid_point =
       geometry_msgs::build<geometry_msgs::msg::Point>().x(mid_pt.x()).y(mid_pt.y()).z(mid_pt.z());
     stop_idx_default_ip = stop_idx_critical_ip =
-      motion_utils::findNearestSegmentIndex(path_ip.points, mid_point);
+      autoware_motion_utils::findNearestSegmentIndex(path_ip.points, mid_point);
     /*
     // NOTE: it is not ambiguous when the curve starts on the left/right lanelet, so this module
     inserts stopline at the beginning of the lanelet for baselink
     stop_idx_default_ip = stop_idx_critical_ip = static_cast<size_t>(std::max<int>(0,
-    static_cast<int>(motion_utils::findNearestSegmentIndex(path_ip.points, mid_point)) -
+    static_cast<int>(autoware_motion_utils::findNearestSegmentIndex(path_ip.points, mid_point)) -
     baselink2front_dist));
     */
   }
@@ -419,12 +419,13 @@ std::optional<OverPassJudge> BlindSpotModule::isOverPassJudge(
   const double pass_judge_line_dist = planning_utils::calcJudgeLineDistWithAccLimit(
     planner_data_->current_velocity->twist.linear.x, planner_data_->max_stop_acceleration_threshold,
     planner_data_->delay_response_time);
-  const auto ego_segment_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    input_path.points, current_pose, planner_data_->ego_nearest_dist_threshold,
-    planner_data_->ego_nearest_yaw_threshold);
+  const auto ego_segment_idx =
+    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      input_path.points, current_pose, planner_data_->ego_nearest_dist_threshold,
+      planner_data_->ego_nearest_yaw_threshold);
   const size_t stop_point_segment_idx =
-    motion_utils::findNearestSegmentIndex(input_path.points, stop_point_pose.position);
-  const auto distance_until_stop = motion_utils::calcSignedArcLength(
+    autoware_motion_utils::findNearestSegmentIndex(input_path.points, stop_point_pose.position);
+  const auto distance_until_stop = autoware_motion_utils::calcSignedArcLength(
     input_path.points, current_pose.position, ego_segment_idx, stop_point_pose.position,
     stop_point_segment_idx);
 

@@ -16,6 +16,7 @@
 
 #include "utility_functions.hpp"
 
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/math/normalization.hpp>
 #include <autoware/universe_utils/math/unit_conversion.hpp>
@@ -25,7 +26,6 @@
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <lanelet2_extension/visualization/visualization.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/geometry/Lanelet.h>
@@ -108,8 +108,8 @@ geometry_msgs::msg::Pose get_closest_centerline_pose(
 
   const double lane_yaw = lanelet::utils::getLaneletAngle(closest_lanelet, point.position);
 
-  const auto nearest_idx =
-    motion_utils::findNearestIndex(convertCenterlineToPoints(closest_lanelet), point.position);
+  const auto nearest_idx = autoware_motion_utils::findNearestIndex(
+    convertCenterlineToPoints(closest_lanelet), point.position);
   const auto nearest_point = closest_lanelet.centerline()[nearest_idx];
 
   // shift nearest point on its local y axis so that vehicle's right and left edges

@@ -520,7 +520,7 @@ Path AEB::generateEgoPath(const double curr_v, const double curr_w)
   }
 
   // If path is shorter than minimum path length
-  while (motion_utils::calcArcLength(path) < min_generated_path_length_) {
+  while (autoware_motion_utils::calcArcLength(path) < min_generated_path_length_) {
     curr_x = curr_x + curr_v * std::cos(curr_yaw) * dt;
     curr_y = curr_y + curr_v * std::sin(curr_yaw) * dt;
     curr_yaw = curr_yaw + curr_w * dt;
@@ -630,7 +630,7 @@ void AEB::createObjectDataUsingPointCloudClusters(
   for (const auto & p : *points_belonging_to_cluster_hulls) {
     const auto obj_position = autoware_universe_utils::createPoint(p.x, p.y, p.z);
     const double obj_arc_length =
-      motion_utils::calcSignedArcLength(ego_path, current_p, obj_position);
+      autoware_motion_utils::calcSignedArcLength(ego_path, current_p, obj_position);
     if (std::isnan(obj_arc_length)) continue;
 
     // If the object is behind the ego, we need to use the backward long offset. The distance should

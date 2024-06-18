@@ -22,10 +22,10 @@
 
 #include <lanelet2_extension/utility/utilities.hpp>
 
+using autoware_motion_utils::findNearestIndex;
 using autoware_universe_utils::calcDistance2d;
 using autoware_universe_utils::calcOffsetPose;
 using lanelet::utils::getArcCoordinates;
-using motion_utils::findNearestIndex;
 namespace autoware::behavior_path_planner
 {
 using start_planner_utils::getPullOutLanes;
@@ -92,14 +92,14 @@ std::optional<PullOutPath> GeometricPullOut::plan(
     // insert stop velocity to first arc path end
     output.partial_paths.front().points.back().point.longitudinal_velocity_mps = 0.0;
     const double arc_length_on_first_arc_path =
-      motion_utils::calcArcLength(output.partial_paths.front().points);
+      autoware_motion_utils::calcArcLength(output.partial_paths.front().points);
     const double time_to_center = arc_length_on_first_arc_path / (2 * velocity);
     const double average_velocity = arc_length_on_first_arc_path / (time_to_center * 2);
     const double average_acceleration = average_velocity / (time_to_center * 2);
     output.pairs_terminal_velocity_and_accel.push_back(
       std::make_pair(average_velocity, average_acceleration));
     const double arc_length_on_second_arc_path =
-      motion_utils::calcArcLength(planner_.getArcPaths().at(1).points);
+      autoware_motion_utils::calcArcLength(planner_.getArcPaths().at(1).points);
     output.pairs_terminal_velocity_and_accel.push_back(
       std::make_pair(velocity, velocity * velocity / (2 * arc_length_on_second_arc_path)));
   } else {
@@ -109,7 +109,7 @@ std::optional<PullOutPath> GeometricPullOut::plan(
 
     // Calculate the acceleration required to reach the forward parking velocity at the center of
     // the path, assuming constant acceleration and deceleration.
-    const double arc_length_on_path = motion_utils::calcArcLength(combined_path.points);
+    const double arc_length_on_path = autoware_motion_utils::calcArcLength(combined_path.points);
     output.pairs_terminal_velocity_and_accel.push_back(
       std::make_pair(velocity, velocity * velocity / 2 * arc_length_on_path));
   }

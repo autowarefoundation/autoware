@@ -15,13 +15,13 @@
 #ifndef AUTOWARE__OBSTACLE_CRUISE_PLANNER__COMMON_STRUCTS_HPP_
 #define AUTOWARE__OBSTACLE_CRUISE_PLANNER__COMMON_STRUCTS_HPP_
 
+#include "autoware/motion_utils/trajectory/conversion.hpp"
+#include "autoware/motion_utils/trajectory/interpolation.hpp"
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/obstacle_cruise_planner/type_alias.hpp"
 #include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
 #include "autoware/universe_utils/ros/update_param.hpp"
 #include "autoware/universe_utils/ros/uuid_helper.hpp"
-#include "motion_utils/trajectory/conversion.hpp"
-#include "motion_utils/trajectory/interpolation.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -280,21 +280,21 @@ struct EgoNearestParam
   TrajectoryPoint calcInterpolatedPoint(
     const std::vector<TrajectoryPoint> & traj_points, const geometry_msgs::msg::Pose & pose) const
   {
-    return motion_utils::calcInterpolatedPoint(
-      motion_utils::convertToTrajectory(traj_points), pose, dist_threshold, yaw_threshold);
+    return autoware_motion_utils::calcInterpolatedPoint(
+      autoware_motion_utils::convertToTrajectory(traj_points), pose, dist_threshold, yaw_threshold);
   }
 
   size_t findIndex(
     const std::vector<TrajectoryPoint> & traj_points, const geometry_msgs::msg::Pose & pose) const
   {
-    return motion_utils::findFirstNearestIndexWithSoftConstraints(
+    return autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
       traj_points, pose, dist_threshold, yaw_threshold);
   }
 
   size_t findSegmentIndex(
     const std::vector<TrajectoryPoint> & traj_points, const geometry_msgs::msg::Pose & pose) const
   {
-    return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    return autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       traj_points, pose, dist_threshold, yaw_threshold);
   }
 

@@ -41,6 +41,7 @@
   <depend>autoware_freespace_planning_algorithms</depend>
   <depend>autoware_frenet_planner</depend>
   <depend>autoware_lane_departure_checker</depend>
+  <depend>autoware_motion_utils</depend>
   <depend>autoware_path_sampler</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
@@ -55,7 +56,6 @@
   <depend>libboost-dev</depend>
   <depend>libopencv-dev</depend>
   <depend>magic_enum</depend>
-  <depend>motion_utils</depend>
   <depend>object_recognition_utils</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>

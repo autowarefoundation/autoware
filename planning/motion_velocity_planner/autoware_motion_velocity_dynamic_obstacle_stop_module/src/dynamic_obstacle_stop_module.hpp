@@ -18,9 +18,9 @@
 #include "object_stop_decision.hpp"
 #include "types.hpp"
 
+#include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <autoware/motion_velocity_planner_common/plugin_module_interface.hpp>
 #include <autoware/motion_velocity_planner_common/velocity_planning_result.hpp>
-#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>

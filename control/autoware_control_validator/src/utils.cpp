@@ -14,9 +14,9 @@
 
 #include "autoware/control_validator/utils.hpp"
 
+#include <autoware/motion_utils/trajectory/interpolation.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
-#include <motion_utils/trajectory/interpolation.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <memory>
 #include <string>
@@ -37,8 +37,8 @@ void insertPointInPredictedTrajectory(
   TrajectoryPoints & modified_trajectory, const Pose & reference_pose,
   const TrajectoryPoints & predicted_trajectory)
 {
-  const auto point_to_interpolate =
-    motion_utils::calcInterpolatedPoint(convertToTrajectory(predicted_trajectory), reference_pose);
+  const auto point_to_interpolate = autoware_motion_utils::calcInterpolatedPoint(
+    convertToTrajectory(predicted_trajectory), reference_pose);
   modified_trajectory.insert(modified_trajectory.begin(), point_to_interpolate);
 }
 
@@ -59,8 +59,8 @@ bool removeFrontTrajectoryPoint(
   bool predicted_trajectory_point_removed = false;
   for (const auto & point : predicted_trajectory_points) {
     if (
-      motion_utils::calcLongitudinalOffsetToSegment(trajectory_points, 0, point.pose.position) <
-      0.0) {
+      autoware_motion_utils::calcLongitudinalOffsetToSegment(
+        trajectory_points, 0, point.pose.position) < 0.0) {
       modified_trajectory_points.erase(modified_trajectory_points.begin());
 
       predicted_trajectory_point_removed = true;
@@ -75,7 +75,7 @@ bool removeFrontTrajectoryPoint(
 Trajectory alignTrajectoryWithReferenceTrajectory(
   const Trajectory & trajectory, const Trajectory & predicted_trajectory)
 {
-  const auto last_seg_length = motion_utils::calcSignedArcLength(
+  const auto last_seg_length = autoware_motion_utils::calcSignedArcLength(
     trajectory.points, trajectory.points.size() - 2, trajectory.points.size() - 1);
 
   // If no overlapping between trajectory and predicted_trajectory, return empty trajectory
@@ -85,9 +85,9 @@ Trajectory alignTrajectoryWithReferenceTrajectory(
   // predicted_trajectory:                           p1------------------pN
   // trajectory:             t1------------------tN
   const bool & is_p_n_before_t1 =
-    motion_utils::calcLongitudinalOffsetToSegment(
+    autoware_motion_utils::calcLongitudinalOffsetToSegment(
       trajectory.points, 0, predicted_trajectory.points.back().pose.position) < 0.0;
-  const bool & is_p1_behind_t_n = motion_utils::calcLongitudinalOffsetToSegment(
+  const bool & is_p1_behind_t_n = autoware_motion_utils::calcLongitudinalOffsetToSegment(
                                     trajectory.points, trajectory.points.size() - 2,
                                     predicted_trajectory.points.front().pose.position) -
                                     last_seg_length >
@@ -152,9 +152,9 @@ double calcMaxLateralDistance(
     const auto p0 = autoware_universe_utils::getPoint(point);
     // find nearest segment
     const size_t nearest_segment_idx =
-      motion_utils::findNearestSegmentIndex(reference_trajectory.points, p0);
-    const double temp_dist = std::abs(
-      motion_utils::calcLateralOffset(reference_trajectory.points, p0, nearest_segment_idx));
+      autoware_motion_utils::findNearestSegmentIndex(reference_trajectory.points, p0);
+    const double temp_dist = std::abs(autoware_motion_utils::calcLateralOffset(
+      reference_trajectory.points, p0, nearest_segment_idx));
     if (temp_dist > max_dist) {
       max_dist = temp_dist;
     }

@@ -15,12 +15,12 @@
 #ifndef PREDICTED_PATH_CHECKER__COLLISION_CHECKER_HPP_
 #define PREDICTED_PATH_CHECKER__COLLISION_CHECKER_HPP_
 
+#include <autoware/motion_utils/trajectory/conversion.hpp>
+#include <autoware/motion_utils/trajectory/interpolation.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/debug_publisher.hpp>
 #include <autoware/universe_utils/ros/transform_listener.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info.hpp>
-#include <motion_utils/trajectory/conversion.hpp>
-#include <motion_utils/trajectory/interpolation.hpp>
 #include <predicted_path_checker/debug_marker.hpp>
 #include <predicted_path_checker/utils.hpp>
 #include <rclcpp/rclcpp.hpp>

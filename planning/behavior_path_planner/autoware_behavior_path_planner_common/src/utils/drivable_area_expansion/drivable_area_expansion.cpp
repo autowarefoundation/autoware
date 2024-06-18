@@ -20,11 +20,11 @@
 #include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/path_projection.hpp"
 #include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/types.hpp"
 
+#include <autoware/motion_utils/resample/resample.hpp>
+#include <autoware/motion_utils/trajectory/interpolation.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
 #include <interpolation/linear_interpolation.hpp>
-#include <motion_utils/resample/resample.hpp>
-#include <motion_utils/trajectory/interpolation.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <boost/geometry/strategies/strategies.hpp>
 
@@ -48,8 +48,9 @@ void reuse_previous_poses(
 {
   std::vector<Pose> cropped_poses;
   std::vector<double> cropped_curvatures;
-  const auto ego_is_behind = prev_poses.size() > 1 && motion_utils::calcLongitudinalOffsetToSegment(
-                                                        prev_poses, 0, ego_point) < 0.0;
+  const auto ego_is_behind =
+    prev_poses.size() > 1 &&
+    autoware_motion_utils::calcLongitudinalOffsetToSegment(prev_poses, 0, ego_point) < 0.0;
   const auto ego_is_far = !prev_poses.empty() && autoware_universe_utils::calcDistance2d(
                                                    ego_point, prev_poses.front()) < 0.0;
   // make sure the reused points are not behind the current original drivable area
@@ -64,9 +65,9 @@ void reuse_previous_poses(
 
   if (!ego_is_behind && !ego_is_far && prev_poses.size() > 1 && !prev_poses_across_bounds) {
     const auto first_idx =
-      motion_utils::findNearestSegmentIndex(prev_poses, path.points.front().point.pose);
+      autoware_motion_utils::findNearestSegmentIndex(prev_poses, path.points.front().point.pose);
     const auto deviation =
-      motion_utils::calcLateralOffset(prev_poses, path.points.front().point.pose.position);
+      autoware_motion_utils::calcLateralOffset(prev_poses, path.points.front().point.pose.position);
     if (first_idx && deviation < params.max_reuse_deviation) {
       LineString2d path_ls;
       for (const auto & p : path.points) path_ls.push_back(convert_point(p.point.pose.position));
@@ -86,27 +87,27 @@ void reuse_previous_poses(
   }
   if (cropped_poses.empty()) {
     const auto resampled_path_points =
-      motion_utils::resamplePath(path, params.resample_interval, true, true, false).points;
+      autoware_motion_utils::resamplePath(path, params.resample_interval, true, true, false).points;
     const auto cropped_path =
       params.max_path_arc_length <= 0.0
         ? resampled_path_points
-        : motion_utils::cropForwardPoints(
+        : autoware_motion_utils::cropForwardPoints(
             resampled_path_points, resampled_path_points.front().point.pose.position, 0,
             params.max_path_arc_length);
     for (const auto & p : cropped_path) cropped_poses.push_back(p.point.pose);
   } else {
-    const auto initial_arc_length = motion_utils::calcArcLength(cropped_poses);
-    const auto max_path_arc_length = motion_utils::calcArcLength(path.points);
-    const auto first_arc_length = motion_utils::calcSignedArcLength(
+    const auto initial_arc_length = autoware_motion_utils::calcArcLength(cropped_poses);
+    const auto max_path_arc_length = autoware_motion_utils::calcArcLength(path.points);
+    const auto first_arc_length = autoware_motion_utils::calcSignedArcLength(
       path.points, path.points.front().point.pose.position, cropped_poses.back().position);
     for (auto arc_length = first_arc_length + params.resample_interval;
          (params.max_path_arc_length <= 0.0 ||
           initial_arc_length + (arc_length - first_arc_length) <= params.max_path_arc_length) &&
          arc_length <= max_path_arc_length;
          arc_length += params.resample_interval)
-      cropped_poses.push_back(motion_utils::calcInterpolatedPose(path.points, arc_length));
+      cropped_poses.push_back(autoware_motion_utils::calcInterpolatedPose(path.points, arc_length));
   }
-  prev_poses = motion_utils::removeOverlapPoints(cropped_poses);
+  prev_poses = autoware_motion_utils::removeOverlapPoints(cropped_poses);
   prev_curvatures = cropped_curvatures;
 }
 
@@ -302,7 +303,7 @@ void expand_bound(
 std::vector<double> calculate_smoothed_curvatures(
   const std::vector<Pose> & poses, const size_t smoothing_window_size)
 {
-  const auto curvatures = motion_utils::calcCurvature(poses);
+  const auto curvatures = autoware_motion_utils::calcCurvature(poses);
   std::vector<double> smoothed_curvatures(curvatures.size());
   for (auto i = 0UL; i < curvatures.size(); ++i) {
     auto sum = 0.0;

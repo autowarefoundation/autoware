@@ -18,9 +18,9 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <lanelet2_extension/regulatory_elements/road_marking.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <lanelet2_core/geometry/Polygon.h>
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
@@ -159,7 +159,7 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
     velocity_factor_.set(
       path->points, planner_data_->current_odometry->pose, stop_pose, VelocityFactor::UNKNOWN);
 
-    const double signed_arc_dist_to_stop_point = motion_utils::calcSignedArcLength(
+    const double signed_arc_dist_to_stop_point = autoware_motion_utils::calcSignedArcLength(
       path->points, current_pose.position, path->points.at(stopline_idx).point.pose.position);
 
     if (

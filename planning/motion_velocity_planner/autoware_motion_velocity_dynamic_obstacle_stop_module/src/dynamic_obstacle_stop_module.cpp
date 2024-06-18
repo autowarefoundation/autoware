@@ -21,12 +21,12 @@
 #include "object_stop_decision.hpp"
 #include "types.hpp"
 
+#include <autoware/motion_utils/distance/distance.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/parameter.hpp>
 #include <autoware/universe_utils/ros/update_param.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
-#include <motion_utils/distance/distance.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -42,7 +42,7 @@ void DynamicObstacleStopModule::init(rclcpp::Node & node, const std::string & mo
   module_name_ = module_name;
   logger_ = node.get_logger().get_child(ns_);
   clock_ = node.get_clock();
-  velocity_factor_interface_.init(motion_utils::PlanningBehavior::ROUTE_OBSTACLE);
+  velocity_factor_interface_.init(autoware_motion_utils::PlanningBehavior::ROUTE_OBSTACLE);
 
   debug_publisher_ =
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/" + ns_ + "/debug_markers", 1);
@@ -101,20 +101,20 @@ VelocityPlanningResult DynamicObstacleStopModule::plan(
   dynamic_obstacle_stop::EgoData ego_data;
   ego_data.pose = planner_data->current_odometry.pose.pose;
   ego_data.trajectory = ego_trajectory_points;
-  motion_utils::removeOverlapPoints(ego_data.trajectory);
+  autoware_motion_utils::removeOverlapPoints(ego_data.trajectory);
   ego_data.first_trajectory_idx =
-    motion_utils::findNearestSegmentIndex(ego_data.trajectory, ego_data.pose.position);
+    autoware_motion_utils::findNearestSegmentIndex(ego_data.trajectory, ego_data.pose.position);
   ego_data.longitudinal_offset_to_first_trajectory_idx =
-    motion_utils::calcLongitudinalOffsetToSegment(
+    autoware_motion_utils::calcLongitudinalOffsetToSegment(
       ego_data.trajectory, ego_data.first_trajectory_idx, ego_data.pose.position);
-  const auto min_stop_distance = motion_utils::calcDecelDistWithJerkAndAccConstraints(
+  const auto min_stop_distance = autoware_motion_utils::calcDecelDistWithJerkAndAccConstraints(
                                    planner_data->current_odometry.twist.twist.linear.x, 0.0,
                                    planner_data->current_acceleration.accel.accel.linear.x,
                                    planner_data->velocity_smoother_->getMinDecel(),
                                    planner_data->velocity_smoother_->getMaxJerk(),
                                    planner_data->velocity_smoother_->getMinJerk())
                                    .value_or(0.0);
-  ego_data.earliest_stop_pose = motion_utils::calcLongitudinalOffsetPose(
+  ego_data.earliest_stop_pose = autoware_motion_utils::calcLongitudinalOffsetPose(
     ego_data.trajectory, ego_data.pose.position, min_stop_distance);
 
   dynamic_obstacle_stop::make_ego_footprint_rtree(ego_data, params_);
@@ -141,13 +141,13 @@ VelocityPlanningResult DynamicObstacleStopModule::plan(
     dynamic_obstacle_stop::find_earliest_collision(object_map_, ego_data);
   const auto collisions_duration_us = stopwatch.toc("collisions");
   if (earliest_collision) {
-    const auto arc_length_diff = motion_utils::calcSignedArcLength(
+    const auto arc_length_diff = autoware_motion_utils::calcSignedArcLength(
       ego_data.trajectory, *earliest_collision, ego_data.pose.position);
     const auto can_stop_before_limit = arc_length_diff < min_stop_distance -
                                                            params_.ego_longitudinal_offset -
                                                            params_.stop_distance_buffer;
     const auto stop_pose = can_stop_before_limit
-                             ? motion_utils::calcLongitudinalOffsetPose(
+                             ? autoware_motion_utils::calcLongitudinalOffsetPose(
                                  ego_data.trajectory, *earliest_collision,
                                  -params_.stop_distance_buffer - params_.ego_longitudinal_offset)
                              : ego_data.earliest_stop_pose;
@@ -159,8 +159,8 @@ VelocityPlanningResult DynamicObstacleStopModule::plan(
         autoware_universe_utils::calcDistance2d(ego_data.pose, *stop_pose) < 1e-3;
       velocity_factor_interface_.set(
         ego_trajectory_points, ego_data.pose, *stop_pose,
-        stop_pose_reached ? motion_utils::VelocityFactor::STOPPED
-                          : motion_utils::VelocityFactor::APPROACHING,
+        stop_pose_reached ? autoware_motion_utils::VelocityFactor::STOPPED
+                          : autoware_motion_utils::VelocityFactor::APPROACHING,
         "dynamic_obstacle_stop");
       result.velocity_factor = velocity_factor_interface_.get();
       create_virtual_walls();
@@ -207,10 +207,10 @@ visualization_msgs::msg::MarkerArray DynamicObstacleStopModule::create_debug_mar
 void DynamicObstacleStopModule::create_virtual_walls()
 {
   if (debug_data_.stop_pose) {
-    motion_utils::VirtualWall virtual_wall;
+    autoware_motion_utils::VirtualWall virtual_wall;
     virtual_wall.text = "dynamic_obstacle_stop";
     virtual_wall.longitudinal_offset = params_.ego_longitudinal_offset;
-    virtual_wall.style = motion_utils::VirtualWallType::stop;
+    virtual_wall.style = autoware_motion_utils::VirtualWallType::stop;
     virtual_wall.pose = *debug_data_.stop_pose;
     virtual_wall_marker_creator.add_virtual_wall(virtual_wall);
   }

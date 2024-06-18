@@ -23,6 +23,7 @@
 
   <depend>autoware_behavior_path_planner</depend>
   <depend>autoware_behavior_path_planner_common</depend>
+  <depend>autoware_motion_utils</depend>
   <depend>autoware_objects_of_interest_marker_interface</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_route_handler</depend>
@@ -32,7 +33,6 @@
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
   <depend>magic_enum</depend>
-  <depend>motion_utils</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>

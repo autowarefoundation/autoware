@@ -16,7 +16,7 @@
 #define AUTOWARE__BEHAVIOR_PATH_PLANNER_COMMON__UTILS__UTILS_HPP_
 
 #include "autoware/behavior_path_planner_common/data_manager.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 
 #include <autoware/route_handler/route_handler.hpp>
 #include <autoware/universe_utils/geometry/boost_geometry.hpp>
@@ -93,9 +93,11 @@ FrenetPoint convertToFrenetPoint(
   FrenetPoint frenet_point;
 
   const double longitudinal_length =
-    motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, search_point_geom);
-  frenet_point.length = motion_utils::calcSignedArcLength(points, 0, seg_idx) + longitudinal_length;
-  frenet_point.distance = motion_utils::calcLateralOffset(points, search_point_geom, seg_idx);
+    autoware_motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, search_point_geom);
+  frenet_point.length =
+    autoware_motion_utils::calcSignedArcLength(points, 0, seg_idx) + longitudinal_length;
+  frenet_point.distance =
+    autoware_motion_utils::calcLateralOffset(points, search_point_geom, seg_idx);
 
   return frenet_point;
 }
@@ -342,12 +344,12 @@ size_t findNearestSegmentIndex(
   const double yaw_threshold)
 {
   const auto nearest_idx =
-    motion_utils::findNearestSegmentIndex(points, pose, dist_threshold, yaw_threshold);
+    autoware_motion_utils::findNearestSegmentIndex(points, pose, dist_threshold, yaw_threshold);
   if (nearest_idx) {
     return nearest_idx.value();
   }
 
-  return motion_utils::findNearestSegmentIndex(points, pose.position);
+  return autoware_motion_utils::findNearestSegmentIndex(points, pose.position);
 }
 }  // namespace autoware::behavior_path_planner::utils
 

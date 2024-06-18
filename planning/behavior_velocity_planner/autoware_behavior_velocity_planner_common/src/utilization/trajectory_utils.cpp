@@ -13,11 +13,11 @@
 // limitations under the License.
 
 // #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
-#include "motion_utils/trajectory/conversion.hpp"
+#include "autoware/motion_utils/trajectory/conversion.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/trajectory_utils.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/velocity_smoother/trajectory_utils.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/quaternion.hpp>
@@ -55,7 +55,8 @@ bool smoothPath(
   const auto & smoother = planner_data->velocity_smoother_;
 
   auto trajectory =
-    motion_utils::convertToTrajectoryPoints<tier4_planning_msgs::msg::PathWithLaneId>(in_path);
+    autoware_motion_utils::convertToTrajectoryPoints<tier4_planning_msgs::msg::PathWithLaneId>(
+      in_path);
   const auto traj_lateral_acc_filtered = smoother->applyLateralAccelerationFilter(trajectory);
 
   const auto traj_steering_rate_limited =
@@ -65,9 +66,10 @@ bool smoothPath(
   auto traj_resampled = smoother->resampleTrajectory(
     traj_steering_rate_limited, v0, current_pose, planner_data->ego_nearest_dist_threshold,
     planner_data->ego_nearest_yaw_threshold);
-  const size_t traj_resampled_closest = motion_utils::findFirstNearestIndexWithSoftConstraints(
-    traj_resampled, current_pose, planner_data->ego_nearest_dist_threshold,
-    planner_data->ego_nearest_yaw_threshold);
+  const size_t traj_resampled_closest =
+    autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+      traj_resampled, current_pose, planner_data->ego_nearest_dist_threshold,
+      planner_data->ego_nearest_yaw_threshold);
   std::vector<TrajectoryPoints> debug_trajectories;
   // Clip trajectory from closest point
   TrajectoryPoints clipped;
@@ -85,7 +87,7 @@ bool smoothPath(
     autoware::velocity_smoother::trajectory_utils::applyMaximumVelocityLimit(
       traj_resampled_closest, traj_smoothed.size(), external_v_limit->max_velocity, traj_smoothed);
   }
-  out_path = motion_utils::convertToPathWithLaneId<TrajectoryPoints>(traj_smoothed);
+  out_path = autoware_motion_utils::convertToPathWithLaneId<TrajectoryPoints>(traj_smoothed);
   return true;
 }
 

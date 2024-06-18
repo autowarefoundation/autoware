@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "motion_utils/trajectory/trajectory.hpp"
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "utils.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
@@ -84,10 +84,10 @@ TEST(smoothDeceleration, calculateMaxSlowDownVelocity)
 TEST(specialInterpolation, specialInterpolation)
 {
   using autoware::behavior_velocity_planner::interpolatePath;
+  using autoware_motion_utils::calcSignedArcLength;
+  using autoware_motion_utils::searchZeroVelocityIndex;
   using autoware_planning_msgs::msg::Path;
   using autoware_planning_msgs::msg::PathPoint;
-  using motion_utils::calcSignedArcLength;
-  using motion_utils::searchZeroVelocityIndex;
 
   const auto genPath = [](const auto p, const auto v) {
     if (p.size() != v.size()) throw std::invalid_argument("different size is not expected");

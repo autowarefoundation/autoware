@@ -14,11 +14,11 @@
 
 #include "util.hpp"
 
-#include "motion_utils/trajectory/path_with_lane_id.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
+#include "autoware/motion_utils/trajectory/path_with_lane_id.hpp"
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
-#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
+#include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 
 #include <lanelet2_core/geometry/Polygon.h>
 
@@ -32,8 +32,8 @@ using Point = bg::model::d2::point_xy<double>;
 using Polygon = bg::model::polygon<Point>;
 using Line = bg::model::linestring<Point>;
 
+using autoware_motion_utils::calcSignedArcLength;
 using autoware_universe_utils::createPoint;
-using motion_utils::calcSignedArcLength;
 
 PathWithNoDrivableLanePolygonIntersection getPathIntersectionWithNoDrivableLanePolygon(
   const PathWithLaneId & ego_path, const lanelet::BasicPolygon2d & polygon,

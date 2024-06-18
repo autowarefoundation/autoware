@@ -18,12 +18,12 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/motion_utils/distance/distance.hpp>
+#include <autoware/motion_utils/resample/resample.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/uuid_helper.hpp>
-#include <motion_utils/distance/distance.hpp>
-#include <motion_utils/resample/resample.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <lanelet2_core/geometry/LineString.h>
@@ -41,22 +41,22 @@
 namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
+using autoware_motion_utils::calcArcLength;
+using autoware_motion_utils::calcDecelDistWithJerkAndAccConstraints;
+using autoware_motion_utils::calcLateralOffset;
+using autoware_motion_utils::calcLongitudinalOffsetPoint;
+using autoware_motion_utils::calcLongitudinalOffsetPose;
+using autoware_motion_utils::calcSignedArcLength;
+using autoware_motion_utils::calcSignedArcLengthPartialSum;
+using autoware_motion_utils::findNearestSegmentIndex;
+using autoware_motion_utils::insertTargetPoint;
+using autoware_motion_utils::resamplePath;
 using autoware_universe_utils::createPoint;
 using autoware_universe_utils::getPose;
 using autoware_universe_utils::Point2d;
 using autoware_universe_utils::Polygon2d;
 using autoware_universe_utils::pose2transform;
 using autoware_universe_utils::toHexString;
-using motion_utils::calcArcLength;
-using motion_utils::calcDecelDistWithJerkAndAccConstraints;
-using motion_utils::calcLateralOffset;
-using motion_utils::calcLongitudinalOffsetPoint;
-using motion_utils::calcLongitudinalOffsetPose;
-using motion_utils::calcSignedArcLength;
-using motion_utils::calcSignedArcLengthPartialSum;
-using motion_utils::findNearestSegmentIndex;
-using motion_utils::insertTargetPoint;
-using motion_utils::resamplePath;
 
 namespace
 {
@@ -385,7 +385,7 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
     const double base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
     const double dist_ego2crosswalk =
       calcSignedArcLength(ego_path.points, ego_pos, path_intersects.front());
-    const auto braking_distance_opt = motion_utils::calcDecelDistWithJerkAndAccConstraints(
+    const auto braking_distance_opt = autoware_motion_utils::calcDecelDistWithJerkAndAccConstraints(
       ego_vel, 0.0, ego_acc, p.min_acc_for_no_stop_decision, p.max_jerk_for_no_stop_decision,
       p.min_jerk_for_no_stop_decision);
     const double braking_distance = braking_distance_opt ? *braking_distance_opt : 0.0;

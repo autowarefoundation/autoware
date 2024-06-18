@@ -14,8 +14,8 @@
 
 #include "control_performance_analysis/control_performance_analysis_core.hpp"
 
+#include "autoware/motion_utils/trajectory/interpolation.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
-#include "motion_utils/trajectory/interpolation.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -86,7 +86,7 @@ std::pair<bool, int32_t> ControlPerformanceAnalysisCore::findClosestPrevWayPoint
     return std::make_pair(false, std::numeric_limits<int32_t>::quiet_NaN());
   }
 
-  const auto closest_segment = motion_utils::findNearestSegmentIndex(
+  const auto closest_segment = autoware_motion_utils::findNearestSegmentIndex(
     current_trajectory_ptr_->points, *current_vec_pose_ptr_,
     p_.acceptable_max_distance_to_waypoint_, p_.acceptable_max_yaw_difference_rad_);
 
@@ -391,7 +391,7 @@ std::optional<int32_t> ControlPerformanceAnalysisCore::findCurveRefIdx()
 std::pair<bool, Pose> ControlPerformanceAnalysisCore::calculateClosestPose()
 {
   const auto interp_point =
-    motion_utils::calcInterpolatedPoint(*current_trajectory_ptr_, *current_vec_pose_ptr_);
+    autoware_motion_utils::calcInterpolatedPoint(*current_trajectory_ptr_, *current_vec_pose_ptr_);
 
   const double interp_steering_angle = std::atan(p_.wheelbase_ * estimateCurvature());
 

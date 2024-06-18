@@ -14,7 +14,7 @@
 
 #include "planning.hpp"
 
-#include <motion_utils/trajectory/trajectory.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/planning_behavior.hpp>
 
@@ -136,7 +136,8 @@ void PlanningNode::on_timer()
         const auto & curr_point = kinematic_state_->pose.pose.position;
         const auto & stop_point = factor.pose.position;
         const auto & points = trajectory_->points;
-        factor.distance = motion_utils::calcSignedArcLength(points, curr_point, stop_point);
+        factor.distance =
+          autoware_motion_utils::calcSignedArcLength(points, curr_point, stop_point);
       }
     }
   }

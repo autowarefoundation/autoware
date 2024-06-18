@@ -15,6 +15,7 @@
 #ifndef AUTOWARE_PATH_SAMPLER__UTILS__TRAJECTORY_UTILS_HPP_
 #define AUTOWARE_PATH_SAMPLER__UTILS__TRAJECTORY_UTILS_HPP_
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware_path_sampler/common_structs.hpp"
 #include "autoware_path_sampler/type_alias.hpp"
 #include "autoware_sampler_common/structures.hpp"
@@ -22,7 +23,6 @@
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
 #include "interpolation/spline_interpolation_points_2d.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 #include "autoware_planning_msgs/msg/path_point.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
@@ -47,7 +47,7 @@ std::optional<size_t> getPointIndexAfter(
   }
 
   double sum_length =
-    -motion_utils::calcLongitudinalOffsetToSegment(points, target_seg_idx, target_pos);
+    -autoware_motion_utils::calcLongitudinalOffsetToSegment(points, target_seg_idx, target_pos);
 
   // search forward
   if (sum_length < offset) {
@@ -126,7 +126,7 @@ size_t findEgoIndex(
   const std::vector<T> & points, const geometry_msgs::msg::Pose & ego_pose,
   const EgoNearestParam & ego_nearest_param)
 {
-  return motion_utils::findFirstNearestIndexWithSoftConstraints(
+  return autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
     points, ego_pose, ego_nearest_param.dist_threshold, ego_nearest_param.yaw_threshold);
 }
 
@@ -135,7 +135,7 @@ size_t findEgoSegmentIndex(
   const std::vector<T> & points, const geometry_msgs::msg::Pose & ego_pose,
   const EgoNearestParam & ego_nearest_param)
 {
-  return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+  return autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     points, ego_pose, ego_nearest_param.dist_threshold, ego_nearest_param.yaw_threshold);
 }
 
@@ -158,7 +158,7 @@ std::optional<size_t> updateFrontPointForFix(
 
   // check if the points_for_fix is longer in front than points
   const double lon_offset_to_prev_front =
-    motion_utils::calcSignedArcLength(points, 0, front_fix_point.pose.position);
+    autoware_motion_utils::calcSignedArcLength(points, 0, front_fix_point.pose.position);
   if (0 < lon_offset_to_prev_front) {
     RCLCPP_WARN(
       rclcpp::get_logger("autoware_path_sampler.trajectory_utils"),

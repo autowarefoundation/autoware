@@ -14,9 +14,9 @@
 
 #include "collision.hpp"
 
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
 #include <autoware/universe_utils/ros/uuid_helper.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <boost/geometry.hpp>
 
@@ -48,8 +48,8 @@ std::optional<geometry_msgs::msg::Point> find_closest_collision_point(
         object_footprint.outer(), ego_footprint.outer(), collision_points);
       for (const auto & coll_p : collision_points) {
         auto p = geometry_msgs::msg::Point().set__x(coll_p.x()).set__y(coll_p.y());
-        const auto dist_to_ego =
-          motion_utils::calcSignedArcLength(ego_data.trajectory, ego_data.pose.position, p);
+        const auto dist_to_ego = autoware_motion_utils::calcSignedArcLength(
+          ego_data.trajectory, ego_data.pose.position, p);
         if (dist_to_ego < closest_dist) {
           closest_dist = dist_to_ego;
           closest_collision_point = p;

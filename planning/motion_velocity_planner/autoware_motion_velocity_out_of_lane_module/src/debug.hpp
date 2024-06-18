@@ -17,14 +17,14 @@
 
 #include "types.hpp"
 
-#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
+#include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 
 #include <visualization_msgs/msg/marker_array.hpp>
 
 namespace autoware::motion_velocity_planner::out_of_lane::debug
 {
 visualization_msgs::msg::MarkerArray create_debug_marker_array(const DebugData & debug_data);
-motion_utils::VirtualWalls create_virtual_walls(
+autoware_motion_utils::VirtualWalls create_virtual_walls(
   const DebugData & debug_data, const PlannerParam & params);
 }  // namespace autoware::motion_velocity_planner::out_of_lane::debug
 

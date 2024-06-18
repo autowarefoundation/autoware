@@ -17,8 +17,8 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/debug.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
-#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 
 #include <cmath>
 #include <string>
@@ -214,12 +214,12 @@ MarkerArray OcclusionSpotModule::createDebugMarkerArray()
   return debug_marker_array;
 }
 
-motion_utils::VirtualWalls OcclusionSpotModule::createVirtualWalls()
+autoware_motion_utils::VirtualWalls OcclusionSpotModule::createVirtualWalls()
 {
-  motion_utils::VirtualWalls virtual_walls;
-  motion_utils::VirtualWall wall;
+  autoware_motion_utils::VirtualWalls virtual_walls;
+  autoware_motion_utils::VirtualWall wall;
   wall.text = "occlusion_spot";
-  wall.style = motion_utils::VirtualWallType::slowdown;
+  wall.style = autoware_motion_utils::VirtualWallType::slowdown;
   for (size_t id = 0; id < debug_data_.debug_poses.size(); id++) {
     wall.pose =
       calcOffsetPose(debug_data_.debug_poses.at(id), debug_data_.baselink_to_front, 0.0, 0.0);

@@ -14,8 +14,8 @@
 
 #include "autoware/control_validator/debug_marker.hpp"
 
+#include <autoware/motion_utils/marker/marker_helper.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
-#include <motion_utils/marker/marker_helper.hpp>
 
 #include <memory>
 #include <string>
@@ -90,7 +90,7 @@ void ControlValidatorDebugMarkerPublisher::pushVirtualWall(const geometry_msgs::
 {
   const auto now = node_->get_clock()->now();
   const auto stop_wall_marker =
-    motion_utils::createStopVirtualWallMarker(pose, "control_validator", now, 0);
+    autoware_motion_utils::createStopVirtualWallMarker(pose, "control_validator", now, 0);
   autoware_universe_utils::appendMarkerArray(stop_wall_marker, &marker_array_virtual_wall_, now);
 }
 

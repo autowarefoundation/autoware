@@ -123,7 +123,7 @@ std::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
 
   // Check if driving forward for each path, return empty if not
   for (auto & path : partial_paths) {
-    if (!motion_utils::isDrivingForward(path.points)) {
+    if (!autoware_motion_utils::isDrivingForward(path.points)) {
       return {};
     }
   }

@@ -12,13 +12,13 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_internal_msgs</depend>
+  <depend>autoware_motion_utils</depend>
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_route_handler</depend>
   <depend>autoware_test_utils</depend>
   <depend>autoware_universe_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
-  <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

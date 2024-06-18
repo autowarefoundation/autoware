@@ -14,9 +14,9 @@
 
 #include "autoware/velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp"
 
+#include "autoware/motion_utils/resample/resample.hpp"
+#include "autoware/motion_utils/trajectory/conversion.hpp"
 #include "autoware/velocity_smoother/trajectory_utils.hpp"
-#include "motion_utils/resample/resample.hpp"
-#include "motion_utils/trajectory/conversion.hpp"
 
 #include <algorithm>
 #include <string>
@@ -298,9 +298,9 @@ TrajectoryPoints AnalyticalJerkConstrainedSmoother::applyLateralAccelerationFilt
     for (double s = 0; s < in_arclength.back(); s += points_interval) {
       out_arclength.push_back(s);
     }
-    const auto output_traj =
-      motion_utils::resampleTrajectory(motion_utils::convertToTrajectory(input), out_arclength);
-    output = motion_utils::convertToTrajectoryPointArray(output_traj);
+    const auto output_traj = autoware_motion_utils::resampleTrajectory(
+      autoware_motion_utils::convertToTrajectory(input), out_arclength);
+    output = autoware_motion_utils::convertToTrajectoryPointArray(output_traj);
     output.back() = input.back();  // keep the final speed.
   } else {
     output = input;

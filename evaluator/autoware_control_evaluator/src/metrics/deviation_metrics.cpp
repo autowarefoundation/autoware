@@ -14,9 +14,9 @@
 
 #include "autoware/control_evaluator/metrics/deviation_metrics.hpp"
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware/universe_utils/geometry/pose_deviation.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 namespace control_diagnostics
 {
@@ -26,14 +26,14 @@ using autoware_planning_msgs::msg::Trajectory;
 
 double calcLateralDeviation(const Trajectory & traj, const Point & point)
 {
-  const size_t nearest_index = motion_utils::findNearestIndex(traj.points, point);
+  const size_t nearest_index = autoware_motion_utils::findNearestIndex(traj.points, point);
   return std::abs(
     autoware_universe_utils::calcLateralDeviation(traj.points[nearest_index].pose, point));
 }
 
 double calcYawDeviation(const Trajectory & traj, const Pose & pose)
 {
-  const size_t nearest_index = motion_utils::findNearestIndex(traj.points, pose.position);
+  const size_t nearest_index = autoware_motion_utils::findNearestIndex(traj.points, pose.position);
   return std::abs(autoware_universe_utils::calcYawDeviation(traj.points[nearest_index].pose, pose));
 }
 

@@ -26,7 +26,7 @@ The `TemplateModule` class serves as a foundation for creating a scene module wi
 
 #### `createVirtualWalls` Method
 
-- The `createVirtualWalls` method creates virtual walls for the scene and returns them as `motion_utils::VirtualWalls`. In the provided code, it returns an empty `VirtualWalls` object.
+- The `createVirtualWalls` method creates virtual walls for the scene and returns them as `autoware_motion_utils::VirtualWalls`. In the provided code, it returns an empty `VirtualWalls` object.
 - You should implement the logic to create virtual walls based on your module's requirements.
 
 ## `Manager`

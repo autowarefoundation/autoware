@@ -14,8 +14,8 @@
 
 #include "autoware/planning_evaluator/metrics/stability_metrics.hpp"
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 #include <Eigen/Core>
 
@@ -66,19 +66,21 @@ Stat<double> calcLateralDistance(const Trajectory & traj1, const Trajectory & tr
   for (const auto & point : traj2.points) {
     const auto p0 = autoware_universe_utils::getPoint(point);
     // find nearest segment
-    const size_t nearest_segment_idx = motion_utils::findNearestSegmentIndex(traj1.points, p0);
+    const size_t nearest_segment_idx =
+      autoware_motion_utils::findNearestSegmentIndex(traj1.points, p0);
     double dist;
     // distance to segment
     if (
       nearest_segment_idx == traj1.points.size() - 2 &&
-      motion_utils::calcLongitudinalOffsetToSegment(traj1.points, nearest_segment_idx, p0) >
+      autoware_motion_utils::calcLongitudinalOffsetToSegment(
+        traj1.points, nearest_segment_idx, p0) >
         autoware_universe_utils::calcDistance2d(
           traj1.points[nearest_segment_idx], traj1.points[nearest_segment_idx + 1])) {
       // distance to last point
       dist = autoware_universe_utils::calcDistance2d(traj1.points.back(), p0);
     } else if (  // NOLINT
-      nearest_segment_idx == 0 &&
-      motion_utils::calcLongitudinalOffsetToSegment(traj1.points, nearest_segment_idx, p0) <= 0) {
+      nearest_segment_idx == 0 && autoware_motion_utils::calcLongitudinalOffsetToSegment(
+                                    traj1.points, nearest_segment_idx, p0) <= 0) {
       // distance to first point
       dist = autoware_universe_utils::calcDistance2d(traj1.points.front(), p0);
     } else {

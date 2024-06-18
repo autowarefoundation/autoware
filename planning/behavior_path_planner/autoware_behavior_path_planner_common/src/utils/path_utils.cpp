@@ -17,12 +17,12 @@
 #include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 
+#include <autoware/motion_utils/resample/resample.hpp>
+#include <autoware/motion_utils/trajectory/interpolation.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <interpolation/spline_interpolation.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <motion_utils/resample/resample.hpp>
-#include <motion_utils/trajectory/interpolation.hpp>
 
 #include <tf2/utils.h>
 
@@ -98,8 +98,8 @@ PathWithLaneId resamplePathWithSpline(
   // Get lane ids that are not duplicated
   std::vector<double> s_in;
   std::unordered_set<int64_t> unique_lane_ids;
-  const auto s_vec =
-    motion_utils::calcSignedArcLengthPartialSum(transformed_path, 0, transformed_path.size());
+  const auto s_vec = autoware_motion_utils::calcSignedArcLengthPartialSum(
+    transformed_path, 0, transformed_path.size());
   for (size_t i = 0; i < path.points.size(); ++i) {
     const double s = s_vec.at(i);
     for (const auto & lane_id : path.points.at(i).lane_ids) {
@@ -129,7 +129,8 @@ PathWithLaneId resamplePathWithSpline(
   }
 
   // Insert Stop Point
-  const auto closest_stop_dist = motion_utils::calcDistanceToForwardStopPoint(transformed_path);
+  const auto closest_stop_dist =
+    autoware_motion_utils::calcDistanceToForwardStopPoint(transformed_path);
   if (closest_stop_dist) {
     const auto close_indices = find_almost_same_values(s_out, *closest_stop_dist);
     if (close_indices) {
@@ -152,7 +153,7 @@ PathWithLaneId resamplePathWithSpline(
 
   std::sort(s_out.begin(), s_out.end());
 
-  return motion_utils::resamplePath(path, s_out);
+  return autoware_motion_utils::resamplePath(path, s_out);
 }
 
 size_t getIdxByArclength(
@@ -184,7 +185,7 @@ size_t getIdxByArclength(
   return 0;
 }
 
-// TODO(murooka) This function should be replaced with motion_utils::cropPoints
+// TODO(murooka) This function should be replaced with autoware_motion_utils::cropPoints
 void clipPathLength(
   PathWithLaneId & path, const size_t target_idx, const double forward, const double backward)
 {
@@ -201,7 +202,7 @@ void clipPathLength(
   path.points = clipped_points;
 }
 
-// TODO(murooka) This function should be replaced with motion_utils::cropPoints
+// TODO(murooka) This function should be replaced with autoware_motion_utils::cropPoints
 void clipPathLength(
   PathWithLaneId & path, const size_t target_idx, const BehaviorPathPlannerParameters & params)
 {
@@ -411,7 +412,7 @@ std::vector<PathWithLaneId> dividePath(
 void correctDividedPathVelocity(std::vector<PathWithLaneId> & divided_paths)
 {
   for (auto & path : divided_paths) {
-    const auto is_driving_forward = motion_utils::isDrivingForward(path.points);
+    const auto is_driving_forward = autoware_motion_utils::isDrivingForward(path.points);
     // If the number of points in the path is less than 2, don't correct the velocity
     if (!is_driving_forward) {
       continue;
@@ -507,11 +508,13 @@ Pose getUnshiftedEgoPose(const Pose & ego_pose, const ShiftedPath & prev_path)
   }
 
   // un-shifted for current ideal pose
-  const auto closest_idx = motion_utils::findNearestIndex(prev_path.path.points, ego_pose.position);
+  const auto closest_idx =
+    autoware_motion_utils::findNearestIndex(prev_path.path.points, ego_pose.position);
 
   // NOTE: Considering avoidance by motion, we set unshifted_pose as previous path instead of
   // ego_pose.
-  auto unshifted_pose = motion_utils::calcInterpolatedPoint(prev_path.path, ego_pose).point.pose;
+  auto unshifted_pose =
+    autoware_motion_utils::calcInterpolatedPoint(prev_path.path, ego_pose).point.pose;
 
   unshifted_pose = autoware_universe_utils::calcOffsetPose(
     unshifted_pose, 0.0, -prev_path.shift_length.at(closest_idx), 0.0);
@@ -571,7 +574,7 @@ PathWithLaneId combinePath(const PathWithLaneId & path1, const PathWithLaneId & 
   path.points.insert(path.points.end(), next(path2.points.begin()), path2.points.end());
 
   PathWithLaneId filtered_path = path;
-  filtered_path.points = motion_utils::removeOverlapPoints(filtered_path.points);
+  filtered_path.points = autoware_motion_utils::removeOverlapPoints(filtered_path.points);
   return filtered_path;
 }
 
@@ -612,10 +615,11 @@ BehaviorModuleOutput getReferencePath(
   // clip backward length
   // NOTE: In order to keep backward_path_length at least, resampling interval is added to the
   // backward.
-  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    reference_path.points, no_shift_pose, p.ego_nearest_dist_threshold,
-    p.ego_nearest_yaw_threshold);
-  reference_path.points = motion_utils::cropPoints(
+  const size_t current_seg_idx =
+    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      reference_path.points, no_shift_pose, p.ego_nearest_dist_threshold,
+      p.ego_nearest_yaw_threshold);
+  reference_path.points = autoware_motion_utils::cropPoints(
     reference_path.points, no_shift_pose.position, current_seg_idx, p.forward_path_length,
     p.backward_path_length + p.input_path_interval);
 

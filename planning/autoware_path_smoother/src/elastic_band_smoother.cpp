@@ -14,10 +14,10 @@
 
 #include "autoware/path_smoother/elastic_band_smoother.hpp"
 
+#include "autoware/motion_utils/trajectory/conversion.hpp"
 #include "autoware/path_smoother/utils/geometry_utils.hpp"
 #include "autoware/path_smoother/utils/trajectory_utils.hpp"
 #include "interpolation/spline_interpolation_points_2d.hpp"
-#include "motion_utils/trajectory/conversion.hpp"
 #include "rclcpp/time.hpp"
 
 #include <chrono>
@@ -54,7 +54,7 @@ Float64Stamped createFloat64Stamped(const rclcpp::Time & now, const float & data
 
 void setZeroVelocityAfterStopPoint(std::vector<TrajectoryPoint> & traj_points)
 {
-  const auto opt_zero_vel_idx = motion_utils::searchZeroVelocityIndex(traj_points);
+  const auto opt_zero_vel_idx = autoware_motion_utils::searchZeroVelocityIndex(traj_points);
   if (opt_zero_vel_idx) {
     for (size_t i = opt_zero_vel_idx.value(); i < traj_points.size(); ++i) {
       traj_points.at(i).longitudinal_velocity_mps = 0.0;
@@ -169,7 +169,8 @@ void ElasticBandSmoother::onPath(const Path::ConstSharedPtr path_ptr)
       "Backward path is NOT supported. Just converting path to trajectory");
 
     const auto traj_points = trajectory_utils::convertToTrajectoryPoints(path_ptr->points);
-    const auto output_traj_msg = motion_utils::convertToTrajectory(traj_points, path_ptr->header);
+    const auto output_traj_msg =
+      autoware_motion_utils::convertToTrajectory(traj_points, path_ptr->header);
     traj_pub_->publish(output_traj_msg);
     path_pub_->publish(*path_ptr);
     published_time_publisher_->publish_if_subscribed(path_pub_, path_ptr->header.stamp);
@@ -223,7 +224,7 @@ void ElasticBandSmoother::onPath(const Path::ConstSharedPtr path_ptr)
     createFloat64Stamped(now(), time_keeper_ptr_->getAccumulatedTime()));
 
   const auto output_traj_msg =
-    motion_utils::convertToTrajectory(full_traj_points, path_ptr->header);
+    autoware_motion_utils::convertToTrajectory(full_traj_points, path_ptr->header);
   traj_pub_->publish(output_traj_msg);
   const auto output_path_msg = trajectory_utils::create_path(*path_ptr, full_traj_points);
   path_pub_->publish(output_path_msg);
@@ -260,12 +261,12 @@ void ElasticBandSmoother::applyInputVelocity(
   time_keeper_ptr_->tic(__func__);
 
   // crop forward for faster calculation
-  const double output_traj_length = motion_utils::calcArcLength(output_traj_points);
+  const double output_traj_length = autoware_motion_utils::calcArcLength(output_traj_points);
   constexpr double margin_traj_length = 10.0;
   const auto forward_cropped_input_traj_points = [&]() {
     const size_t ego_seg_idx =
       trajectory_utils::findEgoSegmentIndex(input_traj_points, ego_pose, ego_nearest_param_);
-    return motion_utils::cropForwardPoints(
+    return autoware_motion_utils::cropForwardPoints(
       input_traj_points, ego_pose.position, ego_seg_idx, output_traj_length + margin_traj_length);
   }();
 
@@ -287,14 +288,15 @@ void ElasticBandSmoother::applyInputVelocity(
   }
 
   // insert stop point explicitly
-  const auto stop_idx = motion_utils::searchZeroVelocityIndex(forward_cropped_input_traj_points);
+  const auto stop_idx =
+    autoware_motion_utils::searchZeroVelocityIndex(forward_cropped_input_traj_points);
   if (stop_idx) {
     const auto & input_stop_pose = forward_cropped_input_traj_points.at(stop_idx.value()).pose;
-    // NOTE: motion_utils::findNearestSegmentIndex is used instead of
+    // NOTE: autoware_motion_utils::findNearestSegmentIndex is used instead of
     // trajectory_utils::findEgoSegmentIndex
     //       for the case where input_traj_points is much longer than output_traj_points, and the
     //       former has a stop point but the latter will not have.
-    const auto stop_seg_idx = motion_utils::findNearestSegmentIndex(
+    const auto stop_seg_idx = autoware_motion_utils::findNearestSegmentIndex(
       output_traj_points, input_stop_pose, ego_nearest_param_.dist_threshold,
       ego_nearest_param_.yaw_threshold);
 
@@ -305,10 +307,10 @@ void ElasticBandSmoother::applyInputVelocity(
       }
       if (*stop_seg_idx == output_traj_points.size() - 2) {
         const double signed_projected_length_to_segment =
-          motion_utils::calcLongitudinalOffsetToSegment(
+          autoware_motion_utils::calcLongitudinalOffsetToSegment(
             output_traj_points, *stop_seg_idx, input_stop_pose.position);
-        const double segment_length =
-          motion_utils::calcSignedArcLength(output_traj_points, *stop_seg_idx, *stop_seg_idx + 1);
+        const double segment_length = autoware_motion_utils::calcSignedArcLength(
+          output_traj_points, *stop_seg_idx, *stop_seg_idx + 1);
         if (segment_length < signed_projected_length_to_segment) {
           // NOTE: input_stop_pose is outside output_traj_points.
           return false;

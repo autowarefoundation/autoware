@@ -14,9 +14,9 @@
 
 #include "map_based_prediction/path_generator.hpp"
 
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <interpolation/spline_interpolation.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <algorithm>
 
@@ -187,7 +187,7 @@ PredictedPath PathGenerator::generatePolynomialPath(
   const double lateral_duration, const double speed_limit) const
 {
   // Get current Frenet Point
-  const double ref_path_len = motion_utils::calcArcLength(ref_path);
+  const double ref_path_len = autoware_motion_utils::calcArcLength(ref_path);
   const auto current_point = getFrenetPoint(object, ref_path, speed_limit, duration);
 
   // Step1. Set Target Frenet Point
@@ -398,9 +398,10 @@ FrenetPoint PathGenerator::getFrenetPoint(
   FrenetPoint frenet_point;
   const auto obj_point = object.kinematics.pose_with_covariance.pose.position;
 
-  const size_t nearest_segment_idx = motion_utils::findNearestSegmentIndex(ref_path, obj_point);
-  const double l =
-    motion_utils::calcLongitudinalOffsetToSegment(ref_path, nearest_segment_idx, obj_point);
+  const size_t nearest_segment_idx =
+    autoware_motion_utils::findNearestSegmentIndex(ref_path, obj_point);
+  const double l = autoware_motion_utils::calcLongitudinalOffsetToSegment(
+    ref_path, nearest_segment_idx, obj_point);
   const float vx = static_cast<float>(object.kinematics.twist_with_covariance.twist.linear.x);
   const float vy = static_cast<float>(object.kinematics.twist_with_covariance.twist.linear.y);
   const float obj_yaw =
@@ -479,8 +480,8 @@ FrenetPoint PathGenerator::getFrenetPoint(
   const float acceleration_adjusted_velocity_x = get_acceleration_adjusted_velocity(vx, ax);
   const float acceleration_adjusted_velocity_y = get_acceleration_adjusted_velocity(vy, ay);
 
-  frenet_point.s = motion_utils::calcSignedArcLength(ref_path, 0, nearest_segment_idx) + l;
-  frenet_point.d = motion_utils::calcLateralOffset(ref_path, obj_point);
+  frenet_point.s = autoware_motion_utils::calcSignedArcLength(ref_path, 0, nearest_segment_idx) + l;
+  frenet_point.d = autoware_motion_utils::calcLateralOffset(ref_path, obj_point);
   frenet_point.s_vel = acceleration_adjusted_velocity_x * std::cos(delta_yaw) -
                        acceleration_adjusted_velocity_y * std::sin(delta_yaw);
   frenet_point.d_vel = acceleration_adjusted_velocity_x * std::sin(delta_yaw) +

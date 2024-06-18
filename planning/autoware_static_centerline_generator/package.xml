@@ -18,6 +18,7 @@
   <depend>autoware_behavior_path_planner_common</depend>
   <depend>autoware_map_msgs</depend>
   <depend>autoware_mission_planner</depend>
+  <depend>autoware_motion_utils</depend>
   <depend>autoware_path_optimizer</depend>
   <depend>autoware_path_smoother</depend>
   <depend>autoware_perception_msgs</depend>
@@ -32,7 +33,6 @@
   <depend>lanelet2_extension</depend>
   <depend>map_loader</depend>
   <depend>map_projection_loader</depend>
-  <depend>motion_utils</depend>
   <depend>osqp_interface</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

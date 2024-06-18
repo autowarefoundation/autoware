@@ -18,9 +18,9 @@
 #include "autoware/behavior_path_planner_common/utils/path_utils.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 
+#include <autoware/motion_utils/trajectory/path_with_lane_id.hpp>
 #include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <motion_utils/trajectory/path_with_lane_id.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <boost/geometry/algorithms/dispatch/distance.hpp>
@@ -115,16 +115,16 @@ std::optional<PathWithLaneId> extractCollisionCheckSection(
   if (full_path.points.empty()) return std::nullopt;
   // Find the start index for collision check section based on the shift start pose
   const auto shift_start_idx =
-    motion_utils::findNearestIndex(full_path.points, path.start_pose.position);
+    autoware_motion_utils::findNearestIndex(full_path.points, path.start_pose.position);
 
   // Find the end index for collision check section based on the end pose and collision check
   // distance
   const auto collision_check_end_idx = [&]() -> size_t {
-    const auto end_pose_offset = motion_utils::calcLongitudinalOffsetPose(
+    const auto end_pose_offset = autoware_motion_utils::calcLongitudinalOffsetPose(
       full_path.points, path.end_pose.position, collision_check_distance_from_end);
 
     return end_pose_offset
-             ? motion_utils::findNearestIndex(full_path.points, end_pose_offset->position)
+             ? autoware_motion_utils::findNearestIndex(full_path.points, end_pose_offset->position)
              : full_path.points.size() - 1;  // Use the last point if offset pose is not calculable
   }();
 

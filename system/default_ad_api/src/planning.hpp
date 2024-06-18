@@ -15,10 +15,10 @@
 #ifndef PLANNING_HPP_
 #define PLANNING_HPP_
 
+#include <autoware/motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <autoware_ad_api_specs/planning.hpp>
 #include <component_interface_specs/localization.hpp>
 #include <component_interface_specs/planning.hpp>
-#include <motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>
@@ -48,7 +48,7 @@ private:
   std::vector<SteeringFactorArray::ConstSharedPtr> steering_factors_;
   rclcpp::TimerBase::SharedPtr timer_;
 
-  using VehicleStopChecker = motion_utils::VehicleStopCheckerBase;
+  using VehicleStopChecker = autoware_motion_utils::VehicleStopCheckerBase;
   using Trajectory = planning_interface::Trajectory::Message;
   using KinematicState = localization_interface::KinematicState::Message;
   void on_trajectory(const Trajectory::ConstSharedPtr msg);

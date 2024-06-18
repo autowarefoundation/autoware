@@ -16,6 +16,7 @@
   <depend>autoware_behavior_path_planner_common</depend>
   <depend>autoware_bezier_sampler</depend>
   <depend>autoware_frenet_planner</depend>
+  <depend>autoware_motion_utils</depend>
   <depend>autoware_path_sampler</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
@@ -27,7 +28,6 @@
   <depend>geometry_msgs</depend>
   <depend>interpolation</depend>
   <depend>lanelet2_extension</depend>
-  <depend>motion_utils</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

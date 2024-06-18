@@ -17,8 +17,8 @@
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 #include "object_recognition_utils/predicted_path_utils.hpp"
 
+#include <autoware/motion_utils/trajectory/interpolation.hpp>
 #include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
-#include <motion_utils/trajectory/interpolation.hpp>
 
 #include <boost/geometry/algorithms/distance.hpp>
 
@@ -39,7 +39,7 @@ bool position_filter(
   const geometry_msgs::msg::Point & current_pose, const double forward_distance,
   const double backward_distance)
 {
-  const auto dist_ego_to_obj = motion_utils::calcSignedArcLength(
+  const auto dist_ego_to_obj = autoware_motion_utils::calcSignedArcLength(
     path_points, current_pose, object.kinematics.initial_pose_with_covariance.pose.position);
 
   return (backward_distance < dist_ego_to_obj && dist_ego_to_obj < forward_distance);
@@ -274,7 +274,7 @@ std::vector<PoseWithVelocityStamped> createPredictedPath(
     }
 
     const auto pose =
-      motion_utils::calcInterpolatedPose(path_points, vehicle_pose_frenet.length + length);
+      autoware_motion_utils::calcInterpolatedPose(path_points, vehicle_pose_frenet.length + length);
     predicted_path.emplace_back(t, pose, velocity);
   }
 

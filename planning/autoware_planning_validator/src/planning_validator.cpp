@@ -16,8 +16,8 @@
 
 #include "autoware/planning_validator/utils.hpp"
 
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <memory>
 #include <string>
@@ -450,7 +450,7 @@ bool PlanningValidator::checkValidSteeringRate(const Trajectory & trajectory)
 bool PlanningValidator::checkValidVelocityDeviation(const Trajectory & trajectory)
 {
   // TODO(horibe): set appropriate thresholds for index search
-  const auto idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const auto idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
     trajectory.points, current_kinematics_->pose.pose);
 
   validation_status_.velocity_deviation = std::abs(
@@ -466,7 +466,7 @@ bool PlanningValidator::checkValidVelocityDeviation(const Trajectory & trajector
 bool PlanningValidator::checkValidDistanceDeviation(const Trajectory & trajectory)
 {
   // TODO(horibe): set appropriate thresholds for index search
-  const auto idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const auto idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
     trajectory.points, current_kinematics_->pose.pose);
 
   validation_status_.distance_deviation = autoware_universe_utils::calcDistance2d(
@@ -487,7 +487,7 @@ bool PlanningValidator::checkValidLongitudinalDistanceDeviation(const Trajectory
 
   const auto ego_pose = current_kinematics_->pose.pose;
   const size_t idx =
-    motion_utils::findFirstNearestIndexWithSoftConstraints(trajectory.points, ego_pose);
+    autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(trajectory.points, ego_pose);
 
   if (0 < idx && idx < trajectory.points.size() - 1) {
     return true;  // ego-nearest point exists between trajectory points.
@@ -495,8 +495,8 @@ bool PlanningValidator::checkValidLongitudinalDistanceDeviation(const Trajectory
 
   // Check if the valid longitudinal deviation for given segment index
   const auto HasValidLongitudinalDeviation = [&](const size_t seg_idx, const bool is_last) {
-    auto long_offset =
-      motion_utils::calcLongitudinalOffsetToSegment(trajectory.points, seg_idx, ego_pose.position);
+    auto long_offset = autoware_motion_utils::calcLongitudinalOffsetToSegment(
+      trajectory.points, seg_idx, ego_pose.position);
 
     // for last, need to remove distance for the last segment.
     if (is_last) {
@@ -532,7 +532,7 @@ bool PlanningValidator::checkValidForwardTrajectoryLength(const Trajectory & tra
     return true;  // Ego is almost stopped.
   }
 
-  const auto forward_length = motion_utils::calcSignedArcLength(
+  const auto forward_length = autoware_motion_utils::calcSignedArcLength(
     trajectory.points, current_kinematics_->pose.pose.position, trajectory.points.size() - 1);
 
   const auto acc = validation_params_.forward_trajectory_length_acceleration;

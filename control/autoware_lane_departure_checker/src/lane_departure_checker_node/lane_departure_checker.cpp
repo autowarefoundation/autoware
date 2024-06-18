@@ -16,11 +16,11 @@
 
 #include "autoware/lane_departure_checker/util/create_vehicle_footprint.hpp"
 
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/math/normalization.hpp>
 #include <autoware/universe_utils/math/unit_conversion.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <boost/geometry.hpp>
 
@@ -30,12 +30,12 @@
 #include <algorithm>
 #include <vector>
 
+using autoware_motion_utils::calcArcLength;
 using autoware_universe_utils::LinearRing2d;
 using autoware_universe_utils::LineString2d;
 using autoware_universe_utils::MultiPoint2d;
 using autoware_universe_utils::MultiPolygon2d;
 using autoware_universe_utils::Point2d;
-using motion_utils::calcArcLength;
 
 namespace
 {
@@ -169,7 +169,7 @@ PoseDeviation LaneDepartureChecker::calcTrajectoryDeviation(
   const Trajectory & trajectory, const geometry_msgs::msg::Pose & pose, const double dist_threshold,
   const double yaw_threshold)
 {
-  const auto nearest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const auto nearest_idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
     trajectory.points, pose, dist_threshold, yaw_threshold);
   return autoware_universe_utils::calcPoseDeviation(trajectory.points.at(nearest_idx).pose, pose);
 }

@@ -14,8 +14,8 @@
 
 #include "autoware/planning_validator/utils.hpp"
 
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <memory>
 #include <string>

@@ -67,7 +67,7 @@ struct PullOverPath
           partial_paths.at(i).points.end());
       }
     }
-    path.points = motion_utils::removeOverlapPoints(path.points);
+    path.points = autoware_motion_utils::removeOverlapPoints(path.points);
 
     return path;
   }
@@ -75,7 +75,8 @@ struct PullOverPath
   PathWithLaneId getParkingPath() const
   {
     const PathWithLaneId full_path = getFullPath();
-    const size_t start_idx = motion_utils::findNearestIndex(full_path.points, start_pose.position);
+    const size_t start_idx =
+      autoware_motion_utils::findNearestIndex(full_path.points, start_pose.position);
 
     PathWithLaneId parking_path{};
     std::copy(

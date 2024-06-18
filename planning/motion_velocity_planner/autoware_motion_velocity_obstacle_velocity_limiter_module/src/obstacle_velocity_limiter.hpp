@@ -122,7 +122,7 @@ std::vector<autoware::motion_velocity_planner::SlowdownInterval> calculate_slowd
   TrajectoryPoints & trajectory, const CollisionChecker & collision_checker,
   const std::vector<multi_linestring_t> & projections, const std::vector<polygon_t> & footprints,
   ProjectionParameters & projection_params, const VelocityParameters & velocity_params,
-  motion_utils::VirtualWalls & virtual_walls);
+  autoware_motion_utils::VirtualWalls & virtual_walls);
 
 /// @brief copy the velocity profile of a downsampled trajectory to the original trajectory
 /// @param[in] downsampled_trajectory downsampled trajectory

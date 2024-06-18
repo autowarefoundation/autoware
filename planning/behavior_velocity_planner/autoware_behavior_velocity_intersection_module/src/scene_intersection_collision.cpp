@@ -17,11 +17,11 @@
 
 #include <autoware/behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>  // for toGeomPoly
 #include <autoware/behavior_velocity_planner_common/utilization/trajectory_utils.hpp>  // for smoothPath
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>  // for toPolygon2d
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <magic_enum.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/algorithms/intersects.hpp>
@@ -630,7 +630,7 @@ std::string IntersectionModule::generateEgoRiskEvasiveDiagnosis(
       object_dist_to_margin_point / std::max(min_vel, object_info->observed_velocity());
     // ego side
     const double ego_dist_to_collision_pos =
-      motion_utils::calcSignedArcLength(path.points, closest_idx, collision_pos);
+      autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, collision_pos);
     const auto ego_eta_to_collision_pos_it = std::lower_bound(
       ego_time_distance_array.begin(), ego_time_distance_array.end(), ego_dist_to_collision_pos,
       [](const auto & a, const double b) { return a.second < b; });
@@ -897,15 +897,16 @@ IntersectionModule::TimeDistanceArray IntersectionModule::calcIntersectionPassin
 
   // NOTE: `reference_path` is resampled in `reference_smoothed_path`, so
   // `last_intersection_stopline_candidate_idx` makes no sense
-  const auto smoothed_path_closest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
-    smoothed_reference_path.points, path.points.at(closest_idx).point.pose,
-    planner_data_->ego_nearest_dist_threshold, planner_data_->ego_nearest_yaw_threshold);
+  const auto smoothed_path_closest_idx =
+    autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+      smoothed_reference_path.points, path.points.at(closest_idx).point.pose,
+      planner_data_->ego_nearest_dist_threshold, planner_data_->ego_nearest_yaw_threshold);
 
   const std::optional<size_t> upstream_stopline_idx_opt = [&]() -> std::optional<size_t> {
     if (upstream_stopline) {
       const auto upstream_stopline_point =
         reference_path.points.at(upstream_stopline.value()).point.pose;
-      return motion_utils::findFirstNearestIndexWithSoftConstraints(
+      return autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
         smoothed_reference_path.points, upstream_stopline_point,
         planner_data_->ego_nearest_dist_threshold, planner_data_->ego_nearest_yaw_threshold);
     } else {

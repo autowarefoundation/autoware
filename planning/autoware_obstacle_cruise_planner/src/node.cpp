@@ -14,13 +14,13 @@
 
 #include "autoware/obstacle_cruise_planner/node.hpp"
 
+#include "autoware/motion_utils/resample/resample.hpp"
+#include "autoware/motion_utils/trajectory/conversion.hpp"
 #include "autoware/obstacle_cruise_planner/polygon_utils.hpp"
 #include "autoware/obstacle_cruise_planner/utils.hpp"
 #include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
 #include "autoware/universe_utils/ros/marker_helper.hpp"
 #include "autoware/universe_utils/ros/update_param.hpp"
-#include "motion_utils/resample/resample.hpp"
-#include "motion_utils/trajectory/conversion.hpp"
 #include "object_recognition_utils/predicted_path_utils.hpp"
 
 #include <boost/format.hpp>
@@ -58,9 +58,9 @@ std::optional<double> calcDistanceToFrontVehicle(
   const std::vector<TrajectoryPoint> & traj_points, const size_t ego_idx,
   const geometry_msgs::msg::Point & obstacle_pos)
 {
-  const size_t obstacle_idx = motion_utils::findNearestIndex(traj_points, obstacle_pos);
+  const size_t obstacle_idx = autoware_motion_utils::findNearestIndex(traj_points, obstacle_pos);
   const auto ego_to_obstacle_distance =
-    motion_utils::calcSignedArcLength(traj_points, ego_idx, obstacle_idx);
+    autoware_motion_utils::calcSignedArcLength(traj_points, ego_idx, obstacle_idx);
   if (ego_to_obstacle_distance < 0.0) return std::nullopt;
   return ego_to_obstacle_distance;
 }
@@ -82,7 +82,8 @@ PredictedPath resampleHighestConfidencePredictedPath(
 double calcDiffAngleAgainstTrajectory(
   const std::vector<TrajectoryPoint> & traj_points, const geometry_msgs::msg::Pose & target_pose)
 {
-  const size_t nearest_idx = motion_utils::findNearestIndex(traj_points, target_pose.position);
+  const size_t nearest_idx =
+    autoware_motion_utils::findNearestIndex(traj_points, target_pose.position);
   const double traj_yaw = tf2::getYaw(traj_points.at(nearest_idx).pose.orientation);
 
   const double target_yaw = tf2::getYaw(target_pose.orientation);
@@ -94,7 +95,8 @@ double calcDiffAngleAgainstTrajectory(
 std::pair<double, double> projectObstacleVelocityToTrajectory(
   const std::vector<TrajectoryPoint> & traj_points, const Obstacle & obstacle)
 {
-  const size_t object_idx = motion_utils::findNearestIndex(traj_points, obstacle.pose.position);
+  const size_t object_idx =
+    autoware_motion_utils::findNearestIndex(traj_points, obstacle.pose.position);
   const double traj_yaw = tf2::getYaw(traj_points.at(object_idx).pose.orientation);
 
   const double obstacle_yaw = tf2::getYaw(obstacle.pose.orientation);
@@ -143,7 +145,8 @@ std::vector<TrajectoryPoint> extendTrajectoryPoints(
   const double step_length)
 {
   auto output_points = input_points;
-  const auto is_driving_forward_opt = motion_utils::isDrivingForwardWithTwist(input_points);
+  const auto is_driving_forward_opt =
+    autoware_motion_utils::isDrivingForwardWithTwist(input_points);
   const bool is_driving_forward = is_driving_forward_opt ? *is_driving_forward_opt : true;
 
   if (extend_distance < std::numeric_limits<double>::epsilon()) {
@@ -186,9 +189,9 @@ std::vector<int> getTargetObjectType(rclcpp::Node & node, const std::string & pa
 std::vector<TrajectoryPoint> resampleTrajectoryPoints(
   const std::vector<TrajectoryPoint> & traj_points, const double interval)
 {
-  const auto traj = motion_utils::convertToTrajectory(traj_points);
-  const auto resampled_traj = motion_utils::resampleTrajectory(traj, interval);
-  return motion_utils::convertToTrajectoryPointArray(resampled_traj);
+  const auto traj = autoware_motion_utils::convertToTrajectory(traj_points);
+  const auto resampled_traj = autoware_motion_utils::resampleTrajectory(traj, interval);
+  return autoware_motion_utils::convertToTrajectoryPointArray(resampled_traj);
 }
 
 geometry_msgs::msg::Point toGeomPoint(const autoware_universe_utils::Point2d & point)
@@ -501,7 +504,7 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
   const auto & objects = *objects_ptr;
   const auto & acc = *acc_ptr;
 
-  const auto traj_points = motion_utils::convertToTrajectoryPointArray(*msg);
+  const auto traj_points = autoware_motion_utils::convertToTrajectoryPointArray(*msg);
   // check if subscribed variables are ready
   if (traj_points.empty()) {
     return;
@@ -510,7 +513,7 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
   stop_watch_.tic(__func__);
   *debug_data_ptr_ = DebugData();
 
-  const auto is_driving_forward = motion_utils::isDrivingForwardWithTwist(traj_points);
+  const auto is_driving_forward = autoware_motion_utils::isDrivingForwardWithTwist(traj_points);
   is_driving_forward_ = is_driving_forward ? is_driving_forward.value() : is_driving_forward_;
 
   // 1. Convert predicted objects to obstacles which are
@@ -542,7 +545,8 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
   publishVelocityLimit(slow_down_vel_limit, "slow_down");
 
   // 7. Publish trajectory
-  const auto output_traj = motion_utils::convertToTrajectory(slow_down_traj_points, msg->header);
+  const auto output_traj =
+    autoware_motion_utils::convertToTrajectory(slow_down_traj_points, msg->header);
   trajectory_pub_->publish(output_traj);
 
   // 8. Publish debug data
@@ -569,7 +573,7 @@ std::vector<Polygon2d> ObstacleCruisePlannerNode::createOneStepPolygons(
   const double vehicle_width = vehicle_info.vehicle_width_m;
 
   const size_t nearest_idx =
-    motion_utils::findNearestSegmentIndex(traj_points, current_ego_pose.position);
+    autoware_motion_utils::findNearestSegmentIndex(traj_points, current_ego_pose.position);
   const auto nearest_pose = traj_points.at(nearest_idx).pose;
   const auto current_ego_pose_error =
     autoware_universe_utils::inverseTransformPose(current_ego_pose, nearest_pose);
@@ -679,7 +683,7 @@ std::vector<Obstacle> ObstacleCruisePlannerNode::convertToObstacles(
 
     // 3. Check if rough lateral distance is smaller than the threshold
     const double lat_dist_from_obstacle_to_traj =
-      motion_utils::calcLateralOffset(traj_points, current_obstacle_pose.pose.position);
+      autoware_motion_utils::calcLateralOffset(traj_points, current_obstacle_pose.pose.position);
 
     const double min_lat_dist_to_traj_poly = [&]() {
       const double obstacle_max_length = calcObstacleMaxLength(predicted_object.shape);
@@ -744,10 +748,11 @@ bool ObstacleCruisePlannerNode::isFrontCollideObstacle(
   const std::vector<TrajectoryPoint> & traj_points, const Obstacle & obstacle,
   const size_t first_collision_idx) const
 {
-  const auto obstacle_idx = motion_utils::findNearestIndex(traj_points, obstacle.pose.position);
+  const auto obstacle_idx =
+    autoware_motion_utils::findNearestIndex(traj_points, obstacle.pose.position);
 
   const double obstacle_to_col_points_distance =
-    motion_utils::calcSignedArcLength(traj_points, obstacle_idx, first_collision_idx);
+    autoware_motion_utils::calcSignedArcLength(traj_points, obstacle_idx, first_collision_idx);
   const double obstacle_max_length = calcObstacleMaxLength(obstacle.shape);
 
   // If the obstacle is far in front of the collision point, the obstacle is behind the ego.
@@ -939,7 +944,7 @@ std::optional<CruiseObstacle> ObstacleCruisePlannerNode::createYieldCruiseObstac
   }
 
   const auto collision_points = [&]() -> std::optional<std::vector<PointWithStamp>> {
-    const auto obstacle_idx = motion_utils::findNearestIndex(traj_points, obstacle.pose);
+    const auto obstacle_idx = autoware_motion_utils::findNearestIndex(traj_points, obstacle.pose);
     if (!obstacle_idx) return std::nullopt;
     const auto collision_traj_point = traj_points.at(obstacle_idx.value());
     const auto object_time = now() + traj_points.at(obstacle_idx.value()).time_from_start;
@@ -1353,7 +1358,7 @@ std::optional<SlowDownObstacle> ObstacleCruisePlannerNode::createSlowDownObstacl
   for (const auto & collision_poly : front_collision_polygons) {
     for (const auto & collision_point : collision_poly.outer()) {
       const auto collision_geom_point = toGeomPoint(collision_point);
-      const double dist = motion_utils::calcLongitudinalOffsetToSegment(
+      const double dist = autoware_motion_utils::calcLongitudinalOffsetToSegment(
         traj_points, front_seg_idx, collision_geom_point);
       if (dist < front_min_dist) {
         front_min_dist = dist;
@@ -1368,7 +1373,7 @@ std::optional<SlowDownObstacle> ObstacleCruisePlannerNode::createSlowDownObstacl
   for (const auto & collision_poly : back_collision_polygons) {
     for (const auto & collision_point : collision_poly.outer()) {
       const auto collision_geom_point = toGeomPoint(collision_point);
-      const double dist = motion_utils::calcLongitudinalOffsetToSegment(
+      const double dist = autoware_motion_utils::calcLongitudinalOffsetToSegment(
         traj_points, back_seg_idx, collision_geom_point);
       if (back_max_dist < dist) {
         back_max_dist = dist;
@@ -1451,7 +1456,7 @@ double ObstacleCruisePlannerNode::calcCollisionTimeMargin(
                                     ? std::abs(vehicle_info_.max_longitudinal_offset_m)
                                     : std::abs(vehicle_info_.min_longitudinal_offset_m);
     const double dist_from_ego_to_obstacle =
-      std::abs(motion_utils::calcSignedArcLength(
+      std::abs(autoware_motion_utils::calcSignedArcLength(
         traj_points, ego_pose.position, collision_points.front().point)) -
       abs_ego_offset;
     return dist_from_ego_to_obstacle / std::max(1e-6, std::abs(ego_vel));

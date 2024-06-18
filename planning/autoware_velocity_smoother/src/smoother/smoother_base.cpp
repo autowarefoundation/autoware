@@ -14,13 +14,13 @@
 
 #include "autoware/velocity_smoother/smoother/smoother_base.hpp"
 
+#include "autoware/motion_utils/resample/resample.hpp"
+#include "autoware/motion_utils/trajectory/conversion.hpp"
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware/universe_utils/math/unit_conversion.hpp"
 #include "autoware/velocity_smoother/resample.hpp"
 #include "autoware/velocity_smoother/trajectory_utils.hpp"
-#include "motion_utils/resample/resample.hpp"
-#include "motion_utils/trajectory/conversion.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -34,10 +34,10 @@ namespace
 TrajectoryPoints applyPreProcess(
   const TrajectoryPoints & input, const double interval, const bool use_resampling)
 {
-  using motion_utils::calcArcLength;
-  using motion_utils::convertToTrajectory;
-  using motion_utils::convertToTrajectoryPointArray;
-  using motion_utils::resampleTrajectory;
+  using autoware_motion_utils::calcArcLength;
+  using autoware_motion_utils::convertToTrajectory;
+  using autoware_motion_utils::convertToTrajectoryPointArray;
+  using autoware_motion_utils::resampleTrajectory;
 
   if (!use_resampling) {
     return input;
@@ -141,13 +141,13 @@ TrajectoryPoints SmootherBase::applyLateralAccelerationFilter(
   // since the resampling takes a long time, omit the resampling when it is not requested
   if (use_resampling) {
     std::vector<double> out_arclength;
-    const auto traj_length = motion_utils::calcArcLength(input);
+    const auto traj_length = autoware_motion_utils::calcArcLength(input);
     for (double s = 0; s < traj_length; s += points_interval) {
       out_arclength.push_back(s);
     }
-    const auto output_traj =
-      motion_utils::resampleTrajectory(motion_utils::convertToTrajectory(input), out_arclength);
-    output = motion_utils::convertToTrajectoryPointArray(output_traj);
+    const auto output_traj = autoware_motion_utils::resampleTrajectory(
+      autoware_motion_utils::convertToTrajectory(input), out_arclength);
+    output = autoware_motion_utils::convertToTrajectoryPointArray(output_traj);
     output.back() = input.back();  // keep the final speed.
   } else {
     output = input;

@@ -177,14 +177,14 @@ public:
   double getShift(const Point & p) const
   {
     validate();
-    const auto idx = motion_utils::findNearestIndex(prev_reference_path_.points, p);
+    const auto idx = autoware_motion_utils::findNearestIndex(prev_reference_path_.points, p);
     return prev_spline_shift_path_.shift_length.at(idx);
   }
 
   double getLinearShift(const Point & p) const
   {
     validate();
-    const auto idx = motion_utils::findNearestIndex(prev_reference_path_.points, p);
+    const auto idx = autoware_motion_utils::findNearestIndex(prev_reference_path_.points, p);
     return prev_linear_shift_path_.shift_length.at(idx);
   }
 
@@ -278,7 +278,7 @@ public:
     }
 
     const auto start_idx = data_->findEgoIndex(path.points);
-    const auto distance = motion_utils::calcSignedArcLength(
+    const auto distance = autoware_motion_utils::calcSignedArcLength(
       path.points, start_idx, max_v_point_.value().first.position);
     return std::make_pair(distance, max_v_point_.value().second);
   }
@@ -290,7 +290,7 @@ public:
     const auto & a_now = data_->self_acceleration->accel.accel.linear.x;
     const auto & a_lim = use_hard_constraints ? p->max_deceleration : p->nominal_deceleration;
     const auto & j_lim = use_hard_constraints ? p->max_jerk : p->nominal_jerk;
-    const auto ret = motion_utils::calcDecelDistWithJerkAndAccConstraints(
+    const auto ret = autoware_motion_utils::calcDecelDistWithJerkAndAccConstraints(
       getEgoSpeed(), target_velocity, a_now, a_lim, j_lim, -1.0 * j_lim);
 
     if (!!ret) {
@@ -449,15 +449,15 @@ public:
     const auto x_max_accel =
       v_neg_jerk * t_max_accel + p->max_acceleration * std::pow(t_max_accel, 2.0) / 2.0;
 
-    const auto point = motion_utils::calcLongitudinalOffsetPose(
+    const auto point = autoware_motion_utils::calcLongitudinalOffsetPose(
       path.points, getEgoPosition(), x_neg_jerk + x_max_accel);
     if (point.has_value()) {
       max_v_point_ = std::make_pair(point.value(), v_max);
       return;
     }
 
-    const auto x_end =
-      motion_utils::calcSignedArcLength(path.points, getEgoPosition(), path.points.size() - 1);
+    const auto x_end = autoware_motion_utils::calcSignedArcLength(
+      path.points, getEgoPosition(), path.points.size() - 1);
     const auto t_end =
       (std::sqrt(v0 * v0 + 2.0 * p->max_acceleration * x_end) - v0) / p->max_acceleration;
     const auto v_end = v0 + p->max_acceleration * t_end;

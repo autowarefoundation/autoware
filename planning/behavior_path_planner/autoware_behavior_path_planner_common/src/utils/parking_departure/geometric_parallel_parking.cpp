@@ -70,7 +70,7 @@ PathWithLaneId GeometricParallelParking::getFullPath() const
   }
 
   PathWithLaneId filtered_path = path;
-  filtered_path.points = motion_utils::removeOverlapPoints(filtered_path.points);
+  filtered_path.points = autoware_motion_utils::removeOverlapPoints(filtered_path.points);
   return filtered_path;
 }
 
@@ -299,7 +299,7 @@ bool GeometricParallelParking::planPullOut(
       paths.back().points.end(),
       road_center_line_path.points.begin() + 1,  // to avoid overlapped point
       road_center_line_path.points.end());
-    paths.back().points = motion_utils::removeOverlapPoints(paths.back().points);
+    paths.back().points = autoware_motion_utils::removeOverlapPoints(paths.back().points);
 
     // if the end point is the goal, set the velocity to 0
     if (path_terminal_is_goal) {

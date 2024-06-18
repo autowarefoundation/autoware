@@ -15,8 +15,8 @@ nav:
     - 'Glog Component': common/glog_component
     - 'interpolation': common/interpolation
     - 'Kalman Filter': common/kalman_filter
-    - 'Motion Utils': common/motion_utils
-    - 'Vehicle Utils': common/motion_utils/docs/vehicle/vehicle
+    - 'Motion Utils': common/autoware_motion_utils
+    - 'Vehicle Utils': common/autoware_motion_utils/docs/vehicle/vehicle
     - 'Object Recognition Utils': common/object_recognition_utils
     - 'OSQP Interface': common/osqp_interface/design/osqp_interface-design
     - 'Perception Utils': common/perception_utils

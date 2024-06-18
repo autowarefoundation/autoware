@@ -15,11 +15,11 @@
 #include "autoware/behavior_velocity_crosswalk_module/util.hpp"
 
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
+#include <autoware/motion_utils/trajectory/path_with_lane_id.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <lanelet2_extension/utility/query.hpp>
-#include <motion_utils/trajectory/path_with_lane_id.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 
@@ -48,10 +48,10 @@
 namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
+using autoware_motion_utils::calcSignedArcLength;
 using autoware_universe_utils::createPoint;
 using autoware_universe_utils::Line2d;
 using autoware_universe_utils::Point2d;
-using motion_utils::calcSignedArcLength;
 
 std::vector<std::pair<int64_t, lanelet::ConstLanelet>> getCrosswalksOnPath(
   const geometry_msgs::msg::Pose & current_pose,

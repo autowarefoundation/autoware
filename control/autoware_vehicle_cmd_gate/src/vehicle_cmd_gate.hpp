@@ -20,12 +20,12 @@
 #include "moderate_stop_interface.hpp"
 #include "vehicle_cmd_filter.hpp"
 
+#include <autoware/motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <autoware/universe_utils/ros/polling_subscriber.hpp>
 #include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <autoware_vehicle_cmd_gate/msg/is_filter_activated.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
-#include <motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/mrm_state.hpp>
@@ -81,7 +81,7 @@ using nav_msgs::msg::Odometry;
 using EngageMsg = autoware_vehicle_msgs::msg::Engage;
 using EngageSrv = tier4_external_api_msgs::srv::Engage;
 
-using motion_utils::VehicleStopChecker;
+using autoware_motion_utils::VehicleStopChecker;
 struct Commands
 {
   Control control;

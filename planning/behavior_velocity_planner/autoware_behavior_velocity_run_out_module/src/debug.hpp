@@ -16,7 +16,7 @@
 
 #include "utils.hpp"
 
-#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
+#include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 
 #include <tier4_debug_msgs/msg/float32_multi_array_stamped.hpp>
 #include <tier4_debug_msgs/msg/int32_stamped.hpp>
@@ -123,7 +123,7 @@ public:
   void publishEmptyPointCloud();
   visualization_msgs::msg::MarkerArray createVisualizationMarkerArray();
   void setHeight(const double height);
-  motion_utils::VirtualWalls createVirtualWalls();
+  autoware_motion_utils::VirtualWalls createVirtualWalls();
 
 private:
   visualization_msgs::msg::MarkerArray createVisualizationMarkerArrayFromDebugData(

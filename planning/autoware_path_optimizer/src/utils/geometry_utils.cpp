@@ -14,8 +14,8 @@
 
 #include "autoware/path_optimizer/utils/geometry_utils.hpp"
 
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/path_optimizer/mpt_optimizer.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
 
 #include <autoware/universe_utils/geometry/boost_geometry.hpp>
@@ -49,7 +49,7 @@ namespace
 geometry_msgs::msg::Point getStartPoint(
   const std::vector<geometry_msgs::msg::Point> & bound, const geometry_msgs::msg::Point & point)
 {
-  const size_t segment_idx = motion_utils::findNearestSegmentIndex(bound, point);
+  const size_t segment_idx = autoware_motion_utils::findNearestSegmentIndex(bound, point);
   const auto & curr_seg_point = bound.at(segment_idx);
   const auto & next_seg_point = bound.at(segment_idx);
   const Eigen::Vector2d first_to_target{point.x - curr_seg_point.x, point.y - curr_seg_point.y};
@@ -61,7 +61,8 @@ geometry_msgs::msg::Point getStartPoint(
     return bound.front();
   }
 
-  const auto first_point = motion_utils::calcLongitudinalOffsetPoint(bound, segment_idx, length);
+  const auto first_point =
+    autoware_motion_utils::calcLongitudinalOffsetPoint(bound, segment_idx, length);
   if (first_point) {
     return *first_point;
   }
@@ -84,7 +85,8 @@ bool isFrontDrivableArea(
 
   // ignore point behind of the front line
   const std::vector<geometry_msgs::msg::Point> front_bound = {left_start_point, right_start_point};
-  const double lat_dist_to_front_bound = motion_utils::calcLateralOffset(front_bound, point);
+  const double lat_dist_to_front_bound =
+    autoware_motion_utils::calcLateralOffset(front_bound, point);
   if (lat_dist_to_front_bound < min_dist) {
     return true;
   }

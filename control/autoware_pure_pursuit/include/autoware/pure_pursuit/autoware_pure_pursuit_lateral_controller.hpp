@@ -37,9 +37,9 @@
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
 
-#include <motion_utils/resample/resample.hpp>
-#include <motion_utils/trajectory/conversion.hpp>
-#include <motion_utils/trajectory/trajectory.hpp>
+#include <autoware/motion_utils/resample/resample.hpp>
+#include <autoware/motion_utils/trajectory/conversion.hpp>
+#include <autoware/motion_utils/trajectory/trajectory.hpp>
 
 #include "autoware_control_msgs/msg/lateral.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
