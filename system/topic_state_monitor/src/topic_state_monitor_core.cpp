@@ -154,8 +154,8 @@ void TopicStateMonitorNode::checkTopicStatus(diagnostic_updater::DiagnosticStatu
   const auto print_warn = [&](const std::string & msg) {
     RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 3000, "%s", msg.c_str());
   };
-  const auto print_debug = [&](const std::string & msg) {
-    RCLCPP_DEBUG_THROTTLE(get_logger(), *get_clock(), 3000, "%s", msg.c_str());
+  const auto print_info = [&](const std::string & msg) {
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 3000, "%s", msg.c_str());
   };
 
   // Judge level
@@ -166,19 +166,21 @@ void TopicStateMonitorNode::checkTopicStatus(diagnostic_updater::DiagnosticStatu
   } else if (topic_status == TopicStatus::NotReceived) {
     level = DiagnosticStatus::ERROR;
     stat.add("status", "NotReceived");
-    print_debug(node_param_.topic + " has not received.");
+    print_info(node_param_.topic + " has not received. Set ERROR in diagnostics.");
   } else if (topic_status == TopicStatus::WarnRate) {
     level = DiagnosticStatus::WARN;
     stat.add("status", "WarnRate");
-    print_warn(node_param_.topic + " topic rate has dropped to the warning level.");
+    print_warn(
+      node_param_.topic + " topic rate has dropped to the warning level. Set WARN in diagnostics.");
   } else if (topic_status == TopicStatus::ErrorRate) {
     level = DiagnosticStatus::ERROR;
     stat.add("status", "ErrorRate");
-    print_warn(node_param_.topic + " topic rate has dropped to the error level.");
+    print_warn(
+      node_param_.topic + " topic rate has dropped to the error level. Set ERROR in diagnostics.");
   } else if (topic_status == TopicStatus::Timeout) {
     level = DiagnosticStatus::ERROR;
     stat.add("status", "Timeout");
-    print_warn(node_param_.topic + " topic is timeout.");
+    print_warn(node_param_.topic + " topic is timeout. Set ERROR in diagnostics.");
   }
 
   // Add key-value
