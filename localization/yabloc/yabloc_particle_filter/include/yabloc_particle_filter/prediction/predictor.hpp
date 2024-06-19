@@ -106,7 +106,7 @@ private:
   void initialize_particles(const PoseCovStamped & initialpose);
   //
   void update_with_dynamic_noise(
-    ParticleArray & particle_array, const TwistCovStamped & twist, double dt);
+    ParticleArray & particle_array, const TwistCovStamped & twist, double dt) const;
   //
   void publish_mean_pose(const geometry_msgs::msg::Pose & mean_pose, const rclcpp::Time & stamp);
   void publish_range_marker(const Eigen::Vector3f & pos, const Eigen::Vector3f & tangent);

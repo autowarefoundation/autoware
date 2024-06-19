@@ -18,14 +18,14 @@ namespace yabloc
 {
 cv::Mat direct_cost_map(const cv::Mat & cost_map, const cv::Mat & intensity)
 {
-  constexpr int MAX_INT = std::numeric_limits<int>::max();
+  constexpr int max_int = std::numeric_limits<int>::max();
 
   std::vector<std::vector<int>> distances;
   distances.resize(cost_map.rows);
   for (int i = 0; i < cost_map.rows; i++) {
     distances.at(i).resize(cost_map.cols);
-    std::fill(distances.at(i).begin(), distances.at(i).end(), MAX_INT);
-    const uchar * intensity_ptr = intensity.ptr<uchar>(i);
+    std::fill(distances.at(i).begin(), distances.at(i).end(), max_int);
+    const auto * intensity_ptr = intensity.ptr<uchar>(i);
     for (int j = 0; j < cost_map.cols; j++) {
       if (intensity_ptr[j] == 0) distances.at(i).at(j) = 0;
     }
@@ -36,7 +36,7 @@ cv::Mat direct_cost_map(const cv::Mat & cost_map, const cv::Mat & intensity)
   // Forward
   for (int r = 1; r < cost_map.rows; r++) {
     const uchar * upper_ptr = dst.ptr<uchar>(r - 1);
-    uchar * current_ptr = dst.ptr<uchar>(r);
+    auto * current_ptr = dst.ptr<uchar>(r);
 
     for (int c = 1; c < cost_map.cols; c++) {
       int up = distances.at(r - 1).at(c);
@@ -56,7 +56,7 @@ cv::Mat direct_cost_map(const cv::Mat & cost_map, const cv::Mat & intensity)
   // Backward
   for (int r = cost_map.rows - 2; r >= 0; r--) {
     const uchar * downer_ptr = dst.ptr<uchar>(r + 1);
-    uchar * current_ptr = dst.ptr<uchar>(r);
+    auto * current_ptr = dst.ptr<uchar>(r);
 
     for (int c = cost_map.cols - 2; c >= 0; c--) {
       int down = distances.at(r + 1).at(c);
@@ -74,24 +74,6 @@ cv::Mat direct_cost_map(const cv::Mat & cost_map, const cv::Mat & intensity)
   }
 
   return dst;
-}
-
-cv::Mat visualize_direction_map(const cv::Mat & cost_map)
-{
-  cv::Mat s = 255 * cv::Mat::ones(cost_map.size(), CV_8UC1);
-  cv::Mat v = 255 * cv::Mat::ones(cost_map.size(), CV_8UC1);
-  cv::Mat hsv, rgb;
-  cv::merge(std::vector<cv::Mat>{cost_map, s, v}, hsv);
-  cv::cvtColor(hsv, rgb, cv::COLOR_HSV2BGR);
-
-  for (int r = 0; r < cost_map.rows; r++) {
-    const uchar * src_ptr = cost_map.ptr<uchar>(r);
-    cv::Vec3b * dst_ptr = rgb.ptr<cv::Vec3b>(r);
-    for (int c = 0; c < cost_map.cols; c++) {
-      if (src_ptr[c] == 0) dst_ptr[c] = cv::Vec3b(0, 0, 0);
-    }
-  }
-  return rgb;
 }
 
 }  // namespace yabloc

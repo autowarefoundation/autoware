@@ -20,9 +20,6 @@
 namespace yabloc
 {
 cv::Mat direct_cost_map(const cv::Mat & cost_map, const cv::Mat & intensity);
-
-cv::Mat visualize_direction_map(const cv::Mat & cost_map);
-
 }  // namespace yabloc
 
 #endif  // YABLOC_PARTICLE_FILTER__LL2_COST_MAP__DIRECT_COST_MAP_HPP_

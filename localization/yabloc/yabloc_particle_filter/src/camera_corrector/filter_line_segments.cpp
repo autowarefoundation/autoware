@@ -22,33 +22,35 @@
 
 namespace yabloc::modularized_particle_filter
 {
-cv::Point2f cv2pt(const Eigen::Vector3f v)
+cv::Point2f cv2pt(const Eigen::Vector3f & v)
 {
-  const float METRIC_PER_PIXEL = 0.05;
-  const float IMAGE_RADIUS = 400;
-  return {-v.y() / METRIC_PER_PIXEL + IMAGE_RADIUS, -v.x() / METRIC_PER_PIXEL + 2 * IMAGE_RADIUS};
+  const float metric_per_pixel = 0.05;
+  const float image_radius = 400;
+  return {-v.y() / metric_per_pixel + image_radius, -v.x() / metric_per_pixel + 2 * image_radius};
 }
 
 float normalized_atan2(const Eigen::Vector3f & t, float deg)
 {
-  float diff = std::atan2(t.y(), t.x()) - deg * M_PI / 180;
-  diff = std::fmod(diff, M_PI);
+  auto diff = static_cast<float>(std::atan2(t.y(), t.x()) - deg * M_PI / 180);
+  diff = static_cast<float>(std::fmod(diff, M_PI));
 
   if (diff < 0) diff = -diff;
 
   if (diff < M_PI_2) {
-    return 1 - diff / M_PI_2;
-  } else if (diff < M_PI) {
-    return diff / M_PI_2 - 1;
-  } else {
-    throw std::runtime_error("invalid cos");
+    return static_cast<float>(1.0 - diff / M_PI_2);
   }
+
+  if (diff < M_PI) {
+    return static_cast<float>(diff / M_PI_2 - 1.0);
+  }
+  throw std::runtime_error("invalid cos");
 }
 
 std::pair<CameraParticleCorrector::LineSegments, CameraParticleCorrector::LineSegments>
 CameraParticleCorrector::filt(const LineSegments & iffy_lines)
 {
-  LineSegments good, bad;
+  LineSegments good;
+  LineSegments bad;
   if (!latest_pose_.has_value()) {
     throw std::runtime_error("latest_pose_ is nullopt");
   }
@@ -67,7 +69,7 @@ CameraParticleCorrector::filt(const LineSegments & iffy_lines)
     for (float distance = 0; distance < length; distance += 0.1f) {
       Eigen::Vector3f px = pose * (p2 + tangent * distance);
       CostMapValue v3 = cost_map_.at(px.topRows(2));
-      float cos2 = normalized_atan2(pose.so3() * tangent, v3.angle);
+      float cos2 = normalized_atan2(pose.so3() * tangent, static_cast<float>(v3.angle));
       score += (cos2 * v3.intensity);
       count++;
 
@@ -77,7 +79,7 @@ CameraParticleCorrector::filt(const LineSegments & iffy_lines)
       // rgb_cloud.push_back(rgb);
     }
 
-    if (score / count > 0.5f) {
+    if (score / static_cast<float>(count) > 0.5f) {
       good.push_back(line);
     } else {
       bad.push_back(line);

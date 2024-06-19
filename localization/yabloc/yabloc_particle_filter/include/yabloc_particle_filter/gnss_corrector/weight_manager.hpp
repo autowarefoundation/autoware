@@ -35,41 +35,48 @@ struct WeightManager
     }
   };
 
-  Parameter for_fixed_;
-  Parameter for_not_fixed_;
+  Parameter for_fixed_{};
+  Parameter for_not_fixed_{};
 
   explicit WeightManager(rclcpp::Node * node)
   {
-    for_fixed_.flat_radius_ = node->declare_parameter<float>("for_fixed/flat_radius");
-    for_fixed_.max_radius_ = node->declare_parameter<float>("for_fixed/max_radius");
-    for_fixed_.min_weight_ = node->declare_parameter<float>("for_fixed/min_weight");
-    for_fixed_.max_weight_ = node->declare_parameter<float>("for_fixed/max_weight");
+    for_fixed_.flat_radius_ =
+      static_cast<float>(node->declare_parameter<float>("for_fixed/flat_radius"));
+    for_fixed_.max_radius_ =
+      static_cast<float>(node->declare_parameter<float>("for_fixed/max_radius"));
+    for_fixed_.min_weight_ =
+      static_cast<float>(node->declare_parameter<float>("for_fixed/min_weight"));
+    for_fixed_.max_weight_ =
+      static_cast<float>(node->declare_parameter<float>("for_fixed/max_weight"));
     for_fixed_.compute_coeff();
 
-    for_not_fixed_.flat_radius_ = node->declare_parameter<float>("for_not_fixed/flat_radius");
-    for_not_fixed_.max_radius_ = node->declare_parameter<float>("for_not_fixed/max_radius");
-    for_not_fixed_.min_weight_ = node->declare_parameter<float>("for_not_fixed/min_weight");
-    for_not_fixed_.max_weight_ = node->declare_parameter<float>("for_not_fixed/max_weight");
+    for_not_fixed_.flat_radius_ =
+      static_cast<float>(node->declare_parameter<float>("for_not_fixed/flat_radius"));
+    for_not_fixed_.max_radius_ =
+      static_cast<float>(node->declare_parameter<float>("for_not_fixed/max_radius"));
+    for_not_fixed_.min_weight_ =
+      static_cast<float>(node->declare_parameter<float>("for_not_fixed/min_weight"));
+    for_not_fixed_.max_weight_ =
+      static_cast<float>(node->declare_parameter<float>("for_not_fixed/max_weight"));
     for_not_fixed_.compute_coeff();
   }
 
-  float normal_pdf(float distance, const Parameter & param) const
+  [[nodiscard]] static float normal_pdf(float distance, const Parameter & param)
   {
     // NOTE: This is not exact normal distribution because of no scale factor depending on sigma
     float d = std::clamp(std::abs(distance) - param.flat_radius_, 0.f, param.max_radius_);
     return param.max_weight_ * std::exp(-param.coeff_ * d * d);
   }
 
-  float normal_pdf(float distance, bool is_rtk_fixed) const
+  [[nodiscard]] float normal_pdf(float distance, bool is_rtk_fixed) const
   {
     if (is_rtk_fixed) {
       return normal_pdf(distance, for_fixed_);
-    } else {
-      return normal_pdf(distance, for_not_fixed_);
     }
+    return normal_pdf(distance, for_not_fixed_);
   }
 
-  float inverse_normal_pdf(float prob, const Parameter & param) const
+  [[nodiscard]] static float inverse_normal_pdf(float prob, const Parameter & param)
   {
     prob = (param.max_weight_ - param.min_weight_) * prob + param.min_weight_;
 
@@ -78,13 +85,12 @@ struct WeightManager
     return param.flat_radius_ + std::sqrt(-std::log(prob / param.max_weight_) / param.coeff_);
   }
 
-  float inverse_normal_pdf(float prob, bool is_rtk_fixed) const
+  [[nodiscard]] float inverse_normal_pdf(float prob, bool is_rtk_fixed) const
   {
     if (is_rtk_fixed) {
       return inverse_normal_pdf(prob, for_fixed_);
-    } else {
-      return inverse_normal_pdf(prob, for_not_fixed_);
     }
+    return inverse_normal_pdf(prob, for_not_fixed_);
   }
 };
 }  // namespace yabloc::modularized_particle_filter

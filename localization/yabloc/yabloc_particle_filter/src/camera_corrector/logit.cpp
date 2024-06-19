@@ -27,7 +27,7 @@ struct ProbToLogitTable
   ProbToLogitTable()
   {
     for (int i = 0; i < 100; ++i) {
-      float p = i / 100.0f;
+      float p = static_cast<float>(i) / 100.0f;
       table_.at(i) = std::log(p / std::max(1 - p, 1e-6f));
     }
   }
@@ -37,7 +37,7 @@ struct ProbToLogitTable
     return table_.at(index);
   }
 
-  std::array<float, 100> table_;
+  std::array<float, 100> table_{};
 } prob_to_logit_table;
 
 }  // namespace
@@ -45,11 +45,6 @@ struct ProbToLogitTable
 float logit_to_prob(float logit, float gain)
 {
   return 1.f / (1 + std::exp(-gain * logit));
-}
-
-float prob_to_logit(float prob)
-{
-  return prob_to_logit_table(prob);
 }
 
 }  // namespace yabloc

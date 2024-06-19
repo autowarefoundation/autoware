@@ -33,7 +33,7 @@ void ParticleVisualizer::publish(const ParticleArray & msg)
   float min = minmax_weight.first->weight;
   float max = minmax_weight.second->weight;
   max = std::max(max, min + 1e-7f);
-  auto boundWeight = [min, max](float raw) -> float { return (raw - min) / (max - min); };
+  auto bound_weight = [min, max](float raw) -> float { return (raw - min) / (max - min); };
 
   int id = 0;
   for (const Particle & p : msg.particles) {
@@ -46,7 +46,7 @@ void ParticleVisualizer::publish(const ParticleArray & msg)
     marker.scale.y = 0.1;
     marker.scale.z = 0.1;
     marker.color =
-      static_cast<std_msgs::msg::ColorRGBA>(common::color_scale::rainbow(boundWeight(p.weight)));
+      static_cast<std_msgs::msg::ColorRGBA>(common::color_scale::rainbow(bound_weight(p.weight)));
     marker.pose.orientation = p.pose.orientation;
     marker.pose.position.x = p.pose.position.x;
     marker.pose.position.y = p.pose.position.y;

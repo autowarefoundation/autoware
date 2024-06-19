@@ -20,18 +20,13 @@
 
 #include <geometry_msgs/msg/pose.hpp>
 
-namespace yabloc
-{
-namespace modularized_particle_filter
+namespace yabloc::modularized_particle_filter
 {
 geometry_msgs::msg::Pose get_mean_pose(
   const yabloc_particle_filter::msg::ParticleArray & particle_array);
 
 Eigen::Matrix3f std_of_distribution(
   const yabloc_particle_filter::msg::ParticleArray & particle_array);
-
-float std_of_weight(const yabloc_particle_filter::msg::ParticleArray & particle_array);
-}  // namespace modularized_particle_filter
-}  // namespace yabloc
+}  // namespace yabloc::modularized_particle_filter
 
 #endif  // YABLOC_PARTICLE_FILTER__COMMON__MEAN_HPP_

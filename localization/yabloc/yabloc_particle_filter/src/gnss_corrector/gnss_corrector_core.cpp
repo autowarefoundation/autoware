@@ -21,7 +21,8 @@ namespace yabloc::modularized_particle_filter
 {
 GnssParticleCorrector::GnssParticleCorrector(const rclcpp::NodeOptions & options)
 : AbstractCorrector("gnss_particle_corrector", options),
-  mahalanobis_distance_threshold_(declare_parameter<float>("mahalanobis_distance_threshold")),
+  mahalanobis_distance_threshold_(
+    static_cast<float>(declare_parameter<float>("mahalanobis_distance_threshold"))),
   weight_manager_(this)
 {
   using std::placeholders::_1;
@@ -61,7 +62,8 @@ void GnssParticleCorrector::on_pose(const PoseCovStamped::ConstSharedPtr pose_ms
   const rclcpp::Time stamp = pose_msg->header.stamp;
   const auto & position = pose_msg->pose.pose.position;
   Eigen::Vector3f gnss_position;
-  gnss_position << position.x, position.y, position.z;
+  gnss_position << static_cast<float>(position.x), static_cast<float>(position.y),
+    static_cast<float>(position.z);
 
   constexpr bool is_rtk_fixed = false;
   process(gnss_position, stamp, is_rtk_fixed);
@@ -96,7 +98,6 @@ void GnssParticleCorrector::process(
   // Compute travel distance from last update position
   // If the distance is too short, skip weighting
   {
-    Eigen::Vector3f mean_position = common::pose_to_affine(mean_pose).translation();
     if ((mean_position - last_mean_position_).squaredNorm() > 1) {
       this->set_weighted_particle_array(weighted_particles);
       last_mean_position_ = mean_position;
@@ -113,12 +114,12 @@ void GnssParticleCorrector::publish_marker(const Eigen::Vector3f & position, boo
   using namespace std::literals::chrono_literals;
   using Point = geometry_msgs::msg::Point;
 
-  auto drawCircle = [](std::vector<Point> & points, float radius) -> void {
-    const int N = 10;
-    for (int theta = 0; theta < 2 * N + 1; theta++) {
+  auto draw_circle = [](std::vector<Point> & points, float radius) -> void {
+    const int n = 10;
+    for (int theta = 0; theta < 2 * n + 1; theta++) {
       geometry_msgs::msg::Point pt;
-      pt.x = radius * std::cos(theta * M_PI / N);
-      pt.y = radius * std::sin(theta * M_PI / N);
+      pt.x = radius * std::cos(theta * M_PI / n);
+      pt.y = radius * std::sin(theta * M_PI / n);
       points.push_back(pt);
     }
   };
@@ -135,11 +136,11 @@ void GnssParticleCorrector::publish_marker(const Eigen::Vector3f & position, boo
     marker.pose.position.y = position.y();
     marker.pose.position.z = latest_height_.data;
 
-    float prob = i / 4.0f;
+    float prob = static_cast<float>(i) / 4.0f;
     marker.color = static_cast<std_msgs::msg::ColorRGBA>(common::color_scale::rainbow(prob));
     marker.color.a = 0.5f;
     marker.scale.x = 0.1;
-    drawCircle(marker.points, weight_manager_.inverse_normal_pdf(prob, is_rtk_fixed));
+    draw_circle(marker.points, weight_manager_.inverse_normal_pdf(prob, is_rtk_fixed));
     array_msg.markers.push_back(marker);
   }
   marker_pub_->publish(array_msg);
@@ -151,7 +152,7 @@ GnssParticleCorrector::ParticleArray GnssParticleCorrector::weight_particles(
   ParticleArray weighted_particles{predicted_particles};
 
   for (auto & particle : weighted_particles.particles) {
-    float distance = static_cast<float>(
+    auto distance = static_cast<float>(
       std::hypot(particle.pose.position.x - pose.x(), particle.pose.position.y - pose.y()));
     particle.weight = weight_manager_.normal_pdf(distance, is_rtk_fixed);
   }

@@ -33,10 +33,13 @@ namespace yabloc::modularized_particle_filter
 
 Predictor::Predictor(const rclcpp::NodeOptions & options)
 : Node("predictor", options),
-  number_of_particles_(declare_parameter<int>("num_of_particles")),
-  resampling_interval_seconds_(declare_parameter<float>("resampling_interval_seconds")),
-  static_linear_covariance_(declare_parameter<float>("static_linear_covariance")),
-  static_angular_covariance_(declare_parameter<float>("static_angular_covariance")),
+  number_of_particles_(static_cast<int>(declare_parameter<int>("num_of_particles"))),
+  resampling_interval_seconds_(
+    static_cast<float>(declare_parameter<float>("resampling_interval_seconds"))),
+  static_linear_covariance_(
+    static_cast<float>(declare_parameter<float>("static_linear_covariance"))),
+  static_angular_covariance_(
+    static_cast<float>(declare_parameter<float>("static_angular_covariance"))),
   cov_xx_yy_{this->template declare_parameter<std::vector<double>>("cov_xx_yy")}
 {
   tf2_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
@@ -93,11 +96,11 @@ void Predictor::on_trigger_service(
     RCLCPP_INFO_STREAM(get_logger(), "yabloc particle filter is deactivated");
   }
 
-  const bool before_activated_ = yabloc_activated_;
+  const bool before_activated = yabloc_activated_;
   yabloc_activated_ = request->data;
   response->success = true;
 
-  if (yabloc_activated_ && (!before_activated_)) {
+  if (yabloc_activated_ && (!before_activated)) {
     RCLCPP_INFO_STREAM(get_logger(), "restart particle filter");
     if (latest_ekf_pose_ptr_) {
       on_initial_pose(latest_ekf_pose_ptr_);
@@ -113,10 +116,11 @@ void Predictor::on_initial_pose(const PoseCovStamped::ConstSharedPtr initialpose
   // Publish initial pose marker
   auto position = initialpose->pose.pose.position;
   Eigen::Vector3f pos_vec3f;
-  pos_vec3f << position.x, position.y, position.z;
+  pos_vec3f << static_cast<float>(position.x), static_cast<float>(position.y),
+    static_cast<float>(position.z);
 
   auto orientation = initialpose->pose.pose.orientation;
-  float theta = 2 * std::atan2(orientation.z, orientation.w);
+  auto theta = static_cast<float>(2 * std::atan2(orientation.z, orientation.w));
   Eigen::Vector3f tangent;
   tangent << std::cos(theta), std::sin(theta), 0;
 
@@ -152,7 +156,7 @@ void Predictor::initialize_particles(const PoseCovStamped & initialpose)
     pose.position.x += noise.x();
     pose.position.y += noise.y();
 
-    float noised_yaw = util::normalize_radian(yaw + util::nrand(yaw_std));
+    auto noised_yaw = static_cast<float>(util::normalize_radian(yaw + util::nrand(yaw_std)));
     pose.orientation.w = std::cos(noised_yaw / 2.0);
     pose.orientation.x = 0.0;
     pose.orientation.y = 0.0;
@@ -184,14 +188,14 @@ void Predictor::on_twist_cov(const TwistCovStamped::ConstSharedPtr twist_cov)
 }
 
 void Predictor::update_with_dynamic_noise(
-  ParticleArray & particle_array, const TwistCovStamped & twist, double dt)
+  ParticleArray & particle_array, const TwistCovStamped & twist, double dt) const
 {
   // linear & angular velocity
-  const float linear_x = twist.twist.twist.linear.x;
-  const float angular_z = twist.twist.twist.angular.z;
+  const auto linear_x = static_cast<float>(twist.twist.twist.linear.x);
+  const auto angular_z = static_cast<float>(twist.twist.twist.angular.z);
   // standard deviation of linear & angular velocity
-  const float std_linear_x = std::sqrt(twist.twist.covariance[6 * 0 + 0]);
-  const float std_angular_z = std::sqrt(twist.twist.covariance[6 * 5 + 5]);
+  const auto std_linear_x = static_cast<float>(std::sqrt(twist.twist.covariance[6 * 0 + 0]));
+  const auto std_angular_z = static_cast<float>(std::sqrt(twist.twist.covariance[6 * 5 + 5]));
   // 1[rad/s] = 60[deg/s]
   // 1[m/s] = 3.6[km/h]
   const float truncated_angular_std =
@@ -272,7 +276,7 @@ void Predictor::on_weighted_particles(const ParticleArray::ConstSharedPtr weight
   try {
     particle_array =
       resampler_ptr_->add_weight_retroactively(particle_array, *weighted_particles_ptr);
-  } catch (const resampling_skip_exception & e) {
+  } catch (const ResamplingSkipException & e) {
     // Do nothing (just skipping the resample())
     RCLCPP_INFO_STREAM(this->get_logger(), "skipped resampling");
   }
@@ -284,16 +288,16 @@ void Predictor::on_weighted_particles(const ParticleArray::ConstSharedPtr weight
     // Exit if previous resampling time is not valid.
     if (!previous_resampling_time_opt_.has_value()) {
       previous_resampling_time_opt_ = current_time;
-      throw resampling_skip_exception("previous resampling time is not valid");
+      throw ResamplingSkipException("previous resampling time is not valid");
     }
 
     if (current_time - previous_resampling_time_opt_.value() <= resampling_interval_seconds_) {
-      throw resampling_skip_exception("it is not time to resample");
+      throw ResamplingSkipException("it is not time to resample");
     }
 
     particle_array = resampler_ptr_->resample(particle_array);
     previous_resampling_time_opt_ = current_time;
-  } catch (const resampling_skip_exception & e) {
+  } catch (const ResamplingSkipException & e) {
     void();
     // Do nothing (just skipping the resample())
   }
@@ -397,7 +401,7 @@ Predictor::PoseCovStamped Predictor::rectify_initial_pose(
   msg.pose.pose.orientation.z = std::sin(theta / 2);
 
   Eigen::Matrix2f cov;
-  cov << cov_xx_yy_.at(0), 0, 0, cov_xx_yy_.at(1);
+  cov << static_cast<float>(cov_xx_yy_.at(0)), 0, 0, static_cast<float>(cov_xx_yy_.at(1));
   Eigen::Rotation2D r(theta);
   cov = r * cov * r.inverse();
 

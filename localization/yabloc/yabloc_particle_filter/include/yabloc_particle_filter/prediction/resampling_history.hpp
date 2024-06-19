@@ -35,7 +35,7 @@ public:
     }
   }
 
-  bool check_history_validity() const
+  [[nodiscard]] bool check_history_validity() const
   {
     for (auto & generation : resampling_history_) {
       bool result = std::any_of(generation.begin(), generation.end(), [this](int x) {

@@ -39,36 +39,12 @@ public:
       "/particle_array", 10, std::bind(&ParticleVisualize::on_particles, this, _1));
 
     // Publisher
-    pub_marker_array = this->create_publisher<MarkerArray>("/marker_array", 10);
+    pub_marker_array_ = this->create_publisher<MarkerArray>("/marker_array", 10);
   }
 
 private:
   rclcpp::Subscription<ParticleArray>::SharedPtr sub_particles_;
-  rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_array;
-
-  std_msgs::msg::ColorRGBA compute_color(float value) const
-  {
-    float r = 1.0f, g = 1.0f, b = 1.0f;
-    // clang-format off
-    value = std::clamp(value, 0.0f, 1.0f);
-    if (value < 0.25f) {
-      r = 0; g = 4 * (value);
-    } else if (value < 0.5f) {
-      r = 0; b = 1 + 4 * (0.25f - value);
-    } else if (value < 0.75f) {
-      r = 4 * (value - 0.5f); b = 0;
-    } else {
-      g = 1 + 4 * (0.75f - value); b = 0;
-    }
-    // clang-format on
-
-    std_msgs::msg::ColorRGBA rgba;
-    rgba.r = r;
-    rgba.g = g;
-    rgba.b = b;
-    rgba.a = 1.0f;
-    return rgba;
-  }
+  rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_array_;
 
   void on_particles(const ParticleArray & msg)
   {
@@ -102,7 +78,7 @@ private:
       marker.pose.position.z = p.pose.position.z;
       marker_array.markers.push_back(marker);
     }
-    pub_marker_array->publish(marker_array);
+    pub_marker_array_->publish(marker_array);
   }
 };
 }  // namespace yabloc::modularized_particle_filter

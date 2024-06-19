@@ -65,7 +65,7 @@ RetroactiveResampler::ParticleArray RetroactiveResampler::add_weight_retroactive
 {
   if (!check_weighted_particles_validity(weighted_particles)) {
     RCLCPP_ERROR_STREAM(logger_, "weighted_particles has invalid data");
-    throw resampling_skip_exception("weighted_particles has invalid data");
+    throw ResamplingSkipException("weighted_particles has invalid data");
   }
 
   // Initialize corresponding index lookup table
@@ -143,7 +143,7 @@ RetroactiveResampler::ParticleArray RetroactiveResampler::resample(
     // Copy particle to resampled variable
     resampled_particles.particles[m] = predicted_particles.particles[predicted_particle_index];
     // Reset weight uniformly
-    resampled_particles.particles[m].weight = num_of_particles_inv;
+    resampled_particles.particles[m].weight = static_cast<float>(num_of_particles_inv);
     // Make history
     resampling_history_[latest_resampling_generation_][m] = predicted_particle_index;
   }
@@ -157,7 +157,7 @@ RetroactiveResampler::ParticleArray RetroactiveResampler::resample(
   return resampled_particles;
 }
 
-double RetroactiveResampler::random_from_01_uniformly() const
+double RetroactiveResampler::random_from_01_uniformly()
 {
   static std::default_random_engine engine(0);
   std::uniform_real_distribution<double> dist(0.0, 1.0);

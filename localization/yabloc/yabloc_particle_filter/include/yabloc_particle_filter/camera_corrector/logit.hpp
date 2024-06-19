@@ -18,15 +18,6 @@
 namespace yabloc
 {
 float logit_to_prob(float logit, float gain = 1.0f);
-
-/**
- * Convert probability to logit
- * This function is much faster than logit_to_prob() because it refers to pre-computed table
- *
- * @param[in] prob
- * @return logit
- */
-float prob_to_logit(float prob);
 }  // namespace yabloc
 
 #endif  // YABLOC_PARTICLE_FILTER__CAMERA_CORRECTOR__LOGIT_HPP_

@@ -70,7 +70,9 @@ geometry_msgs::msg::Pose get_mean_pose(
     mean_pose.position.y += particle.pose.position.y * normalized_weight;
     mean_pose.position.z += particle.pose.position.z * normalized_weight;
 
-    double yaw{0.0}, pitch{0.0}, roll{0.0};
+    double yaw{0.0};
+    double pitch{0.0};
+    double roll{0.0};
     tf2::getEulerYPR(particle.pose.orientation, yaw, pitch, roll);
 
     rolls.push_back(roll);
@@ -93,43 +95,25 @@ Eigen::Matrix3f std_of_distribution(const yabloc_particle_filter::msg::ParticleA
 {
   using Particle = yabloc_particle_filter::msg::Particle;
   auto ori = get_mean_pose(array).orientation;
-  Eigen::Quaternionf orientation(ori.w, ori.x, ori.y, ori.z);
-  float invN = 1.f / array.particles.size();
+  Eigen::Quaternionf orientation(
+    static_cast<float>(ori.w), static_cast<float>(ori.x), static_cast<float>(ori.y),
+    static_cast<float>(ori.z));
+  float inv_n = 1.f / static_cast<float>(array.particles.size());
   Eigen::Vector3f mean = Eigen::Vector3f::Zero();
   for (const Particle & p : array.particles) {
     Eigen::Affine3f affine = common::pose_to_affine(p.pose);
     mean += affine.translation();
   }
-  mean *= invN;
+  mean *= inv_n;
 
   Eigen::Matrix3f sigma = Eigen::Matrix3f::Zero();
   for (const Particle & p : array.particles) {
     Eigen::Affine3f affine = common::pose_to_affine(p.pose);
     Eigen::Vector3f d = affine.translation() - mean;
     d = orientation.conjugate() * d;
-    sigma += (d * d.transpose()) * invN;
+    sigma += (d * d.transpose()) * inv_n;
   }
 
   return sigma;
-}
-
-float std_of_weight(const yabloc_particle_filter::msg::ParticleArray & particle_array)
-{
-  using Particle = yabloc_particle_filter::msg::Particle;
-
-  const float invN = 1.f / particle_array.particles.size();
-  float mean = 0;
-  for (const Particle & p : particle_array.particles) {
-    mean += p.weight;
-  }
-  mean *= invN;
-
-  float sigma = 0.0;
-  for (const Particle & p : particle_array.particles) {
-    sigma += (p.weight - mean) * (p.weight - mean);
-  }
-  sigma *= invN;
-
-  return std::sqrt(sigma);
 }
 }  // namespace yabloc::modularized_particle_filter

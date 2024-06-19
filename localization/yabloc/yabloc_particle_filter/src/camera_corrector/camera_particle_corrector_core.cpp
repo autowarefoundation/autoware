@@ -25,13 +25,15 @@
 
 #include <pcl_conversions/pcl_conversions.h>
 
+#include <cmath>
+
 namespace yabloc::modularized_particle_filter
 {
 
 CameraParticleCorrector::CameraParticleCorrector(const rclcpp::NodeOptions & options)
 : AbstractCorrector("camera_particle_corrector", options),
-  min_prob_(declare_parameter<float>("min_prob")),
-  far_weight_gain_(declare_parameter<float>("far_weight_gain")),
+  min_prob_(static_cast<float>(declare_parameter<float>("min_prob"))),
+  far_weight_gain_(static_cast<float>(declare_parameter<float>("far_weight_gain"))),
   cost_map_(this)
 {
   using std::placeholders::_1;
@@ -98,7 +100,8 @@ CameraParticleCorrector::split_line_segments(const PointCloud2 & msg)
 {
   LineSegments all_line_segments_cloud;
   pcl::fromROSMsg(msg, all_line_segments_cloud);
-  LineSegments reliable_cloud, iffy_cloud;
+  LineSegments reliable_cloud;
+  LineSegments iffy_cloud;
   {
     for (const auto & p : all_line_segments_cloud) {
       if (p.label == 0)
@@ -111,7 +114,7 @@ CameraParticleCorrector::split_line_segments(const PointCloud2 & msg)
   auto [good_cloud, bad_cloud] = filt(iffy_cloud);
   {
     cv::Mat debug_image = cv::Mat::zeros(800, 800, CV_8UC3);
-    auto draw = [&debug_image](LineSegments & cloud, cv::Scalar color) -> void {
+    auto draw = [&debug_image](const LineSegments & cloud, const cv::Scalar & color) -> void {
       for (const auto & line : cloud) {
         const Eigen::Vector3f p1 = line.getVector3fMap();
         const Eigen::Vector3f p2 = line.getNormalVector3fMap();
@@ -162,7 +165,7 @@ void CameraParticleCorrector::on_line_segments(const PointCloud2 & line_segments
     }
   }
 
-  cost_map_.set_height(mean_pose.position.z);
+  cost_map_.set_height(static_cast<float>(mean_pose.position.z));
 
   if (publish_weighted_particles) {
     for (auto & particle : weighted_particles.particles) {
@@ -187,8 +190,7 @@ void CameraParticleCorrector::on_line_segments(const PointCloud2 & line_segments
 
   // DEBUG: just visualization
   {
-    Pose mean_pose = get_mean_pose(weighted_particles);
-    Sophus::SE3f transform = common::pose_to_se3(mean_pose);
+    Sophus::SE3f transform = common::pose_to_se3(get_mean_pose(weighted_particles));
 
     pcl::PointCloud<pcl::PointXYZI> cloud = evaluate_cloud(
       common::transform_line_segments(line_segments_cloud, transform), transform.translation());
@@ -199,10 +201,9 @@ void CameraParticleCorrector::on_line_segments(const PointCloud2 & line_segments
     pcl::PointCloud<pcl::PointXYZRGB> rgb_cloud;
     pcl::PointCloud<pcl::PointXYZRGB> rgb_iffy_cloud;
 
-    float max_score = 0;
-    for (const auto p : cloud) {
-      max_score = std::max(max_score, std::abs(p.intensity));
-    }
+    float max_score = std::accumulate(
+      cloud.begin(), cloud.end(), 0.0f,
+      [](float max_score, const auto & p) { return std::max(max_score, std::abs(p.intensity)); });
     for (const auto p : cloud) {
       pcl::PointXYZRGB rgb;
       rgb.getVector3fMap() = p.getVector3fMap();
@@ -256,7 +257,7 @@ void CameraParticleCorrector::on_ll2(const PointCloud2 & ll2_msg)
 
 float abs_cos(const Eigen::Vector3f & t, float deg)
 {
-  const float radian = deg * M_PI / 180.0;
+  const auto radian = static_cast<float>(deg * M_PI / 180.0);
   Eigen::Vector2f x(t.x(), t.y());
   Eigen::Vector2f y(autoware_universe_utils::cos(radian), autoware_universe_utils::sin(radian));
   x.normalize();
@@ -276,7 +277,7 @@ float CameraParticleCorrector::compute_logit(
 
       // NOTE: Close points are prioritized
       float squared_norm = (p - self_position).topRows(2).squaredNorm();
-      float gain = exp(-far_weight_gain_ * squared_norm);  // 0 < gain < 1
+      float gain = std::exp(-far_weight_gain_ * squared_norm);  // 0 < gain < 1
 
       const CostMapValue v3 = cost_map_.at(p.topRows(2));
 
@@ -285,9 +286,10 @@ float CameraParticleCorrector::compute_logit(
         continue;
       }
       if (pn.label == 0) {  // posteriori
-        logit += 0.2f * gain * (abs_cos(tangent, v3.angle) * v3.intensity - 0.5f);
+        logit +=
+          0.2f * gain * (abs_cos(tangent, static_cast<float>(v3.angle)) * v3.intensity - 0.5f);
       } else {  // apriori
-        logit += gain * (abs_cos(tangent, v3.angle) * v3.intensity - 0.5f);
+        logit += gain * (abs_cos(tangent, static_cast<float>(v3.angle)) * v3.intensity - 0.5f);
       }
     }
   }
@@ -307,11 +309,14 @@ pcl::PointCloud<pcl::PointXYZI> CameraParticleCorrector::evaluate_cloud(
 
       // NOTE: Close points are prioritized
       float squared_norm = (p - self_position).topRows(2).squaredNorm();
-      float gain = std::exp(-far_weight_gain_ * squared_norm);
 
       CostMapValue v3 = cost_map_.at(p.topRows(2));
       float logit = 0;
-      if (!v3.unmapped) logit = gain * (abs_cos(tangent, v3.angle) * v3.intensity - 0.5f);
+      if (!v3.unmapped) {
+        float gain = std::exp(-far_weight_gain_ * squared_norm);
+
+        logit = gain * (abs_cos(tangent, static_cast<float>(v3.angle)) * v3.intensity - 0.5f);
+      }
 
       pcl::PointXYZI xyzi(logit_to_prob(logit, 10.f));
       xyzi.getVector3fMap() = p;

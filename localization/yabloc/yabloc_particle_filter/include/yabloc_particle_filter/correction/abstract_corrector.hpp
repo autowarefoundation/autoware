@@ -26,9 +26,7 @@
 #include <optional>
 #include <string>
 
-namespace yabloc
-{
-namespace modularized_particle_filter
+namespace yabloc::modularized_particle_filter
 {
 class AbstractCorrector : public rclcpp::Node
 {
@@ -55,7 +53,6 @@ protected:
 private:
   void on_particle_array(const ParticleArray & particle_array);
 };
-}  // namespace modularized_particle_filter
-}  // namespace yabloc
+}  // namespace yabloc::modularized_particle_filter
 
 #endif  // YABLOC_PARTICLE_FILTER__CORRECTION__ABSTRACT_CORRECTOR_HPP_

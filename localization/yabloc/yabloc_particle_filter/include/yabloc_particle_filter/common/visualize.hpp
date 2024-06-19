@@ -21,9 +21,7 @@
 #include <std_msgs/msg/color_rgba.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-namespace yabloc
-{
-namespace modularized_particle_filter
+namespace yabloc::modularized_particle_filter
 {
 class ParticleVisualizer
 {
@@ -37,9 +35,7 @@ public:
 
 private:
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_array_;
-  std_msgs::msg::ColorRGBA compute_color(float value);
 };
-}  // namespace modularized_particle_filter
-}  // namespace yabloc
+}  // namespace yabloc::modularized_particle_filter
 
 #endif  // YABLOC_PARTICLE_FILTER__COMMON__VISUALIZE_HPP_
