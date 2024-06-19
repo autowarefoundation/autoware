@@ -156,8 +156,6 @@ void NetMonitor::check_usage(diagnostic_updater::DiagnosticStatusWrapper & statu
 
   int level = DiagStatus::OK;
   int index = 0;
-  std::string error_str;
-  std::vector<std::string> interface_names;
 
   for (const auto & network : network_list_) {
     // Skip if network is not supported
@@ -282,7 +280,6 @@ void NetMonitor::check_reassembles_failed(diagnostic_updater::DiagnosticStatusWr
   int whole_level = DiagStatus::OK;
   std::string error_message;
   uint64_t total_reassembles_failed = 0;
-  uint64_t unit_reassembles_failed = 0;
 
   if (get_reassembles_failed(total_reassembles_failed)) {
     reassembles_failed_queue_.push_back(total_reassembles_failed - last_reassembles_failed_);
@@ -290,6 +287,7 @@ void NetMonitor::check_reassembles_failed(diagnostic_updater::DiagnosticStatusWr
       reassembles_failed_queue_.pop_front();
     }
 
+    uint64_t unit_reassembles_failed = 0;
     for (auto reassembles_failed : reassembles_failed_queue_) {
       unit_reassembles_failed += reassembles_failed;
     }
@@ -452,9 +450,9 @@ void NetMonitor::update_network_capacity(NetworkInfomation & network, int socket
 
   // NOLINTNEXTLINE [cppcoreguidelines-pro-type-union-access]
   strncpy(request.ifr_name, network.interface_name.c_str(), IFNAMSIZ - 1);
+  ether_request.cmd = ETHTOOL_GSET;
   request.ifr_data = (caddr_t)&ether_request;  // NOLINT [cppcoreguidelines-pro-type-cstyle-cast]
 
-  ether_request.cmd = ETHTOOL_GSET;
   if (ioctl(socket, SIOCETHTOOL, &request) >= 0) {
     network.speed = ether_request.speed;
     return;
