@@ -32,7 +32,7 @@ std::vector<int> createConnectionsMap(
   std::vector<int> connection_map;
   // index in "connection_map" is index in "connection_names_2" and value in "connection_map" is
   // index in "connection_names_1"
-  for (auto name_2 : connection_names_2) {
+  for (const auto & name_2 : connection_names_2) {
     int mapped_idx = -1;  // -1 means that we cannot create a connection between some signals
     for (std::size_t NAME_1_IDX = 0; NAME_1_IDX < connection_names_1.size(); NAME_1_IDX++) {
       if (strcmp(name_2, connection_names_1[NAME_1_IDX]) == 0) {  // 0 means strings are the same
