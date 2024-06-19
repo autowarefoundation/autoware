@@ -25,7 +25,7 @@
 class YabLocMonitor : public rclcpp::Node
 {
 public:
-  YabLocMonitor();
+  explicit YabLocMonitor(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
   void update_diagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat);

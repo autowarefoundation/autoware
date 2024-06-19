@@ -18,7 +18,8 @@
 
 #include <memory>
 
-YabLocMonitor::YabLocMonitor() : Node("yabloc_monitor"), updater_(this)
+YabLocMonitor::YabLocMonitor(const rclcpp::NodeOptions & options)
+: Node("yabloc_monitor", options), updater_(this)
 {
   updater_.setHardwareID(get_name());
   updater_.add("yabloc_status", this, &YabLocMonitor::update_diagnostics);
@@ -46,3 +47,6 @@ void YabLocMonitor::update_diagnostics(diagnostic_updater::DiagnosticStatusWrapp
     stat.summary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "NG");
   }
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(YabLocMonitor)

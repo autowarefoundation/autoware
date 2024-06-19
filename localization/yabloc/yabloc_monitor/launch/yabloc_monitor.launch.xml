@@ -1,7 +1,7 @@
 <launch>
   <arg name="param_file" default="$(find-pkg-share yabloc_monitor)/config/yabloc_monitor.param.yaml"/>
 
-  <node name="yabloc_monitor" pkg="yabloc_monitor" exec="yabloc_monitor" output="screen">
+  <node pkg="yabloc_monitor" exec="yabloc_monitor_node" output="both">
     <param from="$(var param_file)"/>
     <remap from="~/input/yabloc_pose" to="/localization/pose_estimator/yabloc/pf/pose"/>
   </node>

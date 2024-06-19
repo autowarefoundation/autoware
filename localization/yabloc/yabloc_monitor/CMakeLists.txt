@@ -4,12 +4,16 @@ project(yabloc_monitor)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-ament_auto_add_executable(yabloc_monitor
-  src/yabloc_monitor_node.cpp
+ament_auto_add_library(${PROJECT_NAME}
   src/yabloc_monitor_core.cpp
   src/availability_module.cpp
 )
-ament_target_dependencies(yabloc_monitor)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "YabLocMonitor"
+  EXECUTABLE ${PROJECT_NAME}_node
+  EXECUTOR SingleThreadedExecutor
+)
 
 ament_auto_package(
   INSTALL_TO_SHARE
