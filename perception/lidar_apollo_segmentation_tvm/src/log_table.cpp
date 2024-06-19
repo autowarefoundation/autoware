@@ -46,7 +46,7 @@ float calcApproximateLog(float num)
       return log_table.data[integer_num];
     }
   }
-  return std::log(1.0f + num);
+  return std::log1p(num);
 }
 }  // namespace lidar_apollo_segmentation_tvm
 }  // namespace perception
