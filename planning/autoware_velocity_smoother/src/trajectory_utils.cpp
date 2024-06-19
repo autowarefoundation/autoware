@@ -300,7 +300,6 @@ bool calcStopDistWithJerkConstraints(
   }
 
   double x, v, a, j;
-  std::tuple<double, double, double, double> state;
 
   switch (type) {
     case AccelerationType::TRAPEZOID: {
