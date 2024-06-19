@@ -523,7 +523,6 @@ autoware::sampler_common::Path PathSampler::generatePath(const PlannerData & pla
 
 std::vector<TrajectoryPoint> PathSampler::generateTrajectoryPoints(const PlannerData & planner_data)
 {
-  std::vector<TrajectoryPoint> trajectory;
   time_keeper_ptr_->tic(__func__);
   const auto path = generatePath(planner_data);
   return trajectory_utils::convertToTrajectoryPoints(path);
