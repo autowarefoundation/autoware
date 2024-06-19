@@ -54,6 +54,17 @@ runs:
         echo "$EOF" >> $GITHUB_OUTPUT
       shell: bash
 
+    - name: Docker meta for base
+      id: meta-base
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: ${{ steps.set-docker-tags.outputs.tags }}
+        bake-target: docker-metadata-action-base
+        flavor: |
+          latest=false
+          suffix=-base
+
     - name: Docker meta for prebuilt
       id: meta-prebuilt
       uses: docker/metadata-action@v5
@@ -77,7 +88,7 @@ runs:
           suffix=-devel${{ inputs.tag-suffix }}
 
     - name: Docker meta for runtime
-      if: ${{ github.event_name == 'workflow_dispatch' }} || ${{ (github.event_name == 'push' && github.ref_type == 'tag') }}
+      if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_type == 'tag') }}
       id: meta-runtime
       uses: docker/metadata-action@v5
       with:
@@ -97,12 +108,15 @@ runs:
         password: ${{ github.token }}
 
     - name: Build and Push to GitHub Container Registry
-      if: ${{ github.event_name == 'push' || github.event_name == 'schedule' || ( github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
+      if: ${{ github.event_name == 'push' ||
+        github.event_name == 'schedule' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
       uses: docker/bake-action@v4
       with:
         push: ${{ inputs.allow-push == 'true' }}
         files: |
           docker/docker-bake.hcl
+          ${{ steps.meta-base.outputs.bake-file }}
           ${{ steps.meta-prebuilt.outputs.bake-file }}
           ${{ steps.meta-devel.outputs.bake-file }}
           ${{ steps.meta-runtime.outputs.bake-file }}
@@ -117,6 +131,7 @@ runs:
         push: false
         files: |
           docker/docker-bake.hcl
+          ${{ steps.meta-base.outputs.bake-file }}
           ${{ steps.meta-prebuilt.outputs.bake-file }}
           ${{ steps.meta-devel.outputs.bake-file }}
           ${{ steps.meta-runtime.outputs.bake-file }}
