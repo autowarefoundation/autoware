@@ -888,20 +888,16 @@ PriorityOrder StartPlannerModule::determinePriorityOrder(
         order_priority.emplace_back(i, planner);
       }
     }
-    return order_priority;
-  }
-
-  if (search_priority == "short_back_distance") {
+  } else if (search_priority == "short_back_distance") {
     for (size_t i = 0; i < start_pose_candidates_num; i++) {
       for (const auto & planner : start_planners_) {
         order_priority.emplace_back(i, planner);
       }
     }
-    return order_priority;
+  } else {
+    RCLCPP_ERROR(getLogger(), "Invalid search_priority: %s", search_priority.c_str());
+    throw std::domain_error("[start_planner] invalid search_priority");
   }
-
-  RCLCPP_ERROR(getLogger(), "Invalid search_priority: %s", search_priority.c_str());
-  throw std::domain_error("[start_planner] invalid search_priority");
   return order_priority;
 }
 
