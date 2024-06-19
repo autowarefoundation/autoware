@@ -143,7 +143,7 @@ double findReachTime(
     return j * t * t * t / 6.0 + a * t * t / 2.0 + v * t - d;
   };
   if (f(min, j, a, v, d) > 0 || f(max, j, a, v, d) < 0) {
-    std::logic_error("[obstacle_cruise_planner](findReachTime): search range is invalid");
+    throw std::logic_error("[obstacle_cruise_planner](findReachTime): search range is invalid");
   }
   const double eps = 1e-5;
   const int warn_iter = 100;
@@ -175,7 +175,7 @@ double calcDecelerationVelocityFromDistanceToTarget(
   const double current_velocity, const double distance_to_target)
 {
   if (max_slowdown_jerk > 0 || max_slowdown_accel > 0) {
-    std::logic_error("max_slowdown_jerk and max_slowdown_accel should be negative");
+    throw std::logic_error("max_slowdown_jerk and max_slowdown_accel should be negative");
   }
   // case0: distance to target is behind ego
   if (distance_to_target <= 0) return current_velocity;

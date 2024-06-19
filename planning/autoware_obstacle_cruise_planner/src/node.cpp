@@ -409,7 +409,7 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
       planner_ptr_ = std::make_unique<PIDBasedPlanner>(
         *this, longitudinal_info, vehicle_info_, ego_nearest_param_, debug_data_ptr_);
     } else {
-      std::logic_error("Designated algorithm is not supported.");
+      throw std::logic_error("Designated algorithm is not supported.");
     }
 
     min_behavior_stop_margin_ = declare_parameter<double>("common.min_behavior_stop_margin");
