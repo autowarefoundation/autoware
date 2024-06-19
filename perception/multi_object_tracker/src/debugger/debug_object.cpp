@@ -236,8 +236,9 @@ void TrackerObjectDebugger::draw(
       stream << std::fixed << std::setprecision(0) << object_data_front.existence_vector[i] * 100;
       existence_probability_text += channel_names_[i] + stream.str() + ":";
     }
-    existence_probability_text =
-      existence_probability_text.substr(0, existence_probability_text.size() - 1);
+    if (!existence_probability_text.empty()) {
+      existence_probability_text.pop_back();
+    }
     existence_probability_text += "\n" + object_data_front.uuid_str.substr(0, 6);
 
     text_marker.text = existence_probability_text;
