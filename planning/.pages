@@ -1,22 +1,22 @@
 nav:
   - 'Introduction': planning
   - 'Behavior Path Planner':
-    - 'About Behavior Path': planning/autoware_behavior_path_planner
+    - 'About Behavior Path': planning/behavior_path_planner/autoware_behavior_path_planner
     - 'Concept':
-        - 'Planner Manager': planning/autoware_behavior_path_planner/docs/behavior_path_planner_manager_design
-        - 'Scene Module Interface': planning/autoware_behavior_path_planner/docs/behavior_path_planner_interface_design
-        - 'Path Generation': planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design
-        - 'Collision Assessment/Safety Check': planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_safety_check
-        - 'Dynamic Drivable Area': planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design
-        - 'Turn Signal': planning/autoware_behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design
+        - 'Planner Manager': planning/behavior_path_planner/autoware_behavior_path_planner/docs/behavior_path_planner_manager_design
+        - 'Scene Module Interface': planning/behavior_path_planner/autoware_behavior_path_planner/docs/behavior_path_planner_interface_design
+        - 'Path Generation': planning/behavior_path_planner/autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design
+        - 'Collision Assessment/Safety Check': planning/behavior_path_planner/autoware_behavior_path_planner_common/docs/behavior_path_planner_safety_check
+        - 'Dynamic Drivable Area': planning/behavior_path_planner/autoware_behavior_path_planner_common/docs/behavior_path_planner_drivable_area_design
+        - 'Turn Signal': planning/behavior_path_planner/autoware_behavior_path_planner_common/docs/behavior_path_planner_turn_signal_design
     - 'Scene Module':
-        - 'Avoidance by Lane Change': planning/autoware_behavior_path_avoidance_by_lane_change_module
-        - 'Dynamic Obstacle Avoidance': planning/autoware_behavior_path_dynamic_obstacle_avoidance_module
-        - 'Goal Planner': planning/autoware_behavior_path_goal_planner_module
-        - 'Lane Change': planning/autoware_behavior_path_lane_change_module
-        - 'Side Shift': planning/autoware_behavior_path_side_shift_module
-        - 'Start Planner': planning/autoware_behavior_path_start_planner_module
-        - 'Static Obstacle Avoidance': planning/autoware_behavior_path_static_obstacle_avoidance_module
+        - 'Avoidance by Lane Change': planning/behavior_path_planner/autoware_behavior_path_avoidance_by_lane_change_module
+        - 'Dynamic Obstacle Avoidance': planning/behavior_path_planner/autoware_behavior_path_dynamic_obstacle_avoidance_module
+        - 'Goal Planner': planning/behavior_path_planner/autoware_behavior_path_goal_planner_module
+        - 'Lane Change': planning/behavior_path_planner/autoware_behavior_path_lane_change_module
+        - 'Side Shift': planning/behavior_path_planner/autoware_behavior_path_side_shift_module
+        - 'Start Planner': planning/behavior_path_planner/autoware_behavior_path_start_planner_module
+        - 'Static Obstacle Avoidance': planning/behavior_path_planner/autoware_behavior_path_static_obstacle_avoidance_module
   - 'Behavior Velocity Planner':
     - 'About Behavior Velocity': planning/behavior_velocity_planner/autoware_behavior_velocity_planner
     - 'Template for Custom Module': planning/behavior_velocity_planner/autoware_behavior_velocity_template_module
