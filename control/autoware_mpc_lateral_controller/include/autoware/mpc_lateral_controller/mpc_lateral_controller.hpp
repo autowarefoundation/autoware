@@ -22,6 +22,8 @@
 #include "autoware/trajectory_follower_base/lateral_controller_base.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+#include <diagnostic_updater/diagnostic_updater.hpp>
+
 #include "autoware_control_msgs/msg/lateral.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "autoware_vehicle_msgs/msg/steering_report.hpp"
@@ -52,7 +54,8 @@ class MpcLateralController : public trajectory_follower::LateralControllerBase
 {
 public:
   /// \param node Reference to the node used only for the component and parameter initialization.
-  explicit MpcLateralController(rclcpp::Node & node);
+  explicit MpcLateralController(
+    rclcpp::Node & node, std::shared_ptr<diagnostic_updater::Updater> diag_updater);
   virtual ~MpcLateralController();
 
 private:
@@ -62,6 +65,9 @@ private:
   rclcpp::Publisher<Trajectory>::SharedPtr m_pub_predicted_traj;
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr m_pub_debug_values;
   rclcpp::Publisher<Float32Stamped>::SharedPtr m_pub_steer_offset;
+
+  std::shared_ptr<diagnostic_updater::Updater>
+    diag_updater_{};  // Diagnostic updater for publishing diagnostic data.
 
   //!< @brief parameters for path smoothing
   TrajectoryFilteringParam m_trajectory_filtering_param;
@@ -87,8 +93,15 @@ private:
   // Flag indicating whether to keep the steering control until it converges.
   bool m_keep_steer_control_until_converged;
 
+  // MPC solver checker.
+  bool m_is_mpc_solved{true};
+
   // trajectory buffer for detecting new trajectory
   std::deque<Trajectory> m_trajectory_buffer;
+
+  void setStatus(diagnostic_updater::DiagnosticStatusWrapper & stat);
+
+  void setupDiag();
 
   std::unique_ptr<MPC> m_mpc;  // MPC object for trajectory following.
 

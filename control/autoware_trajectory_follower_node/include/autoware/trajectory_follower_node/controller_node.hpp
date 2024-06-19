@@ -30,6 +30,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <autoware/universe_utils/ros/published_time_publisher.hpp>
+#include <diagnostic_updater/diagnostic_updater.hpp>
 
 #include "autoware_control_msgs/msg/control.hpp"
 #include "autoware_control_msgs/msg/longitudinal.hpp"
@@ -72,6 +73,10 @@ private:
   rclcpp::TimerBase::SharedPtr timer_control_;
   double timeout_thr_sec_;
   boost::optional<LongitudinalOutput> longitudinal_output_{boost::none};
+
+  std::shared_ptr<diagnostic_updater::Updater> diag_updater_ =
+    std::make_shared<diagnostic_updater::Updater>(
+      this);  // Diagnostic updater for publishing diagnostic data.
 
   std::shared_ptr<trajectory_follower::LongitudinalControllerBase> longitudinal_controller_;
   std::shared_ptr<trajectory_follower::LateralControllerBase> lateral_controller_;

@@ -35,12 +35,15 @@
 namespace autoware::motion::control::mpc_lateral_controller
 {
 
-MpcLateralController::MpcLateralController(rclcpp::Node & node)
+MpcLateralController::MpcLateralController(
+  rclcpp::Node & node, std::shared_ptr<diagnostic_updater::Updater> diag_updater)
 : clock_(node.get_clock()), logger_(node.get_logger().get_child("lateral_controller"))
 {
   const auto dp_int = [&](const std::string & s) { return node.declare_parameter<int>(s); };
   const auto dp_bool = [&](const std::string & s) { return node.declare_parameter<bool>(s); };
   const auto dp_double = [&](const std::string & s) { return node.declare_parameter<double>(s); };
+
+  diag_updater_ = diag_updater;
 
   m_mpc = std::make_unique<MPC>(node);
 
@@ -152,6 +155,8 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node)
 
   m_mpc->setLogger(logger_);
   m_mpc->setClock(clock_);
+
+  setupDiag();
 }
 
 MpcLateralController::~MpcLateralController()
@@ -227,6 +232,24 @@ std::shared_ptr<SteeringOffsetEstimator> MpcLateralController::createSteerOffset
   return steering_offset_;
 }
 
+void MpcLateralController::setStatus(diagnostic_updater::DiagnosticStatusWrapper & stat)
+{
+  if (m_is_mpc_solved) {
+    stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "MPC succeeded.");
+  } else {
+    const std::string error_msg = "The MPC solver failed. Call MRM to stop the car.";
+    stat.summary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, error_msg);
+  }
+}
+
+void MpcLateralController::setupDiag()
+{
+  auto & d = diag_updater_;
+  d->setHardwareID("mpc_lateral_controller");
+
+  d->add("MPC_solve_checker", [&](auto & stat) { setStatus(stat); });
+}
+
 trajectory_follower::LateralOutput MpcLateralController::run(
   trajectory_follower::InputData const & input_data)
 {
@@ -254,6 +277,10 @@ trajectory_follower::LateralOutput MpcLateralController::run(
 
   const bool is_mpc_solved = m_mpc->calculateMPC(
     m_current_steering, m_current_kinematic_state, ctrl_cmd, predicted_traj, debug_values);
+
+  m_is_mpc_solved = is_mpc_solved;  // for diagnostic updater
+
+  diag_updater_->force_update();
 
   // reset previous MPC result
   // Note: When a large deviation from the trajectory occurs, the optimization stops and

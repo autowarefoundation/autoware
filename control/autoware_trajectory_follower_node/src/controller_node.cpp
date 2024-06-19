@@ -39,7 +39,8 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
     getLateralControllerMode(declare_parameter<std::string>("lateral_controller_mode"));
   switch (lateral_controller_mode) {
     case LateralControllerMode::MPC: {
-      lateral_controller_ = std::make_shared<mpc_lateral_controller::MpcLateralController>(*this);
+      lateral_controller_ =
+        std::make_shared<mpc_lateral_controller::MpcLateralController>(*this, diag_updater_);
       break;
     }
     case LateralControllerMode::PURE_PURSUIT: {
