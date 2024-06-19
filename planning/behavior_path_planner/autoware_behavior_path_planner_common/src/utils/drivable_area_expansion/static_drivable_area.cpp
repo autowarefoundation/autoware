@@ -357,7 +357,6 @@ std::vector<PolygonPoint> generatePolygonInsideBounds(
     // Here is if (!is_prev_outside && is_curr_outside).
     inside_poly.push_back(prev_poly);
     inside_poly.push_back(intersect_point);
-    continue;
   }
   if (has_intersection) {
     return inside_poly;
