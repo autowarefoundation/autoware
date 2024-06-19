@@ -23,6 +23,7 @@
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <autoware_system_msgs/msg/autoware_state.hpp>
 #include <autoware_vehicle_msgs/msg/velocity_report.hpp>
@@ -68,6 +69,9 @@ using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 using Path = std::vector<geometry_msgs::msg::Pose>;
 using Vector3 = geometry_msgs::msg::Vector3;
+using autoware_perception_msgs::msg::PredictedObject;
+using autoware_perception_msgs::msg::PredictedObjects;
+
 struct ObjectData
 {
   rclcpp::Time stamp;
@@ -176,6 +180,13 @@ public:
   std::optional<double> calcObjectSpeedFromHistory(
     const ObjectData & closest_object, const Path & path, const double current_ego_speed)
   {
+    // in case the object comes from predicted objects info, we reuse the speed.
+    if (closest_object.velocity > 0.0) {
+      this->setPreviousObjectData(closest_object);
+      this->updateVelocityHistory(closest_object.velocity, closest_object.stamp);
+      return this->getMedianObstacleVelocity();
+    }
+
     if (this->checkPreviousObjectDataExpired()) {
       this->setPreviousObjectData(closest_object);
       this->resetVelocityHistory();
@@ -243,6 +254,8 @@ public:
   autoware_universe_utils::InterProcessPollingSubscriber<Imu> sub_imu_{this, "~/input/imu"};
   autoware_universe_utils::InterProcessPollingSubscriber<Trajectory> sub_predicted_traj_{
     this, "~/input/predicted_trajectory"};
+  autoware_universe_utils::InterProcessPollingSubscriber<PredictedObjects> predicted_objects_sub_{
+    this, "~/input/objects"};
   autoware_universe_utils::InterProcessPollingSubscriber<AutowareState> sub_autoware_state_{
     this, "/autoware/state"};
   // publisher
@@ -275,6 +288,10 @@ public:
     std::vector<ObjectData> & objects,
     const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_points_ptr);
 
+  void createObjectDataUsingPredictedObjects(
+    const Path & ego_path, const std::vector<Polygon2d> & ego_polys,
+    std::vector<ObjectData> & objects);
+
   void cropPointCloudWithEgoFootprintPath(
     const std::vector<Polygon2d> & ego_polys, pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_objects);
 
@@ -298,6 +315,7 @@ public:
   VelocityReport::ConstSharedPtr current_velocity_ptr_{nullptr};
   Vector3::SharedPtr angular_velocity_ptr_{nullptr};
   Trajectory::ConstSharedPtr predicted_traj_ptr_{nullptr};
+  PredictedObjects::ConstSharedPtr predicted_objects_ptr_{nullptr};
   AutowareState::ConstSharedPtr autoware_state_{nullptr};
 
   tf2_ros::Buffer tf_buffer_{get_clock()};
@@ -313,6 +331,8 @@ public:
   bool publish_debug_pointcloud_;
   bool use_predicted_trajectory_;
   bool use_imu_path_;
+  bool use_pointcloud_data_;
+  bool use_predicted_object_data_;
   bool use_object_velocity_calculation_;
   double path_footprint_extra_margin_;
   double detection_range_min_height_;

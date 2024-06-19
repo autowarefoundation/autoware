@@ -12,11 +12,18 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
 )
 
+ament_auto_add_library(autoware_autonomous_emergency_braking_helpers SHARED
+  include/autoware/autonomous_emergency_braking/utils.hpp
+  src/utils.cpp
+)
+
 set(AEB_NODE ${PROJECT_NAME}_node)
 ament_auto_add_library(${AEB_NODE} SHARED
+  include/autoware/autonomous_emergency_braking/node.hpp
   src/node.cpp
 )
 
+target_link_libraries(${AEB_NODE} autoware_autonomous_emergency_braking_helpers)
 rclcpp_components_register_node(${AEB_NODE}
   PLUGIN "autoware::motion::control::autonomous_emergency_braking::AEB"
   EXECUTABLE ${PROJECT_NAME}

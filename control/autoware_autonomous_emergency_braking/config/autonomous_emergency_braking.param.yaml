@@ -3,6 +3,8 @@
     # Ego path calculation
     use_predicted_trajectory: true
     use_imu_path: false
+    use_pointcloud_data: true
+    use_predicted_object_data: true
     use_object_velocity_calculation: true
     min_generated_path_length: 0.5
     imu_prediction_time_horizon: 1.5
