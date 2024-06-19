@@ -1068,8 +1068,8 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_pose(
     const pclomp::NdtResult ndt_result = ndt_ptr_->getResult();
 
     Particle particle(
-      initial_pose, matrix4f_to_pose(ndt_result.pose), ndt_result.transform_probability,
-      ndt_result.iteration_num);
+      initial_pose, matrix4f_to_pose(ndt_result.pose),
+      ndt_result.nearest_voxel_transformation_likelihood, ndt_result.iteration_num);
     particle_array.push_back(particle);
     push_debug_markers(marker_array, get_clock()->now(), param_.frame.map_frame, particle, i);
     if (
@@ -1100,6 +1100,13 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_pose(
   auto best_particle_ptr = std::max_element(
     std::begin(particle_array), std::end(particle_array),
     [](const Particle & lhs, const Particle & rhs) { return lhs.score < rhs.score; });
+
+  if (
+    best_particle_ptr->score <
+    param_.score_estimation.converged_param_nearest_voxel_transformation_likelihood)
+    RCLCPP_WARN_STREAM(
+      this->get_logger(),
+      "Initial Pose Estimation is Unstable. Score is " << best_particle_ptr->score);
 
   geometry_msgs::msg::PoseWithCovarianceStamped result_pose_with_cov_msg;
   result_pose_with_cov_msg.header.stamp = initial_pose_with_cov.header.stamp;
