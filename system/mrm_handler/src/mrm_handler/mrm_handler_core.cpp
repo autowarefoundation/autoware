@@ -91,7 +91,7 @@ void MrmHandler::onOperationModeAvailability(
   if (!is_emergency_holding_) {
     if (msg->autonomous) {
       stamp_autonomous_become_unavailable_.reset();
-    } else if (!msg->autonomous) {
+    } else {
       if (!stamp_autonomous_become_unavailable_.has_value()) {
         stamp_autonomous_become_unavailable_.emplace(this->now());
       } else {
