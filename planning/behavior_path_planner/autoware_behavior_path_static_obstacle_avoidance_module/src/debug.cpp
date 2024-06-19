@@ -573,31 +573,36 @@ MarkerArray createDebugMarkerArray(
     addObjects(data.other_objects, ObjectInfo::AMBIGUOUS_STOPPED_VEHICLE);
   }
 
-  // shift line pre-process
   if (parameters->enable_shift_line_marker) {
+    // shift line pre-process
     addAvoidLine(debug.step1_registered_shift_line, "step1_registered_shift_line", 0.2, 0.2, 1.0);
     addAvoidLine(debug.step1_current_shift_line, "step1_current_shift_line", 0.2, 0.4, 0.8, 0.3);
     addAvoidLine(debug.step1_merged_shift_line, "step1_merged_shift_line", 0.2, 0.6, 0.6, 0.3);
     addAvoidLine(debug.step1_filled_shift_line, "step1_filled_shift_line", 0.2, 0.8, 0.4, 0.3);
     addAvoidLine(debug.step1_return_shift_line, "step1_return_shift_line", 0.2, 1.0, 0.2, 0.3);
-  }
 
-  // merge process
-  if (parameters->enable_shift_line_marker) {
+    // merge process
     addAvoidLine(debug.step2_merged_shift_line, "step2_merged_shift_line", 0.2, 1.0, 0.0, 0.3);
-  }
 
-  // trimming process
-  if (parameters->enable_shift_line_marker) {
+    // trimming process
     addAvoidLine(debug.step3_grad_filtered_1st, "step3_grad_filtered_1st", 0.2, 0.8, 0.0, 0.3);
     addAvoidLine(debug.step3_grad_filtered_2nd, "step3_grad_filtered_2nd", 0.4, 0.6, 0.0, 0.3);
     addAvoidLine(debug.step3_grad_filtered_3rd, "step3_grad_filtered_3rd", 0.6, 0.4, 0.0, 0.3);
-  }
 
-  // registering process
-  if (parameters->enable_shift_line_marker) {
+    // registering process
     addShiftLine(shifter.getShiftLines(), "step4_old_shift_line", 1.0, 1.0, 0.0, 0.3);
     addAvoidLine(data.new_shift_line, "step4_new_shift_line", 1.0, 0.0, 0.0, 0.3);
+
+    // shift length
+    addShiftLength(debug.pos_shift, "merged_length_pos", 0.0, 0.7, 0.5);
+    addShiftLength(debug.neg_shift, "merged_length_neg", 0.0, 0.5, 0.7);
+    addShiftLength(debug.total_shift, "merged_length_total", 0.99, 0.4, 0.2);
+
+    // shift grad
+    addShiftGrad(debug.pos_shift_grad, debug.pos_shift, "merged_grad_pos", 0.0, 0.7, 0.5);
+    addShiftGrad(debug.neg_shift_grad, debug.neg_shift, "merged_grad_neg", 0.0, 0.5, 0.7);
+    addShiftGrad(debug.total_forward_grad, debug.total_shift, "grad_forward", 0.99, 0.4, 0.2);
+    addShiftGrad(debug.total_backward_grad, debug.total_shift, "grad_backward", 0.4, 0.2, 0.9);
   }
 
   // safety check
@@ -605,21 +610,6 @@ MarkerArray createDebugMarkerArray(
     add(showSafetyCheckInfo(debug.collision_check, "object_debug_info"));
     add(showPredictedPath(debug.collision_check, "ego_predicted_path"));
     add(showPolygon(debug.collision_check, "ego_and_target_polygon_relation"));
-  }
-
-  // shift length
-  if (parameters->enable_shift_line_marker) {
-    addShiftLength(debug.pos_shift, "merged_length_pos", 0.0, 0.7, 0.5);
-    addShiftLength(debug.neg_shift, "merged_length_neg", 0.0, 0.5, 0.7);
-    addShiftLength(debug.total_shift, "merged_length_total", 0.99, 0.4, 0.2);
-  }
-
-  // shift grad
-  if (parameters->enable_shift_line_marker) {
-    addShiftGrad(debug.pos_shift_grad, debug.pos_shift, "merged_grad_pos", 0.0, 0.7, 0.5);
-    addShiftGrad(debug.neg_shift_grad, debug.neg_shift, "merged_grad_neg", 0.0, 0.5, 0.7);
-    addShiftGrad(debug.total_forward_grad, debug.total_shift, "grad_forward", 0.99, 0.4, 0.2);
-    addShiftGrad(debug.total_backward_grad, debug.total_shift, "grad_backward", 0.4, 0.2, 0.9);
   }
 
   // detection area
