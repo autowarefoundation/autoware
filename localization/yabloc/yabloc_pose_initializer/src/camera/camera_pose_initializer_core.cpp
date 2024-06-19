@@ -26,8 +26,9 @@
 
 namespace yabloc
 {
-CameraPoseInitializer::CameraPoseInitializer()
-: Node("camera_pose_initializer"), angle_resolution_(declare_parameter<int>("angle_resolution"))
+CameraPoseInitializer::CameraPoseInitializer(const rclcpp::NodeOptions & options)
+: Node("camera_pose_initializer", options),
+  angle_resolution_(declare_parameter<int>("angle_resolution"))
 {
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -216,3 +217,6 @@ CameraPoseInitializer::PoseCovStamped CameraPoseInitializer::create_rectified_in
 }
 
 }  // namespace yabloc
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(yabloc::CameraPoseInitializer)

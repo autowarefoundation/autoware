@@ -43,7 +43,7 @@ public:
   using LaneletMapBin = autoware_map_msgs::msg::LaneletMapBin;
   using RequestPoseAlignment = tier4_localization_msgs::srv::PoseWithCovarianceStamped;
 
-  CameraPoseInitializer();
+  explicit CameraPoseInitializer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
   const int angle_resolution_;

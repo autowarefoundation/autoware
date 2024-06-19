@@ -20,18 +20,22 @@ find_package(OpenCV REQUIRED)
 # ===================================================
 # Executable
 # Camera
-set(TARGET camera_pose_initializer_node)
-ament_auto_add_executable(${TARGET}
+ament_auto_add_library(${PROJECT_NAME}
   src/camera/lane_image.cpp
   src/camera/marker_module.cpp
   src/camera/projector_module.cpp
   src/camera/semantic_segmentation.cpp
-  src/camera/camera_pose_initializer_core.cpp
-  src/camera/camera_pose_initializer_node.cpp)
-target_include_directories(${TARGET} PUBLIC include)
-target_include_directories(${TARGET} SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
-target_link_libraries(${TARGET} ${PCL_LIBRARIES} Sophus::Sophus)
-ament_target_dependencies(${TARGET} OpenCV)
+  src/camera/camera_pose_initializer_core.cpp)
+target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES} Sophus::Sophus)
+ament_target_dependencies(${PROJECT_NAME} OpenCV)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "yabloc::CameraPoseInitializer"
+  EXECUTABLE ${PROJECT_NAME}_node
+  EXECUTOR MultiThreadedExecutor
+)
 
 # ===================================================
 ament_auto_package(INSTALL_TO_SHARE config launch)

@@ -22,6 +22,7 @@
   <depend>lanelet2_extension</depend>
   <depend>libopencv-dev</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
   <depend>tier4_localization_msgs</depend>
   <depend>visualization_msgs</depend>
