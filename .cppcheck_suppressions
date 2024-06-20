@@ -4,15 +4,12 @@ arrayIndexThenCheck
 checkersReport
 constParameterPointer
 constParameterReference
-constStatement
 constVariable
 constVariableReference
 containerOutOfBounds
 cstyleCast
-duplicateAssignExpression
 duplicateBranch
 duplicateBreak
-duplicateExpression
 funcArgNamesDifferent
 functionConst
 functionStatic
@@ -25,7 +22,6 @@ noExplicitConstructor
 noValidConfiguration
 passedByValue
 preprocessorErrorDirective
-redundantContinue
 redundantInitialization
 returnByReference
 shadowArgument
@@ -37,7 +33,6 @@ unknownMacro
 unmatchedSuppression
 unreadVariable
 unusedFunction
-unusedScopedObject
 unusedStructMember
 unusedVariable
 useInitializationList
