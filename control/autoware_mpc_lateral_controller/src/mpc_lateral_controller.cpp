@@ -287,7 +287,7 @@ trajectory_follower::LateralOutput MpcLateralController::run(
   // the vehicle will return to the path by re-planning the trajectory or external operation.
   // After the recovery, the previous value of the optimization may deviate greatly from
   // the actual steer angle, and it may make the optimization result unstable.
-  if (!is_mpc_solved) {
+  if (!is_mpc_solved || !is_under_control) {
     m_mpc->resetPrevResult(m_current_steering);
   } else {
     setSteeringToHistory(ctrl_cmd);
