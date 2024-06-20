@@ -86,8 +86,9 @@ AstarSearch::TransitionTable createTransitionTable(
   for (int i = 0; i < turning_radius_size; ++i) {
     double R = R_min + i * dR;
     double step = R * dtheta;
-    const NodeUpdate forward_left{
-      R * sin(dtheta), R * (1 - cos(dtheta)), dtheta, step, true, false};
+    const double shift_x = R * sin(dtheta);
+    const double shift_y = R * (1 - cos(dtheta));
+    const NodeUpdate forward_left{shift_x, shift_y, dtheta, step, true, false};
     const NodeUpdate forward_right = forward_left.flipped();
     forward_node_candidates.push_back(forward_left);
     forward_node_candidates.push_back(forward_right);
