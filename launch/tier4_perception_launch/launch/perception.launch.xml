@@ -77,6 +77,7 @@
   <arg name="use_pointcloud_map" default="true" description="use pointcloud map in detection"/>
   <arg name="use_low_height_cropbox" default="true" description="use low height crop filter in clustering"/>
   <arg name="use_object_filter" default="true" description="use object filter"/>
+  <arg name="objects_filter_method" default="lanelet_filter" description="options: `lanelet_filter` or `position_filter`"/>
   <arg name="use_roi_based_cluster" default="true" description="use roi_based_cluster in clustering"/>
   <arg name="use_low_intensity_cluster_filter" default="true" description="use low_intensity_cluster_filter in clustering"/>
   <arg
@@ -85,8 +86,8 @@
     description="if use_empty_dynamic_object_publisher:=true, /perception/object_recognition/objects topic has an empty DynamicObjectArray"
   />
   <arg name="pointcloud_container_name" default="pointcloud_container"/>
-  <arg name="objects_filter_method" default="lanelet_filter"/>
-  <arg name="objects_validation_method" default="obstacle_pointcloud"/>
+  <arg name="use_object_validator" default="true" description="use obstacle_pointcloud based object validator"/>
+  <arg name="objects_validation_method" default="obstacle_pointcloud" description="options: `obstacle_pointcloud` or `occupancy_grid`"/>
   <arg name="use_perception_online_evaluator" default="false" description="use perception online evaluator"/>
 
   <!-- Traffic light recognition parameters -->
@@ -115,12 +116,13 @@
   <!-- Whether to use detection by tracker -->
   <arg name="use_detection_by_tracker" default="true"/>
 
-  <!-- Radar long range integration methods -->
+  <!-- Radar parameters -->
   <arg
     name="use_radar_tracking_fusion"
     default="true"
     description="if use_radar_tracking_fusion:=true, radar information is merged in tracking launch. Otherwise, radar information is merged in detection launch."
   />
+  <arg name="input/radar" default="/sensing/radar/detected_objects"/>
 
   <!-- Downsample pointcloud for perception usage -->
   <arg name="downsample_perception_common_pointcloud" default="false"/>
@@ -186,25 +188,35 @@
         <push-ros-namespace namespace="detection"/>
         <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/detection.launch.xml">
           <arg name="mode" value="$(var mode)"/>
-          <arg name="input/pointcloud" value="$(var perception_pointcloud)"/>
           <arg name="lidar_detection_model" value="$(var lidar_detection_model)"/>
-          <arg name="image_raw0" value="$(var image_raw0)"/>
-          <arg name="camera_info0" value="$(var camera_info0)"/>
-          <arg name="image_raw1" value="$(var image_raw1)"/>
-          <arg name="camera_info1" value="$(var camera_info1)"/>
-          <arg name="image_raw2" value="$(var image_raw2)"/>
-          <arg name="camera_info2" value="$(var camera_info2)"/>
-          <arg name="image_raw3" value="$(var image_raw3)"/>
-          <arg name="camera_info3" value="$(var camera_info3)"/>
-          <arg name="image_raw4" value="$(var image_raw4)"/>
-          <arg name="camera_info4" value="$(var camera_info4)"/>
-          <arg name="image_raw5" value="$(var image_raw5)"/>
-          <arg name="camera_info5" value="$(var camera_info5)"/>
-          <arg name="image_raw6" value="$(var image_raw6)"/>
-          <arg name="camera_info6" value="$(var camera_info6)"/>
-          <arg name="image_raw7" value="$(var image_raw7)"/>
-          <arg name="camera_info7" value="$(var camera_info7)"/>
-          <arg name="image_number" value="$(var image_number)"/>
+          <arg name="number_of_cameras" value="$(var image_number)"/>
+          <arg name="input/camera0/image" value="$(var image_raw0)"/>
+          <arg name="input/camera0/info" value="$(var camera_info0)"/>
+          <arg name="input/camera0/rois" value="$(var detection_rois0)"/>
+          <arg name="input/camera1/image" value="$(var image_raw1)"/>
+          <arg name="input/camera1/info" value="$(var camera_info1)"/>
+          <arg name="input/camera1/rois" value="$(var detection_rois1)"/>
+          <arg name="input/camera2/image" value="$(var image_raw2)"/>
+          <arg name="input/camera2/info" value="$(var camera_info2)"/>
+          <arg name="input/camera2/rois" value="$(var detection_rois2)"/>
+          <arg name="input/camera3/image" value="$(var image_raw3)"/>
+          <arg name="input/camera3/info" value="$(var camera_info3)"/>
+          <arg name="input/camera3/rois" value="$(var detection_rois3)"/>
+          <arg name="input/camera4/image" value="$(var image_raw4)"/>
+          <arg name="input/camera4/info" value="$(var camera_info4)"/>
+          <arg name="input/camera4/rois" value="$(var detection_rois4)"/>
+          <arg name="input/camera5/image" value="$(var image_raw5)"/>
+          <arg name="input/camera5/info" value="$(var camera_info5)"/>
+          <arg name="input/camera5/rois" value="$(var detection_rois5)"/>
+          <arg name="input/camera6/image" value="$(var image_raw6)"/>
+          <arg name="input/camera6/info" value="$(var camera_info6)"/>
+          <arg name="input/camera6/rois" value="$(var detection_rois6)"/>
+          <arg name="input/camera7/image" value="$(var image_raw7)"/>
+          <arg name="input/camera7/info" value="$(var camera_info7)"/>
+          <arg name="input/camera7/rois" value="$(var detection_rois7)"/>
+          <arg name="input/pointcloud" value="$(var perception_pointcloud)"/>
+          <arg name="node/pointcloud_container" value="$(var pointcloud_container_name)"/>
+          <arg name="input/radar" value="$(var input/radar)"/>
           <arg name="sync_param_path" value="$(var object_recognition_detection_fusion_sync_param_path)"/>
           <arg name="roi_cluster_fusion_param_path" value="$(var object_recognition_detection_roi_cluster_fusion_param_path)"/>
           <arg name="roi_pointcloud_fusion_param_path" value="$(var object_recognition_detection_roi_pointcloud_fusion_param_path)"/>
@@ -218,11 +230,14 @@
           <arg name="detection_by_tracker_param_path" value="$(var object_recognition_detection_detection_by_tracker_param)"/>
 
           <arg name="use_detection_by_tracker" value="$(var use_detection_by_tracker)"/>
+          <arg name="use_validator" value="$(var use_object_validator)"/>
+          <arg name="objects_validation_method" value="$(var objects_validation_method)"/>
           <arg name="use_radar_tracking_fusion" value="$(var use_radar_tracking_fusion)"/>
           <arg name="use_pointcloud_map" value="$(var use_pointcloud_map)"/>
           <arg name="use_low_height_cropbox" value="$(var use_low_height_cropbox)"/>
+          <arg name="use_low_intensity_cluster_filter" value="$(var use_low_intensity_cluster_filter)"/>
           <arg name="use_object_filter" value="$(var use_object_filter)"/>
-          <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+          <arg name="objects_filter_method" value="$(var objects_filter_method)"/>
           <arg name="use_roi_based_cluster" value="$(var use_roi_based_cluster)"/>
         </include>
       </group>

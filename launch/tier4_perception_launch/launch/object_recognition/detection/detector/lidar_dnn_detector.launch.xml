@@ -2,6 +2,7 @@
 <launch>
   <!-- Lidar parameters -->
   <arg name="input/pointcloud"/>
+  <arg name="node/pointcloud_container"/>
   <arg name="lidar_detection_model" default="centerpoint" description="options: `transfusion`, `centerpoint`, `apollo`, `clustering`"/>
 
   <!-- Lidar detector centerpoint parameters -->
@@ -27,7 +28,7 @@
         <arg name="class_remapper_param_path" value="$(var lidar_model_param_path)/detection_class_remapper.param.yaml"/>
 
         <arg name="use_pointcloud_container" value="true"/>
-        <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+        <arg name="pointcloud_container_name" value="$(var node/pointcloud_container)"/>
       </include>
     </group>
   </group>
@@ -48,7 +49,7 @@
         <arg name="class_remapper_param_path" value="$(var centerpoint_model_path)/detection_class_remapper.param.yaml"/>
 
         <arg name="use_pointcloud_container" value="true"/>
-        <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+        <arg name="pointcloud_container_name" value="$(var node/pointcloud_container)"/>
       </include>
     </group>
   </group>

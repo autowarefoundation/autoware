@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <launch>
   <!-- Pipeline junctions -->
-  <arg name="objects_filter_method" default="lanelet_filter" description="lanelet_filter or position_filter"/>
+  <arg name="objects_filter_method" default="lanelet_filter" description="options: `lanelet_filter` or `position_filter`"/>
 
   <!-- external interfaces -->
-  <arg name="input/objects" default="clustering/camera_lidar_fusion/objects"/>
-  <arg name="output/objects" default="clustering/camera_lidar_fusion/filtered/objects"/>
+  <arg name="input/objects"/>
+  <arg name="output/objects"/>
 
   <!-- Filter -->
   <group if="$(eval &quot;'$(var objects_filter_method)'=='lanelet_filter'&quot;)">

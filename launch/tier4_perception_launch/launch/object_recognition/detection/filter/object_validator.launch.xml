@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <launch>
   <!-- Pipeline junctions -->
-  <arg name="objects_validation_method" default="obstacle_pointcloud" description="obstacle_pointcloud or occupancy_grid"/>
+  <arg name="objects_validation_method" description="options: `obstacle_pointcloud` or `occupancy_grid`"/>
 
   <!-- external interfaces -->
-  <arg name="input/obstacle_pointcloud" default="pointcloud_map_filtered/pointcloud" description="Only required when 'obstacle_pointcloud'"/>
-  <arg name="input/objects" default="centerpoint/objects"/>
-  <arg name="output/objects" default="centerpoint/validation/objects"/>
+  <arg name="input/obstacle_pointcloud" description="Only required when 'obstacle_pointcloud'"/>
+  <arg name="input/objects"/>
+  <arg name="output/objects"/>
 
   <!-- Validator -->
   <group if="$(eval &quot;'$(var objects_validation_method)'=='obstacle_pointcloud'&quot;)">

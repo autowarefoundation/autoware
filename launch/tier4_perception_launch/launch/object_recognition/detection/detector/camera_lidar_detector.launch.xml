@@ -2,93 +2,94 @@
 <launch>
   <!-- Lidar parameters -->
   <arg name="input/pointcloud"/>
-  <arg name="input/obstacle_segmentation/pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
-  <arg name="pointcloud_container_name" default="pointcloud_container"/>
+  <arg name="input/pointcloud_map/pointcloud"/>
+  <arg name="input/obstacle_segmentation/pointcloud"/>
+  <arg name="node/pointcloud_container"/>
 
   <!-- Lidar + Camera detector parameters -->
-  <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`, `pointpainting`, `clustering`"/>
-  <arg name="use_roi_based_cluster" default="false"/>
-  <arg name="use_low_intensity_cluster_filter" default="false"/>
+  <arg name="lidar_detection_model" description="options: `centerpoint`, `apollo`, `pointpainting`, `clustering`"/>
+  <arg name="use_roi_based_cluster"/>
+  <arg name="use_low_intensity_cluster_filter"/>
 
   <!-- Camera parameters -->
-  <arg name="image_raw0" default="/image_raw" description="image raw topic name"/>
-  <arg name="camera_info0" default="/camera_info" description="camera info topic name"/>
-  <arg name="detection_rois0" default="/perception/object_recognition/detection/rois0" description="detection rois output topic name"/>
-  <arg name="image_raw1" default="/image_raw1"/>
-  <arg name="camera_info1" default="/camera_info1"/>
-  <arg name="detection_rois1" default="/perception/object_recognition/detection/rois1"/>
-  <arg name="image_raw2" default="/image_raw2"/>
-  <arg name="camera_info2" default="/camera_info2"/>
-  <arg name="detection_rois2" default="/perception/object_recognition/detection/rois2"/>
-  <arg name="image_raw3" default="/image_raw3"/>
-  <arg name="camera_info3" default="/camera_info3"/>
-  <arg name="detection_rois3" default="/perception/object_recognition/detection/rois3"/>
-  <arg name="image_raw4" default="/image_raw4"/>
-  <arg name="camera_info4" default="/camera_info4"/>
-  <arg name="detection_rois4" default="/perception/object_recognition/detection/rois4"/>
-  <arg name="image_raw5" default="/image_raw5"/>
-  <arg name="camera_info5" default="/camera_info5"/>
-  <arg name="detection_rois5" default="/perception/object_recognition/detection/rois5"/>
-  <arg name="image_raw6" default="/image_raw6"/>
-  <arg name="camera_info6" default="/camera_info6"/>
-  <arg name="detection_rois6" default="/perception/object_recognition/detection/rois6"/>
-  <arg name="image_raw7" default="/image_raw7"/>
-  <arg name="camera_info7" default="/camera_info7"/>
-  <arg name="detection_rois7" default="/perception/object_recognition/detection/rois7"/>
-  <arg name="image_number" default="1" description="choose image raw number(1-8)"/>
+  <arg name="number_of_cameras"/>
+  <arg name="input/camera0/image"/>
+  <arg name="input/camera0/info"/>
+  <arg name="input/camera0/rois"/>
+  <arg name="input/camera1/image"/>
+  <arg name="input/camera1/info"/>
+  <arg name="input/camera1/rois"/>
+  <arg name="input/camera2/image"/>
+  <arg name="input/camera2/info"/>
+  <arg name="input/camera2/rois"/>
+  <arg name="input/camera3/image"/>
+  <arg name="input/camera3/info"/>
+  <arg name="input/camera3/rois"/>
+  <arg name="input/camera4/image"/>
+  <arg name="input/camera4/info"/>
+  <arg name="input/camera4/rois"/>
+  <arg name="input/camera5/image"/>
+  <arg name="input/camera5/info"/>
+  <arg name="input/camera5/rois"/>
+  <arg name="input/camera6/image"/>
+  <arg name="input/camera6/info"/>
+  <arg name="input/camera6/rois"/>
+  <arg name="input/camera7/image"/>
+  <arg name="input/camera7/info"/>
+  <arg name="input/camera7/rois"/>
 
   <!-- Jetson AGX -->
   <!-- <include file="$(find-pkg-share tensorrt_yolox)/launch/multiple_yolox.launch.xml">
-    <arg name="image_raw0" value="$(var image_raw0)"/>
-    <arg name="image_raw1" value="$(var image_raw1)"/>
-    <arg name="image_raw2" value="$(var image_raw2)"/>
-    <arg name="image_raw3" value="$(var image_raw3)"/>
-    <arg name="image_raw4" value="$(var image_raw4)"/>
-    <arg name="image_raw5" value="$(var image_raw5)"/>
-    <arg name="image_raw6" value="$(var image_raw6)"/>
-    <arg name="image_raw7" value="$(var image_raw7)"/>
-    <arg name="image_number" value="$(var image_number)"/>
+    <arg name="image_raw0" value="$(var input/camera0/image)"/>
+    <arg name="image_raw1" value="$(var input/camera1/image)"/>
+    <arg name="image_raw2" value="$(var input/camera2/image)"/>
+    <arg name="image_raw3" value="$(var input/camera3/image)"/>
+    <arg name="image_raw4" value="$(var input/camera4/image)"/>
+    <arg name="image_raw5" value="$(var input/camera5/image)"/>
+    <arg name="image_raw6" value="$(var input/camera6/image)"/>
+    <arg name="image_raw7" value="$(var input/camera7/image)"/>
+    <arg name="image_number" value="$(var number_of_cameras)"/>
   </include> -->
 
   <!-- PointPainting -->
   <group if="$(eval &quot;'$(var lidar_detection_model)'=='pointpainting'&quot;)">
     <push-ros-namespace namespace="pointpainting"/>
     <include file="$(find-pkg-share image_projection_based_fusion)/launch/pointpainting_fusion.launch.xml">
-      <arg name="input/camera_info0" value="$(var camera_info0)"/>
-      <arg name="input/rois0" value="$(var detection_rois0)"/>
-      <arg name="input/camera_info1" value="$(var camera_info1)"/>
-      <arg name="input/rois1" value="$(var detection_rois1)"/>
-      <arg name="input/camera_info2" value="$(var camera_info2)"/>
-      <arg name="input/rois2" value="$(var detection_rois2)"/>
-      <arg name="input/camera_info3" value="$(var camera_info3)"/>
-      <arg name="input/rois3" value="$(var detection_rois3)"/>
-      <arg name="input/camera_info4" value="$(var camera_info4)"/>
-      <arg name="input/rois4" value="$(var detection_rois4)"/>
-      <arg name="input/camera_info5" value="$(var camera_info5)"/>
-      <arg name="input/rois5" value="$(var detection_rois5)"/>
-      <arg name="input/camera_info6" value="$(var camera_info6)"/>
-      <arg name="input/rois6" value="$(var detection_rois6)"/>
-      <arg name="input/camera_info7" value="$(var camera_info7)"/>
-      <arg name="input/rois7" value="$(var detection_rois7)"/>
-      <arg name="input/rois_number" value="$(var image_number)"/>
-      <arg name="input/image0" value="$(var image_raw0)"/>
-      <arg name="input/image1" value="$(var image_raw1)"/>
-      <arg name="input/image2" value="$(var image_raw2)"/>
-      <arg name="input/image3" value="$(var image_raw3)"/>
-      <arg name="input/image4" value="$(var image_raw4)"/>
-      <arg name="input/image5" value="$(var image_raw5)"/>
-      <arg name="input/image6" value="$(var image_raw6)"/>
-      <arg name="input/image7" value="$(var image_raw7)"/>
+      <arg name="input/rois_number" value="$(var number_of_cameras)"/>
+      <arg name="input/rois0" value="$(var input/camera0/rois)"/>
+      <arg name="input/rois1" value="$(var input/camera1/rois)"/>
+      <arg name="input/rois2" value="$(var input/camera2/rois)"/>
+      <arg name="input/rois3" value="$(var input/camera3/rois)"/>
+      <arg name="input/rois4" value="$(var input/camera4/rois)"/>
+      <arg name="input/rois5" value="$(var input/camera5/rois)"/>
+      <arg name="input/rois6" value="$(var input/camera6/rois)"/>
+      <arg name="input/rois7" value="$(var input/camera7/rois)"/>
+      <arg name="input/camera_info0" value="$(var input/camera0/info)"/>
+      <arg name="input/camera_info1" value="$(var input/camera1/info)"/>
+      <arg name="input/camera_info2" value="$(var input/camera2/info)"/>
+      <arg name="input/camera_info3" value="$(var input/camera3/info)"/>
+      <arg name="input/camera_info4" value="$(var input/camera4/info)"/>
+      <arg name="input/camera_info5" value="$(var input/camera5/info)"/>
+      <arg name="input/camera_info6" value="$(var input/camera6/info)"/>
+      <arg name="input/camera_info7" value="$(var input/camera7/info)"/>
+      <arg name="input/image0" value="$(var input/camera0/image)"/>
+      <arg name="input/image1" value="$(var input/camera1/image)"/>
+      <arg name="input/image2" value="$(var input/camera2/image)"/>
+      <arg name="input/image3" value="$(var input/camera3/image)"/>
+      <arg name="input/image4" value="$(var input/camera4/image)"/>
+      <arg name="input/image5" value="$(var input/camera5/image)"/>
+      <arg name="input/image6" value="$(var input/camera6/image)"/>
+      <arg name="input/image7" value="$(var input/camera7/image)"/>
       <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
       <arg name="output/objects" value="objects"/>
+
       <arg name="model_name" value="$(var lidar_detection_model)"/>
       <arg name="model_path" value="$(var pointpainting_model_path)"/>
       <arg name="model_param_path" value="$(var lidar_model_param_path)/pointpainting.param.yaml"/>
       <arg name="ml_package_param_path" value="$(var model_path)/pointpainting_ml_package.param.yaml"/>
       <arg name="class_remapper_param_path" value="$(var model_path)/detection_class_remapper.param.yaml"/>
-
       <arg name="use_pointcloud_container" value="true"/>
-      <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+      <arg name="pointcloud_container_name" value="$(var node/pointcloud_container)"/>
     </include>
   </group>
 
@@ -99,7 +100,7 @@
       <arg name="output_topic" value="pointcloud_map_filtered/pointcloud"/>
       <arg name="use_intra_process" value="true"/>
       <arg name="use_multithread" value="true"/>
-      <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+      <arg name="pointcloud_container_name" value="$(var node/pointcloud_container)"/>
       <arg name="use_pointcloud_map" value="$(var use_pointcloud_map)"/>
     </include>
   </group>
@@ -111,7 +112,7 @@
       <let name="euclidean_cluster_output" value="euclidean_cluster/clusters" if="$(var use_roi_based_cluster)"/>
       <let name="euclidean_cluster_output" value="clusters" unless="$(var use_roi_based_cluster)"/>
       <include file="$(find-pkg-share euclidean_cluster)/launch/voxel_grid_based_euclidean_cluster.launch.xml">
-        <arg name="input_pointcloud" value="/perception/object_recognition/detection/pointcloud_map_filtered/pointcloud"/>
+        <arg name="input_pointcloud" value="$(var input/pointcloud_map/pointcloud)"/>
         <arg name="output_clusters" value="$(var euclidean_cluster_output)"/>
         <arg name="use_low_height_cropbox" value="$(var use_low_height_cropbox)"/>
       </include>
@@ -122,32 +123,32 @@
       <push-ros-namespace namespace="roi_cluster"/>
       <group>
         <include file="$(find-pkg-share image_projection_based_fusion)/launch/roi_pointcloud_fusion.launch.xml" if="$(var use_roi_based_cluster)">
-          <arg name="input/camera_info0" value="$(var camera_info0)"/>
-          <arg name="input/rois0" value="$(var detection_rois0)"/>
-          <arg name="input/camera_info1" value="$(var camera_info1)"/>
-          <arg name="input/rois1" value="$(var detection_rois1)"/>
-          <arg name="input/camera_info2" value="$(var camera_info2)"/>
-          <arg name="input/rois2" value="$(var detection_rois2)"/>
-          <arg name="input/camera_info3" value="$(var camera_info3)"/>
-          <arg name="input/rois3" value="$(var detection_rois3)"/>
-          <arg name="input/camera_info4" value="$(var camera_info4)"/>
-          <arg name="input/rois4" value="$(var detection_rois4)"/>
-          <arg name="input/camera_info5" value="$(var camera_info5)"/>
-          <arg name="input/rois5" value="$(var detection_rois5)"/>
-          <arg name="input/camera_info6" value="$(var camera_info6)"/>
-          <arg name="input/rois6" value="$(var detection_rois6)"/>
-          <arg name="input/camera_info7" value="$(var camera_info7)"/>
-          <arg name="input/rois7" value="$(var detection_rois7)"/>
-          <arg name="input/rois_number" value="$(var image_number)"/>
-          <arg name="input/image0" value="$(var image_raw0)"/>
-          <arg name="input/image1" value="$(var image_raw1)"/>
-          <arg name="input/image2" value="$(var image_raw2)"/>
-          <arg name="input/image3" value="$(var image_raw3)"/>
-          <arg name="input/image4" value="$(var image_raw4)"/>
-          <arg name="input/image5" value="$(var image_raw5)"/>
-          <arg name="input/image6" value="$(var image_raw6)"/>
-          <arg name="input/image7" value="$(var image_raw7)"/>
-          <arg name="input/pointcloud" value="/perception/object_recognition/detection/pointcloud_map_filtered/pointcloud"/>
+          <arg name="input/rois_number" value="$(var number_of_cameras)"/>
+          <arg name="input/rois0" value="$(var input/camera0/rois)"/>
+          <arg name="input/rois1" value="$(var input/camera1/rois)"/>
+          <arg name="input/rois2" value="$(var input/camera2/rois)"/>
+          <arg name="input/rois3" value="$(var input/camera3/rois)"/>
+          <arg name="input/rois4" value="$(var input/camera4/rois)"/>
+          <arg name="input/rois5" value="$(var input/camera5/rois)"/>
+          <arg name="input/rois6" value="$(var input/camera6/rois)"/>
+          <arg name="input/rois7" value="$(var input/camera7/rois)"/>
+          <arg name="input/camera_info0" value="$(var input/camera0/info)"/>
+          <arg name="input/camera_info1" value="$(var input/camera1/info)"/>
+          <arg name="input/camera_info2" value="$(var input/camera2/info)"/>
+          <arg name="input/camera_info3" value="$(var input/camera3/info)"/>
+          <arg name="input/camera_info4" value="$(var input/camera4/info)"/>
+          <arg name="input/camera_info5" value="$(var input/camera5/info)"/>
+          <arg name="input/camera_info6" value="$(var input/camera6/info)"/>
+          <arg name="input/camera_info7" value="$(var input/camera7/info)"/>
+          <arg name="input/image0" value="$(var input/camera0/image)"/>
+          <arg name="input/image1" value="$(var input/camera1/image)"/>
+          <arg name="input/image2" value="$(var input/camera2/image)"/>
+          <arg name="input/image3" value="$(var input/camera3/image)"/>
+          <arg name="input/image4" value="$(var input/camera4/image)"/>
+          <arg name="input/image5" value="$(var input/camera5/image)"/>
+          <arg name="input/image6" value="$(var input/camera6/image)"/>
+          <arg name="input/image7" value="$(var input/camera7/image)"/>
+          <arg name="input/pointcloud" value="$(var input/pointcloud_map/pointcloud)"/>
           <arg name="output_clusters" value="clusters"/>
           <arg name="param_path" value="$(var roi_pointcloud_fusion_param_path)"/>
         </include>
@@ -178,32 +179,32 @@
       <!-- euclidean clustering -->
       <group>
         <include file="$(find-pkg-share image_projection_based_fusion)/launch/roi_cluster_fusion.launch.xml">
-          <arg name="input/camera_info0" value="$(var camera_info0)"/>
-          <arg name="input/rois0" value="$(var detection_rois0)"/>
-          <arg name="input/camera_info1" value="$(var camera_info1)"/>
-          <arg name="input/rois1" value="$(var detection_rois1)"/>
-          <arg name="input/camera_info2" value="$(var camera_info2)"/>
-          <arg name="input/rois2" value="$(var detection_rois2)"/>
-          <arg name="input/camera_info3" value="$(var camera_info3)"/>
-          <arg name="input/rois3" value="$(var detection_rois3)"/>
-          <arg name="input/camera_info4" value="$(var camera_info4)"/>
-          <arg name="input/rois4" value="$(var detection_rois4)"/>
-          <arg name="input/camera_info5" value="$(var camera_info5)"/>
-          <arg name="input/rois5" value="$(var detection_rois5)"/>
-          <arg name="input/camera_info6" value="$(var camera_info6)"/>
-          <arg name="input/rois6" value="$(var detection_rois6)"/>
-          <arg name="input/camera_info7" value="$(var camera_info7)"/>
-          <arg name="input/rois7" value="$(var detection_rois7)"/>
-          <arg name="input/rois_number" value="$(var image_number)"/>
+          <arg name="input/rois_number" value="$(var number_of_cameras)"/>
+          <arg name="input/rois0" value="$(var input/camera0/rois)"/>
+          <arg name="input/rois1" value="$(var input/camera1/rois)"/>
+          <arg name="input/rois2" value="$(var input/camera2/rois)"/>
+          <arg name="input/rois3" value="$(var input/camera3/rois)"/>
+          <arg name="input/rois4" value="$(var input/camera4/rois)"/>
+          <arg name="input/rois5" value="$(var input/camera5/rois)"/>
+          <arg name="input/rois6" value="$(var input/camera6/rois)"/>
+          <arg name="input/rois7" value="$(var input/camera7/rois)"/>
+          <arg name="input/camera_info0" value="$(var input/camera0/info)"/>
+          <arg name="input/camera_info1" value="$(var input/camera1/info)"/>
+          <arg name="input/camera_info2" value="$(var input/camera2/info)"/>
+          <arg name="input/camera_info3" value="$(var input/camera3/info)"/>
+          <arg name="input/camera_info4" value="$(var input/camera4/info)"/>
+          <arg name="input/camera_info5" value="$(var input/camera5/info)"/>
+          <arg name="input/camera_info6" value="$(var input/camera6/info)"/>
+          <arg name="input/camera_info7" value="$(var input/camera7/info)"/>
+          <arg name="input/image0" value="$(var input/camera0/image)"/>
+          <arg name="input/image1" value="$(var input/camera1/image)"/>
+          <arg name="input/image2" value="$(var input/camera2/image)"/>
+          <arg name="input/image3" value="$(var input/camera3/image)"/>
+          <arg name="input/image4" value="$(var input/camera4/image)"/>
+          <arg name="input/image5" value="$(var input/camera5/image)"/>
+          <arg name="input/image6" value="$(var input/camera6/image)"/>
+          <arg name="input/image7" value="$(var input/camera7/image)"/>
           <arg name="input/clusters" value="$(var input/clustering)"/>
-          <arg name="input/image0" value="$(var image_raw0)"/>
-          <arg name="input/image1" value="$(var image_raw1)"/>
-          <arg name="input/image2" value="$(var image_raw2)"/>
-          <arg name="input/image3" value="$(var image_raw3)"/>
-          <arg name="input/image4" value="$(var image_raw4)"/>
-          <arg name="input/image5" value="$(var image_raw5)"/>
-          <arg name="input/image6" value="$(var image_raw6)"/>
-          <arg name="input/image7" value="$(var image_raw7)"/>
           <arg name="output/clusters" value="clusters"/>
           <arg name="param_path" value="$(var roi_cluster_fusion_param_path)"/>
         </include>
