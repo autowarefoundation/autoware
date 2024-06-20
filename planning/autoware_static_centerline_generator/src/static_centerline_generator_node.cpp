@@ -89,13 +89,13 @@ LinearRing2d create_vehicle_footprint(
 
   std::vector<geometry_msgs::msg::Point> geom_points;
   geom_points.push_back(
-    autoware_universe_utils::calcOffsetPose(pose, x_front, y_left, 0.0).position);
+    autoware::universe_utils::calcOffsetPose(pose, x_front, y_left, 0.0).position);
   geom_points.push_back(
-    autoware_universe_utils::calcOffsetPose(pose, x_front, y_right, 0.0).position);
+    autoware::universe_utils::calcOffsetPose(pose, x_front, y_right, 0.0).position);
   geom_points.push_back(
-    autoware_universe_utils::calcOffsetPose(pose, x_rear, y_right, 0.0).position);
+    autoware::universe_utils::calcOffsetPose(pose, x_rear, y_right, 0.0).position);
   geom_points.push_back(
-    autoware_universe_utils::calcOffsetPose(pose, x_rear, y_left, 0.0).position);
+    autoware::universe_utils::calcOffsetPose(pose, x_rear, y_left, 0.0).position);
 
   LinearRing2d footprint;
   for (const auto & geom_point : geom_points) {
@@ -117,7 +117,7 @@ geometry_msgs::msg::Pose get_text_pose(
   const double x_front = i.front_overhang_m + i.wheel_base_m;
   const double y_left = i.wheel_tread_m / 2.0 + i.left_overhang_m + 1.0;
 
-  return autoware_universe_utils::calcOffsetPose(pose, x_front, y_left, 0.0);
+  return autoware::universe_utils::calcOffsetPose(pose, x_front, y_left, 0.0);
 }
 
 std::array<double, 3> convert_hex_string_to_decimal(const std::string & hex_str_color)
@@ -166,10 +166,10 @@ std::vector<TrajectoryPoint> resample_trajectory_points(
   const std::vector<TrajectoryPoint> & input_traj_points, const double resample_interval)
 {
   // resample and calculate trajectory points' orientation
-  const auto input_traj = autoware_motion_utils::convertToTrajectory(input_traj_points);
+  const auto input_traj = autoware::motion_utils::convertToTrajectory(input_traj_points);
   auto resampled_input_traj =
-    autoware_motion_utils::resampleTrajectory(input_traj, resample_interval);
-  return autoware_motion_utils::convertToTrajectoryPointArray(resampled_input_traj);
+    autoware::motion_utils::resampleTrajectory(input_traj, resample_interval);
+  return autoware::motion_utils::convertToTrajectoryPointArray(resampled_input_traj);
 }
 }  // namespace
 
@@ -203,7 +203,7 @@ StaticCenterlineGeneratorNode::StaticCenterlineGeneratorNode(
   sub_save_map_ = create_subscription<std_msgs::msg::Bool>(
     "/centerline_updater_helper/save_map", rclcpp::QoS{1}, [this](const std_msgs::msg::Bool & msg) {
       const auto lanelet2_output_file_path =
-        autoware_universe_utils::getOrDeclareParameter<std::string>(
+        autoware::universe_utils::getOrDeclareParameter<std::string>(
           *this, "lanelet2_output_file_path");
       if (!centerline_with_route_ || msg.data) {
         const auto & c = *centerline_with_route_;
@@ -274,7 +274,7 @@ void StaticCenterlineGeneratorNode::update_centerline_range(
     centerline.begin() + traj_range_indices_.second + 1);
 
   pub_centerline_->publish(
-    autoware_motion_utils::convertToTrajectory(selected_centerline, create_header(this->now())));
+    autoware::motion_utils::convertToTrajectory(selected_centerline, create_header(this->now())));
 }
 
 void StaticCenterlineGeneratorNode::run()
@@ -326,10 +326,10 @@ CenterlineWithRoute StaticCenterlineGeneratorNode::generate_centerline_with_rout
   centerline_with_route.centerline =
     resample_trajectory_points(centerline_with_route.centerline, output_trajectory_interval);
 
-  pub_whole_centerline_->publish(autoware_motion_utils::convertToTrajectory(
+  pub_whole_centerline_->publish(autoware::motion_utils::convertToTrajectory(
     centerline_with_route.centerline, create_header(this->now())));
 
-  pub_centerline_->publish(autoware_motion_utils::convertToTrajectory(
+  pub_centerline_->publish(autoware::motion_utils::convertToTrajectory(
     centerline_with_route.centerline, create_header(this->now())));
 
   return centerline_with_route;
@@ -577,10 +577,11 @@ void StaticCenterlineGeneratorNode::evaluate(
   const std::vector<TrajectoryPoint> & optimized_traj_points)
 {
   const auto route_lanelets = utils::get_lanelets_from_ids(*route_handler_ptr_, route_lane_ids);
-  const auto dist_thresh_vec = autoware_universe_utils::getOrDeclareParameter<std::vector<double>>(
+  const auto dist_thresh_vec = autoware::universe_utils::getOrDeclareParameter<std::vector<double>>(
     *this, "marker_color_dist_thresh");
   const auto marker_color_vec =
-    autoware_universe_utils::getOrDeclareParameter<std::vector<std::string>>(*this, "marker_color");
+    autoware::universe_utils::getOrDeclareParameter<std::vector<std::string>>(
+      *this, "marker_color");
   const auto get_marker_color = [&](const double dist) -> boost::optional<std::array<double, 3>> {
     for (size_t i = 0; i < dist_thresh_vec.size(); ++i) {
       const double dist_thresh = dist_thresh_vec.at(i);
@@ -627,13 +628,13 @@ void StaticCenterlineGeneratorNode::evaluate(
       // add footprint marker
       const auto footprint_marker =
         utils::create_footprint_marker(footprint_poly, marker_color, now(), i);
-      autoware_universe_utils::appendMarkerArray(footprint_marker, &marker_array);
+      autoware::universe_utils::appendMarkerArray(footprint_marker, &marker_array);
 
       // add text of distance to bounds marker
       const auto text_pose = get_text_pose(traj_point.pose, vehicle_info_);
       const auto text_marker =
         utils::create_distance_text_marker(text_pose, min_dist_to_bound, marker_color, now(), i);
-      autoware_universe_utils::appendMarkerArray(text_marker, &marker_array);
+      autoware::universe_utils::appendMarkerArray(text_marker, &marker_array);
     }
   }
 

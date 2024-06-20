@@ -51,9 +51,9 @@ namespace autoware::surround_obstacle_checker
 namespace bg = boost::geometry;
 using Point2d = bg::model::d2::point_xy<double>;
 using Polygon2d = bg::model::polygon<Point2d>;
+using autoware::universe_utils::createPoint;
+using autoware::universe_utils::pose2transform;
 using autoware_perception_msgs::msg::ObjectClassification;
-using autoware_universe_utils::createPoint;
-using autoware_universe_utils::pose2transform;
 
 namespace
 {
@@ -193,7 +193,7 @@ SurroundObstacleCheckerNode::SurroundObstacleCheckerNode(const rclcpp::NodeOptio
     p.publish_debug_footprints = this->declare_parameter<bool>("publish_debug_footprints");
     p.debug_footprint_label = this->declare_parameter<std::string>("debug_footprint_label");
 
-    logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+    logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
   }
 
   vehicle_info_ = autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo();
@@ -251,12 +251,12 @@ rcl_interfaces::msg::SetParametersResult SurroundObstacleCheckerNode::onParam(
   use_dynamic_object_ = false;
   for (const auto & label_pair : label_map_) {
     bool & check_current_label = node_param_.enable_check_map.at(label_pair.second);
-    autoware_universe_utils::updateParam<bool>(
+    autoware::universe_utils::updateParam<bool>(
       parameters, label_pair.first + ".enable_check", check_current_label);
     use_dynamic_object_ = use_dynamic_object_ || check_current_label;
   }
 
-  autoware_universe_utils::updateParam<std::string>(
+  autoware::universe_utils::updateParam<std::string>(
     parameters, "debug_footprint_label", node_param_.debug_footprint_label);
   const auto check_distances = getCheckDistances(node_param_.debug_footprint_label);
   debug_ptr_->updateFootprintMargin(
@@ -411,7 +411,7 @@ std::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacleByPointCl
     tf2::transformToEigen(transform_stamped.value().transform).cast<float>();
   pcl::PointCloud<pcl::PointXYZ> transformed_pointcloud;
   pcl::fromROSMsg(*pointcloud_ptr_, transformed_pointcloud);
-  autoware_universe_utils::transformPointCloud(
+  autoware::universe_utils::transformPointCloud(
     transformed_pointcloud, transformed_pointcloud, isometry);
 
   const double front_margin = node_param_.pointcloud_surround_check_front_distance;

@@ -44,10 +44,10 @@ using autoware::behavior_path_planner::utils::path_safety_checker::
 using autoware::behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
 using autoware::behavior_path_planner::utils::path_safety_checker::PredictedPathWithPolygon;
 using autoware::route_handler::Direction;
+using autoware::universe_utils::Polygon2d;
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_perception_msgs::msg::PredictedPath;
-using autoware_universe_utils::Polygon2d;
 using data::lane_change::LanesPolygon;
 using data::lane_change::PathSafetyStatus;
 using geometry_msgs::msg::Point;

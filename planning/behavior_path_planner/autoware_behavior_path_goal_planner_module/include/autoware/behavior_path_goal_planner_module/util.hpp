@@ -42,7 +42,7 @@ using geometry_msgs::msg::Twist;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
-using Polygon2d = autoware_universe_utils::Polygon2d;
+using Polygon2d = autoware::universe_utils::Polygon2d;
 
 lanelet::ConstLanelets getPullOverLanes(
   const RouteHandler & route_handler, const bool left_side, const double backward_distance,
@@ -94,8 +94,8 @@ std::vector<Polygon2d> createPathFootPrints(
 
 // debug
 MarkerArray createPullOverAreaMarkerArray(
-  const autoware_universe_utils::MultiPolygon2d area_polygons, const std_msgs::msg::Header & header,
-  const std_msgs::msg::ColorRGBA & color, const double z);
+  const autoware::universe_utils::MultiPolygon2d area_polygons,
+  const std_msgs::msg::Header & header, const std_msgs::msg::ColorRGBA & color, const double z);
 MarkerArray createPosesMarkerArray(
   const std::vector<Pose> & poses, std::string && ns, const std_msgs::msg::ColorRGBA & color);
 MarkerArray createTextsMarkerArray(

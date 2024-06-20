@@ -101,7 +101,7 @@ inline autoware::sampler_common::State getInitialState(
 {
   autoware::sampler_common::State initial_state;
   Point2d initial_state_pose{pose.position.x, pose.position.y};
-  const auto rpy = autoware_universe_utils::getRPY(pose.orientation);
+  const auto rpy = autoware::universe_utils::getRPY(pose.orientation);
   initial_state.pose = initial_state_pose;
   initial_state.frenet = reference_spline.frenet({pose.position.x, pose.position.y});
   initial_state.heading = rpy.z;

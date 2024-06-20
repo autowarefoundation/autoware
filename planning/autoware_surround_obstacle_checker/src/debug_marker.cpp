@@ -52,12 +52,12 @@ Polygon2d createSelfPolygon(
 }
 }  // namespace
 
-using autoware_universe_utils::appendMarkerArray;
-using autoware_universe_utils::calcOffsetPose;
-using autoware_universe_utils::createDefaultMarker;
-using autoware_universe_utils::createMarkerColor;
-using autoware_universe_utils::createMarkerScale;
-using autoware_universe_utils::createPoint;
+using autoware::universe_utils::appendMarkerArray;
+using autoware::universe_utils::calcOffsetPose;
+using autoware::universe_utils::createDefaultMarker;
+using autoware::universe_utils::createMarkerColor;
+using autoware::universe_utils::createMarkerScale;
+using autoware::universe_utils::createPoint;
 
 SurroundObstacleCheckerDebugNode::SurroundObstacleCheckerDebugNode(
   const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double base_link2front,

@@ -101,7 +101,7 @@ std::optional<PathWithLaneId> ShiftPullOver::cropPrevModulePath(
   const PathWithLaneId & prev_module_path, const Pose & shift_end_pose) const
 {
   // clip previous module path to shift end pose nearest segment index
-  const size_t shift_end_idx = autoware_motion_utils::findNearestSegmentIndex(
+  const size_t shift_end_idx = autoware::motion_utils::findNearestSegmentIndex(
     prev_module_path.points, shift_end_pose.position);
   std::vector<PathPointWithLaneId> clipped_points{
     prev_module_path.points.begin(), prev_module_path.points.begin() + shift_end_idx};
@@ -111,10 +111,10 @@ std::optional<PathWithLaneId> ShiftPullOver::cropPrevModulePath(
 
   // add projected shift end pose to clipped points
   PathPointWithLaneId projected_point = clipped_points.back();
-  const double offset = autoware_motion_utils::calcSignedArcLength(
+  const double offset = autoware::motion_utils::calcSignedArcLength(
     prev_module_path.points, shift_end_idx, shift_end_pose.position);
   projected_point.point.pose =
-    autoware_universe_utils::calcOffsetPose(clipped_points.back().point.pose, offset, 0, 0);
+    autoware::universe_utils::calcOffsetPose(clipped_points.back().point.pose, offset, 0, 0);
   clipped_points.push_back(projected_point);
   auto clipped_prev_module_path = prev_module_path;
   clipped_prev_module_path.points = clipped_points;
@@ -131,7 +131,7 @@ std::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
 
   // shift end pose is longitudinal offset from goal pose to improve parking angle accuracy
   const Pose shift_end_pose =
-    autoware_universe_utils::calcOffsetPose(goal_pose, -after_shift_straight_distance, 0, 0);
+    autoware::universe_utils::calcOffsetPose(goal_pose, -after_shift_straight_distance, 0, 0);
 
   // calculate lateral shift of previous module path terminal pose from road lane reference path
   const auto road_lane_reference_path_to_shift_end = utils::resamplePathWithSpline(
@@ -162,7 +162,7 @@ std::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
   const Pose & shift_end_pose_prev_module_path =
     processed_prev_module_path->points.back().point.pose;
   const double shift_end_road_to_target_distance =
-    autoware_universe_utils::inverseTransformPoint(
+    autoware::universe_utils::inverseTransformPoint(
       shift_end_pose.position, shift_end_pose_prev_module_path)
       .y;
 
@@ -171,7 +171,7 @@ std::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
     shift_end_road_to_target_distance, lateral_jerk, pull_over_velocity);
   const double before_shifted_pull_over_distance = calcBeforeShiftedArcLength(
     processed_prev_module_path.value(), pull_over_distance, shift_end_road_to_target_distance);
-  const auto shift_start_pose = autoware_motion_utils::calcLongitudinalOffsetPose(
+  const auto shift_start_pose = autoware::motion_utils::calcLongitudinalOffsetPose(
     processed_prev_module_path->points, shift_end_pose_prev_module_path.position,
     -before_shifted_pull_over_distance);
 
@@ -188,8 +188,8 @@ std::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
   if (!path_shifter.generate(&shifted_path, offset_back)) {
     return {};
   }
-  shifted_path.path.points = autoware_motion_utils::removeOverlapPoints(shifted_path.path.points);
-  autoware_motion_utils::insertOrientation(shifted_path.path.points, true);
+  shifted_path.path.points = autoware::motion_utils::removeOverlapPoints(shifted_path.path.points);
+  autoware::motion_utils::insertOrientation(shifted_path.path.points, true);
 
   // set same orientation, because the reference center line orientation is not same to the
   shifted_path.path.points.back().point.pose.orientation = shift_end_pose.orientation;
@@ -309,7 +309,7 @@ double ShiftPullOver::calcBeforeShiftedArcLength(
   double before_arc_length{0.0};
   double after_arc_length{0.0};
   for (const auto & [k, segment_length] :
-       autoware_motion_utils::calcCurvatureAndArcLength(reversed_path.points)) {
+       autoware::motion_utils::calcCurvatureAndArcLength(reversed_path.points)) {
     // after shifted segment length
     const double after_segment_length =
       k > 0 ? segment_length * (1 + k * dr) : segment_length / (1 - k * dr);

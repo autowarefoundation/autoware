@@ -52,15 +52,15 @@ geometry_msgs::msg::Vector3 calculate_error_rpy(
   const geometry_msgs::msg::Vector3 & gyro_bias)
 {
   const geometry_msgs::msg::Vector3 rpy_0 =
-    autoware_universe_utils::getRPY(pose_list.front().pose.orientation);
+    autoware::universe_utils::getRPY(pose_list.front().pose.orientation);
   const geometry_msgs::msg::Vector3 rpy_1 =
-    autoware_universe_utils::getRPY(pose_list.back().pose.orientation);
+    autoware::universe_utils::getRPY(pose_list.back().pose.orientation);
   const geometry_msgs::msg::Vector3 d_rpy = integrate_orientation(gyro_list, gyro_bias);
 
   geometry_msgs::msg::Vector3 error_rpy;
-  error_rpy.x = autoware_universe_utils::normalizeRadian(-rpy_1.x + rpy_0.x + d_rpy.x);
-  error_rpy.y = autoware_universe_utils::normalizeRadian(-rpy_1.y + rpy_0.y + d_rpy.y);
-  error_rpy.z = autoware_universe_utils::normalizeRadian(-rpy_1.z + rpy_0.z + d_rpy.z);
+  error_rpy.x = autoware::universe_utils::normalizeRadian(-rpy_1.x + rpy_0.x + d_rpy.x);
+  error_rpy.y = autoware::universe_utils::normalizeRadian(-rpy_1.y + rpy_0.y + d_rpy.y);
+  error_rpy.z = autoware::universe_utils::normalizeRadian(-rpy_1.z + rpy_0.z + d_rpy.z);
   return error_rpy;
 }
 

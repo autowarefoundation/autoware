@@ -40,9 +40,9 @@
 #include <string>
 #include <vector>
 
-using autoware_universe_utils::LinearRing2d;
-using autoware_universe_utils::MultiPoint2d;
-using autoware_universe_utils::Point2d;
+using autoware::universe_utils::LinearRing2d;
+using autoware::universe_utils::MultiPoint2d;
+using autoware::universe_utils::Point2d;
 
 namespace pointcloud_preprocessor
 {

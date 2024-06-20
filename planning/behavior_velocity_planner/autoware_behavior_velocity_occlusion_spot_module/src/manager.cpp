@@ -27,7 +27,7 @@
 
 namespace autoware::behavior_velocity_planner
 {
-using autoware_universe_utils::getOrDeclareParameter;
+using autoware::universe_utils::getOrDeclareParameter;
 using occlusion_spot_utils::DETECTION_METHOD;
 using occlusion_spot_utils::PASS_JUDGE;
 

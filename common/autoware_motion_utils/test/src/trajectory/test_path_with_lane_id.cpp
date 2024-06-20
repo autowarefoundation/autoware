@@ -22,7 +22,7 @@
 
 namespace
 {
-using autoware_universe_utils::createPoint;
+using autoware::universe_utils::createPoint;
 using tier4_planning_msgs::msg::PathPointWithLaneId;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
@@ -31,7 +31,7 @@ geometry_msgs::msg::Pose createPose(
 {
   geometry_msgs::msg::Pose p;
   p.position = createPoint(x, y, z);
-  p.orientation = autoware_universe_utils::createQuaternionFromRPY(roll, pitch, yaw);
+  p.orientation = autoware::universe_utils::createQuaternionFromRPY(roll, pitch, yaw);
   return p;
 }
 
@@ -54,7 +54,7 @@ PathWithLaneId generateTestPathWithLaneId(const size_t num_points, const double 
 
 TEST(path_with_lane_id, getPathIndexRangeWithLaneId)
 {
-  using autoware_motion_utils::getPathIndexRangeWithLaneId;
+  using autoware::motion_utils::getPathIndexRangeWithLaneId;
   using tier4_planning_msgs::msg::PathWithLaneId;
 
   // Usual cases
@@ -99,8 +99,8 @@ TEST(path_with_lane_id, getPathIndexRangeWithLaneId)
 
 TEST(path_with_lane_id, findNearestIndexFromLaneId)
 {
-  using autoware_motion_utils::findNearestIndexFromLaneId;
-  using autoware_motion_utils::findNearestSegmentIndexFromLaneId;
+  using autoware::motion_utils::findNearestIndexFromLaneId;
+  using autoware::motion_utils::findNearestSegmentIndexFromLaneId;
 
   const auto path = generateTestPathWithLaneId(10, 1.0);
 
@@ -164,7 +164,7 @@ TEST(path_with_lane_id, findNearestIndexFromLaneId)
 // NOTE: This test is temporary for the current implementation.
 TEST(path_with_lane_id, convertToRearWheelCenter)
 {
-  using autoware_motion_utils::convertToRearWheelCenter;
+  using autoware::motion_utils::convertToRearWheelCenter;
 
   PathWithLaneId path;
 

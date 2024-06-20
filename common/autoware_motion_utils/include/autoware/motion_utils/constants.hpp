@@ -15,9 +15,9 @@
 #ifndef AUTOWARE__MOTION_UTILS__CONSTANTS_HPP_
 #define AUTOWARE__MOTION_UTILS__CONSTANTS_HPP_
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 constexpr double overlap_threshold = 0.1;
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils
 
 #endif  // AUTOWARE__MOTION_UTILS__CONSTANTS_HPP_

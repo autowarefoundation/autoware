@@ -31,7 +31,7 @@
 #include <lanelet2_core/geometry/Polygon.h>
 #include <lanelet2_core/primitives/Point.h>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 
 template <>
@@ -44,7 +44,7 @@ inline geometry_msgs::msg::Point getPoint(const lanelet::ConstPoint3d & p)
   return point;
 }
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 namespace
 {
@@ -74,7 +74,7 @@ lanelet::ConstLanelet generatePathLanelet(
   for (size_t i = start_idx; i <= end_idx; ++i) {
     const auto & p = path.points.at(i).point.pose;
     const auto & p_prev = path.points.at(prev_idx).point.pose;
-    if (i != start_idx && autoware_universe_utils::calcDistance2d(p_prev, p) < interval) {
+    if (i != start_idx && autoware::universe_utils::calcDistance2d(p_prev, p) < interval) {
       continue;
     }
     prev_idx = i;
@@ -198,7 +198,7 @@ Result<IntersectionModule::BasicData, InternalError> IntersectionModule::prepare
 
   const auto & path_ip = interpolated_path_info.path;
   const auto & path_ip_intersection_end = interpolated_path_info.lane_id_interval.value().second;
-  internal_debug_data_.distance = autoware_motion_utils::calcSignedArcLength(
+  internal_debug_data_.distance = autoware::motion_utils::calcSignedArcLength(
     path->points, current_pose.position,
     path_ip.points.at(path_ip_intersection_end).point.pose.position);
 
@@ -275,9 +275,9 @@ Result<IntersectionModule::BasicData, InternalError> IntersectionModule::prepare
     if (is_green_solid_on && !initial_green_light_observed_time_) {
       const auto assigned_lane_begin_point = assigned_lanelet.centerline().front();
       const bool approached_assigned_lane =
-        autoware_motion_utils::calcSignedArcLength(
+        autoware::motion_utils::calcSignedArcLength(
           path->points, closest_idx,
-          autoware_universe_utils::createPoint(
+          autoware::universe_utils::createPoint(
             assigned_lane_begin_point.x(), assigned_lane_begin_point.y(),
             assigned_lane_begin_point.z())) <
         planner_param_.collision_detection.yield_on_green_traffic_light
@@ -338,7 +338,7 @@ std::optional<size_t> IntersectionModule::getStopLineIndexFromMap(
   stop_point_from_map.position.y = 0.5 * (p_start.y() + p_end.y());
   stop_point_from_map.position.z = 0.5 * (p_start.z() + p_end.z());
 
-  return autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+  return autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
     path.points, stop_point_from_map, planner_data_->ego_nearest_dist_threshold,
     planner_data_->ego_nearest_yaw_threshold);
 }
@@ -381,8 +381,8 @@ std::optional<IntersectionStopLines> IntersectionModule::generateIntersectionSto
   std::optional<size_t> first_footprint_attention_centerline_ip_opt = std::nullopt;
   for (auto i = std::get<0>(lane_interval_ip); i < std::get<1>(lane_interval_ip); ++i) {
     const auto & base_pose = path_ip.points.at(i).point.pose;
-    const auto path_footprint = autoware_universe_utils::transformVector(
-      local_footprint, autoware_universe_utils::pose2transform(base_pose));
+    const auto path_footprint = autoware::universe_utils::transformVector(
+      local_footprint, autoware::universe_utils::pose2transform(base_pose));
     if (bg::intersects(path_footprint, first_attention_lane_centerline.basicLineString())) {
       // NOTE: maybe consideration of braking dist is necessary
       first_footprint_attention_centerline_ip_opt = i;
@@ -413,7 +413,7 @@ std::optional<IntersectionStopLines> IntersectionModule::generateIntersectionSto
 
   // (2) ego front stop line position on interpolated path
   const geometry_msgs::msg::Pose & current_pose = planner_data_->current_odometry->pose;
-  const auto closest_idx_ip = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const auto closest_idx_ip = autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
     path_ip.points, current_pose, planner_data_->ego_nearest_dist_threshold,
     planner_data_->ego_nearest_yaw_threshold);
 
@@ -423,8 +423,8 @@ std::optional<IntersectionStopLines> IntersectionModule::generateIntersectionSto
   // NOTE: if footprints[0] is already inside the attention area, invalid
   {
     const auto & base_pose0 = path_ip.points.at(default_stopline_ip).point.pose;
-    const auto path_footprint0 = autoware_universe_utils::transformVector(
-      local_footprint, autoware_universe_utils::pose2transform(base_pose0));
+    const auto path_footprint0 = autoware::universe_utils::transformVector(
+      local_footprint, autoware::universe_utils::pose2transform(base_pose0));
     if (bg::intersects(
           path_footprint0, lanelet::utils::to2D(first_attention_area).basicPolygon())) {
       occlusion_peeking_line_valid = false;

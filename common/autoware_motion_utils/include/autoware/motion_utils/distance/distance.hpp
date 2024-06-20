@@ -22,12 +22,12 @@
 #include <tuple>
 #include <vector>
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 std::optional<double> calcDecelDistWithJerkAndAccConstraints(
   const double current_vel, const double target_vel, const double current_acc, const double acc_min,
   const double jerk_acc, const double jerk_dec);
 
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils
 
 #endif  // AUTOWARE__MOTION_UTILS__DISTANCE__DISTANCE_HPP_

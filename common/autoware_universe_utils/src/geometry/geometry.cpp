@@ -32,7 +32,7 @@ void fromMsg(const geometry_msgs::msg::PoseStamped & msg, tf2::Stamped<tf2::Tran
 }
 }  // namespace tf2
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 geometry_msgs::msg::Vector3 getRPY(const geometry_msgs::msg::Quaternion & quat)
 {
@@ -208,7 +208,7 @@ geometry_msgs::msg::Point32 transformPoint(
 {
   const auto point =
     geometry_msgs::build<geometry_msgs::msg::Point>().x(point32.x).y(point32.y).z(point32.z);
-  const auto transformed_point = autoware_universe_utils::transformPoint(point, pose);
+  const auto transformed_point = autoware::universe_utils::transformPoint(point, pose);
   return geometry_msgs::build<geometry_msgs::msg::Point32>()
     .x(transformed_point.x)
     .y(transformed_point.y)
@@ -383,4 +383,4 @@ std::optional<geometry_msgs::msg::Point> intersect(
   return intersect_point;
 }
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils

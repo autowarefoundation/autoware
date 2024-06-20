@@ -27,11 +27,11 @@
 
 namespace
 {
+using autoware::universe_utils::createPoint;
+using autoware::universe_utils::createQuaternionFromRPY;
+using autoware::universe_utils::transformPoint;
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
-using autoware_universe_utils::createPoint;
-using autoware_universe_utils::createQuaternionFromRPY;
-using autoware_universe_utils::transformPoint;
 using tier4_planning_msgs::msg::PathPointWithLaneId;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
@@ -124,7 +124,7 @@ T generateTestPath(
 
 TEST(Interpolation, interpolate_path_for_trajectory)
 {
-  using autoware_motion_utils::calcInterpolatedPoint;
+  using autoware::motion_utils::calcInterpolatedPoint;
 
   {
     autoware_planning_msgs::msg::Trajectory traj;
@@ -348,7 +348,7 @@ TEST(Interpolation, interpolate_path_for_trajectory)
 
 TEST(Interpolation, interpolate_path_for_path)
 {
-  using autoware_motion_utils::calcInterpolatedPoint;
+  using autoware::motion_utils::calcInterpolatedPoint;
 
   {
     tier4_planning_msgs::msg::PathWithLaneId path;
@@ -540,7 +540,7 @@ TEST(Interpolation, interpolate_path_for_path)
 
 TEST(Interpolation, interpolate_points_with_length)
 {
-  using autoware_motion_utils::calcInterpolatedPose;
+  using autoware::motion_utils::calcInterpolatedPose;
 
   {
     autoware_planning_msgs::msg::Trajectory traj;

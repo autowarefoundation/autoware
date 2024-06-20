@@ -20,9 +20,9 @@
 
 TEST(geometry, pose_deviation)
 {
-  using autoware_universe_utils::calcPoseDeviation;
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
+  using autoware::universe_utils::calcPoseDeviation;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
 
   geometry_msgs::msg::Pose pose1;
   pose1.position.x = 1.0;

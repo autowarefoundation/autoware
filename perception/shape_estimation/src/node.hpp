@@ -35,11 +35,11 @@ private:
   // ros
   rclcpp::Publisher<DetectedObjectsWithFeature>::SharedPtr pub_;
   rclcpp::Subscription<DetectedObjectsWithFeature>::SharedPtr sub_;
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 
   // debug publisher
-  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
-  std::unique_ptr<autoware_universe_utils::DebugPublisher> processing_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<autoware::universe_utils::DebugPublisher> processing_time_publisher_;
 
   void callback(const DetectedObjectsWithFeature::ConstSharedPtr input_msg);
 

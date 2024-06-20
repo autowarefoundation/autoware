@@ -26,62 +26,62 @@ using std_msgs::msg::ColorRGBA;
 
 inline ColorRGBA red(float a = 0.99)
 {
-  return autoware_universe_utils::createMarkerColor(1., 0., 0., a);
+  return autoware::universe_utils::createMarkerColor(1., 0., 0., a);
 }
 
 inline ColorRGBA green(float a = 0.99)
 {
-  return autoware_universe_utils::createMarkerColor(0., 1., 0., a);
+  return autoware::universe_utils::createMarkerColor(0., 1., 0., a);
 }
 
 inline ColorRGBA blue(float a = 0.99)
 {
-  return autoware_universe_utils::createMarkerColor(0., 0., 1., a);
+  return autoware::universe_utils::createMarkerColor(0., 0., 1., a);
 }
 
 inline ColorRGBA yellow(float a = 0.99)
 {
-  return autoware_universe_utils::createMarkerColor(1., 1., 0., a);
+  return autoware::universe_utils::createMarkerColor(1., 1., 0., a);
 }
 
 inline ColorRGBA aqua(float a = 0.99)
 {
-  return autoware_universe_utils::createMarkerColor(0., 1., 1., a);
+  return autoware::universe_utils::createMarkerColor(0., 1., 1., a);
 }
 
 inline ColorRGBA magenta(float a = 0.99)
 {
-  return autoware_universe_utils::createMarkerColor(1., 0., 1., a);
+  return autoware::universe_utils::createMarkerColor(1., 0., 1., a);
 }
 
 inline ColorRGBA medium_orchid(float a = 0.99)
 {
-  return autoware_universe_utils::createMarkerColor(0.729, 0.333, 0.827, a);
+  return autoware::universe_utils::createMarkerColor(0.729, 0.333, 0.827, a);
 }
 
 inline ColorRGBA light_pink(float a = 0.99)
 {
-  return autoware_universe_utils::createMarkerColor(1., 0.713, 0.756, a);
+  return autoware::universe_utils::createMarkerColor(1., 0.713, 0.756, a);
 }
 
 inline ColorRGBA light_yellow(float a = 0.99)
 {
-  return autoware_universe_utils::createMarkerColor(1., 1., 0.878, a);
+  return autoware::universe_utils::createMarkerColor(1., 1., 0.878, a);
 }
 
 inline ColorRGBA light_steel_blue(float a = 0.99)
 {
-  return autoware_universe_utils::createMarkerColor(0.690, 0.768, 0.870, a);
+  return autoware::universe_utils::createMarkerColor(0.690, 0.768, 0.870, a);
 }
 
 inline ColorRGBA white(float a = 0.99)
 {
-  return autoware_universe_utils::createMarkerColor(1., 1., 1., a);
+  return autoware::universe_utils::createMarkerColor(1., 1., 1., a);
 }
 
 inline ColorRGBA grey(float a = 0.99)
 {
-  return autoware_universe_utils::createMarkerColor(.5, .5, .5, a);
+  return autoware::universe_utils::createMarkerColor(.5, .5, .5, a);
 }
 
 inline std::vector<ColorRGBA> colors_list(float a = 0.99)

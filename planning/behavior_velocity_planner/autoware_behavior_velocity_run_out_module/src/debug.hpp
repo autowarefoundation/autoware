@@ -123,7 +123,7 @@ public:
   void publishEmptyPointCloud();
   visualization_msgs::msg::MarkerArray createVisualizationMarkerArray();
   void setHeight(const double height);
-  autoware_motion_utils::VirtualWalls createVirtualWalls();
+  autoware::motion_utils::VirtualWalls createVirtualWalls();
 
 private:
   visualization_msgs::msg::MarkerArray createVisualizationMarkerArrayFromDebugData(

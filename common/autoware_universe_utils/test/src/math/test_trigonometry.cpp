@@ -21,31 +21,31 @@
 
 TEST(trigonometry, sin)
 {
-  float x = 4.f * autoware_universe_utils::pi / 128.f;
+  float x = 4.f * autoware::universe_utils::pi / 128.f;
   for (int i = 0; i < 128; i++) {
     EXPECT_TRUE(
       std::abs(
         std::sin(x * static_cast<float>(i)) -
-        autoware_universe_utils::sin(x * static_cast<float>(i))) < 10e-5);
+        autoware::universe_utils::sin(x * static_cast<float>(i))) < 10e-5);
   }
 }
 
 TEST(trigonometry, cos)
 {
-  float x = 4.f * autoware_universe_utils::pi / 128.f;
+  float x = 4.f * autoware::universe_utils::pi / 128.f;
   for (int i = 0; i < 128; i++) {
     EXPECT_TRUE(
       std::abs(
         std::cos(x * static_cast<float>(i)) -
-        autoware_universe_utils::cos(x * static_cast<float>(i))) < 10e-5);
+        autoware::universe_utils::cos(x * static_cast<float>(i))) < 10e-5);
   }
 }
 
 TEST(trigonometry, sin_and_cos)
 {
-  float x = 4.f * autoware_universe_utils::pi / 128.f;
+  float x = 4.f * autoware::universe_utils::pi / 128.f;
   for (int i = 0; i < 128; i++) {
-    const auto sin_and_cos = autoware_universe_utils::sin_and_cos(x * static_cast<float>(i));
+    const auto sin_and_cos = autoware::universe_utils::sin_and_cos(x * static_cast<float>(i));
     EXPECT_TRUE(std::abs(std::sin(x * static_cast<float>(i)) - sin_and_cos.first) < 10e-7);
     EXPECT_TRUE(std::abs(std::cos(x * static_cast<float>(i)) - sin_and_cos.second) < 10e-7);
   }

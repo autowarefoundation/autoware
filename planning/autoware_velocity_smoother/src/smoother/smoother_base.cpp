@@ -34,10 +34,10 @@ namespace
 TrajectoryPoints applyPreProcess(
   const TrajectoryPoints & input, const double interval, const bool use_resampling)
 {
-  using autoware_motion_utils::calcArcLength;
-  using autoware_motion_utils::convertToTrajectory;
-  using autoware_motion_utils::convertToTrajectoryPointArray;
-  using autoware_motion_utils::resampleTrajectory;
+  using autoware::motion_utils::calcArcLength;
+  using autoware::motion_utils::convertToTrajectory;
+  using autoware::motion_utils::convertToTrajectoryPointArray;
+  using autoware::motion_utils::resampleTrajectory;
 
   if (!use_resampling) {
     return input;
@@ -141,13 +141,13 @@ TrajectoryPoints SmootherBase::applyLateralAccelerationFilter(
   // since the resampling takes a long time, omit the resampling when it is not requested
   if (use_resampling) {
     std::vector<double> out_arclength;
-    const auto traj_length = autoware_motion_utils::calcArcLength(input);
+    const auto traj_length = autoware::motion_utils::calcArcLength(input);
     for (double s = 0; s < traj_length; s += points_interval) {
       out_arclength.push_back(s);
     }
-    const auto output_traj = autoware_motion_utils::resampleTrajectory(
-      autoware_motion_utils::convertToTrajectory(input), out_arclength);
-    output = autoware_motion_utils::convertToTrajectoryPointArray(output_traj);
+    const auto output_traj = autoware::motion_utils::resampleTrajectory(
+      autoware::motion_utils::convertToTrajectory(input), out_arclength);
+    output = autoware::motion_utils::convertToTrajectoryPointArray(output_traj);
     output.back() = input.back();  // keep the final speed.
   } else {
     output = input;
@@ -249,7 +249,7 @@ TrajectoryPoints SmootherBase::applySteeringRateLimit(
     }
 
     const auto steer_rate = steer_rate_arr.at(i);
-    if (steer_rate < autoware_universe_utils::deg2rad(base_param_.max_steering_angle_rate)) {
+    if (steer_rate < autoware::universe_utils::deg2rad(base_param_.max_steering_angle_rate)) {
       continue;
     }
 
@@ -257,7 +257,7 @@ TrajectoryPoints SmootherBase::applySteeringRateLimit(
       (output.at(i).longitudinal_velocity_mps + output.at(i + 1).longitudinal_velocity_mps) / 2.0;
     const auto target_mean_vel =
       mean_vel *
-      (autoware_universe_utils::deg2rad(base_param_.max_steering_angle_rate) / steer_rate);
+      (autoware::universe_utils::deg2rad(base_param_.max_steering_angle_rate) / steer_rate);
 
     for (size_t k = 0; k < 2; k++) {
       auto & velocity = output.at(i + k).longitudinal_velocity_mps;

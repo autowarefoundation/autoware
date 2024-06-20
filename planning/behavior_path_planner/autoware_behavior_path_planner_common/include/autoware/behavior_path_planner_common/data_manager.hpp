@@ -102,7 +102,7 @@ struct DrivableAreaInfo
   struct Obstacle
   {
     geometry_msgs::msg::Pose pose;
-    autoware_universe_utils::Polygon2d poly;
+    autoware::universe_utils::Polygon2d poly;
     bool is_left{true};
   };
   std::vector<DrivableLanes> drivable_lanes{};
@@ -254,7 +254,7 @@ struct PlannerData
   template <class T>
   size_t findEgoIndex(const std::vector<T> & points) const
   {
-    return autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+    return autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
       points, self_odometry->pose.pose, parameters.ego_nearest_dist_threshold,
       parameters.ego_nearest_yaw_threshold);
   }
@@ -262,7 +262,7 @@ struct PlannerData
   template <class T>
   size_t findEgoSegmentIndex(const std::vector<T> & points) const
   {
-    return autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    return autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       points, self_odometry->pose.pose, parameters.ego_nearest_dist_threshold,
       parameters.ego_nearest_yaw_threshold);
   }

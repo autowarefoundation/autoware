@@ -23,8 +23,8 @@
 namespace
 {
 namespace bg = boost::geometry;
-using autoware_universe_utils::Point2d;
-using autoware_universe_utils::Polygon2d;
+using autoware::universe_utils::Point2d;
+using autoware::universe_utils::Polygon2d;
 
 void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point & geom_point)
 {
@@ -68,7 +68,7 @@ double getCircleArea(const geometry_msgs::msg::Vector3 & dimensions)
 }
 }  // namespace
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 bool isClockwise(const Polygon2d & polygon)
 {
@@ -123,16 +123,16 @@ Polygon2d toPolygon2d(
   Polygon2d polygon;
 
   if (shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
-    const auto point0 = autoware_universe_utils::calcOffsetPose(
+    const auto point0 = autoware::universe_utils::calcOffsetPose(
                           pose, shape.dimensions.x / 2.0, shape.dimensions.y / 2.0, 0.0)
                           .position;
-    const auto point1 = autoware_universe_utils::calcOffsetPose(
+    const auto point1 = autoware::universe_utils::calcOffsetPose(
                           pose, -shape.dimensions.x / 2.0, shape.dimensions.y / 2.0, 0.0)
                           .position;
-    const auto point2 = autoware_universe_utils::calcOffsetPose(
+    const auto point2 = autoware::universe_utils::calcOffsetPose(
                           pose, -shape.dimensions.x / 2.0, -shape.dimensions.y / 2.0, 0.0)
                           .position;
-    const auto point3 = autoware_universe_utils::calcOffsetPose(
+    const auto point3 = autoware::universe_utils::calcOffsetPose(
                           pose, shape.dimensions.x / 2.0, -shape.dimensions.y / 2.0, 0.0)
                           .position;
 
@@ -179,24 +179,24 @@ Polygon2d toPolygon2d(
   return isClockwise(polygon) ? polygon : inverseClockwise(polygon);
 }
 
-autoware_universe_utils::Polygon2d toPolygon2d(
+autoware::universe_utils::Polygon2d toPolygon2d(
   const autoware_perception_msgs::msg::DetectedObject & object)
 {
-  return autoware_universe_utils::toPolygon2d(
+  return autoware::universe_utils::toPolygon2d(
     object.kinematics.pose_with_covariance.pose, object.shape);
 }
 
-autoware_universe_utils::Polygon2d toPolygon2d(
+autoware::universe_utils::Polygon2d toPolygon2d(
   const autoware_perception_msgs::msg::TrackedObject & object)
 {
-  return autoware_universe_utils::toPolygon2d(
+  return autoware::universe_utils::toPolygon2d(
     object.kinematics.pose_with_covariance.pose, object.shape);
 }
 
-autoware_universe_utils::Polygon2d toPolygon2d(
+autoware::universe_utils::Polygon2d toPolygon2d(
   const autoware_perception_msgs::msg::PredictedObject & object)
 {
-  return autoware_universe_utils::toPolygon2d(
+  return autoware::universe_utils::toPolygon2d(
     object.kinematics.initial_pose_with_covariance.pose, object.shape);
 }
 
@@ -206,16 +206,16 @@ Polygon2d toFootprint(
 {
   Polygon2d polygon;
   const auto point0 =
-    autoware_universe_utils::calcOffsetPose(base_link_pose, base_to_front, width / 2.0, 0.0)
+    autoware::universe_utils::calcOffsetPose(base_link_pose, base_to_front, width / 2.0, 0.0)
       .position;
   const auto point1 =
-    autoware_universe_utils::calcOffsetPose(base_link_pose, base_to_front, -width / 2.0, 0.0)
+    autoware::universe_utils::calcOffsetPose(base_link_pose, base_to_front, -width / 2.0, 0.0)
       .position;
   const auto point2 =
-    autoware_universe_utils::calcOffsetPose(base_link_pose, -base_to_rear, -width / 2.0, 0.0)
+    autoware::universe_utils::calcOffsetPose(base_link_pose, -base_to_rear, -width / 2.0, 0.0)
       .position;
   const auto point3 =
-    autoware_universe_utils::calcOffsetPose(base_link_pose, -base_to_rear, width / 2.0, 0.0)
+    autoware::universe_utils::calcOffsetPose(base_link_pose, -base_to_rear, width / 2.0, 0.0)
       .position;
 
   appendPointToPolygon(polygon, point0);
@@ -272,4 +272,4 @@ Polygon2d expandPolygon(const Polygon2d & input_polygon, const double offset)
   boost::geometry::correct(expanded_polygon);
   return expanded_polygon;
 }
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils

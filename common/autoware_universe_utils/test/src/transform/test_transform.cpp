@@ -31,7 +31,7 @@ TEST(system, transform_point_cloud)
     42301.179688, -0.001429, -0.017543, 0.999845, -3.157415, 0.000000, 0.000000, 0.000000, 1.000000;
 
   pcl::PointCloud<pcl::PointXYZI> cloud_transformed;
-  autoware_universe_utils::transformPointCloud(cloud, cloud_transformed, transform);
+  autoware::universe_utils::transformPointCloud(cloud, cloud_transformed, transform);
 
   pcl::PointXYZI pt1_gt(89603.187500, 42270.878906, -13.056946, 4);
 
@@ -53,8 +53,8 @@ TEST(system, empty_point_cloud)
   pcl::PointCloud<pcl::PointXYZI> cloud_transformed;
 
   EXPECT_NO_THROW(
-    autoware_universe_utils::transformPointCloud(cloud, cloud_transformed, transform));
+    autoware::universe_utils::transformPointCloud(cloud, cloud_transformed, transform));
   EXPECT_NO_FATAL_FAILURE(
-    autoware_universe_utils::transformPointCloud(cloud, cloud_transformed, transform));
+    autoware::universe_utils::transformPointCloud(cloud, cloud_transformed, transform));
   EXPECT_EQ(cloud_transformed.size(), 0ul);
 }

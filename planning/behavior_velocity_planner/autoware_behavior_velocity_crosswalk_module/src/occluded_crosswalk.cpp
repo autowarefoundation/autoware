@@ -118,7 +118,7 @@ void clear_occlusions_behind_objects(
       object.kinematics.initial_pose_with_covariance.pose.position.y};
     if (lanelet::geometry::distance2d(grid_map_position, object_position) < range) {
       lanelet::BasicPoints2d edge_points;
-      const auto object_polygon = autoware_universe_utils::toPolygon2d(object);
+      const auto object_polygon = autoware::universe_utils::toPolygon2d(object);
       for (const auto & edge_point : object_polygon.outer()) edge_points.push_back(edge_point);
       std::sort(edge_points.begin(), edge_points.end(), angle_cmp);
       // points.push_back(interpolate_point({object_position, edge_point}, 10.0 * range));

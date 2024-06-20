@@ -14,7 +14,7 @@
 
 #include "autoware/motion_utils/trajectory/trajectory.hpp"
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 
 //
@@ -599,4 +599,4 @@ template bool isTargetPointFront<std::vector<autoware_planning_msgs::msg::Trajec
   const geometry_msgs::msg::Point & base_point, const geometry_msgs::msg::Point & target_point,
   const double threshold);
 
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils

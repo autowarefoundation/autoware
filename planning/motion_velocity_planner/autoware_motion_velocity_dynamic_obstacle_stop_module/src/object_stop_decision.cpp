@@ -29,7 +29,7 @@ void update_object_map(
     if (auto search = object_map.find(collision.object_uuid); search != object_map.end()) {
       search->second.collision_detected = true;
       const auto is_closer_collision_point =
-        autoware_motion_utils::calcSignedArcLength(
+        autoware::motion_utils::calcSignedArcLength(
           trajectory, search->second.collision_point, collision.point) < 0.0;
       if (is_closer_collision_point) search->second.collision_point = collision.point;
     } else {
@@ -53,7 +53,7 @@ std::optional<geometry_msgs::msg::Point> find_earliest_collision(
   double earliest_collision_arc_length = std::numeric_limits<double>::max();
   for (auto & [object_uuid, decision] : object_map) {
     if (decision.should_be_avoided()) {
-      const auto arc_length = autoware_motion_utils::calcSignedArcLength(
+      const auto arc_length = autoware::motion_utils::calcSignedArcLength(
         ego_data.trajectory, ego_data.pose.position, decision.collision_point);
       if (arc_length < earliest_collision_arc_length) {
         earliest_collision_arc_length = arc_length;

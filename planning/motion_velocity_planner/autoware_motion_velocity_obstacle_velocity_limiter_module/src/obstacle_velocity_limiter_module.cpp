@@ -46,7 +46,7 @@ void ObstacleVelocityLimiterModule::init(rclcpp::Node & node, const std::string 
   projection_params_ = obstacle_velocity_limiter::ProjectionParameters(node);
   obstacle_params_ = obstacle_velocity_limiter::ObstacleParameters(node);
   velocity_params_ = obstacle_velocity_limiter::VelocityParameters(node);
-  velocity_factor_interface_.init(autoware_motion_utils::PlanningBehavior::ROUTE_OBSTACLE);
+  velocity_factor_interface_.init(autoware::motion_utils::PlanningBehavior::ROUTE_OBSTACLE);
 
   debug_publisher_ =
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/" + ns_ + "/debug_markers", 1);
@@ -132,11 +132,11 @@ VelocityPlanningResult ObstacleVelocityLimiterModule::plan(
   const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & ego_trajectory_points,
   const std::shared_ptr<const PlannerData> planner_data)
 {
-  autoware_universe_utils::StopWatch<std::chrono::microseconds> stopwatch;
+  autoware::universe_utils::StopWatch<std::chrono::microseconds> stopwatch;
   stopwatch.tic();
   VelocityPlanningResult result;
   stopwatch.tic("preprocessing");
-  const auto ego_idx = autoware_motion_utils::findNearestIndex(
+  const auto ego_idx = autoware::motion_utils::findNearestIndex(
     ego_trajectory_points, planner_data->current_odometry.pose.pose);
   if (!ego_idx) {
     RCLCPP_WARN_THROTTLE(
@@ -183,7 +183,7 @@ VelocityPlanningResult ObstacleVelocityLimiterModule::plan(
       obstacle_params_);
   }
   const auto obstacles_us = stopwatch.toc("obstacles");
-  autoware_motion_utils::VirtualWalls virtual_walls;
+  autoware::motion_utils::VirtualWalls virtual_walls;
   stopwatch.tic("slowdowns");
   result.slowdown_intervals = obstacle_velocity_limiter::calculate_slowdown_intervals(
     downsampled_traj_points,
@@ -195,7 +195,7 @@ VelocityPlanningResult ObstacleVelocityLimiterModule::plan(
   for (auto & wall : virtual_walls) {
     wall.longitudinal_offset = vehicle_front_offset_;
     wall.text = ns_;
-    wall.style = autoware_motion_utils::VirtualWallType::slowdown;
+    wall.style = autoware::motion_utils::VirtualWallType::slowdown;
   }
   virtual_wall_marker_creator.add_virtual_walls(virtual_walls);
   virtual_wall_publisher_->publish(virtual_wall_marker_creator.create_markers(clock_->now()));

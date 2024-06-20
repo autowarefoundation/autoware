@@ -35,7 +35,7 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetOnStraightLin
   Pose vehicle_pose = autoware::behavior_path_planner::generateEgoSamplePose(10.7f, -1.7f, 0.0);
 
   const size_t vehicle_seg_idx =
-    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, vehicle_pose, 3.0, 1.0);
   const auto vehicle_pose_frenet = autoware::behavior_path_planner::utils::convertToFrenetPoint(
     path.points, vehicle_pose.position, vehicle_seg_idx);
@@ -51,7 +51,7 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetOnDiagonalLin
   Pose vehicle_pose = autoware::behavior_path_planner::generateEgoSamplePose(0.1f, 0.1f, 0.0);
 
   const size_t vehicle_seg_idx =
-    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, vehicle_pose, 3.0, 1.0);
   const auto vehicle_pose_frenet = autoware::behavior_path_planner::utils::convertToFrenetPoint(
     path.points, vehicle_pose.position, vehicle_seg_idx);

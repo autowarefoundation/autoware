@@ -39,12 +39,12 @@
 namespace autoware::behavior_path_planner
 {
 
-using autoware_universe_utils::StopWatch;
+using autoware::universe_utils::StopWatch;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using tier4_planning_msgs::msg::StopReasonArray;
 using SceneModulePtr = std::shared_ptr<SceneModuleInterface>;
 using SceneModuleManagerPtr = std::shared_ptr<SceneModuleManagerInterface>;
-using DebugPublisher = autoware_universe_utils::DebugPublisher;
+using DebugPublisher = autoware::universe_utils::DebugPublisher;
 using DebugDoubleMsg = tier4_debug_msgs::msg::Float64Stamped;
 using DebugStringMsg = tier4_debug_msgs::msg::StringStamped;
 

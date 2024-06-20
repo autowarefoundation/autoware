@@ -93,7 +93,7 @@ ObjectInfo::ObjectInfo(
   }
 
   const auto current_pose =
-    autoware_universe_utils::calcOffsetPose(initial_pose, move_distance, 0.0, 0.0);
+    autoware::universe_utils::calcOffsetPose(initial_pose, move_distance, 0.0, 0.0);
 
   // calculate tf from map to moved_object
   geometry_msgs::msg::Transform ros_map2moved_object;

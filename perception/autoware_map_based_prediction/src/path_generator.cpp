@@ -50,7 +50,7 @@ PredictedPath PathGenerator::generatePathToTargetPoint(
 
   const auto pedestrian_to_entry_point_normalized = pedestrian_to_entry_point.normalized();
   const auto pedestrian_to_entry_point_orientation =
-    autoware_universe_utils::createQuaternionFromYaw(std::atan2(
+    autoware::universe_utils::createQuaternionFromYaw(std::atan2(
       pedestrian_to_entry_point_normalized.y(), pedestrian_to_entry_point_normalized.x()));
 
   for (double dt = 0.0; dt < arrival_time + ep; dt += sampling_time_interval_) {
@@ -94,10 +94,10 @@ PredictedPath PathGenerator::generatePathForCrosswalkUser(
 
   const auto pedestrian_to_entry_point_normalized = pedestrian_to_entry_point.normalized();
   const auto pedestrian_to_entry_point_orientation =
-    autoware_universe_utils::createQuaternionFromYaw(std::atan2(
+    autoware::universe_utils::createQuaternionFromYaw(std::atan2(
       pedestrian_to_entry_point_normalized.y(), pedestrian_to_entry_point_normalized.x()));
   const auto entry_to_exit_point_normalized = entry_to_exit_point.normalized();
-  const auto entry_to_exit_point_orientation = autoware_universe_utils::createQuaternionFromYaw(
+  const auto entry_to_exit_point_orientation = autoware::universe_utils::createQuaternionFromYaw(
     std::atan2(entry_to_exit_point_normalized.y(), entry_to_exit_point_normalized.x()));
 
   for (double dt = 0.0; dt < duration + ep; dt += sampling_time_interval_) {
@@ -174,7 +174,7 @@ PredictedPath PathGenerator::generateStraightPath(
   path.time_step = rclcpp::Duration::from_seconds(sampling_time_interval_);
   path.path.reserve(static_cast<size_t>((duration) / sampling_time_interval_));
   for (double dt = 0.0; dt < duration; dt += sampling_time_interval_) {
-    const auto future_obj_pose = autoware_universe_utils::calcOffsetPose(
+    const auto future_obj_pose = autoware::universe_utils::calcOffsetPose(
       object_pose, object_twist.linear.x * dt, object_twist.linear.y * dt, 0.0);
     path.path.push_back(future_obj_pose);
   }
@@ -187,7 +187,7 @@ PredictedPath PathGenerator::generatePolynomialPath(
   const double lateral_duration, const double speed_limit) const
 {
   // Get current Frenet Point
-  const double ref_path_len = autoware_motion_utils::calcArcLength(ref_path);
+  const double ref_path_len = autoware::motion_utils::calcArcLength(ref_path);
   const auto current_point = getFrenetPoint(object, ref_path, speed_limit, duration);
 
   // Step1. Set Target Frenet Point
@@ -319,7 +319,7 @@ PosePath PathGenerator::interpolateReferencePath(
     base_path_y.at(i) = base_path.at(i).position.y;
     base_path_z.at(i) = base_path.at(i).position.z;
     if (i > 0) {
-      base_path_s.at(i) = base_path_s.at(i - 1) + autoware_universe_utils::calcDistance2d(
+      base_path_s.at(i) = base_path_s.at(i - 1) + autoware::universe_utils::calcDistance2d(
                                                     base_path.at(i - 1), base_path.at(i));
     }
   }
@@ -344,16 +344,16 @@ PosePath PathGenerator::interpolateReferencePath(
   for (size_t i = 0; i < interpolate_num - 1; ++i) {
     geometry_msgs::msg::Pose interpolated_pose;
     const auto current_point =
-      autoware_universe_utils::createPoint(spline_ref_path_x.at(i), spline_ref_path_y.at(i), 0.0);
-    const auto next_point = autoware_universe_utils::createPoint(
+      autoware::universe_utils::createPoint(spline_ref_path_x.at(i), spline_ref_path_y.at(i), 0.0);
+    const auto next_point = autoware::universe_utils::createPoint(
       spline_ref_path_x.at(i + 1), spline_ref_path_y.at(i + 1), 0.0);
-    const double yaw = autoware_universe_utils::calcAzimuthAngle(current_point, next_point);
-    interpolated_pose.position = autoware_universe_utils::createPoint(
+    const double yaw = autoware::universe_utils::calcAzimuthAngle(current_point, next_point);
+    interpolated_pose.position = autoware::universe_utils::createPoint(
       spline_ref_path_x.at(i), spline_ref_path_y.at(i), spline_ref_path_z.at(i));
-    interpolated_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(yaw);
+    interpolated_pose.orientation = autoware::universe_utils::createQuaternionFromYaw(yaw);
     interpolated_path.at(i) = interpolated_pose;
   }
-  interpolated_path.back().position = autoware_universe_utils::createPoint(
+  interpolated_path.back().position = autoware::universe_utils::createPoint(
     spline_ref_path_x.back(), spline_ref_path_y.back(), spline_ref_path_z.back());
   interpolated_path.back().orientation = interpolated_path.at(interpolate_num - 2).orientation;
 
@@ -376,14 +376,14 @@ PredictedPath PathGenerator::convertToPredictedPath(
 
     // Converted Pose
     auto predicted_pose =
-      autoware_universe_utils::calcOffsetPose(ref_pose, 0.0, frenet_point.d, 0.0);
+      autoware::universe_utils::calcOffsetPose(ref_pose, 0.0, frenet_point.d, 0.0);
     predicted_pose.position.z = object.kinematics.pose_with_covariance.pose.position.z;
     if (i == 0) {
       predicted_pose.orientation = object.kinematics.pose_with_covariance.pose.orientation;
     } else {
-      const double yaw = autoware_universe_utils::calcAzimuthAngle(
+      const double yaw = autoware::universe_utils::calcAzimuthAngle(
         predicted_path.path.at(i - 1).position, predicted_pose.position);
-      predicted_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(yaw);
+      predicted_pose.orientation = autoware::universe_utils::createQuaternionFromYaw(yaw);
     }
     predicted_path.path.at(i) = predicted_pose;
   }
@@ -399,8 +399,8 @@ FrenetPoint PathGenerator::getFrenetPoint(
   const auto obj_point = object.kinematics.pose_with_covariance.pose.position;
 
   const size_t nearest_segment_idx =
-    autoware_motion_utils::findNearestSegmentIndex(ref_path, obj_point);
-  const double l = autoware_motion_utils::calcLongitudinalOffsetToSegment(
+    autoware::motion_utils::findNearestSegmentIndex(ref_path, obj_point);
+  const double l = autoware::motion_utils::calcLongitudinalOffsetToSegment(
     ref_path, nearest_segment_idx, obj_point);
   const float vx = static_cast<float>(object.kinematics.twist_with_covariance.twist.linear.x);
   const float vy = static_cast<float>(object.kinematics.twist_with_covariance.twist.linear.y);
@@ -480,8 +480,9 @@ FrenetPoint PathGenerator::getFrenetPoint(
   const float acceleration_adjusted_velocity_x = get_acceleration_adjusted_velocity(vx, ax);
   const float acceleration_adjusted_velocity_y = get_acceleration_adjusted_velocity(vy, ay);
 
-  frenet_point.s = autoware_motion_utils::calcSignedArcLength(ref_path, 0, nearest_segment_idx) + l;
-  frenet_point.d = autoware_motion_utils::calcLateralOffset(ref_path, obj_point);
+  frenet_point.s =
+    autoware::motion_utils::calcSignedArcLength(ref_path, 0, nearest_segment_idx) + l;
+  frenet_point.d = autoware::motion_utils::calcLateralOffset(ref_path, obj_point);
   frenet_point.s_vel = acceleration_adjusted_velocity_x * std::cos(delta_yaw) -
                        acceleration_adjusted_velocity_y * std::sin(delta_yaw);
   frenet_point.d_vel = acceleration_adjusted_velocity_x * std::sin(delta_yaw) +

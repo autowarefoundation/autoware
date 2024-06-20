@@ -43,11 +43,11 @@ private:
   void initTimer(double period_s);
 
   rclcpp::Publisher<autoware_vehicle_msgs::msg::GearCommand>::SharedPtr pub_shift_cmd_;
-  autoware_universe_utils::InterProcessPollingSubscriber<autoware_control_msgs::msg::Control>
+  autoware::universe_utils::InterProcessPollingSubscriber<autoware_control_msgs::msg::Control>
     sub_control_cmd_{this, "input/control_cmd"};
-  autoware_universe_utils::InterProcessPollingSubscriber<autoware_system_msgs::msg::AutowareState>
+  autoware::universe_utils::InterProcessPollingSubscriber<autoware_system_msgs::msg::AutowareState>
     sub_autoware_state_{this, "input/state"};
-  autoware_universe_utils::InterProcessPollingSubscriber<autoware_vehicle_msgs::msg::GearReport>
+  autoware::universe_utils::InterProcessPollingSubscriber<autoware_vehicle_msgs::msg::GearReport>
     sub_current_gear_{this, "input/current_gear"};
 
   rclcpp::TimerBase::SharedPtr timer_;

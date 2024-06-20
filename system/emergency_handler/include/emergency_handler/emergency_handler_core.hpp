@@ -63,14 +63,14 @@ private:
     sub_hazard_status_stamped_;
   rclcpp::Subscription<autoware_control_msgs::msg::Control>::SharedPtr sub_prev_control_command_;
   // Subscribers without callback
-  autoware_universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
+  autoware::universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
     this, "~/input/odometry"};
-  autoware_universe_utils::InterProcessPollingSubscriber<
+  autoware::universe_utils::InterProcessPollingSubscriber<
     autoware_vehicle_msgs::msg::ControlModeReport>
     sub_control_mode_{this, "~/input/control_mode"};
-  autoware_universe_utils::InterProcessPollingSubscriber<tier4_system_msgs::msg::MrmBehaviorStatus>
+  autoware::universe_utils::InterProcessPollingSubscriber<tier4_system_msgs::msg::MrmBehaviorStatus>
     sub_mrm_comfortable_stop_status_{this, "~/input/mrm/comfortable_stop/status"};
-  autoware_universe_utils::InterProcessPollingSubscriber<tier4_system_msgs::msg::MrmBehaviorStatus>
+  autoware::universe_utils::InterProcessPollingSubscriber<tier4_system_msgs::msg::MrmBehaviorStatus>
     sub_mrm_emergency_stop_status_{this, "~/input/mrm/emergency_stop/status"};
 
   autoware_system_msgs::msg::HazardStatusStamped::ConstSharedPtr hazard_status_stamped_;

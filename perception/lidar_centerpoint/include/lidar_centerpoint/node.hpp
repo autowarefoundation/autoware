@@ -62,11 +62,11 @@ private:
   std::unique_ptr<CenterPointTRT> detector_ptr_{nullptr};
 
   // debugger
-  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{
+  std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{
     nullptr};
-  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_ptr_{nullptr};
+  std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_ptr_{nullptr};
 
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 
 }  // namespace centerpoint

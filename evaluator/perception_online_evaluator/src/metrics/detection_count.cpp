@@ -24,7 +24,7 @@ namespace perception_diagnostics
 {
 namespace metrics
 {
-using autoware_universe_utils::toHexString;
+using autoware::universe_utils::toHexString;
 
 bool isCountObject(
   const std::uint8_t classification, const std::unordered_map<uint8_t, ObjectParameter> & params)

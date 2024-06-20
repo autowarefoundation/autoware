@@ -435,7 +435,7 @@ bool MpcLateralController::isStoppedState() const
   // for the stop state judgement. However, it has been removed since the steering
   // control was turned off when approaching/exceeding the stop line on a curve or
   // emergency stop situation and it caused large tracking error.
-  const size_t nearest = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const size_t nearest = autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
     m_current_trajectory.points, m_current_kinematic_state.pose.pose, m_ego_nearest_dist_threshold,
     m_ego_nearest_yaw_threshold);
 
@@ -643,7 +643,7 @@ bool MpcLateralController::isTrajectoryShapeChanged() const
   // TODO(Horibe): update implementation to check trajectory shape around ego vehicle.
   // Now temporally check the goal position.
   for (const auto & trajectory : m_trajectory_buffer) {
-    const auto change_distance = autoware_universe_utils::calcDistance2d(
+    const auto change_distance = autoware::universe_utils::calcDistance2d(
       trajectory.points.back().pose, m_current_trajectory.points.back().pose);
     if (change_distance > m_new_traj_end_dist) {
       return true;

@@ -70,9 +70,9 @@ private:
   rclcpp::CallbackGroup::SharedPtr callback_group_services_;
 
   // Subscriber
-  autoware_universe_utils::InterProcessPollingSubscriber<sensor_msgs::msg::Joy> sub_joy_{
+  autoware::universe_utils::InterProcessPollingSubscriber<sensor_msgs::msg::Joy> sub_joy_{
     this, "input/joy"};
-  autoware_universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
+  autoware::universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
     this, "input/odometry"};
 
   rclcpp::Time last_joy_received_time_;

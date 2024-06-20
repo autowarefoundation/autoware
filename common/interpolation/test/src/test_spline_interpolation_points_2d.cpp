@@ -25,7 +25,7 @@ constexpr double epsilon = 1e-6;
 
 TEST(spline_interpolation, splineYawFromPoints)
 {
-  using autoware_universe_utils::createPoint;
+  using autoware::universe_utils::createPoint;
 
   {  // straight
     std::vector<geometry_msgs::msg::Point> points;
@@ -96,7 +96,7 @@ TEST(spline_interpolation, splineYawFromPoints)
 
 TEST(spline_interpolation, SplineInterpolationPoints2d)
 {
-  using autoware_universe_utils::createPoint;
+  using autoware::universe_utils::createPoint;
 
   // curve
   std::vector<geometry_msgs::msg::Point> points;
@@ -199,8 +199,8 @@ TEST(spline_interpolation, SplineInterpolationPoints2d)
 
 TEST(spline_interpolation, SplineInterpolationPoints2dPolymorphism)
 {
+  using autoware::universe_utils::createPoint;
   using autoware_planning_msgs::msg::TrajectoryPoint;
-  using autoware_universe_utils::createPoint;
 
   std::vector<geometry_msgs::msg::Point> points;
   points.push_back(createPoint(-2.0, -10.0, 0.0));

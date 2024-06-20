@@ -50,9 +50,9 @@ namespace autoware::motion::control::predicted_path_checker
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
+using autoware::universe_utils::Point2d;
+using autoware::universe_utils::Polygon2d;
 using autoware_perception_msgs::msg::PredictedObjects;
-using autoware_universe_utils::Point2d;
-using autoware_universe_utils::Polygon2d;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::TransformStamped;
 
@@ -88,7 +88,7 @@ private:
   rclcpp::CallbackGroup::SharedPtr group_cli_;
 
   // Subscriber
-  std::shared_ptr<autoware_universe_utils::SelfPoseListener> self_pose_listener_;
+  std::shared_ptr<autoware::universe_utils::SelfPoseListener> self_pose_listener_;
   rclcpp::Subscription<PredictedObjects>::SharedPtr sub_dynamic_objects_;
   rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr
     sub_reference_trajectory_;

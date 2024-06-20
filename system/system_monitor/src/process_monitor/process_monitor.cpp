@@ -517,7 +517,7 @@ void ProcessMonitor::onTimer()
   bool is_top_error = false;
 
   // Start to measure elapsed time
-  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stop_watch;
+  autoware::universe_utils::StopWatch<std::chrono::milliseconds> stop_watch;
   stop_watch.tic("execution_time");
 
   int out_fd[2];

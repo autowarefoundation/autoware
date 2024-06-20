@@ -23,7 +23,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 
 inline rclcpp::SensorDataQoS SingleDepthSensorQoS()
@@ -159,6 +159,6 @@ public:
   };
 };
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__ROS__POLLING_SUBSCRIBER_HPP_

@@ -57,9 +57,9 @@ struct TrafficSignalStamped
 };
 
 using Pose = geometry_msgs::msg::Pose;
-using Point2d = autoware_universe_utils::Point2d;
-using LineString2d = autoware_universe_utils::LineString2d;
-using Polygon2d = autoware_universe_utils::Polygon2d;
+using Point2d = autoware::universe_utils::Point2d;
+using LineString2d = autoware::universe_utils::LineString2d;
+using Polygon2d = autoware::universe_utils::Polygon2d;
 using BasicPolygons2d = std::vector<lanelet::BasicPolygon2d>;
 using Polygons2d = std::vector<Polygon2d>;
 using autoware_perception_msgs::msg::PredictedObjects;

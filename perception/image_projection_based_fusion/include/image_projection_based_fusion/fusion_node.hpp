@@ -138,8 +138,8 @@ protected:
   float filter_scope_max_z_;
 
   /** \brief processing time publisher. **/
-  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
-  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_;
+  std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_;
 };
 
 }  // namespace image_projection_based_fusion

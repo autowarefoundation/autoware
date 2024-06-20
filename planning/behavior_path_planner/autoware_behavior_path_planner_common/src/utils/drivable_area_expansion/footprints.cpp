@@ -37,7 +37,7 @@ Polygon2d create_footprint(const geometry_msgs::msg::Pose & pose, const Polygon2
 {
   const auto angle = tf2::getYaw(pose.orientation);
   return translate_polygon(
-    autoware_universe_utils::rotatePolygon(base_footprint, angle), pose.position.x,
+    autoware::universe_utils::rotatePolygon(base_footprint, angle), pose.position.x,
     pose.position.y);
 }
 

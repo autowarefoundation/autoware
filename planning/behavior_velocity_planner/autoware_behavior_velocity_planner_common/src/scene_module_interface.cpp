@@ -24,7 +24,7 @@
 namespace autoware::behavior_velocity_planner
 {
 
-using autoware_universe_utils::StopWatch;
+using autoware::universe_utils::StopWatch;
 
 SceneModuleInterface::SceneModuleInterface(
   const int64_t module_id, rclcpp::Logger logger, rclcpp::Clock::SharedPtr clock)
@@ -41,7 +41,7 @@ size_t SceneModuleInterface::findEgoSegmentIndex(
   const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & points) const
 {
   const auto & p = planner_data_;
-  return autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+  return autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     points, p->current_odometry->pose, p->ego_nearest_dist_threshold);
 }
 
@@ -77,7 +77,7 @@ size_t SceneModuleManagerInterface::findEgoSegmentIndex(
   const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & points) const
 {
   const auto & p = planner_data_;
-  return autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+  return autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     points, p->current_odometry->pose, p->ego_nearest_dist_threshold, p->ego_nearest_yaw_threshold);
 }
 
@@ -236,7 +236,7 @@ UUID SceneModuleManagerInterfaceWithRTC::getUUID(const int64_t & module_id) cons
 
 void SceneModuleManagerInterfaceWithRTC::generateUUID(const int64_t & module_id)
 {
-  map_uuid_.insert({module_id, autoware_universe_utils::generateUUID()});
+  map_uuid_.insert({module_id, autoware::universe_utils::generateUUID()});
 }
 
 void SceneModuleManagerInterfaceWithRTC::removeUUID(const int64_t & module_id)

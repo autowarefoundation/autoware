@@ -28,9 +28,9 @@
 constexpr double epsilon = 1e-6;
 
 using autoware::behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
+using autoware::universe_utils::Point2d;
+using autoware::universe_utils::Polygon2d;
 using autoware_perception_msgs::msg::Shape;
-using autoware_universe_utils::Point2d;
-using autoware_universe_utils::Polygon2d;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
@@ -47,8 +47,8 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
 
   {
     Pose ego_pose;
-    ego_pose.position = autoware_universe_utils::createPoint(0.0, 0.0, 0.0);
-    ego_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(0.0);
+    ego_pose.position = autoware::universe_utils::createPoint(0.0, 0.0, 0.0);
+    ego_pose.orientation = autoware::universe_utils::createQuaternionFromYaw(0.0);
 
     const double lon_length = 10.0;
     const double lat_margin = 2.0;
@@ -75,8 +75,8 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
 
   {
     Pose ego_pose;
-    ego_pose.position = autoware_universe_utils::createPoint(3.0, 4.0, 0.0);
-    ego_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(0.0);
+    ego_pose.position = autoware::universe_utils::createPoint(3.0, 4.0, 0.0);
+    ego_pose.orientation = autoware::universe_utils::createQuaternionFromYaw(0.0);
 
     const double lon_length = 10.0;
     const double lat_margin = 2.0;
@@ -103,9 +103,9 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
 
   {
     Pose ego_pose;
-    ego_pose.position = autoware_universe_utils::createPoint(0.0, 0.0, 0.0);
+    ego_pose.position = autoware::universe_utils::createPoint(0.0, 0.0, 0.0);
     ego_pose.orientation =
-      autoware_universe_utils::createQuaternionFromYaw(autoware_universe_utils::deg2rad(60));
+      autoware::universe_utils::createQuaternionFromYaw(autoware::universe_utils::deg2rad(60));
 
     const double lon_length = 10.0;
     const double lat_margin = 2.0;
@@ -134,13 +134,13 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
 TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedObjPolygon)
 {
   using autoware::behavior_path_planner::utils::path_safety_checker::createExtendedPolygon;
-  using autoware_universe_utils::createPoint;
-  using autoware_universe_utils::createQuaternionFromYaw;
+  using autoware::universe_utils::createPoint;
+  using autoware::universe_utils::createQuaternionFromYaw;
 
   {
     Pose obj_pose;
     obj_pose.position = createPoint(0.0, 0.0, 0.0);
-    obj_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(0.0);
+    obj_pose.orientation = autoware::universe_utils::createQuaternionFromYaw(0.0);
 
     Shape shape;
     shape.type = autoware_perception_msgs::msg::Shape::POLYGON;

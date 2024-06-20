@@ -18,7 +18,7 @@
 
 TEST(normalization, normalizeDegree)
 {
-  using autoware_universe_utils::normalizeDegree;
+  using autoware::universe_utils::normalizeDegree;
 
   // -180 <= deg < 180
   {
@@ -51,7 +51,7 @@ TEST(normalization, normalizeDegree)
 
 TEST(normalization, normalizeRadian)
 {
-  using autoware_universe_utils::normalizeRadian;
+  using autoware::universe_utils::normalizeRadian;
 
   // -M_PI <= deg < M_PI
   {

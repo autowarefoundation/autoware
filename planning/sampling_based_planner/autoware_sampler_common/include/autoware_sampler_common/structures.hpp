@@ -38,13 +38,13 @@
 
 namespace autoware::sampler_common
 {
-using autoware_universe_utils::LinearRing2d;
-using autoware_universe_utils::MultiPoint2d;
-using autoware_universe_utils::MultiPolygon2d;
-using autoware_universe_utils::Point2d;
-using autoware_universe_utils::Polygon2d;
+using autoware::universe_utils::LinearRing2d;
+using autoware::universe_utils::MultiPoint2d;
+using autoware::universe_utils::MultiPolygon2d;
+using autoware::universe_utils::Point2d;
+using autoware::universe_utils::Polygon2d;
 
-typedef std::pair<autoware_universe_utils::Box2d, size_t> BoxIndexPair;
+typedef std::pair<autoware::universe_utils::Box2d, size_t> BoxIndexPair;
 typedef boost::geometry::index::rtree<BoxIndexPair, boost::geometry::index::rstar<16, 4>> Rtree;
 
 /// @brief data about constraint check results of a given path

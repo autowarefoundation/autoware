@@ -21,7 +21,7 @@ Output GoalDistanceCalculator::update(const Input & input)
   Output output{};
 
   output.goal_deviation =
-    autoware_universe_utils::calcPoseDeviation(input.route->goal_pose, input.current_pose->pose);
+    autoware::universe_utils::calcPoseDeviation(input.route->goal_pose, input.current_pose->pose);
 
   return output;
 }

@@ -25,7 +25,7 @@
 
 namespace goal_distance_calculator
 {
-using autoware_universe_utils::PoseDeviation;
+using autoware::universe_utils::PoseDeviation;
 
 struct Param
 {

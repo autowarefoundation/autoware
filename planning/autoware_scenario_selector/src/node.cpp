@@ -382,7 +382,7 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
   timer_ = rclcpp::create_timer(
     this, get_clock(), period_ns, std::bind(&ScenarioSelectorNode::onTimer, this));
   published_time_publisher_ =
-    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
+    std::make_unique<autoware::universe_utils::PublishedTimePublisher>(this);
 }
 }  // namespace autoware::scenario_selector
 

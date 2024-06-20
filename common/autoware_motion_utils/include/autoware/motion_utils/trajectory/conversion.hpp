@@ -23,7 +23,7 @@
 
 #include <vector>
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 using TrajectoryPoints = std::vector<autoware_planning_msgs::msg::TrajectoryPoint>;
 
@@ -115,6 +115,6 @@ inline tier4_planning_msgs::msg::PathWithLaneId convertToPathWithLaneId(
   return output;
 }
 
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils
 
 #endif  // AUTOWARE__MOTION_UTILS__TRAJECTORY__CONVERSION_HPP_

@@ -48,7 +48,7 @@ void SideShiftModuleManager::init(rclcpp::Node * node)
 void SideShiftModuleManager::updateModuleParams(
   [[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters)
 {
-  using autoware_universe_utils::updateParam;
+  using autoware::universe_utils::updateParam;
 
   [[maybe_unused]] auto p = parameters_;
 

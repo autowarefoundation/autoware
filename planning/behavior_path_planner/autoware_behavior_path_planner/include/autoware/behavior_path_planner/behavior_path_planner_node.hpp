@@ -88,30 +88,30 @@ public:
 
 private:
   // subscriber
-  autoware_universe_utils::InterProcessPollingSubscriber<LaneletRoute> route_subscriber_{
+  autoware::universe_utils::InterProcessPollingSubscriber<LaneletRoute> route_subscriber_{
     this, "~/input/route", rclcpp::QoS{1}.transient_local()};
-  autoware_universe_utils::InterProcessPollingSubscriber<LaneletMapBin> vector_map_subscriber_{
+  autoware::universe_utils::InterProcessPollingSubscriber<LaneletMapBin> vector_map_subscriber_{
     this, "~/input/vector_map", rclcpp::QoS{1}.transient_local()};
-  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> velocity_subscriber_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Odometry> velocity_subscriber_{
     this, "~/input/odometry"};
-  autoware_universe_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped>
+  autoware::universe_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped>
     acceleration_subscriber_{this, "~/input/accel"};
-  autoware_universe_utils::InterProcessPollingSubscriber<Scenario> scenario_subscriber_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Scenario> scenario_subscriber_{
     this, "~/input/scenario"};
-  autoware_universe_utils::InterProcessPollingSubscriber<PredictedObjects> perception_subscriber_{
+  autoware::universe_utils::InterProcessPollingSubscriber<PredictedObjects> perception_subscriber_{
     this, "~/input/perception"};
-  autoware_universe_utils::InterProcessPollingSubscriber<OccupancyGrid> occupancy_grid_subscriber_{
+  autoware::universe_utils::InterProcessPollingSubscriber<OccupancyGrid> occupancy_grid_subscriber_{
     this, "~/input/occupancy_grid_map"};
-  autoware_universe_utils::InterProcessPollingSubscriber<OccupancyGrid> costmap_subscriber_{
+  autoware::universe_utils::InterProcessPollingSubscriber<OccupancyGrid> costmap_subscriber_{
     this, "~/input/costmap"};
-  autoware_universe_utils::InterProcessPollingSubscriber<TrafficLightGroupArray>
+  autoware::universe_utils::InterProcessPollingSubscriber<TrafficLightGroupArray>
     traffic_signals_subscriber_{this, "~/input/traffic_signals"};
-  autoware_universe_utils::InterProcessPollingSubscriber<LateralOffset> lateral_offset_subscriber_{
+  autoware::universe_utils::InterProcessPollingSubscriber<LateralOffset> lateral_offset_subscriber_{
     this, "~/input/lateral_offset"};
-  autoware_universe_utils::InterProcessPollingSubscriber<OperationModeState>
+  autoware::universe_utils::InterProcessPollingSubscriber<OperationModeState>
     operation_mode_subscriber_{
       this, "/system/operation_mode/state", rclcpp::QoS{1}.transient_local()};
-  autoware_universe_utils::InterProcessPollingSubscriber<tier4_planning_msgs::msg::VelocityLimit>
+  autoware::universe_utils::InterProcessPollingSubscriber<tier4_planning_msgs::msg::VelocityLimit>
     external_limit_max_velocity_subscriber_{this, "/planning/scenario_planning/max_velocity"};
 
   // publisher
@@ -236,9 +236,9 @@ private:
     const std::shared_ptr<PathWithLaneId> & path_candidate_ptr, const bool is_ready,
     const std::shared_ptr<PlannerData> & planner_data);
 
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 }  // namespace autoware::behavior_path_planner
 

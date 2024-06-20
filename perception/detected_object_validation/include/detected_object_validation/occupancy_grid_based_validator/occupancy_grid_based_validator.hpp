@@ -43,7 +43,7 @@ private:
   message_filters::Subscriber<nav_msgs::msg::OccupancyGrid> occ_grid_sub_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 
   typedef message_filters::sync_policies::ApproximateTime<
     autoware_perception_msgs::msg::DetectedObjects, nav_msgs::msg::OccupancyGrid>

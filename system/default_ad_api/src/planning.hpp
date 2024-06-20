@@ -48,7 +48,7 @@ private:
   std::vector<SteeringFactorArray::ConstSharedPtr> steering_factors_;
   rclcpp::TimerBase::SharedPtr timer_;
 
-  using VehicleStopChecker = autoware_motion_utils::VehicleStopCheckerBase;
+  using VehicleStopChecker = autoware::motion_utils::VehicleStopCheckerBase;
   using Trajectory = planning_interface::Trajectory::Message;
   using KinematicState = localization_interface::KinematicState::Message;
   void on_trajectory(const Trajectory::ConstSharedPtr msg);

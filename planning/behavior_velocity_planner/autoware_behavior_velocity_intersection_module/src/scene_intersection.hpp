@@ -325,7 +325,7 @@ public:
   /** @}*/
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
-  autoware_motion_utils::VirtualWalls createVirtualWalls() override;
+  autoware::motion_utils::VirtualWalls createVirtualWalls() override;
 
   const std::set<lanelet::Id> & getAssociativeIds() const { return associative_ids_; }
 

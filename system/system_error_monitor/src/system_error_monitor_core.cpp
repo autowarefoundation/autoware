@@ -265,7 +265,7 @@ AutowareErrorMonitor::AutowareErrorMonitor(const rclcpp::NodeOptions & options)
   timer_ = rclcpp::create_timer(
     this, get_clock(), period_ns, std::bind(&AutowareErrorMonitor::onTimer, this));
 
-  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
 }
 
 void AutowareErrorMonitor::loadRequiredModules(const std::string & key)

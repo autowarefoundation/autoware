@@ -125,7 +125,7 @@ EBPathSmoother::EBParam::EBParam(rclcpp::Node * node)
 
 void EBPathSmoother::EBParam::onParam(const std::vector<rclcpp::Parameter> & parameters)
 {
-  using autoware_universe_utils::updateParam;
+  using autoware::universe_utils::updateParam;
 
   {  // option
     updateParam<bool>(parameters, "elastic_band.option.enable_warm_start", enable_warm_start);
@@ -212,7 +212,7 @@ std::vector<TrajectoryPoint> EBPathSmoother::smoothTrajectory(
 
   const size_t ego_seg_idx =
     trajectory_utils::findEgoSegmentIndex(traj_points, ego_pose, ego_nearest_param_);
-  const auto cropped_traj_points = autoware_motion_utils::cropPoints(
+  const auto cropped_traj_points = autoware::motion_utils::cropPoints(
     traj_points, ego_pose.position, ego_seg_idx, forward_traj_length, backward_traj_length);
 
   // check if goal is contained in cropped_traj_points
@@ -263,7 +263,7 @@ std::vector<TrajectoryPoint> EBPathSmoother::smoothTrajectory(
 
   // 8. publish eb trajectory
   const auto eb_traj =
-    autoware_motion_utils::convertToTrajectory(*eb_traj_points, createHeader(clock_.now()));
+    autoware::motion_utils::convertToTrajectory(*eb_traj_points, createHeader(clock_.now()));
   debug_eb_traj_pub_->publish(eb_traj);
 
   time_keeper_ptr_->toc(__func__, "      ");
@@ -389,8 +389,8 @@ void EBPathSmoother::updateConstraint(
   }
 
   // publish fixed trajectory
-  const auto eb_fixed_traj =
-    autoware_motion_utils::convertToTrajectory(debug_fixed_traj_points, createHeader(clock_.now()));
+  const auto eb_fixed_traj = autoware::motion_utils::convertToTrajectory(
+    debug_fixed_traj_points, createHeader(clock_.now()));
   debug_eb_fixed_traj_pub_->publish(eb_fixed_traj);
 
   time_keeper_ptr_->toc(__func__, "        ");
@@ -443,12 +443,12 @@ std::optional<std::vector<TrajectoryPoint>> EBPathSmoother::convertOptimizedPoin
 
     auto eb_traj_point = traj_points.at(i);
     eb_traj_point.pose =
-      autoware_universe_utils::calcOffsetPose(eb_traj_point.pose, 0.0, lat_offset, 0.0);
+      autoware::universe_utils::calcOffsetPose(eb_traj_point.pose, 0.0, lat_offset, 0.0);
     eb_traj_points.push_back(eb_traj_point);
   }
 
   // update orientation
-  autoware_motion_utils::insertOrientation(eb_traj_points, true);
+  autoware::motion_utils::insertOrientation(eb_traj_points, true);
 
   time_keeper_ptr_->toc(__func__, "        ");
   return eb_traj_points;

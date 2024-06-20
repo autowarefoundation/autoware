@@ -102,14 +102,14 @@ std::vector<geometry_msgs::msg::Point> findLateralSameSidePoints(
   const geometry_msgs::msg::Point & target_point)
 {
   const auto signed_deviation =
-    autoware_universe_utils::calcLateralDeviation(base_pose, target_point);
+    autoware::universe_utils::calcLateralDeviation(base_pose, target_point);
   RCLCPP_DEBUG_STREAM(
     rclcpp::get_logger("findLateralSameSidePoints"), "signed dev of target: " << signed_deviation);
 
   std::vector<geometry_msgs::msg::Point> same_side_points;
   for (const auto & p : points) {
     const auto signed_deviation_of_point =
-      autoware_universe_utils::calcLateralDeviation(base_pose, p);
+      autoware::universe_utils::calcLateralDeviation(base_pose, p);
     RCLCPP_DEBUG_STREAM(
       rclcpp::get_logger("findLateralSameSidePoints"),
       "signed dev of point: " << signed_deviation_of_point);
@@ -127,7 +127,7 @@ std::vector<geometry_msgs::msg::Point> findLateralSameSidePoints(
 
 bool isSamePoint(const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2)
 {
-  if (autoware_universe_utils::calcDistance2d(p1, p2) < std::numeric_limits<float>::epsilon()) {
+  if (autoware::universe_utils::calcDistance2d(p1, p2) < std::numeric_limits<float>::epsilon()) {
     return true;
   }
 
@@ -184,15 +184,15 @@ bool pathIntersectsEgoCutLine(
 {
   if (path.size() < 2) return false;
   const auto p1 =
-    autoware_universe_utils::calcOffsetPose(ego_pose, 0.0, half_line_length, 0.0).position;
+    autoware::universe_utils::calcOffsetPose(ego_pose, 0.0, half_line_length, 0.0).position;
   const auto p2 =
-    autoware_universe_utils::calcOffsetPose(ego_pose, 0.0, -half_line_length, 0.0).position;
+    autoware::universe_utils::calcOffsetPose(ego_pose, 0.0, -half_line_length, 0.0).position;
   ego_cut_line = {p1, p2};
 
   for (size_t i = 1; i < path.size(); ++i) {
     const auto & p3 = path.at(i).position;
     const auto & p4 = path.at(i - 1).position;
-    const auto intersection = autoware_universe_utils::intersect(p1, p2, p3, p4);
+    const auto intersection = autoware::universe_utils::intersect(p1, p2, p3, p4);
     if (intersection.has_value()) {
       return true;
     }
@@ -218,7 +218,7 @@ std::vector<DynamicObstacle> excludeObstaclesOutSideOfLine(
   std::vector<DynamicObstacle> extracted_dynamic_obstacle;
   for (const auto & obstacle : dynamic_obstacles) {
     const auto obstacle_nearest_idx =
-      autoware_motion_utils::findNearestIndex(path_points, obstacle.pose.position);
+      autoware::motion_utils::findNearestIndex(path_points, obstacle.pose.position);
     const auto & obstacle_nearest_path_point =
       path_points.at(obstacle_nearest_idx).point.pose.position;
 
@@ -255,7 +255,7 @@ PathPointsWithLaneId decimatePathPoints(
   for (size_t i = 1; i < input_path_points.size(); i++) {
     const auto p1 = input_path_points.at(i - 1);
     const auto p2 = input_path_points.at(i);
-    const auto dist = autoware_universe_utils::calcDistance2d(p1, p2);
+    const auto dist = autoware::universe_utils::calcDistance2d(p1, p2);
     dist_sum += dist;
 
     if (dist_sum > step) {
@@ -273,7 +273,7 @@ PathWithLaneId trimPathFromSelfPose(
   const double trim_distance)
 {
   const size_t nearest_idx =
-    autoware_motion_utils::findNearestIndex(input.points, self_pose.position);
+    autoware::motion_utils::findNearestIndex(input.points, self_pose.position);
 
   PathWithLaneId output{};
   output.header = input.header;
@@ -285,7 +285,7 @@ PathWithLaneId trimPathFromSelfPose(
 
     if (i != nearest_idx) {
       dist_sum +=
-        autoware_universe_utils::calcDistance2d(input.points.at(i - 1), input.points.at(i));
+        autoware::universe_utils::calcDistance2d(input.points.at(i - 1), input.points.at(i));
     }
 
     if (dist_sum > trim_distance) {
@@ -329,7 +329,7 @@ PathPointWithLaneId createExtendPathPoint(
 {
   PathPointWithLaneId extend_path_point = goal_point;
   extend_path_point.point.pose =
-    autoware_universe_utils::calcOffsetPose(goal_point.point.pose, extend_distance, 0.0, 0.0);
+    autoware::universe_utils::calcOffsetPose(goal_point.point.pose, extend_distance, 0.0, 0.0);
   return extend_path_point;
 }
 
@@ -381,7 +381,7 @@ Polygons2d createDetectionAreaPolygon(
   const float jerk_acc = std::abs(jerk_dec);
   const float planning_dec =
     jerk_dec < pp.common.normal_min_jerk ? pp.common.limit_min_acc : pp.common.normal_min_acc;
-  auto stop_dist = autoware_motion_utils::calcDecelDistWithJerkAndAccConstraints(
+  auto stop_dist = autoware::motion_utils::calcDecelDistWithJerkAndAccConstraints(
     initial_vel, target_vel, initial_acc, planning_dec, jerk_acc, jerk_dec);
 
   if (!stop_dist) {
@@ -401,9 +401,10 @@ Polygons2d createDetectionAreaPolygon(
   da_range.left_overhang = pp.vehicle_param.left_overhang;
   da_range.max_lateral_distance = obstacle_vel_mps * pp.dynamic_obstacle.max_prediction_time;
   Polygons2d detection_area_poly;
-  const size_t ego_seg_idx = autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    path.points, pd.current_odometry->pose, pd.ego_nearest_dist_threshold,
-    pd.ego_nearest_yaw_threshold);
+  const size_t ego_seg_idx =
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      path.points, pd.current_odometry->pose, pd.ego_nearest_dist_threshold,
+      pd.ego_nearest_yaw_threshold);
   planning_utils::createDetectionAreaPolygons(
     detection_area_poly, path, pd.current_odometry->pose, ego_seg_idx, da_range,
     pp.dynamic_obstacle.max_vel_kmph / 3.6);
@@ -425,7 +426,7 @@ Polygons2d createMandatoryDetectionAreaPolygon(
   const float jerk_acc = std::abs(jerk_dec);
   const float planning_dec =
     jerk_dec < pp.common.normal_min_jerk ? pp.common.limit_min_acc : pp.common.normal_min_acc;
-  auto stop_dist = autoware_motion_utils::calcDecelDistWithJerkAndAccConstraints(
+  auto stop_dist = autoware::motion_utils::calcDecelDistWithJerkAndAccConstraints(
     initial_vel, target_vel, initial_acc, planning_dec, jerk_acc, jerk_dec);
 
   if (!stop_dist) {
@@ -443,9 +444,10 @@ Polygons2d createMandatoryDetectionAreaPolygon(
   da_range.left_overhang = pp.vehicle_param.left_overhang;
   da_range.max_lateral_distance = obstacle_vel_mps * pp.dynamic_obstacle.max_prediction_time;
   Polygons2d detection_area_poly;
-  const size_t ego_seg_idx = autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    path.points, pd.current_odometry->pose, pd.ego_nearest_dist_threshold,
-    pd.ego_nearest_yaw_threshold);
+  const size_t ego_seg_idx =
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      path.points, pd.current_odometry->pose, pd.ego_nearest_dist_threshold,
+      pd.ego_nearest_yaw_threshold);
   planning_utils::createDetectionAreaPolygons(
     detection_area_poly, path, pd.current_odometry->pose, ego_seg_idx, da_range,
     pp.dynamic_obstacle.max_vel_kmph / 3.6);

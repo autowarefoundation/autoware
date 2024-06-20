@@ -428,7 +428,7 @@ void GoalPlannerModuleManager::updateModuleParams(
   // object_recognition_collision_check_hard_margins, maximum_deceleration, shift_sampling_num or
   // parking_policy, there seems to be a problem when we use a temp value to check these values.
 
-  using autoware_universe_utils::updateParam;
+  using autoware::universe_utils::updateParam;
 
   auto & p = parameters_;
 

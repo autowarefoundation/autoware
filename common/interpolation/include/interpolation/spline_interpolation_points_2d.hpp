@@ -53,7 +53,7 @@ public:
   {
     std::vector<geometry_msgs::msg::Point> points_inner;
     for (const auto & p : points) {
-      points_inner.push_back(autoware_universe_utils::getPoint(p));
+      points_inner.push_back(autoware::universe_utils::getPoint(p));
     }
     calcSplineCoefficientsInner(points_inner);
   }

@@ -47,8 +47,8 @@ private:
   std::shared_ptr<LidarInstanceSegmentationInterface> detector_ptr_;
   std::shared_ptr<Debugger> debugger_ptr_;
   void pointCloudCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
-  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
-  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_;
+  std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_;
 
 public:
   explicit LidarInstanceSegmentationNode(const rclcpp::NodeOptions & node_options);

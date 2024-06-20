@@ -33,7 +33,7 @@
 namespace autoware::behavior_path_planner
 {
 using autoware::lane_departure_checker::LaneDepartureChecker;
-using autoware_universe_utils::calcOffsetPose;
+using autoware::universe_utils::calcOffsetPose;
 using lanelet::autoware::NoParkingArea;
 using lanelet::autoware::NoStoppingArea;
 
@@ -136,7 +136,7 @@ GoalCandidates GoalSearcher::search(
     // todo(kosuke55): fix orientation for inverseTransformPoint temporarily
     Pose center_pose = p.point.pose;
     center_pose.orientation =
-      autoware_universe_utils::createQuaternionFromYaw(tf2::getYaw(center_pose.orientation));
+      autoware::universe_utils::createQuaternionFromYaw(tf2::getYaw(center_pose.orientation));
 
     // ignore goal_pose near lane start
     const double distance_from_lane_start =
@@ -156,7 +156,7 @@ GoalCandidates GoalSearcher::search(
     // original means non lateral offset poses
     const Pose original_search_pose = calcOffsetPose(center_pose, 0, offset_from_center_line, 0);
     const double longitudinal_distance_from_original_goal =
-      std::abs(autoware_motion_utils::calcSignedArcLength(
+      std::abs(autoware::motion_utils::calcSignedArcLength(
         center_line_path.points, reference_goal_pose_.position, original_search_pose.position));
     original_search_poses.push_back(original_search_pose);  // for createAreaPolygon
     Pose search_pose{};
@@ -167,7 +167,7 @@ GoalCandidates GoalSearcher::search(
       search_pose = calcOffsetPose(original_search_pose, 0, sign * dy, 0);
 
       const auto transformed_vehicle_footprint =
-        transformVector(vehicle_footprint_, autoware_universe_utils::pose2transform(search_pose));
+        transformVector(vehicle_footprint_, autoware::universe_utils::pose2transform(search_pose));
 
       if (isInAreas(transformed_vehicle_footprint, getNoParkingAreaPolygons(pull_over_lanes))) {
         // break here to exclude goals located laterally in no_parking_areas
@@ -245,8 +245,8 @@ void GoalSearcher::countObjectsToAvoid(
   for (const auto & object : objects.objects) {
     for (const auto & p : current_center_line_path.points) {
       const auto transformed_vehicle_footprint =
-        transformVector(vehicle_footprint_, autoware_universe_utils::pose2transform(p.point.pose));
-      const auto obj_polygon = autoware_universe_utils::toPolygon2d(object);
+        transformVector(vehicle_footprint_, autoware::universe_utils::pose2transform(p.point.pose));
+      const auto obj_polygon = autoware::universe_utils::toPolygon2d(object);
       const double distance = boost::geometry::distance(obj_polygon, transformed_vehicle_footprint);
       if (distance > parameters_.object_recognition_collision_check_hard_margins.back()) {
         continue;
@@ -431,9 +431,9 @@ bool GoalSearcher::checkCollisionWithLongitudinalDistance(
 void GoalSearcher::createAreaPolygons(
   std::vector<Pose> original_search_poses, const std::shared_ptr<const PlannerData> & planner_data)
 {
-  using autoware_universe_utils::MultiPolygon2d;
-  using autoware_universe_utils::Point2d;
-  using autoware_universe_utils::Polygon2d;
+  using autoware::universe_utils::MultiPolygon2d;
+  using autoware::universe_utils::Point2d;
+  using autoware::universe_utils::Polygon2d;
 
   const double vehicle_width = planner_data->parameters.vehicle_width;
   const double base_link2front = planner_data->parameters.base_link2front;

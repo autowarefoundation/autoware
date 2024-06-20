@@ -152,7 +152,7 @@ void DynamicObstacleAvoidanceModuleManager::init(rclcpp::Node * node)
 void DynamicObstacleAvoidanceModuleManager::updateModuleParams(
   [[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters)
 {
-  using autoware_universe_utils::updateParam;
+  using autoware::universe_utils::updateParam;
   auto & p = parameters_;
 
   {  // common

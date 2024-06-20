@@ -23,7 +23,7 @@
 #include <sstream>
 #include <string>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 class ProcessingTimePublisher
 {
@@ -62,6 +62,6 @@ private:
     return oss.str();
   }
 };
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__ROS__PROCESSING_TIME_PUBLISHER_HPP_

@@ -96,7 +96,7 @@ inline void doTransform(
 #endif
 }  // namespace tf2
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 template <class T>
 geometry_msgs::msg::Point getPoint(const T & p)
@@ -577,6 +577,6 @@ std::optional<geometry_msgs::msg::Point> intersect(
   const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2,
   const geometry_msgs::msg::Point & p3, const geometry_msgs::msg::Point & p4);
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__GEOMETRY__GEOMETRY_HPP_

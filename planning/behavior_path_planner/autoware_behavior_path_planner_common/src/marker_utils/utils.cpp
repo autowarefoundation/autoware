@@ -31,12 +31,12 @@
 namespace marker_utils
 {
 using autoware::behavior_path_planner::utils::calcPathArcLengthArray;
-using autoware_universe_utils::calcOffsetPose;
-using autoware_universe_utils::createDefaultMarker;
-using autoware_universe_utils::createMarkerColor;
-using autoware_universe_utils::createMarkerOrientation;
-using autoware_universe_utils::createMarkerScale;
-using autoware_universe_utils::createPoint;
+using autoware::universe_utils::calcOffsetPose;
+using autoware::universe_utils::createDefaultMarker;
+using autoware::universe_utils::createMarkerColor;
+using autoware::universe_utils::createMarkerOrientation;
+using autoware::universe_utils::createMarkerScale;
+using autoware::universe_utils::createPoint;
 using std_msgs::msg::ColorRGBA;
 using visualization_msgs::msg::Marker;
 
@@ -49,13 +49,13 @@ void addFootprintMarker(
   const double base_to_rear = vehicle_info.rear_overhang_m;
 
   marker.points.push_back(
-    autoware_universe_utils::calcOffsetPose(pose, base_to_front, -half_width, 0.0).position);
+    autoware::universe_utils::calcOffsetPose(pose, base_to_front, -half_width, 0.0).position);
   marker.points.push_back(
-    autoware_universe_utils::calcOffsetPose(pose, base_to_front, half_width, 0.0).position);
+    autoware::universe_utils::calcOffsetPose(pose, base_to_front, half_width, 0.0).position);
   marker.points.push_back(
-    autoware_universe_utils::calcOffsetPose(pose, -base_to_rear, half_width, 0.0).position);
+    autoware::universe_utils::calcOffsetPose(pose, -base_to_rear, half_width, 0.0).position);
   marker.points.push_back(
-    autoware_universe_utils::calcOffsetPose(pose, -base_to_rear, -half_width, 0.0).position);
+    autoware::universe_utils::calcOffsetPose(pose, -base_to_rear, -half_width, 0.0).position);
   marker.points.push_back(marker.points.front());
 }
 
@@ -214,7 +214,7 @@ MarkerArray createShiftLengthMarkerArray(
   Marker marker = createDefaultMarker(
     "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, 0L, Marker::LINE_STRIP,
     createMarkerScale(0.1, 0.0, 0.0), createMarkerColor(r, g, b, 0.9));
-  marker.pose.orientation = autoware_universe_utils::createMarkerOrientation(0, 0, 0, 1.0);
+  marker.pose.orientation = autoware::universe_utils::createMarkerOrientation(0, 0, 0, 1.0);
   marker.points.reserve(shift_distance.size());
 
   for (size_t i = 0; i < shift_distance.size(); ++i) {
@@ -271,7 +271,7 @@ MarkerArray createLaneletsAreaMarkerArray(
 
       "map", current_time, ns, static_cast<int32_t>(lanelet.id()), Marker::LINE_STRIP,
       createMarkerScale(0.1, 0.0, 0.0), createMarkerColor(r, g, b, 0.999));
-    marker.pose.orientation = autoware_universe_utils::createMarkerOrientation(0, 0, 0, 1.0);
+    marker.pose.orientation = autoware::universe_utils::createMarkerOrientation(0, 0, 0, 1.0);
 
     if (!lanelet.polygon3d().empty()) {
       marker.points.reserve(lanelet.polygon3d().size() + 1);
@@ -299,7 +299,7 @@ MarkerArray createPolygonMarkerArray(
     "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, static_cast<int32_t>(lane_id), Marker::LINE_STRIP,
     createMarkerScale(w, 0.0, 0.0), createMarkerColor(r, g, b, 0.8));
 
-  marker.pose.orientation = autoware_universe_utils::createMarkerOrientation(0, 0, 0, 1.0);
+  marker.pose.orientation = autoware::universe_utils::createMarkerOrientation(0, 0, 0, 1.0);
 
   if (!polygon.points.empty()) {
     marker.points.reserve(polygon.points.size() + 1);

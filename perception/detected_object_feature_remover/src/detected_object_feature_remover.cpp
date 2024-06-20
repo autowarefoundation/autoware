@@ -24,7 +24,7 @@ DetectedObjectFeatureRemover::DetectedObjectFeatureRemover(const rclcpp::NodeOpt
   sub_ = this->create_subscription<DetectedObjectsWithFeature>(
     "~/input", 1, std::bind(&DetectedObjectFeatureRemover::objectCallback, this, _1));
   published_time_publisher_ =
-    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
+    std::make_unique<autoware::universe_utils::PublishedTimePublisher>(this);
 }
 
 void DetectedObjectFeatureRemover::objectCallback(

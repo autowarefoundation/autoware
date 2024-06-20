@@ -70,7 +70,7 @@ void closest_cluster(
     std::memcpy(&point.y, &cluster.data[i * point_step + y_offset], sizeof(float));
     std::memcpy(&point.z, &cluster.data[i * point_step + z_offset], sizeof(float));
 
-    point_data.distance = autoware_universe_utils::calcDistance2d(center, point);
+    point_data.distance = autoware::universe_utils::calcDistance2d(center, point);
     point_data.orig_index = i;
     points_data.push_back(point_data);
   }
@@ -258,7 +258,7 @@ pcl::PointXYZ getClosestPoint(const pcl::PointCloud<pcl::PointXYZ> & cluster)
   pcl::PointXYZ orig_point = pcl::PointXYZ(0.0, 0.0, 0.0);
   for (std::size_t i = 0; i < cluster.points.size(); ++i) {
     pcl::PointXYZ point = cluster.points.at(i);
-    double dist_closest_point = autoware_universe_utils::calcDistance2d(point, orig_point);
+    double dist_closest_point = autoware::universe_utils::calcDistance2d(point, orig_point);
     if (min_dist > dist_closest_point) {
       min_dist = dist_closest_point;
       closest_point = pcl::PointXYZ(point.x, point.y, point.z);

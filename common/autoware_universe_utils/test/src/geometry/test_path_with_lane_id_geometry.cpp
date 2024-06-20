@@ -18,7 +18,7 @@
 
 TEST(geometry, getPoint_PathWithLaneId)
 {
-  using autoware_universe_utils::getPoint;
+  using autoware::universe_utils::getPoint;
 
   const double x_ans = 1.0;
   const double y_ans = 2.0;
@@ -36,7 +36,7 @@ TEST(geometry, getPoint_PathWithLaneId)
 
 TEST(geometry, getPose_PathWithLaneId)
 {
-  using autoware_universe_utils::getPose;
+  using autoware::universe_utils::getPose;
 
   const double x_ans = 1.0;
   const double y_ans = 2.0;
@@ -66,7 +66,7 @@ TEST(geometry, getPose_PathWithLaneId)
 
 TEST(geometry, getLongitudinalVelocity_PathWithLaneId)
 {
-  using autoware_universe_utils::getLongitudinalVelocity;
+  using autoware::universe_utils::getLongitudinalVelocity;
 
   const double velocity = 1.0;
 
@@ -77,7 +77,7 @@ TEST(geometry, getLongitudinalVelocity_PathWithLaneId)
 
 TEST(geometry, setPose_PathWithLaneId)
 {
-  using autoware_universe_utils::setPose;
+  using autoware::universe_utils::setPose;
 
   const double x_ans = 1.0;
   const double y_ans = 2.0;
@@ -109,7 +109,7 @@ TEST(geometry, setPose_PathWithLaneId)
 
 TEST(geometry, setLongitudinalVelocity_PathWithLaneId)
 {
-  using autoware_universe_utils::setLongitudinalVelocity;
+  using autoware::universe_utils::setLongitudinalVelocity;
 
   const double velocity = 1.0;
 

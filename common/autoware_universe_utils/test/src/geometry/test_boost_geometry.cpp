@@ -20,8 +20,8 @@
 
 namespace bg = boost::geometry;
 
-using autoware_universe_utils::Point2d;
-using autoware_universe_utils::Point3d;
+using autoware::universe_utils::Point2d;
+using autoware::universe_utils::Point3d;
 
 TEST(boost_geometry, boost_geometry_distance)
 {
@@ -54,7 +54,7 @@ TEST(boost_geometry, to_2d)
 
 TEST(boost_geometry, toMsg)
 {
-  using autoware_universe_utils::toMsg;
+  using autoware::universe_utils::toMsg;
 
   {
     const Point3d p(1.0, 2.0, 3.0);
@@ -68,7 +68,7 @@ TEST(boost_geometry, toMsg)
 
 TEST(boost_geometry, fromMsg)
 {
-  using autoware_universe_utils::fromMsg;
+  using autoware::universe_utils::fromMsg;
 
   geometry_msgs::msg::Point p_msg;
   p_msg.x = 1.0;

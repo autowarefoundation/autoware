@@ -48,8 +48,8 @@ public:
 
 private:
   // Subscriber
-  std::shared_ptr<autoware_universe_utils::SelfPoseListener> self_pose_listener_;
-  std::shared_ptr<autoware_universe_utils::TransformListener> transform_listener_;
+  std::shared_ptr<autoware::universe_utils::SelfPoseListener> self_pose_listener_;
+  std::shared_ptr<autoware::universe_utils::TransformListener> transform_listener_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_obstacle_pointcloud_;
   rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr
     sub_reference_trajectory_;
@@ -72,8 +72,8 @@ private:
   void onOdom(const nav_msgs::msg::Odometry::SharedPtr msg);
 
   // Publisher
-  std::shared_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_;
-  std::shared_ptr<autoware_universe_utils::ProcessingTimePublisher> time_publisher_;
+  std::shared_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_;
+  std::shared_ptr<autoware::universe_utils::ProcessingTimePublisher> time_publisher_;
 
   // Timer
   rclcpp::TimerBase::SharedPtr timer_;

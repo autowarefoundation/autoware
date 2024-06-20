@@ -59,10 +59,10 @@ visualization_msgs::msg::Marker getObjectMarker(
 {
   const auto current_time = rclcpp::Clock().now();
 
-  auto marker = autoware_universe_utils::createDefaultMarker(
+  auto marker = autoware::universe_utils::createDefaultMarker(
     "map", current_time, ns, idx, visualization_msgs::msg::Marker::SPHERE,
-    autoware_universe_utils::createMarkerScale(2.0, 2.0, 2.0),
-    autoware_universe_utils::createMarkerColor(r, g, b, 0.8));
+    autoware::universe_utils::createMarkerScale(2.0, 2.0, 2.0),
+    autoware::universe_utils::createMarkerColor(r, g, b, 0.8));
 
   marker.pose = obj_pose;
 

@@ -57,8 +57,8 @@ Pose createPoseFromLaneID(const lanelet::Id & lane_id)
   // calculate middle pose
   geometry_msgs::msg::Pose middle_pose;
   middle_pose.position = middle_pos;
-  const double yaw = autoware_universe_utils::calcAzimuthAngle(middle_pos, next_middle_pos);
-  middle_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(yaw);
+  const double yaw = autoware::universe_utils::calcAzimuthAngle(middle_pos, next_middle_pos);
+  middle_pose.orientation = autoware::universe_utils::createQuaternionFromYaw(yaw);
 
   return middle_pose;
 }

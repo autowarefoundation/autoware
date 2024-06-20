@@ -44,9 +44,9 @@ public:
   ~SimpleTrajectoryFollower() = default;
 
 private:
-  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
     this, "~/input/kinematics"};
-  autoware_universe_utils::InterProcessPollingSubscriber<Trajectory> sub_trajectory_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Trajectory> sub_trajectory_{
     this, "~/input/trajectory"};
   rclcpp::Publisher<Control>::SharedPtr pub_cmd_;
   rclcpp::TimerBase::SharedPtr timer_;

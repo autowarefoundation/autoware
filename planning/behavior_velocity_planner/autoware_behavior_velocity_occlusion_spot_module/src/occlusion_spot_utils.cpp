@@ -41,7 +41,7 @@ namespace occlusion_spot_utils
 Polygon2d toFootprintPolygon(const PredictedObject & object, const double scale = 1.0)
 {
   const Pose & obj_pose = object.kinematics.initial_pose_with_covariance.pose;
-  Polygon2d obj_footprint = autoware_universe_utils::toPolygon2d(object);
+  Polygon2d obj_footprint = autoware::universe_utils::toPolygon2d(object);
   // upscale foot print for noise
   obj_footprint = upScalePolygon(obj_pose.position, obj_footprint, scale);
   return obj_footprint;
@@ -126,7 +126,7 @@ void calcSlowDownPointsForPossibleCollision(
     const double dist_to_col =
       possible_collisions.at(collision_index).arc_lane_dist_at_collision.length;
     dist_along_next_path_point +=
-      autoware_universe_utils::calcDistance2d(p_prev.pose.position, p_next.pose.position);
+      autoware::universe_utils::calcDistance2d(p_prev.pose.position, p_next.pose.position);
     // process if nearest possible collision is between current and next path point
     if (dist_along_path_point < dist_to_col) {
       for (; collision_index < possible_collisions.size(); collision_index++) {
@@ -173,7 +173,8 @@ void clipPathByLength(
   double length_sum = 0;
   clipped.points.emplace_back(path.points.front());
   for (int i = 1; i < static_cast<int>(path.points.size()); i++) {
-    length_sum += autoware_universe_utils::calcDistance2d(path.points.at(i - 1), path.points.at(i));
+    length_sum +=
+      autoware::universe_utils::calcDistance2d(path.points.at(i - 1), path.points.at(i));
     if (length_sum > max_length) return;
     clipped.points.emplace_back(path.points.at(i));
   }
@@ -248,7 +249,7 @@ void categorizeVehicles(
 lanelet::ArcCoordinates getOcclusionPoint(
   const PredictedObject & obj, const lanelet::ConstLineString2d & ll_string)
 {
-  const auto poly = autoware_universe_utils::toPolygon2d(obj);
+  const auto poly = autoware::universe_utils::toPolygon2d(obj);
   std::deque<lanelet::ArcCoordinates> arcs;
   for (const auto & p : poly.outer()) {
     lanelet::BasicPoint2d obj_p = {p.x(), p.y()};
@@ -374,7 +375,7 @@ std::vector<PredictedObject> filterVehiclesByDetectionArea(
   // stuck points by predicted objects
   for (const auto & object : objs) {
     // check if the footprint is in the stuck detect area
-    const auto obj_footprint = autoware_universe_utils::toPolygon2d(object);
+    const auto obj_footprint = autoware::universe_utils::toPolygon2d(object);
     for (const auto & p : polys) {
       if (!bg::disjoint(obj_footprint, p)) {
         filtered_obj.emplace_back(object);
@@ -402,7 +403,7 @@ bool generatePossibleCollisionsFromGridMap(
       param.detection_area.min_occlusion_spot_size);
     if (param.is_show_occlusion) {
       for (const auto & op : occlusion_spot_positions) {
-        Point p = autoware_universe_utils::createPoint(
+        Point p = autoware::universe_utils::createPoint(
           op[0], op[1], path.points.at(0).point.pose.position.z);
         debug_data.occlusion_points.emplace_back(p);
       }

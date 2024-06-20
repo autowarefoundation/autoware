@@ -40,14 +40,14 @@
 #include <vector>
 
 using autoware::behavior_path_planner::utils::parking_departure::calcFeasibleDecelDistance;
-using autoware_motion_utils::calcLongitudinalOffsetPose;
-using autoware_motion_utils::calcSignedArcLength;
-using autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
-using autoware_motion_utils::insertDecelPoint;
-using autoware_universe_utils::calcDistance2d;
-using autoware_universe_utils::calcOffsetPose;
-using autoware_universe_utils::createMarkerColor;
-using autoware_universe_utils::inverseTransformPose;
+using autoware::motion_utils::calcLongitudinalOffsetPose;
+using autoware::motion_utils::calcSignedArcLength;
+using autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
+using autoware::motion_utils::insertDecelPoint;
+using autoware::universe_utils::calcDistance2d;
+using autoware::universe_utils::calcOffsetPose;
+using autoware::universe_utils::createMarkerColor;
+using autoware::universe_utils::inverseTransformPose;
 using nav_msgs::msg::OccupancyGrid;
 
 namespace autoware::behavior_path_planner
@@ -137,7 +137,7 @@ bool GoalPlannerModule::hasPreviousModulePathShapeChanged(
   // the last path
   constexpr double LATERAL_DEVIATION_THRESH = 0.3;
   for (const auto & p : previous_module_output.path.points) {
-    const size_t nearest_seg_idx = autoware_motion_utils::findNearestSegmentIndex(
+    const size_t nearest_seg_idx = autoware::motion_utils::findNearestSegmentIndex(
       last_previous_module_output->path.points, p.point.pose.position);
     const auto seg_front = last_previous_module_output->path.points.at(nearest_seg_idx);
     const auto seg_back = last_previous_module_output->path.points.at(nearest_seg_idx + 1);
@@ -155,7 +155,7 @@ bool GoalPlannerModule::hasPreviousModulePathShapeChanged(
       // p.point.pose.position is not within the segment, skip lateral distance check
       continue;
     }
-    const double lateral_distance = std::abs(autoware_motion_utils::calcLateralOffset(
+    const double lateral_distance = std::abs(autoware::motion_utils::calcLateralOffset(
       last_previous_module_output->path.points, p.point.pose.position, nearest_seg_idx));
     if (lateral_distance > LATERAL_DEVIATION_THRESH) {
       return true;
@@ -171,7 +171,7 @@ bool GoalPlannerModule::hasDeviatedFromLastPreviousModulePath(
   if (!last_previous_module_output) {
     return true;
   }
-  return std::abs(autoware_motion_utils::calcLateralOffset(
+  return std::abs(autoware::motion_utils::calcLateralOffset(
            last_previous_module_output->path.points,
            planner_data->self_odometry->pose.pose.position)) > 0.3;
 }
@@ -181,7 +181,7 @@ bool GoalPlannerModule::hasDeviatedFromCurrentPreviousModulePath(
   const BehaviorModuleOutput & previous_module_output) const
 {
   constexpr double LATERAL_DEVIATION_THRESH = 0.3;
-  return std::abs(autoware_motion_utils::calcLateralOffset(
+  return std::abs(autoware::motion_utils::calcLateralOffset(
            previous_module_output.path.points, planner_data->self_odometry->pose.pose.position)) >
          LATERAL_DEVIATION_THRESH;
 }
@@ -770,7 +770,7 @@ bool GoalPlannerModule::canReturnToLaneParking()
   const Point & current_point = planner_data_->self_odometry->pose.pose.position;
   constexpr double th_distance = 0.5;
   const bool is_close_to_path =
-    std::abs(autoware_motion_utils::calcLateralOffset(path.points, current_point)) < th_distance;
+    std::abs(autoware::motion_utils::calcLateralOffset(path.points, current_point)) < th_distance;
   if (!is_close_to_path) {
     return false;
   }
@@ -1266,9 +1266,9 @@ DecidingPathStatusWithStamp GoalPlannerModule::checkDecidingPathStatus(
   // if ego is sufficiently close to the start of the nearest candidate path, the path is decided
   const auto & current_pose = planner_data->self_odometry->pose.pose;
   const size_t ego_segment_idx =
-    autoware_motion_utils::findNearestSegmentIndex(current_path.points, current_pose.position);
+    autoware::motion_utils::findNearestSegmentIndex(current_path.points, current_pose.position);
 
-  const size_t start_pose_segment_idx = autoware_motion_utils::findNearestSegmentIndex(
+  const size_t start_pose_segment_idx = autoware::motion_utils::findNearestSegmentIndex(
     current_path.points, pull_over_path->start_pose.position);
   const double dist_to_parking_start_pose = calcSignedArcLength(
     current_path.points, current_pose.position, ego_segment_idx,
@@ -1500,19 +1500,19 @@ std::pair<double, double> GoalPlannerModule::calcDistanceToPathChange() const
 
   const auto full_path = thread_safe_data_.get_pull_over_path()->getFullPath();
 
-  const auto ego_segment_idx = autoware_motion_utils::findNearestSegmentIndex(
+  const auto ego_segment_idx = autoware::motion_utils::findNearestSegmentIndex(
     full_path.points, planner_data_->self_odometry->pose.pose, std::numeric_limits<double>::max(),
     M_PI_2);
   if (!ego_segment_idx) {
     return {std::numeric_limits<double>::max(), std::numeric_limits<double>::max()};
   }
 
-  const size_t start_pose_segment_idx = autoware_motion_utils::findNearestSegmentIndex(
+  const size_t start_pose_segment_idx = autoware::motion_utils::findNearestSegmentIndex(
     full_path.points, thread_safe_data_.get_pull_over_path()->start_pose.position);
   const double dist_to_parking_start_pose = calcSignedArcLength(
     full_path.points, planner_data_->self_odometry->pose.pose.position, *ego_segment_idx,
     thread_safe_data_.get_pull_over_path()->start_pose.position, start_pose_segment_idx);
-  const size_t goal_pose_segment_idx = autoware_motion_utils::findNearestSegmentIndex(
+  const size_t goal_pose_segment_idx = autoware::motion_utils::findNearestSegmentIndex(
     full_path.points, thread_safe_data_.get_modified_goal_pose()->goal_pose.position);
   const double dist_to_parking_finish_pose = calcSignedArcLength(
     full_path.points, planner_data_->self_odometry->pose.pose.position, *ego_segment_idx,
@@ -1646,7 +1646,7 @@ PathWithLaneId GoalPlannerModule::generateFeasibleStopPath(const PathWithLaneId 
   auto stop_path = path;
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const auto stop_idx =
-    autoware_motion_utils::insertStopPoint(current_pose, *min_stop_distance, stop_path.points);
+    autoware::motion_utils::insertStopPoint(current_pose, *min_stop_distance, stop_path.points);
   if (stop_idx) {
     debug_stop_pose_with_info_.set(stop_path.points.at(*stop_idx).point.pose, "feasible stop");
   }
@@ -1764,7 +1764,7 @@ bool GoalPlannerModule::hasFinishedCurrentPath()
   const auto current_path_end =
     thread_safe_data_.get_pull_over_path()->getCurrentPath().points.back();
   const auto & self_pose = planner_data_->self_odometry->pose.pose;
-  return autoware_universe_utils::calcDistance2d(current_path_end, self_pose) <
+  return autoware::universe_utils::calcDistance2d(current_path_end, self_pose) <
          parameters_->th_arrived_distance;
 }
 
@@ -1789,9 +1789,9 @@ TurnSignalInfo GoalPlannerModule::calcTurnSignalInfo()
   const auto & end_pose = thread_safe_data_.get_pull_over_path()->end_pose;
 
   const auto shift_start_idx =
-    autoware_motion_utils::findNearestIndex(path.points, start_pose.position);
+    autoware::motion_utils::findNearestIndex(path.points, start_pose.position);
   const auto shift_end_idx =
-    autoware_motion_utils::findNearestIndex(path.points, end_pose.position);
+    autoware::motion_utils::findNearestIndex(path.points, end_pose.position);
 
   const auto is_ignore_signal = [this](const lanelet::Id & id) {
     if (!ignore_signal_.has_value()) {
@@ -1835,7 +1835,7 @@ TurnSignalInfo GoalPlannerModule::calcTurnSignalInfo()
     const auto stop_point =
       thread_safe_data_.get_pull_over_path()->partial_paths.front().points.back();
     const double distance_from_ego_to_stop_point =
-      std::abs(autoware_motion_utils::calcSignedArcLength(
+      std::abs(autoware::motion_utils::calcSignedArcLength(
         path.points, stop_point.point.pose.position, current_pose.position));
     return distance_from_ego_to_stop_point < distance_threshold;
   });
@@ -1880,7 +1880,7 @@ bool GoalPlannerModule::checkObjectsCollision(
 
   std::vector<Polygon2d> obj_polygons;
   for (const auto & object : target_objects.objects) {
-    obj_polygons.push_back(autoware_universe_utils::toPolygon2d(object));
+    obj_polygons.push_back(autoware::universe_utils::toPolygon2d(object));
   }
 
   /* Expand ego collision check polygon
@@ -1889,7 +1889,7 @@ bool GoalPlannerModule::checkObjectsCollision(
    *   - `extra_lateral_margin` adds the lateral margin on curves.
    */
   std::vector<Polygon2d> ego_polygons_expanded{};
-  const auto curvatures = autoware_motion_utils::calcCurvature(path.points);
+  const auto curvatures = autoware::motion_utils::calcCurvature(path.points);
   for (size_t i = 0; i < path.points.size(); ++i) {
     const auto p = path.points.at(i);
 
@@ -1904,7 +1904,7 @@ bool GoalPlannerModule::checkObjectsCollision(
       extra_stopping_margin,
       std::abs(curvatures.at(i) * std::pow(p.point.longitudinal_velocity_mps, 2)));
 
-    const auto ego_polygon = autoware_universe_utils::toFootprint(
+    const auto ego_polygon = autoware::universe_utils::toFootprint(
       p.point.pose,
       planner_data->parameters.base_link2front + collision_check_margin + extra_stopping_margin,
       planner_data->parameters.base_link2rear + collision_check_margin,
@@ -2202,7 +2202,7 @@ static std::vector<utils::path_safety_checker::ExtendedPredictedObject> filterOb
   for (const auto & target_lane : target_lanes) {
     const auto lane_poly = target_lane.polygon2d().basicPolygon();
     for (const auto & filtered_object : filtered_objects.objects) {
-      const auto object_bbox = autoware_universe_utils::toPolygon2d(filtered_object);
+      const auto object_bbox = autoware::universe_utils::toPolygon2d(filtered_object);
       if (boost::geometry::within(object_bbox, lane_poly)) {
         within_filtered_objects.push_back(filtered_object);
       }
@@ -2285,7 +2285,7 @@ std::pair<bool, bool> GoalPlannerModule::isSafePath(
       lanelet::utils::conversion::toGeomMsgPt(fist_road_lane.centerline().front());
     const double lane_yaw = lanelet::utils::getLaneletAngle(fist_road_lane, first_road_point);
     first_road_pose.position = first_road_point;
-    first_road_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(lane_yaw);
+    first_road_pose.orientation = autoware::universe_utils::createQuaternionFromYaw(lane_yaw);
     // if current ego pose is before pull over lanes segment, use first road lanelet center pose
     if (
       calcSignedArcLength(pull_over_path.points, first_road_pose.position, current_pose.position) <
@@ -2362,10 +2362,10 @@ void GoalPlannerModule::setDebugData()
 {
   debug_marker_.markers.clear();
 
-  using autoware_motion_utils::createStopVirtualWallMarker;
-  using autoware_universe_utils::createDefaultMarker;
-  using autoware_universe_utils::createMarkerColor;
-  using autoware_universe_utils::createMarkerScale;
+  using autoware::motion_utils::createStopVirtualWallMarker;
+  using autoware::universe_utils::createDefaultMarker;
+  using autoware::universe_utils::createMarkerColor;
+  using autoware::universe_utils::createMarkerScale;
   using marker_utils::createObjectsMarkerArray;
   using marker_utils::createPathMarkerArray;
   using marker_utils::createPoseMarkerArray;
@@ -2380,7 +2380,7 @@ void GoalPlannerModule::setDebugData()
     for (auto & marker : added.markers) {
       marker.lifetime = rclcpp::Duration::from_seconds(1.5);
     }
-    autoware_universe_utils::appendMarkerArray(added, &debug_marker_);
+    autoware::universe_utils::appendMarkerArray(added, &debug_marker_);
   };
   if (utils::isAllowedGoalModification(planner_data_->route_handler)) {
     // Visualize pull over areas
@@ -2428,10 +2428,10 @@ void GoalPlannerModule::setDebugData()
         createPathMarkerArray(partial_path, "partial_path_" + std::to_string(i), 0, 0.9, 0.5, 0.9));
     }
 
-    auto marker = autoware_universe_utils::createDefaultMarker(
+    auto marker = autoware::universe_utils::createDefaultMarker(
       "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "detection_polygons", 0, Marker::LINE_LIST,
-      autoware_universe_utils::createMarkerScale(0.01, 0.0, 0.0),
-      autoware_universe_utils::createMarkerColor(0.0, 0.0, 1.0, 0.999));
+      autoware::universe_utils::createMarkerScale(0.01, 0.0, 0.0),
+      autoware::universe_utils::createMarkerColor(0.0, 0.0, 1.0, 0.999));
     const double ego_z = planner_data_->self_odometry->pose.pose.position.z;
     for (const auto & ego_polygon : debug_data_.ego_polygons_expanded) {
       for (size_t ep_idx = 0; ep_idx < ego_polygon.outer().size(); ++ep_idx) {
@@ -2439,19 +2439,19 @@ void GoalPlannerModule::setDebugData()
         const auto & next_point = ego_polygon.outer().at((ep_idx + 1) % ego_polygon.outer().size());
 
         marker.points.push_back(
-          autoware_universe_utils::createPoint(current_point.x(), current_point.y(), ego_z));
+          autoware::universe_utils::createPoint(current_point.x(), current_point.y(), ego_z));
         marker.points.push_back(
-          autoware_universe_utils::createPoint(next_point.x(), next_point.y(), ego_z));
+          autoware::universe_utils::createPoint(next_point.x(), next_point.y(), ego_z));
       }
     }
     debug_marker_.markers.push_back(marker);
 
     if (parameters_->safety_check_params.enable_safety_check) {
-      autoware_universe_utils::appendMarkerArray(
+      autoware::universe_utils::appendMarkerArray(
         goal_planner_utils::createLaneletPolygonMarkerArray(
           debug_data_.expanded_pull_over_lane_between_ego.polygon3d(), header,
           "expanded_pull_over_lane_between_ego",
-          autoware_universe_utils::createMarkerColor(1.0, 0.7, 0.0, 0.999)),
+          autoware::universe_utils::createMarkerColor(1.0, 0.7, 0.0, 0.999)),
         &debug_marker_);
     }
 
@@ -2578,7 +2578,7 @@ void GoalPlannerModule::printParkingPositionError() const
     real_shoulder_to_map_shoulder + parameters_->margin_from_boundary - dy;
   RCLCPP_INFO(
     getLogger(), "current pose to goal, dx:%f dy:%f dyaw:%f from_real_shoulder:%f", dx, dy,
-    autoware_universe_utils::rad2deg(
+    autoware::universe_utils::rad2deg(
       tf2::getYaw(current_pose.orientation) -
       tf2::getYaw(thread_safe_data_.get_modified_goal_pose()->goal_pose.orientation)),
     distance_from_real_shoulder);
@@ -2634,7 +2634,7 @@ void GoalPlannerModule::GoalPlannerData::update(
   const PlannerData & planner_data_, const ModuleStatus & current_status_,
   const BehaviorModuleOutput & previous_module_output_,
   const std::shared_ptr<GoalSearcherBase> goal_searcher_,
-  const autoware_universe_utils::LinearRing2d & vehicle_footprint_)
+  const autoware::universe_utils::LinearRing2d & vehicle_footprint_)
 {
   parameters = parameters_;
   ego_predicted_path_params = ego_predicted_path_params_;

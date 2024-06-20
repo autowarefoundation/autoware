@@ -22,8 +22,8 @@
 
 namespace autoware::behavior_velocity_planner
 {
-using autoware_motion_utils::calcSignedArcLength;
-using autoware_universe_utils::createPoint;
+using autoware::motion_utils::calcSignedArcLength;
+using autoware::universe_utils::createPoint;
 
 using geometry_msgs::msg::Point32;
 

@@ -29,7 +29,7 @@
 #include <vector>
 namespace autoware::behavior_path_planner
 {
-using autoware_universe_utils::generateUUID;
+using autoware::universe_utils::generateUUID;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using tier4_planning_msgs::msg::PathPointWithLaneId;

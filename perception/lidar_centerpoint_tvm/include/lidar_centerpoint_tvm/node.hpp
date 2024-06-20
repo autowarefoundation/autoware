@@ -59,9 +59,9 @@ private:
   std::unique_ptr<CenterPointTVM> detector_ptr_{nullptr};
 
   // debugger
-  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{
+  std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{
     nullptr};
-  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_ptr_{nullptr};
+  std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_ptr_{nullptr};
 };
 
 }  // namespace lidar_centerpoint_tvm

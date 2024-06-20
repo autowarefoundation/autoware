@@ -49,7 +49,7 @@ public:
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
-  autoware_motion_utils::VirtualWalls createVirtualWalls() override;
+  autoware::motion_utils::VirtualWalls createVirtualWalls() override;
 
 private:
   const int64_t module_id_;

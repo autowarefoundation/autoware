@@ -21,7 +21,7 @@
 #include <utility>
 #include <vector>
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 
 std::optional<std::pair<size_t, size_t>> getPathIndexRangeWithLaneId(
@@ -116,15 +116,15 @@ tier4_planning_msgs::msg::PathWithLaneId convertToRearWheelCenter(
 
     // apply beta to CoG pose
     geometry_msgs::msg::Pose cog_pose_with_beta;
-    cog_pose_with_beta.position = autoware_universe_utils::getPoint(path.points.at(i));
+    cog_pose_with_beta.position = autoware::universe_utils::getPoint(path.points.at(i));
     cog_pose_with_beta.orientation =
-      autoware_universe_utils::createQuaternionFromYaw(yaw_vec.at(i) - beta);
+      autoware::universe_utils::createQuaternionFromYaw(yaw_vec.at(i) - beta);
 
     const auto rear_pose =
-      autoware_universe_utils::calcOffsetPose(cog_pose_with_beta, -rear_to_cog, 0.0, 0.0);
+      autoware::universe_utils::calcOffsetPose(cog_pose_with_beta, -rear_to_cog, 0.0, 0.0);
 
     // update pose
-    autoware_universe_utils::setPose(rear_pose, cog_path.points.at(i));
+    autoware::universe_utils::setPose(rear_pose, cog_path.points.at(i));
   }
 
   // compensate for the last pose
@@ -136,4 +136,4 @@ tier4_planning_msgs::msg::PathWithLaneId convertToRearWheelCenter(
 
   return cog_path;
 }
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils

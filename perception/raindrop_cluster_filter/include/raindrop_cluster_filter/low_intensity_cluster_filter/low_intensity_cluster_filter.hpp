@@ -68,9 +68,9 @@ private:
   utils::FilterTargetLabel filter_target_;
 
   // debugger
-  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{
+  std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{
     nullptr};
-  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_ptr_{nullptr};
+  std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_ptr_{nullptr};
 };
 
 }  // namespace low_intensity_cluster_filter

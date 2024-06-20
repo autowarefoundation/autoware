@@ -33,7 +33,7 @@
 #include <stack>
 #include <vector>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 template <>
 geometry_msgs::msg::Point getPoint(const autoware::path_optimizer::ReferencePoint & p)
@@ -52,7 +52,7 @@ double getLongitudinalVelocity(const autoware::path_optimizer::ReferencePoint & 
 {
   return p.longitudinal_velocity_mps;
 }
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 namespace autoware::path_optimizer
 {
@@ -108,12 +108,12 @@ void compensateLastPose(
 
   const geometry_msgs::msg::Pose last_traj_pose = traj_points.back().pose;
 
-  const double dist =
-    autoware_universe_utils::calcDistance2d(last_path_point.pose.position, last_traj_pose.position);
+  const double dist = autoware::universe_utils::calcDistance2d(
+    last_path_point.pose.position, last_traj_pose.position);
   const double norm_diff_yaw = [&]() {
     const double diff_yaw =
       tf2::getYaw(last_path_point.pose.orientation) - tf2::getYaw(last_traj_pose.orientation);
-    return autoware_universe_utils::normalizeRadian(diff_yaw);
+    return autoware::universe_utils::normalizeRadian(diff_yaw);
   }();
   if (dist > delta_dist_threshold || std::fabs(norm_diff_yaw) > delta_yaw_threshold) {
     traj_points.push_back(convertToTrajectoryPoint(last_path_point));
@@ -140,10 +140,10 @@ std::vector<TrajectoryPoint> resampleTrajectoryPoints(
 {
   constexpr bool enable_resampling_stop_point = true;
 
-  const auto traj = autoware_motion_utils::convertToTrajectory(traj_points);
-  const auto resampled_traj = autoware_motion_utils::resampleTrajectory(
+  const auto traj = autoware::motion_utils::convertToTrajectory(traj_points);
+  const auto resampled_traj = autoware::motion_utils::resampleTrajectory(
     traj, interval, false, true, true, enable_resampling_stop_point);
-  return autoware_motion_utils::convertToTrajectoryPointArray(resampled_traj);
+  return autoware::motion_utils::convertToTrajectoryPointArray(resampled_traj);
 }
 
 // NOTE: stop point will not be resampled
@@ -152,10 +152,10 @@ std::vector<TrajectoryPoint> resampleTrajectoryPointsWithoutStopPoint(
 {
   constexpr bool enable_resampling_stop_point = false;
 
-  const auto traj = autoware_motion_utils::convertToTrajectory(traj_points);
-  const auto resampled_traj = autoware_motion_utils::resampleTrajectory(
+  const auto traj = autoware::motion_utils::convertToTrajectory(traj_points);
+  const auto resampled_traj = autoware::motion_utils::resampleTrajectory(
     traj, interval, false, true, true, enable_resampling_stop_point);
-  return autoware_motion_utils::convertToTrajectoryPointArray(resampled_traj);
+  return autoware::motion_utils::convertToTrajectoryPointArray(resampled_traj);
 }
 
 std::vector<ReferencePoint> resampleReferencePoints(
@@ -175,7 +175,7 @@ std::vector<ReferencePoint> resampleReferencePoints(
       base_keys.push_back(0.0);
     } else {
       const double delta_arc_length =
-        autoware_universe_utils::calcDistance2d(ref_points.at(i), ref_points.at(i - 1));
+        autoware::universe_utils::calcDistance2d(ref_points.at(i), ref_points.at(i - 1));
       base_keys.push_back(base_keys.back() + delta_arc_length);
     }
 
@@ -187,7 +187,7 @@ std::vector<ReferencePoint> resampleReferencePoints(
     if (i == 0) {
       query_keys.push_back(0.0);
     } else {
-      const double delta_arc_length = autoware_universe_utils::calcDistance2d(
+      const double delta_arc_length = autoware::universe_utils::calcDistance2d(
         resampled_ref_points.at(i), resampled_ref_points.at(i - 1));
       const double key = query_keys.back() + delta_arc_length;
       if (base_keys.back() < key) {
@@ -220,7 +220,7 @@ void insertStopPoint(
   std::vector<TrajectoryPoint> & traj_points, const geometry_msgs::msg::Pose & input_stop_pose,
   const size_t stop_seg_idx)
 {
-  const double offset_to_segment = autoware_motion_utils::calcLongitudinalOffsetToSegment(
+  const double offset_to_segment = autoware::motion_utils::calcLongitudinalOffsetToSegment(
     traj_points, stop_seg_idx, input_stop_pose.position);
 
   const auto traj_spline = SplineInterpolationPoints2d(traj_points);

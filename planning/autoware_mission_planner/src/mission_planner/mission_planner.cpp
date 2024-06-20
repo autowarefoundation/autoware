@@ -78,7 +78,7 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
   const auto period = rclcpp::Rate(10).period();
   data_check_timer_ = create_wall_timer(period, [this] { check_initialization(); });
 
-  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
 }
 
 void MissionPlanner::publish_pose_log(const Pose & pose, const std::string & pose_type)

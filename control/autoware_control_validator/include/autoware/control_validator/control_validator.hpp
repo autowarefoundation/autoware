@@ -69,9 +69,9 @@ private:
   void setStatus(DiagnosticStatusWrapper & stat, const bool & is_ok, const std::string & msg);
 
   rclcpp::Subscription<Trajectory>::SharedPtr sub_predicted_traj_;
-  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
     this, "~/input/kinematics"};
-  autoware_universe_utils::InterProcessPollingSubscriber<Trajectory> sub_reference_traj_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Trajectory> sub_reference_traj_{
     this, "~/input/reference_trajectory"};
   rclcpp::Publisher<ControlValidatorStatus>::SharedPtr pub_status_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_markers_;

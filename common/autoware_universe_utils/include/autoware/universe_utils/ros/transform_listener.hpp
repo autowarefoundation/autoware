@@ -26,7 +26,7 @@
 #include <memory>
 #include <string>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 class TransformListener
 {
@@ -82,6 +82,6 @@ private:
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 };
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__ROS__TRANSFORM_LISTENER_HPP_

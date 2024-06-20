@@ -22,7 +22,7 @@
 
 #include <memory>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 class SelfPoseListener
 {
@@ -53,6 +53,6 @@ public:
 private:
   TransformListener transform_listener_;
 };
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__ROS__SELF_POSE_LISTENER_HPP_

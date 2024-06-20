@@ -25,7 +25,7 @@ constexpr double epsilon = 1e-6;
 
 TEST(geometry, getPoint)
 {
-  using autoware_universe_utils::getPoint;
+  using autoware::universe_utils::getPoint;
 
   const double x_ans = 1.0;
   const double y_ans = 2.0;
@@ -114,7 +114,7 @@ TEST(geometry, getPoint)
 
 TEST(geometry, getPose)
 {
-  using autoware_universe_utils::getPose;
+  using autoware::universe_utils::getPose;
 
   const double x_ans = 1.0;
   const double y_ans = 2.0;
@@ -203,7 +203,7 @@ TEST(geometry, getPose)
 
 TEST(geometry, getLongitudinalVelocity)
 {
-  using autoware_universe_utils::getLongitudinalVelocity;
+  using autoware::universe_utils::getLongitudinalVelocity;
 
   const double velocity = 1.0;
 
@@ -222,7 +222,7 @@ TEST(geometry, getLongitudinalVelocity)
 
 TEST(geometry, setPose)
 {
-  using autoware_universe_utils::setPose;
+  using autoware::universe_utils::setPose;
 
   const double x_ans = 1.0;
   const double y_ans = 2.0;
@@ -292,9 +292,9 @@ TEST(geometry, setPose)
 
 TEST(geometry, setOrientation)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
-  using autoware_universe_utils::setOrientation;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
+  using autoware::universe_utils::setOrientation;
 
   geometry_msgs::msg::Pose p;
   const auto orientation = createQuaternionFromRPY(deg2rad(30), deg2rad(30), deg2rad(30));
@@ -308,7 +308,7 @@ TEST(geometry, setOrientation)
 
 TEST(geometry, setLongitudinalVelocity)
 {
-  using autoware_universe_utils::setLongitudinalVelocity;
+  using autoware::universe_utils::setLongitudinalVelocity;
 
   const double velocity = 1.0;
 
@@ -327,7 +327,7 @@ TEST(geometry, setLongitudinalVelocity)
 
 TEST(geometry, createPoint)
 {
-  using autoware_universe_utils::createPoint;
+  using autoware::universe_utils::createPoint;
 
   const geometry_msgs::msg::Point p_out = createPoint(1.0, 2.0, 3.0);
   EXPECT_DOUBLE_EQ(p_out.x, 1.0);
@@ -337,7 +337,7 @@ TEST(geometry, createPoint)
 
 TEST(geometry, createQuaternion)
 {
-  using autoware_universe_utils::createQuaternion;
+  using autoware::universe_utils::createQuaternion;
 
   // (0.18257419, 0.36514837, 0.54772256, 0.73029674) is normalized quaternion of (1, 2, 3, 4)
   const geometry_msgs::msg::Quaternion q_out =
@@ -350,7 +350,7 @@ TEST(geometry, createQuaternion)
 
 TEST(geometry, createTranslation)
 {
-  using autoware_universe_utils::createTranslation;
+  using autoware::universe_utils::createTranslation;
 
   const geometry_msgs::msg::Vector3 v_out = createTranslation(1.0, 2.0, 3.0);
   EXPECT_DOUBLE_EQ(v_out.x, 1.0);
@@ -360,8 +360,8 @@ TEST(geometry, createTranslation)
 
 TEST(geometry, createQuaternionFromRPY)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
 
   {
     const auto q_out = createQuaternionFromRPY(0, 0, 0);
@@ -390,8 +390,8 @@ TEST(geometry, createQuaternionFromRPY)
 
 TEST(geometry, createQuaternionFromYaw)
 {
-  using autoware_universe_utils::createQuaternionFromYaw;
-  using autoware_universe_utils::deg2rad;
+  using autoware::universe_utils::createQuaternionFromYaw;
+  using autoware::universe_utils::deg2rad;
 
   {
     const auto q_out = createQuaternionFromYaw(0);
@@ -420,9 +420,9 @@ TEST(geometry, createQuaternionFromYaw)
 
 TEST(geometry, calcElevationAngle)
 {
-  using autoware_universe_utils::calcElevationAngle;
-  using autoware_universe_utils::createPoint;
-  using autoware_universe_utils::deg2rad;
+  using autoware::universe_utils::calcElevationAngle;
+  using autoware::universe_utils::createPoint;
+  using autoware::universe_utils::deg2rad;
 
   {
     const auto p1 = createPoint(1.0, 1.0, 1.0);
@@ -468,9 +468,9 @@ TEST(geometry, calcElevationAngle)
 
 TEST(geometry, calcAzimuthAngle)
 {
-  using autoware_universe_utils::calcAzimuthAngle;
-  using autoware_universe_utils::createPoint;
-  using autoware_universe_utils::deg2rad;
+  using autoware::universe_utils::calcAzimuthAngle;
+  using autoware::universe_utils::createPoint;
+  using autoware::universe_utils::deg2rad;
 
   {
     const auto p1 = createPoint(0.0, 0.0, 9.0);
@@ -521,7 +521,7 @@ TEST(geometry, calcAzimuthAngle)
 
 TEST(geometry, calcDistance2d)
 {
-  using autoware_universe_utils::calcDistance2d;
+  using autoware::universe_utils::calcDistance2d;
 
   geometry_msgs::msg::Point point;
   point.x = 1.0;
@@ -538,7 +538,7 @@ TEST(geometry, calcDistance2d)
 
 TEST(geometry, calcSquaredDistance2d)
 {
-  using autoware_universe_utils::calcSquaredDistance2d;
+  using autoware::universe_utils::calcSquaredDistance2d;
 
   geometry_msgs::msg::Point point;
   point.x = 1.0;
@@ -555,7 +555,7 @@ TEST(geometry, calcSquaredDistance2d)
 
 TEST(geometry, calcDistance3d)
 {
-  using autoware_universe_utils::calcDistance3d;
+  using autoware::universe_utils::calcDistance3d;
 
   geometry_msgs::msg::Point point;
   point.x = 1.0;
@@ -572,9 +572,9 @@ TEST(geometry, calcDistance3d)
 
 TEST(geometry, getRPY)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
-  using autoware_universe_utils::getRPY;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
+  using autoware::universe_utils::getRPY;
 
   {
     const double ans_roll = deg2rad(5);
@@ -610,9 +610,9 @@ TEST(geometry, getRPY)
 
 TEST(geometry, getRPY_wrapper)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
-  using autoware_universe_utils::getRPY;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
+  using autoware::universe_utils::getRPY;
 
   {
     const double ans_roll = deg2rad(45);
@@ -652,9 +652,9 @@ TEST(geometry, getRPY_wrapper)
 
 TEST(geometry, transform2pose)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
-  using autoware_universe_utils::transform2pose;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
+  using autoware::universe_utils::transform2pose;
 
   {
     geometry_msgs::msg::Transform transform;
@@ -703,9 +703,9 @@ TEST(geometry, transform2pose)
 
 TEST(geometry, pose2transform)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
-  using autoware_universe_utils::pose2transform;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
+  using autoware::universe_utils::pose2transform;
 
   {
     geometry_msgs::msg::Pose pose;
@@ -756,9 +756,9 @@ TEST(geometry, pose2transform)
 
 TEST(geometry, point2tfVector)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
-  using autoware_universe_utils::point2tfVector;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
+  using autoware::universe_utils::point2tfVector;
 
   // Point
   {
@@ -823,11 +823,11 @@ TEST(geometry, point2tfVector)
 
 TEST(geometry, transformPoint)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
-  using autoware_universe_utils::Point2d;
-  using autoware_universe_utils::Point3d;
-  using autoware_universe_utils::transformPoint;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
+  using autoware::universe_utils::Point2d;
+  using autoware::universe_utils::Point3d;
+  using autoware::universe_utils::transformPoint;
 
   {
     const Point2d p(1.0, 2.0);
@@ -916,9 +916,9 @@ TEST(geometry, transformPoint)
 
 TEST(geometry, transformPose)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
-  using autoware_universe_utils::transformPose;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
+  using autoware::universe_utils::transformPose;
 
   geometry_msgs::msg::Pose pose;
   pose.position.x = 2.0;
@@ -967,9 +967,9 @@ TEST(geometry, transformPose)
 
 TEST(geometry, inverseTransformPose)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
-  using autoware_universe_utils::inverseTransformPose;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
+  using autoware::universe_utils::inverseTransformPose;
 
   geometry_msgs::msg::Pose pose;
   pose.position.x = 2.0;
@@ -1018,10 +1018,10 @@ TEST(geometry, inverseTransformPose)
 
 TEST(geometry, inverseTransformPoint)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
-  using autoware_universe_utils::inverseTransformPoint;
-  using autoware_universe_utils::inverseTransformPose;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
+  using autoware::universe_utils::inverseTransformPoint;
+  using autoware::universe_utils::inverseTransformPose;
 
   geometry_msgs::msg::Pose pose_transform;
   pose_transform.position.x = 1.0;
@@ -1050,10 +1050,10 @@ TEST(geometry, inverseTransformPoint)
 
 TEST(geometry, transformVector)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
-  using autoware_universe_utils::MultiPoint3d;
-  using autoware_universe_utils::transformVector;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
+  using autoware::universe_utils::MultiPoint3d;
+  using autoware::universe_utils::transformVector;
 
   {
     const MultiPoint3d ps{{1.0, 2.0, 3.0}, {2.0, 3.0, 4.0}};
@@ -1078,51 +1078,51 @@ TEST(geometry, transformVector)
 
 TEST(geometry, calcCurvature)
 {
-  using autoware_universe_utils::calcCurvature;
+  using autoware::universe_utils::calcCurvature;
   // Straight Line
   {
-    geometry_msgs::msg::Point p1 = autoware_universe_utils::createPoint(0.0, 0.0, 0.0);
-    geometry_msgs::msg::Point p2 = autoware_universe_utils::createPoint(1.0, 0.0, 0.0);
-    geometry_msgs::msg::Point p3 = autoware_universe_utils::createPoint(2.0, 0.0, 0.0);
+    geometry_msgs::msg::Point p1 = autoware::universe_utils::createPoint(0.0, 0.0, 0.0);
+    geometry_msgs::msg::Point p2 = autoware::universe_utils::createPoint(1.0, 0.0, 0.0);
+    geometry_msgs::msg::Point p3 = autoware::universe_utils::createPoint(2.0, 0.0, 0.0);
     EXPECT_DOUBLE_EQ(calcCurvature(p1, p2, p3), 0.0);
   }
 
   // Clockwise Curved Road with a 1[m] radius
   {
-    geometry_msgs::msg::Point p1 = autoware_universe_utils::createPoint(0.0, 0.0, 0.0);
-    geometry_msgs::msg::Point p2 = autoware_universe_utils::createPoint(1.0, 1.0, 0.0);
-    geometry_msgs::msg::Point p3 = autoware_universe_utils::createPoint(2.0, 0.0, 0.0);
+    geometry_msgs::msg::Point p1 = autoware::universe_utils::createPoint(0.0, 0.0, 0.0);
+    geometry_msgs::msg::Point p2 = autoware::universe_utils::createPoint(1.0, 1.0, 0.0);
+    geometry_msgs::msg::Point p3 = autoware::universe_utils::createPoint(2.0, 0.0, 0.0);
     EXPECT_DOUBLE_EQ(calcCurvature(p1, p2, p3), -1.0);
   }
 
   // Clockwise Curved Road with a 5[m] radius
   {
-    geometry_msgs::msg::Point p1 = autoware_universe_utils::createPoint(0.0, 0.0, 0.0);
-    geometry_msgs::msg::Point p2 = autoware_universe_utils::createPoint(5.0, 5.0, 0.0);
-    geometry_msgs::msg::Point p3 = autoware_universe_utils::createPoint(10.0, 0.0, 0.0);
+    geometry_msgs::msg::Point p1 = autoware::universe_utils::createPoint(0.0, 0.0, 0.0);
+    geometry_msgs::msg::Point p2 = autoware::universe_utils::createPoint(5.0, 5.0, 0.0);
+    geometry_msgs::msg::Point p3 = autoware::universe_utils::createPoint(10.0, 0.0, 0.0);
     EXPECT_DOUBLE_EQ(calcCurvature(p1, p2, p3), -0.2);
   }
 
   // Counter-Clockwise Curved Road with a 1[m] radius
   {
-    geometry_msgs::msg::Point p1 = autoware_universe_utils::createPoint(0.0, 0.0, 0.0);
-    geometry_msgs::msg::Point p2 = autoware_universe_utils::createPoint(-1.0, 1.0, 0.0);
-    geometry_msgs::msg::Point p3 = autoware_universe_utils::createPoint(-2.0, 0.0, 0.0);
+    geometry_msgs::msg::Point p1 = autoware::universe_utils::createPoint(0.0, 0.0, 0.0);
+    geometry_msgs::msg::Point p2 = autoware::universe_utils::createPoint(-1.0, 1.0, 0.0);
+    geometry_msgs::msg::Point p3 = autoware::universe_utils::createPoint(-2.0, 0.0, 0.0);
     EXPECT_DOUBLE_EQ(calcCurvature(p1, p2, p3), 1.0);
   }
 
   // Counter-Clockwise Curved Road with a 5[m] radius
   {
-    geometry_msgs::msg::Point p1 = autoware_universe_utils::createPoint(0.0, 0.0, 0.0);
-    geometry_msgs::msg::Point p2 = autoware_universe_utils::createPoint(-5.0, 5.0, 0.0);
-    geometry_msgs::msg::Point p3 = autoware_universe_utils::createPoint(-10.0, 0.0, 0.0);
+    geometry_msgs::msg::Point p1 = autoware::universe_utils::createPoint(0.0, 0.0, 0.0);
+    geometry_msgs::msg::Point p2 = autoware::universe_utils::createPoint(-5.0, 5.0, 0.0);
+    geometry_msgs::msg::Point p3 = autoware::universe_utils::createPoint(-10.0, 0.0, 0.0);
     EXPECT_DOUBLE_EQ(calcCurvature(p1, p2, p3), 0.2);
   }
 
   // Give same points
   {
-    geometry_msgs::msg::Point p1 = autoware_universe_utils::createPoint(0.0, 0.0, 0.0);
-    geometry_msgs::msg::Point p2 = autoware_universe_utils::createPoint(1.0, 0.0, 0.0);
+    geometry_msgs::msg::Point p1 = autoware::universe_utils::createPoint(0.0, 0.0, 0.0);
+    geometry_msgs::msg::Point p2 = autoware::universe_utils::createPoint(1.0, 0.0, 0.0);
     ASSERT_ANY_THROW(calcCurvature(p1, p1, p1));
     ASSERT_ANY_THROW(calcCurvature(p1, p1, p2));
     ASSERT_ANY_THROW(calcCurvature(p1, p2, p1));
@@ -1132,11 +1132,11 @@ TEST(geometry, calcCurvature)
 
 TEST(geometry, calcOffsetPose)
 {
-  using autoware_universe_utils::calcOffsetPose;
-  using autoware_universe_utils::createPoint;
-  using autoware_universe_utils::createQuaternion;
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
+  using autoware::universe_utils::calcOffsetPose;
+  using autoware::universe_utils::createPoint;
+  using autoware::universe_utils::createQuaternion;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
 
   // Only translation
   {
@@ -1224,12 +1224,12 @@ TEST(geometry, calcOffsetPose)
 
 TEST(geometry, isDrivingForward)
 {
-  using autoware_universe_utils::calcInterpolatedPoint;
-  using autoware_universe_utils::createPoint;
-  using autoware_universe_utils::createQuaternion;
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
-  using autoware_universe_utils::isDrivingForward;
+  using autoware::universe_utils::calcInterpolatedPoint;
+  using autoware::universe_utils::createPoint;
+  using autoware::universe_utils::createQuaternion;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
+  using autoware::universe_utils::isDrivingForward;
 
   const double epsilon = 1e-3;
 
@@ -1286,8 +1286,8 @@ TEST(geometry, isDrivingForward)
 
 TEST(geometry, calcInterpolatedPoint)
 {
-  using autoware_universe_utils::calcInterpolatedPoint;
-  using autoware_universe_utils::createPoint;
+  using autoware::universe_utils::calcInterpolatedPoint;
+  using autoware::universe_utils::createPoint;
 
   {
     const auto src_point = createPoint(0.0, 0.0, 0.0);
@@ -1343,11 +1343,11 @@ TEST(geometry, calcInterpolatedPoint)
 
 TEST(geometry, calcInterpolatedPose)
 {
-  using autoware_universe_utils::calcInterpolatedPose;
-  using autoware_universe_utils::createPoint;
-  using autoware_universe_utils::createQuaternion;
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
+  using autoware::universe_utils::calcInterpolatedPose;
+  using autoware::universe_utils::createPoint;
+  using autoware::universe_utils::createQuaternion;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
   const double epsilon = 1e-3;
 
   // Position Interpolation
@@ -1527,11 +1527,11 @@ TEST(geometry, calcInterpolatedPose)
 
 TEST(geometry, calcInterpolatedPose_with_Spherical_Interpolation)
 {
-  using autoware_universe_utils::calcInterpolatedPose;
-  using autoware_universe_utils::createPoint;
-  using autoware_universe_utils::createQuaternion;
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::deg2rad;
+  using autoware::universe_utils::calcInterpolatedPose;
+  using autoware::universe_utils::createPoint;
+  using autoware::universe_utils::createQuaternion;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::deg2rad;
   const double epsilon = 1e-3;
 
   // Position Interpolation
@@ -1675,7 +1675,7 @@ TEST(geometry, calcInterpolatedPose_with_Spherical_Interpolation)
 
 TEST(geometry, getTwist)
 {
-  using autoware_universe_utils::createVector3;
+  using autoware::universe_utils::createVector3;
 
   geometry_msgs::msg::Vector3 velocity = createVector3(1.0, 2.0, 3.0);
   geometry_msgs::msg::Vector3 angular = createVector3(0.1, 0.2, 0.3);
@@ -1691,7 +1691,7 @@ TEST(geometry, getTwist)
 
   // getTwist
   {
-    auto t_out = autoware_universe_utils::createTwist(velocity, angular);
+    auto t_out = autoware::universe_utils::createTwist(velocity, angular);
     EXPECT_DOUBLE_EQ(t_out.linear.x, twist.linear.x);
     EXPECT_DOUBLE_EQ(t_out.linear.y, twist.linear.y);
     EXPECT_DOUBLE_EQ(t_out.linear.z, twist.linear.z);
@@ -1703,32 +1703,32 @@ TEST(geometry, getTwist)
 
 TEST(geometry, getTwistNorm)
 {
-  using autoware_universe_utils::createVector3;
+  using autoware::universe_utils::createVector3;
   geometry_msgs::msg::TwistWithCovariance twist_with_covariance;
   twist_with_covariance.twist = geometry_msgs::build<geometry_msgs::msg::Twist>()
                                   .linear(createVector3(3.0, 4.0, 0.0))
                                   .angular(createVector3(0.1, 0.2, 0.3));
-  EXPECT_NEAR(autoware_universe_utils::calcNorm(twist_with_covariance.twist.linear), 5.0, epsilon);
+  EXPECT_NEAR(autoware::universe_utils::calcNorm(twist_with_covariance.twist.linear), 5.0, epsilon);
 }
 
 TEST(geometry, isTwistCovarianceValid)
 {
-  using autoware_universe_utils::createVector3;
+  using autoware::universe_utils::createVector3;
   geometry_msgs::msg::TwistWithCovariance twist_with_covariance;
   twist_with_covariance.twist = geometry_msgs::build<geometry_msgs::msg::Twist>()
                                   .linear(createVector3(1.0, 2.0, 3.0))
                                   .angular(createVector3(0.1, 0.2, 0.3));
 
-  EXPECT_EQ(autoware_universe_utils::isTwistCovarianceValid(twist_with_covariance), false);
+  EXPECT_EQ(autoware::universe_utils::isTwistCovarianceValid(twist_with_covariance), false);
 
   twist_with_covariance.covariance.at(0) = 1.0;
-  EXPECT_EQ(autoware_universe_utils::isTwistCovarianceValid(twist_with_covariance), true);
+  EXPECT_EQ(autoware::universe_utils::isTwistCovarianceValid(twist_with_covariance), true);
 }
 
 TEST(geometry, intersect)
 {
-  using autoware_universe_utils::createPoint;
-  using autoware_universe_utils::intersect;
+  using autoware::universe_utils::createPoint;
+  using autoware::universe_utils::intersect;
 
   {  // Normally crossing
     const auto p1 = createPoint(0.0, -1.0, 0.0);

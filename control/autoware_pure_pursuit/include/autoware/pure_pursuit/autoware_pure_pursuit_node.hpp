@@ -78,10 +78,10 @@ public:
 
 private:
   // Subscriber
-  autoware_universe_utils::SelfPoseListener self_pose_listener_{this};
-  autoware_universe_utils::InterProcessPollingSubscriber<autoware_planning_msgs::msg::Trajectory>
+  autoware::universe_utils::SelfPoseListener self_pose_listener_{this};
+  autoware::universe_utils::InterProcessPollingSubscriber<autoware_planning_msgs::msg::Trajectory>
     sub_trajectory_{this, "input/reference_trajectory"};
-  autoware_universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry>
+  autoware::universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry>
     sub_current_odometry_{this, "input/current_odometry"};
 
   autoware_planning_msgs::msg::Trajectory::ConstSharedPtr trajectory_;

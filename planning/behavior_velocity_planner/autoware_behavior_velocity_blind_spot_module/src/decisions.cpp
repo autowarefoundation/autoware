@@ -88,7 +88,7 @@ void BlindSpotModule::setRTCStatusByDecision(
 {
   setSafe(false);
   const auto & current_pose = planner_data_->current_odometry->pose;
-  setDistance(autoware_motion_utils::calcSignedArcLength(
+  setDistance(autoware::motion_utils::calcSignedArcLength(
     path.points, current_pose.position, decision.stop_line_idx));
   return;
 }
@@ -124,7 +124,7 @@ void BlindSpotModule::setRTCStatusByDecision(
 {
   setSafe(true);
   const auto & current_pose = planner_data_->current_odometry->pose;
-  setDistance(autoware_motion_utils::calcSignedArcLength(
+  setDistance(autoware::motion_utils::calcSignedArcLength(
     path.points, current_pose.position, decision.stop_line_idx));
   return;
 }

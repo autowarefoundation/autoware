@@ -96,7 +96,7 @@ EKFLocalizer::EKFLocalizer(const rclcpp::NodeOptions & node_options)
     std::shared_ptr<rclcpp::Node>(this, [](auto) {}));
 
   ekf_module_ = std::make_unique<EKFModule>(warning_, params_);
-  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
 
   z_filter_.set_proc_dev(params_.z_filter_proc_dev);
   roll_filter_.set_proc_dev(params_.roll_filter_proc_dev);
@@ -264,7 +264,7 @@ void EKFLocalizer::timer_tf_callback()
   const rclcpp::Time current_time = this->now();
 
   geometry_msgs::msg::TransformStamped transform_stamped;
-  transform_stamped = autoware_universe_utils::pose2transform(
+  transform_stamped = autoware::universe_utils::pose2transform(
     ekf_module_->get_current_pose(current_time, z, roll, pitch, false), "base_link");
   transform_stamped.header.stamp = current_time;
   tf_br_->sendTransform(transform_stamped);
@@ -436,9 +436,9 @@ void EKFLocalizer::update_simple_1d_filters(
 {
   double z = pose.pose.pose.position.z;
 
-  const auto rpy = autoware_universe_utils::getRPY(pose.pose.pose.orientation);
+  const auto rpy = autoware::universe_utils::getRPY(pose.pose.pose.orientation);
 
-  using COV_IDX = autoware_universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
   double z_dev = pose.pose.covariance[COV_IDX::Z_Z] * static_cast<double>(smoothing_step);
   double roll_dev = pose.pose.covariance[COV_IDX::ROLL_ROLL] * static_cast<double>(smoothing_step);
   double pitch_dev =
@@ -454,9 +454,9 @@ void EKFLocalizer::init_simple_1d_filters(
 {
   double z = pose.pose.pose.position.z;
 
-  const auto rpy = autoware_universe_utils::getRPY(pose.pose.pose.orientation);
+  const auto rpy = autoware::universe_utils::getRPY(pose.pose.pose.orientation);
 
-  using COV_IDX = autoware_universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
   double z_dev = pose.pose.covariance[COV_IDX::Z_Z];
   double roll_dev = pose.pose.covariance[COV_IDX::ROLL_ROLL];
   double pitch_dev = pose.pose.covariance[COV_IDX::PITCH_PITCH];

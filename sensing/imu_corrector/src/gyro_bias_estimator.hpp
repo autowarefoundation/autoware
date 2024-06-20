@@ -76,7 +76,7 @@ private:
 
   std::optional<Vector3> gyro_bias_;
 
-  std::shared_ptr<autoware_universe_utils::TransformListener> transform_listener_;
+  std::shared_ptr<autoware::universe_utils::TransformListener> transform_listener_;
 
   std::string imu_frame_;
 

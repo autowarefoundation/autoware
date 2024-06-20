@@ -59,7 +59,7 @@ nav_msgs::msg::Odometry to_odometry(
   nav_msgs::msg::Odometry odometry;
   odometry.pose.pose.position.x = vehicle_model_ptr->getX();
   odometry.pose.pose.position.y = vehicle_model_ptr->getY();
-  odometry.pose.pose.orientation = autoware_universe_utils::createQuaternionFromRPY(
+  odometry.pose.pose.orientation = autoware::universe_utils::createQuaternionFromRPY(
     0.0, ego_pitch_angle, vehicle_model_ptr->getYaw());
   odometry.twist.twist.linear.x = vehicle_model_ptr->getVx();
   odometry.twist.twist.angular.z = vehicle_model_ptr->getWz();
@@ -304,8 +304,8 @@ rcl_interfaces::msg::SetParametersResult SimplePlanningSimulator::on_parameter(
   result.reason = "success";
 
   try {
-    autoware_universe_utils::updateParam(parameters, "x_stddev", x_stddev_);
-    autoware_universe_utils::updateParam(parameters, "y_stddev", y_stddev_);
+    autoware::universe_utils::updateParam(parameters, "x_stddev", x_stddev_);
+    autoware::universe_utils::updateParam(parameters, "y_stddev", y_stddev_);
   } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
     result.successful = false;
     result.reason = e.what();
@@ -323,7 +323,7 @@ double SimplePlanningSimulator::calculate_ego_pitch() const
   geometry_msgs::msg::Pose ego_pose;
   ego_pose.position.x = ego_x;
   ego_pose.position.y = ego_y;
-  ego_pose.orientation = autoware_universe_utils::createQuaternionFromYaw(ego_yaw);
+  ego_pose.orientation = autoware::universe_utils::createQuaternionFromYaw(ego_yaw);
 
   // calculate prev/next point of lanelet centerline nearest to ego pose.
   lanelet::Lanelet ego_lanelet;
@@ -333,7 +333,7 @@ double SimplePlanningSimulator::calculate_ego_pitch() const
   }
   const auto centerline_points = convert_centerline_to_points(ego_lanelet);
   const size_t ego_seg_idx =
-    autoware_motion_utils::findNearestSegmentIndex(centerline_points, ego_pose.position);
+    autoware::motion_utils::findNearestSegmentIndex(centerline_points, ego_pose.position);
 
   const auto & prev_point = centerline_points.at(ego_seg_idx);
   const auto & next_point = centerline_points.at(ego_seg_idx + 1);
@@ -398,7 +398,7 @@ void SimplePlanningSimulator::on_timer()
 
   // add estimate covariance
   {
-    using COV_IDX = autoware_universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+    using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
     current_odometry_.pose.covariance[COV_IDX::X_X] = x_stddev_;
     current_odometry_.pose.covariance[COV_IDX::Y_Y] = y_stddev_;
   }
@@ -553,7 +553,7 @@ void SimplePlanningSimulator::add_measurement_noise(
   odom.twist.twist.linear.x += velocity_noise;
   double yaw = tf2::getYaw(odom.pose.pose.orientation);
   yaw += static_cast<float>((*n.rpy_dist_)(*n.rand_engine_));
-  odom.pose.pose.orientation = autoware_universe_utils::createQuaternionFromYaw(yaw);
+  odom.pose.pose.orientation = autoware::universe_utils::createQuaternionFromYaw(yaw);
 
   vel.longitudinal_velocity += static_cast<double>(velocity_noise);
 
@@ -686,7 +686,7 @@ void SimplePlanningSimulator::publish_acceleration()
   msg.accel.accel.linear.x = vehicle_model_ptr_->getAx();
   msg.accel.accel.linear.y = vehicle_model_ptr_->getWz() * vehicle_model_ptr_->getVx();
 
-  using COV_IDX = autoware_universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
   constexpr auto COV = 0.001;
   msg.accel.covariance.at(COV_IDX::X_X) = COV;          // linear x
   msg.accel.covariance.at(COV_IDX::Y_Y) = COV;          // linear y
@@ -699,7 +699,7 @@ void SimplePlanningSimulator::publish_acceleration()
 
 void SimplePlanningSimulator::publish_imu()
 {
-  using COV_IDX = autoware_universe_utils::xyz_covariance_index::XYZ_COV_IDX;
+  using COV_IDX = autoware::universe_utils::xyz_covariance_index::XYZ_COV_IDX;
 
   sensor_msgs::msg::Imu imu;
   imu.header.frame_id = "base_link";

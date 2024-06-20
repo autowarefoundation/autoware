@@ -35,7 +35,7 @@
 
 namespace obstacle_collision_checker
 {
-using autoware_universe_utils::LinearRing2d;
+using autoware::universe_utils::LinearRing2d;
 
 struct Param
 {

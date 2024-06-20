@@ -50,10 +50,10 @@
 
 namespace autoware::motion::control::pid_longitudinal_controller
 {
+using autoware::universe_utils::createDefaultMarker;
+using autoware::universe_utils::createMarkerColor;
+using autoware::universe_utils::createMarkerScale;
 using autoware_adapi_v1_msgs::msg::OperationModeState;
-using autoware_universe_utils::createDefaultMarker;
-using autoware_universe_utils::createMarkerColor;
-using autoware_universe_utils::createMarkerScale;
 using visualization_msgs::msg::Marker;
 
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;

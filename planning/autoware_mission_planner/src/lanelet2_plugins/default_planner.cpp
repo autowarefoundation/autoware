@@ -108,7 +108,7 @@ geometry_msgs::msg::Pose get_closest_centerline_pose(
 
   const double lane_yaw = lanelet::utils::getLaneletAngle(closest_lanelet, point.position);
 
-  const auto nearest_idx = autoware_motion_utils::findNearestIndex(
+  const auto nearest_idx = autoware::motion_utils::findNearestIndex(
     convertCenterlineToPoints(closest_lanelet), point.position);
   const auto nearest_point = closest_lanelet.centerline()[nearest_idx];
 
@@ -190,13 +190,13 @@ PlannerPlugin::MarkerArray DefaultPlanner::visualize(const LaneletRoute & route)
   }
 
   const std_msgs::msg::ColorRGBA cl_route =
-    autoware_universe_utils::createMarkerColor(0.8, 0.99, 0.8, 0.15);
+    autoware::universe_utils::createMarkerColor(0.8, 0.99, 0.8, 0.15);
   const std_msgs::msg::ColorRGBA cl_ll_borders =
-    autoware_universe_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999);
+    autoware::universe_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999);
   const std_msgs::msg::ColorRGBA cl_end =
-    autoware_universe_utils::createMarkerColor(0.2, 0.2, 0.4, 0.05);
+    autoware::universe_utils::createMarkerColor(0.2, 0.2, 0.4, 0.05);
   const std_msgs::msg::ColorRGBA cl_goal =
-    autoware_universe_utils::createMarkerColor(0.2, 0.4, 0.4, 0.05);
+    autoware::universe_utils::createMarkerColor(0.2, 0.4, 0.4, 0.05);
 
   visualization_msgs::msg::MarkerArray route_marker_array;
   insert_marker_array(
@@ -216,27 +216,27 @@ PlannerPlugin::MarkerArray DefaultPlanner::visualize(const LaneletRoute & route)
 }
 
 visualization_msgs::msg::MarkerArray DefaultPlanner::visualize_debug_footprint(
-  autoware_universe_utils::LinearRing2d goal_footprint) const
+  autoware::universe_utils::LinearRing2d goal_footprint) const
 {
   visualization_msgs::msg::MarkerArray msg;
-  auto marker = autoware_universe_utils::createDefaultMarker(
+  auto marker = autoware::universe_utils::createDefaultMarker(
     "map", rclcpp::Clock().now(), "goal_footprint", 0, visualization_msgs::msg::Marker::LINE_STRIP,
-    autoware_universe_utils::createMarkerScale(0.05, 0.0, 0.0),
-    autoware_universe_utils::createMarkerColor(0.99, 0.99, 0.2, 1.0));
+    autoware::universe_utils::createMarkerScale(0.05, 0.0, 0.0),
+    autoware::universe_utils::createMarkerColor(0.99, 0.99, 0.2, 1.0));
   marker.lifetime = rclcpp::Duration::from_seconds(2.5);
 
   marker.points.push_back(
-    autoware_universe_utils::createPoint(goal_footprint[0][0], goal_footprint[0][1], 0.0));
+    autoware::universe_utils::createPoint(goal_footprint[0][0], goal_footprint[0][1], 0.0));
   marker.points.push_back(
-    autoware_universe_utils::createPoint(goal_footprint[1][0], goal_footprint[1][1], 0.0));
+    autoware::universe_utils::createPoint(goal_footprint[1][0], goal_footprint[1][1], 0.0));
   marker.points.push_back(
-    autoware_universe_utils::createPoint(goal_footprint[2][0], goal_footprint[2][1], 0.0));
+    autoware::universe_utils::createPoint(goal_footprint[2][0], goal_footprint[2][1], 0.0));
   marker.points.push_back(
-    autoware_universe_utils::createPoint(goal_footprint[3][0], goal_footprint[3][1], 0.0));
+    autoware::universe_utils::createPoint(goal_footprint[3][0], goal_footprint[3][1], 0.0));
   marker.points.push_back(
-    autoware_universe_utils::createPoint(goal_footprint[4][0], goal_footprint[4][1], 0.0));
+    autoware::universe_utils::createPoint(goal_footprint[4][0], goal_footprint[4][1], 0.0));
   marker.points.push_back(
-    autoware_universe_utils::createPoint(goal_footprint[5][0], goal_footprint[5][1], 0.0));
+    autoware::universe_utils::createPoint(goal_footprint[5][0], goal_footprint[5][1], 0.0));
   marker.points.push_back(marker.points.front());
 
   msg.markers.push_back(marker);
@@ -247,7 +247,7 @@ visualization_msgs::msg::MarkerArray DefaultPlanner::visualize_debug_footprint(
 bool DefaultPlanner::check_goal_footprint_inside_lanes(
   const lanelet::ConstLanelet & current_lanelet,
   const lanelet::ConstLanelet & combined_prev_lanelet,
-  const autoware_universe_utils::Polygon2d & goal_footprint, double & next_lane_length,
+  const autoware::universe_utils::Polygon2d & goal_footprint, double & next_lane_length,
   const double search_margin)
 {
   // check if goal footprint is in current lane
@@ -302,8 +302,8 @@ bool DefaultPlanner::is_goal_valid(
         shoulder_lanelets, goal, &closest_shoulder_lanelet)) {
     const auto lane_yaw = lanelet::utils::getLaneletAngle(closest_shoulder_lanelet, goal.position);
     const auto goal_yaw = tf2::getYaw(goal.orientation);
-    const auto angle_diff = autoware_universe_utils::normalizeRadian(lane_yaw - goal_yaw);
-    const double th_angle = autoware_universe_utils::deg2rad(param_.goal_angle_threshold_deg);
+    const auto angle_diff = autoware::universe_utils::normalizeRadian(lane_yaw - goal_yaw);
+    const double th_angle = autoware::universe_utils::deg2rad(param_.goal_angle_threshold_deg);
     if (std::abs(angle_diff) < th_angle) {
       return true;
     }
@@ -332,8 +332,8 @@ bool DefaultPlanner::is_goal_valid(
   }
 
   const auto local_vehicle_footprint = vehicle_info_.createFootprint();
-  autoware_universe_utils::LinearRing2d goal_footprint =
-    transformVector(local_vehicle_footprint, autoware_universe_utils::pose2transform(goal));
+  autoware::universe_utils::LinearRing2d goal_footprint =
+    transformVector(local_vehicle_footprint, autoware::universe_utils::pose2transform(goal));
   pub_goal_footprint_marker_->publish(visualize_debug_footprint(goal_footprint));
   const auto polygon_footprint = convert_linear_ring_to_polygon(goal_footprint);
 
@@ -357,9 +357,9 @@ bool DefaultPlanner::is_goal_valid(
   if (is_in_lane(closest_lanelet, goal_lanelet_pt)) {
     const auto lane_yaw = lanelet::utils::getLaneletAngle(closest_lanelet, goal.position);
     const auto goal_yaw = tf2::getYaw(goal.orientation);
-    const auto angle_diff = autoware_universe_utils::normalizeRadian(lane_yaw - goal_yaw);
+    const auto angle_diff = autoware::universe_utils::normalizeRadian(lane_yaw - goal_yaw);
 
-    const double th_angle = autoware_universe_utils::deg2rad(param_.goal_angle_threshold_deg);
+    const double th_angle = autoware::universe_utils::deg2rad(param_.goal_angle_threshold_deg);
     if (std::abs(angle_diff) < th_angle) {
       return true;
     }

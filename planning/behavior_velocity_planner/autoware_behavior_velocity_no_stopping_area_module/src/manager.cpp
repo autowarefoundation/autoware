@@ -30,7 +30,7 @@
 
 namespace autoware::behavior_velocity_planner
 {
-using autoware_universe_utils::getOrDeclareParameter;
+using autoware::universe_utils::getOrDeclareParameter;
 using lanelet::autoware::NoStoppingArea;
 
 NoStoppingAreaModuleManager::NoStoppingAreaModuleManager(rclcpp::Node & node)

@@ -83,7 +83,7 @@ protected:
 
   std::unique_ptr<NetworkTRT> network_trt_ptr_{nullptr};
   std::unique_ptr<VoxelGenerator> vg_ptr_{nullptr};
-  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{
+  std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{
     nullptr};
   std::unique_ptr<PreprocessCuda> pre_ptr_{nullptr};
   std::unique_ptr<PostprocessCuda> post_ptr_{nullptr};

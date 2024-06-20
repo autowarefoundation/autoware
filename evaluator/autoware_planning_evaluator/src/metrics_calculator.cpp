@@ -123,7 +123,7 @@ Trajectory MetricsCalculator::getLookaheadTrajectory(
   }
 
   const auto ego_index =
-    autoware_motion_utils::findNearestSegmentIndex(traj.points, ego_pose_.position);
+    autoware::motion_utils::findNearestSegmentIndex(traj.points, ego_pose_.position);
   Trajectory lookahead_traj;
   lookahead_traj.header = traj.header;
   double dist = 0.0;
@@ -132,7 +132,7 @@ Trajectory MetricsCalculator::getLookaheadTrajectory(
   auto prev_point_it = curr_point_it;
   while (curr_point_it != traj.points.end() && dist <= max_dist_m && time <= max_time_s) {
     lookahead_traj.points.push_back(*curr_point_it);
-    const auto d = autoware_universe_utils::calcDistance2d(
+    const auto d = autoware::universe_utils::calcDistance2d(
       prev_point_it->pose.position, curr_point_it->pose.position);
     dist += d;
     if (prev_point_it->longitudinal_velocity_mps != 0.0) {

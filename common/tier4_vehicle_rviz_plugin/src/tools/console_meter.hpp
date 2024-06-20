@@ -63,10 +63,10 @@ protected:
   // QImage hud_;
 
 private:
-  static constexpr float meter_min_velocity_ = autoware_universe_utils::kmph2mps(0.f);
-  static constexpr float meter_max_velocity_ = autoware_universe_utils::kmph2mps(60.f);
-  static constexpr float meter_min_angle_ = autoware_universe_utils::deg2rad(40.f);
-  static constexpr float meter_max_angle_ = autoware_universe_utils::deg2rad(320.f);
+  static constexpr float meter_min_velocity_ = autoware::universe_utils::kmph2mps(0.f);
+  static constexpr float meter_max_velocity_ = autoware::universe_utils::kmph2mps(60.f);
+  static constexpr float meter_min_angle_ = autoware::universe_utils::deg2rad(40.f);
+  static constexpr float meter_max_angle_ = autoware::universe_utils::deg2rad(320.f);
   static constexpr int line_width_ = 2;
   static constexpr int hand_width_ = 4;
   struct Line  // for drawLine

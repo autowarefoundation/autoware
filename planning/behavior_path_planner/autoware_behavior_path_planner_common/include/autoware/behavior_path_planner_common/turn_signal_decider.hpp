@@ -239,8 +239,8 @@ private:
     const ShiftedPath & path, const ShiftLine & shift_line, const lanelet::ConstLanelets & lanes,
     const autoware::vehicle_info_utils::VehicleInfo & vehicle_info) const
   {
-    using autoware_universe_utils::pose2transform;
-    using autoware_universe_utils::transformVector;
+    using autoware::universe_utils::pose2transform;
+    using autoware::universe_utils::transformVector;
     using boost::geometry::intersects;
 
     const auto footprint = vehicle_info.createFootprint();

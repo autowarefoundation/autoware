@@ -70,7 +70,7 @@ bool isCentroidWithinLanelet(const PredictedObject & object, const lanelet::Cons
 bool isPolygonOverlapLanelet(const PredictedObject & object, const lanelet::ConstLanelet & lanelet);
 
 bool isPolygonOverlapLanelet(
-  const PredictedObject & object, const autoware_universe_utils::Polygon2d & lanelet_polygon);
+  const PredictedObject & object, const autoware::universe_utils::Polygon2d & lanelet_polygon);
 
 bool isPolygonOverlapLanelet(
   const PredictedObject & object, const lanelet::BasicPolygon2d & lanelet_polygon);

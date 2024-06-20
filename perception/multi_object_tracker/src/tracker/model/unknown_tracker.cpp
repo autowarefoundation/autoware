@@ -67,8 +67,8 @@ UnknownTracker::UnknownTracker(
 
   // Set motion limits
   motion_model_.setMotionLimits(
-    autoware_universe_utils::kmph2mps(60), /* [m/s] maximum velocity, x */
-    autoware_universe_utils::kmph2mps(60)  /* [m/s] maximum velocity, y */
+    autoware::universe_utils::kmph2mps(60), /* [m/s] maximum velocity, x */
+    autoware::universe_utils::kmph2mps(60)  /* [m/s] maximum velocity, y */
   );
 
   // Set initial state
@@ -107,8 +107,8 @@ UnknownTracker::UnknownTracker(
     }
 
     if (!object.kinematics.has_twist_covariance) {
-      constexpr double p0_stddev_vx = autoware_universe_utils::kmph2mps(10);  // [m/s]
-      constexpr double p0_stddev_vy = autoware_universe_utils::kmph2mps(10);  // [m/s]
+      constexpr double p0_stddev_vx = autoware::universe_utils::kmph2mps(10);  // [m/s]
+      constexpr double p0_stddev_vy = autoware::universe_utils::kmph2mps(10);  // [m/s]
       const double p0_cov_vx = std::pow(p0_stddev_vx, 2.0);
       const double p0_cov_vy = std::pow(p0_stddev_vy, 2.0);
       twist_cov[utils::MSG_COV_IDX::X_X] = p0_cov_vx;

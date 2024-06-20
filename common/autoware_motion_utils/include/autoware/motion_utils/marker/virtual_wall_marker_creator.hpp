@@ -25,7 +25,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 
 /// @brief type of virtual wall associated with different marker styles and namespace
@@ -76,6 +76,6 @@ public:
   /// @param now current time to be used for displaying the markers
   visualization_msgs::msg::MarkerArray create_markers(const rclcpp::Time & now = rclcpp::Time());
 };
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils
 
 #endif  // AUTOWARE__MOTION_UTILS__MARKER__VIRTUAL_WALL_MARKER_CREATOR_HPP_

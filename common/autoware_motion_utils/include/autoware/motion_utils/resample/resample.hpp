@@ -21,7 +21,7 @@
 
 #include <vector>
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 /**
  * @brief A resampling function for a path(points). Note that in a default setting, position xy are
@@ -234,6 +234,6 @@ autoware_planning_msgs::msg::Trajectory resampleTrajectory(
   const bool use_akima_spline_for_xy = false, const bool use_lerp_for_z = true,
   const bool use_zero_order_hold_for_twist = true,
   const bool resample_input_trajectory_stop_point = true);
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils
 
 #endif  // AUTOWARE__MOTION_UTILS__RESAMPLE__RESAMPLE_HPP_

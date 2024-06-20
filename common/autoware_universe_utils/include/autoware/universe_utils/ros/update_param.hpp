@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 template <class T>
 bool updateParam(const std::vector<rclcpp::Parameter> & params, const std::string & name, T & value)
@@ -37,6 +37,6 @@ bool updateParam(const std::vector<rclcpp::Parameter> & params, const std::strin
   value = itr->template get_value<T>();
   return true;
 }
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__ROS__UPDATE_PARAM_HPP_

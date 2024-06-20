@@ -465,10 +465,10 @@ PidLongitudinalController::ControlData PidLongitudinalController::getControlData
 
   // check if the deviation is worth emergency
   m_diagnostic_data.trans_deviation =
-    autoware_universe_utils::calcDistance2d(current_interpolated_pose.first, current_pose);
+    autoware::universe_utils::calcDistance2d(current_interpolated_pose.first, current_pose);
   const bool is_dist_deviation_large =
     m_state_transition_params.emergency_state_traj_trans_dev < m_diagnostic_data.trans_deviation;
-  m_diagnostic_data.rot_deviation = std::abs(autoware_universe_utils::normalizeRadian(
+  m_diagnostic_data.rot_deviation = std::abs(autoware::universe_utils::normalizeRadian(
     tf2::getYaw(current_interpolated_pose.first.pose.orientation) -
     tf2::getYaw(current_pose.orientation)));
   const bool is_yaw_deviation_large =
@@ -509,11 +509,11 @@ PidLongitudinalController::ControlData PidLongitudinalController::getControlData
   // ==========================================================================================
   // Remove overlapped points after inserting the interpolated points
   control_data.interpolated_traj.points =
-    autoware_motion_utils::removeOverlapPoints(control_data.interpolated_traj.points);
-  control_data.nearest_idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+    autoware::motion_utils::removeOverlapPoints(control_data.interpolated_traj.points);
+  control_data.nearest_idx = autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
     control_data.interpolated_traj.points, nearest_point.pose, m_ego_nearest_dist_threshold,
     m_ego_nearest_yaw_threshold);
-  control_data.target_idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+  control_data.target_idx = autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
     control_data.interpolated_traj.points, target_point.pose, m_ego_nearest_dist_threshold,
     m_ego_nearest_yaw_threshold);
 
@@ -594,7 +594,7 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     stop_dist > p.drive_state_stop_dist + p.drive_state_offset_stop_dist;
   const bool departure_condition_from_stopped = stop_dist > p.drive_state_stop_dist;
 
-  // NOTE: the same velocity threshold as autoware_motion_utils::searchZeroVelocity
+  // NOTE: the same velocity threshold as autoware::motion_utils::searchZeroVelocity
   static constexpr double vel_epsilon = 1e-3;
 
   // Let vehicle start after the steering is converged for control accuracy
@@ -605,7 +605,7 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     auto marker = createDefaultMarker(
       "map", clock_->now(), "stop_reason", 0, Marker::TEXT_VIEW_FACING,
       createMarkerScale(0.0, 0.0, 1.0), createMarkerColor(1.0, 1.0, 1.0, 0.999));
-    marker.pose = autoware_universe_utils::calcOffsetPose(
+    marker.pose = autoware::universe_utils::calcOffsetPose(
       m_current_kinematic_state.pose.pose, m_wheel_base + m_front_overhang,
       m_vehicle_width / 2 + 2.0, 1.5);
     marker.text = "steering not\nconverged";
@@ -971,7 +971,7 @@ PidLongitudinalController::Motion PidLongitudinalController::keepBrakeBeforeStop
   }
   const auto traj = control_data.interpolated_traj;
 
-  const auto stop_idx = autoware_motion_utils::searchZeroVelocityIndex(traj.points);
+  const auto stop_idx = autoware::motion_utils::searchZeroVelocityIndex(traj.points);
   if (!stop_idx) {
     return output_motion;
   }

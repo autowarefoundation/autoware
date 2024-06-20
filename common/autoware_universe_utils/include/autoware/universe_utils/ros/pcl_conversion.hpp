@@ -20,7 +20,7 @@
 
 #include <vector>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 /**
  * @brief a faster implementation of converting sensor_msgs::msg::PointCloud2 to
@@ -67,6 +67,6 @@ void transformPointCloudFromROSMsg(
   }
 }
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__ROS__PCL_CONVERSION_HPP_

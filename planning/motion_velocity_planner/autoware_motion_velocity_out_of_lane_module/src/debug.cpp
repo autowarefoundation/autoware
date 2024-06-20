@@ -36,10 +36,10 @@ visualization_msgs::msg::Marker get_base_marker()
   base_marker.id = 0;
   base_marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
   base_marker.action = visualization_msgs::msg::Marker::ADD;
-  base_marker.pose.position = autoware_universe_utils::createMarkerPosition(0.0, 0.0, 0);
-  base_marker.pose.orientation = autoware_universe_utils::createMarkerOrientation(0, 0, 0, 1.0);
-  base_marker.scale = autoware_universe_utils::createMarkerScale(0.1, 0.1, 0.1);
-  base_marker.color = autoware_universe_utils::createMarkerColor(1.0, 0.1, 0.1, 0.5);
+  base_marker.pose.position = autoware::universe_utils::createMarkerPosition(0.0, 0.0, 0);
+  base_marker.pose.orientation = autoware::universe_utils::createMarkerOrientation(0, 0, 0, 1.0);
+  base_marker.scale = autoware::universe_utils::createMarkerScale(0.1, 0.1, 0.1);
+  base_marker.color = autoware::universe_utils::createMarkerColor(1.0, 0.1, 0.1, 0.5);
   return base_marker;
 }
 void add_footprint_markers(
@@ -52,7 +52,7 @@ void add_footprint_markers(
     debug_marker.points.clear();
     for (const auto & p : f)
       debug_marker.points.push_back(
-        autoware_universe_utils::createMarkerPosition(p.x(), p.y(), z + 0.5));
+        autoware::universe_utils::createMarkerPosition(p.x(), p.y(), z + 0.5));
     debug_marker.points.push_back(debug_marker.points.front());
     debug_marker_array.markers.push_back(debug_marker);
     debug_marker.id++;
@@ -71,19 +71,19 @@ void add_current_overlap_marker(
   debug_marker.ns = "current_overlap";
   debug_marker.points.clear();
   for (const auto & p : current_footprint)
-    debug_marker.points.push_back(autoware_universe_utils::createMarkerPosition(p.x(), p.y(), z));
+    debug_marker.points.push_back(autoware::universe_utils::createMarkerPosition(p.x(), p.y(), z));
   if (!debug_marker.points.empty()) debug_marker.points.push_back(debug_marker.points.front());
   if (current_overlapped_lanelets.empty())
-    debug_marker.color = autoware_universe_utils::createMarkerColor(0.1, 1.0, 0.1, 0.5);
+    debug_marker.color = autoware::universe_utils::createMarkerColor(0.1, 1.0, 0.1, 0.5);
   else
-    debug_marker.color = autoware_universe_utils::createMarkerColor(1.0, 0.1, 0.1, 0.5);
+    debug_marker.color = autoware::universe_utils::createMarkerColor(1.0, 0.1, 0.1, 0.5);
   debug_marker_array.markers.push_back(debug_marker);
   debug_marker.id++;
   for (const auto & ll : current_overlapped_lanelets) {
     debug_marker.points.clear();
     for (const auto & p : ll.polygon3d())
       debug_marker.points.push_back(
-        autoware_universe_utils::createMarkerPosition(p.x(), p.y(), p.z() + 0.5));
+        autoware::universe_utils::createMarkerPosition(p.x(), p.y(), p.z() + 0.5));
     debug_marker.points.push_back(debug_marker.points.front());
     debug_marker_array.markers.push_back(debug_marker);
     debug_marker.id++;
@@ -106,7 +106,7 @@ void add_lanelet_markers(
     // add a small z offset to draw above the lanelet map
     for (const auto & p : ll.polygon3d())
       debug_marker.points.push_back(
-        autoware_universe_utils::createMarkerPosition(p.x(), p.y(), p.z() + 0.1));
+        autoware::universe_utils::createMarkerPosition(p.x(), p.y(), p.z() + 0.1));
     debug_marker.points.push_back(debug_marker.points.front());
     debug_marker_array.markers.push_back(debug_marker);
     debug_marker.id++;
@@ -123,20 +123,20 @@ void add_range_markers(
 {
   auto debug_marker = get_base_marker();
   debug_marker.ns = "ranges";
-  debug_marker.color = autoware_universe_utils::createMarkerColor(0.2, 0.9, 0.1, 0.5);
+  debug_marker.color = autoware::universe_utils::createMarkerColor(0.2, 0.9, 0.1, 0.5);
   for (const auto & range : ranges) {
     debug_marker.points.clear();
     debug_marker.points.push_back(
       trajectory_points[first_ego_idx + range.entering_trajectory_idx].pose.position);
-    debug_marker.points.push_back(autoware_universe_utils::createMarkerPosition(
+    debug_marker.points.push_back(autoware::universe_utils::createMarkerPosition(
       range.entering_point.x(), range.entering_point.y(), z));
     for (const auto & overlap : range.debug.overlaps) {
-      debug_marker.points.push_back(autoware_universe_utils::createMarkerPosition(
+      debug_marker.points.push_back(autoware::universe_utils::createMarkerPosition(
         overlap.min_overlap_point.x(), overlap.min_overlap_point.y(), z));
-      debug_marker.points.push_back(autoware_universe_utils::createMarkerPosition(
+      debug_marker.points.push_back(autoware::universe_utils::createMarkerPosition(
         overlap.max_overlap_point.x(), overlap.max_overlap_point.y(), z));
     }
-    debug_marker.points.push_back(autoware_universe_utils::createMarkerPosition(
+    debug_marker.points.push_back(autoware::universe_utils::createMarkerPosition(
       range.exiting_point.x(), range.exiting_point.y(), z));
     debug_marker.points.push_back(
       trajectory_points[first_ego_idx + range.exiting_trajectory_idx].pose.position);
@@ -156,12 +156,12 @@ void add_decision_markers(
   debug_marker.action = debug_marker.ADD;
   debug_marker.id = 0;
   debug_marker.ns = "decisions";
-  debug_marker.color = autoware_universe_utils::createMarkerColor(0.9, 0.1, 0.1, 1.0);
+  debug_marker.color = autoware::universe_utils::createMarkerColor(0.9, 0.1, 0.1, 1.0);
   debug_marker.points.clear();
   for (const auto & range : ranges) {
     debug_marker.type = debug_marker.LINE_STRIP;
     if (range.debug.decision) {
-      debug_marker.points.push_back(autoware_universe_utils::createMarkerPosition(
+      debug_marker.points.push_back(autoware::universe_utils::createMarkerPosition(
         range.entering_point.x(), range.entering_point.y(), z));
       debug_marker.points.push_back(
         range.debug.object->kinematics.initial_pose_with_covariance.pose.position);
@@ -210,15 +210,16 @@ visualization_msgs::msg::MarkerArray create_debug_marker_array(const DebugData &
     debug_data.prev_current_overlapped_lanelets);
   debug::add_lanelet_markers(
     debug_marker_array, debug_data.trajectory_lanelets, "trajectory_lanelets",
-    autoware_universe_utils::createMarkerColor(0.1, 0.1, 1.0, 0.5),
+    autoware::universe_utils::createMarkerColor(0.1, 0.1, 1.0, 0.5),
     debug_data.prev_trajectory_lanelets);
   debug::add_lanelet_markers(
     debug_marker_array, debug_data.ignored_lanelets, "ignored_lanelets",
-    autoware_universe_utils::createMarkerColor(0.7, 0.7, 0.2, 0.5),
+    autoware::universe_utils::createMarkerColor(0.7, 0.7, 0.2, 0.5),
     debug_data.prev_ignored_lanelets);
   debug::add_lanelet_markers(
     debug_marker_array, debug_data.other_lanelets, "other_lanelets",
-    autoware_universe_utils::createMarkerColor(0.4, 0.4, 0.7, 0.5), debug_data.prev_other_lanelets);
+    autoware::universe_utils::createMarkerColor(0.4, 0.4, 0.7, 0.5),
+    debug_data.prev_other_lanelets);
   debug::add_range_markers(
     debug_marker_array, debug_data.ranges, debug_data.trajectory_points,
     debug_data.first_trajectory_idx, z, debug_data.prev_ranges);
@@ -226,14 +227,14 @@ visualization_msgs::msg::MarkerArray create_debug_marker_array(const DebugData &
   return debug_marker_array;
 }
 
-autoware_motion_utils::VirtualWalls create_virtual_walls(
+autoware::motion_utils::VirtualWalls create_virtual_walls(
   const DebugData & debug_data, const PlannerParam & params)
 {
-  autoware_motion_utils::VirtualWalls virtual_walls;
-  autoware_motion_utils::VirtualWall wall;
+  autoware::motion_utils::VirtualWalls virtual_walls;
+  autoware::motion_utils::VirtualWall wall;
   wall.text = "out_of_lane";
   wall.longitudinal_offset = params.front_offset;
-  wall.style = autoware_motion_utils::VirtualWallType::slowdown;
+  wall.style = autoware::motion_utils::VirtualWallType::slowdown;
   for (const auto & slowdown : debug_data.slowdowns) {
     wall.pose = slowdown.point.pose;
     virtual_walls.push_back(wall);

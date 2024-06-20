@@ -88,7 +88,7 @@ using DataStampedPtr = std::shared_ptr<DataStamped>;
 class AccelBrakeMapCalibrator : public rclcpp::Node
 {
 private:
-  std::shared_ptr<autoware_universe_utils::TransformListener> transform_listener_;
+  std::shared_ptr<autoware::universe_utils::TransformListener> transform_listener_;
   std::string csv_default_map_dir_;
   rclcpp::Publisher<OccupancyGrid>::SharedPtr original_map_occ_pub_;
   rclcpp::Publisher<OccupancyGrid>::SharedPtr update_map_occ_pub_;
@@ -107,13 +107,13 @@ private:
   rclcpp::Publisher<Float32Stamped>::SharedPtr map_error_ratio_pub_;
   rclcpp::Publisher<CalibrationStatus>::SharedPtr calibration_status_pub_;
 
-  autoware_universe_utils::InterProcessPollingSubscriber<SteeringReport> steer_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<SteeringReport> steer_sub_{
     this, "~/input/steer"};
-  autoware_universe_utils::InterProcessPollingSubscriber<ActuationStatusStamped>
+  autoware::universe_utils::InterProcessPollingSubscriber<ActuationStatusStamped>
     actuation_status_sub_{this, "~/input/actuation_status"};
-  autoware_universe_utils::InterProcessPollingSubscriber<ActuationCommandStamped>
+  autoware::universe_utils::InterProcessPollingSubscriber<ActuationCommandStamped>
     actuation_cmd_sub_{this, "~/input/actuation_cmd"};
-  autoware_universe_utils::InterProcessPollingSubscriber<VelocityReport> velocity_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<VelocityReport> velocity_sub_{
     this, "~/input/velocity"};
 
   // Service
@@ -374,7 +374,7 @@ private:
     COMMAND = 1,
   };
 
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 
 public:
   explicit AccelBrakeMapCalibrator(const rclcpp::NodeOptions & node_options);

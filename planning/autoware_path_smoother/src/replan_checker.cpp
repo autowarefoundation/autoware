@@ -40,7 +40,7 @@ ReplanChecker::ReplanChecker(rclcpp::Node * node, const EgoNearestParam & ego_ne
 
 void ReplanChecker::onParam(const std::vector<rclcpp::Parameter> & parameters)
 {
-  using autoware_universe_utils::updateParam;
+  using autoware::universe_utils::updateParam;
 
   updateParam<bool>(parameters, "replan.enable", enable_);
   updateParam<double>(
@@ -80,7 +80,7 @@ bool ReplanChecker::isResetRequired(const PlannerData & planner_data) const
 
     // ego pose is lost or new ego pose is designated in simulation
     const double delta_dist =
-      autoware_universe_utils::calcDistance2d(p.ego_pose, prev_ego_pose_ptr_->position);
+      autoware::universe_utils::calcDistance2d(p.ego_pose, prev_ego_pose_ptr_->position);
     if (max_ego_moving_dist_ < delta_dist) {
       RCLCPP_DEBUG(
         logger_,
@@ -140,14 +140,14 @@ bool ReplanChecker::isPathAroundEgoChanged(
   // calculate ego's lateral offset to previous trajectory points
   const auto prev_ego_seg_idx =
     trajectory_utils::findEgoSegmentIndex(prev_traj_points, p.ego_pose, ego_nearest_param_);
-  const double prev_ego_lat_offset = autoware_motion_utils::calcLateralOffset(
+  const double prev_ego_lat_offset = autoware::motion_utils::calcLateralOffset(
     prev_traj_points, p.ego_pose.position, prev_ego_seg_idx);
 
   // calculate ego's lateral offset to current trajectory points
   const auto ego_seg_idx =
     trajectory_utils::findEgoSegmentIndex(p.traj_points, p.ego_pose, ego_nearest_param_);
   const double ego_lat_offset =
-    autoware_motion_utils::calcLateralOffset(p.traj_points, p.ego_pose.position, ego_seg_idx);
+    autoware::motion_utils::calcLateralOffset(p.traj_points, p.ego_pose.position, ego_seg_idx);
 
   const double diff_ego_lat_offset = prev_ego_lat_offset - ego_lat_offset;
   if (std::abs(diff_ego_lat_offset) < max_path_shape_around_ego_lat_dist_) {
@@ -170,7 +170,7 @@ bool ReplanChecker::isPathForwardChanged(
   constexpr double lon_dist_interval = 10.0;
   for (double lon_dist = lon_dist_interval; lon_dist <= max_path_shape_forward_lon_dist_;
        lon_dist += lon_dist_interval) {
-    const auto prev_forward_point = autoware_motion_utils::calcLongitudinalOffsetPoint(
+    const auto prev_forward_point = autoware::motion_utils::calcLongitudinalOffsetPoint(
       prev_traj_points, prev_ego_seg_idx, lon_dist);
     if (!prev_forward_point) {
       continue;
@@ -178,9 +178,9 @@ bool ReplanChecker::isPathForwardChanged(
 
     // calculate lateral offset of current trajectory points to prev forward point
     const auto forward_seg_idx =
-      autoware_motion_utils::findNearestSegmentIndex(p.traj_points, *prev_forward_point);
-    const double forward_lat_offset =
-      autoware_motion_utils::calcLateralOffset(p.traj_points, *prev_forward_point, forward_seg_idx);
+      autoware::motion_utils::findNearestSegmentIndex(p.traj_points, *prev_forward_point);
+    const double forward_lat_offset = autoware::motion_utils::calcLateralOffset(
+      p.traj_points, *prev_forward_point, forward_seg_idx);
     if (max_path_shape_forward_lat_dist_ < std::abs(forward_lat_offset)) {
       return true;
     }
@@ -201,7 +201,7 @@ bool ReplanChecker::isPathGoalChanged(
   }
 
   const double goal_moving_dist =
-    autoware_universe_utils::calcDistance2d(p.traj_points.back(), prev_traj_points.back());
+    autoware::universe_utils::calcDistance2d(p.traj_points.back(), prev_traj_points.back());
   if (goal_moving_dist < max_goal_moving_dist_) {
     return false;
   }

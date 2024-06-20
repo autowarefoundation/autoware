@@ -114,9 +114,9 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       this, get_clock(), period_ns, std::bind(&BehaviorPathPlannerNode::run, this));
   }
 
-  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
   published_time_publisher_ =
-    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
+    std::make_unique<autoware::universe_utils::PublishedTimePublisher>(this);
 }
 
 std::vector<std::string> BehaviorPathPlannerNode::getWaitingApprovalModules()
@@ -445,7 +445,7 @@ void BehaviorPathPlannerNode::run()
   const auto current_pose = planner_data_->self_odometry->pose.pose;
   if (!path->points.empty()) {
     const size_t current_seg_idx = planner_data_->findEgoSegmentIndex(path->points);
-    path->points = autoware_motion_utils::cropPoints(
+    path->points = autoware::motion_utils::cropPoints(
       path->points, current_pose.position, current_seg_idx,
       planner_data_->parameters.forward_path_length,
       planner_data_->parameters.backward_path_length +
@@ -472,7 +472,7 @@ void BehaviorPathPlannerNode::run()
   if (
     output.modified_goal &&
     /* has changed modified goal */ (
-      !planner_data_->prev_modified_goal || autoware_universe_utils::calcDistance2d(
+      !planner_data_->prev_modified_goal || autoware::universe_utils::calcDistance2d(
                                               planner_data_->prev_modified_goal->pose.position,
                                               output.modified_goal->pose.position) > 0.01)) {
     PoseWithUuidStamped modified_goal = *(output.modified_goal);
@@ -566,29 +566,29 @@ void BehaviorPathPlannerNode::publish_turn_signal_debug_data(const TurnSignalDeb
   constexpr double scale_x = 1.0;
   constexpr double scale_y = 1.0;
   constexpr double scale_z = 1.0;
-  const auto scale = autoware_universe_utils::createMarkerScale(scale_x, scale_y, scale_z);
+  const auto scale = autoware::universe_utils::createMarkerScale(scale_x, scale_y, scale_z);
   const auto desired_section_color =
-    autoware_universe_utils::createMarkerColor(0.0, 1.0, 0.0, 0.999);
+    autoware::universe_utils::createMarkerColor(0.0, 1.0, 0.0, 0.999);
   const auto required_section_color =
-    autoware_universe_utils::createMarkerColor(1.0, 0.0, 1.0, 0.999);
+    autoware::universe_utils::createMarkerColor(1.0, 0.0, 1.0, 0.999);
 
   // intersection turn signal info
   {
     const auto & turn_signal_info = debug_data.intersection_turn_signal_info;
 
-    auto desired_start_marker = autoware_universe_utils::createDefaultMarker(
+    auto desired_start_marker = autoware::universe_utils::createDefaultMarker(
       "map", current_time, "intersection_turn_signal_desired_start", 0L, Marker::SPHERE, scale,
       desired_section_color);
-    auto desired_end_marker = autoware_universe_utils::createDefaultMarker(
+    auto desired_end_marker = autoware::universe_utils::createDefaultMarker(
       "map", current_time, "intersection_turn_signal_desired_end", 0L, Marker::SPHERE, scale,
       desired_section_color);
     desired_start_marker.pose = turn_signal_info.desired_start_point;
     desired_end_marker.pose = turn_signal_info.desired_end_point;
 
-    auto required_start_marker = autoware_universe_utils::createDefaultMarker(
+    auto required_start_marker = autoware::universe_utils::createDefaultMarker(
       "map", current_time, "intersection_turn_signal_required_start", 0L, Marker::SPHERE, scale,
       required_section_color);
-    auto required_end_marker = autoware_universe_utils::createDefaultMarker(
+    auto required_end_marker = autoware::universe_utils::createDefaultMarker(
       "map", current_time, "intersection_turn_signal_required_end", 0L, Marker::SPHERE, scale,
       required_section_color);
     required_start_marker.pose = turn_signal_info.required_start_point;
@@ -604,19 +604,19 @@ void BehaviorPathPlannerNode::publish_turn_signal_debug_data(const TurnSignalDeb
   {
     const auto & turn_signal_info = debug_data.behavior_turn_signal_info;
 
-    auto desired_start_marker = autoware_universe_utils::createDefaultMarker(
+    auto desired_start_marker = autoware::universe_utils::createDefaultMarker(
       "map", current_time, "behavior_turn_signal_desired_start", 0L, Marker::CUBE, scale,
       desired_section_color);
-    auto desired_end_marker = autoware_universe_utils::createDefaultMarker(
+    auto desired_end_marker = autoware::universe_utils::createDefaultMarker(
       "map", current_time, "behavior_turn_signal_desired_end", 0L, Marker::CUBE, scale,
       desired_section_color);
     desired_start_marker.pose = turn_signal_info.desired_start_point;
     desired_end_marker.pose = turn_signal_info.desired_end_point;
 
-    auto required_start_marker = autoware_universe_utils::createDefaultMarker(
+    auto required_start_marker = autoware::universe_utils::createDefaultMarker(
       "map", current_time, "behavior_turn_signal_required_start", 0L, Marker::CUBE, scale,
       required_section_color);
-    auto required_end_marker = autoware_universe_utils::createDefaultMarker(
+    auto required_end_marker = autoware::universe_utils::createDefaultMarker(
       "map", current_time, "behavior_turn_signal_required_end", 0L, Marker::CUBE, scale,
       required_section_color);
     required_start_marker.pose = turn_signal_info.required_start_point;
@@ -642,18 +642,18 @@ void BehaviorPathPlannerNode::publish_bounds(const PathWithLaneId & path)
   constexpr double color_a = 0.999;
 
   const auto current_time = path.header.stamp;
-  auto left_marker = autoware_universe_utils::createDefaultMarker(
+  auto left_marker = autoware::universe_utils::createDefaultMarker(
     "map", current_time, "left_bound", 0L, Marker::LINE_STRIP,
-    autoware_universe_utils::createMarkerScale(scale_x, scale_y, scale_z),
-    autoware_universe_utils::createMarkerColor(color_r, color_g, color_b, color_a));
+    autoware::universe_utils::createMarkerScale(scale_x, scale_y, scale_z),
+    autoware::universe_utils::createMarkerColor(color_r, color_g, color_b, color_a));
   for (const auto lb : path.left_bound) {
     left_marker.points.push_back(lb);
   }
 
-  auto right_marker = autoware_universe_utils::createDefaultMarker(
+  auto right_marker = autoware::universe_utils::createDefaultMarker(
     "map", current_time, "right_bound", 0L, Marker::LINE_STRIP,
-    autoware_universe_utils::createMarkerScale(scale_x, scale_y, scale_z),
-    autoware_universe_utils::createMarkerColor(color_r, color_g, color_b, color_a));
+    autoware::universe_utils::createMarkerScale(scale_x, scale_y, scale_z),
+    autoware::universe_utils::createMarkerColor(color_r, color_g, color_b, color_a));
   for (const auto rb : path.right_bound) {
     right_marker.points.push_back(rb);
   }
@@ -744,7 +744,7 @@ Path BehaviorPathPlannerNode::convertToPath(
     return output;
   }
 
-  output = autoware_motion_utils::convertToPath<tier4_planning_msgs::msg::PathWithLaneId>(
+  output = autoware::motion_utils::convertToPath<tier4_planning_msgs::msg::PathWithLaneId>(
     *path_candidate_ptr);
   // header is replaced by the input one, so it is substituted again
   output.header = planner_data->route_handler->getRouteHeader();
@@ -830,7 +830,7 @@ void BehaviorPathPlannerNode::onLateralOffset(const LateralOffset::ConstSharedPt
 SetParametersResult BehaviorPathPlannerNode::onSetParam(
   const std::vector<rclcpp::Parameter> & parameters)
 {
-  using autoware_universe_utils::updateParam;
+  using autoware::universe_utils::updateParam;
 
   rcl_interfaces::msg::SetParametersResult result;
 

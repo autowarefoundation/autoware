@@ -31,7 +31,7 @@ namespace imu_corrector
 {
 class ImuCorrector : public rclcpp::Node
 {
-  using COV_IDX = autoware_universe_utils::xyz_covariance_index::XYZ_COV_IDX;
+  using COV_IDX = autoware::universe_utils::xyz_covariance_index::XYZ_COV_IDX;
 
 public:
   explicit ImuCorrector(const rclcpp::NodeOptions & options);
@@ -53,7 +53,7 @@ private:
 
   double accel_stddev_imu_link_;
 
-  std::shared_ptr<autoware_universe_utils::TransformListener> transform_listener_;
+  std::shared_ptr<autoware::universe_utils::TransformListener> transform_listener_;
 
   std::string output_frame_;
 };

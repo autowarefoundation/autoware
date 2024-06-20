@@ -93,9 +93,9 @@ struct ReferencePoint
 
   geometry_msgs::msg::Pose offsetDeviation(const double lat_dev, const double yaw_dev) const
   {
-    auto pose_with_deviation = autoware_universe_utils::calcOffsetPose(pose, 0.0, lat_dev, 0.0);
+    auto pose_with_deviation = autoware::universe_utils::calcOffsetPose(pose, 0.0, lat_dev, 0.0);
     pose_with_deviation.orientation =
-      autoware_universe_utils::createQuaternionFromYaw(getYaw() + yaw_dev);
+      autoware::universe_utils::createQuaternionFromYaw(getYaw() + yaw_dev);
     return pose_with_deviation;
   }
 };

@@ -26,8 +26,8 @@
 
 namespace autoware::behavior_path_planner
 {
+using autoware::universe_utils::getOrDeclareParameter;
 using autoware_perception_msgs::msg::ObjectClassification;
-using autoware_universe_utils::getOrDeclareParameter;
 
 AvoidanceParameters getParameter(rclcpp::Node * node)
 {

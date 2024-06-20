@@ -28,8 +28,8 @@ namespace autoware::behavior_path_planner
 {
 void StaticObstacleAvoidanceModuleManager::init(rclcpp::Node * node)
 {
+  using autoware::universe_utils::getOrDeclareParameter;
   using autoware_perception_msgs::msg::ObjectClassification;
-  using autoware_universe_utils::getOrDeclareParameter;
 
   // init manager interface
   initInterface(node, {"left", "right"});
@@ -42,8 +42,8 @@ void StaticObstacleAvoidanceModuleManager::init(rclcpp::Node * node)
 void StaticObstacleAvoidanceModuleManager::updateModuleParams(
   const std::vector<rclcpp::Parameter> & parameters)
 {
+  using autoware::universe_utils::updateParam;
   using autoware_perception_msgs::msg::ObjectClassification;
-  using autoware_universe_utils::updateParam;
 
   auto p = parameters_;
 

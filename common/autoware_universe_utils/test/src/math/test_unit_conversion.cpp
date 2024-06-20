@@ -16,11 +16,11 @@
 
 #include <gtest/gtest.h>
 
-using autoware_universe_utils::pi;
+using autoware::universe_utils::pi;
 
 TEST(unit_conversion, deg2rad)
 {
-  using autoware_universe_utils::deg2rad;
+  using autoware::universe_utils::deg2rad;
 
   EXPECT_DOUBLE_EQ(deg2rad(-720), -4 * pi);
   EXPECT_DOUBLE_EQ(deg2rad(0), 0);
@@ -33,7 +33,7 @@ TEST(unit_conversion, deg2rad)
 
 TEST(unit_conversion, rad2deg)
 {
-  using autoware_universe_utils::rad2deg;
+  using autoware::universe_utils::rad2deg;
 
   EXPECT_DOUBLE_EQ(rad2deg(-4 * pi), -720);
   EXPECT_DOUBLE_EQ(rad2deg(0), 0);
@@ -46,7 +46,7 @@ TEST(unit_conversion, rad2deg)
 
 TEST(unit_conversion, kmph2mps)
 {
-  using autoware_universe_utils::kmph2mps;
+  using autoware::universe_utils::kmph2mps;
 
   EXPECT_DOUBLE_EQ(kmph2mps(0), 0);
   EXPECT_DOUBLE_EQ(kmph2mps(36), 10);
@@ -56,7 +56,7 @@ TEST(unit_conversion, kmph2mps)
 
 TEST(unit_conversion, mps2kmph)
 {
-  using autoware_universe_utils::mps2kmph;
+  using autoware::universe_utils::mps2kmph;
 
   EXPECT_DOUBLE_EQ(mps2kmph(0), 0);
   EXPECT_DOUBLE_EQ(mps2kmph(10), 36);

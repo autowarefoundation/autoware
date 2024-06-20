@@ -38,9 +38,9 @@ bool has_ns_id(
 
 TEST(VirtualWallMarkerCreator, oneWall)
 {
-  autoware_motion_utils::VirtualWall wall;
-  autoware_motion_utils::VirtualWallMarkerCreator creator;
-  wall.style = autoware_motion_utils::VirtualWallType::stop;
+  autoware::motion_utils::VirtualWall wall;
+  autoware::motion_utils::VirtualWallMarkerCreator creator;
+  wall.style = autoware::motion_utils::VirtualWallType::stop;
   wall.pose.position.x = 1.0;
   wall.pose.position.y = 2.0;
   creator.add_virtual_wall(wall);
@@ -63,16 +63,16 @@ TEST(VirtualWallMarkerCreator, oneWall)
 
 TEST(VirtualWallMarkerCreator, manyWalls)
 {
-  autoware_motion_utils::VirtualWall wall;
-  autoware_motion_utils::VirtualWallMarkerCreator creator;
-  wall.style = autoware_motion_utils::VirtualWallType::stop;
+  autoware::motion_utils::VirtualWall wall;
+  autoware::motion_utils::VirtualWallMarkerCreator creator;
+  wall.style = autoware::motion_utils::VirtualWallType::stop;
   wall.ns = "ns1_";
   creator.add_virtual_wall(wall);
   creator.add_virtual_wall(wall);
   creator.add_virtual_wall(wall);
   wall.ns = "ns2_";
   creator.add_virtual_wall(wall);
-  wall.style = autoware_motion_utils::VirtualWallType::slowdown;
+  wall.style = autoware::motion_utils::VirtualWallType::slowdown;
   wall.ns = "ns2_";
   creator.add_virtual_wall(wall);
   creator.add_virtual_wall(wall);
@@ -80,7 +80,7 @@ TEST(VirtualWallMarkerCreator, manyWalls)
   creator.add_virtual_wall(wall);
   creator.add_virtual_wall(wall);
   creator.add_virtual_wall(wall);
-  wall.style = autoware_motion_utils::VirtualWallType::deadline;
+  wall.style = autoware::motion_utils::VirtualWallType::deadline;
   wall.ns = "ns1_";
   creator.add_virtual_wall(wall);
   wall.ns = "ns2_";

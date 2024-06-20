@@ -116,6 +116,7 @@ struct PredictionTimeHorizon
 
 using LaneletsData = std::vector<LaneletData>;
 using ManeuverProbability = std::unordered_map<Maneuver, float>;
+using autoware::universe_utils::StopWatch;
 using autoware_map_msgs::msg::LaneletMapBin;
 using autoware_perception_msgs::msg::ObjectClassification;
 using autoware_perception_msgs::msg::PredictedObject;
@@ -129,7 +130,6 @@ using autoware_perception_msgs::msg::TrafficLightElement;
 using autoware_perception_msgs::msg::TrafficLightGroup;
 using autoware_perception_msgs::msg::TrafficLightGroupArray;
 using autoware_planning_msgs::msg::TrajectoryPoint;
-using autoware_universe_utils::StopWatch;
 using tier4_debug_msgs::msg::StringStamped;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
 class MapBasedPredictionNode : public rclcpp::Node
@@ -143,12 +143,12 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_debug_markers_;
   rclcpp::Subscription<TrackedObjects>::SharedPtr sub_objects_;
   rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_map_;
-  autoware_universe_utils::InterProcessPollingSubscriber<TrafficLightGroupArray>
+  autoware::universe_utils::InterProcessPollingSubscriber<TrafficLightGroupArray>
     sub_traffic_signals_{this, "/traffic_signals"};
 
   // debug publisher
-  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
-  std::unique_ptr<autoware_universe_utils::DebugPublisher> processing_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<autoware::universe_utils::DebugPublisher> processing_time_publisher_;
 
   // Object History
   std::unordered_map<std::string, std::deque<ObjectData>> road_users_history;
@@ -169,7 +169,7 @@ private:
     const std::vector<rclcpp::Parameter> & parameters);
 
   // Pose Transform Listener
-  autoware_universe_utils::TransformListener transform_listener_{this};
+  autoware::universe_utils::TransformListener transform_listener_{this};
 
   // Path Generator
   std::shared_ptr<PathGenerator> path_generator_;
@@ -221,7 +221,7 @@ private:
   bool match_lost_and_appeared_crosswalk_users_;
   bool remember_lost_crosswalk_users_;
 
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 
   // Member Functions
   void mapCallback(const LaneletMapBin::ConstSharedPtr msg);
@@ -314,8 +314,8 @@ private:
   inline std::vector<double> calcTrajectoryCurvatureFrom3Points(
     const TrajectoryPoints & trajectory, size_t idx_dist)
   {
-    using autoware_universe_utils::calcCurvature;
-    using autoware_universe_utils::getPoint;
+    using autoware::universe_utils::calcCurvature;
+    using autoware::universe_utils::getPoint;
 
     if (trajectory.size() < 3) {
       const std::vector<double> k_arr(trajectory.size(), 0.0);

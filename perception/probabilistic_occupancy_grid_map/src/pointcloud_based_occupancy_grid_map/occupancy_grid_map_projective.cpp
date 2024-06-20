@@ -56,9 +56,9 @@ void OccupancyGridMapProjectiveBlindSpot::updateWithPointCloud(
   const PointCloud2 & raw_pointcloud, const PointCloud2 & obstacle_pointcloud,
   const Pose & robot_pose, const Pose & scan_origin)
 {
-  constexpr double min_angle = autoware_universe_utils::deg2rad(-180.0);
-  constexpr double max_angle = autoware_universe_utils::deg2rad(180.0);
-  constexpr double angle_increment = autoware_universe_utils::deg2rad(0.1);
+  constexpr double min_angle = autoware::universe_utils::deg2rad(-180.0);
+  constexpr double max_angle = autoware::universe_utils::deg2rad(180.0);
+  constexpr double angle_increment = autoware::universe_utils::deg2rad(0.1);
   const size_t angle_bin_size = ((max_angle - min_angle) / angle_increment) + size_t(1 /*margin*/);
 
   // Transform from base_link to map frame

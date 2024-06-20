@@ -30,7 +30,7 @@ private:
   rclcpp::Subscription<autoware_planning_msgs::msg::Path>::SharedPtr sub_path_;
   rclcpp::Publisher<tier4_debug_msgs::msg::Float64Stamped>::SharedPtr pub_dist_;
   rclcpp::TimerBase::SharedPtr timer_;
-  autoware_universe_utils::SelfPoseListener self_pose_listener_;
+  autoware::universe_utils::SelfPoseListener self_pose_listener_;
   autoware_planning_msgs::msg::Path::SharedPtr path_;
 };
 

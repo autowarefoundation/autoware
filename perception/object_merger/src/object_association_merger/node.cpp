@@ -43,7 +43,7 @@ bool isUnknownObjectOverlapped(
   const double distance_threshold = distance_threshold_map.at(
     object_recognition_utils::getHighestProbLabel(known_object.classification));
   const double sq_distance_threshold = std::pow(distance_threshold, 2.0);
-  const double sq_distance = autoware_universe_utils::calcSquaredDistance2d(
+  const double sq_distance = autoware::universe_utils::calcSquaredDistance2d(
     unknown_object.kinematics.pose_with_covariance.pose,
     known_object.kinematics.pose_with_covariance.pose);
   if (sq_distance_threshold < sq_distance) return false;
@@ -121,13 +121,13 @@ ObjectAssociationMergerNode::ObjectAssociationMergerNode(const rclcpp::NodeOptio
 
   // Debug publisher
   processing_time_publisher_ =
-    std::make_unique<autoware_universe_utils::DebugPublisher>(this, "object_association_merger");
+    std::make_unique<autoware::universe_utils::DebugPublisher>(this, "object_association_merger");
   stop_watch_ptr_ =
-    std::make_unique<autoware_universe_utils::StopWatch<std::chrono::milliseconds>>();
+    std::make_unique<autoware::universe_utils::StopWatch<std::chrono::milliseconds>>();
   stop_watch_ptr_->tic("cyclic_time");
   stop_watch_ptr_->tic("processing_time");
   published_time_publisher_ =
-    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
+    std::make_unique<autoware::universe_utils::PublishedTimePublisher>(this);
 }
 
 void ObjectAssociationMergerNode::objectsCallback(

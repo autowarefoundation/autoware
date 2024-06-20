@@ -60,11 +60,11 @@ private:
     emergency_stop_heartbeat_sub_;
 
   // Polling Subscriber
-  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> velocity_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Odometry> velocity_sub_{
     this, "in/odometry"};
-  autoware_universe_utils::InterProcessPollingSubscriber<GearCommand> shift_cmd_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<GearCommand> shift_cmd_sub_{
     this, "in/shift_cmd"};
-  autoware_universe_utils::InterProcessPollingSubscriber<GateMode> gate_mode_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<GateMode> gate_mode_sub_{
     this, "in/current_gate_mode"};
 
   void on_external_cmd(const ExternalControlCommand::ConstSharedPtr cmd_ptr);

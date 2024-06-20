@@ -30,7 +30,7 @@
 
 namespace autoware::behavior_path_planner
 {
-using autoware_universe_utils::LinearRing2d;
+using autoware::universe_utils::LinearRing2d;
 using geometry_msgs::msg::Pose;
 using tier4_planning_msgs::msg::PathWithLaneId;
 

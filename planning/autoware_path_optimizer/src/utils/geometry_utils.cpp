@@ -39,17 +39,17 @@
 namespace autoware::path_optimizer
 {
 namespace bg = boost::geometry;
-using autoware_universe_utils::LinearRing2d;
-using autoware_universe_utils::LineString2d;
-using autoware_universe_utils::Point2d;
-using autoware_universe_utils::Polygon2d;
+using autoware::universe_utils::LinearRing2d;
+using autoware::universe_utils::LineString2d;
+using autoware::universe_utils::Point2d;
+using autoware::universe_utils::Polygon2d;
 
 namespace
 {
 geometry_msgs::msg::Point getStartPoint(
   const std::vector<geometry_msgs::msg::Point> & bound, const geometry_msgs::msg::Point & point)
 {
-  const size_t segment_idx = autoware_motion_utils::findNearestSegmentIndex(bound, point);
+  const size_t segment_idx = autoware::motion_utils::findNearestSegmentIndex(bound, point);
   const auto & curr_seg_point = bound.at(segment_idx);
   const auto & next_seg_point = bound.at(segment_idx);
   const Eigen::Vector2d first_to_target{point.x - curr_seg_point.x, point.y - curr_seg_point.y};
@@ -62,7 +62,7 @@ geometry_msgs::msg::Point getStartPoint(
   }
 
   const auto first_point =
-    autoware_motion_utils::calcLongitudinalOffsetPoint(bound, segment_idx, length);
+    autoware::motion_utils::calcLongitudinalOffsetPoint(bound, segment_idx, length);
   if (first_point) {
     return *first_point;
   }
@@ -86,7 +86,7 @@ bool isFrontDrivableArea(
   // ignore point behind of the front line
   const std::vector<geometry_msgs::msg::Point> front_bound = {left_start_point, right_start_point};
   const double lat_dist_to_front_bound =
-    autoware_motion_utils::calcLateralOffset(front_bound, point);
+    autoware::motion_utils::calcLateralOffset(front_bound, point);
   if (lat_dist_to_front_bound < min_dist) {
     return true;
   }
@@ -136,13 +136,13 @@ bool isOutsideDrivableAreaFromRectangleFootprint(
 
   // calculate footprint corner points
   const auto top_left_pos =
-    autoware_universe_utils::calcOffsetPose(pose, base_to_front, base_to_left, 0.0).position;
+    autoware::universe_utils::calcOffsetPose(pose, base_to_front, base_to_left, 0.0).position;
   const auto top_right_pos =
-    autoware_universe_utils::calcOffsetPose(pose, base_to_front, -base_to_right, 0.0).position;
+    autoware::universe_utils::calcOffsetPose(pose, base_to_front, -base_to_right, 0.0).position;
   const auto bottom_right_pos =
-    autoware_universe_utils::calcOffsetPose(pose, -base_to_rear, -base_to_right, 0.0).position;
+    autoware::universe_utils::calcOffsetPose(pose, -base_to_rear, -base_to_right, 0.0).position;
   const auto bottom_left_pos =
-    autoware_universe_utils::calcOffsetPose(pose, -base_to_rear, base_to_left, 0.0).position;
+    autoware::universe_utils::calcOffsetPose(pose, -base_to_rear, base_to_left, 0.0).position;
 
   if (use_footprint_polygon_for_outside_drivable_area_check) {
     // calculate footprint polygon

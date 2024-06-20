@@ -52,12 +52,12 @@ public:
   ~PredictedPathCheckerDebugNode() {}
 
   bool pushPolygon(
-    const autoware_universe_utils::Polygon2d & polygon, const double z, const PolygonType & type);
+    const autoware::universe_utils::Polygon2d & polygon, const double z, const PolygonType & type);
 
   bool pushPolygon(const std::vector<Eigen::Vector3d> & polygon, const PolygonType & type);
 
   bool pushPolyhedron(
-    const autoware_universe_utils::Polygon2d & polyhedron, const double z_min, const double z_max,
+    const autoware::universe_utils::Polygon2d & polyhedron, const double z_min, const double z_max,
     const PolygonType & type);
 
   bool pushPolyhedron(const std::vector<Eigen::Vector3d> & polyhedron, const PolygonType & type);

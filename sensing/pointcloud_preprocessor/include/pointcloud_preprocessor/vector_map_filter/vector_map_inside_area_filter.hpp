@@ -26,7 +26,7 @@
 
 #include <string>
 
-using autoware_universe_utils::MultiPoint2d;
+using autoware::universe_utils::MultiPoint2d;
 
 namespace pointcloud_preprocessor
 {

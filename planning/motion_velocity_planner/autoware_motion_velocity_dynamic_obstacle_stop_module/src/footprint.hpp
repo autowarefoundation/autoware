@@ -29,7 +29,7 @@ namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
 /// @param [in] params parameters used to create the footprint
 /// @param [in] hysteresis [m] extra lateral distance to add to the footprints
 /// @return forward footprint of the obstacle
-autoware_universe_utils::MultiPolygon2d make_forward_footprints(
+autoware::universe_utils::MultiPolygon2d make_forward_footprints(
   const std::vector<autoware_perception_msgs::msg::PredictedObject> & obstacles,
   const PlannerParam & params, const double hysteresis);
 /// @brief create the footprint of the given obstacle and its projection over a fixed time horizon
@@ -37,15 +37,16 @@ autoware_universe_utils::MultiPolygon2d make_forward_footprints(
 /// @param [in] params parameters used to create the footprint
 /// @param [in] hysteresis [m] extra lateral distance to add to the footprint
 /// @return forward footprint of the obstacle
-autoware_universe_utils::Polygon2d make_forward_footprint(
+autoware::universe_utils::Polygon2d make_forward_footprint(
   const autoware_perception_msgs::msg::PredictedObject & obstacle, const PlannerParam & params,
   const double hysteresis);
 /// @brief project a footprint to the given pose
 /// @param [in] base_footprint footprint to project
 /// @param [in] pose projection pose
 /// @return footprint projected to the given pose
-autoware_universe_utils::Polygon2d project_to_pose(
-  const autoware_universe_utils::Polygon2d & base_footprint, const geometry_msgs::msg::Pose & pose);
+autoware::universe_utils::Polygon2d project_to_pose(
+  const autoware::universe_utils::Polygon2d & base_footprint,
+  const geometry_msgs::msg::Pose & pose);
 /// @brief create the rtree indexing the ego footprint along the trajectory
 /// @param [inout] ego_data ego data with its trajectory and the rtree to populate
 /// @param [in] params parameters

@@ -89,7 +89,7 @@ struct TimeKeeper
 
   double accumulated_time{0.0};
 
-  autoware_universe_utils::StopWatch<
+  autoware::universe_utils::StopWatch<
     std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
     stop_watch_;
 };
@@ -122,7 +122,7 @@ struct TrajectoryParam
 
   void onParam(const std::vector<rclcpp::Parameter> & parameters)
   {
-    using autoware_universe_utils::updateParam;
+    using autoware::universe_utils::updateParam;
 
     // common
     updateParam<double>(
@@ -145,7 +145,7 @@ struct EgoNearestParam
 
   void onParam(const std::vector<rclcpp::Parameter> & parameters)
   {
-    using autoware_universe_utils::updateParam;
+    using autoware::universe_utils::updateParam;
     updateParam<double>(parameters, "ego_nearest_dist_threshold", dist_threshold);
     updateParam<double>(parameters, "ego_nearest_yaw_threshold", yaw_threshold);
   }

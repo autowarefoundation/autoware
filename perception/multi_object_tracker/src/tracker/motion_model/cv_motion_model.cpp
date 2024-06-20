@@ -49,8 +49,8 @@ void CVMotionModel::setDefaultParams()
   setMotionParams(q_stddev_x, q_stddev_y, q_stddev_vx, q_stddev_vy);
 
   // set motion limitations
-  constexpr double max_vx = autoware_universe_utils::kmph2mps(60);  // [m/s] maximum x velocity
-  constexpr double max_vy = autoware_universe_utils::kmph2mps(60);  // [m/s] maximum y velocity
+  constexpr double max_vx = autoware::universe_utils::kmph2mps(60);  // [m/s] maximum x velocity
+  constexpr double max_vy = autoware::universe_utils::kmph2mps(60);  // [m/s] maximum y velocity
   setMotionLimits(max_vx, max_vy);
 
   // set prediction parameters

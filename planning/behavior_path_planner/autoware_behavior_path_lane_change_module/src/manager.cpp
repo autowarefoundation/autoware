@@ -36,7 +36,7 @@ void LaneChangeModuleManager::init(rclcpp::Node * node)
 
 void LaneChangeModuleManager::initParams(rclcpp::Node * node)
 {
-  using autoware_universe_utils::getOrDeclareParameter;
+  using autoware::universe_utils::getOrDeclareParameter;
 
   LaneChangeParameters p{};
 
@@ -281,7 +281,7 @@ std::unique_ptr<SceneModuleInterface> LaneChangeModuleManager::createNewSceneMod
 
 void LaneChangeModuleManager::updateModuleParams(const std::vector<rclcpp::Parameter> & parameters)
 {
-  using autoware_universe_utils::updateParam;
+  using autoware::universe_utils::updateParam;
 
   auto p = parameters_;
 

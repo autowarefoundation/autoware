@@ -87,13 +87,13 @@ std::pair<TrajectoryPoint, size_t> lerpTrajectoryPoint(
   const T & points, const Pose & pose, const double max_dist, const double max_yaw)
 {
   TrajectoryPoint interpolated_point;
-  const size_t seg_idx = autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+  const size_t seg_idx = autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     points, pose, max_dist, max_yaw);
 
   const double len_to_interpolated =
-    autoware_motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, pose.position);
+    autoware::motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, pose.position);
   const double len_segment =
-    autoware_motion_utils::calcSignedArcLength(points, seg_idx, seg_idx + 1);
+    autoware::motion_utils::calcSignedArcLength(points, seg_idx, seg_idx + 1);
   const double interpolate_ratio = std::clamp(len_to_interpolated / len_segment, 0.0, 1.0);
 
   {

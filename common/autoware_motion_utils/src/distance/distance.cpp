@@ -14,7 +14,7 @@
 
 #include "autoware/motion_utils/distance/distance.hpp"
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 namespace
 {
@@ -269,4 +269,4 @@ std::optional<double> calcDecelDistWithJerkAndAccConstraints(
 
   return calcDecelDistPlanType3(current_vel, target_vel, current_acc, jerk_acc);
 }
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils

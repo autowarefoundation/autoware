@@ -130,8 +130,8 @@ FusionNode<TargetMsg3D, ObjType, Msg2D>::FusionNode(
 
   // initialize debug tool
   {
-    using autoware_universe_utils::DebugPublisher;
-    using autoware_universe_utils::StopWatch;
+    using autoware::universe_utils::DebugPublisher;
+    using autoware::universe_utils::StopWatch;
     stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
     debug_publisher_ = std::make_unique<DebugPublisher>(this, get_name());
     stop_watch_ptr_->tic("cyclic_time");

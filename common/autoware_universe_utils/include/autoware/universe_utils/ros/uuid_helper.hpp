@@ -23,7 +23,7 @@
 #include <random>
 #include <string>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 inline unique_identifier_msgs::msg::UUID generateUUID()
 {
@@ -58,6 +58,6 @@ inline unique_identifier_msgs::msg::UUID toUUIDMsg(const boost::uuids::uuid & id
   return ros_uuid;
 }
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__ROS__UUID_HELPER_HPP_

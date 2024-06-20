@@ -45,7 +45,7 @@ public:
 private:
   // Subscriber
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr sub_initial_pose_;
-  autoware_universe_utils::SelfPoseListener self_pose_listener_;
+  autoware::universe_utils::SelfPoseListener self_pose_listener_;
   rclcpp::Subscription<autoware_planning_msgs::msg::LaneletRoute>::SharedPtr sub_route_;
 
   // Data Buffer
@@ -56,7 +56,7 @@ private:
   void onRoute(const autoware_planning_msgs::msg::LaneletRoute::ConstSharedPtr & msg);
 
   // Publisher
-  autoware_universe_utils::DebugPublisher debug_publisher_;
+  autoware::universe_utils::DebugPublisher debug_publisher_;
 
   // Timer
   rclcpp::TimerBase::SharedPtr timer_;

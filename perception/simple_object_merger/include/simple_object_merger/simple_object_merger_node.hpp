@@ -47,7 +47,7 @@ private:
   // Subscriber
   rclcpp::Subscription<DetectedObjects>::SharedPtr sub_objects_{};
   std::vector<rclcpp::Subscription<DetectedObjects>::SharedPtr> sub_objects_array{};
-  std::shared_ptr<autoware_universe_utils::TransformListener> transform_listener_;
+  std::shared_ptr<autoware::universe_utils::TransformListener> transform_listener_;
 
   // Callback
   void onData(const DetectedObjects::ConstSharedPtr msg, size_t array_number);

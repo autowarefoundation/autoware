@@ -50,7 +50,7 @@ void cut_predicted_path_beyond_line(
     auto cut_idx = stop_line_idx;
     double arc_length = 0;
     while (cut_idx > 0 && arc_length < object_front_overhang) {
-      arc_length += autoware_universe_utils::calcDistance2d(
+      arc_length += autoware::universe_utils::calcDistance2d(
         predicted_path.path[cut_idx], predicted_path.path[cut_idx - 1]);
       --cut_idx;
     }
@@ -114,10 +114,10 @@ autoware_perception_msgs::msg::PredictedObjects filter_predicted_objects(
     auto filtered_object = object;
     const auto is_invalid_predicted_path = [&](const auto & predicted_path) {
       const auto is_low_confidence = predicted_path.confidence < params.objects_min_confidence;
-      const auto no_overlap_path = autoware_motion_utils::removeOverlapPoints(predicted_path.path);
+      const auto no_overlap_path = autoware::motion_utils::removeOverlapPoints(predicted_path.path);
       if (no_overlap_path.size() <= 1) return true;
-      const auto lat_offset_to_current_ego =
-        std::abs(autoware_motion_utils::calcLateralOffset(no_overlap_path, ego_data.pose.position));
+      const auto lat_offset_to_current_ego = std::abs(
+        autoware::motion_utils::calcLateralOffset(no_overlap_path, ego_data.pose.position));
       const auto is_crossing_ego =
         lat_offset_to_current_ego <=
         object.shape.dimensions.y / 2.0 + std::max(

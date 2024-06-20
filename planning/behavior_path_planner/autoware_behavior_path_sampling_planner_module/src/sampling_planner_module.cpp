@@ -16,13 +16,13 @@
 
 namespace autoware::behavior_path_planner
 {
-using autoware_motion_utils::calcSignedArcLength;
-using autoware_motion_utils::findNearestIndex;
-using autoware_motion_utils::findNearestSegmentIndex;
-using autoware_universe_utils::calcDistance2d;
-using autoware_universe_utils::calcOffsetPose;
-using autoware_universe_utils::getPoint;
-using autoware_universe_utils::Point2d;
+using autoware::motion_utils::calcSignedArcLength;
+using autoware::motion_utils::findNearestIndex;
+using autoware::motion_utils::findNearestSegmentIndex;
+using autoware::universe_utils::calcDistance2d;
+using autoware::universe_utils::calcOffsetPose;
+using autoware::universe_utils::getPoint;
+using autoware::universe_utils::Point2d;
 using geometry_msgs::msg::Point;
 
 namespace bg = boost::geometry;
@@ -103,7 +103,7 @@ SamplingPlannerModule::SamplingPlannerModule(
   //     [[maybe_unused]] const SoftConstraintsInputs & input_data) -> double {
   //     if (path.points.empty()) return 0.0;
   //     const auto & goal_pose_yaw =
-  //     autoware_universe_utils::getRPY(input_data.goal_pose.orientation).z; const auto &
+  //     autoware::universe_utils::getRPY(input_data.goal_pose.orientation).z; const auto &
   //     last_point_yaw = path.yaws.back(); const double angle_difference = std::abs(last_point_yaw
   //     - goal_pose_yaw); return angle_difference / (3.141519 / 4.0);
   //   });
@@ -190,7 +190,7 @@ bool SamplingPlannerModule::isExecutionRequested() const
     return false;
   }
 
-  if (!autoware_motion_utils::isDrivingForward(getPreviousModuleOutput().reference_path.points)) {
+  if (!autoware::motion_utils::isDrivingForward(getPreviousModuleOutput().reference_path.points)) {
     RCLCPP_WARN(getLogger(), "Backward path is NOT supported. Just converting path to trajectory");
     return false;
   }
@@ -343,7 +343,7 @@ PathWithLaneId SamplingPlannerModule::convertFrenetPathToPathWithLaneID(
       point.lane_ids = path.points.at(i - 1).lane_ids;
     }
     if (reference_path_ptr) {
-      const auto idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+      const auto idx = autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
         reference_path_ptr->points, point.point.pose);
       const auto & closest_point = reference_path_ptr->points[idx];
       point.point.longitudinal_velocity_mps = closest_point.point.longitudinal_velocity_mps;
@@ -365,9 +365,9 @@ void SamplingPlannerModule::prepareConstraints(
   size_t i = 0;
   for (const auto & o : predicted_objects->objects) {
     if (o.kinematics.initial_twist_with_covariance.twist.linear.x < 0.5) {
-      const auto polygon = autoware_universe_utils::toPolygon2d(o);
+      const auto polygon = autoware::universe_utils::toPolygon2d(o);
       constraints.obstacle_polygons.push_back(polygon);
-      const auto box = boost::geometry::return_envelope<autoware_universe_utils::Box2d>(polygon);
+      const auto box = boost::geometry::return_envelope<autoware::universe_utils::Box2d>(polygon);
       constraints.rtree.insert(std::make_pair(box, i));
     }
     i++;

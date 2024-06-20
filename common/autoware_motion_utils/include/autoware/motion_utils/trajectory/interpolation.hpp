@@ -25,7 +25,7 @@
 #include <algorithm>
 #include <limits>
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 /**
  * @brief An interpolation function that finds the closest interpolated point on the trajectory from
@@ -73,24 +73,24 @@ geometry_msgs::msg::Pose calcInterpolatedPose(const T & points, const double tar
   }
 
   if (points.size() < 2 || target_length < 0.0) {
-    return autoware_universe_utils::getPose(points.front());
+    return autoware::universe_utils::getPose(points.front());
   }
 
   double accumulated_length = 0;
   for (size_t i = 0; i < points.size() - 1; ++i) {
-    const auto & curr_pose = autoware_universe_utils::getPose(points.at(i));
-    const auto & next_pose = autoware_universe_utils::getPose(points.at(i + 1));
-    const double length = autoware_universe_utils::calcDistance3d(curr_pose, next_pose);
+    const auto & curr_pose = autoware::universe_utils::getPose(points.at(i));
+    const auto & next_pose = autoware::universe_utils::getPose(points.at(i + 1));
+    const double length = autoware::universe_utils::calcDistance3d(curr_pose, next_pose);
     if (accumulated_length + length > target_length) {
       const double ratio = (target_length - accumulated_length) / std::max(length, 1e-6);
-      return autoware_universe_utils::calcInterpolatedPose(curr_pose, next_pose, ratio);
+      return autoware::universe_utils::calcInterpolatedPose(curr_pose, next_pose, ratio);
     }
     accumulated_length += length;
   }
 
-  return autoware_universe_utils::getPose(points.back());
+  return autoware::universe_utils::getPose(points.back());
 }
 
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils
 
 #endif  // AUTOWARE__MOTION_UTILS__TRAJECTORY__INTERPOLATION_HPP_

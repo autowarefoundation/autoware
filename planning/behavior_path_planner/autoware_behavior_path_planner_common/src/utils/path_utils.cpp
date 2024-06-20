@@ -49,8 +49,8 @@ std::vector<double> calcPathArcLengthArray(
   out.push_back(sum);
 
   for (size_t i = bounded_start + 1; i < bounded_end; ++i) {
-    sum +=
-      autoware_universe_utils::calcDistance2d(path.points.at(i).point, path.points.at(i - 1).point);
+    sum += autoware::universe_utils::calcDistance2d(
+      path.points.at(i).point, path.points.at(i - 1).point);
     out.push_back(sum);
   }
   return out;
@@ -98,7 +98,7 @@ PathWithLaneId resamplePathWithSpline(
   // Get lane ids that are not duplicated
   std::vector<double> s_in;
   std::unordered_set<int64_t> unique_lane_ids;
-  const auto s_vec = autoware_motion_utils::calcSignedArcLengthPartialSum(
+  const auto s_vec = autoware::motion_utils::calcSignedArcLengthPartialSum(
     transformed_path, 0, transformed_path.size());
   for (size_t i = 0; i < path.points.size(); ++i) {
     const double s = s_vec.at(i);
@@ -130,7 +130,7 @@ PathWithLaneId resamplePathWithSpline(
 
   // Insert Stop Point
   const auto closest_stop_dist =
-    autoware_motion_utils::calcDistanceToForwardStopPoint(transformed_path);
+    autoware::motion_utils::calcDistanceToForwardStopPoint(transformed_path);
   if (closest_stop_dist) {
     const auto close_indices = find_almost_same_values(s_out, *closest_stop_dist);
     if (close_indices) {
@@ -153,7 +153,7 @@ PathWithLaneId resamplePathWithSpline(
 
   std::sort(s_out.begin(), s_out.end());
 
-  return autoware_motion_utils::resamplePath(path, s_out);
+  return autoware::motion_utils::resamplePath(path, s_out);
 }
 
 size_t getIdxByArclength(
@@ -163,7 +163,7 @@ size_t getIdxByArclength(
     throw std::runtime_error("[getIdxByArclength] path points must be > 0");
   }
 
-  using autoware_universe_utils::calcDistance2d;
+  using autoware::universe_utils::calcDistance2d;
   double sum_length = 0.0;
   if (signed_arc >= 0.0) {
     for (size_t i = target_idx; i < path.points.size() - 1; ++i) {
@@ -185,7 +185,7 @@ size_t getIdxByArclength(
   return 0;
 }
 
-// TODO(murooka) This function should be replaced with autoware_motion_utils::cropPoints
+// TODO(murooka) This function should be replaced with autoware::motion_utils::cropPoints
 void clipPathLength(
   PathWithLaneId & path, const size_t target_idx, const double forward, const double backward)
 {
@@ -202,7 +202,7 @@ void clipPathLength(
   path.points = clipped_points;
 }
 
-// TODO(murooka) This function should be replaced with autoware_motion_utils::cropPoints
+// TODO(murooka) This function should be replaced with autoware::motion_utils::cropPoints
 void clipPathLength(
   PathWithLaneId & path, const size_t target_idx, const BehaviorPathPlannerParameters & params)
 {
@@ -412,7 +412,7 @@ std::vector<PathWithLaneId> dividePath(
 void correctDividedPathVelocity(std::vector<PathWithLaneId> & divided_paths)
 {
   for (auto & path : divided_paths) {
-    const auto is_driving_forward = autoware_motion_utils::isDrivingForward(path.points);
+    const auto is_driving_forward = autoware::motion_utils::isDrivingForward(path.points);
     // If the number of points in the path is less than 2, don't correct the velocity
     if (!is_driving_forward) {
       continue;
@@ -472,7 +472,7 @@ std::vector<Pose> interpolatePose(
   std::vector<Pose> interpolated_poses{};  // output
 
   const std::vector<double> base_s{
-    0, autoware_universe_utils::calcDistance2d(start_pose.position, end_pose.position)};
+    0, autoware::universe_utils::calcDistance2d(start_pose.position, end_pose.position)};
   const std::vector<double> base_x{start_pose.position.x, end_pose.position.x};
   const std::vector<double> base_y{start_pose.position.y, end_pose.position.y};
   std::vector<double> new_s;
@@ -490,7 +490,7 @@ std::vector<Pose> interpolatePose(
     std::sin(tf2::getYaw(end_pose.orientation)), new_s);
   for (size_t i = 0; i < interpolated_x.size(); ++i) {
     Pose pose{};
-    pose = autoware_universe_utils::calcInterpolatedPose(
+    pose = autoware::universe_utils::calcInterpolatedPose(
       end_pose, start_pose, (base_s.back() - new_s.at(i)) / base_s.back());
     pose.position.x = interpolated_x.at(i);
     pose.position.y = interpolated_y.at(i);
@@ -509,14 +509,14 @@ Pose getUnshiftedEgoPose(const Pose & ego_pose, const ShiftedPath & prev_path)
 
   // un-shifted for current ideal pose
   const auto closest_idx =
-    autoware_motion_utils::findNearestIndex(prev_path.path.points, ego_pose.position);
+    autoware::motion_utils::findNearestIndex(prev_path.path.points, ego_pose.position);
 
   // NOTE: Considering avoidance by motion, we set unshifted_pose as previous path instead of
   // ego_pose.
   auto unshifted_pose =
-    autoware_motion_utils::calcInterpolatedPoint(prev_path.path, ego_pose).point.pose;
+    autoware::motion_utils::calcInterpolatedPoint(prev_path.path, ego_pose).point.pose;
 
-  unshifted_pose = autoware_universe_utils::calcOffsetPose(
+  unshifted_pose = autoware::universe_utils::calcOffsetPose(
     unshifted_pose, 0.0, -prev_path.shift_length.at(closest_idx), 0.0);
   unshifted_pose.orientation = ego_pose.orientation;
 
@@ -574,7 +574,7 @@ PathWithLaneId combinePath(const PathWithLaneId & path1, const PathWithLaneId & 
   path.points.insert(path.points.end(), next(path2.points.begin()), path2.points.end());
 
   PathWithLaneId filtered_path = path;
-  filtered_path.points = autoware_motion_utils::removeOverlapPoints(filtered_path.points);
+  filtered_path.points = autoware::motion_utils::removeOverlapPoints(filtered_path.points);
   return filtered_path;
 }
 
@@ -616,10 +616,10 @@ BehaviorModuleOutput getReferencePath(
   // NOTE: In order to keep backward_path_length at least, resampling interval is added to the
   // backward.
   const size_t current_seg_idx =
-    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       reference_path.points, no_shift_pose, p.ego_nearest_dist_threshold,
       p.ego_nearest_yaw_threshold);
-  reference_path.points = autoware_motion_utils::cropPoints(
+  reference_path.points = autoware::motion_utils::cropPoints(
     reference_path.points, no_shift_pose.position, current_seg_idx, p.forward_path_length,
     p.backward_path_length + p.input_path_interval);
 

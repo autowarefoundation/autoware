@@ -21,9 +21,9 @@
 
 namespace autoware::behavior_path_planner
 {
-using autoware_universe_utils::createQuaternionFromYaw;
-using autoware_universe_utils::normalizeRadian;
-using autoware_universe_utils::transformPose;
+using autoware::universe_utils::createQuaternionFromYaw;
+using autoware::universe_utils::normalizeRadian;
+using autoware::universe_utils::transformPose;
 
 int discretizeAngle(const double theta, const int theta_size)
 {

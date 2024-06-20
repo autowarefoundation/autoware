@@ -53,22 +53,22 @@ using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using tier4_rtc_msgs::msg::State;
 
 // tier4 utils functions
-using autoware_universe_utils::appendMarkerArray;
-using autoware_universe_utils::calcDistance2d;
-using autoware_universe_utils::calcLateralDeviation;
-using autoware_universe_utils::calcOffsetPose;
-using autoware_universe_utils::calcYawDeviation;
-using autoware_universe_utils::createDefaultMarker;
-using autoware_universe_utils::createMarkerColor;
-using autoware_universe_utils::createMarkerScale;
-using autoware_universe_utils::createPoint;
-using autoware_universe_utils::createQuaternionFromRPY;
-using autoware_universe_utils::getPoint;
-using autoware_universe_utils::getPose;
-using autoware_universe_utils::Point2d;
-using autoware_universe_utils::Polygon2d;
-using autoware_universe_utils::pose2transform;
-using autoware_universe_utils::toHexString;
+using autoware::universe_utils::appendMarkerArray;
+using autoware::universe_utils::calcDistance2d;
+using autoware::universe_utils::calcLateralDeviation;
+using autoware::universe_utils::calcOffsetPose;
+using autoware::universe_utils::calcYawDeviation;
+using autoware::universe_utils::createDefaultMarker;
+using autoware::universe_utils::createMarkerColor;
+using autoware::universe_utils::createMarkerScale;
+using autoware::universe_utils::createPoint;
+using autoware::universe_utils::createQuaternionFromRPY;
+using autoware::universe_utils::getPoint;
+using autoware::universe_utils::getPose;
+using autoware::universe_utils::Point2d;
+using autoware::universe_utils::Polygon2d;
+using autoware::universe_utils::pose2transform;
+using autoware::universe_utils::toHexString;
 }  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE__BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__TYPE_ALIAS_HPP_

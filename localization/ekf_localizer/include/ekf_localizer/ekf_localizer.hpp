@@ -142,7 +142,7 @@ private:
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_br_;
 
   //!< @brief logger configure module
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 
   //!< @brief  extended kalman filter instance.
   std::unique_ptr<EKFModule> ekf_module_;
@@ -236,7 +236,7 @@ private:
     const std_srvs::srv::SetBool::Request::SharedPtr req,
     std_srvs::srv::SetBool::Response::SharedPtr res);
 
-  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
+  autoware::universe_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
 
   friend class EKFLocalizerTestSuite;  // for test code
 };

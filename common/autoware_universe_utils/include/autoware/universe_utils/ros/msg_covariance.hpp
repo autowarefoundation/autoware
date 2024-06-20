@@ -15,7 +15,7 @@
 #ifndef AUTOWARE__UNIVERSE_UTILS__ROS__MSG_COVARIANCE_HPP_
 #define AUTOWARE__UNIVERSE_UTILS__ROS__MSG_COVARIANCE_HPP_
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 namespace xyz_covariance_index
 {
@@ -115,6 +115,6 @@ enum XYZ_UPPER_COV_IDX {
   Z_Z = 5,
 };
 }  // namespace xyz_upper_covariance_index
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__ROS__MSG_COVARIANCE_HPP_

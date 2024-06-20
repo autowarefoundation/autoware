@@ -40,17 +40,17 @@
 
 namespace motion_planning
 {
-using autoware_motion_utils::calcLongitudinalOffsetPose;
-using autoware_motion_utils::calcLongitudinalOffsetToSegment;
-using autoware_motion_utils::calcSignedArcLength;
-using autoware_motion_utils::findFirstNearestIndexWithSoftConstraints;
-using autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
+using autoware::motion_utils::calcLongitudinalOffsetPose;
+using autoware::motion_utils::calcLongitudinalOffsetToSegment;
+using autoware::motion_utils::calcSignedArcLength;
+using autoware::motion_utils::findFirstNearestIndexWithSoftConstraints;
+using autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
+using autoware::universe_utils::calcDistance2d;
+using autoware::universe_utils::createPoint;
+using autoware::universe_utils::getPoint;
+using autoware::universe_utils::getPose;
+using autoware::universe_utils::getRPY;
 using autoware_perception_msgs::msg::PredictedObject;
-using autoware_universe_utils::calcDistance2d;
-using autoware_universe_utils::createPoint;
-using autoware_universe_utils::getPoint;
-using autoware_universe_utils::getPose;
-using autoware_universe_utils::getRPY;
 
 ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & node_options)
 : Node("obstacle_stop_planner", node_options)
@@ -245,9 +245,9 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
     std::bind(&ObstacleStopPlannerNode::onExpandStopRange, this, std::placeholders::_1),
     createSubscriptionOptions(this));
 
-  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
   published_time_publisher_ =
-    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
+    std::make_unique<autoware::universe_utils::PublishedTimePublisher>(this);
 }
 
 void ObstacleStopPlannerNode::onPointCloud(const PointCloud2::ConstSharedPtr input_msg)
@@ -327,7 +327,7 @@ void ObstacleStopPlannerNode::onTrigger(const Trajectory::ConstSharedPtr input_m
 
   // TODO(someone): support backward path
   const auto is_driving_forward =
-    autoware_motion_utils::isDrivingForwardWithTwist(input_msg->points);
+    autoware::motion_utils::isDrivingForwardWithTwist(input_msg->points);
   is_driving_forward_ = is_driving_forward ? is_driving_forward.value() : is_driving_forward_;
   if (!is_driving_forward_) {
     RCLCPP_WARN_THROTTLE(
@@ -343,11 +343,11 @@ void ObstacleStopPlannerNode::onTrigger(const Trajectory::ConstSharedPtr input_m
 
   Trajectory output_trajectory = *input_msg;
   TrajectoryPoints output_trajectory_points =
-    autoware_motion_utils::convertToTrajectoryPointArray(*input_msg);
+    autoware::motion_utils::convertToTrajectoryPointArray(*input_msg);
 
   // trim trajectory from self pose
   TrajectoryPoints base_trajectory = trimTrajectoryWithIndexFromSelfPose(
-    autoware_motion_utils::convertToTrajectoryPointArray(*input_msg), planner_data.current_pose,
+    autoware::motion_utils::convertToTrajectoryPointArray(*input_msg), planner_data.current_pose,
     planner_data.trajectory_trim_index);
 
   // extend trajectory to consider obstacles after the goal
@@ -379,7 +379,7 @@ void ObstacleStopPlannerNode::onTrigger(const Trajectory::ConstSharedPtr input_m
     resetExternalVelocityLimit(current_acc, current_vel);
   }
 
-  auto trajectory = autoware_motion_utils::convertToTrajectory(output_trajectory_points);
+  auto trajectory = autoware::motion_utils::convertToTrajectory(output_trajectory_points);
   publishDebugData(planner_data, current_acc, current_vel);
 
   trajectory.header = input_msg->header;
@@ -1557,10 +1557,10 @@ void ObstacleStopPlannerNode::filterObstacles(
 
     // Check is it near to trajectory
     const double max_length = calcObstacleMaxLength(object.shape);
-    const size_t seg_idx = autoware_motion_utils::findNearestSegmentIndex(
+    const size_t seg_idx = autoware::motion_utils::findNearestSegmentIndex(
       traj, object.kinematics.initial_pose_with_covariance.pose.position);
-    const auto p_front = autoware_universe_utils::getPoint(traj.at(seg_idx));
-    const auto p_back = autoware_universe_utils::getPoint(traj.at(seg_idx + 1));
+    const auto p_front = autoware::universe_utils::getPoint(traj.at(seg_idx));
+    const auto p_back = autoware::universe_utils::getPoint(traj.at(seg_idx + 1));
     const auto & p_target = object.kinematics.initial_pose_with_covariance.pose.position;
     const Eigen::Vector3d segment_vec{p_back.x - p_front.x, p_back.y - p_front.y, 0.0};
     const Eigen::Vector3d target_vec{p_target.x - p_front.x, p_target.y - p_front.y, 0.0};

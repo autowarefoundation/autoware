@@ -19,11 +19,11 @@ namespace autoware::behavior_velocity_planner
 {
 namespace debug
 {
-using autoware_universe_utils::appendMarkerArray;
-using autoware_universe_utils::createDefaultMarker;
-using autoware_universe_utils::createMarkerColor;
-using autoware_universe_utils::createMarkerOrientation;
-using autoware_universe_utils::createMarkerScale;
+using autoware::universe_utils::appendMarkerArray;
+using autoware::universe_utils::createDefaultMarker;
+using autoware::universe_utils::createMarkerColor;
+using autoware::universe_utils::createMarkerOrientation;
+using autoware::universe_utils::createMarkerScale;
 
 visualization_msgs::msg::MarkerArray createPolygonMarkerArray(
   const geometry_msgs::msg::Polygon & polygon, const std::string & ns, const int64_t module_id,

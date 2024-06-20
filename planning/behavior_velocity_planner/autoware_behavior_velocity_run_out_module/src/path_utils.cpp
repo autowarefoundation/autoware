@@ -26,7 +26,7 @@ geometry_msgs::msg::Point findLongitudinalNearestPoint(
   geometry_msgs::msg::Point min_dist_point{};
 
   for (const auto & p : target_points) {
-    const float dist = autoware_motion_utils::calcSignedArcLength(points, src_point, p);
+    const float dist = autoware::motion_utils::calcSignedArcLength(points, src_point, p);
     if (dist < min_dist) {
       min_dist = dist;
       min_dist_point = p;

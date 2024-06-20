@@ -48,13 +48,13 @@
 namespace autoware::behavior_velocity_planner
 {
 
+using autoware::motion_utils::PlanningBehavior;
+using autoware::motion_utils::VelocityFactor;
 using autoware::objects_of_interest_marker_interface::ColorName;
 using autoware::objects_of_interest_marker_interface::ObjectsOfInterestMarkerInterface;
 using autoware::rtc_interface::RTCInterface;
-using autoware_motion_utils::PlanningBehavior;
-using autoware_motion_utils::VelocityFactor;
-using autoware_universe_utils::DebugPublisher;
-using autoware_universe_utils::getOrDeclareParameter;
+using autoware::universe_utils::DebugPublisher;
+using autoware::universe_utils::getOrDeclareParameter;
 using builtin_interfaces::msg::Time;
 using tier4_debug_msgs::msg::Float64Stamped;
 using tier4_planning_msgs::msg::PathWithLaneId;
@@ -87,7 +87,7 @@ public:
   virtual bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) = 0;
 
   virtual visualization_msgs::msg::MarkerArray createDebugMarkerArray() = 0;
-  virtual std::vector<autoware_motion_utils::VirtualWall> createVirtualWalls() = 0;
+  virtual std::vector<autoware::motion_utils::VirtualWall> createVirtualWalls() = 0;
 
   int64_t getModuleId() const { return module_id_; }
   void setPlannerData(const std::shared_ptr<const PlannerData> & planner_data)
@@ -130,7 +130,7 @@ protected:
   std::shared_ptr<const PlannerData> planner_data_;
   std::optional<tier4_v2x_msgs::msg::InfrastructureCommand> infrastructure_command_;
   std::optional<int> first_stop_path_point_index_;
-  autoware_motion_utils::VelocityFactorInterface velocity_factor_;
+  autoware::motion_utils::VelocityFactorInterface velocity_factor_;
   std::vector<ObjectOfInterest> objects_of_interest_;
 
   void setSafe(const bool safe)
@@ -197,7 +197,7 @@ protected:
   std::set<int64_t> registered_module_id_set_;
 
   std::shared_ptr<const PlannerData> planner_data_;
-  autoware_motion_utils::VirtualWallMarkerCreator virtual_wall_marker_creator_;
+  autoware::motion_utils::VirtualWallMarkerCreator virtual_wall_marker_creator_;
 
   std::optional<int> first_stop_path_point_index_;
   rclcpp::Node & node_;

@@ -209,7 +209,7 @@ void ConstantTurnRateMotionTracker::loadDefaultModelParameters(const std::string
   // limitation
   // (TODO): this may be written in another yaml file based on classify result
   const float max_speed_kmph = config["default"]["limit"]["max_speed"].as<float>();  // [km/h]
-  max_vx_ = autoware_universe_utils::kmph2mps(max_speed_kmph);                       // [m/s]
+  max_vx_ = autoware::universe_utils::kmph2mps(max_speed_kmph);                      // [m/s]
 }
 
 bool ConstantTurnRateMotionTracker::predict(const rclcpp::Time & time)
@@ -393,7 +393,7 @@ bool ConstantTurnRateMotionTracker::measureWithPose(
 
     Eigen::MatrixXd Y_yaw = Eigen::MatrixXd::Zero(1, 1);
     const auto yaw = [&] {
-      auto obj_yaw = autoware_universe_utils::normalizeRadian(
+      auto obj_yaw = autoware::universe_utils::normalizeRadian(
         tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation));
       while (M_PI_2 <= yaw_state - obj_yaw) {
         obj_yaw = obj_yaw + M_PI;
@@ -617,7 +617,7 @@ bool ConstantTurnRateMotionTracker::getTrackedObject(
     const auto origin_yaw = tf2::getYaw(object_.kinematics.pose_with_covariance.pose.orientation);
     const auto ekf_pose_yaw = tf2::getYaw(pose_with_cov.pose.orientation);
     object.shape.footprint =
-      autoware_universe_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
+      autoware::universe_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
   }
 
   return true;

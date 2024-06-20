@@ -50,8 +50,8 @@ void reuse_previous_poses(
   std::vector<double> cropped_curvatures;
   const auto ego_is_behind =
     prev_poses.size() > 1 &&
-    autoware_motion_utils::calcLongitudinalOffsetToSegment(prev_poses, 0, ego_point) < 0.0;
-  const auto ego_is_far = !prev_poses.empty() && autoware_universe_utils::calcDistance2d(
+    autoware::motion_utils::calcLongitudinalOffsetToSegment(prev_poses, 0, ego_point) < 0.0;
+  const auto ego_is_far = !prev_poses.empty() && autoware::universe_utils::calcDistance2d(
                                                    ego_point, prev_poses.front()) < 0.0;
   // make sure the reused points are not behind the current original drivable area
   LineString2d left_bound;
@@ -65,9 +65,9 @@ void reuse_previous_poses(
 
   if (!ego_is_behind && !ego_is_far && prev_poses.size() > 1 && !prev_poses_across_bounds) {
     const auto first_idx =
-      autoware_motion_utils::findNearestSegmentIndex(prev_poses, path.points.front().point.pose);
-    const auto deviation =
-      autoware_motion_utils::calcLateralOffset(prev_poses, path.points.front().point.pose.position);
+      autoware::motion_utils::findNearestSegmentIndex(prev_poses, path.points.front().point.pose);
+    const auto deviation = autoware::motion_utils::calcLateralOffset(
+      prev_poses, path.points.front().point.pose.position);
     if (first_idx && deviation < params.max_reuse_deviation) {
       LineString2d path_ls;
       for (const auto & p : path.points) path_ls.push_back(convert_point(p.point.pose.position));
@@ -87,27 +87,29 @@ void reuse_previous_poses(
   }
   if (cropped_poses.empty()) {
     const auto resampled_path_points =
-      autoware_motion_utils::resamplePath(path, params.resample_interval, true, true, false).points;
+      autoware::motion_utils::resamplePath(path, params.resample_interval, true, true, false)
+        .points;
     const auto cropped_path =
       params.max_path_arc_length <= 0.0
         ? resampled_path_points
-        : autoware_motion_utils::cropForwardPoints(
+        : autoware::motion_utils::cropForwardPoints(
             resampled_path_points, resampled_path_points.front().point.pose.position, 0,
             params.max_path_arc_length);
     for (const auto & p : cropped_path) cropped_poses.push_back(p.point.pose);
   } else {
-    const auto initial_arc_length = autoware_motion_utils::calcArcLength(cropped_poses);
-    const auto max_path_arc_length = autoware_motion_utils::calcArcLength(path.points);
-    const auto first_arc_length = autoware_motion_utils::calcSignedArcLength(
+    const auto initial_arc_length = autoware::motion_utils::calcArcLength(cropped_poses);
+    const auto max_path_arc_length = autoware::motion_utils::calcArcLength(path.points);
+    const auto first_arc_length = autoware::motion_utils::calcSignedArcLength(
       path.points, path.points.front().point.pose.position, cropped_poses.back().position);
     for (auto arc_length = first_arc_length + params.resample_interval;
          (params.max_path_arc_length <= 0.0 ||
           initial_arc_length + (arc_length - first_arc_length) <= params.max_path_arc_length) &&
          arc_length <= max_path_arc_length;
          arc_length += params.resample_interval)
-      cropped_poses.push_back(autoware_motion_utils::calcInterpolatedPose(path.points, arc_length));
+      cropped_poses.push_back(
+        autoware::motion_utils::calcInterpolatedPose(path.points, arc_length));
   }
-  prev_poses = autoware_motion_utils::removeOverlapPoints(cropped_poses);
+  prev_poses = autoware::motion_utils::removeOverlapPoints(cropped_poses);
   prev_curvatures = cropped_curvatures;
 }
 
@@ -162,7 +164,7 @@ void apply_arc_length_range_smoothing(
     auto arc_length = boost::geometry::distance(
       bound_projections[path_idx].point, convert_point(bound[bound_idx + 1]));
     const auto update_arc_length_and_bound_expansions = [&](auto idx) {
-      arc_length += autoware_universe_utils::calcDistance2d(bound[idx - 1], bound[idx]);
+      arc_length += autoware::universe_utils::calcDistance2d(bound[idx - 1], bound[idx]);
       bound_expansions[idx] = std::max(bound_expansions[idx], original_expansions[bound_idx]);
     };
     for (auto up_bound_idx = bound_idx + 2; up_bound_idx < bound.size(); ++up_bound_idx) {
@@ -201,7 +203,7 @@ void apply_bound_change_rate_limit(
   if (distances.empty()) return;
   const auto apply_max_vel = [&](auto & exp, const auto from, const auto to) {
     if (exp[from] > exp[to]) {
-      const auto arc_length = autoware_universe_utils::calcDistance2d(bound[from], bound[to]);
+      const auto arc_length = autoware::universe_utils::calcDistance2d(bound[from], bound[to]);
       const auto smoothed_dist = exp[from] - arc_length * max_rate;
       exp[to] = std::max(exp[to], smoothed_dist);
     }
@@ -285,12 +287,12 @@ void expand_bound(
   for (auto idx = 1LU; idx < bound.size(); ++idx) {
     bool is_intersecting = false;
     for (auto succ_idx = idx + 1; succ_idx < bound.size(); ++succ_idx) {
-      const auto intersection = autoware_universe_utils::intersect(
+      const auto intersection = autoware::universe_utils::intersect(
         bound[idx - 1], bound[idx], bound[succ_idx - 1], bound[succ_idx]);
       if (
         intersection &&
-        autoware_universe_utils::calcDistance2d(*intersection, bound[idx - 1]) < 1e-3 &&
-        autoware_universe_utils::calcDistance2d(*intersection, bound[idx]) < 1e-3) {
+        autoware::universe_utils::calcDistance2d(*intersection, bound[idx - 1]) < 1e-3 &&
+        autoware::universe_utils::calcDistance2d(*intersection, bound[idx]) < 1e-3) {
         idx = succ_idx;
         is_intersecting = true;
       }
@@ -303,7 +305,7 @@ void expand_bound(
 std::vector<double> calculate_smoothed_curvatures(
   const std::vector<Pose> & poses, const size_t smoothing_window_size)
 {
-  const auto curvatures = autoware_motion_utils::calcCurvature(poses);
+  const auto curvatures = autoware::motion_utils::calcCurvature(poses);
   std::vector<double> smoothed_curvatures(curvatures.size());
   for (auto i = 0UL; i < curvatures.size(); ++i) {
     auto sum = 0.0;
@@ -364,7 +366,7 @@ void expand_drivable_area(
 {
   // skip if no bounds or not enough points to calculate path curvature
   if (path.points.size() < 3 || path.left_bound.empty() || path.right_bound.empty()) return;
-  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stop_watch;
+  autoware::universe_utils::StopWatch<std::chrono::milliseconds> stop_watch;
   stop_watch.tic("overall");
   stop_watch.tic("preprocessing");
   const auto & params = planner_data->drivable_area_expansion_parameters;

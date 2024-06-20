@@ -47,12 +47,12 @@
 
 namespace autoware::lane_departure_checker
 {
+using autoware::universe_utils::LinearRing2d;
+using autoware::universe_utils::PoseDeviation;
+using autoware::universe_utils::Segment2d;
 using autoware_planning_msgs::msg::LaneletRoute;
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
-using autoware_universe_utils::LinearRing2d;
-using autoware_universe_utils::PoseDeviation;
-using autoware_universe_utils::Segment2d;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
 typedef boost::geometry::index::rtree<Segment2d, boost::geometry::index::rstar<16>> SegmentRtree;
@@ -122,7 +122,7 @@ public:
   std::vector<std::pair<double, lanelet::Lanelet>> getLaneletsFromPath(
     const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path) const;
 
-  std::optional<autoware_universe_utils::Polygon2d> getFusedLaneletPolygonForPath(
+  std::optional<autoware::universe_utils::Polygon2d> getFusedLaneletPolygonForPath(
     const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path) const;
 
   bool checkPathWillLeaveLane(

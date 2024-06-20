@@ -33,8 +33,8 @@
 namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
-using autoware_motion_utils::calcLongitudinalOffsetPose;
-using autoware_motion_utils::calcSignedArcLength;
+using autoware::motion_utils::calcLongitudinalOffsetPose;
+using autoware::motion_utils::calcSignedArcLength;
 
 DetectionAreaModule::DetectionAreaModule(
   const int64_t module_id, const int64_t lane_id,
@@ -288,7 +288,7 @@ std::vector<geometry_msgs::msg::Point> DetectionAreaModule::getObstaclePoints() 
                                   (circle.first.y() - p.y) * (circle.first.y() - p.y);
       if (squared_dist <= circle.second) {
         if (bg::within(Point2d{p.x, p.y}, poly.basicPolygon())) {
-          obstacle_points.push_back(autoware_universe_utils::createPoint(p.x, p.y, p.z));
+          obstacle_points.push_back(autoware::universe_utils::createPoint(p.x, p.y, p.z));
           // get all obstacle point becomes high computation cost so skip if any point is found
           break;
         }

@@ -91,7 +91,7 @@ BlindSpotDecision BlindSpotModule::modifyPathVelocityDetail(
 
   /* calc closest index */
   const auto & current_pose = planner_data_->current_odometry->pose;
-  const auto closest_idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const auto closest_idx = autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
     input_path.points, current_pose, planner_data_->ego_nearest_dist_threshold,
     planner_data_->ego_nearest_yaw_threshold);
   const auto stop_line_idx =
@@ -256,7 +256,7 @@ std::optional<lanelet::ConstLanelet> BlindSpotModule::getSiblingStraightLanelet(
 
 static std::optional<size_t> getFirstPointIntersectsLineByFootprint(
   const lanelet::ConstLineString2d & line, const InterpolatedPathInfo & interpolated_path_info,
-  const autoware_universe_utils::LinearRing2d & footprint, const double vehicle_length)
+  const autoware::universe_utils::LinearRing2d & footprint, const double vehicle_length)
 {
   const auto & path_ip = interpolated_path_info.path;
   const auto [lane_start, lane_end] = interpolated_path_info.lane_id_interval.value();
@@ -266,8 +266,8 @@ static std::optional<size_t> getFirstPointIntersectsLineByFootprint(
   const auto line2d = line.basicLineString();
   for (auto i = start; i <= lane_end; ++i) {
     const auto & base_pose = path_ip.points.at(i).point.pose;
-    const auto path_footprint = autoware_universe_utils::transformVector(
-      footprint, autoware_universe_utils::pose2transform(base_pose));
+    const auto path_footprint = autoware::universe_utils::transformVector(
+      footprint, autoware::universe_utils::pose2transform(base_pose));
     if (bg::intersects(path_footprint, line2d)) {
       return std::make_optional<size_t>(i);
     }
@@ -282,7 +282,7 @@ static std::optional<size_t> getDuplicatedPointIdx(
     const auto & p = path.points.at(i).point.pose.position;
 
     constexpr double min_dist = 0.001;
-    if (autoware_universe_utils::calcDistance2d(p, point) < min_dist) {
+    if (autoware::universe_utils::calcDistance2d(p, point) < min_dist) {
       return i;
     }
   }
@@ -299,7 +299,7 @@ static std::optional<size_t> insertPointIndex(
     return duplicate_idx_opt.value();
   }
 
-  const size_t closest_idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const size_t closest_idx = autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
     inout_path->points, in_pose, ego_nearest_dist_threshold, ego_nearest_yaw_threshold);
   // vector.insert(i) inserts element on the left side of v[i]
   // the velocity need to be zero order hold(from prior point)
@@ -361,12 +361,12 @@ std::optional<std::pair<size_t, size_t>> BlindSpotModule::generateStopLine(
     const geometry_msgs::msg::Point mid_point =
       geometry_msgs::build<geometry_msgs::msg::Point>().x(mid_pt.x()).y(mid_pt.y()).z(mid_pt.z());
     stop_idx_default_ip = stop_idx_critical_ip =
-      autoware_motion_utils::findNearestSegmentIndex(path_ip.points, mid_point);
+      autoware::motion_utils::findNearestSegmentIndex(path_ip.points, mid_point);
     /*
     // NOTE: it is not ambiguous when the curve starts on the left/right lanelet, so this module
     inserts stopline at the beginning of the lanelet for baselink
     stop_idx_default_ip = stop_idx_critical_ip = static_cast<size_t>(std::max<int>(0,
-    static_cast<int>(autoware_motion_utils::findNearestSegmentIndex(path_ip.points, mid_point)) -
+    static_cast<int>(autoware::motion_utils::findNearestSegmentIndex(path_ip.points, mid_point)) -
     baselink2front_dist));
     */
   }
@@ -420,12 +420,12 @@ std::optional<OverPassJudge> BlindSpotModule::isOverPassJudge(
     planner_data_->current_velocity->twist.linear.x, planner_data_->max_stop_acceleration_threshold,
     planner_data_->delay_response_time);
   const auto ego_segment_idx =
-    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       input_path.points, current_pose, planner_data_->ego_nearest_dist_threshold,
       planner_data_->ego_nearest_yaw_threshold);
   const size_t stop_point_segment_idx =
-    autoware_motion_utils::findNearestSegmentIndex(input_path.points, stop_point_pose.position);
-  const auto distance_until_stop = autoware_motion_utils::calcSignedArcLength(
+    autoware::motion_utils::findNearestSegmentIndex(input_path.points, stop_point_pose.position);
+  const auto distance_until_stop = autoware::motion_utils::calcSignedArcLength(
     input_path.points, current_pose.position, ego_segment_idx, stop_point_pose.position,
     stop_point_segment_idx);
 

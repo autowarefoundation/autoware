@@ -131,7 +131,7 @@ private:
   rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjects>::SharedPtr objects_pub_;
   message_filters::Subscriber<autoware_perception_msgs::msg::DetectedObjects> objects_sub_;
   message_filters::Subscriber<sensor_msgs::msg::PointCloud2> obstacle_pointcloud_sub_;
-  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_{nullptr};
+  std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_{nullptr};
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
 
@@ -145,7 +145,7 @@ private:
   std::shared_ptr<Debugger> debugger_;
   bool using_2d_validator_;
   std::unique_ptr<Validator> validator_;
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 
 private:
   void onObjectsAndObstaclePointCloud(

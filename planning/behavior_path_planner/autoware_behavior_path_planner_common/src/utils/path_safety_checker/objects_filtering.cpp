@@ -39,7 +39,7 @@ bool position_filter(
   const geometry_msgs::msg::Point & current_pose, const double forward_distance,
   const double backward_distance)
 {
-  const auto dist_ego_to_obj = autoware_motion_utils::calcSignedArcLength(
+  const auto dist_ego_to_obj = autoware::motion_utils::calcSignedArcLength(
     path_points, current_pose, object.kinematics.initial_pose_with_covariance.pose.position);
 
   return (backward_distance < dist_ego_to_obj && dist_ego_to_obj < forward_distance);
@@ -71,16 +71,16 @@ bool isPolygonOverlapLanelet(const PredictedObject & object, const lanelet::Cons
 }
 
 bool isPolygonOverlapLanelet(
-  const PredictedObject & object, const autoware_universe_utils::Polygon2d & lanelet_polygon)
+  const PredictedObject & object, const autoware::universe_utils::Polygon2d & lanelet_polygon)
 {
-  const auto object_polygon = autoware_universe_utils::toPolygon2d(object);
+  const auto object_polygon = autoware::universe_utils::toPolygon2d(object);
   return !boost::geometry::disjoint(lanelet_polygon, object_polygon);
 }
 
 bool isPolygonOverlapLanelet(
   const PredictedObject & object, const lanelet::BasicPolygon2d & lanelet_polygon)
 {
-  const auto object_polygon = autoware_universe_utils::toPolygon2d(object);
+  const auto object_polygon = autoware::universe_utils::toPolygon2d(object);
   return !boost::geometry::disjoint(lanelet_polygon, object_polygon);
 }
 
@@ -273,8 +273,8 @@ std::vector<PoseWithVelocityStamped> createPredictedPath(
       length = current_velocity * t_with_delay + 0.5 * acceleration * t_with_delay * t_with_delay;
     }
 
-    const auto pose =
-      autoware_motion_utils::calcInterpolatedPose(path_points, vehicle_pose_frenet.length + length);
+    const auto pose = autoware::motion_utils::calcInterpolatedPose(
+      path_points, vehicle_pose_frenet.length + length);
     predicted_path.emplace_back(t, pose, velocity);
   }
 
@@ -315,7 +315,7 @@ ExtendedPredictedObject transform(
     for (double t = 0.0; t < safety_check_time_horizon + 1e-3; t += safety_check_time_resolution) {
       const auto obj_pose = object_recognition_utils::calcInterpolatedPose(path, t);
       if (obj_pose) {
-        const auto obj_polygon = autoware_universe_utils::toPolygon2d(*obj_pose, object.shape);
+        const auto obj_polygon = autoware::universe_utils::toPolygon2d(*obj_pose, object.shape);
         extended_object.predicted_paths[i].path.emplace_back(
           t, *obj_pose, obj_velocity, obj_polygon);
       }

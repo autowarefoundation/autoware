@@ -172,8 +172,8 @@ private:
   void checkConcatStatus(diagnostic_updater::DiagnosticStatusWrapper & stat);
 
   /** \brief processing time publisher. **/
-  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
-  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_;
+  std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_;
 };
 
 }  // namespace pointcloud_preprocessor

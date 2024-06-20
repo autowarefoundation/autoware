@@ -400,7 +400,7 @@ TEST(TestCollisionDistance, createObjPolygons)
   object1.kinematics.initial_pose_with_covariance.pose.position.x = 0.0;
   object1.kinematics.initial_pose_with_covariance.pose.position.y = 0.0;
   object1.kinematics.initial_pose_with_covariance.pose.orientation =
-    autoware_universe_utils::createQuaternionFromYaw(0.0);
+    autoware::universe_utils::createQuaternionFromYaw(0.0);
   object1.kinematics.initial_twist_with_covariance.twist.linear.x = 0.0;
   object1.shape.dimensions.x = 1.0;
   object1.shape.dimensions.y = 1.0;
@@ -427,7 +427,7 @@ TEST(TestCollisionDistance, createObjPolygons)
   object2.kinematics.initial_pose_with_covariance.pose.position.x = 10.0;
   object2.kinematics.initial_pose_with_covariance.pose.position.y = 10.0;
   object2.kinematics.initial_pose_with_covariance.pose.orientation =
-    autoware_universe_utils::createQuaternionFromYaw(M_PI_2);
+    autoware::universe_utils::createQuaternionFromYaw(M_PI_2);
   object2.kinematics.initial_twist_with_covariance.twist.linear.x = 2.0;
   object2.shape.dimensions.x = 2.0;
   object2.shape.dimensions.y = 1.0;

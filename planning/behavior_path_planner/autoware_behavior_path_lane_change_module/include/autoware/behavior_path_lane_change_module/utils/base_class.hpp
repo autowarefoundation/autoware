@@ -37,7 +37,7 @@
 namespace autoware::behavior_path_planner
 {
 using autoware::route_handler::Direction;
-using autoware_universe_utils::StopWatch;
+using autoware::universe_utils::StopWatch;
 using data::lane_change::PathSafetyStatus;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;

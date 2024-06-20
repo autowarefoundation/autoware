@@ -32,11 +32,11 @@ constexpr double STOP_DURATION_THRESHOLD_600_MS = 0.6;
 constexpr double STOP_DURATION_THRESHOLD_800_MS = 0.8;
 constexpr double STOP_DURATION_THRESHOLD_1000_MS = 1.0;
 
-using autoware_motion_utils::VehicleArrivalChecker;
-using autoware_motion_utils::VehicleStopChecker;
-using autoware_universe_utils::createPoint;
-using autoware_universe_utils::createQuaternion;
-using autoware_universe_utils::createTranslation;
+using autoware::motion_utils::VehicleArrivalChecker;
+using autoware::motion_utils::VehicleStopChecker;
+using autoware::universe_utils::createPoint;
+using autoware::universe_utils::createQuaternion;
+using autoware::universe_utils::createTranslation;
 using nav_msgs::msg::Odometry;
 
 class CheckerNode : public rclcpp::Node

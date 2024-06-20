@@ -156,7 +156,7 @@ void PerceptionOnlineEvaluatorNode::publishDebugMarker()
     for (auto & marker : added.markers) {
       marker.lifetime = rclcpp::Duration::from_seconds(1.5);
     }
-    autoware_universe_utils::appendMarkerArray(added, &marker);
+    autoware::universe_utils::appendMarkerArray(added, &marker);
   };
 
   const auto & p = parameters_->debug_marker_parameters;
@@ -236,7 +236,7 @@ void PerceptionOnlineEvaluatorNode::publishDebugMarker()
 rcl_interfaces::msg::SetParametersResult PerceptionOnlineEvaluatorNode::onParameter(
   const std::vector<rclcpp::Parameter> & parameters)
 {
-  using autoware_universe_utils::updateParam;
+  using autoware::universe_utils::updateParam;
 
   auto & p = parameters_;
 
@@ -305,8 +305,8 @@ rcl_interfaces::msg::SetParametersResult PerceptionOnlineEvaluatorNode::onParame
 
 void PerceptionOnlineEvaluatorNode::initParameter()
 {
-  using autoware_universe_utils::getOrDeclareParameter;
-  using autoware_universe_utils::updateParam;
+  using autoware::universe_utils::getOrDeclareParameter;
+  using autoware::universe_utils::updateParam;
 
   auto & p = parameters_;
 

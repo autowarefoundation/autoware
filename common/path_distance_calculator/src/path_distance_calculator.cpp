@@ -48,7 +48,7 @@ PathDistanceCalculator::PathDistanceCalculator(const rclcpp::NodeOptions & optio
       return;
     }
 
-    const double distance = autoware_motion_utils::calcSignedArcLength(
+    const double distance = autoware::motion_utils::calcSignedArcLength(
       path->points, pose->pose.position, path->points.size() - 1);
 
     tier4_debug_msgs::msg::Float64Stamped msg;

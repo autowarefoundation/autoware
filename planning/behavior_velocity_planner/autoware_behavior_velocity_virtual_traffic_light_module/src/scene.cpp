@@ -27,7 +27,7 @@ namespace autoware::behavior_velocity_planner
 {
 namespace
 {
-using autoware_universe_utils::calcDistance2d;
+using autoware::universe_utils::calcDistance2d;
 
 struct SegmentIndexWithPoint
 {
@@ -46,17 +46,17 @@ tier4_v2x_msgs::msg::KeyValue createKeyValue(const std::string & key, const std:
   return tier4_v2x_msgs::build<tier4_v2x_msgs::msg::KeyValue>().key(key).value(value);
 }
 
-autoware_universe_utils::LineString3d toAutowarePoints(
+autoware::universe_utils::LineString3d toAutowarePoints(
   const lanelet::ConstLineString3d & line_string)
 {
-  autoware_universe_utils::LineString3d output;
+  autoware::universe_utils::LineString3d output;
   for (const auto & p : line_string) {
     output.emplace_back(p.x(), p.y(), p.z());
   }
   return output;
 }
 
-std::optional<autoware_universe_utils::LineString3d> toAutowarePoints(
+std::optional<autoware::universe_utils::LineString3d> toAutowarePoints(
   const lanelet::Optional<lanelet::ConstLineString3d> & line_string)
 {
   if (!line_string) {
@@ -65,28 +65,28 @@ std::optional<autoware_universe_utils::LineString3d> toAutowarePoints(
   return toAutowarePoints(*line_string);
 }
 
-std::vector<autoware_universe_utils::LineString3d> toAutowarePoints(
+std::vector<autoware::universe_utils::LineString3d> toAutowarePoints(
   const lanelet::ConstLineStrings3d & line_strings)
 {
-  std::vector<autoware_universe_utils::LineString3d> output;
+  std::vector<autoware::universe_utils::LineString3d> output;
   for (const auto & line_string : line_strings) {
     output.emplace_back(toAutowarePoints(line_string));
   }
   return output;
 }
 
-[[maybe_unused]] autoware_universe_utils::LineString2d to_2d(
-  const autoware_universe_utils::LineString3d & line_string)
+[[maybe_unused]] autoware::universe_utils::LineString2d to_2d(
+  const autoware::universe_utils::LineString3d & line_string)
 {
-  autoware_universe_utils::LineString2d output;
+  autoware::universe_utils::LineString2d output;
   for (const auto & p : line_string) {
     output.emplace_back(p.x(), p.y());
   }
   return output;
 }
 
-autoware_universe_utils::Point3d calcCenter(
-  const autoware_universe_utils::LineString3d & line_string)
+autoware::universe_utils::Point3d calcCenter(
+  const autoware::universe_utils::LineString3d & line_string)
 {
   const auto p1 = line_string.front();
   const auto p2 = line_string.back();
@@ -97,10 +97,10 @@ autoware_universe_utils::Point3d calcCenter(
 geometry_msgs::msg::Pose calcHeadPose(
   const geometry_msgs::msg::Pose & base_link_pose, const double base_link_to_front)
 {
-  return autoware_universe_utils::calcOffsetPose(base_link_pose, base_link_to_front, 0.0, 0.0);
+  return autoware::universe_utils::calcOffsetPose(base_link_pose, base_link_to_front, 0.0, 0.0);
 }
 
-geometry_msgs::msg::Point convertToGeomPoint(const autoware_universe_utils::Point3d & p)
+geometry_msgs::msg::Point convertToGeomPoint(const autoware::universe_utils::Point3d & p)
 {
   geometry_msgs::msg::Point geom_p;
   geom_p.x = p.x();
@@ -111,7 +111,7 @@ geometry_msgs::msg::Point convertToGeomPoint(const autoware_universe_utils::Poin
 
 template <class T>
 std::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
-  const T & points, const autoware_universe_utils::LineString3d & target_line,
+  const T & points, const autoware::universe_utils::LineString3d & target_line,
   const size_t end_line_idx)
 {
   const auto target_line_p1 = convertToGeomPoint(target_line.at(0));
@@ -119,8 +119,8 @@ std::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
 
   for (size_t i = end_line_idx; 0 < i;
        --i) {  // NOTE: size_t can be used since it will not be negative.
-    const auto & p1 = autoware_universe_utils::getPoint(points.at(i));
-    const auto & p2 = autoware_universe_utils::getPoint(points.at(i - 1));
+    const auto & p1 = autoware::universe_utils::getPoint(points.at(i));
+    const auto & p2 = autoware::universe_utils::getPoint(points.at(i - 1));
     const auto collision_point =
       arc_lane_utils::checkCollision(p1, p2, target_line_p1, target_line_p2);
 
@@ -134,7 +134,7 @@ std::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
 
 template <class T>
 std::optional<SegmentIndexWithPoint> findLastCollisionBeforeEndLine(
-  const T & points, const std::vector<autoware_universe_utils::LineString3d> & lines,
+  const T & points, const std::vector<autoware::universe_utils::LineString3d> & lines,
   const size_t end_line_idx)
 {
   for (const auto & line : lines) {
@@ -158,7 +158,7 @@ std::optional<size_t> insertStopVelocityAtCollision(
   const SegmentIndexWithPoint & collision, const double offset,
   tier4_planning_msgs::msg::PathWithLaneId * path)
 {
-  const auto collision_offset = autoware_motion_utils::calcLongitudinalOffsetToSegment(
+  const auto collision_offset = autoware::motion_utils::calcLongitudinalOffsetToSegment(
     path->points, collision.index, collision.point);
 
   const auto offset_segment =
@@ -410,7 +410,7 @@ bool VirtualTrafficLightModule::isBeforeStartLine(const size_t end_line_idx)
 
   const auto & ego_pose = planner_data_->current_odometry->pose;
   const size_t ego_seg_idx = findEgoSegmentIndex(module_data_.path.points);
-  const auto signed_arc_length = autoware_motion_utils::calcSignedArcLength(
+  const auto signed_arc_length = autoware::motion_utils::calcSignedArcLength(
                                    module_data_.path.points, ego_pose.position, ego_seg_idx,
                                    collision->point, collision_seg_idx) -
                                  planner_data_->vehicle_info_.max_longitudinal_offset_m;
@@ -433,7 +433,7 @@ bool VirtualTrafficLightModule::isBeforeStopLine(const size_t end_line_idx)
 
   const auto & ego_pose = planner_data_->current_odometry->pose;
   const size_t ego_seg_idx = findEgoSegmentIndex(module_data_.path.points);
-  const auto signed_arc_length = autoware_motion_utils::calcSignedArcLength(
+  const auto signed_arc_length = autoware::motion_utils::calcSignedArcLength(
                                    module_data_.path.points, ego_pose.position, ego_seg_idx,
                                    collision->point, collision_seg_idx) -
                                  planner_data_->vehicle_info_.max_longitudinal_offset_m;
@@ -461,7 +461,7 @@ bool VirtualTrafficLightModule::isAfterAnyEndLine(const size_t end_line_idx)
 
   const auto & ego_pose = planner_data_->current_odometry->pose;
   const size_t ego_seg_idx = findEgoSegmentIndex(module_data_.path.points);
-  const auto signed_arc_length = autoware_motion_utils::calcSignedArcLength(
+  const auto signed_arc_length = autoware::motion_utils::calcSignedArcLength(
                                    module_data_.path.points, ego_pose.position, ego_seg_idx,
                                    collision->point, collision_seg_idx) -
                                  planner_data_->vehicle_info_.max_longitudinal_offset_m;
@@ -482,7 +482,7 @@ bool VirtualTrafficLightModule::isNearAnyEndLine(const size_t end_line_idx)
 
   const auto & ego_pose = planner_data_->current_odometry->pose;
   const size_t ego_seg_idx = findEgoSegmentIndex(module_data_.path.points);
-  const auto signed_arc_length = autoware_motion_utils::calcSignedArcLength(
+  const auto signed_arc_length = autoware::motion_utils::calcSignedArcLength(
                                    module_data_.path.points, ego_pose.position, ego_seg_idx,
                                    collision->point, collision_seg_idx) -
                                  planner_data_->vehicle_info_.max_longitudinal_offset_m;
@@ -544,7 +544,7 @@ void VirtualTrafficLightModule::insertStopVelocityAtStopLine(
       path->points, collision->point, collision->index);
 
     const auto stop_distance =
-      autoware_motion_utils::calcSignedArcLength(
+      autoware::motion_utils::calcSignedArcLength(
         path->points, ego_pose.position, ego_seg_idx, collision.value().point, collision_seg_idx) +
       offset;
     const auto is_stopped = planner_data_->isVehicleStopped();
@@ -552,7 +552,7 @@ void VirtualTrafficLightModule::insertStopVelocityAtStopLine(
     if (stop_distance < planner_param_.hold_stop_margin_distance && is_stopped) {
       SegmentIndexWithPoint new_collision;
       const auto ego_pos_on_path =
-        autoware_motion_utils::calcLongitudinalOffsetPoint(path->points, ego_pose.position, 0.0);
+        autoware::motion_utils::calcLongitudinalOffsetPoint(path->points, ego_pose.position, 0.0);
 
       if (ego_pos_on_path) {
         new_collision.point = ego_pos_on_path.value();

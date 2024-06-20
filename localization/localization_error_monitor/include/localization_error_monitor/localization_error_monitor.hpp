@@ -43,7 +43,7 @@ private:
 
   rclcpp::TimerBase::SharedPtr timer_;
 
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 
   double scale_;
   double error_ellipse_size_;

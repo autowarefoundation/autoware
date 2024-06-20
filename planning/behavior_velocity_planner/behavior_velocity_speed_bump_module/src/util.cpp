@@ -40,11 +40,11 @@ using Point = bg::model::d2::point_xy<double>;
 using Polygon = bg::model::polygon<Point>;
 using Line = bg::model::linestring<Point>;
 
-using autoware_motion_utils::calcLongitudinalOffsetPoint;
-using autoware_motion_utils::calcSignedArcLength;
-using autoware_motion_utils::findNearestSegmentIndex;
-using autoware_motion_utils::insertTargetPoint;
-using autoware_universe_utils::createPoint;
+using autoware::motion_utils::calcLongitudinalOffsetPoint;
+using autoware::motion_utils::calcSignedArcLength;
+using autoware::motion_utils::findNearestSegmentIndex;
+using autoware::motion_utils::insertTargetPoint;
+using autoware::universe_utils::createPoint;
 
 PathPolygonIntersectionStatus getPathPolygonIntersectionStatus(
   const PathWithLaneId & ego_path, const lanelet::BasicPolygon2d & polygon,

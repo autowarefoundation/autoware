@@ -30,8 +30,8 @@
 namespace polygon_utils
 {
 namespace bg = boost::geometry;
-using autoware_universe_utils::Point2d;
-using autoware_universe_utils::Polygon2d;
+using autoware::universe_utils::Point2d;
+using autoware::universe_utils::Polygon2d;
 
 Polygon2d createOneStepPolygon(
   const std::vector<geometry_msgs::msg::Pose> & last_poses,

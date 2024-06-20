@@ -49,12 +49,12 @@
 namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
+using autoware::universe_utils::Polygon2d;
+using autoware::universe_utils::StopWatch;
 using autoware_perception_msgs::msg::ObjectClassification;
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_perception_msgs::msg::TrafficLightElement;
-using autoware_universe_utils::Polygon2d;
-using autoware_universe_utils::StopWatch;
 using lanelet::autoware::Crosswalk;
 using tier4_api_msgs::msg::CrosswalkStatus;
 using tier4_planning_msgs::msg::PathWithLaneId;
@@ -264,7 +264,7 @@ public:
       const bool is_object_away_from_path =
         !attention_area.outer().empty() &&
         boost::geometry::distance(
-          autoware_universe_utils::fromMsg(position).to_2d(), attention_area) > 0.5;
+          autoware::universe_utils::fromMsg(position).to_2d(), attention_area) > 0.5;
 
       // add new object
       if (objects.count(uuid) == 0) {
@@ -327,7 +327,7 @@ public:
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
-  autoware_motion_utils::VirtualWalls createVirtualWalls() override;
+  autoware::motion_utils::VirtualWalls createVirtualWalls() override;
 
 private:
   // main functions

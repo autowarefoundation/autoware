@@ -46,7 +46,7 @@ int main(int argc, char * argv[])
   result_file
     << "#Size PolygonVertices PolygonIndexes grid_map_utils_constructor grid_map_utils_iteration "
        "grid_map_constructor grid_map_iteration\n";
-  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stopwatch;
+  autoware::universe_utils::StopWatch<std::chrono::milliseconds> stopwatch;
 
   constexpr auto nb_iterations = 10;
   constexpr auto polygon_side_vertices =

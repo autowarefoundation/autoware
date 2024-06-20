@@ -19,7 +19,7 @@
 
 #include <cmath>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 inline double normalizeDegree(const double deg, const double min_deg = -180)
 {
@@ -45,6 +45,6 @@ inline double normalizeRadian(const double rad, const double min_rad = -pi)
   return value - std::copysign(2 * pi, value);
 }
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__MATH__NORMALIZATION_HPP_

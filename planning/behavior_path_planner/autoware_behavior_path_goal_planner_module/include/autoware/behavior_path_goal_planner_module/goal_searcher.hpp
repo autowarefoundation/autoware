@@ -23,7 +23,7 @@
 
 namespace autoware::behavior_path_planner
 {
-using autoware_universe_utils::LinearRing2d;
+using autoware::universe_utils::LinearRing2d;
 using BasicPolygons2d = std::vector<lanelet::BasicPolygon2d>;
 
 class GoalSearcher : public GoalSearcherBase

@@ -73,12 +73,12 @@ private:
 
   rclcpp::Subscription<autoware_map_msgs::msg::LaneletMapBin>::SharedPtr sub_lanelet_map_;
   rclcpp::Subscription<autoware_planning_msgs::msg::LaneletRoute>::SharedPtr sub_route_;
-  autoware_universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry, 100>::SharedPtr
+  autoware::universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry, 100>::SharedPtr
     sub_odom_;
   rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr
     sub_lane_driving_trajectory_;
   rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr sub_parking_trajectory_;
-  autoware_universe_utils::InterProcessPollingSubscriber<std_msgs::msg::Bool>::SharedPtr
+  autoware::universe_utils::InterProcessPollingSubscriber<std_msgs::msg::Bool>::SharedPtr
     sub_parking_state_;
   rclcpp::Publisher<autoware_planning_msgs::msg::Trajectory>::SharedPtr pub_trajectory_;
   rclcpp::Publisher<tier4_planning_msgs::msg::Scenario>::SharedPtr pub_scenario_;
@@ -93,7 +93,7 @@ private:
   std::deque<geometry_msgs::msg::TwistStamped::ConstSharedPtr> twist_buffer_;
 
   std::shared_ptr<autoware::route_handler::RouteHandler> route_handler_;
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 
   // Parameters
   double update_rate_;

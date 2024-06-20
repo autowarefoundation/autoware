@@ -55,7 +55,7 @@ bool smoothPath(
   const auto & smoother = planner_data->velocity_smoother_;
 
   auto trajectory =
-    autoware_motion_utils::convertToTrajectoryPoints<tier4_planning_msgs::msg::PathWithLaneId>(
+    autoware::motion_utils::convertToTrajectoryPoints<tier4_planning_msgs::msg::PathWithLaneId>(
       in_path);
   const auto traj_lateral_acc_filtered = smoother->applyLateralAccelerationFilter(trajectory);
 
@@ -67,7 +67,7 @@ bool smoothPath(
     traj_steering_rate_limited, v0, current_pose, planner_data->ego_nearest_dist_threshold,
     planner_data->ego_nearest_yaw_threshold);
   const size_t traj_resampled_closest =
-    autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+    autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
       traj_resampled, current_pose, planner_data->ego_nearest_dist_threshold,
       planner_data->ego_nearest_yaw_threshold);
   std::vector<TrajectoryPoints> debug_trajectories;
@@ -87,7 +87,7 @@ bool smoothPath(
     autoware::velocity_smoother::trajectory_utils::applyMaximumVelocityLimit(
       traj_resampled_closest, traj_smoothed.size(), external_v_limit->max_velocity, traj_smoothed);
   }
-  out_path = autoware_motion_utils::convertToPathWithLaneId<TrajectoryPoints>(traj_smoothed);
+  out_path = autoware::motion_utils::convertToPathWithLaneId<TrajectoryPoints>(traj_smoothed);
   return true;
 }
 

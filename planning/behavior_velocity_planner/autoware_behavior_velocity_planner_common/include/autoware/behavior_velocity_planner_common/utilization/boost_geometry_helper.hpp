@@ -50,9 +50,9 @@ namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
-using Point2d = autoware_universe_utils::Point2d;
-using LineString2d = autoware_universe_utils::LineString2d;
-using Polygon2d = autoware_universe_utils::Polygon2d;
+using Point2d = autoware::universe_utils::Point2d;
+using LineString2d = autoware::universe_utils::LineString2d;
+using Polygon2d = autoware::universe_utils::Polygon2d;
 
 template <class T>
 Point2d to_bg2d(const T & p)

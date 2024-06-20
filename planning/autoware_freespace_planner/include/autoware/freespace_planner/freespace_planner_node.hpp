@@ -163,7 +163,7 @@ private:
 
   TransformStamped getTransform(const std::string & from, const std::string & to);
 
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 };
 }  // namespace autoware::freespace_planner
 

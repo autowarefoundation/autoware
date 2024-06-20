@@ -36,10 +36,10 @@
 namespace autoware::behavior_path_planner
 {
 
-using autoware_motion_utils::createDeadLineVirtualWallMarker;
-using autoware_motion_utils::createSlowDownVirtualWallMarker;
-using autoware_motion_utils::createStopVirtualWallMarker;
-using autoware_universe_utils::toHexString;
+using autoware::motion_utils::createDeadLineVirtualWallMarker;
+using autoware::motion_utils::createSlowDownVirtualWallMarker;
+using autoware::motion_utils::createStopVirtualWallMarker;
+using autoware::universe_utils::toHexString;
 using unique_identifier_msgs::msg::UUID;
 using SceneModulePtr = std::shared_ptr<SceneModuleInterface>;
 using SceneModuleObserver = std::weak_ptr<SceneModuleInterface>;
@@ -111,7 +111,7 @@ public:
 
   void publishVirtualWall() const
   {
-    using autoware_universe_utils::appendMarkerArray;
+    using autoware::universe_utils::appendMarkerArray;
 
     MarkerArray markers{};
 
@@ -155,7 +155,7 @@ public:
 
   void publishMarker() const
   {
-    using autoware_universe_utils::appendMarkerArray;
+    using autoware::universe_utils::appendMarkerArray;
 
     MarkerArray info_markers{};
     MarkerArray debug_markers{};
@@ -271,7 +271,7 @@ public:
 protected:
   void initInterface(rclcpp::Node * node, const std::vector<std::string> & rtc_types)
   {
-    using autoware_universe_utils::getOrDeclareParameter;
+    using autoware::universe_utils::getOrDeclareParameter;
 
     // init manager configuration
     {

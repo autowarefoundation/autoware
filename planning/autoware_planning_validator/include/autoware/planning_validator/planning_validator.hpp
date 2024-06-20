@@ -36,10 +36,10 @@
 
 namespace autoware::planning_validator
 {
+using autoware::universe_utils::StopWatch;
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
 using autoware_planning_validator::msg::PlanningValidatorStatus;
-using autoware_universe_utils::StopWatch;
 using diagnostic_updater::DiagnosticStatusWrapper;
 using diagnostic_updater::Updater;
 using nav_msgs::msg::Odometry;
@@ -103,7 +103,7 @@ private:
 
   void setStatus(DiagnosticStatusWrapper & stat, const bool & is_ok, const std::string & msg);
 
-  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Odometry> sub_kinematics_{
     this, "~/input/kinematics"};
   rclcpp::Subscription<Trajectory>::SharedPtr sub_traj_;
   rclcpp::Publisher<Trajectory>::SharedPtr pub_traj_;
@@ -137,9 +137,9 @@ private:
 
   std::shared_ptr<PlanningValidatorDebugMarkerPublisher> debug_pose_publisher_;
 
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 
   StopWatch<std::chrono::milliseconds> stop_watch_;
 };

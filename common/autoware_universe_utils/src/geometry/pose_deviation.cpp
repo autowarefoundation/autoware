@@ -28,7 +28,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 
 double calcLateralDeviation(
@@ -82,4 +82,4 @@ PoseDeviation calcPoseDeviation(
 
   return deviation;
 }
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils

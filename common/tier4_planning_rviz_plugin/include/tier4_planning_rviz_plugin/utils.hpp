@@ -29,7 +29,7 @@ bool isDrivingForward(const T points_with_twist, size_t target_idx)
 
   // 1. check velocity
   const double target_velocity =
-    autoware_universe_utils::getLongitudinalVelocity(points_with_twist.at(target_idx));
+    autoware::universe_utils::getLongitudinalVelocity(points_with_twist.at(target_idx));
   if (epsilon < target_velocity) {
     return true;
   } else if (target_velocity < -epsilon) {
@@ -46,13 +46,13 @@ bool isDrivingForward(const T points_with_twist, size_t target_idx)
   const size_t first_idx = is_last_point ? target_idx - 1 : target_idx;
   const size_t second_idx = is_last_point ? target_idx : target_idx + 1;
 
-  const auto first_pose = autoware_universe_utils::getPose(points_with_twist.at(first_idx));
-  const auto second_pose = autoware_universe_utils::getPose(points_with_twist.at(second_idx));
+  const auto first_pose = autoware::universe_utils::getPose(points_with_twist.at(first_idx));
+  const auto second_pose = autoware::universe_utils::getPose(points_with_twist.at(second_idx));
   const double first_traj_yaw = tf2::getYaw(first_pose.orientation);
   const double driving_direction_yaw =
-    autoware_universe_utils::calcAzimuthAngle(first_pose.position, second_pose.position);
+    autoware::universe_utils::calcAzimuthAngle(first_pose.position, second_pose.position);
   if (
-    std::abs(autoware_universe_utils::normalizeRadian(first_traj_yaw - driving_direction_yaw)) <
+    std::abs(autoware::universe_utils::normalizeRadian(first_traj_yaw - driving_direction_yaw)) <
     M_PI_2) {
     return true;
   }

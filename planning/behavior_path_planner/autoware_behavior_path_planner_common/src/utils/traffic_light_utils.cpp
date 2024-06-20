@@ -18,7 +18,7 @@
 
 namespace autoware::behavior_path_planner::utils::traffic_light
 {
-using autoware_motion_utils::calcSignedArcLength;
+using autoware::motion_utils::calcSignedArcLength;
 
 double getDistanceToNextTrafficLight(
   const Pose & current_pose, const lanelet::ConstLanelets & lanelets)
@@ -99,7 +99,7 @@ std::optional<double> calcDistanceToRedTrafficLight(
       const auto z = 0.5 * (stop_line.front().z() + stop_line.back().z());
 
       return calcSignedArcLength(
-        path.points, ego_pos, autoware_universe_utils::createPoint(x, y, z));
+        path.points, ego_pos, autoware::universe_utils::createPoint(x, y, z));
     }
   }
 

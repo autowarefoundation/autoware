@@ -25,11 +25,11 @@
 
 namespace ground_segmentation
 {
+using autoware::universe_utils::calcDistance3d;
+using autoware::universe_utils::deg2rad;
+using autoware::universe_utils::normalizeDegree;
+using autoware::universe_utils::normalizeRadian;
 using autoware::vehicle_info_utils::VehicleInfoUtils;
-using autoware_universe_utils::calcDistance3d;
-using autoware_universe_utils::deg2rad;
-using autoware_universe_utils::normalizeDegree;
-using autoware_universe_utils::normalizeRadian;
 using pointcloud_preprocessor::get_param;
 
 ScanGroundFilterComponent::ScanGroundFilterComponent(const rclcpp::NodeOptions & options)
@@ -79,8 +79,8 @@ ScanGroundFilterComponent::ScanGroundFilterComponent(const rclcpp::NodeOptions &
 
   // initialize debug tool
   {
-    using autoware_universe_utils::DebugPublisher;
-    using autoware_universe_utils::StopWatch;
+    using autoware::universe_utils::DebugPublisher;
+    using autoware::universe_utils::StopWatch;
     stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
     debug_publisher_ptr_ = std::make_unique<DebugPublisher>(this, "scan_ground_filter");
     stop_watch_ptr_->tic("cyclic_time");

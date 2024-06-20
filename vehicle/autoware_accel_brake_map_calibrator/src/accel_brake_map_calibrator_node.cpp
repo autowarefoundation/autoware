@@ -32,7 +32,7 @@ namespace autoware::accel_brake_map_calibrator
 AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & node_options)
 : Node("accel_brake_map_calibrator", node_options)
 {
-  transform_listener_ = std::make_shared<autoware_universe_utils::TransformListener>(this);
+  transform_listener_ = std::make_shared<autoware::universe_utils::TransformListener>(this);
   // get parameter
   update_hz_ = declare_parameter<double>("update_hz", 10.0);
   covariance_ = declare_parameter<double>("initial_covariance", 0.05);
@@ -217,7 +217,7 @@ AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & nod
   init_timer(1.0 / update_hz_);
   init_output_csv_timer(30.0);
 
-  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
 }
 
 void AccelBrakeMapCalibrator::init_output_csv_timer(double period_s)

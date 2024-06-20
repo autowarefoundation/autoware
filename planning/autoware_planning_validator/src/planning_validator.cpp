@@ -44,9 +44,9 @@ PlanningValidator::PlanningValidator(const rclcpp::NodeOptions & options)
 
   setupParameters();
 
-  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
   published_time_publisher_ =
-    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
+    std::make_unique<autoware::universe_utils::PublishedTimePublisher>(this);
 }
 
 void PlanningValidator::setupParameters()
@@ -450,7 +450,7 @@ bool PlanningValidator::checkValidSteeringRate(const Trajectory & trajectory)
 bool PlanningValidator::checkValidVelocityDeviation(const Trajectory & trajectory)
 {
   // TODO(horibe): set appropriate thresholds for index search
-  const auto idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const auto idx = autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
     trajectory.points, current_kinematics_->pose.pose);
 
   validation_status_.velocity_deviation = std::abs(
@@ -466,10 +466,10 @@ bool PlanningValidator::checkValidVelocityDeviation(const Trajectory & trajector
 bool PlanningValidator::checkValidDistanceDeviation(const Trajectory & trajectory)
 {
   // TODO(horibe): set appropriate thresholds for index search
-  const auto idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const auto idx = autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
     trajectory.points, current_kinematics_->pose.pose);
 
-  validation_status_.distance_deviation = autoware_universe_utils::calcDistance2d(
+  validation_status_.distance_deviation = autoware::universe_utils::calcDistance2d(
     trajectory.points.at(idx), current_kinematics_->pose.pose);
 
   if (validation_status_.distance_deviation > validation_params_.distance_deviation_threshold) {
@@ -487,7 +487,7 @@ bool PlanningValidator::checkValidLongitudinalDistanceDeviation(const Trajectory
 
   const auto ego_pose = current_kinematics_->pose.pose;
   const size_t idx =
-    autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(trajectory.points, ego_pose);
+    autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(trajectory.points, ego_pose);
 
   if (0 < idx && idx < trajectory.points.size() - 1) {
     return true;  // ego-nearest point exists between trajectory points.
@@ -495,13 +495,13 @@ bool PlanningValidator::checkValidLongitudinalDistanceDeviation(const Trajectory
 
   // Check if the valid longitudinal deviation for given segment index
   const auto HasValidLongitudinalDeviation = [&](const size_t seg_idx, const bool is_last) {
-    auto long_offset = autoware_motion_utils::calcLongitudinalOffsetToSegment(
+    auto long_offset = autoware::motion_utils::calcLongitudinalOffsetToSegment(
       trajectory.points, seg_idx, ego_pose.position);
 
     // for last, need to remove distance for the last segment.
     if (is_last) {
       const auto size = trajectory.points.size();
-      long_offset -= autoware_universe_utils::calcDistance2d(
+      long_offset -= autoware::universe_utils::calcDistance2d(
         trajectory.points.at(size - 1), trajectory.points.at(size - 2));
     }
 
@@ -532,7 +532,7 @@ bool PlanningValidator::checkValidForwardTrajectoryLength(const Trajectory & tra
     return true;  // Ego is almost stopped.
   }
 
-  const auto forward_length = autoware_motion_utils::calcSignedArcLength(
+  const auto forward_length = autoware::motion_utils::calcSignedArcLength(
     trajectory.points, current_kinematics_->pose.pose.position, trajectory.points.size() - 1);
 
   const auto acc = validation_params_.forward_trajectory_length_acceleration;

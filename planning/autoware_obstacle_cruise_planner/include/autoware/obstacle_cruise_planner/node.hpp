@@ -145,11 +145,11 @@ private:
 
   // subscriber
   rclcpp::Subscription<Trajectory>::SharedPtr traj_sub_;
-  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> ego_odom_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Odometry> ego_odom_sub_{
     this, "~/input/odometry"};
-  autoware_universe_utils::InterProcessPollingSubscriber<PredictedObjects> objects_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<PredictedObjects> objects_sub_{
     this, "~/input/objects"};
-  autoware_universe_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped> acc_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped> acc_sub_{
     this, "~/input/acceleration"};
 
   // Vehicle Parameters
@@ -161,7 +161,7 @@ private:
   PlanningAlgorithm planning_algorithm_;
 
   // stop watch
-  mutable autoware_universe_utils::StopWatch<
+  mutable autoware::universe_utils::StopWatch<
     std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
     stop_watch_;
   mutable std::shared_ptr<DebugData> debug_data_ptr_{nullptr};
@@ -274,9 +274,9 @@ private:
 
   std::vector<StopObstacle> prev_closest_stop_obstacles_{};
 
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 }  // namespace autoware::motion_planning
 

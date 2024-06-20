@@ -117,7 +117,7 @@ public:
       point.pose.position.x = x.at(i);
       point.pose.position.y = y.at(i);
       point.pose.position.z = z.at(i);
-      point.pose.orientation = autoware_universe_utils::createQuaternionFromYaw(yaw.at(i));
+      point.pose.orientation = autoware::universe_utils::createQuaternionFromYaw(yaw.at(i));
       point.longitudinal_velocity_mps = vx.at(i);
       points.push_back(point);
     }

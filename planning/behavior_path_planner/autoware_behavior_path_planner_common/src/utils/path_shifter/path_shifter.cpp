@@ -51,10 +51,10 @@ std::string toStr(const std::vector<double> & v)
 namespace autoware::behavior_path_planner
 {
 
-using autoware_motion_utils::findNearestIndex;
-using autoware_motion_utils::insertOrientation;
-using autoware_motion_utils::removeFirstInvalidOrientationPoints;
-using autoware_motion_utils::removeOverlapPoints;
+using autoware::motion_utils::findNearestIndex;
+using autoware::motion_utils::insertOrientation;
+using autoware::motion_utils::removeFirstInvalidOrientationPoints;
+using autoware::motion_utils::removeOverlapPoints;
 
 void PathShifter::setPath(const PathWithLaneId & path)
 {

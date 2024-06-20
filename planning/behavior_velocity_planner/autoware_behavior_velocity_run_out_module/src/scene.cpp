@@ -177,7 +177,7 @@ bool RunOutModule::modifyPathVelocity(
       insertStopPoint(last_stop_point_, *path);
       // debug
       debug_ptr_->setAccelReason(RunOutDebug::AccelReason::STOP);
-      debug_ptr_->pushStopPose(autoware_universe_utils::calcOffsetPose(
+      debug_ptr_->pushStopPose(autoware::universe_utils::calcOffsetPose(
         *last_stop_point_, planner_param_.vehicle_param.base_to_front, 0, 0));
     }
   }
@@ -222,7 +222,7 @@ std::optional<DynamicObstacle> RunOutModule::detectCollision(
     const auto & p2 = path.points.at(idx).point;
     const float prev_vel =
       std::max(p1.longitudinal_velocity_mps, planner_param_.run_out.min_vel_ego_kmph / 3.6f);
-    const float ds = autoware_universe_utils::calcDistance2d(p1, p2);
+    const float ds = autoware::universe_utils::calcDistance2d(p1, p2);
 
     // calculate travel time from nearest point to p2
     travel_time += ds / prev_vel;
@@ -272,9 +272,9 @@ std::optional<DynamicObstacle> RunOutModule::findNearestCollisionObstacle(
   std::sort(
     dynamic_obstacles.begin(), dynamic_obstacles.end(),
     [&path, &base_pose](const auto & lhs, const auto & rhs) -> bool {
-      const auto dist_lhs = autoware_motion_utils::calcSignedArcLength(
+      const auto dist_lhs = autoware::motion_utils::calcSignedArcLength(
         path.points, base_pose.position, lhs.pose.position);
-      const auto dist_rhs = autoware_motion_utils::calcSignedArcLength(
+      const auto dist_rhs = autoware::motion_utils::calcSignedArcLength(
         path.points, base_pose.position, rhs.pose.position);
 
       return dist_lhs < dist_rhs;
@@ -316,10 +316,10 @@ std::optional<DynamicObstacle> RunOutModule::findNearestCollisionObstacle(
 float RunOutModule::calcCollisionPositionOfVehicleSide(
   const geometry_msgs::msg::Point & point, const geometry_msgs::msg::Pose & base_pose) const
 {
-  const auto vehicle_front_pose = autoware_universe_utils::calcOffsetPose(
+  const auto vehicle_front_pose = autoware::universe_utils::calcOffsetPose(
     base_pose, planner_param_.vehicle_param.base_to_front, 0, 0);
   const auto longitudinal_offset_from_front =
-    std::abs(autoware_universe_utils::calcLongitudinalDeviation(vehicle_front_pose, point));
+    std::abs(autoware::universe_utils::calcLongitudinalDeviation(vehicle_front_pose, point));
 
   return longitudinal_offset_from_front;
 }
@@ -341,7 +341,7 @@ std::vector<geometry_msgs::msg::Point> RunOutModule::createVehiclePolygon(
   const double base_to_left =
     (planner_param_.vehicle_param.wheel_tread / 2.0) + planner_param_.vehicle_param.left_overhang;
 
-  using autoware_universe_utils::calcOffsetPose;
+  using autoware::universe_utils::calcOffsetPose;
   const auto p1 = calcOffsetPose(base_pose, base_to_front, base_to_left, 0.0);
   const auto p2 = calcOffsetPose(base_pose, base_to_front, -base_to_right, 0.0);
   const auto p3 = calcOffsetPose(base_pose, -base_to_rear, -base_to_right, 0.0);
@@ -359,8 +359,8 @@ std::vector<geometry_msgs::msg::Point> RunOutModule::createVehiclePolygon(
 std::vector<DynamicObstacle> RunOutModule::excludeObstaclesOnEgoPath(
   const std::vector<DynamicObstacle> & dynamic_obstacles, const PathWithLaneId & path)
 {
-  using autoware_motion_utils::findNearestIndex;
-  using autoware_universe_utils::calcOffsetPose;
+  using autoware::motion_utils::findNearestIndex;
+  using autoware::universe_utils::calcOffsetPose;
   if (!planner_param_.run_out.exclude_obstacles_already_in_path || path.points.empty()) {
     return dynamic_obstacles;
   }
@@ -379,18 +379,18 @@ std::vector<DynamicObstacle> RunOutModule::excludeObstaclesOnEgoPath(
     }
     const auto object_position = o.pose.position;
     const auto closest_ego_pose = path.points.at(*idx).point.pose;
-    const auto vehicle_left_pose = autoware_universe_utils::calcOffsetPose(
+    const auto vehicle_left_pose = autoware::universe_utils::calcOffsetPose(
       closest_ego_pose, 0, vehicle_with_with_margin_halved, 0);
-    const auto vehicle_right_pose = autoware_universe_utils::calcOffsetPose(
+    const auto vehicle_right_pose = autoware::universe_utils::calcOffsetPose(
       closest_ego_pose, 0, -vehicle_with_with_margin_halved, 0);
     const double signed_distance_from_left =
-      autoware_universe_utils::calcLateralDeviation(vehicle_left_pose, object_position);
+      autoware::universe_utils::calcLateralDeviation(vehicle_left_pose, object_position);
     const double signed_distance_from_right =
-      autoware_universe_utils::calcLateralDeviation(vehicle_right_pose, object_position);
+      autoware::universe_utils::calcLateralDeviation(vehicle_right_pose, object_position);
 
     // If object is outside of the ego path, include it in list of possible target objects
     // It is also deleted from the path of objects inside ego path
-    const auto obstacle_uuid_hex = autoware_universe_utils::toHexString(o.uuid);
+    const auto obstacle_uuid_hex = autoware::universe_utils::toHexString(o.uuid);
     if (signed_distance_from_left > 0.0 || signed_distance_from_right < 0.0) {
       obstacles_outside_of_path.push_back(o);
       obstacle_in_ego_path_times_.erase(obstacle_uuid_hex);
@@ -482,7 +482,7 @@ std::optional<geometry_msgs::msg::Pose> RunOutModule::calcPredictedObstaclePose(
     const auto & p1 = predicted_path.at(i - 1);
     const auto & p2 = predicted_path.at(i);
 
-    const float ds = autoware_universe_utils::calcDistance2d(p1, p2);
+    const float ds = autoware::universe_utils::calcDistance2d(p1, p2);
     const float dt = ds / velocity_mps;
 
     // apply linear interpolation between the predicted path points
@@ -555,7 +555,7 @@ bool RunOutModule::checkCollisionWithCylinder(
     run_out_utils::createBoostPolyFromMsg(bounding_box_for_points);
 
   // check collision with 2d polygon
-  std::vector<autoware_universe_utils::Point2d> collision_points_bg;
+  std::vector<autoware::universe_utils::Point2d> collision_points_bg;
   bg::intersection(vehicle_polygon, bg_bounding_box_for_points, collision_points_bg);
 
   // no collision detected
@@ -568,7 +568,7 @@ bool RunOutModule::checkCollisionWithCylinder(
   debug_ptr_->pushCollisionObstaclePolygons(bounding_box_for_points);
   for (const auto & p : collision_points_bg) {
     const auto p_msg =
-      autoware_universe_utils::createPoint(p.x(), p.y(), pose_with_range.pose_min.position.z);
+      autoware::universe_utils::createPoint(p.x(), p.y(), pose_with_range.pose_min.position.z);
     collision_points.emplace_back(p_msg);
   }
 
@@ -581,30 +581,30 @@ std::vector<geometry_msgs::msg::Point> RunOutModule::createBoundingBoxForRangedP
   const PoseWithRange & pose_with_range, const float x_offset, const float y_offset) const
 {
   const auto dist_p1_p2 =
-    autoware_universe_utils::calcDistance2d(pose_with_range.pose_min, pose_with_range.pose_max);
+    autoware::universe_utils::calcDistance2d(pose_with_range.pose_min, pose_with_range.pose_max);
 
   geometry_msgs::msg::Pose p_min_to_p_max;
   if (dist_p1_p2 < std::numeric_limits<double>::epsilon()) {
     // can't calculate the angle if two points are the same
     p_min_to_p_max = pose_with_range.pose_min;
   } else {
-    const auto azimuth_angle = autoware_universe_utils::calcAzimuthAngle(
+    const auto azimuth_angle = autoware::universe_utils::calcAzimuthAngle(
       pose_with_range.pose_min.position, pose_with_range.pose_max.position);
     p_min_to_p_max.position = pose_with_range.pose_min.position;
-    p_min_to_p_max.orientation = autoware_universe_utils::createQuaternionFromYaw(azimuth_angle);
+    p_min_to_p_max.orientation = autoware::universe_utils::createQuaternionFromYaw(azimuth_angle);
   }
 
   std::vector<geometry_msgs::msg::Point> poly;
   poly.emplace_back(
-    autoware_universe_utils::calcOffsetPose(p_min_to_p_max, dist_p1_p2 + x_offset, y_offset, 0.0)
+    autoware::universe_utils::calcOffsetPose(p_min_to_p_max, dist_p1_p2 + x_offset, y_offset, 0.0)
       .position);
   poly.emplace_back(
-    autoware_universe_utils::calcOffsetPose(p_min_to_p_max, dist_p1_p2 + x_offset, -y_offset, 0.0)
+    autoware::universe_utils::calcOffsetPose(p_min_to_p_max, dist_p1_p2 + x_offset, -y_offset, 0.0)
       .position);
   poly.emplace_back(
-    autoware_universe_utils::calcOffsetPose(p_min_to_p_max, -x_offset, -y_offset, 0.0).position);
+    autoware::universe_utils::calcOffsetPose(p_min_to_p_max, -x_offset, -y_offset, 0.0).position);
   poly.emplace_back(
-    autoware_universe_utils::calcOffsetPose(p_min_to_p_max, -x_offset, y_offset, 0.0).position);
+    autoware::universe_utils::calcOffsetPose(p_min_to_p_max, -x_offset, y_offset, 0.0).position);
 
   return poly;
 }
@@ -620,7 +620,7 @@ bool RunOutModule::checkCollisionWithBoundingBox(
   const auto bg_bounding_box = run_out_utils::createBoostPolyFromMsg(bounding_box);
 
   // check collision with 2d polygon
-  std::vector<autoware_universe_utils::Point2d> collision_points_bg;
+  std::vector<autoware::universe_utils::Point2d> collision_points_bg;
   bg::intersection(vehicle_polygon, bg_bounding_box, collision_points_bg);
 
   // no collision detected
@@ -633,7 +633,7 @@ bool RunOutModule::checkCollisionWithBoundingBox(
   debug_ptr_->pushCollisionObstaclePolygons(bounding_box);
   for (const auto & p : collision_points_bg) {
     const auto p_msg =
-      autoware_universe_utils::createPoint(p.x(), p.y(), pose_with_range.pose_min.position.z);
+      autoware::universe_utils::createPoint(p.x(), p.y(), pose_with_range.pose_min.position.z);
     collision_points.emplace_back(p_msg);
   }
 
@@ -658,7 +658,7 @@ std::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
   }
 
   // calculate distance to collision with the obstacle
-  const float dist_to_collision_point = autoware_motion_utils::calcSignedArcLength(
+  const float dist_to_collision_point = autoware::motion_utils::calcSignedArcLength(
     path.points, current_pose.position, dynamic_obstacle->nearest_collision_point);
   const float dist_to_collision =
     dist_to_collision_point - planner_param_.vehicle_param.base_to_front;
@@ -669,7 +669,7 @@ std::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
     // calculate the stop point for base link
     const float base_to_collision_point =
       planner_param_.run_out.stop_margin + planner_param_.vehicle_param.base_to_front;
-    const auto stop_point = autoware_motion_utils::calcLongitudinalOffsetPose(
+    const auto stop_point = autoware::motion_utils::calcLongitudinalOffsetPose(
       path.points, dynamic_obstacle->nearest_collision_point, -base_to_collision_point, false);
     if (!stop_point) {
       RCLCPP_WARN_STREAM(logger_, "failed to calculate stop point.");
@@ -678,7 +678,7 @@ std::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
 
     // debug
     debug_ptr_->setAccelReason(RunOutDebug::AccelReason::STOP);
-    debug_ptr_->pushStopPose(autoware_universe_utils::calcOffsetPose(
+    debug_ptr_->pushStopPose(autoware::universe_utils::calcOffsetPose(
       *stop_point, planner_param_.vehicle_param.base_to_front, 0, 0));
 
     return stop_point;
@@ -691,7 +691,7 @@ std::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
   const float planning_dec = jerk_dec < planner_param_.common.normal_min_jerk
                                ? planner_param_.common.limit_min_acc
                                : planner_param_.common.normal_min_acc;
-  auto stop_dist = autoware_motion_utils::calcDecelDistWithJerkAndAccConstraints(
+  auto stop_dist = autoware::motion_utils::calcDecelDistWithJerkAndAccConstraints(
     current_vel, target_vel, current_acc, planning_dec, jerk_acc, jerk_dec);
   if (!stop_dist) {
     RCLCPP_WARN_STREAM(logger_, "failed to calculate stop distance.");
@@ -727,7 +727,7 @@ std::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
   // calculate the stop point for base link
   const float base_to_collision_point =
     planner_param_.run_out.stop_margin + planner_param_.vehicle_param.base_to_front;
-  const auto stop_point = autoware_motion_utils::calcLongitudinalOffsetPose(
+  const auto stop_point = autoware::motion_utils::calcLongitudinalOffsetPose(
     path.points, dynamic_obstacle->nearest_collision_point, -base_to_collision_point, false);
   if (!stop_point) {
     RCLCPP_WARN_STREAM(logger_, "failed to calculate stop point.");
@@ -736,7 +736,7 @@ std::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
 
   // debug
   debug_ptr_->setAccelReason(RunOutDebug::AccelReason::STOP);
-  debug_ptr_->pushStopPose(autoware_universe_utils::calcOffsetPose(
+  debug_ptr_->pushStopPose(autoware::universe_utils::calcOffsetPose(
     *stop_point, planner_param_.vehicle_param.base_to_front, 0, 0));
 
   return stop_point;
@@ -754,7 +754,7 @@ bool RunOutModule::insertStopPoint(
 
   // find nearest point index behind the stop point
   const auto nearest_seg_idx =
-    autoware_motion_utils::findNearestSegmentIndex(path.points, stop_point->position);
+    autoware::motion_utils::findNearestSegmentIndex(path.points, stop_point->position);
   auto insert_idx = nearest_seg_idx + 1;
 
   // if stop point is ahead of the end of the path, don't insert
@@ -788,7 +788,7 @@ void RunOutModule::insertVelocityForState(
   state_input.current_velocity = current_vel;
   state_input.current_obstacle = dynamic_obstacle;
   state_input.dist_to_collision =
-    autoware_motion_utils::calcSignedArcLength(
+    autoware::motion_utils::calcSignedArcLength(
       smoothed_path.points, current_pose.position, dynamic_obstacle->nearest_collision_point) -
     planner_param.vehicle_param.base_to_front;
 
@@ -857,14 +857,14 @@ void RunOutModule::insertApproachingVelocity(
 {
   // insert slow down velocity from nearest segment point
   const auto nearest_seg_idx =
-    autoware_motion_utils::findNearestSegmentIndex(output_path.points, current_pose.position);
+    autoware::motion_utils::findNearestSegmentIndex(output_path.points, current_pose.position);
   run_out_utils::insertPathVelocityFromIndexLimited(
     nearest_seg_idx, approaching_vel, output_path.points);
 
   // calculate stop point to insert 0 velocity
   const float base_to_collision_point =
     approach_margin + planner_param_.vehicle_param.base_to_front;
-  const auto stop_point = autoware_motion_utils::calcLongitudinalOffsetPose(
+  const auto stop_point = autoware::motion_utils::calcLongitudinalOffsetPose(
     output_path.points, dynamic_obstacle.nearest_collision_point, -base_to_collision_point, false);
   if (!stop_point) {
     RCLCPP_WARN_STREAM(logger_, "failed to calculate stop point.");
@@ -872,11 +872,11 @@ void RunOutModule::insertApproachingVelocity(
   }
 
   // debug
-  debug_ptr_->pushStopPose(autoware_universe_utils::calcOffsetPose(
+  debug_ptr_->pushStopPose(autoware::universe_utils::calcOffsetPose(
     *stop_point, planner_param_.vehicle_param.base_to_front, 0, 0));
 
   const auto nearest_seg_idx_stop =
-    autoware_motion_utils::findNearestSegmentIndex(output_path.points, stop_point->position);
+    autoware::motion_utils::findNearestSegmentIndex(output_path.points, stop_point->position);
   auto insert_idx_stop = nearest_seg_idx_stop + 1;
 
   // to PathPointWithLaneId
@@ -899,7 +899,7 @@ void RunOutModule::applyMaxJerkLimit(
 
   const auto stop_point = path.points.at(stop_point_idx.value()).point.pose.position;
   const auto dist_to_stop_point =
-    autoware_motion_utils::calcSignedArcLength(path.points, current_pose.position, stop_point);
+    autoware::motion_utils::calcSignedArcLength(path.points, current_pose.position, stop_point);
 
   // calculate desired velocity with limited jerk
   const auto jerk_limited_vel = planning_utils::calcDecelerationVelocityFromDistanceToTarget(
@@ -982,15 +982,15 @@ void RunOutModule::publishDebugValue(
   const geometry_msgs::msg::Pose & current_pose) const
 {
   if (dynamic_obstacle) {
-    const auto lateral_dist = std::abs(autoware_motion_utils::calcLateralOffset(
+    const auto lateral_dist = std::abs(autoware::motion_utils::calcLateralOffset(
                                 path.points, dynamic_obstacle->pose.position)) -
                               planner_param_.vehicle_param.width / 2.0;
     const auto longitudinal_dist_to_obstacle =
-      autoware_motion_utils::calcSignedArcLength(
+      autoware::motion_utils::calcSignedArcLength(
         path.points, current_pose.position, dynamic_obstacle->pose.position) -
       planner_param_.vehicle_param.base_to_front;
 
-    const float dist_to_collision_point = autoware_motion_utils::calcSignedArcLength(
+    const float dist_to_collision_point = autoware::motion_utils::calcSignedArcLength(
       path.points, current_pose.position, dynamic_obstacle->nearest_collision_point);
     const auto dist_to_collision =
       dist_to_collision_point - planner_param_.vehicle_param.base_to_front;

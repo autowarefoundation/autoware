@@ -20,7 +20,7 @@
 
 #include <optional>
 #include <utility>
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 std::optional<std::pair<size_t, size_t>> getPathIndexRangeWithLaneId(
   const tier4_planning_msgs::msg::PathWithLaneId & path, const int64_t target_lane_id);
@@ -41,6 +41,6 @@ size_t findNearestSegmentIndexFromLaneId(
 tier4_planning_msgs::msg::PathWithLaneId convertToRearWheelCenter(
   const tier4_planning_msgs::msg::PathWithLaneId & path, const double rear_to_cog,
   const bool enable_last_point_compensation = true);
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils
 
 #endif  // AUTOWARE__MOTION_UTILS__TRAJECTORY__PATH_WITH_LANE_ID_HPP_

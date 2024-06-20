@@ -84,7 +84,7 @@ private:
 
   detection_by_tracker::utils::TrackerIgnoreLabel tracker_ignore_;
 
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 
   void setMaxSearchRange();
 

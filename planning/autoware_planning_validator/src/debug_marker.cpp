@@ -48,7 +48,7 @@ void PlanningValidatorDebugMarkerPublisher::pushPoseMarker(
 void PlanningValidatorDebugMarkerPublisher::pushPoseMarker(
   const geometry_msgs::msg::Pose & pose, const std::string & ns, int id)
 {
-  using autoware_universe_utils::createMarkerColor;
+  using autoware::universe_utils::createMarkerColor;
 
   // append arrow marker
   std_msgs::msg::ColorRGBA color;
@@ -64,9 +64,9 @@ void PlanningValidatorDebugMarkerPublisher::pushPoseMarker(
   {
     color = createMarkerColor(0.0, 0.0, 1.0, 0.999);
   }
-  Marker marker = autoware_universe_utils::createDefaultMarker(
+  Marker marker = autoware::universe_utils::createDefaultMarker(
     "map", node_->get_clock()->now(), ns, getMarkerId(ns), Marker::ARROW,
-    autoware_universe_utils::createMarkerScale(0.2, 0.1, 0.3), color);
+    autoware::universe_utils::createMarkerScale(0.2, 0.1, 0.3), color);
   marker.lifetime = rclcpp::Duration::from_seconds(0.2);
   marker.pose = pose;
 
@@ -76,10 +76,10 @@ void PlanningValidatorDebugMarkerPublisher::pushPoseMarker(
 void PlanningValidatorDebugMarkerPublisher::pushWarningMsg(
   const geometry_msgs::msg::Pose & pose, const std::string & msg)
 {
-  visualization_msgs::msg::Marker marker = autoware_universe_utils::createDefaultMarker(
+  visualization_msgs::msg::Marker marker = autoware::universe_utils::createDefaultMarker(
     "map", node_->get_clock()->now(), "warning_msg", 0, Marker::TEXT_VIEW_FACING,
-    autoware_universe_utils::createMarkerScale(0.0, 0.0, 1.0),
-    autoware_universe_utils::createMarkerColor(1.0, 0.1, 0.1, 0.999));
+    autoware::universe_utils::createMarkerScale(0.0, 0.0, 1.0),
+    autoware::universe_utils::createMarkerColor(1.0, 0.1, 0.1, 0.999));
   marker.lifetime = rclcpp::Duration::from_seconds(0.2);
   marker.pose = pose;
   marker.text = msg;
@@ -89,9 +89,9 @@ void PlanningValidatorDebugMarkerPublisher::pushWarningMsg(
 void PlanningValidatorDebugMarkerPublisher::pushVirtualWall(const geometry_msgs::msg::Pose & pose)
 {
   const auto now = node_->get_clock()->now();
-  const auto stop_wall_marker =
-    autoware_motion_utils::createStopVirtualWallMarker(pose, "autoware_planning_validator", now, 0);
-  autoware_universe_utils::appendMarkerArray(stop_wall_marker, &marker_array_virtual_wall_, now);
+  const auto stop_wall_marker = autoware::motion_utils::createStopVirtualWallMarker(
+    pose, "autoware_planning_validator", now, 0);
+  autoware::universe_utils::appendMarkerArray(stop_wall_marker, &marker_array_virtual_wall_, now);
 }
 
 void PlanningValidatorDebugMarkerPublisher::publish()

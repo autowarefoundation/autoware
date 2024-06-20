@@ -31,8 +31,8 @@
 namespace autoware::behavior_path_planner::utils::path_safety_checker
 {
 
+using autoware::universe_utils::Polygon2d;
 using autoware_perception_msgs::msg::PredictedObject;
-using autoware_universe_utils::Polygon2d;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 

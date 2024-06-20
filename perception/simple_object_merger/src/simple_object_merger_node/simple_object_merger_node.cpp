@@ -98,7 +98,7 @@ SimpleObjectMergerNode::SimpleObjectMergerNode(const rclcpp::NodeOptions & node_
   }
 
   // Subscriber
-  transform_listener_ = std::make_shared<autoware_universe_utils::TransformListener>(this);
+  transform_listener_ = std::make_shared<autoware::universe_utils::TransformListener>(this);
   sub_objects_array.resize(input_topic_size);
   objects_data_.resize(input_topic_size);
 

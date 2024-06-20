@@ -47,12 +47,12 @@ std::optional<size_t> getPointIndexAfter(
   }
 
   double sum_length =
-    -autoware_motion_utils::calcLongitudinalOffsetToSegment(points, target_seg_idx, target_pos);
+    -autoware::motion_utils::calcLongitudinalOffsetToSegment(points, target_seg_idx, target_pos);
 
   // search forward
   if (sum_length < offset) {
     for (size_t i = target_seg_idx + 1; i < points.size(); ++i) {
-      sum_length += autoware_universe_utils::calcDistance2d(points.at(i), points.at(i - 1));
+      sum_length += autoware::universe_utils::calcDistance2d(points.at(i), points.at(i - 1));
       if (offset < sum_length) {
         return i - 1;
       }
@@ -64,7 +64,7 @@ std::optional<size_t> getPointIndexAfter(
   // search backward
   for (size_t i = target_seg_idx; 0 < i;
        --i) {  // NOTE: use size_t since i is always positive value
-    sum_length -= autoware_universe_utils::calcDistance2d(points.at(i), points.at(i - 1));
+    sum_length -= autoware::universe_utils::calcDistance2d(points.at(i), points.at(i - 1));
     if (sum_length < offset) {
       return i - 1;
     }
@@ -77,7 +77,7 @@ template <typename T>
 TrajectoryPoint convertToTrajectoryPoint(const T & point)
 {
   TrajectoryPoint traj_point;
-  traj_point.pose = autoware_universe_utils::getPose(point);
+  traj_point.pose = autoware::universe_utils::getPose(point);
   traj_point.longitudinal_velocity_mps = point.longitudinal_velocity_mps;
   traj_point.lateral_velocity_mps = point.lateral_velocity_mps;
   traj_point.heading_rate_rps = point.heading_rate_rps;
@@ -126,7 +126,7 @@ size_t findEgoIndex(
   const std::vector<T> & points, const geometry_msgs::msg::Pose & ego_pose,
   const EgoNearestParam & ego_nearest_param)
 {
-  return autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+  return autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
     points, ego_pose, ego_nearest_param.dist_threshold, ego_nearest_param.yaw_threshold);
 }
 
@@ -135,7 +135,7 @@ size_t findEgoSegmentIndex(
   const std::vector<T> & points, const geometry_msgs::msg::Pose & ego_pose,
   const EgoNearestParam & ego_nearest_param)
 {
-  return autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+  return autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     points, ego_pose, ego_nearest_param.dist_threshold, ego_nearest_param.yaw_threshold);
 }
 
@@ -152,13 +152,13 @@ std::optional<size_t> updateFrontPointForFix(
 {
   // calculate front point to insert in points as a fixed point
   const size_t front_seg_idx_for_fix = trajectory_utils::findEgoSegmentIndex(
-    points_for_fix, autoware_universe_utils::getPose(points.front()), ego_nearest_param);
+    points_for_fix, autoware::universe_utils::getPose(points.front()), ego_nearest_param);
   const size_t front_point_idx_for_fix = front_seg_idx_for_fix;
   const auto & front_fix_point = points_for_fix.at(front_point_idx_for_fix);
 
   // check if the points_for_fix is longer in front than points
   const double lon_offset_to_prev_front =
-    autoware_motion_utils::calcSignedArcLength(points, 0, front_fix_point.pose.position);
+    autoware::motion_utils::calcSignedArcLength(points, 0, front_fix_point.pose.position);
   if (0 < lon_offset_to_prev_front) {
     RCLCPP_WARN(
       rclcpp::get_logger("autoware_path_sampler.trajectory_utils"),
@@ -166,7 +166,7 @@ std::optional<size_t> updateFrontPointForFix(
     return std::nullopt;
   }
 
-  const double dist = autoware_universe_utils::calcDistance2d(points.front(), front_fix_point);
+  const double dist = autoware::universe_utils::calcDistance2d(points.front(), front_fix_point);
 
   // check if deviation is not too large
   constexpr double max_lat_error = 3.0;

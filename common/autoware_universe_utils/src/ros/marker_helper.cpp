@@ -14,7 +14,7 @@
 
 #include "autoware/universe_utils/ros/marker_helper.hpp"
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 
 visualization_msgs::msg::Marker createDefaultMarker(
@@ -68,4 +68,4 @@ void appendMarkerArray(
   }
 }
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils

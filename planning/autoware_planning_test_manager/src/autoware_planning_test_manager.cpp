@@ -296,7 +296,7 @@ void PlanningInterfaceTestManager::publishNominalPath(
 {
   autoware::test_utils::publishToTargetNode(
     test_node_, target_node, topic_name, normal_path_pub_,
-    autoware_motion_utils::convertToPath<tier4_planning_msgs::msg::PathWithLaneId>(
+    autoware::motion_utils::convertToPath<tier4_planning_msgs::msg::PathWithLaneId>(
       autoware::test_utils::loadPathWithLaneIdInYaml()),
     5);
 }

@@ -66,8 +66,8 @@ rcl_interfaces::msg::SetParametersResult DummyDiagPublisher::paramCallback(
       auto prev_status_str = status_str;
       auto is_active = true;
       try {
-        autoware_universe_utils::updateParam(parameters, status_prefix_str, status_str);
-        autoware_universe_utils::updateParam(parameters, is_active_prefix_str, is_active);
+        autoware::universe_utils::updateParam(parameters, status_prefix_str, status_str);
+        autoware::universe_utils::updateParam(parameters, is_active_prefix_str, is_active);
       } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
         result.successful = false;
         result.reason = e.what();

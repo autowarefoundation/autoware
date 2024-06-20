@@ -85,8 +85,8 @@ private:
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr fused_map_pub_;
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr single_frame_pub_;
   std::vector<rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr> grid_map_subs_;
-  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{};
-  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_ptr_{};
+  std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{};
+  std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_ptr_{};
 
   // Topics manager
   std::size_t num_input_topics_{1};

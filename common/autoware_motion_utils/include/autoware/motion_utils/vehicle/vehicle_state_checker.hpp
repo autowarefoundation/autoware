@@ -23,7 +23,7 @@
 
 #include <deque>
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 
 using autoware_planning_msgs::msg::Trajectory;
@@ -77,6 +77,6 @@ private:
 
   void onTrajectory(const Trajectory::ConstSharedPtr msg);
 };
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils
 
 #endif  // AUTOWARE__MOTION_UTILS__VEHICLE__VEHICLE_STATE_CHECKER_HPP_

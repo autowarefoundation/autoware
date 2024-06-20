@@ -28,11 +28,11 @@
 
 namespace autoware::behavior_path_planner
 {
-using autoware_motion_utils::calcSignedArcLength;
-using autoware_motion_utils::findNearestIndex;
-using autoware_motion_utils::findNearestSegmentIndex;
-using autoware_universe_utils::calcDistance2d;
-using autoware_universe_utils::getPoint;
+using autoware::motion_utils::calcSignedArcLength;
+using autoware::motion_utils::findNearestIndex;
+using autoware::motion_utils::findNearestSegmentIndex;
+using autoware::universe_utils::calcDistance2d;
+using autoware::universe_utils::getPoint;
 using geometry_msgs::msg::Point;
 
 SideShiftModule::SideShiftModule(
@@ -196,7 +196,7 @@ void SideShiftModule::updateData()
     double max_dist = 0.0;
     for (const auto & pnt : path_shifter_.getShiftLines()) {
       max_dist =
-        std::max(max_dist, autoware_universe_utils::calcDistance2d(getEgoPose(), pnt.start));
+        std::max(max_dist, autoware::universe_utils::calcDistance2d(getEgoPose(), pnt.start));
     }
     return max_dist;
   }();
@@ -373,7 +373,8 @@ double SideShiftModule::getClosestShiftLength() const
   }
 
   const auto ego_point = planner_data_->self_odometry->pose.pose.position;
-  const auto closest = autoware_motion_utils::findNearestIndex(prev_output_.path.points, ego_point);
+  const auto closest =
+    autoware::motion_utils::findNearestIndex(prev_output_.path.points, ego_point);
   return prev_output_.shift_length.at(closest);
 }
 
@@ -396,7 +397,7 @@ BehaviorModuleOutput SideShiftModule::adjustDrivableArea(const ShiftedPath & pat
   auto output_path = path.path;
   const size_t current_seg_idx = planner_data_->findEgoSegmentIndex(output_path.points);
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
-  output_path.points = autoware_motion_utils::cropPoints(
+  output_path.points = autoware::motion_utils::cropPoints(
     output_path.points, current_pose.position, current_seg_idx, p.forward_path_length,
     p.backward_path_length + p.input_path_interval);
 
@@ -468,7 +469,7 @@ void SideShiftModule::setDebugMarkersVisualization() const
   debug_marker_.markers.clear();
 
   const auto add = [this](const MarkerArray & added) {
-    autoware_universe_utils::appendMarkerArray(added, &debug_marker_);
+    autoware::universe_utils::appendMarkerArray(added, &debug_marker_);
   };
 
   const auto add_shift_line_marker = [this, add](

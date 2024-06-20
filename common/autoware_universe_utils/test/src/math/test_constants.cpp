@@ -18,14 +18,14 @@
 
 TEST(constants, pi)
 {
-  using autoware_universe_utils::pi;
+  using autoware::universe_utils::pi;
 
   EXPECT_DOUBLE_EQ(pi, 3.14159265358979323846);
 }
 
 TEST(constants, gravity)
 {
-  using autoware_universe_utils::gravity;
+  using autoware::universe_utils::gravity;
 
   EXPECT_DOUBLE_EQ(gravity, 9.80665);
 }

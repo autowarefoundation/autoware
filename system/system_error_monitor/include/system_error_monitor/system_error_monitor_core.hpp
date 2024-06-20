@@ -147,7 +147,7 @@ private:
 
   void loggingErrors(const autoware_system_msgs::msg::HazardStatus & diag_array);
 
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 };
 
 #endif  // SYSTEM_ERROR_MONITOR__SYSTEM_ERROR_MONITOR_CORE_HPP_

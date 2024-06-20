@@ -32,8 +32,8 @@ using autoware::behavior_path_planner::ObjectParameter;
 
 void AvoidanceByLaneChangeModuleManager::init(rclcpp::Node * node)
 {
+  using autoware::universe_utils::getOrDeclareParameter;
   using autoware_perception_msgs::msg::ObjectClassification;
-  using autoware_universe_utils::getOrDeclareParameter;
 
   // init manager interface
   initInterface(node, {"left", "right"});

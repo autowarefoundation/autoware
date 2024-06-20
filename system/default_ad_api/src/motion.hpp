@@ -34,7 +34,7 @@ public:
   explicit MotionNode(const rclcpp::NodeOptions & options);
 
 private:
-  autoware_motion_utils::VehicleStopChecker vehicle_stop_checker_;
+  autoware::motion_utils::VehicleStopChecker vehicle_stop_checker_;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::CallbackGroup::SharedPtr group_cli_;
   Srv<autoware_ad_api::motion::AcceptStart> srv_accept_;

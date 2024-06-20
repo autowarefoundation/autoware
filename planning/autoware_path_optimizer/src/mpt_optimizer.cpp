@@ -125,8 +125,8 @@ std::vector<double> toStdVector(const Eigen::VectorXd & eigen_vec)
 bool isLeft(const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Point & target_pos)
 {
   const double base_theta = tf2::getYaw(pose.orientation);
-  const double target_theta = autoware_universe_utils::calcAzimuthAngle(pose.position, target_pos);
-  const double diff_theta = autoware_universe_utils::normalizeRadian(target_theta - base_theta);
+  const double target_theta = autoware::universe_utils::calcAzimuthAngle(pose.position, target_pos);
+  const double diff_theta = autoware::universe_utils::normalizeRadian(target_theta - base_theta);
   return diff_theta > 0;
 }
 
@@ -141,18 +141,18 @@ double calcLateralDistToBounds(
   const double max_lat_offset = is_left_bound ? max_lat_offset_for_left : -max_lat_offset_for_left;
   const double min_lat_offset = is_left_bound ? min_lat_offset_for_left : -min_lat_offset_for_left;
   const auto max_lat_offset_point =
-    autoware_universe_utils::calcOffsetPose(pose, 0.0, max_lat_offset, 0.0).position;
+    autoware::universe_utils::calcOffsetPose(pose, 0.0, max_lat_offset, 0.0).position;
   const auto min_lat_offset_point =
-    autoware_universe_utils::calcOffsetPose(pose, 0.0, min_lat_offset, 0.0).position;
+    autoware::universe_utils::calcOffsetPose(pose, 0.0, min_lat_offset, 0.0).position;
 
   double closest_dist_to_bound = max_lat_offset;
   for (size_t i = 0; i < bound.size() - 1; ++i) {
-    const auto intersect_point = autoware_universe_utils::intersect(
+    const auto intersect_point = autoware::universe_utils::intersect(
       min_lat_offset_point, max_lat_offset_point, bound.at(i), bound.at(i + 1));
     if (intersect_point) {
       const bool is_point_left = isLeft(pose, *intersect_point);
       const double dist_to_bound =
-        autoware_universe_utils::calcDistance2d(pose.position, *intersect_point) *
+        autoware::universe_utils::calcDistance2d(pose.position, *intersect_point) *
         (is_point_left ? 1.0 : -1.0);
 
       // the bound which is closest to the centerline will be chosen
@@ -283,7 +283,7 @@ MPTOptimizer::MPTParam::MPTParam(
 
 void MPTOptimizer::MPTParam::onParam(const std::vector<rclcpp::Parameter> & parameters)
 {
-  using autoware_universe_utils::updateParam;
+  using autoware::universe_utils::updateParam;
 
   {  // option
     updateParam<bool>(parameters, "mpt.option.steer_limit_constraint", steer_limit_constraint);
@@ -564,7 +564,7 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
   constexpr double tmp_margin = 10.0;
   size_t ego_seg_idx =
     trajectory_utils::findEgoSegmentIndex(ref_points, p.ego_pose, ego_nearest_param_);
-  ref_points = autoware_motion_utils::cropPoints(
+  ref_points = autoware::motion_utils::cropPoints(
     ref_points, p.ego_pose.position, ego_seg_idx, forward_traj_length + tmp_margin,
     backward_traj_length + tmp_margin);
 
@@ -579,7 +579,7 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
 
   // 4. crop backward
   // NOTE: Start point may change. Spline calculation is required.
-  ref_points = autoware_motion_utils::cropPoints(
+  ref_points = autoware::motion_utils::cropPoints(
     ref_points, p.ego_pose.position, ego_seg_idx, forward_traj_length + tmp_margin,
     backward_traj_length);
   ref_points_spline = SplineInterpolationPoints2d(ref_points);
@@ -605,7 +605,7 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
   updateExtraPoints(ref_points);
 
   // 9. crop forward
-  // ref_points = autoware_motion_utils::cropForwardPoints(
+  // ref_points = autoware::motion_utils::cropForwardPoints(
   //   ref_points, p.ego_pose.position, ego_seg_idx, forward_traj_length);
   if (static_cast<size_t>(mpt_param_.num_points) < ref_points.size()) {
     ref_points.resize(mpt_param_.num_points);
@@ -623,7 +623,7 @@ void MPTOptimizer::updateOrientation(
   const auto yaw_vec = ref_points_spline.getSplineInterpolatedYaws();
   for (size_t i = 0; i < ref_points.size(); ++i) {
     ref_points.at(i).pose.orientation =
-      autoware_universe_utils::createQuaternionFromYaw(yaw_vec.at(i));
+      autoware::universe_utils::createQuaternionFromYaw(yaw_vec.at(i));
   }
 }
 
@@ -691,7 +691,7 @@ void MPTOptimizer::updateDeltaArcLength(std::vector<ReferencePoint> & ref_points
     ref_points.at(i).delta_arc_length =
       (i == ref_points.size() - 1)
         ? 0.0
-        : autoware_universe_utils::calcDistance2d(ref_points.at(i + 1), ref_points.at(i));
+        : autoware::universe_utils::calcDistance2d(ref_points.at(i + 1), ref_points.at(i));
   }
 }
 
@@ -704,14 +704,14 @@ void MPTOptimizer::updateExtraPoints(std::vector<ReferencePoint> & ref_points) c
     const auto front_wheel_pos =
       trajectory_utils::getNearestPosition(ref_points, i, vehicle_info_.wheel_base_m);
 
-    const bool are_too_close_points = autoware_universe_utils::calcDistance2d(
+    const bool are_too_close_points = autoware::universe_utils::calcDistance2d(
                                         front_wheel_pos, ref_points.at(i).pose.position) < 1e-03;
     const auto front_wheel_yaw = are_too_close_points
                                    ? ref_points.at(i).getYaw()
-                                   : autoware_universe_utils::calcAzimuthAngle(
+                                   : autoware::universe_utils::calcAzimuthAngle(
                                        ref_points.at(i).pose.position, front_wheel_pos);
     ref_points.at(i).alpha =
-      autoware_universe_utils::normalizeRadian(front_wheel_yaw - ref_points.at(i).getYaw());
+      autoware::universe_utils::normalizeRadian(front_wheel_yaw - ref_points.at(i).getYaw());
   }
 
   {  // avoidance
@@ -771,10 +771,10 @@ void MPTOptimizer::updateExtraPoints(std::vector<ReferencePoint> & ref_points) c
     if (prev_ref_points_ptr_ && !prev_ref_points_ptr_->empty()) {
       for (int i = 0; i < static_cast<int>(ref_points.size()); ++i) {
         const size_t prev_idx = trajectory_utils::findEgoIndex(
-          *prev_ref_points_ptr_, autoware_universe_utils::getPose(ref_points.at(i)),
+          *prev_ref_points_ptr_, autoware::universe_utils::getPose(ref_points.at(i)),
           ego_nearest_param_);
 
-        const double dist_to_prev = autoware_universe_utils::calcDistance2d(
+        const double dist_to_prev = autoware::universe_utils::calcDistance2d(
           ref_points.at(i), prev_ref_points_ptr_->at(prev_idx));
         if (max_dist_threshold < dist_to_prev) {
           continue;
@@ -1081,7 +1081,7 @@ void MPTOptimizer::avoidSuddenSteering(
     return;
   }
   const size_t prev_ego_idx = trajectory_utils::findEgoIndex(
-    *prev_ref_points_ptr_, autoware_universe_utils::getPose(ref_points.front()),
+    *prev_ref_points_ptr_, autoware::universe_utils::getPose(ref_points.front()),
     ego_nearest_param_);
 
   const double max_bound_fixing_length = ego_vel * mpt_param_.max_bound_fixing_time;
@@ -1129,11 +1129,11 @@ void MPTOptimizer::updateVehicleBounds(
         collision_check_pose.position.y - ref_point.pose.position.y,
         collision_check_pose.position.x - ref_point.pose.position.x);
       const double offset_y =
-        -autoware_universe_utils::calcDistance2d(ref_point, collision_check_pose) *
+        -autoware::universe_utils::calcDistance2d(ref_point, collision_check_pose) *
         std::sin(tmp_yaw - collision_check_yaw);
 
       const auto vehicle_bounds_pose =
-        autoware_universe_utils::calcOffsetPose(collision_check_pose, 0.0, offset_y, 0.0);
+        autoware::universe_utils::calcOffsetPose(collision_check_pose, 0.0, offset_y, 0.0);
 
       // interpolate bounds
       const auto bounds = [&]() {
@@ -1587,7 +1587,7 @@ Eigen::VectorXd MPTOptimizer::calcInitialSolutionForManualWarmStart(
 
   Eigen::VectorXd u0 = Eigen::VectorXd::Zero(D_un);
 
-  const size_t nearest_idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const size_t nearest_idx = autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
     prev_ref_points, ref_points.front().pose, ego_nearest_param_.dist_threshold,
     ego_nearest_param_.yaw_threshold);
 
@@ -1713,17 +1713,17 @@ void MPTOptimizer::publishDebugTrajectories(
   time_keeper_ptr_->tic(__func__);
 
   // reference points
-  const auto ref_traj = autoware_motion_utils::convertToTrajectory(
+  const auto ref_traj = autoware::motion_utils::convertToTrajectory(
     trajectory_utils::convertToTrajectoryPoints(ref_points), header);
   debug_ref_traj_pub_->publish(ref_traj);
 
   // fixed reference points
   const auto fixed_traj_points = extractFixedPoints(ref_points);
-  const auto fixed_traj = autoware_motion_utils::convertToTrajectory(fixed_traj_points, header);
+  const auto fixed_traj = autoware::motion_utils::convertToTrajectory(fixed_traj_points, header);
   debug_fixed_traj_pub_->publish(fixed_traj);
 
   // mpt points
-  const auto mpt_traj = autoware_motion_utils::convertToTrajectory(mpt_traj_points, header);
+  const auto mpt_traj = autoware::motion_utils::convertToTrajectory(mpt_traj_points, header);
   debug_mpt_traj_pub_->publish(mpt_traj);
 
   time_keeper_ptr_->toc(__func__, "        ");

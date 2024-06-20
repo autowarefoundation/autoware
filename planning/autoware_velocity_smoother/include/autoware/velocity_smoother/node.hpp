@@ -88,13 +88,13 @@ private:
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_virtual_wall_;
   rclcpp::Publisher<StopSpeedExceeded>::SharedPtr pub_over_stop_velocity_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_current_trajectory_;
-  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> sub_current_odometry_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Odometry> sub_current_odometry_{
     this, "/localization/kinematic_state"};
-  autoware_universe_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped>
+  autoware::universe_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped>
     sub_current_acceleration_{this, "~/input/acceleration"};
-  autoware_universe_utils::InterProcessPollingSubscriber<VelocityLimit>
+  autoware::universe_utils::InterProcessPollingSubscriber<VelocityLimit>
     sub_external_velocity_limit_{this, "~/input/external_velocity_limit_mps"};
-  autoware_universe_utils::InterProcessPollingSubscriber<OperationModeState> sub_operation_mode_{
+  autoware::universe_utils::InterProcessPollingSubscriber<OperationModeState> sub_operation_mode_{
     this, "~/input/operation_mode_state"};
 
   Odometry::ConstSharedPtr current_odometry_ptr_;  // current odometry
@@ -245,7 +245,7 @@ private:
   void initCommonParam();
 
   // debug
-  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
+  autoware::universe_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
   std::shared_ptr<rclcpp::Time> prev_time_;
   double prev_acc_;
   rclcpp::Publisher<Float32Stamped>::SharedPtr pub_dist_to_stopline_;
@@ -273,8 +273,8 @@ private:
   void flipVelocity(TrajectoryPoints & points) const;
   void publishStopWatchTime();
 
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 }  // namespace autoware::velocity_smoother
 

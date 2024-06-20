@@ -107,7 +107,7 @@ void GoalDistanceCalculatorNode::onTimer()
   output_ = goal_distance_calculator_->update(input_);
 
   {
-    using autoware_universe_utils::rad2deg;
+    using autoware::universe_utils::rad2deg;
     const auto & deviation = output_.goal_deviation;
 
     debug_publisher_.publish<tier4_debug_msgs::msg::Float64Stamped>(

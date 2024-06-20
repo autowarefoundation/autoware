@@ -355,7 +355,7 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
         return false;
       }
       const auto goal_pose = data_->route_handler->getGoalPose();
-      const double goal_longitudinal_distance = autoware_motion_utils::calcSignedArcLength(
+      const double goal_longitudinal_distance = autoware::motion_utils::calcSignedArcLength(
         data.reference_path.points, 0, goal_pose.position);
       const bool is_return_shift_to_goal =
         std::abs(al_return.end_longitudinal - goal_longitudinal_distance) <
@@ -365,7 +365,7 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
       }
       const auto & object_pos = o.object.kinematics.initial_pose_with_covariance.pose.position;
       const bool has_object_near_goal =
-        autoware_universe_utils::calcDistance2d(goal_pose.position, object_pos) <
+        autoware::universe_utils::calcDistance2d(goal_pose.position, object_pos) <
         parameters_->object_check_goal_distance;
       return has_object_near_goal;
     }();
@@ -1026,7 +1026,7 @@ AvoidLineArray ShiftLineGenerator::addReturnShiftLine(
   if (utils::isAllowedGoalModification(data_->route_handler)) {
     const auto has_object_near_goal =
       std::any_of(data.target_objects.begin(), data.target_objects.end(), [&](const auto & o) {
-        return autoware_universe_utils::calcDistance2d(
+        return autoware::universe_utils::calcDistance2d(
                  data_->route_handler->getGoalPose().position,
                  o.object.kinematics.initial_pose_with_covariance.pose.position) <
                parameters_->object_check_goal_distance;
@@ -1097,7 +1097,7 @@ AvoidLineArray ShiftLineGenerator::addReturnShiftLine(
   if (utils::isAllowedGoalModification(data_->route_handler)) {
     const bool has_last_shift_near_goal =
       std::any_of(data.target_objects.begin(), data.target_objects.end(), [&](const auto & o) {
-        return autoware_universe_utils::calcDistance2d(
+        return autoware::universe_utils::calcDistance2d(
                  last_sl.end.position,
                  o.object.kinematics.initial_pose_with_covariance.pose.position) <
                parameters_->object_check_goal_distance;

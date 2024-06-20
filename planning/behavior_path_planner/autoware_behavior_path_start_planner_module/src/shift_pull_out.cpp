@@ -27,9 +27,9 @@
 #include <memory>
 #include <vector>
 
-using autoware_motion_utils::findNearestIndex;
-using autoware_universe_utils::calcDistance2d;
-using autoware_universe_utils::calcOffsetPose;
+using autoware::motion_utils::findNearestIndex;
+using autoware::universe_utils::calcDistance2d;
+using autoware::universe_utils::calcOffsetPose;
 using lanelet::utils::getArcCoordinates;
 namespace autoware::behavior_path_planner
 {
@@ -108,7 +108,7 @@ std::optional<PullOutPath> ShiftPullOut::plan(
     // narrow place.
 
     const size_t start_segment_idx =
-      autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+      autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
         shift_path.points, start_pose, common_parameters.ego_nearest_dist_threshold,
         common_parameters.ego_nearest_yaw_threshold);
 
@@ -125,17 +125,18 @@ std::optional<PullOutPath> ShiftPullOut::plan(
       if (cropped_path.points.size() < 2) return false;
       const double max_long_offset = parameters_.maximum_longitudinal_deviation;
       const size_t start_segment_idx_after_crop =
-        autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+        autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
           cropped_path.points, start_pose);
 
       // if the start segment id after crop is not 0, then the cropping is not excessive
       if (start_segment_idx_after_crop != 0) return true;
 
       const auto long_offset_to_closest_point =
-        autoware_motion_utils::calcLongitudinalOffsetToSegment(
+        autoware::motion_utils::calcLongitudinalOffsetToSegment(
           cropped_path.points, start_segment_idx_after_crop, start_pose.position);
-      const auto long_offset_to_next_point = autoware_motion_utils::calcLongitudinalOffsetToSegment(
-        cropped_path.points, start_segment_idx_after_crop + 1, start_pose.position);
+      const auto long_offset_to_next_point =
+        autoware::motion_utils::calcLongitudinalOffsetToSegment(
+          cropped_path.points, start_segment_idx_after_crop + 1, start_pose.position);
       return std::abs(long_offset_to_closest_point - long_offset_to_next_point) < max_long_offset;
     };
 
@@ -174,7 +175,7 @@ bool ShiftPullOut::refineShiftedPathToStartPose(
   size_t iteration = 0;
   while (iteration < MAX_ITERATION) {
     const double lateral_offset =
-      autoware_motion_utils::calcLateralOffset(shifted_path.path.points, start_pose.position);
+      autoware::motion_utils::calcLateralOffset(shifted_path.path.points, start_pose.position);
 
     PathShifter path_shifter;
     path_shifter.setPath(shifted_path.path);
@@ -196,7 +197,7 @@ bool ShiftPullOut::refineShiftedPathToStartPose(
 
     if (is_within_tolerance(
           lateral_offset,
-          autoware_motion_utils::calcLateralOffset(shifted_path.path.points, start_pose.position),
+          autoware::motion_utils::calcLateralOffset(shifted_path.path.points, start_pose.position),
           TOLERANCE)) {
       return true;
     }
@@ -423,7 +424,7 @@ double ShiftPullOut::calcBeforeShiftedArcLength(
   double after_arc_length{0.0};
 
   for (const auto & [k, segment_length] :
-       autoware_motion_utils::calcCurvatureAndArcLength(path.points)) {
+       autoware::motion_utils::calcCurvatureAndArcLength(path.points)) {
     // after shifted segment length
     const double after_segment_length =
       k < 0 ? segment_length * (1 - k * dr) : segment_length / (1 + k * dr);

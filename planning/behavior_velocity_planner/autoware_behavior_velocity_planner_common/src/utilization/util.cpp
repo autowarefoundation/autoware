@@ -46,9 +46,9 @@ size_t calcPointIndexFromSegmentIndex(
   const size_t next_point_idx = seg_idx + 1;
 
   const double prev_dist =
-    autoware_universe_utils::calcDistance2d(point, points.at(prev_point_idx));
+    autoware::universe_utils::calcDistance2d(point, points.at(prev_point_idx));
   const double next_dist =
-    autoware_universe_utils::calcDistance2d(point, points.at(next_point_idx));
+    autoware::universe_utils::calcDistance2d(point, points.at(next_point_idx));
 
   if (prev_dist < next_dist) {
     return prev_point_idx;
@@ -62,7 +62,7 @@ PathPoint getLerpPathPointWithLaneId(const PathPoint p0, const PathPoint p1, con
 {
   auto lerp = [](const double a, const double b, const double t) { return a + t * (b - a); };
   PathPoint p;
-  p.pose = autoware_universe_utils::calcInterpolatedPose(p0, p1, ratio);
+  p.pose = autoware::universe_utils::calcInterpolatedPose(p0, p1, ratio);
   const double v = lerp(p0.longitudinal_velocity_mps, p1.longitudinal_velocity_mps, ratio);
   p.longitudinal_velocity_mps = v;
   return p;
@@ -84,7 +84,7 @@ geometry_msgs::msg::Pose transformRelCoordinate2D(
   res.position.y = ((-1.0) * std::sin(yaw) * trans_p.x) + (std::cos(yaw) * trans_p.y);
   res.position.z = target.position.z - origin.position.z;
   res.orientation =
-    autoware_universe_utils::createQuaternionFromYaw(tf2::getYaw(target.orientation) - yaw);
+    autoware::universe_utils::createQuaternionFromYaw(tf2::getYaw(target.orientation) - yaw);
 
   return res;
 }
@@ -95,16 +95,16 @@ namespace autoware::behavior_velocity_planner
 {
 namespace planning_utils
 {
-using autoware_motion_utils::calcLongitudinalOffsetToSegment;
-using autoware_motion_utils::calcSignedArcLength;
-using autoware_motion_utils::validateNonEmpty;
+using autoware::motion_utils::calcLongitudinalOffsetToSegment;
+using autoware::motion_utils::calcSignedArcLength;
+using autoware::motion_utils::validateNonEmpty;
+using autoware::universe_utils::calcAzimuthAngle;
+using autoware::universe_utils::calcDistance2d;
+using autoware::universe_utils::calcOffsetPose;
+using autoware::universe_utils::calcSquaredDistance2d;
+using autoware::universe_utils::createQuaternionFromYaw;
+using autoware::universe_utils::getPoint;
 using autoware_planning_msgs::msg::PathPoint;
-using autoware_universe_utils::calcAzimuthAngle;
-using autoware_universe_utils::calcDistance2d;
-using autoware_universe_utils::calcOffsetPose;
-using autoware_universe_utils::calcSquaredDistance2d;
-using autoware_universe_utils::createQuaternionFromYaw;
-using autoware_universe_utils::getPoint;
 
 size_t calcSegmentIndexFromPointIndex(
   const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & points,
@@ -121,7 +121,7 @@ size_t calcSegmentIndexFromPointIndex(
   }
 
   const double offset_to_seg =
-    autoware_motion_utils::calcLongitudinalOffsetToSegment(points, idx, point);
+    autoware::motion_utils::calcLongitudinalOffsetToSegment(points, idx, point);
   if (0 < offset_to_seg) {
     return idx;
   }
@@ -318,7 +318,7 @@ geometry_msgs::msg::Pose getAheadPose(
   for (size_t i = start_idx; i < path.points.size() - 1; ++i) {
     const geometry_msgs::msg::Pose p0 = path.points.at(i).point.pose;
     const geometry_msgs::msg::Pose p1 = path.points.at(i + 1).point.pose;
-    curr_dist += autoware_universe_utils::calcDistance2d(p0, p1);
+    curr_dist += autoware::universe_utils::calcDistance2d(p0, p1);
     if (curr_dist > ahead_dist) {
       const double dl = std::max(curr_dist - prev_dist, 0.0001 /* avoid 0 divide */);
       const double w_p0 = (curr_dist - ahead_dist) / dl;
@@ -613,7 +613,7 @@ bool isOverLine(
   const tier4_planning_msgs::msg::PathWithLaneId & path, const geometry_msgs::msg::Pose & self_pose,
   const geometry_msgs::msg::Pose & line_pose, const double offset)
 {
-  return autoware_motion_utils::calcSignedArcLength(
+  return autoware::motion_utils::calcSignedArcLength(
            path.points, self_pose.position, line_pose.position) +
            offset <
          0.0;
@@ -626,8 +626,9 @@ std::optional<geometry_msgs::msg::Pose> insertDecelPoint(
   // TODO(tanaka): consider proper overlap threshold for inserting decel point
   const double overlap_threshold = 5e-2;
   // TODO(murooka): remove this function for u-turn and crossing-path
-  const size_t base_idx = autoware_motion_utils::findNearestSegmentIndex(output.points, stop_point);
-  const auto insert_idx = autoware_motion_utils::insertTargetPoint(
+  const size_t base_idx =
+    autoware::motion_utils::findNearestSegmentIndex(output.points, stop_point);
+  const auto insert_idx = autoware::motion_utils::insertTargetPoint(
     base_idx, stop_point, output.points, overlap_threshold);
 
   if (!insert_idx) {
@@ -639,35 +640,36 @@ std::optional<geometry_msgs::msg::Pose> insertDecelPoint(
     output.points.at(i).point.longitudinal_velocity_mps =
       std::min(original_velocity, target_velocity);
   }
-  return autoware_universe_utils::getPose(output.points.at(insert_idx.value()));
+  return autoware::universe_utils::getPose(output.points.at(insert_idx.value()));
 }
 
 // TODO(murooka): remove this function for u-turn and crossing-path
 std::optional<geometry_msgs::msg::Pose> insertStopPoint(
   const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output)
 {
-  const size_t base_idx = autoware_motion_utils::findNearestSegmentIndex(output.points, stop_point);
+  const size_t base_idx =
+    autoware::motion_utils::findNearestSegmentIndex(output.points, stop_point);
   const auto insert_idx =
-    autoware_motion_utils::insertStopPoint(base_idx, stop_point, output.points);
+    autoware::motion_utils::insertStopPoint(base_idx, stop_point, output.points);
 
   if (!insert_idx) {
     return {};
   }
 
-  return autoware_universe_utils::getPose(output.points.at(insert_idx.value()));
+  return autoware::universe_utils::getPose(output.points.at(insert_idx.value()));
 }
 
 std::optional<geometry_msgs::msg::Pose> insertStopPoint(
   const geometry_msgs::msg::Point & stop_point, const size_t stop_seg_idx, PathWithLaneId & output)
 {
   const auto insert_idx =
-    autoware_motion_utils::insertStopPoint(stop_seg_idx, stop_point, output.points);
+    autoware::motion_utils::insertStopPoint(stop_seg_idx, stop_point, output.points);
 
   if (!insert_idx) {
     return {};
   }
 
-  return autoware_universe_utils::getPose(output.points.at(insert_idx.value()));
+  return autoware::universe_utils::getPose(output.points.at(insert_idx.value()));
 }
 
 std::set<lanelet::Id> getAssociativeIntersectionLanelets(

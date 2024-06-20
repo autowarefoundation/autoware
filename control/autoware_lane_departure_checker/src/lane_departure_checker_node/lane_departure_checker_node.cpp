@@ -31,7 +31,7 @@
 #include <utility>
 #include <vector>
 
-using autoware_universe_utils::rad2deg;
+using autoware::universe_utils::rad2deg;
 
 namespace
 {
@@ -251,7 +251,7 @@ bool LaneDepartureCheckerNode::isDataValid()
 void LaneDepartureCheckerNode::onTimer()
 {
   std::map<std::string, double> processing_time_map;
-  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stop_watch;
+  autoware::universe_utils::StopWatch<std::chrono::milliseconds> stop_watch;
   stop_watch.tic("Total");
 
   current_odom_ = sub_odom_.takeData();
@@ -453,9 +453,9 @@ void LaneDepartureCheckerNode::checkTrajectoryDeviation(
 
 visualization_msgs::msg::MarkerArray LaneDepartureCheckerNode::createMarkerArray() const
 {
-  using autoware_universe_utils::createDefaultMarker;
-  using autoware_universe_utils::createMarkerColor;
-  using autoware_universe_utils::createMarkerScale;
+  using autoware::universe_utils::createDefaultMarker;
+  using autoware::universe_utils::createMarkerColor;
+  using autoware::universe_utils::createMarkerScale;
 
   visualization_msgs::msg::MarkerArray marker_array;
 

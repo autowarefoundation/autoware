@@ -24,7 +24,7 @@ class PublishedTimePublisherWithSubscriptionTest : public ::testing::Test
 {
 protected:
   std::shared_ptr<rclcpp::Node> node_{nullptr};
-  std::shared_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_ptr_{
+  std::shared_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_ptr_{
     nullptr};
 
   std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Header>> first_test_publisher_ptr_{nullptr};
@@ -70,7 +70,7 @@ protected:
 
     // Create a PublishedTimePublisher
     published_time_publisher_ptr_ =
-      std::make_shared<autoware_universe_utils::PublishedTimePublisher>(node_.get());
+      std::make_shared<autoware::universe_utils::PublishedTimePublisher>(node_.get());
 
     // Create the first subscriber
     first_test_subscriber_ptr_ =
@@ -98,7 +98,7 @@ class PublishedTimePublisherWithoutSubscriptionTest : public ::testing::Test
 {
 protected:
   std::shared_ptr<rclcpp::Node> node_{nullptr};
-  std::shared_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_ptr_{
+  std::shared_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_ptr_{
     nullptr};
 
   std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Header>> first_test_publisher_ptr_{nullptr};
@@ -135,7 +135,7 @@ protected:
 
     // Create a PublishedTimePublisher
     published_time_publisher_ptr_ =
-      std::make_shared<autoware_universe_utils::PublishedTimePublisher>(node_.get());
+      std::make_shared<autoware::universe_utils::PublishedTimePublisher>(node_.get());
 
     rclcpp::spin_some(node_);
   }

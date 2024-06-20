@@ -56,12 +56,12 @@ public:
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
-  autoware_motion_utils::VirtualWalls createVirtualWalls() override;
+  autoware::motion_utils::VirtualWalls createVirtualWalls() override;
 
 private:
   // Parameter
   PlannerParam param_;
-  autoware_universe_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
+  autoware::universe_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
   std::vector<lanelet::BasicPolygon2d> partition_lanelets_;
 
 protected:

@@ -124,7 +124,7 @@ std::optional<StuckStop> IntersectionModule::isStuckStatus(
 {
   const auto closest_idx = intersection_stoplines.closest_idx;
   auto fromEgoDist = [&](const size_t index) {
-    return autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, index);
+    return autoware::motion_utils::calcSignedArcLength(path.points, closest_idx, index);
   };
 
   const auto & intersection_lanelets = intersection_lanelets_.value();  // this is OK
@@ -290,7 +290,7 @@ bool IntersectionModule::checkStuckVehicleInIntersection(const PathLanelets & pa
     }
 
     // check if the footprint is in the stuck detect area
-    const auto obj_footprint = autoware_universe_utils::toPolygon2d(object);
+    const auto obj_footprint = autoware::universe_utils::toPolygon2d(object);
     // NOTE: in order not to stop too much
     const bool is_in_stuck_area = bg::within(
       to_bg2d(object.kinematics.initial_pose_with_covariance.pose.position),
@@ -310,7 +310,7 @@ std::optional<YieldStuckStop> IntersectionModule::isYieldStuckStatus(
 {
   const auto closest_idx = intersection_stoplines.closest_idx;
   auto fromEgoDist = [&](const size_t index) {
-    return autoware_motion_utils::calcSignedArcLength(path.points, closest_idx, index);
+    return autoware::motion_utils::calcSignedArcLength(path.points, closest_idx, index);
   };
   const auto & intersection_lanelets = intersection_lanelets_.value();
   const auto default_stopline_idx = intersection_stoplines.default_stopline.value();

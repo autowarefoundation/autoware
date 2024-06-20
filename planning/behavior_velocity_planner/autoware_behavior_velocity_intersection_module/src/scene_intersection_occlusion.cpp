@@ -151,7 +151,7 @@ IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
 
   auto findCommonCvPolygons =
     [&](const auto & area2d, std::vector<std::vector<cv::Point>> & cv_polygons) -> void {
-    autoware_universe_utils::Polygon2d area2d_poly;
+    autoware::universe_utils::Polygon2d area2d_poly;
     for (const auto & p : area2d) {
       area2d_poly.outer().emplace_back(p.x(), p.y());
     }
@@ -240,7 +240,7 @@ IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
   std::vector<std::vector<cv::Point>> blocking_polygons;
   for (const auto & blocking_attention_object_info : blocking_attention_objects) {
     const Polygon2d obj_poly =
-      autoware_universe_utils::toPolygon2d(blocking_attention_object_info->predicted_object());
+      autoware::universe_utils::toPolygon2d(blocking_attention_object_info->predicted_object());
     findCommonCvPolygons(obj_poly.outer(), blocking_polygons);
   }
   for (const auto & blocking_polygon : blocking_polygons) {
@@ -321,7 +321,8 @@ IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
     for (auto i = lane_start_idx + 1; i <= lane_end_idx; i++) {
       const auto path_linestring_point = path_ip.points.at(i).point.pose.position;
       if (
-        autoware_universe_utils::calcDistance2d(prev_path_linestring_point, path_linestring_point) <
+        autoware::universe_utils::calcDistance2d(
+          prev_path_linestring_point, path_linestring_point) <
         1.0 /* rough tick for computational cost */) {
         continue;
       }
@@ -405,9 +406,9 @@ IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
             division_index,
             std::distance(division.begin(), point_it),
             acc_dist,
-            autoware_universe_utils::createPoint(point_it->x(), point_it->y(), origin.z),
-            autoware_universe_utils::createPoint(projection_it->x(), projection_it->y(), origin.z),
-            autoware_universe_utils::createPoint(
+            autoware::universe_utils::createPoint(point_it->x(), point_it->y(), origin.z),
+            autoware::universe_utils::createPoint(projection_it->x(), projection_it->y(), origin.z),
+            autoware::universe_utils::createPoint(
               projection_it->x(), projection_it->y(),
               origin.z) /* initialize with projection point at first*/};
           found_min_dist_for_this_division = true;
@@ -416,7 +417,7 @@ IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
           // division previously in this iteration, and the iterated cells are still OCCLUDED since
           // then
           nearest_occlusion_point.visible_end =
-            autoware_universe_utils::createPoint(point_it->x(), point_it->y(), origin.z);
+            autoware::universe_utils::createPoint(point_it->x(), point_it->y(), origin.z);
         }
       }
       is_prev_occluded = (pixel == OCCLUDED);
@@ -440,7 +441,7 @@ IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
   bg::correct(ego_occlusion_triangle);
   for (const auto & attention_object_info : object_info_manager_.allObjects()) {
     const auto obj_poly =
-      autoware_universe_utils::toPolygon2d(attention_object_info->predicted_object());
+      autoware::universe_utils::toPolygon2d(attention_object_info->predicted_object());
     if (bg::intersects(obj_poly, ego_occlusion_triangle)) {
       debug_data_.static_occlusion = false;
       return DynamicallyOccluded{min_dist};

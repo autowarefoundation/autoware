@@ -25,9 +25,9 @@
 
 namespace autoware::motion::control::mpc_lateral_controller
 {
-using autoware_universe_utils::calcDistance2d;
-using autoware_universe_utils::normalizeRadian;
-using autoware_universe_utils::rad2deg;
+using autoware::universe_utils::calcDistance2d;
+using autoware::universe_utils::normalizeRadian;
+using autoware::universe_utils::rad2deg;
 
 MPC::MPC(rclcpp::Node & node)
 {
@@ -167,10 +167,10 @@ void MPC::setReferenceTrajectory(
   const Odometry & current_kinematics)
 {
   const size_t nearest_seg_idx =
-    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       trajectory_msg.points, current_kinematics.pose.pose, ego_nearest_dist_threshold,
       ego_nearest_yaw_threshold);
-  const double ego_offset_to_segment = autoware_motion_utils::calcLongitudinalOffsetToSegment(
+  const double ego_offset_to_segment = autoware::motion_utils::calcLongitudinalOffsetToSegment(
     trajectory_msg.points, nearest_seg_idx, current_kinematics.pose.pose.position);
 
   const auto mpc_traj_raw = MPCUtils::convertToMPCTrajectory(trajectory_msg);
@@ -184,7 +184,7 @@ void MPC::setReferenceTrajectory(
   }
 
   const auto is_forward_shift =
-    autoware_motion_utils::isDrivingForward(mpc_traj_resampled.toTrajectoryPoints());
+    autoware::motion_utils::isDrivingForward(mpc_traj_resampled.toTrajectoryPoints());
 
   // if driving direction is unknown, use previous value
   m_is_forward_shift = is_forward_shift ? is_forward_shift.value() : m_is_forward_shift;
@@ -391,7 +391,7 @@ MPCTrajectory MPC::applyVelocityDynamicsFilter(
   }
 
   const size_t nearest_seg_idx =
-    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       autoware_traj.points, current_kinematics.pose.pose, ego_nearest_dist_threshold,
       ego_nearest_yaw_threshold);
 
@@ -501,7 +501,7 @@ MPCMatrix MPC::generateMPCMatrix(
     // get reference input (feed-forward)
     m_vehicle_model_ptr->setCurvature(ref_smooth_k);
     m_vehicle_model_ptr->calculateReferenceInput(Uref);
-    if (std::fabs(Uref(0, 0)) < autoware_universe_utils::deg2rad(m_param.zero_ff_steer_deg)) {
+    if (std::fabs(Uref(0, 0)) < autoware::universe_utils::deg2rad(m_param.zero_ff_steer_deg)) {
       Uref(0, 0) = 0.0;  // ignore curvature noise
     }
     m.Uref_ex.block(i * DIM_U, 0, DIM_U, 1) = Uref;
@@ -678,7 +678,7 @@ double MPC::getPredictionDeltaTime(
 {
   // Calculate the time min_prediction_length ahead from current_pose
   const auto autoware_traj = MPCUtils::convertToAutowareTrajectory(input);
-  const size_t nearest_idx = autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const size_t nearest_idx = autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
     autoware_traj.points, current_kinematics.pose.pose, ego_nearest_dist_threshold,
     ego_nearest_yaw_threshold);
   double sum_dist = 0;

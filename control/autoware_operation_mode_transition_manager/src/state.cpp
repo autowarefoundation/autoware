@@ -26,9 +26,9 @@
 namespace autoware::operation_mode_transition_manager
 {
 
-using autoware_motion_utils::findNearestIndex;
-using autoware_universe_utils::calcDistance2d;
-using autoware_universe_utils::calcYawDeviation;
+using autoware::motion_utils::findNearestIndex;
+using autoware::universe_utils::calcDistance2d;
+using autoware::universe_utils::calcYawDeviation;
 
 AutonomousMode::AutonomousMode(rclcpp::Node * node)
 : logger_(node->get_logger()), clock_(node->get_clock())
@@ -126,7 +126,7 @@ bool AutonomousMode::isModeChangeCompleted()
 
   // check for lateral deviation
   const auto dist_deviation =
-    autoware_motion_utils::calcLateralOffset(trajectory_.points, kinematics_.pose.pose.position);
+    autoware::motion_utils::calcLateralOffset(trajectory_.points, kinematics_.pose.pose.position);
   if (std::isnan(dist_deviation)) {
     RCLCPP_INFO(logger_, "Not stable yet: lateral offset calculation failed.");
     return unstable();
@@ -138,7 +138,7 @@ bool AutonomousMode::isModeChangeCompleted()
 
   // check for yaw deviation
   const auto yaw_deviation =
-    autoware_motion_utils::calcYawDeviation(trajectory_.points, kinematics_.pose.pose);
+    autoware::motion_utils::calcYawDeviation(trajectory_.points, kinematics_.pose.pose);
   if (std::isnan(yaw_deviation)) {
     RCLCPP_INFO(logger_, "Not stable yet: lateral offset calculation failed.");
     return unstable();

@@ -59,7 +59,7 @@ private:
   std::string output_frame_id_;
 
   std::vector<rclcpp::Subscription<DetectedObjectsWithFeature>::SharedPtr> sub_objects_array{};
-  std::shared_ptr<autoware_universe_utils::TransformListener> transform_listener_;
+  std::shared_ptr<autoware::universe_utils::TransformListener> transform_listener_;
 
   void objectsCallback(
     const DetectedObjectsWithFeature::ConstSharedPtr & input_objects0_msg,

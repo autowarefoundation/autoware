@@ -90,9 +90,9 @@ VelocitySmootherNode::VelocitySmootherNode(const rclcpp::NodeOptions & node_opti
 
   clock_ = get_clock();
 
-  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
   published_time_publisher_ =
-    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
+    std::make_unique<autoware::universe_utils::PublishedTimePublisher>(this);
 }
 
 void VelocitySmootherNode::setupSmoother(const double wheelbase)
@@ -300,7 +300,7 @@ void VelocitySmootherNode::initCommonParam()
 
 void VelocitySmootherNode::publishTrajectory(const TrajectoryPoints & trajectory) const
 {
-  Trajectory publishing_trajectory = autoware_motion_utils::convertToTrajectory(trajectory);
+  Trajectory publishing_trajectory = autoware::motion_utils::convertToTrajectory(trajectory);
   publishing_trajectory.header = base_traj_raw_ptr_->header;
   pub_trajectory_->publish(publishing_trajectory);
   published_time_publisher_->publish_if_subscribed(
@@ -434,10 +434,10 @@ void VelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstSharedPtr 
   }
 
   // calculate trajectory velocity
-  auto input_points = autoware_motion_utils::convertToTrajectoryPointArray(*base_traj_raw_ptr_);
+  auto input_points = autoware::motion_utils::convertToTrajectoryPointArray(*base_traj_raw_ptr_);
 
   // guard for invalid trajectory
-  input_points = autoware_motion_utils::removeOverlapPoints(input_points);
+  input_points = autoware::motion_utils::removeOverlapPoints(input_points);
   if (input_points.size() < 2) {
     RCLCPP_ERROR(get_logger(), "No enough points in trajectory after overlap points removal");
     return;
@@ -687,7 +687,7 @@ void VelocitySmootherNode::insertBehindVelocity(
       // TODO(planning/control team) deal with overlapped lanes with the same direction
       const size_t seg_idx = [&]() {
         // with distance and yaw thresholds
-        const auto opt_nearest_seg_idx = autoware_motion_utils::findNearestSegmentIndex(
+        const auto opt_nearest_seg_idx = autoware::motion_utils::findNearestSegmentIndex(
           prev_output_, output.at(i).pose, node_param_.ego_nearest_dist_threshold,
           node_param_.ego_nearest_yaw_threshold);
         if (opt_nearest_seg_idx) {
@@ -695,13 +695,13 @@ void VelocitySmootherNode::insertBehindVelocity(
         }
 
         // with distance threshold
-        const auto opt_second_nearest_seg_idx = autoware_motion_utils::findNearestSegmentIndex(
+        const auto opt_second_nearest_seg_idx = autoware::motion_utils::findNearestSegmentIndex(
           prev_output_, output.at(i).pose, node_param_.ego_nearest_dist_threshold);
         if (opt_second_nearest_seg_idx) {
           return opt_second_nearest_seg_idx.value();
         }
 
-        return autoware_motion_utils::findNearestSegmentIndex(
+        return autoware::motion_utils::findNearestSegmentIndex(
           prev_output_, output.at(i).pose.position);
       }();
       const auto prev_output_point =
@@ -722,9 +722,9 @@ void VelocitySmootherNode::publishStopDistance(const TrajectoryPoints & trajecto
   // stop distance calculation
   const double stop_dist_lim{50.0};
   double stop_dist{stop_dist_lim};
-  const auto stop_idx{autoware_motion_utils::searchZeroVelocityIndex(trajectory)};
+  const auto stop_idx{autoware::motion_utils::searchZeroVelocityIndex(trajectory)};
   if (stop_idx) {
-    stop_dist = autoware_motion_utils::calcSignedArcLength(trajectory, closest, *stop_idx);
+    stop_dist = autoware::motion_utils::calcSignedArcLength(trajectory, closest, *stop_idx);
   } else {
     stop_dist = closest > 0 ? stop_dist : -stop_dist;
   }
@@ -820,14 +820,14 @@ std::pair<Motion, VelocitySmootherNode::InitializeType> VelocitySmootherNode::ca
 void VelocitySmootherNode::overwriteStopPoint(
   const TrajectoryPoints & input, TrajectoryPoints & output) const
 {
-  const auto stop_idx = autoware_motion_utils::searchZeroVelocityIndex(input);
+  const auto stop_idx = autoware::motion_utils::searchZeroVelocityIndex(input);
   if (!stop_idx) {
     return;
   }
 
   // Get Closest Point from Output
   // TODO(planning/control team) deal with overlapped lanes with the same directions
-  const auto nearest_output_point_idx = autoware_motion_utils::findNearestIndex(
+  const auto nearest_output_point_idx = autoware::motion_utils::findNearestIndex(
     output, input.at(*stop_idx).pose, node_param_.ego_nearest_dist_threshold,
     node_param_.ego_nearest_yaw_threshold);
 
@@ -876,11 +876,11 @@ void VelocitySmootherNode::applyExternalVelocityLimit(TrajectoryPoints & traj) c
   // insert the point at the distance of external velocity limit
   const auto & current_pose = current_odometry_ptr_->pose.pose;
   const size_t closest_seg_idx =
-    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       traj, current_pose, node_param_.ego_nearest_dist_threshold,
       node_param_.ego_nearest_yaw_threshold);
   const auto inserted_index =
-    autoware_motion_utils::insertTargetPoint(closest_seg_idx, external_velocity_limit_.dist, traj);
+    autoware::motion_utils::insertTargetPoint(closest_seg_idx, external_velocity_limit_.dist, traj);
   if (!inserted_index) {
     traj.back().longitudinal_velocity_mps = std::min(
       traj.back().longitudinal_velocity_mps, static_cast<float>(external_velocity_limit_.velocity));
@@ -893,7 +893,7 @@ void VelocitySmootherNode::applyExternalVelocityLimit(TrajectoryPoints & traj) c
 
   // create virtual wall
   if (std::abs(external_velocity_limit_.velocity) < 1e-3) {
-    const auto virtual_wall_marker = autoware_motion_utils::createStopVirtualWallMarker(
+    const auto virtual_wall_marker = autoware::motion_utils::createStopVirtualWallMarker(
       traj.at(*inserted_index).pose, external_velocity_limit_.sender, this->now(), 0,
       base_link2front_);
     pub_virtual_wall_->publish(virtual_wall_marker);
@@ -905,13 +905,13 @@ void VelocitySmootherNode::applyExternalVelocityLimit(TrajectoryPoints & traj) c
 
 void VelocitySmootherNode::applyStopApproachingVelocity(TrajectoryPoints & traj) const
 {
-  const auto stop_idx = autoware_motion_utils::searchZeroVelocityIndex(traj);
+  const auto stop_idx = autoware::motion_utils::searchZeroVelocityIndex(traj);
   if (!stop_idx) {
     return;  // no stop point.
   }
   double distance_sum = 0.0;
   for (size_t i = *stop_idx - 1; i < traj.size(); --i) {  // search backward
-    distance_sum += autoware_universe_utils::calcDistance2d(traj.at(i), traj.at(i + 1));
+    distance_sum += autoware::universe_utils::calcDistance2d(traj.at(i), traj.at(i + 1));
     if (distance_sum > node_param_.stopping_distance) {
       break;
     }
@@ -1022,7 +1022,7 @@ double VelocitySmootherNode::calcTravelDistance() const
 
   if (prev_closest_point_) {
     const double travel_dist =
-      autoware_universe_utils::calcDistance2d(*prev_closest_point_, closest_point);
+      autoware::universe_utils::calcDistance2d(*prev_closest_point_, closest_point);
     return travel_dist;
   }
 
@@ -1039,14 +1039,14 @@ bool VelocitySmootherNode::isEngageStatus(const double target_vel) const
 Trajectory VelocitySmootherNode::toTrajectoryMsg(
   const TrajectoryPoints & points, const std_msgs::msg::Header * header) const
 {
-  auto trajectory = autoware_motion_utils::convertToTrajectory(points);
+  auto trajectory = autoware::motion_utils::convertToTrajectory(points);
   trajectory.header = header ? *header : base_traj_raw_ptr_->header;
   return trajectory;
 }
 
 size_t VelocitySmootherNode::findNearestIndexFromEgo(const TrajectoryPoints & points) const
 {
-  return autoware_motion_utils::findFirstNearestIndexWithSoftConstraints(
+  return autoware::motion_utils::findFirstNearestIndexWithSoftConstraints(
     points, current_odometry_ptr_->pose.pose, node_param_.ego_nearest_dist_threshold,
     node_param_.ego_nearest_yaw_threshold);
 }
@@ -1077,7 +1077,7 @@ TrajectoryPoint VelocitySmootherNode::calcProjectedTrajectoryPoint(
   const TrajectoryPoints & trajectory, const Pose & pose) const
 {
   const size_t current_seg_idx =
-    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       trajectory, pose, node_param_.ego_nearest_dist_threshold,
       node_param_.ego_nearest_yaw_threshold);
   return trajectory_utils::calcInterpolatedTrajectoryPoint(trajectory, pose, current_seg_idx);

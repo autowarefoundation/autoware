@@ -67,15 +67,15 @@ public:
 
 private:
   // Subscriber
-  autoware_universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
+  autoware::universe_utils::InterProcessPollingSubscriber<nav_msgs::msg::Odometry> sub_odom_{
     this, "~/input/odometry"};
-  autoware_universe_utils::InterProcessPollingSubscriber<LaneletMapBin> sub_lanelet_map_bin_{
+  autoware::universe_utils::InterProcessPollingSubscriber<LaneletMapBin> sub_lanelet_map_bin_{
     this, "~/input/lanelet_map_bin", rclcpp::QoS{1}.transient_local()};
-  autoware_universe_utils::InterProcessPollingSubscriber<LaneletRoute> sub_route_{
+  autoware::universe_utils::InterProcessPollingSubscriber<LaneletRoute> sub_route_{
     this, "~/input/route"};
-  autoware_universe_utils::InterProcessPollingSubscriber<Trajectory> sub_reference_trajectory_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Trajectory> sub_reference_trajectory_{
     this, "~/input/reference_trajectory"};
-  autoware_universe_utils::InterProcessPollingSubscriber<Trajectory> sub_predicted_trajectory_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Trajectory> sub_predicted_trajectory_{
     this, "~/input/predicted_trajectory"};
 
   // Data Buffer
@@ -99,8 +99,8 @@ private:
   void onPredictedTrajectory(const Trajectory::ConstSharedPtr msg);
 
   // Publisher
-  autoware_universe_utils::DebugPublisher debug_publisher_{this, "~/debug"};
-  autoware_universe_utils::ProcessingTimePublisher processing_time_publisher_{this};
+  autoware::universe_utils::DebugPublisher debug_publisher_{this, "~/debug"};
+  autoware::universe_utils::ProcessingTimePublisher processing_time_publisher_{this};
 
   // Timer
   rclcpp::TimerBase::SharedPtr timer_;

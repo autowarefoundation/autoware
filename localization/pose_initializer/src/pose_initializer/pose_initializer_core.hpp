@@ -55,7 +55,7 @@ private:
   std::unique_ptr<StopCheckModule> stop_check_;
   std::unique_ptr<EkfLocalizationTriggerModule> ekf_localization_trigger_;
   std::unique_ptr<NdtLocalizationTriggerModule> ndt_localization_trigger_;
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
   double stop_check_duration_;
 
   void change_node_trigger(bool flag, bool need_spin = false);

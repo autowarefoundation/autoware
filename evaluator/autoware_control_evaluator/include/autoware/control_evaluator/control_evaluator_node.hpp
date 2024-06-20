@@ -72,9 +72,9 @@ private:
   // onDiagnostics().
   rclcpp::Subscription<DiagnosticArray>::SharedPtr control_diag_sub_;
 
-  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> odometry_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Odometry> odometry_sub_{
     this, "~/input/odometry"};
-  autoware_universe_utils::InterProcessPollingSubscriber<Trajectory> traj_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Trajectory> traj_sub_{
     this, "~/input/trajectory"};
 
   rclcpp::Publisher<DiagnosticArray>::SharedPtr metrics_pub_;

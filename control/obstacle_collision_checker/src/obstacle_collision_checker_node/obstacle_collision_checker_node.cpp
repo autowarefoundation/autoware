@@ -70,8 +70,8 @@ ObstacleCollisionCheckerNode::ObstacleCollisionCheckerNode(const rclcpp::NodeOpt
   obstacle_collision_checker_->setParam(param_);
 
   // Subscriber
-  self_pose_listener_ = std::make_shared<autoware_universe_utils::SelfPoseListener>(this);
-  transform_listener_ = std::make_shared<autoware_universe_utils::TransformListener>(this);
+  self_pose_listener_ = std::make_shared<autoware::universe_utils::SelfPoseListener>(this);
+  transform_listener_ = std::make_shared<autoware::universe_utils::TransformListener>(this);
 
   sub_obstacle_pointcloud_ = create_subscription<sensor_msgs::msg::PointCloud2>(
     "input/obstacle_pointcloud", rclcpp::SensorDataQoS(),
@@ -87,8 +87,8 @@ ObstacleCollisionCheckerNode::ObstacleCollisionCheckerNode(const rclcpp::NodeOpt
 
   // Publisher
   debug_publisher_ =
-    std::make_shared<autoware_universe_utils::DebugPublisher>(this, "debug/marker");
-  time_publisher_ = std::make_shared<autoware_universe_utils::ProcessingTimePublisher>(this);
+    std::make_shared<autoware::universe_utils::DebugPublisher>(this, "debug/marker");
+  time_publisher_ = std::make_shared<autoware::universe_utils::ProcessingTimePublisher>(this);
 
   // Diagnostic Updater
   updater_.setHardwareID("obstacle_collision_checker");
@@ -283,9 +283,9 @@ void ObstacleCollisionCheckerNode::checkLaneDeparture(
 
 visualization_msgs::msg::MarkerArray ObstacleCollisionCheckerNode::createMarkerArray() const
 {
-  using autoware_universe_utils::createDefaultMarker;
-  using autoware_universe_utils::createMarkerColor;
-  using autoware_universe_utils::createMarkerScale;
+  using autoware::universe_utils::createDefaultMarker;
+  using autoware::universe_utils::createMarkerColor;
+  using autoware::universe_utils::createMarkerScale;
 
   visualization_msgs::msg::MarkerArray marker_array;
 

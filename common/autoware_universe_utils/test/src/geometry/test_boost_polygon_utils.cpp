@@ -19,7 +19,7 @@
 
 #include <gtest/gtest.h>
 
-using autoware_universe_utils::Polygon2d;
+using autoware::universe_utils::Polygon2d;
 
 namespace
 {
@@ -39,7 +39,7 @@ geometry_msgs::msg::Pose createPose(const double x, const double y, const double
   p.position.x = x;
   p.position.y = y;
   p.position.z = 0.0;
-  p.orientation = autoware_universe_utils::createQuaternionFromYaw(yaw);
+  p.orientation = autoware::universe_utils::createQuaternionFromYaw(yaw);
 
   return p;
 }
@@ -47,7 +47,7 @@ geometry_msgs::msg::Pose createPose(const double x, const double y, const double
 
 TEST(boost_geometry, boost_isClockwise)
 {
-  using autoware_universe_utils::isClockwise;
+  using autoware::universe_utils::isClockwise;
 
   // empty
   Polygon2d empty_polygon;
@@ -72,8 +72,8 @@ TEST(boost_geometry, boost_isClockwise)
 
 TEST(boost_geometry, boost_inverseClockwise)
 {
-  using autoware_universe_utils::inverseClockwise;
-  using autoware_universe_utils::isClockwise;
+  using autoware::universe_utils::inverseClockwise;
+  using autoware::universe_utils::isClockwise;
 
   // empty
   Polygon2d empty_polygon;
@@ -100,7 +100,7 @@ TEST(boost_geometry, boost_inverseClockwise)
 TEST(boost_geometry, boost_rotatePolygon)
 {
   constexpr double epsilon = 1e-6;
-  using autoware_universe_utils::rotatePolygon;
+  using autoware::universe_utils::rotatePolygon;
 
   // empty
   geometry_msgs::msg::Polygon empty_polygon;
@@ -130,7 +130,7 @@ TEST(boost_geometry, boost_rotatePolygon)
 
 TEST(boost_geometry, boost_toPolygon2d)
 {
-  using autoware_universe_utils::toPolygon2d;
+  using autoware::universe_utils::toPolygon2d;
 
   {  // bounding box
     const double x = 1.0;
@@ -206,7 +206,7 @@ TEST(boost_geometry, boost_toPolygon2d)
 
 TEST(boost_geometry, boost_toFootprint)
 {
-  using autoware_universe_utils::toFootprint;
+  using autoware::universe_utils::toFootprint;
 
   // from base link
   {
@@ -234,7 +234,7 @@ TEST(boost_geometry, boost_toFootprint)
 
 TEST(boost_geometry, boost_getArea)
 {
-  using autoware_universe_utils::getArea;
+  using autoware::universe_utils::getArea;
 
   {  // bounding box
     const double x = 1.0;
@@ -290,7 +290,7 @@ TEST(boost_geometry, boost_getArea)
 
 TEST(boost_geometry, boost_expandPolygon)
 {
-  using autoware_universe_utils::expandPolygon;
+  using autoware::universe_utils::expandPolygon;
 
   {  // box with a certain offset
     Polygon2d box_poly{{{-1.0, -1.0}, {-1.0, 1.0}, {1.0, 1.0}, {1.0, -1.0}, {-1.0, -1.0}}};

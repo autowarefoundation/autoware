@@ -44,7 +44,7 @@ void expect_eq_vector(const std::vector<int> & input, const std::vector<int> & e
 
 TEST(arange_Test, arange_double)
 {
-  using autoware_universe_utils::arange;
+  using autoware::universe_utils::arange;
 
   // general cases
   {
@@ -82,7 +82,7 @@ TEST(arange_Test, arange_double)
 
 TEST(arange_Test, arange_float)
 {
-  using autoware_universe_utils::arange;
+  using autoware::universe_utils::arange;
 
   // general cases
   {
@@ -121,7 +121,7 @@ TEST(arange_Test, arange_float)
 
 TEST(arange_Test, arange_int)
 {
-  using autoware_universe_utils::arange;
+  using autoware::universe_utils::arange;
 
   // general cases
   {
@@ -154,7 +154,7 @@ TEST(arange_Test, arange_int)
 
 TEST(test_linspace, linspace_double)
 {
-  using autoware_universe_utils::linspace;
+  using autoware::universe_utils::linspace;
 
   // general cases
   {
@@ -182,7 +182,7 @@ TEST(test_linspace, linspace_double)
 
 TEST(test_linspace, linspace_float)
 {
-  using autoware_universe_utils::linspace;
+  using autoware::universe_utils::linspace;
 
   // general cases
   {
@@ -211,7 +211,7 @@ TEST(test_linspace, linspace_float)
 
 TEST(test_linspace, linspace_int)
 {
-  using autoware_universe_utils::linspace;
+  using autoware::universe_utils::linspace;
 
   // general cases
   {

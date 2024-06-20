@@ -203,7 +203,7 @@ private:
   std::unique_ptr<DiagnosticsModule> diagnostics_ndt_align_;
   std::unique_ptr<DiagnosticsModule> diagnostics_trigger_node_;
   std::unique_ptr<MapUpdateModule> map_update_module_;
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 
   HyperParameters param_;
 };

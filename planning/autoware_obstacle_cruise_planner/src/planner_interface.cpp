@@ -50,7 +50,7 @@ tier4_planning_msgs::msg::StopReasonArray makeStopReasonArray(
   stop_factor.stop_pose = stop_pose;
   geometry_msgs::msg::Point stop_factor_point = stop_obstacle.collision_point;
   stop_factor_point.z = stop_pose.position.z;
-  stop_factor.dist_to_stop_pose = autoware_motion_utils::calcSignedArcLength(
+  stop_factor.dist_to_stop_pose = autoware::motion_utils::calcSignedArcLength(
     planner_data.traj_points, planner_data.ego_pose.position, stop_pose.position);
   stop_factor.stop_factor_points.emplace_back(stop_factor_point);
 
@@ -218,14 +218,14 @@ double calcDecelerationVelocityFromDistanceToTarget(
 std::vector<TrajectoryPoint> resampleTrajectoryPoints(
   const std::vector<TrajectoryPoint> & traj_points, const double interval)
 {
-  const auto traj = autoware_motion_utils::convertToTrajectory(traj_points);
-  const auto resampled_traj = autoware_motion_utils::resampleTrajectory(traj, interval);
-  return autoware_motion_utils::convertToTrajectoryPointArray(resampled_traj);
+  const auto traj = autoware::motion_utils::convertToTrajectory(traj_points);
+  const auto resampled_traj = autoware::motion_utils::resampleTrajectory(traj, interval);
+  return autoware::motion_utils::convertToTrajectoryPointArray(resampled_traj);
 }
 
-autoware_universe_utils::Point2d convertPoint(const geometry_msgs::msg::Point & p)
+autoware::universe_utils::Point2d convertPoint(const geometry_msgs::msg::Point & p)
 {
-  return autoware_universe_utils::Point2d{p.x, p.y};
+  return autoware::universe_utils::Point2d{p.x, p.y};
 }
 }  // namespace
 
@@ -248,8 +248,8 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
 
     // delete marker
     const auto markers =
-      autoware_motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
-    autoware_universe_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
+      autoware::motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
+    autoware::universe_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
 
     prev_stop_distance_info_ = std::nullopt;
     return planner_data.traj_points;
@@ -269,14 +269,14 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
     const auto ego_segment_idx =
       ego_nearest_param_.findSegmentIndex(planner_data.traj_points, planner_data.ego_pose);
     const double dist_to_collide_on_ref_traj =
-      autoware_motion_utils::calcSignedArcLength(planner_data.traj_points, 0, ego_segment_idx) +
+      autoware::motion_utils::calcSignedArcLength(planner_data.traj_points, 0, ego_segment_idx) +
       stop_obstacle.dist_to_collide_on_decimated_traj;
 
     const double desired_margin = [&]() {
       const double margin_from_obstacle =
         calculateMarginFromObstacleOnCurve(planner_data, stop_obstacle);
       // Use terminal margin (terminal_safe_distance_margin) for obstacle stop
-      const auto ref_traj_length = autoware_motion_utils::calcSignedArcLength(
+      const auto ref_traj_length = autoware::motion_utils::calcSignedArcLength(
         planner_data.traj_points, 0, planner_data.traj_points.size() - 1);
       if (dist_to_collide_on_ref_traj > ref_traj_length) {
         return longitudinal_info_.terminal_safe_distance_margin;
@@ -284,11 +284,11 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
 
       // If behavior stop point is ahead of the closest_obstacle_stop point within a certain
       // margin we set closest_obstacle_stop_distance to closest_behavior_stop_distance
-      const auto closest_behavior_stop_idx = autoware_motion_utils::searchZeroVelocityIndex(
+      const auto closest_behavior_stop_idx = autoware::motion_utils::searchZeroVelocityIndex(
         planner_data.traj_points, ego_segment_idx + 1);
       if (closest_behavior_stop_idx) {
         const double closest_behavior_stop_dist_on_ref_traj =
-          autoware_motion_utils::calcSignedArcLength(
+          autoware::motion_utils::calcSignedArcLength(
             planner_data.traj_points, 0, *closest_behavior_stop_idx);
         const double stop_dist_diff = closest_behavior_stop_dist_on_ref_traj -
                                       (dist_to_collide_on_ref_traj - margin_from_obstacle);
@@ -329,7 +329,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
       }
 
       const double acceptable_stop_pos =
-        autoware_motion_utils::calcSignedArcLength(
+        autoware::motion_utils::calcSignedArcLength(
           planner_data.traj_points, 0, planner_data.ego_pose.position) +
         calcMinimumDistanceToStop(
           planner_data.ego_vel, longitudinal_info_.limit_max_accel, acceptable_stop_acc.value());
@@ -356,8 +356,8 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
   if (!determined_zero_vel_dist) {
     // delete marker
     const auto markers =
-      autoware_motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
-    autoware_universe_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
+      autoware::motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
+    autoware::universe_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
 
     prev_stop_distance_info_ = std::nullopt;
     return planner_data.traj_points;
@@ -370,9 +370,9 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
     // NOTE: We assume that the current trajectory's front point is ahead of the previous
     // trajectory's front point.
     const size_t traj_front_point_prev_seg_idx =
-      autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
         prev_stop_distance_info_->first, planner_data.traj_points.front().pose);
-    const double diff_dist_front_points = autoware_motion_utils::calcSignedArcLength(
+    const double diff_dist_front_points = autoware::motion_utils::calcSignedArcLength(
       prev_stop_distance_info_->first, 0, planner_data.traj_points.front().pose.position,
       traj_front_point_prev_seg_idx);
 
@@ -387,13 +387,13 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
   // Insert stop point
   auto output_traj_points = planner_data.traj_points;
   const auto zero_vel_idx =
-    autoware_motion_utils::insertStopPoint(0, *determined_zero_vel_dist, output_traj_points);
+    autoware::motion_utils::insertStopPoint(0, *determined_zero_vel_dist, output_traj_points);
   if (zero_vel_idx) {
     // virtual wall marker for stop obstacle
-    const auto markers = autoware_motion_utils::createStopVirtualWallMarker(
+    const auto markers = autoware::motion_utils::createStopVirtualWallMarker(
       output_traj_points.at(*zero_vel_idx).pose, "obstacle stop", planner_data.current_time, 0,
       abs_ego_offset, "", planner_data.is_driving_forward);
-    autoware_universe_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
+    autoware::universe_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
     debug_data_ptr_->obstacles_to_stop.push_back(*determined_stop_obstacle);
 
     // Publish Stop Reason
@@ -406,7 +406,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
     // Publish if ego vehicle will over run against the stop point with a limit acceleration
 
     const bool will_over_run = determined_zero_vel_dist.value() >
-                               autoware_motion_utils::calcSignedArcLength(
+                               autoware::motion_utils::calcSignedArcLength(
                                  planner_data.traj_points, 0, planner_data.ego_pose.position) +
                                  determined_stop_obstacle->dist_to_collide_on_decimated_traj +
                                  determined_desired_margin.value() + 0.1;
@@ -448,7 +448,7 @@ double PlannerInterface::calculateMarginFromObstacleOnCurve(
                                   : std::abs(vehicle_info_.min_longitudinal_offset_m);
 
   // calculate short trajectory points towards obstacle
-  const size_t obj_segment_idx = autoware_motion_utils::findNearestSegmentIndex(
+  const size_t obj_segment_idx = autoware::motion_utils::findNearestSegmentIndex(
     planner_data.traj_points, stop_obstacle.collision_point);
   std::vector<TrajectoryPoint> short_traj_points{planner_data.traj_points.at(obj_segment_idx + 1)};
   double sum_short_traj_length{0.0};
@@ -460,7 +460,7 @@ double PlannerInterface::calculateMarginFromObstacleOnCurve(
       longitudinal_info_.safe_distance_margin + abs_ego_offset < sum_short_traj_length) {
       break;
     }
-    sum_short_traj_length += autoware_universe_utils::calcDistance2d(
+    sum_short_traj_length += autoware::universe_utils::calcDistance2d(
       planner_data.traj_points.at(i), planner_data.traj_points.at(i + 1));
   }
   std::reverse(short_traj_points.begin(), short_traj_points.end());
@@ -471,15 +471,15 @@ double PlannerInterface::calculateMarginFromObstacleOnCurve(
   // calculate collision index between straight line from ego pose and object
   const auto calculate_distance_from_straight_ego_path =
     [&](const auto & ego_pose, const auto & object_polygon) {
-      const auto forward_ego_pose = autoware_universe_utils::calcOffsetPose(
+      const auto forward_ego_pose = autoware::universe_utils::calcOffsetPose(
         ego_pose, longitudinal_info_.safe_distance_margin + 3.0, 0.0, 0.0);
-      const auto ego_straight_segment = autoware_universe_utils::Segment2d{
+      const auto ego_straight_segment = autoware::universe_utils::Segment2d{
         convertPoint(ego_pose.position), convertPoint(forward_ego_pose.position)};
       return boost::geometry::distance(ego_straight_segment, object_polygon);
     };
   const auto resampled_short_traj_points = resampleTrajectoryPoints(short_traj_points, 0.5);
   const auto object_polygon =
-    autoware_universe_utils::toPolygon2d(stop_obstacle.pose, stop_obstacle.shape);
+    autoware::universe_utils::toPolygon2d(stop_obstacle.pose, stop_obstacle.shape);
   const auto collision_idx = [&]() -> std::optional<size_t> {
     for (size_t i = 0; i < resampled_short_traj_points.size(); ++i) {
       const double dist_to_obj = calculate_distance_from_straight_ego_path(
@@ -499,7 +499,7 @@ double PlannerInterface::calculateMarginFromObstacleOnCurve(
 
   // calculate margin from obstacle
   const double partial_segment_length = [&]() {
-    const double collision_segment_length = autoware_universe_utils::calcDistance2d(
+    const double collision_segment_length = autoware::universe_utils::calcDistance2d(
       resampled_short_traj_points.at(*collision_idx - 1),
       resampled_short_traj_points.at(*collision_idx));
     const double prev_dist = calculate_distance_from_straight_ego_path(
@@ -512,7 +512,7 @@ double PlannerInterface::calculateMarginFromObstacleOnCurve(
 
   const double short_margin_from_obstacle =
     partial_segment_length +
-    autoware_motion_utils::calcSignedArcLength(
+    autoware::motion_utils::calcSignedArcLength(
       resampled_short_traj_points, *collision_idx, stop_obstacle.collision_point) -
     abs_ego_offset + additional_safe_distance_margin_on_curve_;
 
@@ -532,9 +532,9 @@ double PlannerInterface::calcDistanceToCollisionPoint(
     ego_nearest_param_.findSegmentIndex(planner_data.traj_points, planner_data.ego_pose);
 
   const size_t collision_segment_idx =
-    autoware_motion_utils::findNearestSegmentIndex(planner_data.traj_points, collision_point);
+    autoware::motion_utils::findNearestSegmentIndex(planner_data.traj_points, collision_point);
 
-  const auto dist_to_collision_point = autoware_motion_utils::calcSignedArcLength(
+  const auto dist_to_collision_point = autoware::motion_utils::calcSignedArcLength(
     planner_data.traj_points, planner_data.ego_pose.position, ego_segment_idx, collision_point,
     collision_segment_idx);
 
@@ -553,7 +553,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
   const double dist_to_ego = [&]() {
     const size_t ego_seg_idx =
       ego_nearest_param_.findSegmentIndex(slow_down_traj_points, planner_data.ego_pose);
-    return autoware_motion_utils::calcSignedArcLength(
+    return autoware::motion_utils::calcSignedArcLength(
       slow_down_traj_points, 0, planner_data.ego_pose.position, ego_seg_idx);
   }();
   const double abs_ego_offset = planner_data.is_driving_forward
@@ -563,7 +563,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
   // define function to insert slow down velocity to trajectory
   const auto insert_point_in_trajectory = [&](const double lon_dist) -> std::optional<size_t> {
     const auto inserted_idx =
-      autoware_motion_utils::insertTargetPoint(0, lon_dist, slow_down_traj_points);
+      autoware::motion_utils::insertTargetPoint(0, lon_dist, slow_down_traj_points);
     if (inserted_idx) {
       if (inserted_idx.value() + 1 <= slow_down_traj_points.size() - 1) {
         // zero-order hold for velocity interpolation
@@ -648,25 +648,25 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
         return *slow_down_end_idx;
       }();
 
-      const auto markers = autoware_motion_utils::createSlowDownVirtualWallMarker(
+      const auto markers = autoware::motion_utils::createSlowDownVirtualWallMarker(
         slow_down_traj_points.at(slow_down_wall_idx).pose, "obstacle slow down",
         planner_data.current_time, i, abs_ego_offset, "", planner_data.is_driving_forward);
-      autoware_universe_utils::appendMarkerArray(markers, &debug_data_ptr_->slow_down_wall_marker);
+      autoware::universe_utils::appendMarkerArray(markers, &debug_data_ptr_->slow_down_wall_marker);
     }
 
     // add debug virtual wall
     if (slow_down_start_idx) {
-      const auto markers = autoware_motion_utils::createSlowDownVirtualWallMarker(
+      const auto markers = autoware::motion_utils::createSlowDownVirtualWallMarker(
         slow_down_traj_points.at(*slow_down_start_idx).pose, "obstacle slow down start",
         planner_data.current_time, i * 2, abs_ego_offset, "", planner_data.is_driving_forward);
-      autoware_universe_utils::appendMarkerArray(
+      autoware::universe_utils::appendMarkerArray(
         markers, &debug_data_ptr_->slow_down_debug_wall_marker);
     }
     if (slow_down_end_idx) {
-      const auto markers = autoware_motion_utils::createSlowDownVirtualWallMarker(
+      const auto markers = autoware::motion_utils::createSlowDownVirtualWallMarker(
         slow_down_traj_points.at(*slow_down_end_idx).pose, "obstacle slow down end",
         planner_data.current_time, i * 2 + 1, abs_ego_offset, "", planner_data.is_driving_forward);
-      autoware_universe_utils::appendMarkerArray(
+      autoware::universe_utils::appendMarkerArray(
         markers, &debug_data_ptr_->slow_down_debug_wall_marker);
     }
 
@@ -728,9 +728,9 @@ PlannerInterface::calculateDistanceToSlowDownWithConstraints(
 
   // calculate distance to collision points
   const double dist_to_front_collision =
-    autoware_motion_utils::calcSignedArcLength(traj_points, 0, obstacle.front_collision_point);
+    autoware::motion_utils::calcSignedArcLength(traj_points, 0, obstacle.front_collision_point);
   const double dist_to_back_collision =
-    autoware_motion_utils::calcSignedArcLength(traj_points, 0, obstacle.back_collision_point);
+    autoware::motion_utils::calcSignedArcLength(traj_points, 0, obstacle.back_collision_point);
 
   // calculate offset distance to first collision considering relative velocity
   const double relative_vel = planner_data.ego_vel - obstacle.velocity;
@@ -773,9 +773,9 @@ PlannerInterface::calculateDistanceToSlowDownWithConstraints(
   const auto apply_lowpass_filter = [&](const double dist_to_slow_down, const auto prev_point) {
     if (prev_output && prev_point) {
       const size_t seg_idx =
-        autoware_motion_utils::findNearestSegmentIndex(traj_points, prev_point->position);
+        autoware::motion_utils::findNearestSegmentIndex(traj_points, prev_point->position);
       const double prev_dist_to_slow_down =
-        autoware_motion_utils::calcSignedArcLength(traj_points, 0, prev_point->position, seg_idx);
+        autoware::motion_utils::calcSignedArcLength(traj_points, 0, prev_point->position, seg_idx);
       return signal_processing::lowpassFilter(
         dist_to_slow_down, prev_dist_to_slow_down, slow_down_param_.lpf_gain_dist_to_slow_down);
     }

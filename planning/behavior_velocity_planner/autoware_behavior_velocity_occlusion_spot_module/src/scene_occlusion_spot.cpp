@@ -110,12 +110,12 @@ bool OcclusionSpotModule::modifyPathVelocity(
   //! never change this interpolation interval(will affect module accuracy)
   splineInterpolate(clipped_path, 1.0, path_interpolated, logger_);
   const geometry_msgs::msg::Point start_point = path_interpolated.points.at(0).point.pose.position;
-  const auto ego_segment_idx = autoware_motion_utils::findNearestSegmentIndex(
+  const auto ego_segment_idx = autoware::motion_utils::findNearestSegmentIndex(
     path_interpolated.points, ego_pose, param_.dist_thr, param_.angle_thr);
   if (!ego_segment_idx) return true;
   const size_t start_point_segment_idx =
-    autoware_motion_utils::findNearestSegmentIndex(path_interpolated.points, start_point);
-  const auto offset = autoware_motion_utils::calcSignedArcLength(
+    autoware::motion_utils::findNearestSegmentIndex(path_interpolated.points, start_point);
+  const auto offset = autoware::motion_utils::calcSignedArcLength(
     path_interpolated.points, ego_pose.position, *ego_segment_idx, start_point,
     start_point_segment_idx);
   const double offset_from_start_to_ego = -offset;

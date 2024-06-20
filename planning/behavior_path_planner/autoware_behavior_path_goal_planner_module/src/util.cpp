@@ -38,11 +38,11 @@
 namespace autoware::behavior_path_planner::goal_planner_utils
 {
 
-using autoware_universe_utils::calcOffsetPose;
-using autoware_universe_utils::createDefaultMarker;
-using autoware_universe_utils::createMarkerColor;
-using autoware_universe_utils::createMarkerScale;
-using autoware_universe_utils::createPoint;
+using autoware::universe_utils::calcOffsetPose;
+using autoware::universe_utils::createDefaultMarker;
+using autoware::universe_utils::createMarkerColor;
+using autoware::universe_utils::createMarkerScale;
+using autoware::universe_utils::createPoint;
 
 lanelet::ConstLanelets getPullOverLanes(
   const RouteHandler & route_handler, const bool left_side, const double backward_distance,
@@ -116,9 +116,9 @@ lanelet::ConstLanelets generateBetweenEgoAndExpandedPullOverLanes(
   const double ego_length_to_front = wheel_base + front_overhang;
   const double ego_width_to_front =
     !left_side ? (-wheel_tread / 2.0 - side_overhang) : (wheel_tread / 2.0 + side_overhang);
-  autoware_universe_utils::Point2d front_edge_local{ego_length_to_front, ego_width_to_front};
-  const auto front_edge_glob = autoware_universe_utils::transformPoint(
-    front_edge_local, autoware_universe_utils::pose2transform(ego_pose));
+  autoware::universe_utils::Point2d front_edge_local{ego_length_to_front, ego_width_to_front};
+  const auto front_edge_glob = autoware::universe_utils::transformPoint(
+    front_edge_local, autoware::universe_utils::pose2transform(ego_pose));
   geometry_msgs::msg::Pose ego_front_pose;
   ego_front_pose.position =
     createPoint(front_edge_glob.x(), front_edge_glob.y(), ego_pose.position.z);
@@ -180,8 +180,8 @@ PredictedObjects filterObjectsByLateralDistance(
 }
 
 MarkerArray createPullOverAreaMarkerArray(
-  const autoware_universe_utils::MultiPolygon2d area_polygons, const std_msgs::msg::Header & header,
-  const std_msgs::msg::ColorRGBA & color, const double z)
+  const autoware::universe_utils::MultiPolygon2d area_polygons,
+  const std_msgs::msg::Header & header, const std_msgs::msg::ColorRGBA & color, const double z)
 {
   MarkerArray marker_array{};
   for (size_t i = 0; i < area_polygons.size(); ++i) {
@@ -205,7 +205,7 @@ MarkerArray createPosesMarkerArray(
   MarkerArray msg{};
   int32_t i = 0;
   for (const auto & pose : poses) {
-    Marker marker = autoware_universe_utils::createDefaultMarker(
+    Marker marker = autoware::universe_utils::createDefaultMarker(
       "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, i, Marker::ARROW,
       createMarkerScale(0.5, 0.25, 0.25), color);
     marker.pose = pose;
@@ -305,11 +305,11 @@ double calcLateralDeviationBetweenPaths(
 {
   double lateral_deviation = 0.0;
   for (const auto & target_point : target_path.points) {
-    const size_t nearest_index = autoware_motion_utils::findNearestIndex(
+    const size_t nearest_index = autoware::motion_utils::findNearestIndex(
       reference_path.points, target_point.point.pose.position);
     lateral_deviation = std::max(
       lateral_deviation,
-      std::abs(autoware_universe_utils::calcLateralDeviation(
+      std::abs(autoware::universe_utils::calcLateralDeviation(
         reference_path.points[nearest_index].point.pose, target_point.point.pose.position)));
   }
   return lateral_deviation;
@@ -326,7 +326,7 @@ bool isReferencePath(
 std::optional<PathWithLaneId> cropPath(const PathWithLaneId & path, const Pose & end_pose)
 {
   const size_t end_idx =
-    autoware_motion_utils::findNearestSegmentIndex(path.points, end_pose.position);
+    autoware::motion_utils::findNearestSegmentIndex(path.points, end_pose.position);
   std::vector<PathPointWithLaneId> clipped_points{
     path.points.begin(), path.points.begin() + end_idx};
   if (clipped_points.empty()) {
@@ -336,9 +336,9 @@ std::optional<PathWithLaneId> cropPath(const PathWithLaneId & path, const Pose &
   // add projected end pose to clipped points
   PathPointWithLaneId projected_point = clipped_points.back();
   const double offset =
-    autoware_motion_utils::calcSignedArcLength(path.points, end_idx, end_pose.position);
+    autoware::motion_utils::calcSignedArcLength(path.points, end_idx, end_pose.position);
   projected_point.point.pose =
-    autoware_universe_utils::calcOffsetPose(clipped_points.back().point.pose, offset, 0, 0);
+    autoware::universe_utils::calcOffsetPose(clipped_points.back().point.pose, offset, 0, 0);
   clipped_points.push_back(projected_point);
   auto clipped_path = path;
   clipped_path.points = clipped_points;
@@ -354,7 +354,7 @@ PathWithLaneId cropForwardPoints(
   double sum_length = 0;
   for (size_t i = target_seg_idx + 1; i < points.size(); ++i) {
     const double seg_length =
-      autoware_universe_utils::calcDistance2d(points.at(i), points.at(i - 1));
+      autoware::universe_utils::calcDistance2d(points.at(i), points.at(i - 1));
     if (forward_length < sum_length + seg_length) {
       const auto cropped_points =
         std::vector<PathPointWithLaneId>{points.begin() + target_seg_idx, points.begin() + i};
@@ -393,7 +393,7 @@ PathWithLaneId extendPath(
   const auto & target_terminal_pose = target_path.points.back().point.pose;
 
   // generate clipped road lane reference path from previous module path terminal pose to shift end
-  const size_t target_path_terminal_idx = autoware_motion_utils::findNearestSegmentIndex(
+  const size_t target_path_terminal_idx = autoware::motion_utils::findNearestSegmentIndex(
     reference_path.points, target_terminal_pose.position);
 
   PathWithLaneId clipped_path =
@@ -401,9 +401,9 @@ PathWithLaneId extendPath(
 
   // shift clipped path to previous module path terminal pose
   const double lateral_shift_from_reference_path =
-    autoware_motion_utils::calcLateralOffset(reference_path.points, target_terminal_pose.position);
+    autoware::motion_utils::calcLateralOffset(reference_path.points, target_terminal_pose.position);
   for (auto & p : clipped_path.points) {
-    p.point.pose = autoware_universe_utils::calcOffsetPose(
+    p.point.pose = autoware::universe_utils::calcOffsetPose(
       p.point.pose, 0, lateral_shift_from_reference_path, 0);
   }
 
@@ -411,15 +411,15 @@ PathWithLaneId extendPath(
   const auto start_point =
     std::find_if(clipped_path.points.begin(), clipped_path.points.end(), [&](const auto & p) {
       const bool is_forward =
-        autoware_universe_utils::inverseTransformPoint(p.point.pose.position, target_terminal_pose)
+        autoware::universe_utils::inverseTransformPoint(p.point.pose.position, target_terminal_pose)
           .x > 0.0;
-      const bool is_close = autoware_universe_utils::calcDistance2d(
+      const bool is_close = autoware::universe_utils::calcDistance2d(
                               p.point.pose.position, target_terminal_pose.position) < 0.1;
       return is_forward && !is_close;
     });
   std::copy(start_point, clipped_path.points.end(), std::back_inserter(extended_path.points));
 
-  extended_path.points = autoware_motion_utils::removeOverlapPoints(extended_path.points);
+  extended_path.points = autoware::motion_utils::removeOverlapPoints(extended_path.points);
 
   return extended_path;
 }
@@ -429,9 +429,9 @@ PathWithLaneId extendPath(
   const Pose & extend_pose)
 {
   const auto & target_terminal_pose = target_path.points.back().point.pose;
-  const size_t target_path_terminal_idx = autoware_motion_utils::findNearestSegmentIndex(
+  const size_t target_path_terminal_idx = autoware::motion_utils::findNearestSegmentIndex(
     reference_path.points, target_terminal_pose.position);
-  const double extend_distance = autoware_motion_utils::calcSignedArcLength(
+  const double extend_distance = autoware::motion_utils::calcSignedArcLength(
     reference_path.points, target_path_terminal_idx, extend_pose.position);
 
   return extendPath(target_path, reference_path, extend_distance);
@@ -445,7 +445,7 @@ std::vector<Polygon2d> createPathFootPrints(
   for (const auto & point : path.points) {
     const auto & pose = point.point.pose;
     footprints.push_back(
-      autoware_universe_utils::toFootprint(pose, base_to_front, base_to_rear, width));
+      autoware::universe_utils::toFootprint(pose, base_to_front, base_to_rear, width));
   }
   return footprints;
 }

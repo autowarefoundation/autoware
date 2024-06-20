@@ -33,16 +33,16 @@
 
 namespace autoware::behavior_path_planner
 {
-using autoware_motion_utils::calcSignedArcLength;
+using autoware::motion_utils::calcSignedArcLength;
 
 double calc_distance(
   const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
   const Pose & input_point, const double nearest_dist_threshold, const double nearest_yaw_threshold)
 {
   const size_t nearest_seg_idx =
-    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
-  return autoware_motion_utils::calcSignedArcLength(
+  return autoware::motion_utils::calcSignedArcLength(
     path.points, current_pose.position, current_seg_idx, input_point.position, nearest_seg_idx);
 }
 
@@ -83,8 +83,9 @@ TurnIndicatorsCommand TurnSignalDecider::getTurnSignal(
   }
 
   // Closest ego segment
-  const size_t ego_seg_idx = autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    extended_path.points, current_pose, nearest_dist_threshold, nearest_yaw_threshold);
+  const size_t ego_seg_idx =
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      extended_path.points, current_pose, nearest_dist_threshold, nearest_yaw_threshold);
 
   // Get closest intersection turn signal if exists
   const auto intersection_turn_signal_info = getIntersectionTurnSignalInfo(
@@ -231,20 +232,20 @@ std::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo(
     }
 
     const size_t front_nearest_seg_idx =
-      autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
         path.points, lane_front_pose, nearest_dist_threshold, nearest_yaw_threshold);
     const size_t back_nearest_seg_idx =
-      autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
         path.points, lane_back_pose, nearest_dist_threshold, nearest_yaw_threshold);
 
     // Distance from ego vehicle front pose to front point of the lane
-    const double dist_to_front_point = autoware_motion_utils::calcSignedArcLength(
+    const double dist_to_front_point = autoware::motion_utils::calcSignedArcLength(
                                          path.points, current_pose.position, current_seg_idx,
                                          lane_front_pose.position, front_nearest_seg_idx) -
                                        base_link2front_;
 
     // Distance from ego vehicle base link to the terminal point of the lane
-    const double dist_to_back_point = autoware_motion_utils::calcSignedArcLength(
+    const double dist_to_back_point = autoware::motion_utils::calcSignedArcLength(
       path.points, current_pose.position, current_seg_idx, lane_back_pose.position,
       back_nearest_seg_idx);
 
@@ -280,9 +281,9 @@ std::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo(
     const auto & turn_signal_info = signal_queue.front();
     const auto & required_end_point = turn_signal_info.required_end_point;
     const size_t nearest_seg_idx =
-      autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
         path.points, required_end_point, nearest_dist_threshold, nearest_yaw_threshold);
-    const double dist_to_end_point = autoware_motion_utils::calcSignedArcLength(
+    const double dist_to_end_point = autoware::motion_utils::calcSignedArcLength(
       path.points, current_pose.position, current_seg_idx, required_end_point.position,
       nearest_seg_idx);
 
@@ -407,9 +408,9 @@ TurnSignalInfo TurnSignalDecider::overwrite_turn_signal(
 
   const auto get_distance = [&](const Pose & input_point) {
     const size_t nearest_seg_idx =
-      autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
         path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
-    return autoware_motion_utils::calcSignedArcLength(
+    return autoware::motion_utils::calcSignedArcLength(
              path.points, current_pose.position, current_seg_idx, input_point.position,
              nearest_seg_idx) -
            base_link2front_;
@@ -434,9 +435,9 @@ TurnSignalInfo TurnSignalDecider::use_prior_turn_signal(
 {
   const auto get_distance = [&](const Pose & input_point) {
     const size_t nearest_seg_idx =
-      autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
         path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
-    return autoware_motion_utils::calcSignedArcLength(
+    return autoware::motion_utils::calcSignedArcLength(
       path.points, current_pose.position, current_seg_idx, input_point.position, nearest_seg_idx);
   };
 
@@ -557,9 +558,9 @@ geometry_msgs::msg::Pose TurnSignalDecider::get_required_end_point(
   for (size_t i = 0; i < centerline.size(); ++i) {
     converted_centerline.at(i).position = lanelet::utils::conversion::toGeomMsgPt(centerline[i]);
   }
-  autoware_motion_utils::insertOrientation(converted_centerline, true);
+  autoware::motion_utils::insertOrientation(converted_centerline, true);
 
-  const double length = autoware_motion_utils::calcArcLength(converted_centerline);
+  const double length = autoware::motion_utils::calcArcLength(converted_centerline);
 
   // Create resampling intervals
   const double resampling_interval = 1.0;
@@ -569,20 +570,21 @@ geometry_msgs::msg::Pose TurnSignalDecider::get_required_end_point(
   }
 
   // Insert terminal point
-  if (length - resampling_arclength.back() < autoware_motion_utils::overlap_threshold) {
+  if (length - resampling_arclength.back() < autoware::motion_utils::overlap_threshold) {
     resampling_arclength.back() = length;
   } else {
     resampling_arclength.push_back(length);
   }
 
   const auto resampled_centerline =
-    autoware_motion_utils::resamplePoseVector(converted_centerline, resampling_arclength);
+    autoware::motion_utils::resamplePoseVector(converted_centerline, resampling_arclength);
 
   const double terminal_yaw = tf2::getYaw(resampled_centerline.back().orientation);
   for (size_t i = 0; i < resampled_centerline.size(); ++i) {
     const double yaw = tf2::getYaw(resampled_centerline.at(i).orientation);
-    const double yaw_diff = autoware_universe_utils::normalizeRadian(yaw - terminal_yaw);
-    if (std::fabs(yaw_diff) < autoware_universe_utils::deg2rad(intersection_angle_threshold_deg_)) {
+    const double yaw_diff = autoware::universe_utils::normalizeRadian(yaw - terminal_yaw);
+    if (
+      std::fabs(yaw_diff) < autoware::universe_utils::deg2rad(intersection_angle_threshold_deg_)) {
       return resampled_centerline.at(i);
     }
   }
@@ -597,9 +599,9 @@ void TurnSignalDecider::set_intersection_info(
 {
   const auto get_distance = [&](const Pose & input_point) {
     const size_t nearest_seg_idx =
-      autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
         path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
-    return autoware_motion_utils::calcSignedArcLength(
+    return autoware::motion_utils::calcSignedArcLength(
       path.points, current_pose.position, current_seg_idx, input_point.position, nearest_seg_idx);
   };
 
@@ -639,9 +641,9 @@ void TurnSignalDecider::initialize_intersection_info()
 geometry_msgs::msg::Quaternion TurnSignalDecider::calc_orientation(
   const Point & src_point, const Point & dst_point)
 {
-  const double pitch = autoware_universe_utils::calcElevationAngle(src_point, dst_point);
-  const double yaw = autoware_universe_utils::calcAzimuthAngle(src_point, dst_point);
-  return autoware_universe_utils::createQuaternionFromRPY(0.0, pitch, yaw);
+  const double pitch = autoware::universe_utils::calcElevationAngle(src_point, dst_point);
+  const double yaw = autoware::universe_utils::calcAzimuthAngle(src_point, dst_point);
+  return autoware::universe_utils::createQuaternionFromRPY(0.0, pitch, yaw);
 }
 
 std::pair<TurnSignalInfo, bool> TurnSignalDecider::getBehaviorTurnSignalInfo(
@@ -652,7 +654,7 @@ std::pair<TurnSignalInfo, bool> TurnSignalDecider::getBehaviorTurnSignalInfo(
   const double current_shift_length, const bool is_driving_forward, const bool egos_lane_is_shifted,
   const bool override_ego_stopped_check, const bool is_pull_out) const
 {
-  using autoware_universe_utils::getPose;
+  using autoware::universe_utils::getPose;
 
   const auto & p = parameters;
   const auto & rh = route_handler;

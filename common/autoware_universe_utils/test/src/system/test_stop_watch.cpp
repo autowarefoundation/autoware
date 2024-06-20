@@ -21,7 +21,7 @@
 
 TEST(system, StopWatch_sec)
 {
-  using autoware_universe_utils::StopWatch;
+  using autoware::universe_utils::StopWatch;
 
   StopWatch<std::chrono::seconds> stop_watch;
 
@@ -50,7 +50,7 @@ TEST(system, StopWatch_sec)
 
 TEST(system, StopWatch_msec)
 {
-  using autoware_universe_utils::StopWatch;
+  using autoware::universe_utils::StopWatch;
 
   StopWatch<std::chrono::milliseconds> stop_watch;
 

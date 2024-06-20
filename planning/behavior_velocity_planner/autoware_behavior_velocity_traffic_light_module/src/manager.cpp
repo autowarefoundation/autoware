@@ -26,7 +26,7 @@
 #include <utility>
 namespace autoware::behavior_velocity_planner
 {
-using autoware_universe_utils::getOrDeclareParameter;
+using autoware::universe_utils::getOrDeclareParameter;
 using lanelet::TrafficLight;
 
 TrafficLightModuleManager::TrafficLightModuleManager(rclcpp::Node & node)

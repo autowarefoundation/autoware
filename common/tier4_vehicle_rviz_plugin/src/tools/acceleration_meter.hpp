@@ -67,8 +67,8 @@ protected:
 private:
   static constexpr float meter_min_acceleration_ = -10.0f;
   static constexpr float meter_max_acceleration_ = 10.0f;
-  static constexpr float meter_min_angle_ = autoware_universe_utils::deg2rad(40.f);
-  static constexpr float meter_max_angle_ = autoware_universe_utils::deg2rad(320.f);
+  static constexpr float meter_min_angle_ = autoware::universe_utils::deg2rad(40.f);
+  static constexpr float meter_max_angle_ = autoware::universe_utils::deg2rad(320.f);
   static constexpr int line_width_ = 2;
   static constexpr int hand_width_ = 4;
   struct Line  // for drawLine

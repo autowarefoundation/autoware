@@ -88,7 +88,8 @@ bool LidarApolloInstanceSegmentation::transformCloud(
         target_frame_, input.header.frame_id, input.header.stamp, std::chrono::milliseconds(500));
       Eigen::Matrix4f affine_matrix =
         tf2::transformToEigen(transform_stamped.transform).matrix().cast<float>();
-      autoware_universe_utils::transformPointCloud(pcl_input, pcl_transformed_cloud, affine_matrix);
+      autoware::universe_utils::transformPointCloud(
+        pcl_input, pcl_transformed_cloud, affine_matrix);
       transformed_cloud.header.frame_id = target_frame_;
       pcl_transformed_cloud.header.frame_id = target_frame_;
     } catch (tf2::TransformException & ex) {
@@ -103,7 +104,7 @@ bool LidarApolloInstanceSegmentation::transformCloud(
   pcl::PointCloud<pcl::PointXYZI> pointcloud_with_z_offset;
   Eigen::Affine3f z_up_translation(Eigen::Translation3f(0, 0, z_offset));
   Eigen::Matrix4f z_up_transform = z_up_translation.matrix();
-  autoware_universe_utils::transformPointCloud(
+  autoware::universe_utils::transformPointCloud(
     pcl_transformed_cloud, pcl_transformed_cloud, z_up_transform);
 
   pcl::toROSMsg(pcl_transformed_cloud, transformed_cloud);

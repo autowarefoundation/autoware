@@ -20,13 +20,13 @@
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
 
-using autoware_universe_utils::appendMarkerArray;
-using autoware_universe_utils::calcOffsetPose;
-using autoware_universe_utils::createDefaultMarker;
-using autoware_universe_utils::createMarkerColor;
-using autoware_universe_utils::createMarkerOrientation;
-using autoware_universe_utils::createMarkerScale;
-using autoware_universe_utils::createPoint;
+using autoware::universe_utils::appendMarkerArray;
+using autoware::universe_utils::calcOffsetPose;
+using autoware::universe_utils::createDefaultMarker;
+using autoware::universe_utils::createMarkerColor;
+using autoware::universe_utils::createMarkerOrientation;
+using autoware::universe_utils::createMarkerScale;
+using autoware::universe_utils::createPoint;
 
 namespace autoware::behavior_velocity_planner
 {
@@ -35,7 +35,7 @@ namespace
 RunOutDebug::TextWithPosition createDebugText(
   const std::string text, const geometry_msgs::msg::Pose pose, const float lateral_offset)
 {
-  const auto offset_pose = autoware_universe_utils::calcOffsetPose(pose, 0, lateral_offset, 0);
+  const auto offset_pose = autoware::universe_utils::calcOffsetPose(pose, 0, lateral_offset, 0);
 
   RunOutDebug::TextWithPosition text_with_position;
   text_with_position.text = text;
@@ -136,7 +136,7 @@ void RunOutDebug::pushDetectionAreaPolygons(const Polygon2d & debug_polygon)
 {
   std::vector<geometry_msgs::msg::Point> ros_points;
   for (const auto & p : debug_polygon.outer()) {
-    ros_points.push_back(autoware_universe_utils::createPoint(p.x(), p.y(), 0.0));
+    ros_points.push_back(autoware::universe_utils::createPoint(p.x(), p.y(), 0.0));
   }
 
   detection_area_polygons_.push_back(ros_points);
@@ -146,7 +146,7 @@ void RunOutDebug::pushMandatoryDetectionAreaPolygons(const Polygon2d & debug_pol
 {
   std::vector<geometry_msgs::msg::Point> ros_points;
   for (const auto & p : debug_polygon.outer()) {
-    ros_points.push_back(autoware_universe_utils::createPoint(p.x(), p.y(), 0.0));
+    ros_points.push_back(autoware::universe_utils::createPoint(p.x(), p.y(), 0.0));
   }
 
   mandatory_detection_area_polygons_.push_back(ros_points);
@@ -186,12 +186,12 @@ visualization_msgs::msg::MarkerArray RunOutDebug::createVisualizationMarkerArray
   return visualization_marker_array;
 }
 
-autoware_motion_utils::VirtualWalls RunOutDebug::createVirtualWalls()
+autoware::motion_utils::VirtualWalls RunOutDebug::createVirtualWalls()
 {
-  autoware_motion_utils::VirtualWalls virtual_walls;
-  autoware_motion_utils::VirtualWall wall;
+  autoware::motion_utils::VirtualWalls virtual_walls;
+  autoware::motion_utils::VirtualWall wall;
   wall.text = "run_out";
-  wall.style = autoware_motion_utils::VirtualWallType::stop;
+  wall.style = autoware::motion_utils::VirtualWallType::stop;
   for (const auto & p : stop_pose_) {
     wall.pose = p;
     virtual_walls.push_back(wall);
@@ -363,7 +363,7 @@ visualization_msgs::msg::MarkerArray RunOutModule::createDebugMarkerArray()
   return debug_ptr_->createVisualizationMarkerArray();
 }
 
-autoware_motion_utils::VirtualWalls RunOutModule::createVirtualWalls()
+autoware::motion_utils::VirtualWalls RunOutModule::createVirtualWalls()
 {
   return debug_ptr_->createVirtualWalls();
 }

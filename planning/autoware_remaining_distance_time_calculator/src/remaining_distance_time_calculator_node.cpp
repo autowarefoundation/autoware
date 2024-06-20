@@ -143,7 +143,7 @@ void RemainingDistanceTimeCalculatorNode::calculate_remaining_distance()
 
   for (auto & llt : remaining_shortest_path) {
     if (remaining_shortest_path.size() == 1) {
-      remaining_distance_ += autoware_universe_utils::calcDistance2d(
+      remaining_distance_ += autoware::universe_utils::calcDistance2d(
         current_vehicle_pose_.position, goal_pose_.position);
       break;
     }

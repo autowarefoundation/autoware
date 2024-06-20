@@ -18,17 +18,17 @@
 
 #include <gtest/gtest.h>
 
-using autoware_universe_utils::Point2d;
-using autoware_universe_utils::Point3d;
+using autoware::universe_utils::Point2d;
+using autoware::universe_utils::Point3d;
 
 constexpr double epsilon = 1e-06;
 
 namespace
 {
+using autoware::universe_utils::createPoint;
+using autoware::universe_utils::createQuaternionFromRPY;
+using autoware::universe_utils::transformPoint;
 using autoware_perception_msgs::msg::PredictedPath;
-using autoware_universe_utils::createPoint;
-using autoware_universe_utils::createQuaternionFromRPY;
-using autoware_universe_utils::transformPoint;
 
 geometry_msgs::msg::Pose createPose(
   double x, double y, double z, double roll, double pitch, double yaw)
@@ -62,9 +62,9 @@ PredictedPath createTestPredictedPath(
 
 TEST(predicted_path_utils, testCalcInterpolatedPose)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::createQuaternionFromYaw;
-  using autoware_universe_utils::deg2rad;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::createQuaternionFromYaw;
+  using autoware::universe_utils::deg2rad;
   using object_recognition_utils::calcInterpolatedPose;
 
   const auto path = createTestPredictedPath(100, 0.1, 1.0);
@@ -128,9 +128,9 @@ TEST(predicted_path_utils, testCalcInterpolatedPose)
 
 TEST(predicted_path_utils, resamplePredictedPath_by_vector)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::createQuaternionFromYaw;
-  using autoware_universe_utils::deg2rad;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::createQuaternionFromYaw;
+  using autoware::universe_utils::deg2rad;
   using object_recognition_utils::resamplePredictedPath;
 
   const auto path = createTestPredictedPath(10, 1.0, 1.0);
@@ -205,9 +205,9 @@ TEST(predicted_path_utils, resamplePredictedPath_by_vector)
 
 TEST(predicted_path_utils, resamplePredictedPath_by_sampling_time)
 {
-  using autoware_universe_utils::createQuaternionFromRPY;
-  using autoware_universe_utils::createQuaternionFromYaw;
-  using autoware_universe_utils::deg2rad;
+  using autoware::universe_utils::createQuaternionFromRPY;
+  using autoware::universe_utils::createQuaternionFromYaw;
+  using autoware::universe_utils::deg2rad;
   using object_recognition_utils::resamplePredictedPath;
 
   const auto path = createTestPredictedPath(10, 1.0, 1.0);

@@ -237,8 +237,8 @@ void LinearMotionTracker::loadDefaultModelParameters(const std::string & path)
   // limitation
   // (TODO): this may be written in another yaml file based on classify result
   const float max_speed_kmph = config["default"]["limit"]["max_speed"].as<float>();  // [km/h]
-  max_vx_ = autoware_universe_utils::kmph2mps(max_speed_kmph);                       // [m/s]
-  max_vy_ = autoware_universe_utils::kmph2mps(max_speed_kmph);                       // [rad/s]
+  max_vx_ = autoware::universe_utils::kmph2mps(max_speed_kmph);                      // [m/s]
+  max_vy_ = autoware::universe_utils::kmph2mps(max_speed_kmph);                      // [rad/s]
 }
 
 bool LinearMotionTracker::predict(const rclcpp::Time & time)
@@ -682,7 +682,7 @@ bool LinearMotionTracker::getTrackedObject(
     const auto origin_yaw = tf2::getYaw(object_.kinematics.pose_with_covariance.pose.orientation);
     const auto ekf_pose_yaw = tf2::getYaw(pose_with_cov.pose.orientation);
     object.shape.footprint =
-      autoware_universe_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
+      autoware::universe_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
   }
 
   return true;

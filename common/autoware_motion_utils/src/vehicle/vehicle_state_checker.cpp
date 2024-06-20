@@ -18,7 +18,7 @@
 
 #include <string>
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 VehicleStopCheckerBase::VehicleStopCheckerBase(rclcpp::Node * node, double buffer_duration)
 : clock_(node->get_clock()), logger_(node->get_logger())
@@ -118,13 +118,13 @@ bool VehicleArrivalChecker::isVehicleStoppedAtStopPoint(const double stop_durati
   }
 
   const auto & p = odometry_ptr_->pose.pose.position;
-  const auto idx = autoware_motion_utils::searchZeroVelocityIndex(trajectory_ptr_->points);
+  const auto idx = autoware::motion_utils::searchZeroVelocityIndex(trajectory_ptr_->points);
 
   if (!idx) {
     return false;
   }
 
-  return std::abs(autoware_motion_utils::calcSignedArcLength(
+  return std::abs(autoware::motion_utils::calcSignedArcLength(
            trajectory_ptr_->points, p, idx.value())) < th_arrived_distance_m;
 }
 
@@ -132,4 +132,4 @@ void VehicleArrivalChecker::onTrajectory(const Trajectory::ConstSharedPtr msg)
 {
   trajectory_ptr_ = msg;
 }
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils

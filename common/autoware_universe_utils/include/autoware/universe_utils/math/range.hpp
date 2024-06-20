@@ -20,7 +20,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 template <class T>
 std::vector<T> arange(const T start, const T stop, const T step = 1)
@@ -73,6 +73,6 @@ std::vector<double> linspace(const T start, const T stop, const size_t num)
   return out;
 }
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__MATH__RANGE_HPP_

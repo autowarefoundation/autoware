@@ -210,10 +210,10 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
   timer_pub_status_ = rclcpp::create_timer(
     this, get_clock(), period_ns, std::bind(&VehicleCmdGate::publishStatus, this));
 
-  logger_configure_ = std::make_unique<autoware_universe_utils::LoggerLevelConfigure>(this);
+  logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
 
   published_time_publisher_ =
-    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
+    std::make_unique<autoware::universe_utils::PublishedTimePublisher>(this);
 
   // Parameter Callback
   set_param_res_ =
@@ -223,7 +223,7 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
 rcl_interfaces::msg::SetParametersResult VehicleCmdGate::onParameter(
   const std::vector<rclcpp::Parameter> & parameters)
 {
-  using autoware_universe_utils::updateParam;
+  using autoware::universe_utils::updateParam;
   // Parameter
   updateParam<bool>(parameters, "use_emergency_handling", use_emergency_handling_);
   updateParam<bool>(

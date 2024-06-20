@@ -33,10 +33,10 @@
 
 namespace
 {
-using autoware_universe_utils::appendMarkerArray;
-using autoware_universe_utils::createMarkerColor;
-using autoware_universe_utils::createMarkerOrientation;
-using autoware_universe_utils::createMarkerScale;
+using autoware::universe_utils::appendMarkerArray;
+using autoware::universe_utils::createMarkerColor;
+using autoware::universe_utils::createMarkerOrientation;
+using autoware::universe_utils::createMarkerScale;
 
 visualization_msgs::msg::MarkerArray createLaneletPolygonsMarkerArray(
   const std::vector<lanelet::CompoundPolygon3d> & polygons, const std::string & ns,
@@ -226,10 +226,10 @@ constexpr std::tuple<float, float, float> light_blue()
 
 namespace autoware::behavior_velocity_planner
 {
-using autoware_universe_utils::appendMarkerArray;
-using autoware_universe_utils::createMarkerColor;
-using autoware_universe_utils::createMarkerOrientation;
-using autoware_universe_utils::createMarkerScale;
+using autoware::universe_utils::appendMarkerArray;
+using autoware::universe_utils::createMarkerColor;
+using autoware::universe_utils::createMarkerOrientation;
+using autoware::universe_utils::createMarkerScale;
 
 visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray()
 {
@@ -424,27 +424,27 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
   return debug_marker_array;
 }
 
-autoware_motion_utils::VirtualWalls IntersectionModule::createVirtualWalls()
+autoware::motion_utils::VirtualWalls IntersectionModule::createVirtualWalls()
 {
-  autoware_motion_utils::VirtualWalls virtual_walls;
-  autoware_motion_utils::VirtualWall wall;
+  autoware::motion_utils::VirtualWalls virtual_walls;
+  autoware::motion_utils::VirtualWall wall;
 
   if (debug_data_.collision_stop_wall_pose) {
-    wall.style = autoware_motion_utils::VirtualWallType::stop;
+    wall.style = autoware::motion_utils::VirtualWallType::stop;
     wall.text = "intersection";
     wall.ns = "intersection" + std::to_string(module_id_) + "_";
     wall.pose = debug_data_.collision_stop_wall_pose.value();
     virtual_walls.push_back(wall);
   }
   if (debug_data_.occlusion_first_stop_wall_pose) {
-    wall.style = autoware_motion_utils::VirtualWallType::stop;
+    wall.style = autoware::motion_utils::VirtualWallType::stop;
     wall.text = "intersection";
     wall.ns = "intersection_occlusion_first_stop" + std::to_string(module_id_) + "_";
     wall.pose = debug_data_.occlusion_first_stop_wall_pose.value();
     virtual_walls.push_back(wall);
   }
   if (debug_data_.occlusion_stop_wall_pose) {
-    wall.style = autoware_motion_utils::VirtualWallType::stop;
+    wall.style = autoware::motion_utils::VirtualWallType::stop;
     wall.text = "intersection_occlusion";
     if (debug_data_.static_occlusion_with_traffic_light_timeout) {
       std::stringstream timeout;
@@ -457,7 +457,7 @@ autoware_motion_utils::VirtualWalls IntersectionModule::createVirtualWalls()
     virtual_walls.push_back(wall);
   }
   if (debug_data_.absence_traffic_light_creep_wall) {
-    wall.style = autoware_motion_utils::VirtualWallType::slowdown;
+    wall.style = autoware::motion_utils::VirtualWallType::slowdown;
     wall.text = "intersection_occlusion";
     wall.ns = "intersection_occlusion" + std::to_string(module_id_) + "_";
     wall.pose = debug_data_.absence_traffic_light_creep_wall.value();
@@ -483,13 +483,13 @@ visualization_msgs::msg::MarkerArray MergeFromPrivateRoadModule::createDebugMark
   return debug_marker_array;
 }
 
-autoware_motion_utils::VirtualWalls MergeFromPrivateRoadModule::createVirtualWalls()
+autoware::motion_utils::VirtualWalls MergeFromPrivateRoadModule::createVirtualWalls()
 {
-  autoware_motion_utils::VirtualWalls virtual_walls;
+  autoware::motion_utils::VirtualWalls virtual_walls;
   const auto state = state_machine_.getState();
   if (state == StateMachine::State::STOP) {
-    autoware_motion_utils::VirtualWall wall;
-    wall.style = autoware_motion_utils::VirtualWallType::stop;
+    autoware::motion_utils::VirtualWall wall;
+    wall.style = autoware::motion_utils::VirtualWallType::stop;
     wall.pose = debug_data_.virtual_wall_pose;
     wall.text = "merge_from_private_road";
     virtual_walls.push_back(wall);

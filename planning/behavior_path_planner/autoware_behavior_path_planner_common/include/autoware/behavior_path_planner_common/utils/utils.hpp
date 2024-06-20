@@ -47,8 +47,8 @@ using autoware_perception_msgs::msg::PredictedObjects;
 using autoware_perception_msgs::msg::PredictedPath;
 
 using autoware::route_handler::RouteHandler;
-using autoware_universe_utils::LinearRing2d;
-using autoware_universe_utils::Polygon2d;
+using autoware::universe_utils::LinearRing2d;
+using autoware::universe_utils::Polygon2d;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Vector3;
@@ -93,11 +93,11 @@ FrenetPoint convertToFrenetPoint(
   FrenetPoint frenet_point;
 
   const double longitudinal_length =
-    autoware_motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, search_point_geom);
+    autoware::motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, search_point_geom);
   frenet_point.length =
-    autoware_motion_utils::calcSignedArcLength(points, 0, seg_idx) + longitudinal_length;
+    autoware::motion_utils::calcSignedArcLength(points, 0, seg_idx) + longitudinal_length;
   frenet_point.distance =
-    autoware_motion_utils::calcLateralOffset(points, search_point_geom, seg_idx);
+    autoware::motion_utils::calcLateralOffset(points, search_point_geom, seg_idx);
 
   return frenet_point;
 }
@@ -147,7 +147,7 @@ bool checkCollisionWithExtraStoppingMargin(
  * @return Has collision or not
  */
 bool checkCollisionBetweenPathFootprintsAndObjects(
-  const autoware_universe_utils::LinearRing2d & vehicle_footprint, const PathWithLaneId & ego_path,
+  const autoware::universe_utils::LinearRing2d & vehicle_footprint, const PathWithLaneId & ego_path,
   const PredictedObjects & dynamic_objects, const double margin);
 
 /**
@@ -155,7 +155,7 @@ bool checkCollisionBetweenPathFootprintsAndObjects(
  * @return Has collision or not
  */
 bool checkCollisionBetweenFootprintAndObjects(
-  const autoware_universe_utils::LinearRing2d & vehicle_footprint, const Pose & ego_pose,
+  const autoware::universe_utils::LinearRing2d & vehicle_footprint, const Pose & ego_pose,
   const PredictedObjects & dynamic_objects, const double margin);
 
 /**
@@ -344,12 +344,12 @@ size_t findNearestSegmentIndex(
   const double yaw_threshold)
 {
   const auto nearest_idx =
-    autoware_motion_utils::findNearestSegmentIndex(points, pose, dist_threshold, yaw_threshold);
+    autoware::motion_utils::findNearestSegmentIndex(points, pose, dist_threshold, yaw_threshold);
   if (nearest_idx) {
     return nearest_idx.value();
   }
 
-  return autoware_motion_utils::findNearestSegmentIndex(points, pose.position);
+  return autoware::motion_utils::findNearestSegmentIndex(points, pose.position);
 }
 }  // namespace autoware::behavior_path_planner::utils
 

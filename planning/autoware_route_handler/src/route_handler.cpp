@@ -110,7 +110,7 @@ PathWithLaneId removeOverlappingPoints(const PathWithLaneId & input_path)
 
     constexpr double min_dist = 0.001;
     if (
-      autoware_universe_utils::calcDistance3d(filtered_path.points.back().point, pt.point) <
+      autoware::universe_utils::calcDistance3d(filtered_path.points.back().point, pt.point) <
       min_dist) {
       filtered_path.points.back().lane_ids.push_back(pt.lane_ids.front());
       filtered_path.points.back().point.longitudinal_velocity_mps = std::min(
@@ -1725,14 +1725,14 @@ PathWithLaneId RouteHandler::getCenterLinePath(
     double angle{0.0};
     const auto & pts = reference_path.points;
     if (i + 1 < reference_path.points.size()) {
-      angle = autoware_universe_utils::calcAzimuthAngle(
+      angle = autoware::universe_utils::calcAzimuthAngle(
         pts.at(i).point.pose.position, pts.at(i + 1).point.pose.position);
     } else if (i != 0) {
-      angle = autoware_universe_utils::calcAzimuthAngle(
+      angle = autoware::universe_utils::calcAzimuthAngle(
         pts.at(i - 1).point.pose.position, pts.at(i).point.pose.position);
     }
     reference_path.points.at(i).point.pose.orientation =
-      autoware_universe_utils::createQuaternionFromYaw(angle);
+      autoware::universe_utils::createQuaternionFromYaw(angle);
   }
 
   return reference_path;

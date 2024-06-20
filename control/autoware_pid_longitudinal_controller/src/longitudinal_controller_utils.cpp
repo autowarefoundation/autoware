@@ -58,12 +58,12 @@ bool isValidTrajectory(const Trajectory & traj)
 double calcStopDistance(
   const Pose & current_pose, const Trajectory & traj, const double max_dist, const double max_yaw)
 {
-  const auto stop_idx_opt = autoware_motion_utils::searchZeroVelocityIndex(traj.points);
+  const auto stop_idx_opt = autoware::motion_utils::searchZeroVelocityIndex(traj.points);
 
   const size_t end_idx = stop_idx_opt ? *stop_idx_opt : traj.points.size() - 1;
-  const size_t seg_idx = autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+  const size_t seg_idx = autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     traj.points, current_pose, max_dist, max_yaw);
-  const double signed_length_on_traj = autoware_motion_utils::calcSignedArcLength(
+  const double signed_length_on_traj = autoware::motion_utils::calcSignedArcLength(
     traj.points, current_pose.position, seg_idx, traj.points.at(end_idx).pose.position,
     std::min(end_idx, traj.points.size() - 2));
 
@@ -93,7 +93,7 @@ double getPitchByTraj(
 
   const auto [prev_idx, next_idx] = [&]() {
     for (size_t i = start_idx + 1; i < trajectory.points.size(); ++i) {
-      const double dist = autoware_universe_utils::calcDistance3d(
+      const double dist = autoware::universe_utils::calcDistance3d(
         trajectory.points.at(start_idx), trajectory.points.at(i));
       if (dist > wheel_base) {
         // calculate pitch from trajectory between rear wheel (nearest) and front center (i)
@@ -105,7 +105,7 @@ double getPitchByTraj(
       std::min(start_idx, trajectory.points.size() - 2), trajectory.points.size() - 1);
   }();
 
-  return autoware_universe_utils::calcElevationAngle(
+  return autoware::universe_utils::calcElevationAngle(
     trajectory.points.at(prev_idx).pose.position, trajectory.points.at(next_idx).pose.position);
 }
 
@@ -166,7 +166,7 @@ geometry_msgs::msg::Pose findTrajectoryPoseAfterDistance(
   double remain_dist = distance;
   geometry_msgs::msg::Pose p = trajectory.points.back().pose;
   for (size_t i = src_idx; i < trajectory.points.size() - 1; ++i) {
-    const double dist = autoware_universe_utils::calcDistance3d(
+    const double dist = autoware::universe_utils::calcDistance3d(
       trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose);
     if (remain_dist < dist) {
       if (remain_dist <= 0.0) {

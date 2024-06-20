@@ -161,7 +161,7 @@ geometry_msgs::msg::Pose LandmarkManager::calculate_new_self_pose(
 
     // convert base_link to map
     const Pose detected_landmark_on_map =
-      autoware_universe_utils::transformPose(detected_landmark_on_base_link, self_pose);
+      autoware::universe_utils::transformPose(detected_landmark_on_base_link, self_pose);
 
     // match to map
     if (landmarks_map_.count(landmark.id) == 0) {
@@ -171,7 +171,7 @@ geometry_msgs::msg::Pose LandmarkManager::calculate_new_self_pose(
     // check all poses
     for (const Pose mapped_landmark_on_map : landmarks_map_.at(landmark.id)) {
       // check distance
-      const double curr_distance = autoware_universe_utils::calcDistance3d(
+      const double curr_distance = autoware::universe_utils::calcDistance3d(
         mapped_landmark_on_map.position, detected_landmark_on_map.position);
       if (curr_distance > min_distance) {
         continue;

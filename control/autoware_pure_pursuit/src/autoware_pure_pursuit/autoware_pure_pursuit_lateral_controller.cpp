@@ -141,7 +141,7 @@ TrajectoryPoint PurePursuitLateralController::calcNextPose(
   const double ds, TrajectoryPoint & point, Lateral cmd) const
 {
   geometry_msgs::msg::Transform transform;
-  transform.translation = autoware_universe_utils::createTranslation(ds, 0.0, 0.0);
+  transform.translation = autoware::universe_utils::createTranslation(ds, 0.0, 0.0);
   transform.rotation =
     planning_utils::getQuaternionFromYaw(((tan(cmd.steering_tire_angle) * ds) / param_.wheel_base));
   TrajectoryPoint output_p;
@@ -158,17 +158,17 @@ void PurePursuitLateralController::setResampledTrajectory()
 {
   // Interpolate with constant interval distance.
   std::vector<double> out_arclength;
-  const auto input_tp_array = autoware_motion_utils::convertToTrajectoryPointArray(trajectory_);
-  const auto traj_length = autoware_motion_utils::calcArcLength(input_tp_array);
+  const auto input_tp_array = autoware::motion_utils::convertToTrajectoryPointArray(trajectory_);
+  const auto traj_length = autoware::motion_utils::calcArcLength(input_tp_array);
   for (double s = 0; s < traj_length; s += param_.resampling_ds) {
     out_arclength.push_back(s);
   }
   trajectory_resampled_ = std::make_shared<autoware_planning_msgs::msg::Trajectory>(
-    autoware_motion_utils::resampleTrajectory(
-      autoware_motion_utils::convertToTrajectory(input_tp_array), out_arclength));
+    autoware::motion_utils::resampleTrajectory(
+      autoware::motion_utils::convertToTrajectory(input_tp_array), out_arclength));
   trajectory_resampled_->points.back() = trajectory_.points.back();
   trajectory_resampled_->header = trajectory_.header;
-  output_tp_array_ = autoware_motion_utils::convertToTrajectoryPointArray(*trajectory_resampled_);
+  output_tp_array_ = autoware::motion_utils::convertToTrajectoryPointArray(*trajectory_resampled_);
 }
 
 double PurePursuitLateralController::calcCurvature(const size_t closest_idx)
@@ -202,10 +202,10 @@ double PurePursuitLateralController::calcCurvature(const size_t closest_idx)
   double current_curvature = 0.0;
 
   try {
-    current_curvature = autoware_universe_utils::calcCurvature(
-      autoware_universe_utils::getPoint(trajectory_resampled_->points.at(prev_idx)),
-      autoware_universe_utils::getPoint(trajectory_resampled_->points.at(closest_idx)),
-      autoware_universe_utils::getPoint(trajectory_resampled_->points.at(next_idx)));
+    current_curvature = autoware::universe_utils::calcCurvature(
+      autoware::universe_utils::getPoint(trajectory_resampled_->points.at(prev_idx)),
+      autoware::universe_utils::getPoint(trajectory_resampled_->points.at(closest_idx)),
+      autoware::universe_utils::getPoint(trajectory_resampled_->points.at(next_idx)));
   } catch (std::exception const & e) {
     // ...code that handles the error...
     RCLCPP_WARN(rclcpp::get_logger("pure_pursuit"), "%s", e.what());
@@ -268,7 +268,7 @@ void PurePursuitLateralController::averageFilterTrajectory(
 
 boost::optional<Trajectory> PurePursuitLateralController::generatePredictedTrajectory()
 {
-  const auto closest_idx_result = autoware_motion_utils::findNearestIndex(
+  const auto closest_idx_result = autoware::motion_utils::findNearestIndex(
     output_tp_array_, current_odometry_.pose.pose, 3.0, M_PI_4);
 
   if (!closest_idx_result) {
@@ -427,7 +427,7 @@ boost::optional<PpOutput> PurePursuitLateralController::calcTargetCurvature(
   // Calculate target point for velocity/acceleration
 
   const auto closest_idx_result =
-    autoware_motion_utils::findNearestIndex(output_tp_array_, pose, 3.0, M_PI_4);
+    autoware::motion_utils::findNearestIndex(output_tp_array_, pose, 3.0, M_PI_4);
   if (!closest_idx_result) {
     RCLCPP_ERROR(logger_, "cannot find closest waypoint");
     return {};
@@ -439,7 +439,7 @@ boost::optional<PpOutput> PurePursuitLateralController::calcTargetCurvature(
   // calculate the lateral error
 
   const double lateral_error =
-    autoware_motion_utils::calcLateralOffset(trajectory_resampled_->points, pose.position);
+    autoware::motion_utils::calcLateralOffset(trajectory_resampled_->points, pose.position);
 
   // calculate the current curvature
 

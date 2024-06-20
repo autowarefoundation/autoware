@@ -21,7 +21,7 @@
 #include <pcl/common/transforms.h>
 #include <pcl/point_cloud.h>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 template <typename PointT>
 void transformPointCloud(
@@ -46,6 +46,6 @@ void transformPointCloud(
     pcl::transformPointCloud(cloud_in, cloud_out, transform);
   }
 }
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__TRANSFORM__TRANSFORMS_HPP_

@@ -78,9 +78,9 @@ public:
   //!< @brief subscriber for vehicle command
   rclcpp::Subscription<Control>::SharedPtr sub_control_cmd_;
   // polling subscribers
-  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> sub_odometry_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Odometry> sub_odometry_{
     this, "~/input/odometry"};
-  autoware_universe_utils::InterProcessPollingSubscriber<Steering> sub_steering_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Steering> sub_steering_{
     this, "~/input/steering"};
 
   rclcpp::TimerBase::SharedPtr timer_;
@@ -117,7 +117,7 @@ public:
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_pub_steer_pid_;
   DebugValues debug_steer_;
 
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 };
 }  // namespace autoware::raw_vehicle_cmd_converter
 

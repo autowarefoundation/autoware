@@ -19,12 +19,12 @@
 
 #include <cmath>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 
 float sin(float radian)
 {
-  float degree = radian * (180.f / static_cast<float>(autoware_universe_utils::pi)) *
+  float degree = radian * (180.f / static_cast<float>(autoware::universe_utils::pi)) *
                  (discrete_arcs_num_360 / 360.f);
   size_t idx =
     (static_cast<int>(std::round(degree)) % discrete_arcs_num_360 + discrete_arcs_num_360) %
@@ -46,13 +46,13 @@ float sin(float radian)
 
 float cos(float radian)
 {
-  return sin(radian + static_cast<float>(autoware_universe_utils::pi) / 2.f);
+  return sin(radian + static_cast<float>(autoware::universe_utils::pi) / 2.f);
 }
 
 std::pair<float, float> sin_and_cos(float radian)
 {
   constexpr float tmp =
-    (180.f / static_cast<float>(autoware_universe_utils::pi)) * (discrete_arcs_num_360 / 360.f);
+    (180.f / static_cast<float>(autoware::universe_utils::pi)) * (discrete_arcs_num_360 / 360.f);
   const float degree = radian * tmp;
   size_t idx =
     (static_cast<int>(std::round(degree)) % discrete_arcs_num_360 + discrete_arcs_num_360) %
@@ -72,4 +72,4 @@ std::pair<float, float> sin_and_cos(float radian)
   }
 }
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils

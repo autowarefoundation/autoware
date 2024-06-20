@@ -81,7 +81,7 @@ using nav_msgs::msg::Odometry;
 using EngageMsg = autoware_vehicle_msgs::msg::Engage;
 using EngageSrv = tier4_external_api_msgs::srv::Engage;
 
-using autoware_motion_utils::VehicleStopChecker;
+using autoware::motion_utils::VehicleStopChecker;
 struct Commands
 {
   Control control;
@@ -155,31 +155,31 @@ private:
   // Subscriber for auto
   Commands auto_commands_;
   rclcpp::Subscription<Control>::SharedPtr auto_control_cmd_sub_;
-  autoware_universe_utils::InterProcessPollingSubscriber<TurnIndicatorsCommand>
+  autoware::universe_utils::InterProcessPollingSubscriber<TurnIndicatorsCommand>
     auto_turn_indicator_cmd_sub_{this, "input/auto/turn_indicators_cmd"};
-  autoware_universe_utils::InterProcessPollingSubscriber<HazardLightsCommand>
+  autoware::universe_utils::InterProcessPollingSubscriber<HazardLightsCommand>
     auto_hazard_light_cmd_sub_{this, "input/auto/hazard_lights_cmd"};
-  autoware_universe_utils::InterProcessPollingSubscriber<GearCommand> auto_gear_cmd_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<GearCommand> auto_gear_cmd_sub_{
     this, "input/auto/gear_cmd"};
   void onAutoCtrlCmd(Control::ConstSharedPtr msg);
 
   // Subscription for external
   Commands remote_commands_;
   rclcpp::Subscription<Control>::SharedPtr remote_control_cmd_sub_;
-  autoware_universe_utils::InterProcessPollingSubscriber<TurnIndicatorsCommand>
+  autoware::universe_utils::InterProcessPollingSubscriber<TurnIndicatorsCommand>
     remote_turn_indicator_cmd_sub_{this, "input/external/turn_indicators_cmd"};
-  autoware_universe_utils::InterProcessPollingSubscriber<HazardLightsCommand>
+  autoware::universe_utils::InterProcessPollingSubscriber<HazardLightsCommand>
     remote_hazard_light_cmd_sub_{this, "input/external/hazard_lights_cmd"};
-  autoware_universe_utils::InterProcessPollingSubscriber<GearCommand> remote_gear_cmd_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<GearCommand> remote_gear_cmd_sub_{
     this, "input/external/gear_cmd"};
   void onRemoteCtrlCmd(Control::ConstSharedPtr msg);
 
   // Subscription for emergency
   Commands emergency_commands_;
   rclcpp::Subscription<Control>::SharedPtr emergency_control_cmd_sub_;
-  autoware_universe_utils::InterProcessPollingSubscriber<HazardLightsCommand>
+  autoware::universe_utils::InterProcessPollingSubscriber<HazardLightsCommand>
     emergency_hazard_light_cmd_sub_{this, "input/emergency/hazard_lights_cmd"};
-  autoware_universe_utils::InterProcessPollingSubscriber<GearCommand> emergency_gear_cmd_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<GearCommand> emergency_gear_cmd_sub_{
     this, "input/emergency/gear_cmd"};
   void onEmergencyCtrlCmd(Control::ConstSharedPtr msg);
 
@@ -261,9 +261,9 @@ private:
   MarkerArray createMarkerArray(const IsFilterActivated & filter_activated);
   void publishMarkers(const IsFilterActivated & filter_activated);
 
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 
 }  // namespace autoware::vehicle_cmd_gate

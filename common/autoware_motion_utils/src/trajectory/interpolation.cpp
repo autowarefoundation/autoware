@@ -22,7 +22,7 @@ using autoware_planning_msgs::msg::TrajectoryPoint;
 using tier4_planning_msgs::msg::PathPointWithLaneId;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 TrajectoryPoint calcInterpolatedPoint(
   const Trajectory & trajectory, const geometry_msgs::msg::Pose & target_pose,
@@ -37,14 +37,15 @@ TrajectoryPoint calcInterpolatedPoint(
     return trajectory.points.front();
   }
 
-  const size_t segment_idx = autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    trajectory.points, target_pose, dist_threshold, yaw_threshold);
+  const size_t segment_idx =
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      trajectory.points, target_pose, dist_threshold, yaw_threshold);
 
   // Calculate interpolation ratio
   const auto & curr_pt = trajectory.points.at(segment_idx);
   const auto & next_pt = trajectory.points.at(segment_idx + 1);
-  const auto v1 = autoware_universe_utils::point2tfVector(curr_pt, next_pt);
-  const auto v2 = autoware_universe_utils::point2tfVector(curr_pt, target_pose);
+  const auto v1 = autoware::universe_utils::point2tfVector(curr_pt, next_pt);
+  const auto v2 = autoware::universe_utils::point2tfVector(curr_pt, target_pose);
   if (v1.length2() < 1e-3) {
     return curr_pt;
   }
@@ -57,7 +58,7 @@ TrajectoryPoint calcInterpolatedPoint(
 
   // pose interpolation
   interpolated_point.pose =
-    autoware_universe_utils::calcInterpolatedPose(curr_pt, next_pt, clamped_ratio);
+    autoware::universe_utils::calcInterpolatedPose(curr_pt, next_pt, clamped_ratio);
 
   // twist interpolation
   if (use_zero_order_hold_for_twist) {
@@ -105,14 +106,15 @@ PathPointWithLaneId calcInterpolatedPoint(
     return path.points.front();
   }
 
-  const size_t segment_idx = autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    path.points, target_pose, dist_threshold, yaw_threshold);
+  const size_t segment_idx =
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      path.points, target_pose, dist_threshold, yaw_threshold);
 
   // Calculate interpolation ratio
   const auto & curr_pt = path.points.at(segment_idx);
   const auto & next_pt = path.points.at(segment_idx + 1);
-  const auto v1 = autoware_universe_utils::point2tfVector(curr_pt.point, next_pt.point);
-  const auto v2 = autoware_universe_utils::point2tfVector(curr_pt.point, target_pose);
+  const auto v1 = autoware::universe_utils::point2tfVector(curr_pt.point, next_pt.point);
+  const auto v2 = autoware::universe_utils::point2tfVector(curr_pt.point, target_pose);
   if (v1.length2() < 1e-3) {
     return curr_pt;
   }
@@ -125,7 +127,7 @@ PathPointWithLaneId calcInterpolatedPoint(
 
   // pose interpolation
   interpolated_point.point.pose =
-    autoware_universe_utils::calcInterpolatedPose(curr_pt.point, next_pt.point, clamped_ratio);
+    autoware::universe_utils::calcInterpolatedPose(curr_pt.point, next_pt.point, clamped_ratio);
 
   // twist interpolation
   if (use_zero_order_hold_for_twist) {
@@ -145,4 +147,4 @@ PathPointWithLaneId calcInterpolatedPoint(
 
   return interpolated_point;
 }
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils

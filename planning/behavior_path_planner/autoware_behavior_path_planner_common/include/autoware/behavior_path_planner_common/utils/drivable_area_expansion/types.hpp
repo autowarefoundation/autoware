@@ -36,13 +36,13 @@ using geometry_msgs::msg::Pose;
 using tier4_planning_msgs::msg::PathPointWithLaneId;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
-using autoware_universe_utils::LineString2d;
-using autoware_universe_utils::MultiLineString2d;
-using autoware_universe_utils::MultiPoint2d;
-using autoware_universe_utils::MultiPolygon2d;
-using autoware_universe_utils::Point2d;
-using autoware_universe_utils::Polygon2d;
-using autoware_universe_utils::Segment2d;
+using autoware::universe_utils::LineString2d;
+using autoware::universe_utils::MultiLineString2d;
+using autoware::universe_utils::MultiPoint2d;
+using autoware::universe_utils::MultiPolygon2d;
+using autoware::universe_utils::Point2d;
+using autoware::universe_utils::Polygon2d;
+using autoware::universe_utils::Segment2d;
 
 using SegmentRtree = boost::geometry::index::rtree<Segment2d, boost::geometry::index::rstar<16>>;
 

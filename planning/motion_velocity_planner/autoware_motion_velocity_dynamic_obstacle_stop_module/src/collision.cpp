@@ -29,7 +29,7 @@ namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
 
 std::optional<geometry_msgs::msg::Point> find_closest_collision_point(
   const EgoData & ego_data, const geometry_msgs::msg::Pose & object_pose,
-  const autoware_universe_utils::Polygon2d & object_footprint)
+  const autoware::universe_utils::Polygon2d & object_footprint)
 {
   std::optional<geometry_msgs::msg::Point> closest_collision_point;
   auto closest_dist = std::numeric_limits<double>::max();
@@ -40,15 +40,15 @@ std::optional<geometry_msgs::msg::Point> find_closest_collision_point(
     const auto traj_idx = rough_collision.second;
     const auto & ego_footprint = ego_data.trajectory_footprints[traj_idx];
     const auto & ego_pose = ego_data.trajectory[traj_idx].pose;
-    const auto angle_diff = autoware_universe_utils::normalizeRadian(
+    const auto angle_diff = autoware::universe_utils::normalizeRadian(
       tf2::getYaw(ego_pose.orientation) - tf2::getYaw(object_pose.orientation));
     if (std::abs(angle_diff) > (M_PI_2 + M_PI_4)) {  // TODO(Maxime): make this angle a parameter
-      autoware_universe_utils::MultiPoint2d collision_points;
+      autoware::universe_utils::MultiPoint2d collision_points;
       boost::geometry::intersection(
         object_footprint.outer(), ego_footprint.outer(), collision_points);
       for (const auto & coll_p : collision_points) {
         auto p = geometry_msgs::msg::Point().set__x(coll_p.x()).set__y(coll_p.y());
-        const auto dist_to_ego = autoware_motion_utils::calcSignedArcLength(
+        const auto dist_to_ego = autoware::motion_utils::calcSignedArcLength(
           ego_data.trajectory, ego_data.pose.position, p);
         if (dist_to_ego < closest_dist) {
           closest_dist = dist_to_ego;
@@ -63,7 +63,7 @@ std::optional<geometry_msgs::msg::Point> find_closest_collision_point(
 std::vector<Collision> find_collisions(
   const EgoData & ego_data,
   const std::vector<autoware_perception_msgs::msg::PredictedObject> & objects,
-  const autoware_universe_utils::MultiPolygon2d & object_forward_footprints)
+  const autoware::universe_utils::MultiPolygon2d & object_forward_footprints)
 {
   std::vector<Collision> collisions;
   for (auto object_idx = 0UL; object_idx < objects.size(); ++object_idx) {
@@ -72,7 +72,7 @@ std::vector<Collision> find_collisions(
     const auto collision = find_closest_collision_point(ego_data, object_pose, object_footprint);
     if (collision) {
       Collision c;
-      c.object_uuid = autoware_universe_utils::toHexString(objects[object_idx].object_id);
+      c.object_uuid = autoware::universe_utils::toHexString(objects[object_idx].object_id);
       c.point = *collision;
       collisions.push_back(c);
     }

@@ -50,14 +50,14 @@ void box3DToDetectedObject(
 
   // pose and shape
   // mmdet3d yaw format to ros yaw format
-  float yaw = -box3d.yaw - autoware_universe_utils::pi / 2;
+  float yaw = -box3d.yaw - autoware::universe_utils::pi / 2;
   obj.kinematics.pose_with_covariance.pose.position =
-    autoware_universe_utils::createPoint(box3d.x, box3d.y, box3d.z);
+    autoware::universe_utils::createPoint(box3d.x, box3d.y, box3d.z);
   obj.kinematics.pose_with_covariance.pose.orientation =
-    autoware_universe_utils::createQuaternionFromYaw(yaw);
+    autoware::universe_utils::createQuaternionFromYaw(yaw);
   obj.shape.type = autoware_perception_msgs::msg::Shape::BOUNDING_BOX;
   obj.shape.dimensions =
-    autoware_universe_utils::createTranslation(box3d.length, box3d.width, box3d.height);
+    autoware::universe_utils::createTranslation(box3d.length, box3d.width, box3d.height);
   if (has_variance) {
     obj.kinematics.has_position_covariance = has_variance;
     obj.kinematics.pose_with_covariance.covariance = convertPoseCovarianceMatrix(box3d);
@@ -102,7 +102,7 @@ uint8_t getSemanticType(const std::string & class_name)
 
 std::array<double, 36> convertPoseCovarianceMatrix(const Box3D & box3d)
 {
-  using POSE_IDX = autoware_universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  using POSE_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
   std::array<double, 36> pose_covariance{};
   pose_covariance[POSE_IDX::X_X] = box3d.x_variance;
   pose_covariance[POSE_IDX::Y_Y] = box3d.y_variance;
@@ -113,7 +113,7 @@ std::array<double, 36> convertPoseCovarianceMatrix(const Box3D & box3d)
 
 std::array<double, 36> convertTwistCovarianceMatrix(const Box3D & box3d)
 {
-  using POSE_IDX = autoware_universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  using POSE_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
   std::array<double, 36> twist_covariance{};
   twist_covariance[POSE_IDX::X_X] = box3d.vel_x_variance;
   twist_covariance[POSE_IDX::Y_Y] = box3d.vel_y_variance;

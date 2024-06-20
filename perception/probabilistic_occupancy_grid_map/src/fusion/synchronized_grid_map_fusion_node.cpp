@@ -142,8 +142,8 @@ GridMapFusionNode::GridMapFusionNode(const rclcpp::NodeOptions & node_options)
 
   // debug tools
   {
-    using autoware_universe_utils::DebugPublisher;
-    using autoware_universe_utils::StopWatch;
+    using autoware::universe_utils::DebugPublisher;
+    using autoware::universe_utils::StopWatch;
     stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
     debug_publisher_ptr_ = std::make_unique<DebugPublisher>(this, "synchronized_grid_map_fusion");
     stop_watch_ptr_->tic("cyclic_time");

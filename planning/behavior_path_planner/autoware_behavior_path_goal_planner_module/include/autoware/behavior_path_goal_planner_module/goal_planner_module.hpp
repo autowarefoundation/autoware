@@ -69,7 +69,7 @@ using autoware::behavior_path_planner::utils::path_safety_checker::ObjectsFilter
 using autoware::behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
 using autoware::behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
 using autoware::behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
-using autoware_universe_utils::Polygon2d;
+using autoware::universe_utils::Polygon2d;
 
 #define DEFINE_SETTER_WITH_MUTEX(TYPE, NAME)                  \
 public:                                                       \
@@ -387,7 +387,7 @@ private:
     std::shared_ptr<EgoPredictedPathParams> ego_predicted_path_params;
     std::shared_ptr<ObjectsFilteringParams> objects_filtering_params;
     std::shared_ptr<SafetyCheckParams> safety_check_params;
-    autoware_universe_utils::LinearRing2d vehicle_footprint;
+    autoware::universe_utils::LinearRing2d vehicle_footprint;
 
     PlannerData planner_data;
     ModuleStatus current_status;
@@ -409,7 +409,7 @@ private:
       const PlannerData & planner_data, const ModuleStatus & current_status,
       const BehaviorModuleOutput & previous_module_output,
       const std::shared_ptr<GoalSearcherBase> goal_searcher_,
-      const autoware_universe_utils::LinearRing2d & vehicle_footprint);
+      const autoware::universe_utils::LinearRing2d & vehicle_footprint);
 
   private:
     void initializeOccupancyGridMap(
@@ -484,7 +484,7 @@ private:
   std::deque<nav_msgs::msg::Odometry::ConstSharedPtr> odometry_buffer_stopped_;
   std::deque<nav_msgs::msg::Odometry::ConstSharedPtr> odometry_buffer_stuck_;
 
-  autoware_universe_utils::LinearRing2d vehicle_footprint_;
+  autoware::universe_utils::LinearRing2d vehicle_footprint_;
 
   std::recursive_mutex mutex_;
   // TODO(Mamoru Sobue): isSafePath() modifies ThreadSafeData::check_collision, avoid this mutable

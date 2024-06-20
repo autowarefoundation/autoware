@@ -30,7 +30,7 @@
 
 namespace autoware::behavior_velocity_planner
 {
-using autoware_universe_utils::getOrDeclareParameter;
+using autoware::universe_utils::getOrDeclareParameter;
 using lanelet::autoware::DetectionArea;
 
 DetectionAreaModuleManager::DetectionAreaModuleManager(rclcpp::Node & node)

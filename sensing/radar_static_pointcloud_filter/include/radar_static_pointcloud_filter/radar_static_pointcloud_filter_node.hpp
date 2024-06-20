@@ -51,7 +51,7 @@ private:
   // Subscriber
   message_filters::Subscriber<RadarScan> sub_radar_{};
   message_filters::Subscriber<Odometry> sub_odometry_{};
-  std::shared_ptr<autoware_universe_utils::TransformListener> transform_listener_;
+  std::shared_ptr<autoware::universe_utils::TransformListener> transform_listener_;
 
   using SyncPolicy = message_filters::sync_policies::ApproximateTime<RadarScan, Odometry>;
   using Sync = message_filters::Synchronizer<SyncPolicy>;

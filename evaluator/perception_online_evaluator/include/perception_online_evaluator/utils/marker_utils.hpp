@@ -30,8 +30,8 @@
 namespace marker_utils
 {
 
+using autoware::universe_utils::Polygon2d;
 using autoware_perception_msgs::msg::PredictedObject;
-using autoware_universe_utils::Polygon2d;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using std_msgs::msg::ColorRGBA;

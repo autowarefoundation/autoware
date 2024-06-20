@@ -28,15 +28,15 @@
 #include <memory>
 #include <vector>
 
-using autoware_motion_utils::createDeletedStopVirtualWallMarker;
-using autoware_motion_utils::createStopVirtualWallMarker;
-using autoware_universe_utils::appendMarkerArray;
-using autoware_universe_utils::calcOffsetPose;
-using autoware_universe_utils::createDefaultMarker;
-using autoware_universe_utils::createMarkerColor;
-using autoware_universe_utils::createMarkerOrientation;
-using autoware_universe_utils::createMarkerScale;
-using autoware_universe_utils::createPoint;
+using autoware::motion_utils::createDeletedStopVirtualWallMarker;
+using autoware::motion_utils::createStopVirtualWallMarker;
+using autoware::universe_utils::appendMarkerArray;
+using autoware::universe_utils::calcOffsetPose;
+using autoware::universe_utils::createDefaultMarker;
+using autoware::universe_utils::createMarkerColor;
+using autoware::universe_utils::createMarkerOrientation;
+using autoware::universe_utils::createMarkerScale;
+using autoware::universe_utils::createPoint;
 
 namespace autoware::motion::control::predicted_path_checker
 {
@@ -51,7 +51,7 @@ PredictedPathCheckerDebugNode::PredictedPathCheckerDebugNode(
 }
 
 bool PredictedPathCheckerDebugNode::pushPolygon(
-  const autoware_universe_utils::Polygon2d & polygon, const double z, const PolygonType & type)
+  const autoware::universe_utils::Polygon2d & polygon, const double z, const PolygonType & type)
 {
   std::vector<Eigen::Vector3d> eigen_polygon;
   for (const auto & point : polygon.outer()) {
@@ -82,7 +82,7 @@ bool PredictedPathCheckerDebugNode::pushPolygon(
 }
 
 bool PredictedPathCheckerDebugNode::pushPolyhedron(
-  const autoware_universe_utils::Polygon2d & polyhedron, const double z_min, const double z_max,
+  const autoware::universe_utils::Polygon2d & polyhedron, const double z_min, const double z_max,
   const PolygonType & type)
 {
   std::vector<Eigen::Vector3d> eigen_polyhedron;

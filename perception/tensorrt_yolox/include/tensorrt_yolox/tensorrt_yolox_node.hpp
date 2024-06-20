@@ -63,8 +63,8 @@ private:
 
   LabelMap label_map_;
   std::unique_ptr<tensorrt_yolox::TrtYoloX> trt_yolox_;
-  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
-  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_;
+  std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_;
 };
 
 }  // namespace tensorrt_yolox

@@ -16,7 +16,7 @@
 
 #include "autoware/motion_utils/marker/marker_helper.hpp"
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 
 void VirtualWallMarkerCreator::cleanup()
@@ -55,13 +55,13 @@ visualization_msgs::msg::MarkerArray VirtualWallMarkerCreator::create_markers(
   for (const auto & virtual_wall : virtual_walls_) {
     switch (virtual_wall.style) {
       case stop:
-        create_fn = autoware_motion_utils::createStopVirtualWallMarker;
+        create_fn = autoware::motion_utils::createStopVirtualWallMarker;
         break;
       case slowdown:
-        create_fn = autoware_motion_utils::createSlowDownVirtualWallMarker;
+        create_fn = autoware::motion_utils::createSlowDownVirtualWallMarker;
         break;
       case deadline:
-        create_fn = autoware_motion_utils::createDeadLineVirtualWallMarker;
+        create_fn = autoware::motion_utils::createDeadLineVirtualWallMarker;
         break;
     }
     auto markers = create_fn(
@@ -85,4 +85,4 @@ visualization_msgs::msg::MarkerArray VirtualWallMarkerCreator::create_markers(
   cleanup();
   return marker_array;
 }
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils

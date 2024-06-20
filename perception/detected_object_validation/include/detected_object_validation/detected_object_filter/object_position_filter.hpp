@@ -54,7 +54,7 @@ private:
   utils::FilterTargetLabel filter_target_;
   bool isObjectInBounds(const autoware_perception_msgs::msg::DetectedObject & object) const;
 
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 
 }  // namespace object_position_filter

@@ -40,17 +40,17 @@ CTRVMotionModel::CTRVMotionModel() : MotionModel(), logger_(rclcpp::get_logger("
 void CTRVMotionModel::setDefaultParams()
 {
   // process noise covariance
-  constexpr double q_stddev_x = 0.5;                                     // [m/s]
-  constexpr double q_stddev_y = 0.5;                                     // [m/s]
-  constexpr double q_stddev_yaw = autoware_universe_utils::deg2rad(20);  // [rad/s]
-  constexpr double q_stddev_vel = 9.8 * 0.3;                             // [m/(s*s)]
-  constexpr double q_stddev_wz = autoware_universe_utils::deg2rad(30);   // [rad/(s*s)]
+  constexpr double q_stddev_x = 0.5;                                      // [m/s]
+  constexpr double q_stddev_y = 0.5;                                      // [m/s]
+  constexpr double q_stddev_yaw = autoware::universe_utils::deg2rad(20);  // [rad/s]
+  constexpr double q_stddev_vel = 9.8 * 0.3;                              // [m/(s*s)]
+  constexpr double q_stddev_wz = autoware::universe_utils::deg2rad(30);   // [rad/(s*s)]
 
   setMotionParams(q_stddev_x, q_stddev_y, q_stddev_yaw, q_stddev_vel, q_stddev_wz);
 
   // set motion limitations
-  constexpr double max_vel = autoware_universe_utils::kmph2mps(10);  // [m/s] maximum velocity
-  constexpr double max_wz = 30.0;                                    // [deg] maximum yaw rate
+  constexpr double max_vel = autoware::universe_utils::kmph2mps(10);  // [m/s] maximum velocity
+  constexpr double max_wz = 30.0;                                     // [deg] maximum yaw rate
   setMotionLimits(max_vel, max_wz);
 
   // set prediction parameters
@@ -74,7 +74,7 @@ void CTRVMotionModel::setMotionLimits(const double & max_vel, const double & max
 {
   // set motion limitations
   motion_params_.max_vel = max_vel;
-  motion_params_.max_wz = autoware_universe_utils::deg2rad(max_wz);
+  motion_params_.max_wz = autoware::universe_utils::deg2rad(max_wz);
 }
 
 bool CTRVMotionModel::initialize(
@@ -220,7 +220,7 @@ bool CTRVMotionModel::limitStates()
   Eigen::MatrixXd P_t(DIM, DIM);
   ekf_.getX(X_t);
   ekf_.getP(P_t);
-  X_t(IDX::YAW) = autoware_universe_utils::normalizeRadian(X_t(IDX::YAW));
+  X_t(IDX::YAW) = autoware::universe_utils::normalizeRadian(X_t(IDX::YAW));
   if (!(-motion_params_.max_vel <= X_t(IDX::VEL) && X_t(IDX::VEL) <= motion_params_.max_vel)) {
     X_t(IDX::VEL) = X_t(IDX::VEL) < 0 ? -motion_params_.max_vel : motion_params_.max_vel;
   }

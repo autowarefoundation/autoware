@@ -87,7 +87,7 @@ boost::optional<LineString2d> NoStoppingAreaModule::getStopLineGeometry2d(
         std::vector<Point2d> collision_points;
         bg::intersection(area_poly, line, collision_points);
         if (!collision_points.empty()) {
-          const double yaw = autoware_universe_utils::calcAzimuthAngle(p0, p1);
+          const double yaw = autoware::universe_utils::calcAzimuthAngle(p0, p1);
           const double w = planner_data_->vehicle_info_.vehicle_width_m;
           const double l = stop_line_margin;
           stop_line.emplace_back(
@@ -132,7 +132,7 @@ bool NoStoppingAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason 
     return true;
   }
   const auto & stop_pose = stop_point->second;
-  setDistance(autoware_motion_utils::calcSignedArcLength(
+  setDistance(autoware::motion_utils::calcSignedArcLength(
     original_path.points, current_pose->pose.position, stop_pose.position));
   if (planning_utils::isOverLine(
         original_path, current_pose->pose, stop_pose, planner_param_.dead_line_margin)) {
@@ -229,7 +229,7 @@ bool NoStoppingAreaModule::checkStuckVehiclesInNoStoppingArea(
       continue;  // not stop vehicle
     }
     // check if the footprint is in the stuck detect area
-    const Polygon2d obj_footprint = autoware_universe_utils::toPolygon2d(object);
+    const Polygon2d obj_footprint = autoware::universe_utils::toPolygon2d(object);
     const bool is_in_stuck_area = !bg::disjoint(obj_footprint, poly);
     if (is_in_stuck_area) {
       RCLCPP_DEBUG(logger_, "stuck vehicle found.");
@@ -266,7 +266,7 @@ bool NoStoppingAreaModule::checkStopLinesInNoStoppingArea(
     }
     // judge if stop point p0 is near goal, by its distance to the path end.
     const double dist_to_path_end =
-      autoware_motion_utils::calcSignedArcLength(path.points, i, path.points.size() - 1);
+      autoware::motion_utils::calcSignedArcLength(path.points, i, path.points.size() - 1);
     if (dist_to_path_end < close_to_goal_distance) {
       // exit with false, cause position is near goal.
       return false;
@@ -302,10 +302,10 @@ Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
   auto & pp = interpolated_path.points;
   /* calc closest index */
   const auto closest_idx_opt =
-    autoware_motion_utils::findNearestIndex(interpolated_path.points, ego_pose, 3.0, M_PI_4);
+    autoware::motion_utils::findNearestIndex(interpolated_path.points, ego_pose, 3.0, M_PI_4);
   if (!closest_idx_opt) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      logger_, *clock_, 1000 /* ms */, "autoware_motion_utils::findNearestIndex fail");
+      logger_, *clock_, 1000 /* ms */, "autoware::motion_utils::findNearestIndex fail");
     return ego_area;
   }
   const size_t closest_idx = closest_idx_opt.value();
@@ -318,7 +318,7 @@ Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
   }
   const auto no_stopping_area = no_stopping_area_reg_elem_.noStoppingAreas().front();
   for (size_t i = closest_idx + num_ignore_nearest; i < pp.size() - 1; ++i) {
-    dist_from_start_sum += autoware_universe_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
+    dist_from_start_sum += autoware::universe_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
     const auto & p = pp.at(i).point.pose.position;
     if (bg::within(Point2d{p.x, p.y}, lanelet::utils::to2D(no_stopping_area).basicPolygon())) {
       is_in_area = true;
@@ -339,10 +339,10 @@ Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
   // decide end idx with extract distance
   size_t ego_area_end_idx = ego_area_start_idx;
   for (size_t i = ego_area_start_idx; i < pp.size() - 1; ++i) {
-    dist_from_start_sum += autoware_universe_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
+    dist_from_start_sum += autoware::universe_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
     const auto & p = pp.at(i).point.pose.position;
     if (!bg::within(Point2d{p.x, p.y}, lanelet::utils::to2D(no_stopping_area).basicPolygon())) {
-      dist_from_area_sum += autoware_universe_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
+      dist_from_area_sum += autoware::universe_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
     }
     if (dist_from_start_sum > extra_dist || dist_from_area_sum > margin) {
       break;

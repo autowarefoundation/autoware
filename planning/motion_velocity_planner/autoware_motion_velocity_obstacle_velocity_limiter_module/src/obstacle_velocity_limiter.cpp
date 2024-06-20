@@ -120,7 +120,7 @@ std::vector<autoware::motion_velocity_planner::SlowdownInterval> calculate_slowd
   TrajectoryPoints & trajectory, const CollisionChecker & collision_checker,
   const std::vector<multi_linestring_t> & projections, const std::vector<polygon_t> & footprints,
   ProjectionParameters & projection_params, const VelocityParameters & velocity_params,
-  autoware_motion_utils::VirtualWalls & virtual_walls)
+  autoware::motion_utils::VirtualWalls & virtual_walls)
 {
   std::vector<autoware::motion_velocity_planner::SlowdownInterval> slowdown_intervals;
   double time = 0.0;
@@ -129,7 +129,7 @@ std::vector<autoware::motion_velocity_planner::SlowdownInterval> calculate_slowd
     if (i > 0) {
       const auto & prev_point = trajectory[i - 1];
       time += static_cast<double>(
-        autoware_universe_utils::calcDistance2d(prev_point, trajectory_point) /
+        autoware::universe_utils::calcDistance2d(prev_point, trajectory_point) /
         prev_point.longitudinal_velocity_mps);
     }
     // First linestring is used to calculate distance
@@ -150,7 +150,7 @@ std::vector<autoware::motion_velocity_planner::SlowdownInterval> calculate_slowd
             static_cast<double>(*dist_to_collision - projection_params.extra_length),
             static_cast<double>(projection_params.duration), velocity_params.min_velocity)));
 
-      autoware_motion_utils::VirtualWall wall;
+      autoware::motion_utils::VirtualWall wall;
       wall.pose = trajectory_point.pose;
       virtual_walls.push_back(wall);
     }

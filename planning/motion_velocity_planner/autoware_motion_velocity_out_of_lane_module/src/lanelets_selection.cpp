@@ -91,7 +91,7 @@ lanelet::ConstLanelets calculate_ignored_lanelets(
   lanelet::ConstLanelets ignored_lanelets;
   // ignore lanelets directly behind ego
   const auto behind =
-    autoware_universe_utils::calcOffsetPose(ego_data.pose, params.rear_offset, 0.0, 0.0);
+    autoware::universe_utils::calcOffsetPose(ego_data.pose, params.rear_offset, 0.0, 0.0);
   const lanelet::BasicPoint2d behind_point(behind.position.x, behind.position.y);
   const auto behind_lanelets = lanelet::geometry::findWithin2d(
     route_handler->getLaneletMapPtr()->laneletLayer, behind_point, 0.0);

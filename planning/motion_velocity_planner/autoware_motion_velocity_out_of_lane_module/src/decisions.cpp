@@ -33,7 +33,7 @@ namespace autoware::motion_velocity_planner::out_of_lane
 {
 double distance_along_trajectory(const EgoData & ego_data, const size_t target_idx)
 {
-  return autoware_motion_utils::calcSignedArcLength(
+  return autoware::motion_utils::calcSignedArcLength(
     ego_data.trajectory_points, ego_data.pose.position, ego_data.first_trajectory_idx + target_idx);
 }
 
@@ -80,18 +80,19 @@ std::optional<std::pair<double, double>> object_time_to_range(
   auto worst_exit_time = std::optional<double>();
 
   for (const auto & predicted_path : object.kinematics.predicted_paths) {
-    const auto unique_path_points = autoware_motion_utils::removeOverlapPoints(predicted_path.path);
+    const auto unique_path_points =
+      autoware::motion_utils::removeOverlapPoints(predicted_path.path);
     if (unique_path_points.size() < 2) continue;
     const auto time_step = rclcpp::Duration(predicted_path.time_step).seconds();
     const auto enter_point =
       geometry_msgs::msg::Point().set__x(range.entering_point.x()).set__y(range.entering_point.y());
     const auto enter_segment_idx =
-      autoware_motion_utils::findNearestSegmentIndex(unique_path_points, enter_point);
-    const auto enter_offset = autoware_motion_utils::calcLongitudinalOffsetToSegment(
+      autoware::motion_utils::findNearestSegmentIndex(unique_path_points, enter_point);
+    const auto enter_offset = autoware::motion_utils::calcLongitudinalOffsetToSegment(
       unique_path_points, enter_segment_idx, enter_point);
-    const auto enter_lat_dist = std::abs(
-      autoware_motion_utils::calcLateralOffset(unique_path_points, enter_point, enter_segment_idx));
-    const auto enter_segment_length = autoware_universe_utils::calcDistance2d(
+    const auto enter_lat_dist = std::abs(autoware::motion_utils::calcLateralOffset(
+      unique_path_points, enter_point, enter_segment_idx));
+    const auto enter_segment_length = autoware::universe_utils::calcDistance2d(
       unique_path_points[enter_segment_idx], unique_path_points[enter_segment_idx + 1]);
     const auto enter_offset_ratio = enter_offset / enter_segment_length;
     const auto enter_time =
@@ -100,12 +101,12 @@ std::optional<std::pair<double, double>> object_time_to_range(
     const auto exit_point =
       geometry_msgs::msg::Point().set__x(range.exiting_point.x()).set__y(range.exiting_point.y());
     const auto exit_segment_idx =
-      autoware_motion_utils::findNearestSegmentIndex(unique_path_points, exit_point);
-    const auto exit_offset = autoware_motion_utils::calcLongitudinalOffsetToSegment(
+      autoware::motion_utils::findNearestSegmentIndex(unique_path_points, exit_point);
+    const auto exit_offset = autoware::motion_utils::calcLongitudinalOffsetToSegment(
       unique_path_points, exit_segment_idx, exit_point);
     const auto exit_lat_dist = std::abs(
-      autoware_motion_utils::calcLateralOffset(unique_path_points, exit_point, exit_segment_idx));
-    const auto exit_segment_length = autoware_universe_utils::calcDistance2d(
+      autoware::motion_utils::calcLateralOffset(unique_path_points, exit_point, exit_segment_idx));
+    const auto exit_segment_length = autoware::universe_utils::calcDistance2d(
       unique_path_points[exit_segment_idx], unique_path_points[exit_segment_idx + 1]);
     const auto exit_offset_ratio = exit_offset / static_cast<double>(exit_segment_length);
     const auto exit_time =
@@ -314,7 +315,7 @@ bool should_not_enter(
   for (const auto & object : inputs.objects.objects) {
     RCLCPP_DEBUG(
       logger, "\t\t[%s] going at %2.2fm/s",
-      autoware_universe_utils::toHexString(object.object_id).c_str(),
+      autoware::universe_utils::toHexString(object.object_id).c_str(),
       object.kinematics.initial_twist_with_covariance.twist.linear.x);
     if (object.kinematics.initial_twist_with_covariance.twist.linear.x < params.objects_min_vel) {
       RCLCPP_DEBUG(logger, " SKIP (velocity bellow threshold %2.2fm/s)\n", params.objects_min_vel);

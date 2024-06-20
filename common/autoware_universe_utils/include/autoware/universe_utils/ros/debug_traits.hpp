@@ -28,7 +28,7 @@
 
 #include <type_traits>
 
-namespace autoware_universe_utils::debug_traits
+namespace autoware::universe_utils::debug_traits
 {
 template <typename T>
 struct is_debug_message : std::false_type
@@ -84,6 +84,6 @@ template <>
 struct is_debug_message<tier4_debug_msgs::msg::StringStamped> : std::true_type
 {
 };
-}  // namespace autoware_universe_utils::debug_traits
+}  // namespace autoware::universe_utils::debug_traits
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__ROS__DEBUG_TRAITS_HPP_

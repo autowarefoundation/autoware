@@ -69,8 +69,8 @@ private:
   rclcpp::Subscription<geometry_msgs::msg::TwistWithCovarianceStamped>::SharedPtr twist_sub_;
   rclcpp::Publisher<PointCloud2>::SharedPtr undistorted_points_pub_;
 
-  std::unique_ptr<autoware_universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
-  std::unique_ptr<autoware_universe_utils::DebugPublisher> debug_publisher_;
+  std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_;
 
   tf2_ros::Buffer tf2_buffer_{get_clock()};
   tf2_ros::TransformListener tf2_listener_{tf2_buffer_};

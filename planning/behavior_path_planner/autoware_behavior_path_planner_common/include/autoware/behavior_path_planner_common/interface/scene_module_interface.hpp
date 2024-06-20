@@ -59,10 +59,10 @@ namespace autoware::behavior_path_planner
 using autoware::objects_of_interest_marker_interface::ColorName;
 using autoware::objects_of_interest_marker_interface::ObjectsOfInterestMarkerInterface;
 using autoware::rtc_interface::RTCInterface;
+using autoware::universe_utils::calcOffsetPose;
+using autoware::universe_utils::generateUUID;
 using autoware_adapi_v1_msgs::msg::PlanningBehavior;
 using autoware_adapi_v1_msgs::msg::SteeringFactor;
-using autoware_universe_utils::calcOffsetPose;
-using autoware_universe_utils::generateUUID;
 using steering_factor_interface::SteeringFactorInterface;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using tier4_planning_msgs::msg::PathWithLaneId;
@@ -146,7 +146,7 @@ public:
     updateData();
     const auto output = isWaitingApproval() ? planWaitingApproval() : plan();
     try {
-      autoware_motion_utils::validateNonEmpty(output.path.points);
+      autoware::motion_utils::validateNonEmpty(output.path.points);
     } catch (const std::exception & ex) {
       throw std::invalid_argument("[" + name_ + "]" + ex.what());
     }
@@ -566,7 +566,7 @@ protected:
 
     StopFactor stop_factor;
     stop_factor.stop_pose = stop_pose_.value();
-    stop_factor.dist_to_stop_pose = autoware_motion_utils::calcSignedArcLength(
+    stop_factor.dist_to_stop_pose = autoware::motion_utils::calcSignedArcLength(
       path.points, getEgoPosition(), stop_pose_.value().position);
     stop_reason_.stop_factors.push_back(stop_factor);
   }

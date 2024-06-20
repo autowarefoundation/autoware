@@ -53,10 +53,10 @@ TEST_F(TestRouteHandler, getLaneletSequenceWhenOverlappingRoute)
   ASSERT_FALSE(route_handler_->isHandlerReady());
 
   geometry_msgs::msg::Pose start_pose, goal_pose;
-  start_pose.position = autoware_universe_utils::createPoint(3728.870361, 73739.281250, 0);
-  start_pose.orientation = autoware_universe_utils::createQuaternion(0, 0, -0.513117, 0.858319);
-  goal_pose.position = autoware_universe_utils::createPoint(3729.961182, 73727.328125, 0);
-  goal_pose.orientation = autoware_universe_utils::createQuaternion(0, 0, 0.234831, 0.972036);
+  start_pose.position = autoware::universe_utils::createPoint(3728.870361, 73739.281250, 0);
+  start_pose.orientation = autoware::universe_utils::createQuaternion(0, 0, -0.513117, 0.858319);
+  goal_pose.position = autoware::universe_utils::createPoint(3729.961182, 73727.328125, 0);
+  goal_pose.orientation = autoware::universe_utils::createQuaternion(0, 0, 0.234831, 0.972036);
 
   lanelet::ConstLanelets path_lanelets;
   ASSERT_TRUE(
@@ -86,16 +86,17 @@ TEST_F(TestRouteHandler, getClosestRouteLaneletFromLaneletWhenOverlappingRoute)
   geometry_msgs::msg::Pose reference_pose, search_pose;
 
   lanelet::ConstLanelet reference_lanelet;
-  reference_pose.position = autoware_universe_utils::createPoint(3730.88, 73735.3, 0);
-  reference_pose.orientation = autoware_universe_utils::createQuaternion(0, 0, -0.504626, 0.863338);
+  reference_pose.position = autoware::universe_utils::createPoint(3730.88, 73735.3, 0);
+  reference_pose.orientation =
+    autoware::universe_utils::createQuaternion(0, 0, -0.504626, 0.863338);
   const auto found_reference_lanelet =
     route_handler_->getClosestLaneletWithinRoute(reference_pose, &reference_lanelet);
   ASSERT_TRUE(found_reference_lanelet);
   ASSERT_EQ(reference_lanelet.id(), 168);
 
   lanelet::ConstLanelet closest_lanelet;
-  search_pose.position = autoware_universe_utils::createPoint(3736.89, 73730.8, 0);
-  search_pose.orientation = autoware_universe_utils::createQuaternion(0, 0, 0.223244, 0.974763);
+  search_pose.position = autoware::universe_utils::createPoint(3736.89, 73730.8, 0);
+  search_pose.orientation = autoware::universe_utils::createQuaternion(0, 0, 0.223244, 0.974763);
   bool found_lanelet = route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lanelet);
   ASSERT_TRUE(found_lanelet);
   ASSERT_EQ(closest_lanelet.id(), 345);
@@ -112,56 +113,56 @@ TEST_F(TestRouteHandler, getClosestRouteLaneletFromLaneletWhenOverlappingRoute)
 
 //   Pose search_pose;
 
-//   search_pose.position = autoware_universe_utils::createPoint(-1.0, 1.75, 0);
-//   search_pose.orientation = autoware_universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
+//   search_pose.position = autoware::universe_utils::createPoint(-1.0, 1.75, 0);
+//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
 //   const auto closest_lane_obtained7 =
 //     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
 
 //   ASSERT_TRUE(closest_lane_obtained7);
 //   ASSERT_EQ(closest_lane.id(), 4775);
 
-//   search_pose.position = autoware_universe_utils::createPoint(-0.5, 1.75, 0);
+//   search_pose.position = autoware::universe_utils::createPoint(-0.5, 1.75, 0);
 //   const auto closest_lane_obtained =
-//   search_pose.orientation = autoware_universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
+//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
 //     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
 
 //   ASSERT_TRUE(closest_lane_obtained);
 //   ASSERT_EQ(closest_lane.id(), 4775);
 
-//   search_pose.position = autoware_universe_utils::createPoint(-.01, 1.75, 0);
-//   search_pose.orientation = autoware_universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
+//   search_pose.position = autoware::universe_utils::createPoint(-.01, 1.75, 0);
+//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
 //   const auto closest_lane_obtained3 =
 //     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
 
 //   ASSERT_TRUE(closest_lane_obtained3);
 //   ASSERT_EQ(closest_lane.id(), 4775);
 
-//   search_pose.position = autoware_universe_utils::createPoint(0.0, 1.75, 0);
-//   search_pose.orientation = autoware_universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
+//   search_pose.position = autoware::universe_utils::createPoint(0.0, 1.75, 0);
+//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
 //   const auto closest_lane_obtained1 =
 //     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
 
 //   ASSERT_TRUE(closest_lane_obtained1);
 //   ASSERT_EQ(closest_lane.id(), 4775);
 
-//   search_pose.position = autoware_universe_utils::createPoint(0.01, 1.75, 0);
-//   search_pose.orientation = autoware_universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
+//   search_pose.position = autoware::universe_utils::createPoint(0.01, 1.75, 0);
+//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
 //   const auto closest_lane_obtained2 =
 //     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
 
 //   ASSERT_TRUE(closest_lane_obtained2);
 //   ASSERT_EQ(closest_lane.id(), 4424);
 
-//   search_pose.position = autoware_universe_utils::createPoint(0.5, 1.75, 0);
-//   search_pose.orientation = autoware_universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
+//   search_pose.position = autoware::universe_utils::createPoint(0.5, 1.75, 0);
+//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
 //   const auto closest_lane_obtained4 =
 //     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
 
 //   ASSERT_TRUE(closest_lane_obtained4);
 //   ASSERT_EQ(closest_lane.id(), 4424);
 
-//   search_pose.position = autoware_universe_utils::createPoint(1.0, 1.75, 0);
-//   search_pose.orientation = autoware_universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
+//   search_pose.position = autoware::universe_utils::createPoint(1.0, 1.75, 0);
+//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
 //   const auto closest_lane_obtained5 =
 //     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
 

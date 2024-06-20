@@ -19,8 +19,8 @@
 
 #include <gtest/gtest.h>
 
-using autoware_universe_utils::Point2d;
-using autoware_universe_utils::Point3d;
+using autoware::universe_utils::Point2d;
+using autoware::universe_utils::Point3d;
 
 constexpr double epsilon = 1e-06;
 
@@ -30,7 +30,7 @@ geometry_msgs::msg::Pose createPose(const double x, const double y, const double
 {
   geometry_msgs::msg::Pose p;
   p.position = geometry_msgs::build<geometry_msgs::msg::Point>().x(x).y(y).z(0.0);
-  p.orientation = autoware_universe_utils::createQuaternionFromYaw(yaw);
+  p.orientation = autoware::universe_utils::createQuaternionFromYaw(yaw);
   return p;
 }
 }  // namespace

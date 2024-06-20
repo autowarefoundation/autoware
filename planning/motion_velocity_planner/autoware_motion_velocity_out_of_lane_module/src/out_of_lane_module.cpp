@@ -50,7 +50,7 @@ void OutOfLaneModule::init(rclcpp::Node & node, const std::string & module_name)
   logger_ = node.get_logger();
   clock_ = node.get_clock();
   init_parameters(node);
-  velocity_factor_interface_.init(autoware_motion_utils::PlanningBehavior::ROUTE_OBSTACLE);
+  velocity_factor_interface_.init(autoware::motion_utils::PlanningBehavior::ROUTE_OBSTACLE);
 
   debug_publisher_ =
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/" + ns_ + "/debug_markers", 1);
@@ -59,7 +59,7 @@ void OutOfLaneModule::init(rclcpp::Node & node, const std::string & module_name)
 }
 void OutOfLaneModule::init_parameters(rclcpp::Node & node)
 {
-  using autoware_universe_utils::getOrDeclareParameter;
+  using autoware::universe_utils::getOrDeclareParameter;
   auto & pp = params_;
 
   pp.mode = getOrDeclareParameter<std::string>(node, ns_ + ".mode");
@@ -109,7 +109,7 @@ void OutOfLaneModule::init_parameters(rclcpp::Node & node)
 
 void OutOfLaneModule::update_parameters(const std::vector<rclcpp::Parameter> & parameters)
 {
-  using autoware_universe_utils::updateParam;
+  using autoware::universe_utils::updateParam;
   auto & pp = params_;
   updateParam(parameters, ns_ + ".mode", pp.mode);
   updateParam(parameters, ns_ + ".skip_if_already_overlapping", pp.skip_if_already_overlapping);
@@ -151,13 +151,13 @@ VelocityPlanningResult OutOfLaneModule::plan(
   const std::shared_ptr<const PlannerData> planner_data)
 {
   VelocityPlanningResult result;
-  autoware_universe_utils::StopWatch<std::chrono::microseconds> stopwatch;
+  autoware::universe_utils::StopWatch<std::chrono::microseconds> stopwatch;
   stopwatch.tic();
   out_of_lane::EgoData ego_data;
   ego_data.pose = planner_data->current_odometry.pose.pose;
   ego_data.trajectory_points = ego_trajectory_points;
   ego_data.first_trajectory_idx =
-    autoware_motion_utils::findNearestSegmentIndex(ego_trajectory_points, ego_data.pose.position);
+    autoware::motion_utils::findNearestSegmentIndex(ego_trajectory_points, ego_data.pose.position);
   ego_data.velocity = planner_data->current_odometry.twist.twist.linear.x;
   ego_data.max_decel = planner_data->velocity_smoother_->getMinDecel();
   stopwatch.tic("calculate_trajectory_footprints");
@@ -234,9 +234,9 @@ VelocityPlanningResult OutOfLaneModule::plan(
     if (
       point_to_insert && prev_inserted_point_ &&
       prev_inserted_point_->slowdown.velocity <= point_to_insert->slowdown.velocity) {
-      const auto arc_length = autoware_motion_utils::calcSignedArcLength(
+      const auto arc_length = autoware::motion_utils::calcSignedArcLength(
         ego_trajectory_points, 0LU, point_to_insert->point.pose.position);
-      const auto prev_arc_length = autoware_motion_utils::calcSignedArcLength(
+      const auto prev_arc_length = autoware::motion_utils::calcSignedArcLength(
         ego_trajectory_points, 0LU, prev_inserted_point_->point.pose.position);
       return prev_arc_length < arc_length;
     }
@@ -244,10 +244,10 @@ VelocityPlanningResult OutOfLaneModule::plan(
   }();
   if (should_use_prev_inserted_point) {
     // if the trajectory changed the prev point is no longer on the trajectory so we project it
-    const auto insert_arc_length = autoware_motion_utils::calcSignedArcLength(
+    const auto insert_arc_length = autoware::motion_utils::calcSignedArcLength(
       ego_trajectory_points, 0LU, prev_inserted_point_->point.pose.position);
     prev_inserted_point_->point.pose =
-      autoware_motion_utils::calcInterpolatedPose(ego_trajectory_points, insert_arc_length);
+      autoware::motion_utils::calcInterpolatedPose(ego_trajectory_points, insert_arc_length);
     point_to_insert = prev_inserted_point_;
   }
   if (point_to_insert) {
@@ -261,12 +261,12 @@ VelocityPlanningResult OutOfLaneModule::plan(
         point_to_insert->point.pose.position, point_to_insert->point.pose.position,
         point_to_insert->slowdown.velocity);
 
-    const auto is_approaching = autoware_motion_utils::calcSignedArcLength(
+    const auto is_approaching = autoware::motion_utils::calcSignedArcLength(
                                   ego_trajectory_points, ego_data.pose.position,
                                   point_to_insert->point.pose.position) > 0.1 &&
                                 ego_data.velocity > 0.1;
-    const auto status = is_approaching ? autoware_motion_utils::VelocityFactor::APPROACHING
-                                       : autoware_motion_utils::VelocityFactor::STOPPED;
+    const auto status = is_approaching ? autoware::motion_utils::VelocityFactor::APPROACHING
+                                       : autoware::motion_utils::VelocityFactor::STOPPED;
     velocity_factor_interface_.set(
       ego_trajectory_points, ego_data.pose, point_to_insert->point.pose, status, "out_of_lane");
     result.velocity_factor = velocity_factor_interface_.get();

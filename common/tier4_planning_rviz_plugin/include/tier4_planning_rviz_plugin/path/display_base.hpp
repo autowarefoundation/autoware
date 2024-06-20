@@ -86,8 +86,8 @@ bool validateFloats(const typename T::ConstSharedPtr & msg_ptr)
 {
   for (auto && path_point : msg_ptr->points) {
     if (
-      !rviz_common::validateFloats(autoware_universe_utils::getPose(path_point)) &&
-      !rviz_common::validateFloats(autoware_universe_utils::getLongitudinalVelocity(path_point))) {
+      !rviz_common::validateFloats(autoware::universe_utils::getPose(path_point)) &&
+      !rviz_common::validateFloats(autoware::universe_utils::getLongitudinalVelocity(path_point))) {
       return false;
     }
   }
@@ -358,8 +358,8 @@ protected:
 
     for (size_t point_idx = 0; point_idx < msg_ptr->points.size(); point_idx++) {
       const auto & path_point = msg_ptr->points.at(point_idx);
-      const auto & pose = autoware_universe_utils::getPose(path_point);
-      const auto & velocity = autoware_universe_utils::getLongitudinalVelocity(path_point);
+      const auto & pose = autoware::universe_utils::getPose(path_point);
+      const auto & velocity = autoware::universe_utils::getLongitudinalVelocity(path_point);
 
       // path
       if (property_path_view_.getBool()) {
@@ -454,9 +454,9 @@ protected:
           (point_idx != msg_ptr->points.size() - 1) ? point_idx + 1 : point_idx;
 
         const auto & prev_path_pos =
-          autoware_universe_utils::getPose(msg_ptr->points.at(prev_idx)).position;
+          autoware::universe_utils::getPose(msg_ptr->points.at(prev_idx)).position;
         const auto & next_path_pos =
-          autoware_universe_utils::getPose(msg_ptr->points.at(next_idx)).position;
+          autoware::universe_utils::getPose(msg_ptr->points.at(next_idx)).position;
 
         Ogre::Vector3 position;
         position.x = pose.position.x;
@@ -467,7 +467,7 @@ protected:
 
         rviz_rendering::MovableText * text = slope_texts_.at(point_idx);
         const double slope =
-          autoware_universe_utils::calcElevationAngle(prev_path_pos, next_path_pos);
+          autoware::universe_utils::calcElevationAngle(prev_path_pos, next_path_pos);
 
         std::stringstream ss;
         ss << std::fixed << std::setprecision(2) << slope;
@@ -511,7 +511,7 @@ protected:
 
     for (size_t p_idx = 0; p_idx < msg_ptr->points.size(); p_idx++) {
       const auto & point = msg_ptr->points.at(p_idx);
-      const auto & pose = autoware_universe_utils::getPose(point);
+      const auto & pose = autoware::universe_utils::getPose(point);
       // footprint
       if (property_footprint_view_.getBool()) {
         Ogre::ColourValue color;

@@ -14,7 +14,7 @@
 
 #include "autoware/universe_utils/math/sin_table.hpp"
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 
 const float g_sin_table[sin_table_size] = {
@@ -8212,4 +8212,4 @@ const float g_sin_table[sin_table_size] = {
   0.9999999816164293f, 0.9999999896592414f, 0.9999999954041073f, 0.9999999988510269f,
   1.0000000000000000f};
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils

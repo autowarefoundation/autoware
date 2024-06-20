@@ -94,12 +94,12 @@ LidarTransfusionNode::LidarTransfusionNode(const rclcpp::NodeOptions & options)
   objects_pub_ = this->create_publisher<autoware_perception_msgs::msg::DetectedObjects>(
     "~/output/objects", rclcpp::QoS(1));
 
-  published_time_pub_ = std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
+  published_time_pub_ = std::make_unique<autoware::universe_utils::PublishedTimePublisher>(this);
 
   // initialize debug tool
   {
-    using autoware_universe_utils::DebugPublisher;
-    using autoware_universe_utils::StopWatch;
+    using autoware::universe_utils::DebugPublisher;
+    using autoware::universe_utils::StopWatch;
     stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
     debug_publisher_ptr_ = std::make_unique<DebugPublisher>(this, this->get_name());
     stop_watch_ptr_->tic("cyclic");

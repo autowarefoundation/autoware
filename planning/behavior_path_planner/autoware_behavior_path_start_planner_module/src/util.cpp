@@ -65,7 +65,7 @@ PathWithLaneId getBackwardPath(
     const double lateral_distance_to_shoulder_center = current_pose_arc_coords.distance;
     for (size_t i = 0; i < backward_path.points.size(); ++i) {
       auto & p = backward_path.points.at(i).point.pose;
-      p = autoware_universe_utils::calcOffsetPose(p, 0, lateral_distance_to_shoulder_center, 0);
+      p = autoware::universe_utils::calcOffsetPose(p, 0, lateral_distance_to_shoulder_center, 0);
     }
   }
 
@@ -115,16 +115,16 @@ std::optional<PathWithLaneId> extractCollisionCheckSection(
   if (full_path.points.empty()) return std::nullopt;
   // Find the start index for collision check section based on the shift start pose
   const auto shift_start_idx =
-    autoware_motion_utils::findNearestIndex(full_path.points, path.start_pose.position);
+    autoware::motion_utils::findNearestIndex(full_path.points, path.start_pose.position);
 
   // Find the end index for collision check section based on the end pose and collision check
   // distance
   const auto collision_check_end_idx = [&]() -> size_t {
-    const auto end_pose_offset = autoware_motion_utils::calcLongitudinalOffsetPose(
+    const auto end_pose_offset = autoware::motion_utils::calcLongitudinalOffsetPose(
       full_path.points, path.end_pose.position, collision_check_distance_from_end);
 
     return end_pose_offset
-             ? autoware_motion_utils::findNearestIndex(full_path.points, end_pose_offset->position)
+             ? autoware::motion_utils::findNearestIndex(full_path.points, end_pose_offset->position)
              : full_path.points.size() - 1;  // Use the last point if offset pose is not calculable
   }();
 

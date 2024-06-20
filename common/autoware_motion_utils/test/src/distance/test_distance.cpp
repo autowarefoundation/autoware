@@ -16,7 +16,7 @@
 #include "gtest/gtest.h"
 namespace
 {
-using autoware_motion_utils::calcDecelDistWithJerkAndAccConstraints;
+using autoware::motion_utils::calcDecelDistWithJerkAndAccConstraints;
 
 constexpr double epsilon = 1e-3;
 

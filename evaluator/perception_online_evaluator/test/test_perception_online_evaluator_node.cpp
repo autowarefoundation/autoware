@@ -43,7 +43,7 @@ using ObjectClassification = autoware_perception_msgs::msg::ObjectClassification
 using nav_msgs::msg::Odometry;
 using TFMessage = tf2_msgs::msg::TFMessage;
 
-using autoware_universe_utils::generateUUID;
+using autoware::universe_utils::generateUUID;
 
 constexpr double epsilon = 1e-6;
 

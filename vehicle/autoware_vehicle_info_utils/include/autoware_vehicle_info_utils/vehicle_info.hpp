@@ -47,8 +47,8 @@ struct VehicleInfo
   double min_height_offset_m;
   double max_height_offset_m;
 
-  autoware_universe_utils::LinearRing2d createFootprint(const double margin = 0.0) const;
-  autoware_universe_utils::LinearRing2d createFootprint(
+  autoware::universe_utils::LinearRing2d createFootprint(const double margin = 0.0) const;
+  autoware::universe_utils::LinearRing2d createFootprint(
     const double lat_margin, const double lon_margin) const;
 };
 

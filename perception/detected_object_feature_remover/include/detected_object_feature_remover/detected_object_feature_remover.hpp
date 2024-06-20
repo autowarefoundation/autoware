@@ -36,7 +36,7 @@ public:
 private:
   rclcpp::Subscription<DetectedObjectsWithFeature>::SharedPtr sub_;
   rclcpp::Publisher<DetectedObjects>::SharedPtr pub_;
-  std::unique_ptr<autoware_universe_utils::PublishedTimePublisher> published_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
   void objectCallback(const DetectedObjectsWithFeature::ConstSharedPtr input);
   void convert(const DetectedObjectsWithFeature & objs_with_feature, DetectedObjects & objs);
 };

@@ -137,7 +137,7 @@ void PlanningNode::on_timer()
         const auto & stop_point = factor.pose.position;
         const auto & points = trajectory_->points;
         factor.distance =
-          autoware_motion_utils::calcSignedArcLength(points, curr_point, stop_point);
+          autoware::motion_utils::calcSignedArcLength(points, curr_point, stop_point);
       }
     }
   }

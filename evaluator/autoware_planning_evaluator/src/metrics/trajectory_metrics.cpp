@@ -20,8 +20,8 @@ namespace planning_diagnostics
 {
 namespace metrics
 {
-using autoware_universe_utils::calcCurvature;
-using autoware_universe_utils::calcDistance2d;
+using autoware::universe_utils::calcCurvature;
+using autoware::universe_utils::calcDistance2d;
 
 Stat<double> calcTrajectoryInterval(const Trajectory & traj)
 {

@@ -58,11 +58,11 @@
 namespace autoware::behavior_path_planner::utils::lane_change
 {
 using autoware::route_handler::RouteHandler;
+using autoware::universe_utils::LineString2d;
+using autoware::universe_utils::Point2d;
+using autoware::universe_utils::Polygon2d;
 using autoware_perception_msgs::msg::ObjectClassification;
 using autoware_perception_msgs::msg::PredictedObjects;
-using autoware_universe_utils::LineString2d;
-using autoware_universe_utils::Point2d;
-using autoware_universe_utils::Polygon2d;
 using geometry_msgs::msg::Pose;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
@@ -368,7 +368,7 @@ std::optional<LaneChangePath> constructCandidatePath(
   LaneChangePath candidate_path;
   candidate_path.info = lane_change_info;
 
-  const auto lane_change_end_idx = autoware_motion_utils::findNearestIndex(
+  const auto lane_change_end_idx = autoware::motion_utils::findNearestIndex(
     shifted_path.path.points, candidate_path.info.lane_changing_end);
 
   if (!lane_change_end_idx) {
@@ -385,7 +385,7 @@ std::optional<LaneChangePath> constructCandidatePath(
       continue;
     }
     const auto nearest_idx =
-      autoware_motion_utils::findNearestIndex(target_segment.points, point.point.pose);
+      autoware::motion_utils::findNearestIndex(target_segment.points, point.point.pose);
     point.lane_ids = target_segment.points.at(*nearest_idx).lane_ids;
   }
 
@@ -404,13 +404,13 @@ std::optional<LaneChangePath> constructCandidatePath(
       std::prev(prepare_segment.points.end() - 1)->point.pose;
     const auto & lane_change_start_from_shifted =
       std::next(shifted_path.path.points.begin())->point.pose;
-    const auto yaw_diff2 = std::abs(autoware_universe_utils::normalizeRadian(
+    const auto yaw_diff2 = std::abs(autoware::universe_utils::normalizeRadian(
       tf2::getYaw(prepare_segment_second_last_point.orientation) -
       tf2::getYaw(lane_change_start_from_shifted.orientation)));
-    if (yaw_diff2 > autoware_universe_utils::deg2rad(5.0)) {
+    if (yaw_diff2 > autoware::universe_utils::deg2rad(5.0)) {
       RCLCPP_DEBUG(
         get_logger(), "Excessive yaw difference %.3f which exceeds the 5 degrees threshold.",
-        autoware_universe_utils::rad2deg(yaw_diff2));
+        autoware::universe_utils::rad2deg(yaw_diff2));
       return std::nullopt;
     }
   }
@@ -473,10 +473,10 @@ ShiftLine getLaneChangingShiftLine(
   shift_line.end_shift_length = shift_length;
   shift_line.start = lane_changing_start_pose;
   shift_line.end = lane_changing_end_pose;
-  shift_line.start_idx = autoware_motion_utils::findNearestIndex(
+  shift_line.start_idx = autoware::motion_utils::findNearestIndex(
     reference_path.points, lane_changing_start_pose.position);
-  shift_line.end_idx =
-    autoware_motion_utils::findNearestIndex(reference_path.points, lane_changing_end_pose.position);
+  shift_line.end_idx = autoware::motion_utils::findNearestIndex(
+    reference_path.points, lane_changing_end_pose.position);
 
   return shift_line;
 }
@@ -768,9 +768,9 @@ CandidateOutput assignToCandidate(
   CandidateOutput candidate_output;
   candidate_output.path_candidate = lane_change_path.path;
   candidate_output.lateral_shift = utils::lane_change::getLateralShift(lane_change_path);
-  candidate_output.start_distance_to_path_change = autoware_motion_utils::calcSignedArcLength(
+  candidate_output.start_distance_to_path_change = autoware::motion_utils::calcSignedArcLength(
     lane_change_path.path.points, ego_position, lane_change_path.info.shift_line.start.position);
-  candidate_output.finish_distance_to_path_change = autoware_motion_utils::calcSignedArcLength(
+  candidate_output.finish_distance_to_path_change = autoware::motion_utils::calcSignedArcLength(
     lane_change_path.path.points, ego_position, lane_change_path.info.shift_line.end.position);
 
   return candidate_output;
@@ -807,7 +807,7 @@ std::vector<PoseWithVelocityStamped> convertToPredictedPath(
     lane_change_parameters.minimum_lane_changing_velocity;
 
   const auto nearest_seg_idx =
-    autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, vehicle_pose, common_parameters.ego_nearest_dist_threshold,
       common_parameters.ego_nearest_yaw_threshold);
 
@@ -821,8 +821,8 @@ std::vector<PoseWithVelocityStamped> convertToPredictedPath(
     const double velocity =
       std::max(initial_velocity + prepare_acc * t, minimum_lane_changing_velocity);
     const double length = initial_velocity * t + 0.5 * prepare_acc * t * t;
-    const auto pose =
-      autoware_motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length);
+    const auto pose = autoware::motion_utils::calcInterpolatedPose(
+      path.points, vehicle_pose_frenet.length + length);
     predicted_path.emplace_back(t, pose, velocity);
   }
 
@@ -836,8 +836,8 @@ std::vector<PoseWithVelocityStamped> convertToPredictedPath(
     const double velocity = lane_changing_velocity + lane_changing_acc * delta_t;
     const double length =
       lane_changing_velocity * delta_t + 0.5 * lane_changing_acc * delta_t * delta_t + offset;
-    const auto pose =
-      autoware_motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length);
+    const auto pose = autoware::motion_utils::calcInterpolatedPose(
+      path.points, vehicle_pose_frenet.length + length);
     predicted_path.emplace_back(t, pose, velocity);
   }
 
@@ -870,7 +870,7 @@ bool isParkedObject(
 
   const auto & object_pose = object.initial_pose.pose;
   const auto object_closest_index =
-    autoware_motion_utils::findNearestIndex(path.points, object_pose.position);
+    autoware::motion_utils::findNearestIndex(path.points, object_pose.position);
   const auto object_closest_pose = path.points.at(object_closest_index).point.pose;
 
   lanelet::ConstLanelet closest_lanelet;
@@ -879,7 +879,7 @@ bool isParkedObject(
   }
 
   const double lat_dist =
-    autoware_motion_utils::calcLateralOffset(path.points, object_pose.position);
+    autoware::motion_utils::calcLateralOffset(path.points, object_pose.position);
   lanelet::BasicLineString2d bound;
   double center_to_bound_buffer = 0.0;
   if (lat_dist > 0.0) {
@@ -937,7 +937,7 @@ bool isParkedObject(
 
   const auto & obj_pose = object.initial_pose.pose;
   const auto & obj_shape = object.shape;
-  const auto obj_poly = autoware_universe_utils::toPolygon2d(obj_pose, obj_shape);
+  const auto obj_poly = autoware::universe_utils::toPolygon2d(obj_pose, obj_shape);
   const auto obj_point = obj_pose.position;
 
   double max_dist_to_bound = std::numeric_limits<double>::lowest();
@@ -996,7 +996,7 @@ bool passParkedObject(
   const auto & leading_obj = objects.at(*leading_obj_idx);
   auto debug = utils::path_safety_checker::createObjectDebug(leading_obj);
   const auto leading_obj_poly =
-    autoware_universe_utils::toPolygon2d(leading_obj.initial_pose.pose, leading_obj.shape);
+    autoware::universe_utils::toPolygon2d(leading_obj.initial_pose.pose, leading_obj.shape);
   if (leading_obj_poly.outer().empty()) {
     return false;
   }
@@ -1004,13 +1004,13 @@ bool passParkedObject(
   const auto & current_path_end = current_lane_path.points.back().point.pose.position;
   double min_dist_to_end_of_current_lane = std::numeric_limits<double>::max();
   for (const auto & point : leading_obj_poly.outer()) {
-    const auto obj_p = autoware_universe_utils::createPoint(point.x(), point.y(), 0.0);
-    const double dist =
-      autoware_motion_utils::calcSignedArcLength(current_lane_path.points, obj_p, current_path_end);
+    const auto obj_p = autoware::universe_utils::createPoint(point.x(), point.y(), 0.0);
+    const double dist = autoware::motion_utils::calcSignedArcLength(
+      current_lane_path.points, obj_p, current_path_end);
     min_dist_to_end_of_current_lane = std::min(dist, min_dist_to_end_of_current_lane);
     if (is_goal_in_route) {
       const auto goal_pose = route_handler.getGoalPose();
-      const double dist_to_goal = autoware_motion_utils::calcSignedArcLength(
+      const double dist_to_goal = autoware::motion_utils::calcSignedArcLength(
         current_lane_path.points, obj_p, goal_pose.position);
       min_dist_to_end_of_current_lane = std::min(min_dist_to_end_of_current_lane, dist_to_goal);
     }
@@ -1061,14 +1061,14 @@ std::optional<size_t> getLeadingStaticObjectIdx(
       continue;
     }
 
-    const double dist_back_to_obj = autoware_motion_utils::calcSignedArcLength(
+    const double dist_back_to_obj = autoware::motion_utils::calcSignedArcLength(
       path.points, path_end.point.pose.position, obj_pose.position);
     if (dist_back_to_obj > 0.0) {
       // object is not on the lane change path
       continue;
     }
 
-    const double dist_lc_start_to_obj = autoware_motion_utils::calcSignedArcLength(
+    const double dist_lc_start_to_obj = autoware::motion_utils::calcSignedArcLength(
       path.points, lane_change_start.position, obj_pose.position);
     if (dist_lc_start_to_obj < 0.0) {
       // object is on the lane changing path or behind it. It will be detected in safety check
@@ -1124,7 +1124,7 @@ ExtendedPredictedObject transform(
       }
       const auto obj_pose = object_recognition_utils::calcInterpolatedPose(path, t);
       if (obj_pose) {
-        const auto obj_polygon = autoware_universe_utils::toPolygon2d(*obj_pose, object.shape);
+        const auto obj_polygon = autoware::universe_utils::toPolygon2d(*obj_pose, object.shape);
         extended_object.predicted_paths.at(i).path.emplace_back(
           t, *obj_pose, obj_vel_norm, obj_polygon);
       }
@@ -1167,7 +1167,7 @@ Polygon2d getEgoCurrentFootprint(
   const auto base_to_rear = ego_info.rear_overhang_m;
   const auto width = ego_info.vehicle_width_m;
 
-  return autoware_universe_utils::toFootprint(ego_pose, base_to_front, base_to_rear, width);
+  return autoware::universe_utils::toFootprint(ego_pose, base_to_front, base_to_rear, width);
 }
 
 bool isWithinIntersection(
@@ -1255,13 +1255,13 @@ geometry_msgs::msg::Polygon createExecutionArea(
   const double lat_offset = width / 2.0 + additional_lat_offset;
 
   const auto p1 =
-    autoware_universe_utils::calcOffsetPose(pose, forward_lon_offset, lat_offset, 0.0);
+    autoware::universe_utils::calcOffsetPose(pose, forward_lon_offset, lat_offset, 0.0);
   const auto p2 =
-    autoware_universe_utils::calcOffsetPose(pose, forward_lon_offset, -lat_offset, 0.0);
+    autoware::universe_utils::calcOffsetPose(pose, forward_lon_offset, -lat_offset, 0.0);
   const auto p3 =
-    autoware_universe_utils::calcOffsetPose(pose, backward_lon_offset, -lat_offset, 0.0);
+    autoware::universe_utils::calcOffsetPose(pose, backward_lon_offset, -lat_offset, 0.0);
   const auto p4 =
-    autoware_universe_utils::calcOffsetPose(pose, backward_lon_offset, lat_offset, 0.0);
+    autoware::universe_utils::calcOffsetPose(pose, backward_lon_offset, lat_offset, 0.0);
   geometry_msgs::msg::Polygon polygon;
 
   polygon.points.push_back(create_point32(p1));

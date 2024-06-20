@@ -48,10 +48,10 @@
 namespace autoware::behavior_velocity_planner
 {
 namespace bg = boost::geometry;
-using autoware_motion_utils::calcSignedArcLength;
-using autoware_universe_utils::createPoint;
-using autoware_universe_utils::Line2d;
-using autoware_universe_utils::Point2d;
+using autoware::motion_utils::calcSignedArcLength;
+using autoware::universe_utils::createPoint;
+using autoware::universe_utils::Line2d;
+using autoware::universe_utils::Point2d;
 
 std::vector<std::pair<int64_t, lanelet::ConstLanelet>> getCrosswalksOnPath(
   const geometry_msgs::msg::Pose & current_pose,
@@ -152,7 +152,7 @@ std::vector<geometry_msgs::msg::Point> getPolygonIntersects(
 
   std::sort(intersects.begin(), intersects.end(), compare);
 
-  // convert autoware_universe_utils::Point2d to geometry::msg::Point
+  // convert autoware::universe_utils::Point2d to geometry::msg::Point
   std::vector<geometry_msgs::msg::Point> geometry_points;
   for (const auto & p : intersects) {
     geometry_points.push_back(createPoint(p.x(), p.y(), ego_pos.z));
@@ -201,7 +201,7 @@ std::vector<geometry_msgs::msg::Point> getLinestringIntersects(
 
   std::sort(intersects.begin(), intersects.end(), compare);
 
-  // convert autoware_universe_utils::Point2d to geometry::msg::Point
+  // convert autoware::universe_utils::Point2d to geometry::msg::Point
   std::vector<geometry_msgs::msg::Point> geometry_points;
   for (const auto & p : intersects) {
     geometry_points.push_back(createPoint(p.x(), p.y(), ego_pos.z));

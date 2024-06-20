@@ -21,10 +21,10 @@
 namespace utils
 {
 
-using autoware_motion_utils::findFirstNearestIndexWithSoftConstraints;
-using autoware_motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
-using autoware_universe_utils::calcDistance2d;
-using autoware_universe_utils::getRPY;
+using autoware::motion_utils::findFirstNearestIndexWithSoftConstraints;
+using autoware::motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
+using autoware::universe_utils::calcDistance2d;
+using autoware::universe_utils::getRPY;
 
 // Utils Functions
 Polygon2d createOneStepPolygon(
@@ -40,40 +40,40 @@ Polygon2d createOneStepPolygon(
   {  // base step
     appendPointToPolygon(
       polygon,
-      autoware_universe_utils::calcOffsetPose(base_step_pose, longitudinal_offset, width, 0.0)
+      autoware::universe_utils::calcOffsetPose(base_step_pose, longitudinal_offset, width, 0.0)
         .position);
     appendPointToPolygon(
       polygon,
-      autoware_universe_utils::calcOffsetPose(base_step_pose, longitudinal_offset, -width, 0.0)
+      autoware::universe_utils::calcOffsetPose(base_step_pose, longitudinal_offset, -width, 0.0)
         .position);
     appendPointToPolygon(
-      polygon, autoware_universe_utils::calcOffsetPose(base_step_pose, -rear_overhang, -width, 0.0)
+      polygon, autoware::universe_utils::calcOffsetPose(base_step_pose, -rear_overhang, -width, 0.0)
                  .position);
     appendPointToPolygon(
-      polygon,
-      autoware_universe_utils::calcOffsetPose(base_step_pose, -rear_overhang, width, 0.0).position);
+      polygon, autoware::universe_utils::calcOffsetPose(base_step_pose, -rear_overhang, width, 0.0)
+                 .position);
   }
 
   {  // next step
     appendPointToPolygon(
       polygon,
-      autoware_universe_utils::calcOffsetPose(next_step_pose, longitudinal_offset, width, 0.0)
+      autoware::universe_utils::calcOffsetPose(next_step_pose, longitudinal_offset, width, 0.0)
         .position);
     appendPointToPolygon(
       polygon,
-      autoware_universe_utils::calcOffsetPose(next_step_pose, longitudinal_offset, -width, 0.0)
+      autoware::universe_utils::calcOffsetPose(next_step_pose, longitudinal_offset, -width, 0.0)
         .position);
     appendPointToPolygon(
-      polygon, autoware_universe_utils::calcOffsetPose(next_step_pose, -rear_overhang, -width, 0.0)
+      polygon, autoware::universe_utils::calcOffsetPose(next_step_pose, -rear_overhang, -width, 0.0)
                  .position);
     appendPointToPolygon(
-      polygon,
-      autoware_universe_utils::calcOffsetPose(next_step_pose, -rear_overhang, width, 0.0).position);
+      polygon, autoware::universe_utils::calcOffsetPose(next_step_pose, -rear_overhang, width, 0.0)
+                 .position);
   }
 
-  polygon = autoware_universe_utils::isClockwise(polygon)
+  polygon = autoware::universe_utils::isClockwise(polygon)
               ? polygon
-              : autoware_universe_utils::inverseClockwise(polygon);
+              : autoware::universe_utils::inverseClockwise(polygon);
 
   Polygon2d hull_polygon;
   boost::geometry::convex_hull(polygon, hull_polygon);
@@ -97,8 +97,8 @@ TrajectoryPoint calcInterpolatedPoint(
   // Calculate interpolation ratio
   const auto & curr_pt = trajectory.at(segment_idx);
   const auto & next_pt = trajectory.at(segment_idx + 1);
-  const auto v1 = autoware_universe_utils::point2tfVector(curr_pt, next_pt);
-  const auto v2 = autoware_universe_utils::point2tfVector(curr_pt, target_point);
+  const auto v1 = autoware::universe_utils::point2tfVector(curr_pt, next_pt);
+  const auto v2 = autoware::universe_utils::point2tfVector(curr_pt, target_point);
   if (v1.length2() < 1e-3) {
     return curr_pt;
   }
@@ -111,7 +111,7 @@ TrajectoryPoint calcInterpolatedPoint(
 
   // pose interpolation
   interpolated_point.pose =
-    autoware_universe_utils::calcInterpolatedPose(curr_pt, next_pt, clamped_ratio);
+    autoware::universe_utils::calcInterpolatedPose(curr_pt, next_pt, clamped_ratio);
 
   // twist interpolation
   if (use_zero_order_hold_for_twist) {
@@ -160,7 +160,7 @@ std::pair<size_t, TrajectoryPoint> findStopPoint(
 
   for (size_t i = collision_idx; i > 0; i--) {
     distance_point_to_collision =
-      autoware_motion_utils::calcSignedArcLength(trajectory_array, i - 1, collision_idx);
+      autoware::motion_utils::calcSignedArcLength(trajectory_array, i - 1, collision_idx);
     if (distance_point_to_collision >= desired_distance_base_link_to_collision) {
       stop_segment_idx = i - 1;
       found_stop_point = true;
@@ -176,8 +176,8 @@ std::pair<size_t, TrajectoryPoint> findStopPoint(
                      base_point.pose.position.x - next_point.pose.position.x,
                      base_point.pose.position.y - next_point.pose.position.y));
 
-    geometry_msgs::msg::Pose interpolated_pose =
-      autoware_universe_utils::calcInterpolatedPose(base_point.pose, next_point.pose, ratio, false);
+    geometry_msgs::msg::Pose interpolated_pose = autoware::universe_utils::calcInterpolatedPose(
+      base_point.pose, next_point.pose, ratio, false);
     TrajectoryPoint output;
     output.set__pose(interpolated_pose);
     return std::make_pair(stop_segment_idx, output);
@@ -196,7 +196,7 @@ bool isInBrakeDistance(
     return false;
   }
 
-  const auto distance_to_obstacle = autoware_motion_utils::calcSignedArcLength(
+  const auto distance_to_obstacle = autoware::motion_utils::calcSignedArcLength(
     trajectory, trajectory.front().pose.position, trajectory.at(stop_idx).pose.position);
 
   const double distance_in_delay = relative_velocity * delay_time_sec +
@@ -249,7 +249,7 @@ double getNearestPointAndDistanceForPredictedObject(
   bool is_init = false;
 
   for (const auto & p : points) {
-    double norm = autoware_universe_utils::calcDistance2d(p, base_pose);
+    double norm = autoware::universe_utils::calcDistance2d(p, base_pose);
     if (norm < min_norm || !is_init) {
       min_norm = norm;
       *nearest_collision_point = p;
@@ -371,7 +371,7 @@ Polygon2d convertObjToPolygon(const PredictedObject & obj)
 
 bool isFrontObstacle(const Pose & ego_pose, const geometry_msgs::msg::Point & obstacle_pos)
 {
-  const auto yaw = autoware_universe_utils::getRPY(ego_pose).z;
+  const auto yaw = autoware::universe_utils::getRPY(ego_pose).z;
   const Eigen::Vector2d base_pose_vec(std::cos(yaw), std::sin(yaw));
   const Eigen::Vector2d obstacle_vec(
     obstacle_pos.x - ego_pose.position.x, obstacle_pos.y - ego_pose.position.y);
@@ -403,7 +403,7 @@ void getCurrentObjectPose(
   PredictedObject & predicted_object, const rclcpp::Time & obj_base_time,
   const rclcpp::Time & current_time)
 {
-  const double yaw = autoware_universe_utils::getRPY(
+  const double yaw = autoware::universe_utils::getRPY(
                        predicted_object.kinematics.initial_pose_with_covariance.pose.orientation)
                        .z;
   const double vx = predicted_object.kinematics.initial_twist_with_covariance.twist.linear.x;
@@ -414,8 +414,8 @@ void getCurrentObjectPose(
   const double delta_yaw =
     predicted_object.kinematics.initial_twist_with_covariance.twist.angular.z * dt;
   geometry_msgs::msg::Transform transform;
-  transform.translation = autoware_universe_utils::createTranslation(ds, 0.0, 0.0);
-  transform.rotation = autoware_universe_utils::createQuaternionFromRPY(0.0, 0.0, yaw);
+  transform.translation = autoware::universe_utils::createTranslation(ds, 0.0, 0.0);
+  transform.rotation = autoware::universe_utils::createQuaternionFromRPY(0.0, 0.0, yaw);
 
   tf2::Transform tf_pose;
   tf2::Transform tf_offset;
@@ -424,8 +424,8 @@ void getCurrentObjectPose(
   tf2::toMsg(tf_pose * tf_offset, predicted_object.kinematics.initial_pose_with_covariance.pose);
   predicted_object.kinematics.initial_twist_with_covariance.twist.linear.x += ax * dt;
   predicted_object.kinematics.initial_pose_with_covariance.pose.orientation =
-    autoware_universe_utils::createQuaternionFromRPY(
-      0.0, 0.0, autoware_universe_utils::normalizeRadian(yaw + delta_yaw));
+    autoware::universe_utils::createQuaternionFromRPY(
+      0.0, 0.0, autoware::universe_utils::normalizeRadian(yaw + delta_yaw));
 }
 
 }  // namespace utils

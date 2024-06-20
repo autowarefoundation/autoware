@@ -85,7 +85,7 @@ private:
 
   rclcpp::Subscription<PoseWithUuidStamped>::SharedPtr sub_modified_goal_;
   rclcpp::Subscription<Odometry>::SharedPtr sub_odometry_;
-  autoware_universe_utils::InterProcessPollingSubscriber<RerouteAvailability>
+  autoware::universe_utils::InterProcessPollingSubscriber<RerouteAvailability>
     sub_reroute_availability_{this, "~/input/reroute_availability"};
 
   rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_vector_map_;
@@ -132,7 +132,7 @@ private:
   double minimum_reroute_length_;
   bool check_reroute_safety(const LaneletRoute & original_route, const LaneletRoute & target_route);
 
-  std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 };
 
 }  // namespace autoware::mission_planner

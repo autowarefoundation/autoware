@@ -56,7 +56,7 @@ private:
   rclcpp::Node & node_;
   rclcpp::Publisher<autoware_perception_msgs::msg::TrackedObjects>::SharedPtr
     debug_tentative_objects_pub_;
-  std::unique_ptr<autoware_universe_utils::DebugPublisher> processing_time_publisher_;
+  std::unique_ptr<autoware::universe_utils::DebugPublisher> processing_time_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_objects_markers_pub_;
 
   diagnostic_updater::Updater diagnostic_updater_;

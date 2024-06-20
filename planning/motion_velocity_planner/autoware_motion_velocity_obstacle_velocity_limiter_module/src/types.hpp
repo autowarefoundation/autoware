@@ -35,13 +35,13 @@ using nav_msgs::msg::OccupancyGrid;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
-using point_t = autoware_universe_utils::Point2d;
-using multipoint_t = autoware_universe_utils::MultiPoint2d;
-using polygon_t = autoware_universe_utils::Polygon2d;
-using multi_polygon_t = autoware_universe_utils::MultiPolygon2d;
-using segment_t = autoware_universe_utils::Segment2d;
-using linestring_t = autoware_universe_utils::LineString2d;
-using multi_linestring_t = autoware_universe_utils::MultiLineString2d;
+using point_t = autoware::universe_utils::Point2d;
+using multipoint_t = autoware::universe_utils::MultiPoint2d;
+using polygon_t = autoware::universe_utils::Polygon2d;
+using multi_polygon_t = autoware::universe_utils::MultiPolygon2d;
+using segment_t = autoware::universe_utils::Segment2d;
+using linestring_t = autoware::universe_utils::LineString2d;
+using multi_linestring_t = autoware::universe_utils::MultiLineString2d;
 
 struct ObstacleMasks
 {

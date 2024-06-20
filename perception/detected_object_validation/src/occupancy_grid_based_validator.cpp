@@ -33,7 +33,7 @@
 namespace occupancy_grid_based_validator
 {
 using Shape = autoware_perception_msgs::msg::Shape;
-using Polygon2d = autoware_universe_utils::Polygon2d;
+using Polygon2d = autoware::universe_utils::Polygon2d;
 
 OccupancyGridBasedValidator::OccupancyGridBasedValidator(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("occupancy_grid_based_validator", node_options),
@@ -53,7 +53,7 @@ OccupancyGridBasedValidator::OccupancyGridBasedValidator(const rclcpp::NodeOptio
   mean_threshold_ = declare_parameter<float>("mean_threshold", 0.6);
   enable_debug_ = declare_parameter<bool>("enable_debug", false);
   published_time_publisher_ =
-    std::make_unique<autoware_universe_utils::PublishedTimePublisher>(this);
+    std::make_unique<autoware::universe_utils::PublishedTimePublisher>(this);
 }
 
 void OccupancyGridBasedValidator::onObjectsAndOccGrid(
@@ -107,8 +107,8 @@ std::optional<cv::Mat> OccupancyGridBasedValidator::getMask(
   const auto & resolution = occupancy_grid.info.resolution;
   const auto & origin = occupancy_grid.info.origin;
   std::vector<cv::Point> pixel_vertices;
-  Polygon2d poly2d =
-    autoware_universe_utils::toPolygon2d(object.kinematics.pose_with_covariance.pose, object.shape);
+  Polygon2d poly2d = autoware::universe_utils::toPolygon2d(
+    object.kinematics.pose_with_covariance.pose, object.shape);
 
   bool is_polygon_within_image = true;
   for (const auto & p : poly2d.outer()) {

@@ -147,7 +147,7 @@ private:
       sub_compressed_image_.reset();
     }
 
-    autoware_universe_utils::StopWatch stop_watch;
+    autoware::universe_utils::StopWatch stop_watch;
     remap_and_publish(common::decompress_to_cv_mat(msg), msg.header);
     RCLCPP_INFO_STREAM(get_logger(), "image undistort: " << stop_watch.toc() << "[ms]");
   }
@@ -161,7 +161,7 @@ private:
       make_remap_lut();
     }
 
-    autoware_universe_utils::StopWatch stop_watch;
+    autoware::universe_utils::StopWatch stop_watch;
     remap_and_publish(common::decompress_to_cv_mat(msg), msg.header);
     RCLCPP_INFO_STREAM(get_logger(), "image undistort: " << stop_watch.toc() << "[ms]");
   }

@@ -26,7 +26,7 @@
 
 namespace autoware::behavior_path_planner
 {
-using autoware_universe_utils::MultiPolygon2d;
+using autoware::universe_utils::MultiPolygon2d;
 using geometry_msgs::msg::Pose;
 
 struct GoalCandidate

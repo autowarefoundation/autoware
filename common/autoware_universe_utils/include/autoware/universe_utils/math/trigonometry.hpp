@@ -17,7 +17,7 @@
 
 #include <utility>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 
 float sin(float radian);
@@ -26,6 +26,6 @@ float cos(float radian);
 
 std::pair<float, float> sin_and_cos(float radian);
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 
 #endif  // AUTOWARE__UNIVERSE_UTILS__MATH__TRIGONOMETRY_HPP_

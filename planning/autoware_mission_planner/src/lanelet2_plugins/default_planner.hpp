@@ -52,7 +52,7 @@ public:
   void clearRoute() override;
   MarkerArray visualize(const LaneletRoute & route) const override;
   MarkerArray visualize_debug_footprint(
-    autoware_universe_utils::LinearRing2d goal_footprint_) const;
+    autoware::universe_utils::LinearRing2d goal_footprint_) const;
   autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 
 private:
@@ -86,7 +86,7 @@ private:
   bool check_goal_footprint_inside_lanes(
     const lanelet::ConstLanelet & current_lanelet,
     const lanelet::ConstLanelet & combined_prev_lanelet,
-    const autoware_universe_utils::Polygon2d & goal_footprint, double & next_lane_length,
+    const autoware::universe_utils::Polygon2d & goal_footprint, double & next_lane_length,
     const double search_margin = 2.0);
 
   /**

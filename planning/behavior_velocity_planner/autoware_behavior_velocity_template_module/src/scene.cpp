@@ -36,9 +36,9 @@ visualization_msgs::msg::MarkerArray TemplateModule::createDebugMarkerArray()
   return ma;
 };
 
-autoware_motion_utils::VirtualWalls TemplateModule::createVirtualWalls()
+autoware::motion_utils::VirtualWalls TemplateModule::createVirtualWalls()
 {
-  autoware_motion_utils::VirtualWalls vw;
+  autoware::motion_utils::VirtualWalls vw;
   return vw;
 }
 

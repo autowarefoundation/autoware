@@ -21,7 +21,7 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 
-class StopCheckModule : public autoware_motion_utils::VehicleStopCheckerBase
+class StopCheckModule : public autoware::motion_utils::VehicleStopCheckerBase
 {
 public:
   StopCheckModule(rclcpp::Node * node, double buffer_duration);

@@ -198,7 +198,7 @@ Ll2Decomposer::MarkerArray Ll2Decomposer::make_sign_marker_msg(
     marker.header.frame_id = "map";
     marker.header.stamp = get_clock()->now();
     marker.type = Marker::LINE_STRIP;
-    marker.color = autoware_universe_utils::createMarkerColor(0.6f, 0.6f, 0.6f, 0.999f);
+    marker.color = autoware::universe_utils::createMarkerColor(0.6f, 0.6f, 0.6f, 0.999f);
     marker.scale.x = 0.1;
     marker.ns = ns;
     marker.id = id++;
@@ -228,7 +228,7 @@ Ll2Decomposer::MarkerArray Ll2Decomposer::make_polygon_marker_msg(
     marker.header.frame_id = "map";
     marker.header.stamp = get_clock()->now();
     marker.type = Marker::LINE_STRIP;
-    marker.color = autoware_universe_utils::createMarkerColor(0.4f, 0.4f, 0.8f, 0.999f);
+    marker.color = autoware::universe_utils::createMarkerColor(0.4f, 0.4f, 0.8f, 0.999f);
     marker.scale.x = 0.2;
     marker.ns = ns;
     marker.id = id++;

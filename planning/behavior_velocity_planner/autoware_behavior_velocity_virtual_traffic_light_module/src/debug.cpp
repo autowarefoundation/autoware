@@ -18,27 +18,27 @@
 #include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <autoware/universe_utils/math/constants.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
-using autoware_motion_utils::createStopVirtualWallMarker;
-using autoware_universe_utils::appendMarkerArray;
-using autoware_universe_utils::createDefaultMarker;
-using autoware_universe_utils::createMarkerColor;
-using autoware_universe_utils::createMarkerOrientation;
-using autoware_universe_utils::createMarkerPosition;
-using autoware_universe_utils::createMarkerScale;
-using autoware_universe_utils::toMsg;
+using autoware::motion_utils::createStopVirtualWallMarker;
+using autoware::universe_utils::appendMarkerArray;
+using autoware::universe_utils::createDefaultMarker;
+using autoware::universe_utils::createMarkerColor;
+using autoware::universe_utils::createMarkerOrientation;
+using autoware::universe_utils::createMarkerPosition;
+using autoware::universe_utils::createMarkerScale;
+using autoware::universe_utils::toMsg;
 using namespace std::literals::string_literals;
 
 namespace autoware::behavior_velocity_planner
 {
 namespace
 {
-[[maybe_unused]] autoware_universe_utils::LinearRing3d createCircle(
-  const autoware_universe_utils::Point3d & p, const double radius, const size_t num_points = 50)
+[[maybe_unused]] autoware::universe_utils::LinearRing3d createCircle(
+  const autoware::universe_utils::Point3d & p, const double radius, const size_t num_points = 50)
 {
-  autoware_universe_utils::LinearRing3d ring;  // clockwise and closed
+  autoware::universe_utils::LinearRing3d ring;  // clockwise and closed
 
   for (size_t i = 0; i < num_points; ++i) {
-    const double theta = i * (2 * autoware_universe_utils::pi / num_points);
+    const double theta = i * (2 * autoware::universe_utils::pi / num_points);
     const double x = p.x() + radius * std::sin(theta);
     const double y = p.y() + radius * std::cos(theta);
     ring.emplace_back(x, y, p.z());
@@ -51,13 +51,13 @@ namespace
 }
 }  // namespace
 
-autoware_motion_utils::VirtualWalls VirtualTrafficLightModule::createVirtualWalls()
+autoware::motion_utils::VirtualWalls VirtualTrafficLightModule::createVirtualWalls()
 {
-  autoware_motion_utils::VirtualWalls virtual_walls;
-  autoware_motion_utils::VirtualWall wall;
+  autoware::motion_utils::VirtualWalls virtual_walls;
+  autoware::motion_utils::VirtualWall wall;
   wall.text = "virtual_traffic_light";
   wall.ns = std::to_string(module_id_) + "_";
-  wall.style = autoware_motion_utils::VirtualWallType::stop;
+  wall.style = autoware::motion_utils::VirtualWallType::stop;
   const auto & d = module_data_;
   // virtual_wall_stop_line
   std::vector<geometry_msgs::msg::Pose> wall_poses;

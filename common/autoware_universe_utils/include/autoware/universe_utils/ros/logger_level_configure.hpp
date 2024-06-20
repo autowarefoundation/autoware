@@ -27,7 +27,7 @@
 //   ...
 //
 //   // Define logger_configure as a node class member variable
-//   std::unique_ptr<autoware_universe_utils::LoggerLevelConfigure> logger_configure_;
+//   std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 // }
 //
 // ___In your_node.cpp___
@@ -45,7 +45,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 class LoggerLevelConfigure
 {
@@ -64,5 +64,5 @@ private:
     const ConfigLogger::Response::SharedPtr response);
 };
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
 #endif  // AUTOWARE__UNIVERSE_UTILS__ROS__LOGGER_LEVEL_CONFIGURE_HPP_

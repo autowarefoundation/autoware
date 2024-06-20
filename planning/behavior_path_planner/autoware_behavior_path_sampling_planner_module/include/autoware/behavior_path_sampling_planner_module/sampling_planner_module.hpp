@@ -75,8 +75,8 @@ struct SamplingPlannerDebugData
 {
   std::vector<autoware::sampler_common::Path> sampled_candidates{};
   size_t previous_sampled_candidates_nb = 0UL;
-  std::vector<autoware_universe_utils::Polygon2d> obstacles{};
-  std::vector<autoware_universe_utils::MultiPoint2d> footprints{};
+  std::vector<autoware::universe_utils::Polygon2d> obstacles{};
+  std::vector<autoware::universe_utils::MultiPoint2d> footprints{};
 };
 class SamplingPlannerModule : public SceneModuleInterface
 {
@@ -204,10 +204,10 @@ private:
     if (length_to_goal < epsilon) return isReferencePathSafe();
 
     const auto nearest_index =
-      autoware_motion_utils::findNearestIndex(prev_module_reference_path->points, ego_pose);
+      autoware::motion_utils::findNearestIndex(prev_module_reference_path->points, ego_pose);
     if (!nearest_index) return false;
     auto toYaw = [](const geometry_msgs::msg::Quaternion & quat) -> double {
-      const auto rpy = autoware_universe_utils::getRPY(quat);
+      const auto rpy = autoware::universe_utils::getRPY(quat);
       return rpy.z;
     };
     const auto quat = prev_module_reference_path->points[*nearest_index].point.pose.orientation;

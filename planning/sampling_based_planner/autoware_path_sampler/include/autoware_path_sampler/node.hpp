@@ -62,9 +62,9 @@ protected:  // for the static_centerline_generator package
 
   // interface subscriber
   rclcpp::Subscription<Path>::SharedPtr path_sub_;
-  autoware_universe_utils::InterProcessPollingSubscriber<Odometry> odom_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<Odometry> odom_sub_{
     this, "~/input/odometry"};
-  autoware_universe_utils::InterProcessPollingSubscriber<PredictedObjects> objects_sub_{
+  autoware::universe_utils::InterProcessPollingSubscriber<PredictedObjects> objects_sub_{
     this, "~/input/objects"};
 
   // debug publisher

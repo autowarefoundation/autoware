@@ -57,7 +57,7 @@ std::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
   constexpr double straight_distance = 1.0;
   const Pose end_pose =
     use_back_ ? goal_pose
-              : autoware_universe_utils::calcOffsetPose(goal_pose, -straight_distance, 0.0, 0.0);
+              : autoware::universe_utils::calcOffsetPose(goal_pose, -straight_distance, 0.0, 0.0);
   if (!planner_->makePlan(current_pose, end_pose)) {
     return {};
   }
@@ -85,7 +85,7 @@ std::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
     size_t index = std::distance(last_path.points.begin(), it);
     if (index == 0) continue;
     const double distance =
-      autoware_universe_utils::calcDistance2d(end_pose.position, it->point.pose.position);
+      autoware::universe_utils::calcDistance2d(end_pose.position, it->point.pose.position);
     if (distance < th_goal_distance) {
       last_path.points.erase(it, last_path.points.end());
       break;
@@ -123,7 +123,7 @@ std::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
 
   // Check if driving forward for each path, return empty if not
   for (auto & path : partial_paths) {
-    if (!autoware_motion_utils::isDrivingForward(path.points)) {
+    if (!autoware::motion_utils::isDrivingForward(path.points)) {
       return {};
     }
   }

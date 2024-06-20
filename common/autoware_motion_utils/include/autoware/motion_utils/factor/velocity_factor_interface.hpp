@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace autoware_motion_utils
+namespace autoware::motion_utils
 {
 using autoware_adapi_v1_msgs::msg::PlanningBehavior;
 using autoware_adapi_v1_msgs::msg::VelocityFactor;
@@ -49,6 +49,6 @@ private:
   VelocityFactor velocity_factor_{};
 };
 
-}  // namespace autoware_motion_utils
+}  // namespace autoware::motion_utils
 
 #endif  // AUTOWARE__MOTION_UTILS__FACTOR__VELOCITY_FACTOR_INTERFACE_HPP_

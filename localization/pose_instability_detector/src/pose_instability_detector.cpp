@@ -123,7 +123,7 @@ void PoseInstabilityDetector::callback_timer()
 
   // compare dead reckoning pose and latest_odometry_
   const Pose latest_ekf_pose = latest_odometry_->pose.pose;
-  const Pose ekf_to_dr = autoware_universe_utils::inverseTransformPose(*dr_pose, latest_ekf_pose);
+  const Pose ekf_to_dr = autoware::universe_utils::inverseTransformPose(*dr_pose, latest_ekf_pose);
   const geometry_msgs::msg::Point pos = ekf_to_dr.position;
   const auto [ang_x, ang_y, ang_z] = quat_to_rpy(ekf_to_dr.orientation);
   const std::vector<double> values = {pos.x, pos.y, pos.z, ang_x, ang_y, ang_z};

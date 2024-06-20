@@ -62,7 +62,7 @@ size_t getIndexWithLongitudinalOffset(
   if (longitudinal_offset > 0) {
     for (size_t i = *start_idx; i < points.size() - 1; ++i) {
       const double segment_length =
-        autoware_universe_utils::calcDistance2d(points.at(i), points.at(i + 1));
+        autoware::universe_utils::calcDistance2d(points.at(i), points.at(i + 1));
       sum_length += segment_length;
       if (sum_length >= longitudinal_offset) {
         const double back_length = sum_length - longitudinal_offset;
@@ -79,7 +79,7 @@ size_t getIndexWithLongitudinalOffset(
 
   for (size_t i = *start_idx; 0 < i; --i) {
     const double segment_length =
-      autoware_universe_utils::calcDistance2d(points.at(i - 1), points.at(i));
+      autoware::universe_utils::calcDistance2d(points.at(i - 1), points.at(i));
     sum_length += segment_length;
     if (sum_length >= -longitudinal_offset) {
       const double back_length = sum_length + longitudinal_offset;

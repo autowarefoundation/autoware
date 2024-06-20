@@ -23,7 +23,7 @@
 #include <sstream>
 #include <vector>
 
-namespace autoware_universe_utils
+namespace autoware::universe_utils
 {
 
 void print_backtrace()
@@ -49,4 +49,4 @@ void print_backtrace()
   free(symbol_list);
 }
 
-}  // namespace autoware_universe_utils
+}  // namespace autoware::universe_utils
