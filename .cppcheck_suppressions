@@ -34,6 +34,7 @@ shadowVariable
 syntaxError
 uninitMemberVar
 unknownMacro
+unmatchedSuppression
 unreadVariable
 unusedFunction
 unusedScopedObject
