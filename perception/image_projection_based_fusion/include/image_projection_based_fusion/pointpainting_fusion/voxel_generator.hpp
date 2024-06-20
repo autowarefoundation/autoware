@@ -15,19 +15,35 @@
 #ifndef IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__VOXEL_GENERATOR_HPP_
 #define IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__VOXEL_GENERATOR_HPP_
 
+#include <image_projection_based_fusion/pointpainting_fusion/pointcloud_densification.hpp>
+#include <lidar_centerpoint/preprocess/pointcloud_densification.hpp>
 #include <lidar_centerpoint/preprocess/voxel_generator.hpp>
 
 #include <bitset>
+#include <memory>
 #include <vector>
 
 namespace image_projection_based_fusion
 {
-class VoxelGenerator : public centerpoint::VoxelGenerator
+
+class VoxelGenerator
 {
 public:
-  using centerpoint::VoxelGenerator::VoxelGenerator;
+  explicit VoxelGenerator(
+    const centerpoint::DensificationParam & param, const centerpoint::CenterPointConfig & config);
 
-  std::size_t generateSweepPoints(std::vector<float> & points) override;
+  bool enqueuePointCloud(
+    const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer);
+
+  std::size_t generateSweepPoints(std::vector<float> & points);
+
+protected:
+  std::unique_ptr<PointCloudDensification> pd_ptr_{nullptr};
+
+  centerpoint::CenterPointConfig config_;
+  std::array<float, 6> range_;
+  std::array<int, 3> grid_size_;
+  std::array<float, 3> recip_voxel_size_;
 };
 }  // namespace image_projection_based_fusion
 

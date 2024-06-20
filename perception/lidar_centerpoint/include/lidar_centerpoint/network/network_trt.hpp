@@ -15,8 +15,8 @@
 #ifndef LIDAR_CENTERPOINT__NETWORK__NETWORK_TRT_HPP_
 #define LIDAR_CENTERPOINT__NETWORK__NETWORK_TRT_HPP_
 
-#include <lidar_centerpoint/centerpoint_config.hpp>
-#include <lidar_centerpoint/network/tensorrt_wrapper.hpp>
+#include "lidar_centerpoint/centerpoint_config.hpp"
+#include "lidar_centerpoint/network/tensorrt_wrapper.hpp"
 
 #include <vector>
 

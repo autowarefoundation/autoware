@@ -127,6 +127,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
 
   ament_auto_add_library(pointpainting_lib SHARED
     src/pointpainting_fusion/node.cpp
+    src/pointpainting_fusion/pointcloud_densification.cpp
     src/pointpainting_fusion/pointpainting_trt.cpp
     src/pointpainting_fusion/voxel_generator.cpp
   )

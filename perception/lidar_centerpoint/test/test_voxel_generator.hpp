@@ -33,34 +33,36 @@ public:
   void TearDown() override;
 
   // These need to be public so that they can be accessed in the test cases
-  rclcpp::Node::SharedPtr node_;
+  rclcpp::Node::SharedPtr node_{};
 
-  std::unique_ptr<sensor_msgs::msg::PointCloud2> cloud1_, cloud2_;
-  geometry_msgs::msg::TransformStamped transform1_, transform2_;
+  std::unique_ptr<sensor_msgs::msg::PointCloud2> cloud1_{}, cloud2_{};
+  geometry_msgs::msg::TransformStamped transform1_{}, transform2_{};
 
-  std::unique_ptr<centerpoint::DensificationParam> densification_param_ptr_;
-  std::unique_ptr<centerpoint::CenterPointConfig> config_ptr_;
+  std::unique_ptr<centerpoint::DensificationParam> densification_param_ptr_{};
+  std::unique_ptr<centerpoint::CenterPointConfig> config_ptr_{};
 
-  std::unique_ptr<tf2_ros::Buffer> tf2_buffer_;
+  std::unique_ptr<tf2_ros::Buffer> tf2_buffer_{};
 
-  std::string world_frame_;
-  std::string lidar_frame_;
-  std::size_t points_per_pointcloud_;
-  std::size_t capacity_;
-  double delta_pointcloud_x_;
+  std::string world_frame_{};
+  std::string lidar_frame_{};
+  std::size_t points_per_pointcloud_{};
+  std::size_t capacity_{};
+  double delta_pointcloud_x_{};
 
-  std::size_t class_size_;
-  float point_feature_size_;
-  std::size_t max_voxel_size_;
+  std::size_t class_size_{};
+  float point_feature_size_{};
+  std::size_t max_voxel_size_{};
 
-  std::vector<double> point_cloud_range_;
-  std::vector<double> voxel_size_;
-  std::size_t downsample_factor_;
-  std::size_t encoder_in_feature_size_;
-  float score_threshold_;
-  float circle_nms_dist_threshold_;
-  std::vector<double> yaw_norm_thresholds_;
-  bool has_variance_;
+  std::vector<double> point_cloud_range_{};
+  std::vector<double> voxel_size_{};
+  std::size_t downsample_factor_{};
+  std::size_t encoder_in_feature_size_{};
+  float score_threshold_{};
+  float circle_nms_dist_threshold_{};
+  std::vector<double> yaw_norm_thresholds_{};
+  bool has_variance_{};
+
+  cudaStream_t stream_{};
 };
 
 #endif  // TEST_VOXEL_GENERATOR_HPP_

@@ -14,7 +14,7 @@
 
 #include "lidar_centerpoint/network/tensorrt_wrapper.hpp"
 
-#include <NvOnnxParser.h>
+#include "NvOnnxParser.h"
 
 #include <fstream>
 #include <memory>

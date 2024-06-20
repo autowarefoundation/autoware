@@ -14,10 +14,11 @@
 
 #include "lidar_centerpoint/centerpoint_trt.hpp"
 
+#include "lidar_centerpoint/centerpoint_config.hpp"
+#include "lidar_centerpoint/network/scatter_kernel.hpp"
+#include "lidar_centerpoint/preprocess/preprocess_kernel.hpp"
+
 #include <autoware/universe_utils/math/constants.hpp>
-#include <lidar_centerpoint/centerpoint_config.hpp>
-#include <lidar_centerpoint/network/scatter_kernel.hpp>
-#include <lidar_centerpoint/preprocess/preprocess_kernel.hpp>
 
 #include <iostream>
 #include <memory>
@@ -130,14 +131,11 @@ bool CenterPointTRT::detect(
 bool CenterPointTRT::preprocess(
   const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer)
 {
-  bool is_success = vg_ptr_->enqueuePointCloud(input_pointcloud_msg, tf_buffer);
+  bool is_success = vg_ptr_->enqueuePointCloud(input_pointcloud_msg, tf_buffer, stream_);
   if (!is_success) {
     return false;
   }
-  const auto count = vg_ptr_->generateSweepPoints(points_);
-  CHECK_CUDA_ERROR(cudaMemcpyAsync(
-    points_d_.get(), points_.data(), count * config_.point_feature_size_ * sizeof(float),
-    cudaMemcpyHostToDevice, stream_));
+  const auto count = vg_ptr_->generateSweepPoints(points_d_.get(), stream_);
   CHECK_CUDA_ERROR(cudaMemsetAsync(num_voxels_d_.get(), 0, sizeof(unsigned int), stream_));
   CHECK_CUDA_ERROR(
     cudaMemsetAsync(voxels_buffer_d_.get(), 0, voxels_buffer_size_ * sizeof(float), stream_));

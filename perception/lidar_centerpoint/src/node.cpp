@@ -14,17 +14,7 @@
 
 #include "lidar_centerpoint/node.hpp"
 
-#include <lidar_centerpoint/centerpoint_config.hpp>
-#include <lidar_centerpoint/preprocess/pointcloud_densification.hpp>
-#include <lidar_centerpoint/ros_utils.hpp>
-#include <lidar_centerpoint/utils.hpp>
-#include <pcl_ros/transforms.hpp>
-
-#ifdef ROS_DISTRO_GALACTIC
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#else
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#endif
+#include "pcl_ros/transforms.hpp"
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -32,6 +22,17 @@
 #include <memory>
 #include <string>
 #include <vector>
+
+#ifdef ROS_DISTRO_GALACTIC
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#else
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#endif
+
+#include "lidar_centerpoint/centerpoint_config.hpp"
+#include "lidar_centerpoint/preprocess/pointcloud_densification.hpp"
+#include "lidar_centerpoint/ros_utils.hpp"
+#include "lidar_centerpoint/utils.hpp"
 
 namespace centerpoint
 {

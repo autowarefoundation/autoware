@@ -17,12 +17,9 @@
 
 // ros packages cannot be included from cuda.
 
-#include <lidar_centerpoint/utils.hpp>
+#include "lidar_centerpoint/utils.hpp"
 
-#include <autoware_perception_msgs/msg/detected_object_kinematics.hpp>
-#include <autoware_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_perception_msgs/msg/object_classification.hpp>
-#include <autoware_perception_msgs/msg/shape.hpp>
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
 
 #include <string>
 #include <vector>

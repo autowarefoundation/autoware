@@ -42,7 +42,7 @@
 #ifndef LIDAR_CENTERPOINT__CUDA_UTILS_HPP_
 #define LIDAR_CENTERPOINT__CUDA_UTILS_HPP_
 
-#include <cuda_runtime_api.h>
+#include "cuda_runtime_api.h"
 
 #include <memory>
 #include <sstream>

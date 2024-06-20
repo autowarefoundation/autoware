@@ -13,8 +13,7 @@
 // limitations under the License.
 
 #include "lidar_centerpoint/network/scatter_kernel.hpp"
-
-#include <lidar_centerpoint/utils.hpp>
+#include "lidar_centerpoint/utils.hpp"
 
 namespace
 {

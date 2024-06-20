@@ -31,17 +31,17 @@ public:
   void SetUp() override;
   void TearDown() override;
 
-  cudaStream_t stream_{nullptr};
+  cudaStream_t stream_{};
 
-  std::unique_ptr<PostProcessCUDA> postprocess_cuda_ptr_;
-  std::unique_ptr<centerpoint::CenterPointConfig> config_ptr_;
+  std::unique_ptr<PostProcessCUDA> postprocess_cuda_ptr_{};
+  std::unique_ptr<centerpoint::CenterPointConfig> config_ptr_{};
 
-  cuda::unique_ptr<float[]> head_out_heatmap_d_;
-  cuda::unique_ptr<float[]> head_out_offset_d_;
-  cuda::unique_ptr<float[]> head_out_z_d_;
-  cuda::unique_ptr<float[]> head_out_dim_d_;
-  cuda::unique_ptr<float[]> head_out_rot_d_;
-  cuda::unique_ptr<float[]> head_out_vel_d_;
+  cuda::unique_ptr<float[]> head_out_heatmap_d_{};
+  cuda::unique_ptr<float[]> head_out_offset_d_{};
+  cuda::unique_ptr<float[]> head_out_z_d_{};
+  cuda::unique_ptr<float[]> head_out_dim_d_{};
+  cuda::unique_ptr<float[]> head_out_rot_d_{};
+  cuda::unique_ptr<float[]> head_out_vel_d_{};
 };
 
 }  // namespace centerpoint

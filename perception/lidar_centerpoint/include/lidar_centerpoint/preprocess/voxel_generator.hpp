@@ -15,10 +15,10 @@
 #ifndef LIDAR_CENTERPOINT__PREPROCESS__VOXEL_GENERATOR_HPP_
 #define LIDAR_CENTERPOINT__PREPROCESS__VOXEL_GENERATOR_HPP_
 
-#include <lidar_centerpoint/centerpoint_config.hpp>
-#include <lidar_centerpoint/preprocess/pointcloud_densification.hpp>
+#include "lidar_centerpoint/centerpoint_config.hpp"
+#include "lidar_centerpoint/preprocess/pointcloud_densification.hpp"
 
-#include <sensor_msgs/msg/point_cloud2.hpp>
+#include "sensor_msgs/msg/point_cloud2.hpp"
 
 #include <memory>
 #include <vector>
@@ -31,10 +31,11 @@ public:
   explicit VoxelGeneratorTemplate(
     const DensificationParam & param, const CenterPointConfig & config);
 
-  virtual std::size_t generateSweepPoints(std::vector<float> & points) = 0;
+  virtual std::size_t generateSweepPoints(float * d_points, cudaStream_t stream) = 0;
 
   bool enqueuePointCloud(
-    const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer);
+    const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer,
+    cudaStream_t stream);
 
 protected:
   std::unique_ptr<PointCloudDensification> pd_ptr_{nullptr};
@@ -50,7 +51,7 @@ class VoxelGenerator : public VoxelGeneratorTemplate
 public:
   using VoxelGeneratorTemplate::VoxelGeneratorTemplate;
 
-  std::size_t generateSweepPoints(std::vector<float> & points) override;
+  std::size_t generateSweepPoints(float * d_points, cudaStream_t stream) override;
 };
 
 }  // namespace centerpoint

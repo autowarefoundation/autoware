@@ -15,10 +15,9 @@
 #ifndef LIDAR_CENTERPOINT__NETWORK__TENSORRT_WRAPPER_HPP_
 #define LIDAR_CENTERPOINT__NETWORK__TENSORRT_WRAPPER_HPP_
 
-#include <lidar_centerpoint/centerpoint_config.hpp>
-#include <tensorrt_common/tensorrt_common.hpp>
-
-#include <NvInfer.h>
+#include "NvInfer.h"
+#include "lidar_centerpoint/centerpoint_config.hpp"
+#include "tensorrt_common/tensorrt_common.hpp"
 
 #include <iostream>
 #include <memory>
@@ -32,7 +31,7 @@ class TensorRTWrapper
 public:
   explicit TensorRTWrapper(const CenterPointConfig & config);
 
-  ~TensorRTWrapper();
+  virtual ~TensorRTWrapper();
 
   bool init(
     const std::string & onnx_path, const std::string & engine_path, const std::string & precision);

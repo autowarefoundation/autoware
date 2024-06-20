@@ -21,12 +21,10 @@ Written by Shaoshuai Shi
 All Rights Reserved 2019-2020.
 */
 
+#include "lidar_centerpoint/cuda_utils.hpp"
 #include "lidar_centerpoint/postprocess/circle_nms_kernel.hpp"
-
-#include <lidar_centerpoint/cuda_utils.hpp>
-#include <lidar_centerpoint/utils.hpp>
-
-#include <thrust/host_vector.h>
+#include "lidar_centerpoint/utils.hpp"
+#include "thrust/host_vector.h"
 
 namespace
 {

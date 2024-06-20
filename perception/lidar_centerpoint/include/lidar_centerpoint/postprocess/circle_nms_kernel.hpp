@@ -15,9 +15,8 @@
 #ifndef LIDAR_CENTERPOINT__POSTPROCESS__CIRCLE_NMS_KERNEL_HPP_
 #define LIDAR_CENTERPOINT__POSTPROCESS__CIRCLE_NMS_KERNEL_HPP_
 
-#include <lidar_centerpoint/utils.hpp>
-
-#include <thrust/device_vector.h>
+#include "lidar_centerpoint/utils.hpp"
+#include "thrust/device_vector.h"
 
 namespace centerpoint
 {

@@ -15,17 +15,19 @@
 #ifndef LIDAR_CENTERPOINT__PREPROCESS__POINTCLOUD_DENSIFICATION_HPP_
 #define LIDAR_CENTERPOINT__PREPROCESS__POINTCLOUD_DENSIFICATION_HPP_
 
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
-#ifdef ROS_DISTRO_GALACTIC
-#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
-#else
-#include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
-#endif
+#include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_listener.h"
 
 #include <list>
 #include <string>
 #include <utility>
+#ifdef ROS_DISTRO_GALACTIC
+#include "tf2_sensor_msgs/tf2_sensor_msgs.h"
+#else
+#include "tf2_sensor_msgs/tf2_sensor_msgs.hpp"
+#endif
+
+#include "lidar_centerpoint/cuda_utils.hpp"
 
 namespace centerpoint
 {
@@ -48,7 +50,10 @@ private:
 
 struct PointCloudWithTransform
 {
-  sensor_msgs::msg::PointCloud2 pointcloud_msg;
+  cuda::unique_ptr<float[]> points_d{nullptr};
+  std_msgs::msg::Header header;
+  size_t num_points{0};
+  size_t point_step{0};
   Eigen::Affine3f affine_past2world;
 };
 
@@ -58,7 +63,8 @@ public:
   explicit PointCloudDensification(const DensificationParam & param);
 
   bool enqueuePointCloud(
-    const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer);
+    const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer,
+    cudaStream_t stream);
 
   double getCurrentTimestamp() const { return current_timestamp_; }
   Eigen::Affine3f getAffineWorldToCurrent() const { return affine_world2current_; }
@@ -73,7 +79,8 @@ public:
   unsigned int pointcloud_cache_size() const { return param_.pointcloud_cache_size(); }
 
 private:
-  void enqueue(const sensor_msgs::msg::PointCloud2 & msg, const Eigen::Affine3f & affine);
+  void enqueue(
+    const sensor_msgs::msg::PointCloud2 & msg, const Eigen::Affine3f & affine, cudaStream_t stream);
   void dequeue();
 
   DensificationParam param_;

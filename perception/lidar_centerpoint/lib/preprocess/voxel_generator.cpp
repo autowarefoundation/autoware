@@ -14,7 +14,12 @@
 
 #include "lidar_centerpoint/preprocess/voxel_generator.hpp"
 
-#include <sensor_msgs/point_cloud2_iterator.hpp>
+#include "lidar_centerpoint/centerpoint_trt.hpp"
+#include "lidar_centerpoint/preprocess/preprocess_kernel.hpp"
+
+#include "sensor_msgs/point_cloud2_iterator.hpp"
+
+#include <type_traits>
 
 namespace centerpoint
 {
@@ -38,35 +43,40 @@ VoxelGeneratorTemplate::VoxelGeneratorTemplate(
 }
 
 bool VoxelGeneratorTemplate::enqueuePointCloud(
-  const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer)
+  const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer,
+  cudaStream_t stream)
 {
-  return pd_ptr_->enqueuePointCloud(input_pointcloud_msg, tf_buffer);
+  return pd_ptr_->enqueuePointCloud(input_pointcloud_msg, tf_buffer, stream);
 }
 
-std::size_t VoxelGenerator::generateSweepPoints(std::vector<float> & points)
+std::size_t VoxelGenerator::generateSweepPoints(float * points_d, cudaStream_t stream)
 {
-  Eigen::Vector3f point_current, point_past;
-  size_t point_counter{};
+  size_t point_counter = 0;
   for (auto pc_cache_iter = pd_ptr_->getPointCloudCacheIter(); !pd_ptr_->isCacheEnd(pc_cache_iter);
        pc_cache_iter++) {
-    auto pc_msg = pc_cache_iter->pointcloud_msg;
+    auto sweep_num_points = pc_cache_iter->num_points;
+    auto point_step = pc_cache_iter->point_step;
     auto affine_past2current =
       pd_ptr_->getAffineWorldToCurrent() * pc_cache_iter->affine_past2world;
     float time_lag = static_cast<float>(
-      pd_ptr_->getCurrentTimestamp() - rclcpp::Time(pc_msg.header.stamp).seconds());
+      pd_ptr_->getCurrentTimestamp() - rclcpp::Time(pc_cache_iter->header.stamp).seconds());
 
-    for (sensor_msgs::PointCloud2ConstIterator<float> x_iter(pc_msg, "x"), y_iter(pc_msg, "y"),
-         z_iter(pc_msg, "z");
-         x_iter != x_iter.end(); ++x_iter, ++y_iter, ++z_iter) {
-      point_past << *x_iter, *y_iter, *z_iter;
-      point_current = affine_past2current * point_past;
-
-      points.at(point_counter * config_.point_feature_size_) = point_current.x();
-      points.at(point_counter * config_.point_feature_size_ + 1) = point_current.y();
-      points.at(point_counter * config_.point_feature_size_ + 2) = point_current.z();
-      points.at(point_counter * config_.point_feature_size_ + 3) = time_lag;
-      ++point_counter;
+    if (point_counter + sweep_num_points > CAPACITY_POINT) {
+      RCLCPP_WARN_STREAM(
+        rclcpp::get_logger("lidar_centerpoint"),
+        "Requested number of points exceeds the maximum capacity. Current points = "
+          << point_counter);
+      break;
     }
+
+    static_assert(std::is_same<decltype(affine_past2current.matrix()), Eigen::Matrix4f &>::value);
+    static_assert(!Eigen::Matrix4f::IsRowMajor, "matrices should be col-major.");
+    generateSweepPoints_launch(
+      pc_cache_iter->points_d.get(), sweep_num_points, point_step / sizeof(float), time_lag,
+      affine_past2current.matrix().data(), config_.point_feature_size_,
+      points_d + config_.point_feature_size_ * point_counter, stream);
+
+    point_counter += sweep_num_points;
   }
   return point_counter;
 }

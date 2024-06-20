@@ -18,6 +18,32 @@
 
 namespace image_projection_based_fusion
 {
+
+VoxelGenerator::VoxelGenerator(
+  const centerpoint::DensificationParam & param, const centerpoint::CenterPointConfig & config)
+: config_(config)
+{
+  pd_ptr_ = std::make_unique<PointCloudDensification>(param);
+  range_[0] = config.range_min_x_;
+  range_[1] = config.range_min_y_;
+  range_[2] = config.range_min_z_;
+  range_[3] = config.range_max_x_;
+  range_[4] = config.range_max_y_;
+  range_[5] = config.range_max_z_;
+  grid_size_[0] = config.grid_size_x_;
+  grid_size_[1] = config.grid_size_y_;
+  grid_size_[2] = config.grid_size_z_;
+  recip_voxel_size_[0] = 1 / config.voxel_size_x_;
+  recip_voxel_size_[1] = 1 / config.voxel_size_y_;
+  recip_voxel_size_[2] = 1 / config.voxel_size_z_;
+}
+
+bool VoxelGenerator::enqueuePointCloud(
+  const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer)
+{
+  return pd_ptr_->enqueuePointCloud(input_pointcloud_msg, tf_buffer);
+}
+
 size_t VoxelGenerator::generateSweepPoints(std::vector<float> & points)
 {
   Eigen::Vector3f point_current, point_past;

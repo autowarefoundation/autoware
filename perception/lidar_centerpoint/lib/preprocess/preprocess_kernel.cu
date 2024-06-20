@@ -28,9 +28,11 @@
  * limitations under the License.
  */
 
+#include "lidar_centerpoint/cuda_utils.hpp"
 #include "lidar_centerpoint/preprocess/preprocess_kernel.hpp"
+#include "lidar_centerpoint/utils.hpp"
 
-#include <lidar_centerpoint/utils.hpp>
+#include <cassert>
 
 namespace
 {
@@ -41,6 +43,51 @@ const std::size_t ENCODER_IN_FEATURE_SIZE = 9;  // the same as encoder_in_featur
 
 namespace centerpoint
 {
+
+__global__ void generateSweepPoints_kernel(
+  const float * input_points, size_t points_size, int input_point_step, float time_lag,
+  const float * transform_array, int num_features, float * output_points)
+{
+  int point_idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (point_idx >= points_size) return;
+
+  const float input_x = input_points[point_idx * input_point_step + 0];
+  const float input_y = input_points[point_idx * input_point_step + 1];
+  const float input_z = input_points[point_idx * input_point_step + 2];
+
+  // transform_array is expected to be column-major
+  output_points[point_idx * num_features + 0] = transform_array[0] * input_x +
+                                                transform_array[4] * input_y +
+                                                transform_array[8] * input_z + transform_array[12];
+  output_points[point_idx * num_features + 1] = transform_array[1] * input_x +
+                                                transform_array[5] * input_y +
+                                                transform_array[9] * input_z + transform_array[13];
+  output_points[point_idx * num_features + 2] = transform_array[2] * input_x +
+                                                transform_array[6] * input_y +
+                                                transform_array[10] * input_z + transform_array[14];
+  output_points[point_idx * num_features + 3] = time_lag;
+}
+
+cudaError_t generateSweepPoints_launch(
+  const float * input_points, size_t points_size, int input_point_step, float time_lag,
+  const float * transform_array, int num_features, float * output_points, cudaStream_t stream)
+{
+  auto transform_d = cuda::make_unique<float[]>(16);
+  CHECK_CUDA_ERROR(cudaMemcpyAsync(
+    transform_d.get(), transform_array, 16 * sizeof(float), cudaMemcpyHostToDevice, stream));
+
+  dim3 blocks((points_size + 256 - 1) / 256);
+  dim3 threads(256);
+  assert(num_features == 4);
+
+  generateSweepPoints_kernel<<<blocks, threads, 0, stream>>>(
+    input_points, points_size, input_point_step, time_lag, transform_d.get(), num_features,
+    output_points);
+
+  cudaError_t err = cudaGetLastError();
+  return err;
+}
+
 __global__ void generateVoxels_random_kernel(
   const float * points, size_t points_size, float min_x_range, float max_x_range, float min_y_range,
   float max_y_range, float min_z_range, float max_z_range, float pillar_x_size, float pillar_y_size,

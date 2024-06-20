@@ -15,13 +15,13 @@
 #ifndef LIDAR_CENTERPOINT__NODE_HPP_
 #define LIDAR_CENTERPOINT__NODE_HPP_
 
+#include "lidar_centerpoint/centerpoint_trt.hpp"
+#include "lidar_centerpoint/detection_class_remapper.hpp"
 #include "lidar_centerpoint/postprocess/non_maximum_suppression.hpp"
 
 #include <autoware/universe_utils/ros/debug_publisher.hpp>
 #include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
-#include <lidar_centerpoint/centerpoint_trt.hpp>
-#include <lidar_centerpoint/detection_class_remapper.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_perception_msgs/msg/detected_object_kinematics.hpp>
