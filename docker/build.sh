@@ -140,11 +140,6 @@ build_images() {
     set +x
 }
 
-# Remove temporary source directory
-remove_tmp_src() {
-    rm -rf "$WORKSPACE_ROOT/docker/src"
-}
-
 # Remove dangling images
 remove_dangling_images() {
     docker image prune -f
@@ -159,5 +154,4 @@ set_arch_lib_dir
 load_env
 clone_repositories
 build_images
-remove_tmp_src
 remove_dangling_images
