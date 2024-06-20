@@ -91,7 +91,7 @@ geometry_msgs::msg::Pose local2global(
 double PlannerWaypoints::compute_length() const
 {
   if (waypoints.empty()) {
-    std::runtime_error("cannot compute cost because waypoint has size 0");
+    throw std::runtime_error("cannot compute cost because waypoint has size 0");
   }
   double total_cost = 0.0;
   for (size_t i = 0; i < waypoints.size() - 1; ++i) {
