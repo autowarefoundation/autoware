@@ -1690,6 +1690,59 @@ void compensateDetectionLost(
   }
 }
 
+void updateClipObject(ObjectDataArray & clip_objects, AvoidancePlanningData & data)
+{
+  std::for_each(data.target_objects.begin(), data.target_objects.end(), [](auto & o) {
+    if (o.is_avoidable) {
+      o.is_clip_target = true;
+    }
+  });
+
+  const auto itr =
+    std::remove_if(clip_objects.begin(), clip_objects.end(), [&data](const auto & clip_object) {
+      const auto id = clip_object.object.object_id;
+
+      // update target objects
+      {
+        const auto same_id_obj = std::find_if(
+          data.target_objects.begin(), data.target_objects.end(),
+          [&id](const auto & o) { return o.object.object_id == id; });
+        if (same_id_obj != data.target_objects.end()) {
+          same_id_obj->is_clip_target = true;
+          return false;
+        }
+      }
+
+      // update other objects
+      {
+        const auto same_id_obj = std::find_if(
+          data.other_objects.begin(), data.other_objects.end(),
+          [&id](const auto & o) { return o.object.object_id == id; });
+        if (same_id_obj != data.other_objects.end()) {
+          same_id_obj->is_clip_target = true;
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+  clip_objects.erase(itr, clip_objects.end());
+
+  for (const auto & object : data.target_objects) {
+    const auto id = object.object.object_id;
+    const auto same_id_obj = std::find_if(
+      clip_objects.begin(), clip_objects.end(),
+      [&id](const auto & o) { return o.object.object_id == id; });
+
+    if (same_id_obj != clip_objects.end()) {
+      continue;
+    }
+
+    clip_objects.push_back(object);
+  }
+}
+
 void updateRoadShoulderDistance(
   AvoidancePlanningData & data, const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters)

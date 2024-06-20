@@ -5,10 +5,6 @@
       resample_interval_for_planning: 0.3               # [m] FOR DEVELOPER
       resample_interval_for_output: 4.0                 # [m] FOR DEVELOPER
 
-      # avoidance module common setting
-      enable_bound_clipping: false
-      disable_path_update: false
-
       # drivable area setting
       use_adjacent_lane: true
       use_opposite_lane: true
@@ -283,6 +279,19 @@
           max_jerk: 1.0                                 # [m/sss]
           max_acceleration: 0.5                         # [m/ss]
           min_velocity_to_limit_max_acceleration: 2.78  # [m/ss]
+
+      # path generation method. select "shift_line_base" or "optimization_base" or "both".
+      # "shift_line_base"  : Create avoidance path based on shift line.
+      #                      User can control avoidance maneuver execution via RTC.
+      #                      However, this method doesn't support complex avoidance scenario (e.g. S-shape maneuver).
+      # "optimization_base": This module selects avoidance target object
+      #                      and bpp module clips drivable area based on avoidance target object polygon shape.
+      #                      But this module doesn't modify the path shape.
+      #                      On the other hand, autoware_path_optimizer module optimizes path shape instead of this module
+      #                      so that the path can be within drivable area. This method is able to deal with complex avoidance scenario.
+      #                      However, user can't control avoidance manuever execution.
+      # "both"             : Use both method.
+      path_generation_method: "shift_line_base"
 
       shift_line_pipeline:
         trim:

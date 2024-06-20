@@ -121,6 +121,8 @@ void updateRegisteredObject(
   ObjectDataArray & registered_objects, const ObjectDataArray & now_objects,
   const std::shared_ptr<AvoidanceParameters> & parameters);
 
+void updateClipObject(ObjectDataArray & clip_objects, AvoidancePlanningData & data);
+
 void compensateDetectionLost(
   const ObjectDataArray & registered_objects, ObjectDataArray & now_objects,
   ObjectDataArray & other_objects);

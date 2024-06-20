@@ -16,15 +16,10 @@
           "description": "Path resample interval for output path. Too short interval increases computational cost for latter modules.",
           "default": "4.0"
         },
-        "enable_bound_clipping": {
-          "type": "boolean",
-          "description": "Enable clipping left and right bound of drivable area when obstacles are in the drivable area.",
-          "default": "false"
-        },
-        "disable_path_update": {
-          "type": "boolean",
-          "description": "Disable path update.",
-          "default": "false"
+        "path_generation_method": {
+          "enum": ["shift_line_base", "optimization_base", "both"],
+          "description": "Path generation method.",
+          "default": "shift_line_base"
         },
         "use_adjacent_lane": {
           "type": "boolean",
@@ -1445,7 +1440,7 @@
       "required": [
         "resample_interval_for_planning",
         "resample_interval_for_output",
-        "enable_bound_clipping",
+        "path_generation_method",
         "use_adjacent_lane",
         "use_opposite_lane",
         "use_hatched_road_markings",

@@ -39,8 +39,8 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
       getOrDeclareParameter<double>(*node, ns + "resample_interval_for_planning");
     p.resample_interval_for_output =
       getOrDeclareParameter<double>(*node, ns + "resample_interval_for_output");
-    p.enable_bound_clipping = getOrDeclareParameter<bool>(*node, ns + "enable_bound_clipping");
-    p.disable_path_update = getOrDeclareParameter<bool>(*node, ns + "disable_path_update");
+    p.path_generation_method =
+      getOrDeclareParameter<std::string>(*node, ns + "path_generation_method");
   }
 
   // drivable area

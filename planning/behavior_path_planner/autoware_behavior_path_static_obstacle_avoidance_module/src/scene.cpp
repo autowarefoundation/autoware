@@ -294,6 +294,7 @@ void StaticObstacleAvoidanceModule::fillFundamentalData(
     registered_objects_, data.target_objects, parameters_);
   utils::static_obstacle_avoidance::compensateDetectionLost(
     registered_objects_, data.target_objects, data.other_objects);
+  utils::static_obstacle_avoidance::updateClipObject(clip_objects_, data);
 
   // sort object order by longitudinal distance
   std::sort(data.target_objects.begin(), data.target_objects.end(), [](auto a, auto b) {
@@ -653,7 +654,7 @@ void StaticObstacleAvoidanceModule::fillDebugData(
 void StaticObstacleAvoidanceModule::updateEgoBehavior(
   const AvoidancePlanningData & data, ShiftedPath & path)
 {
-  if (parameters_->disable_path_update) {
+  if (parameters_->path_generation_method == "optimization_base") {
     return;
   }
 
@@ -998,19 +999,14 @@ BehaviorModuleOutput StaticObstacleAvoidanceModule::plan()
     // expand freespace areas
     current_drivable_area_info.enable_expanding_freespace_areas = parameters_->use_freespace_areas;
     // generate obstacle polygons
-    if (parameters_->enable_bound_clipping) {
-      ObjectDataArray clip_objects;
-      // If avoidance is executed by both behavior and motion, only non-avoidable object will be
-      // extracted from the drivable area.
-      std::for_each(
-        data.target_objects.begin(), data.target_objects.end(), [&](const auto & object) {
-          if (!object.is_avoidable) clip_objects.push_back(object);
-        });
+    current_drivable_area_info.obstacles.clear();
+
+    if (
+      parameters_->path_generation_method == "optimization_base" ||
+      parameters_->path_generation_method == "both") {
       current_drivable_area_info.obstacles =
         utils::static_obstacle_avoidance::generateObstaclePolygonsForDrivableArea(
-          clip_objects, parameters_, planner_data_->parameters.vehicle_width / 2.0);
-    } else {
-      current_drivable_area_info.obstacles.clear();
+          clip_objects_, parameters_, planner_data_->parameters.vehicle_width / 2.0);
     }
 
     output.drivable_area_info = utils::combineDrivableAreaInfo(
@@ -1077,7 +1073,7 @@ BehaviorModuleOutput StaticObstacleAvoidanceModule::planWaitingApproval()
 
 void StaticObstacleAvoidanceModule::updatePathShifter(const AvoidLineArray & shift_lines)
 {
-  if (parameters_->disable_path_update) {
+  if (parameters_->path_generation_method == "optimization_base") {
     return;
   }
 

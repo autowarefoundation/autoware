@@ -120,9 +120,6 @@ struct AvoidanceParameters
   // enable yield maneuver.
   bool enable_yield_maneuver_during_shifting{false};
 
-  // disable path update
-  bool disable_path_update{false};
-
   // use hatched road markings for avoidance
   bool use_hatched_road_markings{false};
 
@@ -313,6 +310,9 @@ struct AvoidanceParameters
   // policy
   std::string policy_lateral_margin{"best_effort"};
 
+  // path generation method.
+  std::string path_generation_method{"shift_line_base"};
+
   // target velocity matrix
   std::vector<double> velocity_map;
 
@@ -333,9 +333,6 @@ struct AvoidanceParameters
 
   // rss parameters
   utils::path_safety_checker::RSSparams rss_params{};
-
-  // clip left and right bounds for objects
-  bool enable_bound_clipping{false};
 
   // debug
   bool enable_other_objects_marker{false};
@@ -437,6 +434,9 @@ struct ObjectData  // avoidance target
 
   // is ambiguous stopped vehicle.
   bool is_ambiguous{false};
+
+  // is clip targe.
+  bool is_clip_target{false};
 
   // object direction.
   Direction direction{Direction::NONE};
