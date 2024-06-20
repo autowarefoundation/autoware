@@ -660,8 +660,8 @@ bool MpcLateralController::isValidTrajectory(const Trajectory & traj) const
       !isfinite(p.pose.orientation.w) || !isfinite(p.pose.orientation.x) ||
       !isfinite(p.pose.orientation.y) || !isfinite(p.pose.orientation.z) ||
       !isfinite(p.longitudinal_velocity_mps) || !isfinite(p.lateral_velocity_mps) ||
-      !isfinite(p.lateral_velocity_mps) || !isfinite(p.heading_rate_rps) ||
-      !isfinite(p.front_wheel_angle_rad) || !isfinite(p.rear_wheel_angle_rad)) {
+      !isfinite(p.heading_rate_rps) || !isfinite(p.front_wheel_angle_rad) ||
+      !isfinite(p.rear_wheel_angle_rad)) {
       return false;
     }
   }
