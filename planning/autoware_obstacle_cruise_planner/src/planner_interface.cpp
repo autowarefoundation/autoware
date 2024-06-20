@@ -598,8 +598,9 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
         obstacle.uuid.c_str());
       continue;
     }
-    const auto [dist_to_slow_down_start, dist_to_slow_down_end, feasible_slow_down_vel] =
-      *dist_vec_to_slow_down;
+    const auto dist_to_slow_down_start = std::get<0>(*dist_vec_to_slow_down);
+    const auto dist_to_slow_down_end = std::get<1>(*dist_vec_to_slow_down);
+    const auto feasible_slow_down_vel = std::get<2>(*dist_vec_to_slow_down);
 
     // calculate slow down end distance, and insert slow down velocity
     // NOTE: slow_down_start_idx will not be wrong since inserted back point is after inserted
