@@ -228,17 +228,8 @@ std::set<lanelet::Id> getAssociativeIntersectionLanelets(
   lanelet::ConstLanelet lane, const lanelet::LaneletMapPtr lanelet_map,
   const lanelet::routing::RoutingGraphPtr routing_graph);
 
-template <template <class> class Container>
 lanelet::ConstLanelets getConstLaneletsFromIds(
-  lanelet::LaneletMapConstPtr map, const Container<lanelet::Id> & ids)
-{
-  lanelet::ConstLanelets ret{};
-  for (const auto & id : ids) {
-    const auto ll = map->laneletLayer.get(id);
-    ret.push_back(ll);
-  }
-  return ret;
-}
+  lanelet::LaneletMapConstPtr map, const std::set<lanelet::Id> & ids);
 
 }  // namespace planning_utils
 }  // namespace autoware::behavior_velocity_planner

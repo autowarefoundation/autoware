@@ -265,7 +265,9 @@ void IntersectionModule::updateObjectInfoManagerCollision(
         continue;
       }
       const auto & object_passage_interval = object_passage_interval_opt.value();
-      const auto [object_enter_time, object_exit_time] = object_passage_interval.interval_time;
+      const auto object_enter_exit_time = object_passage_interval.interval_time;
+      const auto object_enter_time = std::get<0>(object_enter_exit_time);
+      const auto object_exit_time = std::get<1>(object_enter_exit_time);
       const auto ego_start_itr = std::lower_bound(
         time_distance_array.begin(), time_distance_array.end(),
         object_enter_time - collision_start_margin_time,

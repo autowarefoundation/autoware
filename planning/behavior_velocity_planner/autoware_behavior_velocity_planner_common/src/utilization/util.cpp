@@ -701,5 +701,16 @@ std::set<lanelet::Id> getAssociativeIntersectionLanelets(
   return associative_intersection_lanelets;
 }
 
+lanelet::ConstLanelets getConstLaneletsFromIds(
+  lanelet::LaneletMapConstPtr map, const std::set<lanelet::Id> & ids)
+{
+  lanelet::ConstLanelets ret{};
+  for (const auto & id : ids) {
+    const auto ll = map->laneletLayer.get(id);
+    ret.push_back(ll);
+  }
+  return ret;
+}
+
 }  // namespace planning_utils
 }  // namespace autoware::behavior_velocity_planner
