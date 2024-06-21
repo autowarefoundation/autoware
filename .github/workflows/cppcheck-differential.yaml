@@ -25,7 +25,7 @@ jobs:
       # cppcheck from apt does not yet support --check-level args, and thus install from snap
       - name: Install Cppcheck from snap
         run: |
-          sudo snap install cppcheck --edge
+          sudo snap install cppcheck
 
       - name: Fetch the base branch with enough history for a common merge-base commit
         run: git fetch origin ${{ github.base_ref }}
