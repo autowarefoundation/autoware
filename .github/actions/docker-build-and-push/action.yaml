@@ -100,7 +100,7 @@ runs:
           suffix=-runtime${{ inputs.tag-suffix }}
 
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
