@@ -8,8 +8,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Set PR fetch depth
+        run: echo "PR_FETCH_DEPTH=$(( ${{ github.event.pull_request.commits }} + 1 ))" >> "${GITHUB_ENV}"
+
+      - name: Checkout PR branch and all PR commits
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: ${{ env.PR_FETCH_DEPTH }}
 
       - name: Install dependencies
         run: |
@@ -21,12 +27,16 @@ jobs:
         run: |
           sudo snap install cppcheck --edge
 
+      - name: Fetch the base branch with enough history for a common merge-base commit
+        run: git fetch origin ${{ github.base_ref }}
+        shell: bash
+
       - name: Get changed files
         id: changed-files
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
-          git diff --name-only FETCH_HEAD ${{ github.sha }} > changed_files.txt
+          git diff --name-only "origin/${{ github.base_ref }}"...HEAD > changed_files.txt
           cat changed_files.txt
+        shell: bash
 
       - name: Run Cppcheck on changed files
         continue-on-error: true
