@@ -110,7 +110,7 @@ runs:
       if: ${{ github.event_name == 'push' ||
         github.event_name == 'schedule' ||
         (github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
-      uses: docker/bake-action@v4
+      uses: docker/bake-action@v5
       with:
         push: ${{ inputs.allow-push == 'true' }}
         files: |
@@ -124,7 +124,7 @@ runs:
           ${{ inputs.build-args }}
 
     - name: Build only
-      uses: docker/bake-action@v4
+      uses: docker/bake-action@v5
       with:
         push: false
         files: |

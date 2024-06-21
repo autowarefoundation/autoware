@@ -62,7 +62,7 @@ runs:
         password: ${{ github.token }}
 
     - name: Run docker build
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         file: docker/Dockerfile
         context: .
