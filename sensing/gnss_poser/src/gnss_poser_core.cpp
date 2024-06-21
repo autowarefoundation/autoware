@@ -44,9 +44,11 @@ GNSSPoser::GNSSPoser(const rclcpp::NodeOptions & node_options)
     sub_map_projector_info_,
     [this](const MapProjectorInfo::Message::ConstSharedPtr msg) { callbackMapProjectorInfo(msg); });
 
+  // Set up position buffer
   int buff_epoch = declare_parameter<int>("buff_epoch");
   position_buffer_.set_capacity(buff_epoch);
 
+  // Set subscribers and publishers
   nav_sat_fix_sub_ = create_subscription<sensor_msgs::msg::NavSatFix>(
     "fix", rclcpp::QoS{1}, std::bind(&GNSSPoser::callbackNavSatFix, this, std::placeholders::_1));
   autoware_orientation_sub_ =
@@ -58,6 +60,12 @@ GNSSPoser::GNSSPoser(const rclcpp::NodeOptions & node_options)
   pose_cov_pub_ = create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "gnss_pose_cov", rclcpp::QoS{1});
   fixed_pub_ = create_publisher<tier4_debug_msgs::msg::BoolStamped>("gnss_fixed", rclcpp::QoS{1});
+
+  // Set msg_gnss_ins_orientation_stamped_ with temoporary values (not to publish zero value
+  // covariances)
+  msg_gnss_ins_orientation_stamped_->orientation.rmse_rotation_x = 1.0;
+  msg_gnss_ins_orientation_stamped_->orientation.rmse_rotation_y = 1.0;
+  msg_gnss_ins_orientation_stamped_->orientation.rmse_rotation_z = 1.0;
 }
 
 void GNSSPoser::callbackMapProjectorInfo(const MapProjectorInfo::Message::ConstSharedPtr msg)
