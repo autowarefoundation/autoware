@@ -13,23 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install dependencies
+      # cppcheck from apt does not yet support --check-level args, and thus install from snap
+      - name: Install Cppcheck from snap
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake git libpcre3-dev
-
-      # cppcheck from apt does not yet support --check-level args, and thus install from source
-      - name: Install Cppcheck from source
-        run: |
-          mkdir /tmp/cppcheck
-          git clone https://github.com/danmar/cppcheck.git /tmp/cppcheck
-          cd /tmp/cppcheck
-          git checkout 2.14.1
-          mkdir build
-          cd build
-          cmake ..
-          make -j $(nproc)
-          sudo make install
+          sudo snap install cppcheck
 
       - name: Run Cppcheck on all files
         continue-on-error: true
