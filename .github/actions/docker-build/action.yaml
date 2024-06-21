@@ -55,7 +55,7 @@ runs:
         skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
