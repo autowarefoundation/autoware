@@ -38,10 +38,10 @@ namespace autoware::behavior_path_planner
 {
 using autoware::route_handler::Direction;
 using autoware::universe_utils::StopWatch;
-using data::lane_change::PathSafetyStatus;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
+using lane_change::PathSafetyStatus;
 using tier4_planning_msgs::msg::PathWithLaneId;
 
 class LaneChangeBase
@@ -126,7 +126,7 @@ public:
 
   const LaneChangeStatus & getLaneChangeStatus() const { return status_; }
 
-  const data::lane_change::Debug & getDebugData() const { return lane_change_debug_; }
+  const lane_change::Debug & getDebugData() const { return lane_change_debug_; }
 
   const Pose & getEgoPose() const { return planner_data_->self_odometry->pose.pose; }
 
@@ -233,7 +233,7 @@ protected:
   LaneChangeModuleType type_{LaneChangeModuleType::NORMAL};
 
   mutable StopWatch<std::chrono::milliseconds> stop_watch_;
-  mutable data::lane_change::Debug lane_change_debug_;
+  mutable lane_change::Debug lane_change_debug_;
 
   rclcpp::Logger logger_ = utils::lane_change::getLogger(getModuleTypeStr());
   mutable rclcpp::Clock clock_{RCL_ROS_TIME};
