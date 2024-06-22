@@ -12,7 +12,9 @@ This module has following assumptions.
 
 - The predicted path of the ego vehicle can be made from either the path created from sensors or the path created from a control module, or both.
 
-- The current speed and angular velocity can be obtained from the sensors of the ego vehicle, and it uses point cloud as obstacles.
+- The current speed and angular velocity can be obtained from the sensors of the ego vehicle, and it uses points as obstacles.
+
+- The AEBs target obstacles are 2D points that can be obtained from the input point cloud or by obtaining the intersection points between the predicted ego footprint path and a predicted object's shape.
 
 ### IMU path generation: steering angle vs IMU's angular velocity
 
@@ -40,11 +42,13 @@ AEB has the following steps before it outputs the emergency stop signal.
 
 2. Generate a predicted path of the ego vehicle.
 
-3. Get target obstacles from the input point cloud.
+3. Get target obstacles from the input point cloud and/or predicted object data.
 
-4. Collision check with target obstacles.
+4. Estimate the closest obstacle speed.
 
-5. Send emergency stop signals to `/diagnostics`.
+5. Collision check with target obstacles.
+
+6. Send emergency stop signals to `/diagnostics`.
 
 We give more details of each section below.
 
@@ -58,7 +62,7 @@ We do not activate AEB module if it satisfies the following conditions.
 
 ### 2. Generate a predicted path of the ego vehicle
 
-AEB generates a predicted path based on current velocity and current angular velocity obtained from attached sensors. Note that if `use_imu_path` is `false`, it skips this step. This predicted path is generated as:
+AEB generates a predicted footprint path based on current velocity and current angular velocity obtained from attached sensors. Note that if `use_imu_path` is `false`, it skips this step. This predicted path is generated as:
 
 $$
 x_{k+1} = x_k + v cos(\theta_k) dt \\
@@ -68,29 +72,47 @@ $$
 
 where $v$ and $\omega$ are current longitudinal velocity and angular velocity respectively. $dt$ is time interval that users can define in advance.
 
-### 3. Get target obstacles from the input point cloud
+On the other hand, if `use_predicted_trajectory` is set to true, the AEB module will use the predicted path from the MPC as a base to generate a footprint path. Both the IMU footprint path and the MPC footprint path can be used at the same time.
 
-After generating the ego predicted path, we select target obstacles from the input point cloud. This obstacle filtering has three major steps, which are rough filtering, noise filtering with clustering and rigorous filtering.
+### 3. Get target obstacles
 
-#### Rough filtering
+After generating the ego footprint path(s), the target obstacles are identified. There are two methods to find target obstacles: using the input point cloud, or using the predicted object information coming from perception modules.
 
-In rough filtering step, we select target obstacle with simple filter. Create a search area up to a certain distance (default is half of the ego vehicle width plus the `path_footprint_extra_margin` parameter) away from the predicted path of the ego vehicle and ignore the point cloud that are not within it. The image of the rough filtering is illustrated below.
+#### Pointcloud obstacle filtering
+
+The AEB module can filter the input pointcloud to find target obstacles with which the ego vehicle might collide. This method can be enable if the `use_pointcloud_data` parameter is set to true. The pointcloud obstacle filtering has three major steps, which are rough filtering, noise filtering with clustering and rigorous filtering.
+
+##### Rough filtering
+
+In rough filtering step, we select target obstacle with simple filter. Create a search area up to a certain distance (default is half of the ego vehicle width plus the `path_footprint_extra_margin` parameter) away from the predicted path of the ego vehicle and ignore the point cloud that are not within it. The rough filtering step is illustrated below.
 
 ![rough_filtering](./image/obstacle_filtering_1.drawio.svg)
 
-#### Noise filtering with clustering and convex hulls
+##### Noise filtering with clustering and convex hulls
 
-To prevent the AEB from considering noisy points, euclidean clustering is performed on the filtered point cloud. The points in the point cloud that are not close enough to other points to form a cluster are discarded. The parameters `cluster_tolerance`, `minimum_cluster_size` and `maximum_cluster_size` can be used to tune the clustering and the size of objects to be ignored, for more information about the clustering method used by the AEB module, please check the official documentation on euclidean clustering of the PCL library: <https://pcl.readthedocs.io/projects/tutorials/en/master/cluster_extraction.html>.
+To prevent the AEB from considering noisy points, euclidean clustering is performed on the filtered point cloud. The points in the point cloud that are not close enough to other points to form a cluster are discarded. Furthermore, each point in a cluster is compared against the `cluster_minimum_height` parameter, if no point inside a cluster has a height/z value greater than `cluster_minimum_height`, the whole cluster of points is discarded. The parameters `cluster_tolerance`, `minimum_cluster_size` and `maximum_cluster_size` can be used to tune the clustering and the size of objects to be ignored, for more information about the clustering method used by the AEB module, please check the official documentation on euclidean clustering of the PCL library: <https://pcl.readthedocs.io/projects/tutorials/en/master/cluster_extraction.html>.
 
 Furthermore, a 2D convex hull is created around each detected cluster, the vertices of each hull represent the most extreme/outside points of the cluster. These vertices are then checked in the next step.
 
-#### Rigorous filtering
+##### Rigorous filtering
 
-After Noise filtering, the module performs a geometric collision check to determine whether the filtered obstacles/hull vertices actually have possibility to collide with the ego vehicle. In this check, the ego vehicle is represented as a rectangle, and the point cloud obstacles are represented as points. Only the vertices with a possibility of collision are kept. Finally, the vertex that is closest to the ego vehicle is chosen as the candidate for collision checking: Since rss distance is used to judge if a collision will happen or not, if the closest vertex to the ego is deemed to be safe, the rest of the vertices (and the points in the clusters) will also be safe.
+After Noise filtering, the module performs a geometric collision check to determine whether the filtered obstacles/hull vertices actually have possibility to collide with the ego vehicle. In this check, the ego vehicle is represented as a rectangle, and the point cloud obstacles are represented as points. Only the vertices with a possibility of collision are kept.
 
 ![rigorous_filtering](./image/obstacle_filtering_2.drawio.svg)
 
-#### Obstacle velocity estimation
+#### Using predicted objects to get target obstacles
+
+If the `use_predicted_object_data` parameter is set to true, the AEB can use predicted object data coming from the perception modules, to get target obstacle points. This is done by obtaining the 2D intersection points between the ego's predicted footprint path and each of the predicted objects enveloping polygon or bounding box.
+
+![predicted_object_and_path_intersection](./image/using-predicted-objects.drawio.svg)
+
+### Finding the closest target obstacle
+
+Once all target obstacles have been identified, the AEB module chooses the point that is closest to the ego vehicle as the candidate for collision checking. Only the closest point is considered because RSS distance is used to judge if a collision will happen or not, and if the closest vertex to the ego is deemed to be safe from collision, the rest of the target obstacles will also be safe.
+
+![closest_object](./image/closest-point.drawio.svg)
+
+### 4. Obstacle velocity estimation
 
 Once the position of the closest obstacle/point is determined, the AEB modules uses the history of previously detected objects to estimate the closest object relative speed using the following equations:
 
@@ -110,7 +132,9 @@ Where $t_{1}$ and $t_{0}$ are the timestamps of the point clouds used to detect 
 
 ![relative_speed](./image/object_relative_speed.drawio.svg)
 
-Finally, the velocity vector is compared against the ego's predicted path to get the longitudinal velocity $v_{obj}$:
+Note that, when the closest obstacle/point comes from using predicted object data, $v_{norm}$ is calculated by directly computing the norm of the predicted object's velocity in the x and y axes.
+
+The velocity vector is then compared against the ego's predicted path to get the longitudinal velocity $v_{obj}$:
 
 $$
 v_{obj} = v_{norm} * Cos(yaw_{diff}) + v_{ego}
@@ -120,7 +144,9 @@ where $yaw_{diff}$ is the difference in yaw between the ego path and the displac
 
 Note that, the object velocity is calculated against the ego's current movement direction. If the object moves in the opposite direction to the ego's movement, the object velocity is set to 0 m/s. That is because the RSS distance calculation assumes the ego and the object move in the same direction and it cannot deal with negative velocities.
 
-### 4. Collision check with target obstacles using RSS distance
+The resulting estimated object speed is added to a queue of speeds with timestamps. The AEB then checks for expiration of past speed estimations and eliminates expired speed measurements from the queue, the object expiration is determined by checking if the time elapsed since the speed was first added to the queue is larger than the parameter `previous_obstacle_keep_time`. Finally, the median speed of the queue is calculated. The median speed will be used to calculate the RSS distance used for collision checking.
+
+### 5. Collision check with target obstacles using RSS distance
 
 In the fourth step, it checks the collision with the closest obstacle point using RSS distance. RSS distance is formulated as:
 
@@ -132,7 +158,7 @@ where $v_{ego}$ and $v_{obj}$ is current ego and obstacle velocity, $a_{min}$ an
 
 ![rss_check](./image/rss_check.drawio.svg)
 
-### 5. Send emergency stop signals to `/diagnostics`
+### 6. Send emergency stop signals to `/diagnostics`
 
 If AEB detects collision with point cloud obstacles in the previous step, it sends emergency signal to `/diagnostics` in this step. Note that in order to enable emergency stop, it has to send ERROR level emergency. Moreover, AEB user should modify the setting file to keep the emergency level, otherwise Autoware does not hold the emergency state.
 

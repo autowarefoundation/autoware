@@ -147,6 +147,7 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
   a_obj_min_ = declare_parameter<double>("a_obj_min");
 
   cluster_tolerance_ = declare_parameter<double>("cluster_tolerance");
+  cluster_minimum_height_ = declare_parameter<double>("cluster_minimum_height");
   minimum_cluster_size_ = declare_parameter<int>("minimum_cluster_size");
   maximum_cluster_size_ = declare_parameter<int>("maximum_cluster_size");
 
@@ -198,6 +199,7 @@ rcl_interfaces::msg::SetParametersResult AEB::onParameter(
   updateParam<double>(parameters, "a_obj_min", a_obj_min_);
 
   updateParam<double>(parameters, "cluster_tolerance", cluster_tolerance_);
+  updateParam<double>(parameters, "cluster_minimum_height", cluster_minimum_height_);
   updateParam<int>(parameters, "minimum_cluster_size", minimum_cluster_size_);
   updateParam<int>(parameters, "maximum_cluster_size", maximum_cluster_size_);
 
@@ -725,9 +727,15 @@ void AEB::createObjectDataUsingPointCloudClusters(
   PointCloud::Ptr points_belonging_to_cluster_hulls(new PointCloud);
   for (const auto & indices : cluster_indices) {
     PointCloud::Ptr cluster(new PointCloud);
+    bool cluster_surpasses_threshold_height{false};
     for (const auto & index : indices.indices) {
-      cluster->push_back((*obstacle_points_ptr)[index]);
+      const auto & p = (*obstacle_points_ptr)[index];
+      cluster_surpasses_threshold_height = (cluster_surpasses_threshold_height)
+                                             ? cluster_surpasses_threshold_height
+                                             : (p.z > cluster_minimum_height_);
+      cluster->push_back(p);
     }
+    if (!cluster_surpasses_threshold_height) continue;
     // Make a 2d convex hull for the objects
     pcl::ConvexHull<pcl::PointXYZ> hull;
     hull.setDimension(2);

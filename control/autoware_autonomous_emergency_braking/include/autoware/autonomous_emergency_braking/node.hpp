@@ -347,6 +347,7 @@ public:
   double a_ego_min_;
   double a_obj_min_;
   double cluster_tolerance_;
+  double cluster_minimum_height_;
   int minimum_cluster_size_;
   int maximum_cluster_size_;
   double imu_prediction_time_horizon_;
