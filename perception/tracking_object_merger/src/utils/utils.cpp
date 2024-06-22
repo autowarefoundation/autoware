@@ -153,20 +153,20 @@ TrackedObject predictPastOrFutureTrackedObject(const TrackedObject & obj, const 
 /**
  * @brief predict past or future tracked objects
  *
- * @param obj
+ * @param input_objects
  * @param header
  * @return TrackedObjects
  */
 TrackedObjects predictPastOrFutureTrackedObjects(
-  const TrackedObjects & obj, const std_msgs::msg::Header & header)
+  const TrackedObjects & input_objects, const std_msgs::msg::Header & header)
 {
   // for each object, predict past or future
   TrackedObjects output_objects;
-  output_objects.header = obj.header;
+  output_objects.header = input_objects.header;
   output_objects.header.stamp = header.stamp;
 
-  const auto dt = (rclcpp::Time(header.stamp) - rclcpp::Time(obj.header.stamp)).seconds();
-  for (const auto & obj : obj.objects) {
+  const auto dt = (rclcpp::Time(header.stamp) - rclcpp::Time(input_objects.header.stamp)).seconds();
+  for (const auto & obj : input_objects.objects) {
     output_objects.objects.push_back(predictPastOrFutureTrackedObject(obj, dt));
   }
   return output_objects;

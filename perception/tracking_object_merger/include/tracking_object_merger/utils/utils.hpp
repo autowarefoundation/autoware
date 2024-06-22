@@ -93,7 +93,7 @@ TrackedObject linearInterpolationForTrackedObject(
 TrackedObject predictPastOrFutureTrackedObject(const TrackedObject & obj, const double dt);
 
 TrackedObjects predictPastOrFutureTrackedObjects(
-  const TrackedObjects & obj, const std_msgs::msg::Header & header);
+  const TrackedObjects & input_objects, const std_msgs::msg::Header & header);
 
 // predict tracked objects
 TrackedObjects interpolateTrackedObjects(
