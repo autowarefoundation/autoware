@@ -72,7 +72,7 @@ public:
 
   void onInitialize() override;
 
-  void handleMouseEvent(rviz_common::ViewportMouseEvent & evt) override;
+  void handleMouseEvent(rviz_common::ViewportMouseEvent & event) override;
 
   void lookAt(const Ogre::Vector3 & point) override;
 
@@ -96,7 +96,7 @@ protected:
   void orientCamera();
 
   void setPosition(const Ogre::Vector3 & pos_rel_target);
-  void move_camera(float x, float y);
+  void move_camera(float dx, float dy);
   void updateCamera();
   Ogre::SceneNode * getCameraParent(Ogre::Camera * camera);
 

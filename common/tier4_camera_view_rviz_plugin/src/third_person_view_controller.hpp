@@ -68,7 +68,7 @@ class ThirdPersonViewController : public rviz_default_plugins::view_controllers:
 public:
   void onInitialize() override;
 
-  void handleMouseEvent(rviz_common::ViewportMouseEvent & evt) override;
+  void handleMouseEvent(rviz_common::ViewportMouseEvent & event) override;
 
   void lookAt(const Ogre::Vector3 & point) override;
 
