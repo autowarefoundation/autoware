@@ -105,7 +105,7 @@ PointCloudConcatenationComponent::PointCloudConcatenationComponent(
   {
     RCLCPP_INFO_STREAM(
       get_logger(), "Subscribing to " << input_topics_.size() << " user given topics as inputs:");
-    for (auto & input_topic : input_topics_) {
+    for (const auto & input_topic : input_topics_) {
       RCLCPP_INFO_STREAM(get_logger(), " - " << input_topic);
     }
 
