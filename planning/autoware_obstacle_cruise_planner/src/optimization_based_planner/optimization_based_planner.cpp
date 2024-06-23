@@ -702,7 +702,6 @@ void OptimizationBasedPlanner::publishDebugTrajectory(
   const SBoundaries & s_boundaries, const VelocityOptimizer::OptimizationResult & opt_result)
 {
   const auto & current_time = planner_data.current_time;
-  const std::vector<double> time = opt_result.t;
   // Publish optimized result and boundary
   Trajectory boundary_traj;
   boundary_traj.header.stamp = current_time;
