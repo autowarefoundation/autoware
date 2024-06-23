@@ -22,9 +22,9 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <autoware_perception_msgs/msg/detected_object.hpp>
-#include <autoware_perception_msgs/msg/shape.hpp>
-#include <autoware_perception_msgs/msg/tracked_object.hpp>
+#include "autoware_perception_msgs/msg/detected_object.hpp"
+#include "autoware_perception_msgs/msg/shape.hpp"
+#include "autoware_perception_msgs/msg/tracked_object.hpp"
 #include <geometry_msgs/msg/polygon.hpp>
 #include <geometry_msgs/msg/transform.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
@@ -38,45 +38,6 @@
 
 namespace utils
 {
-enum MSG_COV_IDX {
-  X_X = 0,
-  X_Y = 1,
-  X_Z = 2,
-  X_ROLL = 3,
-  X_PITCH = 4,
-  X_YAW = 5,
-  Y_X = 6,
-  Y_Y = 7,
-  Y_Z = 8,
-  Y_ROLL = 9,
-  Y_PITCH = 10,
-  Y_YAW = 11,
-  Z_X = 12,
-  Z_Y = 13,
-  Z_Z = 14,
-  Z_ROLL = 15,
-  Z_PITCH = 16,
-  Z_YAW = 17,
-  ROLL_X = 18,
-  ROLL_Y = 19,
-  ROLL_Z = 20,
-  ROLL_ROLL = 21,
-  ROLL_PITCH = 22,
-  ROLL_YAW = 23,
-  PITCH_X = 24,
-  PITCH_Y = 25,
-  PITCH_Z = 26,
-  PITCH_ROLL = 27,
-  PITCH_PITCH = 28,
-  PITCH_YAW = 29,
-  YAW_X = 30,
-  YAW_Y = 31,
-  YAW_Z = 32,
-  YAW_ROLL = 33,
-  YAW_PITCH = 34,
-  YAW_YAW = 35
-};
-
 enum BBOX_IDX {
   FRONT_SURFACE = 0,
   RIGHT_SURFACE = 1,
@@ -132,7 +93,8 @@ inline int getNearestCornerOrSurface(
   // (left) |  | (right)
   //         --
   //     x- (rear)
-  int xgrid, ygrid;
+  int xgrid = 0;
+  int ygrid = 0;
   const int labels[3][3] = {
     {BBOX_IDX::FRONT_L_CORNER, BBOX_IDX::FRONT_SURFACE, BBOX_IDX::FRONT_R_CORNER},
     {BBOX_IDX::LEFT_SURFACE, BBOX_IDX::INSIDE, BBOX_IDX::RIGHT_SURFACE},
@@ -153,34 +115,6 @@ inline int getNearestCornerOrSurface(
   }
 
   return labels[xgrid][ygrid];  // 0 to 7 + 1(null) value
-}
-
-/**
- * @brief Get the Nearest Corner or Surface from detected object
- * @param object: input object
- * @param yaw: object yaw angle (after solved front and back uncertainty)
- * @param self_transform
- * @return nearest corner or surface index
- */
-inline int getNearestCornerOrSurfaceFromObject(
-  const autoware_perception_msgs::msg::DetectedObject & object, const double & yaw,
-  const geometry_msgs::msg::Transform & self_transform)
-{
-  // only work for BBOX shape
-  if (object.shape.type != autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
-    return BBOX_IDX::INVALID;
-  }
-
-  // extract necessary information from input object
-  double x, y, width, length;
-  x = object.kinematics.pose_with_covariance.pose.position.x;
-  y = object.kinematics.pose_with_covariance.pose.position.y;
-  // yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation); //not use raw yaw
-  // now
-  width = object.shape.dimensions.y;
-  length = object.shape.dimensions.x;
-
-  return getNearestCornerOrSurface(x, y, yaw, width, length, self_transform);
 }
 
 /**
@@ -226,30 +160,6 @@ inline Eigen::Vector2d calcOffsetVectorFromShapeChange(
 }
 
 /**
- * @brief post-processing to recover bounding box center from tracking point and offset vector
- * @param x: x of tracking point estimated with ekf
- * @param y: y of tracking point estimated with ekf
- * @param yaw: yaw of tracking point estimated with ekf
- * @param dw: diff of width: w_estimated - w_input
- * @param dl: diff of length: l_estimated - l_input
- * @param indx: closest corner or surface index
- * @param tracking_offset: tracking offset between bounding box center and tracking point
- */
-inline Eigen::Vector2d recoverFromTrackingPoint(
-  const double x, const double y, const double yaw, const double dw, const double dl,
-  const int indx, const Eigen::Vector2d & tracking_offset)
-{
-  const Eigen::Vector2d tracking_point{x, y};
-  const Eigen::Matrix2d R = Eigen::Rotation2Dd(yaw).toRotationMatrix();
-
-  const Eigen::Vector2d shape_change_offset = calcOffsetVectorFromShapeChange(dw, dl, indx);
-
-  Eigen::Vector2d output_center = tracking_point - R * tracking_offset - R * shape_change_offset;
-
-  return output_center;
-}
-
-/**
  * @brief Convert input object center to tracking point based on nearest corner information
  * 1. update anchor offset vector, 2. offset input bbox based on tracking_offset vector and
  * prediction yaw angle
@@ -274,9 +184,8 @@ inline void calcAnchorPointOffset(
   }
 
   // current object width and height
-  double w_n, l_n;
-  l_n = input_object.shape.dimensions.x;
-  w_n = input_object.shape.dimensions.y;
+  const double w_n = input_object.shape.dimensions.y;
+  const double l_n = input_object.shape.dimensions.x;
 
   // update offset
   const Eigen::Vector2d offset = calcOffsetVectorFromShapeChange(w_n - w, l_n - l, indx);
@@ -304,26 +213,18 @@ inline bool convertConvexHullToBoundingBox(
   }
 
   // look for bounding box boundary
-  double max_x = 0;
-  double max_y = 0;
-  double min_x = 0;
-  double min_y = 0;
-  double max_z = 0;
-  for (size_t i = 0; i < input_object.shape.footprint.points.size(); ++i) {
-    const double foot_x = input_object.shape.footprint.points.at(i).x;
-    const double foot_y = input_object.shape.footprint.points.at(i).y;
-    const double foot_z = input_object.shape.footprint.points.at(i).z;
-    max_x = std::max(max_x, foot_x);
-    max_y = std::max(max_y, foot_y);
-    min_x = std::min(min_x, foot_x);
-    min_y = std::min(min_y, foot_y);
-    max_z = std::max(max_z, foot_z);
+  float max_x = 0;
+  float max_y = 0;
+  float min_x = 0;
+  float min_y = 0;
+  float max_z = 0;
+  for (const auto & point : input_object.shape.footprint.points) {
+    max_x = std::max(max_x, point.x);
+    max_y = std::max(max_y, point.y);
+    min_x = std::min(min_x, point.x);
+    min_y = std::min(min_y, point.y);
+    max_z = std::max(max_z, point.z);
   }
-
-  // calc bounding box state
-  const double length = max_x - min_x;
-  const double width = max_y - min_y;
-  const double height = max_z;
 
   // calc new center
   const Eigen::Vector2d center{
@@ -340,9 +241,9 @@ inline bool convertConvexHullToBoundingBox(
   output_object.kinematics.pose_with_covariance.pose.position.y = new_center.y();
 
   output_object.shape.type = autoware_perception_msgs::msg::Shape::BOUNDING_BOX;
-  output_object.shape.dimensions.x = length;
-  output_object.shape.dimensions.y = width;
-  output_object.shape.dimensions.z = height;
+  output_object.shape.dimensions.x = max_x - min_x;
+  output_object.shape.dimensions.y = max_y - min_y;
+  output_object.shape.dimensions.z = max_z;
 
   return true;
 }

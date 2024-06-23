@@ -28,8 +28,8 @@
 
 #include "autoware_perception_msgs/msg/detected_object.hpp"
 #include "autoware_perception_msgs/msg/tracked_object.hpp"
-#include "geometry_msgs/msg/point.hpp"
-#include "unique_identifier_msgs/msg/uuid.hpp"
+#include <geometry_msgs/msg/point.hpp>
+#include <unique_identifier_msgs/msg/uuid.hpp>
 
 #include <vector>
 
@@ -54,7 +54,7 @@ public:
     const rclcpp::Time & time,
     const std::vector<autoware_perception_msgs::msg::ObjectClassification> & classification,
     const size_t & channel_size);
-  virtual ~Tracker() {}
+  virtual ~Tracker() = default;
 
   void initializeExistenceProbabilities(
     const uint & channel_index, const float & existence_probability);

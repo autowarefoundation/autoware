@@ -19,10 +19,9 @@
 #ifndef MULTI_OBJECT_TRACKER__TRACKER__MODEL__UNKNOWN_TRACKER_HPP_
 #define MULTI_OBJECT_TRACKER__TRACKER__MODEL__UNKNOWN_TRACKER_HPP_
 
+#include "kalman_filter/kalman_filter.hpp"
 #include "multi_object_tracker/tracker/model/tracker_base.hpp"
 #include "multi_object_tracker/tracker/motion_model/cv_motion_model.hpp"
-
-#include <kalman_filter/kalman_filter.hpp>
 
 class UnknownTracker : public Tracker
 {
@@ -30,7 +29,6 @@ private:
   autoware_perception_msgs::msg::DetectedObject object_;
   rclcpp::Logger logger_;
 
-private:
   struct EkfParams
   {
     double r_cov_x;
@@ -41,9 +39,7 @@ private:
 
   double z_;
 
-private:
   CVMotionModel motion_model_;
-  const char DIM = motion_model_.DIM;
   using IDX = CVMotionModel::IDX;
 
 public:
@@ -64,7 +60,6 @@ public:
   bool getTrackedObject(
     const rclcpp::Time & time,
     autoware_perception_msgs::msg::TrackedObject & object) const override;
-  virtual ~UnknownTracker() {}
 };
 
 #endif  // MULTI_OBJECT_TRACKER__TRACKER__MODEL__UNKNOWN_TRACKER_HPP_

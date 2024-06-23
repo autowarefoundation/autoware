@@ -19,10 +19,10 @@
 #ifndef MULTI_OBJECT_TRACKER__TRACKER__MODEL__NORMAL_VEHICLE_TRACKER_HPP_
 #define MULTI_OBJECT_TRACKER__TRACKER__MODEL__NORMAL_VEHICLE_TRACKER_HPP_
 
+#include "kalman_filter/kalman_filter.hpp"
 #include "multi_object_tracker/tracker/model/tracker_base.hpp"
 #include "multi_object_tracker/tracker/motion_model/bicycle_motion_model.hpp"
-
-#include <kalman_filter/kalman_filter.hpp>
+#include "multi_object_tracker/tracker/object_model/object_model.hpp"
 
 class NormalVehicleTracker : public Tracker
 {
@@ -30,14 +30,8 @@ private:
   autoware_perception_msgs::msg::DetectedObject object_;
   rclcpp::Logger logger_;
 
-private:
-  struct EkfParams
-  {
-    double r_cov_x;
-    double r_cov_y;
-    double r_cov_yaw;
-    double r_cov_vel;
-  } ekf_params_;
+  object_model::ObjectModel object_model_ = object_model::normal_vehicle;
+
   double velocity_deviation_threshold_;
 
   double z_;
@@ -51,9 +45,7 @@ private:
   BoundingBox bounding_box_;
   Eigen::Vector2d tracking_offset_;
 
-private:
   BicycleMotionModel motion_model_;
-  const char DIM = motion_model_.DIM;
   using IDX = BicycleMotionModel::IDX;
 
 public:
@@ -66,15 +58,16 @@ public:
   bool measure(
     const autoware_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
     const geometry_msgs::msg::Transform & self_transform) override;
-  autoware_perception_msgs::msg::DetectedObject getUpdatingObject(
-    const autoware_perception_msgs::msg::DetectedObject & object,
-    const geometry_msgs::msg::Transform & self_transform);
   bool measureWithPose(const autoware_perception_msgs::msg::DetectedObject & object);
   bool measureWithShape(const autoware_perception_msgs::msg::DetectedObject & object);
   bool getTrackedObject(
     const rclcpp::Time & time,
     autoware_perception_msgs::msg::TrackedObject & object) const override;
-  virtual ~NormalVehicleTracker() {}
+
+private:
+  autoware_perception_msgs::msg::DetectedObject getUpdatingObject(
+    const autoware_perception_msgs::msg::DetectedObject & object,
+    const geometry_msgs::msg::Transform & self_transform);
 };
 
 #endif  // MULTI_OBJECT_TRACKER__TRACKER__MODEL__NORMAL_VEHICLE_TRACKER_HPP_

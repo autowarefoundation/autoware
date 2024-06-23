@@ -19,10 +19,10 @@
 #ifndef MULTI_OBJECT_TRACKER__TRACKER__MODEL__PEDESTRIAN_TRACKER_HPP_
 #define MULTI_OBJECT_TRACKER__TRACKER__MODEL__PEDESTRIAN_TRACKER_HPP_
 
+#include "kalman_filter/kalman_filter.hpp"
 #include "multi_object_tracker/tracker/model/tracker_base.hpp"
 #include "multi_object_tracker/tracker/motion_model/ctrv_motion_model.hpp"
-
-#include <kalman_filter/kalman_filter.hpp>
+#include "multi_object_tracker/tracker/object_model/object_model.hpp"
 
 // cspell: ignore CTRV
 
@@ -32,13 +32,7 @@ private:
   autoware_perception_msgs::msg::DetectedObject object_;
   rclcpp::Logger logger_;
 
-private:
-  struct EkfParams
-  {
-    double r_cov_x;
-    double r_cov_y;
-    double r_cov_yaw;
-  } ekf_params_;
+  object_model::ObjectModel object_model_ = object_model::pedestrian;
 
   double z_;
 
@@ -56,9 +50,7 @@ private:
   BoundingBox bounding_box_;
   Cylinder cylinder_;
 
-private:
   CTRVMotionModel motion_model_;
-  const char DIM = motion_model_.DIM;
   using IDX = CTRVMotionModel::IDX;
 
 public:
@@ -71,15 +63,16 @@ public:
   bool measure(
     const autoware_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
     const geometry_msgs::msg::Transform & self_transform) override;
-  autoware_perception_msgs::msg::DetectedObject getUpdatingObject(
-    const autoware_perception_msgs::msg::DetectedObject & object,
-    const geometry_msgs::msg::Transform & self_transform);
   bool measureWithPose(const autoware_perception_msgs::msg::DetectedObject & object);
   bool measureWithShape(const autoware_perception_msgs::msg::DetectedObject & object);
   bool getTrackedObject(
     const rclcpp::Time & time,
     autoware_perception_msgs::msg::TrackedObject & object) const override;
-  virtual ~PedestrianTracker() {}
+
+private:
+  autoware_perception_msgs::msg::DetectedObject getUpdatingObject(
+    const autoware_perception_msgs::msg::DetectedObject & object,
+    const geometry_msgs::msg::Transform & self_transform) const;
 };
 
 #endif  // MULTI_OBJECT_TRACKER__TRACKER__MODEL__PEDESTRIAN_TRACKER_HPP_

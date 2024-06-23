@@ -19,10 +19,10 @@
 #ifndef MULTI_OBJECT_TRACKER__TRACKER__MOTION_MODEL__BICYCLE_MOTION_MODEL_HPP_
 #define MULTI_OBJECT_TRACKER__TRACKER__MOTION_MODEL__BICYCLE_MOTION_MODEL_HPP_
 
+#include "kalman_filter/kalman_filter.hpp"
 #include "multi_object_tracker/tracker/motion_model/motion_model_base.hpp"
 
 #include <Eigen/Core>
-#include <kalman_filter/kalman_filter.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #ifdef ROS_DISTRO_GALACTIC
@@ -47,6 +47,8 @@ private:
   {
     double q_stddev_acc_long;
     double q_stddev_acc_lat;
+    double q_cov_acc_long;
+    double q_cov_acc_lat;
     double q_stddev_yaw_rate_min;
     double q_stddev_yaw_rate_max;
     double q_cov_slip_rate_min;

@@ -19,8 +19,9 @@
 #ifndef MULTI_OBJECT_TRACKER__TRACKER__MOTION_MODEL__MOTION_MODEL_BASE_HPP_
 #define MULTI_OBJECT_TRACKER__TRACKER__MOTION_MODEL__MOTION_MODEL_BASE_HPP_
 
+#include "kalman_filter/kalman_filter.hpp"
+
 #include <Eigen/Core>
-#include <kalman_filter/kalman_filter.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #ifdef ROS_DISTRO_GALACTIC

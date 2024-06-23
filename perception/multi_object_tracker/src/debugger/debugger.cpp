@@ -98,7 +98,7 @@ void TrackerDebugger::checkDelay(diagnostic_updater::DiagnosticStatusWrapper & s
     stat.summary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Measurement time is not set.");
     return;
   }
-  const double & delay = pipeline_latency_ms_;  // [s]
+  const double & delay = pipeline_latency_ms_ / 1e3;  // [s]
 
   if (delay == 0.0) {
     stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "Detection delay is not calculated.");
