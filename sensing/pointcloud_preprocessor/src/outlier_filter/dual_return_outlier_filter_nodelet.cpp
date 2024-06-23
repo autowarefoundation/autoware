@@ -85,28 +85,17 @@ void DualReturnOutlierFilterComponent::onVisibilityChecker(DiagnosticStatusWrapp
   // Add values
   stat.add("value", std::to_string(visibility_));
 
-  // Judge level
   auto level = DiagnosticStatus::OK;
+  std::string msg = "OK";
   if (visibility_ < 0) {
     level = DiagnosticStatus::STALE;
+    msg = "STALE";
   } else if (visibility_ < visibility_error_threshold_) {
     level = DiagnosticStatus::ERROR;
+    msg = "ERROR: low visibility in dual outlier filter";
   } else if (visibility_ < visibility_warn_threshold_) {
     level = DiagnosticStatus::WARN;
-  } else {
-    level = DiagnosticStatus::OK;
-  }
-
-  // Set message
-  std::string msg;
-  if (level == DiagnosticStatus::OK) {
-    msg = "OK";
-  } else if (level == DiagnosticStatus::WARN) {
     msg = "WARNING: low visibility in dual outlier filter";
-  } else if (level == DiagnosticStatus::ERROR) {
-    msg = "ERROR: low visibility in dual outlier filter";
-  } else if (level == DiagnosticStatus::STALE) {
-    msg = "STALE";
   }
   stat.summary(level, msg);
 }
