@@ -26,7 +26,7 @@
 
 #include <OgreColourValue.h>
 #include <OgreManualObject.h>
-#include <OgreVector3.h>
+#include <OgreVector.h>
 
 #include <deque>
 #include <memory>

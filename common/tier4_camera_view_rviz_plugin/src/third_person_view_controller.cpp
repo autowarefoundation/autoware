@@ -56,7 +56,7 @@
 #include <OgreQuaternion.h>
 #include <OgreRay.h>
 #include <OgreSceneNode.h>
-#include <OgreVector3.h>
+#include <OgreVector.h>
 #include <OgreViewport.h>
 #include <stdint.h>
 

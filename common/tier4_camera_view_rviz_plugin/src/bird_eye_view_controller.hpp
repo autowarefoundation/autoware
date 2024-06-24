@@ -46,7 +46,7 @@
 #include "rviz_common/frame_position_tracking_view_controller.hpp"
 
 #include <OgreQuaternion.h>
-#include <OgreVector3.h>
+#include <OgreVector.h>
 
 namespace rviz_common
 {

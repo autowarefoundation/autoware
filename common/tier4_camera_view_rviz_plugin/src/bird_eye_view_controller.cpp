@@ -53,7 +53,7 @@
 #include <OgreQuaternion.h>
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
-#include <OgreVector3.h>
+#include <OgreVector.h>
 #include <OgreViewport.h>
 
 namespace tier4_camera_view_rviz_plugin
