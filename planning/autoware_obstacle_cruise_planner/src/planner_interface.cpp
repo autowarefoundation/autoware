@@ -623,9 +623,9 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
     }();
 
     // insert slow down velocity between slow start and end
-    for (size_t i = (slow_down_start_idx ? *slow_down_start_idx : 0); i <= *slow_down_end_idx;
-         ++i) {
-      auto & traj_point = slow_down_traj_points.at(i);
+    for (size_t j = (slow_down_start_idx ? *slow_down_start_idx : 0); j <= *slow_down_end_idx;
+         ++j) {
+      auto & traj_point = slow_down_traj_points.at(j);
       traj_point.longitudinal_velocity_mps =
         std::min(traj_point.longitudinal_velocity_mps, static_cast<float>(stable_slow_down_vel));
     }
