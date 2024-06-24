@@ -49,10 +49,11 @@ TEST_F(TestRouteHandler, getGoalLaneId)
 
 TEST_F(TestRouteHandler, getLaneletSequenceWhenOverlappingRoute)
 {
-  set_route_handler("/test_map/overlap_map.osm");
+  set_route_handler("overlap_map.osm");
   ASSERT_FALSE(route_handler_->isHandlerReady());
 
-  geometry_msgs::msg::Pose start_pose, goal_pose;
+  geometry_msgs::msg::Pose start_pose;
+  geometry_msgs::msg::Pose goal_pose;
   start_pose.position = autoware::universe_utils::createPoint(3728.870361, 73739.281250, 0);
   start_pose.orientation = autoware::universe_utils::createQuaternion(0, 0, -0.513117, 0.858319);
   goal_pose.position = autoware::universe_utils::createPoint(3729.961182, 73727.328125, 0);
@@ -79,11 +80,12 @@ TEST_F(TestRouteHandler, getLaneletSequenceWhenOverlappingRoute)
 
 TEST_F(TestRouteHandler, getClosestRouteLaneletFromLaneletWhenOverlappingRoute)
 {
-  set_route_handler("/test_map/overlap_map.osm");
-  set_test_route("/test_route/overlap_test_route.yaml");
+  set_route_handler("overlap_map.osm");
+  set_test_route("overlap_test_route.yaml");
   ASSERT_TRUE(route_handler_->isHandlerReady());
 
-  geometry_msgs::msg::Pose reference_pose, search_pose;
+  geometry_msgs::msg::Pose reference_pose;
+  geometry_msgs::msg::Pose search_pose;
 
   lanelet::ConstLanelet reference_lanelet;
   reference_pose.position = autoware::universe_utils::createPoint(3730.88, 73735.3, 0);
@@ -102,71 +104,189 @@ TEST_F(TestRouteHandler, getClosestRouteLaneletFromLaneletWhenOverlappingRoute)
   ASSERT_EQ(closest_lanelet.id(), 345);
 
   found_lanelet = route_handler_->getClosestRouteLaneletFromLanelet(
-    search_pose, reference_lanelet, &closest_lanelet, 3.0, 1.046);
+    search_pose, reference_lanelet, &closest_lanelet, dist_threshold, yaw_threshold);
   ASSERT_TRUE(found_lanelet);
   ASSERT_EQ(closest_lanelet.id(), 277);
 }
 
-// TEST_F(TestRouteHandler, getClosestLaneletWithinRouteWhenPointsInRoute)
-// {
-//   lanelet::ConstLanelet closest_lane;
+TEST_F(TestRouteHandler, CheckLaneIsInGoalRouteSection)
+{
+  const auto lane = route_handler_->getLaneletsFromId(4785);
+  const auto is_lane_in_goal_route_section = route_handler_->isInGoalRouteSection(lane);
+  ASSERT_TRUE(is_lane_in_goal_route_section);
+}
 
-//   Pose search_pose;
+TEST_F(TestRouteHandler, CheckLaneIsNotInGoalRouteSection)
+{
+  const auto lane = route_handler_->getLaneletsFromId(4780);
+  const auto is_lane_in_goal_route_section = route_handler_->isInGoalRouteSection(lane);
+  ASSERT_FALSE(is_lane_in_goal_route_section);
+}
 
-//   search_pose.position = autoware::universe_utils::createPoint(-1.0, 1.75, 0);
-//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
-//   const auto closest_lane_obtained7 =
-//     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
+TEST_F(TestRouteHandler, checkGetLaneletSequence)
+{
+  const auto current_pose = autoware::test_utils::createPose(-50.0, 1.75, 0.0, 0.0, 0.0, 0.0);
 
-//   ASSERT_TRUE(closest_lane_obtained7);
-//   ASSERT_EQ(closest_lane.id(), 4775);
+  lanelet::ConstLanelet closest_lanelet;
+  const auto found_closest_lanelet = route_handler_->getClosestLaneletWithConstrainsWithinRoute(
+    current_pose, &closest_lanelet, dist_threshold, yaw_threshold);
+  ASSERT_TRUE(found_closest_lanelet);
+  ASSERT_EQ(closest_lanelet.id(), 4765ul);
 
-//   search_pose.position = autoware::universe_utils::createPoint(-0.5, 1.75, 0);
-//   const auto closest_lane_obtained =
-//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
-//     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
+  const auto current_lanes = route_handler_->getLaneletSequence(
+    closest_lanelet, current_pose, backward_path_length, forward_path_length);
 
-//   ASSERT_TRUE(closest_lane_obtained);
-//   ASSERT_EQ(closest_lane.id(), 4775);
+  ASSERT_EQ(current_lanes.size(), 6ul);
+  ASSERT_EQ(current_lanes.at(0).id(), 4765ul);
+  ASSERT_EQ(current_lanes.at(1).id(), 4770ul);
+  ASSERT_EQ(current_lanes.at(2).id(), 4775ul);
+  ASSERT_EQ(current_lanes.at(3).id(), 4424ul);
+  ASSERT_EQ(current_lanes.at(4).id(), 4780ul);
+  ASSERT_EQ(current_lanes.at(5).id(), 4785ul);
+}
 
-//   search_pose.position = autoware::universe_utils::createPoint(-.01, 1.75, 0);
-//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
-//   const auto closest_lane_obtained3 =
-//     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
+TEST_F(TestRouteHandler, checkLateralIntervalToPreferredLaneWhenLaneChangeToRight)
+{
+  const auto current_lanes = get_current_lanes();
 
-//   ASSERT_TRUE(closest_lane_obtained3);
-//   ASSERT_EQ(closest_lane.id(), 4775);
+  // The input is within expectation.
+  // this lane is of preferred lane type
+  std::for_each(current_lanes.begin(), current_lanes.begin() + 3, [&](const auto & lane) {
+    const auto result = route_handler_->getLateralIntervalsToPreferredLane(lane, Direction::RIGHT);
+    ASSERT_EQ(result.size(), 0ul);
+  });
 
-//   search_pose.position = autoware::universe_utils::createPoint(0.0, 1.75, 0);
-//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
-//   const auto closest_lane_obtained1 =
-//     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
+  // The input is within expectation.
+  // this alternative lane is a subset of preferred lane route section
+  std::for_each(current_lanes.begin() + 3, current_lanes.end(), [&](const auto & lane) {
+    const auto result = route_handler_->getLateralIntervalsToPreferredLane(lane, Direction::RIGHT);
+    ASSERT_EQ(result.size(), 1ul);
+    EXPECT_DOUBLE_EQ(result.at(0), -3.5);
+  });
 
-//   ASSERT_TRUE(closest_lane_obtained1);
-//   ASSERT_EQ(closest_lane.id(), 4775);
+  // The input is within expectation.
+  // Although Direction::NONE, the function should still return result similar to
+  // Direction::RIGHT.
+  std::for_each(current_lanes.begin(), current_lanes.begin() + 3, [&](const auto & lane) {
+    const auto result = route_handler_->getLateralIntervalsToPreferredLane(lane, Direction::NONE);
+    ASSERT_EQ(result.size(), 0ul);
+  });
 
-//   search_pose.position = autoware::universe_utils::createPoint(0.01, 1.75, 0);
-//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
-//   const auto closest_lane_obtained2 =
-//     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
+  // The input is within expectation.
+  // Although Direction::NONE is provided, the function should behave similarly to
+  // Direction::RIGHT.
+  std::for_each(current_lanes.begin() + 3, current_lanes.end(), [&](const auto & lane) {
+    const auto result = route_handler_->getLateralIntervalsToPreferredLane(lane, Direction::NONE);
+    ASSERT_EQ(result.size(), 1ul);
+    EXPECT_DOUBLE_EQ(result.at(0), -3.5);
+  });
+}
 
-//   ASSERT_TRUE(closest_lane_obtained2);
-//   ASSERT_EQ(closest_lane.id(), 4424);
+TEST_F(TestRouteHandler, checkLateralIntervalToPreferredLaneUsingUnexpectedResults)
+{
+  const auto current_lanes = get_current_lanes();
 
-//   search_pose.position = autoware::universe_utils::createPoint(0.5, 1.75, 0);
-//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
-//   const auto closest_lane_obtained4 =
-//     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
+  std::for_each(current_lanes.begin(), current_lanes.end(), [&](const auto & lane) {
+    const auto result = route_handler_->getLateralIntervalsToPreferredLane(lane, Direction::LEFT);
+    ASSERT_EQ(result.size(), 0ul);
+  });
+}
 
-//   ASSERT_TRUE(closest_lane_obtained4);
-//   ASSERT_EQ(closest_lane.id(), 4424);
+TEST_F(TestRouteHandler, testGetCenterLinePath)
+{
+  const auto current_lanes = route_handler_->getLaneletsFromIds({4424, 4780, 4785});
+  {
+    // The input is within expectation.
+    const auto center_line_path = route_handler_->getCenterLinePath(current_lanes, 0.0, 50.0);
+    ASSERT_EQ(center_line_path.points.size(), 51);  // 26 + 26 - 1(overlapped)
+    ASSERT_EQ(center_line_path.points.back().lane_ids.size(), 2);
+    ASSERT_EQ(center_line_path.points.back().lane_ids.at(0), 4780);
+    ASSERT_EQ(center_line_path.points.back().lane_ids.at(1), 4785);
+  }
+  {
+    // The input is broken.
+    // s_start is negative, and s_end is over the boundary.
+    const auto center_line_path = route_handler_->getCenterLinePath(current_lanes, -1.0, 200.0);
+    ASSERT_EQ(center_line_path.points.size(), 76);  // 26 + 26 + 26 - 2(overlapped)
+    ASSERT_EQ(center_line_path.points.front().lane_ids.size(), 1);
+    ASSERT_EQ(center_line_path.points.front().lane_ids.at(0), 4424);
+    ASSERT_EQ(center_line_path.points.back().lane_ids.size(), 1);
+    ASSERT_EQ(center_line_path.points.back().lane_ids.at(0), 4785);
+  }
+}
+TEST_F(TestRouteHandler, DISABLED_testGetCenterLinePathWhenLanesIsNotConnected)
+{
+  // broken current lanes. 4424 and 4785 are not connected directly.
+  const auto current_lanes = route_handler_->getLaneletsFromIds({4424, 4780, 4785});
 
-//   search_pose.position = autoware::universe_utils::createPoint(1.0, 1.75, 0);
-//   search_pose.orientation = autoware::universe_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
-//   const auto closest_lane_obtained5 =
-//     route_handler_->getClosestLaneletWithinRoute(search_pose, &closest_lane);
+  // The input is broken. Test is disabled because it doesn't pass.
+  const auto center_line_path = route_handler_->getCenterLinePath(current_lanes, 0.0, 75.0);
+  ASSERT_EQ(center_line_path.points.size(), 26);  // 26 + 26 + 26 - 2(overlapped)
+  ASSERT_EQ(center_line_path.points.front().lane_ids.size(), 1);
+  ASSERT_EQ(center_line_path.points.front().lane_ids.at(0), 4424);
+  ASSERT_EQ(center_line_path.points.back().lane_ids.size(), 1);
+  ASSERT_EQ(center_line_path.points.back().lane_ids.at(0), 4424);
+}
 
-//   ASSERT_TRUE(closest_lane_obtained5);
-//   ASSERT_EQ(closest_lane.id(), 4424);
-// }
+TEST_F(TestRouteHandler, getClosestLaneletWithinRouteWhenPointsInRoute)
+{
+  auto get_closest_lanelet_within_route =
+    [&](double x, double y, double z) -> std::optional<lanelet::Id> {
+    const auto pose = autoware::test_utils::createPose(x, y, z, 0.0, 0.0, 0.0);
+    lanelet::ConstLanelet closest_lanelet;
+    const auto closest_lane_obtained =
+      route_handler_->getClosestLaneletWithinRoute(pose, &closest_lanelet);
+    if (!closest_lane_obtained) {
+      return std::nullopt;
+    }
+    return closest_lanelet.id();
+  };
+
+  ASSERT_TRUE(get_closest_lanelet_within_route(-0.5, 1.75, 0).has_value());
+  ASSERT_EQ(get_closest_lanelet_within_route(-0.5, 1.75, 0).value(), 4775ul);
+
+  ASSERT_TRUE(get_closest_lanelet_within_route(-0.01, 1.75, 0).has_value());
+  ASSERT_EQ(get_closest_lanelet_within_route(-0.01, 1.75, 0).value(), 4775ul);
+
+  ASSERT_TRUE(get_closest_lanelet_within_route(0.0, 1.75, 0).has_value());
+  ASSERT_EQ(get_closest_lanelet_within_route(0.0, 1.75, 0).value(), 4775ul);
+
+  ASSERT_TRUE(get_closest_lanelet_within_route(0.01, 1.75, 0).has_value());
+  ASSERT_EQ(get_closest_lanelet_within_route(0.01, 1.75, 0).value(), 4424ul);
+
+  ASSERT_TRUE(get_closest_lanelet_within_route(0.5, 1.75, 0).has_value());
+  ASSERT_EQ(get_closest_lanelet_within_route(0.5, 1.75, 0).value(), 4424ul);
+}
+
+TEST_F(TestRouteHandler, testGetLaneChangeTargetLanes)
+{
+  {
+    // The input is within expectation.
+    // There exist no lane changing lane since both 4770 and 4775 are preferred lane.
+    const auto current_lanes = route_handler_->getLaneletsFromIds({4770, 4775});
+    const auto lane_change_lane =
+      route_handler_->getLaneChangeTarget(current_lanes, Direction::RIGHT);
+    ASSERT_FALSE(lane_change_lane.has_value());
+  }
+
+  {
+    // The input is within expectation.
+    // There exist lane changing lane since 4424 is subset of preferred lane 9598.
+    const auto current_lanes = route_handler_->getLaneletsFromIds({4775, 4424});
+    const auto lane_change_lane =
+      route_handler_->getLaneChangeTarget(current_lanes, Direction::RIGHT);
+    EXPECT_TRUE(lane_change_lane.has_value());
+    ASSERT_EQ(lane_change_lane.value().id(), 9598ul);
+  }
+
+  {
+    // The input is within expectation.
+    // There is a lane-changing lane. Within the maximum current lanes, there is an alternative lane
+    // to the preferred lane. Therefore, the lane-changing lane exists.
+    const auto current_lanes = get_current_lanes();
+    const auto lane_change_lane = route_handler_->getLaneChangeTarget(current_lanes);
+    ASSERT_TRUE(lane_change_lane.has_value());
+    ASSERT_EQ(lane_change_lane.value().id(), 9598ul);
+  }
+}
 }  // namespace autoware::route_handler::test

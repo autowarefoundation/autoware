@@ -19,6 +19,8 @@
 #include <rclcpp/logging.hpp>
 #include <rclcpp/node.hpp>
 
+#include <lanelet2_core/geometry/LineString.h>
+
 #include <utility>
 
 namespace autoware::test_utils
@@ -54,14 +56,32 @@ lanelet::LaneletMapPtr loadMap(const std::string & lanelet2_filename)
   lanelet::ErrorMessages errors{};
   lanelet::projection::MGRSProjector projector{};
   lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, projector, &errors);
-  if (errors.empty()) {
-    return map;
+  if (!errors.empty()) {
+    for (const auto & error : errors) {
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("map_loader"), error);
+    }
+    return nullptr;
   }
 
-  for (const auto & error : errors) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("map_loader"), error);
+  for (lanelet::Point3d point : map->pointLayer) {
+    if (point.hasAttribute("local_x")) {
+      point.x() = point.attribute("local_x").asDouble().value();
+    }
+    if (point.hasAttribute("local_y")) {
+      point.y() = point.attribute("local_y").asDouble().value();
+    }
   }
-  return nullptr;
+
+  // realign lanelet borders using updated points
+  for (lanelet::Lanelet lanelet : map->laneletLayer) {
+    auto left = lanelet.leftBound();
+    auto right = lanelet.rightBound();
+    std::tie(left, right) = lanelet::geometry::align(left, right);
+    lanelet.setLeftBound(left);
+    lanelet.setRightBound(right);
+  }
+
+  return map;
 }
 
 LaneletMapBin convertToMapBinMsg(
