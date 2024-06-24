@@ -190,7 +190,6 @@ std::vector<std::vector<float>> ByteTracker::ious(
 
   // bbox_ious
   for (size_t k = 0; k < btlbrs.size(); k++) {
-    std::vector<float> ious_tmp;
     float box_area = (btlbrs[k][2] - btlbrs[k][0] + 1) * (btlbrs[k][3] - btlbrs[k][1] + 1);
     for (size_t n = 0; n < atlbrs.size(); n++) {
       float iw = std::min(atlbrs[n][2], btlbrs[k][2]) - std::max(atlbrs[n][0], btlbrs[k][0]) + 1;
@@ -277,8 +276,6 @@ double ByteTracker::lapjv(
   std::vector<std::vector<float>> cost_c;
   cost_c.assign(cost.begin(), cost.end());
 
-  std::vector<std::vector<float>> cost_c_extended;
-
   int n_rows = cost.size();
   int n_cols = cost[0].size();
   rowsol.resize(n_rows);
@@ -296,6 +293,8 @@ double ByteTracker::lapjv(
   }
 
   if (extend_cost || cost_limit < LONG_MAX) {
+    std::vector<std::vector<float>> cost_c_extended;
+
     n = n_rows + n_cols;
     cost_c_extended.resize(n);
     for (size_t i = 0; i < cost_c_extended.size(); i++) cost_c_extended[i].resize(n);

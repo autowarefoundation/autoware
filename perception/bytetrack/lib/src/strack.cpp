@@ -112,12 +112,6 @@ void STrack::activate(int frame_id)
   this->track_id = this->next_id();
   this->unique_id = boost::uuids::random_generator()();
 
-  std::vector<float> _tlwh_tmp(4);
-  _tlwh_tmp[0] = this->original_tlwh[0];
-  _tlwh_tmp[1] = this->original_tlwh[1];
-  _tlwh_tmp[2] = this->original_tlwh[2];
-  _tlwh_tmp[3] = this->original_tlwh[3];
-  std::vector<float> xyah = tlwh_to_xyah(_tlwh_tmp);
   // init kf
   init_kalman_filter();
   // reflect state
@@ -132,7 +126,6 @@ void STrack::activate(int frame_id)
 
 void STrack::re_activate(STrack & new_track, int frame_id, bool new_id)
 {
-  std::vector<float> xyah = tlwh_to_xyah(new_track.tlwh);
   // TODO(me): write kf update
   Eigen::MatrixXd measurement = Eigen::MatrixXd::Zero(_kf_parameters.dim_z, 1);
   measurement << new_track.tlwh[0], new_track.tlwh[1], new_track.tlwh[2], new_track.tlwh[3];
@@ -155,8 +148,6 @@ void STrack::update(STrack & new_track, int frame_id)
 {
   this->frame_id = frame_id;
   this->tracklet_len++;
-
-  std::vector<float> xyah = tlwh_to_xyah(new_track.tlwh);
 
   // update
   // TODO(me): write update
