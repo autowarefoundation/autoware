@@ -25,7 +25,12 @@
 #include <tier4_perception_msgs/msg/traffic_light_roi_array.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include <image_geometry/pinhole_camera_model.h>
+#if __has_include(<image_geometry/pinhole_camera_model.hpp>)
+#include <image_geometry/pinhole_camera_model.hpp>  // for ROS 2 Jazzy or newer
+#else
+#include <image_geometry/pinhole_camera_model.h>  // for ROS 2 Humble or older
+#endif
+
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
 #include <lanelet2_traffic_rules/TrafficRulesFactory.h>

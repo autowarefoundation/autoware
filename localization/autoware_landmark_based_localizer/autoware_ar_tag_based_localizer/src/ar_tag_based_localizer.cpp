@@ -51,7 +51,11 @@
 #include <opencv4/opencv2/calib3d.hpp>
 #include <opencv4/opencv2/core/quaternion.hpp>
 
-#include <cv_bridge/cv_bridge.h>
+#if __has_include(<cv_bridge/cv_bridge.hpp>)
+#include <cv_bridge/cv_bridge.hpp>  // for ROS 2 Jazzy or newer
+#else
+#include <cv_bridge/cv_bridge.h>  // for ROS 2 Humble or older
+#endif
 #include <tf2/LinearMath/Transform.h>
 
 #include <algorithm>
