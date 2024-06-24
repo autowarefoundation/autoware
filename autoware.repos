@@ -16,6 +16,10 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_common.git
     version: main
+  core/autoware_lanelet2_extension:
+    type: git
+    url: https://github.com/autowarefoundation/autoware_lanelet2_extension.git
+    version: main
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
