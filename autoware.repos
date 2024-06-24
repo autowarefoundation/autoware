@@ -12,9 +12,17 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_internal_msgs.git
     version: main
-  core/autoware_common:
+  core/autoware_cmake:
     type: git
-    url: https://github.com/autowarefoundation/autoware_common.git
+    url: https://github.com/autowarefoundation/autoware_cmake.git
+    version: main
+  core/autoware_utils:
+    type: git
+    url: https://github.com/autowarefoundation/autoware_utils.git
+    version: main
+  core/autoware_lanelet2_extension:
+    type: git
+    url: https://github.com/autowarefoundation/autoware_msgs.git
     version: main
   core/autoware.core:
     type: git
