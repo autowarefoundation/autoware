@@ -55,12 +55,6 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
     ament_index_cpp::get_package_share_directory("autoware_velocity_smoother");
 
   // TODO(esteve): delete when all the modules are migrated to autoware_behavior_velocity_*
-  const auto get_behavior_velocity_module_config_no_prefix = [](const std::string & module) {
-    const auto package_name = "behavior_velocity_" + module + "_module";
-    const auto package_path = ament_index_cpp::get_package_share_directory(package_name);
-    return package_path + "/config/" + module + ".param.yaml";
-  };
-
   const auto get_behavior_velocity_module_config = [](const std::string & module) {
     const auto package_name = "autoware_behavior_velocity_" + module + "_module";
     const auto package_path = ament_index_cpp::get_package_share_directory(package_name);
@@ -103,7 +97,7 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
                    get_behavior_velocity_module_config("no_stopping_area"),
                    get_behavior_velocity_module_config("occlusion_spot"),
                    get_behavior_velocity_module_config("run_out"),
-                   get_behavior_velocity_module_config_no_prefix("speed_bump"),
+                   get_behavior_velocity_module_config("speed_bump"),
                    get_behavior_velocity_module_config("stop_line"),
                    get_behavior_velocity_module_config("traffic_light"),
                    get_behavior_velocity_module_config("virtual_traffic_light"),

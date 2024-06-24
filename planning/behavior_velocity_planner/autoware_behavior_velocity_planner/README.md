@@ -19,7 +19,7 @@ It loads modules as plugins. Please refer to the links listed below for detail o
 - [Occlusion Spot](../autoware_behavior_velocity_occlusion_spot_module/README.md)
 - [No Stopping Area](../autoware_behavior_velocity_no_stopping_area_module/README.md)
 - [Run Out](../autoware_behavior_velocity_run_out_module/README.md)
-- [Speed Bump](../behavior_velocity_speed_bump_module/README.md)
+- [Speed Bump](../autoware_behavior_velocity_speed_bump_module/README.md)
 
 When each module plans velocity, it considers based on `base_link`(center of rear-wheel axis) pose.
 So for example, in order to stop at a stop line with the vehicles' front on the stop line, it calculates `base_link` position from the distance between `base_link` to front and modifies path velocity from the `base_link` position.

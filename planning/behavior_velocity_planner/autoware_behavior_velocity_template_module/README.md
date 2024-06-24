@@ -1,6 +1,6 @@
 ## Template
 
-A template for behavior velocity modules based on the behavior_velocity_speed_bump_module.
+A template for behavior velocity modules based on the autoware_behavior_velocity_speed_bump_module.
 
 # Autoware Behavior Velocity Module Template
 
