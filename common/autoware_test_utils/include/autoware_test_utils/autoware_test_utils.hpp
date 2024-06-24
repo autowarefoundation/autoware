@@ -31,6 +31,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <rosgraph_msgs/msg/clock.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
@@ -527,6 +528,7 @@ public:
   AutowareTestManager()
   {
     test_node_ = std::make_shared<rclcpp::Node>("autoware_test_manager_node");
+    pub_clock_ = test_node_->create_publisher<rosgraph_msgs::msg::Clock>("/clock", 1);
   }
 
   template <typename MessageType>
@@ -560,10 +562,28 @@ public:
     }
   }
 
+  /**
+   * @brief Publishes a ROS Clock message with the specified time.
+   *
+   * This function publishes a ROS Clock message with the specified time.
+   * Be careful when using this function, as it can affect the behavior of
+   * the system under test. Consider using ament_add_ros_isolated_gtest to
+   * isolate the system under test from the ROS clock.
+   *
+   * @param time The time to publish.
+   */
+  void jump_clock(const rclcpp::Time & time)
+  {
+    rosgraph_msgs::msg::Clock clock;
+    clock.clock = time;
+    pub_clock_->publish(clock);
+  }
+
 protected:
   // Publisher
   std::unordered_map<std::string, std::shared_ptr<rclcpp::PublisherBase>> publishers_;
   std::unordered_map<std::string, std::shared_ptr<rclcpp::SubscriptionBase>> subscribers_;
+  rclcpp::Publisher<rosgraph_msgs::msg::Clock>::SharedPtr pub_clock_;
 
   // Node
   rclcpp::Node::SharedPtr test_node_;
