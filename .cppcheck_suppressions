@@ -1,6 +1,5 @@
 *:*/test/*
 
-arrayIndexThenCheck
 checkersReport
 constParameterPointer
 constParameterReference
