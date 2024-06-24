@@ -821,7 +821,6 @@ bool TrtYoloX::doInferenceWithRoi(
 bool TrtYoloX::doMultiScaleInference(
   const cv::Mat & image, ObjectArrays & objects, const std::vector<cv::Rect> & rois)
 {
-  std::vector<cv::Mat> images;
   if (!trt_common_->isInitialized()) {
     return false;
   }
