@@ -34,6 +34,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <map>
 
 namespace autoware::motion_velocity_planner
 {
@@ -52,6 +53,8 @@ void ObstacleVelocityLimiterModule::init(rclcpp::Node & node, const std::string 
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/" + ns_ + "/debug_markers", 1);
   virtual_wall_publisher_ =
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/" + ns_ + "/virtual_walls", 1);
+  processing_time_publisher_ = std::make_shared<autoware::universe_utils::ProcessingTimePublisher>(
+    &node, "~/debug/" + ns_ + "/processing_time_ms");
 
   const auto vehicle_info = vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo();
   vehicle_lateral_offset_ = static_cast<double>(vehicle_info.max_lateral_offset_m);
@@ -218,6 +221,12 @@ VelocityPlanningResult ObstacleVelocityLimiterModule::plan(
       safe_footprint_polygons, obstacle_masks,
       planner_data->current_odometry.pose.pose.position.z));
   }
+  std::map<std::string, double> processing_times;
+  processing_times["preprocessing"] = preprocessing_us / 1000;
+  processing_times["obstacles"] = obstacles_us / 1000;
+  processing_times["slowdowns"] = slowdowns_us / 1000;
+  processing_times["Total"] = total_us / 1000;
+  processing_time_publisher_->publish(processing_times);
   return result;
 }
 }  // namespace autoware::motion_velocity_planner

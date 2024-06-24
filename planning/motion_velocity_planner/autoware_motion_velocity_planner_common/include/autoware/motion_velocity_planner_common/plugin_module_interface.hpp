@@ -19,6 +19,7 @@
 #include "velocity_planning_result.hpp"
 
 #include <autoware/motion_utils/factor/velocity_factor_interface.hpp>
+#include <autoware/universe_utils/ros/processing_time_publisher.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_planning_msgs/msg/trajectory_point.hpp>
@@ -44,6 +45,7 @@ public:
   rclcpp::Logger logger_ = rclcpp::get_logger("");
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr virtual_wall_publisher_;
+  std::shared_ptr<autoware::universe_utils::ProcessingTimePublisher> processing_time_publisher_;
   autoware::motion_utils::VirtualWallMarkerCreator virtual_wall_marker_creator{};
 };
 

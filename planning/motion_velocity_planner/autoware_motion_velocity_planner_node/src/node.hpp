@@ -96,6 +96,7 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_viz_pub_;
   rclcpp::Publisher<autoware_adapi_v1_msgs::msg::VelocityFactorArray>::SharedPtr
     velocity_factor_publisher_;
+  autoware::universe_utils::ProcessingTimePublisher processing_time_publisher_{this};
 
   //  parameters
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr set_param_callback_;

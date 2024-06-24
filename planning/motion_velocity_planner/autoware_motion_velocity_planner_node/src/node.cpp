@@ -17,6 +17,7 @@
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/ros/update_param.hpp>
 #include <autoware/universe_utils/ros/wait_for_param.hpp>
+#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <autoware/universe_utils/transform/transforms.hpp>
 #include <autoware/velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp>
 #include <autoware/velocity_smoother/trajectory_utils.hpp>
@@ -31,6 +32,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 
 #include <functional>
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -252,9 +254,14 @@ void MotionVelocityPlannerNode::on_trajectory(
 {
   std::unique_lock<std::mutex> lk(mutex_);
 
+  autoware::universe_utils::StopWatch<std::chrono::milliseconds> stop_watch;
+  std::map<std::string, double> processing_times;
+  stop_watch.tic("Total");
+
   if (!update_planner_data()) {
     return;
   }
+  processing_times["update_planner_data"] = stop_watch.toc(true);
 
   if (input_trajectory_msg->points.empty()) {
     RCLCPP_WARN(get_logger(), "Input trajectory message is empty");
@@ -264,6 +271,7 @@ void MotionVelocityPlannerNode::on_trajectory(
   if (has_received_map_) {
     planner_data_.route_handler = std::make_shared<route_handler::RouteHandler>(*map_ptr_);
     has_received_map_ = false;
+    processing_times["make_RouteHandler"] = stop_watch.toc(true);
   }
 
   autoware::motion_velocity_planner::TrajectoryPoints input_trajectory_points{
@@ -271,12 +279,15 @@ void MotionVelocityPlannerNode::on_trajectory(
 
   auto output_trajectory_msg = generate_trajectory(input_trajectory_points);
   output_trajectory_msg.header = input_trajectory_msg->header;
+  processing_times["generate_trajectory"] = stop_watch.toc(true);
 
   lk.unlock();
 
   trajectory_pub_->publish(output_trajectory_msg);
   published_time_publisher_->publish_if_subscribed(
     trajectory_pub_, output_trajectory_msg.header.stamp);
+  processing_times["Total"] = stop_watch.toc("Total");
+  processing_time_publisher_.publish(processing_times);
 }
 
 void MotionVelocityPlannerNode::insert_stop(

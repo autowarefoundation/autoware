@@ -33,6 +33,7 @@
 
 #include <lanelet2_core/geometry/LaneletMap.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -56,6 +57,8 @@ void OutOfLaneModule::init(rclcpp::Node & node, const std::string & module_name)
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/" + ns_ + "/debug_markers", 1);
   virtual_wall_publisher_ =
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/" + ns_ + "/virtual_walls", 1);
+  processing_time_publisher_ = std::make_shared<autoware::universe_utils::ProcessingTimePublisher>(
+    &node, "~/debug/" + ns_ + "/processing_time_ms");
 }
 void OutOfLaneModule::init_parameters(rclcpp::Node & node)
 {
@@ -207,7 +210,7 @@ VelocityPlanningResult OutOfLaneModule::plan(
   inputs.ego_data = ego_data;
   stopwatch.tic("filter_predicted_objects");
   inputs.objects = out_of_lane::filter_predicted_objects(planner_data, ego_data, params_);
-  const auto filter_predicted_objects_ms = stopwatch.toc("filter_predicted_objects");
+  const auto filter_predicted_objects_us = stopwatch.toc("filter_predicted_objects");
   inputs.route_handler = planner_data->route_handler;
   inputs.lanelets = other_lanelets;
   stopwatch.tic("calculate_decisions");
@@ -288,12 +291,22 @@ VelocityPlanningResult OutOfLaneModule::plan(
     "\tcalc_slowdown_points = %2.0fus\n"
     "\tinsert_slowdown_points = %2.0fus\n",
     total_time_us, calculate_lanelets_us, calculate_trajectory_footprints_us,
-    calculate_overlapping_ranges_us, filter_predicted_objects_ms, calculate_decisions_us,
+    calculate_overlapping_ranges_us, filter_predicted_objects_us, calculate_decisions_us,
     calc_slowdown_points_us, insert_slowdown_points_us);
   debug_publisher_->publish(out_of_lane::debug::create_debug_marker_array(debug_data_));
   virtual_wall_marker_creator.add_virtual_walls(
     out_of_lane::debug::create_virtual_walls(debug_data_, params_));
   virtual_wall_publisher_->publish(virtual_wall_marker_creator.create_markers(clock_->now()));
+  std::map<std::string, double> processing_times;
+  processing_times["calculate_lanelets"] = calculate_lanelets_us / 1000;
+  processing_times["calculate_trajectory_footprints"] = calculate_trajectory_footprints_us / 1000;
+  processing_times["calculate_overlapping_ranges"] = calculate_overlapping_ranges_us / 1000;
+  processing_times["filter_pred_objects"] = filter_predicted_objects_us / 1000;
+  processing_times["calculate_decision"] = calculate_decisions_us / 1000;
+  processing_times["calc_slowdown_points"] = calc_slowdown_points_us / 1000;
+  processing_times["insert_slowdown_points"] = insert_slowdown_points_us / 1000;
+  processing_times["Total"] = total_time_us / 1000;
+  processing_time_publisher_->publish(processing_times);
   return result;
 }
 

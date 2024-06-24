@@ -29,6 +29,7 @@
 #include <autoware/universe_utils/system/stop_watch.hpp>
 
 #include <algorithm>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -48,6 +49,8 @@ void DynamicObstacleStopModule::init(rclcpp::Node & node, const std::string & mo
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/" + ns_ + "/debug_markers", 1);
   virtual_wall_publisher_ =
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/" + ns_ + "/virtual_walls", 1);
+  processing_time_publisher_ = std::make_shared<autoware::universe_utils::ProcessingTimePublisher>(
+    &node, "~/debug/" + ns_ + "/processing_time_ms");
 
   using autoware::universe_utils::getOrDeclareParameter;
   auto & p = params_;
@@ -179,6 +182,12 @@ VelocityPlanningResult DynamicObstacleStopModule::plan(
   debug_data_.ego_footprints = ego_data.trajectory_footprints;
   debug_data_.obstacle_footprints = obstacle_forward_footprints;
   debug_data_.z = ego_data.pose.position.z;
+  std::map<std::string, double> processing_times;
+  processing_times["preprocessing"] = preprocessing_duration_us / 1000;
+  processing_times["footprints"] = footprints_duration_us / 1000;
+  processing_times["collisions"] = collisions_duration_us / 1000;
+  processing_times["Total"] = total_time_us / 1000;
+  processing_time_publisher_->publish(processing_times);
   return result;
 }
 
