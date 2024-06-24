@@ -509,7 +509,6 @@ std::vector<TrajectoryPoint> PIDBasedPlanner::getAccelerationLimitedTrajectory(
   const double v0, const double a0, const double target_acc, const double target_jerk_ratio) const
 {
   // calculate vt function
-  const auto & i = longitudinal_info_;
   const auto vt = [&](
                     const double v0, const double a0, const double jerk, const double t,
                     const double target_acc) {
@@ -541,8 +540,8 @@ std::vector<TrajectoryPoint> PIDBasedPlanner::getAccelerationLimitedTrajectory(
   //       Therefore, we calculate v1 (velocity at next step) and use it for initial velocity.
   const double v1 = v0;  // + 0.1;  // a0 * 0.1;  //  + jerk * 0.1 * 0.1 / 2.0;
   const double a1 = a0;  //  + jerk * 0.1;
-  const double jerk =
-    target_acc > a1 ? i.max_jerk * target_jerk_ratio : i.min_jerk * target_jerk_ratio;
+  const double jerk = target_acc > a1 ? longitudinal_info_.max_jerk * target_jerk_ratio
+                                      : longitudinal_info_.min_jerk * target_jerk_ratio;
 
   double t_current = 0.0;
   std::vector<double> s_vec{0.0};
