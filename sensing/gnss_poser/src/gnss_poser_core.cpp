@@ -61,7 +61,7 @@ GNSSPoser::GNSSPoser(const rclcpp::NodeOptions & node_options)
     "gnss_pose_cov", rclcpp::QoS{1});
   fixed_pub_ = create_publisher<tier4_debug_msgs::msg::BoolStamped>("gnss_fixed", rclcpp::QoS{1});
 
-  // Set msg_gnss_ins_orientation_stamped_ with temoporary values (not to publish zero value
+  // Set msg_gnss_ins_orientation_stamped_ with temporary values (not to publish zero value
   // covariances)
   msg_gnss_ins_orientation_stamped_->orientation.rmse_rotation_x = 1.0;
   msg_gnss_ins_orientation_stamped_->orientation.rmse_rotation_y = 1.0;
