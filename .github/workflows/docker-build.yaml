@@ -53,7 +53,7 @@ jobs:
         run: |
           if [ $(date +'%d') -eq 01 ] || [ $(date +'%d') -eq 15 ]; then echo "IS_PUSH_DAY=true" >> $GITHUB_ENV; else echo "IS_PUSH_DAY=false" >> $GITHUB_ENV; fi
           echo "Day of the month: $(date +'%d')"
-          
+
       - name: Check out repository
         uses: actions/checkout@v4
 
