@@ -637,7 +637,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
     slow_down_debug_multi_array_.data.push_back(feasible_slow_down_vel);
     slow_down_debug_multi_array_.data.push_back(stable_slow_down_vel);
     slow_down_debug_multi_array_.data.push_back(slow_down_start_idx ? *slow_down_start_idx : -1.0);
-    slow_down_debug_multi_array_.data.push_back(slow_down_end_idx ? *slow_down_end_idx : -1.0);
+    slow_down_debug_multi_array_.data.push_back(*slow_down_end_idx);
 
     // add virtual wall
     if (slow_down_start_idx && slow_down_end_idx) {

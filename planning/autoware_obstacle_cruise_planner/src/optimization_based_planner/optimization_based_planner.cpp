@@ -339,16 +339,21 @@ std::tuple<double, double> OptimizationBasedPlanner::calcInitialMotion(
       const auto stop_dist = autoware::motion_utils::calcDistanceToForwardStopPoint(
         input_traj_points, ego_pose, ego_nearest_param_.dist_threshold,
         ego_nearest_param_.yaw_threshold);
-      if ((stop_dist && *stop_dist > stop_dist_to_prohibit_engage_) || !stop_dist) {
-        initial_vel = engage_velocity_;
-        initial_acc = engage_acceleration_;
+      if (!stop_dist.has_value()) {
+        RCLCPP_DEBUG(
+          rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
+          "calcInitialMotion : vehicle speed is low (%.3f), and desired speed is high (%.3f). Use "
+          "engage speed (%.3f) until vehicle speed reaches engage_vel_thr (%.3f)",
+          vehicle_speed, target_vel, engage_velocity_, engage_vel_thr);
+        return std::make_tuple(engage_velocity_, engage_acceleration_);
+      } else if (stop_dist.value() > stop_dist_to_prohibit_engage_) {
         RCLCPP_DEBUG(
           rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
           "calcInitialMotion : vehicle speed is low (%.3f), and desired speed is high (%.3f). Use "
           "engage speed (%.3f) until vehicle speed reaches engage_vel_thr (%.3f). stop_dist = %.3f",
           vehicle_speed, target_vel, engage_velocity_, engage_vel_thr, stop_dist.value());
-        return std::make_tuple(initial_vel, initial_acc);
-      } else if (stop_dist) {
+        return std::make_tuple(engage_velocity_, engage_acceleration_);
+      } else {
         RCLCPP_DEBUG(
           rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
           "calcInitialMotion : stop point is close (%.3f[m]). no engage.", stop_dist.value());
