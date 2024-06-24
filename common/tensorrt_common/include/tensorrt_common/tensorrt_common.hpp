@@ -15,7 +15,9 @@
 #ifndef TENSORRT_COMMON__TENSORRT_COMMON_HPP_
 #define TENSORRT_COMMON__TENSORRT_COMMON_HPP_
 
+#ifndef YOLOX_STANDALONE
 #include <rclcpp/rclcpp.hpp>
+#endif
 
 #include <NvInfer.h>
 #include <NvOnnxParser.h>
@@ -86,6 +88,7 @@ struct BuildConfig
     profile_per_layer(profile_per_layer),
     clip_value(clip_value)
   {
+#ifndef YOLOX_STANDALONE
     if (
       std::find(valid_calib_type.begin(), valid_calib_type.end(), calib_type_str) ==
       valid_calib_type.end()) {
@@ -95,6 +98,7 @@ struct BuildConfig
               << "Default calibration type will be used: MinMax" << std::endl;
       std::cerr << message.str();
     }
+#endif
   }
 };
 

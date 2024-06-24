@@ -594,4 +594,39 @@ void multi_scale_resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
     cuda_gridsize(N), block, 0, stream>>>(N, dst, src, d_h, d_w, s_h, s_w, d_roi, norm, batch);
 }
 
+__global__ void argmax_gpu_kernel(
+  int N, unsigned char * dst, float * src, int dst_h, int dst_w, int src_c, int src_h, int src_w,
+  int batch)
+{
+  // NHWC
+  int index = (blockIdx.x + blockIdx.y * gridDim.x) * blockDim.x + threadIdx.x;
+
+  if (index >= N) return;
+  int c = 0;
+  int w = index % dst_w;
+  int h = index / (dst_w);
+
+  int b;
+  for (b = 0; b < batch; b++) {
+    float max_prob = 0.0;
+    int max_index = 0;
+    int dst_index = w + dst_w * h + b * dst_h * dst_w;
+    for (c = 0; c < src_c; c++) {
+      int src_index = w + src_w * h + c * src_h * src_w + b * src_c * src_h * src_w;
+      max_index = max_prob < src[src_index] ? c : max_index;
+      max_prob = max_prob < src[src_index] ? src[src_index] : max_prob;
+    }
+    dst[dst_index] = max_index;
+  }
+}
+
+void argmax_gpu(
+  unsigned char * dst, float * src, int d_w, int d_h, int s_w, int s_h, int s_c, int batch,
+  cudaStream_t stream)
+{
+  int N = d_w * d_h;
+  argmax_gpu_kernel<<<cuda_gridsize(N), block, 0, stream>>>(
+    N, dst, src, d_h, d_w, s_c, s_h, s_w, batch);
+}
+
 }  // namespace tensorrt_yolox

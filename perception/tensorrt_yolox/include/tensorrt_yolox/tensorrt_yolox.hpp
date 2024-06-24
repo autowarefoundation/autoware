@@ -52,6 +52,13 @@ struct GridAndStride
   int stride;
 };
 
+typedef struct Colormap_
+{
+  int id;
+  std::string name;
+  std::vector<unsigned char> color;
+} Colormap;
+
 /**
  * @class TrtYoloX
  * @brief TensorRT YOLOX for faster inference
@@ -85,7 +92,7 @@ public:
     const bool use_gpu_preprocess = false, std::string calibration_image_list_file = std::string(),
     const double norm_factor = 1.0, [[maybe_unused]] const std::string & cache_dir = "",
     const tensorrt_common::BatchConfig & batch_config = {1, 1, 1},
-    const size_t max_workspace_size = (1 << 30));
+    const size_t max_workspace_size = (1 << 30), const std::string & color_map_path = "");
   /**
    * @brief Deconstruct TrtYoloX
    */
@@ -96,7 +103,9 @@ public:
    * @param[out] objects results for object detection
    * @param[in] images batched images
    */
-  bool doInference(const std::vector<cv::Mat> & images, ObjectArrays & objects);
+  bool doInference(
+    const std::vector<cv::Mat> & images, ObjectArrays & objects, std::vector<cv::Mat> & masks,
+    std::vector<cv::Mat> & color_masks);
 
   /**
    * @brief run inference including pre-process and post-process
@@ -129,6 +138,22 @@ public:
    * @brief output TensorRT profiles for each layer
    */
   void printProfiling(void);
+
+  /**
+   * @brief get num for multitask heads
+   */
+  int getMultitaskNum(void);
+
+  /**
+   * @brief get colorized masks from index using specific colormap
+   * @param[out] cmask colorized mask
+   * @param[in] index multitask index
+   * @param[in] colormap colormap for masks
+   */
+  void getColorizedMask(
+    const std::vector<tensorrt_yolox::Colormap> & colormap, const cv::Mat & mask,
+    cv::Mat & colorized_mask);
+  inline std::vector<Colormap> getColorMap() { return sematic_color_map_; }
 
 private:
   /**
@@ -177,7 +202,9 @@ private:
     const cv::Mat & images, int batch_size, ObjectArrays & objects);
 
   bool feedforward(const std::vector<cv::Mat> & images, ObjectArrays & objects);
-  bool feedforwardAndDecode(const std::vector<cv::Mat> & images, ObjectArrays & objects);
+  bool feedforwardAndDecode(
+    const std::vector<cv::Mat> & images, ObjectArrays & objects, std::vector<cv::Mat> & masks,
+    std::vector<cv::Mat> & color_masks);
   void decodeOutputs(float * prob, ObjectArray & objects, float scale, cv::Size & img_size) const;
   void generateGridsAndStride(
     const int target_w, const int target_h, const std::vector<int> & strides,
@@ -205,6 +232,26 @@ private:
   // cspell: ignore Bboxes
   void nmsSortedBboxes(
     const ObjectArray & face_objects, std::vector<int> & picked, float nms_threshold) const;
+
+  /**
+   * @brief get a mask image for a segmentation head
+   * @param[out] argmax argmax results
+   * @param[in] prob probability map
+   * @param[in] dims dimension for probability map
+   * @param[in] out_w mask width excluding letterbox
+   * @param[in] out_h mask height excluding letterbox
+   */
+  cv::Mat getMaskImage(float * prob, nvinfer1::Dims dims, int out_w, int out_h);
+
+  /**
+   * @brief get a mask image on GPUs for a segmentation head
+   * @param[out] mask image
+   * @param[in] prob probability map on device
+   * @param[in] out_w mask width excluding letterbox
+   * @param[in] out_h mask height excluding letterbox
+   * @param[in] b current batch
+   */
+  cv::Mat getMaskImageGpu(float * d_prob, nvinfer1::Dims dims, int out_w, int out_h, int b);
 
   std::unique_ptr<tensorrt_common::TrtCommon> trt_common_;
 
@@ -249,6 +296,20 @@ private:
   CudaUniquePtrHost<Roi[]> roi_h_;
   // device pointer for ROI
   CudaUniquePtr<Roi[]> roi_d_;
+
+  // flag whether model has multitasks
+  int multitask_;
+  // buff size for segmentation heads
+  CudaUniquePtr<float[]> segmentation_out_prob_d_;
+  CudaUniquePtrHost<float[]> segmentation_out_prob_h_;
+  size_t segmentation_out_elem_num_;
+  size_t segmentation_out_elem_num_per_batch_;
+  std::vector<cv::Mat> segmentation_masks_;
+  // host buffer for argmax postprocessing on GPU
+  CudaUniquePtrHost<unsigned char[]> argmax_buf_h_;
+  // device buffer for argmax postprocessing  on GPU
+  CudaUniquePtr<unsigned char[]> argmax_buf_d_;
+  std::vector<tensorrt_yolox::Colormap> sematic_color_map_;
 };
 
 }  // namespace tensorrt_yolox

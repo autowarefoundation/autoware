@@ -1,22 +1,30 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- cspell:ignore finetune -->
+  <!-- cspell: ignore semseg, finetune  -->
   <arg name="input/image" default="/sensing/camera/camera0/image_rect_color"/>
   <arg name="output/objects" default="/perception/object_recognition/detection/rois0"/>
-  <arg name="model_name" default="yolox-sPlus-T4-960x960-pseudo-finetune"/>
+  <arg name="output/mask" default="/perception/object_recognition/detection/mask0"/>
+  <arg
+    name="model_name"
+    default="yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls"
+    description="options `yolox-sPlus-T4-960x960-pseudo-finetune` if only detection is needed, `yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls` if sematic segmentation is also needed"
+  />
   <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
   <arg name="yolox_param_path" default="$(find-pkg-share tensorrt_yolox)/config/yolox_s_plus_opt.param.yaml"/>
   <arg name="use_decompress" default="true" description="use image decompress"/>
   <arg name="build_only" default="false" description="exit after trt engine is built"/>
 
+  <arg name="param_file" default="$(find-pkg-share image_transport_decompressor)/config/image_transport_decompressor.param.yaml"/>
   <node pkg="image_transport_decompressor" exec="image_transport_decompressor_node" name="image_transport_decompressor_node" if="$(var use_decompress)">
     <remap from="~/input/compressed_image" to="$(var input/image)/compressed"/>
     <remap from="~/output/raw_image" to="$(var input/image)"/>
+    <param from="$(var param_file)"/>
   </node>
 
   <node pkg="tensorrt_yolox" exec="tensorrt_yolox_node_exe" name="tensorrt_yolox" output="screen">
     <remap from="~/in/image" to="$(var input/image)"/>
     <remap from="~/out/objects" to="$(var output/objects)"/>
+    <remap from="~/out/mask" to="$(var output/mask)"/>
     <param from="$(var yolox_param_path)" allow_substs="true"/>
     <param name="build_only" value="$(var build_only)"/>
   </node>
