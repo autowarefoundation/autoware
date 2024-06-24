@@ -3,16 +3,18 @@
   <arg name="vehicle_model"/>
 
   <!-- flag -->
-  <arg name="run_background" default="false"/>
+  <arg name="mode" default="AUTO" description="select from AUTO, GUI, and VMB"/>
   <arg name="rviz" default="true"/>
   <arg name="centerline_source" default="optimization_trajectory_base" description="select from optimization_trajectory_base and bag_ego_trajectory_base"/>
-  <arg name="bag_filename" default="bag.db3"/>
 
-  <!-- mandatory arguments when run_background is true -->
+  <!-- mandatory arguments when mode is AUTO -->
   <arg name="lanelet2_input_file_path" default=""/>
-  <arg name="lanelet2_output_file_path" default="/tmp/static_centerline_generator/lanelet2_map.osm"/>
+  <arg name="lanelet2_output_file_path" default="/tmp/autoware_static_centerline_generator/lanelet2_map.osm"/>
   <arg name="start_lanelet_id" default=""/>
   <arg name="end_lanelet_id" default=""/>
+
+  <!-- mandatory arguments when mode is GUI -->
+  <arg name="bag_filename" default="bag.db3"/>
 
   <!-- topic -->
   <arg name="lanelet2_map_topic" default="/map/vector_map"/>
@@ -28,7 +30,7 @@
     default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/behavior_velocity_planner.param.yaml"
   />
   <arg name="path_smoother_param" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/motion_planning/path_smoother/elastic_band_smoother.param.yaml"/>
-  <arg name="path_optimizer_param" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/motion_planning/path_optimizer/path_optimizer.param.yaml"/>
+  <arg name="path_optimizer_param" default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/motion_planning/autoware_path_optimizer/path_optimizer.param.yaml"/>
   <arg name="mission_planner_param" default="$(find-pkg-share autoware_launch)/config/planning/mission_planning/mission_planner/mission_planner.param.yaml"/>
 
   <!-- Global parameters (for PathFootprint in tier4_planning_rviz_plugin) -->
@@ -55,12 +57,8 @@
   <node pkg="autoware_static_centerline_generator" exec="main" name="static_centerline_generator">
     <remap from="lanelet2_map_topic" to="$(var lanelet2_map_topic)"/>
     <remap from="input_centerline" to="~/input_centerline"/>
-    <remap from="output_whole_centerline" to="~/output_whole_centerline"/>
-    <remap from="output_centerline" to="~/output_centerline"/>
-    <remap from="debug/raw_centerline" to="~/debug/raw_centerline"/>
-    <remap from="debug/unsafe_footprints" to="~/debug/unsafe_footprints"/>
 
-    <param name="run_background" value="$(var run_background)"/>
+    <param name="mode" value="$(var mode)"/>
     <param name="lanelet2_input_file_path" value="$(var lanelet2_input_file_path)"/>
     <param name="lanelet2_output_file_path" value="$(var lanelet2_output_file_path)"/>
     <param name="start_lanelet_id" value="$(var start_lanelet_id)"/>
@@ -75,12 +73,19 @@
     <param from="$(var path_smoother_param)"/>
     <param from="$(var path_optimizer_param)"/>
     <param from="$(var mission_planner_param)"/>
+    <param name="check_footprint_inside_lanes" value="false"/>
+    <!-- override the mission_planner's parameter -->
     <!-- node param -->
     <param from="$(find-pkg-share autoware_static_centerline_generator)/config/static_centerline_generator.param.yaml"/>
     <param name="centerline_source" value="$(var centerline_source)"/>
     <param name="bag_filename" value="$(var bag_filename)"/>
   </node>
 
+  <!-- GUI to select the range of centerline -->
+  <group if="$(eval &quot;'$(var mode)'=='GUI'&quot;)">
+    <node pkg="autoware_static_centerline_generator" exec="centerline_updater_helper.py" name="centerline_updater_helper"/>
+  </group>
+
   <!-- rviz -->
-  <node pkg="rviz2" exec="rviz2" name="rviz2" output="screen" args="-d $(find-pkg-share autoware_static_centerline_generator)/rviz/static_centerline_generator.param" if="$(var rviz)"/>
+  <node pkg="rviz2" exec="rviz2" name="rviz2" output="screen" args="-d $(find-pkg-share autoware_static_centerline_generator)/rviz/static_centerline_generator.rviz" if="$(var rviz)"/>
 </launch>

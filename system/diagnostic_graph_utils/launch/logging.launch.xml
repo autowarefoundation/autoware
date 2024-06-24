@@ -1,0 +1,10 @@
+<launch>
+  <arg name="root_path" default="/autoware/modes/autonomous"/>
+  <arg name="max_depth" default="3"/>
+  <arg name="show_rate" default="1.0"/>
+  <node pkg="diagnostic_graph_utils" exec="logging_node" name="logging_diag_graph" output="both">
+    <param name="root_path" value="$(var root_path)"/>
+    <param name="max_depth" value="$(var max_depth)"/>
+    <param name="show_rate" value="$(var show_rate)"/>
+  </node>
+</launch>

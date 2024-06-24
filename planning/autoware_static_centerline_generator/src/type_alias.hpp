@@ -40,6 +40,7 @@ using autoware_planning_msgs::msg::PathPoint;
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
 using tier4_planning_msgs::msg::PathWithLaneId;
+using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 }  // namespace autoware::static_centerline_generator
 

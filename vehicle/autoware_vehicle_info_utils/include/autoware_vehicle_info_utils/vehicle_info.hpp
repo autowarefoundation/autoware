@@ -50,6 +50,9 @@ struct VehicleInfo
   autoware::universe_utils::LinearRing2d createFootprint(const double margin = 0.0) const;
   autoware::universe_utils::LinearRing2d createFootprint(
     const double lat_margin, const double lon_margin) const;
+
+  double calcMaxCurvature() const;
+  double calcCurvatureFromSteerAngle(const double steer_angle) const;
 };
 
 /// Create vehicle info from base parameters

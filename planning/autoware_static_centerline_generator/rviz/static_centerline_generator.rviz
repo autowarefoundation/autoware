@@ -179,11 +179,11 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /static_centerline_generator/output_centerline
+        Value: /static_centerline_generator/output/centerline
       Value: true
       View Footprint:
-        Alpha: 1
-        Color: 255; 0; 0
+        Alpha: 0.5
+        Color: 0; 255; 0
         Offset from BaseLink: 0
         Rear Overhang: 1.0299999713897705
         Value: true
@@ -268,9 +268,33 @@ Visualization Manager:
             Durability Policy: Transient Local
             History Policy: Keep Last
             Reliability Policy: Reliable
-            Value: /static_centerline_generator/debug/unsafe_footprints
+            Value: /static_centerline_generator/output/validation_results
           Value: true
-      Enabled: false
+        - Class: rviz_default_plugins/MarkerArray
+          Enabled: true
+          Name: Debug Markers
+          Namespaces:
+            curvature: false
+          Topic:
+            Depth: 5
+            Durability Policy: Transient Local
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /static_centerline_generator/debug/markers
+          Value: true
+        - Class: rviz_default_plugins/MarkerArray
+          Enabled: false
+          Name: MarkerArray
+          Namespaces:
+            {}
+          Topic:
+            Depth: 5
+            Durability Policy: Transient Local
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /static_centerline_generator/debug/ego_footprint_bounds
+          Value: true
+      Enabled: true
       Name: debug
   Enabled: true
   Global Options:

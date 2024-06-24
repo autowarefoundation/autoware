@@ -12,6 +12,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 ament_auto_add_library(${PROJECT_NAME}_tools SHARED
   src/node/dump.cpp
   src/node/converter.cpp
+  src/node/logging.cpp
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}_tools
@@ -24,4 +25,9 @@ rclcpp_components_register_node(${PROJECT_NAME}_tools
   EXECUTABLE converter_node
 )
 
-ament_auto_package()
+rclcpp_components_register_node(${PROJECT_NAME}_tools
+  PLUGIN "diagnostic_graph_utils::LoggingNode"
+  EXECUTABLE logging_node
+)
+
+ament_auto_package(INSTALL_TO_SHARE launch)

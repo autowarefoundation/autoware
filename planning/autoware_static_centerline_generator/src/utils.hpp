@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace autoware::static_centerline_generator
@@ -45,13 +46,23 @@ void update_centerline(
   lanelet::LaneletMapPtr lanelet_map_ptr, const lanelet::ConstLanelets & lanelets,
   const std::vector<TrajectoryPoint> & new_centerline);
 
-MarkerArray create_footprint_marker(
-  const LinearRing2d & footprint_poly, const std::array<double, 3> & marker_color,
-  const rclcpp::Time & now, const size_t idx);
+Marker create_footprint_marker(
+  const LinearRing2d & footprint_poly, const double width, const double r, const double g,
+  const double b, const double a, const rclcpp::Time & now, const size_t idx);
 
-MarkerArray create_distance_text_marker(
-  const geometry_msgs::msg::Pose & pose, const double dist,
-  const std::array<double, 3> & marker_color, const rclcpp::Time & now, const size_t idx);
+Marker create_text_marker(
+  const std::string & ns, const geometry_msgs::msg::Pose & pose, const double value, const double r,
+  const double g, const double b, const double a, const rclcpp::Time & now, const size_t idx);
+
+Marker create_points_marker(
+  const std::string & ns, const std::vector<geometry_msgs::msg::Point> & points, const double width,
+  const double r, const double g, const double b, const double a, const rclcpp::Time & now);
+
+MarkerArray create_delete_all_marker_array(
+  const std::vector<std::string> & ns_vec, const rclcpp::Time & now);
+
+std::pair<std::vector<geometry_msgs::msg::Point>, std::vector<geometry_msgs::msg::Point>>
+calcBoundsFromLanelets(const lanelet::ConstLanelets lanelets);
 }  // namespace utils
 }  // namespace autoware::static_centerline_generator
 
