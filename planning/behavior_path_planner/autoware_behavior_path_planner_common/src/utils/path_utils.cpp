@@ -471,14 +471,15 @@ std::vector<Pose> interpolatePose(
 {
   std::vector<Pose> interpolated_poses{};  // output
 
-  const std::vector<double> base_s{
-    0, autoware::universe_utils::calcDistance2d(start_pose.position, end_pose.position)};
+  const double distance =
+    autoware::universe_utils::calcDistance2d(start_pose.position, end_pose.position);
+  const std::vector<double> base_s{0.0, distance};
   const std::vector<double> base_x{start_pose.position.x, end_pose.position.x};
   const std::vector<double> base_y{start_pose.position.y, end_pose.position.y};
   std::vector<double> new_s;
 
   constexpr double eps = 0.3;  // prevent overlapping
-  for (double s = eps; s < base_s.back() - eps; s += resample_interval) {
+  for (double s = eps; s < distance - eps; s += resample_interval) {
     new_s.push_back(s);
   }
 
@@ -491,7 +492,7 @@ std::vector<Pose> interpolatePose(
   for (size_t i = 0; i < interpolated_x.size(); ++i) {
     Pose pose{};
     pose = autoware::universe_utils::calcInterpolatedPose(
-      end_pose, start_pose, (base_s.back() - new_s.at(i)) / base_s.back());
+      end_pose, start_pose, (distance - new_s.at(i)) / distance);
     pose.position.x = interpolated_x.at(i);
     pose.position.y = interpolated_y.at(i);
     pose.position.z = end_pose.position.z;
