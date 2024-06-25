@@ -116,7 +116,6 @@ std::vector<tensorrt_yolox::Colormap> get_seg_colormap(const std::string & filen
       }
       std::string colormapString = color_list[i];
       tensorrt_yolox::Colormap cmap;
-      std::vector<int> rgb;
       size_t npos = colormapString.find_first_of(',');
       assert(npos != std::string::npos);
       std::string substr = colormapString.substr(0, npos);
