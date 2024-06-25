@@ -28,7 +28,7 @@ so_path = (
     ]
 )
 setup(
-    name="smart_mpc_trajectory_follower",
+    name="autoware_smart_mpc_trajectory_follower",
     version="1.0.0",
     packages=find_packages(),
     package_data={

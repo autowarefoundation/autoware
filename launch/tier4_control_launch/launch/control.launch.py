@@ -444,7 +444,7 @@ def launch_setup(context, *args, **kwargs):
     smart_mpc_trajectory_follower = Node(
         package="autoware_smart_mpc_trajectory_follower",
         executable="pympc_trajectory_follower.py",
-        name="pympc_trajectory_follower",
+        name="controller_node_exe",
     )
     if trajectory_follower_mode == "trajectory_follower_node":
         return [group, control_validator_group]

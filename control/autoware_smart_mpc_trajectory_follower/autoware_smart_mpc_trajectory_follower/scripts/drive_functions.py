@@ -297,7 +297,7 @@ limit_yaml_path = None
 for curDir, dirs, files in os.walk(control_dir_path):
     for name in files:
         if name == "vehicle_cmd_gate.param.yaml":
-            if curDir.split("/")[-2] == "vehicle_cmd_gate":
+            if curDir.split("/")[-2] == "autoware_vehicle_cmd_gate":
                 limit_yaml_path = curDir + "/" + name
                 break
 

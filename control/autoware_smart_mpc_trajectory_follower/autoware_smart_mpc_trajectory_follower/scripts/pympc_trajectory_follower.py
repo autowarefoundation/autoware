@@ -16,6 +16,7 @@
 
 # cspell: ignore interp
 
+from enum import Enum
 import time
 
 from autoware_adapi_v1_msgs.msg import OperationModeState
@@ -26,6 +27,9 @@ from autoware_smart_mpc_trajectory_follower.scripts import drive_controller
 from autoware_smart_mpc_trajectory_follower.scripts import drive_functions
 from autoware_vehicle_msgs.msg import SteeringReport
 from builtin_interfaces.msg import Duration
+from diagnostic_msgs.msg import DiagnosticStatus
+import diagnostic_updater
+from diagnostic_updater import DiagnosticStatusWrapper
 from geometry_msgs.msg import AccelWithCovarianceStamped
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry
@@ -40,6 +44,13 @@ from std_msgs.msg import String
 from tier4_debug_msgs.msg import BoolStamped
 from tier4_debug_msgs.msg import Float32MultiArrayStamped
 from tier4_debug_msgs.msg import Float32Stamped
+
+
+class ControlStatus(Enum):
+    DRIVE = 0
+    STOPPING = 1
+    STOPPED = 2
+    EMERGENCY = 3
 
 
 def getYaw(orientation_xyzw):
@@ -272,6 +283,10 @@ class PyMPCTrajectoryFollower(Node):
         self.last_steer_cmd = 0.0
         self.past_control_trajectory_mode = 1
 
+        self.diagnostic_updater = diagnostic_updater.Updater(self)
+        self.setup_diagnostic_updater()
+        self.control_state = ControlStatus.STOPPED
+
     def onTrajectory(self, msg):
         self._present_trajectory = msg
 
@@ -421,12 +436,14 @@ class PyMPCTrajectoryFollower(Node):
         orientation_deviation_threshold = 60 * np.pi / 180.0
 
         # The moment the threshold is exceeded, it enters emergency stop mode.
+        control_state = self.control_state
         if is_applying_control:
             if (
                 position_deviation > position_deviation_threshold
                 or orientation_deviation > orientation_deviation_threshold
             ):
                 self.emergency_stop_mode_flag = True
+                control_state = ControlStatus.EMERGENCY
 
             # Normal return from emergency stop mode when within the threshold value and a request to cancel the stop mode has been received.
             if (
@@ -698,12 +715,13 @@ class PyMPCTrajectoryFollower(Node):
                 steer_cmd = self.last_steer_cmd + steer_cmd_decrease_limit
             else:
                 steer_cmd = 0.0
+            control_state = ControlStatus.STOPPING
 
         cmd_msg = Control()
         cmd_msg.stamp = cmd_msg.lateral.stamp = cmd_msg.longitudinal.stamp = (
             self.get_clock().now().to_msg()
         )
-        cmd_msg.longitudinal.speed = trajectory_longitudinal_velocity[nearestIndex]
+        cmd_msg.longitudinal.velocity = trajectory_longitudinal_velocity[nearestIndex]
         cmd_msg.longitudinal.acceleration = acc_cmd
         cmd_msg.lateral.steering_tire_angle = steer_cmd
 
@@ -721,6 +739,15 @@ class PyMPCTrajectoryFollower(Node):
                 self.control_cmd_time_stamp_list.pop(0)
                 self.control_cmd_steer_list.pop(0)
                 self.control_cmd_acc_list.pop(0)
+
+        # [3-6] Update control state
+        if control_state != ControlStatus.EMERGENCY:
+            stopped_velocity_threshold = 0.1
+            if present_linear_velocity[0] <= stopped_velocity_threshold:
+                control_state = ControlStatus.STOPPED
+            elif control_state != ControlStatus.STOPPING:
+                control_state = ControlStatus.DRIVE
+        self.control_state = control_state
 
         # [4] Update MPC internal variables
         if not is_applying_control:
@@ -842,6 +869,23 @@ class PyMPCTrajectoryFollower(Node):
                     data=(end_ctrl_time - start_ctrl_time),
                 )
             )
+
+            self.diagnostic_updater.force_update()
+
+    def setup_diagnostic_updater(self):
+        self.diagnostic_updater.setHardwareID("pympc_trajectory_follower")
+        self.diagnostic_updater.add("control_state", self.check_control_state)
+
+    def check_control_state(self, stat: DiagnosticStatusWrapper):
+        msg = "emergency occurred" if self.control_state == ControlStatus.EMERGENCY else "OK"
+        level = (
+            DiagnosticStatus.ERROR
+            if self.control_state == ControlStatus.EMERGENCY
+            else DiagnosticStatus.OK
+        )
+        stat.summary(level, msg)
+        stat.add("control_state", str(self.control_state))
+        return stat
 
 
 def main(args=None):
