@@ -1,7 +1,6 @@
 *:*/test/*
 
 checkersReport
-constParameterPointer
 constParameterReference
 constVariable
 constVariableReference
@@ -23,8 +22,6 @@ noValidConfiguration
 passedByValue
 preprocessorErrorDirective
 redundantInitialization
-returnByReference
-shadowArgument
 shadowFunction
 shadowVariable
 syntaxError
