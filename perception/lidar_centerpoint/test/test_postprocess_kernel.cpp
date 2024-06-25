@@ -94,12 +94,12 @@ TEST_F(PostprocessKernelTest, SingleDetectionTest)
   constexpr float detection_x = 70.f;
   constexpr float detection_y = -38.4f;
   constexpr float detection_z = 1.0;
-  constexpr float detection_log_w = std::log(7.0);
-  constexpr float detection_log_l = std::log(1.0);
-  constexpr float detection_log_h = std::log(2.0);
+  const float detection_log_w = std::log(7.0);
+  const float detection_log_l = std::log(1.0);
+  const float detection_log_h = std::log(2.0);
   constexpr float detection_yaw = M_PI_4;
-  constexpr float detection_yaw_sin = std::sin(detection_yaw);
-  constexpr float detection_yaw_cos = std::sin(detection_yaw);
+  const float detection_yaw_sin = std::sin(detection_yaw);
+  const float detection_yaw_cos = std::sin(detection_yaw);
   constexpr float detection_vel_x = 5.0;
   constexpr float detection_vel_y = -5.0;
 
@@ -240,9 +240,9 @@ TEST_F(PostprocessKernelTest, CircleNMSTest)
   constexpr float detection_x = 70.f;
   constexpr float detection_y = -38.4f;
   constexpr float detection_z = 1.0;
-  constexpr float detection_log_w = std::log(7.0);
-  constexpr float detection_log_l = std::log(1.0);
-  constexpr float detection_log_h = std::log(2.0);
+  const float detection_log_w = std::log(7.0);
+  const float detection_log_l = std::log(1.0);
+  const float detection_log_h = std::log(2.0);
   constexpr float detection_yaw1_sin = 0.0;
   constexpr float detection_yaw1_cos = 1.0;
   constexpr float detection_yaw2_sin = 1.0;
