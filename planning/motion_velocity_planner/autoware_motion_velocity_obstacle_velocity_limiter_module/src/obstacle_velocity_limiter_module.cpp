@@ -53,8 +53,10 @@ void ObstacleVelocityLimiterModule::init(rclcpp::Node & node, const std::string 
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/" + ns_ + "/debug_markers", 1);
   virtual_wall_publisher_ =
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/" + ns_ + "/virtual_walls", 1);
-  processing_time_publisher_ = std::make_shared<autoware::universe_utils::ProcessingTimePublisher>(
-    &node, "~/debug/" + ns_ + "/processing_time_ms");
+  processing_diag_publisher_ = std::make_shared<autoware::universe_utils::ProcessingTimePublisher>(
+    &node, "~/debug/" + ns_ + "/processing_time_ms_diag");
+  processing_time_publisher_ = node.create_publisher<tier4_debug_msgs::msg::Float64Stamped>(
+    "~/debug/" + ns_ + "/processing_time_ms", 1);
 
   const auto vehicle_info = vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo();
   vehicle_lateral_offset_ = static_cast<double>(vehicle_info.max_lateral_offset_m);
@@ -226,7 +228,11 @@ VelocityPlanningResult ObstacleVelocityLimiterModule::plan(
   processing_times["obstacles"] = obstacles_us / 1000;
   processing_times["slowdowns"] = slowdowns_us / 1000;
   processing_times["Total"] = total_us / 1000;
-  processing_time_publisher_->publish(processing_times);
+  processing_diag_publisher_->publish(processing_times);
+  tier4_debug_msgs::msg::Float64Stamped processing_time_msg;
+  processing_time_msg.stamp = clock_->now();
+  processing_time_msg.data = processing_times["Total"];
+  processing_time_publisher_->publish(processing_time_msg);
   return result;
 }
 }  // namespace autoware::motion_velocity_planner

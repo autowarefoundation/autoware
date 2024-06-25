@@ -23,6 +23,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_planning_msgs/msg/trajectory_point.hpp>
+#include <tier4_debug_msgs/msg/float64_stamped.hpp>
 
 #include <memory>
 #include <string>
@@ -45,7 +46,8 @@ public:
   rclcpp::Logger logger_ = rclcpp::get_logger("");
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr virtual_wall_publisher_;
-  std::shared_ptr<autoware::universe_utils::ProcessingTimePublisher> processing_time_publisher_;
+  std::shared_ptr<autoware::universe_utils::ProcessingTimePublisher> processing_diag_publisher_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float64Stamped>::SharedPtr processing_time_publisher_;
   autoware::motion_utils::VirtualWallMarkerCreator virtual_wall_marker_creator{};
 };
 

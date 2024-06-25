@@ -82,6 +82,8 @@ MotionVelocityPlannerNode::MotionVelocityPlannerNode(const rclcpp::NodeOptions &
   velocity_factor_publisher_ =
     this->create_publisher<autoware_adapi_v1_msgs::msg::VelocityFactorArray>(
       "~/output/velocity_factors", 1);
+  processing_time_publisher_ = this->create_publisher<tier4_debug_msgs::msg::Float64Stamped>(
+    "~/debug/total_time/processing_time_ms", 1);
 
   // Parameters
   smooth_velocity_before_planning_ = declare_parameter<bool>("smooth_velocity_before_planning");
@@ -105,8 +107,6 @@ MotionVelocityPlannerNode::MotionVelocityPlannerNode(const rclcpp::NodeOptions &
     std::bind(&MotionVelocityPlannerNode::on_set_param, this, std::placeholders::_1));
 
   logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
-  published_time_publisher_ =
-    std::make_unique<autoware::universe_utils::PublishedTimePublisher>(this);
 }
 
 void MotionVelocityPlannerNode::on_load_plugin(
@@ -284,10 +284,14 @@ void MotionVelocityPlannerNode::on_trajectory(
   lk.unlock();
 
   trajectory_pub_->publish(output_trajectory_msg);
-  published_time_publisher_->publish_if_subscribed(
+  published_time_publisher_.publish_if_subscribed(
     trajectory_pub_, output_trajectory_msg.header.stamp);
   processing_times["Total"] = stop_watch.toc("Total");
-  processing_time_publisher_.publish(processing_times);
+  processing_diag_publisher_.publish(processing_times);
+  tier4_debug_msgs::msg::Float64Stamped processing_time_msg;
+  processing_time_msg.stamp = get_clock()->now();
+  processing_time_msg.data = processing_times["Total"];
+  processing_time_publisher_->publish(processing_time_msg);
 }
 
 void MotionVelocityPlannerNode::insert_stop(

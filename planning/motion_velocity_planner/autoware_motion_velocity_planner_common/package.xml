@@ -27,6 +27,7 @@
   <depend>lanelet2_extension</depend>
   <depend>libboost-dev</depend>
   <depend>rclcpp</depend>
+  <depend>tier4_debug_msgs</depend>
   <depend>tier4_planning_msgs</depend>
   <depend>visualization_msgs</depend>
 
