@@ -734,12 +734,11 @@ double getDistanceToCrosswalk(
           boost::geometry::intersection(centerline, polygon, points_intersection);
 
           for (const auto & point : points_intersection) {
-            lanelet::ConstLanelets lanelets = {llt};
             Pose pose_point;
             pose_point.position.x = point.x();
             pose_point.position.y = point.y();
             const lanelet::ArcCoordinates & arc_crosswalk =
-              lanelet::utils::getArcCoordinates(lanelets, pose_point);
+              lanelet::utils::getArcCoordinates({llt}, pose_point);
 
             const double distance_to_crosswalk = arc_crosswalk.length;
             if (distance_to_crosswalk < min_distance_to_crosswalk) {
