@@ -38,7 +38,7 @@ jobs:
       - name: Get modified files
         id: get-modified-files
         run: |
-          echo "changed_files=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD | grep -E '\.(cpp|hpp)$' || true)" >> $GITHUB_OUTPUT
+          echo "changed_files=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD | grep -E '\.(cpp|hpp)$' | tr '\n' ' ' || true)" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Run clang-tidy
