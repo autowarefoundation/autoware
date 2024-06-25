@@ -17,11 +17,11 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_common.git
     version: remove-autoware-cmake-utils
-  autoware_cmake:
+  core/autoware_cmake:
     type: git
     url: https://github.com/autowarefoundation/autoware_cmake.git
     version: main
-  autoware_utils:
+  core/autoware_utils:
     type: git
     url: https://github.com/autowarefoundation/autoware_utils.git
     version: main
