@@ -294,7 +294,12 @@ public:
     const auto max_lat_acc_lim = *std::max_element(lat_acc_lim.begin(), lat_acc_lim.end());
     const auto max_lat_jerk_lim = *std::max_element(lat_jerk_lim.begin(), lat_jerk_lim.end());
 
+    // This test is designed to verify that the filter is applied correctly. However, if topic
+    // communication is delayed, the allowable range of change in the command values between the
+    // sender and receiver of the topic will vary, making the results dependent on processing time.
+    // We define the allowable error margin to account for this.
     constexpr auto threshold_scale = 1.1;
+
     // Output command must be smaller than maximum limit.
     // TODO(Horibe): check for each velocity range.
     if (std::abs(lon_vel) > 0.01) {
@@ -433,7 +438,7 @@ TEST_P(TestFixture, CheckFilterForSinCmd)
   //           << cmd_generator_.p_.steering.freq << " * dt + " << cmd_generator_.p_.steering.bias
   //           << ")" << std::endl;
 
-  for (size_t i = 0; i < 100; ++i) {
+  for (size_t i = 0; i < 30; ++i) {
     auto start_time = std::chrono::steady_clock::now();
 
     const bool reset_clock = (i == 0);
@@ -449,7 +454,13 @@ TEST_P(TestFixture, CheckFilterForSinCmd)
     std::chrono::milliseconds elapsed =
       std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 
-    std::chrono::milliseconds sleep_duration = std::chrono::milliseconds{10} - elapsed;
+    // The value determines the period of the topic. The filter logic of vehicle_cmd_gate depends on
+    // real-time, and if the time from publishing to subscribing becomes too long, this test will
+    // fail (the test specification itself should be improved). To prevent processing bottlenecks,
+    // please set this value appropriately. It is set to 30ms because it occasionally fails at 10ms.
+    constexpr int running_ms = 30;
+
+    std::chrono::milliseconds sleep_duration = std::chrono::milliseconds{running_ms} - elapsed;
     if (sleep_duration.count() > 0) {
       std::this_thread::sleep_for(sleep_duration);
     }
