@@ -37,11 +37,10 @@ repositories:
     url: https://github.com/tier4/autoware_auto_msgs.git
     version: tier4/main
   # universe
-  # TODO(youtalk): Revert after https://github.com/autowarefoundation/autoware.universe/pull/7640 merged
   universe/autoware.universe:
     type: git
-    url: https://github.com/youtalk/autoware.universe.git
-    version: use-autoware-lanelet2-extension
+    url: https://github.com/autowarefoundation/autoware.universe.git
+    version: main
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
