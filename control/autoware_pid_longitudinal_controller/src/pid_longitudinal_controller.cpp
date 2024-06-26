@@ -27,13 +27,15 @@
 
 namespace autoware::motion::control::pid_longitudinal_controller
 {
-PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
+PidLongitudinalController::PidLongitudinalController(
+  rclcpp::Node & node, std::shared_ptr<diagnostic_updater::Updater> diag_updater)
 : node_parameters_(node.get_node_parameters_interface()),
   clock_(node.get_clock()),
-  logger_(node.get_logger().get_child("longitudinal_controller")),
-  diagnostic_updater_(&node)
+  logger_(node.get_logger().get_child("longitudinal_controller"))
 {
   using std::placeholders::_1;
+
+  diag_updater_ = diag_updater;
 
   // parameters timer
   m_longitudinal_ctrl_period = node.get_parameter("ctrl_period").as_double();
@@ -432,7 +434,7 @@ trajectory_follower::LongitudinalOutput PidLongitudinalController::run(
   publishDebugData(ctrl_cmd, control_data);
 
   // diagnostic
-  diagnostic_updater_.force_update();
+  diag_updater_->force_update();
 
   return output;
 }
@@ -1150,8 +1152,8 @@ void PidLongitudinalController::updateDebugVelAcc(const ControlData & control_da
 
 void PidLongitudinalController::setupDiagnosticUpdater()
 {
-  diagnostic_updater_.setHardwareID("autoware_pid_longitudinal_controller");
-  diagnostic_updater_.add("control_state", this, &PidLongitudinalController::checkControlState);
+  diag_updater_->setHardwareID("autoware_pid_longitudinal_controller");
+  diag_updater_->add("control_state", this, &PidLongitudinalController::checkControlState);
 }
 
 void PidLongitudinalController::checkControlState(

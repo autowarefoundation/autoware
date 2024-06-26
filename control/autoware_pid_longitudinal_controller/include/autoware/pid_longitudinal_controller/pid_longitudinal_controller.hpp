@@ -64,7 +64,8 @@ class PidLongitudinalController : public trajectory_follower::LongitudinalContro
 {
 public:
   /// \param node Reference to the node used only for the component and parameter initialization.
-  explicit PidLongitudinalController(rclcpp::Node & node);
+  explicit PidLongitudinalController(
+    rclcpp::Node & node, std::shared_ptr<diagnostic_updater::Updater> diag_updater);
 
 private:
   struct Motion
@@ -236,8 +237,8 @@ private:
   std::shared_ptr<rclcpp::Time> m_last_running_time{std::make_shared<rclcpp::Time>(clock_->now())};
 
   // Diagnostic
-
-  diagnostic_updater::Updater diagnostic_updater_;
+  std::shared_ptr<diagnostic_updater::Updater>
+    diag_updater_{};  // Diagnostic updater for publishing diagnostic data.
   struct DiagnosticData
   {
     double trans_deviation{0.0};  // translation deviation between nearest point and current_pose

@@ -57,7 +57,8 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
   switch (longitudinal_controller_mode) {
     case LongitudinalControllerMode::PID: {
       longitudinal_controller_ =
-        std::make_shared<pid_longitudinal_controller::PidLongitudinalController>(*this);
+        std::make_shared<pid_longitudinal_controller::PidLongitudinalController>(
+          *this, diag_updater_);
       break;
     }
     default:
