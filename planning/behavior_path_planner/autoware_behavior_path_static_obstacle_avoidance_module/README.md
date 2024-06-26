@@ -485,11 +485,6 @@ title Filtering flow for vehicle type objects
 start
 
 partition isSatisfiedWithVehicleCodition() {
-if(object is force avoidance target ?) then (yes)
-#FF006C :return true;
-stop
-else (\n no)
-
 if(isNeverAvoidanceTarget()) then (yes)
 #00FFB1 :return false;
 stop
@@ -534,7 +529,6 @@ endif
 
 endif
 }
-endif
 endif
 endif
 endif
