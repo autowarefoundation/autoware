@@ -1279,7 +1279,6 @@ void TrtYoloX::getColorizedMask(
   int height = mask.rows;
   if ((cmask.cols != mask.cols) || (cmask.rows != mask.rows)) {
     throw std::runtime_error("input and output image have difference size.");
-    return;
   }
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
