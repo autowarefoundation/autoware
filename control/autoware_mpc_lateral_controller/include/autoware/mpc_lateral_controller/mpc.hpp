@@ -271,7 +271,7 @@ private:
    */
   std::pair<bool, VectorXd> executeOptimization(
     const MPCMatrix & mpc_matrix, const VectorXd & x0, const double prediction_dt,
-    const MPCTrajectory & trajectory, const double current_velocity);
+    const MPCTrajectory & trajectory);
 
   /**
    * @brief Resample the trajectory with the MPC resampling time.
@@ -386,8 +386,7 @@ private:
    * @param reference_trajectory The reference trajectory.
    * @param current_velocity current velocity of ego.
    */
-  VectorXd calcSteerRateLimitOnTrajectory(
-    const MPCTrajectory & trajectory, const double current_velocity) const;
+  VectorXd calcSteerRateLimitOnTrajectory(const MPCTrajectory & trajectory) const;
 
   //!< @brief logging with warn and return false
   template <typename... Args>
