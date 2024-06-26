@@ -14,6 +14,7 @@
   <arg name="mode" default="lidar" description="options: `camera_lidar_radar_fusion`, `camera_lidar_fusion`, `lidar_radar_fusion`, `lidar` or `radar`"/>
   <arg name="use_radar_tracking_fusion" default="false" description="use radar tracking fusion"/>
   <let name="use_radar_tracking_fusion" value="false" if="$(eval '&quot;$(var mode)&quot;!=&quot;camera_lidar_radar_fusion&quot;')"/>
+  <arg name="use_multi_channel_tracker_merger"/>
 
   <!-- External interface -->
   <let name="input/detection_input_channels" value="['detected_objects']"/>
