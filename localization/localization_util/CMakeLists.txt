@@ -8,6 +8,7 @@ ament_auto_add_library(localization_util SHARED
   src/util_func.cpp
   src/smart_pose_buffer.cpp
   src/tree_structured_parzen_estimator.cpp
+  src/covariance_ellipse.cpp
 )
 
 if(BUILD_TESTING)

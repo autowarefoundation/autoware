@@ -58,61 +58,12 @@ LocalizationErrorMonitor::LocalizationErrorMonitor(const rclcpp::NodeOptions & o
   logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
 }
 
-visualization_msgs::msg::Marker LocalizationErrorMonitor::create_ellipse_marker(
-  const Ellipse & ellipse, nav_msgs::msg::Odometry::ConstSharedPtr odom)
-{
-  tf2::Quaternion quat;
-  quat.setEuler(0, 0, ellipse.yaw);
-
-  const double ellipse_long_radius = std::min(ellipse.long_radius, 30.0);
-  const double ellipse_short_radius = std::min(ellipse.short_radius, 30.0);
-  visualization_msgs::msg::Marker marker;
-  marker.header = odom->header;
-  marker.header.stamp = this->now();
-  marker.ns = "error_ellipse";
-  marker.id = 0;
-  marker.type = visualization_msgs::msg::Marker::SPHERE;
-  marker.action = visualization_msgs::msg::Marker::ADD;
-  marker.pose = odom->pose.pose;
-  marker.pose.orientation = tf2::toMsg(quat);
-  marker.scale.x = ellipse_long_radius * 2;
-  marker.scale.y = ellipse_short_radius * 2;
-  marker.scale.z = 0.01;
-  marker.color.a = 0.1;
-  marker.color.r = 0.0;
-  marker.color.g = 0.0;
-  marker.color.b = 1.0;
-  return marker;
-}
-
 void LocalizationErrorMonitor::on_odom(nav_msgs::msg::Odometry::ConstSharedPtr input_msg)
 {
-  // create xy covariance (2x2 matrix)
-  // input geometry_msgs::PoseWithCovariance contain 6x6 matrix
-  Eigen::Matrix2d xy_covariance;
-  const auto cov = input_msg->pose.covariance;
-  xy_covariance(0, 0) = cov[0 * 6 + 0];
-  xy_covariance(0, 1) = cov[0 * 6 + 1];
-  xy_covariance(1, 0) = cov[1 * 6 + 0];
-  xy_covariance(1, 1) = cov[1 * 6 + 1];
+  ellipse_ = autoware::localization_util::calculate_xy_ellipse(input_msg->pose, scale_);
 
-  Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> eigensolver(xy_covariance);
-
-  // eigen values and vectors are sorted in ascending order
-  ellipse_.long_radius = scale_ * std::sqrt(eigensolver.eigenvalues()(1));
-  ellipse_.short_radius = scale_ * std::sqrt(eigensolver.eigenvalues()(0));
-
-  // principal component vector
-  const Eigen::Vector2d pc_vector = eigensolver.eigenvectors().col(1);
-  ellipse_.yaw = std::atan2(pc_vector.y(), pc_vector.x());
-
-  // ellipse size along lateral direction (body-frame)
-  ellipse_.P = xy_covariance;
-  const double yaw_vehicle = tf2::getYaw(input_msg->pose.pose.orientation);
-  ellipse_.size_lateral_direction =
-    scale_ * measure_size_ellipse_along_body_frame(ellipse_.P.inverse(), yaw_vehicle);
-
-  const auto ellipse_marker = create_ellipse_marker(ellipse_, input_msg);
+  const auto ellipse_marker = autoware::localization_util::create_ellipse_marker(
+    ellipse_, input_msg->header, input_msg->pose);
   ellipse_marker_pub_->publish(ellipse_marker);
 
   // diagnostics
@@ -132,17 +83,6 @@ void LocalizationErrorMonitor::on_odom(nav_msgs::msg::Odometry::ConstSharedPtr i
   diag_msg.header.stamp = input_msg->header.stamp;
   diag_msg.status.push_back(diag_merged_status);
   diag_pub_->publish(diag_msg);
-}
-
-double LocalizationErrorMonitor::measure_size_ellipse_along_body_frame(
-  const Eigen::Matrix2d & Pinv, const double theta)
-{
-  Eigen::MatrixXd e(2, 1);
-  e(0, 0) = std::cos(theta);
-  e(1, 0) = std::sin(theta);
-
-  double d = std::sqrt((e.transpose() * Pinv * e)(0, 0) / Pinv.determinant());
-  return d;
 }
 
 #include <rclcpp_components/register_node_macro.hpp>

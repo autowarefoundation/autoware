@@ -15,6 +15,8 @@
 #ifndef LOCALIZATION_ERROR_MONITOR__LOCALIZATION_ERROR_MONITOR_HPP_
 #define LOCALIZATION_ERROR_MONITOR__LOCALIZATION_ERROR_MONITOR_HPP_
 
+#include "localization_util/covariance_ellipse.hpp"
+
 #include <Eigen/Dense>
 #include <autoware/universe_utils/ros/logger_level_configure.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -24,15 +26,6 @@
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <memory>
-
-struct Ellipse
-{
-  double long_radius;
-  double short_radius;
-  double yaw;
-  Eigen::Matrix2d P;
-  double size_lateral_direction;
-};
 
 class LocalizationErrorMonitor : public rclcpp::Node
 {
@@ -50,12 +43,9 @@ private:
   double warn_ellipse_size_;
   double error_ellipse_size_lateral_direction_;
   double warn_ellipse_size_lateral_direction_;
-  Ellipse ellipse_;
+  autoware::localization_util::Ellipse ellipse_;
 
   void on_odom(nav_msgs::msg::Odometry::ConstSharedPtr input_msg);
-  visualization_msgs::msg::Marker create_ellipse_marker(
-    const Ellipse & ellipse, nav_msgs::msg::Odometry::ConstSharedPtr odom);
-  static double measure_size_ellipse_along_body_frame(const Eigen::Matrix2d & Pinv, double theta);
 
 public:
   explicit LocalizationErrorMonitor(const rclcpp::NodeOptions & options);

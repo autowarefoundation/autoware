@@ -23,6 +23,7 @@
   <depend>autoware_universe_utils</depend>
   <depend>diagnostic_msgs</depend>
   <depend>diagnostic_updater</depend>
+  <depend>localization_util</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp_components</depend>
   <depend>tf2</depend>
