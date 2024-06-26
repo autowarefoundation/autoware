@@ -1,0 +1,77 @@
+Checks: "
+  -*,
+  // severity: HIGH
+  bugprone-dangling-handle,
+  bugprone-fold-init-type,
+  bugprone-inaccurate-erase,
+  // bugprone-incorrect-roundings,
+  // bugprone-misplaced-widening-cast,
+  bugprone-sizeof-container,
+  bugprone-sizeof-expression,
+  bugprone-string-constructor,
+  bugprone-suspicious-enum-usage,
+  bugprone-suspicious-memset-usage,
+  bugprone-suspicious-missing-comma,
+  bugprone-suspicious-semicolon,
+  bugprone-swapped-arguments,
+  bugprone-unchecked-optional-access,
+  // bugprone-unused-raii,
+  bugprone-use-after-move,
+  misc-non-copyable-objects,
+  misc-throw-by-value-catch-by-reference,
+
+  // severity: MEDIUM
+  bugprone-assert-side-effect,
+  bugprone-bad-signal-to-kill-thread,
+  bugprone-copy-constructor-init,
+  bugprone-dynamic-static-initializers,
+  // bugprone-exception-escape,
+  // bugprone-integer-division,
+  // bugprone-macro-parentheses,
+  bugprone-macro-repeated-side-effects,
+  bugprone-misplaced-operator-in-strlen-in-alloc,
+  bugprone-move-forwarding-reference,
+  bugprone-multiple-statement-macro,
+  bugprone-not-null-terminated-result,
+  // bugprone-parent-virtual-call,
+  bugprone-posix-return,
+  // bugprone-signed-char-misuse,
+  bugprone-string-literal-with-embedded-nul,
+  bugprone-suspicious-string-compare,
+  bugprone-terminating-continue,
+  // bugprone-throw-keyword-missing,
+  bugprone-too-small-loop-variable,
+  bugprone-undefined-memory-manipulation,
+  bugprone-undelegated-constructor,
+  bugprone-unhandled-self-assignment,
+  bugprone-unused-return-value,
+  bugprone-virtual-near-miss,
+  // cppcoreguidelines-init-variables,
+  // cppcoreguidelines-narrowing-conversions,
+  google-build-explicit-make-pair,
+  google-build-namespaces,
+  // google-explicit-constructor,
+  misc-definitions-in-headers,
+  misc-new-delete-overloads,
+  misc-redundant-expression,
+  misc-unconventional-assign-operator,
+  misc-uniqueptr-reset-release,
+  performance-inefficient-algorithm,
+  // performance-move-const-arg,
+  performance-move-constructor-init,
+  performance-noexcept-move-constructor,
+  // readability-simplify-boolean-expr"
+
+WarningsAsErrors: "*"
+
+HeaderFilterRegex: ^(?!\/usr)(?!\/opt)
+
+CheckOptions:
+  - key: bugprone-assert-side-effect.AssertMacros
+    value: assert
+  - key: bugprone-dynamic-static-initializers.HeaderFileExtensions
+    value: ",h,hh,hpp,hxx"
+  - key: bugprone-unused-return-value.CheckedFunctions
+    value: ::std::async;::std::launder;::std::remove;::std::remove_if;::std::unique;::std::unique_ptr::release;::std::basic_string::empty;::std::vector::empty
+  - key: performance-move-constructor-init.IncludeStyle
+    value: google
