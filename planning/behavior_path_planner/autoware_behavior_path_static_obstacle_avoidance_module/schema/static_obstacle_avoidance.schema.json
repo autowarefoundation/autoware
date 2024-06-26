@@ -17,6 +17,7 @@
           "default": "4.0"
         },
         "path_generation_method": {
+          "type": "string",
           "enum": ["shift_line_base", "optimization_base", "both"],
           "description": "Path generation method.",
           "default": "shift_line_base"
