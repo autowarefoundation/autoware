@@ -56,8 +56,11 @@
 
 - name: Add PATH to .bashrc
   ansible.builtin.lineinfile:
-    dest: ~/.bashrc
+    dest: "{{ item }}"
     line: source /opt/ros/{{ rosdistro }}/setup.bash
     state: present
     create: true
     mode: 0644
+  loop:
+    - ~/.bashrc
+    - /etc/skel/.bashrc
