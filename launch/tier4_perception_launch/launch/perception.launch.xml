@@ -124,6 +124,9 @@
   />
   <arg name="input/radar" default="/sensing/radar/detected_objects"/>
 
+  <!-- Object merger method: whether to enable multi-channel tracker merger -->
+  <arg name="use_multi_channel_tracker_merger" default="false" description="if it is true, replace the multi step merger to multi-channel tracker merger."/>
+
   <!-- Downsample pointcloud for perception usage -->
   <arg name="downsample_perception_common_pointcloud" default="false"/>
   <arg name="common_downsample_voxel_size_x" default="0.05"/>
@@ -189,6 +192,7 @@
         <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/detection.launch.xml">
           <arg name="mode" value="$(var mode)"/>
           <arg name="lidar_detection_model" value="$(var lidar_detection_model)"/>
+          <arg name="use_multi_channel_tracker_merger" value="$(var use_multi_channel_tracker_merger)"/>
           <arg name="number_of_cameras" value="$(var image_number)"/>
           <arg name="input/camera0/image" value="$(var image_raw0)"/>
           <arg name="input/camera0/info" value="$(var camera_info0)"/>
@@ -255,7 +259,9 @@
           <arg name="object_recognition_tracking_radar_object_tracker_node_param_path" value="$(var object_recognition_tracking_radar_object_tracker_node_param_path)"/>
           <arg name="object_recognition_tracking_object_merger_data_association_matrix_param_path" value="$(var object_recognition_tracking_object_merger_data_association_matrix_param_path)"/>
           <arg name="object_recognition_tracking_object_merger_node_param_path" value="$(var object_recognition_tracking_object_merger_node_param_path)"/>
+          <arg name="use_multi_channel_tracker_merger" value="$(var use_multi_channel_tracker_merger)"/>
           <arg name="use_radar_tracking_fusion" value="$(var use_radar_tracking_fusion)"/>
+          <arg name="use_detection_by_tracker" value="$(var use_detection_by_tracker)"/>
         </include>
       </group>
 

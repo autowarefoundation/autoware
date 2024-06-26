@@ -47,16 +47,16 @@
   <arg name="input/camera7/rois"/>
   <arg name="input/pointcloud_map/pointcloud"/>
   <arg name="input/obstacle_segmentation/pointcloud"/>
-  <arg name="input/lidar_ml/objects" default="$(var lidar_detection_model)/objects"/>
-  <arg name="input/lidar_rule/objects" default="clustering/camera_lidar_fusion/objects"/>
-  <arg name="input/radar_near/objects" default="radar/noise_filtered_objects"/>
-  <arg name="input/radar_far/objects" default="radar/far_objects"/>
-  <arg name="input/detection_by_tracker/objects" default="detection_by_tracker/objects"/>
+  <arg name="input/lidar_ml/objects"/>
+  <arg name="input/lidar_rule/objects"/>
+  <arg name="input/radar/objects"/>
+  <arg name="input/radar_far/objects"/>
+  <arg name="input/detection_by_tracker/objects"/>
   <arg name="output/objects" default="objects"/>
 
   <!-- internal interfaces -->
   <let name="radar_objects_fusion/input/objects" value="$(var input/lidar_ml/objects)"/>
-  <let name="radar_objects_fusion/input/radars" value="$(var input/radar_near/objects)"/>
+  <let name="radar_objects_fusion/input/radars" value="$(var input/radar/objects)"/>
   <let name="radar_objects_fusion/output/objects" value="radar_fusion/objects"/>
 
   <let name="camera_roi_fusion/input/objects" value="$(var radar_objects_fusion/output/objects)" if="$(var use_near_radar_fusion)"/>

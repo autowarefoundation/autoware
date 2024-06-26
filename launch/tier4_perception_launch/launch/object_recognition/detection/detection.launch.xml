@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- Current namespace -->
+  <let name="ns" value="/perception/object_recognition/detection"/>
+
   <!-- Pipeline junctions -->
   <arg name="mode" description="options: `camera_lidar_radar_fusion`, `camera_lidar_fusion`, `lidar_radar_fusion`, `lidar` or `radar`"/>
   <arg name="lidar_detection_model" description="options: `transfusion`, `centerpoint`, `apollo`, `pointpainting`, `clustering`"/>
@@ -10,15 +13,13 @@
   <arg name="use_validator" description="use obstacle_pointcloud based validator"/>
   <arg name="objects_validation_method" description="options: `obstacle_pointcloud` or `occupancy_grid`"/>
   <arg name="use_low_intensity_cluster_filter"/>
+  <arg name="use_multi_channel_tracker_merger"/>
 
-  <!-- Lidar interfaces -->
-  <arg name="input/pointcloud"/>
-  <arg name="input/pointcloud_map/pointcloud" default="/perception/object_recognition/detection/pointcloud_map_filtered/pointcloud"/>
-  <arg name="input/obstacle_segmentation/pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
-  <arg name="node/pointcloud_container"/>
-
-  <!-- Camera interfaces -->
+  <!-- External interfaces -->
   <arg name="number_of_cameras"/>
+  <arg name="node/pointcloud_container"/>
+  <arg name="input/pointcloud"/>
+  <arg name="input/obstacle_segmentation/pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
   <arg name="input/camera0/image"/>
   <arg name="input/camera0/info"/>
   <arg name="input/camera0/rois"/>
@@ -43,9 +44,20 @@
   <arg name="input/camera7/image"/>
   <arg name="input/camera7/info"/>
   <arg name="input/camera7/rois"/>
-
-  <!-- Radar interfaces -->
   <arg name="input/radar"/>
+
+  <arg name="output/objects" default="objects"/>
+
+  <!-- internal interfaces -->
+  <arg name="pointcloud_filter/output/pointcloud" default="$(var ns)/pointcloud_map_filtered/pointcloud"/>
+  <arg name="lidar_ml_detector/output/objects" default="$(var ns)/$(var lidar_detection_model)/objects"/>
+  <arg name="lidar_rule_detector/output/objects" default="$(var ns)/clustering/objects"/>
+  <arg name="camera_lidar_rule_detector/output/objects" default="$(var ns)/clustering/camera_lidar_fusion/objects"/>
+  <arg name="tracker_based_detector/output/objects" default="$(var ns)/detection_by_tracker/objects"/>
+  <arg name="lidar_object_filter/output/objects" default="$(var ns)/$(var lidar_detection_model)/validation/objects"/>
+  <arg name="camera_lidar_object_filter/output/objects" default="$(var ns)/clustering/camera_lidar_fusion/filtered/objects"/>
+  <arg name="radar_pipeline/output/objects" default="$(var ns)/radar/far_objects"/>
+  <arg name="radar_object_filter/output/objects" default="$(var ns)/radar/far_objects"/>
 
   <!-- Module switching -->
   <arg name="switch/detector/camera_lidar" default="false"/>
@@ -56,35 +68,58 @@
   <arg name="switch/detector/tracker_based" default="false"/>
   <let name="switch/detector/tracker_based" value="true" if="$(var use_detection_by_tracker)"/>
 
+  <arg name="switch/filter/pointcloud" default="false"/>
+  <arg name="switch/filter/camera_lidar_object" default="false"/>
+  <arg name="switch/filter/lidar_object" default="false"/>
+
   <arg name="switch/merger/camera_lidar_radar" default="false"/>
   <arg name="switch/merger/camera_lidar" default="false"/>
   <arg name="switch/merger/lidar_radar" default="false"/>
   <arg name="switch/merger/lidar" default="false"/>
 
   <group scoped="false" if="$(eval '&quot;$(var mode)&quot;==&quot;camera_lidar_radar_fusion&quot;')">
+    <let name="switch/filter/pointcloud" value="true"/>
     <let name="switch/detector/camera_lidar" value="true"/>
     <let name="switch/detector/lidar_dnn" value="true"/>
     <let name="switch/detector/radar" value="true"/>
-    <let name="switch/merger/camera_lidar_radar" value="true"/>
+    <let name="switch/merger/camera_lidar_radar" value="true" unless="$(var use_multi_channel_tracker_merger)"/>
+    <group scoped="false" if="$(var use_multi_channel_tracker_merger)">
+      <let name="switch/filter/camera_lidar_object" value="true"/>
+      <let name="switch/filter/lidar_object" value="true"/>
+      <let name="camera_lidar_rule_detector/output/objects" value="$(var ns)/clustering/camera_lidar_fusion/unfiltered/objects"/>
+      <let name="camera_lidar_object_filter/output/objects" value="$(var ns)/clustering/camera_lidar_fusion/objects"/>
+    </group>
   </group>
   <group scoped="false" if="$(eval '&quot;$(var mode)&quot;==&quot;camera_lidar_fusion&quot;')">
+    <let name="switch/filter/pointcloud" value="true"/>
     <let name="switch/detector/camera_lidar" value="true"/>
     <let name="switch/detector/lidar_dnn" value="true"/>
-    <let name="switch/merger/camera_lidar" value="true"/>
+    <let name="switch/merger/camera_lidar" value="true" unless="$(var use_multi_channel_tracker_merger)"/>
+    <group scoped="false" if="$(var use_multi_channel_tracker_merger)">
+      <let name="switch/filter/camera_lidar_object" value="true"/>
+      <let name="switch/filter/lidar_object" value="true"/>
+      <let name="camera_lidar_rule_detector/output/objects" value="$(var ns)/clustering/camera_lidar_fusion/unfiltered/objects"/>
+      <let name="camera_lidar_object_filter/output/objects" value="$(var ns)/clustering/camera_lidar_fusion/objects"/>
+    </group>
   </group>
   <group scoped="false" if="$(eval '&quot;$(var mode)&quot;==&quot;lidar_radar_fusion&quot;')">
+    <let name="switch/filter/pointcloud" value="true"/>
     <let name="switch/detector/lidar_dnn" value="true"/>
     <let name="switch/detector/lidar_rule" value="true"/>
     <let name="switch/detector/radar" value="true"/>
-    <let name="switch/merger/lidar_radar" value="true"/>
+    <let name="switch/filter/lidar_object" value="true" if="$(var use_multi_channel_tracker_merger)"/>
+    <let name="switch/merger/lidar_radar" value="true" unless="$(var use_multi_channel_tracker_merger)"/>
   </group>
   <group scoped="false" if="$(eval '&quot;$(var mode)&quot;==&quot;lidar&quot;')">
+    <let name="switch/filter/pointcloud" value="true"/>
     <let name="switch/detector/lidar_dnn" value="true"/>
     <let name="switch/detector/lidar_rule" value="true"/>
-    <let name="switch/merger/lidar" value="true"/>
+    <let name="switch/filter/lidar_object" value="true" if="$(var use_multi_channel_tracker_merger)"/>
+    <let name="switch/merger/lidar" value="true" unless="$(var use_multi_channel_tracker_merger)"/>
   </group>
   <group scoped="false" if="$(eval '&quot;$(var mode)&quot;==&quot;radar&quot;')">
-    <let name="switch/detector/radar_only" value="true"/>
+    <let name="switch/detector/radar" value="true" if="$(var use_multi_channel_tracker_merger)"/>
+    <let name="switch/detector/radar_only" value="true" unless="$(var use_multi_channel_tracker_merger)"/>
     <let name="switch/detector/tracker_based" value="false"/>
   </group>
 
@@ -118,11 +153,12 @@
       <arg name="input/camera7/info" value="$(var input/camera7/info)"/>
       <arg name="input/camera7/rois" value="$(var input/camera7/rois)"/>
       <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
-      <arg name="input/pointcloud_map/pointcloud" value="$(var input/pointcloud_map/pointcloud)"/>
+      <arg name="input/pointcloud_map/pointcloud" value="$(var pointcloud_filter/output/pointcloud)"/>
       <arg name="input/obstacle_segmentation/pointcloud" value="$(var input/obstacle_segmentation/pointcloud)"/>
+      <arg name="output/ml_detector/objects" value="$(var lidar_ml_detector/output/objects)"/>
+      <arg name="output/rule_detector/objects" value="$(var camera_lidar_rule_detector/output/objects)"/>
       <arg name="node/pointcloud_container" value="$(var node/pointcloud_container)"/>
       <arg name="lidar_detection_model" value="$(var lidar_detection_model)"/>
-      <arg name="use_pointcloud_map" value="$(var use_pointcloud_map)"/>
       <arg name="use_low_height_cropbox" value="$(var use_low_height_cropbox)"/>
       <arg name="use_roi_based_cluster" value="$(var use_roi_based_cluster)"/>
       <arg name="detection_by_tracker_param_path" value="$(var detection_by_tracker_param_path)"/>
@@ -133,6 +169,7 @@
     <!-- Lidar dnn-based detectors-->
     <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/detector/lidar_dnn_detector.launch.xml">
       <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+      <arg name="output/objects" value="$(var lidar_ml_detector/output/objects)"/>
       <arg name="node/pointcloud_container" value="$(var node/pointcloud_container)"/>
       <arg name="lidar_detection_model" value="$(var lidar_detection_model)"/>
     </include>
@@ -141,9 +178,9 @@
     <!-- Lidar rule-based detectors-->
     <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/detector/lidar_rule_detector.launch.xml">
       <arg name="node/pointcloud_container" value="$(var node/pointcloud_container)"/>
-      <arg name="input/pointcloud_map/pointcloud" value="$(var input/pointcloud_map/pointcloud)"/>
+      <arg name="input/pointcloud_map/pointcloud" value="$(var pointcloud_filter/output/pointcloud)"/>
       <arg name="input/obstacle_segmentation/pointcloud" value="$(var input/obstacle_segmentation/pointcloud)"/>
-      <arg name="use_pointcloud_map" value="$(var use_pointcloud_map)"/>
+      <arg name="output/objects" value="$(var lidar_rule_detector/output/objects)"/>
       <arg name="use_low_height_cropbox" value="$(var use_low_height_cropbox)"/>
     </include>
   </group>
@@ -152,7 +189,7 @@
     <push-ros-namespace namespace="radar"/>
     <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/filter/radar_filter.launch.xml">
       <arg name="input/radar" value="$(var input/radar)"/>
-      <arg name="output/objects" value="far_objects"/>
+      <arg name="output/objects" value="$(var radar_pipeline/output/objects)"/>
       <arg name="radar_lanelet_filtering_range_param_path" value="$(var radar_lanelet_filtering_range_param_path)"/>
       <arg name="radar_crossing_objects_noise_filter_param_path" value="$(var object_recognition_detection_radar_crossing_objects_noise_filter_param_path)"/>
       <arg name="object_velocity_splitter_param_path" value="$(var object_recognition_detection_object_velocity_splitter_radar_fusion_param_path)"/>
@@ -175,7 +212,35 @@
   <!-- DetectionByTracker -->
   <group if="$(var switch/detector/tracker_based)">
     <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/detector/tracker_based_detector.launch.xml">
+      <arg name="output/objects" value="$(var tracker_based_detector/output/objects)"/>
       <arg name="detection_by_tracker_param_path" value="$(var object_recognition_detection_detection_by_tracker_param)"/>
+    </include>
+  </group>
+
+  <!-- Filter -->
+  <group if="$(var switch/filter/pointcloud)">
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/filter/pointcloud_map_filter.launch.py">
+      <arg name="input_topic" value="$(var input/obstacle_segmentation/pointcloud)"/>
+      <arg name="output_topic" value="$(var pointcloud_filter/output/pointcloud)"/>
+      <arg name="use_intra_process" value="true"/>
+      <arg name="use_multithread" value="true"/>
+      <arg name="pointcloud_container_name" value="$(var node/pointcloud_container)"/>
+      <arg name="use_pointcloud_map" value="$(var use_pointcloud_map)"/>
+    </include>
+  </group>
+  <group if="$(var switch/filter/lidar_object)">
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/filter/object_validator.launch.xml">
+      <arg name="input/obstacle_pointcloud" value="$(var pointcloud_filter/output/pointcloud)"/>
+      <arg name="input/objects" value="$(var lidar_ml_detector/output/objects)"/>
+      <arg name="output/objects" value="$(var lidar_object_filter/output/objects)"/>
+      <arg name="objects_validation_method" value="obstacle_pointcloud"/>
+    </include>
+  </group>
+  <group if="$(var switch/filter/camera_lidar_object)">
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/filter/object_filter.launch.xml" if="$(var use_object_filter)">
+      <arg name="objects_filter_method" value="lanelet_filter"/>
+      <arg name="input/objects" value="$(var camera_lidar_rule_detector/output/objects)"/>
+      <arg name="output/objects" value="$(var camera_lidar_object_filter/output/objects)"/>
     </include>
   </group>
 
@@ -208,8 +273,14 @@
       <arg name="input/camera7/image" value="$(var input/camera7/image)"/>
       <arg name="input/camera7/info" value="$(var input/camera7/info)"/>
       <arg name="input/camera7/rois" value="$(var input/camera7/rois)"/>
-      <arg name="input/pointcloud_map/pointcloud" value="$(var input/pointcloud_map/pointcloud)"/>
+      <arg name="input/pointcloud_map/pointcloud" value="$(var pointcloud_filter/output/pointcloud)"/>
       <arg name="input/obstacle_segmentation/pointcloud" value="$(var input/obstacle_segmentation/pointcloud)"/>
+      <arg name="input/lidar_ml/objects" value="$(var lidar_ml_detector/output/objects)"/>
+      <arg name="input/lidar_rule/objects" value="$(var camera_lidar_rule_detector/output/objects)"/>
+      <arg name="input/detection_by_tracker/objects" value="$(var tracker_based_detector/output/objects)"/>
+      <arg name="input/radar/objects" value="radar/noise_filtered_objects"/>
+      <arg name="input/radar_far/objects" value="$(var radar_pipeline/output/objects)"/>
+      <arg name="output/objects" value="$(var output/objects)"/>
       <arg name="lidar_detection_model" value="$(var lidar_detection_model)"/>
       <arg name="use_radar_tracking_fusion" value="$(var use_radar_tracking_fusion)"/>
       <arg name="use_detection_by_tracker" value="$(var use_detection_by_tracker)"/>
@@ -250,8 +321,12 @@
       <arg name="input/camera7/image" value="$(var input/camera7/image)"/>
       <arg name="input/camera7/info" value="$(var input/camera7/info)"/>
       <arg name="input/camera7/rois" value="$(var input/camera7/rois)"/>
-      <arg name="input/pointcloud_map/pointcloud" value="$(var input/pointcloud_map/pointcloud)"/>
+      <arg name="input/pointcloud_map/pointcloud" value="$(var pointcloud_filter/output/pointcloud)"/>
       <arg name="input/obstacle_segmentation/pointcloud" value="$(var input/obstacle_segmentation/pointcloud)"/>
+      <arg name="input/lidar_ml/objects" value="$(var lidar_ml_detector/output/objects)"/>
+      <arg name="input/lidar_rule/objects" value="$(var camera_lidar_rule_detector/output/objects)"/>
+      <arg name="input/detection_by_tracker/objects" value="$(var tracker_based_detector/output/objects)"/>
+      <arg name="output/objects" value="$(var output/objects)"/>
       <arg name="use_object_filter" value="$(var use_object_filter)"/>
       <arg name="objects_filter_method" value="$(var objects_filter_method)"/>
       <arg name="use_validator" value="$(var use_validator)"/>
@@ -264,32 +339,41 @@
 
   <group if="$(var switch/merger/lidar_radar)">
     <!-- Lidar object merger-->
-    <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/merger/lidar_merger.launch.xml">
-      <arg name="input/pointcloud_map/pointcloud" value="$(var input/pointcloud_map/pointcloud)"/>
-      <arg name="input/obstacle_segmentation/pointcloud" value="$(var input/obstacle_segmentation/pointcloud)"/>
-      <arg name="output/objects" value="lidar/objects"/>
-      <arg name="lidar_detection_model" value="$(var lidar_detection_model)"/>
-      <arg name="use_detection_by_tracker" value="$(var use_detection_by_tracker)"/>
-      <arg name="use_pointcloud_map" value="$(var use_pointcloud_map)"/>
-      <arg name="use_object_filter" value="$(var use_object_filter)"/>
-      <arg name="objects_filter_method" value="$(var objects_filter_method)"/>
-      <arg name="use_validator" value="$(var use_validator)"/>
-      <arg name="objects_validation_method" value="$(var objects_validation_method)"/>
-    </include>
+    <group>
+      <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/merger/lidar_merger.launch.xml">
+        <arg name="input/pointcloud_map/pointcloud" value="$(var pointcloud_filter/output/pointcloud)"/>
+        <arg name="input/obstacle_segmentation/pointcloud" value="$(var input/obstacle_segmentation/pointcloud)"/>
+        <arg name="input/lidar_ml/objects" value="$(var lidar_ml_detector/output/objects)"/>
+        <arg name="input/lidar_rule/objects" value="$(var lidar_rule_detector/output/objects)"/>
+        <arg name="output/objects" value="lidar/objects"/>
+        <arg name="lidar_detection_model" value="$(var lidar_detection_model)"/>
+        <arg name="use_detection_by_tracker" value="$(var use_detection_by_tracker)"/>
+        <arg name="use_pointcloud_map" value="$(var use_pointcloud_map)"/>
+        <arg name="use_object_filter" value="$(var use_object_filter)"/>
+        <arg name="objects_filter_method" value="$(var objects_filter_method)"/>
+        <arg name="use_validator" value="$(var use_validator)"/>
+        <arg name="objects_validation_method" value="$(var objects_validation_method)"/>
+      </include>
+    </group>
     <!-- Lidar-Radar object merger-->
-    <include file="$(find-pkg-share radar_fusion_to_detected_object)/launch/radar_object_fusion_to_detected_object.launch.xml">
-      <arg name="input/objects" value="lidar/objects"/>
-      <arg name="input/radars" value="radar/noise_filtered_objects"/>
-      <arg name="output/objects" value="objects"/>
-    </include>
+    <group>
+      <include file="$(find-pkg-share radar_fusion_to_detected_object)/launch/radar_object_fusion_to_detected_object.launch.xml">
+        <arg name="input/objects" value="lidar/objects"/>
+        <arg name="input/radars" value="radar/noise_filtered_objects"/>
+        <arg name="output/objects" value="$(var output/objects)"/>
+      </include>
+    </group>
   </group>
 
   <group if="$(var switch/merger/lidar)">
     <!-- Lidar object merger-->
     <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/merger/lidar_merger.launch.xml">
-      <arg name="input/pointcloud_map/pointcloud" value="$(var input/pointcloud_map/pointcloud)"/>
+      <arg name="input/pointcloud_map/pointcloud" value="$(var pointcloud_filter/output/pointcloud)"/>
       <arg name="input/obstacle_segmentation/pointcloud" value="$(var input/obstacle_segmentation/pointcloud)"/>
-      <arg name="output/objects" value="objects"/>
+      <arg name="input/lidar_ml/objects " value="$(var lidar_ml_detector/output/objects)"/>
+      <arg name="input/lidar_rule/objects" value="$(var lidar_rule_detector/output/objects)"/>
+      <arg name="input/detection_by_tracker/objects" value="$(var tracker_based_detector/output/objects)"/>
+      <arg name="output/objects" value="$(var output/objects)"/>
       <arg name="lidar_detection_model" value="$(var lidar_detection_model)"/>
       <arg name="use_detection_by_tracker" value="$(var use_detection_by_tracker)"/>
       <arg name="use_pointcloud_map" value="$(var use_pointcloud_map)"/>

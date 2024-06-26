@@ -1,17 +1,11 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- Lidar parameters -->
-  <arg name="input/pointcloud"/>
-  <arg name="input/pointcloud_map/pointcloud"/>
-  <arg name="input/obstacle_segmentation/pointcloud"/>
-  <arg name="node/pointcloud_container"/>
-
   <!-- Lidar + Camera detector parameters -->
   <arg name="lidar_detection_model" description="options: `centerpoint`, `apollo`, `pointpainting`, `clustering`"/>
   <arg name="use_roi_based_cluster"/>
   <arg name="use_low_intensity_cluster_filter"/>
 
-  <!-- Camera parameters -->
+  <!-- External interfaces -->
   <arg name="number_of_cameras"/>
   <arg name="input/camera0/image"/>
   <arg name="input/camera0/info"/>
@@ -37,6 +31,14 @@
   <arg name="input/camera7/image"/>
   <arg name="input/camera7/info"/>
   <arg name="input/camera7/rois"/>
+
+  <arg name="node/pointcloud_container"/>
+  <arg name="input/pointcloud"/>
+  <arg name="input/pointcloud_map/pointcloud"/>
+  <arg name="input/obstacle_segmentation/pointcloud"/>
+
+  <arg name="output/ml_detector/objects"/>
+  <arg name="output/rule_detector/objects"/>
 
   <!-- Jetson AGX -->
   <!-- <include file="$(find-pkg-share tensorrt_yolox)/launch/multiple_yolox.launch.xml">
@@ -81,7 +83,7 @@
       <arg name="input/image6" value="$(var input/camera6/image)"/>
       <arg name="input/image7" value="$(var input/camera7/image)"/>
       <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
-      <arg name="output/objects" value="objects"/>
+      <arg name="output/objects" value="$(var output/ml_detector/objects)"/>
 
       <arg name="model_name" value="$(var lidar_detection_model)"/>
       <arg name="model_path" value="$(var pointpainting_model_path)"/>
@@ -90,18 +92,6 @@
       <arg name="class_remapper_param_path" value="$(var model_path)/detection_class_remapper.param.yaml"/>
       <arg name="use_pointcloud_container" value="true"/>
       <arg name="pointcloud_container_name" value="$(var node/pointcloud_container)"/>
-    </include>
-  </group>
-
-  <!-- Pointcloud filter -->
-  <group>
-    <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/filter/pointcloud_map_filter.launch.py">
-      <arg name="input_topic" value="$(var input/obstacle_segmentation/pointcloud)"/>
-      <arg name="output_topic" value="pointcloud_map_filtered/pointcloud"/>
-      <arg name="use_intra_process" value="true"/>
-      <arg name="use_multithread" value="true"/>
-      <arg name="pointcloud_container_name" value="$(var node/pointcloud_container)"/>
-      <arg name="use_pointcloud_map" value="$(var use_pointcloud_map)"/>
     </include>
   </group>
 
@@ -230,7 +220,7 @@
       <group>
         <include file="$(find-pkg-share detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
           <arg name="input" value="objects_with_feature"/>
-          <arg name="output" value="objects"/>
+          <arg name="output" value="$(var output/rule_detector/objects)"/>
         </include>
       </group>
     </group>

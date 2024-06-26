@@ -1,17 +1,18 @@
 <?xml version="1.0"?>
 <launch>
   <!-- Lidar parameters -->
-  <arg name="input/pointcloud"/>
-  <arg name="node/pointcloud_container"/>
   <arg name="lidar_detection_model" default="centerpoint" description="options: `transfusion`, `centerpoint`, `apollo`, `clustering`"/>
-
   <!-- Lidar detector centerpoint parameters -->
   <arg name="centerpoint_model_name" default="centerpoint_tiny" description="options: `centerpoint`, `centerpoint_tiny` or `centerpoint_sigma`"/>
   <arg name="centerpoint_model_path" default="$(var data_path)/lidar_centerpoint"/>
-
   <!-- Lidar detector transfusion parameters -->
   <arg name="transfusion_model_name" default="transfusion" description="options: `transfusion`"/>
   <arg name="transfusion_model_path" default="$(var data_path)/lidar_transfusion"/>
+
+  <!-- External interfaces -->
+  <arg name="node/pointcloud_container"/>
+  <arg name="input/pointcloud"/>
+  <arg name="output/objects"/>
 
   <!-- TransFusion -->
   <group if="$(eval &quot;'$(var lidar_detection_model)'=='transfusion'&quot;)">
@@ -21,7 +22,7 @@
     <group>
       <include file="$(find-pkg-share lidar_transfusion)/launch/lidar_transfusion.launch.xml">
         <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
-        <arg name="output/objects" value="objects"/>
+        <arg name="output/objects" value="$(var output/objects)"/>
         <arg name="model_name" value="$(var transfusion_model_name)"/>
         <arg name="model_path" value="$(var transfusion_model_path)"/>
         <arg name="model_param_path" value="$(var lidar_model_param_path)/$(var transfusion_model_name).param.yaml"/>
@@ -41,7 +42,7 @@
     <group>
       <include file="$(find-pkg-share lidar_centerpoint)/launch/lidar_centerpoint.launch.xml">
         <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
-        <arg name="output/objects" value="objects"/>
+        <arg name="output/objects" value="$(var output/objects)"/>
         <arg name="model_name" value="$(var centerpoint_model_name)"/>
         <arg name="model_path" value="$(var centerpoint_model_path)"/>
         <arg name="model_param_path" value="$(var lidar_model_param_path)/$(var centerpoint_model_name).param.yaml"/>
@@ -77,7 +78,7 @@
     <group>
       <include file="$(find-pkg-share detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
         <arg name="input" value="objects_with_feature"/>
-        <arg name="output" value="objects"/>
+        <arg name="output" value="$(var output/objects)"/>
       </include>
     </group>
   </group>

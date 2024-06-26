@@ -44,9 +44,9 @@
   <arg name="input/camera7/rois"/>
   <arg name="input/pointcloud_map/pointcloud"/>
   <arg name="input/obstacle_segmentation/pointcloud"/>
-  <arg name="input/lidar_ml/objects" default="$(var lidar_detection_model)/objects"/>
-  <arg name="input/lidar_rule/objects" default="clustering/camera_lidar_fusion/objects"/>
-  <arg name="input/detection_by_tracker/objects" default="detection_by_tracker/objects"/>
+  <arg name="input/lidar_ml/objects"/>
+  <arg name="input/lidar_rule/objects"/>
+  <arg name="input/detection_by_tracker/objects"/>
   <arg name="output/objects" default="objects"/>
 
   <!-- internal interfaces -->

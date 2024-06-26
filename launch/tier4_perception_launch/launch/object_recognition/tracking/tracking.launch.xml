@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- Current namespace -->
+  <let name="ns" value="/perception/object_recognition/tracking"/>
+
   <!-- Radar Tracking and Merger parameters -->
   <arg name="object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path" description="association param file for radar far object tracking"/>
   <arg name="object_recognition_tracking_radar_object_tracker_tracking_setting_param_path" description="tracking setting param file for radar far object tracking"/>
@@ -13,50 +16,84 @@
   <let name="use_radar_tracking_fusion" value="false" if="$(eval '&quot;$(var mode)&quot;!=&quot;camera_lidar_radar_fusion&quot;')"/>
 
   <!-- External interface -->
-  <arg name="input/detection_input_channels" default="['detected_objects']"/>
-  <!-- detection_input_channels: Input channels for multi object tracker, reference: multi_object_tracker/config/input_channels.param.yaml -->
+  <let name="input/detection_input_channels" value="['detected_objects']"/>
   <arg name="input/radar/objects" default="/perception/object_recognition/detection/radar/far_objects"/>
-  <arg name="output/objects" default="/perception/object_recognition/tracking/objects"/>
+  <arg name="output/objects" default="$(var ns)/objects"/>
 
-  <!-- Internal interface -->
-  <let name="radar_tracker/input/objects" value="$(var input/radar/objects)"/>
-  <let name="radar_tracker/output/objects" value="/perception/object_recognition/tracking/radar/far_objects"/>
+  <group unless="$(var use_multi_channel_tracker_merger)">
+    <!-- Internal interface -->
+    <let name="radar_tracker/input/objects" value="$(var input/radar/objects)"/>
+    <let name="radar_tracker/output/objects" value="$(var ns)/radar/far_objects"/>
 
-  <let name="multi_object_tracker/input/selected_input_channels" value="$(var input/detection_input_channels)"/>
-  <let name="multi_object_tracker/output/objects" value="$(var output/objects)" unless="$(var use_radar_tracking_fusion)"/>
-  <let name="multi_object_tracker/output/objects" value="/perception/object_recognition/tracking/near_objects" if="$(var use_radar_tracking_fusion)"/>
+    <let name="multi_object_tracker/input/selected_input_channels" value="$(var input/detection_input_channels)"/>
+    <let name="multi_object_tracker/output/objects" value="$(var output/objects)" unless="$(var use_radar_tracking_fusion)"/>
+    <let name="multi_object_tracker/output/objects" value="$(var ns)/near_objects" if="$(var use_radar_tracking_fusion)"/>
 
-  <let name="tracker_merger/input/main_objects" value="$(var multi_object_tracker/output/objects)"/>
-  <let name="tracker_merger/input/sub_objects" value="$(var radar_tracker/output/objects)"/>
-  <let name="tracker_merger/output/objects" value="$(var output/objects)"/>
+    <let name="tracker_merger/input/main_objects" value="$(var multi_object_tracker/output/objects)"/>
+    <let name="tracker_merger/input/sub_objects" value="$(var radar_tracker/output/objects)"/>
+    <let name="tracker_merger/output/objects" value="$(var output/objects)"/>
 
-  <!--Multi object tracking-->
-  <include file="$(find-pkg-share multi_object_tracker)/launch/multi_object_tracker.launch.xml">
-    <arg name="selected_input_channels" value="$(var multi_object_tracker/input/selected_input_channels)"/>
-    <arg name="output" value="$(var multi_object_tracker/output/objects)"/>
-    <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path)"/>
-    <arg name="input_channels_path" value="$(var object_recognition_tracking_multi_object_tracker_input_channels_param_path)"/>
-    <arg name="tracker_setting_path" value="$(var object_recognition_tracking_multi_object_tracker_node_param_path)"/>
-  </include>
-
-  <!-- Run with tracking merger to add far radar information -->
-  <group if="$(var use_radar_tracking_fusion)">
-    <!--radar long range dynamic object tracking-->
-    <include file="$(find-pkg-share radar_object_tracker)/launch/radar_object_tracker.launch.xml">
-      <arg name="input" value="$(var radar_tracker/input/objects)"/>
-      <arg name="output" value="$(var radar_tracker/output/objects)"/>
-      <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path)"/>
-      <arg name="tracker_setting_path" value="$(var object_recognition_tracking_radar_object_tracker_tracking_setting_param_path)"/>
-      <arg name="radar_object_tracker_param_path" value="$(var object_recognition_tracking_radar_object_tracker_node_param_path)"/>
+    <!-- Multi object tracking -->
+    <include file="$(find-pkg-share multi_object_tracker)/launch/multi_object_tracker.launch.xml">
+      <arg name="selected_input_channels" value="$(var multi_object_tracker/input/selected_input_channels)"/>
+      <arg name="output" value="$(var multi_object_tracker/output/objects)"/>
+      <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path)"/>
+      <arg name="input_channels_path" value="$(var object_recognition_tracking_multi_object_tracker_input_channels_param_path)"/>
+      <arg name="tracker_setting_path" value="$(var object_recognition_tracking_multi_object_tracker_node_param_path)"/>
     </include>
 
-    <!--tracking object merger to merge near objects and far objects -->
-    <include file="$(find-pkg-share tracking_object_merger)/launch/decorative_tracker_merger.launch.xml">
-      <arg name="input/main_object" value="$(var tracker_merger/input/main_objects)"/>
-      <arg name="input/sub_object" value="$(var tracker_merger/input/sub_objects)"/>
-      <arg name="output" value="$(var tracker_merger/output/objects)"/>
-      <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_object_merger_data_association_matrix_param_path)"/>
-      <arg name="node_param_file_path" value="$(var object_recognition_tracking_object_merger_node_param_path)"/>
+    <!-- Run with tracking merger to add far radar information -->
+    <group if="$(var use_radar_tracking_fusion)">
+      <!-- radar long range dynamic object tracking -->
+      <include file="$(find-pkg-share radar_object_tracker)/launch/radar_object_tracker.launch.xml">
+        <arg name="input" value="$(var radar_tracker/input/objects)"/>
+        <arg name="output" value="$(var radar_tracker/output/objects)"/>
+        <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path)"/>
+        <arg name="tracker_setting_path" value="$(var object_recognition_tracking_radar_object_tracker_tracking_setting_param_path)"/>
+        <arg name="radar_object_tracker_param_path" value="$(var object_recognition_tracking_radar_object_tracker_node_param_path)"/>
+      </include>
+
+      <!-- tracking object merger to merge near objects and far objects -->
+      <include file="$(find-pkg-share tracking_object_merger)/launch/decorative_tracker_merger.launch.xml">
+        <arg name="input/main_object" value="$(var tracker_merger/input/main_objects)"/>
+        <arg name="input/sub_object" value="$(var tracker_merger/input/sub_objects)"/>
+        <arg name="output" value="$(var tracker_merger/output/objects)"/>
+        <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_object_merger_data_association_matrix_param_path)"/>
+        <arg name="node_param_file_path" value="$(var object_recognition_tracking_object_merger_node_param_path)"/>
+      </include>
+    </group>
+  </group>
+
+  <!-- Object list for multi-channel tracker merger -->
+  <group if="$(var use_multi_channel_tracker_merger)">
+    <let name="detection_enabled_channels" value="$(var input/detection_input_channels)"/>
+    <group scoped="false" if="$(eval '&quot;$(var mode)&quot;==&quot;camera_lidar_radar_fusion&quot;')">
+      <let name="detection_enabled_channels" value="['lidar_$(var lidar_detection_model)_validated','camera_lidar_fusion','detection_by_tracker','radar_far']" if="$(var use_detection_by_tracker)"/>
+      <let name="detection_enabled_channels" value="['lidar_$(var lidar_detection_model)_validated','camera_lidar_fusion','radar_far']" unless="$(var use_detection_by_tracker)"/>
+    </group>
+    <group scoped="false" if="$(eval '&quot;$(var mode)&quot;==&quot;camera_lidar_fusion&quot;')">
+      <let name="detection_enabled_channels" value="['lidar_$(var lidar_detection_model)_validated','camera_lidar_fusion','detection_by_tracker']" if="$(var use_detection_by_tracker)"/>
+      <let name="detection_enabled_channels" value="['lidar_$(var lidar_detection_model)_validated','camera_lidar_fusion']" unless="$(var use_detection_by_tracker)"/>
+    </group>
+    <group scoped="false" if="$(eval '&quot;$(var mode)&quot;==&quot;lidar_radar_fusion&quot;')">
+      <let name="detection_enabled_channels" value="['lidar_$(var lidar_detection_model)_validated','detection_by_tracker','radar_far']" if="$(var use_detection_by_tracker)"/>
+      <let name="detection_enabled_channels" value="['lidar_$(var lidar_detection_model)_validated','radar_far']" unless="$(var use_detection_by_tracker)"/>
+    </group>
+    <group scoped="false" if="$(eval '&quot;$(var mode)&quot;==&quot;lidar&quot;')">
+      <let name="detection_enabled_channels" value="['lidar_$(var lidar_detection_model)_validated','detection_by_tracker']" if="$(var use_detection_by_tracker)"/>
+      <let name="detection_enabled_channels" value="['lidar_$(var lidar_detection_model)_validated']" unless="$(var use_detection_by_tracker)"/>
+    </group>
+    <group scoped="false" if="$(eval '&quot;$(var mode)&quot;==&quot;radar&quot;')">
+      <let name="detection_enabled_channels" value="['radar_far']"/>
+    </group>
+
+    <!-- Multi object tracking -->
+    <include file="$(find-pkg-share multi_object_tracker)/launch/multi_object_tracker.launch.xml">
+      <arg name="selected_input_channels" value="$(var detection_enabled_channels)"/>
+      <arg name="output" value="$(var output/objects)"/>
+      <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path)"/>
+      <arg name="input_channels_path" value="$(var object_recognition_tracking_multi_object_tracker_input_channels_param_path)"/>
+      <arg name="tracker_setting_path" value="$(var object_recognition_tracking_multi_object_tracker_node_param_path)"/>
     </include>
   </group>
 </launch>

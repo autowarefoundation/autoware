@@ -1,22 +1,10 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- Lidar parameters -->
+  <!-- External interfaces -->
+  <arg name="node/pointcloud_container"/>
   <arg name="input/pointcloud_map/pointcloud"/>
   <arg name="input/obstacle_segmentation/pointcloud"/>
-  <arg name="node/pointcloud_container"/>
-  <arg name="use_pointcloud_map"/>
-
-  <!-- Pointcloud filter -->
-  <group>
-    <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/filter/pointcloud_map_filter.launch.py">
-      <arg name="input_topic" value="$(var input/obstacle_segmentation/pointcloud)"/>
-      <arg name="output_topic" value="pointcloud_map_filtered/pointcloud"/>
-      <arg name="use_intra_process" value="true"/>
-      <arg name="use_multithread" value="true"/>
-      <arg name="pointcloud_container_name" value="$(var node/pointcloud_container)"/>
-      <arg name="use_pointcloud_map" value="$(var use_pointcloud_map)"/>
-    </include>
-  </group>
+  <arg name="output/objects"/>
 
   <!-- Clustering -->
   <group>
@@ -43,7 +31,7 @@
     <group>
       <include file="$(find-pkg-share detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
         <arg name="input" value="objects_with_feature"/>
-        <arg name="output" value="objects"/>
+        <arg name="output" value="$(var output/objects)"/>
       </include>
     </group>
   </group>
