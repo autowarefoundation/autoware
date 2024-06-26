@@ -1013,7 +1013,6 @@ VelocitySmootherNode::AlgorithmType VelocitySmootherNode::getAlgorithmType(
   }
 
   throw std::domain_error("[VelocitySmootherNode] undesired algorithm is selected.");
-  return AlgorithmType::INVALID;
 }
 
 double VelocitySmootherNode::calcTravelDistance() const
