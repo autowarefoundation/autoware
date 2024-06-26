@@ -23,6 +23,7 @@
 
 #include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
+#include <autoware/motion_velocity_planner_common/trajectory_preprocessing.hpp>
 #include <autoware/universe_utils/ros/update_param.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
@@ -159,7 +160,7 @@ VelocityPlanningResult ObstacleVelocityLimiterModule::plan(
   const auto end_idx = obstacle_velocity_limiter::calculateEndIndex(
     original_traj_points, start_idx, preprocessing_params_.max_length,
     preprocessing_params_.max_duration);
-  auto downsampled_traj_points = obstacle_velocity_limiter::downsampleTrajectory(
+  auto downsampled_traj_points = downsample_trajectory(
     original_traj_points, start_idx, end_idx, preprocessing_params_.downsample_factor);
   obstacle_velocity_limiter::ObstacleMasks obstacle_masks;
   const auto preprocessing_us = stopwatch.toc("preprocessing");

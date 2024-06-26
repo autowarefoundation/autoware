@@ -55,17 +55,6 @@ size_t calculateEndIndex(
   return idx;
 }
 
-TrajectoryPoints downsampleTrajectory(
-  const TrajectoryPoints & trajectory, const size_t start_idx, const size_t end_idx,
-  const int factor)
-{
-  if (factor < 1) return trajectory;
-  TrajectoryPoints downsampled_traj;
-  downsampled_traj.reserve((end_idx - start_idx) / factor);
-  for (size_t i = start_idx; i <= end_idx; i += factor) downsampled_traj.push_back(trajectory[i]);
-  return downsampled_traj;
-}
-
 void calculateSteeringAngles(TrajectoryPoints & trajectory, const double wheel_base)
 {
   auto prev_point = trajectory.front();
@@ -81,17 +70,5 @@ void calculateSteeringAngles(TrajectoryPoints & trajectory, const double wheel_b
     point.front_wheel_angle_rad =
       std::atan2(wheel_base * d_heading, point.longitudinal_velocity_mps * dt);
   }
-}
-
-TrajectoryPoints copyDownsampledVelocity(
-  const TrajectoryPoints & downsampled_traj, TrajectoryPoints trajectory, const size_t start_idx,
-  const int factor)
-{
-  const auto size = std::min(downsampled_traj.size(), trajectory.size());
-  for (size_t i = 0; i < size; ++i) {
-    trajectory[start_idx + i * factor].longitudinal_velocity_mps =
-      downsampled_traj[i].longitudinal_velocity_mps;
-  }
-  return trajectory;
 }
 }  // namespace autoware::motion_velocity_planner::obstacle_velocity_limiter

@@ -50,7 +50,7 @@ size_t calculateStartIndex(
 /// @param[in] start_idx starting index of the input trajectory
 /// @param[in] factor factor used for downsampling
 /// @return downsampled trajectory
-TrajectoryPoints downsampleTrajectory(
+TrajectoryPoints downsample_trajectory(
   const TrajectoryPoints & trajectory, const size_t start_idx, const int factor);
 
 /// @brief recalculate the steering angle of the trajectory
@@ -123,16 +123,6 @@ std::vector<autoware::motion_velocity_planner::SlowdownInterval> calculate_slowd
   const std::vector<multi_linestring_t> & projections, const std::vector<polygon_t> & footprints,
   ProjectionParameters & projection_params, const VelocityParameters & velocity_params,
   autoware::motion_utils::VirtualWalls & virtual_walls);
-
-/// @brief copy the velocity profile of a downsampled trajectory to the original trajectory
-/// @param[in] downsampled_trajectory downsampled trajectory
-/// @param[in] trajectory input trajectory
-/// @param[in] start_idx starting index of the downsampled trajectory relative to the input
-/// @param[in] factor downsampling factor
-/// @return input trajectory with the velocity profile of the downsampled trajectory
-TrajectoryPoints copyDownsampledVelocity(
-  const TrajectoryPoints & downsampled_traj, TrajectoryPoints trajectory, const size_t start_idx,
-  const int factor);
 }  // namespace autoware::motion_velocity_planner::obstacle_velocity_limiter
 
 #endif  // OBSTACLE_VELOCITY_LIMITER_HPP_
