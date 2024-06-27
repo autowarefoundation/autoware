@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tracking_object_merger/utils/tracker_state.hpp"
+#include "autoware_tracking_object_merger/utils/tracker_state.hpp"
 
-#include "tracking_object_merger/utils/utils.hpp"
+#include "autoware_tracking_object_merger/utils/utils.hpp"
+
+namespace autoware::tracking_object_merger
+{
 
 using autoware_perception_msgs::msg::TrackedObject;
 using autoware_perception_msgs::msg::TrackedObjects;
@@ -325,3 +328,5 @@ TrackedObjects getTrackedObjectsFromTrackerStates(
   tracked_objects.header.frame_id = "map";  // TODO(yoshiri): get frame_id from input
   return tracked_objects;
 }
+
+}  // namespace autoware::tracking_object_merger

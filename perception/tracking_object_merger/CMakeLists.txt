@@ -22,22 +22,22 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
 )
 
-ament_auto_add_library(decorative_tracker_merger_node SHARED
-  src/data_association/data_association.cpp
-  src/data_association/mu_successive_shortest_path/mu_successive_shortest_path_wrapper.cpp
-  src/decorative_tracker_merger.cpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/association/data_association.cpp
+  src/association/solver/mu_successive_shortest_path_wrapper.cpp
+  src/decorative_tracker_merger_node.cpp
   src/utils/utils.cpp
   src/utils/tracker_state.cpp
 )
 
-target_link_libraries(decorative_tracker_merger_node
+target_link_libraries(${PROJECT_NAME}
   Eigen3::Eigen
   glog::glog
 )
 
-rclcpp_components_register_node(decorative_tracker_merger_node
-  PLUGIN "tracking_object_merger::DecorativeTrackerMergerNode"
-  EXECUTABLE decorative_tracker_merger
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::tracking_object_merger::DecorativeTrackerMergerNode"
+  EXECUTABLE decorative_tracker_merger_node
 )
 
 ament_auto_package(INSTALL_TO_SHARE

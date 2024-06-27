@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tracking_object_merger/data_association/data_association.hpp"
+#include "autoware_tracking_object_merger/association/data_association.hpp"
 
 #include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware_tracking_object_merger/association/solver/gnn_solver.hpp"
+#include "autoware_tracking_object_merger/utils/utils.hpp"
 #include "object_recognition_utils/object_recognition_utils.hpp"
-#include "tracking_object_merger/data_association/solver/gnn_solver.hpp"
-#include "tracking_object_merger/utils/utils.hpp"
 
 #include <algorithm>
 #include <fstream>
@@ -47,6 +47,8 @@ double getFormedYawAngle(
 }
 }  // namespace
 
+namespace autoware::tracking_object_merger
+{
 DataAssociation::DataAssociation(
   std::vector<int> can_assign_vector, std::vector<double> max_dist_vector,
   std::vector<double> max_rad_vector, std::vector<double> min_iou_vector,
@@ -229,3 +231,5 @@ double DataAssociation::calcScoreBetweenObjects(
   }
   return score;
 }
+
+}  // namespace autoware::tracking_object_merger

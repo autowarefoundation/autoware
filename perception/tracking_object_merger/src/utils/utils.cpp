@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tracking_object_merger/utils/utils.hpp"
+#include "autoware_tracking_object_merger/utils/utils.hpp"
 
-#include <autoware_perception_msgs/msg/shape.hpp>
-#include <autoware_perception_msgs/msg/tracked_object.hpp>
-#include <autoware_perception_msgs/msg/tracked_objects.hpp>
+#include "autoware_perception_msgs/msg/shape.hpp"
+#include "autoware_perception_msgs/msg/tracked_object.hpp"
+#include "autoware_perception_msgs/msg/tracked_objects.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -25,7 +25,7 @@
 
 using autoware_perception_msgs::msg::TrackedObject;
 using autoware_perception_msgs::msg::TrackedObjects;
-namespace utils
+namespace autoware::tracking_object_merger::utils
 {
 
 /**
@@ -243,9 +243,9 @@ TrackedObjects interpolateTrackedObjects(
   return output_objects;
 }
 
-}  // namespace utils
+}  // namespace autoware::tracking_object_merger::utils
 
-namespace merger_utils
+namespace autoware::tracking_object_merger::merger_utils
 {
 
 double mean(const double a, const double b)
@@ -513,4 +513,4 @@ void updateWholeTrackedObject(TrackedObject & main_obj, const TrackedObject & su
   main_obj = sub_obj;
 }
 
-}  // namespace merger_utils
+}  // namespace autoware::tracking_object_merger::merger_utils

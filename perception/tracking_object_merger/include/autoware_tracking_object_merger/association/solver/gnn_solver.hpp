@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRACKING_OBJECT_MERGER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_HPP_
-#define TRACKING_OBJECT_MERGER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_HPP_
+#ifndef AUTOWARE_TRACKING_OBJECT_MERGER__ASSOCIATION__SOLVER__GNN_SOLVER_HPP_
+#define AUTOWARE_TRACKING_OBJECT_MERGER__ASSOCIATION__SOLVER__GNN_SOLVER_HPP_
 
-#include "tracking_object_merger/data_association/solver/gnn_solver_interface.hpp"
-#include "tracking_object_merger/data_association/solver/mu_successive_shortest_path.hpp"
-#include "tracking_object_merger/data_association/solver/successive_shortest_path.hpp"
+#include "autoware_tracking_object_merger/association/solver/gnn_solver_interface.hpp"
+#include "autoware_tracking_object_merger/association/solver/mu_ssp.hpp"
+#include "autoware_tracking_object_merger/association/solver/ssp.hpp"
 
-#endif  // TRACKING_OBJECT_MERGER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_HPP_
+#endif  // AUTOWARE_TRACKING_OBJECT_MERGER__ASSOCIATION__SOLVER__GNN_SOLVER_HPP_

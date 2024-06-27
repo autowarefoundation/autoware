@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRACKING_OBJECT_MERGER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_INTERFACE_HPP_
-#define TRACKING_OBJECT_MERGER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_INTERFACE_HPP_
+#ifndef AUTOWARE_TRACKING_OBJECT_MERGER__ASSOCIATION__SOLVER__GNN_SOLVER_INTERFACE_HPP_
+#define AUTOWARE_TRACKING_OBJECT_MERGER__ASSOCIATION__SOLVER__GNN_SOLVER_INTERFACE_HPP_
 
 #include <unordered_map>
 #include <vector>
 
-namespace gnn_solver
+namespace autoware::tracking_object_merger::gnn_solver
 {
 class GnnSolverInterface
 {
@@ -30,6 +30,6 @@ public:
     const std::vector<std::vector<double>> & cost, std::unordered_map<int, int> * direct_assignment,
     std::unordered_map<int, int> * reverse_assignment) = 0;
 };
-}  // namespace gnn_solver
+}  // namespace autoware::tracking_object_merger::gnn_solver
 
-#endif  // TRACKING_OBJECT_MERGER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_INTERFACE_HPP_
+#endif  // AUTOWARE_TRACKING_OBJECT_MERGER__ASSOCIATION__SOLVER__GNN_SOLVER_INTERFACE_HPP_

@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRACKING_OBJECT_MERGER__DECORATIVE_TRACKER_MERGER_HPP_
-#define TRACKING_OBJECT_MERGER__DECORATIVE_TRACKER_MERGER_HPP_
+#ifndef DECORATIVE_TRACKER_MERGER_NODE_HPP_
+#define DECORATIVE_TRACKER_MERGER_NODE_HPP_
 
-#include "tracking_object_merger/data_association/data_association.hpp"
-#include "tracking_object_merger/utils/tracker_state.hpp"
-#include "tracking_object_merger/utils/utils.hpp"
+#include "autoware/universe_utils/ros/debug_publisher.hpp"
+#include "autoware/universe_utils/ros/published_time_publisher.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
+#include "autoware_tracking_object_merger/association/data_association.hpp"
+#include "autoware_tracking_object_merger/utils/tracker_state.hpp"
+#include "autoware_tracking_object_merger/utils/utils.hpp"
 
-#include <autoware/universe_utils/ros/debug_publisher.hpp>
-#include <autoware/universe_utils/ros/published_time_publisher.hpp>
-#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_perception_msgs/msg/tracked_objects.hpp>
+#include "autoware_perception_msgs/msg/tracked_objects.hpp"
 #include <std_msgs/msg/header.hpp>
 
 #ifdef ROS_DISTRO_GALACTIC
@@ -43,7 +43,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace tracking_object_merger
+namespace autoware::tracking_object_merger
 {
 
 class DecorativeTrackerMergerNode : public rclcpp::Node
@@ -131,6 +131,6 @@ private:
   } logging_;
 };
 
-}  // namespace tracking_object_merger
+}  // namespace autoware::tracking_object_merger
 
-#endif  // TRACKING_OBJECT_MERGER__DECORATIVE_TRACKER_MERGER_HPP_
+#endif  // DECORATIVE_TRACKER_MERGER_NODE_HPP_
