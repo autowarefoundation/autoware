@@ -13,7 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_fusion_to_detected_object/radar_fusion_to_detected_object_node.hpp"
+#include "include/node.hpp"
+
 #include "rclcpp/rclcpp.hpp"
 
 #include <memory>
@@ -46,7 +47,7 @@ bool update_param(
 }
 }  // namespace
 
-namespace radar_fusion_to_detected_object
+namespace autoware::radar_fusion_to_detected_object
 {
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjects;
@@ -217,8 +218,8 @@ RadarFusionToDetectedObject::RadarInput RadarObjectFusionToDetectedObjectNode::s
   return output;
 }
 
-}  // namespace radar_fusion_to_detected_object
+}  // namespace autoware::radar_fusion_to_detected_object
 
 #include "rclcpp_components/register_node_macro.hpp"
 RCLCPP_COMPONENTS_REGISTER_NODE(
-  radar_fusion_to_detected_object::RadarObjectFusionToDetectedObjectNode)
+  autoware::radar_fusion_to_detected_object::RadarObjectFusionToDetectedObjectNode)

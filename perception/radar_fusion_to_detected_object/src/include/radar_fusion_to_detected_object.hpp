@@ -12,25 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_HPP_
-#define RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_HPP_
+#ifndef RADAR_FUSION_TO_DETECTED_OBJECT_HPP_
+#define RADAR_FUSION_TO_DETECTED_OBJECT_HPP_
+
+#define EIGEN_MPL2_ONLY
 
 #include "autoware/universe_utils/geometry/boost_geometry.hpp"
 #include "rclcpp/logger.hpp"
-#define EIGEN_MPL2_ONLY
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
 #include "autoware_perception_msgs/msg/detected_objects.hpp"
 #include "geometry_msgs/msg/pose_with_covariance.hpp"
 #include "geometry_msgs/msg/twist_with_covariance.hpp"
-// #include "std_msgs/msg/header.hpp"
 
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace radar_fusion_to_detected_object
+namespace autoware::radar_fusion_to_detected_object
 {
 using autoware::universe_utils::LinearRing2d;
 using autoware::universe_utils::Point2d;
@@ -113,6 +114,6 @@ private:
   double getTwistNorm(const Twist & twist);
   LinearRing2d createObject2dWithMargin(const Point2d object_size, const double margin);
 };
-}  // namespace radar_fusion_to_detected_object
+}  // namespace autoware::radar_fusion_to_detected_object
 
-#endif  // RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_HPP_
+#endif  // RADAR_FUSION_TO_DETECTED_OBJECT_HPP_

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_fusion_to_detected_object/radar_fusion_to_detected_object.hpp"
+#include "include/radar_fusion_to_detected_object.hpp"
 
-#include <autoware/universe_utils/geometry/geometry.hpp>
-#include <autoware/universe_utils/math/normalization.hpp>
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/math/normalization.hpp"
 
 #include <boost/geometry.hpp>
 
@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-namespace radar_fusion_to_detected_object
+namespace autoware::radar_fusion_to_detected_object
 {
 using autoware::universe_utils::LinearRing2d;
 using autoware::universe_utils::Point2d;
@@ -358,4 +358,4 @@ LinearRing2d RadarFusionToDetectedObject::createObject2dWithMargin(
 
   return box;
 }
-}  // namespace radar_fusion_to_detected_object
+}  // namespace autoware::radar_fusion_to_detected_object

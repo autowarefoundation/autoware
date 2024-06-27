@@ -13,13 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_NODE_HPP_
-#define RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_NODE_HPP_
+#ifndef NODE_HPP_
+#define NODE_HPP_
 
 #include "message_filters/subscriber.h"
 #include "message_filters/sync_policies/approximate_time.h"
 #include "message_filters/synchronizer.h"
-#include "radar_fusion_to_detected_object/radar_fusion_to_detected_object.hpp"
+#include "radar_fusion_to_detected_object.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include "autoware_perception_msgs/msg/detected_objects.hpp"
@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 
-namespace radar_fusion_to_detected_object
+namespace autoware::radar_fusion_to_detected_object
 {
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjects;
@@ -87,6 +87,6 @@ private:
     const DetectedObject & radar_object, const std_msgs::msg::Header & header_);
 };
 
-}  // namespace radar_fusion_to_detected_object
+}  // namespace autoware::radar_fusion_to_detected_object
 
-#endif  // RADAR_FUSION_TO_DETECTED_OBJECT__RADAR_FUSION_TO_DETECTED_OBJECT_NODE_HPP_
+#endif  // NODE_HPP_

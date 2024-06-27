@@ -8,7 +8,7 @@
   <arg name="config_file" default="$(find-pkg-share radar_fusion_to_detected_object)/config/radar_object_fusion_to_detected_object.param.yaml"/>
 
   <!-- Node -->
-  <node pkg="radar_fusion_to_detected_object" exec="radar_object_fusion_to_detected_object_node" name="radar_object_fusion_to_detected_object" output="screen">
+  <node pkg="radar_fusion_to_detected_object" exec="radar_fusion_to_detected_object_node" name="radar_object_fusion_to_detected_object" output="screen">
     <remap from="~/input/objects" to="$(var input/objects)"/>
     <remap from="~/input/radars" to="$(var input/radars)"/>
     <remap from="~/output/objects" to="$(var output/objects)"/>

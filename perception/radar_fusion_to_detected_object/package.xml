@@ -22,7 +22,6 @@
   <depend>message_filters</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>std_msgs</depend>
 
   <test_depend>ament_lint_common</test_depend>
   <test_depend>autoware_lint_common</test_depend>
