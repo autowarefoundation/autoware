@@ -468,8 +468,16 @@ void NormalLaneChange::insertStopPoint(
 
 PathWithLaneId NormalLaneChange::getReferencePath() const
 {
-  return utils::getCenterLinePathFromLanelet(
-    status_.lane_change_path.info.target_lanes.front(), planner_data_);
+  lanelet::ConstLanelet closest_lanelet;
+  if (!lanelet::utils::query::getClosestLanelet(
+        status_.lane_change_path.info.target_lanes, getEgoPose(), &closest_lanelet)) {
+    return prev_module_output_.reference_path;
+  }
+  const auto reference_path = utils::getCenterLinePathFromLanelet(closest_lanelet, planner_data_);
+  if (reference_path.points.empty()) {
+    return prev_module_output_.reference_path;
+  }
+  return reference_path;
 }
 
 std::optional<PathWithLaneId> NormalLaneChange::extendPath()
