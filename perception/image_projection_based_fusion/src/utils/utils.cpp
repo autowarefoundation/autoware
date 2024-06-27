@@ -13,8 +13,18 @@
 // limitations under the License.
 
 #include "image_projection_based_fusion/utils/utils.hpp"
+
 namespace image_projection_based_fusion
 {
+Eigen::Vector2d calcRawImageProjectedPoint(
+  const image_geometry::PinholeCameraModel & pinhole_camera_model, const cv::Point3d & point3d)
+{
+  const cv::Point2d rectified_image_point = pinhole_camera_model.project3dToPixel(point3d);
+
+  const cv::Point2d raw_image_point = pinhole_camera_model.unrectifyPoint(rectified_image_point);
+
+  return Eigen::Vector2d(raw_image_point.x, raw_image_point.y);
+}
 
 std::optional<geometry_msgs::msg::TransformStamped> getTransformStamped(
   const tf2_ros::Buffer & tf_buffer, const std::string & target_frame_id,

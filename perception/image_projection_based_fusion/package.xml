@@ -21,6 +21,7 @@
   <depend>autoware_universe_utils</depend>
   <depend>cv_bridge</depend>
   <depend>euclidean_cluster</depend>
+  <depend>image_geometry</depend>
   <depend>image_transport</depend>
   <depend>lidar_centerpoint</depend>
   <depend>message_filters</depend>

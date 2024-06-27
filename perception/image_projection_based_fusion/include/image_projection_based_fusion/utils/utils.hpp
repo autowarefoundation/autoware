@@ -42,6 +42,7 @@
 #include "autoware_perception_msgs/msg/shape.hpp"
 #include "tier4_perception_msgs/msg/detected_object_with_feature.hpp"
 
+#include <image_geometry/pinhole_camera_model.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -60,6 +61,10 @@ struct PointData
   float distance;
   size_t orig_index;
 };
+
+Eigen::Vector2d calcRawImageProjectedPoint(
+  const image_geometry::PinholeCameraModel & pinhole_camera_model, const cv::Point3d & point3d);
+
 std::optional<geometry_msgs::msg::TransformStamped> getTransformStamped(
   const tf2_ros::Buffer & tf_buffer, const std::string & target_frame_id,
   const std::string & source_frame_id, const rclcpp::Time & time);

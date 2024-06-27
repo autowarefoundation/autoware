@@ -65,11 +65,9 @@ void SegmentPointCloudFusionNode::fuseOnSingleImage(
   if (mask.cols == 0 || mask.rows == 0) {
     return;
   }
-  Eigen::Matrix4d projection;
-  projection << camera_info.p.at(0), camera_info.p.at(1), camera_info.p.at(2), camera_info.p.at(3),
-    camera_info.p.at(4), camera_info.p.at(5), camera_info.p.at(6), camera_info.p.at(7),
-    camera_info.p.at(8), camera_info.p.at(9), camera_info.p.at(10), camera_info.p.at(11), 0.0, 0.0,
-    0.0, 1.0;
+  image_geometry::PinholeCameraModel pinhole_camera_model;
+  pinhole_camera_model.fromCameraInfo(camera_info);
+
   geometry_msgs::msg::TransformStamped transform_stamped;
   // transform pointcloud from frame id to camera optical frame id
   {
@@ -113,14 +111,11 @@ void SegmentPointCloudFusionNode::fuseOnSingleImage(
       continue;
     }
 
-    Eigen::Vector4d projected_point =
-      projection * Eigen::Vector4d(transformed_x, transformed_y, transformed_z, 1.0);
-    Eigen::Vector2d normalized_projected_point = Eigen::Vector2d(
-      projected_point.x() / projected_point.z(), projected_point.y() / projected_point.z());
+    Eigen::Vector2d projected_point = calcRawImageProjectedPoint(
+      pinhole_camera_model, cv::Point3d(transformed_x, transformed_y, transformed_z));
 
-    bool is_inside_image =
-      normalized_projected_point.x() > 0 && normalized_projected_point.x() < camera_info.width &&
-      normalized_projected_point.y() > 0 && normalized_projected_point.y() < camera_info.height;
+    bool is_inside_image = projected_point.x() > 0 && projected_point.x() < camera_info.width &&
+                           projected_point.y() > 0 && projected_point.y() < camera_info.height;
     if (!is_inside_image) {
       copyPointCloud(
         input_pointcloud_msg, point_step, global_offset, output_cloud, output_pointcloud_size);
@@ -129,8 +124,7 @@ void SegmentPointCloudFusionNode::fuseOnSingleImage(
 
     // skip filtering pointcloud where semantic id out of the defined list
     uint8_t semantic_id = mask.at<uint8_t>(
-      static_cast<uint16_t>(normalized_projected_point.y()),
-      static_cast<uint16_t>(normalized_projected_point.x()));
+      static_cast<uint16_t>(projected_point.y()), static_cast<uint16_t>(projected_point.x()));
     if (static_cast<size_t>(semantic_id) >= filter_semantic_label_target_.size()) {
       copyPointCloud(
         input_pointcloud_msg, point_step, global_offset, output_cloud, output_pointcloud_size);

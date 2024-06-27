@@ -17,6 +17,8 @@
 
 #include "image_projection_based_fusion/fusion_node.hpp"
 
+#include <image_projection_based_fusion/utils/utils.hpp>
+
 #include <string>
 #include <vector>
 
