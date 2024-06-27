@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_tracks_msgs_converter/radar_tracks_msgs_converter_node.hpp"
+#include "radar_tracks_msgs_converter_node.hpp"
 
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware/universe_utils/math/unit_conversion.hpp"
@@ -56,7 +56,7 @@ bool update_param(
 }
 }  // namespace
 
-namespace radar_tracks_msgs_converter
+namespace autoware::radar_tracks_msgs_converter
 {
 
 enum class RadarTrackObjectID {
@@ -407,7 +407,7 @@ uint8_t RadarTracksMsgsConverterNode::convertClassification(const uint16_t class
   }
 }
 
-}  // namespace radar_tracks_msgs_converter
+}  // namespace autoware::radar_tracks_msgs_converter
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(radar_tracks_msgs_converter::RadarTracksMsgsConverterNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::radar_tracks_msgs_converter::RadarTracksMsgsConverterNode)

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_TRACKS_MSGS_CONVERTER__RADAR_TRACKS_MSGS_CONVERTER_NODE_HPP_
-#define RADAR_TRACKS_MSGS_CONVERTER__RADAR_TRACKS_MSGS_CONVERTER_NODE_HPP_
+#ifndef RADAR_TRACKS_MSGS_CONVERTER_NODE_HPP_
+#define RADAR_TRACKS_MSGS_CONVERTER_NODE_HPP_
 
 #include "autoware/universe_utils/ros/transform_listener.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-namespace radar_tracks_msgs_converter
+namespace autoware::radar_tracks_msgs_converter
 {
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjectKinematics;
@@ -114,6 +114,6 @@ private:
   uint8_t convertClassification(const uint16_t classification);
 };
 
-}  // namespace radar_tracks_msgs_converter
+}  // namespace autoware::radar_tracks_msgs_converter
 
-#endif  // RADAR_TRACKS_MSGS_CONVERTER__RADAR_TRACKS_MSGS_CONVERTER_NODE_HPP_
+#endif  // RADAR_TRACKS_MSGS_CONVERTER_NODE_HPP_

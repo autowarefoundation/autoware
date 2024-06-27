@@ -17,14 +17,12 @@
 
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_universe_utils</depend>
-  <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>radar_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
-  <depend>tf2_ros</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
