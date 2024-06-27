@@ -12,17 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_OBJECT_TRACKER__RADAR_OBJECT_TRACKER_NODE__RADAR_OBJECT_TRACKER_NODE_HPP_
-#define RADAR_OBJECT_TRACKER__RADAR_OBJECT_TRACKER_NODE__RADAR_OBJECT_TRACKER_NODE_HPP_
+#ifndef RADAR_OBJECT_TRACKER_NODE_HPP_
+#define RADAR_OBJECT_TRACKER_NODE_HPP_
 
-#include "radar_object_tracker/data_association/data_association.hpp"
+#include "autoware_radar_object_tracker/association/data_association.hpp"
 
+#include <lanelet2_extension/utility/message_conversion.hpp>
+#include <lanelet2_extension/utility/query.hpp>
+#include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_perception_msgs/msg/tracked_objects.hpp>
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
+#include "autoware_perception_msgs/msg/tracked_objects.hpp"
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
+#include <lanelet2_core/LaneletMap.h>
+#include <lanelet2_core/geometry/BoundingBox.h>
+#include <lanelet2_core/geometry/Lanelet.h>
+#include <lanelet2_core/geometry/Point.h>
+#include <lanelet2_routing/RoutingGraph.h>
+#include <lanelet2_traffic_rules/TrafficRulesFactory.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/convert.h>
 #include <tf2/transform_datatypes.h>
@@ -32,17 +41,6 @@
 #else
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
-
-#include <lanelet2_extension/utility/message_conversion.hpp>
-#include <lanelet2_extension/utility/query.hpp>
-#include <lanelet2_extension/utility/utilities.hpp>
-
-#include <lanelet2_core/LaneletMap.h>
-#include <lanelet2_core/geometry/BoundingBox.h>
-#include <lanelet2_core/geometry/Lanelet.h>
-#include <lanelet2_core/geometry/Point.h>
-#include <lanelet2_routing/RoutingGraph.h>
-#include <lanelet2_traffic_rules/TrafficRulesFactory.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
@@ -51,6 +49,8 @@
 #include <memory>
 #include <string>
 
+namespace autoware::radar_object_tracker
+{
 using autoware_map_msgs::msg::LaneletMapBin;
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjects;
@@ -132,4 +132,6 @@ private:
   inline bool shouldTrackerPublish(const std::shared_ptr<const Tracker> tracker) const;
 };
 
-#endif  // RADAR_OBJECT_TRACKER__RADAR_OBJECT_TRACKER_NODE__RADAR_OBJECT_TRACKER_NODE_HPP_
+}  // namespace autoware::radar_object_tracker
+
+#endif  // RADAR_OBJECT_TRACKER_NODE_HPP_

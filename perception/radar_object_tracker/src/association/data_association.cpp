@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_object_tracker/data_association/data_association.hpp"
+#include "autoware_radar_object_tracker/association/data_association.hpp"
 
-#include "radar_object_tracker/data_association/solver/gnn_solver.hpp"
+#include "autoware_radar_object_tracker/association/solver/gnn_solver.hpp"
 
 #include <nlohmann/json.hpp>
-
-// #include "multi_object_tracker/utils/utils.hpp"
 
 #include <algorithm>
 #include <fstream>
@@ -71,6 +69,8 @@ double getFormedYawAngle(
 }
 }  // namespace
 
+namespace autoware::radar_object_tracker
+{
 DataAssociation::DataAssociation(
   std::vector<int> can_assign_vector, std::vector<double> max_dist_vector,
   std::vector<double> max_area_vector, std::vector<double> min_area_vector,
@@ -294,3 +294,5 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
 
   return score_matrix;
 }
+
+}  // namespace autoware::radar_object_tracker

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_object_tracker/utils/utils.hpp"
+#include "autoware_radar_object_tracker/utils/utils.hpp"
 
-namespace utils
+namespace autoware::radar_object_tracker::utils
 {
 // concatenate matrices vertically
 Eigen::MatrixXd stackMatricesVertically(const std::vector<Eigen::MatrixXd> & matrices)
@@ -68,4 +68,4 @@ Eigen::MatrixXd stackMatricesDiagonally(const std::vector<Eigen::MatrixXd> & mat
   return result;
 }
 
-}  // namespace utils
+}  // namespace autoware::radar_object_tracker::utils

@@ -7,7 +7,7 @@
   <arg name="radar_object_tracker_param_path" default="$(find-pkg-share radar_object_tracker)/config/radar_object_tracker.param.yaml"/>
   <arg name="vector_map_topic" default="/map/vector_map"/>
 
-  <node pkg="radar_object_tracker" exec="radar_object_tracker" name="radar_object_tracker" output="screen">
+  <node pkg="radar_object_tracker" exec="radar_object_tracker_node" name="radar_object_tracker" output="screen">
     <remap from="input" to="$(var input)"/>
     <remap from="output" to="$(var output)"/>
     <remap from="/vector_map" to="$(var vector_map_topic)"/>

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_object_tracker/utils/radar_object_tracker_utils.hpp"
+#include "autoware_radar_object_tracker/utils/radar_object_tracker_utils.hpp"
 
 #include <gtest/gtest.h>
 
+using autoware::radar_object_tracker::utils::checkCloseLaneletCondition;
 using autoware_perception_msgs::msg::TrackedObject;
-using radar_object_tracker_utils::checkCloseLaneletCondition;
 
 // helper function to create a dummy straight lanelet
 lanelet::Lanelet createDummyStraightLanelet(double length, double width)

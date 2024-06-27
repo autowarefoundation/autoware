@@ -14,13 +14,15 @@
 //
 //
 
-#include "radar_object_tracker/tracker/model/tracker_base.hpp"
+#include "autoware_radar_object_tracker/tracker/model/tracker_base.hpp"
 
-#include "radar_object_tracker/utils/utils.hpp"
+#include "autoware_radar_object_tracker/utils/utils.hpp"
 
 #include <algorithm>
 #include <random>
 
+namespace autoware::radar_object_tracker
+{
 Tracker::Tracker(
   const rclcpp::Time & time,
   const std::vector<autoware_perception_msgs::msg::ObjectClassification> & classification)
@@ -61,3 +63,4 @@ geometry_msgs::msg::PoseWithCovariance Tracker::getPoseWithCovariance(
   getTrackedObject(time, object);
   return object.kinematics.pose_with_covariance;
 }
+}  // namespace autoware::radar_object_tracker

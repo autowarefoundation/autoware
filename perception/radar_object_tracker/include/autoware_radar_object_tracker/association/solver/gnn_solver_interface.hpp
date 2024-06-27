@@ -12,26 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_OBJECT_TRACKER__DATA_ASSOCIATION__SOLVER__MU_SUCCESSIVE_SHORTEST_PATH_HPP_
-#define RADAR_OBJECT_TRACKER__DATA_ASSOCIATION__SOLVER__MU_SUCCESSIVE_SHORTEST_PATH_HPP_
-
-#include "radar_object_tracker/data_association/solver/gnn_solver_interface.hpp"
+#ifndef AUTOWARE_RADAR_OBJECT_TRACKER__ASSOCIATION__SOLVER__GNN_SOLVER_INTERFACE_HPP_
+#define AUTOWARE_RADAR_OBJECT_TRACKER__ASSOCIATION__SOLVER__GNN_SOLVER_INTERFACE_HPP_
 
 #include <unordered_map>
 #include <vector>
 
-namespace gnn_solver
+namespace autoware::radar_object_tracker::gnn_solver
 {
-class MuSSP : public GnnSolverInterface
+class GnnSolverInterface
 {
 public:
-  MuSSP() = default;
-  ~MuSSP() = default;
+  GnnSolverInterface() = default;
+  virtual ~GnnSolverInterface() = default;
 
-  void maximizeLinearAssignment(
+  virtual void maximizeLinearAssignment(
     const std::vector<std::vector<double>> & cost, std::unordered_map<int, int> * direct_assignment,
-    std::unordered_map<int, int> * reverse_assignment) override;
+    std::unordered_map<int, int> * reverse_assignment) = 0;
 };
-}  // namespace gnn_solver
+}  // namespace autoware::radar_object_tracker::gnn_solver
 
-#endif  // RADAR_OBJECT_TRACKER__DATA_ASSOCIATION__SOLVER__MU_SUCCESSIVE_SHORTEST_PATH_HPP_
+#endif  // AUTOWARE_RADAR_OBJECT_TRACKER__ASSOCIATION__SOLVER__GNN_SOLVER_INTERFACE_HPP_

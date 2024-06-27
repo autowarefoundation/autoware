@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_object_tracker/data_association/solver/successive_shortest_path.hpp"
+#include "autoware_radar_object_tracker/association/solver/ssp.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -22,7 +22,7 @@
 #include <utility>
 #include <vector>
 
-namespace gnn_solver
+namespace autoware::radar_object_tracker::gnn_solver
 {
 struct ResidualEdge
 {
@@ -367,4 +367,4 @@ void SSP::maximizeLinearAssignment(
   }
 #endif
 }
-}  // namespace gnn_solver
+}  // namespace autoware::radar_object_tracker::gnn_solver

@@ -16,12 +16,14 @@
 // Author: v1.0 Yukihiro Saito
 //
 
-#include "radar_object_tracker/tracker/model/constant_turn_rate_motion_tracker.hpp"
+#define EIGEN_MPL2_ONLY
 
-#include "radar_object_tracker/utils/utils.hpp"
+#include "autoware_radar_object_tracker/tracker/model/constant_turn_rate_motion_tracker.hpp"
 
-#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
-#include <autoware/universe_utils/math/unit_conversion.hpp>
+#include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
+#include "autoware/universe_utils/math/unit_conversion.hpp"
+#include "autoware/universe_utils/ros/msg_covariance.hpp"
+#include "autoware_radar_object_tracker/utils/utils.hpp"
 
 #include <bits/stdc++.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -34,7 +36,6 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
-#define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -42,7 +43,10 @@
 
 #include <yaml-cpp/yaml.h>
 
+namespace autoware::radar_object_tracker
+{
 using Label = autoware_perception_msgs::msg::ObjectClassification;
+using autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
 
 // init static member variables
 bool ConstantTurnRateMotionTracker::is_initialized_ = false;
@@ -114,10 +118,10 @@ ConstantTurnRateMotionTracker::ConstantTurnRateMotionTracker(
   // Rotate the covariance matrix according to the vehicle yaw
   // because p0_cov_x and y are in the vehicle coordinate system.
   if (object.kinematics.has_position_covariance) {
-    P_xy_local << object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::X_X],
-      object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::X_Y],
-      object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::Y_X],
-      object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::Y_Y];
+    P_xy_local << object.kinematics.pose_with_covariance.covariance[XYZRPY_COV_IDX::X_X],
+      object.kinematics.pose_with_covariance.covariance[XYZRPY_COV_IDX::X_Y],
+      object.kinematics.pose_with_covariance.covariance[XYZRPY_COV_IDX::Y_X],
+      object.kinematics.pose_with_covariance.covariance[XYZRPY_COV_IDX::Y_Y];
     P_xy = R * P_xy_local * R.transpose();
   } else {
     // rotate
@@ -128,9 +132,9 @@ ConstantTurnRateMotionTracker::ConstantTurnRateMotionTracker(
 
   // covariance often written in object frame
   if (object.kinematics.has_twist_covariance) {
-    const auto vx_cov = object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::X_X];
+    const auto vx_cov = object.kinematics.twist_with_covariance.covariance[XYZRPY_COV_IDX::X_X];
     // const auto vy_cov =
-    // object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::Y_Y];
+    // object.kinematics.twist_with_covariance.covariance[XYZRPY_COV_IDX::Y_Y];
     P(IDX::VX, IDX::VX) = vx_cov;
   } else {
     P(IDX::VX, IDX::VX) = ekf_params_.p0_cov_vx;
@@ -371,11 +375,11 @@ bool ConstantTurnRateMotionTracker::measureWithPose(
       Rxy_local << ekf_params_.r_cov_x, 0, 0, r_cov_y;  // xy in base_link coordinate
       Rxy = RotationBaseLink * Rxy_local * RotationBaseLink.transpose();
     } else {
-      Rxy_local << object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::X_X],
-        object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::X_Y],
-        object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::Y_X],
+      Rxy_local << object.kinematics.pose_with_covariance.covariance[XYZRPY_COV_IDX::X_X],
+        object.kinematics.pose_with_covariance.covariance[XYZRPY_COV_IDX::X_Y],
+        object.kinematics.pose_with_covariance.covariance[XYZRPY_COV_IDX::Y_X],
         object.kinematics.pose_with_covariance
-          .covariance[utils::MSG_COV_IDX::Y_Y];  // xy in vehicle coordinate
+          .covariance[XYZRPY_COV_IDX::Y_Y];  // xy in vehicle coordinate
       Rxy = RotationYaw * Rxy_local * RotationYaw.transpose();
     }
     R_block_list.push_back(Rxy);
@@ -427,7 +431,7 @@ bool ConstantTurnRateMotionTracker::measureWithPose(
     if (!object.kinematics.has_twist_covariance) {
       R_vx << ekf_params_.r_cov_vx;
     } else {
-      R_vx << object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::X_X];
+      R_vx << object.kinematics.twist_with_covariance.covariance[XYZRPY_COV_IDX::X_X];
     }
     R_block_list.push_back(R_vx);
   }
@@ -442,9 +446,9 @@ bool ConstantTurnRateMotionTracker::measureWithPose(
   }
 
   // stacking matrices vertically or diagonally
-  const auto C = utils::stackMatricesVertically(C_list);
-  const auto Y = utils::stackMatricesVertically(Y_list);
-  const auto R = utils::stackMatricesDiagonally(R_block_list);
+  const auto C = autoware::radar_object_tracker::utils::stackMatricesVertically(C_list);
+  const auto Y = autoware::radar_object_tracker::utils::stackMatricesVertically(Y_list);
+  const auto R = autoware::radar_object_tracker::utils::stackMatricesDiagonally(R_block_list);
 
   // 4. EKF update
   if (!ekf_.update(Y, C, R)) {
@@ -582,27 +586,27 @@ bool ConstantTurnRateMotionTracker::getTrackedObject(
   constexpr double z_cov = 1. * 1.;      // TODO(yukkysaito) Currently tentative
   constexpr double yaw_cov = 0.1 * 0.1;  // TODO(yukkysaito) Currently tentative
 
-  pose_with_cov.covariance[utils::MSG_COV_IDX::X_X] = P_xy(IDX::X, IDX::X);
-  pose_with_cov.covariance[utils::MSG_COV_IDX::X_Y] = P_xy(IDX::X, IDX::Y);
-  pose_with_cov.covariance[utils::MSG_COV_IDX::Y_X] = P_xy(IDX::Y, IDX::X);
-  pose_with_cov.covariance[utils::MSG_COV_IDX::Y_Y] = P_xy(IDX::Y, IDX::Y);
-  pose_with_cov.covariance[utils::MSG_COV_IDX::Z_Z] = z_cov;
-  pose_with_cov.covariance[utils::MSG_COV_IDX::ROLL_ROLL] = no_info_cov;
-  pose_with_cov.covariance[utils::MSG_COV_IDX::PITCH_PITCH] = no_info_cov;
-  pose_with_cov.covariance[utils::MSG_COV_IDX::YAW_YAW] = yaw_cov;
+  pose_with_cov.covariance[XYZRPY_COV_IDX::X_X] = P_xy(IDX::X, IDX::X);
+  pose_with_cov.covariance[XYZRPY_COV_IDX::X_Y] = P_xy(IDX::X, IDX::Y);
+  pose_with_cov.covariance[XYZRPY_COV_IDX::Y_X] = P_xy(IDX::Y, IDX::X);
+  pose_with_cov.covariance[XYZRPY_COV_IDX::Y_Y] = P_xy(IDX::Y, IDX::Y);
+  pose_with_cov.covariance[XYZRPY_COV_IDX::Z_Z] = z_cov;
+  pose_with_cov.covariance[XYZRPY_COV_IDX::ROLL_ROLL] = no_info_cov;
+  pose_with_cov.covariance[XYZRPY_COV_IDX::PITCH_PITCH] = no_info_cov;
+  pose_with_cov.covariance[XYZRPY_COV_IDX::YAW_YAW] = yaw_cov;
 
   // twist covariance
   constexpr double vz_cov = 0.2 * 0.2;  // TODO(Yoshi Ri) Currently tentative
   constexpr double wz_cov = 0.2 * 0.2;  // TODO(yukkysaito) Currently tentative
 
-  twist_with_cov.covariance[utils::MSG_COV_IDX::X_X] = P(IDX::VX, IDX::VX);
-  twist_with_cov.covariance[utils::MSG_COV_IDX::X_Y] = 0.0;
-  twist_with_cov.covariance[utils::MSG_COV_IDX::Y_X] = 0.0;
-  twist_with_cov.covariance[utils::MSG_COV_IDX::Y_Y] = no_info_cov;
-  twist_with_cov.covariance[utils::MSG_COV_IDX::Z_Z] = vz_cov;
-  twist_with_cov.covariance[utils::MSG_COV_IDX::ROLL_ROLL] = no_info_cov;
-  twist_with_cov.covariance[utils::MSG_COV_IDX::PITCH_PITCH] = no_info_cov;
-  twist_with_cov.covariance[utils::MSG_COV_IDX::YAW_YAW] = wz_cov;
+  twist_with_cov.covariance[XYZRPY_COV_IDX::X_X] = P(IDX::VX, IDX::VX);
+  twist_with_cov.covariance[XYZRPY_COV_IDX::X_Y] = 0.0;
+  twist_with_cov.covariance[XYZRPY_COV_IDX::Y_X] = 0.0;
+  twist_with_cov.covariance[XYZRPY_COV_IDX::Y_Y] = no_info_cov;
+  twist_with_cov.covariance[XYZRPY_COV_IDX::Z_Z] = vz_cov;
+  twist_with_cov.covariance[XYZRPY_COV_IDX::ROLL_ROLL] = no_info_cov;
+  twist_with_cov.covariance[XYZRPY_COV_IDX::PITCH_PITCH] = no_info_cov;
+  twist_with_cov.covariance[XYZRPY_COV_IDX::YAW_YAW] = wz_cov;
 
   // set shape
   if (object.shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
@@ -622,3 +626,5 @@ bool ConstantTurnRateMotionTracker::getTrackedObject(
 
   return true;
 }
+
+}  // namespace autoware::radar_object_tracker

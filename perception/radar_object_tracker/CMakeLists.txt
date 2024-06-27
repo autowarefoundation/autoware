@@ -20,31 +20,31 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
 )
 
-ament_auto_add_library(radar_object_tracker_utils SHARED
+ament_auto_add_library(${PROJECT_NAME}_utils SHARED
   src/utils/utils.cpp
   src/utils/radar_object_tracker_utils.cpp
 )
 
-ament_auto_add_library(radar_object_tracker_node SHARED
-  src/radar_object_tracker_node/radar_object_tracker_node.cpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/radar_object_tracker_node.cpp
   src/tracker/model/tracker_base.cpp
   src/tracker/model/linear_motion_tracker.cpp
   src/tracker/model/constant_turn_rate_motion_tracker.cpp
-  src/data_association/data_association.cpp
-  src/data_association/mu_successive_shortest_path/mu_successive_shortest_path_wrapper.cpp
+  src/association/data_association.cpp
+  src/association/mu_ssp/mu_successive_shortest_path_wrapper.cpp
 )
 
-target_link_libraries(radar_object_tracker_node
+target_link_libraries(${PROJECT_NAME}
   Eigen3::Eigen
   yaml-cpp
   nlohmann_json::nlohmann_json # for debug
   glog::glog
-  radar_object_tracker_utils
+  ${PROJECT_NAME}_utils
 )
 
-rclcpp_components_register_node(radar_object_tracker_node
-  PLUGIN "RadarObjectTrackerNode"
-  EXECUTABLE radar_object_tracker
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::radar_object_tracker::RadarObjectTrackerNode"
+  EXECUTABLE radar_object_tracker_node
 )
 
 # testing
@@ -52,15 +52,15 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  ament_add_gtest(test_radar_object_tracker_utils
+  ament_add_gtest(test_${PROJECT_NAME}_utils
     test/test_radar_object_tracker_utils.cpp
     src/utils/radar_object_tracker_utils.cpp
   )
-  target_include_directories(test_radar_object_tracker_utils PRIVATE
+  target_include_directories(test_${PROJECT_NAME}_utils PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
   )
-  target_link_libraries(test_radar_object_tracker_utils
-    radar_object_tracker_utils
+  target_link_libraries(test_${PROJECT_NAME}_utils
+    ${PROJECT_NAME}_utils
   )
 endif()
 

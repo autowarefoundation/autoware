@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_object_tracker/utils/radar_object_tracker_utils.hpp"
+#include "autoware_radar_object_tracker/utils/radar_object_tracker_utils.hpp"
 
-namespace radar_object_tracker_utils
+namespace autoware::radar_object_tracker::utils
 {
 
 boost::optional<geometry_msgs::msg::Transform> getTransformAnonymous(
@@ -151,4 +151,4 @@ bool hasValidVelocityDirectionToLanelet(
   return false;
 }
 
-}  // namespace radar_object_tracker_utils
+}  // namespace autoware::radar_object_tracker::utils

@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_OBJECT_TRACKER__TRACKER__MODEL__CONSTANT_TURN_RATE_MOTION_TRACKER_HPP_
-#define RADAR_OBJECT_TRACKER__TRACKER__MODEL__CONSTANT_TURN_RATE_MOTION_TRACKER_HPP_
+#ifndef AUTOWARE_RADAR_OBJECT_TRACKER__TRACKER__MODEL__CONSTANT_TURN_RATE_MOTION_TRACKER_HPP_
+#define AUTOWARE_RADAR_OBJECT_TRACKER__TRACKER__MODEL__CONSTANT_TURN_RATE_MOTION_TRACKER_HPP_
 
-#include "radar_object_tracker/tracker/model/tracker_base.hpp"
-
-#include <kalman_filter/kalman_filter.hpp>
+#include "autoware_radar_object_tracker/tracker/model/tracker_base.hpp"
+#include "kalman_filter/kalman_filter.hpp"
 
 #include <string>
-
+namespace autoware::radar_object_tracker
+{
 using Label = autoware_perception_msgs::msg::ObjectClassification;
 class ConstantTurnRateMotionTracker : public Tracker  // means constant turn rate motion tracker
 {
@@ -108,5 +108,5 @@ public:
     autoware_perception_msgs::msg::TrackedObject & object) const override;
   virtual ~ConstantTurnRateMotionTracker() {}
 };
-
-#endif  // RADAR_OBJECT_TRACKER__TRACKER__MODEL__CONSTANT_TURN_RATE_MOTION_TRACKER_HPP_
+}  // namespace autoware::radar_object_tracker
+#endif  // AUTOWARE_RADAR_OBJECT_TRACKER__TRACKER__MODEL__CONSTANT_TURN_RATE_MOTION_TRACKER_HPP_

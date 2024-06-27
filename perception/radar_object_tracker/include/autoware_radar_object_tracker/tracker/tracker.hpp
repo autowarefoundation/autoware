@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2020 Tier IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_OBJECT_TRACKER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_HPP_
-#define RADAR_OBJECT_TRACKER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_HPP_
+#ifndef AUTOWARE_RADAR_OBJECT_TRACKER__TRACKER__TRACKER_HPP_
+#define AUTOWARE_RADAR_OBJECT_TRACKER__TRACKER__TRACKER_HPP_
 
-#include "radar_object_tracker/data_association/solver/gnn_solver_interface.hpp"
-#include "radar_object_tracker/data_association/solver/mu_successive_shortest_path.hpp"
-#include "radar_object_tracker/data_association/solver/successive_shortest_path.hpp"
+#include "model/constant_turn_rate_motion_tracker.hpp"
+#include "model/linear_motion_tracker.hpp"
+#include "model/tracker_base.hpp"
 
-#endif  // RADAR_OBJECT_TRACKER__DATA_ASSOCIATION__SOLVER__GNN_SOLVER_HPP_
+#endif  // AUTOWARE_RADAR_OBJECT_TRACKER__TRACKER__TRACKER_HPP_
