@@ -639,14 +639,11 @@ double AdaptiveCruiseController::calcTargetVelocity_D(
     return 0.0;
   }
 
-  double add_vel_d = 0;
-
-  add_vel_d = diff_vel;
+  double add_vel_d = diff_vel;
   if (add_vel_d >= 0) {
-    diff_vel *= param_.d_coeff_pos;
-  }
-  if (add_vel_d < 0) {
-    diff_vel *= param_.d_coeff_neg;
+    add_vel_d *= param_.d_coeff_pos;
+  } else {
+    add_vel_d *= param_.d_coeff_neg;
   }
   add_vel_d = boost::algorithm::clamp(add_vel_d, -param_.d_max_vel_norm, param_.d_max_vel_norm);
 
