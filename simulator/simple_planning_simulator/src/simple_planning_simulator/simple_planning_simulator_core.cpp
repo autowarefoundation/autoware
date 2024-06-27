@@ -269,6 +269,12 @@ void SimplePlanningSimulator::initialize_vehicle_model()
       vel_lim, steer_lim, vel_rate_lim, steer_rate_lim, wheelbase, timer_sampling_time_ms_ / 1000.0,
       acc_time_delay, acc_time_constant, steer_time_delay, steer_time_constant, steer_dead_band,
       steer_bias, debug_acc_scaling_factor, debug_steer_scaling_factor);
+  } else if (vehicle_model_type_str == "DELAY_STEER_ACC_GEARED_WO_FALL_GUARD") {
+    vehicle_model_type_ = VehicleModelType::DELAY_STEER_ACC_GEARED_WO_FALL_GUARD;
+    vehicle_model_ptr_ = std::make_shared<SimModelDelaySteerAccGearedWoFallGuard>(
+      vel_lim, steer_lim, vel_rate_lim, steer_rate_lim, wheelbase, timer_sampling_time_ms_ / 1000.0,
+      acc_time_delay, acc_time_constant, steer_time_delay, steer_time_constant, steer_dead_band,
+      steer_bias, debug_acc_scaling_factor, debug_steer_scaling_factor);
   } else if (vehicle_model_type_str == "DELAY_STEER_MAP_ACC_GEARED") {
     vehicle_model_type_ = VehicleModelType::DELAY_STEER_MAP_ACC_GEARED;
     const std::string acceleration_map_path =
@@ -471,7 +477,7 @@ void SimplePlanningSimulator::set_input(const Control & cmd, const double acc_by
 {
   const auto steer = cmd.lateral.steering_tire_angle;
   const auto vel = cmd.longitudinal.velocity;
-  const auto accel = cmd.longitudinal.acceleration;
+  const auto acc_by_cmd = cmd.longitudinal.acceleration;
 
   using autoware_vehicle_msgs::msg::GearCommand;
   Eigen::VectorXd input(vehicle_model_ptr_->getDimU());
@@ -479,12 +485,15 @@ void SimplePlanningSimulator::set_input(const Control & cmd, const double acc_by
 
   // TODO(Watanabe): The definition of the sign of acceleration in REVERSE mode is different
   // between .auto and proposal.iv, and will be discussed later.
-  float acc = accel + acc_by_slope;
-  if (gear == GearCommand::NONE) {
-    acc = 0.0;
-  } else if (gear == GearCommand::REVERSE || gear == GearCommand::REVERSE_2) {
-    acc = -accel - acc_by_slope;
-  }
+  const float combined_acc = [&] {
+    if (gear == GearCommand::NONE) {
+      return 0.0;
+    } else if (gear == GearCommand::REVERSE || gear == GearCommand::REVERSE_2) {
+      return -acc_by_cmd + acc_by_slope;
+    } else {
+      return acc_by_cmd + acc_by_slope;
+    }
+  }();
 
   if (
     vehicle_model_type_ == VehicleModelType::IDEAL_STEER_VEL ||
@@ -494,12 +503,15 @@ void SimplePlanningSimulator::set_input(const Control & cmd, const double acc_by
   } else if (  // NOLINT
     vehicle_model_type_ == VehicleModelType::IDEAL_STEER_ACC ||
     vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC) {
-    input << acc, steer;
+    input << combined_acc, steer;
   } else if (  // NOLINT
     vehicle_model_type_ == VehicleModelType::IDEAL_STEER_ACC_GEARED ||
     vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC_GEARED ||
     vehicle_model_type_ == VehicleModelType::DELAY_STEER_MAP_ACC_GEARED) {
-    input << acc, steer;
+    input << combined_acc, steer;
+  } else if (  // NOLINT
+    vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC_GEARED_WO_FALL_GUARD) {
+    input << acc_by_cmd, gear, acc_by_slope, steer;
   }
   vehicle_model_ptr_->setInput(input);
 }
@@ -599,6 +611,7 @@ void SimplePlanningSimulator::set_initial_state(const Pose & pose, const Twist &
   } else if (  // NOLINT
     vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC ||
     vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC_GEARED ||
+    vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC_GEARED_WO_FALL_GUARD ||
     vehicle_model_type_ == VehicleModelType::DELAY_STEER_MAP_ACC_GEARED) {
     state << x, y, yaw, vx, steer, accx;
   }

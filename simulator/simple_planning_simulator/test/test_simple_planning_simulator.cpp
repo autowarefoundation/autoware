@@ -271,6 +271,7 @@ TEST_P(TestSimplePlanningSimulator, TestIdealSteerVel)
 const std::string VEHICLE_MODEL_LIST[] = {   // NOLINT
   "IDEAL_STEER_VEL", "IDEAL_STEER_ACC", "IDEAL_STEER_ACC_GEARED",
   "DELAY_STEER_VEL", "DELAY_STEER_ACC", "DELAY_STEER_ACC_GEARED",
+  "DELAY_STEER_ACC_GEARED_WO_FALL_GUARD"
 };
 // clang-format on
 
