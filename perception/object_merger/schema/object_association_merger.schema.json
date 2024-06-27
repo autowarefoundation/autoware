@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Object Association Merger Node",
+  "type": "object",
+  "definitions": {
+    "object_association_merger": {
+      "type": "object",
+      "properties": {
+        "sync_queue_size": {
+          "type": "integer",
+          "description": "The size of the synchronization queue.",
+          "default": 20
+        },
+        "precision_threshold_to_judge_overlapped": {
+          "type": "number",
+          "description": "The precision threshold to judge if objects are overlapped.",
+          "default": 0.4
+        },
+        "recall_threshold_to_judge_overlapped": {
+          "type": "number",
+          "description": "The recall threshold to judge if objects are overlapped.",
+          "default": 0.5
+        },
+        "remove_overlapped_unknown_objects": {
+          "type": "boolean",
+          "description": "Flag to remove overlapped unknown objects.",
+          "default": true
+        },
+        "base_link_frame_id": {
+          "type": "string",
+          "description": "The frame ID of the association frame.",
+          "default": "base_link"
+        },
+        "priority_mode": {
+          "type": "integer",
+          "description": "Index for the priority_mode.",
+          "default": 3,
+          "enum": [0, 1, 2, 3]
+        }
+      },
+      "required": [
+        "sync_queue_size",
+        "precision_threshold_to_judge_overlapped",
+        "recall_threshold_to_judge_overlapped",
+        "remove_overlapped_unknown_objects",
+        "base_link_frame_id",
+        "priority_mode"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/object_association_merger"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

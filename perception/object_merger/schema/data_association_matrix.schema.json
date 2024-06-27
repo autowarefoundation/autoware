@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Data Association Matrix Parameters",
+  "type": "object",
+  "properties": {
+    "ros__parameters": {
+      "type": "object",
+      "properties": {
+        "can_assign_matrix": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Assignment table for data association"
+        },
+        "max_dist_matrix": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Maximum distance table for data association"
+        },
+        "max_rad_matrix": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Maximum angle table for data association. If value is greater than pi, it will be ignored."
+        },
+        "min_iou_matrix": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Minimum IoU threshold matrix for data association. If value is negative, it will be ignored."
+        }
+      },
+      "required": ["can_assign_matrix", "max_dist_matrix", "max_rad_matrix", "min_iou_matrix"]
+    }
+  }
+}

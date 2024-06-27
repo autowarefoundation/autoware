@@ -2,4 +2,7 @@
   ros__parameters:
     sync_queue_size: 20
     precision_threshold_to_judge_overlapped: 0.4
+    recall_threshold_to_judge_overlapped: 0.5
     remove_overlapped_unknown_objects: true
+    base_link_frame_id: base_link
+    priority_mode: 3  # PriorityMode::Confidence

@@ -25,16 +25,9 @@ The successive shortest path algorithm is used to solve the data association pro
 
 ## Parameters
 
-| Name                        | Type                  | Description                                                                                                                                                                                                                        |
-| --------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `can_assign_matrix`         | double                | Assignment table for data association                                                                                                                                                                                              |
-| `max_dist_matrix`           | double                | Maximum distance table for data association                                                                                                                                                                                        |
-| `max_area_matrix`           | double                | Maximum area table for data association                                                                                                                                                                                            |
-| `min_area_matrix`           | double                | Minimum area table for data association                                                                                                                                                                                            |
-| `max_rad_matrix`            | double                | Maximum angle table for data association                                                                                                                                                                                           |
-| `base_link_frame_id`        | double                | association frame                                                                                                                                                                                                                  |
-| `distance_threshold_list`   | `std::vector<double>` | Distance threshold for each class used in judging overlap. The class order depends on [ObjectClassification](https://github.com/autowarefoundation/autoware_msgs/blob/main/autoware_perception_msgs/msg/ObjectClassification.msg). |
-| `generalized_iou_threshold` | `std::vector<double>` | Generalized IoU threshold for each class                                                                                                                                                                                           |
+{{ json_to_markdown("perception/object_merger/schema/object_association_merger.schema.json") }}
+{{ json_to_markdown("perception/object_merger/schema/data_association_matrix.schema.json") }}
+{{ json_to_markdown("perception/object_merger/schema/overlapped_judge.schema.json") }}
 
 ## Tips
 

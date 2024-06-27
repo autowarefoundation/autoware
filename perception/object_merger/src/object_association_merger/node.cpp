@@ -80,16 +80,14 @@ ObjectAssociationMergerNode::ObjectAssociationMergerNode(const rclcpp::NodeOptio
   object1_sub_(this, "input/object1", rclcpp::QoS{1}.get_rmw_qos_profile())
 {
   // Parameters
-  base_link_frame_id_ = declare_parameter<std::string>("base_link_frame_id", "base_link");
-  priority_mode_ = static_cast<PriorityMode>(
-    declare_parameter<int>("priority_mode", static_cast<int>(PriorityMode::Confidence)));
-  sync_queue_size_ = declare_parameter<int>("sync_queue_size", 20);
-  remove_overlapped_unknown_objects_ =
-    declare_parameter<bool>("remove_overlapped_unknown_objects", true);
+  base_link_frame_id_ = declare_parameter<std::string>("base_link_frame_id");
+  priority_mode_ = static_cast<PriorityMode>(declare_parameter<int>("priority_mode"));
+  sync_queue_size_ = declare_parameter<int>("sync_queue_size");
+  remove_overlapped_unknown_objects_ = declare_parameter<bool>("remove_overlapped_unknown_objects");
   overlapped_judge_param_.precision_threshold =
     declare_parameter<double>("precision_threshold_to_judge_overlapped");
   overlapped_judge_param_.recall_threshold =
-    declare_parameter<double>("recall_threshold_to_judge_overlapped", 0.5);
+    declare_parameter<double>("recall_threshold_to_judge_overlapped");
   overlapped_judge_param_.generalized_iou_threshold =
     convertListToClassMap(declare_parameter<std::vector<double>>("generalized_iou_threshold"));
 
