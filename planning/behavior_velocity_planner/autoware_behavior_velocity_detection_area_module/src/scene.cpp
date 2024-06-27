@@ -83,7 +83,7 @@ bool DetectionAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason *
 
   // Get stop point
   const auto stop_point = arc_lane_utils::createTargetPoint(
-    original_path, stop_line, lane_id_, planner_param_.stop_margin,
+    original_path, stop_line, planner_param_.stop_margin,
     planner_data_->vehicle_info_.max_longitudinal_offset_m);
   if (!stop_point) {
     return true;
@@ -128,7 +128,7 @@ bool DetectionAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason *
   if (planner_param_.use_dead_line) {
     // Use '-' for margin because it's the backward distance from stop line
     const auto dead_line_point = arc_lane_utils::createTargetPoint(
-      original_path, stop_line, lane_id_, -planner_param_.dead_line_margin,
+      original_path, stop_line, -planner_param_.dead_line_margin,
       planner_data_->vehicle_info_.max_longitudinal_offset_m);
 
     if (dead_line_point) {

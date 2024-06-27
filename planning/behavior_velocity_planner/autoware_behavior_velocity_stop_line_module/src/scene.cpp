@@ -52,7 +52,7 @@ bool StopLineModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop
 
   // Calculate stop pose and insert index
   const auto stop_point = arc_lane_utils::createTargetPoint(
-    *path, stop_line, lane_id_, planner_param_.stop_margin,
+    *path, stop_line, planner_param_.stop_margin,
     planner_data_->vehicle_info_.max_longitudinal_offset_m);
 
   // If no collision found, do nothing
