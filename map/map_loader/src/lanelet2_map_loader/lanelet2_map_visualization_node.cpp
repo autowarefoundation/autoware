@@ -153,8 +153,8 @@ void Lanelet2MapVisualizationNode::onMapBin(
   setColor(&cl_speed_bumps, 0.56, 0.40, 0.27, 0.5);
   setColor(&cl_crosswalks, 0.80, 0.80, 0.0, 0.5);
   setColor(&cl_obstacle_polygons, 0.4, 0.27, 0.27, 0.5);
-  setColor(&cl_parking_lots, 0.5, 0.5, 0.0, 0.3);
-  setColor(&cl_parking_spaces, 1.0, 0.647, 0.0, 0.6);
+  setColor(&cl_parking_lots, 1.0, 1.0, 1.0, 0.2);
+  setColor(&cl_parking_spaces, 1.0, 1.0, 1.0, 0.3);
   setColor(&cl_lanelet_id, 0.5, 0.5, 0.5, 0.999);
   setColor(&cl_no_obstacle_segmentation_area, 0.37, 0.37, 0.27, 0.5);
   setColor(&cl_no_obstacle_segmentation_area_for_run_out, 0.37, 0.7, 0.27, 0.5);
