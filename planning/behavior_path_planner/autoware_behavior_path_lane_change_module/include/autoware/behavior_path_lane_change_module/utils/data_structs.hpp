@@ -137,6 +137,7 @@ struct LaneChangeParameters
 
   // safety check
   bool allow_loose_check_for_cancel{true};
+  double collision_check_yaw_diff_threshold{3.1416};
   utils::path_safety_checker::RSSparams rss_params{};
   utils::path_safety_checker::RSSparams rss_params_for_abort{};
   utils::path_safety_checker::RSSparams rss_params_for_stuck{};

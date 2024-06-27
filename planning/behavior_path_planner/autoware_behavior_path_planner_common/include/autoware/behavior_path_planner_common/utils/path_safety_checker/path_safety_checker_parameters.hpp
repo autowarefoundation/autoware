@@ -23,6 +23,7 @@
 
 #include <boost/uuid/uuid_hash.hpp>
 
+#include <cmath>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -203,7 +204,9 @@ struct SafetyCheckParams
   /// possible values: ["RSS", "integral_predicted_polygon"]
   double keep_unsafe_time{0.0};  ///< Time to keep unsafe before changing to safe.
   double hysteresis_factor_expand_rate{
-    0.0};                            ///< Hysteresis factor to expand/shrink polygon with the value.
+    0.0};  ///< Hysteresis factor to expand/shrink polygon with the value.
+  double collision_check_yaw_diff_threshold{
+    3.1416};                         ///< threshold yaw difference between ego and object.
   double backward_path_length{0.0};  ///< Length of the backward lane for path generation.
   double forward_path_length{0.0};   ///< Length of the forward path lane for path generation.
   RSSparams rss_params{};            ///< Parameters related to the RSS model.

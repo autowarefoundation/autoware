@@ -283,6 +283,8 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
       node->declare_parameter<double>(safety_check_ns + "forward_path_length");
     p.safety_check_params.publish_debug_marker =
       node->declare_parameter<bool>(safety_check_ns + "publish_debug_marker");
+    p.safety_check_params.collision_check_yaw_diff_threshold =
+      node->declare_parameter<double>(safety_check_ns + "collision_check_yaw_diff_threshold");
   }
 
   // RSSparams
@@ -298,6 +300,8 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
       node->declare_parameter<double>(rss_ns + "longitudinal_distance_min_threshold");
     p.safety_check_params.rss_params.longitudinal_velocity_delta_time =
       node->declare_parameter<double>(rss_ns + "longitudinal_velocity_delta_time");
+    p.safety_check_params.rss_params.extended_polygon_policy =
+      node->declare_parameter<std::string>(rss_ns + "extended_polygon_policy");
   }
 
   // surround moving obstacle check
@@ -367,7 +371,6 @@ void StartPlannerModuleManager::updateModuleParams(
     updateParam<double>(
       parameters, ns + "extra_width_margin_for_rear_obstacle",
       p->extra_width_margin_for_rear_obstacle);
-
     updateParam<std::vector<double>>(
       parameters, ns + "collision_check_margins", p->collision_check_margins);
     updateParam<double>(
@@ -658,6 +661,9 @@ void StartPlannerModuleManager::updateModuleParams(
     updateParam<bool>(
       parameters, safety_check_ns + "publish_debug_marker",
       p->safety_check_params.publish_debug_marker);
+    updateParam<double>(
+      parameters, safety_check_ns + "collision_check_yaw_diff_threshold",
+      p->safety_check_params.collision_check_yaw_diff_threshold);
   }
   const std::string rss_ns = safety_check_ns + "rss_params.";
   {
@@ -676,6 +682,9 @@ void StartPlannerModuleManager::updateModuleParams(
     updateParam<double>(
       parameters, rss_ns + "longitudinal_velocity_delta_time",
       p->safety_check_params.rss_params.longitudinal_velocity_delta_time);
+    updateParam<std::string>(
+      parameters, rss_ns + "extended_polygon_policy",
+      p->safety_check_params.rss_params.extended_polygon_policy);
   }
   std::string surround_moving_obstacle_check_ns = ns + "surround_moving_obstacle_check.";
   {

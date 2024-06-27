@@ -180,6 +180,7 @@
             time_horizon: 10.0
           # hysteresis factor to expand/shrink polygon with the value
           hysteresis_factor_expand_rate: 1.0
+          collision_check_yaw_diff_threshold: 3.1416
           # temporary
           backward_path_length: 100.0
           forward_path_length: 100.0

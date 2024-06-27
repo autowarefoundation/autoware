@@ -927,6 +927,11 @@
               "description": "Hysteresis count that be used for chattering prevention.",
               "default": 10
             },
+            "collision_check_yaw_diff_threshold": {
+              "type": "number",
+              "description": "Max yaw difference between ego and object when doing collision check",
+              "default": 3.1416
+            },
             "min_velocity": {
               "type": "number",
               "description": "Minimum velocity of the ego vehicle's predicted path.",

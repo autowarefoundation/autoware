@@ -223,6 +223,8 @@ struct AvoidanceParameters
   size_t hysteresis_factor_safe_count;
   double hysteresis_factor_expand_rate{0.0};
 
+  double collision_check_yaw_diff_threshold{3.1416};
+
   bool consider_front_overhang{true};
   bool consider_rear_overhang{true};
 

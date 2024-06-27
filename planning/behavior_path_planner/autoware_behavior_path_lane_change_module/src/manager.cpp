@@ -102,6 +102,8 @@ void LaneChangeModuleManager::initParams(rclcpp::Node * node)
   // safety check
   p.allow_loose_check_for_cancel =
     getOrDeclareParameter<bool>(*node, parameter("safety_check.allow_loose_check_for_cancel"));
+  p.collision_check_yaw_diff_threshold = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.collision_check_yaw_diff_threshold"));
 
   p.rss_params.longitudinal_distance_min_threshold = getOrDeclareParameter<double>(
     *node, parameter("safety_check.execution.longitudinal_distance_min_threshold"));

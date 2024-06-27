@@ -199,6 +199,8 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
       getOrDeclareParameter<double>(*node, ns + "hysteresis_factor_expand_rate");
     p.hysteresis_factor_safe_count =
       getOrDeclareParameter<int>(*node, ns + "hysteresis_factor_safe_count");
+    p.collision_check_yaw_diff_threshold =
+      getOrDeclareParameter<double>(*node, ns + "collision_check_yaw_diff_threshold");
   }
 
   // safety check predicted path params

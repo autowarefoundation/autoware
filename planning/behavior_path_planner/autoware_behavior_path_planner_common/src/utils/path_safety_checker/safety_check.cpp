@@ -26,6 +26,9 @@
 #include <boost/geometry/algorithms/union.hpp>
 #include <boost/geometry/strategies/strategies.hpp>
 
+#include <tf2/utils.h>
+
+#include <cmath>
 #include <limits>
 
 namespace autoware::behavior_path_planner::utils::path_safety_checker
@@ -482,7 +485,8 @@ bool checkSafetyWithRSS(
   const std::vector<PoseWithVelocityStamped> & ego_predicted_path,
   const std::vector<ExtendedPredictedObject> & objects, CollisionCheckDebugMap & debug_map,
   const BehaviorPathPlannerParameters & parameters, const RSSparams & rss_params,
-  const bool check_all_predicted_path, const double hysteresis_factor)
+  const bool check_all_predicted_path, const double hysteresis_factor,
+  const double yaw_difference_th)
 {
   // Check for collisions with each predicted path of the object
   const bool is_safe = !std::any_of(objects.begin(), objects.end(), [&](const auto & object) {
@@ -495,7 +499,7 @@ bool checkSafetyWithRSS(
       obj_predicted_paths.begin(), obj_predicted_paths.end(), [&](const auto & obj_path) {
         const bool has_collision = !utils::path_safety_checker::checkCollision(
           planned_path, ego_predicted_path, object, obj_path, parameters, rss_params,
-          hysteresis_factor, current_debug_data.second);
+          hysteresis_factor, yaw_difference_th, current_debug_data.second);
 
         utils::path_safety_checker::updateCollisionCheckDebugMap(
           debug_map, current_debug_data, !has_collision);
@@ -559,11 +563,12 @@ bool checkCollision(
   const ExtendedPredictedObject & target_object,
   const PredictedPathWithPolygon & target_object_path,
   const BehaviorPathPlannerParameters & common_parameters, const RSSparams & rss_parameters,
-  const double hysteresis_factor, CollisionCheckDebug & debug)
+  const double hysteresis_factor, const double yaw_difference_th, CollisionCheckDebug & debug)
 {
   const auto collided_polygons = getCollidedPolygons(
     planned_path, predicted_ego_path, target_object, target_object_path, common_parameters,
-    rss_parameters, hysteresis_factor, std::numeric_limits<double>::max(), debug);
+    rss_parameters, hysteresis_factor, std::numeric_limits<double>::max(), yaw_difference_th,
+    debug);
   return collided_polygons.empty();
 }
 
@@ -573,7 +578,8 @@ std::vector<Polygon2d> getCollidedPolygons(
   const ExtendedPredictedObject & target_object,
   const PredictedPathWithPolygon & target_object_path,
   const BehaviorPathPlannerParameters & common_parameters, const RSSparams & rss_parameters,
-  double hysteresis_factor, const double max_velocity_limit, CollisionCheckDebug & debug)
+  double hysteresis_factor, const double max_velocity_limit, const double yaw_difference_th,
+  CollisionCheckDebug & debug)
 {
   {
     debug.ego_predicted_path = predicted_ego_path;
@@ -603,6 +609,11 @@ std::vector<Polygon2d> getCollidedPolygons(
     const auto & ego_pose = interpolated_data->pose;
     const auto & ego_polygon = interpolated_data->poly;
     const auto ego_velocity = std::min(interpolated_data->velocity, max_velocity_limit);
+
+    const double ego_yaw = tf2::getYaw(ego_pose.orientation);
+    const double object_yaw = tf2::getYaw(obj_pose.orientation);
+    const double yaw_difference = autoware::universe_utils::normalizeRadian(ego_yaw - object_yaw);
+    if (std::abs(yaw_difference) > yaw_difference_th) continue;
 
     // check overlap
     if (boost::geometry::overlaps(ego_polygon, obj_polygon)) {

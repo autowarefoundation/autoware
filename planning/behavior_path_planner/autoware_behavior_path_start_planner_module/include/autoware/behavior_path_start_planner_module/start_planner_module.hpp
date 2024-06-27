@@ -77,7 +77,7 @@ struct PullOutStatus
   // record if the ego has departed from the start point
   bool has_departed{false};
 
-  PullOutStatus() {}
+  PullOutStatus() = default;
 };
 
 class StartPlannerModule : public SceneModuleInterface
@@ -90,7 +90,7 @@ public:
     std::unordered_map<std::string, std::shared_ptr<ObjectsOfInterestMarkerInterface>> &
       objects_of_interest_marker_interface_ptr_map);
 
-  ~StartPlannerModule()
+  ~StartPlannerModule() override
   {
     if (freespace_planner_timer_) {
       freespace_planner_timer_->cancel();
@@ -296,16 +296,16 @@ private:
   PathWithLaneId getCurrentPath() const;
   void planWithPriority(
     const std::vector<Pose> & start_pose_candidates, const Pose & refined_start_pose,
-    const Pose & goal_pose, const std::string search_priority);
+    const Pose & goal_pose, const std::string & search_priority);
   PathWithLaneId generateStopPath() const;
   lanelet::ConstLanelets getPathRoadLanes(const PathWithLaneId & path) const;
   std::vector<DrivableLanes> generateDrivableLanes(const PathWithLaneId & path) const;
   void updatePullOutStatus();
   void updateStatusAfterBackwardDriving();
   PredictedObjects filterStopObjectsInPullOutLanes(
-    const lanelet::ConstLanelets & pull_out_lanes, const geometry_msgs::msg::Point & current_pose,
-    const double velocity_threshold, const double object_check_backward_distance,
-    const double object_check_forward_distance) const;
+    const lanelet::ConstLanelets & pull_out_lanes, const geometry_msgs::msg::Point & current_point,
+    const double velocity_threshold, const double object_check_forward_distance,
+    const double object_check_backward_distance) const;
   bool needToPrepareBlinkerBeforeStartDrivingForward() const;
   bool hasReachedFreespaceEnd() const;
   bool hasReachedPullOutEnd() const;

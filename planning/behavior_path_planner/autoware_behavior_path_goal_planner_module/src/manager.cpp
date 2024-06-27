@@ -357,6 +357,8 @@ void GoalPlannerModuleManager::init(rclcpp::Node * node)
     p.safety_check_params.method = node->declare_parameter<std::string>(safety_check_ns + "method");
     p.safety_check_params.hysteresis_factor_expand_rate =
       node->declare_parameter<double>(safety_check_ns + "hysteresis_factor_expand_rate");
+    p.safety_check_params.collision_check_yaw_diff_threshold =
+      node->declare_parameter<double>(safety_check_ns + "collision_check_yaw_diff_threshold");
     p.safety_check_params.backward_path_length =
       node->declare_parameter<double>(safety_check_ns + "backward_path_length");
     p.safety_check_params.forward_path_length =
@@ -778,6 +780,9 @@ void GoalPlannerModuleManager::updateModuleParams(
     updateParam<double>(
       parameters, safety_check_ns + "hysteresis_factor_expand_rate",
       p->safety_check_params.hysteresis_factor_expand_rate);
+    updateParam<double>(
+      parameters, safety_check_ns + "collision_check_yaw_diff_threshold",
+      p->safety_check_params.collision_check_yaw_diff_threshold);
     updateParam<double>(
       parameters, safety_check_ns + "backward_path_length",
       p->safety_check_params.backward_path_length);

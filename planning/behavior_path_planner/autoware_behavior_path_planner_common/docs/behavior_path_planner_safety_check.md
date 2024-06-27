@@ -48,7 +48,7 @@ $$
 rss_{dist} = v_{rear} (t_{reaction} + t_{margin}) + \frac{v_{rear}^2}{2|a_{rear, decel}|} - \frac{v_{front}^2}{2|a_{front, decel|}}
 $$
 
-where $V_{front}$, $v_{rear}$ are front and rear vehicle velocity respectively and $a_{rear, front}$, $a_{rear, decel}$ are front and rear vehicle deceleration.
+where $V_{front}$, $v_{rear}$ are front and rear vehicle velocity respectively and $a_{rear, front}$, $a_{rear, decel}$ are front and rear vehicle deceleration. Note that RSS distance is normally used for objects traveling in the same direction, if the yaw difference between a given ego pose and object pose is more than a user-defined yaw difference threshold, the rss collision check will be skipped for that specific pair of poses.
 
 #### 5. Create extended ego and target object polygons
 
@@ -56,7 +56,7 @@ In this step, we compute extended ego and target object polygons. The extended p
 
 ![extended_polygons](../images/path_safety_checker/extended_polygons.drawio.svg)
 
-As the picture shows, we expand the rear object polygon. For the longitudinal side, we extend it with the RSS distance, and for the lateral side, we extend it by the lateral margin
+As the picture shows, we expand the rear object polygon. For the longitudinal side, we extend it with the RSS distance, and for the lateral side, we extend it by the lateral margin.
 
 #### 6. Check overlap
 

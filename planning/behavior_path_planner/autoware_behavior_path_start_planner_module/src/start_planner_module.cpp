@@ -34,7 +34,9 @@
 #include <lanelet2_core/geometry/Lanelet.h>
 
 #include <algorithm>
+#include <cmath>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -65,7 +67,7 @@ StartPlannerModule::StartPlannerModule(
 {
   lane_departure_checker_ = std::make_shared<LaneDepartureChecker>();
   lane_departure_checker_->setVehicleInfo(vehicle_info_);
-  autoware::lane_departure_checker::Param lane_departure_checker_params;
+  autoware::lane_departure_checker::Param lane_departure_checker_params{};
   lane_departure_checker_params.footprint_extra_margin =
     parameters->lane_departure_check_expansion_margin;
 
@@ -104,7 +106,7 @@ void StartPlannerModule::onFreespacePlannerTimer()
   std::optional<ModuleStatus> current_status_opt{std::nullopt};
   std::optional<StartPlannerParameters> parameters_opt{std::nullopt};
   std::optional<PullOutStatus> pull_out_status_opt{std::nullopt};
-  bool is_stopped;
+  bool is_stopped{false};
 
   // making a local copy of thread sensitive data
   {
@@ -501,7 +503,7 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
   // Get the closest target obj width in the relevant lanes
   const auto closest_object_width = std::invoke([&]() -> std::optional<double> {
     double arc_length_to_closet_object = std::numeric_limits<double>::max();
-    double closest_object_width = -1.0;
+    std::optional<double> closest_object_width = std::nullopt;
     std::for_each(
       target_objects_on_lane.on_current_lane.begin(), target_objects_on_lane.on_current_lane.end(),
       [&](const auto & o) {
@@ -512,7 +514,6 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
         arc_length_to_closet_object = arc_length;
         closest_object_width = o.shape.dimensions.y;
       });
-    if (closest_object_width < 0.0) return std::nullopt;
     return closest_object_width;
   });
   if (!closest_object_width) return false;
@@ -837,7 +838,7 @@ PathWithLaneId StartPlannerModule::getCurrentPath() const
 
 void StartPlannerModule::planWithPriority(
   const std::vector<Pose> & start_pose_candidates, const Pose & refined_start_pose,
-  const Pose & goal_pose, const std::string search_priority)
+  const Pose & goal_pose, const std::string & search_priority)
 {
   if (start_pose_candidates.empty()) return;
 
@@ -1112,8 +1113,8 @@ void StartPlannerModule::updateStatusAfterBackwardDriving()
   waitApproval();
   // To enable approval of the forward path, the RTC status is removed.
   removeRTCStatus();
-  for (auto itr = uuid_map_.begin(); itr != uuid_map_.end(); ++itr) {
-    itr->second = generateUUID();
+  for (auto & itr : uuid_map_) {
+    itr.second = generateUUID();
   }
 }
 
@@ -1303,7 +1304,7 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo()
     return ignore_signal_.value() == id;
   };
 
-  const auto update_ignore_signal = [this](const lanelet::Id & id, const bool is_ignore) {
+  const auto update_ignore_signal = [](const lanelet::Id & id, const bool is_ignore) {
     return is_ignore ? std::make_optional(id) : std::nullopt;
   };
 
@@ -1422,10 +1423,12 @@ bool StartPlannerModule::isSafePath() const
   merged_target_object.insert(
     merged_target_object.end(), target_objects_on_lane.on_shoulder_lane.begin(),
     target_objects_on_lane.on_shoulder_lane.end());
+
   return autoware::behavior_path_planner::utils::path_safety_checker::checkSafetyWithRSS(
     pull_out_path, ego_predicted_path, merged_target_object, debug_data_.collision_check,
     planner_data_->parameters, safety_check_params_->rss_params,
-    objects_filtering_params_->use_all_predicted_path, hysteresis_factor);
+    objects_filtering_params_->use_all_predicted_path, hysteresis_factor,
+    safety_check_params_->collision_check_yaw_diff_threshold);
 }
 
 bool StartPlannerModule::isGoalBehindOfEgoInSameRouteSegment() const
@@ -1693,7 +1696,7 @@ void StartPlannerModule::setDebugData()
 
   // safety check
   if (parameters_->safety_check_params.enable_safety_check) {
-    if (debug_data_.ego_predicted_path.size() > 0) {
+    if (!debug_data_.ego_predicted_path.empty()) {
       const auto & ego_predicted_path = utils::path_safety_checker::convertToPredictedPath(
         debug_data_.ego_predicted_path, ego_predicted_path_params_->time_resolution);
       add(
@@ -1702,7 +1705,7 @@ void StartPlannerModule::setDebugData()
         debug_marker_);
     }
 
-    if (debug_data_.filtered_objects.objects.size() > 0) {
+    if (!debug_data_.filtered_objects.objects.empty()) {
       add(
         createObjectsMarkerArray(
           debug_data_.filtered_objects, "filtered_objects", 0, 0.0, 0.5, 0.9),
