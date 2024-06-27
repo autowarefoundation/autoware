@@ -185,6 +185,10 @@ Return `true` if `uuid` is registered.
 If `uuid` is registered, return `true`.
 If not, return `false`.
 
+## Debugging Tools
+
+There is a debugging tool called [RTC replayer](https://github.com/autowarefoundation/autoware_tools/tree/main/planning/autoware_rtc_replayer) for the RTC interface.
+
 ## Assumptions / Known limits
 
 ## Future extensions / Unimplemented parts

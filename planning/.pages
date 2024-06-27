@@ -79,7 +79,6 @@ nav:
     - 'RTC Interface': planning/autoware_rtc_interface
   - 'Additional Tools':
     - 'Remaining Distance Time Calculator': planning/autoware_remaining_distance_time_calculator
-    - 'RTC Replayer': planning/rtc_replayer
     - 'Planning Debug Tools':
       - 'About Planning Debug Tools': https://github.com/autowarefoundation/autoware_tools/tree/main/planning/planning_debug_tools
       - 'Stop Reason Visualizer': https://github.com/autowarefoundation/autoware_tools/blob/main/planning/planning_debug_tools/doc-stop-reason-visualizer.md
