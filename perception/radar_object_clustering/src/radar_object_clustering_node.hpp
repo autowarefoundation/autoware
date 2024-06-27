@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_OBJECT_CLUSTERING__RADAR_OBJECT_CLUSTERING_NODE_HPP_
-#define RADAR_OBJECT_CLUSTERING__RADAR_OBJECT_CLUSTERING_NODE_HPP_
+#ifndef RADAR_OBJECT_CLUSTERING_NODE_HPP_
+#define RADAR_OBJECT_CLUSTERING_NODE_HPP_
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace radar_object_clustering
+namespace autoware::radar_object_clustering
 {
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjects;
@@ -72,6 +72,6 @@ private:
   bool isSameObject(const DetectedObject & object_1, const DetectedObject & object_2);
 };
 
-}  // namespace radar_object_clustering
+}  // namespace autoware::radar_object_clustering
 
-#endif  // RADAR_OBJECT_CLUSTERING__RADAR_OBJECT_CLUSTERING_NODE_HPP_
+#endif  // RADAR_OBJECT_CLUSTERING_NODE_HPP_

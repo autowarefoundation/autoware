@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_object_clustering/radar_object_clustering_node.hpp"
+#include "radar_object_clustering_node.hpp"
 
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware/universe_utils/math/unit_conversion.hpp"
@@ -20,16 +20,17 @@
 
 #include <tf2/utils.h>
 
-#include <cmath>
-#include <memory>
-#include <string>
-#include <vector>
-
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #else
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
+
+#include <algorithm>
+#include <cmath>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace
 {
@@ -58,7 +59,7 @@ double get_distance(const autoware_perception_msgs::msg::DetectedObject & object
 
 }  // namespace
 
-namespace radar_object_clustering
+namespace autoware::radar_object_clustering
 {
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjects;
@@ -229,7 +230,7 @@ rcl_interfaces::msg::SetParametersResult RadarObjectClusteringNode::onSetParam(
   result.reason = "success";
   return result;
 }
-}  // namespace radar_object_clustering
+}  // namespace autoware::radar_object_clustering
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(radar_object_clustering::RadarObjectClusteringNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::radar_object_clustering::RadarObjectClusteringNode)
