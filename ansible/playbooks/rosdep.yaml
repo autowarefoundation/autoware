@@ -1,0 +1,10 @@
+- name: Register rosdep package repositories
+  hosts: localhost
+  connection: local
+  pre_tasks:
+    - name: Verify OS
+      ansible.builtin.fail:
+        msg: Only Ubuntu 22.04 is supported for this branch. Please refer to https://autowarefoundation.github.io/autoware-documentation/main/installation/autoware/source-installation/.
+      when: ansible_distribution != 'Ubuntu' or ansible_distribution_version != '22.04'
+  roles:
+    - role: autoware.dev_env.pacmod

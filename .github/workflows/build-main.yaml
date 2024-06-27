@@ -4,13 +4,6 @@ on:
   schedule:
     - cron: 0 12 * * *
   workflow_dispatch:
-    inputs:
-      artifacts-destination:
-        type: choice
-        description: Built images will be saved as tarball
-        options:
-          - tarball
-        default: tarball
 
 jobs:
   load-env:
@@ -27,11 +20,13 @@ jobs:
           - cuda
         include:
           - name: no-cuda
+            platform: amd64
             base_image_env: base_image
             lib_dir: x86_64
             setup-args: --no-nvidia
             additional-tag-suffix: ""
           - name: cuda
+            platform: amd64
             base_image_env: base_image
             lib_dir: x86_64
             additional-tag-suffix: -cuda
@@ -39,22 +34,25 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      - name: Build 'autoware-universe'
-        uses: ./.github/actions/docker-build-and-push
+      - name: Build 'Autoware'
+        uses: ./.github/actions/docker-build
         with:
-          bake-target: autoware-openadk
+          name: ${{ matrix.name }}
+          platform: ${{ matrix.platform }}
+          cache-tag-suffix: main
           build-args: |
-            *.platform=linux/amd64
-            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
-            *.args.SETUP_ARGS=${{ matrix.setup-args }}
-            *.args.LIB_DIR=${{ matrix.lib_dir }}
-          tag-suffix: ${{ matrix.additional-tag-suffix }}-amd64
-          tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
-          allow-push: false
+            ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
+            SETUP_ARGS=${{ matrix.setup-args }}
+            LIB_DIR=${{ matrix.lib_dir }}
 
       - name: Show disk space
         run: |

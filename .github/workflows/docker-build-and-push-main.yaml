@@ -9,9 +9,7 @@ name: docker-build-and-push-main
 on:
   push:
     tags:
-      - adkit-v*.*.*
-    branches:
-      - main
+      - openadkit-v*.*.*
   schedule:
     - cron: 0 0 1,15 * *
   workflow_dispatch:
@@ -39,11 +37,13 @@ jobs:
           - cuda
         include:
           - name: no-cuda
+            platform: amd64
             base_image_env: base_image
             lib_dir: x86_64
             setup-args: --no-nvidia
             additional-tag-suffix: ""
           - name: cuda
+            platform: amd64
             base_image_env: base_image
             lib_dir: x86_64
             additional-tag-suffix: -cuda
@@ -51,20 +51,50 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      - name: Build 'autoware-openadk'
+      - name: Restore cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            root-ccache
+          key: cache-${{ matrix.platform }}-${{ matrix.name }}-${{ hashFiles('autoware.repos') }}
+          restore-keys: |
+            cache-${{ matrix.platform }}-${{ matrix.name }}-
+            cache-${{ matrix.platform }}-
+
+      - name: Inject cache into docker
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.1
+        with:
+          cache-map: |
+            {
+              "root-ccache": "/root/.ccache"
+            }
+          skip-extraction: true
+
+      - name: Build 'Autoware'
         uses: ./.github/actions/docker-build-and-push
         with:
-          bake-target: autoware-openadk
+          bake-target: autoware
           build-args: |
-            *.platform=linux/amd64
+            *.platform=linux/${{ matrix.platform }}
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
             *.args.LIB_DIR=${{ matrix.lib_dir }}
-          tag-suffix: ${{ matrix.additional-tag-suffix }}-amd64
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.ref_name }},mode=max
+          tag-suffix: ${{ matrix.additional-tag-suffix }}-${{ matrix.platform }}
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           allow-push: true
 

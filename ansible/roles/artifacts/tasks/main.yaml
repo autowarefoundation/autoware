@@ -158,6 +158,38 @@
     dest: "{{ data_dir }}/lidar_centerpoint/deploy_metadata.yaml"
     mode: "644"
     checksum: sha256:152536f053c3750b60d349800e1b983b418029d6dadf087614a00c661942a178
+
+# lidar_transfusion
+- name: Create lidar_transfusion directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/lidar_transfusion"
+    mode: "755"
+    state: directory
+
+- name: Download lidar_transfusion/transfusion.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/transfusion/v1/transfusion.onnx
+    dest: "{{ data_dir }}/lidar_transfusion/transfusion.onnx"
+    mode: "644"
+    checksum: sha256:8938999cf03770ffd3301027300ea2cbcf471c180450e0434121d7294c42aa0b
+
+- name: Download lidar_transfusion/transfusion.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/transfusion/v1/transfusion.param.yaml
+    dest: "{{ data_dir }}/lidar_transfusion/transfusion.param.yaml"
+    mode: "644"
+    checksum: sha256:0e18776040f14e380037ef6ecb500d1d1d151f21ff7d5c890606673f7e100e14
+
+- name: Download lidar_transfusion/detection_class_remapper.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/transfusion/v1/detection_class_remapper.param.yaml
+    dest: "{{ data_dir }}/lidar_transfusion/detection_class_remapper.param.yaml"
+    mode: "644"
+    checksum: sha256:c711f8875ece9b527dfe31ffc75f8c0de2e77945ef67860a959a4e04c36772d5
+
 # tensorrt_yolox
 - name: Create tensorrt_yolox directory inside {{ data_dir }}
   ansible.builtin.file:
@@ -212,6 +244,30 @@
     dest: "{{ data_dir }}/tensorrt_yolox/label.txt"
     mode: "644"
     checksum: sha256:3540a365bfd6d8afb1b5d8df4ec47f82cb984760d3270c9b41dbbb3422d09a0c
+
+- name: Download tensorrt_yolox/yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/object_detection_semseg_yolox_s/v1/yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls.onnx
+    dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls.onnx"
+    mode: "644"
+    checksum: sha256:73b3812432cedf65cebf02ca4cb630542fc3b1671c4c0fbf7cee50fa38e416a8
+
+- name: Download tensorrt_yolox/yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls.EntropyV2-calibration.table
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/object_detection_semseg_yolox_s/v1/yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls.EntropyV2-calibration.table
+    dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls.EntropyV2-calibration.table"
+    mode: "644"
+    checksum: sha256:28cd6524d4bcdb2809592a225d28330433e58dc02c92169ea555b44c1a51a584
+
+- name: Download tensorrt_yolox/semseg_color_map.csv
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/object_detection_semseg_yolox_s/v1/semseg_color_map.csv
+    dest: "{{ data_dir }}/tensorrt_yolox/semseg_color_map.csv"
+    mode: "644"
+    checksum: sha256:3d93ca05f31b63424d7d7246a01a2365953705a0ed3323ba5b6fddd744a4bfea
 
 # traffic_light_classifier
 - name: Create traffic_light_classifier directory inside {{ data_dir }}
