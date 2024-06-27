@@ -95,25 +95,31 @@ PathPolygonIntersectionStatus getPathPolygonIntersectionStatus(
   auto const & is_first_path_point_inside_polygon = bg::within(first_path_point, polygon);
   auto const & is_last_path_point_inside_polygon = bg::within(last_path_point, polygon);
 
-  if (
-    intersects.empty() && is_first_path_point_inside_polygon && is_last_path_point_inside_polygon) {
-    polygon_intersection_status.is_path_inside_of_polygon = true;
-  } else {
-    // classify first and second intersection points
-    for (size_t i = 0; i < intersects.size(); ++i) {
-      const auto & p = intersects.at(i);
-      if (
-        (intersects.size() == 2 && i == 0) ||
-        (intersects.size() == 1 && is_last_path_point_inside_polygon)) {
-        polygon_intersection_status.first_intersection_point = createPoint(p.x(), p.y(), ego_pos.z);
-      } else if (
-        (intersects.size() == 2 && i == 1) ||
-        (intersects.size() == 1 && is_first_path_point_inside_polygon)) {
-        polygon_intersection_status.second_intersection_point =
-          createPoint(p.x(), p.y(), ego_pos.z);
-      }
+  // classify first and second intersection points
+  if (intersects.empty()) {
+    if (is_first_path_point_inside_polygon && is_last_path_point_inside_polygon) {
+      polygon_intersection_status.is_path_inside_of_polygon = true;
+    } else {
+      // do nothing
     }
+  } else if (intersects.size() == 1) {
+    const auto & p = intersects.at(0);
+    if (is_last_path_point_inside_polygon) {
+      polygon_intersection_status.first_intersection_point = createPoint(p.x(), p.y(), ego_pos.z);
+    } else if (is_first_path_point_inside_polygon) {
+      polygon_intersection_status.second_intersection_point = createPoint(p.x(), p.y(), ego_pos.z);
+    } else {
+      // do nothing
+    }
+  } else if (intersects.size() == 2) {
+    const auto & p0 = intersects.at(0);
+    const auto & p1 = intersects.at(1);
+    polygon_intersection_status.first_intersection_point = createPoint(p0.x(), p0.y(), ego_pos.z);
+    polygon_intersection_status.second_intersection_point = createPoint(p1.x(), p1.y(), ego_pos.z);
+  } else {
+    // do nothing
   }
+
   return polygon_intersection_status;
 }
 
