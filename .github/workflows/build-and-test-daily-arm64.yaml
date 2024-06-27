@@ -37,6 +37,16 @@ jobs:
         id: get-self-packages
         uses: autowarefoundation/autoware-github-actions/get-self-packages@v1
 
+      - name: Export CUDA state as a variable for adding to cache key
+        run: |
+          build_type_cuda_state=nocuda
+          if [[ "${{ matrix.container-suffix }}" == "-cuda" ]]; then
+            build_type_cuda_state=cuda
+          fi
+          echo "BUILD_TYPE_CUDA_STATE=$build_type_cuda_state" >> "${GITHUB_ENV}"
+          echo "::notice::BUILD_TYPE_CUDA_STATE=$build_type_cuda_state"
+        shell: bash
+
       - name: Build
         if: ${{ steps.get-self-packages.outputs.self-packages != '' }}
         uses: autowarefoundation/autoware-github-actions/colcon-build@v1
@@ -44,6 +54,7 @@ jobs:
           rosdistro: ${{ matrix.rosdistro }}
           target-packages: ${{ steps.get-self-packages.outputs.self-packages }}
           build-depends-repos: ${{ matrix.build-depends-repos }}
+          cache-key-element: ${{ env.BUILD_TYPE_CUDA_STATE }}
 
       - name: Test
         if: ${{ steps.get-self-packages.outputs.self-packages != '' }}

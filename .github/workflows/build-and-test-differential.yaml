@@ -74,6 +74,16 @@ jobs:
         run: du -sh ${CCACHE_DIR} && ccache -s
         shell: bash
 
+      - name: Export CUDA state as a variable for adding to cache key
+        run: |
+          build_type_cuda_state=nocuda
+          if [[ "${{ matrix.container-suffix }}" == "-cuda" ]]; then
+            build_type_cuda_state=cuda
+          fi
+          echo "BUILD_TYPE_CUDA_STATE=$build_type_cuda_state" >> "${GITHUB_ENV}"
+          echo "::notice::BUILD_TYPE_CUDA_STATE=$build_type_cuda_state"
+        shell: bash
+
       - name: Build
         if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
         uses: autowarefoundation/autoware-github-actions/colcon-build@v1
@@ -81,6 +91,7 @@ jobs:
           rosdistro: ${{ matrix.rosdistro }}
           target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
           build-depends-repos: ${{ matrix.build-depends-repos }}
+          cache-key-element: ${{ env.BUILD_TYPE_CUDA_STATE }}
 
       - name: Show ccache stats after build
         run: du -sh ${CCACHE_DIR} && ccache -s
@@ -103,6 +114,50 @@ jobs:
           fail_ci_if_error: false
           verbose: true
           flags: differential
+
+      - name: Show disk space after the tasks
+        run: df -h
+
+  clang-tidy-differential:
+    needs: build-and-test-differential
+    runs-on: ubuntu-latest
+    container: ghcr.io/autowarefoundation/autoware:latest-prebuilt-cuda
+    steps:
+      - name: Set PR fetch depth
+        run: echo "PR_FETCH_DEPTH=$(( ${{ github.event.pull_request.commits }} + 1 ))" >> "${GITHUB_ENV}"
+
+      - name: Checkout PR branch and all PR commits
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: ${{ env.PR_FETCH_DEPTH }}
+
+      - name: Show disk space before the tasks
+        run: df -h
+
+      - name: Remove exec_depend
+        uses: autowarefoundation/autoware-github-actions/remove-exec-depend@v1
+
+      - name: Get modified packages
+        id: get-modified-packages
+        uses: autowarefoundation/autoware-github-actions/get-modified-packages@v1
+
+      - name: Get modified files
+        id: get-modified-files
+        run: |
+          echo "changed_files=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD | grep -E '\.(cpp|hpp)$' | tr '\n' ' ' || true)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Run clang-tidy
+        if: ${{ steps.get-modified-files.outputs.changed_files != '' }}
+        uses: autowarefoundation/autoware-github-actions/clang-tidy@v1
+        with:
+          rosdistro: humble
+          target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
+          target-files: ${{ steps.get-modified-files.outputs.changed_files }}
+          clang-tidy-config-url: https://raw.githubusercontent.com/autowarefoundation/autoware/main/.clang-tidy
+          build-depends-repos: build_depends.repos
+          cache-key-element: cuda
 
       - name: Show disk space after the tasks
         run: df -h
