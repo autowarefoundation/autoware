@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_CROSSING_OBJECTS_NOISE_FILTER__RADAR_CROSSING_OBJECTS_NOISE_FILTER_NODE_HPP_
-#define RADAR_CROSSING_OBJECTS_NOISE_FILTER__RADAR_CROSSING_OBJECTS_NOISE_FILTER_NODE_HPP_
+#ifndef RADAR_CROSSING_OBJECTS_NOISE_FILTER_NODE_HPP_
+#define RADAR_CROSSING_OBJECTS_NOISE_FILTER_NODE_HPP_
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -23,7 +23,7 @@
 #include <memory>
 #include <vector>
 
-namespace radar_crossing_objects_noise_filter
+namespace autoware::radar_crossing_objects_noise_filter
 {
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjects;
@@ -63,6 +63,6 @@ public:
   bool isNoise(const DetectedObject & object);
 };
 
-}  // namespace radar_crossing_objects_noise_filter
+}  // namespace autoware::radar_crossing_objects_noise_filter
 
-#endif  // RADAR_CROSSING_OBJECTS_NOISE_FILTER__RADAR_CROSSING_OBJECTS_NOISE_FILTER_NODE_HPP_
+#endif  // RADAR_CROSSING_OBJECTS_NOISE_FILTER_NODE_HPP_

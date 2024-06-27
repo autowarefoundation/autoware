@@ -6,12 +6,12 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 # Targets
-ament_auto_add_library(radar_crossing_objects_noise_filter_node_component SHARED
-  src/radar_crossing_objects_noise_filter_node/radar_crossing_objects_noise_filter_node.cpp
+ament_auto_add_library(${PROJECT_NAME}_node_component SHARED
+  src/radar_crossing_objects_noise_filter_node.cpp
 )
 
-rclcpp_components_register_node(radar_crossing_objects_noise_filter_node_component
-  PLUGIN "radar_crossing_objects_noise_filter::RadarCrossingObjectsNoiseFilterNode"
+rclcpp_components_register_node(${PROJECT_NAME}_node_component
+  PLUGIN "autoware::radar_crossing_objects_noise_filter::RadarCrossingObjectsNoiseFilterNode"
   EXECUTABLE radar_crossing_objects_noise_filter_node
 )
 
@@ -23,10 +23,10 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   file(GLOB_RECURSE test_files test/**/*.cpp)
-  ament_add_ros_isolated_gtest(radar_crossing_objects_noise_filter ${test_files})
+  ament_add_ros_isolated_gtest(${PROJECT_NAME} ${test_files})
 
-  target_link_libraries(radar_crossing_objects_noise_filter
-    radar_crossing_objects_noise_filter_node_component
+  target_link_libraries(${PROJECT_NAME}
+    ${PROJECT_NAME}_node_component
   )
 endif()
 

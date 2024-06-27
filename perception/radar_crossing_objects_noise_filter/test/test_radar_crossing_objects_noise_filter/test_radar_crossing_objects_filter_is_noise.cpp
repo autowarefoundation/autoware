@@ -12,24 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "../../src/radar_crossing_objects_noise_filter_node.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware/universe_utils/math/unit_conversion.hpp"
-#include "radar_crossing_objects_noise_filter/radar_crossing_objects_noise_filter_node.hpp"
 
 #include <geometry_msgs/msg/point32.hpp>
 
 #include <gtest/gtest.h>
 
-std::shared_ptr<radar_crossing_objects_noise_filter::RadarCrossingObjectsNoiseFilterNode> get_node(
-  double angle_threshold, double velocity_threshold)
+std::shared_ptr<autoware::radar_crossing_objects_noise_filter::RadarCrossingObjectsNoiseFilterNode>
+get_node(double angle_threshold, double velocity_threshold)
 {
   rclcpp::NodeOptions node_options;
 
   node_options.parameter_overrides(
     {{"angle_threshold", angle_threshold}, {"velocity_threshold", velocity_threshold}});
-  auto node =
-    std::make_shared<radar_crossing_objects_noise_filter::RadarCrossingObjectsNoiseFilterNode>(
-      node_options);
+  auto node = std::make_shared<
+    autoware::radar_crossing_objects_noise_filter::RadarCrossingObjectsNoiseFilterNode>(
+    node_options);
   return node;
 }
 

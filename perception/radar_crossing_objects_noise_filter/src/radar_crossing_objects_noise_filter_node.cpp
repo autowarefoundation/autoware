@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_crossing_objects_noise_filter/radar_crossing_objects_noise_filter_node.hpp"
+#include "radar_crossing_objects_noise_filter_node.hpp"
 
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware/universe_utils/math/normalization.hpp"
@@ -50,7 +50,7 @@ bool update_param(
 }
 }  // namespace
 
-namespace radar_crossing_objects_noise_filter
+namespace autoware::radar_crossing_objects_noise_filter
 {
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjects;
@@ -142,8 +142,8 @@ bool RadarCrossingObjectsNoiseFilterNode::isNoise(const DetectedObject & object)
   }
 }
 
-}  // namespace radar_crossing_objects_noise_filter
+}  // namespace autoware::radar_crossing_objects_noise_filter
 
 #include "rclcpp_components/register_node_macro.hpp"
 RCLCPP_COMPONENTS_REGISTER_NODE(
-  radar_crossing_objects_noise_filter::RadarCrossingObjectsNoiseFilterNode)
+  autoware::radar_crossing_objects_noise_filter::RadarCrossingObjectsNoiseFilterNode)

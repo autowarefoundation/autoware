@@ -16,7 +16,6 @@
 
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_universe_utils</depend>
-  <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tf2</depend>
