@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "object_range_splitter/node.hpp"
+#include "object_range_splitter_node.hpp"
 
-namespace object_range_splitter
+namespace autoware::object_range_splitter
 {
 ObjectRangeSplitterNode::ObjectRangeSplitterNode(const rclcpp::NodeOptions & node_options)
 : Node("object_range_splitter_node", node_options)
@@ -59,7 +59,7 @@ void ObjectRangeSplitterNode::objectCallback(
   long_range_object_pub_->publish(output_long_range_object_msg);
   short_range_object_pub_->publish(output_short_range_object_msg);
 }
-}  // namespace object_range_splitter
+}  // namespace autoware::object_range_splitter
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(object_range_splitter::ObjectRangeSplitterNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::object_range_splitter::ObjectRangeSplitterNode)

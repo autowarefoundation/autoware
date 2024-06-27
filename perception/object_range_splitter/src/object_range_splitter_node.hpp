@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECT_RANGE_SPLITTER__NODE_HPP_
-#define OBJECT_RANGE_SPLITTER__NODE_HPP_
+#ifndef OBJECT_RANGE_SPLITTER_NODE_HPP_
+#define OBJECT_RANGE_SPLITTER_NODE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
 
 #include <memory>
 
-namespace object_range_splitter
+namespace autoware::object_range_splitter
 {
 class ObjectRangeSplitterNode : public rclcpp::Node
 {
@@ -42,6 +42,6 @@ private:
   float spilt_range_;
 };
 
-}  // namespace object_range_splitter
+}  // namespace autoware::object_range_splitter
 
-#endif  // OBJECT_RANGE_SPLITTER__NODE_HPP_
+#endif  // OBJECT_RANGE_SPLITTER_NODE_HPP_
