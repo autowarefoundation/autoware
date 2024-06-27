@@ -6,12 +6,12 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 # Targets
-ament_auto_add_library(simple_object_merger_node_component SHARED
-  src/simple_object_merger_node/simple_object_merger_node.cpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/simple_object_merger_node.cpp
 )
 
-rclcpp_components_register_node(simple_object_merger_node_component
-  PLUGIN "simple_object_merger::SimpleObjectMergerNode"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::simple_object_merger::SimpleObjectMergerNode"
   EXECUTABLE simple_object_merger_node
 )
 

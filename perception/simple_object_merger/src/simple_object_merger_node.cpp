@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "simple_object_merger/simple_object_merger_node.hpp"
+#include "simple_object_merger_node.hpp"
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
@@ -65,7 +65,7 @@ autoware_perception_msgs::msg::DetectedObjects::SharedPtr getTransformedObjects(
 
 }  // namespace
 
-namespace simple_object_merger
+namespace autoware::simple_object_merger
 {
 using namespace std::literals;
 using std::chrono::duration;
@@ -193,7 +193,7 @@ void SimpleObjectMergerNode::onTimer()
   pub_objects_->publish(output_objects);
 }
 
-}  // namespace simple_object_merger
+}  // namespace autoware::simple_object_merger
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(simple_object_merger::SimpleObjectMergerNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::simple_object_merger::SimpleObjectMergerNode)

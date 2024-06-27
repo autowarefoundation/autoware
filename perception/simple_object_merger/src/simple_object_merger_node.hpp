@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SIMPLE_OBJECT_MERGER__SIMPLE_OBJECT_MERGER_NODE_HPP_
-#define SIMPLE_OBJECT_MERGER__SIMPLE_OBJECT_MERGER_NODE_HPP_
+#ifndef SIMPLE_OBJECT_MERGER_NODE_HPP_
+#define SIMPLE_OBJECT_MERGER_NODE_HPP_
 
 #include "autoware/universe_utils/ros/transform_listener.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-namespace simple_object_merger
+namespace autoware::simple_object_merger
 {
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjects;
@@ -76,6 +76,6 @@ private:
   size_t input_topic_size;
 };
 
-}  // namespace simple_object_merger
+}  // namespace autoware::simple_object_merger
 
-#endif  // SIMPLE_OBJECT_MERGER__SIMPLE_OBJECT_MERGER_NODE_HPP_
+#endif  // SIMPLE_OBJECT_MERGER_NODE_HPP_
