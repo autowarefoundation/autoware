@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "object_velocity_splitter/object_velocity_splitter_node.hpp"
+#include "object_velocity_splitter_node.hpp"
 
 #include "autoware/universe_utils/geometry/geometry.hpp"
 
@@ -40,7 +40,7 @@ bool update_param(
 }
 }  // namespace
 
-namespace object_velocity_splitter
+namespace autoware::object_velocity_splitter
 {
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjects;
@@ -110,7 +110,7 @@ rcl_interfaces::msg::SetParametersResult ObjectVelocitySplitterNode::onSetParam(
   return result;
 }
 
-}  // namespace object_velocity_splitter
+}  // namespace autoware::object_velocity_splitter
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(object_velocity_splitter::ObjectVelocitySplitterNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::object_velocity_splitter::ObjectVelocitySplitterNode)

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECT_VELOCITY_SPLITTER__OBJECT_VELOCITY_SPLITTER_NODE_HPP_
-#define OBJECT_VELOCITY_SPLITTER__OBJECT_VELOCITY_SPLITTER_NODE_HPP_
+#ifndef OBJECT_VELOCITY_SPLITTER_NODE_HPP_
+#define OBJECT_VELOCITY_SPLITTER_NODE_HPP_
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace object_velocity_splitter
+namespace autoware::object_velocity_splitter
 {
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjects;
@@ -62,6 +62,6 @@ private:
   NodeParam node_param_{};
 };
 
-}  // namespace object_velocity_splitter
+}  // namespace autoware::object_velocity_splitter
 
-#endif  // OBJECT_VELOCITY_SPLITTER__OBJECT_VELOCITY_SPLITTER_NODE_HPP_
+#endif  // OBJECT_VELOCITY_SPLITTER_NODE_HPP_
