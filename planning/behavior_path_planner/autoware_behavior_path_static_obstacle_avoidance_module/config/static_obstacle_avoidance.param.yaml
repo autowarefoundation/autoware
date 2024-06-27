@@ -5,9 +5,13 @@
       resample_interval_for_planning: 0.3               # [m] FOR DEVELOPER
       resample_interval_for_output: 4.0                 # [m] FOR DEVELOPER
 
+      # drivable lane setting. this module is able to use not only current lane but also right/left lane
+      # if the current lane(=lanelet::Lanelet) and the right/left lane share the boundary(=lanelet::Linestring) in HDMap.
+      # "current_lane"           : use only current lane. this module doesn't use adjacent lane to avoid object.
+      # "same_direction_lane"    : this module uses same direction lane to avoid object if need.
+      # "opposite_direction_lane": this module uses both same direction and opposite direction lane.
+      use_lane_type: "opposite_direction_lane"
       # drivable area setting
-      use_adjacent_lane: true
-      use_opposite_lane: true
       use_intersection_areas: true
       use_hatched_road_markings: true
       use_freespace_areas: true

@@ -22,15 +22,11 @@
           "description": "Path generation method.",
           "default": "shift_line_base"
         },
-        "use_adjacent_lane": {
-          "type": "boolean",
-          "description": "Extend avoidance trajectory to adjacent lanes that has same direction. If false, avoidance only happen in current lane.",
-          "default": "true"
-        },
-        "use_opposite_lane": {
-          "type": "boolean",
-          "description": "Extend avoidance trajectory to opposite direction lane. `use_adjacent_lane` must be `true` to take effects.",
-          "default": "true"
+        "use_lane_type": {
+          "type": "string",
+          "enum": ["current_lane", "same_direction_lane", "opposite_direction_lane"],
+          "description": "Drivable lane configuration.",
+          "default": "opposite_direction_lane"
         },
         "use_hatched_road_markings": {
           "type": "boolean",
@@ -1447,8 +1443,7 @@
         "resample_interval_for_planning",
         "resample_interval_for_output",
         "path_generation_method",
-        "use_adjacent_lane",
-        "use_opposite_lane",
+        "use_lane_type",
         "use_hatched_road_markings",
         "use_intersection_areas",
         "use_freespace_areas",

@@ -2238,14 +2238,16 @@ DrivableLanes generateExpandedDrivableLanes(
   current_drivable_lanes.left_lane = lanelet;
   current_drivable_lanes.right_lane = lanelet;
 
-  if (!parameters->use_adjacent_lane) {
+  if (parameters->use_lane_type == "current_lane") {
     return current_drivable_lanes;
   }
 
+  const auto use_opposite_lane = parameters->use_lane_type == "opposite_direction_lane";
+
   // 1. get left/right side lanes
   const auto update_left_lanelets = [&](const lanelet::ConstLanelet & target_lane) {
-    const auto all_left_lanelets = route_handler->getAllLeftSharedLinestringLanelets(
-      target_lane, parameters->use_opposite_lane, true);
+    const auto all_left_lanelets =
+      route_handler->getAllLeftSharedLinestringLanelets(target_lane, use_opposite_lane, true);
     if (!all_left_lanelets.empty()) {
       current_drivable_lanes.left_lane = all_left_lanelets.back();  // leftmost lanelet
       pushUniqueVector(
@@ -2254,8 +2256,8 @@ DrivableLanes generateExpandedDrivableLanes(
     }
   };
   const auto update_right_lanelets = [&](const lanelet::ConstLanelet & target_lane) {
-    const auto all_right_lanelets = route_handler->getAllRightSharedLinestringLanelets(
-      target_lane, parameters->use_opposite_lane, true);
+    const auto all_right_lanelets =
+      route_handler->getAllRightSharedLinestringLanelets(target_lane, use_opposite_lane, true);
     if (!all_right_lanelets.empty()) {
       current_drivable_lanes.right_lane = all_right_lanelets.back();  // rightmost lanelet
       pushUniqueVector(

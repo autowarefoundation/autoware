@@ -760,7 +760,7 @@ Basically, this module tries to generate avoidance path in order to keep lateral
 
 But if there isn't enough space to keep `soft_margin` distance, this module shortens soft constraint lateral margin. The parameter `soft_margin` is a maximum value of soft constraint, and actual soft margin can be a value between 0.0 and `soft_margin`. On the other hand, this module definitely keeps `hard_margin` or `hard_margin_for_parked_vehicle` depending on the situation. Thus, the minimum value of total lateral margin is `hard_margin`/`hard_margin_for_parked_vehicle`, and the maximum value is the sum of `hard_margin`/`hard_margin_for_parked_vehicle` and `soft_margin`.
 
-Following figure shows the situation where this module shortens lateral soft constraint in order not to drive opposite direction lane when user set a parameter `use_opposite_lane` to `false`.
+Following figure shows the situation where this module shortens lateral soft constraint in order not to drive opposite direction lane when user set a parameter `use_lane_type` to `same_direction_lane`.
 
 ![fig](./images/path_generation/adjust_margin.png)
 
@@ -784,7 +784,7 @@ On the other hand, if the lateral distance is larger than `hard_margin`/`hard_ma
 
 ### When there is not enough space
 
-This module inserts stop point only when the ego can potentially avoid the object. So, if it is not able to keep distance more than `hard_margin`/`hard_margin_for_parked_vehicle`, this module does nothing. Following figure shows the situation where this module is not able to keep enough lateral distance when user set a parameter `use_opposite_lane` to `false`.
+This module inserts stop point only when the ego can potentially avoid the object. So, if it is not able to keep distance more than `hard_margin`/`hard_margin_for_parked_vehicle`, this module does nothing. Following figure shows the situation where this module is not able to keep enough lateral distance when user set a parameter `use_lane_type` to `same_direction_lane`.
 
 ![fig](./images/path_generation/do_nothing.png)
 
@@ -804,15 +804,19 @@ Usable lane for avoidance module can be selected by config file.
 
 ```yaml
       ...
-      use_adjacent_lane: true
-      use_opposite_lane: true
+      # drivable lane setting. this module is able to use not only current lane but also right/left lane
+      # if the current lane(=lanelt::Lanelet) and the rignt/left lane share the boundary(=lanelet::Linestring) in HDMap.
+      # "current_lane"           : use only current lane. this module doesn't use adjacent lane to avoid object.
+      # "same_direction_lane"    : this module uses same direction lane to avoid object if need.
+      # "opposite_direction_lane": this module uses both same direction and opposite direction lane.
+      use_lane_type: "opposite_direction_lane"
 ```
 
-When user set parameter both `use_adjacent_lane` and `use_opposite_lane` to `true`, it is possible to use opposite lane.
+When user set parameter `use_lane_type` to `opposite_direction_lane`, it is possible to use opposite lane.
 
 ![fig](./images/path_generation/opposite_direction.png)
 
-When user only set parameter `use_adjacent_lane` to `true`, the module doesn't create path that overlaps opposite lane.
+When user set parameter `use_lane_type` to `same_direction_lane`, the module doesn't create path that overlaps opposite lane.
 
 ![fig](./images/path_generation/same_direction.png)
 
@@ -972,21 +976,25 @@ This module supports drivable area expansion for following polygons defined in H
 Please set the flags to `true` when user wants to make it possible to use those areas in avoidance maneuver.
 
 ```yaml
+# drivable lane setting. this module is able to use not only current lane but also right/left lane
+# if the current lane(=lanelt::Lanelet) and the rignt/left lane share the boundary(=lanelet::Linestring) in HDMap.
+# "current_lane"           : use only current lane. this module doesn't use adjacent lane to avoid object.
+# "same_direction_lane"    : this module uses same direction lane to avoid object if need.
+# "opposite_direction_lane": this module uses both same direction and opposite direction lane.
+use_lane_type: "opposite_direction_lane"
 # drivable area setting
-use_adjacent_lane: true
-use_opposite_lane: true
 use_intersection_areas: true
 use_hatched_road_markings: true
 use_freespace_areas: true
 ```
 
-|                       |                                                            |                                                                                                                                                                                                                     |
-| --------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| adjacent lane         | ![fig](./images/advanced/avoidance_same_direction.png)     |                                                                                                                                                                                                                     |
-| opposite lane         | ![fig](./images/advanced/avoidance_opposite_direction.png) |                                                                                                                                                                                                                     |
-| intersection area     | ![fig](./images/advanced/avoidance_intersection.png)       | The intersection area is defined on Lanelet map. See [here](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md)                               |
-| hatched road markings | ![fig](./images/advanced/avoidance_zebra.png)              | The hatched road marking is defined on Lanelet map. See [here](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md#hatched-road-markings-area) |
-| freespace area        | ![fig](./images/advanced/avoidance_freespace.png)          | The freespace area is defined on Lanelet map. (unstable)                                                                                                                                                            |
+|                                        |                                                            |                                                                                                                                                                                                                     |
+| -------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| use_lane_type: same_direction_lane     | ![fig](./images/advanced/avoidance_same_direction.png)     |                                                                                                                                                                                                                     |
+| use_lane_type: opposite_direction_lane | ![fig](./images/advanced/avoidance_opposite_direction.png) |                                                                                                                                                                                                                     |
+| intersection area                      | ![fig](./images/advanced/avoidance_intersection.png)       | The intersection area is defined on Lanelet map. See [here](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md)                               |
+| hatched road markings                  | ![fig](./images/advanced/avoidance_zebra.png)              | The hatched road marking is defined on Lanelet map. See [here](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md#hatched-road-markings-area) |
+| freespace area                         | ![fig](./images/advanced/avoidance_freespace.png)          | The freespace area is defined on Lanelet map. (unstable)                                                                                                                                                            |
 
 ## Future extensions / Unimplemented parts
 

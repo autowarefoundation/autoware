@@ -101,12 +101,8 @@ struct AvoidanceParameters
   // computational cost for latter modules.
   double resample_interval_for_output = 3.0;
 
-  // enable avoidance to be perform only in lane with same direction
-  bool use_adjacent_lane{true};
-
-  // enable avoidance to be perform in opposite lane direction
-  // to use this, enable_avoidance_over_same_direction need to be set to true.
-  bool use_opposite_lane{true};
+  // drivable lane config
+  std::string use_lane_type{"current_lane"};
 
   // if this param is true, it reverts avoidance path when the path is no longer needed.
   bool enable_cancel_maneuver{false};
