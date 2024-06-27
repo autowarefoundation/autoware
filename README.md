@@ -31,8 +31,8 @@
 
 <!--- CI Reports -->
 <p align="center">
-    <a href="https://github.com/autowarefoundation/autoware/actions/workflows/build-main.yaml?query=branch%3Amain">
-        <img src="https://img.shields.io/github/actions/workflow/status/autowarefoundation/autoware/build-main.yaml?style=flat&label=build-main"
+    <a href="https://github.com/autowarefoundation/autoware/actions/workflows/docker-build.yaml">
+        <img src="https://github.com/autowarefoundation/autoware/actions/workflows/docker-build.yaml/badge.svg?branch=main"
             alt="Build Main CI" /></a>
     <a href="https://app.codecov.io/gh/autowarefoundation/autoware.universe">
         <img src="https://img.shields.io/codecov/c/gh/autowarefoundation/autoware.universe?style=flat&label=Coverage&logo=codecov&logoColor=white"

@@ -4,14 +4,14 @@
 # push-branch: Build only devel and prebuilt. TAGS: date, latest
 # push-tag: Build all. TAGS: version, date, latest
 
-name: docker-build-and-push-main
+name: docker-build-self-hosted
 
 on:
   push:
     tags:
       - openadkit-v*.*.*
   schedule:
-    - cron: 0 0 1,15 * *
+    - cron: 0 12 * * *
   workflow_dispatch:
     inputs:
       artifacts-destination:
@@ -26,9 +26,9 @@ jobs:
   load-env:
     uses: ./.github/workflows/load-env.yaml
 
-  docker-build-and-push-main:
+  docker-build-self-hosted:
     needs: load-env
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, ARM64]
     strategy:
       fail-fast: false
       matrix:
@@ -37,17 +37,28 @@ jobs:
           - cuda
         include:
           - name: no-cuda
-            platform: amd64
+            platform: arm64
             base_image_env: base_image
-            lib_dir: x86_64
+            lib_dir: aarch64
             setup-args: --no-nvidia
             additional-tag-suffix: ""
           - name: cuda
-            platform: amd64
+            platform: arm64
             base_image_env: base_image
-            lib_dir: x86_64
+            lib_dir: aarch64
             additional-tag-suffix: -cuda
     steps:
+      - name: Check if push day
+        if: ${{ github.event_name == 'schedule' }}
+        run: |
+          if [ $(date +'%d') -eq 01 ] || [ $(date +'%d') -eq 15 ]; then echo "IS_PUSH_DAY=true" >> $GITHUB_ENV; else echo "IS_PUSH_DAY=false" >> $GITHUB_ENV; fi
+          echo "Day of the month: $(date +'%d')"
+
+      # https://github.com/actions/checkout/issues/211
+      - name: Change permission of workspace
+        run: |
+          sudo chown -R $USER:$USER ${{ github.workspace }}
+
       - name: Check out repository
         uses: actions/checkout@v4
 
@@ -96,7 +107,7 @@ jobs:
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.ref_name }},mode=max
           tag-suffix: ${{ matrix.additional-tag-suffix }}-${{ matrix.platform }}
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
-          allow-push: true
+          allow-push: ${{ env.IS_PUSH_DAY == 'true' }}
 
       - name: Show disk space
         run: |
