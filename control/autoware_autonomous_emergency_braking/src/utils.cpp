@@ -16,7 +16,6 @@
 
 namespace autoware::motion::control::autonomous_emergency_braking::utils
 {
-using autoware::universe_utils::Point2d;
 using autoware::universe_utils::Polygon2d;
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedObjects;
@@ -26,7 +25,7 @@ using geometry_msgs::msg::TransformStamped;
 using geometry_msgs::msg::Vector3;
 
 PredictedObject transformObjectFrame(
-  const PredictedObject & input, geometry_msgs::msg::TransformStamped transform_stamped)
+  const PredictedObject & input, geometry_msgs::msg::TransformStamped & transform_stamped)
 {
   PredictedObject output = input;
   const auto & linear_twist = input.kinematics.initial_twist_with_covariance.twist.linear;
@@ -74,12 +73,12 @@ Polygon2d convertCylindricalObjectToGeometryPolygon(
   const double obj_x = current_pose.position.x;
   const double obj_y = current_pose.position.y;
 
-  constexpr int N = 20;
+  constexpr int n = 20;
   const double r = obj_shape.dimensions.x / 2;
-  object_polygon.outer().reserve(N + 1);
-  for (int i = 0; i < N; ++i) {
+  object_polygon.outer().reserve(n + 1);
+  for (int i = 0; i < n; ++i) {
     object_polygon.outer().emplace_back(
-      obj_x + r * std::cos(2.0 * M_PI / N * i), obj_y + r * std::sin(2.0 * M_PI / N * i));
+      obj_x + r * std::cos(2.0 * M_PI / n * i), obj_y + r * std::sin(2.0 * M_PI / n * i));
   }
 
   object_polygon.outer().push_back(object_polygon.outer().front());

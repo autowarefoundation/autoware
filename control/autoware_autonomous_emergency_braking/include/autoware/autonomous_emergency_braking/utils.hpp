@@ -37,7 +37,6 @@
 
 namespace autoware::motion::control::autonomous_emergency_braking::utils
 {
-using autoware::universe_utils::Point2d;
 using autoware::universe_utils::Polygon2d;
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedObjects;
@@ -51,7 +50,7 @@ using geometry_msgs::msg::TransformStamped;
  * @param transform_stamped the tf2 transform
  */
 PredictedObject transformObjectFrame(
-  const PredictedObject & input, geometry_msgs::msg::TransformStamped transform_stamped);
+  const PredictedObject & input, geometry_msgs::msg::TransformStamped & transform_stamped);
 
 /**
  * @brief Get the predicted objects polygon as a geometry polygon

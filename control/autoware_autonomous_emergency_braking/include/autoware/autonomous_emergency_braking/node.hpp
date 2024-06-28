@@ -60,7 +60,6 @@ using nav_msgs::msg::Odometry;
 using sensor_msgs::msg::Imu;
 using sensor_msgs::msg::PointCloud2;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
-using autoware::universe_utils::Point2d;
 using autoware::universe_utils::Polygon2d;
 using autoware::vehicle_info_utils::VehicleInfo;
 using diagnostic_updater::DiagnosticStatusWrapper;
@@ -120,12 +119,12 @@ public:
     return this->checkObjectDataExpired(prev_closest_object_, previous_obstacle_keep_time_);
   }
 
-  ObjectData get() const
+  [[nodiscard]] ObjectData get() const
   {
     return (closest_object_.has_value()) ? closest_object_.value() : ObjectData();
   }
 
-  ObjectData getPreviousObjectData() const
+  [[nodiscard]] ObjectData getPreviousObjectData() const
   {
     return (prev_closest_object_.has_value()) ? prev_closest_object_.value() : ObjectData();
   }
@@ -156,20 +155,21 @@ public:
         }),
       obstacle_velocity_history_.end());
     obstacle_velocity_history_.emplace_back(
-      std::make_pair(current_object_velocity, current_object_velocity_time_stamp));
+      current_object_velocity, current_object_velocity_time_stamp);
   }
 
-  std::optional<double> getMedianObstacleVelocity() const
+  [[nodiscard]] std::optional<double> getMedianObstacleVelocity() const
   {
     if (obstacle_velocity_history_.empty()) return std::nullopt;
     std::vector<double> raw_velocities;
+    raw_velocities.reserve(obstacle_velocity_history_.size());
     for (const auto & vel_time_pair : obstacle_velocity_history_) {
       raw_velocities.emplace_back(vel_time_pair.first);
     }
 
     const size_t med1 = (raw_velocities.size() % 2 == 0) ? (raw_velocities.size()) / 2 - 1
-                                                         : (raw_velocities.size()) / 2.0;
-    const size_t med2 = (raw_velocities.size()) / 2.0;
+                                                         : (raw_velocities.size()) / 2;
+    const size_t med2 = (raw_velocities.size()) / 2;
     std::nth_element(raw_velocities.begin(), raw_velocities.begin() + med1, raw_velocities.end());
     const double vel1 = raw_velocities.at(med1);
     std::nth_element(raw_velocities.begin(), raw_velocities.begin() + med2, raw_velocities.end());
