@@ -39,6 +39,9 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/surface/convex_hull.h>
 #include <tf2/utils.h>
+
+#include <cmath>
+#include <limits>
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -508,9 +511,17 @@ bool AEB::hasCollision(const double current_v, const ObjectData & closest_object
 {
   const double & obj_v = closest_object.velocity;
   const double & t = t_response_;
-  const double rss_dist = std::abs(current_v) * t +
-                          (current_v * current_v) / (2 * std::fabs(a_ego_min_)) -
-                          obj_v * obj_v / (2 * std::fabs(a_obj_min_)) + longitudinal_offset_;
+
+  const double rss_dist = std::invoke([&]() {
+    const double pre_braking_covered_distance = std::abs(current_v) * t;
+    const double braking_distance = (current_v * current_v) / (2 * std::fabs(a_ego_min_));
+    const double ego_stopping_distance = pre_braking_covered_distance + braking_distance;
+    const double obj_braking_distance = (obj_v > 0.0)
+                                          ? -(obj_v * obj_v) / (2 * std::fabs(a_obj_min_))
+                                          : (obj_v * obj_v) / (2 * std::fabs(a_obj_min_));
+    return ego_stopping_distance + obj_braking_distance + longitudinal_offset_;
+  });
+
   if (closest_object.distance_to_object < rss_dist) {
     // collision happens
     ObjectData collision_data = closest_object;
@@ -538,7 +549,7 @@ Path AEB::generateEgoPath(const double curr_v, const double curr_w)
     return path;
   }
 
-  constexpr double epsilon = 1e-6;
+  constexpr double epsilon = std::numeric_limits<double>::epsilon();
   const double & dt = imu_prediction_time_interval_;
   const double & horizon = imu_prediction_time_horizon_;
   for (double t = 0.0; t < horizon + epsilon; t += dt) {
@@ -687,7 +698,7 @@ void AEB::createObjectDataUsingPredictedObjects(
         ObjectData obj;
         obj.stamp = stamp;
         obj.position = obj_position;
-        obj.velocity = (obj_tangent_velocity > 0.0) ? obj_tangent_velocity : 0.0;
+        obj.velocity = obj_tangent_velocity;
         obj.distance_to_object = std::abs(dist_ego_to_object);
         object_data_vector.push_back(obj);
         collision_points_added = true;

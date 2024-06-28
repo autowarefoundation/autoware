@@ -181,7 +181,7 @@ public:
     const ObjectData & closest_object, const Path & path, const double current_ego_speed)
   {
     // in case the object comes from predicted objects info, we reuse the speed.
-    if (closest_object.velocity > 0.0) {
+    if (std::abs(closest_object.velocity) > std::numeric_limits<double>::epsilon()) {
       this->setPreviousObjectData(closest_object);
       this->updateVelocityHistory(closest_object.velocity, closest_object.stamp);
       return this->getMedianObstacleVelocity();
@@ -218,7 +218,7 @@ public:
         p_vel * std::cos(p_yaw - traj_yaw) + std::abs(current_ego_speed);
 
       // Current RSS distance calculation does not account for negative velocities
-      return (estimated_velocity > 0.0) ? estimated_velocity : 0.0;
+      return estimated_velocity;
     });
 
     if (!estimated_velocity_opt.has_value()) {

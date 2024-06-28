@@ -142,7 +142,7 @@ $$
 
 where $yaw_{diff}$ is the difference in yaw between the ego path and the displacement vector $$v_{pos} = o_{pos} - prev_{pos} $$ and $v_{ego}$ is the ego's current speed, which accounts for the movement of points caused by the ego moving and not the object. All these equations are performed disregarding the z axis (in 2D).
 
-Note that, the object velocity is calculated against the ego's current movement direction. If the object moves in the opposite direction to the ego's movement, the object velocity is set to 0 m/s. That is because the RSS distance calculation assumes the ego and the object move in the same direction and it cannot deal with negative velocities.
+Note that, the object velocity is calculated against the ego's current movement direction. If the object moves in the opposite direction to the ego's movement, the object velocity will be negative, which will reduce the rss distance on the next step.
 
 The resulting estimated object speed is added to a queue of speeds with timestamps. The AEB then checks for expiration of past speed estimations and eliminates expired speed measurements from the queue, the object expiration is determined by checking if the time elapsed since the speed was first added to the queue is larger than the parameter `previous_obstacle_keep_time`. Finally, the median speed of the queue is calculated. The median speed will be used to calculate the RSS distance used for collision checking.
 
@@ -151,7 +151,7 @@ The resulting estimated object speed is added to a queue of speeds with timestam
 In the fourth step, it checks the collision with the closest obstacle point using RSS distance. RSS distance is formulated as:
 
 $$
-d = v_{ego}*t_{response} + v_{ego}^2/(2*a_{min}) - v_{obj}^2/(2*a_{obj_{min}}) + offset
+d = v_{ego}*t_{response} + v_{ego}^2/(2*a_{min}) -(sign(v_{obj})) * v_{obj}^2/(2*a_{obj_{min}}) + offset
 $$
 
 where $v_{ego}$ and $v_{obj}$ is current ego and obstacle velocity, $a_{min}$ and $a_{obj_{min}}$ is ego and object minimum acceleration (maximum deceleration), $t_{response}$ is response time of the ego vehicle to start deceleration. Therefore the distance from the ego vehicle to the obstacle is smaller than this RSS distance $d$, the ego vehicle send emergency stop signals. This is illustrated in the following picture.
@@ -220,7 +220,5 @@ When vehicle odometry information is faulty, it is possible that the MPC fails t
 - Longitudinal acceleration information obtained from sensors is not used due to the high amount of noise.
 
 - The accuracy of the predicted path created from sensor data depends on the accuracy of sensors attached to the ego vehicle.
-
-- Currently, the module calculates thee closest object velocity if it goes in the same direction as the ego vehicle, otherwise the velocity is set to 0 m/s since RSS distance calculation does not use negative velocities.
 
 ![aeb_range](./image/range.drawio.svg)
