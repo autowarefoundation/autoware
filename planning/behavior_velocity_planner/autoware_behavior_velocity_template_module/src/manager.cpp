@@ -15,7 +15,7 @@
 #include "manager.hpp"
 
 #include <autoware/universe_utils/ros/parameter.hpp>
-#include <lanelet2_extension/utility/query.hpp>
+#include <autoware_lanelet2_extension/utility/query.hpp>
 
 #include <tf2/utils.h>
 

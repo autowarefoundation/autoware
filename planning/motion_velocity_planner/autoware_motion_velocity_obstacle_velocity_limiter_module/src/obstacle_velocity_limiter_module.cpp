@@ -26,8 +26,8 @@
 #include <autoware/motion_velocity_planner_common/trajectory_preprocessing.hpp>
 #include <autoware/universe_utils/ros/update_param.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
+#include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
-#include <lanelet2_extension/utility/message_conversion.hpp>
 #include <rclcpp/duration.hpp>
 #include <rclcpp/logging.hpp>
 

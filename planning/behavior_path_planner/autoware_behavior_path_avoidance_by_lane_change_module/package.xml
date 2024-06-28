@@ -22,10 +22,10 @@
   <depend>autoware_behavior_path_planner</depend>
   <depend>autoware_behavior_path_planner_common</depend>
   <depend>autoware_behavior_path_static_obstacle_avoidance_module</depend>
+  <depend>autoware_lanelet2_extension</depend>
   <depend>autoware_motion_utils</depend>
   <depend>autoware_rtc_interface</depend>
   <depend>autoware_universe_utils</depend>
-  <depend>lanelet2_extension</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>tier4_planning_msgs</depend>

@@ -14,7 +14,7 @@
 
 #include "pose_estimator_arbiter/switch_rule/vector_map_based_rule.hpp"
 
-#include <lanelet2_extension/utility/message_conversion.hpp>
+#include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 

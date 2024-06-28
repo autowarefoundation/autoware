@@ -24,13 +24,13 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_lanelet2_extension</depend>
   <depend>autoware_point_types</depend>
   <depend>autoware_universe_utils</depend>
   <depend>cgal</depend>
   <depend>cv_bridge</depend>
   <depend>diagnostic_updater</depend>
   <depend>image_transport</depend>
-  <depend>lanelet2_extension</depend>
   <depend>libopencv-dev</depend>
   <depend>libpcl-all-dev</depend>
   <depend>message_filters</depend>

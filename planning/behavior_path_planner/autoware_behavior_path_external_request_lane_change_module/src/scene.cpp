@@ -14,7 +14,7 @@
 
 #include "scene.hpp"
 
-#include <lanelet2_extension/utility/utilities.hpp>
+#include <autoware_lanelet2_extension/utility/utilities.hpp>
 
 #include <memory>
 

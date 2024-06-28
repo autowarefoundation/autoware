@@ -16,7 +16,7 @@
 #include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/drivable_area_expansion.hpp"
 #include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/path_projection.hpp"
 #include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/types.hpp"
-#include "lanelet2_extension/utility/message_conversion.hpp"
+#include "autoware_lanelet2_extension/utility/message_conversion.hpp"
 
 #include <gtest/gtest.h>
 #include <lanelet2_core/LaneletMap.h>

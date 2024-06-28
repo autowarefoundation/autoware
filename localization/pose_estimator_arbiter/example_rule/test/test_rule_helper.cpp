@@ -16,7 +16,7 @@
 #include "pose_estimator_arbiter/rule_helper/pcd_occupancy.hpp"
 #include "pose_estimator_arbiter/rule_helper/pose_estimator_area.hpp"
 
-#include <lanelet2_extension/utility/message_conversion.hpp>
+#include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 

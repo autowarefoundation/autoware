@@ -17,7 +17,7 @@
 #include "yabloc_common/ground_server/util.hpp"
 
 #include <Eigen/Eigenvalues>
-#include <lanelet2_extension/utility/message_conversion.hpp>
+#include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <yabloc_common/color.hpp>
 #include <yabloc_common/pub_sub.hpp>
 

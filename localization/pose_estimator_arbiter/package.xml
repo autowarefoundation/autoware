@@ -18,11 +18,11 @@
   <build_depend>autoware_cmake</build_depend>
 
   <depend>autoware_adapi_v1_msgs</depend>
+  <depend>autoware_lanelet2_extension</depend>
   <depend>autoware_map_msgs</depend>
   <depend>autoware_universe_utils</depend>
   <depend>diagnostic_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>lanelet2_extension</depend>
   <depend>magic_enum</depend>
   <depend>pcl_conversions</depend>
   <depend>pcl_ros</depend>

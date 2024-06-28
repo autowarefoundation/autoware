@@ -20,7 +20,7 @@
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>  // for toPolygon2d
 #include <autoware/universe_utils/geometry/geometry.hpp>
-#include <lanelet2_extension/utility/utilities.hpp>
+#include <autoware_lanelet2_extension/utility/utilities.hpp>
 #include <magic_enum.hpp>
 
 #include <boost/geometry/algorithms/correct.hpp>

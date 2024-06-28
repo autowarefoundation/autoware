@@ -17,6 +17,7 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_lanelet2_extension</depend>
   <depend>autoware_motion_utils</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_universe_utils</depend>
@@ -25,7 +26,6 @@
   <depend>eigen</depend>
   <depend>geometry_msgs</depend>
   <depend>glog</depend>
-  <depend>lanelet2_extension</depend>
   <depend>nav_msgs</depend>
   <depend>object_recognition_utils</depend>
   <depend>pluginlib</depend>

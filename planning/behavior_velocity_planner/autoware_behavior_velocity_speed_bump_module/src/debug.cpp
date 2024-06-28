@@ -19,7 +19,7 @@
 #include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
-#include <lanelet2_extension/regulatory_elements/speed_bump.hpp>
+#include <autoware_lanelet2_extension/regulatory_elements/speed_bump.hpp>
 
 #include <vector>
 

@@ -20,7 +20,7 @@
 #include "autoware/universe_utils/ros/debug_publisher.hpp"
 #include "autoware/universe_utils/system/stop_watch.hpp"
 
-#include <lanelet2_extension/utility/query.hpp>
+#include <autoware_lanelet2_extension/utility/query.hpp>
 #include <magic_enum.hpp>
 
 #include <boost/format.hpp>

@@ -18,7 +18,7 @@
 #include "util.hpp"
 
 #include <autoware/behavior_velocity_planner_common/scene_module_interface.hpp>
-#include <lanelet2_extension/regulatory_elements/speed_bump.hpp>
+#include <autoware_lanelet2_extension/regulatory_elements/speed_bump.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <utility>

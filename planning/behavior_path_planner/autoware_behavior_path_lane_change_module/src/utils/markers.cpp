@@ -18,7 +18,7 @@
 
 #include <autoware/behavior_path_lane_change_module/utils/markers.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
-#include <lanelet2_extension/visualization/visualization.hpp>
+#include <autoware_lanelet2_extension/visualization/visualization.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <geometry_msgs/msg/detail/pose__struct.hpp>

@@ -43,7 +43,7 @@ So, if the 4 vertices are considered as forming a tetrahedron and its volume exc
 
 ## Map specifications
 
-See <https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md#localization-landmarks>
+See <https://github.com/autowarefoundation/autoware_lanelet2_extension/blob/main/autoware_lanelet2_extension/docs/lanelet2_format_extension.md#localization-landmarks>
 
 ## About `consider_orientation`
 

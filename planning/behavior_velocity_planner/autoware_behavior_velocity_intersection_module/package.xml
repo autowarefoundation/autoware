@@ -19,6 +19,7 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_behavior_velocity_planner_common</depend>
+  <depend>autoware_lanelet2_extension</depend>
   <depend>autoware_motion_utils</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_planning_msgs</depend>
@@ -29,7 +30,6 @@
   <depend>fmt</depend>
   <depend>geometry_msgs</depend>
   <depend>interpolation</depend>
-  <depend>lanelet2_extension</depend>
   <depend>libopencv-dev</depend>
   <depend>magic_enum</depend>
   <depend>nav_msgs</depend>

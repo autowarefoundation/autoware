@@ -12,6 +12,7 @@
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
   <depend>autoware_grid_map_utils</depend>
+  <depend>autoware_lanelet2_extension</depend>
   <depend>autoware_motion_utils</depend>
   <depend>autoware_motion_velocity_planner_common</depend>
   <depend>autoware_perception_msgs</depend>
@@ -23,7 +24,6 @@
   <depend>grid_map_msgs</depend>
   <depend>grid_map_ros</depend>
   <depend>lanelet2_core</depend>
-  <depend>lanelet2_extension</depend>
   <depend>libboost-dev</depend>
   <depend>nav_msgs</depend>
   <depend>pcl_ros</depend>

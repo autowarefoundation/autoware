@@ -17,6 +17,7 @@
 
   <build_depend>rosidl_default_generators</build_depend>
 
+  <depend>autoware_lanelet2_extension</depend>
   <depend>autoware_map_msgs</depend>
   <depend>autoware_motion_utils</depend>
   <depend>autoware_motion_velocity_planner_common</depend>
@@ -27,7 +28,6 @@
   <depend>diagnostic_msgs</depend>
   <depend>eigen</depend>
   <depend>geometry_msgs</depend>
-  <depend>lanelet2_extension</depend>
   <depend>libboost-dev</depend>
   <depend>pcl_conversions</depend>
   <depend>pluginlib</depend>

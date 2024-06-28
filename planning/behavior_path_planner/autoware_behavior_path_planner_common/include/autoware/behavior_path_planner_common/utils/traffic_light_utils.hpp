@@ -15,9 +15,9 @@
 #define AUTOWARE__BEHAVIOR_PATH_PLANNER_COMMON__UTILS__TRAFFIC_LIGHT_UTILS_HPP_
 
 #include <autoware/behavior_path_planner_common/data_manager.hpp>
-#include <lanelet2_extension/utility/message_conversion.hpp>
-#include <lanelet2_extension/utility/query.hpp>
-#include <lanelet2_extension/utility/utilities.hpp>
+#include <autoware_lanelet2_extension/utility/message_conversion.hpp>
+#include <autoware_lanelet2_extension/utility/query.hpp>
+#include <autoware_lanelet2_extension/utility/utilities.hpp>
 
 #include <autoware_perception_msgs/msg/traffic_light_element.hpp>
 #include <autoware_perception_msgs/msg/traffic_light_group.hpp>

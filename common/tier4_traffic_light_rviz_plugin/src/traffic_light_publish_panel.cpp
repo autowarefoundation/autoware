@@ -22,9 +22,9 @@
 #include <QString>
 #include <QStringList>
 #include <QVBoxLayout>
-#include <lanelet2_extension/regulatory_elements/autoware_traffic_light.hpp>
-#include <lanelet2_extension/utility/message_conversion.hpp>
-#include <lanelet2_extension/utility/query.hpp>
+#include <autoware_lanelet2_extension/regulatory_elements/autoware_traffic_light.hpp>
+#include <autoware_lanelet2_extension/utility/message_conversion.hpp>
+#include <autoware_lanelet2_extension/utility/query.hpp>
 #include <rviz_common/display_context.hpp>
 
 #include <lanelet2_core/primitives/RegulatoryElement.h>

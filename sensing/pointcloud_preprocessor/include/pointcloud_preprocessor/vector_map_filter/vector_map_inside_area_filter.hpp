@@ -19,8 +19,8 @@
 #include "pointcloud_preprocessor/utility/utilities.hpp"
 
 #include <autoware/universe_utils/geometry/boost_geometry.hpp>
-#include <lanelet2_extension/utility/message_conversion.hpp>
-#include <lanelet2_extension/utility/query.hpp>
+#include <autoware_lanelet2_extension/utility/message_conversion.hpp>
+#include <autoware_lanelet2_extension/utility/query.hpp>
 
 #include <lanelet2_core/geometry/Polygon.h>
 

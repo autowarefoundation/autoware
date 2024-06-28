@@ -15,7 +15,7 @@
 #include "yabloc_common/ll2_decomposer/ll2_decomposer.hpp"
 
 #include <autoware/universe_utils/ros/marker_helper.hpp>
-#include <lanelet2_extension/utility/message_conversion.hpp>
+#include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <yabloc_common/pub_sub.hpp>
 
 #include <geometry_msgs/msg/polygon.hpp>

@@ -18,9 +18,9 @@
 
   <build_depend>eigen</build_depend>
 
+  <depend>autoware_lanelet2_extension</depend>
   <depend>autoware_map_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>lanelet2_extension</depend>
   <depend>localization_util</depend>
   <depend>rclcpp</depend>
   <depend>tf2_eigen</depend>

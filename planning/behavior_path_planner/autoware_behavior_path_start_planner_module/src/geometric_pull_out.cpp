@@ -20,7 +20,7 @@
 #include "autoware/behavior_path_start_planner_module/util.hpp"
 #include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
 
-#include <lanelet2_extension/utility/utilities.hpp>
+#include <autoware_lanelet2_extension/utility/utilities.hpp>
 
 using autoware::motion_utils::findNearestIndex;
 using autoware::universe_utils::calcDistance2d;

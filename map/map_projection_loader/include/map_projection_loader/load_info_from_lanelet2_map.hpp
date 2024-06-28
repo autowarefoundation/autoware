@@ -15,10 +15,10 @@
 #ifndef MAP_PROJECTION_LOADER__LOAD_INFO_FROM_LANELET2_MAP_HPP_
 #define MAP_PROJECTION_LOADER__LOAD_INFO_FROM_LANELET2_MAP_HPP_
 
-#include <lanelet2_extension/io/autoware_osm_parser.hpp>
-#include <lanelet2_extension/projection/mgrs_projector.hpp>
-#include <lanelet2_extension/utility/message_conversion.hpp>
-#include <lanelet2_extension/utility/utilities.hpp>
+#include <autoware_lanelet2_extension/io/autoware_osm_parser.hpp>
+#include <autoware_lanelet2_extension/projection/mgrs_projector.hpp>
+#include <autoware_lanelet2_extension/utility/message_conversion.hpp>
+#include <autoware_lanelet2_extension/utility/utilities.hpp>
 
 #include "tier4_map_msgs/msg/map_projector_info.hpp"
 
