@@ -142,19 +142,19 @@ jobs:
         id: get-modified-packages
         uses: autowarefoundation/autoware-github-actions/get-modified-packages@v1
 
-      - name: Get modified files
-        id: get-modified-files
+      - name: Get changed files (existing files only)
+        id: get-changed-files
         run: |
-          echo "changed_files=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD | grep -E '\.(cpp|hpp)$' | tr '\n' ' ' || true)" >> $GITHUB_OUTPUT
+          echo "changed-files=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD | grep -E '\.(cpp|hpp)$' | while read -r file; do [ -e "$file" ] && echo -n "$file "; done)" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Run clang-tidy
-        if: ${{ steps.get-modified-files.outputs.changed_files != '' }}
+        if: ${{ steps.get-changed-files.outputs.changed-files != '' }}
         uses: autowarefoundation/autoware-github-actions/clang-tidy@v1
         with:
           rosdistro: humble
           target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
-          target-files: ${{ steps.get-modified-files.outputs.changed_files }}
+          target-files: ${{ steps.get-changed-files.outputs.changed-files }}
           clang-tidy-config-url: https://raw.githubusercontent.com/autowarefoundation/autoware/main/.clang-tidy
           build-depends-repos: build_depends.repos
           cache-key-element: cuda
