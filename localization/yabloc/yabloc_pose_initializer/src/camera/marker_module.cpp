@@ -28,22 +28,22 @@ void MarkerModule::publish_marker(
   const std::vector<float> & scores, const std::vector<float> & angles,
   const Eigen::Vector3f & position)
 {
-  const int N = scores.size();
+  const int n = static_cast<int>(scores.size());
   auto minmax = std::minmax_element(scores.begin(), scores.end());
   auto normalize = [minmax](int score) -> float {
-    return static_cast<float>(score - *minmax.first) /
+    return static_cast<float>(static_cast<float>(score) - *minmax.first) /
            std::max(1e-4f, static_cast<float>(*minmax.second - *minmax.first));
   };
 
   MarkerArray array;
-  for (int i = 0; i < N; i++) {
+  for (int i = 0; i < n; i++) {
     Marker marker;
     marker.header.frame_id = "map";
     marker.type = Marker::ARROW;
     marker.id = i;
     marker.ns = "arrow";
-    marker.color =
-      static_cast<std_msgs::msg::ColorRGBA>(common::color_scale::rainbow(normalize(scores.at(i))));
+    marker.color = static_cast<std_msgs::msg::ColorRGBA>(
+      common::color_scale::rainbow(normalize(static_cast<int>(scores.at(i)))));
     marker.color.a = 0.5;
 
     marker.pose.position.x = position.x();

@@ -31,13 +31,13 @@ public:
   static void print_error_message(const rclcpp::Logger & logger);
 
 private:
-  cv::Mat make_blob(const cv::Mat & image);
+  static cv::Mat make_blob(const cv::Mat & image);
 
-  cv::Mat convert_blob_to_image(const cv::Mat & blob);
+  static cv::Mat convert_blob_to_image(const cv::Mat & blob);
 
-  cv::Mat normalize(const cv::Mat & mask, double score_threshold = 0.5);
+  static cv::Mat normalize(const cv::Mat & mask, double score_threshold = 0.5);
 
-  cv::Mat draw_overlay(const cv::Mat & image, const cv::Mat & segmentation);
+  static cv::Mat draw_overlay(const cv::Mat & image, const cv::Mat & segmentation);
 
   struct Impl;
   std::shared_ptr<Impl> impl_{nullptr};

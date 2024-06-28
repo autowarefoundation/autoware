@@ -65,9 +65,9 @@ private:
 
   void on_map(const LaneletMapBin & msg);
   void on_service(
-    const RequestPoseAlignment::Request::SharedPtr,
-    RequestPoseAlignment::Response::SharedPtr request);
-  PoseCovStamped create_rectified_initial_pose(
+    const RequestPoseAlignment::Request::SharedPtr request,
+    RequestPoseAlignment::Response::SharedPtr response);
+  static PoseCovStamped create_rectified_initial_pose(
     const Eigen::Vector3f & pos, double yaw_angle_rad, const PoseCovStamped & src_msg);
 
   std::optional<double> estimate_pose(

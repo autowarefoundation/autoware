@@ -32,7 +32,7 @@ namespace yabloc
 {
 CameraPoseInitializer::CameraPoseInitializer(const rclcpp::NodeOptions & options)
 : Node("camera_pose_initializer", options),
-  angle_resolution_(declare_parameter<int>("angle_resolution"))
+  angle_resolution_(static_cast<int>(declare_parameter<int>("angle_resolution")))
 {
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -62,7 +62,7 @@ CameraPoseInitializer::CameraPoseInitializer(const rclcpp::NodeOptions & options
   }
 }
 
-cv::Mat bitwise_and_3ch(const cv::Mat src1, const cv::Mat src2)
+cv::Mat bitwise_and_3ch(const cv::Mat & src1, const cv::Mat & src2)
 {
   std::vector<cv::Mat> src1_array;
   std::vector<cv::Mat> src2_array;
@@ -79,7 +79,7 @@ cv::Mat bitwise_and_3ch(const cv::Mat src1, const cv::Mat src2)
   return merged;
 }
 
-int count_non_zero(cv::Mat image_3ch)
+int count_non_zero(const cv::Mat & image_3ch)
 {
   std::vector<cv::Mat> images;
   cv::split(image_3ch, images);
@@ -153,13 +153,13 @@ std::optional<double> CameraPoseInitializer::estimate_pose(
     // consider lanelet direction
     float gain = 1;
     if (lane_angle_rad) {
-      gain = 2 + std::cos((lane_angle_rad.value() - angle_rad) / 2.0);
+      gain = static_cast<float>(2 + std::cos((lane_angle_rad.value() - angle_rad) / 2.0));
     }
     // If count_non_zero() returns 0 everywhere, the orientation is chosen by the only gain
-    const float score = gain * (1 + count_non_zero(dst));
+    const float score = gain * static_cast<float>(1 + count_non_zero(dst));
 
     scores.push_back(score);
-    angles_rad.push_back(angle_rad);
+    angles_rad.push_back(static_cast<float>(angle_rad));
   }
 
   marker_module_->publish_marker(scores, angles_rad, position);
@@ -176,7 +176,7 @@ void CameraPoseInitializer::on_map(const LaneletMapBin & msg)
   lane_image_ = std::make_unique<LaneImage>(lanelet_map);
 
   const_lanelets_.clear();
-  for (auto l : lanelet_map->laneletLayer) {
+  for (const auto & l : lanelet_map->laneletLayer) {
     const_lanelets_.push_back(l);
   }
 }
@@ -191,7 +191,9 @@ void CameraPoseInitializer::on_service(
   const auto query_pos = request->pose_with_covariance.pose.pose.position;
   const auto orientation = request->pose_with_covariance.pose.pose.orientation;
   const double yaw_std_rad = std::sqrt(query_pos_with_cov.pose.covariance.at(35));
-  const Eigen::Vector3f pos_vec3f(query_pos.x, query_pos.y, query_pos.z);
+  const Eigen::Vector3f pos_vec3f(
+    static_cast<float>(query_pos.x), static_cast<float>(query_pos.y),
+    static_cast<float>(query_pos.z));
   RCLCPP_INFO_STREAM(get_logger(), "Given initial position " << pos_vec3f.transpose());
 
   // Estimate orientation
