@@ -85,6 +85,20 @@ private:
     {tier4_perception_msgs::msg::TrafficLightElement::UNKNOWN, "unknown"},
   };
 
+  std::string extractShapeName(const std::string & label)
+  {
+    size_t start_pos = label.find('-');
+    if (start_pos != std::string::npos) {
+      start_pos++;                                  // Start after the hyphen
+      size_t end_pos = label.find(',', start_pos);  // Find the next comma after the hyphen
+      if (end_pos == std::string::npos) {  // If no comma is found, take the rest of the string
+        end_pos = label.length();
+      }
+      return label.substr(start_pos, end_pos - start_pos);
+    }
+    return "unknown";  // Return "unknown" if no hyphen is found
+  }
+
   bool createRect(
     cv::Mat & image, const tier4_perception_msgs::msg::TrafficLightRoi & tl_roi,
     const cv::Scalar & color);

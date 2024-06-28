@@ -8,6 +8,7 @@ find_package(OpenCV REQUIRED)
 
 ament_auto_add_library(traffic_light_roi_visualizer_nodelet SHARED
   src/traffic_light_roi_visualizer/nodelet.cpp
+  src/traffic_light_roi_visualizer/shape_draw.cpp
 )
 
 target_link_libraries(traffic_light_roi_visualizer_nodelet
@@ -22,6 +23,12 @@ rclcpp_components_register_node(traffic_light_roi_visualizer_nodelet
 ament_auto_add_executable(traffic_light_map_visualizer_node
   src/traffic_light_map_visualizer/node.cpp
   src/traffic_light_map_visualizer/main.cpp
+)
+
+# Copy the assets directory to the installation directory
+install(
+    DIRECTORY images/
+    DESTINATION share/${PROJECT_NAME}/images
 )
 
 ament_auto_package(
