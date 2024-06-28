@@ -26,7 +26,7 @@
   <arg name="sensor_model" description="sensor model name"/>
 
   <!-- Emergency handler will be replaced by MRM handler. -->
-  <arg name="use_emergency_handler" default="true" description="use emergency handler packages"/>
+  <arg name="use_emergency_handler" default="false" description="use emergency handler packages"/>
   <arg name="mrm_handler_param_path"/>
   <arg name="diagnostic_graph_aggregator_param_path"/>
   <arg name="diagnostic_graph_aggregator_graph_path"/>
