@@ -65,6 +65,10 @@ void SegmentPointCloudFusionNode::fuseOnSingleImage(
   if (mask.cols == 0 || mask.rows == 0) {
     return;
   }
+  const int orig_width = camera_info.width;
+  const int orig_height = camera_info.height;
+  // resize mask to the same size as the camera image
+  cv::resize(mask, mask, cv::Size(orig_width, orig_height), 0, 0, cv::INTER_NEAREST);
   image_geometry::PinholeCameraModel pinhole_camera_model;
   pinhole_camera_model.fromCameraInfo(camera_info);
 
