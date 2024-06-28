@@ -588,11 +588,11 @@ std::optional<Path> AEB::generateEgoPath(const Trajectory & predicted_traj)
 
   // create path
   Path path;
-  path.resize(predicted_traj.points.size());
+  path.reserve(predicted_traj.points.size());
   for (size_t i = 0; i < predicted_traj.points.size(); ++i) {
     geometry_msgs::msg::Pose map_pose;
     tf2::doTransform(predicted_traj.points.at(i).pose, map_pose, transform_stamped);
-    path.at(i) = map_pose;
+    path.push_back(map_pose);
 
     if (i * mpc_prediction_time_interval_ > mpc_prediction_time_horizon_) {
       break;
