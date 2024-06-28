@@ -74,11 +74,14 @@ void make_ego_footprint_rtree(EgoData & ego_data, const PlannerParam & params)
   for (const auto & p : ego_data.trajectory)
     ego_data.trajectory_footprints.push_back(autoware::universe_utils::toFootprint(
       p.pose, params.ego_longitudinal_offset, 0.0, params.ego_lateral_offset * 2.0));
+  std::vector<BoxIndexPair> rtree_nodes;
+  rtree_nodes.reserve(ego_data.trajectory_footprints.size());
   for (auto i = 0UL; i < ego_data.trajectory_footprints.size(); ++i) {
     const auto box = boost::geometry::return_envelope<autoware::universe_utils::Box2d>(
       ego_data.trajectory_footprints[i]);
-    ego_data.rtree.insert(std::make_pair(box, i));
+    rtree_nodes.push_back(std::make_pair(box, i));
   }
+  ego_data.rtree = Rtree(rtree_nodes);
 }
 
 }  // namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
