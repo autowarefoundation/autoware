@@ -23,7 +23,7 @@ nav:
     - 'Available Module':
         - 'Blind Spot': planning/behavior_velocity_planner/autoware_behavior_velocity_blind_spot_module
         - 'Crosswalk': planning/behavior_velocity_planner/autoware_behavior_velocity_crosswalk_module
-        - 'Detection Area': planning/behavior_velocity_detection_area_module
+        - 'Detection Area': planning/behavior_velocity_planner/autoware_behavior_velocity_detection_area_module
         - 'Intersection': planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module
         - 'No Drivable Lane': planning/behavior_velocity_planner/autoware_behavior_velocity_no_drivable_lane_module
         - 'No Stopping Area': planning/behavior_velocity_planner/autoware_behavior_velocity_no_stopping_area_module
@@ -64,7 +64,7 @@ nav:
       - 'About Motion Velocity Planner': planning/motion_velocity_planner/autoware_motion_velocity_planner_node/
       - 'Available Modules':
         - 'Dynamic Obstacle Stop': planning/motion_velocity_planner/autoware_motion_velocity_dynamic_obstacle_stop_module/
-        - 'Out of Lane': planning/motion_velocity_planner/autoware_motion_velocity_planner_out_of_lane_module/
+        - 'Out of Lane': planning/motion_velocity_planner/autoware_motion_velocity_out_of_lane_module/
         - 'Obstacle Velocity Limiter': planning/motion_velocity_planner/autoware_motion_velocity_obstacle_velocity_limiter_module/
     - 'Velocity Smoother':
       - 'About Velocity Smoother': planning/autoware_velocity_smoother
@@ -72,7 +72,7 @@ nav:
   - 'Scenario Selector': planning/autoware_scenario_selector
   - 'Static Centerline Generator': planning/autoware_static_centerline_generator
   - 'API and Library':
-    - 'Costmap Generator': planning/costmap_generator
+    - 'Costmap Generator': planning/autoware_costmap_generator
     - 'External Velocity Limit Selector': planning/autoware_external_velocity_limit_selector
     - 'Objects of Interest Marker Interface': planning/autoware_objects_of_interest_marker_interface
     - 'Route Handler': planning/autoware_route_handler
