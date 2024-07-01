@@ -73,6 +73,7 @@ jobs:
           fail_ci_if_error: false
           verbose: true
           flags: total-arm64
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Show disk space after the tasks
         run: df -h
