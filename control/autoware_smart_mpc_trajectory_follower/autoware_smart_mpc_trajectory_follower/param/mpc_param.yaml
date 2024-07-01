@@ -1,11 +1,11 @@
 mpc_parameter:
   system:
-    mode: mppi_ilqr # option: ilqr, mppi, mppi_ilqr
+    mode: ilqr # option: ilqr, mppi, mppi_ilqr
   mpc_setting:
     ctrl_time_step: 0.03333
     mpc_freq: 3
     N: 50
-    steer_ctrl_queue_size: 50
+    steer_ctrl_queue_size: 17
     steer_ctrl_queue_size_core: 15
     acc_ctrl_queue_size: 12
     nx_0: 6
@@ -14,21 +14,21 @@ mpc_parameter:
   cost_parameters:
     Q: [0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     Q_c: [1e+2, 1e+8, 1e+6, 1e+3, 1.0, 1.0, 1.0, 1.0]
-    Q_f: [1e+2, 1e+8, 1e+2, 1e+8, 1.0, 1.0, 1.0, 1.0]
+    Q_f: [1e+2, 1e+8, 1e+2, 1e+7, 1.0, 1.0, 1.0, 1.0]
     R: [10.0, 1000.0]
     acc_lim_weight: 100.0
     steer_lim_weight: 100.0
     acc_rate_lim_weight: 10000.0
     steer_rate_lim_weight: 10000.0
-    min_steer_rate_transform_for_start: 0.01
-    power_steer_rate_transform_for_start: 5
-    coef_steer_rate_transform_for_start: 3.0
-    min_loose_lateral_cost: 0.00001
-    power_loose_lateral_cost: 10
-    threshold_loose_lateral_cost: 0.2
-    min_loose_yaw_cost: 0.00001
-    power_loose_yaw_cost: 1
-    threshold_loose_yaw_cost: 0.1
+    vel_steer_cost_coef_table: [0.01, 0.01, 0.08, 0.36, 1.0]
+    vel_steer_table: [0.01, 0.1, 0.2, 0.27, 0.33]
+    lateral_cost_coef_table: [0.00001, 0.0005, 0.06, 0.27, 1.0]
+    lateral_error_table: [0.01, 0.1, 0.15, 0.175, 0.2]
+    yaw_cost_coef_table: [0.00001, 1.0]
+    yaw_error_table: [0.00001, 0.1]
+    steer_rate_cost_table: [10.0, 5.0, 1.0]
+    curvature_table: [0.01, 0.03, 0.05]
+    use_max_curvature: true
   ilqr:
     ls_step: 0.9
     max_iter_ls: 10
@@ -40,17 +40,31 @@ mpc_parameter:
     max_iter_mppi: 2
     sample_num: 100
     mppi_tol: 0.5
-    mppi_step: 20
+    mppi_step: 7
+  pure_pursuit:
+    acc_kp: 0.5
+    lookahead_time: 3.0
+    min_lookahead: 10.0
+    steer_kp_param: 2.0
+    steer_kd_param: 2.0
+  naive_pure_pursuit:
+    acc_kp: 0.5
+    lookahead_coef: 1.0
+    lookahead_intercept: 5.0
   preprocessing:
     reference_horizon: 50
     cap_pred_error: [0.5, 2.0]
     use_sg_for_nominal_inputs: true
     sg_deg_for_nominal_inputs: 0
     sg_window_size_for_nominal_inputs: 10
-  to_be_deprecated:
-    tighten_horizon: 20
-    min_tighten_steer_rate: 1.0
-    power_tighten_steer_rate_by_lateral_error: 1
-    threshold_tighten_steer_rate_by_lateral_error: 0.05
-    power_tighten_steer_rate_by_yaw_error: 1
-    threshold_tighten_steer_rate_by_yaw_error: 0.05
+  compensation:
+    acc_fb_decay: 0.1
+    acc_fb_gain: 1.0
+    acc_fb_sec_order_ratio: 1.0
+    max_error_acc: 1e-3
+    steer_fb_decay: 0.001
+    steer_fb_gain: 1.0
+    steer_fb_sec_order_ratio: 1.0
+    max_error_steer: 1e-2
+  limit:
+    read_limit_file: false

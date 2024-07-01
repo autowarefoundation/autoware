@@ -22,12 +22,34 @@ import glob
 import json
 import os
 from pathlib import Path
+import subprocess
 
 from autoware_smart_mpc_trajectory_follower.scripts import drive_functions
 import numpy as np
 import scipy.interpolate
 from scipy.ndimage import gaussian_filter
 from scipy.spatial.transform import Rotation
+from sklearn import linear_model
+from sklearn.preprocessing import PolynomialFeatures
+
+ctrl_index_for_polynomial_reg = np.concatenate(
+    (
+        np.arange(3),
+        3
+        + max(drive_functions.acc_delay_step - drive_functions.mpc_freq, 0)
+        + np.arange(drive_functions.mpc_freq),
+        3
+        + drive_functions.acc_ctrl_queue_size
+        + max(drive_functions.steer_delay_step - drive_functions.mpc_freq, 0)
+        + np.arange(drive_functions.mpc_freq),
+    )
+)
+
+
+if drive_functions.use_memory_for_training:
+    default_add_mode = "divide"
+else:
+    default_add_mode = "as_train"
 
 
 def data_smoothing(data: np.ndarray, sigma: float) -> np.ndarray:
@@ -53,19 +75,29 @@ class add_data_from_csv:
     """Class for loading csv files containing driving data, converting them into teacher data for the NN training, and storing them in lists."""
 
     X_input_list: list[np.ndarray]
-    """Input side of NN teacher data"""
+    """Input side of NN teacher data."""
 
     Y_output_list: list[np.ndarray]
-    """Output side of NN teacher data"""
+    """Output side of NN teacher data."""
 
-    def __init__(self):
+    def __init__(
+        self, alpha_1_for_polynomial_regression=0.1**5, alpha_2_for_polynomial_regression=0.1**5
+    ):
         self.X_input_list = []
         self.Y_output_list = []
+        self.X_val_list = []
+        self.Y_val_list = []
+        self.division_indices = []
+        self.division_indices_val = []
+        self.alpha_1_for_polynomial_regression = alpha_1_for_polynomial_regression
+        self.alpha_2_for_polynomial_regression = alpha_2_for_polynomial_regression
 
     def clear_data(self):
         """Clear the teacher data for the training."""
         self.X_input_list.clear()
         self.Y_output_list.clear()
+        self.X_val_list.clear()
+        self.Y_val_list.clear()
 
     def transform_rosbag_to_csv(self, dir_name: str, delete_csv_first: bool = True) -> None:
         """Convert rosbag file to CSV format."""
@@ -73,19 +105,20 @@ class add_data_from_csv:
         with open(package_path_json, "r") as file:
             package_path = json.load(file)
         dir_exe = os.getcwd()
-        os.system(
+        subprocess.run(
             "cp "
             + package_path["path"]
             + "/autoware_smart_mpc_trajectory_follower/training_and_data_check/rosbag2.bash "
-            + dir_name
+            + dir_name,
+            shell=True,
         )
         os.chdir(dir_name)
         if len(glob.glob("*.csv")) > 0 and delete_csv_first:
-            os.system("rm *.csv")
-        os.system("bash rosbag2.bash")
+            subprocess.run("rm *.csv", shell=True)
+        subprocess.run("bash rosbag2.bash", shell=True)
         os.chdir(dir_exe)
 
-    def add_data_from_csv(self, dir_name: str) -> None:
+    def add_data_from_csv(self, dir_name: str, add_mode=default_add_mode) -> None:
         """Adding teacher data for training from a CSV file."""
         acc_ctrl_queue_size = drive_functions.acc_ctrl_queue_size
         steer_ctrl_queue_size = drive_functions.steer_ctrl_queue_size
@@ -119,7 +152,7 @@ class add_data_from_csv:
         steer_sm = data_smoothing(steer, drive_functions.steer_sigma_for_learning)
 
         control_cmd = np.loadtxt(
-            dir_name + "/control_cmd_orig.csv", delimiter=",", usecols=[0, 1, 4, 9]
+            dir_name + "/control_cmd_orig.csv", delimiter=",", usecols=[0, 1, 8, 16]
         )
         acc_des = control_cmd[:, 3]
         acc_des_sm = data_smoothing(acc_des, drive_functions.acc_des_sigma_for_learning)
@@ -279,10 +312,30 @@ class add_data_from_csv:
         Y_smooth[:, 5] = data_smoothing(
             Y_output_list_array[:, 5], drive_functions.steer_out_sigma_for_learning
         )
+        if add_mode == "divide":
+            for i in range(len(X_input_list)):
+                if i < 3 * len(X_input_list) / 4:
+                    self.X_input_list.append(X_input_list[i])
+                    self.Y_output_list.append(Y_smooth[i])
+                else:
+                    self.X_val_list.append(X_input_list[i])
+                    self.Y_val_list.append(Y_smooth[i])
 
-        for i in range(len(X_input_list)):
-            self.X_input_list.append(X_input_list[i])
-            self.Y_output_list.append(Y_smooth[i])
+            self.division_indices.append(len(self.X_input_list))
+            self.division_indices_val.append(len(self.X_val_list))
+
+        elif add_mode == "as_train":
+            for i in range(len(X_input_list)):
+                self.X_input_list.append(X_input_list[i])
+                self.Y_output_list.append(Y_smooth[i])
+
+            self.division_indices.append(len(self.X_input_list))
+        if add_mode == "as_val":
+            for i in range(len(X_input_list)):
+                self.X_val_list.append(X_input_list[i])
+                self.Y_val_list.append(Y_smooth[i])
+
+            self.division_indices_val.append(len(self.X_val_list))
 
     def save_train_data(self, save_dir=".") -> None:
         """Save neural net teacher data."""
@@ -291,3 +344,126 @@ class add_data_from_csv:
             X_input=np.array(self.X_input_list),
             Y_output=np.array(self.Y_output_list),
         )
+
+    def get_polynomial_regression_result(
+        self,
+        X_input_list: list[np.ndarray],
+        Y_output_list: list[np.ndarray],
+        use_polynomial_reg: bool,
+        use_selected_polynomial: bool,
+        deg: int,
+        fit_intercept: bool,
+        use_intercept: bool,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Get the results of a polynomial regression."""
+        X_input = np.array(X_input_list)
+        Y_output = np.array(Y_output_list)
+        if use_selected_polynomial:
+            self.deg = 2
+        else:
+            self.deg = deg
+        self.A, self.b, Y_output_minus = polynomial_regression(
+            X_input,
+            Y_output,
+            self.alpha_1_for_polynomial_regression,
+            self.alpha_2_for_polynomial_regression,
+            use_polynomial_reg,
+            use_selected_polynomial,
+            self.deg,
+            fit_intercept,
+            use_intercept,
+        )
+        return X_input, Y_output_minus
+
+
+def polynomial_regression(
+    X,
+    Y,
+    alpha_1,
+    alpha_2,
+    use_polynomial_reg,
+    use_selected_polynomial,
+    deg,
+    fit_intercept,
+    use_intercept,
+    fit_acc_steer=False,
+):
+    polynomial_features = PolynomialFeatures(degree=deg, include_bias=False)
+    alpha = alpha_1 + alpha_2
+    if use_polynomial_reg:
+        if use_selected_polynomial:
+            clf_1 = linear_model.ElasticNet(
+                fit_intercept=fit_intercept, alpha=alpha, l1_ratio=alpha_1 / alpha, max_iter=100000
+            )
+            clf_2 = linear_model.ElasticNet(
+                fit_intercept=fit_intercept, alpha=alpha, l1_ratio=alpha_1 / alpha, max_iter=100000
+            )
+            clf_3 = linear_model.ElasticNet(
+                fit_intercept=fit_intercept, alpha=alpha, l1_ratio=alpha_1 / alpha, max_iter=100000
+            )
+            X_poly = polynomial_features.fit_transform(X[:, ctrl_index_for_polynomial_reg])
+            A = np.zeros((Y.shape[1], X_poly.shape[1]))
+            b = np.zeros(Y.shape[1])
+            clf_1.fit(X_poly[:, [0, ctrl_index_for_polynomial_reg.shape[0] + 2]], Y[:, [3]])
+            # clf_2.fit(X_poly[:, [1, 3,4,5]], Y[:, [4]])
+
+            acc_input_sum = np.zeros((3, 1))
+            acc_input_sum[0, 0] = drive_functions.ctrl_time_step / drive_functions.acc_time_constant
+            acc_input_sum[1, 0] = acc_input_sum[0, 0] * (1 - acc_input_sum[0, 0])
+            acc_input_sum[2, 0] = acc_input_sum[1, 0] * (1 - acc_input_sum[0, 0])
+            clf_2.fit(X_poly[:, [3, 4, 5]] @ acc_input_sum, Y[:, [4]])
+
+            # clf_3.fit(X_poly[:, [2, 6,7,8]], Y[:, [5]])
+
+            steer_input_sum = np.zeros((3, 1))
+            steer_input_sum[0, 0] = (
+                drive_functions.ctrl_time_step / drive_functions.steer_time_constant
+            )
+            steer_input_sum[1, 0] = steer_input_sum[0, 0] * (1 - steer_input_sum[0, 0])
+            steer_input_sum[2, 0] = steer_input_sum[1, 0] * (1 - steer_input_sum[0, 0])
+            clf_3.fit(X_poly[:, [6, 7, 8]] @ steer_input_sum, Y[:, [5]])
+
+            A[3, [0, ctrl_index_for_polynomial_reg.shape[0] + 2]] = clf_1.coef_
+            # A[4, [1, 3,4,5]] = clf_2.coef_
+            if fit_acc_steer:
+                A[4, [3, 4, 5]] = clf_2.coef_ * acc_input_sum.flatten()
+
+            # A[5, [2, 6,7,8]] = clf_3.coef_
+            if fit_acc_steer:
+                A[5, [6, 7, 8]] = clf_3.coef_ * steer_input_sum.flatten()
+
+            if fit_intercept:
+                b[3] = clf_1.intercept_
+                if fit_acc_steer:
+                    b[4] = clf_2.intercept_
+                    b[5] = clf_3.intercept_
+
+            if not use_intercept:
+                b = 0 * b
+            return A, b, Y - X_poly @ A.T - b
+        else:
+            clf = linear_model.ElasticNet(
+                fit_intercept=fit_intercept, alpha=alpha, l1_ratio=alpha_1 / alpha, max_iter=100000
+            )
+            X_poly = polynomial_features.fit_transform(X[:, ctrl_index_for_polynomial_reg])
+            clf.fit(X_poly, Y)
+            if fit_intercept:
+                if use_intercept:
+                    return (
+                        clf.coef_,
+                        clf.intercept_,
+                        Y - clf.predict(X_poly),
+                    )
+                else:
+                    return (
+                        clf.coef_,
+                        0 * clf.intercept_,
+                        Y - clf.predict(X_poly) + clf.intercept_,
+                    )
+            else:
+                return clf.coef_, np.zeros(Y.shape[1]), Y - clf.predict(X_poly)
+    else:
+        poly_dim = polynomial_features.fit_transform(
+            X[0, ctrl_index_for_polynomial_reg].reshape(1, -1)
+        ).shape[1]
+        return np.zeros((Y.shape[1], poly_dim)), np.zeros(Y.shape[1]), Y

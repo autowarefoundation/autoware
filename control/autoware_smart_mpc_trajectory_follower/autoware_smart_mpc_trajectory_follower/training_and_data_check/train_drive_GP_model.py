@@ -15,8 +15,10 @@
 # cspell: ignore lengthscale savez
 
 import GPy
+from autoware_smart_mpc_trajectory_follower.training_and_data_check import (
+    add_training_data_from_csv,
+)
 import numpy as np
-from smart_mpc_trajectory_follower.training_and_data_check import add_training_data_from_csv
 
 
 class train_drive_GP_model(add_training_data_from_csv.add_data_from_csv):

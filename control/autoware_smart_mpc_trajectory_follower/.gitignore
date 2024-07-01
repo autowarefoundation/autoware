@@ -1,3 +1,4 @@
 # Files generated when installing smart_mpc_trajectory_follower
 build/
 *.egg-info/
+.cspell.json

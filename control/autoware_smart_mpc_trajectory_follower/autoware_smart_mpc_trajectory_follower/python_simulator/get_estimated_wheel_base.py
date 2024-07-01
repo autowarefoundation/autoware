@@ -12,16 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Class for training neural nets from driving data."""
 from autoware_smart_mpc_trajectory_follower.scripts import drive_functions
-from autoware_smart_mpc_trajectory_follower.training_and_data_check import (
-    train_drive_NN_model_with_memory,
-)
-from autoware_smart_mpc_trajectory_follower.training_and_data_check import (
-    train_drive_NN_model_without_memory,
-)
+import numpy as np
 
-if drive_functions.use_memory_for_training:
-    train_drive_NN_model = train_drive_NN_model_with_memory.train_drive_NN_model_with_memory
-else:
-    train_drive_NN_model = train_drive_NN_model_without_memory.train_drive_NN_model_without_memory
+
+def get_estimated_wheel_base_coef(dir_name: str) -> float:
+    A = np.load(dir_name + "/polynomial_reg_info.npz")["A"]
+    estimated_wheel_base = 1 / (1 / drive_functions.L + A[3, 11])
+    print("estimated wheel base:", estimated_wheel_base)
+    return estimated_wheel_base / drive_functions.L

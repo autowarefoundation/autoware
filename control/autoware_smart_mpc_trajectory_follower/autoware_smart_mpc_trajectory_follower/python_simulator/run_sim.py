@@ -11,11 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-# cspell: ignore oneline
-
 import argparse
-from enum import Enum
+import datetime
 from importlib import reload as ir
 import json
 import os
@@ -23,19 +20,17 @@ import time
 import traceback
 from typing import Dict
 
+from assets import ChangeParam  # type: ignore
+from assets import ControlType
+from assets import DataCollectionMode
+from assets import DirGenerator
 from autoware_smart_mpc_trajectory_follower.training_and_data_check import train_drive_NN_model
 import numpy as np
-import python_simulator
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--param_name", default=None)
-args = parser.parse_args()
-
-P1 = 0.8
-P2 = 1.2
+import python_simulator  # type: ignore
 
 USE_TRAINED_MODEL_DIFF = True
-DATA_COLLECTION_MODE = "pp"  # option: "pp": pure_pursuit, "ff": feed_forward, "mpc": smart_mpc
+DATA_COLLECTION_MODE = DataCollectionMode.pp
+CONTROL_TYPE_TO_SKIP = [ControlType.pp_straight]
 USE_POLYNOMIAL_REGRESSION = True
 USE_SELECTED_POLYNOMIAL = True
 FORCE_NN_MODEL_TO_ZERO = False
@@ -45,93 +40,30 @@ FIT_INTERCEPT = True  # Should be True if FORCE_NN_MODEL_TO_ZERO is True
 USE_INTERCEPT = False  # Should be True if FORCE_NN_MODEL_TO_ZERO is True
 
 
-class ChangeParam(Enum):
-    """Parameters to be changed when running the simulation."""
-
-    steer_bias = [
-        -1.0 * np.pi / 180.0,
-        -0.8 * np.pi / 180.0,
-        -0.6 * np.pi / 180.0,
-        -0.4 * np.pi / 180.0,
-        -0.2 * np.pi / 180.0,
-        0.0,
-        0.2 * np.pi / 180.0,
-        0.4 * np.pi / 180.0,
-        0.6 * np.pi / 180.0,
-        0.8 * np.pi / 180.0,
-        1.0 * np.pi / 180.0,
-    ]
-    """steer midpoint (soft + hard)"""
-
-    steer_rate_lim = [0.020, 0.050, 0.100, 0.150, 0.200, 0.300, 0.400, 0.500]
-    """Maximum steer angular velocity"""
-
-    vel_rate_lim = [0.5, 1.0, 3.0, 5.0, 7.0, 9.0]
-    """Maximum acceleration/deceleration"""
-
-    wheel_base = [0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 7.0]
-    """wheel base"""
-
-    steer_dead_band = [0.0000, 0.0012, 0.0025, 0.0050, 0.01]
-    """steer dead band"""
-
-    adaptive_gear_ratio_coef = [
-        [15.713, 0.053, 0.042, 15.713, 0.053, 0.042],
-        [15.713, 0.053, 0.042, P1 * 15.713, 0.053, 0.042],
-        [15.713, 0.053, 0.042, P2 * 15.713, 0.053, 0.042],
-        [15.713, 0.053, 0.042, 15.713, P1 * 0.053, 0.042],
-        [15.713, 0.053, 0.042, P1 * 15.713, P1 * 0.053, 0.042],
-        [15.713, 0.053, 0.042, P2 * 15.713, P1 * 0.053, 0.042],
-        [15.713, 0.053, 0.042, 15.713, P2 * 0.053, 0.042],
-        [15.713, 0.053, 0.042, P1 * 15.713, P2 * 0.053, 0.042],
-        [15.713, 0.053, 0.042, P2 * 15.713, P2 * 0.053, 0.042],
-        [15.713, 0.053, 0.042, 15.713, 0.053, P1 * 0.042],
-        [15.713, 0.053, 0.042, P1 * 15.713, 0.053, P1 * 0.042],
-        [15.713, 0.053, 0.042, P2 * 15.713, 0.053, P1 * 0.042],
-        [15.713, 0.053, 0.042, 15.713, P1 * 0.053, P1 * 0.042],
-        [15.713, 0.053, 0.042, P1 * 15.713, P1 * 0.053, P1 * 0.042],
-        [15.713, 0.053, 0.042, P2 * 15.713, P1 * 0.053, P1 * 0.042],
-        [15.713, 0.053, 0.042, 15.713, P2 * 0.053, P1 * 0.042],
-        [15.713, 0.053, 0.042, P1 * 15.713, P2 * 0.053, P1 * 0.042],
-        [15.713, 0.053, 0.042, P2 * 15.713, P2 * 0.053, P1 * 0.042],
-        [15.713, 0.053, 0.042, 15.713, 0.053, P2 * 0.042],
-        [15.713, 0.053, 0.042, P1 * 15.713, 0.053, P2 * 0.042],
-        [15.713, 0.053, 0.042, P2 * 15.713, 0.053, P2 * 0.042],
-        [15.713, 0.053, 0.042, 15.713, P1 * 0.053, P2 * 0.042],
-        [15.713, 0.053, 0.042, P1 * 15.713, P1 * 0.053, P2 * 0.042],
-        [15.713, 0.053, 0.042, P2 * 15.713, P1 * 0.053, P2 * 0.042],
-        [15.713, 0.053, 0.042, 15.713, P2 * 0.053, P2 * 0.042],
-        [15.713, 0.053, 0.042, P1 * 15.713, P2 * 0.053, P2 * 0.042],
-        [15.713, 0.053, 0.042, P2 * 15.713, P2 * 0.053, P2 * 0.042],
-    ]
-    """velocity-dependent gear ratio"""
-
-    acc_time_delay = [0.00, 0.1, 0.27, 0.40, 0.60, 0.80, 1.01]
-    """acc time delay"""
-
-    steer_time_delay = [0.00, 0.1, 0.27, 0.40, 0.60, 0.80, 1.02]
-    """steer time delay"""
-
-    acc_time_constant = [0.01, 0.1, 0.20, 0.24, 0.40, 0.60, 0.80, 1.01]
-    """time constant"""
-
-    steer_time_constant = [0.01, 0.1, 0.20, 0.24, 0.40, 0.60, 0.80, 1.02]
-    """time constant"""
-
-    accel_map_scale = [0.2, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0]
-    """pedal - real acceleration correspondence"""
-
-    acc_scaling = [0.2, 0.5, 1.0, 2.0, 3.0, 4.0, 5.01]
-    """Acceleration scaling coefficient"""
-
-    steer_scaling = [0.2, 0.5, 1.0, 2.0, 3.0, 4.0, 5.02]
-    """Steer scaling coefficient"""
-
-    vehicle_type = [1, 2, 3, 4]
-    """change to other vehicle parameters"""
-
-
-def run_simulator(change_param: ChangeParam):
+def run_simulator(
+    change_param: ChangeParam,
+    root: str = ".",
+    batch_size=5,
+    patience_1=10,
+    patience_2=10,
+    acc_amp_range=0.05,
+    acc_period_range=[5.0, 20.0],
+    hidden_layer_sizes=(16, 16),
+    hidden_layer_lstm=8,
+    steer_amp_range=0.05,
+    steer_period_range=[5.0, 30.0],
+    acc_max=1.2,
+    constant_vel_time=5.0,
+    split_size=5,
+    step_response_max_input=0.01,
+    step_response_max_length=1.5,
+    step_response_start_time_ratio=0.0,
+    step_response_interval=5.0,
+    step_response_min_length=0.5,
+    use_memory_diff=True,  # False,
+    skip_data_collection=False,
+    smoothing_trajectory_data_flag=True,
+):
     """Run the simulator."""
     # initialize parameters
     print("reset sim_setting_json")
@@ -142,6 +74,8 @@ def run_simulator(change_param: ChangeParam):
     param_val_list = change_param.value
     start_time = time.time()
 
+    dir_generator = DirGenerator(root=root)
+
     for j in range(len(param_val_list)):
         i = j + 0
         with open("sim_setting.json", "r") as f:
@@ -151,28 +85,18 @@ def run_simulator(change_param: ChangeParam):
         with open("sim_setting.json", "w") as f:
             json.dump(data, f)
         ir(python_simulator)
+        training_data_dirs = []
+        val_data_dirs = []
 
         try:
             initial_error = np.array(
-                [0.001, 0.03, 0.01, -0.001, 0, 2 * python_simulator.measurement_steer_bias]
+                [0.001, 0.03, 0.01, 0.0, 0, python_simulator.measurement_steer_bias]
             )
-            if DATA_COLLECTION_MODE in ["ff", "pp"]:
-                if DATA_COLLECTION_MODE == "ff":
-                    save_dir = "test_feedforward_sim" + change_param.name + str(i)
-                else:
-                    save_dir = "test_pure_pursuit_sim" + change_param.name + str(i)
-                python_simulator.slalom_drive(
-                    save_dir=save_dir,
-                    control_type=DATA_COLLECTION_MODE,
-                    t_range=[0, 200.0],
-                    acc_width_range=0.005,
-                    acc_period_range=[5.0, 20.0],
-                    steer_width_range=0.005,
-                    steer_period_range=[5.0, 20.0],
-                    large_steer_width_range=0.05,
-                    large_steer_period_range=[10.0, 20.0],
-                    start_large_steer_time=150.0,
-                )
+            if DATA_COLLECTION_MODE in [
+                DataCollectionMode.ff,
+                DataCollectionMode.pp,
+                DataCollectionMode.npp,
+            ]:
                 if FORCE_NN_MODEL_TO_ZERO:
                     model_trainer = train_drive_NN_model.train_drive_NN_model()
                 else:
@@ -181,51 +105,108 @@ def run_simulator(change_param: ChangeParam):
                         alpha_2_for_polynomial_regression=0.1**5,
                     )
 
-                model_trainer.add_data_from_csv(save_dir)
-                start_time_learning = time.time()
-                model_trainer.get_trained_model(
-                    use_polynomial_reg=USE_POLYNOMIAL_REGRESSION,
-                    use_selected_polynomial=USE_SELECTED_POLYNOMIAL,
-                    force_NN_model_to_zero=FORCE_NN_MODEL_TO_ZERO,
-                    fit_intercept=FIT_INTERCEPT,
-                    use_intercept=USE_INTERCEPT,
-                )
-                learning_computation_time = time.time() - start_time_learning
-                model_trainer.plot_trained_result(save_dir=save_dir)
-                model_trainer.save_models(save_dir=save_dir)
+                for control_type in DATA_COLLECTION_MODE.toControlTypes():
+                    if control_type in CONTROL_TYPE_TO_SKIP:
+                        continue
+                    add_mode = ["as_val", "as_train"]
+                    y_length = 60.0
+                    x_length = 120.0
+                    initial_error_diff = np.zeros(6)
+                    if control_type == ControlType.pp_eight:
+                        initial_error_diff[0] = -(x_length - y_length) / 4.0
+                        initial_error_diff[1] = -y_length / 4.0
+                    else:
+                        initial_error_diff[1] = -0.05
+                    for k in range(2):
+                        save_dir = dir_generator.test_dir_name(
+                            control_type=control_type,
+                            change_param=change_param,
+                            index=i,
+                            validation_flag=(1 - k),
+                        )
+                        if not skip_data_collection:
+                            python_simulator.drive_sim(
+                                save_dir=save_dir,
+                                control_type=control_type,
+                                seed=k + 1,
+                                t_range=[0, 900.0],
+                                acc_amp_range=acc_amp_range,
+                                acc_period_range=acc_period_range,
+                                steer_amp_range=steer_amp_range,
+                                steer_period_range=steer_period_range,
+                                large_steer_amp_range=0.0,
+                                large_steer_period_range=[10.0, 20.0],
+                                start_large_steer_time=150.0,
+                                acc_max=acc_max,
+                                constant_vel_time=constant_vel_time,
+                                split_size=split_size,
+                                y_length=(0.9 ** (1 - k)) * y_length,
+                                x_length=(0.9 ** (1 - k)) * x_length,
+                                step_response_max_input=step_response_max_input,
+                                step_response_max_length=step_response_max_length,
+                                step_response_start_time_ratio=step_response_start_time_ratio,
+                                step_response_interval=step_response_interval,
+                                step_response_min_length=step_response_min_length,
+                                initial_error=initial_error + (1 - k) * initial_error_diff,
+                                smoothing_trajectory_data_flag=smoothing_trajectory_data_flag,
+                            )
+                            model_trainer.add_data_from_csv(save_dir, add_mode=add_mode[k])
+                        if k == 0:
+                            val_data_dirs.append(save_dir)
+                        else:
+                            training_data_dirs.append(save_dir)
+
+                if not skip_data_collection:
+                    start_time_learning = time.time()
+                    model_trainer.get_trained_model(
+                        use_polynomial_reg=USE_POLYNOMIAL_REGRESSION,
+                        use_selected_polynomial=USE_SELECTED_POLYNOMIAL,
+                        force_NN_model_to_zero=FORCE_NN_MODEL_TO_ZERO,
+                        fit_intercept=FIT_INTERCEPT,
+                        use_intercept=USE_INTERCEPT,
+                        hidden_layer_sizes=hidden_layer_sizes,
+                        hidden_layer_lstm=hidden_layer_lstm,
+                        batch_size=batch_size,
+                        patience=patience_1,
+                    )
+                    learning_computation_time = time.time() - start_time_learning
+                    model_trainer.plot_trained_result(save_dir=save_dir)
+                    model_trainer.save_models(save_dir=save_dir)
+                    print("learning_computation_time:", learning_computation_time)
+                    f = open(
+                        save_dir
+                        + f"/computational_time_learning_from_{DATA_COLLECTION_MODE}_data.txt",
+                        "w",
+                    )
+                    f.write(str(learning_computation_time))
+                    f.close()
                 load_dir = save_dir
-                if DATA_COLLECTION_MODE == "ff":
-                    save_dir = "test_python_ff_aided_sim_" + change_param.name + str(i)
-                elif DATA_COLLECTION_MODE == "pp":
-                    save_dir = "test_python_pp_aided_sim_" + change_param.name + str(i)
-                auto_test_performance_result_list = python_simulator.slalom_drive(
+                save_dir = dir_generator.test_dir_name(
+                    data_collection_mode=DATA_COLLECTION_MODE,
+                    change_param=change_param,
+                    index=i,
+                    use_memory_diff=use_memory_diff,
+                )
+                auto_test_performance_result_list = python_simulator.drive_sim(
                     load_dir=load_dir,
                     save_dir=save_dir,
                     use_trained_model=True,
                     use_trained_model_diff=USE_TRAINED_MODEL_DIFF,
                     initial_error=initial_error,
+                    use_memory_diff=use_memory_diff,
                 )
+                training_data_dirs.append(save_dir)
 
-                print("learning_computation_time:", learning_computation_time)
-                if DATA_COLLECTION_MODE == "ff":
-                    f = open(save_dir + "/computational_time_learning_from_ff_data.txt", "w")
-                    f.write(str(learning_computation_time))
-                    f.close()
-                    f = open(
-                        "auto_test_result_intermediate_model_control_trained_with_data_collected_by_ff_control.csv",
-                        mode="a",
-                    )
-                elif DATA_COLLECTION_MODE == "pp":
-                    f = open(save_dir + "/computational_time_learning_from_pp_data.txt", "w")
-                    f.write(str(learning_computation_time))
-                    f.close()
-                    f = open(
-                        "auto_test_result_intermediate_model_control_trained_with_data_collected_by_pp_control.csv",
-                        mode="a",
-                    )
+                f = open(
+                    f"auto_test_result_intermediate_model_control_trained_with_data_collected_by_{control_type}_control.csv",
+                    mode="a",
+                )
             else:
-                save_dir = "test_python_sim_" + change_param.name + str(i)
-                auto_test_performance_result_list = python_simulator.slalom_drive(
+                save_dir = dir_generator.test_dir_name(
+                    change_param=change_param,
+                    index=i,
+                )
+                auto_test_performance_result_list = python_simulator.drive_sim(
                     save_dir=save_dir,
                     initial_error=initial_error,
                 )
@@ -236,7 +217,7 @@ def run_simulator(change_param: ChangeParam):
                 str(param_val_list[j]).replace(",", "_"),
                 *auto_test_performance_result_list,
                 sep=",",
-                file=f
+                file=f,
             )
             f.close()
 
@@ -246,10 +227,16 @@ def run_simulator(change_param: ChangeParam):
             if not skip_learning_for_developing_testcase:
                 ir(train_drive_NN_model)
                 model_trainer = train_drive_NN_model.train_drive_NN_model()
-                learning_computation_time = None
-                if DATA_COLLECTION_MODE in ["ff", "pp"]:
-                    model_trainer.add_data_from_csv(load_dir)
-                    model_trainer.add_data_from_csv(save_dir)
+                learning_computation_time = None  # type: ignore
+                if DATA_COLLECTION_MODE in [
+                    DataCollectionMode.ff,
+                    DataCollectionMode.pp,
+                    DataCollectionMode.npp,
+                ]:
+                    for dir_name in val_data_dirs:
+                        model_trainer.add_data_from_csv(dir_name, add_mode="as_val")
+                    for dir_name in training_data_dirs:
+                        model_trainer.add_data_from_csv(dir_name, add_mode="as_train")
                     start_time_learning = time.time()
                     model_trainer.update_saved_trained_model(
                         path=load_dir + "/model_for_test_drive.pth",
@@ -258,16 +245,25 @@ def run_simulator(change_param: ChangeParam):
                         force_NN_model_to_zero=FORCE_NN_MODEL_TO_ZERO,
                         fit_intercept=FIT_INTERCEPT,
                         use_intercept=USE_INTERCEPT,
+                        batch_size=batch_size,
+                        patience=patience_2,
                     )
                     learning_computation_time = time.time() - start_time_learning
                     model_trainer.plot_trained_result(save_dir=save_dir)
                     model_trainer.save_models(save_dir=save_dir)
-                    if DATA_COLLECTION_MODE == "ff":
-                        load_dir = "test_python_ff_aided_sim_" + change_param.name + str(i)
-                        save_dir = "test_python_ff_aided_sim_trained_" + change_param.name + str(i)
-                    elif DATA_COLLECTION_MODE == "pp":
-                        load_dir = "test_python_pp_aided_sim_" + change_param.name + str(i)
-                        save_dir = "test_python_pp_aided_sim_trained_" + change_param.name + str(i)
+                    load_dir = dir_generator.test_dir_name(
+                        data_collection_mode=DATA_COLLECTION_MODE,
+                        change_param=change_param,
+                        index=i,
+                        use_memory_diff=use_memory_diff,
+                    )
+                    save_dir = dir_generator.test_dir_name(
+                        data_collection_mode=DATA_COLLECTION_MODE,
+                        trained=True,
+                        change_param=change_param,
+                        index=i,
+                        use_memory_diff=use_memory_diff,
+                    )
                 else:
                     model_trainer.add_data_from_csv(save_dir)
                     start_time_learning = time.time()
@@ -277,20 +273,35 @@ def run_simulator(change_param: ChangeParam):
                         force_NN_model_to_zero=FORCE_NN_MODEL_TO_ZERO,
                         fit_intercept=FIT_INTERCEPT,
                         use_intercept=USE_INTERCEPT,
+                        hidden_layer_sizes=hidden_layer_sizes,
+                        hidden_layer_lstm=hidden_layer_lstm,
+                        batch_size=batch_size,
+                        patience=patience_1,
                     )
                     learning_computation_time = time.time() - start_time_learning
                     model_trainer.plot_trained_result(save_dir=save_dir)
                     model_trainer.save_models(save_dir=save_dir)
 
-                    load_dir = "test_python_sim_" + change_param.name + str(i)
-                    save_dir = "test_python_sim_trained_" + change_param.name + str(i)
-                auto_test_performance_result_list = python_simulator.slalom_drive(
+                    load_dir = dir_generator.test_dir_name(
+                        change_param=change_param,
+                        index=i,
+                        use_memory_diff=use_memory_diff,
+                    )
+                    save_dir = dir_generator.test_dir_name(
+                        trained=True,
+                        change_param=change_param,
+                        index=i,
+                        use_memory_diff=use_memory_diff,
+                    )
+                auto_test_performance_result_list = python_simulator.drive_sim(
                     load_dir=load_dir,
                     use_trained_model=True,
                     use_trained_model_diff=USE_TRAINED_MODEL_DIFF,
                     save_dir=save_dir,
                     initial_error=initial_error,
+                    use_memory_diff=use_memory_diff,
                 )
+                # cSpell:ignore oneline
                 print("learning_computation_time: ", learning_computation_time)
                 f = open(save_dir + "/test_info.txt", "w")
                 f.write("commit id: " + str(os.popen("git log --oneline -1").read()) + "\n")
@@ -307,55 +318,33 @@ def run_simulator(change_param: ChangeParam):
                 f.write("USE_INTERCEPT: " + str(USE_INTERCEPT) + "\n")
                 f.close()
 
-                if DATA_COLLECTION_MODE == "ff":
-                    f = open(
-                        "auto_test_result_final_model_control_trained_with_data_collected_by_ff_control.csv",
-                        mode="a",
-                    )
-                elif DATA_COLLECTION_MODE == "pp":
-                    f = open(
-                        "auto_test_result_final_model_control_trained_with_data_collected_by_pp_control.csv",
-                        mode="a",
-                    )
-                else:
-                    f = open(
-                        "auto_test_result_final_model_control_trained_with_data_collected_by_nominal_control.csv",
-                        mode="a",
-                    )
+                f = open(
+                    f"auto_test_result_final_model_control_trained_with_data_collected_by_{DATA_COLLECTION_MODE}_control.csv",
+                    mode="a",
+                )
                 print(
                     change_param.name,
                     str(param_val_list[j]).replace(",", "_"),
                     *auto_test_performance_result_list,
                     sep=",",
-                    file=f
+                    file=f,
                 )
                 f.close()
             print("experiment success")
         except Exception:
             print("# Catch Exception #")
-            print(traceback.print_exc())
+            traceback.print_exc()
             auto_test_performance_result_list = [1e16] * 11
-            if DATA_COLLECTION_MODE == "ff":
-                f = open(
-                    "auto_test_result_final_model_control_trained_with_data_collected_by_ff_control.csv",
-                    mode="a",
-                )
-            elif DATA_COLLECTION_MODE == "pp":
-                f = open(
-                    "auto_test_result_final_model_control_trained_with_data_collected_by_pp_control.csv",
-                    mode="a",
-                )
-            else:
-                f = open(
-                    "auto_test_result_final_model_control_trained_with_data_collected_by_nominal_control.csv",
-                    mode="a",
-                )
+            f = open(
+                f"auto_test_result_final_model_control_trained_with_data_collected_by_{DATA_COLLECTION_MODE}_control.csv",
+                mode="a",
+            )
             print(
                 change_param.name,
                 str(param_val_list[j]).replace(",", "_"),
                 *auto_test_performance_result_list,
                 sep=",",
-                file=f
+                file=f,
             )
             f.close()
             print("experiment failure")
@@ -373,20 +362,29 @@ def yes_no_input():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--param_name", default=None)
+    parser.add_argument("--root", default=".")
+    args = parser.parse_args()
+
+    if args.root == "time":
+        args.root = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        args.root = "test_run_sim_" + args.root
+
     if args.param_name is None:
         print("Do you want to run the simulation for all parameters at once?")
         if yes_no_input():
             for _, change_param in ChangeParam.__members__.items():
-                run_simulator(change_param)
+                run_simulator(change_param, root=args.root)
         else:
             print("Enter the name of the parameter for which the simulation is to be run.")
             input_string = input()
             for name, change_param in ChangeParam.__members__.items():
                 if name == input_string:
-                    run_simulator(change_param)
+                    run_simulator(change_param, root=args.root)
                     break
     else:
         for name, change_param in ChangeParam.__members__.items():
             if name == args.param_name:
-                run_simulator(change_param)
+                run_simulator(change_param, root=args.root)
                 break

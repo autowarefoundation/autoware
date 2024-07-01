@@ -116,53 +116,40 @@ acc_delay_step = min(round(acc_time_delay / ctrl_time_step), acc_ctrl_queue_size
 acc_time_constant = float(nominal_param["nominal_parameter"]["acceleration"]["acc_time_constant"])
 
 steer_time_delay = float(nominal_param["nominal_parameter"]["steering"]["steer_time_delay"])
-steer_delay_step = min(
-    round(steer_time_delay / ctrl_time_step), steer_ctrl_queue_size_core - mpc_freq
-)
+steer_delay_step = min(round(steer_time_delay / ctrl_time_step), steer_ctrl_queue_size - mpc_freq)
 steer_time_constant = float(nominal_param["nominal_parameter"]["steering"]["steer_time_constant"])
 
-min_steer_rate_transform_for_start = float(
-    mpc_param["mpc_parameter"]["cost_parameters"]["min_steer_rate_transform_for_start"]
+
+vel_steer_cost_coef_table = np.array(
+    mpc_param["mpc_parameter"]["cost_parameters"]["vel_steer_cost_coef_table"], dtype=float
 )
-power_steer_rate_transform_for_start = int(
-    mpc_param["mpc_parameter"]["cost_parameters"]["power_steer_rate_transform_for_start"]
-)
-coef_steer_rate_transform_for_start = float(
-    mpc_param["mpc_parameter"]["cost_parameters"]["coef_steer_rate_transform_for_start"]
+vel_steer_table = np.array(
+    mpc_param["mpc_parameter"]["cost_parameters"]["vel_steer_table"], dtype=float
 )
 
-min_tighten_steer_rate = float(
-    mpc_param["mpc_parameter"]["to_be_deprecated"]["min_tighten_steer_rate"]
-)
-power_tighten_steer_rate_by_lateral_error = int(
-    mpc_param["mpc_parameter"]["to_be_deprecated"]["power_tighten_steer_rate_by_lateral_error"]
-)
-threshold_tighten_steer_rate_by_lateral_error = float(
-    mpc_param["mpc_parameter"]["to_be_deprecated"]["threshold_tighten_steer_rate_by_lateral_error"]
-)
-power_tighten_steer_rate_by_yaw_error = int(
-    mpc_param["mpc_parameter"]["to_be_deprecated"]["power_tighten_steer_rate_by_yaw_error"]
-)
-threshold_tighten_steer_rate_by_yaw_error = float(
-    mpc_param["mpc_parameter"]["to_be_deprecated"]["threshold_tighten_steer_rate_by_yaw_error"]
-)
-tighten_horizon = int(mpc_param["mpc_parameter"]["to_be_deprecated"]["tighten_horizon"])
 
-min_loose_lateral_cost = float(
-    mpc_param["mpc_parameter"]["cost_parameters"]["min_loose_lateral_cost"]
+lateral_cost_coef_table = np.array(
+    mpc_param["mpc_parameter"]["cost_parameters"]["lateral_cost_coef_table"], dtype=float
 )
-power_loose_lateral_cost = int(
-    mpc_param["mpc_parameter"]["cost_parameters"]["power_loose_lateral_cost"]
+lateral_error_table = np.array(
+    mpc_param["mpc_parameter"]["cost_parameters"]["lateral_error_table"], dtype=float
 )
-threshold_loose_lateral_cost = float(
-    mpc_param["mpc_parameter"]["cost_parameters"]["threshold_loose_lateral_cost"]
+yaw_cost_coef_table = np.array(
+    mpc_param["mpc_parameter"]["cost_parameters"]["yaw_cost_coef_table"], dtype=float
+)
+yaw_error_table = np.array(
+    mpc_param["mpc_parameter"]["cost_parameters"]["yaw_error_table"], dtype=float
 )
 
-min_loose_yaw_cost = float(mpc_param["mpc_parameter"]["cost_parameters"]["min_loose_yaw_cost"])
-power_loose_yaw_cost = int(mpc_param["mpc_parameter"]["cost_parameters"]["power_loose_yaw_cost"])
-threshold_loose_yaw_cost = float(
-    mpc_param["mpc_parameter"]["cost_parameters"]["threshold_loose_yaw_cost"]
+
+steer_rate_cost_table = np.array(
+    mpc_param["mpc_parameter"]["cost_parameters"]["steer_rate_cost_table"], dtype=float
 )
+curvature_table = np.array(
+    mpc_param["mpc_parameter"]["cost_parameters"]["curvature_table"], dtype=float
+)
+
+use_max_curvature = str(mpc_param["mpc_parameter"]["cost_parameters"]["use_max_curvature"])
 
 use_sg_for_nominal_inputs = bool(
     mpc_param["mpc_parameter"]["preprocessing"]["use_sg_for_nominal_inputs"]
@@ -173,6 +160,20 @@ sg_deg_for_nominal_inputs = int(
 sg_window_size_for_nominal_inputs = int(
     mpc_param["mpc_parameter"]["preprocessing"]["sg_window_size_for_nominal_inputs"]
 )
+
+acc_fb_decay = float(mpc_param["mpc_parameter"]["compensation"]["acc_fb_decay"])
+acc_fb_gain = float(mpc_param["mpc_parameter"]["compensation"]["acc_fb_gain"])
+acc_fb_sec_order_ratio = float(mpc_param["mpc_parameter"]["compensation"]["acc_fb_sec_order_ratio"])
+max_error_acc = float(mpc_param["mpc_parameter"]["compensation"]["max_error_acc"])
+
+steer_fb_decay = float(mpc_param["mpc_parameter"]["compensation"]["steer_fb_decay"])
+steer_fb_gain = float(mpc_param["mpc_parameter"]["compensation"]["steer_fb_gain"])
+steer_fb_sec_order_ratio = float(
+    mpc_param["mpc_parameter"]["compensation"]["steer_fb_sec_order_ratio"]
+)
+max_error_steer = float(mpc_param["mpc_parameter"]["compensation"]["max_error_steer"])
+
+
 trained_model_param_path = (
     package_path["path"] + "/autoware_smart_mpc_trajectory_follower/param/trained_model_param.yaml"
 )
@@ -180,6 +181,16 @@ with open(trained_model_param_path, "r") as yml:
     trained_model_param = yaml.safe_load(yml)
 use_trained_model_diff = bool(
     trained_model_param["trained_model_parameter"]["control_application"]["use_trained_model_diff"]
+)
+minimum_steer_diff = float(
+    trained_model_param["trained_model_parameter"]["control_application"]["minimum_steer_diff"]
+)
+use_memory_diff = bool(
+    trained_model_param["trained_model_parameter"]["memory_for_training"]["use_memory_diff"]
+)
+
+reflect_only_poly_diff = bool(
+    trained_model_param["trained_model_parameter"]["control_application"]["reflect_only_poly_diff"]
 )
 use_sg_for_trained_model_diff = bool(
     trained_model_param["trained_model_parameter"]["control_application"][
@@ -197,6 +208,18 @@ sg_window_size_for_trained_model_diff = int(
     ]
 )
 
+use_sg_for_memory_diff = bool(
+    trained_model_param["trained_model_parameter"]["memory_for_training"]["use_sg_for_memory_diff"]
+)
+sg_deg_for_trained_model_diff = int(
+    trained_model_param["trained_model_parameter"]["memory_for_training"]["sg_deg_for_memory_diff"]
+)
+sg_window_size_for_memory_diff = int(
+    trained_model_param["trained_model_parameter"]["memory_for_training"][
+        "sg_window_size_for_memory_diff"
+    ]
+)
+
 use_sg_for_noise = bool(
     trained_model_param["trained_model_parameter"]["control_application"]["use_sg_for_noise"]
 )
@@ -209,6 +232,9 @@ sg_window_size_for_noise = int(
     ]
 )
 
+use_memory_for_training = bool(
+    trained_model_param["trained_model_parameter"]["memory_for_training"]["use_memory_for_training"]
+)
 
 load_dir = os.environ["HOME"]
 save_dir = os.environ["HOME"]  # +"/autoware"
@@ -282,6 +308,66 @@ steer_out_sigma_for_learning = float(
 )
 
 
+vel_normalize = float(trained_model_param["trained_model_parameter"]["normalize"]["vel_normalize"])
+acc_normalize = float(trained_model_param["trained_model_parameter"]["normalize"]["acc_normalize"])
+steer_normalize = float(
+    trained_model_param["trained_model_parameter"]["normalize"]["steer_normalize"]
+)
+
+NN_x_weight = float(trained_model_param["trained_model_parameter"]["weight"]["NN_x_weight"])
+NN_y_weight = float(trained_model_param["trained_model_parameter"]["weight"]["NN_y_weight"])
+NN_v_weight = float(trained_model_param["trained_model_parameter"]["weight"]["NN_v_weight"])
+NN_yaw_weight = float(trained_model_param["trained_model_parameter"]["weight"]["NN_yaw_weight"])
+NN_acc_weight = float(trained_model_param["trained_model_parameter"]["weight"]["NN_acc_weight"])
+NN_steer_weight = float(trained_model_param["trained_model_parameter"]["weight"]["NN_steer_weight"])
+
+NN_x_weight_diff = float(
+    trained_model_param["trained_model_parameter"]["weight"]["NN_x_weight_diff"]
+)
+NN_y_weight_diff = float(
+    trained_model_param["trained_model_parameter"]["weight"]["NN_y_weight_diff"]
+)
+NN_v_weight_diff = float(
+    trained_model_param["trained_model_parameter"]["weight"]["NN_v_weight_diff"]
+)
+NN_yaw_weight_diff = float(
+    trained_model_param["trained_model_parameter"]["weight"]["NN_yaw_weight_diff"]
+)
+NN_acc_weight_diff = float(
+    trained_model_param["trained_model_parameter"]["weight"]["NN_acc_weight_diff"]
+)
+NN_steer_weight_diff = float(
+    trained_model_param["trained_model_parameter"]["weight"]["NN_steer_weight_diff"]
+)
+
+NN_x_weight_two_diff = float(
+    trained_model_param["trained_model_parameter"]["weight"]["NN_x_weight_two_diff"]
+)
+NN_y_weight_two_diff = float(
+    trained_model_param["trained_model_parameter"]["weight"]["NN_y_weight_two_diff"]
+)
+NN_v_weight_two_diff = float(
+    trained_model_param["trained_model_parameter"]["weight"]["NN_v_weight_two_diff"]
+)
+NN_yaw_weight_two_diff = float(
+    trained_model_param["trained_model_parameter"]["weight"]["NN_yaw_weight_two_diff"]
+)
+NN_acc_weight_two_diff = float(
+    trained_model_param["trained_model_parameter"]["weight"]["NN_acc_weight_two_diff"]
+)
+NN_steer_weight_two_diff = float(
+    trained_model_param["trained_model_parameter"]["weight"]["NN_steer_weight_two_diff"]
+)
+
+finalize_x_weight = float(
+    trained_model_param["trained_model_parameter"]["weight"]["finalize_x_weight"]
+)
+finalize_y_weight = float(
+    trained_model_param["trained_model_parameter"]["weight"]["finalize_y_weight"]
+)
+finalize_v_weight = float(
+    trained_model_param["trained_model_parameter"]["weight"]["finalize_v_weight"]
+)
 # upper limit of input
 
 
@@ -293,40 +379,52 @@ for i in range(len(package_path_split)):
         break
     control_dir_path += "/"
 
-limit_yaml_path = None
-for curDir, dirs, files in os.walk(control_dir_path):
-    for name in files:
-        if name == "vehicle_cmd_gate.param.yaml":
-            if curDir.split("/")[-2] == "autoware_vehicle_cmd_gate":
-                limit_yaml_path = curDir + "/" + name
-                break
+read_limit_file = bool(mpc_param["mpc_parameter"]["limit"]["read_limit_file"])
+if read_limit_file:
+    limit_yaml_path = None
+    for curDir, dirs, files in os.walk(control_dir_path):
+        for name in files:
+            if name == "vehicle_cmd_gate.param.yaml":
+                if curDir.split("/")[-2] == "autoware_vehicle_cmd_gate":
+                    limit_yaml_path = curDir + "/" + name
+                    break
 
-limit_params = None
-if limit_yaml_path is not None:
-    with open(limit_yaml_path, "r") as yml:
-        limit_params = yaml.safe_load(yml)
-else:
-    print("Error: limit_yaml_path is None")
+    limit_params = None
+    if limit_yaml_path is not None:
+        with open(limit_yaml_path, "r") as yml:
+            limit_params = yaml.safe_load(yml)
+    else:
+        print("Error: limit_yaml_path is None")
 
-if limit_params is not None:
-    reference_speed_points = np.array(
-        limit_params["/**"]["ros__parameters"]["nominal"]["reference_speed_points"]
-    )
-    steer_lim_points = np.array(limit_params["/**"]["ros__parameters"]["nominal"]["steer_lim"])
-    steer_rate_lim_points = np.array(
-        limit_params["/**"]["ros__parameters"]["nominal"]["steer_rate_lim"]
-    )
-    acc_lim_points = np.array(limit_params["/**"]["ros__parameters"]["nominal"]["lon_acc_lim"])
-    acc_rate_lim_points = np.array(
-        limit_params["/**"]["ros__parameters"]["nominal"]["lon_jerk_lim"]
-    )
-    lat_acc_lim_points = np.array(limit_params["/**"]["ros__parameters"]["nominal"]["lat_acc_lim"])
-    lat_jerk_lim_points = np.array(
-        limit_params["/**"]["ros__parameters"]["nominal"]["lat_jerk_lim"]
-    )
+    if limit_params is not None:
+        reference_speed_points = np.array(
+            limit_params["/**"]["ros__parameters"]["nominal"]["reference_speed_points"]
+        )
+        steer_lim_points = np.array(limit_params["/**"]["ros__parameters"]["nominal"]["steer_lim"])
+        steer_rate_lim_points = np.array(
+            limit_params["/**"]["ros__parameters"]["nominal"]["steer_rate_lim"]
+        )
+        acc_lim_points = np.array(limit_params["/**"]["ros__parameters"]["nominal"]["lon_acc_lim"])
+        acc_rate_lim_points = np.array(
+            limit_params["/**"]["ros__parameters"]["nominal"]["lon_jerk_lim"]
+        )
+        lat_acc_lim_points = np.array(
+            limit_params["/**"]["ros__parameters"]["nominal"]["lat_acc_lim"]
+        )
+        lat_jerk_lim_points = np.array(
+            limit_params["/**"]["ros__parameters"]["nominal"]["lat_jerk_lim"]
+        )
+    else:
+        print("Error: limit_params is None")
+        sys.exit(1)
 else:
-    print("Error: limit_params is None")
-    sys.exit(1)
+    reference_speed_points = np.array([20.0, 30.0])
+    steer_lim_points = np.array([10.0, 10.0])
+    steer_rate_lim_points = np.array([10.0, 10.0])
+    acc_lim_points = np.array([20.0, 20.0])
+    acc_rate_lim_points = np.array([20.0, 20.0])
+    lat_acc_lim_points = np.array([20.0, 20.0])
+    lat_jerk_lim_points = np.array([20.0, 20.0])
 
 
 @njit(cache=True, fastmath=True)
@@ -414,6 +512,55 @@ def calc_limits(
 
 
 @njit(cache=True, fastmath=True)
+def calc_steer_rate_cost_coef(curvature: float) -> float:
+    """Calc steer rate cost coefficient."""
+    interval_index = 0
+    for i in range(curvature_table.shape[0]):
+        if curvature > curvature_table[i]:
+            interval_index += 1
+        else:
+            break
+    if interval_index == 0:
+        steer_rate_cost_coef = steer_rate_cost_table[0]
+
+    elif interval_index == steer_rate_cost_table.shape[0]:
+        steer_rate_cost_coef = steer_rate_cost_table[-1]
+
+    else:
+        r = (curvature - curvature_table[interval_index - 1]) / (
+            curvature_table[interval_index] - curvature_table[interval_index - 1]
+        )
+        steer_rate_cost_coef = (1 - r) * steer_rate_cost_table[
+            interval_index - 1
+        ] + r * steer_rate_cost_table[interval_index]
+
+    return steer_rate_cost_coef
+
+
+@njit(cache=True, fastmath=True)
+def calc_table_value(x: float, table_domain, table_target) -> float:
+    interval_index = 0
+    for i in range(table_domain.shape[0]):
+        if x > table_domain[i]:
+            interval_index += 1
+        else:
+            break
+    if interval_index == 0:
+        target_val = table_target[0]
+
+    elif interval_index == table_target.shape[0]:
+        target_val = table_target[-1]
+
+    else:
+        r = (x - table_domain[interval_index - 1]) / (
+            table_domain[interval_index] - table_domain[interval_index - 1]
+        )
+        target_val = (1 - r) * table_target[interval_index - 1] + r * table_target[interval_index]
+
+    return target_val
+
+
+@njit(cache=True, fastmath=True)
 def transform_yaw(yaw_old: float, yaw_current_: float) -> float:
     """Transform the yaw angle so that the difference in yaw angle is less than or equal to π."""
     rotate_num = (yaw_current_ - yaw_old) // (2 * np.pi)
@@ -431,7 +578,7 @@ def transform_yaw_for_x_current(x_old: np.ndarray, x_current_: np.ndarray) -> np
     return x_current
 
 
-def transform_yaw_for_X_des(x_current: np.ndarray, X_des_: np.ndarray) -> np.ndarray:
+def transform_yaw_for_X_des(x_current: np.ndarray, X_des_: np.ndarray) -> tuple[np.ndarray, float]:
     """Transform the yaw angle with respect to the target trajectory.
 
     X_des[0] is set to the current state.
@@ -506,7 +653,11 @@ def calc_maximum_trajectory_error(traj: np.ndarray, X_des: np.ndarray) -> float:
 
 @njit(cache=False, fastmath=True)
 def transform_Q_R(
-    X_des: np.ndarray, U_des: np.ndarray, nominal_traj: np.ndarray, nominal_input: np.ndarray
+    X_des: np.ndarray,
+    U_des: np.ndarray,
+    nominal_traj: np.ndarray,
+    nominal_input: np.ndarray,
+    steer_rate_coef: float,
 ) -> tuple:
     """Calculate the MPC cost weight matrix from the current predicted trajectory and target trajectory.
 
@@ -540,43 +691,17 @@ def transform_Q_R(
 
         lateral_error = np.abs((Rot.T @ (X_des[i, :2] - x_current[:2]))[1])
         yaw_error = np.abs(X_des[i, 3] - x_current[3])
-        cost_tr_steer_rate_by_error = max(
-            min_tighten_steer_rate,
-            max(
-                (lateral_error / threshold_tighten_steer_rate_by_lateral_error)
-                ** power_tighten_steer_rate_by_lateral_error,
-                (yaw_error / threshold_tighten_steer_rate_by_yaw_error)
-                ** power_tighten_steer_rate_by_yaw_error,
-            ),
+
+        cost_tr_steer_rate = 1 / calc_table_value(
+            np.abs(v), vel_steer_table, vel_steer_cost_coef_table
         )
-        cost_tr_steer_rate = 1 / (
-            min(
-                max(
-                    min_steer_rate_transform_for_start,
-                    (coef_steer_rate_transform_for_start * np.abs(v))
-                    ** power_steer_rate_transform_for_start,
-                ),
-                1.0,
-            )
-        )
-        if i >= tighten_horizon:
-            cost_tr_steer_rate = max(cost_tr_steer_rate, 1 / cost_tr_steer_rate_by_error)
+
         if i in timing_Q_c or i == X_des.shape[0] - 1:
-            lateral_cost_coef = min(
-                max(
-                    min_loose_lateral_cost,
-                    (lateral_error / threshold_loose_lateral_cost) ** power_loose_lateral_cost,
-                ),
-                1.0,
+            lateral_cost_coef = calc_table_value(
+                lateral_error, lateral_error_table, lateral_cost_coef_table
             )
             Q_[1, 1] = lateral_cost_coef * Q_[1, 1]
-            yaw_cost_coef = min(
-                max(
-                    min_loose_yaw_cost,
-                    (yaw_error / threshold_loose_yaw_cost) ** power_loose_yaw_cost,
-                ),
-                1.0,
-            )
+            yaw_cost_coef = calc_table_value(yaw_error, yaw_error_table, yaw_cost_coef_table)
             Q_[3, 3] = yaw_cost_coef * Q_[3, 3]
 
         Q_[:2, :2] = Rot @ Q_[:2, :2] @ Rot.T
@@ -605,6 +730,7 @@ def transform_Q_R(
             steer_lim_center[i] = -steer_lim
         if i != X_des.shape[0] - 1:
             R_ = R.copy()
+            R_[1, 1] = steer_rate_coef * R_[1, 1]
             if acc >= 0:
                 R_[1, 1] = cost_tr_steer_rate * R_[1, 1]
             R_total[i] = R_
@@ -639,7 +765,12 @@ def transform_Q_R(
 
 @njit(cache=False, fastmath=True)
 def calc_cost(
-    X_des: np.ndarray, U_des: np.ndarray, Traj: np.ndarray, Inputs: np.ndarray, n: int
+    X_des: np.ndarray,
+    U_des: np.ndarray,
+    Traj: np.ndarray,
+    Inputs: np.ndarray,
+    n: int,
+    steer_rate_coef: float,
 ) -> np.ndarray:
     """Calculate the MPC cost of the nth horizon from several candidate predicted trajectories and target trajectories."""
     Cost = np.zeros(Traj.shape[0])
@@ -661,43 +792,17 @@ def calc_cost(
         Qi = Q_.copy()
         lateral_error = np.abs((Rot.T @ (X_des[:2] - x_current[:2]))[1])
         yaw_error = np.abs(X_des[3] - x_current[3])
-        cost_tr_steer_rate_by_error = max(
-            min_tighten_steer_rate,
-            max(
-                (lateral_error / threshold_tighten_steer_rate_by_lateral_error)
-                ** power_tighten_steer_rate_by_lateral_error,
-                (yaw_error / threshold_tighten_steer_rate_by_yaw_error)
-                ** power_tighten_steer_rate_by_yaw_error,
-            ),
+
+        cost_tr_steer_rate = 1 / calc_table_value(
+            np.abs(v), vel_steer_table, vel_steer_cost_coef_table
         )
-        cost_tr_steer_rate = 1 / (
-            min(
-                max(
-                    min_steer_rate_transform_for_start,
-                    (coef_steer_rate_transform_for_start * np.abs(v))
-                    ** power_steer_rate_transform_for_start,
-                ),
-                1.0,
-            )
-        )
-        if n >= tighten_horizon:
-            cost_tr_steer_rate = max(cost_tr_steer_rate, 1 / cost_tr_steer_rate_by_error)
+
         if n in timing_Q_c or n == N:
-            lateral_cost_coef = min(
-                max(
-                    min_loose_lateral_cost,
-                    (lateral_error / threshold_loose_lateral_cost) ** power_loose_lateral_cost,
-                ),
-                1.0,
+            lateral_cost_coef = calc_table_value(
+                lateral_error, lateral_error_table, lateral_cost_coef_table
             )
             Qi[1, 1] = lateral_cost_coef * Qi[1, 1]
-            yaw_cost_coef = min(
-                max(
-                    min_loose_yaw_cost,
-                    (yaw_error / threshold_loose_yaw_cost) ** power_loose_yaw_cost,
-                ),
-                1.0,
-            )
+            yaw_cost_coef = calc_table_value(yaw_error, yaw_error_table, yaw_cost_coef_table)
             Qi[3, 3] = yaw_cost_coef * Qi[3, 3]
         Qi[:2, :2] = Rot @ Qi[:2, :2] @ Rot.T
         Cost[i] += 0.5 * np.dot(Qi @ (x_current - X_des), x_current - X_des)
@@ -736,6 +841,8 @@ def calc_cost(
 
         if n != N:
             R_ = R.copy()
+            R_[1, 1] = steer_rate_coef * R_[1, 1]
+
             if acc >= 0:
                 R_[1, 1] = cost_tr_steer_rate * R_[1, 1]
 
@@ -795,22 +902,13 @@ def calc_cost_only_for_states(X_des: np.ndarray, Traj: np.ndarray, n: int) -> np
         Qi = Q_.copy()
         if n in timing_Q_c or n == N:
             lateral_error = np.abs((Rot.T @ (X_des[:2] - x_current[:2]))[1])
-            lateral_cost_coef = min(
-                max(
-                    min_loose_lateral_cost,
-                    (lateral_error / threshold_loose_lateral_cost) ** power_loose_lateral_cost,
-                ),
-                1.0,
+            lateral_cost_coef = calc_table_value(
+                lateral_error, lateral_error_table, lateral_cost_coef_table
             )
             Qi[1, 1] = lateral_cost_coef * Qi[1, 1]
             yaw_error = np.abs(X_des[3] - x_current[3])
-            yaw_cost_coef = min(
-                max(
-                    min_loose_yaw_cost,
-                    (yaw_error / threshold_loose_yaw_cost) ** power_loose_yaw_cost,
-                ),
-                1.0,
-            )
+            yaw_cost_coef = calc_table_value(yaw_error, yaw_error_table, yaw_cost_coef_table)
+
             Qi[3, 3] = yaw_cost_coef * Qi[3, 3]
         Qi[:2, :2] = Rot @ Qi[:2, :2] @ Rot.T
         Cost[i] += 0.5 * np.dot(Qi @ (x_current - X_des), x_current - X_des)
@@ -1077,12 +1175,14 @@ def F_multiple_for_candidates(
 def F_with_history(
     states: np.ndarray,
     inputs: np.ndarray,
+    previous_error=None,
+    k: int = 0,
     i: int = acc_delay_step,
     j: int = steer_delay_step,
     acc_time_constant_ctrl: float = acc_time_constant,
     steer_time_constant_ctrl: float = steer_time_constant,
     steer_dead_band_for_ctrl=steer_dead_band_for_ctrl,
-) -> np.ndarray:
+) -> tuple[np.ndarray, None]:
     """Integrate up to the MPC time width according to the nominal model.
 
     This includes the history of the input to the state.
@@ -1097,12 +1197,12 @@ def F_with_history(
     ] = states[
         nx_0 + acc_ctrl_queue_size : nx_0 + acc_ctrl_queue_size + steer_ctrl_queue_size - mpc_freq
     ].copy()
-    for k in range(mpc_freq):
-        states_next[nx_0 + mpc_freq - k - 1] = (
-            states_next[nx_0 + mpc_freq - k] + ctrl_time_step * inputs[0]
+    for index in range(mpc_freq):
+        states_next[nx_0 + mpc_freq - index - 1] = (
+            states_next[nx_0 + mpc_freq - index] + ctrl_time_step * inputs[0]
         )
-        states_next[nx_0 + acc_ctrl_queue_size + mpc_freq - k - 1] = (
-            states_next[nx_0 + acc_ctrl_queue_size + mpc_freq - k] + ctrl_time_step * inputs[1]
+        states_next[nx_0 + acc_ctrl_queue_size + mpc_freq - index - 1] = (
+            states_next[nx_0 + acc_ctrl_queue_size + mpc_freq - index] + ctrl_time_step * inputs[1]
         )
 
     actual_inputs = np.zeros((mpc_freq, inputs.shape[0]))
@@ -1117,14 +1217,14 @@ def F_with_history(
         steer_dead_band_for_ctrl,
     )
 
-    return states_next
+    return states_next, None
 
 
 def F_with_history_and_diff(
     states: np.ndarray,
     inputs: np.ndarray,
     previous_error: None = None,
-    init: None = None,
+    k: int = 0,
     i: int = acc_delay_step,
     j: int = steer_delay_step,
     acc_time_constant_ctrl: float = acc_time_constant,
@@ -1156,18 +1256,18 @@ def F_with_history_and_diff(
         nx_0 + acc_ctrl_queue_size : nx_0 + acc_ctrl_queue_size + steer_ctrl_queue_size - mpc_freq,
     ] = np.eye(steer_ctrl_queue_size - mpc_freq)
 
-    for k in range(mpc_freq):
-        states_next[nx_0 + mpc_freq - k - 1] = (
-            states_next[nx_0 + mpc_freq - k] + ctrl_time_step * inputs[0]
+    for index in range(mpc_freq):
+        states_next[nx_0 + mpc_freq - index - 1] = (
+            states_next[nx_0 + mpc_freq - index] + ctrl_time_step * inputs[0]
         )
-        states_next[nx_0 + acc_ctrl_queue_size + mpc_freq - k - 1] = (
-            states_next[nx_0 + acc_ctrl_queue_size + mpc_freq - k] + ctrl_time_step * inputs[1]
+        states_next[nx_0 + acc_ctrl_queue_size + mpc_freq - index - 1] = (
+            states_next[nx_0 + acc_ctrl_queue_size + mpc_freq - index] + ctrl_time_step * inputs[1]
         )
-        dF_dx[nx_0 + mpc_freq - k - 1, nx_0] = 1
-        dF_dx[nx_0 + acc_ctrl_queue_size + mpc_freq - k - 1, nx_0 + acc_ctrl_queue_size] = 1
+        dF_dx[nx_0 + mpc_freq - index - 1, nx_0] = 1
+        dF_dx[nx_0 + acc_ctrl_queue_size + mpc_freq - index - 1, nx_0 + acc_ctrl_queue_size] = 1
 
-        dF_du[nx_0 + mpc_freq - k - 1, 0] = (k + 1) * ctrl_time_step
-        dF_du[nx_0 + acc_ctrl_queue_size + mpc_freq - k - 1, 1] = (k + 1) * ctrl_time_step
+        dF_du[nx_0 + mpc_freq - index - 1, 0] = (index + 1) * ctrl_time_step
+        dF_du[nx_0 + acc_ctrl_queue_size + mpc_freq - index - 1, 1] = (index + 1) * ctrl_time_step
 
     actual_inputs = np.zeros((mpc_freq, inputs.shape[0]))
     actual_inputs[:, 0] = states_next[nx_0 + i + np.arange(mpc_freq)[::-1]].copy()
@@ -1193,7 +1293,7 @@ def F_with_history_for_candidates(
     States: np.ndarray,
     Inputs: np.ndarray,
     Previous_error=None,
-    init=None,
+    k=0,
     i: int = acc_delay_step,
     j: int = steer_delay_step,
     acc_time_constant_ctrl: float = acc_time_constant,
@@ -1215,12 +1315,12 @@ def F_with_history_for_candidates(
         :,
         nx_0 + acc_ctrl_queue_size : nx_0 + acc_ctrl_queue_size + steer_ctrl_queue_size - mpc_freq,
     ].copy()
-    for k in range(mpc_freq):
-        States_next[:, nx_0 + mpc_freq - k - 1] = (
-            States_next[:, nx_0 + mpc_freq - k] + ctrl_time_step * Inputs[:, 0]
+    for index in range(mpc_freq):
+        States_next[:, nx_0 + mpc_freq - index - 1] = (
+            States_next[:, nx_0 + mpc_freq - index] + ctrl_time_step * Inputs[:, 0]
         )
-        States_next[:, nx_0 + acc_ctrl_queue_size + mpc_freq - k - 1] = (
-            States_next[:, nx_0 + acc_ctrl_queue_size + mpc_freq - k]
+        States_next[:, nx_0 + acc_ctrl_queue_size + mpc_freq - index - 1] = (
+            States_next[:, nx_0 + acc_ctrl_queue_size + mpc_freq - index]
             + ctrl_time_step * Inputs[:, 1]
         )
     actual_Inputs = np.zeros((Inputs.shape[0], mpc_freq, nu_0))
@@ -1233,6 +1333,39 @@ def F_with_history_for_candidates(
         States[:, :nx_0], actual_Inputs, acc_time_constant_ctrl, steer_time_constant_ctrl
     )
     return States_next, None
+
+
+def F_with_model(
+    states: np.ndarray,
+    inputs: np.ndarray,
+    previous_error: np.ndarray,
+    k: int,
+    pred: Callable,
+    i: int = acc_delay_step,
+    j: int = steer_delay_step,
+    acc_time_constant_ctrl: float = acc_time_constant,
+    steer_time_constant_ctrl: float = steer_time_constant,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Integrate up to the MPC time width according to the trained model."""
+    if k == 0:
+        error = Error_decay * previous_error + (1 - Error_decay) * pred(states)
+    else:
+        error = Error_decay * Error_decay * Error_decay * previous_error + (
+            1 - Error_decay * Error_decay * Error_decay
+        ) * pred(states)
+    previous_error_ = error
+    states_next, _ = F_with_history(
+        states,
+        inputs,
+        i=i,
+        j=j,
+        acc_time_constant_ctrl=acc_time_constant_ctrl,
+        steer_time_constant_ctrl=steer_time_constant_ctrl,
+    )
+
+    states_next[:nx_0] += error * mpc_time_step
+
+    return states_next, previous_error_
 
 
 def F_with_model_initial_diff(
@@ -1326,7 +1459,13 @@ def F_with_model_diff(
 
     dF_dx[:2, 3] += d_rot_error * mpc_time_step
     states_next[:nx_0] += rot_error * mpc_time_step
-    return states_next, dF_dx, dF_du, pred_with_diff[:, 2:] * mpc_time_step, pred_error_
+    C = pred_with_diff[:, 2:] * mpc_time_step
+    steer_diff = (
+        dF_dx[5, nx_0 + acc_ctrl_queue_size :].sum() + C[5, nx_0 + acc_ctrl_queue_size :].sum()
+    )
+    if steer_diff < minimum_steer_diff:
+        C[5, -1] += minimum_steer_diff - steer_diff
+    return states_next, dF_dx, dF_du, C, pred_error_
 
 
 def F_with_model_for_candidates(
@@ -1364,6 +1503,137 @@ def F_with_model_for_candidates(
     States_next[:, :nx_0] += Error * mpc_time_step
 
     return States_next, Previous_error_
+
+
+def acc_prediction_error_compensation(
+    states: np.ndarray,
+    previous_states: np.ndarray,
+    inputs: np.ndarray,
+    previous_error: np.ndarray,
+    acc_fb_1: float,
+    acc_fb_2: float,
+    acc_time_stamp_interval: float,
+):
+    actual_acc_input = np.concatenate(
+        (np.array([inputs[0]]), previous_states[nx_0 : nx_0 + acc_ctrl_queue_size])
+    )[acc_delay_step]
+
+    predicted_acc = previous_states[4] + acc_time_stamp_interval * (
+        previous_error[4] + (actual_acc_input - previous_states[4]) / acc_time_constant
+    )
+    prediction_error = predicted_acc - states[4]
+    new_acc_fb_1 = np.exp(-acc_fb_decay) * acc_fb_1 + acc_fb_decay * prediction_error
+    new_acc_fb_2 = (
+        acc_fb_decay * np.exp(-acc_fb_decay) * acc_fb_1 + np.exp(-acc_fb_decay) * acc_fb_2
+    )
+    return new_acc_fb_1, new_acc_fb_2
+
+
+def steer_prediction_error_compensation(
+    states: np.ndarray,
+    previous_states: np.ndarray,
+    inputs: np.ndarray,
+    previous_error: np.ndarray,
+    steer_fb_1: float,
+    steer_fb_2: float,
+    steer_time_stamp_interval: float,
+):
+    actual_steer_input = np.concatenate(
+        (np.array([inputs[1]]), previous_states[nx_0 + acc_ctrl_queue_size :])
+    )[steer_delay_step]
+
+    delta_diff = actual_steer_input - previous_states[5]
+    if delta_diff >= steer_dead_band_for_ctrl:
+        delta_diff = delta_diff - steer_dead_band_for_ctrl
+    elif delta_diff <= -steer_dead_band_for_ctrl:
+        delta_diff = delta_diff + steer_dead_band_for_ctrl
+    else:
+        delta_diff = 0.0
+
+    predicted_steer = previous_states[5] + steer_time_stamp_interval * (
+        previous_error[5] + delta_diff / steer_time_constant
+    )
+    prediction_error = predicted_steer - states[5]
+
+    new_steer_fb_1 = np.exp(-steer_fb_decay) * steer_fb_1 + steer_fb_decay * (prediction_error)
+    new_steer_fb_2 = (
+        steer_fb_decay * np.exp(-steer_fb_decay) * steer_fb_1 + np.exp(-steer_fb_decay) * steer_fb_2
+    )
+    return new_steer_fb_1, new_steer_fb_2
+
+
+def pure_pursuit_control(
+    pos_xy_obs,
+    pos_yaw_obs,
+    longitudinal_vel_obs,
+    pos_xy_ref,
+    pos_yaw_ref,
+    longitudinal_vel_ref,
+    acc_gain_scaling=1.0,
+    steer_gain_scaling=1.0,
+):
+    pure_pursuit_acc_kp = acc_gain_scaling * mpc_param["mpc_parameter"]["pure_pursuit"]["acc_kp"]
+    pure_pursuit_lookahead_time = mpc_param["mpc_parameter"]["pure_pursuit"]["lookahead_time"]
+    pure_pursuit_min_lookahead = mpc_param["mpc_parameter"]["pure_pursuit"]["min_lookahead"]
+    pure_pursuit_steer_kp_param = (
+        steer_gain_scaling * mpc_param["mpc_parameter"]["pure_pursuit"]["steer_kp_param"]
+    )
+    pure_pursuit_steer_kd_param = (
+        steer_gain_scaling * mpc_param["mpc_parameter"]["pure_pursuit"]["steer_kd_param"]
+    )
+
+    longitudinal_vel_err = longitudinal_vel_obs - longitudinal_vel_ref
+    pure_pursuit_acc_cmd = -pure_pursuit_acc_kp * longitudinal_vel_err
+
+    cos_yaw = np.cos(pos_yaw_ref)
+    sin_yaw = np.sin(pos_yaw_ref)
+    diff_position = pos_xy_obs - pos_xy_ref
+    lat_err = -sin_yaw * diff_position[0] + cos_yaw * diff_position[1]
+    yaw_err = pos_yaw_obs - pos_yaw_ref
+    while True:
+        if yaw_err > np.pi:
+            yaw_err -= 2.0 * np.pi
+        if yaw_err < (-np.pi):
+            yaw_err += 2.0 * np.pi
+        if np.abs(yaw_err) < np.pi:
+            break
+
+    lookahead = pure_pursuit_min_lookahead + pure_pursuit_lookahead_time * np.abs(
+        longitudinal_vel_obs
+    )
+    pure_pursuit_steer_kp = pure_pursuit_steer_kp_param * L / (lookahead * lookahead)
+    pure_pursuit_steer_kd = pure_pursuit_steer_kd_param * L / lookahead
+    pure_pursuit_steer_cmd = -pure_pursuit_steer_kp * lat_err - pure_pursuit_steer_kd * yaw_err
+    return np.array([pure_pursuit_acc_cmd, pure_pursuit_steer_cmd])
+
+
+naive_pure_pursuit_lookahead_coef = float(
+    mpc_param["mpc_parameter"]["naive_pure_pursuit"]["lookahead_coef"]
+)
+naive_pure_pursuit_lookahead_intercept = float(
+    mpc_param["mpc_parameter"]["naive_pure_pursuit"]["lookahead_intercept"]
+)
+
+
+def naive_pure_pursuit_control(
+    pos_xy_obs,
+    pos_yaw_obs,
+    longitudinal_vel_obs,
+    pos_xy_ref_target,
+    longitudinal_vel_ref_nearest,
+):
+    pure_pursuit_acc_kp = mpc_param["mpc_parameter"]["naive_pure_pursuit"]["acc_kp"]
+    wheel_base = L
+    longitudinal_vel_err = longitudinal_vel_obs - longitudinal_vel_ref_nearest
+    pure_pursuit_acc_cmd = -pure_pursuit_acc_kp * longitudinal_vel_err
+
+    alpha = (
+        np.arctan2(pos_xy_ref_target[1] - pos_xy_obs[1], pos_xy_ref_target[0] - pos_xy_obs[0])
+        - pos_yaw_obs
+    )
+    angular_velocity_z = 2.0 * longitudinal_vel_ref_nearest * np.sin(alpha) / wheel_base
+    steer = np.arctan(angular_velocity_z * wheel_base / max(0.1, longitudinal_vel_ref_nearest))
+    return np.array([pure_pursuit_acc_cmd, steer])
 
 
 def sg_filter(
@@ -1440,6 +1710,11 @@ def calc_sg_filter_weight(sg_deg, sg_window_size):
     sg_vector_right_edge_for_trained_model_diff,
 ) = calc_sg_filter_weight(sg_deg_for_trained_model_diff, sg_window_size_for_trained_model_diff)
 (
+    sg_vector_for_memory_diff,
+    sg_vector_left_edge_for_memory_diff,
+    sg_vector_right_edge_for_memory_diff,
+) = calc_sg_filter_weight(0, sg_window_size_for_memory_diff)
+(
     sg_vector_for_noise,
     sg_vector_left_edge_for_noise,
     sg_vector_right_edge_for_noise,
@@ -1462,6 +1737,16 @@ sg_filter_for_trained_model_diff = partial(
     sg_vector_right_edge=sg_vector_right_edge_for_trained_model_diff,
     sg_vector=sg_vector_for_trained_model_diff,
 )
+
+sg_filter_for_memory_diff = partial(
+    sg_filter,
+    use_sg=use_sg_for_memory_diff,
+    sg_window_size=sg_window_size_for_memory_diff,  # sg_window_size_for_trained_model_diff,
+    sg_vector_left_edge=sg_vector_left_edge_for_memory_diff,  # sg_vector_left_edge_for_trained_model_diff,
+    sg_vector_right_edge=sg_vector_right_edge_for_memory_diff,  # sg_vector_right_edge_for_trained_model_diff,
+    sg_vector=sg_vector_for_memory_diff,
+)
+
 
 sg_filter_for_noise = partial(
     sg_filter,

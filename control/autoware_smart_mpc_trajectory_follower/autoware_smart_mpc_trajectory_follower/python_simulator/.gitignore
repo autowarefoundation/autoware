@@ -8,6 +8,7 @@ train_drive_*.png
 test_feedforward_*/
 test_pure_pursuit_*/
 test_python_*/
+test_*/
 python_sim_log_*/
 sim_setting.json
 auto_test_result_*.csv

@@ -3,7 +3,7 @@
     <img width="500px" src="./images/proxima_logo.png">
   </a>
 </p>
-<!-- cspell: ignore numba ipynb -->
+<!-- cspell: ignore numba ipynb LSTM -->
 
 # Smart MPC Trajectory Follower
 
@@ -83,18 +83,28 @@ model_trainer.transform_rosbag_to_csv(rosbag_dir)
 Here, `rosbag_dir` represents the rosbag directory.
 At this time, all CSV files in `rosbag_dir` are automatically deleted first.
 
-The paths of the rosbag directories used for training, `dir_0`, `dir_1`, `dir_2`,... and the directory `save_dir` where you save the models, the model can be saved in the python environment as follows:
+We move on to an explanation of how the model is trained.
+If `trained_model_parameter:memory_for_training:use_memory_for_training` in [trained_model_param.yaml](./autoware_smart_mpc_trajectory_follower/param/trained_model_param.yaml) is set to `true`, training is performed on models that include LSTM, and if it is set to `false`, training is performed on models that do not include LSTM.
+When using LSTM, cell states and hidden states are updated based on historical time series data and reflected in the prediction.
+
+The paths of the rosbag directories used for training and validation, `dir_0`, `dir_1`, `dir_2`,..., `dir_val_0`, `dir_val_1`, `dir_val_2`,... and the directory `save_dir` where you save the models, the model can be saved in the python environment as follows:
 
 ```python
 from autoware_smart_mpc_trajectory_follower.training_and_data_check import train_drive_NN_model
 model_trainer = train_drive_NN_model.train_drive_NN_model()
-model_trainer.add_data_from_csv(dir_0)
-model_trainer.add_data_from_csv(dir_1)
-model_trainer.add_data_from_csv(dir_2)
+model_trainer.add_data_from_csv(dir_0, add_mode="as_train")
+model_trainer.add_data_from_csv(dir_1, add_mode="as_train")
+model_trainer.add_data_from_csv(dir_2, add_mode="as_train")
+...
+model_trainer.add_data_from_csv(dir_val_0, add_mode="as_val")
+model_trainer.add_data_from_csv(dir_val_1, add_mode="as_val")
+model_trainer.add_data_from_csv(dir_val_2, add_mode="as_val")
 ...
 model_trainer.get_trained_model()
 model_trainer.save_models(save_dir)
 ```
+
+If `add_mode` is not specified or validation data is not added, the training data is split to be used for training and validation.
 
 After performing the polynomial regression, the NN can be trained on the residuals as follows:
 
@@ -130,6 +140,7 @@ To perform a control test on autoware with the nominal model before training, ma
 <p><img src="images/test_route.png" width=712pix></p>
 
 Record rosbag and train the model in the manner described in "Training of model and reflection in control", and move the generated files `model_for_test_drive.pth` and `polynomial_reg_info.npz` to the home directory.
+Sample models, which work under the condition that`trained_model_parameter:memory_for_training:use_memory_for_training` in [trained_model_param.yaml](./autoware_smart_mpc_trajectory_follower/param/trained_model_param.yaml) is set to `true`, can be obtained at [sample_models/wheel_base_changed](./sample_models/wheel_base_changed/).
 
 > [!NOTE]
 > Although the data used for training is small, for the sake of simplicity, we will see how much performance can be improved with this amount of data.
@@ -158,58 +169,84 @@ First, to give wheel base 2.79 m in the python simulator, create the following f
 { "wheel_base": 2.79 }
 ```
 
-Next, run the following commands to test the slalom driving on the python simulator with the nominal model:
+Next, after moving to `control/autoware_smart_mpc_trajectory_follower/autoware_smart_mpc_trajectory_follower/python_simulator`, run the following commands to test the slalom driving on the python simulator with the nominal control:
 
-```python
-import python_simulator
-from autoware_smart_mpc_trajectory_follower.training_and_data_check import train_drive_NN_model
-initial_error = [0.0, 0.03, 0.01, -0.01, 0.0, 0.0]
-save_dir = "test_python_sim"
-python_simulator.slalom_drive(save_dir=save_dir,use_trained_model=False,initial_error=initial_error)
+```bash
+python3 run_python_simulator.py nominal_test
 ```
 
-Here, `initial_error` is the initial error from the target trajectory, in the order of x-coordinate, y-coordinate, longitudinal velocity, yaw angle, longitudinal acceleration, and steer angle,
-and `save_dir` is the directory where the driving test results are saved.
+The result of the driving is stored in `test_python_nominal_sim`.
 
-> [!NOTE]
-> The value of `use_trained_model` given as the argument of `python_simulator.slalom_drive` takes precedence over the value of `trained_model_parameter:control_application:use_trained_model` in [trained_model_param.yaml](./autoware_smart_mpc_trajectory_follower/param/trained_model_param.yaml).
-
-Run the following commands to perform training using driving data of the nominal model.
-
-```python
-model_trainer = train_drive_NN_model.train_drive_NN_model()
-model_trainer.add_data_from_csv(save_dir)
-model_trainer.save_train_data(save_dir)
-model_trainer.get_trained_model(use_polynomial_reg=True)
-model_trainer.save_models(save_dir=save_dir)
-```
-
-This way, files `model_for_test_drive.pth` and `polynomial_reg_info.npz` are saved in `save_dir`.
 The following results were obtained.
 
 <p style="text-align: center;">
-    <img src="images/python_sim_lateral_error_nominal_model.png" width="712px">
+    <img src="images/python_sim_lateral_error_nominal_model_wheel_base.png" width="712px">
 </p>
 
 The center of the upper row represents the lateral deviation.
 
-Finally, to drive with the training model, run the following commands:
+Run the following commands to perform training using figure eight driving data under the control of pure pursuit.
 
-```python
-load_dir = save_dir
-save_dir = "test_python_trained_sim"
-python_simulator.slalom_drive(save_dir=save_dir,load_dir=load_dir,use_trained_model=True,initial_error=initial_error)
+To perform training using a figure eight driving and driving based on the obtained model, run the following commands:
+
+```bash
+python3 run_python_simulator.py
 ```
 
-The following results were obtained.
+The result of the driving is stored in `test_python_trined_sim`.
+
+When `trained_model_parameter:memory_for_training:use_memory_for_training` in [trained_model_param.yaml](./autoware_smart_mpc_trajectory_follower/param/trained_model_param.yaml) is set to `true`, the following results were obtained.
 
 <p style="text-align: center;">
-    <img src="images/python_sim_lateral_error_trained_model.png" width="712px">
+    <img src="images/python_sim_lateral_error_trained_model_lstm_wheel_base.png" width="712px">
+</p>
+
+When `trained_model_parameter:memory_for_training:use_memory_for_training` in [trained_model_param.yaml](./autoware_smart_mpc_trajectory_follower/param/trained_model_param.yaml) is set to `false`, the following results were obtained.
+
+<p style="text-align: center;">
+    <img src="images/python_sim_lateral_error_trained_model_wheel_base.png" width="712px">
 </p>
 
 It can be seen that the lateral deviation has improved significantly.
+However, the difference in driving with and without LSTM is not very apparent.
 
-Here we have described wheel base, but the parameters that can be passed to the python simulator are as follows.
+To see the difference, for example, we can experiment with parameters such as steer_time_delay.
+
+First, to restore nominal model settings to default values, set the value of `nominal_parameter:vehicle_info:wheel_base` in [nominal_param.yaml](./autoware_smart_mpc_trajectory_follower/param/nominal_param.yaml) to 2.79, and run the following command:
+
+```bash
+python3 -m smart_mpc_trajectory_follower.clear_pycache
+```
+
+Next, modify `sim_setting.json` as follows:
+
+```json
+{ "steer_time_delay": 1.01 }
+```
+
+In this way, an experiment is performed when `steer_time_delay` is set to 1.01 sec.
+
+The result of the driving using the nominal model is as follows:
+
+<p style="text-align: center;">
+    <img src="images/python_sim_lateral_error_nominal_model_steer_time_delay.png" width="712px">
+</p>
+
+The result of the driving using the trained model with LSTM is as follows:
+
+<p style="text-align: center;">
+    <img src="images/python_sim_lateral_error_trained_model_lstm_steer_time_delay.png" width="712px">
+</p>
+
+The result of the driving using the trained model without LSTM is as follows:
+
+<p style="text-align: center;">
+    <img src="images/python_sim_lateral_error_trained_model_steer_time_delay.png" width="712px">
+</p>
+
+It can be seen that the performance with the model that includes LSTM is significantly better than with the model that does not.
+
+The parameters that can be passed to the python simulator are as follows.
 
 | Parameter                | Type        | Description                                                                                                                                                                                                                                                                                  |
 | ------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -226,6 +263,7 @@ Here we have described wheel base, but the parameters that can be passed to the 
 | accel_map_scale          | float       | Parameter that magnifies the corresponding distortion from acceleration input values to actual acceleration realizations. <br> Correspondence information is kept in `control/autoware_smart_mpc_trajectory_follower/autoware_smart_mpc_trajectory_follower/python_simulator/accel_map.csv`. |
 | acc_scaling              | float       | acceleration scaling                                                                                                                                                                                                                                                                         |
 | steer_scaling            | float       | steer scaling                                                                                                                                                                                                                                                                                |
+| vehicle_type             | int         | Take values from 0 to 4 for pre-designed vehicle types. <br> A description of each vehicle type is given below.                                                                                                                                                                              |
 
 For example, to give the simulation side 0.01 [rad] of steer bias and 0.001 [rad] of steer dead band, edit the `sim_setting.json` as follows.
 
@@ -233,15 +271,74 @@ For example, to give the simulation side 0.01 [rad] of steer bias and 0.001 [rad
 { "steer_bias": 0.01, "steer_dead_band": 0.001 }
 ```
 
+##### vehicle_type_0
+
+This vehicle type matches the default vehicle type used in the control.
+
+| Parameter           | value |
+| ------------------- | ----- |
+| wheel_base          | 2.79  |
+| acc_time_delay      | 0.1   |
+| steer_time_delay    | 0.27  |
+| acc_time_constant   | 0.1   |
+| steer_time_constant | 0.24  |
+| acc_scaling         | 1.0   |
+
+##### vehicle_type_1
+
+This vehicle type is intended for a heavy bus.
+
+| Parameter           | value |
+| ------------------- | ----- |
+| wheel_base          | 4.76  |
+| acc_time_delay      | 1.0   |
+| steer_time_delay    | 1.0   |
+| acc_time_constant   | 1.0   |
+| steer_time_constant | 1.0   |
+| acc_scaling         | 0.2   |
+
+##### vehicle_type_2
+
+This vehicle type is intended for a light bus.
+
+| Parameter           | value |
+| ------------------- | ----- |
+| wheel_base          | 4.76  |
+| acc_time_delay      | 0.5   |
+| steer_time_delay    | 0.5   |
+| acc_time_constant   | 0.5   |
+| steer_time_constant | 0.5   |
+| acc_scaling         | 0.5   |
+
+##### vehicle_type_3
+
+This vehicle type is intended for a small vehicle.
+
+| Parameter           | value |
+| ------------------- | ----- |
+| wheel_base          | 1.335 |
+| acc_time_delay      | 0.3   |
+| steer_time_delay    | 0.3   |
+| acc_time_constant   | 0.3   |
+| steer_time_constant | 0.3   |
+| acc_scaling         | 1.5   |
+
+##### vehicle_type_4
+
+This vehicle type is intended for a small robot.
+
+| Parameter           | value |
+| ------------------- | ----- |
+| wheel_base          | 0.395 |
+| acc_time_delay      | 0.2   |
+| steer_time_delay    | 0.2   |
+| acc_time_constant   | 0.2   |
+| steer_time_constant | 0.2   |
+| acc_scaling         | 1.0   |
+
 #### Auto test on python simulator
 
 Here, we describe a method for testing adaptive performance by giving the simulation side a predefined range of model parameters while the control side is given constant model parameters.
-
-First, to restore nominal model settings to default values, set the value of `nominal_parameter:vehicle_info:wheel_base` in [nominal_param.yaml](./autoware_smart_mpc_trajectory_follower/param/nominal_param.yaml) to 2.79, and run the following command:
-
-```bash
-python3 -m smart_mpc_trajectory_follower.clear_pycache
-```
 
 To run a driving experiment within the parameter change range set in [run_sim.py](./autoware_smart_mpc_trajectory_follower/python_simulator/run_sim.py), for example, move to `control/autoware_smart_mpc_trajectory_follower/autoware_smart_mpc_trajectory_follower/python_simulator` and run the following command:
 
@@ -251,26 +348,42 @@ python3 run_sim.py --param_name steer_bias
 
 Here we described the experimental procedure for steer bias, and the same method can be used for other parameters.
 
-If you want to do it for all parameters at once, run the following command:
+To run the test for all parameters except limits at once, run the following command:
 
 ```bash
-yes | python3 run_sim.py
+python3 run_auto_test.py
 ```
+
+The results are stored in the `auto_test` directory.
+After the executions were completed, the following results were obtained by running [plot_auto_test_result.ipynb](./autoware_smart_mpc_trajectory_follower/python_simulator/plot_auto_test_result.ipynb):
+
+<p style="text-align: center;">
+    <img src="images/proxima_test_result_with_lstm.png" width="712px">
+</p>
+
+The orange line shows the intermediate model trained using pure pursuit figure eight drive, and the blue line shows the final model trained using data from both the intermediate model and the figure eight drive.
+In most cases, sufficient performance is obtained, but for `vehicle_type_1`, which is intended for a heavy bus, a lateral deviation of about 2 m was observed, which is not satisfactory.
 
 In `run_sim.py`, the following parameters can be set:
 
-| Parameter                 | Type | Description                                                                                                                                                                                                                                                                                                                                                               |
-| ------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| USE_TRAINED_MODEL_DIFF    | bool | Whether the derivative of the trained model is reflected in the control                                                                                                                                                                                                                                                                                                   |
-| DATA_COLLECTION_MODE      | str  | Which method will be used to collect the training data　<br> "ff": Straight line driving with feed-forward input <br> "pp": Figure eight driving with pure pursuit control <br> "mpc": Slalom driving with mpc                                                                                                                                                            |
-| USE_POLYNOMIAL_REGRESSION | bool | Whether to perform polynomial regression before NN                                                                                                                                                                                                                                                                                                                        |
-| USE_SELECTED_POLYNOMIAL   | bool | When USE_POLYNOMIAL_REGRESSION is True, perform polynomial regression using only some preselected polynomials. <br> The choice of polynomials is intended to be able to absorb the contribution of some parameter shifts based on the nominal model of the vehicle.                                                                                                       |
-| FORCE_NN_MODEL_TO_ZERO    | bool | Whether to force the NN model to zero (i.e., erase the contribution of the NN model). <br> When USE_POLYNOMIAL_REGRESSION is True, setting FORCE_MODEL_TO_ZERO to True allows the control to reflect the results of polynomial regression only, without using NN models.                                                                                                  |
-| FIT_INTERCEPT             | bool | Whether to include bias in polynomial regression. <br> If it is False, perform the regression with a polynomial of the first degree or higher.                                                                                                                                                                                                                            |
-| USE_INTERCEPT             | bool | When a polynomial regression including bias is performed, whether to use or discard the resulting bias information. <br> It is meaningful only if FIT_INTERCEPT is True.<br> If it is False, discard the bias in the polynomial regression in the hope that the NN model can remove the bias term, even if the polynomial regression is performed with the bias included. |
+| Parameter                 | Type               | Description                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| USE_TRAINED_MODEL_DIFF    | bool               | Whether the derivative of the trained model is reflected in the control                                                                                                                                                                                                                                                                                                   |
+| DATA_COLLECTION_MODE      | DataCollectionMode | Which method will be used to collect the training data　<br> "DataCollectionMode.ff": Straight line driving with feed-forward input <br> "DataCollectionMode.pp": Figure eight driving with pure pursuit control <br> "DataCollectionMode.mpc": Slalom driving with mpc                                                                                                   |
+| USE_POLYNOMIAL_REGRESSION | bool               | Whether to perform polynomial regression before NN                                                                                                                                                                                                                                                                                                                        |
+| USE_SELECTED_POLYNOMIAL   | bool               | When USE_POLYNOMIAL_REGRESSION is True, perform polynomial regression using only some preselected polynomials. <br> The choice of polynomials is intended to be able to absorb the contribution of some parameter shifts based on the nominal model of the vehicle.                                                                                                       |
+| FORCE_NN_MODEL_TO_ZERO    | bool               | Whether to force the NN model to zero (i.e., erase the contribution of the NN model). <br> When USE_POLYNOMIAL_REGRESSION is True, setting FORCE_MODEL_TO_ZERO to True allows the control to reflect the results of polynomial regression only, without using NN models.                                                                                                  |
+| FIT_INTERCEPT             | bool               | Whether to include bias in polynomial regression. <br> If it is False, perform the regression with a polynomial of the first degree or higher.                                                                                                                                                                                                                            |
+| USE_INTERCEPT             | bool               | When a polynomial regression including bias is performed, whether to use or discard the resulting bias information. <br> It is meaningful only if FIT_INTERCEPT is True.<br> If it is False, discard the bias in the polynomial regression in the hope that the NN model can remove the bias term, even if the polynomial regression is performed with the bias included. |
 
 > [!NOTE]
 > When `run_sim.py` is run, the `use_trained_model_diff` set in `run_sim.py` takes precedence over the `trained_model_parameter:control_application:use_trained_model_diff` set in [trained_model_param.yaml](./autoware_smart_mpc_trajectory_follower/param/trained_model_param.yaml).
+
+#### Kernel density estimation of pure pursuit driving data
+
+The distribution of data obtained from pure pursuit runs can be displayed using Kernel density estimation. To do this, run [density_estimation.ipynb](./autoware_smart_mpc_trajectory_follower/python_simulator/density_estimation.ipynb).
+
+The correlation between the minimum value of the density estimate and the lateral deviation of the run results is low. A scalar indicator that better predicts the value of lateral deviation is under development.
 
 ## Change of nominal parameters and their reloading
 
@@ -293,7 +406,7 @@ The nominal parameters include the following:
 
 ## Change of control parameters and their reloading
 
-The control parameters can be changed by editing files [mpc_param.yaml](./smart_mpc_trajectory_follower/param/mpc_param.yaml) and [trained_model_param.yaml](./autoware_smart_mpc_trajectory_follower/param/trained_model_param.yaml).
+The control parameters can be changed by editing files [mpc_param.yaml](./autoware_smart_mpc_trajectory_follower/param/mpc_param.yaml) and [trained_model_param.yaml](./autoware_smart_mpc_trajectory_follower/param/trained_model_param.yaml).
 Although it is possible to reflect parameter changes by restarting autoware, the following command allows us to do so without leaving autoware running:
 
 ```bash
@@ -304,21 +417,29 @@ The main parameters among the control parameters are as follows.
 
 ### `mpc_param.yaml`
 
-| Parameter                            | Type        | Description                                                                                                                                                                                                                                        |
-| ------------------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| mpc_parameter:system:mode            | str         | control mode <br>"ilqr": iLQR mode <br> "mppi": MPPI mode <br> "mppi_ilqr": the initial value of iLQR is given by the MPPI solution.                                                                                                               |
-| mpc_parameter:cost_parameters:Q      | list[float] | Stage cost for states. <br> List of length 8, in order: straight deviation, lateral deviation, velocity deviation, yaw angle deviation, acceleration deviation, steer deviation, acceleration input deviation, steer input deviation cost weights. |
-| mpc_parameter:cost_parameters:Q_c    | list[float] | Cost in the horizon corresponding to the following timing_Q_c for the states. <br> The correspondence of the components of the list is the same as for Q.                                                                                          |
-| mpc_parameter:cost_parameters:Q_f    | list[float] | Termination cost for the states. <br> The correspondence of the components of the list is the same as for Q.                                                                                                                                       |
-| mpc_parameter:cost_parameters:R      | list[float] | A list of length 2 where R[0] is weight of cost for the change rate of acceleration input value and R[1] is weight of cost for the change rate of steer input value.                                                                               |
-| mpc_parameter:mpc_setting:timing_Q_c | list[int]   | Horizon numbers such that the stage cost for the states is set to Q_c.                                                                                                                                                                             |
+| Parameter                                  | Type        | Description                                                                                                                                                                                                                                        |
+| ------------------------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| mpc_parameter:system:mode                  | str         | control mode <br>"ilqr": iLQR mode <br> "mppi": MPPI mode <br> "mppi_ilqr": the initial value of iLQR is given by the MPPI solution.                                                                                                               |
+| mpc_parameter:cost_parameters:Q            | list[float] | Stage cost for states. <br> List of length 8, in order: straight deviation, lateral deviation, velocity deviation, yaw angle deviation, acceleration deviation, steer deviation, acceleration input deviation, steer input deviation cost weights. |
+| mpc_parameter:cost_parameters:Q_c          | list[float] | Cost in the horizon corresponding to the following timing_Q_c for the states. <br> The correspondence of the components of the list is the same as for Q.                                                                                          |
+| mpc_parameter:cost_parameters:Q_f          | list[float] | Termination cost for the states. <br> The correspondence of the components of the list is the same as for Q.                                                                                                                                       |
+| mpc_parameter:cost_parameters:R            | list[float] | A list of length 2 where R[0] is weight of cost for the change rate of acceleration input value and R[1] is weight of cost for the change rate of steer input value.                                                                               |
+| mpc_parameter:mpc_setting:timing_Q_c       | list[int]   | Horizon numbers such that the stage cost for the states is set to Q_c.                                                                                                                                                                             |
+| mpc_parameter:compensation:acc_fb_decay    | float       | Coefficient of damping in integrating the error between the observed and predicted acceleration values in the compensator outside the MPC.                                                                                                         |
+| mpc_parameter:compensation:acc_fb_gain     | float       | Gain of acceleration compensation.                                                                                                                                                                                                                 |
+| mpc_parameter:compensation:max_error_acc   | float       | Maximum acceleration compensation (m/s^2)                                                                                                                                                                                                          |
+| mpc_parameter:compensation:steer_fb_decay  | float       | Coefficient of damping in integrating the error between the observed and predicted steering values in the compensator outside the MPC.                                                                                                             |
+| mpc_parameter:compensation:steer_fb_gain   | float       | Gain of steering compensation.                                                                                                                                                                                                                     |
+| mpc_parameter:compensation:max_error_steer | float       | Maximum steering compensation (rad)                                                                                                                                                                                                                |
 
 ### `trained_model_param.yaml`
 
-| Parameter                                                          | Type | Description                                                                                                                                                                                                                                                           |
-| ------------------------------------------------------------------ | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| trained_model_parameter:control_application:use_trained_model      | bool | Whether the trained model is reflected in the control or not.                                                                                                                                                                                                         |
-| trained_model_parameter:control_application:use_trained_model_diff | bool | Whether the derivative of the trained model is reflected on the control or not. <br> It is meaningful only when use_trained_model is True, and if False, the nominal model is used for the derivative of the dynamics, and trained model is used only for prediction. |
+| Parameter                                                           | Type | Description                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| trained_model_parameter:control_application:use_trained_model       | bool | Whether the trained model is reflected in the control or not.                                                                                                                                                                                                         |
+| trained_model_parameter:control_application:use_trained_model_diff  | bool | Whether the derivative of the trained model is reflected on the control or not. <br> It is meaningful only when use_trained_model is True, and if False, the nominal model is used for the derivative of the dynamics, and trained model is used only for prediction. |
+| trained_model_parameter:memory_for_training:use_memory_for_training | bool | Whether to use the model that includes LSTM for learning or not.                                                                                                                                                                                                      |
+| trained_model_parameter:memory_for_training:use_memory_diff         | bool | Whether the derivative with respect to the cell state and hidden state at the previous time of LSTM is reflected in the control or not.                                                                                                                               |
 
 ## Request to release the slow stop mode
 
@@ -336,3 +457,5 @@ ros2 topic pub /pympc_stop_mode_reset_request std_msgs/msg/String "data: ''" --o
 - It may take some time until the end of the planning to compile numba functions at the start of the first control.
 
 - In the stopping action near the goal our control switches to another simple control law. As a result, the stopping action may not work except near the goal. Stopping is also difficult if the acceleration map is significantly shifted.
+
+- If the dynamics deviates too much from the nominal model, as in `vehicle_type_1`, which is intended for heavy buses, it may not be well controlled.

@@ -23,7 +23,7 @@ import numpy as np
 index_cost = np.concatenate(
     (
         np.arange(drive_functions.nx_0 + 1),
-        [drive_functions.nx_0 + drive_functions.acc_ctrl_queue_size],
+        np.array([drive_functions.nx_0 + drive_functions.acc_ctrl_queue_size]),
     )
 )
 
@@ -105,29 +105,14 @@ class drive_mppi:
         Cost += drive_functions.calc_cost_only_for_states(X_des[N], Traj[:, N, index_cost], N)
         return Traj, Cost
 
-    def proceed_mppi_step(self, x_current, inputs, X_des, U_des, previous_error):
+    def compute_optimal_control(self, x_current, inputs, X_des, U_des, previous_error):
         """Proceed with MPPI iteration one time."""
         N = inputs.shape[0]
-
-        previous_error_ = previous_error.reshape(1, -1).copy()
-        nominal_traj = np.zeros((N + 1, x_current.shape[0]))
-        nominal_traj[0] = x_current.copy()
-        for k in range(N):
-            if k == 0:
-                Traj_, previous_error_ = self.F_for_candidates(
-                    nominal_traj[k].reshape(1, -1), inputs[k].reshape(1, -1), previous_error_, True
-                )
-                nominal_traj[k + 1] = Traj_[0]
-            else:
-                Traj_, previous_error_ = self.F_for_candidates(
-                    nominal_traj[k].reshape(1, -1), inputs[k].reshape(1, -1), previous_error_, False
-                )
-                nominal_traj[k + 1] = Traj_[0]
 
         Inputs = self.generate_sample_inputs(inputs)
 
         Previous_error = np.tile(previous_error, (self.sample_num, 1))
-        _, Cost = self.calc_forward_trajectories_with_cost(
+        Traj, Cost = self.calc_forward_trajectories_with_cost(
             x_current, Inputs, X_des, U_des, Previous_error
         )
         original_cost = Cost[0]
@@ -135,36 +120,20 @@ class drive_mppi:
         Exps = np.exp(-(Cost - best_cost) / self.lam)
         Exps = Exps / Exps.sum()
         new_inputs = (Inputs.T @ Exps).T
-        previous_error_ = previous_error.reshape(1, -1).copy()
+        previous_error_ = previous_error.copy()
         new_traj = np.zeros((N + 1, x_current.shape[0]))
         new_traj[0] = x_current.copy()
         for k in range(N):
-            if k == 0:
-                Traj_, previous_error_ = self.F_for_candidates(
-                    new_traj[k].reshape(1, -1), new_inputs[k].reshape(1, -1), previous_error_, True
-                )
-                new_traj[k + 1] = Traj_[0]
-            else:
-                Traj_, previous_error_ = self.F_for_candidates(
-                    new_traj[k].reshape(1, -1), new_inputs[k].reshape(1, -1), previous_error_, False
-                )
-                new_traj[k + 1] = Traj_[0]
+            new_traj[k + 1], previous_error_ = self.F(
+                new_traj[k], new_inputs[k], previous_error_, k
+            )
         if np.dot(Exps, Cost) < (1 - self.mppi_tol) * original_cost:
             proceed = True
         else:
             proceed = False
-        return new_traj, new_inputs, proceed
+        return new_inputs, new_inputs[0], new_traj, Traj, proceed
 
-    def compute_optimal_control(self, x_current, inputs, X_des, U_des, previous_error):
-        """Calculate the optimal input based on MPPI."""
-        for i in range(self.max_iter_mppi):
-            new_traj, new_inputs, proceed = self.proceed_mppi_step(
-                x_current, inputs, X_des, U_des, previous_error
-            )
-            if not proceed:
-                break
-        return new_inputs, new_inputs[0], new_traj
-
-    def receive_model(self, F_for_candidates: Callable):
+    def receive_model(self, F_for_candidates: Callable, F):
         """Receive vehicle model for control."""
         self.F_for_candidates = F_for_candidates
+        self.F = F

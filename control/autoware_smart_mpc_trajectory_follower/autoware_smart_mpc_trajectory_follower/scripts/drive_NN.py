@@ -25,6 +25,37 @@ dim_steer_layer_2 = 8
 dim_acc_layer_1 = 16
 dim_acc_layer_2 = 16
 
+loss_weights = torch.tensor(
+    [
+        drive_functions.NN_x_weight,
+        drive_functions.NN_y_weight,
+        drive_functions.NN_yaw_weight,
+        drive_functions.NN_v_weight,
+        drive_functions.NN_acc_weight,
+        drive_functions.NN_steer_weight,
+    ]
+)
+loss_weights_diff = torch.tensor(
+    [
+        drive_functions.NN_x_weight_diff,
+        drive_functions.NN_y_weight_diff,
+        drive_functions.NN_yaw_weight_diff,
+        drive_functions.NN_v_weight_diff,
+        drive_functions.NN_acc_weight_diff,
+        drive_functions.NN_steer_weight_diff,
+    ]
+)
+loss_weights_two_diff = torch.tensor(
+    [
+        drive_functions.NN_x_weight_two_diff,
+        drive_functions.NN_y_weight_two_diff,
+        drive_functions.NN_yaw_weight_two_diff,
+        drive_functions.NN_v_weight_two_diff,
+        drive_functions.NN_acc_weight_two_diff,
+        drive_functions.NN_steer_weight_two_diff,
+    ]
+)
+
 
 def nominal_model_input(Var, lam, step):
     """Calculate prediction with nominal model that takes into account time constants for the first order and time delays related to the input."""
@@ -43,9 +74,37 @@ def nominal_model_input(Var, lam, step):
 
 def loss_fn_plus_tanh(loss_fn, pred, Y, tanh_gain, tanh_weight):
     """Compute the loss function to be used in the training."""
-    loss = loss_fn(pred, Y)
+    loss = loss_fn(pred * loss_weights, Y * loss_weights)
     loss += tanh_weight * loss_fn(
         torch.tanh(tanh_gain * (pred[:, -1] - Y[:, -1])), torch.zeros(Y.shape[0])
+    )
+    return loss
+
+
+def loss_fn_plus_tanh_with_memory(
+    loss_fn, pred, Y, tanh_gain, tanh_weight, first_order_weight, second_order_weight
+):
+    """Compute the loss function to be used in the training."""
+    loss = loss_fn(pred * loss_weights, Y * loss_weights)
+    loss += (
+        first_order_weight
+        * loss_fn(
+            (pred[:, 1:] - pred[:, :-1]) * loss_weights_diff,
+            (Y[:, 1:] - Y[:, :-1]) * loss_weights_diff,
+        )
+        / drive_functions.ctrl_time_step
+    )
+    loss += (
+        second_order_weight
+        * loss_fn(
+            (pred[:, 2:] + pred[:, :-2] - 2 * pred[:, 1:-1]) * loss_weights_two_diff,
+            (Y[:, 2:] + Y[:, :-2] - 2 * Y[:, 1:-1]) * loss_weights_two_diff,
+        )
+        / (drive_functions.ctrl_time_step * drive_functions.ctrl_time_step)
+    )
+    loss += tanh_weight * loss_fn(
+        torch.tanh(tanh_gain * (pred[:, :, -1] - Y[:, :, -1])),
+        torch.zeros((Y.shape[0], Y.shape[1])),
     )
     return loss
 
@@ -80,8 +139,6 @@ class DriveNeuralNetwork(nn.Module):
         self.steer_input_index = np.concatenate(
             ([2], np.arange(steer_queue_size_core) + acc_queue_size + 3)
         )
-        self.acc_input_index_ = np.arange(acc_queue_size) + 3
-        self.steer_input_index_ = np.arange(steer_queue_size_core) + acc_queue_size + 3
         self.steer_input_index_full = np.arange(steer_queue_size) + acc_queue_size + 3
         self.acc_layer_1 = nn.Sequential(
             nn.Linear(self.acc_input_index.shape[0], dim_acc_layer_1),
@@ -102,12 +159,12 @@ class DriveNeuralNetwork(nn.Module):
         nn.init.uniform_(self.steer_layer_1_tail[0].weight, a=lb, b=ub)
         nn.init.uniform_(self.steer_layer_1_tail[0].bias, a=lb, b=ub)
 
-        self.acc_layer_2 = nn.Sequential(nn.Linear(dim_acc_layer_1, dim_acc_layer_2), nn.Tanh())
+        self.acc_layer_2 = nn.Sequential(nn.Linear(dim_acc_layer_1, dim_acc_layer_2), nn.ReLU())
         nn.init.uniform_(self.acc_layer_2[0].weight, a=lb, b=ub)
         nn.init.uniform_(self.acc_layer_2[0].bias, a=lb, b=ub)
 
         self.steer_layer_2 = nn.Sequential(
-            nn.Linear(dim_steer_layer_1_head + dim_steer_layer_1_tail, dim_steer_layer_2), nn.Tanh()
+            nn.Linear(dim_steer_layer_1_head + dim_steer_layer_1_tail, dim_steer_layer_2), nn.ReLU()
         )
         nn.init.uniform_(self.steer_layer_2[0].weight, a=lb, b=ub)
         nn.init.uniform_(self.steer_layer_2[0].bias, a=lb, b=ub)
@@ -132,19 +189,145 @@ class DriveNeuralNetwork(nn.Module):
         self.steer_dropout = nn.Dropout(steer_drop_out)
 
     def forward(self, x):
-        acc_layer_1 = self.acc_layer_1(x[:, self.acc_input_index])
+        acc_layer_1 = self.acc_layer_1(drive_functions.acc_normalize * x[:, self.acc_input_index])
         steer_layer_1 = torch.cat(
             (
-                self.steer_layer_1_head(x[:, self.steer_input_index]),
-                self.steer_layer_1_tail(x[:, self.steer_input_index_full]),
+                self.steer_layer_1_head(
+                    drive_functions.steer_normalize * x[:, self.steer_input_index]
+                ),
+                self.steer_layer_1_tail(
+                    drive_functions.steer_normalize * x[:, self.steer_input_index_full]
+                ),
             ),
             dim=1,
         )
         acc_layer_2 = self.acc_layer_2(self.acc_dropout(acc_layer_1))
         steer_layer_2 = self.steer_layer_2(self.steer_dropout(steer_layer_1))
 
-        pre_pred = self.linear_relu_stack(torch.cat((x[:, [0]], acc_layer_2, steer_layer_2), dim=1))
+        pre_pred = self.linear_relu_stack(
+            torch.cat(
+                (drive_functions.vel_normalize * x[:, [0]], acc_layer_2, steer_layer_2), dim=1
+            )
+        )
         pred = self.finalize(torch.cat((pre_pred, acc_layer_2, steer_layer_2), dim=1))
+        return pred
+
+
+class DriveNeuralNetworkWithMemory(nn.Module):
+    """Define the neural net model with memory to be used in vehicle control."""
+
+    def __init__(
+        self,
+        hidden_layer_sizes=(32, 16),
+        hidden_layer_lstm=64,
+        randomize=0.01,
+        acc_drop_out=0.0,
+        steer_drop_out=0.0,
+        acc_delay_step=drive_functions.acc_delay_step,
+        steer_delay_step=drive_functions.steer_delay_step,
+        acc_time_constant_ctrl=drive_functions.acc_time_constant,
+        steer_time_constant_ctrl=drive_functions.steer_time_constant,
+        acc_queue_size=drive_functions.acc_ctrl_queue_size,
+        steer_queue_size=drive_functions.steer_ctrl_queue_size,
+        steer_queue_size_core=drive_functions.steer_ctrl_queue_size_core,
+    ):
+        super().__init__()
+        self.acc_time_constant_ctrl = acc_time_constant_ctrl
+        self.acc_delay_step = acc_delay_step
+        self.steer_time_constant_ctrl = steer_time_constant_ctrl
+        self.steer_delay_step = steer_delay_step
+
+        lb = -randomize
+        ub = randomize
+        self.acc_input_index = np.concatenate(([1], np.arange(acc_queue_size) + 3))
+        self.steer_input_index = np.concatenate(
+            ([2], np.arange(steer_queue_size_core) + acc_queue_size + 3)
+        )
+        self.steer_input_index_full = np.arange(steer_queue_size) + acc_queue_size + 3
+        self.acc_layer_1 = nn.Sequential(
+            nn.Linear(self.acc_input_index.shape[0], dim_acc_layer_1),
+            nn.ReLU(),
+        )
+        nn.init.uniform_(self.acc_layer_1[0].weight, a=lb, b=ub)
+        nn.init.uniform_(self.acc_layer_1[0].bias, a=lb, b=ub)
+        self.steer_layer_1_head = nn.Sequential(
+            nn.Linear(self.steer_input_index.shape[0], dim_steer_layer_1_head),
+            nn.ReLU(),
+        )
+        nn.init.uniform_(self.steer_layer_1_head[0].weight, a=lb, b=ub)
+        nn.init.uniform_(self.steer_layer_1_head[0].bias, a=lb, b=ub)
+
+        self.steer_layer_1_tail = nn.Sequential(
+            nn.Linear(self.steer_input_index_full.shape[0], dim_steer_layer_1_tail), nn.ReLU()
+        )
+        nn.init.uniform_(self.steer_layer_1_tail[0].weight, a=lb, b=ub)
+        nn.init.uniform_(self.steer_layer_1_tail[0].bias, a=lb, b=ub)
+
+        self.acc_layer_2 = nn.Sequential(nn.Linear(dim_acc_layer_1, dim_acc_layer_2), nn.ReLU())
+        nn.init.uniform_(self.acc_layer_2[0].weight, a=lb, b=ub)
+        nn.init.uniform_(self.acc_layer_2[0].bias, a=lb, b=ub)
+
+        self.steer_layer_2 = nn.Sequential(
+            nn.Linear(dim_steer_layer_1_head + dim_steer_layer_1_tail, dim_steer_layer_2), nn.ReLU()
+        )
+        nn.init.uniform_(self.steer_layer_2[0].weight, a=lb, b=ub)
+        nn.init.uniform_(self.steer_layer_2[0].bias, a=lb, b=ub)
+
+        self.lstm = nn.LSTM(
+            1 + dim_acc_layer_2 + dim_steer_layer_2, hidden_layer_lstm, batch_first=True
+        )
+
+        nn.init.uniform_(self.lstm.weight_hh_l0, a=lb, b=ub)
+        nn.init.uniform_(self.lstm.weight_ih_l0, a=lb, b=ub)
+        nn.init.uniform_(self.lstm.bias_hh_l0, a=lb, b=ub)
+        nn.init.uniform_(self.lstm.bias_ih_l0, a=lb, b=ub)
+
+        self.linear_relu_stack_1 = nn.Sequential(
+            nn.Linear(1 + dim_acc_layer_2 + dim_steer_layer_2, hidden_layer_sizes[0]),
+            nn.ReLU(),
+        )
+        nn.init.uniform_(self.linear_relu_stack_1[0].weight, a=lb, b=ub)
+        nn.init.uniform_(self.linear_relu_stack_1[0].bias, a=lb, b=ub)
+
+        self.linear_relu_stack_2 = nn.Sequential(
+            nn.Linear(hidden_layer_lstm + hidden_layer_sizes[0], hidden_layer_sizes[1]),
+            nn.ReLU(),
+        )
+        nn.init.uniform_(self.linear_relu_stack_2[0].weight, a=lb, b=ub)
+        nn.init.uniform_(self.linear_relu_stack_2[0].bias, a=lb, b=ub)
+
+        self.finalize = nn.Linear(hidden_layer_sizes[1] + dim_acc_layer_2 + dim_steer_layer_2, 6)
+
+        nn.init.uniform_(self.finalize.weight, a=lb, b=ub)
+        nn.init.uniform_(self.finalize.bias, a=lb, b=ub)
+
+        self.acc_dropout = nn.Dropout(acc_drop_out)
+        self.steer_dropout = nn.Dropout(steer_drop_out)
+
+    def forward(self, x):
+        acc_layer_1 = self.acc_layer_1(
+            drive_functions.acc_normalize * x[:, :, self.acc_input_index]
+        )
+        steer_layer_1 = torch.cat(
+            (
+                self.steer_layer_1_head(
+                    drive_functions.steer_normalize * x[:, :, self.steer_input_index]
+                ),
+                self.steer_layer_1_tail(
+                    drive_functions.steer_normalize * x[:, :, self.steer_input_index_full]
+                ),
+            ),
+            dim=2,
+        )
+        acc_layer_2 = self.acc_layer_2(self.acc_dropout(acc_layer_1))
+        steer_layer_2 = self.steer_layer_2(self.steer_dropout(steer_layer_1))
+        h_1 = torch.cat(
+            (drive_functions.vel_normalize * x[:, :, [0]], acc_layer_2, steer_layer_2), dim=2
+        )
+        pre_pred, _ = self.lstm(h_1)
+        pre_pred = torch.cat((pre_pred, self.linear_relu_stack_1(h_1)), dim=2)
+        pre_pred = self.linear_relu_stack_2(pre_pred)
+        pred = self.finalize(torch.cat((pre_pred, acc_layer_2, steer_layer_2), dim=2))
         return pred
 
 
@@ -180,68 +363,110 @@ class transform_model_to_c:
         A_for_linear_reg,
         b_for_linear_reg,
         deg,
-        acc_time_constant,
-        acc_delay_step,
-        steer_time_constant,
-        steer_delay_step,
-        acc_queue_size,
-        steer_queue_size,
-        steer_queue_size_core,
+        acc_delay_step=drive_functions.acc_delay_step,
+        steer_delay_step=drive_functions.steer_delay_step,
+        acc_queue_size=drive_functions.acc_ctrl_queue_size,
+        steer_queue_size=drive_functions.steer_ctrl_queue_size,
+        steer_queue_size_core=drive_functions.steer_ctrl_queue_size_core,
+        vel_normalize=drive_functions.vel_normalize,
+        acc_normalize=drive_functions.acc_normalize,
+        steer_normalize=drive_functions.steer_normalize,
     ):
-        transformer = proxima_calc.transform_model_to_eigen()
-
-        numpy_weight_list = []
-        numpy_bias_list = []
-        for i, w in enumerate(model.parameters()):
-            if i % 2 == 0:
-                numpy_weight_list.append(w.detach().numpy().astype(np.float64))
-            else:
-                numpy_bias_list.append(w.detach().numpy().astype(np.float64))
-        array_weight_list_0 = numpy_weight_list[0]
-        array_bias_list_0 = numpy_bias_list[0]
-        array_weight_list_1 = numpy_weight_list[1]
-        array_bias_list_1 = numpy_bias_list[1]
-        array_weight_list_2 = numpy_weight_list[2]
-        array_bias_list_2 = numpy_bias_list[2]
-        array_weight_list_3 = numpy_weight_list[3]
-        array_bias_list_3 = numpy_bias_list[3]
-        array_weight_list_4 = numpy_weight_list[4]
-        array_bias_list_4 = numpy_bias_list[4]
-        array_weight_list_5 = numpy_weight_list[5]
-        array_bias_list_5 = numpy_bias_list[5]
-        array_weight_list_6 = numpy_weight_list[6]
-        array_bias_list_6 = numpy_bias_list[6]
-        array_weight_list_7 = numpy_weight_list[7]
-        array_bias_list_7 = numpy_bias_list[7]
-
-        transformer.set_params(
-            array_weight_list_0,
-            array_weight_list_1,
-            array_weight_list_2,
-            array_weight_list_3,
-            array_weight_list_4,
-            array_weight_list_5,
-            array_weight_list_6,
-            array_weight_list_7,
-            array_bias_list_0,
-            array_bias_list_1,
-            array_bias_list_2,
-            array_bias_list_3,
-            array_bias_list_4,
-            array_bias_list_5,
-            array_bias_list_6,
-            array_bias_list_7,
+        self.transform = proxima_calc.transform_model_to_eigen()
+        self.transform.set_params(
+            model.acc_layer_1[0].weight.detach().numpy().astype(np.float64),
+            model.steer_layer_1_head[0].weight.detach().numpy().astype(np.float64),
+            model.steer_layer_1_tail[0].weight.detach().numpy().astype(np.float64),
+            model.acc_layer_2[0].weight.detach().numpy().astype(np.float64),
+            model.steer_layer_2[0].weight.detach().numpy().astype(np.float64),
+            model.linear_relu_stack[0].weight.detach().numpy().astype(np.float64),
+            model.linear_relu_stack[2].weight.detach().numpy().astype(np.float64),
+            model.finalize.weight.detach().numpy().astype(np.float64),
+            model.acc_layer_1[0].bias.detach().numpy().astype(np.float64),
+            model.steer_layer_1_head[0].bias.detach().numpy().astype(np.float64),
+            model.steer_layer_1_tail[0].bias.detach().numpy().astype(np.float64),
+            model.acc_layer_2[0].bias.detach().numpy().astype(np.float64),
+            model.steer_layer_2[0].bias.detach().numpy().astype(np.float64),
+            model.linear_relu_stack[0].bias.detach().numpy().astype(np.float64),
+            model.linear_relu_stack[2].bias.detach().numpy().astype(np.float64),
+            model.finalize.bias.detach().numpy().astype(np.float64),
             A_for_linear_reg,
             b_for_linear_reg,
             deg,
-            acc_time_constant,
             acc_delay_step,
-            steer_time_constant,
             steer_delay_step,
             acc_queue_size,
             steer_queue_size,
             steer_queue_size_core,
+            vel_normalize,
+            acc_normalize,
+            steer_normalize,
         )
-        self.pred = transformer.rot_and_d_rot_error_prediction
-        self.pred_with_diff = transformer.rot_and_d_rot_error_prediction_with_diff
-        self.Pred = transformer.Rotated_error_prediction
+        self.pred = self.transform.rot_and_d_rot_error_prediction
+        self.pred_only_state = self.transform.rotated_error_prediction
+        self.pred_with_diff = self.transform.rot_and_d_rot_error_prediction_with_diff
+        self.pred_with_poly_diff = self.transform.rot_and_d_rot_error_prediction_with_poly_diff
+        self.Pred = self.transform.Rotated_error_prediction
+
+
+class transform_model_with_memory_to_c:
+    """Pass the necessary information to the C++ program to call the trained model at high speed."""
+
+    def __init__(
+        self,
+        model,
+        A_for_linear_reg,
+        b_for_linear_reg,
+        deg,
+        acc_delay_step=drive_functions.acc_delay_step,
+        steer_delay_step=drive_functions.steer_delay_step,
+        acc_queue_size=drive_functions.acc_ctrl_queue_size,
+        steer_queue_size=drive_functions.steer_ctrl_queue_size,
+        steer_queue_size_core=drive_functions.steer_ctrl_queue_size_core,
+        vel_normalize=drive_functions.vel_normalize,
+        acc_normalize=drive_functions.acc_normalize,
+        steer_normalize=drive_functions.steer_normalize,
+    ):
+        self.transform = proxima_calc.transform_model_with_memory_to_eigen()
+        self.transform.set_params(
+            model.acc_layer_1[0].weight.detach().numpy().astype(np.float64),
+            model.steer_layer_1_head[0].weight.detach().numpy().astype(np.float64),
+            model.steer_layer_1_tail[0].weight.detach().numpy().astype(np.float64),
+            model.acc_layer_2[0].weight.detach().numpy().astype(np.float64),
+            model.steer_layer_2[0].weight.detach().numpy().astype(np.float64),
+            model.lstm.weight_ih_l0.detach().numpy().astype(np.float64),
+            model.lstm.weight_hh_l0.detach().numpy().astype(np.float64),
+            model.linear_relu_stack_1[0].weight.detach().numpy().astype(np.float64),
+            model.linear_relu_stack_2[0].weight.detach().numpy().astype(np.float64),
+            model.finalize.weight.detach().numpy().astype(np.float64),
+            model.acc_layer_1[0].bias.detach().numpy().astype(np.float64),
+            model.steer_layer_1_head[0].bias.detach().numpy().astype(np.float64),
+            model.steer_layer_1_tail[0].bias.detach().numpy().astype(np.float64),
+            model.acc_layer_2[0].bias.detach().numpy().astype(np.float64),
+            model.steer_layer_2[0].bias.detach().numpy().astype(np.float64),
+            model.lstm.bias_hh_l0.detach().numpy().astype(np.float64),
+            model.lstm.bias_ih_l0.detach().numpy().astype(np.float64),
+            model.linear_relu_stack_1[0].bias.detach().numpy().astype(np.float64),
+            model.linear_relu_stack_2[0].bias.detach().numpy().astype(np.float64),
+            model.finalize.bias.detach().numpy().astype(np.float64),
+        )
+        self.transform.set_params_res(
+            A_for_linear_reg,
+            b_for_linear_reg,
+            deg,
+            acc_delay_step,
+            steer_delay_step,
+            acc_queue_size,
+            steer_queue_size,
+            steer_queue_size_core,
+            vel_normalize,
+            acc_normalize,
+            steer_normalize,
+        )
+        self.pred = self.transform.rot_and_d_rot_error_prediction
+        self.pred_only_state = self.transform.rotated_error_prediction
+        self.pred_with_diff = self.transform.rot_and_d_rot_error_prediction_with_diff
+        self.pred_with_memory_diff = self.transform.rot_and_d_rot_error_prediction_with_memory_diff
+        self.pred_with_poly_diff = self.transform.rot_and_d_rot_error_prediction_with_poly_diff
+        self.Pred = self.transform.Rotated_error_prediction
+        self.test_lstm = self.transform.error_prediction

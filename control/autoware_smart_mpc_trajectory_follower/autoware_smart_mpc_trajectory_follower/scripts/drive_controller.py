@@ -20,6 +20,7 @@ from functools import partial
 from importlib import reload as ir
 import threading
 import time
+from typing import Literal
 
 from autoware_smart_mpc_trajectory_follower.scripts import drive_GP
 from autoware_smart_mpc_trajectory_follower.scripts import drive_NN
@@ -57,8 +58,8 @@ class drive_controller:
     update_trained_model: bool | None
     """Whether to update the model online with the data under control."""
 
-    mode: str | None
-    """which algorithm to use, "mppi", "ilqr", or "mppi_ilqr" """
+    mode: Literal["pure_pursuit", "naive_pure_pursuit", "mppi", "ilqr", "mppi_ilqr"] | None
+    """which algorithm to use"""
 
     use_x_noise: bool | None
     """Whether to reflect the uncertainty of the straight-line position when performing iLQG"""
@@ -109,6 +110,7 @@ class drive_controller:
         self,
         use_trained_model: bool | None = None,
         use_trained_model_diff=None,
+        use_memory_diff=None,
         update_trained_model=None,
         mode=None,
         use_x_noise=None,
@@ -138,6 +140,14 @@ class drive_controller:
         ir(drive_iLQR)
         ir(drive_mppi)
 
+        if mode is None:
+            self.mode = drive_functions.mode
+        else:
+            self.mode = mode
+
+        if mode == "pure_pursuit" or mode == "naive_pure_pursuit":
+            use_trained_model = False
+
         if use_trained_model is None:
             self.use_trained_model = drive_functions.use_trained_model
         else:
@@ -145,6 +155,7 @@ class drive_controller:
         if not self.use_trained_model:
             self.use_trained_model_diff = False
             self.update_trained_model = False
+            self.use_memory_diff = False
         else:
             if use_trained_model_diff is None:
                 self.use_trained_model_diff = drive_functions.use_trained_model_diff
@@ -154,10 +165,10 @@ class drive_controller:
                 self.update_trained_model = drive_functions.update_trained_model
             else:
                 self.update_trained_model = update_trained_model
-        if mode is None:
-            self.mode = drive_functions.mode
-        else:
-            self.mode = mode
+            if use_memory_diff is None:
+                self.use_memory_diff = drive_functions.use_memory_diff
+            else:
+                self.use_memory_diff = use_memory_diff
 
         self.acc_delay_step = drive_functions.acc_delay_step
         self.steer_delay_step = drive_functions.steer_delay_step
@@ -230,6 +241,8 @@ class drive_controller:
             self.use_trained_model_diff,
         )
         self.err = 0
+        if self.use_trained_model and drive_functions.use_memory_for_training:
+            print("use_memory_diff", self.use_memory_diff)
         if self.use_trained_model:
             self.model = torch.load(model_file_name)
             polynomial_reg_info = np.load(self.load_polynomial_reg_dir + "/polynomial_reg_info.npz")
@@ -237,30 +250,52 @@ class drive_controller:
             self.b_for_polynomial_reg = polynomial_reg_info["b"]
             self.deg = int(polynomial_reg_info["deg"])
             self.polynomial_features = PolynomialFeatures(degree=self.deg, include_bias=False)
-            transform_model = drive_NN.transform_model_to_c(
-                self.model,
-                self.A_for_polynomial_reg,
-                self.b_for_polynomial_reg,
-                self.deg,
-                self.acc_time_constant_ctrl,
-                self.acc_delay_step,
-                self.steer_time_constant_ctrl,
-                self.steer_delay_step,
-                drive_functions.acc_ctrl_queue_size,
-                drive_functions.steer_ctrl_queue_size,
-                drive_functions.steer_ctrl_queue_size_core,
-            )
-            pred = transform_model.pred
-            Pred = transform_model.Pred
-            self.pred = pred
-            self.pred_with_diff = transform_model.pred_with_diff
+            if drive_functions.use_memory_for_training:
+                self.transform_model = drive_NN.transform_model_with_memory_to_c(
+                    self.model,
+                    self.A_for_polynomial_reg,
+                    self.b_for_polynomial_reg,
+                    self.deg,
+                    self.acc_delay_step,
+                    self.steer_delay_step,
+                    drive_functions.acc_ctrl_queue_size,
+                    drive_functions.steer_ctrl_queue_size,
+                    drive_functions.steer_ctrl_queue_size_core,
+                )
+                self.h = np.zeros(self.model.lstm.weight_hh_l0.shape[1])
+                self.c = (self.h).copy()
+                if self.use_memory_diff:
+                    self.ilqr.receive_memory_diff(
+                        self.transform_model.transform.get_dhc_dx,
+                        self.transform_model.transform.get_dhc_dhc,
+                        self.transform_model.transform.get_dy_dhc,
+                    )
+            else:
+                self.transform_model = drive_NN.transform_model_to_c(
+                    self.model,
+                    self.A_for_polynomial_reg,
+                    self.b_for_polynomial_reg,
+                    self.deg,
+                    self.acc_delay_step,
+                    self.steer_delay_step,
+                    drive_functions.acc_ctrl_queue_size,
+                    drive_functions.steer_ctrl_queue_size,
+                    drive_functions.steer_ctrl_queue_size_core,
+                )
+            self.pred = self.transform_model.pred
+            if drive_functions.reflect_only_poly_diff:
+                self.pred_with_diff = self.transform_model.pred_with_poly_diff
+            elif self.use_memory_diff and drive_functions.use_memory_for_training:
+                self.pred_with_diff = self.transform_model.pred_with_memory_diff
+            else:
+                self.pred_with_diff = self.transform_model.pred_with_diff
             self.loss_fn = torch.nn.L1Loss()
             self.drive_optimizer = torch.optim.Adam(
                 params=self.model.parameters(), lr=drive_learning_rate
             )
             self.F_N_initial_diff = partial(
                 drive_functions.F_with_model_initial_diff,
-                pred=pred,
+                pred=self.transform_model.pred,
                 i=self.acc_delay_step,
                 j=self.steer_delay_step,
                 acc_time_constant_ctrl=self.acc_time_constant_ctrl,
@@ -275,9 +310,17 @@ class drive_controller:
                 acc_time_constant_ctrl=self.acc_time_constant_ctrl,
                 steer_time_constant_ctrl=self.steer_time_constant_ctrl,
             )
+            self.F_N_only_state = partial(
+                drive_functions.F_with_model,
+                pred=self.transform_model.pred_only_state,
+                i=self.acc_delay_step,
+                j=self.steer_delay_step,
+                acc_time_constant_ctrl=self.acc_time_constant_ctrl,
+                steer_time_constant_ctrl=self.steer_time_constant_ctrl,
+            )
             self.F_N_for_candidates = partial(
                 drive_functions.F_with_model_for_candidates,
-                Pred=Pred,
+                Pred=self.transform_model.Pred,
                 i=self.acc_delay_step,
                 j=self.steer_delay_step,
                 acc_time_constant_ctrl=self.acc_time_constant_ctrl,
@@ -292,6 +335,13 @@ class drive_controller:
                 steer_time_constant_ctrl=self.steer_time_constant_ctrl,
             )
             self.F_N_initial_diff = self.F_N_diff
+            self.F_N_only_state = partial(
+                drive_functions.F_with_history,
+                i=self.acc_delay_step,
+                j=self.steer_delay_step,
+                acc_time_constant_ctrl=self.acc_time_constant_ctrl,
+                steer_time_constant_ctrl=self.steer_time_constant_ctrl,
+            )
             self.F_N_for_candidates = partial(
                 drive_functions.F_with_history_for_candidates,
                 i=self.acc_delay_step,
@@ -367,12 +417,25 @@ class drive_controller:
 
         self.x_old = np.empty(6)
 
+        self.X_queue_for_learning: list[np.ndarray] = []
+        self.acc_input_queue_for_learning: list[np.ndarray] = []
+        self.steer_input_queue_for_learning: list[np.ndarray] = []
+        self.time_stamp_queue_for_learning: list[float] = []
+        self.X_smoothed_queue: list[np.ndarray] = []
+
+        self.pre_X_input_list: list[np.ndarray] = []
+        self.pre_Y_output_list: list[np.ndarray] = []
+
+        self.time_stamp_for_update_lstm: list[float] = []
+        self.X_queue_for_update_lstm: list[np.ndarray] = []
+
     def __del__(self):
         print("control finished")
 
     def get_optimal_control(
         self,
         x_current_: np.ndarray,
+        time_stamp: list[float],
         X_des_: np.ndarray,
         U_des: np.ndarray = np.zeros((drive_functions.N, drive_functions.nu_0)),
     ) -> np.ndarray:
@@ -387,32 +450,43 @@ class drive_controller:
                 X_des_,
             )
             self.u_opt = X_des[0, drive_functions.nx_0 + np.arange(drive_functions.nu_0)]
-            self.u_old = self.u_opt.copy()
-            self.u_old2 = self.u_opt.copy()
             self.acc_input_queue = self.u_opt[0] * np.ones(drive_functions.acc_ctrl_queue_size)
             self.steer_input_queue = self.u_opt[1] * np.ones(drive_functions.steer_ctrl_queue_size)
-            self.nominal_inputs = drive_functions.U_des_from_X_des(self.u_old, X_des, diff_delta)
+            self.nominal_inputs = drive_functions.U_des_from_X_des(self.u_opt, X_des, diff_delta)
             self.previous_error = np.zeros(8)
 
-            self.X_queue_for_learning: list[np.ndarray] = []
-            self.acc_input_queue_for_learning: list[np.ndarray] = []
-            self.steer_input_queue_for_learning: list[np.ndarray] = []
-            self.time_stamp_queue_for_learning: list[float] = []
-            self.X_smoothed_queue: list[np.ndarray] = []
+            self.X_queue_for_learning.clear()
+            self.acc_input_queue_for_learning.clear()
+            self.steer_input_queue_for_learning.clear()
+            self.time_stamp_queue_for_learning.clear()
+            self.X_smoothed_queue.clear()
 
-            self.pre_X_input_list: list[np.ndarray] = []
-            self.pre_Y_output_list: list[np.ndarray] = []
+            self.pre_X_input_list.clear()
+            self.pre_Y_output_list.clear()
+
+            self.time_stamp_for_update_lstm.clear()
+            self.X_queue_for_update_lstm.clear()
+            if self.use_trained_model and drive_functions.use_memory_for_training:
+                self.h = np.zeros(self.model.lstm.weight_hh_l0.shape[1])
+                self.c = (self.h).copy()
 
             self.initialize_X_smoothing_time_stamp = True
+            self.acc_fb_1 = 0.0
+            self.acc_fb_2 = 0.0
+            self.steer_fb_1 = 0.0
+            self.steer_fb_2 = 0.0
+
         else:
             x_current = drive_functions.transform_yaw_for_x_current(self.x_old, x_current_)
             X_des, diff_delta = drive_functions.transform_yaw_for_X_des(
                 x_current,
                 X_des_,
             )
-            self.u_old2 = self.u_old.copy()
-            self.u_old = self.u_opt.copy()
-
+        if drive_functions.use_max_curvature:
+            curvature = np.abs(X_des[:, 5]).max() / drive_functions.L
+        else:
+            curvature = np.abs(X_des[:, 5]).mean() / drive_functions.L
+        steer_rate_cost_coef = drive_functions.calc_steer_rate_cost_coef(curvature)
         if self.init:
             self.X_current_queue = []
             self.init = False
@@ -421,6 +495,10 @@ class drive_controller:
         self.X_current = np.concatenate(
             (x_current, self.acc_input_queue[::-1], self.steer_input_queue[::-1])
         )
+        self.u_old = np.array([self.acc_input_queue[-1], self.steer_input_queue[-1]])
+        if self.use_trained_model and drive_functions.use_memory_for_training:
+            if len(time_stamp) > 0:
+                self.update_lstm_info(time_stamp[-1])
 
         self.X_current_queue.append(self.X_current.copy())
         if len(self.X_current_queue) > drive_functions.mpc_freq:
@@ -429,22 +507,38 @@ class drive_controller:
             self.nominal_inputs = drive_functions.sg_filter_for_nominal_inputs(self.nominal_inputs)
         if self.mode == "mppi" or self.mode == "mppi_ilqr":  # Run mppi
             self.start_mppi = time.time()
-            self.mppi.receive_model(self.F_N_for_candidates)
-            self.nominal_inputs, self.u_opt_dot, nominal_traj = (self.mppi).compute_optimal_control(
-                self.X_current,
-                self.nominal_inputs,
-                X_des,
-                U_des,
-                self.previous_error[:6],
-            )
-            self.nominal_traj_mppi = nominal_traj.copy()
+            proceed = True
+            for k in range(drive_functions.max_iter_mppi):
+                if not proceed:
+                    break
+                if drive_functions.use_memory_for_training and self.use_trained_model:
+                    self.transform_model.transform.set_lstm(self.h, self.c)
+                    self.transform_model.transform.set_lstm_for_candidate(
+                        self.h, self.c, drive_functions.sample_num
+                    )
+                self.mppi.receive_model(self.F_N_for_candidates, self.F_N_only_state)
+                self.nominal_inputs, self.u_opt_dot, nominal_traj, self.mppi_candidates, proceed = (
+                    self.mppi
+                ).compute_optimal_control(
+                    self.X_current,
+                    self.nominal_inputs,
+                    X_des,
+                    U_des,
+                    self.previous_error[:6],
+                )
+                self.nominal_traj_mppi = nominal_traj.copy()
             self.end_mppi = time.time()
-        if self.mode != "mppi":
+        if self.mode == "ilqr" or self.mode == "mppi_ilqr":
             self.start_ilqr = time.time()
             proceed = True
             for k in range(drive_functions.max_iter_ilqr):
                 if not proceed:
                     break
+                if drive_functions.use_memory_for_training and self.use_trained_model:
+                    self.transform_model.transform.set_lstm(self.h, self.c)
+                    self.transform_model.transform.set_lstm_for_candidate(
+                        self.h, self.c, drive_functions.max_iter_ls + 1
+                    )
                 self.nominal_inputs = drive_functions.sg_filter_for_nominal_inputs(
                     self.nominal_inputs
                 )
@@ -465,6 +559,7 @@ class drive_controller:
                     self.theta_noise,
                     self.acc_noise,
                     self.steer_noise,
+                    steer_rate_cost_coef,
                 )
                 self.nominal_traj_ilqr = nominal_traj.copy()
                 self.nominal_inputs_ilqr = self.nominal_inputs.copy()
@@ -490,7 +585,41 @@ class drive_controller:
             self.time_5 = self.ilqr.time_5
             self.end_ilqr = time.time()
 
+        if self.mode == "pure_pursuit":
+            nominal_traj = np.zeros((drive_functions.N + 1, x_current_.shape[0]))
+
+            u_opt = drive_functions.pure_pursuit_control(
+                pos_xy_obs=x_current_[:2],
+                pos_yaw_obs=x_current_[3],
+                longitudinal_vel_obs=x_current_[2],
+                pos_xy_ref=X_des_[0, :2],
+                pos_yaw_ref=X_des_[0, 3],
+                longitudinal_vel_ref=X_des_[0, 2],
+            )
+            self.u_opt_dot = (u_opt - self.u_old) / drive_functions.ctrl_time_step
+
+        if self.mode == "naive_pure_pursuit":
+            nominal_traj = np.zeros((drive_functions.N + 1, x_current_.shape[0]))
+            lookahead_distance = (
+                drive_functions.naive_pure_pursuit_lookahead_coef * x_current_[2]
+                + drive_functions.naive_pure_pursuit_lookahead_intercept
+            )
+            targetIndex = np.abs(
+                ((X_des_[:, :2] - x_current_[:2]) ** 2).sum(axis=1) - lookahead_distance**2
+            ).argmin()
+
+            u_opt = drive_functions.naive_pure_pursuit_control(
+                pos_xy_obs=x_current_[:2],
+                pos_yaw_obs=x_current_[3],
+                longitudinal_vel_obs=x_current_[2],
+                pos_xy_ref_target=X_des_[targetIndex, :2],
+                longitudinal_vel_ref_nearest=X_des_[0, 2],
+            )
+            self.u_opt_dot = (u_opt - self.u_old) / drive_functions.ctrl_time_step
+
         if self.use_trained_model:
+            if drive_functions.use_memory_for_training:
+                self.transform_model.transform.set_lstm(self.h, self.c)
             self.previous_error = drive_functions.error_decay * self.previous_error + (
                 1 - drive_functions.error_decay
             ) * self.pred(self.X_current)
@@ -505,6 +634,41 @@ class drive_controller:
             acc_lim,
             acc_rate_lim,
         ) = drive_functions.calc_limits(x_current[2], x_current[4], x_current[5])
+        if not self.initialize_input_queue and (
+            self.mode != "pure_pursuit" and self.mode != "naive_pure_pursuit"
+        ):
+            self.acc_fb_1, self.acc_fb_2 = np.clip(
+                drive_functions.acc_prediction_error_compensation(
+                    self.X_current,
+                    self.X_old,
+                    self.u_old,
+                    self.previous_error,
+                    self.acc_fb_1,
+                    self.acc_fb_2,
+                    self.acc_time_stamp - self.acc_time_stamp_old,
+                ),
+                -drive_functions.max_error_acc,
+                drive_functions.max_error_acc,
+            )
+            self.steer_fb_1, self.steer_fb_2 = np.clip(
+                drive_functions.steer_prediction_error_compensation(
+                    self.X_current,
+                    self.X_old,
+                    self.u_old,
+                    self.previous_error,
+                    self.steer_fb_1,
+                    self.steer_fb_2,
+                    self.steer_time_stamp - self.steer_time_stamp_old,
+                ),
+                -drive_functions.max_error_steer,
+                drive_functions.max_error_steer,
+            )
+            self.u_opt[0] += drive_functions.acc_fb_gain * (
+                2 * self.acc_fb_1 - drive_functions.acc_fb_sec_order_ratio * self.acc_fb_2
+            )
+            self.u_opt[1] += drive_functions.steer_fb_gain * (
+                2 * self.steer_fb_1 - drive_functions.steer_fb_sec_order_ratio * self.steer_fb_2
+            )
 
         self.u_opt = drive_functions.u_cut_off(
             self.u_opt,
@@ -517,10 +681,13 @@ class drive_controller:
         )
 
         self.initialize_input_queue = False
-        self.X_des_history.append(X_des[0])
+        self.X_des_history.append(X_des_[0])
         self.initial_guess_for_debug = (self.nominal_inputs).copy()
 
         self.x_old = x_current
+        self.X_old = (self.X_current).copy()
+        self.acc_time_stamp_old = self.acc_time_stamp
+        self.steer_time_stamp_old = self.steer_time_stamp
         return self.u_opt
 
     def update_input_queue(
@@ -529,12 +696,16 @@ class drive_controller:
         acc_history: list[float],
         steer_history: list[float],
         x_current_: np.ndarray,
+        acc_time_stamp: float,
+        steer_time_stamp: float,
     ) -> None:
         """Receives the history of the acceleration and steer inputs and their time stamps.
 
         And interpolates them to be the history of the time steps used by the controller.
         The return value can be passed to get_optimal_control.
         """
+        self.acc_time_stamp = acc_time_stamp
+        self.steer_time_stamp = steer_time_stamp
         if not self.initialize_input_queue:
             if len(time_stamp) == 1:
                 self.acc_input_queue[-1] = acc_history[0]
@@ -849,6 +1020,39 @@ class drive_controller:
                             self.steer_input_queue_for_learning.pop(0)
                             self.time_stamp_queue_for_learning.pop(0)
 
+    def update_lstm_info(self, time_stamp):
+        self.transform_model.transform.set_lstm(0 * self.h, 0 * self.c)
+        self.time_stamp_for_update_lstm.append(time_stamp)
+        self.X_queue_for_update_lstm.append(self.X_current)
+        if len(self.X_queue_for_update_lstm) > 1:
+            while self.time_stamp_for_update_lstm[-1] - self.time_stamp_for_update_lstm[
+                1
+            ] > drive_functions.mpc_time_step * (drive_functions.N + 1):
+                self.time_stamp_for_update_lstm.pop(0)
+                self.X_queue_for_update_lstm.pop(0)
+            if (
+                self.time_stamp_for_update_lstm[-1] - self.time_stamp_for_update_lstm[0]
+                > drive_functions.mpc_time_step
+            ):
+                horizon_num = min(
+                    int(
+                        (self.time_stamp_for_update_lstm[-1] - self.time_stamp_for_update_lstm[0])
+                        / drive_functions.mpc_time_step
+                    ),
+                    drive_functions.N,
+                )
+                time_stamp_interp = (
+                    self.time_stamp_for_update_lstm[-1]
+                    - drive_functions.mpc_time_step * np.arange(1, horizon_num + 1)[::-1]
+                )
+                X_interp = scipy.interpolate.interp1d(
+                    np.array(self.time_stamp_for_update_lstm),
+                    np.array(self.X_queue_for_update_lstm).T,
+                )(time_stamp_interp)
+                self.transform_model.transform.update_memory_by_state_history(X_interp)
+                self.h = self.transform_model.transform.get_h()
+                self.c = self.transform_model.transform.get_c()
+
     def update_input_queue_and_get_optimal_control(
         self,
         time_stamp,
@@ -857,10 +1061,14 @@ class drive_controller:
         x_current_,
         X_des_,
         U_des=np.zeros((drive_functions.N, drive_functions.nu_0)),
+        acc_time_stamp=0.0,
+        steer_time_stamp=0.0,
     ):
         """Run update_input_queue and get_optimal_control all at once."""
-        self.update_input_queue(time_stamp, acc_history, steer_history, x_current_)
-        u_opt = self.get_optimal_control(x_current_, X_des_, U_des)
+        self.update_input_queue(
+            time_stamp, acc_history, steer_history, x_current_, acc_time_stamp, steer_time_stamp
+        )
+        u_opt = self.get_optimal_control(x_current_, time_stamp, X_des_, U_des)
         return u_opt
 
     def update_model(self):
@@ -888,25 +1096,27 @@ class drive_controller:
                 loss.backward()
                 self.drive_optimizer.step()
 
-                transform_model = drive_NN.transform_model_to_c(
+                self.transform_model = drive_NN.transform_model_to_c(
                     self.model,
                     self.A_for_polynomial_reg,
                     self.b_for_polynomial_reg,
                     self.deg,
-                    self.acc_time_constant_ctrl,
                     self.acc_delay_step,
-                    self.steer_time_constant_ctrl,
                     self.steer_delay_step,
                     drive_functions.acc_ctrl_queue_size,
                     drive_functions.steer_ctrl_queue_size,
                     drive_functions.steer_ctrl_queue_size_core,
                 )
-                self.pred = transform_model.pred
-                self.Pred = transform_model.Pred
-                self.pred_with_diff = transform_model.pred_with_diff
+                self.pred = self.transform_model.pred
+                if drive_functions.reflect_only_poly_diff:
+                    self.pred_with_diff = self.transform_model.pred_with_poly_diff
+                elif self.use_memory_diff and drive_functions.use_memory_for_training:
+                    self.pred_with_diff = self.transform_model.pred_with_memory_diff
+                else:
+                    self.pred_with_diff = self.transform_model.pred_with_diff
                 self.F_N_initial_diff = partial(
                     drive_functions.F_with_model_initial_diff,
-                    pred=self.pred,
+                    pred=self.transform_model.pred,
                     i=self.acc_delay_step,
                     j=self.steer_delay_step,
                     acc_time_constant_ctrl=self.acc_time_constant_ctrl,
@@ -920,9 +1130,17 @@ class drive_controller:
                     acc_time_constant_ctrl=self.acc_time_constant_ctrl,
                     steer_time_constant_ctrl=self.steer_time_constant_ctrl,
                 )
+                self.F_N_only_state = partial(
+                    drive_functions.F_with_model,
+                    pred=self.transform_model.pred_only_state,
+                    i=self.acc_delay_step,
+                    j=self.steer_delay_step,
+                    acc_time_constant_ctrl=self.acc_time_constant_ctrl,
+                    steer_time_constant_ctrl=self.steer_time_constant_ctrl,
+                )
                 self.F_N_for_candidates = partial(
                     drive_functions.F_with_model_for_candidates,
-                    Pred=self.Pred,
+                    Pred=self.transform_model.Pred,
                     i=self.acc_delay_step,
                     j=self.steer_delay_step,
                     acc_time_constant_ctrl=self.acc_time_constant_ctrl,

@@ -5,6 +5,8 @@ trained_model_parameter:
     max_train_data_size: 10000
     error_decay: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
     use_trained_model_diff: true
+    minimum_steer_diff: 0.03
+    reflect_only_poly_diff: false
     use_sg_for_trained_model_diff: true
     sg_deg_for_trained_model_diff: 0
     sg_window_size_for_trained_model_diff: 25
@@ -17,6 +19,12 @@ trained_model_parameter:
     use_theta_noise: false
     use_acc_noise: false
     use_steer_noise: false
+  memory_for_training:
+    use_memory_for_training: true
+    use_memory_diff: true
+    use_sg_for_memory_diff: true
+    sg_deg_for_memory_diff: 0
+    sg_window_size_for_memory_diff: 10
   smoothing:
     acc_sigma_for_learning: 5.0
     steer_sigma_for_learning: 5.0
@@ -28,3 +36,29 @@ trained_model_parameter:
     theta_out_sigma_for_learning: 10.0
     acc_out_sigma_for_learning: 5.0
     steer_out_sigma_for_learning: 5.0
+  normalize:
+    vel_normalize: 0.2
+    acc_normalize: 1.0
+    steer_normalize: 3.0
+  weight:
+    NN_x_weight: 1.0
+    NN_y_weight: 1.0
+    NN_v_weight: 1.0
+    NN_yaw_weight: 2.0
+    NN_acc_weight: 1.0
+    NN_steer_weight: 2.0
+    NN_x_weight_diff: 0.001
+    NN_y_weight_diff: 0.01
+    NN_v_weight_diff: 0.001
+    NN_yaw_weight_diff: 0.1
+    NN_acc_weight_diff: 0.1
+    NN_steer_weight_diff: 0.1
+    NN_x_weight_two_diff: 0.0001
+    NN_y_weight_two_diff: 0.001
+    NN_v_weight_two_diff: 0.00001
+    NN_yaw_weight_two_diff: 0.01
+    NN_acc_weight_two_diff: 0.01
+    NN_steer_weight_two_diff: 0.01
+    finalize_x_weight: 10.0
+    finalize_y_weight: 10.0
+    finalize_v_weight: 10.0
