@@ -251,11 +251,6 @@ StaticCenterlineGeneratorNode::StaticCenterlineGeneratorNode(
       }
       save_map();
     });
-  sub_traj_resample_interval_ = create_subscription<std_msgs::msg::Float32>(
-    "/static_centerline_generator/traj_resample_interval", rclcpp::QoS{1},
-    [this]([[maybe_unused]] const std_msgs::msg::Float32 & msg) {
-      // TODO(murooka)
-    });
   sub_validate_ = create_subscription<std_msgs::msg::Empty>(
     "/static_centerline_generator/validate", rclcpp::QoS{1},
     [this]([[maybe_unused]] const std_msgs::msg::Empty & msg) { validate(); });
@@ -323,14 +318,6 @@ void StaticCenterlineGeneratorNode::generate_centerline()
   centerline_handler_ = CenterlineHandler(whole_centerline_with_route);
 
   visualize_selected_centerline();
-}
-
-void StaticCenterlineGeneratorNode::validate()
-{
-  const auto selected_centerline = centerline_handler_.get_selected_centerline();
-  const auto road_bounds = update_road_boundary(selected_centerline);
-
-  evaluate();
 }
 
 CenterlineWithRoute StaticCenterlineGeneratorNode::generate_whole_centerline_with_route()
@@ -572,7 +559,7 @@ void StaticCenterlineGeneratorNode::on_plan_path(
     CenterlineHandler(CenterlineWithRoute{optimized_traj_points, route_lane_ids});
 
   // publish unsafe_footprints
-  evaluate();
+  validate();
 
   // create output data
   auto target_traj_point = optimized_traj_points.cbegin();
@@ -714,8 +701,11 @@ RoadBounds StaticCenterlineGeneratorNode::update_road_boundary(
   return RoadBounds{ego_left_bound, ego_right_bound};
 }
 
-void StaticCenterlineGeneratorNode::evaluate()
+void StaticCenterlineGeneratorNode::validate()
 {
+  // const auto selected_centerline = centerline_handler_.get_selected_centerline();
+  // const auto road_bounds = update_road_boundary(selected_centerline);
+
   std::cerr << std::endl
             << "############################################## Validation Results "
                "##############################################"
@@ -730,6 +720,7 @@ void StaticCenterlineGeneratorNode::evaluate()
   const double max_steer_angle_margin =
     getRosParameter<double>("validation.max_steer_angle_margin");
 
+  // calculate color for distance to road border
   const auto dist_thresh_vec = getRosParameter<std::vector<double>>("marker_color_dist_thresh");
   const auto marker_color_vec = getRosParameter<std::vector<std::string>>("marker_color");
   const auto get_marker_color = [&](const double dist) -> boost::optional<std::array<double, 3>> {
@@ -806,7 +797,7 @@ void StaticCenterlineGeneratorNode::evaluate()
     }
   }
 
-  // publish left boundary
+  // publish road boundaries
   const auto left_bound = convertToGeometryPoints(lanelet_left_bound);
   const auto right_bound = convertToGeometryPoints(lanelet_right_bound);
 

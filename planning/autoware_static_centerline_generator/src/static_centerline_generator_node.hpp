@@ -133,7 +133,6 @@ private:
 
   void visualize_selected_centerline();
   RoadBounds update_road_boundary(const std::vector<TrajectoryPoint> & centerline);
-  void evaluate();
 
   // parameter
   template <typename T>

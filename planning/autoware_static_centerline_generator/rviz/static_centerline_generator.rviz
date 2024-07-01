@@ -122,7 +122,7 @@ Visualization Manager:
       Name: Map
     - Class: rviz_plugins/PathWithLaneId
       Color Border Vel Max: 3
-      Enabled: true
+      Enabled: false
       Name: Raw Centerline
       Topic:
         Depth: 5
