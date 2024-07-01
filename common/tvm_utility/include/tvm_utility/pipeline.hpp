@@ -93,6 +93,7 @@ public:
    * @return The output of the pipeline
    */
   virtual OutputType schedule(const InputType & input) = 0;
+  virtual ~PipelineStage() {}
   InputType input_type_indicator_;
   OutputType output_type_indicator_;
 };
@@ -299,7 +300,7 @@ public:
     }
   }
 
-  TVMArrayContainerVector schedule(const TVMArrayContainerVector & input)
+  TVMArrayContainerVector schedule(const TVMArrayContainerVector & input) override
   {
     // Set input(s)
     for (uint32_t index = 0; index < input.size(); ++index) {
