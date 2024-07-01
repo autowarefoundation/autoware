@@ -162,6 +162,13 @@ class CenterlineUpdaterHelper(Node):
         msg = Empty()
         self.pub_save_map.publish(msg)
 
+        # NOTE: After saving the map, the generated centerline is written
+        # in original_map_ptr_ in static_centerline_generator_node.
+        # When saving the map again, another centerline is written without
+        # removing the previous centerline.
+        # Therefore, saving the map can be called only once.
+        self.widget.save_map_button.setEnabled(False)
+
     def onValidateButtonPushed(self, event):
         msg = Empty()
         self.pub_validate.publish(msg)
