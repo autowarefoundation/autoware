@@ -354,6 +354,9 @@ PoseInstabilityDetector::clip_out_necessary_twist(
     start_twist.header.stamp = start_time;
     result_deque.push_front(start_twist);
   } else {
+    if (result_deque.size() < 2) {
+      return result_deque;
+    }
     // If the first element is earlier than start_time, interpolate the first element
     rclcpp::Time time0 = rclcpp::Time(result_deque[0].header.stamp);
     rclcpp::Time time1 = rclcpp::Time(result_deque[1].header.stamp);
@@ -380,6 +383,9 @@ PoseInstabilityDetector::clip_out_necessary_twist(
     end_twist.header.stamp = end_time;
     result_deque.push_back(end_twist);
   } else {
+    if (result_deque.size() < 2) {
+      return result_deque;
+    }
     // If the last element is later than end_time, interpolate the last element
     rclcpp::Time time0 = rclcpp::Time(result_deque[result_deque.size() - 2].header.stamp);
     rclcpp::Time time1 = rclcpp::Time(result_deque[result_deque.size() - 1].header.stamp);
