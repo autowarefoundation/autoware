@@ -36,7 +36,8 @@ class SteeringWheelDisplay
 {
 public:
   SteeringWheelDisplay();
-  void drawSteeringWheel(QPainter & painter, const QRectF & backgroundRect);
+  void drawSteeringWheel(
+    QPainter & painter, const QRectF & backgroundRect, float handle_angle_scale_);
   void updateSteeringData(const autoware_vehicle_msgs::msg::SteeringReport::ConstSharedPtr & msg);
 
 private:
@@ -46,6 +47,7 @@ private:
   QImage wheelImage;
   QImage scaledWheelImage;
   QImage coloredImage(const QImage & source, const QColor & color);
+  autoware_vehicle_msgs::msg::SteeringReport::ConstSharedPtr last_msg_ptr_;
 };
 
 }  // namespace autoware_overlay_rviz_plugin

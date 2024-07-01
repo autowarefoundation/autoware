@@ -59,19 +59,17 @@ void SteeringWheelDisplay::updateSteeringData(
   const autoware_vehicle_msgs::msg::SteeringReport::ConstSharedPtr & msg)
 {
   try {
-    // Assuming msg->steering_angle is the field you're interested in
-    float steeringAngle = msg->steering_tire_angle;
-    // we received it as a radian value, but we want to display it in degrees
-    steering_angle_ =
-      (steeringAngle * -180 / M_PI) *
-      17;  // 17 is the ratio between the steering wheel and the steering tire angle i assume
+    last_msg_ptr_ = msg;
+
+    steering_angle_ = msg->steering_tire_angle;
   } catch (const std::exception & e) {
     // Log the error
     std::cerr << "Error in processMessage: " << e.what() << std::endl;
   }
 }
 
-void SteeringWheelDisplay::drawSteeringWheel(QPainter & painter, const QRectF & backgroundRect)
+void SteeringWheelDisplay::drawSteeringWheel(
+  QPainter & painter, const QRectF & backgroundRect, float handle_angle_scale_)
 {
   // Enable Antialiasing for smoother drawing
   painter.setRenderHint(QPainter::Antialiasing, true);
@@ -80,7 +78,7 @@ void SteeringWheelDisplay::drawSteeringWheel(QPainter & painter, const QRectF & 
   QImage wheel = coloredImage(scaledWheelImage, gray);
 
   // Rotate the wheel
-  float steeringAngle = steering_angle_;  // No need to round here
+  float steeringAngle = std::round(handle_angle_scale_ * (steering_angle_ / M_PI) * -180.0);
   // Calculate the position
   int wheelCenterX = backgroundRect.left() + wheel.width() + 54 + 54;
   int wheelCenterY = backgroundRect.height() / 2;
@@ -99,16 +97,40 @@ void SteeringWheelDisplay::drawSteeringWheel(QPainter & painter, const QRectF & 
   // Draw the rotated image
   painter.drawImage(drawPoint.x(), drawPoint.y(), rotatedWheel);
 
-  QString steeringAngleStringAfterModulo = QString::number(fmod(steeringAngle, 360), 'f', 0);
+  std::ostringstream steering_angle_ss;
+  if (last_msg_ptr_) {
+    steering_angle_ss << std::fixed << std::setprecision(1) << steering_angle_ * 180.0 / M_PI
+                      << "°";
+  } else {
+    steering_angle_ss << "N/A";
+  }
+
+  QString steeringAngleString = QString::fromStdString(steering_angle_ss.str());
+  // if the string doesn't have a negative sign, add a space to the front of the string
+  // to align the text in both cases (negative and positive)
+  if (steeringAngleString[0] != '-') {
+    steeringAngleString = " " + steeringAngleString;
+  }
 
   // Draw the steering angle text
-  QFont steeringFont("Quicksand", 9, QFont::Bold);
+  QFont steeringFont("Quicksand", 8, QFont::Bold);
   painter.setFont(steeringFont);
   painter.setPen(QColor(0, 0, 0, 255));
-  QRect steeringRect(
-    wheelCenterX - wheelImage.width() / 2, wheelCenterY - wheelImage.height() / 2,
-    wheelImage.width(), wheelImage.height());
-  painter.drawText(steeringRect, Qt::AlignCenter, steeringAngleStringAfterModulo + "°");
+  // QRect steeringRect(
+  //   wheelCenterX - wheelImage.width() / 2 + 1, wheelCenterY - wheelImage.height() / 2,
+  //   wheelImage.width(), wheelImage.height());
+  // painter.drawText(steeringRect, Qt::AlignCenter, steeringAngleString);
+
+  // Measure the text
+  QFontMetrics fontMetrics(steeringFont);
+  QRect textRect = fontMetrics.boundingRect(steeringAngleString);
+
+  // Center the text
+  int textX = wheelCenterX - textRect.width() / 2;
+  int textY = wheelCenterY - textRect.height() / 2;
+
+  QRect steeringRect(textX, textY, textRect.width(), textRect.height());
+  painter.drawText(steeringRect, Qt::AlignCenter, steeringAngleString);
 }
 
 QImage SteeringWheelDisplay::coloredImage(const QImage & source, const QColor & color)
