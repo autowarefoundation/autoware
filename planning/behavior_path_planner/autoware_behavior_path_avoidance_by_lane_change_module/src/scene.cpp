@@ -40,7 +40,6 @@ using autoware::behavior_path_planner::LaneChangeModuleType;
 using autoware::behavior_path_planner::ObjectInfo;
 using autoware::behavior_path_planner::Point2d;
 using autoware::behavior_path_planner::utils::lane_change::debug::createExecutionArea;
-namespace utils = autoware::behavior_path_planner::utils;
 
 AvoidanceByLaneChange::AvoidanceByLaneChange(
   const std::shared_ptr<LaneChangeParameters> & parameters,

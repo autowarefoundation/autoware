@@ -35,7 +35,6 @@ namespace autoware::behavior_velocity_planner
 {
 using autoware::universe_utils::getOrDeclareParameter;
 using lanelet::autoware::VirtualTrafficLight;
-namespace planning_utils = autoware::behavior_velocity_planner::planning_utils;
 
 VirtualTrafficLightModuleManager::VirtualTrafficLightModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
