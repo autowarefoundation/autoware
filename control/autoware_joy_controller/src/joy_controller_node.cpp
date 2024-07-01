@@ -23,7 +23,6 @@
 #include <algorithm>
 #include <memory>
 #include <string>
-#include <utility>
 
 namespace
 {
@@ -404,8 +403,8 @@ void AutowareJoyControllerNode::sendEmergencyRequest(bool emergency)
   request->emergency = emergency;
 
   client_emergency_stop_->async_send_request(
-    request, [this, emergency](
-               rclcpp::Client<tier4_external_api_msgs::srv::SetEmergency>::SharedFuture result) {
+    request,
+    [this](rclcpp::Client<tier4_external_api_msgs::srv::SetEmergency>::SharedFuture result) {
       auto response = result.get();
       if (tier4_api_utils::is_success(response->status)) {
         RCLCPP_INFO(get_logger(), "service succeeded");

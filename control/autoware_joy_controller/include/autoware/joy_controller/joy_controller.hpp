@@ -33,7 +33,6 @@
 #include <tier4_external_api_msgs/srv/engage.hpp>
 #include <tier4_external_api_msgs/srv/set_emergency.hpp>
 
-#include <algorithm>
 #include <memory>
 #include <string>
 
@@ -110,7 +109,6 @@ private:
   autoware_control_msgs::msg::Control prev_control_command_;
   tier4_external_api_msgs::msg::ControlCommand prev_external_control_command_;
   GearShiftType prev_shift_ = tier4_external_api_msgs::msg::GearShift::NONE;
-  TurnSignalType prev_turn_signal_ = tier4_external_api_msgs::msg::TurnSignal::NONE;
   GateModeType prev_gate_mode_ = tier4_control_msgs::msg::GateMode::AUTO;
 
   // Timer

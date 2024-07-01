@@ -17,6 +17,8 @@
 
 #include "autoware/joy_controller/joy_converter/joy_converter_base.hpp"
 
+#include <cstdlib>
+
 namespace autoware::joy_controller
 {
 class G29JoyConverter : public JoyConverterBase
@@ -27,7 +29,7 @@ public:
   float accel() const
   {
     constexpr float eps = 0.0000001;
-    if (std::fabs(AccelPedal()) < eps) {
+    if (std::abs(AccelPedal()) < eps) {
       return 0.0f;
     }
     return (AccelPedal() + 1.0f) / 2;
@@ -36,7 +38,7 @@ public:
   float brake() const
   {
     constexpr float eps = 0.0000001;
-    if (std::fabs(BrakePedal()) < eps) {
+    if (std::abs(BrakePedal()) < eps) {
       return 0.0f;
     }
     return (BrakePedal() + 1.0f) / 2;

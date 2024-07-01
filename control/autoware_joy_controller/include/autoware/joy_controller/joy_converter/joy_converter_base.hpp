@@ -17,8 +17,6 @@
 
 #include <sensor_msgs/msg/joy.hpp>
 
-#include <algorithm>
-
 namespace autoware::joy_controller
 {
 class JoyConverterBase
@@ -49,6 +47,8 @@ public:
 
   virtual bool vehicle_engage() const = 0;
   virtual bool vehicle_disengage() const = 0;
+
+  virtual ~JoyConverterBase() = default;
 };
 }  // namespace autoware::joy_controller
 
