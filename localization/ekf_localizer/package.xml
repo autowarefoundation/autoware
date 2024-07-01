@@ -28,6 +28,7 @@
   <depend>fmt</depend>
   <depend>geometry_msgs</depend>
   <depend>kalman_filter</depend>
+  <depend>localization_util</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

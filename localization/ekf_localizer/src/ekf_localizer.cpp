@@ -17,6 +17,7 @@
 #include "ekf_localizer/diagnostics.hpp"
 #include "ekf_localizer/string.hpp"
 #include "ekf_localizer/warning_message.hpp"
+#include "localization_util/covariance_ellipse.hpp"
 
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/math/unit_conversion.hpp>
@@ -148,7 +149,7 @@ void EKFLocalizer::timer_callback()
   if (!is_activated_) {
     warning_->warn_throttle(
       "The node is not activated. Provide initial pose to pose_initializer", 2000);
-    publish_diagnostics(current_time);
+    publish_diagnostics(geometry_msgs::msg::PoseStamped{}, current_time);
     return;
   }
 
@@ -241,7 +242,7 @@ void EKFLocalizer::timer_callback()
 
   /* publish ekf result */
   publish_estimate_result(current_ekf_pose, current_biased_ekf_pose, current_ekf_twist);
-  publish_diagnostics(current_time);
+  publish_diagnostics(current_ekf_pose, current_time);
 }
 
 /*
@@ -390,7 +391,8 @@ void EKFLocalizer::publish_estimate_result(
   pub_odom_->publish(odometry);
 }
 
-void EKFLocalizer::publish_diagnostics(const rclcpp::Time & current_time)
+void EKFLocalizer::publish_diagnostics(
+  const geometry_msgs::msg::PoseStamped & current_ekf_pose, const rclcpp::Time & current_time)
 {
   std::vector<diagnostic_msgs::msg::DiagnosticStatus> diag_status_array;
 
@@ -418,6 +420,18 @@ void EKFLocalizer::publish_diagnostics(const rclcpp::Time & current_time)
     diag_status_array.push_back(check_measurement_mahalanobis_gate(
       "twist", twist_diag_info_.is_passed_mahalanobis_gate, twist_diag_info_.mahalanobis_distance,
       params_.twist_gate_dist));
+
+    geometry_msgs::msg::PoseWithCovariance pose_cov;
+    pose_cov.pose = current_ekf_pose.pose;
+    pose_cov.covariance = ekf_module_->get_current_pose_covariance();
+    const autoware::localization_util::Ellipse ellipse =
+      autoware::localization_util::calculate_xy_ellipse(pose_cov, params_.ellipse_scale);
+    diag_status_array.push_back(check_covariance_ellipse(
+      "cov_ellipse_long_axis", ellipse.long_radius, params_.warn_ellipse_size,
+      params_.error_ellipse_size));
+    diag_status_array.push_back(check_covariance_ellipse(
+      "cov_ellipse_lateral_direction", ellipse.size_lateral_direction,
+      params_.warn_ellipse_size_lateral_direction, params_.error_ellipse_size_lateral_direction));
   }
 
   diagnostic_msgs::msg::DiagnosticStatus diag_merged_status;

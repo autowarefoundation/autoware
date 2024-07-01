@@ -186,10 +186,12 @@ Note that, although the dimension gets larger since the analytical expansion can
 - The number of consecutive no measurement update via the Pose/Twist topic exceeds the `pose_no_update_count_threshold_warn`/`twist_no_update_count_threshold_warn`.
 - The timestamp of the Pose/Twist topic is beyond the delay compensation range.
 - The Pose/Twist topic is beyond the range of Mahalanobis distance for covariance estimation.
+- The covariance ellipse is bigger than threshold `warn_ellipse_size` for long axis or `warn_ellipse_size_lateral_direction` for lateral_direction.
 
 ### The conditions that result in an ERROR state
 
 - The number of consecutive no measurement update via the Pose/Twist topic exceeds the `pose_no_update_count_threshold_error`/`twist_no_update_count_threshold_error`.
+- The covariance ellipse is bigger than threshold `error_ellipse_size` for long axis or `error_ellipse_size_lateral_direction` for lateral_direction.
 
 ## Known issues
 

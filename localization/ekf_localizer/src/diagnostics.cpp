@@ -139,6 +139,39 @@ diagnostic_msgs::msg::DiagnosticStatus check_measurement_mahalanobis_gate(
   return stat;
 }
 
+diagnostic_msgs::msg::DiagnosticStatus check_covariance_ellipse(
+  const std::string & name, const double curr_size, const double warn_threshold,
+  const double error_threshold)
+{
+  diagnostic_msgs::msg::DiagnosticStatus stat;
+
+  diagnostic_msgs::msg::KeyValue key_value;
+  key_value.key = name + "_size";
+  key_value.value = std::to_string(curr_size);
+  stat.values.push_back(key_value);
+
+  key_value.key = name + "_warn_threshold";
+  key_value.value = std::to_string(warn_threshold);
+  stat.values.push_back(key_value);
+
+  key_value.key = name + "_error_threshold";
+  key_value.value = std::to_string(error_threshold);
+  stat.values.push_back(key_value);
+
+  stat.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
+  stat.message = "OK";
+  if (curr_size >= warn_threshold) {
+    stat.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
+    stat.message = "[WARN]" + name + " is large";
+  }
+  if (curr_size >= error_threshold) {
+    stat.level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
+    stat.message = "[ERROR]" + name + " is large";
+  }
+
+  return stat;
+}
+
 // The highest level within the stat_array will be reflected in the merged_stat.
 // When all stat_array entries are 'OK,' the message of merged_stat will be "OK"
 diagnostic_msgs::msg::DiagnosticStatus merge_diagnostic_status(

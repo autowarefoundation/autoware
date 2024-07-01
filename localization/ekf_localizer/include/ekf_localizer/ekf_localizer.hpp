@@ -216,7 +216,8 @@ private:
   /**
    * @brief publish diagnostics message
    */
-  void publish_diagnostics(const rclcpp::Time & current_time);
+  void publish_diagnostics(
+    const geometry_msgs::msg::PoseStamped & current_ekf_pose, const rclcpp::Time & current_time);
 
   /**
    * @brief update simple 1d filter

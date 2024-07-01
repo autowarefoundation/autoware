@@ -39,6 +39,11 @@
       pose_no_update_count_threshold_error: 100
       twist_no_update_count_threshold_warn: 50
       twist_no_update_count_threshold_error: 100
+      ellipse_scale: 3.0
+      error_ellipse_size: 1.5
+      warn_ellipse_size: 1.2
+      error_ellipse_size_lateral_direction: 0.3
+      warn_ellipse_size_lateral_direction: 0.25
 
     misc:
       # for velocity measurement limitation (Set 0.0 if you want to ignore)
