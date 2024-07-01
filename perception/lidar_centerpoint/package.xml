@@ -16,7 +16,6 @@
   <depend>autoware_universe_utils</depend>
   <depend>object_recognition_utils</depend>
   <depend>pcl_ros</depend>
-  <depend>python3-open3d</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tensorrt_common</depend>
