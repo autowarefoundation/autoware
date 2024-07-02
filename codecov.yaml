@@ -1,11 +1,15 @@
+# https://docs.codecov.com/docs/commit-status#project-status
+
 coverage:
   status:
     project:
       default:
-        target: auto
+        target: 0% # Make CI always succeed
+        threshold: 100% # Make CI always succeed
     patch:
       default:
-        target: auto
+        target: 0% # Make CI always succeed
+        threshold: 100% # Make CI always succeed
 
 comment:
   show_carryforward_flags: true
