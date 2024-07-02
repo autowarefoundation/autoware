@@ -381,8 +381,11 @@ def launch_setup(context, *args, **kwargs):
         remappings=[
             ("~/input/diagnostics", "/diagnostics"),
             ("~/input/odometry", "/localization/kinematic_state"),
+            ("~/input/acceleration", "/localization/acceleration"),
             ("~/input/trajectory", "/planning/scenario_planning/trajectory"),
             ("~/metrics", "/diagnostic/control_evaluator/metrics"),
+            ("~/input/vector_map", "/map/vector_map"),
+            ("~/input/route", "/planning/mission_planning/route"),
         ],
     )
 

@@ -16,6 +16,7 @@
 
   <depend>autoware_motion_utils</depend>
   <depend>autoware_planning_msgs</depend>
+  <depend>autoware_route_handler</depend>
   <depend>autoware_universe_utils</depend>
   <depend>diagnostic_msgs</depend>
   <depend>pluginlib</depend>

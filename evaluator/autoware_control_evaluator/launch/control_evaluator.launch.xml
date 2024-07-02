@@ -1,15 +1,21 @@
 <launch>
   <arg name="input/diagnostics" default="/diagnostics"/>
   <arg name="input/odometry" default="/localization/kinematic_state"/>
+  <arg name="input/acceleration" default="/localization/acceleration"/>
   <arg name="input/trajectory" default="/planning/scenario_planning/trajectory"/>
+  <arg name="map_topic_name" default="/map/vector_map"/>
+  <arg name="route_topic_name" default="/planning/mission_planning/route"/>
   <!-- control evaluator -->
   <group>
     <node name="control_evaluator" exec="control_evaluator" pkg="autoware_control_evaluator">
       <param from="$(find-pkg-share autoware_control_evaluator)/param/control_evaluator.defaults.yaml"/>
       <remap from="~/input/diagnostics" to="$(var input/diagnostics)"/>
       <remap from="~/input/odometry" to="$(var input/odometry)"/>
+      <remap from="~/input/acceleration" to="$(var input/acceleration)"/>
       <remap from="~/input/trajectory" to="$(var input/trajectory)"/>
       <remap from="~/metrics" to="/diagnostic/control_evaluator/metrics"/>
+      <remap from="~/input/vector_map" to="$(var map_topic_name)"/>
+      <remap from="~/input/route" to="$(var route_topic_name)"/>
     </node>
   </group>
 </launch>
