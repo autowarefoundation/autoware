@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECT_MERGER__DATA_ASSOCIATION__SOLVER__MU_SUCCESSIVE_SHORTEST_PATH_HPP_
-#define OBJECT_MERGER__DATA_ASSOCIATION__SOLVER__MU_SUCCESSIVE_SHORTEST_PATH_HPP_
+#ifndef AUTOWARE_OBJECT_MERGER__ASSOCIATION__SOLVER__MU_SSP_HPP_
+#define AUTOWARE_OBJECT_MERGER__ASSOCIATION__SOLVER__MU_SSP_HPP_
 
-#include "object_merger/data_association/solver/gnn_solver_interface.hpp"
+#include "autoware_object_merger/association/solver/gnn_solver_interface.hpp"
 
 #include <unordered_map>
 #include <vector>
 
-namespace gnn_solver
+namespace autoware::object_merger::gnn_solver
 {
 class MuSSP : public GnnSolverInterface
 {
@@ -32,6 +32,6 @@ public:
     const std::vector<std::vector<double>> & cost, std::unordered_map<int, int> * direct_assignment,
     std::unordered_map<int, int> * reverse_assignment) override;
 };
-}  // namespace gnn_solver
+}  // namespace autoware::object_merger::gnn_solver
 
-#endif  // OBJECT_MERGER__DATA_ASSOCIATION__SOLVER__MU_SUCCESSIVE_SHORTEST_PATH_HPP_
+#endif  // AUTOWARE_OBJECT_MERGER__ASSOCIATION__SOLVER__MU_SSP_HPP_

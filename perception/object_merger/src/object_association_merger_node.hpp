@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECT_MERGER__NODE_HPP_
-#define OBJECT_MERGER__NODE_HPP_
+#ifndef OBJECT_ASSOCIATION_MERGER_NODE_HPP_
+#define OBJECT_ASSOCIATION_MERGER_NODE_HPP_
 
-#include "object_merger/data_association/data_association.hpp"
+#include "autoware/universe_utils/ros/debug_publisher.hpp"
+#include "autoware/universe_utils/ros/published_time_publisher.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
+#include "autoware_object_merger/association/data_association.hpp"
 
-#include <autoware/universe_utils/ros/debug_publisher.hpp>
-#include <autoware/universe_utils/ros/published_time_publisher.hpp>
-#include <autoware/universe_utils/system/stop_watch.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
 
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -45,7 +45,7 @@
 #include <string>
 #include <vector>
 
-namespace object_association
+namespace autoware::object_merger
 {
 class ObjectAssociationMergerNode : public rclcpp::Node
 {
@@ -89,6 +89,6 @@ private:
 
   std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
-}  // namespace object_association
+}  // namespace autoware::object_merger
 
-#endif  // OBJECT_MERGER__NODE_HPP_
+#endif  // OBJECT_ASSOCIATION_MERGER_NODE_HPP_

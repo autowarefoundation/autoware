@@ -18,18 +18,18 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
 )
 
-ament_auto_add_library(object_association_merger SHARED
-  src/object_association_merger/data_association/data_association.cpp
-  src/object_association_merger/data_association/mu_successive_shortest_path/mu_successive_shortest_path_wrapper.cpp
-  src/object_association_merger/node.cpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/association/data_association.cpp
+  src/association/solver/mu_successive_shortest_path_wrapper.cpp
+  src/object_association_merger_node.cpp
 )
 
-target_link_libraries(object_association_merger
+target_link_libraries(${PROJECT_NAME}
   Eigen3::Eigen
 )
 
-rclcpp_components_register_node(object_association_merger
-  PLUGIN "object_association::ObjectAssociationMergerNode"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::object_merger::ObjectAssociationMergerNode"
   EXECUTABLE object_association_merger_node
 )
 

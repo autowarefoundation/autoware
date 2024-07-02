@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "object_merger/data_association/data_association.hpp"
+#include "autoware_object_merger/association/data_association.hpp"
 
 #include "autoware/universe_utils/geometry/geometry.hpp"
-#include "object_merger/data_association/solver/gnn_solver.hpp"
-#include "object_merger/utils/utils.hpp"
+#include "autoware_object_merger/association/solver/gnn_solver.hpp"
 #include "object_recognition_utils/object_recognition_utils.hpp"
 
 #include <algorithm>
@@ -46,6 +45,9 @@ double getFormedYawAngle(
   return std::fabs(fixed_yaw0 - yaw1);
 }
 }  // namespace
+
+namespace autoware::object_merger
+{
 
 DataAssociation::DataAssociation(
   std::vector<int> can_assign_vector, std::vector<double> max_dist_vector,
@@ -77,7 +79,7 @@ DataAssociation::DataAssociation(
     min_iou_matrix_ = min_iou_matrix_tmp.transpose();
   }
 
-  gnn_solver_ptr_ = std::make_unique<gnn_solver::MuSSP>();
+  gnn_solver_ptr_ = std::make_unique<autoware::object_merger::gnn_solver::MuSSP>();
 }
 
 void DataAssociation::assign(
@@ -172,3 +174,5 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
 
   return score_matrix;
 }
+
+}  // namespace autoware::object_merger

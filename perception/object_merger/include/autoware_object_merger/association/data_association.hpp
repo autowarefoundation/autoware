@@ -16,21 +16,25 @@
 // Author: v1.0 Yukihiro Saito
 //
 
-#ifndef OBJECT_MERGER__DATA_ASSOCIATION__DATA_ASSOCIATION_HPP_
-#define OBJECT_MERGER__DATA_ASSOCIATION__DATA_ASSOCIATION_HPP_
+#ifndef AUTOWARE_OBJECT_MERGER__ASSOCIATION__DATA_ASSOCIATION_HPP_
+#define AUTOWARE_OBJECT_MERGER__ASSOCIATION__DATA_ASSOCIATION_HPP_
+
+#define EIGEN_MPL2_ONLY
+
+#include "autoware_object_merger/association/solver/gnn_solver.hpp"
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
 
 #include <list>
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
-#define EIGEN_MPL2_ONLY
-#include "object_merger/data_association/solver/gnn_solver.hpp"
-
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-
-#include <autoware_perception_msgs/msg/detected_objects.hpp>
+namespace autoware::object_merger
+{
 
 class DataAssociation
 {
@@ -40,7 +44,7 @@ private:
   Eigen::MatrixXd max_rad_matrix_;
   Eigen::MatrixXd min_iou_matrix_;
   const double score_threshold_;
-  std::unique_ptr<gnn_solver::GnnSolverInterface> gnn_solver_ptr_;
+  std::unique_ptr<autoware::object_merger::gnn_solver::GnnSolverInterface> gnn_solver_ptr_;
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -56,4 +60,6 @@ public:
   virtual ~DataAssociation() {}
 };
 
-#endif  // OBJECT_MERGER__DATA_ASSOCIATION__DATA_ASSOCIATION_HPP_
+}  // namespace autoware::object_merger
+
+#endif  // AUTOWARE_OBJECT_MERGER__ASSOCIATION__DATA_ASSOCIATION_HPP_

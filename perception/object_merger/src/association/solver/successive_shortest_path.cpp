@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "object_merger/data_association/solver/successive_shortest_path.hpp"
+#include "autoware_object_merger/association/solver/ssp.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -22,7 +22,7 @@
 #include <utility>
 #include <vector>
 
-namespace gnn_solver
+namespace autoware::object_merger::gnn_solver
 {
 struct ResidualEdge
 {
@@ -367,4 +367,4 @@ void SSP::maximizeLinearAssignment(
   }
 #endif
 }
-}  // namespace gnn_solver
+}  // namespace autoware::object_merger::gnn_solver
