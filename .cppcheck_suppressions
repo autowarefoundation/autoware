@@ -5,7 +5,6 @@ constParameterReference
 constVariableReference
 // cspell: ignore cstyle
 cstyleCast
-duplicateBranch
 funcArgNamesDifferent
 functionConst
 functionStatic
