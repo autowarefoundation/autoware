@@ -148,7 +148,8 @@ private:
   bool isStopped();
   bool isDrivingBackwards();
   bool isEmergency() const;
-  bool isAutonomous();
+  bool isControlModeAutonomous();
+  bool isOperationModeAutonomous();
   bool isPullOverStatusAvailable();
   bool isComfortableStopStatusAvailable();
   bool isEmergencyStopStatusAvailable();
