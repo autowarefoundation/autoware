@@ -26,6 +26,3 @@ capture/
 
 # Node.js
 node_modules/
-
-# Docker build
-docker/src

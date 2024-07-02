@@ -100,13 +100,13 @@ load_env() {
 # Clone repositories
 clone_repositories() {
     cd "$WORKSPACE_ROOT"
-    if [ ! -d "docker/src" ]; then
-        mkdir -p docker/src
-        vcs import docker/src <autoware.repos
+    if [ ! -d "src" ]; then
+        mkdir -p src
+        vcs import src <autoware.repos
     else
         echo "Source directory already exists. Updating repositories..."
-        vcs import docker/src <autoware.repos
-        vcs pull docker/src
+        vcs import src <autoware.repos
+        vcs pull src
     fi
 }
 
@@ -140,11 +140,6 @@ build_images() {
     set +x
 }
 
-# Remove temporary source directory
-remove_tmp_src() {
-    rm -rf "$WORKSPACE_ROOT/docker/src"
-}
-
 # Remove dangling images
 remove_dangling_images() {
     docker image prune -f
@@ -159,5 +154,4 @@ set_arch_lib_dir
 load_env
 clone_repositories
 build_images
-remove_tmp_src
 remove_dangling_images
