@@ -43,7 +43,7 @@ jobs:
         id: cppcheck
         run: |
           echo "Running Cppcheck on changed files: ${{ steps.get-changed-files.outputs.changed-files }}"
-          cppcheck --enable=all --inconclusive --check-level=exhaustive --error-exitcode=1 --suppressions-list=.cppcheck_suppressions ${{ steps.get-changed-files.outputs.changed-files }} 2> cppcheck-report.txt
+          cppcheck --enable=all --inconclusive --check-level=exhaustive --error-exitcode=1 --suppressions-list=.cppcheck_suppressions --inline-suppr ${{ steps.get-changed-files.outputs.changed-files }} 2> cppcheck-report.txt
         shell: bash
 
       - name: Show cppcheck-report result
