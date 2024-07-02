@@ -48,7 +48,7 @@ nav:
     - 'Obstacle Cruise Planner':
       - 'About Obstacle Cruise': planning/autoware_obstacle_cruise_planner
       - 'How to Debug': planning/autoware_obstacle_cruise_planner/docs/debug
-    - 'Obstacle Stop Planner': planning/obstacle_stop_planner
+    - 'Obstacle Stop Planner': planning/autoware_obstacle_stop_planner
     - 'Path Smoother':
       - 'About Path Smoother': planning/autoware_path_smoother
       - 'Elastic Band': planning/autoware_path_smoother/docs/eb

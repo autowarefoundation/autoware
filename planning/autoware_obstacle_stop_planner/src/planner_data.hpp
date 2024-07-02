@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_STOP_PLANNER__PLANNER_DATA_HPP_
-#define OBSTACLE_STOP_PLANNER__PLANNER_DATA_HPP_
+#ifndef PLANNER_DATA_HPP_
+#define PLANNER_DATA_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -27,7 +27,7 @@
 
 #include <map>
 
-namespace motion_planning
+namespace autoware::motion_planning
 {
 
 using diagnostic_msgs::msg::DiagnosticStatus;
@@ -282,6 +282,6 @@ struct PlannerData
   bool enable_adaptive_cruise{false};
 };
 
-}  // namespace motion_planning
+}  // namespace autoware::motion_planning
 
-#endif  // OBSTACLE_STOP_PLANNER__PLANNER_DATA_HPP_
+#endif  // PLANNER_DATA_HPP_

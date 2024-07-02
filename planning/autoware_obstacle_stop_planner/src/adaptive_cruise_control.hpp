@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_STOP_PLANNER__ADAPTIVE_CRUISE_CONTROL_HPP_
-#define OBSTACLE_STOP_PLANNER__ADAPTIVE_CRUISE_CONTROL_HPP_
+#ifndef ADAPTIVE_CRUISE_CONTROL_HPP_
+#define ADAPTIVE_CRUISE_CONTROL_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -29,7 +29,7 @@
 #include <optional>
 #include <vector>
 
-namespace motion_planning
+namespace autoware::motion_planning
 {
 using autoware_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
@@ -232,6 +232,6 @@ private:
   static constexpr unsigned int num_debug_values_ = 10;
 };
 
-}  // namespace motion_planning
+}  // namespace autoware::motion_planning
 
-#endif  // OBSTACLE_STOP_PLANNER__ADAPTIVE_CRUISE_CONTROL_HPP_
+#endif  // ADAPTIVE_CRUISE_CONTROL_HPP_

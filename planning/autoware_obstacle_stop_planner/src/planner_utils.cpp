@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "obstacle_stop_planner/planner_utils.hpp"
+#include "planner_utils.hpp"
 
 #include <autoware/motion_utils/distance/distance.hpp>
 #include <autoware/motion_utils/trajectory/conversion.hpp>
@@ -29,7 +29,10 @@
 
 #include <pcl_conversions/pcl_conversions.h>
 
-namespace motion_planning
+#include <algorithm>
+#include <limits>
+
+namespace autoware::motion_planning
 {
 
 using autoware::motion_utils::calcDecelDistWithJerkAndAccConstraints;
@@ -720,4 +723,4 @@ double calcObstacleMaxLength(const autoware_perception_msgs::msg::Shape & shape)
   throw std::logic_error("The shape type is not supported in obstacle_cruise_planner.");
 }
 
-}  // namespace motion_planning
+}  // namespace autoware::motion_planning

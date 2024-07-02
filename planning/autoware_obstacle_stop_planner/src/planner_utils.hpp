@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_STOP_PLANNER__PLANNER_UTILS_HPP_
-#define OBSTACLE_STOP_PLANNER__PLANNER_UTILS_HPP_
+#ifndef PLANNER_UTILS_HPP_
+#define PLANNER_UTILS_HPP_
 
-#include "obstacle_stop_planner/planner_data.hpp"
+#include "planner_data.hpp"
 
 #include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
@@ -33,7 +33,7 @@
 #include <utility>
 #include <vector>
 
-namespace motion_planning
+namespace autoware::motion_planning
 {
 
 namespace bg = boost::geometry;
@@ -149,6 +149,6 @@ double calcObstacleMaxLength(const autoware_perception_msgs::msg::Shape & shape)
 
 rclcpp::SubscriptionOptions createSubscriptionOptions(rclcpp::Node * node_ptr);
 
-}  // namespace motion_planning
+}  // namespace autoware::motion_planning
 
-#endif  // OBSTACLE_STOP_PLANNER__PLANNER_UTILS_HPP_
+#endif  // PLANNER_UTILS_HPP_

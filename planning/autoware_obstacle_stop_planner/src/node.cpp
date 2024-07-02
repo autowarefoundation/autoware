@@ -20,8 +20,8 @@
 #include <vector>
 
 #define EIGEN_MPL2_ONLY
-#include "obstacle_stop_planner/node.hpp"
-#include "obstacle_stop_planner/planner_utils.hpp"
+#include "node.hpp"
+#include "planner_utils.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -38,7 +38,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
-namespace motion_planning
+namespace autoware::motion_planning
 {
 using autoware::motion_utils::calcLongitudinalOffsetPose;
 using autoware::motion_utils::calcLongitudinalOffsetToSegment;
@@ -1601,7 +1601,7 @@ void ObstacleStopPlannerNode::publishDebugData(
   debug_ptr_->publish();
 }
 
-}  // namespace motion_planning
+}  // namespace autoware::motion_planning
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(motion_planning::ObstacleStopPlannerNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::motion_planning::ObstacleStopPlannerNode)

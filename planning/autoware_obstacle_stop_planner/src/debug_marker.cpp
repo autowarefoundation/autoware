@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "obstacle_stop_planner/debug_marker.hpp"
+#include "debug_marker.hpp"
 
 #include <autoware/motion_utils/marker/marker_helper.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
@@ -24,6 +24,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -38,7 +39,7 @@ using autoware::universe_utils::createMarkerColor;
 using autoware::universe_utils::createMarkerScale;
 using autoware::universe_utils::createPoint;
 
-namespace motion_planning
+namespace autoware::motion_planning
 {
 ObstacleStopPlannerDebugNode::ObstacleStopPlannerDebugNode(
   rclcpp::Node * node, const double base_link2front)
@@ -458,39 +459,35 @@ MarkerArray ObstacleStopPlannerDebugNode::makeVisualizationMarker()
   }
 
   if (stop_obstacle_point_ptr_ != nullptr) {
-    auto marker = createDefaultMarker(
+    auto marker1 = createDefaultMarker(
       "map", current_time, "stop_obstacle_point", 0, Marker::SPHERE,
       createMarkerScale(0.25, 0.25, 0.25), createMarkerColor(1.0, 0.0, 0.0, 0.999));
-    marker.pose.position = *stop_obstacle_point_ptr_;
-    msg.markers.push_back(marker);
-  }
+    marker1.pose.position = *stop_obstacle_point_ptr_;
+    msg.markers.push_back(marker1);
 
-  if (stop_obstacle_point_ptr_ != nullptr) {
-    auto marker = createDefaultMarker(
+    auto marker2 = createDefaultMarker(
       "map", current_time, "stop_obstacle_text", 0, Marker::TEXT_VIEW_FACING,
       createMarkerScale(0.0, 0.0, 1.0), createMarkerColor(1.0, 1.0, 1.0, 0.999));
-    marker.pose.position = *stop_obstacle_point_ptr_;
-    marker.pose.position.z += 2.0;
-    marker.text = "!";
-    msg.markers.push_back(marker);
+    marker2.pose.position = *stop_obstacle_point_ptr_;
+    marker2.pose.position.z += 2.0;
+    marker2.text = "!";
+    msg.markers.push_back(marker2);
   }
 
   if (slow_down_obstacle_point_ptr_ != nullptr) {
-    auto marker = createDefaultMarker(
+    auto marker1 = createDefaultMarker(
       "map", current_time, "slow_down_obstacle_point", 0, Marker::SPHERE,
       createMarkerScale(0.25, 0.25, 0.25), createMarkerColor(1.0, 0.0, 0.0, 0.999));
-    marker.pose.position = *slow_down_obstacle_point_ptr_;
-    msg.markers.push_back(marker);
-  }
+    marker1.pose.position = *slow_down_obstacle_point_ptr_;
+    msg.markers.push_back(marker1);
 
-  if (slow_down_obstacle_point_ptr_ != nullptr) {
-    auto marker = createDefaultMarker(
+    auto marker2 = createDefaultMarker(
       "map", current_time, "slow_down_obstacle_text", 0, Marker::TEXT_VIEW_FACING,
       createMarkerScale(0.0, 0.0, 1.0), createMarkerColor(1.0, 1.0, 1.0, 0.999));
-    marker.pose.position = *slow_down_obstacle_point_ptr_;
-    marker.pose.position.z += 2.0;
-    marker.text = "!";
-    msg.markers.push_back(marker);
+    marker2.pose.position = *slow_down_obstacle_point_ptr_;
+    marker2.pose.position.z += 2.0;
+    marker2.text = "!";
+    msg.markers.push_back(marker2);
   }
 
   return msg;
@@ -542,4 +539,4 @@ VelocityFactorArray ObstacleStopPlannerDebugNode::makeVelocityFactorArray()
   return velocity_factor_array;
 }
 
-}  // namespace motion_planning
+}  // namespace autoware::motion_planning

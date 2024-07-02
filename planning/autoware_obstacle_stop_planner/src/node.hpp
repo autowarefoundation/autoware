@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_STOP_PLANNER__NODE_HPP_
-#define OBSTACLE_STOP_PLANNER__NODE_HPP_
+#ifndef NODE_HPP_
+#define NODE_HPP_
 
+#include "adaptive_cruise_control.hpp"
 #include "autoware/universe_utils/ros/logger_level_configure.hpp"
 #include "autoware/universe_utils/system/stop_watch.hpp"
-#include "obstacle_stop_planner/adaptive_cruise_control.hpp"
-#include "obstacle_stop_planner/debug_marker.hpp"
-#include "obstacle_stop_planner/planner_data.hpp"
+#include "debug_marker.hpp"
+#include "planner_data.hpp"
 
 #include <autoware/motion_utils/trajectory/conversion.hpp>
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
@@ -62,7 +62,7 @@
 #include <utility>
 #include <vector>
 
-namespace motion_planning
+namespace autoware::motion_planning
 {
 
 namespace bg = boost::geometry;
@@ -319,6 +319,6 @@ private:
 
   std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
-}  // namespace motion_planning
+}  // namespace autoware::motion_planning
 
-#endif  // OBSTACLE_STOP_PLANNER__NODE_HPP_
+#endif  // NODE_HPP_

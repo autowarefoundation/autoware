@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "obstacle_stop_planner/node.hpp"
+#include "node.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <autoware_planning_test_manager/autoware_planning_test_manager.hpp>
@@ -22,8 +22,8 @@
 
 #include <vector>
 
+using autoware::motion_planning::ObstacleStopPlannerNode;
 using autoware::planning_test_manager::PlanningInterfaceTestManager;
-using motion_planning::ObstacleStopPlannerNode;
 
 std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
 {
@@ -41,7 +41,7 @@ std::shared_ptr<ObstacleStopPlannerNode> generateNode()
   const auto autoware_test_utils_dir =
     ament_index_cpp::get_package_share_directory("autoware_test_utils");
   const auto obstacle_stop_planner_dir =
-    ament_index_cpp::get_package_share_directory("obstacle_stop_planner");
+    ament_index_cpp::get_package_share_directory("autoware_obstacle_stop_planner");
 
   node_options.append_parameter_override("enable_slow_down", false);
 
@@ -53,7 +53,7 @@ std::shared_ptr<ObstacleStopPlannerNode> generateNode()
      obstacle_stop_planner_dir + "/config/adaptive_cruise_control.param.yaml", "--params-file",
      obstacle_stop_planner_dir + "/config/obstacle_stop_planner.param.yaml"});
 
-  return std::make_shared<motion_planning::ObstacleStopPlannerNode>(node_options);
+  return std::make_shared<ObstacleStopPlannerNode>(node_options);
 }
 
 void publishMandatoryTopics(

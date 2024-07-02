@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef OBSTACLE_STOP_PLANNER__DEBUG_MARKER_HPP_
-#define OBSTACLE_STOP_PLANNER__DEBUG_MARKER_HPP_
+#ifndef DEBUG_MARKER_HPP_
+#define DEBUG_MARKER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -34,7 +34,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <autoware/universe_utils/geometry/boost_geometry.hpp>
-namespace motion_planning
+namespace autoware::motion_planning
 {
 
 using geometry_msgs::msg::Point;
@@ -154,6 +154,6 @@ private:
   DebugValues debug_values_;
 };
 
-}  // namespace motion_planning
+}  // namespace autoware::motion_planning
 
-#endif  // OBSTACLE_STOP_PLANNER__DEBUG_MARKER_HPP_
+#endif  // DEBUG_MARKER_HPP_
