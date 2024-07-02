@@ -14,6 +14,11 @@
 
 #include "autoware/planning_evaluator/planning_evaluator_node.hpp"
 
+#include <autoware_lanelet2_extension/utility/query.hpp>
+#include <autoware_lanelet2_extension/utility/utilities.hpp>
+
+#include <diagnostic_msgs/msg/detail/diagnostic_status__struct.hpp>
+
 #include "boost/lexical_cast.hpp"
 
 #include <fstream>
@@ -105,6 +110,97 @@ PlanningEvaluatorNode::~PlanningEvaluatorNode()
   }
 }
 
+void PlanningEvaluatorNode::getRouteData()
+{
+  // route
+  {
+    const auto msg = route_subscriber_.takeNewData();
+    if (msg) {
+      if (msg->segments.empty()) {
+        RCLCPP_ERROR(get_logger(), "input route is empty. ignored");
+      } else {
+        route_handler_.setRoute(*msg);
+      }
+    }
+  }
+
+  // map
+  {
+    const auto msg = vector_map_subscriber_.takeNewData();
+    if (msg) {
+      route_handler_.setMap(*msg);
+    }
+  }
+}
+
+DiagnosticStatus PlanningEvaluatorNode::generateLaneletDiagnosticStatus()
+{
+  const auto & ego_pose = ego_state_ptr_->pose.pose;
+  const auto current_lanelets = [&]() {
+    lanelet::ConstLanelet closest_route_lanelet;
+    route_handler_.getClosestLaneletWithinRoute(ego_pose, &closest_route_lanelet);
+    const auto shoulder_lanelets = route_handler_.getShoulderLaneletsAtPose(ego_pose);
+    lanelet::ConstLanelets closest_lanelets{closest_route_lanelet};
+    closest_lanelets.insert(
+      closest_lanelets.end(), shoulder_lanelets.begin(), shoulder_lanelets.end());
+    return closest_lanelets;
+  }();
+  const auto arc_coordinates = lanelet::utils::getArcCoordinates(current_lanelets, ego_pose);
+  lanelet::ConstLanelet current_lane;
+  lanelet::utils::query::getClosestLanelet(current_lanelets, ego_pose, &current_lane);
+
+  DiagnosticStatus status;
+  status.name = "ego_lane_info";
+  status.level = status.OK;
+  diagnostic_msgs::msg::KeyValue key_value;
+  key_value.key = "lane_id";
+  key_value.value = std::to_string(current_lane.id());
+  status.values.push_back(key_value);
+  key_value.key = "s";
+  key_value.value = std::to_string(arc_coordinates.length);
+  status.values.push_back(key_value);
+  key_value.key = "t";
+  key_value.value = std::to_string(arc_coordinates.distance);
+  status.values.push_back(key_value);
+  return status;
+}
+
+DiagnosticStatus PlanningEvaluatorNode::generateKinematicStateDiagnosticStatus(
+  const AccelWithCovarianceStamped & accel_stamped)
+{
+  DiagnosticStatus status;
+  status.name = "kinematic_state";
+  status.level = status.OK;
+  diagnostic_msgs::msg::KeyValue key_value;
+  key_value.key = "vel";
+  key_value.value = std::to_string(ego_state_ptr_->twist.twist.linear.x);
+  status.values.push_back(key_value);
+  key_value.key = "acc";
+  const auto & acc = accel_stamped.accel.accel.linear.x;
+  key_value.value = std::to_string(acc);
+  status.values.push_back(key_value);
+  key_value.key = "jerk";
+  const auto jerk = [&]() {
+    if (!prev_acc_stamped_.has_value()) {
+      prev_acc_stamped_ = accel_stamped;
+      return 0.0;
+    }
+    const auto t = static_cast<double>(accel_stamped.header.stamp.sec) +
+                   static_cast<double>(accel_stamped.header.stamp.nanosec) * 1e-9;
+    const auto prev_t = static_cast<double>(prev_acc_stamped_.value().header.stamp.sec) +
+                        static_cast<double>(prev_acc_stamped_.value().header.stamp.nanosec) * 1e-9;
+    const auto dt = t - prev_t;
+    if (dt < std::numeric_limits<double>::epsilon()) return 0.0;
+
+    const auto prev_acc = prev_acc_stamped_.value().accel.accel.linear.x;
+    prev_acc_stamped_ = accel_stamped;
+    return (acc - prev_acc) / dt;
+  }();
+  key_value.value = std::to_string(jerk);
+  status.values.push_back(key_value);
+  return status;
+}
+
 DiagnosticStatus PlanningEvaluatorNode::generateDiagnosticStatus(
   const Metric & metric, const Stat<double> & metric_stat) const
 {
@@ -172,6 +268,25 @@ void PlanningEvaluatorNode::onOdometry(const Odometry::ConstSharedPtr odometry_m
 {
   ego_state_ptr_ = odometry_msg;
   metrics_calculator_.setEgoPose(odometry_msg->pose.pose);
+  {
+    DiagnosticArray metrics_msg;
+    metrics_msg.header.stamp = now();
+
+    getRouteData();
+    if (route_handler_.isHandlerReady() && ego_state_ptr_) {
+      metrics_msg.status.push_back(generateLaneletDiagnosticStatus());
+    }
+
+    const auto acc = accel_sub_.takeData();
+
+    if (acc && ego_state_ptr_) {
+      metrics_msg.status.push_back(generateKinematicStateDiagnosticStatus(*acc));
+    }
+
+    if (!metrics_msg.status.empty()) {
+      metrics_pub_->publish(metrics_msg);
+    }
+  }
 
   if (modified_goal_ptr_) {
     publishModifiedGoalDeviationMetrics();
