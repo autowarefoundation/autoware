@@ -22,6 +22,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git
 
+      - name: Install colcon
+        run: |
+          sudo sh -c 'echo "deb [arch=amd64,arm64] http://repo.ros2.org/ubuntu/main `lsb_release -cs` main" > /etc/apt/sources.list.d/ros2-latest.list'
+          curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+          sudo apt update
+          sudo apt install python3-colcon-common-extensions
+
       # cppcheck from apt does not yet support --check-level args, and thus install from snap
       - name: Install Cppcheck from snap
         run: |
@@ -31,33 +38,42 @@ jobs:
         run: git fetch origin ${{ github.base_ref }}
         shell: bash
 
-      - name: Get changed files (existing files only)
-        id: get-changed-files
-        run: |
-          echo "changed-files=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD | grep -E '\.(cpp|hpp)$' | while read -r file; do [ -e "$file" ] && echo -n "$file "; done)" >> $GITHUB_OUTPUT
-        shell: bash
+      - name: Get modified packages
+        id: get-modified-packages
+        uses: autowarefoundation/autoware-github-actions/get-modified-packages@v1
 
-      - name: Run Cppcheck on changed files
-        if: ${{ steps.get-changed-files.outputs.changed-files != '' }}
+      - name: Get full paths of modified packages
+        id: get-full-paths
+        run: |
+          modified_packages="${{ steps.get-modified-packages.outputs.modified-packages }}"
+          paths=""
+          for pkg in $modified_packages; do
+            path=$(colcon list --packages-select $pkg | awk '{print $2}' | xargs realpath)
+            paths="$paths $path"
+          done
+          echo "full-paths=$paths" >> $GITHUB_OUTPUT
+
+      - name: Run Cppcheck on modified packages
+        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
         continue-on-error: true
         id: cppcheck
         run: |
-          echo "Running Cppcheck on changed files: ${{ steps.get-changed-files.outputs.changed-files }}"
-          cppcheck --enable=all --inconclusive --check-level=exhaustive --error-exitcode=1 --suppressions-list=.cppcheck_suppressions --inline-suppr ${{ steps.get-changed-files.outputs.changed-files }} 2> cppcheck-report.txt
+          echo "Running Cppcheck on modified packages: ${{ steps.get-modified-packages.outputs.modified-packages }}"
+          cppcheck --enable=all --inconclusive --check-level=exhaustive --error-exitcode=1 --suppressions-list=.cppcheck_suppressions --inline-suppr ${{ steps.get-full-paths.outputs.full-paths }} 2> cppcheck-report.txt
         shell: bash
 
       - name: Show cppcheck-report result
-        if: ${{ steps.get-changed-files.outputs.changed-files != '' }}
+        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
         run: |
           cat cppcheck-report.txt
 
       - name: Upload Cppcheck report
-        if: ${{ steps.get-changed-files.outputs.changed-files != '' }}
+        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
         uses: actions/upload-artifact@v2
         with:
           name: cppcheck-report
           path: cppcheck-report.txt
 
       - name: Fail the job if Cppcheck failed
-        if: ${{ steps.get-changed-files.outputs.changed-files != '' && steps.cppcheck.outcome == 'failure' }}
+        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' && steps.cppcheck.outcome == 'failure' }}
         run: exit 1
