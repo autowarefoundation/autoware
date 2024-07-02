@@ -48,10 +48,10 @@ using geometry_msgs::msg::AccelWithCovarianceStamped;
 /**
  * @brief Node for control evaluation
  */
-class controlEvaluatorNode : public rclcpp::Node
+class ControlEvaluatorNode : public rclcpp::Node
 {
 public:
-  explicit controlEvaluatorNode(const rclcpp::NodeOptions & node_options);
+  explicit ControlEvaluatorNode(const rclcpp::NodeOptions & node_options);
   void removeOldDiagnostics(const rclcpp::Time & stamp);
   void removeDiagnosticsByName(const std::string & name);
   void addDiagnostic(const DiagnosticStatus & diag, const rclcpp::Time & stamp);
@@ -83,7 +83,7 @@ private:
   autoware::universe_utils::InterProcessPollingSubscriber<Odometry> odometry_sub_{
     this, "~/input/odometry"};
   autoware::universe_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped> accel_sub_{
-    this, "/localization/acceleration"};
+    this, "~/input/acceleration"};
   autoware::universe_utils::InterProcessPollingSubscriber<Trajectory> traj_sub_{
     this, "~/input/trajectory"};
   autoware::universe_utils::InterProcessPollingSubscriber<LaneletRoute> route_subscriber_{

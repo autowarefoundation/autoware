@@ -376,7 +376,7 @@ def launch_setup(context, *args, **kwargs):
     # control evaluator
     control_evaluator_component = ComposableNode(
         package="autoware_control_evaluator",
-        plugin="control_diagnostics::controlEvaluatorNode",
+        plugin="control_diagnostics::ControlEvaluatorNode",
         name="control_evaluator",
         remappings=[
             ("~/input/diagnostics", "/diagnostics"),

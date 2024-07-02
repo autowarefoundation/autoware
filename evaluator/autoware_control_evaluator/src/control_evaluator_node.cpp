@@ -25,12 +25,12 @@
 
 namespace control_diagnostics
 {
-controlEvaluatorNode::controlEvaluatorNode(const rclcpp::NodeOptions & node_options)
+ControlEvaluatorNode::ControlEvaluatorNode(const rclcpp::NodeOptions & node_options)
 : Node("control_evaluator", node_options)
 {
   using std::placeholders::_1;
   control_diag_sub_ = create_subscription<DiagnosticArray>(
-    "~/input/diagnostics", 1, std::bind(&controlEvaluatorNode::onDiagnostics, this, _1));
+    "~/input/diagnostics", 1, std::bind(&ControlEvaluatorNode::onDiagnostics, this, _1));
 
   // Publisher
   metrics_pub_ = create_publisher<DiagnosticArray>("~/metrics", 1);
@@ -38,10 +38,10 @@ controlEvaluatorNode::controlEvaluatorNode(const rclcpp::NodeOptions & node_opti
   // Timer callback to publish evaluator diagnostics
   using namespace std::literals::chrono_literals;
   timer_ =
-    rclcpp::create_timer(this, get_clock(), 100ms, std::bind(&controlEvaluatorNode::onTimer, this));
+    rclcpp::create_timer(this, get_clock(), 100ms, std::bind(&ControlEvaluatorNode::onTimer, this));
 }
 
-void controlEvaluatorNode::getRouteData()
+void ControlEvaluatorNode::getRouteData()
 {
   // route
   {
@@ -64,7 +64,7 @@ void controlEvaluatorNode::getRouteData()
   }
 }
 
-void controlEvaluatorNode::removeOldDiagnostics(const rclcpp::Time & stamp)
+void ControlEvaluatorNode::removeOldDiagnostics(const rclcpp::Time & stamp)
 {
   constexpr double KEEP_TIME = 1.0;
   diag_queue_.erase(
@@ -76,7 +76,7 @@ void controlEvaluatorNode::removeOldDiagnostics(const rclcpp::Time & stamp)
     diag_queue_.end());
 }
 
-void controlEvaluatorNode::removeDiagnosticsByName(const std::string & name)
+void ControlEvaluatorNode::removeDiagnosticsByName(const std::string & name)
 {
   diag_queue_.erase(
     std::remove_if(
@@ -87,13 +87,13 @@ void controlEvaluatorNode::removeDiagnosticsByName(const std::string & name)
     diag_queue_.end());
 }
 
-void controlEvaluatorNode::addDiagnostic(
+void ControlEvaluatorNode::addDiagnostic(
   const diagnostic_msgs::msg::DiagnosticStatus & diag, const rclcpp::Time & stamp)
 {
   diag_queue_.push_back(std::make_pair(diag, stamp));
 }
 
-void controlEvaluatorNode::updateDiagnosticQueue(
+void ControlEvaluatorNode::updateDiagnosticQueue(
   const DiagnosticArray & input_diagnostics, const std::string & function,
   const rclcpp::Time & stamp)
 {
@@ -110,7 +110,7 @@ void controlEvaluatorNode::updateDiagnosticQueue(
   removeOldDiagnostics(stamp);
 }
 
-void controlEvaluatorNode::onDiagnostics(const DiagnosticArray::ConstSharedPtr diag_msg)
+void ControlEvaluatorNode::onDiagnostics(const DiagnosticArray::ConstSharedPtr diag_msg)
 {
   // add target diagnostics to the queue and remove old ones
   for (const auto & function : target_functions_) {
@@ -118,7 +118,7 @@ void controlEvaluatorNode::onDiagnostics(const DiagnosticArray::ConstSharedPtr d
   }
 }
 
-DiagnosticStatus controlEvaluatorNode::generateAEBDiagnosticStatus(const DiagnosticStatus & diag)
+DiagnosticStatus ControlEvaluatorNode::generateAEBDiagnosticStatus(const DiagnosticStatus & diag)
 {
   DiagnosticStatus status;
   status.level = status.OK;
@@ -131,7 +131,7 @@ DiagnosticStatus controlEvaluatorNode::generateAEBDiagnosticStatus(const Diagnos
   return status;
 }
 
-DiagnosticStatus controlEvaluatorNode::generateLaneletDiagnosticStatus(const Pose & ego_pose) const
+DiagnosticStatus ControlEvaluatorNode::generateLaneletDiagnosticStatus(const Pose & ego_pose) const
 {
   const auto current_lanelets = [&]() {
     lanelet::ConstLanelet closest_route_lanelet;
@@ -162,7 +162,7 @@ DiagnosticStatus controlEvaluatorNode::generateLaneletDiagnosticStatus(const Pos
   return status;
 }
 
-DiagnosticStatus controlEvaluatorNode::generateKinematicStateDiagnosticStatus(
+DiagnosticStatus ControlEvaluatorNode::generateKinematicStateDiagnosticStatus(
   const Odometry & odom, const AccelWithCovarianceStamped & accel_stamped)
 {
   DiagnosticStatus status;
@@ -198,7 +198,7 @@ DiagnosticStatus controlEvaluatorNode::generateKinematicStateDiagnosticStatus(
   return status;
 }
 
-DiagnosticStatus controlEvaluatorNode::generateLateralDeviationDiagnosticStatus(
+DiagnosticStatus ControlEvaluatorNode::generateLateralDeviationDiagnosticStatus(
   const Trajectory & traj, const Point & ego_point)
 {
   const double lateral_deviation = metrics::calcLateralDeviation(traj, ego_point);
@@ -214,7 +214,7 @@ DiagnosticStatus controlEvaluatorNode::generateLateralDeviationDiagnosticStatus(
   return status;
 }
 
-DiagnosticStatus controlEvaluatorNode::generateYawDeviationDiagnosticStatus(
+DiagnosticStatus ControlEvaluatorNode::generateYawDeviationDiagnosticStatus(
   const Trajectory & traj, const Pose & ego_pose)
 {
   const double yaw_deviation = metrics::calcYawDeviation(traj, ego_pose);
@@ -230,7 +230,7 @@ DiagnosticStatus controlEvaluatorNode::generateYawDeviationDiagnosticStatus(
   return status;
 }
 
-void controlEvaluatorNode::onTimer()
+void ControlEvaluatorNode::onTimer()
 {
   DiagnosticArray metrics_msg;
   const auto traj = traj_sub_.takeData();
@@ -278,4 +278,4 @@ void controlEvaluatorNode::onTimer()
 }  // namespace control_diagnostics
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(control_diagnostics::controlEvaluatorNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(control_diagnostics::ControlEvaluatorNode)
