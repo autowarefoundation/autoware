@@ -18,6 +18,7 @@ jobs:
         run: |
           sudo snap install cppcheck
 
+      # cspell: ignore suppr
       - name: Run Cppcheck on all files
         continue-on-error: true
         id: cppcheck

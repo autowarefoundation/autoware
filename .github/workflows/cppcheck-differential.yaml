@@ -53,6 +53,7 @@ jobs:
           done
           echo "full-paths=$paths" >> $GITHUB_OUTPUT
 
+      # cspell: ignore suppr
       - name: Run Cppcheck on modified packages
         if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
         continue-on-error: true
@@ -61,6 +62,9 @@ jobs:
           echo "Running Cppcheck on modified packages: ${{ steps.get-modified-packages.outputs.modified-packages }}"
           cppcheck --enable=all --inconclusive --check-level=exhaustive --error-exitcode=1 --suppressions-list=.cppcheck_suppressions --inline-suppr ${{ steps.get-full-paths.outputs.full-paths }} 2> cppcheck-report.txt
         shell: bash
+
+      - name: Setup Problem Matchers for cppcheck
+        run: echo "::add-matcher::.github/cppcheck-problem-matcher.json"
 
       - name: Show cppcheck-report result
         if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
