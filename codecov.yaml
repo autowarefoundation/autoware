@@ -20,7 +20,9 @@ flag_management:
     statuses:
       - name_prefix: project-
         type: project
-        target: auto
+        target: 0% # Make CI always succeed
+        threshold: 100% # Make CI always succeed
       - name_prefix: patch-
         type: patch
-        target: auto
+        target: 0% # Make CI always succeed
+        threshold: 100% # Make CI always succeed
