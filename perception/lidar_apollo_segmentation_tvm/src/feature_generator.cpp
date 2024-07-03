@@ -35,10 +35,7 @@ inline float normalizeIntensity(float intensity)
 FeatureGenerator::FeatureGenerator(
   const int32_t width, const int32_t height, const int32_t range, const bool use_intensity_feature,
   const bool use_constant_feature, const float min_height, const float max_height)
-: use_intensity_feature_(use_intensity_feature),
-  use_constant_feature_(use_constant_feature),
-  min_height_(min_height),
-  max_height_(max_height)
+: min_height_(min_height), max_height_(max_height)
 {
   // select feature map type
   if (use_constant_feature && use_intensity_feature) {

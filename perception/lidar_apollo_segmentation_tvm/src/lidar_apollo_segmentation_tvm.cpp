@@ -109,12 +109,7 @@ ApolloLidarSegmentation::ApolloLidarSegmentation(
   int32_t range, float score_threshold, bool use_intensity_feature, bool use_constant_feature,
   float z_offset, float min_height, float max_height, float objectness_thresh, int32_t min_pts_num,
   float height_thresh, const std::string & data_path)
-: range_(range),
-  score_threshold_(score_threshold),
-  z_offset_(z_offset),
-  objectness_thresh_(objectness_thresh),
-  min_pts_num_(min_pts_num),
-  height_thresh_(height_thresh),
+: z_offset_(z_offset),
   pcl_pointcloud_ptr_(new pcl::PointCloud<pcl::PointXYZI>),
   PreP(std::make_shared<PrePT>(
     config, range, use_intensity_feature, use_constant_feature, min_height, max_height)),

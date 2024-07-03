@@ -15,7 +15,7 @@
 #ifndef LIDAR_APOLLO_SEGMENTATION_TVM__FEATURE_MAP_HPP_
 #define LIDAR_APOLLO_SEGMENTATION_TVM__FEATURE_MAP_HPP_
 
-#include <memory>
+#include <cstdint>
 #include <vector>
 
 namespace autoware
@@ -45,6 +45,7 @@ public:
   virtual void initializeMap(std::vector<float> & map) = 0;
   virtual void resetMap(std::vector<float> & map) = 0;
   explicit FeatureMapInterface(int32_t _channels, int32_t _width, int32_t _height, int32_t _range);
+  virtual ~FeatureMapInterface() {}
 };
 
 /// \brief FeatureMap with no extra feature channels.

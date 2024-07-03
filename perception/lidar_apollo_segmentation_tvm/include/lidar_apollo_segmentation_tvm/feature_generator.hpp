@@ -37,8 +37,6 @@ namespace lidar_apollo_segmentation_tvm
 class LIDAR_APOLLO_SEGMENTATION_TVM_LOCAL FeatureGenerator
 {
 private:
-  const bool use_intensity_feature_;
-  const bool use_constant_feature_;
   const float min_height_;
   const float max_height_;
   std::shared_ptr<FeatureMapInterface> map_ptr_;

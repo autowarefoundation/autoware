@@ -164,12 +164,7 @@ public:
   tvm_utility::Version version_check() const;
 
 private:
-  const int32_t range_;
-  const float score_threshold_;
   const float z_offset_;
-  const float objectness_thresh_;
-  const int32_t min_pts_num_;
-  const float height_thresh_;
   const pcl::PointCloud<pcl::PointXYZI>::Ptr pcl_pointcloud_ptr_;
   // Earliest supported model version.
   const std::array<int8_t, 3> model_version_from{2, 0, 0};
