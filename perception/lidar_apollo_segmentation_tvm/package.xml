@@ -5,7 +5,7 @@
   <version>0.1.0</version>
   <description>lidar_apollo_segmentation_tvm</description>
   <maintainer email="ambroise.vincent@arm.com">Ambroise Vincent</maintainer>
-  <maintainer email="xinyu.wang@tier4.jp">Xinyu Wang</maintainer>
+  <maintainer email="yoshi.ri@tier4.jp">Yoshi Ri</maintainer>
   <license>Apache 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>

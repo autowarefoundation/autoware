@@ -4,6 +4,7 @@
   <name>lidar_apollo_instance_segmentation</name>
   <version>0.1.0</version>
   <description>lidar_apollo_instance_segmentation</description>
+  <maintainer email="yoshi.ri@tier4.jp">Yoshi Ri</maintainer>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <license>Apache License 2.0</license>
 
