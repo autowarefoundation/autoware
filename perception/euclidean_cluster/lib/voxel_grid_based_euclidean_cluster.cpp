@@ -117,7 +117,7 @@ bool VoxelGridBasedEuclideanCluster::cluster(
       voxel_grid_.getCentroidIndexAt(voxel_grid_.getGridCoordinates(point.x, point.y, point.z));
     if (map.find(index) != map.end()) {
       auto & cluster_data_size = clusters_data_size.at(map[index]);
-      if (cluster_data_size + point_step > std::size_t(max_cluster_size_ * point_step)) {
+      if (cluster_data_size > std::size_t(max_cluster_size_ * point_step)) {
         continue;
       }
       std::memcpy(
