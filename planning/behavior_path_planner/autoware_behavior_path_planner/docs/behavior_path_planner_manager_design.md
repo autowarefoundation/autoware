@@ -88,7 +88,6 @@ struct ModuleConfigParameters
   bool enable_simultaneous_execution_as_approved_module{false};
   bool enable_simultaneous_execution_as_candidate_module{false};
   uint8_t priority{0};
-  uint8_t max_module_size{0};
 };
 ```
 
@@ -101,7 +100,6 @@ Code is [here](https://github.com/autowarefoundation/autoware.universe/blob/b173
 | `enable_simultaneous_execution_as_candidate_module` | bool    | if true, the manager allows its scene modules to run with other scene modules as **candidate module**.                                          |
 | `enable_simultaneous_execution_as_approved_module`  | bool    | if true, the manager allows its scene modules to run with other scene modules as **approved module**.                                           |
 | `priority`                                          | uint8_t | the manager decides execution priority based on this parameter. The smaller the number is, the higher the priority is.                          |
-| `max_module_size`                                   | uint8_t | the sub-manager can run some modules simultaneously. this parameter set the maximum number of the launched modules.                             |
 
 ### Scene modules
 

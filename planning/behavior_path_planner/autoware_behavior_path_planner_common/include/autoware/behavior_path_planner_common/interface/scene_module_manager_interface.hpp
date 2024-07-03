@@ -205,7 +205,16 @@ public:
     });
   }
 
-  bool canLaunchNewModule() const { return observers_.size() < config_.max_module_size; }
+  /**
+   * Determine if a new module can be launched. It ensures that only one instance of a particular
+   * scene module type is registered at a time.
+   *
+   * When this returns true:
+   * - A new instance of the scene module can be launched.
+   * - No other instance of the same name of scene module is currently active or registered.
+   *
+   */
+  bool canLaunchNewModule() const { return observers_.empty(); }
 
   /**
    * Determine if the module is always executable, regardless of the state of other modules.
@@ -290,7 +299,6 @@ protected:
         *node, ns + "enable_simultaneous_execution_as_candidate_module");
       config_.keep_last = getOrDeclareParameter<bool>(*node, ns + "keep_last");
       config_.priority = getOrDeclareParameter<int>(*node, ns + "priority");
-      config_.max_module_size = getOrDeclareParameter<int>(*node, ns + "max_module_size");
     }
 
     // init rtc configuration

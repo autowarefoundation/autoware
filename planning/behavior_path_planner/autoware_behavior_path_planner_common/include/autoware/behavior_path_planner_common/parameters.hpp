@@ -25,7 +25,6 @@ struct ModuleConfigParameters
   bool enable_simultaneous_execution_as_candidate_module{false};
   bool keep_last{false};
   uint8_t priority{0};
-  uint8_t max_module_size{0};
 };
 
 struct BehaviorPathPlannerParameters
