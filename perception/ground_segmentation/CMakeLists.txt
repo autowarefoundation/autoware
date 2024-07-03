@@ -100,4 +100,11 @@ if(BUILD_TESTING)
     ground_segmentation
     ${YAML_CPP_LIBRARIES}
   )
+  ament_add_ros_isolated_gtest(test_ransac_ground_filter
+    test/test_ransac_ground_filter.cpp
+  )
+  target_link_libraries(test_ransac_ground_filter
+    ground_segmentation
+    ${YAML_CPP_LIBRARIES})
+
 endif()

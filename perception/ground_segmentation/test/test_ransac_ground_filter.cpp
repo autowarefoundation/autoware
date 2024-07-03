@@ -1,4 +1,4 @@
-// Copyright 2022 The Autoware Contributors
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 
-#include <ground_segmentation/ray_ground_filter_nodelet.hpp>
+#include <experimental/random>
+#include <ground_segmentation/ransac_ground_filter_nodelet.hpp>
 
 #include "geometry_msgs/msg/transform_stamped.hpp"
+#include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
 #include <gtest/gtest.h>
@@ -30,31 +32,60 @@
 #include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
 #endif
 #include <yaml-cpp/yaml.h>
-class RayGroundFilterComponentTestSuite : public ::testing::Test
+
+void setPointCloud2Fields(sensor_msgs::msg::PointCloud2 & pointcloud)
+{
+  pointcloud.fields.resize(4);
+  pointcloud.fields[0].name = "x";
+  pointcloud.fields[1].name = "y";
+  pointcloud.fields[2].name = "z";
+  pointcloud.fields[3].name = "intensity";
+  pointcloud.fields[0].offset = 0;
+  pointcloud.fields[1].offset = 4;
+  pointcloud.fields[2].offset = 8;
+  pointcloud.fields[3].offset = 12;
+  pointcloud.fields[0].datatype = sensor_msgs::msg::PointField::FLOAT32;
+  pointcloud.fields[1].datatype = sensor_msgs::msg::PointField::FLOAT32;
+  pointcloud.fields[2].datatype = sensor_msgs::msg::PointField::FLOAT32;
+  pointcloud.fields[3].datatype = sensor_msgs::msg::PointField::FLOAT32;
+  pointcloud.fields[0].count = 1;
+  pointcloud.fields[1].count = 1;
+  pointcloud.fields[2].count = 1;
+  pointcloud.fields[3].count = 1;
+  pointcloud.height = 1;
+  pointcloud.point_step = 16;
+  pointcloud.is_bigendian = false;
+  pointcloud.is_dense = true;
+  pointcloud.header.frame_id = "base_link";
+  pointcloud.header.stamp.sec = 0;
+  pointcloud.header.stamp.nanosec = 0;
+}
+
+class RansacGroundFilterTestSuite : public ::testing::Test
 {
 protected:
   void SetUp() { rclcpp::init(0, nullptr); }
   void TearDown() { (void)rclcpp::shutdown(); }
-};  // sanity_check
+};
 
-class RayGroundFilterComponentTest : public ground_segmentation::RayGroundFilterComponent
+class RansacGroundFilterTest : public ground_segmentation::RANSACGroundFilterComponent
 {
 public:
-  explicit RayGroundFilterComponentTest(const rclcpp::NodeOptions & options)
-  : RayGroundFilterComponent(options)
+  explicit RansacGroundFilterTest(const rclcpp::NodeOptions & options)
+  : RANSACGroundFilterComponent(options)
   {
     input_pointcloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
-      "/test_ray_ground_filter/input_cloud", 1);
+      "/test_ransac_ground_filter/input_cloud", 1);
 
     output_pointcloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
-      "/test_ray_ground_filter/output_cloud", 1);
+      "/test_ransac_ground_filter/output_cloud", 1);
   }
 
-  ~RayGroundFilterComponentTest() {}
+  ~RansacGroundFilterTest() {}
 
   void filter(const PointCloud2ConstPtr & input, const IndicesPtr & indices, PointCloud2 & output)
   {
-    return RayGroundFilterComponent::filter(input, indices, output);
+    return RANSACGroundFilterComponent::filter(input, indices, output);
   }
 
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr input_pointcloud_pub_;
@@ -101,26 +132,25 @@ void convertPCL2PointCloud2(
   }
 }
 
-TEST_F(RayGroundFilterComponentTestSuite, TestCase1)
+TEST_F(RansacGroundFilterTestSuite, TestCase1)
 {
   const auto share_dir = ament_index_cpp::get_package_share_directory("ground_segmentation");
-  const auto config_path = share_dir + "/config/ray_ground_filter.param.yaml";
-  // std::cout << "config_path:" << config_path << std::endl;
+  const auto config_path = share_dir + "/config/ransac_ground_filter.param.yaml";
   YAML::Node config = YAML::LoadFile(config_path);
   auto params = config["/**"]["ros__parameters"];
 
-  double min_x_ = params["min_x"].as<float>();
-  double max_x_ = params["max_x"].as<float>();
-  double min_y_ = params["min_y"].as<float>();
-  double max_y_ = params["max_y"].as<float>();
-  bool use_vehicle_footprint_ = params["use_vehicle_footprint"].as<bool>();
-  double general_max_slope_ = params["general_max_slope"].as<float>();
-  double local_max_slope_ = params["local_max_slope"].as<float>();
-  double initial_max_slope_ = params["initial_max_slope"].as<float>();
-  double radial_divider_angle_ = params["radial_divider_angle"].as<float>();
-  double min_height_threshold_ = params["min_height_threshold"].as<float>();
-  double concentric_divider_distance_ = params["concentric_divider_distance"].as<float>();
-  double reclass_distance_threshold_ = params["reclass_distance_threshold"].as<float>();
+  std::string base_frame = params["base_frame"].as<std::string>();
+  std::string unit_axis = params["unit_axis"].as<std::string>();
+  int max_iterations = params["max_iterations"].as<int>();
+  int min_trial = params["min_trial"].as<int>();
+  int min_points = params["min_points"].as<int>();
+  double outlier_threshold = params["outlier_threshold"].as<float>();
+  double plane_slope_threshold = params["plane_slope_threshold"].as<float>();
+  double voxel_size_x = params["voxel_size_x"].as<float>();
+  double voxel_size_y = params["voxel_size_y"].as<float>();
+  double voxel_size_z = params["voxel_size_z"].as<float>();
+  double height_threshold = params["height_threshold"].as<float>();
+  bool debug = params["debug"].as<bool>();
 
   const auto pcd_path = share_dir + "/data/test.pcd";
   pcl::PointCloud<pcl::PointXYZI> cloud;
@@ -134,7 +164,6 @@ TEST_F(RayGroundFilterComponentTestSuite, TestCase1)
   sensor_msgs::msg::PointCloud2::SharedPtr input_msg_ptr(new sensor_msgs::msg::PointCloud2);
 
   geometry_msgs::msg::TransformStamped t;
-  // t.header.stamp = this->now();
   t.header.frame_id = "base_link";
   t.child_frame_id = "velodyne_top";
   t.transform.translation.x = 0.6;
@@ -148,33 +177,35 @@ TEST_F(RayGroundFilterComponentTestSuite, TestCase1)
   t.transform.rotation.w = q.w();
 
   tf2::doTransform(*origin_input_msg_ptr, *input_msg_ptr, t);
+  std::vector<rclcpp::Parameter> parameters;
+  parameters.emplace_back("base_frame", base_frame);
+  parameters.emplace_back("unit_axis", unit_axis);
+  parameters.emplace_back("max_iterations", max_iterations);
+  parameters.emplace_back("min_trial", min_trial);
+  parameters.emplace_back("min_points", min_points);
+  parameters.emplace_back("outlier_threshold", outlier_threshold);
+  parameters.emplace_back("plane_slope_threshold", plane_slope_threshold);
+  parameters.emplace_back("voxel_size_x", voxel_size_x);
+  parameters.emplace_back("voxel_size_y", voxel_size_y);
+  parameters.emplace_back("voxel_size_z", voxel_size_z);
+  parameters.emplace_back("height_threshold", height_threshold);
+  parameters.emplace_back("debug", debug);
 
   rclcpp::NodeOptions node_options;
-  std::vector<rclcpp::Parameter> parameters;
-
-  parameters.emplace_back(rclcpp::Parameter("base_frame", "base_link"));
-  parameters.emplace_back(rclcpp::Parameter("general_max_slope", general_max_slope_));
-  parameters.emplace_back(rclcpp::Parameter("local_max_slope", local_max_slope_));
-  parameters.emplace_back(rclcpp::Parameter("initial_max_slope", initial_max_slope_));
-  parameters.emplace_back(rclcpp::Parameter("radial_divider_angle", radial_divider_angle_));
-  parameters.emplace_back(rclcpp::Parameter("min_height_threshold", min_height_threshold_));
-  parameters.emplace_back(
-    rclcpp::Parameter("concentric_divider_distance", concentric_divider_distance_));
-  parameters.emplace_back(
-    rclcpp::Parameter("reclass_distance_threshold", reclass_distance_threshold_));
-  parameters.emplace_back(rclcpp::Parameter("min_x", min_x_));
-  parameters.emplace_back(rclcpp::Parameter("max_x", max_x_));
-  parameters.emplace_back(rclcpp::Parameter("min_y", min_y_));
-  parameters.emplace_back(rclcpp::Parameter("max_y", max_y_));
-  parameters.emplace_back(rclcpp::Parameter("use_vehicle_footprint", use_vehicle_footprint_));
-
   node_options.parameter_overrides(parameters);
-  auto ray_ground_filter_test = std::make_shared<RayGroundFilterComponentTest>(node_options);
-  ray_ground_filter_test->input_pointcloud_pub_->publish(*input_msg_ptr);
+  auto ransac_ground_filter_test = std::make_shared<RansacGroundFilterTest>(node_options);
+  ransac_ground_filter_test->input_pointcloud_pub_->publish(*input_msg_ptr);
 
   sensor_msgs::msg::PointCloud2 out_cloud;
-  ray_ground_filter_test->filter(input_msg_ptr, nullptr, out_cloud);
-  ray_ground_filter_test->output_pointcloud_pub_->publish(out_cloud);
+  ransac_ground_filter_test->filter(input_msg_ptr, nullptr, out_cloud);
+  ransac_ground_filter_test->output_pointcloud_pub_->publish(out_cloud);
+  std::cout << "out_cloud.width: " << out_cloud.width << std::endl;
+  std::cout << "out_cloud.height: " << out_cloud.height << std::endl;
+  std::cout << "out_cloud.row_step: " << out_cloud.row_step << std::endl;
+  std::cout << "out_cloud.point_step: " << out_cloud.point_step << std::endl;
+  std::cout << "out_cloud.is_dense: " << out_cloud.is_dense << std::endl;
+  std::cout << "out_cloud.is_bigendian: " << out_cloud.is_bigendian << std::endl;
+  std::cout << "out_cloud.data.size(): " << out_cloud.data.size() << std::endl;
 
   // check out_cloud
   int effect_num = 0;
@@ -191,7 +222,7 @@ TEST_F(RayGroundFilterComponentTestSuite, TestCase1)
   }
 
   const float percent = 1.0 * effect_num / total_num;
-  // std::cout << "effect_num=" << effect_num << ",total_num=" << total_num
-  //           << ",percentage:" << percent << std::endl;
-  EXPECT_GE(percent, 0.9);
+  std::cout << "effect_num=" << effect_num << ",total_num=" << total_num
+            << ",percentage:" << percent << std::endl;
+  EXPECT_GE(percent, 0.8);
 }
