@@ -439,7 +439,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
 double PlannerInterface::calculateMarginFromObstacleOnCurve(
   const PlannerData & planner_data, const StopObstacle & stop_obstacle) const
 {
-  if (!enable_approaching_on_curve_) {
+  if (!enable_approaching_on_curve_ || use_pointcloud_) {
     return longitudinal_info_.safe_distance_margin;
   }
 

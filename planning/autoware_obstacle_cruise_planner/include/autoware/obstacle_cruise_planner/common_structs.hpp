@@ -58,15 +58,15 @@ struct Obstacle
     const geometry_msgs::msg::Pose & arg_pose, const double ego_to_obstacle_distance,
     const double lat_dist_from_obstacle_to_traj)
   : stamp(arg_stamp),
+    ego_to_obstacle_distance(ego_to_obstacle_distance),
+    lat_dist_from_obstacle_to_traj(lat_dist_from_obstacle_to_traj),
     pose(arg_pose),
     orientation_reliable(true),
     twist(object.kinematics.initial_twist_with_covariance.twist),
     twist_reliable(true),
     classification(object.classification.at(0)),
     uuid(autoware::universe_utils::toHexString(object.object_id)),
-    shape(object.shape),
-    ego_to_obstacle_distance(ego_to_obstacle_distance),
-    lat_dist_from_obstacle_to_traj(lat_dist_from_obstacle_to_traj)
+    shape(object.shape)
   {
     predicted_paths.clear();
     for (const auto & path : object.kinematics.predicted_paths) {
@@ -74,9 +74,26 @@ struct Obstacle
     }
   }
 
-  Polygon2d toPolygon() const { return autoware::universe_utils::toPolygon2d(pose, shape); }
+  Obstacle(
+    const rclcpp::Time & arg_stamp,
+    const std::optional<geometry_msgs::msg::Point> & stop_collision_point,
+    const std::optional<geometry_msgs::msg::Point> & slow_down_front_collision_point,
+    const std::optional<geometry_msgs::msg::Point> & slow_down_back_collision_point,
+    const double ego_to_obstacle_distance, const double lat_dist_from_obstacle_to_traj)
+  : stamp(arg_stamp),
+    ego_to_obstacle_distance(ego_to_obstacle_distance),
+    lat_dist_from_obstacle_to_traj(lat_dist_from_obstacle_to_traj),
+    stop_collision_point(stop_collision_point),
+    slow_down_front_collision_point(slow_down_front_collision_point),
+    slow_down_back_collision_point(slow_down_back_collision_point)
+  {
+  }
 
   rclcpp::Time stamp;  // This is not the current stamp, but when the object was observed.
+  double ego_to_obstacle_distance;
+  double lat_dist_from_obstacle_to_traj;
+
+  // for PredictedObject
   geometry_msgs::msg::Pose pose;  // interpolated with the current stamp
   bool orientation_reliable;
   Twist twist;
@@ -85,8 +102,11 @@ struct Obstacle
   std::string uuid;
   Shape shape;
   std::vector<PredictedPath> predicted_paths;
-  double ego_to_obstacle_distance;
-  double lat_dist_from_obstacle_to_traj;
+
+  // for PointCloud
+  std::optional<geometry_msgs::msg::Point> stop_collision_point;
+  std::optional<geometry_msgs::msg::Point> slow_down_front_collision_point;
+  std::optional<geometry_msgs::msg::Point> slow_down_back_collision_point;
 };
 
 struct TargetObstacleInterface

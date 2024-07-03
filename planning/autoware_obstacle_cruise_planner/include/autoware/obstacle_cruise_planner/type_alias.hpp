@@ -27,6 +27,7 @@
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "sensor_msgs/msg/point_cloud2.hpp"
 #include "tier4_debug_msgs/msg/float32_stamped.hpp"
 #include "tier4_planning_msgs/msg/stop_factor.hpp"
 #include "tier4_planning_msgs/msg/stop_reason_array.hpp"
@@ -34,6 +35,9 @@
 #include "tier4_planning_msgs/msg/velocity_limit.hpp"
 #include "tier4_planning_msgs/msg/velocity_limit_clear_command.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
+
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 using autoware::vehicle_info_utils::VehicleInfo;
 using autoware_adapi_v1_msgs::msg::PlanningBehavior;
@@ -50,6 +54,7 @@ using geometry_msgs::msg::AccelStamped;
 using geometry_msgs::msg::AccelWithCovarianceStamped;
 using geometry_msgs::msg::Twist;
 using nav_msgs::msg::Odometry;
+using sensor_msgs::msg::PointCloud2;
 using tier4_debug_msgs::msg::Float32Stamped;
 using tier4_planning_msgs::msg::StopFactor;
 using tier4_planning_msgs::msg::StopReason;
@@ -62,5 +67,7 @@ using visualization_msgs::msg::MarkerArray;
 namespace bg = boost::geometry;
 using autoware::universe_utils::Point2d;
 using autoware::universe_utils::Polygon2d;
+
+using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 
 #endif  // AUTOWARE__OBSTACLE_CRUISE_PLANNER__TYPE_ALIAS_HPP_

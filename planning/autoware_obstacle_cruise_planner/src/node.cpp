@@ -23,7 +23,14 @@
 #include "autoware/universe_utils/ros/update_param.hpp"
 #include "object_recognition_utils/predicted_path_utils.hpp"
 
+#include <pcl_ros/transforms.hpp>
+#include <tf2_eigen/tf2_eigen.hpp>
+
 #include <boost/format.hpp>
+
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/segmentation/extract_clusters.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 #include <algorithm>
 #include <chrono>
@@ -194,6 +201,15 @@ std::vector<TrajectoryPoint> resampleTrajectoryPoints(
   return autoware::motion_utils::convertToTrajectoryPointArray(resampled_traj);
 }
 
+geometry_msgs::msg::Point toGeomPoint(const pcl::PointXYZ & point)
+{
+  geometry_msgs::msg::Point geom_point;
+  geom_point.x = point.x;
+  geom_point.y = point.y;
+  geom_point.z = point.z;
+  return geom_point;
+}
+
 geometry_msgs::msg::Point toGeomPoint(const autoware::universe_utils::Point2d & point)
 {
   geometry_msgs::msg::Point geom_point;
@@ -216,6 +232,12 @@ bool isLowerConsideringHysteresis(
   }
   return false;
 }
+
+template <typename T>
+void concatenate(std::vector<T> & first, const std::vector<T> & last)
+{
+  first.insert(first.end(), last.begin(), last.end());
+}
 }  // namespace
 
 namespace autoware::motion_planning
@@ -225,6 +247,20 @@ ObstacleCruisePlannerNode::BehaviorDeterminationParam::BehaviorDeterminationPara
 {  // behavior determination
   decimate_trajectory_step_length =
     node.declare_parameter<double>("behavior_determination.decimate_trajectory_step_length");
+  pointcloud_search_radius =
+    node.declare_parameter<double>("behavior_determination.pointcloud_search_radius");
+  pointcloud_voxel_grid_x =
+    node.declare_parameter<double>("behavior_determination.pointcloud_voxel_grid_x");
+  pointcloud_voxel_grid_y =
+    node.declare_parameter<double>("behavior_determination.pointcloud_voxel_grid_y");
+  pointcloud_voxel_grid_z =
+    node.declare_parameter<double>("behavior_determination.pointcloud_voxel_grid_z");
+  pointcloud_cluster_tolerance =
+    node.declare_parameter<double>("behavior_determination.pointcloud_cluster_tolerance");
+  pointcloud_min_cluster_size =
+    node.declare_parameter<int>("behavior_determination.pointcloud_min_cluster_size");
+  pointcloud_max_cluster_size =
+    node.declare_parameter<int>("behavior_determination.pointcloud_max_cluster_size");
   obstacle_velocity_threshold_from_cruise_to_stop = node.declare_parameter<double>(
     "behavior_determination.obstacle_velocity_threshold_from_cruise_to_stop");
   obstacle_velocity_threshold_from_stop_to_cruise = node.declare_parameter<double>(
@@ -284,6 +320,21 @@ void ObstacleCruisePlannerNode::BehaviorDeterminationParam::onParam(
   autoware::universe_utils::updateParam<double>(
     parameters, "behavior_determination.decimate_trajectory_step_length",
     decimate_trajectory_step_length);
+  autoware::universe_utils::updateParam<double>(
+    parameters, "behavior_determination.pointcloud_search_radius", pointcloud_search_radius);
+  autoware::universe_utils::updateParam<double>(
+    parameters, "behavior_determination.pointcloud_voxel_grid_x", pointcloud_voxel_grid_x);
+  autoware::universe_utils::updateParam<double>(
+    parameters, "behavior_determination.pointcloud_voxel_grid_y", pointcloud_voxel_grid_y);
+  autoware::universe_utils::updateParam<double>(
+    parameters, "behavior_determination.pointcloud_voxel_grid_z", pointcloud_voxel_grid_z);
+  autoware::universe_utils::updateParam<double>(
+    parameters, "behavior_determination.pointcloud_cluster_tolerance",
+    pointcloud_cluster_tolerance);
+  autoware::universe_utils::updateParam<int>(
+    parameters, "behavior_determination.pointcloud_min_cluster_size", pointcloud_min_cluster_size);
+  autoware::universe_utils::updateParam<int>(
+    parameters, "behavior_determination.pointcloud_max_cluster_size", pointcloud_max_cluster_size);
   autoware::universe_utils::updateParam<double>(
     parameters, "behavior_determination.crossing_obstacle.obstacle_velocity_threshold",
     crossing_obstacle_velocity_threshold);
@@ -387,6 +438,10 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
   debug_slow_down_planning_info_pub_ =
     create_publisher<Float32MultiArrayStamped>("~/debug/slow_down_planning_info", 1);
 
+  // tf listener
+  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(get_clock());
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+
   const auto longitudinal_info = LongitudinalInfo(*this);
 
   ego_nearest_param_ = EgoNearestParam(*this);
@@ -394,6 +449,11 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
   enable_debug_info_ = declare_parameter<bool>("common.enable_debug_info");
   enable_calculation_time_info_ = declare_parameter<bool>("common.enable_calculation_time_info");
   enable_slow_down_planning_ = declare_parameter<bool>("common.enable_slow_down_planning");
+
+  use_pointcloud_for_stop_ = declare_parameter<bool>("common.stop_obstacle_type.pointcloud");
+  use_pointcloud_for_slow_down_ =
+    declare_parameter<bool>("common.slow_down_obstacle_type.pointcloud");
+  use_pointcloud_ = use_pointcloud_for_stop_ || use_pointcloud_for_slow_down_;
 
   behavior_determination_param_ = BehaviorDeterminationParam(*this);
 
@@ -422,7 +482,7 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
     suppress_sudden_obstacle_stop_ =
       declare_parameter<bool>("common.suppress_sudden_obstacle_stop");
     planner_ptr_->setParam(
-      enable_debug_info_, enable_calculation_time_info_, min_behavior_stop_margin_,
+      enable_debug_info_, enable_calculation_time_info_, use_pointcloud_, min_behavior_stop_margin_,
       enable_approaching_on_curve_, additional_safe_distance_margin_on_curve_,
       min_safe_distance_margin_on_curve_, suppress_sudden_obstacle_stop_);
   }
@@ -476,7 +536,7 @@ rcl_interfaces::msg::SetParametersResult ObstacleCruisePlannerNode::onParam(
     min_safe_distance_margin_on_curve_);
 
   planner_ptr_->setParam(
-    enable_debug_info_, enable_calculation_time_info_, min_behavior_stop_margin_,
+    enable_debug_info_, enable_calculation_time_info_, use_pointcloud_, min_behavior_stop_margin_,
     enable_approaching_on_curve_, additional_safe_distance_margin_on_curve_,
     min_safe_distance_margin_on_curve_, suppress_sudden_obstacle_stop_);
 
@@ -495,13 +555,13 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
 {
   const auto ego_odom_ptr = ego_odom_sub_.takeData();
   const auto objects_ptr = objects_sub_.takeData();
+  const auto pointcloud_ptr = use_pointcloud_ ? pointcloud_sub_.takeData() : nullptr;
   const auto acc_ptr = acc_sub_.takeData();
-  if (!ego_odom_ptr || !objects_ptr || !acc_ptr) {
+  if (!ego_odom_ptr || (!objects_ptr && (!use_pointcloud_ || !pointcloud_ptr)) || !acc_ptr) {
     return;
   }
 
   const auto & ego_odom = *ego_odom_ptr;
-  const auto & objects = *objects_ptr;
   const auto & acc = *acc_ptr;
 
   const auto traj_points = autoware::motion_utils::convertToTrajectoryPointArray(*msg);
@@ -516,15 +576,39 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
   const auto is_driving_forward = autoware::motion_utils::isDrivingForwardWithTwist(traj_points);
   is_driving_forward_ = is_driving_forward ? is_driving_forward.value() : is_driving_forward_;
 
-  // 1. Convert predicted objects to obstacles which are
-  //    (1) with a proper label
-  //    (2) in front of ego
-  //    (3) not too far from trajectory
-  const auto target_obstacles = convertToObstacles(ego_odom, objects, traj_points);
+  const auto & [stop_obstacles, cruise_obstacles, slow_down_obstacles] = [&]() {
+    std::vector<StopObstacle> stop_obstacles;
+    std::vector<CruiseObstacle> cruise_obstacles;
+    std::vector<SlowDownObstacle> slow_down_obstacles;
+    if (objects_ptr) {
+      // 1. Convert predicted objects to obstacles which are
+      //    (1) with a proper label
+      //    (2) in front of ego
+      //    (3) not too far from trajectory
+      const auto target_obstacles = convertToObstacles(ego_odom, *objects_ptr, traj_points);
 
-  //  2. Determine ego's behavior against each obstacle from stop, cruise and slow down.
-  const auto & [stop_obstacles, cruise_obstacles, slow_down_obstacles] =
-    determineEgoBehaviorAgainstObstacles(ego_odom, objects, traj_points, target_obstacles);
+      //  2. Determine ego's behavior against each obstacle from stop, cruise and slow down.
+      const auto & [stop_object_obstacles, cruise_object_obstacles, slow_down_object_obstacles] =
+        determineEgoBehaviorAgainstPredictedObjectObstacles(
+          ego_odom, *objects_ptr, traj_points, target_obstacles);
+
+      concatenate(stop_obstacles, stop_object_obstacles);
+      concatenate(cruise_obstacles, cruise_object_obstacles);
+      concatenate(slow_down_obstacles, slow_down_object_obstacles);
+    }
+    if (pointcloud_ptr && !pointcloud_ptr->data.empty()) {
+      const auto target_obstacles =
+        convertToObstacles(ego_odom, *pointcloud_ptr, traj_points, msg->header);
+
+      const auto & [stop_pc_obstacles, cruise_pc_obstacles, slow_down_pc_obstacles] =
+        determineEgoBehaviorAgainstPointCloudObstacles(ego_odom, traj_points, target_obstacles);
+
+      concatenate(stop_obstacles, stop_pc_obstacles);
+      concatenate(cruise_obstacles, cruise_pc_obstacles);
+      concatenate(slow_down_obstacles, slow_down_pc_obstacles);
+    }
+    return std::make_tuple(stop_obstacles, cruise_obstacles, slow_down_obstacles);
+  }();
 
   // 3. Create data for planning
   const auto planner_data = createPlannerData(ego_odom, acc, traj_points);
@@ -715,6 +799,124 @@ std::vector<Obstacle> ObstacleCruisePlannerNode::convertToObstacles(
   return target_obstacles;
 }
 
+std::vector<Obstacle> ObstacleCruisePlannerNode::convertToObstacles(
+  const Odometry & odometry, const PointCloud2 & pointcloud,
+  const std::vector<TrajectoryPoint> & traj_points, const std_msgs::msg::Header & traj_header) const
+{
+  stop_watch_.tic(__func__);
+
+  const auto & p = behavior_determination_param_;
+
+  std::vector<Obstacle> target_obstacles;
+
+  std::optional<geometry_msgs::msg::TransformStamped> transform_stamped{};
+  try {
+    transform_stamped = tf_buffer_->lookupTransform(
+      traj_header.frame_id, pointcloud.header.frame_id, pointcloud.header.stamp,
+      rclcpp::Duration::from_seconds(0.5));
+  } catch (tf2::TransformException & ex) {
+    RCLCPP_ERROR_STREAM(
+      get_logger(), "Failed to look up transform from " << traj_header.frame_id << " to "
+                                                        << pointcloud.header.frame_id);
+    transform_stamped = std::nullopt;
+  }
+
+  if (transform_stamped) {
+    // 1. transform pointcloud
+    PointCloud::Ptr pointcloud_ptr(new PointCloud);
+    pcl::fromROSMsg(pointcloud, *pointcloud_ptr);
+    const Eigen::Matrix4f transform =
+      tf2::transformToEigen(transform_stamped.value().transform).matrix().cast<float>();
+    pcl::transformPointCloud(*pointcloud_ptr, *pointcloud_ptr, transform);
+
+    // 2. downsample & cluster pointcloud
+    PointCloud::Ptr filtered_points_ptr(new PointCloud);
+    pcl::VoxelGrid<pcl::PointXYZ> filter;
+    filter.setInputCloud(pointcloud_ptr);
+    filter.setLeafSize(
+      p.pointcloud_voxel_grid_x, p.pointcloud_voxel_grid_y, p.pointcloud_voxel_grid_z);
+    filter.filter(*filtered_points_ptr);
+
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
+    tree->setInputCloud(filtered_points_ptr);
+    std::vector<pcl::PointIndices> clusters;
+    pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
+    ec.setClusterTolerance(p.pointcloud_cluster_tolerance);
+    ec.setMinClusterSize(p.pointcloud_min_cluster_size);
+    ec.setMaxClusterSize(p.pointcloud_max_cluster_size);
+    ec.setSearchMethod(tree);
+    ec.setInputCloud(filtered_points_ptr);
+    ec.extract(clusters);
+
+    const auto max_lat_margin =
+      std::max(p.max_lat_margin_for_stop_against_unknown, p.max_lat_margin_for_slow_down);
+    const size_t ego_idx = ego_nearest_param_.findIndex(traj_points, odometry.pose.pose);
+
+    // 3. convert clusters to obstacles
+    for (const auto & cluster_indices : clusters) {
+      double ego_to_stop_collision_distance = std::numeric_limits<double>::max();
+      double ego_to_slow_down_front_collision_distance = std::numeric_limits<double>::max();
+      double ego_to_slow_down_back_collision_distance = std::numeric_limits<double>::min();
+      double lat_dist_from_obstacle_to_traj = std::numeric_limits<double>::max();
+      double ego_to_obstacle_distance = std::numeric_limits<double>::max();
+      std::optional<geometry_msgs::msg::Point> stop_collision_point = std::nullopt;
+      std::optional<geometry_msgs::msg::Point> slow_down_front_collision_point = std::nullopt;
+      std::optional<geometry_msgs::msg::Point> slow_down_back_collision_point = std::nullopt;
+
+      for (const auto & index : cluster_indices.indices) {
+        const auto obstacle_point = toGeomPoint(filtered_points_ptr->points[index]);
+        const auto current_lat_dist_from_obstacle_to_traj =
+          autoware::motion_utils::calcLateralOffset(traj_points, obstacle_point);
+        const auto min_lat_dist_to_traj_poly =
+          std::abs(current_lat_dist_from_obstacle_to_traj) - vehicle_info_.vehicle_width_m;
+
+        if (min_lat_dist_to_traj_poly < max_lat_margin) {
+          const auto current_ego_to_obstacle_distance =
+            calcDistanceToFrontVehicle(traj_points, ego_idx, obstacle_point);
+          if (current_ego_to_obstacle_distance) {
+            ego_to_obstacle_distance =
+              std::min(ego_to_obstacle_distance, *current_ego_to_obstacle_distance);
+          } else {
+            continue;
+          }
+
+          lat_dist_from_obstacle_to_traj =
+            std::min(lat_dist_from_obstacle_to_traj, current_lat_dist_from_obstacle_to_traj);
+
+          if (min_lat_dist_to_traj_poly < p.max_lat_margin_for_stop_against_unknown) {
+            if (*current_ego_to_obstacle_distance < ego_to_stop_collision_distance) {
+              stop_collision_point = obstacle_point;
+              ego_to_stop_collision_distance = *current_ego_to_obstacle_distance;
+            }
+          } else if (min_lat_dist_to_traj_poly < p.max_lat_margin_for_slow_down) {
+            if (*current_ego_to_obstacle_distance < ego_to_slow_down_front_collision_distance) {
+              slow_down_front_collision_point = obstacle_point;
+              ego_to_slow_down_front_collision_distance = *current_ego_to_obstacle_distance;
+            } else if (
+              *current_ego_to_obstacle_distance > ego_to_slow_down_back_collision_distance) {
+              slow_down_back_collision_point = obstacle_point;
+              ego_to_slow_down_back_collision_distance = *current_ego_to_obstacle_distance;
+            }
+          }
+        }
+      }
+
+      if (stop_collision_point || slow_down_front_collision_point) {
+        target_obstacles.emplace_back(
+          pointcloud.header.stamp, stop_collision_point, slow_down_front_collision_point,
+          slow_down_back_collision_point, ego_to_obstacle_distance, lat_dist_from_obstacle_to_traj);
+      }
+    }
+  }
+
+  const double calculation_time = stop_watch_.toc(__func__);
+  RCLCPP_INFO_EXPRESSION(
+    rclcpp::get_logger("ObstacleCruisePlanner"), enable_debug_info_, "  %s := %f [ms]", __func__,
+    calculation_time);
+
+  return target_obstacles;
+}
+
 bool ObstacleCruisePlannerNode::isStopObstacle(const uint8_t label) const
 {
   const auto & types = stop_obstacle_types_;
@@ -760,7 +962,7 @@ bool ObstacleCruisePlannerNode::isFrontCollideObstacle(
 }
 
 std::tuple<std::vector<StopObstacle>, std::vector<CruiseObstacle>, std::vector<SlowDownObstacle>>
-ObstacleCruisePlannerNode::determineEgoBehaviorAgainstObstacles(
+ObstacleCruisePlannerNode::determineEgoBehaviorAgainstPredictedObjectObstacles(
   const Odometry & odometry, const PredictedObjects & objects,
   const std::vector<TrajectoryPoint> & traj_points, const std::vector<Obstacle> & obstacles)
 {
@@ -778,7 +980,7 @@ ObstacleCruisePlannerNode::determineEgoBehaviorAgainstObstacles(
   std::vector<SlowDownObstacle> slow_down_obstacles;
   slow_down_condition_counter_.resetCurrentUuids();
   for (const auto & obstacle : obstacles) {
-    const auto obstacle_poly = obstacle.toPolygon();
+    const auto obstacle_poly = autoware::universe_utils::toPolygon2d(obstacle.pose, obstacle.shape);
 
     // Calculate distance between trajectory and obstacle first
     double precise_lat_dist = std::numeric_limits<double>::max();
@@ -794,14 +996,14 @@ ObstacleCruisePlannerNode::determineEgoBehaviorAgainstObstacles(
       cruise_obstacles.push_back(*cruise_obstacle);
       continue;
     }
-    const auto stop_obstacle = createStopObstacle(
+    const auto stop_obstacle = createStopObstacleForPredictedObject(
       odometry, decimated_traj_points, decimated_traj_polys, obstacle, precise_lat_dist);
     if (stop_obstacle) {
       stop_obstacles.push_back(*stop_obstacle);
       continue;
     }
-    const auto slow_down_obstacle =
-      createSlowDownObstacle(odometry, decimated_traj_points, obstacle, precise_lat_dist);
+    const auto slow_down_obstacle = createSlowDownObstacleForPredictedObject(
+      odometry, decimated_traj_points, obstacle, precise_lat_dist);
     if (slow_down_obstacle) {
       slow_down_obstacles.push_back(*slow_down_obstacle);
       continue;
@@ -840,6 +1042,47 @@ ObstacleCruisePlannerNode::determineEgoBehaviorAgainstObstacles(
     __func__, calculation_time);
 
   return {stop_obstacles, cruise_obstacles, slow_down_obstacles};
+}
+
+std::tuple<std::vector<StopObstacle>, std::vector<CruiseObstacle>, std::vector<SlowDownObstacle>>
+ObstacleCruisePlannerNode::determineEgoBehaviorAgainstPointCloudObstacles(
+  const Odometry & odometry, const std::vector<TrajectoryPoint> & traj_points,
+  const std::vector<Obstacle> & obstacles)
+{
+  stop_watch_.tic(__func__);
+
+  // calculated decimated trajectory points and trajectory polygon
+  const auto decimated_traj_points = decimateTrajectoryPoints(odometry, traj_points);
+  const auto decimated_traj_polys =
+    createOneStepPolygons(decimated_traj_points, vehicle_info_, odometry.pose.pose);
+  debug_data_ptr_->detection_polygons = decimated_traj_polys;
+
+  // determine ego's behavior from stop and slow down
+  std::vector<StopObstacle> stop_obstacles;
+  std::vector<SlowDownObstacle> slow_down_obstacles;
+  for (const auto & obstacle : obstacles) {
+    const auto & precise_lat_dist = obstacle.lat_dist_from_obstacle_to_traj;
+
+    // Filter obstacles for stop and slow down
+    const auto stop_obstacle =
+      createStopObstacleForPointCloud(decimated_traj_points, obstacle, precise_lat_dist);
+    if (stop_obstacle) {
+      stop_obstacles.push_back(*stop_obstacle);
+      continue;
+    }
+    const auto slow_down_obstacle = createSlowDownObstacleForPointCloud(obstacle, precise_lat_dist);
+    if (slow_down_obstacle) {
+      slow_down_obstacles.push_back(*slow_down_obstacle);
+      continue;
+    }
+  }
+
+  const double calculation_time = stop_watch_.toc(__func__);
+  RCLCPP_INFO_EXPRESSION(
+    rclcpp::get_logger("ObstacleCruisePlanner"), enable_calculation_time_info_, "  %s := %f [ms]",
+    __func__, calculation_time);
+
+  return {stop_obstacles, {}, slow_down_obstacles};
 }
 
 std::vector<TrajectoryPoint> ObstacleCruisePlannerNode::decimateTrajectoryPoints(
@@ -1173,7 +1416,7 @@ ObstacleCruisePlannerNode::createCollisionPointsForOutsideCruiseObstacle(
   return collision_points;
 }
 
-std::optional<StopObstacle> ObstacleCruisePlannerNode::createStopObstacle(
+std::optional<StopObstacle> ObstacleCruisePlannerNode::createStopObstacleForPredictedObject(
   const Odometry & odometry, const std::vector<TrajectoryPoint> & traj_points,
   const std::vector<Polygon2d> & traj_polys, const Obstacle & obstacle,
   const double precise_lat_dist) const
@@ -1264,7 +1507,45 @@ std::optional<StopObstacle> ObstacleCruisePlannerNode::createStopObstacle(
                       normal_vel,    collision_point->first, collision_point->second};
 }
 
-std::optional<SlowDownObstacle> ObstacleCruisePlannerNode::createSlowDownObstacle(
+std::optional<StopObstacle> ObstacleCruisePlannerNode::createStopObstacleForPointCloud(
+  const std::vector<TrajectoryPoint> & traj_points, const Obstacle & obstacle,
+  const double precise_lat_dist) const
+{
+  const auto & p = behavior_determination_param_;
+
+  if (!use_pointcloud_for_stop_) {
+    return std::nullopt;
+  }
+
+  if (!obstacle.stop_collision_point) {
+    return std::nullopt;
+  }
+
+  const double max_lat_margin_for_stop =
+    (obstacle.classification.label == ObjectClassification::UNKNOWN)
+      ? p.max_lat_margin_for_stop_against_unknown
+      : p.max_lat_margin_for_stop;
+
+  if (precise_lat_dist > std::max(max_lat_margin_for_stop, 1e-3)) {
+    return std::nullopt;
+  }
+
+  const auto dist_to_collide_on_traj =
+    autoware::motion_utils::calcSignedArcLength(traj_points, 0, *obstacle.stop_collision_point);
+
+  return StopObstacle{
+    obstacle.uuid,
+    obstacle.stamp,
+    obstacle.classification,
+    obstacle.pose,
+    obstacle.shape,
+    {},
+    {},
+    *obstacle.stop_collision_point,
+    dist_to_collide_on_traj};
+}
+
+std::optional<SlowDownObstacle> ObstacleCruisePlannerNode::createSlowDownObstacleForPredictedObject(
   const Odometry & odometry, const std::vector<TrajectoryPoint> & traj_points,
   const Obstacle & obstacle, const double precise_lat_dist)
 {
@@ -1315,7 +1596,7 @@ std::optional<SlowDownObstacle> ObstacleCruisePlannerNode::createSlowDownObstacl
     return std::nullopt;
   }
 
-  const auto obstacle_poly = obstacle.toPolygon();
+  const auto obstacle_poly = autoware::universe_utils::toPolygon2d(obstacle.pose, obstacle.shape);
 
   // calculate collision points with trajectory with lateral stop margin
   // NOTE: For additional margin, hysteresis is not divided by two.
@@ -1386,6 +1667,26 @@ std::optional<SlowDownObstacle> ObstacleCruisePlannerNode::createSlowDownObstacl
   return SlowDownObstacle{obstacle.uuid,    obstacle.stamp,        obstacle.classification,
                           obstacle.pose,    tangent_vel,           normal_vel,
                           precise_lat_dist, front_collision_point, back_collision_point};
+}
+
+std::optional<SlowDownObstacle> ObstacleCruisePlannerNode::createSlowDownObstacleForPointCloud(
+  const Obstacle & obstacle, const double precise_lat_dist)
+{
+  if (!enable_slow_down_planning_ || !use_pointcloud_for_slow_down_) {
+    return std::nullopt;
+  }
+
+  if (!obstacle.slow_down_front_collision_point) {
+    return std::nullopt;
+  }
+
+  auto front_collision_point = *obstacle.slow_down_front_collision_point;
+  auto back_collision_point =
+    obstacle.slow_down_back_collision_point.value_or(front_collision_point);
+
+  return SlowDownObstacle{
+    obstacle.uuid,    obstacle.stamp,        obstacle.classification, obstacle.pose, {}, {},
+    precise_lat_dist, front_collision_point, back_collision_point};
 }
 
 void ObstacleCruisePlannerNode::checkConsistency(
