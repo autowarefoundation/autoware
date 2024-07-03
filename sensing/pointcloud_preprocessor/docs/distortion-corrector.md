@@ -2,20 +2,17 @@
 
 ## Purpose
 
-The `distortion_corrector` is a node that compensates pointcloud distortion caused by ego vehicle's movement during 1 scan.
+The `distortion_corrector` is a node that compensates for pointcloud distortion caused by the ego-vehicle's movement during one scan.
 
-Since the LiDAR sensor scans by rotating an internal laser, the resulting point cloud will be distorted if the ego-vehicle moves during a single scan (as shown by the figure below). The node corrects this by interpolating sensor data using odometry of ego-vehicle.
+Since the LiDAR sensor scans by rotating an internal laser, the resulting point cloud will be distorted if the ego-vehicle moves during a single scan (as shown by the figure below). The node corrects this by interpolating sensor data using the odometry of the ego-vehicle.
 
 ## Inner-workings / Algorithms
 
-- Use the equations below (specific to the Velodyne 32C sensor) to obtain an accurate timestamp for each scan data point.
-- Use twist information to determine the distance the ego-vehicle has traveled between the time that the scan started and the corrected timestamp of each point, and then correct the position of the point.
+The node uses twist information (linear and angular velocity) from the `~/input/twist` topic to correct each point in the point cloud. If the user sets `use_imu` to true, the node will replace the twist's angular velocity with the angular velocity from IMU.
 
-The offset equation is given by
-$ TimeOffset = (55.296 \mu s _SequenceIndex) + (2.304 \mu s_ DataPointIndex) $
+The node supports two different modes of distortion correction: 2D distortion correction and 3D distortion correction. The main difference is that the 2D distortion corrector only utilizes the x-axis of linear velocity and the z-axis of angular velocity to correct the point positions. On the other hand, the 3D distortion corrector utilizes all linear and angular velocity components to correct the point positions.
 
-To calculate the exact point time, add the TimeOffset to the timestamp.
-$ ExactPointTime = TimeStamp + TimeOffset $
+Please note that the processing time difference between the two distortion methods is significant; the 3D corrector takes 50% more time than the 2D corrector. Therefore, it is recommended that in general cases, users should set `use_3d_distortion_correction` to `false`. However, in scenarios such as a vehicle going over speed bumps, using the 3D corrector can be beneficial.
 
 ![distortion corrector figure](./image/distortion_corrector.jpg)
 
@@ -23,25 +20,31 @@ $ ExactPointTime = TimeStamp + TimeOffset $
 
 ### Input
 
-| Name             | Type                                             | Description      |
-| ---------------- | ------------------------------------------------ | ---------------- |
-| `~/input/points` | `sensor_msgs::msg::PointCloud2`                  | reference points |
-| `~/input/twist`  | `geometry_msgs::msg::TwistWithCovarianceStamped` | twist            |
-| `~/input/imu`    | `sensor_msgs::msg::Imu`                          | imu data         |
+| Name                 | Type                                             | Description                        |
+| -------------------- | ------------------------------------------------ | ---------------------------------- |
+| `~/input/pointcloud` | `sensor_msgs::msg::PointCloud2`                  | Topic of the distorted pointcloud. |
+| `~/input/twist`      | `geometry_msgs::msg::TwistWithCovarianceStamped` | Topic of the twist information.    |
+| `~/input/imu`        | `sensor_msgs::msg::Imu`                          | Topic of the IMU data.             |
 
 ### Output
 
-| Name              | Type                            | Description     |
-| ----------------- | ------------------------------- | --------------- |
-| `~/output/points` | `sensor_msgs::msg::PointCloud2` | filtered points |
+| Name                  | Type                            | Description                         |
+| --------------------- | ------------------------------- | ----------------------------------- |
+| `~/output/pointcloud` | `sensor_msgs::msg::PointCloud2` | Topic of the undistorted pointcloud |
 
 ## Parameters
 
 ### Core Parameters
 
-| Name                   | Type   | Default Value | Description                                                 |
-| ---------------------- | ------ | ------------- | ----------------------------------------------------------- |
-| `timestamp_field_name` | string | "time_stamp"  | time stamp field name                                       |
-| `use_imu`              | bool   | true          | use gyroscope for yaw rate if true, else use vehicle status |
+{{ json_to_markdown("sensing/pointcloud_preprocessor/schema/distortion_corrector.schema.json") }}
+
+## Launch
+
+```bash
+ros2 launch pointcloud_preprocessor distortion_corrector.launch.xml
+```
 
 ## Assumptions / Known limits
+
+- The node requires time synchronization between the topics from lidars, twist, and IMU.
+- If you want to use a 3D distortion corrector without IMU, please check that the linear and angular velocity fields of your twist message are not empty.

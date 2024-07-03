@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Distortion Corrector Node",
+  "type": "object",
+  "definitions": {
+    "distortion_corrector": {
+      "type": "object",
+      "properties": {
+        "base_frame": {
+          "type": "string",
+          "description": "The undistortion algorithm is based on a base frame, which must be the same as the twist frame.",
+          "default": "base_link"
+        },
+        "use_imu": {
+          "type": "boolean",
+          "description": "Use IMU angular velocity, otherwise, use twist angular velocity.",
+          "default": "true"
+        },
+        "use_3d_distortion_correction": {
+          "type": "boolean",
+          "description": "Use 3d distortion correction algorithm, otherwise, use 2d distortion correction algorithm.",
+          "default": "false"
+        }
+      },
+      "required": ["base_frame", "use_imu", "use_3d_distortion_correction"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/distortion_corrector"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

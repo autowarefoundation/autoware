@@ -42,6 +42,7 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
+  <depend>sophus</depend>
   <depend>std_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>

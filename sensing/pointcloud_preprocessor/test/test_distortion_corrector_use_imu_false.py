@@ -46,7 +46,11 @@ def generate_test_description():
             plugin="pointcloud_preprocessor::DistortionCorrectorComponent",
             name="distortion_corrector_node",
             parameters=[
-                {"use_imu": False},
+                {
+                    "base_frame": "base_link",
+                    "use_imu": False,
+                    "use_3d_distortion_correction": False,
+                },
             ],
             remappings=[
                 ("~/input/twist", "/test/sensing/vehicle_velocity_converter/twist_with_covariance"),
