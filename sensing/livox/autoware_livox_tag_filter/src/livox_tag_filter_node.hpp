@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LIVOX_TAG_FILTER__LIVOX_TAG_FILTER_NODE_HPP_
-#define LIVOX_TAG_FILTER__LIVOX_TAG_FILTER_NODE_HPP_
+#ifndef LIVOX_TAG_FILTER_NODE_HPP_
+#define LIVOX_TAG_FILTER_NODE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -22,7 +22,7 @@
 #include <memory>
 #include <vector>
 
-namespace livox_tag_filter
+namespace autoware::livox_tag_filter
 {
 class LivoxTagFilterNode : public rclcpp::Node
 {
@@ -41,6 +41,6 @@ private:
   // Publisher
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_pointcloud_;
 };
-}  // namespace livox_tag_filter
+}  // namespace autoware::livox_tag_filter
 
-#endif  // LIVOX_TAG_FILTER__LIVOX_TAG_FILTER_NODE_HPP_
+#endif  // LIVOX_TAG_FILTER_NODE_HPP_

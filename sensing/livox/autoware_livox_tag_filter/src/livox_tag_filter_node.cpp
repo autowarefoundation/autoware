@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "livox_tag_filter/livox_tag_filter_node.hpp"
+#include "livox_tag_filter_node.hpp"
 
 #include <pcl_conversions/pcl_conversions.h>
 
@@ -34,7 +34,7 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
   LivoxPoint, (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(
                 std::uint8_t, tag, tag)(std::uint8_t, line, line))
 
-namespace livox_tag_filter
+namespace autoware::livox_tag_filter
 {
 LivoxTagFilterNode::LivoxTagFilterNode(const rclcpp::NodeOptions & node_options)
 : Node("livox_tag_filter", node_options)
@@ -84,7 +84,7 @@ void LivoxTagFilterNode::onPointCloud(const sensor_msgs::msg::PointCloud2::Const
   pub_pointcloud_->publish(std::move(tag_filtered_msg_ptr));
 }
 
-}  // namespace livox_tag_filter
+}  // namespace autoware::livox_tag_filter
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(livox_tag_filter::LivoxTagFilterNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::livox_tag_filter::LivoxTagFilterNode)

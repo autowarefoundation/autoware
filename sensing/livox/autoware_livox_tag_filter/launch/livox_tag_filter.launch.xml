@@ -1,9 +1,9 @@
 <launch>
   <arg name="input" description="input topic name"/>
   <arg name="output" description="output topic name"/>
-  <arg name="param_file" default="$(find-pkg-share livox_tag_filter)/config/livox_tag_filter.param.yaml"/>
+  <arg name="param_file" default="$(find-pkg-share autoware_livox_tag_filter)/config/livox_tag_filter.param.yaml"/>
 
-  <node pkg="livox_tag_filter" exec="livox_tag_filter_node" name="livox_tag_filter_node" output="screen">
+  <node pkg="autoware_livox_tag_filter" exec="autoware_livox_tag_filter_node" name="livox_tag_filter_node" output="screen">
     <remap from="input" to="$(var input)"/>
     <remap from="output" to="$(var output)"/>
     <param from="$(var param_file)"/>
