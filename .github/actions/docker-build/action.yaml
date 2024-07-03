@@ -36,6 +36,7 @@ runs:
 
     - name: Cache
       uses: actions/cache@v3
+      if: ${{ inputs.name == 'no-cuda' }}
       id: cache
       with:
         path: |
@@ -44,6 +45,17 @@ runs:
         restore-keys: |
           cache-${{ inputs.platform }}-${{ inputs.name }}-
           cache-${{ inputs.platform }}-
+
+    - name: Restore cache
+      uses: actions/cache/restore@v4
+      if: ${{ inputs.name != 'no-cuda' }}
+      with:
+        path: |
+          root-ccache
+        key: cache-${{ matrix.platform }}-${{ matrix.name }}-${{ hashFiles('autoware.repos') }}
+        restore-keys: |
+          cache-${{ matrix.platform }}-${{ matrix.name }}-
+          cache-${{ matrix.platform }}-
 
     - name: Inject cache into docker
       uses: reproducible-containers/buildkit-cache-dance@v3.1.0
