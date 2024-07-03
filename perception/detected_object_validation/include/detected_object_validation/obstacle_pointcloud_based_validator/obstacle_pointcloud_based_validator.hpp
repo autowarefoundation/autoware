@@ -75,6 +75,8 @@ public:
     const autoware_perception_msgs::msg::DetectedObject & object) = 0;
   size_t getThresholdPointCloud(const autoware_perception_msgs::msg::DetectedObject & object);
   virtual pcl::PointCloud<pcl::PointXYZ>::Ptr getDebugNeighborPointCloud() = 0;
+
+  virtual ~Validator() = default;
 };
 
 class Validator2D : public Validator

@@ -24,9 +24,6 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include <memory>
-#include <vector>
-
 namespace obstacle_pointcloud_based_validator
 {
 class Debugger
