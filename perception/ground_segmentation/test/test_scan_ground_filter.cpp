@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "../src/scan_ground_filter/node.hpp"
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "tf2_ros/transform_broadcaster.h"
-
-#include <ground_segmentation/scan_ground_filter_nodelet.hpp>
 
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
@@ -126,7 +125,8 @@ protected:
 
     options.parameter_overrides(parameters);
 
-    scan_ground_filter_ = std::make_shared<ground_segmentation::ScanGroundFilterComponent>(options);
+    scan_ground_filter_ =
+      std::make_shared<autoware::ground_segmentation::ScanGroundFilterComponent>(options);
 
     // read pcd to pointcloud
     sensor_msgs::msg::PointCloud2::SharedPtr origin_input_msg_ptr =
@@ -161,7 +161,7 @@ protected:
   ~ScanGroundFilterTest() override { rclcpp::shutdown(); }
 
 public:
-  std::shared_ptr<ground_segmentation::ScanGroundFilterComponent> scan_ground_filter_;
+  std::shared_ptr<autoware::ground_segmentation::ScanGroundFilterComponent> scan_ground_filter_;
   rclcpp::Node::SharedPtr dummy_node_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr input_pointcloud_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr output_pointcloud_pub_;

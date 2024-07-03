@@ -82,6 +82,12 @@ class GroundSegmentationPipeline:
                 "margin_min_z"
             ]
         )
+        # Get the plugin name from the full plugin path
+        ground_segmentation_plugin_name = self.ground_segmentation_param[
+            f"{lidar_name}_ground_filter"
+        ]["plugin"]
+        ground_segmentation_plugin_name = ground_segmentation_plugin_name.split("::")[-1]
+
         components = []
         components.append(
             ComposableNode(
@@ -110,7 +116,7 @@ class GroundSegmentationPipeline:
         components.append(
             ComposableNode(
                 package="ground_segmentation",
-                plugin=self.ground_segmentation_param[f"{lidar_name}_ground_filter"]["plugin"],
+                plugin="autoware::ground_segmentation::" + ground_segmentation_plugin_name,
                 name=f"{lidar_name}_ground_filter",
                 remappings=[
                     ("input", f"{lidar_name}/range_cropped/pointcloud"),
@@ -203,7 +209,7 @@ class GroundSegmentationPipeline:
         components.append(
             ComposableNode(
                 package="ground_segmentation",
-                plugin="ground_segmentation::RANSACGroundFilterComponent",
+                plugin="autoware::ground_segmentation::" + "RANSACGroundFilterComponent",
                 name="ransac_ground_filter",
                 namespace="plane_fitting",
                 remappings=[
@@ -228,6 +234,12 @@ class GroundSegmentationPipeline:
             self.vehicle_info["min_height_offset"]
             + self.ground_segmentation_param["common_crop_box_filter"]["parameters"]["margin_min_z"]
         )
+        # Get the plugin name from the full plugin path
+        ground_segmentation_plugin_name = self.ground_segmentation_param["common_ground_filter"][
+            "plugin"
+        ]
+        ground_segmentation_plugin_name = ground_segmentation_plugin_name.split("::")[-1]
+
         components = []
         components.append(
             ComposableNode(
@@ -256,7 +268,7 @@ class GroundSegmentationPipeline:
         components.append(
             ComposableNode(
                 package="ground_segmentation",
-                plugin=self.ground_segmentation_param["common_ground_filter"]["plugin"],
+                plugin="autoware::ground_segmentation::" + ground_segmentation_plugin_name,
                 name="common_ground_filter",
                 remappings=[
                     ("input", "range_cropped/pointcloud"),

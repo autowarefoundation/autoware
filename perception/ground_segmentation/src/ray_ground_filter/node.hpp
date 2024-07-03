@@ -42,8 +42,8 @@
  *  v1.0: amc-nu (abrahammonrroy@yahoo.com)
  */
 
-#ifndef GROUND_SEGMENTATION__RAY_GROUND_FILTER_NODELET_HPP_
-#define GROUND_SEGMENTATION__RAY_GROUND_FILTER_NODELET_HPP_
+#ifndef RAY_GROUND_FILTER__NODE_HPP_
+#define RAY_GROUND_FILTER__NODE_HPP_
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
@@ -58,14 +58,7 @@
 #include <tf2_eigen/tf2_eigen.hpp>
 #endif
 
-#include <tf2_ros/transform_listener.h>
-
-#include <chrono>
-#include <string>
-#include <vector>
-// #include <pcl_ros/point_cloud.h>
-
-#include "ground_segmentation/gencolors.hpp"
+#include "gencolors.hpp"
 #include "pointcloud_preprocessor/filter.hpp"
 
 #include <opencv2/core.hpp>
@@ -76,11 +69,17 @@
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/optional.hpp>
 
+#include <tf2_ros/transform_listener.h>
+
+#include <chrono>
+#include <string>
+#include <vector>
+
 namespace bg = boost::geometry;
 using Point = bg::model::d2::point_xy<double>;
 using Polygon = bg::model::polygon<Point>;
 
-namespace ground_segmentation
+namespace autoware::ground_segmentation
 {
 class RayGroundFilterComponent : public pointcloud_preprocessor::Filter
 {
@@ -206,6 +205,6 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   explicit RayGroundFilterComponent(const rclcpp::NodeOptions & options);
 };
-}  // namespace ground_segmentation
+}  // namespace autoware::ground_segmentation
 
-#endif  // GROUND_SEGMENTATION__RAY_GROUND_FILTER_NODELET_HPP_
+#endif  // RAY_GROUND_FILTER__NODE_HPP_

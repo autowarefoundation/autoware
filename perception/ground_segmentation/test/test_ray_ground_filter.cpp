@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "../src/ray_ground_filter/node.hpp"
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "tf2_ros/transform_broadcaster.h"
-
-#include <ground_segmentation/ray_ground_filter_nodelet.hpp>
 
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include <sensor_msgs/point_cloud2_iterator.hpp>
@@ -37,7 +36,7 @@ protected:
   void TearDown() { (void)rclcpp::shutdown(); }
 };  // sanity_check
 
-class RayGroundFilterComponentTest : public ground_segmentation::RayGroundFilterComponent
+class RayGroundFilterComponentTest : public autoware::ground_segmentation::RayGroundFilterComponent
 {
 public:
   explicit RayGroundFilterComponentTest(const rclcpp::NodeOptions & options)

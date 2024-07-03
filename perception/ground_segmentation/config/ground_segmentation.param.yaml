@@ -16,7 +16,7 @@
         negative: False
 
     common_ground_filter:
-      plugin: "ground_segmentation::ScanGroundFilterComponent"
+      plugin: "autoware::ground_segmentation::ScanGroundFilterComponent"
       parameters:
         global_slope_max_angle_deg: 10.0
         local_slope_max_angle_deg: 13.0 # recommended 30.0 for non elevation_grid_mode

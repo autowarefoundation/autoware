@@ -29,12 +29,12 @@
  *  v1.0: amc-nu (abrahammonrroy@yahoo.com)
  */
 
-#include "ground_segmentation/ray_ground_filter_nodelet.hpp"
+#include "node.hpp"
 
 #include <string>
 #include <vector>
 
-namespace ground_segmentation
+namespace autoware::ground_segmentation
 {
 using pointcloud_preprocessor::get_param;
 
@@ -250,8 +250,9 @@ void RayGroundFilterComponent::ClassifyPointCloud(
 //   // Enable the dynamic reconfigure service
 //   has_service = true;
 //   srv_ = boost::make_shared<
-//     dynamic_reconfigure::Server<ground_segmentation::RayGroundFilterConfig> >(nh);
-//   dynamic_reconfigure::Server<ground_segmentation::RayGroundFilterConfig>::CallbackType f =
+//     dynamic_reconfigure::Server<autoware::ground_segmentation::RayGroundFilterConfig> >(nh);
+//   dynamic_reconfigure::Server<autoware::ground_segmentation::RayGroundFilterConfig>::CallbackType
+//   f =
 //     boost::bind(&RayGroundFilterComponent::config_callback, this, _1, _2);
 //   srv_->setCallback(f);
 //   return (true);
@@ -394,7 +395,7 @@ rcl_interfaces::msg::SetParametersResult RayGroundFilterComponent::paramCallback
   return result;
 }
 
-}  // namespace ground_segmentation
+}  // namespace autoware::ground_segmentation
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(ground_segmentation::RayGroundFilterComponent)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::ground_segmentation::RayGroundFilterComponent)

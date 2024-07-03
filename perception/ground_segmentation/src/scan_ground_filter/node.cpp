@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ground_segmentation/scan_ground_filter_nodelet.hpp"
+#include "node.hpp"
 
-#include <autoware/universe_utils/geometry/geometry.hpp>
-#include <autoware/universe_utils/math/normalization.hpp>
-#include <autoware/universe_utils/math/unit_conversion.hpp>
-#include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/math/normalization.hpp"
+#include "autoware/universe_utils/math/unit_conversion.hpp"
+#include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace ground_segmentation
+namespace autoware::ground_segmentation
 {
 using autoware::universe_utils::calcDistance3d;
 using autoware::universe_utils::deg2rad;
@@ -33,7 +33,7 @@ using autoware::vehicle_info_utils::VehicleInfoUtils;
 using pointcloud_preprocessor::get_param;
 
 ScanGroundFilterComponent::ScanGroundFilterComponent(const rclcpp::NodeOptions & options)
-: Filter("ScanGroundFilter", options)
+: pointcloud_preprocessor::Filter("ScanGroundFilter", options)
 {
   // set initial parameters
   {
@@ -715,7 +715,7 @@ rcl_interfaces::msg::SetParametersResult ScanGroundFilterComponent::onParameter(
   return result;
 }
 
-}  // namespace ground_segmentation
+}  // namespace autoware::ground_segmentation
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(ground_segmentation::ScanGroundFilterComponent)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::ground_segmentation::ScanGroundFilterComponent)

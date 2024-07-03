@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "../src/ransac_ground_filter/node.hpp"
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 
 #include <experimental/random>
-#include <ground_segmentation/ransac_ground_filter_nodelet.hpp>
 
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -68,7 +68,7 @@ protected:
   void TearDown() { (void)rclcpp::shutdown(); }
 };
 
-class RansacGroundFilterTest : public ground_segmentation::RANSACGroundFilterComponent
+class RansacGroundFilterTest : public autoware::ground_segmentation::RANSACGroundFilterComponent
 {
 public:
   explicit RansacGroundFilterTest(const rclcpp::NodeOptions & options)
