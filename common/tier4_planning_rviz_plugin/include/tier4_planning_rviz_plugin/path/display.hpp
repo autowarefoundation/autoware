@@ -77,7 +77,7 @@ void visualizeBound(
 
       const float diff_angle =
         autoware::universe_utils::normalizeRadian(normal_vector_angle - curr_to_next_angle);
-      if (diff_angle == 0.0) {
+      if (diff_angle <= 1e-7 && diff_angle >= -1e-7) {
         return std::make_pair(normal_vector_angle, width);
       }
 
