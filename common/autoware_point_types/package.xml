@@ -4,7 +4,8 @@
   <name>autoware_point_types</name>
   <version>0.1.0</version>
   <description>The point types definition to use point_cloud_msg_wrapper</description>
-  <maintainer email="taichi.higashide@tier4.jp">Taichi Higashide</maintainer>
+  <maintainer email="david.wong@tier4.jp">David Wong</maintainer>
+  <maintainer email="max.schmeller@tier4.jp">Max Schmeller</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_core</buildtool_depend>
