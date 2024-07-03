@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "stop_filter/stop_filter.hpp"
+#include "stop_filter.hpp"
 
 #include <rclcpp/logging.hpp>
 
@@ -24,6 +24,8 @@
 
 using std::placeholders::_1;
 
+namespace autoware::stop_filter
+{
 StopFilter::StopFilter(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("stop_filter", node_options)
 {
@@ -57,6 +59,7 @@ void StopFilter::callback_odometry(const nav_msgs::msg::Odometry::SharedPtr msg)
   pub_stop_flag_->publish(stop_flag_msg);
   pub_odom_->publish(odom_msg);
 }
+}  // namespace autoware::stop_filter
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(StopFilter)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::stop_filter::StopFilter)

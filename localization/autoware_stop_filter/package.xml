@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>stop_filter</name>
+  <name>autoware_stop_filter</name>
   <version>0.0.0</version>
   <description>The stop filter package</description>
   <maintainer email="koji.minoda@tier4.jp">Koji Minoda</maintainer>

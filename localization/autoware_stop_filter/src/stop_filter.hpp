@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef STOP_FILTER__STOP_FILTER_HPP_
-#define STOP_FILTER__STOP_FILTER_HPP_
+#ifndef STOP_FILTER_HPP_
+#define STOP_FILTER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -34,6 +34,8 @@
 #include <string>
 #include <vector>
 
+namespace autoware::stop_filter
+{
 class StopFilter : public rclcpp::Node
 {
 public:
@@ -54,4 +56,5 @@ private:
    */
   void callback_odometry(const nav_msgs::msg::Odometry::SharedPtr msg);
 };
-#endif  // STOP_FILTER__STOP_FILTER_HPP_
+}  // namespace autoware::stop_filter
+#endif  // STOP_FILTER_HPP_

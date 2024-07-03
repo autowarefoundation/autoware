@@ -17,7 +17,7 @@
   </group>
 
   <group>
-    <include file="$(find-pkg-share stop_filter)/launch/stop_filter.launch.xml">
+    <include file="$(find-pkg-share autoware_stop_filter)/launch/stop_filter.launch.xml">
       <arg name="use_twist_with_covariance" value="True"/>
       <arg name="input_odom_name" value="/localization/pose_twist_fusion_filter/kinematic_state"/>
       <arg name="input_twist_with_covariance_name" value="/localization/pose_twist_fusion_filter/twist_with_covariance"/>

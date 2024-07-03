@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.14)
-project(stop_filter)
+project(autoware_stop_filter)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/stop_filter.cpp
+  src/stop_filter.hpp
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
