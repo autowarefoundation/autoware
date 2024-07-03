@@ -33,8 +33,12 @@ RingOutlierFilterComponent::RingOutlierFilterComponent(const rclcpp::NodeOptions
     using autoware::universe_utils::StopWatch;
     stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
     debug_publisher_ = std::make_unique<DebugPublisher>(this, "ring_outlier_filter");
-    outlier_pointcloud_publisher_ =
-      this->create_publisher<PointCloud2>("debug/ring_outlier_filter", 1);
+    {
+      rclcpp::PublisherOptions pub_options;
+      pub_options.qos_overriding_options = rclcpp::QosOverridingOptions::with_default_policies();
+      outlier_pointcloud_publisher_ =
+        this->create_publisher<PointCloud2>("debug/ring_outlier_filter", 1, pub_options);
+    }
     visibility_pub_ = create_publisher<tier4_debug_msgs::msg::Float32Stamped>(
       "ring_outlier_filter/debug/visibility", rclcpp::SensorDataQoS());
     stop_watch_ptr_->tic("cyclic_time");

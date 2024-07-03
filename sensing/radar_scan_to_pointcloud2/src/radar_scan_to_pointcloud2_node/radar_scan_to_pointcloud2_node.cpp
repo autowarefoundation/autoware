@@ -111,9 +111,15 @@ RadarScanToPointcloud2Node::RadarScanToPointcloud2Node(const rclcpp::NodeOptions
   sub_radar_ = create_subscription<RadarScan>(
     "~/input/radar", rclcpp::QoS{1}, std::bind(&RadarScanToPointcloud2Node::onData, this, _1));
 
-  // Publisher
-  pub_amplitude_pointcloud_ = create_publisher<PointCloud2>("~/output/amplitude_pointcloud", 1);
-  pub_doppler_pointcloud_ = create_publisher<PointCloud2>("~/output/doppler_pointcloud", 1);
+  {
+    rclcpp::PublisherOptions pub_options;
+    pub_options.qos_overriding_options = rclcpp::QosOverridingOptions::with_default_policies();
+    // Publisher
+    pub_amplitude_pointcloud_ =
+      create_publisher<PointCloud2>("~/output/amplitude_pointcloud", 1, pub_options);
+    pub_doppler_pointcloud_ =
+      create_publisher<PointCloud2>("~/output/doppler_pointcloud", 1, pub_options);
+  }
 }
 
 rcl_interfaces::msg::SetParametersResult RadarScanToPointcloud2Node::onSetParam(

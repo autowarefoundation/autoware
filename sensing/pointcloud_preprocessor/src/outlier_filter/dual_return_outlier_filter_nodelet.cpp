@@ -72,9 +72,12 @@ DualReturnOutlierFilterComponent::DualReturnOutlierFilterComponent(
     image_transport::create_publisher(this, "dual_return_outlier_filter/debug/frequency_image");
   visibility_pub_ = create_publisher<tier4_debug_msgs::msg::Float32Stamped>(
     "dual_return_outlier_filter/debug/visibility", rclcpp::SensorDataQoS());
-  noise_cloud_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>(
-    "dual_return_outlier_filter/debug/pointcloud_noise", rclcpp::SensorDataQoS());
-
+  {
+    rclcpp::PublisherOptions pub_options;
+    pub_options.qos_overriding_options = rclcpp::QosOverridingOptions::with_default_policies();
+    noise_cloud_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>(
+      "dual_return_outlier_filter/debug/pointcloud_noise", rclcpp::SensorDataQoS(), pub_options);
+  }
   using std::placeholders::_1;
   set_param_res_ = this->add_on_set_parameters_callback(
     std::bind(&DualReturnOutlierFilterComponent::paramCallback, this, _1));

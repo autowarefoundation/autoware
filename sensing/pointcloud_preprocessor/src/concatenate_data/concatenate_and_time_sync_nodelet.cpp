@@ -141,8 +141,10 @@ PointCloudConcatenateDataSynchronizerComponent::PointCloudConcatenateDataSynchro
 
   // Output Publishers
   {
+    rclcpp::PublisherOptions pub_options;
+    pub_options.qos_overriding_options = rclcpp::QosOverridingOptions::with_default_policies();
     pub_output_ = this->create_publisher<PointCloud2>(
-      "output", rclcpp::SensorDataQoS().keep_last(maximum_queue_size_));
+      "output", rclcpp::SensorDataQoS().keep_last(maximum_queue_size_), pub_options);
   }
 
   // Subscribers
@@ -192,10 +194,13 @@ PointCloudConcatenateDataSynchronizerComponent::PointCloudConcatenateDataSynchro
 
   // Transformed Raw PointCloud2 Publisher to publish the transformed pointcloud
   if (publish_synchronized_pointcloud_) {
+    rclcpp::PublisherOptions pub_options;
+    pub_options.qos_overriding_options = rclcpp::QosOverridingOptions::with_default_policies();
+
     for (auto & topic : input_topics_) {
       std::string new_topic = replaceSyncTopicNamePostfix(topic, synchronized_pointcloud_postfix_);
       auto publisher = this->create_publisher<sensor_msgs::msg::PointCloud2>(
-        new_topic, rclcpp::SensorDataQoS().keep_last(maximum_queue_size_));
+        new_topic, rclcpp::SensorDataQoS().keep_last(maximum_queue_size_), pub_options);
       transformed_raw_pc_publisher_map_.insert({topic, publisher});
     }
   }

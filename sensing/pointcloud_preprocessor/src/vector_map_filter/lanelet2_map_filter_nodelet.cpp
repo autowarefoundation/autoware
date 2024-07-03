@@ -45,8 +45,10 @@ Lanelet2MapFilterComponent::Lanelet2MapFilterComponent(const rclcpp::NodeOptions
 
   // Set publisher
   {
+    rclcpp::PublisherOptions pub_options;
+    pub_options.qos_overriding_options = rclcpp::QosOverridingOptions::with_default_policies();
     filtered_pointcloud_pub_ =
-      this->create_publisher<PointCloud2>("output", rclcpp::SensorDataQoS());
+      this->create_publisher<PointCloud2>("output", rclcpp::SensorDataQoS(), pub_options);
   }
 
   // Set subscriber

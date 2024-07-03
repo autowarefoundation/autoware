@@ -40,10 +40,13 @@ DistortionCorrectorComponent::DistortionCorrectorComponent(const rclcpp::NodeOpt
   time_stamp_field_name_ = declare_parameter("time_stamp_field_name", "time_stamp");
   use_imu_ = declare_parameter("use_imu", true);
 
-  // Publisher
-  undistorted_points_pub_ =
-    this->create_publisher<PointCloud2>("~/output/pointcloud", rclcpp::SensorDataQoS());
-
+  {
+    rclcpp::PublisherOptions pub_options;
+    pub_options.qos_overriding_options = rclcpp::QosOverridingOptions::with_default_policies();
+    // Publisher
+    undistorted_points_pub_ = this->create_publisher<PointCloud2>(
+      "~/output/pointcloud", rclcpp::SensorDataQoS(), pub_options);
+  }
   // Subscriber
   twist_sub_ = this->create_subscription<geometry_msgs::msg::TwistWithCovarianceStamped>(
     "~/input/twist", 10,
