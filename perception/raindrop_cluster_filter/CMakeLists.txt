@@ -10,11 +10,11 @@ autoware_package()
 
 # Targets
 ament_auto_add_library(low_intensity_cluster_filter SHARED
-  src/low_intensity_cluster_filter.cpp
+  src/low_intensity_cluster_filter_node.cpp
 )
 
 rclcpp_components_register_node(low_intensity_cluster_filter
-  PLUGIN "low_intensity_cluster_filter::LowIntensityClusterFilter"
+  PLUGIN "autoware::low_intensity_cluster_filter::LowIntensityClusterFilter"
   EXECUTABLE low_intensity_cluster_filter_node)
 
 

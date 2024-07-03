@@ -12,15 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "raindrop_cluster_filter/low_intensity_cluster_filter/low_intensity_cluster_filter.hpp"
+#include "low_intensity_cluster_filter_node.hpp"
 
-#include <autoware/universe_utils/geometry/geometry.hpp>
+#include "autoware/universe_utils/geometry/geometry.hpp"
+
 #include <pcl_ros/transforms.hpp>
 
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
 #include <pcl_conversions/pcl_conversions.h>
-namespace low_intensity_cluster_filter
+
+namespace autoware::low_intensity_cluster_filter
 {
 LowIntensityClusterFilter::LowIntensityClusterFilter(const rclcpp::NodeOptions & node_options)
 : Node("low_intensity_cluster_filter_node", node_options),
@@ -135,7 +137,7 @@ bool LowIntensityClusterFilter::isValidatedCluster(const sensor_msgs::msg::Point
   return false;
 }
 
-}  // namespace low_intensity_cluster_filter
+}  // namespace autoware::low_intensity_cluster_filter
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(low_intensity_cluster_filter::LowIntensityClusterFilter)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::low_intensity_cluster_filter::LowIntensityClusterFilter)

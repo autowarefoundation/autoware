@@ -12,26 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RAINDROP_CLUSTER_FILTER__LOW_INTENSITY_CLUSTER_FILTER__LOW_INTENSITY_CLUSTER_FILTER_HPP_
-#define RAINDROP_CLUSTER_FILTER__LOW_INTENSITY_CLUSTER_FILTER__LOW_INTENSITY_CLUSTER_FILTER_HPP_
+#ifndef LOW_INTENSITY_CLUSTER_FILTER_NODE_HPP_
+#define LOW_INTENSITY_CLUSTER_FILTER_NODE_HPP_
 
+#include "autoware/universe_utils/ros/debug_publisher.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
 #include "detected_object_validation/utils/utils.hpp"
 
-#include <autoware/universe_utils/ros/debug_publisher.hpp>
-#include <autoware/universe_utils/system/stop_watch.hpp>
+#include <Eigen/Eigen>
 #include <rclcpp/rclcpp.hpp>
 
-#include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
+#include "tier4_perception_msgs/msg/detected_objects_with_feature.hpp"
 
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
-// #include <tf2_eigen/tf2_eigen.hpp>
-#include <Eigen/Eigen>
 
 #include <memory>
 #include <string>
 
-namespace low_intensity_cluster_filter
+namespace autoware::low_intensity_cluster_filter
 {
 
 class LowIntensityClusterFilter : public rclcpp::Node
@@ -73,6 +72,6 @@ private:
   std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_ptr_{nullptr};
 };
 
-}  // namespace low_intensity_cluster_filter
+}  // namespace autoware::low_intensity_cluster_filter
 
-#endif  // RAINDROP_CLUSTER_FILTER__LOW_INTENSITY_CLUSTER_FILTER__LOW_INTENSITY_CLUSTER_FILTER_HPP_
+#endif  // LOW_INTENSITY_CLUSTER_FILTER_NODE_HPP_
