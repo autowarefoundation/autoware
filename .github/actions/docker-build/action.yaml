@@ -46,12 +46,10 @@ runs:
           cache-${{ inputs.platform }}-
 
     - name: Inject cache into docker
-      uses: reproducible-containers/buildkit-cache-dance@v3.1.0
+      uses: reproducible-containers/buildkit-cache-dance@v2.1.4
       with:
-        cache-map: |
-          {
-            "root-ccache": "/root/.ccache"
-          }
+        cache-source: root-ccache
+        cache-target: /root/.ccache
         skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
     - name: Login to GitHub Container Registry

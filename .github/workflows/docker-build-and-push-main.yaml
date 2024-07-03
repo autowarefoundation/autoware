@@ -79,12 +79,10 @@ jobs:
             cache-${{ matrix.platform }}-
 
       - name: Inject cache into docker
-        uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+        uses: reproducible-containers/buildkit-cache-dance@v2.1.4
         with:
-          cache-map: |
-            {
-              "root-ccache": "/root/.ccache"
-            }
+          cache-source: root-ccache
+          cache-target: /root/.ccache
           skip-extraction: true
 
       - name: Build 'Autoware'
