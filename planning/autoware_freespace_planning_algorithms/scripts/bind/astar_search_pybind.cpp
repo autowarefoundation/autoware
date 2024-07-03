@@ -99,6 +99,7 @@ public:
 
 namespace py = pybind11;
 
+// cppcheck-suppress syntaxError
 PYBIND11_MODULE(autoware_freespace_planning_algorithms_pybind, p)
 {
   auto pyPlannerWaypointsVector =
