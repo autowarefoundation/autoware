@@ -53,31 +53,43 @@ jobs:
           done
           echo "full-paths=$paths" >> $GITHUB_OUTPUT
 
+      - name: Filter packages with no cpp/hpp files
+        id: filter-paths-no-cpp-files
+        run: |
+          filtered_paths=""
+          for dir in ${{ steps.get-full-paths.outputs.full-paths }}; do
+            if [ -d "$dir" ] && find "$dir" -name "*.cpp" -o -name "*.hpp" | grep -q .; then
+              filtered_paths="$filtered_paths $dir"
+            fi
+          done
+          echo "filtered-full-paths=$filtered_paths" >> $GITHUB_OUTPUT
+
       # cspell: ignore suppr
       - name: Run Cppcheck on modified packages
-        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
+        if: ${{ steps.filter-paths-no-cpp-files.outputs.filtered-full-paths != '' }}
         continue-on-error: true
         id: cppcheck
         run: |
-          echo "Running Cppcheck on modified packages: ${{ steps.get-modified-packages.outputs.modified-packages }}"
-          cppcheck --enable=all --inconclusive --check-level=exhaustive --error-exitcode=1 --suppressions-list=.cppcheck_suppressions --inline-suppr ${{ steps.get-full-paths.outputs.full-paths }} 2> cppcheck-report.txt
+          echo "Running Cppcheck on modified packages: ${{ steps.filter-paths-no-cpp-files.outputs.filtered-full-paths }}"
+          cppcheck --enable=all --inconclusive --check-level=exhaustive --error-exitcode=1 --suppressions-list=.cppcheck_suppressions --inline-suppr ${{ steps.filter-paths-no-cpp-files.outputs.filtered-full-paths }} 2> cppcheck-report.txt
         shell: bash
 
       - name: Setup Problem Matchers for cppcheck
+        if: ${{ steps.filter-paths-no-cpp-files.outputs.filtered-full-paths != '' }}
         run: echo "::add-matcher::.github/cppcheck-problem-matcher.json"
 
       - name: Show cppcheck-report result
-        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
+        if: ${{ steps.filter-paths-no-cpp-files.outputs.filtered-full-paths != '' }}
         run: |
           cat cppcheck-report.txt
 
       - name: Upload Cppcheck report
-        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
+        if: ${{ steps.filter-paths-no-cpp-files.outputs.filtered-full-paths != '' }}
         uses: actions/upload-artifact@v2
         with:
           name: cppcheck-report
           path: cppcheck-report.txt
 
       - name: Fail the job if Cppcheck failed
-        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' && steps.cppcheck.outcome == 'failure' }}
+        if: ${{ steps.filter-paths-no-cpp-files.outputs.filtered-full-paths != '' && steps.cppcheck.outcome == 'failure' }}
         run: exit 1
