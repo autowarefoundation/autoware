@@ -1993,6 +1993,17 @@ lanelet::ConstLanelets getAdjacentLane(
       lanes.push_back(opt_right_lane.value());
     }
 
+    const auto left_opposite_lanes = rh->getLeftOppositeLanelets(lane);
+    if (!is_right_shift && !left_opposite_lanes.empty()) {
+      lanes.push_back(left_opposite_lanes.front());
+
+      for (const auto & prev_lane : rh->getPreviousLanelets(left_opposite_lanes.front())) {
+        if (!exist(prev_lane.id())) {
+          lanes.push_back(prev_lane);
+        }
+      }
+    }
+
     const auto right_opposite_lanes = rh->getRightOppositeLanelets(lane);
     if (is_right_shift && !right_opposite_lanes.empty()) {
       lanes.push_back(right_opposite_lanes.front());
