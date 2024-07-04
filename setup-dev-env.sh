@@ -121,9 +121,9 @@ fi
 # Check installation of dev package
 if [ "$option_runtime" = "true" ]; then
     ansible_args+=("--extra-vars" "ros2_installation_type=ros-base") # ROS installation type, default "desktop"
-    ansible_args+=("--extra-vars" "install_devel=false")
+    ansible_args+=("--extra-vars" "install_devel=N")
 else
-    ansible_args+=("--extra-vars" "install_devel=true")
+    ansible_args+=("--extra-vars" "install_devel=y")
 fi
 
 # Check downloading artifacts
@@ -133,7 +133,7 @@ if [ "$option_yes" = "true" ] || [ "$option_download_artifacts" = "true" ]; then
 fi
 
 # Check downloading artifacts
-if [ "$target_playbook" = "autoware.dev_env.openadk" ]; then
+if [ "$target_playbook" = "autoware.dev_env.docker" ] || [ "$target_playbook" = "autoware.dev_env.openadk" ]; then
     if [ "$option_download_artifacts" = "true" ]; then
         echo -e "\e[36mArtifacts will be downloaded to $option_data_dir\e[m"
         ansible_args+=("--extra-vars" "prompt_download_artifacts=y")

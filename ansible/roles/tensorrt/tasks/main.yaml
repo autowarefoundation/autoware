@@ -18,12 +18,14 @@
       - libcudnn8-dev={{ cudnn_version }}
       - libnvinfer-dev={{ tensorrt_version }}
       - libnvinfer-plugin-dev={{ tensorrt_version }}
+      - libnvinfer-headers-dev={{ tensorrt_version }}
+      - libnvinfer-headers-plugin-dev={{ tensorrt_version }}
       - libnvparsers-dev={{ tensorrt_version }}
       - libnvonnxparsers-dev={{ tensorrt_version }}
     allow_change_held_packages: true
     allow_downgrade: true
     update_cache: true
-  when: install_devel == 'true'
+  when: install_devel == 'y'
 
 # apt-mark hold
 - name: Prevent CUDA-related packages from upgrading
@@ -47,6 +49,8 @@
     - libcudnn8-dev
     - libnvinfer-dev
     - libnvinfer-plugin-dev
+    - libnvinfer-headers-dev
+    - libnvinfer-headers-plugin-dev
     - libnvparsers-dev
     - libnvonnxparsers-dev
-  when: install_devel == 'true'
+  when: install_devel == 'y'
