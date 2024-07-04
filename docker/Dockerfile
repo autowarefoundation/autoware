@@ -32,7 +32,6 @@ FROM $BASE_IMAGE as src-imported
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
-# Copy files
 COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
 COPY ansible/ /autoware/ansible/
 WORKDIR /autoware
@@ -42,10 +41,16 @@ RUN --mount=type=ssh \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
-# Copy repository files
-COPY src /autoware/src
-
 # Generate install package lists
+COPY src/core /autoware/src/core
+RUN rosdep update && rosdep keys --ignore-src --from-paths src \
+    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
+    | grep -v '^#' \
+    | sed 's/ \+/\n/g'\
+    | sort \
+    > /rosdep-core-depend-packages.txt \
+    && cat /rosdep-core-depend-packages.txt
+COPY src /autoware/src
 RUN rosdep update && rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -61,7 +66,7 @@ RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
     > /rosdep-exec-depend-packages.txt \
     && cat /rosdep-exec-depend-packages.txt
 
-FROM base as prebuilt
+FROM base as autoware-core
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG SETUP_ARGS
@@ -75,6 +80,30 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Install rosdep dependencies
+COPY --from=src-imported /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  apt-get update \
+  && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+
+COPY --from=src-imported /autoware/src/core /autoware/src/core
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && du -sh ${CCACHE_DIR} && ccache -s \
+  && colcon build --cmake-args \
+    " -Wno-dev" \
+    " --no-warn-unused-cli" \
+    --mixin release compile-commands ccache \
+  && du -sh ${CCACHE_DIR} && ccache -s
+
+FROM autoware-core as prebuilt
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ARG SETUP_ARGS
+ENV CCACHE_DIR="/root/.ccache"
+
+# Install rosdep dependencies
 COPY --from=src-imported /rosdep-all-depend-packages.txt /tmp/rosdep-all-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
@@ -83,7 +112,12 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Build Autoware
-COPY --from=src-imported /autoware/src /autoware/src
+COPY --from=src-imported /autoware/src/launcher /autoware/src/launcher
+COPY --from=src-imported /autoware/src/param /autoware/src/param
+COPY --from=src-imported /autoware/src/sensor_component /autoware/src/sensor_component
+COPY --from=src-imported /autoware/src/sensor_kit /autoware/src/sensor_kit
+COPY --from=src-imported /autoware/src/universe /autoware/src/universe
+COPY --from=src-imported /autoware/src/vehicle /autoware/src/vehicle
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
@@ -91,9 +125,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     " -Wno-dev" \
     " --no-warn-unused-cli" \
     --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && find /autoware/install -type d -exec chmod 777 {} \; \
-  && rm -rf /autoware/build /autoware/src
+  && du -sh ${CCACHE_DIR} && ccache -s
 
 CMD ["/bin/bash"]
 
