@@ -52,6 +52,7 @@ struct PullOverPath
   size_t goal_id{};
   size_t id{};
   bool decided_velocity{false};
+  double max_curvature{0.0};  // max curvature of the parking path
 
   PathWithLaneId getFullPath() const
   {
@@ -72,6 +73,7 @@ struct PullOverPath
     return path;
   }
 
+  // path from the pull over start pose to the end pose
   PathWithLaneId getParkingPath() const
   {
     const PathWithLaneId full_path = getFullPath();

@@ -22,6 +22,7 @@
         lateral_offset_interval: 0.25
         ignore_distance_from_lane_start: 0.0
         margin_from_boundary: 0.5
+        high_curvature_threshold: 0.1
 
       # occupancy grid map
       occupancy_grid:

@@ -61,6 +61,7 @@ void GoalPlannerModuleManager::init(rclcpp::Node * node)
     p.ignore_distance_from_lane_start =
       node->declare_parameter<double>(ns + "ignore_distance_from_lane_start");
     p.margin_from_boundary = node->declare_parameter<double>(ns + "margin_from_boundary");
+    p.high_curvature_threshold = node->declare_parameter<double>(ns + "high_curvature_threshold");
 
     const std::string parking_policy_name =
       node->declare_parameter<std::string>(ns + "parking_policy");
