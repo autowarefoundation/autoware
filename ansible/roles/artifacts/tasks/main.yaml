@@ -429,51 +429,6 @@
     src: "{{ data_dir }}/tvm_utility/yolo_v2_tiny-x86_64-llvm-3.0.0-20221221.tar.gz"
     dest: "{{ data_dir }}/tvm_utility/models/yolo_v2_tiny"
 
-# lidar_centerpoint_tvm
-- name: Create lidar_centerpoint_tvm/models directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/lidar_centerpoint_tvm/models"
-    mode: "755"
-    state: directory
-
-- name: Download centerpoint_encoder-x86_64-llvm-3.0.0-20221221.tar.gz
-  become: true
-  ansible.builtin.get_url:
-    url: https://autoware-modelzoo.s3.us-east-2.amazonaws.com/models/3.0.0-20221221/centerpoint_encoder-x86_64-llvm-3.0.0-20221221.tar.gz
-    dest: "{{ data_dir }}/lidar_centerpoint_tvm/centerpoint_encoder-x86_64-llvm-3.0.0-20221221.tar.gz"
-    mode: "644"
-    checksum: sha256:41e19de43f30549c325968aee06b4ad0d9701220be819e79d37efdfa86b918d0
-
-- name: Create centerpoint_encoder folder in lidar_centerpoint_tvm/models of {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/lidar_centerpoint_tvm/models/centerpoint_encoder"
-    mode: "755"
-    state: directory
-
-- name: Extract centerpoint_encoder-x86_64-llvm-3.0.0-20221221.tar.gz
-  ansible.builtin.unarchive:
-    src: "{{ data_dir }}/lidar_centerpoint_tvm/centerpoint_encoder-x86_64-llvm-3.0.0-20221221.tar.gz"
-    dest: "{{ data_dir }}/lidar_centerpoint_tvm/models/centerpoint_encoder"
-
-- name: Download centerpoint_backbone-x86_64-llvm-3.0.0-20221221.tar.gz
-  become: true
-  ansible.builtin.get_url:
-    url: https://autoware-modelzoo.s3.us-east-2.amazonaws.com/models/3.0.0-20221221/centerpoint_backbone-x86_64-llvm-3.0.0-20221221.tar.gz
-    dest: "{{ data_dir }}/lidar_centerpoint_tvm/centerpoint_backbone-x86_64-llvm-3.0.0-20221221.tar.gz"
-    mode: "644"
-    checksum: sha256:3840b6b3590984e8115d66b12061aea3a2cfaed70b4e8d59457f04b0d6f6a1fc
-
-- name: Create centerpoint_backbone folder in lidar_centerpoint_tvm/models of {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/lidar_centerpoint_tvm/models/centerpoint_backbone"
-    mode: "755"
-    state: directory
-
-- name: Extract centerpoint_backbone-x86_64-llvm-3.0.0-20221221.tar.gz
-  ansible.builtin.unarchive:
-    src: "{{ data_dir }}/lidar_centerpoint_tvm/centerpoint_backbone-x86_64-llvm-3.0.0-20221221.tar.gz"
-    dest: "{{ data_dir }}/lidar_centerpoint_tvm/models/centerpoint_backbone"
-
 # lidar_apollo_segmentation_tvm
 - name: Create lidar_apollo_segmentation_tvm/models directory inside {{ data_dir }}
   ansible.builtin.file:
