@@ -1,4 +1,4 @@
-name: docker-build-self-hosted
+name: health-check-self-hosted
 
 on:
   schedule:

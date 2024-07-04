@@ -1,4 +1,4 @@
-name: docker-build
+name: health-check
 
 on:
   schedule:
