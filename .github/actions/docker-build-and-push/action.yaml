@@ -2,6 +2,12 @@ name: docker-build-and-push
 description: ""
 
 inputs:
+  name:
+    description: ""
+    required: true
+  platform:
+    description: ""
+    required: true
   bake-target:
     description: ""
     required: true
@@ -34,6 +40,28 @@ runs:
         mkdir src
         vcs import src < autoware.repos
       shell: bash
+
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Restore cache
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          root-ccache
+        key: cache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('autoware.repos') }}
+        restore-keys: |
+          cache-${{ inputs.platform }}-${{ inputs.name }}-
+          cache-${{ inputs.platform }}-
+
+    - name: Inject cache into docker
+      uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+      with:
+        cache-map: |
+          {
+            "root-ccache": "/root/.ccache"
+          }
+        skip-extraction: true
 
     - name: Set Docker tags
       id: set-docker-tags

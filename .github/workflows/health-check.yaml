@@ -1,4 +1,4 @@
-name: build-main
+name: health-check
 
 on:
   schedule:
@@ -9,7 +9,7 @@ jobs:
   load-env:
     uses: ./.github/workflows/load-env.yaml
 
-  build-main:
+  docker-build:
     needs: load-env
     runs-on: ubuntu-latest
     strategy:
