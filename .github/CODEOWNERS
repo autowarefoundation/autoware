@@ -192,10 +192,10 @@ planning/behavior_velocity_planner/autoware_behavior_velocity_traffic_light_modu
 planning/behavior_velocity_planner/autoware_behavior_velocity_virtual_traffic_light_module/** kosuke.takeuchi@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_planner/autoware_behavior_velocity_walkway_module/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 planning/motion_velocity_planner/autoware_motion_velocity_dynamic_obstacle_stop_module/** mamoru.sobue@tier4.jp maxime.clement@tier4.jp
-planning/motion_velocity_planner/autoware_motion_velocity_obstacle_velocity_limiter_module/** maxime.clement@tier4.jp
+planning/motion_velocity_planner/autoware_motion_velocity_obstacle_velocity_limiter_module/** maxime.clement@tier4.jp daniel.sanchez@tier4.jp
 planning/motion_velocity_planner/autoware_motion_velocity_out_of_lane_module/** maxime.clement@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
-planning/motion_velocity_planner/autoware_motion_velocity_planner_common/** maxime.clement@tier4.jp
-planning/motion_velocity_planner/autoware_motion_velocity_planner_node/** maxime.clement@tier4.jp
+planning/motion_velocity_planner/autoware_motion_velocity_planner_common/** maxime.clement@tier4.jp daniel.sanchez@tier4.jp alqudah.mohammad@tier4.jp
+planning/motion_velocity_planner/autoware_motion_velocity_planner_node/** maxime.clement@tier4.jp daniel.sanchez@tier4.jp alqudah.mohammad@tier4.jp
 planning/sampling_based_planner/autoware_bezier_sampler/** maxime.clement@tier4.jp
 planning/sampling_based_planner/autoware_frenet_planner/** maxime.clement@tier4.jp
 planning/sampling_based_planner/autoware_path_sampler/** maxime.clement@tier4.jp
