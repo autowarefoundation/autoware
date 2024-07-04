@@ -126,10 +126,8 @@ static Counts & counts()
 // bitness
 #if SIZE_MAX == UINT32_MAX
 #define ROBIN_HOOD_PRIVATE_DEFINITION_BITNESS() 32
-#elif SIZE_MAX == UINT64_MAX
-#define ROBIN_HOOD_PRIVATE_DEFINITION_BITNESS() 64
 #else
-#error Unsupported bitness
+#define ROBIN_HOOD_PRIVATE_DEFINITION_BITNESS() 64
 #endif
 
 // endianess
@@ -165,12 +163,13 @@ static Counts & counts()
 #endif
 #include <intrin.h>
 #pragma intrinsic(ROBIN_HOOD(BITSCANFORWARD))
-#define ROBIN_HOOD_COUNT_TRAILING_ZEROES(x)                                   \
-  [](size_t mask) noexcept -> int {                                           \
-    unsigned long index;                                                      \  // NOLINT
-    return ROBIN_HOOD(BITSCANFORWARD)(&index, mask) ? static_cast<int>(index) \
-                                                    : ROBIN_HOOD(BITNESS);    \
-  }(x)
+#define ROBIN_HOOD_COUNT_TRAILING_ZEROES(x)         \
+  [](size_t mask) noexcept -> int {                 \
+    unsigned long index;                            \  // NOLINT
+    return ROBIN_HOOD(BITSCANFORWARD)(&index, mask) \  // NOLINT
+    ? static_cast<int>(index)                       \  // cppcheck-suppress syntaxError
+    : ROBIN_HOOD(BITNESS);                          \  // cppcheck-suppress syntaxError
+  }(x)  // cppcheck-suppress syntaxError
 #else
 #if ROBIN_HOOD(BITNESS) == 32
 #define ROBIN_HOOD_PRIVATE_DEFINITION_CTZ() __builtin_ctzl
@@ -429,14 +428,6 @@ public:
     return *this;
   }
 
-  BulkPoolAllocator &
-  // NOLINTNEXTLINE (bugprone-unhandled-self-assignment,cert-oop54-cpp)
-  operator=(const BulkPoolAllocator & ROBIN_HOOD_UNUSED(o) /*unused*/) noexcept
-  {
-    // does not do anything
-    return *this;
-  }
-
   ~BulkPoolAllocator() noexcept { reset(); }
 
   // Deallocates all allocated memory.
@@ -473,22 +464,6 @@ public:
   {
     *reinterpret_cast_no_cast_align_warning<T **>(obj) = mHead;
     mHead = obj;
-  }
-
-  // Adds an already allocated block of memory to the allocator. This allocator is from now on
-  // responsible for freeing the data (with free()). If the provided data is not large enough to
-  // make use of, it is immediately freed. Otherwise it is reused and freed in the destructor.
-  void addOrFree(void * ptr, const size_t numBytes) noexcept
-  {
-    // calculate number of available elements in ptr
-    if (numBytes < ALIGNMENT + ALIGNED_SIZE) {
-      // not enough data for at least one element. Free and return.
-      ROBIN_HOOD_LOG("std::free")
-      std::free(ptr);
-    } else {
-      ROBIN_HOOD_LOG("add to buffer")
-      add(ptr, numBytes);
-    }
   }
 
   void swap(BulkPoolAllocator<T, MinNumAllocs, MaxNumAllocs> & other) noexcept
@@ -1382,7 +1357,7 @@ private:
     Iter & operator++() noexcept
     {
       mInfo++;
-      mKeyVals++;
+      ++mKeyVals;
       fastForward();
       return *this;
     }
@@ -2033,41 +2008,6 @@ public:
   {
     (void)hint;
     return emplace(std::move(keyval)).first;
-  }
-
-  // Returns 1 if key is found, 0 otherwise.
-  size_t count(const key_type & key) const
-  {  // NOLINT (modernize-use-nodiscard)
-    ROBIN_HOOD_TRACE(this)
-    auto kv = mKeyVals + findIdx(key);
-    if (kv != reinterpret_cast_no_cast_align_warning<Node *>(mInfo)) {
-      return 1;
-    }
-    return 0;
-  }
-
-  template <typename OtherKey, typename Self_ = Self>
-  // NOLINTNEXTLINE (modernize-use-nodiscard)
-  typename std::enable_if<Self_::is_transparent, size_t>::type count(const OtherKey & key) const
-  {
-    ROBIN_HOOD_TRACE(this)
-    auto kv = mKeyVals + findIdx(key);
-    if (kv != reinterpret_cast_no_cast_align_warning<Node *>(mInfo)) {
-      return 1;
-    }
-    return 0;
-  }
-
-  bool contains(const key_type & key) const
-  {  // NOLINT (modernize-use-nodiscard)
-    return 1U == count(key);
-  }
-
-  template <typename OtherKey, typename Self_ = Self>
-  // NOLINTNEXTLINE (modernize-use-nodiscard)
-  typename std::enable_if<Self_::is_transparent, bool>::type contains(const OtherKey & key) const
-  {
-    return 1U == count(key);
   }
 
   // Returns a reference to the value found for key.
