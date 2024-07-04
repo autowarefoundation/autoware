@@ -194,7 +194,7 @@ void PathShifter::applyLinearShifter(ShiftedPath * shifted_path) const
       double ith_shift_length = 0.0;
       if (i < shift_line.start_idx) {
         ith_shift_length = 0.0;
-      } else if (shift_line.start_idx <= i && i <= shift_line.end_idx) {
+      } else if (i <= shift_line.end_idx) {
         auto dist_from_start = arclength_arr.at(i) - arclength_arr.at(shift_line.start_idx);
         ith_shift_length = (dist_from_start / shifting_arclength) * delta_shift;
       } else {
