@@ -35,25 +35,25 @@ TreeData::TreeData(const YAML::Node & yaml, const TreePath & path) : path_(path)
 TreeData::Item TreeData::required(const std::string & name)
 {
   // TODO(Takagi, Isamu): check map type.
-  const auto path = path_.field(name);
+  const auto tree_path = path_.field(name);
   if (!yaml_[name]) {
-    throw FieldNotFound(path);
+    throw FieldNotFound(tree_path);
   }
   const auto data = yaml_[name];
   yaml_.remove(name);
-  return TreeData(data, path);
+  return TreeData(data, tree_path);
 }
 
 TreeData::Item TreeData::optional(const std::string & name)
 {
   // TODO(Takagi, Isamu): check map type.
-  const auto path = path_.field(name);
+  const auto tree_path = path_.field(name);
   if (!yaml_[name]) {
-    return TreeData(YAML::Node(YAML::NodeType::Undefined), path);
+    return TreeData(YAML::Node(YAML::NodeType::Undefined), tree_path);
   }
   const auto data = yaml_[name];
   yaml_.remove(name);
-  return TreeData(data, path);
+  return TreeData(data, tree_path);
 }
 
 bool TreeData::is_valid() const

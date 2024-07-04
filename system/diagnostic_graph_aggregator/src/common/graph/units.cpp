@@ -84,12 +84,12 @@ void NodeUnit::initialize_status()
 
 LeafUnit::LeafUnit(const UnitLoader & unit) : BaseUnit(unit)
 {
-  const auto node = unit.data().required("node").text();
-  const auto name = unit.data().required("name").text();
-  const auto sep = node.empty() ? "" : ": ";
+  const auto diag_node = unit.data().required("node").text();
+  const auto diag_name = unit.data().required("name").text();
+  const auto sep = diag_node.empty() ? "" : ": ";
 
   struct_.path = unit.path();
-  struct_.name = node + sep + name;
+  struct_.name = diag_node + sep + diag_name;
   status_.level = DiagnosticStatus::STALE;
 }
 

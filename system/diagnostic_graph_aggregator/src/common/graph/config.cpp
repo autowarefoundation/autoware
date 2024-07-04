@@ -68,10 +68,10 @@ FileLoader::FileLoader(const PathConfig * path)
   }
 
   TreeData tree = TreeData::Load(path->resolved);
-  const auto paths = tree.optional("files").children("files");
+  const auto files = tree.optional("files").children("files");
   const auto edits = tree.optional("edits").children("edits");
   const auto units = tree.optional("units").children("units");
-  for (const auto & data : paths) create_path_config(data);
+  for (const auto & data : files) create_path_config(data);
   for (const auto & data : edits) create_edit_config(data);
   for (const auto & data : units) create_unit_config(data);
 }
