@@ -95,6 +95,8 @@ RadarFusionToDetectedObject::Output RadarFusionToDetectedObject::update(
     for (auto & split_object : split_objects) {
       // set radars within objects
       std::shared_ptr<std::vector<RadarInput>> radars_within_split_object;
+
+      // cppcheck-suppress knownConditionTrueFalse
       if (split_objects.size() == 1) {
         // If object is not split, radar data within object is same
         radars_within_split_object = radars_within_object;
