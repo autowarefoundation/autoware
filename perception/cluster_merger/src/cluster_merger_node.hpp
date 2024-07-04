@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CLUSTER_MERGER__NODE_HPP_
-#define CLUSTER_MERGER__NODE_HPP_
+#ifndef CLUSTER_MERGER_NODE_HPP_
+#define CLUSTER_MERGER_NODE_HPP_
 
 #include "autoware/universe_utils/ros/transform_listener.hpp"
 #include "message_filters/subscriber.h"
@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-namespace cluster_merger
+namespace autoware::cluster_merger
 {
 using tier4_perception_msgs::msg::DetectedObjectsWithFeature;
 using tier4_perception_msgs::msg::DetectedObjectWithFeature;
@@ -68,6 +68,6 @@ private:
   rclcpp::Publisher<DetectedObjectsWithFeature>::SharedPtr pub_objects_;
 };
 
-}  // namespace cluster_merger
+}  // namespace autoware::cluster_merger
 
-#endif  // CLUSTER_MERGER__NODE_HPP_
+#endif  // CLUSTER_MERGER_NODE_HPP_

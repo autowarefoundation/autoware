@@ -6,12 +6,12 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 # Targets
-ament_auto_add_library(cluster_merger_node_component SHARED
-  src/cluster_merger/node.cpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/cluster_merger_node.cpp
 )
 
-rclcpp_components_register_node(cluster_merger_node_component
-  PLUGIN "cluster_merger::ClusterMergerNode"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::cluster_merger::ClusterMergerNode"
   EXECUTABLE cluster_merger_node)
 
 

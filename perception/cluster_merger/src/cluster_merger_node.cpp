@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cluster_merger/node.hpp"
+#include "cluster_merger_node.hpp"
 
 #include "object_recognition_utils/object_recognition_utils.hpp"
 
 #include <memory>
 #include <string>
 #include <vector>
-namespace cluster_merger
+
+namespace autoware::cluster_merger
 {
 
 ClusterMergerNode::ClusterMergerNode(const rclcpp::NodeOptions & node_options)
@@ -67,7 +68,7 @@ void ClusterMergerNode::objectsCallback(
     transformed_objects1.feature_objects.end());
   pub_objects_->publish(output_objects);
 }
-}  // namespace cluster_merger
+}  // namespace autoware::cluster_merger
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(cluster_merger::ClusterMergerNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::cluster_merger::ClusterMergerNode)
