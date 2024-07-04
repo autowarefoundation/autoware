@@ -325,7 +325,7 @@ void MotionVelocityPlannerNode::insert_slowdown(
     autoware::motion_utils::insertTargetPoint(to_seg_idx, slowdown_interval.to, trajectory.points);
   if (from_insert_idx && to_insert_idx) {
     for (auto idx = *from_insert_idx; idx <= *to_insert_idx; ++idx)
-      trajectory.points[idx].longitudinal_velocity_mps = 0.0;
+      trajectory.points[idx].longitudinal_velocity_mps = slowdown_interval.velocity;
   } else {
     RCLCPP_WARN(get_logger(), "Failed to insert slowdown point");
   }
