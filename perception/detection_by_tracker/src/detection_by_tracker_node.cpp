@@ -12,22 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "detection_by_tracker/detection_by_tracker_core.hpp"
+#define EIGEN_MPL2_ONLY
 
+#include "detection_by_tracker_node.hpp"
+
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/math/unit_conversion.hpp"
 #include "object_recognition_utils/object_recognition_utils.hpp"
 
-#include <autoware/universe_utils/geometry/geometry.hpp>
-#include <autoware/universe_utils/math/unit_conversion.hpp>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include <chrono>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
-
-#define EIGEN_MPL2_ONLY
-#include <Eigen/Core>
-#include <Eigen/Geometry>
 
 using Label = autoware_perception_msgs::msg::ObjectClassification;
 namespace
@@ -79,6 +79,9 @@ boost::optional<ReferenceShapeSizeInfo> getReferenceShapeSizeInfo(
   }
 }
 }  // namespace
+
+namespace autoware::detection_by_tracker
+{
 
 void TrackerHandler::onTrackedObjects(
   const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr msg)
@@ -466,5 +469,7 @@ void DetectionByTracker::mergeOverSegmentedObjects(
   }
 }
 
+}  // namespace autoware::detection_by_tracker
+
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(DetectionByTracker)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::detection_by_tracker::DetectionByTracker)

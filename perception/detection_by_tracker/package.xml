@@ -16,9 +16,7 @@
   <depend>autoware_universe_utils</depend>
   <depend>eigen</depend>
   <depend>euclidean_cluster</depend>
-  <depend>libpcl-all-dev</depend>
   <depend>object_recognition_utils</depend>
-  <depend>pcl_conversions</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>shape_estimation</depend>

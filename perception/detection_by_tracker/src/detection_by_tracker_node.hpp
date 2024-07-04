@@ -12,24 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DETECTION_BY_TRACKER__DETECTION_BY_TRACKER_CORE_HPP_
-#define DETECTION_BY_TRACKER__DETECTION_BY_TRACKER_CORE_HPP_
+#ifndef DETECTION_BY_TRACKER_NODE_HPP_
+#define DETECTION_BY_TRACKER_NODE_HPP_
 
-#include "detection_by_tracker/debugger.hpp"
-#include "detection_by_tracker/utils.hpp"
+#include "autoware/universe_utils/ros/published_time_publisher.hpp"
+#include "debugger/debugger.hpp"
+#include "euclidean_cluster/euclidean_cluster.hpp"
+#include "euclidean_cluster/utils.hpp"
+#include "euclidean_cluster/voxel_grid_based_euclidean_cluster.hpp"
+#include "shape_estimation/shape_estimator.hpp"
+#include "utils/utils.hpp"
 
-#include <autoware/universe_utils/ros/published_time_publisher.hpp>
-#include <euclidean_cluster/euclidean_cluster.hpp>
-#include <euclidean_cluster/utils.hpp>
-#include <euclidean_cluster/voxel_grid_based_euclidean_cluster.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <shape_estimation/shape_estimator.hpp>
 
-#include <autoware_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_perception_msgs/msg/tracked_objects.hpp>
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
+#include "autoware_perception_msgs/msg/tracked_objects.hpp"
+#include "tier4_perception_msgs/msg/detected_objects_with_feature.hpp"
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
-#include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/convert.h>
@@ -48,6 +48,10 @@
 #include <map>
 #include <memory>
 #include <vector>
+
+namespace autoware::detection_by_tracker
+{
+
 class TrackerHandler
 {
 private:
@@ -82,7 +86,7 @@ private:
   std::map<uint8_t, int> max_search_distance_for_merger_;
   std::map<uint8_t, int> max_search_distance_for_divider_;
 
-  detection_by_tracker::utils::TrackerIgnoreLabel tracker_ignore_;
+  utils::TrackerIgnoreLabel tracker_ignore_;
 
   std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 
@@ -109,4 +113,6 @@ private:
     tier4_perception_msgs::msg::DetectedObjectsWithFeature & out_objects);
 };
 
-#endif  // DETECTION_BY_TRACKER__DETECTION_BY_TRACKER_CORE_HPP_
+}  // namespace autoware::detection_by_tracker
+
+#endif  // DETECTION_BY_TRACKER_NODE_HPP_

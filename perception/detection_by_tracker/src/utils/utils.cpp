@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "detection_by_tracker/utils.hpp"
+#include "utils.hpp"
 
 #include <autoware_perception_msgs/msg/object_classification.hpp>
 
-namespace detection_by_tracker
+namespace autoware::detection_by_tracker
 {
 namespace utils
 {
@@ -30,4 +30,4 @@ bool TrackerIgnoreLabel::isIgnore(const uint8_t label) const
          (label == Label::BICYCLE && BICYCLE) || (label == Label::PEDESTRIAN && PEDESTRIAN);
 }
 }  // namespace utils
-}  // namespace detection_by_tracker
+}  // namespace autoware::detection_by_tracker

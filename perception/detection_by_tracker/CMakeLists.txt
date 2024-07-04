@@ -26,22 +26,22 @@ include_directories(
 
 # Generate exe file
 set(DETECTION_BY_TRACKER_SRC
-  src/detection_by_tracker_core.cpp
-  src/utils.cpp
+  src/detection_by_tracker_node.cpp
+  src/utils/utils.cpp
 )
 
-ament_auto_add_library(detection_by_tracker_node SHARED
+ament_auto_add_library(${PROJECT_NAME} SHARED
   ${DETECTION_BY_TRACKER_SRC}
 )
 
-target_link_libraries(detection_by_tracker_node
+target_link_libraries(${PROJECT_NAME}
   Eigen3::Eigen
   ${PCL_LIBRARIES}
 )
 
-rclcpp_components_register_node(detection_by_tracker_node
-  PLUGIN "DetectionByTracker"
-  EXECUTABLE detection_by_tracker
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::detection_by_tracker::DetectionByTracker"
+  EXECUTABLE detection_by_tracker_node
 )
 
 ament_auto_package(
