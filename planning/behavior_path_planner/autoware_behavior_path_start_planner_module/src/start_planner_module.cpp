@@ -1217,8 +1217,9 @@ PredictedObjects StartPlannerModule::filterStopObjectsInPullOutLanes(
   // filter for objects located in pull out lanes and moving at a speed below the threshold
   auto [stop_objects_in_pull_out_lanes, others] =
     utils::path_safety_checker::separateObjectsByLanelets(
-      stop_objects, pull_out_lanes, [](const auto & obj, const auto & lane) {
-        return utils::path_safety_checker::isPolygonOverlapLanelet(obj, lane);
+      stop_objects, pull_out_lanes,
+      [](const auto & obj, const auto & lane, const auto yaw_threshold) {
+        return utils::path_safety_checker::isPolygonOverlapLanelet(obj, lane, yaw_threshold);
       });
 
   const auto path = planner_data_->route_handler->getCenterLinePath(

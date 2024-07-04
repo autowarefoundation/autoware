@@ -57,15 +57,34 @@ bool is_within_circle(
 
 namespace autoware::behavior_path_planner::utils::path_safety_checker
 {
-bool isCentroidWithinLanelet(const PredictedObject & object, const lanelet::ConstLanelet & lanelet)
+bool isCentroidWithinLanelet(
+  const PredictedObject & object, const lanelet::ConstLanelet & lanelet, const double yaw_threshold)
 {
-  const auto & object_pos = object.kinematics.initial_pose_with_covariance.pose.position;
-  lanelet::BasicPoint2d object_centroid(object_pos.x, object_pos.y);
-  return boost::geometry::within(object_centroid, lanelet.polygon2d().basicPolygon());
+  const auto & object_pose = object.kinematics.initial_pose_with_covariance.pose;
+  const auto closest_pose = lanelet::utils::getClosestCenterPose(lanelet, object_pose.position);
+  if (
+    std::abs(autoware::universe_utils::calcYawDeviation(closest_pose, object_pose)) >
+    yaw_threshold) {
+    return false;
+  }
+
+  return boost::geometry::within(
+    lanelet::utils::to2D(lanelet::utils::conversion::toLaneletPoint(object_pose.position))
+      .basicPoint(),
+    lanelet.polygon2d().basicPolygon());
 }
 
-bool isPolygonOverlapLanelet(const PredictedObject & object, const lanelet::ConstLanelet & lanelet)
+bool isPolygonOverlapLanelet(
+  const PredictedObject & object, const lanelet::ConstLanelet & lanelet, const double yaw_threshold)
 {
+  const auto & object_pose = object.kinematics.initial_pose_with_covariance.pose;
+  const auto closest_pose = lanelet::utils::getClosestCenterPose(lanelet, object_pose.position);
+  if (
+    std::abs(autoware::universe_utils::calcYawDeviation(closest_pose, object_pose)) >
+    yaw_threshold) {
+    return false;
+  }
+
   const auto lanelet_polygon = utils::toPolygon2d(lanelet);
   return isPolygonOverlapLanelet(object, lanelet_polygon);
 }
@@ -174,7 +193,9 @@ void filterObjectsByClass(
 
 std::pair<std::vector<size_t>, std::vector<size_t>> separateObjectIndicesByLanelets(
   const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets,
-  const std::function<bool(const PredictedObject, const lanelet::ConstLanelet)> & condition)
+  const std::function<bool(const PredictedObject, const lanelet::ConstLanelet, const double)> &
+    condition,
+  const double yaw_threshold)
 {
   if (target_lanelets.empty()) {
     return {};
@@ -184,7 +205,9 @@ std::pair<std::vector<size_t>, std::vector<size_t>> separateObjectIndicesByLanel
   std::vector<size_t> other_indices;
 
   for (size_t i = 0; i < objects.objects.size(); i++) {
-    const auto filter = [&](const auto & llt) { return condition(objects.objects.at(i), llt); };
+    const auto filter = [&](const auto & llt) {
+      return condition(objects.objects.at(i), llt, yaw_threshold);
+    };
     const auto found = std::find_if(target_lanelets.begin(), target_lanelets.end(), filter);
     if (found != target_lanelets.end()) {
       target_indices.push_back(i);
@@ -198,13 +221,15 @@ std::pair<std::vector<size_t>, std::vector<size_t>> separateObjectIndicesByLanel
 
 std::pair<PredictedObjects, PredictedObjects> separateObjectsByLanelets(
   const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets,
-  const std::function<bool(const PredictedObject, const lanelet::ConstLanelet)> & condition)
+  const std::function<bool(const PredictedObject, const lanelet::ConstLanelet, const double)> &
+    condition,
+  const double yaw_threshold)
 {
   PredictedObjects target_objects;
   PredictedObjects other_objects;
 
   const auto [target_indices, other_indices] =
-    separateObjectIndicesByLanelets(objects, target_lanelets, condition);
+    separateObjectIndicesByLanelets(objects, target_lanelets, condition, yaw_threshold);
 
   target_objects.objects.reserve(target_indices.size());
   other_objects.objects.reserve(other_indices.size());
