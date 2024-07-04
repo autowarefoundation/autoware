@@ -75,7 +75,7 @@ void OccupancyGridMapProjectiveBlindSpot::updateWithPointCloud(
   // Create angle bins and sort points by range
   struct BinInfo3D
   {
-    BinInfo3D(
+    explicit BinInfo3D(
       const double _range = 0.0, const double _wx = 0.0, const double _wy = 0.0,
       const double _wz = 0.0, const double _projection_length = 0.0,
       const double _projected_wx = 0.0, const double _projected_wy = 0.0)

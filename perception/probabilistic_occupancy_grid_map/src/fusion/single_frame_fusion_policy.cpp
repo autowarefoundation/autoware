@@ -171,7 +171,7 @@ struct dempsterShaferOccupancy
   }
 
   // initialize with probability
-  dempsterShaferOccupancy(double occupied_probability)
+  explicit dempsterShaferOccupancy(double occupied_probability)
   {
     // confine to [0, 1]
     double p = std::max(0.0, std::min(1.0, occupied_probability));
