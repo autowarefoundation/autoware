@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <detected_object_feature_remover/detected_object_feature_remover.hpp>
+#include "detected_object_feature_remover_node.hpp"
 
-namespace detected_object_feature_remover
+namespace autoware::detected_object_feature_remover
 {
 DetectedObjectFeatureRemover::DetectedObjectFeatureRemover(const rclcpp::NodeOptions & node_options)
 : Node("detected_object_feature_remover", node_options)
@@ -45,7 +45,8 @@ void DetectedObjectFeatureRemover::convert(
   }
 }
 
-}  // namespace detected_object_feature_remover
+}  // namespace autoware::detected_object_feature_remover
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(detected_object_feature_remover::DetectedObjectFeatureRemover)
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::detected_object_feature_remover::DetectedObjectFeatureRemover)

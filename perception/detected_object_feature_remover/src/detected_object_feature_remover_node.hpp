@@ -12,18 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DETECTED_OBJECT_FEATURE_REMOVER__DETECTED_OBJECT_FEATURE_REMOVER_HPP_
-#define DETECTED_OBJECT_FEATURE_REMOVER__DETECTED_OBJECT_FEATURE_REMOVER_HPP_
+#ifndef DETECTED_OBJECT_FEATURE_REMOVER_NODE_HPP_
+#define DETECTED_OBJECT_FEATURE_REMOVER_NODE_HPP_
 
-#include <autoware/universe_utils/ros/published_time_publisher.hpp>
+#include "autoware/universe_utils/ros/published_time_publisher.hpp"
+
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_perception_msgs/msg/detected_objects.hpp>
-#include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
+#include "tier4_perception_msgs/msg/detected_objects_with_feature.hpp"
 
 #include <memory>
 
-namespace detected_object_feature_remover
+namespace autoware::detected_object_feature_remover
 {
 using autoware_perception_msgs::msg::DetectedObjects;
 using tier4_perception_msgs::msg::DetectedObjectsWithFeature;
@@ -41,6 +42,6 @@ private:
   void convert(const DetectedObjectsWithFeature & objs_with_feature, DetectedObjects & objs);
 };
 
-}  // namespace detected_object_feature_remover
+}  // namespace autoware::detected_object_feature_remover
 
-#endif  // DETECTED_OBJECT_FEATURE_REMOVER__DETECTED_OBJECT_FEATURE_REMOVER_HPP_
+#endif  // DETECTED_OBJECT_FEATURE_REMOVER_NODE_HPP_
