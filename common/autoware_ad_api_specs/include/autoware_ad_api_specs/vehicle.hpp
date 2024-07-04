@@ -32,7 +32,7 @@ struct VehicleKinematics
   using Message = autoware_adapi_v1_msgs::msg::VehicleKinematics;
   static constexpr char name[] = "/api/vehicle/kinematics";
   static constexpr size_t depth = 1;
-  static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
+  static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
   static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_VOLATILE;
 };
 

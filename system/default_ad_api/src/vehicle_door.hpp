@@ -19,6 +19,8 @@
 #include <component_interface_specs/vehicle.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <optional>
+
 // This file should be included after messages.
 #include "utils/types.hpp"
 
@@ -31,6 +33,7 @@ public:
   explicit VehicleDoorNode(const rclcpp::NodeOptions & options);
 
 private:
+  void on_status(vehicle_interface::DoorStatus::Message::ConstSharedPtr msg);
   rclcpp::CallbackGroup::SharedPtr group_cli_;
   Srv<autoware_ad_api::vehicle::DoorCommand> srv_command_;
   Srv<autoware_ad_api::vehicle::DoorLayout> srv_layout_;
@@ -38,6 +41,7 @@ private:
   Cli<vehicle_interface::DoorCommand> cli_command_;
   Cli<vehicle_interface::DoorLayout> cli_layout_;
   Sub<vehicle_interface::DoorStatus> sub_status_;
+  std::optional<vehicle_interface::DoorStatus::Message> status_;
 };
 
 }  // namespace default_ad_api

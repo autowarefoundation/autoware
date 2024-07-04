@@ -14,6 +14,8 @@
 
 #include "vehicle_door.hpp"
 
+#include "utils/topics.hpp"
+
 namespace default_ad_api
 {
 
@@ -24,7 +26,14 @@ VehicleDoorNode::VehicleDoorNode(const rclcpp::NodeOptions & options)
   group_cli_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   adaptor.relay_service(cli_command_, srv_command_, group_cli_, 3.0);
   adaptor.relay_service(cli_layout_, srv_layout_, group_cli_, 3.0);
-  adaptor.relay_message(pub_status_, sub_status_);
+  adaptor.init_pub(pub_status_);
+  adaptor.init_sub(sub_status_, this, &VehicleDoorNode::on_status);
+}
+
+void VehicleDoorNode::on_status(vehicle_interface::DoorStatus::Message::ConstSharedPtr msg)
+{
+  utils::notify(
+    pub_status_, status_, *msg, utils::ignore_stamp<vehicle_interface::DoorStatus::Message>);
 }
 
 }  // namespace default_ad_api
