@@ -165,9 +165,9 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
     }
 
     // the avoidance path is already approved
-    const auto & object_pos = object.object.kinematics.initial_pose_with_covariance.pose.position;
-    const auto is_approved = (helper_->getShift(object_pos) > 0.0 && is_object_on_right) ||
-                             (helper_->getShift(object_pos) < 0.0 && !is_object_on_right);
+    const auto is_approved =
+      (helper_->getShift(object.getPosition()) > 0.0 && is_object_on_right) ||
+      (helper_->getShift(object.getPosition()) < 0.0 && !is_object_on_right);
     if (is_approved) {
       return std::make_pair(desire_shift_length, avoidance_distance);
     }
@@ -363,9 +363,8 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
       if (is_return_shift_to_goal) {
         return true;
       }
-      const auto & object_pos = o.object.kinematics.initial_pose_with_covariance.pose.position;
       const bool has_object_near_goal =
-        autoware::universe_utils::calcDistance2d(goal_pose.position, object_pos) <
+        autoware::universe_utils::calcDistance2d(goal_pose.position, o.getPosition()) <
         parameters_->object_check_goal_distance;
       return has_object_near_goal;
     }();
@@ -1027,8 +1026,7 @@ AvoidLineArray ShiftLineGenerator::addReturnShiftLine(
     const auto has_object_near_goal =
       std::any_of(data.target_objects.begin(), data.target_objects.end(), [&](const auto & o) {
         return autoware::universe_utils::calcDistance2d(
-                 data_->route_handler->getGoalPose().position,
-                 o.object.kinematics.initial_pose_with_covariance.pose.position) <
+                 data_->route_handler->getGoalPose().position, o.getPosition()) <
                parameters_->object_check_goal_distance;
       });
     if (has_object_near_goal) {
@@ -1097,9 +1095,7 @@ AvoidLineArray ShiftLineGenerator::addReturnShiftLine(
   if (utils::isAllowedGoalModification(data_->route_handler)) {
     const bool has_last_shift_near_goal =
       std::any_of(data.target_objects.begin(), data.target_objects.end(), [&](const auto & o) {
-        return autoware::universe_utils::calcDistance2d(
-                 last_sl.end.position,
-                 o.object.kinematics.initial_pose_with_covariance.pose.position) <
+        return autoware::universe_utils::calcDistance2d(last_sl.end.position, o.getPosition()) <
                parameters_->object_check_goal_distance;
       });
     if (has_last_shift_near_goal) {

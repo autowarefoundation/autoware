@@ -64,7 +64,7 @@ MarkerArray createObjectsCubeMarkerArray(
     }
 
     marker.id = uuidToInt32(object.object.object_id);
-    marker.pose = object.object.kinematics.initial_pose_with_covariance.pose;
+    marker.pose = object.getPose();
     msg.markers.push_back(marker);
   }
 
@@ -80,10 +80,8 @@ MarkerArray createObjectPolygonMarkerArray(const ObjectDataArray & objects, std:
       "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, 0L, Marker::LINE_STRIP,
       createMarkerScale(0.1, 0.0, 0.0), createMarkerColor(1.0, 1.0, 1.0, 0.999));
 
-    const auto pos = object.object.kinematics.initial_pose_with_covariance.pose.position;
-
     for (const auto & p : object.envelope_poly.outer()) {
-      marker.points.push_back(createPoint(p.x(), p.y(), pos.z));
+      marker.points.push_back(createPoint(p.x(), p.y(), object.getPosition().z));
     }
 
     marker.points.push_back(marker.points.front());
@@ -142,7 +140,7 @@ MarkerArray createObjectInfoMarkerArray(
   for (const auto & object : objects) {
     if (verbose) {
       marker.id = uuidToInt32(object.object.object_id);
-      marker.pose = object.object.kinematics.initial_pose_with_covariance.pose;
+      marker.pose = object.getPose();
       std::ostringstream string_stream;
       string_stream << std::fixed << std::setprecision(2) << std::boolalpha;
       string_stream << "ratio:" << object.shiftable_ratio << " [-]\n"
@@ -162,7 +160,7 @@ MarkerArray createObjectInfoMarkerArray(
 
     {
       marker.id = uuidToInt32(object.object.object_id);
-      marker.pose = object.object.kinematics.initial_pose_with_covariance.pose;
+      marker.pose = object.getPose();
       marker.pose.position.z += 2.0;
       std::ostringstream string_stream;
       string_stream << magic_enum::enum_name(object.info) << (object.is_parked ? "(PARKED)" : "");

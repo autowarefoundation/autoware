@@ -352,6 +352,10 @@ struct ObjectData  // avoidance target
   {
   }
 
+  Pose getPose() const { return object.kinematics.initial_pose_with_covariance.pose; }
+
+  Point getPosition() const { return object.kinematics.initial_pose_with_covariance.pose.position; }
+
   PredictedObject object;
 
   // object behavior.
