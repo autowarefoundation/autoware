@@ -25,6 +25,8 @@
 #include <boost/geometry/algorithms/distance.hpp>
 #include <boost/geometry/strategies/strategies.hpp>
 
+#include <string>
+
 namespace
 {
 StopSpeedExceeded createStopSpeedExceededMsg(
@@ -102,6 +104,78 @@ VelocityFactorArray makeVelocityFactorArray(
     velocity_factor_array.factors.push_back(velocity_factor);
   }
   return velocity_factor_array;
+}
+
+DiagnosticArray makeEmptyStopReasonDiagnosticArray(const rclcpp::Time & current_time)
+{
+  // Create status
+  DiagnosticStatus status;
+  status.level = status.OK;
+  status.name = "obstacle_cruise_planner";
+  diagnostic_msgs::msg::KeyValue key_value;
+  {
+    // Decision
+    key_value.key = "decision";
+    key_value.value = "none";
+    status.values.push_back(key_value);
+  }
+  // create array
+  DiagnosticArray diagnostics;
+  diagnostics.header.stamp = current_time;
+  diagnostics.header.frame_id = "map";
+  diagnostics.status.push_back(status);
+  return diagnostics;
+}
+
+DiagnosticArray makeStopReasonDiagnosticArray(
+  const PlannerData & planner_data, const geometry_msgs::msg::Pose & stop_pose,
+  const StopObstacle & stop_obstacle)
+{
+  // Create status
+  DiagnosticStatus status;
+  status.level = status.OK;
+  status.name = "obstacle_cruise_planner";
+  diagnostic_msgs::msg::KeyValue key_value;
+  {
+    // Decision
+    key_value.key = "decision";
+    key_value.value = "stop";
+    status.values.push_back(key_value);
+  }
+
+  {  // Stop info
+    key_value.key = "stop_position";
+    const auto & p = stop_pose.position;
+    key_value.value =
+      "{" + std::to_string(p.x) + ", " + std::to_string(p.y) + ", " + std::to_string(p.z) + "}";
+    status.values.push_back(key_value);
+    key_value.key = "stop_orientation";
+    const auto & o = stop_pose.orientation;
+    key_value.value = "{" + std::to_string(o.w) + ", " + std::to_string(o.x) + ", " +
+                      std::to_string(o.y) + ", " + std::to_string(o.z) + "}";
+    status.values.push_back(key_value);
+    const auto dist_to_stop_pose = autoware::motion_utils::calcSignedArcLength(
+      planner_data.traj_points, planner_data.ego_pose.position, stop_pose.position);
+    key_value.key = "distance_to_stop_pose";
+    key_value.value = std::to_string(dist_to_stop_pose);
+    status.values.push_back(key_value);
+  }
+
+  {
+    // Obstacle info
+    const auto & p = stop_obstacle.collision_point;
+    key_value.key = "collision_point";
+    key_value.value =
+      "{" + std::to_string(p.x) + ", " + std::to_string(p.y) + ", " + std::to_string(p.z) + "}";
+    status.values.push_back(key_value);
+  }
+
+  // create array
+  DiagnosticArray diagnostics;
+  diagnostics.header.stamp = planner_data.current_time;
+  diagnostics.header.frame_id = "map";
+  diagnostics.status.push_back(status);
+  return diagnostics;
 }
 
 double calcMinimumDistanceToStop(
@@ -245,7 +319,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
   if (stop_obstacles.empty()) {
     stop_reasons_pub_->publish(makeEmptyStopReasonArray(planner_data.current_time));
     velocity_factors_pub_->publish(makeVelocityFactorArray(planner_data.current_time));
-
+    diagnostics_pub_->publish(makeEmptyStopReasonDiagnosticArray(planner_data.current_time));
     // delete marker
     const auto markers =
       autoware::motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
@@ -400,9 +474,11 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
     const auto stop_pose = output_traj_points.at(*zero_vel_idx).pose;
     const auto stop_reasons_msg =
       makeStopReasonArray(planner_data, stop_pose, *determined_stop_obstacle);
+    const auto stop_reason_diagnostic_array =
+      makeStopReasonDiagnosticArray(planner_data, stop_pose, *determined_stop_obstacle);
     stop_reasons_pub_->publish(stop_reasons_msg);
     velocity_factors_pub_->publish(makeVelocityFactorArray(planner_data.current_time, stop_pose));
-
+    diagnostics_pub_->publish(stop_reason_diagnostic_array);
     // Publish if ego vehicle will over run against the stop point with a limit acceleration
 
     const bool will_over_run = determined_zero_vel_dist.value() >

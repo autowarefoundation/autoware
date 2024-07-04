@@ -557,7 +557,8 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
   const auto objects_ptr = objects_sub_.takeData();
   const auto pointcloud_ptr = use_pointcloud_ ? pointcloud_sub_.takeData() : nullptr;
   const auto acc_ptr = acc_sub_.takeData();
-  if (!ego_odom_ptr || (!objects_ptr && (!use_pointcloud_ || !pointcloud_ptr)) || !acc_ptr) {
+  const bool can_detect_obstacles = objects_ptr || pointcloud_ptr;
+  if (!ego_odom_ptr || !can_detect_obstacles || !acc_ptr) {
     return;
   }
 
