@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OCCUPANCY_GRID_MAP_OUTLIER_FILTER__OCCUPANCY_GRID_MAP_OUTLIER_FILTER_NODELET_HPP_
-#define OCCUPANCY_GRID_MAP_OUTLIER_FILTER__OCCUPANCY_GRID_MAP_OUTLIER_FILTER_NODELET_HPP_
+#ifndef OCCUPANCY_GRID_MAP_OUTLIER_FILTER_NODE_HPP_
+#define OCCUPANCY_GRID_MAP_OUTLIER_FILTER_NODE_HPP_
 
+#include "autoware/universe_utils/ros/published_time_publisher.hpp"
 #include "pointcloud_preprocessor/filter.hpp"
 
-#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <pcl/common/impl/common.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -40,7 +40,7 @@
 #include <memory>
 #include <string>
 
-namespace occupancy_grid_map_outlier_filter
+namespace autoware::occupancy_grid_map_outlier_filter
 {
 using geometry_msgs::msg::Pose;
 using nav_msgs::msg::OccupancyGrid;
@@ -129,6 +129,6 @@ private:
   std::string base_link_frame_;
   int cost_threshold_;
 };
-}  // namespace occupancy_grid_map_outlier_filter
+}  // namespace autoware::occupancy_grid_map_outlier_filter
 
-#endif  // OCCUPANCY_GRID_MAP_OUTLIER_FILTER__OCCUPANCY_GRID_MAP_OUTLIER_FILTER_NODELET_HPP_
+#endif  // OCCUPANCY_GRID_MAP_OUTLIER_FILTER_NODE_HPP_

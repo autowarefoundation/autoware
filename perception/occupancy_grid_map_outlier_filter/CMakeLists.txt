@@ -8,7 +8,6 @@ find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED)
 find_package(PCL REQUIRED)
-find_package(pcl_conversions REQUIRED)
 find_package(OpenMP)
 ament_auto_find_build_dependencies()
 
@@ -22,26 +21,26 @@ include_directories(
   ${GRID_MAP_INCLUDE_DIR}
 )
 
-ament_auto_add_library(occupancy_grid_map_outlier_filter SHARED
-  src/occupancy_grid_map_outlier_filter_nodelet.cpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/occupancy_grid_map_outlier_filter_node.cpp
 )
 
-target_link_libraries(occupancy_grid_map_outlier_filter
+target_link_libraries(${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES}
 )
 
 if(OPENMP_FOUND)
-  set_target_properties(occupancy_grid_map_outlier_filter PROPERTIES
+  set_target_properties(${PROJECT_NAME} PROPERTIES
     COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
     LINK_FLAGS ${OpenMP_CXX_FLAGS}
   )
 endif()
 
 # -- Occupancy Grid Map Outlier Filter --
-rclcpp_components_register_node(occupancy_grid_map_outlier_filter
-  PLUGIN "occupancy_grid_map_outlier_filter::OccupancyGridMapOutlierFilterComponent"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::occupancy_grid_map_outlier_filter::OccupancyGridMapOutlierFilterComponent"
   EXECUTABLE occupancy_grid_map_outlier_filter_node)
 
 ament_auto_package(INSTALL_TO_SHARE)

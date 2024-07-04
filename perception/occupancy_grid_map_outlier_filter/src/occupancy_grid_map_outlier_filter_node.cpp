@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "occupancy_grid_map_outlier_filter/occupancy_grid_map_outlier_filter_nodelet.hpp"
+#include "occupancy_grid_map_outlier_filter_node.hpp"
 
-#include <autoware/universe_utils/geometry/geometry.hpp>
-#include <autoware/universe_utils/ros/debug_publisher.hpp>
-#include <autoware/universe_utils/system/stop_watch.hpp>
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/ros/debug_publisher.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
+
 #include <pcl_ros/transforms.hpp>
 
 #include <boost/optional.hpp>
@@ -101,7 +102,7 @@ boost::optional<char> getCost(
 
 }  // namespace
 
-namespace occupancy_grid_map_outlier_filter
+namespace autoware::occupancy_grid_map_outlier_filter
 {
 RadiusSearch2dFilter::RadiusSearch2dFilter(rclcpp::Node & node)
 {
@@ -489,8 +490,8 @@ void OccupancyGridMapOutlierFilterComponent::Debugger::transformToBaseLink(
   transformPointcloud(ros_input, *(node_.tf2_), node_.base_link_frame_, output);
 }
 
-}  // namespace occupancy_grid_map_outlier_filter
+}  // namespace autoware::occupancy_grid_map_outlier_filter
 
 #include <rclcpp_components/register_node_macro.hpp>
 RCLCPP_COMPONENTS_REGISTER_NODE(
-  occupancy_grid_map_outlier_filter::OccupancyGridMapOutlierFilterComponent)
+  autoware::occupancy_grid_map_outlier_filter::OccupancyGridMapOutlierFilterComponent)
