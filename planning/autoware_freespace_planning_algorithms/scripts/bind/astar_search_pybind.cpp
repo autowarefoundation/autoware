@@ -89,8 +89,9 @@ public:
       // python-side. So this function returns [*position, *quaternion] as double array
       const auto & xyz = waypoint.pose.pose.position;
       const auto & quat = waypoint.pose.pose.orientation;
+      const double & is_back = waypoint.is_back;
       waypoints_vector.waypoints.push_back(
-        std::vector<double>({xyz.x, xyz.y, xyz.z, quat.x, quat.y, quat.z, quat.w}));
+        std::vector<double>({xyz.x, xyz.y, xyz.z, quat.x, quat.y, quat.z, quat.w, is_back}));
     }
     waypoints_vector.length = waypoints.compute_length();
     return waypoints_vector;

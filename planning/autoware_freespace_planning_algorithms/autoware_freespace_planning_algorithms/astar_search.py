@@ -24,6 +24,12 @@ VehicleShape = _fp.VehicleShape
 AstarParam = _fp.AstarParam
 
 
+class PlannerWaypoint:
+    def __init__(self, pose, is_back):
+        self.pose = pose
+        self.is_back = is_back
+
+
 class PlannerWaypoints:
     def __init__(self):
         self.waypoints = []
@@ -59,6 +65,9 @@ class AstarSearch:
         for waypoint in waypoints_vector.waypoints:
             pos = Point(x=waypoint[0], y=waypoint[1], z=waypoint[2])
             quat = Quaternion(x=waypoint[3], y=waypoint[4], z=waypoint[5], w=waypoint[6])
-            waypoints.waypoints.append(Pose(position=pos, orientation=quat))
+            is_bask = bool(waypoint[7])
+            waypoints.waypoints.append(
+                PlannerWaypoint(Pose(position=pos, orientation=quat), is_bask)
+            )
 
         return waypoints
