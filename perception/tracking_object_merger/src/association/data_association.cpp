@@ -191,7 +191,7 @@ double DataAssociation::calcScoreBetweenObjects(
 
     bool passed_gate = true;
     // dist gate
-    if (passed_gate) {
+    {  // passed_gate is always true
       if (max_dist < dist) passed_gate = false;
     }
     // angle gate
