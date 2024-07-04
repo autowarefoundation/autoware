@@ -422,7 +422,7 @@ void VelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstSharedPtr 
   // receive data
   current_odometry_ptr_ = sub_current_odometry_.takeData();
   current_acceleration_ptr_ = sub_current_acceleration_.takeData();
-  external_velocity_limit_ptr_ = sub_external_velocity_limit_.takeData();
+  external_velocity_limit_ptr_ = sub_external_velocity_limit_.takeNewData();
   const auto operation_mode_ptr = sub_operation_mode_.takeData();
   if (operation_mode_ptr) {
     operation_mode_ = *operation_mode_ptr;
@@ -454,9 +454,6 @@ void VelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstSharedPtr 
   // calculate distance to insert external velocity limit
   calcExternalVelocityLimit();
   updateDataForExternalVelocityLimit();
-
-  // ignore current external velocity limit next time
-  external_velocity_limit_ptr_ = nullptr;
 
   // For negative velocity handling, multiple -1 to velocity if it is for reverse.
   // NOTE: this process must be in the beginning of the process
