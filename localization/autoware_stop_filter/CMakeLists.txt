@@ -10,7 +10,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "StopFilter"
+  PLUGIN "autoware::stop_filter::StopFilter"
   EXECUTABLE ${PROJECT_NAME}_node
   EXECUTOR SingleThreadedExecutor
 )
