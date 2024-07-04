@@ -131,10 +131,7 @@ void AstarSearch::setMap(const nav_msgs::msg::OccupancyGrid & costmap)
 {
   AbstractPlanningAlgorithm::setMap(costmap);
 
-  clearNodes();
-
   x_scale_ = costmap_.info.height;
-  graph_.reserve(100000);
 }
 
 bool AstarSearch::makePlan(
@@ -142,6 +139,9 @@ bool AstarSearch::makePlan(
 {
   start_pose_ = global2local(costmap_, start_pose);
   goal_pose_ = global2local(costmap_, goal_pose);
+
+  clearNodes();
+  graph_.reserve(100000);
 
   if (!setStartNode()) {
     return false;
