@@ -56,9 +56,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
         with:
@@ -67,28 +64,12 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      - name: Restore cache
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            root-ccache
-          key: cache-${{ matrix.platform }}-${{ matrix.name }}-${{ hashFiles('autoware.repos') }}
-          restore-keys: |
-            cache-${{ matrix.platform }}-${{ matrix.name }}-
-            cache-${{ matrix.platform }}-
-
-      - name: Inject cache into docker
-        uses: reproducible-containers/buildkit-cache-dance@v3.1.2
-        with:
-          cache-map: |
-            {
-              "root-ccache": "/root/.ccache"
-            }
-          skip-extraction: true
 
       - name: Build 'Autoware'
         uses: ./.github/actions/docker-build-and-push
         with:
+          name: ${{ matrix.name }}
+          platform: ${{ matrix.platform }}
           bake-target: autoware
           build-args: |
             *.platform=linux/${{ matrix.platform }}
