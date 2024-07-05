@@ -508,29 +508,16 @@ void TrtYoloX::preprocess(const std::vector<cv::Mat> & images)
   const float input_width = static_cast<float>(input_dims.d[3]);
   std::vector<cv::Mat> dst_images;
   scales_.clear();
-  bool letterbox = true;
-  if (letterbox) {
-    for (const auto & image : images) {
-      cv::Mat dst_image;
-      const float scale = std::min(input_width / image.cols, input_height / image.rows);
-      scales_.emplace_back(scale);
-      const auto scale_size = cv::Size(image.cols * scale, image.rows * scale);
-      cv::resize(image, dst_image, scale_size, 0, 0, cv::INTER_CUBIC);
-      const auto bottom = input_height - dst_image.rows;
-      const auto right = input_width - dst_image.cols;
-      copyMakeBorder(
-        dst_image, dst_image, 0, bottom, 0, right, cv::BORDER_CONSTANT, {114, 114, 114});
-      dst_images.emplace_back(dst_image);
-    }
-  } else {
-    for (const auto & image : images) {
-      cv::Mat dst_image;
-      const float scale = -1.0;
-      scales_.emplace_back(scale);
-      const auto scale_size = cv::Size(input_width, input_height);
-      cv::resize(image, dst_image, scale_size, 0, 0, cv::INTER_CUBIC);
-      dst_images.emplace_back(dst_image);
-    }
+  for (const auto & image : images) {
+    cv::Mat dst_image;
+    const float scale = std::min(input_width / image.cols, input_height / image.rows);
+    scales_.emplace_back(scale);
+    const auto scale_size = cv::Size(image.cols * scale, image.rows * scale);
+    cv::resize(image, dst_image, scale_size, 0, 0, cv::INTER_CUBIC);
+    const auto bottom = input_height - dst_image.rows;
+    const auto right = input_width - dst_image.cols;
+    copyMakeBorder(dst_image, dst_image, 0, bottom, 0, right, cv::BORDER_CONSTANT, {114, 114, 114});
+    dst_images.emplace_back(dst_image);
   }
   const auto chw_images = cv::dnn::blobFromImages(
     dst_images, norm_factor_, cv::Size(), cv::Scalar(), false, false, CV_32F);
@@ -650,34 +637,21 @@ void TrtYoloX::preprocessWithRoi(
   const float input_width = static_cast<float>(input_dims.d[3]);
   std::vector<cv::Mat> dst_images;
   scales_.clear();
-  bool letterbox = true;
   int b = 0;
-  if (letterbox) {
-    for (const auto & image : images) {
-      cv::Mat dst_image;
-      cv::Mat cropped = image(rois[b]);
-      const float scale = std::min(
-        input_width / static_cast<float>(rois[b].width),
-        input_height / static_cast<float>(rois[b].height));
-      scales_.emplace_back(scale);
-      const auto scale_size = cv::Size(rois[b].width * scale, rois[b].height * scale);
-      cv::resize(cropped, dst_image, scale_size, 0, 0, cv::INTER_CUBIC);
-      const auto bottom = input_height - dst_image.rows;
-      const auto right = input_width - dst_image.cols;
-      copyMakeBorder(
-        dst_image, dst_image, 0, bottom, 0, right, cv::BORDER_CONSTANT, {114, 114, 114});
-      dst_images.emplace_back(dst_image);
-      b++;
-    }
-  } else {
-    for (const auto & image : images) {
-      cv::Mat dst_image;
-      const float scale = -1.0;
-      scales_.emplace_back(scale);
-      const auto scale_size = cv::Size(input_width, input_height);
-      cv::resize(image, dst_image, scale_size, 0, 0, cv::INTER_CUBIC);
-      dst_images.emplace_back(dst_image);
-    }
+  for (const auto & image : images) {
+    cv::Mat dst_image;
+    cv::Mat cropped = image(rois[b]);
+    const float scale = std::min(
+      input_width / static_cast<float>(rois[b].width),
+      input_height / static_cast<float>(rois[b].height));
+    scales_.emplace_back(scale);
+    const auto scale_size = cv::Size(rois[b].width * scale, rois[b].height * scale);
+    cv::resize(cropped, dst_image, scale_size, 0, 0, cv::INTER_CUBIC);
+    const auto bottom = input_height - dst_image.rows;
+    const auto right = input_width - dst_image.cols;
+    copyMakeBorder(dst_image, dst_image, 0, bottom, 0, right, cv::BORDER_CONSTANT, {114, 114, 114});
+    dst_images.emplace_back(dst_image);
+    b++;
   }
   const auto chw_images = cv::dnn::blobFromImages(
     dst_images, norm_factor_, cv::Size(), cv::Scalar(), false, false, CV_32F);
