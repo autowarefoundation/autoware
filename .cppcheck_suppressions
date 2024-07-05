@@ -13,7 +13,6 @@ knownConditionTrueFalse
 missingInclude
 missingIncludeSystem
 noConstructor
-noExplicitConstructor
 passedByValue
 redundantInitialization
 shadowFunction
