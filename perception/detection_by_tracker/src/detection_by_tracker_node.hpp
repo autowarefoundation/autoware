@@ -15,12 +15,13 @@
 #ifndef DETECTION_BY_TRACKER_NODE_HPP_
 #define DETECTION_BY_TRACKER_NODE_HPP_
 
+#include "autoware/shape_estimation/shape_estimator.hpp"
 #include "autoware/universe_utils/ros/published_time_publisher.hpp"
 #include "debugger/debugger.hpp"
 #include "euclidean_cluster/euclidean_cluster.hpp"
 #include "euclidean_cluster/utils.hpp"
 #include "euclidean_cluster/voxel_grid_based_euclidean_cluster.hpp"
-#include "shape_estimation/shape_estimator.hpp"
+#include "tracker/tracker_handler.hpp"
 #include "utils/utils.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -52,19 +53,6 @@
 namespace autoware::detection_by_tracker
 {
 
-class TrackerHandler
-{
-private:
-  std::deque<autoware_perception_msgs::msg::TrackedObjects> objects_buffer_;
-
-public:
-  TrackerHandler() = default;
-  void onTrackedObjects(
-    const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr input_objects_msg);
-  bool estimateTrackedObjects(
-    const rclcpp::Time & time, autoware_perception_msgs::msg::TrackedObjects & output);
-};
-
 class DetectionByTracker : public rclcpp::Node
 {
 public:
@@ -80,13 +68,13 @@ private:
   tf2_ros::TransformListener tf_listener_;
 
   TrackerHandler tracker_handler_;
-  std::shared_ptr<ShapeEstimator> shape_estimator_;
+  std::shared_ptr<autoware::shape_estimation::ShapeEstimator> shape_estimator_;
   std::shared_ptr<euclidean_cluster::EuclideanClusterInterface> cluster_;
   std::shared_ptr<Debugger> debugger_;
   std::map<uint8_t, int> max_search_distance_for_merger_;
   std::map<uint8_t, int> max_search_distance_for_divider_;
 
-  utils::TrackerIgnoreLabel tracker_ignore_;
+  detection_by_tracker::utils::TrackerIgnoreLabel tracker_ignore_;
 
   std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 
@@ -112,7 +100,6 @@ private:
     autoware_perception_msgs::msg::DetectedObjects & out_no_found_tracked_objects,
     tier4_perception_msgs::msg::DetectedObjectsWithFeature & out_objects);
 };
-
 }  // namespace autoware::detection_by_tracker
 
 #endif  // DETECTION_BY_TRACKER_NODE_HPP_

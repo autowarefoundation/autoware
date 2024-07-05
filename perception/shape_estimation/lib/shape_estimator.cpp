@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shape_estimation/shape_estimator.hpp"
+#include "autoware/shape_estimation/shape_estimator.hpp"
 
-#include "shape_estimation/corrector/corrector.hpp"
-#include "shape_estimation/filter/filter.hpp"
-#include "shape_estimation/model/model.hpp"
+#include "autoware/shape_estimation/corrector/corrector.hpp"
+#include "autoware/shape_estimation/filter/filter.hpp"
+#include "autoware/shape_estimation/model/model.hpp"
 
 #include <iostream>
 #include <memory>
+
+namespace autoware::shape_estimation
+{
 
 using Label = autoware_perception_msgs::msg::ObjectClassification;
 
@@ -75,15 +78,15 @@ bool ShapeEstimator::estimateOriginalShapeAndPose(
   autoware_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output)
 {
   // estimate shape
-  std::unique_ptr<ShapeEstimationModelInterface> model_ptr;
+  std::unique_ptr<model::ShapeEstimationModelInterface> model_ptr;
   if (
     label == Label::CAR || label == Label::TRUCK || label == Label::BUS ||
     label == Label::TRAILER || label == Label::MOTORCYCLE || label == Label::BICYCLE) {
-    model_ptr.reset(new BoundingBoxShapeModel(ref_yaw_info, use_boost_bbox_optimizer_));
+    model_ptr.reset(new model::BoundingBoxShapeModel(ref_yaw_info, use_boost_bbox_optimizer_));
   } else if (label == Label::PEDESTRIAN) {
-    model_ptr.reset(new CylinderShapeModel());
+    model_ptr.reset(new model::CylinderShapeModel());
   } else {
-    model_ptr.reset(new ConvexHullShapeModel());
+    model_ptr.reset(new model::ConvexHullShapeModel());
   }
 
   return model_ptr->estimate(cluster, shape_output, pose_output);
@@ -93,17 +96,17 @@ bool ShapeEstimator::applyFilter(
   const uint8_t label, const autoware_perception_msgs::msg::Shape & shape,
   const geometry_msgs::msg::Pose & pose)
 {
-  std::unique_ptr<ShapeEstimationFilterInterface> filter_ptr;
+  std::unique_ptr<filter::ShapeEstimationFilterInterface> filter_ptr;
   if (label == Label::CAR) {
-    filter_ptr.reset(new CarFilter);
+    filter_ptr.reset(new filter::CarFilter);
   } else if (label == Label::BUS) {
-    filter_ptr.reset(new BusFilter);
+    filter_ptr.reset(new filter::BusFilter);
   } else if (label == Label::TRUCK) {
-    filter_ptr.reset(new TruckFilter);
+    filter_ptr.reset(new filter::TruckFilter);
   } else if (label == Label::TRAILER) {
-    filter_ptr.reset(new TrailerFilter);
+    filter_ptr.reset(new filter::TrailerFilter);
   } else {
-    filter_ptr.reset(new NoFilter);
+    filter_ptr.reset(new filter::NoFilter);
   }
 
   return filter_ptr->filter(shape, pose);
@@ -114,23 +117,26 @@ bool ShapeEstimator::applyCorrector(
   const boost::optional<ReferenceShapeSizeInfo> & ref_shape_size_info,
   autoware_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose)
 {
-  std::unique_ptr<ShapeEstimationCorrectorInterface> corrector_ptr;
+  std::unique_ptr<corrector::ShapeEstimationCorrectorInterface> corrector_ptr;
 
   if (ref_shape_size_info && use_reference_yaw) {
-    corrector_ptr.reset(new ReferenceShapeBasedVehicleCorrector(ref_shape_size_info.get()));
+    corrector_ptr.reset(
+      new corrector::ReferenceShapeBasedVehicleCorrector(ref_shape_size_info.get()));
   } else if (label == Label::CAR) {
-    corrector_ptr.reset(new CarCorrector(use_reference_yaw));
+    corrector_ptr.reset(new corrector::CarCorrector(use_reference_yaw));
   } else if (label == Label::BUS) {
-    corrector_ptr.reset(new BusCorrector(use_reference_yaw));
+    corrector_ptr.reset(new corrector::BusCorrector(use_reference_yaw));
   } else if (label == Label::TRUCK) {
-    corrector_ptr.reset(new TruckCorrector(use_reference_yaw));
+    corrector_ptr.reset(new corrector::TruckCorrector(use_reference_yaw));
   } else if (label == Label::TRAILER) {
-    corrector_ptr.reset(new TrailerCorrector(use_reference_yaw));
+    corrector_ptr.reset(new corrector::TrailerCorrector(use_reference_yaw));
   } else if (label == Label::MOTORCYCLE || label == Label::BICYCLE) {
-    corrector_ptr.reset(new BicycleCorrector(use_reference_yaw));
+    corrector_ptr.reset(new corrector::BicycleCorrector(use_reference_yaw));
   } else {
-    corrector_ptr.reset(new NoCorrector);
+    corrector_ptr.reset(new corrector::NoCorrector);
   }
 
   return corrector_ptr->correct(shape, pose);
 }
+
+}  // namespace autoware::shape_estimation

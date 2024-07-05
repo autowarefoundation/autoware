@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shape_estimation/model/convex_hull.hpp"
+#include "autoware/shape_estimation/model/convex_hull.hpp"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -27,6 +27,11 @@
 
 #include <algorithm>
 #include <vector>
+
+namespace autoware::shape_estimation
+{
+namespace model
+{
 
 bool ConvexHullShapeModel::estimate(
   const pcl::PointCloud<pcl::PointXYZ> & cluster,
@@ -94,3 +99,6 @@ bool ConvexHullShapeModel::estimate(
   pose_output.orientation.w = 1;
   return true;
 }
+
+}  // namespace model
+}  // namespace autoware::shape_estimation

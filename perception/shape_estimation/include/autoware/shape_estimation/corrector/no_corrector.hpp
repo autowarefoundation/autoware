@@ -12,22 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware/shape_estimation/filter/trailer_filter.hpp"
+#ifndef AUTOWARE__SHAPE_ESTIMATION__CORRECTOR__NO_CORRECTOR_HPP_
+#define AUTOWARE__SHAPE_ESTIMATION__CORRECTOR__NO_CORRECTOR_HPP_
+
+#include "autoware/shape_estimation/corrector/corrector_interface.hpp"
+#include "utils.hpp"
 
 namespace autoware::shape_estimation
 {
-namespace filter
+namespace corrector
 {
 
-bool TrailerFilter::filter(
-  const autoware_perception_msgs::msg::Shape & shape,
-  [[maybe_unused]] const geometry_msgs::msg::Pose & pose)
+class NoCorrector : public ShapeEstimationCorrectorInterface
 {
-  constexpr float min_width = 1.5;
-  constexpr float max_width = 3.2;
-  constexpr float max_length = 25.0;  // maximum Full-TRAILER size in JAPAN(normally upto 18m)
-  return utils::filterVehicleBoundingBox(shape, min_width, max_width, max_length);
-}
+public:
+  NoCorrector() {}
 
-}  // namespace filter
+  ~NoCorrector() {}
+
+  bool correct(
+    [[maybe_unused]] autoware_perception_msgs::msg::Shape & shape,
+    [[maybe_unused]] geometry_msgs::msg::Pose & pose) override
+  {
+    return true;
+  }
+};
+
+}  // namespace corrector
 }  // namespace autoware::shape_estimation
+
+#endif  // AUTOWARE__SHAPE_ESTIMATION__CORRECTOR__NO_CORRECTOR_HPP_

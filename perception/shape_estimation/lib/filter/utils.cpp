@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shape_estimation/filter/utils.hpp"
+#include "autoware/shape_estimation/filter/utils.hpp"
+namespace autoware::shape_estimation
+{
 
 namespace utils
 {
@@ -43,4 +45,6 @@ bool filterVehicleBoundingBox(
   }
   return true;
 }
+
 }  // namespace utils
+}  // namespace autoware::shape_estimation

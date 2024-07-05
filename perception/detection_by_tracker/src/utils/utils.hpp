@@ -15,12 +15,16 @@
 #ifndef UTILS__UTILS_HPP_
 #define UTILS__UTILS_HPP_
 
+#include "autoware_perception_msgs/msg/object_classification.hpp"
+
 #include <cstdint>
 
 namespace autoware::detection_by_tracker
 {
 namespace utils
 {
+using Label = autoware_perception_msgs::msg::ObjectClassification;
+
 struct TrackerIgnoreLabel
 {
   bool UNKNOWN;
@@ -31,8 +35,15 @@ struct TrackerIgnoreLabel
   bool MOTORCYCLE;
   bool BICYCLE;
   bool PEDESTRIAN;
-  bool isIgnore(const uint8_t label) const;
-};  // struct TrackerIgnoreLabel
+  bool isIgnore(const uint8_t label) const
+  {
+    return (label == Label::UNKNOWN && UNKNOWN) || (label == Label::CAR && CAR) ||
+           (label == Label::TRUCK && TRUCK) || (label == Label::BUS && BUS) ||
+           (label == Label::TRAILER && TRAILER) || (label == Label::MOTORCYCLE && MOTORCYCLE) ||
+           (label == Label::BICYCLE && BICYCLE) || (label == Label::PEDESTRIAN && PEDESTRIAN);
+  }
+};
+
 }  // namespace utils
 }  // namespace autoware::detection_by_tracker
 

@@ -12,4 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware/shape_estimation/filter/no_filter.hpp"
+#ifndef AUTOWARE__SHAPE_ESTIMATION__MODEL__MODEL_HPP_
+#define AUTOWARE__SHAPE_ESTIMATION__MODEL__MODEL_HPP_
+
+#include "autoware/shape_estimation/model/bounding_box.hpp"
+#include "autoware/shape_estimation/model/convex_hull.hpp"
+#include "autoware/shape_estimation/model/cylinder.hpp"
+#include "autoware/shape_estimation/model/model_interface.hpp"
+
+#endif  // AUTOWARE__SHAPE_ESTIMATION__MODEL__MODEL_HPP_

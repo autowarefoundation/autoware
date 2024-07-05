@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shape_estimation/corrector/corrector.hpp"
-#include "shape_estimation/filter/filter.hpp"
-#include "shape_estimation/model/model.hpp"
-#include "shape_estimation/shape_estimator.hpp"
+#include "autoware/shape_estimation/corrector/corrector.hpp"
+#include "autoware/shape_estimation/filter/filter.hpp"
+#include "autoware/shape_estimation/model/model.hpp"
+#include "autoware/shape_estimation/shape_estimator.hpp"
 
 #include <gtest/gtest.h>
 #include <math.h>
@@ -70,7 +70,7 @@ pcl::PointCloud<pcl::PointXYZ> createLShapeCluster(
 TEST(BoundingBoxShapeModel, test_estimateShape)
 {
   // Generate BoundingBoxShapeModel
-  BoundingBoxShapeModel bbox_shape_model = BoundingBoxShapeModel();
+  auto bbox_shape_model = autoware::shape_estimation::model::BoundingBoxShapeModel();
 
   // Generate cluster
   const double length = 4.0;
@@ -117,12 +117,12 @@ TEST(BoundingBoxShapeModel, test_estimateShape_rotated)
   pcl::PointCloud<pcl::PointXYZ> cluster =
     createLShapeCluster(length, width, height, yaw, offset_x, offset_y);
 
-  const auto ref_yaw_info =
-    ReferenceYawInfo{static_cast<float>(yaw), static_cast<float>(deg2rad(10.0))};
+  const auto ref_yaw_info = autoware::shape_estimation::ReferenceYawInfo{
+    static_cast<float>(yaw), static_cast<float>(deg2rad(10.0))};
   const bool use_boost_bbox_optimizer = true;
   // Generate BoundingBoxShapeModel
-  BoundingBoxShapeModel bbox_shape_model =
-    BoundingBoxShapeModel(ref_yaw_info, use_boost_bbox_optimizer);
+  auto bbox_shape_model = autoware::shape_estimation::model::BoundingBoxShapeModel(
+    ref_yaw_info, use_boost_bbox_optimizer);
 
   // Generate shape and pose output
   autoware_perception_msgs::msg::Shape shape_output;
@@ -152,7 +152,7 @@ TEST(BoundingBoxShapeModel, test_estimateShape_rotated)
 TEST(CylinderShapeModel, test_estimateShape)
 {
   // Generate CylinderShapeModel
-  CylinderShapeModel cylinder_shape_model = CylinderShapeModel();
+  auto cylinder_shape_model = autoware::shape_estimation::model::CylinderShapeModel();
 
   // Generate cluster
   pcl::PointCloud<pcl::PointXYZ> cluster = createLShapeCluster(4.0, 2.0, 1.0, 0.0, 0.0, 0.0);
@@ -169,7 +169,7 @@ TEST(CylinderShapeModel, test_estimateShape)
 TEST(ConvexHullShapeModel, test_estimateShape)
 {
   // Generate ConvexHullShapeModel
-  ConvexHullShapeModel convex_hull_shape_model = ConvexHullShapeModel();
+  auto convex_hull_shape_model = autoware::shape_estimation::model::ConvexHullShapeModel();
 
   // Generate cluster
   pcl::PointCloud<pcl::PointXYZ> cluster = createLShapeCluster(2.0, 1.0, 1.0, 0.0, 0.0, 0.0);
@@ -200,14 +200,16 @@ TEST(ShapeEstimator, test_estimateShapeAndPose)
   const bool use_corrector = true;
   const bool use_filter = true;
   const bool use_boost_bbox_optimizer = true;
-  ShapeEstimator shape_estimator =
-    ShapeEstimator(use_corrector, use_filter, use_boost_bbox_optimizer);
+  auto shape_estimator =
+    autoware::shape_estimation::ShapeEstimator(use_corrector, use_filter, use_boost_bbox_optimizer);
 
   // Generate ref_yaw_info
-  boost::optional<ReferenceYawInfo> ref_yaw_info = boost::none;
-  boost::optional<ReferenceShapeSizeInfo> ref_shape_size_info = boost::none;
+  boost::optional<autoware::shape_estimation::ReferenceYawInfo> ref_yaw_info = boost::none;
+  boost::optional<autoware::shape_estimation::ReferenceShapeSizeInfo> ref_shape_size_info =
+    boost::none;
 
-  ref_yaw_info = ReferenceYawInfo{static_cast<float>(yaw), static_cast<float>(deg2rad(10.0))};
+  ref_yaw_info = autoware::shape_estimation::ReferenceYawInfo{
+    static_cast<float>(yaw), static_cast<float>(deg2rad(10.0))};
   const auto label = autoware_perception_msgs::msg::ObjectClassification::CAR;
 
   // Generate shape and pose output

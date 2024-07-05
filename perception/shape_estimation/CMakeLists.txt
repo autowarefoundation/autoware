@@ -16,7 +16,7 @@ set(SHAPE_ESTIMATION_DEPENDENCIES
   Eigen3
 )
 
-ament_auto_add_library(shape_estimation_lib SHARED
+ament_auto_add_library(${PROJECT_NAME}_lib SHARED
   lib/shape_estimator.cpp
   lib/model/bounding_box.cpp
   lib/model/convex_hull.cpp
@@ -27,23 +27,23 @@ ament_auto_add_library(shape_estimation_lib SHARED
   lib/filter/trailer_filter.cpp
   lib/filter/no_filter.cpp
   lib/filter/utils.cpp
-  lib/corrector/no_corrector.cpp
   lib/corrector/utils.cpp
+  lib/corrector/no_corrector.cpp
 )
 
-ament_target_dependencies(shape_estimation_lib ${SHAPE_ESTIMATION_DEPENDENCIES})
+ament_target_dependencies(${PROJECT_NAME}_lib ${SHAPE_ESTIMATION_DEPENDENCIES})
 
-target_include_directories(shape_estimation_lib
+target_include_directories(${PROJECT_NAME}_lib
   SYSTEM PUBLIC
   "${PCL_INCLUDE_DIRS}"
   "${EIGEN3_INCLUDE_DIR}"
 )
 
-ament_auto_add_library(shape_estimation_node SHARED
-  src/node.cpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/shape_estimation_node.cpp
 )
 
-target_include_directories(shape_estimation_node
+target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<INSTALL_INTERFACE:include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -51,15 +51,15 @@ target_include_directories(shape_estimation_node
   ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-ament_target_dependencies(shape_estimation_node ${SHAPE_ESTIMATION_DEPENDENCIES})
+ament_target_dependencies(${PROJECT_NAME} ${SHAPE_ESTIMATION_DEPENDENCIES})
 
-target_link_libraries(shape_estimation_node
+target_link_libraries(${PROJECT_NAME}
   shape_estimation_lib
 )
 
-rclcpp_components_register_node(shape_estimation_node
-  PLUGIN "ShapeEstimationNode"
-  EXECUTABLE shape_estimation
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::shape_estimation::ShapeEstimationNode"
+  EXECUTABLE shape_estimation_node
 )
 
 ament_auto_package(INSTALL_TO_SHARE
@@ -79,6 +79,6 @@ if(BUILD_TESTING)
   ament_add_ros_isolated_gtest(test_shape_estimation ${test_files})
 
   target_link_libraries(test_shape_estimation
-  shape_estimation_node
+  ${PROJECT_NAME}
   )
 endif()

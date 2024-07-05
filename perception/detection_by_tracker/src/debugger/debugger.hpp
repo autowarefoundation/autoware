@@ -20,7 +20,6 @@
 #include "euclidean_cluster/euclidean_cluster.hpp"
 #include "euclidean_cluster/utils.hpp"
 #include "euclidean_cluster/voxel_grid_based_euclidean_cluster.hpp"
-#include "shape_estimation/shape_estimator.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -46,7 +45,6 @@
 #include <deque>
 #include <memory>
 #include <vector>
-
 namespace autoware::detection_by_tracker
 {
 class Debugger

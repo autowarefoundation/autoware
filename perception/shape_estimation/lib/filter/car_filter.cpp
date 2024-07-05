@@ -12,8 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shape_estimation/filter/car_filter.hpp"
+#include "autoware/shape_estimation/filter/car_filter.hpp"
 
+namespace autoware::shape_estimation
+{
+namespace filter
+{
 bool CarFilter::filter(
   const autoware_perception_msgs::msg::Shape & shape,
   [[maybe_unused]] const geometry_msgs::msg::Pose & pose)
@@ -23,3 +27,6 @@ bool CarFilter::filter(
   constexpr float max_length = 5.8;
   return utils::filterVehicleBoundingBox(shape, min_width, max_width, max_length);
 }
+
+}  // namespace filter
+}  // namespace autoware::shape_estimation

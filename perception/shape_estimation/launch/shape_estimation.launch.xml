@@ -5,7 +5,7 @@
   <!-- Parameter -->
   <arg name="config_file" default="$(find-pkg-share shape_estimation)/config/shape_estimation.param.yaml"/>
 
-  <node pkg="shape_estimation" exec="shape_estimation" name="$(var node_name)" output="screen">
+  <node pkg="shape_estimation" exec="shape_estimation_node" name="$(var node_name)" output="screen">
     <remap from="input" to="$(var input/objects)"/>
     <remap from="objects" to="$(var output/objects)"/>
     <param from="$(var config_file)"/>

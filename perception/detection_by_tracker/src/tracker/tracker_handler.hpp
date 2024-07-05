@@ -1,0 +1,42 @@
+// Copyright 2024 TIER IV, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef TRACKER__TRACKER_HANDLER_HPP_
+#define TRACKER__TRACKER_HANDLER_HPP_
+
+#include <rclcpp/rclcpp.hpp>
+
+#include "autoware_perception_msgs/msg/tracked_objects.hpp"
+
+#include <deque>
+
+namespace autoware::detection_by_tracker
+{
+
+class TrackerHandler
+{
+private:
+  std::deque<autoware_perception_msgs::msg::TrackedObjects> objects_buffer_;
+
+public:
+  TrackerHandler() = default;
+  void onTrackedObjects(
+    const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr input_objects_msg);
+  bool estimateTrackedObjects(
+    const rclcpp::Time & time, autoware_perception_msgs::msg::TrackedObjects & output);
+};
+
+}  // namespace autoware::detection_by_tracker
+
+#endif  // TRACKER__TRACKER_HANDLER_HPP_

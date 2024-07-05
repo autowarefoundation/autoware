@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shape_estimation/model/cylinder.hpp"
+#include "autoware/shape_estimation/model/cylinder.hpp"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -25,6 +25,11 @@
 #include <pcl_conversions/pcl_conversions.h>
 
 #include <algorithm>
+
+namespace autoware::shape_estimation
+{
+namespace model
+{
 
 bool CylinderShapeModel::estimate(
   const pcl::PointCloud<pcl::PointXYZ> & cluster,
@@ -63,3 +68,6 @@ bool CylinderShapeModel::estimate(
   pose_output.orientation.w = 1;
   return true;
 }
+
+}  // namespace model
+}  // namespace autoware::shape_estimation

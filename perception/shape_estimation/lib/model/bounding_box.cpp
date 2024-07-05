@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shape_estimation/model/bounding_box.hpp"
+#define EIGEN_MPL2_ONLY
+
+#include "autoware/shape_estimation/model/bounding_box.hpp"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include <autoware_perception_msgs/msg/shape.hpp>
+#include "autoware_perception_msgs/msg/shape.hpp"
 
 #include <boost/math/tools/minima.hpp>
 
@@ -33,14 +35,17 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
+#include <Eigen/Core>
+
 #include <algorithm>
 #include <cmath>
 #include <utility>
 #include <vector>
 
-#define EIGEN_MPL2_ONLY
-
-#include <Eigen/Core>
+namespace autoware::shape_estimation
+{
+namespace model
+{
 
 constexpr float epsilon = 0.001;
 
@@ -252,3 +257,6 @@ float BoundingBoxShapeModel::boostOptimize(
   float theta_star = min.first;
   return theta_star;
 }
+
+}  // namespace model
+}  // namespace autoware::shape_estimation

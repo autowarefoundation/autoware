@@ -12,22 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware/shape_estimation/filter/trailer_filter.hpp"
+#ifndef AUTOWARE__SHAPE_ESTIMATION__MODEL__CONVEX_HULL_HPP_
+#define AUTOWARE__SHAPE_ESTIMATION__MODEL__CONVEX_HULL_HPP_
+
+#include "autoware/shape_estimation/model/model_interface.hpp"
 
 namespace autoware::shape_estimation
 {
-namespace filter
+namespace model
 {
 
-bool TrailerFilter::filter(
-  const autoware_perception_msgs::msg::Shape & shape,
-  [[maybe_unused]] const geometry_msgs::msg::Pose & pose)
+class ConvexHullShapeModel : public ShapeEstimationModelInterface
 {
-  constexpr float min_width = 1.5;
-  constexpr float max_width = 3.2;
-  constexpr float max_length = 25.0;  // maximum Full-TRAILER size in JAPAN(normally upto 18m)
-  return utils::filterVehicleBoundingBox(shape, min_width, max_width, max_length);
-}
+public:
+  ConvexHullShapeModel() {}
 
-}  // namespace filter
+  ~ConvexHullShapeModel() {}
+
+  bool estimate(
+    const pcl::PointCloud<pcl::PointXYZ> & cluster,
+    autoware_perception_msgs::msg::Shape & shape_output,
+    geometry_msgs::msg::Pose & pose_output) override;
+};
+
+}  // namespace model
 }  // namespace autoware::shape_estimation
+
+#endif  // AUTOWARE__SHAPE_ESTIMATION__MODEL__CONVEX_HULL_HPP_

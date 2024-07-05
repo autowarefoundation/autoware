@@ -1,4 +1,4 @@
-// Copyright 2018 Autoware Foundation. All rights reserved.
+// Copyright 2021 TierIV. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,4 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware/shape_estimation/filter/no_filter.hpp"
+#ifndef AUTOWARE__SHAPE_ESTIMATION__FILTER__UTILS_HPP_
+#define AUTOWARE__SHAPE_ESTIMATION__FILTER__UTILS_HPP_
+
+#include <autoware_perception_msgs/msg/shape.hpp>
+namespace autoware::shape_estimation
+{
+
+namespace utils
+{
+bool filterVehicleBoundingBox(
+  const autoware_perception_msgs::msg::Shape & shape, const float min_width, const float max_width,
+  const float max_length);
+}  // namespace utils
+
+}  // namespace autoware::shape_estimation
+
+#endif  // AUTOWARE__SHAPE_ESTIMATION__FILTER__UTILS_HPP_

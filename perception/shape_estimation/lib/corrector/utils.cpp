@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shape_estimation/corrector/utils.hpp"
+#define EIGEN_MPL2_ONLY
 
-#include <autoware/universe_utils/geometry/geometry.hpp>
+#include "autoware/shape_estimation/corrector/utils.hpp"
+
+#include "autoware/universe_utils/geometry/geometry.hpp"
 
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -28,12 +30,14 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
 #include <algorithm>
 #include <vector>
 
-#define EIGEN_MPL2_ONLY
-#include <Eigen/Core>
-#include <Eigen/Geometry>
+namespace autoware::shape_estimation
+{
 
 namespace corrector_utils
 {
@@ -398,3 +402,5 @@ bool correctWithReferenceYawAndShapeSize(
   return true;
 }
 }  // namespace corrector_utils
+
+}  // namespace autoware::shape_estimation

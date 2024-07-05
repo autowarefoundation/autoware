@@ -36,7 +36,7 @@ This node calculates a refined object shape (bounding box, cylinder, convex hull
 
 ## Parameters
 
-{{ json_to_markdown("perception/shape_estimation/schema/shape_estimation.schema.json") }}
+{{ json_to_markdown("perception/autoware/shape_estimation/schema/shape_estimation.schema.json") }}
 
 ## Assumptions / Known limits
 

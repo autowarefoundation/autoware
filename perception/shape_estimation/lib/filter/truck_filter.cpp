@@ -12,7 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shape_estimation/filter/truck_filter.hpp"
+#include "autoware/shape_estimation/filter/truck_filter.hpp"
+
+namespace autoware::shape_estimation
+{
+namespace filter
+{
 
 bool TruckFilter::filter(
   const autoware_perception_msgs::msg::Shape & shape,
@@ -23,3 +28,6 @@ bool TruckFilter::filter(
   constexpr float max_length = 18.0;  // upto 12m in japanese law
   return utils::filterVehicleBoundingBox(shape, min_width, max_width, max_length);
 }
+
+}  // namespace filter
+}  // namespace autoware::shape_estimation
