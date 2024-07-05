@@ -76,6 +76,7 @@ void CPUMonitor::checkThrottling(diagnostic_updater::DiagnosticStatusWrapper & s
   addr.sin_family = AF_INET;
   addr.sin_port = htons(msr_reader_port_);
   addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  // cppcheck-suppress cstyleCast
   ret = connect(sock, (struct sockaddr *)&addr, sizeof(addr));
   if (ret < 0) {
     stat.summary(DiagStatus::ERROR, "connect error");

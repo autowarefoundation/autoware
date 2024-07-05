@@ -206,6 +206,7 @@ void * hdd_reader(void * args)
   addr.sin_family = AF_INET;
   addr.sin_port = htons(7635);
   addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  // cppcheck-suppress cstyleCast
   ret = bind(sock, (struct sockaddr *)&addr, sizeof(addr));
   if (ret < 0) {
     close(sock);

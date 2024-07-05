@@ -198,7 +198,8 @@ int get_ata_identify(int fd, HddInfo * info)
   // Create a control structure
   hdr.interface_id = 'S';                   // This must be set to 'S'
   hdr.dxfer_direction = SG_DXFER_FROM_DEV;  // a SCSI READ command
-  hdr.cmd_len = sizeof(ata);         // length in bytes of the SCSI command that 'cmdp' points to
+  hdr.cmd_len = sizeof(ata);  // length in bytes of the SCSI command that 'cmdp' points to
+  // cppcheck-suppress cstyleCast
   hdr.cmdp = (unsigned char *)&ata;  // SCSI command to be executed
   hdr.dxfer_len = sizeof(data);      // number of bytes to be moved in the data transfer
   hdr.dxferp = data;                 // a pointer to user memory
@@ -260,7 +261,8 @@ int get_ata_smart_data(int fd, HddInfo * info, const HddDevice & device)
   // Create a control structure
   hdr.interface_id = 'S';                   // This must be set to 'S'
   hdr.dxfer_direction = SG_DXFER_FROM_DEV;  // a SCSI READ command
-  hdr.cmd_len = sizeof(ata);         // length in bytes of the SCSI command that 'cmdp' points to
+  hdr.cmd_len = sizeof(ata);  // length in bytes of the SCSI command that 'cmdp' points to
+  // cppcheck-suppress cstyleCast
   hdr.cmdp = (unsigned char *)&ata;  // SCSI command to be executed
   hdr.dxfer_len = sizeof(data);      // number of bytes to be moved in the data transfer
   hdr.dxferp = &data;                // a pointer to user memory
@@ -545,6 +547,7 @@ void run(int port)
   addr.sin_family = AF_INET;
   addr.sin_port = htons(port);
   addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  // cppcheck-suppress cstyleCast
   ret = bind(sock, (struct sockaddr *)&addr, sizeof(addr));
   if (ret < 0) {
     syslog(LOG_ERR, "Failed to give the socket FD the local address ADDR. %s\n", strerror(errno));

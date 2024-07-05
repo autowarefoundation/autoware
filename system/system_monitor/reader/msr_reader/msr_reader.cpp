@@ -114,6 +114,7 @@ void run(int port, const std::vector<std::string> & list)
   addr.sin_family = AF_INET;
   addr.sin_port = htons(port);
   addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  // cppcheck-suppress cstyleCast
   ret = bind(sock, (struct sockaddr *)&addr, sizeof(addr));
   if (ret < 0) {
     syslog(LOG_ERR, "Failed to give the socket FD the local address ADDR. %s\n", strerror(errno));
