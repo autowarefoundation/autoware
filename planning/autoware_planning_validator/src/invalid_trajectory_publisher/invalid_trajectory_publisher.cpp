@@ -59,11 +59,6 @@ void InvalidTrajectoryPublisherNode::onTimer()
   traj_pub_->publish(output);
 
   RCLCPP_INFO(this->get_logger(), "invalid trajectory is published.");
-
-  bool EXIT_AFTER_PUBLISH = false;
-  if (EXIT_AFTER_PUBLISH) {
-    exit(0);
-  }
 }
 
 void InvalidTrajectoryPublisherNode::onCurrentTrajectory(const Trajectory::ConstSharedPtr msg)
