@@ -35,7 +35,7 @@ runs:
       shell: bash
 
     - name: Cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       if: ${{ inputs.name == 'no-cuda' }}
       id: cache
       with:
