@@ -37,7 +37,6 @@ namespace
 // y = [-2.9, 0.0, 0.2, 0.0]`
 // obj = 1.88
 
-// cppcheck-suppress syntaxError
 TEST(TestOsqpInterface, BasicQp)
 {
   using qp::calCSCMatrix;
