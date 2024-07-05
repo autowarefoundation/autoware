@@ -216,7 +216,7 @@
 
     <!-- control evaluator -->
     <load_composable_node target="/control/control_container">
-      <composable_node pkg="autoware_control_evaluator" plugin="control_diagnostics::controlEvaluatorNode" name="control_evaluator">
+      <composable_node pkg="autoware_control_evaluator" plugin="control_diagnostics::ControlEvaluatorNode" name="control_evaluator">
         <remap from="~/input/diagnostics" to="/diagnostics"/>
         <remap from="~/input/odometry" to="/localization/kinematic_state"/>
         <remap from="~/input/acceleration" to="/localization/acceleration"/>
