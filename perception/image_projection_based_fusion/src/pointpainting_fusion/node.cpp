@@ -45,13 +45,6 @@ Eigen::Affine3f _transformToEigen(const geometry_msgs::msg::Transform & t)
 namespace image_projection_based_fusion
 {
 
-inline bool isInsideBbox(
-  float proj_x, float proj_y, sensor_msgs::msg::RegionOfInterest roi, float zc)
-{
-  return proj_x >= roi.x_offset * zc && proj_x <= (roi.x_offset + roi.width) * zc &&
-         proj_y >= roi.y_offset * zc && proj_y <= (roi.y_offset + roi.height) * zc;
-}
-
 inline bool isVehicle(int label2d)
 {
   return label2d == autoware_perception_msgs::msg::ObjectClassification::CAR ||

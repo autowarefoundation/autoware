@@ -172,6 +172,13 @@ if(BUILD_TESTING)
   ament_auto_add_gtest(test_geometry
     test/test_geometry.cpp
   )
+  # test needed cuda, tensorRT and cudnn
+  if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
+    ament_auto_add_gtest(test_pointpainting
+      test/test_pointpainting_fusion.cpp
+    )
+  endif()
+
 endif()
 
 ament_auto_package(INSTALL_TO_SHARE
