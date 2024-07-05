@@ -17,16 +17,28 @@
 #include "autoware/behavior_path_planner_common/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "autoware/behavior_path_planner_common/utils/path_shifter/path_shifter.hpp"
 
+#include <autoware/behavior_path_planner_common/parameters.hpp>
+#include <autoware/route_handler/route_handler.hpp>
 #include <interpolation/linear_interpolation.hpp>
+
+#include <nav_msgs/msg/odometry.hpp>
 
 #include <lanelet2_core/primitives/Lanelet.h>
 #include <lanelet2_core/primitives/Polygon.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
-namespace autoware::behavior_path_planner
+namespace autoware::behavior_path_planner::lane_change
 {
+using geometry_msgs::msg::Pose;
+using geometry_msgs::msg::Twist;
+using nav_msgs::msg::Odometry;
+using route_handler::Direction;
+using route_handler::RouteHandler;
+using utils::path_safety_checker::ExtendedPredictedObjects;
+
 struct LateralAccelerationMap
 {
   std::vector<double> base_vel;
@@ -68,7 +80,7 @@ struct LateralAccelerationMap
   }
 };
 
-struct LaneChangeCancelParameters
+struct CancelParameters
 {
   bool enable_on_prepare_phase{true};
   bool enable_on_lane_changing_phase{false};
@@ -83,7 +95,7 @@ struct LaneChangeCancelParameters
   int unsafe_hysteresis_threshold{2};
 };
 
-struct LaneChangeParameters
+struct Parameters
 {
   // trajectory generation
   double backward_lane_length{200.0};
@@ -92,8 +104,8 @@ struct LaneChangeParameters
   int lateral_acc_sampling_num{10};
 
   // lane change parameters
-  double backward_length_buffer_for_end_of_lane;
-  double backward_length_buffer_for_blocking_object;
+  double backward_length_buffer_for_end_of_lane{0.0};
+  double backward_length_buffer_for_blocking_object{0.0};
   double lane_changing_lateral_jerk{0.5};
   double minimum_lane_changing_velocity{5.6};
   double lane_change_prepare_duration{4.0};
@@ -143,7 +155,7 @@ struct LaneChangeParameters
   utils::path_safety_checker::RSSparams rss_params_for_stuck{};
 
   // abort
-  LaneChangeCancelParameters cancel{};
+  CancelParameters cancel{};
 
   double finish_judge_lateral_threshold{0.2};
 
@@ -151,32 +163,32 @@ struct LaneChangeParameters
   bool publish_debug_marker{false};
 };
 
-enum class LaneChangeStates {
+enum class States {
   Normal = 0,
   Cancel,
   Abort,
   Stop,
 };
 
-struct LaneChangePhaseInfo
+struct PhaseInfo
 {
   double prepare{0.0};
   double lane_changing{0.0};
 
   [[nodiscard]] double sum() const { return prepare + lane_changing; }
 
-  LaneChangePhaseInfo(const double _prepare, const double _lane_changing)
+  PhaseInfo(const double _prepare, const double _lane_changing)
   : prepare(_prepare), lane_changing(_lane_changing)
   {
   }
 };
 
-struct LaneChangeInfo
+struct Info
 {
-  LaneChangePhaseInfo longitudinal_acceleration{0.0, 0.0};
-  LaneChangePhaseInfo velocity{0.0, 0.0};
-  LaneChangePhaseInfo duration{0.0, 0.0};
-  LaneChangePhaseInfo length{0.0, 0.0};
+  PhaseInfo longitudinal_acceleration{0.0, 0.0};
+  PhaseInfo velocity{0.0, 0.0};
+  PhaseInfo duration{0.0, 0.0};
+  PhaseInfo length{0.0, 0.0};
 
   lanelet::ConstLanelets current_lanes{};
   lanelet::ConstLanelets target_lanes{};
@@ -190,22 +202,19 @@ struct LaneChangeInfo
   double terminal_lane_changing_velocity{0.0};
 };
 
-struct LaneChangeLanesFilteredObjects
+struct LanesObjects
 {
-  utils::path_safety_checker::ExtendedPredictedObjects current_lane{};
-  utils::path_safety_checker::ExtendedPredictedObjects target_lane{};
-  utils::path_safety_checker::ExtendedPredictedObjects other_lane{};
+  ExtendedPredictedObjects current_lane{};
+  ExtendedPredictedObjects target_lane{};
+  ExtendedPredictedObjects other_lane{};
 };
 
-enum class LaneChangeModuleType {
+enum class ModuleType {
   NORMAL = 0,
   EXTERNAL_REQUEST,
   AVOIDANCE_BY_LANE_CHANGE,
 };
-}  // namespace autoware::behavior_path_planner
 
-namespace autoware::behavior_path_planner::lane_change
-{
 struct PathSafetyStatus
 {
   bool is_safe{true};
@@ -218,6 +227,55 @@ struct LanesPolygon
   std::optional<lanelet::BasicPolygon2d> target;
   std::vector<lanelet::BasicPolygon2d> target_backward;
 };
+
+struct Lanes
+{
+  lanelet::ConstLanelets current;
+  lanelet::ConstLanelets target;
+  std::vector<lanelet::ConstLanelets> preceding_target;
+};
+
+struct CommonData
+{
+  std::shared_ptr<RouteHandler> route_handler_ptr;
+  Odometry::ConstSharedPtr self_odometry_ptr;
+  std::shared_ptr<BehaviorPathPlannerParameters> bpp_param_ptr;
+  std::shared_ptr<Parameters> lc_param_ptr;
+  Lanes lanes;
+  Direction direction;
+
+  [[nodiscard]] Pose get_ego_pose() const { return self_odometry_ptr->pose.pose; }
+
+  [[nodiscard]] Twist get_ego_twist() const { return self_odometry_ptr->twist.twist; }
+
+  [[nodiscard]] double get_ego_speed(bool use_norm = false) const
+  {
+    if (!use_norm) {
+      return get_ego_twist().linear.x;
+    }
+
+    const auto x = get_ego_twist().linear.x;
+    const auto y = get_ego_twist().linear.y;
+    return std::hypot(x, y);
+  }
+};
+
+using RouteHandlerPtr = std::shared_ptr<RouteHandler>;
+using BppParamPtr = std::shared_ptr<BehaviorPathPlannerParameters>;
+using LCParamPtr = std::shared_ptr<Parameters>;
+using CommonDataPtr = std::shared_ptr<CommonData>;
+using LanesPtr = std::shared_ptr<Lanes>;
 }  // namespace autoware::behavior_path_planner::lane_change
+
+namespace autoware::behavior_path_planner
+{
+using LaneChangeModuleType = lane_change::ModuleType;
+using LaneChangeParameters = lane_change::Parameters;
+using LaneChangeStates = lane_change::States;
+using LaneChangePhaseInfo = lane_change::PhaseInfo;
+using LaneChangeInfo = lane_change::Info;
+using LaneChangeLanesFilteredObjects = lane_change::LanesObjects;
+using LateralAccelerationMap = lane_change::LateralAccelerationMap;
+}  // namespace autoware::behavior_path_planner
 
 #endif  // AUTOWARE__BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__DATA_STRUCTS_HPP_
