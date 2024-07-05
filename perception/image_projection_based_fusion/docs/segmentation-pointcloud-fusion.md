@@ -32,9 +32,7 @@ The node `segmentation_pointcloud_fusion` is a package for filtering pointcloud 
 
 ### Core Parameters
 
-| Name          | Type | Description              |
-| ------------- | ---- | ------------------------ |
-| `rois_number` | int  | the number of input rois |
+{{ json_to_markdown("perception/image_projection_based_fusion/schema/segmentation_pointcloud_fusion.schema.json") }}
 
 ## Assumptions / Known limits
 

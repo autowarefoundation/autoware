@@ -20,6 +20,7 @@
 #include <image_projection_based_fusion/utils/utils.hpp>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #if __has_include(<cv_bridge/cv_bridge.hpp>)
@@ -36,7 +37,13 @@ private:
   rclcpp::Publisher<PointCloud2>::SharedPtr pub_pointcloud_ptr_;
   std::vector<bool> filter_semantic_label_target_;
   float filter_distance_threshold_;
-  /* data */
+  // declare list of semantic label target, depend on trained data of yolox segmentation model
+  std::vector<std::pair<std::string, bool>> filter_semantic_label_target_list_ = {
+    {"UNKNOWN", false},       {"BUILDING", false},     {"WALL", false},       {"OBSTACLE", false},
+    {"TRAFFIC_LIGHT", false}, {"TRAFFIC_SIGN", false}, {"PERSON", false},     {"VEHICLE", false},
+    {"BIKE", false},          {"ROAD", false},         {"SIDEWALK", false},   {"ROAD_PAINT", false},
+    {"CURBSTONE", false},     {"CROSSWALK", false},    {"VEGETATION", false}, {"SKY", false}};
+
 public:
   explicit SegmentPointCloudFusionNode(const rclcpp::NodeOptions & options);
 

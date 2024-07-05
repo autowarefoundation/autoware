@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Segmentation Pointcloud Fusion Node",
+  "type": "object",
+  "definitions": {
+    "segmentation_pointcloud_fusion": {
+      "type": "object",
+      "properties": {
+        "filter_semantic_label_target": {
+          "type": "object",
+          "properties": {
+            "UNKNOWN": {
+              "type": "boolean",
+              "description": "If true, UNKNOWN class of semantic will be filtered.",
+              "default": false
+            },
+            "BUILDING": {
+              "type": "boolean",
+              "description": "If true, BUILDING class of semantic will be filtered.",
+              "default": true
+            },
+            "WALL": {
+              "type": "boolean",
+              "description": "If true, WALL class of semantic will be filtered.",
+              "default": true
+            },
+            "OBSTACLE": {
+              "type": "boolean",
+              "description": "If true, OBSTACLE class of semantic will be filtered.",
+              "default": false
+            },
+            "TRAFFIC_LIGHT": {
+              "type": "boolean",
+              "description": "If true, TRAFFIC_LIGHT class of semantic will be filtered.",
+              "default": false
+            },
+            "TRAFFIC_SIGN": {
+              "type": "boolean",
+              "description": "If true, TRAFFIC_SIGN class of semantic will be filtered.",
+              "default": false
+            },
+            "PERSON": {
+              "type": "boolean",
+              "description": "If true, PERSON class of semantic will be filtered.",
+              "default": false
+            },
+            "VEHICLE": {
+              "type": "boolean",
+              "description": "If true, VEHICLE class of semantic will be filtered.",
+              "default": false
+            },
+            "BIKE": {
+              "type": "boolean",
+              "description": "If true, BIKE class of semantic will be filtered.",
+              "default": false
+            },
+            "ROAD": {
+              "type": "boolean",
+              "description": "If true, ROAD class of semantic will be filtered.",
+              "default": true
+            },
+            "SIDEWALK": {
+              "type": "boolean",
+              "description": "If true, SIDEWALK class of semantic will be filtered.",
+              "default": false
+            },
+            "ROAD_PAINT": {
+              "type": "boolean",
+              "description": "If true, ROAD_PAINT class of semantic will be filtered.",
+              "default": false
+            },
+            "CURBSTONE": {
+              "type": "boolean",
+              "description": "If true, CURBSTONE class of semantic will be filtered.",
+              "default": false
+            },
+            "CROSSWALK": {
+              "type": "boolean",
+              "description": "If true, CROSSWALK class of semantic will be filtered.",
+              "default": false
+            },
+            "VEGETATION": {
+              "type": "boolean",
+              "description": "If true, VEGETATION class of semantic will be filtered.",
+              "default": true
+            },
+            "SKY": {
+              "type": "boolean",
+              "description": "If true, SKY class of semantic will be filtered.",
+              "default": false
+            }
+          },
+          "required": [
+            "UNKNOWN",
+            "BUILDING",
+            "WALL",
+            "OBSTACLE",
+            "TRAFFIC_LIGHT",
+            "TRAFFIC_SIGN",
+            "PERSON",
+            "VEHICLE",
+            "BIKE",
+            "ROAD",
+            "SIDEWALK",
+            "ROAD_PAINT",
+            "CURBSTONE",
+            "CROSSWALK",
+            "VEGETATION",
+            "SKY"
+          ]
+        },
+        "filter_distance_threshold": {
+          "type": "number",
+          "description": "A maximum distance of pointcloud to apply filter [m].",
+          "default": 60.0,
+          "minimum": 0.0
+        }
+      },
+      "required": ["filter_semantic_label_target", "filter_distance_threshold"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/segmentation_pointcloud_fusion"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
