@@ -51,6 +51,9 @@
 
 #include <string>
 
+using autoware_map_msgs::msg::LaneletMapBin;
+using tier4_map_msgs::msg::MapProjectorInfo;
+
 Lanelet2MapLoaderNode::Lanelet2MapLoaderNode(const rclcpp::NodeOptions & options)
 : Node("lanelet2_map_loader", options)
 {
@@ -105,13 +108,13 @@ lanelet::LaneletMapPtr Lanelet2MapLoaderNode::load_map(
   if (projector_info.projector_type != tier4_map_msgs::msg::MapProjectorInfo::LOCAL) {
     std::unique_ptr<lanelet::Projector> projector =
       geography_utils::get_lanelet2_projector(projector_info);
-    const lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, *projector, &errors);
+    lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, *projector, &errors);
     if (errors.empty()) {
       return map;
     }
   } else {
     const lanelet::projection::LocalProjector projector;
-    const lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, projector, &errors);
+    lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, projector, &errors);
 
     if (!errors.empty()) {
       for (const auto & error : errors) {
@@ -150,7 +153,8 @@ lanelet::LaneletMapPtr Lanelet2MapLoaderNode::load_map(
 LaneletMapBin Lanelet2MapLoaderNode::create_map_bin_msg(
   const lanelet::LaneletMapPtr map, const std::string & lanelet2_filename, const rclcpp::Time & now)
 {
-  std::string format_version{}, map_version{};
+  std::string format_version{};
+  std::string map_version{};
   lanelet::io_handlers::AutowareOsmParser::parseVersions(
     lanelet2_filename, &format_version, &map_version);
 

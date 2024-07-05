@@ -34,7 +34,7 @@ private:
 
   bool viz_lanelets_centerline_;
 
-  void onMapBin(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg);
+  void on_map_bin(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg);
 };
 
 #endif  // MAP_LOADER__LANELET2_MAP_VISUALIZATION_NODE_HPP_

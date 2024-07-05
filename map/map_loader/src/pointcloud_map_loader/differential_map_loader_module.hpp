@@ -38,7 +38,7 @@ class DifferentialMapLoaderModule
 
 public:
   explicit DifferentialMapLoaderModule(
-    rclcpp::Node * node, const std::map<std::string, PCDFileMetadata> & pcd_file_metadata_dict);
+    rclcpp::Node * node, std::map<std::string, PCDFileMetadata> pcd_file_metadata_dict);
 
 private:
   rclcpp::Logger logger_;
@@ -46,13 +46,13 @@ private:
   std::map<std::string, PCDFileMetadata> all_pcd_file_metadata_dict_;
   rclcpp::Service<GetDifferentialPointCloudMap>::SharedPtr get_differential_pcd_maps_service_;
 
-  bool onServiceGetDifferentialPointCloudMap(
+  [[nodiscard]] bool on_service_get_differential_point_cloud_map(
     GetDifferentialPointCloudMap::Request::SharedPtr req,
-    GetDifferentialPointCloudMap::Response::SharedPtr res);
-  void differentialAreaLoad(
+    GetDifferentialPointCloudMap::Response::SharedPtr res) const;
+  void differential_area_load(
     const autoware_map_msgs::msg::AreaInfo & area_info, const std::vector<std::string> & cached_ids,
-    GetDifferentialPointCloudMap::Response::SharedPtr & response) const;
-  autoware_map_msgs::msg::PointCloudMapCellWithID loadPointCloudMapCellWithID(
+    const GetDifferentialPointCloudMap::Response::SharedPtr & response) const;
+  [[nodiscard]] autoware_map_msgs::msg::PointCloudMapCellWithID load_point_cloud_map_cell_with_id(
     const std::string & path, const std::string & map_id) const;
 };
 

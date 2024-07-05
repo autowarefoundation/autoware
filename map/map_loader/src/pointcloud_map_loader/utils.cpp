@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-std::map<std::string, PCDFileMetadata> loadPCDMetadata(const std::string & pcd_metadata_path)
+std::map<std::string, PCDFileMetadata> load_pcd_metadata(const std::string & pcd_metadata_path)
 {
   YAML::Node config = YAML::LoadFile(pcd_metadata_path);
 
@@ -33,22 +33,22 @@ std::map<std::string, PCDFileMetadata> loadPCDMetadata(const std::string & pcd_m
       continue;
     }
 
-    std::string key = node.first.as<std::string>();
-    std::vector<int> values = node.second.as<std::vector<int>>();
+    auto key = node.first.as<std::string>();
+    auto values = node.second.as<std::vector<int>>();
 
-    PCDFileMetadata fileMetadata;
-    fileMetadata.min.x = values[0];
-    fileMetadata.min.y = values[1];
-    fileMetadata.max.x = values[0] + config["x_resolution"].as<float>();
-    fileMetadata.max.y = values[1] + config["y_resolution"].as<float>();
+    PCDFileMetadata file_metadata;
+    file_metadata.min.x = static_cast<float>(values[0]);
+    file_metadata.min.y = static_cast<float>(values[1]);
+    file_metadata.max.x = static_cast<float>(values[0]) + config["x_resolution"].as<float>();
+    file_metadata.max.y = static_cast<float>(values[1]) + config["y_resolution"].as<float>();
 
-    metadata[key] = fileMetadata;
+    metadata[key] = file_metadata;
   }
 
   return metadata;
 }
 
-std::map<std::string, PCDFileMetadata> replaceWithAbsolutePath(
+std::map<std::string, PCDFileMetadata> replace_with_absolute_path(
   const std::map<std::string, PCDFileMetadata> & pcd_metadata_path,
   const std::vector<std::string> & pcd_paths, std::set<std::string> & missing_pcd_names)
 {
@@ -75,7 +75,7 @@ std::map<std::string, PCDFileMetadata> replaceWithAbsolutePath(
   return absolute_path_map;
 }
 
-bool cylinderAndBoxOverlapExists(
+bool cylinder_and_box_overlap_exists(
   const double center_x, const double center_y, const double radius,
   const pcl::PointXYZ box_min_point, const pcl::PointXYZ box_max_point)
 {
@@ -92,22 +92,18 @@ bool cylinderAndBoxOverlapExists(
   const double dy0 = center_y - box_min_point.y;
   const double dy1 = center_y - box_max_point.y;
 
-  if (
-    std::hypot(dx0, dy0) <= radius || std::hypot(dx1, dy0) <= radius ||
-    std::hypot(dx0, dy1) <= radius || std::hypot(dx1, dy1) <= radius) {
-    return true;
-  }
-
-  return false;
+  return std::hypot(dx0, dy0) <= radius || std::hypot(dx1, dy0) <= radius ||
+         std::hypot(dx0, dy1) <= radius || std::hypot(dx1, dy1) <= radius;
 }
 
-bool isGridWithinQueriedArea(
+bool is_grid_within_queried_area(
   const autoware_map_msgs::msg::AreaInfo area, const PCDFileMetadata metadata)
 {
   // Currently, the area load only supports cylindrical area
   double center_x = area.center_x;
   double center_y = area.center_y;
   double radius = area.radius;
-  bool res = cylinderAndBoxOverlapExists(center_x, center_y, radius, metadata.min, metadata.max);
+  bool res =
+    cylinder_and_box_overlap_exists(center_x, center_y, radius, metadata.min, metadata.max);
   return res;
 }

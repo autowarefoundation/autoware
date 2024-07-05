@@ -14,20 +14,22 @@
 
 #include "differential_map_loader_module.hpp"
 
+#include <utility>
+
 DifferentialMapLoaderModule::DifferentialMapLoaderModule(
-  rclcpp::Node * node, const std::map<std::string, PCDFileMetadata> & pcd_file_metadata_dict)
-: logger_(node->get_logger()), all_pcd_file_metadata_dict_(pcd_file_metadata_dict)
+  rclcpp::Node * node, std::map<std::string, PCDFileMetadata> pcd_file_metadata_dict)
+: logger_(node->get_logger()), all_pcd_file_metadata_dict_(std::move(pcd_file_metadata_dict))
 {
   get_differential_pcd_maps_service_ = node->create_service<GetDifferentialPointCloudMap>(
     "service/get_differential_pcd_map",
     std::bind(
-      &DifferentialMapLoaderModule::onServiceGetDifferentialPointCloudMap, this,
+      &DifferentialMapLoaderModule::on_service_get_differential_point_cloud_map, this,
       std::placeholders::_1, std::placeholders::_2));
 }
 
-void DifferentialMapLoaderModule::differentialAreaLoad(
-  const autoware_map_msgs::msg::AreaInfo & area, const std::vector<std::string> & cached_ids,
-  GetDifferentialPointCloudMap::Response::SharedPtr & response) const
+void DifferentialMapLoaderModule::differential_area_load(
+  const autoware_map_msgs::msg::AreaInfo & area_info, const std::vector<std::string> & cached_ids,
+  const GetDifferentialPointCloudMap::Response::SharedPtr & response) const
 {
   // iterate over all the available pcd map grids
   std::vector<bool> should_remove(static_cast<int>(cached_ids.size()), true);
@@ -36,18 +38,18 @@ void DifferentialMapLoaderModule::differentialAreaLoad(
     PCDFileMetadata metadata = ele.second;
 
     // assume that the map ID = map path (for now)
-    std::string map_id = path;
+    const std::string & map_id = path;
 
     // skip if the pcd file is not within the queried area
-    if (!isGridWithinQueriedArea(area, metadata)) continue;
+    if (!is_grid_within_queried_area(area_info, metadata)) continue;
 
     auto id_in_cached_list = std::find(cached_ids.begin(), cached_ids.end(), map_id);
     if (id_in_cached_list != cached_ids.end()) {
-      int index = id_in_cached_list - cached_ids.begin();
+      int index = static_cast<int>(id_in_cached_list - cached_ids.begin());
       should_remove[index] = false;
     } else {
       autoware_map_msgs::msg::PointCloudMapCellWithID pointcloud_map_cell_with_id =
-        loadPointCloudMapCellWithID(path, map_id);
+        load_point_cloud_map_cell_with_id(path, map_id);
       pointcloud_map_cell_with_id.metadata.min_x = metadata.min.x;
       pointcloud_map_cell_with_id.metadata.min_y = metadata.min.y;
       pointcloud_map_cell_with_id.metadata.max_x = metadata.max.x;
@@ -63,19 +65,19 @@ void DifferentialMapLoaderModule::differentialAreaLoad(
   }
 }
 
-bool DifferentialMapLoaderModule::onServiceGetDifferentialPointCloudMap(
+bool DifferentialMapLoaderModule::on_service_get_differential_point_cloud_map(
   GetDifferentialPointCloudMap::Request::SharedPtr req,
-  GetDifferentialPointCloudMap::Response::SharedPtr res)
+  GetDifferentialPointCloudMap::Response::SharedPtr res) const
 {
   auto area = req->area;
   std::vector<std::string> cached_ids = req->cached_ids;
-  differentialAreaLoad(area, cached_ids, res);
+  differential_area_load(area, cached_ids, res);
   res->header.frame_id = "map";
   return true;
 }
 
 autoware_map_msgs::msg::PointCloudMapCellWithID
-DifferentialMapLoaderModule::loadPointCloudMapCellWithID(
+DifferentialMapLoaderModule::load_point_cloud_map_cell_with_id(
   const std::string & path, const std::string & map_id) const
 {
   sensor_msgs::msg::PointCloud2 pcd;

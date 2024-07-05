@@ -21,7 +21,7 @@
 
 using ::testing::ContainerEq;
 
-std::string createYAMLFile()
+std::string create_yaml_file()
 {
   std::filesystem::path tmp_path = std::filesystem::temp_directory_path() / "temp_metadata.yaml";
 
@@ -37,14 +37,14 @@ std::string createYAMLFile()
 
 TEST(LoadPCDMetadataTest, BasicFunctionality)
 {
-  std::string yaml_file_path = createYAMLFile();
+  std::string yaml_file_path = create_yaml_file();
 
   std::map<std::string, PCDFileMetadata> expected = {
     {"file1.pcd", {{1, 2, 0}, {6, 8, 0}}},
     {"file2.pcd", {{3, 4, 0}, {8, 10, 0}}},
   };
 
-  auto result = loadPCDMetadata(yaml_file_path);
+  auto result = load_pcd_metadata(yaml_file_path);
   ASSERT_THAT(result, ContainerEq(expected));
 }
 

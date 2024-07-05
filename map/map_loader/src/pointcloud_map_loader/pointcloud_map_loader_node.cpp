@@ -28,7 +28,7 @@ namespace fs = std::filesystem;
 
 namespace
 {
-bool isPcdFile(const std::string & p)
+bool is_pcd_file(const std::string & p)
 {
   if (fs::is_directory(p)) {
     return false;
@@ -36,11 +36,7 @@ bool isPcdFile(const std::string & p)
 
   const std::string ext = fs::path(p).extension();
 
-  if (ext != ".pcd" && ext != ".PCD") {
-    return false;
-  }
-
-  return true;
+  return !(ext != ".pcd" && ext != ".PCD");
 }
 }  // namespace
 
@@ -48,7 +44,7 @@ PointCloudMapLoaderNode::PointCloudMapLoaderNode(const rclcpp::NodeOptions & opt
 : Node("pointcloud_map_loader", options)
 {
   const auto pcd_paths =
-    getPcdPaths(declare_parameter<std::vector<std::string>>("pcd_paths_or_directory"));
+    get_pcd_paths(declare_parameter<std::vector<std::string>>("pcd_paths_or_directory"));
   std::string pcd_metadata_path = declare_parameter<std::string>("pcd_metadata_path");
   bool enable_whole_load = declare_parameter<bool>("enable_whole_load");
   bool enable_downsample_whole_load = declare_parameter<bool>("enable_downsampled_whole_load");
@@ -68,7 +64,7 @@ PointCloudMapLoaderNode::PointCloudMapLoaderNode(const rclcpp::NodeOptions & opt
   }
 
   // Parse the metadata file and get the map of (absolute pcd path, pcd file metadata)
-  auto pcd_metadata_dict = getPCDMetadata(pcd_metadata_path, pcd_paths);
+  auto pcd_metadata_dict = get_pcd_metadata(pcd_metadata_path, pcd_paths);
 
   if (enable_partial_load) {
     partial_map_loader_ = std::make_unique<PartialMapLoaderModule>(this, pcd_metadata_dict);
@@ -81,14 +77,14 @@ PointCloudMapLoaderNode::PointCloudMapLoaderNode(const rclcpp::NodeOptions & opt
   }
 }
 
-std::map<std::string, PCDFileMetadata> PointCloudMapLoaderNode::getPCDMetadata(
+std::map<std::string, PCDFileMetadata> PointCloudMapLoaderNode::get_pcd_metadata(
   const std::string & pcd_metadata_path, const std::vector<std::string> & pcd_paths) const
 {
   if (fs::exists(pcd_metadata_path)) {
     std::set<std::string> missing_pcd_names;
-    auto pcd_metadata_dict = loadPCDMetadata(pcd_metadata_path);
+    auto pcd_metadata_dict = load_pcd_metadata(pcd_metadata_path);
 
-    pcd_metadata_dict = replaceWithAbsolutePath(pcd_metadata_dict, pcd_paths, missing_pcd_names);
+    pcd_metadata_dict = replace_with_absolute_path(pcd_metadata_dict, pcd_paths, missing_pcd_names);
 
     // Warning if some segments are missing
     if (!missing_pcd_names.empty()) {
@@ -96,7 +92,7 @@ std::map<std::string, PCDFileMetadata> PointCloudMapLoaderNode::getPCDMetadata(
 
       oss << "The following segment(s) are missing from the input PCDs: ";
 
-      for (auto & fname : missing_pcd_names) {
+      for (const auto & fname : missing_pcd_names) {
         oss << std::endl << fname;
       }
 
@@ -105,7 +101,9 @@ std::map<std::string, PCDFileMetadata> PointCloudMapLoaderNode::getPCDMetadata(
     }
 
     return pcd_metadata_dict;
-  } else if (pcd_paths.size() == 1) {
+  }
+
+  if (pcd_paths.size() == 1) {
     // An exception when using a single file PCD map so that the users do not have to provide
     // a metadata file.
     // Note that this should ideally be avoided and thus eventually be removed by someone, until
@@ -119,12 +117,11 @@ std::map<std::string, PCDFileMetadata> PointCloudMapLoaderNode::getPCDMetadata(
     PCDFileMetadata metadata = {};
     pcl::getMinMax3D(single_pcd, metadata.min, metadata.max);
     return std::map<std::string, PCDFileMetadata>{{pcd_path, metadata}};
-  } else {
-    throw std::runtime_error("PCD metadata file not found: " + pcd_metadata_path);
   }
+  throw std::runtime_error("PCD metadata file not found: " + pcd_metadata_path);
 }
 
-std::vector<std::string> PointCloudMapLoaderNode::getPcdPaths(
+std::vector<std::string> PointCloudMapLoaderNode::get_pcd_paths(
   const std::vector<std::string> & pcd_paths_or_directory) const
 {
   std::vector<std::string> pcd_paths;
@@ -133,14 +130,14 @@ std::vector<std::string> PointCloudMapLoaderNode::getPcdPaths(
       RCLCPP_ERROR_STREAM(get_logger(), "invalid path: " << p);
     }
 
-    if (isPcdFile(p)) {
+    if (is_pcd_file(p)) {
       pcd_paths.push_back(p);
     }
 
     if (fs::is_directory(p)) {
       for (const auto & file : fs::directory_iterator(p)) {
         const auto filename = file.path().string();
-        if (isPcdFile(filename)) {
+        if (is_pcd_file(filename)) {
           pcd_paths.push_back(filename);
         }
       }

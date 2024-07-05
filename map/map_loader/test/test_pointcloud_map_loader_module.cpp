@@ -26,8 +26,6 @@
 #include <chrono>
 #include <memory>
 
-using std::chrono_literals::operator""ms;
-
 class TestPointcloudMapLoaderModule : public ::testing::Test
 {
 protected:
@@ -61,6 +59,8 @@ protected:
 
 TEST_F(TestPointcloudMapLoaderModule, LoadPCDFilesNoDownsampleTest)
 {
+  using namespace std::literals::chrono_literals;
+
   // Prepare PCD paths
   std::vector<std::string> pcd_paths = {temp_pcd_path};
 

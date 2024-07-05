@@ -37,15 +37,15 @@ struct PCDFileMetadata
   }
 };
 
-std::map<std::string, PCDFileMetadata> loadPCDMetadata(const std::string & pcd_metadata_path);
-std::map<std::string, PCDFileMetadata> replaceWithAbsolutePath(
+std::map<std::string, PCDFileMetadata> load_pcd_metadata(const std::string & pcd_metadata_path);
+std::map<std::string, PCDFileMetadata> replace_with_absolute_path(
   const std::map<std::string, PCDFileMetadata> & pcd_metadata_path,
   const std::vector<std::string> & pcd_paths, std::set<std::string> & missing_pcd_names);
 
-bool cylinderAndBoxOverlapExists(
+bool cylinder_and_box_overlap_exists(
   const double center_x, const double center_y, const double radius,
-  const pcl::PointXYZ position_min, const pcl::PointXYZ position_max);
-bool isGridWithinQueriedArea(
+  const pcl::PointXYZ box_min_point, const pcl::PointXYZ box_max_point);
+bool is_grid_within_queried_area(
   const autoware_map_msgs::msg::AreaInfo area, const PCDFileMetadata metadata);
 
 #endif  // POINTCLOUD_MAP_LOADER__UTILS_HPP_

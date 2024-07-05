@@ -50,10 +50,10 @@ PointcloudMapLoaderModule::PointcloudMapLoaderModule(
 
   sensor_msgs::msg::PointCloud2 pcd;
   if (use_downsample) {
-    const float leaf_size = node->declare_parameter<float>("leaf_size");
-    pcd = loadPCDFiles(pcd_paths, leaf_size);
+    const float leaf_size = static_cast<float>(node->declare_parameter<float>("leaf_size"));
+    pcd = load_pcd_files(pcd_paths, leaf_size);
   } else {
-    pcd = loadPCDFiles(pcd_paths, boost::none);
+    pcd = load_pcd_files(pcd_paths, boost::none);
   }
 
   if (pcd.width == 0) {
@@ -65,7 +65,7 @@ PointcloudMapLoaderModule::PointcloudMapLoaderModule(
   pub_pointcloud_map_->publish(pcd);
 }
 
-sensor_msgs::msg::PointCloud2 PointcloudMapLoaderModule::loadPCDFiles(
+sensor_msgs::msg::PointCloud2 PointcloudMapLoaderModule::load_pcd_files(
   const std::vector<std::string> & pcd_paths, const boost::optional<float> leaf_size) const
 {
   sensor_msgs::msg::PointCloud2 whole_pcd;

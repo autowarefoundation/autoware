@@ -35,7 +35,7 @@ TEST(CylinderAndBoxOverlapExists, NoOverlap)
   p_max.y = 1.0;
   p_max.z = 1.0;
 
-  bool result = cylinderAndBoxOverlapExists(center_x, center_y, radius, p_min, p_max);
+  bool result = cylinder_and_box_overlap_exists(center_x, center_y, radius, p_min, p_max);
   EXPECT_FALSE(result);
 }
 
@@ -57,7 +57,7 @@ TEST(CylinderAndBoxOverlapExists, Overlap1)
   p_max.y = 1.0;
   p_max.z = 1.0;
 
-  bool result = cylinderAndBoxOverlapExists(center_x, center_y, radius, p_min, p_max);
+  bool result = cylinder_and_box_overlap_exists(center_x, center_y, radius, p_min, p_max);
   EXPECT_TRUE(result);
 }
 
@@ -79,6 +79,6 @@ TEST(CylinderAndBoxOverlapExists, Overlap2)
   p_max.y = 1.0;
   p_max.z = -99.0;
 
-  bool result = cylinderAndBoxOverlapExists(center_x, center_y, radius, p_min, p_max);
+  bool result = cylinder_and_box_overlap_exists(center_x, center_y, radius, p_min, p_max);
   EXPECT_TRUE(result);
 }

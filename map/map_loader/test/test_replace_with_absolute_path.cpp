@@ -37,7 +37,7 @@ TEST(ReplaceWithAbsolutePathTest, BasicFunctionality)
   };
 
   std::set<std::string> missing_pcd_names;
-  auto result = replaceWithAbsolutePath(pcd_metadata_path, pcd_paths, missing_pcd_names);
+  auto result = replace_with_absolute_path(pcd_metadata_path, pcd_paths, missing_pcd_names);
   ASSERT_THAT(result, ContainerEq(expected));
 }
 
@@ -56,7 +56,7 @@ TEST(ReplaceWithAbsolutePathTest, NoMatchingFiles)
   std::map<std::string, PCDFileMetadata> expected = {};
   std::set<std::string> missing_pcd_names;
 
-  auto result = replaceWithAbsolutePath(pcd_metadata_path, pcd_paths, missing_pcd_names);
+  auto result = replace_with_absolute_path(pcd_metadata_path, pcd_paths, missing_pcd_names);
   ASSERT_THAT(result, ContainerEq(expected));
 }
 

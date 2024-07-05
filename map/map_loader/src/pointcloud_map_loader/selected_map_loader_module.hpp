@@ -39,7 +39,7 @@ class SelectedMapLoaderModule
 
 public:
   explicit SelectedMapLoaderModule(
-    rclcpp::Node * node, const std::map<std::string, PCDFileMetadata> & pcd_file_metadata_dict);
+    rclcpp::Node * node, std::map<std::string, PCDFileMetadata> pcd_file_metadata_dict);
 
 private:
   rclcpp::Logger logger_;
@@ -49,10 +49,10 @@ private:
 
   rclcpp::Publisher<autoware_map_msgs::msg::PointCloudMapMetaData>::SharedPtr pub_metadata_;
 
-  bool onServiceGetSelectedPointCloudMap(
+  [[nodiscard]] bool on_service_get_selected_point_cloud_map(
     GetSelectedPointCloudMap::Request::SharedPtr req,
     GetSelectedPointCloudMap::Response::SharedPtr res) const;
-  autoware_map_msgs::msg::PointCloudMapCellWithID loadPointCloudMapCellWithID(
+  [[nodiscard]] autoware_map_msgs::msg::PointCloudMapCellWithID load_point_cloud_map_cell_with_id(
     const std::string & path, const std::string & map_id) const;
 };
 

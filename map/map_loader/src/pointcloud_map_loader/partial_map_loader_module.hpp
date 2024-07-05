@@ -38,7 +38,7 @@ class PartialMapLoaderModule
 
 public:
   explicit PartialMapLoaderModule(
-    rclcpp::Node * node, const std::map<std::string, PCDFileMetadata> & pcd_file_metadata_dict);
+    rclcpp::Node * node, std::map<std::string, PCDFileMetadata> pcd_file_metadata_dict);
 
 private:
   rclcpp::Logger logger_;
@@ -46,13 +46,13 @@ private:
   std::map<std::string, PCDFileMetadata> all_pcd_file_metadata_dict_;
   rclcpp::Service<GetPartialPointCloudMap>::SharedPtr get_partial_pcd_maps_service_;
 
-  bool onServiceGetPartialPointCloudMap(
+  [[nodiscard]] bool on_service_get_partial_point_cloud_map(
     GetPartialPointCloudMap::Request::SharedPtr req,
-    GetPartialPointCloudMap::Response::SharedPtr res);
-  void partialAreaLoad(
+    GetPartialPointCloudMap::Response::SharedPtr res) const;
+  void partial_area_load(
     const autoware_map_msgs::msg::AreaInfo & area,
-    GetPartialPointCloudMap::Response::SharedPtr & response) const;
-  autoware_map_msgs::msg::PointCloudMapCellWithID loadPointCloudMapCellWithID(
+    const GetPartialPointCloudMap::Response::SharedPtr & response) const;
+  [[nodiscard]] autoware_map_msgs::msg::PointCloudMapCellWithID load_point_cloud_map_cell_with_id(
     const std::string & path, const std::string & map_id) const;
 };
 

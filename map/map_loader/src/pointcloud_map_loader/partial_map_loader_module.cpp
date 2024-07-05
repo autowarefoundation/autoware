@@ -14,19 +14,22 @@
 
 #include "partial_map_loader_module.hpp"
 
+#include <utility>
+
 PartialMapLoaderModule::PartialMapLoaderModule(
-  rclcpp::Node * node, const std::map<std::string, PCDFileMetadata> & pcd_file_metadata_dict)
-: logger_(node->get_logger()), all_pcd_file_metadata_dict_(pcd_file_metadata_dict)
+  rclcpp::Node * node, std::map<std::string, PCDFileMetadata> pcd_file_metadata_dict)
+: logger_(node->get_logger()), all_pcd_file_metadata_dict_(std::move(pcd_file_metadata_dict))
 {
   get_partial_pcd_maps_service_ = node->create_service<GetPartialPointCloudMap>(
-    "service/get_partial_pcd_map", std::bind(
-                                     &PartialMapLoaderModule::onServiceGetPartialPointCloudMap,
-                                     this, std::placeholders::_1, std::placeholders::_2));
+    "service/get_partial_pcd_map",
+    std::bind(
+      &PartialMapLoaderModule::on_service_get_partial_point_cloud_map, this, std::placeholders::_1,
+      std::placeholders::_2));
 }
 
-void PartialMapLoaderModule::partialAreaLoad(
+void PartialMapLoaderModule::partial_area_load(
   const autoware_map_msgs::msg::AreaInfo & area,
-  GetPartialPointCloudMap::Response::SharedPtr & response) const
+  const GetPartialPointCloudMap::Response::SharedPtr & response) const
 {
   // iterate over all the available pcd map grids
   for (const auto & ele : all_pcd_file_metadata_dict_) {
@@ -34,13 +37,13 @@ void PartialMapLoaderModule::partialAreaLoad(
     PCDFileMetadata metadata = ele.second;
 
     // assume that the map ID = map path (for now)
-    std::string map_id = path;
+    const std::string & map_id = path;
 
     // skip if the pcd file is not within the queried area
-    if (!isGridWithinQueriedArea(area, metadata)) continue;
+    if (!is_grid_within_queried_area(area, metadata)) continue;
 
     autoware_map_msgs::msg::PointCloudMapCellWithID pointcloud_map_cell_with_id =
-      loadPointCloudMapCellWithID(path, map_id);
+      load_point_cloud_map_cell_with_id(path, map_id);
     pointcloud_map_cell_with_id.metadata.min_x = metadata.min.x;
     pointcloud_map_cell_with_id.metadata.min_y = metadata.min.y;
     pointcloud_map_cell_with_id.metadata.max_x = metadata.max.x;
@@ -50,16 +53,18 @@ void PartialMapLoaderModule::partialAreaLoad(
   }
 }
 
-bool PartialMapLoaderModule::onServiceGetPartialPointCloudMap(
-  GetPartialPointCloudMap::Request::SharedPtr req, GetPartialPointCloudMap::Response::SharedPtr res)
+bool PartialMapLoaderModule::on_service_get_partial_point_cloud_map(
+  GetPartialPointCloudMap::Request::SharedPtr req,
+  GetPartialPointCloudMap::Response::SharedPtr res) const
 {
   auto area = req->area;
-  partialAreaLoad(area, res);
+  partial_area_load(area, res);
   res->header.frame_id = "map";
   return true;
 }
 
-autoware_map_msgs::msg::PointCloudMapCellWithID PartialMapLoaderModule::loadPointCloudMapCellWithID(
+autoware_map_msgs::msg::PointCloudMapCellWithID
+PartialMapLoaderModule::load_point_cloud_map_cell_with_id(
   const std::string & path, const std::string & map_id) const
 {
   sensor_msgs::msg::PointCloud2 pcd;
