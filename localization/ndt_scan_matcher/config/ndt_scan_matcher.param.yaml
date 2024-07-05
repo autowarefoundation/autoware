@@ -107,12 +107,17 @@
 
       # 2D Real-time covariance estimation with multiple searches (output_pose_covariance is the minimum value)
       covariance_estimation:
-        enable: false
+        # Covariance estimation type
+        # 0=FIXED_VALUE, 1=LAPLACE_APPROXIMATION, 2=MULTI_NDT, 3=MULTI_NDT_SCORE
+        covariance_estimation_type: 0
 
         # Offset arrangement in covariance estimation [m]
         # initial_pose_offset_model_x & initial_pose_offset_model_y must have the same number of elements.
         initial_pose_offset_model_x: [0.0, 0.0, 0.5, -0.5, 1.0, -1.0]
         initial_pose_offset_model_y: [0.5, -0.5, 0.0, 0.0, 0.0, 0.0]
+
+        # In MULTI_NDT_SCORE, the parameter that adjusts the estimated 2D covariance
+        temperature: 0.1
 
 
     dynamic_map_loading:

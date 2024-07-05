@@ -241,18 +241,26 @@ This is a function that uses no ground LiDAR scan to estimate the scan matching 
 
 ### Abstract
 
-Calculate 2D covariance (xx, xy, yx, yy) in real time using the NDT convergence from multiple initial poses.
-The arrangement of multiple initial poses is efficiently limited by the Hessian matrix of the NDT score function.
+Initially, the covariance of NDT scan matching is a fixed value(FIXED_VALUE mode).
+So, three modes are provided for 2D covariance (xx, xy, yx, yy) estimation in real time: LAPLACE_APPROXIMATION, MULTI_NDT, and MULTI_NDT_SCORE.
+LAPLACE_APPROXIMATION calculates the inverse matrix of the XY (2x2) part of the Hessian obtained by NDT scan matching and uses it as the covariance matrix.
+On the other hand, MULTI_NDT, and MULTI_NDT_SCORE use NDT convergence from multiple initial poses to obtain 2D covariance.
+Ideally, the arrangement of multiple initial poses is efficiently limited by the Hessian matrix of the NDT score function.
 In this implementation, the number of initial positions is fixed to simplify the code.
+To obtain the covariance, MULTI_NDT computes until convergence at each initial position, while MULTI_NDT_SCORE uses the nearest voxel transformation likelihood.
 The covariance can be seen as error ellipse from ndt_pose_with_covariance setting on rviz2.
 [original paper](https://www.fujipress.jp/jrm/rb/robot003500020435/).
+
+<img src="./media/calculation_of_ndt_covariance.png" alt="drawing" width="600"/>
 
 Note that this function may spoil healthy system behavior if it consumes much calculation resources.
 
 ### Parameters
 
+There are three types in the calculation of 2D covariance in real time.You can select the method by changing covariance_estimation_type.
 initial_pose_offset_model is rotated around (x,y) = (0,0) in the direction of the first principal component of the Hessian matrix.
 initial_pose_offset_model_x & initial_pose_offset_model_y must have the same number of elements.
+In MULTI_NDT_SCORE mode, the scale of the output 2D covariance can be adjusted according to the temperature.
 
 {{ json_to_markdown("localization/ndt_scan_matcher/schema/sub/covariance_covariance_estimation.json") }}
 
