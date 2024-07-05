@@ -51,11 +51,11 @@ GyroBiasEstimator::GyroBiasEstimator(const rclcpp::NodeOptions & options)
     [this](const Odometry::ConstSharedPtr msg) { callback_odom(msg); });
   gyro_bias_pub_ = create_publisher<Vector3Stamped>("~/output/gyro_bias", rclcpp::SensorDataQoS());
 
-  auto timer_callback = std::bind(&GyroBiasEstimator::timer_callback, this);
+  auto bound_timer_callback = std::bind(&GyroBiasEstimator::timer_callback, this);
   auto period_control = std::chrono::duration_cast<std::chrono::nanoseconds>(
     std::chrono::duration<double>(timer_callback_interval_sec_));
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), period_control, std::move(timer_callback),
+  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(bound_timer_callback)>>(
+    this->get_clock(), period_control, std::move(bound_timer_callback),
     this->get_node_base_interface()->get_context());
   this->get_node_timers_interface()->add_timer(timer_, nullptr);
 
