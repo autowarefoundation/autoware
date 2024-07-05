@@ -35,26 +35,13 @@ PlanningEvaluatorNode::PlanningEvaluatorNode(const rclcpp::NodeOptions & node_op
 : Node("planning_evaluator", node_options)
 {
   using std::placeholders::_1;
-
-  traj_sub_ = create_subscription<Trajectory>(
-    "~/input/trajectory", 1, std::bind(&PlanningEvaluatorNode::onTrajectory, this, _1));
-
-  ref_sub_ = create_subscription<Trajectory>(
-    "~/input/reference_trajectory", 1,
-    std::bind(&PlanningEvaluatorNode::onReferenceTrajectory, this, _1));
-
-  objects_sub_ = create_subscription<PredictedObjects>(
-    "~/input/objects", 1, std::bind(&PlanningEvaluatorNode::onObjects, this, _1));
-
-  modified_goal_sub_ = create_subscription<PoseWithUuidStamped>(
-    "~/input/modified_goal", 1, std::bind(&PlanningEvaluatorNode::onModifiedGoal, this, _1));
-
-  odom_sub_ = create_subscription<Odometry>(
-    "~/input/odometry", 1, std::bind(&PlanningEvaluatorNode::onOdometry, this, _1));
-
   tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
   transform_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
+  // Timer callback to publish evaluator diagnostics
+  using namespace std::literals::chrono_literals;
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), 100ms, std::bind(&PlanningEvaluatorNode::onTimer, this));
   // Parameters
   metrics_calculator_.parameters.trajectory.min_point_dist_m =
     declare_parameter<double>("trajectory.min_point_dist_m");
@@ -133,9 +120,10 @@ void PlanningEvaluatorNode::getRouteData()
   }
 }
 
-DiagnosticStatus PlanningEvaluatorNode::generateLaneletDiagnosticStatus()
+DiagnosticStatus PlanningEvaluatorNode::generateLaneletDiagnosticStatus(
+  const Odometry::ConstSharedPtr ego_state_ptr)
 {
-  const auto & ego_pose = ego_state_ptr_->pose.pose;
+  const auto & ego_pose = ego_state_ptr->pose.pose;
   const auto current_lanelets = [&]() {
     lanelet::ConstLanelet closest_route_lanelet;
     route_handler_.getClosestLaneletWithinRoute(ego_pose, &closest_route_lanelet);
@@ -166,14 +154,14 @@ DiagnosticStatus PlanningEvaluatorNode::generateLaneletDiagnosticStatus()
 }
 
 DiagnosticStatus PlanningEvaluatorNode::generateKinematicStateDiagnosticStatus(
-  const AccelWithCovarianceStamped & accel_stamped)
+  const AccelWithCovarianceStamped & accel_stamped, const Odometry::ConstSharedPtr ego_state_ptr)
 {
   DiagnosticStatus status;
   status.name = "kinematic_state";
   status.level = status.OK;
   diagnostic_msgs::msg::KeyValue key_value;
   key_value.key = "vel";
-  key_value.value = std::to_string(ego_state_ptr_->twist.twist.linear.x);
+  key_value.value = std::to_string(ego_state_ptr->twist.twist.linear.x);
   status.values.push_back(key_value);
   key_value.key = "acc";
   const auto & acc = accel_stamped.accel.accel.linear.x;
@@ -220,9 +208,40 @@ DiagnosticStatus PlanningEvaluatorNode::generateDiagnosticStatus(
   return status;
 }
 
-void PlanningEvaluatorNode::onTrajectory(const Trajectory::ConstSharedPtr traj_msg)
+void PlanningEvaluatorNode::onTimer()
 {
-  if (!ego_state_ptr_) {
+  metrics_msg_.header.stamp = now();
+
+  const auto ego_state_ptr = odometry_sub_.takeData();
+  onOdometry(ego_state_ptr);
+  {
+    const auto objects_msg = objects_sub_.takeData();
+    onObjects(objects_msg);
+  }
+
+  {
+    const auto ref_traj_msg = ref_sub_.takeData();
+    onReferenceTrajectory(ref_traj_msg);
+  }
+
+  {
+    const auto traj_msg = traj_sub_.takeData();
+    onTrajectory(traj_msg, ego_state_ptr);
+  }
+  {
+    const auto modified_goal_msg = modified_goal_sub_.takeData();
+    onModifiedGoal(modified_goal_msg, ego_state_ptr);
+  }
+  if (!metrics_msg_.status.empty()) {
+    metrics_pub_->publish(metrics_msg_);
+  }
+  metrics_msg_ = DiagnosticArray{};
+}
+
+void PlanningEvaluatorNode::onTrajectory(
+  const Trajectory::ConstSharedPtr traj_msg, const Odometry::ConstSharedPtr ego_state_ptr)
+{
+  if (!ego_state_ptr || !traj_msg) {
     return;
   }
 
@@ -231,8 +250,6 @@ void PlanningEvaluatorNode::onTrajectory(const Trajectory::ConstSharedPtr traj_m
     stamps_.push_back(traj_msg->header.stamp);
   }
 
-  DiagnosticArray metrics_msg;
-  metrics_msg.header.stamp = now();
   for (Metric metric : metrics_) {
     const auto metric_stat = metrics_calculator_.calculate(Metric(metric), *traj_msg);
     if (!metric_stat) {
@@ -244,74 +261,34 @@ void PlanningEvaluatorNode::onTrajectory(const Trajectory::ConstSharedPtr traj_m
     }
 
     if (metric_stat->count() > 0) {
-      metrics_msg.status.push_back(generateDiagnosticStatus(metric, *metric_stat));
+      metrics_msg_.status.push_back(generateDiagnosticStatus(metric, *metric_stat));
     }
   }
-  if (!metrics_msg.status.empty()) {
-    metrics_pub_->publish(metrics_msg);
-  }
+
   metrics_calculator_.setPreviousTrajectory(*traj_msg);
   auto runtime = (now() - start).seconds();
   RCLCPP_DEBUG(get_logger(), "Planning evaluation calculation time: %2.2f ms", runtime * 1e3);
 }
 
 void PlanningEvaluatorNode::onModifiedGoal(
-  const PoseWithUuidStamped::ConstSharedPtr modified_goal_msg)
+  const PoseWithUuidStamped::ConstSharedPtr modified_goal_msg,
+  const Odometry::ConstSharedPtr ego_state_ptr)
 {
-  modified_goal_ptr_ = modified_goal_msg;
-  if (ego_state_ptr_) {
-    publishModifiedGoalDeviationMetrics();
+  if (!modified_goal_msg || !ego_state_ptr) {
+    return;
   }
-}
-
-void PlanningEvaluatorNode::onOdometry(const Odometry::ConstSharedPtr odometry_msg)
-{
-  ego_state_ptr_ = odometry_msg;
-  metrics_calculator_.setEgoPose(odometry_msg->pose.pose);
-  {
-    DiagnosticArray metrics_msg;
-    metrics_msg.header.stamp = now();
-
-    getRouteData();
-    if (route_handler_.isHandlerReady() && ego_state_ptr_) {
-      metrics_msg.status.push_back(generateLaneletDiagnosticStatus());
-    }
-
-    const auto acc = accel_sub_.takeData();
-
-    if (acc && ego_state_ptr_) {
-      metrics_msg.status.push_back(generateKinematicStateDiagnosticStatus(*acc));
-    }
-
-    if (!metrics_msg.status.empty()) {
-      metrics_pub_->publish(metrics_msg);
-    }
-  }
-
-  if (modified_goal_ptr_) {
-    publishModifiedGoalDeviationMetrics();
-  }
-}
-
-void PlanningEvaluatorNode::publishModifiedGoalDeviationMetrics()
-{
   auto start = now();
 
-  DiagnosticArray metrics_msg;
-  metrics_msg.header.stamp = now();
   for (Metric metric : metrics_) {
     const auto metric_stat = metrics_calculator_.calculate(
-      Metric(metric), modified_goal_ptr_->pose, ego_state_ptr_->pose.pose);
+      Metric(metric), modified_goal_msg->pose, ego_state_ptr->pose.pose);
     if (!metric_stat) {
       continue;
     }
     metric_stats_[static_cast<size_t>(metric)].push_back(*metric_stat);
     if (metric_stat->count() > 0) {
-      metrics_msg.status.push_back(generateDiagnosticStatus(metric, *metric_stat));
+      metrics_msg_.status.push_back(generateDiagnosticStatus(metric, *metric_stat));
     }
-  }
-  if (!metrics_msg.status.empty()) {
-    metrics_pub_->publish(metrics_msg);
   }
   auto runtime = (now() - start).seconds();
   RCLCPP_DEBUG(
@@ -319,13 +296,36 @@ void PlanningEvaluatorNode::publishModifiedGoalDeviationMetrics()
     runtime * 1e3);
 }
 
+void PlanningEvaluatorNode::onOdometry(const Odometry::ConstSharedPtr odometry_msg)
+{
+  if (!odometry_msg) return;
+  metrics_calculator_.setEgoPose(odometry_msg->pose.pose);
+  {
+    getRouteData();
+    if (route_handler_.isHandlerReady() && odometry_msg) {
+      metrics_msg_.status.push_back(generateLaneletDiagnosticStatus(odometry_msg));
+    }
+
+    const auto acc_msg = accel_sub_.takeData();
+    if (acc_msg && odometry_msg) {
+      metrics_msg_.status.push_back(generateKinematicStateDiagnosticStatus(*acc_msg, odometry_msg));
+    }
+  }
+}
+
 void PlanningEvaluatorNode::onReferenceTrajectory(const Trajectory::ConstSharedPtr traj_msg)
 {
+  if (!traj_msg) {
+    return;
+  }
   metrics_calculator_.setReferenceTrajectory(*traj_msg);
 }
 
 void PlanningEvaluatorNode::onObjects(const PredictedObjects::ConstSharedPtr objects_msg)
 {
+  if (!objects_msg) {
+    return;
+  }
   metrics_calculator_.setPredictedObjects(*objects_msg);
 }
 
