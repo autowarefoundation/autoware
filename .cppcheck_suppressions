@@ -15,7 +15,6 @@ missingIncludeSystem
 noConstructor
 passedByValue
 redundantInitialization
-shadowFunction
 shadowVariable
 // cspell: ignore uninit
 uninitMemberVar
