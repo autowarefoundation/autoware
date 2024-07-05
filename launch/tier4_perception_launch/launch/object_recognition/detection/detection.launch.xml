@@ -13,6 +13,7 @@
   <arg name="use_validator" description="use obstacle_pointcloud based validator"/>
   <arg name="objects_validation_method" description="options: `obstacle_pointcloud` or `occupancy_grid`"/>
   <arg name="use_low_intensity_cluster_filter"/>
+  <arg name="use_image_segmentation_based_filter"/>
   <arg name="use_multi_channel_tracker_merger"/>
 
   <!-- External interfaces -->
@@ -163,6 +164,7 @@
       <arg name="use_roi_based_cluster" value="$(var use_roi_based_cluster)"/>
       <arg name="detection_by_tracker_param_path" value="$(var detection_by_tracker_param_path)"/>
       <arg name="use_low_intensity_cluster_filter" value="$(var use_low_intensity_cluster_filter)"/>
+      <arg name="use_image_segmentation_based_filter" value="$(var use_image_segmentation_based_filter)"/>
     </include>
   </group>
   <group if="$(var switch/detector/lidar_dnn)">
