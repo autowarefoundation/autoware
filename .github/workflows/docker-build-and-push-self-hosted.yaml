@@ -4,7 +4,7 @@
 # push-branch: Build only devel and prebuilt. TAGS: date, latest
 # push-tag: Build all. TAGS: version, date, latest
 
-name: docker-build-and-push-main
+name: docker-build-and-push-self-hosted
 
 on:
   push:
@@ -26,9 +26,9 @@ jobs:
   load-env:
     uses: ./.github/workflows/load-env.yaml
 
-  docker-build-and-push-main:
+  docker-build-and-push:
     needs: load-env
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, ARM64]
     strategy:
       fail-fast: false
       matrix:
@@ -37,17 +37,22 @@ jobs:
           - cuda
         include:
           - name: no-cuda
-            platform: amd64
+            platform: arm64
             base_image_env: base_image
-            lib_dir: x86_64
+            lib_dir: aarch64
             setup-args: --no-nvidia
             additional-tag-suffix: ""
           - name: cuda
-            platform: amd64
+            platform: arm64
             base_image_env: base_image
-            lib_dir: x86_64
+            lib_dir: aarch64
             additional-tag-suffix: -cuda
     steps:
+      # https://github.com/actions/checkout/issues/211
+      - name: Change permission of workspace
+        run: |
+          sudo chown -R $USER:$USER ${{ github.workspace }}
+
       - name: Check out repository
         uses: actions/checkout@v4
 

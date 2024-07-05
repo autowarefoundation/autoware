@@ -1,4 +1,4 @@
-name: build-main-self-hosted
+name: health-check-self-hosted
 
 on:
   schedule:
@@ -9,7 +9,7 @@ jobs:
   load-env:
     uses: ./.github/workflows/load-env.yaml
 
-  build-main-self-hosted:
+  docker-build:
     needs: load-env
     runs-on: [self-hosted, linux, ARM64]
     strategy:
