@@ -47,10 +47,11 @@ It distributes route requests and planning results according to current MRM oper
 
 ### Subscriptions
 
-| Name                  | Type                                | Description            |
-| --------------------- | ----------------------------------- | ---------------------- |
-| `input/vector_map`    | autoware_map_msgs/msg/LaneletMapBin | vector map of Lanelet2 |
-| `input/modified_goal` | geometry_msgs/PoseWithUuidStamped   | modified goal pose     |
+| Name                         | Type                                      | Description            |
+| ---------------------------- | ----------------------------------------- | ---------------------- |
+| `input/vector_map`           | autoware_map_msgs/msg/LaneletMapBin       | vector map of Lanelet2 |
+| `input/modified_goal`        | geometry_msgs/PoseWithUuidStamped         | modified goal pose     |
+| `input/operation_mode_state` | autoware_adapi_v1_msgs/OperationModeState | operation mode state   |
 
 ### Publications
 
@@ -170,6 +171,7 @@ To calculate `route_lanelets`,
 ### Rerouting
 
 Reroute here means changing the route while driving. Unlike route setting, it is required to keep a certain distance from vehicle to the point where the route is changed.
+If the ego vehicle is not on autonomous driving state, the safety checking process will be skipped.
 
 ![rerouting_safety](./media/rerouting_safety.svg)
 

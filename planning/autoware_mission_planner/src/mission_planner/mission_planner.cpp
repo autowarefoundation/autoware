@@ -55,6 +55,9 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
   const auto durable_qos = rclcpp::QoS(1).transient_local();
   sub_odometry_ = create_subscription<Odometry>(
     "~/input/odometry", rclcpp::QoS(1), std::bind(&MissionPlanner::on_odometry, this, _1));
+  sub_operation_mode_state_ = create_subscription<OperationModeState>(
+    "~/input/operation_mode_state", rclcpp::QoS(1),
+    std::bind(&MissionPlanner::on_operation_mode_state, this, _1));
   sub_vector_map_ = create_subscription<LaneletMapBin>(
     "~/input/vector_map", durable_qos, std::bind(&MissionPlanner::on_map, this, _1));
   pub_marker_ = create_publisher<MarkerArray>("~/debug/route_marker", durable_qos);
@@ -128,6 +131,11 @@ void MissionPlanner::on_odometry(const Odometry::ConstSharedPtr msg)
       change_state(RouteState::ARRIVED);
     }
   }
+}
+
+void MissionPlanner::on_operation_mode_state(const OperationModeState::ConstSharedPtr msg)
+{
+  operation_mode_state_ = msg;
 }
 
 void MissionPlanner::on_map(const LaneletMapBin::ConstSharedPtr msg)
@@ -222,10 +230,23 @@ void MissionPlanner::on_set_lanelet_route(
     throw service_utils::ServiceException(
       ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
   }
-  const auto reroute_availability = sub_reroute_availability_.takeData();
-  if (is_reroute && (!reroute_availability || !reroute_availability->availability)) {
+  if (is_reroute && !operation_mode_state_) {
     throw service_utils::ServiceException(
-      ResponseCode::ERROR_INVALID_STATE, "Cannot reroute as the planner is not in lane following.");
+      ResponseCode::ERROR_PLANNER_UNREADY, "Operation mode state is not received.");
+  }
+
+  const bool is_autonomous_driving =
+    operation_mode_state_ ? operation_mode_state_->mode == OperationModeState::AUTONOMOUS &&
+                              operation_mode_state_->is_autoware_control_enabled
+                          : false;
+
+  if (is_reroute && is_autonomous_driving) {
+    const auto reroute_availability = sub_reroute_availability_.takeData();
+    if (!reroute_availability || !reroute_availability->availability) {
+      throw service_utils::ServiceException(
+        ResponseCode::ERROR_INVALID_STATE,
+        "Cannot reroute as the planner is not in lane following.");
+    }
   }
 
   change_state(is_reroute ? RouteState::REROUTING : RouteState::ROUTING);
@@ -238,7 +259,7 @@ void MissionPlanner::on_set_lanelet_route(
       ResponseCode::ERROR_PLANNER_FAILED, "The planned route is empty.");
   }
 
-  if (is_reroute && !check_reroute_safety(*current_route_, route)) {
+  if (is_reroute && is_autonomous_driving && !check_reroute_safety(*current_route_, route)) {
     cancel_route();
     change_state(RouteState::SET);
     throw service_utils::ServiceException(
@@ -271,10 +292,23 @@ void MissionPlanner::on_set_waypoint_route(
     throw service_utils::ServiceException(
       ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
   }
-  const auto reroute_availability = sub_reroute_availability_.takeData();
-  if (is_reroute && (!reroute_availability || !reroute_availability->availability)) {
+  if (is_reroute && !operation_mode_state_) {
     throw service_utils::ServiceException(
-      ResponseCode::ERROR_INVALID_STATE, "Cannot reroute as the planner is not in lane following.");
+      ResponseCode::ERROR_PLANNER_UNREADY, "Operation mode state is not received.");
+  }
+
+  const bool is_autonomous_driving =
+    operation_mode_state_ ? operation_mode_state_->mode == OperationModeState::AUTONOMOUS &&
+                              operation_mode_state_->is_autoware_control_enabled
+                          : false;
+
+  if (is_reroute && is_autonomous_driving) {
+    const auto reroute_availability = sub_reroute_availability_.takeData();
+    if (!reroute_availability || !reroute_availability->availability) {
+      throw service_utils::ServiceException(
+        ResponseCode::ERROR_INVALID_STATE,
+        "Cannot reroute as the planner is not in lane following.");
+    }
   }
 
   change_state(is_reroute ? RouteState::REROUTING : RouteState::ROUTING);
@@ -287,7 +321,7 @@ void MissionPlanner::on_set_waypoint_route(
       ResponseCode::ERROR_PLANNER_FAILED, "The planned route is empty.");
   }
 
-  if (is_reroute && !check_reroute_safety(*current_route_, route)) {
+  if (is_reroute && is_autonomous_driving && !check_reroute_safety(*current_route_, route)) {
     cancel_route();
     change_state(RouteState::SET);
     throw service_utils::ServiceException(

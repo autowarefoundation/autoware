@@ -24,6 +24,7 @@
 #include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
 #include <autoware_adapi_v1_msgs/srv/set_route.hpp>
 #include <autoware_adapi_v1_msgs/srv/set_route_points.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
@@ -45,6 +46,7 @@
 namespace autoware::mission_planner
 {
 
+using autoware_adapi_v1_msgs::msg::OperationModeState;
 using autoware_map_msgs::msg::LaneletMapBin;
 using autoware_planning_msgs::msg::LaneletPrimitive;
 using autoware_planning_msgs::msg::LaneletRoute;
@@ -85,18 +87,21 @@ private:
 
   rclcpp::Subscription<PoseWithUuidStamped>::SharedPtr sub_modified_goal_;
   rclcpp::Subscription<Odometry>::SharedPtr sub_odometry_;
+  rclcpp::Subscription<OperationModeState>::SharedPtr sub_operation_mode_state_;
   autoware::universe_utils::InterProcessPollingSubscriber<RerouteAvailability>
     sub_reroute_availability_{this, "~/input/reroute_availability"};
 
   rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_vector_map_;
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_;
   Odometry::ConstSharedPtr odometry_;
+  OperationModeState::ConstSharedPtr operation_mode_state_;
   LaneletMapBin::ConstSharedPtr map_ptr_;
   RouteState state_;
   LaneletRoute::ConstSharedPtr current_route_;
   lanelet::LaneletMapPtr lanelet_map_ptr_{nullptr};
 
   void on_odometry(const Odometry::ConstSharedPtr msg);
+  void on_operation_mode_state(const OperationModeState::ConstSharedPtr msg);
   void on_map(const LaneletMapBin::ConstSharedPtr msg);
   void on_reroute_availability(const RerouteAvailability::ConstSharedPtr msg);
   void on_modified_goal(const PoseWithUuidStamped::ConstSharedPtr msg);
