@@ -659,6 +659,27 @@ if(isWithinCrosswalk()) then (yes)
 stop
 else (\n no)
 endif
+
+if(is object within intersection?) then (yes)
+#00FFB1 :return false;
+stop
+else (\n no)
+endif
+
+if(is object on right side of the ego path?) then (yes)
+if(are there adjacent lanes on right side of ego lane?) then (yes)
+#00FFB1 :return false;
+stop
+else (\n no)
+endif
+else (\n no)
+if(are there adjacent lanes on left side of ego lane?) then (yes)
+#00FFB1 :return false;
+stop
+else (\n no)
+endif
+endif
+
 #FF006C :return true;
 stop
 }

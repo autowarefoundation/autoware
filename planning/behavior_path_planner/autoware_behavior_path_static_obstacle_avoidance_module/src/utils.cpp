@@ -809,6 +809,45 @@ bool isSatisfiedWithNonVehicleCondition(
     return false;
   }
 
+  if (object.is_within_intersection) {
+    RCLCPP_DEBUG(
+      rclcpp::get_logger(logger_namespace),
+      "object is within intersection. don't have to avoid it.");
+    return false;
+  }
+
+  const auto right_lane =
+    planner_data->route_handler->getRightLanelet(object.overhang_lanelet, true, true);
+  if (right_lane.has_value() && isOnRight(object)) {
+    RCLCPP_DEBUG(
+      rclcpp::get_logger(logger_namespace), "object isn't on the edge lane. never avoid it.");
+    return false;
+  }
+
+  const auto left_lane =
+    planner_data->route_handler->getLeftLanelet(object.overhang_lanelet, true, true);
+  if (left_lane.has_value() && !isOnRight(object)) {
+    RCLCPP_DEBUG(
+      rclcpp::get_logger(logger_namespace), "object isn't on the edge lane. never avoid it.");
+    return false;
+  }
+
+  const auto right_opposite_lanes =
+    planner_data->route_handler->getRightOppositeLanelets(object.overhang_lanelet);
+  if (!right_opposite_lanes.empty() && isOnRight(object)) {
+    RCLCPP_DEBUG(
+      rclcpp::get_logger(logger_namespace), "object isn't on the edge lane. never avoid it.");
+    return false;
+  }
+
+  const auto left_opposite_lanes =
+    planner_data->route_handler->getLeftOppositeLanelets(object.overhang_lanelet);
+  if (!left_opposite_lanes.empty() && !isOnRight(object)) {
+    RCLCPP_DEBUG(
+      rclcpp::get_logger(logger_namespace), "object isn't on the edge lane. never avoid it.");
+    return false;
+  }
+
   return true;
 }
 
@@ -1840,6 +1879,8 @@ void filterTargetObjects(
         continue;
       }
     } else {
+      o.is_within_intersection =
+        filtering_utils::isWithinIntersection(o, planner_data->route_handler);
       o.is_parked = false;
       o.avoid_margin = filtering_utils::getAvoidMargin(o, planner_data, parameters);
 
