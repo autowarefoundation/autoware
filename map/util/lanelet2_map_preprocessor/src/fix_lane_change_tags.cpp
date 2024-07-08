@@ -27,10 +27,7 @@
 #include <unordered_set>
 #include <vector>
 
-using lanelet::utils::getId;
-using lanelet::utils::to2D;
-
-bool loadLaneletMap(
+bool load_lanelet_map(
   const std::string & llt_map_path, lanelet::LaneletMapPtr & lanelet_map_ptr,
   lanelet::Projector & projector)
 {
@@ -48,32 +45,32 @@ bool loadLaneletMap(
   return true;
 }
 
-lanelet::Lanelets convertToVector(lanelet::LaneletMapPtr & lanelet_map_ptr)
+lanelet::Lanelets convert_to_vector(const lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   lanelet::Lanelets lanelets;
-  for (lanelet::Lanelet lanelet : lanelet_map_ptr->laneletLayer) {
-    lanelets.push_back(lanelet);
-  }
+  std::copy(
+    lanelet_map_ptr->laneletLayer.begin(), lanelet_map_ptr->laneletLayer.end(),
+    std::back_inserter(lanelets));
   return lanelets;
 }
-void fixTags(lanelet::LaneletMapPtr & lanelet_map_ptr)
+void fix_tags(lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
-  auto lanelets = convertToVector(lanelet_map_ptr);
-  lanelet::traffic_rules::TrafficRulesPtr trafficRules =
+  auto lanelets = convert_to_vector(lanelet_map_ptr);
+  lanelet::traffic_rules::TrafficRulesPtr traffic_rules =
     lanelet::traffic_rules::TrafficRulesFactory::create(
       lanelet::Locations::Germany, lanelet::Participants::Vehicle);
-  lanelet::routing::RoutingGraphUPtr routingGraph =
-    lanelet::routing::RoutingGraph::build(*lanelet_map_ptr, *trafficRules);
+  lanelet::routing::RoutingGraphUPtr routing_graph =
+    lanelet::routing::RoutingGraph::build(*lanelet_map_ptr, *traffic_rules);
 
   for (auto & llt : lanelets) {
-    if (!routingGraph->conflicting(llt).empty()) {
+    if (!routing_graph->conflicting(llt).empty()) {
       continue;
     }
     llt.attributes().erase("turn_direction");
-    if (!!routingGraph->adjacentRight(llt)) {
+    if (!!routing_graph->adjacentRight(llt)) {
       llt.rightBound().attributes()["lane_change"] = "yes";
     }
-    if (!!routingGraph->adjacentLeft(llt)) {
+    if (!!routing_graph->adjacentLeft(llt)) {
       llt.leftBound().attributes()["lane_change"] = "yes";
     }
   }
@@ -91,11 +88,11 @@ int main(int argc, char * argv[])
   lanelet::LaneletMapPtr llt_map_ptr(new lanelet::LaneletMap);
   lanelet::projection::MGRSProjector projector;
 
-  if (!loadLaneletMap(llt_map_path, llt_map_ptr, projector)) {
+  if (!load_lanelet_map(llt_map_path, llt_map_ptr, projector)) {
     return EXIT_FAILURE;
   }
 
-  fixTags(llt_map_ptr);
+  fix_tags(llt_map_ptr);
   lanelet::write(output_path, *llt_map_ptr, projector);
 
   rclcpp::shutdown();

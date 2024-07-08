@@ -26,10 +26,7 @@
 #include <unordered_set>
 #include <vector>
 
-using lanelet::utils::getId;
-using lanelet::utils::to2D;
-
-bool loadLaneletMap(
+bool load_lanelet_map(
   const std::string & llt_map_path, lanelet::LaneletMapPtr & lanelet_map_ptr,
   lanelet::Projector & projector)
 {
@@ -47,21 +44,17 @@ bool loadLaneletMap(
   return true;
 }
 
-bool exists(std::unordered_set<lanelet::Id> & set, lanelet::Id element)
-{
-  return set.find(element) != set.end();
-}
-
-lanelet::LineStrings3d convertLineLayerToLineStrings(lanelet::LaneletMapPtr & lanelet_map_ptr)
+lanelet::LineStrings3d convert_line_layer_to_line_strings(
+  const lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   lanelet::LineStrings3d lines;
-  for (const lanelet::LineString3d & line : lanelet_map_ptr->lineStringLayer) {
-    lines.push_back(line);
-  }
+  std::copy(
+    lanelet_map_ptr->lineStringLayer.begin(), lanelet_map_ptr->lineStringLayer.end(),
+    std::back_inserter(lines));
   return lines;
 }
 
-lanelet::ConstPoint3d get3DPointFrom2DArcLength(
+lanelet::ConstPoint3d get3d_point_from2d_arc_length(
   const lanelet::ConstLineString3d & line, const double s)
 {
   double accumulated_distance2d = 0;
@@ -71,27 +64,23 @@ lanelet::ConstPoint3d get3DPointFrom2DArcLength(
   auto prev_pt = line.front();
   for (size_t i = 1; i < line.size(); i++) {
     const auto & pt = line[i];
-    double distance2d = lanelet::geometry::distance2d(to2D(prev_pt), to2D(pt));
+    double distance2d =
+      lanelet::geometry::distance2d(lanelet::utils::to2D(prev_pt), lanelet::utils::to2D(pt));
     if (accumulated_distance2d + distance2d >= s) {
       double ratio = (s - accumulated_distance2d) / distance2d;
       auto interpolated_pt = prev_pt.basicPoint() * (1 - ratio) + pt.basicPoint() * ratio;
       std::cout << interpolated_pt << std::endl;
-      return lanelet::ConstPoint3d(
-        lanelet::utils::getId(), interpolated_pt.x(), interpolated_pt.y(), interpolated_pt.z());
+      return lanelet::ConstPoint3d{
+        lanelet::utils::getId(), interpolated_pt.x(), interpolated_pt.y(), interpolated_pt.z()};
     }
     accumulated_distance2d += distance2d;
     prev_pt = pt;
   }
   RCLCPP_ERROR(rclcpp::get_logger("merge_close_lines"), "interpolation failed");
-  return lanelet::ConstPoint3d();
+  return {};
 }
 
-double getLineLength(const lanelet::ConstLineString3d & line)
-{
-  return boost::geometry::length(line.basicLineString());
-}
-
-bool areLinesSame(
+bool are_lines_same(
   const lanelet::ConstLineString3d & line1, const lanelet::ConstLineString3d & line2)
 {
   bool same_ends = false;
@@ -105,66 +94,63 @@ bool areLinesSame(
     return false;
   }
 
-  double sum_distance = 0;
-  for (const auto & pt : line1) {
-    sum_distance += boost::geometry::distance(pt.basicPoint(), line2);
-  }
-  for (const auto & pt : line2) {
-    sum_distance += boost::geometry::distance(pt.basicPoint(), line1);
-  }
+  double sum_distance =
+    std::accumulate(line1.begin(), line1.end(), 0.0, [&line2](double sum, const auto & pt) {
+      return sum + boost::geometry::distance(pt.basicPoint(), line2);
+    });
+  sum_distance +=
+    std::accumulate(line2.begin(), line2.end(), 0.0, [&line1](double sum, const auto & pt) {
+      return sum + boost::geometry::distance(pt.basicPoint(), line1);
+    });
 
-  double avg_distance = sum_distance / (line1.size() + line2.size());
+  double avg_distance = sum_distance / static_cast<double>(line1.size() + line2.size());
   std::cout << line1 << " " << line2 << " " << avg_distance << std::endl;
-  if (avg_distance < 1.0) {
-    return true;
-  } else {
-    return false;
-  }
+  return avg_distance < 1.0;
 }
 
-lanelet::BasicPoint3d getClosestPointOnLine(
+lanelet::BasicPoint3d get_closest_point_on_line(
   const lanelet::BasicPoint3d & search_point, const lanelet::ConstLineString3d & line)
 {
-  auto arc_coordinate = lanelet::geometry::toArcCoordinates(to2D(line), to2D(search_point));
+  auto arc_coordinate = lanelet::geometry::toArcCoordinates(
+    lanelet::utils::to2D(line), lanelet::utils::to2D(search_point));
   std::cout << arc_coordinate.length << " " << arc_coordinate.distance << std::endl;
-  return get3DPointFrom2DArcLength(line, arc_coordinate.length).basicPoint();
+  return get3d_point_from2d_arc_length(line, arc_coordinate.length).basicPoint();
 }
 
-lanelet::LineString3d mergeTwoLines(
+lanelet::LineString3d merge_two_lines(
   const lanelet::LineString3d & line1, const lanelet::ConstLineString3d & line2)
 {
   lanelet::Points3d new_points;
   for (const auto & p1 : line1) {
-    lanelet::BasicPoint3d p1_basic_point = p1.basicPoint();
-    lanelet::BasicPoint3d p2_basic_point = getClosestPointOnLine(p1, line2);
+    const lanelet::BasicPoint3d & p1_basic_point = p1.basicPoint();
+    lanelet::BasicPoint3d p2_basic_point = get_closest_point_on_line(p1, line2);
     lanelet::BasicPoint3d new_basic_point = (p1_basic_point + p2_basic_point) / 2;
     lanelet::Point3d new_point(lanelet::utils::getId(), new_basic_point);
     new_points.push_back(new_point);
   }
-  return lanelet::LineString3d(lanelet::utils::getId(), new_points);
+  return lanelet::LineString3d{lanelet::utils::getId(), new_points};
 }
 
-void copyData(lanelet::LineString3d & dst, lanelet::LineString3d & src)
+void copy_data(lanelet::LineString3d & dst, const lanelet::LineString3d & src)
 {
-  lanelet::Points3d points;
   dst.clear();
-  for (lanelet::Point3d & pt : src) {
-    dst.push_back(pt);
+  for (const lanelet::ConstPoint3d & pt : src) {
+    dst.push_back(static_cast<lanelet::Point3d>(pt));
   }
 }
 
-void mergeLines(lanelet::LaneletMapPtr & lanelet_map_ptr)
+void merge_lines(lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
-  auto lines = convertLineLayerToLineStrings(lanelet_map_ptr);
+  auto lines = convert_line_layer_to_line_strings(lanelet_map_ptr);
 
   for (size_t i = 0; i < lines.size(); i++) {
     auto line_i = lines.at(i);
     for (size_t j = 0; j < i; j++) {
       auto line_j = lines.at(j);
-      if (areLinesSame(line_i, line_j)) {
-        auto merged_line = mergeTwoLines(line_i, line_j);
-        copyData(line_i, merged_line);
-        copyData(line_j, merged_line);
+      if (are_lines_same(line_i, line_j)) {
+        auto merged_line = merge_two_lines(line_i, line_j);
+        copy_data(line_i, merged_line);
+        copy_data(line_j, merged_line);
         line_i.setId(line_j.id());
         std::cout << line_j << " " << line_i << std::endl;
         // lanelet_map_ptr->add(merged_line);
@@ -189,11 +175,11 @@ int main(int argc, char * argv[])
   lanelet::LaneletMapPtr llt_map_ptr(new lanelet::LaneletMap);
   lanelet::projection::MGRSProjector projector;
 
-  if (!loadLaneletMap(llt_map_path, llt_map_ptr, projector)) {
+  if (!load_lanelet_map(llt_map_path, llt_map_ptr, projector)) {
     return EXIT_FAILURE;
   }
 
-  mergeLines(llt_map_ptr);
+  merge_lines(llt_map_ptr);
   lanelet::write(output_path, *llt_map_ptr, projector);
 
   rclcpp::shutdown();

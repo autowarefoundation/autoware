@@ -27,7 +27,7 @@
 #include <unordered_set>
 #include <vector>
 
-bool loadLaneletMap(
+bool load_lanelet_map(
   const std::string & llt_map_path, lanelet::LaneletMapPtr & lanelet_map_ptr,
   lanelet::Projector & projector)
 {
@@ -45,7 +45,8 @@ bool loadLaneletMap(
   return true;
 }
 
-bool loadPCDMap(const std::string & pcd_map_path, pcl::PointCloud<pcl::PointXYZ>::Ptr & pcd_map_ptr)
+bool load_pcd_map(
+  const std::string & pcd_map_path, pcl::PointCloud<pcl::PointXYZ>::Ptr & pcd_map_ptr)
 {
   if (pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_map_path, *pcd_map_ptr) == -1) {  //* load the file
     RCLCPP_ERROR_STREAM(rclcpp::get_logger("loadPCDMap"), "Couldn't read file: " << pcd_map_path);
@@ -56,9 +57,9 @@ bool loadPCDMap(const std::string & pcd_map_path, pcl::PointCloud<pcl::PointXYZ>
   return true;
 }
 
-void transformMaps(
-  pcl::PointCloud<pcl::PointXYZ>::Ptr & pcd_map_ptr, lanelet::LaneletMapPtr & lanelet_map_ptr,
-  const Eigen::Affine3d affine)
+void transform_maps(
+  const pcl::PointCloud<pcl::PointXYZ>::Ptr & pcd_map_ptr,
+  const lanelet::LaneletMapPtr & lanelet_map_ptr, const Eigen::Affine3d & affine)
 {
   {
     for (lanelet::Point3d & pt : lanelet_map_ptr->pointLayer) {
@@ -74,14 +75,14 @@ void transformMaps(
     for (auto & pt : pcd_map_ptr->points) {
       Eigen::Vector3d eigen_pt(pt.x, pt.y, pt.z);
       auto transformed_pt = affine * eigen_pt;
-      pt.x = transformed_pt.x();
-      pt.y = transformed_pt.y();
-      pt.z = transformed_pt.z();
+      pt.x = static_cast<float>(transformed_pt.x());
+      pt.y = static_cast<float>(transformed_pt.y());
+      pt.z = static_cast<float>(transformed_pt.z());
     }
   }
 }
 
-Eigen::Affine3d createAffineMatrixFromXYZRPY(
+Eigen::Affine3d create_affine_matrix_from_xyzrpy(
   const double x, const double y, const double z, const double roll, const double pitch,
   const double yaw)
 {
@@ -127,19 +128,19 @@ int main(int argc, char * argv[])
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr pcd_map_ptr(new pcl::PointCloud<pcl::PointXYZ>);
 
-  if (!loadLaneletMap(llt_map_path, llt_map_ptr, projector)) {
+  if (!load_lanelet_map(llt_map_path, llt_map_ptr, projector)) {
     return EXIT_FAILURE;
   }
-  if (!loadPCDMap(pcd_map_path, pcd_map_ptr)) {
+  if (!load_pcd_map(pcd_map_path, pcd_map_ptr)) {
     return EXIT_FAILURE;
   }
-  Eigen::Affine3d affine = createAffineMatrixFromXYZRPY(x, y, z, roll, pitch, yaw);
+  Eigen::Affine3d affine = create_affine_matrix_from_xyzrpy(x, y, z, roll, pitch, yaw);
 
   const auto mgrs_grid =
     node->declare_parameter<std::string>("mgrs_grid", projector.getProjectedMGRSGrid());
   std::cout << "using mgrs grid: " << mgrs_grid << std::endl;
 
-  transformMaps(pcd_map_ptr, llt_map_ptr, affine);
+  transform_maps(pcd_map_ptr, llt_map_ptr, affine);
   lanelet::write(llt_output_path, *llt_map_ptr, projector);
   pcl::io::savePCDFileBinary(pcd_output_path, *pcd_map_ptr);
 

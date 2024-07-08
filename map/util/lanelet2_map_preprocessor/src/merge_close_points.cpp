@@ -25,7 +25,7 @@
 #include <unordered_set>
 #include <vector>
 
-bool loadLaneletMap(
+bool load_lanelet_map(
   const std::string & llt_map_path, lanelet::LaneletMapPtr & lanelet_map_ptr,
   lanelet::Projector & projector)
 {
@@ -43,17 +43,12 @@ bool loadLaneletMap(
   return true;
 }
 
-bool exists(std::unordered_set<lanelet::Id> & set, lanelet::Id element)
-{
-  return set.find(element) != set.end();
-}
-
-lanelet::Points3d convertPointsLayerToPoints(lanelet::LaneletMapPtr & lanelet_map_ptr)
+lanelet::Points3d convert_points_layer_to_points(const lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   lanelet::Points3d points;
-  for (const lanelet::Point3d & pt : lanelet_map_ptr->pointLayer) {
-    points.push_back(pt);
-  }
+  std::copy(
+    lanelet_map_ptr->pointLayer.begin(), lanelet_map_ptr->pointLayer.end(),
+    std::back_inserter(points));
   return points;
 }
 
@@ -72,9 +67,9 @@ lanelet::Points3d convertPointsLayerToPoints(lanelet::LaneletMapPtr & lanelet_ma
 //   return lanelet::LineString3d(lanelet::utils::getId(), new_points);
 // }
 
-void mergePoints(lanelet::LaneletMapPtr & lanelet_map_ptr)
+void merge_points(const lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
-  const auto & points = convertPointsLayerToPoints(lanelet_map_ptr);
+  const auto & points = convert_points_layer_to_points(lanelet_map_ptr);
 
   for (size_t i = 0; i < points.size(); i++) {
     auto point_i = points.at(i);
@@ -109,11 +104,11 @@ int main(int argc, char * argv[])
   lanelet::LaneletMapPtr llt_map_ptr(new lanelet::LaneletMap);
   lanelet::projection::MGRSProjector projector;
 
-  if (!loadLaneletMap(llt_map_path, llt_map_ptr, projector)) {
+  if (!load_lanelet_map(llt_map_path, llt_map_ptr, projector)) {
     return EXIT_FAILURE;
   }
 
-  mergePoints(llt_map_ptr);
+  merge_points(llt_map_ptr);
   lanelet::write(output_path, *llt_map_ptr, projector);
 
   rclcpp::shutdown();

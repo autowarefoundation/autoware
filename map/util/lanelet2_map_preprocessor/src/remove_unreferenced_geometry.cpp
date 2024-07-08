@@ -25,7 +25,7 @@
 #include <unordered_set>
 #include <vector>
 
-bool loadLaneletMap(
+bool load_lanelet_map(
   const std::string & llt_map_path, lanelet::LaneletMapPtr & lanelet_map_ptr,
   lanelet::Projector & projector)
 {
@@ -43,28 +43,29 @@ bool loadLaneletMap(
   return true;
 }
 
-lanelet::Points3d convertPointsLayerToPoints(lanelet::LaneletMapPtr & lanelet_map_ptr)
+lanelet::Points3d convert_points_layer_to_points(const lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   lanelet::Points3d points;
-  for (const lanelet::Point3d & pt : lanelet_map_ptr->pointLayer) {
-    points.push_back(pt);
-  }
+  std::copy(
+    lanelet_map_ptr->pointLayer.begin(), lanelet_map_ptr->pointLayer.end(),
+    std::back_inserter(points));
   return points;
 }
 
-lanelet::LineStrings3d convertLineLayerToLineStrings(lanelet::LaneletMapPtr & lanelet_map_ptr)
+lanelet::LineStrings3d convert_line_layer_to_line_strings(
+  const lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   lanelet::LineStrings3d lines;
-  for (const lanelet::LineString3d & line : lanelet_map_ptr->lineStringLayer) {
-    lines.push_back(line);
-  }
+  std::copy(
+    lanelet_map_ptr->lineStringLayer.begin(), lanelet_map_ptr->lineStringLayer.end(),
+    std::back_inserter(lines));
   return lines;
 }
 
-void removeUnreferencedGeometry(lanelet::LaneletMapPtr & lanelet_map_ptr)
+void remove_unreferenced_geometry(lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   lanelet::LaneletMapPtr new_map(new lanelet::LaneletMap);
-  for (auto llt : lanelet_map_ptr->laneletLayer) {
+  for (const auto & llt : lanelet_map_ptr->laneletLayer) {
     new_map->add(llt);
   }
   lanelet_map_ptr = new_map;
@@ -82,10 +83,10 @@ int main(int argc, char * argv[])
   lanelet::LaneletMapPtr llt_map_ptr(new lanelet::LaneletMap);
   lanelet::projection::MGRSProjector projector;
 
-  if (!loadLaneletMap(llt_map_path, llt_map_ptr, projector)) {
+  if (!load_lanelet_map(llt_map_path, llt_map_ptr, projector)) {
     return EXIT_FAILURE;
   }
-  removeUnreferencedGeometry(llt_map_ptr);
+  remove_unreferenced_geometry(llt_map_ptr);
   lanelet::write(output_path, *llt_map_ptr, projector);
 
   rclcpp::shutdown();

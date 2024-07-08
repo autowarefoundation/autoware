@@ -27,7 +27,7 @@
 #include <unordered_set>
 #include <vector>
 
-bool loadLaneletMap(
+bool load_lanelet_map(
   const std::string & llt_map_path, lanelet::LaneletMapPtr & lanelet_map_ptr,
   lanelet::Projector & projector)
 {
@@ -45,7 +45,8 @@ bool loadLaneletMap(
   return true;
 }
 
-bool loadPCDMap(const std::string & pcd_map_path, pcl::PointCloud<pcl::PointXYZ>::Ptr & pcd_map_ptr)
+bool load_pcd_map(
+  const std::string & pcd_map_path, pcl::PointCloud<pcl::PointXYZ>::Ptr & pcd_map_ptr)
 {
   if (pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_map_path, *pcd_map_ptr) == -1) {  //* load the file
     RCLCPP_ERROR_STREAM(rclcpp::get_logger("loadPCDMap"), "Couldn't read file: " << pcd_map_path);
@@ -56,16 +57,16 @@ bool loadPCDMap(const std::string & pcd_map_path, pcl::PointCloud<pcl::PointXYZ>
   return true;
 }
 
-double getMinHeightAroundPoint(
+double get_min_height_around_point(
   const pcl::PointCloud<pcl::PointXYZ>::Ptr & pcd_map_ptr,
   const pcl::KdTreeFLANN<pcl::PointXYZ> & kdtree, const pcl::PointXYZ & search_pt,
   const double search_radius3d, const double search_radius2d)
 {
-  std::vector<int> pointIdxRadiusSearch;
-  std::vector<float> pointRadiusSquaredDistance;
+  std::vector<int> point_idx_radius_search;
+  std::vector<float> point_radius_squared_distance;
   if (
     kdtree.radiusSearch(
-      search_pt, search_radius3d, pointIdxRadiusSearch, pointRadiusSquaredDistance) <= 0) {
+      search_pt, search_radius3d, point_idx_radius_search, point_radius_squared_distance) <= 0) {
     std::cout << "no points found within 3d radius " << search_radius3d << std::endl;
     return search_pt.z;
   }
@@ -73,8 +74,7 @@ double getMinHeightAroundPoint(
   double min_height = std::numeric_limits<double>::max();
   bool found = false;
 
-  for (std::size_t i = 0; i < pointIdxRadiusSearch.size(); i++) {
-    std::size_t pt_idx = pointIdxRadiusSearch.at(i);
+  for (auto pt_idx : point_idx_radius_search) {
     const auto pt = pcd_map_ptr->points.at(pt_idx);
     if (pt.z > min_height) {
       continue;
@@ -91,8 +91,9 @@ double getMinHeightAroundPoint(
   return min_height;
 }
 
-void adjustHeight(
-  const pcl::PointCloud<pcl::PointXYZ>::Ptr & pcd_map_ptr, lanelet::LaneletMapPtr & lanelet_map_ptr)
+void adjust_height(
+  const pcl::PointCloud<pcl::PointXYZ>::Ptr & pcd_map_ptr,
+  const lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   std::unordered_set<lanelet::Id> done;
   double search_radius2d = 0.5;
@@ -107,11 +108,11 @@ void adjustHeight(
         continue;
       }
       pcl::PointXYZ pcl_pt;
-      pcl_pt.x = pt.x();
-      pcl_pt.y = pt.y();
-      pcl_pt.z = pt.z();
+      pcl_pt.x = static_cast<float>(pt.x());
+      pcl_pt.y = static_cast<float>(pt.y());
+      pcl_pt.z = static_cast<float>(pt.z());
       double min_height =
-        getMinHeightAroundPoint(pcd_map_ptr, kdtree, pcl_pt, search_radius3d, search_radius2d);
+        get_min_height_around_point(pcd_map_ptr, kdtree, pcl_pt, search_radius3d, search_radius2d);
       std::cout << "moving from " << pt.z() << " to " << min_height << std::endl;
       pt.z() = min_height;
       done.insert(pt.id());
@@ -121,11 +122,11 @@ void adjustHeight(
         continue;
       }
       pcl::PointXYZ pcl_pt;
-      pcl_pt.x = pt.x();
-      pcl_pt.y = pt.y();
-      pcl_pt.z = pt.z();
+      pcl_pt.x = static_cast<float>(pt.x());
+      pcl_pt.y = static_cast<float>(pt.y());
+      pcl_pt.z = static_cast<float>(pt.z());
       double min_height =
-        getMinHeightAroundPoint(pcd_map_ptr, kdtree, pcl_pt, search_radius3d, search_radius2d);
+        get_min_height_around_point(pcd_map_ptr, kdtree, pcl_pt, search_radius3d, search_radius2d);
       std::cout << "moving from " << pt.z() << " to " << min_height << std::endl;
       pt.z() = min_height;
       done.insert(pt.id());
@@ -148,14 +149,14 @@ int main(int argc, char * argv[])
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr pcd_map_ptr(new pcl::PointCloud<pcl::PointXYZ>);
 
-  if (!loadLaneletMap(llt_map_path, llt_map_ptr, projector)) {
+  if (!load_lanelet_map(llt_map_path, llt_map_ptr, projector)) {
     return EXIT_FAILURE;
   }
-  if (!loadPCDMap(pcd_map_path, pcd_map_ptr)) {
+  if (!load_pcd_map(pcd_map_path, pcd_map_ptr)) {
     return EXIT_FAILURE;
   }
 
-  adjustHeight(pcd_map_ptr, llt_map_ptr);
+  adjust_height(pcd_map_ptr, llt_map_ptr);
   lanelet::write(llt_output_path, *llt_map_ptr, projector);
 
   rclcpp::shutdown();
