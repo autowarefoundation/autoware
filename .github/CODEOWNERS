@@ -6,7 +6,7 @@ common/autoware_motion_utils/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4.j
 common/autoware_overlay_rviz_plugin/autoware_mission_details_overlay_rviz_plugin/** ahmed.ebrahim@leodrive.ai
 common/autoware_overlay_rviz_plugin/autoware_overlay_rviz_plugin/** khalil@leodrive.ai
 common/autoware_perception_rviz_plugin/** opensource@apex.ai satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taiki.tanaka@tier4.jp takeshi.miura@tier4.jp yoshi.ri@tier4.jp
-common/autoware_point_types/** taichi.higashide@tier4.jp
+common/autoware_point_types/** david.wong@tier4.jp max.schmeller@tier4.jp
 common/autoware_test_utils/** kyoichi.sugahara@tier4.jp mamoru.sobue@tier4.jp takamasa.horibe@tier4.jp zulfaqar.azmi@tier4.jp
 common/autoware_testing/** adam.dabrowski@robotec.ai satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 common/autoware_universe_utils/** mamoru.sobue@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
@@ -115,9 +115,9 @@ perception/elevation_map_loader/** kosuke.takeuchi@tier4.jp shintaro.tomie@tier4
 perception/euclidean_cluster/** dai.nguyen@tier4.jp yukihiro.saito@tier4.jp
 perception/ground_segmentation/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/image_projection_based_fusion/** dai.nguyen@tier4.jp koji.minoda@tier4.jp kotaro.uetake@tier4.jp shunsuke.miura@tier4.jp tao.zhong@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
-perception/lidar_apollo_instance_segmentation/** yukihiro.saito@tier4.jp
-perception/lidar_apollo_segmentation_tvm/** ambroise.vincent@arm.com xinyu.wang@tier4.jp
-perception/lidar_apollo_segmentation_tvm_nodes/** ambroise.vincent@arm.com xinyu.wang@tier4.jp
+perception/lidar_apollo_instance_segmentation/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
+perception/lidar_apollo_segmentation_tvm/** ambroise.vincent@arm.com yoshi.ri@tier4.jp
+perception/lidar_apollo_segmentation_tvm_nodes/** ambroise.vincent@arm.com yoshi.ri@tier4.jp
 perception/lidar_centerpoint/** kenzo.lobos@tier4.jp koji.minoda@tier4.jp
 perception/lidar_transfusion/** amadeusz.szymko.2@tier4.jp kenzo.lobos@tier4.jp satoshi.tanaka@tier4.jp
 perception/multi_object_tracker/** taekjin.lee@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
@@ -192,10 +192,10 @@ planning/behavior_velocity_planner/autoware_behavior_velocity_traffic_light_modu
 planning/behavior_velocity_planner/autoware_behavior_velocity_virtual_traffic_light_module/** kosuke.takeuchi@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_planner/autoware_behavior_velocity_walkway_module/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 planning/motion_velocity_planner/autoware_motion_velocity_dynamic_obstacle_stop_module/** mamoru.sobue@tier4.jp maxime.clement@tier4.jp
-planning/motion_velocity_planner/autoware_motion_velocity_obstacle_velocity_limiter_module/** maxime.clement@tier4.jp daniel.sanchez@tier4.jp
+planning/motion_velocity_planner/autoware_motion_velocity_obstacle_velocity_limiter_module/** maxime.clement@tier4.jp
 planning/motion_velocity_planner/autoware_motion_velocity_out_of_lane_module/** maxime.clement@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
-planning/motion_velocity_planner/autoware_motion_velocity_planner_common/** maxime.clement@tier4.jp daniel.sanchez@tier4.jp alqudah.mohammad@tier4.jp
-planning/motion_velocity_planner/autoware_motion_velocity_planner_node/** maxime.clement@tier4.jp daniel.sanchez@tier4.jp alqudah.mohammad@tier4.jp
+planning/motion_velocity_planner/autoware_motion_velocity_planner_common/** maxime.clement@tier4.jp
+planning/motion_velocity_planner/autoware_motion_velocity_planner_node/** maxime.clement@tier4.jp
 planning/sampling_based_planner/autoware_bezier_sampler/** maxime.clement@tier4.jp
 planning/sampling_based_planner/autoware_frenet_planner/** maxime.clement@tier4.jp
 planning/sampling_based_planner/autoware_path_sampler/** maxime.clement@tier4.jp
@@ -204,7 +204,7 @@ sensing/gnss_poser/** anh.nguyen.2@tier4.jp kento.yabuuchi.2@tier4.jp koji.minod
 sensing/image_diagnostics/** dai.nguyen@tier4.jp yoshi.ri@tier4.jp
 sensing/image_transport_decompressor/** kenzo.lobos@tier4.jp yukihiro.saito@tier4.jp
 sensing/imu_corrector/** koji.minoda@tier4.jp taiki.yamada@tier4.jp yamato.ando@tier4.jp
-sensing/livox/livox_tag_filter/** kenzo.lobos@tier4.jp ryohsuke.mitsudome@tier4.jp
+sensing/livox/autoware_livox_tag_filter/** kenzo.lobos@tier4.jp ryohsuke.mitsudome@tier4.jp
 sensing/pointcloud_preprocessor/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp david.wong@tier4.jp kenzo.lobos@tier4.jp kyoichi.sugahara@tier4.jp melike@leodrive.ai shunsuke.miura@tier4.jp yihsiang.fang@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 sensing/radar_scan_to_pointcloud2/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
 sensing/radar_static_pointcloud_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
