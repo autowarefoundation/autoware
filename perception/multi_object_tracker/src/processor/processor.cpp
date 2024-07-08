@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "multi_object_tracker/processor/processor.hpp"
+#include "processor.hpp"
 
-#include "multi_object_tracker/tracker/tracker.hpp"
+#include "autoware/multi_object_tracker/tracker/tracker.hpp"
 #include "object_recognition_utils/object_recognition_utils.hpp"
 
 #include "autoware_perception_msgs/msg/tracked_objects.hpp"
 
 #include <iterator>
+
+namespace autoware::multi_object_tracker
+{
 
 using Label = autoware_perception_msgs::msg::ObjectClassification;
 
@@ -248,3 +251,5 @@ void TrackerProcessor::getTentativeObjects(
     }
   }
 }
+
+}  // namespace autoware::multi_object_tracker

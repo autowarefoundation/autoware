@@ -20,32 +20,34 @@ include_directories(
 )
 
 # Generate exe file
-set(MULTI_OBJECT_TRACKER_SRC
-  src/multi_object_tracker_core.cpp
+set(${PROJECT_NAME}_src
+  src/multi_object_tracker_node.cpp
   src/debugger/debugger.cpp
   src/debugger/debug_object.cpp
   src/processor/processor.cpp
   src/processor/input_manager.cpp
-  src/data_association/data_association.cpp
-  src/data_association/mu_successive_shortest_path/mu_successive_shortest_path_wrapper.cpp
-  src/tracker/motion_model/motion_model_base.cpp
-  src/tracker/motion_model/bicycle_motion_model.cpp
-  # cspell: ignore ctrv
-  src/tracker/motion_model/ctrv_motion_model.cpp
-  src/tracker/motion_model/cv_motion_model.cpp
-  src/tracker/model/tracker_base.cpp
-  src/tracker/model/big_vehicle_tracker.cpp
-  src/tracker/model/normal_vehicle_tracker.cpp
-  src/tracker/model/multiple_vehicle_tracker.cpp
-  src/tracker/model/bicycle_tracker.cpp
-  src/tracker/model/pedestrian_tracker.cpp
-  src/tracker/model/pedestrian_and_bicycle_tracker.cpp
-  src/tracker/model/unknown_tracker.cpp
-  src/tracker/model/pass_through_tracker.cpp
 )
-
+set(${PROJECT_NAME}_lib
+  lib/association/association.cpp
+  lib/association/mu_successive_shortest_path/mu_ssp.cpp
+  lib/tracker/motion_model/motion_model_base.cpp
+  lib/tracker/motion_model/bicycle_motion_model.cpp
+  # cspell: ignore ctrv
+  lib/tracker/motion_model/ctrv_motion_model.cpp
+  lib/tracker/motion_model/cv_motion_model.cpp
+  lib/tracker/model/tracker_base.cpp
+  lib/tracker/model/big_vehicle_tracker.cpp
+  lib/tracker/model/normal_vehicle_tracker.cpp
+  lib/tracker/model/multiple_vehicle_tracker.cpp
+  lib/tracker/model/bicycle_tracker.cpp
+  lib/tracker/model/pedestrian_tracker.cpp
+  lib/tracker/model/pedestrian_and_bicycle_tracker.cpp
+  lib/tracker/model/unknown_tracker.cpp
+  lib/tracker/model/pass_through_tracker.cpp
+)
 ament_auto_add_library(${PROJECT_NAME} SHARED
-  ${MULTI_OBJECT_TRACKER_SRC}
+  ${${PROJECT_NAME}_src}
+  ${${PROJECT_NAME}_lib}
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -54,8 +56,8 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "multi_object_tracker::MultiObjectTracker"
-  EXECUTABLE ${PROJECT_NAME}_node
+  PLUGIN "autoware::multi_object_tracker::MultiObjectTracker"
+  EXECUTABLE multi_object_tracker_node
 )
 
 ament_auto_package(INSTALL_TO_SHARE

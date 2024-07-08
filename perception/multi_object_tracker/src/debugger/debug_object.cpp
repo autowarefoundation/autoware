@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "multi_object_tracker/debugger/debug_object.hpp"
+#include "debug_object.hpp"
 
 #include "autoware_perception_msgs/msg/tracked_object.hpp"
 
@@ -48,6 +48,9 @@ int32_t uuidToInt(const boost::uuids::uuid & uuid)
 }
 }  // namespace
 
+namespace autoware::multi_object_tracker
+{
+
 TrackerObjectDebugger::TrackerObjectDebugger(std::string frame_id)
 {
   // set frame id
@@ -79,7 +82,7 @@ void TrackerObjectDebugger::collect(
   const std::unordered_map<int, int> & direct_assignment,
   const std::unordered_map<int, int> & /*reverse_assignment*/)
 {
-  if (!is_initialized_) is_initialized_ = true;
+  is_initialized_ = true;
 
   message_time_ = message_time;
 
@@ -391,3 +394,5 @@ void TrackerObjectDebugger::getMessage(visualization_msgs::msg::MarkerArray & ma
 
   return;
 }
+
+}  // namespace autoware::multi_object_tracker

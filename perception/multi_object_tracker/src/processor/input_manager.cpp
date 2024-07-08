@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "multi_object_tracker/processor/input_manager.hpp"
+#include "input_manager.hpp"
 
 #include <cassert>
 
-namespace multi_object_tracker
+namespace autoware::multi_object_tracker
 {
 ///////////////////////////
 /////// InputStream ///////
@@ -62,7 +62,7 @@ void InputStream::onMessage(
 {
   const DetectedObjects objects = *msg;
   objects_que_.push_back(objects);
-  if (objects_que_.size() > que_size_) {
+  while (objects_que_.size() > que_size_) {
     objects_que_.pop_front();
   }
 
@@ -160,21 +160,27 @@ void InputStream::getObjectsOlderThan(
     return;
   }
 
-  for (const auto & object : objects_que_) {
-    const rclcpp::Time object_time = rclcpp::Time(object.header.stamp);
-
-    // remove objects older than the specified duration
+  for (const auto & objects : objects_que_) {
+    const rclcpp::Time object_time = rclcpp::Time(objects.header.stamp);
+    // ignore objects older than the specified duration
     if (object_time < object_oldest_time) {
-      objects_que_.pop_front();
       continue;
     }
 
     // Add the object if the object is older than the specified latest time
-    if (object_latest_time >= object_time) {
-      std::pair<uint, DetectedObjects> object_pair(index_, object);
-      objects_list.push_back(object_pair);
-      // remove the object from the queue
+    if (object_time <= object_latest_time) {
+      std::pair<uint, DetectedObjects> objects_pair(index_, objects);
+      objects_list.push_back(objects_pair);
+    }
+  }
+
+  // remove objects older than 'object_latest_time'
+  while (!objects_que_.empty()) {
+    const rclcpp::Time object_time = rclcpp::Time(objects_que_.front().header.stamp);
+    if (object_time < object_latest_time) {
       objects_que_.pop_front();
+    } else {
+      break;
     }
   }
 }
@@ -368,4 +374,4 @@ bool InputManager::getObjects(const rclcpp::Time & now, ObjectsList & objects_li
   return is_any_object;
 }
 
-}  // namespace multi_object_tracker
+}  // namespace autoware::multi_object_tracker
