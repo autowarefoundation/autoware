@@ -49,29 +49,29 @@ public:
 private:
   using MapProjectorInfo = map_interface::MapProjectorInfo;
 
-  void callbackMapProjectorInfo(const MapProjectorInfo::Message::ConstSharedPtr msg);
-  void callbackNavSatFix(const sensor_msgs::msg::NavSatFix::ConstSharedPtr nav_sat_fix_msg_ptr);
-  void callbackGnssInsOrientationStamped(
+  void callback_map_projector_info(const MapProjectorInfo::Message::ConstSharedPtr msg);
+  void callback_nav_sat_fix(const sensor_msgs::msg::NavSatFix::ConstSharedPtr nav_sat_fix_msg_ptr);
+  void callback_gnss_ins_orientation_stamped(
     const autoware_sensing_msgs::msg::GnssInsOrientationStamped::ConstSharedPtr msg);
 
-  bool isFixed(const sensor_msgs::msg::NavSatStatus & nav_sat_status_msg);
-  bool canGetCovariance(const sensor_msgs::msg::NavSatFix & nav_sat_fix_msg);
-  geometry_msgs::msg::Point getMedianPosition(
+  static bool is_fixed(const sensor_msgs::msg::NavSatStatus & nav_sat_status_msg);
+  static bool can_get_covariance(const sensor_msgs::msg::NavSatFix & nav_sat_fix_msg);
+  static geometry_msgs::msg::Point get_median_position(
     const boost::circular_buffer<geometry_msgs::msg::Point> & position_buffer);
-  geometry_msgs::msg::Point getAveragePosition(
+  static geometry_msgs::msg::Point get_average_position(
     const boost::circular_buffer<geometry_msgs::msg::Point> & position_buffer);
-  geometry_msgs::msg::Quaternion getQuaternionByHeading(const int heading);
-  geometry_msgs::msg::Quaternion getQuaternionByPositionDifference(
+  static geometry_msgs::msg::Quaternion get_quaternion_by_heading(const int heading);
+  static geometry_msgs::msg::Quaternion get_quaternion_by_position_difference(
     const geometry_msgs::msg::Point & point, const geometry_msgs::msg::Point & prev_point);
 
-  bool getTransform(
+  bool get_transform(
     const std::string & target_frame, const std::string & source_frame,
     const geometry_msgs::msg::TransformStamped::SharedPtr transform_stamped_ptr);
-  bool getStaticTransform(
+  bool get_static_transform(
     const std::string & target_frame, const std::string & source_frame,
     const geometry_msgs::msg::TransformStamped::SharedPtr transform_stamped_ptr,
     const builtin_interfaces::msg::Time & stamp);
-  void publishTF(
+  void publish_tf(
     const std::string & frame_id, const std::string & child_frame_id,
     const geometry_msgs::msg::PoseStamped & pose_msg);
 
@@ -99,7 +99,7 @@ private:
 
   autoware_sensing_msgs::msg::GnssInsOrientationStamped::SharedPtr
     msg_gnss_ins_orientation_stamped_;
-  int gnss_pose_pub_method;
+  int gnss_pose_pub_method_;
 };
 }  // namespace gnss_poser
 
