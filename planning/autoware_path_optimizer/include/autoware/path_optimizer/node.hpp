@@ -22,10 +22,11 @@
 #include "autoware/path_optimizer/type_alias.hpp"
 #include "autoware/universe_utils/ros/logger_level_configure.hpp"
 #include "autoware/universe_utils/ros/polling_subscriber.hpp"
+#include "autoware/universe_utils/system/time_keeper.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
-#include "rclcpp/rclcpp.hpp"
 
 #include <autoware/universe_utils/ros/published_time_publisher.hpp>
+#include <rclcpp/publisher.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -65,7 +66,7 @@ protected:  // for the static_centerline_generator package
   // argument variables
   autoware::vehicle_info_utils::VehicleInfo vehicle_info_{};
   mutable std::shared_ptr<DebugData> debug_data_ptr_{nullptr};
-  mutable std::shared_ptr<TimeKeeper> time_keeper_ptr_{nullptr};
+  mutable std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper_{nullptr};
 
   // flags for some functions
   bool enable_pub_debug_marker_;
@@ -98,6 +99,8 @@ protected:  // for the static_centerline_generator package
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_markers_pub_;
   rclcpp::Publisher<StringStamped>::SharedPtr debug_calculation_time_str_pub_;
   rclcpp::Publisher<Float64Stamped>::SharedPtr debug_calculation_time_float_pub_;
+  rclcpp::Publisher<autoware::universe_utils::ProcessingTimeDetail>::SharedPtr
+    debug_processing_time_detail_pub_;
 
   // parameter callback
   rcl_interfaces::msg::SetParametersResult onParam(

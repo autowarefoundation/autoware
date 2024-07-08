@@ -395,13 +395,13 @@ MPTOptimizer::MPTOptimizer(
   rclcpp::Node * node, const bool enable_debug_info, const EgoNearestParam ego_nearest_param,
   const autoware::vehicle_info_utils::VehicleInfo & vehicle_info,
   const TrajectoryParam & traj_param, const std::shared_ptr<DebugData> debug_data_ptr,
-  const std::shared_ptr<TimeKeeper> time_keeper_ptr)
+  const std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper)
 : enable_debug_info_(enable_debug_info),
   ego_nearest_param_(ego_nearest_param),
   vehicle_info_(vehicle_info),
   traj_param_(traj_param),
   debug_data_ptr_(debug_data_ptr),
-  time_keeper_ptr_(time_keeper_ptr),
+  time_keeper_(time_keeper),
   logger_(node->get_logger().get_child("mpt_optimizer"))
 {
   // initialize mpt param
@@ -411,7 +411,7 @@ MPTOptimizer::MPTOptimizer(
 
   // state equation generator
   state_equation_generator_ =
-    StateEquationGenerator(vehicle_info_.wheel_base_m, mpt_param_.max_steer_rad, time_keeper_ptr_);
+    StateEquationGenerator(vehicle_info_.wheel_base_m, mpt_param_.max_steer_rad, time_keeper_);
 
   // osqp solver
   osqp_solver_ptr_ = std::make_unique<autoware::common::osqp::OSQPInterface>(osqp_epsilon_);
@@ -470,7 +470,7 @@ void MPTOptimizer::onParam(const std::vector<rclcpp::Parameter> & parameters)
 
 std::vector<TrajectoryPoint> MPTOptimizer::optimizeTrajectory(const PlannerData & planner_data)
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   const auto & p = planner_data;
   const auto & traj_points = p.traj_points;
@@ -520,8 +520,6 @@ std::vector<TrajectoryPoint> MPTOptimizer::optimizeTrajectory(const PlannerData 
   // 8. publish trajectories for debug
   publishDebugTrajectories(p.header, ref_points, *mpt_traj_points);
 
-  time_keeper_ptr_->toc(__func__, "      ");
-
   debug_data_ptr_->ref_points = ref_points;
   prev_ref_points_ptr_ = std::make_shared<std::vector<ReferencePoint>>(ref_points);
   prev_optimized_traj_points_ptr_ =
@@ -541,7 +539,7 @@ std::optional<std::vector<TrajectoryPoint>> MPTOptimizer::getPrevOptimizedTrajec
 std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
   const PlannerData & planner_data, const std::vector<TrajectoryPoint> & smoothed_points) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   const auto & p = planner_data;
 
@@ -549,14 +547,14 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
   const double backward_traj_length = traj_param_.output_backward_traj_length;
 
   // 1. resample and convert smoothed points type from trajectory points to reference points
-  time_keeper_ptr_->tic("resampleReferencePoints");
+  time_keeper_->start_track("resampleReferencePoints");
   auto ref_points = [&]() {
     const auto resampled_smoothed_points =
       trajectory_utils::resampleTrajectoryPointsWithoutStopPoint(
         smoothed_points, mpt_param_.delta_arc_length);
     return trajectory_utils::convertToReferencePoints(resampled_smoothed_points);
   }();
-  time_keeper_ptr_->toc("resampleReferencePoints", "          ");
+  time_keeper_->end_track("resampleReferencePoints");
 
   // 2. crop forward and backward with margin, and calculate spline interpolation
   // NOTE: Margin is added to calculate orientation, curvature, etc precisely.
@@ -611,8 +609,6 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
     ref_points.resize(mpt_param_.num_points);
   }
 
-  time_keeper_ptr_->toc(__func__, "        ");
-
   return ref_points;
 }
 
@@ -639,7 +635,7 @@ void MPTOptimizer::updateCurvature(
 
 void MPTOptimizer::updateFixedPoint(std::vector<ReferencePoint> & ref_points) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   if (!prev_ref_points_ptr_) {
     // no fixed point
@@ -681,8 +677,6 @@ void MPTOptimizer::updateFixedPoint(std::vector<ReferencePoint> & ref_points) co
     ref_points.front().curvature = front_point.curvature;
     ref_points.front().fixed_kinematic_state = front_point.optimized_kinematic_state;
   }
-
-  time_keeper_ptr_->toc(__func__, "          ");
 }
 
 void MPTOptimizer::updateDeltaArcLength(std::vector<ReferencePoint> & ref_points) const
@@ -697,7 +691,7 @@ void MPTOptimizer::updateDeltaArcLength(std::vector<ReferencePoint> & ref_points
 
 void MPTOptimizer::updateExtraPoints(std::vector<ReferencePoint> & ref_points) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   // alpha
   for (size_t i = 0; i < ref_points.size(); ++i) {
@@ -786,8 +780,6 @@ void MPTOptimizer::updateExtraPoints(std::vector<ReferencePoint> & ref_points) c
       }
     }
   }
-
-  time_keeper_ptr_->toc(__func__, "          ");
 }
 
 void MPTOptimizer::updateBounds(
@@ -796,7 +788,7 @@ void MPTOptimizer::updateBounds(
   const std::vector<geometry_msgs::msg::Point> & right_bound,
   const geometry_msgs::msg::Pose & ego_pose, const double ego_vel) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   const double soft_road_clearance =
     mpt_param_.soft_clearance_from_road + vehicle_info_.vehicle_width_m / 2.0;
@@ -844,8 +836,6 @@ void MPTOptimizer::updateBounds(
     }
   }
   */
-
-  time_keeper_ptr_->toc(__func__, "          ");
   return;
 }
 
@@ -1104,7 +1094,7 @@ void MPTOptimizer::updateVehicleBounds(
   std::vector<ReferencePoint> & ref_points,
   const SplineInterpolationPoints2d & ref_points_spline) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   for (size_t p_idx = 0; p_idx < ref_points.size(); ++p_idx) {
     const auto & ref_point = ref_points.at(p_idx);
@@ -1160,8 +1150,6 @@ void MPTOptimizer::updateVehicleBounds(
       ref_points.at(p_idx).pose_on_constraints.push_back(vehicle_bounds_pose);
     }
   }
-
-  time_keeper_ptr_->toc(__func__, "          ");
 }
 
 // cost function: J = x' Q x + u' R u
@@ -1169,7 +1157,7 @@ MPTOptimizer::ValueMatrix MPTOptimizer::calcValueMatrix(
   const std::vector<ReferencePoint> & ref_points,
   const std::vector<TrajectoryPoint> & traj_points) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   const size_t D_x = state_equation_generator_.getDimX();
   const size_t D_u = state_equation_generator_.getDimU();
@@ -1228,7 +1216,6 @@ MPTOptimizer::ValueMatrix MPTOptimizer::calcValueMatrix(
 
   R_sparse_mat.setFromTriplets(R_triplet_vec.begin(), R_triplet_vec.end());
 
-  time_keeper_ptr_->toc(__func__, "        ");
   return ValueMatrix{Q_sparse_mat, R_sparse_mat};
 }
 
@@ -1236,7 +1223,7 @@ MPTOptimizer::ObjectiveMatrix MPTOptimizer::calcObjectiveMatrix(
   [[maybe_unused]] const StateEquationGenerator::Matrix & mpt_mat, const ValueMatrix & val_mat,
   const std::vector<ReferencePoint> & ref_points) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   const size_t D_x = state_equation_generator_.getDimX();
   const size_t D_u = state_equation_generator_.getDimU();
@@ -1286,7 +1273,6 @@ MPTOptimizer::ObjectiveMatrix MPTOptimizer::calcObjectiveMatrix(
   obj_matrix.hessian = H;
   obj_matrix.gradient = g;
 
-  time_keeper_ptr_->toc(__func__, "        ");
   return obj_matrix;
 }
 
@@ -1297,7 +1283,7 @@ MPTOptimizer::ConstraintMatrix MPTOptimizer::calcConstraintMatrix(
   const StateEquationGenerator::Matrix & mpt_mat,
   const std::vector<ReferencePoint> & ref_points) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   const size_t D_x = state_equation_generator_.getDimX();
   const size_t D_u = state_equation_generator_.getDimU();
@@ -1451,7 +1437,6 @@ MPTOptimizer::ConstraintMatrix MPTOptimizer::calcConstraintMatrix(
     A_rows_end += N_u;
   }
 
-  time_keeper_ptr_->toc(__func__, "        ");
   return ConstraintMatrix{A, lb, ub};
 }
 
@@ -1477,7 +1462,7 @@ std::optional<Eigen::VectorXd> MPTOptimizer::calcOptimizedSteerAngles(
   const std::vector<ReferencePoint> & ref_points, const ObjectiveMatrix & obj_mat,
   const ConstraintMatrix & const_mat)
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   const size_t D_x = state_equation_generator_.getDimX();
   const size_t D_u = state_equation_generator_.getDimU();
@@ -1510,7 +1495,7 @@ std::optional<Eigen::VectorXd> MPTOptimizer::calcOptimizedSteerAngles(
   const auto lower_bound = toStdVector(updated_const_mat.lower_bound);
 
   // initialize or update solver according to warm start
-  time_keeper_ptr_->tic("initOsqp");
+  time_keeper_->start_track("initOsqp");
 
   const autoware::common::osqp::CSC_Matrix P_csc =
     autoware::common::osqp::calCSCMatrixTrapezoidal(H);
@@ -1530,13 +1515,12 @@ std::optional<Eigen::VectorXd> MPTOptimizer::calcOptimizedSteerAngles(
   }
   prev_mat_n_ = H.rows();
   prev_mat_m_ = A.rows();
-
-  time_keeper_ptr_->toc("initOsqp", "          ");
+  time_keeper_->end_track("initOsqp");
 
   // solve qp
-  time_keeper_ptr_->tic("solveOsqp");
+  time_keeper_->start_track("solveOsqp");
   const auto result = osqp_solver_ptr_->optimize();
-  time_keeper_ptr_->toc("solveOsqp", "          ");
+  time_keeper_->end_track("solveOsqp");
 
   // check solution status
   const int solution_status = std::get<3>(result);
@@ -1562,8 +1546,6 @@ std::optional<Eigen::VectorXd> MPTOptimizer::calcOptimizedSteerAngles(
   }
   const Eigen::VectorXd optimized_variables =
     Eigen::Map<Eigen::VectorXd>(&optimization_result[0], N_v);
-
-  time_keeper_ptr_->toc(__func__, "        ");
 
   if (u0) {  // manual warm start
     return static_cast<Eigen::VectorXd>(optimized_variables + *u0);
@@ -1647,7 +1629,7 @@ std::optional<std::vector<TrajectoryPoint>> MPTOptimizer::calcMPTPoints(
   std::vector<ReferencePoint> & ref_points, const Eigen::VectorXd & optimized_variables,
   [[maybe_unused]] const StateEquationGenerator::Matrix & mpt_mat) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   const size_t D_x = state_equation_generator_.getDimX();
   const size_t D_u = state_equation_generator_.getDimU();
@@ -1700,7 +1682,6 @@ std::optional<std::vector<TrajectoryPoint>> MPTOptimizer::calcMPTPoints(
     traj_points.push_back(traj_point);
   }
 
-  time_keeper_ptr_->toc(__func__, "        ");
   return traj_points;
 }
 
@@ -1708,7 +1689,7 @@ void MPTOptimizer::publishDebugTrajectories(
   const std_msgs::msg::Header & header, const std::vector<ReferencePoint> & ref_points,
   const std::vector<TrajectoryPoint> & mpt_traj_points) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   // reference points
   const auto ref_traj = autoware::motion_utils::convertToTrajectory(
@@ -1723,8 +1704,6 @@ void MPTOptimizer::publishDebugTrajectories(
   // mpt points
   const auto mpt_traj = autoware::motion_utils::convertToTrajectory(mpt_traj_points, header);
   debug_mpt_traj_pub_->publish(mpt_traj);
-
-  time_keeper_ptr_->toc(__func__, "        ");
 }
 
 std::vector<TrajectoryPoint> MPTOptimizer::extractFixedPoints(

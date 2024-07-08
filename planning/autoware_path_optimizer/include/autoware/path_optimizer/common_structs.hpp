@@ -17,7 +17,6 @@
 
 #include "autoware/path_optimizer/type_alias.hpp"
 #include "autoware/universe_utils/ros/update_param.hpp"
-#include "autoware/universe_utils/system/stop_watch.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include <memory>
@@ -41,57 +40,6 @@ struct PlannerData
   // ego
   geometry_msgs::msg::Pose ego_pose;
   double ego_vel{};
-};
-
-struct TimeKeeper
-{
-  void init()
-  {
-    accumulated_msg = "\n";
-    accumulated_time = 0.0;
-  }
-
-  template <typename T>
-  TimeKeeper & operator<<(const T & msg)
-  {
-    latest_stream << msg;
-    return *this;
-  }
-
-  void endLine()
-  {
-    const auto msg = latest_stream.str();
-    accumulated_msg += msg + "\n";
-    latest_stream.str("");
-
-    if (enable_calculation_time_info) {
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("autoware_path_optimizer.time"), msg);
-    }
-  }
-
-  void tic(const std::string & func_name) { stop_watch_.tic(func_name); }
-
-  void toc(const std::string & func_name, const std::string & white_spaces)
-  {
-    const double elapsed_time = stop_watch_.toc(func_name);
-    *this << white_spaces << func_name << ":= " << elapsed_time << " [ms]";
-    accumulated_time = elapsed_time;
-    endLine();
-  }
-
-  std::string getLog() const { return accumulated_msg; }
-
-  bool enable_calculation_time_info;
-  std::string accumulated_msg = "\n";
-  std::stringstream latest_stream;
-
-  double getAccumulatedTime() const { return accumulated_time; }
-
-  double accumulated_time{0.0};
-
-  autoware::universe_utils::StopWatch<
-    std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
-    stop_watch_;
 };
 
 struct DebugData

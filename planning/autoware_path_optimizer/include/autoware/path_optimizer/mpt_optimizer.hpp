@@ -19,6 +19,7 @@
 #include "autoware/path_optimizer/state_equation_generator.hpp"
 #include "autoware/path_optimizer/type_alias.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/system/time_keeper.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 #include "gtest/gtest.h"
 #include "interpolation/linear_interpolation.hpp"
@@ -107,7 +108,7 @@ public:
     rclcpp::Node * node, const bool enable_debug_info, const EgoNearestParam ego_nearest_param,
     const autoware::vehicle_info_utils::VehicleInfo & vehicle_info,
     const TrajectoryParam & traj_param, const std::shared_ptr<DebugData> debug_data_ptr,
-    const std::shared_ptr<TimeKeeper> time_keeper_ptr);
+    const std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper_);
 
   std::vector<TrajectoryPoint> optimizeTrajectory(const PlannerData & planner_data);
   std::optional<std::vector<TrajectoryPoint>> getPrevOptimizedTrajectoryPoints() const;
@@ -222,7 +223,7 @@ private:
   autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
   TrajectoryParam traj_param_;
   mutable std::shared_ptr<DebugData> debug_data_ptr_;
-  mutable std::shared_ptr<TimeKeeper> time_keeper_ptr_;
+  mutable std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper_;
   rclcpp::Logger logger_;
   MPTParam mpt_param_;
 

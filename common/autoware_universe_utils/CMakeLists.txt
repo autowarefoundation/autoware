@@ -1,10 +1,14 @@
 cmake_minimum_required(VERSION 3.14)
 project(autoware_universe_utils)
 
+option(BUILD_EXAMPLES "Build examples" OFF)
+
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 find_package(Boost REQUIRED)
+
+find_package(fmt REQUIRED)
 
 ament_auto_add_library(autoware_universe_utils SHARED
   src/geometry/geometry.cpp
@@ -16,6 +20,11 @@ ament_auto_add_library(autoware_universe_utils SHARED
   src/ros/marker_helper.cpp
   src/ros/logger_level_configure.cpp
   src/system/backtrace.cpp
+  src/system/time_keeper.cpp
+)
+
+target_link_libraries(autoware_universe_utils
+  fmt::fmt
 )
 
 if(BUILD_TESTING)
@@ -28,6 +37,22 @@ if(BUILD_TESTING)
   target_link_libraries(test_autoware_universe_utils
     autoware_universe_utils
   )
+endif()
+
+if(BUILD_EXAMPLES)
+  message(STATUS "Building examples")
+  file(GLOB_RECURSE example_files examples/*.cpp)
+
+  foreach(example_file ${example_files})
+    get_filename_component(example_name ${example_file} NAME_WE)
+    add_executable(${example_name} ${example_file})
+    target_link_libraries(${example_name}
+      autoware_universe_utils
+    )
+    install(TARGETS ${example_name}
+      DESTINATION lib/${PROJECT_NAME}
+    )
+  endforeach()
 endif()
 
 ament_auto_package()

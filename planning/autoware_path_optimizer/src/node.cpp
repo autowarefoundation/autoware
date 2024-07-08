@@ -23,6 +23,7 @@
 #include "rclcpp/time.hpp"
 
 #include <chrono>
+#include <iostream>
 #include <limits>
 
 namespace autoware::path_optimizer
@@ -38,7 +39,8 @@ std::vector<T> concatVectors(const std::vector<T> & prev_vector, const std::vect
   return concatenated_vector;
 }
 
-StringStamped createStringStamped(const rclcpp::Time & now, const std::string & data)
+[[maybe_unused]] StringStamped createStringStamped(
+  const rclcpp::Time & now, const std::string & data)
 {
   StringStamped msg;
   msg.stamp = now;
@@ -46,7 +48,7 @@ StringStamped createStringStamped(const rclcpp::Time & now, const std::string & 
   return msg;
 }
 
-Float64Stamped createFloat64Stamped(const rclcpp::Time & now, const float & data)
+[[maybe_unused]] Float64Stamped createFloat64Stamped(const rclcpp::Time & now, const float & data)
 {
   Float64Stamped msg;
   msg.stamp = now;
@@ -85,8 +87,7 @@ std::vector<double> calcSegmentLengthVector(const std::vector<TrajectoryPoint> &
 PathOptimizer::PathOptimizer(const rclcpp::NodeOptions & node_options)
 : Node("path_optimizer", node_options),
   vehicle_info_(autoware::vehicle_info_utils::VehicleInfoUtils(*this).getVehicleInfo()),
-  debug_data_ptr_(std::make_shared<DebugData>()),
-  time_keeper_ptr_(std::make_shared<TimeKeeper>())
+  debug_data_ptr_(std::make_shared<DebugData>())
 {
   // interface publisher
   traj_pub_ = create_publisher<Trajectory>("~/output/path", 1);
@@ -102,6 +103,9 @@ PathOptimizer::PathOptimizer(const rclcpp::NodeOptions & node_options)
   debug_calculation_time_str_pub_ = create_publisher<StringStamped>("~/debug/calculation_time", 1);
   debug_calculation_time_float_pub_ =
     create_publisher<Float64Stamped>("~/debug/processing_time_ms", 1);
+  debug_processing_time_detail_pub_ =
+    create_publisher<autoware::universe_utils::ProcessingTimeDetail>(
+      "~/debug/processing_time_detail_ms", 1);
 
   {  // parameters
     // parameter for option
@@ -120,8 +124,6 @@ PathOptimizer::PathOptimizer(const rclcpp::NodeOptions & node_options)
 
     // parameter for debug info
     enable_debug_info_ = declare_parameter<bool>("option.debug.enable_debug_info");
-    time_keeper_ptr_->enable_calculation_time_info =
-      declare_parameter<bool>("option.debug.enable_calculation_time_info");
 
     vehicle_stop_margin_outside_drivable_area_ =
       declare_parameter<double>("common.vehicle_stop_margin_outside_drivable_area");
@@ -133,11 +135,14 @@ PathOptimizer::PathOptimizer(const rclcpp::NodeOptions & node_options)
     traj_param_ = TrajectoryParam(this);
   }
 
+  time_keeper_ =
+    std::make_shared<autoware::universe_utils::TimeKeeper>(debug_processing_time_detail_pub_);
+
   // create core algorithm pointers with parameter declaration
   replan_checker_ptr_ = std::make_shared<ReplanChecker>(this, ego_nearest_param_);
   mpt_optimizer_ptr_ = std::make_shared<MPTOptimizer>(
     this, enable_debug_info_, ego_nearest_param_, vehicle_info_, traj_param_, debug_data_ptr_,
-    time_keeper_ptr_);
+    time_keeper_);
 
   // reset planners
   // NOTE: This function must be called after core algorithms (e.g. mpt_optimizer_) have been
@@ -177,9 +182,6 @@ rcl_interfaces::msg::SetParametersResult PathOptimizer::onParam(
 
   // parameters for debug info
   updateParam<bool>(parameters, "option.debug.enable_debug_info", enable_debug_info_);
-  updateParam<bool>(
-    parameters, "option.debug.enable_calculation_time_info",
-    time_keeper_ptr_->enable_calculation_time_info);
 
   updateParam<double>(
     parameters, "common.vehicle_stop_margin_outside_drivable_area",
@@ -220,8 +222,7 @@ void PathOptimizer::resetPreviousData()
 
 void PathOptimizer::onPath(const Path::ConstSharedPtr path_ptr)
 {
-  time_keeper_ptr_->init();
-  time_keeper_ptr_->tic(__func__);
+  time_keeper_->start_track(__func__);
 
   // check if input path is valid
   if (!checkInputPath(*path_ptr, *get_clock())) {
@@ -267,21 +268,21 @@ void PathOptimizer::onPath(const Path::ConstSharedPtr path_ptr)
   // 5. publish debug data
   publishDebugData(planner_data.header);
 
-  time_keeper_ptr_->toc(__func__, "");
-  *time_keeper_ptr_ << "========================================";
-  time_keeper_ptr_->endLine();
-
   // publish calculation_time
   // NOTE: This function must be called after measuring onPath calculation time
+  /*
   const auto calculation_time_msg = createStringStamped(now(), time_keeper_ptr_->getLog());
   debug_calculation_time_str_pub_->publish(calculation_time_msg);
   debug_calculation_time_float_pub_->publish(
     createFloat64Stamped(now(), time_keeper_ptr_->getAccumulatedTime()));
+  */
 
   const auto output_traj_msg =
     autoware::motion_utils::convertToTrajectory(full_traj_points, path_ptr->header);
   traj_pub_->publish(output_traj_msg);
   published_time_publisher_->publish_if_subscribed(traj_pub_, output_traj_msg.header.stamp);
+
+  time_keeper_->end_track(__func__);
 }
 
 bool PathOptimizer::checkInputPath(const Path & path, rclcpp::Clock clock) const
@@ -319,7 +320,7 @@ PlannerData PathOptimizer::createPlannerData(
 std::vector<TrajectoryPoint> PathOptimizer::generateOptimizedTrajectory(
   const PlannerData & planner_data)
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   const auto & input_traj_points = planner_data.traj_points;
 
@@ -339,13 +340,12 @@ std::vector<TrajectoryPoint> PathOptimizer::generateOptimizedTrajectory(
   // 4. publish debug marker
   publishDebugMarkerOfOptimization(optimized_traj_points);
 
-  time_keeper_ptr_->toc(__func__, " ");
   return optimized_traj_points;
 }
 
 std::vector<TrajectoryPoint> PathOptimizer::optimizeTrajectory(const PlannerData & planner_data)
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   const auto & p = planner_data;
 
   // 1. check if replan (= optimization) is required
@@ -372,7 +372,6 @@ std::vector<TrajectoryPoint> PathOptimizer::optimizeTrajectory(const PlannerData
   //    with model predictive trajectory
   const auto mpt_traj = mpt_optimizer_ptr_->optimizeTrajectory(planner_data);
 
-  time_keeper_ptr_->toc(__func__, "    ");
   return mpt_traj;
 }
 
@@ -391,7 +390,7 @@ void PathOptimizer::applyInputVelocity(
   const std::vector<TrajectoryPoint> & input_traj_points,
   const geometry_msgs::msg::Pose & ego_pose) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   // crop forward for faster calculation
   const auto forward_cropped_input_traj_points = [&]() {
@@ -486,14 +485,12 @@ void PathOptimizer::applyInputVelocity(
       trajectory_utils::insertStopPoint(output_traj_points, input_stop_pose, *stop_seg_idx);
     }
   }
-
-  time_keeper_ptr_->toc(__func__, "    ");
 }
 
 void PathOptimizer::insertZeroVelocityOutsideDrivableArea(
   const PlannerData & planner_data, std::vector<TrajectoryPoint> & optimized_traj_points) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   if (optimized_traj_points.empty()) {
     return;
@@ -553,13 +550,11 @@ void PathOptimizer::insertZeroVelocityOutsideDrivableArea(
   } else {
     debug_data_ptr_->stop_pose_by_drivable_area = std::nullopt;
   }
-
-  time_keeper_ptr_->toc(__func__, "    ");
 }
 
 void PathOptimizer::publishVirtualWall(const geometry_msgs::msg::Pose & stop_pose) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   auto virtual_wall_marker = autoware::motion_utils::createStopVirtualWallMarker(
     stop_pose, "outside drivable area", now(), 0, vehicle_info_.max_longitudinal_offset_m);
@@ -569,36 +564,33 @@ void PathOptimizer::publishVirtualWall(const geometry_msgs::msg::Pose & stop_pos
   }
 
   virtual_wall_pub_->publish(virtual_wall_marker);
-  time_keeper_ptr_->toc(__func__, "      ");
 }
 
 void PathOptimizer::publishDebugMarkerOfOptimization(
   const std::vector<TrajectoryPoint> & traj_points) const
 {
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   if (!enable_pub_debug_marker_) {
     return;
   }
 
-  time_keeper_ptr_->tic(__func__);
-
   // debug marker
-  time_keeper_ptr_->tic("getDebugMarker");
+  time_keeper_->start_track("getDebugMarker");
   const auto debug_marker =
     getDebugMarker(*debug_data_ptr_, traj_points, vehicle_info_, enable_pub_extra_debug_marker_);
-  time_keeper_ptr_->toc("getDebugMarker", "      ");
+  time_keeper_->end_track("getDebugMarker");
 
-  time_keeper_ptr_->tic("publishDebugMarker");
+  time_keeper_->start_track("publishDebugMarker");
   debug_markers_pub_->publish(debug_marker);
-  time_keeper_ptr_->toc("publishDebugMarker", "      ");
-
-  time_keeper_ptr_->toc(__func__, "    ");
+  time_keeper_->end_track("publishDebugMarker");
 }
 
 std::vector<TrajectoryPoint> PathOptimizer::extendTrajectory(
   const std::vector<TrajectoryPoint> & traj_points,
   const std::vector<TrajectoryPoint> & optimized_traj_points) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   const auto & joint_start_pose = optimized_traj_points.back().pose;
 
@@ -654,20 +646,17 @@ std::vector<TrajectoryPoint> PathOptimizer::extendTrajectory(
 
   // debug_data_ptr_->extended_traj_points =
   //   extended_traj_points ? *extended_traj_points : std::vector<TrajectoryPoint>();
-  time_keeper_ptr_->toc(__func__, "  ");
   return resampled_traj_points;
 }
 
 void PathOptimizer::publishDebugData(const Header & header) const
 {
-  time_keeper_ptr_->tic(__func__);
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   // publish trajectories
   const auto debug_extended_traj =
     autoware::motion_utils::convertToTrajectory(debug_data_ptr_->extended_traj_points, header);
   debug_extended_traj_pub_->publish(debug_extended_traj);
-
-  time_keeper_ptr_->toc(__func__, "  ");
 }
 }  // namespace autoware::path_optimizer
 
