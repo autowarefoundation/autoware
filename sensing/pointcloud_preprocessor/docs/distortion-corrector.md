@@ -36,7 +36,7 @@ Please note that the processing time difference between the two distortion metho
 
 ### Core Parameters
 
-{{ json_to_markdown("sensing/pointcloud_preprocessor/schema/distortion_corrector.schema.json") }}
+{{ json_to_markdown("sensing/pointcloud_preprocessor/schema/distortion_corrector_node.schema.json") }}
 
 ## Launch
 
