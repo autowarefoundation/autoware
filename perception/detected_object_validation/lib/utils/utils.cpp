@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "detected_object_validation/utils/utils.hpp"
+#include "autoware/detected_object_validation/utils/utils.hpp"
 
 #include <autoware_perception_msgs/msg/object_classification.hpp>
 
+namespace autoware::detected_object_validation
+{
 namespace utils
 {
 using Label = autoware_perception_msgs::msg::ObjectClassification;
@@ -27,4 +29,6 @@ bool FilterTargetLabel::isTarget(const uint8_t label) const
          (label == Label::TRAILER && TRAILER) || (label == Label::MOTORCYCLE && MOTORCYCLE) ||
          (label == Label::BICYCLE && BICYCLE) || (label == Label::PEDESTRIAN && PEDESTRIAN);
 }
+
 }  // namespace utils
+}  // namespace autoware::detected_object_validation

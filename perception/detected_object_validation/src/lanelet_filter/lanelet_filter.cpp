@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "detected_object_validation/detected_object_filter/object_lanelet_filter.hpp"
+#include "lanelet_filter.hpp"
 
-#include <autoware/universe_utils/geometry/geometry.hpp>
-#include <autoware_lanelet2_extension/utility/message_conversion.hpp>
-#include <autoware_lanelet2_extension/utility/query.hpp>
-#include <object_recognition_utils/object_recognition_utils.hpp>
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware_lanelet2_extension/utility/message_conversion.hpp"
+#include "autoware_lanelet2_extension/utility/query.hpp"
+#include "object_recognition_utils/object_recognition_utils.hpp"
 
 #include <boost/geometry/algorithms/convex_hull.hpp>
 #include <boost/geometry/algorithms/disjoint.hpp>
@@ -25,7 +25,9 @@
 
 #include <lanelet2_core/geometry/Polygon.h>
 
-namespace object_lanelet_filter
+namespace autoware::detected_object_validation
+{
+namespace lanelet_filter
 {
 ObjectLaneletFilterNode::ObjectLaneletFilterNode(const rclcpp::NodeOptions & node_options)
 : Node("object_lanelet_filter_node", node_options),
@@ -309,7 +311,9 @@ bool ObjectLaneletFilterNode::isSameDirectionWithLanelets(
   return false;
 }
 
-}  // namespace object_lanelet_filter
+}  // namespace lanelet_filter
+}  // namespace autoware::detected_object_validation
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(object_lanelet_filter::ObjectLaneletFilterNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::detected_object_validation::lanelet_filter::ObjectLaneletFilterNode)

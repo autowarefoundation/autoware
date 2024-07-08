@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "detected_object_validation/detected_object_filter/object_position_filter.hpp"
+#include "../../src/position_filter/position_filter.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <autoware_test_utils/autoware_test_utils.hpp>
@@ -21,10 +21,10 @@
 
 #include <vector>
 
+using autoware::detected_object_validation::position_filter::ObjectPositionFilterNode;
 using autoware_perception_msgs::msg::DetectedObject;
 using autoware_perception_msgs::msg::DetectedObjects;
 using autoware_perception_msgs::msg::ObjectClassification;
-using object_position_filter::ObjectPositionFilterNode;
 
 std::shared_ptr<autoware::test_utils::AutowareTestManager> generateTestManager()
 {

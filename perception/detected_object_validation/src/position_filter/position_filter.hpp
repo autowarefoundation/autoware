@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DETECTED_OBJECT_VALIDATION__DETECTED_OBJECT_FILTER__OBJECT_POSITION_FILTER_HPP_
-#define DETECTED_OBJECT_VALIDATION__DETECTED_OBJECT_FILTER__OBJECT_POSITION_FILTER_HPP_
+#ifndef POSITION_FILTER__POSITION_FILTER_HPP_
+#define POSITION_FILTER__POSITION_FILTER_HPP_
 
-#include "detected_object_validation/utils/utils.hpp"
+#include "autoware/detected_object_validation/utils/utils.hpp"
+#include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/ros/published_time_publisher.hpp"
 
-#include <autoware/universe_utils/geometry/geometry.hpp>
-#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
-#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include "autoware_map_msgs/msg/lanelet_map_bin.hpp"
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
 
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
@@ -30,7 +30,9 @@
 #include <memory>
 #include <string>
 
-namespace object_position_filter
+namespace autoware::detected_object_validation
+{
+namespace position_filter
 {
 
 class ObjectPositionFilterNode : public rclcpp::Node
@@ -57,6 +59,7 @@ private:
   std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
 };
 
-}  // namespace object_position_filter
+}  // namespace position_filter
+}  // namespace autoware::detected_object_validation
 
-#endif  // DETECTED_OBJECT_VALIDATION__DETECTED_OBJECT_FILTER__OBJECT_POSITION_FILTER_HPP_
+#endif  // POSITION_FILTER__POSITION_FILTER_HPP_

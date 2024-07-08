@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "detected_object_validation/obstacle_pointcloud_based_validator/obstacle_pointcloud_based_validator.hpp"
+#define EIGEN_MPL2_ONLY
+
+#include "obstacle_pointcloud_validator.hpp"
 
 #include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
 #include <object_recognition_utils/object_recognition_utils.hpp>
@@ -25,11 +27,12 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
-#define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-namespace obstacle_pointcloud_based_validator
+namespace autoware::detected_object_validation
+{
+namespace obstacle_pointcloud
 {
 namespace bg = boost::geometry;
 using Shape = autoware_perception_msgs::msg::Shape;
@@ -369,8 +372,9 @@ void ObstaclePointCloudBasedValidator::onObjectsAndObstaclePointCloud(
     "debug/pipeline_latency_ms", pipeline_latency);
 }
 
-}  // namespace obstacle_pointcloud_based_validator
+}  // namespace obstacle_pointcloud
+}  // namespace autoware::detected_object_validation
 
 #include <rclcpp_components/register_node_macro.hpp>
 RCLCPP_COMPONENTS_REGISTER_NODE(
-  obstacle_pointcloud_based_validator::ObstaclePointCloudBasedValidator)
+  autoware::detected_object_validation::obstacle_pointcloud::ObstaclePointCloudBasedValidator)

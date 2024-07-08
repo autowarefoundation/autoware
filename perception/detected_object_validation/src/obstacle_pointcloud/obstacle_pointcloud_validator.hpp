@@ -13,17 +13,17 @@
 // limitations under the License.
 
 // NOLINTNEXTLINE(whitespace/line_length)
-#ifndef DETECTED_OBJECT_VALIDATION__OBSTACLE_POINTCLOUD_BASED_VALIDATOR__OBSTACLE_POINTCLOUD_BASED_VALIDATOR_HPP_
+#ifndef OBSTACLE_POINTCLOUD__OBSTACLE_POINTCLOUD_VALIDATOR_HPP_
 // NOLINTNEXTLINE(whitespace/line_length)
-#define DETECTED_OBJECT_VALIDATION__OBSTACLE_POINTCLOUD_BASED_VALIDATOR__OBSTACLE_POINTCLOUD_BASED_VALIDATOR_HPP_
+#define OBSTACLE_POINTCLOUD__OBSTACLE_POINTCLOUD_VALIDATOR_HPP_
 
-#include "detected_object_validation/obstacle_pointcloud_based_validator/debugger.hpp"
+#include "autoware/universe_utils/ros/debug_publisher.hpp"
+#include "autoware/universe_utils/ros/published_time_publisher.hpp"
+#include "debugger.hpp"
 
-#include <autoware/universe_utils/ros/debug_publisher.hpp>
-#include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <message_filters/subscriber.h>
@@ -42,7 +42,10 @@
 #include <memory>
 #include <optional>
 #include <vector>
-namespace obstacle_pointcloud_based_validator
+
+namespace autoware::detected_object_validation
+{
+namespace obstacle_pointcloud
 {
 
 struct PointsNumThresholdParam
@@ -91,14 +94,17 @@ public:
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr convertToXYZ(
     const pcl::PointCloud<pcl::PointXY>::Ptr & pointcloud_xy);
-  inline pcl::PointCloud<pcl::PointXYZ>::Ptr getDebugNeighborPointCloud()
+  inline pcl::PointCloud<pcl::PointXYZ>::Ptr getDebugNeighborPointCloud() override
   {
     return convertToXYZ(neighbor_pointcloud_);
   }
 
-  bool setKdtreeInputCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & input_cloud);
-  bool validate_object(const autoware_perception_msgs::msg::DetectedObject & transformed_object);
-  std::optional<float> getMaxRadius(const autoware_perception_msgs::msg::DetectedObject & object);
+  bool setKdtreeInputCloud(
+    const sensor_msgs::msg::PointCloud2::ConstSharedPtr & input_cloud) override;
+  bool validate_object(
+    const autoware_perception_msgs::msg::DetectedObject & transformed_object) override;
+  std::optional<float> getMaxRadius(
+    const autoware_perception_msgs::msg::DetectedObject & object) override;
   std::optional<size_t> getPointCloudWithinObject(
     const autoware_perception_msgs::msg::DetectedObject & object,
     const pcl::PointCloud<pcl::PointXY>::Ptr neighbor_pointcloud);
@@ -112,13 +118,16 @@ private:
 
 public:
   explicit Validator3D(PointsNumThresholdParam & points_num_threshold_param);
-  inline pcl::PointCloud<pcl::PointXYZ>::Ptr getDebugNeighborPointCloud()
+  inline pcl::PointCloud<pcl::PointXYZ>::Ptr getDebugNeighborPointCloud() override
   {
     return neighbor_pointcloud_;
   }
-  bool setKdtreeInputCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & input_cloud);
-  bool validate_object(const autoware_perception_msgs::msg::DetectedObject & transformed_object);
-  std::optional<float> getMaxRadius(const autoware_perception_msgs::msg::DetectedObject & object);
+  bool setKdtreeInputCloud(
+    const sensor_msgs::msg::PointCloud2::ConstSharedPtr & input_cloud) override;
+  bool validate_object(
+    const autoware_perception_msgs::msg::DetectedObject & transformed_object) override;
+  std::optional<float> getMaxRadius(
+    const autoware_perception_msgs::msg::DetectedObject & object) override;
   std::optional<size_t> getPointCloudWithinObject(
     const autoware_perception_msgs::msg::DetectedObject & object,
     const pcl::PointCloud<pcl::PointXYZ>::Ptr neighbor_pointcloud);
@@ -154,7 +163,9 @@ private:
     const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr & input_objects,
     const sensor_msgs::msg::PointCloud2::ConstSharedPtr & input_obstacle_pointcloud);
 };
-}  // namespace obstacle_pointcloud_based_validator
+
+}  // namespace obstacle_pointcloud
+}  // namespace autoware::detected_object_validation
 
 // NOLINTNEXTLINE(whitespace/line_length)
-#endif  // DETECTED_OBJECT_VALIDATION__OBSTACLE_POINTCLOUD_BASED_VALIDATOR__OBSTACLE_POINTCLOUD_BASED_VALIDATOR_HPP_
+#endif  // OBSTACLE_POINTCLOUD__OBSTACLE_POINTCLOUD_VALIDATOR_HPP_

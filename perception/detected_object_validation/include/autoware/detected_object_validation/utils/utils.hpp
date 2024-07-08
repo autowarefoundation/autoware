@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DETECTED_OBJECT_VALIDATION__UTILS__UTILS_HPP_
-#define DETECTED_OBJECT_VALIDATION__UTILS__UTILS_HPP_
+#ifndef AUTOWARE__DETECTED_OBJECT_VALIDATION__UTILS__UTILS_HPP_
+#define AUTOWARE__DETECTED_OBJECT_VALIDATION__UTILS__UTILS_HPP_
 
 #include <autoware_perception_msgs/msg/detected_objects.hpp>
 
 #include <cstdint>
+
+namespace autoware::detected_object_validation
+{
 namespace utils
 {
 struct FilterTargetLabel
@@ -48,5 +51,6 @@ inline bool hasBoundingBox(const autoware_perception_msgs::msg::DetectedObject &
 }
 
 }  // namespace utils
+}  // namespace autoware::detected_object_validation
 
-#endif  // DETECTED_OBJECT_VALIDATION__UTILS__UTILS_HPP_
+#endif  // AUTOWARE__DETECTED_OBJECT_VALIDATION__UTILS__UTILS_HPP_

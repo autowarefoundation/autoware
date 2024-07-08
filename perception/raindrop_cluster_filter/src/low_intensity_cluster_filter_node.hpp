@@ -15,9 +15,9 @@
 #ifndef LOW_INTENSITY_CLUSTER_FILTER_NODE_HPP_
 #define LOW_INTENSITY_CLUSTER_FILTER_NODE_HPP_
 
+#include "autoware/detected_object_validation/utils/utils.hpp"
 #include "autoware/universe_utils/ros/debug_publisher.hpp"
 #include "autoware/universe_utils/system/stop_watch.hpp"
-#include "detected_object_validation/utils/utils.hpp"
 
 #include <Eigen/Eigen>
 #include <rclcpp/rclcpp.hpp>
@@ -64,7 +64,7 @@ private:
   // Eigen::Vector4f max_boundary_transformed_;
   bool is_validation_range_transformed_ = false;
   const std::string base_link_frame_id_ = "base_link";
-  utils::FilterTargetLabel filter_target_;
+  autoware::detected_object_validation::utils::FilterTargetLabel filter_target_;
 
   // debugger
   std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{

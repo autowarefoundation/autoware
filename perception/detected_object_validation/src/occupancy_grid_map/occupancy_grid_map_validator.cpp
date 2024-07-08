@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "detected_object_validation/occupancy_grid_based_validator/occupancy_grid_based_validator.hpp"
+#define EIGEN_MPL2_ONLY
 
-#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
-#include <object_recognition_utils/object_classification.hpp>
-#include <object_recognition_utils/object_recognition_utils.hpp>
+#include "occupancy_grid_map_validator.hpp"
+
+#include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
+#include "object_recognition_utils/object_classification.hpp"
+#include "object_recognition_utils/object_recognition_utils.hpp"
 
 #include <boost/optional.hpp>
 
@@ -26,11 +28,12 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
-#define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-namespace occupancy_grid_based_validator
+namespace autoware::detected_object_validation
+{
+namespace occupancy_grid_map
 {
 using Shape = autoware_perception_msgs::msg::Shape;
 using Polygon2d = autoware::universe_utils::Polygon2d;
@@ -173,7 +176,9 @@ void OccupancyGridBasedValidator::showDebugImage(
   cv::waitKey(2);
 }
 
-}  // namespace occupancy_grid_based_validator
+}  // namespace occupancy_grid_map
+}  // namespace autoware::detected_object_validation
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(occupancy_grid_based_validator::OccupancyGridBasedValidator)
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::detected_object_validation::occupancy_grid_map::OccupancyGridBasedValidator)

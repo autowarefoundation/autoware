@@ -28,12 +28,8 @@ include_directories(
 )
 
 # Generate occupancy grid based validator exe file
-set(OCCUPANCY_GRID_BASED_VALIDATOR_SRC
-  src/occupancy_grid_based_validator.cpp
-)
-
 ament_auto_add_library(occupancy_grid_based_validator SHARED
-  ${OCCUPANCY_GRID_BASED_VALIDATOR_SRC}
+  src/occupancy_grid_map/occupancy_grid_map_validator.cpp
 )
 
 target_link_libraries(occupancy_grid_based_validator
@@ -42,12 +38,8 @@ target_link_libraries(occupancy_grid_based_validator
 )
 
 # Generate obstacle pointcloud based validator exe file
-set(OBSTACLE_POINTCLOUD_BASED_VALIDATOR_SRC
-  src/obstacle_pointcloud_based_validator.cpp
-)
-
 ament_auto_add_library(obstacle_pointcloud_based_validator SHARED
-  ${OBSTACLE_POINTCLOUD_BASED_VALIDATOR_SRC}
+  src/obstacle_pointcloud/obstacle_pointcloud_validator.cpp
 )
 
 target_link_libraries(obstacle_pointcloud_based_validator
@@ -56,32 +48,32 @@ target_link_libraries(obstacle_pointcloud_based_validator
 )
 
 ament_auto_add_library(object_lanelet_filter SHARED
-  src/object_lanelet_filter.cpp
-  src/utils.cpp
+  src/lanelet_filter/lanelet_filter.cpp
+  lib/utils/utils.cpp
 )
 
 ament_auto_add_library(object_position_filter SHARED
-  src/object_position_filter.cpp
-  src/utils.cpp
+  src/position_filter/position_filter.cpp
+  lib/utils/utils.cpp
 )
 
 rclcpp_components_register_node(obstacle_pointcloud_based_validator
-  PLUGIN "obstacle_pointcloud_based_validator::ObstaclePointCloudBasedValidator"
+  PLUGIN "autoware::detected_object_validation::obstacle_pointcloud::ObstaclePointCloudBasedValidator"
   EXECUTABLE obstacle_pointcloud_based_validator_node
 )
 
 rclcpp_components_register_node(object_lanelet_filter
-  PLUGIN "object_lanelet_filter::ObjectLaneletFilterNode"
+  PLUGIN "autoware::detected_object_validation::lanelet_filter::ObjectLaneletFilterNode"
   EXECUTABLE object_lanelet_filter_node
 )
 
 rclcpp_components_register_node(object_position_filter
-  PLUGIN "object_position_filter::ObjectPositionFilterNode"
+  PLUGIN "autoware::detected_object_validation::position_filter::ObjectPositionFilterNode"
   EXECUTABLE object_position_filter_node
 )
 
 rclcpp_components_register_node(occupancy_grid_based_validator
-  PLUGIN "occupancy_grid_based_validator::OccupancyGridBasedValidator"
+  PLUGIN "autoware::detected_object_validation::occupancy_grid_map::OccupancyGridBasedValidator"
   EXECUTABLE occupancy_grid_based_validator_node
 )
 

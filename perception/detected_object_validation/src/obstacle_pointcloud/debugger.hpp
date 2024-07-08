@@ -12,19 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DETECTED_OBJECT_VALIDATION__OBSTACLE_POINTCLOUD_BASED_VALIDATOR__DEBUGGER_HPP_
-#define DETECTED_OBJECT_VALIDATION__OBSTACLE_POINTCLOUD_BASED_VALIDATOR__DEBUGGER_HPP_
+#ifndef OBSTACLE_POINTCLOUD__DEBUGGER_HPP_
+#define OBSTACLE_POINTCLOUD__DEBUGGER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_perception_msgs/msg/detected_objects.hpp>
+#include "autoware_perception_msgs/msg/detected_objects.hpp"
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-namespace obstacle_pointcloud_based_validator
+namespace autoware::detected_object_validation
+{
+namespace obstacle_pointcloud
 {
 class Debugger
 {
@@ -106,6 +108,8 @@ private:
     return pointcloud_xyz;
   }
 };
-}  // namespace obstacle_pointcloud_based_validator
 
-#endif  // DETECTED_OBJECT_VALIDATION__OBSTACLE_POINTCLOUD_BASED_VALIDATOR__DEBUGGER_HPP_
+}  // namespace obstacle_pointcloud
+}  // namespace autoware::detected_object_validation
+
+#endif  // OBSTACLE_POINTCLOUD__DEBUGGER_HPP_
