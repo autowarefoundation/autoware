@@ -97,7 +97,8 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_viz_pub_;
   rclcpp::Publisher<autoware_adapi_v1_msgs::msg::VelocityFactorArray>::SharedPtr
     velocity_factor_publisher_;
-  autoware::universe_utils::ProcessingTimePublisher processing_diag_publisher_{this};
+  autoware::universe_utils::ProcessingTimePublisher processing_diag_publisher_{
+    this, "~/debug/processing_time_ms_diag"};
   rclcpp::Publisher<tier4_debug_msgs::msg::Float64Stamped>::SharedPtr processing_time_publisher_;
   autoware::universe_utils::PublishedTimePublisher published_time_publisher_{this};
 
