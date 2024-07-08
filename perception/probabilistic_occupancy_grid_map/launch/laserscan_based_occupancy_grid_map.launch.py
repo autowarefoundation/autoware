@@ -85,7 +85,7 @@ def launch_setup(context, *args, **kwargs):
         ),
         ComposableNode(
             package="probabilistic_occupancy_grid_map",
-            plugin="occupancy_grid_map::LaserscanBasedOccupancyGridMapNode",
+            plugin="autoware::occupancy_grid_map::LaserscanBasedOccupancyGridMapNode",
             name="occupancy_grid_map_node",
             remappings=[
                 ("~/input/laserscan", LaunchConfiguration("output/laserscan")),

@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_
-#define PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_
+#ifndef AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OGM_UPDATER_INTERFACE_HPP_
+#define AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OGM_UPDATER_INTERFACE_HPP_
 
-#include "probabilistic_occupancy_grid_map/cost_value.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/cost_value/cost_value.hpp"
 
 #include <nav2_costmap_2d/costmap_2d.hpp>
 #include <rclcpp/node.hpp>
 
+namespace autoware::occupancy_grid_map
+{
 namespace costmap_2d
 {
 class OccupancyGridMapUpdaterInterface : public nav2_costmap_2d::Costmap2D
@@ -27,8 +29,7 @@ class OccupancyGridMapUpdaterInterface : public nav2_costmap_2d::Costmap2D
 public:
   OccupancyGridMapUpdaterInterface(
     const unsigned int cells_size_x, const unsigned int cells_size_y, const float resolution)
-  : Costmap2D(
-      cells_size_x, cells_size_y, resolution, 0.f, 0.f, occupancy_cost_value::NO_INFORMATION)
+  : Costmap2D(cells_size_x, cells_size_y, resolution, 0.f, 0.f, cost_value::NO_INFORMATION)
   {
   }
   virtual ~OccupancyGridMapUpdaterInterface() = default;
@@ -37,5 +38,6 @@ public:
 };
 
 }  // namespace costmap_2d
+}  // namespace autoware::occupancy_grid_map
 
-#endif  // PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_
+#endif  // AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OGM_UPDATER_INTERFACE_HPP_

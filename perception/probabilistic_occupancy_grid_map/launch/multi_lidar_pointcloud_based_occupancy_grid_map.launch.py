@@ -196,7 +196,7 @@ def launch_setup(context, *args, **kwargs):
         # generate composable node
         node = ComposableNode(
             package="probabilistic_occupancy_grid_map",
-            plugin="occupancy_grid_map::PointcloudBasedOccupancyGridMapNode",
+            plugin="autoware::occupancy_grid_map::PointcloudBasedOccupancyGridMapNode",
             name="occupancy_grid_map_node",
             namespace=frame_name,
             remappings=[

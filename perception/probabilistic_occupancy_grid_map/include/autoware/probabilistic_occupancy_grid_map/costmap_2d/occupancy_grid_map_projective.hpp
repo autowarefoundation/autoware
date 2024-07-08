@@ -12,20 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PROBABILISTIC_OCCUPANCY_GRID_MAP__POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_FIXED_HPP_
-#define PROBABILISTIC_OCCUPANCY_GRID_MAP__POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_FIXED_HPP_
+#ifndef AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__COSTMAP_2D__OCCUPANCY_GRID_MAP_PROJECTIVE_HPP_
+#define AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__COSTMAP_2D__OCCUPANCY_GRID_MAP_PROJECTIVE_HPP_
 
-#include "probabilistic_occupancy_grid_map/pointcloud_based_occupancy_grid_map/occupancy_grid_map_base.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/costmap_2d/occupancy_grid_map_base.hpp"
 
+#include <grid_map_core/GridMap.hpp>
+
+#include <grid_map_msgs/msg/grid_map.hpp>
+
+namespace autoware::occupancy_grid_map
+{
 namespace costmap_2d
 {
 using geometry_msgs::msg::Pose;
 using sensor_msgs::msg::PointCloud2;
 
-class OccupancyGridMapFixedBlindSpot : public OccupancyGridMapInterface
+class OccupancyGridMapProjectiveBlindSpot : public OccupancyGridMapInterface
 {
 public:
-  OccupancyGridMapFixedBlindSpot(
+  OccupancyGridMapProjectiveBlindSpot(
     const unsigned int cells_size_x, const unsigned int cells_size_y, const float resolution);
 
   void updateWithPointCloud(
@@ -39,9 +45,14 @@ public:
   void initRosParam(rclcpp::Node & node) override;
 
 private:
-  double distance_margin_;
+  double projection_dz_threshold_;
+  double obstacle_separation_threshold_;
+  bool pub_debug_grid_;
+  grid_map::GridMap debug_grid_;
+  rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr debug_grid_map_publisher_ptr_;
 };
 
 }  // namespace costmap_2d
+}  // namespace autoware::occupancy_grid_map
 
-#endif  // PROBABILISTIC_OCCUPANCY_GRID_MAP__POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_FIXED_HPP_
+#endif  // AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__COSTMAP_2D__OCCUPANCY_GRID_MAP_PROJECTIVE_HPP_

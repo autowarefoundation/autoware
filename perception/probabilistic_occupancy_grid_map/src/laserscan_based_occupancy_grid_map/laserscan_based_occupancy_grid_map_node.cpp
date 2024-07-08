@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "probabilistic_occupancy_grid_map/laserscan_based_occupancy_grid_map/laserscan_based_occupancy_grid_map_node.hpp"
+#include "laserscan_based_occupancy_grid_map_node.hpp"
 
-#include "probabilistic_occupancy_grid_map/cost_value.hpp"
-#include "probabilistic_occupancy_grid_map/utils/utils.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/cost_value/cost_value.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/utils/utils.hpp"
 
 #include <pcl_ros/transforms.hpp>
 
@@ -35,7 +35,7 @@
 #include <memory>
 #include <string>
 
-namespace occupancy_grid_map
+namespace autoware::occupancy_grid_map
 {
 using costmap_2d::OccupancyGridMap;
 using costmap_2d::OccupancyGridMapBBFUpdater;
@@ -229,12 +229,12 @@ OccupancyGrid::UniquePtr LaserscanBasedOccupancyGridMapNode::OccupancyGridMapToM
 
   unsigned char * data = occupancy_grid_map.getCharMap();
   for (unsigned int i = 0; i < msg_ptr->data.size(); ++i) {
-    msg_ptr->data[i] = occupancy_cost_value::cost_translation_table[data[i]];
+    msg_ptr->data[i] = cost_value::cost_translation_table[data[i]];
   }
   return msg_ptr;
 }
 
-}  // namespace occupancy_grid_map
+}  // namespace autoware::occupancy_grid_map
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(occupancy_grid_map::LaserscanBasedOccupancyGridMapNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::occupancy_grid_map::LaserscanBasedOccupancyGridMapNode)

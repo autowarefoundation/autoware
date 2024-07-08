@@ -14,8 +14,8 @@ include_directories(
 )
 
 ament_auto_add_library(${PROJECT_NAME}_common SHARED
-  src/updater/occupancy_grid_map_binary_bayes_filter_updater.cpp
-  src/utils/utils.cpp
+  lib/updater/binary_bayes_filter_updater.cpp
+  lib/utils/utils.cpp
 )
 target_link_libraries(${PROJECT_NAME}_common
   ${PCL_LIBRARIES}
@@ -24,9 +24,9 @@ target_link_libraries(${PROJECT_NAME}_common
 # PointcloudBasedOccupancyGridMap
 ament_auto_add_library(pointcloud_based_occupancy_grid_map SHARED
   src/pointcloud_based_occupancy_grid_map/pointcloud_based_occupancy_grid_map_node.cpp
-  src/pointcloud_based_occupancy_grid_map/occupancy_grid_map_base.cpp
-  src/pointcloud_based_occupancy_grid_map/occupancy_grid_map_fixed.cpp
-  src/pointcloud_based_occupancy_grid_map/occupancy_grid_map_projective.cpp
+  lib/costmap_2d/occupancy_grid_map_base.cpp
+  lib/costmap_2d/occupancy_grid_map_fixed.cpp
+  lib/costmap_2d/occupancy_grid_map_projective.cpp
 )
 
 target_link_libraries(pointcloud_based_occupancy_grid_map
@@ -35,14 +35,14 @@ target_link_libraries(pointcloud_based_occupancy_grid_map
 )
 
 rclcpp_components_register_node(pointcloud_based_occupancy_grid_map
-  PLUGIN "occupancy_grid_map::PointcloudBasedOccupancyGridMapNode"
+  PLUGIN "autoware::occupancy_grid_map::PointcloudBasedOccupancyGridMapNode"
   EXECUTABLE pointcloud_based_occupancy_grid_map_node
 )
 
 # LaserscanBasedOccupancyGridMap
 ament_auto_add_library(laserscan_based_occupancy_grid_map SHARED
   src/laserscan_based_occupancy_grid_map/laserscan_based_occupancy_grid_map_node.cpp
-  src/laserscan_based_occupancy_grid_map/occupancy_grid_map.cpp
+  lib/costmap_2d/occupancy_grid_map.cpp
 )
 
 target_link_libraries(laserscan_based_occupancy_grid_map
@@ -51,17 +51,17 @@ target_link_libraries(laserscan_based_occupancy_grid_map
 )
 
 rclcpp_components_register_node(laserscan_based_occupancy_grid_map
-  PLUGIN "occupancy_grid_map::LaserscanBasedOccupancyGridMapNode"
+  PLUGIN "autoware::occupancy_grid_map::LaserscanBasedOccupancyGridMapNode"
   EXECUTABLE laserscan_based_occupancy_grid_map_node
 )
 
 # GridMapFusionNode
 ament_auto_add_library(synchronized_grid_map_fusion SHARED
   src/fusion/synchronized_grid_map_fusion_node.cpp
-  src/fusion/single_frame_fusion_policy.cpp
-  src/pointcloud_based_occupancy_grid_map/occupancy_grid_map_fixed.cpp
-  src/updater/occupancy_grid_map_log_odds_bayes_filter_updater.cpp
-  src/utils/utils.cpp
+  lib/fusion_policy/fusion_policy.cpp
+  lib/costmap_2d/occupancy_grid_map_fixed.cpp
+  lib/updater/log_odds_bayes_filter_updater.cpp
+  lib/utils/utils.cpp
 )
 
 target_link_libraries(synchronized_grid_map_fusion
@@ -69,7 +69,7 @@ target_link_libraries(synchronized_grid_map_fusion
 )
 
 rclcpp_components_register_node(synchronized_grid_map_fusion
-  PLUGIN "synchronized_grid_map_fusion::GridMapFusionNode"
+  PLUGIN "autoware::occupancy_grid_map::GridMapFusionNode"
   EXECUTABLE synchronized_grid_map_fusion_node
 )
 
@@ -88,13 +88,14 @@ if(BUILD_TESTING)
 
   # gtest
   ament_add_gtest(test_utils
-  test/test_utils.cpp
+    test/test_utils.cpp
   )
   ament_add_gtest(costmap_unit_tests
-  test/cost_value_test.cpp)
+    test/cost_value_test.cpp
+  )
   ament_add_gtest(fusion_policy_unit_tests
-  test/fusion_policy_test.cpp
-  src/fusion/single_frame_fusion_policy.cpp
+    test/fusion_policy_test.cpp
+    lib/fusion_policy/fusion_policy.cpp
   )
   target_link_libraries(test_utils
     ${PCL_LIBRARIES}

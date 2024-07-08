@@ -49,8 +49,8 @@
  *         David V. Lu!!
  *********************************************************************/
 
-#ifndef PROBABILISTIC_OCCUPANCY_GRID_MAP__LASERSCAN_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_HPP_
-#define PROBABILISTIC_OCCUPANCY_GRID_MAP__LASERSCAN_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_HPP_
+#ifndef AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__COSTMAP_2D__OCCUPANCY_GRID_MAP_HPP_
+#define AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__COSTMAP_2D__OCCUPANCY_GRID_MAP_HPP_
 
 #include <nav2_costmap_2d/costmap_2d.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -59,6 +59,8 @@
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
+namespace autoware::occupancy_grid_map
+{
 namespace costmap_2d
 {
 using geometry_msgs::msg::Pose;
@@ -90,5 +92,6 @@ private:
 };
 
 }  // namespace costmap_2d
+}  // namespace autoware::occupancy_grid_map
 
-#endif  // PROBABILISTIC_OCCUPANCY_GRID_MAP__LASERSCAN_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_HPP_
+#endif  // AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__COSTMAP_2D__OCCUPANCY_GRID_MAP_HPP_

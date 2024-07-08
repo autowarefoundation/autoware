@@ -96,7 +96,7 @@ def launch_setup(context, *args, **kwargs):
     composable_nodes.append(
         ComposableNode(
             package="probabilistic_occupancy_grid_map",
-            plugin="occupancy_grid_map::PointcloudBasedOccupancyGridMapNode",
+            plugin="autoware::occupancy_grid_map::PointcloudBasedOccupancyGridMapNode",
             name="occupancy_grid_map_node",
             remappings=[
                 (

@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "probabilistic_occupancy_grid_map/utils/utils.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/utils/utils.hpp"
 
 #include <autoware/universe_utils/geometry/geometry.hpp>
 
 #include <string>
 
+namespace autoware::occupancy_grid_map
+{
 namespace utils
 {
 
@@ -189,13 +191,14 @@ bool extractCommonPointCloud(
  */
 unsigned char getApproximateOccupancyState(const unsigned char & value)
 {
-  if (value >= occupancy_cost_value::OCCUPIED_THRESHOLD) {
-    return occupancy_cost_value::LETHAL_OBSTACLE;
-  } else if (value <= occupancy_cost_value::FREE_THRESHOLD) {
-    return occupancy_cost_value::FREE_SPACE;
+  if (value >= cost_value::OCCUPIED_THRESHOLD) {
+    return cost_value::LETHAL_OBSTACLE;
+  } else if (value <= cost_value::FREE_THRESHOLD) {
+    return cost_value::FREE_SPACE;
   } else {
-    return occupancy_cost_value::NO_INFORMATION;
+    return cost_value::NO_INFORMATION;
   }
 }
 
 }  // namespace utils
+}  // namespace autoware::occupancy_grid_map

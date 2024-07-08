@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PROBABILISTIC_OCCUPANCY_GRID_MAP__UTILS__UTILS_HPP_
-#define PROBABILISTIC_OCCUPANCY_GRID_MAP__UTILS__UTILS_HPP_
+#ifndef AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__UTILS__UTILS_HPP_
+#define AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__UTILS__UTILS_HPP_
 
-#include "probabilistic_occupancy_grid_map/cost_value.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/cost_value/cost_value.hpp"
 
 #include <builtin_interfaces/msg/time.hpp>
 #include <pcl_ros/transforms.hpp>
@@ -45,6 +45,8 @@
 #include <cmath>
 #include <vector>
 
+namespace autoware::occupancy_grid_map
+{
 namespace utils
 {
 
@@ -117,6 +119,8 @@ bool extractCommonPointCloud(
   sensor_msgs::msg::PointCloud2 & output_obstacle_pc);
 
 unsigned char getApproximateOccupancyState(const unsigned char & value);
-}  // namespace utils
 
-#endif  // PROBABILISTIC_OCCUPANCY_GRID_MAP__UTILS__UTILS_HPP_
+}  // namespace utils
+}  // namespace autoware::occupancy_grid_map
+
+#endif  // AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__UTILS__UTILS_HPP_

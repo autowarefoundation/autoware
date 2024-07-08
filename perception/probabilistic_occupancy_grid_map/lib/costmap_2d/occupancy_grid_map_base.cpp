@@ -49,10 +49,10 @@
  *         David V. Lu!!
  *********************************************************************/
 
-#include "probabilistic_occupancy_grid_map/pointcloud_based_occupancy_grid_map/occupancy_grid_map_base.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/costmap_2d/occupancy_grid_map_base.hpp"
 
-#include "probabilistic_occupancy_grid_map/cost_value.hpp"
-#include "probabilistic_occupancy_grid_map/utils/utils.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/cost_value/cost_value.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/utils/utils.hpp"
 
 #include <grid_map_costmap_2d/grid_map_costmap_2d.hpp>
 #include <pcl_ros/transforms.hpp>
@@ -69,13 +69,16 @@
 #endif
 
 #include <algorithm>
+
+namespace autoware::occupancy_grid_map
+{
 namespace costmap_2d
 {
 using sensor_msgs::PointCloud2ConstIterator;
 
 OccupancyGridMapInterface::OccupancyGridMapInterface(
   const unsigned int cells_size_x, const unsigned int cells_size_y, const float resolution)
-: Costmap2D(cells_size_x, cells_size_y, resolution, 0.f, 0.f, occupancy_cost_value::NO_INFORMATION)
+: Costmap2D(cells_size_x, cells_size_y, resolution, 0.f, 0.f, cost_value::NO_INFORMATION)
 {
 }
 
@@ -230,3 +233,4 @@ void OccupancyGridMapInterface::raytrace(
 }
 
 }  // namespace costmap_2d
+}  // namespace autoware::occupancy_grid_map

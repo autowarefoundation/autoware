@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "probabilistic_occupancy_grid_map/pointcloud_based_occupancy_grid_map/pointcloud_based_occupancy_grid_map_node.hpp"
+#include "pointcloud_based_occupancy_grid_map_node.hpp"
 
-#include "probabilistic_occupancy_grid_map/cost_value.hpp"
-#include "probabilistic_occupancy_grid_map/pointcloud_based_occupancy_grid_map/occupancy_grid_map_fixed.hpp"
-#include "probabilistic_occupancy_grid_map/pointcloud_based_occupancy_grid_map/occupancy_grid_map_projective.hpp"
-#include "probabilistic_occupancy_grid_map/utils/utils.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/cost_value/cost_value.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/costmap_2d/occupancy_grid_map_fixed.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/costmap_2d/occupancy_grid_map_projective.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/utils/utils.hpp"
 
 #include <autoware/universe_utils/ros/debug_publisher.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
@@ -40,7 +40,7 @@
 #include <memory>
 #include <string>
 
-namespace occupancy_grid_map
+namespace autoware::occupancy_grid_map
 {
 using costmap_2d::OccupancyGridMapBBFUpdater;
 using costmap_2d::OccupancyGridMapFixedBlindSpot;
@@ -250,12 +250,12 @@ OccupancyGrid::UniquePtr PointcloudBasedOccupancyGridMapNode::OccupancyGridMapTo
 
   unsigned char * data = occupancy_grid_map.getCharMap();
   for (unsigned int i = 0; i < msg_ptr->data.size(); ++i) {
-    msg_ptr->data[i] = occupancy_cost_value::cost_translation_table[data[i]];
+    msg_ptr->data[i] = cost_value::cost_translation_table[data[i]];
   }
   return msg_ptr;
 }
 
-}  // namespace occupancy_grid_map
+}  // namespace autoware::occupancy_grid_map
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(occupancy_grid_map::PointcloudBasedOccupancyGridMapNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::occupancy_grid_map::PointcloudBasedOccupancyGridMapNode)

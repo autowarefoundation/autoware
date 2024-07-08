@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "probabilistic_occupancy_grid_map/updater/occupancy_grid_map_binary_bayes_filter_updater.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/updater/binary_bayes_filter_updater.hpp"
 
-#include "probabilistic_occupancy_grid_map/cost_value.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/cost_value/cost_value.hpp"
 
 #include <algorithm>
 
+namespace autoware::occupancy_grid_map
+{
 namespace costmap_2d
 {
 
@@ -48,15 +50,15 @@ inline unsigned char OccupancyGridMapBBFUpdater::applyBBF(
   float pz{};
   float not_pz{};
   float po_hat{};
-  if (z == occupancy_cost_value::LETHAL_OBSTACLE) {
+  if (z == cost_value::LETHAL_OBSTACLE) {
     pz = probability_matrix_(Index::OCCUPIED, Index::OCCUPIED);
     not_pz = probability_matrix_(Index::FREE, Index::OCCUPIED);
     po_hat = ((po * pz) / ((po * pz) + ((1.f - po) * not_pz)));
-  } else if (z == occupancy_cost_value::FREE_SPACE) {
+  } else if (z == cost_value::FREE_SPACE) {
     pz = 1.f - probability_matrix_(Index::FREE, Index::FREE);
     not_pz = 1.f - probability_matrix_(Index::OCCUPIED, Index::FREE);
     po_hat = ((po * pz) / ((po * pz) + ((1.f - po) * not_pz)));
-  } else if (z == occupancy_cost_value::NO_INFORMATION) {
+  } else if (z == cost_value::NO_INFORMATION) {
     const float inv_v_ratio = 1.f / v_ratio_;
     po_hat = ((po + (0.5f * inv_v_ratio)) / ((1.f * inv_v_ratio) + 1.f));
   }
@@ -79,3 +81,4 @@ bool OccupancyGridMapBBFUpdater::update(const Costmap2D & single_frame_occupancy
 }
 
 }  // namespace costmap_2d
+}  // namespace autoware::occupancy_grid_map

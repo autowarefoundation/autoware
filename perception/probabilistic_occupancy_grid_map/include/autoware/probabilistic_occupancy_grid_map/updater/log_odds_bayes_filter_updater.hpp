@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_LOG_ODDS_BAYES_FILTER_UPDATER_HPP_
-#define PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_LOG_ODDS_BAYES_FILTER_UPDATER_HPP_
+#ifndef AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__LOG_ODDS_BAYES_FILTER_UPDATER_HPP_
+#define AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__LOG_ODDS_BAYES_FILTER_UPDATER_HPP_
 
-#include "probabilistic_occupancy_grid_map/fusion/single_frame_fusion_policy.hpp"
-#include "probabilistic_occupancy_grid_map/updater/occupancy_grid_map_updater_interface.hpp"
-#include "probabilistic_occupancy_grid_map/utils/utils.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/fusion_policy/fusion_policy.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/updater/ogm_updater_interface.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/utils/utils.hpp"
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Geometry>
@@ -25,6 +25,8 @@
 // LOBF means: Log Odds Bayes Filter
 // cspell: ignore LOBF
 
+namespace autoware::occupancy_grid_map
+{
 namespace costmap_2d
 {
 class OccupancyGridMapLOBFUpdater : public OccupancyGridMapUpdaterInterface
@@ -45,5 +47,6 @@ private:
 };
 
 }  // namespace costmap_2d
+}  // namespace autoware::occupancy_grid_map
 
-#endif  // PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_LOG_ODDS_BAYES_FILTER_UPDATER_HPP_
+#endif  // AUTOWARE__PROBABILISTIC_OCCUPANCY_GRID_MAP__UPDATER__LOG_ODDS_BAYES_FILTER_UPDATER_HPP_

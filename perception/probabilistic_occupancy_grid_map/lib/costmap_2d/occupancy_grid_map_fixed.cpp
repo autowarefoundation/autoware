@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "probabilistic_occupancy_grid_map/pointcloud_based_occupancy_grid_map/occupancy_grid_map_fixed.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/costmap_2d/occupancy_grid_map_fixed.hpp"
 
-#include "probabilistic_occupancy_grid_map/cost_value.hpp"
-#include "probabilistic_occupancy_grid_map/utils/utils.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/cost_value/cost_value.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/utils/utils.hpp"
 
 #include <autoware/universe_utils/math/unit_conversion.hpp>
 #include <grid_map_costmap_2d/grid_map_costmap_2d.hpp>
@@ -33,6 +33,9 @@
 #endif
 
 #include <algorithm>
+
+namespace autoware::occupancy_grid_map
+{
 namespace costmap_2d
 {
 using sensor_msgs::PointCloud2ConstIterator;
@@ -136,7 +139,7 @@ void OccupancyGridMapFixedBlindSpot::updateWithPointCloud(
     }
     raytrace(
       scan_origin.position.x, scan_origin.position.y, end_distance.wx, end_distance.wy,
-      occupancy_cost_value::FREE_SPACE);
+      cost_value::FREE_SPACE);
   }
 
   // Second step: Add unknown cell
@@ -162,9 +165,8 @@ void OccupancyGridMapFixedBlindSpot::updateWithPointCloud(
         const auto & source = obstacle_pointcloud_angle_bin.at(dist_index);
         if (!no_freespace_point) {
           const auto & target = *raw_distance_iter;
-          raytrace(
-            source.wx, source.wy, target.wx, target.wy, occupancy_cost_value::NO_INFORMATION);
-          setCellValue(target.wx, target.wy, occupancy_cost_value::FREE_SPACE);
+          raytrace(source.wx, source.wy, target.wx, target.wy, cost_value::NO_INFORMATION);
+          setCellValue(target.wx, target.wy, cost_value::FREE_SPACE);
         }
         continue;
       }
@@ -177,7 +179,7 @@ void OccupancyGridMapFixedBlindSpot::updateWithPointCloud(
       } else if (no_freespace_point) {
         const auto & source = obstacle_pointcloud_angle_bin.at(dist_index);
         const auto & target = obstacle_pointcloud_angle_bin.at(dist_index + 1);
-        raytrace(source.wx, source.wy, target.wx, target.wy, occupancy_cost_value::NO_INFORMATION);
+        raytrace(source.wx, source.wy, target.wx, target.wy, cost_value::NO_INFORMATION);
         continue;
       }
 
@@ -186,13 +188,13 @@ void OccupancyGridMapFixedBlindSpot::updateWithPointCloud(
       if (next_raw_distance < next_obstacle_point_distance) {
         const auto & source = obstacle_pointcloud_angle_bin.at(dist_index);
         const auto & target = *raw_distance_iter;
-        raytrace(source.wx, source.wy, target.wx, target.wy, occupancy_cost_value::NO_INFORMATION);
-        setCellValue(target.wx, target.wy, occupancy_cost_value::FREE_SPACE);
+        raytrace(source.wx, source.wy, target.wx, target.wy, cost_value::NO_INFORMATION);
+        setCellValue(target.wx, target.wy, cost_value::FREE_SPACE);
         continue;
       } else {
         const auto & source = obstacle_pointcloud_angle_bin.at(dist_index);
         const auto & target = obstacle_pointcloud_angle_bin.at(dist_index + 1);
-        raytrace(source.wx, source.wy, target.wx, target.wy, occupancy_cost_value::NO_INFORMATION);
+        raytrace(source.wx, source.wy, target.wx, target.wy, cost_value::NO_INFORMATION);
         continue;
       }
     }
@@ -203,7 +205,7 @@ void OccupancyGridMapFixedBlindSpot::updateWithPointCloud(
     auto & obstacle_pointcloud_angle_bin = obstacle_pointcloud_angle_bins.at(bin_index);
     for (size_t dist_index = 0; dist_index < obstacle_pointcloud_angle_bin.size(); ++dist_index) {
       const auto & source = obstacle_pointcloud_angle_bin.at(dist_index);
-      setCellValue(source.wx, source.wy, occupancy_cost_value::LETHAL_OBSTACLE);
+      setCellValue(source.wx, source.wy, cost_value::LETHAL_OBSTACLE);
 
       if (dist_index + 1 == obstacle_pointcloud_angle_bin.size()) {
         continue;
@@ -215,7 +217,7 @@ void OccupancyGridMapFixedBlindSpot::updateWithPointCloud(
       if (next_obstacle_point_distance <= distance_margin_) {
         const auto & source = obstacle_pointcloud_angle_bin.at(dist_index);
         const auto & target = obstacle_pointcloud_angle_bin.at(dist_index + 1);
-        raytrace(source.wx, source.wy, target.wx, target.wy, occupancy_cost_value::LETHAL_OBSTACLE);
+        raytrace(source.wx, source.wy, target.wx, target.wy, cost_value::LETHAL_OBSTACLE);
         continue;
       }
     }
@@ -229,3 +231,4 @@ void OccupancyGridMapFixedBlindSpot::initRosParam(rclcpp::Node & node)
 }
 
 }  // namespace costmap_2d
+}  // namespace autoware::occupancy_grid_map

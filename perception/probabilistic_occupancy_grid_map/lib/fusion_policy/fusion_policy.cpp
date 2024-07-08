@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "probabilistic_occupancy_grid_map/fusion/single_frame_fusion_policy.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/fusion_policy/fusion_policy.hpp"
 
+namespace autoware::occupancy_grid_map
+{
 namespace fusion_policy
 {
 
@@ -61,9 +63,9 @@ namespace overwrite_fusion
  */
 State getApproximateState(const unsigned char & occupancy)
 {
-  if (occupancy >= occupancy_cost_value::OCCUPIED_THRESHOLD) {
+  if (occupancy >= cost_value::OCCUPIED_THRESHOLD) {
     return State::OCCUPIED;
-  } else if (occupancy <= occupancy_cost_value::FREE_THRESHOLD) {
+  } else if (occupancy <= cost_value::FREE_THRESHOLD) {
     return State::FREE;
   } else {
     return State::UNKNOWN;
@@ -320,3 +322,4 @@ unsigned char singleFrameOccupancyFusion(
 }
 
 }  // namespace fusion_policy
+}  // namespace autoware::occupancy_grid_map

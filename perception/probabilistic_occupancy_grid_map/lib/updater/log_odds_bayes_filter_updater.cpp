@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "probabilistic_occupancy_grid_map/updater/occupancy_grid_map_log_odds_bayes_filter_updater.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/updater/log_odds_bayes_filter_updater.hpp"
 
-#include "probabilistic_occupancy_grid_map/cost_value.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/cost_value/cost_value.hpp"
 
 #include <algorithm>
 
 // cspell: ignore LOBF
 
+namespace autoware::occupancy_grid_map
+{
 namespace costmap_2d
 {
 
@@ -35,7 +37,7 @@ inline unsigned char OccupancyGridMapLOBFUpdater::applyLOBF(
   using fusion_policy::convertProbabilityToChar;
   using fusion_policy::log_odds_fusion::logOddsFusion;
 
-  constexpr unsigned char unknown = occupancy_cost_value::NO_INFORMATION;
+  constexpr unsigned char unknown = cost_value::NO_INFORMATION;
   constexpr unsigned char unknown_margin = 1;
   /* Tau and ST decides how fast the observation decay to the unknown status*/
   constexpr double tau = 0.75;
@@ -68,4 +70,6 @@ bool OccupancyGridMapLOBFUpdater::update(const Costmap2D & single_frame_occupanc
   }
   return true;
 }
+
 }  // namespace costmap_2d
+}  // namespace autoware::occupancy_grid_map

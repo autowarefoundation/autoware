@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PROBABILISTIC_OCCUPANCY_GRID_MAP__FUSION__SYNCHRONIZED_GRID_MAP_FUSION_NODE_HPP_
-#define PROBABILISTIC_OCCUPANCY_GRID_MAP__FUSION__SYNCHRONIZED_GRID_MAP_FUSION_NODE_HPP_
+#ifndef FUSION__SYNCHRONIZED_GRID_MAP_FUSION_NODE_HPP_
+#define FUSION__SYNCHRONIZED_GRID_MAP_FUSION_NODE_HPP_
 
-#include "probabilistic_occupancy_grid_map/fusion/single_frame_fusion_policy.hpp"
-#include "probabilistic_occupancy_grid_map/pointcloud_based_occupancy_grid_map/occupancy_grid_map_fixed.hpp"
-#include "probabilistic_occupancy_grid_map/updater/occupancy_grid_map_log_odds_bayes_filter_updater.hpp"
-#include "probabilistic_occupancy_grid_map/updater/occupancy_grid_map_updater_interface.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/costmap_2d/occupancy_grid_map_fixed.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/fusion_policy/fusion_policy.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/updater/log_odds_bayes_filter_updater.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/updater/ogm_updater_interface.hpp"
 
 #include <autoware/universe_utils/ros/debug_publisher.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
@@ -45,7 +45,7 @@
 
 // cspell: ignore LOBF
 
-namespace synchronized_grid_map_fusion
+namespace autoware::occupancy_grid_map
 {
 
 using costmap_2d::OccupancyGridMapFixedBlindSpot;
@@ -124,6 +124,6 @@ private:
   fusion_policy::FusionMethod fusion_method_;
 };
 
-}  // namespace synchronized_grid_map_fusion
+}  // namespace autoware::occupancy_grid_map
 
-#endif  // PROBABILISTIC_OCCUPANCY_GRID_MAP__FUSION__SYNCHRONIZED_GRID_MAP_FUSION_NODE_HPP_
+#endif  // FUSION__SYNCHRONIZED_GRID_MAP_FUSION_NODE_HPP_

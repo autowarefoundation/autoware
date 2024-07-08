@@ -49,21 +49,23 @@
  *         David V. Lu!!
  *********************************************************************/
 
-#include "probabilistic_occupancy_grid_map/laserscan_based_occupancy_grid_map/occupancy_grid_map.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/costmap_2d/occupancy_grid_map.hpp"
 
-#include "probabilistic_occupancy_grid_map/cost_value.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/cost_value/cost_value.hpp"
 
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
 #include <algorithm>
 
+namespace autoware::occupancy_grid_map
+{
 namespace costmap_2d
 {
 using sensor_msgs::PointCloud2ConstIterator;
 
 OccupancyGridMap::OccupancyGridMap(
   const unsigned int cells_size_x, const unsigned int cells_size_y, const float resolution)
-: Costmap2D(cells_size_x, cells_size_y, resolution, 0.f, 0.f, occupancy_cost_value::NO_INFORMATION)
+: Costmap2D(cells_size_x, cells_size_y, resolution, 0.f, 0.f, cost_value::NO_INFORMATION)
 {
 }
 
@@ -140,7 +142,7 @@ void OccupancyGridMap::raytrace2D(const PointCloud2 & pointcloud, const Pose & r
   raytraceFreespace(pointcloud, robot_pose);
 
   // occupied
-  MarkCell marker(costmap_, occupancy_cost_value::LETHAL_OBSTACLE);
+  MarkCell marker(costmap_, cost_value::LETHAL_OBSTACLE);
   for (PointCloud2ConstIterator<float> iter_x(pointcloud, "x"), iter_y(pointcloud, "y");
        iter_x != iter_x.end(); ++iter_x, ++iter_y) {
     unsigned int mx, my;
@@ -155,12 +157,12 @@ void OccupancyGridMap::raytrace2D(const PointCloud2 & pointcloud, const Pose & r
 
 void OccupancyGridMap::updateFreespaceCells(const PointCloud2 & pointcloud)
 {
-  updateCellsByPointCloud(pointcloud, occupancy_cost_value::FREE_SPACE);
+  updateCellsByPointCloud(pointcloud, cost_value::FREE_SPACE);
 }
 
 void OccupancyGridMap::updateOccupiedCells(const PointCloud2 & pointcloud)
 {
-  updateCellsByPointCloud(pointcloud, occupancy_cost_value::LETHAL_OBSTACLE);
+  updateCellsByPointCloud(pointcloud, cost_value::LETHAL_OBSTACLE);
 }
 
 void OccupancyGridMap::updateCellsByPointCloud(
@@ -244,9 +246,10 @@ void OccupancyGridMap::raytraceFreespace(const PointCloud2 & pointcloud, const P
     }
 
     constexpr unsigned int cell_raytrace_range = 10000;  // large number to ignore range threshold
-    MarkCell marker(costmap_, occupancy_cost_value::FREE_SPACE);
+    MarkCell marker(costmap_, cost_value::FREE_SPACE);
     raytraceLine(marker, x0, y0, x1, y1, cell_raytrace_range);
   }
 }
 
 }  // namespace costmap_2d
+}  // namespace autoware::occupancy_grid_map

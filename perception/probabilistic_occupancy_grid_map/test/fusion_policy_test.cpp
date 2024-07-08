@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "probabilistic_occupancy_grid_map/cost_value.hpp"
-#include "probabilistic_occupancy_grid_map/fusion/single_frame_fusion_policy.hpp"
+#include "autoware/probabilistic_occupancy_grid_map/fusion_policy/fusion_policy.hpp"
+
+#include "autoware/probabilistic_occupancy_grid_map/cost_value/cost_value.hpp"
 
 #include <gtest/gtest.h>
 
 // Test the log-odds update rule
 TEST(FusionPolicyTest, TestLogOddsUpdateRule)
 {
-  using fusion_policy::log_odds_fusion::logOddsFusion;
+  using autoware::occupancy_grid_map::fusion_policy::log_odds_fusion::logOddsFusion;
   const double MARGIN = 0.03;
   const double OCCUPIED = 1.0 - MARGIN;
   const double FREE = 0.0 + MARGIN;
@@ -49,7 +50,7 @@ TEST(FusionPolicyTest, TestLogOddsUpdateRule)
 // Test the dempster-shafer update rule
 TEST(FusionPolicyTest, TestDempsterShaferUpdateRule)
 {
-  using fusion_policy::dempster_shafer_fusion::dempsterShaferFusion;
+  using autoware::occupancy_grid_map::fusion_policy::dempster_shafer_fusion::dempsterShaferFusion;
   const double MARGIN = 0.03;
   const double OCCUPIED = 1.0 - MARGIN;
   const double FREE = 0.0 + MARGIN;
