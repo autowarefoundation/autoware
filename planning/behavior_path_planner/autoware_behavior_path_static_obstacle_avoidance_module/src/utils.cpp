@@ -1645,31 +1645,39 @@ void fillObjectStoppableJudge(
   object_data.is_stoppable = same_id_obj->is_stoppable;
 }
 
-void updateRegisteredObject(
-  ObjectDataArray & registered_objects, const ObjectDataArray & now_objects,
+void compensateLostTargetObjects(
+  ObjectDataArray & stored_objects, AvoidancePlanningData & data, const rclcpp::Time & now,
+  const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters)
 {
-  const auto updateIfDetectedNow = [&now_objects](auto & registered_object) {
-    const auto & n = now_objects;
-    const auto r_id = registered_object.object.object_id;
-    const auto same_id_obj = std::find_if(
-      n.begin(), n.end(), [&r_id](const auto & o) { return o.object.object_id == r_id; });
+  const auto include = [](const auto & objects, const auto & search_id) {
+    return std::all_of(objects.begin(), objects.end(), [&search_id](const auto & o) {
+      return o.object.object_id != search_id;
+    });
+  };
+
+  // STEP.1 UPDATE STORED OBJECTS.
+  const auto match = [&data](auto & object) {
+    const auto & search_id = object.object.object_id;
+    const auto same_id_object = std::find_if(
+      data.target_objects.begin(), data.target_objects.end(),
+      [&search_id](const auto & o) { return o.object.object_id == search_id; });
 
     // same id object is detected. update registered.
-    if (same_id_obj != n.end()) {
-      registered_object = *same_id_obj;
+    if (same_id_object != data.target_objects.end()) {
+      object = *same_id_object;
       return true;
     }
 
-    constexpr auto POS_THR = 1.5;
-    const auto r_pos = registered_object.getPose();
-    const auto similar_pos_obj = std::find_if(n.begin(), n.end(), [&](const auto & o) {
-      return calcDistance2d(r_pos, o.getPose()) < POS_THR;
-    });
+    const auto similar_pos_obj = std::find_if(
+      data.target_objects.begin(), data.target_objects.end(), [&object](const auto & o) {
+        constexpr auto POS_THR = 1.5;
+        return calcDistance2d(object.getPose(), o.getPose()) < POS_THR;
+      });
 
     // same id object is not detected, but object is found around registered. update registered.
-    if (similar_pos_obj != n.end()) {
-      registered_object = *similar_pos_obj;
+    if (similar_pos_obj != data.target_objects.end()) {
+      object = *similar_pos_obj;
       return true;
     }
 
@@ -1677,61 +1685,54 @@ void updateRegisteredObject(
     return false;
   };
 
-  const rclcpp::Time now = rclcpp::Clock(RCL_ROS_TIME).now();
+  // STEP1-1: REMOVE EXPIRED OBJECTS.
+  const auto itr = std::remove_if(
+    stored_objects.begin(), stored_objects.end(), [&now, &match, &parameters](auto & o) {
+      if (!match(o)) {
+        o.lost_time = (now - o.last_seen).seconds();
+      } else {
+        o.last_seen = now;
+        o.lost_time = 0.0;
+      }
 
-  // -- check registered_objects, remove if lost_count exceeds limit. --
-  for (int i = static_cast<int>(registered_objects.size()) - 1; i >= 0; --i) {
-    auto & r = registered_objects.at(i);
+      return o.lost_time > parameters->object_last_seen_threshold;
+    });
 
-    // registered object is not detected this time. lost count up.
-    if (!updateIfDetectedNow(r)) {
-      r.lost_time = (now - r.last_seen).seconds();
-    } else {
-      r.last_seen = now;
-      r.lost_time = 0.0;
-    }
+  stored_objects.erase(itr, stored_objects.end());
 
-    // lost count exceeds threshold. remove object from register.
-    if (r.lost_time > parameters->object_last_seen_threshold) {
-      registered_objects.erase(registered_objects.begin() + i);
-    }
-  }
-
-  const auto isAlreadyRegistered = [&](const auto & n_id) {
-    const auto & r = registered_objects;
-    return std::any_of(
-      r.begin(), r.end(), [&n_id](const auto & o) { return o.object.object_id == n_id; });
-  };
-
-  // -- check now_objects, add it if it has new object id --
-  for (const auto & now_obj : now_objects) {
-    if (!isAlreadyRegistered(now_obj.object.object_id)) {
-      registered_objects.push_back(now_obj);
+  // STEP1-2: UPDATE STORED OBJECTS IF THERE ARE NEW OBJECTS.
+  for (const auto & current_object : data.target_objects) {
+    if (!include(stored_objects, current_object.object.object_id)) {
+      stored_objects.push_back(current_object);
     }
   }
-}
 
-void compensateDetectionLost(
-  const ObjectDataArray & registered_objects, ObjectDataArray & now_objects,
-  ObjectDataArray & other_objects)
-{
-  const auto isDetectedNow = [&](const auto & r_id) {
-    const auto & n = now_objects;
+  // STEP2: COMPENSATE CURRENT TARGET OBJECTS
+  const auto is_detected = [&](const auto & object_id) {
     return std::any_of(
-      n.begin(), n.end(), [&r_id](const auto & o) { return o.object.object_id == r_id; });
+      data.target_objects.begin(), data.target_objects.end(),
+      [&object_id](const auto & o) { return o.object.object_id == object_id; });
   };
 
-  const auto isIgnoreObject = [&](const auto & r_id) {
-    const auto & n = other_objects;
+  const auto is_ignored = [&](const auto & object_id) {
     return std::any_of(
-      n.begin(), n.end(), [&r_id](const auto & o) { return o.object.object_id == r_id; });
+      data.other_objects.begin(), data.other_objects.end(),
+      [&object_id](const auto & o) { return o.object.object_id == object_id; });
   };
 
-  for (const auto & registered : registered_objects) {
-    if (
-      !isDetectedNow(registered.object.object_id) && !isIgnoreObject(registered.object.object_id)) {
-      now_objects.push_back(registered);
+  for (auto & stored_object : stored_objects) {
+    if (is_detected(stored_object.object.object_id)) {
+      continue;
     }
+    if (is_ignored(stored_object.object.object_id)) {
+      continue;
+    }
+
+    const auto & ego_pos = planner_data->self_odometry->pose.pose.position;
+    fillLongitudinalAndLengthByClosestEnvelopeFootprint(
+      data.reference_path_rough, ego_pos, stored_object);
+
+    data.target_objects.push_back(stored_object);
   }
 }
 

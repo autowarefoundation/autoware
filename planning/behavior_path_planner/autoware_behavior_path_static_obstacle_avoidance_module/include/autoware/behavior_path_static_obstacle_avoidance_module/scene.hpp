@@ -267,6 +267,12 @@ private:
   void fillAvoidanceTargetObjects(AvoidancePlanningData & data, DebugData & debug) const;
 
   /**
+   * @brief fill additional data which are necessary to plan avoidance path/velocity.
+   * @param avoidance target objects.
+   */
+  void fillAvoidanceTargetData(ObjectDataArray & objects) const;
+
+  /**
    * @brief fill candidate shift lines.
    * @param avoidance data.
    * @param debug data.

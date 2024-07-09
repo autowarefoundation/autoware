@@ -466,6 +466,23 @@ MarkerArray createOtherObjectsMarkerArray(
   return msg;
 }
 
+MarkerArray createStopTargetObjectMarkerArray(const AvoidancePlanningData & data)
+{
+  MarkerArray msg;
+
+  if (!data.stop_target_object.has_value()) {
+    return msg;
+  }
+
+  appendMarkerArray(
+    createObjectsCubeMarkerArray(
+      {data.stop_target_object.value()}, "stop_target", createMarkerScale(3.4, 1.9, 1.9),
+      createMarkerColor(1.0, 0.0, 0.42, 0.5)),
+    &msg);
+
+  return msg;
+}
+
 MarkerArray createDrivableBounds(
   const AvoidancePlanningData & data, std::string && ns, const float & r, const float & g,
   const float & b)
