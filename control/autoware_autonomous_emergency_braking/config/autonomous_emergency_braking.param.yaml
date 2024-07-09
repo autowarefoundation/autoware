@@ -14,6 +14,7 @@
 
     # Debug
     publish_debug_pointcloud: false
+    publish_debug_markers: true
 
     # Point cloud partitioning
     detection_range_min_height: 0.0

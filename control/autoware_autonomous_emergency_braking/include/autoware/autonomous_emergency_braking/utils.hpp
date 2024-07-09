@@ -33,8 +33,6 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
-#include <vector>
-
 namespace autoware::motion::control::autonomous_emergency_braking::utils
 {
 using autoware::universe_utils::Polygon2d;

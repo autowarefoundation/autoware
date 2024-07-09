@@ -14,6 +14,7 @@
 
 #include <autoware/autonomous_emergency_braking/node.hpp>
 #include <autoware/autonomous_emergency_braking/utils.hpp>
+#include <autoware/motion_utils/marker/marker_helper.hpp>
 #include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
@@ -41,7 +42,9 @@
 #include <tf2/utils.h>
 
 #include <cmath>
+#include <functional>
 #include <limits>
+#include <optional>
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -131,6 +134,7 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
   }
   // parameter
   publish_debug_pointcloud_ = declare_parameter<bool>("publish_debug_pointcloud");
+  publish_debug_markers_ = declare_parameter<bool>("publish_debug_markers");
   use_predicted_trajectory_ = declare_parameter<bool>("use_predicted_trajectory");
   use_imu_path_ = declare_parameter<bool>("use_imu_path");
   use_pointcloud_data_ = declare_parameter<bool>("use_pointcloud_data");
@@ -182,6 +186,7 @@ rcl_interfaces::msg::SetParametersResult AEB::onParameter(
 {
   using autoware::universe_utils::updateParam;
   updateParam<bool>(parameters, "publish_debug_pointcloud", publish_debug_pointcloud_);
+  updateParam<bool>(parameters, "publish_debug_markers", publish_debug_markers_);
   updateParam<bool>(parameters, "use_predicted_trajectory", use_predicted_trajectory_);
   updateParam<bool>(parameters, "use_imu_path", use_imu_path_);
   updateParam<bool>(parameters, "use_pointcloud_data", use_pointcloud_data_);
@@ -378,7 +383,9 @@ void AEB::onCheckCollision(DiagnosticStatusWrapper & stat)
     stat.addf("RSS", "%.2f", data.rss);
     stat.addf("Distance", "%.2f", data.distance_to_object);
     stat.addf("Object Speed", "%.2f", data.velocity);
-    addCollisionMarker(data, debug_markers);
+    if (publish_debug_markers_) {
+      addCollisionMarker(data, debug_markers);
+    }
   } else {
     const std::string error_msg = "[AEB]: No Collision";
     const auto diag_level = DiagnosticStatus::OK;
@@ -455,7 +462,7 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
     });
 
     // Add debug markers
-    {
+    if (publish_debug_markers_) {
       const auto [color_r, color_g, color_b, color_a] = debug_colors;
       addMarker(
         this->get_clock()->now(), path, ego_polys, objects, closest_object_point, color_r, color_g,
@@ -896,6 +903,33 @@ void AEB::addCollisionMarker(const ObjectData & data, MarkerArray & debug_marker
     autoware::universe_utils::createMarkerColor(1.0, 0.0, 0.0, 0.3));
   point_marker.pose.position = data.position;
   debug_markers.markers.push_back(point_marker);
+
+  const auto ego_map_pose = std::invoke([this]() -> std::optional<geometry_msgs::msg::Pose> {
+    geometry_msgs::msg::TransformStamped tf_current_pose;
+    geometry_msgs::msg::Pose p;
+    try {
+      tf_current_pose = tf_buffer_.lookupTransform(
+        "map", "base_link", rclcpp::Time(0), rclcpp::Duration::from_seconds(1.0));
+    } catch (tf2::TransformException & ex) {
+      RCLCPP_ERROR(get_logger(), "%s", ex.what());
+      return std::nullopt;
+    }
+
+    p.orientation = tf_current_pose.transform.rotation;
+    p.position.x = tf_current_pose.transform.translation.x;
+    p.position.y = tf_current_pose.transform.translation.y;
+    p.position.z = tf_current_pose.transform.translation.z;
+    return std::make_optional(p);
+  });
+
+  if (ego_map_pose.has_value()) {
+    const double base_to_front_offset = vehicle_info_.max_longitudinal_offset_m;
+    const auto ego_front_pose = autoware::universe_utils::calcOffsetPose(
+      ego_map_pose.value(), base_to_front_offset, 0.0, 0.0, 0.0);
+    const auto virtual_stop_wall = autoware::motion_utils::createStopVirtualWallMarker(
+      ego_front_pose, "autonomous_emergency_braking", this->now(), 0);
+    autoware::universe_utils::appendMarkerArray(virtual_stop_wall, &debug_markers);
+  }
 }
 
 }  // namespace autoware::motion::control::autonomous_emergency_braking

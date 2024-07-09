@@ -329,6 +329,7 @@ public:
 
   // member variables
   bool publish_debug_pointcloud_;
+  bool publish_debug_markers_;
   bool use_predicted_trajectory_;
   bool use_imu_path_;
   bool use_pointcloud_data_;
