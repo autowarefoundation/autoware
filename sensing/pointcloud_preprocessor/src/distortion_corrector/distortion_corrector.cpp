@@ -20,6 +20,31 @@
 
 namespace pointcloud_preprocessor
 {
+
+template <class T>
+bool DistortionCorrector<T>::pointcloud_transform_exists()
+{
+  return pointcloud_transform_exists_;
+}
+
+template <class T>
+bool DistortionCorrector<T>::pointcloud_transform_needed()
+{
+  return pointcloud_transform_needed_;
+}
+
+template <class T>
+std::deque<geometry_msgs::msg::TwistStamped> DistortionCorrector<T>::get_twist_queue()
+{
+  return twist_queue_;
+}
+
+template <class T>
+std::deque<geometry_msgs::msg::Vector3Stamped> DistortionCorrector<T>::get_angular_velocity_queue()
+{
+  return angular_velocity_queue_;
+}
+
 template <class T>
 void DistortionCorrector<T>::processTwistMessage(
   const geometry_msgs::msg::TwistWithCovarianceStamped::ConstSharedPtr twist_msg)
@@ -349,7 +374,9 @@ inline void DistortionCorrector2D::undistortPointImplementation(
   theta_ += w * time_offset;
   baselink_quat_.setValue(
     0, 0, autoware::universe_utils::sin(theta_ * 0.5f),
-    autoware::universe_utils::cos(theta_ * 0.5f));  // baselink_quat.setRPY(0.0, 0.0, theta);
+    autoware::universe_utils::cos(
+      theta_ *
+      0.5f));  // baselink_quat.setRPY(0.0, 0.0, theta); (Note that the value is slightly different)
   const float dis = v * time_offset;
   x_ += dis * autoware::universe_utils::cos(theta_);
   y_ += dis * autoware::universe_utils::sin(theta_);
