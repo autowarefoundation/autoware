@@ -221,8 +221,9 @@ void MultiObjectTracker::onTrigger()
   } else {
     // Publish if the next publish time is close
     const double minimum_publish_interval = publisher_period_ * 0.70;  // 70% of the period
-    if ((current_time - last_published_time_).seconds() > minimum_publish_interval) {
-      checkAndPublish(current_time);
+    const rclcpp::Time publish_time = this->now();
+    if ((publish_time - last_published_time_).seconds() > minimum_publish_interval) {
+      checkAndPublish(publish_time);
     }
   }
 }
