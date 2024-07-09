@@ -991,34 +991,51 @@ calcCurvature<std::vector<autoware_planning_msgs::msg::TrajectoryPoint>>(
  * curvature calculation
  */
 template <class T>
-std::vector<std::pair<double, double>> calcCurvatureAndArcLength(const T & points)
+std::vector<std::pair<double, std::pair<double, double>>> calcCurvatureAndSegmentLength(
+  const T & points)
 {
-  // Note that arclength is for the segment, not the sum.
-  std::vector<std::pair<double, double>> curvature_arc_length_vec;
-  curvature_arc_length_vec.emplace_back(0.0, 0.0);
+  // segment length is pair of segment length between {p1, p2} and {p2, p3}
+  std::vector<std::pair<double, std::pair<double, double>>> curvature_and_segment_length_vec;
+  curvature_and_segment_length_vec.reserve(points.size());
+  curvature_and_segment_length_vec.emplace_back(0.0, std::make_pair(0.0, 0.0));
   for (size_t i = 1; i < points.size() - 1; ++i) {
     const auto p1 = autoware::universe_utils::getPoint(points.at(i - 1));
     const auto p2 = autoware::universe_utils::getPoint(points.at(i));
     const auto p3 = autoware::universe_utils::getPoint(points.at(i + 1));
     const double curvature = autoware::universe_utils::calcCurvature(p1, p2, p3);
-    const double arc_length =
-      autoware::universe_utils::calcDistance2d(points.at(i - 1), points.at(i)) +
-      autoware::universe_utils::calcDistance2d(points.at(i), points.at(i + 1));
-    curvature_arc_length_vec.emplace_back(curvature, arc_length);
-  }
-  curvature_arc_length_vec.emplace_back(0.0, 0.0);
 
-  return curvature_arc_length_vec;
+    // The first point has only the next point, so put the distance to that point.
+    // In other words, assign the first segment length at the second point to the
+    // second_segment_length at the first point.
+    if (i == 1) {
+      curvature_and_segment_length_vec.at(0).second.second =
+        autoware::universe_utils::calcDistance2d(p1, p2);
+    }
+
+    // The second_segment_length of the previous point and the first segment length of the current
+    // point are equal.
+    const std::pair<double, double> arc_length{
+      curvature_and_segment_length_vec.back().second.second,
+      autoware::universe_utils::calcDistance2d(p2, p3)};
+
+    curvature_and_segment_length_vec.emplace_back(curvature, arc_length);
+  }
+
+  // set to the last point
+  curvature_and_segment_length_vec.emplace_back(
+    0.0, std::make_pair(curvature_and_segment_length_vec.back().second.second, 0.0));
+
+  return curvature_and_segment_length_vec;
 }
 
-extern template std::vector<std::pair<double, double>>
-calcCurvatureAndArcLength<std::vector<autoware_planning_msgs::msg::PathPoint>>(
+extern template std::vector<std::pair<double, std::pair<double, double>>>
+calcCurvatureAndSegmentLength<std::vector<autoware_planning_msgs::msg::PathPoint>>(
   const std::vector<autoware_planning_msgs::msg::PathPoint> & points);
-extern template std::vector<std::pair<double, double>>
-calcCurvatureAndArcLength<std::vector<tier4_planning_msgs::msg::PathPointWithLaneId>>(
+extern template std::vector<std::pair<double, std::pair<double, double>>>
+calcCurvatureAndSegmentLength<std::vector<tier4_planning_msgs::msg::PathPointWithLaneId>>(
   const std::vector<tier4_planning_msgs::msg::PathPointWithLaneId> & points);
-extern template std::vector<std::pair<double, double>>
-calcCurvatureAndArcLength<std::vector<autoware_planning_msgs::msg::TrajectoryPoint>>(
+extern template std::vector<std::pair<double, std::pair<double, double>>>
+calcCurvatureAndSegmentLength<std::vector<autoware_planning_msgs::msg::TrajectoryPoint>>(
   const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & points);
 
 /**
