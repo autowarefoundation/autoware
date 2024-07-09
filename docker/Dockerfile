@@ -43,6 +43,9 @@ RUN --mount=type=ssh \
 
 # Generate install package lists
 COPY src/core /autoware/src/core
+COPY src/sensor_component /autoware/src/sensor_component
+COPY src/sensor_kit /autoware/src/sensor_kit
+COPY src/vehicle /autoware/src/vehicle
 RUN rosdep update && rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -50,14 +53,16 @@ RUN rosdep update && rosdep keys --ignore-src --from-paths src \
     | sort \
     > /rosdep-core-depend-packages.txt \
     && cat /rosdep-core-depend-packages.txt
-COPY src /autoware/src
+COPY src/launcher /autoware/src/launcher
+COPY src/param /autoware/src/param
+COPY src/universe /autoware/src/universe
 RUN rosdep update && rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
     | sed 's/ \+/\n/g'\
     | sort \
-    > /rosdep-all-depend-packages.txt \
-    && cat /rosdep-all-depend-packages.txt
+    > /rosdep-universe-depend-packages.txt \
+    && cat /rosdep-universe-depend-packages.txt
 RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -88,6 +93,9 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 COPY --from=src-imported /autoware/src/core /autoware/src/core
+COPY --from=src-imported /autoware/src/sensor_component /autoware/src/sensor_component
+COPY --from=src-imported /autoware/src/sensor_kit /autoware/src/sensor_kit
+COPY --from=src-imported /autoware/src/vehicle /autoware/src/vehicle
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
@@ -97,27 +105,24 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s
 
-FROM autoware-core as prebuilt
+FROM autoware-core as autoware-universe
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG SETUP_ARGS
 ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
-COPY --from=src-imported /rosdep-all-depend-packages.txt /tmp/rosdep-all-depend-packages.txt
+COPY --from=src-imported /rosdep-universe-depend-packages.txt /tmp/rosdep-universe-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   apt-get update \
-  && cat /tmp/rosdep-all-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Build Autoware
 COPY --from=src-imported /autoware/src/launcher /autoware/src/launcher
 COPY --from=src-imported /autoware/src/param /autoware/src/param
-COPY --from=src-imported /autoware/src/sensor_component /autoware/src/sensor_component
-COPY --from=src-imported /autoware/src/sensor_kit /autoware/src/sensor_kit
 COPY --from=src-imported /autoware/src/universe /autoware/src/universe
-COPY --from=src-imported /autoware/src/vehicle /autoware/src/vehicle
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
@@ -129,7 +134,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
 
 CMD ["/bin/bash"]
 
-FROM prebuilt as devel
+FROM autoware-universe as devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install development tools and artifacts
@@ -168,8 +173,7 @@ RUN --mount=type=ssh \
     /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
     /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
-# Copy prebuilt binaries
-COPY --from=prebuilt /autoware/install/ /autoware/install/
+COPY --from=autoware-universe /autoware/install/ /autoware/install/
 
 # Copy bash aliases
 COPY docker/etc/.bash_aliases /root/.bash_aliases
