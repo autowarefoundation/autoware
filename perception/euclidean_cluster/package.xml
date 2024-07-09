@@ -12,7 +12,7 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_perception_msgs</depend>
-  <depend>compare_map_segmentation</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>libpcl-all-dev</depend>
   <depend>pcl_conversions</depend>
