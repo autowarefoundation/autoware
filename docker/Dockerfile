@@ -92,10 +92,10 @@ RUN --mount=type=ssh \
   && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
-COPY --from=src-imported /autoware/src/core /autoware/src/core
-COPY --from=src-imported /autoware/src/sensor_component /autoware/src/sensor_component
-COPY --from=src-imported /autoware/src/sensor_kit /autoware/src/sensor_kit
-COPY --from=src-imported /autoware/src/vehicle /autoware/src/vehicle
+COPY src/core /autoware/src/core
+COPY src/sensor_component /autoware/src/sensor_component
+COPY src/sensor_kit /autoware/src/sensor_kit
+COPY src/vehicle /autoware/src/vehicle
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
@@ -120,9 +120,9 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Build Autoware
-COPY --from=src-imported /autoware/src/launcher /autoware/src/launcher
-COPY --from=src-imported /autoware/src/param /autoware/src/param
-COPY --from=src-imported /autoware/src/universe /autoware/src/universe
+COPY src/launcher /autoware/src/launcher
+COPY src/param /autoware/src/param
+COPY src/universe /autoware/src/universe
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
