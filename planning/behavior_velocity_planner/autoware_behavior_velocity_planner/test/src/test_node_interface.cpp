@@ -54,7 +54,6 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
   const auto velocity_smoother_dir =
     ament_index_cpp::get_package_share_directory("autoware_velocity_smoother");
 
-  // TODO(esteve): delete when all the modules are migrated to autoware_behavior_velocity_*
   const auto get_behavior_velocity_module_config = [](const std::string & module) {
     const auto package_name = "autoware_behavior_velocity_" + module + "_module";
     const auto package_path = ament_index_cpp::get_package_share_directory(package_name);
