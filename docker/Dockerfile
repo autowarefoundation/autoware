@@ -56,7 +56,7 @@ COPY src/sensor_component /autoware/src/sensor_component
 COPY src/sensor_kit /autoware/src/sensor_kit
 COPY src/universe /autoware/src/universe
 COPY src/vehicle /autoware/src/vehicle
-RUN rosdep update && rosdep keys --ignore-src --from-paths src \
+RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
     | sed 's/ \+/\n/g'\
@@ -93,9 +93,6 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 COPY src/core /autoware/src/core
-COPY src/sensor_component /autoware/src/sensor_component
-COPY src/sensor_kit /autoware/src/sensor_kit
-COPY src/vehicle /autoware/src/vehicle
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
@@ -123,6 +120,9 @@ RUN --mount=type=ssh \
 COPY src/launcher /autoware/src/launcher
 COPY src/param /autoware/src/param
 COPY src/universe /autoware/src/universe
+COPY src/sensor_component /autoware/src/sensor_component
+COPY src/sensor_kit /autoware/src/sensor_kit
+COPY src/vehicle /autoware/src/vehicle
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
