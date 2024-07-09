@@ -51,6 +51,8 @@
 
 #include "pointcloud_preprocessor/filter.hpp"
 
+#include "pointcloud_preprocessor/utility/memory.hpp"
+
 #include <pcl_ros/transforms.hpp>
 
 #include <pcl/io/io.h>
@@ -411,6 +413,30 @@ bool pointcloud_preprocessor::Filter::convert_output_costly(std::unique_ptr<Poin
 void pointcloud_preprocessor::Filter::faster_input_indices_callback(
   const PointCloud2ConstPtr cloud, const PointIndicesConstPtr indices)
 {
+  if (
+    !utils::is_data_layout_compatible_with_point_xyzircaedt(*cloud) &&
+    !utils::is_data_layout_compatible_with_point_xyzirc(*cloud)) {
+    RCLCPP_ERROR(
+      get_logger(),
+      "The pointcloud layout is not compatible with PointXYZIRCAEDT not PointXYZIRC. Aborting");
+
+    if (utils::is_data_layout_compatible_with_point_xyziradrt(*cloud)) {
+      RCLCPP_ERROR(
+        get_logger(),
+        "The pointcloud layout is compatible with PointXYZIRADRT. You may be using legacy "
+        "code/data");
+    }
+
+    if (utils::is_data_layout_compatible_with_point_xyzi(*cloud)) {
+      RCLCPP_ERROR(
+        get_logger(),
+        "The pointcloud layout is compatible with PointXYZI. You may be using legacy "
+        "code/data");
+    }
+
+    return;
+  }
+
   if (!isValid(cloud)) {
     RCLCPP_ERROR(this->get_logger(), "[input_indices_callback] Invalid input!");
     return;

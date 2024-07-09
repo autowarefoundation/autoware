@@ -87,7 +87,7 @@
 
 namespace pointcloud_preprocessor
 {
-using autoware_point_types::PointXYZI;
+using autoware_point_types::PointXYZIRC;
 using point_cloud_msg_wrapper::PointCloud2Modifier;
 
 /** \brief @b PointCloudConcatenateDataSynchronizerComponent is a special form of data
@@ -169,7 +169,7 @@ private:
     sensor_msgs::msg::PointCloud2::SharedPtr & concat_cloud_ptr);
   void publish();
 
-  void convertToXYZICloud(
+  void convertToXYZIRCCloud(
     const sensor_msgs::msg::PointCloud2::SharedPtr & input_ptr,
     sensor_msgs::msg::PointCloud2::SharedPtr & output_ptr);
   void setPeriod(const int64_t new_period);

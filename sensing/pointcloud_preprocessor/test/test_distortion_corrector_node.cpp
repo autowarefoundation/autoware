@@ -58,7 +58,7 @@ protected:
 
     // Spin the node for a while to ensure transforms are published
     auto start = std::chrono::steady_clock::now();
-    auto timeout = std::chrono::seconds(1);
+    auto timeout = std::chrono::milliseconds(100);
     while (std::chrono::steady_clock::now() - start < timeout) {
       rclcpp::spin_some(node_);
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -194,19 +194,24 @@ protected:
       }};
 
       // Generate timestamps for the points
-      std::vector<double> timestamps = generatePointTimestamps(stamp, number_of_points_);
+      std::vector<std::uint32_t> timestamps = generatePointTimestamps(stamp, number_of_points_);
 
       sensor_msgs::PointCloud2Modifier modifier(pointcloud_msg);
       modifier.setPointCloud2Fields(
-        4, "x", 1, sensor_msgs::msg::PointField::FLOAT32, "y", 1,
+        10, "x", 1, sensor_msgs::msg::PointField::FLOAT32, "y", 1,
         sensor_msgs::msg::PointField::FLOAT32, "z", 1, sensor_msgs::msg::PointField::FLOAT32,
-        "time_stamp", 1, sensor_msgs::msg::PointField::FLOAT64);
+        "intensity", 1, sensor_msgs::msg::PointField::UINT8, "return_type", 1,
+        sensor_msgs::msg::PointField::UINT8, "channel", 1, sensor_msgs::msg::PointField::UINT16,
+        "azimuth", 1, sensor_msgs::msg::PointField::FLOAT32, "elevation", 1,
+        sensor_msgs::msg::PointField::FLOAT32, "distance", 1, sensor_msgs::msg::PointField::FLOAT32,
+        "time_stamp", 1, sensor_msgs::msg::PointField::UINT32);
+
       modifier.resize(number_of_points_);
 
       sensor_msgs::PointCloud2Iterator<float> iter_x(pointcloud_msg, "x");
       sensor_msgs::PointCloud2Iterator<float> iter_y(pointcloud_msg, "y");
       sensor_msgs::PointCloud2Iterator<float> iter_z(pointcloud_msg, "z");
-      sensor_msgs::PointCloud2Iterator<double> iter_t(pointcloud_msg, "time_stamp");
+      sensor_msgs::PointCloud2Iterator<std::uint32_t> iter_t(pointcloud_msg, "time_stamp");
 
       for (size_t i = 0; i < number_of_points_; ++i) {
         *iter_x = points[i].x();
@@ -226,15 +231,15 @@ protected:
     return pointcloud_msg;
   }
 
-  std::vector<double> generatePointTimestamps(
+  std::vector<std::uint32_t> generatePointTimestamps(
     rclcpp::Time pointcloud_timestamp, size_t number_of_points)
   {
-    std::vector<double> timestamps;
-    rclcpp::Time point_stamp = pointcloud_timestamp;
+    std::vector<std::uint32_t> timestamps;
+    rclcpp::Time global_point_stamp = pointcloud_timestamp;
     for (size_t i = 0; i < number_of_points; ++i) {
-      double timestamp = point_stamp.seconds();
-      timestamps.push_back(timestamp);
-      point_stamp = addMilliseconds(point_stamp, points_interval_ms_);
+      std::uint32_t relative_timestamp = (global_point_stamp - pointcloud_timestamp).nanoseconds();
+      timestamps.push_back(relative_timestamp);
+      global_point_stamp = addMilliseconds(global_point_stamp, points_interval_ms_);
     }
 
     return timestamps;
@@ -735,11 +740,11 @@ TEST_F(DistortionCorrectorTest, TestUndistortPointCloudWithPureLinearMotion)
   sensor_msgs::PointCloud2Iterator<float> iter_x(expected_pointcloud_msg, "x");
   sensor_msgs::PointCloud2Iterator<float> iter_y(expected_pointcloud_msg, "y");
   sensor_msgs::PointCloud2Iterator<float> iter_z(expected_pointcloud_msg, "z");
-  sensor_msgs::PointCloud2Iterator<double> iter_t(expected_pointcloud_msg, "time_stamp");
+  sensor_msgs::PointCloud2Iterator<std::uint32_t> iter_t(expected_pointcloud_msg, "time_stamp");
 
   std::vector<Eigen::Vector3f> expected_points;
   for (; iter_t != iter_t.end(); ++iter_t, ++iter_x, ++iter_y, ++iter_z) {
-    double time_offset = *iter_t - timestamp.seconds();
+    double time_offset = static_cast<double>(*iter_t) / 1e9;
     expected_points.emplace_back(
       *iter_x + static_cast<float>(velocity * time_offset), *iter_y, *iter_z);
   }
@@ -822,11 +827,11 @@ TEST_F(DistortionCorrectorTest, TestUndistortPointCloudWithPureRotationalMotion)
   sensor_msgs::PointCloud2Iterator<float> iter_x(expected_pointcloud_msg, "x");
   sensor_msgs::PointCloud2Iterator<float> iter_y(expected_pointcloud_msg, "y");
   sensor_msgs::PointCloud2Iterator<float> iter_z(expected_pointcloud_msg, "z");
-  sensor_msgs::PointCloud2Iterator<double> iter_t(expected_pointcloud_msg, "time_stamp");
+  sensor_msgs::PointCloud2Iterator<std::uint32_t> iter_t(expected_pointcloud_msg, "time_stamp");
 
   std::vector<Eigen::Vector3f> expected_pointcloud;
   for (; iter_t != iter_t.end(); ++iter_t, ++iter_x, ++iter_y, ++iter_z) {
-    double time_offset = *iter_t - timestamp.seconds();
+    double time_offset = static_cast<double>(*iter_t) / 1e9;
     float angle = angular_velocity * time_offset;
 
     // Set the quaternion for the current angle

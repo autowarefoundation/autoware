@@ -29,16 +29,27 @@ void FasterVoxelGridDownsampleFilter::set_voxel_size(
     Eigen::Array3f::Ones() / Eigen::Array3f(voxel_size_x, voxel_size_y, voxel_size_z);
 }
 
-void FasterVoxelGridDownsampleFilter::set_field_offsets(const PointCloud2ConstPtr & input)
+void FasterVoxelGridDownsampleFilter::set_field_offsets(
+  const PointCloud2ConstPtr & input, const rclcpp::Logger & logger)
 {
   x_offset_ = input->fields[pcl::getFieldIndex(*input, "x")].offset;
   y_offset_ = input->fields[pcl::getFieldIndex(*input, "y")].offset;
   z_offset_ = input->fields[pcl::getFieldIndex(*input, "z")].offset;
   intensity_index_ = pcl::getFieldIndex(*input, "intensity");
+
+  if (
+    intensity_index_ < 0 || input->fields[pcl::getFieldIndex(*input, "intensity")].datatype !=
+                              sensor_msgs::msg::PointField::UINT8) {
+    RCLCPP_ERROR(
+      logger,
+      "There is no intensity field in the input point cloud or the intensity field is not of type "
+      "UINT8.");
+  }
+
   if (intensity_index_ != -1) {
     intensity_offset_ = input->fields[intensity_index_].offset;
   } else {
-    intensity_offset_ = z_offset_ + sizeof(float);
+    intensity_offset_ = -1;
   }
   offset_initialized_ = true;
 }
@@ -49,7 +60,7 @@ void FasterVoxelGridDownsampleFilter::filter(
 {
   // Check if the field offset has been set
   if (!offset_initialized_) {
-    set_field_offsets(input);
+    set_field_offsets(input, logger);
   }
 
   // Compute the minimum and maximum voxel coordinates
@@ -85,10 +96,9 @@ Eigen::Vector4f FasterVoxelGridDownsampleFilter::get_point_from_global_offset(
   const PointCloud2ConstPtr & input, size_t global_offset)
 {
   float intensity = 0.0;
-  if (intensity_index_ == -1) {
-    intensity = -1.0;
-  } else {
-    intensity = *reinterpret_cast<const float *>(&input->data[global_offset + intensity_offset_]);
+  if (intensity_index_ >= 0) {
+    intensity = static_cast<float>(
+      *reinterpret_cast<const uint8_t *>(&input->data[global_offset + intensity_offset_]));
   }
   Eigen::Vector4f point(
     *reinterpret_cast<const float *>(&input->data[global_offset + x_offset_]),
@@ -179,7 +189,8 @@ void FasterVoxelGridDownsampleFilter::copy_centroids_to_output(
     *reinterpret_cast<float *>(&output.data[output_data_size + x_offset_]) = centroid[0];
     *reinterpret_cast<float *>(&output.data[output_data_size + y_offset_]) = centroid[1];
     *reinterpret_cast<float *>(&output.data[output_data_size + z_offset_]) = centroid[2];
-    *reinterpret_cast<float *>(&output.data[output_data_size + intensity_offset_]) = centroid[3];
+    *reinterpret_cast<uint8_t *>(&output.data[output_data_size + intensity_offset_]) =
+      static_cast<uint8_t>(centroid[3]);
     output_data_size += output.point_step;
   }
 }

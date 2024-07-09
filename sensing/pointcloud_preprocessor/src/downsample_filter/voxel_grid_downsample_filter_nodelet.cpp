@@ -108,7 +108,7 @@ void VoxelGridDownsampleFilterComponent::faster_filter(
   std::scoped_lock lock(mutex_);
   FasterVoxelGridDownsampleFilter faster_voxel_filter;
   faster_voxel_filter.set_voxel_size(voxel_size_x_, voxel_size_y_, voxel_size_z_);
-  faster_voxel_filter.set_field_offsets(input);
+  faster_voxel_filter.set_field_offsets(input, this->get_logger());
   faster_voxel_filter.filter(input, output, transform_info, this->get_logger());
 }
 

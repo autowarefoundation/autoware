@@ -1,4 +1,4 @@
-// Copyright 2022 Tier IV, Inc.
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 #define POINTCLOUD_PREPROCESSOR__VECTOR_MAP_FILTER__VECTOR_MAP_INSIDE_AREA_FILTER_HPP_
 
 #include "pointcloud_preprocessor/filter.hpp"
-#include "pointcloud_preprocessor/utility/utilities.hpp"
+#include "pointcloud_preprocessor/utility/geometry.hpp"
 
 #include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <autoware_lanelet2_extension/utility/message_conversion.hpp>

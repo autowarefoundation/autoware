@@ -36,6 +36,15 @@ TEST(PointEquality, PointXYZIRADRT)
   EXPECT_EQ(pt0, pt1);
 }
 
+TEST(PointEquality, PointXYZIRCAEDT)
+{
+  using autoware_point_types::PointXYZIRCAEDT;
+
+  PointXYZIRCAEDT pt0{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  PointXYZIRCAEDT pt1{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  EXPECT_EQ(pt0, pt1);
+}
+
 TEST(PointEquality, FloatEq)
 {
   // test template

@@ -161,6 +161,7 @@ private:
   int y_offset_;
   int z_offset_;
   int intensity_offset_;
+  int intensity_type_;
   bool offset_initialized_;
 
   void set_field_offsets(const PointCloud2ConstPtr & input);

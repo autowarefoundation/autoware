@@ -16,6 +16,8 @@
 
 #include "lidar_apollo_instance_segmentation/feature_map.hpp"
 
+#include <sensor_msgs/point_cloud2_iterator.hpp>
+
 #include <NvCaffeParser.h>
 #include <NvInfer.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -126,7 +128,27 @@ bool LidarApolloInstanceSegmentation::detectDynamicObjects(
 
   // convert from ros to pcl
   pcl::PointCloud<pcl::PointXYZI>::Ptr pcl_pointcloud_raw_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::fromROSMsg(transformed_cloud, *pcl_pointcloud_raw_ptr);
+  // pcl::fromROSMsg(transformed_cloud, *pcl_pointcloud_raw_ptr);
+
+  auto pcl_pointcloud_raw = *pcl_pointcloud_raw_ptr;
+  pcl_pointcloud_raw.width = transformed_cloud.width;
+  pcl_pointcloud_raw.height = transformed_cloud.height;
+  pcl_pointcloud_raw.is_dense = transformed_cloud.is_dense == 1;
+  pcl_pointcloud_raw.resize(transformed_cloud.width * transformed_cloud.height);
+
+  sensor_msgs::PointCloud2ConstIterator<float> it_x(transformed_cloud, "x");
+  sensor_msgs::PointCloud2ConstIterator<float> it_y(transformed_cloud, "y");
+  sensor_msgs::PointCloud2ConstIterator<float> it_z(transformed_cloud, "z");
+  sensor_msgs::PointCloud2ConstIterator<uint8_t> it_intensity(transformed_cloud, "intensity");
+
+  for (; it_x != it_x.end(); ++it_x, ++it_y, ++it_z, ++it_intensity) {
+    pcl::PointXYZI point;
+    point.x = *it_x;
+    point.y = *it_y;
+    point.z = *it_z;
+    point.intensity = static_cast<float>(*it_intensity);
+    pcl_pointcloud_raw.emplace_back(std::move(point));
+  }
 
   // generate feature map
   std::shared_ptr<FeatureMapInterface> feature_map_ptr =

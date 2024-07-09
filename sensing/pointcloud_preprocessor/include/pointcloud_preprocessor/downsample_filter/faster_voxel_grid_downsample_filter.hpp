@@ -34,7 +34,7 @@ class FasterVoxelGridDownsampleFilter
 public:
   FasterVoxelGridDownsampleFilter();
   void set_voxel_size(float voxel_size_x, float voxel_size_y, float voxel_size_z);
-  void set_field_offsets(const PointCloud2ConstPtr & input);
+  void set_field_offsets(const PointCloud2ConstPtr & input, const rclcpp::Logger & logger);
   void filter(
     const PointCloud2ConstPtr & input, PointCloud2 & output, const TransformInfo & transform_info,
     const rclcpp::Logger & logger);
@@ -48,7 +48,7 @@ private:
     float intensity;
     uint32_t point_count_;
 
-    Centroid() : x(0), y(0), z(0), intensity(-1.0) {}
+    Centroid() : x(0), y(0), z(0), intensity(0) {}
     Centroid(float _x, float _y, float _z, float _intensity)
     : x(_x), y(_y), z(_z), intensity(_intensity)
     {

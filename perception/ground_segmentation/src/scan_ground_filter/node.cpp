@@ -96,8 +96,9 @@ inline void ScanGroundFilterComponent::set_field_offsets(const PointCloud2ConstP
   int intensity_index = pcl::getFieldIndex(*input, "intensity");
   if (intensity_index != -1) {
     intensity_offset_ = input->fields[intensity_index].offset;
+    intensity_type_ = input->fields[intensity_index].datatype;
   } else {
-    intensity_offset_ = z_offset_ + sizeof(float);
+    intensity_offset_ = -1;
   }
   offset_initialized_ = true;
 }
@@ -569,6 +570,7 @@ void ScanGroundFilterComponent::extractObjectPoints(
   PointCloud2 & out_object_cloud)
 {
   size_t output_data_size = 0;
+
   for (const auto & i : in_indices.indices) {
     std::memcpy(
       &out_object_cloud.data[output_data_size], &in_cloud_ptr->data[i * in_cloud_ptr->point_step],

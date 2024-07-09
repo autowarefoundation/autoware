@@ -11,7 +11,7 @@
   <arg name="pedestrian_traffic_light_classifier_label_name" default="lamp_labels_ped.txt" description="classifier label filename"/>
   <arg name="car_traffic_light_classifier_model_name" default="traffic_light_classifier_mobilenetv2_batch_6.onnx" description="classifier onnx model filename"/>
   <arg name="pedestrian_traffic_light_classifier_model_name" default="ped_traffic_light_classifier_mobilenetv2_batch_6.onnx" description="classifier onnx model filename"/>
-  <arg name="input/cloud" default="/sensing/lidar/top/pointcloud_raw" description="point cloud for occlusion prediction"/>
+  <arg name="input/cloud" default="/sensing/lidar/top/pointcloud_raw_ex" description="point cloud for occlusion prediction"/>
   <arg name="judged/traffic_signals" default="/perception/traffic_light_recognition/judged/traffic_signals"/>
   <arg name="internal/traffic_signals" default="/perception/traffic_light_recognition/internal/traffic_signals"/>
   <arg name="external/traffic_signals" default="/perception/traffic_light_recognition/external/traffic_signals"/>

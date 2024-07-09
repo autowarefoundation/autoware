@@ -10,7 +10,7 @@ This node can remove rain and fog by considering the light reflected from the ob
 
 ![outlier_filter-return_type](./image/outlier_filter-return_type.drawio.svg)
 
-Therefore, in order to use this node, the sensor driver must publish custom data including `return_type`. please refer to [PointXYZIRADRT](../../../common/autoware_point_types/include/autoware_point_types/types.hpp#L57-L76) data structure.
+Therefore, in order to use this node, the sensor driver must publish custom data including `return_type`. please refer to [PointXYZIRCAEDT](../../../common/autoware_point_types/include/autoware_point_types/types.hpp#L95-L116) data structure.
 
 Another feature of this node is that it publishes visibility as a diagnostic topic. With this function, for example, in heavy rain, the sensing module can notify that the processing performance has reached its limit, which can lead to ensuring the safety of the vehicle.
 
@@ -73,7 +73,7 @@ This implementation inherits `pointcloud_preprocessor::Filter` class, please ref
 ## Assumptions / Known limits
 
 Not recommended for use as it is under development.
-Input data must be `PointXYZIRADRT` type data including `return_type`.
+Input data must be [PointXYZIRCAEDT](../../../common/autoware_point_types/include/autoware_point_types/types.hpp#L95-L116) type data including `return_type`.
 
 ## (Optional) Error detection and handling
 

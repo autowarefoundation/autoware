@@ -21,7 +21,7 @@
 
 namespace pointcloud_preprocessor
 {
-using autoware_point_types::PointXYZIRADRT;
+using autoware_point_types::PointXYZIRCAEDT;
 using diagnostic_msgs::msg::DiagnosticStatus;
 
 BlockageDiagComponent::BlockageDiagComponent(const rclcpp::NodeOptions & options)
@@ -175,7 +175,7 @@ void BlockageDiagComponent::filter(
   }
   ideal_horizontal_bins = static_cast<int>(
     (angle_range_deg_[1] + compensate_angle - angle_range_deg_[0]) / horizontal_resolution_);
-  pcl::PointCloud<PointXYZIRADRT>::Ptr pcl_input(new pcl::PointCloud<PointXYZIRADRT>);
+  pcl::PointCloud<PointXYZIRCAEDT>::Ptr pcl_input(new pcl::PointCloud<PointXYZIRCAEDT>);
   pcl::fromROSMsg(*input, *pcl_input);
   cv::Mat full_size_depth_map(
     cv::Size(ideal_horizontal_bins, vertical_bins), CV_16UC1, cv::Scalar(0));
@@ -196,7 +196,7 @@ void BlockageDiagComponent::filter(
     sky_blockage_range_deg_[1] = angle_range_deg_[1];
   } else {
     for (const auto p : pcl_input->points) {
-      double azimuth_deg = p.azimuth / 100.;
+      double azimuth_deg = p.azimuth * (180.0 / M_PI);
       if (
         ((azimuth_deg > angle_range_deg_[0]) &&
          (azimuth_deg <= angle_range_deg_[1] + compensate_angle)) ||
@@ -208,9 +208,9 @@ void BlockageDiagComponent::filter(
         uint16_t depth_intensity =
           UINT16_MAX * (1.0 - std::min(p.distance / max_distance_range_, 1.0));
         if (is_channel_order_top2down_) {
-          full_size_depth_map.at<uint16_t>(p.ring, horizontal_bin_index) = depth_intensity;
+          full_size_depth_map.at<uint16_t>(p.channel, horizontal_bin_index) = depth_intensity;
         } else {
-          full_size_depth_map.at<uint16_t>(vertical_bins - p.ring - 1, horizontal_bin_index) =
+          full_size_depth_map.at<uint16_t>(vertical_bins - p.channel - 1, horizontal_bin_index) =
             depth_intensity;
         }
       }

@@ -1,4 +1,4 @@
-// Copyright 2024 Tier IV, Inc.
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "pointcloud_preprocessor/utility/utilities.hpp"
+#include "pointcloud_preprocessor/utility/geometry.hpp"
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
 

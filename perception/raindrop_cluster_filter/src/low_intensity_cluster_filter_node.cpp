@@ -125,9 +125,9 @@ bool LowIntensityClusterFilter::isValidatedCluster(const sensor_msgs::msg::Point
     RCLCPP_WARN(get_logger(), "Invalid point cloud data. point_step is less than 16.");
     return true;
   }
-  for (sensor_msgs::PointCloud2ConstIterator<float> iter(cluster, "intensity"); iter != iter.end();
-       ++iter) {
-    mean_intensity += *iter;
+  for (sensor_msgs::PointCloud2ConstIterator<uint8_t> iter(cluster, "intensity");
+       iter != iter.end(); ++iter) {
+    mean_intensity += static_cast<float>(*iter);
   }
   const size_t num_points = cluster.width * cluster.height;
   mean_intensity /= static_cast<double>(num_points);

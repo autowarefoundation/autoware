@@ -73,16 +73,7 @@ This implementation inherits `pointcloud_preprocessor::Filter` class, please ref
 
 ## Assumptions / Known limits
 
-It is a prerequisite to input a scan point cloud in chronological order. In this repository it is defined as blow structure (please refer to [PointXYZIRADT](https://github.com/tier4/AutowareArchitectureProposal.iv/blob/5d8dff0db51634f0c42d2a3e87ca423fbee84348/sensing/preprocessor/pointcloud/pointcloud_preprocessor/include/pointcloud_preprocessor/outlier_filter/ring_outlier_filter_nodelet.hpp#L53-L62)).
-
-- X: x
-- Y: y
-- z: z
-- I: intensity
-- R: ring
-- A :azimuth
-- D: distance
-- T: time_stamp
+This nodes requires that the points of the input point cloud are in chronological order and that individual points follow the memory layout specified by [PointXYZIRCAEDT](../../../common/autoware_point_types/include/autoware_point_types/types.hpp#L95-L116).
 
 ## (Optional) Error detection and handling
 

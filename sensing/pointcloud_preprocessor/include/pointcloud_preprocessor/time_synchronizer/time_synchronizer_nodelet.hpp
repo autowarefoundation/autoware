@@ -87,7 +87,7 @@
 
 namespace pointcloud_preprocessor
 {
-using autoware_point_types::PointXYZI;
+using autoware_point_types::PointXYZIRC;
 using point_cloud_msg_wrapper::PointCloud2Modifier;
 // cspell:ignore Yoshi
 /** \brief @b PointCloudDataSynchronizerComponent is a special form of data
@@ -166,7 +166,7 @@ private:
   std::map<std::string, sensor_msgs::msg::PointCloud2::SharedPtr> synchronizeClouds();
   void publish();
 
-  void convertToXYZICloud(
+  void convertToXYZIRCCloud(
     const sensor_msgs::msg::PointCloud2::SharedPtr & input_ptr,
     sensor_msgs::msg::PointCloud2::SharedPtr & output_ptr);
   void setPeriod(const int64_t new_period);

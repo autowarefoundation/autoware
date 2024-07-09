@@ -16,7 +16,7 @@
 #define POINTCLOUD_PREPROCESSOR__POLYGON_REMOVER__POLYGON_REMOVER_HPP_
 
 #include "pointcloud_preprocessor/filter.hpp"
-#include "pointcloud_preprocessor/utility/utilities.hpp"
+#include "pointcloud_preprocessor/utility/geometry.hpp"
 
 #include <geometry_msgs/msg/polygon_stamped.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>

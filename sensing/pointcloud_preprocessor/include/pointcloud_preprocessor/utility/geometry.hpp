@@ -1,4 +1,4 @@
-// Copyright 2022 Tier IV, Inc.
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POINTCLOUD_PREPROCESSOR__UTILITY__UTILITIES_HPP_
-#define POINTCLOUD_PREPROCESSOR__UTILITY__UTILITIES_HPP_
+#ifndef POINTCLOUD_PREPROCESSOR__UTILITY__GEOMETRY_HPP_
+#define POINTCLOUD_PREPROCESSOR__UTILITY__GEOMETRY_HPP_
 
 #include <geometry_msgs/msg/polygon.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -81,14 +81,6 @@ void remove_polygon_cgal_from_cloud(
 bool point_within_cgal_polys(
   const pcl::PointXYZ & point, const std::vector<PolygonCgal> & polyline_polygons);
 
-/** \brief Return whether the input PointCloud2 data has the same layout than PointXYZI. That is to
- * say whether you can memcpy from the PointCloud2 data buffer to a PointXYZI */
-bool is_data_layout_compatible_with_PointXYZI(const sensor_msgs::msg::PointCloud2 & input);
-
-/** \brief Return whether the input PointCloud2 data has the same layout than PointXYZIRADRT. That
- * is to say whether you can memcpy from the PointCloud2 data buffer to a PointXYZIRADRT */
-bool is_data_layout_compatible_with_PointXYZIRADRT(const sensor_msgs::msg::PointCloud2 & input);
-
 }  // namespace pointcloud_preprocessor::utils
 
-#endif  // POINTCLOUD_PREPROCESSOR__UTILITY__UTILITIES_HPP_
+#endif  // POINTCLOUD_PREPROCESSOR__UTILITY__GEOMETRY_HPP_

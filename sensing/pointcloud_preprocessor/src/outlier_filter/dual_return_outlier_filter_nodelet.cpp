@@ -28,7 +28,7 @@
 
 namespace pointcloud_preprocessor
 {
-using autoware_point_types::PointXYZIRADRT;
+using autoware_point_types::PointXYZIRCAEDT;
 using autoware_point_types::ReturnType;
 using diagnostic_msgs::msg::DiagnosticStatus;
 
@@ -110,22 +110,22 @@ void DualReturnOutlierFilterComponent::filter(
   if (indices) {
     RCLCPP_WARN(get_logger(), "Indices are not supported and will be ignored");
   }
-  pcl::PointCloud<PointXYZIRADRT>::Ptr pcl_input(new pcl::PointCloud<PointXYZIRADRT>);
+  pcl::PointCloud<PointXYZIRCAEDT>::Ptr pcl_input(new pcl::PointCloud<PointXYZIRCAEDT>);
   pcl::fromROSMsg(*input, *pcl_input);
 
   uint32_t vertical_bins = vertical_bins_;
   uint32_t horizontal_bins = 36;
-  float max_azimuth = 36000.0f;
+  float max_azimuth = 2 * M_PI;
   float min_azimuth = 0.0f;
   switch (roi_mode_map_[roi_mode_]) {
     case 2: {
-      max_azimuth = max_azimuth_deg_ * 100.0;
-      min_azimuth = min_azimuth_deg_ * 100.0;
+      max_azimuth = max_azimuth_deg_ * (M_PI / 180.0);
+      min_azimuth = min_azimuth_deg_ * (M_PI / 180.0);
       break;
     }
 
     default: {
-      max_azimuth = 36000.0f;
+      max_azimuth = 2 * M_PI;
       min_azimuth = 0.0f;
       break;
     }
@@ -134,13 +134,13 @@ void DualReturnOutlierFilterComponent::filter(
   uint32_t horizontal_resolution =
     static_cast<uint32_t>((max_azimuth - min_azimuth) / horizontal_bins);
 
-  pcl::PointCloud<PointXYZIRADRT>::Ptr pcl_output(new pcl::PointCloud<PointXYZIRADRT>);
+  pcl::PointCloud<PointXYZIRCAEDT>::Ptr pcl_output(new pcl::PointCloud<PointXYZIRCAEDT>);
   pcl_output->points.reserve(pcl_input->points.size());
 
-  std::vector<pcl::PointCloud<PointXYZIRADRT>> pcl_input_ring_array;
-  std::vector<pcl::PointCloud<PointXYZIRADRT>> weak_first_pcl_input_ring_array;
+  std::vector<pcl::PointCloud<PointXYZIRCAEDT>> pcl_input_ring_array;
+  std::vector<pcl::PointCloud<PointXYZIRCAEDT>> weak_first_pcl_input_ring_array;
 
-  pcl::PointCloud<PointXYZIRADRT>::Ptr noise_output(new pcl::PointCloud<PointXYZIRADRT>);
+  pcl::PointCloud<PointXYZIRCAEDT>::Ptr noise_output(new pcl::PointCloud<PointXYZIRCAEDT>);
   noise_output->points.reserve(pcl_input->points.size());
   pcl_input_ring_array.resize(
     vertical_bins);  // TODO(davidw): this is for Pandar 40 only, make dynamic
@@ -149,9 +149,9 @@ void DualReturnOutlierFilterComponent::filter(
   // Split into 36 x 10 degree bins x 40 lines (TODO: change to dynamic)
   for (const auto & p : pcl_input->points) {
     if (p.return_type == ReturnType::DUAL_WEAK_FIRST) {
-      weak_first_pcl_input_ring_array.at(p.ring).push_back(p);
+      weak_first_pcl_input_ring_array.at(p.channel).push_back(p);
     } else {
-      pcl_input_ring_array.at(p.ring).push_back(p);
+      pcl_input_ring_array.at(p.channel).push_back(p);
     }
   }
 
@@ -164,16 +164,16 @@ void DualReturnOutlierFilterComponent::filter(
     }
     std::vector<float> deleted_azimuths;
     std::vector<float> deleted_distances;
-    pcl::PointCloud<PointXYZIRADRT> temp_segment;
+    pcl::PointCloud<PointXYZIRCAEDT> temp_segment;
 
     bool keep_next = false;
-    uint ring_id = weak_first_single_ring.points.front().ring;
+    uint ring_id = weak_first_single_ring.points.front().channel;
     for (auto iter = std::begin(weak_first_single_ring) + 1;
          iter != std::end(weak_first_single_ring) - 1; ++iter) {
       const float min_dist = std::min(iter->distance, (iter + 1)->distance);
       const float max_dist = std::max(iter->distance, (iter + 1)->distance);
       float azimuth_diff = (iter + 1)->azimuth - iter->azimuth;
-      azimuth_diff = azimuth_diff < 0.f ? azimuth_diff + 36000.f : azimuth_diff;
+      azimuth_diff = azimuth_diff < 0.f ? azimuth_diff + 2 * M_PI : azimuth_diff;
 
       if (max_dist < min_dist * weak_first_distance_ratio_ && azimuth_diff < max_azimuth_diff) {
         temp_segment.points.push_back(*iter);
@@ -283,14 +283,14 @@ void DualReturnOutlierFilterComponent::filter(
     if (input_ring.size() < 2) {
       continue;
     }
-    pcl::PointCloud<PointXYZIRADRT> temp_segment;
+    pcl::PointCloud<PointXYZIRCAEDT> temp_segment;
     bool keep_next = false;
     // uint ring_id = input_ring.points.front().ring;
     for (auto iter = std::begin(input_ring) + 1; iter != std::end(input_ring) - 1; ++iter) {
       const float min_dist = std::min(iter->distance, (iter + 1)->distance);
       const float max_dist = std::max(iter->distance, (iter + 1)->distance);
       float azimuth_diff = (iter + 1)->azimuth - iter->azimuth;
-      azimuth_diff = azimuth_diff < 0.f ? azimuth_diff + 36000.f : azimuth_diff;
+      azimuth_diff = azimuth_diff < 0.f ? azimuth_diff + 2 * M_PI : azimuth_diff;
 
       if (max_dist < min_dist * general_distance_ratio_ && azimuth_diff < max_azimuth_diff) {
         temp_segment.points.push_back(*iter);

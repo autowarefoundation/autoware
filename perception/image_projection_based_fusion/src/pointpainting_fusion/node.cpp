@@ -289,13 +289,13 @@ void PointPaintingFusionNode::fuseOnSingleImage(
   // tf2::doTransform(painted_pointcloud_msg, transformed_pointcloud, transform_stamped);
 
   const auto x_offset =
-    painted_pointcloud_msg.fields.at(static_cast<size_t>(autoware_point_types::PointIndex::X))
+    painted_pointcloud_msg.fields.at(static_cast<size_t>(autoware_point_types::PointXYZIRCIndex::X))
       .offset;
   const auto y_offset =
-    painted_pointcloud_msg.fields.at(static_cast<size_t>(autoware_point_types::PointIndex::Y))
+    painted_pointcloud_msg.fields.at(static_cast<size_t>(autoware_point_types::PointXYZIRCIndex::Y))
       .offset;
   const auto z_offset =
-    painted_pointcloud_msg.fields.at(static_cast<size_t>(autoware_point_types::PointIndex::Z))
+    painted_pointcloud_msg.fields.at(static_cast<size_t>(autoware_point_types::PointXYZIRCIndex::Z))
       .offset;
   const auto class_offset = painted_pointcloud_msg.fields.at(4).offset;
   const auto p_step = painted_pointcloud_msg.point_step;

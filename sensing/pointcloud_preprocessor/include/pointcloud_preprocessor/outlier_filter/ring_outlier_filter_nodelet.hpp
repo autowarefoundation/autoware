@@ -35,12 +35,15 @@
 
 namespace pointcloud_preprocessor
 {
-using autoware_point_types::PointXYZI;
 using point_cloud_msg_wrapper::PointCloud2Modifier;
 
 class RingOutlierFilterComponent : public pointcloud_preprocessor::Filter
 {
 protected:
+  using InputPointIndex = autoware_point_types::PointXYZIRCAEDTIndex;
+  using InputPointType = autoware_point_types::PointXYZIRCAEDT;
+  using OutputPointType = autoware_point_types::PointXYZIRC;
+
   virtual void filter(
     const PointCloud2ConstPtr & input, const IndicesPtr & indices, PointCloud2 & output);
 
@@ -83,8 +86,10 @@ private:
   {
     if (walk_size > num_points_threshold_) return true;
 
-    auto first_point = reinterpret_cast<const PointXYZI *>(&input->data[data_idx_both_ends.first]);
-    auto last_point = reinterpret_cast<const PointXYZI *>(&input->data[data_idx_both_ends.second]);
+    auto first_point =
+      reinterpret_cast<const InputPointType *>(&input->data[data_idx_both_ends.first]);
+    auto last_point =
+      reinterpret_cast<const InputPointType *>(&input->data[data_idx_both_ends.second]);
 
     const auto x = first_point->x - last_point->x;
     const auto y = first_point->y - last_point->y;
@@ -94,8 +99,7 @@ private:
   }
 
   void setUpPointCloudFormat(
-    const PointCloud2ConstPtr & input, PointCloud2 & formatted_points, size_t points_size,
-    size_t num_fields);
+    const PointCloud2ConstPtr & input, PointCloud2 & formatted_points, size_t points_size);
   float calculateVisibilityScore(const PointCloud2 & input);
 
 public:
