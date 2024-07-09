@@ -14,15 +14,15 @@
 
 #pragma once
 
-#include "euclidean_cluster/euclidean_cluster_interface.hpp"
-#include "euclidean_cluster/utils.hpp"
+#include "autoware/euclidean_cluster/euclidean_cluster_interface.hpp"
+#include "autoware/euclidean_cluster/utils.hpp"
 
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/point_types.h>
 
 #include <vector>
 
-namespace euclidean_cluster
+namespace autoware::euclidean_cluster
 {
 class VoxelGridBasedEuclideanCluster : public EuclideanClusterInterface
 {
@@ -52,4 +52,4 @@ private:
   int min_points_number_per_voxel_;
 };
 
-}  // namespace euclidean_cluster
+}  // namespace autoware::euclidean_cluster

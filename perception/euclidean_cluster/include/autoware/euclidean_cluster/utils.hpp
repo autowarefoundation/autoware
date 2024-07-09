@@ -24,7 +24,7 @@
 
 #include <vector>
 
-namespace euclidean_cluster
+namespace autoware::euclidean_cluster
 {
 geometry_msgs::msg::Point getCentroid(const sensor_msgs::msg::PointCloud2 & pointcloud);
 void convertPointCloudClusters2Msg(
@@ -37,4 +37,4 @@ void convertPointCloudClusters2Msg(
 void convertObjectMsg2SensorMsg(
   const tier4_perception_msgs::msg::DetectedObjectsWithFeature & input,
   sensor_msgs::msg::PointCloud2 & output);
-}  // namespace euclidean_cluster
+}  // namespace autoware::euclidean_cluster

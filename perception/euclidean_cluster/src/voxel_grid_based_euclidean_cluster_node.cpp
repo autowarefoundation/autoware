@@ -14,11 +14,11 @@
 
 #include "voxel_grid_based_euclidean_cluster_node.hpp"
 
-#include "euclidean_cluster/utils.hpp"
+#include "autoware/euclidean_cluster/utils.hpp"
 
 #include <vector>
 
-namespace euclidean_cluster
+namespace autoware::euclidean_cluster
 {
 VoxelGridBasedEuclideanClusterNode::VoxelGridBasedEuclideanClusterNode(
   const rclcpp::NodeOptions & options)
@@ -89,8 +89,8 @@ void VoxelGridBasedEuclideanClusterNode::onPointCloud(
   }
 }
 
-}  // namespace euclidean_cluster
+}  // namespace autoware::euclidean_cluster
 
 #include <rclcpp_components/register_node_macro.hpp>
 
-RCLCPP_COMPONENTS_REGISTER_NODE(euclidean_cluster::VoxelGridBasedEuclideanClusterNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::euclidean_cluster::VoxelGridBasedEuclideanClusterNode)

@@ -14,11 +14,11 @@
 
 #include "euclidean_cluster_node.hpp"
 
-#include "euclidean_cluster/utils.hpp"
+#include "autoware/euclidean_cluster/utils.hpp"
 
 #include <vector>
 
-namespace euclidean_cluster
+namespace autoware::euclidean_cluster
 {
 EuclideanClusterNode::EuclideanClusterNode(const rclcpp::NodeOptions & options)
 : Node("euclidean_cluster_node", options)
@@ -86,8 +86,8 @@ void EuclideanClusterNode::onPointCloud(
   }
 }
 
-}  // namespace euclidean_cluster
+}  // namespace autoware::euclidean_cluster
 
 #include <rclcpp_components/register_node_macro.hpp>
 
-RCLCPP_COMPONENTS_REGISTER_NODE(euclidean_cluster::EuclideanClusterNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::euclidean_cluster::EuclideanClusterNode)

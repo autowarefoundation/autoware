@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "euclidean_cluster/utils.hpp"
+#include "autoware/euclidean_cluster/utils.hpp"
 
 #include <autoware_perception_msgs/msg/object_classification.hpp>
 #include <sensor_msgs/msg/point_field.hpp>
@@ -19,7 +19,7 @@
 #include <tier4_perception_msgs/msg/detected_object_with_feature.hpp>
 #include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 
-namespace euclidean_cluster
+namespace autoware::euclidean_cluster
 {
 geometry_msgs::msg::Point getCentroid(const sensor_msgs::msg::PointCloud2 & pointcloud)
 {
@@ -128,4 +128,4 @@ void convertObjectMsg2SensorMsg(
   output.height = 1;
   output.is_dense = false;
 }
-}  // namespace euclidean_cluster
+}  // namespace autoware::euclidean_cluster

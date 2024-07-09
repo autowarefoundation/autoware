@@ -25,7 +25,7 @@
 #include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
 #endif
 
-#include "euclidean_cluster/utils.hpp"
+#include "autoware/euclidean_cluster/utils.hpp"
 
 namespace image_projection_based_fusion
 {
@@ -68,7 +68,7 @@ void RoiPointCloudFusionNode::postprocess(
   // publish debug cluster
   if (cluster_debug_pub_->get_subscription_count() > 0) {
     sensor_msgs::msg::PointCloud2 debug_cluster_msg;
-    euclidean_cluster::convertObjectMsg2SensorMsg(output_msg, debug_cluster_msg);
+    autoware::euclidean_cluster::convertObjectMsg2SensorMsg(output_msg, debug_cluster_msg);
     cluster_debug_pub_->publish(debug_cluster_msg);
   }
 }

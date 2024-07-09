@@ -49,7 +49,7 @@ def launch_setup(context, *args, **kwargs):
     use_low_height_euclidean_component = ComposableNode(
         package=pkg,
         namespace=ns,
-        plugin="euclidean_cluster::VoxelGridBasedEuclideanClusterNode",
+        plugin="autoware::euclidean_cluster::VoxelGridBasedEuclideanClusterNode",
         name="euclidean_cluster",
         remappings=[
             ("input", "low_height/pointcloud"),
@@ -61,7 +61,7 @@ def launch_setup(context, *args, **kwargs):
     disuse_low_height_euclidean_component = ComposableNode(
         package=pkg,
         namespace=ns,
-        plugin="euclidean_cluster::VoxelGridBasedEuclideanClusterNode",
+        plugin="autoware::euclidean_cluster::VoxelGridBasedEuclideanClusterNode",
         name="euclidean_cluster",
         remappings=[
             ("input", LaunchConfiguration("input_pointcloud")),

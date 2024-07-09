@@ -14,14 +14,14 @@
 
 #pragma once
 
-#include "euclidean_cluster/euclidean_cluster_interface.hpp"
-#include "euclidean_cluster/utils.hpp"
+#include "autoware/euclidean_cluster/euclidean_cluster_interface.hpp"
+#include "autoware/euclidean_cluster/utils.hpp"
 
 #include <pcl/point_types.h>
 
 #include <vector>
 
-namespace euclidean_cluster
+namespace autoware::euclidean_cluster
 {
 class EuclideanCluster : public EuclideanClusterInterface
 {
@@ -42,4 +42,4 @@ private:
   float tolerance_;
 };
 
-}  // namespace euclidean_cluster
+}  // namespace autoware::euclidean_cluster

@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "euclidean_cluster/voxel_grid_based_euclidean_cluster.hpp"
+#include "autoware/euclidean_cluster/voxel_grid_based_euclidean_cluster.hpp"
 
 #include <pcl/kdtree/kdtree.h>
 #include <pcl/segmentation/extract_clusters.h>
 
 #include <unordered_map>
 
-namespace euclidean_cluster
+namespace autoware::euclidean_cluster
 {
 VoxelGridBasedEuclideanCluster::VoxelGridBasedEuclideanCluster()
 {
@@ -166,4 +166,4 @@ bool VoxelGridBasedEuclideanCluster::cluster(
   return true;
 }
 
-}  // namespace euclidean_cluster
+}  // namespace autoware::euclidean_cluster

@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "euclidean_cluster/voxel_grid_based_euclidean_cluster.hpp"
+#include "autoware/euclidean_cluster/voxel_grid_based_euclidean_cluster.hpp"
 
 #include <autoware/universe_utils/ros/debug_publisher.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
@@ -26,7 +26,7 @@
 
 #include <memory>
 
-namespace euclidean_cluster
+namespace autoware::euclidean_cluster
 {
 class VoxelGridBasedEuclideanClusterNode : public rclcpp::Node
 {
@@ -45,4 +45,4 @@ private:
   std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_;
 };
 
-}  // namespace euclidean_cluster
+}  // namespace autoware::euclidean_cluster

@@ -24,7 +24,7 @@
 
 #include <vector>
 
-namespace euclidean_cluster
+namespace autoware::euclidean_cluster
 {
 class EuclideanClusterInterface
 {
@@ -54,4 +54,4 @@ protected:
   int max_cluster_size_;
 };
 
-}  // namespace euclidean_cluster
+}  // namespace autoware::euclidean_cluster

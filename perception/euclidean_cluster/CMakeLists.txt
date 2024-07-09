@@ -13,45 +13,45 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
 )
 
-ament_auto_add_library(cluster_lib SHARED
-  lib/utils.cpp
+ament_auto_add_library(${PROJECT_NAME}_lib SHARED
   lib/euclidean_cluster.cpp
   lib/voxel_grid_based_euclidean_cluster.cpp
+  lib/utils.cpp
 )
 
-target_link_libraries(cluster_lib
+target_link_libraries(${PROJECT_NAME}_lib
   ${PCL_LIBRARIES}
 )
 
-target_include_directories(cluster_lib
+target_include_directories(${PROJECT_NAME}_lib
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
-ament_auto_add_library(euclidean_cluster_node_core SHARED
+ament_auto_add_library(${PROJECT_NAME}_node_core SHARED
   src/euclidean_cluster_node.cpp
 )
-target_link_libraries(euclidean_cluster_node_core
+target_link_libraries(${PROJECT_NAME}_node_core
   ${PCL_LIBRARIES}
-  cluster_lib
+  ${PROJECT_NAME}_lib
 )
 
-rclcpp_components_register_node(euclidean_cluster_node_core
-  PLUGIN "euclidean_cluster::EuclideanClusterNode"
+rclcpp_components_register_node(${PROJECT_NAME}_node_core
+  PLUGIN "autoware::euclidean_cluster::EuclideanClusterNode"
   EXECUTABLE euclidean_cluster_node
 )
 
-ament_auto_add_library(voxel_grid_based_euclidean_cluster_node_core SHARED
+ament_auto_add_library(${PROJECT_NAME}_voxel_grid_node_core SHARED
   src/voxel_grid_based_euclidean_cluster_node.cpp
 )
-target_link_libraries(voxel_grid_based_euclidean_cluster_node_core
+target_link_libraries(${PROJECT_NAME}_voxel_grid_node_core
   ${PCL_LIBRARIES}
-  cluster_lib
+  ${PROJECT_NAME}_lib
 )
 
-rclcpp_components_register_node(voxel_grid_based_euclidean_cluster_node_core
-  PLUGIN "euclidean_cluster::VoxelGridBasedEuclideanClusterNode"
+rclcpp_components_register_node(${PROJECT_NAME}_voxel_grid_node_core
+  PLUGIN "autoware::euclidean_cluster::VoxelGridBasedEuclideanClusterNode"
   EXECUTABLE voxel_grid_based_euclidean_cluster_node
 )
 

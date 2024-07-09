@@ -115,7 +115,7 @@ DetectionByTracker::DetectionByTracker(const rclcpp::NodeOptions & node_options)
   setMaxSearchRange();
 
   shape_estimator_ = std::make_shared<autoware::shape_estimation::ShapeEstimator>(true, true);
-  cluster_ = std::make_shared<euclidean_cluster::VoxelGridBasedEuclideanCluster>(
+  cluster_ = std::make_shared<autoware::euclidean_cluster::VoxelGridBasedEuclideanCluster>(
     false, 10, 10000, 0.7, 0.3, 0);
   debugger_ = std::make_shared<Debugger>(this);
   published_time_publisher_ =
@@ -277,7 +277,7 @@ float DetectionByTracker::optimizeUnderSegmentedObject(
   const auto & label = target_object.classification.front().label;
 
   // initialize clustering parameters
-  euclidean_cluster::VoxelGridBasedEuclideanCluster cluster(
+  autoware::euclidean_cluster::VoxelGridBasedEuclideanCluster cluster(
     false, 4, 10000, initial_cluster_range, initial_voxel_size, 0);
 
   // convert to pcl

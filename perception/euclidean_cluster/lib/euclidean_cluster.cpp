@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "euclidean_cluster/euclidean_cluster.hpp"
+#include "autoware/euclidean_cluster/euclidean_cluster.hpp"
 
 #include <pcl/kdtree/kdtree.h>
 #include <pcl/segmentation/extract_clusters.h>
 
-namespace euclidean_cluster
+namespace autoware::euclidean_cluster
 {
 EuclideanCluster::EuclideanCluster()
 {
@@ -93,4 +93,4 @@ bool EuclideanCluster::cluster(
   return true;
 }
 
-}  // namespace euclidean_cluster
+}  // namespace autoware::euclidean_cluster
