@@ -90,6 +90,7 @@
           <!-- topic remap -->
           <remap from="~/input/path" to="path_smoother/path"/>
           <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+          <remap from="~/input/objects" to="/perception/object_recognition/objects"/>
           <remap from="~/output/path" to="path_optimizer/trajectory"/>
           <!-- params -->
           <param from="$(var common_param_path)"/>

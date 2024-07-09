@@ -1,4 +1,4 @@
-// Copyright 2023 Tier IV, Inc.
+// Copyright 2023-2024 Tier IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -186,7 +186,7 @@ void calculateCartesian(
     for (size_t i = 1; i < path.yaws.size(); ++i) {
       const auto dyaw =
         autoware::common::helper_functions::wrap_angle(path.yaws[i] - path.yaws[i - 1]);
-      path.curvatures.push_back(dyaw / (path.lengths[i - 1], path.lengths[i]));
+      path.curvatures.push_back(dyaw / (path.lengths[i] - path.lengths[i - 1]));
     }
     path.curvatures.push_back(path.curvatures.back());
   }
