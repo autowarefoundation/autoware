@@ -43,9 +43,6 @@ RUN --mount=type=ssh \
 
 # Generate install package lists
 COPY src/core /autoware/src/core
-COPY src/sensor_component /autoware/src/sensor_component
-COPY src/sensor_kit /autoware/src/sensor_kit
-COPY src/vehicle /autoware/src/vehicle
 RUN rosdep update && rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -55,7 +52,10 @@ RUN rosdep update && rosdep keys --ignore-src --from-paths src \
     && cat /rosdep-core-depend-packages.txt
 COPY src/launcher /autoware/src/launcher
 COPY src/param /autoware/src/param
+COPY src/sensor_component /autoware/src/sensor_component
+COPY src/sensor_kit /autoware/src/sensor_kit
 COPY src/universe /autoware/src/universe
+COPY src/vehicle /autoware/src/vehicle
 RUN rosdep update && rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
