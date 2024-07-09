@@ -6,6 +6,11 @@
     "lanelet2_map_loader": {
       "type": "object",
       "properties": {
+        "allow_unsupported_version": {
+          "type": "boolean",
+          "description": "Flag to load unsupported format_version anyway. If true, just prints warning.",
+          "default": "true"
+        },
         "center_line_resolution": {
           "type": "number",
           "description": "Resolution of the Lanelet center line [m]",

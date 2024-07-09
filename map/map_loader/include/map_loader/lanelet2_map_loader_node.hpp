@@ -15,6 +15,7 @@
 #ifndef MAP_LOADER__LANELET2_MAP_LOADER_NODE_HPP_
 #define MAP_LOADER__LANELET2_MAP_LOADER_NODE_HPP_
 
+#include <autoware_lanelet2_extension/version.hpp>
 #include <component_interface_specs/map.hpp>
 #include <component_interface_utils/rclcpp.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -29,6 +30,9 @@
 
 class Lanelet2MapLoaderNode : public rclcpp::Node
 {
+public:
+  static constexpr lanelet::autoware::Version version = lanelet::autoware::version;
+
 public:
   explicit Lanelet2MapLoaderNode(const rclcpp::NodeOptions & options);
 
