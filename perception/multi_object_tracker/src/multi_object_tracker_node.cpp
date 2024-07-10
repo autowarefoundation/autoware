@@ -350,10 +350,10 @@ void MultiObjectTracker::publish(const rclcpp::Time & time) const
   debugger_->endPublishTime(this->now(), time);
 
   if (debugger_->shouldPublishTentativeObjects()) {
-    TrackedObjects tentative_objects_msg;
-    tentative_objects_msg.header.frame_id = world_frame_id_;
-    processor_->getTentativeObjects(time, tentative_objects_msg);
-    debugger_->publishTentativeObjects(tentative_objects_msg);
+    TrackedObjects tentative_output_msg;
+    tentative_output_msg.header.frame_id = world_frame_id_;
+    processor_->getTentativeObjects(time, tentative_output_msg);
+    debugger_->publishTentativeObjects(tentative_output_msg);
   }
   debugger_->publishObjectsMarkers();
 }
