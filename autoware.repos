@@ -3,15 +3,15 @@ repositories:
   core/autoware_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_msgs.git
-    version: main
+    version: 1.1.0
   core/autoware_adapi_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_adapi_msgs.git
-    version: main
+    version: 1.3.0
   core/autoware_internal_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_internal_msgs.git
-    version: main
+    version: 1.1.0
   # TODO(youtalk): Remove autoware_common when https://github.com/autowarefoundation/autoware/issues/4911 is closed
   core/autoware_common:
     type: git
@@ -20,15 +20,15 @@ repositories:
   core/autoware_cmake:
     type: git
     url: https://github.com/autowarefoundation/autoware_cmake.git
-    version: main
+    version: 1.0.0
   core/autoware_utils:
     type: git
     url: https://github.com/autowarefoundation/autoware_utils.git
-    version: main
+    version: 1.0.0
   core/autoware_lanelet2_extension:
     type: git
     url: https://github.com/autowarefoundation/autoware_lanelet2_extension.git
-    version: main
+    version: 0.5.0
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
