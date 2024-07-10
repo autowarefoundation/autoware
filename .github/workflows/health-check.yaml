@@ -19,6 +19,7 @@ jobs:
 
   load-env:
     needs: label-check
+    if: ${{ needs.label-check.outputs.result == 'true' }}
     uses: ./.github/workflows/load-env.yaml
 
   docker-build:
