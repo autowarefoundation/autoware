@@ -599,21 +599,6 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
   // NOTE: the same velocity threshold as autoware::motion_utils::searchZeroVelocity
   static constexpr double vel_epsilon = 1e-3;
 
-  // Let vehicle start after the steering is converged for control accuracy
-  const bool keep_stopped_condition = std::fabs(current_vel) < vel_epsilon &&
-                                      m_enable_keep_stopped_until_steer_convergence &&
-                                      !lateral_sync_data_.is_steer_converged;
-  if (keep_stopped_condition) {
-    auto marker = createDefaultMarker(
-      "map", clock_->now(), "stop_reason", 0, Marker::TEXT_VIEW_FACING,
-      createMarkerScale(0.0, 0.0, 1.0), createMarkerColor(1.0, 1.0, 1.0, 0.999));
-    marker.pose = autoware::universe_utils::calcOffsetPose(
-      m_current_kinematic_state.pose.pose, m_wheel_base + m_front_overhang,
-      m_vehicle_width / 2 + 2.0, 1.5);
-    marker.text = "steering not\nconverged";
-    m_pub_stop_reason_marker->publish(marker);
-  }
-
   const bool stopping_condition = stop_dist < p.stopping_state_stop_dist;
 
   const bool is_stopped = std::abs(current_vel) < p.stopped_state_entry_vel &&
@@ -672,15 +657,18 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     m_under_control_starting_time =
       is_under_control ? std::make_shared<rclcpp::Time>(clock_->now()) : nullptr;
   }
+
+  if (m_control_state != ControlState::STOPPED) {
+    m_prev_keep_stopped_condition = std::nullopt;
+  }
+
   // transit state
   // in DRIVE state
   if (m_control_state == ControlState::DRIVE) {
     if (emergency_condition) {
       return changeState(ControlState::EMERGENCY);
     }
-    if (!is_under_control && stopped_condition && keep_stopped_condition) {
-      // NOTE: When the ego is stopped on manual driving, since the driving state may transit to
-      //       autonomous, keep_stopped_condition should be checked.
+    if (!is_under_control && stopped_condition) {
       return changeState(ControlState::STOPPED);
     }
 
@@ -723,19 +711,42 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
 
   // in STOPPED state
   if (m_control_state == ControlState::STOPPED) {
-    // -- debug print --
+    // debug print
     if (has_nonzero_target_vel && !departure_condition_from_stopped) {
       debug_msg_once("target speed > 0, but departure condition is not met. Keep STOPPED.");
     }
-    if (has_nonzero_target_vel && keep_stopped_condition) {
-      debug_msg_once("target speed > 0, but keep stop condition is met. Keep STOPPED.");
-    }
-    // ---------------
 
-    if (keep_stopped_condition) {
-      return changeState(ControlState::STOPPED);
-    }
     if (departure_condition_from_stopped) {
+      // Let vehicle start after the steering is converged for dry steering
+      const bool current_keep_stopped_condition =
+        std::fabs(current_vel) < vel_epsilon && !lateral_sync_data_.is_steer_converged;
+      // NOTE: Dry steering is considered unnecessary when the steering is converged twice in a
+      //       row. This is because lateral_sync_data_.is_steer_converged is not the current but
+      //       the previous value due to the order controllers' run and sync functions.
+      const bool keep_stopped_condition =
+        !m_prev_keep_stopped_condition ||
+        (current_keep_stopped_condition || *m_prev_keep_stopped_condition);
+      m_prev_keep_stopped_condition = current_keep_stopped_condition;
+      if (m_enable_keep_stopped_until_steer_convergence && keep_stopped_condition) {
+        // debug print
+        if (has_nonzero_target_vel) {
+          debug_msg_once("target speed > 0, but keep stop condition is met. Keep STOPPED.");
+        }
+
+        // publish debug marker
+        auto marker = createDefaultMarker(
+          "map", clock_->now(), "stop_reason", 0, Marker::TEXT_VIEW_FACING,
+          createMarkerScale(0.0, 0.0, 1.0), createMarkerColor(1.0, 1.0, 1.0, 0.999));
+        marker.pose = autoware::universe_utils::calcOffsetPose(
+          m_current_kinematic_state.pose.pose, m_wheel_base + m_front_overhang,
+          m_vehicle_width / 2 + 2.0, 1.5);
+        marker.text = "steering not\nconverged";
+        m_pub_stop_reason_marker->publish(marker);
+
+        // keep STOPPED
+        return;
+      }
+
       m_pid_vel.reset();
       m_lpf_vel_error->reset(0.0);
       // prevent the car from taking a long time to start to move

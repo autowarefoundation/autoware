@@ -234,6 +234,8 @@ private:
   // debug values
   DebugValues m_debug_values;
 
+  std::optional<bool> m_prev_keep_stopped_condition{std::nullopt};
+
   std::shared_ptr<rclcpp::Time> m_last_running_time{std::make_shared<rclcpp::Time>(clock_->now())};
 
   // Diagnostic

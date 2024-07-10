@@ -589,11 +589,28 @@ TEST_F(FakeNodeFixture, longitudinal_check_steer_converged)
   traj.points.push_back(make_traj_point(0.0, 0.0, 1.0f));
   traj.points.push_back(make_traj_point(50.0, 0.0, 1.0f));
   traj.points.push_back(make_traj_point(100.0, 0.0, 1.0f));
-  tester.traj_pub->publish(traj);
 
-  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+  {  // Check if the ego can keep stopped when the steering is not converged.
+    tester.traj_pub->publish(traj);
+    test_utils::waitForMessage(tester.node, this, tester.received_control_command);
 
-  ASSERT_TRUE(tester.received_control_command);
-  // Keep stopped state when the lateral control is not converged.
-  EXPECT_DOUBLE_EQ(tester.cmd_msg->longitudinal.velocity, 0.0f);
+    ASSERT_TRUE(tester.received_control_command);
+    // Keep stopped state when the lateral control is not converged.
+    EXPECT_DOUBLE_EQ(tester.cmd_msg->longitudinal.velocity, 0.0f);
+  }
+
+  {  // Check if the ego can keep stopped after the following sequence
+    // 1. not converged -> 2. converged -> 3. not converged
+    tester.publish_steer_angle(0.0);
+    tester.traj_pub->publish(traj);
+    test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+
+    tester.publish_steer_angle(steering_tire_angle);
+    tester.traj_pub->publish(traj);
+    test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+
+    ASSERT_TRUE(tester.received_control_command);
+    // Keep stopped state when the lateral control is not converged.
+    EXPECT_DOUBLE_EQ(tester.cmd_msg->longitudinal.velocity, 0.0f);
+  }
 }
