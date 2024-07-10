@@ -55,7 +55,15 @@ rclcpp_components_register_node(${PROJECT_NAME}_voxel_grid_node_core
   EXECUTABLE voxel_grid_based_euclidean_cluster_node
 )
 
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  ament_auto_add_gtest(test_voxel_grid_based_euclidean_cluster_fusion
+    test/test_voxel_grid_based_euclidean_cluster.cpp
+  )
+endif()
+
 ament_auto_package(INSTALL_TO_SHARE
     launch
     config
+    test
 )
