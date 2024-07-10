@@ -11,13 +11,69 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 find_package(OpenCV REQUIRED)
-include(CheckLanguage)
-check_language(CUDA)
-if(CMAKE_CUDA_COMPILER)
-  enable_language(CUDA)
+
+option(CUDA_VERBOSE "Verbose output of CUDA modules" OFF)
+
+# set flags for CUDA availability
+option(CUDA_AVAIL "CUDA available" OFF)
+find_package(CUDA)
+if(CUDA_FOUND)
+  find_library(CUBLAS_LIBRARIES cublas HINTS
+    ${CUDA_TOOLKIT_ROOT_DIR}/lib64
+    ${CUDA_TOOLKIT_ROOT_DIR}/lib
+  )
+  if(CUDA_VERBOSE)
+    message("CUDA is available!")
+    message("CUDA Libs: ${CUDA_LIBRARIES}")
+    message("CUDA Headers: ${CUDA_INCLUDE_DIRS}")
+  endif()
+  # Note: cublas_device was depreciated in CUDA version 9.2
+  #       https://forums.developer.nvidia.com/t/where-can-i-find-libcublas-device-so-or-libcublas-device-a/67251/4
+  #       In LibTorch, CUDA_cublas_device_LIBRARY is used.
+  unset(CUDA_cublas_device_LIBRARY CACHE)
+  set(CUDA_AVAIL ON)
 else()
-  message(WARNING "CUDA is not found. preprocess acceleration using CUDA will not be available.")
+  message("CUDA NOT FOUND")
+  set(CUDA_AVAIL OFF)
 endif()
+
+# set flags for TensorRT availability
+option(TRT_AVAIL "TensorRT available" OFF)
+# try to find the tensorRT modules
+find_library(NVINFER nvinfer)
+find_library(NVONNXPARSER nvonnxparser)
+if(NVINFER AND NVONNXPARSER)
+  if(CUDA_VERBOSE)
+    message("TensorRT is available!")
+    message("NVINFER: ${NVINFER}")
+    message("NVONNXPARSER: ${NVONNXPARSER}")
+  endif()
+  set(TRT_AVAIL ON)
+else()
+  message("TensorRT is NOT Available")
+  set(TRT_AVAIL OFF)
+endif()
+
+# set flags for CUDNN availability
+option(CUDNN_AVAIL "CUDNN available" OFF)
+# try to find the CUDNN module
+find_library(CUDNN_LIBRARY
+NAMES libcudnn.so${__cudnn_ver_suffix} libcudnn${__cudnn_ver_suffix}.dylib ${__cudnn_lib_win_name}
+PATHS $ENV{LD_LIBRARY_PATH} ${__libpath_cudart} ${CUDNN_ROOT_DIR} ${PC_CUDNN_LIBRARY_DIRS} ${CMAKE_INSTALL_PREFIX}
+PATH_SUFFIXES lib lib64 bin
+DOC "CUDNN library."
+)
+if(CUDNN_LIBRARY)
+  if(CUDA_VERBOSE)
+    message(STATUS "CUDNN is available!")
+    message(STATUS "CUDNN_LIBRARY: ${CUDNN_LIBRARY}")
+  endif()
+  set(CUDNN_AVAIL ON)
+else()
+  message("CUDNN is NOT Available")
+  set(CUDNN_AVAIL OFF)
+endif()
+
 find_package(OpenMP)
 if(OpenMP_FOUND)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -34,7 +90,7 @@ ament_target_dependencies(${PROJECT_NAME}
   OpenCV
 )
 
-if(CMAKE_CUDA_COMPILER)
+if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   # Officially, add_library supports .cu file compilation.
   # However, as of cmake 3.22.1, it seems to fail compilation because compiler flags for
   # C++ are directly passed to nvcc (they are originally space separated
