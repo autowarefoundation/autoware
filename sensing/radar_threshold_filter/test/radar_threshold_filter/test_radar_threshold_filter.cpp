@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_threshold_filter/radar_threshold_filter_node.hpp"
+#include "../../src/radar_threshold_filter_node.hpp"
 
 #include <radar_msgs/msg/radar_scan.hpp>
 
@@ -21,8 +21,8 @@
 TEST(RadarThresholdFilter, isWithinThreshold)
 {
   rclcpp::init(0, nullptr);
+  using autoware::radar_threshold_filter::RadarThresholdFilterNode;
   using radar_msgs::msg::RadarReturn;
-  using radar_threshold_filter::RadarThresholdFilterNode;
 
   const double amplitude_min = -10.0;
   const double amplitude_max = 100.0;

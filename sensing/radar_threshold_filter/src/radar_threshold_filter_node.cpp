@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_threshold_filter/radar_threshold_filter_node.hpp"
+#include "radar_threshold_filter_node.hpp"
 
 #include <radar_msgs/msg/radar_scan.hpp>
 
 #include <memory>
 #include <string>
 #include <vector>
-
-using std::placeholders::_1;
 
 namespace
 {
@@ -51,10 +49,11 @@ bool isWithin(double value, double max, double min)
 }
 }  // namespace
 
-namespace radar_threshold_filter
+namespace autoware::radar_threshold_filter
 {
 using radar_msgs::msg::RadarReturn;
 using radar_msgs::msg::RadarScan;
+using std::placeholders::_1;
 
 RadarThresholdFilterNode::RadarThresholdFilterNode(const rclcpp::NodeOptions & node_options)
 : Node("radar_threshold_filter", node_options)
@@ -156,7 +155,7 @@ bool RadarThresholdFilterNode::isWithinThreshold(const RadarReturn & radar_retur
   return true;
 }
 
-}  // namespace radar_threshold_filter
+}  // namespace autoware::radar_threshold_filter
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(radar_threshold_filter::RadarThresholdFilterNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::radar_threshold_filter::RadarThresholdFilterNode)
