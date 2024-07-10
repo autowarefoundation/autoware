@@ -1,7 +1,6 @@
 name: health-check-self-hosted
 
 on:
-  pull_request:
   schedule:
     - cron: 0 12 * * *
   workflow_dispatch:
