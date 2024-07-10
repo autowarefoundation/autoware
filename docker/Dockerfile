@@ -119,9 +119,9 @@ RUN --mount=type=ssh \
 # Build Autoware
 COPY src/launcher /autoware/src/launcher
 COPY src/param /autoware/src/param
-COPY src/universe /autoware/src/universe
 COPY src/sensor_component /autoware/src/sensor_component
 COPY src/sensor_kit /autoware/src/sensor_kit
+COPY src/universe /autoware/src/universe
 COPY src/vehicle /autoware/src/vehicle
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
