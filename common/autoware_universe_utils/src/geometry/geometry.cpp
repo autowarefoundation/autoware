@@ -225,7 +225,7 @@ geometry_msgs::msg::Pose transformPose(
 }
 
 geometry_msgs::msg::Pose transformPose(
-  const geometry_msgs::msg::Pose & pose, geometry_msgs::msg::Transform & transform)
+  const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Transform & transform)
 {
   geometry_msgs::msg::TransformStamped transform_stamped;
   transform_stamped.transform = transform;

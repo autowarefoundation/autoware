@@ -413,7 +413,7 @@ geometry_msgs::msg::Pose transformPose(
   const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::TransformStamped & transform);
 
 geometry_msgs::msg::Pose transformPose(
-  const geometry_msgs::msg::Pose & pose, geometry_msgs::msg::Transform & transform);
+  const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Transform & transform);
 
 geometry_msgs::msg::Pose transformPose(
   const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Pose & pose_transform);
