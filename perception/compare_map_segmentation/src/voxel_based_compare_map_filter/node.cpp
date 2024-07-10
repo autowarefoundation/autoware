@@ -12,100 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "compare_map_segmentation/voxel_distance_based_compare_map_filter_nodelet.hpp"
+#include "node.hpp"
+
+#include "autoware/universe_utils/ros/debug_publisher.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
 
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/search/kdtree.h>
 #include <pcl/segmentation/segment_differences.h>
 
+#include <string>
 #include <vector>
 
-namespace compare_map_segmentation
+namespace autoware::compare_map_segmentation
 {
+using pointcloud_preprocessor::get_param;
 
-void VoxelDistanceBasedStaticMapLoader::onMapCallback(
-  const sensor_msgs::msg::PointCloud2::ConstSharedPtr map)
-{
-  pcl::PointCloud<pcl::PointXYZ> map_pcl;
-  pcl::fromROSMsg<pcl::PointXYZ>(*map, map_pcl);
-  const auto map_pcl_ptr = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(map_pcl);
-
-  (*mutex_ptr_).lock();
-  map_ptr_ = map_pcl_ptr;
-  *tf_map_input_frame_ = map_ptr_->header.frame_id;
-  // voxel
-  voxel_map_ptr_.reset(new pcl::PointCloud<pcl::PointXYZ>);
-  voxel_grid_.setLeafSize(voxel_leaf_size_, voxel_leaf_size_, voxel_leaf_size_);
-  voxel_grid_.setInputCloud(map_pcl_ptr);
-  voxel_grid_.setSaveLeafLayout(true);
-  voxel_grid_.filter(*voxel_map_ptr_);
-  // kdtree
-  map_ptr_ = map_pcl_ptr;
-
-  if (!tree_) {
-    if (map_ptr_->isOrganized()) {
-      tree_.reset(new pcl::search::OrganizedNeighbor<pcl::PointXYZ>());
-    } else {
-      tree_.reset(new pcl::search::KdTree<pcl::PointXYZ>(false));
-    }
-  }
-  tree_->setInputCloud(map_ptr_);
-  (*mutex_ptr_).unlock();
-}
-
-bool VoxelDistanceBasedStaticMapLoader::is_close_to_map(
-  const pcl::PointXYZ & point, const double distance_threshold)
-{
-  if (voxel_map_ptr_ == NULL) {
-    return false;
-  }
-  if (map_ptr_ == NULL) {
-    return false;
-  }
-  if (tree_ == NULL) {
-    return false;
-  }
-  if (is_close_to_neighbor_voxels(point, distance_threshold, voxel_grid_, tree_)) {
-    return true;
-  }
-  return false;
-}
-
-bool VoxelDistanceBasedDynamicMapLoader::is_close_to_map(
-  const pcl::PointXYZ & point, const double distance_threshold)
-{
-  if (current_voxel_grid_dict_.size() == 0) {
-    return false;
-  }
-
-  const int map_grid_index = static_cast<int>(
-    std::floor((point.x - origin_x_) / map_grid_size_x_) +
-    map_grids_x_ * std::floor((point.y - origin_y_) / map_grid_size_y_));
-
-  if (static_cast<size_t>(map_grid_index) >= current_voxel_grid_array_.size()) {
-    return false;
-  }
-  if (
-    current_voxel_grid_array_.at(map_grid_index) != NULL &&
-    is_close_to_neighbor_voxels(
-      point, distance_threshold, current_voxel_grid_array_.at(map_grid_index)->map_cell_voxel_grid,
-      current_voxel_grid_array_.at(map_grid_index)->map_cell_kdtree)) {
-    return true;
-  }
-  return false;
-}
-
-VoxelDistanceBasedCompareMapFilterComponent::VoxelDistanceBasedCompareMapFilterComponent(
+VoxelBasedCompareMapFilterComponent::VoxelBasedCompareMapFilterComponent(
   const rclcpp::NodeOptions & options)
-: Filter("VoxelDistanceBasedCompareMapFilter", options)
+: Filter("VoxelBasedCompareMapFilter", options)
 {
   // initialize debug tool
   {
     using autoware::universe_utils::DebugPublisher;
     using autoware::universe_utils::StopWatch;
     stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
-    debug_publisher_ =
-      std::make_unique<DebugPublisher>(this, "voxel_distance_based_compare_map_filter");
+    debug_publisher_ = std::make_unique<DebugPublisher>(this, "voxel_based_compare_map_filter");
     stop_watch_ptr_->tic("cyclic_time");
     stop_watch_ptr_->tic("processing_time");
   }
@@ -117,19 +49,22 @@ VoxelDistanceBasedCompareMapFilterComponent::VoxelDistanceBasedCompareMapFilterC
     RCLCPP_ERROR(this->get_logger(), "downsize_ratio_z_axis should be positive");
     return;
   }
+  set_map_in_voxel_grid_ = false;
   if (use_dynamic_map_loading) {
     rclcpp::CallbackGroup::SharedPtr main_callback_group;
     main_callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-    voxel_distance_based_map_loader_ = std::make_unique<VoxelDistanceBasedDynamicMapLoader>(
+    voxel_grid_map_loader_ = std::make_unique<VoxelGridDynamicMapLoader>(
       this, distance_threshold_, downsize_ratio_z_axis, &tf_input_frame_, &mutex_,
       main_callback_group);
   } else {
-    voxel_distance_based_map_loader_ = std::make_unique<VoxelDistanceBasedStaticMapLoader>(
+    voxel_grid_map_loader_ = std::make_unique<VoxelGridStaticMapLoader>(
       this, distance_threshold_, downsize_ratio_z_axis, &tf_input_frame_, &mutex_);
   }
+  tf_input_frame_ = *(voxel_grid_map_loader_->tf_map_input_frame_);
+  RCLCPP_INFO(this->get_logger(), "tf_map_input_frame: %s", tf_input_frame_.c_str());
 }
 
-void VoxelDistanceBasedCompareMapFilterComponent::filter(
+void VoxelBasedCompareMapFilterComponent::filter(
   const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
   PointCloud2 & output)
 {
@@ -148,13 +83,12 @@ void VoxelDistanceBasedCompareMapFilterComponent::filter(
     std::memcpy(&point.x, &input->data[global_offset + offset_x], sizeof(float));
     std::memcpy(&point.y, &input->data[global_offset + offset_y], sizeof(float));
     std::memcpy(&point.z, &input->data[global_offset + offset_z], sizeof(float));
-    if (voxel_distance_based_map_loader_->is_close_to_map(point, distance_threshold_)) {
+    if (voxel_grid_map_loader_->is_close_to_map(point, distance_threshold_)) {
       continue;
     }
     std::memcpy(&output.data[output_size], &input->data[global_offset], point_step);
     output_size += point_step;
   }
-
   output.header = input->header;
   output.fields = input->fields;
   output.data.resize(output_size);
@@ -174,8 +108,9 @@ void VoxelDistanceBasedCompareMapFilterComponent::filter(
       "debug/processing_time_ms", processing_time_ms);
   }
 }
-}  // namespace compare_map_segmentation
+
+}  // namespace autoware::compare_map_segmentation
 
 #include <rclcpp_components/register_node_macro.hpp>
 RCLCPP_COMPONENTS_REGISTER_NODE(
-  compare_map_segmentation::VoxelDistanceBasedCompareMapFilterComponent)
+  autoware::compare_map_segmentation::VoxelBasedCompareMapFilterComponent)

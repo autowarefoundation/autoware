@@ -391,7 +391,7 @@ class GroundSegmentationPipeline:
         components.append(
             ComposableNode(
                 package="compare_map_segmentation",
-                plugin="compare_map_segmentation::CompareElevationMapFilterComponent",
+                plugin="autoware::compare_map_segmentation::CompareElevationMapFilterComponent",
                 name="compare_elevation_map_filter",
                 namespace="elevation_map",
                 remappings=[

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef COMPARE_MAP_SEGMENTATION__COMPARE_ELEVATION_MAP_FILTER_NODE_HPP_
-#define COMPARE_MAP_SEGMENTATION__COMPARE_ELEVATION_MAP_FILTER_NODE_HPP_
+#ifndef COMPARE_ELEVATION_MAP_FILTER__NODE_HPP_
+#define COMPARE_ELEVATION_MAP_FILTER__NODE_HPP_
 
 #include "pointcloud_preprocessor/filter.hpp"
 
@@ -29,7 +29,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
-namespace compare_map_segmentation
+namespace autoware::compare_map_segmentation
 {
 class CompareElevationMapFilterComponent : public pointcloud_preprocessor::Filter
 {
@@ -56,6 +56,6 @@ public:
   PCL_MAKE_ALIGNED_OPERATOR_NEW
   explicit CompareElevationMapFilterComponent(const rclcpp::NodeOptions & options);
 };
-}  // namespace compare_map_segmentation
+}  // namespace autoware::compare_map_segmentation
 
-#endif  // COMPARE_MAP_SEGMENTATION__COMPARE_ELEVATION_MAP_FILTER_NODE_HPP_
+#endif  // COMPARE_ELEVATION_MAP_FILTER__NODE_HPP_

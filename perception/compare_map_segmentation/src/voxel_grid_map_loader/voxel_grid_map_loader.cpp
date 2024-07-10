@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "compare_map_segmentation/voxel_grid_map_loader.hpp"
+#include "voxel_grid_map_loader.hpp"
 
+namespace autoware::compare_map_segmentation
+{
 VoxelGridMapLoader::VoxelGridMapLoader(
   rclcpp::Node * node, double leaf_size, double downsize_ratio_z_axis,
   std::string * tf_map_input_frame, std::mutex * mutex)
@@ -462,3 +464,5 @@ void VoxelGridDynamicMapLoader::request_update_map(const geometry_msgs::msg::Poi
     }
   }
 }
+
+}  // namespace autoware::compare_map_segmentation

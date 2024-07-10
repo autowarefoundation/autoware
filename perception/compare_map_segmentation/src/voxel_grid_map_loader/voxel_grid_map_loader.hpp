@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef COMPARE_MAP_SEGMENTATION__VOXEL_GRID_MAP_LOADER_HPP_
-#define COMPARE_MAP_SEGMENTATION__VOXEL_GRID_MAP_LOADER_HPP_
+#ifndef VOXEL_GRID_MAP_LOADER__VOXEL_GRID_MAP_LOADER_HPP_
+#define VOXEL_GRID_MAP_LOADER__VOXEL_GRID_MAP_LOADER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_map_msgs/srv/get_differential_point_cloud_map.hpp>
+#include "autoware_map_msgs/srv/get_differential_point_cloud_map.hpp"
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -33,6 +33,8 @@
 #include <utility>
 #include <vector>
 
+namespace autoware::compare_map_segmentation
+{
 template <typename T, typename U>
 double distance3D(const T p1, const U p2)
 {
@@ -138,7 +140,7 @@ public:
     rclcpp::Node * node, double leaf_size, double downsize_ratio_z_axis,
     std::string * tf_map_input_frame, std::mutex * mutex);
   virtual void onMapCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr map);
-  virtual bool is_close_to_map(const pcl::PointXYZ & point, const double distance_threshold);
+  bool is_close_to_map(const pcl::PointXYZ & point, const double distance_threshold) override;
 };
 
 class VoxelGridDynamicMapLoader : public VoxelGridMapLoader
@@ -199,7 +201,7 @@ public:
   void timer_callback();
   bool should_update_map() const;
   void request_update_map(const geometry_msgs::msg::Point & position);
-  virtual bool is_close_to_map(const pcl::PointXYZ & point, const double distance_threshold);
+  bool is_close_to_map(const pcl::PointXYZ & point, const double distance_threshold) override;
   /** \brief Check if point close to map pointcloud in the */
   bool is_close_to_next_map_grid(
     const pcl::PointXYZ & point, const int current_map_grid_index, const double distance_threshold);
@@ -319,4 +321,6 @@ public:
   }
 };
 
-#endif  // COMPARE_MAP_SEGMENTATION__VOXEL_GRID_MAP_LOADER_HPP_
+}  // namespace autoware::compare_map_segmentation
+
+#endif  // VOXEL_GRID_MAP_LOADER__VOXEL_GRID_MAP_LOADER_HPP_

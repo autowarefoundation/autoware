@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef COMPARE_MAP_SEGMENTATION__VOXEL_BASED_COMPARE_MAP_FILTER_NODELET_HPP_
-#define COMPARE_MAP_SEGMENTATION__VOXEL_BASED_COMPARE_MAP_FILTER_NODELET_HPP_
+#ifndef VOXEL_BASED_COMPARE_MAP_FILTER__NODE_HPP_
+#define VOXEL_BASED_COMPARE_MAP_FILTER__NODE_HPP_
 
-#include "compare_map_segmentation/voxel_grid_map_loader.hpp"
+#include "../voxel_grid_map_loader/voxel_grid_map_loader.hpp"
 #include "pointcloud_preprocessor/filter.hpp"
 
 #include <pcl/filters/voxel_grid.h>
@@ -24,7 +24,7 @@
 #include <memory>
 #include <vector>
 
-namespace compare_map_segmentation
+namespace autoware::compare_map_segmentation
 {
 class VoxelBasedCompareMapFilterComponent : public pointcloud_preprocessor::Filter
 {
@@ -45,6 +45,6 @@ public:
   PCL_MAKE_ALIGNED_OPERATOR_NEW
   explicit VoxelBasedCompareMapFilterComponent(const rclcpp::NodeOptions & options);
 };
-}  // namespace compare_map_segmentation
+}  // namespace autoware::compare_map_segmentation
 
-#endif  // COMPARE_MAP_SEGMENTATION__VOXEL_BASED_COMPARE_MAP_FILTER_NODELET_HPP_
+#endif  // VOXEL_BASED_COMPARE_MAP_FILTER__NODE_HPP_

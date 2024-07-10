@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "compare_map_segmentation/compare_elevation_map_filter_node.hpp"
+#include "node.hpp"
 
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_cv/GridMapCvConverter.hpp>
@@ -33,7 +33,7 @@
 #include <string>
 #include <utility>
 
-namespace compare_map_segmentation
+namespace autoware::compare_map_segmentation
 {
 CompareElevationMapFilterComponent::CompareElevationMapFilterComponent(
   const rclcpp::NodeOptions & options)
@@ -94,7 +94,8 @@ void CompareElevationMapFilterComponent::filter(
   output.header.stamp = input->header.stamp;
   output.header.frame_id = output_frame;
 }
-}  // namespace compare_map_segmentation
+}  // namespace autoware::compare_map_segmentation
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(compare_map_segmentation::CompareElevationMapFilterComponent)
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::compare_map_segmentation::CompareElevationMapFilterComponent)

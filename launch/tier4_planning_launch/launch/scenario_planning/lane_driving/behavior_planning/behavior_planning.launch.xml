@@ -260,7 +260,12 @@
   <group if="$(var launch_compare_map_pipeline)">
     <!-- use pointcloud container -->
     <load_composable_node target="$(var pointcloud_container_name)">
-      <composable_node pkg="compare_map_segmentation" plugin="compare_map_segmentation::VoxelDistanceBasedCompareMapFilterComponent" name="voxel_distance_based_compare_map_filter_node" namespace="">
+      <composable_node
+        pkg="compare_map_segmentation"
+        plugin="autoware::compare_map_segmentation::VoxelDistanceBasedCompareMapFilterComponent"
+        name="voxel_distance_based_compare_map_filter_node"
+        namespace=""
+      >
         <!-- topic remap -->
         <remap from="map" to="$(var input_pointcloud_map_topic_name)"/>
         <remap from="kinematic_state" to="/localization/kinematic_state"/>

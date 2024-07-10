@@ -21,23 +21,23 @@ include_directories(
   ${GRID_MAP_INCLUDE_DIR}
 )
 
-add_library(compare_map_segmentation SHARED
-  src/distance_based_compare_map_filter_nodelet.cpp
-  src/voxel_based_approximate_compare_map_filter_nodelet.cpp
-  src/voxel_based_compare_map_filter_nodelet.cpp
-  src/voxel_distance_based_compare_map_filter_nodelet.cpp
-  src/compare_elevation_map_filter_node.cpp
-  src/voxel_grid_map_loader.cpp
+add_library(${PROJECT_NAME} SHARED
+  src/distance_based_compare_map_filter/node.cpp
+  src/voxel_based_approximate_compare_map_filter/node.cpp
+  src/voxel_based_compare_map_filter/node.cpp
+  src/voxel_distance_based_compare_map_filter/node.cpp
+  src/compare_elevation_map_filter/node.cpp
+  src/voxel_grid_map_loader/voxel_grid_map_loader.cpp
 )
 
-target_link_libraries(compare_map_segmentation
+target_link_libraries(${PROJECT_NAME}
   pointcloud_preprocessor::pointcloud_preprocessor_filter_base
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES}
 )
 
-ament_target_dependencies(compare_map_segmentation
+ament_target_dependencies(${PROJECT_NAME}
   grid_map_pcl
   grid_map_ros
   pcl_conversions
@@ -50,7 +50,7 @@ ament_target_dependencies(compare_map_segmentation
 )
 
 if(OPENMP_FOUND)
-  set_target_properties(compare_map_segmentation PROPERTIES
+  set_target_properties(${PROJECT_NAME} PROPERTIES
     COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
     LINK_FLAGS ${OpenMP_CXX_FLAGS}
   )
@@ -58,32 +58,32 @@ endif()
 
 # ========== Compare Map Filter ==========
 # -- Distance Based Compare Map Filter --
-rclcpp_components_register_node(compare_map_segmentation
-  PLUGIN "compare_map_segmentation::DistanceBasedCompareMapFilterComponent"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::compare_map_segmentation::DistanceBasedCompareMapFilterComponent"
   EXECUTABLE distance_based_compare_map_filter_node)
 
 # -- Voxel Based Approximate Compare Map Filter --
-rclcpp_components_register_node(compare_map_segmentation
-  PLUGIN "compare_map_segmentation::VoxelBasedApproximateCompareMapFilterComponent"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::compare_map_segmentation::VoxelBasedApproximateCompareMapFilterComponent"
   EXECUTABLE voxel_based_approximate_compare_map_filter_node)
 
 # -- Voxel Based Compare Map Filter --
-rclcpp_components_register_node(compare_map_segmentation
-  PLUGIN "compare_map_segmentation::VoxelBasedCompareMapFilterComponent"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::compare_map_segmentation::VoxelBasedCompareMapFilterComponent"
   EXECUTABLE voxel_based_compare_map_filter_node)
 
 # -- Voxel Distance Based Compare Map Filter --
-rclcpp_components_register_node(compare_map_segmentation
-  PLUGIN "compare_map_segmentation::VoxelDistanceBasedCompareMapFilterComponent"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::compare_map_segmentation::VoxelDistanceBasedCompareMapFilterComponent"
   EXECUTABLE voxel_distance_based_compare_map_filter_node)
 
 # -- Compare Elevation Map Filter --
-rclcpp_components_register_node(compare_map_segmentation
-  PLUGIN "compare_map_segmentation::CompareElevationMapFilterComponent"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::compare_map_segmentation::CompareElevationMapFilterComponent"
   EXECUTABLE compare_elevation_map_filter_node)
 
 install(
-  TARGETS compare_map_segmentation
+  TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
