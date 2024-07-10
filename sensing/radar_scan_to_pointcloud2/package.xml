@@ -14,8 +14,8 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>libpcl-common</depend>
   <depend>pcl_conversions</depend>
-  <depend>pcl_ros</depend>
   <depend>radar_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

@@ -5,13 +5,22 @@ project(radar_scan_to_pointcloud2)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
+find_package(PCL REQUIRED COMPONENTS common)
+
 # Targets
-ament_auto_add_library(radar_scan_to_pointcloud2_node_component SHARED
-  src/radar_scan_to_pointcloud2_node/radar_scan_to_pointcloud2_node.cpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/radar_scan_to_pointcloud2_node.cpp
 )
 
-rclcpp_components_register_node(radar_scan_to_pointcloud2_node_component
-  PLUGIN "radar_scan_to_pointcloud2::RadarScanToPointcloud2Node"
+target_include_directories(${PROJECT_NAME}
+  SYSTEM PUBLIC ${PCL_INCLUDE_DIRS}
+)
+target_link_libraries(${PROJECT_NAME}
+  ${PCL_LIBRARIES}
+)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::radar_scan_to_pointcloud2::RadarScanToPointcloud2Node"
   EXECUTABLE radar_scan_to_pointcloud2_node
 )
 

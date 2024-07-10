@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_scan_to_pointcloud2/radar_scan_to_pointcloud2_node.hpp"
+#include "radar_scan_to_pointcloud2_node.hpp"
 
 #include <pcl/pcl_base.h>
 #include <pcl/point_cloud.h>
@@ -87,7 +87,7 @@ sensor_msgs::msg::PointCloud2 toDopplerPointcloud2(const radar_msgs::msg::RadarS
 }
 }  // namespace
 
-namespace radar_scan_to_pointcloud2
+namespace autoware::radar_scan_to_pointcloud2
 {
 using radar_msgs::msg::RadarReturn;
 using radar_msgs::msg::RadarScan;
@@ -153,7 +153,7 @@ void RadarScanToPointcloud2Node::onData(const RadarScan::ConstSharedPtr radar_ms
   }
 }
 
-}  // namespace radar_scan_to_pointcloud2
+}  // namespace autoware::radar_scan_to_pointcloud2
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(radar_scan_to_pointcloud2::RadarScanToPointcloud2Node)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::radar_scan_to_pointcloud2::RadarScanToPointcloud2Node)

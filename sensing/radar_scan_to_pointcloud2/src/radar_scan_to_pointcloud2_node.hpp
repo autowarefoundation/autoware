@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_SCAN_TO_POINTCLOUD2__RADAR_SCAN_TO_POINTCLOUD2_NODE_HPP_
-#define RADAR_SCAN_TO_POINTCLOUD2__RADAR_SCAN_TO_POINTCLOUD2_NODE_HPP_
+#ifndef RADAR_SCAN_TO_POINTCLOUD2_NODE_HPP_
+#define RADAR_SCAN_TO_POINTCLOUD2_NODE_HPP_
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -24,7 +24,7 @@
 #include <memory>
 #include <vector>
 
-namespace radar_scan_to_pointcloud2
+namespace autoware::radar_scan_to_pointcloud2
 {
 using radar_msgs::msg::RadarReturn;
 using radar_msgs::msg::RadarScan;
@@ -65,6 +65,6 @@ private:
   NodeParam node_param_{};
 };
 
-}  // namespace radar_scan_to_pointcloud2
+}  // namespace autoware::radar_scan_to_pointcloud2
 
-#endif  // RADAR_SCAN_TO_POINTCLOUD2__RADAR_SCAN_TO_POINTCLOUD2_NODE_HPP_
+#endif  // RADAR_SCAN_TO_POINTCLOUD2_NODE_HPP_
