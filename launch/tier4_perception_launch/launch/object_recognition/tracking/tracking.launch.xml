@@ -46,7 +46,7 @@
     <!-- Run with tracking merger to add far radar information -->
     <group if="$(var use_radar_tracking_fusion)">
       <!-- radar long range dynamic object tracking -->
-      <include file="$(find-pkg-share radar_object_tracker)/launch/radar_object_tracker.launch.xml">
+      <include file="$(find-pkg-share autoware_radar_object_tracker)/launch/radar_object_tracker.launch.xml">
         <arg name="input" value="$(var radar_tracker/input/objects)"/>
         <arg name="output" value="$(var radar_tracker/output/objects)"/>
         <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path)"/>

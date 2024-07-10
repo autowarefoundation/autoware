@@ -359,7 +359,7 @@
     </group>
     <!-- Lidar-Radar object merger-->
     <group>
-      <include file="$(find-pkg-share radar_fusion_to_detected_object)/launch/radar_object_fusion_to_detected_object.launch.xml">
+      <include file="$(find-pkg-share autoware_radar_fusion_to_detected_object)/launch/radar_object_fusion_to_detected_object.launch.xml">
         <arg name="input/objects" value="lidar/objects"/>
         <arg name="input/radars" value="radar/noise_filtered_objects"/>
         <arg name="output/objects" value="$(var output/objects)"/>

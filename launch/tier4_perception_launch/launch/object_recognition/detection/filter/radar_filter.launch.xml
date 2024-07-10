@@ -5,28 +5,28 @@
   <arg name="object_velocity_splitter_param_path" default="$(var object_recognition_detection_object_velocity_splitter_radar_param_path)"/>
   <arg name="object_range_splitter_param_path" default="$(var object_recognition_detection_object_range_splitter_radar_param_path)"/>
   <arg name="radar_lanelet_filtering_range_param_path" default="$(find-pkg-share detected_object_validation)/config/object_lanelet_filter.param.yaml"/>
-  <arg name="radar_object_clustering_param_path" default="$(find-pkg-share radar_object_clustering)/config/radar_object_clustering.param.yaml"/>
+  <arg name="radar_object_clustering_param_path" default="$(find-pkg-share autoware_radar_object_clustering)/config/radar_object_clustering.param.yaml"/>
 
   <!-- External interfaces -->
   <arg name="input/radar"/>
   <arg name="output/objects"/>
 
   <!-- Radar filter pipeline -->
-  <include file="$(find-pkg-share radar_crossing_objects_noise_filter)/launch/radar_crossing_objects_noise_filter.launch.xml">
+  <include file="$(find-pkg-share autoware_radar_crossing_objects_noise_filter)/launch/radar_crossing_objects_noise_filter.launch.xml">
     <arg name="input/objects" value="$(var input/radar)"/>
     <arg name="output/noise_objects" value="noise_objects"/>
     <arg name="output/filtered_objects" value="noise_filtered_objects"/>
     <arg name="param_path" value="$(var radar_crossing_objects_noise_filter_param_path)"/>
   </include>
 
-  <include file="$(find-pkg-share object_velocity_splitter)/launch/object_velocity_splitter.launch.xml">
+  <include file="$(find-pkg-share autoware_object_velocity_splitter)/launch/object_velocity_splitter.launch.xml">
     <arg name="input/objects" value="noise_filtered_objects"/>
     <arg name="output/low_speed_objects" value="low_speed_objects"/>
     <arg name="output/high_speed_objects" value="high_speed_objects"/>
     <arg name="param_path" value="$(var object_velocity_splitter_param_path)"/>
   </include>
 
-  <include file="$(find-pkg-share object_range_splitter)/launch/object_range_splitter.launch.xml">
+  <include file="$(find-pkg-share autoware_object_range_splitter)/launch/object_range_splitter.launch.xml">
     <arg name="input/object" value="high_speed_objects"/>
     <arg name="output/long_range_object" value="far_high_speed_objects"/>
     <arg name="output/short_range_object" value="near_high_speed_objects"/>
@@ -39,7 +39,7 @@
     <arg name="filtering_range_param" value="$(var radar_lanelet_filtering_range_param_path)"/>
   </include>
 
-  <include file="$(find-pkg-share radar_object_clustering)/launch/radar_object_clustering.launch.xml">
+  <include file="$(find-pkg-share autoware_radar_object_clustering)/launch/radar_object_clustering.launch.xml">
     <arg name="input/objects" value="lanelet_filtered_objects"/>
     <arg name="output/objects" value="$(var output/objects)"/>
     <arg name="param_path" value="$(var radar_object_clustering_param_path)"/>

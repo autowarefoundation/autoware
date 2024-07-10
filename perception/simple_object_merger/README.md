@@ -25,7 +25,7 @@ Merged objects will not be published until all topic data is received when initi
 
 - Post-processing
 
-Because this package does not have matching processing, there are overlapping objects depending on the input objects. So output objects can be used only when post-processing is used. For now, [clustering processing](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/radar_object_clustering) can be used as post-processing.
+Because this package does not have matching processing, there are overlapping objects depending on the input objects. So output objects can be used only when post-processing is used. For now, [clustering processing](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/autoware_radar_object_clustering) can be used as post-processing.
 
 ## Interface
 

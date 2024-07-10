@@ -1,0 +1,17 @@
+<launch>
+  <!-- Input -->
+  <arg name="input/objects" default="~/input/objects"/>
+  <!-- Output -->
+  <arg name="output/low_speed_objects" default="~/output/low_speed_objects"/>
+  <arg name="output/high_speed_objects" default="~/output/high_speed_objects"/>
+  <!-- Parameter -->
+  <arg name="param_path" default="$(find-pkg-share autoware_object_velocity_splitter)/config/object_velocity_splitter.param.yaml"/>
+
+  <!-- Node -->
+  <node pkg="autoware_object_velocity_splitter" exec="object_velocity_splitter_node" name="object_velocity_splitter" output="screen">
+    <remap from="~/input/objects" to="$(var input/objects)"/>
+    <remap from="~/output/low_speed_objects" to="$(var output/low_speed_objects)"/>
+    <remap from="~/output/high_speed_objects" to="$(var output/high_speed_objects)"/>
+    <param from="$(var param_path)"/>
+  </node>
+</launch>

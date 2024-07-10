@@ -1,0 +1,12 @@
+<launch>
+  <arg name="input/objects" default="~/input/objects"/>
+  <arg name="output/objects" default="~/output/objects"/>
+  <arg name="param_path" default="$(find-pkg-share autoware_radar_object_clustering)/config/radar_object_clustering.param.yaml"/>
+
+  <!-- Node -->
+  <node pkg="autoware_radar_object_clustering" exec="radar_object_clustering_node" name="radar_object_clustering" output="screen">
+    <remap from="~/input/objects" to="$(var input/objects)"/>
+    <remap from="~/output/objects" to="$(var output/objects)"/>
+    <param from="$(var param_path)"/>
+  </node>
+</launch>

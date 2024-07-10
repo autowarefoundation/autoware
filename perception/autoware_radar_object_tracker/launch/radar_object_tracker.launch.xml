@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="input" default="/perception/object_recognition/detection/objects"/>
+  <arg name="output" default="objects"/>
+  <arg name="tracker_setting_path" default="$(find-pkg-share autoware_radar_object_tracker)/config/default_tracker.param.yaml"/>
+  <arg name="data_association_matrix_path" default="$(find-pkg-share autoware_radar_object_tracker)/config/data_association_matrix.param.yaml"/>
+  <arg name="radar_object_tracker_param_path" default="$(find-pkg-share autoware_radar_object_tracker)/config/radar_object_tracker.param.yaml"/>
+  <arg name="vector_map_topic" default="/map/vector_map"/>
+
+  <node pkg="autoware_radar_object_tracker" exec="radar_object_tracker_node" name="radar_object_tracker" output="screen">
+    <remap from="input" to="$(var input)"/>
+    <remap from="output" to="$(var output)"/>
+    <remap from="/vector_map" to="$(var vector_map_topic)"/>
+    <param from="$(var tracker_setting_path)"/>
+    <param from="$(var data_association_matrix_path)"/>
+    <param from="$(var radar_object_tracker_param_path)" allow_substs="true"/>
+  </node>
+</launch>

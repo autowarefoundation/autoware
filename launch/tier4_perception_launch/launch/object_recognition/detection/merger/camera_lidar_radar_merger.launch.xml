@@ -89,7 +89,7 @@
 
   <!-- Radar fusion -->
   <group>
-    <include file="$(find-pkg-share radar_fusion_to_detected_object)/launch/radar_object_fusion_to_detected_object.launch.xml" if="$(var use_near_radar_fusion)">
+    <include file="$(find-pkg-share autoware_radar_fusion_to_detected_object)/launch/radar_object_fusion_to_detected_object.launch.xml" if="$(var use_near_radar_fusion)">
       <arg name="input/objects" value="$(var radar_objects_fusion/input/objects)"/>
       <arg name="input/radars" value="$(var radar_objects_fusion/input/radars)"/>
       <arg name="output/objects" value="$(var radar_objects_fusion/output/objects)"/>

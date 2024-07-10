@@ -1,0 +1,17 @@
+<launch>
+  <!-- Input -->
+  <arg name="input/objects" default="~/input/objects"/>
+  <arg name="input/radars" default="~/input/radars"/>
+  <!-- Output -->
+  <arg name="output/objects" default="~/output/data"/>
+  <!-- Parameter -->
+  <arg name="config_file" default="$(find-pkg-share autoware_radar_fusion_to_detected_object)/config/radar_object_fusion_to_detected_object.param.yaml"/>
+
+  <!-- Node -->
+  <node pkg="autoware_radar_fusion_to_detected_object" exec="radar_fusion_to_detected_object_node" name="radar_object_fusion_to_detected_object" output="screen">
+    <remap from="~/input/objects" to="$(var input/objects)"/>
+    <remap from="~/input/radars" to="$(var input/radars)"/>
+    <remap from="~/output/objects" to="$(var output/objects)"/>
+    <param from="$(var config_file)"/>
+  </node>
+</launch>
