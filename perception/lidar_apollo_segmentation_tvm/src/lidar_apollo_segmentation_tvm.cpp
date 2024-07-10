@@ -202,10 +202,10 @@ std::shared_ptr<const DetectedObjectsWithFeature> ApolloLidarSegmentation::detec
   output->header = input.header;
 
   // move down pointcloud z_offset in z axis
-  for (std::size_t i = 0; i < output->feature_objects.size(); i++) {
-    sensor_msgs::msg::PointCloud2 transformed_cloud;
-    transformCloud(output->feature_objects.at(i).feature.cluster, transformed_cloud, -z_offset_);
-    output->feature_objects.at(i).feature.cluster = transformed_cloud;
+  for (auto & feature_object : output->feature_objects) {
+    sensor_msgs::msg::PointCloud2 updated_cloud;
+    transformCloud(feature_object.feature.cluster, updated_cloud, -z_offset_);
+    feature_object.feature.cluster = updated_cloud;
   }
 
   return output;
