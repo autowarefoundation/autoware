@@ -14,6 +14,8 @@
 
 #include "autoware/control_evaluator/control_evaluator_node.hpp"
 
+#include "autoware/evaluator_utils/evaluator_utils.hpp"
+
 #include <autoware_lanelet2_extension/utility/query.hpp>
 #include <autoware_lanelet2_extension/utility/utilities.hpp>
 
@@ -64,57 +66,11 @@ void ControlEvaluatorNode::getRouteData()
   }
 }
 
-void ControlEvaluatorNode::removeOldDiagnostics(const rclcpp::Time & stamp)
-{
-  constexpr double KEEP_TIME = 1.0;
-  diag_queue_.erase(
-    std::remove_if(
-      diag_queue_.begin(), diag_queue_.end(),
-      [stamp](const std::pair<diagnostic_msgs::msg::DiagnosticStatus, rclcpp::Time> & p) {
-        return (stamp - p.second).seconds() > KEEP_TIME;
-      }),
-    diag_queue_.end());
-}
-
-void ControlEvaluatorNode::removeDiagnosticsByName(const std::string & name)
-{
-  diag_queue_.erase(
-    std::remove_if(
-      diag_queue_.begin(), diag_queue_.end(),
-      [&name](const std::pair<diagnostic_msgs::msg::DiagnosticStatus, rclcpp::Time> & p) {
-        return p.first.name.find(name) != std::string::npos;
-      }),
-    diag_queue_.end());
-}
-
-void ControlEvaluatorNode::addDiagnostic(
-  const diagnostic_msgs::msg::DiagnosticStatus & diag, const rclcpp::Time & stamp)
-{
-  diag_queue_.push_back(std::make_pair(diag, stamp));
-}
-
-void ControlEvaluatorNode::updateDiagnosticQueue(
-  const DiagnosticArray & input_diagnostics, const std::string & function,
-  const rclcpp::Time & stamp)
-{
-  const auto it = std::find_if(
-    input_diagnostics.status.begin(), input_diagnostics.status.end(),
-    [&function](const diagnostic_msgs::msg::DiagnosticStatus & diag) {
-      return diag.name.find(function) != std::string::npos;
-    });
-  if (it != input_diagnostics.status.end()) {
-    removeDiagnosticsByName(it->name);
-    addDiagnostic(*it, input_diagnostics.header.stamp);
-  }
-
-  removeOldDiagnostics(stamp);
-}
-
 void ControlEvaluatorNode::onDiagnostics(const DiagnosticArray::ConstSharedPtr diag_msg)
 {
   // add target diagnostics to the queue and remove old ones
   for (const auto & function : target_functions_) {
-    updateDiagnosticQueue(*diag_msg, function, now());
+    autoware::evaluator_utils::updateDiagnosticQueue(*diag_msg, function, now(), diag_queue_);
   }
 }
 

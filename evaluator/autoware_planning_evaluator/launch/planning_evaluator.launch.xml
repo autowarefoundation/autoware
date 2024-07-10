@@ -7,6 +7,7 @@
   <arg name="input/modified_goal" default="/planning/scenario_planning/modified_goal"/>
   <arg name="input/map_topic" default="/map/vector_map"/>
   <arg name="input/route_topic" default="/planning/mission_planning/route"/>
+  <arg name="input/diagnostics" default="/diagnostics"/>
 
   <!-- planning evaluator -->
   <group>
@@ -15,6 +16,7 @@
       <remap from="~/input/odometry" to="$(var input/odometry)"/>
       <remap from="~/input/acceleration" to="$(var input/acceleration)"/>
       <remap from="~/input/trajectory" to="$(var input/trajectory)"/>
+      <remap from="~/input/diagnostics" to="$(var input/diagnostics)"/>
       <remap from="~/input/reference_trajectory" to="$(var input/reference_trajectory)"/>
       <remap from="~/input/objects" to="$(var input/objects)"/>
       <remap from="~/input/modified_goal" to="$(var input/modified_goal)"/>

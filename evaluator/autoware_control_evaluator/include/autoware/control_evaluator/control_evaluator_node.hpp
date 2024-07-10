@@ -52,13 +52,6 @@ class ControlEvaluatorNode : public rclcpp::Node
 {
 public:
   explicit ControlEvaluatorNode(const rclcpp::NodeOptions & node_options);
-  void removeOldDiagnostics(const rclcpp::Time & stamp);
-  void removeDiagnosticsByName(const std::string & name);
-  void addDiagnostic(const DiagnosticStatus & diag, const rclcpp::Time & stamp);
-  void updateDiagnosticQueue(
-    const DiagnosticArray & input_diagnostics, const std::string & function,
-    const rclcpp::Time & stamp);
-
   DiagnosticStatus generateLateralDeviationDiagnosticStatus(
     const Trajectory & traj, const Point & ego_point);
   DiagnosticStatus generateYawDeviationDiagnosticStatus(
