@@ -56,12 +56,8 @@ public:
     unsigned int * mask, float * voxels, unsigned int * pillar_num, float * voxel_features,
     unsigned int * voxel_num, unsigned int * voxel_idxs);
 
-  // cudaError_t generateVoxelsInput_launch(
-  //   uint8_t * cloud_data, CloudInfo & cloud_info, unsigned int points_agg, unsigned int
-  //   points_size, float time_lag, float * affine_transform, float * points);
-
   cudaError_t generateSweepPoints_launch(
-    const float * input_points, size_t points_size, int input_point_step, float time_lag,
+    const uint8_t * input_data, size_t points_size, int input_point_step, float time_lag,
     const float * transform, float * output_points);
 
 private:

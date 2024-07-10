@@ -137,6 +137,58 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   if(BUILD_TESTING)
     find_package(ament_lint_auto REQUIRED)
     ament_lint_auto_find_test_dependencies()
+
+    find_package(ament_cmake_gtest REQUIRED)
+    ament_auto_add_gtest(test_detection_class_remapper
+      test/test_detection_class_remapper.cpp
+    )
+    ament_auto_add_gtest(test_ros_utils
+      test/test_ros_utils.cpp
+    )
+    ament_auto_add_gtest(test_nms
+      test/test_nms.cpp
+    )
+
+    # Temporary disabled, tracked by:
+    # https://github.com/autowarefoundation/autoware.universe/issues/7724
+    # ament_auto_add_gtest(test_voxel_generator
+    #   test/test_voxel_generator.cpp
+    # )
+
+    # # preprocess kernel test
+    # add_executable(test_preprocess_kernel
+    #   test/test_preprocess_kernel.cpp
+    # )
+    # target_include_directories(test_preprocess_kernel PUBLIC
+    #   ${test_preprocess_kernel_SOURCE_DIR}
+    # )
+    # target_link_libraries(test_preprocess_kernel
+    #   transfusion_cuda_lib
+    #   gtest
+    #   gtest_main
+    # )
+    # ament_add_test(test_preprocess_kernel
+    #   GENERATE_RESULT_FOR_RETURN_CODE_ZERO
+    #   COMMAND "$<TARGET_FILE:test_preprocess_kernel>"
+    # )
+
+    # # postprocess kernel test
+    # add_executable(test_postprocess_kernel
+    #   test/test_postprocess_kernel.cpp
+    # )
+    # target_include_directories(test_postprocess_kernel PUBLIC
+    #   ${test_postprocess_kernel_SOURCE_DIR}
+    # )
+    # target_link_libraries(test_postprocess_kernel
+    #   transfusion_cuda_lib
+    #   gtest
+    #   gtest_main
+    # )
+    # ament_add_test(test_postprocess_kernel
+    #   GENERATE_RESULT_FOR_RETURN_CODE_ZERO
+    #   COMMAND "$<TARGET_FILE:test_postprocess_kernel>"
+    # )
+
   endif()
 
   ament_auto_package(

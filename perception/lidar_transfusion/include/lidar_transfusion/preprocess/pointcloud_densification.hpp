@@ -51,7 +51,7 @@ private:
 
 struct PointCloudWithTransform
 {
-  cuda::unique_ptr<float[]> points_d{nullptr};
+  cuda::unique_ptr<uint8_t[]> data_d{nullptr};
   std_msgs::msg::Header header;
   size_t num_points{0};
   Eigen::Affine3f affine_past2world;

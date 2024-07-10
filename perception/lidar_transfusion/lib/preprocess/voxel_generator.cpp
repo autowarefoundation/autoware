@@ -23,25 +23,6 @@
 namespace lidar_transfusion
 {
 
-std::ostream & operator<<(std::ostream & os, const CloudInfo & info)
-{
-  os << "x_offset: " << static_cast<int>(info.x_offset) << std::endl;
-  os << "y_offset: " << static_cast<int>(info.y_offset) << std::endl;
-  os << "z_offset: " << static_cast<int>(info.z_offset) << std::endl;
-  os << "intensity_offset: " << static_cast<int>(info.intensity_offset) << std::endl;
-  os << "x_datatype: " << static_cast<int>(info.x_datatype) << std::endl;
-  os << "y_datatype: " << static_cast<int>(info.y_datatype) << std::endl;
-  os << "z_datatype: " << static_cast<int>(info.z_datatype) << std::endl;
-  os << "intensity_datatype: " << static_cast<int>(info.intensity_datatype) << std::endl;
-  os << "x_count: " << static_cast<int>(info.x_count) << std::endl;
-  os << "y_count: " << static_cast<int>(info.y_count) << std::endl;
-  os << "z_count: " << static_cast<int>(info.z_count) << std::endl;
-  os << "intensity_count: " << static_cast<int>(info.intensity_count) << std::endl;
-  os << "point_step: " << static_cast<int>(info.point_step) << std::endl;
-  os << "is_bigendian: " << static_cast<int>(info.is_bigendian) << std::endl;
-  return os;
-}
-
 VoxelGenerator::VoxelGenerator(
   const DensificationParam & densification_param, const TransfusionConfig & config,
   cudaStream_t & stream)
@@ -106,8 +87,8 @@ std::size_t VoxelGenerator::generateSweepPoints(
     CHECK_CUDA_ERROR(cudaStreamSynchronize(stream_));
 
     pre_ptr_->generateSweepPoints_launch(
-      pc_cache_iter->points_d.get(), sweep_num_points, cloud_info_.point_step / sizeof(float),
-      time_lag, affine_past2current_d_.get(), points_d.get() + shift);
+      pc_cache_iter->data_d.get(), sweep_num_points, cloud_info_.point_step, time_lag,
+      affine_past2current_d_.get(), points_d.get() + shift);
     point_counter += sweep_num_points;
   }
 

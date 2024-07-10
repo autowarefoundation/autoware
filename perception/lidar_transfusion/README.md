@@ -59,6 +59,24 @@ ros2 launch lidar_transfusion lidar_transfusion.launch.xml log_level:=debug
 
 ## Assumptions / Known limits
 
+This library operates on raw cloud data (bytes). It is assumed that the input pointcloud message has following format:
+
+```python
+[
+  sensor_msgs.msg.PointField(name='x', offset=0, datatype=7, count=1),
+  sensor_msgs.msg.PointField(name='y', offset=4, datatype=7, count=1),
+  sensor_msgs.msg.PointField(name='z', offset=8, datatype=7, count=1),
+  sensor_msgs.msg.PointField(name='intensity', offset=12, datatype=2, count=1)
+]
+```
+
+This input may consist of other fields as well - shown format is required minimum.
+For debug purposes, you can validate your pointcloud topic using simple command:
+
+```bash
+ros2 topic echo <input_topic> --field fields
+```
+
 ## Trained Models
 
 You can download the onnx format of trained models by clicking on the links below.

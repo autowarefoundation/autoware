@@ -93,16 +93,15 @@ void PointCloudDensification::enqueue(
   affine_world2current_ = affine_world2current;
   current_timestamp_ = rclcpp::Time(msg.header.stamp).seconds();
 
-  assert(sizeof(uint8_t) * msg.width * msg.height * msg.point_step % sizeof(float) == 1);
-  auto points_d = cuda::make_unique<float[]>(
-    sizeof(uint8_t) * msg.width * msg.height * msg.point_step / sizeof(float));
+  auto data_d = cuda::make_unique<uint8_t[]>(
+    sizeof(uint8_t) * msg.width * msg.height * msg.point_step / sizeof(uint8_t));
 
   CHECK_CUDA_ERROR(cudaMemcpyAsync(
-    points_d.get(), msg.data.data(), sizeof(uint8_t) * msg.width * msg.height * msg.point_step,
+    data_d.get(), msg.data.data(), sizeof(uint8_t) * msg.width * msg.height * msg.point_step,
     cudaMemcpyHostToDevice, stream_));
 
   PointCloudWithTransform pointcloud = {
-    std::move(points_d), msg.header, msg.width * msg.height, affine_world2current.inverse()};
+    std::move(data_d), msg.header, msg.width * msg.height, affine_world2current.inverse()};
 
   pointcloud_cache_.push_front(std::move(pointcloud));
 }
