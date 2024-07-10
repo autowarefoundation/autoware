@@ -621,14 +621,14 @@ lanelet::ConstLanelets BlindSpotModule::generateBlindSpotLanelets(
   for (const auto i : lane_ids) {
     const auto lane = lanelet_map_ptr->laneletLayer.get(i);
     const auto ego_half_lanelet = generateHalfLanelet(lane);
-    const auto adj =
+    const auto assoc_adj =
       turn_direction_ == TurnDirection::LEFT
         ? (routing_graph_ptr->adjacentLeft(lane))
         : (turn_direction_ == TurnDirection::RIGHT ? (routing_graph_ptr->adjacentRight(lane))
                                                    : boost::none);
     const std::optional<lanelet::ConstLanelet> opposite_adj =
       [&]() -> std::optional<lanelet::ConstLanelet> {
-      if (!!adj) {
+      if (!!assoc_adj) {
         return std::nullopt;
       }
       if (turn_direction_ == TurnDirection::LEFT) {
@@ -653,10 +653,27 @@ lanelet::ConstLanelets BlindSpotModule::generateBlindSpotLanelets(
       }
     }();
 
-    if (!adj && !opposite_adj) {
-      blind_spot_lanelets.push_back(ego_half_lanelet);
-    } else if (!!adj) {
-      const auto adj_half_lanelet = generateExtendedAdjacentLanelet(adj.value(), turn_direction_);
+    const auto assoc_shoulder = [&]() -> std::optional<lanelet::ConstLanelet> {
+      if (turn_direction_ == TurnDirection::LEFT) {
+        return planner_data_->route_handler_->getLeftShoulderLanelet(lane);
+      } else if (turn_direction_ == TurnDirection::RIGHT) {
+        return planner_data_->route_handler_->getRightShoulderLanelet(lane);
+      }
+      return std::nullopt;
+    }();
+    if (assoc_shoulder) {
+      const auto lefts = (turn_direction_ == TurnDirection::LEFT)
+                           ? assoc_shoulder.value().leftBound()
+                           : ego_half_lanelet.leftBound();
+      const auto rights = (turn_direction_ == TurnDirection::LEFT)
+                            ? ego_half_lanelet.rightBound()
+                            : assoc_shoulder.value().rightBound();
+      blind_spot_lanelets.push_back(
+        lanelet::ConstLanelet(lanelet::InvalId, removeConst(lefts), removeConst(rights)));
+
+    } else if (!!assoc_adj) {
+      const auto adj_half_lanelet =
+        generateExtendedAdjacentLanelet(assoc_adj.value(), turn_direction_);
       const auto lefts = (turn_direction_ == TurnDirection::LEFT) ? adj_half_lanelet.leftBound()
                                                                   : ego_half_lanelet.leftBound();
       const auto rights = (turn_direction_ == TurnDirection::RIGHT) ? adj_half_lanelet.rightBound()
@@ -672,6 +689,8 @@ lanelet::ConstLanelets BlindSpotModule::generateBlindSpotLanelets(
                                                                    : adj_half_lanelet.rightBound();
       blind_spot_lanelets.push_back(
         lanelet::ConstLanelet(lanelet::InvalId, removeConst(lefts), removeConst(rights)));
+    } else {
+      blind_spot_lanelets.push_back(ego_half_lanelet);
     }
   }
   return blind_spot_lanelets;
