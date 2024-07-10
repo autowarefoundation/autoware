@@ -6,12 +6,12 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 # Targets
-ament_auto_add_library(radar_static_pointcloud_filter_node_component SHARED
-  src/radar_static_pointcloud_filter_node/radar_static_pointcloud_filter_node.cpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/radar_static_pointcloud_filter_node.cpp
 )
 
-rclcpp_components_register_node(radar_static_pointcloud_filter_node_component
-  PLUGIN "radar_static_pointcloud_filter::RadarStaticPointcloudFilterNode"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::radar_static_pointcloud_filter::RadarStaticPointcloudFilterNode"
   EXECUTABLE radar_static_pointcloud_filter_node
 )
 

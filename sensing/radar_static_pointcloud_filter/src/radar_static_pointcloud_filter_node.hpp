@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_STATIC_POINTCLOUD_FILTER__RADAR_STATIC_POINTCLOUD_FILTER_NODE_HPP_
-#define RADAR_STATIC_POINTCLOUD_FILTER__RADAR_STATIC_POINTCLOUD_FILTER_NODE_HPP_
+#ifndef RADAR_STATIC_POINTCLOUD_FILTER_NODE_HPP_
+#define RADAR_STATIC_POINTCLOUD_FILTER_NODE_HPP_
 
 #include "autoware/universe_utils/ros/transform_listener.hpp"
 
@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-namespace radar_static_pointcloud_filter
+namespace autoware::radar_static_pointcloud_filter
 {
 using nav_msgs::msg::Odometry;
 using radar_msgs::msg::RadarReturn;
@@ -77,6 +77,6 @@ private:
     const RadarReturn & radar_return, const Odometry::ConstSharedPtr & odom_msg,
     geometry_msgs::msg::TransformStamped::ConstSharedPtr transform);
 };
-}  // namespace radar_static_pointcloud_filter
+}  // namespace autoware::radar_static_pointcloud_filter
 
-#endif  // RADAR_STATIC_POINTCLOUD_FILTER__RADAR_STATIC_POINTCLOUD_FILTER_NODE_HPP_
+#endif  // RADAR_STATIC_POINTCLOUD_FILTER_NODE_HPP_

@@ -20,9 +20,6 @@
   <depend>radar_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>tf2</depend>
-  <depend>tf2_geometry_msgs</depend>
-  <depend>tf2_ros</depend>
 
   <test_depend>ament_clang_format</test_depend>
   <test_depend>ament_lint_auto</test_depend>

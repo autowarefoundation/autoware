@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_static_pointcloud_filter/radar_static_pointcloud_filter_node.hpp"
+#include "radar_static_pointcloud_filter_node.hpp"
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance.hpp>
@@ -75,7 +75,7 @@ geometry_msgs::msg::Vector3 compensateEgoVehicleTwist(
 }
 }  // namespace
 
-namespace radar_static_pointcloud_filter
+namespace autoware::radar_static_pointcloud_filter
 {
 using nav_msgs::msg::Odometry;
 using radar_msgs::msg::RadarReturn;
@@ -167,7 +167,8 @@ bool RadarStaticPointcloudFilterNode::isStaticPointcloud(
          (compensated_velocity.x < node_param_.doppler_velocity_sd);
 }
 
-}  // namespace radar_static_pointcloud_filter
+}  // namespace autoware::radar_static_pointcloud_filter
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(radar_static_pointcloud_filter::RadarStaticPointcloudFilterNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::radar_static_pointcloud_filter::RadarStaticPointcloudFilterNode)
