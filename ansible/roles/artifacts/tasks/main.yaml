@@ -169,23 +169,23 @@
 - name: Download lidar_transfusion/transfusion.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/transfusion/v1/transfusion.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/transfusion/t4xx1_90m/v2/transfusion.onnx
     dest: "{{ data_dir }}/lidar_transfusion/transfusion.onnx"
     mode: "644"
-    checksum: sha256:8938999cf03770ffd3301027300ea2cbcf471c180450e0434121d7294c42aa0b
+    checksum: sha256:ad66a061d61449af671bd0d14c2c407f0d749753f17f3165287857f686c4fd1a
 
 - name: Download lidar_transfusion/transfusion.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/transfusion/v1/transfusion.param.yaml
+    url: https://awf.ml.dev.web.auto/perception/models/transfusion/t4xx1_90m/v2/transfusion.param.yaml
     dest: "{{ data_dir }}/lidar_transfusion/transfusion.param.yaml"
     mode: "644"
-    checksum: sha256:0e18776040f14e380037ef6ecb500d1d1d151f21ff7d5c890606673f7e100e14
+    checksum: sha256:fdd8dd21b7c1c0f9a15119fa6a79565f927ce8f6bac4ddf095cb7e27672cb3d8
 
 - name: Download lidar_transfusion/detection_class_remapper.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/transfusion/v1/detection_class_remapper.param.yaml
+    url: https://awf.ml.dev.web.auto/perception/models/transfusion/t4xx1_90m/v2/detection_class_remapper.param.yaml
     dest: "{{ data_dir }}/lidar_transfusion/detection_class_remapper.param.yaml"
     mode: "644"
     checksum: sha256:c711f8875ece9b527dfe31ffc75f8c0de2e77945ef67860a959a4e04c36772d5
