@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "image_diagnostics/image_diagnostics_node.hpp"
+#include "image_diagnostics_node.hpp"
 
 #include <std_msgs/msg/header.hpp>
 
-namespace image_diagnostics
+#include <vector>
+
+namespace autoware::image_diagnostics
 {
 using image_diagnostics::Image_State;
 ImageDiagNode::ImageDiagNode(const rclcpp::NodeOptions & node_options)
@@ -271,7 +273,7 @@ void ImageDiagNode::shiftImage(cv::Mat & img)
   tmp.copyTo(left_bottom);
 }
 
-}  // namespace image_diagnostics
+}  // namespace autoware::image_diagnostics
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(image_diagnostics::ImageDiagNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::image_diagnostics::ImageDiagNode)

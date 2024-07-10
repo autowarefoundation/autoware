@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef IMAGE_DIAGNOSTICS__IMAGE_DIAGNOSTICS_NODE_HPP_
-#define IMAGE_DIAGNOSTICS__IMAGE_DIAGNOSTICS_NODE_HPP_
+#ifndef IMAGE_DIAGNOSTICS_NODE_HPP_
+#define IMAGE_DIAGNOSTICS_NODE_HPP_
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <image_transport/image_transport.hpp>
@@ -34,7 +34,8 @@
 
 #include <string>
 #include <unordered_map>
-namespace image_diagnostics
+
+namespace autoware::image_diagnostics
 {
 using diagnostic_updater::DiagnosticStatusWrapper;
 using diagnostic_updater::Updater;
@@ -98,6 +99,6 @@ protected:
   rclcpp::Publisher<tier4_debug_msgs::msg::Int32Stamped>::SharedPtr image_state_pub_;
 };
 
-}  // namespace image_diagnostics
+}  // namespace autoware::image_diagnostics
 
-#endif  // IMAGE_DIAGNOSTICS__IMAGE_DIAGNOSTICS_NODE_HPP_
+#endif  // IMAGE_DIAGNOSTICS_NODE_HPP_

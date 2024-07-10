@@ -28,14 +28,14 @@ include_directories(
 )
 
 
-ament_auto_add_library(image_diagnostics SHARED
+ament_auto_add_library(${PROJECT_NAME} SHARED
   src/image_diagnostics_node.cpp
 )
-target_link_libraries(image_diagnostics
+target_link_libraries(${PROJECT_NAME}
   ${OpenCV_LIBRARIES}
 )
-rclcpp_components_register_node(image_diagnostics
-  PLUGIN "image_diagnostics::ImageDiagNode"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::image_diagnostics::ImageDiagNode"
   EXECUTABLE image_diagnostics_node
 )
 
