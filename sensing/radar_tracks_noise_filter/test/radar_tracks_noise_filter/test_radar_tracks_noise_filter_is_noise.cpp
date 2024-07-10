@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "radar_tracks_noise_filter/radar_tracks_noise_filter_node.hpp"
+#include "../../src/radar_tracks_noise_filter_node.hpp"
 
 #include <radar_msgs/msg/radar_scan.hpp>
 
 #include <gtest/gtest.h>
 
-std::shared_ptr<radar_tracks_noise_filter::RadarTrackCrossingNoiseFilterNode> get_node(
+std::shared_ptr<autoware::radar_tracks_noise_filter::RadarTrackCrossingNoiseFilterNode> get_node(
   float velocity_y_threshold)
 {
   rclcpp::NodeOptions node_options;
@@ -28,7 +28,8 @@ std::shared_ptr<radar_tracks_noise_filter::RadarTrackCrossingNoiseFilterNode> ge
   });
 
   auto node =
-    std::make_shared<radar_tracks_noise_filter::RadarTrackCrossingNoiseFilterNode>(node_options);
+    std::make_shared<autoware::radar_tracks_noise_filter::RadarTrackCrossingNoiseFilterNode>(
+      node_options);
   return node;
 }
 
@@ -45,8 +46,8 @@ radar_msgs::msg::RadarTrack getRadarTrack(float velocity_x, float velocity_y)
 
 TEST(RadarTracksNoiseFilter, isNoise)
 {
+  using autoware::radar_tracks_noise_filter::RadarTrackCrossingNoiseFilterNode;
   using radar_msgs::msg::RadarTrack;
-  using radar_tracks_noise_filter::RadarTrackCrossingNoiseFilterNode;
   rclcpp::init(0, nullptr);
   {
     float velocity_node_threshold = 0.0;

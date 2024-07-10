@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_TRACKS_NOISE_FILTER__RADAR_TRACKS_NOISE_FILTER_NODE_HPP_
-#define RADAR_TRACKS_NOISE_FILTER__RADAR_TRACKS_NOISE_FILTER_NODE_HPP_
+#ifndef RADAR_TRACKS_NOISE_FILTER_NODE_HPP_
+#define RADAR_TRACKS_NOISE_FILTER_NODE_HPP_
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -23,7 +23,7 @@
 #include <memory>
 #include <vector>
 
-namespace radar_tracks_noise_filter
+namespace autoware::radar_tracks_noise_filter
 {
 using radar_msgs::msg::RadarTrack;
 using radar_msgs::msg::RadarTracks;
@@ -62,6 +62,6 @@ public:
   bool isNoise(const RadarTrack & radar_track);
 };
 
-}  // namespace radar_tracks_noise_filter
+}  // namespace autoware::radar_tracks_noise_filter
 
-#endif  // RADAR_TRACKS_NOISE_FILTER__RADAR_TRACKS_NOISE_FILTER_NODE_HPP_
+#endif  // RADAR_TRACKS_NOISE_FILTER_NODE_HPP_
