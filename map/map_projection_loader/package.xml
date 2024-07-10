@@ -4,7 +4,6 @@
   <name>map_projection_loader</name>
   <version>0.1.0</version>
   <description>map_projection_loader package as a ROS 2 node</description>
-  <maintainer email="koji.minoda@tier4.jp">Koji Minoda</maintainer>
   <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
   <maintainer email="masahiro.sakamoto@tier4.jp">Masahiro Sakamoto</maintainer>
   <maintainer email="kento.yabuuchi.2@tier4.jp">Kento Yabuuchi</maintainer>

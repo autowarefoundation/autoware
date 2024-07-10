@@ -4,7 +4,6 @@
   <name>autoware_stop_filter</name>
   <version>0.0.0</version>
   <description>The stop filter package</description>
-  <maintainer email="koji.minoda@tier4.jp">Koji Minoda</maintainer>
   <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
   <maintainer email="masahiro.sakamoto@tier4.jp">Masahiro Sakamoto</maintainer>
   <maintainer email="kento.yabuuchi.2@tier4.jp">Kento Yabuuchi</maintainer>

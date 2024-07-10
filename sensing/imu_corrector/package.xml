@@ -6,7 +6,6 @@
   <description>The ROS 2 imu_corrector package</description>
   <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
   <maintainer email="taiki.yamada@tier4.jp">Taiki Yamada</maintainer>
-  <maintainer email="koji.minoda@tier4.jp">Koji Minoda</maintainer>
   <license>Apache License 2.0</license>
   <author email="yamato.ando@tier4.jp">Yamato Ando</author>
 
