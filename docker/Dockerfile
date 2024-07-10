@@ -28,7 +28,7 @@ RUN --mount=type=ssh \
 # Create entrypoint
 CMD ["/bin/bash"]
 
-FROM $BASE_IMAGE as src-imported
+FROM $BASE_IMAGE as rosdep-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
@@ -85,7 +85,7 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Install rosdep dependencies
-COPY --from=src-imported /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
+COPY --from=rosdep-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   apt-get update \
@@ -109,7 +109,7 @@ ARG SETUP_ARGS
 ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
-COPY --from=src-imported /rosdep-universe-depend-packages.txt /tmp/rosdep-universe-depend-packages.txt
+COPY --from=rosdep-depend /rosdep-universe-depend-packages.txt /tmp/rosdep-universe-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   apt-get update \
@@ -156,7 +156,7 @@ ARG LIB_DIR
 ARG SETUP_ARGS
 
 # Set up runtime environment and artifacts
-COPY --from=src-imported /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
+COPY --from=rosdep-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadkit \
