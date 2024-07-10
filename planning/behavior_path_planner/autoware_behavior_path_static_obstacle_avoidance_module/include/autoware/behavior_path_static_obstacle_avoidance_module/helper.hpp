@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -325,7 +326,24 @@ public:
 
     const auto object = objects.front();
 
+    // if the object is NOT ambiguous, this module doesn't wait operator approval if RTC is running
+    // as AUTO mode.
     if (!object.is_ambiguous) {
+      return true;
+    }
+
+    // check only front objects.
+    if (object.longitudinal < 0.0) {
+      return true;
+    }
+
+    // if the policy is "manual", this module generates candidate path and waits approval.
+    if (parameters_->policy_ambiguous_vehicle == "manual") {
+      return false;
+    }
+
+    // don't delay avoidance start position if it's not MERGING or DEVIATING vehicle.
+    if (!isWaitAndSeeTarget(object)) {
       return true;
     }
 
@@ -341,9 +359,32 @@ public:
     const auto constant_distance = getFrontConstantDistance(object);
     const auto avoidance_distance = getMinAvoidanceDistance(desire_shift_length);
 
-    return object.longitudinal <
-           prepare_distance + constant_distance + avoidance_distance +
-             parameters_->closest_distance_to_wait_and_see_for_ambiguous_vehicle;
+    return object.longitudinal < prepare_distance + constant_distance + avoidance_distance +
+                                   parameters_->wait_and_see_th_closest_distance;
+  }
+
+  bool isWaitAndSeeTarget(const ObjectData & object) const
+  {
+    const auto & behaviors = parameters_->wait_and_see_target_behaviors;
+    if (object.behavior == ObjectData::Behavior::MERGING) {
+      return std::any_of(behaviors.begin(), behaviors.end(), [](const std::string & behavior) {
+        return behavior == "MERGING";
+      });
+    }
+
+    if (object.behavior == ObjectData::Behavior::DEVIATING) {
+      return std::any_of(behaviors.begin(), behaviors.end(), [](const std::string & behavior) {
+        return behavior == "DEVIATING";
+      });
+    }
+
+    if (object.behavior == ObjectData::Behavior::NONE) {
+      return std::any_of(behaviors.begin(), behaviors.end(), [](const std::string & behavior) {
+        return behavior == "NONE";
+      });
+    }
+
+    return false;
   }
 
   static bool isAbsolutelyNotAvoidable(const ObjectData & object)

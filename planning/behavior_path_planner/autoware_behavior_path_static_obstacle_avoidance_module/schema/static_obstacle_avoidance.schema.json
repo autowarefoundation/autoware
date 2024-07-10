@@ -716,9 +716,10 @@
             "avoidance_for_ambiguous_vehicle": {
               "type": "object",
               "properties": {
-                "enable": {
-                  "type": "boolean",
-                  "description": "Enable avoidance maneuver for ambiguous vehicles.",
+                "policy": {
+                  "type": "string",
+                  "enum": ["auto", "manual", "ignore"],
+                  "description": "Ego behavior policy for ambiguous vehicle.",
                   "default": "true"
                 },
                 "closest_distance_to_wait_and_see": {
@@ -778,14 +779,26 @@
                   },
                   "required": ["traffic_light", "crosswalk"],
                   "additionalProperties": false
+                },
+                "wait_and_see": {
+                  "type": "object",
+                  "properties": {
+                    "target_behaviors": {
+                      "type": "array",
+                      "default": ["MERGING", "DEVIATING"],
+                      "description": "This module doesn't avoid these behaviors vehicle until it gets closer than threshold."
+                    },
+                    "th_closest_distance": {
+                      "type": "number",
+                      "default": 10.0,
+                      "description": "Threshold to check whether the ego gets close enough the ambiguous vehicle."
+                    }
+                  },
+                  "required": ["target_behaviors", "th_closest_distance"],
+                  "additionalProperties": false
                 }
               },
-              "required": [
-                "enable",
-                "closest_distance_to_wait_and_see",
-                "condition",
-                "ignore_area"
-              ],
+              "required": ["policy", "condition", "ignore_area", "wait_and_see"],
               "additionalProperties": false
             },
             "intersection": {

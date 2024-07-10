@@ -138,8 +138,11 @@
 
         # params for avoidance of vehicle type objects that are ambiguous as to whether they are parked.
         avoidance_for_ambiguous_vehicle:
-          enable: true                                  # [-]
-          closest_distance_to_wait_and_see: 10.0        # [m]
+          # policy for ego behavior for ambiguous vehicle.
+          # "auto"   : generate candidate path. if RTC is running as AUTO mode, the ego avoids it automatically.
+          # "manual" : generate candidate path and wait operator approval even if RTC is running as AUTO mode.
+          # "ignore" : never avoid it.
+          policy: "auto"                                # [-]
           condition:
             th_stopped_time: 3.0                        # [s]
             th_moving_distance: 1.0                     # [m]
@@ -149,6 +152,9 @@
             crosswalk:
               front_distance: 30.0                      # [m]
               behind_distance: 30.0                     # [m]
+          wait_and_see:
+            target_behaviors: ["MERGING", "DEVIATING"]  # [-]
+            th_closest_distance: 10.0                   # [m]
 
         # params for filtering objects that are in intersection
         intersection:

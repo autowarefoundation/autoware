@@ -108,7 +108,7 @@ struct AvoidanceParameters
   bool enable_cancel_maneuver{false};
 
   // enable avoidance for all parking vehicle
-  bool enable_avoidance_for_ambiguous_vehicle{false};
+  std::string policy_ambiguous_vehicle{"ignore"};
 
   // enable yield maneuver.
   bool enable_yield_maneuver{false};
@@ -192,7 +192,8 @@ struct AvoidanceParameters
   double object_check_min_road_shoulder_width{0.0};
 
   // force avoidance
-  double closest_distance_to_wait_and_see_for_ambiguous_vehicle{0.0};
+  std::vector<std::string> wait_and_see_target_behaviors{"NONE", "MERGING", "DEVIATING"};
+  double wait_and_see_th_closest_distance{0.0};
   double time_threshold_for_ambiguous_vehicle{0.0};
   double distance_threshold_for_ambiguous_vehicle{0.0};
 
