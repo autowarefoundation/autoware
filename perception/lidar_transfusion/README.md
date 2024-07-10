@@ -81,9 +81,9 @@ ros2 topic echo <input_topic> --field fields
 
 You can download the onnx format of trained models by clicking on the links below.
 
-- TransFusion: [transfusion.onnx](https://awf.ml.dev.web.auto/perception/models/transfusion/v1/transfusion.onnx)
+- TransFusion: [transfusion.onnx](https://awf.ml.dev.web.auto/perception/models/transfusion/t4xx1_90m/v2/transfusion.onnx)
 
-The model was trained in TIER IV's internal database (~11k lidar frames) for 20 epochs.
+The model was trained in TIER IV's internal database (~11k lidar frames) for 50 epochs.
 
 ### Changelog
 

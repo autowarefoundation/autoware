@@ -61,6 +61,12 @@
           "default": "$(var model_path)/transfusion.engine",
           "pattern": "\\.engine$"
         },
+        "num_proposals": {
+          "type": "integer",
+          "description": "Number of proposals at TransHead.",
+          "default": 500,
+          "minimum": 1
+        },
         "down_sample_factor": {
           "type": "integer",
           "description": "A scale factor of downsampling points",
