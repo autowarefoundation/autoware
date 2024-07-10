@@ -1,10 +1,11 @@
 group "default" {
-  targets = ["base", "prebuilt", "devel", "runtime"]
+  targets = ["base", "autoware-core", "autoware-universe", "devel", "runtime"]
 }
 
 // For docker/metadata-action
 target "docker-metadata-action-base" {}
-target "docker-metadata-action-prebuilt" {}
+target "docker-metadata-action-autoware-core" {}
+target "docker-metadata-action-autoware-universe" {}
 target "docker-metadata-action-devel" {}
 target "docker-metadata-action-runtime" {}
 
@@ -14,10 +15,16 @@ target "base" {
   target = "base"
 }
 
-target "prebuilt" {
-  inherits = ["docker-metadata-action-prebuilt"]
+target "autoware-core" {
+  inherits = ["docker-metadata-action-autoware-core"]
   dockerfile = "docker/Dockerfile"
-  target = "prebuilt"
+  target = "autoware-core"
+}
+
+target "autoware-universe" {
+  inherits = ["docker-metadata-action-autoware-universe"]
+  dockerfile = "docker/Dockerfile"
+  target = "autoware-universe"
 }
 
 target "devel" {
