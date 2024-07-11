@@ -1,12 +1,25 @@
 name: health-check
 
 on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
   schedule:
     - cron: 0 12 * * *
   workflow_dispatch:
 
 jobs:
+  label-check:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
+    with:
+      label: tag:run-health-check
+
   load-env:
+    needs: label-check
+    if: ${{ needs.label-check.outputs.result == 'true' }}
     uses: ./.github/workflows/load-env.yaml
 
   docker-build:
