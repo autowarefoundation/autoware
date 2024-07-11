@@ -81,8 +81,6 @@ void SamplingPlannerModuleManager::updateModuleParams(
 
   auto & p = parameters_;
 
-  [[maybe_unused]] const std::string ns = name_ + ".";
-
   {
     std::string ns{"constraints.hard"};
     updateParam<double>(parameters, ns + ".max_curvature", p->max_curvature);
