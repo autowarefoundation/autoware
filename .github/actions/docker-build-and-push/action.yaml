@@ -46,7 +46,6 @@ runs:
 
     - name: Restore ccache
       uses: actions/cache/restore@v4
-      if: ${{ inputs.name != 'no-cuda' }}
       with:
         path: |
           root-ccache
@@ -59,7 +58,6 @@ runs:
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
-      if: ${{ inputs.name == 'no-cuda' }}
       with:
         path: |
           var-cache-apt
