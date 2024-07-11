@@ -4,7 +4,6 @@
   <name>perception_utils</name>
   <version>0.1.0</version>
   <description>The perception_utils package</description>
-  <maintainer email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
   <maintainer email="yoshi.ri@tier4.jp">Yoshi Ri</maintainer>
   <license>Apache License 2.0</license>
