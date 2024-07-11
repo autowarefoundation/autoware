@@ -130,12 +130,12 @@ std::vector<tensorrt_yolox::Colormap> get_seg_colormap(const std::string & filen
       cmap.name = name;
       colormapString.erase(0, npos + 1);
       while (!colormapString.empty()) {
-        size_t npos = colormapString.find_first_of(',');
-        if (npos != std::string::npos) {
-          substr = colormapString.substr(0, npos);
+        size_t inner_npos = colormapString.find_first_of(',');
+        if (inner_npos != std::string::npos) {
+          substr = colormapString.substr(0, inner_npos);
           unsigned char c = (unsigned char)std::stoi(trim(substr));
           cmap.color.push_back(c);
-          colormapString.erase(0, npos + 1);
+          colormapString.erase(0, inner_npos + 1);
         } else {
           unsigned char c = (unsigned char)std::stoi(trim(colormapString));
           cmap.color.push_back(c);
