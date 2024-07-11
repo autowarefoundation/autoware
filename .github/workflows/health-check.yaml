@@ -19,7 +19,9 @@ jobs:
 
   load-env:
     needs: label-check
-    if: ${{ needs.label-check.outputs.result == 'true' }}
+    if: ${{ needs.label-check.outputs.result == 'true' ||
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/load-env.yaml
 
   docker-build:
