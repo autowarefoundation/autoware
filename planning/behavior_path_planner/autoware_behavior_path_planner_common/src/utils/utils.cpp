@@ -1268,8 +1268,8 @@ lanelet::ConstLanelets getCurrentLanesFromPath(
   const auto & p = planner_data->parameters;
 
   std::set<lanelet::Id> lane_ids;
-  for (const auto & p : path.points) {
-    for (const auto & id : p.lane_ids) {
+  for (const auto & point : path.points) {
+    for (const auto & id : point.lane_ids) {
       lane_ids.insert(id);
     }
   }
