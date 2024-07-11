@@ -597,7 +597,7 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
       concatenate(cruise_obstacles, cruise_object_obstacles);
       concatenate(slow_down_obstacles, slow_down_object_obstacles);
     }
-    if (pointcloud_ptr && !pointcloud_ptr->data.empty()) {
+    if (pointcloud_ptr) {
       const auto target_obstacles =
         convertToObstacles(ego_odom, *pointcloud_ptr, traj_points, msg->header);
 
@@ -822,7 +822,7 @@ std::vector<Obstacle> ObstacleCruisePlannerNode::convertToObstacles(
     transform_stamped = std::nullopt;
   }
 
-  if (transform_stamped) {
+  if (!pointcloud.data.empty() && transform_stamped) {
     // 1. transform pointcloud
     PointCloud::Ptr pointcloud_ptr(new PointCloud);
     pcl::fromROSMsg(pointcloud, *pointcloud_ptr);
@@ -1033,9 +1033,9 @@ ObstacleCruisePlannerNode::determineEgoBehaviorAgainstPredictedObjectObstacles(
   checkConsistency(objects.header.stamp, objects, stop_obstacles);
 
   // update previous obstacles
-  prev_stop_obstacles_ = stop_obstacles;
-  prev_cruise_obstacles_ = cruise_obstacles;
-  prev_slow_down_obstacles_ = slow_down_obstacles;
+  prev_stop_object_obstacles_ = stop_obstacles;
+  prev_cruise_object_obstacles_ = cruise_obstacles;
+  prev_slow_down_object_obstacles_ = slow_down_obstacles;
 
   const double calculation_time = stop_watch_.toc(__func__);
   RCLCPP_INFO_EXPRESSION(
@@ -1051,6 +1051,8 @@ ObstacleCruisePlannerNode::determineEgoBehaviorAgainstPointCloudObstacles(
   const std::vector<Obstacle> & obstacles)
 {
   stop_watch_.tic(__func__);
+
+  const auto & p = behavior_determination_param_;
 
   // calculated decimated trajectory points and trajectory polygon
   const auto decimated_traj_points = decimateTrajectoryPoints(odometry, traj_points);
@@ -1077,6 +1079,32 @@ ObstacleCruisePlannerNode::determineEgoBehaviorAgainstPointCloudObstacles(
       continue;
     }
   }
+
+  std::vector<StopObstacle> past_stop_obstacles;
+  for (auto itr = stop_pc_obstacle_history_.begin(); itr != stop_pc_obstacle_history_.end();) {
+    const double elapsed_time = (rclcpp::Time(odometry.header.stamp) - itr->stamp).seconds();
+    if (elapsed_time >= p.stop_obstacle_hold_time_threshold) {
+      itr = stop_pc_obstacle_history_.erase(itr);
+      continue;
+    }
+
+    const auto lat_dist_from_obstacle_to_traj =
+      autoware::motion_utils::calcLateralOffset(traj_points, itr->collision_point);
+    const auto min_lat_dist_to_traj_poly =
+      std::abs(lat_dist_from_obstacle_to_traj) - vehicle_info_.vehicle_width_m;
+
+    if (min_lat_dist_to_traj_poly < p.max_lat_margin_for_stop_against_unknown) {
+      auto stop_obstacle = *itr;
+      stop_obstacle.dist_to_collide_on_decimated_traj = autoware::motion_utils::calcSignedArcLength(
+        decimated_traj_points, 0, stop_obstacle.collision_point);
+      past_stop_obstacles.push_back(stop_obstacle);
+    }
+
+    ++itr;
+  }
+
+  concatenate(stop_pc_obstacle_history_, stop_obstacles);
+  concatenate(stop_obstacles, past_stop_obstacles);
 
   const double calculation_time = stop_watch_.toc(__func__);
   RCLCPP_INFO_EXPRESSION(
@@ -1308,7 +1336,7 @@ ObstacleCruisePlannerNode::createCollisionPointsForInsideCruiseObstacle(
     // const bool is_prev_obstacle_stop = getObstacleFromUuid(prev_stop_obstacles_,
     // obstacle.uuid).has_value();
     const bool is_prev_obstacle_cruise =
-      getObstacleFromUuid(prev_cruise_obstacles_, obstacle.uuid).has_value();
+      getObstacleFromUuid(prev_cruise_object_obstacles_, obstacle.uuid).has_value();
 
     if (is_prev_obstacle_cruise) {
       if (obstacle_tangent_vel < p.obstacle_velocity_threshold_from_cruise_to_stop) {
@@ -1555,7 +1583,7 @@ std::optional<SlowDownObstacle> ObstacleCruisePlannerNode::createSlowDownObstacl
   slow_down_condition_counter_.addCurrentUuid(obstacle.uuid);
 
   const bool is_prev_obstacle_slow_down =
-    getObstacleFromUuid(prev_slow_down_obstacles_, obstacle.uuid).has_value();
+    getObstacleFromUuid(prev_slow_down_object_obstacles_, obstacle.uuid).has_value();
 
   if (!enable_slow_down_planning_ || !isSlowDownObstacle(obstacle.classification.label)) {
     return std::nullopt;
@@ -1694,7 +1722,7 @@ void ObstacleCruisePlannerNode::checkConsistency(
   const rclcpp::Time & current_time, const PredictedObjects & predicted_objects,
   std::vector<StopObstacle> & stop_obstacles)
 {
-  for (const auto & prev_closest_stop_obstacle : prev_closest_stop_obstacles_) {
+  for (const auto & prev_closest_stop_obstacle : prev_closest_stop_object_obstacles_) {
     const auto predicted_object_itr = std::find_if(
       predicted_objects.objects.begin(), predicted_objects.objects.end(),
       [&prev_closest_stop_obstacle](const PredictedObject & po) {
@@ -1724,7 +1752,8 @@ void ObstacleCruisePlannerNode::checkConsistency(
     }
   }
 
-  prev_closest_stop_obstacles_ = obstacle_cruise_utils::getClosestStopObstacles(stop_obstacles);
+  prev_closest_stop_object_obstacles_ =
+    obstacle_cruise_utils::getClosestStopObstacles(stop_obstacles);
 }
 
 bool ObstacleCruisePlannerNode::isObstacleCrossing(
