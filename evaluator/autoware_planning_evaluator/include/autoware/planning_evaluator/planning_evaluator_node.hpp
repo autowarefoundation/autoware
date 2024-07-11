@@ -181,7 +181,9 @@ private:
   rclcpp::TimerBase::SharedPtr timer_;
   // queue for diagnostics and time stamp
   std::deque<std::pair<DiagnosticStatus, rclcpp::Time>> diag_queue_;
-  const std::vector<std::string> target_functions_ = {"obstacle_cruise_planner"};
+  const std::vector<std::string> target_functions_ = {
+    "obstacle_cruise_planner_stop", "obstacle_cruise_planner_slow_down",
+    "obstacle_cruise_planner_cruise"};
   std::optional<AccelWithCovarianceStamped> prev_acc_stamped_{std::nullopt};
 };
 }  // namespace planning_diagnostics

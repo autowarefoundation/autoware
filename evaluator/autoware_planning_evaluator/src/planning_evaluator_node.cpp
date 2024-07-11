@@ -122,7 +122,21 @@ DiagnosticStatus PlanningEvaluatorNode::generateDiagnosticEvaluationStatus(
   });
   const bool found = it != diag.values.end();
   status.level = (found) ? status.OK : status.ERROR;
-  status.values.push_back((found) ? *it : diagnostic_msgs::msg::KeyValue{});
+
+  auto get_key_value = [&]() {
+    if (!found) {
+      return diagnostic_msgs::msg::KeyValue{};
+    }
+    if (it->value.find("none") != std::string::npos) {
+      return *it;
+    }
+    diagnostic_msgs::msg::KeyValue key_value;
+    key_value.key = "decision";
+    key_value.value = "deceleration";
+    return key_value;
+  };
+
+  status.values.push_back(get_key_value());
   return status;
 }
 

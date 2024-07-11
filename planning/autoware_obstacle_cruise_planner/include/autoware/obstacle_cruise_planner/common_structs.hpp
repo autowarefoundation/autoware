@@ -25,6 +25,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+
 #include <optional>
 #include <string>
 #include <vector>
@@ -286,6 +288,9 @@ struct DebugData
   MarkerArray cruise_wall_marker;
   MarkerArray slow_down_wall_marker;
   std::vector<autoware::universe_utils::Polygon2d> detection_polygons;
+  std::optional<diagnostic_msgs::msg::DiagnosticStatus> stop_reason_diag{std::nullopt};
+  std::optional<diagnostic_msgs::msg::DiagnosticStatus> slow_down_reason_diag{std::nullopt};
+  std::optional<diagnostic_msgs::msg::DiagnosticStatus> cruise_reason_diag{std::nullopt};
 };
 
 struct EgoNearestParam
