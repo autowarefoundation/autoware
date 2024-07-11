@@ -1,7 +1,6 @@
 name: docker-build-and-push-self-hosted
 
 on:
-  pull_request:
   workflow_dispatch:
     inputs:
       artifacts-destination:
