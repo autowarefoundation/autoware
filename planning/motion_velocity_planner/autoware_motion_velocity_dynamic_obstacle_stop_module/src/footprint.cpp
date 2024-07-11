@@ -79,7 +79,7 @@ void make_ego_footprint_rtree(EgoData & ego_data, const PlannerParam & params)
   for (auto i = 0UL; i < ego_data.trajectory_footprints.size(); ++i) {
     const auto box = boost::geometry::return_envelope<autoware::universe_utils::Box2d>(
       ego_data.trajectory_footprints[i]);
-    rtree_nodes.push_back(std::make_pair(box, i));
+    rtree_nodes.emplace_back(box, i);
   }
   ego_data.rtree = Rtree(rtree_nodes);
 }
