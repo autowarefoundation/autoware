@@ -11,7 +11,7 @@ jobs:
 
   docker-build:
     needs: load-env
-    runs-on: ubuntu-latest
+    runs-on: buildjet-16vcpu-ubuntu-2204
     strategy:
       fail-fast: false
       matrix:

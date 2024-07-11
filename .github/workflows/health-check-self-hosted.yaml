@@ -11,7 +11,7 @@ jobs:
 
   docker-build:
     needs: load-env
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: buildjet-16vcpu-ubuntu-2204-arm
     strategy:
       fail-fast: false
       matrix:
