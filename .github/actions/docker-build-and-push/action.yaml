@@ -44,22 +44,37 @@ runs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Restore cache
+    - name: Restore ccache
       uses: actions/cache/restore@v4
+      if: ${{ inputs.name != 'no-cuda' }}
       with:
         path: |
           root-ccache
         key: cache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('autoware.repos') }}
         restore-keys: |
-          cache-${{ inputs.platform }}-${{ inputs.name }}-
-          cache-${{ inputs.platform }}-
+          ccache-${{ matrix.platform }}-${{ matrix.name }}-
+          ccache-${{ matrix.platform }}-
+
+    - name: Restore apt-get
+      uses: actions/cache/restore@v4
+      if: ${{ inputs.name == 'no-cuda' }}
+      with:
+        path: |
+          var-cache-apt
+          var-lib-apt
+        key: apt-get-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/package.xml') }}
+        restore-keys: |
+          apt-get-${{ inputs.platform }}-${{ inputs.name }}-
+          apt-get-${{ inputs.platform }}-
 
     - name: Inject cache into docker
       uses: reproducible-containers/buildkit-cache-dance@v3.1.2
       with:
         cache-map: |
           {
-            "root-ccache": "/root/.ccache"
+            "root-ccache": "/root/.ccache",
+            "var-cache-apt": "/var/cache/apt",
+            "var-lib-apt": "/var/lib/apt"
           }
         skip-extraction: true
 
