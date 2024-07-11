@@ -179,6 +179,9 @@ void ExternalCmdConverterNode::check_topic_status(
 {
   using diagnostic_msgs::msg::DiagnosticStatus;
   DiagnosticStatus status;
+
+  current_gate_mode_ = gate_mode_sub_.takeData();
+
   if (!check_emergency_stop_topic_timeout()) {
     status.level = DiagnosticStatus::ERROR;
     status.message = "emergency stop topic is timeout";
@@ -195,6 +198,14 @@ void ExternalCmdConverterNode::check_topic_status(
 
 bool ExternalCmdConverterNode::check_emergency_stop_topic_timeout()
 {
+  if (!current_gate_mode_) {
+    return true;
+  }
+
+  if (current_gate_mode_->data == tier4_control_msgs::msg::GateMode::AUTO) {
+    latest_emergency_stop_heartbeat_received_time_ = nullptr;
+  }
+
   if (!latest_emergency_stop_heartbeat_received_time_) {
     return wait_for_first_topic_;
   }
@@ -205,8 +216,6 @@ bool ExternalCmdConverterNode::check_emergency_stop_topic_timeout()
 
 bool ExternalCmdConverterNode::check_remote_topic_rate()
 {
-  current_gate_mode_ = gate_mode_sub_.takeData();
-
   if (!current_gate_mode_) {
     return true;
   }
