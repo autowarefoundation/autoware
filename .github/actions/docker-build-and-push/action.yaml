@@ -54,6 +54,8 @@ runs:
         restore-keys: |
           ccache-${{ matrix.platform }}-${{ matrix.name }}-
           ccache-${{ matrix.platform }}-
+          cache-${{ matrix.platform }}-${{ matrix.name }}-  # TODO(youtalk): Remove obsolete cache key
+          cache-${{ matrix.platform }}-  # TODO(youtalk): Remove obsolete cache key
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
