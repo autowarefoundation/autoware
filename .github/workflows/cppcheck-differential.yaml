@@ -58,7 +58,7 @@ jobs:
         run: |
           filtered_paths=""
           for dir in ${{ steps.get-full-paths.outputs.full-paths }}; do
-            if [ -d "$dir" ] && find "$dir" -name "*.cpp" -o -name "*.hpp" | grep -q .; then
+            if [ -d "$dir" ] && find "$dir" -name "*.cpp" | grep -q .; then
               filtered_paths="$filtered_paths $dir"
             fi
           done
