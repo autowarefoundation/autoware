@@ -45,8 +45,8 @@ runs:
         restore-keys: |
           ccache-${{ inputs.platform }}-${{ inputs.name }}-
           ccache-${{ inputs.platform }}-
-          cache-${{ matrix.platform }}-${{ matrix.name }}-  # TODO(youtalk): Remove obsolete cache key
-          cache-${{ matrix.platform }}-  # TODO(youtalk): Remove obsolete cache key
+          cache-${{ inputs.platform }}-${{ inputs.name }}-  # TODO(youtalk): Remove obsolete cache key
+          cache-${{ inputs.platform }}-  # TODO(youtalk): Remove obsolete cache key
 
     - name: Cache apt-get
       uses: actions/cache@v4
@@ -67,10 +67,10 @@ runs:
       with:
         path: |
           root-ccache
-        key: cache-${{ matrix.platform }}-${{ matrix.name }}-${{ hashFiles('autoware.repos') }}
+        key: ccache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
-          ccache-${{ matrix.platform }}-${{ matrix.name }}-
-          ccache-${{ matrix.platform }}-
+          ccache-${{ inputs.platform }}-${{ inputs.name }}-
+          ccache-${{ inputs.platform }}-
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4

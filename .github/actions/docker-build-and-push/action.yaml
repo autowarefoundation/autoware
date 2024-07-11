@@ -52,10 +52,10 @@ runs:
           root-ccache
         key: cache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('autoware.repos') }}
         restore-keys: |
-          ccache-${{ matrix.platform }}-${{ matrix.name }}-
-          ccache-${{ matrix.platform }}-
-          cache-${{ matrix.platform }}-${{ matrix.name }}-  # TODO(youtalk): Remove obsolete cache key
-          cache-${{ matrix.platform }}-  # TODO(youtalk): Remove obsolete cache key
+          ccache-${{ inputs.platform }}-${{ inputs.name }}-
+          ccache-${{ inputs.platform }}-
+          cache-${{ inputs.platform }}-${{ inputs.name }}-  # TODO(youtalk): Remove obsolete cache key
+          cache-${{ inputs.platform }}-  # TODO(youtalk): Remove obsolete cache key
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
