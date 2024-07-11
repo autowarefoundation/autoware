@@ -888,7 +888,7 @@ bool isParkedObject(
     const auto most_left_lanelet_candidates =
       route_handler.getLaneletMapPtr()->laneletLayer.findUsages(most_left_road_lanelet.leftBound());
     lanelet::ConstLanelet most_left_lanelet = most_left_road_lanelet;
-    const lanelet::Attribute sub_type =
+    const lanelet::Attribute most_left_sub_type =
       most_left_lanelet.attribute(lanelet::AttributeName::Subtype);
 
     for (const auto & ll : most_left_lanelet_candidates) {
@@ -898,7 +898,7 @@ bool isParkedObject(
       }
     }
     bound = most_left_lanelet.leftBound2d().basicLineString();
-    if (sub_type.value() != "road_shoulder") {
+    if (most_left_sub_type.value() != "road_shoulder") {
       center_to_bound_buffer = object_check_min_road_shoulder_width;
     }
   } else {
@@ -909,7 +909,7 @@ bool isParkedObject(
         most_right_road_lanelet.rightBound());
 
     lanelet::ConstLanelet most_right_lanelet = most_right_road_lanelet;
-    const lanelet::Attribute sub_type =
+    const lanelet::Attribute most_right_sub_type =
       most_right_lanelet.attribute(lanelet::AttributeName::Subtype);
 
     for (const auto & ll : most_right_lanelet_candidates) {
@@ -919,7 +919,7 @@ bool isParkedObject(
       }
     }
     bound = most_right_lanelet.rightBound2d().basicLineString();
-    if (sub_type.value() != "road_shoulder") {
+    if (most_right_sub_type.value() != "road_shoulder") {
       center_to_bound_buffer = object_check_min_road_shoulder_width;
     }
   }

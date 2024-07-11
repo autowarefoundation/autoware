@@ -1445,7 +1445,7 @@ bool NormalLaneChange::getLaneChangePaths(
       RCLCPP_DEBUG(logger_, "  -  sampling num for lat_acc: %lu", sample_lat_acc.size());
 
       for (const auto & lateral_acc : sample_lat_acc) {
-        const auto debug_print = [&](const auto & s) {
+        const auto debug_print_lat = [&](const auto & s) {
           RCLCPP_DEBUG_STREAM(
             logger_, "    -  " << s << " : prep_time = " << prepare_duration << ", lon_acc = "
                                << sampled_longitudinal_acc << ", lat_acc = " << lateral_acc);
@@ -1467,7 +1467,7 @@ bool NormalLaneChange::getLaneChangePaths(
           prepare_segment, current_velocity, terminal_lane_changing_velocity);
 
         if (lane_changing_length + prepare_length > dist_to_end_of_current_lanes) {
-          debug_print("Reject: length of lane changing path is longer than length to goal!!");
+          debug_print_lat("Reject: length of lane changing path is longer than length to goal!!");
           continue;
         }
 
@@ -1486,7 +1486,7 @@ bool NormalLaneChange::getLaneChangePaths(
             s_start + lane_changing_length + finish_judge_buffer + backward_buffer +
               next_lane_change_buffer >
             s_goal) {
-            debug_print("Reject: length of lane changing path is longer than length to goal!!");
+            debug_print_lat("Reject: length of lane changing path is longer than length to goal!!");
             continue;
           }
         }
@@ -1496,7 +1496,7 @@ bool NormalLaneChange::getLaneChangePaths(
           initial_lane_changing_velocity, next_lane_change_buffer);
 
         if (target_segment.points.empty()) {
-          debug_print("Reject: target segment is empty!! something wrong...");
+          debug_print_lat("Reject: target segment is empty!! something wrong...");
           continue;
         }
 
@@ -1527,7 +1527,7 @@ bool NormalLaneChange::getLaneChangePaths(
         lane_change_info.terminal_lane_changing_velocity = terminal_lane_changing_velocity;
 
         if (!is_valid_start_point) {
-          debug_print(
+          debug_print_lat(
             "Reject: lane changing points are not inside of the target preferred lanes or its "
             "neighbors");
           continue;
@@ -1541,7 +1541,7 @@ bool NormalLaneChange::getLaneChangePaths(
           next_lane_change_buffer);
 
         if (target_lane_reference_path.points.empty()) {
-          debug_print("Reject: target_lane_reference_path is empty!!");
+          debug_print_lat("Reject: target_lane_reference_path is empty!!");
           continue;
         }
 
@@ -1553,12 +1553,12 @@ bool NormalLaneChange::getLaneChangePaths(
           sorted_lane_ids);
 
         if (!candidate_path) {
-          debug_print("Reject: failed to generate candidate path!!");
+          debug_print_lat("Reject: failed to generate candidate path!!");
           continue;
         }
 
         if (!hasEnoughLength(*candidate_path, current_lanes, target_lanes, direction)) {
-          debug_print("Reject: invalid candidate path!!");
+          debug_print_lat("Reject: invalid candidate path!!");
           continue;
         }
 
@@ -1566,7 +1566,7 @@ bool NormalLaneChange::getLaneChangePaths(
           lane_change_parameters_->regulate_on_crosswalk &&
           !hasEnoughLengthToCrosswalk(*candidate_path, current_lanes)) {
           if (getStopTime() < lane_change_parameters_->stop_time_threshold) {
-            debug_print("Reject: including crosswalk!!");
+            debug_print_lat("Reject: including crosswalk!!");
             continue;
           }
           RCLCPP_INFO_THROTTLE(
@@ -1577,7 +1577,7 @@ bool NormalLaneChange::getLaneChangePaths(
           lane_change_parameters_->regulate_on_intersection &&
           !hasEnoughLengthToIntersection(*candidate_path, current_lanes)) {
           if (getStopTime() < lane_change_parameters_->stop_time_threshold) {
-            debug_print("Reject: including intersection!!");
+            debug_print_lat("Reject: including intersection!!");
             continue;
           }
           RCLCPP_WARN_STREAM(
@@ -1587,14 +1587,14 @@ bool NormalLaneChange::getLaneChangePaths(
         if (
           lane_change_parameters_->regulate_on_traffic_light &&
           !hasEnoughLengthToTrafficLight(*candidate_path, current_lanes)) {
-          debug_print("Reject: regulate on traffic light!!");
+          debug_print_lat("Reject: regulate on traffic light!!");
           continue;
         }
 
         if (utils::traffic_light::isStoppedAtRedTrafficLightWithinDistance(
               lane_change_info.current_lanes, candidate_path.value().path, planner_data_,
               lane_change_info.length.sum())) {
-          debug_print("Ego is stopping near traffic light. Do not allow lane change");
+          debug_print_lat("Ego is stopping near traffic light. Do not allow lane change");
           continue;
         }
         candidate_paths->push_back(*candidate_path);
@@ -1604,14 +1604,14 @@ bool NormalLaneChange::getLaneChangePaths(
                          route_handler, *candidate_path, filtered_objects.target_lane,
                          lane_change_buffer, is_goal_in_route, *lane_change_parameters_,
                          lane_change_debug_.collision_check_objects)) {
-          debug_print(
+          debug_print_lat(
             "Reject: parking vehicle exists in the target lane, and the ego is not in stuck. Skip "
             "lane change.");
           return false;
         }
 
         if (!check_safety) {
-          debug_print("ACCEPT!!!: it is valid (and safety check is skipped).");
+          debug_print_lat("ACCEPT!!!: it is valid (and safety check is skipped).");
           return false;
         }
 
@@ -1619,11 +1619,11 @@ bool NormalLaneChange::getLaneChangePaths(
           *candidate_path, target_objects, rss_params, lane_change_debug_.collision_check_objects);
 
         if (is_safe) {
-          debug_print("ACCEPT!!!: it is valid and safe!");
+          debug_print_lat("ACCEPT!!!: it is valid and safe!");
           return true;
         }
 
-        debug_print("Reject: sampled path is not safe.");
+        debug_print_lat("Reject: sampled path is not safe.");
       }
     }
   }
