@@ -15,6 +15,6 @@ rclcpp_components_register_node(dummy_infrastructure_node_component
 
 ament_auto_package(
   INSTALL_TO_SHARE
-    config
-    launch
+  launch
+  config
 )

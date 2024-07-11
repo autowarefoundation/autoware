@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Dummy Infrastructure Node",
+  "type": "object",
+  "definitions": {
+    "dummy_infrastructure": {
+      "type": "object",
+      "properties": {
+        "update_rate_hz": {
+          "type": "number",
+          "default": "10.0",
+          "description": "Timer callback period [Hz]"
+        },
+        "use_first_command": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Consider instrument id or not"
+        },
+        "use_command_state": {
+          "type": "boolean",
+          "default": "false",
+          "description": "Consider command state or not"
+        },
+        "instrument_id": {
+          "type": "string",
+          "default": "",
+          "description": "Used as command id"
+        },
+        "approval": {
+          "type": "boolean",
+          "default": "false",
+          "description": "set approval filed to ros param"
+        },
+        "is_finalized": {
+          "type": "boolean",
+          "default": "false",
+          "description": "Stop at stop_line if finalization isn't completed"
+        }
+      },
+      "required": [
+        "update_rate_hz",
+        "use_first_command",
+        "use_command_state",
+        "instrument_id",
+        "approval",
+        "is_finalized"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/dummy_infrastructure"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

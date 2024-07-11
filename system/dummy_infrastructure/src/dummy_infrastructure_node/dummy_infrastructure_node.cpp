@@ -89,12 +89,12 @@ DummyInfrastructureNode::DummyInfrastructureNode(const rclcpp::NodeOptions & nod
     this->add_on_set_parameters_callback(std::bind(&DummyInfrastructureNode::onSetParam, this, _1));
 
   // Parameter
-  node_param_.update_rate_hz = declare_parameter<double>("update_rate_hz", 10.0);
-  node_param_.use_first_command = declare_parameter<bool>("use_first_command", true);
-  node_param_.use_command_state = declare_parameter<bool>("use_command_state", false);
-  node_param_.instrument_id = declare_parameter<std::string>("instrument_id", "");
-  node_param_.approval = declare_parameter<bool>("approval", false);
-  node_param_.is_finalized = declare_parameter<bool>("is_finalized", false);
+  node_param_.update_rate_hz = declare_parameter<double>("update_rate_hz");
+  node_param_.use_first_command = declare_parameter<bool>("use_first_command");
+  node_param_.use_command_state = declare_parameter<bool>("use_command_state");
+  node_param_.instrument_id = declare_parameter<std::string>("instrument_id");
+  node_param_.approval = declare_parameter<bool>("approval");
+  node_param_.is_finalized = declare_parameter<bool>("is_finalized");
 
   // Subscriber
   sub_command_array_ = create_subscription<InfrastructureCommandArray>(
