@@ -33,6 +33,9 @@ public:
     std::unordered_set<std::string> unique_names;
     std::vector<std::string> identical_names;
     for (auto name : input_name_lists) {
+      if (nodes_to_ignore_.count(name) != 0) {
+        continue;
+      }
       if (unique_names.find(name) != unique_names.end()) {
         identical_names.push_back(name);
       } else {
@@ -49,6 +52,7 @@ private:
   diagnostic_updater::Updater updater_{this};
   rclcpp::TimerBase::SharedPtr timer_;
   bool add_duplicated_node_names_to_msg_;
+  std::unordered_set<std::string> nodes_to_ignore_;
 };
 }  // namespace duplicated_node_checker
 

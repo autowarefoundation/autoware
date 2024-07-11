@@ -29,6 +29,11 @@ DuplicatedNodeChecker::DuplicatedNodeChecker(const rclcpp::NodeOptions & node_op
 {
   double update_rate = declare_parameter<double>("update_rate");
   add_duplicated_node_names_to_msg_ = declare_parameter<bool>("add_duplicated_node_names_to_msg");
+
+  std::vector<std::string> nodes_to_ignore_vector =
+    declare_parameter<std::vector<std::string>>("nodes_to_ignore");
+  nodes_to_ignore_.insert(nodes_to_ignore_vector.begin(), nodes_to_ignore_vector.end());
+
   updater_.setHardwareID("duplicated_node_checker");
   updater_.add("duplicated_node_checker", this, &DuplicatedNodeChecker::produceDiagnostics);
 
