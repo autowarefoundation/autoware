@@ -71,10 +71,12 @@ runs:
         restore-keys: |
           ccache-${{ inputs.platform }}-${{ inputs.name }}-
           ccache-${{ inputs.platform }}-
+          cache-${{ inputs.platform }}-${{ inputs.name }}-  # TODO(youtalk): Remove obsolete cache key
+          cache-${{ inputs.platform }}-  # TODO(youtalk): Remove obsolete cache key
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
-      if: ${{ inputs.name == 'no-cuda' }}
+      if: ${{ inputs.name != 'no-cuda' }}
       with:
         path: |
           var-cache-apt
