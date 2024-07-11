@@ -202,8 +202,6 @@ WarningsAsErrors: "
 
 HeaderFilterRegex: ^(?!\/usr)(?!\/opt)
 
-AnalyzeTemporaryDtors: false
-
 FormatStyle: none
 
 CheckOptions:
