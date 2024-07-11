@@ -1205,8 +1205,8 @@ cv::Mat TrtYoloX::getMaskImageGpu(float * d_prob, nvinfer1::Dims dims, int out_w
   cv::Mat mask = cv::Mat::zeros(out_h, out_w, CV_8UC1);
   int index = b * out_w * out_h;
   argmax_gpu(
-    (unsigned char *)argmax_buf_d_.get() + index, d_prob, out_w, out_h, width, height, classes, 1,
-    *stream_);
+    reinterpret_cast<unsigned char *>(argmax_buf_d_.get()) + index, d_prob, out_w, out_h, width,
+    height, classes, 1, *stream_);
   CHECK_CUDA_ERROR(cudaMemcpyAsync(
     argmax_buf_h_.get(), argmax_buf_d_.get(), sizeof(unsigned char) * 1 * out_w * out_h,
     cudaMemcpyDeviceToHost, *stream_));
