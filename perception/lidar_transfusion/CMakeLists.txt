@@ -134,6 +134,11 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     EXECUTABLE lidar_transfusion_node
   )
 
+  install(
+    TARGETS transfusion_cuda_lib
+    DESTINATION lib
+  )
+
   if(BUILD_TESTING)
     find_package(ament_lint_auto REQUIRED)
     ament_lint_auto_find_test_dependencies()
