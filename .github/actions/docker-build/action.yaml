@@ -34,37 +34,68 @@ runs:
         vcs import src < autoware.repos
       shell: bash
 
-    - name: Cache
+    - name: Cache ccache
       uses: actions/cache@v4
       if: ${{ inputs.name == 'no-cuda' }}
-      id: cache
+      id: cache-ccahce
       with:
         path: |
           root-ccache
         key: cache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
-          cache-${{ inputs.platform }}-${{ inputs.name }}-
-          cache-${{ inputs.platform }}-
+          ccache-${{ inputs.platform }}-${{ inputs.name }}-
+          ccache-${{ inputs.platform }}-
+          cache-${{ inputs.platform }}-${{ inputs.name }}-  # TODO(youtalk): Remove obsolete cache key
+          cache-${{ inputs.platform }}-  # TODO(youtalk): Remove obsolete cache key
 
-    - name: Restore cache
+    - name: Cache apt-get
+      uses: actions/cache@v4
+      if: ${{ inputs.name == 'no-cuda' }}
+      id: cache-apt-get
+      with:
+        path: |
+          var-cache-apt
+          var-lib-apt
+        key: apt-get-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/package.xml') }}
+        restore-keys: |
+          apt-get-${{ inputs.platform }}-${{ inputs.name }}-
+          apt-get-${{ inputs.platform }}-
+
+    - name: Restore ccache
       uses: actions/cache/restore@v4
       if: ${{ inputs.name != 'no-cuda' }}
       with:
         path: |
           root-ccache
-        key: cache-${{ matrix.platform }}-${{ matrix.name }}-${{ hashFiles('src/**/*.cpp') }}
+        key: ccache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
-          cache-${{ matrix.platform }}-${{ matrix.name }}-
-          cache-${{ matrix.platform }}-
+          ccache-${{ inputs.platform }}-${{ inputs.name }}-
+          ccache-${{ inputs.platform }}-
+          cache-${{ inputs.platform }}-${{ inputs.name }}-  # TODO(youtalk): Remove obsolete cache key
+          cache-${{ inputs.platform }}-  # TODO(youtalk): Remove obsolete cache key
+
+    - name: Restore apt-get
+      uses: actions/cache/restore@v4
+      if: ${{ inputs.name != 'no-cuda' }}
+      with:
+        path: |
+          var-cache-apt
+          var-lib-apt
+        key: apt-get-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/package.xml') }}
+        restore-keys: |
+          apt-get-${{ inputs.platform }}-${{ inputs.name }}-
+          apt-get-${{ inputs.platform }}-
 
     - name: Inject cache into docker
       uses: reproducible-containers/buildkit-cache-dance@v3.1.2
       with:
         cache-map: |
           {
-            "root-ccache": "/root/.ccache"
+            "root-ccache": "/root/.ccache",
+            "var-cache-apt": "/var/cache/apt",
+            "var-lib-apt": "/var/lib/apt"
           }
-        skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+        skip-extraction: ${{ steps.cache-ccache.outputs.cache-hit && steps.cache-apt-get.outputs.cache-hit }}
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
