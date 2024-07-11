@@ -49,7 +49,7 @@ runs:
       with:
         path: |
           root-ccache
-        key: cache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('autoware.repos') }}
+        key: cache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
           cache-${{ inputs.platform }}-${{ inputs.name }}-
           cache-${{ inputs.platform }}-
