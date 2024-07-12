@@ -44,6 +44,7 @@ runs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    # TODO(youtalk): Remove obsolete "cache-" restore-keys
     - name: Restore ccache
       uses: actions/cache/restore@v4
       with:
@@ -53,8 +54,8 @@ runs:
         restore-keys: |
           ccache-${{ inputs.platform }}-${{ inputs.name }}-
           ccache-${{ inputs.platform }}-
-          cache-${{ inputs.platform }}-${{ inputs.name }}-  # TODO(youtalk): Remove obsolete cache key
-          cache-${{ inputs.platform }}-  # TODO(youtalk): Remove obsolete cache key
+          cache-${{ inputs.platform }}-${{ inputs.name }}-
+          cache-${{ inputs.platform }}-
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
