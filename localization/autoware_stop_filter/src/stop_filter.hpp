@@ -39,7 +39,7 @@ namespace autoware::stop_filter
 class StopFilter : public rclcpp::Node
 {
 public:
-  explicit StopFilter(const rclcpp::NodeOptions & options);
+  explicit StopFilter(const rclcpp::NodeOptions & node_options);
 
 private:
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odom_;  //!< @brief odom publisher
