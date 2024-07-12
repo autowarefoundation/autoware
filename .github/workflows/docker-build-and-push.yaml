@@ -2,19 +2,7 @@ name: docker-build-and-push
 
 on:
   push:
-    tags:
-      - openadkit-v*.*.*
-  schedule:
-    - cron: 0 0 1,15 * *
   workflow_dispatch:
-    inputs:
-      artifacts-destination:
-        type: choice
-        description: Destination for the artifacts
-        options:
-          - registry
-          - tarball
-        default: tarball
 
 jobs:
   load-env:
