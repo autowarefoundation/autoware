@@ -23,6 +23,7 @@
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 
 #include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
+#include <autoware/universe_utils/system/time_keeper.hpp>
 #include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <autoware_lanelet2_extension/utility/utilities.hpp>
 
@@ -55,6 +56,7 @@ NormalLaneChange::NormalLaneChange(
 
 void NormalLaneChange::updateLaneChangeStatus()
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   updateStopTime();
   const auto [found_valid_path, found_safe_path] = getSafePath(status_.lane_change_path);
 
@@ -263,6 +265,7 @@ BehaviorModuleOutput NormalLaneChange::getTerminalLaneChangePath() const
 
 BehaviorModuleOutput NormalLaneChange::generateOutput()
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   if (!status_.is_valid_path) {
     RCLCPP_DEBUG(logger_, "No valid path found. Returning previous module's path as output.");
     return prev_module_output_;
@@ -308,6 +311,7 @@ BehaviorModuleOutput NormalLaneChange::generateOutput()
 
 void NormalLaneChange::extendOutputDrivableArea(BehaviorModuleOutput & output) const
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   const auto & dp = planner_data_->drivable_area_expansion_parameters;
 
   const auto drivable_lanes = utils::lane_change::generateDrivableLanes(
@@ -327,6 +331,7 @@ void NormalLaneChange::extendOutputDrivableArea(BehaviorModuleOutput & output) c
 void NormalLaneChange::insertStopPoint(
   const lanelet::ConstLanelets & lanelets, PathWithLaneId & path)
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   if (lanelets.empty()) {
     return;
   }
@@ -468,6 +473,7 @@ void NormalLaneChange::insertStopPoint(
 
 PathWithLaneId NormalLaneChange::getReferencePath() const
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   lanelet::ConstLanelet closest_lanelet;
   if (!lanelet::utils::query::getClosestLanelet(
         status_.lane_change_path.info.target_lanes, getEgoPose(), &closest_lanelet)) {
@@ -482,6 +488,7 @@ PathWithLaneId NormalLaneChange::getReferencePath() const
 
 std::optional<PathWithLaneId> NormalLaneChange::extendPath()
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   const auto path = status_.lane_change_path.path;
   const auto lc_start_point = status_.lane_change_path.info.lane_changing_start.position;
 
@@ -560,6 +567,7 @@ void NormalLaneChange::resetParameters()
 
 TurnSignalInfo NormalLaneChange::updateOutputTurnSignal() const
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   const auto & pose = getEgoPose();
   const auto & current_lanes = status_.current_lanes;
   const auto & shift_line = status_.lane_change_path.info.shift_line;
@@ -584,6 +592,7 @@ lanelet::ConstLanelets NormalLaneChange::getCurrentLanes() const
 lanelet::ConstLanelets NormalLaneChange::getLaneChangeLanes(
   const lanelet::ConstLanelets & current_lanes, Direction direction) const
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   if (current_lanes.empty()) {
     return {};
   }
@@ -1832,6 +1841,7 @@ PathSafetyStatus NormalLaneChange::evaluateApprovedPathWithUnsafeHysteresis(
 
 bool NormalLaneChange::isValidPath(const PathWithLaneId & path) const
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   const auto & route_handler = planner_data_->route_handler;
   const auto & dp = planner_data_->drivable_area_expansion_parameters;
 
@@ -1869,6 +1879,7 @@ bool NormalLaneChange::isValidPath(const PathWithLaneId & path) const
 
 bool NormalLaneChange::isRequiredStop(const bool is_object_coming_from_rear)
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   const auto threshold = lane_change_parameters_->backward_length_buffer_for_end_of_lane;
   if (
     isNearEndOfCurrentLanes(status_.current_lanes, status_.target_lanes, threshold) &&
@@ -1882,6 +1893,7 @@ bool NormalLaneChange::isRequiredStop(const bool is_object_coming_from_rear)
 
 bool NormalLaneChange::calcAbortPath()
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   const auto & route_handler = getRouteHandler();
   const auto & common_param = getCommonParam();
   const auto current_velocity =
@@ -2025,6 +2037,7 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
   const utils::path_safety_checker::RSSparams & rss_params,
   CollisionCheckDebugMap & debug_data) const
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   PathSafetyStatus path_safety_status;
 
   if (collision_check_objects.empty()) {
@@ -2108,6 +2121,7 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
 bool NormalLaneChange::isVehicleStuck(
   const lanelet::ConstLanelets & current_lanes, const double obstacle_check_distance) const
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   // Ego is still moving, not in stuck
   if (std::abs(getEgoVelocity()) > lane_change_parameters_->stop_velocity_threshold) {
     RCLCPP_DEBUG(logger_, "Ego is still moving, not in stuck");
@@ -2163,6 +2177,7 @@ bool NormalLaneChange::isVehicleStuck(
 
 double NormalLaneChange::get_max_velocity_for_safety_check() const
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   const auto external_velocity_limit_ptr = planner_data_->external_limit_max_velocity;
   if (external_velocity_limit_ptr) {
     return std::min(
@@ -2174,6 +2189,7 @@ double NormalLaneChange::get_max_velocity_for_safety_check() const
 
 bool NormalLaneChange::isVehicleStuck(const lanelet::ConstLanelets & current_lanes) const
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   if (current_lanes.empty()) {
     lane_change_debug_.is_stuck = false;
     return false;  // can not check
@@ -2208,6 +2224,7 @@ void NormalLaneChange::setStopPose(const Pose & stop_pose)
 
 void NormalLaneChange::updateStopTime()
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   const auto current_vel = getEgoVelocity();
 
   if (std::abs(current_vel) > lane_change_parameters_->stop_velocity_threshold) {

@@ -21,6 +21,7 @@
 #include "autoware/universe_utils/ros/debug_publisher.hpp"
 #include "autoware/universe_utils/system/stop_watch.hpp"
 
+#include <autoware/universe_utils/system/time_keeper.hpp>
 #include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -277,6 +278,7 @@ private:
     const SceneModulePtr & module_ptr, const std::shared_ptr<PlannerData> & planner_data,
     const BehaviorModuleOutput & previous_module_output) const
   {
+    universe_utils::ScopedTimeTrack st(module_ptr->name() + "=>run", *module_ptr->getTimeKeeper());
     stop_watch_.tic(module_ptr->name());
 
     module_ptr->setData(planner_data);

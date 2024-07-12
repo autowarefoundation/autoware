@@ -85,6 +85,7 @@ public:
 
     observer.lock()->setData(planner_data_);
     observer.lock()->setPreviousModuleOutput(previous_module_output);
+    observer.lock()->getTimeKeeper()->add_reporter(this->pub_processing_time_);
     observer.lock()->onEntry();
 
     observers_.push_back(observer);
@@ -318,6 +319,8 @@ protected:
       pub_debug_marker_ = node->create_publisher<MarkerArray>("~/debug/" + name_, 20);
       pub_virtual_wall_ = node->create_publisher<MarkerArray>("~/virtual_wall/" + name_, 20);
       pub_drivable_lanes_ = node->create_publisher<MarkerArray>("~/drivable_lanes/" + name_, 20);
+      pub_processing_time_ = node->create_publisher<universe_utils::ProcessingTimeDetail>(
+        "~/processing_time/" + name_, 20);
     }
 
     // misc
@@ -337,6 +340,8 @@ protected:
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_virtual_wall_;
 
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_drivable_lanes_;
+
+  rclcpp::Publisher<universe_utils::ProcessingTimeDetail>::SharedPtr pub_processing_time_;
 
   std::string name_;
 
