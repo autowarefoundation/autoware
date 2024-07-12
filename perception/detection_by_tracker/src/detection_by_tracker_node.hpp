@@ -85,7 +85,7 @@ private:
 
   void divideUnderSegmentedObjects(
     const autoware_perception_msgs::msg::DetectedObjects & tracked_objects,
-    const tier4_perception_msgs::msg::DetectedObjectsWithFeature & in_objects,
+    const tier4_perception_msgs::msg::DetectedObjectsWithFeature & in_cluster_objects,
     autoware_perception_msgs::msg::DetectedObjects & out_no_found_tracked_objects,
     tier4_perception_msgs::msg::DetectedObjectsWithFeature & out_objects);
 
@@ -96,7 +96,7 @@ private:
 
   void mergeOverSegmentedObjects(
     const autoware_perception_msgs::msg::DetectedObjects & tracked_objects,
-    const tier4_perception_msgs::msg::DetectedObjectsWithFeature & in_objects,
+    const tier4_perception_msgs::msg::DetectedObjectsWithFeature & in_cluster_objects,
     autoware_perception_msgs::msg::DetectedObjects & out_no_found_tracked_objects,
     tier4_perception_msgs::msg::DetectedObjectsWithFeature & out_objects);
 };
