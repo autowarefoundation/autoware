@@ -86,7 +86,7 @@ runs:
             tags+=("$(echo "${{ github.ref }}" | sed -E 's/.*([vV][0-9]+\.[0-9]+\.[0-9]+).*/\1/')")
         fi
 
-        tags+=("{{date 'YYYYMMDD'}}")
+        tags+=("${{ date 'YYYYMMDD' }}")
         tags+=("latest")
         tags+=("latest-${{ inputs.tag-prefix }}")
 
