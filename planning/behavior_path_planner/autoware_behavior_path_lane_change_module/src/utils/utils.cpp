@@ -330,13 +330,12 @@ bool isPathInLanelets(
 }
 
 std::optional<LaneChangePath> constructCandidatePath(
-  const LaneChangeInfo & lane_change_info, const PathWithLaneId & prepare_segment,
-  const PathWithLaneId & target_segment, const PathWithLaneId & target_lane_reference_path,
+  const CommonDataPtr & common_data_ptr, const LaneChangeInfo & lane_change_info,
+  const PathWithLaneId & prepare_segment, const PathWithLaneId & target_segment,
+  const PathWithLaneId & target_lane_reference_path,
   const std::vector<std::vector<int64_t>> & sorted_lane_ids)
 {
   const auto & shift_line = lane_change_info.shift_line;
-  const auto & original_lanes = lane_change_info.current_lanes;
-  const auto & target_lanes = lane_change_info.target_lanes;
   const auto terminal_lane_changing_velocity = lane_change_info.terminal_lane_changing_velocity;
   const auto longitudinal_acceleration = lane_change_info.longitudinal_acceleration;
   const auto lane_change_velocity = lane_change_info.velocity;
@@ -393,9 +392,11 @@ std::optional<LaneChangePath> constructCandidatePath(
   const bool enable_path_check_in_lanelet = false;
 
   // check candidate path is in lanelet
+  const auto & current_lanes = common_data_ptr->lanes_ptr->current;
+  const auto & target_lanes = common_data_ptr->lanes_ptr->target;
   if (
     enable_path_check_in_lanelet &&
-    !isPathInLanelets(shifted_path.path, original_lanes, target_lanes)) {
+    !isPathInLanelets(shifted_path.path, current_lanes, target_lanes)) {
     return std::nullopt;
   }
 
@@ -968,17 +969,18 @@ bool isParkedObject(
 }
 
 bool passParkedObject(
-  const RouteHandler & route_handler, const LaneChangePath & lane_change_path,
+  const CommonDataPtr & common_data_ptr, const LaneChangePath & lane_change_path,
   const std::vector<ExtendedPredictedObject> & objects, const double minimum_lane_change_length,
-  const bool is_goal_in_route, const LaneChangeParameters & lane_change_parameters,
-  CollisionCheckDebugMap & object_debug)
+  const bool is_goal_in_route, CollisionCheckDebugMap & object_debug)
 {
+  const auto route_handler = *common_data_ptr->route_handler_ptr;
+  const auto lane_change_parameters = *common_data_ptr->lc_param_ptr;
   const auto & object_check_min_road_shoulder_width =
     lane_change_parameters.object_check_min_road_shoulder_width;
   const auto & object_shiftable_ratio_threshold =
     lane_change_parameters.object_shiftable_ratio_threshold;
   const auto & path = lane_change_path.path;
-  const auto & current_lanes = lane_change_path.info.current_lanes;
+  const auto & current_lanes = common_data_ptr->lanes_ptr->current;
   const auto current_lane_path =
     route_handler.getCenterLinePath(current_lanes, 0.0, std::numeric_limits<double>::max());
 
@@ -1135,10 +1137,9 @@ ExtendedPredictedObject transform(
 }
 
 bool isCollidedPolygonsInLanelet(
-  const std::vector<Polygon2d> & collided_polygons, const lanelet::ConstLanelets & lanes)
+  const std::vector<Polygon2d> & collided_polygons,
+  const std::optional<lanelet::BasicPolygon2d> & lanes_polygon)
 {
-  const auto lanes_polygon = createPolygon(lanes, 0.0, std::numeric_limits<double>::max());
-
   const auto is_in_lanes = [&](const auto & collided_polygon) {
     return lanes_polygon && boost::geometry::intersects(lanes_polygon.value(), collided_polygon);
   };
@@ -1207,26 +1208,59 @@ double calcPhaseLength(
   return std::min(length_with_acceleration, length_with_max_velocity);
 }
 
-LanesPolygon createLanesPolygon(
-  const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes,
-  const std::vector<lanelet::ConstLanelets> & target_backward_lanes)
+LanesPolygon create_lanes_polygon(const CommonDataPtr & common_data_ptr)
 {
+  const auto & lanes = common_data_ptr->lanes_ptr;
   LanesPolygon lanes_polygon;
 
   lanes_polygon.current =
-    utils::lane_change::createPolygon(current_lanes, 0.0, std::numeric_limits<double>::max());
+    utils::lane_change::createPolygon(lanes->current, 0.0, std::numeric_limits<double>::max());
   lanes_polygon.target =
-    utils::lane_change::createPolygon(target_lanes, 0.0, std::numeric_limits<double>::max());
+    utils::lane_change::createPolygon(lanes->target, 0.0, std::numeric_limits<double>::max());
 
-  for (const auto & target_backward_lane : target_backward_lanes) {
-    auto lane_polygon = utils::lane_change::createPolygon(
-      target_backward_lane, 0.0, std::numeric_limits<double>::max());
+  const auto & lc_param_ptr = common_data_ptr->lc_param_ptr;
+  const auto expanded_target_lanes = utils::lane_change::generateExpandedLanelets(
+    lanes->target, common_data_ptr->direction, lc_param_ptr->lane_expansion_left_offset,
+    lc_param_ptr->lane_expansion_right_offset);
+  lanes_polygon.expanded_target = utils::lane_change::createPolygon(
+    expanded_target_lanes, 0.0, std::numeric_limits<double>::max());
+
+  const auto & route_handler = *common_data_ptr->route_handler_ptr;
+  lanes_polygon.target_neighbor =
+    getTargetNeighborLanesPolygon(route_handler, lanes->current, common_data_ptr->lc_type);
+
+  lanes_polygon.preceding_target.reserve(lanes->preceding_target.size());
+  for (const auto & preceding_lane : lanes->preceding_target) {
+    auto lane_polygon =
+      utils::lane_change::createPolygon(preceding_lane, 0.0, std::numeric_limits<double>::max());
 
     if (lane_polygon) {
-      lanes_polygon.target_backward.push_back(*lane_polygon);
+      lanes_polygon.preceding_target.push_back(*lane_polygon);
     }
   }
   return lanes_polygon;
+}
+
+bool is_same_lane_with_prev_iteration(
+  const CommonDataPtr & common_data_ptr, const lanelet::ConstLanelets & current_lanes,
+  const lanelet::ConstLanelets & target_lanes)
+{
+  if (current_lanes.empty() || target_lanes.empty()) {
+    return false;
+  }
+  const auto & prev_current_lanes = common_data_ptr->lanes_ptr->current;
+  const auto & prev_target_lanes = common_data_ptr->lanes_ptr->target;
+  if (prev_current_lanes.empty() || prev_target_lanes.empty()) {
+    return false;
+  }
+
+  if (
+    (prev_current_lanes.front().id() != current_lanes.front().id()) ||
+    (prev_current_lanes.back().id() != prev_current_lanes.back().id())) {
+    return false;
+  }
+  return (prev_target_lanes.front().id() == target_lanes.front().id()) &&
+         (prev_target_lanes.back().id() == prev_target_lanes.back().id());
 }
 }  // namespace autoware::behavior_path_planner::utils::lane_change
 

@@ -65,6 +65,8 @@ public:
   LaneChangeBase & operator=(LaneChangeBase &&) = delete;
   virtual ~LaneChangeBase() = default;
 
+  virtual void update_lanes(const bool is_approved) = 0;
+
   virtual void updateLaneChangeStatus() = 0;
 
   virtual std::pair<bool, bool> getSafePath(LaneChangePath & safe_path) const = 0;
@@ -139,6 +141,11 @@ public:
 
   const Twist & getEgoTwist() const { return planner_data_->self_odometry->twist.twist; }
 
+  const lanelet::ConstLanelets & get_current_lanes() const
+  {
+    return common_data_ptr_->lanes_ptr->current;
+  }
+
   const BehaviorPathPlannerParameters & getCommonParam() const { return planner_data_->parameters; }
 
   LaneChangeParameters getLaneChangeParam() const { return *lane_change_parameters_; }
@@ -163,9 +170,19 @@ public:
       common_data_ptr_->bpp_param_ptr =
         std::make_shared<BehaviorPathPlannerParameters>(data->parameters);
     }
+
+    if (!common_data_ptr_->lanes_ptr) {
+      common_data_ptr_->lanes_ptr = std::make_shared<lane_change::Lanes>();
+    }
+
+    if (!common_data_ptr_->lanes_polygon_ptr) {
+      common_data_ptr_->lanes_polygon_ptr = std::make_shared<lane_change::LanesPolygon>();
+    }
+
     common_data_ptr_->self_odometry_ptr = data->self_odometry;
     common_data_ptr_->route_handler_ptr = data->route_handler;
     common_data_ptr_->lc_param_ptr = lane_change_parameters_;
+    common_data_ptr_->lc_type = type_;
     common_data_ptr_->direction = direction_;
   }
 
@@ -211,8 +228,6 @@ public:
   virtual TurnSignalInfo get_current_turn_signal_info() = 0;
 
 protected:
-  virtual lanelet::ConstLanelets getCurrentLanes() const = 0;
-
   virtual int getNumToPreferredLane(const lanelet::ConstLanelet & lane) const = 0;
 
   virtual PathWithLaneId getPrepareSegment(

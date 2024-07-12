@@ -51,6 +51,8 @@ public:
   NormalLaneChange & operator=(NormalLaneChange &&) = delete;
   ~NormalLaneChange() override = default;
 
+  void update_lanes(const bool is_approved) final;
+
   void updateLaneChangeStatus() override;
 
   std::pair<bool, bool> getSafePath(LaneChangePath & safe_path) const override;
@@ -105,8 +107,6 @@ public:
   TurnSignalInfo get_current_turn_signal_info() override;
 
 protected:
-  lanelet::ConstLanelets getCurrentLanes() const override;
-
   lanelet::ConstLanelets getLaneChangeLanes(
     const lanelet::ConstLanelets & current_lanes, Direction direction) const override;
 
@@ -124,9 +124,7 @@ protected:
     const LaneChangeLanesFilteredObjects & predicted_objects,
     const lanelet::ConstLanelets & current_lanes) const;
 
-  LaneChangeLanesFilteredObjects filterObjects(
-    const lanelet::ConstLanelets & current_lanes,
-    const lanelet::ConstLanelets & target_lanes) const;
+  LaneChangeLanesFilteredObjects filterObjects() const;
 
   void filterOncomingObjects(PredictedObjects & objects) const;
 
@@ -202,6 +200,11 @@ protected:
   void updateStopTime();
 
   double getStopTime() const { return stop_time_; }
+
+  const lanelet::ConstLanelets & get_target_lanes() const
+  {
+    return common_data_ptr_->lanes_ptr->target;
+  }
 
   double stop_time_{0.0};
 };

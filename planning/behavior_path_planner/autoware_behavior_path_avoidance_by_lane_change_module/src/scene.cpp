@@ -134,7 +134,7 @@ AvoidancePlanningData AvoidanceByLaneChange::calcAvoidancePlanningData(
   const auto resample_interval = avoidance_parameters_->resample_interval_for_planning;
   data.reference_path = utils::resamplePathWithSpline(data.reference_path_rough, resample_interval);
 
-  data.current_lanelets = getCurrentLanes();
+  data.current_lanelets = get_current_lanes();
 
   fillAvoidanceTargetObjects(data, debug);
 
@@ -274,7 +274,7 @@ double AvoidanceByLaneChange::calcMinAvoidanceLength(const ObjectData & nearest_
 
 double AvoidanceByLaneChange::calcMinimumLaneChangeLength() const
 {
-  const auto current_lanes = getCurrentLanes();
+  const auto current_lanes = get_current_lanes();
   if (current_lanes.empty()) {
     RCLCPP_DEBUG(logger_, "no empty lanes");
     return std::numeric_limits<double>::infinity();

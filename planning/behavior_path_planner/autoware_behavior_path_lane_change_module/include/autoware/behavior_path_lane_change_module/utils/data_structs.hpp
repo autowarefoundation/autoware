@@ -183,15 +183,19 @@ struct PhaseInfo
   }
 };
 
+struct Lanes
+{
+  lanelet::ConstLanelets current;
+  lanelet::ConstLanelets target;
+  std::vector<lanelet::ConstLanelets> preceding_target;
+};
+
 struct Info
 {
   PhaseInfo longitudinal_acceleration{0.0, 0.0};
   PhaseInfo velocity{0.0, 0.0};
   PhaseInfo duration{0.0, 0.0};
   PhaseInfo length{0.0, 0.0};
-
-  lanelet::ConstLanelets current_lanes{};
-  lanelet::ConstLanelets target_lanes{};
 
   Pose lane_changing_start{};
   Pose lane_changing_end{};
@@ -225,23 +229,26 @@ struct LanesPolygon
 {
   std::optional<lanelet::BasicPolygon2d> current;
   std::optional<lanelet::BasicPolygon2d> target;
-  std::vector<lanelet::BasicPolygon2d> target_backward;
+  std::optional<lanelet::BasicPolygon2d> expanded_target;
+  lanelet::BasicPolygon2d target_neighbor;
+  std::vector<lanelet::BasicPolygon2d> preceding_target;
 };
 
-struct Lanes
-{
-  lanelet::ConstLanelets current;
-  lanelet::ConstLanelets target;
-  std::vector<lanelet::ConstLanelets> preceding_target;
-};
+using RouteHandlerPtr = std::shared_ptr<RouteHandler>;
+using BppParamPtr = std::shared_ptr<BehaviorPathPlannerParameters>;
+using LCParamPtr = std::shared_ptr<Parameters>;
+using LanesPtr = std::shared_ptr<Lanes>;
+using LanesPolygonPtr = std::shared_ptr<LanesPolygon>;
 
 struct CommonData
 {
-  std::shared_ptr<RouteHandler> route_handler_ptr;
+  RouteHandlerPtr route_handler_ptr;
   Odometry::ConstSharedPtr self_odometry_ptr;
-  std::shared_ptr<BehaviorPathPlannerParameters> bpp_param_ptr;
-  std::shared_ptr<Parameters> lc_param_ptr;
-  Lanes lanes;
+  BppParamPtr bpp_param_ptr;
+  LCParamPtr lc_param_ptr;
+  LanesPtr lanes_ptr;
+  LanesPolygonPtr lanes_polygon_ptr;
+  ModuleType lc_type;
   Direction direction;
 
   [[nodiscard]] Pose get_ego_pose() const { return self_odometry_ptr->pose.pose; }
@@ -259,12 +266,7 @@ struct CommonData
     return std::hypot(x, y);
   }
 };
-
-using RouteHandlerPtr = std::shared_ptr<RouteHandler>;
-using BppParamPtr = std::shared_ptr<BehaviorPathPlannerParameters>;
-using LCParamPtr = std::shared_ptr<Parameters>;
 using CommonDataPtr = std::shared_ptr<CommonData>;
-using LanesPtr = std::shared_ptr<Lanes>;
 }  // namespace autoware::behavior_path_planner::lane_change
 
 namespace autoware::behavior_path_planner
