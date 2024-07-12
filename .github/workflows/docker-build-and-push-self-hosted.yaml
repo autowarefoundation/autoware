@@ -65,7 +65,6 @@ jobs:
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.ref_name }},mode=max
           tag-suffix: ${{ matrix.additional-tag-suffix }}-${{ matrix.platform }}
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
-          allow-push: true
 
       - name: Show disk space
         run: |
