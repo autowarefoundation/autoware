@@ -684,8 +684,8 @@ void HddMonitor::updateHddInfoList()
   // Restore HDD information list
   try {
     std::istringstream iss(buf);
-    boost::archive::text_iarchive oa(iss);
-    oa >> hdd_info_list_;
+    boost::archive::text_iarchive ia(iss);
+    ia >> hdd_info_list_;
   } catch (const std::exception & e) {
     connect_diag_.summary(DiagStatus::ERROR, "recv error");
     connect_diag_.add("recv", e.what());
