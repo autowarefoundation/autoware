@@ -689,8 +689,8 @@ IntersectionLanelets IntersectionModule::generateObjectiveLanelets(
         routing_graph_ptr, ll, length, ego_lanelets);
       for (const auto & ls : lanelet_sequences) {
         for (const auto & l : ls) {
-          const auto & inserted = detection_ids.insert(l.id());
-          if (inserted.second) detection_and_preceding_lanelets.push_back(l);
+          const auto & inner_inserted = detection_ids.insert(l.id());
+          if (inner_inserted.second) detection_and_preceding_lanelets.push_back(l);
         }
       }
     }
@@ -710,8 +710,8 @@ IntersectionLanelets IntersectionModule::generateObjectiveLanelets(
         routing_graph_ptr, ll, length, ego_lanelets);
       for (const auto & ls : lanelet_sequences) {
         for (const auto & l : ls) {
-          const auto & inserted = detection_ids.insert(l.id());
-          if (inserted.second) occlusion_detection_and_preceding_lanelets.push_back(l);
+          const auto & inner_inserted = detection_ids.insert(l.id());
+          if (inner_inserted.second) occlusion_detection_and_preceding_lanelets.push_back(l);
         }
       }
     }
