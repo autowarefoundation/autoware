@@ -71,7 +71,7 @@ void calculateSteeringAngles(TrajectoryPoints & trajectory, const double wheel_b
   auto prev_point = trajectory.front();
   auto prev_heading = tf2::getYaw(prev_point.pose.orientation);
   for (auto i = 1ul; i < trajectory.size(); ++i) {
-    const auto & prev_point = trajectory[i - 1];
+    prev_point = trajectory[i - 1];
     auto & point = trajectory[i];
     const auto dt = autoware::universe_utils::calcDistance2d(prev_point, point) /
                     prev_point.longitudinal_velocity_mps;
