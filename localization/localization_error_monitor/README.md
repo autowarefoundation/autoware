@@ -16,9 +16,9 @@ The package monitors the following two values:
 
 ### Input
 
-| Name                  | Type                                            | Description         |
-| --------------------- | ----------------------------------------------- | ------------------- |
-| `input/pose_with_cov` | `geometry_msgs::msg::PoseWithCovarianceStamped` | localization result |
+| Name         | Type                      | Description         |
+| ------------ | ------------------------- | ------------------- |
+| `input/odom` | `nav_msgs::msg::Odometry` | localization result |
 
 ### Output
 
