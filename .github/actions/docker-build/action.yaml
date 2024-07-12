@@ -34,6 +34,7 @@ runs:
         vcs import src < autoware.repos
       shell: bash
 
+    # TODO(youtalk): Remove obsolete "cache-" restore-keys
     - name: Cache ccache
       uses: actions/cache@v4
       if: ${{ inputs.name == 'no-cuda' && github.ref == 'refs/heads/main' }}
@@ -41,12 +42,12 @@ runs:
       with:
         path: |
           root-ccache
-        key: cache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/*.cpp') }}
+        key: ccache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
           ccache-${{ inputs.platform }}-${{ inputs.name }}-
           ccache-${{ inputs.platform }}-
-          cache-${{ inputs.platform }}-${{ inputs.name }}-  # TODO(youtalk): Remove obsolete cache key
-          cache-${{ inputs.platform }}-  # TODO(youtalk): Remove obsolete cache key
+          cache-${{ inputs.platform }}-${{ inputs.name }}-
+          cache-${{ inputs.platform }}-
 
     - name: Cache apt-get
       uses: actions/cache@v4
@@ -61,6 +62,7 @@ runs:
           apt-get-${{ inputs.platform }}-${{ inputs.name }}-
           apt-get-${{ inputs.platform }}-
 
+    # TODO(youtalk): Remove obsolete "cache-" restore-keys
     - name: Restore ccache
       uses: actions/cache/restore@v4
       if: ${{ inputs.name != 'no-cuda' || github.ref != 'refs/heads/main' }}
@@ -71,8 +73,8 @@ runs:
         restore-keys: |
           ccache-${{ inputs.platform }}-${{ inputs.name }}-
           ccache-${{ inputs.platform }}-
-          cache-${{ inputs.platform }}-${{ inputs.name }}-  # TODO(youtalk): Remove obsolete cache key
-          cache-${{ inputs.platform }}-  # TODO(youtalk): Remove obsolete cache key
+          cache-${{ inputs.platform }}-${{ inputs.name }}-
+          cache-${{ inputs.platform }}-
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
