@@ -17,13 +17,10 @@
 #include "autoware/universe_utils/system/stop_watch.hpp"
 
 #include <rclcpp/publisher.hpp>
-#include <rclcpp/rclcpp.hpp>
 
 #include <std_msgs/msg/string.hpp>
 #include <tier4_debug_msgs/msg/processing_time_node.hpp>
 #include <tier4_debug_msgs/msg/processing_time_tree.hpp>
-
-#include <fmt/format.h>
 
 #include <memory>
 #include <ostream>
@@ -135,14 +132,6 @@ public:
   void add_reporter(rclcpp::Publisher<ProcessingTimeDetail>::SharedPtr publisher);
 
   /**
-   * @brief Add a reporter to publish processing times to an rclcpp publisher with
-   * std_msgs::msg::String
-   *
-   * @param publisher Shared pointer to the rclcpp publisher
-   */
-  void add_reporter(rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher);
-
-  /**
    * @brief Start tracking the processing time of a function
    *
    * @param func_name Name of the function to be tracked
@@ -186,6 +175,11 @@ public:
    * @param time_keeper Reference to the TimeKeeper object
    */
   ScopedTimeTrack(const std::string & func_name, TimeKeeper & time_keeper);
+
+  ScopedTimeTrack(const ScopedTimeTrack &) = delete;
+  ScopedTimeTrack & operator=(const ScopedTimeTrack &) = delete;
+  ScopedTimeTrack(ScopedTimeTrack &&) = delete;
+  ScopedTimeTrack & operator=(ScopedTimeTrack &&) = delete;
 
   /**
    * @brief Destroy the ScopedTimeTrack object, ending the tracking of the function

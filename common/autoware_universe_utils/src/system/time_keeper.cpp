@@ -14,7 +14,8 @@
 
 #include "autoware/universe_utils/system/time_keeper.hpp"
 
-#include <iostream>
+#include <fmt/format.h>
+
 #include <stdexcept>
 
 namespace autoware::universe_utils
@@ -67,7 +68,7 @@ tier4_debug_msgs::msg::ProcessingTimeTree ProcessingTimeNode::to_msg() const
       tier4_debug_msgs::msg::ProcessingTimeNode time_node_msg;
       time_node_msg.name = node.name_;
       time_node_msg.processing_time = node.processing_time_;
-      time_node_msg.id = tree_msg.nodes.size() + 1;
+      time_node_msg.id = static_cast<int>(tree_msg.nodes.size() + 1);
       time_node_msg.parent_id = parent_id;
       tree_msg.nodes.emplace_back(time_node_msg);
 
@@ -109,15 +110,6 @@ void TimeKeeper::add_reporter(rclcpp::Publisher<ProcessingTimeDetail>::SharedPtr
 {
   reporters_.emplace_back([publisher](const std::shared_ptr<ProcessingTimeNode> & node) {
     publisher->publish(node->to_msg());
-  });
-}
-
-void TimeKeeper::add_reporter(rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher)
-{
-  reporters_.emplace_back([publisher](const std::shared_ptr<ProcessingTimeNode> & node) {
-    std_msgs::msg::String msg;
-    msg.data = node->to_string();
-    publisher->publish(msg);
   });
 }
 

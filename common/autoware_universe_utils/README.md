@@ -49,56 +49,80 @@ explicit TimeKeeper(Reporters... reporters);
   - Ends tracking the processing time of a function.
   - `func_name`: Name of the function to end tracking.
 
+##### Note
+
+- It's possible to start and end time measurements using `start_track` and `end_track` as shown below:
+
+  ```cpp
+  time_keeper.start_track("example_function");
+  // Your function code here
+  time_keeper.end_track("example_function");
+  ```
+
+- For safety and to ensure proper tracking, it is recommended to use `ScopedTimeTrack`.
+
 ##### Example
 
 ```cpp
-#include "autoware/universe_utils/system/time_keeper.hpp"
-
 #include <rclcpp/rclcpp.hpp>
 
+#include <std_msgs/msg/string.hpp>
+
+#include <chrono>
 #include <iostream>
 #include <memory>
+#include <thread>
+
+class ExampleNode : public rclcpp::Node
+{
+public:
+  ExampleNode() : Node("time_keeper_example")
+  {
+    publisher_ =
+      create_publisher<autoware::universe_utils::ProcessingTimeDetail>("processing_time", 1);
+
+    time_keeper_ = std::make_shared<autoware::universe_utils::TimeKeeper>(publisher_, &std::cerr);
+    // You can also add a reporter later by add_reporter.
+    // time_keeper_->add_reporter(publisher_);
+    // time_keeper_->add_reporter(&std::cerr);
+
+    timer_ = create_wall_timer(std::chrono::seconds(1), std::bind(&ExampleNode::func_a, this));
+  }
+
+private:
+  std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper_;
+  rclcpp::Publisher<autoware::universe_utils::ProcessingTimeDetail>::SharedPtr publisher_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_str_;
+  rclcpp::TimerBase::SharedPtr timer_;
+
+  void func_a()
+  {
+    // Start constructing ProcessingTimeTree (because func_a is the root function)
+    autoware::universe_utils::ScopedTimeTrack st("func_a", *time_keeper_);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    func_b();
+    // End constructing ProcessingTimeTree. After this, the tree will be reported (publishing
+    // message and outputting to std::cerr)
+  }
+
+  void func_b()
+  {
+    autoware::universe_utils::ScopedTimeTrack st("func_b", *time_keeper_);
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    func_c();
+  }
+
+  void func_c()
+  {
+    autoware::universe_utils::ScopedTimeTrack st("func_c", *time_keeper_);
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+  }
+};
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<rclcpp::Node>("time_keeper_example");
-
-  auto time_keeper = std::make_shared<autoware::universe_utils::TimeKeeper>();
-
-  time_keeper->add_reporter(&std::cout);
-
-  auto publisher =
-    node->create_publisher<autoware::universe_utils::ProcessingTimeDetail>("processing_time", 10);
-
-  time_keeper->add_reporter(publisher);
-
-  auto publisher_str = node->create_publisher<std_msgs::msg::String>("processing_time_str", 10);
-
-  time_keeper->add_reporter(publisher_str);
-
-  auto funcA = [&time_keeper]() {
-    time_keeper->start_track("funcA");
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    time_keeper->end_track("funcA");
-  };
-
-  auto funcB = [&time_keeper, &funcA]() {
-    time_keeper->start_track("funcB");
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    funcA();
-    time_keeper->end_track("funcB");
-  };
-
-  auto funcC = [&time_keeper, &funcB]() {
-    time_keeper->start_track("funcC");
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-    funcB();
-    time_keeper->end_track("funcC");
-  };
-
-  funcC();
-
+  auto node = std::make_shared<ExampleNode>();
   rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
@@ -109,38 +133,28 @@ int main(int argc, char ** argv)
 
   ```text
   ==========================
-  funcC (6000.7ms)
-      └── funcB (3000.44ms)
-          └── funcA (1000.19ms)
+  func_a (6.382ms)
+      └── func_b (5.243ms)
+          └── func_c (3.146ms)
   ```
 
 - Output (`ros2 topic echo /processing_time`)
 
   ```text
+  ---
   nodes:
   - id: 1
-    name: funcC
-    processing_time: 6000.659
+    name: func_a
+    processing_time: 6.397
     parent_id: 0
   - id: 2
-    name: funcB
-    processing_time: 3000.415
+    name: func_b
+    processing_time: 5.263
     parent_id: 1
   - id: 3
-    name: funcA
-    processing_time: 1000.181
+    name: func_c
+    processing_time: 3.129
     parent_id: 2
-  ---
-  ```
-
-- Output (`ros2 topic echo /processing_time_str --field data`)
-
-  ```text
-  funcC (6000.67ms)
-    └── funcB (3000.42ms)
-        └── funcA (1000.19ms)
-
-  ---
   ```
 
 #### `autoware::universe_utils::ScopedTimeTrack`
@@ -165,94 +179,3 @@ ScopedTimeTrack(const std::string & func_name, TimeKeeper & time_keeper);
 ```
 
 - Destroys the `ScopedTimeTrack` object, ending the tracking of the function.
-
-##### Example
-
-```cpp
-#include "autoware/universe_utils/system/time_keeper.hpp"
-
-#include <rclcpp/rclcpp.hpp>
-
-#include <iostream>
-#include <memory>
-
-int main(int argc, char ** argv)
-{
-  rclcpp::init(argc, argv);
-  auto node = std::make_shared<rclcpp::Node>("scoped_time_track_example");
-
-  auto time_keeper = std::make_shared<autoware::universe_utils::TimeKeeper>();
-
-  time_keeper->add_reporter(&std::cout);
-
-  auto publisher =
-    node->create_publisher<autoware::universe_utils::ProcessingTimeDetail>("processing_time", 10);
-
-  time_keeper->add_reporter(publisher);
-
-  auto publisher_str = node->create_publisher<std_msgs::msg::String>("processing_time_str", 10);
-
-  time_keeper->add_reporter(publisher_str);
-
-  auto funcA = [&time_keeper]() {
-    autoware::universe_utils::ScopedTimeTrack st("funcA", *time_keeper);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-  };
-
-  auto funcB = [&time_keeper, &funcA]() {
-    autoware::universe_utils::ScopedTimeTrack st("funcB", *time_keeper);
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    funcA();
-  };
-
-  auto funcC = [&time_keeper, &funcB]() {
-    autoware::universe_utils::ScopedTimeTrack st("funcC", *time_keeper);
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-    funcB();
-  };
-
-  funcC();
-
-  rclcpp::spin(node);
-  rclcpp::shutdown();
-  return 0;
-}
-```
-
-- Output (console)
-
-  ```text
-  ==========================
-  funcC (6000.7ms)
-      └── funcB (3000.44ms)
-          └── funcA (1000.19ms)
-  ```
-
-- Output (`ros2 topic echo /processing_time`)
-
-  ```text
-  nodes:
-  - id: 1
-    name: funcC
-    processing_time: 6000.659
-    parent_id: 0
-  - id: 2
-    name: funcB
-    processing_time: 3000.415
-    parent_id: 1
-  - id: 3
-    name: funcA
-    processing_time: 1000.181
-    parent_id: 2
-  ---
-  ```
-
-- Output (`ros2 topic echo /processing_time_str --field data`)
-
-  ```text
-  funcC (6000.67ms)
-    └── funcB (3000.42ms)
-        └── funcA (1000.19ms)
-
-  ---
-  ```

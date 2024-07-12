@@ -15,49 +15,63 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <std_msgs/msg/string.hpp>
+
+#include <chrono>
 #include <iostream>
 #include <memory>
+#include <thread>
+
+class ExampleNode : public rclcpp::Node
+{
+public:
+  ExampleNode() : Node("time_keeper_example")
+  {
+    publisher_ =
+      create_publisher<autoware::universe_utils::ProcessingTimeDetail>("processing_time", 1);
+
+    time_keeper_ = std::make_shared<autoware::universe_utils::TimeKeeper>(publisher_, &std::cerr);
+    // You can also add a reporter later by add_reporter.
+    // time_keeper_->add_reporter(publisher_);
+    // time_keeper_->add_reporter(&std::cerr);
+
+    timer_ = create_wall_timer(std::chrono::seconds(1), std::bind(&ExampleNode::func_a, this));
+  }
+
+private:
+  std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper_;
+  rclcpp::Publisher<autoware::universe_utils::ProcessingTimeDetail>::SharedPtr publisher_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_str_;
+  rclcpp::TimerBase::SharedPtr timer_;
+
+  void func_a()
+  {
+    // Start constructing ProcessingTimeTree (because func_a is the root function)
+    autoware::universe_utils::ScopedTimeTrack st("func_a", *time_keeper_);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    func_b();
+    // End constructing ProcessingTimeTree. After this, the tree will be reported (publishing
+    // message and outputting to std::cerr)
+  }
+
+  void func_b()
+  {
+    autoware::universe_utils::ScopedTimeTrack st("func_b", *time_keeper_);
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    func_c();
+  }
+
+  void func_c()
+  {
+    autoware::universe_utils::ScopedTimeTrack st("func_c", *time_keeper_);
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+  }
+};
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<rclcpp::Node>("time_keeper_example");
-
-  auto time_keeper = std::make_shared<autoware::universe_utils::TimeKeeper>();
-
-  time_keeper->add_reporter(&std::cout);
-
-  auto publisher =
-    node->create_publisher<autoware::universe_utils::ProcessingTimeDetail>("processing_time", 10);
-
-  time_keeper->add_reporter(publisher);
-
-  auto publisher_str = node->create_publisher<std_msgs::msg::String>("processing_time_str", 10);
-
-  time_keeper->add_reporter(publisher_str);
-
-  auto funcA = [&time_keeper]() {
-    time_keeper->start_track("funcA");
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    time_keeper->end_track("funcA");
-  };
-
-  auto funcB = [&time_keeper, &funcA]() {
-    time_keeper->start_track("funcB");
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    funcA();
-    time_keeper->end_track("funcB");
-  };
-
-  auto funcC = [&time_keeper, &funcB]() {
-    time_keeper->start_track("funcC");
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-    funcB();
-    time_keeper->end_track("funcC");
-  };
-
-  funcC();
-
+  auto node = std::make_shared<ExampleNode>();
   rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
