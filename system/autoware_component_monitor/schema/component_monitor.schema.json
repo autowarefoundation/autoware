@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for the Component Monitor node",
+  "type": "object",
+  "definitions": {
+    "component_monitor": {
+      "type": "object",
+      "properties": {
+        "publish_rate": {
+          "type": "number",
+          "default": "5.0",
+          "description": "Publish rate in Hz"
+        }
+      },
+      "required": ["publish_rate"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/component_monitor"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

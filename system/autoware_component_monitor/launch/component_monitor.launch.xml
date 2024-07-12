@@ -1,0 +1,9 @@
+<launch>
+  <arg name="param_file" default="$(find-pkg-share autoware_component_monitor)/config/component_monitor.param.yaml"/>
+
+  <node_container pkg="rclcpp_components" exec="component_container_mt" name="component_monitor_container" namespace="/">
+    <composable_node pkg="autoware_component_monitor" plugin="autoware::component_monitor::ComponentMonitor" name="component_monitor">
+      <param from="$(var param_file)"/>
+    </composable_node>
+  </node_container>
+</launch>
