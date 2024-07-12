@@ -37,7 +37,7 @@ runs:
     # TODO(youtalk): Remove obsolete "cache-" restore-keys
     - name: Cache ccache
       uses: actions/cache@v4
-      if: ${{ inputs.name == 'no-cuda' }}
+      if: ${{ inputs.name == 'no-cuda' && github.ref == 'refs/heads/main' }}
       id: cache-ccahce
       with:
         path: |
@@ -51,7 +51,7 @@ runs:
 
     - name: Cache apt-get
       uses: actions/cache@v4
-      if: ${{ inputs.name == 'no-cuda' }}
+      if: ${{ inputs.name == 'no-cuda' && github.ref == 'refs/heads/main' }}
       id: cache-apt-get
       with:
         path: |
@@ -65,7 +65,7 @@ runs:
     # TODO(youtalk): Remove obsolete "cache-" restore-keys
     - name: Restore ccache
       uses: actions/cache/restore@v4
-      if: ${{ inputs.name != 'no-cuda' }}
+      if: ${{ inputs.name != 'no-cuda' || github.ref != 'refs/heads/main' }}
       with:
         path: |
           root-ccache
@@ -78,7 +78,7 @@ runs:
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
-      if: ${{ inputs.name != 'no-cuda' }}
+      if: ${{ inputs.name != 'no-cuda' || github.ref != 'refs/heads/main' }}
       with:
         path: |
           var-cache-apt
