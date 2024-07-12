@@ -4,6 +4,7 @@
   <arg name="component_state_monitor_topic_path"/>
   <arg name="emergency_handler_param_path"/>
   <arg name="duplicated_node_checker_param_path"/>
+  <arg name="processing_time_checker_param_path"/>
   <arg name="mrm_comfortable_stop_operator_param_path"/>
   <arg name="mrm_emergency_stop_operator_param_path"/>
   <arg name="system_error_monitor_param_path"/>
@@ -61,6 +62,13 @@
     <group>
       <include file="$(find-pkg-share duplicated_node_checker)/launch/duplicated_node_checker.launch.xml">
         <arg name="config_file" value="$(var duplicated_node_checker_param_path)"/>
+      </include>
+    </group>
+
+    <!-- Processing Time Checker -->
+    <group>
+      <include file="$(find-pkg-share autoware_processing_time_checker)/launch/processing_time_checker.launch.xml">
+        <arg name="config_file" value="$(var processing_time_checker_param_path)"/>
       </include>
     </group>
 

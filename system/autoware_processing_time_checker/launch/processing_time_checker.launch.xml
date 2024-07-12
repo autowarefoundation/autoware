@@ -1,0 +1,7 @@
+<launch>
+  <arg name="config_file" default="$(find-pkg-share autoware_processing_time_checker)/config/processing_time_checker.param.yaml"/>
+
+  <node pkg="autoware_processing_time_checker" exec="processing_time_checker_node" name="processing_time_checker" output="screen">
+    <param from="$(var config_file)"/>
+  </node>
+</launch>

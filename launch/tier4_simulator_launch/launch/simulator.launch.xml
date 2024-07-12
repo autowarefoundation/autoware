@@ -148,7 +148,7 @@
   <!-- Diagnostic Converter -->
   <group if="$(var launch_diagnostic_converter)">
     <node name="diagnostic_converter" exec="diagnostic_converter" pkg="diagnostic_converter" output="screen">
-      <param name="diagnostic_topics" value="[/diagnostic/planning_evaluator/metrics, /diagnostic/control_evaluator/metrics, /diagnostics_err]"/>
+      <param name="diagnostic_topics" value="[/diagnostic/planning_evaluator/metrics, /diagnostic/control_evaluator/metrics, /diagnostics_err, /system/processing_time_checker/metrics]"/>
     </node>
   </group>
 

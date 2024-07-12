@@ -1,0 +1,37 @@
+/**:
+  ros__parameters:
+    update_rate: 10.0
+    processing_time_topic_name_list:
+      - /control/trajectory_follower/controller_node_exe/lateral/debug/processing_time_ms
+      - /control/trajectory_follower/controller_node_exe/longitudinal/debug/processing_time_ms
+      - /control/trajectory_follower/lane_departure_checker_node/debug/processing_time_ms
+      - /perception/object_recognition/prediction/map_based_prediction/debug/processing_time_ms
+      - /perception/object_recognition/tracking/multi_object_tracker/debug/processing_time_ms
+      - /planning/planning_validator/debug/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/avoidance_by_lane_change/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/dynamic_obstacle_avoidance/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/goal_planner/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/lane_change_left/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/lane_change_right/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/side_shift/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/start_planner/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/static_obstacle_avoidance/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/total_time/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/blind_spot/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/crosswalk/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/detection_area/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/intersection/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/merge_from_private/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/no_stopping_area/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/run_out/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/stop_line/processing_time_ms
+      - /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/walkway/processing_time_ms
+      - /planning/scenario_planning/lane_driving/motion_planning/elastic_band_smoother/debug/processing_time_ms
+      - /planning/scenario_planning/lane_driving/motion_planning/motion_velocity_planner/debug/dynamic_obstacle_stop/processing_time_ms
+      - /planning/scenario_planning/lane_driving/motion_planning/motion_velocity_planner/debug/obstacle_velocity_limiter/processing_time_ms
+      - /planning/scenario_planning/lane_driving/motion_planning/motion_velocity_planner/debug/out_of_lane/processing_time_ms
+      - /planning/scenario_planning/lane_driving/motion_planning/motion_velocity_planner/debug/processing_time_ms
+      - /planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/processing_time_ms
+      - /planning/scenario_planning/lane_driving/motion_planning/path_optimizer/debug/processing_time_ms
+      - /planning/scenario_planning/velocity_smoother/debug/processing_time_ms
+      - /simulation/shape_estimation/debug/processing_time_ms
