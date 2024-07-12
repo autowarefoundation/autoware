@@ -2,6 +2,8 @@ name: docker-build-and-push-self-hosted
 
 on:
   push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
