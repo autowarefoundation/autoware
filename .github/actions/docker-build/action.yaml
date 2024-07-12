@@ -36,7 +36,7 @@ runs:
 
     - name: Cache ccache
       uses: actions/cache@v4
-      if: ${{ inputs.name == 'no-cuda' }}
+      if: ${{ inputs.name == 'no-cuda' && github.ref == 'refs/heads/main' }}
       id: cache-ccahce
       with:
         path: |
@@ -50,7 +50,7 @@ runs:
 
     - name: Cache apt-get
       uses: actions/cache@v4
-      if: ${{ inputs.name == 'no-cuda' }}
+      if: ${{ inputs.name == 'no-cuda' && github.ref == 'refs/heads/main' }}
       id: cache-apt-get
       with:
         path: |
@@ -63,11 +63,11 @@ runs:
 
     - name: Restore ccache
       uses: actions/cache/restore@v4
-      if: ${{ inputs.name != 'no-cuda' }}
+      if: ${{ inputs.name != 'no-cuda' || github.ref != 'refs/heads/main' }}
       with:
         path: |
           root-ccache
-        key: cache-${{ matrix.platform }}-${{ matrix.name }}-${{ hashFiles('src/**/*.cpp') }}
+        key: cache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
           ccache-${{ inputs.platform }}-${{ inputs.name }}-
           ccache-${{ inputs.platform }}-
@@ -76,7 +76,7 @@ runs:
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
-      if: ${{ inputs.name != 'no-cuda' }}
+      if: ${{ inputs.name != 'no-cuda' || github.ref != 'refs/heads/main' }}
       with:
         path: |
           var-cache-apt
