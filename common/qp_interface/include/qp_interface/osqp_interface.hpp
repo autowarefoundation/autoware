@@ -24,9 +24,9 @@
 #include <string>
 #include <vector>
 
-namespace qp
+namespace autoware::common
 {
-constexpr c_float INF = 1e30;
+constexpr c_float OSQP_INF = 1e30;
 
 class OSQPInterface : public QPInterface
 {
@@ -34,7 +34,9 @@ public:
   /// \brief Constructor without problem formulation
   OSQPInterface(
     const bool enable_warm_start = false,
-    const c_float eps_abs = std::numeric_limits<c_float>::epsilon(), const bool polish = true);
+    const c_float eps_abs = std::numeric_limits<c_float>::epsilon(),
+    const c_float eps_rel = std::numeric_limits<c_float>::epsilon(), const bool polish = true,
+    const bool verbose = false);
   /// \brief Constructor with problem setup
   /// \param P: (n,n) matrix defining relations between parameters.
   /// \param A: (m,n) matrix defining parameter constraints relative to the lower and upper bound.
@@ -60,8 +62,10 @@ public:
     CSC_Matrix P, CSC_Matrix A, const std::vector<double> & q, const std::vector<double> & l,
     const std::vector<double> & u);
 
-  int getIteration() const override;
-  int getStatus() const override;
+  int getIterationNumber() const override;
+  bool isSolved() const override;
+  std::string getStatus() const override;
+
   int getPolishStatus() const;
   std::vector<double> getDualSolution() const;
 
@@ -96,20 +100,18 @@ public:
   void updateCheckTermination(const int check_termination);
 
   /// \brief Get the number of iteration taken to solve the problem
-  inline int64_t getTakenIter() const { return static_cast<int64_t>(m_latest_work_info.iter); }
+  inline int64_t getTakenIter() const { return static_cast<int64_t>(latest_work_info_.iter); }
   /// \brief Get the status message for the latest problem solved
   inline std::string getStatusMessage() const
   {
-    return static_cast<std::string>(m_latest_work_info.status);
+    return static_cast<std::string>(latest_work_info_.status);
   }
   /// \brief Get the runtime of the latest problem solved
-  inline double getRunTime() const { return m_latest_work_info.run_time; }
+  inline double getRunTime() const { return latest_work_info_.run_time; }
   /// \brief Get the objective value the latest problem solved
-  inline double getObjVal() const { return m_latest_work_info.obj_val; }
+  inline double getObjVal() const { return latest_work_info_.obj_val; }
   /// \brief Returns flag asserting interface condition (Healthy condition: 0).
-  inline int64_t getExitFlag() const { return m_exitflag; }
-
-  void logUnsolvedStatus(const std::string & prefix_message = "") const;
+  inline int64_t getExitFlag() const { return exitflag_; }
 
   // Setter functions for warm start
   bool setWarmStart(
@@ -118,17 +120,17 @@ public:
   bool setDualVariables(const std::vector<double> & dual_variables);
 
 private:
-  std::unique_ptr<OSQPWorkspace, std::function<void(OSQPWorkspace *)>> m_work;
-  std::unique_ptr<OSQPSettings> m_settings;
-  std::unique_ptr<OSQPData> m_data;
+  std::unique_ptr<OSQPWorkspace, std::function<void(OSQPWorkspace *)>> work_;
+  std::unique_ptr<OSQPSettings> settings_;
+  std::unique_ptr<OSQPData> data_;
   // store last work info since work is cleaned up at every execution to prevent memory leak.
-  OSQPInfo m_latest_work_info;
+  OSQPInfo latest_work_info_;
   // Number of parameters to optimize
-  int64_t m_param_n;
+  int64_t param_n_;
   // Flag to check if the current work exists
-  bool m_work_initialized = false;
+  bool work__initialized = false;
   // Exitflag
-  int64_t m_exitflag;
+  int64_t exitflag_;
 
   void initializeProblemImpl(
     const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<double> & q,
@@ -140,6 +142,6 @@ private:
 
   std::vector<double> optimizeImpl() override;
 };
-}  // namespace qp
+}  // namespace autoware::common
 
 #endif  // QP_INTERFACE__OSQP_INTERFACE_HPP_

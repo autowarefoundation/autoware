@@ -40,7 +40,9 @@ namespace
 
 TEST(TestProxqpInterface, BasicQp)
 {
-  auto check_result = [](const auto & solution) {
+  auto check_result = [](const auto & solution, const std::string & status) {
+    EXPECT_EQ(status, "PROXQP_SOLVED");
+
     static const auto ep = 1.0e-8;
     ASSERT_EQ(solution.size(), size_t(2));
     EXPECT_NEAR(solution[0], 0.3, ep);
@@ -55,23 +57,26 @@ TEST(TestProxqpInterface, BasicQp)
 
   {
     // Define problem during optimization
-    qp::ProxQPInterface proxqp(false, 1e-9);
+    autoware::common::ProxQPInterface proxqp(false, 1e-9, 1e-9, false);
     const auto solution = proxqp.QPInterface::optimize(P, A, q, l, u);
-    check_result(solution);
+    const auto status = proxqp.getStatus();
+    check_result(solution, status);
   }
 
   {
     // Define problem during optimization with warm start
-    qp::ProxQPInterface proxqp(true, 1e-9);
+    autoware::common::ProxQPInterface proxqp(true, 1e-9, 1e-9, false);
     {
       const auto solution = proxqp.QPInterface::optimize(P, A, q, l, u);
-      check_result(solution);
-      EXPECT_NE(proxqp.getIteration(), 1);
+      const auto status = proxqp.getStatus();
+      check_result(solution, status);
+      EXPECT_NE(proxqp.getIterationNumber(), 1);
     }
     {
       const auto solution = proxqp.QPInterface::optimize(P, A, q, l, u);
-      check_result(solution);
-      EXPECT_EQ(proxqp.getIteration(), 0);
+      const auto status = proxqp.getStatus();
+      check_result(solution, status);
+      EXPECT_EQ(proxqp.getIterationNumber(), 0);
     }
   }
 }

@@ -23,42 +23,42 @@
 
 TEST(TestCscMatrixConv, Nominal)
 {
-  using qp::calCSCMatrix;
-  using qp::CSC_Matrix;
+  using autoware::common::calCSCMatrix;
+  using autoware::common::CSC_Matrix;
 
   Eigen::MatrixXd rect1(1, 2);
   rect1 << 0.0, 1.0;
 
   const CSC_Matrix rect_m1 = calCSCMatrix(rect1);
-  ASSERT_EQ(rect_m1.m_vals.size(), size_t(1));
-  EXPECT_EQ(rect_m1.m_vals[0], 1.0);
-  ASSERT_EQ(rect_m1.m_row_idxs.size(), size_t(1));
-  EXPECT_EQ(rect_m1.m_row_idxs[0], c_int(0));
-  ASSERT_EQ(rect_m1.m_col_idxs.size(), size_t(3));  // nb of columns + 1
-  EXPECT_EQ(rect_m1.m_col_idxs[0], c_int(0));
-  EXPECT_EQ(rect_m1.m_col_idxs[1], c_int(0));
-  EXPECT_EQ(rect_m1.m_col_idxs[2], c_int(1));
+  ASSERT_EQ(rect_m1.vals_.size(), size_t(1));
+  EXPECT_EQ(rect_m1.vals_[0], 1.0);
+  ASSERT_EQ(rect_m1.row_idxs_.size(), size_t(1));
+  EXPECT_EQ(rect_m1.row_idxs_[0], c_int(0));
+  ASSERT_EQ(rect_m1.col_idxs_.size(), size_t(3));  // nb of columns + 1
+  EXPECT_EQ(rect_m1.col_idxs_[0], c_int(0));
+  EXPECT_EQ(rect_m1.col_idxs_[1], c_int(0));
+  EXPECT_EQ(rect_m1.col_idxs_[2], c_int(1));
 
   Eigen::MatrixXd rect2(2, 4);
   rect2 << 1.0, 0.0, 3.0, 0.0, 0.0, 6.0, 7.0, 0.0;
 
   const CSC_Matrix rect_m2 = calCSCMatrix(rect2);
-  ASSERT_EQ(rect_m2.m_vals.size(), size_t(4));
-  EXPECT_EQ(rect_m2.m_vals[0], 1.0);
-  EXPECT_EQ(rect_m2.m_vals[1], 6.0);
-  EXPECT_EQ(rect_m2.m_vals[2], 3.0);
-  EXPECT_EQ(rect_m2.m_vals[3], 7.0);
-  ASSERT_EQ(rect_m2.m_row_idxs.size(), size_t(4));
-  EXPECT_EQ(rect_m2.m_row_idxs[0], c_int(0));
-  EXPECT_EQ(rect_m2.m_row_idxs[1], c_int(1));
-  EXPECT_EQ(rect_m2.m_row_idxs[2], c_int(0));
-  EXPECT_EQ(rect_m2.m_row_idxs[3], c_int(1));
-  ASSERT_EQ(rect_m2.m_col_idxs.size(), size_t(5));  // nb of columns + 1
-  EXPECT_EQ(rect_m2.m_col_idxs[0], c_int(0));
-  EXPECT_EQ(rect_m2.m_col_idxs[1], c_int(1));
-  EXPECT_EQ(rect_m2.m_col_idxs[2], c_int(2));
-  EXPECT_EQ(rect_m2.m_col_idxs[3], c_int(4));
-  EXPECT_EQ(rect_m2.m_col_idxs[4], c_int(4));
+  ASSERT_EQ(rect_m2.vals_.size(), size_t(4));
+  EXPECT_EQ(rect_m2.vals_[0], 1.0);
+  EXPECT_EQ(rect_m2.vals_[1], 6.0);
+  EXPECT_EQ(rect_m2.vals_[2], 3.0);
+  EXPECT_EQ(rect_m2.vals_[3], 7.0);
+  ASSERT_EQ(rect_m2.row_idxs_.size(), size_t(4));
+  EXPECT_EQ(rect_m2.row_idxs_[0], c_int(0));
+  EXPECT_EQ(rect_m2.row_idxs_[1], c_int(1));
+  EXPECT_EQ(rect_m2.row_idxs_[2], c_int(0));
+  EXPECT_EQ(rect_m2.row_idxs_[3], c_int(1));
+  ASSERT_EQ(rect_m2.col_idxs_.size(), size_t(5));  // nb of columns + 1
+  EXPECT_EQ(rect_m2.col_idxs_[0], c_int(0));
+  EXPECT_EQ(rect_m2.col_idxs_[1], c_int(1));
+  EXPECT_EQ(rect_m2.col_idxs_[2], c_int(2));
+  EXPECT_EQ(rect_m2.col_idxs_[3], c_int(4));
+  EXPECT_EQ(rect_m2.col_idxs_[4], c_int(4));
 
   // Example from http://netlib.org/linalg/html_templates/node92.html
   Eigen::MatrixXd square2(6, 6);
@@ -66,59 +66,59 @@ TEST(TestCscMatrixConv, Nominal)
     0.0, 3.0, 0.0, 8.0, 7.0, 5.0, 0.0, 0.0, 8.0, 0.0, 9.0, 9.0, 13.0, 0.0, 4.0, 0.0, 0.0, 2.0, -1.0;
 
   const CSC_Matrix square_m2 = calCSCMatrix(square2);
-  ASSERT_EQ(square_m2.m_vals.size(), size_t(19));
-  EXPECT_EQ(square_m2.m_vals[0], 10.0);
-  EXPECT_EQ(square_m2.m_vals[1], 3.0);
-  EXPECT_EQ(square_m2.m_vals[2], 3.0);
-  EXPECT_EQ(square_m2.m_vals[3], 9.0);
-  EXPECT_EQ(square_m2.m_vals[4], 7.0);
-  EXPECT_EQ(square_m2.m_vals[5], 8.0);
-  EXPECT_EQ(square_m2.m_vals[6], 4.0);
-  EXPECT_EQ(square_m2.m_vals[7], 8.0);
-  EXPECT_EQ(square_m2.m_vals[8], 8.0);
-  EXPECT_EQ(square_m2.m_vals[9], 7.0);
-  EXPECT_EQ(square_m2.m_vals[10], 7.0);
-  EXPECT_EQ(square_m2.m_vals[11], 9.0);
-  EXPECT_EQ(square_m2.m_vals[12], -2.0);
-  EXPECT_EQ(square_m2.m_vals[13], 5.0);
-  EXPECT_EQ(square_m2.m_vals[14], 9.0);
-  EXPECT_EQ(square_m2.m_vals[15], 2.0);
-  EXPECT_EQ(square_m2.m_vals[16], 3.0);
-  EXPECT_EQ(square_m2.m_vals[17], 13.0);
-  EXPECT_EQ(square_m2.m_vals[18], -1.0);
-  ASSERT_EQ(square_m2.m_row_idxs.size(), size_t(19));
-  EXPECT_EQ(square_m2.m_row_idxs[0], c_int(0));
-  EXPECT_EQ(square_m2.m_row_idxs[1], c_int(1));
-  EXPECT_EQ(square_m2.m_row_idxs[2], c_int(3));
-  EXPECT_EQ(square_m2.m_row_idxs[3], c_int(1));
-  EXPECT_EQ(square_m2.m_row_idxs[4], c_int(2));
-  EXPECT_EQ(square_m2.m_row_idxs[5], c_int(4));
-  EXPECT_EQ(square_m2.m_row_idxs[6], c_int(5));
-  EXPECT_EQ(square_m2.m_row_idxs[7], c_int(2));
-  EXPECT_EQ(square_m2.m_row_idxs[8], c_int(3));
-  EXPECT_EQ(square_m2.m_row_idxs[9], c_int(2));
-  EXPECT_EQ(square_m2.m_row_idxs[10], c_int(3));
-  EXPECT_EQ(square_m2.m_row_idxs[11], c_int(4));
-  EXPECT_EQ(square_m2.m_row_idxs[12], c_int(0));
-  EXPECT_EQ(square_m2.m_row_idxs[13], c_int(3));
-  EXPECT_EQ(square_m2.m_row_idxs[14], c_int(4));
-  EXPECT_EQ(square_m2.m_row_idxs[15], c_int(5));
-  EXPECT_EQ(square_m2.m_row_idxs[16], c_int(1));
-  EXPECT_EQ(square_m2.m_row_idxs[17], c_int(4));
-  EXPECT_EQ(square_m2.m_row_idxs[18], c_int(5));
-  ASSERT_EQ(square_m2.m_col_idxs.size(), size_t(7));  // nb of columns + 1
-  EXPECT_EQ(square_m2.m_col_idxs[0], c_int(0));
-  EXPECT_EQ(square_m2.m_col_idxs[1], c_int(3));
-  EXPECT_EQ(square_m2.m_col_idxs[2], c_int(7));
-  EXPECT_EQ(square_m2.m_col_idxs[3], c_int(9));
-  EXPECT_EQ(square_m2.m_col_idxs[4], c_int(12));
-  EXPECT_EQ(square_m2.m_col_idxs[5], c_int(16));
-  EXPECT_EQ(square_m2.m_col_idxs[6], c_int(19));
+  ASSERT_EQ(square_m2.vals_.size(), size_t(19));
+  EXPECT_EQ(square_m2.vals_[0], 10.0);
+  EXPECT_EQ(square_m2.vals_[1], 3.0);
+  EXPECT_EQ(square_m2.vals_[2], 3.0);
+  EXPECT_EQ(square_m2.vals_[3], 9.0);
+  EXPECT_EQ(square_m2.vals_[4], 7.0);
+  EXPECT_EQ(square_m2.vals_[5], 8.0);
+  EXPECT_EQ(square_m2.vals_[6], 4.0);
+  EXPECT_EQ(square_m2.vals_[7], 8.0);
+  EXPECT_EQ(square_m2.vals_[8], 8.0);
+  EXPECT_EQ(square_m2.vals_[9], 7.0);
+  EXPECT_EQ(square_m2.vals_[10], 7.0);
+  EXPECT_EQ(square_m2.vals_[11], 9.0);
+  EXPECT_EQ(square_m2.vals_[12], -2.0);
+  EXPECT_EQ(square_m2.vals_[13], 5.0);
+  EXPECT_EQ(square_m2.vals_[14], 9.0);
+  EXPECT_EQ(square_m2.vals_[15], 2.0);
+  EXPECT_EQ(square_m2.vals_[16], 3.0);
+  EXPECT_EQ(square_m2.vals_[17], 13.0);
+  EXPECT_EQ(square_m2.vals_[18], -1.0);
+  ASSERT_EQ(square_m2.row_idxs_.size(), size_t(19));
+  EXPECT_EQ(square_m2.row_idxs_[0], c_int(0));
+  EXPECT_EQ(square_m2.row_idxs_[1], c_int(1));
+  EXPECT_EQ(square_m2.row_idxs_[2], c_int(3));
+  EXPECT_EQ(square_m2.row_idxs_[3], c_int(1));
+  EXPECT_EQ(square_m2.row_idxs_[4], c_int(2));
+  EXPECT_EQ(square_m2.row_idxs_[5], c_int(4));
+  EXPECT_EQ(square_m2.row_idxs_[6], c_int(5));
+  EXPECT_EQ(square_m2.row_idxs_[7], c_int(2));
+  EXPECT_EQ(square_m2.row_idxs_[8], c_int(3));
+  EXPECT_EQ(square_m2.row_idxs_[9], c_int(2));
+  EXPECT_EQ(square_m2.row_idxs_[10], c_int(3));
+  EXPECT_EQ(square_m2.row_idxs_[11], c_int(4));
+  EXPECT_EQ(square_m2.row_idxs_[12], c_int(0));
+  EXPECT_EQ(square_m2.row_idxs_[13], c_int(3));
+  EXPECT_EQ(square_m2.row_idxs_[14], c_int(4));
+  EXPECT_EQ(square_m2.row_idxs_[15], c_int(5));
+  EXPECT_EQ(square_m2.row_idxs_[16], c_int(1));
+  EXPECT_EQ(square_m2.row_idxs_[17], c_int(4));
+  EXPECT_EQ(square_m2.row_idxs_[18], c_int(5));
+  ASSERT_EQ(square_m2.col_idxs_.size(), size_t(7));  // nb of columns + 1
+  EXPECT_EQ(square_m2.col_idxs_[0], c_int(0));
+  EXPECT_EQ(square_m2.col_idxs_[1], c_int(3));
+  EXPECT_EQ(square_m2.col_idxs_[2], c_int(7));
+  EXPECT_EQ(square_m2.col_idxs_[3], c_int(9));
+  EXPECT_EQ(square_m2.col_idxs_[4], c_int(12));
+  EXPECT_EQ(square_m2.col_idxs_[5], c_int(16));
+  EXPECT_EQ(square_m2.col_idxs_[6], c_int(19));
 }
 TEST(TestCscMatrixConv, Trapezoidal)
 {
-  using qp::calCSCMatrixTrapezoidal;
-  using qp::CSC_Matrix;
+  using autoware::common::calCSCMatrixTrapezoidal;
+  using autoware::common::CSC_Matrix;
 
   Eigen::MatrixXd square1(2, 2);
   Eigen::MatrixXd square2(3, 3);
@@ -129,33 +129,33 @@ TEST(TestCscMatrixConv, Trapezoidal)
 
   const CSC_Matrix square_m1 = calCSCMatrixTrapezoidal(square1);
   // Trapezoidal: skip the lower left triangle (2.0 in this example)
-  ASSERT_EQ(square_m1.m_vals.size(), size_t(3));
-  EXPECT_EQ(square_m1.m_vals[0], 1.0);
-  EXPECT_EQ(square_m1.m_vals[1], 2.0);
-  EXPECT_EQ(square_m1.m_vals[2], 4.0);
-  ASSERT_EQ(square_m1.m_row_idxs.size(), size_t(3));
-  EXPECT_EQ(square_m1.m_row_idxs[0], c_int(0));
-  EXPECT_EQ(square_m1.m_row_idxs[1], c_int(0));
-  EXPECT_EQ(square_m1.m_row_idxs[2], c_int(1));
-  ASSERT_EQ(square_m1.m_col_idxs.size(), size_t(3));
-  EXPECT_EQ(square_m1.m_col_idxs[0], c_int(0));
-  EXPECT_EQ(square_m1.m_col_idxs[1], c_int(1));
-  EXPECT_EQ(square_m1.m_col_idxs[2], c_int(3));
+  ASSERT_EQ(square_m1.vals_.size(), size_t(3));
+  EXPECT_EQ(square_m1.vals_[0], 1.0);
+  EXPECT_EQ(square_m1.vals_[1], 2.0);
+  EXPECT_EQ(square_m1.vals_[2], 4.0);
+  ASSERT_EQ(square_m1.row_idxs_.size(), size_t(3));
+  EXPECT_EQ(square_m1.row_idxs_[0], c_int(0));
+  EXPECT_EQ(square_m1.row_idxs_[1], c_int(0));
+  EXPECT_EQ(square_m1.row_idxs_[2], c_int(1));
+  ASSERT_EQ(square_m1.col_idxs_.size(), size_t(3));
+  EXPECT_EQ(square_m1.col_idxs_[0], c_int(0));
+  EXPECT_EQ(square_m1.col_idxs_[1], c_int(1));
+  EXPECT_EQ(square_m1.col_idxs_[2], c_int(3));
 
   const CSC_Matrix square_m2 = calCSCMatrixTrapezoidal(square2);
-  ASSERT_EQ(square_m2.m_vals.size(), size_t(3));
-  EXPECT_EQ(square_m2.m_vals[0], 2.0);
-  EXPECT_EQ(square_m2.m_vals[1], 5.0);
-  EXPECT_EQ(square_m2.m_vals[2], 6.0);
-  ASSERT_EQ(square_m2.m_row_idxs.size(), size_t(3));
-  EXPECT_EQ(square_m2.m_row_idxs[0], c_int(0));
-  EXPECT_EQ(square_m2.m_row_idxs[1], c_int(1));
-  EXPECT_EQ(square_m2.m_row_idxs[2], c_int(1));
-  ASSERT_EQ(square_m2.m_col_idxs.size(), size_t(4));
-  EXPECT_EQ(square_m2.m_col_idxs[0], c_int(0));
-  EXPECT_EQ(square_m2.m_col_idxs[1], c_int(0));
-  EXPECT_EQ(square_m2.m_col_idxs[2], c_int(2));
-  EXPECT_EQ(square_m2.m_col_idxs[3], c_int(3));
+  ASSERT_EQ(square_m2.vals_.size(), size_t(3));
+  EXPECT_EQ(square_m2.vals_[0], 2.0);
+  EXPECT_EQ(square_m2.vals_[1], 5.0);
+  EXPECT_EQ(square_m2.vals_[2], 6.0);
+  ASSERT_EQ(square_m2.row_idxs_.size(), size_t(3));
+  EXPECT_EQ(square_m2.row_idxs_[0], c_int(0));
+  EXPECT_EQ(square_m2.row_idxs_[1], c_int(1));
+  EXPECT_EQ(square_m2.row_idxs_[2], c_int(1));
+  ASSERT_EQ(square_m2.col_idxs_.size(), size_t(4));
+  EXPECT_EQ(square_m2.col_idxs_[0], c_int(0));
+  EXPECT_EQ(square_m2.col_idxs_[1], c_int(0));
+  EXPECT_EQ(square_m2.col_idxs_[2], c_int(2));
+  EXPECT_EQ(square_m2.col_idxs_[3], c_int(3));
 
   try {
     const CSC_Matrix rect_m1 = calCSCMatrixTrapezoidal(rect1);
@@ -166,10 +166,10 @@ TEST(TestCscMatrixConv, Trapezoidal)
 }
 TEST(TestCscMatrixConv, Print)
 {
-  using qp::calCSCMatrix;
-  using qp::calCSCMatrixTrapezoidal;
-  using qp::CSC_Matrix;
-  using qp::printCSCMatrix;
+  using autoware::common::calCSCMatrix;
+  using autoware::common::calCSCMatrixTrapezoidal;
+  using autoware::common::CSC_Matrix;
+  using autoware::common::printCSCMatrix;
   Eigen::MatrixXd square1(2, 2);
   Eigen::MatrixXd rect1(1, 2);
   square1 << 1.0, 2.0, 2.0, 4.0;

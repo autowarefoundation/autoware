@@ -18,28 +18,30 @@
 #include <Eigen/Core>
 
 #include <optional>
+#include <string>
 #include <vector>
 
-namespace qp
+namespace autoware::common
 {
 class QPInterface
 {
 public:
-  explicit QPInterface(const bool enable_warm_start) : m_enable_warm_start(enable_warm_start) {}
+  explicit QPInterface(const bool enable_warm_start) : enable_warm_start_(enable_warm_start) {}
 
   std::vector<double> optimize(
     const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<double> & q,
     const std::vector<double> & l, const std::vector<double> & u);
 
-  virtual int getIteration() const = 0;
-  virtual int getStatus() const = 0;
+  virtual bool isSolved() const = 0;
+  virtual int getIterationNumber() const = 0;
+  virtual std::string getStatus() const = 0;
 
   virtual void updateEpsAbs([[maybe_unused]] const double eps_abs) = 0;
   virtual void updateEpsRel([[maybe_unused]] const double eps_rel) = 0;
   virtual void updateVerbose([[maybe_unused]] const bool verbose) {}
 
 protected:
-  bool m_enable_warm_start;
+  bool enable_warm_start_{false};
 
   void initializeProblem(
     const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<double> & q,
@@ -51,9 +53,9 @@ protected:
 
   virtual std::vector<double> optimizeImpl() = 0;
 
-  std::optional<size_t> m_variables_num;
-  std::optional<size_t> m_constraints_num;
+  std::optional<size_t> variables_num_{std::nullopt};
+  std::optional<size_t> constraints_num_{std::nullopt};
 };
-}  // namespace qp
+}  // namespace autoware::common
 
 #endif  // QP_INTERFACE__QP_INTERFACE_HPP_

@@ -14,12 +14,17 @@
 
 #include "qp_interface/proxqp_interface.hpp"
 
-namespace qp
+namespace autoware::common
 {
-ProxQPInterface::ProxQPInterface(const bool enable_warm_start, const double eps_abs)
+using proxsuite::proxqp::QPSolverOutput;
+
+ProxQPInterface::ProxQPInterface(
+  const bool enable_warm_start, const double eps_abs, const double eps_rel, const bool verbose)
 : QPInterface(enable_warm_start)
 {
-  m_settings.eps_abs = eps_abs;
+  settings_.eps_abs = eps_abs;
+  settings_.eps_rel = eps_rel;
+  settings_.verbose = verbose;
 }
 
 void ProxQPInterface::initializeProblemImpl(
@@ -31,28 +36,28 @@ void ProxQPInterface::initializeProblemImpl(
 
   const bool enable_warm_start = [&]() {
     if (
-      !m_enable_warm_start  // Warm start is designated
-      || !m_qp_ptr          // QP pointer is initialized
+      !enable_warm_start_  // Warm start is designated
+      || !qp_ptr_          // QP pointer is initialized
       // The number of variables is the same as the previous one.
-      || !m_variables_num ||
-      *m_variables_num != variables_num
+      || !variables_num_ ||
+      *variables_num_ != variables_num
       // The number of constraints is the same as the previous one
-      || !m_constraints_num || *m_constraints_num != constraints_num) {
+      || !constraints_num_ || *constraints_num_ != constraints_num) {
       return false;
     }
     return true;
   }();
 
   if (!enable_warm_start) {
-    m_qp_ptr = std::make_shared<proxsuite::proxqp::sparse::QP<double, int>>(
+    qp_ptr_ = std::make_shared<proxsuite::proxqp::sparse::QP<double, int>>(
       variables_num, 0, constraints_num);
   }
 
-  m_settings.initial_guess =
+  settings_.initial_guess =
     enable_warm_start ? proxsuite::proxqp::InitialGuessStatus::WARM_START_WITH_PREVIOUS_RESULT
                       : proxsuite::proxqp::InitialGuessStatus::NO_INITIAL_GUESS;
 
-  m_qp_ptr->settings = m_settings;
+  qp_ptr_->settings = settings_;
 
   Eigen::SparseMatrix<double> P_sparse(variables_num, constraints_num);
   P_sparse = P.sparseView();
@@ -69,53 +74,78 @@ void ProxQPInterface::initializeProblemImpl(
     Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(u_std_vec.data(), u_std_vec.size());
 
   if (enable_warm_start) {
-    m_qp_ptr->update(
+    qp_ptr_->update(
       P_sparse, eigen_q, proxsuite::nullopt, proxsuite::nullopt, A.sparseView(), eigen_l, eigen_u);
   } else {
-    m_qp_ptr->init(
+    qp_ptr_->init(
       P_sparse, eigen_q, proxsuite::nullopt, proxsuite::nullopt, A.sparseView(), eigen_l, eigen_u);
   }
 }
 
 void ProxQPInterface::updateEpsAbs(const double eps_abs)
 {
-  m_settings.eps_abs = eps_abs;
+  settings_.eps_abs = eps_abs;
 }
 
 void ProxQPInterface::updateEpsRel(const double eps_rel)
 {
-  m_settings.eps_rel = eps_rel;
+  settings_.eps_rel = eps_rel;
 }
 
 void ProxQPInterface::updateVerbose(const bool is_verbose)
 {
-  m_settings.verbose = is_verbose;
+  settings_.verbose = is_verbose;
 }
 
-int ProxQPInterface::getIteration() const
+bool ProxQPInterface::isSolved() const
 {
-  if (m_qp_ptr) {
-    return m_qp_ptr->results.info.iter;
+  if (qp_ptr_) {
+    return qp_ptr_->results.info.status == QPSolverOutput::PROXQP_SOLVED;
+  }
+  return false;
+}
+
+int ProxQPInterface::getIterationNumber() const
+{
+  if (qp_ptr_) {
+    return qp_ptr_->results.info.iter;
   }
   return 0;
 }
 
-int ProxQPInterface::getStatus() const
+std::string ProxQPInterface::getStatus() const
 {
-  if (m_qp_ptr) {
-    return static_cast<int>(m_qp_ptr->results.info.status);
+  if (qp_ptr_) {
+    if (qp_ptr_->results.info.status == QPSolverOutput::PROXQP_SOLVED) {
+      return "PROXQP_SOLVED";
+    }
+    if (qp_ptr_->results.info.status == QPSolverOutput::PROXQP_MAX_ITER_REACHED) {
+      return "PROXQP_MAX_ITER_REACHED";
+    }
+    if (qp_ptr_->results.info.status == QPSolverOutput::PROXQP_PRIMAL_INFEASIBLE) {
+      return "PROXQP_PRIMAL_INFEASIBLE";
+    }
+    // if (qp_ptr_->results.info.status == QPSolverOutput::PROXQP_SOLVED_CLOSEST_PRIMAL_FEASIBLE) {
+    //   return "PROXQP_SOLVED_CLOSEST_PRIMAL_FEASIBLE";
+    // }
+    if (qp_ptr_->results.info.status == QPSolverOutput::PROXQP_DUAL_INFEASIBLE) {
+      return "PROXQP_DUAL_INFEASIBLE";
+    }
+    if (qp_ptr_->results.info.status == QPSolverOutput::PROXQP_NOT_RUN) {
+      return "PROXQP_NOT_RUN";
+    }
   }
-  return 0;
+  return "None";
 }
 
 std::vector<double> ProxQPInterface::optimizeImpl()
 {
-  m_qp_ptr->solve();
+  qp_ptr_->solve();
 
   std::vector<double> result;
-  for (Eigen::Index i = 0; i < m_qp_ptr->results.x.size(); ++i) {
-    result.push_back(m_qp_ptr->results.x[i]);
+  for (Eigen::Index i = 0; i < qp_ptr_->results.x.size(); ++i) {
+    result.push_back(qp_ptr_->results.x[i]);
   }
   return result;
 }
-}  // namespace qp
+}  // namespace autoware::common

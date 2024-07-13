@@ -22,27 +22,29 @@
 
 #include <limits>
 #include <memory>
+#include <string>
 #include <vector>
 
-namespace qp
+namespace autoware::common
 {
 class ProxQPInterface : public QPInterface
 {
 public:
   explicit ProxQPInterface(
-    const bool enable_warm_start = false,
-    const double eps_abs = std::numeric_limits<double>::epsilon());
+    const bool enable_warm_start, const double eps_abs, const double eps_rel,
+    const bool verbose = false);
 
-  int getIteration() const override;
-  int getStatus() const override;
+  int getIterationNumber() const override;
+  bool isSolved() const override;
+  std::string getStatus() const override;
 
   void updateEpsAbs(const double eps_abs) override;
   void updateEpsRel(const double eps_rel) override;
   void updateVerbose(const bool verbose) override;
 
 private:
-  proxsuite::proxqp::Settings<double> m_settings;
-  std::shared_ptr<proxsuite::proxqp::sparse::QP<double, int>> m_qp_ptr;
+  proxsuite::proxqp::Settings<double> settings_{};
+  std::shared_ptr<proxsuite::proxqp::sparse::QP<double, int>> qp_ptr_{nullptr};
 
   void initializeProblemImpl(
     const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<double> & q,
@@ -50,6 +52,6 @@ private:
 
   std::vector<double> optimizeImpl() override;
 };
-}  // namespace qp
+}  // namespace autoware::common
 
 #endif  // QP_INTERFACE__PROXQP_INTERFACE_HPP_
