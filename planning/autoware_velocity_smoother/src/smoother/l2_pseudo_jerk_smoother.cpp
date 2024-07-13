@@ -25,7 +25,9 @@
 
 namespace autoware::velocity_smoother
 {
-L2PseudoJerkSmoother::L2PseudoJerkSmoother(rclcpp::Node & node) : SmootherBase(node)
+L2PseudoJerkSmoother::L2PseudoJerkSmoother(
+  rclcpp::Node & node, const std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper)
+: SmootherBase(node, time_keeper)
 {
   auto & p = smoother_param_;
   p.pseudo_jerk_weight = node.declare_parameter<double>("pseudo_jerk_weight");

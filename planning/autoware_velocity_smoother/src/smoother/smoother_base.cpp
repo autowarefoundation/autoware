@@ -60,7 +60,9 @@ TrajectoryPoints applyPreProcess(
 }
 }  // namespace
 
-SmootherBase::SmootherBase(rclcpp::Node & node)
+SmootherBase::SmootherBase(
+  rclcpp::Node & node, const std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper)
+: time_keeper_(time_keeper)
 {
   auto & p = base_param_;
   p.max_accel = node.declare_parameter<double>("normal.max_acc");
@@ -130,6 +132,8 @@ TrajectoryPoints SmootherBase::applyLateralAccelerationFilter(
   [[maybe_unused]] const double a0, [[maybe_unused]] const bool enable_smooth_limit,
   const bool use_resampling, const double input_points_interval) const
 {
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   if (input.size() < 3) {
     return input;  // cannot calculate lateral acc. do nothing.
   }
@@ -198,6 +202,8 @@ TrajectoryPoints SmootherBase::applySteeringRateLimit(
   const TrajectoryPoints & input, const bool use_resampling,
   const double input_points_interval) const
 {
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   if (input.size() < 3) {
     return input;  // cannot calculate the desired velocity. do nothing.
   }

@@ -17,6 +17,7 @@
 
 #include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
+#include "autoware/universe_utils/system/time_keeper.hpp"
 #include "autoware/velocity_smoother/smoother/smoother_base.hpp"
 #include "osqp_interface/osqp_interface.hpp"
 
@@ -24,6 +25,7 @@
 
 #include "boost/optional.hpp"
 
+#include <memory>
 #include <vector>
 
 namespace autoware::velocity_smoother
@@ -40,7 +42,8 @@ public:
     double jerk_filter_ds;
   };
 
-  explicit JerkFilteredSmoother(rclcpp::Node & node);
+  explicit JerkFilteredSmoother(
+    rclcpp::Node & node, const std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper);
 
   bool apply(
     const double initial_vel, const double initial_acc, const TrajectoryPoints & input,

@@ -16,6 +16,7 @@
 #define AUTOWARE__VELOCITY_SMOOTHER__SMOOTHER__ANALYTICAL_JERK_CONSTRAINED_SMOOTHER__ANALYTICAL_JERK_CONSTRAINED_SMOOTHER_HPP_  // NOLINT
 
 #include "autoware/motion_utils/trajectory/trajectory.hpp"
+#include "autoware/universe_utils/system/time_keeper.hpp"
 #include "autoware/velocity_smoother/smoother/analytical_jerk_constrained_smoother/velocity_planning_utils.hpp"
 #include "autoware/velocity_smoother/smoother/smoother_base.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -24,6 +25,7 @@
 #include "autoware_planning_msgs/msg/trajectory_point.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -65,7 +67,9 @@ public:
     } backward;
   };
 
-  explicit AnalyticalJerkConstrainedSmoother(rclcpp::Node & node);
+  explicit AnalyticalJerkConstrainedSmoother(
+    rclcpp::Node & node, const std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper =
+                           std::make_shared<autoware::universe_utils::TimeKeeper>());
 
   bool apply(
     const double initial_vel, const double initial_acc, const TrajectoryPoints & input,

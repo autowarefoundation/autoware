@@ -46,6 +46,13 @@ VelocitySmootherNode::VelocitySmootherNode(const rclcpp::NodeOptions & node_opti
   initCommonParam();
   over_stop_velocity_warn_thr_ = declare_parameter<double>("over_stop_velocity_warn_thr");
 
+  // create time_keeper and its publisher
+  // NOTE: This has to be called before setupSmoother to pass the time_keeper to the smoother.
+  debug_processing_time_detail_ = create_publisher<autoware::universe_utils::ProcessingTimeDetail>(
+    "~/debug/processing_time_detail_ms", 1);
+  time_keeper_ =
+    std::make_shared<autoware::universe_utils::TimeKeeper>(debug_processing_time_detail_);
+
   // create smoother
   setupSmoother(wheelbase_);
 
@@ -99,7 +106,7 @@ void VelocitySmootherNode::setupSmoother(const double wheelbase)
 {
   switch (node_param_.algorithm_type) {
     case AlgorithmType::JERK_FILTERED: {
-      smoother_ = std::make_shared<JerkFilteredSmoother>(*this);
+      smoother_ = std::make_shared<JerkFilteredSmoother>(*this, time_keeper_);
 
       // Set Publisher for jerk filtered algorithm
       pub_forward_filtered_trajectory_ =
@@ -113,15 +120,15 @@ void VelocitySmootherNode::setupSmoother(const double wheelbase)
       break;
     }
     case AlgorithmType::L2: {
-      smoother_ = std::make_shared<L2PseudoJerkSmoother>(*this);
+      smoother_ = std::make_shared<L2PseudoJerkSmoother>(*this, time_keeper_);
       break;
     }
     case AlgorithmType::LINF: {
-      smoother_ = std::make_shared<LinfPseudoJerkSmoother>(*this);
+      smoother_ = std::make_shared<LinfPseudoJerkSmoother>(*this, time_keeper_);
       break;
     }
     case AlgorithmType::ANALYTICAL: {
-      smoother_ = std::make_shared<AnalyticalJerkConstrainedSmoother>(*this);
+      smoother_ = std::make_shared<AnalyticalJerkConstrainedSmoother>(*this, time_keeper_);
       break;
     }
     default:
@@ -309,6 +316,8 @@ void VelocitySmootherNode::publishTrajectory(const TrajectoryPoints & trajectory
 
 void VelocitySmootherNode::calcExternalVelocityLimit()
 {
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   if (!external_velocity_limit_ptr_) {
     return;
   }
@@ -414,6 +423,8 @@ bool VelocitySmootherNode::checkData() const
 
 void VelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstSharedPtr msg)
 {
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   RCLCPP_DEBUG(get_logger(), "========================= run start =========================");
   stop_watch_.tic();
 
@@ -502,6 +513,8 @@ void VelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstSharedPtr 
 
 void VelocitySmootherNode::updateDataForExternalVelocityLimit()
 {
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   if (prev_output_.empty()) {
     return;
   }
@@ -519,6 +532,8 @@ void VelocitySmootherNode::updateDataForExternalVelocityLimit()
 TrajectoryPoints VelocitySmootherNode::calcTrajectoryVelocity(
   const TrajectoryPoints & traj_input) const
 {
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   TrajectoryPoints output{};  // velocity is optimized by qp solver
 
   // Extract trajectory around self-position with desired forward-backward length
@@ -566,6 +581,8 @@ bool VelocitySmootherNode::smoothVelocity(
   const TrajectoryPoints & input, const size_t input_closest,
   TrajectoryPoints & traj_smoothed) const
 {
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   if (input.empty()) {
     return false;  // cannot apply smoothing
   }
@@ -672,6 +689,8 @@ bool VelocitySmootherNode::smoothVelocity(
 void VelocitySmootherNode::insertBehindVelocity(
   const size_t output_closest, const InitializeType type, TrajectoryPoints & output) const
 {
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   const bool keep_closest_vel_for_behind =
     (type == InitializeType::EGO_VELOCITY || type == InitializeType::LARGE_DEVIATION_REPLAN ||
      type == InitializeType::ENGAGING);
@@ -734,6 +753,8 @@ void VelocitySmootherNode::publishStopDistance(const TrajectoryPoints & trajecto
 std::pair<Motion, VelocitySmootherNode::InitializeType> VelocitySmootherNode::calcInitialMotion(
   const TrajectoryPoints & input_traj, const size_t input_closest) const
 {
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   const double vehicle_speed = std::fabs(current_odometry_ptr_->twist.twist.linear.x);
   const double vehicle_acceleration = current_acceleration_ptr_->accel.accel.linear.x;
   const double target_vel = std::fabs(input_traj.at(input_closest).longitudinal_velocity_mps);
@@ -817,6 +838,8 @@ std::pair<Motion, VelocitySmootherNode::InitializeType> VelocitySmootherNode::ca
 void VelocitySmootherNode::overwriteStopPoint(
   const TrajectoryPoints & input, TrajectoryPoints & output) const
 {
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   const auto stop_idx = autoware::motion_utils::searchZeroVelocityIndex(input);
   if (!stop_idx) {
     return;
@@ -863,6 +886,8 @@ void VelocitySmootherNode::overwriteStopPoint(
 
 void VelocitySmootherNode::applyExternalVelocityLimit(TrajectoryPoints & traj) const
 {
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   if (traj.size() < 1) {
     return;
   }
@@ -902,6 +927,8 @@ void VelocitySmootherNode::applyExternalVelocityLimit(TrajectoryPoints & traj) c
 
 void VelocitySmootherNode::applyStopApproachingVelocity(TrajectoryPoints & traj) const
 {
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   const auto stop_idx = autoware::motion_utils::searchZeroVelocityIndex(traj);
   if (!stop_idx) {
     return;  // no stop point.

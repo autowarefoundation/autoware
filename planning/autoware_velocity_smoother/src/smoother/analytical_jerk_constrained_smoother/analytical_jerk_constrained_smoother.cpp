@@ -66,8 +66,9 @@ bool applyMaxVelocity(
 
 namespace autoware::velocity_smoother
 {
-AnalyticalJerkConstrainedSmoother::AnalyticalJerkConstrainedSmoother(rclcpp::Node & node)
-: SmootherBase(node)
+AnalyticalJerkConstrainedSmoother::AnalyticalJerkConstrainedSmoother(
+  rclcpp::Node & node, const std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper)
+: SmootherBase(node, time_keeper)
 {
   auto & p = smoother_param_;
   p.resample.ds_resample = node.declare_parameter<double>("resample.ds_resample");
