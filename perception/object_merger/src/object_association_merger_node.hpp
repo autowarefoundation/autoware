@@ -55,8 +55,8 @@ public:
 
 private:
   void objectsCallback(
-    const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr & input_object0_msg,
-    const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr & input_object1_msg);
+    const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr & input_objects0_msg,
+    const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr & input_objects1_msg);
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
