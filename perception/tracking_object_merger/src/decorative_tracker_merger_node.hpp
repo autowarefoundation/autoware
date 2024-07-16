@@ -58,20 +58,20 @@ private:
     std::unordered_map<std::string, std::unique_ptr<DataAssociation>> & data_association_map);
 
   void mainObjectsCallback(
-    const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr & input_object_msg);
+    const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr & main_objects);
   void subObjectsCallback(
-    const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr & input_object_msg);
+    const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr & msg);
 
   bool decorativeMerger(
-    const MEASUREMENT_STATE input_index,
-    const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr & input_object_msg);
+    const MEASUREMENT_STATE input_sensor,
+    const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr & input_objects_msg);
   autoware_perception_msgs::msg::TrackedObjects predictFutureState(
     const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr & input_object_msg,
     const std_msgs::msg::Header & header);
   std::optional<autoware_perception_msgs::msg::TrackedObjects> interpolateObjectState(
-    const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr & input_object_msg1,
-    const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr & input_object_msg2,
-    const std_msgs::msg::Header & header);
+    const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr & former_msg,
+    const autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr & latter_msg,
+    const std_msgs::msg::Header & output_header);
   TrackedObjects getTrackedObjects(const std_msgs::msg::Header & header);
   TrackerState createNewTracker(
     const MEASUREMENT_STATE input_index, rclcpp::Time current_time,
