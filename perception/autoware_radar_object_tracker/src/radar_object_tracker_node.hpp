@@ -80,7 +80,7 @@ private:
   void onMeasurement(
     const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_objects_msg);
   void onTimer();
-  void onMap(const LaneletMapBin::ConstSharedPtr map_msg);
+  void onMap(const LaneletMapBin::ConstSharedPtr msg);
 
   std::string world_frame_id_;  // tracking frame
   std::string tracker_config_directory_;
