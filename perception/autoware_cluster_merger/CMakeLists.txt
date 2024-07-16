@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(cluster_merger)
+project(autoware_cluster_merger)
 
 # find dependencies
 find_package(autoware_cmake REQUIRED)

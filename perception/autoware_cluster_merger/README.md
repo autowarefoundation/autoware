@@ -1,8 +1,8 @@
-# cluster merger
+# autoware cluster merger
 
 ## Purpose
 
-cluster_merger is a package for merging pointcloud clusters as detected objects with feature type.
+autoware_cluster_merger is a package for merging pointcloud clusters as detected objects with feature type.
 
 ## Inner-working / Algorithms
 

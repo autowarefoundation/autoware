@@ -3,9 +3,9 @@
   <arg name="output/clusters" default="output/clusters"/>
   <arg name="input/cluster0" default="input/cluster0"/>
   <arg name="input/cluster1" default="input/cluster1"/>
-  <arg name="param_path" default="$(find-pkg-share cluster_merger)/config/cluster_merger.param.yaml"/>
+  <arg name="param_path" default="$(find-pkg-share autoware_cluster_merger)/config/cluster_merger.param.yaml"/>
   <!-- Node -->
-  <node pkg="cluster_merger" exec="cluster_merger_node" name="cluster_merger" output="screen">
+  <node pkg="autoware_cluster_merger" exec="cluster_merger_node" name="autoware_cluster_merger" output="screen">
     <remap from="~/output/clusters" to="$(var output/clusters)"/>
     <remap from="input/cluster0" to="$(var input/cluster0)"/>
     <remap from="input/cluster1" to="$(var input/cluster1)"/>
