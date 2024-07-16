@@ -3,9 +3,9 @@
   <arg name="input/objects" default="/perception/object_recognition/detection/clustering/objects_with_feature"/>
   <arg name="output/objects" default="/perception/object_recognition/detection/clustering/validated_objects_with_feature"/>
 
-  <arg name="low_intensity_cluster_filter_param_path" default="$(find-pkg-share raindrop_cluster_filter)/config/low_intensity_cluster_filter.param.yaml"/>
+  <arg name="low_intensity_cluster_filter_param_path" default="$(find-pkg-share autoware_raindrop_cluster_filter)/config/low_intensity_cluster_filter.param.yaml"/>
 
-  <node pkg="raindrop_cluster_filter" exec="low_intensity_cluster_filter_node" name="low_intensity_cluster_filter_node" output="screen">
+  <node pkg="autoware_raindrop_cluster_filter" exec="low_intensity_cluster_filter_node" name="low_intensity_cluster_filter_node" output="screen">
     <remap from="input/objects" to="$(var input/objects)"/>
     <remap from="output/objects" to="$(var output/objects)"/>
     <param name="input_obstacle_pointcloud" value="false"/>

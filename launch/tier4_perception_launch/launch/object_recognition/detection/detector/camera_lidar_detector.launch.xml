@@ -213,7 +213,7 @@
 
       <!-- low_intensity_cluster_filter -->
       <group>
-        <include file="$(find-pkg-share raindrop_cluster_filter)/launch/low_intensity_cluster_filter.launch.xml" if="$(var use_low_intensity_cluster_filter)">
+        <include file="$(find-pkg-share autoware_raindrop_cluster_filter)/launch/low_intensity_cluster_filter.launch.xml" if="$(var use_low_intensity_cluster_filter)">
           <arg name="input/objects" value="clusters"/>
           <arg name="output/objects" value="filtered/clusters"/>
         </include>

@@ -22,6 +22,7 @@
   <exec_depend>autoware_radar_fusion_to_detected_object</exec_depend>
   <exec_depend>autoware_radar_object_clustering</exec_depend>
   <exec_depend>autoware_radar_object_tracker</exec_depend>
+  <exec_depend>autoware_raindrop_cluster_filter</exec_depend>
   <exec_depend>compare_map_segmentation</exec_depend>
   <exec_depend>detected_object_feature_remover</exec_depend>
   <exec_depend>detected_object_validation</exec_depend>
@@ -38,7 +39,6 @@
   <exec_depend>pointcloud_preprocessor</exec_depend>
   <exec_depend>pointcloud_to_laserscan</exec_depend>
   <exec_depend>probabilistic_occupancy_grid_map</exec_depend>
-  <exec_depend>raindrop_cluster_filter</exec_depend>
   <exec_depend>shape_estimation</exec_depend>
   <exec_depend>topic_tools</exec_depend>
   <exec_depend>tracking_object_merger</exec_depend>
