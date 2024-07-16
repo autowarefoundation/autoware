@@ -148,7 +148,7 @@ TrajectoryPoint calcInterpolatedPoint(
 
 std::pair<size_t, TrajectoryPoint> findStopPoint(
   TrajectoryPoints & trajectory_array, const size_t collision_idx, const double stop_margin,
-  autoware::vehicle_info_utils::VehicleInfo & vehicle_info)
+  const autoware::vehicle_info_utils::VehicleInfo & vehicle_info)
 {
   // It returns the stop point and segment of the point on trajectory.
 

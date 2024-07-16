@@ -65,7 +65,7 @@ TrajectoryPoint calcInterpolatedPoint(
 
 std::pair<size_t, TrajectoryPoint> findStopPoint(
   TrajectoryPoints & predicted_trajectory_array, const size_t collision_idx,
-  const double stop_margin, autoware::vehicle_info_utils::VehicleInfo & vehicle_info);
+  const double stop_margin, const autoware::vehicle_info_utils::VehicleInfo & vehicle_info);
 
 bool isInBrakeDistance(
   const TrajectoryPoints & trajectory, const size_t stop_idx, const double relative_velocity,
