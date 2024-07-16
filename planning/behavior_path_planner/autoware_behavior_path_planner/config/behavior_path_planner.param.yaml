@@ -1,6 +1,5 @@
 /**:
   ros__parameters:
-    max_iteration_num: 100
     traffic_light_signal_timeout: 1.0
     planning_hz: 10.0
     backward_path_length: 5.0
