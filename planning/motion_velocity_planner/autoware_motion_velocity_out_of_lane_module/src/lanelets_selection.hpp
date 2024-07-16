@@ -51,7 +51,7 @@ lanelet::ConstLanelets calculate_trajectory_lanelets(
 /// @return lanelets that may be overlapped by a lane change (and are not already in
 /// trajectory_lanelets)
 lanelet::ConstLanelets get_missing_lane_change_lanelets(
-  lanelet::ConstLanelets & trajectory_lanelets,
+  const lanelet::ConstLanelets & trajectory_lanelets,
   const std::shared_ptr<const route_handler::RouteHandler> route_handler);
 /// @brief calculate lanelets that should be ignored
 /// @param [in] ego_data data about the ego vehicle

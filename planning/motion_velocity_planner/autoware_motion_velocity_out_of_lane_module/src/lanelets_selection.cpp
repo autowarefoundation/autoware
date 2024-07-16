@@ -36,7 +36,7 @@ lanelet::ConstLanelets consecutive_lanelets(
 }
 
 lanelet::ConstLanelets get_missing_lane_change_lanelets(
-  lanelet::ConstLanelets & trajectory_lanelets,
+  const lanelet::ConstLanelets & trajectory_lanelets,
   const std::shared_ptr<const route_handler::RouteHandler> route_handler)
 {
   lanelet::ConstLanelets missing_lane_change_lanelets;
