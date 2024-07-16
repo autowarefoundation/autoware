@@ -59,21 +59,20 @@ void OccupancyGridMapProjectiveBlindSpot::updateWithPointCloud(
   const PointCloud2 & raw_pointcloud, const PointCloud2 & obstacle_pointcloud,
   const Pose & robot_pose, const Pose & scan_origin)
 {
-  constexpr double min_angle = autoware::universe_utils::deg2rad(-180.0);
-  constexpr double max_angle = autoware::universe_utils::deg2rad(180.0);
-  constexpr double angle_increment = autoware::universe_utils::deg2rad(0.1);
-  const size_t angle_bin_size = ((max_angle - min_angle) / angle_increment) + size_t(1 /*margin*/);
+  const size_t angle_bin_size =
+    ((max_angle_ - min_angle_) * angle_increment_inv_) + size_t(1 /*margin*/);
 
   // Transform from base_link to map frame
-  PointCloud2 map_raw_pointcloud, map_obstacle_pointcloud;  // point cloud in map frame
-  utils::transformPointcloud(raw_pointcloud, robot_pose, map_raw_pointcloud);
-  utils::transformPointcloud(obstacle_pointcloud, robot_pose, map_obstacle_pointcloud);
+  mat_map_ = utils::getTransformMatrix(robot_pose);
+
+  const auto scan2map_pose = utils::getInversePose(scan_origin);  // scan -> map transform pose
 
   // Transform from map frame to scan frame
-  PointCloud2 scan_raw_pointcloud, scan_obstacle_pointcloud;      // point cloud in scan frame
-  const auto scan2map_pose = utils::getInversePose(scan_origin);  // scan -> map transform pose
-  utils::transformPointcloud(map_raw_pointcloud, scan2map_pose, scan_raw_pointcloud);
-  utils::transformPointcloud(map_obstacle_pointcloud, scan2map_pose, scan_obstacle_pointcloud);
+  mat_scan_ = utils::getTransformMatrix(scan2map_pose);
+
+  if (!offset_initialized_) {
+    setFieldOffsets(raw_pointcloud, obstacle_pointcloud);
+  }
 
   // Create angle bins and sort points by range
   struct BinInfo3D
@@ -100,57 +99,82 @@ void OccupancyGridMapProjectiveBlindSpot::updateWithPointCloud(
     double projected_wy;
   };
 
-  std::vector</*angle bin*/ std::vector<BinInfo3D>> obstacle_pointcloud_angle_bins;
-  std::vector</*angle bin*/ std::vector<BinInfo3D>> raw_pointcloud_angle_bins;
-  obstacle_pointcloud_angle_bins.resize(angle_bin_size);
-  raw_pointcloud_angle_bins.resize(angle_bin_size);
-  for (PointCloud2ConstIterator<float> iter_x(scan_raw_pointcloud, "x"),
-       iter_y(scan_raw_pointcloud, "y"), iter_wx(map_raw_pointcloud, "x"),
-       iter_wy(map_raw_pointcloud, "y"), iter_wz(map_raw_pointcloud, "z");
-       iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_wx, ++iter_wy, ++iter_wz) {
-    const double angle = atan2(*iter_y, *iter_x);
-    const int angle_bin_index = (angle - min_angle) / angle_increment;
+  std::vector</*angle bin*/ std::vector<BinInfo3D>> obstacle_pointcloud_angle_bins(angle_bin_size);
+  std::vector</*angle bin*/ std::vector<BinInfo3D>> raw_pointcloud_angle_bins(angle_bin_size);
+
+  const size_t raw_pointcloud_size = raw_pointcloud.width * raw_pointcloud.height;
+  const size_t obstacle_pointcloud_size = obstacle_pointcloud.width * obstacle_pointcloud.height;
+
+  // Updated every loop inside transformPointAndCalculate()
+  Eigen::Vector4f pt_map;
+  int angle_bin_index;
+  double range;
+
+  size_t global_offset = 0;
+  for (size_t i = 0; i < raw_pointcloud_size; i++) {
+    Eigen::Vector4f pt(
+      *reinterpret_cast<const float *>(&raw_pointcloud.data[global_offset + x_offset_raw_]),
+      *reinterpret_cast<const float *>(&raw_pointcloud.data[global_offset + y_offset_raw_]),
+      *reinterpret_cast<const float *>(&raw_pointcloud.data[global_offset + z_offset_raw_]), 1);
+    global_offset += raw_pointcloud.point_step;
+    if (!isPointValid(pt)) {
+      continue;
+    }
+    transformPointAndCalculate(pt, pt_map, angle_bin_index, range);
+
     raw_pointcloud_angle_bins.at(angle_bin_index)
-      .emplace_back(std::hypot(*iter_y, *iter_x), *iter_wx, *iter_wy, *iter_wz);
+      .emplace_back(range, pt_map[0], pt_map[1], pt_map[2]);
   }
+
   for (auto & raw_pointcloud_angle_bin : raw_pointcloud_angle_bins) {
     std::sort(raw_pointcloud_angle_bin.begin(), raw_pointcloud_angle_bin.end(), [](auto a, auto b) {
       return a.range < b.range;
     });
   }
+
   // Create obstacle angle bins and sort points by range
-  for (PointCloud2ConstIterator<float> iter_x(scan_obstacle_pointcloud, "x"),
-       iter_y(scan_obstacle_pointcloud, "y"), iter_z(scan_obstacle_pointcloud, "z"),
-       iter_wx(map_obstacle_pointcloud, "x"), iter_wy(map_obstacle_pointcloud, "y"),
-       iter_wz(map_obstacle_pointcloud, "z");
-       iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z, ++iter_wx, ++iter_wy, ++iter_wz) {
+  global_offset = 0;
+  for (size_t i = 0; i < obstacle_pointcloud_size; i++) {
+    Eigen::Vector4f pt(
+      *reinterpret_cast<const float *>(
+        &obstacle_pointcloud.data[global_offset + x_offset_obstacle_]),
+      *reinterpret_cast<const float *>(
+        &obstacle_pointcloud.data[global_offset + y_offset_obstacle_]),
+      *reinterpret_cast<const float *>(
+        &obstacle_pointcloud.data[global_offset + z_offset_obstacle_]),
+      1);
+    global_offset += obstacle_pointcloud.point_step;
+    if (!isPointValid(pt)) {
+      continue;
+    }
+    transformPointAndCalculate(pt, pt_map, angle_bin_index, range);
     const double scan_z = scan_origin.position.z - robot_pose.position.z;
-    const double obstacle_z = (*iter_wz) - robot_pose.position.z;
+    const double obstacle_z = (pt_map[2]) - robot_pose.position.z;
     const double dz = scan_z - obstacle_z;
-    const double angle = atan2(*iter_y, *iter_x);
-    const int angle_bin_index = (angle - min_angle) / angle_increment;
-    const double range = std::hypot(*iter_x, *iter_y);
+
     // Ignore obstacle points exceed the range of the raw points
     if (raw_pointcloud_angle_bins.at(angle_bin_index).empty()) {
       continue;  // No raw point in this angle bin
     } else if (range > raw_pointcloud_angle_bins.at(angle_bin_index).back().range) {
       continue;  // Obstacle point exceeds the range of the raw points
     }
+
     if (dz > projection_dz_threshold_) {
       const double ratio = obstacle_z / dz;
       const double projection_length = range * ratio;
-      const double projected_wx = (*iter_wx) + ((*iter_wx) - scan_origin.position.x) * ratio;
-      const double projected_wy = (*iter_wy) + ((*iter_wy) - scan_origin.position.y) * ratio;
+      const double projected_wx = (pt_map[0]) + ((pt_map[0]) - scan_origin.position.x) * ratio;
+      const double projected_wy = (pt_map[1]) + ((pt_map[1]) - scan_origin.position.y) * ratio;
       obstacle_pointcloud_angle_bins.at(angle_bin_index)
         .emplace_back(
-          range, *iter_wx, *iter_wy, *iter_wz, projection_length, projected_wx, projected_wy);
+          range, pt_map[0], pt_map[1], pt_map[2], projection_length, projected_wx, projected_wy);
     } else {
       obstacle_pointcloud_angle_bins.at(angle_bin_index)
         .emplace_back(
-          range, *iter_wx, *iter_wy, *iter_wz, std::numeric_limits<double>::infinity(),
+          range, pt_map[0], pt_map[1], pt_map[2], std::numeric_limits<double>::infinity(),
           std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
     }
   }
+
   for (auto & obstacle_pointcloud_angle_bin : obstacle_pointcloud_angle_bins) {
     std::sort(
       obstacle_pointcloud_angle_bin.begin(), obstacle_pointcloud_angle_bin.end(),

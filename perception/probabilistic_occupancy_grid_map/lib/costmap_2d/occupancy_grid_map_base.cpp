@@ -80,17 +80,21 @@ OccupancyGridMapInterface::OccupancyGridMapInterface(
   const unsigned int cells_size_x, const unsigned int cells_size_y, const float resolution)
 : Costmap2D(cells_size_x, cells_size_y, resolution, 0.f, 0.f, cost_value::NO_INFORMATION)
 {
+  min_height_ = -std::numeric_limits<double>::infinity();
+  max_height_ = std::numeric_limits<double>::infinity();
+  resolution_inv_ = 1.0 / resolution_;
+  offset_initialized_ = false;
 }
 
-bool OccupancyGridMapInterface::worldToMap(
+inline bool OccupancyGridMapInterface::worldToMap(
   double wx, double wy, unsigned int & mx, unsigned int & my) const
 {
   if (wx < origin_x_ || wy < origin_y_) {
     return false;
   }
 
-  mx = static_cast<int>(std::floor((wx - origin_x_) / resolution_));
-  my = static_cast<int>(std::floor((wy - origin_y_) / resolution_));
+  mx = static_cast<int>(std::floor((wx - origin_x_) * resolution_inv_));
+  my = static_cast<int>(std::floor((wy - origin_y_) * resolution_inv_));
 
   if (mx < size_x_ && my < size_y_) {
     return true;
@@ -230,6 +234,24 @@ void OccupancyGridMapInterface::raytrace(
   constexpr unsigned int cell_raytrace_range = 10000;  // large number to ignore range threshold
   MarkCell marker(costmap_, cost);
   raytraceLine(marker, x0, y0, x1, y1, cell_raytrace_range);
+}
+
+void OccupancyGridMapInterface::setHeightLimit(const double min_height, const double max_height)
+{
+  min_height_ = min_height;
+  max_height_ = max_height;
+}
+
+void OccupancyGridMapInterface::setFieldOffsets(
+  const PointCloud2 & input_raw, const PointCloud2 & input_obstacle)
+{
+  x_offset_raw_ = input_raw.fields[pcl::getFieldIndex(input_raw, "x")].offset;
+  y_offset_raw_ = input_raw.fields[pcl::getFieldIndex(input_raw, "y")].offset;
+  z_offset_raw_ = input_raw.fields[pcl::getFieldIndex(input_raw, "z")].offset;
+  x_offset_obstacle_ = input_obstacle.fields[pcl::getFieldIndex(input_obstacle, "x")].offset;
+  y_offset_obstacle_ = input_obstacle.fields[pcl::getFieldIndex(input_obstacle, "y")].offset;
+  z_offset_obstacle_ = input_obstacle.fields[pcl::getFieldIndex(input_obstacle, "z")].offset;
+  offset_initialized_ = true;
 }
 
 }  // namespace costmap_2d

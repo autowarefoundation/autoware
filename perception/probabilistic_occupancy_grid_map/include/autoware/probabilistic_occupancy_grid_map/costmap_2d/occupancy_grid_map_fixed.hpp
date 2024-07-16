@@ -36,6 +36,7 @@ public:
 
   using OccupancyGridMapInterface::raytrace;
   using OccupancyGridMapInterface::setCellValue;
+  using OccupancyGridMapInterface::setFieldOffsets;
   using OccupancyGridMapInterface::updateOrigin;
 
   void initRosParam(rclcpp::Node & node) override;

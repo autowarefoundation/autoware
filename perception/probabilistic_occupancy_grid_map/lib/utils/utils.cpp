@@ -60,6 +60,13 @@ void transformPointcloud(
   output.header.frame_id = "";
 }
 
+Eigen::Matrix4f getTransformMatrix(const geometry_msgs::msg::Pose & pose)
+{
+  auto transform = autoware::universe_utils::pose2transform(pose);
+  Eigen::Matrix4f tf_matrix = tf2::transformToEigen(transform).matrix().cast<float>();
+  return tf_matrix;
+}
+
 bool cropPointcloudByHeight(
   const sensor_msgs::msg::PointCloud2 & input, const tf2_ros::Buffer & tf2,
   const std::string & target_frame, const float min_height, const float max_height,
