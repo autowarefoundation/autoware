@@ -160,6 +160,10 @@
         intersection:
           yaw_deviation: 0.349                          # [rad] (default 20.0deg)
 
+        freespace:
+          condition:
+            th_stopped_time: 5.0                        # [-]
+
       # For safety check
       safety_check:
         # safety check target type

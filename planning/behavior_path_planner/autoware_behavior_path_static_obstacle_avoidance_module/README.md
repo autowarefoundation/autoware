@@ -401,6 +401,15 @@ else (\n no)
 #00FFB1 :IGNORE;
 stop
 endif
+if(Is UNKNOWN objects?) then (yes)
+if(isSatisfiedWithUnknownTypeObjectCodition) then (yes)
+#FF006C :AVOID;
+stop
+else (\n no)
+#00FFB1 :IGNORE;
+stop
+endif
+else (\n no)
 if(Is vehicle type?) then (yes)
 if(isSatisfiedWithVehicleCodition()) then (yes)
 else (\n no)
@@ -618,6 +627,18 @@ title Filter vehicle which is obviously an avoidance target
 start
 
 partition isObviousAvoidanceTarget() {
+if(Is object within freespace?) then (yes)
+if(Is object on ego lane?) then (no)
+if(Is object stopping longer than threshold?) then (yes)
+#FF006C :return true;
+stop
+else (\n no)
+endif
+else (\n yes)
+endif
+else (\n no)
+endif
+
 if(Is object within intersection?) then (yes)
 else (\n no)
 if(Is object parallel to ego lane? AND Is object a parked vehicle?) then (yes)

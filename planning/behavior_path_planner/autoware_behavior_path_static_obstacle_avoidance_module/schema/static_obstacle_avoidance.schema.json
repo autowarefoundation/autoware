@@ -812,6 +812,25 @@
               },
               "required": ["yaw_deviation"],
               "additionalProperties": false
+            },
+            "freespace": {
+              "type": "object",
+              "properties": {
+                "condition": {
+                  "type": "object",
+                  "properties": {
+                    "th_stopped_time": {
+                      "type": "number",
+                      "description": "This module delays avoidance maneuver to see vehicle behavior in freespace.",
+                      "default": 5.0
+                    }
+                  },
+                  "required": ["th_stopped_time"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["condition"],
+              "additionalProperties": false
             }
           },
           "required": [
@@ -823,7 +842,8 @@
             "merging_vehicle",
             "parked_vehicle",
             "avoidance_for_ambiguous_vehicle",
-            "intersection"
+            "intersection",
+            "freespace"
           ],
           "additionalProperties": false
         },

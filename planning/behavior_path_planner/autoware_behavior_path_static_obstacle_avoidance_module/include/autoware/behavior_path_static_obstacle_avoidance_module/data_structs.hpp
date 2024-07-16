@@ -191,6 +191,9 @@ struct AvoidanceParameters
   // minimum road shoulder width. maybe 0.5 [m]
   double object_check_min_road_shoulder_width{0.0};
 
+  // time threshold for vehicle in freespace.
+  double freespace_condition_th_stopped_time{0.0};
+
   // force avoidance
   std::vector<std::string> wait_and_see_target_behaviors{"NONE", "MERGING", "DEVIATING"};
   double wait_and_see_th_closest_distance{0.0};

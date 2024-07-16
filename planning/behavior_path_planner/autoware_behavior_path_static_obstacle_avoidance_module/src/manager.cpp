@@ -151,6 +151,12 @@ void StaticObstacleAvoidanceModuleManager::updateModuleParams(
   }
 
   {
+    const std::string ns = "avoidance.target_filtering.freespace.";
+    updateParam<double>(
+      parameters, ns + "condition.th_stopped_time", p->freespace_condition_th_stopped_time);
+  }
+
+  {
     const std::string ns = "avoidance.target_filtering.intersection.";
     updateParam<double>(parameters, ns + "yaw_deviation", p->object_check_yaw_deviation);
   }

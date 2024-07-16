@@ -155,6 +155,12 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
   }
 
   {
+    const std::string ns = "avoidance.target_filtering.freespace.";
+    p.freespace_condition_th_stopped_time =
+      getOrDeclareParameter<double>(*node, ns + "condition.th_stopped_time");
+  }
+
+  {
     const std::string ns = "avoidance.target_filtering.detection_area.";
     p.use_static_detection_area = getOrDeclareParameter<bool>(*node, ns + "static");
     p.object_check_min_forward_distance =
