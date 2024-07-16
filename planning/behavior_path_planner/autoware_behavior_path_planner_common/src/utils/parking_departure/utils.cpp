@@ -86,7 +86,7 @@ void modifyVelocityByDirection(
 }
 
 void updatePathProperty(
-  std::shared_ptr<EgoPredictedPathParams> & ego_predicted_path_params,
+  const std::shared_ptr<EgoPredictedPathParams> & ego_predicted_path_params,
   const std::pair<double, double> & pairs_terminal_velocity_and_accel)
 {
   // If acceleration is close to 0, the ego predicted path will be too short, so a minimum value is

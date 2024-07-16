@@ -54,7 +54,7 @@ void modifyVelocityByDirection(
   const double acceleration);
 
 void updatePathProperty(
-  std::shared_ptr<EgoPredictedPathParams> & ego_predicted_path_params,
+  const std::shared_ptr<EgoPredictedPathParams> & ego_predicted_path_params,
   const std::pair<double, double> & pairs_terminal_velocity_and_accel);
 
 void initializeCollisionCheckDebugMap(CollisionCheckDebugMap & collision_check_debug_map);
