@@ -28,7 +28,7 @@ namespace autoware::motion_velocity_planner::obstacle_velocity_limiter
 /// @brief mask gridmap cells that are inside the given polygons
 /// @param[in, out] grid_map the grid map to modify
 /// @param[in] polygons the polygons to mask from the grid map
-void maskPolygons(grid_map::GridMap & grid_map, const ObstacleMasks & masks);
+void maskPolygons(grid_map::GridMap & grid_map, const ObstacleMasks & obstacle_masks);
 
 /// @brief apply a threshold to the grid map
 /// @param[in, out] grid_map the grid map to modify
