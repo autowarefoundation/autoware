@@ -52,6 +52,8 @@ public:
     rclcpp::Node * node, std::mutex * ndt_ptr_mutex, NdtPtrType & ndt_ptr,
     HyperParameters::DynamicMapLoading param);
 
+  bool out_of_map_range(const geometry_msgs::msg::Point & position);
+
 private:
   friend class NDTScanMatcher;
 
@@ -62,6 +64,7 @@ private:
   [[nodiscard]] bool should_update_map(
     const geometry_msgs::msg::Point & position,
     std::unique_ptr<DiagnosticsModule> & diagnostics_ptr);
+
   void update_map(
     const geometry_msgs::msg::Point & position,
     std::unique_ptr<DiagnosticsModule> & diagnostics_ptr);
@@ -88,6 +91,8 @@ private:
   // Indicate if there is a prefetch thread waiting for being collected
   NdtPtrType secondary_ndt_ptr_;
   bool need_rebuild_;
+  // Keep the last_update_position_ unchanged while checking map range
+  std::mutex last_update_position_mtx_;
 };
 
 #endif  // NDT_SCAN_MATCHER__MAP_UPDATE_MODULE_HPP_

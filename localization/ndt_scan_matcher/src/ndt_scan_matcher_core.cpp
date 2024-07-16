@@ -440,6 +440,18 @@ bool NDTScanMatcher::callback_sensor_points_main(
     add_regularization_pose(sensor_ros_time);
   }
 
+  // Warn if the lidar has gone out of the map range
+  if (map_update_module_->out_of_map_range(
+        interpolation_result.interpolated_pose.pose.pose.position)) {
+    std::stringstream msg;
+
+    msg << "Lidar has gone out of the map range";
+    diagnostics_scan_points_->update_level_and_message(
+      diagnostic_msgs::msg::DiagnosticStatus::WARN, msg.str());
+
+    RCLCPP_WARN_STREAM_THROTTLE(this->get_logger(), *this->get_clock(), 1000, msg.str());
+  }
+
   // check is_set_map_points
   const bool is_set_map_points = (ndt_ptr_->getInputTarget() != nullptr);
   diagnostics_scan_points_->add_key_value("is_set_map_points", is_set_map_points);

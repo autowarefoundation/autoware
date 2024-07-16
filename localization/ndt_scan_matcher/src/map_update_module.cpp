@@ -82,7 +82,11 @@ void MapUpdateModule::callback_timer(
 bool MapUpdateModule::should_update_map(
   const geometry_msgs::msg::Point & position, std::unique_ptr<DiagnosticsModule> & diagnostics_ptr)
 {
+  last_update_position_mtx_.lock();
+
   if (last_update_position_ == std::nullopt) {
+    last_update_position_mtx_.unlock();
+
     need_rebuild_ = true;
     return true;
   }
@@ -90,6 +94,8 @@ bool MapUpdateModule::should_update_map(
   const double dx = position.x - last_update_position_.value().x;
   const double dy = position.y - last_update_position_.value().y;
   const double distance = std::hypot(dx, dy);
+
+  last_update_position_mtx_.unlock();
 
   // check distance_last_update_position_to_current_position
   diagnostics_ptr->add_key_value("distance_last_update_position_to_current_position", distance);
@@ -105,6 +111,27 @@ bool MapUpdateModule::should_update_map(
   }
 
   return distance > param_.update_distance;
+}
+
+bool MapUpdateModule::out_of_map_range(const geometry_msgs::msg::Point & position)
+{
+  last_update_position_mtx_.lock();
+
+  if (last_update_position_ == std::nullopt) {
+    last_update_position_mtx_.unlock();
+
+    return true;
+  }
+
+  const double dx = position.x - last_update_position_.value().x;
+  const double dy = position.y - last_update_position_.value().y;
+
+  last_update_position_mtx_.unlock();
+
+  const double distance = std::hypot(dx, dy);
+
+  // check distance_last_update_position_to_current_position
+  return (distance + param_.lidar_radius > param_.map_radius);
 }
 
 void MapUpdateModule::update_map(
@@ -140,8 +167,12 @@ void MapUpdateModule::update_map(
       diagnostics_ptr->update_level_and_message(
         diagnostic_msgs::msg::DiagnosticStatus::ERROR, message.str());
       RCLCPP_ERROR_STREAM_THROTTLE(logger_, *clock_, 1000, message.str());
-      last_update_position_ = position;
       ndt_ptr_mutex_->unlock();
+
+      last_update_position_mtx_.lock();
+      last_update_position_ = position;
+      last_update_position_mtx_.unlock();
+
       return;
     }
 
@@ -159,7 +190,10 @@ void MapUpdateModule::update_map(
     // check is_updated_map
     diagnostics_ptr->add_key_value("is_updated_map", updated);
     if (!updated) {
+      last_update_position_mtx_.lock();
       last_update_position_ = position;
+      last_update_position_mtx_.unlock();
+
       return;
     }
 
@@ -179,7 +213,9 @@ void MapUpdateModule::update_map(
   *secondary_ndt_ptr_ = *ndt_ptr_;
 
   // Memorize the position of the last update
+  last_update_position_mtx_.lock();
   last_update_position_ = position;
+  last_update_position_mtx_.unlock();
 
   // Publish the new ndt maps
   publish_partial_pcd_map();
