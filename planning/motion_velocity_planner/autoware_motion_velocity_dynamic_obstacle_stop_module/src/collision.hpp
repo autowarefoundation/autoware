@@ -40,7 +40,7 @@ std::optional<geometry_msgs::msg::Point> find_closest_collision_point(
 std::vector<Collision> find_collisions(
   const EgoData & ego_data,
   const std::vector<autoware_perception_msgs::msg::PredictedObject> & objects,
-  const autoware::universe_utils::MultiPolygon2d & obstacle_forward_footprints);
+  const autoware::universe_utils::MultiPolygon2d & object_forward_footprints);
 
 }  // namespace autoware::motion_velocity_planner::dynamic_obstacle_stop
 
