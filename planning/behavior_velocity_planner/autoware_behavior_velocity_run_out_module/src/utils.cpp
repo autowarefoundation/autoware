@@ -166,7 +166,7 @@ void insertPathVelocityFromIndex(
   }
 }
 
-std::optional<size_t> findFirstStopPointIdx(PathPointsWithLaneId & path_points)
+std::optional<size_t> findFirstStopPointIdx(const PathPointsWithLaneId & path_points)
 {
   for (size_t i = 0; i < path_points.size(); i++) {
     const auto vel = path_points.at(i).point.longitudinal_velocity_mps;

@@ -235,7 +235,7 @@ void insertPathVelocityFromIndexLimited(
 void insertPathVelocityFromIndex(
   const size_t & start_idx, const float velocity_mps, PathPointsWithLaneId & path_points);
 
-std::optional<size_t> findFirstStopPointIdx(PathPointsWithLaneId & path_points);
+std::optional<size_t> findFirstStopPointIdx(const PathPointsWithLaneId & path_points);
 
 LineString2d createLineString2d(const lanelet::BasicPolygon2d & poly);
 
