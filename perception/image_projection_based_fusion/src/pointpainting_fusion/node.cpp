@@ -103,6 +103,7 @@ PointPaintingFusionNode::PointPaintingFusionNode(const rclcpp::NodeOptions & opt
     this->declare_parameter<int>("densification_params.num_past_frames");
   // network param
   const std::string trt_precision = this->declare_parameter<std::string>("trt_precision");
+  const std::size_t cloud_capacity = this->declare_parameter<std::int64_t>("cloud_capacity");
   const std::string encoder_onnx_path = this->declare_parameter<std::string>("encoder_onnx_path");
   const std::string encoder_engine_path =
     this->declare_parameter<std::string>("encoder_engine_path");
@@ -181,9 +182,9 @@ PointPaintingFusionNode::PointPaintingFusionNode(const rclcpp::NodeOptions & opt
   centerpoint::DensificationParam densification_param(
     densification_world_frame_id, densification_num_past_frames);
   centerpoint::CenterPointConfig config(
-    class_names_.size(), point_feature_size, max_voxel_size, pointcloud_range, voxel_size,
-    downsample_factor, encoder_in_feature_size, score_threshold, circle_nms_dist_threshold,
-    yaw_norm_thresholds, has_variance_);
+    class_names_.size(), point_feature_size, cloud_capacity, max_voxel_size, pointcloud_range,
+    voxel_size, downsample_factor, encoder_in_feature_size, score_threshold,
+    circle_nms_dist_threshold, yaw_norm_thresholds, has_variance_);
 
   // create detector
   detector_ptr_ = std::make_unique<image_projection_based_fusion::PointPaintingTRT>(

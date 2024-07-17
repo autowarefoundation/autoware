@@ -85,7 +85,7 @@ void CenterPointTRT::initPtr()
   mask_size_ = config_.grid_size_x_ * config_.grid_size_y_;
 
   // host
-  points_.resize(CAPACITY_POINT * config_.point_feature_size_);
+  points_.resize(config_.cloud_capacity_ * config_.point_feature_size_);
 
   // device
   voxels_d_ = cuda::make_unique<float[]>(voxels_size_);
@@ -100,7 +100,7 @@ void CenterPointTRT::initPtr()
   head_out_dim_d_ = cuda::make_unique<float[]>(grid_xy_size * config_.head_out_dim_size_);
   head_out_rot_d_ = cuda::make_unique<float[]>(grid_xy_size * config_.head_out_rot_size_);
   head_out_vel_d_ = cuda::make_unique<float[]>(grid_xy_size * config_.head_out_vel_size_);
-  points_d_ = cuda::make_unique<float[]>(CAPACITY_POINT * config_.point_feature_size_);
+  points_d_ = cuda::make_unique<float[]>(config_.cloud_capacity_ * config_.point_feature_size_);
   voxels_buffer_d_ = cuda::make_unique<float[]>(voxels_buffer_size_);
   mask_d_ = cuda::make_unique<unsigned int[]>(mask_size_);
   num_voxels_d_ = cuda::make_unique<unsigned int[]>(1);

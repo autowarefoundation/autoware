@@ -25,11 +25,13 @@ class TransfusionConfig
 {
 public:
   TransfusionConfig(
-    const std::vector<int64_t> & voxels_num, const std::vector<double> & point_cloud_range,
-    const std::vector<double> & voxel_size, const int num_proposals,
-    const float circle_nms_dist_threshold, const std::vector<double> & yaw_norm_thresholds,
-    const float score_threshold)
+    const std::size_t cloud_capacity, const std::vector<int64_t> & voxels_num,
+    const std::vector<double> & point_cloud_range, const std::vector<double> & voxel_size,
+    const std::size_t num_proposals, const float circle_nms_dist_threshold,
+    const std::vector<double> & yaw_norm_thresholds, const float score_threshold)
   {
+    cloud_capacity_ = cloud_capacity;
+
     if (voxels_num.size() == 3) {
       max_voxels_ = voxels_num[2];
 
@@ -86,7 +88,7 @@ public:
   }
 
   ///// INPUT PARAMETERS /////
-  const std::size_t cloud_capacity_{1000000};
+  std::size_t cloud_capacity_{};
   ///// KERNEL PARAMETERS /////
   const std::size_t threads_for_voxel_{256};  // threads number for a block
   const std::size_t points_per_voxel_{20};

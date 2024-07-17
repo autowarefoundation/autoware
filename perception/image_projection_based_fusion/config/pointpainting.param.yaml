@@ -5,6 +5,7 @@
     head_onnx_path: "$(var model_path)/pts_backbone_neck_head_$(var model_name).onnx"
     head_engine_path: "$(var model_path)/pts_backbone_neck_head_$(var model_name).engine"
     trt_precision: fp16
+    cloud_capacity: 2000000
     post_process_params:
       # post-process params
       circle_nms_dist_threshold: 0.3

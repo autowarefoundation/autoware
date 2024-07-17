@@ -61,7 +61,7 @@ std::size_t VoxelGenerator::generateSweepPoints(float * points_d, cudaStream_t s
     float time_lag = static_cast<float>(
       pd_ptr_->getCurrentTimestamp() - rclcpp::Time(pc_cache_iter->header.stamp).seconds());
 
-    if (point_counter + sweep_num_points > CAPACITY_POINT) {
+    if (point_counter + sweep_num_points > config_.cloud_capacity_) {
       RCLCPP_WARN_STREAM(
         rclcpp::get_logger("lidar_centerpoint"),
         "Requested number of points exceeds the maximum capacity. Current points = "

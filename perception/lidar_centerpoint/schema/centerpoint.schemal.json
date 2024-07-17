@@ -12,6 +12,12 @@
           "default": "fp16",
           "enum": ["fp32", "fp16"]
         },
+        "cloud_capacity": {
+          "type": "integer",
+          "description": "Capacity of the point cloud buffer (should be set to at least the maximum theoretical number of points).",
+          "default": 2000000,
+          "minimum": 1
+        },
         "post_process_params": {
           "type": "object",
           "properties": {
