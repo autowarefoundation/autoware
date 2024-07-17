@@ -64,7 +64,7 @@ protected:
   pcl::PointCloud<pcl::PointXYZ>::Ptr cropped_pointcloud_;
 
 public:
-  explicit Validator(PointsNumThresholdParam & points_num_threshold_param);
+  explicit Validator(const PointsNumThresholdParam & points_num_threshold_param);
   inline pcl::PointCloud<pcl::PointXYZ>::Ptr getDebugPointCloudWithinObject()
   {
     return cropped_pointcloud_;

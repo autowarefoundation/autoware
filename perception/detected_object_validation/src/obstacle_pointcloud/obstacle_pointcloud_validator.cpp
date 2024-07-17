@@ -38,7 +38,7 @@ namespace bg = boost::geometry;
 using Shape = autoware_perception_msgs::msg::Shape;
 using Polygon2d = autoware::universe_utils::Polygon2d;
 
-Validator::Validator(PointsNumThresholdParam & points_num_threshold_param)
+Validator::Validator(const PointsNumThresholdParam & points_num_threshold_param)
 {
   points_num_threshold_param_.min_points_num = points_num_threshold_param.min_points_num;
   points_num_threshold_param_.max_points_num = points_num_threshold_param.max_points_num;
