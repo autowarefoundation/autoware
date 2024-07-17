@@ -22,6 +22,7 @@
 #include <autoware/rtc_interface/rtc_interface.hpp>
 #include <autoware/universe_utils/ros/debug_publisher.hpp>
 #include <autoware/universe_utils/ros/parameter.hpp>
+#include <autoware/universe_utils/system/time_keeper.hpp>
 #include <builtin_interfaces/msg/time.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/velocity_factor.hpp>
@@ -42,6 +43,7 @@
 #include <vector>
 
 // Debug
+#include <rclcpp/publisher.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -106,6 +108,13 @@ public:
     infrastructure_command_ = command;
   }
 
+  void setTimeKeeper(const std::shared_ptr<universe_utils::TimeKeeper> & time_keeper)
+  {
+    time_keeper_ = time_keeper;
+  }
+
+  std::shared_ptr<universe_utils::TimeKeeper> getTimeKeeper() { return time_keeper_; }
+
   std::optional<int> getFirstStopPathPointIndex() { return first_stop_path_point_index_; }
 
   void setActivation(const bool activated) { activated_ = activated; }
@@ -132,6 +141,7 @@ protected:
   std::optional<int> first_stop_path_point_index_;
   autoware::motion_utils::VelocityFactorInterface velocity_factor_;
   std::vector<ObjectOfInterest> objects_of_interest_;
+  mutable std::shared_ptr<universe_utils::TimeKeeper> time_keeper_;
 
   void setSafe(const bool safe)
   {
@@ -215,6 +225,10 @@ protected:
     pub_infrastructure_commands_;
 
   std::shared_ptr<DebugPublisher> processing_time_publisher_;
+
+  rclcpp::Publisher<universe_utils::ProcessingTimeDetail>::SharedPtr pub_processing_time_detail_;
+
+  std::shared_ptr<universe_utils::TimeKeeper> time_keeper_;
 };
 
 class SceneModuleManagerInterfaceWithRTC : public SceneModuleManagerInterface

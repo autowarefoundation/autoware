@@ -17,6 +17,7 @@
 #include <autoware/behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
 #include <autoware/behavior_velocity_planner_common/utilization/util.hpp>
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
+#include <autoware/universe_utils/system/time_keeper.hpp>
 
 #include <algorithm>
 #include <vector>
@@ -40,6 +41,8 @@ StopLineModule::StopLineModule(
 
 bool StopLineModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
 {
+  universe_utils::ScopedTimeTrack st(
+    std::string(__func__) + " (lane_id:=" + std::to_string(module_id_) + ")", *getTimeKeeper());
   debug_data_ = DebugData();
   if (path->points.empty()) return true;
   const auto base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
@@ -50,11 +53,12 @@ bool StopLineModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop
   const LineString2d stop_line = planning_utils::extendLine(
     stop_line_[0], stop_line_[1], planner_data_->stop_line_extend_length);
 
+  time_keeper_->start_track("createTargetPoint");
   // Calculate stop pose and insert index
   const auto stop_point = arc_lane_utils::createTargetPoint(
     *path, stop_line, planner_param_.stop_margin,
     planner_data_->vehicle_info_.max_longitudinal_offset_m);
-
+  time_keeper_->end_track("createTargetPoint");
   // If no collision found, do nothing
   if (!stop_point) {
     RCLCPP_DEBUG_THROTTLE(logger_, *clock_, 5000 /* ms */, "is no collision");
@@ -70,12 +74,16 @@ bool StopLineModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop
    * |----------------------------|
    * s---ego----------x--|--------g
    */
+  time_keeper_->start_track(
+    "calcSegmentIndexFromPointIndex & findEgoSegmentIndex & calcSignedArcLength");
   const size_t stop_line_seg_idx = planning_utils::calcSegmentIndexFromPointIndex(
     path->points, stop_pose.position, stop_point_idx);
   const size_t current_seg_idx = findEgoSegmentIndex(path->points);
   const double signed_arc_dist_to_stop_point = autoware::motion_utils::calcSignedArcLength(
     path->points, planner_data_->current_odometry->pose.position, current_seg_idx,
     stop_pose.position, stop_line_seg_idx);
+  time_keeper_->end_track(
+    "calcSegmentIndexFromPointIndex & findEgoSegmentIndex & calcSignedArcLength");
   switch (state_) {
     case State::APPROACH: {
       // Insert stop pose

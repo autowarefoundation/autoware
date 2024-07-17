@@ -17,9 +17,11 @@
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/ros/uuid_helper.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
+#include <autoware/universe_utils/system/time_keeper.hpp>
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 
 namespace autoware::behavior_velocity_planner
 {
@@ -33,7 +35,8 @@ SceneModuleInterface::SceneModuleInterface(
   safe_(false),
   distance_(std::numeric_limits<double>::lowest()),
   logger_(logger),
-  clock_(clock)
+  clock_(clock),
+  time_keeper_(std::shared_ptr<universe_utils::TimeKeeper>())
 {
 }
 
@@ -71,6 +74,11 @@ SceneModuleManagerInterface::SceneModuleManagerInterface(
       "~/output/infrastructure_commands", 1);
 
   processing_time_publisher_ = std::make_shared<DebugPublisher>(&node, "~/debug");
+
+  pub_processing_time_detail_ = node.create_publisher<universe_utils::ProcessingTimeDetail>(
+    "~/debug/processing_time_detail_ms/" + std::string(module_name), 1);
+
+  time_keeper_ = std::make_shared<universe_utils::TimeKeeper>(pub_processing_time_detail_);
 }
 
 size_t SceneModuleManagerInterface::findEgoSegmentIndex(
@@ -94,6 +102,8 @@ void SceneModuleManagerInterface::updateSceneModuleInstances(
 void SceneModuleManagerInterface::modifyPathVelocity(
   tier4_planning_msgs::msg::PathWithLaneId * path)
 {
+  universe_utils::ScopedTimeTrack st(
+    "SceneModuleManagerInterface::modifyPathVelocity", *time_keeper_);
   StopWatch<std::chrono::milliseconds> stop_watch;
   stop_watch.tic("Total");
   visualization_msgs::msg::MarkerArray debug_marker_array;
@@ -177,6 +187,7 @@ void SceneModuleManagerInterface::registerModule(
   RCLCPP_DEBUG(
     logger_, "register task: module = %s, id = %lu", getModuleName(), scene_module->getModuleId());
   registered_module_id_set_.emplace(scene_module->getModuleId());
+  scene_module->setTimeKeeper(time_keeper_);
   scene_modules_.insert(scene_module);
 }
 
