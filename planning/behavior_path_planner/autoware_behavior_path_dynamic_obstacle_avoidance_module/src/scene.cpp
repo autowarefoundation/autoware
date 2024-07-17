@@ -113,11 +113,11 @@ std::optional<T> getObjectFromUuid(const std::vector<T> & objects, const std::st
 }
 
 std::pair<double, double> projectObstacleVelocityToTrajectory(
-  const std::vector<PathPointWithLaneId> & path_points, const PredictedObject & object)
+  const std::vector<PathPointWithLaneId> & path_points, const PredictedObject & object,
+  const size_t obj_idx)
 {
   const auto & obj_pose = object.kinematics.initial_pose_with_covariance.pose;
   const double obj_yaw = tf2::getYaw(obj_pose.orientation);
-  const size_t obj_idx = autoware::motion_utils::findNearestIndex(path_points, obj_pose.position);
   const double path_yaw = tf2::getYaw(path_points.at(obj_idx).point.pose.orientation);
 
   const Eigen::Rotation2Dd R_ego_to_obstacle(obj_yaw - path_yaw);
@@ -170,12 +170,9 @@ double calcObstacleWidth(const autoware_perception_msgs::msg::Shape & shape)
 
 double calcDiffAngleAgainstPath(
   const std::vector<PathPointWithLaneId> & path_points,
-  const geometry_msgs::msg::Pose & target_pose)
+  const geometry_msgs::msg::Pose & target_pose, const size_t target_idx)
 {
-  const size_t nearest_idx =
-    autoware::motion_utils::findNearestIndex(path_points, target_pose.position);
-  const double traj_yaw = tf2::getYaw(path_points.at(nearest_idx).point.pose.orientation);
-
+  const double traj_yaw = tf2::getYaw(path_points.at(target_idx).point.pose.orientation);
   const double target_yaw = tf2::getYaw(target_pose.orientation);
 
   const double diff_yaw = autoware::universe_utils::normalizeRadian(target_yaw - traj_yaw);
@@ -202,32 +199,30 @@ double calcDiffAngleAgainstPath(
 }
 
 double calcDistanceToPath(
-  const std::vector<PathPointWithLaneId> & path_points,
-  const geometry_msgs::msg::Point & target_pos)
+  const std::vector<geometry_msgs::msg::Pose> & points,
+  const geometry_msgs::msg::Point & target_pos, const size_t target_idx)
 {
-  const size_t target_idx = autoware::motion_utils::findNearestIndex(path_points, target_pos);
-  if (target_idx == 0 || target_idx == path_points.size() - 1) {
-    const double target_yaw = tf2::getYaw(path_points.at(target_idx).point.pose.orientation);
-    const double angle_to_target_pos = autoware::universe_utils::calcAzimuthAngle(
-      path_points.at(target_idx).point.pose.position, target_pos);
+  if (target_idx == 0 || target_idx == points.size() - 1) {
+    const double target_yaw = tf2::getYaw(points.at(target_idx).orientation);
+    const double angle_to_target_pos =
+      autoware::universe_utils::calcAzimuthAngle(points.at(target_idx).position, target_pos);
     const double diff_yaw =
       autoware::universe_utils::normalizeRadian(angle_to_target_pos - target_yaw);
 
     if (
       (target_idx == 0 && (diff_yaw < -M_PI_2 || M_PI_2 < diff_yaw)) ||
-      (target_idx == path_points.size() - 1 && (-M_PI_2 < diff_yaw && diff_yaw < M_PI_2))) {
-      return autoware::universe_utils::calcDistance2d(path_points.at(target_idx), target_pos);
+      (target_idx == points.size() - 1 && (-M_PI_2 < diff_yaw && diff_yaw < M_PI_2))) {
+      return autoware::universe_utils::calcDistance2d(points.at(target_idx), target_pos);
     }
   }
 
-  return std::abs(autoware::motion_utils::calcLateralOffset(path_points, target_pos));
+  return std::abs(autoware::motion_utils::calcLateralOffset(points, target_pos));
 }
 
 bool isLeft(
   const std::vector<PathPointWithLaneId> & path_points,
-  const geometry_msgs::msg::Point & target_pos)
+  const geometry_msgs::msg::Point & target_pos, const size_t target_idx)
 {
-  const size_t target_idx = autoware::motion_utils::findNearestIndex(path_points, target_pos);
   const double target_yaw = tf2::getYaw(path_points.at(target_idx).point.pose.orientation);
   const double angle_to_target_pos = autoware::universe_utils::calcAzimuthAngle(
     path_points.at(target_idx).point.pose.position, target_pos);
@@ -303,6 +298,32 @@ std::vector<geometry_msgs::msg::Point> convertToPoints(
   }
   return points;
 }
+
+// NOTE: Giving PathPointWithLaneId to autoware_motion_utils functions
+//       cost a lot. Instead, using Pose is much faster (around x10).
+std::vector<geometry_msgs::msg::Pose> toGeometryPoints(
+  const std::vector<PathPointWithLaneId> & path_points)
+{
+  std::vector<geometry_msgs::msg::Pose> geom_points;
+  for (const auto & path_point : path_points) {
+    geom_points.push_back(path_point.point.pose);
+  }
+  return geom_points;
+}
+
+size_t getNearestIndexFromSegmentIndex(
+  const std::vector<geometry_msgs::msg::Pose> & points, const size_t seg_idx,
+  const geometry_msgs::msg::Point & target_pos)
+{
+  const double first_dist =
+    autoware::universe_utils::calcDistance2d(points.at(seg_idx), target_pos);
+  const double second_dist =
+    autoware::universe_utils::calcDistance2d(points.at(seg_idx + 1), target_pos);
+  if (first_dist < second_dist) {
+    return seg_idx;
+  }
+  return seg_idx + 1;
+}
 }  // namespace
 
 DynamicObstacleAvoidanceModule::DynamicObstacleAvoidanceModule(
@@ -351,7 +372,7 @@ bool DynamicObstacleAvoidanceModule::isExecutionReady() const
 
 void DynamicObstacleAvoidanceModule::updateData()
 {
-  // stop_watch_.tic(std::string(__func__));
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
   info_marker_.markers.clear();
   debug_marker_.markers.clear();
@@ -377,11 +398,6 @@ void DynamicObstacleAvoidanceModule::updateData()
       target_objects_.push_back(target_object_candidate);
     }
   }
-
-  // const double calculation_time = stop_watch_.toc(std::string(__func__));
-  // RCLCPP_INFO_STREAM_EXPRESSION(
-  //   getLogger(), parameters_->enable_debug_info, __func__ << ":=" << calculation_time << "
-  //   [ms]");
 }
 
 bool DynamicObstacleAvoidanceModule::canTransitSuccessState()
@@ -391,8 +407,6 @@ bool DynamicObstacleAvoidanceModule::canTransitSuccessState()
 
 BehaviorModuleOutput DynamicObstacleAvoidanceModule::plan()
 {
-  // stop_watch_.tic(std::string(__func__));
-
   const auto & input_path = getPreviousModuleOutput().path;
   if (input_path.points.empty()) {
     throw std::runtime_error("input path is empty");
@@ -439,11 +453,6 @@ BehaviorModuleOutput DynamicObstacleAvoidanceModule::plan()
   output.reference_path = getPreviousModuleOutput().reference_path;
   output.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
   output.modified_goal = getPreviousModuleOutput().modified_goal;
-
-  // const double calculation_time = stop_watch_.toc(std::string(__func__));
-  // RCLCPP_INFO_STREAM_EXPRESSION(
-  //   getLogger(), parameters_->enable_debug_info, __func__ << ":=" << calculation_time << "
-  //   [ms]");
 
   return output;
 }
@@ -494,7 +503,10 @@ ObjectType DynamicObstacleAvoidanceModule::getObjectType(const uint8_t label) co
 void DynamicObstacleAvoidanceModule::registerRegulatedObjects(
   const std::vector<DynamicAvoidanceObject> & prev_objects)
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   const auto input_path = getPreviousModuleOutput().path;
+  const auto input_points = toGeometryPoints(input_path.points);  // for efficient computation
   const auto & predicted_objects = planner_data_->dynamic_object->objects;
 
   for (const auto & predicted_object : predicted_objects) {
@@ -508,6 +520,10 @@ void DynamicObstacleAvoidanceModule::registerRegulatedObjects(
       predicted_object.kinematics.predicted_paths.begin(),
       predicted_object.kinematics.predicted_paths.end(),
       [](const PredictedPath & a, const PredictedPath & b) { return a.confidence < b.confidence; });
+    const size_t obj_seg_idx =
+      autoware::motion_utils::findNearestSegmentIndex(input_points, obj_pose.position);
+    const size_t obj_idx =
+      getNearestIndexFromSegmentIndex(input_points, obj_seg_idx, obj_pose.position);
 
     // 1.a. check label
     if (getObjectType(predicted_object.classification.front().label) != ObjectType::REGULATED) {
@@ -516,7 +532,7 @@ void DynamicObstacleAvoidanceModule::registerRegulatedObjects(
 
     // 1.b. check obstacle velocity
     const auto [obj_tangent_vel, obj_normal_vel] =
-      projectObstacleVelocityToTrajectory(input_path.points, predicted_object);
+      projectObstacleVelocityToTrajectory(input_path.points, predicted_object, obj_idx);
     if (
       std::abs(obj_tangent_vel) < parameters_->min_obstacle_vel ||
       parameters_->max_obstacle_vel < std::abs(obj_tangent_vel)) {
@@ -524,7 +540,7 @@ void DynamicObstacleAvoidanceModule::registerRegulatedObjects(
     }
 
     // 1.c. check if object is not crossing ego's path
-    const double obj_angle = calcDiffAngleAgainstPath(input_path.points, obj_pose);
+    const double obj_angle = calcDiffAngleAgainstPath(input_path.points, obj_pose, obj_idx);
     const double max_crossing_object_angle = 0.0 <= obj_tangent_vel
                                                ? parameters_->max_overtaking_crossing_object_angle
                                                : parameters_->max_oncoming_crossing_object_angle;
@@ -544,7 +560,7 @@ void DynamicObstacleAvoidanceModule::registerRegulatedObjects(
     }
 
     // 1.e. check if object lateral offset to ego's path is small enough
-    const double obj_dist_to_path = calcDistanceToPath(input_path.points, obj_pose.position);
+    const double obj_dist_to_path = calcDistanceToPath(input_points, obj_pose.position, obj_idx);
     const bool is_object_far_from_path = isObjectFarFromPath(predicted_object, obj_dist_to_path);
     if (is_object_far_from_path) {
       RCLCPP_INFO_EXPRESSION(
@@ -582,7 +598,10 @@ void DynamicObstacleAvoidanceModule::registerRegulatedObjects(
 void DynamicObstacleAvoidanceModule::registerUnregulatedObjects(
   const std::vector<DynamicAvoidanceObject> & prev_objects)
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   const auto input_path = getPreviousModuleOutput().path;
+  const auto input_points = toGeometryPoints(input_path.points);  // for efficient computation
   const auto & predicted_objects = planner_data_->dynamic_object->objects;
 
   for (const auto & predicted_object : predicted_objects) {
@@ -596,6 +615,10 @@ void DynamicObstacleAvoidanceModule::registerUnregulatedObjects(
       predicted_object.kinematics.predicted_paths.begin(),
       predicted_object.kinematics.predicted_paths.end(),
       [](const PredictedPath & a, const PredictedPath & b) { return a.confidence < b.confidence; });
+    const size_t obj_seg_idx =
+      autoware::motion_utils::findNearestSegmentIndex(input_points, obj_pose.position);
+    const size_t obj_idx =
+      getNearestIndexFromSegmentIndex(input_points, obj_seg_idx, obj_pose.position);
 
     // 1.a. Check if the obstacle is labeled as pedestrians, bicycle or similar.
     if (getObjectType(predicted_object.classification.front().label) != ObjectType::UNREGULATED) {
@@ -604,7 +627,7 @@ void DynamicObstacleAvoidanceModule::registerUnregulatedObjects(
 
     // 1.b. Check if the object's velocity is within the module's coverage range.
     const auto [obj_tangent_vel, obj_normal_vel] =
-      projectObstacleVelocityToTrajectory(input_path.points, predicted_object);
+      projectObstacleVelocityToTrajectory(input_path.points, predicted_object, obj_idx);
     if (
       obj_vel_norm < parameters_->min_obstacle_vel ||
       obj_vel_norm > parameters_->max_obstacle_vel) {
@@ -626,7 +649,7 @@ void DynamicObstacleAvoidanceModule::registerUnregulatedObjects(
     //  1.f. calculate the object is on ego's path or not
 
     const double dist_obj_center_to_path =
-      std::abs(autoware::motion_utils::calcLateralOffset(input_path.points, obj_pose.position));
+      std::abs(autoware::motion_utils::calcLateralOffset(input_points, obj_pose.position));
     const bool is_object_on_ego_path =
       dist_obj_center_to_path <
       planner_data_->parameters.vehicle_width / 2.0 + parameters_->min_obj_lat_offset_to_ego_path;
@@ -656,7 +679,10 @@ void DynamicObstacleAvoidanceModule::registerUnregulatedObjects(
 void DynamicObstacleAvoidanceModule::determineWhetherToAvoidAgainstRegulatedObjects(
   const std::vector<DynamicAvoidanceObject> & prev_objects)
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   const auto & input_path = getPreviousModuleOutput().path;
+  const auto input_points = toGeometryPoints(input_path.points);  // for efficient computation
 
   for (const auto & object : target_objects_manager_.getValidObjects()) {
     if (getObjectType(object.label) != ObjectType::REGULATED) {
@@ -668,11 +694,15 @@ void DynamicObstacleAvoidanceModule::determineWhetherToAvoidAgainstRegulatedObje
     const auto obj_path = *std::max_element(
       object.predicted_paths.begin(), object.predicted_paths.end(),
       [](const PredictedPath & a, const PredictedPath & b) { return a.confidence < b.confidence; });
+    const size_t obj_seg_idx =
+      autoware::motion_utils::findNearestSegmentIndex(input_points, object.pose.position);
+    const size_t obj_idx =
+      getNearestIndexFromSegmentIndex(input_points, obj_seg_idx, object.pose.position);
 
-    const auto & ref_path_points_for_obj_poly = input_path.points;
+    const auto & ref_points_for_obj_poly = input_points;
 
     // 2.a. check if object is not to be followed by ego
-    const double obj_angle = calcDiffAngleAgainstPath(input_path.points, object.pose);
+    const double obj_angle = calcDiffAngleAgainstPath(input_path.points, object.pose, obj_idx);
     const bool is_object_aligned_to_path =
       std::abs(obj_angle) < parameters_->max_front_object_angle ||
       M_PI - parameters_->max_front_object_angle < std::abs(obj_angle);
@@ -686,9 +716,9 @@ void DynamicObstacleAvoidanceModule::determineWhetherToAvoidAgainstRegulatedObje
     }
 
     // 2.b. calculate which side object exists against ego's path
-    const bool is_object_left = isLeft(input_path.points, object.pose.position);
+    const bool is_object_left = isLeft(input_path.points, object.pose.position, obj_idx);
     const auto lat_lon_offset =
-      getLateralLongitudinalOffset(input_path.points, object.pose, object.shape);
+      getLateralLongitudinalOffset(input_points, object.pose, obj_seg_idx, object.shape);
 
     // 2.c. check if object will not cut in
     const bool will_object_cut_in =
@@ -759,7 +789,10 @@ void DynamicObstacleAvoidanceModule::determineWhetherToAvoidAgainstRegulatedObje
       }
       const auto future_obj_pose =
         object_recognition_utils::calcInterpolatedPose(obj_path, time_to_collision);
-      return future_obj_pose ? isLeft(input_path.points, future_obj_pose->position)
+      const size_t future_obj_idx =
+        autoware::motion_utils::findNearestIndex(input_path.points, future_obj_pose->position);
+
+      return future_obj_pose ? isLeft(input_path.points, future_obj_pose->position, future_obj_idx)
                              : is_object_left;
     }();
 
@@ -790,10 +823,10 @@ void DynamicObstacleAvoidanceModule::determineWhetherToAvoidAgainstRegulatedObje
     // "ego_path_base"
     const auto obj_points = autoware::universe_utils::toPolygon2d(object.pose, object.shape);
     const auto lon_offset_to_avoid = calcMinMaxLongitudinalOffsetToAvoid(
-      ref_path_points_for_obj_poly, object.pose, obj_points, object.vel, obj_path, object.shape,
+      ref_points_for_obj_poly, object.pose, obj_points, object.vel, obj_path, object.shape,
       time_while_collision);
     const auto lat_offset_to_avoid = calcMinMaxLateralOffsetToAvoidRegulatedObject(
-      ref_path_points_for_obj_poly, obj_points, object.pose.position, object.vel, is_collision_left,
+      ref_points_for_obj_poly, obj_points, object.pose.position, object.vel, is_collision_left,
       object.lat_vel, prev_object);
 
     if (!lat_offset_to_avoid) {
@@ -808,7 +841,7 @@ void DynamicObstacleAvoidanceModule::determineWhetherToAvoidAgainstRegulatedObje
     const bool should_be_avoided = true;
     target_objects_manager_.updateObjectVariables(
       obj_uuid, lon_offset_to_avoid, *lat_offset_to_avoid, is_collision_left, should_be_avoided,
-      ref_path_points_for_obj_poly);
+      ref_points_for_obj_poly);
   }
   // prev_input_ref_path_points_ = input_ref_path_points;
 }
@@ -816,23 +849,31 @@ void DynamicObstacleAvoidanceModule::determineWhetherToAvoidAgainstRegulatedObje
 void DynamicObstacleAvoidanceModule::determineWhetherToAvoidAgainstUnregulatedObjects(
   const std::vector<DynamicAvoidanceObject> & prev_objects)
 {
-  const auto & input_path = getPreviousModuleOutput().path;
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
+  const auto & input_path = getPreviousModuleOutput().path;
+  const auto input_points = toGeometryPoints(input_path.points);  // for efficient computation
+
+  const size_t ego_seg_idx = planner_data_->findEgoSegmentIndex(input_path.points);
   for (const auto & object : target_objects_manager_.getValidObjects()) {
     if (getObjectType(object.label) != ObjectType::UNREGULATED) {
       continue;
     }
+    const size_t obj_seg_idx =
+      autoware::motion_utils::findNearestSegmentIndex(input_points, object.pose.position);
 
     const auto obj_uuid = object.uuid;
-    const auto & ref_path_points_for_obj_poly = input_path.points;
+    const auto & ref_points_for_obj_poly = input_points;
 
     // 2.g. check if the ego is not ahead of the object.
+    time_keeper_->start_track("getLateralLongitudinalOffset");
     const auto lat_lon_offset =
-      getLateralLongitudinalOffset(input_path.points, object.pose, object.shape);
+      getLateralLongitudinalOffset(input_points, object.pose, obj_seg_idx, object.shape);
+    time_keeper_->end_track("getLateralLongitudinalOffset");
+
     const double signed_dist_ego_to_obj = [&]() {
-      const size_t ego_seg_idx = planner_data_->findEgoSegmentIndex(input_path.points);
       const double lon_offset_ego_to_obj = autoware::motion_utils::calcSignedArcLength(
-        input_path.points, getEgoPose().position, ego_seg_idx, lat_lon_offset.nearest_idx);
+        input_points, getEgoPose().position, ego_seg_idx, lat_lon_offset.nearest_idx);
       if (0 < lon_offset_ego_to_obj) {
         return std::max(
           0.0, lon_offset_ego_to_obj - planner_data_->parameters.front_overhang +
@@ -854,7 +895,7 @@ void DynamicObstacleAvoidanceModule::determineWhetherToAvoidAgainstUnregulatedOb
     // 2.h. calculate longitudinal and lateral offset to avoid to generate object polygon by
     // "ego_path_base"
     const auto lat_offset_to_avoid = calcMinMaxLateralOffsetToAvoidUnregulatedObject(
-      ref_path_points_for_obj_poly, getObstacleFromUuid(prev_objects, obj_uuid), object);
+      ref_points_for_obj_poly, getObstacleFromUuid(prev_objects, obj_uuid), object);
     if (!lat_offset_to_avoid) {
       RCLCPP_INFO_EXPRESSION(
         getLogger(), parameters_->enable_debug_info,
@@ -870,7 +911,7 @@ void DynamicObstacleAvoidanceModule::determineWhetherToAvoidAgainstUnregulatedOb
     const bool should_be_avoided = true;
     target_objects_manager_.updateObjectVariables(
       obj_uuid, lon_offset_to_avoid, *lat_offset_to_avoid, is_collision_left, should_be_avoided,
-      ref_path_points_for_obj_poly);
+      ref_points_for_obj_poly);
   }
 }
 
@@ -1186,30 +1227,54 @@ DynamicObstacleAvoidanceModule::getAdjacentLanes(
 
 DynamicObstacleAvoidanceModule::LatLonOffset
 DynamicObstacleAvoidanceModule::getLateralLongitudinalOffset(
-  const std::vector<PathPointWithLaneId> & ego_path, const geometry_msgs::msg::Pose & obj_pose,
+  const std::vector<geometry_msgs::msg::Pose> & ego_points,
+  const geometry_msgs::msg::Pose & obj_pose, const size_t obj_seg_idx,
   const autoware_perception_msgs::msg::Shape & obj_shape) const
 {
-  const size_t obj_seg_idx =
-    autoware::motion_utils::findNearestSegmentIndex(ego_path, obj_pose.position);
-  const auto obj_points = autoware::universe_utils::toPolygon2d(obj_pose, obj_shape);
-
   // TODO(murooka) calculation is not so accurate.
   std::vector<double> obj_lat_offset_vec;
   std::vector<double> obj_lon_offset_vec;
-  for (size_t i = 0; i < obj_points.outer().size(); ++i) {
-    const auto geom_obj_point = toGeometryPoint(obj_points.outer().at(i));
-    const size_t obj_point_seg_idx =
-      autoware::motion_utils::findNearestSegmentIndex(ego_path, geom_obj_point);
+  if (obj_shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
+    // NOTE: efficient calculation for the CYLINDER object.
+    const double radius = obj_shape.dimensions.x / 2.0;
 
     // calculate lateral offset
-    const double obj_point_lat_offset =
-      autoware::motion_utils::calcLateralOffset(ego_path, geom_obj_point, obj_point_seg_idx);
-    obj_lat_offset_vec.push_back(obj_point_lat_offset);
+    const double obj_lat_offset =
+      autoware::motion_utils::calcLateralOffset(ego_points, obj_pose.position, obj_seg_idx);
+    double obj_max_lat_offset = obj_lat_offset + radius;
+    if (obj_max_lat_offset * obj_lat_offset < 0) {
+      obj_max_lat_offset = 0.0;
+    }
+    double obj_min_lat_offset = obj_lat_offset - radius;
+    if (obj_min_lat_offset * obj_lat_offset < 0) {
+      obj_min_lat_offset = 0.0;
+    }
+
+    obj_lat_offset_vec.push_back(obj_max_lat_offset);
+    obj_lat_offset_vec.push_back(obj_min_lat_offset);
 
     // calculate longitudinal offset
-    const double lon_offset = autoware::motion_utils::calcLongitudinalOffsetToSegment(
-      ego_path, obj_seg_idx, geom_obj_point);
-    obj_lon_offset_vec.push_back(lon_offset);
+    const double obj_lon_offset = autoware::motion_utils::calcLongitudinalOffsetToSegment(
+      ego_points, obj_seg_idx, obj_pose.position);
+    obj_lon_offset_vec.push_back(obj_lon_offset - radius);
+    obj_lon_offset_vec.push_back(obj_lon_offset + radius);
+  } else {
+    const auto obj_points = autoware::universe_utils::toPolygon2d(obj_pose, obj_shape);
+    for (size_t i = 0; i < obj_points.outer().size(); ++i) {
+      const auto geom_obj_point = toGeometryPoint(obj_points.outer().at(i));
+      const size_t obj_point_seg_idx =
+        autoware::motion_utils::findNearestSegmentIndex(ego_points, geom_obj_point);
+
+      // calculate lateral offset
+      const double obj_point_lat_offset =
+        autoware::motion_utils::calcLateralOffset(ego_points, geom_obj_point, obj_point_seg_idx);
+      obj_lat_offset_vec.push_back(obj_point_lat_offset);
+
+      // calculate longitudinal offset
+      const double lon_offset = autoware::motion_utils::calcLongitudinalOffsetToSegment(
+        ego_points, obj_seg_idx, geom_obj_point);
+      obj_lon_offset_vec.push_back(lon_offset);
+    }
   }
 
   const auto obj_lat_min_max_offset = getMinMaxValues(obj_lat_offset_vec);
@@ -1221,13 +1286,13 @@ DynamicObstacleAvoidanceModule::getLateralLongitudinalOffset(
 }
 
 MinMaxValue DynamicObstacleAvoidanceModule::calcMinMaxLongitudinalOffsetToAvoid(
-  const std::vector<PathPointWithLaneId> & ref_path_points_for_obj_poly,
+  const std::vector<geometry_msgs::msg::Pose> & ref_points_for_obj_poly,
   const geometry_msgs::msg::Pose & obj_pose, const Polygon2d & obj_points, const double obj_vel,
   const PredictedPath & obj_path, const autoware_perception_msgs::msg::Shape & obj_shape,
   const TimeWhileCollision & time_while_collision) const
 {
-  const size_t obj_seg_idx = autoware::motion_utils::findNearestSegmentIndex(
-    ref_path_points_for_obj_poly, obj_pose.position);
+  const size_t obj_seg_idx =
+    autoware::motion_utils::findNearestSegmentIndex(ref_points_for_obj_poly, obj_pose.position);
 
   // calculate min/max longitudinal offset from object to path
   const auto obj_lon_offset = [&]() {
@@ -1235,7 +1300,7 @@ MinMaxValue DynamicObstacleAvoidanceModule::calcMinMaxLongitudinalOffsetToAvoid(
     for (size_t i = 0; i < obj_points.outer().size(); ++i) {
       const auto geom_obj_point = toGeometryPoint(obj_points.outer().at(i));
       const double lon_offset = autoware::motion_utils::calcLongitudinalOffsetToSegment(
-        ref_path_points_for_obj_poly, obj_seg_idx, geom_obj_point);
+        ref_points_for_obj_poly, obj_seg_idx, geom_obj_point);
       obj_lon_offset_vec.push_back(lon_offset);
     }
 
@@ -1388,22 +1453,21 @@ double DynamicObstacleAvoidanceModule::calcValidLengthToAvoid(
 // min value denotes near side, max value denotes far side
 std::optional<MinMaxValue>
 DynamicObstacleAvoidanceModule::calcMinMaxLateralOffsetToAvoidRegulatedObject(
-  const std::vector<PathPointWithLaneId> & ref_path_points_for_obj_poly,
+  const std::vector<geometry_msgs::msg::Pose> & ref_points_for_obj_poly,
   const Polygon2d & obj_points, const geometry_msgs::msg::Point & obj_pos, const double obj_vel,
   const bool is_collision_left, const double obj_normal_vel,
   const std::optional<DynamicAvoidanceObject> & prev_object) const
 {
   const bool enable_lowpass_filter = [&]() {
     if (
-      !prev_object || prev_object->ref_path_points_for_obj_poly.size() < 2 ||
-      ref_path_points_for_obj_poly.size() < 2) {
+      !prev_object || prev_object->ref_points_for_obj_poly.size() < 2 ||
+      ref_points_for_obj_poly.size() < 2) {
       return true;
     }
     const size_t obj_point_idx =
-      autoware::motion_utils::findNearestIndex(ref_path_points_for_obj_poly, obj_pos);
+      autoware::motion_utils::findNearestIndex(ref_points_for_obj_poly, obj_pos);
     const double paths_lat_diff = std::abs(autoware::motion_utils::calcLateralOffset(
-      prev_object->ref_path_points_for_obj_poly,
-      ref_path_points_for_obj_poly.at(obj_point_idx).point.pose.position));
+      prev_object->ref_points_for_obj_poly, ref_points_for_obj_poly.at(obj_point_idx).position));
 
     constexpr double min_paths_lat_diff = 0.3;
     if (paths_lat_diff < min_paths_lat_diff) {
@@ -1419,10 +1483,10 @@ DynamicObstacleAvoidanceModule::calcMinMaxLateralOffsetToAvoidRegulatedObject(
     std::vector<double> obj_lat_abs_offset_vec;
     for (size_t i = 0; i < obj_points.outer().size(); ++i) {
       const auto geom_obj_point = toGeometryPoint(obj_points.outer().at(i));
-      const size_t obj_point_seg_idx = autoware::motion_utils::findNearestSegmentIndex(
-        ref_path_points_for_obj_poly, geom_obj_point);
+      const size_t obj_point_seg_idx =
+        autoware::motion_utils::findNearestSegmentIndex(ref_points_for_obj_poly, geom_obj_point);
       const double obj_point_lat_offset = autoware::motion_utils::calcLateralOffset(
-        ref_path_points_for_obj_poly, geom_obj_point, obj_point_seg_idx);
+        ref_points_for_obj_poly, geom_obj_point, obj_point_seg_idx);
       obj_lat_abs_offset_vec.push_back(obj_point_lat_offset);
     }
     return getMinMaxValues(obj_lat_abs_offset_vec);
@@ -1483,21 +1547,28 @@ DynamicObstacleAvoidanceModule::calcMinMaxLateralOffsetToAvoidRegulatedObject(
 // min value denotes near side, max value denotes far side
 std::optional<MinMaxValue>
 DynamicObstacleAvoidanceModule::calcMinMaxLateralOffsetToAvoidUnregulatedObject(
-  const std::vector<PathPointWithLaneId> & ref_path_points_for_obj_poly,
+  const std::vector<geometry_msgs::msg::Pose> & ref_points_for_obj_poly,
   const std::optional<DynamicAvoidanceObject> & prev_object,
   const DynamicAvoidanceObject & object) const
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
+  time_keeper_->start_track("findNearestSegmentIndex of object position");
+  const size_t obj_seg_idx =
+    autoware::motion_utils::findNearestSegmentIndex(ref_points_for_obj_poly, object.pose.position);
+  time_keeper_->end_track("findNearestSegmentIndex of object position");
+  const size_t obj_point_idx =
+    getNearestIndexFromSegmentIndex(ref_points_for_obj_poly, obj_seg_idx, object.pose.position);
+
   const bool enable_lowpass_filter = [&]() {
+    universe_utils::ScopedTimeTrack st("calc enable_lowpass_filter", *time_keeper_);
     if (
-      !prev_object || prev_object->ref_path_points_for_obj_poly.size() < 2 ||
-      ref_path_points_for_obj_poly.size() < 2) {
+      !prev_object || prev_object->ref_points_for_obj_poly.size() < 2 ||
+      ref_points_for_obj_poly.size() < 2) {
       return true;
     }
-    const size_t obj_point_idx =
-      autoware::motion_utils::findNearestIndex(ref_path_points_for_obj_poly, object.pose.position);
     const double paths_lat_diff = std::abs(autoware::motion_utils::calcLateralOffset(
-      prev_object->ref_path_points_for_obj_poly,
-      ref_path_points_for_obj_poly.at(obj_point_idx).point.pose.position));
+      prev_object->ref_points_for_obj_poly, ref_points_for_obj_poly.at(obj_point_idx).position));
 
     constexpr double min_paths_lat_diff = 0.3;
     if (paths_lat_diff < min_paths_lat_diff) {
@@ -1509,15 +1580,33 @@ DynamicObstacleAvoidanceModule::calcMinMaxLateralOffsetToAvoidUnregulatedObject(
   }();
 
   const auto obj_occupancy_region = [&]() {
-    const auto obj_points = autoware::universe_utils::toPolygon2d(object.pose, object.shape);
+    universe_utils::ScopedTimeTrack st("calc obj_occupancy_region", *time_keeper_);
     std::vector<double> lat_pos_vec;
-    for (size_t i = 0; i < obj_points.outer().size(); ++i) {
-      const auto geom_obj_point = toGeometryPoint(obj_points.outer().at(i));
-      const double obj_point_lat_offset = autoware::motion_utils::calcLateralOffset(
-        ref_path_points_for_obj_poly, geom_obj_point,
-        autoware::motion_utils::findNearestSegmentIndex(
-          ref_path_points_for_obj_poly, geom_obj_point));
-      lat_pos_vec.push_back(obj_point_lat_offset);
+    if (object.shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
+      // NOTE: efficient calculation for the CYLINDER object.
+      const double radius = object.shape.dimensions.x / 2.0;
+
+      const double obj_lat_offset = autoware::motion_utils::calcLateralOffset(
+        ref_points_for_obj_poly, object.pose.position, obj_seg_idx);
+      const double obj_min_lat_offset = [&]() {
+        if (std::abs(obj_lat_offset) < radius) {
+          return 0.0;
+        }
+        if (0.0 < obj_lat_offset) {
+          return obj_lat_offset - radius;
+        }
+        return obj_lat_offset + radius;
+      }();
+      lat_pos_vec.push_back(obj_min_lat_offset);
+    } else {
+      const auto obj_points = autoware::universe_utils::toPolygon2d(object.pose, object.shape);
+      for (size_t i = 0; i < obj_points.outer().size(); ++i) {
+        const auto geom_obj_point = toGeometryPoint(obj_points.outer().at(i));
+        const double obj_point_lat_offset = autoware::motion_utils::calcLateralOffset(
+          ref_points_for_obj_poly, geom_obj_point,
+          autoware::motion_utils::findNearestSegmentIndex(ref_points_for_obj_poly, geom_obj_point));
+        lat_pos_vec.push_back(obj_point_lat_offset);
+      }
     }
     const auto current_pos_area = getMinMaxValues(lat_pos_vec);
     return combineMinMaxValues(current_pos_area, current_pos_area + object.lat_vel * 3.0);
@@ -1574,19 +1663,19 @@ DynamicObstacleAvoidanceModule::calcEgoPathBasedDynamicObstaclePolygon(
     return std::nullopt;
   }
 
-  auto ref_path_points_for_obj_poly = object.ref_path_points_for_obj_poly;
+  auto ref_points_for_obj_poly = object.ref_points_for_obj_poly;
 
-  const size_t obj_seg_idx = autoware::motion_utils::findNearestSegmentIndex(
-    ref_path_points_for_obj_poly, object.pose.position);
+  const size_t obj_seg_idx =
+    autoware::motion_utils::findNearestSegmentIndex(ref_points_for_obj_poly, object.pose.position);
   // const auto obj_points = autoware::universe_utils::toPolygon2d(object.pose, object.shape);
 
   const auto lon_bound_start_idx_opt = autoware::motion_utils::insertTargetPoint(
-    obj_seg_idx, object.lon_offset_to_avoid->min_value, ref_path_points_for_obj_poly);
+    obj_seg_idx, object.lon_offset_to_avoid->min_value, ref_points_for_obj_poly);
   const size_t updated_obj_seg_idx =
     (lon_bound_start_idx_opt && lon_bound_start_idx_opt.value() <= obj_seg_idx) ? obj_seg_idx + 1
                                                                                 : obj_seg_idx;
   const auto lon_bound_end_idx_opt = autoware::motion_utils::insertTargetPoint(
-    updated_obj_seg_idx, object.lon_offset_to_avoid->max_value, ref_path_points_for_obj_poly);
+    updated_obj_seg_idx, object.lon_offset_to_avoid->max_value, ref_points_for_obj_poly);
 
   if (!lon_bound_start_idx_opt && !lon_bound_end_idx_opt) {
     // NOTE: The obstacle is longitudinally out of the ego's trajectory.
@@ -1596,15 +1685,14 @@ DynamicObstacleAvoidanceModule::calcEgoPathBasedDynamicObstaclePolygon(
     lon_bound_start_idx_opt ? lon_bound_start_idx_opt.value() : static_cast<size_t>(0);
   const size_t lon_bound_end_idx = lon_bound_end_idx_opt
                                      ? lon_bound_end_idx_opt.value()
-                                     : static_cast<size_t>(ref_path_points_for_obj_poly.size() - 1);
+                                     : static_cast<size_t>(ref_points_for_obj_poly.size() - 1);
 
   // create inner bound points
   std::vector<geometry_msgs::msg::Pose> obj_inner_bound_poses;
   for (size_t i = lon_bound_start_idx; i <= lon_bound_end_idx; ++i) {
     // NOTE: object.lat_offset_to_avoid->min_value is not the minimum value but the inner value.
     obj_inner_bound_poses.push_back(autoware::universe_utils::calcOffsetPose(
-      ref_path_points_for_obj_poly.at(i).point.pose, 0.0, object.lat_offset_to_avoid->min_value,
-      0.0));
+      ref_points_for_obj_poly.at(i), 0.0, object.lat_offset_to_avoid->min_value, 0.0));
   }
 
   // calculate start index laterally feasible for ego to shift considering maximum lateral jerk and
@@ -1797,9 +1885,6 @@ DynamicObstacleAvoidanceModule::EgoPathReservePoly
 DynamicObstacleAvoidanceModule::calcEgoPathReservePoly(const PathWithLaneId & ego_path) const
 {
   // This function require almost 0.5 ms. Should be refactored in the future
-  // double calculation_time;
-  // stop_watch_.tic(std::string(__func__));
-
   namespace strategy = boost::geometry::strategy::buffer;
 
   assert(!ego_path.points.empty());
@@ -1861,10 +1946,6 @@ DynamicObstacleAvoidanceModule::calcEgoPathReservePoly(const PathWithLaneId & eg
     strategy::distance_asymmetric<double>(reserve_width_obj_side, vehicle_half_width),
     strategy::distance_asymmetric<double>(0.0, vehicle_half_width),
     motion_saturated_outer_paths.left_path);
-
-  // calculation_time = stop_watch_.toc(std::string(__func__));
-  // RCLCPP_INFO_STREAM_EXPRESSION(
-  //   getLogger(), parameters_->enable_debug_info, __func__ << ":=" << calculation_time << "[ms]");
 
   return {left_avoid_poly, right_avoid_poly};
 }
