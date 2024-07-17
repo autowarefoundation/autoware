@@ -46,7 +46,7 @@ ros2 bag play <rosbag_file> --clock
 
 ## Parameters
 
-{{ json_to_markdown("vehicle/steer_offset_estimator/schema/steer_offset_estimator.schema.json") }}
+{{ json_to_markdown("vehicle/autoware_steer_offset_estimator/schema/steer_offset_estimator.schema.json") }}
 
 ## Diagnostics
 
