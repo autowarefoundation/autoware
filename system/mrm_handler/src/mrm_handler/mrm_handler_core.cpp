@@ -82,28 +82,29 @@ void MrmHandler::onOperationModeAvailability(
   const tier4_system_msgs::msg::OperationModeAvailability::ConstSharedPtr msg)
 {
   stamp_operation_mode_availability_ = this->now();
+  operation_mode_availability_ = msg;
+  const bool skip_emergency_holding_check =
+    !param_.use_emergency_holding || is_emergency_holding_ || !isOperationModeAutonomous();
 
-  if (!param_.use_emergency_holding) {
-    operation_mode_availability_ = msg;
+  if (skip_emergency_holding_check) {
     return;
   }
 
-  if (!is_emergency_holding_) {
-    if (msg->autonomous) {
-      stamp_autonomous_become_unavailable_.reset();
-    } else {
-      if (!stamp_autonomous_become_unavailable_.has_value()) {
-        stamp_autonomous_become_unavailable_.emplace(this->now());
-      } else {
-        const auto emergency_duration =
-          (this->now() - stamp_autonomous_become_unavailable_.value()).seconds();
-        if (emergency_duration > param_.timeout_emergency_recovery) {
-          is_emergency_holding_ = true;
-        }
-      }
-    }
+  if (msg->autonomous) {
+    stamp_autonomous_become_unavailable_.reset();
+    return;
   }
-  operation_mode_availability_ = msg;
+
+  // If no timestamp is available, the ego autonomous mode just became unavailable and the current
+  // time is recorded.
+  stamp_autonomous_become_unavailable_ = (!stamp_autonomous_become_unavailable_.has_value())
+                                           ? this->now()
+                                           : stamp_autonomous_become_unavailable_;
+
+  // Check if autonomous mode unavailable time is larger than timeout threshold.
+  const auto emergency_duration =
+    (this->now() - stamp_autonomous_become_unavailable_.value()).seconds();
+  is_emergency_holding_ = (emergency_duration > param_.timeout_emergency_recovery);
 }
 
 void MrmHandler::publishHazardCmd()
