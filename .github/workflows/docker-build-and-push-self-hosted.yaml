@@ -49,6 +49,19 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            *.env
+            *.repos
+            .github/actions/docker-build-and-push/action.yaml
+            .github/workflows/docker-build-and-push*.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker/**
+
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
