@@ -330,12 +330,12 @@ void SSP::maximizeLinearAssignment(
 
 #ifndef NDEBUG
     // Check if the potentials are feasible potentials
-    for (int v = 0; v < n_nodes; ++v) {
-      for (auto it_incident_edge = adjacency_list.at(v).cbegin();
-           it_incident_edge != adjacency_list.at(v).cend(); ++it_incident_edge) {
+    for (int j = 0; j < n_nodes; ++j) {
+      for (auto it_incident_edge = adjacency_list.at(j).cbegin();
+           it_incident_edge != adjacency_list.at(j).cend(); ++it_incident_edge) {
         if (it_incident_edge->capacity > 0) {
           double reduced_cost =
-            it_incident_edge->cost + potentials.at(v) - potentials.at(it_incident_edge->dst);
+            it_incident_edge->cost + potentials.at(j) - potentials.at(it_incident_edge->dst);
           assert(reduced_cost >= 0);
         }
       }
