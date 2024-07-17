@@ -50,6 +50,9 @@ jobs:
         uses: ./.github/actions/free-disk-space
 
       - name: Build 'Autoware'
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: ./.github/actions/docker-build-and-push
         with:
           name: ${{ matrix.name }}
