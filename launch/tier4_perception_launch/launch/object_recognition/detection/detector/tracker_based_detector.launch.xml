@@ -3,8 +3,8 @@
   <arg name="output/objects"/>
   <!-- DetectionByTracker -->
   <group>
-    <push-ros-namespace namespace="detection_by_tracker"/>
-    <include file="$(find-pkg-share detection_by_tracker)/launch/detection_by_tracker.launch.xml">
+    <push-ros-namespace namespace="autoware_detection_by_tracker"/>
+    <include file="$(find-pkg-share autoware_detection_by_tracker)/launch/detection_by_tracker.launch.xml">
       <arg name="detection_by_tracker_param_path" value="$(var object_recognition_detection_detection_by_tracker_param)"/>
       <arg name="output" value="$(var output/objects)"/>
     </include>

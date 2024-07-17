@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(detection_by_tracker)
+project(autoware_detection_by_tracker)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()

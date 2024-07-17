@@ -1,16 +1,16 @@
-# detection_by_tracker
+# autoware_detection_by_tracker
 
 ## Purpose
 
 This package feeds back the tracked objects to the detection module to keep it stable and keep detecting objects.
 ![purpose](image/purpose.svg)
 
-The detection by tracker takes as input an unknown object containing a cluster of points and a tracker.
+The autoware detection by tracker takes as input an unknown object containing a cluster of points and a tracker.
 The unknown object is optimized to fit the size of the tracker so that it can continue to be detected.
 
 ## Inner-workings / Algorithms
 
-The detection by tracker receives an unknown object containing a point cloud and a tracker, where the unknown object is mainly shape-fitted using euclidean clustering.
+The autoware detection by tracker receives an unknown object containing a point cloud and a tracker, where the unknown object is mainly shape-fitted using euclidean clustering.
 Shape fitting using euclidean clustering and other methods has a problem called under segmentation and over segmentation.
 
 [![segmentation_fail](image/segmentation_fail.png)](https://www.researchgate.net/figure/Examples-of-an-undersegmentation-error-top-and-an-oversegmentation-error-bottom-Each_fig1_304533062)

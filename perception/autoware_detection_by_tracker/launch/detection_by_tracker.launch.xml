@@ -3,8 +3,8 @@
   <arg name="input/tracked_objects" default="/perception/object_recognition/tracking/objects"/>
   <arg name="input/initial_objects" default="/perception/object_recognition/detection/clustering/objects_with_feature"/>
   <arg name="output" default="objects"/>
-  <arg name="detection_by_tracker_param_path" default="$(find-pkg-share detection_by_tracker)/config/detection_by_tracker.param.yaml"/>
-  <node pkg="detection_by_tracker" exec="detection_by_tracker_node" name="detection_by_tracker_node" output="screen">
+  <arg name="detection_by_tracker_param_path" default="$(find-pkg-share autoware_detection_by_tracker)/config/detection_by_tracker.param.yaml"/>
+  <node pkg="autoware_detection_by_tracker" exec="detection_by_tracker_node" name="detection_by_tracker_node" output="screen">
     <remap from="~/input/tracked_objects" to="$(var input/tracked_objects)"/>
     <remap from="~/input/initial_objects" to="$(var input/initial_objects)"/>
     <remap from="~/output" to="$(var output)"/>
