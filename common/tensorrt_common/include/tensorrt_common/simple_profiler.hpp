@@ -58,7 +58,7 @@ public:
 
   void setProfDict(nvinfer1::ILayer * layer) noexcept;
 
-  friend std::ostream & operator<<(std::ostream & out, SimpleProfiler & value);
+  friend std::ostream & operator<<(std::ostream & out, const SimpleProfiler & value);
 
 private:
   std::string m_name;

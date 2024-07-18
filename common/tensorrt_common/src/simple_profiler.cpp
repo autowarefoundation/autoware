@@ -78,7 +78,7 @@ void SimpleProfiler::setProfDict(nvinfer1::ILayer * layer) noexcept
   }
 }
 
-std::ostream & operator<<(std::ostream & out, SimpleProfiler & value)
+std::ostream & operator<<(std::ostream & out, const SimpleProfiler & value)
 {
   out << "========== " << value.m_name << " profile ==========" << std::endl;
   float totalTime = 0;
