@@ -20,10 +20,6 @@ inputs:
   tag-suffix:
     description: ""
     required: false
-  allow-push:
-    description: ""
-    default: "true"
-    required: false
 
 runs:
   using: composite
@@ -140,7 +136,6 @@ runs:
           suffix=-devel${{ inputs.tag-suffix }}
 
     - name: Docker meta for runtime
-      if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_type == 'tag') }}
       id: meta-runtime
       uses: docker/metadata-action@v5
       with:
@@ -148,11 +143,10 @@ runs:
         tags: ${{ steps.set-docker-tags.outputs.tags }}
         bake-target: docker-metadata-action-runtime
         flavor: |
-          latest=${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+          latest=auto
           suffix=-runtime${{ inputs.tag-suffix }}
 
     - name: Login to GitHub Container Registry
-      if: ${{ github.event_name != 'pull_request' }}
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
@@ -160,28 +154,9 @@ runs:
         password: ${{ github.token }}
 
     - name: Build and Push to GitHub Container Registry
-      if: ${{ github.event_name == 'push' ||
-        github.event_name == 'schedule' ||
-        (github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'registry') }}
       uses: docker/bake-action@v5
       with:
-        push: ${{ inputs.allow-push == 'true' }}
-        files: |
-          docker/docker-bake.hcl
-          ${{ steps.meta-base.outputs.bake-file }}
-          ${{ steps.meta-autoware-core.outputs.bake-file }}
-          ${{ steps.meta-autoware-universe.outputs.bake-file }}
-          ${{ steps.meta-devel.outputs.bake-file }}
-          ${{ steps.meta-runtime.outputs.bake-file }}
-        provenance: false
-        set: |
-          ${{ inputs.build-args }}
-
-    - name: Build only
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.artifacts-destination == 'tarball' }}
-      uses: docker/bake-action@v5
-      with:
-        push: false
+        push: true
         files: |
           docker/docker-bake.hcl
           ${{ steps.meta-base.outputs.bake-file }}
