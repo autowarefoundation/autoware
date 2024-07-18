@@ -1017,7 +1017,6 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
   std::unordered_set<std::string> predicted_crosswalk_users_ids;
 
   for (const auto & object : in_objects->objects) {
-    std::string object_id = autoware::universe_utils::toHexString(object.object_id);
     TrackedObject transformed_object = object;
 
     // transform object frame if it's based on map frame
