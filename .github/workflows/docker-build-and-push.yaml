@@ -2,19 +2,10 @@ name: docker-build-and-push
 
 on:
   push:
+    branches:
+      - main
     tags:
-      - openadkit-v*.*.*
-  schedule:
-    - cron: 0 0 1,15 * *
   workflow_dispatch:
-    inputs:
-      artifacts-destination:
-        type: choice
-        description: Destination for the artifacts
-        options:
-          - registry
-          - tarball
-        default: tarball
 
 jobs:
   load-env:
@@ -53,7 +44,23 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            *.env
+            *.repos
+            .github/actions/docker-build-and-push/action.yaml
+            .github/workflows/docker-build-and-push*.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker/**
+
       - name: Build 'Autoware'
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: ./.github/actions/docker-build-and-push
         with:
           name: ${{ matrix.name }}
@@ -70,7 +77,6 @@ jobs:
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.ref_name }},mode=max
           tag-suffix: ${{ matrix.additional-tag-suffix }}-${{ matrix.platform }}
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
-          allow-push: true
 
       - name: Show disk space
         run: |
