@@ -245,7 +245,7 @@ void ScanGroundFilterComponent::initializeFirstGndGrids(
 }
 
 void ScanGroundFilterComponent::checkContinuousGndGrid(
-  PointData & p, pcl::PointXYZ & p_orig_point, const std::vector<GridCenter> & gnd_grids_list)
+  PointData & p, const pcl::PointXYZ & p_orig_point, const std::vector<GridCenter> & gnd_grids_list)
 {
   float next_gnd_z = 0.0f;
   float curr_gnd_slope_ratio = 0.0f;
@@ -287,7 +287,7 @@ void ScanGroundFilterComponent::checkContinuousGndGrid(
 }
 
 void ScanGroundFilterComponent::checkDiscontinuousGndGrid(
-  PointData & p, pcl::PointXYZ & p_orig_point, const std::vector<GridCenter> & gnd_grids_list)
+  PointData & p, const pcl::PointXYZ & p_orig_point, const std::vector<GridCenter> & gnd_grids_list)
 {
   float tmp_delta_max_z = p_orig_point.z - gnd_grids_list.back().max_height;
   float tmp_delta_avg_z = p_orig_point.z - gnd_grids_list.back().avg_height;
@@ -305,7 +305,7 @@ void ScanGroundFilterComponent::checkDiscontinuousGndGrid(
 }
 
 void ScanGroundFilterComponent::checkBreakGndGrid(
-  PointData & p, pcl::PointXYZ & p_orig_point, const std::vector<GridCenter> & gnd_grids_list)
+  PointData & p, const pcl::PointXYZ & p_orig_point, const std::vector<GridCenter> & gnd_grids_list)
 {
   float tmp_delta_avg_z = p_orig_point.z - gnd_grids_list.back().avg_height;
   float tmp_delta_radius = p.radius - gnd_grids_list.back().radius;

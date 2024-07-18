@@ -259,7 +259,8 @@ void RayGroundFilterComponent::ClassifyPointCloud(
 // }
 
 void RayGroundFilterComponent::initializePointCloud2(
-  const PointCloud2::ConstSharedPtr & in_cloud_ptr, PointCloud2::SharedPtr & out_cloud_msg_ptr)
+  const PointCloud2::ConstSharedPtr & in_cloud_ptr,
+  const PointCloud2::SharedPtr & out_cloud_msg_ptr)
 {
   out_cloud_msg_ptr->header = in_cloud_ptr->header;
   out_cloud_msg_ptr->height = in_cloud_ptr->height;
@@ -271,7 +272,7 @@ void RayGroundFilterComponent::initializePointCloud2(
 }
 
 void RayGroundFilterComponent::ExtractPointsIndices(
-  const PointCloud2::ConstSharedPtr in_cloud_ptr, pcl::PointIndices & in_indices,
+  const PointCloud2::ConstSharedPtr in_cloud_ptr, const pcl::PointIndices & in_indices,
   PointCloud2::SharedPtr ground_cloud_msg_ptr, PointCloud2::SharedPtr no_ground_cloud_msg_ptr)
 {
   initializePointCloud2(in_cloud_ptr, ground_cloud_msg_ptr);

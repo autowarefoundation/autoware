@@ -240,11 +240,14 @@ private:
     const float h, const float r, const uint16_t id, std::vector<GridCenter> & gnd_grids);
 
   void checkContinuousGndGrid(
-    PointData & p, pcl::PointXYZ & p_orig_point, const std::vector<GridCenter> & gnd_grids_list);
+    PointData & p, const pcl::PointXYZ & p_orig_point,
+    const std::vector<GridCenter> & gnd_grids_list);
   void checkDiscontinuousGndGrid(
-    PointData & p, pcl::PointXYZ & p_orig_point, const std::vector<GridCenter> & gnd_grids_list);
+    PointData & p, const pcl::PointXYZ & p_orig_point,
+    const std::vector<GridCenter> & gnd_grids_list);
   void checkBreakGndGrid(
-    PointData & p, pcl::PointXYZ & p_orig_point, const std::vector<GridCenter> & gnd_grids_list);
+    PointData & p, const pcl::PointXYZ & p_orig_point,
+    const std::vector<GridCenter> & gnd_grids_list);
   void classifyPointCloud(
     const PointCloud2ConstPtr & in_cloud_ptr,
     std::vector<PointCloudVector> & in_radial_ordered_clouds,

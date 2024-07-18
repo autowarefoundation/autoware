@@ -185,7 +185,7 @@ private:
    * @param out_removed_indices_cloud_ptr Resulting PointCloud with the indices removed
    */
   void ExtractPointsIndices(
-    const PointCloud2::ConstSharedPtr in_cloud_ptr, pcl::PointIndices & in_indices,
+    const PointCloud2::ConstSharedPtr in_cloud_ptr, const pcl::PointIndices & in_indices,
     PointCloud2::SharedPtr out_only_indices_cloud_ptr,
     PointCloud2::SharedPtr out_removed_indices_cloud_ptr);
 
@@ -194,7 +194,8 @@ private:
   void setVehicleFootprint(
     const double min_x, const double max_x, const double min_y, const double max_y);
   void initializePointCloud2(
-    const PointCloud2::ConstSharedPtr & in_cloud_ptr, PointCloud2::SharedPtr & out_cloud_msg_ptr);
+    const PointCloud2::ConstSharedPtr & in_cloud_ptr,
+    const PointCloud2::SharedPtr & out_cloud_msg_ptr);
   /** \brief Parameter service callback result : needed to be hold */
   OnSetParametersCallbackHandle::SharedPtr set_param_res_;
 
