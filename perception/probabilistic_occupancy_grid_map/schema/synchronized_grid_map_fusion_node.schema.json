@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Synchronized Grid Map Fusion Node",
+  "type": "object",
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "type": "object",
+          "properties": {
+            "fusion_input_ogm_topics": {
+              "type": "array",
+              "description": "List of fusion input occupancy grid map topics.",
+              "items": {
+                "type": "string"
+              },
+              "default": ["topic1", "topic2"]
+            },
+            "input_ogm_reliabilities": {
+              "type": "array",
+              "description": "Reliability of each sensor for fusion.",
+              "items": {
+                "type": "number",
+                "minimum": 0.0,
+                "maximum": 1.0
+              },
+              "default": [0.8, 0.2]
+            },
+            "fusion_method": {
+              "type": "string",
+              "description": "Method for occupancy grid map fusion.",
+              "enum": ["overwrite", "log-odds", "dempster-shafer"],
+              "default": "overwrite"
+            },
+            "match_threshold_sec": {
+              "type": "number",
+              "description": "Time threshold for matching in seconds.",
+              "default": 0.01
+            },
+            "timeout_sec": {
+              "type": "number",
+              "description": "Timeout for synchronization in seconds.",
+              "default": 0.1
+            },
+            "input_offset_sec": {
+              "type": "array",
+              "description": "Offset for each input in seconds.",
+              "items": {
+                "type": "number"
+              },
+              "default": [0.0, 0.0]
+            },
+            "map_frame_": {
+              "type": "string",
+              "description": "The frame ID of the map.",
+              "default": "map"
+            },
+            "base_link_frame_": {
+              "type": "string",
+              "description": "The frame ID of the base link.",
+              "default": "base_link"
+            },
+            "grid_map_origin_frame_": {
+              "type": "string",
+              "description": "The frame ID of the grid map origin.",
+              "default": "base_link"
+            },
+            "fusion_map_length_x": {
+              "type": "number",
+              "description": "The length of the fusion map in the x direction.",
+              "default": 100.0
+            },
+            "fusion_map_length_y": {
+              "type": "number",
+              "description": "The length of the fusion map in the y direction.",
+              "default": 100.0
+            },
+            "fusion_map_resolution": {
+              "type": "number",
+              "description": "The resolution of the fusion map.",
+              "default": 0.5
+            }
+          },
+          "required": [
+            "fusion_input_ogm_topics",
+            "input_ogm_reliabilities",
+            "fusion_method",
+            "match_threshold_sec",
+            "timeout_sec",
+            "input_offset_sec",
+            "map_frame_",
+            "base_link_frame_",
+            "grid_map_origin_frame_",
+            "fusion_map_length_x",
+            "fusion_map_length_y",
+            "fusion_map_resolution"
+          ]
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

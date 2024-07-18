@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Grid Map",
+  "type": "object",
+  "definitions": {
+    "visualization_params": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The type of grid map visualization.",
+          "default": "occupancy_grid"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "layer": {
+              "type": "string",
+              "description": "The layer of the grid map visualization.",
+              "default": "filled_free_to_farthest"
+            },
+            "data_min": {
+              "type": "number",
+              "description": "The minimum data value for the visualization.",
+              "default": 0.0
+            },
+            "data_max": {
+              "type": "number",
+              "description": "The maximum data value for the visualization.",
+              "default": 100.0
+            }
+          },
+          "required": ["layer", "data_min", "data_max"]
+        }
+      },
+      "required": ["type", "params"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "type": "object",
+          "properties": {
+            "grid_map_topic": {
+              "type": "string",
+              "description": "The topic name for the grid map.",
+              "default": "/perception/occupancy_grid_map/occupancy_grid_map_node/debug/grid_map"
+            },
+            "grid_map_visualizations": {
+              "type": "array",
+              "description": "List of grid map visualizations.",
+              "items": {
+                "type": "string"
+              },
+              "default": ["grid_1st_step", "grid_2nd_step", "grid_3rd_step"]
+            },
+            "grid_1st_step": { "$ref": "#/definitions/visualization_params" },
+            "grid_2nd_step": { "$ref": "#/definitions/visualization_params" },
+            "grid_3rd_step": { "$ref": "#/definitions/visualization_params" }
+          },
+          "required": [
+            "grid_map_topic",
+            "grid_map_visualizations",
+            "grid_1st_step",
+            "grid_2nd_step",
+            "grid_3rd_step"
+          ]
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

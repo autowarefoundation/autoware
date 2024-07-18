@@ -1,0 +1,207 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Multi Lidar Pointcloud Based Occupancy Grid Map",
+  "type": "object",
+  "definitions": {
+    "height_filter_params": {
+      "type": "object",
+      "properties": {
+        "use_height_filter": {
+          "type": "boolean",
+          "description": "Flag to use height filter.",
+          "default": true
+        },
+        "min_height": {
+          "type": "number",
+          "description": "Minimum height for the height filter.",
+          "default": -1.0
+        },
+        "max_height": {
+          "type": "number",
+          "description": "Maximum height for the height filter.",
+          "default": 2.0
+        }
+      },
+      "required": ["use_height_filter", "min_height", "max_height"]
+    },
+    "occupancy_grid_map_fixed_blind_spot_params": {
+      "type": "object",
+      "properties": {
+        "distance_margin": {
+          "type": "number",
+          "description": "Distance margin for the fixed blind spot.",
+          "default": 1.0
+        }
+      },
+      "required": ["distance_margin"]
+    },
+    "occupancy_grid_map_projective_blind_spot_params": {
+      "type": "object",
+      "properties": {
+        "projection_dz_threshold": {
+          "type": "number",
+          "description": "Projection dz threshold to avoid null division.",
+          "default": 0.01
+        },
+        "obstacle_separation_threshold": {
+          "type": "number",
+          "description": "Threshold to fill the interval between obstacles with unknown.",
+          "default": 1.0
+        },
+        "pub_debug_grid": {
+          "type": "boolean",
+          "description": "Flag to publish the debug grid.",
+          "default": false
+        }
+      },
+      "required": ["projection_dz_threshold", "obstacle_separation_threshold", "pub_debug_grid"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "type": "object",
+          "properties": {
+            "shared_config": {
+              "type": "object",
+              "properties": {
+                "map_frame": {
+                  "type": "string",
+                  "description": "The frame ID of the map.",
+                  "default": "map"
+                },
+                "base_link_frame": {
+                  "type": "string",
+                  "description": "The frame ID of the base link.",
+                  "default": "base_link"
+                },
+                "gridmap_origin_frame": {
+                  "type": "string",
+                  "description": "The frame ID of the grid map origin.",
+                  "default": "base_link"
+                },
+                "map_resolution": {
+                  "type": "number",
+                  "description": "The resolution of the map.",
+                  "default": 0.5
+                },
+                "map_length_x": {
+                  "type": "number",
+                  "description": "The length of the map in the x direction.",
+                  "default": 150.0
+                },
+                "map_length_y": {
+                  "type": "number",
+                  "description": "The length of the map in the y direction.",
+                  "default": 150.0
+                }
+              },
+              "required": [
+                "map_frame",
+                "base_link_frame",
+                "gridmap_origin_frame",
+                "map_resolution",
+                "map_length_x",
+                "map_length_y"
+              ]
+            },
+            "downsample_input_pointcloud": {
+              "type": "boolean",
+              "description": "Flag to downsample the input pointcloud.",
+              "default": true
+            },
+            "downsample_voxel_size": {
+              "type": "number",
+              "description": "The voxel size for downsampling.",
+              "default": 0.25
+            },
+            "ogm_creation_config": {
+              "type": "object",
+              "properties": {
+                "height_filter": { "$ref": "#/definitions/height_filter_params" },
+                "enable_single_frame_mode": {
+                  "type": "boolean",
+                  "description": "Flag to enable single frame mode.",
+                  "default": true
+                },
+                "filter_obstacle_pointcloud_by_raw_pointcloud": {
+                  "type": "boolean",
+                  "description": "Flag to filter obstacle pointcloud by raw pointcloud.",
+                  "default": false
+                },
+                "grid_map_type": {
+                  "type": "string",
+                  "description": "Type of the grid map.",
+                  "default": "OccupancyGridMapFixedBlindSpot"
+                },
+                "OccupancyGridMapFixedBlindSpot": {
+                  "$ref": "#/definitions/occupancy_grid_map_fixed_blind_spot_params"
+                },
+                "OccupancyGridMapProjectiveBlindSpot": {
+                  "$ref": "#/definitions/occupancy_grid_map_projective_blind_spot_params"
+                }
+              },
+              "required": [
+                "height_filter",
+                "enable_single_frame_mode",
+                "filter_obstacle_pointcloud_by_raw_pointcloud",
+                "grid_map_type"
+              ]
+            },
+            "fusion_config": {
+              "type": "object",
+              "properties": {
+                "raw_pointcloud_topics": {
+                  "type": "array",
+                  "description": "List of raw pointcloud topics.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "fusion_input_ogm_topics": {
+                  "type": "array",
+                  "description": "List of fusion input occupancy grid map topics.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "input_ogm_reliabilities": {
+                  "type": "array",
+                  "description": "Reliability of each sensor for fusion.",
+                  "items": {
+                    "type": "number",
+                    "minimum": 0.0,
+                    "maximum": 1.0
+                  }
+                },
+                "fusion_method": {
+                  "type": "string",
+                  "description": "Method for occupancy grid map fusion.",
+                  "enum": ["overwrite", "log-odds", "dempster-shafer"],
+                  "default": "overwrite"
+                }
+              },
+              "required": [
+                "raw_pointcloud_topics",
+                "fusion_input_ogm_topics",
+                "input_ogm_reliabilities",
+                "fusion_method"
+              ]
+            }
+          },
+          "required": [
+            "shared_config",
+            "downsample_input_pointcloud",
+            "downsample_voxel_size",
+            "ogm_creation_config",
+            "fusion_config"
+          ]
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

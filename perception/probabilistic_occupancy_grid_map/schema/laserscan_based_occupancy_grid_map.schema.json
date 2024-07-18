@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Laserscan Based Occupancy Grid Map",
+  "type": "object",
+  "definitions": {
+    "height_filter_params": {
+      "type": "object",
+      "properties": {
+        "use_height_filter": {
+          "type": "boolean",
+          "description": "Flag to use height filter.",
+          "default": true
+        },
+        "min_height": {
+          "type": "number",
+          "description": "Minimum height for the height filter.",
+          "default": -1.0
+        },
+        "max_height": {
+          "type": "number",
+          "description": "Maximum height for the height filter.",
+          "default": 2.0
+        }
+      },
+      "required": ["use_height_filter", "min_height", "max_height"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "type": "object",
+          "properties": {
+            "map_frame": {
+              "type": "string",
+              "description": "The frame ID of the map.",
+              "default": "map"
+            },
+            "base_link_frame": {
+              "type": "string",
+              "description": "The frame ID of the base link.",
+              "default": "base_link"
+            },
+            "gridmap_origin_frame": {
+              "type": "string",
+              "description": "The frame ID of the grid map origin.",
+              "default": "base_link"
+            },
+            "scan_origin_frame": {
+              "type": "string",
+              "description": "The frame ID of the scan origin.",
+              "default": "base_link"
+            },
+            "height_filter": { "$ref": "#/definitions/height_filter_params" },
+            "enable_single_frame_mode": {
+              "type": "boolean",
+              "description": "Flag to enable single frame mode.",
+              "default": false
+            },
+            "map_length": {
+              "type": "number",
+              "description": "The length of the map.",
+              "default": 150.0
+            },
+            "map_width": {
+              "type": "number",
+              "description": "The width of the map.",
+              "default": 150.0
+            },
+            "map_resolution": {
+              "type": "number",
+              "description": "The resolution of the map.",
+              "default": 0.5
+            }
+          },
+          "required": [
+            "map_frame",
+            "base_link_frame",
+            "gridmap_origin_frame",
+            "scan_origin_frame",
+            "height_filter",
+            "enable_single_frame_mode",
+            "map_length",
+            "map_width",
+            "map_resolution"
+          ]
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

@@ -1,0 +1,150 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Pointcloud Based Occupancy Grid Map",
+  "type": "object",
+  "definitions": {
+    "height_filter_params": {
+      "type": "object",
+      "properties": {
+        "use_height_filter": {
+          "type": "boolean",
+          "description": "Flag to use height filter.",
+          "default": true
+        },
+        "min_height": {
+          "type": "number",
+          "description": "Minimum height for the height filter.",
+          "default": -1.0
+        },
+        "max_height": {
+          "type": "number",
+          "description": "Maximum height for the height filter.",
+          "default": 2.0
+        }
+      },
+      "required": ["use_height_filter", "min_height", "max_height"]
+    },
+    "occupancy_grid_map_fixed_blind_spot_params": {
+      "type": "object",
+      "properties": {
+        "distance_margin": {
+          "type": "number",
+          "description": "Distance margin for the fixed blind spot.",
+          "default": 1.0
+        }
+      },
+      "required": ["distance_margin"]
+    },
+    "occupancy_grid_map_projective_blind_spot_params": {
+      "type": "object",
+      "properties": {
+        "projection_dz_threshold": {
+          "type": "number",
+          "description": "Projection dz threshold to avoid null division.",
+          "default": 0.01
+        },
+        "obstacle_separation_threshold": {
+          "type": "number",
+          "description": "Threshold to fill the interval between obstacles with unknown.",
+          "default": 1.0
+        },
+        "pub_debug_grid": {
+          "type": "boolean",
+          "description": "Flag to publish the debug grid.",
+          "default": false
+        }
+      },
+      "required": ["projection_dz_threshold", "obstacle_separation_threshold", "pub_debug_grid"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "type": "object",
+          "properties": {
+            "map_length": {
+              "type": "number",
+              "description": "The length of the map.",
+              "default": 150.0
+            },
+            "map_resolution": {
+              "type": "number",
+              "description": "The resolution of the map.",
+              "default": 0.5
+            },
+            "height_filter": { "$ref": "#/definitions/height_filter_params" },
+            "downsample_input_pointcloud": {
+              "type": "boolean",
+              "description": "Flag to downsample the input pointcloud.",
+              "default": true
+            },
+            "downsample_voxel_size": {
+              "type": "number",
+              "description": "The voxel size for downsampling.",
+              "default": 0.25
+            },
+            "enable_single_frame_mode": {
+              "type": "boolean",
+              "description": "Flag to enable single frame mode.",
+              "default": false
+            },
+            "filter_obstacle_pointcloud_by_raw_pointcloud": {
+              "type": "boolean",
+              "description": "Flag to filter obstacle pointcloud by raw pointcloud.",
+              "default": false
+            },
+            "map_frame": {
+              "type": "string",
+              "description": "The frame ID of the map.",
+              "default": "map"
+            },
+            "base_link_frame": {
+              "type": "string",
+              "description": "The frame ID of the base link.",
+              "default": "base_link"
+            },
+            "gridmap_origin_frame": {
+              "type": "string",
+              "description": "The frame ID of the grid map origin.",
+              "default": "base_link"
+            },
+            "scan_origin_frame": {
+              "type": "string",
+              "description": "The frame ID of the scan origin.",
+              "default": "base_link"
+            },
+            "grid_map_type": {
+              "type": "string",
+              "description": "Type of the grid map.",
+              "default": "OccupancyGridMapFixedBlindSpot"
+            },
+            "OccupancyGridMapFixedBlindSpot": {
+              "$ref": "#/definitions/occupancy_grid_map_fixed_blind_spot_params"
+            },
+            "OccupancyGridMapProjectiveBlindSpot": {
+              "$ref": "#/definitions/occupancy_grid_map_projective_blind_spot_params"
+            }
+          },
+          "required": [
+            "map_length",
+            "map_resolution",
+            "height_filter",
+            "downsample_input_pointcloud",
+            "downsample_voxel_size",
+            "enable_single_frame_mode",
+            "filter_obstacle_pointcloud_by_raw_pointcloud",
+            "map_frame",
+            "base_link_frame",
+            "gridmap_origin_frame",
+            "scan_origin_frame",
+            "grid_map_type"
+          ]
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

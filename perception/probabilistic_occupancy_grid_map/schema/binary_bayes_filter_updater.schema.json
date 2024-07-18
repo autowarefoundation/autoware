@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Binary Bayes Filter Updater",
+  "type": "object",
+  "definitions": {
+    "binary_bayes_filter_updater": {
+      "type": "object",
+      "properties": {
+        "probability_matrix": {
+          "type": "object",
+          "properties": {
+            "occupied_to_occupied": {
+              "type": "number",
+              "description": "Probability of transitioning from occupied to occupied state.",
+              "default": 0.95
+            },
+            "occupied_to_free": {
+              "type": "number",
+              "description": "Probability of transitioning from occupied to free state.",
+              "default": 0.05
+            },
+            "free_to_occupied": {
+              "type": "number",
+              "description": "Probability of transitioning from free to occupied state.",
+              "default": 0.2
+            },
+            "free_to_free": {
+              "type": "number",
+              "description": "Probability of transitioning from free to free state.",
+              "default": 0.8
+            }
+          },
+          "required": [
+            "occupied_to_occupied",
+            "occupied_to_free",
+            "free_to_occupied",
+            "free_to_free"
+          ]
+        },
+        "v_ratio": {
+          "type": "number",
+          "description": "Ratio of the variance used in the filter.",
+          "default": 0.1
+        }
+      },
+      "required": ["probability_matrix", "v_ratio"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/binary_bayes_filter_updater"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
