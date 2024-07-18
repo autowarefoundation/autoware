@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NDT_SCAN_MATCHER__DIAGNOSTICS_MODULE_HPP_
-#define NDT_SCAN_MATCHER__DIAGNOSTICS_MODULE_HPP_
+#ifndef LOCALIZATION_UTIL__DIAGNOSTICS_MODULE_HPP_
+#define LOCALIZATION_UTIL__DIAGNOSTICS_MODULE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -57,4 +57,4 @@ void DiagnosticsModule::add_key_value(const std::string & key, const std::string
 template <>
 void DiagnosticsModule::add_key_value(const std::string & key, const bool & value);
 
-#endif  // NDT_SCAN_MATCHER__DIAGNOSTICS_MODULE_HPP_
+#endif  // LOCALIZATION_UTIL__DIAGNOSTICS_MODULE_HPP_

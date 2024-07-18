@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ndt_scan_matcher/diagnostics_module.hpp"
+#include "localization_util/diagnostics_module.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

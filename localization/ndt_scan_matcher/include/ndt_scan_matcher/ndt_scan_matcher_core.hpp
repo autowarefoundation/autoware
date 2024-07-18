@@ -17,8 +17,8 @@
 
 #define FMT_HEADER_ONLY
 
+#include "localization_util/diagnostics_module.hpp"
 #include "localization_util/smart_pose_buffer.hpp"
-#include "ndt_scan_matcher/diagnostics_module.hpp"
 #include "ndt_scan_matcher/hyper_parameters.hpp"
 #include "ndt_scan_matcher/map_update_module.hpp"
 

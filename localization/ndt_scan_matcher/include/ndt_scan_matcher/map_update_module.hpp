@@ -15,8 +15,8 @@
 #ifndef NDT_SCAN_MATCHER__MAP_UPDATE_MODULE_HPP_
 #define NDT_SCAN_MATCHER__MAP_UPDATE_MODULE_HPP_
 
+#include "localization_util/diagnostics_module.hpp"
 #include "localization_util/util_func.hpp"
-#include "ndt_scan_matcher/diagnostics_module.hpp"
 #include "ndt_scan_matcher/hyper_parameters.hpp"
 #include "ndt_scan_matcher/particle.hpp"
 
