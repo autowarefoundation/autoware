@@ -104,10 +104,16 @@ repositories:
     type: git
     url: https://github.com/tier4/nebula.git
     version: main
+  # Fork of transport_drivers that enables reduction of copy operations
   sensor_component/external/transport_drivers:
     type: git
-    url: https://github.com/MapIV/transport_drivers.git
-    version: boost
+    url: https://github.com/mojomex/transport_drivers
+    version: mutable-buffer-in-udp-callback
+  # Continental compatible version of ROS 2 socket CAN
+  ros2_socketcan:
+    type: git
+    url: https://github.com/knzo25/ros2_socketcan
+    version: feat/continental_fd
   # sensor_kit
   sensor_kit/sample_sensor_kit_launch:
     type: git
