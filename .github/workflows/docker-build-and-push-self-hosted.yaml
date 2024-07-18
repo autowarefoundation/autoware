@@ -72,7 +72,7 @@ jobs:
             *.args.LIB_DIR=${{ matrix.lib_dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.ref_name }},mode=max
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.ref_name }}
           tag-suffix: ${{ matrix.additional-tag-suffix }}-${{ matrix.platform }}
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           allow-push: true
