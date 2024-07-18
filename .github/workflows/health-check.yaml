@@ -65,6 +65,7 @@ jobs:
             BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
             SETUP_ARGS=${{ matrix.setup-args }}
             LIB_DIR=${{ matrix.lib_dir }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Show disk space
         run: |
