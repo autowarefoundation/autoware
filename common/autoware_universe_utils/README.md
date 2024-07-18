@@ -46,8 +46,13 @@ explicit TimeKeeper(Reporters... reporters);
   - `func_name`: Name of the function to be tracked.
 
 - `void end_track(const std::string & func_name);`
+
   - Ends tracking the processing time of a function.
   - `func_name`: Name of the function to end tracking.
+
+- `void comment(const std::string & comment);`
+  - Adds a comment to the current function being tracked.
+  - `comment`: Comment to be added.
 
 ##### Note
 
@@ -86,7 +91,8 @@ public:
     // time_keeper_->add_reporter(publisher_);
     // time_keeper_->add_reporter(&std::cerr);
 
-    timer_ = create_wall_timer(std::chrono::seconds(1), std::bind(&ExampleNode::func_a, this));
+    timer_ =
+      create_wall_timer(std::chrono::seconds(1), std::bind(&ExampleNode::func_a, this));
   }
 
 private:
@@ -100,6 +106,7 @@ private:
     // Start constructing ProcessingTimeTree (because func_a is the root function)
     autoware::universe_utils::ScopedTimeTrack st("func_a", *time_keeper_);
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    time_keeper_->comment("This is a comment for func_a");
     func_b();
     // End constructing ProcessingTimeTree. After this, the tree will be reported (publishing
     // message and outputting to std::cerr)
@@ -109,6 +116,7 @@ private:
   {
     autoware::universe_utils::ScopedTimeTrack st("func_b", *time_keeper_);
     std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    time_keeper_->comment("This is a comment for func_b");
     func_c();
   }
 
@@ -116,6 +124,7 @@ private:
   {
     autoware::universe_utils::ScopedTimeTrack st("func_c", *time_keeper_);
     std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    time_keeper_->comment("This is a comment for func_c");
   }
 };
 
@@ -133,9 +142,9 @@ int main(int argc, char ** argv)
 
   ```text
   ==========================
-  func_a (6.382ms)
-      └── func_b (5.243ms)
-          └── func_c (3.146ms)
+  func_a (6.243ms) : This is a comment for func_a
+      └── func_b (5.116ms) : This is a comment for func_b
+          └── func_c (3.055ms) : This is a comment for func_c
   ```
 
 - Output (`ros2 topic echo /processing_time`)
@@ -145,16 +154,19 @@ int main(int argc, char ** argv)
   nodes:
   - id: 1
     name: func_a
-    processing_time: 6.397
+    processing_time: 6.366
     parent_id: 0
+    comment: This is a comment for func_a
   - id: 2
     name: func_b
-    processing_time: 5.263
+    processing_time: 5.237
     parent_id: 1
+    comment: This is a comment for func_b
   - id: 3
     name: func_c
-    processing_time: 3.129
+    processing_time: 3.156
     parent_id: 2
+    comment: This is a comment for func_c
   ```
 
 #### `autoware::universe_utils::ScopedTimeTrack`

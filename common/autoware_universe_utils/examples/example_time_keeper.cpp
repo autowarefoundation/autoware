@@ -49,6 +49,7 @@ private:
     // Start constructing ProcessingTimeTree (because func_a is the root function)
     autoware::universe_utils::ScopedTimeTrack st("func_a", *time_keeper_);
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    time_keeper_->comment("This is a comment for func_a");
     func_b();
     // End constructing ProcessingTimeTree. After this, the tree will be reported (publishing
     // message and outputting to std::cerr)
@@ -58,6 +59,7 @@ private:
   {
     autoware::universe_utils::ScopedTimeTrack st("func_b", *time_keeper_);
     std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    time_keeper_->comment("This is a comment for func_b");
     func_c();
   }
 
@@ -65,6 +67,7 @@ private:
   {
     autoware::universe_utils::ScopedTimeTrack st("func_c", *time_keeper_);
     std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    time_keeper_->comment("This is a comment for func_c");
   }
 };
 
