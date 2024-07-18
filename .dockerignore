@@ -11,10 +11,10 @@ docker
 !docker/etc
 
 # Ignore a part of files under src
+src/**/.*
 src/**/*.asc
 src/**/*.csv
 src/**/*.gif
-src/**/*.git
 src/**/*.md
 src/**/*.pcd
 src/**/*.png
