@@ -65,41 +65,16 @@ Multiple inputs are pre-defined in the input channel parameters (described below
 
 ### Input Channel parameters
 
-Available input channels are defined in [input_channels.param.yaml](config/input_channels.param.yaml).
-
-| Name                              | Type                                             | Description                           |
-| --------------------------------- | ------------------------------------------------ | ------------------------------------- |
-| `<channel>`                       |                                                  | the name of channel                   |
-| `<channel>.topic`                 | `autoware_perception_msgs::msg::DetectedObjects` | detected objects                      |
-| `<channel>.can_spawn_new_tracker` | `bool`                                           | a switch allow to spawn a new tracker |
-| `<channel>.optional.name`         | `std::string`                                    | channel name for analysis             |
-| `<channel>.optional.short_name`   | `std::string`                                    | short name for visualization          |
+{{ json_to_markdown("perception/multi_object_tracker/schema/input_channels.schema.json") }}
 
 ### Core Parameters
 
-Node parameters are defined in [multi_object_tracker_node.param.yaml](config/multi_object_tracker_node.param.yaml) and association parameters are defined in [data_association_matrix.param.yaml](config/data_association_matrix.param.yaml).
+{{ json_to_markdown("perception/multi_object_tracker/schema/multi_object_tracker_node.schema.json") }}
+{{ json_to_markdown("perception/multi_object_tracker/schema/data_association_matrix.schema.json") }}
 
-#### Node parameters
+#### Simulation parameters
 
-| Name                        | Type   | Description                                                                                                                 |
-| --------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `***_tracker`               | string | EKF tracker name for each class                                                                                             |
-| `world_frame_id`            | double | object kinematics definition frame                                                                                          |
-| `enable_delay_compensation` | bool   | if True, tracker use timers to schedule publishers and use prediction step to extrapolate object state at desired timestamp |
-| `publish_rate`              | double | Timer frequency to output with delay compensation                                                                           |
-| `publish_processing_time`   | bool   | enable to publish debug message of process time information                                                                 |
-| `publish_tentative_objects` | bool   | enable to publish tentative tracked objects, which have lower confidence                                                    |
-| `publish_debug_markers`     | bool   | enable to publish debug markers, which indicates association of multi-inputs, existence probability of each detection       |
-
-#### Association parameters
-
-| Name                | Type   | Description                                 |
-| ------------------- | ------ | ------------------------------------------- |
-| `can_assign_matrix` | double | Assignment table for data association       |
-| `max_dist_matrix`   | double | Maximum distance table for data association |
-| `max_area_matrix`   | double | Maximum area table for data association     |
-| `min_area_matrix`   | double | Minimum area table for data association     |
-| `max_rad_matrix`    | double | Maximum angle table for data association    |
+{{ json_to_markdown("perception/multi_object_tracker/schema/simulation_tracker.schema.json") }}
 
 ## Assumptions / Known limits
 

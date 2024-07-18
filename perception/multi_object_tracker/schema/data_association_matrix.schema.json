@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Data Association Matrix",
+  "type": "object",
+  "definitions": {
+    "data_association_matrix": {
+      "type": "object",
+      "properties": {
+        "can_assign_matrix": {
+          "type": "array",
+          "description": "Assignment table for data association.",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "max_dist_matrix": {
+          "type": "array",
+          "description": "Maximum distance table for data association.",
+          "items": {
+            "type": "number"
+          }
+        },
+        "max_area_matrix": {
+          "type": "array",
+          "description": "Maximum area table for data association.",
+          "items": {
+            "type": "number"
+          }
+        },
+        "min_area_matrix": {
+          "type": "array",
+          "description": "Minimum area table for data association.",
+          "items": {
+            "type": "number"
+          }
+        },
+        "max_rad_matrix": {
+          "type": "array",
+          "description": "Maximum angle table for data association.",
+          "items": {
+            "type": "number"
+          }
+        },
+        "min_iou_matrix": {
+          "type": "array",
+          "description": "A matrix that represents the minimum Intersection over Union (IoU) limit allowed for assignment.",
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "required": [
+        "can_assign_matrix",
+        "max_dist_matrix",
+        "max_area_matrix",
+        "min_area_matrix",
+        "max_rad_matrix",
+        "min_iou_matrix"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/data_association_matrix"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

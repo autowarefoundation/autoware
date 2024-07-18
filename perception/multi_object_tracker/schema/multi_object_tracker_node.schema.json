@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Multi Object Tracker Node",
+  "type": "object",
+  "definitions": {
+    "multi_object_tracker_node": {
+      "type": "object",
+      "properties": {
+        "car_tracker": {
+          "type": "string",
+          "description": "Tracker model for car class.",
+          "default": "multi_vehicle_tracker"
+        },
+        "truck_tracker": {
+          "type": "string",
+          "description": "Tracker model for truck class.",
+          "default": "multi_vehicle_tracker"
+        },
+        "bus_tracker": {
+          "type": "string",
+          "description": "Tracker model for bus class.",
+          "default": "multi_vehicle_tracker"
+        },
+        "trailer_tracker": {
+          "type": "string",
+          "description": "Tracker model for trailer class.",
+          "default": "multi_vehicle_tracker"
+        },
+        "pedestrian_tracker": {
+          "type": "string",
+          "description": "Tracker model for pedestrian class.",
+          "default": "pedestrian_and_bicycle_tracker"
+        },
+        "bicycle_tracker": {
+          "type": "string",
+          "description": "Tracker model for bicycle class.",
+          "default": "pedestrian_and_bicycle_tracker"
+        },
+        "motorcycle_tracker": {
+          "type": "string",
+          "description": "Tracker model for motorcycle class.",
+          "default": "pedestrian_and_bicycle_tracker"
+        },
+        "publish_rate": {
+          "type": "number",
+          "description": "Timer frequency to output with delay compensation.",
+          "default": 10.0
+        },
+        "world_frame_id": {
+          "type": "string",
+          "description": "Object kinematics definition frame.",
+          "default": "map"
+        },
+        "enable_delay_compensation": {
+          "type": "boolean",
+          "description": "If True, tracker use timers to schedule publishers and use prediction step to extrapolate object state at desired timestamp.",
+          "default": false
+        },
+        "publish_processing_time": {
+          "type": "boolean",
+          "description": "Enable to publish debug message of process time information.",
+          "default": false
+        },
+        "publish_tentative_objects": {
+          "type": "boolean",
+          "description": "Enable to publish tentative tracked objects, which have lower confidence.",
+          "default": false
+        },
+        "publish_debug_markers": {
+          "type": "boolean",
+          "description": "Enable to publish debug markers, which indicates association of multi-inputs, existence probability of each detection.",
+          "default": false
+        },
+        "diagnostics_warn_delay": {
+          "type": "number",
+          "description": "Delay threshold for warning diagnostics in seconds.",
+          "default": 0.5
+        },
+        "diagnostics_error_delay": {
+          "type": "number",
+          "description": "Delay threshold for error diagnostics in seconds.",
+          "default": 1.0
+        }
+      },
+      "required": [
+        "car_tracker",
+        "truck_tracker",
+        "bus_tracker",
+        "trailer_tracker",
+        "pedestrian_tracker",
+        "bicycle_tracker",
+        "motorcycle_tracker",
+        "publish_rate",
+        "world_frame_id",
+        "enable_delay_compensation",
+        "publish_processing_time",
+        "publish_tentative_objects",
+        "publish_debug_markers",
+        "diagnostics_warn_delay",
+        "diagnostics_error_delay"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/multi_object_tracker_node"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

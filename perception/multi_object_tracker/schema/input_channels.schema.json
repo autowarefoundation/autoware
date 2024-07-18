@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Input Channels",
+  "type": "object",
+  "definitions": {
+    "input_channel": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string",
+          "description": "The ROS topic name for the input channel."
+        },
+        "can_spawn_new_tracker": {
+          "type": "boolean",
+          "description": "Indicates if the input channel can spawn new trackers."
+        },
+        "optional": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of the input channel."
+            },
+            "short_name": {
+              "type": "string",
+              "description": "The short name of the input channel."
+            }
+          }
+        }
+      },
+      "required": ["topic", "can_spawn_new_tracker"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "type": "object",
+          "properties": {
+            "input_channels": {
+              "type": "object",
+              "properties": {
+                "detected_objects": { "$ref": "#/definitions/input_channel" },
+                "lidar_clustering": { "$ref": "#/definitions/input_channel" },
+                "lidar_centerpoint": { "$ref": "#/definitions/input_channel" },
+                "lidar_centerpoint_validated": { "$ref": "#/definitions/input_channel" },
+                "lidar_apollo": { "$ref": "#/definitions/input_channel" },
+                "lidar_apollo_validated": { "$ref": "#/definitions/input_channel" },
+                "lidar_pointpainitng": { "$ref": "#/definitions/input_channel" },
+                "lidar_pointpainting_validated": { "$ref": "#/definitions/input_channel" },
+                "camera_lidar_fusion": { "$ref": "#/definitions/input_channel" },
+                "detection_by_tracker": { "$ref": "#/definitions/input_channel" },
+                "radar": { "$ref": "#/definitions/input_channel" },
+                "radar_far": { "$ref": "#/definitions/input_channel" }
+              },
+              "required": [
+                "detected_objects",
+                "lidar_clustering",
+                "lidar_centerpoint",
+                "lidar_centerpoint_validated",
+                "lidar_apollo",
+                "lidar_apollo_validated",
+                "lidar_pointpainitng",
+                "lidar_pointpainting_validated",
+                "camera_lidar_fusion",
+                "detection_by_tracker",
+                "radar",
+                "radar_far"
+              ]
+            }
+          },
+          "required": ["input_channels"]
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

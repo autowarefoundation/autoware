@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Simulation Tracker Node",
+  "type": "object",
+  "definitions": {
+    "simulation_tracker_node": {
+      "type": "object",
+      "properties": {
+        "car_tracker": {
+          "type": "string",
+          "description": "Tracker model for car class.",
+          "default": "pass_through_tracker"
+        },
+        "truck_tracker": {
+          "type": "string",
+          "description": "Tracker model for truck class.",
+          "default": "pass_through_tracker"
+        },
+        "bus_tracker": {
+          "type": "string",
+          "description": "Tracker model for bus class.",
+          "default": "pass_through_tracker"
+        },
+        "pedestrian_tracker": {
+          "type": "string",
+          "description": "Tracker model for pedestrian class.",
+          "default": "pass_through_tracker"
+        },
+        "bicycle_tracker": {
+          "type": "string",
+          "description": "Tracker model for bicycle class.",
+          "default": "pass_through_tracker"
+        },
+        "motorcycle_tracker": {
+          "type": "string",
+          "description": "Tracker model for motorcycle class.",
+          "default": "pass_through_tracker"
+        }
+      },
+      "required": [
+        "car_tracker",
+        "truck_tracker",
+        "bus_tracker",
+        "pedestrian_tracker",
+        "bicycle_tracker",
+        "motorcycle_tracker"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/simulation_tracker_node"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
