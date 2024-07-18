@@ -121,7 +121,7 @@ runs:
       id: meta-autoware-universe
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.actor }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
         bake-target: docker-metadata-action-autoware-universe
         flavor: |
