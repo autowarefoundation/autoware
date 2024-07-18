@@ -122,8 +122,8 @@ std::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
     partial_paths, pairs_terminal_velocity_and_accel, velocity_, 0);
 
   // Check if driving forward for each path, return empty if not
-  for (auto & path : partial_paths) {
-    if (!autoware::motion_utils::isDrivingForward(path.points)) {
+  for (auto & partial_path : partial_paths) {
+    if (!autoware::motion_utils::isDrivingForward(partial_path.points)) {
       return {};
     }
   }
