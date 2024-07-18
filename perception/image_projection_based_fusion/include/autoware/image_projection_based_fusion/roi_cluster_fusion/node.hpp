@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef IMAGE_PROJECTION_BASED_FUSION__ROI_CLUSTER_FUSION__NODE_HPP_
-#define IMAGE_PROJECTION_BASED_FUSION__ROI_CLUSTER_FUSION__NODE_HPP_
+#ifndef AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__ROI_CLUSTER_FUSION__NODE_HPP_
+#define AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__ROI_CLUSTER_FUSION__NODE_HPP_
 
-#include "image_projection_based_fusion/fusion_node.hpp"
+#include "autoware/image_projection_based_fusion/fusion_node.hpp"
 
 #include <map>
 #include <memory>
 #include <string>
-namespace image_projection_based_fusion
+namespace autoware::image_projection_based_fusion
 {
 const std::map<std::string, uint8_t> IOU_MODE_MAP{{"iou", 0}, {"iou_x", 1}, {"iou_y", 2}};
 
@@ -61,6 +61,6 @@ protected:
   // bool CheckUnknown(const DetectedObjectsWithFeature & obj);
 };
 
-}  // namespace image_projection_based_fusion
+}  // namespace autoware::image_projection_based_fusion
 
-#endif  // IMAGE_PROJECTION_BASED_FUSION__ROI_CLUSTER_FUSION__NODE_HPP_
+#endif  // AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__ROI_CLUSTER_FUSION__NODE_HPP_

@@ -14,7 +14,7 @@
 
 #define EIGEN_MPL2_ONLY
 
-#include "image_projection_based_fusion/fusion_node.hpp"
+#include "autoware/image_projection_based_fusion/fusion_node.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -37,7 +37,7 @@
 // static int publish_counter = 0;
 static double processing_time_ms = 0;
 
-namespace image_projection_based_fusion
+namespace autoware::image_projection_based_fusion
 {
 
 template <class TargetMsg3D, class ObjType, class Msg2D>
@@ -437,4 +437,4 @@ template class FusionNode<
 template class FusionNode<PointCloud2, DetectedObjects, DetectedObjectsWithFeature>;
 template class FusionNode<PointCloud2, DetectedObjectWithFeature, DetectedObjectsWithFeature>;
 template class FusionNode<PointCloud2, PointCloud2, Image>;
-}  // namespace image_projection_based_fusion
+}  // namespace autoware::image_projection_based_fusion

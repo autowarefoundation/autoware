@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "image_projection_based_fusion/utils/geometry.hpp"
+#include "autoware/image_projection_based_fusion/utils/geometry.hpp"
 
 #include <gtest/gtest.h>
 
@@ -37,7 +37,7 @@ TEST(objectToVertices, test_objectToVertices)
     shape.dimensions.z = 8.0;
     std::vector<Eigen::Vector3d> vertices;
 
-    image_projection_based_fusion::objectToVertices(pose, shape, vertices);
+    autoware::image_projection_based_fusion::objectToVertices(pose, shape, vertices);
 
     EXPECT_FALSE(vertices.empty());
     EXPECT_NEAR(vertices.at(0).x(), 1.2320508075688772935274, 1e-6);
@@ -57,7 +57,7 @@ TEST(objectToVertices, test_objectToVertices)
     shape.dimensions.z = 8.0;
     std::vector<Eigen::Vector3d> vertices;
 
-    image_projection_based_fusion::objectToVertices(pose, shape, vertices);
+    autoware::image_projection_based_fusion::objectToVertices(pose, shape, vertices);
 
     EXPECT_FALSE(vertices.empty());
     EXPECT_NEAR(vertices.at(0).x(), 2.732050807568877293528, 1e-6);
@@ -74,7 +74,7 @@ TEST(objectToVertices, test_objectToVertices)
     shape.type = 2;
     std::vector<Eigen::Vector3d> vertices;
 
-    image_projection_based_fusion::objectToVertices(pose, shape, vertices);
+    autoware::image_projection_based_fusion::objectToVertices(pose, shape, vertices);
 
     EXPECT_TRUE(vertices.empty());
   }
@@ -93,7 +93,8 @@ TEST(transformPoints, test_transformPoints)
   Eigen::Affine3d affine_transform = rotation * translation;
   std::vector<Eigen::Vector3d> output_points;
 
-  image_projection_based_fusion::transformPoints(input_points, affine_transform, output_points);
+  autoware::image_projection_based_fusion::transformPoints(
+    input_points, affine_transform, output_points);
 
   EXPECT_FALSE(output_points.empty());
   EXPECT_NEAR(output_points.at(0).x(), 0.7071067811865475244008, 1e-6);
@@ -118,7 +119,7 @@ TEST(is_inside, test_is_inside)
     inner.width = 299;
 
     const bool inside_flag =
-      image_projection_based_fusion::is_inside(outer, inner, outer_offset_scale);
+      autoware::image_projection_based_fusion::is_inside(outer, inner, outer_offset_scale);
 
     EXPECT_TRUE(inside_flag);
   }
@@ -130,7 +131,7 @@ TEST(is_inside, test_is_inside)
     inner.y_offset = 39;
 
     const bool inside_flag =
-      image_projection_based_fusion::is_inside(outer, inner, outer_offset_scale);
+      autoware::image_projection_based_fusion::is_inside(outer, inner, outer_offset_scale);
 
     EXPECT_FALSE(inside_flag);
   }
@@ -144,7 +145,7 @@ TEST(is_inside, test_is_inside)
     inner.width = 301;
 
     const bool inside_flag =
-      image_projection_based_fusion::is_inside(outer, inner, outer_offset_scale);
+      autoware::image_projection_based_fusion::is_inside(outer, inner, outer_offset_scale);
 
     EXPECT_FALSE(inside_flag);
   }
@@ -162,7 +163,7 @@ TEST(sanitizeROI, test_sanitizeROI)
     int height = 400;  // image height
     int width = 300;   // image width
 
-    image_projection_based_fusion::sanitizeROI(roi, width, height);
+    autoware::image_projection_based_fusion::sanitizeROI(roi, width, height);
 
     EXPECT_EQ(roi.height, 200);
     EXPECT_EQ(roi.width, 100);
@@ -176,7 +177,7 @@ TEST(sanitizeROI, test_sanitizeROI)
     int height = 100;
     int width = 50;
 
-    image_projection_based_fusion::sanitizeROI(roi, width, height);
+    autoware::image_projection_based_fusion::sanitizeROI(roi, width, height);
 
     EXPECT_EQ(roi.height, 0);
     EXPECT_EQ(roi.width, 0);
@@ -192,7 +193,7 @@ TEST(sanitizeROI, test_sanitizeROI)
     int height = 100;
     int width = 50;
 
-    image_projection_based_fusion::sanitizeROI(roi, width, height);
+    autoware::image_projection_based_fusion::sanitizeROI(roi, width, height);
 
     EXPECT_EQ(roi.height, 80);
     EXPECT_EQ(roi.width, 40);

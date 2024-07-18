@@ -32,22 +32,22 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "image_projection_based_fusion::RoiDetectedObjectFusionNode"
+  PLUGIN "autoware::image_projection_based_fusion::RoiDetectedObjectFusionNode"
   EXECUTABLE roi_detected_object_fusion_node
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "image_projection_based_fusion::RoiClusterFusionNode"
+  PLUGIN "autoware::image_projection_based_fusion::RoiClusterFusionNode"
   EXECUTABLE roi_cluster_fusion_node
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "image_projection_based_fusion::SegmentPointCloudFusionNode"
+  PLUGIN "autoware::image_projection_based_fusion::SegmentPointCloudFusionNode"
   EXECUTABLE segmentation_pointcloud_fusion_node
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "image_projection_based_fusion::RoiPointCloudFusionNode"
+  PLUGIN "autoware::image_projection_based_fusion::RoiPointCloudFusionNode"
   EXECUTABLE roi_pointcloud_fusion_node
 )
 
@@ -149,7 +149,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   )
 
   rclcpp_components_register_node(pointpainting_lib
-    PLUGIN "image_projection_based_fusion::PointPaintingFusionNode"
+    PLUGIN "autoware::image_projection_based_fusion::PointPaintingFusionNode"
     EXECUTABLE pointpainting_fusion_node
   )
 

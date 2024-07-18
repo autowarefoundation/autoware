@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "image_projection_based_fusion/utils/utils.hpp"
+#include "autoware/image_projection_based_fusion/utils/utils.hpp"
 
-namespace image_projection_based_fusion
+namespace autoware::image_projection_based_fusion
 {
 Eigen::Vector2d calcRawImageProjectedPoint(
   const image_geometry::PinholeCameraModel & pinhole_camera_model, const cv::Point3d & point3d)
@@ -277,4 +277,4 @@ pcl::PointXYZ getClosestPoint(const pcl::PointCloud<pcl::PointXYZ> & cluster)
   return closest_point;
 }
 
-}  // namespace image_projection_based_fusion
+}  // namespace autoware::image_projection_based_fusion

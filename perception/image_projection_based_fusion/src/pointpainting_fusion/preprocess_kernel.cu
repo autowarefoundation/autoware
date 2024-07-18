@@ -28,7 +28,7 @@
  * limitations under the License.
  */
 
-#include "image_projection_based_fusion/pointpainting_fusion/preprocess_kernel.hpp"
+#include "autoware/image_projection_based_fusion/pointpainting_fusion/preprocess_kernel.hpp"
 
 #include <stdexcept>
 // #include <lidar_centerpoint/utils.hpp>
@@ -55,7 +55,7 @@ std::size_t divup(const std::size_t a, const std::size_t b)
 
 }  // namespace
 
-namespace image_projection_based_fusion
+namespace autoware::image_projection_based_fusion
 {
 __global__ void generateVoxels_random_kernel(
   const float * points, size_t points_size, float min_x_range, float max_x_range, float min_y_range,
@@ -269,4 +269,4 @@ cudaError_t generateFeatures_launch(
   return cudaGetLastError();
 }
 
-}  // namespace image_projection_based_fusion
+}  // namespace autoware::image_projection_based_fusion

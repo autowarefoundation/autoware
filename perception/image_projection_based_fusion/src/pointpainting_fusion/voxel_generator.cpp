@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "image_projection_based_fusion/pointpainting_fusion/voxel_generator.hpp"
+#include "autoware/image_projection_based_fusion/pointpainting_fusion/voxel_generator.hpp"
 
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
-namespace image_projection_based_fusion
+namespace autoware::image_projection_based_fusion
 {
 
 VoxelGenerator::VoxelGenerator(
@@ -83,4 +83,4 @@ size_t VoxelGenerator::generateSweepPoints(std::vector<float> & points)
   return point_counter;
 }
 
-}  // namespace image_projection_based_fusion
+}  // namespace autoware::image_projection_based_fusion

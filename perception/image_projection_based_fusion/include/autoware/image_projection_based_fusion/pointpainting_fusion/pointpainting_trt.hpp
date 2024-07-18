@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__POINTPAINTING_TRT_HPP_
-#define IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__POINTPAINTING_TRT_HPP_
+#ifndef AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__POINTPAINTING_TRT_HPP_
+#define AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__POINTPAINTING_TRT_HPP_
 
-#include <image_projection_based_fusion/pointpainting_fusion/voxel_generator.hpp>
+#include <autoware/image_projection_based_fusion/pointpainting_fusion/voxel_generator.hpp>
 #include <lidar_centerpoint/centerpoint_trt.hpp>
 
 #include <memory>
 #include <string>
 
-namespace image_projection_based_fusion
+namespace autoware::image_projection_based_fusion
 {
 class PointPaintingTRT : public centerpoint::CenterPointTRT
 {
@@ -40,6 +40,6 @@ protected:
 
   std::unique_ptr<image_projection_based_fusion::VoxelGenerator> vg_ptr_pp_{nullptr};
 };
-}  // namespace image_projection_based_fusion
+}  // namespace autoware::image_projection_based_fusion
 
-#endif  // IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__POINTPAINTING_TRT_HPP_
+#endif  // AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__POINTPAINTING_TRT_HPP_

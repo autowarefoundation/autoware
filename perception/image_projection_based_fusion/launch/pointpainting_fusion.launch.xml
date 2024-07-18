@@ -45,7 +45,7 @@
 
   <group if="$(var use_pointcloud_container)">
     <load_composable_node target="$(var pointcloud_container_name)">
-      <composable_node pkg="image_projection_based_fusion" plugin="image_projection_based_fusion::PointPaintingFusionNode" name="pointpainting">
+      <composable_node pkg="image_projection_based_fusion" plugin="autoware::image_projection_based_fusion::PointPaintingFusionNode" name="pointpainting">
         <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
         <remap from="~/output/objects" to="$(var output/objects)"/>
         <param from="$(var model_param_path)" allow_substs="true"/>

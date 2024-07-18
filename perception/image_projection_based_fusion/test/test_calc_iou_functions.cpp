@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "image_projection_based_fusion/utils/geometry.hpp"
+#include "autoware/image_projection_based_fusion/utils/geometry.hpp"
 
 #include <gtest/gtest.h>
 
-using image_projection_based_fusion::calcIoU;
-using image_projection_based_fusion::calcIoUX;
-using image_projection_based_fusion::calcIoUY;
+using autoware::image_projection_based_fusion::calcIoU;
+using autoware::image_projection_based_fusion::calcIoUX;
+using autoware::image_projection_based_fusion::calcIoUY;
 
 TEST(GeometryTest, CalcIoU)
 {

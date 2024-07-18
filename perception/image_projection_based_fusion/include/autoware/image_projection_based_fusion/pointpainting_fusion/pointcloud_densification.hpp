@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__POINTCLOUD_DENSIFICATION_HPP_
-#define IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__POINTCLOUD_DENSIFICATION_HPP_
+#ifndef AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__POINTCLOUD_DENSIFICATION_HPP_
+#define AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__POINTCLOUD_DENSIFICATION_HPP_
 
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
@@ -29,7 +29,7 @@
 #include <string>
 #include <utility>
 
-namespace image_projection_based_fusion
+namespace autoware::image_projection_based_fusion
 {
 struct PointCloudWithTransform
 {
@@ -67,6 +67,7 @@ private:
   std::list<PointCloudWithTransform> pointcloud_cache_;
 };
 
-}  // namespace image_projection_based_fusion
+}  // namespace autoware::image_projection_based_fusion
 
-#endif  // IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__POINTCLOUD_DENSIFICATION_HPP_
+// NOLINTNEXTLINE(whitespace/line_length)
+#endif  // AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__POINTCLOUD_DENSIFICATION_HPP_

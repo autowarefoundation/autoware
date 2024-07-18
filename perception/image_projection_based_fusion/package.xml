@@ -26,12 +26,9 @@
   <depend>lidar_centerpoint</depend>
   <depend>message_filters</depend>
   <depend>object_recognition_utils</depend>
-  <depend>pcl_conversions</depend>
-  <depend>pcl_ros</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
-  <depend>tf2</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_sensor_msgs</depend>

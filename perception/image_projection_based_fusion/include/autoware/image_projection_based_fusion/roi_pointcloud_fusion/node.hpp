@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef IMAGE_PROJECTION_BASED_FUSION__ROI_POINTCLOUD_FUSION__NODE_HPP_
-#define IMAGE_PROJECTION_BASED_FUSION__ROI_POINTCLOUD_FUSION__NODE_HPP_
+#ifndef AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__ROI_POINTCLOUD_FUSION__NODE_HPP_
+#define AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__ROI_POINTCLOUD_FUSION__NODE_HPP_
 
-#include "image_projection_based_fusion/fusion_node.hpp"
+#include "autoware/image_projection_based_fusion/fusion_node.hpp"
 
-#include <image_projection_based_fusion/utils/utils.hpp>
+#include <autoware/image_projection_based_fusion/utils/utils.hpp>
 
 #include <string>
 #include <vector>
-namespace image_projection_based_fusion
+namespace autoware::image_projection_based_fusion
 {
 class RoiPointCloudFusionNode
 : public FusionNode<PointCloud2, DetectedObjectWithFeature, DetectedObjectsWithFeature>
@@ -52,5 +52,5 @@ protected:
   bool out_of_scope(const DetectedObjectWithFeature & obj);
 };
 
-}  // namespace image_projection_based_fusion
-#endif  // IMAGE_PROJECTION_BASED_FUSION__ROI_POINTCLOUD_FUSION__NODE_HPP_
+}  // namespace autoware::image_projection_based_fusion
+#endif  // AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__ROI_POINTCLOUD_FUSION__NODE_HPP_

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "image_projection_based_fusion/debugger.hpp"
+#include "autoware/image_projection_based_fusion/debugger.hpp"
 
 #if __has_include(<cv_bridge/cv_bridge.hpp>)
 #include <cv_bridge/cv_bridge.hpp>
@@ -36,7 +36,7 @@ void drawRoiOnImage(
 
 }  // namespace
 
-namespace image_projection_based_fusion
+namespace autoware::image_projection_based_fusion
 {
 Debugger::Debugger(
   rclcpp::Node * node_ptr, const std::size_t image_num, const std::size_t image_buffer_size,
@@ -154,4 +154,4 @@ void Debugger::publishImage(const std::size_t image_id, const rclcpp::Time & sta
   }
 }
 
-}  // namespace image_projection_based_fusion
+}  // namespace autoware::image_projection_based_fusion

@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "image_projection_based_fusion/roi_cluster_fusion/node.hpp"
+#include "autoware/image_projection_based_fusion/roi_cluster_fusion/node.hpp"
 
-#include <image_projection_based_fusion/utils/geometry.hpp>
-#include <image_projection_based_fusion/utils/utils.hpp>
+#include <autoware/image_projection_based_fusion/utils/geometry.hpp>
+#include <autoware/image_projection_based_fusion/utils/utils.hpp>
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
@@ -28,7 +28,7 @@
 #include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
 #endif
 
-namespace image_projection_based_fusion
+namespace autoware::image_projection_based_fusion
 {
 
 RoiClusterFusionNode::RoiClusterFusionNode(const rclcpp::NodeOptions & options)
@@ -290,7 +290,7 @@ double RoiClusterFusionNode::cal_iou_by_mode(
   }
 }
 
-}  // namespace image_projection_based_fusion
+}  // namespace autoware::image_projection_based_fusion
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(image_projection_based_fusion::RoiClusterFusionNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::image_projection_based_fusion::RoiClusterFusionNode)

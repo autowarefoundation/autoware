@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef IMAGE_PROJECTION_BASED_FUSION__ROI_DETECTED_OBJECT_FUSION__NODE_HPP_
-#define IMAGE_PROJECTION_BASED_FUSION__ROI_DETECTED_OBJECT_FUSION__NODE_HPP_
+#ifndef AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__ROI_DETECTED_OBJECT_FUSION__NODE_HPP_
+#define AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__ROI_DETECTED_OBJECT_FUSION__NODE_HPP_
 
+#include "autoware/image_projection_based_fusion/fusion_node.hpp"
 #include "autoware/universe_utils/ros/debug_publisher.hpp"
-#include "image_projection_based_fusion/fusion_node.hpp"
 
-#include <image_projection_based_fusion/utils/utils.hpp>
+#include <autoware/image_projection_based_fusion/utils/utils.hpp>
 
 #include "autoware_perception_msgs/msg/object_classification.hpp"
 
@@ -26,7 +26,7 @@
 #include <memory>
 #include <vector>
 
-namespace image_projection_based_fusion
+namespace autoware::image_projection_based_fusion
 {
 
 using sensor_msgs::msg::RegionOfInterest;
@@ -74,6 +74,6 @@ private:
     ignored_object_flags_map_;
 };
 
-}  // namespace image_projection_based_fusion
+}  // namespace autoware::image_projection_based_fusion
 
-#endif  // IMAGE_PROJECTION_BASED_FUSION__ROI_DETECTED_OBJECT_FUSION__NODE_HPP_
+#endif  // AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__ROI_DETECTED_OBJECT_FUSION__NODE_HPP_

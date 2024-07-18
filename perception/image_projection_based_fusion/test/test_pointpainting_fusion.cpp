@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <image_projection_based_fusion/pointpainting_fusion/node.hpp>
+#include <autoware/image_projection_based_fusion/pointpainting_fusion/node.hpp>
 
 #include <gtest/gtest.h>
 
@@ -30,27 +30,27 @@ sensor_msgs::msg::RegionOfInterest createRoi(
 TEST(isInsideBboxTest, Inside)
 {
   const sensor_msgs::msg::RegionOfInterest roi = createRoi(20, 20, 10, 10);
-  bool result = image_projection_based_fusion::isInsideBbox(25.0, 25.0, roi, 1.0);
+  bool result = autoware::image_projection_based_fusion::isInsideBbox(25.0, 25.0, roi, 1.0);
   EXPECT_TRUE(result);
 }
 
 TEST(isInsideBboxTest, Border)
 {
   const sensor_msgs::msg::RegionOfInterest roi = createRoi(20, 20, 10, 10);
-  bool result = image_projection_based_fusion::isInsideBbox(20.0, 30.0, roi, 1.0);
+  bool result = autoware::image_projection_based_fusion::isInsideBbox(20.0, 30.0, roi, 1.0);
   EXPECT_TRUE(result);
 }
 
 TEST(isInsideBboxTest, Outside)
 {
   const sensor_msgs::msg::RegionOfInterest roi = createRoi(20, 20, 10, 10);
-  bool result = image_projection_based_fusion::isInsideBbox(15.0, 15.0, roi, 1.0);
+  bool result = autoware::image_projection_based_fusion::isInsideBbox(15.0, 15.0, roi, 1.0);
   EXPECT_FALSE(result);
 }
 
 TEST(isInsideBboxTest, Zero)
 {
   const sensor_msgs::msg::RegionOfInterest roi = createRoi(0, 0, 0, 0);
-  bool result = image_projection_based_fusion::isInsideBbox(0.0, 0.0, roi, 1.0);
+  bool result = autoware::image_projection_based_fusion::isInsideBbox(0.0, 0.0, roi, 1.0);
   EXPECT_TRUE(result);
 }

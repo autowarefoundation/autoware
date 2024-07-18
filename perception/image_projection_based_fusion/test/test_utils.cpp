@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <autoware/image_projection_based_fusion/utils/utils.hpp>
 #include <autoware_point_types/types.hpp>
-#include <image_projection_based_fusion/utils/utils.hpp>
 
 #include <gtest/gtest.h>
 
@@ -65,7 +65,7 @@ TEST(UtilsTest, closest_cluster_empty_cluster_test_case1)
   double cluster_2d_tolerance = 0.5;
   int min_cluster_size = 3;
   sensor_msgs::msg::PointCloud2 output_cluster;
-  image_projection_based_fusion::closest_cluster(
+  autoware::image_projection_based_fusion::closest_cluster(
     pointcloud, cluster_2d_tolerance, min_cluster_size, center, output_cluster);
   EXPECT_EQ(output_cluster.data.size(), std::size_t(0));
 }
@@ -96,7 +96,7 @@ TEST(UtilsTest, closest_cluster_test_case2)
   double cluster_2d_tolerance = 0.5;
   int min_cluster_size = 3;
   sensor_msgs::msg::PointCloud2 output_cluster;
-  image_projection_based_fusion::closest_cluster(
+  autoware::image_projection_based_fusion::closest_cluster(
     pointcloud, cluster_2d_tolerance, min_cluster_size, center, output_cluster);
   EXPECT_EQ(output_cluster.data.size(), dummy_x.size() * pointcloud.point_step);
 }
@@ -127,7 +127,7 @@ TEST(UtilsTest, closest_cluster_test_case3)
   double cluster_2d_tolerance = 0.5;
   int min_cluster_size = 3;
   sensor_msgs::msg::PointCloud2 output_cluster;
-  image_projection_based_fusion::closest_cluster(
+  autoware::image_projection_based_fusion::closest_cluster(
     pointcloud, cluster_2d_tolerance, min_cluster_size, center, output_cluster);
   EXPECT_EQ(output_cluster.data.size(), 3 * pointcloud.point_step);
 }
@@ -158,7 +158,7 @@ TEST(UtilsTest, closest_cluster_test_case4)
   double cluster_2d_tolerance = 0.5;
   int min_cluster_size = 3;
   sensor_msgs::msg::PointCloud2 output_cluster;
-  image_projection_based_fusion::closest_cluster(
+  autoware::image_projection_based_fusion::closest_cluster(
     pointcloud, cluster_2d_tolerance, min_cluster_size, center, output_cluster);
   EXPECT_EQ(output_cluster.data.size(), 6 * pointcloud.point_step);
 }

@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "image_projection_based_fusion/utils/geometry.hpp"
+#include "autoware/image_projection_based_fusion/utils/geometry.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
-namespace image_projection_based_fusion
+namespace autoware::image_projection_based_fusion
 {
 
 double calcIoU(
@@ -204,4 +204,4 @@ void sanitizeROI(sensor_msgs::msg::RegionOfInterest & roi, const int width_, con
   }
 }
 
-}  // namespace image_projection_based_fusion
+}  // namespace autoware::image_projection_based_fusion
