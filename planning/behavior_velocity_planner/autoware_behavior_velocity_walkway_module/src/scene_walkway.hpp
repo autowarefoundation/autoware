@@ -54,9 +54,9 @@ public:
 private:
   const int64_t module_id_;
 
-  [[nodiscard]] std::optional<std::pair<double, geometry_msgs::msg::Point>> getStopLine(
+  [[nodiscard]] std::pair<double, geometry_msgs::msg::Point> getStopLine(
     const PathWithLaneId & ego_path, bool & exist_stopline_in_map,
-    const std::vector<geometry_msgs::msg::Point> & path_intersects) const;
+    const geometry_msgs::msg::Point & first_path_point_on_walkway) const;
 
   enum class State { APPROACH, STOP, SURPASSED };
 

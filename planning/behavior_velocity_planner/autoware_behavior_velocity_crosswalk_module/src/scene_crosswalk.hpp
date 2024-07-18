@@ -331,23 +331,33 @@ public:
 
 private:
   // main functions
-  void applySafetySlowDownSpeed(
-    PathWithLaneId & output, const std::vector<geometry_msgs::msg::Point> & path_intersects,
-    const float speed);
+  void applySlowDown(
+    PathWithLaneId & output, const geometry_msgs::msg::Point & first_path_point_on_crosswalk,
+    const geometry_msgs::msg::Point & last_path_point_on_crosswalk,
+    const float safety_slow_down_speed);
 
-  std::optional<std::pair<geometry_msgs::msg::Point, double>> getStopPointWithMargin(
+  void applySlowDownByLanelet2Map(
+    PathWithLaneId & output, const geometry_msgs::msg::Point & first_path_point_on_crosswalk,
+    const geometry_msgs::msg::Point & last_path_point_on_crosswalk);
+
+  void applySlowDownByOcclusion(
+    PathWithLaneId & output, const geometry_msgs::msg::Point & first_path_point_on_crosswalk,
+    const geometry_msgs::msg::Point & last_path_point_on_crosswalk);
+
+  std::optional<geometry_msgs::msg::Pose> getDefaultStopPose(
     const PathWithLaneId & ego_path,
-    const std::vector<geometry_msgs::msg::Point> & path_intersects) const;
+    const geometry_msgs::msg::Point & first_path_point_on_crosswalk) const;
 
   std::optional<StopFactor> checkStopForCrosswalkUsers(
     const PathWithLaneId & ego_path, const PathWithLaneId & sparse_resample_path,
-    const std::optional<std::pair<geometry_msgs::msg::Point, double>> & p_stop_line,
-    const std::vector<geometry_msgs::msg::Point> & path_intersects,
+    const geometry_msgs::msg::Point & first_path_point_on_crosswalk,
+    const geometry_msgs::msg::Point & last_path_point_on_crosswalk,
     const std::optional<geometry_msgs::msg::Pose> & default_stop_pose);
 
   std::optional<StopFactor> checkStopForStuckVehicles(
     const PathWithLaneId & ego_path, const std::vector<PredictedObject> & objects,
-    const std::vector<geometry_msgs::msg::Point> & path_intersects,
+    const geometry_msgs::msg::Point & first_path_point_on_crosswalk,
+    const geometry_msgs::msg::Point & last_path_point_on_crosswalk,
     const std::optional<geometry_msgs::msg::Pose> & stop_pose);
 
   std::optional<double> findEgoPassageDirectionAlongPath(
@@ -378,7 +388,8 @@ private:
   // minor functions
   std::pair<double, double> getAttentionRange(
     const PathWithLaneId & ego_path,
-    const std::vector<geometry_msgs::msg::Point> & path_intersects);
+    const geometry_msgs::msg::Point & first_path_point_on_crosswalk,
+    const geometry_msgs::msg::Point & last_path_point_on_crosswalk);
 
   void insertDecelPointWithDebugInfo(
     const geometry_msgs::msg::Point & stop_point, const float target_velocity,
@@ -400,10 +411,6 @@ private:
   Polygon2d getAttentionArea(
     const PathWithLaneId & sparse_resample_path,
     const std::pair<double, double> & crosswalk_attention_range) const;
-
-  bool isStuckVehicle(
-    const PathWithLaneId & ego_path, const std::vector<PredictedObject> & objects,
-    const std::vector<geometry_msgs::msg::Point> & path_intersects) const;
 
   void updateObjectState(
     const double dist_ego_to_stop, const PathWithLaneId & sparse_resample_path,

@@ -54,14 +54,14 @@ WalkwayModule::WalkwayModule(
   }
 }
 
-std::optional<std::pair<double, geometry_msgs::msg::Point>> WalkwayModule::getStopLine(
+std::pair<double, geometry_msgs::msg::Point> WalkwayModule::getStopLine(
   const PathWithLaneId & ego_path, bool & exist_stopline_in_map,
-  const std::vector<geometry_msgs::msg::Point> & path_intersects) const
+  const geometry_msgs::msg::Point & first_path_point_on_walkway) const
 {
   const auto & ego_pos = planner_data_->current_odometry->pose.position;
   for (const auto & stop_line : stop_lines_) {
-    const auto p_stop_lines = getLinestringIntersects(
-      ego_path, lanelet::utils::to2D(stop_line).basicLineString(), ego_pos, 2);
+    const auto p_stop_lines =
+      getLinestringIntersects(ego_path, lanelet::utils::to2D(stop_line).basicLineString(), ego_pos);
     if (p_stop_lines.empty()) {
       continue;
     }
@@ -73,18 +73,12 @@ std::optional<std::pair<double, geometry_msgs::msg::Point>> WalkwayModule::getSt
     return std::make_pair(dist_ego_to_stop, p_stop_lines.front());
   }
 
-  {
-    exist_stopline_in_map = false;
+  exist_stopline_in_map = false;
 
-    if (!path_intersects.empty()) {
-      const auto p_stop_line = path_intersects.front();
-      const auto dist_ego_to_stop = calcSignedArcLength(ego_path.points, ego_pos, p_stop_line) -
-                                    planner_param_.stop_distance_from_crosswalk;
-      return std::make_pair(dist_ego_to_stop, p_stop_line);
-    }
-  }
-
-  return {};
+  const auto p_stop_line = first_path_point_on_walkway;
+  const auto dist_ego_to_stop = calcSignedArcLength(ego_path.points, ego_pos, p_stop_line) -
+                                planner_param_.stop_distance_from_crosswalk;
+  return std::make_pair(dist_ego_to_stop, p_stop_line);
 }
 
 bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
@@ -97,21 +91,19 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
   const auto input = *path;
 
   const auto & ego_pos = planner_data_->current_odometry->pose.position;
-  const auto path_intersects =
-    getPolygonIntersects(input, walkway_.polygon2d().basicPolygon(), ego_pos, 2);
-
-  if (path_intersects.empty()) {
+  const auto path_end_points_on_walkway =
+    getPathEndPointsOnCrosswalk(input, walkway_.polygon2d().basicPolygon(), ego_pos);
+  if (!path_end_points_on_walkway) {
     return false;
   }
 
+  const auto & first_path_point_on_walkway = path_end_points_on_walkway->first;
+
   if (state_ == State::APPROACH) {
     bool exist_stopline_in_map;
-    const auto p_stop_line = getStopLine(input, exist_stopline_in_map, path_intersects);
-    if (!p_stop_line) {
-      return false;
-    }
+    const auto p_stop_line = getStopLine(input, exist_stopline_in_map, first_path_point_on_walkway);
 
-    const auto & p_stop = p_stop_line->second;
+    const auto & p_stop = p_stop_line.second;
     const auto stop_distance_from_crosswalk =
       exist_stopline_in_map ? 0.0 : planner_param_.stop_distance_from_crosswalk;
     const auto margin = stop_distance_from_crosswalk + base_link2front;
@@ -129,7 +121,7 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
     /* get stop point and stop factor */
     StopFactor stop_factor;
     stop_factor.stop_pose = stop_pose.value();
-    stop_factor.stop_factor_points.push_back(path_intersects.front());
+    stop_factor.stop_factor_points.push_back(path_end_points_on_walkway->first);
     planning_utils::appendStopReason(stop_factor, stop_reason);
     velocity_factor_.set(
       path->points, planner_data_->current_odometry->pose, stop_pose.value(),

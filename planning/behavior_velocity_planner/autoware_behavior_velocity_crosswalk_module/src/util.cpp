@@ -111,14 +111,19 @@ bool checkRegulatoryElementExistence(const lanelet::LaneletMapPtr & lanelet_map_
   return !lanelet::utils::query::crosswalks(all_lanelets).empty();
 }
 
-std::vector<geometry_msgs::msg::Point> getPolygonIntersects(
+/**
+ * @brief Calculate path end (= first and last) points on the crosswalk
+ *
+ * @return first and last path points on the crosswalk
+ */
+std::optional<std::pair<geometry_msgs::msg::Point, geometry_msgs::msg::Point>>
+getPathEndPointsOnCrosswalk(
   const PathWithLaneId & ego_path, const lanelet::BasicPolygon2d & polygon,
-  const geometry_msgs::msg::Point & ego_pos,
-  const size_t max_num = std::numeric_limits<size_t>::max())
+  const geometry_msgs::msg::Point & ego_pos)
 {
   std::vector<Point2d> intersects{};
 
-  bool found_max_num = false;
+  bool has_collision_twice = false;
   for (size_t i = 0; i < ego_path.points.size() - 1; ++i) {
     const auto & p_back = ego_path.points.at(i).point.pose.position;
     const auto & p_front = ego_path.points.at(i + 1).point.pose.position;
@@ -129,13 +134,13 @@ std::vector<geometry_msgs::msg::Point> getPolygonIntersects(
 
     for (const auto & p : tmp_intersects) {
       intersects.push_back(p);
-      if (intersects.size() == max_num) {
-        found_max_num = true;
+      if (intersects.size() == 2) {
+        has_collision_twice = true;
         break;
       }
     }
 
-    if (found_max_num) {
+    if (has_collision_twice) {
       break;
     }
   }
@@ -152,22 +157,24 @@ std::vector<geometry_msgs::msg::Point> getPolygonIntersects(
 
   std::sort(intersects.begin(), intersects.end(), compare);
 
-  // convert autoware::universe_utils::Point2d to geometry::msg::Point
-  std::vector<geometry_msgs::msg::Point> geometry_points;
-  for (const auto & p : intersects) {
-    geometry_points.push_back(createPoint(p.x(), p.y(), ego_pos.z));
+  if (intersects.empty()) {
+    return std::nullopt;
   }
-  return geometry_points;
+
+  const auto & front_intersects = intersects.front();
+  const auto & back_intersects = intersects.back();
+  return std::make_pair(
+    createPoint(front_intersects.x(), front_intersects.y(), ego_pos.z),
+    createPoint(back_intersects.x(), back_intersects.y(), ego_pos.z));
 }
 
 std::vector<geometry_msgs::msg::Point> getLinestringIntersects(
   const PathWithLaneId & ego_path, const lanelet::BasicLineString2d & linestring,
-  const geometry_msgs::msg::Point & ego_pos,
-  const size_t max_num = std::numeric_limits<size_t>::max())
+  const geometry_msgs::msg::Point & ego_pos)
 {
   std::vector<Point2d> intersects{};
 
-  bool found_max_num = false;
+  bool has_collision_twice = false;
   for (size_t i = 0; i < ego_path.points.size() - 1; ++i) {
     const auto & p_back = ego_path.points.at(i).point.pose.position;
     const auto & p_front = ego_path.points.at(i + 1).point.pose.position;
@@ -178,13 +185,13 @@ std::vector<geometry_msgs::msg::Point> getLinestringIntersects(
 
     for (const auto & p : tmp_intersects) {
       intersects.push_back(p);
-      if (intersects.size() == max_num) {
-        found_max_num = true;
+      if (intersects.size() == 2) {
+        has_collision_twice = true;
         break;
       }
     }
 
-    if (found_max_num) {
+    if (has_collision_twice) {
       break;
     }
   }

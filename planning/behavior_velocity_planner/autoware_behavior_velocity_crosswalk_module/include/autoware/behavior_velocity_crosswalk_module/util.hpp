@@ -97,13 +97,14 @@ std::set<int64_t> getCrosswalkIdSetOnPath(
 
 bool checkRegulatoryElementExistence(const lanelet::LaneletMapPtr & lanelet_map_ptr);
 
-std::vector<geometry_msgs::msg::Point> getPolygonIntersects(
+std::optional<std::pair<geometry_msgs::msg::Point, geometry_msgs::msg::Point>>
+getPathEndPointsOnCrosswalk(
   const PathWithLaneId & ego_path, const lanelet::BasicPolygon2d & polygon,
-  const geometry_msgs::msg::Point & ego_pos, const size_t max_num);
+  const geometry_msgs::msg::Point & ego_pos);
 
 std::vector<geometry_msgs::msg::Point> getLinestringIntersects(
   const PathWithLaneId & ego_path, const lanelet::BasicLineString2d & linestring,
-  const geometry_msgs::msg::Point & ego_pos, const size_t max_num);
+  const geometry_msgs::msg::Point & ego_pos);
 
 std::optional<lanelet::ConstLineString3d> getStopLineFromMap(
   const lanelet::Id lane_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,

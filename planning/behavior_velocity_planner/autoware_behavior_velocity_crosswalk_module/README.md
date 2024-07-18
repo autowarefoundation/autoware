@@ -8,6 +8,41 @@ This module judges whether the ego should stop in front of the crosswalk in orde
   ![crosswalk_module](docs/crosswalk_module.svg){width=1100}
 </figure>
 
+## Flowchart
+
+```plantuml
+@startuml
+skinparam monochrome true
+
+title modifyPathVelocity
+start
+:getPathEndPointsOnCrosswalk;
+group apply slow down
+  :applySlowDownByLanleet2Map;
+  :applySlowDownByOcclusion;
+end group
+group calculate stop pose
+  :getDefaultStopPose;
+  :resamplePath;
+  :checkStopForCrosswalkUsers;
+  :checkStopForStuckVehicles;
+end group
+group apply stop
+  :getNearestStopFactor;
+  :setSafe;
+  :setDistanceToStop;
+
+  if (isActivated() is True?) then (yes)
+    :planGo;
+  else (no)
+    :planStop;
+  endif
+end group
+
+stop
+@enduml
+```
+
 ## Features
 
 ### Yield the Way to the Pedestrians
