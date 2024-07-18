@@ -107,7 +107,7 @@ public:
     const autoware_perception_msgs::msg::DetectedObject & object) override;
   std::optional<size_t> getPointCloudWithinObject(
     const autoware_perception_msgs::msg::DetectedObject & object,
-    const pcl::PointCloud<pcl::PointXY>::Ptr neighbor_pointcloud);
+    const pcl::PointCloud<pcl::PointXY>::Ptr pointcloud);
 };
 class Validator3D : public Validator
 {
