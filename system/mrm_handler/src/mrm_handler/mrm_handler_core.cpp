@@ -131,19 +131,20 @@ void MrmHandler::publishGearCmd()
 {
   using autoware_vehicle_msgs::msg::GearCommand;
   GearCommand msg;
-
   msg.stamp = this->now();
-  const auto command = [&]() {
-    // If stopped and use_parking is not true, send the last gear command
-    if (isStopped())
-      return (param_.use_parking_after_stopped) ? GearCommand::PARK : last_gear_command_;
-    return (isDrivingBackwards()) ? GearCommand::REVERSE : GearCommand::DRIVE;
-  }();
 
-  msg.command = command;
-  last_gear_command_ = msg.command;
+  if (isEmergency()) {
+    // gear command is created within mrm_handler
+    msg.command =
+      (param_.use_parking_after_stopped && isStopped()) ? GearCommand::PARK : last_gear_command_;
+  } else {
+    // use the same gear as the input gear
+    auto gear = sub_gear_cmd_.takeData();
+    msg.command = (gear == nullptr) ? last_gear_command_ : gear->command;
+    last_gear_command_ = msg.command;
+  }
+
   pub_gear_cmd_->publish(msg);
-  return;
 }
 
 void MrmHandler::publishMrmState()
@@ -523,14 +524,6 @@ bool MrmHandler::isStopped()
   if (odom == nullptr) return false;
   constexpr auto th_stopped_velocity = 0.001;
   return (std::abs(odom->twist.twist.linear.x) < th_stopped_velocity);
-}
-
-bool MrmHandler::isDrivingBackwards()
-{
-  auto odom = sub_odom_.takeData();
-  if (odom == nullptr) return false;
-  constexpr auto th_moving_backwards = -0.001;
-  return odom->twist.twist.linear.x < th_moving_backwards;
 }
 
 bool MrmHandler::isEmergency() const
