@@ -110,7 +110,7 @@ repositories:
     url: https://github.com/mojomex/transport_drivers
     version: mutable-buffer-in-udp-callback
   # Continental compatible version of ROS 2 socket CAN
-  ros2_socketcan:
+  sensor_component/external/ros2_socketcan:
     type: git
     url: https://github.com/knzo25/ros2_socketcan
     version: feat/continental_fd
