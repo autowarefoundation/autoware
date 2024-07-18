@@ -8,6 +8,7 @@
 
 # Ignore Docker files
 docker
+!docker/etc
 
 # Ignore a part of files under src
 src/*/*.asc
