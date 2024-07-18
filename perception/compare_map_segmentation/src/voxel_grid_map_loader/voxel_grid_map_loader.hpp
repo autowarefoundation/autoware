@@ -196,7 +196,7 @@ public:
     rclcpp::Node * node, double leaf_size, double downsize_ratio_z_axis,
     std::string * tf_map_input_frame, std::mutex * mutex,
     rclcpp::CallbackGroup::SharedPtr main_callback_group);
-  void onEstimatedPoseCallback(nav_msgs::msg::Odometry::ConstSharedPtr pose);
+  void onEstimatedPoseCallback(nav_msgs::msg::Odometry::ConstSharedPtr msg);
 
   void timer_callback();
   bool should_update_map() const;
