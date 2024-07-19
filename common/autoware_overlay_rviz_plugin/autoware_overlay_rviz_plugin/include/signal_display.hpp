@@ -103,8 +103,7 @@ private:
     turn_signals_sub_;
   rclcpp::Subscription<autoware_vehicle_msgs::msg::HazardLightsReport>::SharedPtr
     hazard_lights_sub_;
-  rclcpp::Subscription<autoware_perception_msgs::msg::TrafficLightGroupArray>::SharedPtr
-    traffic_sub_;
+  rclcpp::Subscription<autoware_perception_msgs::msg::TrafficLightGroup>::SharedPtr traffic_sub_;
   rclcpp::Subscription<tier4_planning_msgs::msg::VelocityLimit>::SharedPtr speed_limit_sub_;
 
   std::mutex property_mutex_;
@@ -118,7 +117,7 @@ private:
     const autoware_vehicle_msgs::msg::HazardLightsReport::ConstSharedPtr & msg);
   void updateSpeedLimitData(const tier4_planning_msgs::msg::VelocityLimit::ConstSharedPtr msg);
   void updateTrafficLightData(
-    const autoware_perception_msgs::msg::TrafficLightGroupArray::ConstSharedPtr msg);
+    const autoware_perception_msgs::msg::TrafficLightGroup::ConstSharedPtr msg);
   void drawWidget(QImage & hud);
 };
 }  // namespace autoware_overlay_rviz_plugin

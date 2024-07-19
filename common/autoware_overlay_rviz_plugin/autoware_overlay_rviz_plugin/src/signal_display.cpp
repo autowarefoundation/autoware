@@ -112,9 +112,10 @@ void SignalDisplay::onInitialize()
   speed_limit_topic_property_->initialize(rviz_ros_node);
 
   traffic_topic_property_ = std::make_unique<rviz_common::properties::RosTopicProperty>(
-    "Traffic Topic", "/perception/traffic_light_recognition/traffic_signals",
-    "autoware_perception_msgs/msgs/msg/TrafficLightGroupArray", "Topic for Traffic Light Data",
-    this, SLOT(topic_updated_traffic()));
+    "Traffic Topic",
+    "/planning/scenario_planning/lane_driving/behavior_planning/debug/traffic_signal",
+    "autoware_perception_msgs/msgs/msg/TrafficLightGroup", "Topic for Traffic Light Data", this,
+    SLOT(topic_updated_traffic()));
   traffic_topic_property_->initialize(rviz_ros_node);
 }
 
@@ -192,7 +193,7 @@ void SignalDisplay::onDisable()
 }
 
 void SignalDisplay::updateTrafficLightData(
-  const autoware_perception_msgs::msg::TrafficLightGroupArray::ConstSharedPtr msg)
+  const autoware_perception_msgs::msg::TrafficLightGroup::ConstSharedPtr msg)
 {
   std::lock_guard<std::mutex> lock(property_mutex_);
 
@@ -458,14 +459,13 @@ void SignalDisplay::topic_updated_traffic()
   // resubscribe to the topic
   traffic_sub_.reset();
   auto rviz_ros_node = context_->getRosNodeAbstraction().lock();
-  traffic_sub_ =
-    rviz_ros_node->get_raw_node()
-      ->create_subscription<autoware_perception_msgs::msg::TrafficLightGroupArray>(
-        traffic_topic_property_->getTopicStd(),
-        rclcpp::QoS(rclcpp::KeepLast(10)).durability_volatile().reliable(),
-        [this](const autoware_perception_msgs::msg::TrafficLightGroupArray::SharedPtr msg) {
-          updateTrafficLightData(msg);
-        });
+  traffic_sub_ = rviz_ros_node->get_raw_node()
+                   ->create_subscription<autoware_perception_msgs::msg::TrafficLightGroup>(
+                     traffic_topic_property_->getTopicStd(),
+                     rclcpp::QoS(rclcpp::KeepLast(10)).durability_volatile().reliable(),
+                     [this](const autoware_perception_msgs::msg::TrafficLightGroup::SharedPtr msg) {
+                       updateTrafficLightData(msg);
+                     });
 }
 
 }  // namespace autoware_overlay_rviz_plugin

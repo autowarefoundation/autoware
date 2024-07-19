@@ -25,7 +25,6 @@
 
 #include <autoware_perception_msgs/msg/traffic_light_element.hpp>
 #include <autoware_perception_msgs/msg/traffic_light_group.hpp>
-#include <autoware_perception_msgs/msg/traffic_light_group_array.hpp>
 
 #include <OgreColourValue.h>
 #include <OgreMaterial.h>
@@ -40,8 +39,8 @@ public:
   TrafficDisplay();
   void drawTrafficLightIndicator(QPainter & painter, const QRectF & backgroundRect);
   void updateTrafficLightData(
-    const autoware_perception_msgs::msg::TrafficLightGroupArray::ConstSharedPtr & msg);
-  autoware_perception_msgs::msg::TrafficLightGroupArray current_traffic_;
+    const autoware_perception_msgs::msg::TrafficLightGroup::ConstSharedPtr & msg);
+  autoware_perception_msgs::msg::TrafficLightGroup current_traffic_;
 
 private:
   QImage traffic_light_image_;
