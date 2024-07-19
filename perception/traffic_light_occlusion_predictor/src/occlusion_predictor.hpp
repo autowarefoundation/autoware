@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-#ifndef TRAFFIC_LIGHT_OCCLUSION_PREDICTOR__OCCLUSION_PREDICTOR_HPP_
-#define TRAFFIC_LIGHT_OCCLUSION_PREDICTOR__OCCLUSION_PREDICTOR_HPP_
+#ifndef OCCLUSION_PREDICTOR_HPP_
+#define OCCLUSION_PREDICTOR_HPP_
 
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/pcl_conversion.hpp>
@@ -43,7 +43,7 @@
 #include <string>
 #include <vector>
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 
 struct Ray
@@ -93,6 +93,6 @@ private:
   float elevation_occlusion_resolution_deg_;
 };
 
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
 
-#endif  // TRAFFIC_LIGHT_OCCLUSION_PREDICTOR__OCCLUSION_PREDICTOR_HPP_
+#endif  // OCCLUSION_PREDICTOR_HPP_

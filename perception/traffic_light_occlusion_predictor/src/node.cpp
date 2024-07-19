@@ -12,8 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "traffic_light_occlusion_predictor/nodelet.hpp"
+#define EIGEN_MPL2_ONLY
 
+#include "node.hpp"
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <autoware/universe_utils/system/stop_watch.hpp>
 #include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <autoware_lanelet2_extension/utility/utilities.hpp>
@@ -30,16 +34,13 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
-#define EIGEN_MPL2_ONLY
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-
-namespace traffic_light
+namespace autoware::traffic_light
 {
 
-TrafficLightOcclusionPredictorNodelet::TrafficLightOcclusionPredictorNodelet(
+TrafficLightOcclusionPredictorNode::TrafficLightOcclusionPredictorNode(
   const rclcpp::NodeOptions & node_options)
 : Node("traffic_light_occlusion_predictor_node", node_options),
   tf_buffer_(this->get_clock()),
@@ -53,7 +54,7 @@ TrafficLightOcclusionPredictorNodelet::TrafficLightOcclusionPredictorNodelet(
   // subscribers
   map_sub_ = create_subscription<autoware_map_msgs::msg::LaneletMapBin>(
     "~/input/vector_map", rclcpp::QoS{1}.transient_local(),
-    std::bind(&TrafficLightOcclusionPredictorNodelet::mapCallback, this, _1));
+    std::bind(&TrafficLightOcclusionPredictorNode::mapCallback, this, _1));
 
   // publishers
   signal_pub_ =
@@ -79,7 +80,7 @@ TrafficLightOcclusionPredictorNodelet::TrafficLightOcclusionPredictorNodelet(
   synchronizer_ = std::make_shared<SynchronizerType>(
     this, topics, qos,
     std::bind(
-      &TrafficLightOcclusionPredictorNodelet::syncCallback, this, _1, _2, _3, _4,
+      &TrafficLightOcclusionPredictorNode::syncCallback, this, _1, _2, _3, _4,
       tier4_perception_msgs::msg::TrafficLightRoi::CAR_TRAFFIC_LIGHT),
     config_.max_image_cloud_delay, config_.max_wait_t);
 
@@ -89,14 +90,14 @@ TrafficLightOcclusionPredictorNodelet::TrafficLightOcclusionPredictorNodelet(
   synchronizer_ped_ = std::make_shared<SynchronizerType>(
     this, topics_ped, qos_ped,
     std::bind(
-      &TrafficLightOcclusionPredictorNodelet::syncCallback, this, _1, _2, _3, _4,
+      &TrafficLightOcclusionPredictorNode::syncCallback, this, _1, _2, _3, _4,
       tier4_perception_msgs::msg::TrafficLightRoi::PEDESTRIAN_TRAFFIC_LIGHT),
     config_.max_image_cloud_delay, config_.max_wait_t);
 
   subscribed_.resize(2, false);
 }
 
-void TrafficLightOcclusionPredictorNodelet::mapCallback(
+void TrafficLightOcclusionPredictorNode::mapCallback(
   const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr input_msg)
 {
   traffic_light_position_map_.clear();
@@ -121,7 +122,7 @@ void TrafficLightOcclusionPredictorNodelet::mapCallback(
   }
 }
 
-void TrafficLightOcclusionPredictorNodelet::syncCallback(
+void TrafficLightOcclusionPredictorNode::syncCallback(
   const tier4_perception_msgs::msg::TrafficLightArray::ConstSharedPtr in_signal_msg,
   const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr in_roi_msg,
   const sensor_msgs::msg::CameraInfo::ConstSharedPtr in_cam_info_msg,
@@ -184,7 +185,7 @@ void TrafficLightOcclusionPredictorNodelet::syncCallback(
     std::fill(subscribed_.begin(), subscribed_.end(), false);
   }
 }
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(traffic_light::TrafficLightOcclusionPredictorNodelet)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::traffic_light::TrafficLightOcclusionPredictorNode)

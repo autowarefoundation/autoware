@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAFFIC_LIGHT_OCCLUSION_PREDICTOR__NODELET_HPP_
-#define TRAFFIC_LIGHT_OCCLUSION_PREDICTOR__NODELET_HPP_
+#ifndef NODE_HPP_
+#define NODE_HPP_
+
+#include "occlusion_predictor.hpp"
 
 #include <perception_utils/prime_synchronizer.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <traffic_light_occlusion_predictor/occlusion_predictor.hpp>
 #include <traffic_light_utils/traffic_light_utils.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
@@ -44,12 +45,12 @@
 #include <mutex>
 #include <vector>
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
-class TrafficLightOcclusionPredictorNodelet : public rclcpp::Node
+class TrafficLightOcclusionPredictorNode : public rclcpp::Node
 {
 public:
-  explicit TrafficLightOcclusionPredictorNodelet(const rclcpp::NodeOptions & node_options);
+  explicit TrafficLightOcclusionPredictorNode(const rclcpp::NodeOptions & node_options);
 
 private:
   struct Config
@@ -108,5 +109,5 @@ private:
   std::vector<int> occlusion_ratios_;
   tier4_perception_msgs::msg::TrafficLightArray out_msg_;
 };
-}  // namespace traffic_light
-#endif  // TRAFFIC_LIGHT_OCCLUSION_PREDICTOR__NODELET_HPP_
+}  // namespace autoware::traffic_light
+#endif  // NODE_HPP_

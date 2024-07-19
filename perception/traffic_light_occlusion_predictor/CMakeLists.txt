@@ -13,18 +13,18 @@ include_directories(
     ${PCL_INCLUDE_DIRS}
 )
 
-ament_auto_add_library(traffic_light_occlusion_predictor SHARED
-  src/nodelet.cpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/node.cpp
   src/occlusion_predictor.cpp
 )
 
-rclcpp_components_register_node(traffic_light_occlusion_predictor
-  PLUGIN "traffic_light::TrafficLightOcclusionPredictorNodelet"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::traffic_light::TrafficLightOcclusionPredictorNode"
   EXECUTABLE traffic_light_occlusion_predictor_node
 )
 
 link_directories(${PCL_LIBRARY_DIRS})
-target_link_libraries(traffic_light_occlusion_predictor ${PCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
 ament_auto_package(INSTALL_TO_SHARE
   config
