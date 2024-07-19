@@ -187,7 +187,7 @@ bool MapBasedDetector::getTransform(
     geometry_msgs::msg::TransformStamped transform =
       tf_buffer_.lookupTransform("map", frame_id, t, rclcpp::Duration::from_seconds(0.2));
     tf2::fromMsg(transform.transform, tf);
-  } catch (tf2::TransformException & ex) {
+  } catch (const tf2::TransformException & ex) {
     return false;
   }
   return true;
