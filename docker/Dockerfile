@@ -189,6 +189,8 @@ COPY --from=autoware-universe /autoware/install/ /autoware/install/
 COPY docker/etc/.bash_aliases /root/.bash_aliases
 RUN echo "source /autoware/install/setup.bash" > /etc/bash.bashrc
 
+RUN echo "test"
+
 # Create entrypoint
 COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
