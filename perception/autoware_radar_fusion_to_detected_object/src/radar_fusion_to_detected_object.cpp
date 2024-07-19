@@ -205,7 +205,7 @@ RadarFusionToDetectedObject::filterRadarWithinObject(
 // (Target value is amplitude if using radar pointcloud. Target value is probability if using radar
 // objects).
 TwistWithCovariance RadarFusionToDetectedObject::estimateTwist(
-  const DetectedObject & object, std::shared_ptr<std::vector<RadarInput>> & radars)
+  const DetectedObject & object, const std::shared_ptr<std::vector<RadarInput>> & radars)
 {
   if (!radars || (*radars).empty()) {
     TwistWithCovariance output{};
@@ -298,7 +298,7 @@ TwistWithCovariance RadarFusionToDetectedObject::estimateTwist(
 
 // Judge whether low confidence objects that do not have some radar points/objects or not.
 bool RadarFusionToDetectedObject::isQualified(
-  const DetectedObject & object, std::shared_ptr<std::vector<RadarInput>> & radars)
+  const DetectedObject & object, const std::shared_ptr<std::vector<RadarInput>> & radars)
 {
   if (object.existence_probability > param_.threshold_probability) {
     return true;
