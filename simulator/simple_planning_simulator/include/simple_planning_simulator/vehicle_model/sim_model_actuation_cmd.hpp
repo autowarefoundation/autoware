@@ -1,4 +1,4 @@
-// Copyright 2023 The Autoware Foundation.
+// Copyright 2024 The Autoware Foundation.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_DELAY_STEER_MAP_ACC_GEARED_HPP_
-#define SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_DELAY_STEER_MAP_ACC_GEARED_HPP_
+#ifndef SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_ACTUATION_CMD_HPP_
+#define SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_ACTUATION_CMD_HPP_
 
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/LU"
@@ -27,55 +27,33 @@
 #include <string>
 #include <vector>
 
-class AccelerationMap
+/**
+ * @class ActuationMap
+ * @brief class to convert actuation command
+ */
+class ActuationMap
 {
 public:
-  bool readAccelerationMapFromCSV(const std::string & csv_path)
-  {
-    CSVLoader csv(csv_path);
-    std::vector<std::vector<std::string>> table;
-    if (!csv.readCSV(table)) {
-      std::cerr << "[SimModelDelaySteerMapAccGeared]: failed to read acceleration map from "
-                << csv_path << std::endl;
-      return false;
-    }
-
-    vehicle_name_ = table[0][0];
-    vel_index_ = CSVLoader::getRowIndex(table);
-    acc_index_ = CSVLoader::getColumnIndex(table);
-    acceleration_map_ = CSVLoader::getMap(table);
-
-    std::cout << "[SimModelDelaySteerMapAccGeared]: success to read acceleration map from "
-              << csv_path << std::endl;
-    return true;
-  }
-
-  double getAcceleration(const double acc_des, const double vel) const
-  {
-    std::vector<double> interpolated_acc_vec;
-    const double clamped_vel = CSVLoader::clampValue(vel, vel_index_);
-
-    // (throttle, vel, acc) map => (throttle, acc) map by fixing vel
-    for (const auto & acc_vec : acceleration_map_) {
-      interpolated_acc_vec.push_back(interpolation::lerp(vel_index_, acc_vec, clamped_vel));
-    }
-    // calculate throttle
-    // When the desired acceleration is smaller than the throttle area, return min acc
-    // When the desired acceleration is greater than the throttle area, return max acc
-    const double clamped_acc = CSVLoader::clampValue(acc_des, acc_index_);
-    const double acc = interpolation::lerp(acc_index_, interpolated_acc_vec, clamped_acc);
-
-    return acc;
-  }
-  std::vector<std::vector<double>> acceleration_map_;
+  /**
+   * @brief read actuation map from csv file
+   * @param [in] csv_path path to csv file
+   * @param [in] validation flag to validate data
+   * @return true if success to read
+   */
+  bool readActuationMapFromCSV(const std::string & csv_path, const bool validation = false);
+  double getControlCommand(const double actuation, const double state) const;
 
 private:
-  std::string vehicle_name_;
-  std::vector<double> vel_index_;
-  std::vector<double> acc_index_;
+  std::vector<double> state_index_;  // e.g. velocity, steering
+  std::vector<double> actuation_index_;
+  std::vector<std::vector<double>> actuation_map_;
 };
 
-class SimModelDelaySteerMapAccGeared : public SimModelInterface
+/**
+ * @class SimModelActuationCmd
+ * @brief class to handle vehicle model with actuation command
+ */
+class SimModelActuationCmd : public SimModelInterface
 {
 public:
   /**
@@ -86,24 +64,39 @@ public:
    * @param [in] steer_rate_lim steering angular velocity limit [rad/ss]
    * @param [in] wheelbase vehicle wheelbase length [m]
    * @param [in] dt delta time information to set input buffer for delay
-   * @param [in] acc_delay time delay for accel command [s]
+   * @param [in] accel_delay time delay for accel command [s]
    * @param [in] acc_time_constant time constant for 1D model of accel dynamics
+   * @param [in] brake_delay time delay for brake command [s]
+   * @param [in] brake_time_constant time constant for 1D model of brake dynamics
    * @param [in] steer_delay time delay for steering command [s]
    * @param [in] steer_time_constant time constant for 1D model of steering dynamics
    * @param [in] steer_bias steering bias [rad]
-   * @param [in] path path to csv file for acceleration conversion map
+   * @param [in] convert_accel_cmd flag to convert accel command
+   * @param [in] convert_brake_cmd flag to convert brake command
+   * @param [in] convert_steer_cmd flag to convert steer command
+   * @param [in] accel_map_path path to csv file for accel conversion map
+   * @param [in] brake_map_path path to csv file for brake conversion map
+   * @param [in] steer_map_path path to csv file for steer conversion map
    */
-  SimModelDelaySteerMapAccGeared(
+  SimModelActuationCmd(
     double vx_lim, double steer_lim, double vx_rate_lim, double steer_rate_lim, double wheelbase,
-    double dt, double acc_delay, double acc_time_constant, double steer_delay,
-    double steer_time_constant, double steer_bias, std::string path);
+    double dt, double accel_delay, double accel_time_constant, double brake_delay,
+    double brake_time_constant, double steer_delay, double steer_time_constant, double steer_bias,
+    bool convert_accel_cmd, bool convert_brake_cmd, bool convert_steer_cmd,
+    std::string accel_map_path, std::string brake_map_path, std::string steer_map_path);
 
   /**
    * @brief default destructor
    */
-  ~SimModelDelaySteerMapAccGeared() = default;
+  ~SimModelActuationCmd() = default;
 
-  AccelerationMap acc_map_;
+  ActuationMap accel_map_;
+  ActuationMap brake_map_;
+  ActuationMap steer_map_;
+
+  bool convert_accel_cmd_;
+  bool convert_brake_cmd_;
+  bool convert_steer_cmd_;
 
 private:
   const double MIN_TIME_CONSTANT;  //!< @brief minimum time constant
@@ -117,9 +110,11 @@ private:
     ACCX,
   };
   enum IDX_U {
-    ACCX_DES = 0,
+    ACCEL_DES = 0,
+    BRAKE_DES,
+    SLOPE_ACCX,
     STEER_DES,
-    DRIVE_SHIFT,
+    GEAR,
   };
 
   const double vx_lim_;          //!< @brief velocity limit [m/s]
@@ -128,10 +123,13 @@ private:
   const double steer_rate_lim_;  //!< @brief steering angular velocity limit [rad/s]
   const double wheelbase_;       //!< @brief vehicle wheelbase length [m]
 
-  std::deque<double> acc_input_queue_;    //!< @brief buffer for accel command
+  std::deque<double> accel_input_queue_;  //!< @brief buffer for accel command
+  std::deque<double> brake_input_queue_;  //!< @brief buffer for brake command
   std::deque<double> steer_input_queue_;  //!< @brief buffer for steering command
-  const double acc_delay_;                //!< @brief time delay for accel command [s]
-  const double acc_time_constant_;        //!< @brief time constant for accel dynamics
+  const double accel_delay_;              //!< @brief time delay for accel command [s]
+  const double accel_time_constant_;      //!< @brief time constant for accel dynamics
+  const double brake_delay_;              //!< @brief time delay for brake command [s]
+  const double brake_time_constant_;      //!< @brief time constant for brake dynamics
   const double steer_delay_;              //!< @brief time delay for steering command [s]
   const double steer_time_constant_;      //!< @brief time constant for steering dynamics
   const double steer_bias_;               //!< @brief steering angle bias [rad]
@@ -208,4 +206,4 @@ private:
     const double dt);
 };
 
-#endif  // SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_DELAY_STEER_MAP_ACC_GEARED_HPP_
+#endif  // SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_ACTUATION_CMD_HPP_

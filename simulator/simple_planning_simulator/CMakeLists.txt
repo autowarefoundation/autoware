@@ -21,6 +21,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/simple_planning_simulator/vehicle_model/sim_model_delay_steer_acc_geared.cpp
   src/simple_planning_simulator/vehicle_model/sim_model_delay_steer_acc_geared_wo_fall_guard.cpp
   src/simple_planning_simulator/vehicle_model/sim_model_delay_steer_map_acc_geared.cpp
+  src/simple_planning_simulator/vehicle_model/sim_model_actuation_cmd.cpp
   src/simple_planning_simulator/utils/csv_loader.cpp
 )
 target_include_directories(${PROJECT_NAME} PUBLIC ${Python3_INCLUDE_DIRS} ${learning_based_vehicle_model_INCLUDE_DIRS})
@@ -41,4 +42,4 @@ if(BUILD_TESTING)
   )
 endif()
 
-ament_auto_package(INSTALL_TO_SHARE param launch)
+ament_auto_package(INSTALL_TO_SHARE param data launch test)

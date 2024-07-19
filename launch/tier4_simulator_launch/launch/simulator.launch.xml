@@ -13,6 +13,7 @@
   <arg name="launch_dummy_doors"/>
   <arg name="launch_diagnostic_converter"/>
   <arg name="vehicle_info_param_file"/>
+  <arg name="raw_vehicle_cmd_converter_param_path"/>
 
   <arg name="perception/enable_detection_failure" default="true" description="enable to simulate detection failure when using dummy perception"/>
   <arg name="perception/enable_object_recognition" default="false" description="enable object recognition"/>
@@ -159,6 +160,7 @@
       <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
       <arg name="simulator_model_param_file" value="$(var simulator_model)"/>
       <arg name="initial_engage_state" value="$(var initial_engage_state)"/>
+      <arg name="raw_vehicle_cmd_converter_param_path" value="$(var raw_vehicle_cmd_converter_param_path)"/>
     </include>
   </group>
 </launch>

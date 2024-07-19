@@ -34,8 +34,7 @@ public:
   static Map getMap(const Table & table);
   static std::vector<double> getRowIndex(const Table & table);
   static std::vector<double> getColumnIndex(const Table & table);
-  static double clampValue(
-    const double val, const std::vector<double> & ranges, const std::string & name);
+  static double clampValue(const double val, const std::vector<double> & ranges);
 
 private:
   std::string csv_path_;

@@ -14,11 +14,13 @@
 
 import launch
 from launch.actions import DeclareLaunchArgument
+from launch.actions import IncludeLaunchDescription
 from launch.actions import OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 import launch_ros.parameter_descriptions
 from launch_ros.substitutions import FindPackageShare
+from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
 import yaml
 
 
@@ -57,6 +59,7 @@ def launch_setup(context, *args, **kwargs):
             ("input/vector_map", "/map/vector_map"),
             ("input/initialpose", "/initialpose3d"),
             ("input/ackermann_control_command", "/control/command/control_cmd"),
+            ("input/actuation_command", "/control/command/actuation_cmd"),
             ("input/manual_ackermann_control_command", "/vehicle/command/manual_control_cmd"),
             ("input/gear_command", "/control/command/gear_cmd"),
             ("input/manual_gear_command", "/vehicle/command/manual_gear_command"),
@@ -77,7 +80,35 @@ def launch_setup(context, *args, **kwargs):
         ],
     )
 
-    return [simple_planning_simulator_node]
+    # Determine if we should launch raw_vehicle_cmd_converter based on the vehicle_model_type
+    with open(simulator_model_param_path, "r") as f:
+        simulator_model_param_yaml = yaml.safe_load(f)
+    launch_vehicle_cmd_converter = (
+        simulator_model_param_yaml["/**"]["ros__parameters"].get("vehicle_model_type")
+        == "ACTUATION_CMD"
+    )
+
+    # launch_vehicle_cmd_converter = False # tmp
+
+    # 1) Launch only simple_planning_simulator_node
+    if not launch_vehicle_cmd_converter:
+        return [simple_planning_simulator_node]
+    # 2) Launch raw_vehicle_cmd_converter too
+    # vehicle_launch_pkg = LaunchConfiguration("vehicle_model").perform(context) + "_launch"
+    raw_vehicle_converter_node = IncludeLaunchDescription(
+        XMLLaunchDescriptionSource(
+            [
+                FindPackageShare("autoware_raw_vehicle_cmd_converter"),
+                "/launch/raw_vehicle_converter.launch.xml",
+            ]
+        ),
+        launch_arguments={
+            "config_file": LaunchConfiguration("raw_vehicle_cmd_converter_param_path").perform(
+                context
+            ),
+        }.items(),
+    )
+    return [simple_planning_simulator_node, raw_vehicle_converter_node]
 
 
 def generate_launch_description():
@@ -120,6 +151,26 @@ def generate_launch_description():
         [
             FindPackageShare("simple_planning_simulator"),
             "/param/acceleration_map.csv",
+        ],
+    )
+
+    # If you use the simulator of the actuation_cmd, you need to start the raw_vehicle_cmd_converter, and the following are optional parameters.
+    # Please specify the parameter for that.
+    # The default is the one from autoware_raw_vehicle_cmd_converter, but if you want to use a specific vehicle, please specify the one from {vehicle_model}_launch.
+    add_launch_arg(
+        "raw_vehicle_cmd_converter_param_path",
+        [
+            FindPackageShare("autoware_raw_vehicle_cmd_converter"),
+            "/config/raw_vehicle_cmd_converter.param.yaml",
+        ],
+    )
+    # NOTE: This is an argument that is not defined in the universe.
+    # If you use `{vehicle_model}_launch`, you may need to pass `csv_accel_brake_map_path`.
+    add_launch_arg(
+        "csv_accel_brake_map_path",
+        [
+            FindPackageShare("autoware_raw_vehicle_cmd_converter"),
+            "/data/default",
         ],
     )
 

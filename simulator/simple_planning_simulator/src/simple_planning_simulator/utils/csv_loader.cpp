@@ -26,6 +26,8 @@ CSVLoader::CSVLoader(const std::string & csv_path)
 
 bool CSVLoader::readCSV(Table & result, const char delim)
 {
+  // NOTE: Table[i][j] represents the element in the i-th row and j-th column
+
   std::ifstream ifs(csv_path_);
   if (!ifs.is_open()) {
     std::cerr << "Cannot open " << csv_path_.c_str() << std::endl;
@@ -119,6 +121,8 @@ Map CSVLoader::getMap(const Table & table)
 
 std::vector<double> CSVLoader::getRowIndex(const Table & table)
 {
+  // NOTE: table[0][i] represents the element in the 0-th row and i-th column
+  // This means that we are getting the index of each column in the 0-th row
   std::vector<double> index = {};
   for (size_t i = 1; i < table[0].size(); i++) {
     index.push_back(std::stod(table[0][i]));
@@ -128,6 +132,8 @@ std::vector<double> CSVLoader::getRowIndex(const Table & table)
 
 std::vector<double> CSVLoader::getColumnIndex(const Table & table)
 {
+  // NOTE: table[i][0] represents the element in the i-th row and 0-th column
+  // This means that we are getting the index of each row in the 0-th column
   std::vector<double> index = {};
   for (size_t i = 1; i < table.size(); i++) {
     index.push_back(std::stod(table[i][0]));
@@ -135,15 +141,11 @@ std::vector<double> CSVLoader::getColumnIndex(const Table & table)
   return index;
 }
 
-double CSVLoader::clampValue(
-  const double val, const std::vector<double> & ranges, const std::string & name)
+double CSVLoader::clampValue(const double val, const std::vector<double> & ranges)
 {
   const double max_value = *std::max_element(ranges.begin(), ranges.end());
   const double min_value = *std::min_element(ranges.begin(), ranges.end());
   if (val < min_value || max_value < val) {
-    std::cerr << "Input " << name << ": " << val
-              << " is out of range. use closest value. Please update the conversion map"
-              << std::endl;
     return std::min(std::max(val, min_value), max_value);
   }
   return val;

@@ -65,6 +65,7 @@ The purpose of this simulator is for the integration test of planning and contro
 - `DELAY_STEER_ACC_GEARED_WO_FALL_GUARD`
 - `DELAY_STEER_MAP_ACC_GEARED`: applies 1D dynamics and time delay to the steering and acceleration commands. The simulated acceleration is determined by a value converted through the provided acceleration map. This model is valuable for an accurate simulation with acceleration deviations in a real vehicle.
 - `LEARNED_STEER_VEL`: launches learned python models. More about this [here](../learning_based_vehicle_model).
+- `ACTUATION_CMD`: A simulator model that receives `ACTUATION_CMD`. In this case, the `raw_vehicle_cmd_converter` is also launched.
 
 The `IDEAL` model moves ideally as commanded, while the `DELAY` model moves based on a 1st-order with time delay model. The `STEER` means the model receives the steer command. The `VEL` means the model receives the target velocity command, while the `ACC` model receives the target acceleration command. The `GEARED` suffix means that the motion will consider the gear command: the vehicle moves only one direction following the gear.
 
@@ -121,6 +122,22 @@ default,  0.00,  1.39,  2.78,  4.17,  5.56,  6.94,  8.33,  9.72, 11.11, 12.50, 1
 ```
 
 ![acceleration_map](./media/acceleration_map.svg)
+
+##### ACTUATION_CMD model
+
+The simple_planning_simulator usually operates by receiving Control commands, but when the `ACTUATION_CMD` model is selected, it receives Actuation commands instead of Control commands. This model can simulate the motion using the vehicle command that is actually sent to the real vehicle. Therefore, when this model is selected, the `raw_vehicle_cmd_converter` is also launched.
+
+The parameters used in the ACTUATION_CMD are as follows.
+
+| Name                | Type   | Description                                                                                                                                                     | unit |
+| :------------------ | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--- |
+| accel_time_delay    | double | dead time for the acceleration input                                                                                                                            | [s]  |
+| accel_time_constant | double | time constant of the 1st-order acceleration dynamics                                                                                                            | [s]  |
+| brake_time_delay    | double | dead time for the brake input                                                                                                                                   | [s]  |
+| brake_time_constant | double | time constant of the 1st-order brake dynamics                                                                                                                   | [s]  |
+| convert_accel_cmd   | bool   | If true, it is assumed that the command is received converted to an accel actuation value, and it is converted back to acceleration value inside the simulator. | [-]  |
+| convert_brake_cmd   | bool   | If true, it is assumed that the command is received converted to a brake actuation value, and it is converted back to acceleration value inside the simulator.  | [-]  |
+| convert_steer_cmd   | bool   | If true, it is assumed that the command is received converted to a steer actuation value, and it is converted back to steer rate value inside the simulator.    | [-]  |
 
 <!-- deadzone_delta_steer | double | dead zone for the steering dynamics                  | x      | x      | x        | o      | o      | 0.0      | [rad]         |         | -->
 

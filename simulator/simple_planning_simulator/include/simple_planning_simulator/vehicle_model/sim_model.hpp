@@ -15,6 +15,7 @@
 #ifndef SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_HPP_
 #define SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_HPP_
 
+#include "simple_planning_simulator/vehicle_model/sim_model_actuation_cmd.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model_delay_steer_acc.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model_delay_steer_acc_geared.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model_delay_steer_acc_geared_wo_fall_guard.hpp"

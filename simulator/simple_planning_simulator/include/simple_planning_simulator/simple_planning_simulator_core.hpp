@@ -44,6 +44,7 @@
 #include "nav_msgs/msg/odometry.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 #include "tier4_external_api_msgs/srv/initialize_pose.hpp"
+#include "tier4_vehicle_msgs/msg/actuation_command_stamped.hpp"
 
 #include <lanelet2_core/geometry/Lanelet.h>
 #include <tf2_ros/buffer.h>
@@ -52,6 +53,7 @@
 #include <memory>
 #include <random>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace simulation
@@ -83,6 +85,7 @@ using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::Odometry;
 using sensor_msgs::msg::Imu;
 using tier4_external_api_msgs::srv::InitializePose;
+using tier4_vehicle_msgs::msg::ActuationCommandStamped;
 
 class DeltaTime
 {
@@ -115,6 +118,8 @@ public:
   std::shared_ptr<std::normal_distribution<>> steer_dist_;
 };
 
+using InputCommand = std::variant<std::monostate, ActuationCommandStamped, Control>;
+
 class PLANNING_SIMULATOR_PUBLIC SimplePlanningSimulator : public rclcpp::Node
 {
 public:
@@ -138,13 +143,16 @@ private:
   rclcpp::Subscription<GearCommand>::SharedPtr sub_manual_gear_cmd_;
   rclcpp::Subscription<TurnIndicatorsCommand>::SharedPtr sub_turn_indicators_cmd_;
   rclcpp::Subscription<HazardLightsCommand>::SharedPtr sub_hazard_lights_cmd_;
-  rclcpp::Subscription<Control>::SharedPtr sub_ackermann_cmd_;
   rclcpp::Subscription<Control>::SharedPtr sub_manual_ackermann_cmd_;
   rclcpp::Subscription<LaneletMapBin>::SharedPtr sub_map_;
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_init_pose_;
   rclcpp::Subscription<TwistStamped>::SharedPtr sub_init_twist_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_trajectory_;
   rclcpp::Subscription<Engage>::SharedPtr sub_engage_;
+
+  // todo
+  rclcpp::Subscription<Control>::SharedPtr sub_ackermann_cmd_;
+  rclcpp::Subscription<ActuationCommandStamped>::SharedPtr sub_actuation_cmd_;
 
   rclcpp::Service<ControlModeCommand>::SharedPtr srv_mode_req_;
 
@@ -189,6 +197,8 @@ private:
   bool is_initialized_ = false;         //!< @brief flag to check the initial position is set
   bool add_measurement_noise_ = false;  //!< @brief flag to add measurement noise
 
+  InputCommand current_input_command_{};
+
   DeltaTime delta_time_{};  //!< @brief to calculate delta time
 
   MeasurementNoiseGenerator measurement_noise_{};  //!< @brief for measurement noise
@@ -206,14 +216,19 @@ private:
     DELAY_STEER_VEL = 5,
     DELAY_STEER_MAP_ACC_GEARED = 6,
     LEARNED_STEER_VEL = 7,
-    DELAY_STEER_ACC_GEARED_WO_FALL_GUARD = 8
+    DELAY_STEER_ACC_GEARED_WO_FALL_GUARD = 8,
+    ACTUATION_CMD = 9
   } vehicle_model_type_;  //!< @brief vehicle model type to decide the model dynamics
   std::shared_ptr<SimModelInterface> vehicle_model_ptr_;  //!< @brief vehicle model pointer
+
+  void set_input(const InputCommand & cmd, const double acc_by_slope);
 
   /**
    * @brief set input steering, velocity, and acceleration of the vehicle model
    */
   void set_input(const Control & cmd, const double acc_by_slope);
+
+  void set_input(const ActuationCommandStamped & cmd, const double acc_by_slope);
 
   /**
    * @brief set current_vehicle_state_ with received message
@@ -295,7 +310,7 @@ private:
   /**
    * @brief initialize vehicle_model_ptr
    */
-  void initialize_vehicle_model();
+  void initialize_vehicle_model(const std::string & vehicle_model_type_str);
 
   /**
    * @brief add measurement noise

@@ -115,9 +115,6 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
     "input/initialpose", QoS{1}, std::bind(&SimplePlanningSimulator::on_initialpose, this, _1));
   sub_init_twist_ = create_subscription<TwistStamped>(
     "input/initialtwist", QoS{1}, std::bind(&SimplePlanningSimulator::on_initialtwist, this, _1));
-  sub_ackermann_cmd_ = create_subscription<Control>(
-    "input/ackermann_control_command", QoS{1},
-    [this](const Control::ConstSharedPtr msg) { current_ackermann_cmd_ = *msg; });
   sub_manual_ackermann_cmd_ = create_subscription<Control>(
     "input/manual_ackermann_control_command", QoS{1},
     [this](const Control::ConstSharedPtr msg) { current_manual_ackermann_cmd_ = *msg; });
@@ -143,6 +140,23 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
   // TODO(Horibe): should be replaced by mode_request. Keep for the backward compatibility.
   sub_engage_ = create_subscription<Engage>(
     "input/engage", rclcpp::QoS{1}, std::bind(&SimplePlanningSimulator::on_engage, this, _1));
+
+  // Determine input command type based on vehicle_model_type
+  // NOTE:
+  // Initial value must be set to current_input_command_ with the correct type.
+  // If not, the vehicle_model will not be updated, and it will die when publishing the state.
+  const auto vehicle_model_type_str = declare_parameter("vehicle_model_type", "IDEAL_STEER_VEL");
+  if (vehicle_model_type_str == "ACTUATION_CMD") {
+    current_input_command_ = ActuationCommandStamped();
+    sub_actuation_cmd_ = create_subscription<ActuationCommandStamped>(
+      "input/actuation_command", QoS{1},
+      [this](const ActuationCommandStamped::ConstSharedPtr msg) { current_input_command_ = *msg; });
+  } else {  // default command type is ACKERMANN
+    current_input_command_ = Control();
+    sub_ackermann_cmd_ = create_subscription<Control>(
+      "input/ackermann_control_command", QoS{1},
+      [this](const Control::ConstSharedPtr msg) { current_input_command_ = *msg; });
+  }
 
   pub_control_mode_report_ =
     create_publisher<ControlModeReport>("output/control_mode_report", QoS{1});
@@ -175,7 +189,7 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
     rmw_qos_profile_services_default, group_api_service_);
 
   // set vehicle model type
-  initialize_vehicle_model();
+  initialize_vehicle_model(vehicle_model_type_str);
 
   // set initialize source
   const auto initialize_source = declare_parameter("initialize_source", "INITIAL_POSE_TOPIC");
@@ -211,12 +225,8 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
   current_manual_gear_cmd_.command = GearCommand::PARK;
 }
 
-void SimplePlanningSimulator::initialize_vehicle_model()
+void SimplePlanningSimulator::initialize_vehicle_model(const std::string & vehicle_model_type_str)
 {
-  const auto vehicle_model_type_str = declare_parameter("vehicle_model_type", "IDEAL_STEER_VEL");
-
-  RCLCPP_DEBUG(this->get_logger(), "vehicle_model_type = %s", vehicle_model_type_str.c_str());
-
   const double vel_lim = declare_parameter("vel_lim", 50.0);
   const double vel_rate_lim = declare_parameter("vel_rate_lim", 7.0);
   const double steer_lim = declare_parameter("steer_lim", 1.0);
@@ -296,7 +306,30 @@ void SimplePlanningSimulator::initialize_vehicle_model()
 
     vehicle_model_ptr_ = std::make_shared<SimModelLearnedSteerVel>(
       timer_sampling_time_ms_ / 1000.0, model_module_paths, model_param_paths, model_class_names);
+  } else if (vehicle_model_type_str == "ACTUATION_CMD") {
+    vehicle_model_type_ = VehicleModelType::ACTUATION_CMD;
 
+    // time delay
+    const double accel_time_delay = declare_parameter<double>("accel_time_delay");
+    const double accel_time_constant = declare_parameter<double>("accel_time_constant");
+    const double brake_time_delay = declare_parameter<double>("brake_time_delay");
+    const double brake_time_constant = declare_parameter<double>("brake_time_constant");
+
+    // command conversion flag
+    const bool convert_accel_cmd = declare_parameter<bool>("convert_accel_cmd");
+    const bool convert_brake_cmd = declare_parameter<bool>("convert_brake_cmd");
+    const bool convert_steer_cmd = declare_parameter<bool>("convert_steer_cmd");
+
+    // actuation conversion map
+    const std::string accel_map_path = declare_parameter<std::string>("accel_map_path");
+    const std::string brake_map_path = declare_parameter<std::string>("brake_map_path");
+    const std::string steer_map_path = declare_parameter<std::string>("steer_map_path");
+
+    vehicle_model_ptr_ = std::make_shared<SimModelActuationCmd>(
+      vel_lim, steer_lim, vel_rate_lim, steer_rate_lim, wheelbase, timer_sampling_time_ms_ / 1000.0,
+      accel_time_delay, accel_time_constant, brake_time_delay, brake_time_constant,
+      steer_time_delay, steer_time_constant, steer_bias, convert_accel_cmd, convert_brake_cmd,
+      convert_steer_cmd, accel_map_path, brake_map_path, steer_map_path);
   } else {
     throw std::invalid_argument("Invalid vehicle_model_type: " + vehicle_model_type_str);
   }
@@ -378,7 +411,7 @@ void SimplePlanningSimulator::on_timer()
 
     if (current_control_mode_.mode == ControlModeReport::AUTONOMOUS) {
       vehicle_model_ptr_->setGear(current_gear_cmd_.command);
-      set_input(current_ackermann_cmd_, acc_by_slope);
+      set_input(current_input_command_, acc_by_slope);
     } else {
       vehicle_model_ptr_->setGear(current_manual_gear_cmd_.command);
       set_input(current_manual_ackermann_cmd_, acc_by_slope);
@@ -471,6 +504,37 @@ void SimplePlanningSimulator::on_set_pose(
   initial_pose.pose = request->pose.pose.pose;
   set_initial_state_with_transform(initial_pose, initial_twist);
   response->status = tier4_api_utils::response_success();
+}
+
+void SimplePlanningSimulator::set_input(const InputCommand & cmd, const double acc_by_slope)
+{
+  std::visit(
+    [this, acc_by_slope](auto && arg) {
+      using T = std::decay_t<decltype(arg)>;
+      if constexpr (std::is_same_v<T, Control>) {
+        set_input(arg, acc_by_slope);
+      } else if constexpr (std::is_same_v<T, ActuationCommandStamped>) {
+        set_input(arg, acc_by_slope);
+      } else {
+        throw std::invalid_argument("Invalid input command type");
+      }
+    },
+    cmd);
+}
+
+void SimplePlanningSimulator::set_input(
+  const ActuationCommandStamped & cmd, const double acc_by_slope)
+{
+  const auto accel = cmd.actuation.accel_cmd;
+  const auto brake = cmd.actuation.brake_cmd;
+  const auto steer = cmd.actuation.steer_cmd;
+  const auto gear = vehicle_model_ptr_->getGear();
+
+  Eigen::VectorXd input(vehicle_model_ptr_->getDimU());
+  input << accel, brake, acc_by_slope, steer, gear;
+
+  // VehicleModelType::ACTUATION_COMMAND
+  vehicle_model_ptr_->setInput(input);
 }
 
 void SimplePlanningSimulator::set_input(const Control & cmd, const double acc_by_slope)
@@ -612,7 +676,8 @@ void SimplePlanningSimulator::set_initial_state(const Pose & pose, const Twist &
     vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC ||
     vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC_GEARED ||
     vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC_GEARED_WO_FALL_GUARD ||
-    vehicle_model_type_ == VehicleModelType::DELAY_STEER_MAP_ACC_GEARED) {
+    vehicle_model_type_ == VehicleModelType::DELAY_STEER_MAP_ACC_GEARED ||
+    vehicle_model_type_ == VehicleModelType::ACTUATION_CMD) {
     state << x, y, yaw, vx, steer, accx;
   }
   vehicle_model_ptr_->setState(state);
