@@ -35,7 +35,7 @@
     <let name="tracker_merger/output/objects" value="$(var output/objects)"/>
 
     <!-- Multi object tracking -->
-    <include file="$(find-pkg-share multi_object_tracker)/launch/multi_object_tracker.launch.xml">
+    <include file="$(find-pkg-share autoware_multi_object_tracker)/launch/multi_object_tracker.launch.xml">
       <arg name="selected_input_channels" value="$(var multi_object_tracker/input/selected_input_channels)"/>
       <arg name="output" value="$(var multi_object_tracker/output/objects)"/>
       <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path)"/>
@@ -89,7 +89,7 @@
     </group>
 
     <!-- Multi object tracking -->
-    <include file="$(find-pkg-share multi_object_tracker)/launch/multi_object_tracker.launch.xml">
+    <include file="$(find-pkg-share autoware_multi_object_tracker)/launch/multi_object_tracker.launch.xml">
       <arg name="selected_input_channels" value="$(var detection_enabled_channels)"/>
       <arg name="output" value="$(var output/objects)"/>
       <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path)"/>

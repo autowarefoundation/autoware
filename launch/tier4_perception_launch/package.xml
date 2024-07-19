@@ -17,6 +17,7 @@
   <exec_depend>autoware_crosswalk_traffic_light_estimator</exec_depend>
   <exec_depend>autoware_detection_by_tracker</exec_depend>
   <exec_depend>autoware_map_based_prediction</exec_depend>
+  <exec_depend>autoware_multi_object_tracker</exec_depend>
   <exec_depend>autoware_object_merger</exec_depend>
   <exec_depend>autoware_object_range_splitter</exec_depend>
   <exec_depend>autoware_object_velocity_splitter</exec_depend>
@@ -36,7 +37,6 @@
   <exec_depend>image_projection_based_fusion</exec_depend>
   <exec_depend>image_transport_decompressor</exec_depend>
   <exec_depend>lidar_apollo_instance_segmentation</exec_depend>
-  <exec_depend>multi_object_tracker</exec_depend>
   <exec_depend>occupancy_grid_map_outlier_filter</exec_depend>
   <exec_depend>pointcloud_preprocessor</exec_depend>
   <exec_depend>pointcloud_to_laserscan</exec_depend>

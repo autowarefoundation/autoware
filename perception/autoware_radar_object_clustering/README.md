@@ -44,7 +44,7 @@ When the size information from radar outputs lack accuracy, `is_fixed_size` para
 If the parameter is true, the size of a clustered object is overwritten by the label set by `size_x`, `size_y`, and `size_z` parameters.
 If this package use for faraway dynamic object detection with radar, the parameter is recommended to set to
 `size_x`, `size_y`, `size_z`, as average of vehicle size.
-Note that to use for [multi_objects_tracker](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/multi_object_tracker), the size parameters need to exceed `min_area_matrix` parameters of it.
+Note that to use for [multi_objects_tracker](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/autoware_multi_object_tracker), the size parameters need to exceed `min_area_matrix` parameters of it.
 
 ### Limitation
 
