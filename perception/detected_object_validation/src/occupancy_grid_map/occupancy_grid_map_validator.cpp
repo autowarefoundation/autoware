@@ -163,11 +163,11 @@ void OccupancyGridBasedValidator::showDebugImage(
       auto mask = getMask(ros_occ_grid, object);
       const float mean = mask ? cv::mean(occ_grid, mask.value())[0] * 0.01 : 1.0;
       if (mean_threshold_ < mean) {
-        auto mask = getMask(ros_occ_grid, object, passed_objects_image);
-        if (mask) passed_objects_image = mask.value();
+        auto passed_mask = getMask(ros_occ_grid, object, passed_objects_image);
+        if (passed_mask) passed_objects_image = passed_mask.value();
       } else {
-        auto mask = getMask(ros_occ_grid, object, removed_objects_image);
-        if (mask) removed_objects_image = mask.value();
+        auto removed_mask = getMask(ros_occ_grid, object, removed_objects_image);
+        if (removed_mask) removed_objects_image = removed_mask.value();
       }
     }
   }
