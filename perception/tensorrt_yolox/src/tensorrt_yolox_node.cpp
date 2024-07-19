@@ -40,64 +40,25 @@ TrtYoloXNode::TrtYoloXNode(const rclcpp::NodeOptions & node_options)
   using std::placeholders::_1;
   using std::chrono_literals::operator""ms;
 
-  auto declare_parameter_with_description =
-    [this](std::string name, auto default_val, std::string description = "") {
-      auto param_desc = rcl_interfaces::msg::ParameterDescriptor{};
-      param_desc.description = description;
-      return this->declare_parameter(name, default_val, param_desc);
-    };
+  const std::string model_path = this->declare_parameter<std::string>("model_path");
+  const std::string label_path = this->declare_parameter<std::string>("label_path");
+  const std::string precision = this->declare_parameter<std::string>("precision");
+  const float score_threshold =
+    static_cast<float>(this->declare_parameter<double>("score_threshold"));
+  const float nms_threshold = static_cast<float>(this->declare_parameter<double>("nms_threshold"));
+  const std::string calibration_algorithm =
+    this->declare_parameter<std::string>("calibration_algorithm");
+  const int dla_core_id = this->declare_parameter<int>("dla_core_id");
+  const bool quantize_first_layer = this->declare_parameter<bool>("quantize_first_layer");
+  const bool quantize_last_layer = this->declare_parameter<bool>("quantize_last_layer");
+  const bool profile_per_layer = this->declare_parameter<bool>("profile_per_layer");
+  const double clip_value = this->declare_parameter<double>("clip_value");
+  const bool preprocess_on_gpu = this->declare_parameter<bool>("preprocess_on_gpu");
+  const std::string calibration_image_list_path =
+    this->declare_parameter<std::string>("calibration_image_list_path");
 
-  std::string model_path =
-    declare_parameter_with_description("model_path", "", "The onnx file name for YOLOX model");
-  std::string label_path = declare_parameter_with_description(
-    "label_path", "",
-    "The label file that consists of label name texts for detected object categories");
-  std::string precision = declare_parameter_with_description(
-    "precision", "fp32",
-    "operation precision to be used on inference. Valid value is one of: [fp32, fp16, int8]");
-  float score_threshold = declare_parameter_with_description(
-    "score_threshold", 0.3,
-    ("Objects with a score lower than this value will be ignored. "
-     "This threshold will be ignored if specified model contains EfficientNMS_TRT module in it"));
-  float nms_threshold = declare_parameter_with_description(
-    "nms_threshold", 0.7,
-    ("Detection results will be ignored if IoU over this value. "
-     "This threshold will be ignored if specified model contains EfficientNMS_TRT module in it"));
-  std::string calibration_algorithm = declare_parameter_with_description(
-    "calibration_algorithm", "MinMax",
-    ("Calibration algorithm to be used for quantization when precision==int8. "
-     "Valid value is one of: [Entropy, (Legacy | Percentile), MinMax]"));
-  int dla_core_id = declare_parameter_with_description(
-    "dla_core_id", -1,
-    "If positive ID value is specified, the node assign inference task to the DLA core");
-  bool quantize_first_layer = declare_parameter_with_description(
-    "quantize_first_layer", false,
-    ("If true, set the operating precision for the first (input) layer to be fp16. "
-     "This option is valid only when precision==int8"));
-  bool quantize_last_layer = declare_parameter_with_description(
-    "quantize_last_layer", false,
-    ("If true, set the operating precision for the last (output) layer to be fp16. "
-     "This option is valid only when precision==int8"));
-  bool profile_per_layer = declare_parameter_with_description(
-    "profile_per_layer", false,
-    ("If true, profiler function will be enabled. "
-     "Since the profile function may affect execution speed, it is recommended "
-     "to set this flag true only for development purpose."));
-  double clip_value = declare_parameter_with_description(
-    "clip_value", 0.0,
-    ("If positive value is specified, "
-     "the value of each layer output will be clipped between [0.0, clip_value]. "
-     "This option is valid only when precision==int8 and used to manually specify "
-     "the dynamic range instead of using any calibration"));
-  bool preprocess_on_gpu = declare_parameter_with_description(
-    "preprocess_on_gpu", true, "If true, pre-processing is performed on GPU");
-  std::string calibration_image_list_path = declare_parameter_with_description(
-    "calibration_image_list_path", "",
-    ("Path to a file which contains path to images."
-     "Those images will be used for int8 quantization."));
+  std::string color_map_path = this->declare_parameter<std::string>("color_map_path");
 
-  std::string color_map_path = declare_parameter_with_description(
-    "color_map_path", "", ("Path to a file which contains path to color map."));
   if (!readLabelFile(label_path)) {
     RCLCPP_ERROR(this->get_logger(), "Could not find label file");
     rclcpp::shutdown();

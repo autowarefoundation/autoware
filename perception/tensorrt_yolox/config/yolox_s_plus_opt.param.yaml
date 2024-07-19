@@ -1,6 +1,7 @@
 # cspell: ignore semseg
 /**:
   ros__parameters:
+
     # refine segmentation mask by overlay roi class
     # disable when sematic segmentation accuracy is good enough
     is_roi_overlap_segment: true
@@ -26,6 +27,7 @@
     color_map_path: "$(var data_path)/tensorrt_yolox/semseg_color_map.csv"
     score_threshold: 0.35
     nms_threshold: 0.7
+
     precision: "int8" # Operation precision to be used on inference. Valid value is one of: [fp32, fp16, int8].
     calibration_algorithm: "Entropy" # Calibration algorithm to be used for quantization when precision==int8. Valid value is one of: [Entropy, (Legacy | Percentile), MinMax].
     dla_core_id: -1 # If positive ID value is specified, the node assign inference task to the DLA core.

@@ -1,9 +1,9 @@
 /**:
   ros__parameters:
-    model_path: "$(var data_path)/tensorrt_yolox/$(var model_name).onnx"
-    label_path: "$(var data_path)/tensorrt_yolox/label.txt"
-    score_threshold: 0.35
-    nms_threshold: 0.7
+    model_path: "$(var data_path)/tensorrt_yolox/$(var model_name).onnx" # The onnx file name for YOLOX model.
+    label_path: "$(var data_path)/tensorrt_yolox/label.txt" # The label file path for YOLOX model.
+    score_threshold: 0.35 # Objects with a score lower than this value will be ignored. This threshold will be ignored if specified model contains EfficientNMS_TRT module in it.
+    nms_threshold: 0.7 # Detection results will be ignored if IoU over this value. This threshold will be ignored if specified model contains EfficientNMS_TRT module in it.
     precision: "fp16" # Operation precision to be used on inference. Valid value is one of: [fp32, fp16, int8].
     calibration_algorithm: "MinMax" # Calibration algorithm to be used for quantization when precision==int8. Valid value is one of: [Entropy, (Legacy | Percentile), MinMax].
     dla_core_id: -1 # If positive ID value is specified, the node assign inference task to the DLA core.
