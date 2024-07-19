@@ -103,7 +103,7 @@ private:
     const std::string & source, const std::string & target, const rclcpp::Time & stamp,
     double duration_sec) const;
 
-  bool isStopRequired(const bool is_obstacle_found, const bool is_stopped);
+  bool isStopRequired(const bool is_obstacle_found, const bool is_vehicle_stopped);
 
   // ros
   mutable tf2_ros::Buffer tf_buffer_{get_clock()};
