@@ -293,7 +293,7 @@ void MultiCameraFusion::groupFusion(
   std::map<IdType, FusionRecord> & grouped_record_map)
 {
   grouped_record_map.clear();
-  for (auto & p : fused_record_map) {
+  for (const auto & p : fused_record_map) {
     IdType roi_id = p.second.roi.traffic_light_id;
     /*
     this should not happen
