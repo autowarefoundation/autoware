@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_tracking_object_merger/utils/tracker_state.hpp"
+#include "autoware/tracking_object_merger/utils/tracker_state.hpp"
 
-#include "autoware_tracking_object_merger/utils/utils.hpp"
+#include "autoware/tracking_object_merger/utils/utils.hpp"
 
 namespace autoware::tracking_object_merger
 {

@@ -16,13 +16,13 @@
 // Author: v1.0 Yukihiro Saito
 //
 
-#ifndef AUTOWARE_TRACKING_OBJECT_MERGER__ASSOCIATION__DATA_ASSOCIATION_HPP_
-#define AUTOWARE_TRACKING_OBJECT_MERGER__ASSOCIATION__DATA_ASSOCIATION_HPP_
+#ifndef AUTOWARE__TRACKING_OBJECT_MERGER__ASSOCIATION__DATA_ASSOCIATION_HPP_
+#define AUTOWARE__TRACKING_OBJECT_MERGER__ASSOCIATION__DATA_ASSOCIATION_HPP_
 
 #define EIGEN_MPL2_ONLY
 
-#include "autoware_tracking_object_merger/association/solver/gnn_solver.hpp"
-#include "autoware_tracking_object_merger/utils/tracker_state.hpp"
+#include "autoware/tracking_object_merger/association/solver/gnn_solver.hpp"
+#include "autoware/tracking_object_merger/utils/tracker_state.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -72,4 +72,4 @@ public:
 
 }  // namespace autoware::tracking_object_merger
 
-#endif  // AUTOWARE_TRACKING_OBJECT_MERGER__ASSOCIATION__DATA_ASSOCIATION_HPP_
+#endif  // AUTOWARE__TRACKING_OBJECT_MERGER__ASSOCIATION__DATA_ASSOCIATION_HPP_

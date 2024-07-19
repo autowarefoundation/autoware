@@ -55,7 +55,7 @@
       </include>
 
       <!-- tracking object merger to merge near objects and far objects -->
-      <include file="$(find-pkg-share tracking_object_merger)/launch/decorative_tracker_merger.launch.xml">
+      <include file="$(find-pkg-share autoware_tracking_object_merger)/launch/decorative_tracker_merger.launch.xml">
         <arg name="input/main_object" value="$(var tracker_merger/input/main_objects)"/>
         <arg name="input/sub_object" value="$(var tracker_merger/input/sub_objects)"/>
         <arg name="output" value="$(var tracker_merger/output/objects)"/>

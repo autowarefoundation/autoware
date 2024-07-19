@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_tracking_object_merger/association/solver/ssp.hpp"
+#include "autoware/tracking_object_merger/association/solver/ssp.hpp"
 
 #include <algorithm>
 #include <cassert>

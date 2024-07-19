@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_TRACKING_OBJECT_MERGER__UTILS__TRACKER_STATE_HPP_
-#define AUTOWARE_TRACKING_OBJECT_MERGER__UTILS__TRACKER_STATE_HPP_
+#ifndef AUTOWARE__TRACKING_OBJECT_MERGER__UTILS__TRACKER_STATE_HPP_
+#define AUTOWARE__TRACKING_OBJECT_MERGER__UTILS__TRACKER_STATE_HPP_
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -149,4 +149,4 @@ TrackedObjects getTrackedObjectsFromTrackerStates(
   std::vector<TrackerState> & tracker_states, const rclcpp::Time & time);
 }  // namespace autoware::tracking_object_merger
 
-#endif  // AUTOWARE_TRACKING_OBJECT_MERGER__UTILS__TRACKER_STATE_HPP_
+#endif  // AUTOWARE__TRACKING_OBJECT_MERGER__UTILS__TRACKER_STATE_HPP_

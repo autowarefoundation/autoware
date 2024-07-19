@@ -14,10 +14,10 @@
 
 #define EIGEN_MPL2_ONLY
 
-#include "decorative_tracker_merger_node.hpp"
+#include "autoware/tracking_object_merger/decorative_tracker_merger_node.hpp"
 
-#include "autoware_tracking_object_merger/association/solver/ssp.hpp"
-#include "autoware_tracking_object_merger/utils/utils.hpp"
+#include "autoware/tracking_object_merger/association/solver/ssp.hpp"
+#include "autoware/tracking_object_merger/utils/utils.hpp"
 #include "object_recognition_utils/object_recognition_utils.hpp"
 
 #include <Eigen/Core>

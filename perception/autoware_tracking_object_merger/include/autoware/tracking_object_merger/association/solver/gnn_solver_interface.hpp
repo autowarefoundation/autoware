@@ -12,26 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_TRACKING_OBJECT_MERGER__ASSOCIATION__SOLVER__SSP_HPP_
-#define AUTOWARE_TRACKING_OBJECT_MERGER__ASSOCIATION__SOLVER__SSP_HPP_
-
-#include "autoware_tracking_object_merger/association/solver/gnn_solver_interface.hpp"
+#ifndef AUTOWARE__TRACKING_OBJECT_MERGER__ASSOCIATION__SOLVER__GNN_SOLVER_INTERFACE_HPP_
+#define AUTOWARE__TRACKING_OBJECT_MERGER__ASSOCIATION__SOLVER__GNN_SOLVER_INTERFACE_HPP_
 
 #include <unordered_map>
 #include <vector>
 
 namespace autoware::tracking_object_merger::gnn_solver
 {
-class SSP : public GnnSolverInterface
+class GnnSolverInterface
 {
 public:
-  SSP() = default;
-  ~SSP() = default;
+  GnnSolverInterface() = default;
+  virtual ~GnnSolverInterface() = default;
 
-  void maximizeLinearAssignment(
+  virtual void maximizeLinearAssignment(
     const std::vector<std::vector<double>> & cost, std::unordered_map<int, int> * direct_assignment,
-    std::unordered_map<int, int> * reverse_assignment) override;
+    std::unordered_map<int, int> * reverse_assignment) = 0;
 };
 }  // namespace autoware::tracking_object_merger::gnn_solver
 
-#endif  // AUTOWARE_TRACKING_OBJECT_MERGER__ASSOCIATION__SOLVER__SSP_HPP_
+#endif  // AUTOWARE__TRACKING_OBJECT_MERGER__ASSOCIATION__SOLVER__GNN_SOLVER_INTERFACE_HPP_

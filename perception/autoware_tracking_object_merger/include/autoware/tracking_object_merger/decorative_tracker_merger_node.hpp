@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DECORATIVE_TRACKER_MERGER_NODE_HPP_
-#define DECORATIVE_TRACKER_MERGER_NODE_HPP_
+#ifndef AUTOWARE__TRACKING_OBJECT_MERGER__DECORATIVE_TRACKER_MERGER_NODE_HPP_
+#define AUTOWARE__TRACKING_OBJECT_MERGER__DECORATIVE_TRACKER_MERGER_NODE_HPP_
 
+#include "autoware/tracking_object_merger/association/data_association.hpp"
+#include "autoware/tracking_object_merger/utils/tracker_state.hpp"
+#include "autoware/tracking_object_merger/utils/utils.hpp"
 #include "autoware/universe_utils/ros/debug_publisher.hpp"
 #include "autoware/universe_utils/ros/published_time_publisher.hpp"
 #include "autoware/universe_utils/system/stop_watch.hpp"
-#include "autoware_tracking_object_merger/association/data_association.hpp"
-#include "autoware_tracking_object_merger/utils/tracker_state.hpp"
-#include "autoware_tracking_object_merger/utils/utils.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -133,4 +133,4 @@ private:
 
 }  // namespace autoware::tracking_object_merger
 
-#endif  // DECORATIVE_TRACKER_MERGER_NODE_HPP_
+#endif  // AUTOWARE__TRACKING_OBJECT_MERGER__DECORATIVE_TRACKER_MERGER_NODE_HPP_
