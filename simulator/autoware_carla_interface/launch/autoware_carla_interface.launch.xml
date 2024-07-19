@@ -1,0 +1,50 @@
+<launch>
+  <group>
+    <arg name="host" default="localhost"/>
+    <arg name="port" default="2000"/>
+    <arg name="timeout" default="20"/>
+    <arg name="ego_vehicle_role_name" default="ego_vehicle"/>
+    <arg name="vehicle_type" default="vehicle.toyota.prius"/>
+    <arg name="spawn_point" default="None" description="location of ego vehicle spawn (default is random), example = [0.2 , 4.1, 0.4, 0., 0., 0.]"/>
+    <arg name="carla_map" default="Town01"/>
+    <arg name="sync_mode" default="True"/>
+    <arg name="fixed_delta_seconds" default="0.05" description="Time step for CARLA, FPS=1/value"/>
+    <arg name="objects_definition_file" default="$(find-pkg-share autoware_carla_interface)/objects.json"/>
+    <arg name="use_traffic_manager" default="False"/>
+    <arg name="max_real_delta_seconds" default="0.05"/>
+
+    <!-- CARLA Interface -->
+    <node pkg="autoware_carla_interface" exec="autoware_carla_interface" name="autoware_carla_interface" output="screen">
+      <param name="host" value="$(var host)"/>
+      <param name="port" value="$(var port)"/>
+      <param name="timeout" value="$(var timeout)"/>
+      <param name="sync_mode" value="$(var sync_mode)"/>
+      <param name="fixed_delta_seconds" value="$(var fixed_delta_seconds)"/>
+      <param name="carla_map" value="$(var carla_map)"/>
+      <param name="ego_vehicle_role_name" value="$(var ego_vehicle_role_name)"/>
+      <param name="spawn_point" value="$(var spawn_point)"/>
+      <param name="vehicle_type" value="$(var vehicle_type)"/>
+      <param name="objects_definition_file" value="$(var objects_definition_file)"/>
+      <param name="use_traffic_manager" value="$(var use_traffic_manager)"/>
+      <param name="max_real_delta_seconds" value="$(var max_real_delta_seconds)"/>
+    </node>
+
+    <arg name="input_control_cmd" default="/control/command/control_cmd"/>
+    <arg name="input_odometry" default="/localization/kinematic_state"/>
+    <arg name="input_steering" default="/vehicle/status/steering_status"/>
+    <arg name="output_actuation_cmd" default="/control/command/actuation_cmd"/>
+    <arg name="config_file" default="$(find-pkg-share autoware_carla_interface)/raw_vehicle_cmd_converter.param.yaml"/>
+
+    <node pkg="autoware_raw_vehicle_cmd_converter" exec="autoware_raw_vehicle_cmd_converter_node" name="autoware_raw_vehicle_cmd_converter" output="screen">
+      <param from="$(var config_file)" allow_substs="true"/>
+      <remap from="~/input/control_cmd" to="$(var input_control_cmd)"/>
+      <remap from="~/input/odometry" to="$(var input_odometry)"/>
+      <remap from="~/input/steering" to="$(var input_steering)"/>
+      <remap from="~/output/actuation_cmd" to="$(var output_actuation_cmd)"/>
+    </node>
+
+    <!-- Awsim configuration frame to CARLA frame -->
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="velodyne_top" args="0 0 1 -1.5386 -0.015 0.001 /velodyne_top /velodyne_top_changed "/>
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="imu" args="0 0 1 -3.10519265 -0.015 -3.14059265359 /tamagawa/imu_link /tamagawa/imu_link_changed "/>
+  </group>
+</launch>

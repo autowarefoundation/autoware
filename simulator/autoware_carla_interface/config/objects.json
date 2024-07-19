@@ -1,0 +1,62 @@
+{
+  "sensors": [
+    {
+      "type": "sensor.camera.rgb",
+      "id": "rgb_front",
+      "spawn_point": {
+        "x": 0.7,
+        "y": 0.0,
+        "z": 1.6,
+        "roll": 0.0,
+        "pitch": 0.0,
+        "yaw": 0.0
+      },
+      "image_size_x": 1920,
+      "image_size_y": 1080,
+      "fov": 90.0
+    },
+    {
+      "type": "sensor.lidar.ray_cast",
+      "id": "top",
+      "spawn_point": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.1,
+        "roll": 0.0,
+        "pitch": 0.0,
+        "yaw": 0.0
+      },
+      "range": 100,
+      "channels": 64,
+      "points_per_second": 300000,
+      "upper_fov": 10.0,
+      "lower_fov": -30.0,
+      "rotation_frequency": 20,
+      "noise_stddev": 0.0
+    },
+    {
+      "type": "sensor.other.gnss",
+      "id": "gnss",
+      "spawn_point": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.6,
+        "roll": 0.0,
+        "pitch": 0.0,
+        "yaw": 0.0
+      }
+    },
+    {
+      "type": "sensor.other.imu",
+      "id": "imu",
+      "spawn_point": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.6,
+        "roll": 0.0,
+        "pitch": 0.0,
+        "yaw": 0.0
+      }
+    }
+  ]
+}
