@@ -247,32 +247,33 @@ rcl_interfaces::msg::SetParametersResult PerceptionOnlineEvaluatorNode::onParame
   updateParam<double>(parameters, "objects_count_window_seconds", p->objects_count_window_seconds);
 
   // update parameters for each object class
-  const auto update_object_param = [&p, &parameters](
-                                     const auto & semantic, const std::string & ns) {
-    auto & config = p->object_parameters.at(semantic);
-    updateParam<bool>(parameters, ns + "check_lateral_deviation", config.check_lateral_deviation);
-    updateParam<bool>(parameters, ns + "check_yaw_deviation", config.check_yaw_deviation);
-    updateParam<bool>(
-      parameters, ns + "check_predicted_path_deviation", config.check_predicted_path_deviation);
-    updateParam<bool>(parameters, ns + "check_yaw_rate", config.check_yaw_rate);
-    updateParam<bool>(
-      parameters, ns + "check_total_objects_count", config.check_total_objects_count);
-    updateParam<bool>(
-      parameters, ns + "check_average_objects_count", config.check_average_objects_count);
-    updateParam<bool>(
-      parameters, ns + "check_interval_average_objects_count",
-      config.check_interval_average_objects_count);
-  };
-  const std::string ns = "target_object.";
-  update_object_param(ObjectClassification::MOTORCYCLE, ns + "motorcycle.");
-  update_object_param(ObjectClassification::CAR, ns + "car.");
-  update_object_param(ObjectClassification::TRUCK, ns + "truck.");
-  update_object_param(ObjectClassification::TRAILER, ns + "trailer.");
-  update_object_param(ObjectClassification::BUS, ns + "bus.");
-  update_object_param(ObjectClassification::PEDESTRIAN, ns + "pedestrian.");
-  update_object_param(ObjectClassification::BICYCLE, ns + "bicycle.");
-  update_object_param(ObjectClassification::UNKNOWN, ns + "unknown.");
-
+  {
+    const auto update_object_param = [&p, &parameters](
+                                       const auto & semantic, const std::string & ns) {
+      auto & config = p->object_parameters.at(semantic);
+      updateParam<bool>(parameters, ns + "check_lateral_deviation", config.check_lateral_deviation);
+      updateParam<bool>(parameters, ns + "check_yaw_deviation", config.check_yaw_deviation);
+      updateParam<bool>(
+        parameters, ns + "check_predicted_path_deviation", config.check_predicted_path_deviation);
+      updateParam<bool>(parameters, ns + "check_yaw_rate", config.check_yaw_rate);
+      updateParam<bool>(
+        parameters, ns + "check_total_objects_count", config.check_total_objects_count);
+      updateParam<bool>(
+        parameters, ns + "check_average_objects_count", config.check_average_objects_count);
+      updateParam<bool>(
+        parameters, ns + "check_interval_average_objects_count",
+        config.check_interval_average_objects_count);
+    };
+    const std::string ns = "target_object.";
+    update_object_param(ObjectClassification::MOTORCYCLE, ns + "motorcycle.");
+    update_object_param(ObjectClassification::CAR, ns + "car.");
+    update_object_param(ObjectClassification::TRUCK, ns + "truck.");
+    update_object_param(ObjectClassification::TRAILER, ns + "trailer.");
+    update_object_param(ObjectClassification::BUS, ns + "bus.");
+    update_object_param(ObjectClassification::PEDESTRIAN, ns + "pedestrian.");
+    update_object_param(ObjectClassification::BICYCLE, ns + "bicycle.");
+    update_object_param(ObjectClassification::UNKNOWN, ns + "unknown.");
+  }
   // update debug marker parameters
   {
     const std::string ns = "debug_marker.";
