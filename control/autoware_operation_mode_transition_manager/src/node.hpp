@@ -59,7 +59,7 @@ private:
   void onTimer();
   void publishData();
   void changeControlMode(ControlModeCommandType mode);
-  void changeOperationMode(std::optional<OperationMode> mode);
+  void changeOperationMode(std::optional<OperationMode> request_mode);
   void cancelTransition();
   void processTransition();
 
