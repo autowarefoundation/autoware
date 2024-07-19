@@ -119,6 +119,9 @@
         # In MULTI_NDT_SCORE, the parameter that adjusts the estimated 2D covariance
         temperature: 0.1
 
+        # Scale value for adjusting the estimated covariance by a constant multiplication
+        scale_factor: 1.0
+
 
     dynamic_map_loading:
       # Dynamic map loading distance

@@ -584,8 +584,10 @@ bool NDTScanMatcher::callback_sensor_points_main(
     CovarianceEstimationType::FIXED_VALUE) {
     const Eigen::Matrix2d estimated_covariance_2d =
       estimate_covariance(ndt_result, initial_pose_matrix, sensor_ros_time);
-    const Eigen::Matrix2d estimated_covariance_2d_adj =
-      pclomp::adjust_diagonal_covariance(estimated_covariance_2d, ndt_result.pose, 0.0225, 0.0225);
+    const Eigen::Matrix2d estimated_covariance_2d_scaled =
+      estimated_covariance_2d * param_.covariance.covariance_estimation.scale_factor;
+    const Eigen::Matrix2d estimated_covariance_2d_adj = pclomp::adjust_diagonal_covariance(
+      estimated_covariance_2d_scaled, ndt_result.pose, 0.0225, 0.0225);
     ndt_covariance[0 + 6 * 0] = estimated_covariance_2d_adj(0, 0);
     ndt_covariance[1 + 6 * 1] = estimated_covariance_2d_adj(1, 1);
     ndt_covariance[1 + 6 * 0] = estimated_covariance_2d_adj(1, 0);

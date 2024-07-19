@@ -91,6 +91,7 @@ struct HyperParameters
       std::vector<double> initial_pose_offset_model_x{};
       std::vector<double> initial_pose_offset_model_y{};
       double temperature{};
+      double scale_factor{};
     } covariance_estimation{};
   } covariance{};
 
@@ -178,6 +179,8 @@ public:
     }
     covariance.covariance_estimation.temperature =
       node->declare_parameter<double>("covariance.covariance_estimation.temperature");
+    covariance.covariance_estimation.scale_factor =
+      node->declare_parameter<double>("covariance.covariance_estimation.scale_factor");
 
     dynamic_map_loading.update_distance =
       node->declare_parameter<double>("dynamic_map_loading.update_distance");

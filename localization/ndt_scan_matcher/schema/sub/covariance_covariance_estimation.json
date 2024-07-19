@@ -27,13 +27,21 @@
           "description": "In MULTI_NDT_SCORE, the parameter that adjusts the estimated 2D covariance",
           "default": 0.1,
           "exclusiveMinimum": 0
+        },
+        "scale_factor": {
+          "type": "number",
+          "description": "Scale value for adjusting the estimated covariance by a constant multiplication",
+          "default": 1.0,
+          "exclusiveMinimum": 0
         }
       },
 
       "required": [
         "covariance_estimation_type",
         "initial_pose_offset_model_x",
-        "initial_pose_offset_model_y"
+        "initial_pose_offset_model_y",
+        "temperature",
+        "scale_factor"
       ],
       "additionalProperties": false
     }
