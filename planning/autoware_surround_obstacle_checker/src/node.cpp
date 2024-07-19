@@ -506,7 +506,7 @@ std::optional<geometry_msgs::msg::TransformStamped> SurroundObstacleCheckerNode:
   try {
     transform_stamped =
       tf_buffer_.lookupTransform(source, target, stamp, tf2::durationFromSec(duration_sec));
-  } catch (tf2::TransformException & ex) {
+  } catch (const tf2::TransformException & ex) {
     return {};
   }
 
