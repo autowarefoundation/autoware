@@ -504,17 +504,17 @@ void PointCloudConcatenateDataSynchronizerComponent::convertToXYZIRCCloud(
   output_modifier.reserve(input_ptr->width);
 
   bool has_valid_intensity =
-    std::any_of(input_ptr->fields.begin(), input_ptr->fields.end(), [](auto & field) {
+    std::any_of(input_ptr->fields.begin(), input_ptr->fields.end(), [](const auto & field) {
       return field.name == "intensity" && field.datatype == sensor_msgs::msg::PointField::UINT8;
     });
 
   bool has_valid_return_type =
-    std::any_of(input_ptr->fields.begin(), input_ptr->fields.end(), [](auto & field) {
+    std::any_of(input_ptr->fields.begin(), input_ptr->fields.end(), [](const auto & field) {
       return field.name == "return_type" && field.datatype == sensor_msgs::msg::PointField::UINT8;
     });
 
   bool has_valid_channel =
-    std::any_of(input_ptr->fields.begin(), input_ptr->fields.end(), [](auto & field) {
+    std::any_of(input_ptr->fields.begin(), input_ptr->fields.end(), [](const auto & field) {
       return field.name == "channel" && field.datatype == sensor_msgs::msg::PointField::UINT16;
     });
 
