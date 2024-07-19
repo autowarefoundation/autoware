@@ -41,7 +41,7 @@ public:
   // tracker processes
   void predict(const rclcpp::Time & time);
   void update(
-    const autoware_perception_msgs::msg::DetectedObjects & transformed_objects,
+    const autoware_perception_msgs::msg::DetectedObjects & detected_objects,
     const geometry_msgs::msg::Transform & self_transform,
     const std::unordered_map<int, int> & direct_assignment, const uint & channel_index);
   void spawn(
