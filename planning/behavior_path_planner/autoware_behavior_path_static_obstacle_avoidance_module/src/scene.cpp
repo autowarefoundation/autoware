@@ -579,6 +579,45 @@ void StaticObstacleAvoidanceModule::fillEgoStatus(
     return;
   }
 
+  auto candidate_sl_force_activated = [&](const std::string & direction) {
+    // If statement to avoid unnecessary warning occurring from isForceActivated function
+    if (candidate_uuid_ == uuid_map_.at(direction)) {
+      if (rtc_interface_ptr_map_.at(direction)->isForceActivated(candidate_uuid_)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  auto registered_sl_force_activated =
+    [&](const std::string & direction, const RegisteredShiftLineArray shift_line_array) {
+      return std::any_of(
+        shift_line_array.begin(), shift_line_array.end(), [&](const auto & shift_line) {
+          return rtc_interface_ptr_map_.at(direction)->isForceActivated(shift_line.uuid);
+        });
+    };
+
+  /**
+   * Check if the candidate avoidance path is force activated
+   */
+  if (candidate_sl_force_activated("left") || candidate_sl_force_activated("right")) {
+    data.yield_required = false;
+    data.safe_shift_line = data.new_shift_line;
+    return;
+  }
+
+  /**
+   * Check if any registered shift line is force activated
+   */
+  if (
+    registered_sl_force_activated("left", left_shift_array_) ||
+    registered_sl_force_activated("right", right_shift_array_)) {
+    data.yield_required = false;
+    data.safe_shift_line = data.new_shift_line;
+    RCLCPP_WARN_THROTTLE(getLogger(), *clock_, 5000, "unsafe but force executed");
+    return;
+  }
+
   /**
    * If the yield maneuver is disabled, use unapproved_new_sl for avoidance path generation even if
    * the shift line is unsafe.

@@ -118,8 +118,16 @@ private:
       const double start_distance = autoware::motion_utils::calcSignedArcLength(
         path.points, ego_idx, left_shift.start_pose.position);
       const double finish_distance = start_distance + left_shift.relative_longitudinal;
-      rtc_interface_ptr_map_.at("left")->updateCooperateStatus(
-        left_shift.uuid, true, State::RUNNING, start_distance, finish_distance, clock_->now());
+
+      // If force activated keep safety to false
+      if (rtc_interface_ptr_map_.at("left")->isForceActivated(left_shift.uuid)) {
+        rtc_interface_ptr_map_.at("left")->updateCooperateStatus(
+          left_shift.uuid, false, State::RUNNING, start_distance, finish_distance, clock_->now());
+      } else {
+        rtc_interface_ptr_map_.at("left")->updateCooperateStatus(
+          left_shift.uuid, true, State::RUNNING, start_distance, finish_distance, clock_->now());
+      }
+
       if (finish_distance > -1.0e-03) {
         steering_factor_interface_ptr_->updateSteeringFactor(
           {left_shift.start_pose, left_shift.finish_pose}, {start_distance, finish_distance},
@@ -131,8 +139,15 @@ private:
       const double start_distance = autoware::motion_utils::calcSignedArcLength(
         path.points, ego_idx, right_shift.start_pose.position);
       const double finish_distance = start_distance + right_shift.relative_longitudinal;
-      rtc_interface_ptr_map_.at("right")->updateCooperateStatus(
-        right_shift.uuid, true, State::RUNNING, start_distance, finish_distance, clock_->now());
+
+      if (rtc_interface_ptr_map_.at("right")->isForceActivated(right_shift.uuid)) {
+        rtc_interface_ptr_map_.at("right")->updateCooperateStatus(
+          right_shift.uuid, false, State::RUNNING, start_distance, finish_distance, clock_->now());
+      } else {
+        rtc_interface_ptr_map_.at("right")->updateCooperateStatus(
+          right_shift.uuid, true, State::RUNNING, start_distance, finish_distance, clock_->now());
+      }
+
       if (finish_distance > -1.0e-03) {
         steering_factor_interface_ptr_->updateSteeringFactor(
           {right_shift.start_pose, right_shift.finish_pose}, {start_distance, finish_distance},
