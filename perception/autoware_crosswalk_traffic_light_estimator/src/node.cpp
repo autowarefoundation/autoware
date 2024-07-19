@@ -209,7 +209,7 @@ void CrosswalkTrafficLightEstimatorNode::updateLastDetectedSignal(
   }
 
   std::vector<int32_t> erase_id_list;
-  for (auto & last_traffic_signal : last_detect_color_) {
+  for (const auto & last_traffic_signal : last_detect_color_) {
     const auto & id = last_traffic_signal.second.first.traffic_light_group_id;
 
     if (traffic_light_id_map.count(id) == 0) {
