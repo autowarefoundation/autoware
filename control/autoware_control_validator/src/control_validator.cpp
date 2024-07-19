@@ -53,8 +53,8 @@ void ControlValidator::setupParameters()
     auto & p = validation_params_;
     const std::string t = "thresholds.";
     p.max_distance_deviation_threshold = declare_parameter<double>(t + "max_distance_deviation");
-    p.max_reverse_velocity_threshold = declare_parameter<double>(t + "reverse_velocity");
-    p.max_over_velocity_ratio_threshold = declare_parameter<double>(t + "over_velocity_ratio");
+    p.max_reverse_velocity_threshold = declare_parameter<double>(t + "max_reverse_velocity");
+    p.max_over_velocity_ratio_threshold = declare_parameter<double>(t + "max_over_velocity_ratio");
   }
 
   try {
