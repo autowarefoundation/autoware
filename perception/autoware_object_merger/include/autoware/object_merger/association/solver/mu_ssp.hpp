@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_OBJECT_MERGER__ASSOCIATION__SOLVER__MU_SSP_HPP_
-#define AUTOWARE_OBJECT_MERGER__ASSOCIATION__SOLVER__MU_SSP_HPP_
+#ifndef AUTOWARE__OBJECT_MERGER__ASSOCIATION__SOLVER__MU_SSP_HPP_
+#define AUTOWARE__OBJECT_MERGER__ASSOCIATION__SOLVER__MU_SSP_HPP_
 
-#include "autoware_object_merger/association/solver/gnn_solver_interface.hpp"
+#include "autoware/object_merger/association/solver/gnn_solver_interface.hpp"
 
 #include <unordered_map>
 #include <vector>
@@ -34,4 +34,4 @@ public:
 };
 }  // namespace autoware::object_merger::gnn_solver
 
-#endif  // AUTOWARE_OBJECT_MERGER__ASSOCIATION__SOLVER__MU_SSP_HPP_
+#endif  // AUTOWARE__OBJECT_MERGER__ASSOCIATION__SOLVER__MU_SSP_HPP_

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(object_merger)
+project(autoware_object_merger)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()

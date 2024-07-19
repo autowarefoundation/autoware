@@ -14,7 +14,7 @@
 
 #define EIGEN_MPL2_ONLY
 
-#include "object_association_merger_node.hpp"
+#include "autoware/object_merger/object_association_merger_node.hpp"
 
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "object_recognition_utils/object_recognition_utils.hpp"

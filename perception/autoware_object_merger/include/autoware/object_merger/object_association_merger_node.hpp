@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBJECT_ASSOCIATION_MERGER_NODE_HPP_
-#define OBJECT_ASSOCIATION_MERGER_NODE_HPP_
+#ifndef AUTOWARE__OBJECT_MERGER__OBJECT_ASSOCIATION_MERGER_NODE_HPP_
+#define AUTOWARE__OBJECT_MERGER__OBJECT_ASSOCIATION_MERGER_NODE_HPP_
 
+#include "autoware/object_merger/association/data_association.hpp"
 #include "autoware/universe_utils/ros/debug_publisher.hpp"
 #include "autoware/universe_utils/ros/published_time_publisher.hpp"
 #include "autoware/universe_utils/system/stop_watch.hpp"
-#include "autoware_object_merger/association/data_association.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -91,4 +91,4 @@ private:
 };
 }  // namespace autoware::object_merger
 
-#endif  // OBJECT_ASSOCIATION_MERGER_NODE_HPP_
+#endif  // AUTOWARE__OBJECT_MERGER__OBJECT_ASSOCIATION_MERGER_NODE_HPP_

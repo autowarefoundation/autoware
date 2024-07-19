@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_object_merger/association/solver/mu_ssp.hpp"
+#include "autoware/object_merger/association/solver/mu_ssp.hpp"
 
 #include <mussp/mussp.h>
 

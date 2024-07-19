@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <launch>
   <!-- Parameters -->
-  <arg name="object_recognition_detection_object_merger_data_association_matrix_param_path" default="$(find-pkg-share object_merger)/config/data_association_matrix.param.yaml"/>
-  <arg name="object_recognition_detection_object_merger_distance_threshold_list_path" default="$(find-pkg-share object_merger)/config/overlapped_judge.param.yaml"/>
+  <arg name="object_recognition_detection_object_merger_data_association_matrix_param_path" default="$(find-pkg-share autoware_object_merger)/config/data_association_matrix.param.yaml"/>
+  <arg name="object_recognition_detection_object_merger_distance_threshold_list_path" default="$(find-pkg-share autoware_object_merger)/config/overlapped_judge.param.yaml"/>
 
   <!-- Pipeline junctions -->
   <arg name="lidar_detection_model"/>
@@ -119,7 +119,7 @@
 
   <!-- 1st merger: camera_lidar_fusion + lidar cluster-->
   <group>
-    <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
+    <include file="$(find-pkg-share autoware_object_merger)/launch/object_association_merger.launch.xml">
       <arg name="input/object0" value="$(var merger1/input/objects0)"/>
       <arg name="input/object1" value="$(var merger1/input/objects1)"/>
       <arg name="output/object" value="$(var merger1/output/objects)"/>
@@ -131,7 +131,7 @@
 
   <!-- 2nd merger: + detection_by_tracker -->
   <group if="$(var use_detection_by_tracker)">
-    <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
+    <include file="$(find-pkg-share autoware_object_merger)/launch/object_association_merger.launch.xml">
       <arg name="input/object0" value="$(var merger2/input/objects0)"/>
       <arg name="input/object1" value="$(var merger2/input/objects1)"/>
       <arg name="output/object" value="$(var merger2/output/objects)"/>

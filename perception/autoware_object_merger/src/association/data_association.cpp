@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware_object_merger/association/data_association.hpp"
+#include "autoware/object_merger/association/data_association.hpp"
 
+#include "autoware/object_merger/association/solver/gnn_solver.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
-#include "autoware_object_merger/association/solver/gnn_solver.hpp"
 #include "object_recognition_utils/object_recognition_utils.hpp"
 
 #include <algorithm>
