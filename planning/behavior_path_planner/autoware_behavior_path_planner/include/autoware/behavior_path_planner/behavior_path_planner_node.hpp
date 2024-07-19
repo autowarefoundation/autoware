@@ -88,10 +88,12 @@ public:
 
 private:
   // subscriber
-  autoware::universe_utils::InterProcessPollingSubscriber<LaneletRoute> route_subscriber_{
-    this, "~/input/route", rclcpp::QoS{1}.transient_local()};
-  autoware::universe_utils::InterProcessPollingSubscriber<LaneletMapBin> vector_map_subscriber_{
-    this, "~/input/vector_map", rclcpp::QoS{1}.transient_local()};
+  autoware::universe_utils::InterProcessPollingSubscriber<
+    LaneletRoute, universe_utils::polling_policy::Newest>
+    route_subscriber_{this, "~/input/route", rclcpp::QoS{1}.transient_local()};
+  autoware::universe_utils::InterProcessPollingSubscriber<
+    LaneletMapBin, universe_utils::polling_policy::Newest>
+    vector_map_subscriber_{this, "~/input/vector_map", rclcpp::QoS{1}.transient_local()};
   autoware::universe_utils::InterProcessPollingSubscriber<Odometry> velocity_subscriber_{
     this, "~/input/odometry"};
   autoware::universe_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped>

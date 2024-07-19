@@ -93,7 +93,8 @@ private:
     this, "/localization/kinematic_state"};
   autoware::universe_utils::InterProcessPollingSubscriber<AccelWithCovarianceStamped>
     sub_current_acceleration_{this, "~/input/acceleration"};
-  autoware::universe_utils::InterProcessPollingSubscriber<VelocityLimit>
+  autoware::universe_utils::InterProcessPollingSubscriber<
+    VelocityLimit, universe_utils::polling_policy::Newest>
     sub_external_velocity_limit_{this, "~/input/external_velocity_limit_mps"};
   autoware::universe_utils::InterProcessPollingSubscriber<OperationModeState> sub_operation_mode_{
     this, "~/input/operation_mode_state"};

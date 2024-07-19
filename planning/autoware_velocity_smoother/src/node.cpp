@@ -433,7 +433,7 @@ void VelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstSharedPtr 
   // receive data
   current_odometry_ptr_ = sub_current_odometry_.takeData();
   current_acceleration_ptr_ = sub_current_acceleration_.takeData();
-  external_velocity_limit_ptr_ = sub_external_velocity_limit_.takeNewData();
+  external_velocity_limit_ptr_ = sub_external_velocity_limit_.takeData();
   const auto operation_mode_ptr = sub_operation_mode_.takeData();
   if (operation_mode_ptr) {
     operation_mode_ = *operation_mode_ptr;

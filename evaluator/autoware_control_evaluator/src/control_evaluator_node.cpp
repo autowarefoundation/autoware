@@ -47,7 +47,7 @@ void ControlEvaluatorNode::getRouteData()
 {
   // route
   {
-    const auto msg = route_subscriber_.takeNewData();
+    const auto msg = route_subscriber_.takeData();
     if (msg) {
       if (msg->segments.empty()) {
         RCLCPP_ERROR(get_logger(), "input route is empty. ignored");
@@ -59,7 +59,7 @@ void ControlEvaluatorNode::getRouteData()
 
   // map
   {
-    const auto msg = vector_map_subscriber_.takeNewData();
+    const auto msg = vector_map_subscriber_.takeData();
     if (msg) {
       route_handler_.setMap(*msg);
     }
