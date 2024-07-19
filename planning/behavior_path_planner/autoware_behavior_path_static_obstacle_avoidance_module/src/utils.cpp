@@ -886,7 +886,7 @@ bool isSatisfiedWithNonVehicleCondition(
 }
 
 ObjectData::Behavior getObjectBehavior(
-  ObjectData & object, const std::shared_ptr<AvoidanceParameters> & parameters)
+  const ObjectData & object, const std::shared_ptr<AvoidanceParameters> & parameters)
 {
   if (isParallelToEgoLane(object, parameters->object_check_yaw_deviation)) {
     return ObjectData::Behavior::NONE;
@@ -1101,7 +1101,7 @@ double calcShiftLength(
 }
 
 bool isWithinLanes(
-  const lanelet::ConstLanelets & lanelets, std::shared_ptr<const PlannerData> & planner_data)
+  const lanelet::ConstLanelets & lanelets, const std::shared_ptr<const PlannerData> & planner_data)
 {
   const auto & rh = planner_data->route_handler;
   const auto & ego_pose = planner_data->self_odometry->pose.pose;
