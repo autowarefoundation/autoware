@@ -335,8 +335,15 @@ private:
   {
     return std::any_of(
       rtc_interface_ptr_map_.begin(), rtc_interface_ptr_map_.end(), [&](const auto & rtc) {
-        return rtc.second->isRegistered(uuid_map_.at(rtc.first)) &&
-               rtc.second->isActivated(uuid_map_.at(rtc.first));
+        if (!rtc.second->isRegistered(uuid_map_.at(rtc.first))) {
+          return false;
+        }
+
+        if (rtc.second->isTerminated(uuid_map_.at(rtc.first))) {
+          return true;
+        }
+
+        return rtc.second->isActivated(uuid_map_.at(rtc.first));
       });
   }
 
@@ -345,7 +352,8 @@ private:
     return std::any_of(
       rtc_interface_ptr_map_.begin(), rtc_interface_ptr_map_.end(), [&](const auto & rtc) {
         return rtc.second->isRegistered(uuid_map_.at(rtc.first)) &&
-               !rtc.second->isActivated(uuid_map_.at(rtc.first));
+               !rtc.second->isActivated(uuid_map_.at(rtc.first)) &&
+               !rtc.second->isTerminated(uuid_map_.at(rtc.first));
       });
   }
 
