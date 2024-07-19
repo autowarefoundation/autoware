@@ -364,7 +364,8 @@ bool RTCInterface::isForceActivated(const UUID & uuid) const
   }
 
   RCLCPP_WARN_STREAM(
-    getLogger(), "[isForceActivated] uuid : " << to_string(uuid) << " is not found" << std::endl);
+    getLogger(),
+    "[isForceActivated] uuid : " << uuid_to_string(uuid) << " is not found" << std::endl);
   return false;
 }
 
