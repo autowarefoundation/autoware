@@ -59,7 +59,7 @@ UnitLink * UnitLoader::child() const
 std::vector<UnitLink *> UnitLoader::children() const
 {
   std::vector<UnitLink *> result;
-  for (const auto & config : config_->list) {
+  for (auto * const config : config_->list) {
     result.push_back(links_.config_links.at(config));
   }
   return result;

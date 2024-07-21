@@ -264,9 +264,9 @@ void topological_sort(FileConfig & config)
   for (const auto & unit : config.units) units.push_back(unit.get());
 
   // Count degrees of each unit.
-  for (const auto & unit : units) {
-    if (const auto & link = unit->item) ++degrees[link->child];
-    for (const auto & link : unit->list) ++degrees[link->child];
+  for (const auto * const unit : units) {
+    if (const auto * const link = unit->item) ++degrees[link->child];
+    for (const auto * const link : unit->list) ++degrees[link->child];
   }
 
   // Find initial units that are zero degrees.

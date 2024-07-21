@@ -145,7 +145,7 @@ MaxUnit::MaxUnit(const UnitLoader & unit) : NodeUnit(unit)
 void MaxUnit::update_status()
 {
   DiagnosticLevel level = DiagnosticStatus::OK;
-  for (const auto & link : links_) {
+  for (const auto * const link : links_) {
     level = std::max(level, link->child()->level());
   }
   status_.level = std::min(level, DiagnosticStatus::ERROR);
@@ -155,7 +155,7 @@ void ShortCircuitMaxUnit::update_status()
 {
   // TODO(Takagi, Isamu): update link flags.
   DiagnosticLevel level = DiagnosticStatus::OK;
-  for (const auto & link : links_) {
+  for (const auto * const link : links_) {
     level = std::max(level, link->child()->level());
   }
   status_.level = std::min(level, DiagnosticStatus::ERROR);
@@ -171,7 +171,7 @@ void MinUnit::update_status()
   DiagnosticLevel level = DiagnosticStatus::OK;
   if (!links_.empty()) {
     level = DiagnosticStatus::STALE;
-    for (const auto & link : links_) {
+    for (const auto * const link : links_) {
       level = std::min(level, link->child()->level());
     }
   }
