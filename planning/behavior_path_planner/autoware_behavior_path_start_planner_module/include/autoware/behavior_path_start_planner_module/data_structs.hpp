@@ -90,6 +90,9 @@ struct StartPlannerDebugData
   std::vector<Pose> start_pose_candidates;
   size_t selected_start_pose_candidate_index;
   double margin_for_start_pose_candidate;
+
+  // for isPreventingRearVehicleFromPassingThrough
+  std::optional<Pose> estimated_stop_pose;
 };
 
 struct StartPlannerParameters

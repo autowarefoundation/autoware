@@ -368,7 +368,35 @@ bool StartPlannerModule::isCurrentPoseOnMiddleOfTheRoad() const
 
 bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
 {
+  // prepare poses for preventing check
+  // - current_pose
+  // - estimated_stop_pose (The position assumed when stopped with the minimum stop distance,
+  // although it is NOT actually stopped)
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
+  std::vector<Pose> preventing_check_pose{current_pose};
+  const auto min_stop_distance =
+    autoware::behavior_path_planner::utils::parking_departure::calcFeasibleDecelDistance(
+      planner_data_, parameters_->maximum_deceleration_for_stop, parameters_->maximum_jerk_for_stop,
+      0.0);
+  debug_data_.estimated_stop_pose.reset();  // debug
+  if (min_stop_distance.has_value()) {
+    const auto current_path = getCurrentPath();
+    const auto estimated_stop_pose = calcLongitudinalOffsetPose(
+      current_path.points, current_pose.position, min_stop_distance.value());
+    if (estimated_stop_pose.has_value()) {
+      preventing_check_pose.push_back(estimated_stop_pose.value());
+      debug_data_.estimated_stop_pose = estimated_stop_pose.value();  // debug
+    }
+  }
+
+  // check if any of the preventing check poses are preventing rear vehicle from passing through
+  return std::any_of(
+    preventing_check_pose.begin(), preventing_check_pose.end(),
+    [&](const auto & pose) { return isPreventingRearVehicleFromPassingThrough(pose); });
+}
+
+bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough(const Pose & ego_pose) const
+{
   const auto & dynamic_object = planner_data_->dynamic_object;
   const auto & route_handler = planner_data_->route_handler;
   const Pose start_pose = planner_data_->route_handler->getOriginalStartPose();
@@ -414,8 +442,8 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
       geometry_msgs::msg::Pose & ego_overhang_point_as_pose,
       const bool ego_is_merging_from_the_left) -> std::optional<std::pair<double, double>> {
     const auto local_vehicle_footprint = vehicle_info_.createFootprint();
-    const auto vehicle_footprint = transformVector(
-      local_vehicle_footprint, autoware::universe_utils::pose2transform(current_pose));
+    const auto vehicle_footprint =
+      transformVector(local_vehicle_footprint, autoware::universe_utils::pose2transform(ego_pose));
     double smallest_lateral_gap_between_ego_and_border = std::numeric_limits<double>::max();
     double corresponding_lateral_gap_with_other_lane_bound = std::numeric_limits<double>::max();
 
@@ -481,7 +509,7 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
     // Check backwards just in case the Vehicle behind ego is in a different lanelet
     constexpr double backwards_length = 200.0;
     const auto prev_lanes = autoware::behavior_path_planner::utils::getBackwardLanelets(
-      *route_handler, target_lanes, current_pose, backwards_length);
+      *route_handler, target_lanes, ego_pose, backwards_length);
     // return all the relevant lanelets
     lanelet::ConstLanelets relevant_lanelets{closest_lanelet_const};
     relevant_lanelets.insert(relevant_lanelets.end(), prev_lanes.begin(), prev_lanes.end());
@@ -491,7 +519,7 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
 
   // filtering objects with velocity, position and class
   const auto filtered_objects = utils::path_safety_checker::filterObjects(
-    dynamic_object, route_handler, relevant_lanelets.value(), current_pose.position,
+    dynamic_object, route_handler, relevant_lanelets.value(), ego_pose.position,
     objects_filtering_params_);
   if (filtered_objects.objects.empty()) return false;
 
@@ -508,7 +536,7 @@ bool StartPlannerModule::isPreventingRearVehicleFromPassingThrough() const
       target_objects_on_lane.on_current_lane.begin(), target_objects_on_lane.on_current_lane.end(),
       [&](const auto & o) {
         const auto arc_length = autoware::motion_utils::calcSignedArcLength(
-          centerline_path.points, current_pose.position, o.initial_pose.pose.position);
+          centerline_path.points, ego_pose.position, o.initial_pose.pose.position);
         if (arc_length > 0.0) return;
         if (std::abs(arc_length) >= std::abs(arc_length_to_closet_object)) return;
         arc_length_to_closet_object = arc_length;
@@ -1718,6 +1746,16 @@ void StartPlannerModule::setDebugData()
       showPredictedPath(debug_data_.collision_check, "predicted_path_for_safety_check"),
       info_marker_);
     add(showPolygon(debug_data_.collision_check, "ego_and_target_polygon_relation"), info_marker_);
+
+    // visualize estimated_stop_pose for isPreventingRearVehicleFromPassingThrough()
+    if (debug_data_.estimated_stop_pose.has_value()) {
+      auto footprint_marker = createDefaultMarker(
+        "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "estimated_stop_pose", 0, Marker::LINE_STRIP,
+        createMarkerScale(0.2, 0.2, 0.2), purple_color);
+      footprint_marker.lifetime = rclcpp::Duration::from_seconds(1.5);
+      addFootprintMarker(footprint_marker, debug_data_.estimated_stop_pose.value(), vehicle_info_);
+      debug_marker_.markers.push_back(footprint_marker);
+    }
 
     // set objects of interest
     for (const auto & [uuid, data] : debug_data_.collision_check) {

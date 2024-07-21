@@ -229,7 +229,30 @@ private:
 
   bool isModuleRunning() const;
   bool isCurrentPoseOnMiddleOfTheRoad() const;
+
+  /**
+   * @brief Check if the ego vehicle is preventing the rear vehicle from passing through.
+   *
+   * This function just call isPreventingRearVehicleFromPassingThrough(const Pose & ego_pose) with
+   * two poses. If rear vehicle is obstructed by ego vehicle at either of the two poses, it returns
+   * true.
+   *
+   * @return true if the ego vehicle is preventing the rear vehicle from passing through with the
+   * current pose or the pose if it stops.
+   */
   bool isPreventingRearVehicleFromPassingThrough() const;
+
+  /**
+    * @brief Check if the ego vehicle is preventing the rear vehicle from passing through.
+    *
+    * This function measures the distance to the lane boundary from the current pose and the pose if
+it stops, and determines whether there is enough space for the rear vehicle to pass through. If
+    * it is obstructing at either of the two poses, it returns true.
+    *
+    * @return true if the ego vehicle is preventing the rear vehicle from passing through with given
+ego pose.
+    */
+  bool isPreventingRearVehicleFromPassingThrough(const Pose & ego_pose) const;
 
   bool isCloseToOriginalStartPose() const;
   bool hasArrivedAtGoal() const;
