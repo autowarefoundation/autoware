@@ -65,7 +65,7 @@ private:
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_double_gnss_position_stddev_;
 
   void callback_gnss_pose_with_cov(
-    const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr & msg);
+    const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr & msg_pose_with_cov_in);
 
   void callback_ndt_pose_with_cov(
     const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr & msg_pose_with_cov_in);
