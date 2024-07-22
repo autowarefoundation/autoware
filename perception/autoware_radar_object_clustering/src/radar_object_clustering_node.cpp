@@ -91,11 +91,11 @@ RadarObjectClusteringNode::RadarObjectClusteringNode(const rclcpp::NodeOptions &
   pub_objects_ = create_publisher<DetectedObjects>("~/output/objects", 1);
 }
 
-void RadarObjectClusteringNode::onObjects(const DetectedObjects::ConstSharedPtr objects_data_)
+void RadarObjectClusteringNode::onObjects(const DetectedObjects::ConstSharedPtr msg)
 {
   DetectedObjects output_objects;
-  output_objects.header = objects_data_->header;
-  std::vector<DetectedObject> objects = objects_data_->objects;
+  output_objects.header = msg->header;
+  std::vector<DetectedObject> objects = msg->objects;
 
   std::vector<bool> used_flags(objects.size(), false);
 
