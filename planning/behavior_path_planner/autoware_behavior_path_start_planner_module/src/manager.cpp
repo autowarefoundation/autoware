@@ -82,6 +82,8 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
   p.maximum_lateral_acc = node->declare_parameter<double>(ns + "maximum_lateral_acc");
   p.minimum_lateral_acc = node->declare_parameter<double>(ns + "minimum_lateral_acc");
   p.maximum_curvature = node->declare_parameter<double>(ns + "maximum_curvature");
+  p.end_pose_curvature_threshold =
+    node->declare_parameter<double>(ns + "end_pose_curvature_threshold");
   p.maximum_longitudinal_deviation =
     node->declare_parameter<double>(ns + "maximum_longitudinal_deviation");
   // geometric pull out
@@ -417,6 +419,8 @@ void StartPlannerModuleManager::updateModuleParams(
     updateParam<double>(parameters, ns + "maximum_lateral_acc", p->maximum_lateral_acc);
     updateParam<double>(parameters, ns + "minimum_lateral_acc", p->minimum_lateral_acc);
     updateParam<double>(parameters, ns + "maximum_curvature", p->maximum_curvature);
+    updateParam<double>(
+      parameters, ns + "end_pose_curvature_threshold", p->end_pose_curvature_threshold);
     updateParam<double>(
       parameters, ns + "maximum_longitudinal_deviation", p->maximum_longitudinal_deviation);
     updateParam<bool>(parameters, ns + "enable_geometric_pull_out", p->enable_geometric_pull_out);

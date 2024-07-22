@@ -32,6 +32,7 @@
       minimum_lateral_acc: 0.15
       maximum_lateral_acc: 0.5
       maximum_curvature: 0.07
+      end_pose_curvature_threshold: 0.01
       # geometric pull out
       enable_geometric_pull_out: true
       geometric_collision_check_distance_from_end: 0.0

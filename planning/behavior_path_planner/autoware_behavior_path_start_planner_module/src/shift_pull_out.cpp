@@ -229,6 +229,7 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
   const double minimum_lateral_acc = parameters_.minimum_lateral_acc;
   const double maximum_lateral_acc = parameters_.maximum_lateral_acc;
   const double maximum_curvature = parameters_.maximum_curvature;
+  const double end_pose_curvature_threshold = parameters_.end_pose_curvature_threshold;
   const double minimum_shift_pull_out_distance = parameters_.minimum_shift_pull_out_distance;
   const int lateral_acceleration_sampling_num = parameters_.lateral_acceleration_sampling_num;
 
@@ -304,10 +305,58 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
     // short length, take maximum with the original distance.
     // TODO(kosuke55): update the conversion function and get rid of the comparison with original
     // distance.
-    const double pull_out_distance_converted = calcBeforeShiftedArcLength(
-      road_lane_reference_path_from_ego, pull_out_distance, shift_length);
-    const double before_shifted_pull_out_distance =
-      std::max(pull_out_distance, pull_out_distance_converted);
+    const double pull_out_distance_converted = std::max(
+      pull_out_distance, calcBeforeShiftedArcLength(
+                           road_lane_reference_path_from_ego, pull_out_distance, shift_length));
+
+    // Calculate the distance until the curvature at end_pose is below a certain threshold.
+    // This is to prevent the path curvature from becoming unnecessarily large when end_pose is on a
+    // curve.
+    const double before_shifted_pull_out_distance = std::invoke([&]() -> double {
+      double arc_length = 0.0;
+
+      // If a curvature below end_pose_curvature_threshold is not found, return the distance to the
+      // point with the smallest curvature after pull_out_distance_converted. pull_out_distance is a
+      // variable to store that distance.
+      double pull_out_distance = pull_out_distance_converted;
+      double min_curvature_after_distance_converted = std::numeric_limits<double>::max();
+
+      const auto curvatures_and_segment_lengths =
+        autoware::motion_utils::calcCurvatureAndSegmentLength(
+          road_lane_reference_path_from_ego.points);
+
+      const auto update_arc_length = [&](size_t i, const auto & segment_length) {
+        arc_length += (i == curvatures_and_segment_lengths.size() - 1)
+                        ? segment_length.first + segment_length.second
+                        : segment_length.first;
+      };
+
+      const auto update_min_curvature_and_pull_out_distance = [&](double curvature) {
+        min_curvature_after_distance_converted = curvature;
+        pull_out_distance = arc_length;
+      };
+
+      for (size_t i = 0; i < curvatures_and_segment_lengths.size(); ++i) {
+        const auto & [signed_curvature, segment_length] = curvatures_and_segment_lengths[i];
+        const double curvature = std::abs(signed_curvature);
+        update_arc_length(i, segment_length);
+        if (arc_length > pull_out_distance_converted) {
+          // update distance with minimum curvature after pull_out_distance_converted
+          if (curvature < min_curvature_after_distance_converted) {
+            update_min_curvature_and_pull_out_distance(curvature);
+          }
+          // if curvature is smaller than end_pose_curvature_threshold, return the length
+          if (curvature < end_pose_curvature_threshold) {
+            return arc_length;
+          }
+        }
+      }
+
+      // if not found point with curvature below end_pose_curvature_threshold
+      // pull_out_distance_converted, return the distance to the point with the smallest curvature
+      // after pull_out_distance_converted
+      return pull_out_distance;
+    });
 
     // if before_shifted_pull_out_distance is too short, shifting path fails, so add non shifted
     if (
