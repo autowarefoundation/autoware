@@ -285,7 +285,7 @@ void OccupancyGridMapProjectiveBlindSpot::updateWithPointCloud(
   if (pub_debug_grid_) converter.addLayerFromCostmap2D(*this, "added_unknown", debug_grid_);
 
   // Third step: Overwrite occupied cell
-  for (auto & obstacle_pointcloud_angle_bin : obstacle_pointcloud_angle_bins) {
+  for (const auto & obstacle_pointcloud_angle_bin : obstacle_pointcloud_angle_bins) {
     for (size_t dist_index = 0; dist_index < obstacle_pointcloud_angle_bin.size(); ++dist_index) {
       const auto & obstacle_point = obstacle_pointcloud_angle_bin.at(dist_index);
       setCellValue(obstacle_point.wx, obstacle_point.wy, cost_value::LETHAL_OBSTACLE);

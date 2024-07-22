@@ -160,7 +160,7 @@ void OccupancyGridMapFixedBlindSpot::updateWithPointCloud(
 
   // First step: Initialize cells to the final point with freespace
   for (size_t bin_index = 0; bin_index < obstacle_pointcloud_angle_bins.size(); ++bin_index) {
-    auto & raw_pointcloud_angle_bin = raw_pointcloud_angle_bins.at(bin_index);
+    const auto & raw_pointcloud_angle_bin = raw_pointcloud_angle_bins.at(bin_index);
 
     BinInfo end_distance;
     if (raw_pointcloud_angle_bin.empty()) {
@@ -175,8 +175,8 @@ void OccupancyGridMapFixedBlindSpot::updateWithPointCloud(
 
   // Second step: Add unknown cell
   for (size_t bin_index = 0; bin_index < obstacle_pointcloud_angle_bins.size(); ++bin_index) {
-    auto & obstacle_pointcloud_angle_bin = obstacle_pointcloud_angle_bins.at(bin_index);
-    auto & raw_pointcloud_angle_bin = raw_pointcloud_angle_bins.at(bin_index);
+    const auto & obstacle_pointcloud_angle_bin = obstacle_pointcloud_angle_bins.at(bin_index);
+    const auto & raw_pointcloud_angle_bin = raw_pointcloud_angle_bins.at(bin_index);
     auto raw_distance_iter = raw_pointcloud_angle_bin.begin();
     for (size_t dist_index = 0; dist_index < obstacle_pointcloud_angle_bin.size(); ++dist_index) {
       // Calculate next raw point from obstacle point
@@ -232,7 +232,7 @@ void OccupancyGridMapFixedBlindSpot::updateWithPointCloud(
   }
 
   // Third step: Overwrite occupied cell
-  for (auto & obstacle_pointcloud_angle_bin : obstacle_pointcloud_angle_bins) {
+  for (const auto & obstacle_pointcloud_angle_bin : obstacle_pointcloud_angle_bins) {
     for (size_t dist_index = 0; dist_index < obstacle_pointcloud_angle_bin.size(); ++dist_index) {
       const auto & obstacle_point = obstacle_pointcloud_angle_bin.at(dist_index);
       setCellValue(obstacle_point.wx, obstacle_point.wy, cost_value::LETHAL_OBSTACLE);

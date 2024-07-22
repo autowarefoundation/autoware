@@ -36,7 +36,7 @@ double convertCharToProbability(const unsigned char & occupancy)
 std::vector<unsigned char> convertProbabilityToChar(const std::vector<double> & probabilities)
 {
   std::vector<unsigned char> occupancies;
-  for (auto & probability : probabilities) {
+  for (const auto & probability : probabilities) {
     occupancies.push_back(convertProbabilityToChar(probability));
   }
   return occupancies;
@@ -45,7 +45,7 @@ std::vector<unsigned char> convertProbabilityToChar(const std::vector<double> & 
 std::vector<double> convertCharToProbability(const std::vector<unsigned char> & occupancies)
 {
   std::vector<double> probabilities;
-  for (auto & occupancy : occupancies) {
+  for (const auto & occupancy : occupancies) {
     probabilities.push_back(convertCharToProbability(occupancy));
   }
   return probabilities;
@@ -88,7 +88,7 @@ unsigned char overwriteFusion(const std::vector<unsigned char> & occupancies)
 
   auto fusion_occupancy = 128;  // unknown
   auto fusion_state = getApproximateState(fusion_occupancy);
-  for (auto & cell : occupancies) {
+  for (const auto & cell : occupancies) {
     auto state = getApproximateState(cell);
     if (state > fusion_state) {
       fusion_state = state;
@@ -115,7 +115,7 @@ namespace log_odds_fusion
 double logOddsFusion(const std::vector<double> & probabilities)
 {
   double log_odds = 0.0;
-  for (auto & probability : probabilities) {
+  for (const auto & probability : probabilities) {
     const double p = std::max(EPSILON_PROB, std::min(1.0 - EPSILON_PROB, probability));
     log_odds += std::log(p / (1.0 - p));
   }
@@ -252,7 +252,7 @@ struct dempsterShaferOccupancy
 double dempsterShaferFusion(const std::vector<double> & probability)
 {
   dempsterShaferOccupancy result;  // init with unknown
-  for (auto & p : probability) {
+  for (const auto & p : probability) {
     result = result + dempsterShaferOccupancy(p);
   }
   return result.getPignisticProbability();
